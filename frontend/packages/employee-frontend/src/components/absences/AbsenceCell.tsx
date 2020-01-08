@@ -112,13 +112,15 @@ const MemoizedCell = memo(function AbsenceCell({
   toggle: (parts: CellPart[]) => void
 }) {
   const parts = getCellParts(childId, date, careTypes, absences, backupCare)
+  if (parts.length === 0) {
+    return <DisabledCell />
+  }
 
-  return parts.length === 0 ? (
-    <DisabledCell />
-  ) : (
+  const clickable = !backupCare
+  return (
     <div
       className={`absence-cell ${isSelected ? 'absence-cell-selected' : ''}`}
-      onClick={() => toggle(parts)}
+      onClick={clickable ? () => toggle(parts) : undefined}
     >
       {parts.map(({ id: partId, absenceType, position }) => (
         <AbsenceCellPart
