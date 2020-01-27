@@ -4,7 +4,6 @@
 
 package fi.espoo.evaka.koski
 
-import fi.espoo.evaka.invoicing.controller.parseUUID
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.UploadToKoski
 import fi.espoo.evaka.shared.db.Database
@@ -26,23 +25,18 @@ class KoskiUpdateService(
     private val env: Environment,
     private val asyncJobRunner: AsyncJobRunner
 ) {
-    fun update(
-        db: Database.Connection,
-        personIds: String?,
-        daycareIds: String?
-    ) {
+    init {
+        asyncJobRunner.scheduleKoskiUploads = { db, msg -> scheduleKoskiUploads(db, msg.params) }
+    }
+
+    fun scheduleKoskiUploads(db: Database, params: KoskiSearchParams) {
         val isEnabled: Boolean = env.getRequiredProperty("fi.espoo.integration.koski.enabled", Boolean::class.java)
         if (isEnabled) {
             db.transaction { tx ->
-                val params = KoskiSearchParams(
-                    personIds = personIds?.split(",")?.map(::parseUUID) ?: listOf(),
-                    daycareIds = daycareIds?.split(",")?.map(::parseUUID) ?: listOf()
-                )
                 val requests = tx.getPendingStudyRights(LocalDate.now(), params)
                 logger.info { "Scheduling ${requests.size} Koski upload requests" }
                 asyncJobRunner.plan(tx, requests.map { UploadToKoski(it) }, retryCount = 1)
             }
-            asyncJobRunner.scheduleImmediateRun()
         }
     }
 }

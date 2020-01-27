@@ -78,6 +78,9 @@ class AsyncJobRunner(
     var dvvModificationsRefresh: (db: Database, msg: DvvModificationsRefresh) -> Unit = noHandler
 
     @Volatile
+    var scheduleKoskiUploads: (db: Database, msg: ScheduleKoskiUploads) -> Unit = noHandler
+
+    @Volatile
     var uploadToKoski: (db: Database, msg: UploadToKoski) -> Unit = noHandler
 
     @Volatile
@@ -197,6 +200,7 @@ class AsyncJobRunner(
                     AsyncJobType.SEND_APPLICATION_EMAIL -> it.runJob(job, this.sendApplicationEmail)
                     AsyncJobType.GARBAGE_COLLECT_PAIRING -> it.runJob(job, this.garbageCollectPairing)
                     AsyncJobType.VARDA_UPDATE -> it.runJob(job, this.vardaUpdate)
+                    AsyncJobType.SCHEDULE_KOSKI_UPLOADS -> it.runJob(job, this.scheduleKoskiUploads)
                 }.exhaust()
             }
             if (completed) {
