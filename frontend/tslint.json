@@ -1,0 +1,31 @@
+{
+  "defaultSeverity": "warning",
+  "extends": [
+    "tslint:recommended"
+  ],
+  "linterOptions": {
+    "exclude": [
+      "src/**/*.js",
+      "src/**/*.json",
+      "node_modules/**",
+      "packages/lib-common/**"
+    ]
+  },
+  "rules": {
+    "quotemark": [true, "single"],
+    "indent": [true, "spaces", 2],
+    "interface-name": false,
+    "ordered-imports": false,
+    "object-literal-sort-keys": false,
+    "no-consecutive-blank-lines": false,
+    "semicolon": false,
+    "trailing-comma": false,
+    "space-before-function-paren": false,
+    "only-arrow-functions": false,
+    "no-console": false,
+    "arrow-parens": false,
+    "max-line-length": false,
+    "max-classes-per-file": false,
+    "no-trailing-whitespace": false
+  }
+}

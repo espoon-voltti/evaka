@@ -1,0 +1,92 @@
+/*
+ * SPDX-FileCopyrightText: 2017-2020 City of Espoo
+ *
+ * SPDX-License-Identifier: LGPL-2.1-or-later
+ */
+
+$toggle-height: 30px !default;
+$toggle-width: 55px !default;
+$toggle-border: 1px !default;
+$toggle-slider-margin: 2px !default;
+
+$toggle-color: $grey-dark !default;
+$toggle-checked-color: $blue !default;
+$toggle-disabled-color: $grey !default;
+
+$toggle-focus-box-shadow-size: 0 0 0 0.125em !default;
+$toggle-focus-box-shadow-color: rgba($grey, 0.25) !default;
+$toggle-checked-focus-box-shadow-color: rgba($blue-light, 0.25) !default;
+
+$toggle-transition: all 0.2s ease !default;
+
+$toggle-slider-height: $toggle-height - ($toggle-slider-margin + $toggle-border) * 2;
+
+.toggle {
+  @include unselectable;
+
+  display: inline-block;
+  margin-bottom: 0.5rem;
+
+  position: relative;
+
+  .input {
+    @include sr-only;
+  }
+
+  .input:focus {
+    & ~.label {
+      box-shadow: $toggle-focus-box-shadow-size $toggle-focus-box-shadow-color;
+    }
+  }
+
+  .input:checked {
+    &:focus {
+      & ~.label {
+        box-shadow:  $toggle-focus-box-shadow-size $toggle-checked-focus-box-shadow-color;
+      }
+    }
+    & ~ .label {
+      border-color: $toggle-checked-color;
+      background-color: $toggle-checked-color;
+      &::before {
+        background: $white;
+        left: $toggle-width - ($toggle-slider-height + $toggle-border + $toggle-slider-margin * 2);
+      }
+    }
+  }
+
+  .input:disabled {
+    & ~ .label {
+      cursor: not-allowed;
+      border-color: $toggle-disabled-color;
+      &::before {
+        background: $toggle-disabled-color;
+      }
+    }
+  }
+
+  .label {
+    cursor: pointer;
+    border-width: $toggle-border;
+    border-style: solid;
+    border-color: $toggle-color;
+    border-radius: $toggle-height / 2;
+    height: $toggle-height;
+    width: $toggle-width;
+    transition: $toggle-transition;
+
+    &::before {
+      content: ' ';
+      position: absolute;
+      display: block;
+      margin: $toggle-slider-margin;
+      width: $toggle-slider-height;
+      height: $toggle-slider-height;
+      border-radius: 100%;
+      left: $toggle-slider-margin;
+      background: $toggle-color;
+      transition: $toggle-transition;
+    }
+  }
+
+}

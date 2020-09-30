@@ -1,0 +1,52 @@
+<!--
+SPDX-FileCopyrightText: 2017-2020 City of Espoo
+
+SPDX-License-Identifier: LGPL-2.1-or-later
+-->
+
+<!DOCTYPE html>
+
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+  <style th:replace="~{preparatory/preparatory-decision-css.html}"></style>
+  <style th:replace="~{ipost/ipost-letter.html :: css}"></style>
+  <!--  <style th:replace="~{ipost/ipost-letter.html :: guides}"></style>-->
+</head>
+<body>
+<div th:replace="~{ ipost/ipost-letter :: page(~{ :: content})}">
+  <div th:fragment="content">
+    <div th:replace="~{preparatory/preparatory-decision-common :: header}"></div>
+
+    <div class="content-wrapper">
+      <h4 class="page-title spacing-before-title" th:text="#{title}"></h4>
+
+      <div class="accept-placement-wrapper">
+
+        <div class="details-section accept-details">
+          <p>
+            <span class="detail-label strong" th:text="#{childName} + ':'"></span>
+            <span th:text="${application.form.child.firstName} + ' ' + ${application.form.child.lastName}"></span>
+          </p>
+          <p>
+            <span class="detail-label strong" th:text="#{unitName} + ':'"></span>
+            <span th:text="${decision.unit.preschoolDecisionName}"></span>
+          </p>
+          <p>
+            <span class="detail-label strong"></span>
+            <span th:text="${decision.unit.streetAddress} + ', ' + ${decision.unit.postalCode} + ' ' + ${decision.unit.postOffice}"></span>
+          </p>
+        </div>
+
+        <p>
+          <span th:text="#{accept.text.1}"></span>
+          <span th:replace="~{preparatory/preparatory-decision-dates :: placement-dates}"></span>
+        </p>
+        <p th:utext="#{accept.text.2}"></p>
+
+        <div th:replace="~{shared/acceptance-form :: signatures}"></div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

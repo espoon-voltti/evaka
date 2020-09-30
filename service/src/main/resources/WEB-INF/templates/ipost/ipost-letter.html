@@ -1,0 +1,127 @@
+<!--
+SPDX-FileCopyrightText: 2017-2020 City of Espoo
+
+SPDX-License-Identifier: LGPL-2.1-or-later
+-->
+
+<!DOCTYPE html>
+
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <style th:fragment="guides">
+        @page {
+            border: 1px solid red;
+        }
+
+        .ipost-address-window {
+            border: 1px solid green;
+        }
+
+        .ipost-address-top {
+            border: 1px solid blue;
+        }
+
+        .ipost-address-bottom {
+            border: 1px solid blue;
+        }
+
+        .ipost-heading {
+            border: 1px solid cyan;
+        }
+
+        .ipost-cover-content {
+            border: 1px solid orange;
+        }
+
+        .ipost-page-content {
+            border: 1px solid orange;
+        }
+
+    </style>
+
+    <style th:fragment="css">
+        @page {
+            size: A4 portrait;
+            margin: 5mm 3mm 3mm 11mm;
+        }
+
+        .ipost-address-window {
+            position: fixed;
+            top: 5mm;
+            left: 10mm;
+            width: 80mm;
+            height: 50mm;
+            overflow: hidden;
+        }
+
+        .ipost-address-top {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 20mm;
+            width: 80mm;
+            overflow: hidden;
+        }
+
+        .ipost-address-top img {
+            height: 18mm;
+            margin-top:1mm;
+        }
+
+        .ipost-address-bottom {
+            position: absolute;
+            top: 29mm;
+            left: 0;
+            height: 21mm;
+            width: 66mm;
+            overflow: hidden;
+        }
+
+        .ipost-address-bottom * {
+            font-family: sans-serif;
+            font-size: 14px;
+            line-height: 1.1em;
+        }
+
+        .ipost-heading {
+            position: absolute;
+            top: 0;
+            left: 99mm;
+            height: 85mm;
+            width: 100mm;
+            display: block;
+        }
+
+        .ipost-cover-content {
+            position: absolute;
+            top: 85mm;
+            width: 196mm;
+        }
+
+        .ipost-page-content {
+            position: absolute;
+            top: 0;
+            width: 196mm;
+        }
+
+    </style>
+</head>
+<body>
+<!-- Cover page -->
+<div class="ipost-letter-cover" th:fragment="cover(address, heading, content)">
+    <div class="ipost-address-window">
+        <div class="ipost-address-top">
+            <img th:replace="espoo-logo.html"/>
+        </div>
+        <div class="ipost-address-bottom" th:insert="${address}"></div>
+    </div>
+    <div class="ipost-heading" th:insert="${heading}"></div>
+    <div class="ipost-cover-content" th:insert="${content}"></div>
+</div>
+
+<!-- Normal page -->
+<div class="ipost-letter-page" th:fragment="page(content)">
+    <div class="ipost-page-content" th:insert="${content}"></div>
+</div>
+</body>
+</html>

@@ -1,0 +1,68 @@
+' SPDX-FileCopyrightText: 2017-2020 City of Espoo
+'
+' SPDX-License-Identifier: LGPL-2.1-or-later
+
+@startuml evaka-container
+!includeurl https://raw.githubusercontent.com/RicardoNiepel/C4-PlantUML/master/C4_Container.puml
+
+title eVakan container-kaavio
+
+Person(huoltaja, "Huoltaja", "Varhaiskasvatuksen, kerhotoiminnan tai esiopetuksen piirissä olevan lapsen huoltaja")
+Person(virkailija, "Virkailija", "Kaupungin työntekijä, jolla on Azure AD -tunnukset")
+
+System_Boundary(evaka, "eVaka – Espoon varhaiskasvatuksen toiminnanohjausjärjestelmä") {
+  Container(evaka_front, "evaka-frontend\n(huoltaja)", "Vue, TypeScript", "SPA-sovellus, joka ajetaan käyttäjän selaimessa ja tarjotaan AWS:n S3:sta. Sovelluksen avulla haetaan paikkaa kerhoon tai varhaiskasvatukseen, sekä ilmoitetaan lapsi esiopetukseen .")
+  Container(evaka_admin_front, "evaka-frontend\n(virkailja)", "React, Vue, TypeScript", "SPA-sovellus, joka ajetaan käyttäjän selaimessa ja tarjotaan AWS:n S3:sta. Toteuttaa virkailijan käyttöliittymän kaikki toiminnot.")
+
+  Container(evaka_proxy, "evaka-proxy", "nginx", "Palvelun edustaproxy")
+  Container(evaka_apigw, "evaka-api-gateway", "node.js, TypeScript", "Välittää edustan kutsut oikeille mikropalveluille ja hoitaa SAML2-autentikoinnin.")
+  ContainerDb(evaka_session_store, "evaka-session-store", "AWS ElastiCache", "Muistinvarainen Redis -tietokanta sessioiden tallentamiseen.")
+
+  Container(evaka_service, "evaka-service", "Spring Boot, Kotlin", "Toteuttaa eVaka-sovelluslogiikan.")
+  ContainerDb(evaka_service_db, "evaka-service-db", "Postgres v10 AWS RDS", "Varhaiskasvatuksen hakemusten, perhetietojen ja lasten hoidonaikaisten tietojen tallennus")
+
+  Container(evaka_message_service, "evaka-message-service", "Spring Boot, Kotlin", "Välittää viestit ulkoiselle viestipalvelulle")
+
+  ContainerDb(evaka_s3_bucket, "eVaka-päätökset", "AWS S3", "Päätösdokumenttien säilytys. Päätösdokumentit tarjotaan AWS:n S3:sta Signed URL -mekanismilla.")
+  ContainerDb(evaka_static_s3_bucket, "eVaka-resurssit", "AWS S3", "Staattiset resurssit, kuten HTML-, JavaScript- ja kuvatiedostot")
+}
+
+
+
+System_Ext(suomifi, "Suomi.fi -tunnistus")
+System_Ext(espooad, "Espoo AD -tunnistus")
+System_Ext(suomifiviestit, "Suomi.fi-viestit")
+System_Ext(varda, "Varda Varhaiskasvatuksen tietovaranto")
+System_Ext(vtj, "VTJ Väestötietojärjestelmä")
+
+Rel_L(huoltaja, suomifi, "tunnistautuu\n[SAML/HTTPS]")
+Rel(huoltaja, evaka_front, "käyttää\n[HTTPS]")
+
+Rel(virkailija, espooad, "tunnistautuu\n[SAML/HTTPS]")
+Rel(virkailija, evaka_admin_front, "käyttää\n[HTTPS]")
+
+Rel_U(evaka_front, suomifi, "ohjaa huoltajan tunnistautumaan\n[SAML/HTTPS]")
+Rel(evaka_front, evaka_proxy, "käyttää\n[JSON/HTTPS]")
+
+Rel_R(evaka_admin_front, espooad, "ohjaa virkailijan tunnistautumaan\n[SAML/HTTPS]")
+Rel(evaka_admin_front, evaka_proxy, "käyttää\n[JSON/HTTPS]")
+Rel_D(evaka_service, evaka_s3_bucket, "hakee tiedoston\n[HTTPS]")
+
+Rel_R(evaka_proxy, evaka_apigw, "käyttää\n[JSON/HTTP]")
+
+Rel_R(evaka_apigw, evaka_session_store, "käyttää\n[RESP/TCP]")
+Rel(evaka_apigw, evaka_service, "käyttää\n[JSON/HTTP]")
+
+Rel(evaka_service, evaka_message_service, "käyttää\n[JSON/HTTP]")
+Rel(evaka_message_service, evaka_s3_bucket, "hakee tiedoston\n[HTTPS]")
+
+Rel(evaka_message_service, suomifiviestit, "Lähettää\n[SOAP/HTTPS]")
+
+Rel_D(evaka_service, evaka_service_db, "lukee ja kirjoittaa\n[JDBC]")
+
+Rel(evaka_proxy, evaka_static_s3_bucket, "lukee\n[HTTPS]")
+
+Rel_D(evaka_service, vtj, "lukee\n[SOAP/HTTPS]")
+Rel_D(evaka_service, varda, "lukee ja kirjoittaa\n[REST/HTTPS]")
+
+@enduml

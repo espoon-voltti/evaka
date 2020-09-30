@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+SPDX-FileCopyrightText: 2017-2020 City of Espoo
+
+SPDX-License-Identifier: LGPL-2.1-or-later
+-->
+
+<suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.2.xsd">
+    <suppress>
+        <notes><![CDATA[
+        This suppresses all CVE entries that have a score below this CVSS.
+        ]]></notes>
+        <cvssBelow>8</cvssBelow>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+        Suppress irrelevant vulnerability that breaks build with high score
+        https://nvd.nist.gov/vuln/detail/CVE-2016-7048
+        The interactive installer in PostgreSQL before 9.3.15, 9.4.x before 9.4.10, and 9.5.x before 9.5.5 might allow
+        remote attackers to execute arbitrary code by leveraging use of HTTP to download software.
+        ]]></notes>
+        <cve>CVE-2016-7048</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+        Suppress irrelevant vulnerability that breaks build with high score
+        Versions in use in project are:
+        Spring boot:2.0.8.RELEASE brings Spring versions to use in the 5.0.11-12 range
+        https://nvd.nist.gov/vuln/detail/CVE-2018-1258
+        https://pivotal.io/security/cve-2018-1258
+        Spring Security in combination with Spring Framework 5.0.5.RELEASE contain an authorization bypass when using
+        method security. An unauthorized malicious user can gain unauthorized access to methods that should be restricted.
+        ]]></notes>
+        <cve>CVE-2018-1258</cve>
+    </suppress>
+    <suppress>
+        <notes>
+            <![CDATA[
+            Suppress irrelevant vulnerability in windows version that breaks build with high score
+            https://nvd.nist.gov/vuln/detail/CVE-2019-0232
+            When running on Windows with enableCmdLineArguments enabled, the CGI Servlet in Apache Tomcat 9.0.0.M1
+            to 9.0.17, 8.5.0 to 8.5.39 and 7.0.0 to 7.0.93 is vulnerable to Remote Code Execution due to a bug in the
+            way the JRE passes command line arguments to Windows. The CGI Servlet is disabled by default.
+            ]]>
+        </notes>
+        <cve>CVE-2019-0232</cve>
+    </suppress>
+</suppressions>

@@ -1,0 +1,194 @@
+/*
+ * SPDX-FileCopyrightText: 2017-2020 City of Espoo
+ *
+ * SPDX-License-Identifier: LGPL-2.1-or-later
+ */
+
+$drop-area-min-width: 350px;
+
+.upload-box {
+  margin-top: 40px;
+
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  flex-flow: wrap;
+
+  @include until($desktop) {
+    flex-direction: column-reverse;
+  }
+
+  .file-viewer,
+  .drop-area {
+    position: relative;
+    margin-bottom: 1rem;
+    flex: 1;
+  }
+
+  @include from($desktop) {
+    .file-viewer {
+      margin-right: 20px;
+    }
+    .file-viewer + .drop-area {
+      margin-left: 20px;
+    }
+  }
+
+  .upload-box-error {
+    align-content: baseline;
+    align-items: center;
+    flex-direction: row;
+    justify-content: center;
+    margin-bottom: 1rem;
+    flex: 1 0 auto;
+
+    & > svg {
+      color: $orange;
+    }
+
+    & * + * {
+      margin-left: 0.5em;
+    }
+  }
+
+  .drop-area {
+    min-width: $drop-area-min-width;
+    box-sizing: content-box;
+  }
+}
+
+.drop-area-container {
+  position: relative;
+  display: flex;
+  width: 100%;
+  height: 10rem;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  min-width: $drop-area-min-width;
+  box-sizing: border-box;
+
+  &:before {
+    content: '';
+    background-color: $white-bis;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    border-radius: 6px;
+    border: 1px dashed #bbb;
+    transition: all ease 0.3s;
+  }
+
+  &:hover:before {
+    background-color: lighten($white-bis, 5%);
+    border-color: #999;
+    transform: scale(1.01);
+  }
+
+  .title,
+  .info {
+    max-width: 75%;
+    z-index: 1;
+  }
+
+  .drop-area-restrictions {
+    display: block;
+  }
+
+  .drop-input {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    z-index: 3;
+  }
+}
+
+.uploaded-file {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+
+  padding: 0.5rem 0;
+  border-radius: 4px;
+  flex-wrap: wrap;
+
+  &:hover {
+    background-color: $white-bis;
+  }
+
+  &:not(:last-child) {
+    margin-bottom: 0.5rem;
+  }
+
+  .file-control-margin {
+    margin-right: 0.75rem;
+  }
+
+  .icon {
+    color: $grey;
+    margin-right: 0.5rem;
+    font-size: 1.6rem;
+  }
+
+  .file-name {
+    flex: 1;
+  }
+
+  .button {
+    border: none;
+    background: transparent;
+    font-size: 1.6rem;
+    padding: 0;
+    color: $grey;
+    padding: 0;
+    min-width: 1em;
+    height: 1em;
+
+    &:hover {
+      color: $grey-dark;
+    }
+  }
+
+  .file-status-info {
+    margin-left: 3.2rem;
+  }
+
+  .progress-bar {
+    margin-left: 3.2rem;
+    width: 100%;
+    height: 2px;
+    background: $grey-light;
+    margin-left: 3.2rem;
+    margin-top: 0.5rem;
+    margin-bottom: 0.05rem;
+
+    &:empty {
+      background: transparent;
+    }
+
+    &.is-danger {
+      background: $danger;
+    }
+
+    & > div {
+      background: $espoo-blue;
+      height: 100%;
+    }
+  }
+
+  .file-status-info {
+    &.is-danger {
+      color: $danger;
+    }
+  }
+}

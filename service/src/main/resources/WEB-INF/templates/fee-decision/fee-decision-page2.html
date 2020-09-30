@@ -1,0 +1,49 @@
+<!--
+SPDX-FileCopyrightText: 2017-2020 City of Espoo
+
+SPDX-License-Identifier: LGPL-2.1-or-later
+-->
+
+<!DOCTYPE html>
+
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <style th:replace="~{fee-decision/fee-decision-css.html}"></style>
+    <style th:replace="~{ipost/ipost-letter.html :: css}"></style>
+</head>
+<body>
+<div th:replace="~{ ipost/ipost-letter :: page(~{ :: content})}">
+    <div th:fragment="content">
+        <div th:replace="~{fee-decision/fee-decision-common :: header}"></div>
+        <div class="content-wrapper">
+            <div class="legal-content">
+                <p th:text="#{text.legal.p1}"></p>
+                <p th:text="#{text.legal.p2}"></p>
+                <p th:text="#{text.legal.p3}"></p>
+                <p th:text="#{text.legal.p4}"></p>
+                <p th:text="#{text.legal.p5}"></p>
+                <p th:text="#{text.legal.p6}"></p>
+                <p th:text="#{text.legal.p7}"></p>
+            </div>
+
+            <div class="document-signed-details">
+                <p>
+                    <span th:text="#{text.legal.p8}"></span>
+                    <span th:text="${approvedAt}"></span>
+                </p>
+                <div th:text="#{text.legal.p9}"></div>
+                <div>
+                    <span th:text="${approverLastName}"></span>,
+                    <span th:text="${approverFirstName}"></span>
+                </div>
+                <div th:text="#{text.legal.p14}"></div>
+                <div th:text="#{text.legal.p10}"></div>
+                <div th:text="#{text.legal.p11}"></div>
+                <div th:text="#{text.legal.p12}"></div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

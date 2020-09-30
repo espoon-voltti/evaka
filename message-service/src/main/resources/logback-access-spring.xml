@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+SPDX-FileCopyrightText: 2017-2020 City of Espoo
+
+SPDX-License-Identifier: LGPL-2.1-or-later
+-->
+
+<configuration>
+    <springProperty scope="context" name="appName" source="spring.application.name"/>
+    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+    <include resource="org/springframework/boot/logging/logback/console-appender.xml"/>
+    <include resource="fi/espoo/voltti/logging/logback/default-appender.xml"/>
+    <include resource="fi/espoo/voltti/logging/logback/access-appender.xml"/>
+    <include resource="fi/espoo/voltti/logging/logback/access-appender-plain.xml"/>
+
+    <springProfile name="!production">
+        <appender-ref ref="PLAIN_ACCESS_APPENDER"/>
+    </springProfile>
+    <springProfile name="production">
+        <appender-ref ref="VOLTTI_ACCESS_APPENDER"/>
+    </springProfile>
+</configuration>

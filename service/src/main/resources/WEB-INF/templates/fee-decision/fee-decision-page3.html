@@ -1,0 +1,56 @@
+<!--
+SPDX-FileCopyrightText: 2017-2020 City of Espoo
+
+SPDX-License-Identifier: LGPL-2.1-or-later
+-->
+
+<!DOCTYPE html>
+
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <style th:replace="~{fee-decision/fee-decision-css.html}"></style>
+    <style th:replace="~{ipost/ipost-letter.html :: css}"></style>
+</head>
+<body>
+<div th:replace="~{ ipost/ipost-letter :: page(~{ :: content})}">
+    <div th:fragment="content">
+        <div th:replace="~{fee-decision/fee-decision-common :: header}"></div>
+        <div class="content-wrapper">
+            <div class="legal-content">
+                <h1 th:text="#{text.legal.h1}"></h1>
+                <p th:text="#{text.legal.p1}"></p>
+                <p th:text="#{text.legal.p2}"></p>
+                <p th:text="#{text.legal.p3}"></p>
+                <p th:text="#{text.legal.p4}"></p>
+                <ul>
+                    <li th:text="#{text.legal.li1}"></li>
+                    <li th:text="#{text.legal.li2}"></li>
+                    <li th:text="#{text.legal.li3}"></li>
+                    <li th:text="#{text.legal.li4}"></li>
+                </ul>
+                <p th:text="#{text.legal.p5}"></p>
+                <p th:text="#{text.legal.p6}"></p>
+            </div>
+            <div>
+                <p th:text="#{text.legal.p7}"></p>
+                <dl>
+                    <dt th:text="#{text.legal.dt1}"></dt>
+                    <dd th:text="#{text.legal.dd1}"></dd>
+                    <dt th:text="#{text.legal.dt2}"></dt>
+                    <dd th:text="#{text.legal.dd2}"></dd>
+                    <dt th:text="#{text.legal.dt3}"></dt>
+                    <dd th:text="#{text.legal.dd3}"></dd>
+                    <dt th:text="#{text.legal.dt4}"></dt>
+                    <dd th:text="#{text.legal.dd4}"></dd>
+                    <dt th:text="#{text.legal.dt5}"></dt>
+                    <dd th:text="#{text.legal.dd5}"></dd>
+                    <dt th:text="#{text.legal.dt6}"></dt>
+                    <dd th:text="#{text.legal.dd6}"></dd>
+                </dl>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

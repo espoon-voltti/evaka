@@ -1,0 +1,42 @@
+{
+  "name": "@evaka/maintenance-page",
+  "description": "Displayed when eVaka sites are down for maintenance",
+  "version": "1.0.0",
+  "private": true,
+  "license": "LGPL-2.1-or-later",
+  "scripts": {
+    "clean": "rm -rf dist/",
+    "dev": "parcel src/index.html",
+    "start": "yarn dev",
+    "build": "yarn clean && parcel build src/index.html --public-url ./",
+    "lint": "prettier --check src/**/*.scss",
+    "lint:fix": "prettier --write src/**/*.scss"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "husky": "^2.3.0",
+    "parcel-bundler": "^1.12.4",
+    "postcss-preset-env": "^6.7.0",
+    "sass": "^1.23.3"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "yarn lint:fix"
+    }
+  },
+  "postcss": {
+    "plugins": {
+      "postcss-preset-env": true
+    }
+  },
+  "browserslist": [
+    "> 1% in FI",
+    "last 2 versions",
+    "not ie <= 8",
+    "not dead"
+  ],
+  "prettier": {
+    "semi": false,
+    "singleQuote": true
+  }
+}

@@ -1,0 +1,96 @@
+/*
+ * SPDX-FileCopyrightText: 2017-2020 City of Espoo
+ *
+ * SPDX-License-Identifier: LGPL-2.1-or-later
+ */
+
+$label-weight: $weight-semibold !default;
+.input-group {
+  margin-top: 40px;
+
+  .input-group-content {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+
+    .label {
+      white-space: pre;
+    }
+  }
+
+  @include until($tablet) {
+    .input-group-content {
+      flex-direction: column
+    }
+  }
+
+  &-item {
+    margin-bottom: 20px;
+    display: inline-block;
+    &:not(:last-child) {
+      margin-right: 40px;
+    }
+  }
+
+  &.is-vertical {
+    .input-group-content {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .input-group-item {
+      display: block;
+      &:not(:last-child) {
+        margin-right: 0px;
+      }
+    }
+  }
+
+  &.is-columns {
+    .input-group-content {
+      display: flex;
+      flex-direction: row;
+      flex-wrap: wrap;
+    }
+
+    .input-group-item {
+      display: flex;
+      flex: 0 0 0;
+    }
+
+    @include until($tablet) {
+      .input-group-content {
+        flex-direction: column
+      }
+    }
+  }
+
+  .group-label {
+    font-size: $size-normal;
+    font-weight: $label-weight;
+  }
+
+  .group-label, .group-label-title {
+    margin-bottom: 20px;
+
+    .help {
+      margin-left: 12px;
+      .icon {
+        margin-right: 6px;
+        @include applyStateColors();
+      }
+    }
+  }
+
+  .help {
+    display: inline;
+    font-size: 12px;
+  }
+
+  .is-required {
+    .group-label-content:after {
+      content: ' *'
+    }
+  }
+}
+

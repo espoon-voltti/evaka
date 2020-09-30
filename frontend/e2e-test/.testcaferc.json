@@ -1,0 +1,10 @@
+{
+  "reporter": [
+    { "name": "spec" },
+    {
+      "name": "junit",
+      "output": "test-results/junit.xml"
+    }
+  ],
+  "tsConfigPath": "./tsconfig.json"
+}

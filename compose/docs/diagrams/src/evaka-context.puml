@@ -1,0 +1,42 @@
+' SPDX-FileCopyrightText: 2017-2020 City of Espoo
+'
+' SPDX-License-Identifier: LGPL-2.1-or-later
+
+@startuml 
+!includeurl https://raw.githubusercontent.com/RicardoNiepel/C4-PlantUML/release/1-0/C4_Context.puml
+
+title eVakan kontekstikaavio
+
+Person(hakija, "Kuntalainen", "Varhaiskasvatuksen tai esiopetuksen piirissä olevan lapsen huoltaja")
+System(evaka, "eVaka", "Järjestelmä varhaiskasvatukseen ja esiopetukseen hakemiseen ja hallintaan.\n\nYhteyshenkilö:\nSirpa Puumalainen")
+
+System_Ext(vtj, "Väestötietojärjestelmä", "Väestörekisterikeskuksen palvelu kansalaisten tietojen hakemiseen")
+System_Ext(varda, "Varda", "Opetushallituksen järjestelmä varhaiskasvatuksen tilastointiin")
+System_Ext(suomifiviestit, "Suomi.fi -viestit", "Väestörekisterikeskuksen palvelu paperisten ja sähköisten viestien lähettämiseen kansalaiselle")
+System_Ext(suomifi, "Suomi.fi -tunnistus", "Väestörekisterikeskuksen kansallinen tunnistusportaali")
+System_Ext(espooad, "Espoo AD -tunnistus", "Virkamiesten tunnistaminen")
+System_Ext(espi, "ESPi", "Espoon kaupungin integraatioalusta")
+
+Rel_R(hakija, evaka, "Hakee varhaiskasvatuspaikkaa huollettavalleen")
+Rel_U(hakija, suomifi, "Tunnistautuu")
+Rel_U(evaka, suomifi, "Ohjaa hakijan tunnistautumaan")
+Rel(evaka, espooad, "Ohjaa Espoon kaupungin työntekijän tunnistautumaan")
+Rel_U(evaka, vtj, "Hakee kuntalaisen tiedot ja huollettavat")
+Rel_U(evaka, varda, "Varhaiskasvatuksen tilastointi")
+Rel_R(evaka, espi, "Lähettää varhaiskasvatuksen laskut")
+
+Rel(evaka, suomifiviestit, "Lähettää varhaiskasvatuksen päätökset kuntalaiselle")
+
+Boundary(espoon_tyontekija, "Espoon kaupungin työntekijä") {
+  Person(palveluohjaaja, "Palveluohjaaja", "Vastaa oman palvelualueensa varhaiskasvatuksen päätöksistä")
+  Person(yksikon_esimies, "Yksikön esimies", "Vastaa yhdestä tai useammasta toimipisteestä")
+  Person(talouden_henkilo, "Talouden henkilö", "Huolehtii maksupäätöksistä ja laskuista")
+}
+
+Rel_U(palveluohjaaja, evaka, "Käsittelee hakemuksen, sijoittaa lapsen varhaiskasvatukseen ja tekee päätöksen")
+Rel_U(yksikon_esimies, evaka, "Ryhmittelee")
+Rel(talouden_henkilo, evaka, "Luo maksupäätökset ja laskut")
+
+Rel(espoon_tyontekija, espooad, "Tunnistautuu")
+
+@enduml

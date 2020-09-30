@@ -1,0 +1,12 @@
+{
+  "keys": [
+    {
+      "kid": "evaka-service",
+      "use": "sig",
+      "kty": "RSA",
+      "alg": "RS256",
+      "n": "rfbA5dXkNYBURyIw_a5PiKGzCeWxpr8MxZXaEbmre8gTeUT7keK4bKONSiWzS4uLIVAT8SR3RoKYzQsBPQID78z2KUggyAF8tbtVEOnOl14YpolUdoAgZdOAcXWHOMTLfb5x4N_rZZuJ3NHSJ3c3blXT42WqDK0_7U7cqS-pVrYRNEZlmq4_gqjnm-koA1ai4ey-trLm5odnfU9_6KEv-mblPZx1X0v0p5-53ScGeA312ob2OM4p7rLLssGuGGzuiUZil-Sdtz2IU7qeprwkWN0noO04dj6TuvhvsBAqd2_h9wJHbuudTNtz53yb5C3y1P6_CWOTZOKjNfdCcQwgZMG49WDQd6uXGnMULBiA6Kbtb7_0ZRC2kGLVPFqV03hnpXYZGFWF7FfR2wD7UDP7E2ilddMR0b7_TApUEN-6wbPEdnsVBHktsr6ZymFyN9wZxu_4jKTd95tdAT6HLX6XCA3IlcwMXEzvxYF13JCTk4YxMpQqGaWRYz6Tm4hX3soPHp8IFzT4lgsVSjKbDmLhwfrWsQcQ3gf02EdEniUphbQZhVJxsmuL9xt_hOy8WstEd-DGAz686UyrTb0zHONR-e7CJEWtqrOcpyq3v6csix0wDSiY4OD56Xc1ZnxAAJ6D3baU6V8LYDKTgsofAgNYr4A2yR3GFW-AP2GxFh3R6Tc",
+      "e": "AQAB"
+    }
+  ]
+}

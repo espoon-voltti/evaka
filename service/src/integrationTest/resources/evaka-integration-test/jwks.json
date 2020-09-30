@@ -1,0 +1,12 @@
+{
+    "keys": [
+        {
+            "alg": "RS256",
+            "e": "AQAB",
+            "kid": "integration-test",
+            "kty": "RSA",
+            "n": "v3OTDoZ9S5sJ6_tLRkbL6YnaXUEtb9J-UN-IOS_omiMSdu8A5HLwSW72IkCSYFa6_Hzyf3vx-txiuZ7_GzyzGb1wDqGBnjo7XDuhR3QHpcjPEkK4Ny-lHxz5GJnQtGBZXvT0AGLL8g2-gbJv8Aba3yXti3dJHA8tKWyp67apzq3V-8JC-bpAjFPI9pH-m4rc8s8t1i4lE9ODAjgXFqkW0RpPhl1OIn7m9cQJk-yU_mSsu3fje7TkGyM09wlpqtRGExVe3ByYyUx1U3Kb0szzVssu65M5o1H-_HfuM8hHEPkgwhpFtX6x8T1LW5lXKSlDrjVhUh5Bfd-p_8dWoBrstred4GVO0GTZoakSTCCBTQqmRm7OKwF3N6BadSsIyUpn4vjau69Et8ZODdBdxgQBjeBz8wksYUwWJZR8smA79aUlwwTQpIvcpkVUKEPyDTEiX63CJFPhqkgopwIJTU8EJ_nATCOScpRfSOAK1W7x8ELhczhzlsE1W8wAPWLxt8UmDpLrQHvNPs9YKZbhnSM3G1---d52WVgPH5vWDdlR2OHbHXDwoxwvmmpt78G_325n0h8Cnwrj1adB2atO2q843PVP9U1lsUh4b_4ccUnzsiO1Zxz04rCnHLpk5blMU6H4FiG_UqRf1IuKLlCOC6cRxhjaAZH3bhiuNpkQR3_fVo8",
+            "use": "sig"
+        }
+    ]
+}

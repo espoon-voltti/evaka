@@ -1,0 +1,254 @@
+/*
+ * SPDX-FileCopyrightText: 2017-2020 City of Espoo
+ *
+ * SPDX-License-Identifier: LGPL-2.1-or-later
+ */
+
+$radio-check-font-size: 24px !default;
+
+$radio-check-width: 35px !default;
+$radio-check-margin: 1rem !default;
+
+$radio-check-border-color: $grey-dark !default;
+$radio-check-background: transparent !default;
+$radio-check-text-color: $black !default;
+
+$radio-focus-check-box-shadow-size: 0 0 0 0.125em !default;
+$radio-focus-check-box-shadow-color: rgba($grey, 0.25) !default;
+$radio-checked-focus-check-box-shadow-color: rgba($blue-light, 0.25) !default;
+
+$radio-checked-check-background: $primary !default;
+$radio-checked-check-border-color: $primary !default;
+$radio-checked-check-text-color: $white !default;
+
+$radio-hover-check-background: fade_out($white, 0.7) !default;
+$radio-hover-check-border-color: $grey-darker !default;
+$radio-hover-check-text-color: $grey !default;
+
+$radio-disabled-check-background: transparent !default;
+$radio-disabled-check-border-color: $grey !default;
+$radio-disabled-check-text-color: $grey-light !default;
+$radio-disabled-text-color: $grey-dark !default;
+$label-weight: $weight-semibold !default;
+
+.radio {
+  @include unselectable;
+  display: block;
+  margin-bottom: 0.5rem;
+  position: relative;
+  padding-left: calc(#{$radio-check-width} + #{$radio-check-margin});
+
+  &.is-inline {
+    display: inline-block !important;
+    margin-right: 4rem;
+  }
+
+  .input {
+    @include sr-only;
+  }
+
+  .label {
+    cursor: pointer;
+    font-weight: $weight-normal;
+    min-height: $radio-check-width;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+
+    &::before {
+      position: absolute;
+      left: 0;
+      top: 0;
+
+      content: '';
+
+      display: inline-block;
+      vertical-align: middle;
+
+      background: $radio-check-background;
+
+      width: $radio-check-width;
+      height: $radio-check-width;
+
+      border-width: 1px;
+      border-style: solid;
+      border-color: $radio-check-border-color;
+
+      border-radius: 100%;
+    }
+
+    .tick {
+      display: none;
+
+      position: absolute;
+      top: 0;
+      left: 0;
+
+      font-size: $radio-check-font-size;
+      color: $radio-check-text-color;
+
+      line-height: $radio-check-width;
+      width: $radio-check-width;
+      height: $radio-check-width;
+
+      text-align: center;
+    }
+  }
+
+  .input:focus {
+    & ~.label {
+      &::before {
+        box-shadow: $radio-focus-check-box-shadow-size $radio-focus-check-box-shadow-color;
+      }
+    }
+  }
+
+  .input:checked {
+    &:focus {
+      & ~.label {
+        &::before {
+          box-shadow: $radio-focus-check-box-shadow-size $radio-checked-focus-check-box-shadow-color;
+        }
+      }
+    }
+    & ~ .label {
+      &::before {
+        background: $radio-checked-check-background;
+        border-color: $radio-checked-check-border-color;
+      }
+
+      .tick {
+        display: block;
+        color: $radio-checked-check-text-color;
+      }
+    }
+  }
+
+  .input:disabled {
+    & ~ .label {
+      cursor: not-allowed;
+
+      color: $radio-disabled-text-color;
+      &::before {
+        background: $radio-disabled-check-background;
+        border-color: $radio-disabled-check-border-color;
+      }
+
+      .tick {
+        color: $radio-disabled-check-text-color;
+      }
+    }
+  }
+
+  &:hover {
+    & .label {
+      &::before {
+        background: $radio-hover-check-background;
+        border-color: $radio-hover-check-border-color;
+      }
+
+      .tick {
+        color: $radio-hover-check-text-color;
+      }
+    }
+  }
+
+  & + .radio {
+    margin-left: 0;
+  }
+
+  &.has-description {
+    margin-bottom: 20px;
+    label {
+      font-size: $size-normal;
+      font-weight: $label-weight;
+      align-items: flex-start;
+      display: flex;
+      flex-direction: column;
+
+      span {
+        display: block;
+      }
+
+      .description  {
+        font-weight: $weight-normal;
+      }
+    }
+
+  }
+}
+
+
+.radio-select-list {
+  &-item {
+    margin-top: 20px;
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: row;
+
+    &.is-required {
+      .radio-select-list-item-label:after {
+        content: ' *'
+      }
+    }
+  }
+
+  &-item-label {
+    font-size: $size-normal;
+    font-weight: $label-weight;
+    margin-bottom: 20px;
+    flex: 1;
+  }
+
+  &-item-input {
+    display: flex;
+    align-items: center;
+    .radio {
+      margin-bottom: 0;
+      margin-left: 40px;
+    }
+  }
+
+  &-item-input-error {
+    padding-left: 16px;
+    padding-right: 16px;
+
+    display: flex;
+    // width: 2cols, TODO: fix this
+    $width: 100% / 12 * 2;
+    width: $width;
+    align-items: center;
+
+    .help {
+      margin-left: 12px;
+      .icon {
+        margin-right: 6px;
+        @include applyStateColors();
+      }
+    }
+  }
+
+   @include until($desktop) {
+      &-item {
+        flex-direction: row;
+        flex-wrap: wrap;
+        margin-bottom: 40px;
+      }
+
+      &-item-label {
+        min-width: 100%;
+      }
+
+      &-item-input {
+        .radio:first-child {
+          margin-left: 0;
+        }
+      }
+
+      &-item-input-error {
+        flex: 1;
+        padding: 0;
+        width: auto;
+      }
+    }
+}

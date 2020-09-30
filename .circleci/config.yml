@@ -1,0 +1,929 @@
+# SPDX-FileCopyrightText: 2017-2020 City of Espoo
+#
+# SPDX-License-Identifier: LGPL-2.1-or-later
+
+# NOTE: This configuration is not directly usable in forks as it contains
+# Espoo-specific configurations, references to secrets and internal tooling.
+
+version: 2.1
+
+orbs:
+  slack: circleci/slack@3.4.2
+
+aliases:
+  - &workspace_root ~/repo
+  - &workspace_evaka_base ~/repo/evaka-base
+  - &workspace_apigw ~/repo/apigw
+  - &workspace_frontend ~/repo/frontend
+  - &workspace_e2e ~/repo/frontend/e2e-test
+  - &workspace_proxy ~/repo/proxy
+  - &workspace_service ~/repo/service
+  - &workspace_message_service ~/repo/message-service
+  - &workspace_compose ~/repo/compose
+  - &yarn_cache .yarn_cache
+  # SSH key fingerprint for checking out other eVaka repositories
+  - &ci_evaka_fingerprint 86:d0:b3:3d:aa:fc:d5:b9:6b:69:1e:c7:f5:56:66:aa
+  - &ubuntu_machine_image ubuntu-1604:201903-01
+
+  - &default_config
+    working_directory: *workspace_root
+
+  - &node_config
+    <<: *default_config
+    environment:
+      YARN_CACHE_FOLDER: *yarn_cache
+
+  - &jvm_config
+    <<: *default_config
+    environment:
+      GRADLE_OPTS: '-Dorg.gradle.daemon=false -Dorg.gradle.jvmargs="-Xmx2048m"'
+      _JAVA_OPTIONS: "-Xmx2048m"
+
+  - &restore_repo
+    restore_cache:
+      keys:
+        - repo-v1-{{ .Branch }}-{{ .Revision }}
+
+  - &store_repo
+    save_cache:
+      key: repo-v1-{{ .Branch }}-{{ .Revision }}
+      paths:
+        - .
+
+  - &restore_apigw_node_modules
+    restore_cache:
+      keys:
+        - node-modules-apigw-v3-{{ checksum "apigw/yarn.lock" }}
+        - node-modules-apigw-v3-
+        - node-modules-apigw-
+
+  - &store_apigw_node_modules
+    save_cache:
+      key: node-modules-apigw-v3-{{ checksum "apigw/yarn.lock" }}
+      paths:
+        - apigw/node_modules
+
+  - &restore_frontend_node_modules
+    restore_cache:
+      keys:
+        - node-modules-frontend-v3-{{ checksum "frontend/yarn.lock" }}
+        - node-modules-frontend-v3-
+        - node-modules-frontend-
+
+  - &store_frontend_node_modules
+    save_cache:
+      key: node-modules-frontend-v3-{{ checksum "frontend/yarn.lock" }}
+      paths:
+        - frontend/packages/enduser-frontend/node_modules
+        - frontend/packages/employee-frontend/node_modules
+        - frontend/packages/lib-common/node_modules
+        - frontend/packages/maintenance-page/node_modules
+        - frontend/e2e-test/node_modules
+        - frontend/node_modules
+
+  - &restore_service_gradle
+    restore_cache:
+      keys:
+        - gradle-home-service-v3-{{ checksum "service/build.gradle.kts" }}-{{ checksum "service/gradle.properties" }}-{{ checksum "service/settings.gradle.kts" }}-{{ checksum "service/buildSrc/build.gradle.kts" }}-{{ checksum "service/buildSrc/src/main/kotlin/Version.kt" }}
+        - gradle-home-service-v3-
+        - gradle-home-service-
+
+  - &store_service_gradle
+    save_cache:
+      key: gradle-home-service-v3-{{ checksum "service/build.gradle.kts" }}-{{ checksum "service/gradle.properties" }}-{{ checksum "service/settings.gradle.kts" }}-{{ checksum "service/buildSrc/build.gradle.kts" }}-{{ checksum "service/buildSrc/src/main/kotlin/Version.kt" }}
+      paths:
+        - service/.gradle
+        - service/.gradle-user-home
+
+  - &restore_message_service_gradle
+    restore_cache:
+      keys:
+        - gradle-home-message-service-v3-{{ checksum "message-service/build.gradle.kts" }}-{{ checksum "message-service/gradle.properties" }}-{{ checksum "message-service/settings.gradle.kts" }}
+        - gradle-home-message-service-v3-
+        - gradle-home-message-service-
+
+  - &store_message_service_gradle
+    save_cache:
+      key: gradle-home-message-service-v3-{{ checksum "message-service/build.gradle.kts" }}-{{ checksum "message-service/gradle.properties" }}-{{ checksum "message-service/settings.gradle.kts" }}
+      paths:
+        - message-service/.gradle
+        - message-service/.gradle-user-home
+
+  - &attach_workspace
+    attach_workspace:
+      at: *workspace_root
+
+  - &persist_workspace_apigw
+    persist_to_workspace:
+      root: *workspace_root
+      paths:
+        - apigw/dist
+        - *yarn_cache
+
+  - &persist_workspace_frontend
+    persist_to_workspace:
+      root: *workspace_root
+      paths:
+        - frontend/packages/enduser-frontend/dist
+        - frontend/packages/employee-frontend/dist
+        - frontend/packages/maintenance-page/dist
+        - frontend/packages/employee-frontend/storybook-build
+        - frontend/e2e-test/dist
+        - frontend/e2e-test/scripts
+        - frontend/.npmrc
+        - *yarn_cache
+
+  - &persist_workspace_service
+    persist_to_workspace:
+      root: *workspace_root
+      paths:
+        - service/build
+
+  - &persist_workspace_message_service
+    persist_to_workspace:
+      root: *workspace_root
+      paths:
+        - message-service/build
+
+  - &deploy_frontend
+    executor: aws_executor
+    working_directory: *workspace_root
+    steps:
+      - *attach_workspace
+      - run:
+          name: Configure AWS CLI
+          command: replace-credentials
+      - deploy_to_s3:
+          from: frontend/packages/enduser-frontend
+          to: application
+      - deploy_to_s3:
+          from: frontend/packages/employee-frontend
+          to: employee
+      - deploy_to_s3:
+          from: frontend/packages/maintenance-page
+          to: maintenance-page
+      - storybook_to_s3
+      - notify_slack
+
+executors:
+  aws_executor:
+    <<: *default_config
+    docker:
+      - image: 307238562370.dkr.ecr.eu-west-1.amazonaws.com/voltti/builder-aws:master
+  apigw_executor:
+    <<: *node_config
+    docker:
+      - image: circleci/node:lts-buster
+  frontend_executor:
+    <<: *node_config
+    docker:
+      - image: circleci/node:dubnium
+  e2e_executor:
+    <<: *default_config
+    machine:
+      image: *ubuntu_machine_image
+      docker_layer_caching: true
+      resource_class: large
+  service_executor:
+    <<: *jvm_config
+    environment:
+      GRADLE_USER_HOME: /home/circleci/repo/service/.gradle-user-home
+    docker:
+      - image: circleci/openjdk:11
+  service_test_executor:
+    <<: *jvm_config
+    environment:
+      GRADLE_USER_HOME: /home/circleci/repo/service/.gradle-user-home
+    machine:
+      image: *ubuntu_machine_image
+      resource_class: large
+  message_service_executor:
+    <<: *jvm_config
+    environment:
+      GRADLE_USER_HOME: /home/circleci/repo/message-service/.gradle-user-home
+    docker:
+      - image: circleci/openjdk:11
+  message_service_test_executor:
+    <<: *jvm_config
+    environment:
+      GRADLE_USER_HOME: /home/circleci/repo/message-service/.gradle-user-home
+    machine:
+      image: *ubuntu_machine_image
+
+commands:
+  build_frontend:
+    parameters:
+      dir:
+        type: string
+    steps:
+      - run:
+          name: yarn build << parameters.dir >>
+          working_directory: << parameters.dir >>
+          environment:
+            SENTRY_NO_PROGRESS_BAR: "1"
+          command: |
+            if [ "$CIRCLE_BRANCH" = "master" ]; then
+              export SENTRY_PUBLISH_ENABLED=true
+            fi
+
+            yarn build
+            ls -lRa ./dist
+
+  build_storybook:
+    steps:
+      - run:
+          name: yarn build-storybook ~/repo/frontend/packages/employee-frontend
+          working_directory: ~/repo/frontend/packages/employee-frontend
+          environment:
+            SENTRY_NO_PROGRESS_BAR: "1"
+          command: |
+            yarn build-storybook
+            ls -lRa ./storybook-build
+
+  e2e_test:
+    parameters:
+      suite:
+        type: string
+    steps:
+      - *restore_repo
+      - *attach_workspace
+      - run:
+          name: Load docker images
+          command: |
+            docker load -i apigw/image.tar
+            docker load -i service/image.tar
+      - run:
+          name: Start up compose stack
+          working_directory: *workspace_compose
+          command: |
+            CI=true LOCAL_DIR='../frontend/packages' ./compose-e2e up -d
+      - run:
+          name: Install node 10 and yarn
+          command: |
+            source ~/.bashrc
+            nvm install 10.15.3
+            curl --silent --show-error --location --fail --retry 3 --output - https://yarnpkg.com/install.sh | bash
+            source ~/.bashrc
+      - run:
+          name: Install chrome
+          command: |
+            curl --silent --show-error --location --fail --retry 3 --output /tmp/google-chrome-stable_current_amd64.deb https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb \
+              && (sudo dpkg -i /tmp/google-chrome-stable_current_amd64.deb || sudo apt-get -fy install)  \
+              && rm -rf /tmp/google-chrome-stable_current_amd64.deb \
+              && sudo sed -i 's|HERE/chrome"|HERE/chrome" --disable-setuid-sandbox --no-sandbox|g' \
+                  "/opt/google/chrome/google-chrome" \
+              && google-chrome --version
+            CHROME_VERSION="$(google-chrome --version)" \
+              && export CHROMEDRIVER_RELEASE="$(echo $CHROME_VERSION | sed 's/^Google Chrome //')" && export CHROMEDRIVER_RELEASE=${CHROMEDRIVER_RELEASE%%.*} \
+              && CHROMEDRIVER_VERSION=$(curl --silent --show-error --location --fail --retry 4 --retry-delay 5 http://chromedriver.storage.googleapis.com/LATEST_RELEASE_${CHROMEDRIVER_RELEASE}) \
+              && curl --silent --show-error --location --fail --retry 4 --retry-delay 5 --output /tmp/chromedriver_linux64.zip "http://chromedriver.storage.googleapis.com/$CHROMEDRIVER_VERSION/chromedriver_linux64.zip" \
+              && cd /tmp \
+              && unzip chromedriver_linux64.zip \
+              && rm -rf chromedriver_linux64.zip \
+              && sudo mv chromedriver /usr/local/bin/chromedriver \
+              && sudo chmod +x /usr/local/bin/chromedriver \
+              && chromedriver --version
+      - *restore_frontend_node_modules
+      - run:
+          name: Run e2e tests against compose
+          working_directory: *workspace_e2e
+          command: |
+            source ~/.bashrc
+            nvm use 10.15.3
+            ./wait-for-dev-api.sh 'http://localhost:9999' || (cd ~/repo/compose && ./compose-e2e logs && false)
+            yarn << parameters.suite >>
+      - run:
+          name: Collect error logs
+          command: |
+            cd ~/repo/compose
+            ./compose-e2e logs --tail=all > /tmp/docker-compose-logs.txt
+          when: on_fail
+      - store_artifacts:
+          path: /tmp/docker-compose-logs.txt
+          destination: docker-compose-logs.txt
+      - store_artifacts:
+          path: frontend/e2e-test/screenshots
+          destination: screenshots
+      - store_test_results:
+          path: frontend/e2e-test/test-results
+
+  deploy_to_s3:
+    parameters:
+      from:
+        type: string
+      to:
+        type: string
+    steps:
+      - run:
+          name: Deploy (<< parameters.from >>)
+          working_directory: ~/repo/<< parameters.from >>
+          command: |
+            aws s3 cp dist/index.html s3://evaka-static-$TARGET_ENV/<< parameters.to >>/index.html \
+              --acl public-read \
+              --profile voltti-$TARGET_ENV
+
+            if [ "$TARGET_ENV" = "prod" ]; then
+              echo 'Target environment is prod, excluding source maps from deploy'
+              EXTRA_ARGS=(
+                '--exclude' '*.map'
+              )
+            fi
+
+            aws s3 sync dist s3://evaka-static-$TARGET_ENV/<< parameters.to >> \
+              --acl public-read \
+              --exact-timestamps \
+              --exclude "*index.html" \
+              "${EXTRA_ARGS[@]}" \
+              --profile voltti-$TARGET_ENV
+
+  storybook_to_s3:
+    steps:
+      - run:
+          name: Deploy Storybook
+          working_directory: ~/repo/frontend/packages/employee-frontend
+          command: |
+            if [ "$TARGET_ENV" = "dev" ]; then
+              aws --profile voltti-dev s3 cp storybook-build/ s3://evaka-static-dev/master/storybook/ --recursive --acl public-read
+            fi
+
+  load_base_image:
+    steps:
+      - run:
+          name: Load base image
+          working_directory: *workspace_root
+          command: docker load -i evaka-base.tar
+
+  build_docker_image:
+    parameters:
+      image:
+        type: string
+      dir:
+        type: string
+      push_after:
+        type: boolean
+        default: false
+    steps:
+      - run:
+          name: Build docker image
+          working_directory: << parameters.dir >>
+          command: |
+            docker build \
+              -t << parameters.image >> \
+              --build-arg "build=${CIRCLE_BUILD_NUM}" \
+              --build-arg "commit=${CIRCLE_SHA1}" \
+              .
+      - when:
+          condition: << parameters.push_after >>
+          steps:
+            - run:
+                name: Push docker image
+                command: |
+                  ecr-login
+                  ecr-push << parameters.image >>
+      - unless:
+          condition: << parameters.push_after >>
+          steps:
+            - run:
+                name: Save docker image
+                working_directory: << parameters.dir >>
+                command: docker save << parameters.image >> > image.tar
+
+  push_docker_image:
+    parameters:
+      image:
+        type: string
+      dir:
+        type: string
+    steps:
+      - run:
+          name: Load docker image
+          working_directory: << parameters.dir >>
+          command: docker load -i image.tar
+      - run:
+          name: Push docker image
+          command: |
+            ecr-login
+            ecr-push << parameters.image >>
+
+  deploy_services:
+    parameters:
+      env:
+        type: string
+    steps:
+      - add_ssh_keys:
+          fingerprints:
+            - *ci_evaka_fingerprint
+      - *attach_workspace
+      - run:
+          name: Deploy ECS services to << parameters.env >>
+          command: |
+            cd evaka-infra/terraform/evaka-ecs
+
+            . replace-credentials
+
+            terraform init
+            terraform workspace select << parameters.env >>
+            terraform apply -auto-approve -lock-timeout=300s \
+              -var enduser-api-gw_version="${CIRCLE_SHA1}" \
+              -var internal-api-gw_version="${CIRCLE_SHA1}" \
+              -var evaka-srv_version="${CIRCLE_SHA1}" \
+              -var message-srv_version="${CIRCLE_SHA1}" \
+              -var proxy_version="${CIRCLE_SHA1}" \
+              -var scheduled-api-calls_version="${CIRCLE_SHA1}"
+
+  # Must be the last step in a job
+  notify_slack:
+    description: "Notify via Slack"
+    steps:
+      - slack/status:
+          fail_only: true
+          only_for_branches: master
+          # Webhook URL defined as $SLACK_WEBHOOK in CircleCI project settings
+
+jobs:
+  checkout_repo:
+    executor: apigw_executor
+    steps:
+      - *restore_repo
+      - checkout
+      - *store_repo
+
+  clone_infra_repo:
+    executor: aws_executor
+    steps:
+      - add_ssh_keys:
+          fingerprints:
+            - *ci_evaka_fingerprint
+      - *attach_workspace
+      - run: git clone git@github.com:espoon-voltti/evaka-infra.git
+      - persist_to_workspace:
+          root: *workspace_root
+          paths:
+            - evaka-infra
+
+  build_base_image:
+    executor: apigw_executor
+    steps:
+      - *restore_repo
+      - *attach_workspace
+      - setup_remote_docker
+      - run:
+          name: Build base image
+          working_directory: *workspace_evaka_base
+          command: ./build.sh
+      - run:
+          name: Save base image
+          working_directory: *workspace_root
+          command: docker save evaka-base > evaka-base.tar
+      - persist_to_workspace:
+          root: *workspace_root
+          paths:
+            - evaka-base.tar
+
+  apigw_build_and_test:
+    executor: apigw_executor
+    steps:
+      - *restore_repo
+      - *restore_apigw_node_modules
+      - run:
+          working_directory: *workspace_apigw
+          command: yarn install --frozen-lockfile
+      - *store_apigw_node_modules
+      - run:
+          working_directory: *workspace_apigw
+          command: yarn build
+      - *persist_workspace_apigw
+      - run:
+          working_directory: *workspace_apigw
+          command: yarn lint
+      - run:
+          working_directory: *workspace_apigw
+          command: yarn test-ci
+      - store_test_results:
+          path: ~/repo/apigw/build/test-reports
+      - notify_slack
+
+  apigw_build_image:
+    executor: aws_executor
+    steps:
+      - *restore_repo
+      - *attach_workspace
+      - setup_remote_docker
+      - load_base_image
+      - build_docker_image:
+          image: evaka/api-gateway
+          dir: *workspace_apigw
+      - persist_to_workspace:
+          root: *workspace_root
+          paths:
+            - apigw/image.tar
+      - notify_slack
+
+  apigw_push_image:
+    executor: aws_executor
+    steps:
+      - *attach_workspace
+      - setup_remote_docker
+      - push_docker_image:
+          image: evaka/api-gateway
+          dir: *workspace_apigw
+      - notify_slack
+
+  services_deploy_dev:
+    executor: aws_executor
+    steps:
+      - deploy_services:
+          env: dev
+      - notify_slack
+
+  services_deploy_test:
+    executor: aws_executor
+    steps:
+      - deploy_services:
+          env: test
+      - notify_slack
+
+  frontend_build_and_test:
+    executor: frontend_executor
+    steps:
+      - *restore_repo
+      - run:
+          name: Add .npmrc
+          working_directory: *workspace_frontend
+          command: |
+            cat \<< EOF > .npmrc
+            @fortawesome:registry=https://npm.fontawesome.com/
+            //npm.fontawesome.com/:_authToken=$(echo $FONTAWESOME_TOKEN)
+            @voltti:registry=https://npm.sst.espoon-voltti.fi/
+            //npm.sst.espoon-voltti.fi/:_authToken="$(echo $VERDACCIO_TOKEN)"
+            //npm.sst.espoon-voltti.fi/:always-auth=true
+            EOF
+      - *restore_frontend_node_modules
+      - run:
+          working_directory: *workspace_frontend
+          command: yarn install --frozen-lockfile
+      - *store_frontend_node_modules
+      - build_frontend:
+          dir: ~/repo/frontend/packages/employee-frontend
+      - build_frontend:
+          dir: ~/repo/frontend/packages/enduser-frontend
+      - build_frontend:
+          dir: ~/repo/frontend/packages/maintenance-page
+      - build_storybook
+      - *persist_workspace_frontend
+      - run:
+          working_directory: *workspace_frontend
+          command: yarn lint
+      - run:
+          working_directory: *workspace_frontend
+          command: yarn test --maxWorkers=2
+      - store_test_results:
+          path: ~/repo/frontend/packages/lib-common/test-results
+      - store_test_results:
+          path: ~/repo/frontend/packages/employee-frontend/test-results
+      - store_test_results:
+          path: ~/repo/frontend/packages/enduser-frontend/test-results
+      - notify_slack
+
+  e2e-test-application:
+    executor: e2e_executor
+    steps:
+      - e2e_test:
+          suite: e2e-ci-application
+      - notify_slack
+
+  e2e-test-invoicing:
+    executor: e2e_executor
+    steps:
+      - e2e_test:
+          suite: e2e-ci-invoicing
+      - notify_slack
+
+  e2e-test-employee:
+    executor: e2e_executor
+    steps:
+      - e2e_test:
+          suite: e2e-ci-employee
+      - notify_slack
+
+  e2e-test-employee-2:
+    executor: e2e_executor
+    steps:
+      - e2e_test:
+          suite: e2e-ci-employee-2
+      - notify_slack
+
+  frontend_deploy_dev:
+    <<: *deploy_frontend
+    environment:
+      TARGET_ENV: dev
+
+  frontend_deploy_test:
+    <<: *deploy_frontend
+    environment:
+      TARGET_ENV: test
+
+  frontend_deploy_staging:
+    <<: *deploy_frontend
+    environment:
+      TARGET_ENV: staging
+
+  frontend_deploy_prod:
+    <<: *deploy_frontend
+    environment:
+      TARGET_ENV: prod
+
+  proxy_build_and_push_image:
+    executor: aws_executor
+    steps:
+      - *restore_repo
+      - setup_remote_docker
+      - build_docker_image:
+          image: evaka/proxy
+          dir: *workspace_proxy
+          push_after: true
+
+  service_build:
+    executor: service_executor
+    steps:
+      - *restore_repo
+      - *restore_service_gradle
+      - run:
+          working_directory: *workspace_service
+          command: ./gradlew assemble
+      - *store_service_gradle
+      - *persist_workspace_service
+      - run:
+          working_directory: *workspace_service
+          command: ./gradlew detekt
+      - run:
+          working_directory: *workspace_service
+          command: ./gradlew ktlintCheck
+      - run:
+          working_directory: *workspace_service
+          command: ./circle-check-migrations.sh
+      - notify_slack
+
+  service_build_image:
+    executor: aws_executor
+    steps:
+      - *restore_repo
+      - *attach_workspace
+      - setup_remote_docker
+      - run:
+          name: Unzip executable
+          working_directory: *workspace_service
+          command: unzip -q build/libs/*.jar -d target
+      - load_base_image
+      - build_docker_image:
+          image: evaka/service
+          dir: *workspace_service
+      - persist_to_workspace:
+          root: *workspace_root
+          paths:
+            - service/image.tar
+      - notify_slack
+
+  service_test:
+    executor: service_test_executor
+    steps:
+      - *restore_repo
+      - *attach_workspace
+      - *restore_service_gradle
+      - run:
+          working_directory: *workspace_service
+          command: ./gradlew test
+      - store_test_results:
+          path: ~/repo/service/build/test-results/test/
+      - run:
+          working_directory: *workspace_service
+          command: ./gradlew integrationTest
+      - store_test_results:
+          path: ~/repo/service/build/test-results/integrationTest/
+      - store_artifacts:
+          path: ~/repo/service/build/reports/
+      - store_artifacts:
+          path: ~/repo/service-lib/build/reports/
+      - notify_slack
+
+  service_push_image:
+    executor: aws_executor
+    steps:
+      - *restore_repo
+      - *attach_workspace
+      - setup_remote_docker
+      - push_docker_image:
+          image: evaka/service
+          dir: *workspace_service
+      - notify_slack
+
+  message_service_build:
+    executor: message_service_executor
+    steps:
+      - *restore_repo
+      - *restore_message_service_gradle
+      - run:
+          working_directory: *workspace_message_service
+          command: ./gradlew assemble
+      - *store_message_service_gradle
+      - *persist_workspace_message_service
+      - run:
+          working_directory: *workspace_message_service
+          command: ./gradlew detekt
+      - run:
+          working_directory: *workspace_message_service
+          command: ./gradlew ktlintCheck
+      - notify_slack
+
+  message_service_test:
+    executor: message_service_test_executor
+    steps:
+      - *restore_repo
+      - *attach_workspace
+      - *restore_message_service_gradle
+      - run:
+          working_directory: *workspace_message_service
+          command: ./gradlew test
+      - store_test_results:
+          path: ~/repo/message-service/build/test-results/test/
+      - run:
+          working_directory: *workspace_message_service
+          command: ./gradlew integrationTest
+      - store_test_results:
+          path: ~/repo/message-service/build/test-results/integrationTest/
+      - store_artifacts:
+          path: ~/repo/message-service/build/reports/
+      - notify_slack
+
+  message_service_build_and_push_image:
+    executor: aws_executor
+    steps:
+      - *restore_repo
+      - *attach_workspace
+      - setup_remote_docker
+      - run:
+          name: Unzip executable
+          working_directory: *workspace_message_service
+          command: unzip -q build/libs/*.jar -d target
+      - load_base_image
+      - build_docker_image:
+          image: evaka/message-service
+          dir: *workspace_message_service
+          push_after: true
+      - notify_slack
+
+workflows:
+  version: 2
+  build_test_and_deploy:
+    jobs:
+      - checkout_repo
+      - build_base_image:
+          requires:
+            - checkout_repo
+
+      - apigw_build_and_test:
+          requires:
+            - checkout_repo
+      - apigw_build_image:
+          context: org-global
+          requires:
+            - build_base_image
+            - apigw_build_and_test
+      - apigw_push_image:
+          context: org-global
+          requires:
+            - apigw_build_image
+
+      - frontend_build_and_test:
+          context: org-global
+          requires:
+            - checkout_repo
+      - e2e-test-application:
+          requires:
+            - frontend_build_and_test
+            - apigw_build_image
+            - service_build_image
+      - e2e-test-invoicing:
+          requires:
+            - frontend_build_and_test
+            - apigw_build_image
+            - service_build_image
+      - e2e-test-employee:
+          requires:
+            - frontend_build_and_test
+            - apigw_build_image
+            - service_build_image
+      - e2e-test-employee-2:
+          requires:
+            - frontend_build_and_test
+            - apigw_build_image
+            - service_build_image
+
+      - proxy_build_and_push_image:
+          context: org-global
+          requires:
+            - checkout_repo
+
+      - service_build:
+          requires:
+            - checkout_repo
+      - service_build_image:
+          context: org-global
+          requires:
+            - build_base_image
+            - service_build
+      - service_test:
+          requires:
+            - service_build
+      - service_push_image:
+          context: org-global
+          requires:
+            - service_build_image
+            - service_test
+
+      - message_service_build:
+          requires:
+            - checkout_repo
+      - message_service_test:
+          requires:
+            - message_service_build
+      - message_service_build_and_push_image:
+          context: org-global
+          requires:
+            - build_base_image
+            - message_service_test
+
+      - clone_infra_repo:
+          context: org-global
+          requires:
+            - e2e-test-application
+            - e2e-test-invoicing
+            - e2e-test-employee
+            - e2e-test-employee-2
+            - apigw_push_image
+            - proxy_build_and_push_image
+            - service_push_image
+            - message_service_build_and_push_image
+          filters:
+            branches:
+              only: master
+
+      - services_deploy_dev:
+          context: org-global
+          requires:
+            - clone_infra_repo
+          filters:
+            branches:
+              only: master
+
+      - services_deploy_test:
+          context: org-global
+          requires:
+            - clone_infra_repo
+          filters:
+            branches:
+              only: master
+
+      - frontend_deploy_dev:
+          context: org-global
+          requires:
+            - clone_infra_repo
+          filters:
+            branches:
+              only: master
+      - frontend_deploy_test:
+          context: org-global
+          requires:
+            - clone_infra_repo
+          filters:
+            branches:
+              only: master
+      - frontend_approve_staging_deploy:
+          type: approval
+          requires:
+            - services_deploy_test
+            - frontend_deploy_test
+          filters:
+            branches:
+              only: master
+      - frontend_deploy_staging:
+          context: org-global
+          requires:
+            - frontend_approve_staging_deploy
+          filters:
+            branches:
+              only: master
+      - frontend_approve_prod_deploy:
+          type: approval
+          requires:
+            - frontend_deploy_staging
+          filters:
+            branches:
+              only: master
+      - frontend_deploy_prod:
+          context: org-global
+          requires:
+            - frontend_approve_prod_deploy
+          filters:
+            branches:
+              only: master

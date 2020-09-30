@@ -1,0 +1,98 @@
+// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
+
+package fi.espoo.evaka.invoicing.domain
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties
+import com.fasterxml.jackson.annotation.JsonProperty
+import java.math.BigDecimal
+import java.math.RoundingMode
+import java.time.Instant
+import java.time.LocalDate
+import java.util.UUID
+
+@JsonIgnoreProperties(ignoreUnknown = true)
+data class Income(
+    val id: UUID? = null,
+    val personId: UUID,
+    val effect: IncomeEffect,
+    val data: Map<IncomeType, IncomeValue>,
+    @get:JsonProperty("isEntrepreneur") val isEntrepreneur: Boolean = false,
+    val worksAtECHA: Boolean = false,
+    val validFrom: LocalDate,
+    val validTo: LocalDate?,
+    val notes: String,
+    val updatedAt: Instant? = null,
+    val updatedBy: String? = null
+) {
+    @JsonProperty("totalIncome")
+    fun totalIncome(): Int =
+        data.entries
+            .filter { (type, _) -> type.multiplier > 0 }
+            .map { (type, value) -> type.multiplier * value.monthlyAmount() }
+            .sum()
+
+    @JsonProperty("totalExpenses")
+    fun totalExpenses(): Int =
+        data.entries
+            .filter { (type, _) -> type.multiplier < 0 }
+            .map { (type, value) -> -1 * type.multiplier * value.monthlyAmount() }
+            .sum()
+
+    @JsonProperty("total")
+    fun total(): Int = incomeTotal(data)
+}
+
+fun incomeTotal(data: Map<IncomeType, IncomeValue>) = data.entries
+    .map { (type, value) -> type.multiplier * value.monthlyAmount() }
+    .sum()
+
+@JsonIgnoreProperties(ignoreUnknown = true)
+data class IncomeValue(val amount: Int, val coefficient: IncomeCoefficient) {
+    @JsonProperty("monthlyAmount")
+    fun monthlyAmount(): Int = (BigDecimal(amount) * coefficient.multiplier()).setScale(0, RoundingMode.HALF_UP).toInt()
+}
+
+enum class IncomeEffect {
+    MAX_FEE_ACCEPTED,
+    INCOMPLETE,
+    INCOME,
+    NOT_AVAILABLE
+}
+
+enum class IncomeType(val multiplier: Int) {
+    MAIN_INCOME(1),
+    SHIFT_WORK_ADD_ON(1),
+    PERKS(1),
+    SECONDARY_INCOME(1),
+    PENSION(1),
+    UNEMPLOYMENT_BENEFITS(1),
+    SICKNESS_ALLOWANCE(1),
+    PARENTAL_ALLOWANCE(1),
+    HOME_CARE_ALLOWANCE(1),
+    ALIMONY(1),
+    OTHER_INCOME(1),
+    ALL_EXPENSES(-1);
+}
+
+enum class IncomeCoefficient {
+    MONTHLY_WITH_HOLIDAY_BONUS,
+    MONTHLY_NO_HOLIDAY_BONUS,
+    BI_WEEKLY_WITH_HOLIDAY_BONUS,
+    BI_WEEKLY_NO_HOLIDAY_BONUS,
+    YEARLY;
+
+    companion object {
+        fun default(): IncomeCoefficient = MONTHLY_NO_HOLIDAY_BONUS
+    }
+
+    // values are taken from Effica
+    fun multiplier(): BigDecimal = when (this) {
+        MONTHLY_WITH_HOLIDAY_BONUS -> BigDecimal("1.0417") // = 12.5 / 12
+        MONTHLY_NO_HOLIDAY_BONUS -> BigDecimal("1.0000") // = 12 / 12
+        BI_WEEKLY_WITH_HOLIDAY_BONUS -> BigDecimal("2.2323") // = ???
+        BI_WEEKLY_NO_HOLIDAY_BONUS -> BigDecimal("2.1429") // = ???
+        YEARLY -> BigDecimal("0.0833") // 1 / 12
+    }
+}

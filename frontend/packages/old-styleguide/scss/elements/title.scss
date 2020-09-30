@@ -1,0 +1,86 @@
+/*
+ * SPDX-FileCopyrightText: 2017-2020 City of Espoo
+ *
+ * SPDX-License-Identifier: LGPL-2.1-or-later
+ */
+
+$title-color: $grey-dark !default;
+$title-size: $size-3 !default;
+$title-weight: $weight-light !default;
+$title-line-height: 1.125 !default;
+
+$title-strong-weight: $weight-semibold !default;
+$title-sub-size: 0.75em !default;
+$title-sup-size: 0.75em !default;
+
+$subtitle-color: $grey-dark !default;
+$subtitle-size: $size-5 !default;
+$subtitle-weight: $weight-normal !default;
+$subtitle-line-height: 1.25 !default;
+$subtitle-negative-margin: -1.25rem !default;
+
+.title,
+.subtitle {
+  @extend %block;
+  font-family: $family-sans-serif-secondary;
+
+  word-break: break-word;
+
+  em,
+  span {
+    font-weight: inherit;
+  }
+
+  sub {
+    font-size: $title-sub-size;
+  }
+
+  sup {
+    font-size: $title-sup-size;
+  }
+
+  .tag {
+    vertical-align: middle;
+  }
+
+  &.is-1 {
+    font-size: $size-1;
+    font-weight: $weight-extra-light;
+  }
+  &.is-2 {
+    font-size: $size-2;
+    font-weight: $weight-light;
+  }
+  &.is-3 {
+    font-size: $size-3;
+  }
+  &.is-4 {
+    font-size: $size-4;
+  }
+  &.is-strong,
+  strong {
+    font-weight: $weight-semibold;
+  }
+}
+
+.title {
+  color: $title-color;
+  font-size: $title-size;
+  font-weight: $title-weight;
+  line-height: $title-line-height;
+
+  & + .subtitle {
+    margin-top: $subtitle-negative-margin;
+  }
+}
+
+.subtitle {
+  color: $subtitle-color;
+  font-size: $subtitle-size;
+  font-weight: $subtitle-weight;
+  line-height: $subtitle-line-height;
+
+  & + .title {
+    margin-top: $subtitle-negative-margin;
+  }
+}

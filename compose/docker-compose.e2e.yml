@@ -1,0 +1,120 @@
+# SPDX-FileCopyrightText: 2017-2020 City of Espoo
+#
+# SPDX-License-Identifier: LGPL-2.1-or-later
+
+# Use this compose file to extend docker-compose.yml when you want to run
+# the latest published versions, e.g. for E2E testing.
+version: '3.5'
+
+services:
+  evaka-proxy:
+    image: nginx:1.19-alpine
+    ports:
+      - "9999:8080"
+    volumes:
+      - ./proxy/nginx.conf:/etc/nginx/conf.d/evaka-nginx.conf
+      - ./s3-mount:/static
+    # Enable for debug logging
+    # command: [nginx-debug, '-g', 'daemon off;']
+
+  enduser-gw:
+    image: ${EVAKA_GW_IMAGE}
+    ports:
+      - "3010"
+    hostname: enduser-gw
+    depends_on:
+      - redis
+    volumes:
+      - ../apigw/config/test-cert:/home/evaka/test-cert
+    environment:
+      VOLTTI_ENV: local
+      NODE_ENV: local
+      GATEWAY_ROLE: enduser
+      EVAKA_SERVICE_URL: ${EVAKA_SERVICE_URL}
+      GOOGLE_API_KEY: AIzaSyC6obUEPu6TBU47O500tZg99JC_yW8wCJA
+      COOKIE_SECRET: cookie_secret
+      REDIS_HOST: ${EVAKA_REDIS_HOST}
+      REDIS_PORT: ${EVAKA_REDIS_PORT}
+      REDIS_DISABLE_SECURITY: "true"
+      JWT_PRIVATE_KEY: /home/evaka/test-cert/jwt_private_key.pem
+      ENABLE_DEV_API: "true"
+      PRETTY_LOGS: "false"
+
+  internal-gw:
+    image: ${EVAKA_GW_IMAGE}
+    ports:
+      - "3020"
+    hostname: internal-gw
+    depends_on:
+      - redis
+    volumes:
+      - ../apigw/config/test-cert:/home/evaka/test-cert
+    environment:
+      VOLTTI_ENV: local
+      NODE_ENV: local
+      GATEWAY_ROLE: internal
+      EVAKA_SERVICE_URL: ${EVAKA_SERVICE_URL}
+      GOOGLE_API_KEY: AIzaSyC6obUEPu6TBU47O500tZg99JC_yW8wCJA
+      COOKIE_SECRET: cookie_secret
+      REDIS_HOST: ${EVAKA_REDIS_HOST}
+      REDIS_PORT: ${EVAKA_REDIS_PORT}
+      REDIS_DISABLE_SECURITY: "true"
+      JWT_PRIVATE_KEY: /home/evaka/test-cert/jwt_private_key.pem
+      ENABLE_DEV_API: "true"
+      PRETTY_LOGS: "false"
+
+  evaka-srv:
+    image: ${EVAKA_SRV_IMAGE}
+    ports:
+      - "8888"
+    hostname: evaka-srv
+    depends_on:
+      - db
+      - redis
+    environment:
+      VOLTTI_ENV: local
+      SPRING_PROFILES_ACTIVE: local
+      SPRING_PROFILES_INCLUDE: enable_dev_api,enable_mock_integration_endpoint
+      JAVA_OPTS: -server -Djava.security.egd=file:/dev/./urandom -Xms1024m -Xss512k -Xmx1024m -XX:TieredStopAtLevel=1
+      FLYWAY_USERNAME: ${EVAKA_SERVICE_FLYWAY_USERNAME}
+      FLYWAY_PASSWORD: ${EVAKA_SERVICE_FLYWAY_PASSWORD}
+      FLYWAY_URL: jdbc:postgresql://${EVAKA_DATABASE_HOST}:${EVAKA_DATABASE_PORT}/${EVAKA_SERVICE_DATABASE_NAME}
+      FLYWAY_PLACEHOLDERS_MIGRATION_USER: ${EVAKA_SERVICE_FLYWAY_USERNAME}
+      FLYWAY_PLACEHOLDERS_APPLICATION_USER: ${EVAKA_SERVICE_APPLICATION_USERNAME}
+      SPRING_DATASOURCE_URL: jdbc:postgresql://${EVAKA_DATABASE_HOST}:${EVAKA_DATABASE_PORT}/${EVAKA_SERVICE_DATABASE_NAME}
+      SPRING_DATASOURCE_USERNAME: ${EVAKA_SERVICE_APPLICATION_USERNAME}
+      SPRING_DATASOURCE_PASSWORD: ${EVAKA_SERVICE_APPLICATION_PASSWORD}
+      SPRING_MAIN_BANNER_MODE: "off"
+      # DEBUG: "true"
+      # LOGGING_LEVEL_FI_ESPOO_EVAKA: DEBUG
+      FI_ESPOO_VOLTTI_DOCUMENT_BUCKET_CLUBDECISION: evaka-clubdecisions-dev
+      FI_ESPOO_VOLTTI_DOCUMENT_BUCKET_DAYCAREDECISION: evaka-daycaredecisions-dev
+      FI_ESPOO_VOLTTI_DOCUMENT_BUCKET_PAYMENTDECISION: evaka-paymentdecisions-dev
+      FI_ESPOO_VOLTTI_S3MOCK_URL: ${S3MOCK_URL}
+      FI_ESPOO_INTEGRATION_INVOICE_ENABLED: "false"
+      FI_ESPOO_EVAKA_MESSAGE_ENABLED: "false"
+      FI_ESPOO_VARDA_UPLOAD_CHILDREN: "true"
+      FI_ESPOO_INTEGRATION_VARDA_URL: "http://localhost:8888/mock-integration/varda/api"
+      FI_ESPOO_INTEGRATION_BASIC_AUTH: ""
+      FI_ESPOO_VARDA_FORCE_SYNC: "false"
+      FI_ESPOO_INTEGRATION_KOSKI_URL: ""
+      FI_ESPOO_INTEGRATION_KOSKI_USER: ""
+      FI_ESPOO_INTEGRATION_KOSKI_SECRET: ""
+      FI_ESPOO_INTEGRATION_KOSKI_SOURCE_SYSTEM: ""
+      REDIS_URL: ${EVAKA_REDIS_HOST}
+      REDIS_PORT: ${EVAKA_REDIS_PORT}
+      REDIS_PASSWORD: ""
+      REDIS_SSL: "false"
+    restart: unless-stopped
+
+  db:
+
+  db_it:
+
+  redis:
+
+  s3.mock.evaka:
+
+volumes:
+  db-data:
+    driver: local

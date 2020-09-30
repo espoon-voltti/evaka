@@ -1,0 +1,20 @@
+/*
+ * SPDX-FileCopyrightText: 2017-2020 City of Espoo
+ *
+ * SPDX-License-Identifier: LGPL-2.1-or-later
+ */
+
+.status-border {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 5px;
+
+  @each $name, $pair in $status-colors {
+    $color: nth($pair, 1);
+    &.is-#{$name} {
+      background-color: $color;
+    }
+  }
+}

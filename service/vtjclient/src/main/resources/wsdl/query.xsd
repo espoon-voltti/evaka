@@ -1,0 +1,223 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified"
+            xmlns:tns="http://xml.vrk.fi/ws/vtj/vtjkysely/1"
+            xmlns:vtjres="http://xml.vrk.fi/schema/vtjkysely"
+            targetNamespace="http://xml.vrk.fi/ws/vtj/vtjkysely/1">
+    <xsd:import schemaLocation="vtj-vastaus-unified.xsd" namespace="http://xml.vrk.fi/schema/vtjkysely"/>
+    <xsd:import schemaLocation="xroad.xsd" namespace="http://x-road.eu/xsd/xroad.xsd"/>
+    <xsd:element name="HenkilonTunnusKysely" type="tns:HenkiloTunnusKyselyReqBody"/>
+    <xsd:complexType name="HenkiloTunnusKyselyReqBody">
+        <xsd:sequence>
+            <xsd:element minOccurs="0" maxOccurs="1" name="request"
+                         type="tns:HenkiloTunnusKyselyReqBodyTiedot"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="HenkiloTunnusKyselyReqBodyTiedot">
+        <xsd:sequence>
+            <xsd:element minOccurs="0" maxOccurs="1" name="SoSoNimi" type="xsd:string"/>
+            <xsd:element minOccurs="0" maxOccurs="1" name="Kayttajatunnus" type="xsd:string"/>
+            <xsd:element minOccurs="0" maxOccurs="1" name="Salasana" type="xsd:string"/>
+            <xsd:element minOccurs="0" maxOccurs="1" name="Loppukayttaja" type="xsd:string"/>
+            <xsd:element minOccurs="0" maxOccurs="1" name="Laskutustiedot" type="xsd:string"/>
+            <xsd:element minOccurs="0" maxOccurs="1" name="Henkilotunnus" type="xsd:string"/>
+            <xsd:element minOccurs="0" maxOccurs="1" name="SahkoinenAsiointitunnus" type="xsd:string"/>
+            <xsd:element minOccurs="0" maxOccurs="1" name="VarmenteenMyontaja" type="xsd:string"/>
+            <xsd:element minOccurs="0" maxOccurs="1" name="X509Certificate" type="xsd:string"/>
+            <xsd:element minOccurs="0" maxOccurs="1" name="VarmenteenVoimassaolotarkistus" type="xsd:string"/>
+            <xsd:element minOccurs="0" maxOccurs="1" name="VarmenteenSulkulistatarkistus" type="xsd:string"/>
+            <xsd:element minOccurs="0" maxOccurs="1" name="Tunnistusportaali" type="xsd:string"/>
+            <xsd:element minOccurs="0" maxOccurs="1" name="Vara1" type="xsd:string"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:element name="HenkilonTunnusKyselyResponse" type="tns:HenkiloTunnusKyselyResBody"/>
+    <xsd:complexType name="HenkiloTunnusKyselyResBody">
+        <xsd:sequence>
+            <xsd:element minOccurs="0" maxOccurs="1" name="request" type="tns:HenkiloTunnusKyselyReqBodyTiedot"/>
+            <xsd:element minOccurs="0" maxOccurs="1" name="response" type="tns:HenkiloTunnusKyselyResType"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="FaultResponseType">
+        <xsd:sequence>
+            <xsd:element name="faultCode" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="faultString" type="xsd:string" minOccurs="0"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="HenkiloTunnusKyselyResType">
+        <xsd:sequence maxOccurs="3">
+            <xsd:element ref="vtjres:VTJHenkiloVastaussanoma" minOccurs="0"/>
+            <xsd:element name="faultCode" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="faultString" type="xsd:string" minOccurs="0"/>
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:element name="HenkilonTunnistusKysely" type="tns:HenkiloTunnistusKyselyReqBody"/>
+    <xsd:complexType name="HenkiloTunnistusKyselyReqBody">
+        <xsd:sequence>
+            <xsd:element minOccurs="0" maxOccurs="1" name="request" type="tns:HenkiloTunnistusKyselyReqBodyTiedot"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="HenkiloTunnistusKyselyReqBodyTiedot">
+        <xsd:sequence>
+            <xsd:element minOccurs="0" maxOccurs="1" name="SoSoNimi" type="xsd:string"/>
+            <xsd:element minOccurs="0" maxOccurs="1" name="Kayttajatunnus" type="xsd:string"/>
+            <xsd:element minOccurs="0" maxOccurs="1" name="Salasana" type="xsd:string"/>
+            <xsd:element minOccurs="0" maxOccurs="1" name="Loppukayttaja" type="xsd:string"/>
+            <xsd:element minOccurs="0" maxOccurs="1" name="Laskutustiedot" type="xsd:string"/>
+            <xsd:element minOccurs="0" maxOccurs="1" name="HakuXml" type="xsd:string"/>
+            <xsd:element minOccurs="0" maxOccurs="1" name="Vara1" type="xsd:string"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:element name="HenkilonTunnistusKyselyResponse" type="tns:HenkiloTunnistusKyselyResBody"/>
+    <xsd:complexType name="HenkiloTunnistusKyselyResBody">
+        <xsd:sequence>
+            <xsd:element minOccurs="0" maxOccurs="1" name="request" type="tns:HenkiloTunnistusKyselyReqBodyTiedot"/>
+            <xsd:element minOccurs="0" maxOccurs="1" name="response" type="tns:HenkiloTunnistusKyselyResType"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="HenkiloTunnistusKyselyResType">
+        <xsd:sequence>
+            <xsd:any minOccurs="0" maxOccurs="unbounded"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:element name="RakennuksenTunnusKysely" type="tns:RakennusTunnusKyselyReqBody"/>
+    <xsd:complexType name="RakennusTunnusKyselyReqBody">
+        <xsd:sequence>
+            <xsd:element minOccurs="0" maxOccurs="1" name="request" type="tns:RakennusTunnusKyselyReqBodyTiedot"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="RakennusTunnusKyselyReqBodyTiedot">
+        <xsd:sequence>
+            <xsd:element minOccurs="0" maxOccurs="1" name="SoSoNimi" type="xsd:string"/>
+            <xsd:element minOccurs="0" maxOccurs="1" name="Kayttajatunnus" type="xsd:string"/>
+            <xsd:element minOccurs="0" maxOccurs="1" name="Salasana" type="xsd:string"/>
+            <xsd:element minOccurs="0" maxOccurs="1" name="Loppukayttaja" type="xsd:string"/>
+            <xsd:element minOccurs="0" maxOccurs="1" name="Laskutustiedot" type="xsd:string"/>
+            <xsd:element minOccurs="0" maxOccurs="1" name="Rakennustunnus" type="xsd:string"/>
+            <xsd:element minOccurs="0" maxOccurs="1" name="Huoneistotunnus" type="xsd:string"/>
+            <xsd:element minOccurs="0" maxOccurs="1" name="Vara1" type="xsd:string"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:element name="RakennuksenTunnusKyselyResponse" type="tns:RakennusTunnusKyselyResBody"/>
+    <xsd:complexType name="RakennusTunnusKyselyResBody">
+        <xsd:sequence>
+            <xsd:element minOccurs="0" maxOccurs="1" name="request" type="tns:RakennusTunnusKyselyReqBodyTiedot"/>
+            <xsd:element minOccurs="0" maxOccurs="1" name="response" type="tns:RakennusTunnusKyselyResType"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="RakennusTunnusKyselyResType">
+        <xsd:sequence>
+            <xsd:any minOccurs="0" maxOccurs="unbounded"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:element name="RakennuksenTunnistusKysely" type="tns:RakennusTunnistusKyselyReqBody"/>
+    <xsd:complexType name="RakennusTunnistusKyselyReqBody">
+        <xsd:sequence>
+            <xsd:element minOccurs="0" maxOccurs="1" name="request" type="tns:RakennusTunnistusKyselyReqBodyTiedot"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="RakennusTunnistusKyselyReqBodyTiedot">
+        <xsd:sequence>
+            <xsd:element minOccurs="0" maxOccurs="1" name="SoSoNimi" type="xsd:string"/>
+            <xsd:element minOccurs="0" maxOccurs="1" name="Kayttajatunnus" type="xsd:string"/>
+            <xsd:element minOccurs="0" maxOccurs="1" name="Salasana" type="xsd:string"/>
+            <xsd:element minOccurs="0" maxOccurs="1" name="Loppukayttaja" type="xsd:string"/>
+            <xsd:element minOccurs="0" maxOccurs="1" name="Laskutustiedot" type="xsd:string"/>
+            <xsd:element minOccurs="0" maxOccurs="1" name="HakuXml" type="xsd:string"/>
+            <xsd:element minOccurs="0" maxOccurs="1" name="Vara1" type="xsd:string"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:element name="RakennuksenTunnistusKyselyResponse" type="tns:RakennusTunnistusKyselyResBody"/>
+    <xsd:complexType name="RakennusTunnistusKyselyResBody">
+        <xsd:sequence>
+            <xsd:element minOccurs="0" maxOccurs="1" name="request" type="tns:RakennusTunnistusKyselyReqBodyTiedot"/>
+            <xsd:element minOccurs="0" maxOccurs="1" name="response" type="tns:RakennusTunnistusKyselyResType"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="RakennusTunnistusKyselyResType">
+        <xsd:sequence>
+            <xsd:any minOccurs="0" maxOccurs="unbounded"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:element name="KiinteistonTunnusKysely" type="tns:KiinteistoTunnusKyselyReqBody"/>
+    <xsd:complexType name="KiinteistoTunnusKyselyReqBody">
+        <xsd:sequence>
+            <xsd:element minOccurs="0" maxOccurs="1" name="request" type="tns:KiinteistoTunnusKyselyReqBodyTiedot"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="KiinteistoTunnusKyselyReqBodyTiedot">
+        <xsd:sequence>
+            <xsd:element minOccurs="0" maxOccurs="1" name="SoSoNimi" type="xsd:string"/>
+            <xsd:element minOccurs="0" maxOccurs="1" name="Kayttajatunnus" type="xsd:string"/>
+            <xsd:element minOccurs="0" maxOccurs="1" name="Salasana" type="xsd:string"/>
+            <xsd:element minOccurs="0" maxOccurs="1" name="Loppukayttaja" type="xsd:string"/>
+            <xsd:element minOccurs="0" maxOccurs="1" name="Laskutustiedot" type="xsd:string"/>
+            <xsd:element minOccurs="0" maxOccurs="1" name="Kiinteistotunnus" type="xsd:string"/>
+            <xsd:element minOccurs="0" maxOccurs="1" name="Vara1" type="xsd:string"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:element name="KiinteistonTunnusKyselyResponse" type="tns:KiinteistoTunnusKyselyResBody"/>
+    <xsd:complexType name="KiinteistoTunnusKyselyResBody">
+        <xsd:sequence>
+            <xsd:element minOccurs="0" maxOccurs="1" name="request" type="tns:KiinteistoTunnusKyselyReqBodyTiedot"/>
+            <xsd:element minOccurs="0" maxOccurs="1" name="response" type="tns:KiinteistoTunnusKyselyResType"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="KiinteistoTunnusKyselyResType">
+        <xsd:sequence>
+            <xsd:any minOccurs="0" maxOccurs="unbounded"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:element name="KiinteistonTunnistusKysely" type="tns:KiinteistoTunnistusKyselyReqBody"/>
+    <xsd:complexType name="KiinteistoTunnistusKyselyReqBody">
+        <xsd:sequence>
+            <xsd:element minOccurs="0" maxOccurs="1" name="request" type="tns:KiinteistoTunnistusKyselyReqBodyTiedot"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="KiinteistoTunnistusKyselyReqBodyTiedot">
+        <xsd:sequence>
+            <xsd:element minOccurs="0" maxOccurs="1" name="SoSoNimi" type="xsd:string"/>
+            <xsd:element minOccurs="0" maxOccurs="1" name="Kayttajatunnus" type="xsd:string"/>
+            <xsd:element minOccurs="0" maxOccurs="1" name="Salasana" type="xsd:string"/>
+            <xsd:element minOccurs="0" maxOccurs="1" name="Loppukayttaja" type="xsd:string"/>
+            <xsd:element minOccurs="0" maxOccurs="1" name="Laskutustiedot" type="xsd:string"/>
+            <xsd:element minOccurs="0" maxOccurs="1" name="HakuXml" type="xsd:string"/>
+            <xsd:element minOccurs="0" maxOccurs="1" name="Vara1" type="xsd:string"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:element name="KiinteistonTunnistusKyselyResponse" type="tns:KiinteistoTunnistusKyselyResBody"/>
+    <xsd:complexType name="KiinteistoTunnistusKyselyResBody">
+        <xsd:sequence>
+            <xsd:element minOccurs="0" maxOccurs="1" name="request" type="tns:KiinteistoTunnistusKyselyReqBodyTiedot"/>
+            <xsd:element minOccurs="0" maxOccurs="1" name="response" type="tns:KiinteistoTunnistusKyselyResType"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="KiinteistoTunnistusKyselyResType">
+        <xsd:sequence>
+            <xsd:any minOccurs="0" maxOccurs="unbounded"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:element name="HaeTuotteenSkeema" type="tns:TuotteenSkeemaReqBody"/>
+    <xsd:complexType name="TuotteenSkeemaReqBody">
+        <xsd:sequence>
+            <xsd:element minOccurs="0" maxOccurs="1" name="request" type="tns:TuotteenSkeemaReqBodyTiedot"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="TuotteenSkeemaReqBodyTiedot">
+        <xsd:sequence>
+            <xsd:element minOccurs="0" maxOccurs="1" name="SoSoNimi" type="xsd:string"/>
+            <xsd:element minOccurs="1" maxOccurs="1" name="Laji" type="xsd:int"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:element name="HaeTuotteenSkeemaResponse" type="tns:TuotteenSkeemaResBody"/>
+    <xsd:complexType name="TuotteenSkeemaResBody">
+        <xsd:sequence>
+            <xsd:element minOccurs="0" maxOccurs="1" name="reguest" type="tns:TuotteenSkeemaReqBodyTiedot"/>
+            <xsd:element minOccurs="0" maxOccurs="1" name="response" type="tns:TuotteenSkeemaResType"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="TuotteenSkeemaResType">
+        <xsd:sequence>
+            <xsd:any minOccurs="0" maxOccurs="1"/>
+        </xsd:sequence>
+    </xsd:complexType>
+</xsd:schema>

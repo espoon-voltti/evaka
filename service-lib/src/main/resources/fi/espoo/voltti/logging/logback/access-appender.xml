@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+SPDX-FileCopyrightText: 2017-2020 City of Espoo
+
+SPDX-License-Identifier: LGPL-2.1-or-later
+-->
+
+
+<included>
+    <appender name="VOLTTI_ACCESS_APPENDER" class="ch.qos.logback.core.ConsoleAppender">
+        <filter class="fi.espoo.voltti.logging.filter.AccessLoggingFilter"/>
+        <encoder class="net.logstash.logback.encoder.AccessEventCompositeJsonEncoder">
+            <providers>
+                <contentLength><fieldName>contentLength</fieldName></contentLength>
+                <elapsedTime><fieldName>responseTime</fieldName></elapsedTime>
+                <method><fieldName>httpMethod</fieldName></method>
+                <remoteHost><fieldName>clientIp</fieldName></remoteHost>
+                <requestedUri><fieldName>path</fieldName></requestedUri>
+                <timestamp>
+                    <fieldName>@timestamp</fieldName>
+                    <timeZone>UTC</timeZone>
+                    <pattern>yyyy-MM-dd'T'HH:mm:ss.sss'Z'</pattern>
+                </timestamp>
+
+                <pattern>
+                    <pattern>
+                        {
+                        "type": "app-requests-received",
+                        "appBuild": "${APP_BUILD}",
+                        "appCommit": "${APP_COMMIT}",
+                        "appName": "${appName}",
+                        "env": "${VOLTTI_ENV}",
+                        "hostIp": "${HOST_IP}",
+                        "queryString": "%queryString",
+                        "statusCode": "%statusCode",
+                        "traceId": "%i{X-Request-ID}",
+                        "userIdHash": "%i{X-Voltti-UserIdHash}",
+                        "version": 1
+                        }
+                    </pattern>
+                </pattern>
+            </providers>
+        </encoder>
+    </appender>
+</included>

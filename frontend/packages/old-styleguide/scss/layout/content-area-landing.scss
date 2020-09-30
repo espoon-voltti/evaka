@@ -1,0 +1,33 @@
+/*
+ * SPDX-FileCopyrightText: 2017-2020 City of Espoo
+ *
+ * SPDX-License-Identifier: LGPL-2.1-or-later
+ */
+
+$content-area-landing-padding: 6.75rem 1.5rem !default;
+
+.content-area-landing {
+  position: relative;
+  margin-top: $verticalGap;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: $content-area-landing-padding;
+  background-color: $white;
+
+  & > *:not(:last-child) {
+    margin-bottom: 2.6666rem;
+  }
+
+  &-image:not(:last-child) {
+    margin-bottom: 5.9rem;
+  }
+
+  &-title:not(:last-child) {
+    margin-bottom: 5rem;
+  }
+
+  &-subtitle:not(:last-child) {
+    margin-bottom: 3rem;
+  }
+}

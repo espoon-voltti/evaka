@@ -1,0 +1,178 @@
+/*
+ * SPDX-FileCopyrightText: 2017-2020 City of Espoo
+ *
+ * SPDX-License-Identifier: LGPL-2.1-or-later
+ */
+
+$stepper-border-color: $grey-lighter !default;
+$stepper-border-width: 1px !default;
+
+$stepper-step-circle-font-size: 14px !default;
+$stepper-step-circle-width: 24px !default;
+$stepper-step-circle-margin: 5px !default;
+
+$stepper-large-step-circle-width: 50px !default;
+$stepper-large-step-circle-font-size: 24px !default;
+
+$stepper-x-large-step-circle-width: 65px !default;
+$stepper-x-large-step-circle-font-size: 30px !default;
+
+$stepper-step-circle-border-color: $grey-dark !default;
+$stepper-step-circle-background: $background !default;
+$stepper-step-circle-color: $grey-dark !default;
+
+$stepper-step-content-color: $grey-dark !default;
+
+$stepper-active-step-circle-border-color: $blue-dark !default;
+$stepper-active-step-circle-background: $white !default;
+$stepper-active-step-content-color: $blue-dark !default;
+
+$stepper-disabled-step-circle-border-color: $grey-light !default;
+$stepper-disabled-step-circle-background: $white !default;
+$stepper-disabled-step-content-color: $grey-light !default;
+
+$stepper-completed-step-circle-border-color: $blue-dark !default;
+$stepper-completed-step-circle-background: $blue-dark !default;
+$stepper-completed-step-content-color: $white !default;
+
+$stepper-pending-step-circle-border-color: $orange !default;
+$stepper-pending-step-circle-background: $white !default;
+$stepper-pending-step-content-color: $orange !default;
+
+$stepper-not-started-step-circle-border-color: $grey-darker !default;
+$stepper-not-started-step-circle-background: $white !default;
+$stepper-not-started-step-content-color: $grey-darker !default;
+
+.stepper {
+  &.is-large {
+    .step-circle {
+      width: $stepper-large-step-circle-width;
+      height: $stepper-large-step-circle-width;
+      line-height: $stepper-large-step-circle-width;
+      font-size: $stepper-large-step-circle-font-size;
+    }
+  }
+
+  &.is-x-large {
+    .step-circle {
+      width: $stepper-x-large-step-circle-width;
+      height: $stepper-x-large-step-circle-width;
+      line-height: $stepper-x-large-step-circle-width;
+      font-size: $stepper-x-large-step-circle-font-size;
+    }
+  }
+
+  @include unselectable;
+  display: flex;
+  justify-content: space-between;
+
+  .step {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    color: $stepper-step-content-color;
+    margin-bottom: 20px;
+
+    .step-title,
+    .step-label {
+      text-align: center;
+      margin-left: 1rem;
+      margin-right: 1rem;
+      max-width: 100%;
+    }
+
+    .step-title {
+      font-weight: $weight-bold;
+      margin-top: 1rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .step-error {
+      color: $warning;
+    }
+
+    &.pending {
+      .step-circle {
+        border: 2px solid $stepper-pending-step-circle-border-color;
+        background: $stepper-pending-step-circle-background;
+        color: $stepper-pending-step-content-color;
+      }
+    }
+
+    &.completed {
+      .step-circle {
+        border: 2px solid $stepper-completed-step-circle-border-color;
+        background: $stepper-completed-step-circle-background;
+        color: $stepper-completed-step-content-color;
+      }
+    }
+
+    &.not-started {
+      .step-circle {
+        border: 2px solid $stepper-not-started-step-circle-border-color;
+        background: $stepper-not-started-step-circle-background;
+        color: $stepper-not-started-step-content-color;
+      }
+    }
+
+    &.active {
+      .step-circle {
+        border: 2px solid $stepper-active-step-circle-border-color;
+        background: $stepper-active-step-circle-background;
+        color: $stepper-active-step-content-color;
+      }
+    }
+
+    &.disabled {
+      .step-circle {
+        border: 2px solid $stepper-disabled-step-circle-border-color;
+        background: $stepper-disabled-step-circle-background;
+        color: $stepper-disabled-step-content-color;
+      }
+    }
+
+    &:first-of-type .step-bar::before,
+    &:last-of-type .step-bar::after {
+      background: transparent;
+    }
+  }
+}
+
+.step-image {
+  margin-bottom: 3rem;
+}
+
+.step-bar {
+  display: flex;
+  width: 100%;
+  align-items: center;
+
+  &::before,
+  &::after {
+    content: '';
+    flex: 1;
+    height: $stepper-border-width;
+    background: $stepper-border-color;
+    width: 100%;
+    display: block;
+  }
+}
+
+.step-circle {
+  margin: 0 $stepper-step-circle-margin;
+  width: $stepper-step-circle-width;
+  height: $stepper-step-circle-width;
+  line-height: $stepper-step-circle-width;
+  border-radius: 100%;
+  box-sizing: content-box;
+
+  border: 1px solid $stepper-step-circle-border-color;
+  background: $stepper-step-circle-background;
+  color: $stepper-step-circle-color;
+
+  font-size: $stepper-step-circle-font-size;
+  font-weight: $weight-semibold;
+  text-align: center;
+}

@@ -1,0 +1,3 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+  fi.espoo.voltti.auth.VolttiJwtSecurityAutoConfiguration,\
+  fi.espoo.voltti.auth.VolttiJwtSecurityConfigurerAdapter

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+SPDX-FileCopyrightText: 2017-2020 City of Espoo
+
+SPDX-License-Identifier: LGPL-2.1-or-later
+-->
+
+
+<configuration>
+    <property scope="context" name="appName" value="test-service" />
+
+    <include resource="fi/espoo/voltti/logging/logback/audit-appender.xml"/>
+    <include resource="fi/espoo/voltti/logging/logback/default-appender.xml"/>
+    <include resource="fi/espoo/voltti/logging/logback/default-appender-sanitized.xml"/>
+
+    <root level="INFO">
+        <appender-ref ref="VOLTTI_DEFAULT_APPENDER"/>
+        <appender-ref ref="VOLTTI_AUDIT_APPENDER"/>
+        <appender-ref ref="VOLTTI_DEFAULT_APPENDER_SANITIZED"/>
+    </root>
+</configuration>

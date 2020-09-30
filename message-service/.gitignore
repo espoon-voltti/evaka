@@ -1,0 +1,59 @@
+# SPDX-FileCopyrightText: 2017-2020 City of Espoo
+#
+# SPDX-License-Identifier: LGPL-2.1-or-later
+
+evaka-deployment-local/
+src/main/resources/application-local.properties
+
+# Java
+# Compiled class file
+*.class
+# Log file
+*.log
+# BlueJ files
+*.ctxt
+# Mobile Tools for Java (J2ME)
+.mtj.tmp/
+# Package Files #
+*.jar
+*.war
+*.ear
+*.zip
+*.tar.gz
+*.rar
+
+# Gradle
+.gradle
+.gradle_user_home
+/build/
+/target/
+/buildSrc/build/
+/buildSrc/target/
+# Avoid ignoring Gradle wrapper jar file (.jar files are usually ignored)
+!gradle-wrapper.jar
+.gradletasknamecache
+
+# Editors & IDEs
+.idea/
+cmake-build-debug/
+cmake-build-release/
+*.iws
+*.iml
+*.ipr
+out/
+.idea_modules/
+atlassian-ide-plugin.xml
+# Crashlytics plugin (for Android Studio and IntelliJ)
+com_crashlytics_export_strings.xml
+crashlytics.properties
+crashlytics-build.properties
+fabric.properties
+# MS
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+
+# OSX
+.DS_Store

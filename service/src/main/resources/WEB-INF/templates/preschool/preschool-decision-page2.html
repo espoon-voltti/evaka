@@ -1,0 +1,46 @@
+<!--
+SPDX-FileCopyrightText: 2017-2020 City of Espoo
+
+SPDX-License-Identifier: LGPL-2.1-or-later
+-->
+
+<!DOCTYPE html>
+
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+  <style th:replace="~{preschool/preschool-decision-css.html}"></style>
+  <style th:replace="~{ipost/ipost-letter.html :: css}"></style>
+  <!--    <style th:replace="~{ipost/ipost-letter.html :: guides}"></style>-->
+</head>
+<body>
+<div th:fragment="heading">
+  <div th:replace="~{ ipost/ipost-letter :: page(~{ :: content})}">
+    <div th:fragment="content">
+      <div th:replace="~{preschool/preschool-decision-common :: header}"></div>
+      <div class="document-signed-details">
+        <p>
+          <span class="strong" th:text="#{text.section.sentdate}"></span>
+          <span th:replace="~{preschool/preschool-decision-dates :: format-date(${decision.sentDate})}"></span>
+        </p>
+        <div class="strong" th:text="#{text.approver.caption}"></div>
+        <div th:text="${decision.createdBy}"></div>
+        <div th:text="#{text.approver.signature}"></div>
+        <div th:text="#{text.approver.title.1}"></div>
+        <div th:text="#{text.approver.title.2}"></div>
+        <div th:text="#{text.approver.addressline1}"></div>
+        <div th:text="#{text.approver.phone}"></div>
+        <div>
+          <span th:text="#{text.approver.email.heading}"></span>
+          <a th:href="'mailto:' + #{text.approver.email.email}"
+             th:text="#{text.approver.email.email}"></a>
+        </div>
+      </div>
+      <div class="inform">
+        <div th:text="#{text.inform.guardians}"></div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

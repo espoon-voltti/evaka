@@ -1,0 +1,23 @@
+/*
+ * SPDX-FileCopyrightText: 2017-2020 City of Espoo
+ *
+ * SPDX-License-Identifier: LGPL-2.1-or-later
+ */
+
+.slide-fade-enter-active {
+  transition: all .377s ease-in;
+}
+
+.slide-fade-leave-active {
+  transition: all .377s ease-out;
+}
+
+.slide-fade-enter, .slide-fade-leave-to {
+  opacity: 0;
+  max-height: 0%;
+}
+
+.slide-fade-enter-to, .slide-fade-leave {
+  opacity: 1;
+  max-height: 100%;
+}

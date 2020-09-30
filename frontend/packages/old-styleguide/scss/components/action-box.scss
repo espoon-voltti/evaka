@@ -1,0 +1,99 @@
+/*
+ * SPDX-FileCopyrightText: 2017-2020 City of Espoo
+ *
+ * SPDX-License-Identifier: LGPL-2.1-or-later
+ */
+
+.action-box {
+  position: relative;
+  background-color: $body-background-color;
+  padding: 40px 20px 20px 20px;
+  display: flex;
+  flex-direction: column;
+  min-height: 14em;
+
+  .action-box-title {
+    text-align: center;
+  }
+
+  .action-box-footer {
+    margin-top: 30px;
+    display: flex;
+    flex-direction: column;
+
+    * + * {
+      margin-top: 1rem;
+    }
+  }
+
+  .action-box-content {
+    flex: 1;
+    padding: 20px 0;
+  }
+
+  .action-box-icon {
+    width: 66px;
+    height: 66px;
+    border-radius: 50%;
+    border: 8px solid $white;
+    position: absolute;
+    top: -33px;
+    left: 50%;
+    margin-left: -33px;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18pt;
+  }
+
+  &.is-info .action-box-icon {
+    background-color: $blue-primary;
+  }
+  &.is-success .action-box-icon {
+    background-color: $success;
+  }
+  &.is-warning .action-box-icon {
+    background-color: $warning;
+  }
+  &.is-disabled .action-box-icon {
+    background-color: $grey-dark;
+  }
+
+  .spacer {
+    border-left: 1px dotted $grey-dark;
+    margin: 6px 0 17px 17px;
+    padding-top: 10px;
+    padding-right: 30px;
+    padding-left: calc(1rem + 17px);
+  }
+
+
+  .resolution {
+    display: flex;
+    flex-direction: column;
+
+    .meta {
+      font-size: 12px;
+      text-align: center;
+      padding: 0;
+      margin: 10px 0 0 0;
+      color: $grey-dark;
+    }
+
+    .resolution-title {
+      margin: 20px 0 0 0;
+      text-align: center;
+      span {
+        display: block;
+        margin-top: 8px;
+        margin-bottom: 8px;
+      }
+    }
+
+    p {
+      margin-top: 20px;
+      margin-bottom: 20px;
+  }
+  }
+}

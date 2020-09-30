@@ -1,0 +1,43 @@
+/*
+ * SPDX-FileCopyrightText: 2017-2020 City of Espoo
+ *
+ * SPDX-License-Identifier: LGPL-2.1-or-later
+ */
+
+@import '~react-datepicker/dist/react-datepicker.css';
+
+@import '../../assets/variables';
+
+.full-width {
+  width: 100%;
+}
+
+.half-width {
+  // Daterange separator '-' is 22px width
+  width: calc(50% - 12px);
+  display: inline-flex;
+}
+
+.short {
+  width: 120px;
+}
+
+.react-datepicker-wrapper,
+.react-datepicker__input-container {
+  width: 100%;
+}
+
+.react-datepicker__close-icon {
+  right: 0;
+  &::after {
+    background-color: transparent;
+    color: $grey-light;
+    font-size: 25px;
+  }
+}
+
+.react-datepicker__header {
+  .react-datepicker__current-month.react-datepicker__current-month--hasYearDropdown.react-datepicker__current-month--hasMonthDropdown {
+    display: none;
+  }
+}

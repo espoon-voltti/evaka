@@ -1,0 +1,41 @@
+// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
+
+buildscript {
+    repositories {
+        jcenter()
+    }
+}
+
+plugins {
+    id 'org.jetbrains.kotlin.jvm' version '1.3.50'
+}
+
+sourceSets {
+    main {
+        kotlin.srcDir 'src/main/kotlin'
+        resources.srcDir 'src/main/resources'
+    }
+}
+
+repositories {
+    jcenter()
+    mavenCentral()
+}
+
+dependencies {
+    compile 'org.jetbrains.kotlin:kotlin-stdlib-jdk8'
+    compileOnly "com.pinterest.ktlint:ktlint-core:0.35.0"
+}
+
+task copyJar {
+    doLast {
+        copy {
+            from 'build/libs/custom-ktlint-rules.jar'
+            into '.'
+        }
+    }
+}
+
+build.dependsOn copyJar

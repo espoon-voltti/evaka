@@ -1,0 +1,280 @@
+/*
+ * SPDX-FileCopyrightText: 2017-2020 City of Espoo
+ *
+ * SPDX-License-Identifier: LGPL-2.1-or-later
+ */
+
+$black: $grey-darker !default;
+
+$turqoise: $espoo-turqoise !default;
+$white-bis: #f5f5f5;
+$body-background-color: $white-bis;
+$blue: $espoo-blue !default;
+$blue-dark: shade($blue, 25%);
+$blue-primary: tint($blue, 20%);
+$blue-light: tint($blue, 60%);
+
+$primary-darker: $blue-dark !default;
+$primary-dark: $blue !default;
+$primary: $blue-primary !default;
+$primary-light: $blue-light !default;
+
+$info: $blue-dark !default;
+$success: $green !default;
+$warning: $orange !default;
+$danger: $red !default;
+
+// Status colors
+
+$ready: $green !default;
+$alert: $orange !default;
+$visited: $water !default;
+$new: $petrol !default;
+$not-in-focus: $grey-lighter !default;
+$error: $red !default;
+
+// Old Color names for backwards compability
+
+$soft-blue: $espoo-turqoise !default;
+$rock-blue: $water !default;
+$hard-blue: $petrol !default;
+$blue-lighter: $blue-light;
+// Invert colors
+
+$grey-darker-invert: findColorInvert($grey-darker) !default;
+$grey-dark-invert: findColorInvert($grey-dark) !default;
+$grey-invert: findColorInvert($grey) !default;
+$grey-light-invert: findColorInvert($grey-light) !default;
+$grey-lighter-invert: findColorInvert($grey-lighter) !default;
+$white-invert: findColorInvert($white) !default;
+
+$espoo-blue-invert: findColorInvert($espoo-blue) !default;
+$espoo-turqoise-invert: findColorInvert($espoo-turqoise) !default;
+$water-invert: findColorInvert($water) !default;
+$petrol-invert: findColorInvert($petrol) !default;
+$green-invert: findColorInvert($green) !default;
+$yellow-invert: findColorInvert($yellow) !default;
+$orange-invert: findColorInvert($orange) !default;
+$red-invert: findColorInvert($red) !default;
+
+$turqoise-invert: $espoo-turqoise-invert !default;
+
+$blue-invert: findColorInvert($blue) !default;
+$blue-dark-invert: findColorInvert($blue-dark) !default;
+$blue-primary-invert: findColorInvert($blue-primary) !default;
+$blue-light-invert: findColorInvert($blue-light) !default;
+
+$primary-darker-invert: $blue-dark-invert !default;
+$primary-dark-invert: $blue-invert !default;
+$primary-invert: $blue-primary-invert !default;
+$primary-light-invert: $blue-light-invert !default;
+
+$ready-invert: $green-invert !default;
+$alert-invert: $orange-invert !default;
+$visited-invert: $water-invert !default;
+$new-invert: $petrol-invert !default;
+$not-in-focus-invert: $grey-lighter-invert !default;
+
+$info-invert: $blue-dark-invert !default;
+$success-invert: $green-invert !default;
+$warning-invert: $orange-invert !default;
+$danger-invert: $red-invert !default;
+
+$soft-blue-invert: $espoo-turqoise-invert !default;
+$rock-blue-invert: $water-invert !default;
+$hard-blue-invert: $petrol-invert !default;
+
+// General colors
+
+$background: $white !default;
+
+$border: $grey-lighter !default;
+$border-hover: $grey-light !default;
+
+// Text colors
+
+$text: $grey-darker !default;
+$text-invert: $grey-darker-invert !default;
+$text-light: $grey !default;
+$text-strong: $grey-darker !default;
+
+// Code colors
+
+$code: $red !default;
+$code-background: $background !default;
+
+$pre: $text !default;
+$pre-background: $background !default;
+
+// Link colors
+
+$link: $blue !default;
+$link-invert: findColorInvert($blue) !default;
+
+$link-visited: $petrol !default;
+
+$link-hover: $blue !default;
+$link-hover-border: $blue-invert !default;
+
+$link-active: $blue-dark !default;
+$link-active-border: findColorInvert($blue-dark) !default;
+
+$link-focus: $link-active !default;
+$link-focus-border: $link-active-border !default;
+
+// Typography
+
+$family-primary: $family-sans-serif !default;
+$family-secondary: $family-sans-serif !default;
+$family-code: $family-monospace !default;
+
+$size-small: $size-7 !default;
+$size-normal: $size-6 !default;
+$size-medium: $size-5 !default;
+$size-large: $size-3 !default;
+
+// Lists and maps
+
+$colors: (
+  'espoo-blue': (
+    $espoo-blue,
+    $espoo-blue-invert,
+  ),
+  'espoo-turqoise': (
+    $espoo-turqoise,
+    $espoo-turqoise-invert,
+  ),
+  'water': (
+    $water,
+    $water-invert,
+  ),
+  'petrol': (
+    $petrol,
+    $petrol-invert,
+  ),
+  'green': (
+    $green,
+    $green-invert,
+  ),
+  'yellow': (
+    $yellow,
+    $yellow-invert,
+  ),
+  'orange': (
+    $orange,
+    $orange-invert,
+  ),
+  'red': (
+    $red,
+    $red-invert,
+  ),
+  'blue': (
+    $blue,
+    $blue-invert,
+  ),
+  'turqoise': (
+    $turqoise,
+    $turqoise-invert,
+  ),
+  'blue-dark': (
+    $blue-dark,
+    $blue-dark-invert,
+  ),
+  'blue-primary': (
+    $blue-primary,
+    $blue-primary-invert,
+  ),
+  'blue-light': (
+    $blue-light,
+    $blue-light-invert,
+  ),
+  'ready': (
+    $ready,
+    $ready-invert,
+  ),
+  'alert': (
+    $alert,
+    $alert-invert,
+  ),
+  'visited': (
+    $visited,
+    $visited-invert,
+  ),
+  'new': (
+    $new,
+    $new-invert,
+  ),
+  'not-in-focus': (
+    $not-in-focus,
+    $not-in-focus-invert,
+  ),
+  'primary': (
+    $primary,
+    $primary-invert,
+  ),
+  'info': (
+    $info,
+    $info-invert,
+  ),
+  'success': (
+    $success,
+    $success-invert,
+  ),
+  'warning': (
+    $warning,
+    $warning-invert,
+  ),
+  'danger': (
+    $danger,
+    $danger-invert,
+  ),
+  'soft-blue': (
+    $soft-blue,
+    $soft-blue-invert,
+  ),
+  'rock-blue': (
+    $rock-blue,
+    $rock-blue-invert,
+  ),
+  'hard-blue': (
+    $hard-blue,
+    $hard-blue-invert,
+  ),
+  'muted': (
+    $grey-light,
+    $grey-light-invert,
+  ),
+) !default;
+
+$state-colors: (
+  'success': $success,
+  'warning': $warning,
+  'error': $danger
+) !default;
+
+$status-colors: (
+  'ready': $ready,
+  'alert': $alert,
+  'visited': $visited,
+  'new': $new,
+  'not-in-focus': $not-in-focus,
+  'error': $error
+) !default;
+
+$shades: (
+  'grey-darker': $grey-darker,
+  'grey-dark': $grey-dark,
+  'grey': $grey,
+  'grey-light': $grey-light,
+  'grey-lighter': $grey-lighter,
+) !default;
+
+$sizes: $size-1 $size-2 $size-3 $size-4 $size-5 $size-6 $size-7 !default;
+
+@mixin applyStateColors($prop: 'color') {
+  @each $key, $val in $state-colors {
+    &.is-#{$key} {
+      #{$prop}: $val;
+    }
+  }
+}

@@ -1,0 +1,152 @@
+/*
+ * SPDX-FileCopyrightText: 2017-2020 City of Espoo
+ *
+ * SPDX-License-Identifier: LGPL-2.1-or-later
+ */
+
+* {
+    font-family: sans-serif;
+}
+
+.strong {
+    font-weight: bold;
+}
+
+@page{
+    size: A4 portrait;
+}
+
+.header {
+    font-size: 13px;
+}
+
+.header:after {
+    content: "";
+    display: table;
+    clear: both;
+}
+
+.logo {
+    width: 33%;
+    display: inline-block;
+    float: left;
+}
+
+.logo img {
+    width: 130px;
+    height: auto;
+}
+
+.heading-info {
+    display: inline-block;
+    width: 33%;
+    float: left;
+    padding-top: 2px;
+    font-size: 14px
+}
+
+.heading-info.last {
+    text-align: right;
+    float: right;
+}
+
+.heading-info .detail {
+    line-height: 20px;
+}
+
+.content-wrapper {
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+.page-title {
+    text-transform: uppercase;
+    font-weight: normal;
+}
+
+.spacing-before-title {
+    margin-top: 40px;
+}
+
+.heading-info .detail {
+    margin-bottom: 16px;
+}
+
+.guardian-details {
+    margin-bottom: 30px;
+}
+
+.child-details,
+.club-details,
+.club-manager{
+    margin-bottom: 12px;
+}
+
+.address-details .strong {
+    margin-bottom: 8px;
+}
+
+.accept-placement-wrapper {
+    margin-top: 80px;
+}
+
+.accept-placement-wrapper .details-section {
+    margin-bottom: 30px;
+}
+
+.accept-placement-wrapper .detail-label {
+    display: inline-block;
+    width: 200px;
+    text-align: right;
+    margin-right: 20px;
+}
+
+.accept-checkboxes .checkboxes-wrapper {
+    display: inline-block;
+    vertical-align: top;
+}
+
+.accept-checkboxes .checkbox-label {
+    display: block;
+    margin-bottom: 8px;
+}
+
+.accept-checkboxes .checkbox {
+    display: inline-block;
+    width: 28px;
+    height: 18px;
+    line-height: 1;
+    margin-right: 8px;
+    border: 1px solid #2d2d2d;
+    border-radius: 1px;
+}
+
+.center-text {
+    text-align: center;
+}
+
+.big-spacing-before{
+    margin-top: 80px;
+}
+
+.column {
+    float: left;
+}
+
+.left {
+    width:100px;
+}
+
+.right {
+    width:300px;
+}
+
+.row:after {
+    content: "";
+    display: table;
+    clear: both;
+}
+
+.col-row{
+    margin-bottom: 8px;
+}

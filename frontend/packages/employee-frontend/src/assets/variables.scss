@@ -1,0 +1,51 @@
+/*
+ * SPDX-FileCopyrightText: 2017-2020 City of Espoo
+ *
+ * SPDX-License-Identifier: LGPL-2.1-or-later
+ */
+
+@import '~@evaka/styleguide/scss/utilities/initial-variables';
+
+// Add percentage of white to a color
+@function tint($color, $percent) {
+  @return mix($white, $color, $percent);
+}
+
+// Add percentage of black to a color
+@function shade($color, $percent) {
+  @return mix($black, $color, $percent);
+}
+
+// Color variables
+$grey-darker: $grey-darker;
+$grey-dark: $grey-dark;
+$grey: $grey;
+$grey-light: $grey-light;
+$grey-lighter: $grey-lighter;
+$white: $white;
+$black: #000000;
+
+$espoo-blue: $espoo-blue;
+$espoo-turqoise: $espoo-turqoise;
+$water: $water;
+$petrol: $petrol;
+$green: $green;
+$yellow: $yellow;
+$orange: $orange;
+$red: $red;
+$teal: #038572;
+
+$font-color: #6e6e6e;
+
+$darker-percent: 10%;
+$dark-percent: 25%;
+$light-percent: 20%;
+$lighter-percent: 60%;
+
+$primary-blue: tint($espoo-blue, $light-percent);
+$green-darker: shade($green, $light-percent);
+$blue-darker: shade($espoo-blue, $dark-percent);
+
+$screen-big: 1408px;
+$screen-medium: 1216px;
+$screen-small: 1024px;

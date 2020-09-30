@@ -1,0 +1,18 @@
+#!/bin/sh -e
+
+# SPDX-FileCopyrightText: 2017-2020 City of Espoo
+#
+# SPDX-License-Identifier: LGPL-2.1-or-later
+
+if [ "$1" = "up" ]; then
+    S3_DIR=s3-mount/
+    mkdir -p "$S3_DIR"
+    LOCAL_DIR=../frontend/packages
+
+    rm -rf "$S3_DIR/application"
+    rm -rf "$S3_DIR/employee"
+    cp -r "$LOCAL_DIR/enduser-frontend/dist" "$S3_DIR/enduser"
+    cp -r "$LOCAL_DIR/employee-frontend/dist" "$S3_DIR/employee"
+fi
+
+docker-compose -f docker-compose.yml -f docker-compose.e2e.yml $@

@@ -1,0 +1,30 @@
+/*
+ * SPDX-FileCopyrightText: 2017-2020 City of Espoo
+ *
+ * SPDX-License-Identifier: LGPL-2.1-or-later
+ */
+
+.text {
+  &.is-nowrap {
+    white-space: nowrap;
+  }
+
+  &.is-text-muted {
+    color: $grey-dark;
+  }
+
+  &.display {
+    &-block {
+      display: block;
+    }
+    &-inline {
+      display: inline;
+    }
+    &-inline-block {
+      display: inline-block;
+    }
+    &-flex {
+      display: flex;
+    }
+}
+}

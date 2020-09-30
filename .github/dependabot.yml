@@ -1,0 +1,15 @@
+# Dependabot configuration: https://docs.github.com/en/free-pro-team@latest/github/administering-a-repository/configuration-options-for-dependency-updates#scheduleinterval
+
+version: 2
+# NOTE: Gradle Kotlin support is still missing: https://github.com/dependabot/dependabot-core/issues/2238
+# NOTE: There's no "security updates only" for Docker: https://github.com/dependabot/dependabot-core/issues/1971
+#       and there's no support for OS packages: https://github.com/dependabot/dependabot-core/issues/2129
+updates:
+- package-ecosystem: docker
+  directory: "/evaka-base"
+  schedule:
+    interval: weekly
+- package-ecosystem: docker
+  directory: "/proxy"
+  schedule:
+    interval: weekly

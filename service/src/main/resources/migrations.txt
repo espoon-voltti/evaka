@@ -1,0 +1,4 @@
+V1__evaka_db_base.sql
+V2__remove_application_status_table.sql
+V3__drop_legacy_placement.sql
+V4__drop_enum_tables.sql

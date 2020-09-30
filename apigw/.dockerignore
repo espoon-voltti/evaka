@@ -1,0 +1,10 @@
+# SPDX-FileCopyrightText: 2017-2020 City of Espoo
+#
+# SPDX-License-Identifier: LGPL-2.1-or-later
+
+*
+!dist
+!config/certificates
+!package.json
+!yarn.lock
+!entrypoint.sh

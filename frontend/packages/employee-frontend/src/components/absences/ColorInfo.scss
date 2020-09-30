@@ -1,0 +1,72 @@
+/*
+ * SPDX-FileCopyrightText: 2017-2020 City of Espoo
+ *
+ * SPDX-License-Identifier: LGPL-2.1-or-later
+ */
+
+@import 'absence-variables';
+
+.color-info {
+  display: flex;
+  justify-content: flex-start;
+  flex-wrap: wrap;
+  padding: 0 60px;
+  font-size: $size-7;
+
+  .color-info-container {
+    display: flex;
+    flex: auto;
+    max-width: 130px;
+    margin: 0 10px;
+
+    .info-ball {
+      vertical-align: top;
+      height: 20px;
+      width: 20px;
+      border-radius: 100%;
+      margin-right: 12px;
+      margin-top: 2px;
+      flex-shrink: 0;
+
+      &-OTHER_ABSENCE {
+        background: $color-other;
+      }
+
+      &-PARENTLEAVE {
+        background: $color-parentleave;
+      }
+
+      &-UNKNOWN_ABSENCE {
+        background: $color-unknown;
+      }
+
+      &-FORCE_MAJEURE {
+        background: $color-uncharged;
+      }
+
+      &-SICKLEAVE {
+        background: $color-sick;
+      }
+
+      &-PLANNED_ABSENCE {
+        background: $color-planned;
+      }
+
+      &-TEMPORARY_VISITOR {
+        background: $color-visitor;
+      }
+
+      &-TEMPORARY_RELOCATION {
+        background: $color-relocated;
+      }
+
+      &-PRESENCE {
+        background: $color-empty;
+      }
+
+      &-weekend {
+        background: $color-weekend;
+      }
+    }
+  }
+}

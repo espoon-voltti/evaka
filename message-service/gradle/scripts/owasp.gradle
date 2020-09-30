@@ -1,0 +1,18 @@
+// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
+
+dependencyCheck {
+    failBuildOnCVSS = cvss_fail_level.toInteger()
+    outputDirectory = "$buildDir/reports/owasp-dependency-check"
+    suppressionFile = "$projectDir/owasp-suppressions.xml"
+    format = 'ALL'
+
+    analyzers {
+        experimentalEnabled = false
+        // Disable .NET analysis
+        nuspecEnabled = false
+        assemblyEnabled = false
+        nspEnabled = false
+    }
+}

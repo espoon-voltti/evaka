@@ -1,0 +1,152 @@
+/*
+ * SPDX-FileCopyrightText: 2017-2020 City of Espoo
+ *
+ * SPDX-License-Identifier: LGPL-2.1-or-later
+ */
+
+@import url('https://fonts.googleapis.com/css?family=Montserrat:300,400,700|Open+Sans:300,400,600,800');
+
+// Import Bulma's core
+@import "~bulma/sass/utilities/_all";
+
+// Import custom variables
+@import 'scss/_modal.scss';
+
+@import "~bulma";
+
+@import '~vue-multiselect/dist/vue-multiselect.min.css';
+
+@import "~@evaka/styleguide";
+
+@import 'scss/map-view-styles';
+@import 'scss/common-form-styles';
+
+@import '~v-calendar/lib/v-calendar.min';
+@import "~buefy/src/scss/buefy";
+
+$font-body: "Open Sans", sans-serif;
+$font-heading: "Montserrat", sans-serif;
+
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  background-color: $white;
+  overflow-y: auto;
+}
+
+body {
+  line-height: 1.6;
+}
+
+body,
+#app,
+button,
+.card {
+  font-family: $font-body;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  color: #2c3e50;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-weight: normal;
+  font-family: $font-heading;
+}
+
+p {
+  margin: 0 0 0.325rem;
+
+  > strong {
+    font-weight: 600;
+  }
+}
+
+.description {
+  p + p {
+    margin-top: 0.625rem;
+  }
+}
+
+a {
+  color: $blue;
+}
+
+small {
+  font-size: 85%;
+}
+
+#app {
+  color: #2c3e50;
+  display: flex;
+  min-height: 100vh;
+  flex-direction: column;
+}
+
+.input-label {
+  cursor: pointer;
+}
+
+.vertical-bottom {
+  vertical-align: bottom;
+}
+
+.semi-strong {
+  font-weight: 500;
+}
+
+.strong {
+  font-weight: 600;
+}
+
+.vue-tooltip-theme {
+  max-width: 350px;
+
+  @media all and (min-width: 600px) {
+    max-width: 500px;
+  }
+
+  .tooltip-inner {
+    position: relative;
+    padding: 0.125rem 0.625rem;
+    font-family: $font-body;
+    border: 1px solid #2868bd;
+    background-color: #3273dc;
+    color: white;
+    font-size: 0.875rem;
+    box-shadow: 0 0 4px 2px rgba(0, 0, 0, 0.15);
+    border-radius: 3px;
+  }
+}
+
+.title {
+  word-break: normal;
+
+  @media all and (max-width: 600px) {
+    font-size: 1.75rem;
+  }
+}
+
+.show-results {
+  margin-top: 2rem;
+}
+
+.is-italic {
+  font-style: italic;
+}
+
+hr {
+  background-color: $grey-lighter;
+}
+
+.column {
+  @include onMobile() {
+    max-width: 100%;
+  }
+}

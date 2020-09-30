@@ -1,0 +1,148 @@
+<!--
+SPDX-FileCopyrightText: 2017-2020 City of Espoo
+
+SPDX-License-Identifier: LGPL-2.1-or-later
+-->
+
+<!DOCTYPE html>
+
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <style th:replace="~{fee-decision/fee-decision-css.html}"></style>
+    <style th:replace="~{ipost/ipost-letter.html :: css}"></style>
+<!--    <style th:replace="~{ipost/ipost-letter.html :: guides}"></style>-->
+</head>
+<body>
+<div th:replace="~{ ipost/ipost-letter :: cover(~{ :: address},~{ :: heading},~{ :: content})}">
+    <div th:fragment="address">
+        <div th:text="${headFullName}"></div>
+        <div th:text="${sendAddress.streetAddress}"></div>
+        <div th:if="${hasPoBox}" th:text="${sendAddress.poBox}"></div>
+        <div th:text="${sendAddress.postalCode} + ' ' + ${sendAddress.postOffice}"></div>
+    </div>
+
+    <div th:fragment="heading">
+        <div class="heading">
+            <div class="detail" th:text="${isReliefDecision} ? #{heading.relief.1} : #{heading.1}"></div>
+            <div class="detail" th:text="${isReliefDecision} ? #{heading.relief.2} : #{heading.2}"></div>
+            <div class="detail" th:text="#{heading.3}"></div>
+            <div class="detail" th:text="#{heading.4}"></div>
+            <div class="detail" th:text="#{heading.5(${approvedAt})}"></div>
+        </div>
+        <div class="header">
+            <div class="detail" th:text="#{pageNumber(${pageNumber})}"></div>
+            <div class="detail" th:text="#{decisionNumber}"></div>
+            <div class="detail" th:text="${decisionNumber}"></div>
+        </div>
+    </div>
+
+    <div th:fragment="content">
+        <div class="content-wrapper">
+            <div>
+                <h1 th:if="${isReliefDecision}" th:text="#{text.relief.title}"></h1>
+                <h1 th:unless="${isReliefDecision}" th:text="#{text.title}"></h1>
+
+                <p th:if="${decisionType == 'RELIEF_ACCEPTED'}" th:text="#{text.relief.accepted}"></p>
+                <p th:if="${decisionType == 'RELIEF_PARTLY_ACCEPTED'}" th:text="#{text.relief.partlyAccepted}"></p>
+                <p th:if="${decisionType == 'RELIEF_REJECTED'}" th:text="#{text.relief.rejected}"></p>
+
+                <p th:if="${isReliefDecision}"
+                   th:text="${showValidTo}? #{text.relief.decision_retroactive(${totalFee}, ${validFor})} : #{text.relief.decision(${totalFee}, ${validFrom})}"></p>
+                <p th:unless="${isReliefDecision}"
+                   th:text="${showValidTo}? #{text.decision_retroactive(${totalFee}, ${validFor})} : #{text.decision(${totalFee}, ${validFrom})}"></p>
+
+                <p th:text="#{text.table.intro}"></p>
+
+                <table>
+                    <tbody>
+                    <tr>
+                        <td th:text="${headFullName}"></td>
+
+                        <td class="text-right" th:switch="${headIncomeEffect}">
+                            <span th:case="'MAX_FEE_ACCEPTED'" th:text="#{text.income.max_fee_accepted}"></span>
+                            <span th:case="'INCOMPLETE'" th:text="#{text.income.incomplete}"></span>
+                            <span th:case="'INCOME'" th:text="${headIncomeTotal}"></span>
+                            <span th:case="'NOT_AVAILABLE'" th:text="#{text.income.not_available}"></span>
+                        </td>
+                    </tr>
+                    <tr th:if="${hasPartner}">
+                        <td th:text="${partnerFullName}"></td>
+                        <td class="text-right" th:switch="${partnerIncomeEffect}">
+                            <span th:case="'MAX_FEE_ACCEPTED'" th:text="#{text.income.max_fee_accepted}"></span>
+                            <span th:case="'INCOMPLETE'" th:text="#{text.income.incomplete}"></span>
+                            <span th:case="'INCOME'" th:text="${partnerIncomeTotal}"></span>
+                            <span th:case="'NOT_AVAILABLE'" th:text="#{text.income.not_available}"></span>
+                        </td>
+                    </tr>
+                    <tr th:if="${showTotalIncome}">
+                        <td th:text="#{text.table.combined}"></td>
+                        <td class="text-right" th:text="${totalIncome}"></td>
+                    </tr>
+                    <tr th:if="${showTotalIncome}">
+                        <td th:text="#{text.pricingMinThreshold(${familySize})}"></td>
+                        <td class="text-right" th:text="${pricingMinThreshold}"></td>
+                    </tr>
+                    </tbody>
+                </table>
+
+                <p th:text="#{text.feePercent(${feePercent})}"></p>
+
+                <table>
+                    <tbody th:each="part: ${parts}">
+                        <tr>
+                            <td th:text="${part.childName}"></td>
+                            <td th:switch="${part.placementType.name}">
+                                <span th:case="'DAYCARE'" th:text="#{text.placementType.daycare}"></span>
+                                <span th:case="'PRESCHOOL_WITH_DAYCARE'" th:text="#{text.placementType.preschool}"></span>
+                                <span th:case="'PREPARATORY_WITH_DAYCARE'"
+                                      th:text="#{text.placementType.preparatory}"></span>
+                                <span th:case="'FIVE_YEARS_OLD_DAYCARE'" th:text="#{text.placementType.fiveyears}"></span>
+                            </td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td></td>
+                            <td th:switch="${part.serviceNeed.name}">
+                                <span th:case="'GTE_35'" th:text="#{text.serviceNeed.GTE_35}"></span>
+                                <span th:case="'GTE_25'" th:text="#{text.serviceNeed.GTE_25}"></span>
+                                <span th:case="'GT_25_LT_35'" th:text="#{text.serviceNeed.GT_25_LT_35}"></span>
+                                <span th:case="'GT_15_LT_25'" th:text="#{text.serviceNeed.GT_15_LT_25}"></span>
+                                <span th:case="'LTE_25'" th:text="#{text.serviceNeed.LTE_25}"></span>
+                                <span th:case="'LTE_15'" th:text="#{text.serviceNeed.LTE_15}"></span>
+                            </td>
+                            <td class="text-right" th:text="${part.feeFormatted}"></td>
+                        </tr>
+                        <tr th:each="alteration: ${part.feeAlterations}">
+                            <td></td>
+                            <td th:switch="${alteration.first.name}">
+                                <span th:case="'DISCOUNT'" th:text="#{text.feeAlterationType.DISCOUNT}"></span>
+                                <span th:case="'INCREASE'" th:text="#{text.feeAlterationType.INCREASE}"></span>
+                                <span th:case="'RELIEF'" th:text="#{text.feeAlterationType.RELIEF}"></span>
+                            </td>
+                            <td class="text-right" th:text="${alteration.second}"></td>
+                        </tr>
+                        <tr>
+                            <td></td>
+                            <td th:text="#{text.table.finalFee}"></td>
+                            <td class="text-right" th:text="${part.finalFeeFormatted}"></td>
+                        </tr>
+                    </tbody>
+                    <tbody>
+                        <tr>
+                            <td></td>
+                            <td th:text="#{text.table.combined}"></td>
+                            <td class="text-right" th:text="${totalFee}"></td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <p th:text="#{text.reference}"></p>
+                <a th:href="@{text.referenceUrl}" th:text="#{text.referenceUrl}"></a>
+
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

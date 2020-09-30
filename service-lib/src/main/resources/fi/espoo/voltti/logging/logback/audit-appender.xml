@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+SPDX-FileCopyrightText: 2017-2020 City of Espoo
+
+SPDX-License-Identifier: LGPL-2.1-or-later
+-->
+
+
+<!--
+Audit appender logback configuration provided for import
+-->
+
+<included>
+    <appender name="VOLTTI_AUDIT_APPENDER" class="ch.qos.logback.core.ConsoleAppender">
+        <filter class="ch.qos.logback.core.filter.EvaluatorFilter">
+            <evaluator class="ch.qos.logback.classic.boolex.OnMarkerEvaluator">
+                <marker>AUDIT_EVENT</marker>
+            </evaluator>
+            <onMismatch>DENY</onMismatch>
+            <onMatch>NEUTRAL</onMatch>
+        </filter>
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+            <includeTags>false</includeTags>
+            <excludeMdcKeyName>spanExportable</excludeMdcKeyName>
+            <excludeMdcKeyName>X-B3-ParentSpanId</excludeMdcKeyName>
+            <excludeMdcKeyName>X-B3-SpanId</excludeMdcKeyName>
+            <excludeMdcKeyName>X-B3-TraceId</excludeMdcKeyName>
+            <excludeMdcKeyName>X-Span-Export</excludeMdcKeyName>
+            <fieldNames>
+                <level>[ignore]</level>
+                <levelValue>[ignore]</levelValue>
+                <logger>[ignore]</logger>
+                <message>description</message>
+                <thread>[ignore]</thread>
+                <timestamp>@timestamp</timestamp>
+                <version>[ignore]</version>
+            </fieldNames>
+            <customFields>
+                {
+                    "type": "app-audit-events",
+                    "appBuild": "${APP_BUILD}",
+                    "appCommit": "${APP_COMMIT}",
+                    "appName": "${appName}",
+                    "env": "${VOLTTI_ENV}",
+                    "hostIp": "${HOST_IP}",
+                    "version": 1
+                }
+            </customFields>
+            <timeZone>UTC</timeZone>
+            <timestampPattern>yyyy-MM-dd'T'HH:mm:ss.sss'Z'</timestampPattern>
+        </encoder>
+    </appender>
+</included>

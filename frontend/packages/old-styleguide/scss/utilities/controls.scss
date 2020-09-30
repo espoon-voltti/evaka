@@ -1,0 +1,13 @@
+/*
+ * SPDX-FileCopyrightText: 2017-2020 City of Espoo
+ *
+ * SPDX-License-Identifier: LGPL-2.1-or-later
+ */
+
+$control-radius: $radius !default;
+$control-radius-small: $radius-small !default;
+
+$control-padding-vertical: calc(0.5em - 1px) !default;
+$control-padding-horizontal: calc(0.625em - 1px) !default;
+
+@import "~bulma/sass/utilities/controls.sass";

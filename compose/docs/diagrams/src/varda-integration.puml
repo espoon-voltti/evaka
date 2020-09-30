@@ -1,0 +1,27 @@
+' SPDX-FileCopyrightText: 2017-2020 City of Espoo
+'
+' SPDX-License-Identifier: LGPL-2.1-or-later
+
+@startuml varda-integration
+!includeurl https://raw.githubusercontent.com/RicardoNiepel/C4-PlantUML/master/C4_Component.puml
+title eVakan Varda-integraatio
+
+System_Ext(varda, "Varda", "Opetushallituksen Varda-palvelu")
+
+Container_Boundary(aws, "AWS Virtual private cloud") {
+    Container(scheduler, "evaka-varda-update", "AWS Lambda Function", "Palvelu, joka kutsuu ajastetusti tietojen päivittämistä")
+    Container_Boundary(api, "evaka-service") {
+        Component(controller, "VardaController", "Spring REST Controller", "Tarjoaa REST-rajapinnan päivitysajon käynnistämiseen")
+        Component(service, "VardaService", "Spring service", "Toteuttaa Varda-sovelluslogiikan")
+        Rel_L(controller, service, "Käyttää")
+        Rel(service, varda, "Lähettää tiedot", "JSON / HTTPS")
+        Rel(varda, service, "Palauttaa yksilöivät tunnisteet lähetetyistä tiedoista", "JSON / HTTPS")
+    }
+    ContainerDb(db, "evaka-db", "Postgres v10 AWS RDS", "Tallentaa toimipisteiden, asiakkaiden, sijoitusten ja päätösten tiedot.")
+    Rel_U(service, db, "Koostaa toimipisteiden tiedot", "JDBC")
+}
+System_Ext(varda, "Varda", "Opetushallituksen Varhaiskasvatuksen tietovaranto")
+
+Rel_D(scheduler, controller, "Kutsuu", "REST / HTTP")
+
+@enduml

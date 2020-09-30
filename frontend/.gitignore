@@ -1,0 +1,23 @@
+# SPDX-FileCopyrightText: 2017-2020 City of Espoo
+#
+# SPDX-License-Identifier: LGPL-2.1-or-later
+
+node_modules/
+.cache/
+.idea/
+*.iml
+dist/
+*~
+*.bak
+*.log
+*.swp
+*.tmp
+.npmrc
+test-results
+junit.xml
+.DS_Store
+.vscode
+e2e-test/screenshots/
+.yalc
+yalc.lock
+**/storybook-build/

@@ -1,0 +1,198 @@
+{
+  "name": "@evaka/employee-frontend",
+  "version": "1.0.0",
+  "description": "Employee frontend for eVaka",
+  "license": "LGPL-2.1-or-later",
+  "private": true,
+  "scripts": {
+    "clean": "rm -rf dist/",
+    "dev": "webpack-dev-server",
+    "test": "jest",
+    "lint": "eslint --ext .ts,.tsx src",
+    "lint:fix": "yarn lint --fix",
+    "type-check": "tsc --noEmit",
+    "build": "webpack --mode production",
+    "build:dev": "webpack",
+    "storybook": "start-storybook -p 9001 -c .storybook",
+    "build-storybook": "build-storybook -c .storybook -o storybook-build"
+  },
+  "dependencies": {
+    "@evaka/lib-common": "1.0.0",
+    "@fortawesome/fontawesome-svg-core": "1.2.30",
+    "@fortawesome/free-solid-svg-icons": "5.14.0",
+    "@fortawesome/react-fontawesome": "0.1.11",
+    "@sentry/browser": "^5.11.1",
+    "@types/react-csv": "^1.1.1",
+    "@types/react-datepicker": "2.11.0",
+    "@types/react-tooltip": "^3.11.0",
+    "@types/styled-components": "^5.1.0",
+    "axios": "^0.19.2",
+    "chart.js": "^2.9.3",
+    "chartjs-adapter-date-fns": "^1.0.0",
+    "classnames": "^2.2.6",
+    "core-js": "^3.2.1",
+    "csstype": "^2.6.10",
+    "date-fns": "^2.8.1",
+    "history": "^4.9.0",
+    "lodash": "^4.17.15",
+    "multiselect-react-dropdown": "1.5.7",
+    "polished": "^3.6.4",
+    "react": "^16.12.0",
+    "react-autosize-textarea": "^7.0.0",
+    "react-chartjs-2": "^2.9.0",
+    "react-csv": "^2.0.1",
+    "react-datalist-input": "^1.2.12",
+    "react-datepicker": "^2.10.1",
+    "react-day-picker": "^7.4.0",
+    "react-dom": "^16.12.0",
+    "react-focus-lock": "2.4.1",
+    "react-router-dom": "^5.1.2",
+    "react-select": "^3.0.8",
+    "react-tooltip": "^4.1.0",
+    "react-use": "^13.27.0",
+    "styled-components": "5.1.1"
+  },
+  "optionalDependencies": {
+  },
+  "devDependencies": {
+    "@sentry/webpack-plugin": "^1.9.3",
+    "@storybook/addon-actions": "5.1.11",
+    "@storybook/addon-info": "5.1.11",
+    "@storybook/addon-options": "5.1.11",
+    "@storybook/react": "5.1.11",
+    "@types/classnames": "^2.2.8",
+    "@types/jest": "^24.0.23",
+    "@types/lodash": "^4.14.155",
+    "@types/react": "^16.9.16",
+    "@types/react-datepicker": "2.11.0",
+    "@types/react-dom": "^16.9.4",
+    "@types/react-router-dom": "^5.1.3",
+    "@types/react-select": "^3.0.10",
+    "@types/storybook__addon-actions": "3.4.3",
+    "@types/storybook__react": "4.0.2",
+    "@typescript-eslint/eslint-plugin": "^3.1.0",
+    "@typescript-eslint/parser": "^3.1.0",
+    "babel-loader": "8.0.6",
+    "css-loader": "^3.3.2",
+    "eslint": "^7.2.0",
+    "eslint-config-prettier": "^6.11.0",
+    "eslint-plugin-prettier": "^3.1.3",
+    "eslint-plugin-react": "^7.17.0",
+    "eslint-plugin-react-hooks": "^4.0.4",
+    "file-loader": "^5.0.2",
+    "html-webpack-plugin": "^3.2.0",
+    "husky": "^2.3.0",
+    "jest": "^24.9.0",
+    "jest-junit": "^10.0.0",
+    "mini-css-extract-plugin": "^0.8.0",
+    "optimize-css-assets-webpack-plugin": "^5.0.3",
+    "postcss-loader": "^3.0.0",
+    "postcss-preset-env": "^6.7.0",
+    "sass": "^1.22.10",
+    "sass-loader": "^8.0.0",
+    "ts-jest": "^24.2.0",
+    "ts-loader": "^6.2.1",
+    "tsconfig-paths-webpack-plugin": "^3.2.0",
+    "typescript": "^3.9.5",
+    "webpack": "^4.41.3",
+    "webpack-cli": "^3.3.10",
+    "webpack-dev-server": "^3.9.0"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "yarn lint",
+      "pre-push": "yarn type-check && yarn test"
+    }
+  },
+  "enginesStrict": true,
+  "engines": {
+    "node": ">=10"
+  },
+  "browserslist": [
+    "Firefox ESR"
+  ],
+  "postcss": {
+    "plugins": {
+      "postcss-preset-env": true
+    }
+  },
+  "jest": {
+    "preset": "ts-jest",
+    "testEnvironment": "node",
+    "reporters": [
+      "default",
+      "jest-junit"
+    ],
+    "moduleNameMapper": {
+      "^~(.*)$": "<rootDir>/src/$1",
+      "\\.(jpg|jpeg|png)$": "<rootDir>/assetsTransformer.js"
+    },
+    "modulePathIgnorePatterns": [
+      "/node_modules/",
+      "/dist/"
+    ],
+    "globals": {
+      "ts-jest": {
+        "isolatedModules": true
+      }
+    }
+  },
+  "jest-junit": {
+    "outputDirectory": "test-results/"
+  },
+  "eslintConfig": {
+    "extends": [
+      "eslint:recommended",
+      "plugin:react/recommended",
+      "plugin:@typescript-eslint/eslint-recommended",
+      "plugin:@typescript-eslint/recommended",
+      "plugin:@typescript-eslint/recommended-requiring-type-checking",
+      "prettier/@typescript-eslint",
+      "plugin:prettier/recommended"
+    ],
+    "parser": "@typescript-eslint/parser",
+    "parserOptions": {
+      "project": "./tsconfig.json"
+    },
+    "plugins": [
+      "@typescript-eslint",
+      "react-hooks"
+    ],
+    "settings": {
+      "react": {
+        "version": "detect"
+      }
+    },
+    "rules": {
+      "@typescript-eslint/explicit-function-return-type": "off",
+      "@typescript-eslint/explicit-module-boundary-types": "off",
+      "@typescript-eslint/member-delimiter-style": [
+        "warn",
+        {
+          "multiline": {
+            "delimiter": "none"
+          },
+          "singleline": {
+            "delimiter": "semi",
+            "requireLast": false
+          }
+        }
+      ],
+      "@typescript-eslint/no-unused-vars": [
+        "warn",
+        {
+          "argsIgnorePattern": "^_",
+          "varsIgnorePattern": "^_"
+        }
+      ],
+      "react/prop-types": 0,
+      "react-hooks/rules-of-hooks": "error"
+    }
+  },
+  "workspaces": {
+    "nohoist": [
+      "@types/react-datepicker",
+      "@types/react-datepicker/**"
+    ]
+  }
+}

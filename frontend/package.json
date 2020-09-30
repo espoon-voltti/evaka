@@ -1,0 +1,32 @@
+{
+  "name": "evaka-frontend",
+  "version": "1.0.0",
+  "description": "Frontend for eVaka",
+  "private": true,
+  "license": "LGPL-2.1-or-later",
+  "scripts": {
+    "build": "yarn wsrun --serial --exclude-missing build",
+    "lint": "yarn wsrun --exclude-missing lint",
+    "test": "yarn wsrun --exclude-missing test"
+  },
+  "dependencies": {
+    "@evaka/styleguide": "11.2.0",
+    "bulma": "0.7.5"
+  },
+  "devDependencies": {
+    "prettier": "^2.0.5",
+    "wsrun": "^5.2.0"
+  },
+  "workspaces": [
+    "packages/*",
+    "e2e-test",
+    "eslint-plugin"
+  ],
+  "prettier": {
+    "bracketSpacing": true,
+    "semi": false,
+    "singleQuote": true,
+    "trailingComma": "none",
+    "vueIndentScriptAndStyle": true
+  }
+}

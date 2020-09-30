@@ -1,0 +1,72 @@
+/*
+ * SPDX-FileCopyrightText: 2017-2020 City of Espoo
+ *
+ * SPDX-License-Identifier: LGPL-2.1-or-later
+ */
+
+@import '~@evaka/styleguide/scss/main.scss';
+@import './assets/index.scss';
+
+table.compact tr {
+  td {
+    padding: 0 8px;
+  }
+  th {
+    padding: 8px;
+  }
+}
+
+button.inline {
+  padding: 0;
+  border-width: 0;
+  height: unset;
+  min-width: unset;
+}
+
+.column.no-padding {
+  padding: 0;
+}
+
+.navbar {
+  z-index: unset;
+}
+
+.react-datepicker-popper {
+  z-index: 200;
+}
+
+@media print {
+  .section-toggle,
+  .navbar-menu {
+    display: none !important;
+  }
+
+  body {
+    font-size: 10pt;
+  }
+
+  h1 {
+    font-size: 26pt !important;
+  }
+
+  h2 {
+    font-size: 20pt !important;
+  }
+
+  h3 {
+    font-size: 16pt !important;
+  }
+
+  h4 {
+    font-size: 12pt !important;
+  }
+
+  .content-area {
+    margin-top: 0 !important;
+    padding: 0.5cm !important;
+  }
+
+  a {
+    color: #000000 !important;
+  }
+}

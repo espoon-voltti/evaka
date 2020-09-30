@@ -1,0 +1,84 @@
+CONNECTED(00000005)
+---
+Certificate chain
+ 0 s:/C=FI/L=Espoo/O=Espoon kaupunki/CN=www.espoo.fi
+   i:/C=US/O=Entrust, Inc./OU=See www.entrust.net/legal-terms/OU=(c) 2012 Entrust, Inc. - for authorized use only/CN=Entrust Certification Authority - L1K
+ 1 s:/C=US/O=Entrust, Inc./OU=See www.entrust.net/legal-terms/OU=(c) 2012 Entrust, Inc. - for authorized use only/CN=Entrust Certification Authority - L1K
+   i:/C=US/O=Entrust, Inc./OU=See www.entrust.net/legal-terms/OU=(c) 2009 Entrust, Inc. - for authorized use only/CN=Entrust Root Certification Authority - G2
+ 2 s:/C=US/O=Entrust, Inc./OU=See www.entrust.net/legal-terms/OU=(c) 2009 Entrust, Inc. - for authorized use only/CN=Entrust Root Certification Authority - G2
+   i:/C=US/O=Entrust, Inc./OU=See www.entrust.net/legal-terms/OU=(c) 2009 Entrust, Inc. - for authorized use only/CN=Entrust Root Certification Authority - G2
+---
+Server certificate
+-----BEGIN CERTIFICATE-----
+MIIItjCCB56gAwIBAgIQeGKG8gfs9h8AAAAAUPoA9jANBgkqhkiG9w0BAQsFADCB
+ujELMAkGA1UEBhMCVVMxFjAUBgNVBAoTDUVudHJ1c3QsIEluYy4xKDAmBgNVBAsT
+H1NlZSB3d3cuZW50cnVzdC5uZXQvbGVnYWwtdGVybXMxOTA3BgNVBAsTMChjKSAy
+MDEyIEVudHJ1c3QsIEluYy4gLSBmb3IgYXV0aG9yaXplZCB1c2Ugb25seTEuMCwG
+A1UEAxMlRW50cnVzdCBDZXJ0aWZpY2F0aW9uIEF1dGhvcml0eSAtIEwxSzAeFw0x
+OTExMTIxMTI2MTFaFw0yMTA1MTUxMTU2MTFaME4xCzAJBgNVBAYTAkZJMQ4wDAYD
+VQQHEwVFc3BvbzEYMBYGA1UEChMPRXNwb29uIGthdXB1bmtpMRUwEwYDVQQDEwx3
+d3cuZXNwb28uZmkwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQCv3F1M
+qoR6I69Rk38zUk51/I1mybtbE+m6W3frAUA+ErmwTCLwsYl/8gkbFOQxhh1WeHJT
+zIxXBUZ3FxUha937KKlEnY2Yfnly9L1rJykMdxT1zxLEcTuBFukmbbvyyu7nbE8m
++KrsAthKXhT0j7jLNXI+4/b8n+DlnWbK30eIYKpb6rhZ8/x/mqUWgPljFW6+wJax
+uHyyXmWnnx8ludq0Vw1AQ/Cs+JzSGaf8YwfBp0ebV4jfhhCvlpR/EQZY/zHxQvYU
+/vcd660aRDf/tBLsooqHmL1GYFFdah4zBwMzQtxOp3MQePAPZsV/PraVHD5rS2Oq
+Nd45WMzaxsfnMXytAgMBAAGjggUhMIIFHTCCAbYGA1UdEQSCAa0wggGpggx3d3cu
+ZXNwb28uZmmCCGVzcG9vLmZpghFidXNpbmVzc2VzcG9vLmNvbYIVd3d3LmJ1c2lu
+ZXNzZXNwb28uY29tggdlc2JvLmZpggt3d3cuZXNiby5maYINYmV0YS5lc3Bvby5m
+aYIQZXNwb29jYXRlcmluZy5maYIUd3d3LmVzcG9vY2F0ZXJpbmcuZmmCDmVzcG9v
+bnJla3J5LmZpghJ3d3cuZXNwb29ucmVrcnkuZmmCDWVzcG9vcmVrcnkuZmmCEXd3
+dy5lc3Bvb3Jla3J5LmZpgglrb3Jrb2EuZmmCDXd3dy5rb3Jrb2EuZmmCEGxvY2F0
+ZWluZXNwb28uZmmCFHd3dy5sb2NhdGVpbmVzcG9vLmZpgg1wYXB1cG9zc2V0LmZp
+ghF3d3cucGFwdXBvc3NldC5maYIRdGFzYWFydm90eW9zc2EuZmmCFXd3dy50YXNh
+YXJ2b3R5b3NzYS5maYINaGVsbG9lc3Bvby5maYIRd3d3LmhlbGxvZXNwb28uZmmC
+Dmx1LXBhbHZlbHV0LmZpghJ3d3cubHUtcGFsdmVsdXQuZmkwggH5BgorBgEEAdZ5
+AgQCBIIB6QSCAeUB4wB2APZclC/RdzAiFFQYCDCUVo7jTRMZM7/fDC8gC8xO8WTj
+AAABbl94qHYAAAQDAEcwRQIhAJM6cA5bHRZw9YRrV/9fzf2NkanCI0ygH2cvYbqN
++neAAiARvJg4fBr9yHp46cphhCO0WXcZGjQfzFQdgoq1h3sBWAB3AFWB1MIWkDYB
+SuoLm1c8U/DA5Dh4cCUIFy+jqh0HE9MMAAABbl94qOcAAAQDAEgwRgIhAPxBOgck
+iLM8T2zZCidV4Ic3463dc6hhxUuWeKQJJJkbAiEA1Attepyy2Cu5xKrU7yjqtEba
+j5APndDmAvhZoey7pIUAdwDuS723dc5guuFCaR+r4Z5mow9+X7By2IMAxHuJeqj9
+ywAAAW5feKimAAAEAwBIMEYCIQDoFSF2hunLKG51FFFAvq7DgKsx6tf349ysKWb6
+TZ6sSwIhAIT+bE3gJs8vKYaXbqSsAZwMYc698Q/Rb72mQj10qg4xAHcAVhQGmi/X
+wuzT9eG9RLI+x0Z2ubyZEVzA75SYVdaJ0N0AAAFuX3ipDQAABAMASDBGAiEAsvFC
+RV6P2kpgnKpkLLITSrlm/VHEuNF/79nnntjcOEECIQDHP0dyPYn2CTiMUG8I+xlg
+4iNCegvyDE6YCcY6YtuaoTAOBgNVHQ8BAf8EBAMCBaAwHQYDVR0lBBYwFAYIKwYB
+BQUHAwEGCCsGAQUFBwMCMDMGA1UdHwQsMCowKKAmoCSGImh0dHA6Ly9jcmwuZW50
+cnVzdC5uZXQvbGV2ZWwxay5jcmwwSwYDVR0gBEQwQjA2BgpghkgBhvpsCgEFMCgw
+JgYIKwYBBQUHAgEWGmh0dHA6Ly93d3cuZW50cnVzdC5uZXQvcnBhMAgGBmeBDAEC
+AjBoBggrBgEFBQcBAQRcMFowIwYIKwYBBQUHMAGGF2h0dHA6Ly9vY3NwLmVudHJ1
+c3QubmV0MDMGCCsGAQUFBzAChidodHRwOi8vYWlhLmVudHJ1c3QubmV0L2wxay1j
+aGFpbjI1Ni5jZXIwHwYDVR0jBBgwFoAUgqJwdN28Uz/Pe9T3zX+nYMYKTL8wHQYD
+VR0OBBYEFJtoxirE9EZbPuimRpO33CswDm0AMAkGA1UdEwQCMAAwDQYJKoZIhvcN
+AQELBQADggEBAMzX/G6P7duHT33FcwFTmzBc115xaN3Jt+OsLMYXFp/UrdUPsyuw
+1e7cmfFPzhQC7m9jx/kTZNNqUwA/bm03swPqmiGzHjE6E5YXYHaGwC+1KwKokIBn
+wnvI7S2CHvUADofmsrr9T4SdFTRUMSry9MptALmgejlfcUR0OMIfkyElZ8dXD/cF
+RZ+KChzh8uSSePXkSVIrRlRRpjg38h/GApl3P7C+HGTmgEqPa91BmHPuI0QaezZ0
+R0uig2j0i/N+3840w0pgtB9cyhn5PhDni/xND2JUEYuqAEM7T3EXUquuMPoVZEOw
+QlEZcSp7fOqZuvgDjtAvn5kt9LoY3Z94zAk=
+-----END CERTIFICATE-----
+subject=/C=FI/L=Espoo/O=Espoon kaupunki/CN=www.espoo.fi
+issuer=/C=US/O=Entrust, Inc./OU=See www.entrust.net/legal-terms/OU=(c) 2012 Entrust, Inc. - for authorized use only/CN=Entrust Certification Authority - L1K
+---
+No client certificate CA names sent
+Server Temp Key: ECDH, P-256, 256 bits
+---
+SSL handshake has read 5123 bytes and written 322 bytes
+---
+New, TLSv1/SSLv3, Cipher is ECDHE-RSA-AES256-GCM-SHA384
+Server public key is 2048 bit
+Secure Renegotiation IS supported
+Compression: NONE
+Expansion: NONE
+No ALPN negotiated
+SSL-Session:
+    Protocol  : TLSv1.2
+    Cipher    : ECDHE-RSA-AES256-GCM-SHA384
+    Session-ID: CD7FF9180D7216834FF4CD74A4D0A53E66063A56538A6800ABE5E61A81225522
+    Session-ID-ctx: 
+    Master-Key: 6777F18FF3C2F4E4C4DDCA083345908BAFFDFE7F59E581A6ECEF2AF2D2F4F8C68CCF363A910C3B58C0D046FF72CFD845
+    Start Time: 1601288566
+    Timeout   : 7200 (sec)
+    Verify return code: 0 (ok)
+---

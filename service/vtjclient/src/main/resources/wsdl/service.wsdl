@@ -1,0 +1,361 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+                  xmlns:tns="http://xml.vrk.fi/ws/vtj/vtjkysely/1"
+                  xmlns:wsaw="http://www.w3.org/2006/05/addressing/wsdl"
+                  xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+                  xmlns:id="http://x-road.eu/xsd/identifiers"
+                  xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+                  name="SoSoAdapterService60"
+                  targetNamespace="http://xml.vrk.fi/ws/vtj/vtjkysely/1">
+    <wsdl:types>
+        <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+        <xsd:import schemaLocation="query.xsd" namespace="http://xml.vrk.fi/ws/vtj/vtjkysely/1"/>
+        </xsd:schema>
+    </wsdl:types>
+    <wsdl:message name="HenkilonTunnusKyselyRequest60">
+        <wsdl:part name="HenkilonTunnusKysely" element="tns:HenkilonTunnusKysely"/>
+    </wsdl:message>
+    <wsdl:message name="HenkilonTunnusKyselyRequest60_Headers">
+        <wsdl:part xmlns:q15="http://x-road.eu/xsd/xroad.xsd" name="clientField" element="q15:client"/>
+        <wsdl:part xmlns:q16="http://x-road.eu/xsd/xroad.xsd" name="id" element="q16:id"/>
+        <wsdl:part xmlns:q17="http://x-road.eu/xsd/xroad.xsd" name="issue" element="q17:issue"/>
+        <wsdl:part xmlns:q18="http://x-road.eu/xsd/xroad.xsd" name="protocolVersion" element="q18:protocolVersion"/>
+        <wsdl:part xmlns:q19="http://x-road.eu/xsd/xroad.xsd" name="serviceField" element="q19:service"/>
+        <wsdl:part xmlns:q20="http://x-road.eu/xsd/xroad.xsd" name="userId" element="q20:userId"/>
+    </wsdl:message>
+    <wsdl:message name="HenkiloTunnusKyselyResponse60">
+        <wsdl:part name="HenkilonTunnusKyselyResponse" element="tns:HenkilonTunnusKyselyResponse"/>
+    </wsdl:message>
+    <wsdl:message name="HenkiloTunnusKyselyResponse60_Headers">
+        <wsdl:part xmlns:q21="http://x-road.eu/xsd/xroad.xsd" name="clientField" element="q21:client"/>
+        <wsdl:part xmlns:q22="http://x-road.eu/xsd/xroad.xsd" name="id" element="q22:id"/>
+        <wsdl:part xmlns:q23="http://x-road.eu/xsd/xroad.xsd" name="issue" element="q23:issue"/>
+        <wsdl:part xmlns:q24="http://x-road.eu/xsd/xroad.xsd" name="protocolVersion" element="q24:protocolVersion"/>
+        <wsdl:part xmlns:q25="http://x-road.eu/xsd/xroad.xsd" name="serviceField" element="q25:service"/>
+        <wsdl:part xmlns:q26="http://x-road.eu/xsd/xroad.xsd" name="userId" element="q26:userId"/>
+    </wsdl:message>
+    <wsdl:message name="HenkiloTunnistusKyselyRequest60">
+        <wsdl:part name="HenkilonTunnistusKysely" element="tns:HenkilonTunnistusKysely"/>
+    </wsdl:message>
+    <wsdl:message name="HenkiloTunnistusKyselyRequest60_Headers">
+        <wsdl:part xmlns:q27="http://x-road.eu/xsd/xroad.xsd" name="clientField" element="q27:client"/>
+        <wsdl:part xmlns:q28="http://x-road.eu/xsd/xroad.xsd" name="id" element="q28:id"/>
+        <wsdl:part xmlns:q29="http://x-road.eu/xsd/xroad.xsd" name="issue" element="q29:issue"/>
+        <wsdl:part xmlns:q30="http://x-road.eu/xsd/xroad.xsd" name="protocolVersion" element="q30:protocolVersion"/>
+        <wsdl:part xmlns:q31="http://x-road.eu/xsd/xroad.xsd" name="serviceField" element="q31:service"/>
+        <wsdl:part xmlns:q32="http://x-road.eu/xsd/xroad.xsd" name="userId" element="q32:userId"/>
+    </wsdl:message>
+    <wsdl:message name="HenkiloTunnistusKyselyResponse60">
+        <wsdl:part name="HenkilonTunnistusKyselyResponse" element="tns:HenkilonTunnistusKyselyResponse"/>
+    </wsdl:message>
+    <wsdl:message name="HenkiloTunnistusKyselyResponse60_Headers">
+        <wsdl:part xmlns:q33="http://x-road.eu/xsd/xroad.xsd" name="clientField" element="q33:client"/>
+        <wsdl:part xmlns:q34="http://x-road.eu/xsd/xroad.xsd" name="id" element="q34:id"/>
+        <wsdl:part xmlns:q35="http://x-road.eu/xsd/xroad.xsd" name="issue" element="q35:issue"/>
+        <wsdl:part xmlns:q36="http://x-road.eu/xsd/xroad.xsd" name="protocolVersion" element="q36:protocolVersion"/>
+        <wsdl:part xmlns:q37="http://x-road.eu/xsd/xroad.xsd" name="serviceField" element="q37:service"/>
+        <wsdl:part xmlns:q38="http://x-road.eu/xsd/xroad.xsd" name="userId" element="q38:userId"/>
+    </wsdl:message>
+    <wsdl:message name="RakennusTunnusKyselyRequest60">
+        <wsdl:part name="RakennuksenTunnusKysely" element="tns:RakennuksenTunnusKysely"/>
+    </wsdl:message>
+    <wsdl:message name="RakennusTunnusKyselyRequest60_Headers">
+        <wsdl:part xmlns:q39="http://x-road.eu/xsd/xroad.xsd" name="clientField" element="q39:client"/>
+        <wsdl:part xmlns:q40="http://x-road.eu/xsd/xroad.xsd" name="id" element="q40:id"/>
+        <wsdl:part xmlns:q41="http://x-road.eu/xsd/xroad.xsd" name="issue" element="q41:issue"/>
+        <wsdl:part xmlns:q42="http://x-road.eu/xsd/xroad.xsd" name="protocolVersion" element="q42:protocolVersion"/>
+        <wsdl:part xmlns:q43="http://x-road.eu/xsd/xroad.xsd" name="serviceField" element="q43:service"/>
+        <wsdl:part xmlns:q44="http://x-road.eu/xsd/xroad.xsd" name="userId" element="q44:userId"/>
+    </wsdl:message>
+    <wsdl:message name="RakennusTunnusKyselyResponse60">
+        <wsdl:part name="RakennuksenTunnusKyselyResponse" element="tns:RakennuksenTunnusKyselyResponse"/>
+    </wsdl:message>
+    <wsdl:message name="RakennusTunnusKyselyResponse60_Headers">
+        <wsdl:part xmlns:q45="http://x-road.eu/xsd/xroad.xsd" name="clientField" element="q45:client"/>
+        <wsdl:part xmlns:q46="http://x-road.eu/xsd/xroad.xsd" name="id" element="q46:id"/>
+        <wsdl:part xmlns:q47="http://x-road.eu/xsd/xroad.xsd" name="issue" element="q47:issue"/>
+        <wsdl:part xmlns:q48="http://x-road.eu/xsd/xroad.xsd" name="protocolVersion" element="q48:protocolVersion"/>
+        <wsdl:part xmlns:q49="http://x-road.eu/xsd/xroad.xsd" name="serviceField" element="q49:service"/>
+        <wsdl:part xmlns:q50="http://x-road.eu/xsd/xroad.xsd" name="userId" element="q50:userId"/>
+    </wsdl:message>
+    <wsdl:message name="RakennusTunnistusKyselyRequest60">
+        <wsdl:part name="RakennuksenTunnistusKysely" element="tns:RakennuksenTunnistusKysely"/>
+    </wsdl:message>
+    <wsdl:message name="RakennusTunnistusKyselyRequest60_Headers">
+        <wsdl:part xmlns:q51="http://x-road.eu/xsd/xroad.xsd" name="clientField" element="q51:client"/>
+        <wsdl:part xmlns:q52="http://x-road.eu/xsd/xroad.xsd" name="id" element="q52:id"/>
+        <wsdl:part xmlns:q53="http://x-road.eu/xsd/xroad.xsd" name="issue" element="q53:issue"/>
+        <wsdl:part xmlns:q54="http://x-road.eu/xsd/xroad.xsd" name="protocolVersion" element="q54:protocolVersion"/>
+        <wsdl:part xmlns:q55="http://x-road.eu/xsd/xroad.xsd" name="serviceField" element="q55:service"/>
+        <wsdl:part xmlns:q56="http://x-road.eu/xsd/xroad.xsd" name="userId" element="q56:userId"/>
+    </wsdl:message>
+    <wsdl:message name="RakennusTunnistusKyselyResponse60">
+        <wsdl:part name="RakennuksenTunnistusKyselyResponse" element="tns:RakennuksenTunnistusKyselyResponse"/>
+    </wsdl:message>
+    <wsdl:message name="RakennusTunnistusKyselyResponse60_Headers">
+        <wsdl:part xmlns:q57="http://x-road.eu/xsd/xroad.xsd" name="clientField" element="q57:client"/>
+        <wsdl:part xmlns:q58="http://x-road.eu/xsd/xroad.xsd" name="id" element="q58:id"/>
+        <wsdl:part xmlns:q59="http://x-road.eu/xsd/xroad.xsd" name="issue" element="q59:issue"/>
+        <wsdl:part xmlns:q60="http://x-road.eu/xsd/xroad.xsd" name="protocolVersion" element="q60:protocolVersion"/>
+        <wsdl:part xmlns:q61="http://x-road.eu/xsd/xroad.xsd" name="serviceField" element="q61:service"/>
+        <wsdl:part xmlns:q62="http://x-road.eu/xsd/xroad.xsd" name="userId" element="q62:userId"/>
+    </wsdl:message>
+    <wsdl:message name="KiinteistoTunnusKyselyRequest60">
+        <wsdl:part name="KiinteistonTunnusKysely" element="tns:KiinteistonTunnusKysely"/>
+    </wsdl:message>
+    <wsdl:message name="KiinteistoTunnusKyselyRequest60_Headers">
+        <wsdl:part xmlns:q63="http://x-road.eu/xsd/xroad.xsd" name="clientField" element="q63:client"/>
+        <wsdl:part xmlns:q64="http://x-road.eu/xsd/xroad.xsd" name="id" element="q64:id"/>
+        <wsdl:part xmlns:q65="http://x-road.eu/xsd/xroad.xsd" name="issue" element="q65:issue"/>
+        <wsdl:part xmlns:q66="http://x-road.eu/xsd/xroad.xsd" name="protocolVersion" element="q66:protocolVersion"/>
+        <wsdl:part xmlns:q67="http://x-road.eu/xsd/xroad.xsd" name="serviceField" element="q67:service"/>
+        <wsdl:part xmlns:q68="http://x-road.eu/xsd/xroad.xsd" name="userId" element="q68:userId"/>
+    </wsdl:message>
+    <wsdl:message name="KiinteistoTunnusKyselyResponse60">
+        <wsdl:part name="KiinteistonTunnusKyselyResponse" element="tns:KiinteistonTunnusKyselyResponse"/>
+    </wsdl:message>
+    <wsdl:message name="KiinteistoTunnusKyselyResponse60_Headers">
+        <wsdl:part xmlns:q69="http://x-road.eu/xsd/xroad.xsd" name="clientField" element="q69:client"/>
+        <wsdl:part xmlns:q70="http://x-road.eu/xsd/xroad.xsd" name="id" element="q70:id"/>
+        <wsdl:part xmlns:q71="http://x-road.eu/xsd/xroad.xsd" name="issue" element="q71:issue"/>
+        <wsdl:part xmlns:q72="http://x-road.eu/xsd/xroad.xsd" name="protocolVersion" element="q72:protocolVersion"/>
+        <wsdl:part xmlns:q73="http://x-road.eu/xsd/xroad.xsd" name="serviceField" element="q73:service"/>
+        <wsdl:part xmlns:q74="http://x-road.eu/xsd/xroad.xsd" name="userId" element="q74:userId"/>
+    </wsdl:message>
+    <wsdl:message name="KiinteistoTunnistusKyselyRequest60">
+        <wsdl:part name="KiinteistonTunnistusKysely" element="tns:KiinteistonTunnistusKysely"/>
+    </wsdl:message>
+    <wsdl:message name="KiinteistoTunnistusKyselyRequest60_Headers">
+        <wsdl:part xmlns:q75="http://x-road.eu/xsd/xroad.xsd" name="clientField" element="q75:client"/>
+        <wsdl:part xmlns:q76="http://x-road.eu/xsd/xroad.xsd" name="id" element="q76:id"/>
+        <wsdl:part xmlns:q77="http://x-road.eu/xsd/xroad.xsd" name="issue" element="q77:issue"/>
+        <wsdl:part xmlns:q78="http://x-road.eu/xsd/xroad.xsd" name="protocolVersion" element="q78:protocolVersion"/>
+        <wsdl:part xmlns:q79="http://x-road.eu/xsd/xroad.xsd" name="serviceField" element="q79:service"/>
+        <wsdl:part xmlns:q80="http://x-road.eu/xsd/xroad.xsd" name="userId" element="q80:userId"/>
+    </wsdl:message>
+    <wsdl:message name="KiinteistoTunnistusKyselyResponse60">
+        <wsdl:part name="KiinteistonTunnistusKyselyResponse" element="tns:KiinteistonTunnistusKyselyResponse"/>
+    </wsdl:message>
+    <wsdl:message name="KiinteistoTunnistusKyselyResponse60_Headers">
+        <wsdl:part xmlns:q81="http://x-road.eu/xsd/xroad.xsd" name="clientField" element="q81:client"/>
+        <wsdl:part xmlns:q82="http://x-road.eu/xsd/xroad.xsd" name="id" element="q82:id"/>
+        <wsdl:part xmlns:q83="http://x-road.eu/xsd/xroad.xsd" name="issue" element="q83:issue"/>
+        <wsdl:part xmlns:q84="http://x-road.eu/xsd/xroad.xsd" name="protocolVersion" element="q84:protocolVersion"/>
+        <wsdl:part xmlns:q85="http://x-road.eu/xsd/xroad.xsd" name="serviceField" element="q85:service"/>
+        <wsdl:part xmlns:q86="http://x-road.eu/xsd/xroad.xsd" name="userId" element="q86:userId"/>
+    </wsdl:message>
+    <wsdl:message name="TuotteenSkeemaRequest60">
+        <wsdl:part name="HaeTuotteenSkeema" element="tns:HaeTuotteenSkeema"/>
+    </wsdl:message>
+    <wsdl:message name="TuotteenSkeemaRequest60_Headers">
+        <wsdl:part xmlns:q87="http://x-road.eu/xsd/xroad.xsd" name="clientField" element="q87:client"/>
+        <wsdl:part xmlns:q88="http://x-road.eu/xsd/xroad.xsd" name="id" element="q88:id"/>
+        <wsdl:part xmlns:q89="http://x-road.eu/xsd/xroad.xsd" name="issue" element="q89:issue"/>
+        <wsdl:part xmlns:q90="http://x-road.eu/xsd/xroad.xsd" name="protocolVersion" element="q90:protocolVersion"/>
+        <wsdl:part xmlns:q91="http://x-road.eu/xsd/xroad.xsd" name="serviceField" element="q91:service"/>
+        <wsdl:part xmlns:q92="http://x-road.eu/xsd/xroad.xsd" name="userId" element="q92:userId"/>
+    </wsdl:message>
+    <wsdl:message name="TuotteenSkeemaResponse60">
+        <wsdl:part name="HaeTuotteenSkeemaResponse" element="tns:HaeTuotteenSkeemaResponse"/>
+    </wsdl:message>
+    <wsdl:message name="TuotteenSkeemaResponse60_Headers">
+        <wsdl:part xmlns:q93="http://x-road.eu/xsd/xroad.xsd" name="clientField" element="q93:client"/>
+        <wsdl:part xmlns:q94="http://x-road.eu/xsd/xroad.xsd" name="id" element="q94:id"/>
+        <wsdl:part xmlns:q95="http://x-road.eu/xsd/xroad.xsd" name="issue" element="q95:issue"/>
+        <wsdl:part xmlns:q96="http://x-road.eu/xsd/xroad.xsd" name="protocolVersion" element="q96:protocolVersion"/>
+        <wsdl:part xmlns:q97="http://x-road.eu/xsd/xroad.xsd" name="serviceField" element="q97:service"/>
+        <wsdl:part xmlns:q98="http://x-road.eu/xsd/xroad.xsd" name="userId" element="q98:userId"/>
+    </wsdl:message>
+    <wsdl:portType name="ISoSoAdapterService60">
+        <wsdl:operation name="HenkilonTunnusKysely">
+            <wsdl:input name="HenkilonTunnusKyselyRequest60" message="tns:HenkilonTunnusKyselyRequest60" wsaw:Action=""/>
+            <wsdl:output name="HenkiloTunnusKyselyResponse60" message="tns:HenkiloTunnusKyselyResponse60" wsaw:Action="http://xml.vrk.fi/ws/vtj/vtjkysely/1/ISoSoAdapterService60/HenkilonTunnusKyselyResponse"/>
+        </wsdl:operation>
+        <wsdl:operation name="HenkilonTunnistusKysely">
+            <wsdl:input name="HenkiloTunnistusKyselyRequest60" message="tns:HenkiloTunnistusKyselyRequest60" wsaw:Action=""/>
+            <wsdl:output name="HenkiloTunnistusKyselyResponse60" message="tns:HenkiloTunnistusKyselyResponse60" wsaw:Action="http://xml.vrk.fi/ws/vtj/vtjkysely/1/ISoSoAdapterService60/HenkilonTunnistusKyselyResponse"/>
+        </wsdl:operation>
+        <wsdl:operation name="RakennuksenTunnusKysely">
+            <wsdl:input name="RakennusTunnusKyselyRequest60" message="tns:RakennusTunnusKyselyRequest60" wsaw:Action=""/>
+            <wsdl:output name="RakennusTunnusKyselyResponse60" message="tns:RakennusTunnusKyselyResponse60" wsaw:Action="http://xml.vrk.fi/ws/vtj/vtjkysely/1/ISoSoAdapterService60/RakennuksenTunnusKyselyResponse"/>
+        </wsdl:operation>
+        <wsdl:operation name="RakennuksenTunnistusKysely">
+            <wsdl:input name="RakennusTunnistusKyselyRequest60" message="tns:RakennusTunnistusKyselyRequest60" wsaw:Action=""/>
+            <wsdl:output name="RakennusTunnistusKyselyResponse60" message="tns:RakennusTunnistusKyselyResponse60" wsaw:Action="http://xml.vrk.fi/ws/vtj/vtjkysely/1/ISoSoAdapterService60/RakennuksenTunnistusKyselyResponse"/>
+        </wsdl:operation>
+        <wsdl:operation name="KiinteistonTunnusKysely">
+            <wsdl:input name="KiinteistoTunnusKyselyRequest60" message="tns:KiinteistoTunnusKyselyRequest60" wsaw:Action=""/>
+            <wsdl:output name="KiinteistoTunnusKyselyResponse60" message="tns:KiinteistoTunnusKyselyResponse60" wsaw:Action="http://xml.vrk.fi/ws/vtj/vtjkysely/1/ISoSoAdapterService60/KiinteistonTunnusKyselyResponse"/>
+        </wsdl:operation>
+        <wsdl:operation name="KiinteistonTunnistusKysely">
+            <wsdl:input name="KiinteistoTunnistusKyselyRequest60" message="tns:KiinteistoTunnistusKyselyRequest60" wsaw:Action=""/>
+            <wsdl:output name="KiinteistoTunnistusKyselyResponse60" message="tns:KiinteistoTunnistusKyselyResponse60" wsaw:Action="http://xml.vrk.fi/ws/vtj/vtjkysely/1/ISoSoAdapterService60/KiinteistonTunnistusKyselyResponse"/>
+        </wsdl:operation>
+        <wsdl:operation name="HaeTuotteenSkeema">
+            <wsdl:input name="TuotteenSkeemaRequest60" message="tns:TuotteenSkeemaRequest60" wsaw:Action=""/>
+            <wsdl:output name="TuotteenSkeemaResponse60" message="tns:TuotteenSkeemaResponse60" wsaw:Action="http://xml.vrk.fi/ws/vtj/vtjkysely/1/ISoSoAdapterService60/HaeTuotteenSkeemaResponse"/>
+        </wsdl:operation>
+    </wsdl:portType>
+    <wsdl:binding name="BasicHttpBinding_ISoSoAdapterService60" type="tns:ISoSoAdapterService60">
+        <soap:binding transport="http://schemas.xmlsoap.org/soap/http"/>
+        <wsdl:operation name="HenkilonTunnusKysely">
+            <soap:operation soapAction="" style="document"/>
+            <id:version>v1</id:version>
+            <wsdl:input name="HenkilonTunnusKyselyRequest60">
+                <soap:header message="tns:HenkilonTunnusKyselyRequest60_Headers" part="clientField" use="literal"/>
+                <soap:header message="tns:HenkilonTunnusKyselyRequest60_Headers" part="id" use="literal"/>
+                <soap:header message="tns:HenkilonTunnusKyselyRequest60_Headers" part="issue" use="literal"/>
+                <soap:header message="tns:HenkilonTunnusKyselyRequest60_Headers" part="protocolVersion" use="literal"/>
+                <soap:header message="tns:HenkilonTunnusKyselyRequest60_Headers" part="serviceField" use="literal"/>
+                <soap:header message="tns:HenkilonTunnusKyselyRequest60_Headers" part="userId" use="literal"/>
+                <soap:body use="literal"/>
+            </wsdl:input>
+            <wsdl:output name="HenkiloTunnusKyselyResponse60">
+                <soap:header message="tns:HenkiloTunnusKyselyResponse60_Headers" part="clientField" use="literal"/>
+                <soap:header message="tns:HenkiloTunnusKyselyResponse60_Headers" part="id" use="literal"/>
+                <soap:header message="tns:HenkiloTunnusKyselyResponse60_Headers" part="issue" use="literal"/>
+                <soap:header message="tns:HenkiloTunnusKyselyResponse60_Headers" part="protocolVersion" use="literal"/>
+                <soap:header message="tns:HenkiloTunnusKyselyResponse60_Headers" part="serviceField" use="literal"/>
+                <soap:header message="tns:HenkiloTunnusKyselyResponse60_Headers" part="userId" use="literal"/>
+                <soap:body use="literal"/>
+            </wsdl:output>
+        </wsdl:operation>
+        <wsdl:operation name="HenkilonTunnistusKysely">
+            <soap:operation soapAction="" style="document"/>
+            <id:version>v1</id:version>
+            <wsdl:input name="HenkiloTunnistusKyselyRequest60">
+                <soap:header message="tns:HenkiloTunnistusKyselyRequest60_Headers" part="clientField" use="literal"/>
+                <soap:header message="tns:HenkiloTunnistusKyselyRequest60_Headers" part="id" use="literal"/>
+                <soap:header message="tns:HenkiloTunnistusKyselyRequest60_Headers" part="issue" use="literal"/>
+                <soap:header message="tns:HenkiloTunnistusKyselyRequest60_Headers" part="protocolVersion" use="literal"/>
+                <soap:header message="tns:HenkiloTunnistusKyselyRequest60_Headers" part="serviceField" use="literal"/>
+                <soap:header message="tns:HenkiloTunnistusKyselyRequest60_Headers" part="userId" use="literal"/>
+                <soap:body use="literal"/>
+            </wsdl:input>
+            <wsdl:output name="HenkiloTunnistusKyselyResponse60">
+                <soap:header message="tns:HenkiloTunnistusKyselyResponse60_Headers" part="clientField" use="literal"/>
+                <soap:header message="tns:HenkiloTunnistusKyselyResponse60_Headers" part="id" use="literal"/>
+                <soap:header message="tns:HenkiloTunnistusKyselyResponse60_Headers" part="issue" use="literal"/>
+                <soap:header message="tns:HenkiloTunnistusKyselyResponse60_Headers" part="protocolVersion" use="literal"/>
+                <soap:header message="tns:HenkiloTunnistusKyselyResponse60_Headers" part="serviceField" use="literal"/>
+                <soap:header message="tns:HenkiloTunnistusKyselyResponse60_Headers" part="userId" use="literal"/>
+                <soap:body use="literal"/>
+            </wsdl:output>
+        </wsdl:operation>
+        <wsdl:operation name="RakennuksenTunnusKysely">
+            <soap:operation soapAction="" style="document"/>
+            <id:version>v1</id:version>
+            <wsdl:input name="RakennusTunnusKyselyRequest60">
+                <soap:header message="tns:RakennusTunnusKyselyRequest60_Headers" part="clientField" use="literal"/>
+                <soap:header message="tns:RakennusTunnusKyselyRequest60_Headers" part="id" use="literal"/>
+                <soap:header message="tns:RakennusTunnusKyselyRequest60_Headers" part="issue" use="literal"/>
+                <soap:header message="tns:RakennusTunnusKyselyRequest60_Headers" part="protocolVersion" use="literal"/>
+                <soap:header message="tns:RakennusTunnusKyselyRequest60_Headers" part="serviceField" use="literal"/>
+                <soap:header message="tns:RakennusTunnusKyselyRequest60_Headers" part="userId" use="literal"/>
+                <soap:body use="literal"/>
+            </wsdl:input>
+            <wsdl:output name="RakennusTunnusKyselyResponse60">
+                <soap:header message="tns:RakennusTunnusKyselyResponse60_Headers" part="clientField" use="literal"/>
+                <soap:header message="tns:RakennusTunnusKyselyResponse60_Headers" part="id" use="literal"/>
+                <soap:header message="tns:RakennusTunnusKyselyResponse60_Headers" part="issue" use="literal"/>
+                <soap:header message="tns:RakennusTunnusKyselyResponse60_Headers" part="protocolVersion" use="literal"/>
+                <soap:header message="tns:RakennusTunnusKyselyResponse60_Headers" part="serviceField" use="literal"/>
+                <soap:header message="tns:RakennusTunnusKyselyResponse60_Headers" part="userId" use="literal"/>
+                <soap:body use="literal"/>
+            </wsdl:output>
+        </wsdl:operation>
+        <wsdl:operation name="RakennuksenTunnistusKysely">
+            <soap:operation soapAction="" style="document"/>
+            <id:version>v1</id:version>
+            <wsdl:input name="RakennusTunnistusKyselyRequest60">
+                <soap:header message="tns:RakennusTunnistusKyselyRequest60_Headers" part="clientField" use="literal"/>
+                <soap:header message="tns:RakennusTunnistusKyselyRequest60_Headers" part="id" use="literal"/>
+                <soap:header message="tns:RakennusTunnistusKyselyRequest60_Headers" part="issue" use="literal"/>
+                <soap:header message="tns:RakennusTunnistusKyselyRequest60_Headers" part="protocolVersion" use="literal"/>
+                <soap:header message="tns:RakennusTunnistusKyselyRequest60_Headers" part="serviceField" use="literal"/>
+                <soap:header message="tns:RakennusTunnistusKyselyRequest60_Headers" part="userId" use="literal"/>
+                <soap:body use="literal"/>
+            </wsdl:input>
+            <wsdl:output name="RakennusTunnistusKyselyResponse60">
+                <soap:header message="tns:RakennusTunnistusKyselyResponse60_Headers" part="clientField" use="literal"/>
+                <soap:header message="tns:RakennusTunnistusKyselyResponse60_Headers" part="id" use="literal"/>
+                <soap:header message="tns:RakennusTunnistusKyselyResponse60_Headers" part="issue" use="literal"/>
+                <soap:header message="tns:RakennusTunnistusKyselyResponse60_Headers" part="protocolVersion" use="literal"/>
+                <soap:header message="tns:RakennusTunnistusKyselyResponse60_Headers" part="serviceField" use="literal"/>
+                <soap:header message="tns:RakennusTunnistusKyselyResponse60_Headers" part="userId" use="literal"/>
+                <soap:body use="literal"/>
+            </wsdl:output>
+        </wsdl:operation>
+        <wsdl:operation name="KiinteistonTunnusKysely">
+            <soap:operation soapAction="" style="document"/>
+            <id:version>v1</id:version>
+            <wsdl:input name="KiinteistoTunnusKyselyRequest60">
+                <soap:header message="tns:KiinteistoTunnusKyselyRequest60_Headers" part="clientField" use="literal"/>
+                <soap:header message="tns:KiinteistoTunnusKyselyRequest60_Headers" part="id" use="literal"/>
+                <soap:header message="tns:KiinteistoTunnusKyselyRequest60_Headers" part="issue" use="literal"/>
+                <soap:header message="tns:KiinteistoTunnusKyselyRequest60_Headers" part="protocolVersion" use="literal"/>
+                <soap:header message="tns:KiinteistoTunnusKyselyRequest60_Headers" part="serviceField" use="literal"/>
+                <soap:header message="tns:KiinteistoTunnusKyselyRequest60_Headers" part="userId" use="literal"/>
+                <soap:body use="literal"/>
+            </wsdl:input>
+            <wsdl:output name="KiinteistoTunnusKyselyResponse60">
+                <soap:header message="tns:KiinteistoTunnusKyselyResponse60_Headers" part="clientField" use="literal"/>
+                <soap:header message="tns:KiinteistoTunnusKyselyResponse60_Headers" part="id" use="literal"/>
+                <soap:header message="tns:KiinteistoTunnusKyselyResponse60_Headers" part="issue" use="literal"/>
+                <soap:header message="tns:KiinteistoTunnusKyselyResponse60_Headers" part="protocolVersion" use="literal"/>
+                <soap:header message="tns:KiinteistoTunnusKyselyResponse60_Headers" part="serviceField" use="literal"/>
+                <soap:header message="tns:KiinteistoTunnusKyselyResponse60_Headers" part="userId" use="literal"/>
+                <soap:body use="literal"/>
+            </wsdl:output>
+        </wsdl:operation>
+        <wsdl:operation name="KiinteistonTunnistusKysely">
+            <soap:operation soapAction="" style="document"/>
+            <id:version>v1</id:version>
+            <wsdl:input name="KiinteistoTunnistusKyselyRequest60">
+                <soap:header message="tns:KiinteistoTunnistusKyselyRequest60_Headers" part="clientField" use="literal"/>
+                <soap:header message="tns:KiinteistoTunnistusKyselyRequest60_Headers" part="id" use="literal"/>
+                <soap:header message="tns:KiinteistoTunnistusKyselyRequest60_Headers" part="issue" use="literal"/>
+                <soap:header message="tns:KiinteistoTunnistusKyselyRequest60_Headers" part="protocolVersion" use="literal"/>
+                <soap:header message="tns:KiinteistoTunnistusKyselyRequest60_Headers" part="serviceField" use="literal"/>
+                <soap:header message="tns:KiinteistoTunnistusKyselyRequest60_Headers" part="userId" use="literal"/>
+                <soap:body use="literal"/>
+            </wsdl:input>
+            <wsdl:output name="KiinteistoTunnistusKyselyResponse60">
+                <soap:header message="tns:KiinteistoTunnistusKyselyResponse60_Headers" part="clientField" use="literal"/>
+                <soap:header message="tns:KiinteistoTunnistusKyselyResponse60_Headers" part="id" use="literal"/>
+                <soap:header message="tns:KiinteistoTunnistusKyselyResponse60_Headers" part="issue" use="literal"/>
+                <soap:header message="tns:KiinteistoTunnistusKyselyResponse60_Headers" part="protocolVersion" use="literal"/>
+                <soap:header message="tns:KiinteistoTunnistusKyselyResponse60_Headers" part="serviceField" use="literal"/>
+                <soap:header message="tns:KiinteistoTunnistusKyselyResponse60_Headers" part="userId" use="literal"/>
+                <soap:body use="literal"/>
+            </wsdl:output>
+        </wsdl:operation>
+        <wsdl:operation name="HaeTuotteenSkeema">
+            <soap:operation soapAction="" style="document"/>
+            <id:version>v1</id:version>
+            <wsdl:input name="TuotteenSkeemaRequest60">
+                <soap:header message="tns:TuotteenSkeemaRequest60_Headers" part="clientField" use="literal"/>
+                <soap:header message="tns:TuotteenSkeemaRequest60_Headers" part="id" use="literal"/>
+                <soap:header message="tns:TuotteenSkeemaRequest60_Headers" part="issue" use="literal"/>
+                <soap:header message="tns:TuotteenSkeemaRequest60_Headers" part="protocolVersion" use="literal"/>
+                <soap:header message="tns:TuotteenSkeemaRequest60_Headers" part="serviceField" use="literal"/>
+                <soap:header message="tns:TuotteenSkeemaRequest60_Headers" part="userId" use="literal"/>
+                <soap:body use="literal"/>
+            </wsdl:input>
+            <wsdl:output name="TuotteenSkeemaResponse60">
+                <soap:header message="tns:TuotteenSkeemaResponse60_Headers" part="clientField" use="literal"/>
+                <soap:header message="tns:TuotteenSkeemaResponse60_Headers" part="id" use="literal"/>
+                <soap:header message="tns:TuotteenSkeemaResponse60_Headers" part="issue" use="literal"/>
+                <soap:header message="tns:TuotteenSkeemaResponse60_Headers" part="protocolVersion" use="literal"/>
+                <soap:header message="tns:TuotteenSkeemaResponse60_Headers" part="serviceField" use="literal"/>
+                <soap:header message="tns:TuotteenSkeemaResponse60_Headers" part="userId" use="literal"/>
+                <soap:body use="literal"/>
+            </wsdl:output>
+        </wsdl:operation>
+    </wsdl:binding>
+    <wsdl:service name="SoSoAdapterService60">
+        <wsdl:port name="BasicHttpBinding_ISoSoAdapterService60" binding="tns:BasicHttpBinding_ISoSoAdapterService60">
+            <soap:address location="http://example.org/xroad-endpoint"/>
+        </wsdl:port>
+    </wsdl:service>
+</wsdl:definitions>

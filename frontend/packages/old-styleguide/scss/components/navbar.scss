@@ -1,0 +1,92 @@
+/*
+ * SPDX-FileCopyrightText: 2017-2020 City of Espoo
+ *
+ * SPDX-License-Identifier: LGPL-2.1-or-later
+ */
+
+$navbar-background-color: $white !default;
+$navbar-height: 3.25rem !default;
+$navbar-fixed-z: 30 !default;
+
+$navbar-item-color: $grey-dark !default;
+$navbar-item-hover-color: darken($grey-dark, 10) !default;
+$navbar-item-hover-background-color: $background !default;
+$navbar-item-active-color: $black !default;
+$navbar-item-active-background-color: transparent !default;
+$navbar-item-active-border-color: $primary !default;
+$navbar-item-img-max-height: 1.75rem !default;
+
+$navbar-tab-padding: 1rem 1.2rem !default;
+$navbar-tab-margin: 1rem !default;
+$navbar-tab-hover-background-color: transparent !default;
+$navbar-tab-hover-border-bottom-color: transparent !default;
+$navbar-tab-active-color: $grey-dark !default;
+$navbar-tab-active-background-color: transparent !default;
+$navbar-tab-active-border-bottom-color: $primary !default;
+$navbar-tab-active-border-bottom-style: solid !default;
+$navbar-tab-active-border-bottom-width: 4px !default;
+
+$navbar-dropdown-background-color: $white !default;
+$navbar-dropdown-border-top: 1px solid $border !default;
+$navbar-dropdown-offset: -4px !default;
+$navbar-dropdown-arrow: $link !default;
+$navbar-dropdown-radius: $radius-large !default;
+$navbar-dropdown-z: 20 !default;
+
+$navbar-dropdown-boxed-radius: $radius-large !default;
+$navbar-dropdown-boxed-shadow: 0 8px 8px rgba($black, 0.1), 0 0 0 1px rgba($black, 0.1) !default;
+
+$navbar-dropdown-item-hover-color: $black !default;
+$navbar-dropdown-item-hover-background-color: $background !default;
+$navbar-dropdown-item-active-color: $link !default;
+$navbar-dropdown-item-active-background-color: $background !default;
+
+$navbar-divider-background-color: $border !default;
+
+// Custom, non-Bulma variables
+$navbar-font-size: 14px;
+$navbar-tab-letter-spacing: 1px;
+
+@import "~bulma/sass/components/navbar.sass";
+
+.navbar {
+  flex-direction: column;
+  align-items: stretch;
+  font-family: $family-sans-serif-secondary;
+  font-size: $navbar-font-size;
+
+  // You shouldn't really be doing this but leaving as-is for now for compatibility
+  & > .container {
+    align-items: flex-end;
+  }
+}
+
+.navbar-brand {
+  align-items: center;
+}
+
+.navbar-item {
+  padding: $navbar-tab-padding;
+  padding-bottom: calc(#{nth($navbar-tab-padding, 1)} + #{$navbar-tab-active-border-bottom-width});
+
+  &.is-tab {
+    border-bottom: 0;
+    // NOTE: Only duplicated here to override Bulma styles that aren't modifiable via variables:
+    // https://github.com/jgthms/bulma/blob/0.8.1/sass/components/navbar.sass#L194-L205
+    padding: $navbar-tab-padding;
+    padding-bottom: calc(#{nth($navbar-tab-padding, 1)} + #{$navbar-tab-active-border-bottom-width});
+    text-transform: uppercase;
+    letter-spacing: $navbar-tab-letter-spacing;
+
+    &.is-active {
+      padding-bottom: nth($navbar-tab-padding, 1);
+      font-weight: $weight-bold;
+    }
+
+    @include desktop {
+      & + .navbar-item.is-tab {
+        margin-left: $navbar-tab-margin;
+      }
+    }
+  }
+}

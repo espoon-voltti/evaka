@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+SPDX-FileCopyrightText: 2017-2020 City of Espoo
+
+SPDX-License-Identifier: LGPL-2.1-or-later
+-->
+
+<!--
+Default appender logback configuration provided for import
+-->
+
+<included>
+    <appender name="VOLTTI_DEFAULT_APPENDER" class="ch.qos.logback.core.ConsoleAppender">
+        <filter class="ch.qos.logback.core.filter.EvaluatorFilter">
+            <evaluator class="ch.qos.logback.classic.boolex.OnMarkerEvaluator">
+                <marker>AUDIT_EVENT</marker>
+                <marker>VTJ_EVENT</marker>
+            </evaluator>
+            <onMismatch>NEUTRAL</onMismatch>
+            <onMatch>DENY</onMatch>
+        </filter>
+        <!-- With a Composite encoder, desired fields need to be explicitly defined -->
+        <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
+            <providers>
+                <logLevel><fieldName>logLevel</fieldName></logLevel>
+                <message><fieldName>message</fieldName></message>
+                <stackTrace>
+                    <fieldName>stackTrace</fieldName>
+                    <throwableConverter class="net.logstash.logback.stacktrace.ShortenedThrowableConverter">
+                        <maxDepthPerThrowable>60</maxDepthPerThrowable>
+                        <maxLength>32000</maxLength>
+                        <shortenedClassNameLength>40</shortenedClassNameLength>
+                        <exclude>sun\.reflect\..*\.invoke.*</exclude>
+                        <exclude>net\.sf\.cglib\.proxy\.MethodProxy\.invoke</exclude>
+                        <rootCauseFirst>true</rootCauseFirst>
+                        <inlineHash>true</inlineHash>
+                    </throwableConverter>
+                </stackTrace>
+                <threadName><fieldName>[ignore]</fieldName></threadName>
+                <throwableClassName><fieldName>exception</fieldName></throwableClassName>
+                <timestamp>
+                    <fieldName>@timestamp</fieldName>
+                    <timeZone>UTC</timeZone>
+                    <pattern>yyyy-MM-dd'T'HH:mm:ss.sss'Z'</pattern>
+                </timestamp>
+                <pattern>
+                    <pattern>
+                        {
+                        "type": "app-misc",
+                        "appBuild": "${APP_BUILD}",
+                        "appCommit": "${APP_COMMIT}",
+                        "appName": "${appName}",
+                        "env": "${VOLTTI_ENV}",
+                        "hostIp": "${HOST_IP}",
+                        "userIdHash": "%mdc{userIdHash}",
+                        "spanId": "%mdc{spanId}",
+                        "traceId": "%mdc{traceId}",
+                        "version": 1
+                        }
+                    </pattern>
+                </pattern>
+                <arguments />
+            </providers>
+        </encoder>
+    </appender>
+</included>

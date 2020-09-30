@@ -1,0 +1,97 @@
+/*
+ * SPDX-FileCopyrightText: 2017-2020 City of Espoo
+ *
+ * SPDX-License-Identifier: LGPL-2.1-or-later
+ */
+
+.map-view {
+  margin: 0;
+
+  @media screen and (min-width: $tablet) {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    .map-wrapper {
+      padding: 0
+    }
+  }
+
+  .vue-bulma-tabs .tab-content {
+    margin: 0;
+    overflow: inherit;
+  }
+}
+
+.evaka-map {
+  min-height: 540px;
+  position: relative;
+  flex-grow: 1;
+}
+
+.evaka-search label {
+  padding-bottom: 0.125rem;
+  display: inline-block;
+}
+
+.search-group {
+  position: relative;
+  padding-bottom: 1rem;
+}
+
+.directions {
+  hr {
+    margin-bottom: 0;
+  }
+}
+
+.directions-buttons {
+  position: relative;
+
+  &:after {
+    content: "";
+    display: table;
+    clear: both;
+  }
+}
+
+.show-directions-btn {
+  position: absolute;
+  max-width: 12%;
+  min-width: auto;
+  width: 40px;
+  height: 38px;
+  top: 26px;
+  right: 1px;
+  z-index: 99;
+  margin: 0;
+  padding: 0;
+  color: #3273dc;
+  border: none;
+  border-left: 1px solid #e8e8e8;
+  border-radius: 0;
+  border-bottom-right-radius: 5px;
+  border-top-right-radius: 5px;
+  transition: all ease-out 0.3s;
+
+  &.active:not(:hover) {
+    background-color: #3273dc;
+    color: white;
+  }
+
+  &:hover {
+    color: #6a94a5;
+    border-color: #ccc;
+  }
+}
+
+.multiselect--active {
+  .show-directions-btn {
+    border-top-right-radius: 0;
+  }
+}
+
+.distance-tag {
+  float: right;
+  background-color: #dedede;
+  margin-top: 0.325rem;
+}

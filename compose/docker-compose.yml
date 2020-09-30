@@ -1,0 +1,71 @@
+# SPDX-FileCopyrightText: 2017-2020 City of Espoo
+#
+# SPDX-License-Identifier: LGPL-2.1-or-later
+
+# Docker Compose file that can be used for development builds and that links
+# against the development Docker files. Do not mistaken these with production
+# docker files that the other compose files deal with.
+#
+# Tips and Tricks
+# ===============
+#
+# If you need to target a local service instead you can use
+# a pseudo address docker.for.mac.localhost when running on OXS.
+# E.g. to target local application service set APPLICATION_API_URL: http://docker.for.mac.localhost:8080
+version: '3.5'
+
+services:
+  db:
+    build: ./db
+    ports:
+    - "5432:5432"
+    volumes:
+    - db-data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    healthcheck:
+      test: "pg_isready -U postgres"
+      interval: 2s
+      timeout: 5s
+      retries: 5
+
+  db_it:
+    build: ./db-integration-test
+    ports:
+    - "15432:5432"
+    healthcheck:
+      test: "pg_isready -U postgres"
+      interval: 2s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:4-alpine
+    ports:
+    - "6379:6379"
+    healthcheck:
+      test: '[ "$$(redis-cli -h 127.0.0.1 ping)" == "PONG" ]'
+      interval: 1s
+      timeout: 5s
+      retries: 5
+
+  s3.mock.evaka:
+    image: adobe/s3mock
+    ports:
+    - "9876:9090"
+    volumes:
+    - s3-data:/data
+    environment:
+      ROOT: /data
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:9090"]
+      interval: 1s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  db-data:
+    driver: local
+  s3-data:
+    driver: local

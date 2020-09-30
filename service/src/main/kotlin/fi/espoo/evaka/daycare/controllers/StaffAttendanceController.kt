@@ -1,0 +1,65 @@
+// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
+
+package fi.espoo.evaka.daycare.controllers
+
+import fi.espoo.evaka.Audit
+import fi.espoo.evaka.daycare.controllers.utils.Wrapper
+import fi.espoo.evaka.daycare.service.StaffAttendance
+import fi.espoo.evaka.daycare.service.StaffAttendanceGroup
+import fi.espoo.evaka.daycare.service.StaffAttendanceService
+import fi.espoo.evaka.shared.auth.AccessControlList
+import fi.espoo.evaka.shared.auth.AuthenticatedUser
+import fi.espoo.evaka.shared.auth.UserRole.ADMIN
+import fi.espoo.evaka.shared.auth.UserRole.FINANCE_ADMIN
+import fi.espoo.evaka.shared.auth.UserRole.STAFF
+import fi.espoo.evaka.shared.auth.UserRole.UNIT_SUPERVISOR
+import fi.espoo.evaka.shared.domain.BadRequest
+import org.springframework.http.ResponseEntity
+import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
+import org.springframework.web.bind.annotation.RestController
+import java.util.UUID
+
+@RestController
+@RequestMapping("/staff-attendances")
+class StaffAttendanceController(
+    private val staffAttendanceService: StaffAttendanceService,
+    private val acl: AccessControlList
+) {
+    @GetMapping("/{groupId}")
+    fun getAttendancesByGroup(
+        user: AuthenticatedUser,
+        @RequestParam year: Int,
+        @RequestParam month: Int,
+        @PathVariable groupId: UUID
+    ): ResponseEntity<Wrapper<StaffAttendanceGroup>> {
+        Audit.StaffAttendanceRead.log(targetId = groupId)
+        acl.getRolesForUnitGroup(user, groupId)
+            .requireOneOfRoles(ADMIN, FINANCE_ADMIN, UNIT_SUPERVISOR, STAFF)
+        val result = staffAttendanceService.getAttendancesByMonth(year, month, groupId)
+        return ResponseEntity.ok(Wrapper(result))
+    }
+
+    @PostMapping("/{groupId}")
+    fun upsertStaffAttendance(
+        user: AuthenticatedUser,
+        @RequestBody staffAttendance: StaffAttendance,
+        @PathVariable groupId: UUID
+    ): ResponseEntity<Unit> {
+        Audit.StaffAttendanceUpdate.log(targetId = groupId)
+        acl.getRolesForUnitGroup(user, groupId)
+            .requireOneOfRoles(ADMIN, UNIT_SUPERVISOR)
+        if (staffAttendance.count == null) {
+            throw BadRequest("Count can't be null")
+        }
+        staffAttendance.groupId = groupId
+        staffAttendanceService.upsertStaffAttendance(staffAttendance)
+        return ResponseEntity.noContent().build()
+    }
+}

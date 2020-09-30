@@ -1,0 +1,46 @@
+/*
+ * SPDX-FileCopyrightText: 2017-2020 City of Espoo
+ *
+ * SPDX-License-Identifier: LGPL-2.1-or-later
+ */
+
+@import '../../assets/variables';
+
+.care-type-label {
+  border-radius: 12px;
+  height: 25px;
+  padding: 0 10px;
+  background: $white;
+  text-align: center;
+  line-height: 25px;
+
+  &.is-daycare {
+    background: $green;
+    color: $grey-darker;
+  }
+
+  &.is-connected {
+    background: $orange;
+    color: $grey-darker;
+  }
+
+  &.is-preschool {
+    background: $water;
+    color: $grey-darker;
+  }
+
+  &.is-preparatory {
+    background: $water;
+    color: $grey-darker;
+  }
+
+  &.is-backup-care {
+    background: $yellow;
+    color: $grey-darker;
+  }
+
+  &.is-club {
+    background: $grey-lighter;
+    color: $grey-darker;
+  }
+}

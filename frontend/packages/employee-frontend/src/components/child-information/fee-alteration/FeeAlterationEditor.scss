@@ -1,0 +1,64 @@
+/*
+ * SPDX-FileCopyrightText: 2017-2020 City of Espoo
+ *
+ * SPDX-License-Identifier: LGPL-2.1-or-later
+ */
+
+@import '~assets/variables';
+
+.fee-alteration-editor {
+  .row-input-container {
+    display: flex;
+    justify-content: flex-start;
+    margin-bottom: 20px;
+
+    .input {
+      margin-right: 1rem;
+    }
+
+    input[type='number'] {
+      width: 5rem;
+      text-align: right;
+    }
+
+    .is-absolute-radio-container {
+      width: 140px;
+      display: flex;
+      justify-content: stretch;
+
+      input[type='radio'] {
+        display: none;
+      }
+
+      label {
+        padding: 2px 22px;
+        border: 1px solid $primary-blue;
+        color: $primary-blue;
+      }
+
+      .left {
+        border-right: none;
+        border-radius: 2px 0 0 2px;
+      }
+
+      .right {
+        border-left: none;
+        border-radius: 0 2px 2px 0;
+      }
+
+      .selected {
+        background: $primary-blue;
+        color: white;
+      }
+    }
+
+    .date-range-separator {
+      margin: 0 10px;
+    }
+  }
+
+  .buttons {
+    margin-top: 20px;
+    justify-content: flex-end;
+  }
+}

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--
+SPDX-FileCopyrightText: 2017-2020 City of Espoo
+
+SPDX-License-Identifier: LGPL-2.1-or-later
+-->
+
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" preserveAspectRatio="xMidYMid meet" viewBox="43.13636363636364 37.72727272727272 46.500000000000014 208" width="50" height="240"><defs><path d="M74.32 38.73C79.84 38.73 84.32 43.2 84.32 48.73C84.32 75.47 84.32 145.71 84.32 172.45C84.32 177.98 79.84 182.45 74.32 182.45C68.75 182.45 62.03 182.45 56.45 182.45C50.93 182.45 46.45 177.98 46.45 172.45C46.45 145.71 46.45 75.47 46.45 48.73C46.45 43.2 50.93 38.73 56.45 38.73C62.03 38.73 68.75 38.73 74.32 38.73Z" id="a1EfO2q7ub"></path><path d="M86.64 221.48C86.64 233.21 77.11 242.73 65.39 242.73C53.66 242.73 44.14 233.21 44.14 221.48C44.14 209.75 53.66 200.23 65.39 200.23C77.11 200.23 86.64 209.75 86.64 221.48Z" id="d6NoWT0zIj"></path></defs><g><g><use xlink:href="#a1EfO2q7ub" opacity="1" fill="#000000" fill-opacity="1"></use></g><g><use xlink:href="#d6NoWT0zIj" opacity="1" fill="#000000" fill-opacity="1"></use></g></g></svg>

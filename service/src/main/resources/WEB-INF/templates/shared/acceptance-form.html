@@ -1,0 +1,74 @@
+<!--
+SPDX-FileCopyrightText: 2017-2020 City of Espoo
+
+SPDX-License-Identifier: LGPL-2.1-or-later
+-->
+
+<!DOCTYPE html>
+
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<th:block th:fragment="signatures">
+    <div class="details-section accept-checkboxes big-spacing-before">
+        <div class="checkboxes-wrapper">
+            <label class="checkbox-label">
+                <span class="checkbox"></span>
+                <span th:text="#{accept.yes.1}"></span>________________ <span th:text="#{accept.yes.2}"></span>
+            </label>
+            <label class="checkbox-label">
+                <span class="checkbox"></span>
+                <span th:text="#{accept.no}"></span>
+            </label>
+        </div>
+    </div>
+
+    <div class="details-section">
+        <span class="strong" th:text="#{signatureDate}"></span><span> ________________</span>
+    </div>
+
+    <div class="details-section">
+        <span class="strong" th:text="#{signature}"></span><span> ________________________________</span>
+    </div>
+
+    <div class="return-section">
+        <div th:text="#{text.return} + ': '"></div>
+        <div th:text="${decision.unit.decisionHandler}"></div>
+        <div th:text="${decision.unit.decisionHandlerAddress}"></div>
+    </div>
+</th:block>
+
+<th:block th:fragment="preschool-unit-details">
+    <div class="details-section accept-details">
+        <p>
+            <span class="detail-label strong" th:text="#{childName} + ':'"></span>
+            <span th:text="${application.form.child.firstName} + ' ' + ${application.form.child.lastName}"></span>
+        </p>
+        <p>
+            <span class="detail-label strong" th:text="#{unitName} + ':'"></span>
+            <span th:text="${decision.unit.preschoolDecisionName}"></span>
+        </p>
+        <p>
+            <span class="detail-label strong"></span>
+            <span th:text="${decision.unit.streetAddress} + ', ' + ${decision.unit.postalCode} + ' ' + ${decision.unit.postOffice}"></span>
+        </p>
+    </div>
+</th:block>
+
+<th:block th:fragment="daycare-unit-details">
+    <div class="details-section accept-details">
+        <p>
+            <span class="detail-label strong" th:text="#{childName} + ':'"></span>
+            <span th:text="${application.form.child.firstName} + ' ' + ${application.form.child.lastName}"></span>
+        </p>
+        <p>
+            <span class="detail-label strong" th:text="#{unitName} + ':'"></span>
+            <span th:text="${decision.unit.daycareDecisionName}"></span>
+        </p>
+        <p>
+            <span class="detail-label strong"></span>
+            <span th:text="${decision.unit.streetAddress} + ', ' + ${decision.unit.postalCode} + ' ' + ${decision.unit.postOffice}"></span>
+        </p>
+    </div>
+</th:block>
+</body>
+</html>

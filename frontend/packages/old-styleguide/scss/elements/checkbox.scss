@@ -1,0 +1,167 @@
+/*
+ * SPDX-FileCopyrightText: 2017-2020 City of Espoo
+ *
+ * SPDX-License-Identifier: LGPL-2.1-or-later
+ */
+
+$checkbox-check-font-size: 24px !default;
+
+$checkbox-check-width: 30px !default;
+$checkbox-check-margin: 1rem !default;
+$checkbox-check-border-radius: 2px !default;
+$checkbox-check-margin-bottom: 5px !default;
+
+$checkbox-check-border-color: $grey-dark !default;
+$checkbox-check-background: transparent !default;
+$checkbox-check-text-color: $black !default;
+
+$checkbox-focus-check-box-shadow-size: 0 0 0 0.125em !default;
+$checkbox-focus-check-box-shadow-color: rgba($grey, 0.25) !default;
+$checkbox-checked-focus-check-box-shadow-color: rgba($blue-light, 0.25) !default;
+
+$checkbox-checked-check-background: $primary !default;
+$checkbox-checked-check-border-color: $primary !default;
+$checkbox-checked-check-text-color: $white !default;
+
+$checkbox-hover-check-background: $white !default;
+$checkbox-hover-check-border-color: $grey-darker !default;
+$checkbox-hover-check-text-color: $grey !default;
+
+$checkbox-disabled-check-background: transparent !default;
+$checkbox-disabled-check-border-color: $grey !default;
+$checkbox-disabled-check-text-color: $grey-light !default;
+$checkbox-disabled-text-color: $grey-dark !default;
+$label-weight: $weight-semibold !default;
+
+.checkbox {
+  @include unselectable;
+  display: block;
+  margin-bottom: 0.5rem;
+  position: relative;
+
+  &.is-inline {
+    display: inline-block !important;
+    margin-right: 4rem;
+  }
+
+  .input {
+    @include sr-only;
+  }
+
+  .label {
+    position: relative;
+    padding-left: 43px;
+    cursor: pointer;
+    font-weight: $weight-normal;
+    min-height: 30px;
+    display: flex;
+    align-items: center;
+
+    &::before {
+      content: ' ';
+      position: absolute;
+      left: 0;
+      top: 50%;
+      margin-top: -$checkbox-check-width/2;
+
+      display: inline-block;
+      vertical-align: middle;
+
+      background: $checkbox-check-background;
+
+      width: $checkbox-check-width;
+      height: $checkbox-check-width;
+
+      margin-right: $checkbox-check-margin;
+
+      border-width: 1px;
+      border-style: solid;
+      border-color: $checkbox-check-border-color;
+
+      border-radius: $checkbox-check-border-radius;
+    }
+
+    &::after {
+      content: ' ';
+
+      display: block;
+      height: $checkbox-check-margin-bottom;
+    }
+
+    .tick {
+      display: none;
+
+      position: absolute;
+      top: 0;
+      left: 0;
+
+      font-size: $checkbox-check-font-size;
+      color: $checkbox-check-text-color;
+
+      line-height: $checkbox-check-width;
+      width: $checkbox-check-width;
+      height: $checkbox-check-width;
+
+      text-align: center;
+    }
+  }
+
+ .input:focus {
+    & ~.label {
+      &::before {
+        box-shadow: $checkbox-focus-check-box-shadow-size $checkbox-focus-check-box-shadow-color;
+      }
+    }
+  }
+
+  .input:checked {
+    &:focus {
+      & ~.label {
+        &::before {
+          box-shadow: $checkbox-focus-check-box-shadow-size $checkbox-checked-focus-check-box-shadow-color;
+        }
+      }
+    }
+    & ~ .label {
+      &::before {
+        background: $checkbox-checked-check-background;
+        border-color: $checkbox-checked-check-border-color;
+      }
+
+      .tick {
+        display: block;
+        color: $checkbox-checked-check-text-color;
+      }
+    }
+  }
+
+  .input:disabled {
+    & ~ .label {
+      cursor: not-allowed;
+
+      color: $checkbox-disabled-text-color;
+      &::before {
+        background: $checkbox-disabled-check-background;
+        border-color: $checkbox-disabled-check-border-color;
+      }
+
+      .tick {
+        color: $checkbox-disabled-check-text-color;
+      }
+    }
+  }
+
+  &:hover {
+    & .label {
+      &::before {
+        background: $checkbox-hover-check-background;
+        border-color: $checkbox-hover-check-border-color;
+      }
+
+      .tick {
+        color: $checkbox-hover-check-text-color;
+      }
+    }
+  }
+}
+
