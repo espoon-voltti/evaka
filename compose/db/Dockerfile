@@ -9,7 +9,7 @@ ARG BASE_IMAGE_VERSION=10.13-alpine
 FROM ${BASE_IMAGE}:${BASE_IMAGE_VERSION} AS ext_builder
 # Extension whitelisting to simulate the RDS behaviour
 # Build https://github.com/dimitri/pgextwlist package from source, transfer it to target installation
-RUN apk add --update alpine-sdk
+RUN apk add --update alpine-sdk postgresql-dev
 RUN git clone https://github.com/dimitri/pgextwlist.git /tmp/pgextwlist
 WORKDIR /tmp/pgextwlist
 RUN make && make install
