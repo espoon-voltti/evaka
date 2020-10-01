@@ -6,7 +6,7 @@ package fi.espoo.evaka.msg.config
 
 import org.testcontainers.containers.PostgreSQLContainer
 
-class PostgresContainer : PostgreSQLContainer<PostgresContainer>("postgres:10.13-alpine") {
+class PostgresContainer : PostgreSQLContainer<PostgresContainer>("postgres:12-alpine") {
     companion object {
         private var instance: PostgresContainer? = null
         fun getInstance(): PostgresContainer = synchronized(this) {
