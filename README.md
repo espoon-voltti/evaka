@@ -56,3 +56,7 @@ eVaka is published under **LGPL-2.1-or-later** license. Please refer to
 [LICENSE](LICENSE) for further details.
 
 ## Contact information
+
+eVaka is developed in the [City of Espoo](https://www.espoo.fi), Finland.
+You can contact the development team at [voltti@espoo.fi](voltti@espoo.fi).
+
