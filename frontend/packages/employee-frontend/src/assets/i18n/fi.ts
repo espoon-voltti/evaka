@@ -1724,7 +1724,8 @@ export const fi = {
         valueOnReport: 'Näytä tiedot',
         valuesOnReport: {
           percentage: 'Prosentteina',
-          headcount: 'Lukumääränä'
+          headcount: 'Lukumääränä',
+          raw: 'Summa ja kasvattajamäärä erikseen'
         }
       },
       average: 'Keskiarvo'
