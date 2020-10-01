@@ -15,15 +15,12 @@ import { RouteComponentProps, useHistory } from 'react-router'
 import styled from 'styled-components'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faExclamationTriangle } from '@fortawesome/free-solid-svg-icons'
-import {
-  Container,
-  ContentArea,
-  Title,
-  Button,
-  Buttons,
-  Checkbox,
-  Loader
-} from '~components/shared/alpha'
+import Checkbox from '~components/shared/atoms/form/Checkbox'
+import { Container, ContentArea } from '~components/shared/layout/Container'
+import Title from '~components/shared/atoms/Title'
+import { Gap } from '~components/shared/layout/white-space'
+import Button from '~components/shared/atoms/buttons/Button'
+import Loader from '~components/shared/atoms/Loader'
 import {
   getDecisionDrafts,
   getDecisionUnits,
@@ -47,6 +44,7 @@ import { AlertBox, InfoBox } from '~components/common/MessageBoxes'
 import { TitleContext, TitleState } from '~state/title'
 import { EspooColours } from '~utils/colours'
 import { formatName } from '~utils'
+import { FixedSpaceColumn } from '~components/shared/layout/flex-helpers'
 
 const ColumnTitle = styled.div`
   font-weight: 600;
@@ -194,7 +192,7 @@ const Decision = memo(function Decision({
     () =>
       isSuccess(units)
         ? units.data.map(({ id, name }) => ({
-            id,
+            value: id,
             label: name
           }))
         : [],
@@ -202,9 +200,9 @@ const Decision = memo(function Decision({
   )
 
   const onUnitSelect = useCallback(
-    (e: React.ChangeEvent<HTMLSelectElement>) => {
+    (value) => {
       if (isSuccess(decisionDraftGroup) && isSuccess(units)) {
-        const selected = units.data.find(({ id }) => id === e.target.value)
+        const selected = units.data.find(({ id }) => id === value)
         setSelectedUnit(selected ?? decisionDraftGroup.data.unit)
       }
     },
@@ -262,7 +260,8 @@ const Decision = memo(function Decision({
 
   return (
     <Container>
-      <ContentArea opaque={true}>
+      <Gap size={'L'} />
+      <ContentArea opaque>
         <Title size={1}>{i18n.decisionDraft.title}</Title>
         <InfoContainer>
           <InfoParagraph>{i18n.decisionDraft.info1}</InfoParagraph>
@@ -298,7 +297,6 @@ const Decision = memo(function Decision({
                 ...decisions.map((decision) => ({
                   label: (
                     <Checkbox
-                      name={decision.type}
                       label={i18n.decisionDraft.types[decision.type]}
                       checked={decision.planned}
                       onChange={(planned: boolean) => {
@@ -345,8 +343,11 @@ const Decision = memo(function Decision({
                         value: (
                           <UnitSelectContainer>
                             <Select
-                              value={selectedUnit.id}
-                              onChange={onUnitSelect}
+                              onChange={(value) =>
+                                value && 'value' in value
+                                  ? onUnitSelect(value.value)
+                                  : undefined
+                              }
                               options={unitOptions}
                             />
                             <WarningContainer
@@ -506,17 +507,14 @@ const Decision = memo(function Decision({
               />
             )}
             <SendButtonContainer>
-              <Buttons>
+              <FixedSpaceColumn>
                 <Button
-                  width="wide"
                   dataQa="cancel-decisions-button"
                   onClick={RedirectToMainPage}
-                >
-                  {i18n.common.cancel}
-                </Button>
+                  text={i18n.common.cancel}
+                />
                 <Button
                   primary
-                  width="wide"
                   dataQa="save-decisions-button"
                   disabled={!unitDataIsComplete || submitting}
                   onClick={() => {
@@ -534,10 +532,9 @@ const Decision = memo(function Decision({
                       .then(RedirectToMainPage)
                       .catch(() => setSubmitting(false))
                   }}
-                >
-                  {i18n.common.save}
-                </Button>
-              </Buttons>
+                  text={i18n.common.save}
+                />
+              </FixedSpaceColumn>
             </SendButtonContainer>
           </Fragment>
         )}

@@ -6,7 +6,7 @@ import React, { useContext, useState } from 'react'
 import { useTranslation } from '~state/i18n'
 import { UIContext } from '~state/ui'
 import FormModal from '~components/common/FormModal'
-import { Section } from '~components/shared/alpha'
+import Section from '~components/shared/layout/Section'
 import { isFailure } from '~api'
 import { faChild, faExchange } from 'icon-set'
 import { UUID } from '~types'
@@ -86,11 +86,12 @@ export default React.memo(function BackupCareGroupModal({
         <div className="bold">{i18n.unit.placements.modal.group}</div>
         <Select
           options={openGroups.map((group) => ({
-            id: group.id,
+            value: group.id,
             label: group.name
           }))}
-          value={groupId || undefined}
-          onChange={(event) => setGroupId(event.target.value)}
+          onChange={(value) =>
+            value && 'value' in value ? setGroupId(value.value) : undefined
+          }
         />
       </Section>
       <Section>

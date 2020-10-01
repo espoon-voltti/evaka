@@ -2,9 +2,11 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useState } from 'react'
+import React from 'react'
+
 import { faEuroSign } from 'icon-set'
-import { Collapsible, Title } from '~components/shared/alpha'
+import CollapsibleSection from '~components/shared/molecules/CollapsibleSection'
+import Title from '~components/shared/atoms/Title'
 import IncomeSection from './IncomeSection'
 import PartsSection from './PartsSection'
 import { useTranslation } from '../../state/i18n'
@@ -19,14 +21,12 @@ interface Props {
 
 const Summary = React.memo(function Summary({ decision }: Props) {
   const { i18n } = useTranslation()
-  const [toggled, setToggled] = useState(true)
 
   return (
-    <Collapsible
+    <CollapsibleSection
       title={i18n.feeDecision.form.summary.title}
       icon={faEuroSign}
-      open={toggled}
-      onToggle={() => setToggled((prev) => !prev)}
+      startCollapsed={false}
       className="income-summary"
     >
       <IncomeSection decision={decision} />
@@ -41,7 +41,7 @@ const Summary = React.memo(function Summary({ decision }: Props) {
           <b>{formatCents(decision.totalFee)} €</b>
         </div>
       </div>
-    </Collapsible>
+    </CollapsibleSection>
   )
 })
 

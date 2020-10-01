@@ -3,15 +3,16 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useEffect, useMemo, useState } from 'react'
-import {
-  Container,
-  ContentArea,
-  Loader,
-  Table,
-  Title
-} from '~components/shared/alpha'
-import { useTranslation } from '~state/i18n'
+import ReactSelect from 'react-select'
+import styled from 'styled-components'
 import { Link } from 'react-router-dom'
+
+import { Container, ContentArea } from '~components/shared/layout/Container'
+import Loader from '~components/shared/atoms/Loader'
+import Title from '~components/shared/atoms/Title'
+import { Th, Tr, Td, Thead, Tbody } from '~components/shared/layout/Table'
+import { reactSelectStyles } from '~components/shared/utils'
+import { useTranslation } from '~state/i18n'
 import { isFailure, isLoading, isSuccess, Loading, Result } from '~api'
 import { ApplicationsReportRow } from '~types/reports'
 import { getApplicationsReport, PeriodFilters } from '~api/reports'
@@ -24,7 +25,6 @@ import {
 } from '~components/reports/common'
 import { DatePicker } from '~components/common/DatePicker'
 import { distinct, reducePropertySum } from 'utils'
-import SelectWithIcon from 'components/common/Select'
 import LocalDate from '@evaka/lib-common/src/local-date'
 import { FlexRow } from 'components/common/styled/containers'
 import ReturnButton from 'components/shared/atoms/buttons/ReturnButton'
@@ -36,6 +36,10 @@ interface DisplayFilters {
 const emptyDisplayFilters: DisplayFilters = {
   careArea: ''
 }
+
+const Wrapper = styled.div`
+  width: 100%;
+`
 
 function Applications() {
   const { i18n } = useTranslation()
@@ -92,21 +96,27 @@ function Applications() {
 
         <FilterRow>
           <FilterLabel>{i18n.reports.common.careAreaName}</FilterLabel>
-          <SelectWithIcon
-            options={[
-              { id: '', label: '' },
-              ...(isSuccess(rows)
-                ? distinct(
-                    rows.data.map((row) => row.careAreaName)
-                  ).map((s) => ({ id: s, label: s }))
-                : [])
-            ]}
-            value={displayFilters.careArea}
-            onChange={(e) =>
-              setDisplayFilters({ ...displayFilters, careArea: e.target.value })
-            }
-            fullWidth
-          />
+          <Wrapper>
+            <ReactSelect
+              options={[
+                { id: '', label: '' },
+                ...(isSuccess(rows)
+                  ? distinct(
+                      rows.data.map((row) => row.careAreaName)
+                    ).map((s) => ({ id: s, label: s }))
+                  : [])
+              ]}
+              onChange={(option) =>
+                option && 'id' in option
+                  ? setDisplayFilters({
+                      ...displayFilters,
+                      careArea: option.id
+                    })
+                  : undefined
+              }
+              styles={reactSelectStyles}
+            />
+          </Wrapper>
         </FilterRow>
 
         {isLoading(rows) && <Loader />}
@@ -153,60 +163,54 @@ function Applications() {
               } ${filters.from.formatIso()}-${filters.to.formatIso()}.csv`}
             />
             <TableScrollable>
-              <Table.Head>
-                <Table.Row>
-                  <Table.Th>{i18n.reports.common.careAreaName}</Table.Th>
-                  <Table.Th>{i18n.reports.common.unitName}</Table.Th>
-                  <Table.Th>{i18n.reports.common.unitProviderType}</Table.Th>
-                  <Table.Th>{i18n.reports.applications.under3Years}</Table.Th>
-                  <Table.Th>{i18n.reports.applications.over3Years}</Table.Th>
-                  <Table.Th>{i18n.reports.applications.preschool}</Table.Th>
-                  <Table.Th>{i18n.reports.applications.club}</Table.Th>
-                  <Table.Th>{i18n.reports.applications.totalChildren}</Table.Th>
-                </Table.Row>
-              </Table.Head>
-              <Table.Body>
+              <Thead>
+                <Tr>
+                  <Th>{i18n.reports.common.careAreaName}</Th>
+                  <Th>{i18n.reports.common.unitName}</Th>
+                  <Th>{i18n.reports.common.unitProviderType}</Th>
+                  <Th>{i18n.reports.applications.under3Years}</Th>
+                  <Th>{i18n.reports.applications.over3Years}</Th>
+                  <Th>{i18n.reports.applications.preschool}</Th>
+                  <Th>{i18n.reports.applications.club}</Th>
+                  <Th>{i18n.reports.applications.totalChildren}</Th>
+                </Tr>
+              </Thead>
+              <Tbody>
                 {filteredRows.map((row: ApplicationsReportRow) => (
-                  <Table.Row key={row.unitId}>
-                    <Table.Td>{row.careAreaName}</Table.Td>
-                    <Table.Td>
+                  <Tr key={row.unitId}>
+                    <Td>{row.careAreaName}</Td>
+                    <Td>
                       <Link to={`/units/${row.unitId}`}>{row.unitName}</Link>
-                    </Table.Td>
-                    <Table.Td>
+                    </Td>
+                    <Td>
                       {
                         i18n.reports.common.unitProviderTypes[
                           row.unitProviderType
                         ]
                       }
-                    </Table.Td>
-                    <Table.Td>{row.under3Years}</Table.Td>
-                    <Table.Td>{row.over3Years}</Table.Td>
-                    <Table.Td>{row.preschool}</Table.Td>
-                    <Table.Td>{row.club}</Table.Td>
-                    <Table.Td>{row.total}</Table.Td>
-                  </Table.Row>
+                    </Td>
+                    <Td>{row.under3Years}</Td>
+                    <Td>{row.over3Years}</Td>
+                    <Td>{row.preschool}</Td>
+                    <Td>{row.club}</Td>
+                    <Td>{row.total}</Td>
+                  </Tr>
                 ))}
-              </Table.Body>
+              </Tbody>
               <TableFooter>
-                <Table.Row>
-                  <Table.Td className="bold">
-                    {i18n.reports.common.total}
-                  </Table.Td>
-                  <Table.Td />
-                  <Table.Td />
-                  <Table.Td>
+                <Tr>
+                  <Td className="bold">{i18n.reports.common.total}</Td>
+                  <Td />
+                  <Td />
+                  <Td>
                     {reducePropertySum(filteredRows, (r) => r.under3Years)}
-                  </Table.Td>
-                  <Table.Td>
+                  </Td>
+                  <Td>
                     {reducePropertySum(filteredRows, (r) => r.over3Years)}
-                  </Table.Td>
-                  <Table.Td>
-                    {reducePropertySum(filteredRows, (r) => r.preschool)}
-                  </Table.Td>
-                  <Table.Td>
-                    {reducePropertySum(filteredRows, (r) => r.total)}
-                  </Table.Td>
-                </Table.Row>
+                  </Td>
+                  <Td>{reducePropertySum(filteredRows, (r) => r.preschool)}</Td>
+                  <Td>{reducePropertySum(filteredRows, (r) => r.total)}</Td>
+                </Tr>
               </TableFooter>
             </TableScrollable>
           </>

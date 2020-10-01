@@ -7,11 +7,17 @@ import React, {
   useEffect,
   useState,
   Dispatch,
-  SetStateAction
+  SetStateAction,
+  Fragment
 } from 'react'
+import styled from 'styled-components'
+
 import LocalDate from '@evaka/lib-common/src/local-date'
 import { UUID } from '~types'
-import { Container, ContentArea, Title } from '~components/shared/alpha'
+import { Container, ContentArea } from '~components/shared/layout/Container'
+import Title from '~components/shared/atoms/Title'
+import Column from '~components/shared/layout/Column'
+import { Gap } from 'components/shared/layout/white-space'
 import UnitInformation from './unit/UnitInformation'
 import Placements from './unit/Placements'
 import '~components/Unit.scss'
@@ -24,7 +30,7 @@ import ErrorSegment from 'components/shared/atoms/state/ErrorSegment'
 import UnitDataFilters from '~components/unit/UnitDataFilters'
 import Occupancy from '~components/unit/unit-data/Occupancy'
 import PlacementPlans from '~components/unit/PlacementPlans'
-import styled from 'styled-components'
+
 import { TitleContext, TitleState } from '~state/title'
 import UnitAccessControl from '~components/unit/UnitAccessControl'
 import { UnitFilters } from 'utils/UnitFilters'
@@ -155,10 +161,11 @@ const UnitDetails = React.memo(function UnitDetails({
 
   return (
     <Container>
+      <Gap size={'L'} />
       <ContentArea opaque>
         <UnitBasicsSection>
-          <div className="column is-8-desktop is-full-tablet">
-            <Title size={2} dataQa="unit-name">
+          <Column desktopWidth={'66.6666%'} tabletWidth={'100%'}>
+            <Title size={2} data-qa="unit-name">
               {unit.name}
             </Title>
             <UnitDataFilters
@@ -170,48 +177,58 @@ const UnitDetails = React.memo(function UnitDetails({
               unit={unit}
               caretakers={unitData.caretakers.unitCaretakers}
             />
-          </div>
+          </Column>
           {unitData.unitOccupancies ? (
-            <div className="column is-4-desktop is-6-tablet">
+            <Column desktopWidth={'33.3333%'} tabletWidth={'50%'}>
               <Occupancy
                 filters={filters}
                 occupancies={unitData.unitOccupancies}
               />
-            </div>
+            </Column>
           ) : null}
         </UnitBasicsSection>
       </ContentArea>
 
       {unitData.placementProposals ? (
-        <ContentArea opaque>
-          <PlacementProposals
-            unitId={unit.id}
-            placementPlans={unitData.placementProposals}
-            loadUnitData={loadUnitData}
-          />
-        </ContentArea>
+        <Fragment>
+          <Gap size={'L'} />
+          <ContentArea opaque>
+            <PlacementProposals
+              unitId={unit.id}
+              placementPlans={unitData.placementProposals}
+              loadUnitData={loadUnitData}
+            />
+          </ContentArea>
+        </Fragment>
       ) : null}
 
       {unitData.placementPlans ? (
-        <ContentArea opaque>
-          <PlacementPlans placementPlans={unitData.placementPlans} />
-        </ContentArea>
+        <Fragment>
+          <Gap size={'L'} />
+          <ContentArea opaque>
+            <PlacementPlans placementPlans={unitData.placementPlans} />
+          </ContentArea>
+        </Fragment>
       ) : null}
 
       {isSupervisor && (
-        <ContentArea opaque>
-          <Placements
-            canManageChildren={isSupervisor}
-            filters={filters}
-            groups={unitData.groups}
-            placements={unitData.placements}
-            backupCares={unitData.backupCares}
-            savePosition={savePosition}
-            loadUnitData={loadUnitData}
-          />
-        </ContentArea>
+        <Fragment>
+          <Gap size={'L'} />
+          <ContentArea opaque>
+            <Placements
+              canManageChildren={isSupervisor}
+              filters={filters}
+              groups={unitData.groups}
+              placements={unitData.placements}
+              backupCares={unitData.backupCares}
+              savePosition={savePosition}
+              loadUnitData={loadUnitData}
+            />
+          </ContentArea>
+        </Fragment>
       )}
 
+      <Gap size={'L'} />
       <ContentArea opaque>
         <Groups
           unit={unit}
@@ -231,7 +248,10 @@ const UnitDetails = React.memo(function UnitDetails({
       </ContentArea>
 
       <RequireRole oneOf={['ADMIN', 'UNIT_SUPERVISOR']}>
-        <UnitAccessControl unitId={unit.id} />
+        <Gap size={'L'} />
+        <ContentArea opaque>
+          <UnitAccessControl unitId={unit.id} />
+        </ContentArea>
       </RequireRole>
     </Container>
   )

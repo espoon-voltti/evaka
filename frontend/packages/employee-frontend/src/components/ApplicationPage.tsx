@@ -14,7 +14,8 @@ import { getApplication } from 'api/applications'
 import { renderResult } from 'components/shared/atoms/state/async-rendering'
 import { TitleContext, TitleState } from 'state/title'
 import { useTranslation, Translations } from 'state/i18n'
-import { Container, ContentArea } from 'components/shared/alpha/layout'
+import { Container, ContentArea } from '~components/shared/layout/Container'
+import { Gap } from 'components/shared/layout/white-space'
 import styled from 'styled-components'
 import { FixedSpaceRow } from 'components/shared/layout/flex-helpers'
 import ReturnButton from 'components/shared/atoms/buttons/ReturnButton'
@@ -98,13 +99,14 @@ function ApplicationPage({ match }: RouteComponentProps<{ id: UUID }>) {
 
   return (
     <>
+      <Gap size={'L'} />
       <Container>
         <ReturnButton dataQa="close-application" />
         <FixedSpaceRow>
           <ApplicationArea opaque>
             {renderResult(application, renderApplication)}
           </ApplicationArea>
-          <NotesArea>
+          <NotesArea opaque={false}>
             <ApplicationNotes applicationId={applicationId} />
           </NotesArea>
         </FixedSpaceRow>

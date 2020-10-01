@@ -4,8 +4,9 @@
 
 import styled from 'styled-components'
 import React from 'react'
-import { Button, Buttons } from '~components/shared/alpha'
+import Button from '~components/shared/atoms/buttons/Button'
 import { useTranslation } from '~state/i18n'
+import { FixedSpaceRow } from '~components/shared/layout/flex-helpers'
 
 const ButtonsContainer = styled.div`
   display: flex;
@@ -28,12 +29,16 @@ function FormActions({
   const { i18n } = useTranslation()
   return (
     <ButtonsContainer>
-      <Buttons>
-        <Button onClick={onCancel}>{i18n.common.cancel}</Button>
-        <Button primary type="submit" disabled={disabled} dataQa={dataQa}>
-          {submitButtonText ?? i18n.common.confirm}
-        </Button>
-      </Buttons>
+      <FixedSpaceRow>
+        <Button onClick={onCancel} text={i18n.common.cancel} />
+        <Button
+          primary
+          type="submit"
+          disabled={disabled}
+          dataQa={dataQa}
+          text={submitButtonText ?? i18n.common.confirm}
+        />
+      </FixedSpaceRow>
     </ButtonsContainer>
   )
 }

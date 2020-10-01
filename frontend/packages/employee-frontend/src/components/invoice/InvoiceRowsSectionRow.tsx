@@ -4,10 +4,11 @@
 
 import React, { useEffect, useState } from 'react'
 import styled from 'styled-components'
-import classNames from 'classnames'
+
 import { faTrash } from 'icon-set'
 import LocalDate from '@evaka/lib-common/src/local-date'
-import { IconButton, Input, Table } from '~components/shared/alpha'
+import { Td, Tr } from 'components/shared/layout/Table'
+import InputField from '~components/shared/atoms/form/InputField'
 import Select, { SelectOptionProps } from '../common/Select'
 import DateRangeInput from '../common/DateRangeInput'
 import EuroInput from '../common/EuroInput'
@@ -15,16 +16,8 @@ import { useTranslation } from '../../state/i18n'
 import { isSuccess, Result } from '../../api'
 import { Product, InvoiceCodes } from '../../types/invoicing'
 import { round } from '../utils'
-import { EspooColours } from '../../utils/colours'
 import { formatCents, parseCents } from '../../utils/money'
-
-const CostCenterInput = styled.input`
-  width: 4em;
-
-  &.invalid {
-    border-color: ${EspooColours.orange};
-  }
-`
+import IconButton from '~components/shared/atoms/buttons/IconButton'
 
 interface InvoiceRowStub {
   product: Product
@@ -67,14 +60,14 @@ function InvoiceRowSectionRow({
 
   const producOpts: SelectOptionProps[] = isSuccess(invoiceCodes)
     ? invoiceCodes.data.products.map((product) => ({
-        id: product,
+        value: product,
         label: i18n.product[product]
       }))
     : []
 
   const subCostCenterOpts: SelectOptionProps[] = isSuccess(invoiceCodes)
     ? invoiceCodes.data.subCostCenters.map((subCostCenter) => ({
-        id: subCostCenter,
+        value: subCostCenter,
         label: subCostCenter
       }))
     : []
@@ -85,35 +78,36 @@ function InvoiceRowSectionRow({
     invoiceCodes.data.costCenters.includes(costCenter)
 
   return (
-    <Table.Row dataQa="invoice-details-invoice-row">
-      <Table.Td>
+    <Tr data-qa="invoice-details-invoice-row">
+      <Td>
         <div>
           {editable ? (
             <Select
               name="product"
               placeholder=" "
+              value={producOpts.filter((elem) => elem.value == product)}
               options={producOpts}
-              value={product}
-              onChange={(event: React.ChangeEvent<HTMLSelectElement>) =>
-                update({ product: event.target.value as Product })
+              onChange={(value) =>
+                value && 'value' in value
+                  ? update({ product: value.value as Product })
+                  : undefined
               }
-              dataQa="select-product"
+              data-qa="select-product"
             />
           ) : (
             <div>{i18n.product[product]}</div>
           )}
         </div>
-      </Table.Td>
-      <Table.Td>
+      </Td>
+      <Td>
         <div>
           {editable ? (
-            <Input
-              name="description"
+            <InputField
               placeholder={i18n.invoice.form.rows.description}
               type="text"
               value={description}
-              onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
-                update({ description: event.target.value.substring(0, 52) })
+              onChange={(value) =>
+                update({ description: value.substring(0, 52) })
               }
               dataQa="input-description"
             />
@@ -121,43 +115,46 @@ function InvoiceRowSectionRow({
             <div>{description}</div>
           )}
         </div>
-      </Table.Td>
-      <Table.Td>
+      </Td>
+      <Td>
         {editable ? (
-          <CostCenterInput
-            className={classNames('input', {
-              invalid: !costCenterValueIsValid
-            })}
-            name="costCenter"
+          <InputField
+            value={costCenter}
             type="text"
             placeholder={i18n.invoice.form.rows.costCenter}
-            value={costCenter}
-            onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
-              update({ costCenter: event.target.value })
-            }
+            onChange={(value) => update({ costCenter: value })}
             data-qa="input-cost-center"
+            info={
+              !costCenterValueIsValid
+                ? { text: 'Virheellinen arvo', status: 'warning' }
+                : undefined
+            }
           />
         ) : (
           <div>{costCenter}</div>
         )}
-      </Table.Td>
-      <Table.Td>
+      </Td>
+      <Td>
         {editable ? (
           <Select
             name="subCostCenter"
             placeholder=" "
+            value={subCostCenterOpts.filter(
+              (elem) => elem.value == subCostCenter
+            )}
             options={subCostCenterOpts}
-            value={subCostCenter ?? undefined}
-            onChange={(event: React.ChangeEvent<HTMLSelectElement>) =>
-              update({ subCostCenter: event.target.value })
+            onChange={(value) =>
+              value && 'value' in value
+                ? update({ subCostCenter: value.value })
+                : undefined
             }
-            dataQa="select-sub-cost-center"
+            data-qa="select-sub-cost-center"
           />
         ) : (
           <div>{subCostCenter}</div>
         )}
-      </Table.Td>
-      <Table.Td>
+      </Td>
+      <Td>
         {editable ? (
           <DateRangeInput
             start={periodStart}
@@ -173,17 +170,15 @@ function InvoiceRowSectionRow({
         ) : (
           `${periodStart.format()} - ${periodEnd.format()}`
         )}
-      </Table.Td>
-      <Table.Td>
+      </Td>
+      <Td>
         {editable ? (
-          <Input
+          <InputField
             value={amount ? amount.toString() : ''}
             type={'number'}
-            onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
+            onChange={(value) =>
               update({
-                amount: round(
-                  Math.max(1, Math.min(1000, Number(event.target.value)))
-                )
+                amount: round(Math.max(1, Math.min(1000, Number(value))))
               })
             }
             dataQa="input-amount"
@@ -191,8 +186,8 @@ function InvoiceRowSectionRow({
         ) : (
           amount
         )}
-      </Table.Td>
-      <Table.Td align="right">
+      </Td>
+      <Td align="right">
         {editable ? (
           <UnitPriceInput
             value={unitPrice}
@@ -201,11 +196,11 @@ function InvoiceRowSectionRow({
         ) : (
           formatCents(unitPrice)
         )}
-      </Table.Td>
-      <Table.Td align="right">
+      </Td>
+      <Td align="right">
         {formatCents(editable ? amount * unitPrice : price)}
-      </Table.Td>
-      <Table.Td>
+      </Td>
+      <Td>
         {editable ? (
           <IconButton
             icon={faTrash}
@@ -213,8 +208,8 @@ function InvoiceRowSectionRow({
             dataQa="delete-invoice-row-button"
           />
         ) : null}
-      </Table.Td>
-    </Table.Row>
+      </Td>
+    </Tr>
   )
 }
 

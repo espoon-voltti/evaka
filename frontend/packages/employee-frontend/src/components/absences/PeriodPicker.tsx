@@ -3,12 +3,15 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
+import * as _ from 'lodash'
+
 import LocalDate from '@evaka/lib-common/src/local-date'
 import { useTranslation } from '~state/i18n'
 import './PeriodPicker.scss'
-import { Title } from '~components/shared/alpha'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import Title from '~components/shared/atoms/Title'
 import { faChevronLeft, faChevronRight } from 'icon-set'
+import IconButton from '~components/shared/atoms/buttons/IconButton'
+import { Gap } from '~components/shared/layout/white-space'
 
 export enum PeriodPickerMode {
   MONTH
@@ -40,19 +43,25 @@ function PeriodPicker({ mode, onChange, date }: Props) {
 
   return (
     <div className={'period-picker'}>
-      <button
+      <IconButton
         onClick={decrease}
         className={'is-plain'}
         data-qa="period-picker-previous-month"
-      >
-        <FontAwesomeIcon icon={faChevronLeft} />
-      </button>
-      <Title size={3} dataQa="period-picker-month">
-        {i18n.datePicker.months[date.getMonth() - 1]} {date.getYear()}
+        icon={faChevronLeft}
+        gray
+      />
+      <Gap horizontal size={'L'} />
+      <Title size={3} data-qa="period-picker-month" noMargin>
+        {_.startCase(i18n.datePicker.months[date.getMonth() - 1])}{' '}
+        {date.getYear()}
       </Title>
-      <button onClick={increase} data-qa="period-picker-next-month">
-        <FontAwesomeIcon icon={faChevronRight} />
-      </button>
+      <Gap horizontal size={'L'} />
+      <IconButton
+        onClick={increase}
+        data-qa="period-picker-next-month"
+        icon={faChevronRight}
+        gray
+      />
     </div>
   )
 }

@@ -4,7 +4,8 @@
 
 import React, { useState } from 'react'
 import { format, startOfMonth, subMonths } from 'date-fns'
-import { ContentArea, Title } from '~components/shared/alpha'
+import { ContentArea } from '~components/shared/layout/Container'
+import Title from '~components/shared/atoms/Title'
 import { generateFeeDecisions } from '../../../api/invoicing'
 import styled from 'styled-components'
 
@@ -22,7 +23,7 @@ function GeneratorButton(props: { reload: () => void }) {
   const [targetHeads, setTargetHeads] = useState<string[]>([])
 
   return (
-    <ContentArea opaque={true}>
+    <ContentArea opaque>
       <Title size={3}>Luonnosten generointi</Title>
       <Form>
         <label>Päämiehet (erottimena \s tai ,)</label>

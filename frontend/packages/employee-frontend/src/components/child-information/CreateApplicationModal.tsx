@@ -16,7 +16,7 @@ import PersonSearch from 'components/common/PersonSearch'
 import { UUID } from 'types'
 import { DatePicker } from 'components/common/DatePicker'
 import LocalDate from '@evaka/lib-common/src/local-date'
-import SelectWithIcon from 'components/common/Select'
+import Select from 'components/common/Select'
 import { ApplicationType } from 'types/application'
 import {
   createPaperApplication,
@@ -176,10 +176,10 @@ function CreateApplicationModal({
                   label={i18nView.personTypes.GUARDIAN}
                   onChange={() => setPersonType('GUARDIAN')}
                 />
-                <div data-qa="select-guardian">
-                  <SelectWithIcon
+                <div>
+                  <Select
                     options={guardians.map((guardian) => ({
-                      id: guardian.id,
+                      value: guardian.id,
                       label: formatName(
                         guardian.firstName,
                         guardian.lastName,
@@ -187,9 +187,24 @@ function CreateApplicationModal({
                         false
                       )
                     }))}
-                    value={guardianId}
-                    onChange={(e) => setGuardiaId(e.target.value)}
+                    onChange={(value) =>
+                      value && 'value' in value
+                        ? setGuardiaId(value.value)
+                        : undefined
+                    }
+                    value={guardians
+                      .filter((guardian) => guardian.id === guardianId)
+                      .map((guardian) => ({
+                        value: guardian.id,
+                        label: formatName(
+                          guardian.firstName,
+                          guardian.lastName,
+                          i18n,
+                          false
+                        )
+                      }))}
                     onFocus={() => setPersonType('GUARDIAN')}
+                    data-qa="select-guardian"
                   />
                 </div>
               </div>
@@ -241,13 +256,20 @@ function CreateApplicationModal({
         <div>
           <Label>{i18nView.applicationType}</Label>
           <div>
-            <SelectWithIcon
+            <Select
               options={applicationTypes.map((type) => ({
-                id: type,
+                value: type,
                 label: i18nView.applicationTypes[type]
               }))}
-              value={type}
-              onChange={(e) => setType(e.target.value as ApplicationType)}
+              onChange={(value) =>
+                value && 'value' in value
+                  ? setType(value.value as ApplicationType)
+                  : undefined
+              }
+              value={{
+                value: 'DAYCARE',
+                label: i18nView.applicationTypes['DAYCARE']
+              }}
             />
           </div>
         </div>

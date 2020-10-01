@@ -3,7 +3,8 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useState } from 'react'
-import { Buttons, Button } from '~components/shared/alpha'
+
+import Button from '~components/shared/atoms/buttons/Button'
 import { useTranslation } from '../../state/i18n'
 import { FeeDecisionDetailed } from '../../types/invoicing'
 import {
@@ -14,6 +15,7 @@ import {
 } from '../../api/invoicing'
 import { ErrorMessage } from '~components/fee-decision-details/FeeDecisionDetailsPage'
 import { Result } from '~api'
+import { FixedSpaceRow } from '~components/shared/layout/flex-helpers'
 
 interface Props {
   decision: FeeDecisionDetailed
@@ -70,7 +72,7 @@ const Actions = React.memo(function Actions({
   const isWaiting = decision.status === 'WAITING_FOR_MANUAL_SENDING'
 
   return (
-    <Buttons>
+    <FixedSpaceRow>
       {error ? <ErrorMessage>{i18n.common.error.unknown}</ErrorMessage> : null}
       {isDraft ? (
         <>
@@ -78,24 +80,21 @@ const Actions = React.memo(function Actions({
             onClick={goToDecisions}
             disabled={!modified}
             dataQa="decision-actions-close"
-          >
-            {i18n.feeDecisions.buttons.close}
-          </Button>
+            text={i18n.feeDecisions.buttons.close}
+          />
           <Button
             onClick={updateType}
             disabled={!modified}
             dataQa="decision-actions-save"
-          >
-            {i18n.feeDecisions.buttons.save}
-          </Button>
+            text={i18n.feeDecisions.buttons.save}
+          />
           <Button
             primary
             onClick={confirmDecision}
             disabled={actionInFlight || modified}
             dataQa="decision-actions-confirm-decision"
-          >
-            {i18n.feeDecisions.buttons.createDecision(1)}
-          </Button>
+            text={i18n.feeDecisions.buttons.createDecision(1)}
+          />
         </>
       ) : null}
       {isWaiting ? (
@@ -104,11 +103,10 @@ const Actions = React.memo(function Actions({
           onClick={markSent}
           disabled={actionInFlight}
           dataQa="decision-actions-mark-sent"
-        >
-          {i18n.feeDecisions.buttons.markSent}
-        </Button>
+          text={i18n.feeDecisions.buttons.markSent}
+        />
       ) : null}
-    </Buttons>
+    </FixedSpaceRow>
   )
 })
 

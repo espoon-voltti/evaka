@@ -8,7 +8,15 @@ import { useTranslation } from '~state/i18n'
 import { useEffect } from 'react'
 import { isFailure, isLoading, isSuccess, Loading } from '~api'
 import { useContext } from 'react'
-import { Loader, Table } from '~components/shared/alpha'
+import Loader from '~components/shared/atoms/Loader'
+import {
+  Table,
+  Tbody,
+  Td,
+  Th,
+  Thead,
+  Tr
+} from '~components/shared/layout/Table'
 import _ from 'lodash'
 import { Link } from 'react-router-dom'
 import { PersonDetails } from '~/types/person'
@@ -48,22 +56,18 @@ const Guardians = React.memo(function Guardians({ id, open }: Props) {
       ? _.orderBy(guardians.data, ['lastName', 'firstName'], ['asc']).map(
           (guardian: PersonDetails) => {
             return (
-              <Table.Row key={`${guardian.id}`} dataQa="table-guardian-row">
-                <NameTd dataQa="guardian-name">
+              <Tr key={`${guardian.id}`} data-qa="table-guardian-row">
+                <NameTd data-qa="guardian-name">
                   <Link to={`/profile/${guardian.id}`}>
                     {formatName(guardian.firstName, guardian.lastName, i18n)}
                   </Link>
                 </NameTd>
-                <Table.Td dataQa="guardian-ssn">
-                  {guardian.socialSecurityNumber}
-                </Table.Td>
-                <Table.Td dataQa="guardian-age">
-                  {getAge(guardian.dateOfBirth)}
-                </Table.Td>
-                <Table.Td dataQa="guardian-street-address">
+                <Td data-qa="guardian-ssn">{guardian.socialSecurityNumber}</Td>
+                <Td data-qa="guardian-age">{getAge(guardian.dateOfBirth)}</Td>
+                <Td data-qa="guardian-street-address">
                   {printableAddresses(guardian)}
-                </Table.Td>
-              </Table.Row>
+                </Td>
+              </Tr>
             )
           }
         )
@@ -77,17 +81,17 @@ const Guardians = React.memo(function Guardians({ id, open }: Props) {
         startCollapsed={!open}
         dataQa="person-guardians-collapsible"
       >
-        <Table.Table dataQa="table-of-guardians">
-          <Table.Head>
-            <Table.Row>
-              <Table.Th>{i18n.personProfile.name}</Table.Th>
-              <Table.Th>{i18n.personProfile.ssn}</Table.Th>
-              <Table.Th>{i18n.personProfile.age}</Table.Th>
-              <Table.Th>{i18n.personProfile.streetAddress}</Table.Th>
-            </Table.Row>
-          </Table.Head>
-          <Table.Body>{renderGuardians()}</Table.Body>
-        </Table.Table>
+        <Table data-qa="table-of-guardians">
+          <Thead>
+            <Tr>
+              <Th>{i18n.personProfile.name}</Th>
+              <Th>{i18n.personProfile.ssn}</Th>
+              <Th>{i18n.personProfile.age}</Th>
+              <Th>{i18n.personProfile.streetAddress}</Th>
+            </Tr>
+          </Thead>
+          <Tbody>{renderGuardians()}</Tbody>
+        </Table>
         {isLoading(guardians) && <Loader />}
         {isFailure(guardians) && <div>{i18n.common.loadingFailed}</div>}
       </CollapsibleSection>

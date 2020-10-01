@@ -52,7 +52,7 @@ export default class AbsencesPage {
   )
   readonly btnSaveAbsence: Selector = Selector('[data-qa="modal-okBtn"]')
   readonly staffAttendanceInput: Selector = Selector(
-    '.status.staff-attendance-row > td:nth-child(2) > div > div > input'
+    '.staff-attendance-row > td:nth-child(2) > div > div > input'
   )
 
   absenceIndicatorRight(type: AbsenceType): Selector {
@@ -94,7 +94,7 @@ export default class AbsencesPage {
       .expect(this.absenceCell.classNames)
       .contains('absence-cell-selected')
     await t.click(this.btnAddAbsence)
-    await t.click(Selector(`#${type}`))
+    await t.click(Selector(`#${type}`, { timeout: 50 }))
     await t.expect(this.checkboxBillable.checked).eql(true)
     await t.click(this.btnSaveAbsence)
   }

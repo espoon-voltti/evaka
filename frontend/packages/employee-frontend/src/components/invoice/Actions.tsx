@@ -4,11 +4,12 @@
 
 import React, { useState } from 'react'
 import styled from 'styled-components'
-import { Buttons, Button } from '~components/shared/alpha'
+import Button from '~components/shared/atoms/buttons/Button'
 import { useTranslation } from '../../state/i18n'
 import { updateInvoice, markInvoiceSent } from '../../api/invoicing'
 import { InvoiceDetailed } from '../../types/invoicing'
 import { EspooColours } from '../../utils/colours'
+import { FixedSpaceRow } from '~components/shared/layout/flex-helpers'
 
 const ErrorMessage = styled.div`
   color: ${EspooColours.red};
@@ -49,7 +50,7 @@ const Actions = React.memo(function Actions({
   }
 
   return (
-    <Buttons>
+    <FixedSpaceRow>
       {error ? <ErrorMessage>{i18n.common.error.unknown}</ErrorMessage> : null}
       {[
         invoice.status === 'WAITING_FOR_SENDING' ? (
@@ -59,9 +60,8 @@ const Actions = React.memo(function Actions({
             onClick={markSent}
             disabled={actionInFlight}
             dataQa="invoice-actions-mark-sent"
-          >
-            {i18n.invoice.form.buttons.markSent}
-          </Button>
+            text={i18n.invoice.form.buttons.markSent}
+          />
         ) : null,
         editable ? (
           <Button
@@ -70,12 +70,11 @@ const Actions = React.memo(function Actions({
             onClick={saveChanges}
             disabled={actionInFlight}
             dataQa="invoice-actions-save-changes"
-          >
-            {i18n.invoice.form.buttons.saveChanges}
-          </Button>
+            text={i18n.invoice.form.buttons.saveChanges}
+          />
         ) : null
       ]}
-    </Buttons>
+    </FixedSpaceRow>
   )
 })
 

@@ -5,7 +5,7 @@
 import React, { useContext, useEffect } from 'react'
 import * as _ from 'lodash'
 import { UUID } from '~types'
-import { Loader } from '~components/shared/alpha'
+import Loader from '~components/shared/atoms/Loader'
 import { useTranslation } from '~state/i18n'
 import { faHiking } from 'icon-set'
 import { ChildContext } from '~state'

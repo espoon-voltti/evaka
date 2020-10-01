@@ -9,12 +9,12 @@
 .error-message-modal {
   &-error {
     .modal-icon {
-      background-color: $red;
+      background-color: #db0c41;
     }
   }
   &-warning {
     .modal-icon {
-      background-color: $orange;
+      background-color: #ff7300;
     }
   }
 }

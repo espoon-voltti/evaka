@@ -3,13 +3,14 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useContext } from 'react'
+import * as _ from 'lodash'
+
 import { useTranslation } from '~/state/i18n'
 import { isFailure, isLoading } from '~/api'
 import { ChildContext, ChildState } from '~/state/child'
 import { faUser } from 'icon-set'
-import { Loader, Table } from '~components/shared/alpha'
-
-import * as _ from 'lodash'
+import { Table, Tbody, Td, Th, Thead, Tr } from 'components/shared/layout/Table'
+import Loader from '~components/shared/atoms/Loader'
 import { Parentship } from '~types/fridge'
 import { Link } from 'react-router-dom'
 import { getStatusLabelByDateRange } from '~utils/date'
@@ -32,32 +33,30 @@ const FridgeParents = React.memo(function FridgeParents({ open }: Props) {
     }
 
     return (
-      <Table.Table>
-        <Table.Head>
-          <Table.Row>
-            <Table.Th>{i18n.childInformation.fridgeParents.name}</Table.Th>
-            <Table.Th>{i18n.childInformation.fridgeParents.ssn}</Table.Th>
-            <Table.Th>{i18n.childInformation.fridgeParents.startDate}</Table.Th>
-            <Table.Th>{i18n.childInformation.fridgeParents.endDate}</Table.Th>
-            <Table.Th>{i18n.childInformation.fridgeParents.status}</Table.Th>
-          </Table.Row>
-        </Table.Head>
-        <Table.Body>
+      <Table>
+        <Thead>
+          <Tr>
+            <Th>{i18n.childInformation.fridgeParents.name}</Th>
+            <Th>{i18n.childInformation.fridgeParents.ssn}</Th>
+            <Th>{i18n.childInformation.fridgeParents.startDate}</Th>
+            <Th>{i18n.childInformation.fridgeParents.endDate}</Th>
+            <Th>{i18n.childInformation.fridgeParents.status}</Th>
+          </Tr>
+        </Thead>
+        <Tbody>
           {_.orderBy(parentships.data, ['startDate'], ['desc']).map(
             (parentship: Parentship) => (
-              <Table.Row key={parentship.id}>
-                <Table.Td>
+              <Tr key={parentship.id}>
+                <Td>
                   <Link to={`/profile/${parentship.headOfChildId}`}>
                     {parentship.headOfChild.lastName}{' '}
                     {parentship.headOfChild.firstName}
                   </Link>
-                </Table.Td>
-                <Table.Td>
-                  {parentship.headOfChild.socialSecurityNumber}
-                </Table.Td>
-                <Table.Td>{parentship.startDate.format()}</Table.Td>
-                <Table.Td>{parentship.endDate?.format()}</Table.Td>
-                <Table.Td>
+                </Td>
+                <Td>{parentship.headOfChild.socialSecurityNumber}</Td>
+                <Td>{parentship.startDate.format()}</Td>
+                <Td>{parentship.endDate?.format()}</Td>
+                <Td>
                   <StatusLabel
                     status={
                       parentship.conflict
@@ -65,12 +64,12 @@ const FridgeParents = React.memo(function FridgeParents({ open }: Props) {
                         : getStatusLabelByDateRange(parentship)
                     }
                   />
-                </Table.Td>
-              </Table.Row>
+                </Td>
+              </Tr>
             )
           )}
-        </Table.Body>
-      </Table.Table>
+        </Tbody>
+      </Table>
     )
   }
 

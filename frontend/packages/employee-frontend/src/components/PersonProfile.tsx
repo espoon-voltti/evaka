@@ -5,7 +5,9 @@
 import React, { Fragment, useContext, useMemo } from 'react'
 import { RouteComponentProps } from 'react-router'
 import { UUID } from '~types'
-import { Container, ContentArea, Table, Title } from '~components/shared/alpha'
+import { Container, ContentArea } from '~components/shared/layout/Container'
+import Title from '~components/shared/atoms/Title'
+import { Td } from 'components/shared/layout/Table'
 import PersonFridgePartner from '~components/person-profile/PersonFridgePartner'
 import PersonFridgeChild from '~components/person-profile/PersonFridgeChild'
 import PersonFridgeHead from '~components/person-profile/PersonFridgeHead'
@@ -25,20 +27,21 @@ import styled from 'styled-components'
 import FamilyOverview from './person-profile/PersonFamilyOverview'
 import { useTranslation } from '~state/i18n'
 import CircularLabel from '~components/common/CircularLabel'
+import { Gap } from './shared/layout/white-space'
 
-export const NameTd = styled(Table.Td)`
+export const NameTd = styled(Td)`
   width: 30%;
 `
 
-export const DateTd = styled(Table.Td)`
+export const DateTd = styled(Td)`
   width: 12%;
 `
 
-export const ButtonsTd = styled(Table.Td)`
+export const ButtonsTd = styled(Td)`
   width: 13%;
 `
 
-export const StatusTd = styled(Table.Td)`
+export const StatusTd = styled(Td)`
   width: 13%;
 `
 
@@ -112,10 +115,11 @@ const PersonProfile = React.memo(function PersonProfile({
 
   return (
     <Container>
+      <Gap size={'L'} />
       <ContentArea opaque>
         <div className="person-profile-wrapper" data-person-id={id}>
           <HeaderRow>
-            <Title size={2}> {i18n.personProfile.title}</Title>
+            <Title size={1}> {i18n.personProfile.title}</Title>
             <InfoLabelContainer>
               {isSuccess(person) && person.data.dateOfDeath && (
                 <CircularLabel
@@ -135,7 +139,6 @@ const PersonProfile = React.memo(function PersonProfile({
               )}
             </InfoLabelContainer>
           </HeaderRow>
-          <div className="separator-gap-small" />
           <PersonFridgeHead id={id} />
           {layout.map(({ component, open }) => {
             const Component = components[component]

@@ -52,11 +52,16 @@ const incomeSum = Selector('[data-qa="income-sum-income"]')
 const expensesSum = Selector('[data-qa="income-sum-expenses"]')
 const toggleIncomeItemButton = Selector('[data-qa="toggle-income-item"]')
 const editIncomeItemButton = Selector('[data-qa="edit-income-item"]')
+const coefficient = (type: string) =>
+  Selector(`[data-qa="income-coefficient-select-${type}"]`)
 
-async function chooseCoefficient(t: TestController, type: string, id: string) {
-  const selectInput = Selector(`[data-qa="income-coefficient-select-${type}"]`)
-  await t.click(selectInput)
-  await t.click(selectInput.find(`#${id}`))
+async function chooseCoefficient(
+  t: TestController,
+  type: string,
+  input: string
+) {
+  await t.typeText(coefficient(type).find('#react-select-2-input'), input)
+  await t.click(coefficient(type).find(`[id^="react-select-2-option-"`))
 }
 
 test('Create a new max fee accepted income.', async (t) => {
@@ -122,18 +127,6 @@ test('Income editor save button is disabled with invalid values', async (t) => {
   await t.typeText(incomeInput('MAIN_INCOME'), '100', { replace: true })
   await t.expect(saveIncomeButton.hasAttribute('disabled')).notOk()
 
-  // invalid date
-  await t.typeText(incomeStartDateInput, '31', { replace: true })
-  await t.typeText(incomeStartDateInput, '02')
-  await t.typeText(incomeStartDateInput, '20')
-  await t.expect(saveIncomeButton.hasAttribute('disabled')).ok()
-
-  // not a date
-  await t.typeText(incomeStartDateInput, 'aa', { replace: true })
-  await t.typeText(incomeStartDateInput, 'bb')
-  await t.typeText(incomeStartDateInput, 'cc')
-  await t.expect(saveIncomeButton.hasAttribute('disabled')).ok()
-
   // inverted date range
   await t.typeText(incomeStartDateInput, '31', { replace: true })
   await t.typeText(incomeStartDateInput, '01')
@@ -193,7 +186,7 @@ test('Income coefficients are saved and affect the sum.', async (t) => {
   await t.click(incomeEffect('INCOME'))
 
   await t.typeText(incomeInput('MAIN_INCOME'), '100000', { replace: true })
-  await chooseCoefficient(t, 'MAIN_INCOME', 'YEARLY')
+  await chooseCoefficient(t, 'MAIN_INCOME', 'Vuosi')
 
   await t.typeText(incomeInput('ALIMONY'), '50')
   await t.typeText(incomeInput('ALL_EXPENSES'), '35,75')

@@ -2,7 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useCallback, useState } from 'react'
+import React from 'react'
+import * as _ from 'lodash'
+import { Link } from 'react-router-dom'
+
 import { faFileAlt } from 'icon-set'
 import { UUID } from '~types'
 import { useTranslation } from '~state/i18n'
@@ -10,9 +13,9 @@ import { useEffect } from 'react'
 import { isFailure, isLoading, isSuccess, Loading } from '~api'
 import { useContext } from 'react'
 import { PersonContext } from '~state/person'
-import { Collapsible, Loader, Table } from '~components/shared/alpha'
-import * as _ from 'lodash'
-import { Link } from 'react-router-dom'
+import { Table, Tbody, Td, Th, Thead, Tr } from 'components/shared/layout/Table'
+import Loader from '~components/shared/atoms/Loader'
+import CollapsibleSection from 'components/shared/molecules/CollapsibleSection'
 import { getGuardianApplicationSummaries } from '~api/person'
 import { ApplicationSummary } from '~types/application'
 import { DateTd, NameTd, StatusTd } from '~components/PersonProfile'
@@ -29,10 +32,6 @@ const PersonApplications = React.memo(function PersonApplications({
 }: Props) {
   const { i18n } = useTranslation()
   const { applications, setApplications } = useContext(PersonContext)
-  const [toggled, setToggled] = useState(open)
-  const toggle = useCallback(() => setToggled((toggled) => !toggled), [
-    setToggled
-  ])
 
   useEffect(() => {
     setApplications(Loading())
@@ -49,38 +48,38 @@ const PersonApplications = React.memo(function PersonApplications({
           ['desc', 'desc']
         ).map((application: ApplicationSummary) => {
           return (
-            <Table.Row
+            <Tr
               key={`${application.applicationId}`}
-              dataQa="table-application-row"
+              data-qa="table-application-row"
             >
-              <NameTd dataQa="application-child-name">
+              <NameTd data-qa="application-child-name">
                 <Link to={`/child-information/${application.childId}`}>
                   {application.childName}
                 </Link>
               </NameTd>
-              <Table.Td dataQa="application-preferred-unit-id">
+              <Td data-qa="application-preferred-unit-id">
                 <Link to={`/units/${application.preferredUnitId}`}>
                   {application.preferredUnitName}
                 </Link>
-              </Table.Td>
-              <DateTd dataQa="application-start-date">
+              </Td>
+              <DateTd data-qa="application-start-date">
                 {application.startDate.format()}
               </DateTd>
-              <DateTd dataQa="application-sent-date">
+              <DateTd data-qa="application-sent-date">
                 {application.sentDate?.format()}
               </DateTd>
-              <Table.Td dataQa="application-type">
+              <Td data-qa="application-type">
                 {
                   i18n.personProfile.application.types[
                     application.type.toUpperCase()
                   ]
                 }
-              </Table.Td>
+              </Td>
               <StatusTd>
                 {i18n.personProfile.application.statuses[application.status] ??
                   application.status}
               </StatusTd>
-              <Table.Td>
+              <Td>
                 <Link to={`/applications/${application.applicationId}`}>
                   <IconButton
                     onClick={() => undefined}
@@ -88,40 +87,37 @@ const PersonApplications = React.memo(function PersonApplications({
                     altText={i18n.personProfile.application.open}
                   />
                 </Link>
-              </Table.Td>
-            </Table.Row>
+              </Td>
+            </Tr>
           )
         })
       : null
 
   return (
     <div>
-      <Collapsible
+      <CollapsibleSection
         icon={faFileAlt}
         title={i18n.personProfile.applications}
-        open={toggled}
-        onToggle={toggle}
+        startCollapsed={!open}
         dataQa="person-applications-collapsible"
       >
-        <Table.Table dataQa="table-of-applications">
-          <Table.Head>
-            <Table.Row>
-              <Table.Th>{i18n.personProfile.application.child}</Table.Th>
-              <Table.Th>
-                {i18n.personProfile.application.preferredUnit}
-              </Table.Th>
-              <Table.Th>{i18n.personProfile.application.startDate}</Table.Th>
-              <Table.Th>{i18n.personProfile.application.sentDate}</Table.Th>
-              <Table.Th>{i18n.personProfile.application.type}</Table.Th>
-              <Table.Th>{i18n.personProfile.application.status}</Table.Th>
-              <Table.Th>{i18n.personProfile.application.open}</Table.Th>
-            </Table.Row>
-          </Table.Head>
-          <Table.Body>{renderApplications()}</Table.Body>
-        </Table.Table>
+        <Table data-qa="table-of-applications">
+          <Thead>
+            <Tr>
+              <Th>{i18n.personProfile.application.child}</Th>
+              <Th>{i18n.personProfile.application.preferredUnit}</Th>
+              <Th>{i18n.personProfile.application.startDate}</Th>
+              <Th>{i18n.personProfile.application.sentDate}</Th>
+              <Th>{i18n.personProfile.application.type}</Th>
+              <Th>{i18n.personProfile.application.status}</Th>
+              <Th>{i18n.personProfile.application.open}</Th>
+            </Tr>
+          </Thead>
+          <Tbody>{renderApplications()}</Tbody>
+        </Table>
         {isLoading(applications) && <Loader />}
         {isFailure(applications) && <div>{i18n.common.loadingFailed}</div>}
-      </Collapsible>
+      </CollapsibleSection>
     </div>
   )
 })

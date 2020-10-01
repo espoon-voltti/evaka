@@ -4,7 +4,7 @@
 
 import React, { Fragment, useContext, useState } from 'react'
 import styled from 'styled-components'
-import { Title } from '~components/shared/alpha'
+import Title from '~components/shared/atoms/Title'
 import { faChevronUp } from 'icon-set'
 import { fasExclamationTriangle } from 'icon-set'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -119,7 +119,7 @@ function Placements() {
       {isSuccess(placementDraft) && (
         <Fragment>
           <ToggleHeader onClick={() => setOpen(!open)}>
-            <Title size={4} tag={2}>
+            <Title size={4}>
               {i18n.placementDraft.currentPlacements}
               <FontAwesomeIcon
                 icon={faChevronUp}

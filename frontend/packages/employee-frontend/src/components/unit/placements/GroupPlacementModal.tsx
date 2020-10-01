@@ -3,11 +3,14 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useState, useContext } from 'react'
+import styled from 'styled-components'
+
 import LocalDate from '@evaka/lib-common/src/local-date'
 import { useTranslation } from '~state/i18n'
 import { UIContext } from '~state/ui'
 import FormModal from '~components/common/FormModal'
-import { Section } from '~components/shared/alpha'
+import Section from '~components/shared/layout/Section'
+import { FixedSpaceColumn } from 'components/shared/layout/flex-helpers'
 import { isFailure, Result } from '~api'
 import { faChild } from 'icon-set'
 import { createPlacement } from '~api/unit'
@@ -17,6 +20,10 @@ import { DatePicker } from '~components/common/DatePicker'
 import { formatName } from '~utils'
 import { DaycareGroupPlacementDetailed, DaycareGroup } from '~types/unit'
 import { EVAKA_START } from '~constants'
+
+const Bold = styled.div`
+  font-weight: 600;
+`
 
 interface Props {
   groups: DaycareGroup[]
@@ -128,54 +135,57 @@ export default React.memo(function GroupPlacementModal({
       resolveDisabled={form.errors.length > 0}
       resolve={() => submitForm()}
     >
-      <Section>
-        <div className="bold">{i18n.unit.placements.modal.child}</div>
-        <span>{formatName(child.firstName, child.lastName, i18n)}</span>
-      </Section>
-      <Section>
-        <div className="bold">{i18n.unit.placements.modal.group}</div>
-        <Select
-          options={openGroups.map((group) => ({
-            id: group.id,
-            label: group.name
-          }))}
-          value={form.groupId || undefined}
-          onChange={(event) =>
-            assignFormValues({
-              groupId: event.target.value
-            })
-          }
-        />
-      </Section>
-      <Section>
-        <div className="bold">{i18n.common.form.startDate}</div>
-        <DatePicker
-          date={form.startDate}
-          onChange={(startDate) => assignFormValues({ startDate })}
-          type="full-width"
-          minDate={minDate}
-          maxDate={maxDate}
-        />
-      </Section>
-      <Section>
-        <div className="bold">{i18n.common.form.endDate}</div>
-        <DatePicker
-          date={form.endDate}
-          onChange={(endDate) => assignFormValues({ endDate })}
-          type="full-width"
-          minDate={minDate}
-          maxDate={maxDate}
-        />
-      </Section>
-      {form.errors.length > 0 && (
+      <FixedSpaceColumn>
         <Section>
-          {form.errors.map((error, index) => (
-            <div className="error" key={index}>
-              {error}
-            </div>
-          ))}
+          <Bold>{i18n.unit.placements.modal.child}</Bold>
+          <span>{formatName(child.firstName, child.lastName, i18n)}</span>
         </Section>
-      )}
+        <Section>
+          <Bold>{i18n.unit.placements.modal.group}</Bold>
+          <Select
+            options={openGroups.map((group) => ({
+              value: group.id,
+              label: group.name
+            }))}
+            onChange={(value) =>
+              value && 'value' in value
+                ? assignFormValues({
+                    groupId: value.value
+                  })
+                : undefined
+            }
+          />
+        </Section>
+        <Section>
+          <Bold>{i18n.common.form.startDate}</Bold>
+          <DatePicker
+            date={form.startDate}
+            onChange={(startDate) => assignFormValues({ startDate })}
+            type="full-width"
+            minDate={minDate}
+            maxDate={maxDate}
+          />
+        </Section>
+        <Section>
+          <Bold>{i18n.common.form.endDate}</Bold>
+          <DatePicker
+            date={form.endDate}
+            onChange={(endDate) => assignFormValues({ endDate })}
+            type="full-width"
+            minDate={minDate}
+            maxDate={maxDate}
+          />
+        </Section>
+        {form.errors.length > 0 && (
+          <Section>
+            {form.errors.map((error, index) => (
+              <div className="error" key={index}>
+                {error}
+              </div>
+            ))}
+          </Section>
+        )}
+      </FixedSpaceColumn>
     </FormModal>
   )
 })

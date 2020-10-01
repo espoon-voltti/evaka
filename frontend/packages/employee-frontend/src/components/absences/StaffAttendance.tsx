@@ -7,9 +7,10 @@ import React, {
   useCallback,
   useContext,
   useEffect,
+  useRef,
   useState
 } from 'react'
-import { Table } from '~components/shared/alpha'
+import { Td, Tr } from '~components/shared/layout/Table'
 import { DisabledCell } from '~components/absences/AbsenceCell'
 import { useTranslation } from '~state/i18n'
 import { AbsencesContext } from '~state/absence'
@@ -31,6 +32,7 @@ type Props = {
 }
 
 export default memo(function StaffAttendance({ groupId, emptyCols }: Props) {
+  const isMountedRef = useRef(true)
   const { selectedDate } = useContext(AbsencesContext)
 
   const [attendance, setAttendance] = useState<Result<StaffAttendanceGroup>>(
@@ -38,14 +40,32 @@ export default memo(function StaffAttendance({ groupId, emptyCols }: Props) {
   )
 
   const refreshAttendances = useCallback(() => {
+    isMountedRef.current = true
+
     void getStaffAttendances(groupId, {
       year: selectedDate.getYear(),
       month: selectedDate.getMonth()
-    }).then(setAttendance)
+    }).then((r) => {
+      if (isMountedRef.current) {
+        setAttendance(r)
+      }
+    })
+
+    return () => {
+      isMountedRef.current = false
+    }
   }, [groupId, selectedDate])
 
   useEffect(() => {
-    refreshAttendances()
+    isMountedRef.current = true
+
+    if (isMountedRef.current) {
+      refreshAttendances()
+    }
+
+    return () => {
+      isMountedRef.current = false
+    }
   }, [groupId, selectedDate])
 
   const updateAttendances = (attendance: StaffAttendance) =>
@@ -63,7 +83,7 @@ export default memo(function StaffAttendance({ groupId, emptyCols }: Props) {
 interface StaffAttendanceRowProps {
   attendanceGroup: StaffAttendanceGroup
   emptyCols: number[]
-  updateAttendances: (staffAttendance: StaffAttendance) => Promise<void>
+  updateAttendances: (staffAttendance: StaffAttendance) => Promise<() => void>
 }
 
 const StaffAttendanceRow = memo(function StaffAttendanceRow({
@@ -83,33 +103,33 @@ const StaffAttendanceRow = memo(function StaffAttendanceRow({
   }
 
   return (
-    <Table.Row className={'staff-attendance-row'}>
-      <Table.Td colSpan={2}>{i18n.absences.table.staffRow}</Table.Td>
+    <Tr className={'staff-attendance-row'}>
+      <Td colSpan={2}>{i18n.absences.table.staffRow}</Td>
       {Object.keys(attendanceMap)
         .sort()
         .map((key) => {
           return (
-            <Table.Td key={key}>
+            <Td key={key}>
               <StaffAttendanceCell
                 updateAttendances={updateAttendances}
                 attendance={attendanceMap[key]}
                 disabled={isDisabled(attendanceMap[key])}
               />
-            </Table.Td>
+            </Td>
           )
         })}
       {emptyCols.map((item) => (
-        <Table.Td key={item}>
+        <Td key={item}>
           <DisabledCell />
-        </Table.Td>
+        </Td>
       ))}
-    </Table.Row>
+    </Tr>
   )
 })
 
 interface StaffAttendanceCellProps {
   attendance: StaffAttendance
-  updateAttendances: (attendance: StaffAttendance) => Promise<void>
+  updateAttendances: (attendance: StaffAttendance) => Promise<() => void>
   disabled: boolean
 }
 

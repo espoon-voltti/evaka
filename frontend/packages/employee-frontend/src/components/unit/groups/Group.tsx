@@ -3,6 +3,9 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import * as _ from 'lodash'
+
 import { useTranslation } from '~state/i18n'
 import {
   DaycareGroupPlacementDetailed,
@@ -11,8 +14,14 @@ import {
   Unit
 } from '~types/unit'
 import '~components/unit/groups/Group.scss'
-import { Button, Table } from '~components/shared/alpha'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import {
+  Table,
+  Td,
+  Th,
+  Tr,
+  Thead,
+  Tbody
+} from '~components/shared/layout/Table'
 import {
   faAngleDown,
   faAngleUp,
@@ -26,7 +35,6 @@ import {
 } from 'icon-set'
 import { deleteGroup, deletePlacement, OccupancyResponse } from '~api/unit'
 import { Link } from 'react-router-dom'
-import * as _ from 'lodash'
 import CareTypeLabel, {
   careTypesFromPlacementType
 } from '~components/common/CareTypeLabel'
@@ -45,6 +53,8 @@ import InlineButton from '~components/shared/atoms/buttons/InlineButton'
 import { H3 } from '~components/shared/Typography'
 import { UnitFilters } from '~utils/UnitFilters'
 import { rangesOverlap } from '~utils/date'
+import Colors from 'components/shared/Colors'
+import { FixedSpaceRow } from '~components/shared/layout/flex-helpers'
 
 interface Props {
   unit: Unit
@@ -159,8 +169,7 @@ function Group({
   const showServiceNeed = !unit.type.includes('CLUB') && canManageChildren
 
   return (
-    <div
-      className="daycare-group"
+    <DaycareGroup
       data-qa="daycare-group-collapsible"
       data-status={open ? 'open' : 'closed'}
     >
@@ -288,34 +297,31 @@ function Group({
           </DataList>
           {sortedPlacements.length > 0 ? (
             <div className="table-of-group-placements">
-              <Table.Table
-                dataQa="table-of-group-placements"
-                className="compact"
-              >
-                <Table.Head>
-                  <Table.Row>
-                    <Table.Th>{i18n.unit.groups.name}</Table.Th>
-                    <Table.Th>{i18n.unit.groups.birthday}</Table.Th>
-                    <Table.Th>{i18n.unit.groups.placementDuration}</Table.Th>
+              <Table data-qa="table-of-group-placements" className="compact">
+                <Thead>
+                  <Tr>
+                    <Th>{i18n.unit.groups.name}</Th>
+                    <Th>{i18n.unit.groups.birthday}</Th>
+                    <Th>{i18n.unit.groups.placementDuration}</Th>
                     {showServiceNeed ? (
-                      <Table.Th>{i18n.unit.groups.serviceNeed}</Table.Th>
+                      <Th>{i18n.unit.groups.serviceNeed}</Th>
                     ) : null}
-                    <Table.Th>{i18n.unit.groups.placementType}</Table.Th>
-                    {canManageChildren ? <Table.Th /> : null}
-                  </Table.Row>
-                </Table.Head>
-                <Table.Body>
+                    <Th>{i18n.unit.groups.placementType}</Th>
+                    {canManageChildren ? <Th /> : null}
+                  </Tr>
+                </Thead>
+                <Tbody>
                   {sortedPlacements.map((placement, ind) => {
                     const missingServiceNeedDays =
                       'type' in placement
                         ? placement.daycarePlacementMissingServiceNeedDays
                         : placement.missingServiceNeedDays
                     return (
-                      <Table.Row
+                      <Tr
                         key={placement.id || ''}
-                        dataQa="group-placement-row"
+                        data-qa="group-placement-row"
                       >
-                        <Table.Td dataQa="child-name">
+                        <Td data-qa="child-name">
                           <Link to={`/child-information/${placement.child.id}`}>
                             {formatName(
                               placement.child.firstName,
@@ -324,19 +330,19 @@ function Group({
                               true
                             )}
                           </Link>
-                        </Table.Td>
-                        <Table.Td dataQa="child-dob">
+                        </Td>
+                        <Td data-qa="child-dob">
                           {'type' in placement
                             ? placement.child.dateOfBirth.format()
                             : placement.child.birthDate.format()}
-                        </Table.Td>
-                        <Table.Td dataQa="placement-duration">
+                        </Td>
+                        <Td data-qa="placement-duration">
                           {'type' in placement
                             ? `${placement.startDate.format()} - ${placement.endDate.format()}`
                             : `${placement.period.start.format()} - ${placement.period.end.format()}`}
-                        </Table.Td>
+                        </Td>
                         {showServiceNeed ? (
-                          <Table.Td dataQa="service-need">
+                          <Td data-qa="service-need">
                             {missingServiceNeedDays > 0 ? (
                               <Tooltip
                                 tooltipId={`service-need-tooltip-${ind}`}
@@ -362,43 +368,38 @@ function Group({
                                 </StatusIconContainer>
                               </Tooltip>
                             )}
-                          </Table.Td>
+                          </Td>
                         ) : null}
-                        <Table.Td dataQa="placement-type">
+                        <Td data-qa="placement-type">
                           {'type' in placement ? (
                             careTypesFromPlacementType(placement.type)
                           ) : (
                             <CareTypeLabel type="backup-care" />
                           )}
-                        </Table.Td>
+                        </Td>
                         {canManageChildren ? (
-                          <Table.Td className="row-buttons">
-                            <Button
-                              plain
-                              width={'narrow'}
-                              onClick={() => onTransferRequested(placement)}
-                              dataQa="transfer-btn"
-                              icon={faExchange}
-                              iconSize="lg"
-                            >
-                              {i18n.unit.groups.transferBtn}
-                            </Button>
-                            <Button
-                              plain
-                              width={'narrow'}
-                              onClick={() => onDeletePlacement(placement)}
-                              dataQa="remove-btn"
-                              icon={faUndo}
-                            >
-                              {i18n.unit.groups.returnBtn}
-                            </Button>
-                          </Table.Td>
+                          <Td className="row-buttons">
+                            <FixedSpaceRow>
+                              <InlineButton
+                                onClick={() => onTransferRequested(placement)}
+                                dataQa="transfer-btn"
+                                icon={faExchange}
+                                text={i18n.unit.groups.transferBtn}
+                              />
+                              <InlineButton
+                                onClick={() => onDeletePlacement(placement)}
+                                dataQa="remove-btn"
+                                icon={faUndo}
+                                text={i18n.unit.groups.returnBtn}
+                              />
+                            </FixedSpaceRow>
+                          </Td>
                         ) : null}
-                      </Table.Row>
+                      </Tr>
                     )
                   })}
-                </Table.Body>
-              </Table.Table>
+                </Tbody>
+              </Table>
             </div>
           ) : (
             <p data-qa="no-children-placeholder">
@@ -407,7 +408,7 @@ function Group({
           )}
         </>
       ) : null}
-    </div>
+    </DaycareGroup>
   )
 }
 
@@ -428,6 +429,12 @@ const Toolbar = styled.div`
   flex-direction: row;
   align-items: center;
   flex-wrap: nowrap;
+`
+
+const DaycareGroup = styled.div`
+  border: ${Colors.greyscale.medium} solid 1px;
+  padding: 16px;
+  margin-bottom: 16px;
 `
 
 const TitleSummary = React.memo(function TitleSummary({

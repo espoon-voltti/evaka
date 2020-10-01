@@ -4,7 +4,8 @@
 
 import React, { Dispatch, SetStateAction } from 'react'
 import styled from 'styled-components'
-import { Table } from '~components/shared/alpha'
+
+import { Td, Tr } from 'components/shared/layout/Table'
 import Select from '~components/common/Select'
 import EuroInput from '~components/common/EuroInput'
 import { TableIncomeState } from '../IncomeTable'
@@ -69,18 +70,18 @@ const IncomeTableRow = React.memo(function IncomeTableRow({
   updateData
 }: Props) {
   const coefficientOptions = incomeCoefficients.map((id) => ({
-    id,
+    value: id,
     label: i18n.personProfile.income.details.incomeCoefficients[id]
   }))
 
   return (
-    <Table.Row key={type}>
-      <Table.Td>
+    <Tr key={type}>
+      <Td>
         <TypeLabel indent={incomeSubTypes.includes(type)}>
           {i18n.personProfile.income.details.incomeTypes[type]}
         </TypeLabel>
-      </Table.Td>
-      <Table.Td align="right">
+      </Td>
+      <Td align="right">
         {editing ? (
           <EuroInput
             value={amount}
@@ -101,24 +102,25 @@ const IncomeTableRow = React.memo(function IncomeTableRow({
         ) : (
           <span>{amount} €</span>
         )}
-      </Table.Td>
-      <Table.Td>
+      </Td>
+      <Td>
         {typesWithCoefficients.includes(type) ? (
           editing ? (
             <Select
-              value={coefficient}
               options={coefficientOptions}
-              onChange={(e) => {
-                updateData((prev) => ({
-                  ...prev,
-                  [type]: {
-                    amount: prev[type]?.amount ?? '',
-                    coefficient: e.target.value,
-                    monthlyAmount: undefined
-                  }
-                }))
+              onChange={(value) => {
+                value && 'value' in value
+                  ? updateData((prev) => ({
+                      ...prev,
+                      [type]: {
+                        amount: prev[type]?.amount ?? '',
+                        coefficient: value.value,
+                        monthlyAmount: undefined
+                      }
+                    }))
+                  : undefined
               }}
-              dataQa={`income-coefficient-select-${type}`}
+              data-qa={`income-coefficient-select-${type}`}
             />
           ) : (
             <span>
@@ -130,8 +132,8 @@ const IncomeTableRow = React.memo(function IncomeTableRow({
             </span>
           )
         ) : undefined}
-      </Table.Td>
-      <Table.Td align="right">
+      </Td>
+      <Td align="right">
         <MonthlyValue>
           {`${
             formatCents(
@@ -139,8 +141,8 @@ const IncomeTableRow = React.memo(function IncomeTableRow({
             ) ?? ''
           } €`}
         </MonthlyValue>
-      </Table.Td>
-    </Table.Row>
+      </Td>
+    </Tr>
   )
 })
 

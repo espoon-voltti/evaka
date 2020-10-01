@@ -3,10 +3,18 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
-import { Table } from '~components/shared/alpha'
 import _ from 'lodash'
+
+import {
+  Table,
+  Td,
+  Th,
+  Tr,
+  Thead,
+  Tbody
+} from '~components/shared/layout/Table'
+import Title from '~components/shared/atoms/Title'
 import { useTranslation } from '~state/i18n'
-import { Title } from '~components/shared/alpha'
 import { DaycarePlacementPlan } from '~types/unit'
 import { Link } from 'react-router-dom'
 import { careTypesFromPlacementType } from '~components/common/CareTypeLabel'
@@ -41,20 +49,20 @@ export default React.memo(function PlacementPlans({ placementPlans }: Props) {
         className="table-of-missing-groups"
         data-qa="table-of-missing-groups"
       >
-        <Table.Table dataQa="table-of-missing-groups" className="compact">
-          <Table.Head>
-            <Table.Row>
-              <Table.Th>{i18n.unit.placementPlans.name}</Table.Th>
-              <Table.Th>{i18n.unit.placementPlans.birthday}</Table.Th>
-              <Table.Th>{i18n.unit.placementPlans.placementDuration}</Table.Th>
-              <Table.Th>{i18n.unit.placementPlans.type}</Table.Th>
-              <Table.Th>{i18n.unit.placementPlans.application}</Table.Th>
-            </Table.Row>
-          </Table.Head>
-          <Table.Body>
+        <Table data-qa="table-of-missing-groups" className="compact">
+          <Thead>
+            <Tr>
+              <Th>{i18n.unit.placementPlans.name}</Th>
+              <Th>{i18n.unit.placementPlans.birthday}</Th>
+              <Th>{i18n.unit.placementPlans.placementDuration}</Th>
+              <Th>{i18n.unit.placementPlans.type}</Th>
+              <Th>{i18n.unit.placementPlans.application}</Th>
+            </Tr>
+          </Thead>
+          <Tbody>
             {sortedRows.map((p) => (
-              <Table.Row key={`${p.id}`} dataQa="placement-plan-row">
-                <Table.Td dataQa="child-name">
+              <Tr key={`${p.id}`} data-qa="placement-plan-row">
+                <Td data-qa="child-name">
                   <Link to={`/child-information/${p.child.id}`}>
                     {formatName(
                       p.child.firstName,
@@ -63,17 +71,15 @@ export default React.memo(function PlacementPlans({ placementPlans }: Props) {
                       true
                     )}
                   </Link>
-                </Table.Td>
-                <Table.Td dataQa="child-dob">
-                  {p.child.dateOfBirth.format()}
-                </Table.Td>
-                <Table.Td dataQa="placement-duration">
+                </Td>
+                <Td data-qa="child-dob">{p.child.dateOfBirth.format()}</Td>
+                <Td data-qa="placement-duration">
                   {`${p.period.start.format()} - ${p.period.end.format()}`}
-                </Table.Td>
-                <Table.Td dataQa="placement-type">
+                </Td>
+                <Td data-qa="placement-type">
                   {careTypesFromPlacementType(p.type)}
-                </Table.Td>
-                <Table.Td dataQa="application-link">
+                </Td>
+                <Td data-qa="application-link">
                   <CenteredDiv>
                     <a
                       href={`${getEmployeeUrlPrefix()}/employee/applications/${
@@ -89,11 +95,11 @@ export default React.memo(function PlacementPlans({ placementPlans }: Props) {
                       />
                     </a>
                   </CenteredDiv>
-                </Table.Td>
-              </Table.Row>
+                </Td>
+              </Tr>
             ))}
-          </Table.Body>
-        </Table.Table>
+          </Tbody>
+        </Table>
       </div>
     </>
   )

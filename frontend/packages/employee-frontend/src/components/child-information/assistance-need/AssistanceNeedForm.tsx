@@ -7,7 +7,8 @@ import styled from 'styled-components'
 import LocalDate from '@evaka/lib-common/src/local-date'
 import { useTranslation } from '~/state/i18n'
 import { UIContext } from '~state/ui'
-import { Checkbox, Input, InputField, TextArea } from '~components/shared/alpha'
+import Checkbox from '~components/shared/atoms/form/Checkbox'
+import InputField, { TextArea } from '~components/shared/atoms/form/InputField'
 import InfoBall from '~components/common/InfoBall'
 import { AssistanceBasis, AssistanceNeed } from '~types/child'
 import { UUID } from '~types'
@@ -264,12 +265,16 @@ function AssistanceNeedForm(props: Props) {
                 <CoefficientInputContainer>
                   <InputField
                     value={form.capacityFactor.toString()}
-                    onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
+                    onChange={(value) =>
                       updateFormState({
-                        capacityFactor: event.target.value
+                        capacityFactor: value
                       })
                     }
-                    state={formErrors.coefficient ? 'error' : undefined}
+                    info={
+                      formErrors.coefficient
+                        ? { text: 'Virheellinen arvo', status: 'warning' }
+                        : undefined
+                    }
                     dataQa="input-assistance-need-multiplier"
                   />
                   <InfoBall
@@ -314,7 +319,6 @@ function AssistanceNeedForm(props: Props) {
                 {ASSISTANCE_BASIS_LIST.map((basis) => (
                   <CheckboxRow key={basis}>
                     <Checkbox
-                      name={basis}
                       label={
                         i18n.childInformation.assistanceNeed.fields.basisTypes[
                           basis
@@ -342,10 +346,10 @@ function AssistanceNeedForm(props: Props) {
                 ))}
                 {form.bases.has('OTHER') && (
                   <div style={{ width: '100%' }}>
-                    <Input
+                    <InputField
                       value={form.otherBasis}
-                      onChange={(e) =>
-                        updateFormState({ otherBasis: e.target.value })
+                      onChange={(value) =>
+                        updateFormState({ otherBasis: value })
                       }
                       placeholder={
                         i18n.childInformation.assistanceNeed.fields

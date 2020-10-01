@@ -64,6 +64,7 @@ interface AddButtonProps extends BaseProps {
   onClick: () => unknown
   disabled?: boolean
   flipped?: boolean
+  'data-qa'?: string
 }
 
 function AddButton({
@@ -72,12 +73,13 @@ function AddButton({
   text,
   onClick,
   disabled = false,
-  flipped = false
+  flipped = false,
+  'data-qa': dataQa2
 }: AddButtonProps) {
   return (
     <StyledButton
       className={classNames(className, { disabled, flipped })}
-      data-qa={dataQa}
+      data-qa={dataQa2 ?? dataQa}
       onClick={onClick}
       disabled={disabled}
     >

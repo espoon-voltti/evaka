@@ -7,7 +7,7 @@ import LocalDate from '@evaka/lib-common/src/local-date'
 import { useTranslation } from '~state/i18n'
 import { UIContext } from '~state/ui'
 import FormModal from '~components/common/FormModal'
-import { Section, Select } from '~components/shared/alpha'
+import Section from '~components/shared/layout/Section'
 import { isFailure, Result } from '~api'
 import { faExchange } from 'icon-set'
 import { transferGroup } from '~api/unit'
@@ -15,6 +15,8 @@ import { UUID } from '~types'
 import { DatePicker } from '~components/common/DatePicker'
 import { formatName } from '~utils'
 import { DaycareGroupPlacementDetailed, DaycareGroup } from '~types/unit'
+import Select from '~components/common/Select'
+import { FixedSpaceColumn } from '~components/shared/layout/flex-helpers'
 
 interface Props {
   placement: DaycareGroupPlacementDetailed
@@ -118,44 +120,47 @@ export default React.memo(function GroupTransferModal({
       resolveDisabled={form.errors.length > 0}
       resolve={() => submitForm()}
     >
-      <Section>
-        <div className="bold">{i18n.unit.placements.modal.child}</div>
-        <span>{formatName(child.firstName, child.lastName, i18n)}</span>
-      </Section>
-      <Section>
-        <div className="bold">{i18n.unit.placements.modal.group}</div>
-        <Select
-          options={openGroups.map((group) => ({
-            id: group.id,
-            label: group.name
-          }))}
-          value={form.groupId || undefined}
-          onChange={(event) =>
-            assignFormValues({
-              groupId: event.target.value
-            })
-          }
-        />
-      </Section>
-      <Section>
-        <div className="bold">{i18n.common.form.startDate}</div>
-        <DatePicker
-          date={form.startDate}
-          onChange={(startDate) => assignFormValues({ startDate })}
-          type="full-width"
-          minDate={minDate}
-          maxDate={maxDate}
-        />
-      </Section>
-      {form.errors.length > 0 && (
+      <FixedSpaceColumn>
         <Section>
-          {form.errors.map((error, index) => (
-            <div className="error" key={index}>
-              {error}
-            </div>
-          ))}
+          <div className="bold">{i18n.unit.placements.modal.child}</div>
+          <span>{formatName(child.firstName, child.lastName, i18n)}</span>
         </Section>
-      )}
+        <Section>
+          <div className="bold">{i18n.unit.placements.modal.group}</div>
+          <Select
+            options={openGroups.map((group) => ({
+              value: group.id,
+              label: group.name
+            }))}
+            onChange={(value) =>
+              value && 'value' in value
+                ? assignFormValues({
+                    groupId: value.value
+                  })
+                : undefined
+            }
+          />
+        </Section>
+        <Section>
+          <div className="bold">{i18n.common.form.startDate}</div>
+          <DatePicker
+            date={form.startDate}
+            onChange={(startDate) => assignFormValues({ startDate })}
+            type="full-width"
+            minDate={minDate}
+            maxDate={maxDate}
+          />
+        </Section>
+        {form.errors.length > 0 && (
+          <Section>
+            {form.errors.map((error, index) => (
+              <div className="error" key={index}>
+                {error}
+              </div>
+            ))}
+          </Section>
+        )}
+      </FixedSpaceColumn>
     </FormModal>
   )
 })

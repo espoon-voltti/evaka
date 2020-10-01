@@ -8,14 +8,11 @@ import { isFailure, isLoading, isSuccess, Result } from '~api'
 import { PersonDetails } from '~/types/person'
 import { useTranslation } from '~state/i18n'
 import { useContext, useEffect, useState } from 'react'
-import {
-  Button,
-  Buttons,
-  Input,
-  Loader,
-  Radio,
-  RadioGroup
-} from '~components/shared/alpha'
+import Loader from '~components/shared/atoms/Loader'
+import Button from '~components/shared/atoms/buttons/Button'
+import InlineButton from '~components/shared/atoms/buttons/InlineButton'
+import InputField from '~components/shared/atoms/form/InputField'
+import Radio from '~components/shared/atoms/form/Radio'
 import LabelValueList from '~components/common/LabelValueList'
 import { DatePicker } from '~components/common/DatePicker'
 import { patchPersonDetails } from '~api/person'
@@ -25,6 +22,10 @@ import { UserContext } from '~state/user'
 import styled from 'styled-components'
 import { RequireRole, requireRole } from '~utils/roles'
 import LocalDate from '@evaka/lib-common/src/local-date'
+import {
+  FixedSpaceColumn,
+  FixedSpaceRow
+} from '~components/shared/layout/flex-helpers'
 
 const FlexContainer = styled.div`
   display: flex;
@@ -164,15 +165,12 @@ const PersonDetails = React.memo(function PersonDetails({
               'UNIT_SUPERVISOR'
             ]}
           >
-            <Button
-              plain
+            <InlineButton
               icon={faPen}
-              iconSize="lg"
               onClick={() => toggleUiMode('person-details-editing')}
               dataQa="edit-person-settings-button"
-            >
-              {i18n.common.edit}
-            </Button>
+              text={i18n.common.edit}
+            />
           </RequireRole>
         )}
         <div />
@@ -183,11 +181,9 @@ const PersonDetails = React.memo(function PersonDetails({
               label: i18n.common.form.lastName,
               dataQa: 'person-last-name',
               value: powerEditing ? (
-                <Input
+                <InputField
                   value={form.lastName}
-                  onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
-                    updateForm({ lastName: event.target.value })
-                  }
+                  onChange={(value) => updateForm({ lastName: value })}
                   dataQa="input-last-name"
                 />
               ) : (
@@ -198,11 +194,9 @@ const PersonDetails = React.memo(function PersonDetails({
               label: i18n.common.form.firstNames,
               dataQa: 'person-first-names',
               value: powerEditing ? (
-                <Input
+                <InputField
                   value={form.firstName}
-                  onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
-                    updateForm({ firstName: event.target.value })
-                  }
+                  onChange={(value) => updateForm({ firstName: value })}
                   dataQa="input-first-name"
                 />
               ) : (
@@ -243,12 +237,9 @@ const PersonDetails = React.memo(function PersonDetails({
                   i18n.personProfile.noSsn
                 ) : (
                   <Button
-                    plain
-                    className="inline"
                     onClick={() => toggleUiMode('add-ssn-modal')}
-                  >
-                    {i18n.personProfile.addSsn}
-                  </Button>
+                    text={i18n.personProfile.addSsn}
+                  />
                 ))
             },
             {
@@ -256,31 +247,27 @@ const PersonDetails = React.memo(function PersonDetails({
               dataQa: 'person-address',
               value: powerEditing ? (
                 <>
-                  <Input
+                  <InputField
                     value={form.streetAddress}
                     placeholder={i18n.common.form.streetAddress}
-                    onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
+                    onChange={(value) =>
                       updateForm({
-                        streetAddress: event.target.value
+                        streetAddress: value
                       })
                     }
                   />
                   <PostalCodeAndOffice>
-                    <Input
+                    <InputField
                       id="postal-code"
                       value={form.postalCode}
                       placeholder={i18n.common.form.postalCode}
-                      onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
-                        updateForm({ postalCode: event.target.value })
-                      }
+                      onChange={(value) => updateForm({ postalCode: value })}
                     />
-                    <Input
+                    <InputField
                       id="post-office"
                       value={form.postOffice}
                       placeholder={i18n.common.form.postOffice}
-                      onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
-                        updateForm({ postOffice: event.target.value })
-                      }
+                      onChange={(value) => updateForm({ postOffice: value })}
                     />
                   </PostalCodeAndOffice>
                 </>
@@ -301,51 +288,43 @@ const PersonDetails = React.memo(function PersonDetails({
                     value:
                       powerEditing || editing ? (
                         <>
-                          <Input
+                          <InputField
                             value={form.invoiceRecipientName}
                             placeholder={i18n.common.form.invoiceRecipient}
-                            onChange={(
-                              event: React.ChangeEvent<HTMLInputElement>
-                            ) =>
+                            onChange={(value) =>
                               updateForm({
-                                invoiceRecipientName: event.target.value
+                                invoiceRecipientName: value
                               })
                             }
                           />
 
-                          <Input
+                          <InputField
                             value={form.invoicingStreetAddress}
                             placeholder={i18n.common.form.streetAddress}
-                            onChange={(
-                              event: React.ChangeEvent<HTMLInputElement>
-                            ) =>
+                            onChange={(value) =>
                               updateForm({
-                                invoicingStreetAddress: event.target.value
+                                invoicingStreetAddress: value
                               })
                             }
                           />
                           <PostalCodeAndOffice>
-                            <Input
+                            <InputField
                               id="postal-code"
                               value={form.invoicingPostalCode}
                               placeholder={i18n.common.form.postalCode}
-                              onChange={(
-                                event: React.ChangeEvent<HTMLInputElement>
-                              ) =>
+                              onChange={(value) =>
                                 updateForm({
-                                  invoicingPostalCode: event.target.value
+                                  invoicingPostalCode: value
                                 })
                               }
                             />
-                            <Input
+                            <InputField
                               id="post-office"
                               value={form.invoicingPostOffice}
                               placeholder={i18n.common.form.postOffice}
-                              onChange={(
-                                event: React.ChangeEvent<HTMLInputElement>
-                              ) =>
+                              onChange={(value) =>
                                 updateForm({
-                                  invoicingPostOffice: event.target.value
+                                  invoicingPostOffice: value
                                 })
                               }
                             />
@@ -369,17 +348,15 @@ const PersonDetails = React.memo(function PersonDetails({
                   {
                     label: i18n.personProfile.forceManualFeeDecisionsLabel,
                     value: editing ? (
-                      <RadioGroup label="" dataQa="force-manual-fee-decisions">
+                      <FixedSpaceColumn data-qa="force-manual-fee-decisions">
                         <Radio
                           label={
                             i18n.personProfile.forceManualFeeDecisionsChecked
                           }
-                          id="force-manual-fee-decisions-true"
-                          value={true}
-                          model={form.forceManualFeeDecisions}
-                          onChange={(v) =>
+                          checked={form.forceManualFeeDecisions === true}
+                          onChange={() =>
                             updateForm({
-                              forceManualFeeDecisions: v
+                              forceManualFeeDecisions: true
                             })
                           }
                           dataQa={`force-manual-fee-decisions-true`}
@@ -388,17 +365,15 @@ const PersonDetails = React.memo(function PersonDetails({
                           label={
                             i18n.personProfile.forceManualFeeDecisionsUnchecked
                           }
-                          id="force-manual-fee-decisions-false"
-                          value={false}
-                          model={form.forceManualFeeDecisions}
-                          onChange={(v) =>
+                          checked={form.forceManualFeeDecisions === false}
+                          onChange={() =>
                             updateForm({
-                              forceManualFeeDecisions: v
+                              forceManualFeeDecisions: false
                             })
                           }
                           dataQa={`force-manual-fee-decisions-false`}
                         />
-                      </RadioGroup>
+                      </FixedSpaceColumn>
                     ) : person.forceManualFeeDecisions ? (
                       i18n.personProfile.forceManualFeeDecisionsChecked
                     ) : (
@@ -412,12 +387,9 @@ const PersonDetails = React.memo(function PersonDetails({
                   {
                     label: i18n.common.form.email,
                     value: editing ? (
-                      <Input
+                      <InputField
                         value={form.email}
-                        onChange={(
-                          event: React.ChangeEvent<HTMLInputElement>
-                        ) => updateForm({ email: event.target.value })}
-                        size={40}
+                        onChange={(value) => updateForm({ email: value })}
                       />
                     ) : (
                       person.email
@@ -426,11 +398,9 @@ const PersonDetails = React.memo(function PersonDetails({
                   {
                     label: i18n.common.form.phone,
                     value: editing ? (
-                      <Input
+                      <InputField
                         value={form.phone}
-                        onChange={(
-                          event: React.ChangeEvent<HTMLInputElement>
-                        ) => updateForm({ phone: event.target.value })}
+                        onChange={(value) => updateForm({ phone: value })}
                       />
                     ) : (
                       person.phone
@@ -443,17 +413,16 @@ const PersonDetails = React.memo(function PersonDetails({
       </FlexContainer>
       {editing && (
         <RightAlignedRow>
-          <Buttons>
-            <Button onClick={() => clearUiMode()}>{i18n.common.cancel}</Button>
+          <FixedSpaceRow>
+            <Button onClick={() => clearUiMode()} text={i18n.common.cancel} />
             <Button
               primary
               disabled={false}
               onClick={() => onSubmit()}
               dataQa="confirm-edited-person-button"
-            >
-              {i18n.common.confirm}
-            </Button>
-          </Buttons>
+              text={i18n.common.confirm}
+            />
+          </FixedSpaceRow>
         </RightAlignedRow>
       )}
     </>

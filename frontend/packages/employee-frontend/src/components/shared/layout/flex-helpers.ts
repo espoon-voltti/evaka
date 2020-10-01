@@ -42,6 +42,18 @@ export const FixedSpaceRow = styled.div<FixedSpaceRowProps>`
       margin-right: 0;
     }
   }
+
+  >button {
+    margin-right: ${(p) =>
+      p.spacing
+        ? isSpacingSize(p.spacing)
+          ? DefaultMargins[p.spacing]
+          : p.spacing
+        : DefaultMargins.s};
+    &:last-child {
+      margin-right: 0;
+    }
+  }
 `
 
 interface FixedSpaceColumnProps {

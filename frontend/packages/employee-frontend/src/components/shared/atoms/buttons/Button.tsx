@@ -70,16 +70,18 @@ export const StyledButton = styled.button`
 `
 
 interface ButtonProps extends BaseProps {
-  onClick: () => unknown
+  onClick?: (e: React.MouseEvent) => unknown
   text: string
   primary?: boolean
   disabled?: boolean
   type?: 'submit' | 'button'
+  'data-qa'?: string
 }
 
 function Button({
   className,
   dataQa,
+  'data-qa': dataQa2,
   onClick,
   text,
   primary = false,
@@ -93,19 +95,19 @@ function Button({
     }
   }, 300)
 
-  const handleOnClick = () => {
+  const handleOnClick = (e: React.MouseEvent) => {
     if (!ignoreClick) {
       setIgnoreClick(true)
       startUnignoreClickTimer()
       if (onClick) {
-        onClick()
+        onClick(e)
       }
     }
   }
   return (
     <StyledButton
       className={classNames(className, { primary, disabled })}
-      data-qa={dataQa}
+      data-qa={dataQa2 ?? dataQa}
       onClick={handleOnClick}
       disabled={disabled}
       type={type}

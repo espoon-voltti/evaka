@@ -4,14 +4,24 @@
 
 import React, { memo } from 'react'
 import styled from 'styled-components'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faAngleDown } from 'icon-set'
-import {
-  Select,
-  SelectProps,
-  SelectOptionProps
-} from '~components/shared/alpha'
-import { EspooColours } from 'utils/colours'
+import ReactSelect, { ValueType } from 'react-select'
+
+export interface SelectOptionProps {
+  value: string
+  label: string
+}
+
+export interface SelectProps {
+  disabled?: boolean
+  id?: string
+  name?: string
+  onChange?: (option: ValueType<SelectOptionProps>) => void
+  onFocus?: () => void
+  options: SelectOptionProps[]
+  placeholder?: string
+  'data-qa'?: string
+  value?: ValueType<SelectOptionProps>
+}
 
 interface ContainerProps {
   fullWidth?: boolean
@@ -20,33 +30,41 @@ interface ContainerProps {
 const Container = styled.div<ContainerProps>`
   position: relative;
   ${(p) => (p.fullWidth ? 'width: 100%;' : '')}
+  min-width: 150px;
 
   select {
     padding-right: 20px;
   }
 `
 
-const Icon = styled(FontAwesomeIcon)`
-  pointer-events: none;
-  position: absolute;
-  right: 4px;
-  top: 0px;
-  height: 100%;
-`
+type SelectComponentProps = SelectProps & ContainerProps
 
-type SelectWithIconProps = SelectProps & ContainerProps
-
-const SelectWithIcon = memo(function SelectWithArrow({
+const Select = memo(function Select({
   fullWidth,
-  ...props
-}: SelectWithIconProps) {
+  disabled,
+  id,
+  name,
+  onChange,
+  onFocus,
+  options,
+  placeholder,
+  'data-qa': dataQa,
+  value
+}: SelectComponentProps) {
   return (
-    <Container fullWidth={fullWidth}>
-      <Select {...props} />
-      <Icon icon={faAngleDown} size={'lg'} color={EspooColours.greyDark} />
+    <Container fullWidth={fullWidth} data-qa={dataQa}>
+      <ReactSelect
+        isDisabled={disabled}
+        id={id}
+        name={name}
+        options={options}
+        placeholder={placeholder}
+        onChange={onChange}
+        onFocus={onFocus}
+        value={value}
+      />
     </Container>
   )
 })
 
-export default SelectWithIcon
-export { SelectProps, SelectOptionProps }
+export default Select

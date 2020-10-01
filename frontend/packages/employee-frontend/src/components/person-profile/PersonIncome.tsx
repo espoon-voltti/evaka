@@ -2,10 +2,11 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useCallback, useContext, useEffect, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import { faEuroSign } from 'icon-set'
 import { Gap } from '~components/shared/layout/white-space'
-import { Collapsible, Loader } from '~components/shared/alpha'
+import Loader from '~components/shared/atoms/Loader'
+import CollapsibleSection from 'components/shared/molecules/CollapsibleSection'
 import IncomeList from './income/IncomeList'
 import { useTranslation } from '~state/i18n'
 import { UIContext } from '~state/ui'
@@ -32,10 +33,6 @@ const PersonIncome = React.memo(function PersonIncome({ id, open }: Props) {
   const { incomes, setIncomes, reloadFamily } = useContext(PersonContext)
   const [editing, setEditing] = useState<string>()
   const [deleting, setDeleting] = useState<string>()
-  const [toggled, setToggled] = useState(open)
-  const toggle = useCallback(() => setToggled((toggled) => !toggled), [
-    setToggled
-  ])
   const [toggledIncome, setToggledIncome] = useState<IncomeId[]>([])
   const toggleIncome = (incomeId: IncomeId) =>
     setToggledIncome((prev) => toggleIncomeItem(incomeId, prev))
@@ -114,12 +111,11 @@ const PersonIncome = React.memo(function PersonIncome({ id, open }: Props) {
   }
 
   return (
-    <Collapsible
+    <CollapsibleSection
       icon={faEuroSign}
       title={i18n.personProfile.income.title}
-      open={toggled}
-      onToggle={toggle}
       dataQa="person-income-collapsible"
+      startCollapsed={!open}
     >
       <AddButtonRow
         text={i18n.personProfile.income.add}
@@ -132,7 +128,7 @@ const PersonIncome = React.memo(function PersonIncome({ id, open }: Props) {
       />
       <Gap size="m" />
       {content()}
-    </Collapsible>
+    </CollapsibleSection>
   )
 })
 

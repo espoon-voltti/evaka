@@ -4,26 +4,27 @@
 
 import React, { useState } from 'react'
 import styled from 'styled-components'
+
 import LocalDate from '@evaka/lib-common/src/local-date'
 import AsyncButton from '~components/shared/atoms/buttons/AsyncButton'
 import ListGrid from '~components/shared/layout/ListGrid'
-import { Label } from '~components/shared/Typography'
+import Button from '~components/shared/atoms/buttons/Button'
+import Checkbox from '~components/shared/atoms/form/Checkbox'
+import Radio from '~components/shared/atoms/form/Radio'
+import Title from '~components/shared/atoms/Title'
 import {
-  Button,
-  Buttons,
-  Checkbox,
-  Field,
-  Radio,
-  RadioGroup,
-  Title
-} from '~components/shared/alpha'
+  FixedSpaceColumn,
+  FixedSpaceRow
+} from '~components/shared/layout/flex-helpers'
+import { Label, LabelText } from '~components/common/styled/common'
 import DateRangeInput from '../../common/DateRangeInput'
 import IncomeTable from './IncomeTable'
 import { useTranslation } from '~state/i18n'
 import { incomeEffects, Income, PartialIncome } from '~types/income'
 import { formatDate } from '~utils/date'
+import { Gap } from '~components/shared/layout/white-space'
 
-const ButtonsContainer = styled(Buttons)`
+const ButtonsContainer = styled(FixedSpaceRow)`
   margin: 20px 0;
 `
 
@@ -64,10 +65,11 @@ const IncomeItemEditor = React.memo(function IncomeItemEditor({
 
   return (
     <>
-      <Field
-        label={i18n.personProfile.income.details.dateRange}
-        dataQa="income-date-range"
-      >
+      <div data-qa="income-date-range">
+        <Label>
+          <LabelText>{i18n.personProfile.income.details.dateRange}</LabelText>
+        </Label>
+        <Gap size={'m'} />
         <DateRangeInput
           start={editedIncome.validFrom}
           end={editedIncome.validTo}
@@ -83,30 +85,31 @@ const IncomeItemEditor = React.memo(function IncomeItemEditor({
           }
           nullableEndDate
         />
-      </Field>
-      <RadioGroup
-        label={i18n.personProfile.income.details.effect}
-        dataQa="income-effect"
-      >
+      </div>
+      <Gap size={'L'} />
+      <Label>
+        <LabelText>{i18n.personProfile.income.details.effect}</LabelText>
+      </Label>
+      <Gap size={'m'} />
+      <FixedSpaceColumn data-qa="income-effect">
         {incomeEffects.map((effect) => (
           <Radio
             key={effect}
-            id={effect}
             label={i18n.personProfile.income.details.effectOptions[effect]}
-            value={effect}
-            model={editedIncome.effect}
-            onChange={(v) =>
-              setEditedIncome((prev) => ({ ...prev, effect: v }))
-            }
+            checked={editedIncome.effect === effect}
+            onChange={() => setEditedIncome((prev) => ({ ...prev, effect }))}
             dataQa={`income-effect-${effect}`}
           />
         ))}
-      </RadioGroup>
-
-      <RadioGroup label={i18n.personProfile.income.details.miscTitle}>
+      </FixedSpaceColumn>
+      <Gap size={'L'} />
+      <Label>
+        <LabelText>{i18n.personProfile.income.details.miscTitle}</LabelText>
+      </Label>
+      <Gap size={'m'} />
+      <FixedSpaceColumn>
         <Checkbox
           label={i18n.personProfile.income.details.echa}
-          name="works-at-echa"
           checked={editedIncome.worksAtECHA}
           onChange={() =>
             setEditedIncome((prev) => ({
@@ -117,7 +120,6 @@ const IncomeItemEditor = React.memo(function IncomeItemEditor({
         />
         <Checkbox
           label={i18n.personProfile.income.details.entrepreneur}
-          name="is-entrepreneur"
           checked={editedIncome.isEntrepreneur}
           onChange={() =>
             setEditedIncome((prev) => ({
@@ -126,7 +128,7 @@ const IncomeItemEditor = React.memo(function IncomeItemEditor({
             }))
           }
         />
-      </RadioGroup>
+      </FixedSpaceColumn>
       {baseIncome ? (
         <ListGrid labelWidth="fit-content(40%)" rowGap="xs" columnGap="L">
           <Label>{i18n.personProfile.income.details.updated}</Label>
@@ -174,10 +176,11 @@ const IncomeItemEditor = React.memo(function IncomeItemEditor({
           />
         </>
       ) : null}
-      <ButtonsContainer centered>
-        <Button plain onClick={cancel}>
-          {i18n.personProfile.income.details.cancel}
-        </Button>
+      <ButtonsContainer>
+        <Button
+          onClick={cancel}
+          text={i18n.personProfile.income.details.cancel}
+        />
         <AsyncButton
           text={i18n.personProfile.income.details.save}
           disabled={Object.values(validationErrors).some(Boolean)}

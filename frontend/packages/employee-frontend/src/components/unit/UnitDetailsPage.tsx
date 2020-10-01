@@ -7,7 +7,9 @@ import UnitEditor from '~components/unit/UnitEditor'
 import { isFailure, isLoading, isSuccess, Loading, Result, Success } from '~api'
 import { CareArea } from '~types/unit'
 import { getAreas } from '~api/daycare'
-import { Container, ContentArea, Loader } from '~components/shared/alpha'
+import { Container, ContentArea } from '~components/shared/layout/Container'
+import Loader from '~components/shared/atoms/Loader'
+import { Gap } from '~components/shared/layout/white-space'
 import { useParams } from 'react-router-dom'
 import {
   DaycareFields,
@@ -58,6 +60,7 @@ export default function UnitDetailsPage(): JSX.Element {
 
   return (
     <Container>
+      <Gap size={'L'} />
       <ContentArea opaque>
         {loading && <Loader />}
         {!loading && failure && <div>{i18n.common.error.unknown}</div>}

@@ -3,14 +3,11 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useContext, useEffect, useState } from 'react'
-import {
-  Button,
-  Container,
-  ContentArea,
-  Loader,
-  Table,
-  Title
-} from '~components/shared/alpha'
+import { Container, ContentArea } from '~components/shared/layout/Container'
+import Button from '~components/shared/atoms/buttons/Button'
+import Loader from '~components/shared/atoms/Loader'
+import Title from '~components/shared/atoms/Title'
+import { Th, Tr, Td, Thead, Tbody } from '~components/shared/layout/Table'
 import InfoModal from '~components/common/InfoModal'
 import { useTranslation } from '~state/i18n'
 import { Link } from 'react-router-dom'
@@ -31,10 +28,10 @@ interface RowProps {
   odd: boolean
 }
 
-const StyledRow = styled(Table.Row)<RowProps>`
+const StyledRow = styled(Tr)<RowProps>`
   ${(props) => (props.odd ? `background: #F1F7FF;` : '')}
 `
-const NoWrapTd = styled(Table.Td)`
+const NoWrapTd = styled(Td)`
   white-space: nowrap;
 `
 
@@ -99,37 +96,37 @@ function DuplicatePeople() {
         {isSuccess(rows) && (
           <>
             <TableScrollable>
-              <Table.Head>
-                <Table.Row>
-                  <Table.Th>Henkilön nimi</Table.Th>
-                  <Table.Th>Hetu</Table.Th>
-                  <Table.Th>Synt.aika</Table.Th>
-                  <Table.Th>Katuosoite</Table.Th>
-                  <Table.Th />
-                  <Table.Th />
+              <Thead>
+                <Tr>
+                  <Th>Henkilön nimi</Th>
+                  <Th>Hetu</Th>
+                  <Th>Synt.aika</Th>
+                  <Th>Katuosoite</Th>
+                  <Th />
+                  <Th />
 
-                  <Table.Th>Hakemuksia (huoltajana)</Table.Th>
-                  <Table.Th>Jääkaappi- puolisoja</Table.Th>
-                  <Table.Th>Jääkaappi- lapsia</Table.Th>
-                  <Table.Th>Tulo- tietoja</Table.Th>
-                  <Table.Th>Maksu- päätöksiä (päämies)</Table.Th>
-                  <Table.Th>Maksu- päätöksiä (puoliso)</Table.Th>
-                  <Table.Th>Laskuja</Table.Th>
+                  <Th>Hakemuksia (huoltajana)</Th>
+                  <Th>Jääkaappi- puolisoja</Th>
+                  <Th>Jääkaappi- lapsia</Th>
+                  <Th>Tulo- tietoja</Th>
+                  <Th>Maksu- päätöksiä (päämies)</Th>
+                  <Th>Maksu- päätöksiä (puoliso)</Th>
+                  <Th>Laskuja</Th>
 
-                  <Table.Th>Hakemuksia (lapsena)</Table.Th>
-                  <Table.Th>Sijoituksia</Table.Th>
-                  <Table.Th>Päämiehiä</Table.Th>
-                  <Table.Th>Palvelun tarpeita</Table.Th>
-                  <Table.Th>Tuen tarpeita</Table.Th>
-                  <Table.Th>Tuki- toimia</Table.Th>
-                  <Table.Th>Maksu- muutoksia</Table.Th>
-                  <Table.Th>Poissa- oloja</Table.Th>
-                  <Table.Th>Vara- sijoituksia</Table.Th>
-                  <Table.Th>Maksu- päätös- osia</Table.Th>
-                  <Table.Th>Lasku- rivejä</Table.Th>
-                </Table.Row>
-              </Table.Head>
-              <Table.Body>
+                  <Th>Hakemuksia (lapsena)</Th>
+                  <Th>Sijoituksia</Th>
+                  <Th>Päämiehiä</Th>
+                  <Th>Palvelun tarpeita</Th>
+                  <Th>Tuen tarpeita</Th>
+                  <Th>Tuki- toimia</Th>
+                  <Th>Maksu- muutoksia</Th>
+                  <Th>Poissa- oloja</Th>
+                  <Th>Vara- sijoituksia</Th>
+                  <Th>Maksu- päätös- osia</Th>
+                  <Th>Lasku- rivejä</Th>
+                </Tr>
+              </Thead>
+              <Tbody>
                 {rows.data.map((row: DuplicatePeopleReportRow) => (
                   <StyledRow key={row.id} odd={row.groupIndex % 2 != 0}>
                     <NoWrapTd>
@@ -151,15 +148,12 @@ function DuplicatePeople() {
                         duplicate.group == row.groupIndex ? (
                           duplicate.row == row.duplicateNumber ? (
                             <Button
-                              plain
                               className="inline"
                               onClick={() => setDuplicate(null)}
-                            >
-                              {i18n.common.cancel}
-                            </Button>
+                              text={i18n.common.cancel}
+                            />
                           ) : (
                             <Button
-                              plain
                               className="inline"
                               onClick={() =>
                                 setMaster({
@@ -167,14 +161,12 @@ function DuplicatePeople() {
                                   row: row.duplicateNumber
                                 })
                               }
-                            >
-                              {i18n.reports.duplicatePeople.moveTo}
-                            </Button>
+                              text={i18n.reports.duplicatePeople.moveTo}
+                            />
                           )
                         ) : null
                       ) : (
                         <Button
-                          plain
                           className="inline"
                           disabled={!hasReferences(row)}
                           onClick={() =>
@@ -183,20 +175,17 @@ function DuplicatePeople() {
                               row: row.duplicateNumber
                             })
                           }
-                        >
-                          {i18n.reports.duplicatePeople.moveFrom}
-                        </Button>
+                          text={i18n.reports.duplicatePeople.moveFrom}
+                        />
                       )}
                     </NoWrapTd>
                     <NoWrapTd>
                       <Button
-                        plain
                         className="inline"
                         disabled={duplicate != null || hasReferences(row)}
                         onClick={() => setDeleteId(row.id)}
-                      >
-                        {i18n.common.remove}
-                      </Button>
+                        text={i18n.common.remove}
+                      />
                     </NoWrapTd>
                     <NoWrapTd>{row.applicationsGuardian}</NoWrapTd>
                     <NoWrapTd>{row.fridgePartners}</NoWrapTd>
@@ -219,7 +208,7 @@ function DuplicatePeople() {
                     <NoWrapTd>{row.invoiceRows}</NoWrapTd>
                   </StyledRow>
                 ))}
-              </Table.Body>
+              </Tbody>
             </TableScrollable>
             {master && duplicate && (
               <InfoModal

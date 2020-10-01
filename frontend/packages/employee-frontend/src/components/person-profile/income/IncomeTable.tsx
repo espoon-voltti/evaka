@@ -4,7 +4,7 @@
 
 import React, { useEffect, useState } from 'react'
 import styled from 'styled-components'
-import { Table } from '~components/shared/alpha'
+import { Table, Tbody } from 'components/shared/layout/Table'
 import IncomeTableHeader from './income-table/IncomeTableHeader'
 import IncomeTableRow from './income-table/IncomeTableRow'
 import IncomeSum from './income-table/IncomeSum'
@@ -118,9 +118,9 @@ const IncomeTable = React.memo(function IncomeTable(props: Props) {
   return (
     <Container>
       {shownTypes.length > 0 ? (
-        <Table.Table>
+        <Table>
           <IncomeTableHeader i18n={i18n} type={props.type} />
-          <Table.Body>
+          <Tbody>
             {shownTypes.map((type) => (
               <IncomeTableRow
                 key={type}
@@ -146,8 +146,8 @@ const IncomeTable = React.memo(function IncomeTable(props: Props) {
                 }
               />
             ))}
-          </Table.Body>
-        </Table.Table>
+          </Tbody>
+        </Table>
       ) : null}
       <IncomeSum sum={sum} dataQa={`income-sum-${props.type}`} />
     </Container>

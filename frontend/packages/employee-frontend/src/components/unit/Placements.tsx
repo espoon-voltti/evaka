@@ -3,11 +3,20 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useContext, useState } from 'react'
-import { Button, Table } from '~components/shared/alpha'
-import { faArrowRight } from 'icon-set'
 import _ from 'lodash'
+
+import {
+  Table,
+  Td,
+  Th,
+  Tr,
+  Thead,
+  Tbody
+} from '~components/shared/layout/Table'
+import Title from '~components/shared/atoms/Title'
+import InlineButton from '~components/shared/atoms/buttons/InlineButton'
+import { faArrowRight } from 'icon-set'
 import { useTranslation } from '~state/i18n'
-import { Title } from '~components/shared/alpha'
 import {
   DaycareGroupPlacementDetailed,
   flatMapGroupPlacements,
@@ -44,41 +53,36 @@ function renderMissingPlacementRow(
   } = missingPlacement
 
   return (
-    <Table.Row
+    <Tr
       key={`${child.id}:${type}:${daycarePlacementStartDate.formatIso()}`}
-      dataQa="missing-placement-row"
+      data-qa="missing-placement-row"
     >
-      <Table.Td dataQa="child-name">
+      <Td data-qa="child-name">
         <Link to={`/child-information/${child.id}`} onClick={savePosition}>
           {formatName(child.firstName, child.lastName, i18n, true)}
         </Link>
-      </Table.Td>
-      <Table.Td dataQa="child-dob">{child.dateOfBirth.format()}</Table.Td>
-      <Table.Td dataQa="placement-duration">
+      </Td>
+      <Td data-qa="child-dob">{child.dateOfBirth.format()}</Td>
+      <Td data-qa="placement-duration">
         {`${daycarePlacementStartDate.format()} - ${daycarePlacementEndDate.format()}`}
-      </Table.Td>
+      </Td>
       {canManageChildren ? (
-        <Table.Td dataQa="group-missing-duration">
+        <Td data-qa="group-missing-duration">
           {`${startDate.format()} - ${endDate.format()}`}
-        </Table.Td>
+        </Td>
       ) : null}
-      <Table.Td dataQa="placement-type">
-        {careTypesFromPlacementType(type)}
-      </Table.Td>
+      <Td data-qa="placement-type">{careTypesFromPlacementType(type)}</Td>
       {canManageChildren ? (
-        <Table.Td>
-          <Button
-            plain
-            width={'narrow'}
+        <Td>
+          <InlineButton
             onClick={() => onAddToGroup()}
             icon={faArrowRight}
             dataQa="add-to-group-btn"
-          >
-            {i18n.unit.placements.addToGroup}
-          </Button>
-        </Table.Td>
+            text={i18n.unit.placements.addToGroup}
+          />
+        </Td>
       ) : null}
-    </Table.Row>
+    </Tr>
   )
 }
 
@@ -90,38 +94,35 @@ function renderBackupCareRow(
   canManageChildren: boolean
 ) {
   return (
-    <Table.Row key={id} dataQa="missing-placement-row">
-      <Table.Td dataQa="child-name">
+    <Tr key={id} data-qa="missing-placement-row">
+      <Td data-qa="child-name">
         <Link to={`/child-information/${child.id}`} onClick={savePosition}>
           {formatName(child.firstName, child.lastName, i18n, true)}
         </Link>
-      </Table.Td>
-      <Table.Td dataQa="child-dob">{child.birthDate.format()}</Table.Td>
-      <Table.Td dataQa="placement-duration">
+      </Td>
+      <Td data-qa="child-dob">{child.birthDate.format()}</Td>
+      <Td data-qa="placement-duration">
         {`${period.start.format()} - ${period.end.format()}`}
-      </Table.Td>
+      </Td>
       {canManageChildren ? (
-        <Table.Td dataQa="group-missing-duration">
+        <Td data-qa="group-missing-duration">
           {`${period.start.format()} - ${period.end.format()}`}
-        </Table.Td>
+        </Td>
       ) : null}
-      <Table.Td dataQa="placement-type">
+      <Td data-qa="placement-type">
         <CareTypeLabel type="backup-care" />
-      </Table.Td>
+      </Td>
       {canManageChildren ? (
-        <Table.Td>
-          <Button
-            plain
-            width={'narrow'}
+        <Td>
+          <InlineButton
             onClick={() => onAddToGroup()}
             icon={faArrowRight}
             dataQa="add-to-group-btn"
-          >
-            {i18n.unit.placements.addToGroup}
-          </Button>
-        </Table.Td>
+            text={i18n.unit.placements.addToGroup}
+          />
+        </Td>
       ) : null}
-    </Table.Row>
+    </Tr>
   )
 }
 
@@ -199,20 +200,20 @@ export default React.memo(function Placements({
         className="table-of-missing-groups"
         data-qa="table-of-missing-groups"
       >
-        <Table.Table dataQa="table-of-missing-groups" className="compact">
-          <Table.Head>
-            <Table.Row>
-              <Table.Th>{i18n.unit.placements.name}</Table.Th>
-              <Table.Th>{i18n.unit.placements.birthday}</Table.Th>
-              <Table.Th>{i18n.unit.placements.placementDuration}</Table.Th>
+        <Table data-qa="table-of-missing-groups" className="compact">
+          <Thead>
+            <Tr>
+              <Th>{i18n.unit.placements.name}</Th>
+              <Th>{i18n.unit.placements.birthday}</Th>
+              <Th>{i18n.unit.placements.placementDuration}</Th>
               {canManageChildren ? (
-                <Table.Th>{i18n.unit.placements.missingGroup}</Table.Th>
+                <Th>{i18n.unit.placements.missingGroup}</Th>
               ) : null}
-              <Table.Th>{i18n.unit.placements.type}</Table.Th>
-              {canManageChildren ? <Table.Th /> : null}
-            </Table.Row>
-          </Table.Head>
-          <Table.Body>
+              <Th>{i18n.unit.placements.type}</Th>
+              {canManageChildren ? <Th /> : null}
+            </Tr>
+          </Thead>
+          <Tbody>
             {sortedRows.map((row) =>
               'type' in row
                 ? renderMissingPlacementRow(
@@ -230,8 +231,8 @@ export default React.memo(function Placements({
                     canManageChildren
                   )
             )}
-          </Table.Body>
-        </Table.Table>
+          </Tbody>
+        </Table>
       </div>
       {uiMode == 'group-placement' && activeMissingPlacement && (
         <GroupPlacementModal

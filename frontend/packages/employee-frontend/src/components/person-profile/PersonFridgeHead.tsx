@@ -2,14 +2,15 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useEffect } from 'react'
 import { UUID } from '~types'
 import { useTranslation } from '~state/i18n'
 import { isFailure, isLoading, isSuccess, Loading, Success } from '~api'
 import { getPersonDetails } from '~api/person'
 import { useContext } from 'react'
 import { PersonContext, PersonState } from '~state/person'
-import { Collapsible, Loader } from '~components/shared/alpha'
+import Loader from '~components/shared/atoms/Loader'
+import CollapsibleSection from '~components/shared/molecules/CollapsibleSection'
 import { PersonDetails as PersonDetailsType } from '~types/person'
 import PersonDetails from '~components/person-shared/PersonDetails'
 import { faUser } from 'icon-set'
@@ -46,25 +47,18 @@ const PersonFridgeHead = React.memo(function PersonFridgeHead({ id }: Props) {
     }
   }, [formatTitleName, i18n.titles.customers, person, setTitle])
 
-  const [toggled, setToggled] = useState(true)
-  const toggle = useCallback(() => setToggled((toggled) => !toggled), [
-    setToggled
-  ])
-
   return (
     <div className="person-fridge-head-wrapper">
-      <Collapsible
+      <CollapsibleSection
         icon={faUser}
         title={i18n.personProfile.personDetails}
-        open={toggled}
-        onToggle={toggle}
       >
         <PersonDetails
           personResult={person}
           isChild={false}
           onUpdateComplete={(p) => updateData(p)}
         />
-      </Collapsible>
+      </CollapsibleSection>
       {isLoading(person) && <Loader />}
       {isFailure(person) && <div>{i18n.common.loadingFailed}</div>}
     </div>

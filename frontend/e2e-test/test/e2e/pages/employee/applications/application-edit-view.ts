@@ -39,7 +39,8 @@ export default class ApplicationEditView {
   )
   readonly guardianAgreementStatus = (status: OtherGuardianAgreementStatus) =>
     Selector(
-      `[data-qa="radio-other-guardian-agreement-status-${status ?? 'null'}"]`
+      `[data-qa="radio-other-guardian-agreement-status-${status ?? 'null'}"]`,
+      { timeout: 50 }
     )
   readonly saveButton = Selector('[data-qa="save-application"]')
 

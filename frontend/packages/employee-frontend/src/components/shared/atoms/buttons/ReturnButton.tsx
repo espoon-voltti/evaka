@@ -12,6 +12,7 @@ import InlineButton from 'components/shared/atoms/buttons/InlineButton'
 const ReturnButtonWrapper = styled.div`
   margin-top: 40px;
   margin-bottom: -35px;
+  display: inline-block;
 
   button {
     padding-left: 0;

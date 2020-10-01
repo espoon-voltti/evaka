@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useCallback, useState } from 'react'
+import React, { useState } from 'react'
 import { UUID } from '~types'
 import { useTranslation } from '~state/i18n'
 import { useEffect } from 'react'
@@ -10,7 +10,9 @@ import { isFailure, isLoading, isSuccess, Loading, Result } from '~api'
 import { useContext } from 'react'
 import { PersonContext } from '~state/person'
 import { formatName } from '~utils'
-import { Collapsible, Loader, Table } from '~components/shared/alpha'
+import { Table, Tbody, Td, Th, Thead, Tr } from 'components/shared/layout/Table'
+import Loader from '~components/shared/atoms/Loader'
+import CollapsibleSection from 'components/shared/molecules/CollapsibleSection'
 import { Parentship } from '~types/fridge'
 import * as _ from 'lodash'
 import { faChild, faQuestion } from 'icon-set'
@@ -44,10 +46,6 @@ const PersonFridgeChild = React.memo(function PersonFridgeChild({
     UIContext
   )
   const [selectedParentshipId, setSelectedParentshipId] = useState('')
-  const [toggled, setToggled] = useState(open)
-  const toggle = useCallback(() => setToggled((toggled) => !toggled), [
-    setToggled
-  ])
 
   const loadData = () => {
     setParentships(Loading())
@@ -117,9 +115,9 @@ const PersonFridgeChild = React.memo(function PersonFridgeChild({
           ['desc', 'desc']
         ).map((fridgeChild: Parentship, i: number) => {
           return (
-            <Table.Row
+            <Tr
               key={`${fridgeChild.child.id}-${i}`}
-              dataQa="table-fridge-child-row"
+              data-qa="table-fridge-child-row"
             >
               <NameTd>
                 <Link to={`/child-information/${fridgeChild.child.id}`}>
@@ -130,13 +128,13 @@ const PersonFridgeChild = React.memo(function PersonFridgeChild({
                   )}
                 </Link>
               </NameTd>
-              <Table.Td>
+              <Td>
                 {fridgeChild.child.socialSecurityNumber ??
                   fridgeChild.child.dateOfBirth.format()}
-              </Table.Td>
-              <Table.Td dataQa="child-age">
+              </Td>
+              <Td data-qa="child-age">
                 {getAge(fridgeChild.child.dateOfBirth)}
-              </Table.Td>
+              </Td>
               <DateTd>{fridgeChild.startDate.format()}</DateTd>
               <DateTd>{fridgeChild.endDate?.format()}</DateTd>
               <ButtonsTd>
@@ -162,7 +160,7 @@ const PersonFridgeChild = React.memo(function PersonFridgeChild({
                   conflict={fridgeChild.conflict}
                 />
               </ButtonsTd>
-            </Table.Row>
+            </Tr>
           )
         })
       : null
@@ -170,11 +168,10 @@ const PersonFridgeChild = React.memo(function PersonFridgeChild({
   return (
     <div>
       {renderFridgeChildModal()}
-      <Collapsible
+      <CollapsibleSection
         icon={faChild}
         title={i18n.personProfile.fridgeChildOfHead}
-        open={toggled}
-        onToggle={toggle}
+        startCollapsed={!open}
         dataQa="person-children-collapsible"
       >
         <AddButtonRow
@@ -184,22 +181,22 @@ const PersonFridgeChild = React.memo(function PersonFridgeChild({
           }}
           data-qa="add-child-button"
         />
-        <Table.Table dataQa="table-of-children">
-          <Table.Head>
-            <Table.Row>
-              <Table.Th>{i18n.common.form.name}</Table.Th>
-              <Table.Th>{i18n.common.form.socialSecurityNumber}</Table.Th>
-              <Table.Th>{i18n.common.form.age}</Table.Th>
-              <Table.Th>{i18n.common.form.startDate}</Table.Th>
-              <Table.Th>{i18n.common.form.endDate}</Table.Th>
-              <Table.Th />
-            </Table.Row>
-          </Table.Head>
-          <Table.Body>{renderFridgeChildren()}</Table.Body>
-        </Table.Table>
+        <Table data-qa="table-of-children">
+          <Thead>
+            <Tr>
+              <Th>{i18n.common.form.name}</Th>
+              <Th>{i18n.common.form.socialSecurityNumber}</Th>
+              <Th>{i18n.common.form.age}</Th>
+              <Th>{i18n.common.form.startDate}</Th>
+              <Th>{i18n.common.form.endDate}</Th>
+              <Th />
+            </Tr>
+          </Thead>
+          <Tbody>{renderFridgeChildren()}</Tbody>
+        </Table>
         {isLoading(parentships) && <Loader />}
         {isFailure(parentships) && <div>{i18n.common.loadingFailed}</div>}
-      </Collapsible>
+      </CollapsibleSection>
     </div>
   )
 })

@@ -3,14 +3,13 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useContext, useEffect, useState } from 'react'
-import {
-  Button,
-  Container,
-  ContentArea,
-  Loader,
-  Table,
-  Title
-} from '~components/shared/alpha'
+
+import { Container, ContentArea } from '~components/shared/layout/Container'
+import { Table, Tbody, Td, Th, Thead, Tr } from 'components/shared/layout/Table'
+import Loader from '~components/shared/atoms/Loader'
+import Title from '~components/shared/atoms/Title'
+import Button from '~components/shared/atoms/buttons/Button'
+import IconButton from '~components/shared/atoms/buttons/IconButton'
 import { RouteComponentProps } from 'react-router'
 import { UUID } from '~types'
 import { isFailure, isLoading, isSuccess, Loading, Result } from '~api'
@@ -21,24 +20,26 @@ import { capitalizeFirstLetter } from '~utils'
 import { getStatusLabelByDateRange } from '~utils/date'
 import StatusLabel from '~components/common/StatusLabel'
 import styled from 'styled-components'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faPen, faQuestion, faTrash } from 'icon-set'
 import GroupCaretakersModal from '~components/group-caretakers/GroupCaretakersModal'
 import InfoModal from '~components/common/InfoModal'
 import { useTranslation } from '~state/i18n'
 import ReturnButton from 'components/shared/atoms/buttons/ReturnButton'
+import { FixedSpaceRow } from './shared/layout/flex-helpers'
 
 const NarrowContainer = styled.div`
   max-width: 900px;
 `
 
-const Td = styled(Table.Td)`
+const StyledTd = styled(Td)`
   vertical-align: middle !important;
   padding: 8px 16px !important;
 `
 
-const StatusTd = styled(Td)`
+const StatusTd = styled(StyledTd)`
   width: 30%;
+  vertical-align: middle !important;
+  padding: 8px 16px !important;
 
   > div {
     display: flex;
@@ -53,10 +54,6 @@ const FlexRow = styled.div`
 
 const FlexRowRightAlign = styled(FlexRow)`
   justify-content: flex-end;
-`
-
-const NarrowButton = styled(Button)`
-  min-width: unset;
 `
 
 type Props = RouteComponentProps<{ unitId: UUID; groupId: UUID }>
@@ -107,54 +104,53 @@ function GroupCaretakers({
             </Title>
             <p>{i18n.groupCaretakers.info}</p>
             <FlexRowRightAlign>
-              <Button plain onClick={() => setModalOpen(true)}>
-                {i18n.groupCaretakers.create}
-              </Button>
+              <Button
+                onClick={() => setModalOpen(true)}
+                text={i18n.groupCaretakers.create}
+              />
             </FlexRowRightAlign>
-            <Table.Table>
-              <Table.Head>
-                <Table.Row>
-                  <Table.Th>{i18n.groupCaretakers.startDate}</Table.Th>
-                  <Table.Th>{i18n.groupCaretakers.endDate}</Table.Th>
-                  <Table.Th>{i18n.groupCaretakers.amount}</Table.Th>
-                  <Table.Th>{i18n.groupCaretakers.status}</Table.Th>
-                </Table.Row>
-              </Table.Head>
-              <Table.Body>
+            <Table>
+              <Thead>
+                <Tr>
+                  <Th>{i18n.groupCaretakers.startDate}</Th>
+                  <Th>{i18n.groupCaretakers.endDate}</Th>
+                  <Th>{i18n.groupCaretakers.amount}</Th>
+                  <Th>{i18n.groupCaretakers.status}</Th>
+                </Tr>
+              </Thead>
+              <Tbody>
                 {caretakers.data.caretakers.map((row) => (
-                  <Table.Row key={row.id}>
-                    <Td>{row.startDate.format()}</Td>
-                    <Td>{row.endDate ? row.endDate.format() : ''}</Td>
-                    <Td>
+                  <Tr key={row.id}>
+                    <StyledTd>{row.startDate.format()}</StyledTd>
+                    <StyledTd>
+                      {row.endDate ? row.endDate.format() : ''}
+                    </StyledTd>
+                    <StyledTd>
                       {row.amount.toLocaleString()}{' '}
                       {i18n.groupCaretakers.amountUnit}
-                    </Td>
+                    </StyledTd>
                     <StatusTd>
                       <div>
                         <StatusLabel status={getStatusLabelByDateRange(row)} />
-                        <FlexRow>
-                          <NarrowButton
-                            plain
+                        <FixedSpaceRow>
+                          <IconButton
                             onClick={() => {
                               setRowToEdit(row)
                               setModalOpen(true)
                             }}
-                          >
-                            <FontAwesomeIcon icon={faPen} size="lg" />
-                          </NarrowButton>
-                          <NarrowButton
-                            plain
+                            icon={faPen}
+                          />
+                          <IconButton
                             onClick={() => setRowToDelete(row)}
-                          >
-                            <FontAwesomeIcon icon={faTrash} size="lg" />
-                          </NarrowButton>
-                        </FlexRow>
+                            icon={faTrash}
+                          />
+                        </FixedSpaceRow>
                       </div>
                     </StatusTd>
-                  </Table.Row>
+                  </Tr>
                 ))}
-              </Table.Body>
-            </Table.Table>
+              </Tbody>
+            </Table>
 
             {modalOpen && (
               <GroupCaretakersModal

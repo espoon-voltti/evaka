@@ -3,12 +3,10 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
-import {
-  Section,
-  Title,
-  LabelValueList,
-  LabelValueListItem
-} from '~components/shared/alpha'
+
+import LabelValueList from '~components/common/LabelValueList'
+import Section from '~components/shared/layout/Section'
+import Title from '~components/shared/atoms/Title'
 import { useTranslation } from '../../state/i18n'
 import { formatCents } from '../../utils/money'
 import { Income, IncomeType, incomeTypes } from '../../types/income'
@@ -66,58 +64,64 @@ function IncomeSection({ decision }: Props) {
     )
   }
 
+  function contents() {
+    const first: {
+      label: React.ReactNode
+      value: React.ReactNode
+      valueWidth?: string
+      dataQa?: string
+    }[] = [
+      {
+        label: i18n.feeDecision.form.summary.income.effect.label,
+        value:
+          i18n.feeDecision.form.summary.income.effect[decision.incomeEffect]
+      }
+    ]
+
+    const second: {
+      label: React.ReactNode
+      value: React.ReactNode
+      valueWidth?: string
+      dataQa?: string
+    }[] = decision.partner
+      ? [
+          {
+            label: formatName(
+              decision.partner.firstName,
+              decision.partner.lastName,
+              i18n
+            ),
+            value: personIncome(decision.partnerIncome)
+          }
+        ]
+      : []
+    return first.concat(second)
+  }
+
   return (
     <Section>
       <Title size={3}>
         {i18n.feeDecision.form.summary.income.familyComposition}
       </Title>
-      <LabelValueList>
-        <LabelValueListItem
-          label={i18n.feeDecision.form.summary.income.familySize}
-          value={`${decision.familySize} ${i18n.feeDecision.form.summary.income.persons}`}
-          dataQa="summary-income-effect"
-        />
-        <LabelValueListItem
-          label={i18n.feeDecision.form.summary.income.feePercent}
-          value={`${formatPercent(decision.feePercent) ?? ''} %`}
-          dataQa="summary-income-feePercent"
-        />
-        <LabelValueListItem
-          label={i18n.feeDecision.form.summary.income.minThreshold}
-          value={`${formatCents(decision.minThreshold) ?? ''} €`}
-          dataQa="summary-income-minThreshold"
-        />
-      </LabelValueList>
-      <Title size={3}>{i18n.feeDecision.form.summary.income.title}</Title>
-      <LabelValueList>
-        <LabelValueListItem
-          label={i18n.feeDecision.form.summary.income.effect.label}
-          value={
-            i18n.feeDecision.form.summary.income.effect[decision.incomeEffect]
+      <LabelValueList
+        spacing="small"
+        contents={[
+          {
+            label: i18n.feeDecision.form.summary.income.familySize,
+            value: `${decision.familySize} ${i18n.feeDecision.form.summary.income.persons}`
+          },
+          {
+            label: i18n.feeDecision.form.summary.income.feePercent,
+            value: `${formatPercent(decision.feePercent) ?? ''} %`
+          },
+          {
+            label: i18n.feeDecision.form.summary.income.minThreshold,
+            value: `${formatCents(decision.minThreshold) ?? ''} €`
           }
-          dataQa="summary-income-effect"
-        />
-        <LabelValueListItem
-          label={formatName(
-            decision.headOfFamily.firstName,
-            decision.headOfFamily.lastName,
-            i18n
-          )}
-          value={personIncome(decision.headOfFamilyIncome)}
-          dataQa="summary-income-effect"
-        />
-        {decision.partner ? (
-          <LabelValueListItem
-            label={formatName(
-              decision.partner.firstName,
-              decision.partner.lastName,
-              i18n
-            )}
-            value={personIncome(decision.partnerIncome)}
-            dataQa="summary-income-effect"
-          />
-        ) : null}
-      </LabelValueList>
+        ]}
+      />
+      <Title size={3}>{i18n.feeDecision.form.summary.income.title}</Title>
+      <LabelValueList spacing="small" contents={contents()} />
       {decision.totalIncome && decision.totalIncome > 0 ? (
         <div
           className="total-price slim"

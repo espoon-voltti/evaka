@@ -5,8 +5,10 @@
 import React, { createRef, RefObject, useEffect } from 'react'
 import styled from 'styled-components'
 import { faChevronLeft, faChevronDown, faPen, faTrash } from 'icon-set'
-import { IconButton, Title } from '~components/shared/alpha'
+import IconButton from '~components/shared/atoms/buttons/IconButton'
+import Title from '~components/shared/atoms/Title'
 import { EspooColours } from '~utils/colours'
+import { FixedSpaceRow } from '~components/shared/layout/flex-helpers'
 
 const Container = styled.div`
   display: flex;
@@ -26,6 +28,10 @@ const Button = styled(IconButton)`
 
 const ToggleButton = styled(Button)`
   color: ${EspooColours.greyDark};
+`
+
+const Row = styled(FixedSpaceRow)`
+  align-items: center;
 `
 
 interface Props {
@@ -65,7 +71,7 @@ const IncomeItemHeader = React.memo(function IncomeItemHeader({
           <span>{period}</span>
         </Title>
       </ItemTitle>
-      <div>
+      <Row>
         <Button
           icon={faPen}
           onClick={() => {
@@ -89,7 +95,7 @@ const IncomeItemHeader = React.memo(function IncomeItemHeader({
           disabled={!toggleable}
           dataQa="toggle-income-item"
         />
-      </div>
+      </Row>
     </Container>
   )
 })

@@ -115,7 +115,6 @@ function Checkbox({
         if (!disabled && onChange) onChange(!checked)
       }}
       className={classNames(className, { disabled })}
-      data-qa={dataQa}
     >
       <Box>
         <CheckboxInput
@@ -129,6 +128,7 @@ function Checkbox({
           }}
           readOnly={!onChange}
           ref={inputRef}
+          data-qa={dataQa}
         />
         <IconWrapper>
           <FontAwesomeIcon icon={faCheck} />

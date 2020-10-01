@@ -3,10 +3,12 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useContext, useEffect, useState } from 'react'
-import { Table } from '~components/shared/alpha'
 import _ from 'lodash'
+import styled from 'styled-components'
+
+import { Table, Th, Tr, Thead, Tbody } from '~components/shared/layout/Table'
+import Title from '~components/shared/atoms/Title'
 import { useTranslation } from '~state/i18n'
-import { Title } from '~components/shared/alpha'
 import {
   DaycarePlacementPlan,
   PlacementPlanConfirmationStatus,
@@ -14,7 +16,6 @@ import {
 } from '~types/unit'
 import { Gap } from 'components/shared/layout/white-space'
 import Button from 'components/shared/atoms/buttons/Button'
-import styled from 'styled-components'
 import {
   acceptPlacementProposal,
   respondToPlacementProposal
@@ -128,20 +129,18 @@ export default React.memo(function PlacementProposals({
       )}
 
       <div>
-        <Table.Table>
-          <Table.Head>
-            <Table.Row>
-              <Table.Th>{i18n.unit.placementProposals.name}</Table.Th>
-              <Table.Th>{i18n.unit.placementProposals.birthday}</Table.Th>
-              <Table.Th>
-                {i18n.unit.placementProposals.placementDuration}
-              </Table.Th>
-              <Table.Th>{i18n.unit.placementProposals.type}</Table.Th>
-              <Table.Th>{i18n.unit.placementProposals.application}</Table.Th>
-              <Table.Th>{i18n.unit.placementProposals.confirmation}</Table.Th>
-            </Table.Row>
-          </Table.Head>
-          <Table.Body>
+        <Table>
+          <Thead>
+            <Tr>
+              <Th>{i18n.unit.placementProposals.name}</Th>
+              <Th>{i18n.unit.placementProposals.birthday}</Th>
+              <Th>{i18n.unit.placementProposals.placementDuration}</Th>
+              <Th>{i18n.unit.placementProposals.type}</Th>
+              <Th>{i18n.unit.placementProposals.application}</Th>
+              <Th>{i18n.unit.placementProposals.confirmation}</Th>
+            </Tr>
+          </Thead>
+          <Tbody>
             {sortedRows.map((p) => (
               <PlacementProposalRow
                 key={`${p.id}`}
@@ -157,8 +156,8 @@ export default React.memo(function PlacementProposals({
                 }
               />
             ))}
-          </Table.Body>
-        </Table.Table>
+          </Tbody>
+        </Table>
       </div>
       <Gap />
 

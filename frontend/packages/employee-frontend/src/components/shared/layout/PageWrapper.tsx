@@ -6,7 +6,7 @@ import React from 'react'
 import ReturnButton from 'components/shared/atoms/buttons/ReturnButton'
 
 // todo: write new container components
-import { Container, ContentArea } from 'components/shared/alpha/layout'
+import { Container, ContentArea } from 'components/shared/layout/Container'
 
 interface PageWrapperProps {
   children: React.ReactNode

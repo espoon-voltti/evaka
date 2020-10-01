@@ -4,12 +4,15 @@
 
 import { faChild } from 'icon-set'
 import * as _ from 'lodash'
-import React, { useCallback, useContext, useEffect, useState } from 'react'
+import React, { useContext, useEffect } from 'react'
 import { Link } from 'react-router-dom'
+
 import { isFailure, isLoading, isSuccess, Loading } from '~api'
 import { getPersonInvoices } from '~api/invoicing'
 import { StatusTd } from '~components/PersonProfile'
-import { Collapsible, Loader, Table } from '~components/shared/alpha'
+import { Table, Tbody, Td, Th, Thead, Tr } from 'components/shared/layout/Table'
+import Loader from '~components/shared/atoms/Loader'
+import CollapsibleSection from 'components/shared/molecules/CollapsibleSection'
 import { useTranslation } from '~state/i18n'
 import { PersonContext } from '~state/person'
 import { UUID } from '~types'
@@ -24,10 +27,6 @@ interface Props {
 const PersonInvoices = React.memo(function PersonInvoices({ id, open }: Props) {
   const { i18n } = useTranslation()
   const { invoices, setInvoices } = useContext(PersonContext)
-  const [toggled, setToggled] = useState(open)
-  const toggle = useCallback(() => setToggled((toggled) => !toggled), [
-    setToggled
-  ])
 
   useEffect(() => {
     setInvoices(Loading())
@@ -41,16 +40,16 @@ const PersonInvoices = React.memo(function PersonInvoices({ id, open }: Props) {
       ? _.orderBy(invoices.data, ['sentAt'], ['desc']).map(
           (invoice: Invoice) => {
             return (
-              <Table.Row key={`${invoice.id}`} dataQa="table-invoice-row">
-                <Table.Td>
+              <Tr key={`${invoice.id}`} data-qa="table-invoice-row">
+                <Td>
                   <Link to={`/invoices/${invoice.id}`}>
                     Lasku{' '}
                     {`${invoice.periodStart.format()} - ${invoice.periodEnd.format()}`}
                   </Link>
-                </Table.Td>
-                <Table.Td>{formatCents(invoice.totalPrice)}</Table.Td>
+                </Td>
+                <Td>{formatCents(invoice.totalPrice)}</Td>
                 <StatusTd>{i18n.invoice.status[invoice.status]}</StatusTd>
-              </Table.Row>
+              </Tr>
             )
           }
         )
@@ -58,26 +57,25 @@ const PersonInvoices = React.memo(function PersonInvoices({ id, open }: Props) {
 
   return (
     <div>
-      <Collapsible
+      <CollapsibleSection
         icon={faChild}
         title={i18n.personProfile.invoices}
-        open={toggled}
-        onToggle={toggle}
         dataQa="person-invoices-collapsible"
+        startCollapsed={!open}
       >
-        <Table.Table dataQa="table-of-invoices">
-          <Table.Head>
-            <Table.Row>
-              <Table.Th>{i18n.personProfile.invoice.validity}</Table.Th>
-              <Table.Th>{i18n.personProfile.invoice.price}</Table.Th>
-              <Table.Th>{i18n.personProfile.invoice.status}</Table.Th>
-            </Table.Row>
-          </Table.Head>
-          <Table.Body>{renderInvoices()}</Table.Body>
-        </Table.Table>
+        <Table data-qa="table-of-invoices">
+          <Thead>
+            <Tr>
+              <Th>{i18n.personProfile.invoice.validity}</Th>
+              <Th>{i18n.personProfile.invoice.price}</Th>
+              <Th>{i18n.personProfile.invoice.status}</Th>
+            </Tr>
+          </Thead>
+          <Tbody>{renderInvoices()}</Tbody>
+        </Table>
         {isLoading(invoices) && <Loader />}
         {isFailure(invoices) && <div>{i18n.common.loadingFailed}</div>}
-      </Collapsible>
+      </CollapsibleSection>
     </div>
   )
 })

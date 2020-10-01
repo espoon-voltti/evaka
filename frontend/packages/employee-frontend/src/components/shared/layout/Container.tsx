@@ -7,6 +7,7 @@ import {
   DefaultMargins,
   SpacingSize
 } from 'components/shared/layout/white-space'
+import { BaseProps } from 'components/shared/utils'
 
 export const Container = styled.div`
   margin: 0 auto;
@@ -34,13 +35,13 @@ export const Container = styled.div`
   }
 `
 
-interface ContentAreaProps {
+interface ContentAreaProps extends BaseProps {
   opaque: boolean
   paddingVertical?: SpacingSize
   paddingHorozontal?: SpacingSize
 }
 
-export const ContentArea = styled.div<ContentAreaProps>`
+export const ContentArea = styled.section<ContentAreaProps>`
   padding: ${(p) =>
     `${
       p.paddingVertical ? DefaultMargins[p.paddingVertical] : DefaultMargins.s

@@ -274,7 +274,9 @@ export class ApplicationWorkbenchPage {
   async clickApplicationCheckbox(applicationId: string) {
     await scrollThenClick(
       t,
-      Selector(`[data-qa="application-row-checkbox-${applicationId}"]`)
+      Selector(`[data-qa="application-row-checkbox-${applicationId}"]`, {
+        timeout: 50
+      })
     )
   }
 

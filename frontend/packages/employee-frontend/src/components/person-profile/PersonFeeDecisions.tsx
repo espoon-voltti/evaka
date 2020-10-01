@@ -5,16 +5,18 @@
 import React, { useCallback, useContext, useEffect, useState } from 'react'
 import styled from 'styled-components'
 import _ from 'lodash'
+import { Link } from 'react-router-dom'
+
 import { faChild, faPlus } from 'icon-set'
 import LocalDate from '@evaka/lib-common/src/local-date'
 import { UUID } from '~types'
 import { useTranslation, Translations } from '~state/i18n'
 import { UIContext } from '~state/ui'
 import { isFailure, isLoading, isSuccess, Loading, Result } from '~api'
-import { Link } from 'react-router-dom'
-import { Collapsible, Loader, Table } from '~components/shared/alpha'
+import CollapsibleSection from 'components/shared/molecules/CollapsibleSection'
+import { Table, Tbody, Td, Th, Thead, Tr } from 'components/shared/layout/Table'
+import Loader from '~components/shared/atoms/Loader'
 import { AddButtonRow } from 'components/shared/atoms/buttons/AddButton'
-import DateInput from '~components/common/DateInput'
 import FormModal from '~components/common/FormModal'
 import { formatDate } from '~utils/date'
 import {
@@ -25,6 +27,7 @@ import { FeeDecision } from '~types/invoicing'
 import { DateTd, StatusTd } from '~components/PersonProfile'
 import { formatCents } from '~utils/money'
 import { EspooColours } from '~utils/colours'
+import { DatePicker } from '~components/common/DatePicker'
 
 interface Props {
   id: UUID
@@ -40,10 +43,6 @@ const PersonFeeDecisions = React.memo(function PersonFeeDecisions({
   const [feeDecisions, setFeeDecisions] = useState<Result<FeeDecision[]>>(
     Loading()
   )
-  const [toggled, setToggled] = useState(open)
-  const toggle = useCallback(() => setToggled((toggled) => !toggled), [
-    setToggled
-  ])
 
   const loadDecisions = useCallback(() => {
     setFeeDecisions(Loading())
@@ -59,26 +58,23 @@ const PersonFeeDecisions = React.memo(function PersonFeeDecisions({
       ? _.orderBy(feeDecisions.data, ['createdAt'], ['desc']).map(
           (feeDecision: FeeDecision) => {
             return (
-              <Table.Row
-                key={`${feeDecision.id}`}
-                dataQa="table-fee-decision-row"
-              >
-                <Table.Td>
+              <Tr key={`${feeDecision.id}`} data-qa="table-fee-decision-row">
+                <Td>
                   <Link to={`/fee-decisions/${feeDecision.id}`}>
                     Maksupäätös{' '}
                     {`${feeDecision.validFrom.format()} - ${
                       feeDecision.validTo?.format() ?? ''
                     }`}
                   </Link>
-                </Table.Td>
-                <Table.Td>{formatCents(feeDecision.totalFee)}</Table.Td>
-                <Table.Td>{feeDecision.decisionNumber}</Table.Td>
+                </Td>
+                <Td>{formatCents(feeDecision.totalFee)}</Td>
+                <Td>{feeDecision.decisionNumber}</Td>
                 <DateTd>{formatDate(feeDecision.createdAt)}</DateTd>
                 <DateTd>{formatDate(feeDecision.sentAt)}</DateTd>
                 <StatusTd>
                   {i18n.feeDecision.status[feeDecision.status]}
                 </StatusTd>
-              </Table.Row>
+              </Tr>
             )
           }
         )
@@ -86,12 +82,11 @@ const PersonFeeDecisions = React.memo(function PersonFeeDecisions({
 
   return (
     <div>
-      <Collapsible
+      <CollapsibleSection
         icon={faChild}
         title={i18n.personProfile.feeDecisions.title}
-        open={toggled}
-        onToggle={toggle}
         dataQa="person-fee-decisions-collapsible"
+        startCollapsed={!open}
       >
         {uiMode === 'create-retroactive-fee-decision' ? (
           <Modal
@@ -109,22 +104,22 @@ const PersonFeeDecisions = React.memo(function PersonFeeDecisions({
           disabled={!!uiMode}
           dataQa="create-retroactive-fee-decision-button"
         />
-        <Table.Table dataQa="table-of-fee-decisions">
-          <Table.Head>
-            <Table.Row>
-              <Table.Th>{i18n.feeDecisions.table.validity}</Table.Th>
-              <Table.Th>{i18n.feeDecisions.table.price}</Table.Th>
-              <Table.Th>{i18n.feeDecisions.table.number}</Table.Th>
-              <Table.Th>{i18n.feeDecisions.table.createdAt}</Table.Th>
-              <Table.Th>{i18n.feeDecisions.table.sentAt}</Table.Th>
-              <Table.Th>{i18n.feeDecisions.table.status}</Table.Th>
-            </Table.Row>
-          </Table.Head>
-          <Table.Body>{renderFeeDecisions()}</Table.Body>
-        </Table.Table>
+        <Table data-qa="table-of-fee-decisions">
+          <Thead>
+            <Tr>
+              <Th>{i18n.feeDecisions.table.validity}</Th>
+              <Th>{i18n.feeDecisions.table.price}</Th>
+              <Th>{i18n.feeDecisions.table.number}</Th>
+              <Th>{i18n.feeDecisions.table.createdAt}</Th>
+              <Th>{i18n.feeDecisions.table.sentAt}</Th>
+              <Th>{i18n.feeDecisions.table.status}</Th>
+            </Tr>
+          </Thead>
+          <Tbody>{renderFeeDecisions()}</Tbody>
+        </Table>
         {isLoading(feeDecisions) && <Loader />}
         {isFailure(feeDecisions) && <div>{i18n.common.loadingFailed}</div>}
-      </Collapsible>
+      </CollapsibleSection>
     </div>
   )
 })
@@ -192,11 +187,10 @@ const Modal = React.memo(function Modal({
       <ModalContent>
         <InputContainer>
           <Label>Alkaen</Label>
-          <DateInput
-            initial={undefined}
-            onChange={(date?: LocalDate | 'invalid') =>
-              date === 'invalid' ? setDate(undefined) : setDate(date)
-            }
+          <DatePicker
+            type={'full-width'}
+            date={date ?? undefined}
+            onChange={(value) => setDate(value)}
           />
         </InputContainer>
         {error ? (

@@ -4,7 +4,21 @@
 
 import React, { useContext, useEffect, useMemo, useState } from 'react'
 import { orderBy } from 'lodash'
-import { ContentArea, Loader, Table, Title } from '~components/shared/alpha'
+import ReactSelect, { components } from 'react-select'
+import styled from 'styled-components'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+
+import { ContentArea } from '~components/shared/layout/Container'
+import Loader from '~components/shared/atoms/Loader'
+import Title from '~components/shared/atoms/Title'
+import {
+  Table,
+  Th,
+  Tr,
+  Td,
+  Thead,
+  Tbody
+} from '~components/shared/layout/Table'
 import InfoModal from '~components/common/InfoModal'
 import { isFailure, isLoading, isSuccess, Loading, Result } from '~api'
 import {
@@ -24,9 +38,6 @@ import { useTranslation } from '~state/i18n'
 import IconButton from '~components/shared/atoms/buttons/IconButton'
 import { faPlusCircle, faQuestion, faTrash } from '~icon-set'
 import { H2 } from '~components/shared/Typography'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import styled from 'styled-components'
-import ReactSelect, { components } from 'react-select'
 import Button from '~components/shared/atoms/buttons/Button'
 import { UUID } from '~types'
 import { UIContext } from '~state/ui'
@@ -50,15 +61,15 @@ function AclRow({
   onClickDelete: () => void
 }) {
   return (
-    <Table.Row dataQa="acl-row">
-      <Table.Td dataQa="name">{row.name}</Table.Td>
-      <Table.Td dataQa="email">{row.email}</Table.Td>
-      <Table.Td>
+    <Tr data-qa="acl-row">
+      <Td data-qa="name">{row.name}</Td>
+      <Td data-qa="email">{row.email}</Td>
+      <Td>
         {isDeletable && (
-          <IconButton icon={faTrash} onClick={onClickDelete} dataQa="delete" />
+          <IconButton icon={faTrash} onClick={onClickDelete} data-qa="delete" />
         )}
-      </Table.Td>
-    </Table.Row>
+      </Td>
+    </Tr>
   )
 }
 
@@ -98,15 +109,15 @@ function AclTable({
   const { user } = useContext(UserContext)
 
   return (
-    <Table.Table dataQa="acl-table">
-      <Table.Head>
-        <Table.Row>
-          <Table.Th>{i18n.common.form.name}</Table.Th>
-          <Table.Th>{i18n.unit.accessControl.email}</Table.Th>
-          <Table.Th />
-        </Table.Row>
-      </Table.Head>
-      <Table.Body>
+    <Table data-qa="acl-table">
+      <Thead>
+        <Tr>
+          <Th>{i18n.common.form.name}</Th>
+          <Th>{i18n.unit.accessControl.email}</Th>
+          <Th />
+        </Tr>
+      </Thead>
+      <Tbody>
         {rows.map((row) => (
           <AclRow
             key={row.id}
@@ -115,8 +126,8 @@ function AclTable({
             onClickDelete={() => onDeleteAclRow(row.id)}
           />
         ))}
-      </Table.Body>
-    </Table.Table>
+      </Tbody>
+    </Table>
   )
 }
 
@@ -310,7 +321,7 @@ function UnitAccessControl({ unitId }: Props) {
     <>
       {uiMode === `remove-daycare-acl-${unitId}` && <DeleteConfirmationModal />}
       <RequireRole oneOf={['ADMIN']}>
-        <ContentArea opaque dataQa="daycare-acl-supervisors">
+        <ContentArea opaque data-qa="daycare-acl-supervisors">
           <H2>{i18n.unit.accessControl.unitSupervisors}</H2>
           {loading && <Loader />}
           {failed && !loading && <div>{i18n.common.loadingFailed}</div>}
@@ -332,7 +343,7 @@ function UnitAccessControl({ unitId }: Props) {
         </ContentArea>
       </RequireRole>
       <RequireRole oneOf={['ADMIN', 'UNIT_SUPERVISOR']}>
-        <ContentArea opaque dataQa="daycare-acl-staff">
+        <ContentArea opaque data-qa="daycare-acl-staff">
           <H2>{i18n.unit.accessControl.staff}</H2>
           {loading && <Loader />}
           {failed && !loading && <div>{i18n.common.loadingFailed}</div>}

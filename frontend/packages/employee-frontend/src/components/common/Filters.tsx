@@ -4,11 +4,13 @@
 
 import React, { useCallback, Fragment } from 'react'
 import styled from 'styled-components'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import ReactSelect from 'react-select'
+
 import { faSearch, faTimes, faTrash } from 'icon-set'
 import LocalDate from '@evaka/lib-common/src/local-date'
-import { Button, Icon, Radio } from '~components/shared/alpha'
+import InlineButton from 'components/shared/atoms/buttons/InlineButton'
 import { DatePickerClearable } from '~components/common/DatePicker'
-import Select from '../common/Select'
 import { useTranslation } from '~state/i18n'
 import {
   DecisionDistinctiveDetails,
@@ -23,26 +25,17 @@ import {
   FixedSpaceRow
 } from 'components/shared/layout/flex-helpers'
 import Checkbox from '~components/shared/atoms/form/Checkbox'
-import Radio1 from '~components/shared/atoms/form/Radio'
+import Radio from '~components/shared/atoms/form/Radio'
 import { Gap, DefaultMargins } from '~components/shared/layout/white-space'
 import { FlexRow } from './styled/containers'
 import RoundIcon from '~components/shared/atoms/RoundIcon'
 import IconButton from '~components/shared/atoms/buttons/IconButton'
 import Colors from '~components/shared/Colors'
 import { faAngleDown, faAngleUp } from 'icon-set'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import MultiSelect, { SelectOptionProp } from './MultiSelect'
 import Tooltip from '~components/common/Tooltip'
 import { CareArea } from '~types/unit'
-
-const LabelText = styled.span`
-  font-weight: 600;
-  font-size: 16px;
-`
-
-const Label = styled.label`
-  margin-bottom: 8px;
-`
+import { Label, LabelText } from '~components/common/styled/common'
 
 interface Props {
   freeText: string
@@ -64,6 +57,9 @@ const ClearOptions = styled.div<ClearOptionsProps>`
 
   button {
     margin-top: ${(p) => (p.clearMargin ? `${p.clearMargin}px` : '0px')};
+    display: ${(p) => (p.clearMargin ? 'block' : 'inline-block')};
+    padding: calc(0.375em - 1px) 0.75em;
+    height: 40px;
   }
 `
 
@@ -92,9 +88,11 @@ export function Filters({
         <div className="column c3">{column3}</div>
       </div>
       <ClearOptions clearMargin={clearMargin}>
-        <Button plain icon={faTrash} onClick={clearFilters}>
-          {i18n.filters.clear}
-        </Button>
+        <InlineButton
+          icon={faTrash}
+          onClick={clearFilters}
+          text={i18n.filters.clear}
+        />
       </ClearOptions>
     </div>
   )
@@ -148,7 +146,7 @@ const SearchInput = styled.input`
   }
 `
 
-const CustomIcon = styled(Icon)`
+const CustomIcon = styled(FontAwesomeIcon)`
   color: ${Colors.greyscale.dark};
   margin: 0 0.5rem;
   position: relative;
@@ -227,22 +225,23 @@ export function AreaFilter({
 
 interface UnitFilterProps {
   units: { id: string; label: string }[]
-  selected: string
+  selected?: { id: string; label: string }
   select: (unit: string) => void
 }
 
 export function UnitFilter({ units, selected, select }: UnitFilterProps) {
   const { i18n } = useTranslation()
-
   return (
     <>
       <Label>
         <LabelText>{i18n.filters.unit}</LabelText>
-        <Select
+        <ReactSelect
           placeholder={i18n.filters.unitPlaceholder}
           options={units}
-          value={selected}
-          onChange={(e) => select(e.target.value)}
+          onChange={(option) =>
+            option && 'id' in option ? select(option.id) : undefined
+          }
+          defaultValue={selected}
         />
       </Label>
     </>
@@ -273,17 +272,18 @@ export function FeeDecisionStatusFilter({
       <Label>
         <LabelText>{i18n.filters.status}</LabelText>
       </Label>
-      {statuses.map((id) => (
-        <Radio
-          key={id}
-          id={id}
-          label={i18n.feeDecision.status[id]}
-          value={id}
-          model={toggled}
-          onChange={toggle(id)}
-          dataQa={`fee-decision-status-filter-${id}`}
-        />
-      ))}
+      <FixedSpaceColumn spacing={'xs'}>
+        {statuses.map((id) => (
+          <Radio
+            key={id}
+            label={i18n.feeDecision.status[id]}
+            checked={toggled === id}
+            onChange={toggle(id)}
+            dataQa={`fee-decision-status-filter-${id}`}
+            small
+          />
+        ))}
+      </FixedSpaceColumn>
     </>
   )
 }
@@ -396,17 +396,18 @@ export function InvoiceStatusFilter({
       <Label>
         <LabelText>{i18n.filters.status}</LabelText>
       </Label>
-      {statuses.map((id) => (
-        <Radio
-          key={id}
-          id={id}
-          label={i18n.invoice.status[id]}
-          value={id}
-          model={toggled}
-          onChange={toggle(id)}
-          dataQa={`invoice-status-filter-${id}`}
-        />
-      ))}
+      <FixedSpaceColumn spacing={'xs'}>
+        {statuses.map((id) => (
+          <Radio
+            key={id}
+            label={i18n.invoice.status[id]}
+            checked={toggled === id}
+            onChange={toggle(id)}
+            dataQa={`invoice-status-filter-${id}`}
+            small
+          />
+        ))}
+      </FixedSpaceColumn>
     </>
   )
 }
@@ -544,7 +545,7 @@ export function ApplicationTypeFilter({
       <FixedSpaceColumn spacing={'xs'}>
         {types.map((id) => {
           return id != 'PRESCHOOL' ? (
-            <Radio1
+            <Radio
               key={id}
               label={i18n.applications.types[id]}
               checked={toggled === id}
@@ -554,7 +555,7 @@ export function ApplicationTypeFilter({
             />
           ) : (
             <Fragment key={id}>
-              <Radio1
+              <Radio
                 key={id}
                 label={i18n.applications.types[id]}
                 labelIcon={
@@ -647,7 +648,7 @@ export function ApplicationStatusFilter({
       </Label>
       <FixedSpaceColumn spacing={'xs'}>
         {statuses.map((id: ApplicationSummaryStatusOptions) => (
-          <Radio1
+          <Radio
             key={id}
             label={i18n.application.statuses[id]}
             labelIcon={
@@ -970,21 +971,21 @@ export function TransferApplicationsFilter({
         <LabelText>{i18n.applications.list.transferFilter.title}</LabelText>
       </Label>
       <FixedSpaceColumn spacing={'xs'}>
-        <Radio1
+        <Radio
           dataQa="filter-transfer-only"
           label={i18n.applications.list.transferFilter.transferOnly}
           checked={selected === 'TRANSFER_ONLY'}
           onChange={() => setSelected('TRANSFER_ONLY')}
           small
         />
-        <Radio1
+        <Radio
           dataQa="filter-transfer-exclude"
           label={i18n.applications.list.transferFilter.hideTransfer}
           checked={selected === 'NO_TRANSFER'}
           onChange={() => setSelected('NO_TRANSFER')}
           small
         />
-        <Radio1
+        <Radio
           dataQa="filter-transfer-all"
           label={i18n.applications.list.transferFilter.all}
           checked={selected === 'ALL'}

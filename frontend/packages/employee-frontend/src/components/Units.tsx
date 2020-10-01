@@ -3,27 +3,31 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useContext, useEffect } from 'react'
+import styled from 'styled-components'
+import * as _ from 'lodash'
+import { Link } from 'react-router-dom'
+
 import { isFailure, isLoading, isSuccess } from '~api'
 import { SearchColumn, UnitsContext, UnitsState } from '~state/units'
+import Button from 'components/shared/atoms/buttons/Button'
+import InputField from 'components/shared/atoms/form/InputField'
+import { Container, ContentArea } from 'components/shared/layout/Container'
 import {
-  Button,
-  Buttons,
-  Container,
-  ContentArea,
-  Input,
-  Loader,
-  Table
-} from '~components/shared/alpha'
+  Table,
+  Tr,
+  Td,
+  Thead,
+  Tbody,
+  SortableTh
+} from '~components/shared/layout/Table'
+import { Gap } from 'components/shared/layout/white-space'
 import { useTranslation } from '~state/i18n'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faSearch } from 'icon-set'
 import { getDaycares } from '~api/unit'
 import { Unit } from '~types/unit'
-import * as _ from 'lodash'
-import { Link } from 'react-router-dom'
 import { RequireRole } from '~utils/roles'
 import '~components/Units.scss'
-import styled from 'styled-components'
+import Loader from './shared/atoms/Loader'
 
 const TopBar = styled.div`
   display: flex;
@@ -73,12 +77,12 @@ function Units() {
           )
           .map((unit: Unit) => {
             return (
-              <Table.Row key={unit.id} dataQa="unit-row">
-                <Table.Td>
+              <Tr key={unit.id} data-qa="unit-row">
+                <Td>
                   <Link to={`/units/${unit.id}`}>{unit.name}</Link>
-                </Table.Td>
-                <Table.Td>{unit.area.name}</Table.Td>
-                <Table.Td>
+                </Td>
+                <Td>{unit.area.name}</Td>
+                <Td>
                   {unit.visitingAddress.streetAddress &&
                   unit.visitingAddress.postalCode
                     ? [
@@ -86,11 +90,11 @@ function Units() {
                         unit.visitingAddress.postalCode
                       ].join(', ')
                     : unit.visitingAddress.streetAddress}
-                </Table.Td>
-                <Table.Td>
+                </Td>
+                <Td>
                   {unit.type.map((type) => i18n.common.types[type]).join(', ')}
-                </Table.Td>
-              </Table.Row>
+                </Td>
+              </Tr>
             )
           })
       : null
@@ -99,84 +103,80 @@ function Units() {
     <>
       <div className="units-wrapper" data-qa="units-page">
         <Container>
+          <Gap size={'L'} />
           <ContentArea opaque>
+            <Gap size={'XXL'} />
             <TopBar>
-              <div className="input-search">
-                <Input
-                  dataQa="unit-name-filter"
-                  value={filter}
-                  placeholder={i18n.units.findByName}
-                  onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
-                    setFilter(event.target.value)
-                  }}
-                />
-                <Button plain disabled>
-                  <FontAwesomeIcon icon={faSearch} size="lg" />
-                </Button>
-              </div>
+              <InputField
+                dataQa="unit-name-filter"
+                value={filter}
+                placeholder={i18n.units.findByName}
+                onChange={(value) => {
+                  setFilter(value)
+                }}
+                icon={faSearch}
+                width={'L'}
+              />
               <RequireRole oneOf={['ADMIN']}>
-                <Buttons>
+                <div>
                   <Button
-                    dataQa="create-new-unit"
+                    data-qa="create-new-unit"
                     className="units-wrapper-create"
                     onClick={() => {
                       window.location.href = '/employee/units/new'
                     }}
-                  >
-                    {i18n.unit.create}
-                  </Button>
-                </Buttons>
+                    text={i18n.unit.create}
+                  />
+                </div>
               </RequireRole>
             </TopBar>
+            <Gap size={'XXL'} />
             <>
               <div className="table-of-units">
-                <Table.Table dataQa="table-of-units">
-                  <Table.Head>
-                    <Table.Row>
-                      <Table.HeadButton
-                        sortable
+                <Table data-qa="table-of-units">
+                  <Thead>
+                    <Tr>
+                      <SortableTh
                         sorted={
                           sortColumn === 'name' ? sortDirection : undefined
                         }
                         onClick={() => sortBy('name')}
                       >
                         {i18n.units.name}
-                      </Table.HeadButton>
-                      <Table.HeadButton
-                        sortable
+                      </SortableTh>
+                      <SortableTh
                         sorted={
                           sortColumn === 'area.name' ? sortDirection : undefined
                         }
                         onClick={() => sortBy('area.name')}
                       >
                         {i18n.units.area}
-                      </Table.HeadButton>
-                      <Table.HeadButton
-                        sortable
+                      </SortableTh>
+                      <SortableTh
                         sorted={
                           sortColumn === 'address' ? sortDirection : undefined
                         }
                         onClick={() => sortBy('address')}
                       >
                         {i18n.units.address}
-                      </Table.HeadButton>
-                      <Table.HeadButton
-                        sortable
+                      </SortableTh>
+                      <SortableTh
                         sorted={
                           sortColumn === 'type' ? sortDirection : undefined
                         }
                         onClick={() => sortBy('type')}
                       >
                         {i18n.units.type}
-                      </Table.HeadButton>
-                    </Table.Row>
-                  </Table.Head>
-                  <Table.Body>{renderUnits()}</Table.Body>
-                </Table.Table>
+                      </SortableTh>
+                    </Tr>
+                  </Thead>
+                  <Tbody>{renderUnits()}</Tbody>
+                </Table>
               </div>
             </>
             {isLoading(units) && <Loader />}
             {isFailure(units) && <div>{i18n.common.loadingFailed}</div>}
+            <Gap size={'XXL'} />
           </ContentArea>
         </Container>
       </div>

@@ -3,15 +3,16 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useEffect, useMemo, useState } from 'react'
-import {
-  Container,
-  ContentArea,
-  Loader,
-  Table,
-  Title
-} from '~components/shared/alpha'
-import { useTranslation } from '~state/i18n'
+import ReactSelect from 'react-select'
+import styled from 'styled-components'
 import { Link } from 'react-router-dom'
+
+import { Container, ContentArea } from '~components/shared/layout/Container'
+import Loader from '~components/shared/atoms/Loader'
+import Title from '~components/shared/atoms/Title'
+import { Th, Tr, Td, Thead, Tbody } from '~components/shared/layout/Table'
+import { reactSelectStyles } from '~components/shared/utils'
+import { useTranslation } from '~state/i18n'
 import { isFailure, isLoading, isSuccess, Loading, Result } from '~api'
 import ReturnButton from 'components/shared/atoms/buttons/ReturnButton'
 import ReportDownload from '~components/reports/ReportDownload'
@@ -23,7 +24,6 @@ import {
   RowCountInfo,
   TableScrollable
 } from 'components/reports/common'
-import SelectWithIcon from 'components/common/Select'
 import { distinct } from 'utils'
 
 interface DisplayFilters {
@@ -33,6 +33,10 @@ interface DisplayFilters {
 const emptyDisplayFilters: DisplayFilters = {
   careArea: ''
 }
+
+const Wrapper = styled.div`
+  width: 100%;
+`
 
 function PartnersInDifferentAddress() {
   const { i18n } = useTranslation()
@@ -68,21 +72,27 @@ function PartnersInDifferentAddress() {
 
         <FilterRow>
           <FilterLabel>{i18n.reports.common.careAreaName}</FilterLabel>
-          <SelectWithIcon
-            options={[
-              { id: '', label: '' },
-              ...(isSuccess(rows)
-                ? distinct(
-                    rows.data.map((row) => row.careAreaName)
-                  ).map((s) => ({ id: s, label: s }))
-                : [])
-            ]}
-            value={displayFilters.careArea}
-            onChange={(e) =>
-              setDisplayFilters({ ...displayFilters, careArea: e.target.value })
-            }
-            fullWidth
-          />
+          <Wrapper>
+            <ReactSelect
+              options={[
+                { id: '', label: '' },
+                ...(isSuccess(rows)
+                  ? distinct(
+                      rows.data.map((row) => row.careAreaName)
+                    ).map((s) => ({ id: s, label: s }))
+                  : [])
+              ]}
+              onChange={(option) =>
+                option && 'id' in option
+                  ? setDisplayFilters({
+                      ...displayFilters,
+                      careArea: option.id
+                    })
+                  : undefined
+              }
+              styles={reactSelectStyles}
+            />
+          </Wrapper>
         </FilterRow>
 
         {isLoading(rows) && <Loader />}
@@ -104,48 +114,40 @@ function PartnersInDifferentAddress() {
               filename="Puolisot eri osoitteissa.csv"
             />
             <TableScrollable>
-              <Table.Head>
-                <Table.Row>
-                  <Table.Th>{i18n.reports.common.careAreaName}</Table.Th>
-                  <Table.Th>{i18n.reports.common.unitName}</Table.Th>
-                  <Table.Th>
-                    {i18n.reports.partnersInDifferentAddress.person1}
-                  </Table.Th>
-                  <Table.Th>
-                    {i18n.reports.partnersInDifferentAddress.address1}
-                  </Table.Th>
-                  <Table.Th>
-                    {i18n.reports.partnersInDifferentAddress.person2}
-                  </Table.Th>
-                  <Table.Th>
-                    {i18n.reports.partnersInDifferentAddress.address2}
-                  </Table.Th>
-                </Table.Row>
-              </Table.Head>
-              <Table.Body>
+              <Thead>
+                <Tr>
+                  <Th>{i18n.reports.common.careAreaName}</Th>
+                  <Th>{i18n.reports.common.unitName}</Th>
+                  <Th>{i18n.reports.partnersInDifferentAddress.person1}</Th>
+                  <Th>{i18n.reports.partnersInDifferentAddress.address1}</Th>
+                  <Th>{i18n.reports.partnersInDifferentAddress.person2}</Th>
+                  <Th>{i18n.reports.partnersInDifferentAddress.address2}</Th>
+                </Tr>
+              </Thead>
+              <Tbody>
                 {filteredRows.map(
                   (row: PartnersInDifferentAddressReportRow) => (
-                    <Table.Row key={`${row.unitId}:${row.personId1}`}>
-                      <Table.Td>{row.careAreaName}</Table.Td>
-                      <Table.Td>
+                    <Tr key={`${row.unitId}:${row.personId1}`}>
+                      <Td>{row.careAreaName}</Td>
+                      <Td>
                         <Link to={`/units/${row.unitId}`}>{row.unitName}</Link>
-                      </Table.Td>
-                      <Table.Td>
+                      </Td>
+                      <Td>
                         <Link to={`/profile/${row.personId1}`}>
                           {row.lastName1} {row.firstName1}
                         </Link>
-                      </Table.Td>
-                      <Table.Td>{row.address1}</Table.Td>
-                      <Table.Td>
+                      </Td>
+                      <Td>{row.address1}</Td>
+                      <Td>
                         <Link to={`/profile/${row.personId2}`}>
                           {row.lastName2} {row.firstName2}
                         </Link>
-                      </Table.Td>
-                      <Table.Td>{row.address2}</Table.Td>
-                    </Table.Row>
+                      </Td>
+                      <Td>{row.address2}</Td>
+                    </Tr>
                   )
                 )}
-              </Table.Body>
+              </Tbody>
             </TableScrollable>
             <RowCountInfo rowCount={filteredRows.length} />
           </>

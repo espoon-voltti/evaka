@@ -123,14 +123,20 @@ function InvoiceFilters() {
             toggled={searchFilters.area}
             toggle={toggleArea}
           />
-          <Gap size="s" />
+          <Gap size="L" />
           <UnitFilter
             units={
               isSuccess(units)
                 ? units.data.map(({ id, name }) => ({ id, label: name }))
                 : []
             }
-            selected={searchFilters.unit || ''}
+            selected={
+              isSuccess(units)
+                ? units.data
+                    .map(({ id, name }) => ({ id, label: name }))
+                    .filter((unit) => unit.id === searchFilters.unit)[0]
+                : undefined
+            }
             select={selectUnit}
           />
         </>
@@ -151,6 +157,7 @@ function InvoiceFilters() {
             toggled={searchFilters.status}
             toggle={toggleStatus}
           />
+          <Gap size="L" />
           <InvoiceDateFilter
             startDate={searchFilters.startDate}
             setStartDate={setStartDate}

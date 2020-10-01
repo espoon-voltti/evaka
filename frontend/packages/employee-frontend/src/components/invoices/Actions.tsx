@@ -5,7 +5,8 @@
 import React, { useState, useEffect, Fragment } from 'react'
 import styled from 'styled-components'
 import LocalDate from '@evaka/lib-common/src/local-date'
-import { Checkbox, Field } from '~components/shared/alpha'
+import { Label, LabelText } from '~components/common/styled/common'
+import Checkbox from '~components/shared/atoms/form/Checkbox'
 import FormModal from '~components/common/FormModal'
 import Button from '~components/shared/atoms/buttons/Button'
 import { useTranslation } from '../../state/i18n'
@@ -159,7 +160,6 @@ const Actions = React.memo(function Actions({
       {status === 'DRAFT' ? (
         <LeftSideContent>
           <Checkbox
-            name={'send-whole-area'}
             label={i18n.invoices.buttons.checkAreaInvoices(
               useCustomDatesForInvoiceSending
             )}
@@ -191,22 +191,28 @@ const Actions = React.memo(function Actions({
           data-qa="send-invoices-dialog"
         >
           <ModalContent>
-            <Field label={i18n.invoices.sendModal.invoiceDate}>
+            <Label>
+              <LabelText>{i18n.invoices.sendModal.invoiceDate}</LabelText>
+            </Label>
+            <div>
               <DatePicker
                 date={invoiceDate}
                 onChange={setInvoiceDate}
                 type="full-width"
                 dataQa="invoice-date-input"
               />
-            </Field>
-            <Field label={i18n.invoices.sendModal.dueDate}>
+            </div>
+            <Label>
+              <LabelText>{i18n.invoices.sendModal.dueDate}</LabelText>
+            </Label>
+            <div>
               <DatePicker
                 date={dueDate}
                 onChange={setDueDate}
                 type="full-width"
                 dataQa="invoice-due-date-input"
               />
-            </Field>
+            </div>
             {individualInvoices ? (
               <AlertBox
                 message={i18n.invoices.buttons.individualSendAlertText}

@@ -12,7 +12,9 @@ import React, {
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 import LocalDate from '@evaka/lib-common/src/local-date'
-import { Title, Button, Loader } from '~components/shared/alpha'
+import InlineButton from '~components/shared/atoms/buttons/InlineButton'
+import Title from '~components/shared/atoms/Title'
+import Loader from '~components/shared/atoms/Loader'
 
 import { useTranslation } from '~state/i18n'
 import { Loading, Result, isLoading, isFailure } from '~api'
@@ -206,16 +208,13 @@ const MemoizedCard = memo(function UnitCard({
         )}
       </OccupancyContainer>
       <MarginBox>
-        <Button
-          width="full"
-          primary={isSelectedUnit}
+        <InlineButton
           disabled={false}
           dataQa="select-placement-unit"
           onClick={() => selectUnit(unitId)}
           icon={(isSelectedUnit && faCheck) || undefined}
-        >
-          {isSelectedUnit ? 'Valittu yksikkö' : 'Valitse'}
-        </Button>
+          text={isSelectedUnit ? 'Valittu yksikkö' : 'Valitse'}
+        />
       </MarginBox>
     </Card>
   )

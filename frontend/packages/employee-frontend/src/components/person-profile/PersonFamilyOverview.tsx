@@ -2,17 +2,15 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useCallback, useContext, useEffect, useState } from 'react'
+import React, { useContext, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
+
 import { faHomeAlt } from 'icon-set'
-import {
-  Collapsible,
-  Table,
-  Loader,
-  LabelValueList,
-  LabelValueListItem
-} from '~components/shared/alpha'
+import { Table, Tbody, Td, Th, Thead, Tr } from 'components/shared/layout/Table'
+import Loader from '~components/shared/atoms/Loader'
+import CollapsibleSection from 'components/shared/molecules/CollapsibleSection'
+import LabelValueList from '~components/common/LabelValueList'
 import { Translations, useTranslation } from '~state/i18n'
 import { PersonContext } from '~state/person'
 import { isSuccess, isLoading, isFailure } from '~api'
@@ -110,63 +108,48 @@ const FamilyOverview = React.memo(function FamilyOverview({ id, open }: Props) {
     void reloadFamily(id)
   }, [id, setFamily])
 
-  const [toggled, setToggled] = useState(open)
-  const toggle = useCallback(() => setToggled((toggled) => !toggled), [
-    setToggled
-  ])
-
   return (
     <div>
       {isSuccess(family) && (
-        <Collapsible
+        <CollapsibleSection
           icon={faHomeAlt}
           title={i18n.personProfile.familyOverview.title}
-          open={toggled}
-          onToggle={toggle}
           dataQa="family-overview-collapsible"
+          startCollapsed={!open}
         >
           <LabelValueListContainer>
-            <LabelValueList>
-              <LabelValueListItem
-                label={i18n.personProfile.familyOverview.familySizeLabel}
-                value={i18n.personProfile.familyOverview.familySizeValue(
-                  getAdults(family.data).length,
-                  family.data.children.length
-                )}
-                dataQa="head-of-family"
-              />
-              <LabelValueListItem
-                label={i18n.personProfile.familyOverview.incomeTotalLabel}
-                value={getIncomeString(
-                  family.data.totalIncome,
-                  family.data.totalIncomeEffect
-                )}
-                dataQa="head-of-family"
-              />
-            </LabelValueList>
+            <LabelValueList
+              spacing="small"
+              contents={[
+                {
+                  label: i18n.personProfile.familyOverview.familySizeLabel,
+                  value: i18n.personProfile.familyOverview.familySizeValue(
+                    getAdults(family.data).length,
+                    family.data.children.length
+                  )
+                },
+                {
+                  label: i18n.personProfile.familyOverview.incomeTotalLabel,
+                  value: getIncomeString(
+                    family.data.totalIncome,
+                    family.data.totalIncomeEffect
+                  )
+                }
+              ]}
+            />
           </LabelValueListContainer>
           <div>
-            <Table.Table>
-              <Table.Head>
-                <Table.Row>
-                  <Table.Th>
-                    {i18n.personProfile.familyOverview.colName}
-                  </Table.Th>
-                  <Table.Th>
-                    {i18n.personProfile.familyOverview.colRole}
-                  </Table.Th>
-                  <Table.Th>
-                    {i18n.personProfile.familyOverview.colAge}
-                  </Table.Th>
-                  <Table.Th>
-                    {i18n.personProfile.familyOverview.colIncome}
-                  </Table.Th>
-                  <Table.Th>
-                    {i18n.personProfile.familyOverview.colAddress}
-                  </Table.Th>
-                </Table.Row>
-              </Table.Head>
-              <Table.Body>
+            <Table>
+              <Thead>
+                <Tr>
+                  <Th>{i18n.personProfile.familyOverview.colName}</Th>
+                  <Th>{i18n.personProfile.familyOverview.colRole}</Th>
+                  <Th>{i18n.personProfile.familyOverview.colAge}</Th>
+                  <Th>{i18n.personProfile.familyOverview.colIncome}</Th>
+                  <Th>{i18n.personProfile.familyOverview.colAddress}</Th>
+                </Tr>
+              </Thead>
+              <Tbody>
                 {getMembers(family.data, i18n)?.map(
                   ({
                     personId,
@@ -178,11 +161,11 @@ const FamilyOverview = React.memo(function FamilyOverview({ id, open }: Props) {
                     restrictedDetailsEnabled,
                     address
                   }) => (
-                    <Table.Row
+                    <Tr
                       key={personId}
-                      dataQa={`table-family-overview-row-${personId}`}
+                      data-qa={`table-family-overview-row-${personId}`}
                     >
-                      <Table.Td>
+                      <Td>
                         {role === 'CHILD' ? (
                           <Link to={`/child-information/${personId}`}>
                             {name}
@@ -190,27 +173,25 @@ const FamilyOverview = React.memo(function FamilyOverview({ id, open }: Props) {
                         ) : (
                           <Link to={`/profile/${personId}`}>{name}</Link>
                         )}
-                      </Table.Td>
-                      <Table.Td>
-                        {i18n.personProfile.familyOverview.role[role]}
-                      </Table.Td>
-                      <Table.Td dataQa="person-age">{age}</Table.Td>
-                      <Table.Td dataQa="person-income-total">
+                      </Td>
+                      <Td>{i18n.personProfile.familyOverview.role[role]}</Td>
+                      <Td data-qa="person-age">{age}</Td>
+                      <Td data-qa="person-income-total">
                         {role !== 'CHILD' &&
                           getIncomeString(incomeTotal, incomeEffect)}
-                      </Table.Td>
-                      <Table.Td>
+                      </Td>
+                      <Td>
                         {restrictedDetailsEnabled
                           ? i18n.personProfile.restrictedDetails
                           : address}
-                      </Table.Td>
-                    </Table.Row>
+                      </Td>
+                    </Tr>
                   )
                 )}
-              </Table.Body>
-            </Table.Table>
+              </Tbody>
+            </Table>
           </div>
-        </Collapsible>
+        </CollapsibleSection>
       )}
       {isLoading(family) && <Loader />}
       {isFailure(family) && <div>{i18n.common.loadingFailed}</div>}
