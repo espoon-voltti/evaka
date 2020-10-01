@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
-import { faFileAlt } from 'icon-set'
+import { faFileAlt } from '@evaka/icons'
 import { UUID } from '~types'
 import { useTranslation } from '~state/i18n'
 import { useEffect } from 'react'

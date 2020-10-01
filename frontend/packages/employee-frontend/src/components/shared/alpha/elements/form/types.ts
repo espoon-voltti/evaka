@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { IconDefinition } from '@fortawesome/fontawesome-svg-core'
-import { faCheckCircle, faExclamationTriangle } from 'icon-set'
+import { faCheckCircle, faExclamationTriangle } from '@evaka/icons'
 
 export const statusClassNames = {
   error: 'is-error',

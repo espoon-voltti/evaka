@@ -13,7 +13,7 @@ import {
   isActiveDateRange
 } from '~utils/date'
 import { useTranslation } from '~state/i18n'
-import { faQuestion } from 'icon-set'
+import { faQuestion } from '@evaka/icons'
 import styled from 'styled-components'
 import { Button, Buttons } from '~components/shared/alpha'
 import InfoModal from '~components/common/InfoModal'

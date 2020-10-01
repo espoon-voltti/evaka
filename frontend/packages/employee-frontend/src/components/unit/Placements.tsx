@@ -4,7 +4,7 @@
 
 import React, { useContext, useState } from 'react'
 import { Button, Table } from '~components/shared/alpha'
-import { faArrowRight } from 'icon-set'
+import { faArrowRight } from '@evaka/icons'
 import _ from 'lodash'
 import { useTranslation } from '~state/i18n'
 import { Title } from '~components/shared/alpha'

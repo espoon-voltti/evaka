@@ -6,7 +6,7 @@ import React, { useContext } from 'react'
 import { useTranslation } from '~/state/i18n'
 import { isFailure, isLoading } from '~/api'
 import { ChildContext, ChildState } from '~/state/child'
-import { faUser } from 'icon-set'
+import { faUser } from '@evaka/icons'
 import { Loader, Table } from '~components/shared/alpha'
 
 import * as _ from 'lodash'

@@ -6,7 +6,7 @@ import React from 'react'
 import styled from 'styled-components'
 import { customColours, EspooColours } from 'utils/colours'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faCheck } from 'icon-set'
+import { faCheck } from '@evaka/icons'
 
 export const Chips = styled.div`
   > button {

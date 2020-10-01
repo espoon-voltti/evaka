@@ -4,7 +4,7 @@
 
 import React, { Fragment } from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faTimes } from 'icon-set'
+import { faTimes } from '@evaka/icons'
 import { IconProp } from '@fortawesome/fontawesome-svg-core'
 import styled from 'styled-components'
 import FocusLock from 'react-focus-lock'

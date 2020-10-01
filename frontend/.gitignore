@@ -18,6 +18,8 @@ junit.xml
 .DS_Store
 .vscode
 e2e-test/screenshots/
+packages/icons/icons.ts
+packages/icons/package.json
 .yalc
 yalc.lock
 **/storybook-build/

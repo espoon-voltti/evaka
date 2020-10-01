@@ -5,7 +5,7 @@
 import styled from 'styled-components'
 import Colors from '~components/shared/Colors'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { fasExclamationTriangle } from '~icon-set'
+import { fasExclamationTriangle } from '@evaka/icons'
 import React from 'react'
 
 interface Props {

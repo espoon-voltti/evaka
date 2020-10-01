@@ -19,7 +19,7 @@ import { UUID } from 'types'
 import { UIContext } from 'state/ui'
 import { useTranslation } from 'state/i18n'
 import { FixedSpaceRow } from 'components/shared/layout/flex-helpers'
-import { faPen, faQuestion, faTrash } from 'icon-set'
+import { faPen, faQuestion, faTrash } from '@evaka/icons'
 import IconButton from 'components/shared/atoms/buttons/IconButton'
 import InfoModal from '~components/common/InfoModal'
 

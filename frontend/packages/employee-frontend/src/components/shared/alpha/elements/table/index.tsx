@@ -4,10 +4,10 @@
 
 import * as React from 'react'
 import classNames from 'classnames'
-import { faChevronUp as falChevronUp } from 'icon-set'
-import { faChevronDown as falChevronDown } from 'icon-set'
-import { fasChevronUp } from 'icon-set'
-import { fasChevronDown } from 'icon-set'
+import { faChevronUp as falChevronUp } from '@evaka/icons'
+import { faChevronDown as falChevronDown } from '@evaka/icons'
+import { fasChevronUp } from '@evaka/icons'
+import { fasChevronDown } from '@evaka/icons'
 
 import { Button, ButtonProps } from '../../elements/button'
 import { Icon } from '../../elements/icon'

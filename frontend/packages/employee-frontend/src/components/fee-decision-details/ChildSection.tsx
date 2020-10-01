@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { faUserFriends } from 'icon-set'
+import { faUserFriends } from '@evaka/icons'
 import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
 import {

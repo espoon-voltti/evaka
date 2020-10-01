@@ -9,7 +9,7 @@ import Button from 'components/shared/atoms/buttons/Button'
 import { action } from '@storybook/addon-actions'
 import { Gap } from 'components/shared/layout/white-space'
 import InlineButton from 'components/shared/atoms/buttons/InlineButton'
-import { faPen, faTrash } from 'icon-set'
+import { faPen, faTrash } from '@evaka/icons'
 import IconButton from 'components/shared/atoms/buttons/IconButton'
 import AddButton from 'components/shared/atoms/buttons/AddButton'
 

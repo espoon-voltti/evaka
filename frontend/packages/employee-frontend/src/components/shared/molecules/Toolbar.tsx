@@ -5,7 +5,7 @@
 import styled from 'styled-components'
 import React, { useContext } from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faCopy, faPen, faSync, faTrash } from 'icon-set'
+import { faCopy, faPen, faSync, faTrash } from '@evaka/icons'
 import { faExclamationTriangle } from '@fortawesome/free-solid-svg-icons'
 import Tooltip from 'components/common/Tooltip'
 import StatusLabel from 'components/common/StatusLabel'

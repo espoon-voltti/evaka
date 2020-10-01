@@ -4,7 +4,7 @@
 
 import { getAge } from '@evaka/lib-common/src/utils/local-date'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faSearch } from 'icon-set'
+import { faSearch } from '@evaka/icons'
 import React, { useContext, useState } from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'

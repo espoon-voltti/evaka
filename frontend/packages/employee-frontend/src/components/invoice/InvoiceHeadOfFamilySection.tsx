@@ -9,7 +9,7 @@ import {
   LabelValueList,
   LabelValueListItem
 } from '~components/shared/alpha'
-import { faUserFriends } from 'icon-set'
+import { faUserFriends } from '@evaka/icons'
 import { useTranslation } from '../../state/i18n'
 import LocalDate from '@evaka/lib-common/src/local-date'
 

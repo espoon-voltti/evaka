@@ -58,24 +58,27 @@ The code is organised into `packages/` directory as follows:
 ```txt
 packages/
   |- *-frontend/
+  |- icons/
   |- lib-common/
+  |- maintenance-page/
+  |- old-styleguide/
 ```
 
 - `*-frontend` - eVaka frontend applications
+- `icons` - icons for the frontend applications
 - `lib-common` - code shared by all applications, i.e. not React or Vue components
+- `maintenance-page` - page to show while the service is in maintenance
+- `old-styleguide` - styles from a now deprecated separate styleguide
 
-## Font Awesome icon library
+## Icons
 
 The project uses [Font Awesome](https://fontawesome.com/) library as
 an icon library. **You can run the application using the free version
 of Font Awesome**. Alternatively, you could purchase the license for
 professional version of Font Awesome, which will give the application
-a better look and feel with regards to icons. Professional version of
-the Font Awesome library is listed as an optional dependency and, if
-present, will be automatically included into the build process assuming you've
-[configured access](#access-to-professional-icons) to them.
-
-If you want to use the free icons instead, set an environment variable `ICONS=free`.
+a better look and feel with regards to icons. Free icons are used by default, but
+evaka can be [configured](#access-to-professional-icons) to use the paid version
+of the Font Awesome library.
 
 Please refer to [Font Awesome documentation](https://fontawesome.com/plans)
 on how to retrieve the professional version of the icon library.
@@ -99,6 +102,12 @@ cat << EOF > .npmrc
 EOF
 ```
 
+Setup the icons package to use professional icons:
+
+```sh
+./packages/icons/setup.sh pro
+```
+
 ## Development
 
 The development process supports instant changes made to source code.
@@ -113,6 +122,9 @@ using `yarn install`.
 Here is a list of useful commands when using yarn workspaces.
 
 ```bash
+# Setup the icons
+./packages/icons/setup.sh
+
 # Install dependencies for all workspaces
 yarn install
 

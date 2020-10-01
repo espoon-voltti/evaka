@@ -8,7 +8,7 @@ import { useTranslation } from '~state/i18n'
 import './PeriodPicker.scss'
 import { Title } from '~components/shared/alpha'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faChevronLeft, faChevronRight } from 'icon-set'
+import { faChevronLeft, faChevronRight } from '@evaka/icons'
 
 export enum PeriodPickerMode {
   MONTH

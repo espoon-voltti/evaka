@@ -15,7 +15,7 @@ import {
   faTimes,
   faUserFriends,
   faUsers
-} from 'icon-set'
+} from '@evaka/icons'
 import LocalDate from '@evaka/lib-common/src/local-date'
 import { Loading, Result, isSuccess, isLoading } from 'api'
 import { getApplicationUnits } from 'api/daycare'

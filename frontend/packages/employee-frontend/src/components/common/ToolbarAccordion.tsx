@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { ReactElement } from 'react'
-import { faChevronUp, faChevronDown } from 'icon-set'
+import { faChevronUp, faChevronDown } from '@evaka/icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 
 import '~components/common/ToolbarAccordion.scss'

@@ -8,7 +8,7 @@ import {
   LabelValueList,
   LabelValueListItem
 } from '~components/shared/alpha'
-import { faMoneyCheck } from 'icon-set'
+import { faMoneyCheck } from '@evaka/icons'
 import { useTranslation } from '../../state/i18n'
 import { InvoiceDetailed } from '../../types/invoicing'
 

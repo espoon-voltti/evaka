@@ -20,7 +20,7 @@ import { getOccupancyRates, OccupancyResponse } from '~api/unit'
 
 import { EspooColours } from '../../utils/colours'
 
-import { faCheck } from 'icon-set'
+import { faCheck } from '@evaka/icons'
 
 import { formatPercentage } from '../utils'
 import { Occupancy } from '~types/unit'

@@ -11,7 +11,7 @@ import { UIContext } from '~state/ui'
 import { Income, PartialIncome, IncomeId } from '~types/income'
 import { UUID } from '~types'
 import InfoModal from '~components/common/InfoModal'
-import { faQuestion } from 'icon-set'
+import { faQuestion } from '@evaka/icons'
 
 const IncomeListItem = styled.div`
   margin-bottom: 20px;

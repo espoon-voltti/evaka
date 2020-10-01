@@ -5,7 +5,7 @@
 import React, { memo } from 'react'
 import styled from 'styled-components'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faAngleDown } from 'icon-set'
+import { faAngleDown } from '@evaka/icons'
 import {
   Select,
   SelectProps,

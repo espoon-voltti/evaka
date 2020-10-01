@@ -19,7 +19,7 @@ import {
   FixedSpaceRow
 } from 'components/shared/layout/flex-helpers'
 import IconButton from 'components/shared/atoms/buttons/IconButton'
-import { faFileAlt } from 'icon-set'
+import { faFileAlt } from '@evaka/icons'
 import { getEmployeeUrlPrefix } from '~constants'
 import CheckIconButton from '~components/shared/atoms/buttons/CheckIconButton'
 import CrossIconButton from '~components/shared/atoms/buttons/CrossIconButton'

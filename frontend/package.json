@@ -10,7 +10,10 @@
     "test": "yarn wsrun --exclude-missing test"
   },
   "dependencies": {
+    "@evaka/icons": "1.0.0",
     "@evaka/styleguide": "11.2.0",
+    "@fortawesome/fontawesome-svg-core": "1.2.30",
+    "@fortawesome/free-solid-svg-icons": "5.14.0",
     "bulma": "0.7.5"
   },
   "devDependencies": {

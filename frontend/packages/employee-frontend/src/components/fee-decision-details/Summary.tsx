@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useState } from 'react'
-import { faEuroSign } from 'icon-set'
+import { faEuroSign } from '@evaka/icons'
 import { Collapsible, Title } from '~components/shared/alpha'
 import IncomeSection from './IncomeSection'
 import PartsSection from './PartsSection'

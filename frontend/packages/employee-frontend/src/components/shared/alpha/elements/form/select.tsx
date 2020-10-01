@@ -6,7 +6,7 @@ import * as React from 'react'
 import { FieldState } from './types'
 import { ControlField } from './control'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faAngleDown } from 'icon-set'
+import { faAngleDown } from '@evaka/icons'
 
 export interface SelectOptionProps {
   dataQa?: string

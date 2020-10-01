@@ -12,7 +12,7 @@ import { PersonContext, PersonState } from '~state/person'
 import { Collapsible, Loader } from '~components/shared/alpha'
 import { PersonDetails as PersonDetailsType } from '~types/person'
 import PersonDetails from '~components/person-shared/PersonDetails'
-import { faUser } from 'icon-set'
+import { faUser } from '@evaka/icons'
 import { TitleContext, TitleState } from '~state/title'
 
 interface Props {

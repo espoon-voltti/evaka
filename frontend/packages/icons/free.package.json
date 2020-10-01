@@ -1,0 +1,7 @@
+{
+  "name": "@evaka/icons",
+  "description": "Icons used in evaka",
+  "version": "1.0.0",
+  "private": true,
+  "license": "LGPL-2.1-or-later"
+}

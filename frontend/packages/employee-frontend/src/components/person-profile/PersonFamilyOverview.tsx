@@ -5,7 +5,7 @@
 import React, { useCallback, useContext, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
-import { faHomeAlt } from 'icon-set'
+import { faHomeAlt } from '@evaka/icons'
 import {
   Collapsible,
   Table,

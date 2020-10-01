@@ -4,7 +4,7 @@
 
 import React, { Fragment, useContext, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { faAbacus, faCoins } from 'icon-set'
+import { faAbacus, faCoins } from '@evaka/icons'
 import styled from 'styled-components'
 import { groupBy, get } from 'lodash/fp'
 import LocalDate from '@evaka/lib-common/src/local-date'

@@ -5,7 +5,7 @@
 import * as React from 'react'
 import classNames from 'classnames'
 
-import { faCheck } from 'icon-set'
+import { faCheck } from '@evaka/icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 
 interface Props<T> {

@@ -5,7 +5,7 @@
 import React, { useContext } from 'react'
 import { useTranslation } from '~/state/i18n'
 import { UIContext } from '~state/ui'
-import { faQuestion } from 'icon-set'
+import { faQuestion } from '@evaka/icons'
 import { Title } from '~components/shared/alpha'
 import InfoModal from '~components/common/InfoModal'
 import { ChildContext } from '~state'

@@ -8,7 +8,7 @@ import styled from 'styled-components'
 import Colors from 'components/shared/Colors'
 import classNames from 'classnames'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { fasCheckCircle, fasExclamationTriangle, faTimes } from 'icon-set'
+import { fasCheckCircle, fasExclamationTriangle, faTimes } from '@evaka/icons'
 import { DefaultMargins } from 'components/shared/layout/white-space'
 
 const Wrapper = styled.div`

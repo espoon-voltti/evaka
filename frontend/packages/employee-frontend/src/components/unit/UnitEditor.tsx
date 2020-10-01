@@ -30,7 +30,7 @@ import { isFailure, isLoading, Result } from '~api'
 import { Translations, useTranslation } from '~state/i18n'
 import { EspooColours } from '~utils/colours'
 import InlineButton from 'components/shared/atoms/buttons/InlineButton'
-import { faPen } from 'icon-set'
+import { faPen } from '@evaka/icons'
 import { H1, H3 } from 'components/shared/Typography'
 import { DefaultMargins } from 'components/shared/layout/white-space'
 

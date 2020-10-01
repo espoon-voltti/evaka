@@ -76,6 +76,7 @@ aliases:
       paths:
         - frontend/packages/enduser-frontend/node_modules
         - frontend/packages/employee-frontend/node_modules
+        - frontend/packages/icons/node_modules
         - frontend/packages/lib-common/node_modules
         - frontend/packages/maintenance-page/node_modules
         - frontend/e2e-test/node_modules
@@ -558,6 +559,10 @@ jobs:
             //npm.sst.espoon-voltti.fi/:_authToken="$(echo $VERDACCIO_TOKEN)"
             //npm.sst.espoon-voltti.fi/:always-auth=true
             EOF
+      - run:
+          name: Setup pro icons
+          working_directory: *workspace_frontend
+          command: ./packages/icons/setup.sh pro
       - *restore_frontend_node_modules
       - run:
           working_directory: *workspace_frontend

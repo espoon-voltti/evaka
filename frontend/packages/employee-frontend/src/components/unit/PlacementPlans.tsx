@@ -13,7 +13,7 @@ import { careTypesFromPlacementType } from '~components/common/CareTypeLabel'
 import { formatName } from '~utils'
 import { getEmployeeUrlPrefix } from '~constants'
 import IconButton from 'components/shared/atoms/buttons/IconButton'
-import { faFileAlt } from 'icon-set'
+import { faFileAlt } from '@evaka/icons'
 import styled from 'styled-components'
 
 const CenteredDiv = styled.div`

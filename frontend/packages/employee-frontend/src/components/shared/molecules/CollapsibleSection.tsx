@@ -9,7 +9,7 @@ import styled from 'styled-components'
 import classNames from 'classnames'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { H3 } from 'components/shared/Typography'
-import { faAngleDown, faAngleUp } from 'icon-set'
+import { faAngleDown, faAngleUp } from '@evaka/icons'
 import Colors from 'components/shared/Colors'
 import { DefaultMargins } from 'components/shared/layout/white-space'
 

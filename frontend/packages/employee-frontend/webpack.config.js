@@ -52,12 +52,7 @@ module.exports = function (env, argv) {
     },
     resolve: {
       extensions: ['.js', '.jsx', '.ts', '.tsx', '.json'],
-      plugins: [new TsconfigPathsPlugin()],
-      alias: {
-        'Icons': process.env.ICONS === 'pro'
-          ? path.resolve(__dirname, 'src/icons/pro-icons')
-          : path.resolve(__dirname, 'src/icons/free-icons')
-      }
+      plugins: [new TsconfigPathsPlugin()]
     },
     plugins,
     module: {
@@ -120,7 +115,7 @@ module.exports = function (env, argv) {
           options: {
             name: isDevelopment ? '[name].[ext]' : '[name].[contenthash].[ext]'
           }
-        },
+        }
       ]
     },
     optimization: {

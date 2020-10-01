@@ -4,7 +4,7 @@
 
 import React from 'react'
 import styled from 'styled-components'
-import { faExclamationTriangle } from 'icon-set'
+import { faExclamationTriangle } from '@evaka/icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { areIntervalsOverlapping } from 'date-fns'
 import LocalDate from '@evaka/lib-common/src/local-date'

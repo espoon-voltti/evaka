@@ -5,7 +5,7 @@
 import React, { useEffect, useState } from 'react'
 import styled from 'styled-components'
 import classNames from 'classnames'
-import { faTrash } from 'icon-set'
+import { faTrash } from '@evaka/icons'
 import LocalDate from '@evaka/lib-common/src/local-date'
 import { IconButton, Input, Table } from '~components/shared/alpha'
 import Select, { SelectOptionProps } from '../common/Select'

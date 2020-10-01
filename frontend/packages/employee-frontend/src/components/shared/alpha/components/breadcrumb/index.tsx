@@ -5,7 +5,7 @@
 import * as React from 'react'
 import classNames from 'classnames'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faAngleRight } from 'icon-set'
+import { faAngleRight } from '@evaka/icons'
 
 export interface BreadcrumbItemProps {
   children: React.ReactNode

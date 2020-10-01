@@ -15,7 +15,7 @@ import {
   faPlus,
   fasExclamationTriangle,
   faEuroSign
-} from 'icon-set'
+} from '@evaka/icons'
 import Colors from 'components/shared/Colors'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { action } from '@storybook/addon-actions'

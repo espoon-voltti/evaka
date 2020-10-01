@@ -6,7 +6,7 @@ import React from 'react'
 import styled from 'styled-components'
 import { Greyscale } from 'components/shared/Colors'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faMeh } from 'icon-set'
+import { faMeh } from '@evaka/icons'
 import { DefaultMargins, Gap } from 'components/shared/layout/white-space'
 import classNames from 'classnames'
 

@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useContext, useEffect, useRef, useState } from 'react'
-import { faMoneyCheckEdit, faQuestion } from 'icon-set'
+import { faMoneyCheckEdit, faQuestion } from '@evaka/icons'
 import { Loader } from '~components/shared/alpha'
 import InfoModal from '~components/common/InfoModal'
 import FeeAlterationList from './fee-alteration/FeeAlterationList'

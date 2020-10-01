@@ -7,7 +7,7 @@ import classNames from 'classnames'
 
 import { Button } from '../elements/button'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faChevronDown, faChevronUp } from 'icon-set'
+import { faChevronDown, faChevronUp } from '@evaka/icons'
 import { Title, Subtitle } from '../elements'
 import { Section } from './section'
 

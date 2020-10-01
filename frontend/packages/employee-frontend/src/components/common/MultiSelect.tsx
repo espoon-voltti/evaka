@@ -6,7 +6,7 @@ import React from 'react'
 import styled from 'styled-components'
 import { Multiselect } from 'multiselect-react-dropdown'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faAngleDown } from 'icon-set'
+import { faAngleDown } from '@evaka/icons'
 import Colors from '~components/shared/Colors'
 
 interface MultiSelectProps {

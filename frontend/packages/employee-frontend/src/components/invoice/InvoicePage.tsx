@@ -5,7 +5,7 @@
 import React, { useCallback, useContext, useEffect, useState } from 'react'
 import { Link, Redirect, RouteComponentProps } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faChevronLeft } from 'icon-set'
+import { faChevronLeft } from '@evaka/icons'
 import { Container, ContentArea, Title } from '~components/shared/alpha'
 import { useTranslation } from '../../state/i18n'
 import { TitleContext, TitleState } from '../../state/title'

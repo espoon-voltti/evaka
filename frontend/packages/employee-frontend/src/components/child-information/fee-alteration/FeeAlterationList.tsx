@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
-import { faPen, faTrash } from 'icon-set'
+import { faPen, faTrash } from '@evaka/icons'
 import {
   Buttons,
   IconButton,

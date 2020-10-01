@@ -8,7 +8,7 @@ import styled from 'styled-components'
 import Colors from 'components/shared/Colors'
 import classNames from 'classnames'
 import { BaseProps } from 'components/shared/utils'
-import { faTimes } from '~icon-set'
+import { faTimes } from '@evaka/icons'
 
 const StyledButton = styled.button`
   display: flex;

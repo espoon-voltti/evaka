@@ -23,7 +23,7 @@ import {
   faTimes,
   faTrash,
   faUndo
-} from 'icon-set'
+} from '@evaka/icons'
 import { deleteGroup, deletePlacement, OccupancyResponse } from '~api/unit'
 import { Link } from 'react-router-dom'
 import * as _ from 'lodash'

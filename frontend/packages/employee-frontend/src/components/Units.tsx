@@ -16,7 +16,7 @@ import {
 } from '~components/shared/alpha'
 import { useTranslation } from '~state/i18n'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faSearch } from 'icon-set'
+import { faSearch } from '@evaka/icons'
 import { getDaycares } from '~api/unit'
 import { Unit } from '~types/unit'
 import * as _ from 'lodash'
