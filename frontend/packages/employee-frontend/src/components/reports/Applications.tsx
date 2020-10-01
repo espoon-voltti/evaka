@@ -114,7 +114,7 @@ function Applications() {
         {isSuccess(rows) && (
           <>
             <ReportDownload
-              data={rows.data.map((row) => ({
+              data={filteredRows.map((row) => ({
                 ...row,
                 unitProviderType: String(
                   i18n.reports.common.unitProviderTypes[row.unitProviderType]
