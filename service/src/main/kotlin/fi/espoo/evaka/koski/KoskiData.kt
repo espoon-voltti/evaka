@@ -13,7 +13,7 @@ import java.util.UUID
 data class KoskiData(
     val oppija: Oppija,
     val isNew: Boolean,
-    val organizationOid: String
+    val organizerOid: String
 )
 
 data class KoskiChildRaw(
@@ -66,7 +66,7 @@ data class KoskiVoidedDataRaw(
             opiskeluoikeudet = listOf(haeOpiskeluOikeus(sourceSystem))
         ),
         isNew = false,
-        organizationOid = unit.ophOrganizationOid
+        organizerOid = unit.ophOrganizerOid
     )
 
     private fun haeOpiskeluOikeus(sourceSystem: String) = Opiskeluoikeus(
@@ -125,7 +125,7 @@ data class KoskiActiveDataRaw(
                 opiskeluoikeudet = listOf(haeOpiskeluoikeus(sourceSystem, today, isQualified))
             ),
             isNew = studyRightOid == null,
-            organizationOid = unit.ophOrganizationOid
+            organizerOid = unit.ophOrganizerOid
         )
     }
 
