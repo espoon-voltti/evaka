@@ -12,6 +12,7 @@ import InlineButton from 'components/shared/atoms/buttons/InlineButton'
 import { faPen, faTrash } from 'icon-set'
 import IconButton from 'components/shared/atoms/buttons/IconButton'
 import AddButton from 'components/shared/atoms/buttons/AddButton'
+import AsyncButton from 'components/shared/atoms/buttons/AsyncButton'
 
 const onClick = action('clicked')
 
@@ -79,3 +80,41 @@ storiesOf('evaka/atoms/buttons', module)
       <Gap />
     </div>
   ))
+  .add('AsyncButton', () => {
+    return (
+      <div>
+        <H3>Default (Success)</H3>
+        <AsyncButton
+          onClick={() =>
+            new Promise<void>((resolve) => void setTimeout(resolve, 2000))
+          }
+          onSuccess={() => undefined}
+          text="Save"
+        />
+        <Gap />
+
+        <H3>Default (Failure)</H3>
+        <AsyncButton
+          onClick={() =>
+            new Promise<void>((resolve) => void setTimeout(resolve, 2000)).then(
+              () => {
+                throw 'Error'
+              }
+            )
+          }
+          onSuccess={() => undefined}
+          text="Save"
+        />
+        <Gap />
+
+        <H3>Disabled</H3>
+        <AsyncButton
+          onClick={() => new Promise(() => undefined)}
+          onSuccess={() => undefined}
+          text="Save"
+          disabled
+        />
+        <Gap />
+      </div>
+    )
+  })
