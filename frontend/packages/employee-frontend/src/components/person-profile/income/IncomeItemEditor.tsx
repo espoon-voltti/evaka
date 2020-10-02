@@ -6,6 +6,8 @@ import React, { useState } from 'react'
 import styled from 'styled-components'
 import LocalDate from '@evaka/lib-common/src/local-date'
 import AsyncButton from '~components/shared/atoms/buttons/AsyncButton'
+import ListGrid from '~components/shared/layout/ListGrid'
+import { Label } from '~components/shared/Typography'
 import {
   Button,
   Buttons,
@@ -16,10 +18,10 @@ import {
   Title
 } from '~components/shared/alpha'
 import DateRangeInput from '../../common/DateRangeInput'
-import IncomeItemDetails from './IncomeItemDetails'
 import IncomeTable from './IncomeTable'
 import { useTranslation } from '~state/i18n'
 import { incomeEffects, Income, PartialIncome } from '~types/income'
+import { formatDate } from '~utils/date'
 
 const ButtonsContainer = styled(Buttons)`
   margin: 20px 0;
@@ -125,7 +127,14 @@ const IncomeItemEditor = React.memo(function IncomeItemEditor({
           }
         />
       </RadioGroup>
-      {baseIncome ? <IncomeItemDetails income={baseIncome} editing /> : null}
+      {baseIncome ? (
+        <ListGrid labelWidth="fit-content(40%)" rowGap="xs" columnGap="L">
+          <Label>{i18n.personProfile.income.details.updated}</Label>
+          <span>{formatDate(baseIncome.updatedAt)}</span>
+          <Label>{i18n.personProfile.income.details.handler}</Label>
+          <span>{baseIncome.updatedBy}</span>
+        </ListGrid>
+      ) : null}
       {editedIncome.effect === 'INCOME' ? (
         <>
           <div className="separator" />

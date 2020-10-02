@@ -14,6 +14,19 @@ export async function scrollThenClick(t: TestController, s: Selector) {
   await t.click(s)
 }
 
+export const waitUntilScrolled = ClientFunction(
+  (timeout = 5000) =>
+    new Promise((resolve) => {
+      const handler = () => {
+        window.removeEventListener('scroll', handler)
+        resolve()
+      }
+
+      window.addEventListener('scroll', handler)
+      setTimeout(handler, timeout)
+    })
+)
+
 export class Checkbox {
   constructor(private readonly selector: Selector) {}
   private readonly label: Selector = this.selector.parent().find('label')

@@ -11,12 +11,13 @@ import {
 interface ListGridProps {
   labelWidth?: string
   rowGap?: SpacingSize
+  columnGap?: SpacingSize
 }
 const ListGrid = styled.div<ListGridProps>`
   display: grid;
   grid-template-columns: ${(p) => p.labelWidth ?? '235px'} auto;
   row-gap: ${(p) => DefaultMargins[p.rowGap || 'xs']};
-  column-gap: ${DefaultMargins.s};
+  column-gap: ${(p) => DefaultMargins[p.columnGap || 's']};
 `
 
 export default ListGrid

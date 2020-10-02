@@ -4,6 +4,7 @@
 
 import { Selector, t } from 'testcafe'
 import { formatCents } from '@evaka/employee-frontend/src/utils/money'
+import { waitUntilScrolled } from '../../../utils/helpers'
 
 interface VerifyFamilyPersonOpts {
   personId: string
@@ -118,6 +119,8 @@ export default class FridgeHeadInformationPage {
     )
 
     await t.click(this.incomesCollapsible.find('[data-qa="save-income"]'))
+
+    await waitUntilScrolled()
   }
 
   async verifyFridgeChildAge({ age }: { age: number }) {

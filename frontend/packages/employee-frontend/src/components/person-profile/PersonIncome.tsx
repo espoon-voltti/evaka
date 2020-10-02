@@ -4,12 +4,13 @@
 
 import React, { useCallback, useContext, useEffect, useState } from 'react'
 import { faEuroSign } from 'icon-set'
+import { Gap } from '~components/shared/layout/white-space'
 import { Collapsible, Loader } from '~components/shared/alpha'
 import IncomeList from './income/IncomeList'
 import { useTranslation } from '~state/i18n'
 import { UIContext } from '~state/ui'
 import { PersonContext } from '~state/person'
-import { isFailure, isLoading, Loading, Result } from '~api'
+import { isFailure, isLoading, isSuccess, Loading, Result } from '~api'
 import {
   getIncomes,
   createIncome,
@@ -27,14 +28,22 @@ interface Props {
 
 const PersonIncome = React.memo(function PersonIncome({ id, open }: Props) {
   const { i18n } = useTranslation()
-  const { uiMode, toggleUiMode, clearUiMode, setErrorMessage } = useContext(
-    UIContext
-  )
+  const { setErrorMessage } = useContext(UIContext)
   const { incomes, setIncomes, reloadFamily } = useContext(PersonContext)
+  const [editing, setEditing] = useState<string>()
+  const [deleting, setDeleting] = useState<string>()
   const [toggled, setToggled] = useState(open)
   const toggle = useCallback(() => setToggled((toggled) => !toggled), [
     setToggled
   ])
+  const [toggledIncome, setToggledIncome] = useState<IncomeId[]>([])
+  const toggleIncome = (incomeId: IncomeId) =>
+    setToggledIncome((prev) => toggleIncomeItem(incomeId, prev))
+  function toggleIncomeItem(item: string, items: string[]): string[] {
+    return items.includes(item)
+      ? items.filter((el) => el !== item)
+      : [item, ...items]
+  }
 
   const loadData = () => {
     setIncomes(Loading())
@@ -49,26 +58,7 @@ const PersonIncome = React.memo(function PersonIncome({ id, open }: Props) {
 
   useEffect(loadData, [id, setIncomes])
 
-  function toggleIncomeItem(item: IncomeId, items: IncomeId[]): IncomeId[] {
-    if (uiMode === `edit-person-income-${item}`) {
-      setErrorMessage({
-        type: 'warning',
-        title: i18n.personProfile.income.details.closeWarning,
-        text: i18n.personProfile.income.details.closeWarningText
-      })
-      return items
-    }
-
-    return items.includes(item)
-      ? items.filter((el) => el !== item)
-      : [item, ...items]
-  }
-
-  const [toggledIncome, setToggledIncome] = useState<IncomeId[]>([])
-  const toggleIncome = (incomeId: IncomeId) =>
-    setToggledIncome((prev) => toggleIncomeItem(incomeId, prev))
-
-  const handleErrors = (res: Result<void>) => {
+  const handleErrors = (res: Result<unknown>) => {
     if (isFailure(res)) {
       const text =
         res.error.statusCode === 409
@@ -85,8 +75,15 @@ const PersonIncome = React.memo(function PersonIncome({ id, open }: Props) {
     }
   }
 
+  const toggleCreated = (res: Result<string>): Result<string> => {
+    if (isSuccess(res)) {
+      toggleIncome(res.data)
+    }
+    return res
+  }
+
   const onSuccessfulUpdate = () => {
-    clearUiMode()
+    setEditing(undefined)
     reload()
   }
 
@@ -98,8 +95,12 @@ const PersonIncome = React.memo(function PersonIncome({ id, open }: Props) {
         incomes={incomes.data}
         toggled={toggledIncome}
         toggle={toggleIncome}
+        editing={editing}
+        setEditing={setEditing}
+        deleting={deleting}
+        setDeleting={setDeleting}
         createIncome={(income: PartialIncome) =>
-          createIncome(id, income).then(handleErrors)
+          createIncome(id, income).then(toggleCreated).then(handleErrors)
         }
         updateIncome={(incomeId: UUID, income: Income) =>
           updateIncome(incomeId, income).then(handleErrors)
@@ -124,11 +125,12 @@ const PersonIncome = React.memo(function PersonIncome({ id, open }: Props) {
         text={i18n.personProfile.income.add}
         onClick={() => {
           toggleIncome('new')
-          toggleUiMode('edit-person-income-new')
+          setEditing('new')
         }}
-        disabled={!!uiMode}
+        disabled={!!editing}
         dataQa="add-income-button"
       />
+      <Gap size="m" />
       {content()}
     </Collapsible>
   )

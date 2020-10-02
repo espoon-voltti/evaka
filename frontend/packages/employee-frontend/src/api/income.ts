@@ -30,9 +30,9 @@ export async function getIncomes(personId: UUID): Promise<Result<Income[]>> {
 export async function createIncome(
   personId: UUID,
   income: PartialIncome
-): Promise<Result<void>> {
+): Promise<Result<string>> {
   return client
-    .post<void>('/incomes', { personId, ...income })
+    .post<string>('/incomes', { personId, ...income })
     .then((res) => Success(res.data))
     .catch(Failure)
 }

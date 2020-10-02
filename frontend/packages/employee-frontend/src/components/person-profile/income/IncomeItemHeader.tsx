@@ -25,9 +25,7 @@ const Button = styled(IconButton)`
 `
 
 const ToggleButton = styled(Button)`
-  &.button {
-    color: ${EspooColours.greyDark};
-  }
+  color: ${EspooColours.greyDark};
 `
 
 interface Props {
@@ -35,6 +33,7 @@ interface Props {
   toggled: boolean
   toggle: () => void
   editable: boolean
+  toggleable?: boolean
   startEditing: () => void
   startDeleting: () => void
   children?: JSX.Element[] | JSX.Element
@@ -45,6 +44,7 @@ const IncomeItemHeader = React.memo(function IncomeItemHeader({
   toggled,
   toggle,
   editable,
+  toggleable,
   startEditing,
   startDeleting
 }: Props) {
@@ -86,6 +86,7 @@ const IncomeItemHeader = React.memo(function IncomeItemHeader({
         <ToggleButton
           icon={toggled ? faChevronDown : faChevronLeft}
           onClick={toggle}
+          disabled={!toggleable}
           dataQa="toggle-income-item"
         />
       </div>
