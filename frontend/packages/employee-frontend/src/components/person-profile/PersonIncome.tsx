@@ -9,7 +9,7 @@ import IncomeList from './income/IncomeList'
 import { useTranslation } from '~state/i18n'
 import { UIContext } from '~state/ui'
 import { PersonContext } from '~state/person'
-import { isFailure, isLoading, Loading, isSuccess, Result } from '~api'
+import { isFailure, isLoading, Loading, Result } from '~api'
 import {
   getIncomes,
   createIncome,
@@ -68,22 +68,26 @@ const PersonIncome = React.memo(function PersonIncome({ id, open }: Props) {
   const toggleIncome = (incomeId: IncomeId) =>
     setToggledIncome((prev) => toggleIncomeItem(incomeId, prev))
 
-  const handleUpdate = (res: Result<void>) => {
-    if (isSuccess(res)) {
-      clearUiMode()
-      reload()
-    } else if (isFailure(res) && res.error.statusCode === 409) {
+  const handleErrors = (res: Result<void>) => {
+    if (isFailure(res)) {
+      const text =
+        res.error.statusCode === 409
+          ? i18n.personProfile.income.details.conflictErrorText
+          : undefined
+
       setErrorMessage({
         type: 'error',
         title: i18n.personProfile.income.details.updateError,
-        text: i18n.personProfile.income.details.conflictErrorText
+        text
       })
-    } else {
-      setErrorMessage({
-        type: 'error',
-        title: i18n.personProfile.income.details.updateError
-      })
+
+      throw res.error.message
     }
+  }
+
+  const onSuccessfulUpdate = () => {
+    clearUiMode()
+    reload()
   }
 
   const content = () => {
@@ -95,14 +99,15 @@ const PersonIncome = React.memo(function PersonIncome({ id, open }: Props) {
         toggled={toggledIncome}
         toggle={toggleIncome}
         createIncome={(income: PartialIncome) =>
-          createIncome(id, income).then(handleUpdate)
+          createIncome(id, income).then(handleErrors)
         }
         updateIncome={(incomeId: UUID, income: Income) =>
-          updateIncome(incomeId, income).then(handleUpdate)
+          updateIncome(incomeId, income).then(handleErrors)
         }
         deleteIncome={(incomeId: UUID) =>
-          deleteIncome(incomeId).then(handleUpdate)
+          deleteIncome(incomeId).then(handleErrors)
         }
+        onSuccessfulUpdate={onSuccessfulUpdate}
       />
     )
   }

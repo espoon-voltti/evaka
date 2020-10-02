@@ -19,8 +19,9 @@ type Editing = {
   income?: Income
   editing: true
   cancel: () => void
-  createIncome: (v: PartialIncome) => void
-  updateIncome: (v: Income) => void
+  createIncome: (v: PartialIncome) => Promise<void>
+  updateIncome: (v: Income) => Promise<void>
+  onSuccessfulUpdate: () => void
 }
 
 type Props = NotEditing | Editing
@@ -35,6 +36,7 @@ const IncomeItem = React.memo(function IncomeItem(props: Props) {
             cancel={props.cancel}
             create={props.createIncome}
             update={props.updateIncome}
+            onSuccess={props.onSuccessfulUpdate}
           />
         ) : (
           <IncomeItemBody income={props.income} />

@@ -21,9 +21,10 @@ interface Props {
   incomes: Income[]
   toggled: IncomeId[]
   toggle: (v: IncomeId) => void
-  createIncome: (income: PartialIncome) => void
-  updateIncome: (incomeId: UUID, income: Income) => void
-  deleteIncome: (incomeId: UUID) => void
+  createIncome: (income: PartialIncome) => Promise<void>
+  updateIncome: (incomeId: UUID, income: Income) => Promise<void>
+  deleteIncome: (incomeId: UUID) => Promise<void>
+  onSuccessfulUpdate: () => void
 }
 
 const IncomeList = React.memo(function IncomeList({
@@ -32,7 +33,8 @@ const IncomeList = React.memo(function IncomeList({
   toggle,
   createIncome,
   updateIncome,
-  deleteIncome
+  deleteIncome,
+  onSuccessfulUpdate
 }: Props) {
   const { i18n } = useTranslation()
   const { uiMode, toggleUiMode, clearUiMode } = useContext(UIContext)
@@ -62,7 +64,7 @@ const IncomeList = React.memo(function IncomeList({
         reject={() => clearUiMode()}
         resolve={() => {
           clearUiMode()
-          deleteIncome(income.id)
+          void deleteIncome(income.id)
         }}
       />
     )
@@ -86,7 +88,8 @@ const IncomeList = React.memo(function IncomeList({
               clearUiMode()
             }}
             createIncome={createIncome}
-            updateIncome={() => undefined}
+            updateIncome={() => new Promise((res) => res())}
+            onSuccessfulUpdate={onSuccessfulUpdate}
           />
         </IncomeListItem>
       )}
@@ -113,8 +116,9 @@ const IncomeList = React.memo(function IncomeList({
                 income={item}
                 editing
                 cancel={clearUiMode}
-                createIncome={() => undefined}
+                createIncome={() => new Promise((res) => res())}
                 updateIncome={(income) => updateIncome(item.id, income)}
+                onSuccessfulUpdate={onSuccessfulUpdate}
               />
             ) : (
               <IncomeItem income={item} />

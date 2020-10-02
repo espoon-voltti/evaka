@@ -5,6 +5,7 @@
 import React, { useState } from 'react'
 import styled from 'styled-components'
 import LocalDate from '@evaka/lib-common/src/local-date'
+import AsyncButton from '~components/shared/atoms/buttons/AsyncButton'
 import {
   Button,
   Buttons,
@@ -37,15 +38,17 @@ const emptyIncome: PartialIncome = {
 interface Props {
   baseIncome?: Income
   cancel: () => void
-  update: (income: Income) => void
-  create: (income: PartialIncome) => void
+  update: (income: Income) => Promise<void>
+  create: (income: PartialIncome) => Promise<void>
+  onSuccess: () => void
 }
 
 const IncomeItemEditor = React.memo(function IncomeItemEditor({
   baseIncome,
   cancel,
   update,
-  create
+  create,
+  onSuccess
 }: Props) {
   const { i18n } = useTranslation()
 
@@ -166,18 +169,17 @@ const IncomeItemEditor = React.memo(function IncomeItemEditor({
         <Button plain onClick={cancel}>
           {i18n.personProfile.income.details.cancel}
         </Button>
-        <Button
-          primary
+        <AsyncButton
+          text={i18n.personProfile.income.details.save}
           disabled={Object.values(validationErrors).some(Boolean)}
           onClick={() =>
             !baseIncome
               ? create(editedIncome)
               : update({ ...baseIncome, ...editedIncome })
           }
-          dataQa="save-income"
-        >
-          {i18n.personProfile.income.details.save}
-        </Button>
+          onSuccess={onSuccess}
+          data-qa="save-income"
+        />
       </ButtonsContainer>
     </>
   )
