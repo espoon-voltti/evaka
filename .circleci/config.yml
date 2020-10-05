@@ -24,6 +24,7 @@ aliases:
   # SSH key fingerprint for checking out other eVaka repositories
   - &ci_evaka_fingerprint 86:d0:b3:3d:aa:fc:d5:b9:6b:69:1e:c7:f5:56:66:aa
   - &ubuntu_machine_image ubuntu-1604:201903-01
+  - &builder_aws_image 307238562370.dkr.ecr.eu-west-1.amazonaws.com/voltti/builder-aws:1a7e0dec664ec27fa49d3eb76992be870c3f5b99
 
   - &default_config
     working_directory: *workspace_root
@@ -130,7 +131,6 @@ aliases:
         - frontend/packages/employee-frontend/storybook-build
         - frontend/e2e-test/dist
         - frontend/e2e-test/scripts
-        - frontend/.npmrc
         - *yarn_cache
 
   - &persist_workspace_service
@@ -169,7 +169,7 @@ executors:
   aws_executor:
     <<: *default_config
     docker:
-      - image: 307238562370.dkr.ecr.eu-west-1.amazonaws.com/voltti/builder-aws:master
+      - image: *builder_aws_image
   apigw_executor:
     <<: *node_config
     docker:
@@ -226,7 +226,7 @@ commands:
               export SENTRY_PUBLISH_ENABLED=true
             fi
 
-            yarn build
+            ICONS=pro yarn build
             ls -lRa ./dist
 
   build_storybook:
@@ -237,7 +237,7 @@ commands:
           environment:
             SENTRY_NO_PROGRESS_BAR: "1"
           command: |
-            yarn build-storybook
+            ICONS=pro yarn build-storybook
             ls -lRa ./storybook-build
 
   e2e_test:
@@ -448,6 +448,21 @@ jobs:
       - checkout
       - *store_repo
 
+  fetch_private_dependencies:
+    executor: aws_executor
+    steps:
+      - *restore_repo
+      - run: replace-credentials
+      - run:
+          name: Fetch commercial frontend dependencies
+          working_directory: *workspace_frontend
+          command: |
+            ./init-pro-icons.sh
+      - persist_to_workspace:
+          root: *workspace_root
+          paths:
+            - frontend/vendor/fortawesome/*
+
   clone_infra_repo:
     executor: aws_executor
     steps:
@@ -547,17 +562,7 @@ jobs:
     executor: frontend_executor
     steps:
       - *restore_repo
-      - run:
-          name: Add .npmrc
-          working_directory: *workspace_frontend
-          command: |
-            cat \<< EOF > .npmrc
-            @fortawesome:registry=https://npm.fontawesome.com/
-            //npm.fontawesome.com/:_authToken=$(echo $FONTAWESOME_TOKEN)
-            @voltti:registry=https://npm.sst.espoon-voltti.fi/
-            //npm.sst.espoon-voltti.fi/:_authToken="$(echo $VERDACCIO_TOKEN)"
-            //npm.sst.espoon-voltti.fi/:always-auth=true
-            EOF
+      - *attach_workspace
       - *restore_frontend_node_modules
       - run:
           working_directory: *workspace_frontend
@@ -777,6 +782,10 @@ workflows:
   build_test_and_deploy:
     jobs:
       - checkout_repo
+      - fetch_private_dependencies:
+          context: org-global
+          requires:
+            - checkout_repo
       - build_base_image:
           requires:
             - checkout_repo
@@ -797,7 +806,7 @@ workflows:
       - frontend_build_and_test:
           context: org-global
           requires:
-            - checkout_repo
+            - fetch_private_dependencies
       - e2e-test-application:
           requires:
             - frontend_build_and_test

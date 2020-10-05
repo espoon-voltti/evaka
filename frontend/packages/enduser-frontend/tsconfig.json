@@ -34,7 +34,7 @@
     "tests/**/*.tsx"
   ],
   "exclude": [
-    "src/icons/free-icons.tsx",
-    "src/icons/pro-icons.tsx"
+    "src/icons/free-icons.ts",
+    "src/icons/pro-icons.ts"
   ]
 }

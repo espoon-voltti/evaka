@@ -24,6 +24,12 @@ These microservices can either be run with [compose](../../../compose/README.md)
   * [enduser-gw](../../../apigw/README.md)
   * evaka-db (through docker-compose)
 
+## Packages
+
+The project uses a commercial version of [Font Awesome](https://fontawesome.com/),
+so you need to [configure that first](../README.md#using-pro-icons)
+and **always** set `ICONS=pro` when running builds/local dev servers.
+
 ## Development
 
 ```sh
