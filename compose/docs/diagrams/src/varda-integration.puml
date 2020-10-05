@@ -17,7 +17,7 @@ Container_Boundary(aws, "AWS Virtual private cloud") {
         Rel(service, varda, "Lähettää tiedot", "JSON / HTTPS")
         Rel(varda, service, "Palauttaa yksilöivät tunnisteet lähetetyistä tiedoista", "JSON / HTTPS")
     }
-    ContainerDb(db, "evaka-db", "Postgres v10 AWS RDS", "Tallentaa toimipisteiden, asiakkaiden, sijoitusten ja päätösten tiedot.")
+    ContainerDb(db, "evaka-db", "Postgres AWS RDS", "Tallentaa toimipisteiden, asiakkaiden, sijoitusten ja päätösten tiedot.")
     Rel_U(service, db, "Koostaa toimipisteiden tiedot", "JDBC")
 }
 System_Ext(varda, "Varda", "Opetushallituksen Varhaiskasvatuksen tietovaranto")

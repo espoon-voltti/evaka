@@ -19,7 +19,7 @@ System_Boundary(evaka, "eVaka – Espoon varhaiskasvatuksen toiminnanohjausjärj
   ContainerDb(evaka_session_store, "evaka-session-store", "AWS ElastiCache", "Muistinvarainen Redis -tietokanta sessioiden tallentamiseen.")
 
   Container(evaka_service, "evaka-service", "Spring Boot, Kotlin", "Toteuttaa eVaka-sovelluslogiikan.")
-  ContainerDb(evaka_service_db, "evaka-service-db", "Postgres v10 AWS RDS", "Varhaiskasvatuksen hakemusten, perhetietojen ja lasten hoidonaikaisten tietojen tallennus")
+  ContainerDb(evaka_service_db, "evaka-service-db", "Postgres AWS RDS", "Varhaiskasvatuksen hakemusten, perhetietojen ja lasten hoidonaikaisten tietojen tallennus")
 
   Container(evaka_message_service, "evaka-message-service", "Spring Boot, Kotlin", "Välittää viestit ulkoiselle viestipalvelulle")
 
