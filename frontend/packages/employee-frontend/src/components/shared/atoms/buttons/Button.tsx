@@ -10,7 +10,7 @@ import classNames from 'classnames'
 import { defaultButtonTextStyle } from 'components/shared/atoms/buttons/button-commons'
 import { BaseProps } from 'components/shared/utils'
 
-const StyledButton = styled.button`
+export const StyledButton = styled.button`
   height: 45px;
   padding: 0 27px;
   width: fit-content;

@@ -5,6 +5,9 @@
 import React, { useState } from 'react'
 import styled from 'styled-components'
 import LocalDate from '@evaka/lib-common/src/local-date'
+import AsyncButton from '~components/shared/atoms/buttons/AsyncButton'
+import ListGrid from '~components/shared/layout/ListGrid'
+import { Label } from '~components/shared/Typography'
 import {
   Button,
   Buttons,
@@ -15,10 +18,10 @@ import {
   Title
 } from '~components/shared/alpha'
 import DateRangeInput from '../../common/DateRangeInput'
-import IncomeItemDetails from './IncomeItemDetails'
 import IncomeTable from './IncomeTable'
 import { useTranslation } from '~state/i18n'
 import { incomeEffects, Income, PartialIncome } from '~types/income'
+import { formatDate } from '~utils/date'
 
 const ButtonsContainer = styled(Buttons)`
   margin: 20px 0;
@@ -37,15 +40,17 @@ const emptyIncome: PartialIncome = {
 interface Props {
   baseIncome?: Income
   cancel: () => void
-  update: (income: Income) => void
-  create: (income: PartialIncome) => void
+  update: (income: Income) => Promise<void>
+  create: (income: PartialIncome) => Promise<void>
+  onSuccess: () => void
 }
 
 const IncomeItemEditor = React.memo(function IncomeItemEditor({
   baseIncome,
   cancel,
   update,
-  create
+  create,
+  onSuccess
 }: Props) {
   const { i18n } = useTranslation()
 
@@ -122,7 +127,14 @@ const IncomeItemEditor = React.memo(function IncomeItemEditor({
           }
         />
       </RadioGroup>
-      {baseIncome ? <IncomeItemDetails income={baseIncome} editing /> : null}
+      {baseIncome ? (
+        <ListGrid labelWidth="fit-content(40%)" rowGap="xs" columnGap="L">
+          <Label>{i18n.personProfile.income.details.updated}</Label>
+          <span>{formatDate(baseIncome.updatedAt)}</span>
+          <Label>{i18n.personProfile.income.details.handler}</Label>
+          <span>{baseIncome.updatedBy}</span>
+        </ListGrid>
+      ) : null}
       {editedIncome.effect === 'INCOME' ? (
         <>
           <div className="separator" />
@@ -166,18 +178,17 @@ const IncomeItemEditor = React.memo(function IncomeItemEditor({
         <Button plain onClick={cancel}>
           {i18n.personProfile.income.details.cancel}
         </Button>
-        <Button
-          primary
+        <AsyncButton
+          text={i18n.personProfile.income.details.save}
           disabled={Object.values(validationErrors).some(Boolean)}
           onClick={() =>
             !baseIncome
               ? create(editedIncome)
               : update({ ...baseIncome, ...editedIncome })
           }
-          dataQa="save-income"
-        >
-          {i18n.personProfile.income.details.save}
-        </Button>
+          onSuccess={onSuccess}
+          data-qa="save-income"
+        />
       </ButtonsContainer>
     </>
   )

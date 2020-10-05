@@ -56,7 +56,7 @@ class IncomeController(
     }
 
     @PostMapping
-    fun createIncome(user: AuthenticatedUser, @RequestBody income: Income): ResponseEntity<Unit> {
+    fun createIncome(user: AuthenticatedUser, @RequestBody income: Income): ResponseEntity<UUID> {
         Audit.PersonIncomeCreate.log(targetId = income.personId)
         user.requireOneOfRoles(Roles.FINANCE_ADMIN)
         val period = try {
@@ -67,15 +67,17 @@ class IncomeController(
             }
         }
 
-        jdbi.transaction { h ->
-            val validIncome = income.copy(id = UUID.randomUUID()).let(::validateIncome)
+        val id = jdbi.transaction { h ->
+            val id = UUID.randomUUID()
+            val validIncome = income.copy(id = id).let(::validateIncome)
             splitEarlierIncome(h, validIncome.personId, period)
             upsertIncome(h, mapper, validIncome, user.id)
             asyncJobRunner.plan(h, listOf(NotifyIncomeUpdated(validIncome.personId, period.start, period.end)))
+            id
         }
 
         asyncJobRunner.scheduleImmediateRun()
-        return ResponseEntity.noContent().build()
+        return ResponseEntity.ok(id)
     }
 
     @PutMapping("/{incomeId}")

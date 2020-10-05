@@ -3,11 +3,13 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
+import ListGrid from '~components/shared/layout/ListGrid'
+import { Label } from '~components/shared/Typography'
 import { Title } from '~components/shared/alpha'
 import IncomeTable from './IncomeTable'
 import { Income } from '~types/income'
-import IncomeItemDetails from './IncomeItemDetails'
 import { useTranslation } from '~state/i18n'
+import { formatDate } from '~utils/date'
 
 interface Props {
   income: Income
@@ -18,7 +20,26 @@ const IncomeItemBody = React.memo(function IncomeItemBody({ income }: Props) {
 
   return (
     <>
-      <IncomeItemDetails income={income} />
+      <ListGrid labelWidth="fit-content(40%)" rowGap="xs" columnGap="L">
+        <Label>{i18n.personProfile.income.details.dateRange}</Label>
+        <span>
+          {`${income.validFrom.format()} - ${
+            income.validTo ? income.validTo.format() : ''
+          }`}
+        </span>
+        <Label>{i18n.personProfile.income.details.effect}</Label>
+        <span>
+          {i18n.personProfile.income.details.effectOptions[income.effect]}
+        </span>
+        <Label>{i18n.personProfile.income.details.echa}</Label>
+        <span>{income.worksAtECHA ? i18n.common.yes : i18n.common.no}</span>
+        <Label>{i18n.personProfile.income.details.entrepreneur}</Label>
+        <span>{income.isEntrepreneur ? i18n.common.yes : i18n.common.no}</span>
+        <Label>{i18n.personProfile.income.details.updated}</Label>
+        <span>{formatDate(income.updatedAt)}</span>
+        <Label>{i18n.personProfile.income.details.handler}</Label>
+        <span>{income.updatedBy}</span>
+      </ListGrid>
       {income.effect === 'INCOME' ? (
         <>
           <div className="separator" />

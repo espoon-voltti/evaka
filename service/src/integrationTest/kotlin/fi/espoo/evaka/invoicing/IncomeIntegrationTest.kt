@@ -125,7 +125,7 @@ class IncomeIntegrationTest : FullApplicationTest() {
             .asUser(financeUser)
             .jsonBody(objectMapper.writeValueAsString(testIncome))
             .responseString()
-        assertEquals(204, postResponse.statusCode)
+        assertEquals(200, postResponse.statusCode)
 
         val (_, response, result) = http.get("/incomes?personId=${testAdult_1.id}")
             .asUser(financeUser)
@@ -158,7 +158,7 @@ class IncomeIntegrationTest : FullApplicationTest() {
             .asUser(financeUser)
             .jsonBody(objectMapper.writeValueAsString(secondIncome))
             .responseString()
-        assertEquals(204, postResponse.statusCode)
+        assertEquals(200, postResponse.statusCode)
 
         val result = jdbi.handle { h -> getIncomesForPerson(h, mapper, testAdult_1.id) }
 
@@ -222,7 +222,7 @@ class IncomeIntegrationTest : FullApplicationTest() {
             .asUser(financeUser)
             .jsonBody(objectMapper.writeValueAsString(income))
             .responseString()
-        assertEquals(204, postResponse.statusCode)
+        assertEquals(200, postResponse.statusCode)
 
         val (_, response, result) = http.get("/incomes?personId=${testAdult_1.id}")
             .asUser(financeUser)

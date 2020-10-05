@@ -2,50 +2,45 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext } from 'react'
-import styled from 'styled-components'
+import React from 'react'
+import { Gap } from '~components/shared/layout/white-space'
 import IncomeItemHeader from './IncomeItemHeader'
-import IncomeItem from './IncomeItem'
+import IncomeItemBody from './IncomeItemBody'
+import IncomeItemEditor from './IncomeItemEditor'
 import { useTranslation } from '~state/i18n'
-import { UIContext } from '~state/ui'
 import { Income, PartialIncome, IncomeId } from '~types/income'
 import { UUID } from '~types'
 import InfoModal from '~components/common/InfoModal'
 import { faQuestion } from 'icon-set'
 
-const IncomeListItem = styled.div`
-  margin-bottom: 20px;
-`
-
 interface Props {
   incomes: Income[]
   toggled: IncomeId[]
   toggle: (v: IncomeId) => void
-  createIncome: (income: PartialIncome) => void
-  updateIncome: (incomeId: UUID, income: Income) => void
-  deleteIncome: (incomeId: UUID) => void
+  editing: string | undefined
+  setEditing: React.Dispatch<React.SetStateAction<string | undefined>>
+  deleting: string | undefined
+  setDeleting: React.Dispatch<React.SetStateAction<string | undefined>>
+  createIncome: (income: PartialIncome) => Promise<void>
+  updateIncome: (incomeId: UUID, income: Income) => Promise<void>
+  deleteIncome: (incomeId: UUID) => Promise<void>
+  onSuccessfulUpdate: () => void
 }
 
 const IncomeList = React.memo(function IncomeList({
   incomes,
   toggled,
   toggle,
+  editing,
+  setEditing,
+  deleting,
+  setDeleting,
   createIncome,
   updateIncome,
-  deleteIncome
+  deleteIncome,
+  onSuccessfulUpdate
 }: Props) {
   const { i18n } = useTranslation()
-  const { uiMode, toggleUiMode, clearUiMode } = useContext(UIContext)
-
-  const editable = !uiMode
-  const editingNew = uiMode === 'edit-person-income-new'
-  const editingExisting = (id: UUID) => uiMode === `edit-person-income-${id}`
-  const startEditing = (id: UUID) => () =>
-    toggleUiMode(`edit-person-income-${id}`)
-  const isToggled = (id: UUID) => toggled.includes(id)
-  const startDeleting = (id: UUID) => () =>
-    toggleUiMode(`delete-person-income-${id}`)
-  const deleting = (id: UUID) => uiMode === `delete-person-income-${id}`
 
   const renderDeleteModal = (income: Income) => {
     const confirmText = `${
@@ -59,68 +54,70 @@ const IncomeList = React.memo(function IncomeList({
         resolveLabel={i18n.common.remove}
         rejectLabel={i18n.common.cancel}
         icon={faQuestion}
-        reject={() => clearUiMode()}
-        resolve={() => {
-          clearUiMode()
+        reject={() => setDeleting(undefined)}
+        resolve={() =>
           deleteIncome(income.id)
-        }}
+            .then(() => setDeleting(undefined))
+            .then(onSuccessfulUpdate)
+        }
       />
     )
   }
 
   return (
     <>
-      {editingNew && (
-        <IncomeListItem key="new">
+      {editing === 'new' && (
+        <div key="new">
           <IncomeItemHeader
             title={i18n.personProfile.income.itemHeaderNew}
-            toggled={isToggled('new')}
+            toggled={toggled.includes('new')}
             toggle={() => toggle('new')}
-            editable={editable}
+            editable={!editing}
             startEditing={() => undefined}
             startDeleting={() => undefined}
           />
-          <IncomeItem
-            editing={editingNew}
-            cancel={() => {
-              clearUiMode()
-            }}
-            createIncome={createIncome}
-            updateIncome={() => undefined}
+          <Gap size="m" />
+          <IncomeItemEditor
+            cancel={() => setEditing(undefined)}
+            create={createIncome}
+            update={() => new Promise((res) => res())}
+            onSuccess={onSuccessfulUpdate}
           />
-        </IncomeListItem>
+          <Gap size="m" />
+        </div>
       )}
       {incomes.map((item: Income) => (
-        <IncomeListItem
-          key={`${item.validFrom.formatIso()}-${
-            item.validTo?.formatIso() ?? ''
-          }`}
-        >
-          {deleting(item.id) ? renderDeleteModal(item) : null}
+        <div key={item.id}>
+          {deleting === item.id ? renderDeleteModal(item) : null}
           <IncomeItemHeader
             title={`${
               i18n.personProfile.income.itemHeader
             } ${item.validFrom.format()} - ${item.validTo?.format() ?? ''}`}
-            toggled={isToggled(item.id)}
+            toggled={toggled.includes(item.id)}
             toggle={() => toggle(item.id)}
-            editable={editable}
-            startEditing={startEditing(item.id)}
-            startDeleting={startDeleting(item.id)}
+            editable={!editing}
+            toggleable
+            startEditing={() => setEditing(item.id)}
+            startDeleting={() => setDeleting(item.id)}
           />
-          {isToggled(item.id) ? (
-            editingExisting(item.id) ? (
-              <IncomeItem
-                income={item}
-                editing
-                cancel={clearUiMode}
-                createIncome={() => undefined}
-                updateIncome={(income) => updateIncome(item.id, income)}
-              />
-            ) : (
-              <IncomeItem income={item} />
-            )
+          {toggled.includes(item.id) ? (
+            <>
+              <Gap size="m" />
+              {editing === item.id ? (
+                <IncomeItemEditor
+                  baseIncome={item}
+                  cancel={() => setEditing(undefined)}
+                  create={createIncome}
+                  update={(income) => updateIncome(item.id, income)}
+                  onSuccess={onSuccessfulUpdate}
+                />
+              ) : (
+                <IncomeItemBody income={item} />
+              )}
+            </>
           ) : null}
-        </IncomeListItem>
+          <Gap size="m" />
+        </div>
       ))}
     </>
   )
