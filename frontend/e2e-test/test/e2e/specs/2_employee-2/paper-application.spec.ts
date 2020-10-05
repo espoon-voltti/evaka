@@ -126,8 +126,7 @@ test('Service worker fills paper application with minimal info and saves it', as
   await t.expect(applicationEditPage.readView.exists).ok()
 })
 
-// eslint-disable-next-line
-test.only('Service worker fills paper application with second guardian contact info and agreement status', async (t) => {
+test('Service worker fills paper application with second guardian contact info and agreement status', async (t) => {
   await childInforationPage.openCreateApplicationModal()
   await childInforationPage.clickCreateApplicationModalCreateApplicationButton()
   await applicationEditPage.fillStartDate(new Date())
