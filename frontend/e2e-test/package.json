@@ -38,7 +38,7 @@
     "eslint-plugin-promise": "^4.2.1",
     "husky": "^2.3.0",
     "make-error-cause": "^2.3.0",
-    "testcafe": "^1.7.0",
+    "testcafe": "~1.8.6",
     "testcafe-reporter-junit": "3.0.2"
   },
   "husky": {
