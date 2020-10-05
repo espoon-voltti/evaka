@@ -3,14 +3,15 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useState } from 'react'
-import { Table } from '~components/shared/alpha'
+import { Link } from 'react-router-dom'
+
+import { Td, Tr } from '~components/shared/layout/Table'
 import { useTranslation } from '~state/i18n'
 import {
   DaycarePlacementPlan,
   PlacementPlanConfirmationStatus,
   PlacementPlanRejectReason
 } from '~types/unit'
-import { Link } from 'react-router-dom'
 import { careTypesFromPlacementType } from '~components/common/CareTypeLabel'
 import { formatName } from '~utils'
 import styled from 'styled-components'
@@ -33,7 +34,7 @@ const CenteredDiv = styled.div`
   justify-content: center;
 `
 
-const CenteredRow = styled(Table.Row)`
+const CenteredRow = styled(Tr)`
   height: 52px;
 
   td {
@@ -112,9 +113,9 @@ export default React.memo(function PlacementProposalRow({
       )}
 
       <CenteredRow
-        dataQa={`placement-proposal-row-${placementPlan.applicationId}`}
+        data-qa={`placement-proposal-row-${placementPlan.applicationId}`}
       >
-        <Table.Td dataQa="child-name">
+        <Td data-qa="child-name">
           <Link to={`/child-information/${placementPlan.child.id}`}>
             {formatName(
               placementPlan.child.firstName,
@@ -123,17 +124,15 @@ export default React.memo(function PlacementProposalRow({
               true
             )}
           </Link>
-        </Table.Td>
-        <Table.Td dataQa="child-dob">
-          {placementPlan.child.dateOfBirth.format()}
-        </Table.Td>
-        <Table.Td dataQa="placement-duration">
+        </Td>
+        <Td data-qa="child-dob">{placementPlan.child.dateOfBirth.format()}</Td>
+        <Td data-qa="placement-duration">
           {`${placementPlan.period.start.format()} - ${placementPlan.period.end.format()}`}
-        </Table.Td>
-        <Table.Td dataQa="placement-type">
+        </Td>
+        <Td data-qa="placement-type">
           {careTypesFromPlacementType(placementPlan.type)}
-        </Table.Td>
-        <Table.Td dataQa="application-link">
+        </Td>
+        <Td data-qa="application-link">
           <CenteredDiv>
             <a
               href={`${getEmployeeUrlPrefix()}/employee/applications/${
@@ -149,8 +148,8 @@ export default React.memo(function PlacementProposalRow({
               />
             </a>
           </CenteredDiv>
-        </Table.Td>
-        <Table.Td>
+        </Td>
+        <Td>
           {!submitting && (
             <FixedSpaceRow spacing="m">
               <div>
@@ -177,7 +176,7 @@ export default React.memo(function PlacementProposalRow({
               </div>
             </FixedSpaceRow>
           )}
-        </Table.Td>
+        </Td>
       </CenteredRow>
     </>
   )

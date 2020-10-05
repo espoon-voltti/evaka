@@ -8,7 +8,8 @@ import { CaretakerAmount } from '~types/caretakers'
 import FormModal from '~components/common/FormModal'
 import { faPen, faPlus } from 'icon-set'
 import { useTranslation } from '~state/i18n'
-import { InputField, Section } from '~components/shared/alpha'
+import InputField from '~components/shared/atoms/form/InputField'
+import Section from '~components/shared/layout/Section'
 import { DatePicker, DatePickerClearable } from '~components/common/DatePicker'
 import styled from 'styled-components'
 import { UUID } from '~types'
@@ -141,12 +142,16 @@ function GroupCaretakersModal({
         <NumberInputContainer>
           <InputField
             value={form.amount.toString()}
-            onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
+            onChange={(value) =>
               assignForm({
-                amount: event.target.value
+                amount: value
               })
             }
-            state={invalidAmount ? 'error' : undefined}
+            info={
+              invalidAmount
+                ? { text: 'Virheellinen arvo', status: 'warning' }
+                : undefined
+            }
             dataQa="input-assistance-need-multiplier"
           />
         </NumberInputContainer>

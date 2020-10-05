@@ -194,13 +194,12 @@ function FormModal({
                   )}
                   {text && (
                     <Fragment>
-                      <Gap size={'L'} />
                       <Text data-qa="text">{text}</Text>
                     </Fragment>
                   )}
                 </ModalTitle>
               ) : (
-                <></>
+                <Gap size={'L'} />
               )}
               <form>
                 {children}

@@ -3,7 +3,10 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useEffect, useState } from 'react'
-import { Container, ContentArea, Loader, Title } from '~components/shared/alpha'
+
+import { Container, ContentArea } from '~components/shared/layout/Container'
+import Loader from '~components/shared/atoms/Loader'
+import Title from '~components/shared/atoms/Title'
 import { useTranslation } from '~state/i18n'
 import { isFailure, isLoading, isSuccess, Loading, Result } from '~api'
 import { PresenceReportRow } from '~types/reports'

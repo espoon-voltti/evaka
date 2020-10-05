@@ -101,6 +101,7 @@ interface RadioProps extends BaseProps {
   name?: string
   disabled?: boolean
   small?: boolean
+  id?: string
 }
 
 function Radio({
@@ -112,7 +113,8 @@ function Radio({
   disabled,
   className,
   dataQa,
-  small
+  small,
+  id
 }: RadioProps) {
   const inputRef = useRef<HTMLInputElement>(null)
 
@@ -139,6 +141,7 @@ function Radio({
           readOnly={!onChange}
           ref={inputRef}
           small={small}
+          id={id}
         />
         <IconWrapper small={small}>
           <FontAwesomeIcon icon={faCheck} />

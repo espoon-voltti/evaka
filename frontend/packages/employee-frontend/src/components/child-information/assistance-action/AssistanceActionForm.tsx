@@ -7,7 +7,8 @@ import styled from 'styled-components'
 import LocalDate from '@evaka/lib-common/src/local-date'
 import { useTranslation } from '~/state/i18n'
 import { UIContext } from '~state/ui'
-import { Checkbox, Input } from '~components/shared/alpha'
+import Checkbox from '~components/shared/atoms/form/Checkbox'
+import InputField from '~components/shared/atoms/form/InputField'
 import InfoBall from '~components/common/InfoBall'
 import {
   AssistanceAction,
@@ -243,7 +244,6 @@ function AssistanceActionForm(props: Props) {
                 {ASSISTANCE_ACTION_TYPE_LIST.map((action) => (
                   <CheckboxRow key={action}>
                     <Checkbox
-                      name={action}
                       label={
                         i18n.childInformation.assistanceAction.fields
                           .actionTypes[action]
@@ -269,10 +269,10 @@ function AssistanceActionForm(props: Props) {
                   </CheckboxRow>
                 ))}
                 {form.actions.has('OTHER') && (
-                  <Input
+                  <InputField
                     value={form.otherAction}
-                    onChange={(e) =>
-                      updateFormState({ otherAction: e.target.value })
+                    onChange={(value) =>
+                      updateFormState({ otherAction: value })
                     }
                     placeholder={
                       i18n.childInformation.assistanceAction.fields
@@ -291,7 +291,6 @@ function AssistanceActionForm(props: Props) {
                 {ASSISTANCE_MEASURE_LIST.map((measure) => (
                   <CheckboxRow key={measure}>
                     <Checkbox
-                      name={measure}
                       label={
                         i18n.childInformation.assistanceAction.fields
                           .measureTypes[measure]

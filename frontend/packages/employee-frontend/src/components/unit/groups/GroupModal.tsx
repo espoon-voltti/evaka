@@ -6,14 +6,15 @@ import React, { useContext, useEffect, useState } from 'react'
 import FormModal from '~components/common/FormModal'
 import { useTranslation } from '~state/i18n'
 import { UIContext } from '~state/ui'
-import { Section } from '~components/shared/alpha'
+import Section from '~components/shared/layout/Section'
 import { DatePicker } from '~components/common/DatePicker'
-import { Input } from '~components/shared/alpha'
+import InputField from '~components/shared/atoms/form/InputField'
 import { allPropertiesTrue } from '~utils/validation/validations'
 import '~components/unit/groups/GroupModal.scss'
 import { createGroup } from '~api/unit'
 import { EVAKA_START } from '~constants'
 import LocalDate from '@evaka/lib-common/src/local-date'
+import { FixedSpaceColumn } from '~components/shared/layout/flex-helpers'
 
 interface Props {
   unitId: string
@@ -87,42 +88,47 @@ function GroupModal({ unitId, reload }: Props) {
       reject={() => clearUiMode()}
       rejectLabel={i18n.unit.groups.createModal.cancelButton}
     >
-      <Section>
-        <div className="bold">{i18n.unit.groups.createModal.name}</div>
-        <Input
-          value={form.name}
-          onChange={(e) => assignForm({ name: e.target.value })}
-          dataQa={'new-group-name-input'}
-        />
-        {!validationResult.fields.name && (
-          <div className="error">
-            {i18n.unit.groups.createModal.errors.nameRequired}
+      <FixedSpaceColumn spacing={'m'}>
+        <Section>
+          <div className="bold">{i18n.unit.groups.createModal.name}</div>
+          <InputField
+            value={form.name}
+            onChange={(value) => assignForm({ name: value })}
+            dataQa={'new-group-name-input'}
+            info={
+              !validationResult.fields.name
+                ? {
+                    text: i18n.unit.groups.createModal.errors.nameRequired,
+                    status: 'warning'
+                  }
+                : undefined
+            }
+          />
+        </Section>
+        <Section>
+          <div className="bold">{i18n.common.form.startDate}</div>
+          <DatePicker
+            date={form.startDate}
+            onChange={(startDate) => assignForm({ startDate })}
+            type="full-width"
+          />
+        </Section>
+        <Section>
+          <div className="bold">
+            {i18n.unit.groups.createModal.initialCaretakers}
           </div>
-        )}
-      </Section>
-      <Section>
-        <div className="bold">{i18n.common.form.startDate}</div>
-        <DatePicker
-          date={form.startDate}
-          onChange={(startDate) => assignForm({ startDate })}
-          type="full-width"
-        />
-      </Section>
-      <Section>
-        <div className="bold">
-          {i18n.unit.groups.createModal.initialCaretakers}
-        </div>
-        <Input
-          value={form.initialCaretakers.toString()}
-          type="number"
-          min={0}
-          step={0.1}
-          onChange={(e) =>
-            assignForm({ initialCaretakers: Number(e.target.value) })
-          }
-          dataQa={'new-group-name-input'}
-        />
-      </Section>
+          <InputField
+            value={form.initialCaretakers.toString()}
+            type={'number'}
+            min={0}
+            step={1}
+            onChange={(value) =>
+              assignForm({ initialCaretakers: Number(value) })
+            }
+            dataQa={'new-group-name-input'}
+          />
+        </Section>
+      </FixedSpaceColumn>
     </FormModal>
   )
 }

@@ -10,13 +10,11 @@ import ReactSelect from 'react-select'
 import { faLink } from 'icon-set'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import LocalDate from '@evaka/lib-common/src/local-date'
-import {
-  Container,
-  ContentArea,
-  Title,
-  Button,
-  Loader
-} from '~components/shared/alpha'
+import { Container, ContentArea } from '~components/shared/layout/Container'
+import Title from '~components/shared/atoms/Title'
+import { Gap } from '~components/shared/layout/white-space'
+import Button from '~components/shared/atoms/buttons/Button'
+import Loader from '~components/shared/atoms/Loader'
 
 import {
   PlacementDraftState,
@@ -62,10 +60,13 @@ const PlacementDraftInfo = styled.section`
 
 const ChildName = styled.div`
   display: flex;
+  justify-content: space-between;
 
   a {
     margin-left: 50px;
     min-width: 120px;
+    display: flex;
+    align-items: center;
   }
 
   h2.title.is-3 {
@@ -278,17 +279,16 @@ function PlacementDraft({ match }: RouteComponentProps<{ id: UUID }>) {
 
   return (
     <ContainerNarrow>
-      <ContentArea opaque={true}>
+      <Gap size={'L'} />
+      <ContentArea opaque>
         {isFailure(placementDraft) && <p>{i18n.common.loadingFailed}</p>}
         {isLoading(placementDraft) && <Loader />}
         {isSuccess(placementDraft) && placement.period && (
           <Fragment>
             <PlacementDraftInfo>
-              <Title tag={1} size={2}>
-                {i18n.placementDraft.createPlacementDraft}
-              </Title>
+              <Title size={2}>{i18n.placementDraft.createPlacementDraft}</Title>
               <ChildName>
-                <Title tag={2} size={3}>
+                <Title size={3}>
                   {formatName(
                     placementDraft.data.child.firstName,
                     placementDraft.data.child.lastName,
@@ -352,16 +352,14 @@ function PlacementDraft({ match }: RouteComponentProps<{ id: UUID }>) {
               <Button
                 primary
                 disabled={placement.unitId === undefined}
-                width="wide"
                 dataQa="send-placement-button"
                 onClick={() => {
                   void createPlacementPlan(id, placement).then(() =>
                     redirectToMainPage()
                   )
                 }}
-              >
-                {i18n.common.send}
-              </Button>
+                text={i18n.common.send}
+              />
             </SendButtonContainer>
           </Fragment>
         )}

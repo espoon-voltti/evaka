@@ -3,10 +3,11 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useCallback, useContext, useEffect, useState } from 'react'
-import { Link, Redirect, RouteComponentProps } from 'react-router-dom'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faChevronLeft } from 'icon-set'
-import { Container, ContentArea, Title } from '~components/shared/alpha'
+import { Redirect, RouteComponentProps } from 'react-router-dom'
+
+import { Container, ContentArea } from '~components/shared/layout/Container'
+import ReturnButton from '~components/shared/atoms/buttons/ReturnButton'
+import Title from '~components/shared/atoms/Title'
 import { useTranslation } from '../../state/i18n'
 import { TitleContext, TitleState } from '../../state/title'
 import { isFailure, isSuccess, Loading, Result, Success } from '../../api'
@@ -73,12 +74,7 @@ const InvoiceDetailsPage = React.memo(function InvoiceDetailsPage({
   return (
     <div className="invoice-details-page" data-qa="invoice-details-page">
       <Container>
-        <div className="close-container">
-          <Link to={`/invoices`} data-qa="navigate-back">
-            <FontAwesomeIcon icon={faChevronLeft} />{' '}
-            {i18n.invoice.form.nav.return}
-          </Link>
-        </div>
+        <ReturnButton dataQa="navigate-back" />
         {invoice ? (
           <>
             {isSuccess(invoice) && (

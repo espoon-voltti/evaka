@@ -4,7 +4,7 @@
 
 import React, { useContext, useEffect, useRef, useState } from 'react'
 import { faMoneyCheckEdit, faQuestion } from 'icon-set'
-import { Loader } from '~components/shared/alpha'
+import Loader from '~components/shared/atoms/Loader'
 import InfoModal from '~components/common/InfoModal'
 import FeeAlterationList from './fee-alteration/FeeAlterationList'
 import FeeAlterationEditor from './fee-alteration/FeeAlterationEditor'

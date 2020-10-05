@@ -7,6 +7,12 @@
 @import 'absence-variables';
 // temporary forced overrides
 .absences-page {
+  button {
+    &:disabled {
+      color: #c4c4c4;
+    }
+  }
+
   .container {
     @media screen and (min-width: $screen-small) and (max-width: $screen-medium) {
       width: 100%;
@@ -18,11 +24,21 @@
     margin-bottom: 20px;
   }
 
+  .table th {
+    text-align: left;
+    text-transform: uppercase;
+    color: #6e6e6e;
+  }
+
+  .table td {
+    text-align: center;
+    color: #0f0f0f;
+  }
+
   .table td,
   .table th {
     padding: 5px 2px !important;
     border-bottom: none !important;
-    text-align: center;
   }
 
   .table thead th {
@@ -94,12 +110,12 @@
   }
 
   .absence-header-today {
-    background-color: $grey;
-    color: $white;
+    background-color: #9e9e9e;
+    color: $white !important;
   }
 
   .absence-header-weekday {
-    color: $color-weekday-text;
+    color: $color-weekday-text !important;
   }
 
   .absence-cell {
@@ -244,6 +260,15 @@
         height: $cell-size;
         width: $cell-size;
         min-height: 1.5rem;
+        border-color: #9e9e9e;
+        color: #0f0f0f;
+        display: block;
+        box-shadow: none;
+        max-width: 100%;
+        min-height: 2.5em;
+        border-radius: 0;
+        border-width: 0 0 1px;
+        background-color: transparent;
       }
     }
 

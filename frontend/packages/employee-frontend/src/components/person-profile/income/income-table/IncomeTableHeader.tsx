@@ -4,19 +4,19 @@
 
 import React from 'react'
 import styled from 'styled-components'
-import { Table } from '~components/shared/alpha'
+import { Th, Thead, Tr } from 'components/shared/layout/Table'
 import { Translations } from '~state/i18n'
 
-const TypeHeader = styled(Table.Th)`
+const TypeHeader = styled(Th)`
   width: 50%;
 `
 
-const EuroHeader = styled(Table.Th)`
+const EuroHeader = styled(Th)`
   width: 8rem;
   text-align: right !important;
 `
 
-const CoefficientHeader = styled(Table.Th)`
+const CoefficientHeader = styled(Th)`
   width: 16rem;
 `
 
@@ -30,8 +30,8 @@ const IncomeTableHeader = React.memo(function IncomeTableHeader({
   type
 }: Props) {
   return (
-    <Table.Head>
-      <Table.Row>
+    <Thead>
+      <Tr>
         <TypeHeader>{i18n.personProfile.income.details[type]}</TypeHeader>
         <EuroHeader>{i18n.personProfile.income.details.amount}</EuroHeader>
         <CoefficientHeader>
@@ -40,8 +40,8 @@ const IncomeTableHeader = React.memo(function IncomeTableHeader({
         <EuroHeader>
           {i18n.personProfile.income.details.monthlyAmount}
         </EuroHeader>
-      </Table.Row>
-    </Table.Head>
+      </Tr>
+    </Thead>
   )
 })
 

@@ -11,7 +11,7 @@ import { formatDate } from 'utils/date'
 import { formatParagraphs } from 'utils/html-utils'
 import { DATE_FORMAT_DATE_TIME } from '~constants'
 import { DefaultMargins, Gap } from 'components/shared/layout/white-space'
-import { TextArea } from 'components/shared/alpha/elements/form'
+import { TextArea } from 'components/shared/atoms/form/InputField'
 import { addSeconds, isAfter } from 'date-fns'
 import InlineButton from 'components/shared/atoms/buttons/InlineButton'
 import { createNote, deleteNote, updateNote } from 'api/applications'
@@ -124,7 +124,6 @@ export default React.memo(function ApplicationNoteBox(props: Props) {
           text: i18n.application.notes.error.save
         })
       )
-      .finally(() => setSubmitting(false))
   }
 
   const doDelete = () => {
@@ -217,7 +216,9 @@ export default React.memo(function ApplicationNoteBox(props: Props) {
           <>
             <TextArea
               value={text}
-              onChange={(e) => setText(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+                setText(e.target.value)
+              }
               placeholder={i18n.application.notes.placeholder}
               autoFocus
             />

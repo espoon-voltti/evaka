@@ -6,7 +6,8 @@ import React, { FormEvent, useContext, useEffect, useState } from 'react'
 import LocalDate from '@evaka/lib-common/src/local-date'
 import { useTranslation } from '~/state/i18n'
 import { UIContext } from '~state/ui'
-import { Checkbox, Input } from '~components/shared/alpha'
+import Checkbox from '~components/shared/atoms/form/Checkbox'
+import InputField from '~components/shared/atoms/form/InputField'
 import { ServiceNeed } from '~types/child'
 import { UUID } from '~types'
 import { FormErrors, formHasErrors } from '~utils/validation/validations'
@@ -24,6 +25,7 @@ import {
   ServiceNeedRequest,
   updateServiceNeed
 } from 'api/child/service-needs'
+import { FixedSpaceColumn } from '~components/shared/layout/flex-helpers'
 
 const NumberInputWrapper = styled.div`
   display: flex;
@@ -215,15 +217,15 @@ function ServiceNeedForm(props: Props) {
             value: (
               <div>
                 <NumberInputWrapper>
-                  <Input
+                  <InputField
                     value={form.hoursPerWeek.toString()}
                     type={'number'}
                     min={1}
                     step={0.5}
                     dataQa="input-service-need-hours-per-week"
-                    onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
+                    onChange={(value) =>
                       updateFormState({
-                        hoursPerWeek: Number(event.target.value)
+                        hoursPerWeek: Number(value)
                       })
                     }
                   />
@@ -248,9 +250,8 @@ function ServiceNeedForm(props: Props) {
           {
             label: i18n.childInformation.serviceNeed.serviceNeedDetails,
             value: (
-              <div>
+              <FixedSpaceColumn>
                 <Checkbox
-                  name="partDay"
                   label={i18n.childInformation.serviceNeed.services.partDay}
                   checked={form.partDay}
                   onChange={(value: boolean) =>
@@ -259,7 +260,6 @@ function ServiceNeedForm(props: Props) {
                   dataQa="toggle-service-need-part-day"
                 />
                 <Checkbox
-                  name="partWeek"
                   label={i18n.childInformation.serviceNeed.services.partWeek}
                   checked={form.partWeek}
                   onChange={(value: boolean) =>
@@ -268,7 +268,6 @@ function ServiceNeedForm(props: Props) {
                   dataQa="toggle-service-need-part-week"
                 />
                 <Checkbox
-                  name="temporary"
                   label={i18n.childInformation.serviceNeed.services.temporary}
                   checked={form.temporary}
                   onChange={(value: boolean) =>
@@ -277,7 +276,6 @@ function ServiceNeedForm(props: Props) {
                   dataQa="toggle-service-need-temporary"
                 />
                 <Checkbox
-                  name="shiftCare"
                   label={i18n.childInformation.serviceNeed.services.shiftCare}
                   checked={form.shiftCare}
                   onChange={(value: boolean) =>
@@ -285,7 +283,7 @@ function ServiceNeedForm(props: Props) {
                   }
                   dataQa="toggle-service-need-shift-care"
                 />
-              </div>
+              </FixedSpaceColumn>
             )
           }
         ]}

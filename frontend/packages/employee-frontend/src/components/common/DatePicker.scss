@@ -6,8 +6,6 @@
 
 @import '~react-datepicker/dist/react-datepicker.css';
 
-@import '../../assets/variables';
-
 .full-width {
   width: 100%;
 }
@@ -31,7 +29,7 @@
   right: 0;
   &::after {
     background-color: transparent;
-    color: $grey-light;
+    color: #c4c4c4;
     font-size: 25px;
   }
 }

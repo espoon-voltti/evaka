@@ -15,7 +15,7 @@ import {
 import { useTranslation } from '~state/i18n'
 import { faQuestion } from 'icon-set'
 import styled from 'styled-components'
-import { Button, Buttons } from '~components/shared/alpha'
+import Button from 'components/shared/atoms/buttons/Button'
 import InfoModal from '~components/common/InfoModal'
 import { isFailure, isSuccess } from '~api'
 import { DatePicker } from '~components/common/DatePicker'
@@ -30,6 +30,7 @@ import {
 } from 'api/child/placements'
 import { InputWarning } from '~components/common/InputWarning'
 import LocalDate from '@evaka/lib-common/src/local-date'
+import { FixedSpaceRow } from '~components/shared/layout/flex-helpers'
 
 interface Props {
   placement: Placement
@@ -273,14 +274,17 @@ function PlacementRow({ placement, onRefreshNeeded, checkOverlaps }: Props) {
         )}
         {editing && (
           <ActionRow>
-            <Buttons>
-              <Button onClick={() => setEditing(false)}>
-                {i18n.common.cancel}
-              </Button>
-              <Button primary onClick={() => submitUpdate()}>
-                {i18n.common.save}
-              </Button>
-            </Buttons>
+            <FixedSpaceRow>
+              <Button
+                onClick={() => setEditing(false)}
+                text={i18n.common.cancel}
+              />
+              <Button
+                primary
+                onClick={() => submitUpdate()}
+                text={i18n.common.save}
+              />
+            </FixedSpaceRow>
           </ActionRow>
         )}
       </ToolbarAccordion>

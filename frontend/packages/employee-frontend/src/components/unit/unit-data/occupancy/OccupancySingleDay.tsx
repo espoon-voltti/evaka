@@ -6,7 +6,7 @@ import React from 'react'
 import styled from 'styled-components'
 import { OccupancyResponse } from '~api/unit'
 import { useTranslation } from '~state/i18n'
-import { Title } from '~components/shared/alpha'
+import Title from '~components/shared/atoms/Title'
 
 const Container = styled.div`
   text-align: center;

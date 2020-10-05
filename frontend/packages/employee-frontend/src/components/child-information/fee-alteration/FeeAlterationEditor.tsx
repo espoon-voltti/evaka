@@ -4,14 +4,10 @@
 
 import React, { useState, FormEvent, useEffect } from 'react'
 import LocalDate from '@evaka/lib-common/src/local-date'
-import {
-  Button,
-  Buttons,
-  LabelValueList,
-  LabelValueListItem,
-  TextArea,
-  Title
-} from '~components/shared/alpha'
+import Title from '~components/shared/atoms/Title'
+import Button from '~components/shared/atoms/buttons/Button'
+import { TextArea } from '~components/shared/atoms/form/InputField'
+import LabelValueList from '~components/common/LabelValueList'
 import DateRangeInput from '~components/common/DateRangeInput'
 import FeeAlterationRowInput from './FeeAlterationRowInput'
 import { useTranslation } from '~state/i18n'
@@ -22,6 +18,7 @@ import {
 } from '~types/fee-alteration'
 import { UUID } from '~types'
 import './FeeAlterationEditor.scss'
+import { FixedSpaceRow } from '~components/shared/layout/flex-helpers'
 
 const newFeeAlteration = (personId: UUID): PartialFeeAlteration => ({
   personId,
@@ -83,71 +80,78 @@ function FeeAlterationEditor({
         }
       </Title>
       <form onSubmit={onSubmit}>
-        <LabelValueList>
-          <LabelValueListItem
-            label={i18n.childInformation.feeAlteration.editor.alterationType}
-            value={
-              <div className="row-input-container">
-                <FeeAlterationRowInput
-                  edited={edited}
-                  setEdited={setEdited}
-                  typeOptions={feeAlterationTypes.map((type) => ({
-                    id: type,
-                    label: i18n.childInformation.feeAlteration.types[type]
-                  }))}
-                />
-              </div>
-            }
-            dataQa="fee-alteration-type-input"
-          />
-          <LabelValueListItem
-            label={i18n.childInformation.feeAlteration.editor.validDuring}
-            value={
-              <div className="row-input-container">
-                <DateRangeInput
-                  start={edited.validFrom}
-                  end={edited.validTo ? edited.validTo : undefined}
-                  onChange={(start: LocalDate, end?: LocalDate) =>
-                    setEdited((state) => ({
-                      ...state,
-                      validFrom: start,
-                      validTo: end ?? null
-                    }))
+        <LabelValueList
+          spacing="large"
+          contents={[
+            {
+              label: i18n.childInformation.feeAlteration.editor.alterationType,
+              value: (
+                <div
+                  className="row-input-container"
+                  data-qa="fee-alteration-type-input"
+                >
+                  <FeeAlterationRowInput
+                    edited={edited}
+                    setEdited={setEdited}
+                    typeOptions={feeAlterationTypes.map((type) => ({
+                      value: type,
+                      label: i18n.childInformation.feeAlteration.types[type]
+                    }))}
+                  />
+                </div>
+              )
+            },
+            {
+              label: i18n.childInformation.feeAlteration.editor.validDuring,
+              value: (
+                <div
+                  className="row-input-container"
+                  data-qa="fee-alteration-duration-input"
+                >
+                  <DateRangeInput
+                    start={edited.validFrom}
+                    end={edited.validTo ? edited.validTo : undefined}
+                    onChange={(start: LocalDate, end?: LocalDate) =>
+                      setEdited((state) => ({
+                        ...state,
+                        validFrom: start,
+                        validTo: end ?? null
+                      }))
+                    }
+                    onValidationResult={(hasErrors) =>
+                      setValidationErrors({ dates: hasErrors })
+                    }
+                    nullableEndDate
+                  />
+                </div>
+              )
+            },
+            {
+              label: i18n.childInformation.feeAlteration.editor.notes,
+              value: (
+                <TextArea
+                  value={edited.notes}
+                  onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+                    setEdited({ ...edited, notes: e.target.value })
                   }
-                  onValidationResult={(hasErrors) =>
-                    setValidationErrors({ dates: hasErrors })
-                  }
-                  nullableEndDate
+                  data-qa="fee-alteration-notes-input"
                 />
-              </div>
+              )
             }
-            dataQa="fee-alteration-duration-input"
+          ]}
+        />
+        <FixedSpaceRow>
+          <Button
+            onClick={cancel}
+            text={i18n.childInformation.feeAlteration.editor.cancel}
           />
-          <LabelValueListItem
-            label={i18n.childInformation.feeAlteration.editor.notes}
-            value={
-              <TextArea
-                value={edited.notes}
-                onChange={(e) =>
-                  setEdited({ ...edited, notes: e.target.value })
-                }
-              />
-            }
-            dataQa="fee-alteration-notes-input"
-          />
-        </LabelValueList>
-        <Buttons>
-          <Button onClick={cancel}>
-            {i18n.childInformation.feeAlteration.editor.cancel}
-          </Button>
           <Button
             primary
             type="submit"
             disabled={Object.values(validationErrors).some(Boolean)}
-          >
-            {i18n.childInformation.feeAlteration.editor.save}
-          </Button>
-        </Buttons>
+            text={i18n.childInformation.feeAlteration.editor.save}
+          />
+        </FixedSpaceRow>
       </form>
       <div className="separator" />
     </div>

@@ -5,11 +5,13 @@
 import styled from 'styled-components'
 import { Greyscale } from 'components/shared/Colors'
 import { DefaultMargins } from 'components/shared/layout/white-space'
+import { BaseProps } from './utils'
 
-interface HeadingProps {
+interface HeadingProps extends BaseProps {
   fitted?: boolean
   'data-qa'?: string
   centered?: boolean
+  noMargin?: boolean
 }
 
 export const H1 = styled.h1<HeadingProps>`
@@ -20,6 +22,7 @@ export const H1 = styled.h1<HeadingProps>`
   line-height: 58px;
   ${(p) => (!p.fitted ? `margin-bottom: ${DefaultMargins.m};` : '')}
   ${(p) => (p.centered ? `text-align: center;` : '')}
+  ${(p) => (p.noMargin ? `margin: 0;` : '')}
 `
 
 export const H2 = styled.h2<HeadingProps>`
@@ -29,6 +32,7 @@ export const H2 = styled.h2<HeadingProps>`
   font-weight: 300;
   ${(p) => (!p.fitted ? `margin-bottom: ${DefaultMargins.s};` : '')}
   ${(p) => (p.centered ? `text-align: center;` : '')}
+  ${(p) => (p.noMargin ? `margin: 0;` : '')}
 `
 
 export const H3 = styled.h3<HeadingProps>`
@@ -38,6 +42,7 @@ export const H3 = styled.h3<HeadingProps>`
   font-weight: normal;
   ${(p) => (!p.fitted ? `margin-bottom: ${DefaultMargins.s};` : '')}
   ${(p) => (p.centered ? `text-align: center;` : '')}
+  ${(p) => (p.noMargin ? `margin: 0;` : '')}
 `
 
 export const H4 = styled.h4<HeadingProps>`
@@ -47,6 +52,7 @@ export const H4 = styled.h4<HeadingProps>`
   font-weight: normal;
   ${(p) => (!p.fitted ? `margin-bottom: ${DefaultMargins.s};` : '')}
   ${(p) => (p.centered ? `text-align: center;` : '')}
+  ${(p) => (p.noMargin ? `margin: 0;` : '')}
 `
 
 export const H5 = styled.h4<HeadingProps>`
@@ -56,6 +62,7 @@ export const H5 = styled.h4<HeadingProps>`
   font-weight: normal;
   ${(p) => (!p.fitted ? `margin-bottom: ${DefaultMargins.s};` : '')}
   ${(p) => (p.centered ? `text-align: center;` : '')}
+  ${(p) => (p.noMargin ? `margin: 0;` : '')}
 `
 
 interface LabelProps {

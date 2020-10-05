@@ -4,7 +4,7 @@
 
 import React from 'react'
 import classNames from 'classnames'
-import { Input } from '~components/shared/alpha'
+import InputField from '~components/shared/atoms/form/InputField'
 import { FeeAlterationType, PartialFeeAlteration } from '~types/fee-alteration'
 import Select, { SelectOptionProps } from '../../common/Select'
 
@@ -19,21 +19,22 @@ function FeeAlterationRowInput({ edited, setEdited, typeOptions }: Props) {
     <>
       <Select
         options={typeOptions}
-        value={edited.type}
-        onChange={(e) =>
-          setEdited({
-            ...edited,
-            type: e.target.value as FeeAlterationType
-          })
+        onChange={(value) =>
+          value && 'value' in value
+            ? setEdited({
+                ...edited,
+                type: value.value as FeeAlterationType
+              })
+            : undefined
         }
       />
-      <Input
+      <InputField
         type="number"
         value={edited.amount !== undefined ? edited.amount.toString() : ''}
-        onChange={(e) =>
+        onChange={(value) =>
           setEdited({
             ...edited,
-            amount: Math.max(0, Math.min(99999, Number(e.target.value)))
+            amount: Math.max(0, Math.min(99999, Number(value)))
           })
         }
       />

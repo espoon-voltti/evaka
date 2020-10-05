@@ -7,31 +7,32 @@
 @import url('https://fonts.googleapis.com/css?family=Montserrat:300,400,700|Open+Sans:300,400,600,800');
 
 // Import Bulma's core
-@import "~bulma/sass/utilities/_all";
+@import '~bulma/sass/utilities/_all';
 
 // Import custom variables
 @import 'scss/_modal.scss';
 
-@import "~bulma";
+@import '~bulma';
 
 @import '~vue-multiselect/dist/vue-multiselect.min.css';
 
-@import "~@evaka/styleguide";
+@import '~@voltti/styleguide';
 
 @import 'scss/map-view-styles';
 @import 'scss/common-form-styles';
 
 @import '~v-calendar/lib/v-calendar.min';
-@import "~buefy/src/scss/buefy";
+@import '~buefy/src/scss/buefy';
 
-$font-body: "Open Sans", sans-serif;
-$font-heading: "Montserrat", sans-serif;
+$font-body: 'Open Sans', sans-serif;
+$font-heading: 'Montserrat', sans-serif;
 
 * {
   box-sizing: border-box;
 }
 
-html, body {
+html,
+body {
   margin: 0;
   padding: 0;
 }
@@ -55,7 +56,12 @@ button,
   color: #2c3e50;
 }
 
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   font-weight: normal;
   font-family: $font-heading;
 }

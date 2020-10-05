@@ -14,10 +14,11 @@ import FormModal from '~components/common/FormModal'
 import { faMapMarkerAlt } from 'icon-set'
 import { UIContext } from '~state/ui'
 import { DatePicker } from '~components/common/DatePicker'
-import { Section } from '~components/shared/alpha'
+import Section from '~components/shared/layout/Section'
 import { createPlacement } from 'api/child/placements'
-import SelectWithIcon from '~components/common/Select'
+import Select from '~components/common/Select'
 import { PreferredUnit } from '~types/application'
+import { FixedSpaceColumn } from '~components/shared/layout/flex-helpers'
 
 export interface Props {
   childId: UUID
@@ -100,21 +101,23 @@ function CreatePlacementModal({ childId, reload }: Props) {
       resolveDisabled={errors.length > 0 || submitting}
       resolve={() => submitForm()}
     >
-      <div>
+      <FixedSpaceColumn>
         <Section>
           <div className="bold">{i18n.childInformation.placements.type}</div>
 
-          <SelectWithIcon
+          <Select
             options={placementTypes.map((type) => ({
-              id: type,
+              value: type,
               label: i18n.placement.type[type]
             }))}
-            value={form.type}
-            onChange={(e) =>
-              setForm({
-                ...form,
-                type: e.target.value as PlacementType
-              })
+            value={{ value: form.type, label: i18n.placement.type[form.type] }}
+            onChange={(value) =>
+              value && 'value' in value
+                ? setForm({
+                    ...form,
+                    type: value.value as PlacementType
+                  })
+                : undefined
             }
           />
         </Section>
@@ -168,7 +171,7 @@ function CreatePlacementModal({ childId, reload }: Props) {
             type="full-width"
           />
         </Section>
-      </div>
+      </FixedSpaceColumn>
     </FormModal>
   )
 }

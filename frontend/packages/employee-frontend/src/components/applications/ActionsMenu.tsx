@@ -5,7 +5,7 @@
 import React, { useState } from 'react'
 import styled from 'styled-components'
 import { faEllipsisVAlt } from 'icon-set'
-import { IconButton } from '~components/shared/alpha'
+import IconButton from 'components/shared/atoms/buttons/IconButton'
 import useCloseOnOutsideClick from '~utils/useCloseOnOutsideClick'
 import { EspooColours } from '~utils/colours'
 import { Action } from '~components/applications/ApplicationActions'
@@ -23,9 +23,9 @@ export default React.memo(function ActionsMenu({ actions }: Props) {
       {actions.length > 0 && (
         <>
           <IconButton
-            size="large"
+            size={'m'}
             icon={faEllipsisVAlt}
-            onClick={(e) => {
+            onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
               setShowMenu((value) => !value)
               e.stopPropagation()
             }}

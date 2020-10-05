@@ -3,7 +3,9 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
-import { Container, ContentArea, Title } from '~components/shared/alpha'
+import { Container, ContentArea } from 'components/shared/layout/Container'
+import Title from './shared/atoms/Title'
+import { Gap } from 'components/shared/layout/white-space'
 import { useTranslation } from '~state/i18n'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
@@ -61,6 +63,7 @@ function Reports() {
 
   return (
     <Container>
+      <Gap size={'L'} />
       <ContentArea opaque>
         <Title size={1}>{i18n.reports.title}</Title>
         <ReportItems>

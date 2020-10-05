@@ -29,7 +29,7 @@ import AddButton from 'components/shared/atoms/buttons/AddButton'
 import InputField from 'components/shared/atoms/form/InputField'
 import Radio from 'components/shared/atoms/form/Radio'
 import Checkbox from 'components/shared/atoms/form/Checkbox'
-import { TextArea } from 'components/shared/alpha/elements/form/textarea'
+import { TextArea } from 'components/shared/atoms/form/InputField'
 import { DatePicker } from 'components/common/DatePicker'
 import ApplicationTitle from 'components/application-page/ApplicationTitle'
 import VTJGuardian from 'components/application-page/VTJGuardian'
@@ -300,8 +300,7 @@ export default React.memo(function ApplicationEditView({
               <Label>{i18n.application.serviceNeed.assistanceDesc}</Label>
               <TextArea
                 value={child.assistanceDescription}
-                onChange={(e) => {
-                  const value = e.target.value
+                onChange={(value) => {
                   setApplication(set('form.child.assistanceDescription', value))
                 }}
               />
@@ -629,6 +628,7 @@ export default React.memo(function ApplicationEditView({
                 }
                 dataQa="application-second-guardian-toggle"
               />
+
               {secondGuardian && (
                 <>
                   <Gap size="s" />
@@ -899,9 +899,8 @@ export default React.memo(function ApplicationEditView({
           <Label>{i18n.application.additionalInfo.applicationInfo}</Label>
           <TextArea
             value={otherInfo}
-            onChange={(e) => {
-              const value = e.target.value
-              setApplication(set('form.otherInfo', value))
+            onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => {
+              setApplication(set('form.otherInfo', e.target.value))
             }}
           />
 
@@ -910,18 +909,16 @@ export default React.memo(function ApplicationEditView({
               <Label>{i18n.application.additionalInfo.allergies}</Label>
               <TextArea
                 value={child.allergies}
-                onChange={(e) => {
-                  const value = e.target.value
-                  setApplication(set('form.child.allergies', value))
+                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => {
+                  setApplication(set('form.child.allergies', e.target.value))
                 }}
               />
 
               <Label>{i18n.application.additionalInfo.diet}</Label>
               <TextArea
                 value={application.form.child.diet}
-                onChange={(e) => {
-                  const value = e.target.value
-                  setApplication(set('form.child.diet', value))
+                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => {
+                  setApplication(set('form.child.diet', e.target.value))
                 }}
               />
             </>

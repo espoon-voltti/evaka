@@ -8,7 +8,8 @@ import LocalDate from '@evaka/lib-common/src/local-date'
 import { useTranslation } from '~state/i18n'
 import { UIContext } from '~state/ui'
 import InfoModal from '~components/common/InfoModal'
-import { Loader, Title } from '~components/shared/alpha'
+import Loader from '~components/shared/atoms/Loader'
+import Title from '~components/shared/atoms/Title'
 import { isFailure, isSuccess } from '~api'
 import { getDay } from 'date-fns'
 import { formatName } from '~utils'
@@ -146,7 +147,7 @@ export default function AbsencesModal({ child, date }: Props) {
       {failure && <div>{i18n.common.loadingFailed}</div>}
       {!loading && child && (
         <Section>
-          <CustomTitle size={4} tag={2}>
+          <CustomTitle size={4}>
             {formatName(child.firstName, child.lastName, i18n)}
           </CustomTitle>
 

@@ -12,10 +12,11 @@ type Props = {
   spacing: Spacing
   labelWidth?: LabelWidth
   contents: {
-    label: ReactNode
+    label?: ReactNode
     value: ReactNode
     valueWidth?: string
     dataQa?: string
+    onlyValue?: boolean
   }[]
 }
 
@@ -30,14 +31,18 @@ const LabelValueList = React.memo(function LabelValueList({
       labelWidth={labelWidth}
       size={contents.length}
     >
-      {contents.map(({ label, value, valueWidth, dataQa }, index) => (
-        <Fragment key={index}>
-          <Label index={index + 1}>{label}</Label>
-          <Value index={index + 1} width={valueWidth} data-qa={dataQa}>
-            {value}
-          </Value>
-        </Fragment>
-      ))}
+      {contents.map(({ label, value, valueWidth, dataQa, onlyValue }, index) =>
+        onlyValue ? (
+          { value }
+        ) : (
+          <Fragment key={index}>
+            <Label index={index + 1}>{label}</Label>
+            <Value index={index + 1} width={valueWidth} data-qa={dataQa}>
+              {value}
+            </Value>
+          </Fragment>
+        )
+      )}
     </GridContainer>
   )
 })

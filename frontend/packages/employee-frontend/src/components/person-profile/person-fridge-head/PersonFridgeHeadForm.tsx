@@ -10,17 +10,16 @@ import { isFailure, Result } from '~api'
 import { fridgeHeadPerson, getPersonDetails } from '~api/person'
 import { useContext } from 'react'
 import { PersonContext, PersonState } from '~state/person'
-import { Buttons } from '~components/shared/alpha'
-import { Button } from '~components/shared/alpha'
+import Button from '~components/shared/atoms/buttons/Button'
 import { UIContext, UiState } from '~state/ui'
-import { Input } from '~components/shared/alpha'
+import InputField from '~components/shared/atoms/form/InputField'
 import {
   isEmailValid,
   isPhoneValid,
   allPropertiesTrue
 } from '~utils/validation/validations'
-
 import { PersonContactInfo } from '~types/person'
+import { FixedSpaceRow } from '~components/shared/layout/flex-helpers'
 
 interface Props {
   id: UUID
@@ -94,11 +93,9 @@ function PersonFridgeHeadForm({ id, personFridgeHead }: Props) {
               {i18n.common.form.email}
             </div>
             <div className="column is-5">
-              <Input
+              <InputField
                 value={headPersonForm.email ?? ''}
-                onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
-                  assignHeadPersonForm({ email: event.target.value })
-                }
+                onChange={(value) => assignHeadPersonForm({ email: value })}
               />
               {!formValidation.fields.email && (
                 <div className="error">{i18n.validationError.email}</div>
@@ -110,35 +107,31 @@ function PersonFridgeHeadForm({ id, personFridgeHead }: Props) {
               {i18n.common.form.phone}
             </div>
             <div className="column is-5">
-              <Input
+              <InputField
                 value={headPersonForm.phone ?? ''}
-                onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
-                  assignHeadPersonForm({ phone: event.target.value })
-                }
+                onChange={(value) => assignHeadPersonForm({ phone: value })}
               />
               {!formValidation.fields.phone && (
                 <div className="error">{i18n.validationError.phone}</div>
               )}
             </div>
           </div>
-          <Buttons>
+          <FixedSpaceRow>
             <Button
               onClick={() => {
                 clearUiMode()
               }}
-            >
-              {i18n.common.cancel}
-            </Button>
+              text={i18n.common.cancel}
+            />
             <Button
               primary
               disabled={!formValidation.valid}
               onClick={() => {
                 headPersonActions()
               }}
-            >
-              {i18n.common.confirm}
-            </Button>
-          </Buttons>
+              text={i18n.common.confirm}
+            />
+          </FixedSpaceRow>
         </div>
       ) : null}
     </>

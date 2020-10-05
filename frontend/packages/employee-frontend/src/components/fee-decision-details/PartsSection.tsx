@@ -3,11 +3,13 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
-import { Section, Title } from '~components/shared/alpha'
+
 import { useTranslation } from '../../state/i18n'
 import { FeeDecisionDetailed } from '../../types/invoicing'
 import { formatCents } from '../../utils/money'
 import { formatName } from '~utils'
+import Section from '~components/shared/layout/Section'
+import Title from '~components/shared/atoms/Title'
 
 interface Props {
   decision: FeeDecisionDetailed

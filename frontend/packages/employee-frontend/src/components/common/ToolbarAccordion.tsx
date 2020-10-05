@@ -3,13 +3,15 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { ReactElement } from 'react'
-import { faChevronUp, faChevronDown } from 'icon-set'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-
-import '~components/common/ToolbarAccordion.scss'
-import { Title } from '~components/shared/alpha'
 import styled from 'styled-components'
+
+import { faChevronUp, faChevronDown } from 'icon-set'
+import '~components/common/ToolbarAccordion.scss'
+import Title from '~components/shared/atoms/Title'
 import StatusLabel, { StatusLabelType } from '~components/common/StatusLabel'
+import Colors from '~components/shared/Colors'
+import { Gap } from '~components/shared/layout/white-space'
 
 // workaround against issue where "is-4" class is used for two different purposes.
 const SubTitle = styled(Title)`
@@ -44,30 +46,30 @@ function ToolbarAccordion({
       data-qa={dataQa}
       data-status={open ? 'open' : 'closed'}
     >
-      <div className="accordion-collapse-wrapper">
-        <div className={'columns is-gapless ' + (showBorder ? 'border' : '')}>
+      <AccordionCollapseWrapper>
+        <GaplessColumns showBorder={showBorder}>
           <Title className={`column ${subtitle ? 'is-5' : 'is-8'}`} size={4}>
             {title}
           </Title>
+          <Gap horizontal size={'s'} />
           <SubTitle className="column" size={4}>
             {subtitle}
           </SubTitle>
           {toolbar && <div className="toolbar">{toolbar}</div>}
-          <div
+          <ServiceNeedSectionTitleTrigger
             onClick={onToggle}
-            className="service-need-section-title-trigger"
             data-qa="collapsible-trigger"
           >
             <FontAwesomeIcon
               icon={open ? faChevronUp : faChevronDown}
               size="lg"
             />
-          </div>
-        </div>
+          </ServiceNeedSectionTitleTrigger>
+        </GaplessColumns>
         <div data-qa="content" className="accordion-content">
           {open ? children : null}
         </div>
-      </div>
+      </AccordionCollapseWrapper>
     </section>
   )
 }
@@ -86,7 +88,7 @@ export function RestrictedToolbar({
   statusLabel
 }: RestrictedProps) {
   return (
-    <div className={'is-gapless columns'}>
+    <GaplessColumns>
       <RestrictedTitle className={'column is-5'} size={4}>
         {title}
       </RestrictedTitle>
@@ -96,7 +98,7 @@ export function RestrictedToolbar({
       <StatusContainer>
         <StatusLabel status={statusLabel} />
       </StatusContainer>
-    </div>
+    </GaplessColumns>
   )
 }
 
@@ -110,4 +112,25 @@ const RestrictedDate = styled(Title)`
 
 const StatusContainer = styled.div`
   margin-right: 38px;
+`
+
+const AccordionCollapseWrapper = styled.div`
+  margin: 20px 0;
+`
+
+interface GaplessColumnsProps {
+  showBorder?: boolean
+}
+
+const GaplessColumns = styled.div<GaplessColumnsProps>`
+  display: flex;
+  border: ${(p) =>
+    p.showBorder ? 'border-bottom: 1px solid $grey-light' : 'none'};
+  padding-bottom: ${(p) => (p.showBorder ? '11px' : '0')};
+`
+
+const ServiceNeedSectionTitleTrigger = styled.div`
+  color: ${Colors.greyscale.dark};
+  cursor: pointer;
+  margin-left: 20px;
 `

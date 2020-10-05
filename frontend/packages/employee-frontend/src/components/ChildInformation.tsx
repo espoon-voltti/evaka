@@ -4,13 +4,16 @@
 
 import React, { useContext, useEffect, useMemo } from 'react'
 import styled from 'styled-components'
+
 import { useTranslation } from '~/state/i18n'
 import { Link, RouteComponentProps } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faCircle } from '@fortawesome/free-solid-svg-icons'
 import { faUsers } from 'icon-set'
 import LocalDate from '@evaka/lib-common/src/local-date'
-import { Container, ContentArea, Title } from '~components/shared/alpha'
+import { Container, ContentArea } from '~components/shared/layout/Container'
+import Title from '~components/shared/atoms/Title'
+import { Gap } from '~components/shared/layout/white-space'
 import ChildDetails from '~components/child-information/ChildDetails'
 import ServiceNeed from '~/components/child-information/ServiceNeed'
 import Assistance from 'components/child-information/Assistance'
@@ -166,6 +169,7 @@ const ChildInformation = React.memo(function ChildInformation({
 
   return (
     <Container>
+      <Gap size={'L'} />
       <ContentArea opaque>
         <div className="child-information-wrapper" data-person-id={id}>
           <HeaderRow>

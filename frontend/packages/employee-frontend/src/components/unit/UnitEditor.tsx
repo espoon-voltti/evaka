@@ -5,7 +5,7 @@
 import React, { useMemo, useState } from 'react'
 import LocalDate from '@evaka/lib-common/src/local-date'
 import styled from 'styled-components'
-import SelectWithIcon from '~components/common/Select'
+import Select from '~components/common/Select'
 import {
   CareArea,
   Coordinate,
@@ -15,15 +15,10 @@ import {
   UnitTypes
 } from '~types/unit'
 import { DatePicker, DatePickerClearable } from '~components/common/DatePicker'
-import {
-  Button,
-  Buttons,
-  Checkbox,
-  Input,
-  Radio,
-  RadioGroup,
-  VerticalCheckboxGroup
-} from '~components/shared/alpha'
+import InputField from 'components/shared/atoms/form/InputField'
+import Button from '~components/shared/atoms/buttons/Button'
+import Radio from '~components/shared/atoms/form/Radio'
+import Checkbox from '~components/shared/atoms/form/Checkbox'
 import { DaycareFields } from '~api/unit'
 import { UUID } from '~types'
 import { isFailure, isLoading, Result } from '~api'
@@ -33,6 +28,10 @@ import InlineButton from 'components/shared/atoms/buttons/InlineButton'
 import { faPen } from 'icon-set'
 import { H1, H3 } from 'components/shared/Typography'
 import { DefaultMargins } from 'components/shared/layout/white-space'
+import {
+  FixedSpaceColumn,
+  FixedSpaceRow
+} from '~components/shared/layout/flex-helpers'
 
 type CareType = 'DAYCARE' | 'PRESCHOOL' | 'PREPARATORY_EDUCATION' | 'CLUB'
 type DaycareType = 'CENTRE' | 'FAMILY' | 'GROUP_FAMILY'
@@ -184,21 +183,21 @@ function AddressEditor({
   }
   return (
     <div>
-      <Input
+      <InputField
         value={address.streetAddress}
         placeholder={i18n.unitEditor.placeholder.streetAddress}
-        onChange={(e) => update({ streetAddress: e.currentTarget.value })}
+        onChange={(value) => update({ streetAddress: value })}
       />
       <AddressSecondRowContainer>
-        <Input
+        <InputField
           value={address.postalCode}
           placeholder={i18n.unitEditor.placeholder.postalCode}
-          onChange={(e) => update({ postalCode: e.currentTarget.value })}
+          onChange={(value) => update({ postalCode: value })}
         />
-        <Input
+        <InputField
           value={address.postOffice}
           placeholder={i18n.unitEditor.placeholder.postOffice}
-          onChange={(e) => update({ postOffice: e.currentTarget.value })}
+          onChange={(value) => update({ postOffice: value })}
         />
       </AddressSecondRowContainer>
     </div>
@@ -489,7 +488,10 @@ export default function UnitEditor(props: Props): JSX.Element {
   const updateUnitManager = (updates: Partial<UnitManager>) =>
     updateForm({ unitManager: { ...form.unitManager, ...updates } })
 
-  const areaOptions = props.areas.map(({ id, name }) => ({ id, label: name }))
+  const areaOptions = props.areas.map(({ id, name }) => ({
+    value: id,
+    label: name
+  }))
 
   const onClickSubmit = (e: React.MouseEvent) => {
     e.preventDefault()
@@ -532,11 +534,11 @@ export default function UnitEditor(props: Props): JSX.Element {
           {showRequired(i18n.unitEditor.label.name)}
         </label>
         {props.editable ? (
-          <Input
+          <InputField
             id="unit-name"
             placeholder={i18n.unitEditor.placeholder.name}
             value={form.name}
-            onChange={(e) => updateForm({ name: e.currentTarget.value })}
+            onChange={(value) => updateForm({ name: value })}
           />
         ) : (
           <div>{form.name}</div>
@@ -574,11 +576,14 @@ export default function UnitEditor(props: Props): JSX.Element {
       <FormPart>
         <div>{showRequired(i18n.unitEditor.label.area)}</div>
         {props.editable ? (
-          <SelectWithIcon
-            value={form.areaId}
+          <Select
             options={areaOptions}
             placeholder={i18n.unitEditor.placeholder.area}
-            onChange={(e) => updateForm({ areaId: e.currentTarget.value })}
+            onChange={(value) =>
+              value && 'value' in value
+                ? updateForm({ areaId: value.value })
+                : undefined
+            }
           />
         ) : (
           props.areas.find((area) => area.id === form.areaId)?.name
@@ -586,10 +591,9 @@ export default function UnitEditor(props: Props): JSX.Element {
       </FormPart>
       <FormPart>
         <div>{showRequired(i18n.unitEditor.label.careTypes)}</div>
-        <VerticalCheckboxGroup label="">
+        <FixedSpaceColumn>
           <DaycareTypeSelectContainer>
             <Checkbox
-              name="care-type-daycare"
               disabled={!props.editable}
               checked={careTypes.DAYCARE}
               label={i18n.common.types.DAYCARE}
@@ -601,41 +605,43 @@ export default function UnitEditor(props: Props): JSX.Element {
               }
             />
             {form.careTypes.DAYCARE && (
-              <SelectWithIcon
+              <Select
                 disabled={!props.editable}
                 options={[
-                  { id: 'CENTRE', label: i18n.common.types.CENTRE },
-                  { id: 'FAMILY', label: i18n.common.types.FAMILY },
-                  { id: 'GROUP_FAMILY', label: i18n.common.types.GROUP_FAMILY }
+                  { value: 'CENTRE', label: i18n.common.types.CENTRE },
+                  { value: 'FAMILY', label: i18n.common.types.FAMILY },
+                  {
+                    value: 'GROUP_FAMILY',
+                    label: i18n.common.types.GROUP_FAMILY
+                  }
                 ]}
                 placeholder={showRequired(
                   i18n.unitEditor.placeholder.daycareType
                 )}
-                value={form.daycareType}
-                onChange={(e) =>
-                  updateForm({
-                    daycareType:
-                      e.currentTarget.value === 'CENTRE'
-                        ? 'CENTRE'
-                        : e.currentTarget.value === 'FAMILY'
-                        ? 'FAMILY'
-                        : e.currentTarget.value === 'GROUP_FAMILY'
-                        ? 'GROUP_FAMILY'
-                        : undefined
-                  })
+                onChange={(value) =>
+                  value && 'value' in value
+                    ? updateForm({
+                        daycareType:
+                          value.value === 'CENTRE'
+                            ? 'CENTRE'
+                            : value.value === 'FAMILY'
+                            ? 'FAMILY'
+                            : value.value === 'GROUP_FAMILY'
+                            ? 'GROUP_FAMILY'
+                            : undefined
+                      })
+                    : undefined
                 }
               />
             )}
           </DaycareTypeSelectContainer>
           <Checkbox
-            name="care-type-preschool"
             disabled={!props.editable}
             checked={form.careTypes.PRESCHOOL}
             label={i18n.common.types.PRESCHOOL}
             onChange={(checked) => updateCareTypes({ PRESCHOOL: checked })}
           />
           <Checkbox
-            name="care-type-preparatory"
             disabled={!props.editable}
             checked={form.careTypes.PREPARATORY_EDUCATION}
             label={i18n.common.types.PREPARATORY_EDUCATION}
@@ -644,44 +650,40 @@ export default function UnitEditor(props: Props): JSX.Element {
             }
           />
           <Checkbox
-            name="care-type-club"
             disabled={!props.editable}
             checked={form.careTypes.CLUB}
             label={i18n.common.types.CLUB}
             onChange={(checked) => updateCareTypes({ CLUB: checked })}
           />
-        </VerticalCheckboxGroup>
+        </FixedSpaceColumn>
       </FormPart>
       <FormPart>
         <div>{showRequired(i18n.unitEditor.label.canApply)}</div>
-        <VerticalCheckboxGroup label="">
+        <FixedSpaceColumn>
           <Checkbox
-            name="can-apply-daycare"
             disabled={!props.editable}
             label={i18n.unitEditor.field.canApplyDaycare}
             checked={form.canApplyDaycare}
             onChange={(canApplyDaycare) => updateForm({ canApplyDaycare })}
           />
           <Checkbox
-            name="can-apply-preschool"
             disabled={!props.editable}
             label={i18n.unitEditor.field.canApplyPreschool}
             checked={form.canApplyPreschool}
             onChange={(canApplyPreschool) => updateForm({ canApplyPreschool })}
           />
           <Checkbox
-            name="can-apply-club"
             disabled={!props.editable}
             label={i18n.unitEditor.field.canApplyClub}
             checked={form.canApplyClub}
             onChange={(canApplyClub) => updateForm({ canApplyClub })}
           />
-        </VerticalCheckboxGroup>
+        </FixedSpaceColumn>
       </FormPart>
       <FormPart>
         <div>{showRequired(i18n.unitEditor.label.providerType)}</div>
         {props.editable ? (
-          <RadioGroup label="">
+          <FixedSpaceColumn>
             {([
               'MUNICIPAL',
               'PURCHASED',
@@ -692,13 +694,11 @@ export default function UnitEditor(props: Props): JSX.Element {
               <Radio
                 key={value}
                 label={i18n.common.providerType[value]}
-                id={`provider-type-${value}`}
-                model={form.providerType}
-                value={value}
-                onChange={(providerType) => updateForm({ providerType })}
+                checked={form.providerType === value}
+                onChange={() => updateForm({ providerType: value })}
               />
             ))}
-          </RadioGroup>
+          </FixedSpaceColumn>
         ) : (
           i18n.common.providerType[form.providerType]
         )}
@@ -706,7 +706,6 @@ export default function UnitEditor(props: Props): JSX.Element {
       <FormPart>
         <div>{i18n.unitEditor.label.roundTheClock}</div>
         <Checkbox
-          name="round-the-clock"
           disabled={!props.editable}
           label={i18n.unitEditor.field.roundTheClock}
           checked={form.roundTheClock}
@@ -717,12 +716,12 @@ export default function UnitEditor(props: Props): JSX.Element {
         <label htmlFor="unit-capacity">{i18n.unitEditor.label.capacity}</label>
         <CapacityInputContainer>
           {props.editable ? (
-            <Input
+            <InputField
               id="unit-capacity"
               value={form.capacity}
-              onChange={(e) =>
+              onChange={(value) =>
                 updateForm({
-                  capacity: e.currentTarget.value
+                  capacity: value
                 })
               }
             />
@@ -735,41 +734,36 @@ export default function UnitEditor(props: Props): JSX.Element {
       <FormPart>
         <div>{showRequired(i18n.unitEditor.label.language)}</div>
         {props.editable ? (
-          <RadioGroup label="">
+          <FixedSpaceColumn>
             {(['fi', 'sv'] as const).map((value) => (
               <Radio
                 key={value}
                 label={i18n.language[value]}
-                id={`unit-language-${value}`}
-                model={form.language}
-                value={value}
-                onChange={(language) => updateForm({ language })}
+                checked={form.language === value}
+                onChange={() => updateForm({ language: value })}
               />
             ))}
-          </RadioGroup>
+          </FixedSpaceColumn>
         ) : (
           i18n.language[form.language]
         )}
       </FormPart>
       <FormPart>
         <div>{showRequired(i18n.unitEditor.label.integrations)}</div>
-        <VerticalCheckboxGroup label="">
+        <FixedSpaceColumn>
           <Checkbox
-            name="upload-to-varda"
             disabled={!props.editable}
             label={i18n.unitEditor.field.uploadToVarda}
             checked={form.uploadToVarda}
             onChange={(uploadToVarda) => updateForm({ uploadToVarda })}
           />
           <Checkbox
-            name="upload-to-koski"
             disabled={!props.editable}
             label={i18n.unitEditor.field.uploadToKoski}
             checked={form.uploadToKoski}
             onChange={(uploadToKoski) => updateForm({ uploadToKoski })}
           />
           <Checkbox
-            name="invoiced-by-municipality"
             disabled={!props.editable}
             label={i18n.unitEditor.field.invoicedByMunicipality}
             checked={form.invoicedByMunicipality}
@@ -777,16 +771,16 @@ export default function UnitEditor(props: Props): JSX.Element {
               updateForm({ invoicedByMunicipality })
             }
           />
-        </VerticalCheckboxGroup>
+        </FixedSpaceColumn>
       </FormPart>
       <FormPart>
         <div>{showRequired(i18n.unitEditor.label.ophUnitOid)}</div>
         {props.editable ? (
-          <Input
+          <InputField
             id="oph-unit-oid"
             placeholder={showRequired(i18n.unitEditor.label.ophUnitOid)}
             value={form.ophUnitOid}
-            onChange={(e) => updateForm({ ophUnitOid: e.currentTarget.value })}
+            onChange={(value) => updateForm({ ophUnitOid: value })}
           />
         ) : (
           form.ophUnitOid
@@ -795,13 +789,11 @@ export default function UnitEditor(props: Props): JSX.Element {
       <FormPart>
         <div>{showRequired(i18n.unitEditor.label.ophOrganizerOid)}</div>
         {props.editable ? (
-          <Input
+          <InputField
             id="oph-organizer-oid"
             placeholder={showRequired(i18n.unitEditor.label.ophOrganizerOid)}
             value={form.ophOrganizerOid}
-            onChange={(e) =>
-              updateForm({ ophOrganizerOid: e.currentTarget.value })
-            }
+            onChange={(value) => updateForm({ ophOrganizerOid: value })}
           />
         ) : (
           form.ophOrganizerOid
@@ -810,13 +802,11 @@ export default function UnitEditor(props: Props): JSX.Element {
       <FormPart>
         <div>{showRequired(i18n.unitEditor.label.ophOrganizationOid)}</div>
         {props.editable ? (
-          <Input
+          <InputField
             id="oph-organization-oid"
             placeholder={showRequired(i18n.unitEditor.label.ophOrganizationOid)}
             value={form.ophOrganizationOid}
-            onChange={(e) =>
-              updateForm({ ophOrganizationOid: e.currentTarget.value })
-            }
+            onChange={(value) => updateForm({ ophOrganizationOid: value })}
           />
         ) : (
           form.ophOrganizationOid
@@ -827,11 +817,11 @@ export default function UnitEditor(props: Props): JSX.Element {
           {i18n.unitEditor.label.costCenter}
         </label>
         {props.editable ? (
-          <Input
+          <InputField
             id="unit-cost-center"
             placeholder={showRequired(i18n.unitEditor.placeholder.costCenter)}
             value={form.costCenter}
-            onChange={(e) => updateForm({ costCenter: e.currentTarget.value })}
+            onChange={(value) => updateForm({ costCenter: value })}
           />
         ) : (
           form.costCenter
@@ -842,13 +832,11 @@ export default function UnitEditor(props: Props): JSX.Element {
           {i18n.unitEditor.label.additionalInfo}
         </label>
         {props.editable ? (
-          <Input
+          <InputField
             id="unit-additional-info"
             placeholder={i18n.unitEditor.placeholder.additionalInfo}
             value={form.additionalInfo}
-            onChange={(e) =>
-              updateForm({ additionalInfo: e.currentTarget.value })
-            }
+            onChange={(value) => updateForm({ additionalInfo: value })}
           />
         ) : (
           form.additionalInfo
@@ -858,11 +846,11 @@ export default function UnitEditor(props: Props): JSX.Element {
       <FormPart>
         <label htmlFor="unit-phone">{i18n.unitEditor.label.phone}</label>
         {props.editable ? (
-          <Input
+          <InputField
             id="unit-phone"
             placeholder={i18n.unitEditor.placeholder.phone}
             value={form.phone}
-            onChange={(e) => updateForm({ phone: e.currentTarget.value })}
+            onChange={(value) => updateForm({ phone: value })}
           />
         ) : (
           form.phone
@@ -871,11 +859,11 @@ export default function UnitEditor(props: Props): JSX.Element {
       <FormPart>
         <label htmlFor="unit-email">{i18n.unitEditor.label.email}</label>
         {props.editable ? (
-          <Input
+          <InputField
             id="unit-email"
             placeholder={i18n.unitEditor.placeholder.email}
             value={form.email}
-            onChange={(e) => updateForm({ email: e.currentTarget.value })}
+            onChange={(value) => updateForm({ email: value })}
           />
         ) : (
           form.email
@@ -884,11 +872,11 @@ export default function UnitEditor(props: Props): JSX.Element {
       <FormPart>
         <label htmlFor="unit-url">{i18n.unitEditor.label.url}</label>
         {props.editable ? (
-          <Input
+          <InputField
             id="unit-url"
             placeholder={i18n.unitEditor.placeholder.url}
             value={form.url}
-            onChange={(e) => updateForm({ url: e.currentTarget.value })}
+            onChange={(value) => updateForm({ url: value })}
           />
         ) : (
           form.url && <Url href={form.url}>{form.url}</Url>
@@ -905,11 +893,11 @@ export default function UnitEditor(props: Props): JSX.Element {
       <FormPart>
         <label htmlFor="unit-location">{i18n.unitEditor.label.location}</label>
         {props.editable ? (
-          <Input
+          <InputField
             id="unit-location"
             placeholder={i18n.unitEditor.placeholder.location}
             value={form.location}
-            onChange={(e) => updateForm({ location: e.currentTarget.value })}
+            onChange={(value) => updateForm({ location: value })}
           />
         ) : (
           form.location && (
@@ -933,11 +921,11 @@ export default function UnitEditor(props: Props): JSX.Element {
           {showRequired(i18n.unitEditor.label.unitManager.name)}
         </label>
         {props.editable ? (
-          <Input
+          <InputField
             id="unit-manager-name"
             placeholder={i18n.unitEditor.placeholder.unitManager.name}
             value={unitManager.name}
-            onChange={(e) => updateUnitManager({ name: e.currentTarget.value })}
+            onChange={(value) => updateUnitManager({ name: value })}
           />
         ) : (
           unitManager.name
@@ -948,13 +936,11 @@ export default function UnitEditor(props: Props): JSX.Element {
           {showRequired(i18n.unitEditor.label.unitManager.phone)}
         </label>
         {props.editable ? (
-          <Input
+          <InputField
             id="unit-manager-phone"
             placeholder={i18n.unitEditor.placeholder.phone}
             value={unitManager.phone}
-            onChange={(e) =>
-              updateUnitManager({ phone: e.currentTarget.value })
-            }
+            onChange={(value) => updateUnitManager({ phone: value })}
           />
         ) : (
           unitManager.phone
@@ -965,13 +951,11 @@ export default function UnitEditor(props: Props): JSX.Element {
           {showRequired(i18n.unitEditor.label.unitManager.email)}
         </label>
         {props.editable ? (
-          <Input
+          <InputField
             id="unit-manager-email"
             placeholder={i18n.unitEditor.placeholder.email}
             value={unitManager.email}
-            onChange={(e) =>
-              updateUnitManager({ email: e.currentTarget.value })
-            }
+            onChange={(value) => updateUnitManager({ email: value })}
           />
         ) : (
           unitManager.email
@@ -983,13 +967,13 @@ export default function UnitEditor(props: Props): JSX.Element {
           {i18n.unitEditor.label.decisionCustomization.daycareName}
         </label>
         {props.editable ? (
-          <Input
+          <InputField
             id="unit-daycare-name"
             placeholder={i18n.unitEditor.placeholder.decisionCustomization.name}
             value={decisionCustomization.daycareName}
-            onChange={(e) =>
+            onChange={(value) =>
               updateDecisionCustomization({
-                daycareName: e.currentTarget.value
+                daycareName: value
               })
             }
           />
@@ -1002,13 +986,13 @@ export default function UnitEditor(props: Props): JSX.Element {
           {i18n.unitEditor.label.decisionCustomization.preschoolName}
         </label>
         {props.editable ? (
-          <Input
+          <InputField
             id="unit-preschool-name"
             placeholder={i18n.unitEditor.placeholder.decisionCustomization.name}
             value={decisionCustomization.preschoolName}
-            onChange={(e) =>
+            onChange={(value) =>
               updateDecisionCustomization({
-                preschoolName: e.currentTarget.value
+                preschoolName: value
               })
             }
           />
@@ -1019,22 +1003,26 @@ export default function UnitEditor(props: Props): JSX.Element {
       <FormPart>
         <div>{i18n.unitEditor.label.decisionCustomization.handler}</div>
         {props.editable ? (
-          <RadioGroup label="">
+          <FixedSpaceColumn>
             {([0, 1, 2, 3] as const).map((index) => (
               <Radio
                 key={index}
                 label={
                   i18n.unitEditor.field.decisionCustomization.handler[index]
                 }
-                value={
+                checked={
+                  form.decisionCustomization.handler ===
                   i18n.unitEditor.field.decisionCustomization.handler[index]
                 }
-                id={`decision-handler-${index}`}
-                model={form.decisionCustomization.handler}
-                onChange={(handler) => updateDecisionCustomization({ handler })}
+                onChange={() =>
+                  updateDecisionCustomization({
+                    handler:
+                      i18n.unitEditor.field.decisionCustomization.handler[index]
+                  })
+                }
               />
             ))}
-          </RadioGroup>
+          </FixedSpaceColumn>
         ) : (
           form.decisionCustomization.handler
         )}
@@ -1044,13 +1032,13 @@ export default function UnitEditor(props: Props): JSX.Element {
           {i18n.unitEditor.label.decisionCustomization.handlerAddress}
         </label>
         {props.editable ? (
-          <Input
+          <InputField
             id="unit-handler-address"
             placeholder={i18n.unitEditor.placeholder.streetAddress}
             value={decisionCustomization.handlerAddress}
-            onChange={(e) =>
+            onChange={(value) =>
               updateDecisionCustomization({
-                handlerAddress: e.currentTarget.value
+                handlerAddress: value
               })
             }
           />
@@ -1065,22 +1053,22 @@ export default function UnitEditor(props: Props): JSX.Element {
               <FormError key={key}>{error}</FormError>
             ))}
           </>
-          <Buttons>
+          <FixedSpaceRow>
             <Button
-              onClick={props.onClickCancel}
+              onClick={() =>
+                props.onClickCancel ? props.onClickCancel() : undefined
+              }
               disabled={props.submit && isLoading(props.submit)}
-            >
-              {i18n.common.cancel}
-            </Button>
+              text={i18n.common.cancel}
+            />
             <Button
               primary
               type="submit"
-              onClick={onClickSubmit}
+              onClick={(e) => onClickSubmit(e)}
               disabled={props.submit && isLoading(props.submit)}
-            >
-              {isNewUnit ? i18n.unitEditor.submitNew : i18n.common.save}
-            </Button>
-          </Buttons>
+              text={isNewUnit ? i18n.unitEditor.submitNew : i18n.common.save}
+            />
+          </FixedSpaceRow>
           {props.submit && isFailure(props.submit) && (
             <div>{i18n.common.error.unknown}</div>
           )}

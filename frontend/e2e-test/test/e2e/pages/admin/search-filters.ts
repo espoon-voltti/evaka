@@ -135,9 +135,9 @@ export default class SearchFilter {
     await t.click(this.statusRadioAll)
     await t.click(this.statusRadioAll)
     await t.click(
-      Selector(`[data-qa="application-status-filter-all-${status}"]`).find(
-        'label'
-      )
+      Selector(`[data-qa="application-status-filter-all-${status}"]`, {
+        timeout: 50
+      })
     )
   }
 

@@ -3,13 +3,11 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useEffect, useMemo, useState } from 'react'
-import {
-  Container,
-  ContentArea,
-  Loader,
-  Table,
-  Title
-} from '~components/shared/alpha'
+
+import { Container, ContentArea } from '~components/shared/layout/Container'
+import Loader from '~components/shared/atoms/Loader'
+import Title from '~components/shared/atoms/Title'
+import { Th, Tr, Td, Thead, Tbody } from '~components/shared/layout/Table'
 import { useTranslation } from '~state/i18n'
 import { isFailure, isLoading, isSuccess, Loading, Result } from '~api'
 import { ServiceNeedReportRow } from '~types/reports'
@@ -95,52 +93,50 @@ function ServiceNeeds() {
               filename={`Lapsien palvelutarpeet ja iät yksiköissä ${filters.date.formatIso()}.csv`}
             />
             <TableScrollable>
-              <Table.Head>
-                <Table.Row>
-                  <Table.Th>{i18n.reports.common.careAreaName}</Table.Th>
-                  <Table.Th>{i18n.reports.common.unitName}</Table.Th>
-                  <Table.Th>{i18n.reports.common.unitType}</Table.Th>
-                  <Table.Th>{i18n.reports.common.unitProviderType}</Table.Th>
-                  <Table.Th>{i18n.reports.serviceNeeds.age}</Table.Th>
-                  <Table.Th>{i18n.reports.serviceNeeds.fullDay}</Table.Th>
-                  <Table.Th>{i18n.reports.serviceNeeds.partDay}</Table.Th>
-                  <Table.Th>{i18n.reports.serviceNeeds.fullWeek}</Table.Th>
-                  <Table.Th>{i18n.reports.serviceNeeds.partWeek}</Table.Th>
-                  <Table.Th>{i18n.reports.serviceNeeds.shiftCare}</Table.Th>
-                  <Table.Th>
-                    {i18n.reports.serviceNeeds.missingServiceNeed}
-                  </Table.Th>
-                  <Table.Th>{i18n.reports.serviceNeeds.total}</Table.Th>
-                </Table.Row>
-              </Table.Head>
-              <Table.Body>
+              <Thead>
+                <Tr>
+                  <Th>{i18n.reports.common.careAreaName}</Th>
+                  <Th>{i18n.reports.common.unitName}</Th>
+                  <Th>{i18n.reports.common.unitType}</Th>
+                  <Th>{i18n.reports.common.unitProviderType}</Th>
+                  <Th>{i18n.reports.serviceNeeds.age}</Th>
+                  <Th>{i18n.reports.serviceNeeds.fullDay}</Th>
+                  <Th>{i18n.reports.serviceNeeds.partDay}</Th>
+                  <Th>{i18n.reports.serviceNeeds.fullWeek}</Th>
+                  <Th>{i18n.reports.serviceNeeds.partWeek}</Th>
+                  <Th>{i18n.reports.serviceNeeds.shiftCare}</Th>
+                  <Th>{i18n.reports.serviceNeeds.missingServiceNeed}</Th>
+                  <Th>{i18n.reports.serviceNeeds.total}</Th>
+                </Tr>
+              </Thead>
+              <Tbody>
                 {filteredRows.map((row: ServiceNeedReportRow) => (
-                  <Table.Row key={row.unitName}>
-                    <Table.Td>{row.careAreaName}</Table.Td>
-                    <Table.Td>{row.unitName}</Table.Td>
-                    <Table.Td>
+                  <Tr key={row.unitName}>
+                    <Td>{row.careAreaName}</Td>
+                    <Td>{row.unitName}</Td>
+                    <Td>
                       {row.unitType
                         ? i18n.reports.common.unitTypes[row.unitType]
                         : ''}
-                    </Table.Td>
-                    <Table.Td>
+                    </Td>
+                    <Td>
                       {
                         i18n.reports.common.unitProviderTypes[
                           row.unitProviderType
                         ]
                       }
-                    </Table.Td>
-                    <Table.Td>{row.age}</Table.Td>
-                    <Table.Td>{row.fullDay}</Table.Td>
-                    <Table.Td>{row.partDay}</Table.Td>
-                    <Table.Td>{row.fullWeek}</Table.Td>
-                    <Table.Td>{row.partWeek}</Table.Td>
-                    <Table.Td>{row.shiftCare}</Table.Td>
-                    <Table.Td>{row.missingServiceNeed}</Table.Td>
-                    <Table.Td>{row.total}</Table.Td>
-                  </Table.Row>
+                    </Td>
+                    <Td>{row.age}</Td>
+                    <Td>{row.fullDay}</Td>
+                    <Td>{row.partDay}</Td>
+                    <Td>{row.fullWeek}</Td>
+                    <Td>{row.partWeek}</Td>
+                    <Td>{row.shiftCare}</Td>
+                    <Td>{row.missingServiceNeed}</Td>
+                    <Td>{row.total}</Td>
+                  </Tr>
                 ))}
-              </Table.Body>
+              </Tbody>
             </TableScrollable>
           </>
         )}

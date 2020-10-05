@@ -3,15 +3,16 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useEffect, useMemo, useState } from 'react'
-import {
-  Container,
-  ContentArea,
-  Loader,
-  Table,
-  Title
-} from '~components/shared/alpha'
-import { useTranslation } from '~state/i18n'
+import ReactSelect from 'react-select'
+import styled from 'styled-components'
 import { Link } from 'react-router-dom'
+
+import { Container, ContentArea } from '~components/shared/layout/Container'
+import Loader from '~components/shared/atoms/Loader'
+import Title from '~components/shared/atoms/Title'
+import { Th, Tr, Td, Thead, Tbody } from '~components/shared/layout/Table'
+import { reactSelectStyles } from '~components/shared/utils'
+import { useTranslation } from '~state/i18n'
 import { isFailure, isLoading, isSuccess, Loading, Result } from '~api'
 import ReturnButton from 'components/shared/atoms/buttons/ReturnButton'
 import ReportDownload from '~components/reports/ReportDownload'
@@ -23,7 +24,6 @@ import {
   RowCountInfo,
   TableScrollable
 } from 'components/reports/common'
-import SelectWithIcon from 'components/common/Select'
 import { distinct } from 'utils'
 
 interface DisplayFilters {
@@ -33,6 +33,10 @@ interface DisplayFilters {
 const emptyDisplayFilters: DisplayFilters = {
   careArea: ''
 }
+
+const Wrapper = styled.div`
+  width: 100%;
+`
 
 function ChildrenInDifferentAddress() {
   const { i18n } = useTranslation()
@@ -68,21 +72,27 @@ function ChildrenInDifferentAddress() {
 
         <FilterRow>
           <FilterLabel>{i18n.reports.common.careAreaName}</FilterLabel>
-          <SelectWithIcon
-            options={[
-              { id: '', label: '' },
-              ...(isSuccess(rows)
-                ? distinct(
-                    rows.data.map((row) => row.careAreaName)
-                  ).map((s) => ({ id: s, label: s }))
-                : [])
-            ]}
-            value={displayFilters.careArea}
-            onChange={(e) =>
-              setDisplayFilters({ ...displayFilters, careArea: e.target.value })
-            }
-            fullWidth
-          />
+          <Wrapper>
+            <ReactSelect
+              options={[
+                { id: '', label: '' },
+                ...(isSuccess(rows)
+                  ? distinct(
+                      rows.data.map((row) => row.careAreaName)
+                    ).map((s) => ({ id: s, label: s }))
+                  : [])
+              ]}
+              onChange={(option) =>
+                option && 'id' in option
+                  ? setDisplayFilters({
+                      ...displayFilters,
+                      careArea: option.id
+                    })
+                  : undefined
+              }
+              styles={reactSelectStyles}
+            />
+          </Wrapper>
         </FilterRow>
 
         {isLoading(rows) && <Loader />}
@@ -104,50 +114,40 @@ function ChildrenInDifferentAddress() {
               filename="Lapset eri osoitteissa.csv"
             />
             <TableScrollable>
-              <Table.Head>
-                <Table.Row>
-                  <Table.Th>{i18n.reports.common.careAreaName}</Table.Th>
-                  <Table.Th>{i18n.reports.common.unitName}</Table.Th>
-                  <Table.Th>
-                    {i18n.reports.childrenInDifferentAddress.person1}
-                  </Table.Th>
-                  <Table.Th>
-                    {i18n.reports.childrenInDifferentAddress.address1}
-                  </Table.Th>
-                  <Table.Th>
-                    {i18n.reports.childrenInDifferentAddress.person2}
-                  </Table.Th>
-                  <Table.Th>
-                    {i18n.reports.childrenInDifferentAddress.address2}
-                  </Table.Th>
-                </Table.Row>
-              </Table.Head>
-              <Table.Body>
+              <Thead>
+                <Tr>
+                  <Th>{i18n.reports.common.careAreaName}</Th>
+                  <Th>{i18n.reports.common.unitName}</Th>
+                  <Th>{i18n.reports.childrenInDifferentAddress.person1}</Th>
+                  <Th>{i18n.reports.childrenInDifferentAddress.address1}</Th>
+                  <Th>{i18n.reports.childrenInDifferentAddress.person2}</Th>
+                  <Th>{i18n.reports.childrenInDifferentAddress.address2}</Th>
+                </Tr>
+              </Thead>
+              <Tbody>
                 {filteredRows.map(
                   (row: ChildrenInDifferentAddressReportRow) => (
-                    <Table.Row
-                      key={`${row.unitId}:${row.parentId}:${row.childId}`}
-                    >
-                      <Table.Td>{row.careAreaName}</Table.Td>
-                      <Table.Td>
+                    <Tr key={`${row.unitId}:${row.parentId}:${row.childId}`}>
+                      <Td>{row.careAreaName}</Td>
+                      <Td>
                         <Link to={`/units/${row.unitId}`}>{row.unitName}</Link>
-                      </Table.Td>
-                      <Table.Td>
+                      </Td>
+                      <Td>
                         <Link to={`/profile/${row.parentId}`}>
                           {row.lastNameParent} {row.firstNameParent}
                         </Link>
-                      </Table.Td>
-                      <Table.Td>{row.addressParent}</Table.Td>
-                      <Table.Td>
+                      </Td>
+                      <Td>{row.addressParent}</Td>
+                      <Td>
                         <Link to={`/child-information/${row.childId}`}>
                           {row.lastNameChild} {row.firstNameChild}
                         </Link>
-                      </Table.Td>
-                      <Table.Td>{row.addressChild}</Table.Td>
-                    </Table.Row>
+                      </Td>
+                      <Td>{row.addressChild}</Td>
+                    </Tr>
                   )
                 )}
-              </Table.Body>
+              </Tbody>
             </TableScrollable>
             <RowCountInfo rowCount={filteredRows.length} />
           </>

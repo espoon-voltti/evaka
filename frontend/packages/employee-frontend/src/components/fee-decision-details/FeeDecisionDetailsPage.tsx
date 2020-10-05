@@ -3,10 +3,9 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useCallback, useContext, useEffect, useState } from 'react'
-import { Link, Redirect, RouteComponentProps } from 'react-router-dom'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faChevronLeft, faQuestion } from 'icon-set'
-import { Container, ContentArea } from '~components/shared/alpha'
+import { Redirect, RouteComponentProps } from 'react-router-dom'
+import { faQuestion } from 'icon-set'
+import { Container, ContentArea } from '~components/shared/layout/Container'
 import InfoModal from '~components/common/InfoModal'
 import { useTranslation } from '../../state/i18n'
 import { TitleContext, TitleState } from '../../state/title'
@@ -20,6 +19,7 @@ import { FeeDecisionDetailed } from '../../types/invoicing'
 import './FeeDecisionDetailsPage.scss'
 import styled from 'styled-components'
 import { EspooColours } from '~utils/colours'
+import ReturnButton from '~components/shared/atoms/buttons/ReturnButton'
 
 export const ErrorMessage = styled.div`
   color: ${EspooColours.red};
@@ -70,11 +70,6 @@ const FeeDecisionDetailsPage = React.memo(function FeeDecisionDetailsPage({
 
   const goBack = () => history.push('/fee-decisions')
 
-  const confirmBack = (event: React.MouseEvent<HTMLAnchorElement>) => {
-    event.preventDefault()
-    modified ? setConfirmingBack(true) : goBack()
-  }
-
   const goToDecisions = useCallback(() => goBack(), [history])
 
   if (isFailure(decision)) {
@@ -88,16 +83,7 @@ const FeeDecisionDetailsPage = React.memo(function FeeDecisionDetailsPage({
         data-qa="fee-decision-details-page"
       >
         <Container>
-          <div className="close-container">
-            <Link
-              to={`/`}
-              data-qa="navigate-back"
-              onClick={(event) => confirmBack(event)}
-            >
-              <FontAwesomeIcon icon={faChevronLeft} />{' '}
-              {i18n.feeDecision.form.nav.return}
-            </Link>
-          </div>
+          <ReturnButton dataQa="navigate-back" />
           {isSuccess(decision) && (
             <ContentArea opaque>
               {decision && (

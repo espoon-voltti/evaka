@@ -13,7 +13,7 @@ import {
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faQuestionCircle } from 'icon-set'
 import FormModal from '~components/common/FormModal'
-import { Section } from '~components/shared/alpha'
+import Section from '~components/shared/layout/Section'
 import { Partnership } from '~types/fridge'
 import { UUID } from '~types'
 import { isFailure, Result } from '~api'

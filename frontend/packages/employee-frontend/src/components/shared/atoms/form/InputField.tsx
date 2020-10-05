@@ -10,6 +10,8 @@ import classNames from 'classnames'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { fasCheckCircle, fasExclamationTriangle, faTimes } from 'icon-set'
 import { DefaultMargins } from 'components/shared/layout/white-space'
+import { IconProp } from '@fortawesome/fontawesome-svg-core'
+import TextareaAutosize from 'react-autosize-textarea'
 
 const Wrapper = styled.div`
   min-width: 0; // needed for correct overflow behavior
@@ -86,7 +88,7 @@ const InputRow = styled.div`
   width: 100%;
 `
 
-const ClearableIcon = styled.div`
+const InputIcon = styled.div`
   font-size: 20px;
   position: absolute;
   right: 8px;
@@ -148,6 +150,13 @@ interface TextInputProps extends BaseProps {
     status?: InfoStatus
   }
   clearable?: boolean
+  icon?: IconProp
+  type?: string
+  min?: number
+  max?: number
+  step?: number
+  id?: string
+  'data-qa'?: string
 }
 
 function InputField({
@@ -160,7 +169,14 @@ function InputField({
   info,
   clearable = false,
   dataQa,
-  className
+  className,
+  icon,
+  type,
+  min,
+  max,
+  step,
+  id,
+  'data-qa': dataQa2
 }: TextInputProps) {
   return (
     <Wrapper>
@@ -178,12 +194,22 @@ function InputField({
           width={width}
           clearable={clearable}
           className={classNames(className, info?.status)}
-          data-qa={dataQa}
+          data-qa={dataQa2 ?? dataQa}
+          type={type}
+          min={min}
+          max={max}
+          step={step}
+          id={id}
         />
-        {clearable && (
-          <ClearableIcon onClick={() => onChange && onChange('')}>
+        {clearable && !icon && (
+          <InputIcon onClick={() => onChange && onChange('')}>
             <FontAwesomeIcon icon={faTimes} />
-          </ClearableIcon>
+          </InputIcon>
+        )}
+        {icon && !clearable && (
+          <InputIcon>
+            <FontAwesomeIcon icon={icon} />
+          </InputIcon>
         )}
       </InputRow>
       {info && (
@@ -208,5 +234,31 @@ function InputField({
     </Wrapper>
   )
 }
+
+export const TextArea = styled(TextareaAutosize)`
+  font-family: Open Sans, Arial, sans-serif;
+  align-items: center;
+  border: 1px solid transparent;
+  font-size: 1rem;
+  justify-content: flex-start;
+  line-height: 1.5;
+  padding: calc(0.5em - 1px) calc(0.625em - 1px);
+  position: relative;
+  border-color: #9e9e9e;
+  color: #0f0f0f;
+  display: block;
+  box-shadow: none;
+  max-width: 100%;
+  width: 100%;
+  min-height: 2.5em;
+  border-radius: 0;
+  border-width: 0 0 1px;
+  background-color: transparent;
+  padding-bottom: calc(0.5em - 1px);
+  overflow: hidden;
+  overflow-wrap: break-word;
+  resize: none;
+  height: 38px;
+`
 
 export default InputField

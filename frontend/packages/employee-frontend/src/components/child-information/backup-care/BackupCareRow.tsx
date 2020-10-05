@@ -6,7 +6,7 @@ import React, { useContext } from 'react'
 import { useTranslation } from '~/state/i18n'
 import { UIContext } from '~state/ui'
 import { faQuestion } from 'icon-set'
-import { Title } from '~components/shared/alpha'
+import Title from '~components/shared/atoms/Title'
 import InfoModal from '~components/common/InfoModal'
 import { ChildContext } from '~state'
 import { UUID } from '~types'
@@ -76,12 +76,12 @@ export default function BackupCareRow({ childId, backupCare }: Props) {
         <BackupCareForm childId={childId} backupCare={backupCare} />
       ) : (
         <Row data-qa="backup-care-row">
-          <UnitName size={4} dataQa="unit">
+          <UnitName size={4} data-qa="unit">
             <a href={`/employee/units/${backupCare.unit.id}`}>
               {backupCare.unit.name}
             </a>
           </UnitName>
-          <Period size={4} dataQa="period">
+          <Period size={4} data-qa="period">
             {`${backupCare.period.start.format()} - ${backupCare.period.end.format()}`}
           </Period>
 

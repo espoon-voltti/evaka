@@ -3,21 +3,21 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useEffect, useState } from 'react'
-import {
-  Container,
-  ContentArea,
-  Loader,
-  Table,
-  Title
-} from '~components/shared/alpha'
+import ReactSelect from 'react-select'
+import styled from 'styled-components'
+
+import { Container, ContentArea } from '~components/shared/layout/Container'
+import Loader from '~components/shared/atoms/Loader'
+import Title from '~components/shared/atoms/Title'
+import { Th, Tr, Td, Thead, Tbody } from '~components/shared/layout/Table'
+import { reactSelectStyles } from '~components/shared/utils'
 import { Translations, useTranslation } from '~state/i18n'
 import { isFailure, isLoading, isSuccess, Loading, Result, Success } from '~api'
 import { EndedPlacementsReportRow } from '~types/reports'
 import { getEndedPlacementsReport, PlacementsReportFilters } from '~api/reports'
 import ReturnButton from 'components/shared/atoms/buttons/ReturnButton'
 import ReportDownload from '~components/reports/ReportDownload'
-import styled from 'styled-components'
-import SelectWithIcon, { SelectOptionProps } from '~components/common/Select'
+import { SelectOptionProps } from '~components/common/Select'
 import { fi } from 'date-fns/locale'
 import {
   FilterLabel,
@@ -29,15 +29,19 @@ import { Link } from 'react-router-dom'
 import LocalDate from '@evaka/lib-common/src/local-date'
 import { FlexRow } from 'components/common/styled/containers'
 
-const StyledTd = styled(Table.Td)`
+const StyledTd = styled(Td)`
   white-space: nowrap;
+`
+
+const Wrapper = styled.div`
+  width: 100%;
 `
 
 function monthOptions(): SelectOptionProps[] {
   const monthOptions = []
   for (let i = 1; i <= 12; i++) {
     monthOptions.push({
-      id: i.toString(),
+      value: i.toString(),
       label: String(fi.localize?.month(i - 1))
     })
   }
@@ -49,7 +53,7 @@ function yearOptions(): SelectOptionProps[] {
   const yearOptions = []
   for (let year = currentYear; year > currentYear - 5; year--) {
     yearOptions.push({
-      id: year.toString(),
+      value: year.toString(),
       label: year.toString()
     })
   }
@@ -85,22 +89,30 @@ function EndedPlacements() {
         <FilterRow>
           <FilterLabel>{i18n.reports.common.period}</FilterLabel>
           <FlexRow>
-            <SelectWithIcon
-              options={monthOptions()}
-              value={filters.month.toString()}
-              onChange={(e) => {
-                const month = parseInt(e.target.value)
-                setFilters({ ...filters, month })
-              }}
-            />
-            <SelectWithIcon
-              options={yearOptions()}
-              value={filters.year.toString()}
-              onChange={(e) => {
-                const year = parseInt(e.target.value)
-                setFilters({ ...filters, year })
-              }}
-            />
+            <Wrapper>
+              <ReactSelect
+                options={monthOptions()}
+                onChange={(value) => {
+                  if (value && 'value' in value) {
+                    const month = parseInt(value.value)
+                    setFilters({ ...filters, month })
+                  }
+                }}
+                styles={reactSelectStyles}
+              />
+            </Wrapper>
+            <Wrapper>
+              <ReactSelect
+                options={yearOptions()}
+                onChange={(value) => {
+                  if (value && 'value' in value) {
+                    const year = parseInt(value.value)
+                    setFilters({ ...filters, year })
+                  }
+                }}
+                styles={reactSelectStyles}
+              />
+            </Wrapper>
           </FlexRow>
         </FilterRow>
         {isLoading(rows) && <Loader />}
@@ -126,21 +138,17 @@ function EndedPlacements() {
               filename={getFilename(i18n, filters.year, filters.month)}
             />
             <TableScrollable>
-              <Table.Head>
-                <Table.Row>
-                  <Table.Th>{i18n.reports.common.childName}</Table.Th>
-                  <Table.Th>{i18n.reports.endedPlacements.ssn}</Table.Th>
-                  <Table.Th>
-                    {i18n.reports.endedPlacements.placementEnd}
-                  </Table.Th>
-                  <Table.Th>
-                    {i18n.reports.endedPlacements.nextPlacementStart}
-                  </Table.Th>
-                </Table.Row>
-              </Table.Head>
-              <Table.Body>
+              <Thead>
+                <Tr>
+                  <Th>{i18n.reports.common.childName}</Th>
+                  <Th>{i18n.reports.endedPlacements.ssn}</Th>
+                  <Th>{i18n.reports.endedPlacements.placementEnd}</Th>
+                  <Th>{i18n.reports.endedPlacements.nextPlacementStart}</Th>
+                </Tr>
+              </Thead>
+              <Tbody>
                 {rows.data.map((row) => (
-                  <Table.Row key={row.childId}>
+                  <Tr key={row.childId}>
                     <StyledTd>
                       <Link to={`/child-information/${row.childId}`}>{`${
                         row.lastName ?? ''
@@ -149,9 +157,9 @@ function EndedPlacements() {
                     <StyledTd>{row.ssn}</StyledTd>
                     <StyledTd>{row.placementEnd.format()}</StyledTd>
                     <StyledTd>{row.nextPlacementStart?.format()}</StyledTd>
-                  </Table.Row>
+                  </Tr>
                 ))}
-              </Table.Body>
+              </Tbody>
             </TableScrollable>
             <RowCountInfo rowCount={rows.data.length} />
           </>

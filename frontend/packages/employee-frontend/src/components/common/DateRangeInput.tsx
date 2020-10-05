@@ -4,7 +4,7 @@
 
 import React, { useState, useEffect } from 'react'
 import LocalDate from '@evaka/lib-common/src/local-date'
-import DateInput from './DateInput'
+import { DatePicker } from '~components/common/DatePicker'
 import { useTranslation } from '../../state/i18n'
 import './DateRangeInput.scss'
 
@@ -139,17 +139,18 @@ function BaseDateRangeInput({
 
   return (
     <div className="date-range-input-container">
-      <DateInput
-        initial={start}
+      <DatePicker
+        date={start}
         onChange={setStartValue}
-        errorMessage={validationErrors.start}
         dataQa="date-range-input-start-date"
+        type={'short'}
       />
-      <DateInput
-        initial={end}
+      {' - '}
+      <DatePicker
+        date={end}
         onChange={setEndValue}
-        errorMessage={validationErrors.end}
         dataQa="date-range-input-end-date"
+        type={'short'}
       />
     </div>
   )

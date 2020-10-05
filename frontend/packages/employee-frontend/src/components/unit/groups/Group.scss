@@ -4,44 +4,36 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later
  */
 
-@import '../../../assets/variables';
-
-.daycare-group {
-  border: $grey solid 1px;
-  padding: 16px;
-  margin-bottom: 16px;
-}
-
 td.row-buttons {
   text-align: right !important;
 }
 
-.column.group-toolbar {
-  display: flex;
-  justify-content: flex-end;
-}
+// .column.group-toolbar {
+//   display: flex;
+//   justify-content: flex-end;
+// }
 
-.group-type-label {
-  border-radius: 12px;
-  height: 25px;
-  padding: 0 10px;
-  color: $white;
-  text-align: center;
-  line-height: 25px;
+// .group-type-label {
+//   border-radius: 12px;
+//   height: 25px;
+//   padding: 0 10px;
+//   color: $white;
+//   text-align: center;
+//   line-height: 25px;
 
-  &.is-daycare {
-    background: $teal;
-  }
+//   &.is-daycare {
+//     background: $teal;
+//   }
 
-  &.is-preschool {
-    background: $espoo-blue;
-  }
-}
+//   &.is-preschool {
+//     background: $espoo-blue;
+//   }
+// }
 
-.remove-btn {
-  cursor: pointer;
-  color: $grey-dark;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
+// .remove-btn {
+//   cursor: pointer;
+//   color: $grey-dark;
+//   display: flex;
+//   align-items: center;
+//   justify-content: center;
+// }

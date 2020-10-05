@@ -3,13 +3,15 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useEffect, useMemo, useState } from 'react'
-import {
-  Container,
-  ContentArea,
-  Loader,
-  Table,
-  Title
-} from '~components/shared/alpha'
+import ReactSelect from 'react-select'
+import styled from 'styled-components'
+import { Link } from 'react-router-dom'
+
+import { Container, ContentArea } from '~components/shared/layout/Container'
+import Loader from '~components/shared/atoms/Loader'
+import Title from '~components/shared/atoms/Title'
+import { Th, Tr, Td, Thead, Tbody } from '~components/shared/layout/Table'
+import { reactSelectStyles } from '~components/shared/utils'
 import { useTranslation } from '~state/i18n'
 import { isFailure, isLoading, isSuccess, Loading, Result } from '~api'
 import { ChildAgeLanguageReportRow } from '~types/reports'
@@ -25,8 +27,6 @@ import {
 } from '~components/reports/common'
 import { distinct, reducePropertySum } from 'utils'
 import LocalDate from '@evaka/lib-common/src/local-date'
-import SelectWithIcon from 'components/common/Select'
-import { Link } from 'react-router-dom'
 
 interface DisplayFilters {
   careArea: string
@@ -35,6 +35,10 @@ interface DisplayFilters {
 const emptyDisplayFilters: DisplayFilters = {
   careArea: ''
 }
+
+const Wrapper = styled.div`
+  width: 100%;
+`
 
 function ChildAgeLanguage() {
   const { i18n } = useTranslation()
@@ -80,21 +84,27 @@ function ChildAgeLanguage() {
 
         <FilterRow>
           <FilterLabel>{i18n.reports.common.careAreaName}</FilterLabel>
-          <SelectWithIcon
-            options={[
-              { id: '', label: '' },
-              ...(isSuccess(rows)
-                ? distinct(
-                    rows.data.map((row) => row.careAreaName)
-                  ).map((s) => ({ id: s, label: s }))
-                : [])
-            ]}
-            value={displayFilters.careArea}
-            onChange={(e) =>
-              setDisplayFilters({ ...displayFilters, careArea: e.target.value })
-            }
-            fullWidth
-          />
+          <Wrapper>
+            <ReactSelect
+              options={[
+                { id: '', label: '' },
+                ...(isSuccess(rows)
+                  ? distinct(
+                      rows.data.map((row) => row.careAreaName)
+                    ).map((s) => ({ id: s, label: s }))
+                  : [])
+              ]}
+              onChange={(option) =>
+                option && 'id' in option
+                  ? setDisplayFilters({
+                      ...displayFilters,
+                      careArea: option.id
+                    })
+                  : undefined
+              }
+              styles={reactSelectStyles}
+            />
+          </Wrapper>
         </FilterRow>
 
         {isLoading(rows) && <Loader />}
@@ -146,174 +156,124 @@ function ChildAgeLanguage() {
               filename={`Lapsien kielet ja iät yksiköissä ${filters.date.formatIso()}.csv`}
             />
             <TableScrollable>
-              <Table.Head>
-                <Table.Row>
-                  <Table.Th>{i18n.reports.common.careAreaName}</Table.Th>
-                  <Table.Th>{i18n.reports.common.unitName}</Table.Th>
-                  <Table.Th>{i18n.reports.common.unitType}</Table.Th>
-                  <Table.Th>{i18n.reports.common.unitProviderType}</Table.Th>
-                  <Table.Th>Suomi</Table.Th>
-                  <Table.Th>0v</Table.Th>
-                  <Table.Th>1v</Table.Th>
-                  <Table.Th>2v</Table.Th>
-                  <Table.Th>3v</Table.Th>
-                  <Table.Th>4v</Table.Th>
-                  <Table.Th>5v</Table.Th>
-                  <Table.Th>6v</Table.Th>
-                  <Table.Th>7v</Table.Th>
-                  <Table.Th>Ruotsi</Table.Th>
-                  <Table.Th>0v</Table.Th>
-                  <Table.Th>1v</Table.Th>
-                  <Table.Th>2v</Table.Th>
-                  <Table.Th>3v</Table.Th>
-                  <Table.Th>4v</Table.Th>
-                  <Table.Th>5v</Table.Th>
-                  <Table.Th>6v</Table.Th>
-                  <Table.Th>7v</Table.Th>
-                  <Table.Th>Muut</Table.Th>
-                  <Table.Th>0v</Table.Th>
-                  <Table.Th>1v</Table.Th>
-                  <Table.Th>2v</Table.Th>
-                  <Table.Th>3v</Table.Th>
-                  <Table.Th>4v</Table.Th>
-                  <Table.Th>5v</Table.Th>
-                  <Table.Th>6v</Table.Th>
-                  <Table.Th>7v</Table.Th>
-                </Table.Row>
-              </Table.Head>
-              <Table.Body>
+              <Thead>
+                <Tr>
+                  <Th>{i18n.reports.common.careAreaName}</Th>
+                  <Th>{i18n.reports.common.unitName}</Th>
+                  <Th>{i18n.reports.common.unitType}</Th>
+                  <Th>{i18n.reports.common.unitProviderType}</Th>
+                  <Th>Suomi</Th>
+                  <Th>0v</Th>
+                  <Th>1v</Th>
+                  <Th>2v</Th>
+                  <Th>3v</Th>
+                  <Th>4v</Th>
+                  <Th>5v</Th>
+                  <Th>6v</Th>
+                  <Th>7v</Th>
+                  <Th>Ruotsi</Th>
+                  <Th>0v</Th>
+                  <Th>1v</Th>
+                  <Th>2v</Th>
+                  <Th>3v</Th>
+                  <Th>4v</Th>
+                  <Th>5v</Th>
+                  <Th>6v</Th>
+                  <Th>7v</Th>
+                  <Th>Muut</Th>
+                  <Th>0v</Th>
+                  <Th>1v</Th>
+                  <Th>2v</Th>
+                  <Th>3v</Th>
+                  <Th>4v</Th>
+                  <Th>5v</Th>
+                  <Th>6v</Th>
+                  <Th>7v</Th>
+                </Tr>
+              </Thead>
+              <Tbody>
                 {filteredRows.map((row: ChildAgeLanguageReportRow) => (
-                  <Table.Row key={row.unitName}>
-                    <Table.Td>{row.careAreaName}</Table.Td>
-                    <Table.Td>
+                  <Tr key={row.unitName}>
+                    <Td>{row.careAreaName}</Td>
+                    <Td>
                       <Link to={`/units/${row.unitId}`}>{row.unitName}</Link>
-                    </Table.Td>
-                    <Table.Td>
+                    </Td>
+                    <Td>
                       {row.unitType
                         ? i18n.reports.common.unitTypes[row.unitType]
                         : ''}
-                    </Table.Td>
-                    <Table.Td>
+                    </Td>
+                    <Td>
                       {
                         i18n.reports.common.unitProviderTypes[
                           row.unitProviderType
                         ]
                       }
-                    </Table.Td>
-                    <Table.Td />
-                    <Table.Td>{row.fi_0y}</Table.Td>
-                    <Table.Td>{row.fi_1y}</Table.Td>
-                    <Table.Td>{row.fi_2y}</Table.Td>
-                    <Table.Td>{row.fi_3y}</Table.Td>
-                    <Table.Td>{row.fi_4y}</Table.Td>
-                    <Table.Td>{row.fi_5y}</Table.Td>
-                    <Table.Td>{row.fi_6y}</Table.Td>
-                    <Table.Td>{row.fi_7y}</Table.Td>
-                    <Table.Td />
-                    <Table.Td>{row.sv_0y}</Table.Td>
-                    <Table.Td>{row.sv_1y}</Table.Td>
-                    <Table.Td>{row.sv_2y}</Table.Td>
-                    <Table.Td>{row.sv_3y}</Table.Td>
-                    <Table.Td>{row.sv_4y}</Table.Td>
-                    <Table.Td>{row.sv_5y}</Table.Td>
-                    <Table.Td>{row.sv_6y}</Table.Td>
-                    <Table.Td>{row.sv_7y}</Table.Td>
-                    <Table.Td />
-                    <Table.Td>{row.other_0y}</Table.Td>
-                    <Table.Td>{row.other_1y}</Table.Td>
-                    <Table.Td>{row.other_2y}</Table.Td>
-                    <Table.Td>{row.other_3y}</Table.Td>
-                    <Table.Td>{row.other_4y}</Table.Td>
-                    <Table.Td>{row.other_5y}</Table.Td>
-                    <Table.Td>{row.other_6y}</Table.Td>
-                    <Table.Td>{row.other_7y}</Table.Td>
-                  </Table.Row>
+                    </Td>
+                    <Td />
+                    <Td>{row.fi_0y}</Td>
+                    <Td>{row.fi_1y}</Td>
+                    <Td>{row.fi_2y}</Td>
+                    <Td>{row.fi_3y}</Td>
+                    <Td>{row.fi_4y}</Td>
+                    <Td>{row.fi_5y}</Td>
+                    <Td>{row.fi_6y}</Td>
+                    <Td>{row.fi_7y}</Td>
+                    <Td />
+                    <Td>{row.sv_0y}</Td>
+                    <Td>{row.sv_1y}</Td>
+                    <Td>{row.sv_2y}</Td>
+                    <Td>{row.sv_3y}</Td>
+                    <Td>{row.sv_4y}</Td>
+                    <Td>{row.sv_5y}</Td>
+                    <Td>{row.sv_6y}</Td>
+                    <Td>{row.sv_7y}</Td>
+                    <Td />
+                    <Td>{row.other_0y}</Td>
+                    <Td>{row.other_1y}</Td>
+                    <Td>{row.other_2y}</Td>
+                    <Td>{row.other_3y}</Td>
+                    <Td>{row.other_4y}</Td>
+                    <Td>{row.other_5y}</Td>
+                    <Td>{row.other_6y}</Td>
+                    <Td>{row.other_7y}</Td>
+                  </Tr>
                 ))}
-              </Table.Body>
+              </Tbody>
               <TableFooter>
-                <Table.Row>
-                  <Table.Td className="bold">
-                    {i18n.reports.common.total}
-                  </Table.Td>
-                  <Table.Td />
-                  <Table.Td />
-                  <Table.Td />
-                  <Table.Td />
-                  <Table.Td>
-                    {reducePropertySum(filteredRows, (r) => r.other_0y)}
-                  </Table.Td>
-                  <Table.Td>
-                    {reducePropertySum(filteredRows, (r) => r.other_1y)}
-                  </Table.Td>
-                  <Table.Td>
-                    {reducePropertySum(filteredRows, (r) => r.other_2y)}
-                  </Table.Td>
-                  <Table.Td>
-                    {reducePropertySum(filteredRows, (r) => r.other_3y)}
-                  </Table.Td>
-                  <Table.Td>
-                    {reducePropertySum(filteredRows, (r) => r.other_4y)}
-                  </Table.Td>
-                  <Table.Td>
-                    {reducePropertySum(filteredRows, (r) => r.other_5y)}
-                  </Table.Td>
-                  <Table.Td>
-                    {reducePropertySum(filteredRows, (r) => r.other_6y)}
-                  </Table.Td>
-                  <Table.Td>
-                    {reducePropertySum(filteredRows, (r) => r.other_7y)}
-                  </Table.Td>
-                  <Table.Td />
-                  <Table.Td>
-                    {reducePropertySum(filteredRows, (r) => r.other_0y)}
-                  </Table.Td>
-                  <Table.Td>
-                    {reducePropertySum(filteredRows, (r) => r.other_1y)}
-                  </Table.Td>
-                  <Table.Td>
-                    {reducePropertySum(filteredRows, (r) => r.other_2y)}
-                  </Table.Td>
-                  <Table.Td>
-                    {reducePropertySum(filteredRows, (r) => r.other_3y)}
-                  </Table.Td>
-                  <Table.Td>
-                    {reducePropertySum(filteredRows, (r) => r.other_4y)}
-                  </Table.Td>
-                  <Table.Td>
-                    {reducePropertySum(filteredRows, (r) => r.other_5y)}
-                  </Table.Td>
-                  <Table.Td>
-                    {reducePropertySum(filteredRows, (r) => r.other_6y)}
-                  </Table.Td>
-                  <Table.Td>
-                    {reducePropertySum(filteredRows, (r) => r.other_7y)}
-                  </Table.Td>
-                  <Table.Td />
-                  <Table.Td>
-                    {reducePropertySum(filteredRows, (r) => r.other_0y)}
-                  </Table.Td>
-                  <Table.Td>
-                    {reducePropertySum(filteredRows, (r) => r.other_1y)}
-                  </Table.Td>
-                  <Table.Td>
-                    {reducePropertySum(filteredRows, (r) => r.other_2y)}
-                  </Table.Td>
-                  <Table.Td>
-                    {reducePropertySum(filteredRows, (r) => r.other_3y)}
-                  </Table.Td>
-                  <Table.Td>
-                    {reducePropertySum(filteredRows, (r) => r.other_4y)}
-                  </Table.Td>
-                  <Table.Td>
-                    {reducePropertySum(filteredRows, (r) => r.other_5y)}
-                  </Table.Td>
-                  <Table.Td>
-                    {reducePropertySum(filteredRows, (r) => r.other_6y)}
-                  </Table.Td>
-                  <Table.Td>
-                    {reducePropertySum(filteredRows, (r) => r.other_7y)}
-                  </Table.Td>
-                </Table.Row>
+                <Tr>
+                  <Td className="bold">{i18n.reports.common.total}</Td>
+                  <Td />
+                  <Td />
+                  <Td />
+                  <Td />
+                  <Td>{reducePropertySum(filteredRows, (r) => r.other_0y)}</Td>
+                  <Td>{reducePropertySum(filteredRows, (r) => r.other_1y)}</Td>
+                  <Td>{reducePropertySum(filteredRows, (r) => r.other_2y)}</Td>
+                  <Td>{reducePropertySum(filteredRows, (r) => r.other_3y)}</Td>
+                  <Td>{reducePropertySum(filteredRows, (r) => r.other_4y)}</Td>
+                  <Td>{reducePropertySum(filteredRows, (r) => r.other_5y)}</Td>
+                  <Td>{reducePropertySum(filteredRows, (r) => r.other_6y)}</Td>
+                  <Td>{reducePropertySum(filteredRows, (r) => r.other_7y)}</Td>
+                  <Td />
+                  <Td>{reducePropertySum(filteredRows, (r) => r.other_0y)}</Td>
+                  <Td>{reducePropertySum(filteredRows, (r) => r.other_1y)}</Td>
+                  <Td>{reducePropertySum(filteredRows, (r) => r.other_2y)}</Td>
+                  <Td>{reducePropertySum(filteredRows, (r) => r.other_3y)}</Td>
+                  <Td>{reducePropertySum(filteredRows, (r) => r.other_4y)}</Td>
+                  <Td>{reducePropertySum(filteredRows, (r) => r.other_5y)}</Td>
+                  <Td>{reducePropertySum(filteredRows, (r) => r.other_6y)}</Td>
+                  <Td>{reducePropertySum(filteredRows, (r) => r.other_7y)}</Td>
+                  <Td />
+                  <Td>{reducePropertySum(filteredRows, (r) => r.other_0y)}</Td>
+                  <Td>{reducePropertySum(filteredRows, (r) => r.other_1y)}</Td>
+                  <Td>{reducePropertySum(filteredRows, (r) => r.other_2y)}</Td>
+                  <Td>{reducePropertySum(filteredRows, (r) => r.other_3y)}</Td>
+                  <Td>{reducePropertySum(filteredRows, (r) => r.other_4y)}</Td>
+                  <Td>{reducePropertySum(filteredRows, (r) => r.other_5y)}</Td>
+                  <Td>{reducePropertySum(filteredRows, (r) => r.other_6y)}</Td>
+                  <Td>{reducePropertySum(filteredRows, (r) => r.other_7y)}</Td>
+                </Tr>
               </TableFooter>
             </TableScrollable>
           </>

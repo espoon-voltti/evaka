@@ -6,7 +6,7 @@ import React from 'react'
 import styled from 'styled-components'
 import { EspooColours } from '~utils/colours'
 import { useTranslation } from '~state/i18n'
-import { Title } from '~components/shared/alpha'
+import Title from '~components/shared/atoms/Title'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faArrowDown, faArrowUp, faEye, faEyeSlash } from 'icon-set'
 import Tooltip from '~components/common/Tooltip'
@@ -88,7 +88,9 @@ export default React.memo(function OccupancyCard({
   return (
     <Card color={color} active={active} onClick={() => onClick()}>
       <HeaderContainer>
-        <Title size={4}>{i18n.unit.occupancy.subtitles[type]}</Title>
+        <Title size={4} noMargin>
+          {i18n.unit.occupancy.subtitles[type]}
+        </Title>
         <FontAwesomeIcon
           icon={active ? faEye : faEyeSlash}
           color={active ? EspooColours.espooBlue : EspooColours.greyLight}

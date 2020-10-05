@@ -4,29 +4,13 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later
  */
 
-@import '../../assets/variables';
-
 .accordion-collapse-wrapper {
-  margin: 20px 0;
   .toolbar {
     display: flex;
     justify-content: flex-end;
   }
-  // Prevent columns from collapsing
-  .columns.is-gapless {
-    display: flex !important;
-    &.border {
-      border-bottom: 1px solid $grey-light;
-      padding-bottom: 11px;
-    }
-  }
   .column.is-5 {
     width: 41.6666666667% !important;
-  }
-  .service-need-section-title-trigger {
-    color: $grey-dark;
-    cursor: pointer;
-    margin-left: 20px;
   }
 }
 

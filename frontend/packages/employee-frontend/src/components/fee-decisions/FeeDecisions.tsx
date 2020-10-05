@@ -14,7 +14,9 @@ import {
   Tbody,
   SortableTh
 } from '~components/shared/layout/Table'
-import { Checkbox, Loader, Title } from '~components/shared/alpha'
+import Title from '~components/shared/atoms/Title'
+import Loader from '~components/shared/atoms/Loader'
+import Checkbox from '~components/shared/atoms/form/Checkbox'
 import NameWithSsn from '../common/NameWithSsn'
 import ChildrenCell from '../common/ChildrenCell'
 import { useTranslation } from '../../state/i18n'
@@ -123,8 +125,8 @@ const FeeDecisions = React.memo(function FeeDecisions({
               {showCheckboxes ? (
                 <Td onClick={(e) => e.stopPropagation()}>
                   <Checkbox
-                    name={item.id}
-                    label=""
+                    label={item.id}
+                    hiddenLabel
                     checked={!!checked[item.id]}
                     onChange={() => toggleChecked(item.id)}
                     dataQa="toggle-decision"
@@ -139,7 +141,7 @@ const FeeDecisions = React.memo(function FeeDecisions({
   return (
     <div className="fee-decisions">
       <TitleRowContainer>
-        <SectionTitle size={2}>{i18n.feeDecisions.table.title}</SectionTitle>
+        <SectionTitle size={1}>{i18n.feeDecisions.table.title}</SectionTitle>
         {decisions && isSuccess(decisions) && (
           <ResultsContainer>
             <div>{total ? i18n.feeDecisions.table.rowCount(total) : null}</div>
@@ -197,8 +199,8 @@ const FeeDecisions = React.memo(function FeeDecisions({
             {showCheckboxes ? (
               <Td>
                 <Checkbox
-                  name="all"
-                  label=""
+                  label="all"
+                  hiddenLabel
                   checked={allChecked}
                   onChange={allChecked ? clearChecked : checkAll}
                   dataQa="toggle-all-decisions"

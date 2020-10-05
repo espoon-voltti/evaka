@@ -5,14 +5,14 @@
 import React, { useEffect, useState } from 'react'
 import styled from 'styled-components'
 import { fi } from 'date-fns/locale'
+import ReactSelect from 'react-select'
 import { Link } from 'react-router-dom'
-import {
-  Container,
-  ContentArea,
-  Loader,
-  Table,
-  Title
-} from '~components/shared/alpha'
+
+import { Container, ContentArea } from '~components/shared/layout/Container'
+import Loader from '~components/shared/atoms/Loader'
+import Title from '~components/shared/atoms/Title'
+import { Th, Tr, Td, Thead, Tbody } from '~components/shared/layout/Table'
+import { reactSelectStyles } from '~components/shared/utils'
 import ReturnButton from 'components/shared/atoms/buttons/ReturnButton'
 import ReportDownload from '~components/reports/ReportDownload'
 import {
@@ -29,10 +29,9 @@ import {
 } from '~api/reports'
 import { StartingPlacementsRow } from '~types/reports'
 import LocalDate from '@evaka/lib-common/src/local-date'
-import SelectWithIcon from 'components/common/Select'
 import { FlexRow } from 'components/common/styled/containers'
 
-const StyledTd = styled(Table.Td)`
+const StyledTd = styled(Td)`
   white-space: nowrap;
 `
 
@@ -40,12 +39,16 @@ const locales = {
   fi: fi
 }
 
+const Wrapper = styled.div`
+  width: 100%;
+`
+
 function monthOptions(lang: Lang) {
   const locale = locales[lang]
   const monthOptions = []
   for (let i = 1; i <= 12; i++) {
     monthOptions.push({
-      id: i.toString(),
+      value: i.toString(),
       label: String(locale.localize?.month(i - 1))
     })
   }
@@ -57,7 +60,7 @@ function yearOptions() {
   const yearOptions = []
   for (let year = currentYear; year > currentYear - 5; year--) {
     yearOptions.push({
-      id: year.toString(),
+      value: year.toString(),
       label: year.toString()
     })
   }
@@ -91,22 +94,30 @@ const StartingPlacements = React.memo(function StartingPlacements() {
         <FilterRow>
           <FilterLabel>{i18n.reports.common.period}</FilterLabel>
           <FlexRow>
-            <SelectWithIcon
-              options={monthOptions(lang)}
-              value={filters.month.toString()}
-              onChange={(e) => {
-                const month = parseInt(e.target.value)
-                setFilters({ ...filters, month })
-              }}
-            />
-            <SelectWithIcon
-              options={yearOptions()}
-              value={filters.year.toString()}
-              onChange={(e) => {
-                const year = parseInt(e.target.value)
-                setFilters({ ...filters, year })
-              }}
-            />
+            <Wrapper>
+              <ReactSelect
+                options={monthOptions(lang)}
+                onChange={(value) => {
+                  if (value && 'value' in value) {
+                    const month = parseInt(value.value)
+                    setFilters({ ...filters, month })
+                  }
+                }}
+                styles={reactSelectStyles}
+              />
+            </Wrapper>
+            <Wrapper>
+              <ReactSelect
+                options={yearOptions()}
+                onChange={(value) => {
+                  if (value && 'value' in value) {
+                    const year = parseInt(value.value)
+                    setFilters({ ...filters, year })
+                  }
+                }}
+                styles={reactSelectStyles}
+              />
+            </Wrapper>
           </FlexRow>
         </FilterRow>
         <ReportDownload
@@ -129,19 +140,17 @@ const StartingPlacements = React.memo(function StartingPlacements() {
           filename={getFilename(i18n, filters.year, filters.month)}
         />
         <TableScrollable>
-          <Table.Head>
-            <Table.Row>
-              <Table.Th>{i18n.reports.common.childName}</Table.Th>
-              <Table.Th>{i18n.reports.startingPlacements.ssn}</Table.Th>
-              <Table.Th>
-                {i18n.reports.startingPlacements.placementStart}
-              </Table.Th>
-            </Table.Row>
-          </Table.Head>
+          <Thead>
+            <Tr>
+              <Th>{i18n.reports.common.childName}</Th>
+              <Th>{i18n.reports.startingPlacements.ssn}</Th>
+              <Th>{i18n.reports.startingPlacements.placementStart}</Th>
+            </Tr>
+          </Thead>
           {isSuccess(rows) && (
-            <Table.Body>
+            <Tbody>
               {rows.data.map((row) => (
-                <Table.Row key={row.childId}>
+                <Tr key={row.childId}>
                   <StyledTd>
                     <Link
                       to={`/child-information/${row.childId}`}
@@ -149,9 +158,9 @@ const StartingPlacements = React.memo(function StartingPlacements() {
                   </StyledTd>
                   <StyledTd>{row.ssn ?? row.dateOfBirth.format()}</StyledTd>
                   <StyledTd>{row.placementStart.format()}</StyledTd>
-                </Table.Row>
+                </Tr>
               ))}
-            </Table.Body>
+            </Tbody>
           )}
         </TableScrollable>
         {isSuccess(rows) && <RowCountInfo rowCount={rows.data.length} />}

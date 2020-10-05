@@ -29,12 +29,11 @@ export const waitUntilScrolled = ClientFunction(
 
 export class Checkbox {
   constructor(private readonly selector: Selector) {}
-  private readonly label: Selector = this.selector.parent().find('label')
 
   async click(): Promise<void> {
     await testcafe.t.expect(this.disabled).eql(false)
-    await scrollTo(0, (await this.label.boundingClientRect).bottom)
-    await testcafe.t.click(this.label)
+    await scrollTo(0, (await this.selector.boundingClientRect).bottom)
+    await testcafe.t.click(this.selector)
   }
 
   get checked(): Promise<boolean> {

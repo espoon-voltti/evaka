@@ -87,12 +87,13 @@ const StyledButton = styled.button<ButtonProps>`
 `
 
 interface IconButtonProps extends BaseProps {
-  onClick?: () => void
+  onClick?: (e: React.MouseEvent<HTMLButtonElement>) => void
   icon: IconDefinition
   altText?: string
   disabled?: boolean
   size?: IconSize
   gray?: boolean
+  'data-qa'?: string
 }
 
 function IconButton({
@@ -103,12 +104,13 @@ function IconButton({
   onClick,
   disabled,
   size,
-  gray
+  gray,
+  'data-qa': dataQa2
 }: IconButtonProps) {
   return (
     <StyledButton
       className={classNames(className, { disabled })}
-      data-qa={dataQa}
+      data-qa={dataQa2 ?? dataQa}
       onClick={onClick}
       disabled={disabled}
       aria-label={altText}

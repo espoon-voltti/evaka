@@ -2506,6 +2506,13 @@
     semver "^7.3.2"
     tsutils "^3.17.1"
 
+"@voltti/styleguide@11.2.0":
+  version "11.2.0"
+  resolved "https://npm.sst.espoon-voltti.fi/@voltti%2fstyleguide/-/styleguide-11.2.0.tgz#396e5fccf287f4a7517256e59cf4283b8176e565"
+  integrity sha512-gvTllk/aUC+uYmb7rsqFZ99nnmp2jNTyRWEkYZC9js9v1oCCgeNuwOjNV+LuWWrktSjQNi+eAqLHB2wQKB1Y1w==
+  optionalDependencies:
+    enhanced-resolve "4.1.0"
+
 "@vue/babel-helper-vue-jsx-merge-props@^1.0.0":
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/@vue/babel-helper-vue-jsx-merge-props/-/babel-helper-vue-jsx-merge-props-1.0.0.tgz#048fe579958da408fb7a8b2a3ec050b50a661040"

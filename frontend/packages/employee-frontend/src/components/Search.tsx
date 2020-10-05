@@ -2,25 +2,30 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { getAge } from '@evaka/lib-common/src/utils/local-date'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faSearch } from 'icon-set'
 import React, { useContext, useState } from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
+
+import { getAge } from '@evaka/lib-common/src/utils/local-date'
+
 import { formatName } from '~/utils'
 import { isFailure, isLoading, isSuccess } from '~api'
 import { triggerFamilyBatch, triggerVtjBatch } from '~api/hidden'
 import { Gap } from '~components/shared/layout/white-space'
 import AddButton from '~components/shared/atoms/buttons/AddButton'
+import Button from 'components/shared/atoms/buttons/Button'
+import InputField from 'components/shared/atoms/form/InputField'
+import { Container, ContentArea } from 'components/shared/layout/Container'
 import {
-  Button,
-  Container,
-  ContentArea,
-  Input,
-  Loader,
-  Table
-} from '~components/shared/alpha'
+  Table,
+  Tr,
+  Td,
+  Thead,
+  Tbody,
+  SortableTh
+} from '~components/shared/layout/Table'
+import Loader from './shared/atoms/Loader'
 import AddVTJPersonModal from '~components/person-search/AddVTJPersonModal'
 import CreatePersonModal from '~components/person-search/CreatePersonModal'
 import { CHILD_AGE } from '~constants.ts'
@@ -39,18 +44,6 @@ const Wrapper = styled.div`
   padding-bottom: 50px;
   width: 500px;
   margin-right: 20px;
-`
-
-const SearchButton = styled(Button)`
-  position: absolute;
-  top: 0;
-  right: -20px;
-
-  .loader-spinner {
-    min-width: 20px;
-    min-height: 20px;
-    margin: 1em;
-  }
 `
 
 const ButtonsContainer = styled.div`
@@ -80,25 +73,22 @@ function Search() {
 
   useCustomerSearch()
 
-  const isSortedBy = (column: string) =>
-    sortColumn === column ? sortDirection : undefined
-
   return (
     <Container>
-      <ContentArea opaque={true}>
+      <Gap size={'L'} />
+      <ContentArea opaque>
+        <Gap size={'XXL'} />
         <TopBar>
           <Wrapper tabIndex={-1}>
-            <Input
+            <InputField
               placeholder={i18n.personSearch.inputPlaceholder}
               value={searchTerm}
-              onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
-                setSearchTerm(event.target.value)
+              onChange={(value) => {
+                setSearchTerm(value)
               }}
               dataQa="search-input"
+              icon={faSearch}
             />
-            <SearchButton plain disabled={searchTerm.length < 2}>
-              <FontAwesomeIcon icon={faSearch} size="lg" />
-            </SearchButton>
           </Wrapper>
           <RequireRole oneOf={['SERVICE_WORKER', 'FINANCE_ADMIN']}>
             <ButtonsContainer>
@@ -114,58 +104,69 @@ function Search() {
                 dataQa="create-person-button"
               />
               <RequireRole oneOf={['ADMIN']}>
-                <HiddenButton onClick={() => triggerFamilyBatch()}>
-                  Luo perheet
-                </HiddenButton>
-                <HiddenButton onClick={() => triggerVtjBatch()}>
-                  VTJ-päivitys
-                </HiddenButton>
+                <HiddenButton
+                  onClick={() => triggerFamilyBatch()}
+                  text="Luo perheet"
+                />
+                <HiddenButton
+                  onClick={() => triggerVtjBatch()}
+                  text="VTJ-päivitys"
+                />
               </RequireRole>
             </ButtonsContainer>
           </RequireRole>
         </TopBar>
+        <Gap size={'XL'} />
 
         {/* TODO: move this to a component */}
         <div className="table-of-units">
-          <Table.Table dataQa="table-of-units">
-            <Table.Head>
-              <Table.Row>
-                <Table.HeadButton
-                  sortable
-                  sorted={isSortedBy('last_name,first_name')}
+          <Table data-qa="table-of-units">
+            <Thead>
+              <Tr>
+                <SortableTh
+                  sorted={
+                    sortColumn === 'last_name,first_name'
+                      ? sortDirection
+                      : undefined
+                  }
                   onClick={sortToggle('last_name,first_name')}
                 >
                   {i18n.units.name}
-                </Table.HeadButton>
-                <Table.HeadButton
-                  sortable
-                  sorted={isSortedBy('date_of_birth')}
+                </SortableTh>
+                <SortableTh
+                  sorted={
+                    sortColumn === 'date_of_birth' ? sortDirection : undefined
+                  }
                   onClick={sortToggle('date_of_birth')}
                 >
                   {i18n.personSearch.age}
-                </Table.HeadButton>
-                <Table.HeadButton
-                  sortable
-                  sorted={isSortedBy('street_address')}
+                </SortableTh>
+                <SortableTh
+                  sorted={
+                    sortColumn === 'street_address' ? sortDirection : undefined
+                  }
                   onClick={sortToggle('street_address')}
                 >
                   {i18n.personSearch.address}
-                </Table.HeadButton>
-                <Table.HeadButton
-                  sortable
-                  sorted={isSortedBy('social_security_number')}
+                </SortableTh>
+                <SortableTh
+                  sorted={
+                    sortColumn === 'social_security_number'
+                      ? sortDirection
+                      : undefined
+                  }
                   onClick={sortToggle('social_security_number')}
                 >
                   {i18n.personSearch.socialSecurityNumber}
-                </Table.HeadButton>
-              </Table.Row>
-            </Table.Head>
-            <Table.Body>
+                </SortableTh>
+              </Tr>
+            </Thead>
+            <Tbody>
               {isSuccess(customers) && (
                 <>
                   {customers.data.map((person) => (
-                    <Table.Row key={person.id} dataQa="person-row">
-                      <Table.Td align="left">
+                    <Tr key={person.id} data-qa="person-row">
+                      <Td align="left">
                         <Link
                           to={
                             getAge(person.dateOfBirth) >= CHILD_AGE
@@ -180,40 +181,37 @@ function Search() {
                             true
                           )}
                         </Link>
-                      </Table.Td>
-                      <Table.Td align="left">
-                        {getAge(person.dateOfBirth)}
-                      </Table.Td>
-                      <Table.Td align="left">{person.streetAddress}</Table.Td>
-                      <Table.Td align="left">
-                        {person.socialSecurityNumber}
-                      </Table.Td>
-                    </Table.Row>
+                      </Td>
+                      <Td align="left">{getAge(person.dateOfBirth)}</Td>
+                      <Td align="left">{person.streetAddress}</Td>
+                      <Td align="left">{person.socialSecurityNumber}</Td>
+                    </Tr>
                   ))}
                   {customers.data.length > 99 && (
-                    <Table.Row>
-                      <Table.Td>{i18n.personSearch.maxResultsFound}</Table.Td>
-                      <Table.Td></Table.Td>
-                      <Table.Td></Table.Td>
-                    </Table.Row>
+                    <Tr>
+                      <Td>{i18n.personSearch.maxResultsFound}</Td>
+                      <Td></Td>
+                      <Td></Td>
+                    </Tr>
                   )}
                 </>
               )}
               {isLoading(customers) && (
-                <Table.Row>
-                  <Table.Td colSpan={4}>
+                <Tr>
+                  <Td colSpan={4}>
                     <Loader />
-                  </Table.Td>
-                </Table.Row>
+                  </Td>
+                </Tr>
               )}
               {isFailure(customers) && (
-                <Table.Row>
-                  <Table.Td colSpan={4}>{i18n.common.loadingFailed}</Table.Td>
-                </Table.Row>
+                <Tr>
+                  <Td colSpan={4}>{i18n.common.loadingFailed}</Td>
+                </Tr>
               )}
-            </Table.Body>
-          </Table.Table>
+            </Tbody>
+          </Table>
         </div>
+        <Gap size={'XXL'} />
       </ContentArea>
       {showAddPersonFromVTJModal ? (
         <AddVTJPersonModal

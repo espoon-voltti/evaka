@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useCallback, useState } from 'react'
+import React, { useState } from 'react'
 import styled from 'styled-components'
 import { UUID } from '~types'
 import { useTranslation } from '~state/i18n'
@@ -10,7 +10,9 @@ import { useEffect } from 'react'
 import { isFailure, isSuccess, isLoading, Loading, Result } from '~api'
 import { useContext } from 'react'
 import { PersonContext } from '~state/person'
-import { Collapsible, Loader, Table } from '~components/shared/alpha'
+import { Table, Tbody, Td, Th, Thead, Tr } from 'components/shared/layout/Table'
+import Loader from '~components/shared/atoms/Loader'
+import CollapsibleSection from 'components/shared/molecules/CollapsibleSection'
 import InfoModal from '~components/common/InfoModal'
 import { Partnership } from '~types/fridge'
 import * as _ from 'lodash'
@@ -52,10 +54,6 @@ const PersonFridgePartner = React.memo(function PersonFridgePartner({
     UIContext
   )
   const [selectedPartnershipId, setSelectedPartnershipId] = useState('')
-  const [toggled, setToggled] = useState(open)
-  const toggle = useCallback(() => setToggled((toggled) => !toggled), [
-    setToggled
-  ])
 
   const loadData = () => {
     setPartnerships(Loading())
@@ -130,16 +128,16 @@ const PersonFridgePartner = React.memo(function PersonFridgePartner({
             .filter((p) => p.id !== id)
             .map((partner: PersonDetails) => {
               return (
-                <Table.Row
+                <Tr
                   key={`${partner.id}-${i}`}
-                  dataQa="table-fridge-partner-row"
+                  data-qa="table-fridge-partner-row"
                 >
                   <NameTd>
                     <Link to={`/profile/${partner.id}`}>
                       {formatName(partner.firstName, partner.lastName, i18n)}
                     </Link>
                   </NameTd>
-                  <Table.Td>{partner.socialSecurityNumber}</Table.Td>
+                  <Td>{partner.socialSecurityNumber}</Td>
                   <DateTd>{fridgePartner.startDate.format()}</DateTd>
                   <DateTd>{fridgePartner.endDate?.format()}</DateTd>
                   <ButtonsTd>
@@ -167,7 +165,7 @@ const PersonFridgePartner = React.memo(function PersonFridgePartner({
                       }}
                     />
                   </ButtonsTd>
-                </Table.Row>
+                </Tr>
               )
             })
         })
@@ -176,11 +174,10 @@ const PersonFridgePartner = React.memo(function PersonFridgePartner({
   return (
     <div>
       {renderFridgePartnerModal()}
-      <Collapsible
+      <CollapsibleSection
         icon={faUser}
         title={i18n.personProfile.partner}
-        open={toggled}
-        onToggle={toggle}
+        startCollapsed={!open}
         dataQa="person-partners-collapsible"
       >
         <TopBar>
@@ -194,22 +191,22 @@ const PersonFridgePartner = React.memo(function PersonFridgePartner({
             }}
           />
         </TopBar>
-        <Table.Table dataQa="table-of-partners">
-          <Table.Head>
-            <Table.Row>
-              <Table.Th>{i18n.common.form.name}</Table.Th>
-              <Table.Th>{i18n.common.form.socialSecurityNumber}</Table.Th>
-              <Table.Th>{i18n.common.form.startDate}</Table.Th>
-              <Table.Th>{i18n.common.form.endDate}</Table.Th>
-              <Table.Th />
-              <Table.Th />
-            </Table.Row>
-          </Table.Head>
-          <Table.Body>{renderFridgePartners()}</Table.Body>
-        </Table.Table>
+        <Table data-qa="table-of-partners">
+          <Thead>
+            <Tr>
+              <Th>{i18n.common.form.name}</Th>
+              <Th>{i18n.common.form.socialSecurityNumber}</Th>
+              <Th>{i18n.common.form.startDate}</Th>
+              <Th>{i18n.common.form.endDate}</Th>
+              <Th />
+              <Th />
+            </Tr>
+          </Thead>
+          <Tbody>{renderFridgePartners()}</Tbody>
+        </Table>
         {isLoading(partnerships) && <Loader />}
         {isFailure(partnerships) && <div>{i18n.common.loadingFailed}</div>}
-      </Collapsible>
+      </CollapsibleSection>
     </div>
   )
 })

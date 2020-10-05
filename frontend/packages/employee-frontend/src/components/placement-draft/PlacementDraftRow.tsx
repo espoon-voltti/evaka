@@ -8,7 +8,7 @@ import { faExclamationTriangle } from 'icon-set'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { areIntervalsOverlapping } from 'date-fns'
 import LocalDate from '@evaka/lib-common/src/local-date'
-import { Title } from '~components/shared/alpha'
+import Title from '~components/shared/atoms/Title'
 
 import { useTranslation } from '~state/i18n'
 import { DatePicker } from '~components/common/DatePicker'
@@ -136,9 +136,7 @@ function PlacementDraftSection({
   return (
     <Container>
       <DateTitle>
-        <Title tag={3} size={4}>
-          {i18n.placementDraft.datesTitle}
-        </Title>
+        <Title size={4}>{i18n.placementDraft.datesTitle}</Title>
       </DateTitle>
       <DateRow>
         <DateRowItem width="225px" strong={true}>

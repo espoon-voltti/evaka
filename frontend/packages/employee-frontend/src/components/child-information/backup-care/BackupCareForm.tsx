@@ -16,7 +16,7 @@ import { useTranslation } from '~state/i18n'
 import { UIContext } from '~state/ui'
 import { ChildContext } from '~state'
 import { DateRange } from '~utils/date'
-import { Button, Buttons } from '~components/shared/alpha'
+import Button from '~components/shared/atoms/buttons/Button'
 import { isLoading, isSuccess, Loading, Result } from '~api'
 import {
   isDateRangeInverted,
@@ -33,6 +33,7 @@ import {
 import ReactSelect, { createFilter, components } from 'react-select'
 import styled from 'styled-components'
 import { ChildBackupCare } from '~types/child'
+import { FixedSpaceRow } from '~components/shared/layout/flex-helpers'
 
 export interface Props {
   childId: UUID
@@ -61,7 +62,7 @@ const Unit = styled.div`
   flex: 1 1 auto;
 `
 
-const ActionButtons = styled(Buttons)`
+const ActionButtons = styled(FixedSpaceRow)`
   display: flex;
   align-items: center;
   justify-content: flex-end;
@@ -226,15 +227,14 @@ export default function BackupCareForm({
           </div>
         ))}
         <ActionButtons>
-          <Button onClick={() => clearUiMode()}>{i18n.common.cancel}</Button>
+          <Button onClick={() => clearUiMode()} text={i18n.common.cancel} />
           <Button
             primary
             type="submit"
             disabled={formErrors.length > 0 || !formState.unit}
             dataQa="submit-backup-care-form"
-          >
-            {i18n.common.confirm}
-          </Button>
+            text={i18n.common.confirm}
+          />
         </ActionButtons>
       </form>
       {uiMode === 'create-new-backup-care' && <div className="separator" />}

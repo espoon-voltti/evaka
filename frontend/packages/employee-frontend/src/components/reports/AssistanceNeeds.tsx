@@ -3,13 +3,15 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useEffect, useMemo, useState } from 'react'
-import {
-  Container,
-  ContentArea,
-  Loader,
-  Table,
-  Title
-} from '~components/shared/alpha'
+import ReactSelect from 'react-select'
+import styled from 'styled-components'
+import { Link } from 'react-router-dom'
+
+import { Container, ContentArea } from '~components/shared/layout/Container'
+import Loader from '~components/shared/atoms/Loader'
+import Title from '~components/shared/atoms/Title'
+import { Th, Tr, Td, Thead, Tbody } from '~components/shared/layout/Table'
+import { reactSelectStyles } from '~components/shared/utils'
 import { useTranslation } from '~state/i18n'
 import { isFailure, isLoading, isSuccess, Loading, Result } from '~api'
 import { AssistanceNeedsReportRow } from '~types/reports'
@@ -28,8 +30,6 @@ import {
 } from '~components/reports/common'
 import { distinct, reducePropertySum } from 'utils'
 import LocalDate from '@evaka/lib-common/src/local-date'
-import SelectWithIcon from 'components/common/Select'
-import { Link } from 'react-router-dom'
 
 interface DisplayFilters {
   careArea: string
@@ -38,6 +38,10 @@ interface DisplayFilters {
 const emptyDisplayFilters: DisplayFilters = {
   careArea: ''
 }
+
+const Wrapper = styled.div`
+  width: 100%;
+`
 
 function AssistanceNeeds() {
   const { i18n } = useTranslation()
@@ -85,21 +89,27 @@ function AssistanceNeeds() {
 
         <FilterRow>
           <FilterLabel>{i18n.reports.common.careAreaName}</FilterLabel>
-          <SelectWithIcon
-            options={[
-              { id: '', label: '' },
-              ...(isSuccess(rows)
-                ? distinct(
-                    rows.data.map((row) => row.careAreaName)
-                  ).map((s) => ({ id: s, label: s }))
-                : [])
-            ]}
-            value={displayFilters.careArea}
-            onChange={(e) =>
-              setDisplayFilters({ ...displayFilters, careArea: e.target.value })
-            }
-            fullWidth
-          />
+          <Wrapper>
+            <ReactSelect
+              options={[
+                { id: '', label: '' },
+                ...(isSuccess(rows)
+                  ? distinct(
+                      rows.data.map((row) => row.careAreaName)
+                    ).map((s) => ({ id: s, label: s }))
+                  : [])
+              ]}
+              onChange={(option) =>
+                option && 'id' in option
+                  ? setDisplayFilters({
+                      ...displayFilters,
+                      careArea: option.id
+                    })
+                  : undefined
+              }
+              styles={reactSelectStyles}
+            />
+          </Wrapper>
         </FilterRow>
 
         {isLoading(rows) && <Loader />}
@@ -192,138 +202,126 @@ function AssistanceNeeds() {
               filename={`Lapsien tuentarpeet yksiköissä ${filters.date.formatIso()}.csv`}
             />
             <TableScrollable>
-              <Table.Head>
-                <Table.Row>
-                  <Table.Th>{i18n.reports.common.careAreaName}</Table.Th>
-                  <Table.Th>{i18n.reports.common.unitName}</Table.Th>
-                  <Table.Th>{i18n.reports.common.groupName}</Table.Th>
-                  <Table.Th>{i18n.reports.common.unitType}</Table.Th>
-                  <Table.Th>{i18n.reports.common.unitProviderType}</Table.Th>
-                  <Table.Th>{basisTypes.AUTISM}</Table.Th>
-                  <Table.Th>{basisTypes.DEVELOPMENTAL_DISABILITY_1}</Table.Th>
-                  <Table.Th>{basisTypes.DEVELOPMENTAL_DISABILITY_2}</Table.Th>
-                  <Table.Th>{basisTypes.FOCUS_CHALLENGE}</Table.Th>
-                  <Table.Th>{basisTypes.LINGUISTIC_CHALLENGE}</Table.Th>
-                  <Table.Th>{basisTypes.DEVELOPMENT_MONITORING}</Table.Th>
-                  <Table.Th>
-                    {basisTypes.DEVELOPMENT_MONITORING_PENDING}
-                  </Table.Th>
-                  <Table.Th>{basisTypes.MULTI_DISABILITY}</Table.Th>
-                  <Table.Th>{basisTypes.LONG_TERM_CONDITION}</Table.Th>
-                  <Table.Th>{basisTypes.REGULATION_SKILL_CHALLENGE}</Table.Th>
-                  <Table.Th>{basisTypes.DISABILITY}</Table.Th>
-                  <Table.Th>{basisTypes.OTHER}</Table.Th>
-                  <Table.Th>
-                    {i18n.reports.assistanceNeeds.basisMissing}
-                  </Table.Th>
-                </Table.Row>
-              </Table.Head>
-              <Table.Body>
+              <Thead>
+                <Tr>
+                  <Th>{i18n.reports.common.careAreaName}</Th>
+                  <Th>{i18n.reports.common.unitName}</Th>
+                  <Th>{i18n.reports.common.groupName}</Th>
+                  <Th>{i18n.reports.common.unitType}</Th>
+                  <Th>{i18n.reports.common.unitProviderType}</Th>
+                  <Th>{basisTypes.AUTISM}</Th>
+                  <Th>{basisTypes.DEVELOPMENTAL_DISABILITY_1}</Th>
+                  <Th>{basisTypes.DEVELOPMENTAL_DISABILITY_2}</Th>
+                  <Th>{basisTypes.FOCUS_CHALLENGE}</Th>
+                  <Th>{basisTypes.LINGUISTIC_CHALLENGE}</Th>
+                  <Th>{basisTypes.DEVELOPMENT_MONITORING}</Th>
+                  <Th>{basisTypes.DEVELOPMENT_MONITORING_PENDING}</Th>
+                  <Th>{basisTypes.MULTI_DISABILITY}</Th>
+                  <Th>{basisTypes.LONG_TERM_CONDITION}</Th>
+                  <Th>{basisTypes.REGULATION_SKILL_CHALLENGE}</Th>
+                  <Th>{basisTypes.DISABILITY}</Th>
+                  <Th>{basisTypes.OTHER}</Th>
+                  <Th>{i18n.reports.assistanceNeeds.basisMissing}</Th>
+                </Tr>
+              </Thead>
+              <Tbody>
                 {filteredRows.map((row: AssistanceNeedsReportRow) => (
-                  <Table.Row key={`${row.unitId}:${row.groupId}`}>
-                    <Table.Td>{row.careAreaName}</Table.Td>
-                    <Table.Td>
+                  <Tr key={`${row.unitId}:${row.groupId}`}>
+                    <Td>{row.careAreaName}</Td>
+                    <Td>
                       <Link to={`/units/${row.unitId}`}>{row.unitName}</Link>
-                    </Table.Td>
-                    <Table.Td>{row.groupName}</Table.Td>
-                    <Table.Td>
+                    </Td>
+                    <Td>{row.groupName}</Td>
+                    <Td>
                       {row.unitType
                         ? i18n.reports.common.unitTypes[row.unitType]
                         : ''}
-                    </Table.Td>
-                    <Table.Td>
+                    </Td>
+                    <Td>
                       {
                         i18n.reports.common.unitProviderTypes[
                           row.unitProviderType
                         ]
                       }
-                    </Table.Td>
-                    <Table.Td>{row.autism}</Table.Td>
-                    <Table.Td>{row.developmentalDisability1}</Table.Td>
-                    <Table.Td>{row.developmentalDisability2}</Table.Td>
-                    <Table.Td>{row.focusChallenge}</Table.Td>
-                    <Table.Td>{row.linguisticChallenge}</Table.Td>
-                    <Table.Td>{row.developmentMonitoring}</Table.Td>
-                    <Table.Td>{row.developmentMonitoringPending}</Table.Td>
-                    <Table.Td>{row.multiDisability}</Table.Td>
-                    <Table.Td>{row.longTermCondition}</Table.Td>
-                    <Table.Td>{row.regulationSkillChallenge}</Table.Td>
-                    <Table.Td>{row.disability}</Table.Td>
-                    <Table.Td>{row.other}</Table.Td>
-                    <Table.Td>{row.none}</Table.Td>
-                  </Table.Row>
+                    </Td>
+                    <Td>{row.autism}</Td>
+                    <Td>{row.developmentalDisability1}</Td>
+                    <Td>{row.developmentalDisability2}</Td>
+                    <Td>{row.focusChallenge}</Td>
+                    <Td>{row.linguisticChallenge}</Td>
+                    <Td>{row.developmentMonitoring}</Td>
+                    <Td>{row.developmentMonitoringPending}</Td>
+                    <Td>{row.multiDisability}</Td>
+                    <Td>{row.longTermCondition}</Td>
+                    <Td>{row.regulationSkillChallenge}</Td>
+                    <Td>{row.disability}</Td>
+                    <Td>{row.other}</Td>
+                    <Td>{row.none}</Td>
+                  </Tr>
                 ))}
-              </Table.Body>
+              </Tbody>
               <TableFooter>
-                <Table.Row>
-                  <Table.Td className="bold">
-                    {i18n.reports.common.total}
-                  </Table.Td>
-                  <Table.Td />
-                  <Table.Td />
-                  <Table.Td />
-                  <Table.Td />
-                  <Table.Td>
-                    {reducePropertySum(filteredRows, (r) => r.autism)}
-                  </Table.Td>
-                  <Table.Td>
+                <Tr>
+                  <Td className="bold">{i18n.reports.common.total}</Td>
+                  <Td />
+                  <Td />
+                  <Td />
+                  <Td />
+                  <Td>{reducePropertySum(filteredRows, (r) => r.autism)}</Td>
+                  <Td>
                     {reducePropertySum(
                       filteredRows,
                       (r) => r.developmentalDisability1
                     )}
-                  </Table.Td>
-                  <Table.Td>
+                  </Td>
+                  <Td>
                     {reducePropertySum(
                       filteredRows,
                       (r) => r.developmentalDisability2
                     )}
-                  </Table.Td>
-                  <Table.Td>
+                  </Td>
+                  <Td>
                     {reducePropertySum(filteredRows, (r) => r.focusChallenge)}
-                  </Table.Td>
-                  <Table.Td>
+                  </Td>
+                  <Td>
                     {reducePropertySum(
                       filteredRows,
                       (r) => r.linguisticChallenge
                     )}
-                  </Table.Td>
-                  <Table.Td>
+                  </Td>
+                  <Td>
                     {reducePropertySum(
                       filteredRows,
                       (r) => r.developmentMonitoring
                     )}
-                  </Table.Td>
-                  <Table.Td>
+                  </Td>
+                  <Td>
                     {reducePropertySum(
                       filteredRows,
                       (r) => r.developmentMonitoringPending
                     )}
-                  </Table.Td>
-                  <Table.Td>
+                  </Td>
+                  <Td>
                     {reducePropertySum(filteredRows, (r) => r.multiDisability)}
-                  </Table.Td>
-                  <Table.Td>
+                  </Td>
+                  <Td>
                     {reducePropertySum(
                       filteredRows,
                       (r) => r.longTermCondition
                     )}
-                  </Table.Td>
-                  <Table.Td>
+                  </Td>
+                  <Td>
                     {reducePropertySum(
                       filteredRows,
                       (r) => r.regulationSkillChallenge
                     )}
-                  </Table.Td>
-                  <Table.Td>
+                  </Td>
+                  <Td>
                     {reducePropertySum(filteredRows, (r) => r.disability)}
-                  </Table.Td>
-                  <Table.Td>
-                    {reducePropertySum(filteredRows, (r) => r.other)}
-                  </Table.Td>
-                  <Table.Td>
-                    {reducePropertySum(filteredRows, (r) => r.none)}
-                  </Table.Td>
-                </Table.Row>
+                  </Td>
+                  <Td>{reducePropertySum(filteredRows, (r) => r.other)}</Td>
+                  <Td>{reducePropertySum(filteredRows, (r) => r.none)}</Td>
+                </Tr>
               </TableFooter>
             </TableScrollable>
           </>

@@ -2,24 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { ChangeEvent } from 'react'
-import styled from 'styled-components'
-import classNames from 'classnames'
-import { EspooColours } from '~utils/colours'
+import React from 'react'
+
 import { isValidCents } from '~utils/money'
-
-type InputProps = { error: boolean }
-
-const Input = styled.input<InputProps>`
-  text-align: right;
-  border-color: ${(props) =>
-    props.error ? EspooColours.red : EspooColours.grey};
-
-  &:focus {
-    border-color: ${(props) =>
-      props.error ? EspooColours.red : EspooColours.espooTurqoise};
-  }
-`
+import InputField from '~components/shared/atoms/form/InputField'
 
 type Props = {
   className?: string
@@ -30,22 +16,24 @@ type Props = {
 }
 
 const EuroInput = React.memo(function EuroInput({
-  className,
   value,
   onChange,
   allowEmpty,
   dataQa
 }: Props) {
   return (
-    <Input
-      className={classNames('input', className)}
+    <InputField
+      value={value ?? ''}
       placeholder="0"
-      value={value}
-      onChange={(e: ChangeEvent<HTMLInputElement>) => onChange(e.target.value)}
-      error={
+      onChange={(value) => onChange(value)}
+      info={
         allowEmpty
           ? !!value && !isValidCents(value)
+            ? { text: 'Virheellinen arvo', status: 'warning' }
+            : undefined
           : !value || !isValidCents(value)
+          ? { text: 'Virheellinen arvo', status: 'warning' }
+          : undefined
       }
       data-qa={dataQa}
     />

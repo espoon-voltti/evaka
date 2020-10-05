@@ -77,6 +77,7 @@ interface CollapsibleSectionProps extends BaseProps {
   children: React.ReactNode
   startCollapsed?: boolean
   fitted?: boolean
+  'data-qa'?: string
 }
 
 function CollapsibleSection({
@@ -86,14 +87,15 @@ function CollapsibleSection({
   startCollapsed = false,
   fitted = false,
   className,
-  dataQa
+  dataQa,
+  'data-qa': dataQa2
 }: CollapsibleSectionProps) {
   const [collapsed, setCollapsed] = useState<boolean>(startCollapsed)
 
   return (
     <Wrapper
       className={classNames(className, { fitted })}
-      data-qa={dataQa}
+      data-qa={dataQa2 ?? dataQa}
       data-status={collapsed ? 'closed' : 'open'}
     >
       <Row

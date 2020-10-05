@@ -2,7 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useCallback, useState } from 'react'
+import React from 'react'
+import _ from 'lodash'
+import { Link } from 'react-router-dom'
+
 import { faChild } from 'icon-set'
 import { UUID } from '~types'
 import { useTranslation } from '~state/i18n'
@@ -10,9 +13,9 @@ import { useEffect } from 'react'
 import { isFailure, isLoading, isSuccess, Loading } from '~api'
 import { useContext } from 'react'
 import { PersonContext } from '~state/person'
-import { Collapsible, Loader, Table } from '~components/shared/alpha'
-import _ from 'lodash'
-import { Link } from 'react-router-dom'
+import CollapsibleSection from 'components/shared/molecules/CollapsibleSection'
+import { Table, Tbody, Td, Th, Thead, Tr } from 'components/shared/layout/Table'
+import Loader from '~components/shared/atoms/Loader'
 import { getPersonDependants } from '~api/person'
 import { DependantAddress, PersonWithChildren } from '~/types/person'
 import { formatName } from '~utils'
@@ -30,11 +33,6 @@ const PersonDependants = React.memo(function PersonDependants({
 }: Props) {
   const { i18n } = useTranslation()
   const { dependants, setDependants } = useContext(PersonContext)
-  const [toggled, setToggled] = useState(open)
-  const toggle = useCallback(() => setToggled((toggled) => !toggled), [
-    setToggled
-  ])
-
   useEffect(() => {
     setDependants(Loading())
     void getPersonDependants(id).then((response) => {
@@ -56,22 +54,20 @@ const PersonDependants = React.memo(function PersonDependants({
       ? _.orderBy(dependants.data, ['dateOfBirth'], ['asc']).map(
           (dependant: PersonWithChildren) => {
             return (
-              <Table.Row key={`${dependant.id}`} dataQa="table-dependant-row">
-                <NameTd dataQa="dependant-name">
+              <Tr key={`${dependant.id}`} data-qa="table-dependant-row">
+                <NameTd data-qa="dependant-name">
                   <Link to={`/child-information/${dependant.id}`}>
                     {formatName(dependant.firstName, dependant.lastName, i18n)}
                   </Link>
                 </NameTd>
-                <Table.Td dataQa="dependant-ssn">
+                <Td data-qa="dependant-ssn">
                   {dependant.socialSecurityNumber}
-                </Table.Td>
-                <Table.Td dataQa="dependant-age">
-                  {getAge(dependant.dateOfBirth)}
-                </Table.Td>
-                <Table.Td dataQa="dependant-street-address">
+                </Td>
+                <Td data-qa="dependant-age">{getAge(dependant.dateOfBirth)}</Td>
+                <Td data-qa="dependant-street-address">
                   {printableAddresses(dependant.addresses)}
-                </Table.Td>
-              </Table.Row>
+                </Td>
+              </Tr>
             )
           }
         )
@@ -79,27 +75,26 @@ const PersonDependants = React.memo(function PersonDependants({
 
   return (
     <div>
-      <Collapsible
+      <CollapsibleSection
         icon={faChild}
         title={i18n.personProfile.dependants}
-        open={toggled}
-        onToggle={toggle}
+        startCollapsed={!open}
         dataQa="person-dependants-collapsible"
       >
-        <Table.Table dataQa="table-of-dependants">
-          <Table.Head>
-            <Table.Row>
-              <Table.Th>{i18n.personProfile.name}</Table.Th>
-              <Table.Th>{i18n.personProfile.ssn}</Table.Th>
-              <Table.Th>{i18n.personProfile.age}</Table.Th>
-              <Table.Th>{i18n.personProfile.streetAddress}</Table.Th>
-            </Table.Row>
-          </Table.Head>
-          <Table.Body>{renderDependants()}</Table.Body>
-        </Table.Table>
+        <Table data-qa="table-of-dependants">
+          <Thead>
+            <Tr>
+              <Th>{i18n.personProfile.name}</Th>
+              <Th>{i18n.personProfile.ssn}</Th>
+              <Th>{i18n.personProfile.age}</Th>
+              <Th>{i18n.personProfile.streetAddress}</Th>
+            </Tr>
+          </Thead>
+          <Tbody>{renderDependants()}</Tbody>
+        </Table>
         {isLoading(dependants) && <Loader />}
         {isFailure(dependants) && <div>{i18n.common.loadingFailed}</div>}
-      </Collapsible>
+      </CollapsibleSection>
     </div>
   )
 })

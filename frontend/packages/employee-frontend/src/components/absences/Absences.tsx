@@ -6,16 +6,14 @@ import React, { useCallback, useContext, useEffect } from 'react'
 import { RouteComponentProps } from 'react-router'
 import { flatMap, partition } from 'lodash'
 
-import {
-  Container,
-  ContentArea,
-  Radio,
-  Checkbox,
-  Loader,
-  RadioGroup,
-  Title
-} from '~components/shared/alpha'
-
+import { Label, LabelText } from '~components/common/styled/common'
+import Button from '~components/shared/atoms/buttons/Button'
+import Radio from '~components/shared/atoms/form/Radio'
+import Checkbox from '~components/shared/atoms/form/Checkbox'
+import { Container, ContentArea } from '~components/shared/layout/Container'
+import Loader from '~components/shared/atoms/Loader'
+import Title from '~components/shared/atoms/Title'
+import { FixedSpaceColumn } from '~components/shared/layout/flex-helpers'
 import { isSuccess, isLoading, isFailure, Loading } from '~api'
 import FormModal from '~components/common/FormModal'
 import { getGroupAbsences, postGroupAbsences } from '~api/absences'
@@ -146,33 +144,37 @@ function Absences({ match }: RouteComponentProps<{ groupId: string }>) {
         }}
         size="lg"
       >
-        <div>
-          <RadioGroup label={i18n.absences.modal.absenceSectionLabel}>
+        <FixedSpaceColumn spacing={'L'}>
+          <Label>
+            <LabelText>{i18n.absences.modal.absenceSectionLabel}</LabelText>
+          </Label>
+          <FixedSpaceColumn spacing={'xs'}>
             {AbsenceTypes.map((absenceType, index) => (
               <Radio
                 key={index}
                 id={absenceType}
                 label={i18n.absences.modal.absenceTypes[absenceType]}
-                value={absenceType}
-                model={selectedAbsenceType}
+                checked={selectedAbsenceType === absenceType}
                 onChange={() => setSelectedAbsenceType(absenceType)}
               />
             ))}
-          </RadioGroup>
+          </FixedSpaceColumn>
 
-          <RadioGroup label={i18n.absences.modal.placementSectionLabel}>
+          <Label>
+            <LabelText>{i18n.absences.modal.placementSectionLabel}</LabelText>
+          </Label>
+          <FixedSpaceColumn spacing={'xs'}>
             {CareTypeCategories.map((careTypeCategory, index) => (
               <Checkbox
                 key={index}
                 label={i18n.absences.careTypeCategories[careTypeCategory]}
-                name={careTypeCategory}
                 checked={selectedCareTypeCategories.includes(careTypeCategory)}
                 onChange={() => updateCareTypes(careTypeCategory)}
                 dataQa={`absences-select-caretype-${careTypeCategory}`}
               />
             ))}
-          </RadioGroup>
-        </div>
+          </FixedSpaceColumn>
+        </FixedSpaceColumn>
       </FormModal>
     ) : null
 
@@ -184,10 +186,10 @@ function Absences({ match }: RouteComponentProps<{ groupId: string }>) {
           {renderAbsenceModal()}
           {isSuccess(absences) ? (
             <div>
-              <Title size={2} dataQa="absences-title">
+              <Title size={1} data-qa="absences-title">
                 {absences.data.daycareName}
               </Title>
-              <Title size={3}>{absences.data.groupName}</Title>
+              <Title size={2}>{absences.data.groupName}</Title>
               <PeriodPicker
                 mode={PeriodPickerMode.MONTH}
                 onChange={setSelectedDate}
@@ -197,14 +199,12 @@ function Absences({ match }: RouteComponentProps<{ groupId: string }>) {
                 groupId={groupId}
                 childList={absences.data.children}
               />
-              <button
-                className="button"
+              <Button
                 data-qa="add-absences-button"
                 onClick={() => setModalVisible(true)}
                 disabled={selectedCells.length === 0}
-              >
-                {i18n.absences.addAbsencesButton(selectedCells.length)}
-              </button>
+                text={i18n.absences.addAbsencesButton(selectedCells.length)}
+              />
             </div>
           ) : null}
           {isLoading(absences) && <Loader />}

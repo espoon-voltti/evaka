@@ -26,7 +26,7 @@ export default class InvoicingPage {
   readonly decisionRows = Selector('[data-qa="table-fee-decision-row"]')
   readonly firstDecisionRow = this.decisionRows.nth(0)
   readonly toggleAllDecisions = new Checkbox(
-    Selector('[data-qa="toggle-all-decisions"]')
+    Selector('[data-qa="toggle-all-decisions"]', { timeout: 50 })
   )
   readonly toggleFirstDecision = new Checkbox(
     this.firstDecisionRow.find('[data-qa="toggle-decision"]')

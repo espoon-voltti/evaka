@@ -5,7 +5,7 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
-import { Title } from '~components/shared/alpha'
+import Title from '~components/shared/atoms/Title'
 import { useTranslation } from '~state/i18n'
 import { Stats, Unit } from '~types/unit'
 import { DataList } from 'components/common/DataList'

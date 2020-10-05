@@ -3,14 +3,12 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useEffect, useState } from 'react'
-import {
-  Container,
-  ContentArea,
-  Loader,
-  Table,
-  Title
-} from '~components/shared/alpha'
 import * as _ from 'lodash'
+
+import { Container, ContentArea } from '~components/shared/layout/Container'
+import Loader from '~components/shared/atoms/Loader'
+import Title from '~components/shared/atoms/Title'
+import { Th, Tr, Td, Thead, Tbody } from '~components/shared/layout/Table'
 import { isFailure, isLoading, isSuccess, Loading, Result } from '~api'
 import { getInvoiceReport, InvoiceReportFilters } from '~api/reports'
 import { InvoiceReport, InvoiceReportRow } from '~types/reports'
@@ -67,42 +65,38 @@ function ReportInvoices() {
               filename={`Laskujen_täsmäytys ${filters.date.formatIso()}.csv`}
             />
             <TableScrollable>
-              <Table.Head>
-                <Table.Row>
-                  <Table.Th>{i18n.reports.invoices.areaCode}</Table.Th>
-                  <Table.Th>{i18n.reports.invoices.amountOfInvoices}</Table.Th>
-                  <Table.Th>{i18n.reports.invoices.totalSumCents}</Table.Th>
-                  <Table.Th>{i18n.reports.invoices.amountWithoutSSN}</Table.Th>
-                  <Table.Th>
-                    {i18n.reports.invoices.amountWithoutAddress}
-                  </Table.Th>
-                  <Table.Th>
-                    {i18n.reports.invoices.amountWithZeroPrice}
-                  </Table.Th>
-                </Table.Row>
-              </Table.Head>
-              <Table.Body>
+              <Thead>
+                <Tr>
+                  <Th>{i18n.reports.invoices.areaCode}</Th>
+                  <Th>{i18n.reports.invoices.amountOfInvoices}</Th>
+                  <Th>{i18n.reports.invoices.totalSumCents}</Th>
+                  <Th>{i18n.reports.invoices.amountWithoutSSN}</Th>
+                  <Th>{i18n.reports.invoices.amountWithoutAddress}</Th>
+                  <Th>{i18n.reports.invoices.amountWithZeroPrice}</Th>
+                </Tr>
+              </Thead>
+              <Tbody>
                 {_.orderBy(report.data.reportRows, ['areaCode']).map(
                   (row: InvoiceReportRow) => (
-                    <Table.Row key={row.areaCode}>
-                      <Table.Td>{row.areaCode}</Table.Td>
-                      <Table.Td>{row.amountOfInvoices}</Table.Td>
-                      <Table.Td>{formatCents(row.totalSumCents)}</Table.Td>
-                      <Table.Td>{row.amountWithoutSSN}</Table.Td>
-                      <Table.Td>{row.amountWithoutAddress}</Table.Td>
-                      <Table.Td>{row.amountWithZeroPrice}</Table.Td>
-                    </Table.Row>
+                    <Tr key={row.areaCode}>
+                      <Td>{row.areaCode}</Td>
+                      <Td>{row.amountOfInvoices}</Td>
+                      <Td>{formatCents(row.totalSumCents)}</Td>
+                      <Td>{row.amountWithoutSSN}</Td>
+                      <Td>{row.amountWithoutAddress}</Td>
+                      <Td>{row.amountWithZeroPrice}</Td>
+                    </Tr>
                   )
                 )}
-                <Table.Row>
-                  <Table.Td></Table.Td>
-                  <Table.Td>{report.data.totalAmountOfInvoices}</Table.Td>
-                  <Table.Td>{formatCents(report.data.totalSumCents)}</Table.Td>
-                  <Table.Td>{report.data.totalAmountWithoutSSN}</Table.Td>
-                  <Table.Td>{report.data.totalAmountWithoutAddress}</Table.Td>
-                  <Table.Td>{report.data.totalAmountWithZeroPrice}</Table.Td>
-                </Table.Row>
-              </Table.Body>
+                <Tr>
+                  <Td></Td>
+                  <Td>{report.data.totalAmountOfInvoices}</Td>
+                  <Td>{formatCents(report.data.totalSumCents)}</Td>
+                  <Td>{report.data.totalAmountWithoutSSN}</Td>
+                  <Td>{report.data.totalAmountWithoutAddress}</Td>
+                  <Td>{report.data.totalAmountWithZeroPrice}</Td>
+                </Tr>
+              </Tbody>
             </TableScrollable>
           </>
         )}

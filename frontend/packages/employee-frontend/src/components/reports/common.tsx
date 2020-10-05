@@ -4,7 +4,7 @@
 
 import React from 'react'
 import styled from 'styled-components'
-import { Table } from '~components/shared/alpha'
+import { Table } from '~components/shared/layout/Table'
 import { customColours } from 'utils/colours'
 import { useTranslation } from 'state/i18n'
 import { FlexRow } from 'components/common/styled/containers'
@@ -28,7 +28,7 @@ export const TableScrollableWrapper = styled.div`
 export function TableScrollable({ children }: { children: React.ReactNode }) {
   return (
     <TableScrollableWrapper>
-      <Table.Table>{children}</Table.Table>
+      <Table>{children}</Table>
     </TableScrollableWrapper>
   )
 }

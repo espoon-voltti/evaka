@@ -5,13 +5,10 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
-import ReactSelect from 'react-select'
+
 import LocalDate from '@evaka/lib-common/src/local-date'
-import {
-  LabelValueList,
-  LabelValueListItem,
-  Title
-} from '~components/shared/alpha'
+import Title from '~components/shared/atoms/Title'
+import LabelValueList from '~components/common/LabelValueList'
 import { useTranslation } from '../../state/i18n'
 import { formatDate } from '../../utils/date'
 import {
@@ -22,6 +19,9 @@ import {
 } from '../../types/invoicing'
 import { getPdfUrl } from '../../api/invoicing'
 import WarningLabel from '~components/common/WarningLabel'
+import { EspooColours } from '~utils/colours'
+import { formatName } from '~utils'
+import Select from '~components/common/Select'
 
 export const TitleRow = styled.div`
   display: flex;
@@ -30,8 +30,6 @@ export const TitleRow = styled.div`
 `
 
 export const InfoMarkers = styled.span``
-import { EspooColours } from '~utils/colours'
-import { formatName } from '~utils'
 
 const DisabledLink = styled.span`
   color: ${EspooColours.grey};
@@ -40,10 +38,6 @@ const DisabledLink = styled.span`
 const Cursive = styled.span`
   font-style: italic;
   margin-left: 1rem;
-`
-
-const StyledSelect = styled(ReactSelect)`
-  max-width: 500px;
 `
 
 interface TypeSelectProps {
@@ -79,12 +73,14 @@ const TypeSelect = ({ selected, changeDecisionType }: TypeSelectProps) => {
   )
 
   return (
-    <StyledSelect
+    <Select
       placeholder={'Valitse...'}
       value={initialValue}
       options={decisionTypeOptions}
-      isSearchable={false}
-      onChange={(type: Option) => changeDecisionType(type.value)}
+      fullWidth
+      onChange={(value) =>
+        value && 'value' in value ? changeDecisionType(value.value) : undefined
+      }
     />
   )
 }
@@ -144,6 +140,72 @@ const Heading = React.memo(function Heading({
     </DisabledLink>
   )
 
+  function contents() {
+    const decisionNUmberExists: {
+      label: React.ReactNode
+      value: React.ReactNode
+      valueWidth?: string
+      dataQa?: string
+    }[] = decisionNumber
+      ? [
+          {
+            label: i18n.feeDecision.decisionNUmber,
+            value: displayDecisionNumber(decisionNumber)
+          }
+        ]
+      : []
+
+    const notDraft: {
+      label: React.ReactNode
+      value: React.ReactNode
+      valueWidth?: string
+      dataQa?: string
+    }[] =
+      status !== 'DRAFT'
+        ? [
+            {
+              label: i18n.feeDecision.pdfLabel,
+              value: pdfValue
+            }
+          ]
+        : []
+
+    const always: {
+      label: React.ReactNode
+      value: React.ReactNode
+      valueWidth?: string
+      dataQa?: string
+    }[] = [
+      {
+        label: i18n.feeDecision.headOfFamily,
+        value: (
+          <Link to={`/profile/${headOfFamily.id}`} data-qa="head-of-family">
+            {formatName(headOfFamily.firstName, headOfFamily.lastName, i18n)}
+          </Link>
+        )
+      },
+      {
+        label: i18n.feeDecision.validPeriod,
+        value: `${validFrom.format()} - ${validTo?.format() ?? ''}`
+      },
+      {
+        label: i18n.feeDecision.sentAt,
+        value: formatDate(sentAt)
+      },
+      {
+        label: i18n.feeDecision.relief,
+        value: reliefValue,
+        valueWidth: '100%'
+      },
+      {
+        label: i18n.feeDecision.sentAt,
+        value: formatDate(sentAt)
+      }
+    ]
+
+    return decisionNUmberExists.concat(notDraft).concat(always)
+  }
+
   return (
     <>
       <TitleRow>
@@ -154,46 +216,7 @@ const Heading = React.memo(function Heading({
           )}
         </InfoMarkers>
       </TitleRow>
-      <LabelValueList>
-        <LabelValueListItem
-          label={i18n.feeDecision.headOfFamily}
-          value={
-            <Link to={`/profile/${headOfFamily.id}`}>
-              {formatName(headOfFamily.firstName, headOfFamily.lastName, i18n)}
-            </Link>
-          }
-          dataQa="head-of-family"
-        />
-        {decisionNumber && (
-          <LabelValueListItem
-            label={i18n.feeDecision.decisionNUmber}
-            value={displayDecisionNumber(decisionNumber)}
-            dataQa="feedecision-decision-number"
-          />
-        )}
-        <LabelValueListItem
-          label={i18n.feeDecision.validPeriod}
-          value={`${validFrom.format()} - ${validTo?.format() ?? ''}`}
-          dataQa="feedecision-valid-period"
-        />
-        <LabelValueListItem
-          label={i18n.feeDecision.sentAt}
-          value={formatDate(sentAt)}
-          dataQa="feedecision-sent-at"
-        />
-        <LabelValueListItem
-          label={i18n.feeDecision.relief}
-          value={reliefValue}
-          dataQa="feedecision-relief"
-        />
-        {status !== 'DRAFT' && (
-          <LabelValueListItem
-            label={i18n.feeDecision.pdfLabel}
-            value={pdfValue}
-            dataQa="feedecision-pdf"
-          />
-        )}
-      </LabelValueList>
+      <LabelValueList spacing="small" contents={contents()}></LabelValueList>
     </>
   )
 })

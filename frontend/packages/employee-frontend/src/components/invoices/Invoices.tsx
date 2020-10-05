@@ -17,7 +17,9 @@ import {
   Tbody,
   SortableTh
 } from '~components/shared/layout/Table'
-import { Checkbox, Loader, Title } from '~components/shared/alpha'
+import Title from '~components/shared/atoms/Title'
+import Loader from '~components/shared/atoms/Loader'
+import Checkbox from '~components/shared/atoms/form/Checkbox'
 import { useTranslation } from '../../state/i18n'
 import NameWithSsn from '../common/NameWithSsn'
 import ChildrenCell from '../common/ChildrenCell'
@@ -147,7 +149,7 @@ const Invoices = React.memo(function Invoices({
             {showCheckboxes ? (
               <Td onClick={(e) => e.stopPropagation()}>
                 <Checkbox
-                  name={item.id}
+                  hiddenLabel
                   label=""
                   checked={!!checked[item.id]}
                   onChange={() => toggleChecked(item.id)}
@@ -176,7 +178,7 @@ const Invoices = React.memo(function Invoices({
         />
       </RefreshInvoices>
       <TitleRowContainer>
-        <SectionTitle size={2}>{i18n.invoices.table.title}</SectionTitle>
+        <SectionTitle size={1}>{i18n.invoices.table.title}</SectionTitle>
         {invoices && isSuccess(invoices) && (
           <ResultsContainer>
             <div>{total ? i18n.feeDecisions.table.rowCount(total) : null}</div>
@@ -222,7 +224,7 @@ const Invoices = React.memo(function Invoices({
             {showCheckboxes ? (
               <Th>
                 <Checkbox
-                  name="all"
+                  hiddenLabel
                   label=""
                   checked={allChecked}
                   onChange={allChecked ? clearChecked : checkAll}

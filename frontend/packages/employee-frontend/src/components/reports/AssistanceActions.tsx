@@ -3,13 +3,15 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useEffect, useMemo, useState } from 'react'
-import {
-  Container,
-  ContentArea,
-  Loader,
-  Table,
-  Title
-} from '~components/shared/alpha'
+import ReactSelect from 'react-select'
+import styled from 'styled-components'
+import { Link } from 'react-router-dom'
+
+import { Container, ContentArea } from '~components/shared/layout/Container'
+import Loader from '~components/shared/atoms/Loader'
+import Title from '~components/shared/atoms/Title'
+import { Th, Tr, Td, Thead, Tbody } from '~components/shared/layout/Table'
+import { reactSelectStyles } from '~components/shared/utils'
 import { useTranslation } from '~state/i18n'
 import { isFailure, isLoading, isSuccess, Loading, Result } from '~api'
 import { AssistanceActionsReportRow } from '~types/reports'
@@ -28,8 +30,6 @@ import {
 } from '~components/reports/common'
 import { distinct, reducePropertySum } from 'utils'
 import LocalDate from '@evaka/lib-common/src/local-date'
-import SelectWithIcon from 'components/common/Select'
-import { Link } from 'react-router-dom'
 
 interface DisplayFilters {
   careArea: string
@@ -38,6 +38,10 @@ interface DisplayFilters {
 const emptyDisplayFilters: DisplayFilters = {
   careArea: ''
 }
+
+const Wrapper = styled.div`
+  width: 100%;
+`
 
 function AssistanceActions() {
   const { i18n } = useTranslation()
@@ -85,21 +89,27 @@ function AssistanceActions() {
 
         <FilterRow>
           <FilterLabel>{i18n.reports.common.careAreaName}</FilterLabel>
-          <SelectWithIcon
-            options={[
-              { id: '', label: '' },
-              ...(isSuccess(rows)
-                ? distinct(
-                    rows.data.map((row) => row.careAreaName)
-                  ).map((s) => ({ id: s, label: s }))
-                : [])
-            ]}
-            value={displayFilters.careArea}
-            onChange={(e) =>
-              setDisplayFilters({ ...displayFilters, careArea: e.target.value })
-            }
-            fullWidth
-          />
+          <Wrapper>
+            <ReactSelect
+              options={[
+                { id: '', label: '' },
+                ...(isSuccess(rows)
+                  ? distinct(
+                      rows.data.map((row) => row.careAreaName)
+                    ).map((s) => ({ id: s, label: s }))
+                  : [])
+              ]}
+              onChange={(option) =>
+                option && 'id' in option
+                  ? setDisplayFilters({
+                      ...displayFilters,
+                      careArea: option.id
+                    })
+                  : undefined
+              }
+              styles={reactSelectStyles}
+            />
+          </Wrapper>
         </FilterRow>
 
         {isLoading(rows) && <Loader />}
@@ -168,112 +178,104 @@ function AssistanceActions() {
               filename={`Lapsien tukitoimet yksiköissä ${filters.date.formatIso()}.csv`}
             />
             <TableScrollable>
-              <Table.Head>
-                <Table.Row>
-                  <Table.Th>{i18n.reports.common.careAreaName}</Table.Th>
-                  <Table.Th>{i18n.reports.common.unitName}</Table.Th>
-                  <Table.Th>{i18n.reports.common.groupName}</Table.Th>
-                  <Table.Th>{i18n.reports.common.unitType}</Table.Th>
-                  <Table.Th>{i18n.reports.common.unitProviderType}</Table.Th>
-                  <Table.Th>{actionTypes.ASSISTANCE_SERVICE_CHILD}</Table.Th>
-                  <Table.Th>{actionTypes.ASSISTANCE_SERVICE_UNIT}</Table.Th>
-                  <Table.Th>{actionTypes.SMALLER_GROUP}</Table.Th>
-                  <Table.Th>{actionTypes.SPECIAL_GROUP}</Table.Th>
-                  <Table.Th>{actionTypes.PERVASIVE_VEO_SUPPORT}</Table.Th>
-                  <Table.Th>{actionTypes.RESOURCE_PERSON}</Table.Th>
-                  <Table.Th>{actionTypes.RATIO_DECREASE}</Table.Th>
-                  <Table.Th>{actionTypes.PERIODICAL_VEO_SUPPORT}</Table.Th>
-                  <Table.Th>{actionTypes.OTHER}</Table.Th>
-                  <Table.Th>
-                    {i18n.reports.assistanceActions.actionMissing}
-                  </Table.Th>
-                </Table.Row>
-              </Table.Head>
-              <Table.Body>
+              <Thead>
+                <Tr>
+                  <Th>{i18n.reports.common.careAreaName}</Th>
+                  <Th>{i18n.reports.common.unitName}</Th>
+                  <Th>{i18n.reports.common.groupName}</Th>
+                  <Th>{i18n.reports.common.unitType}</Th>
+                  <Th>{i18n.reports.common.unitProviderType}</Th>
+                  <Th>{actionTypes.ASSISTANCE_SERVICE_CHILD}</Th>
+                  <Th>{actionTypes.ASSISTANCE_SERVICE_UNIT}</Th>
+                  <Th>{actionTypes.SMALLER_GROUP}</Th>
+                  <Th>{actionTypes.SPECIAL_GROUP}</Th>
+                  <Th>{actionTypes.PERVASIVE_VEO_SUPPORT}</Th>
+                  <Th>{actionTypes.RESOURCE_PERSON}</Th>
+                  <Th>{actionTypes.RATIO_DECREASE}</Th>
+                  <Th>{actionTypes.PERIODICAL_VEO_SUPPORT}</Th>
+                  <Th>{actionTypes.OTHER}</Th>
+                  <Th>{i18n.reports.assistanceActions.actionMissing}</Th>
+                </Tr>
+              </Thead>
+              <Tbody>
                 {filteredRows.map((row: AssistanceActionsReportRow) => (
-                  <Table.Row key={`${row.unitId}:${row.groupId}`}>
-                    <Table.Td>{row.careAreaName}</Table.Td>
-                    <Table.Td>
+                  <Tr key={`${row.unitId}:${row.groupId}`}>
+                    <Td>{row.careAreaName}</Td>
+                    <Td>
                       <Link to={`/units/${row.unitId}`}>{row.unitName}</Link>
-                    </Table.Td>
-                    <Table.Td>{row.groupName}</Table.Td>
-                    <Table.Td>
+                    </Td>
+                    <Td>{row.groupName}</Td>
+                    <Td>
                       {row.unitType
                         ? i18n.reports.common.unitTypes[row.unitType]
                         : ''}
-                    </Table.Td>
-                    <Table.Td>
+                    </Td>
+                    <Td>
                       {
                         i18n.reports.common.unitProviderTypes[
                           row.unitProviderType
                         ]
                       }
-                    </Table.Td>
-                    <Table.Td>{row.assistanceServiceChild}</Table.Td>
-                    <Table.Td>{row.assistanceServiceUnit}</Table.Td>
-                    <Table.Td>{row.smallerGroup}</Table.Td>
-                    <Table.Td>{row.specialGroup}</Table.Td>
-                    <Table.Td>{row.pervasiveVeoSupport}</Table.Td>
-                    <Table.Td>{row.resourcePerson}</Table.Td>
-                    <Table.Td>{row.ratioDecrease}</Table.Td>
-                    <Table.Td>{row.periodicalVeoSupport}</Table.Td>
-                    <Table.Td>{row.other}</Table.Td>
-                    <Table.Td>{row.none}</Table.Td>
-                  </Table.Row>
+                    </Td>
+                    <Td>{row.assistanceServiceChild}</Td>
+                    <Td>{row.assistanceServiceUnit}</Td>
+                    <Td>{row.smallerGroup}</Td>
+                    <Td>{row.specialGroup}</Td>
+                    <Td>{row.pervasiveVeoSupport}</Td>
+                    <Td>{row.resourcePerson}</Td>
+                    <Td>{row.ratioDecrease}</Td>
+                    <Td>{row.periodicalVeoSupport}</Td>
+                    <Td>{row.other}</Td>
+                    <Td>{row.none}</Td>
+                  </Tr>
                 ))}
-              </Table.Body>
+              </Tbody>
               <TableFooter>
-                <Table.Row>
-                  <Table.Td className="bold">
-                    {i18n.reports.common.total}
-                  </Table.Td>
-                  <Table.Td />
-                  <Table.Td />
-                  <Table.Td />
-                  <Table.Td />
-                  <Table.Td>
+                <Tr>
+                  <Td className="bold">{i18n.reports.common.total}</Td>
+                  <Td />
+                  <Td />
+                  <Td />
+                  <Td />
+                  <Td>
                     {reducePropertySum(
                       filteredRows,
                       (r) => r.assistanceServiceChild
                     )}
-                  </Table.Td>
-                  <Table.Td>
+                  </Td>
+                  <Td>
                     {reducePropertySum(
                       filteredRows,
                       (r) => r.assistanceServiceUnit
                     )}
-                  </Table.Td>
-                  <Table.Td>
+                  </Td>
+                  <Td>
                     {reducePropertySum(filteredRows, (r) => r.smallerGroup)}
-                  </Table.Td>
-                  <Table.Td>
+                  </Td>
+                  <Td>
                     {reducePropertySum(filteredRows, (r) => r.specialGroup)}
-                  </Table.Td>
-                  <Table.Td>
+                  </Td>
+                  <Td>
                     {reducePropertySum(
                       filteredRows,
                       (r) => r.pervasiveVeoSupport
                     )}
-                  </Table.Td>
-                  <Table.Td>
+                  </Td>
+                  <Td>
                     {reducePropertySum(filteredRows, (r) => r.resourcePerson)}
-                  </Table.Td>
-                  <Table.Td>
+                  </Td>
+                  <Td>
                     {reducePropertySum(filteredRows, (r) => r.ratioDecrease)}
-                  </Table.Td>
-                  <Table.Td>
+                  </Td>
+                  <Td>
                     {reducePropertySum(
                       filteredRows,
                       (r) => r.periodicalVeoSupport
                     )}
-                  </Table.Td>
-                  <Table.Td>
-                    {reducePropertySum(filteredRows, (r) => r.other)}
-                  </Table.Td>
-                  <Table.Td>
-                    {reducePropertySum(filteredRows, (r) => r.none)}
-                  </Table.Td>
-                </Table.Row>
+                  </Td>
+                  <Td>{reducePropertySum(filteredRows, (r) => r.other)}</Td>
+                  <Td>{reducePropertySum(filteredRows, (r) => r.none)}</Td>
+                </Tr>
               </TableFooter>
             </TableScrollable>
           </>

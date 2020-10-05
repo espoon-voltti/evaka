@@ -4,11 +4,15 @@
 
 import React, { Fragment, useContext, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { faAbacus, faCoins } from 'icon-set'
-import styled from 'styled-components'
 import { groupBy, get } from 'lodash/fp'
+import styled from 'styled-components'
+
+import { faAbacus, faCoins } from 'icon-set'
 import LocalDate from '@evaka/lib-common/src/local-date'
-import { Button, Collapsible, Table, Title } from '~components/shared/alpha'
+import { Table, Tbody, Th, Thead, Tr } from 'components/shared/layout/Table'
+import Button from '~components/shared/atoms/buttons/Button'
+import Title from '~components/shared/atoms/Title'
+import CollapsibleSection from '~components/shared/molecules/CollapsibleSection'
 import InvoiceRowsSectionRow from './InvoiceRowsSectionRow'
 import Sum from './Sum'
 import { useTranslation } from '../../state/i18n'
@@ -22,6 +26,7 @@ import { Result } from '../../api'
 import { totalPrice } from '../../utils/pricing'
 import AbsencesModal from './AbsencesModal'
 import { formatName } from '~utils'
+import InlineButton from '~components/shared/atoms/buttons/InlineButton'
 
 const TitleContainer = styled.div`
   display: flex;
@@ -70,7 +75,6 @@ const InvoiceRowsSection = React.memo(function InvoiceRowsSection({
   editable
 }: Props) {
   const { i18n } = useTranslation()
-  const [toggled, setToggled] = useState(true)
   const [child, setChild] = useState<PersonDetailed>()
   const { uiMode, toggleUiMode } = useContext(UIContext)
   const [absenceModalDate, setAbsenceModalDate] = useState<LocalDate>(
@@ -90,11 +94,10 @@ const InvoiceRowsSection = React.memo(function InvoiceRowsSection({
 
   return (
     <Fragment>
-      <Collapsible
+      <CollapsibleSection
         title={i18n.invoice.form.rows.title}
         icon={faCoins}
-        open={toggled}
-        onToggle={() => setToggled((prev) => !prev)}
+        startCollapsed={false}
       >
         <div className="invoice-rows">
           {Object.entries(groupedRows).map(([childId, childRows]) => {
@@ -113,48 +116,45 @@ const InvoiceRowsSection = React.memo(function InvoiceRowsSection({
                       {firstRow.child.ssn}
                     </Link>
                   </Title>
-                  <Button
-                    plain
+                  <InlineButton
                     icon={faAbacus}
-                    iconSize="lg"
                     onClick={() =>
                       openAbsences(firstRow.child, firstRow.periodStart)
                     }
-                  >
-                    {i18n.invoice.openAbsenceSummary}
-                  </Button>
+                    text={i18n.invoice.openAbsenceSummary}
+                  />
                 </TitleContainer>
-                <Table.Table dataQa="table-of-invoice-rows">
-                  <Table.Head>
-                    <Table.Row>
-                      <Table.Th dataQa="invoice-row-product">
+                <Table data-qa="table-of-invoice-rows">
+                  <Thead>
+                    <Tr>
+                      <Th data-qa="invoice-row-product">
                         {i18n.invoice.form.rows.product}
-                      </Table.Th>
-                      <Table.Th dataQa="invoice-row-description">
+                      </Th>
+                      <Th data-qa="invoice-row-description">
                         {i18n.invoice.form.rows.description}
-                      </Table.Th>
-                      <Table.Th dataQa="invoice-row-costcenter">
+                      </Th>
+                      <Th data-qa="invoice-row-costcenter">
                         {i18n.invoice.form.rows.costCenter}
-                      </Table.Th>
-                      <Table.Th dataQa="invoice-row-subcostcenter">
+                      </Th>
+                      <Th data-qa="invoice-row-subcostcenter">
                         {i18n.invoice.form.rows.subCostCenter}
-                      </Table.Th>
-                      <Table.Th dataQa="invoice-row-daterange">
+                      </Th>
+                      <Th data-qa="invoice-row-daterange">
                         {i18n.invoice.form.rows.daterange}
-                      </Table.Th>
-                      <Table.Th dataQa="invoice-row-amount">
+                      </Th>
+                      <Th data-qa="invoice-row-amount">
                         {i18n.invoice.form.rows.amount}
-                      </Table.Th>
-                      <Table.Th align="right" dataQa="invoice-row-unitprice">
+                      </Th>
+                      <Th align="right" data-qa="invoice-row-unitprice">
                         {i18n.invoice.form.rows.unitPrice}
-                      </Table.Th>
-                      <Table.Th align="right" dataQa="invoice-row-totalprice">
+                      </Th>
+                      <Th align="right" data-qa="invoice-row-totalprice">
                         {i18n.invoice.form.rows.price}
-                      </Table.Th>
-                      <Table.Th />
-                    </Table.Row>
-                  </Table.Head>
-                  <Table.Body>
+                      </Th>
+                      <Th />
+                    </Tr>
+                  </Thead>
+                  <Tbody>
                     <InvoiceRowsSectionRow
                       key={firstRow.id || ''}
                       row={firstRow}
@@ -177,22 +177,20 @@ const InvoiceRowsSection = React.memo(function InvoiceRowsSection({
                         editable={editable}
                       />
                     ))}
-                  </Table.Body>
-                </Table.Table>
+                  </Tbody>
+                </Table>
                 <Button
-                  plain
                   disabled={!editable}
                   onClick={getAddInvoiceRow(firstRow)}
                   dataQa="invoice-button-add-row"
-                >
-                  {i18n.invoice.form.rows.addRow}
-                </Button>
+                  text={i18n.invoice.form.rows.addRow}
+                />
                 <Sum title={'rowSubTotal'} sum={totalPrice(rows)} />
               </div>
             )
           })}
         </div>
-      </Collapsible>
+      </CollapsibleSection>
       {uiMode == 'invoices-absence-modal' && child !== undefined && (
         <AbsencesModal child={child} date={absenceModalDate} />
       )}

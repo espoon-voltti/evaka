@@ -9,10 +9,7 @@
     "lint": "yarn wsrun --exclude-missing lint",
     "test": "yarn wsrun --exclude-missing test"
   },
-  "dependencies": {
-    "@evaka/styleguide": "11.2.0",
-    "bulma": "0.7.5"
-  },
+  "dependencies": {},
   "devDependencies": {
     "prettier": "^2.0.5",
     "wsrun": "^5.2.0"

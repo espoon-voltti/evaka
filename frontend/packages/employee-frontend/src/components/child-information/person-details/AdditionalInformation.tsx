@@ -10,7 +10,10 @@ import {
   updateAdditionalInformation
 } from '~api/child/additional-information'
 import { ChildContext } from '~/state/child'
-import { Button, Buttons, Loader, TextArea } from '~components/shared/alpha'
+import { TextArea } from 'components/shared/atoms/form/InputField'
+import Button from 'components/shared/atoms/buttons/Button'
+import InlineButton from 'components/shared/atoms/buttons/InlineButton'
+import Loader from 'components/shared/atoms/Loader'
 import { UUID } from '~/types'
 import LabelValueList from '~components/common/LabelValueList'
 import ToolbarAccordion from '~components/common/ToolbarAccordion'
@@ -21,6 +24,7 @@ import { AdditionalInformation } from '~types/child'
 import { formatParagraphs } from '~utils/html-utils'
 import { textAreaRows } from '~components/utils'
 import { RequireRole } from 'utils/roles'
+import { FixedSpaceRow } from '~components/shared/layout/flex-helpers'
 
 const FlexContainer = styled.div`
   display: flex;
@@ -39,10 +43,6 @@ const RightAlignedRow = styled.div`
   align-items: baseline;
   justify-content: flex-end;
   padding-top: 20px;
-`
-
-const ButtonsContainer = styled(Buttons)`
-  margin: 20px 0;
 `
 
 interface Props {
@@ -114,17 +114,12 @@ const AdditionalInformation = React.memo(function AdditionalInformation({
                 'ADMIN'
               ]}
             >
-              <Button
-                plain
-                type="button"
-                width="narrow"
+              <InlineButton
                 icon={faPen}
-                iconSize="lg"
                 onClick={() => startEdit()}
                 dataQa="edit-child-settings-button"
-              >
-                {i18n.common.edit}
-              </Button>
+                text={i18n.common.edit}
+              />
             </RequireRole>
             <div />
             <LabelValueList
@@ -197,19 +192,19 @@ const AdditionalInformation = React.memo(function AdditionalInformation({
           </FlexContainer>
           {editing && (
             <RightAlignedRow>
-              <ButtonsContainer>
-                <Button onClick={() => clearUiMode()}>
-                  {i18n.common.cancel}
-                </Button>
+              <FixedSpaceRow>
+                <Button
+                  onClick={() => clearUiMode()}
+                  text={i18n.common.cancel}
+                />
                 <Button
                   primary
                   disabled={false}
                   onClick={() => onSubmit()}
                   dataQa="confirm-edited-child-button"
-                >
-                  {i18n.common.confirm}
-                </Button>
-              </ButtonsContainer>
+                  text={i18n.common.confirm}
+                />
+              </FixedSpaceRow>
             </RightAlignedRow>
           )}
         </>

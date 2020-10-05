@@ -3,13 +3,14 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useEffect, useMemo, useState } from 'react'
-import {
-  Container,
-  ContentArea,
-  Loader,
-  Table,
-  Title
-} from '~components/shared/alpha'
+import ReactSelect from 'react-select'
+import styled from 'styled-components'
+
+import { Container, ContentArea } from '~components/shared/layout/Container'
+import Loader from '~components/shared/atoms/Loader'
+import Title from '~components/shared/atoms/Title'
+import { Th, Tr, Td, Thead, Tbody } from '~components/shared/layout/Table'
+import { reactSelectStyles } from '~components/shared/utils'
 import { useTranslation } from '~state/i18n'
 import { Link } from 'react-router-dom'
 import { isFailure, isLoading, isSuccess, Loading, Result } from '~api'
@@ -23,7 +24,6 @@ import {
   RowCountInfo,
   TableScrollable
 } from 'components/reports/common'
-import SelectWithIcon from 'components/common/Select'
 import { distinct } from 'utils'
 
 interface DisplayFilters {
@@ -33,6 +33,10 @@ interface DisplayFilters {
 const emptyDisplayFilters: DisplayFilters = {
   careArea: ''
 }
+
+const Wrapper = styled.div`
+  width: 100%;
+`
 
 function FamilyConflicts() {
   const { i18n } = useTranslation()
@@ -66,21 +70,27 @@ function FamilyConflicts() {
 
         <FilterRow>
           <FilterLabel>{i18n.reports.common.careAreaName}</FilterLabel>
-          <SelectWithIcon
-            options={[
-              { id: '', label: '' },
-              ...(isSuccess(rows)
-                ? distinct(
-                    rows.data.map((row) => row.careAreaName)
-                  ).map((s) => ({ id: s, label: s }))
-                : [])
-            ]}
-            value={displayFilters.careArea}
-            onChange={(e) =>
-              setDisplayFilters({ ...displayFilters, careArea: e.target.value })
-            }
-            fullWidth
-          />
+          <Wrapper>
+            <ReactSelect
+              options={[
+                { id: '', label: '' },
+                ...(isSuccess(rows)
+                  ? distinct(
+                      rows.data.map((row) => row.careAreaName)
+                    ).map((s) => ({ id: s, label: s }))
+                  : [])
+              ]}
+              onChange={(option) =>
+                option && 'id' in option
+                  ? setDisplayFilters({
+                      ...displayFilters,
+                      careArea: option.id
+                    })
+                  : undefined
+              }
+              styles={reactSelectStyles}
+            />
+          </Wrapper>
         </FilterRow>
 
         {isLoading(rows) && <Loader />}
@@ -112,38 +122,34 @@ function FamilyConflicts() {
               filename="Perhekonfliktit.csv"
             />
             <TableScrollable>
-              <Table.Head>
-                <Table.Row>
-                  <Table.Th>{i18n.reports.common.careAreaName}</Table.Th>
-                  <Table.Th>{i18n.reports.common.unitName}</Table.Th>
-                  <Table.Th>{i18n.reports.familyConflicts.name}</Table.Th>
-                  <Table.Th>{i18n.reports.familyConflicts.ssn}</Table.Th>
-                  <Table.Th>
-                    {i18n.reports.familyConflicts.partnerConflictCount}
-                  </Table.Th>
-                  <Table.Th>
-                    {i18n.reports.familyConflicts.childConflictCount}
-                  </Table.Th>
-                </Table.Row>
-              </Table.Head>
-              <Table.Body>
+              <Thead>
+                <Tr>
+                  <Th>{i18n.reports.common.careAreaName}</Th>
+                  <Th>{i18n.reports.common.unitName}</Th>
+                  <Th>{i18n.reports.familyConflicts.name}</Th>
+                  <Th>{i18n.reports.familyConflicts.ssn}</Th>
+                  <Th>{i18n.reports.familyConflicts.partnerConflictCount}</Th>
+                  <Th>{i18n.reports.familyConflicts.childConflictCount}</Th>
+                </Tr>
+              </Thead>
+              <Tbody>
                 {filteredRows.map((row: FamilyConflictReportRow) => (
-                  <Table.Row key={row.id}>
-                    <Table.Td>{row.careAreaName}</Table.Td>
-                    <Table.Td>
+                  <Tr key={row.id}>
+                    <Td>{row.careAreaName}</Td>
+                    <Td>
                       <Link to={`/units/${row.unitId}`}>{row.unitName}</Link>
-                    </Table.Td>
-                    <Table.Td>
+                    </Td>
+                    <Td>
                       <Link to={`/profile/${row.id}`}>
                         {row.lastName} {row.firstName}
                       </Link>
-                    </Table.Td>
-                    <Table.Td>{row.socialSecurityNumber}</Table.Td>
-                    <Table.Td>{row.partnerConflictCount}</Table.Td>
-                    <Table.Td>{row.childConflictCount}</Table.Td>
-                  </Table.Row>
+                    </Td>
+                    <Td>{row.socialSecurityNumber}</Td>
+                    <Td>{row.partnerConflictCount}</Td>
+                    <Td>{row.childConflictCount}</Td>
+                  </Tr>
                 ))}
-              </Table.Body>
+              </Tbody>
             </TableScrollable>
             <RowCountInfo rowCount={filteredRows.length} />
           </>

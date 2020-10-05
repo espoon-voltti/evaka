@@ -4,7 +4,7 @@
 
 import React, { useContext, useEffect, useState } from 'react'
 import styled from 'styled-components'
-import { Input } from '~components/shared/alpha'
+import InputField from '~components/shared/atoms/form/InputField'
 import FormModal from '~components/common/FormModal'
 import { useTranslation } from '~state/i18n'
 import { UIContext } from '~state/ui'
@@ -70,7 +70,7 @@ function AddSsnModal({ personId, onUpdateComplete }: Props) {
       rejectLabel={i18n.common.cancel}
       resolveDisabled={submitting || !isSsnValid(ssn.toUpperCase())}
     >
-      <Input value={ssn} onChange={(e) => setSsn(e.target.value)} />
+      <InputField value={ssn} onChange={(value) => setSsn(value)} />
       <Error>
         {error === 'invalid'
           ? i18n.personProfile.ssnInvalid

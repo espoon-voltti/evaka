@@ -210,10 +210,10 @@ export default class ChildInformationPage {
     }
     await t.click(this.newPlacementButton)
     await t.typeText(
-      this.placementModal.find('#react-select-2-input'),
+      this.placementModal.find('#react-select-3-input'),
       unitName
     )
-    await t.click(this.placementModal.find('[id^="react-select-2-option-"'))
+    await t.click(this.placementModal.find('[id^="react-select-3-option-"'))
     await t.typeText(this.placementModalStartDateInput, startDate, {
       replace: true
     })
@@ -233,7 +233,9 @@ export default class ChildInformationPage {
   public async selectGuardian(index: number) {
     const selectGuardianSelector = Selector('[data-qa="select-guardian"]')
     await t.click(selectGuardianSelector)
-    await t.click(selectGuardianSelector.find('option').nth(index))
+    await t.click(
+      selectGuardianSelector.find(`[id^="react-select-2-option-${index}"`)
+    )
   }
 
   // For selecting application guardian from vtj in application creation modal
@@ -271,9 +273,11 @@ export default class ChildInformationPage {
       replace: true
     })
 
-    await t.typeText(Selector('[data-qa="datepicker-dob"]'), dob, {
-      replace: true
-    })
+    const dateInput = Selector('[data-qa="datepicker-dob"]')
+    await t.click(dateInput)
+    await t.typeText(dateInput, dob)
+    await t.pressKey('tab')
+    await t.pressKey('esc')
 
     await t.typeText(
       Selector('[data-qa="input-street-address"]'),
