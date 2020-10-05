@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useCallback, useContext, useEffect, useState } from 'react'
-import { Redirect, RouteComponentProps } from 'react-router-dom'
+import { Redirect, useHistory, useParams } from 'react-router-dom'
 import { faQuestion } from 'icon-set'
 import { Container, ContentArea } from '~components/shared/layout/Container'
 import InfoModal from '~components/common/InfoModal'
@@ -26,12 +26,10 @@ export const ErrorMessage = styled.div`
   margin-right: 20px;
 `
 
-const FeeDecisionDetailsPage = React.memo(function FeeDecisionDetailsPage({
-  match,
-  history
-}: RouteComponentProps<{ id?: string }>) {
+const FeeDecisionDetailsPage = React.memo(function FeeDecisionDetailsPage() {
+  const history = useHistory()
+  const { id } = useParams<{ id: string }>()
   const { i18n } = useTranslation()
-  const { id } = match.params
   const { setTitle, formatTitleName } = useContext<TitleState>(TitleContext)
   const [decision, setDecision] = useState<Result<FeeDecisionDetailed>>(
     Loading()
@@ -40,11 +38,8 @@ const FeeDecisionDetailsPage = React.memo(function FeeDecisionDetailsPage({
   const [newDecisionType, setNewDecisionType] = useState<string>('')
   const [confirmingBack, setConfirmingBack] = useState<boolean>(false)
 
-  useEffect(() => {
-    // id should always be present as otherwise this page should not be rendered
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    void getDecision(id!).then((dec) => setDecision(dec))
-  }, [id])
+  const loadDecision = () => getDecision(id).then((dec) => setDecision(dec))
+  useEffect(() => void loadDecision(), [id])
 
   useEffect(() => {
     if (isSuccess(decision)) {
@@ -107,9 +102,9 @@ const FeeDecisionDetailsPage = React.memo(function FeeDecisionDetailsPage({
               <Actions
                 decision={decision.data}
                 goToDecisions={goToDecisions}
+                loadDecision={loadDecision}
                 modified={modified}
                 setModified={setModified}
-                setDecision={setDecision}
                 newDecisionType={newDecisionType}
               />
             </ContentArea>
