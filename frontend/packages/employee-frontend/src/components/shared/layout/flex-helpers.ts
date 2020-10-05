@@ -43,7 +43,7 @@ export const FixedSpaceRow = styled.div<FixedSpaceRowProps>`
     }
   }
 
-  >button {
+  > button {
     margin-right: ${(p) =>
       p.spacing
         ? isSpacingSize(p.spacing)
