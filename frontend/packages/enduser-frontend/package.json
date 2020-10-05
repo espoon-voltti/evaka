@@ -57,11 +57,6 @@
     "vuelidate": "^0.7.4",
     "vuex": "^3.1.0"
   },
-  "optionalDependencies": {
-    "@fortawesome/pro-light-svg-icons": "file:../../vendor/fortawesome/fortawesome-pro-light-svg-icons-5.14.0.tgz",
-    "@fortawesome/pro-regular-svg-icons": "file:../../vendor/fortawesome/fortawesome-pro-regular-svg-icons-5.14.0.tgz",
-    "@fortawesome/pro-solid-svg-icons": "file:../../vendor/fortawesome/fortawesome-pro-solid-svg-icons-5.14.0.tgz"
-  },
   "devDependencies": {
     "@sentry/webpack-plugin": "^1.9.3",
     "@types/classnames": "^2.2.6",
