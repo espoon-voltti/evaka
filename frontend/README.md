@@ -70,20 +70,66 @@ The project uses [Font Awesome](https://fontawesome.com/) library as
 an icon library. **You can run the application using the free version
 of Font Awesome**. Alternatively, you could purchase the license for
 professional version of Font Awesome, which will give the application
-a better look and feel with regards to icons. Professional version of
-the Font Awesome library is listed as an optional dependency and, if
-present, will be automatically included into the build process assuming you've
-[configured access](#access-to-professional-icons) to them.
+a better look and feel with regards to icons.
 
-If you want to use the free icons instead, set an environment variable `ICONS=free`.
+### Using free icons
+
+Professional versions of the Font Awesome libraries are listed as optional
+dependencies so use `yarn install --ignore-optional` to avoid installation
+failures when using free icons. The same argument works for `yarn add`, too.
+
+To simplify your local development, you can create a `.yarnrc`:
+
+```ini
+--ignore-optional
+```
+
+By default, all builds will use the free icons but you can also explicitly set
+then environment variable `ICONS=free`, e.g.:
+
+```sh
+cd packages/employee-frontend
+ICONS=free yarn dev
+```
+
+### Using pro icons
+
+**NOTE:** If you've run `yarn install` with `--ignore-optional`, you must
+clear `node_modules` to force yarn to install the optional packages after
+you've fetched them. This appears to be a bug with `yarn` itself.
 
 Please refer to [Font Awesome documentation](https://fontawesome.com/plans)
-on how to retrieve the professional version of the icon library.
+on how to get a license for the professional version of the icon library.
 
-### Access to Professional icons
+By default, all builds will use the free icons, so you must set the environment
+variable `ICONS=pro` when running any builds, e.g.:
 
-If you have a license to use the Professional Font Awesome icons, configure
-access to them in your `.npmrc`:
+```sh
+cd packages/employee-frontend
+ICONS=pro yarn dev
+```
+
+To fetch the icons, see:
+
+- [As a Voltti developer](#as-a-voltti-developer)
+- [As anybody else](#as-anybody-else)
+
+#### As a Voltti developer
+
+Voltti developers can use the helper script to fetch the icon packages from
+a private S3 bucket: `./init-pro-icons.sh`
+
+For updating the icons, follow [the non-Voltti developer guide](#as-a-non-voltti-developer)
+for fetching the new versions. Once fetched, upload the packages to S3:
+
+```sh
+aws --profile voltti-local s3 sync ./vendor/fortawesome/ s3://evaka-deployment-local/frontend/vendor/fortawesome/
+```
+
+#### As anybody else
+
+Once you have a license, configure **temporary** access to Font's
+private registry in your `.npmrc`:
 
 ```ini
 @fortawesome:registry=https://npm.fontawesome.com/
@@ -98,6 +144,20 @@ cat << EOF > .npmrc
 //npm.fontawesome.com/:_authToken=$(aws ssm get-parameter --name "/voltti/fontawesome-token" --query 'Parameter.Value' --with-decryption --region eu-west-1 --profile voltti-dev)
 EOF
 ```
+
+**IMPORTANT:** Once you've fetched the packages, remove the above configuration
+to avoid accidentally configuring all the public `@fortawesome/` packages to
+target the private registry in `yarn.lock`.
+
+Next, fetch the packages with:
+
+```sh
+npm pack @fortawesome/fontawesome-pro@5.14.0 --userconfig=<path to your .npmrc>
+# repeat for all packages
+```
+
+Place the fetched `.tgz` packages in the `./vendor/fortawesome/` directory,
+and run `yarn install` to install the packages to the `node_modules` directory.
 
 ## Development
 

@@ -53,8 +53,6 @@
     "react-use": "^13.27.0",
     "styled-components": "5.1.1"
   },
-  "optionalDependencies": {
-  },
   "devDependencies": {
     "@sentry/webpack-plugin": "^1.9.3",
     "@storybook/addon-actions": "5.1.11",

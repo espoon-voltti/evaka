@@ -5,6 +5,8 @@
   ],
   "linterOptions": {
     "exclude": [
+      "src/icons/free-icons.ts",
+      "src/icons/pro-icons.ts",
       "src/**/*.js",
       "src/**/*.json",
       "node_modules/**",

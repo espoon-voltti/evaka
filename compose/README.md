@@ -93,8 +93,16 @@ designed for running E2E tests locally and in continuous integration
 
 First, you need to build frontends and all the docker images.
 
+With [free icons](../frontend/README.md#using-free-icons)
+
 ```sh
 ./build.sh
+```
+
+With [pro icons](../frontend/README.md#using-pro-icons)
+
+```sh
+ICONS=pro ./build.sh
 ```
 
 Then, start the whole stack locally. `compose-e2e` is just a

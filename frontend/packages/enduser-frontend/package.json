@@ -8,15 +8,18 @@
     "clean": "rm -rf dist/",
     "dev": "yarn serve",
     "start": "yarn serve",
+    "preserve": "./swap-fonts.sh",
     "serve": "vue-cli-service serve",
+    "prebuild": "yarn run preserve",
     "build": "vue-cli-service build",
+    "prebuild:dev": "yarn run preserve",
     "build:dev": "vue-cli-service build --mode development",
     "lint": "vue-cli-service lint",
     "test": "vue-cli-service test:unit",
     "test:watch": "vue-cli-service test:unit --watchAll"
   },
   "dependencies": {
-    "@voltti/styleguide": "11.2.0",
+    "@evaka/styleguide": "11.2.0",
     "bulma": "0.7.5",
     "@evaka/lib-common": "1.0.0",
     "@fortawesome/fontawesome-svg-core": "1.2.30",
@@ -53,8 +56,6 @@
     "vuedraggable": "^2.19.3",
     "vuelidate": "^0.7.4",
     "vuex": "^3.1.0"
-  },
-  "optionalDependencies": {
   },
   "devDependencies": {
     "@sentry/webpack-plugin": "^1.9.3",

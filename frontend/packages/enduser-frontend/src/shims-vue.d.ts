@@ -2,8 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-declare var global: any
-
 declare module '*.vue' {
   import Vue from 'vue'
   export default Vue

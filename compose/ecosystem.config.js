@@ -8,6 +8,8 @@ const defaults = {
   autorestart: false
 }
 
+const useProIcons = process.env.ICONS === 'pro'
+
 module.exports = {
   apps: [{
     name: 'apigw',
@@ -16,12 +18,12 @@ module.exports = {
     ...defaults
   }, {
     name: 'enduser',
-    script: 'yarn install --mutex network && yarn dev',
+    script: useProIcons ? 'yarn install --mutex network && ICONS=pro yarn dev' : 'yarn install --ignore-optional --mutex network && yarn dev',
     cwd: path.resolve(__dirname, '../frontend/packages/enduser-frontend'),
     ...defaults
   }, {
     name: 'employee',
-    script: 'yarn install --mutex network && yarn dev',
+    script: useProIcons ? 'yarn install --mutex network && ICONS=pro yarn dev' : 'yarn install --ignore-optional --mutex network && yarn dev',
     cwd: path.resolve(__dirname, '../frontend/packages/employee-frontend'),
     ...defaults
   }, {
