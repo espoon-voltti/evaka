@@ -9,7 +9,7 @@ if [ "$1" = "up" ]; then
     mkdir -p "$S3_DIR"
     LOCAL_DIR=../frontend/packages
 
-    rm -rf "$S3_DIR/application"
+    rm -rf "$S3_DIR/enduser"
     rm -rf "$S3_DIR/employee"
     cp -r "$LOCAL_DIR/enduser-frontend/dist" "$S3_DIR/enduser"
     cp -r "$LOCAL_DIR/employee-frontend/dist" "$S3_DIR/employee"
