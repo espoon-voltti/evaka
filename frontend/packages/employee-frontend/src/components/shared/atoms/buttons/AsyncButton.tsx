@@ -9,6 +9,8 @@ import { StyledButton } from './Button'
 
 type Props = {
   text: string
+  textInProgress?: string
+  textDone?: string
   onClick: () => Promise<void>
   onSuccess: () => void
   disabled?: boolean
@@ -18,6 +20,8 @@ type Props = {
 export default React.memo(function AsyncButton({
   className,
   text,
+  textInProgress = text,
+  textDone = text,
   disabled,
   onClick,
   onSuccess,
@@ -88,7 +92,7 @@ export default React.memo(function AsyncButton({
             <FontAwesomeIcon icon={faTimes} color={Colors.accents.red} />
           </IconWrapper>
         </IconContainer>
-        {text}
+        {inProgress ? textInProgress : showSuccess ? textDone : text}
       </Content>
     </StyledButton>
   )

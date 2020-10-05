@@ -177,12 +177,11 @@ const IncomeItemEditor = React.memo(function IncomeItemEditor({
         </>
       ) : null}
       <ButtonsContainer>
-        <Button
-          onClick={cancel}
-          text={i18n.personProfile.income.details.cancel}
-        />
+        <Button onClick={cancel} text={i18n.common.cancel} />
         <AsyncButton
-          text={i18n.personProfile.income.details.save}
+          text={i18n.common.save}
+          textInProgress={i18n.common.saving}
+          textDone={i18n.common.saved}
           disabled={Object.values(validationErrors).some(Boolean)}
           onClick={() =>
             !baseIncome

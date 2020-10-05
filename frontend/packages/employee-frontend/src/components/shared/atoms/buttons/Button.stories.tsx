@@ -90,6 +90,8 @@ storiesOf('evaka/atoms/buttons', module)
           }
           onSuccess={() => undefined}
           text="Save"
+          textInProgress="Saving"
+          textDone="Saved"
         />
         <Gap />
 
@@ -104,6 +106,8 @@ storiesOf('evaka/atoms/buttons', module)
           }
           onSuccess={() => undefined}
           text="Save"
+          textInProgress="Saving"
+          textDone="Saved"
         />
         <Gap />
 
@@ -112,6 +116,8 @@ storiesOf('evaka/atoms/buttons', module)
           onClick={() => new Promise(() => undefined)}
           onSuccess={() => undefined}
           text="Save"
+          textInProgress="Saving"
+          textDone="Saved"
           disabled
         />
         <Gap />
