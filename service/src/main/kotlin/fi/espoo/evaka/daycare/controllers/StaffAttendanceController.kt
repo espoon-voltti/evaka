@@ -54,7 +54,7 @@ class StaffAttendanceController(
     ): ResponseEntity<Unit> {
         Audit.StaffAttendanceUpdate.log(targetId = groupId)
         acl.getRolesForUnitGroup(user, groupId)
-            .requireOneOfRoles(ADMIN, UNIT_SUPERVISOR)
+            .requireOneOfRoles(ADMIN, UNIT_SUPERVISOR, STAFF)
         if (staffAttendance.count == null) {
             throw BadRequest("Count can't be null")
         }
