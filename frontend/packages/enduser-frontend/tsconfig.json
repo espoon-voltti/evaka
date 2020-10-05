@@ -32,5 +32,9 @@
     "src/**/*.vue",
     "tests/**/*.ts",
     "tests/**/*.tsx"
+  ],
+  "exclude": [
+    "src/icons/free-icons.tsx",
+    "src/icons/pro-icons.tsx"
   ]
 }

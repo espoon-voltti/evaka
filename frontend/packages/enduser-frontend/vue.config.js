@@ -56,14 +56,7 @@ module.exports = {
     }
   },
   configureWebpack: {
-    plugins: webpackPlugins,
-    resolve: {
-      alias: {
-        'Icons': process.env.ICONS === 'pro'
-          ? path.resolve(__dirname, 'src/icons/pro-icons')
-          : path.resolve(__dirname, 'src/icons/free-icons')
-      }
-    },
+    plugins: webpackPlugins
   },
   chainWebpack: config => {
     config.module

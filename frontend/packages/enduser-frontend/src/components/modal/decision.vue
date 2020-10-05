@@ -106,6 +106,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
       Modal
     },
     computed: {
+      /* tslint:disable:curly */
       icon() {
         if (this.initialPhase) {
           return ['fal', 'exclamation']
@@ -148,6 +149,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
           return this.$t('decision-view.modal.acceptErrorMessageText')
         return this.$t('decision-view.modal.rejectErrorMessageText')
       },
+      /* tslint:enable:curly */
       cancelButtonText() {
         return this.initialPhase ? this.rejectText : this.closeText
       }

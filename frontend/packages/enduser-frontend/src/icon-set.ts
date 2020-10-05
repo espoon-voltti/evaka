@@ -5,7 +5,7 @@
 import { IconDefinition } from '@fortawesome/fontawesome-svg-core'
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
-import icons from 'Icons'
+import icons from '@/icons/icons'
 
 // tslint:disable-next-line
 export type IconSet = {
