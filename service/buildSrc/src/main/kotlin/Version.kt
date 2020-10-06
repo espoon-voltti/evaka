@@ -27,18 +27,13 @@ object Version {
     const val logstashEncoder = "6.3"
     const val mockito = "3.4.6"
     const val mockitoKotlin = "1.6.0"
-    const val postgresDriver = "42.2.14"
+    const val postgresDriver = "42.2.16"
     const val springBoot = "2.3.3.RELEASE"
-    const val springCloud = "Greenwich.SR3"
     const val testContainers = "1.14.3"
 
     object GradlePlugin {
         const val detekt = "1.10.0"
         const val ktlint = "9.3.0"
         const val versions = "0.29.0"
-    }
-
-    object Voltti {
-        const val integrationInvoiceCommon = "0.1.9"
     }
 }

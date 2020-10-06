@@ -79,7 +79,7 @@ fun configureJdbi(jdbi: Jdbi): Jdbi {
     jdbi.registerArgument(closedPeriodArgumentFactory)
     jdbi.registerArgument(periodArgumentFactory)
     jdbi.registerArgument(coordinateArgumentFactory)
-    jdbi.registerArgument(indentityArgumentFactory)
+    jdbi.registerArgument(identityArgumentFactory)
     jdbi.registerColumnMapper(ClosedPeriod::class.java, closedPeriodColumnMapper)
     jdbi.registerColumnMapper(Period::class.java, periodColumnMapper)
     jdbi.registerColumnMapper(Coordinate::class.java, coordinateColumnMapper)
