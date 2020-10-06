@@ -75,7 +75,7 @@ class DaycareService(
             daycareDAO.deleteGroup(daycareId, groupId)
         }
     } catch (e: UnableToExecuteStatementException) {
-        throw (e.cause as? PSQLException)?.takeIf { it.serverErrorMessage.sqlState == PSQLState.FOREIGN_KEY_VIOLATION.state }
+        throw (e.cause as? PSQLException)?.takeIf { it.serverErrorMessage?.sqlState == PSQLState.FOREIGN_KEY_VIOLATION.state }
             ?.let { Conflict("Cannot delete group which is still referred to from other data") }
             ?: e
     }

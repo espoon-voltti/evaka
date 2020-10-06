@@ -44,7 +44,7 @@ val coordinateArgumentFactory = PgObjectArgumentFactory.of<Coordinate> {
     }
 }
 
-val indentityArgumentFactory = PgObjectArgumentFactory.of<ExternalIdentifier> {
+val identityArgumentFactory = PgObjectArgumentFactory.of<ExternalIdentifier> {
     PGobject().apply {
         type = "text"
         value = when (it) {
@@ -56,22 +56,26 @@ val indentityArgumentFactory = PgObjectArgumentFactory.of<ExternalIdentifier> {
 
 val closedPeriodColumnMapper = PgObjectColumnMapper {
     assert(it.type == "daterange")
-    val parts = it.value.trim('[', ')').split(',')
-    val start = LocalDate.parse(parts[0])
-    val end = LocalDate.parse(parts[1]).minusDays(1)
-    ClosedPeriod(start, end)
+    it.value?.let { value ->
+        val parts = value.trim('[', ')').split(',')
+        val start = LocalDate.parse(parts[0])
+        val end = LocalDate.parse(parts[1]).minusDays(1)
+        ClosedPeriod(start, end)
+    }
 }
 
 val periodColumnMapper = PgObjectColumnMapper {
     assert(it.type == "daterange")
-    val parts = it.value.trim('[', ')').split(',')
-    val start = LocalDate.parse(parts[0])
-    val end = if (!parts[1].isEmpty()) {
-        LocalDate.parse(parts[1]).minusDays(1)
-    } else {
-        null
+    it.value?.let { value ->
+        val parts = value.trim('[', ')').split(',')
+        val start = LocalDate.parse(parts[0])
+        val end = if (parts[1].isNotEmpty()) {
+            LocalDate.parse(parts[1]).minusDays(1)
+        } else {
+            null
+        }
+        Period(start, end)
     }
-    Period(start, end)
 }
 
 val coordinateColumnMapper = PgObjectColumnMapper {
@@ -85,7 +89,7 @@ class PgObjectArgumentFactory<T>(
 ) : ArgumentFactory.Preparable {
     override fun prepare(type: Type, config: ConfigRegistry): Optional<Function<Any?, Argument>> = if (type == clazz) {
         Optional.of(
-            Function<Any?, Argument> { nullableValue ->
+            Function { nullableValue ->
                 if (nullableValue == null) NullArgument(Types.OTHER)
                 else (clazz.cast(nullableValue))?.let { value -> PgObjectArgument(serializer(value)) }!!
             }
@@ -109,7 +113,7 @@ class PgObjectArgument(val value: PGobject) : Argument {
     override fun toString(): String = value.toString()
 }
 
-class PgObjectColumnMapper<T>(private val deserializer: (PGobject) -> T) : ColumnMapper<T> {
+class PgObjectColumnMapper<T>(private val deserializer: (PGobject) -> T?) : ColumnMapper<T> {
     override fun map(r: ResultSet, columnNumber: Int, ctx: StatementContext): T? = r.getObject(columnNumber)?.let {
         deserializer(it as PGobject)
     }
