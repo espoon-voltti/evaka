@@ -4,7 +4,7 @@
 
 import React, { useState } from 'react'
 import styled from 'styled-components'
-import Button from '~components/shared/atoms/buttons/Button'
+import AsyncButton from '~components/shared/atoms/buttons/AsyncButton'
 import { useTranslation } from '../../state/i18n'
 import { updateInvoice, markInvoiceSent } from '../../api/invoicing'
 import { InvoiceDetailed } from '../../types/invoicing'
@@ -18,62 +18,49 @@ const ErrorMessage = styled.div`
 
 type Props = {
   invoice: InvoiceDetailed
-  goToInvoices(): void
+  loadInvoice(): void
   editable: boolean
 }
 
 const Actions = React.memo(function Actions({
   invoice,
-  goToInvoices,
+  loadInvoice,
   editable
 }: Props) {
   const { i18n } = useTranslation()
-  const [actionInFlight, setActionInFlight] = useState(false)
   const [error, setError] = useState(false)
 
-  const saveChanges = () => {
-    setActionInFlight(true)
+  const saveChanges = () =>
     updateInvoice(invoice)
       .then(() => void setError(false))
-      .then(goToInvoices)
       .catch(() => void setError(true))
-      .finally(() => void setActionInFlight(false))
-  }
 
-  const markSent = () => {
-    setActionInFlight(true)
+  const markSent = () =>
     markInvoiceSent([invoice.id])
       .then(() => void setError(false))
-      .then(goToInvoices)
       .catch(() => void setError(true))
-      .finally(() => void setActionInFlight(false))
-  }
 
   return (
-    <FixedSpaceRow>
+    <FixedSpaceRow justifyContent="flex-end">
       {error ? <ErrorMessage>{i18n.common.error.unknown}</ErrorMessage> : null}
-      {[
-        invoice.status === 'WAITING_FOR_SENDING' ? (
-          <Button
-            key="invoice-actions-mark-sent"
-            primary
-            onClick={markSent}
-            disabled={actionInFlight}
-            dataQa="invoice-actions-mark-sent"
-            text={i18n.invoice.form.buttons.markSent}
-          />
-        ) : null,
-        editable ? (
-          <Button
-            key="invoice-actions-save-changes"
-            primary
-            onClick={saveChanges}
-            disabled={actionInFlight}
-            dataQa="invoice-actions-save-changes"
-            text={i18n.invoice.form.buttons.saveChanges}
-          />
-        ) : null
-      ]}
+      {invoice.status === 'WAITING_FOR_SENDING' ? (
+        <AsyncButton
+          text={i18n.invoice.form.buttons.markSent}
+          onClick={markSent}
+          onSuccess={loadInvoice}
+          data-qa="invoice-actions-mark-sent"
+        />
+      ) : null}
+      {editable ? (
+        <AsyncButton
+          text={i18n.common.save}
+          textInProgress={i18n.common.saving}
+          textDone={i18n.common.saved}
+          onClick={saveChanges}
+          onSuccess={loadInvoice}
+          data-qa="invoice-actions-save-changes"
+        />
+      ) : null}
     </FixedSpaceRow>
   )
 })

@@ -2,8 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useCallback, useContext, useEffect, useState } from 'react'
-import { Redirect, RouteComponentProps } from 'react-router-dom'
+import React, { useContext, useEffect, useState } from 'react'
+import { Redirect, useParams } from 'react-router-dom'
 
 import { Container, ContentArea } from '~components/shared/layout/Container'
 import ReturnButton from '~components/shared/atoms/buttons/ReturnButton'
@@ -27,27 +27,18 @@ import { totalPrice } from '../../utils/pricing'
 import './InvoicePage.scss'
 import { formatName } from '~utils'
 
-const InvoiceDetailsPage = React.memo(function InvoiceDetailsPage({
-  match,
-  history
-}: RouteComponentProps<{ id?: string }>) {
+const InvoiceDetailsPage = React.memo(function InvoiceDetailsPage() {
+  const { id } = useParams<{ id: string }>()
   const { i18n } = useTranslation()
-  const { id } = match.params
   const [invoice, setInvoice] = useState<Result<InvoiceDetailed>>(Loading())
   const [invoiceCodes, setInvoiceCodes] = useState<Result<InvoiceCodes>>(
     Loading()
   )
   const { setTitle } = useContext<TitleState>(TitleContext)
 
-  useEffect(() => {
-    // id should always be present as otherwise this page should not be rendered
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    void getInvoice(id!).then((inv) => {
-      setInvoice(inv)
-    })
-
-    void getInvoiceCodes().then(setInvoiceCodes)
-  }, [id])
+  const loadInvoice = () => getInvoice(id).then(setInvoice)
+  useEffect(() => void loadInvoice(), [id])
+  useEffect(() => void getInvoiceCodes().then(setInvoiceCodes), [])
 
   useEffect(() => {
     if (isSuccess(invoice)) {
@@ -57,8 +48,6 @@ const InvoiceDetailsPage = React.memo(function InvoiceDetailsPage({
         : setTitle(`${name} | ${i18n.titles.invoice}`)
     }
   }, [invoice])
-
-  const goToInvoices = useCallback(() => history.push('/invoices'), [history])
 
   const editable = isSuccess(invoice) && invoice.data.status === 'DRAFT'
 
@@ -109,7 +98,7 @@ const InvoiceDetailsPage = React.memo(function InvoiceDetailsPage({
                 />
                 <Actions
                   invoice={invoice.data}
-                  goToInvoices={goToInvoices}
+                  loadInvoice={loadInvoice}
                   editable={editable}
                 />
               </ContentArea>

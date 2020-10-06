@@ -1195,7 +1195,6 @@ export const fi = {
         familyTotal: 'Perhe yhteensä'
       },
       buttons: {
-        saveChanges: 'Tallenna muutokset',
         markSent: 'Merkitse siirretyksi'
       }
     },
