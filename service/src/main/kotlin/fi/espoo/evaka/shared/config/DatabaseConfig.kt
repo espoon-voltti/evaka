@@ -44,6 +44,7 @@ class DatabaseConfig {
                 password = env.getRequiredProperty("spring.datasource.password")
                 maximumPoolSize = 20
                 leakDetectionThreshold = TimeUnit.MINUTES.convert(1, TimeUnit.MILLISECONDS)
+                addDataSourceProperty("socketTimeout", TimeUnit.MINUTES.convert(15, TimeUnit.SECONDS).toInt())
             }
         )
     }
