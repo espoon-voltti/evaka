@@ -63,7 +63,7 @@ class DvvUpdateInfoServiceClient(
             .jsonBody(
                 """{
                     "viimeisinKirjausavain": $updateToken,
-                    "tuotekoodi": "mutpT1",
+                    "tuotekoodi": "70015",
                     "hetulista": [${ssns.map{ "\"$it\"" }.joinToString()}]
                 }
                 """.trimIndent()

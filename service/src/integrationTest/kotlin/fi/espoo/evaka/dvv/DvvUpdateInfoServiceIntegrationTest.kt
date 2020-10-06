@@ -17,6 +17,25 @@ class DvvUpdateInfoServiceIntegrationTest : FullApplicationTest() {
     }
 
     @Test
+    fun `restricted info has been added`() {
+        val response: DvvUpdateInfoResponse = dvvUpdateInfoServiceClient.getUpdateInfo("100000000", listOf("turvakielto-lisatty"))!!
+        assertEquals(true, response.updateInfos[0].infoGroups.size == 2)
+        assertEquals("TURVAKIELTO", response.updateInfos[0].infoGroups[0].type)
+        val restrictedInfo = response.updateInfos[0].infoGroups[0] as RestrictedInfo
+        assertEquals(true, restrictedInfo.restrictedActive)
+    }
+
+    @Test
+    fun `restricted info has been removed`() {
+        val response: DvvUpdateInfoResponse = dvvUpdateInfoServiceClient.getUpdateInfo("100000000", listOf("turvakielto-poistettu"))!!
+        assertEquals(true, response.updateInfos[0].infoGroups.size == 2)
+        assertEquals("TURVAKIELTO", response.updateInfos[0].infoGroups[0].type)
+        val restrictedInfo = response.updateInfos[0].infoGroups[0] as RestrictedInfo
+        assertEquals(false, restrictedInfo.restrictedActive)
+        assertEquals("2019-09-25", restrictedInfo.restrictedEndDate?.date)
+    }
+
+    @Test
     fun `name change update info is received`() {
         val response: DvvUpdateInfoResponse = dvvUpdateInfoServiceClient.getUpdateInfo("100000000", listOf("010579-9999"))!!
         assertEquals(true, response.updateToken.length == 9)

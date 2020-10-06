@@ -56,90 +56,158 @@ fun getUpdateInfos(ssns: List<String>): String {
 }
 
 val updateInfos = mapOf<String, String>(
-    "010579-9999" to """
+"010579-9999" to """
+{
+  "henkilotunnus": "010579-9999",
+  "tietoryhmat": [
     {
-      "henkilotunnus": "010579-9999",
-      "tietoryhmat": [
-        {
-          "tietoryhma": "HENKILON_NIMI",
-          "muutosattribuutti": "MUUTETTU",
-          "alkupv": {
-            "arvo": "2019-09-25",
-            "tarkkuus": "PAIVA"
-          },
-          "etunimi": "Etunimi5_muutos",
-          "sukunimi": "Sukunimi5"
-        },
-        {
-          "tietoryhma": "NIMENMUUTOS",
-          "muutosattribuutti": "LISATTY",
-          "nimilaji": "NYKYINEN_ETUNIMI",
-          "nimi": "Etunimi5_muutos",
-          "alkupv": {
-            "arvo": "2019-09-25",
-            "tarkkuus": "PAIVA"
-          }
-        },
-        {
-          "tietoryhma": "NIMENMUUTOS",
-          "muutosattribuutti": "MUUTETTU",
-          "nimilaji": "EDELLINEN_ETUNIMI",
-          "nimi": "Etunimi5",
-          "alkupv": {
-            "arvo": "2019-09-25",
-            "tarkkuus": "PAIVA"
-          },
-          "loppupv": {
-            "arvo": "2019-09-25",
-            "tarkkuus": "PAIVA"
-          }
-        },
-        {
-          "tietoryhma": "NIMENMUUTOS_LAAJA",
-          "muutosattribuutti": "LISATTY",
-          "nimilaji": "NYKYINEN_ETUNIMI",
-          "nimi": "Etunimi5_muutos",
-          "alkupv": {
-            "arvo": "2019-09-25",
-            "tarkkuus": "PAIVA"
-          }
-        },
-        {
-          "tietoryhma": "NIMENMUUTOS_LAAJA",
-          "muutosattribuutti": "MUUTETTU",
-          "nimilaji": "EDELLINEN_ETUNIMI",
-          "nimi": "Etunimi5",
-          "alkupv": {
-            "arvo": "2019-09-25",
-            "tarkkuus": "PAIVA"
-          },
-          "loppupv": {
-            "arvo": "2019-09-25",
-            "tarkkuus": "PAIVA"
-          }
-        }
-      ],
-      "muutospv": "2019-09-24T21:00:00.000Z"
-    }
-    """,
-    "010180-9999" to """
+      "tietoryhma": "HENKILON_NIMI",
+      "muutosattribuutti": "MUUTETTU",
+      "alkupv": {
+        "arvo": "2019-09-25",
+        "tarkkuus": "PAIVA"
+      },
+      "etunimi": "Etunimi5_muutos",
+      "sukunimi": "Sukunimi5"
+    },
     {
-      "henkilotunnus": "010180-9999",
-      "tietoryhmat": [
-        {
-          "tietoryhma": "HENKILON_NIMI",
-          "muutosattribuutti": "MUUTETTU",
-          "alkupv": {
-            "arvo": "2019-09-25",
-            "tarkkuus": "PAIVA"
-          },
-          "etunimi": "Etunimi5_muutos",
-          "sukunimi": "Sukunimi5"
-        }
-      ],
-      "muutospv": "2019-09-24T21:00:00.000Z"
+      "tietoryhma": "NIMENMUUTOS",
+      "muutosattribuutti": "LISATTY",
+      "nimilaji": "NYKYINEN_ETUNIMI",
+      "nimi": "Etunimi5_muutos",
+      "alkupv": {
+        "arvo": "2019-09-25",
+        "tarkkuus": "PAIVA"
+      }
+    },
+    {
+      "tietoryhma": "NIMENMUUTOS",
+      "muutosattribuutti": "MUUTETTU",
+      "nimilaji": "EDELLINEN_ETUNIMI",
+      "nimi": "Etunimi5",
+      "alkupv": {
+        "arvo": "2019-09-25",
+        "tarkkuus": "PAIVA"
+      },
+      "loppupv": {
+        "arvo": "2019-09-25",
+        "tarkkuus": "PAIVA"
+      }
+    },
+    {
+      "tietoryhma": "NIMENMUUTOS_LAAJA",
+      "muutosattribuutti": "LISATTY",
+      "nimilaji": "NYKYINEN_ETUNIMI",
+      "nimi": "Etunimi5_muutos",
+      "alkupv": {
+        "arvo": "2019-09-25",
+        "tarkkuus": "PAIVA"
+      }
+    },
+    {
+      "tietoryhma": "NIMENMUUTOS_LAAJA",
+      "muutosattribuutti": "MUUTETTU",
+      "nimilaji": "EDELLINEN_ETUNIMI",
+      "nimi": "Etunimi5",
+      "alkupv": {
+        "arvo": "2019-09-25",
+        "tarkkuus": "PAIVA"
+      },
+      "loppupv": {
+        "arvo": "2019-09-25",
+        "tarkkuus": "PAIVA"
+      }
     }
-    """
+  ],
+  "muutospv": "2019-09-24T21:00:00.000Z"
+}""".trimIndent(),
+"010180-9999" to """
+{
+  "henkilotunnus": "010180-9999",
+  "tietoryhmat": [
+    {
+      "tietoryhma": "HENKILON_NIMI",
+      "muutosattribuutti": "MUUTETTU",
+      "alkupv": {
+        "arvo": "2019-09-25",
+        "tarkkuus": "PAIVA"
+      },
+      "etunimi": "Etunimi5_muutos",
+      "sukunimi": "Sukunimi5"
+    }
+  ],
+  "muutospv": "2019-09-24T21:00:00.000Z"
+}""".trimIndent(),
+"turvakielto-lisatty" to """
+{
+  "henkilotunnus": "010579-9999",
+  "tietoryhmat": [
+    {
+      "tietoryhma": "TURVAKIELTO",
+      "muutosattribuutti": "LISATTY",
+      "turvakieltoAktiivinen": true
+    },
+    {
+      "tietoryhma": "VAKINAINEN_KOTIMAINEN_OSOITE",
+      "turvakiellonAlaisetKentat": [
+        "katunimi",
+        "katunumero",
+        "huoneistokirjain",
+        "huoneistonumero",
+        "jakokirjain",
+        "postinumero",
+        "postitoimipaikka",
+        "rakennustunnus",
+        "osoitenumero"
+      ],
+      "muutosattribuutti": "MUUTETTU"
+    }
+  ],
+  "muutospv": "2019-09-24T21:00:00.000Z"
+}""".trimIndent(),
+"turvakielto-poistettu" to """
+{
+  "henkilotunnus": "010579-9999",
+  "tietoryhmat": [
+    {
+      "tietoryhma": "TURVAKIELTO",
+      "muutosattribuutti": "MUUTETTU",
+      "turvaLoppuPv": {
+        "arvo": "2019-09-25",
+        "tarkkuus": "PAIVA"
+      },
+      "turvakieltoAktiivinen": false
+    },
+    {
+      "tietoryhma": "VAKINAINEN_KOTIMAINEN_OSOITE",
+      "katunimi": {
+        "fi": "Vanhakatu",
+        "sv": "Gamlagatan"
+      },
+      "katunumero": "10h5",
+      "huoneistonumero": "003",
+      "postinumero": "02230",
+      "postitoimipaikka": {
+        "fi": "Espoo",
+        "sv": "Esbo"
+      },
+      "rakennustunnus": "1234567890",
+      "osoitenumero": 1,
+      "alkupv": {
+        "arvo": "1986-06-02",
+        "tarkkuus": "PAIVA"
+      },
+      "loppupv": {
+        "arvo": "2999-02-28",
+        "tarkkuus": "PAIVA"
+      },
+      "muutosattribuutti": "MUUTETTU"
+    }
+  ],
+  "muutospv": "2019-09-24T21:00:00.000Z"
+}    
+""".trimIndent()
+
 
 )
 
