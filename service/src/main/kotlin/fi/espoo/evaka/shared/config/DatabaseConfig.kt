@@ -12,6 +12,7 @@ import org.jdbi.v3.core.Jdbi
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.core.env.Environment
+import java.util.concurrent.TimeUnit
 import javax.sql.DataSource
 
 @Configuration
@@ -42,6 +43,7 @@ class DatabaseConfig {
                 username = dataSourceUsername
                 password = env.getRequiredProperty("spring.datasource.password")
                 maximumPoolSize = 20
+                leakDetectionThreshold = TimeUnit.MINUTES.convert(1, TimeUnit.MILLISECONDS)
             }
         )
     }

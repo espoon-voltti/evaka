@@ -21,6 +21,7 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.core.env.Environment
 import org.springframework.core.env.get
+import java.util.concurrent.TimeUnit
 import javax.sql.DataSource
 
 @Configuration
@@ -58,6 +59,7 @@ class DatabaseConfig {
                 jdbcUrl = env["voltti.datasource.url"]
                 username = dataSourceUsername
                 password = env["voltti.datasource.password"]
+                leakDetectionThreshold = TimeUnit.MINUTES.convert(1, TimeUnit.MILLISECONDS)
             }
         )
     }
