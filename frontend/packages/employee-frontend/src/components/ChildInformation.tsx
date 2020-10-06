@@ -173,7 +173,7 @@ const ChildInformation = React.memo(function ChildInformation({
       <ContentArea opaque>
         <div className="child-information-wrapper" data-person-id={id}>
           <HeaderRow>
-            <Title size={2}>{i18n.childInformation.title}</Title>
+            <Title size={1}>{i18n.childInformation.title}</Title>
             <div>
               {isSuccess(person) && person.data.restrictedDetailsEnabled && (
                 <WarningLabel text={i18n.childInformation.restrictedDetails} />
