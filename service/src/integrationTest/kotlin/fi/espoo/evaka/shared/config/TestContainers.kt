@@ -33,7 +33,7 @@ class S3Container : GenericContainer<S3Container>("adobe/s3mock:2.1.18") {
     }
 }
 
-class PostgresContainer : PostgreSQLContainer<PostgresContainer>("postgres:10.13-alpine") {
+class PostgresContainer : PostgreSQLContainer<PostgresContainer>("postgres:12-alpine") {
     companion object {
         private var instance: PostgresContainer? = null
         fun getInstance(): PostgresContainer = synchronized(this) {
