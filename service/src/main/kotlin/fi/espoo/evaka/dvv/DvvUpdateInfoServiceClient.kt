@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.github.kittinunf.fuel.core.FuelManager
 import com.github.kittinunf.fuel.core.Headers
+import com.github.kittinunf.fuel.core.extensions.jsonBody
 import com.github.kittinunf.result.Result
 import mu.KotlinLogging
 import org.springframework.core.env.Environment
@@ -22,16 +23,16 @@ private val logger = KotlinLogging.logger {}
 class DvvUpdateInfoServiceClient(
     private val objectMapper: ObjectMapper,
     private val fuel: FuelManager,
-    private val env: Environment
+    private val env: Environment,
+    private val serviceUrl: String = "${env.getRequiredProperty("fi.espoo.integration.dvv-update-info-service.url")}"
 ) {
-    private val serviceUrl = "${env.getRequiredProperty("fi.espoo.integration.dvv-update-info-service.url")}/v1"
     private val dvvUserId = env.getRequiredProperty("fi.espoo.integration.dvv-update-info-service.userId")
     private val dvvPassword = env.getRequiredProperty("fi.espoo.integration.dvv-update-info-service.password")
 
     // Fetch the first update token of the given date
     fun getFirstUpdateToken(date: LocalDate): DvvUpdateInfoServiceUpdateTokenResponse? {
         logger.info { "Fetching the first update token of $date from DVV update info service from $serviceUrl/kirjausavain/$date" }
-        val (_, _, result) = fuel.get("$serviceUrl/kirjausavain/$date")
+        val (_, _, result) = fuel.get("$serviceUrl/v1/kirjausavain/$date")
             .header(Headers.ACCEPT, "application/json")
             .header("MUTP-Tunnus", dvvUserId)
             .header("MUTP-Salasana", dvvPassword)
@@ -46,8 +47,42 @@ class DvvUpdateInfoServiceClient(
             }
             is Result.Failure -> {
                 logger.error(result.getException()) {
-                    "Fetching the first update token of $date from DVV update info service failed with body: ${objectMapper.writeValueAsString(date)}." +
-                        " message: ${String(result.error.errorData)}"
+                    "Fetching the first update token of $date from DVV update info service failed, message: ${String(result.error.errorData)}"
+                }
+                null
+            }
+        }
+    }
+
+    fun getUpdateInfo(updateToken: String, ssns: List<String>): DvvUpdateInfoResponse? {
+        logger.info { "Fetching update info with token $updateToken from DVV update info service from $serviceUrl/muutokset" }
+        val (x1, x2, result) = fuel.post("$serviceUrl/v1/muutokset")
+            .header(Headers.ACCEPT, "application/json")
+            .header("MUTP-Tunnus", dvvUserId)
+            .header("MUTP-Salasana", dvvPassword)
+            .jsonBody(
+                """{
+                    "viimeisinKirjausavain": $updateToken,
+                    "tuotekoodi": "mutpT1",
+                    "hetulista": [${ssns.map{ "\"$it\"" }.joinToString()}]
+                }
+                """.trimIndent()
+            )
+            .responseString()
+
+        // TODO: Remove before merge
+        println("$x1 -- $x2")
+
+        return when (result) {
+            is Result.Success -> {
+                logger.info { "Fetching update info with token $updateToken from DVV update info service succeeded" }
+                objectMapper.readValue<DvvUpdateInfoResponse>(
+                    objectMapper.readTree(result.get()).toString()
+                )
+            }
+            is Result.Failure -> {
+                logger.error(result.getException()) {
+                    "Fetching update info with token $updateToken from DVV update info service failed, message: ${String(result.error.errorData)}"
                 }
                 null
             }

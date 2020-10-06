@@ -76,7 +76,8 @@ class PublicResourcesConfigurerAdapter : WebSecurityConfigurerAdapter() {
                 "/varda/units/update-units",
                 "/koski/update",
                 "/mock-integration/varda/api/**",
-                "/mock-integration/koski/api/**"
+                "/mock-integration/koski/api/**",
+                "/mock-integration/dvv/api/**"
             )
             .and()
             .requestMatchers()
@@ -89,7 +90,8 @@ class PublicResourcesConfigurerAdapter : WebSecurityConfigurerAdapter() {
                 "/varda/units/update-units",
                 "/mock-integration/varda/api/**",
                 "/koski/update",
-                "/mock-integration/koski/api/**"
+                "/mock-integration/koski/api/**",
+                "/mock-integration/dvv/api/**"
             )
             .and()
             .authorizeRequests()
