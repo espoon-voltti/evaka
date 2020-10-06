@@ -30,6 +30,7 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.sql.Timestamp
 import java.time.Instant
 import java.time.LocalDate
+import java.time.OffsetDateTime
 import java.util.UUID
 
 /**
@@ -792,6 +793,31 @@ fun insertTestAbsence(
                 "careType" to careType,
                 "absenceType" to absenceType,
                 "modifiedBy" to modifiedBy
+            )
+        )
+        .execute()
+}
+
+fun insertTestChildAttendance(
+    h: Handle,
+    id: UUID = UUID.randomUUID(),
+    childId: UUID,
+    arrived: OffsetDateTime,
+    departed: OffsetDateTime?
+) {
+    //language=sql
+    val sql =
+        """
+        INSERT INTO child_attendance (id, child_id, arrived, departed)
+        VALUES (:id, :childId, :arrived, :departed)
+        """.trimIndent()
+    h.createUpdate(sql)
+        .bindMap(
+            mapOf(
+                "id" to id,
+                "childId" to childId,
+                "arrived" to arrived,
+                "departed" to departed
             )
         )
         .execute()
