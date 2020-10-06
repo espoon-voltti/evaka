@@ -6,6 +6,7 @@ import React from 'react'
 import styled from 'styled-components'
 import { Gap } from 'components/shared/layout/white-space'
 import StickyFooter from 'components/shared/layout/StickyFooter'
+import AsyncButton from 'components/shared/atoms/buttons/AsyncButton'
 import Button from 'components/shared/atoms/buttons/Button'
 import { useTranslation } from 'state/i18n'
 import { ApplicationDetails, ApplicationStatus } from 'types/application'
@@ -15,7 +16,7 @@ type Props = {
   applicationStatus: ApplicationStatus
   editing: boolean
   setEditing: (v: boolean) => void
-  editedApplication?: ApplicationDetails
+  editedApplication: ApplicationDetails
   reloadApplication: () => void
   errors: boolean
 }
@@ -55,23 +56,24 @@ export default React.memo(function ApplicationActionsBar({
       id: 'save-application',
       enabled: editing,
       component: (
-        <Button
-          disabled={!editedApplication || errors}
-          onClick={() => {
-            if (editedApplication) {
-              void updateApplication(editedApplication)
-                .then((res) =>
-                  editedApplication.status === 'CREATED'
-                    ? sendApplication(editedApplication.id)
-                    : res
-                )
-                .then(() => reloadApplication())
-                .then(() => setEditing(false))
-            }
-          }}
+        <AsyncButton
           text={i18n.common.save}
+          textInProgress={i18n.common.saving}
+          textDone={i18n.common.saved}
+          disabled={!editedApplication || errors}
+          onClick={() =>
+            updateApplication(editedApplication).then((res) =>
+              editedApplication.status === 'CREATED'
+                ? sendApplication(editedApplication.id)
+                : res
+            )
+          }
+          onSuccess={() => {
+            setEditing(false)
+            reloadApplication()
+          }}
           primary
-          dataQa="save-application"
+          data-qa="save-application"
         />
       )
     }
