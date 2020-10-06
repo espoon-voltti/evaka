@@ -74,6 +74,7 @@ const Actions = React.memo(function Actions({
             data-qa="decision-actions-save"
           />
           <AsyncButton
+            primary
             text={i18n.feeDecisions.buttons.createDecision(1)}
             onClick={confirmDecision}
             onSuccess={loadDecision}
@@ -84,6 +85,7 @@ const Actions = React.memo(function Actions({
       ) : null}
       {isWaiting ? (
         <AsyncButton
+          primary
           text={i18n.feeDecisions.buttons.markSent}
           onClick={markSent}
           onSuccess={loadDecision}

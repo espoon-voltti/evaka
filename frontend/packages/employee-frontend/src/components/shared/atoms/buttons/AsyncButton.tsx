@@ -13,6 +13,7 @@ type Props = {
   textDone?: string
   onClick: () => Promise<void>
   onSuccess: () => void
+  primary?: boolean
   disabled?: boolean
   className?: string
 }
@@ -22,6 +23,7 @@ export default React.memo(function AsyncButton({
   text,
   textInProgress = text,
   textDone = text,
+  primary,
   disabled,
   onClick,
   onSuccess,
@@ -60,7 +62,10 @@ export default React.memo(function AsyncButton({
 
   return (
     <StyledButton
-      className={classNames(className, { primary: !showIcon, disabled })}
+      className={classNames(className, {
+        primary: !!primary && !showIcon,
+        disabled
+      })}
       disabled={disabled || showIcon}
       onClick={callback}
       {...props}

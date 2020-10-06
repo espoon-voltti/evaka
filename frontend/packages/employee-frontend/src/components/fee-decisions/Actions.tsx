@@ -42,6 +42,7 @@ const Actions = React.memo(function Actions({
         </CheckedRowsInfo>
       ) : null}
       <AsyncButton
+        primary
         text={i18n.feeDecisions.buttons.createDecision(checkedIds.length)}
         disabled={checkedIds.length === 0}
         onClick={() =>

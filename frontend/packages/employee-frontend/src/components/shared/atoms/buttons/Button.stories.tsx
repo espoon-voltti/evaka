@@ -111,6 +111,19 @@ storiesOf('evaka/atoms/buttons', module)
         />
         <Gap />
 
+        <H3>Primary</H3>
+        <AsyncButton
+          onClick={() =>
+            new Promise<void>((resolve) => void setTimeout(resolve, 2000))
+          }
+          onSuccess={() => undefined}
+          text="Save"
+          textInProgress="Saving"
+          textDone="Saved"
+          primary
+        />
+        <Gap />
+
         <H3>Disabled</H3>
         <AsyncButton
           onClick={() => new Promise(() => undefined)}

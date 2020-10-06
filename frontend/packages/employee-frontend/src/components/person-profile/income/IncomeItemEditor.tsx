@@ -179,6 +179,7 @@ const IncomeItemEditor = React.memo(function IncomeItemEditor({
       <ButtonsContainer>
         <Button onClick={cancel} text={i18n.common.cancel} />
         <AsyncButton
+          primary
           text={i18n.common.save}
           textInProgress={i18n.common.saving}
           textDone={i18n.common.saved}

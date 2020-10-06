@@ -45,6 +45,7 @@ const Actions = React.memo(function Actions({
       {error ? <ErrorMessage>{i18n.common.error.unknown}</ErrorMessage> : null}
       {invoice.status === 'WAITING_FOR_SENDING' ? (
         <AsyncButton
+          primary
           text={i18n.invoice.form.buttons.markSent}
           onClick={markSent}
           onSuccess={loadInvoice}
@@ -53,6 +54,7 @@ const Actions = React.memo(function Actions({
       ) : null}
       {editable ? (
         <AsyncButton
+          primary
           text={i18n.common.save}
           textInProgress={i18n.common.saving}
           textDone={i18n.common.saved}
