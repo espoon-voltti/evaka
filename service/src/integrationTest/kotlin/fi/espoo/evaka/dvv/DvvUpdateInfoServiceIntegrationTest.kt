@@ -21,18 +21,23 @@ class DvvUpdateInfoServiceIntegrationTest : FullApplicationTest() {
         val response: DvvUpdateInfoResponse = dvvUpdateInfoServiceClient.getUpdateInfo("100000000", listOf("turvakielto-lisatty"))!!
         assertEquals(true, response.updateInfos[0].infoGroups.size == 2)
         assertEquals("TURVAKIELTO", response.updateInfos[0].infoGroups[0].type)
-        val restrictedInfo = response.updateInfos[0].infoGroups[0] as RestrictedInfo
+        val restrictedInfo = response.updateInfos[0].infoGroups[0] as RestrictedInfoDvvInfoGroup
         assertEquals(true, restrictedInfo.restrictedActive)
     }
 
     @Test
-    fun `restricted info has been removed`() {
+    fun `restricted info has been removed and address is provided`() {
         val response: DvvUpdateInfoResponse = dvvUpdateInfoServiceClient.getUpdateInfo("100000000", listOf("turvakielto-poistettu"))!!
         assertEquals(true, response.updateInfos[0].infoGroups.size == 2)
         assertEquals("TURVAKIELTO", response.updateInfos[0].infoGroups[0].type)
-        val restrictedInfo = response.updateInfos[0].infoGroups[0] as RestrictedInfo
+
+        val restrictedInfo = response.updateInfos[0].infoGroups[0] as RestrictedInfoDvvInfoGroup
         assertEquals(false, restrictedInfo.restrictedActive)
         assertEquals("2019-09-25", restrictedInfo.restrictedEndDate?.date)
+
+        val address = response.updateInfos[0].infoGroups[1] as AddressDvvInfoGroup
+        assertEquals("Gamlagatan", address.streetName!!.sv)
+        assertEquals("Espoo", address.postOffice!!.fi)
     }
 
     @Test

@@ -56,7 +56,7 @@ fun getUpdateInfos(ssns: List<String>): String {
 }
 
 val updateInfos = mapOf<String, String>(
-"010579-9999" to """
+    "010579-9999" to """
 {
   "henkilotunnus": "010579-9999",
   "tietoryhmat": [
@@ -120,8 +120,9 @@ val updateInfos = mapOf<String, String>(
     }
   ],
   "muutospv": "2019-09-24T21:00:00.000Z"
-}""".trimIndent(),
-"010180-9999" to """
+}
+    """.trimIndent(),
+    "010180-9999" to """
 {
   "henkilotunnus": "010180-9999",
   "tietoryhmat": [
@@ -137,8 +138,9 @@ val updateInfos = mapOf<String, String>(
     }
   ],
   "muutospv": "2019-09-24T21:00:00.000Z"
-}""".trimIndent(),
-"turvakielto-lisatty" to """
+}
+    """.trimIndent(),
+    "turvakielto-lisatty" to """
 {
   "henkilotunnus": "010579-9999",
   "tietoryhmat": [
@@ -164,8 +166,9 @@ val updateInfos = mapOf<String, String>(
     }
   ],
   "muutospv": "2019-09-24T21:00:00.000Z"
-}""".trimIndent(),
-"turvakielto-poistettu" to """
+}
+    """.trimIndent(),
+    "turvakielto-poistettu" to """
 {
   "henkilotunnus": "010579-9999",
   "tietoryhmat": [
@@ -206,8 +209,7 @@ val updateInfos = mapOf<String, String>(
   ],
   "muutospv": "2019-09-24T21:00:00.000Z"
 }    
-""".trimIndent()
-
+    """.trimIndent()
 
 )
 

@@ -38,7 +38,8 @@ data class DvvUpdateInfo(
     JsonSubTypes.Type(value = PersonNameDvvInfoGroup::class, name = "HENKILON_NIMI"),
     JsonSubTypes.Type(value = PersonNameChangeDvvInfoGroup::class, name = "NIMENMUUTOS"),
     JsonSubTypes.Type(value = PersonNameChangeDvvInfoGroup::class, name = "NIMENMUUTOS_LAAJA"),
-    JsonSubTypes.Type(value = RestrictedInfo::class, name = "TURVAKIELTO")
+    JsonSubTypes.Type(value = RestrictedInfoDvvInfoGroup::class, name = "TURVAKIELTO"),
+    JsonSubTypes.Type(value = AddressDvvInfoGroup::class, name = "VAKINAINEN_KOTIMAINEN_OSOITE")
 )
 interface DvvInfoGroup {
     val type: String
@@ -61,7 +62,7 @@ data class PersonNameDvvInfoGroup(
     @JsonProperty("sukunimi")
     val lastName: String?,
     @JsonProperty("alkupv")
-    val startDate: Any?,
+    val startDate: DvvDate?,
     @JsonProperty("lisatieto")
     val additionalInfo: String?
 ) : DvvInfoGroup
@@ -76,12 +77,12 @@ data class PersonNameChangeDvvInfoGroup(
     @JsonProperty("nimi")
     val name: String?,
     @JsonProperty("alkupv")
-    val startDate: Any?,
+    val startDate: DvvDate?,
     @JsonProperty("loppupv")
-    val endDate: Any?
+    val endDate: DvvDate?
 ) : DvvInfoGroup
 
-data class RestrictedInfo(
+data class RestrictedInfoDvvInfoGroup(
     @JsonProperty("tietoryhma")
     override val type: String,
     @JsonProperty("muutosattribuutti")
@@ -91,6 +92,32 @@ data class RestrictedInfo(
     @JsonProperty("turvaLoppuPv")
     val restrictedEndDate: DvvDate?
 ) : DvvInfoGroup
+
+data class AddressDvvInfoGroup(
+    @JsonProperty("tietoryhma")
+    override val type: String,
+    @JsonProperty("muutosattribuutti")
+    val changeAttribute: String?,
+    @JsonProperty("katunimi")
+    val streetName: DvvFiSVValue?,
+    @JsonProperty("katunumero")
+    val streetNumber: String?,
+    @JsonProperty("postinumero")
+    val postalCode: String?,
+    @JsonProperty("postitoimipaikka")
+    val postOffice: DvvFiSVValue?,
+    @JsonProperty("alkupv")
+    val startDate: DvvDate?,
+    @JsonProperty("loppupv")
+    val endDate: DvvDate?
+) : DvvInfoGroup
+
+data class DvvFiSVValue(
+    @JsonProperty("fi")
+    val fi: String?,
+    @JsonProperty("sv")
+    val sv: String?
+)
 
 data class CaretakerLimitedDvvInfoGroup(
     @JsonProperty("tietoryhma")
@@ -115,12 +142,6 @@ data class CustodianInfo(
     val ssn: String?
 )
 
-/*
-          "turvaLoppuPv": {
-            "arvo": "2019-09-25",
-            "tarkkuus": "PAIVA"
-          },
- */
 data class DvvDate(
     @JsonProperty("arvo")
     val date: String,
