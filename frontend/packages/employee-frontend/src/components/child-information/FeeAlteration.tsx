@@ -5,6 +5,7 @@
 import React, { useContext, useEffect, useRef, useState } from 'react'
 import { faMoneyCheckEdit, faQuestion } from 'icon-set'
 import Loader from '~components/shared/atoms/Loader'
+import { Gap } from '~components/shared/layout/white-space'
 import InfoModal from '~components/common/InfoModal'
 import FeeAlterationList from './fee-alteration/FeeAlterationList'
 import FeeAlterationEditor from './fee-alteration/FeeAlterationEditor'
@@ -97,6 +98,7 @@ const FeeAlteration = React.memo(function FeeAlteration({ id, open }: Props) {
           }}
           disabled={uiMode === newFeeAlterationUiMode}
         />
+        <Gap size="m" />
         {uiMode === newFeeAlterationUiMode ? (
           <FeeAlterationEditor
             personId={id}

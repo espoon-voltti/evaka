@@ -2,33 +2,34 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React from 'react'
-import classNames from 'classnames'
+import React, { Dispatch, SetStateAction } from 'react'
+import styled from 'styled-components'
 import InputField from '~components/shared/atoms/form/InputField'
+import SimpleSelect from '~components/shared/atoms/form/SimpleSelect'
+import Colors from '~components/shared/Colors'
 import { FeeAlterationType, PartialFeeAlteration } from '~types/fee-alteration'
-import Select, { SelectOptionProps } from '../../common/Select'
 
 interface Props {
   edited: PartialFeeAlteration
-  setEdited: (v: PartialFeeAlteration) => void
-  typeOptions: SelectOptionProps[]
+  setEdited: Dispatch<SetStateAction<PartialFeeAlteration>>
+  typeOptions: Array<{ label: string; value: string }>
 }
 
-function FeeAlterationRowInput({ edited, setEdited, typeOptions }: Props) {
+export default React.memo(function FeeAlterationRowInput({
+  edited,
+  setEdited,
+  typeOptions
+}: Props) {
   return (
     <>
-      <Select
+      <SimpleSelect
+        value={edited.type}
         options={typeOptions}
-        onChange={(value) =>
-          value && 'value' in value
-            ? setEdited({
-                ...edited,
-                type: value.value as FeeAlterationType
-              })
-            : undefined
+        onChange={(e) =>
+          setEdited({ ...edited, type: e.target.value as FeeAlterationType })
         }
       />
-      <InputField
+      <AmountInput
         type="number"
         value={edited.amount !== undefined ? edited.amount.toString() : ''}
         onChange={(value) =>
@@ -38,52 +39,77 @@ function FeeAlterationRowInput({ edited, setEdited, typeOptions }: Props) {
           })
         }
       />
-      <div className="is-absolute-radio-container">
-        <input
-          type="radio"
-          name="is-absolute"
-          id="is-absolute-false"
-          value="false"
-          onChange={() =>
-            setEdited({
-              ...edited,
-              isAbsolute: false
-            })
-          }
-        />
-        <label
-          htmlFor="is-absolute-false"
-          className={classNames({
-            left: true,
-            selected: !edited.isAbsolute
-          })}
-        >
-          %
-        </label>
-        <input
-          type="radio"
-          name="is-absolute"
-          id="is-absolute-true"
-          value="true"
-          onChange={() =>
-            setEdited({
-              ...edited,
-              isAbsolute: true
-            })
-          }
-        />
-        <label
-          htmlFor="is-absolute-true"
-          className={classNames({
-            right: true,
-            selected: edited.isAbsolute
-          })}
-        >
-          €
-        </label>
-      </div>
+      <IsAbsoluteRadio
+        value={edited.isAbsolute}
+        onChange={(isAbsolute) => setEdited({ ...edited, isAbsolute })}
+      />
     </>
+  )
+})
+
+const AmountInput = styled(InputField)`
+  width: 5rem;
+  text-align: right;
+`
+
+function IsAbsoluteRadio({
+  value,
+  onChange
+}: {
+  value: boolean
+  onChange(v: boolean): void
+}) {
+  return (
+    <RadioContainer>
+      <RadioInput
+        type="radio"
+        name="is-absolute"
+        id="is-absolute-false"
+        value="false"
+        onChange={() => onChange(false)}
+      />
+      <RadioLabelLeft htmlFor="is-absolute-false" selected={!value}>
+        %
+      </RadioLabelLeft>
+      <RadioInput
+        type="radio"
+        name="is-absolute"
+        id="is-absolute-true"
+        value="true"
+        onChange={() => onChange(true)}
+      />
+      <RadioLabelRight htmlFor="is-absolute-true" selected={value}>
+        €
+      </RadioLabelRight>
+    </RadioContainer>
   )
 }
 
-export default FeeAlterationRowInput
+const RadioContainer = styled.div`
+  width: 140px;
+  display: flex;
+  justify-content: stretch;
+`
+
+const RadioInput = styled.input`
+  display: none;
+`
+
+const RadioLabel = styled.label<{ selected: boolean }>`
+  padding: 6px 22px;
+  border: 1px solid ${Colors.primary};
+  color: ${Colors.primary};
+
+  ${({ selected }) => (selected ? `color: ${Colors.greyscale.white};` : '')}
+  ${({ selected }) => (selected ? `background-color: ${Colors.primary};` : '')}
+`
+
+const RadioLabelLeft = styled(RadioLabel)`
+  border-right: none;
+  border-radius: 2px 0 0 2px;
+`
+
+const RadioLabelRight = styled(RadioLabel)`
+  border-left: none;
+  border-radius: 0 2px 2px 0;
+`
