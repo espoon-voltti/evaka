@@ -291,6 +291,12 @@ RETURNING id
         )
     }
 
+    @PostMapping("/pricing/clean-up")
+    fun clearPricing(): ResponseEntity<Unit> {
+        jdbi.handle { it.createUpdate("DELETE FROM pricing").execute() }
+        return ResponseEntity.noContent().build()
+    }
+
     @DeleteMapping("/pricing/{id}")
     fun deletePricing(@PathVariable id: UUID): ResponseEntity<Unit> {
         jdbi.transaction { it.deletePricing(id) }
