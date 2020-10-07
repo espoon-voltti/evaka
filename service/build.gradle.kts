@@ -193,4 +193,15 @@ tasks {
         // If you want to develop against VTJ, add vtj-dev here
         systemProperty("spring.profiles.active", "local")
     }
+
+    create("bootRunTest", org.springframework.boot.gradle.tasks.run.BootRun::class) {
+        main = "fi.espoo.evaka.MainKt"
+        classpath = sourceSets["main"].runtimeClasspath
+        systemProperty("spring.profiles.active", "local")
+        systemProperty("spring.datasource.url", "jdbc:postgresql://localhost:15432/evaka_it")
+        systemProperty("spring.datasource.username", "evaka_it")
+        systemProperty("spring.datasource.password", "evaka_it")
+        systemProperty("flyway.username", "evaka_it")
+        systemProperty("flyway.password", "evaka_it")
+    }
 }
