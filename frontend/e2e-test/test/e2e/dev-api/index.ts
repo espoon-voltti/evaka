@@ -356,6 +356,14 @@ export async function deletePricing(id: UUID): Promise<void> {
   }
 }
 
+export async function clearPricing(): Promise<void> {
+  try {
+    await devClient.post(`/pricing/clean-up`)
+  } catch (e) {
+    throw new DevApiError(e)
+  }
+}
+
 export async function deleteIncomesByPerson(id: UUID): Promise<void> {
   try {
     await devClient.delete(`/incomes/person/${id}`)

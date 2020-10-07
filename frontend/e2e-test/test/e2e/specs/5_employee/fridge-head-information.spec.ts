@@ -12,6 +12,7 @@ import {
 } from '../../dev-api/data-init'
 import { logConsoleMessages } from '../../utils/fixture'
 import {
+  clearPricing,
   deletePricing,
   insertPricing,
   runPendingAsyncJobs
@@ -41,6 +42,7 @@ fixture('Employee - Head of family details')
     regularPerson = fixtures.familyWithTwoGuardians.guardian
     fridgePartner = fixtures.familyWithTwoGuardians.otherGuardian
     child = fixtures.familyWithTwoGuardians.children[0]
+    await clearPricing()
     await insertPricing({
       id: PRICING_ID,
       validFrom: '2020-01-01',
