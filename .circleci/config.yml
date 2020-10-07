@@ -23,6 +23,8 @@ aliases:
   - &yarn_cache .yarn_cache
   # SSH key fingerprint for checking out other eVaka repositories
   - &ci_evaka_fingerprint 86:d0:b3:3d:aa:fc:d5:b9:6b:69:1e:c7:f5:56:66:aa
+  # Version of remote Docker engine used with setup_remote_docker (not including machine executors)
+  - &remote_docker_version '19.03.13'
   - &ubuntu_machine_image ubuntu-1604:201903-01
   - &builder_aws_image 307238562370.dkr.ecr.eu-west-1.amazonaws.com/voltti/builder-aws:1a7e0dec664ec27fa49d3eb76992be870c3f5b99
 
@@ -481,7 +483,8 @@ jobs:
     steps:
       - *restore_repo
       - *attach_workspace
-      - setup_remote_docker
+      - setup_remote_docker:
+          version: *remote_docker_version
       - run:
           name: Build base image
           working_directory: *workspace_evaka_base
@@ -523,7 +526,8 @@ jobs:
     steps:
       - *restore_repo
       - *attach_workspace
-      - setup_remote_docker
+      - setup_remote_docker:
+          version: *remote_docker_version
       - load_base_image
       - build_docker_image:
           image: evaka/api-gateway
@@ -538,7 +542,8 @@ jobs:
     executor: aws_executor
     steps:
       - *attach_workspace
-      - setup_remote_docker
+      - setup_remote_docker:
+          version: *remote_docker_version
       - push_docker_image:
           image: evaka/api-gateway
           dir: *workspace_apigw
@@ -642,7 +647,8 @@ jobs:
     executor: aws_executor
     steps:
       - *restore_repo
-      - setup_remote_docker
+      - setup_remote_docker:
+          version: *remote_docker_version
       - build_docker_image:
           image: evaka/proxy
           dir: *workspace_proxy
@@ -674,7 +680,8 @@ jobs:
     steps:
       - *restore_repo
       - *attach_workspace
-      - setup_remote_docker
+      - setup_remote_docker:
+          version: *remote_docker_version
       - run:
           name: Unzip executable
           working_directory: *workspace_service
@@ -716,7 +723,8 @@ jobs:
     steps:
       - *restore_repo
       - *attach_workspace
-      - setup_remote_docker
+      - setup_remote_docker:
+          version: *remote_docker_version
       - push_docker_image:
           image: evaka/service
           dir: *workspace_service
@@ -765,7 +773,8 @@ jobs:
     steps:
       - *restore_repo
       - *attach_workspace
-      - setup_remote_docker
+      - setup_remote_docker:
+          version: *remote_docker_version
       - run:
           name: Unzip executable
           working_directory: *workspace_message_service
