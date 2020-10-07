@@ -168,7 +168,7 @@ class ApplicationControllerV2(
         @RequestParam(required = false) basis: String?,
         @RequestParam(required = true) type: ApplicationTypeToggle,
         @RequestParam(required = false) preschoolType: String?,
-        @RequestParam(required = true) status: String,
+        @RequestParam(required = true) status: String?,
         @RequestParam(required = false) dateType: String?,
         @RequestParam(required = false) distinctions: String?,
         @RequestParam(
@@ -197,7 +197,7 @@ class ApplicationControllerV2(
                 basis = basis?.split(",")?.map { ApplicationBasis.valueOf(it) } ?: listOf(),
                 type = type,
                 preschoolType = preschoolType?.split(",")?.map { ApplicationPreschoolTypeToggle.valueOf(it) } ?: listOf(),
-                statuses = status.split(",").map { ApplicationStatusOption.valueOf(it) },
+                statuses = status?.split(",")?.map { ApplicationStatusOption.valueOf(it) } ?: listOf(),
                 dateType = dateType?.split(",")?.map { ApplicationDateType.valueOf(it) } ?: listOf(),
                 distinctions = distinctions?.split(",")?.map { ApplicationDistinctions.valueOf(it) } ?: listOf(),
                 periodStart = periodStart,
