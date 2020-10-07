@@ -208,9 +208,25 @@ val updateInfos = mapOf<String, String>(
     }
   ],
   "muutospv": "2019-09-24T21:00:00.000Z"
-}    
+}
+    """.trimIndent(),
+    "kuollut" to """
+{
+  "henkilotunnus": "010579-9999",
+  "tietoryhmat": [
+    {
+      "tietoryhma": "KUOLINPAIVA",
+      "muutosattribuutti": "LISATTY",
+      "kuollut": true,
+      "kuolinpv": {
+        "arvo": "2019-07-30",
+        "tarkkuus": "PAIVA"
+      }
+    }
+  ],
+  "muutospv": "2019-09-24T21:00:00.000Z"
+}
     """.trimIndent()
-
 )
 
 data class UpdateInfoRequest(

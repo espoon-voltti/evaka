@@ -41,6 +41,15 @@ class DvvUpdateInfoServiceIntegrationTest : FullApplicationTest() {
     }
 
     @Test
+    fun `person has died`() {
+        val response: DvvUpdateInfoResponse = dvvUpdateInfoServiceClient.getUpdateInfo("100000000", listOf("kuollut"))!!
+        assertEquals("KUOLINPAIVA", response.updateInfos[0].infoGroups[0].type)
+        val dead = response.updateInfos[0].infoGroups[0] as DeathDvvInfoGroup
+        assertEquals(true, dead.dead)
+        assertEquals("2019-07-30", dead.dateOfDeath?.date)
+    }
+
+    @Test
     fun `name change update info is received`() {
         val response: DvvUpdateInfoResponse = dvvUpdateInfoServiceClient.getUpdateInfo("100000000", listOf("010579-9999"))!!
         assertEquals(true, response.updateToken.length == 9)
