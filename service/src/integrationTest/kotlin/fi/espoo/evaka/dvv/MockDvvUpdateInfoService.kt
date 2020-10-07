@@ -226,6 +226,78 @@ val updateInfos = mapOf<String, String>(
   ],
   "muutospv": "2019-09-24T21:00:00.000Z"
 }
+    """.trimIndent(),
+    "yksinhuoltaja-muutos" to """
+{
+  "henkilotunnus": "010579-9999",
+  "tietoryhmat": [
+    {
+      "tietoryhma": "HUOLLETTAVA_SUPPEA",
+      "huollettava": {
+        "henkilotunnus": "010118-9999",
+        "etunimet": "Etu",
+        "sukunimi": "Suku"
+      },
+      "huoltajanLaji": "MAARATTY_HUOLTAJA",
+      "huoltajanRooli": "AITI",
+      "huoltosuhteenAlkupv": {
+        "arvo": "2020-09-08",
+        "tarkkuus": "PAIVA"
+      },
+      "huoltosuhteenLoppupv": {
+        "arvo": "2036-11-16",
+        "tarkkuus": "PAIVA"
+      },
+      "asuminen": "AIDIN_LUONA",
+      "asumisenAlkupv": {
+        "arvo": "2020-09-08",
+        "tarkkuus": "PAIVA"
+      },
+      "asumisenLoppupv": {
+        "arvo": "2036-11-16",
+        "tarkkuus": "PAIVA"
+      },
+      "oikeudet": [],
+      "muutosattribuutti": "LISATTY",
+      "lisatytOikeudet": [],
+      "poistetutOikeudet": [],
+      "muutetutOikeudet": []
+    },
+    {
+      "tietoryhma": "HUOLLETTAVA_SUPPEA",
+      "huollettava": {
+        "henkilotunnus": "010118-9999",
+        "etunimet": "Etu",
+        "sukunimi": "Suku"
+      },
+      "huoltajanLaji": "LAKISAATEINEN_HUOLTAJA",
+      "huoltajanRooli": "AITI",
+      "huoltosuhteenAlkupv": {
+        "arvo": "2018-11-16",
+        "tarkkuus": "PAIVA"
+      },
+      "huoltosuhteenLoppupv": {
+        "arvo": "2020-09-08",
+        "tarkkuus": "PAIVA"
+      },
+      "asuminen": "AIDIN_LUONA",
+      "asumisenAlkupv": {
+        "arvo": "2020-09-08",
+        "tarkkuus": "PAIVA"
+      },
+      "asumisenLoppupv": {
+        "arvo": "2036-11-16",
+        "tarkkuus": "PAIVA"
+      },
+      "oikeudet": [],
+      "muutosattribuutti": "MUUTETTU",
+      "lisatytOikeudet": [],
+      "poistetutOikeudet": [],
+      "muutetutOikeudet": []
+    }
+  ],
+  "muutospv": "2020-10-01T04:38:04.394Z"
+}    
     """.trimIndent()
 )
 

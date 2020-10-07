@@ -50,10 +50,19 @@ class DvvUpdateInfoServiceIntegrationTest : FullApplicationTest() {
     }
 
     @Test
-    fun `name change update info is received`() {
+    fun `name change update`() {
         val response: DvvUpdateInfoResponse = dvvUpdateInfoServiceClient.getUpdateInfo("100000000", listOf("010579-9999"))!!
         assertEquals(true, response.updateToken.length == 9)
         assertEquals(true, response.updateInfos.size == 1)
         assertEquals("HENKILON_NIMI", response.updateInfos[0].infoGroups[0].type)
+    }
+
+    @Test
+    fun `guardian is now a sole guardian`() {
+        val response: DvvUpdateInfoResponse = dvvUpdateInfoServiceClient.getUpdateInfo("100000000", listOf("yksinhuoltaja-muutos"))!!
+        assertEquals("HUOLLETTAVA_SUPPEA", response.updateInfos[0].infoGroups[0].type)
+        val custodianRelationChange = response.updateInfos[0].infoGroups[0] as CustodianLimitedDvvInfoGroup
+        assertEquals("010118-9999", custodianRelationChange.custodian.ssn)
+        assertEquals("2020-09-08", custodianRelationChange.caretakingStartDate?.date)
     }
 }
