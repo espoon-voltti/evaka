@@ -314,7 +314,8 @@ const ApplicationsList = React.memo(function Applications({
               </div>
             }
           >
-            {application.preferredUnits[0]?.name}
+            {application.placementProposalUnitName ||
+              application.preferredUnits[0]?.name}
           </Tooltip>
         </span>
       </Td>
@@ -425,7 +426,7 @@ const ApplicationsList = React.memo(function Applications({
                 {i18n.applications.list.basis}
               </Th>
               <Th sticky top={'106px'}>
-                {i18n.applications.list.preferredUnits}
+                {i18n.applications.list.unit}
               </Th>
               <SortableTh
                 sticky

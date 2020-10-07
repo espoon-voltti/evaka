@@ -168,7 +168,7 @@ export const fi = {
       name: 'Lapsen nimi/hetu',
       dueDate: 'Käsiteltävä',
       startDate: 'Aloitus',
-      preferredUnits: 'Toive',
+      unit: 'Yksikkö',
       status: 'Tila',
       basis: 'Perusteet',
       lessthan3: 'Alle 3-vuotias hoidontarpeen alkaessa',

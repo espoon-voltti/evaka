@@ -33,7 +33,8 @@ data class ApplicationSummary(
     val duplicateApplication: Boolean = false,
     val transferApplication: Boolean,
     val additionalDaycareApplication: Boolean,
-    val placementProposalStatus: PlacementProposalStatus?
+    val placementProposalStatus: PlacementProposalStatus?,
+    val placementProposalUnitName: String?
 )
 
 data class PlacementProposalStatus(
