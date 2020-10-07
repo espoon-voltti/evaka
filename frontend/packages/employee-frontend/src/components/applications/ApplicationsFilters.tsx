@@ -80,7 +80,7 @@ function ApplicationFilters() {
   }, [])
 
   useEffect(() => {
-    if (units.length === 0) {
+    if (units.length === 0 && distinctions.includes('SECONDARY')) {
       setDistinctions(distinctions.filter((v) => v !== 'SECONDARY'))
     }
   }, [units])
