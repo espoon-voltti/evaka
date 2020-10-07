@@ -18,7 +18,7 @@ import ApplicationsList from 'components/applications/ApplicationsList'
 import ApplicationFilters from './ApplicationsFilters'
 import { ApplicationUIContext } from '~state/application-ui'
 
-const pageSize = 200
+const pageSize = 50
 
 function ApplicationsPage() {
   const [applicationsResult, setApplicationsResult] = useState<
