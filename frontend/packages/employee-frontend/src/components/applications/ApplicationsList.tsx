@@ -202,10 +202,13 @@ const ApplicationsList = React.memo(function Applications({
       startDateOrDueDate && (
         <FixedSpaceRow spacing="xs">
           <Tooltip
-            tooltipText={
-              startDateOrDueDate.differenceInYears(application.dateOfBirth) < 3
-                ? i18n.applications.list.lessthan3
-                : i18n.applications.list.morethan3
+            tooltip={
+              <span>
+                {startDateOrDueDate.differenceInYears(application.dateOfBirth) <
+                3
+                  ? i18n.applications.list.lessthan3
+                  : i18n.applications.list.morethan3}
+              </span>
             }
           >
             <RoundIcon
@@ -303,9 +306,13 @@ const ApplicationsList = React.memo(function Applications({
       <Td>
         <span>
           <Tooltip
-            tooltipText={application.preferredUnits
-              .map((unit) => unit.name)
-              .join('<br/>')}
+            tooltip={
+              <div>
+                {application.preferredUnits.map((unit, i) => (
+                  <p key={`unit-pref-${i}`}>{unit.name}</p>
+                ))}
+              </div>
+            }
           >
             {application.preferredUnits[0]?.name}
           </Tooltip>
@@ -324,17 +331,19 @@ const ApplicationsList = React.memo(function Applications({
             'REJECTED' && (
             <div>
               <Tooltip
-                tooltipText={
-                  application.placementProposalStatus
-                    ? application.placementProposalStatus.unitRejectReason ===
-                      'OTHER'
-                      ? application.placementProposalStatus
-                          .unitRejectOtherReason || ''
-                      : i18n.unit.placementProposals.rejectReasons[
-                          application.placementProposalStatus
-                            .unitRejectReason || 'OTHER'
-                        ]
-                    : ''
+                tooltip={
+                  <p>
+                    {application.placementProposalStatus
+                      ? application.placementProposalStatus.unitRejectReason ===
+                        'OTHER'
+                        ? application.placementProposalStatus
+                            .unitRejectOtherReason || ''
+                        : i18n.unit.placementProposals.rejectReasons[
+                            application.placementProposalStatus
+                              .unitRejectReason || 'OTHER'
+                          ]
+                      : ''}
+                  </p>
                 }
               >
                 <CircleIconRed>

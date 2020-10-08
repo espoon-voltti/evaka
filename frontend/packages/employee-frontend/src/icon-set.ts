@@ -71,6 +71,7 @@ export interface IconSet {
   faUserAltSlash: IconDefinition
   faUserFriends: IconDefinition
   faUsers: IconDefinition
+  fasCaretUp: IconDefinition
   fasCheckCircle: IconDefinition
   fasChevronDown: IconDefinition
   fasChevronUp: IconDefinition
@@ -151,6 +152,7 @@ export const faUsers = iconSet.faUsers
 export const fasCheckCircle = iconSet.fasCheckCircle
 export const fasChevronDown = iconSet.fasChevronDown
 export const fasChevronUp = iconSet.fasChevronUp
+export const fasCaretUp = iconSet.fasCaretUp
 export const fasExclamationTriangle = iconSet.fasExclamationTriangle
 export const fasInfo = iconSet.fasInfo
 export const fasArrowDown = iconSet.fasArrowDown
