@@ -41,7 +41,8 @@ data class DvvUpdateInfo(
     JsonSubTypes.Type(value = RestrictedInfoDvvInfoGroup::class, name = "TURVAKIELTO"),
     JsonSubTypes.Type(value = AddressDvvInfoGroup::class, name = "VAKINAINEN_KOTIMAINEN_OSOITE"),
     JsonSubTypes.Type(value = DeathDvvInfoGroup::class, name = "KUOLINPAIVA"),
-    JsonSubTypes.Type(value = CustodianLimitedDvvInfoGroup::class, name = "HUOLLETTAVA_SUPPEA")
+    JsonSubTypes.Type(value = CustodianLimitedDvvInfoGroup::class, name = "HUOLLETTAVA_SUPPEA"),
+    JsonSubTypes.Type(value = CaretakerLimitedDvvInfoGroup::class, name = "HUOLTAJA_SUPPEA")
 )
 interface DvvInfoGroup {
     val type: String
@@ -123,16 +124,11 @@ data class DvvFiSVValue(
 
 data class CaretakerLimitedDvvInfoGroup(
     @JsonProperty("tietoryhma")
-    override val type: String
-) : DvvInfoGroup
-
-data class CustodianLimitedDvvInfoGroup(
-    @JsonProperty("tietoryhma")
     override val type: String,
     @JsonProperty("muutosattribuutti")
     val changeAttribute: String?,
-    @JsonProperty("huollettava")
-    val custodian: CustodianInfo,
+    @JsonProperty("huoltaja")
+    val caretaker: DvvSsn,
     @JsonProperty("huoltajanRooli")
     val caretakersRole: String,
     @JsonProperty("huoltajanLaji")
@@ -143,7 +139,24 @@ data class CustodianLimitedDvvInfoGroup(
     val caretakingEndDate: DvvDate?
 ) : DvvInfoGroup
 
-data class CustodianInfo(
+data class CustodianLimitedDvvInfoGroup(
+    @JsonProperty("tietoryhma")
+    override val type: String,
+    @JsonProperty("muutosattribuutti")
+    val changeAttribute: String?,
+    @JsonProperty("huollettava")
+    val custodian: DvvSsn,
+    @JsonProperty("huoltajanRooli")
+    val caretakersRole: String,
+    @JsonProperty("huoltajanLaji")
+    val caretakersKind: String,
+    @JsonProperty("huoltosuhteenAlkupv")
+    val caretakingStartDate: DvvDate?,
+    @JsonProperty("huoltosuhteenLoppupv")
+    val caretakingEndDate: DvvDate?
+) : DvvInfoGroup
+
+data class DvvSsn(
     @JsonProperty("henkilotunnus")
     val ssn: String?
 )
