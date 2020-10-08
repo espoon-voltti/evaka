@@ -40,7 +40,7 @@ SELECT
 FROM care_area ca
 LEFT JOIN daycare u ON ca.id = u.care_area_id
 WHERE (u.can_apply_daycare OR u.can_apply_preschool OR u.can_apply_club)
-AND daterange(u.opening_date, u.closing_date, '[]') @> current_date
+AND (u.closing_date IS NULL OR u.closing_date >= current_date) 
     """.trimIndent()
 )
     .reduceRows(mutableMapOf<UUID, Pair<CareArea, MutableList<Location>>>()) { map, row ->
