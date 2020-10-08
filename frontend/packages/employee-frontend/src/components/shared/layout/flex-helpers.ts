@@ -12,6 +12,7 @@ import {
 
 interface FixedSpaceRowProps {
   spacing?: SpacingSize | string
+  justifyContent?: string
   alignItems?: SelfPosition
   marginBottom?: SpacingSize | string
   wrap?: boolean
@@ -19,6 +20,7 @@ interface FixedSpaceRowProps {
 export const FixedSpaceRow = styled.div<FixedSpaceRowProps>`
   display: flex;
   flex-direction: row;
+  ${(p) => (p.justifyContent ? `justify-content: ${p.justifyContent};` : '')}
   ${(p) => (p.alignItems ? `align-items: ${p.alignItems};` : '')}
   ${(p) => (p.wrap ? 'flex-wrap: wrap;' : '')}
 

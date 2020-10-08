@@ -112,7 +112,7 @@ function ApplicationPage({ match }: RouteComponentProps<{ id: UUID }>) {
         </FixedSpaceRow>
       </Container>
 
-      {isSuccess(application) ? (
+      {isSuccess(application) && editedApplication ? (
         <ApplicationActionsBar
           applicationStatus={application.data.application.status}
           editing={editing}

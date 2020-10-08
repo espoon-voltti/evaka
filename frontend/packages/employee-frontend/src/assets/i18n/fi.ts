@@ -39,6 +39,8 @@ export const fi = {
     select: 'Valitse',
     send: 'Lähetä',
     save: 'Tallenna',
+    saving: 'Tallennetaan',
+    saved: 'Tallennettu',
     all: 'Kaikki',
     statuses: {
       active: 'Aktiivinen',
@@ -907,8 +909,6 @@ export const fi = {
           BI_WEEKLY_NO_HOLIDAY_BONUS: '2 viikkoa ilman lomarahaa',
           YEARLY: 'Vuosi'
         },
-        cancel: 'Peruuta',
-        save: 'Tallenna',
         updateError: 'Tulotietojen tallennus epäonnistui',
         conflictErrorText:
           'Ajanjaksolle on jo tallennettu tulotietoja! Tarkista tulotietojen voimassaoloajat.',
@@ -1195,7 +1195,6 @@ export const fi = {
         familyTotal: 'Perhe yhteensä'
       },
       buttons: {
-        saveChanges: 'Tallenna muutokset',
         markSent: 'Merkitse siirretyksi'
       }
     },

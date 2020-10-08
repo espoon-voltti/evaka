@@ -2,12 +2,14 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useState, useEffect, Fragment } from 'react'
+import React, { useState, useEffect } from 'react'
 import styled from 'styled-components'
 import LocalDate from '@evaka/lib-common/src/local-date'
-import { Label, LabelText } from '~components/common/styled/common'
+import { Gap } from '~components/shared/layout/white-space'
+import { Label } from '~components/shared/Typography'
 import Checkbox from '~components/shared/atoms/form/Checkbox'
 import FormModal from '~components/common/FormModal'
+import AsyncButton from '~components/shared/atoms/buttons/AsyncButton'
 import Button from '~components/shared/atoms/buttons/Button'
 import { useTranslation } from '../../state/i18n'
 import { AlertBox } from '~components/common/MessageBoxes'
@@ -21,7 +23,6 @@ import { InvoiceStatus } from '../../types/invoicing'
 import { EspooColours } from '../../utils/colours'
 import { faEnvelope } from '@fortawesome/free-solid-svg-icons'
 import { DatePicker } from '~components/common/DatePicker'
-import { GapHorizalSmall } from '~components/common/styled/separators'
 
 const LeftSideContent = styled.div`
   margin-right: auto;
@@ -29,14 +30,12 @@ const LeftSideContent = styled.div`
 
 const ErrorMessage = styled.div`
   color: ${EspooColours.red};
-  margin-right: 20px;
 `
 
 const CheckedRowsInfo = styled.div`
   color: ${EspooColours.grey};
   font-style: italic;
   font-weight: bold;
-  margin: 0 20px;
 `
 
 const ModalContent = styled.div`
@@ -44,15 +43,6 @@ const ModalContent = styled.div`
   margin-left: 4rem;
   margin-right: 4rem;
 `
-
-type Action = {
-  id: string
-  label: string
-  primary: boolean
-  enabled: boolean
-  disabled: boolean
-  onClick: () => void
-}
 
 type Props = {
   status: InvoiceStatus
@@ -76,7 +66,6 @@ const Actions = React.memo(function Actions({
   useCustomDatesForInvoiceSending
 }: Props) {
   const { i18n } = useTranslation()
-  const [actionInFlight, setActionInFlight] = useState(false)
   const [error, setError] = useState(false)
   const [showModal, setShowModal] = useState(false)
   const [invoiceDate, setInvoiceDate] = useState(LocalDate.today())
@@ -93,7 +82,6 @@ const Actions = React.memo(function Actions({
   const closeModal = () => setShowModal(false)
 
   const send = () => {
-    setActionInFlight(true)
     const request = individualInvoices
       ? sendInvoices(checkedIds, invoiceDate, dueDate)
       : sendInvoicesByDate(
@@ -109,7 +97,6 @@ const Actions = React.memo(function Actions({
       .then(() => loadInvoices())
       .then(() => void setError(false))
       .catch(() => void setError(true))
-      .finally(() => void setActionInFlight(false))
     closeModal()
   }
 
@@ -123,61 +110,35 @@ const Actions = React.memo(function Actions({
     setShowModal(true)
   }
 
-  const actions: Action[] = [
-    {
-      id: 'delete-invoices',
-      label: i18n.invoices.buttons.deleteInvoice(checkedIds.length),
-      primary: false,
-      enabled: status === 'DRAFT',
-      disabled: actionInFlight || checkedIds.length === 0,
-      onClick: () => {
-        setActionInFlight(true)
-        deleteInvoices(checkedIds)
-          .then(() => clearChecked())
-          .then(() => loadInvoices())
-          .then(() => void setError(false))
-          .catch(() => void setError(true))
-          .finally(() => void setActionInFlight(false))
-      }
-    },
-    {
-      id: 'open-send-invoices-dialog',
-      label: i18n.invoices.buttons.sendInvoice(checkedIds.length),
-      primary: true,
-      enabled: status === 'DRAFT',
-      disabled:
-        actionInFlight ||
-        (!sendWholeArea && checkedIds.length === 0) ||
-        (sendWholeArea && checkedAreas.length === 0),
-      onClick: () => {
-        sendWholeArea ? sendMultipleInvoices() : sendIndividualInvoices()
-      }
-    }
-  ].filter(({ enabled }) => enabled)
-
-  return actions.length > 0 ? (
+  return status === 'DRAFT' ? (
     <StickyActionBar align={'right'}>
-      {status === 'DRAFT' ? (
-        <LeftSideContent>
-          <Checkbox
-            label={i18n.invoices.buttons.checkAreaInvoices(
-              useCustomDatesForInvoiceSending
-            )}
-            checked={sendWholeArea}
-            onChange={() => {
-              if (checkedIds.length > 0) {
-                clearChecked()
-              }
-              setSendWholeArea(!sendWholeArea)
-            }}
-          />
-        </LeftSideContent>
+      <LeftSideContent>
+        <Checkbox
+          label={i18n.invoices.buttons.checkAreaInvoices(
+            useCustomDatesForInvoiceSending
+          )}
+          checked={sendWholeArea}
+          onChange={() => {
+            if (checkedIds.length > 0) {
+              clearChecked()
+            }
+            setSendWholeArea(!sendWholeArea)
+          }}
+        />
+      </LeftSideContent>
+      {error ? (
+        <>
+          <ErrorMessage>{i18n.common.error.unknown}</ErrorMessage>
+          <Gap size="s" horizontal />
+        </>
       ) : null}
-      {error ? <ErrorMessage>{i18n.common.error.unknown}</ErrorMessage> : null}
       {checkedIds.length > 0 ? (
-        <CheckedRowsInfo>
-          {i18n.invoices.buttons.checked(checkedIds.length)}
-        </CheckedRowsInfo>
+        <>
+          <CheckedRowsInfo>
+            {i18n.invoices.buttons.checked(checkedIds.length)}
+          </CheckedRowsInfo>
+          <Gap size="s" horizontal />
+        </>
       ) : null}
       {showModal && (
         <FormModal
@@ -191,9 +152,7 @@ const Actions = React.memo(function Actions({
           data-qa="send-invoices-dialog"
         >
           <ModalContent>
-            <Label>
-              <LabelText>{i18n.invoices.sendModal.invoiceDate}</LabelText>
-            </Label>
+            <Label>{i18n.invoices.sendModal.invoiceDate}</Label>
             <div>
               <DatePicker
                 date={invoiceDate}
@@ -202,9 +161,8 @@ const Actions = React.memo(function Actions({
                 dataQa="invoice-date-input"
               />
             </div>
-            <Label>
-              <LabelText>{i18n.invoices.sendModal.dueDate}</LabelText>
-            </Label>
+            <Gap size="s" />
+            <Label>{i18n.invoices.sendModal.dueDate}</Label>
             <div>
               <DatePicker
                 date={dueDate}
@@ -214,27 +172,44 @@ const Actions = React.memo(function Actions({
               />
             </div>
             {individualInvoices ? (
-              <AlertBox
-                message={i18n.invoices.buttons.individualSendAlertText}
-                thin
-              />
+              <>
+                <Gap size="s" />
+                <AlertBox
+                  message={i18n.invoices.buttons.individualSendAlertText}
+                  thin
+                />
+              </>
             ) : null}
           </ModalContent>
         </FormModal>
       )}
-      {actions.map(({ id, label, primary, disabled, onClick }) => (
-        <Fragment key={id}>
-          <Button
-            key={id}
-            primary={primary}
-            disabled={disabled}
-            text={label}
-            onClick={onClick}
-            dataQa={id}
-          />
-          <GapHorizalSmall />
-        </Fragment>
-      ))}
+      <AsyncButton
+        text={i18n.invoices.buttons.deleteInvoice(checkedIds.length)}
+        disabled={checkedIds.length === 0}
+        onClick={() =>
+          deleteInvoices(checkedIds)
+            .then(() => void setError(false))
+            .catch(() => void setError(true))
+        }
+        onSuccess={() => {
+          clearChecked()
+          loadInvoices()
+        }}
+        data-qa="delete-invoices"
+      />
+      <Gap size="s" horizontal />
+      <Button
+        primary
+        disabled={
+          (!sendWholeArea && checkedIds.length === 0) ||
+          (sendWholeArea && checkedAreas.length === 0)
+        }
+        text={i18n.invoices.buttons.sendInvoice(checkedIds.length)}
+        onClick={() => {
+          sendWholeArea ? sendMultipleInvoices() : sendIndividualInvoices()
+        }}
+        data-qa="open-send-invoices-dialog"
+      />
     </StickyActionBar>
   ) : null
 })

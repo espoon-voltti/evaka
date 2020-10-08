@@ -9,8 +9,11 @@ import { StyledButton } from './Button'
 
 type Props = {
   text: string
+  textInProgress?: string
+  textDone?: string
   onClick: () => Promise<void>
   onSuccess: () => void
+  primary?: boolean
   disabled?: boolean
   className?: string
 }
@@ -18,6 +21,9 @@ type Props = {
 export default React.memo(function AsyncButton({
   className,
   text,
+  textInProgress = text,
+  textDone = text,
+  primary,
   disabled,
   onClick,
   onSuccess,
@@ -56,7 +62,10 @@ export default React.memo(function AsyncButton({
 
   return (
     <StyledButton
-      className={classNames(className, { primary: !showIcon, disabled })}
+      className={classNames(className, {
+        primary: !!primary && !showIcon,
+        disabled
+      })}
       disabled={disabled || showIcon}
       onClick={callback}
       {...props}
@@ -88,7 +97,7 @@ export default React.memo(function AsyncButton({
             <FontAwesomeIcon icon={faTimes} color={Colors.accents.red} />
           </IconWrapper>
         </IconContainer>
-        {text}
+        {inProgress ? textInProgress : showSuccess ? textDone : text}
       </Content>
     </StyledButton>
   )

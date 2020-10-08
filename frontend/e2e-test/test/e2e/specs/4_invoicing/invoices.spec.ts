@@ -80,16 +80,6 @@ test('Navigate to and from invoice page', async (t) => {
   await t.expect(page.invoicesPage.exists).ok()
 })
 
-test('Updating invoice navigates to invoice list', async (t) => {
-  await t.expect(page.loaderSpinner.exists).notOk()
-  await t.expect(page.createInvoices.hasAttribute('disabled')).notOk()
-  await t.click(page.createInvoices)
-  await page.openFirstInvoice(t)
-
-  await t.click(page.saveInvoiceChangesButton)
-  await t.expect(page.invoicesPage.exists).ok()
-})
-
 test('Add a new invoice row, modify its amount and price and persist the changes', async (t) => {
   await t.expect(page.loaderSpinner.exists).notOk()
   await t.expect(page.createInvoices.hasAttribute('disabled')).notOk()
@@ -109,6 +99,7 @@ test('Add a new invoice row, modify its amount and price and persist the changes
     .typeText(page.priceInput.nth(1), '100')
   await t.click(page.saveInvoiceChangesButton)
 
+  await t.click(page.navigateBack)
   await t.expect(page.invoicesPage.exists).ok()
   await page.openFirstInvoice(t)
   await t.expect(page.invoiceRow.count).eql(2)
@@ -133,6 +124,7 @@ test('Add a new invoice row, delete it, and delete the parent row', async (t) =>
   await t.expect(page.invoiceRow.count).eql(0)
   await t.click(page.saveInvoiceChangesButton)
 
+  await t.click(page.navigateBack)
   await t.expect(page.invoicesPage.exists).ok()
   await page.openFirstInvoice(t)
   await t.expect(page.invoiceRow.count).eql(0)
@@ -194,6 +186,7 @@ test('Sending an invoice with a recipient without a SSN', async (t) => {
   await page.openFirstInvoice(t)
   await t.click(page.markInvoiceSentButton)
 
+  await t.click(page.navigateBack)
   await t.expect(page.invoiceRows.count).eql(0)
 
   await page.invoicesStatusFilterSent.click()
