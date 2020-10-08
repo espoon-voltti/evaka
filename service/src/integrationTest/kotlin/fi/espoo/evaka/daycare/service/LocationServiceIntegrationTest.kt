@@ -29,6 +29,7 @@ import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
+import java.time.LocalDate
 import java.util.UUID
 
 class LocationServiceIntegrationTest : AbstractIntegrationTest() {
@@ -80,7 +81,24 @@ class LocationServiceIntegrationTest : AbstractIntegrationTest() {
         assertThat(resultPrepPreschool).isEqualTo(expectedPrepPreschool)
     }
 
-    private fun createDaycare(location: Location): UUID = jdbi.handle {
+    @Test
+    fun `List of location contains future units`() {
+        val preschool1 = createDaycare(createGenericUnit(areaId = areaId), openingDate = LocalDate.now().minusYears(1), closingDate = LocalDate.now().minusMonths(1))
+        val preschool2 = createDaycare(createGenericUnit(areaId = areaId), openingDate = LocalDate.now().minusYears(1), closingDate = LocalDate.now().plusMonths(1))
+        val preschool3 = createDaycare(createGenericUnit(areaId = areaId), openingDate = LocalDate.now().plusYears(1), closingDate = LocalDate.now().plusYears(2))
+
+        val areas = service.getAreas().filter { it.id == areaId }
+        assertThat(areas).size().isEqualTo(1)
+        val locationResults = areas.first().locations
+
+        with(assertThat(locationResults)) {
+            filteredOn { it.id == preschool1 }.size().isEqualTo(0)
+            filteredOn { it.id == preschool2 }.size().isEqualTo(1)
+            filteredOn { it.id == preschool3 }.size().isEqualTo(1)
+        }
+    }
+
+    private fun createDaycare(location: Location, openingDate: LocalDate? = null, closingDate: LocalDate? = null): UUID = jdbi.handle {
         val id = it.createDaycare(location.care_area_id, location.name)
         it.updateDaycare(
             id,
@@ -99,8 +117,8 @@ class LocationServiceIntegrationTest : AbstractIntegrationTest() {
                 phone = location.phone,
                 url = location.url,
                 email = null,
-                closingDate = null,
-                openingDate = null,
+                closingDate = closingDate,
+                openingDate = openingDate,
                 additionalInfo = null,
                 costCenter = null,
                 decisionCustomization = DaycareDecisionCustomization(
