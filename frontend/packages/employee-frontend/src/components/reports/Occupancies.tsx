@@ -283,11 +283,7 @@ function Occupancies() {
           <Wrapper>
             <ReactSelect
               options={[
-                {
-                  value: '',
-                  label: i18n.reports.occupancies.filters.areaPlaceholder
-                },
-                ...areas.map((area) => ({ id: area.id, label: area.name }))
+                ...areas.map((area) => ({ value: area.id, label: area.name }))
               ]}
               onChange={(value) => {
                 if (value && 'value' in value) {
