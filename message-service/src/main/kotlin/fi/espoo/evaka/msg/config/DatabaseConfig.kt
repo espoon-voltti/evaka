@@ -59,8 +59,8 @@ class DatabaseConfig {
                 jdbcUrl = env["voltti.datasource.url"]
                 username = dataSourceUsername
                 password = env["voltti.datasource.password"]
-                leakDetectionThreshold = TimeUnit.MINUTES.convert(1, TimeUnit.MILLISECONDS)
-                addDataSourceProperty("socketTimeout", TimeUnit.MINUTES.convert(15, TimeUnit.SECONDS).toInt())
+                leakDetectionThreshold = TimeUnit.MILLISECONDS.convert(1, TimeUnit.MINUTES)
+                addDataSourceProperty("socketTimeout", TimeUnit.SECONDS.convert(15, TimeUnit.MINUTES).toInt())
             }
         )
     }
