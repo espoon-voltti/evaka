@@ -18,14 +18,19 @@ storiesOf('evaka/atoms/Tooltip', module).add('default', () => (
   <div>
     <FixedSpaceColumn>
       <Tooltip
-        tooltipText={
-          'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.'
+        tooltip={
+          <div>
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
+            eiusmod tempor incididunt ut labore et dolore magna aliqua. <br />{' '}
+            Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris
+            nisi ut aliquip ex ea commodo consequat.
+          </div>
         }
       >
         <Elem>Elementti 1</Elem>
       </Tooltip>
 
-      <Tooltip tooltipText={'Tämä on tooltip!'}>
+      <Tooltip tooltip={<span>Tämä on tooltip!</span>}>
         <Elem>Elementti 2</Elem>
       </Tooltip>
     </FixedSpaceColumn>

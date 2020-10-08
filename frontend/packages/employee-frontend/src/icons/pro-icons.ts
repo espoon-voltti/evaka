@@ -69,6 +69,7 @@ import {
 } from '@fortawesome/pro-light-svg-icons'
 
 import {
+  faCaretUp as fasCaretUp,
   faCheckCircle as fasCheckCircle,
   faChevronDown as fasChevronDown,
   faChevronUp as fasChevronUp,
@@ -145,6 +146,7 @@ const icons: IconSet = {
   faUserAltSlash,
   faUserFriends,
   faUsers,
+  fasCaretUp,
   fasCheckCircle,
   fasChevronDown,
   fasChevronUp,

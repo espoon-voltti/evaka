@@ -6,6 +6,8 @@ import React from 'react'
 import styled from 'styled-components'
 import { Greyscale } from '~components/shared/Colors'
 import { DefaultMargins } from '~components/shared/layout/white-space'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { fasCaretUp } from '~icon-set'
 
 const TooltipWrapper = styled.div`
   position: relative;
@@ -20,8 +22,8 @@ const TooltipWrapper = styled.div`
 const TooltipPositioner = styled.div`
   position: absolute;
   top: calc(100% + ${DefaultMargins.xs});
-  left: 0;
-  right: 0;
+  left: -70px;
+  right: -70px;
   z-index: 99999;
   display: flex;
   justify-content: center;
@@ -29,24 +31,48 @@ const TooltipPositioner = styled.div`
 `
 
 const TooltipDiv = styled.div`
-  background-color: ${Greyscale.dark}bb;
   color: ${Greyscale.white};
+  font-size: 15px;
+  line-height: 22px;
+
+  background-color: ${Greyscale.dark};
   padding: ${DefaultMargins.s};
-  border-radius: 4px;
-  text-align: center;
+  border-radius: 2px;
+  box-shadow: 0 4px 4px rgba(0, 0, 0, 0.25);
+
+  p:not(:last-child) {
+    margin-bottom: 8px;
+  }
+`
+
+const Beak = styled.div`
+  position: absolute;
+  top: -24px;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: ${Greyscale.dark};
 `
 
 interface TooltipProps {
   children: React.ReactNode
-  tooltipText: string
+  tooltip: JSX.Element
 }
 
-export default function Tooltip({ children, tooltipText }: TooltipProps) {
+export default function Tooltip({ children, tooltip }: TooltipProps) {
   return (
     <TooltipWrapper>
-      {children}
+      <div>{children}</div>
+
       <TooltipPositioner className={'tooltip'}>
-        <TooltipDiv>{tooltipText}</TooltipDiv>
+        <TooltipDiv>
+          <Beak>
+            <FontAwesomeIcon icon={fasCaretUp} size={'3x'} />
+          </Beak>
+          <div>{tooltip}</div>
+        </TooltipDiv>
       </TooltipPositioner>
     </TooltipWrapper>
   )
