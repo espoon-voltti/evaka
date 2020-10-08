@@ -53,6 +53,7 @@ import { UserContext, UserContextProvider } from '~state/user'
 import CreateUnitPage from '~components/unit/CreateUnitPage'
 import UnitDetailsPage from '~components/unit/UnitDetailsPage'
 import ApplicationPage from 'components/ApplicationPage'
+import AttendancePage from '~components/AttendancePage'
 import { hasRole } from '~utils/roles'
 import { getAuthStatus, AuthStatus } from '~api/auth'
 
@@ -106,6 +107,11 @@ export default function App() {
               exact
               path="/units/:unitId/family-contacts"
               component={ensureAuthenticated(ReportFamilyContacts)}
+            />
+            <Route
+              exact
+              path="/units/:id/attendance"
+              component={ensureAuthenticated(AttendancePage)}
             />
             <RouteWithTitle
               exact

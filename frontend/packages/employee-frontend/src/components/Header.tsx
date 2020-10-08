@@ -71,117 +71,123 @@ const Header = React.memo(function Header({ location }: RouteComponentProps) {
   const atCustomerInfo =
     path.includes('/profile') || path.includes('/child-information')
 
+  const isMobileView = location.pathname.includes('/attendance')
+
   return (
-    <StyledHeader
-      dataQa="header"
-      title={i18n.header.title}
-      logo={
-        <Img
-          data-qa="espoo-logo"
-          src={EspooLogo}
-          alt="Espoo"
-          className="logo"
-        />
-      }
-    >
-      {loggedIn && user && (
-        <NavbarStart>
-          <RequireRole
-            oneOf={[
-              'SERVICE_WORKER',
-              'UNIT_SUPERVISOR',
-              'FINANCE_ADMIN',
-              'ADMIN'
-            ]}
-          >
-            <NavbarLink
-              className="navbar-item is-tab"
-              to="/applications"
-              data-qa="applications-nav"
-              $noMargin
-            >
-              {i18n.header.applications}
-            </NavbarLink>
-          </RequireRole>
-
-          <RequireRole
-            oneOf={[
-              'SERVICE_WORKER',
-              'UNIT_SUPERVISOR',
-              'STAFF',
-              'FINANCE_ADMIN',
-              'ADMIN'
-            ]}
-          >
-            <NavbarLink
-              className="navbar-item is-tab"
-              to="/units"
-              data-qa="units-nav"
-            >
-              {i18n.header.units}
-            </NavbarLink>
-          </RequireRole>
-
-          <RequireRole oneOf={['SERVICE_WORKER', 'FINANCE_ADMIN']}>
-            <NavbarLink
-              className={`navbar-item is-tab ${
-                atCustomerInfo ? 'is-active' : ''
-              }`}
-              to="/search"
-              data-qa="search-nav"
-            >
-              {i18n.header.search}
-            </NavbarLink>
-          </RequireRole>
-
-          <RequireRole oneOf={['FINANCE_ADMIN']}>
-            <>
-              <NavbarLink
-                className="navbar-item is-tab"
-                to="/finance"
-                data-qa="finance-nav"
+    <>
+      {!isMobileView && (
+        <StyledHeader
+          dataQa="header"
+          title={i18n.header.title}
+          logo={
+            <Img
+              data-qa="espoo-logo"
+              src={EspooLogo}
+              alt="Espoo"
+              className="logo"
+            />
+          }
+        >
+          {loggedIn && user && (
+            <NavbarStart>
+              <RequireRole
+                oneOf={[
+                  'SERVICE_WORKER',
+                  'UNIT_SUPERVISOR',
+                  'FINANCE_ADMIN',
+                  'ADMIN'
+                ]}
               >
-                {i18n.header.finance}
-              </NavbarLink>
-            </>
-          </RequireRole>
+                <NavbarLink
+                  className="navbar-item is-tab"
+                  to="/applications"
+                  data-qa="applications-nav"
+                  $noMargin
+                >
+                  {i18n.header.applications}
+                </NavbarLink>
+              </RequireRole>
 
-          <RequireRole
-            oneOf={[
-              'SERVICE_WORKER',
-              'FINANCE_ADMIN',
-              'UNIT_SUPERVISOR',
-              'DIRECTOR'
-            ]}
-          >
-            <NavbarLink
-              className="navbar-item is-tab"
-              to="/reports"
-              data-qa="reports-nav"
-            >
-              {i18n.header.reports}
-            </NavbarLink>
-          </RequireRole>
-        </NavbarStart>
-      )}
+              <RequireRole
+                oneOf={[
+                  'SERVICE_WORKER',
+                  'UNIT_SUPERVISOR',
+                  'STAFF',
+                  'FINANCE_ADMIN',
+                  'ADMIN'
+                ]}
+              >
+                <NavbarLink
+                  className="navbar-item is-tab"
+                  to="/units"
+                  data-qa="units-nav"
+                >
+                  {i18n.header.units}
+                </NavbarLink>
+              </RequireRole>
 
-      {loggedIn && user && (
-        <NavbarItem>
-          <NavbarEnd>
-            <span data-qa="username">
-              {formatName(user.firstName, user.lastName, i18n)}
-            </span>
-            <LogoutLink
-              data-qa="logout-btn"
-              style={{ marginLeft: '1rem' }}
-              href={logoutUrl}
-            >
-              {i18n.header.logout}
-            </LogoutLink>
-          </NavbarEnd>
-        </NavbarItem>
+              <RequireRole oneOf={['SERVICE_WORKER', 'FINANCE_ADMIN']}>
+                <NavbarLink
+                  className={`navbar-item is-tab ${
+                    atCustomerInfo ? 'is-active' : ''
+                  }`}
+                  to="/search"
+                  data-qa="search-nav"
+                >
+                  {i18n.header.search}
+                </NavbarLink>
+              </RequireRole>
+
+              <RequireRole oneOf={['FINANCE_ADMIN']}>
+                <>
+                  <NavbarLink
+                    className="navbar-item is-tab"
+                    to="/finance"
+                    data-qa="finance-nav"
+                  >
+                    {i18n.header.finance}
+                  </NavbarLink>
+                </>
+              </RequireRole>
+
+              <RequireRole
+                oneOf={[
+                  'SERVICE_WORKER',
+                  'FINANCE_ADMIN',
+                  'UNIT_SUPERVISOR',
+                  'DIRECTOR'
+                ]}
+              >
+                <NavbarLink
+                  className="navbar-item is-tab"
+                  to="/reports"
+                  data-qa="reports-nav"
+                >
+                  {i18n.header.reports}
+                </NavbarLink>
+              </RequireRole>
+            </NavbarStart>
+          )}
+
+          {loggedIn && user && (
+            <NavbarItem>
+              <NavbarEnd>
+                <span data-qa="username">
+                  {formatName(user.firstName, user.lastName, i18n)}
+                </span>
+                <LogoutLink
+                  data-qa="logout-btn"
+                  style={{ marginLeft: '1rem' }}
+                  href={logoutUrl}
+                >
+                  {i18n.header.logout}
+                </LogoutLink>
+              </NavbarEnd>
+            </NavbarItem>
+          )}
+        </StyledHeader>
       )}
-    </StyledHeader>
+    </>
   )
 })
 
