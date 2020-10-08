@@ -7,6 +7,8 @@ import LocalDate from '@evaka/lib-common/src/local-date'
 import Title from '~components/shared/atoms/Title'
 import Button from '~components/shared/atoms/buttons/Button'
 import { TextArea } from '~components/shared/atoms/form/InputField'
+import { Gap } from '~components/shared/layout/white-space'
+import { FixedSpaceRow } from '~components/shared/layout/flex-helpers'
 import LabelValueList from '~components/common/LabelValueList'
 import DateRangeInput from '~components/common/DateRangeInput'
 import FeeAlterationRowInput from './FeeAlterationRowInput'
@@ -17,8 +19,6 @@ import {
   PartialFeeAlteration
 } from '~types/fee-alteration'
 import { UUID } from '~types'
-import './FeeAlterationEditor.scss'
-import { FixedSpaceRow } from '~components/shared/layout/flex-helpers'
 
 const newFeeAlteration = (personId: UUID): PartialFeeAlteration => ({
   personId,
@@ -38,7 +38,7 @@ interface Props {
   create: (v: PartialFeeAlteration) => void
 }
 
-function FeeAlterationEditor({
+export default React.memo(function FeeAlterationEditor({
   personId,
   baseFeeAlteration,
   cancel,
@@ -70,7 +70,7 @@ function FeeAlterationEditor({
   }
 
   return (
-    <div className="fee-alteration-editor">
+    <div>
       <div className="separator" />
       <Title size={4}>
         {
@@ -86,10 +86,7 @@ function FeeAlterationEditor({
             {
               label: i18n.childInformation.feeAlteration.editor.alterationType,
               value: (
-                <div
-                  className="row-input-container"
-                  data-qa="fee-alteration-type-input"
-                >
+                <FixedSpaceRow>
                   <FeeAlterationRowInput
                     edited={edited}
                     setEdited={setEdited}
@@ -98,16 +95,13 @@ function FeeAlterationEditor({
                       label: i18n.childInformation.feeAlteration.types[type]
                     }))}
                   />
-                </div>
+                </FixedSpaceRow>
               )
             },
             {
               label: i18n.childInformation.feeAlteration.editor.validDuring,
               value: (
-                <div
-                  className="row-input-container"
-                  data-qa="fee-alteration-duration-input"
-                >
+                <FixedSpaceRow>
                   <DateRangeInput
                     start={edited.validFrom}
                     end={edited.validTo ? edited.validTo : undefined}
@@ -123,7 +117,7 @@ function FeeAlterationEditor({
                     }
                     nullableEndDate
                   />
-                </div>
+                </FixedSpaceRow>
               )
             },
             {
@@ -140,7 +134,8 @@ function FeeAlterationEditor({
             }
           ]}
         />
-        <FixedSpaceRow>
+        <Gap size="m" />
+        <FixedSpaceRow justifyContent="flex-end">
           <Button
             onClick={cancel}
             text={i18n.childInformation.feeAlteration.editor.cancel}
@@ -156,6 +151,4 @@ function FeeAlterationEditor({
       <div className="separator" />
     </div>
   )
-}
-
-export default FeeAlterationEditor
+})
