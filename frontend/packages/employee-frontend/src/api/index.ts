@@ -31,8 +31,9 @@ export interface Cancelled {
   cancelled: true
 }
 
+const loading = { done: false } as const
 export function Loading(): Loading {
-  return { done: false }
+  return loading
 }
 
 export function Success<T>(data: T): Success<T> {

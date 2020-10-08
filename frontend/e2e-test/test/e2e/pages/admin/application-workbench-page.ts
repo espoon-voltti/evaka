@@ -349,11 +349,7 @@ export class ApplicationWorkbenchPage {
   }
 
   async waitUntilApplicationsLoaded() {
-    await t
-      .expect(
-        Selector('[data-qa="applications-list"][data-loaded="true"]').exists
-      )
-      .ok()
+    await t.expect(Selector('[data-qa="applications-list"]').exists).ok()
   }
 
   // Browses through all the pages in application list for specified application
