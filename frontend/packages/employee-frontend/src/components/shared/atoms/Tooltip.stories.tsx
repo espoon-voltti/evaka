@@ -6,6 +6,7 @@ import React from 'react'
 import { storiesOf } from '@storybook/react'
 import Tooltip from '~components/shared/atoms/Tooltip'
 import styled from 'styled-components'
+import { FixedSpaceColumn } from '~components/shared/layout/flex-helpers'
 
 const Elem = styled.div`
   height: 200px;
@@ -15,17 +16,18 @@ const Elem = styled.div`
 
 storiesOf('evaka/atoms/Tooltip', module).add('default', () => (
   <div>
-    <Tooltip
-      tooltipText={
-        'hello world hello world hello world hello world hello world hello world hello world hello world hello world hello world hello world hello world hello world hello world hello world hello world hello world hello world hello world hello world hello world '
-      }
-    >
-      <Elem>foobar</Elem>
-    </Tooltip>
-    <br />
-    <br />
-    <Tooltip tooltipText={'hello mars'}>
-      <Elem>foobar</Elem>
-    </Tooltip>
+    <FixedSpaceColumn>
+      <Tooltip
+        tooltipText={
+          'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.'
+        }
+      >
+        <Elem>Elementti 1</Elem>
+      </Tooltip>
+
+      <Tooltip tooltipText={'Tämä on tooltip!'}>
+        <Elem>Elementti 2</Elem>
+      </Tooltip>
+    </FixedSpaceColumn>
   </div>
 ))
