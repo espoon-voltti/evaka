@@ -9,14 +9,14 @@ import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-data class DvvUpdateInfoResponse(
+data class DvvModificationsResponse(
     @JsonProperty("viimeisinKirjausavain")
-    val updateToken: String,
+    val modificationToken: String,
     @JsonProperty("muutokset")
-    val updateInfos: List<DvvUpdateInfo>
+    val modifications: List<DvvModification>
 )
 
-data class DvvUpdateInfo(
+data class DvvModification(
     @JsonProperty("muutospv")
     val changed: String,
     @JsonProperty("henkilotunnus")
@@ -44,6 +44,7 @@ data class DvvUpdateInfo(
     JsonSubTypes.Type(value = CustodianLimitedDvvInfoGroup::class, name = "HUOLLETTAVA_SUPPEA"),
     JsonSubTypes.Type(value = CaretakerLimitedDvvInfoGroup::class, name = "HUOLTAJA_SUPPEA")
 )
+
 interface DvvInfoGroup {
     val type: String
 }

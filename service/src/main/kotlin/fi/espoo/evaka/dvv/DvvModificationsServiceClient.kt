@@ -17,21 +17,21 @@ import java.time.LocalDate
 private val logger = KotlinLogging.logger {}
 
 /*
-    Integration to DVV Update Info Service (muutostietopalvelu)
+    Integration to DVV modifications service (muutostietopalvelu)
     See https://hiekkalaatikko.muutostietopalvelu.cloud.dvv.fi/
  */
-class DvvUpdateInfoServiceClient(
+class DvvModificationsServiceClient(
     private val objectMapper: ObjectMapper,
     private val fuel: FuelManager,
     private val env: Environment,
-    private val serviceUrl: String = "${env.getRequiredProperty("fi.espoo.integration.dvv-update-info-service.url")}"
+    private val serviceUrl: String = "${env.getRequiredProperty("fi.espoo.integration.dvv-modifications-service.url")}"
 ) {
-    private val dvvUserId = env.getRequiredProperty("fi.espoo.integration.dvv-update-info-service.userId")
-    private val dvvPassword = env.getRequiredProperty("fi.espoo.integration.dvv-update-info-service.password")
+    private val dvvUserId = env.getRequiredProperty("fi.espoo.integration.dvv-modifications-service.userId")
+    private val dvvPassword = env.getRequiredProperty("fi.espoo.integration.dvv-modifications-service.password")
 
-    // Fetch the first update token of the given date
-    fun getFirstUpdateToken(date: LocalDate): DvvUpdateInfoServiceUpdateTokenResponse? {
-        logger.info { "Fetching the first update token of $date from DVV update info service from $serviceUrl/kirjausavain/$date" }
+    // Fetch the first modification token of the given date
+    fun getFirstModificationToken(date: LocalDate): DvvModificationServiceModificationTokenResponse? {
+        logger.info { "Fetching the first modification token of $date from DVV modification service from $serviceUrl/kirjausavain/$date" }
         val (_, _, result) = fuel.get("$serviceUrl/v1/kirjausavain/$date")
             .header(Headers.ACCEPT, "application/json")
             .header("MUTP-Tunnus", dvvUserId)
@@ -40,22 +40,22 @@ class DvvUpdateInfoServiceClient(
 
         return when (result) {
             is Result.Success -> {
-                logger.info { "Fetching the first update token of $date from DVV update info service succeeded" }
-                objectMapper.readValue<DvvUpdateInfoServiceUpdateTokenResponse>(
+                logger.info { "Fetching the first modification token of $date from DVV modification service succeeded" }
+                objectMapper.readValue<DvvModificationServiceModificationTokenResponse>(
                     objectMapper.readTree(result.get()).toString()
                 )
             }
             is Result.Failure -> {
                 logger.error(result.getException()) {
-                    "Fetching the first update token of $date from DVV update info service failed, message: ${String(result.error.errorData)}"
+                    "Fetching the first modification of $date from DVV modification service failed, message: ${String(result.error.errorData)}"
                 }
                 null
             }
         }
     }
 
-    fun getUpdateInfo(updateToken: String, ssns: List<String>): DvvUpdateInfoResponse? {
-        logger.info { "Fetching update info with token $updateToken from DVV update info service from $serviceUrl/muutokset" }
+    fun getModifications(updateToken: String, ssns: List<String>): DvvModificationsResponse? {
+        logger.info { "Fetching modifications with token $updateToken from DVV modifications service from $serviceUrl/muutokset" }
         val (x1, x2, result) = fuel.post("$serviceUrl/v1/muutokset")
             .header(Headers.ACCEPT, "application/json")
             .header("MUTP-Tunnus", dvvUserId)
@@ -75,14 +75,14 @@ class DvvUpdateInfoServiceClient(
 
         return when (result) {
             is Result.Success -> {
-                logger.info { "Fetching update info with token $updateToken from DVV update info service succeeded" }
-                objectMapper.readValue<DvvUpdateInfoResponse>(
+                logger.info { "Fetching modifications with token $updateToken from DVV modifications service succeeded" }
+                objectMapper.readValue<DvvModificationsResponse>(
                     objectMapper.readTree(result.get()).toString()
                 )
             }
             is Result.Failure -> {
                 logger.error(result.getException()) {
-                    "Fetching update info with token $updateToken from DVV update info service failed, message: ${String(result.error.errorData)}"
+                    "Fetching modifications with token $updateToken from DVV modifications service failed, message: ${String(result.error.errorData)}"
                 }
                 null
             }
@@ -90,7 +90,7 @@ class DvvUpdateInfoServiceClient(
     }
 }
 
-data class DvvUpdateInfoServiceUpdateTokenResponse(
+data class DvvModificationServiceModificationTokenResponse(
     @JsonProperty("viimeisinKirjausavain")
-    var latestUpdateToken: Long
+    var latestModificationToken: Long
 )

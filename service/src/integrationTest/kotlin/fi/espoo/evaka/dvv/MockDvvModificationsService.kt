@@ -21,7 +21,7 @@ private val logger = KotlinLogging.logger {}
 @Profile("enable_mock_dvv_api")
 @RestController
 @RequestMapping("/mock-integration/dvv/api")
-class MockDvvUpdateInfoService(private val mapper: ObjectMapper) {
+class MockDvvModificationsService(private val mapper: ObjectMapper) {
 
     @PostConstruct
     fun jee() {
@@ -35,15 +35,15 @@ class MockDvvUpdateInfoService(private val mapper: ObjectMapper) {
     }
 
     @PostMapping("/v1/muutokset")
-    fun getUpdateInfo(
-        @RequestBody body: UpdateInfoRequest
+    fun getModifications(
+        @RequestBody body: ModificationsRequest
     ): ResponseEntity<String> {
         logger.info { "Mock dvv POST /muutokset called, body: $body" }
         return ResponseEntity.ok(
             """
             {
               "viimeisinKirjausavain": 100000021,
-              "muutokset": [${getUpdateInfos(body.hetulista)}],
+              "muutokset": [${getModifications(body.hetulista)}],
               "ajanTasalla": true
             }
         """
@@ -51,11 +51,11 @@ class MockDvvUpdateInfoService(private val mapper: ObjectMapper) {
     }
 }
 
-fun getUpdateInfos(ssns: List<String>): String {
-    return ssns.map { ssn -> if (updateInfos.containsKey(ssn)) updateInfos[ssn] else null }.filter { it != null }.joinToString(",")
+fun getModifications(ssns: List<String>): String {
+    return ssns.map { ssn -> if (modifications.containsKey(ssn)) modifications[ssn] else null }.filter { it != null }.joinToString(",")
 }
 
-val updateInfos = mapOf<String, String>(
+val modifications = mapOf<String, String>(
     "010579-9999" to """
 {
   "henkilotunnus": "010579-9999",
@@ -341,7 +341,7 @@ val updateInfos = mapOf<String, String>(
     """.trimIndent()
 )
 
-data class UpdateInfoRequest(
+data class ModificationsRequest(
     val viimeisinKirjausavain: String,
     val tuotekoodi: String,
     val hetulista: List<String>
