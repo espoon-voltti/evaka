@@ -19,7 +19,6 @@ import fi.espoo.evaka.application.persistence.daycare.DaycareAdditionalDetails
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
 import fi.espoo.evaka.application.persistence.daycare.OtherPerson
 import java.time.LocalDate
-import java.time.LocalTime
 import java.util.UUID
 
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -29,8 +28,8 @@ data class EnduserDaycareFormJSON(
     val partTime: Boolean = false,
     val connectedDaycare: Boolean? = null,
     val preferredStartDate: LocalDate? = null,
-    val serviceStart: LocalTime? = null,
-    val serviceEnd: LocalTime? = null,
+    val serviceStart: String? = null,
+    val serviceEnd: String? = null,
     val extendedCare: Boolean = false,
     val careDetails: EndUserCareDetailsJSON,
     val apply: ApplyJSON,

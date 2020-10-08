@@ -12,8 +12,6 @@ import fi.espoo.evaka.application.enduser.daycare.OtherGuardianAgreementStatus
 import fi.espoo.evaka.application.persistence.DatabaseForm
 import fi.espoo.evaka.application.persistence.FormType
 import java.time.LocalDate
-import java.time.LocalTime
-import java.time.format.DateTimeFormatter
 import java.util.UUID
 
 const val DEFAULT_CHILD_NATIONALITY = "FI"
@@ -29,8 +27,8 @@ data class DaycareFormV0(
     val partTime: Boolean = false,
     val connectedDaycare: Boolean? = false.takeIf { type == FormType.PRESCHOOL },
     val preferredStartDate: LocalDate? = null,
-    val serviceStart: LocalTime? = null,
-    val serviceEnd: LocalTime? = null,
+    val serviceStart: String? = null,
+    val serviceEnd: String? = null,
     val extendedCare: Boolean = false,
     val careDetails: CareDetails = CareDetails(preparatory = false.takeIf { type == FormType.PRESCHOOL }),
     val guardian2: Adult? = null,
@@ -138,8 +136,8 @@ data class DaycareFormV0(
             partTime = form.preferences.serviceNeed?.partTime ?: false,
             connectedDaycare = (form.preferences.serviceNeed != null).takeIf { type == ApplicationType.PRESCHOOL },
             preferredStartDate = form.preferences.preferredStartDate,
-            serviceStart = form.preferences.serviceNeed?.startTime?.takeIf { it.isNotBlank() }?.let { LocalTime.parse(it, DateTimeFormatter.ofPattern("HH:mm")) },
-            serviceEnd = form.preferences.serviceNeed?.endTime?.takeIf { it.isNotBlank() }?.let { LocalTime.parse(it, DateTimeFormatter.ofPattern("HH:mm")) },
+            serviceStart = form.preferences.serviceNeed?.startTime,
+            serviceEnd = form.preferences.serviceNeed?.endTime,
             extendedCare = form.preferences.serviceNeed?.shiftCare ?: false,
             careDetails = CareDetails(
                 preparatory = form.preferences.preparatory.takeIf { type == ApplicationType.PRESCHOOL },
