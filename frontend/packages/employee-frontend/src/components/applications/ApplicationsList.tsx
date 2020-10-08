@@ -31,7 +31,6 @@ import {
 } from 'components/shared/layout/flex-helpers'
 import { H1 } from 'components/shared/Typography'
 import { DefaultMargins } from 'components/shared/layout/white-space'
-/*import Tooltip from 'components/common/Tooltip'*/
 import { getEmployeeUrlPrefix } from '~constants'
 import { formatDate } from '~utils/date'
 import ApplicationActions from '~components/applications/ApplicationActions'
@@ -39,6 +38,7 @@ import Checkbox from '~components/shared/atoms/form/Checkbox'
 import { ApplicationUIContext } from '~state/application-ui'
 import ActionBar from '~components/applications/ActionBar'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import Tooltip from '~components/shared/atoms/Tooltip'
 
 const CircleIcon = styled.div`
   display: flex;
@@ -201,29 +201,29 @@ const ApplicationsList = React.memo(function Applications({
       application.dateOfBirth &&
       startDateOrDueDate && (
         <FixedSpaceRow spacing="xs">
-          {/*          <Tooltip
-            tooltipId={`age-tooltip-${application.id}`}
+          <Tooltip
             tooltipText={
               startDateOrDueDate.differenceInYears(application.dateOfBirth) < 3
                 ? i18n.applications.list.lessthan3
                 : i18n.applications.list.morethan3
             }
-            place="bottom"
-          >*/}
-          <RoundIcon
-            content={
-              startDateOrDueDate.differenceInYears(application.dateOfBirth) < 3
-                ? fasArrowDown
-                : fasArrowUp
-            }
-            color={
-              startDateOrDueDate.differenceInYears(application.dateOfBirth) < 3
-                ? Colors.accents.green
-                : Colors.blues.medium
-            }
-            size="s"
-          />
-          {/*          </Tooltip>*/}
+          >
+            <RoundIcon
+              content={
+                startDateOrDueDate.differenceInYears(application.dateOfBirth) <
+                3
+                  ? fasArrowDown
+                  : fasArrowUp
+              }
+              color={
+                startDateOrDueDate.differenceInYears(application.dateOfBirth) <
+                3
+                  ? Colors.accents.green
+                  : Colors.blues.medium
+              }
+              size="s"
+            />
+          </Tooltip>
           <span>
             {application.socialSecurityNumber ||
               formatDate(application.dateOfBirth.toSystemTzDate())}
@@ -302,15 +302,13 @@ const ApplicationsList = React.memo(function Applications({
       </Td>
       <Td>
         <span>
-          {/*          <Tooltip
-            tooltipId={`pref-units-${application.id}`}
+          <Tooltip
             tooltipText={application.preferredUnits
               .map((unit) => unit.name)
               .join('<br/>')}
-            place="bottom"
-          >*/}
-          {application.preferredUnits[0]?.name}
-          {/*          </Tooltip>*/}
+          >
+            {application.preferredUnits[0]?.name}
+          </Tooltip>
         </span>
       </Td>
       <Td data-qa="application-status">
@@ -325,8 +323,7 @@ const ApplicationsList = React.memo(function Applications({
           {application.placementProposalStatus?.unitConfirmationStatus ===
             'REJECTED' && (
             <div>
-              {/*              <Tooltip
-                tooltipId={`reject-reason-${application.id}`}
+              <Tooltip
                 tooltipText={
                   application.placementProposalStatus
                     ? application.placementProposalStatus.unitRejectReason ===
@@ -339,12 +336,11 @@ const ApplicationsList = React.memo(function Applications({
                         ]
                     : ''
                 }
-                place="bottom"
-              >*/}
-              <CircleIconRed>
-                <FontAwesomeIcon icon={faTimes} />
-              </CircleIconRed>
-              {/*              </Tooltip>*/}
+              >
+                <CircleIconRed>
+                  <FontAwesomeIcon icon={faTimes} />
+                </CircleIconRed>
+              </Tooltip>
             </div>
           )}
         </FixedSpaceRow>
