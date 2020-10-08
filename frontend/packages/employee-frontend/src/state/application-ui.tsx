@@ -26,6 +26,7 @@ import {
 import { useDebounce } from '../utils/useDebounce'
 import { UUID } from '~types'
 import { CareArea } from '~types/unit'
+import { ApplicationsSearchResponse } from '~types/application'
 
 // Nothing in here yet. Filters will be added here in next PR.
 
@@ -34,6 +35,8 @@ import { CareArea } from '~types/unit'
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 interface UIState {
+  applicationsResult: Result<ApplicationsSearchResponse>
+  setApplicationsResult: (result: Result<ApplicationsSearchResponse>) => void
   area: string[]
   setArea: (areas: string[]) => void
   availableAreas: Result<CareArea[]>
@@ -72,6 +75,8 @@ interface UIState {
 }
 
 const defaultState: UIState = {
+  applicationsResult: Loading(),
+  setApplicationsResult: () => undefined,
   area: [],
   setArea: () => undefined,
   availableAreas: Loading(),
@@ -117,6 +122,9 @@ export const ApplicationUIContextProvider = React.memo(
   }: {
     children: JSX.Element
   }) {
+    const [applicationsResult, setApplicationsResult] = useState<
+      Result<ApplicationsSearchResponse>
+    >(Loading())
     const [area, setArea] = useState<string[]>(defaultState.area)
     const [availableAreas, setAvailableAreas] = useState<Result<CareArea[]>>(
       defaultState.availableAreas
@@ -174,6 +182,8 @@ export const ApplicationUIContextProvider = React.memo(
 
     const value = useMemo(
       () => ({
+        applicationsResult,
+        setApplicationsResult,
         area,
         setArea,
         availableAreas,
@@ -211,6 +221,8 @@ export const ApplicationUIContextProvider = React.memo(
         setTransferApplications
       }),
       [
+        applicationsResult,
+        setApplicationsResult,
         area,
         setArea,
         availableAreas,

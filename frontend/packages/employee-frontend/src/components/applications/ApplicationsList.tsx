@@ -20,7 +20,6 @@ import {
   ApplicationsSearchResponse
 } from 'types/application'
 import { SearchOrder } from '~types'
-import { isFailure, isLoading, Result } from 'api'
 import Pagination from '~components/shared/Pagination'
 import Colors, { BlueColors } from '~components/shared/Colors'
 import { SortByApplications } from '~types/application'
@@ -31,10 +30,7 @@ import {
   FixedSpaceRow
 } from 'components/shared/layout/flex-helpers'
 import { H1 } from 'components/shared/Typography'
-import { SpinnerSegment } from 'components/shared/atoms/state/Spinner'
-import ErrorSegment from 'components/shared/atoms/state/ErrorSegment'
 import { DefaultMargins } from 'components/shared/layout/white-space'
-import Tooltip from 'components/common/Tooltip'
 import { getEmployeeUrlPrefix } from '~constants'
 import { formatDate } from '~utils/date'
 import ApplicationActions from '~components/applications/ApplicationActions'
@@ -42,6 +38,7 @@ import Checkbox from '~components/shared/atoms/form/Checkbox'
 import { ApplicationUIContext } from '~state/application-ui'
 import ActionBar from '~components/applications/ActionBar'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import Tooltip from '~components/shared/atoms/Tooltip'
 
 const CircleIcon = styled.div`
   display: flex;
@@ -72,10 +69,6 @@ const TitleRowContainer = styled.div`
   top: 0;
   z-index: 3;
   background: ${Colors.greyscale.white};
-`
-
-const PaddedDiv = styled.div`
-  padding: ${DefaultMargins.m} ${DefaultMargins.L};
 `
 
 interface PaginationWrapperProps {
@@ -109,7 +102,7 @@ const StatusColorTd = styled(Td)<{ color: string }>`
 `
 
 interface Props {
-  applicationsResult: Result<ApplicationsSearchResponse>
+  applicationsResult: ApplicationsSearchResponse
   currentPage: number
   setPage: (page: number) => void
   sortBy: SortByApplications
@@ -129,6 +122,8 @@ const ApplicationsList = React.memo(function Applications({
   setSortDirection,
   reloadApplications
 }: Props) {
+  const { data: applications, pages, totalCount } = applicationsResult
+
   const { i18n } = useTranslation()
   const { showCheckboxes, checkedIds, setCheckedIds, status } = useContext(
     ApplicationUIContext
@@ -145,32 +140,6 @@ const ApplicationsList = React.memo(function Applications({
       setSortDirection('ASC')
     }
   }
-
-  if (isFailure(applicationsResult))
-    return (
-      <PaddedDiv>
-        <H1>
-          {status === 'ALL'
-            ? i18n.applications.list.title
-            : i18n.application.statuses[status]}
-        </H1>
-        <ErrorSegment />
-      </PaddedDiv>
-    )
-
-  if (isLoading(applicationsResult))
-    return (
-      <PaddedDiv>
-        <H1>
-          {status === 'ALL'
-            ? i18n.applications.list.title
-            : i18n.application.statuses[status]}
-        </H1>
-        <SpinnerSegment data-qa="applications-spinner" />
-      </PaddedDiv>
-    )
-
-  const { data: applications, pages, totalCount } = applicationsResult.data
 
   const toggleCheckAll = (checked: boolean) => {
     if (checked) {
@@ -233,13 +202,11 @@ const ApplicationsList = React.memo(function Applications({
       startDateOrDueDate && (
         <FixedSpaceRow spacing="xs">
           <Tooltip
-            tooltipId={`age-tooltip-${application.id}`}
             tooltipText={
               startDateOrDueDate.differenceInYears(application.dateOfBirth) < 3
                 ? i18n.applications.list.lessthan3
                 : i18n.applications.list.morethan3
             }
-            place="bottom"
           >
             <RoundIcon
               content={
@@ -336,11 +303,9 @@ const ApplicationsList = React.memo(function Applications({
       <Td>
         <span>
           <Tooltip
-            tooltipId={`pref-units-${application.id}`}
             tooltipText={application.preferredUnits
               .map((unit) => unit.name)
               .join('<br/>')}
-            place="bottom"
           >
             {application.preferredUnits[0]?.name}
           </Tooltip>
@@ -359,7 +324,6 @@ const ApplicationsList = React.memo(function Applications({
             'REJECTED' && (
             <div>
               <Tooltip
-                tooltipId={`reject-reason-${application.id}`}
                 tooltipText={
                   application.placementProposalStatus
                     ? application.placementProposalStatus.unitRejectReason ===
@@ -372,7 +336,6 @@ const ApplicationsList = React.memo(function Applications({
                         ]
                     : ''
                 }
-                place="bottom"
               >
                 <CircleIconRed>
                   <FontAwesomeIcon icon={faTimes} />
@@ -392,10 +355,7 @@ const ApplicationsList = React.memo(function Applications({
   ))
 
   return (
-    <div
-      data-qa="applications-list"
-      data-loaded={!isLoading(applicationsResult)}
-    >
+    <div data-qa="applications-list">
       <TitleRowContainer>
         <H1 fitted>
           {status === 'ALL'

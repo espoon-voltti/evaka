@@ -24,7 +24,7 @@ import {
   TransferApplicationsFilter
 } from '../common/Filters'
 import { ApplicationUIContext } from '../../state/application-ui'
-import { isSuccess } from '../../api'
+import { isSuccess, Loading } from '../../api'
 import { getAreas, getUnits } from '../../api/daycare'
 import { Gap } from '~components/shared/layout/white-space'
 import { useTranslation } from '~state/i18n'
@@ -66,7 +66,8 @@ function ApplicationFilters() {
     distinctions,
     setDistinctions,
     transferApplications,
-    setTransferApplications
+    setTransferApplications,
+    setApplicationsResult
   } = useContext(ApplicationUIContext)
 
   const { i18n } = useTranslation()
@@ -89,6 +90,8 @@ function ApplicationFilters() {
 
   const toggleArea = (code: string) => () => {
     if (isSuccess(availableAreas)) {
+      setApplicationsResult(Loading())
+
       const newAreas =
         code === ALL
           ? area.includes(ALL)
@@ -105,11 +108,14 @@ function ApplicationFilters() {
   }
 
   const toggleBasis = (toggledBasis: ApplicationBasis) => () => {
+    setApplicationsResult(Loading())
     basis.includes(toggledBasis)
       ? setBasis(basis.filter((v) => v != toggledBasis))
       : setBasis([...basis, toggledBasis])
   }
+
   const toggleStatus = (newStatus: ApplicationSummaryStatusOptions) => () => {
+    setApplicationsResult(Loading())
     if ((newStatus === 'ALL' && status !== 'ALL') || allStatuses.length === 0) {
       setAllStatuses([
         'SENT',
@@ -127,19 +133,23 @@ function ApplicationFilters() {
     }
     setStatus(newStatus)
   }
+
   const toggleApplicationType = (type: ApplicationTypeToggle) => () => {
+    setApplicationsResult(Loading())
     setType(type)
     if (type === 'PRESCHOOL') {
       setPreschoolType([...preschoolTypes])
     }
   }
   const toggleDate = (toggledDateType: ApplicationDateType) => () => {
+    setApplicationsResult(Loading())
     dateType.includes(toggledDateType)
       ? setDateType(dateType.filter((v) => v !== toggledDateType))
       : setDateType([...dateType, toggledDateType])
   }
 
   const toggleApplicationPreschoolType = (type: PreschoolType) => () => {
+    setApplicationsResult(Loading())
     preschoolType.includes(type)
       ? setPreschoolType(preschoolType.filter((v) => v !== type))
       : setPreschoolType([...preschoolType, type])
@@ -148,18 +158,21 @@ function ApplicationFilters() {
   const toggleAllStatuses = (
     status: ApplicationSummaryStatusAllOptions
   ) => () => {
+    setApplicationsResult(Loading())
     allStatuses.includes(status)
       ? setAllStatuses(allStatuses.filter((v) => v !== status))
       : setAllStatuses([...allStatuses, status])
   }
 
   const changeUnits = (selectedUnits: SelectOptionProp[]) => {
+    setApplicationsResult(Loading())
     setUnits(selectedUnits.map((selectedUnit) => selectedUnit.id))
   }
 
   const toggleApplicationDistinctions = (
     distinction: ApplicationDistinctions
   ) => () => {
+    setApplicationsResult(Loading())
     distinctions.includes(distinction)
       ? setDistinctions(distinctions.filter((v) => v !== distinction))
       : setDistinctions([...distinctions, distinction])
