@@ -10,8 +10,8 @@ import { useTranslation } from '~state/i18n'
 import InlineButton from 'components/shared/atoms/buttons/InlineButton'
 
 const ReturnButtonWrapper = styled.div`
-  margin-top: 40px;
-  margin-bottom: -35px;
+  margin-top: 32px;
+  margin-bottom: 8px;
   display: inline-block;
 
   button {
