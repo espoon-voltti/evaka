@@ -313,7 +313,12 @@ export class ApplicationWorkbenchPage {
   }
 
   async closeApplication() {
-    await t.click(this.btnCloseApplication)
+    if (await this.btnCloseApplication.exists) {
+      await t.click(this.btnCloseApplication)
+    } else {
+      // Application was opened in new window/tab
+      await t.closeWindow()
+    }
   }
 
   getApplicationStatus() {
