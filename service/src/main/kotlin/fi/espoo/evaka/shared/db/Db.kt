@@ -141,14 +141,18 @@ fun <T> withSpringTx(
             }
         }
     )
-    try {
-        val result = f()
-        txManager.commit(status)
-        return result
-    } catch (e: RuntimeException) {
-        txManager.rollback(status)
+    val result = try {
+        f()
+    } catch (e: Throwable) {
+        try {
+            txManager.rollback(status)
+        } catch (rollback: Exception) {
+            e.addSuppressed(rollback)
+        }
         throw e
     }
+    txManager.commit(status)
+    return result
 }
 
 /**
