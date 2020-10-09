@@ -64,40 +64,6 @@ function IncomeSection({ decision }: Props) {
     )
   }
 
-  function contents() {
-    const first: {
-      label: React.ReactNode
-      value: React.ReactNode
-      valueWidth?: string
-      dataQa?: string
-    }[] = [
-      {
-        label: i18n.feeDecision.form.summary.income.effect.label,
-        value:
-          i18n.feeDecision.form.summary.income.effect[decision.incomeEffect]
-      }
-    ]
-
-    const second: {
-      label: React.ReactNode
-      value: React.ReactNode
-      valueWidth?: string
-      dataQa?: string
-    }[] = decision.partner
-      ? [
-          {
-            label: formatName(
-              decision.partner.firstName,
-              decision.partner.lastName,
-              i18n
-            ),
-            value: personIncome(decision.partnerIncome)
-          }
-        ]
-      : []
-    return first.concat(second)
-  }
-
   return (
     <Section>
       <Title size={3}>
@@ -121,7 +87,36 @@ function IncomeSection({ decision }: Props) {
         ]}
       />
       <Title size={3}>{i18n.feeDecision.form.summary.income.title}</Title>
-      <LabelValueList spacing="small" contents={contents()} />
+      <LabelValueList
+        spacing="small"
+        contents={[
+          {
+            label: i18n.feeDecision.form.summary.income.effect.label,
+            value:
+              i18n.feeDecision.form.summary.income.effect[decision.incomeEffect]
+          },
+          {
+            label: formatName(
+              decision.headOfFamily.firstName,
+              decision.headOfFamily.lastName,
+              i18n
+            ),
+            value: personIncome(decision.headOfFamilyIncome)
+          },
+          ...(decision.partner
+            ? [
+                {
+                  label: formatName(
+                    decision.partner.firstName,
+                    decision.partner.lastName,
+                    i18n
+                  ),
+                  value: personIncome(decision.partnerIncome)
+                }
+              ]
+            : [])
+        ]}
+      />
       {decision.totalIncome && decision.totalIncome > 0 ? (
         <div
           className="total-price slim"
