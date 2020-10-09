@@ -149,12 +149,12 @@ function getDisplayCells(
         const occupancy = row.occupancies[formatDate(date, DATE_FORMAT_ISO)]
         cells.push(
           typeof occupancy?.sum === 'number'
-            ? `${occupancy.sum.toFixed(1).replace('.', ',')} %`
+            ? occupancy.sum.toFixed(1).replace('.', ',')
             : '0'
         )
         cells.push(
           typeof occupancy?.caretakers === 'number'
-            ? `${occupancy.caretakers.toFixed(1).replace('.', ',')} %`
+            ? occupancy.caretakers.toFixed(1).replace('.', ',')
             : '0'
         )
       }
