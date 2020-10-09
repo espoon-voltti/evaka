@@ -200,6 +200,7 @@ export interface ApplicationListSummary {
   extendedCare: boolean
   duplicateApplication: boolean
   placementProposalStatus: PlacementProposalStatus | null
+  placementProposalUnitName: string | null
 }
 
 interface PlacementProposalStatus {

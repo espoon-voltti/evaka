@@ -235,6 +235,7 @@ fun fetchApplicationSummaries(
             pp.unit_confirmation_status,
             pp.unit_reject_reason,
             pp.unit_reject_other_reason,
+            ppd.unit_name,
             count(*) OVER () AS total
         FROM application a
         JOIN (
@@ -249,6 +250,9 @@ fun fetchApplicationSummaries(
         JOIN care_area ca on d.care_area_id = ca.id
         JOIN person child ON child.id = a.child_id
         LEFT JOIN placement_plan pp ON pp.application_id = a.id AND a.status = 'WAITING_UNIT_CONFIRMATION'::application_status_type
+        LEFT JOIN  (
+            SELECT placement_plan.application_id, daycare.name unit_name FROM daycare JOIN placement_plan ON daycare.id = placement_plan.unit_id
+        ) ppd ON ppd.application_id = a.id
         LEFT JOIN (
             SELECT
                 l.id, array_agg(r.id) AS duplicate_application_ids
@@ -312,7 +316,8 @@ fun fetchApplicationSummaries(
                             unitRejectReason = row.mapColumn("unit_reject_reason"),
                             unitRejectOtherReason = row.mapColumn("unit_reject_other_reason")
                         )
-                    }
+                    },
+                placementProposalUnitName = row.mapColumn("unit_name")
             )
         }
         .toList()
