@@ -35,6 +35,7 @@ const EuroInput = React.memo(function EuroInput({
           ? { text: 'Virheellinen arvo', status: 'warning' }
           : undefined
       }
+      align="right"
       data-qa={dataQa}
     />
   )

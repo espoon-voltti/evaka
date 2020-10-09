@@ -29,6 +29,7 @@ const inputWidths: Record<InputWidth, string> = {
 interface StyledInputProps {
   width: InputWidth
   clearable: boolean
+  align?: 'left' | 'right'
 }
 const StyledInput = styled.input<StyledInputProps>`
   width: ${(p) => inputWidths[p.width]};
@@ -38,6 +39,7 @@ const StyledInput = styled.input<StyledInputProps>`
   border-radius: 2px;
   outline: none;
   box-sizing: border-box;
+  text-align: ${(p) => p.align ?? 'left'};
 
   font-size: 15px;
   color: ${Colors.greyscale.darkest};
@@ -150,6 +152,7 @@ interface TextInputProps extends BaseProps {
     status?: InfoStatus
   }
   clearable?: boolean
+  align?: 'left' | 'right'
   icon?: IconProp
   type?: string
   min?: number
@@ -168,6 +171,7 @@ function InputField({
   placeholder,
   info,
   clearable = false,
+  align,
   dataQa,
   className,
   icon,
@@ -193,6 +197,7 @@ function InputField({
           disabled={readonly}
           width={width}
           clearable={clearable}
+          align={align}
           className={classNames(className, info?.status)}
           data-qa={dataQa2 ?? dataQa}
           type={type}
