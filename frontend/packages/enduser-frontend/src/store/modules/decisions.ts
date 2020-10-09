@@ -25,6 +25,7 @@ const initialState: DecisionsState = {
 
 export interface DecisionSummary {
   id: UUID
+  applicationId: UUID
   childId: UUID
   status: DecisionStatus
   type: 'CLUB_DECISION' | DecisionType
@@ -54,6 +55,7 @@ const module: Module<DecisionsState, RootState> = {
         )
         return {
           id: decision.id,
+          applicationId: decision.applicationId,
           childId: application && application.child.id,
           type: decision.type,
           status: decision.status,

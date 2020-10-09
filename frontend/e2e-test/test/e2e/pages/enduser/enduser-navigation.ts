@@ -58,7 +58,7 @@ export default class EnduserPage {
     const applicationType = new ApplicationTypeSelection()
     await applicationType.selectApplicationType(type)
     await applicationType.createApplication()
-    await t.expect(Selector('#preview-and-send')).ok()
+    await t.expect(Selector('[data-qa="btn-check-and-send"]').exists).ok()
   }
 
   getApplicationById(applicationId: string) {
@@ -76,26 +76,33 @@ export default class EnduserPage {
   ) {
     await t
       .expect(
-        this.getApplicationById(applicationId).withText(expectedStatusText)
+        (
+          await this.getApplicationById(applicationId).find(
+            '[data-qa="application-status-text"]'
+          ).innerText
+        ).toUpperCase()
       )
-      .ok()
+      .eql(expectedStatusText.toUpperCase())
   }
 
   getDecisionByApplicationId(applicationId: string) {
-    return this.decisionList.filter(`[data-application-id=${applicationId}]`)
+    return this.decisionList.filter(`[data-application-id="${applicationId}"]`)
   }
 
   async assertDecisionStatus(
     applicationId: string,
     expectedStatusText: string
   ) {
+    await t.expect(this.getDecisionByApplicationId(applicationId).exists).ok()
     await t
       .expect(
-        this.getDecisionByApplicationId(applicationId).withText(
-          expectedStatusText
-        )
+        (
+          await this.getDecisionByApplicationId(applicationId).find(
+            '[data-qa="decision-status-text"]'
+          ).innerText
+        ).toUpperCase()
       )
-      .ok()
+      .eql(expectedStatusText.toUpperCase())
   }
 
   async sendDecision(applicationId: string) {

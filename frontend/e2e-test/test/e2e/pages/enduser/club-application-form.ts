@@ -136,7 +136,7 @@ export default class ClubApplication {
   async checkAndSend() {
     await t
       .click(this.checkAndSendBtn)
-      .expect(this.summaryHeadline)
+      .expect(this.summaryHeadline.exists)
       .ok()
       .click(this.summaryCheckbox)
       .click(this.sendBtn)

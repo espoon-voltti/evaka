@@ -961,6 +961,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
           @click="toSummary"
           :class="{ 'is-danger': !isValid }"
           :primary="true"
+          data-qa="btn-check-and-send"
           :disabled="loading"
           >{{ $t('form.preview-and-send') }}</c-button
         >
