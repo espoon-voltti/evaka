@@ -40,7 +40,6 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import java.time.Instant
 import java.time.LocalDate
-import java.time.LocalTime
 import java.util.UUID
 
 class VardaDecisionsIntegrationTest : FullApplicationTest() {
@@ -687,8 +686,8 @@ fun insertDecisionWithApplication(
             type = FormType.DAYCARE,
             partTime = false,
             connectedDaycare = false,
-            serviceStart = LocalTime.of(8, 0),
-            serviceEnd = LocalTime.of(16, 0),
+            serviceStart = "08:00",
+            serviceEnd = "16:00",
             careDetails = CareDetails(),
             child = child.toDaycareFormChild(),
             guardian = testAdult_1.toDaycareFormAdult(),

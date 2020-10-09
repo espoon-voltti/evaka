@@ -38,7 +38,6 @@ import org.mockito.Mock
 import org.mockito.Mockito.lenient
 import org.mockito.junit.jupiter.MockitoExtension
 import java.time.LocalDate
-import java.time.LocalTime
 import java.time.OffsetDateTime
 import java.util.UUID
 
@@ -217,8 +216,8 @@ private val expectedEnduserDaycareFormJSON = with(expectedEnduserDaycareApplicat
         type = ApplicationJsonType.DAYCARE,
         urgent = preferences.urgent,
         preferredStartDate = preferences.preferredStartDate,
-        serviceStart = LocalTime.parse(preferences.serviceNeed!!.startTime),
-        serviceEnd = LocalTime.parse(preferences.serviceNeed!!.endTime),
+        serviceStart = preferences.serviceNeed!!.startTime,
+        serviceEnd = preferences.serviceNeed!!.endTime,
         extendedCare = preferences.serviceNeed!!.shiftCare,
         careDetails = EndUserCareDetailsJSON(
             preparatory = null,
@@ -324,8 +323,8 @@ private val DAYCARE_JSON =
     "preferredStartDate": "2019-03-06",
     "extendedCare": true,
     "urgent": true,
-    "serviceStart": "08:00:00",
-    "serviceEnd": "14:00:00",
+    "serviceStart": "08:00",
+    "serviceEnd": "14:00",
     "careDetails": {
       "assistanceNeeded": true,
       "assistanceDescription": "Lapseni ei osaa kävellä vielä."

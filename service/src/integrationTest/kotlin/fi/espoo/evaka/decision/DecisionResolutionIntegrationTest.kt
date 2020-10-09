@@ -52,7 +52,6 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
 import java.time.LocalDate
-import java.time.LocalTime
 import java.util.UUID
 import java.util.stream.Stream
 
@@ -393,8 +392,8 @@ class DecisionResolutionIntegrationTest : FullApplicationTest() {
                 type = type.toFormType(),
                 partTime = type == PlacementType.DAYCARE_PART_TIME,
                 connectedDaycare = preschoolDaycare,
-                serviceStart = LocalTime.of(8, 0).takeIf { preschoolDaycare },
-                serviceEnd = LocalTime.of(16, 0).takeIf { preschoolDaycare },
+                serviceStart = "08:00".takeIf { preschoolDaycare },
+                serviceEnd = "16:00".takeIf { preschoolDaycare },
                 careDetails = CareDetails(preparatory = type in listOf(PlacementType.PREPARATORY, PlacementType.PREPARATORY_DAYCARE)),
                 child = child.toDaycareFormChild(),
                 guardian = adult.toDaycareFormAdult(),

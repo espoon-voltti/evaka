@@ -50,7 +50,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import java.time.LocalDate
-import java.time.LocalTime
 import java.util.UUID
 
 class DecisionCreationIntegrationTest : FullApplicationTest() {
@@ -430,8 +429,8 @@ WHERE id = :unitId
                 type = type.toFormType(),
                 partTime = type == PlacementType.DAYCARE_PART_TIME,
                 connectedDaycare = preschoolDaycare,
-                serviceStart = LocalTime.of(8, 0).takeIf { preschoolDaycare },
-                serviceEnd = LocalTime.of(16, 0).takeIf { preschoolDaycare },
+                serviceStart = "08:00".takeIf { preschoolDaycare },
+                serviceEnd = "16:00".takeIf { preschoolDaycare },
                 careDetails = CareDetails(preparatory = preparatoryEducation),
                 child = child.toDaycareFormChild(),
                 guardian = adult.toDaycareFormAdult(),

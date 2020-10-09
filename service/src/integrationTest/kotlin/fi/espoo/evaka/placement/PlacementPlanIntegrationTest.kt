@@ -40,7 +40,6 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
-import java.time.LocalTime
 import java.util.UUID
 
 class PlacementPlanIntegrationTest : FullApplicationTest() {
@@ -311,8 +310,8 @@ private fun insertInitialData(
             type = type,
             partTime = partTime,
             connectedDaycare = preschoolDaycare,
-            serviceStart = LocalTime.of(8, 0).takeIf { preschoolDaycare },
-            serviceEnd = LocalTime.of(16, 0).takeIf { preschoolDaycare },
+            serviceStart = "08:00".takeIf { preschoolDaycare },
+            serviceEnd = "16:00".takeIf { preschoolDaycare },
             child = child.toDaycareFormChild(),
             guardian = adult.toDaycareFormAdult(),
             apply = Apply(preferredUnits = preferredUnits.map { it.id }),
