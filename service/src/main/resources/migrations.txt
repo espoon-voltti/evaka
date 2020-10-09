@@ -5,3 +5,4 @@ V4__drop_enum_tables.sql
 V5__child_attendance.sql
 V6__add_delete_columns_to_varda_tables.sql
 V7__voucher_value_decision_table.sql
+V8__dvv_modification_token.sql

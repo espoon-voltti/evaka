@@ -23,11 +23,6 @@ private val logger = KotlinLogging.logger {}
 @RequestMapping("/mock-integration/dvv/api")
 class MockDvvModificationsService(private val mapper: ObjectMapper) {
 
-    @PostConstruct
-    fun jee() {
-        println("DDEBUG ALIVE")
-    }
-
     @GetMapping("/v1/kirjausavain/{date}")
     fun getApiKey(@PathVariable("date") date: String?): ResponseEntity<String> {
         logger.info { "Mock dvv GET /kirjausavain/$date called" }
