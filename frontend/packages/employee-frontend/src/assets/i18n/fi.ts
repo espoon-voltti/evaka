@@ -118,6 +118,7 @@ export const fi = {
     clubApplications: 'Kerho',
     units: 'Yksiköt',
     search: 'Asiakastiedot',
+    finance: 'Talous',
     invoices: 'Laskut',
     feeDecisions: 'Maksupäätökset',
     reports: 'Raportit',

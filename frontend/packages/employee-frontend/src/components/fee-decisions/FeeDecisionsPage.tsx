@@ -109,7 +109,6 @@ const FeeDecisionsPage = React.memo(function FeeDecisionsPage() {
   return (
     <div className="fee-decisions-page" data-qa="fee-decisions-page">
       <Container>
-        <Gap size={'L'} />
         {window['secretButton'] && <GeneratorButton reload={loadDecisions} />}
         <ContentArea opaque>
           <FeeDecisionFilters />

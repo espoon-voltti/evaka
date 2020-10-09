@@ -7,7 +7,8 @@ import {
   BrowserRouter as Router,
   Route,
   Switch,
-  Redirect
+  Redirect,
+  useParams
 } from 'react-router-dom'
 import ChildInformation from '~/components/ChildInformation'
 import StateProvider from '~/state/StateProvider'
@@ -20,9 +21,8 @@ import ensureAuthenticated from './components/ensureAuthenticated'
 import LoginPage from '~components/LoginPage'
 import Units from '~components/Units'
 import ApplicationsPage from 'components/applications/ApplicationsPage'
-import InvoicesPage from '~components/invoices/InvoicesPage'
+import FinancePage from '~components/FinancePage'
 import InvoicePage from '~components/invoice/InvoicePage'
-import FeeDecisionsPage from '~components/fee-decisions/FeeDecisionsPage'
 import FeeDecisionDetailsPage from '~components/fee-decision-details/FeeDecisionDetailsPage'
 import Absences from '~components/absences/Absences'
 import GroupCaretakers from '~components/GroupCaretakers'
@@ -55,23 +55,7 @@ import ApplicationPage from 'components/ApplicationPage'
 import { hasRole } from '~utils/roles'
 import { getAuthStatus, AuthStatus } from '~api/auth'
 
-function RedirectToMainPage() {
-  const { loggedIn, roles } = useContext(UserContext)
-
-  if (!loggedIn) {
-    return <Redirect to={'/login'} />
-  }
-
-  if (hasRole(roles, 'SERVICE_WORKER')) {
-    return <Redirect to={'/applications'} />
-  } else if (hasRole(roles, 'UNIT_SUPERVISOR') || hasRole(roles, 'STAFF')) {
-    return <Redirect to={'/units'} />
-  } else {
-    return <Redirect to={'/search'} />
-  }
-}
-
-function App() {
+export default function App() {
   const { i18n } = useTranslation()
   const [authStatus, setAuthStatus] = useState<AuthStatus>()
 
@@ -157,28 +141,19 @@ function App() {
               component={ensureAuthenticated(DecisionPage)}
               title={i18n.titles.decision}
             />
-            <RouteWithTitle
+            <Route
               exact
-              path="/fee-decisions"
-              component={ensureAuthenticated(FeeDecisionsPage)}
-              title={i18n.titles.feeDecisions}
-            />
-            <RouteWithTitle
-              exact
-              path="/fee-decisions/:id"
+              path="/finance/fee-decisions/:id"
               component={ensureAuthenticated(FeeDecisionDetailsPage)}
             />
-            <RouteWithTitle
+            <Route
               exact
-              path="/invoices"
-              component={ensureAuthenticated(InvoicesPage)}
-              title={i18n.titles.invoices}
-            />
-            {/*TODO test this*/}
-            <RouteWithTitle
-              exact
-              path="/invoices/:id"
+              path="/finance/invoices/:id"
               component={ensureAuthenticated(InvoicePage)}
+            />
+            <Route
+              path="/finance"
+              component={ensureAuthenticated(FinancePage)}
             />
             <RouteWithTitle
               exact
@@ -298,7 +273,25 @@ function App() {
               component={ensureAuthenticated(ReportRaw)}
               title={i18n.titles.reports}
             />
-            <RouteWithTitle path="*" component={RedirectToMainPage} />
+            {redirectRoutes([
+              {
+                from: '/fee-decisions',
+                to: () => `/finance/fee-decisions`
+              },
+              {
+                from: '/fee-decisions/:id',
+                to: ({ id }) => `/finance/fee-decisions/${id}`
+              },
+              {
+                from: '/invoices',
+                to: () => `/finance/invoices`
+              },
+              {
+                from: '/invoices/:id',
+                to: ({ id }) => `/finance/invoices/${id}`
+              }
+            ])}
+            <Route exact path="/" component={RedirectToMainPage} />
           </Switch>
           <ErrorMessage />
         </Router>
@@ -307,4 +300,35 @@ function App() {
   )
 }
 
-export default App
+function RedirectToMainPage() {
+  const { loggedIn, roles } = useContext(UserContext)
+
+  if (!loggedIn) {
+    return <Redirect to={'/login'} />
+  }
+
+  if (hasRole(roles, 'SERVICE_WORKER')) {
+    return <Redirect to={'/applications'} />
+  } else if (hasRole(roles, 'UNIT_SUPERVISOR') || hasRole(roles, 'STAFF')) {
+    return <Redirect to={'/units'} />
+  } else {
+    return <Redirect to={'/search'} />
+  }
+}
+
+function redirectRoutes(
+  routes: Array<{
+    from: string
+    to: (params: { [k: string]: string }) => string
+  }>
+) {
+  return routes.map(({ from, to }) => (
+    <Route key={from} exact path={from} component={redirectTo(to)} />
+  ))
+}
+
+const redirectTo = (urlMapper: (params: { [k: string]: string }) => string) =>
+  function RedirectTo() {
+    const routeParams = useParams()
+    return <Redirect to={urlMapper(routeParams)} />
+  }

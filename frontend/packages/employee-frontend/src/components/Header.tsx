@@ -138,17 +138,10 @@ const Header = React.memo(function Header({ location }: RouteComponentProps) {
             <>
               <NavbarLink
                 className="navbar-item is-tab"
-                to="/fee-decisions"
-                data-qa="fee-decisions-nav"
+                to="/finance"
+                data-qa="finance-nav"
               >
-                {i18n.header.feeDecisions}
-              </NavbarLink>
-              <NavbarLink
-                className="navbar-item is-tab"
-                to="/invoices"
-                data-qa="invoices-nav"
-              >
-                {i18n.header.invoices}
+                {i18n.header.finance}
               </NavbarLink>
             </>
           </RequireRole>

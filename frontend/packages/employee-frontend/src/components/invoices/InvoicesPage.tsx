@@ -100,7 +100,6 @@ const InvoicesPage = React.memo(function InvoicesPage() {
   return (
     <div className="invoices-page" data-qa="invoices-page">
       <Container>
-        <Gap size={'L'} />
         <ContentArea opaque>
           <InvoiceFilters />
         </ContentArea>
