@@ -28,7 +28,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
                   :icon="['fal', iconType]"
                 ></font-awesome-icon>
               </div>
-              <span class="decision-status">{{ decisionStatusText }}</span>
+              <span data-qa="decision-status-text" class="decision-status">{{ decisionStatusText }}</span>
             </div>
             <div v-if="decisionPending">
               <p class="decision-description">{{ decisionDescription }}</p>

@@ -44,6 +44,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
                   :key="index"
                   :decision="decision"
                   class="decision"
+                  :data-application-id="decision.applicationId"
                   :data-decision-id="decision.id"
                 />
               </ul>

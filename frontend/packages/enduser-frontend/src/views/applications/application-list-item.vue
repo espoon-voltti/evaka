@@ -23,7 +23,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
                   :icon="['fal', getIcon.type]"
                 ></font-awesome-icon>
               </div>
-              <span class="application-status">{{ statusText }}</span>
+              <span data-qa="application-status-text" class="application-status">{{ statusText }}</span>
             </div>
             <div v-if="waitingForConfirmation">
               <p>{{ $t('application-list.waiting-confirmation') }}</p>

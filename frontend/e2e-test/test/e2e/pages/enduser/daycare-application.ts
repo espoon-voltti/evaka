@@ -12,7 +12,7 @@ export default class DaycareApplication {
     '#daycare-application-form .date-picker'
   )
 
-  readonly checkAndSendBtn = Selector('#preview-and-send')
+  readonly checkAndSendBtn = Selector('[data-qa="btn-check-and-send"]')
   readonly preferredUnitDetails = Selector('.unit-container')
   readonly preferredUnitDetailsTitle = Selector('.unit-title')
   readonly guardianInformation = Selector('.title').withText('Huoltajan tiedot')
