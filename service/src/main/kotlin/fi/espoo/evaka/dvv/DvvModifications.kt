@@ -42,7 +42,8 @@ data class DvvModification(
     JsonSubTypes.Type(value = AddressDvvInfoGroup::class, name = "VAKINAINEN_KOTIMAINEN_OSOITE"),
     JsonSubTypes.Type(value = DeathDvvInfoGroup::class, name = "KUOLINPAIVA"),
     JsonSubTypes.Type(value = CustodianLimitedDvvInfoGroup::class, name = "HUOLLETTAVA_SUPPEA"),
-    JsonSubTypes.Type(value = CaretakerLimitedDvvInfoGroup::class, name = "HUOLTAJA_SUPPEA")
+    JsonSubTypes.Type(value = CaretakerLimitedDvvInfoGroup::class, name = "HUOLTAJA_SUPPEA"),
+    JsonSubTypes.Type(value = SsnDvvInfoGroup::class, name = "HENKILOTUNNUS_KORJAUS")
 )
 
 interface DvvInfoGroup {
@@ -171,6 +172,21 @@ data class DeathDvvInfoGroup(
     val dead: Boolean?,
     @JsonProperty("kuolinpv")
     val dateOfDeath: DvvDate?
+) : DvvInfoGroup
+
+data class SsnDvvInfoGroup(
+    @JsonProperty("tietoryhma")
+    override val type: String,
+    @JsonProperty("muutosattribuutti")
+    val changeAttribute: String?,
+    @JsonProperty("voimassaolo")
+    val activeState: String,
+    @JsonProperty("muutettuHenkilotunnus")
+    val modifiedSsn: String,
+    @JsonProperty("aktiivinenHenkilotunnus")
+    val activeSsn: String,
+    @JsonProperty("edellisetHenkilotunnukset")
+    val previousSsns: List<String>
 ) : DvvInfoGroup
 
 data class DvvDate(

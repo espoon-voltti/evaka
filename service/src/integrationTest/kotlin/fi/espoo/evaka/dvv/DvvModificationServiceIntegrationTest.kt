@@ -74,4 +74,15 @@ class DvvModificationServiceIntegrationTest : FullApplicationTest() {
         assertEquals("010579-9999", caretaker.caretaker.ssn)
         assertEquals("2020-09-08", caretaker.caretakingStartDate?.date)
     }
+
+    @Test
+    fun `ssn change`() {
+        val response: DvvModificationsResponse = dvvModificationsServiceClient.getModifications("100000000", listOf("hetu-muutettu"))!!
+        assertEquals("HENKILOTUNNUS_KORJAUS", response.modifications[0].infoGroups[0].type)
+        val ssnModified = response.modifications[0].infoGroups[0] as SsnDvvInfoGroup
+        assertEquals("LISATTY", ssnModified.changeAttribute)
+        assertEquals("AKTIIVI", ssnModified.activeState)
+        assertEquals("010218-9999", ssnModified.activeSsn)
+        assertEquals("010118-9999", ssnModified.previousSsns.get(0))
+    }
 }

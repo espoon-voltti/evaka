@@ -338,6 +338,44 @@ val modifications = mapOf<String, String>(
   ],
   "muutospv": "2020-10-01T04:38:04.394Z"
 }            
+    """.trimIndent(),
+    "hetu-muutettu" to """
+{
+      "henkilotunnus": "010118-9999",
+      "tietoryhmat": [
+        {
+          "tietoryhma": "HENKILOTUNNUS_KORJAUS",
+          "voimassaolo": "AKTIIVI",
+          "muutosattribuutti": "LISATTY",
+          "muutettuHenkilotunnus": "010218-9999",
+          "aktiivinenHenkilotunnus": "010218-9999",
+          "edellisetHenkilotunnukset": [
+            "010118-9999"
+          ]
+        },
+        {
+          "tietoryhma": "HENKILOTUNNUS_KORJAUS",
+          "voimassaolo": "PASSIIVI",
+          "muutosattribuutti": "MUUTETTU",
+          "muutettuHenkilotunnus": "010118-9999",
+          "aktiivinenHenkilotunnus": "010218-9999",
+          "edellisetHenkilotunnukset": [
+            "010118-9999"
+          ]
+        },
+        {
+          "tietoryhma": "HENKILON_NIMI",
+          "etunimi": "Etunimi12",
+          "sukunimi": "Sukunimi12",
+          "alkupv": {
+            "tarkkuus": "PAIVA",
+            "arvo": "2019-04-23"
+          },
+          "muutosattribuutti": "LISATIETO"
+        }
+      ],
+      "muutospv": "2019-09-24T21:00:00.000Z"
+    }
     """.trimIndent()
 )
 
