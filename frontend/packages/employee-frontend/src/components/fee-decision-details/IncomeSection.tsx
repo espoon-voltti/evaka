@@ -5,8 +5,9 @@
 import React from 'react'
 
 import LabelValueList from '~components/common/LabelValueList'
+import { Gap } from '~components/shared/layout/white-space'
 import Section from '~components/shared/layout/Section'
-import Title from '~components/shared/atoms/Title'
+import { H3, H4 } from '~components/shared/Typography'
 import { useTranslation } from '../../state/i18n'
 import { formatCents } from '../../utils/money'
 import { Income, IncomeType, incomeTypes } from '../../types/income'
@@ -66,9 +67,7 @@ function IncomeSection({ decision }: Props) {
 
   return (
     <Section>
-      <Title size={3}>
-        {i18n.feeDecision.form.summary.income.familyComposition}
-      </Title>
+      <H3>{i18n.feeDecision.form.summary.income.familyComposition}</H3>
       <LabelValueList
         spacing="small"
         contents={[
@@ -86,7 +85,8 @@ function IncomeSection({ decision }: Props) {
           }
         ]}
       />
-      <Title size={3}>{i18n.feeDecision.form.summary.income.title}</Title>
+      <Gap size="m" />
+      <H3>{i18n.feeDecision.form.summary.income.title}</H3>
       <LabelValueList
         spacing="small"
         contents={[
@@ -101,7 +101,8 @@ function IncomeSection({ decision }: Props) {
               decision.headOfFamily.lastName,
               i18n
             ),
-            value: personIncome(decision.headOfFamilyIncome)
+            value: personIncome(decision.headOfFamilyIncome),
+            valueWidth: '100%'
           },
           ...(decision.partner
             ? [
@@ -111,26 +112,30 @@ function IncomeSection({ decision }: Props) {
                     decision.partner.lastName,
                     i18n
                   ),
-                  value: personIncome(decision.partnerIncome)
+                  value: personIncome(decision.partnerIncome),
+                  valueWidth: '100%'
                 }
               ]
             : [])
         ]}
       />
       {decision.totalIncome && decision.totalIncome > 0 ? (
-        <div
-          className="total-price slim"
-          data-qa="decision-summary-total-income"
-        >
-          <div>
-            <Title size={4}>
-              <b>{i18n.feeDecision.form.summary.income.total}</b>
-            </Title>
+        <>
+          <Gap size="s" />
+          <div
+            className="total-price slim"
+            data-qa="decision-summary-total-income"
+          >
+            <div>
+              <H4 noMargin>
+                <b>{i18n.feeDecision.form.summary.income.total}</b>
+              </H4>
+            </div>
+            <div>
+              <b>{formatCents(decision.totalIncome)} €</b>
+            </div>
           </div>
-          <div>
-            <b>{formatCents(decision.totalIncome)} €</b>
-          </div>
-        </div>
+        </>
       ) : null}
     </Section>
   )

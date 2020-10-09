@@ -5,6 +5,7 @@
 import React from 'react'
 
 import { faEuroSign } from 'icon-set'
+import { Gap } from '~components/shared/layout/white-space'
 import CollapsibleSection from '~components/shared/molecules/CollapsibleSection'
 import Title from '~components/shared/atoms/Title'
 import IncomeSection from './IncomeSection'
@@ -30,7 +31,9 @@ const Summary = React.memo(function Summary({ decision }: Props) {
       className="income-summary"
     >
       <IncomeSection decision={decision} />
+      <Gap size="m" />
       <PartsSection decision={decision} />
+      <Gap size="m" />
       <div className="total-price" data-qa="decision-summary-total-price">
         <div>
           <Title size={3}>

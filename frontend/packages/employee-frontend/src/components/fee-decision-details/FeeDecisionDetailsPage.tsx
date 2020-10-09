@@ -81,13 +81,11 @@ const FeeDecisionDetailsPage = React.memo(function FeeDecisionDetailsPage() {
           <ReturnButton dataQa="navigate-back" />
           {isSuccess(decision) && (
             <ContentArea opaque>
-              {decision && (
-                <Heading
-                  {...decision.data}
-                  changeDecisionType={changeDecisionType}
-                  newDecisionType={newDecisionType}
-                />
-              )}
+              <Heading
+                {...decision.data}
+                changeDecisionType={changeDecisionType}
+                newDecisionType={newDecisionType}
+              />
               {decision.data.parts.map(
                 ({ child, placement, placementUnit }) => (
                   <ChildSection
