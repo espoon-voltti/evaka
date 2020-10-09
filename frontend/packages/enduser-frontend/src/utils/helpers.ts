@@ -64,6 +64,11 @@ export const providerIsPrivate = (provider: string) =>
   provider.length > 0 &&
   provider.toUpperCase() === PROVIDER_TYPE.PRIVATE
 
+export const providerIsVoucher = (provider: string) =>
+  provider &&
+  provider.length > 0 &&
+  provider.toUpperCase() === PROVIDER_TYPE.PRIVATE_SERVICE_VOUCHER
+
 export const providerIsPurchased = (provider: string) =>
   provider &&
   provider.length > 0 &&
