@@ -60,7 +60,7 @@ To start dev server connected to integration test database (suitable for e.g. ru
 ```sh
 ./gradlew bootRunTest
 ```
-Edit `gradle.properties` to run flyway commands against integration test database.
+Enable running flyway commands against integration test database in `gradle.properties`
 
 Run linter autofix:
 
