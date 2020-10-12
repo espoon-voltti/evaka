@@ -9,7 +9,7 @@ import { FeeDecisionDetailed } from '../../types/invoicing'
 import { formatCents } from '../../utils/money'
 import { formatName } from '~utils'
 import Section from '~components/shared/layout/Section'
-import Title from '~components/shared/atoms/Title'
+import { H3, H4 } from '~components/shared/Typography'
 
 interface Props {
   decision: FeeDecisionDetailed
@@ -20,7 +20,7 @@ function PartsSection({ decision }: Props) {
 
   return (
     <Section>
-      <Title size={3}>{i18n.feeDecision.form.summary.parts.title}</Title>
+      <H3>{i18n.feeDecision.form.summary.parts.title}</H3>
       {decision.parts.map(
         ({
           child,
@@ -44,9 +44,7 @@ function PartsSection({ decision }: Props) {
 
           return (
             <div key={child.id} className="part">
-              <Title size={4}>
-                {formatName(child.firstName, child.lastName, i18n)}
-              </Title>
+              <H4>{formatName(child.firstName, child.lastName, i18n)}</H4>
               <div className="part-row">
                 <div>{mainDescription}</div>
                 <div>

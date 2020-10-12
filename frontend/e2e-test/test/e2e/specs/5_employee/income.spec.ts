@@ -52,16 +52,20 @@ const incomeSum = Selector('[data-qa="income-sum-income"]')
 const expensesSum = Selector('[data-qa="income-sum-expenses"]')
 const toggleIncomeItemButton = Selector('[data-qa="toggle-income-item"]')
 const editIncomeItemButton = Selector('[data-qa="edit-income-item"]')
-const coefficient = (type: string) =>
+const coefficientSelect = (type: string) =>
   Selector(`[data-qa="income-coefficient-select-${type}"]`)
+const coefficientOption = (type: string, option: string) =>
+  Selector(`[data-qa="income-coefficient-select-${type}"]`).find(
+    `[data-qa="select-option-${option}"]`
+  )
 
 async function chooseCoefficient(
   t: TestController,
   type: string,
-  input: string
+  coefficient: string
 ) {
-  await t.typeText(coefficient(type).find('#react-select-2-input'), input)
-  await t.click(coefficient(type).find(`[id^="react-select-2-option-"`))
+  await t.click(coefficientSelect(type))
+  await t.click(coefficientOption(type, coefficient))
 }
 
 test('Create a new max fee accepted income.', async (t) => {
@@ -186,7 +190,7 @@ test('Income coefficients are saved and affect the sum.', async (t) => {
   await t.click(incomeEffect('INCOME'))
 
   await t.typeText(incomeInput('MAIN_INCOME'), '100000', { replace: true })
-  await chooseCoefficient(t, 'MAIN_INCOME', 'Vuosi')
+  await chooseCoefficient(t, 'MAIN_INCOME', 'YEARLY')
 
   await t.typeText(incomeInput('ALIMONY'), '50')
   await t.typeText(incomeInput('ALL_EXPENSES'), '35,75')

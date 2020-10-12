@@ -7,6 +7,7 @@ import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
 import LocalDate from '@evaka/lib-common/src/local-date'
+import { Gap } from '~components/shared/layout/white-space'
 import Title from '~components/shared/atoms/Title'
 import LabelValueList from '~components/common/LabelValueList'
 import { useTranslation } from '../../state/i18n'
@@ -21,7 +22,7 @@ import { getPdfUrl } from '../../api/invoicing'
 import WarningLabel from '~components/common/WarningLabel'
 import { EspooColours } from '~utils/colours'
 import { formatName } from '~utils'
-import Select from '~components/common/Select'
+import SimpleSelect from '~components/shared/atoms/form/SimpleSelect'
 
 export const TitleRow = styled.div`
   display: flex;
@@ -48,11 +49,7 @@ interface TypeSelectProps {
 const TypeSelect = ({ selected, changeDecisionType }: TypeSelectProps) => {
   const { i18n } = useTranslation()
 
-  interface Option {
-    value: string
-    label: string
-  }
-  const decisionTypeOptions: Option[] = [
+  const options = [
     { value: 'NORMAL', label: i18n.feeDecision.type.NORMAL },
     {
       value: 'RELIEF_ACCEPTED',
@@ -68,19 +65,11 @@ const TypeSelect = ({ selected, changeDecisionType }: TypeSelectProps) => {
     }
   ]
 
-  const initialValue = decisionTypeOptions.find(
-    (type) => type.value === selected
-  )
-
   return (
-    <Select
-      placeholder={'Valitse...'}
-      value={initialValue}
-      options={decisionTypeOptions}
-      fullWidth
-      onChange={(value) =>
-        value && 'value' in value ? changeDecisionType(value.value) : undefined
-      }
+    <SimpleSelect
+      value={selected}
+      options={options}
+      onChange={(e) => changeDecisionType(e.target.value)}
     />
   )
 }
@@ -194,8 +183,7 @@ const Heading = React.memo(function Heading({
       },
       {
         label: i18n.feeDecision.relief,
-        value: reliefValue,
-        valueWidth: '100%'
+        value: reliefValue
       },
       {
         label: i18n.feeDecision.sentAt,
@@ -217,6 +205,7 @@ const Heading = React.memo(function Heading({
         </InfoMarkers>
       </TitleRow>
       <LabelValueList spacing="small" contents={contents()}></LabelValueList>
+      <Gap size="L" />
     </>
   )
 })

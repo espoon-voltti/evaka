@@ -6,7 +6,7 @@ import React, { Dispatch, SetStateAction } from 'react'
 import styled from 'styled-components'
 
 import { Td, Tr } from 'components/shared/layout/Table'
-import Select from '~components/common/Select'
+import SimpleSelect from '~components/shared/atoms/form/SimpleSelect'
 import EuroInput from '~components/common/EuroInput'
 import { TableIncomeState } from '../IncomeTable'
 import { Translations } from '~state/i18n'
@@ -106,19 +106,18 @@ const IncomeTableRow = React.memo(function IncomeTableRow({
       <Td>
         {typesWithCoefficients.includes(type) ? (
           editing ? (
-            <Select
+            <SimpleSelect
+              value={coefficient}
               options={coefficientOptions}
-              onChange={(value) => {
-                value && 'value' in value
-                  ? updateData((prev) => ({
-                      ...prev,
-                      [type]: {
-                        amount: prev[type]?.amount ?? '',
-                        coefficient: value.value,
-                        monthlyAmount: undefined
-                      }
-                    }))
-                  : undefined
+              onChange={(e) => {
+                updateData((prev) => ({
+                  ...prev,
+                  [type]: {
+                    amount: prev[type]?.amount ?? '',
+                    coefficient: e.target.value,
+                    monthlyAmount: undefined
+                  }
+                }))
               }}
               data-qa={`income-coefficient-select-${type}`}
             />

@@ -16,6 +16,7 @@ type CommonProps = {
     value: string
   }>
   onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void
+  'data-qa'?: string
 }
 
 type NonNullableValue = {
@@ -35,16 +36,21 @@ export default React.memo(function Select({
   value,
   options,
   onChange,
+  'data-qa': dataQa,
   ...props
 }: Props) {
   return (
     <Wrapper className={className}>
-      <StyledSelect id={id} value={value} onChange={onChange}>
+      <StyledSelect id={id} value={value} onChange={onChange} data-qa={dataQa}>
         {'placeholder' in props && (
           <option value="">{props.placeholder}</option>
         )}
         {options.map((option) => (
-          <option key={option.value} value={option.value}>
+          <option
+            key={option.value}
+            value={option.value}
+            data-qa={`select-option-${option.value}`}
+          >
             {option.label}
           </option>
         ))}

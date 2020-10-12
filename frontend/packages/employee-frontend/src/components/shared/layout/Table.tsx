@@ -41,14 +41,14 @@ export const Th = styled.th<ThProps>`
   background: ${(p) => (p.sticky ? Greyscale.white : 'none')};
 `
 
-export const Td = styled.td`
+export const Td = styled.td<{ align?: 'right' | 'left' }>`
   line-height: 1.3em;
   border-style: solid;
   border-color: ${Greyscale.lighter};
   border-width: 0 0 1px;
   padding: ${DefaultMargins.s};
   vertical-align: top;
-  text-align: left;
+  text-align: ${(p) => p.align ?? 'left'};
 `
 
 interface TrProps {
