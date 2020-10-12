@@ -55,6 +55,13 @@ Run integration tests (needs to have docker daemon running):
 ./gradlew integrationTest
 ```
 
+To start dev server connected to integration test database (suitable for e.g. running E2E tests without cluttering
+ development data):
+```sh
+./gradlew bootRunTest
+```
+Enable running flyway commands against integration test database in `gradle.properties`
+
 Run linter autofix:
 
 ```sh
