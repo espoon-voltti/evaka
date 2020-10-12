@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
-import javax.annotation.PostConstruct
 
 private val logger = KotlinLogging.logger {}
 
@@ -37,7 +36,7 @@ class MockDvvModificationsService(private val mapper: ObjectMapper) {
         return ResponseEntity.ok(
             """
             {
-              "viimeisinKirjausavain": 100000021,
+              "viimeisinKirjausavain": ${body.viimeisinKirjausavain.toInt() + 1},
               "muutokset": [${getModifications(body.hetulista)}],
               "ajanTasalla": true
             }
@@ -51,7 +50,7 @@ fun getModifications(ssns: List<String>): String {
 }
 
 val modifications = mapOf<String, String>(
-    "010579-9999" to """
+    "nimenmuutos" to """
 {
   "henkilotunnus": "010579-9999",
   "tietoryhmat": [

@@ -6,6 +6,7 @@ package fi.espoo.evaka
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.kittinunf.fuel.core.FuelManager
+import fi.espoo.evaka.dvv.DvvModificationsService
 import fi.espoo.evaka.dvv.DvvModificationsServiceClient
 import fi.espoo.evaka.shared.config.SharedIntegrationTestConfig
 import fi.espoo.evaka.shared.config.defaultObjectMapper
@@ -50,6 +51,7 @@ abstract class FullApplicationTest {
     protected lateinit var vardaClient: VardaClient
 
     protected lateinit var dvvModificationsServiceClient: DvvModificationsServiceClient
+    protected lateinit var dvvModificationsService: DvvModificationsService
 
     @Autowired
     protected lateinit var env: Environment
@@ -68,6 +70,7 @@ abstract class FullApplicationTest {
         vardaClient = VardaClient(vardaTokenProvider, env, objectMapper, vardaBaseUrl)
         val mockDvvBaseUrl = "http://localhost:$httpPort/mock-integration/dvv/api"
         dvvModificationsServiceClient = DvvModificationsServiceClient(objectMapper, noCertCheckFuelManager(), env, mockDvvBaseUrl)
+        dvvModificationsService = DvvModificationsService(jdbi, dvvModificationsServiceClient)
     }
 
     fun noCertCheckFuelManager() = FuelManager().apply {

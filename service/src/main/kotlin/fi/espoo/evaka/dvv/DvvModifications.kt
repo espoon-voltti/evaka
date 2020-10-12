@@ -13,7 +13,9 @@ data class DvvModificationsResponse(
     @JsonProperty("viimeisinKirjausavain")
     val modificationToken: String,
     @JsonProperty("muutokset")
-    val modifications: List<DvvModification>
+    val modifications: List<DvvModification>,
+    @JsonProperty("ajanTasalla")
+    val upToDate: Boolean
 )
 
 data class DvvModification(
