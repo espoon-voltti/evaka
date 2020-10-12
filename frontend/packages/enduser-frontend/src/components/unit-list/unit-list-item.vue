@@ -33,16 +33,31 @@ SPDX-License-Identifier: LGPL-2.1-or-later
       <div class="address">{{ unit.streetAddress }}, {{ espooLocalized }}</div>
       <div class="chips">
         <c-chip-text
+          :raisedOrange="isSwedishUnit"
+          :raisedBlue="!isSwedishUnit"
+        >{{ language }}</c-chip-text
+        >
+        <c-chip-text
           :teal="providerIsMunicipal"
           :green="providerIsPurchased"
-          :blue="providerIsPrivate"
+          :blue="providerIsPrivate || providerIsVoucher"
           >{{ provider }}</c-chip-text
         >
         <c-chip-text
-          :raisedOrange="isSwedishUnit"
-          :raisedBlue="!isSwedishUnit"
-          >{{ language }}</c-chip-text
+          v-if="providerIsVoucher"
+          class="plain"
         >
+          <a
+            href="https://fi.wikipedia.org/wiki/Palveluseteli"
+            class="www-link strong"
+            target="_blank"
+            rel="noopener"
+          >
+            <font-awesome-icon :icon="['fal', 'euro-sign']"></font-awesome-icon>
+            <span>{{' '}}</span>
+            {{ $t('constants.provider-type.private_service_voucher') }}
+          </a>
+        </c-chip-text>
       </div>
     </div>
   </div>
@@ -54,7 +69,8 @@ SPDX-License-Identifier: LGPL-2.1-or-later
   import {
     providerIsMunicipal,
     providerIsPrivate,
-    providerIsPurchased
+    providerIsPurchased,
+    providerIsVoucher
   } from '@/utils/helpers'
 
   export default {
@@ -115,10 +131,14 @@ SPDX-License-Identifier: LGPL-2.1-or-later
         return this.unit ? this.unit.address : ''
       },
       provider() {
-        if (this.unit && this.unit.provider_type) {
-          return this.$t(
-            `constants.provider-type.${this.unit.provider_type.toLowerCase()}`
-          )
+        if (this.unit && this.unit.providerType) {
+          if(this.providerIsVoucher) {
+            return this.$t(`constants.provider-type.private`)
+          } else {
+            return this.$t(
+              `constants.provider-type.${this.unit.providerType.toLowerCase()}`
+            )
+          }
         } else {
           return this.$t('constants.provider-type.municipal')
         }
@@ -130,13 +150,16 @@ SPDX-License-Identifier: LGPL-2.1-or-later
         )
       },
       providerIsMunicipal() {
-        return providerIsMunicipal(this.unit.provider_type)
+        return providerIsMunicipal(this.unit.providerType)
       },
       providerIsPrivate() {
-        return providerIsPrivate(this.unit.provider_type)
+        return providerIsPrivate(this.unit.providerType)
+      },
+      providerIsVoucher() {
+        return providerIsVoucher(this.unit.providerType)
       },
       providerIsPurchased() {
-        return providerIsPurchased(this.unit.provider_type)
+        return providerIsPurchased(this.unit.providerType)
       }
     },
     methods: {
@@ -223,8 +246,12 @@ SPDX-License-Identifier: LGPL-2.1-or-later
       color: #6e6e6e;
       font-size: 15px;
     }
-    .chips :nth-child(2) {
-      margin-left: 0.5rem;
+    .chip{
+      margin-right: 12px;
+
+      &.plain {
+        padding-left: 0;
+      }
     }
   }
 </style>

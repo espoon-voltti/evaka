@@ -88,8 +88,8 @@
     "provider-type": {
       "municipal": "Kunnallinen",
       "purchased": "Ostopalvelu",
-      "private": "Yksityinen palvelu",
-      "private_service_voucher": "Yksityinen palvelu (palveluseteli)"
+      "private": "Yksityinen",
+      "private_service_voucher": "Palveluseteli"
     },
     "daycare-language": {
       "fi": "Suomenkielinen",

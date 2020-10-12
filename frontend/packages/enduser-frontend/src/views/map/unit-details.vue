@@ -11,22 +11,35 @@ SPDX-License-Identifier: LGPL-2.1-or-later
         {{ unit.name }}
       </h5>
       <h6 class="subtitle is-6">{{ unit.address }}, Espoo</h6>
+      <div class="www-provider-details">
+        <a
+          v-if="!!unit.url"
+          :href="unit.url"
+          class="www-link strong"
+          target="_blank"
+          rel="noopener"
+        >
+          www
+          <font-awesome-icon :icon="['fal', 'link']"></font-awesome-icon>
+        </a>
+        <span v-else class="www-link"></span>
+      </div>
     </div>
 
     <div class="www-provider-details">
-      <a
-        v-if="!!unit.url"
-        :href="unit.url"
-        class="www-link strong"
-        target="_blank"
-        rel="noopener"
-      >
-        www
-        <font-awesome-icon :icon="['fal', 'link']"></font-awesome-icon>
-      </a>
-      <span v-else class="www-link"></span>
-
       <c-chip-text v-if="isNotClubType">{{ provider }}</c-chip-text>
+      <c-chip-text v-if="isServiceVoucher">
+        <a
+          href="https://fi.wikipedia.org/wiki/Palveluseteli"
+          class="www-link strong"
+          target="_blank"
+          rel="noopener"
+        >
+          <font-awesome-icon :icon="['fal', 'euro-sign']"></font-awesome-icon>
+          <span>{{' '}}</span>
+          {{ $t('constants.provider-type.private_service_voucher') }}
+        </a>
+      </c-chip-text>
       <c-chip-text v-if="isNotClubType">{{ language }}</c-chip-text>
     </div>
   </div>
@@ -56,13 +69,23 @@ SPDX-License-Identifier: LGPL-2.1-or-later
       isNotClubType() {
         return !this.unit.type.includes(UNIT_TYPE.CLUB)
       },
+      isServiceVoucher() {
+        return this.unit.provider_type === 'PRIVATE_SERVICE_VOUCHER'
+      },
       provider() {
-        return this.unit.provider_type
-          ? this.$t(
+        if(this.isServiceVoucher) {
+          return this.$t(
+            `constants.provider-type.private`,
+            { returnObjects: true }
+          )
+        } else {
+          return this.unit.provider_type
+            ? this.$t(
               `constants.provider-type.${this.unit.provider_type.toLowerCase()}`,
               { returnObjects: true }
             )
-          : this.$t('constants.provider-type.municipal')
+            : this.$t('constants.provider-type.municipal')
+        }
       },
       language() {
         return this.unit.language
@@ -106,7 +129,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
     display: flex;
     flex-direction: column;
     flex: 1 0 auto;
-    padding: 0 42px 1rem 0;
+    padding: 0 42px 0 0;
 
     .subtitle {
       margin-bottom: 0;
@@ -175,11 +198,15 @@ SPDX-License-Identifier: LGPL-2.1-or-later
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 0.75rem;
+    margin: 0.5rem 0;
 
     .www-link {
       color: #3273dc;
       min-width: 60px;
+    }
+
+    .chip {
+      padding-left: 0;
     }
   }
 

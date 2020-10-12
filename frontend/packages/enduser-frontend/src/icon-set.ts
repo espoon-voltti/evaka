@@ -44,6 +44,7 @@ export type IconSet = {
   falChild: IconDefinition
   falClock: IconDefinition
   falEnvelope: IconDefinition
+  falEuroSign: IconDefinition
   falExclamation: IconDefinition
   falExclamationTriangle: IconDefinition
   falFile: IconDefinition
