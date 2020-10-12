@@ -8,6 +8,7 @@ import fi.espoo.evaka.daycare.service.CareType
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
+import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
@@ -16,6 +17,7 @@ import fi.espoo.evaka.shared.dev.insertTestChildAttendance
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroupPlacement
 import fi.espoo.evaka.shared.dev.insertTestPlacement
+import fi.espoo.evaka.shared.dev.updateDaycareAclWithEmployee
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDecisionMaker_1
@@ -54,6 +56,7 @@ class ChildAttendanceIntegrationTest : FullApplicationTest() {
                 startDate = placementStart,
                 endDate = placementEnd
             )
+            updateDaycareAclWithEmployee(h, testDaycare.id, staffUser.id, UserRole.STAFF)
         }
     }
 
