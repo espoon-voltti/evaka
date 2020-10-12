@@ -96,7 +96,7 @@ function getFilename(
   return `${prefix}-${time}-${careAreaName}.csv`.replace(/ /g, '_')
 }
 
-type ValueOnReport = 'percentage' | 'headcount'
+type ValueOnReport = 'percentage' | 'headcount' | 'raw'
 
 function getOccupancyAverage(
   row: OccupancyReportRow,
@@ -143,36 +143,56 @@ function getDisplayCells(
   usedValues: ValueOnReport
 ): string[][] {
   return reportRows.map((row) => {
-    const average =
-      usedValues === 'headcount'
-        ? getHeadCountAverage(row, dates)
-        : getOccupancyAverage(row, dates)
-
-    const roundedAverage =
-      average !== null ? Math.round(10 * average) / 10 : undefined
-
-    return [
-      row.unitName,
-      row.groupName,
-
-      // average
-      (usedValues === 'percentage'
-        ? formatPercentage(roundedAverage)
-        : formatDecimal(roundedAverage)) ?? '',
-
-      // daily values
-      ...dates.map((date) => {
+    if (usedValues === 'raw') {
+      const cells = [row.unitName, row.groupName].filter(
+        (cell) => cell !== undefined
+      ) as string[]
+      for (const date of dates) {
         const occupancy = row.occupancies[formatDate(date, DATE_FORMAT_ISO)]
+        cells.push(
+          typeof occupancy?.sum === 'number'
+            ? occupancy.sum.toFixed(2).replace('.', ',')
+            : '0'
+        )
+        cells.push(
+          typeof occupancy?.caretakers === 'number'
+            ? occupancy.caretakers.toFixed(2).replace('.', ',')
+            : '0'
+        )
+      }
+      return cells
+    } else {
+      const average =
+        usedValues === 'headcount'
+          ? getHeadCountAverage(row, dates)
+          : getOccupancyAverage(row, dates)
 
-        if (usedValues === 'percentage') {
-          return typeof occupancy?.percentage === 'number'
-            ? formatPercentage(occupancy.percentage)
-            : ''
-        } else {
-          return occupancy?.[usedValues] ?? ''
-        }
-      })
-    ].filter((cell) => cell !== undefined) as string[]
+      const roundedAverage =
+        average !== null ? Math.round(10 * average) / 10 : undefined
+
+      return [
+        row.unitName,
+        row.groupName,
+
+        // average
+        (usedValues === 'percentage'
+          ? formatPercentage(roundedAverage)
+          : formatDecimal(roundedAverage)) ?? '',
+
+        // daily values
+        ...dates.map((date) => {
+          const occupancy = row.occupancies[formatDate(date, DATE_FORMAT_ISO)]
+
+          if (usedValues === 'percentage') {
+            return typeof occupancy?.percentage === 'number'
+              ? formatPercentage(occupancy.percentage)
+              : ''
+          } else {
+            return occupancy?.[usedValues] ?? ''
+          }
+        })
+      ].filter((cell) => cell !== undefined) as string[]
+    }
   })
 }
 
@@ -203,8 +223,16 @@ function Occupancies() {
   const displayCells: string[][] = isSuccess(rows)
     ? getDisplayCells(rows.data, dates, usedValues)
     : []
+  const dateCols = dates.reduce((cols, date) => {
+    cols.push(date)
+    if (usedValues === 'raw') cols.push(date)
+    return cols
+  }, [] as Date[])
 
   const includeGroups = filters.type.startsWith('GROUP_')
+
+  const months = monthOptions()
+  const years = yearOptions()
 
   return (
     <Container>
@@ -216,7 +244,10 @@ function Occupancies() {
           <FlexRow>
             <Wrapper>
               <ReactSelect
-                options={monthOptions()}
+                options={months}
+                value={months.find(
+                  (opt) => opt.value === filters.month.toString()
+                )}
                 onChange={(value) => {
                   if (value && 'value' in value) {
                     const month = parseInt(value.value)
@@ -228,7 +259,10 @@ function Occupancies() {
             </Wrapper>
             <Wrapper>
               <ReactSelect
-                options={yearOptions()}
+                options={years}
+                value={years.find(
+                  (opt) => opt.value === filters.year.toString()
+                )}
                 onChange={(value) => {
                   if (value && 'value' in value) {
                     const year = parseInt(value.value)
@@ -266,6 +300,10 @@ function Occupancies() {
                   label: i18n.reports.occupancies.filters.types.GROUP_REALIZED
                 }
               ]}
+              value={{
+                value: filters.type,
+                label: i18n.reports.occupancies.filters.types[filters.type]
+              }}
               onChange={(value) => {
                 if (value && 'value' in value) {
                   setFilters({
@@ -302,21 +340,28 @@ function Occupancies() {
             <ReactSelect
               options={[
                 {
-                  value: 'percentage',
+                  value: 'percentage' as ValueOnReport,
                   label:
                     i18n.reports.occupancies.filters.valuesOnReport.percentage
                 },
                 {
-                  value: 'headcount',
+                  value: 'headcount' as ValueOnReport,
                   label:
                     i18n.reports.occupancies.filters.valuesOnReport.headcount
+                },
+                {
+                  value: 'raw' as ValueOnReport,
+                  label: i18n.reports.occupancies.filters.valuesOnReport.raw
                 }
               ]}
+              value={{
+                value: usedValues,
+                label:
+                  i18n.reports.occupancies.filters.valuesOnReport[usedValues]
+              }}
               onChange={(value) => {
                 if (value && 'value' in value) {
-                  setUsedValues(
-                    value.value === 'headcount' ? 'headcount' : 'percentage'
-                  )
+                  setUsedValues(value.value)
                 }
               }}
               styles={reactSelectStyles}
@@ -332,8 +377,10 @@ function Occupancies() {
                 [
                   i18n.reports.common.unitName,
                   includeGroups ? i18n.reports.common.groupName : undefined,
-                  i18n.reports.occupancies.average,
-                  ...dates.map((date) => formatDate(date, 'dd.MM.'))
+                  usedValues !== 'raw'
+                    ? i18n.reports.occupancies.average
+                    : undefined,
+                  ...dateCols.map((date) => formatDate(date, 'dd.MM.'))
                 ].filter((label) => label !== undefined),
                 ...displayCells
               ]}
@@ -350,9 +397,11 @@ function Occupancies() {
                 <Tr>
                   <Th>{i18n.reports.common.unitName}</Th>
                   {includeGroups && <Th>{i18n.reports.common.groupName}</Th>}
-                  <Th>{i18n.reports.occupancies.average}</Th>
-                  {dates.map((date) => (
-                    <Th key={date.toDateString()}>
+                  {usedValues !== 'raw' && (
+                    <Th>{i18n.reports.occupancies.average}</Th>
+                  )}
+                  {dateCols.map((date, i) => (
+                    <Th key={`${date.toDateString()}:${i}`}>
                       {formatDate(date, 'dd.MM.')}
                     </Th>
                   ))}
