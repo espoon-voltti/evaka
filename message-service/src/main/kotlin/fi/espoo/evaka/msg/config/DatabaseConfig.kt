@@ -21,6 +21,7 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.core.env.Environment
 import org.springframework.core.env.get
+import org.springframework.core.env.getProperty
 import java.util.concurrent.TimeUnit
 import javax.sql.DataSource
 
@@ -59,7 +60,7 @@ class DatabaseConfig {
                 jdbcUrl = env["voltti.datasource.url"]
                 username = dataSourceUsername
                 password = env["voltti.datasource.password"]
-                leakDetectionThreshold = TimeUnit.MILLISECONDS.convert(1, TimeUnit.MINUTES)
+                leakDetectionThreshold = env.getProperty<Long>("spring.datasource.hikari.leak-detection-threshold") ?: 0
                 addDataSourceProperty("socketTimeout", TimeUnit.SECONDS.convert(15, TimeUnit.MINUTES).toInt())
             }
         )
