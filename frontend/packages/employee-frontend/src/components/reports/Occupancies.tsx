@@ -144,17 +144,19 @@ function getDisplayCells(
 ): string[][] {
   return reportRows.map((row) => {
     if (usedValues === 'raw') {
-      const cells: string[] = []
+      const cells = [row.unitName, row.groupName].filter(
+        (cell) => cell !== undefined
+      ) as string[]
       for (const date of dates) {
         const occupancy = row.occupancies[formatDate(date, DATE_FORMAT_ISO)]
         cells.push(
           typeof occupancy?.sum === 'number'
-            ? occupancy.sum.toFixed(1).replace('.', ',')
+            ? occupancy.sum.toFixed(2).replace('.', ',')
             : '0'
         )
         cells.push(
           typeof occupancy?.caretakers === 'number'
-            ? occupancy.caretakers.toFixed(1).replace('.', ',')
+            ? occupancy.caretakers.toFixed(2).replace('.', ',')
             : '0'
         )
       }
@@ -229,6 +231,9 @@ function Occupancies() {
 
   const includeGroups = filters.type.startsWith('GROUP_')
 
+  const months = monthOptions()
+  const years = yearOptions()
+
   return (
     <Container>
       <ReturnButton />
@@ -239,7 +244,10 @@ function Occupancies() {
           <FlexRow>
             <Wrapper>
               <ReactSelect
-                options={monthOptions()}
+                options={months}
+                value={months.find(
+                  (opt) => opt.value === filters.month.toString()
+                )}
                 onChange={(value) => {
                   if (value && 'value' in value) {
                     const month = parseInt(value.value)
@@ -251,7 +259,10 @@ function Occupancies() {
             </Wrapper>
             <Wrapper>
               <ReactSelect
-                options={yearOptions()}
+                options={years}
+                value={years.find(
+                  (opt) => opt.value === filters.year.toString()
+                )}
                 onChange={(value) => {
                   if (value && 'value' in value) {
                     const year = parseInt(value.value)
@@ -289,6 +300,10 @@ function Occupancies() {
                   label: i18n.reports.occupancies.filters.types.GROUP_REALIZED
                 }
               ]}
+              value={{
+                value: filters.type,
+                label: i18n.reports.occupancies.filters.types[filters.type]
+              }}
               onChange={(value) => {
                 if (value && 'value' in value) {
                   setFilters({
@@ -339,6 +354,11 @@ function Occupancies() {
                   label: i18n.reports.occupancies.filters.valuesOnReport.raw
                 }
               ]}
+              value={{
+                value: usedValues,
+                label:
+                  i18n.reports.occupancies.filters.valuesOnReport[usedValues]
+              }}
               onChange={(value) => {
                 if (value && 'value' in value) {
                   setUsedValues(value.value)
