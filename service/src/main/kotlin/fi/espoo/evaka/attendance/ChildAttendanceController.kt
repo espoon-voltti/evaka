@@ -1,6 +1,10 @@
 package fi.espoo.evaka.attendance
 
+import fi.espoo.evaka.Audit
 import fi.espoo.evaka.pis.dao.mapPSQLException
+import fi.espoo.evaka.shared.auth.AccessControlList
+import fi.espoo.evaka.shared.auth.AuthenticatedUser
+import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.transaction
 import org.jdbi.v3.core.Jdbi
 import org.jdbi.v3.core.JdbiException
@@ -17,12 +21,20 @@ import java.util.UUID
 
 @RestController
 @RequestMapping("/child-attendances")
-class ChildAttendanceController(private val jdbi: Jdbi) {
+class ChildAttendanceController(
+    private val jdbi: Jdbi,
+    private val acl: AccessControlList
+) {
 
     @PostMapping("/arrive")
     fun childArrives(
+        user: AuthenticatedUser,
         @RequestBody body: ArrivalRequest
     ): ResponseEntity<ChildAttendance> {
+        Audit.ChildAttendanceArrive.log(targetId = body.childId)
+        acl.getRolesForChild(user, body.childId)
+            .requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF)
+
         try {
             return jdbi.transaction {
                 it.createAttendance(
@@ -37,8 +49,13 @@ class ChildAttendanceController(private val jdbi: Jdbi) {
 
     @PostMapping("/depart")
     fun childDeparts(
+        user: AuthenticatedUser,
         @RequestBody body: DepartureRequest
     ): ResponseEntity<Unit> {
+        Audit.ChildAttendanceDepart.log(targetId = body.childId)
+        acl.getRolesForChild(user, body.childId)
+            .requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF)
+
         try {
             jdbi.transaction {
                 it.updateCurrentAttendanceEnd(
@@ -54,8 +71,13 @@ class ChildAttendanceController(private val jdbi: Jdbi) {
 
     @GetMapping("/current")
     fun getChildrenInGroup(
+        user: AuthenticatedUser,
         @RequestParam groupId: UUID
     ): ResponseEntity<List<ChildInGroup>> {
+        Audit.ChildAttendanceReadGroup.log(targetId = groupId)
+        acl.getRolesForUnitGroup(user, groupId)
+            .requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF)
+
         return jdbi.transaction { it.getChildrenInGroup(groupId) }
             .let { ResponseEntity.ok(it) }
     }
