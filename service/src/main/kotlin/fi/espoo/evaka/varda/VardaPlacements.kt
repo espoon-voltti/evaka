@@ -96,7 +96,7 @@ SELECT
 FROM daycare_placement p
 LEFT JOIN varda_placement vp ON p.id = vp.evaka_placement_id
 JOIN varda_unit vu ON p.unit_id = vu.evaka_daycare_id
-JOIN daycare ON vu.evaka_daycare_id = daycare.id AND daycare.oph_unit_oid IS NOT NULL
+JOIN daycare ON vu.evaka_daycare_id = daycare.id AND daycare.upload_to_varda = true AND daycare.oph_unit_oid IS NOT NULL
 JOIN sent_decision d
     ON p.child_id = d.child_id
     AND p.unit_id = d.unit_id

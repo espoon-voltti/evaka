@@ -150,7 +150,7 @@ SELECT
     latest_sn.shift_care AS shift_care,
     u.provider_type AS provider_type
 FROM accepted_daycare_decision d
-JOIN daycare u ON d.unit_id = u.id
+JOIN daycare u ON (d.unit_id = u.id AND u.upload_to_varda = true)
 JOIN varda_child vc ON d.child_id = vc.person_id
 LEFT JOIN varda_decision vd ON d.id = vd.evaka_decision_id
 LEFT JOIN LATERAL (
