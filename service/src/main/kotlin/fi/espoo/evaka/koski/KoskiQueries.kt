@@ -73,6 +73,7 @@ SELECT
     kvsr.*,
     ksr.id AS study_right_id, ksr.study_right_oid,
     d.language AS daycare_language,
+    d.provider_type AS daycare_provider_type,
     pr.social_security_number ssn,
     pr.first_name,
     pr.last_name
@@ -93,6 +94,7 @@ SELECT
     kasr.*,
     ksr.id AS study_right_id, ksr.study_right_oid,
     d.language AS daycare_language,
+    d.provider_type AS daycare_provider_type,
     um.name AS approver_name,
     pr.social_security_number ssn,
     pr.first_name,

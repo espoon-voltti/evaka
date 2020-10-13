@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.koski
 
+import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.derivePreschoolTerm
 import fi.espoo.evaka.shared.domain.ClosedPeriod
 import org.jdbi.v3.core.mapper.Nested
@@ -26,6 +27,7 @@ data class KoskiChildRaw(
 
 data class KoskiUnitRaw(
     val daycareLanguage: String,
+    val daycareProviderType: ProviderType,
     val ophUnitOid: String,
     val ophOrganizationOid: String,
     val ophOrganizerOid: String
@@ -48,6 +50,13 @@ data class KoskiUnitRaw(
         suorituskieli = Suorituskieli(daycareLanguage.toUpperCase()),
         tyyppi = SuorituksenTyyppi(SuorituksenTyyppiKoodi.PRESCHOOL)
     )
+    fun haeJärjestämisMuoto() = when (daycareProviderType) {
+        ProviderType.PURCHASED -> Järjestämismuoto(JärjestämismuotoKoodi.PURCHASED)
+        ProviderType.PRIVATE_SERVICE_VOUCHER -> Järjestämismuoto(JärjestämismuotoKoodi.PRIVATE_SERVICE_VOUCHER)
+        ProviderType.MUNICIPAL -> null
+        ProviderType.PRIVATE -> null
+        ProviderType.MUNICIPAL_SCHOOL -> null
+    }
 }
 
 data class KoskiVoidedDataRaw(
@@ -78,7 +87,8 @@ data class KoskiVoidedDataRaw(
             lähdejärjestelmä = Lähdejärjestelmä(koodiarvo = sourceSystem)
         ),
         tyyppi = OpiskeluoikeudenTyyppi(type),
-        lisätiedot = null
+        lisätiedot = null,
+        järjestämismuoto = unit.haeJärjestämisMuoto()
     )
 }
 
@@ -189,7 +199,8 @@ data class KoskiActiveDataRaw(
                 lähdejärjestelmä = Lähdejärjestelmä(koodiarvo = sourceSystem)
             ),
             tyyppi = OpiskeluoikeudenTyyppi(type),
-            lisätiedot = if (type == OpiskeluoikeudenTyyppiKoodi.PREPARATORY) null else haeLisätiedot()
+            lisätiedot = if (type == OpiskeluoikeudenTyyppiKoodi.PREPARATORY) null else haeLisätiedot(),
+            järjestämismuoto = unit.haeJärjestämisMuoto()
         )
     }
 
