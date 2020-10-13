@@ -7,24 +7,22 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 # eVaka compose
 
 This repository contains everything needed to run eVaka projects
-on local development locally.
+on local development environment.
 
 ## Prerequisites
 
 These are the prerequisites to run environment locally.
 
-### Required tooling
+### Development environments and operating systems
 
-eVaka uses [PM2](https://pm2.keymetrics.io/) for running multiple
-services in parallel. PM2 is an opinionated choice for
-development process in eVaka. However, installing PM2 is not strictly
-mandatory. Alternatively, you could run every sub-project separaterly.
+eVaka is being actively developed in Linux and macOS environments.
+We recommend using the package manager (e.g. `aptitude`, `homebrew` etc.)
+for your operating system for obtaining required software and packages.
 
-Install PM2 by running following command
-
-```bash
-npm install -g pm2
-```
+Development in Windows environment should also be possible, but we
+cannot guarantee it works out-of-the-box. In any case, we strongly recommend 
+installing [Windows Subsystem for Linux](https://docs.microsoft.com/en-us/windows/wsl/install-win10)
+for developing in Windows operating system.
 
 ### Dependencies
 
@@ -33,11 +31,35 @@ environment locally. You can install them through your development
 environment's package manager, or alternatively download binaries
 from websites provided below.
 
-- [Node.js](https://nodejs.org/en/) – a JavaScript runtime built on Chrome's V8 JavaScript engine, version 10
-- [Yarn](https://yarnpkg.com/getting-started/install) – Package manager for Node
+Please note that all the dependencies should be installed as 
+current user. Do not use elevated privileges, e.g. sudo to install
+packages.
+
+- [Node.js](https://nodejs.org/en/) – a JavaScript runtime built on Chrome's V8 JavaScript engine, version  12.13+
+- [Yarn](https://yarnpkg.com/getting-started/install) – Package manager for Node, version 1.22.10+
 - [JDK](https://openjdk.java.net/projects/jdk/11/) – Java Development
   Kit, version 11+. We recommend using OpenJDK implementation of JSR 384.
 - [Docker](https://docs.docker.com/get-docker/) – Docker is an open platform for developing, shipping, and running applications.
+
+
+### Required tooling
+
+eVaka uses [PM2](https://pm2.keymetrics.io/) for running multiple
+services in parallel. PM2 is an opinionated choice for
+development process in eVaka. Installing PM2 is not strictly
+mandatory. You can also run every sub-project in separate processes or
+build Docker images and run the stack using Docker (please refer to the
+[documentation for this](#running-the-full-stack-for-e2e-tests)).
+
+Install PM2 by running following command
+
+```bash
+npm install -g pm2
+```
+
+You will also need `nc/netcat` (Arbitrary TCP and UDP connections and listens) utility.
+If your operating system does not have this utility installed, please install
+it using your package manager. (E.g. on Ubuntu, run  `sudo apt-get install netcat`).
 
 ## Starting all sub-projects in development mode
 
@@ -91,7 +113,7 @@ Running the application with `./compose-e2e` is mainly
 designed for running E2E tests locally and in continuous integration
 (CI) pipelines.
 
-First, you need to build frontends and all the docker images.
+First, you need to build frontends and all the Docker images.
 
 With [free icons](../frontend/README.md#using-free-icons)
 
@@ -118,6 +140,12 @@ Access the frontends at
 - <http://localhost:9999/employee> – Frontend for the employee
 
 ## Troubleshooting
+
+### Docker
+
+If you are having troubles starting Docker, make sure the user is added
+to `docker` group. See [post-installation steps for Linux](https://docs.docker.com/engine/install/linux-postinstall/) 
+for further reference.
 
 ### Database
 
@@ -153,3 +181,22 @@ docker volume prune
 # or take down services and volumes altogether with
 docker-compose down -v
 ```
+
+### Unable to start services correctly
+
+In case you are unable to start services properly (i.e. `pm2 status` command will)
+list some of the services `stopped`), please first double-check all the instructions
+in this document.
+
+Then, for investigating issues with specific service, please refer to the application logs.
+You can list the application logs for e.g. `service` or `apigw` with following commands:
+
+```bash
+# List logs for service
+pm2 logs service
+# List logs for apigw
+pm2 logs apigw
+```
+
+You should be able to start all the services without any modifications
+if you have followed the instructions carefully.
