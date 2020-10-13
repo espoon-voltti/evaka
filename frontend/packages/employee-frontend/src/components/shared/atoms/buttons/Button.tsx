@@ -11,7 +11,7 @@ import { defaultButtonTextStyle } from 'components/shared/atoms/buttons/button-c
 import { BaseProps } from 'components/shared/utils'
 
 export const StyledButton = styled.button`
-  height: 45px;
+  min-height: 45px;
   padding: 0 27px;
   width: fit-content;
   min-width: 100px;

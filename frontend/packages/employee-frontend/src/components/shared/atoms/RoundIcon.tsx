@@ -11,7 +11,7 @@ import classNames from 'classnames'
 import Colors from 'components/shared/Colors'
 import { shade } from 'polished'
 
-export type IconSize = 's' | 'm' | 'L' | 'XL'
+export type IconSize = 's' | 'm' | 'L' | 'XL' | 'XXL'
 
 interface IconContainerProps {
   color: string
@@ -71,6 +71,10 @@ const IconContainer = styled.div<IconContainerProps>`
   &.xl {
     font-size: 44px;
     ${diameter(64)}
+  }
+  &.xxl {
+    font-size: 80px;
+    ${diameter(128)}
   }
 `
 
