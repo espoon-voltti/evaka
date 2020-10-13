@@ -84,6 +84,7 @@ fun getFamilyContacts(
             LEFT JOIN person gu1 ON gu1.id = g1.guardian_id
             LEFT JOIN person gu2 ON gu2.id = g2.guardian_id
             WHERE pl.unit_id = :unitId AND daterange(pl.start_date, pl.end_date, '[]') @> current_date
+            ORDER BY ch.last_name, ch.first_name
         """.trimIndent()
 
     return h.createQuery(sql)
