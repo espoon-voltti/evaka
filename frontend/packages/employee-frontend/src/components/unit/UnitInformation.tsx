@@ -10,6 +10,8 @@ import { useTranslation } from '~state/i18n'
 import { Stats, Unit } from '~types/unit'
 import { DataList } from 'components/common/DataList'
 import { RequireRole } from '~utils/roles'
+import { Gap } from '~components/shared/layout/white-space'
+import { isNotProduction } from '~constants'
 
 const DetailsLink = styled(Link)`
   text-transform: uppercase;
@@ -107,11 +109,20 @@ function UnitInformation({ unit, caretakers }: Props) {
       {renderDaycareManager()}
 
       <RequireRole oneOf={['ADMIN']}>
-        <div className="separator-gap-small" />
+        <Gap size={'L'} />
         <DetailsLink to={`/units/${unit.id}/details`}>
           {i18n.unit.openDetails}
         </DetailsLink>
       </RequireRole>
+
+      {isNotProduction() && (
+        <RequireRole oneOf={['ADMIN']}>
+          <Gap size={'L'} />
+          <DetailsLink to={`/units/${unit.id}/attendance`}>
+            {i18n.unit.openMobilePOC}
+          </DetailsLink>
+        </RequireRole>
+      )}
     </div>
   )
 }
