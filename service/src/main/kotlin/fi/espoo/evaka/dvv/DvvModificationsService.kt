@@ -20,7 +20,6 @@ class DvvModificationsService(
     private val jdbi: Jdbi,
     private val dvvModificationsServiceClient: DvvModificationsServiceClient,
     private val personService: PersonService
-
 ) {
 
     fun updatePersonsFromDvv(ssns: List<String>) {
@@ -34,7 +33,7 @@ class DvvModificationsService(
         }
     }
 
-    fun handleDeath(ssn: String, deathDvvInfoGroup: DeathDvvInfoGroup) {
+    private fun handleDeath(ssn: String, deathDvvInfoGroup: DeathDvvInfoGroup) {
         personService.getPersonBySsn(ssn)?.let {
             val dateOfDeath = deathDvvInfoGroup.dateOfDeath?.asLocalDate() ?: LocalDate.now()
             logger.debug("Dvv modification: marking ${it.id} dead since $dateOfDeath")

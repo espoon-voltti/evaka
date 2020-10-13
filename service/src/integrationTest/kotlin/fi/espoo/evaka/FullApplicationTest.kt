@@ -6,8 +6,6 @@ package fi.espoo.evaka
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.kittinunf.fuel.core.FuelManager
-import fi.espoo.evaka.dvv.DvvModificationsService
-import fi.espoo.evaka.dvv.DvvModificationsServiceClient
 import fi.espoo.evaka.shared.config.SharedIntegrationTestConfig
 import fi.espoo.evaka.shared.config.defaultObjectMapper
 import fi.espoo.evaka.shared.config.getTestDataSource
@@ -24,12 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.web.server.LocalServerPort
 import org.springframework.core.env.Environment
-import java.security.cert.X509Certificate
 import java.time.LocalDate
-import javax.net.ssl.HostnameVerifier
-import javax.net.ssl.SSLContext
-import javax.net.ssl.TrustManager
-import javax.net.ssl.X509TrustManager
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @SpringBootTest(
@@ -50,9 +43,6 @@ abstract class FullApplicationTest {
     protected lateinit var vardaTokenProvider: VardaTokenProvider
     protected lateinit var vardaClient: VardaClient
 
-    protected lateinit var dvvModificationsServiceClient: DvvModificationsServiceClient
-    protected lateinit var dvvModificationsService: DvvModificationsService
-
     @Autowired
     protected lateinit var env: Environment
 
@@ -68,22 +58,5 @@ abstract class FullApplicationTest {
         val vardaBaseUrl = "http://localhost:$httpPort/mock-integration/varda/api"
         vardaTokenProvider = VardaTempTokenProvider(env, objectMapper, vardaBaseUrl)
         vardaClient = VardaClient(vardaTokenProvider, env, objectMapper, vardaBaseUrl)
-        val mockDvvBaseUrl = "http://localhost:$httpPort/mock-integration/dvv/api"
-        dvvModificationsServiceClient = DvvModificationsServiceClient(objectMapper, noCertCheckFuelManager(), env, mockDvvBaseUrl)
-        dvvModificationsService = DvvModificationsService(jdbi, dvvModificationsServiceClient)
-    }
-
-    fun noCertCheckFuelManager() = FuelManager().apply {
-        val trustAllCerts = arrayOf<TrustManager>(object : X509TrustManager {
-            override fun getAcceptedIssuers(): Array<X509Certificate>? = null
-            override fun checkClientTrusted(chain: Array<X509Certificate>, authType: String) = Unit
-            override fun checkServerTrusted(chain: Array<X509Certificate>, authType: String) = Unit
-        })
-
-        socketFactory = SSLContext.getInstance("SSL").apply {
-            init(null, trustAllCerts, java.security.SecureRandom())
-        }.socketFactory
-
-        hostnameVerifier = HostnameVerifier { _, _ -> true }
     }
 }
