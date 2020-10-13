@@ -25,12 +25,22 @@ private val logger = KotlinLogging.logger { }
 
 fun updateDecisions(h: Handle, client: VardaClient) {
     logger.debug { "Varda: Updating decisions" }
+    logger.debug { "Varda: removing decisions that are marked to be deleted from Varda" }
+    removeMarkedDecisions(h, client)
     logger.debug { "Varda: removing deleted decisions" }
     removeDeletedDecisions(h, client)
     logger.debug { "Varda: sending new decisions" }
     sendNewDecisions(h, client)
     logger.debug { "Varda: sending updated decisions" }
     sendUpdatedDecisions(h, client)
+}
+
+fun removeMarkedDecisions(h: Handle, client: VardaClient) {
+    val decisionIds: List<Long> = getDecisionsToDelete(h)
+    decisionIds.forEach { id ->
+        client.deleteDecision(id)
+        softDeleteDecision(h, id)
+    }
 }
 
 fun sendNewDecisions(h: Handle, client: VardaClient) {
@@ -331,19 +341,21 @@ private fun deleteDecision(h: Handle, vardaDecisionId: Long) {
         .execute()
 }
 
-fun softDeleteDecision(h: Handle, vardaPlacementId: Long) {
-    h.createUpdate("UPDATE varda_decision SET deleted = NOW() WHERE varda_placement_id = :id")
-        .bind("id", vardaPlacementId)
+fun softDeleteDecision(h: Handle, vardaDecisionId: Long) {
+    h.createUpdate("UPDATE varda_decision SET deleted = NOW() WHERE varda_decision_id = :vardaDecisionId")
+        .bind("vardaDecisionId", vardaDecisionId)
         .execute()
 }
 
 fun getDecisionsToDelete(h: Handle): List<Long> {
-    return h.createQuery("""
+    return h.createQuery(
+        """
 SELECT varda_decision_id 
 FROM varda_decision
 WHERE should_be_deleted = true
 AND deleted IS NULL
-""")
+"""
+    )
         .mapTo(Long::class.java)
         .toList()
 }

@@ -18,9 +18,18 @@ import java.time.LocalDate
 import java.util.UUID
 
 fun updatePlacements(h: Handle, client: VardaClient) {
+    removeMarkedPlacements(h, client)
     removeDeletedPlacements(h, client)
     sendNewPlacements(h, client)
     sendUpdatedPlacements(h, client)
+}
+
+fun removeMarkedPlacements(h: Handle, client: VardaClient) {
+    val placementIds: List<Long> = getPlacementsToDelete(h)
+    placementIds.forEach { id ->
+        client.deletePlacement(id)
+        softDeletePlacement(h, id)
+    }
 }
 
 fun sendNewPlacements(h: Handle, client: VardaClient) {
@@ -198,7 +207,6 @@ fun getPlacementsToDelete(h: Handle): List<Long> {
         .mapTo(Long::class.java)
         .toList()
 }
-
 
 data class VardaPlacement(
     @JsonProperty("varhaiskasvatuspaatos")

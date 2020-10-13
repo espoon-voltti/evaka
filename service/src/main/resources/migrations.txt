@@ -3,3 +3,4 @@ V2__remove_application_status_table.sql
 V3__drop_legacy_placement.sql
 V4__drop_enum_tables.sql
 V5__child_attendance.sql
+V6__add_delete_columns_to_varda_tables.sql

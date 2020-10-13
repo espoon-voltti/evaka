@@ -81,22 +81,3 @@ fun updateAll(
         logger.debug { "Varda update finished" }
     }
 }
-
-fun clearPlacementsAndDecisions(
-    jdbi: Jdbi,
-    client: VardaClient
-) {
-    jdbi.handle { h ->
-        val placementIds: List<Long> = getPlacementsToDelete(h)
-        placementIds.forEach { id ->
-            client.deletePlacement(id)
-            softDeletePlacement(h, id)
-        }
-
-        val decisionIds: List<Long> = getDecisionsToDelete(h)
-        decisionIds.forEach { id ->
-            client.deleteDecision(id)
-            softDeleteDecision(h, id)
-        }
-    }
-}

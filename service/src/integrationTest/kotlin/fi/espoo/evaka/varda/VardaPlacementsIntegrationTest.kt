@@ -265,7 +265,32 @@ class VardaPlacementsIntegrationTest : FullApplicationTest() {
             assertEquals(0, result.size)
         }
     }
+
+    @Test
+    fun `placement is soft deleted if it is flagged with should_be_deleted`() {
+        jdbi.handle { h ->
+            val period = ClosedPeriod(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))
+            insertVardaUnit(h)
+            val placementId = insertPlacement(h, testChild_1.id, period)
+            insertTestVardaDecision(h, placementId = placementId)
+
+            updatePlacements(h, vardaClient)
+
+            assertEquals(1, getVardaPlacements(h).size)
+            assertEquals(0, getSoftDeletedVardaPlacements(h).size)
+
+            h.createUpdate("UPDATE varda_placement SET should_be_deleted = true").execute()
+
+            updatePlacements(h, vardaClient)
+
+            assertEquals(1, getSoftDeletedVardaPlacements(h).size)
+        }
+    }
 }
+
+private fun getSoftDeletedVardaPlacements(h: Handle) = h.createQuery("SELECT * FROM varda_placement WHERE deleted IS NOT NULL")
+    .map(toVardaPlacementRow)
+    .toList()
 
 internal fun getVardaPlacements(h: Handle) = h.createQuery("SELECT * FROM varda_placement")
     .map(toVardaPlacementRow)
