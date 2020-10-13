@@ -154,6 +154,33 @@ export default React.memo(function ApplicationEditView({
                 }
                 dataQa="checkbox-urgent"
               />
+
+              {serviceNeed !== null && (
+                <>
+                  <Label>{i18n.application.serviceNeed.partTimeLabel}</Label>
+                  <div>
+                    <Radio
+                      label={i18n.application.serviceNeed.partTime}
+                      checked={serviceNeed.partTime === true}
+                      onChange={() => {
+                        setApplication(
+                          set('form.preferences.serviceNeed.partTime', true)
+                        )
+                      }}
+                    />
+                    <Gap size="xs" />
+                    <Radio
+                      label={i18n.application.serviceNeed.fullTime}
+                      checked={serviceNeed.partTime === false}
+                      onChange={() => {
+                        setApplication(
+                          set('form.preferences.serviceNeed.partTime', false)
+                        )
+                      }}
+                    />
+                  </div>
+                </>
+              )}
             </>
           )}
 

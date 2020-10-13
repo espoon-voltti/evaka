@@ -287,7 +287,10 @@ export const fi = {
       preparatoryValue: 'Haen myös valmistavaan opetukseen',
       assistanceLabel: 'Tuen tarve',
       assistanceValue: 'Lapsella on tuen tarve',
-      assistanceDesc: 'Tuen tarpeen kuvaus'
+      assistanceDesc: 'Tuen tarpeen kuvaus',
+      partTime: 'Osa-aikainen',
+      fullTime: 'Kokoaikainen',
+      partTimeLabel: 'Osa- tai kokoaikainen'
     },
     clubDetails: {
       wasOnClubCareLabel: 'Kerhossa edellisenä toimintakautena',
