@@ -187,6 +187,19 @@ fun deletePlacement(h: Handle, vardaPlacementId: Long) {
         .execute()
 }
 
+fun softDeletePlacement(h: Handle, vardaPlacementId: Long) {
+    h.createUpdate("UPDATE varda_placement SET deleted = NOW() WHERE varda_placement_id = :id")
+        .bind("id", vardaPlacementId)
+        .execute()
+}
+
+fun getPlacementsToDelete(h: Handle): List<Long> {
+    return h.createQuery("SELECT varda_placement_id FROM varda_placement WHERE should_be_deleted = true AND deleted IS NULL")
+        .mapTo(Long::class.java)
+        .toList()
+}
+
+
 data class VardaPlacement(
     @JsonProperty("varhaiskasvatuspaatos")
     val decisionUrl: String,

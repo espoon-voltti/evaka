@@ -331,6 +331,23 @@ private fun deleteDecision(h: Handle, vardaDecisionId: Long) {
         .execute()
 }
 
+fun softDeleteDecision(h: Handle, vardaPlacementId: Long) {
+    h.createUpdate("UPDATE varda_decision SET deleted = NOW() WHERE varda_placement_id = :id")
+        .bind("id", vardaPlacementId)
+        .execute()
+}
+
+fun getDecisionsToDelete(h: Handle): List<Long> {
+    return h.createQuery("""
+SELECT varda_decision_id 
+FROM varda_decision
+WHERE should_be_deleted = true
+AND deleted IS NULL
+""")
+        .mapTo(Long::class.java)
+        .toList()
+}
+
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class VardaDecision(
     @JsonProperty("lapsi")
