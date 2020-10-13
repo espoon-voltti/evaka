@@ -168,7 +168,7 @@ export const fi = {
       name: 'Lapsen nimi/hetu',
       dueDate: 'Käsiteltävä',
       startDate: 'Aloitus',
-      unit: 'Yksikkö',
+      preferredUnits: 'Toive',
       status: 'Tila',
       basis: 'Perusteet',
       lessthan3: 'Alle 3-vuotias hoidontarpeen alkaessa',
@@ -287,7 +287,10 @@ export const fi = {
       preparatoryValue: 'Haen myös valmistavaan opetukseen',
       assistanceLabel: 'Tuen tarve',
       assistanceValue: 'Lapsella on tuen tarve',
-      assistanceDesc: 'Tuen tarpeen kuvaus'
+      assistanceDesc: 'Tuen tarpeen kuvaus',
+      partTime: 'Osa-aikainen',
+      fullTime: 'Kokoaikainen',
+      partTimeLabel: 'Osa- tai kokoaikainen'
     },
     clubDetails: {
       wasOnClubCareLabel: 'Kerhossa edellisenä toimintakautena',
@@ -1724,8 +1727,7 @@ export const fi = {
         valueOnReport: 'Näytä tiedot',
         valuesOnReport: {
           percentage: 'Prosentteina',
-          headcount: 'Lukumääränä',
-          raw: 'Summa ja kasvattajamäärä erikseen'
+          headcount: 'Lukumääränä'
         }
       },
       average: 'Keskiarvo'

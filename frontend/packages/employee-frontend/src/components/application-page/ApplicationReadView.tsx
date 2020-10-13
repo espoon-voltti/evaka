@@ -136,6 +136,17 @@ function ApplicationReadView({
                 value={urgent}
                 selectedLabel={i18n.application.serviceNeed.urgentValue}
               />
+
+              {serviceNeed !== null && (
+                <>
+                  <Label>{i18n.application.serviceNeed.partTimeLabel}</Label>
+                  {serviceNeed.partTime ? (
+                    <span>{i18n.application.serviceNeed.partTime}</span>
+                  ) : (
+                    <span>{i18n.application.serviceNeed.fullTime}</span>
+                  )}
+                </>
+              )}
             </>
           )}
 
