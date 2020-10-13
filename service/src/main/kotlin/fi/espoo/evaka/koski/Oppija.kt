@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.koski
 
+import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonProperty
 import fi.espoo.evaka.shared.domain.ClosedPeriod
 import java.time.LocalDate
@@ -33,9 +34,22 @@ data class Suorituskieli(override val koodiarvo: String) :
 data class Lähdejärjestelmä(override val koodiarvo: String) :
     Koodistokoodiviite<String>("lahdejarjestelma")
 
+// https://koski.opintopolku.fi/koski/dokumentaatio/koodisto/vardajarjestamismuoto/latest
+data class Järjestämismuoto(override val koodiarvo: JärjestämismuotoKoodi) :
+    Koodistokoodiviite<JärjestämismuotoKoodi>("vardajarjestamismuoto")
+
 // https://github.com/Opetushallitus/koski/blob/bb25022e3eff22675246eb73f17a1c718c6f07f9/src/main/scala/fi/oph/koski/schema/Koodiviite.scala#L17
 abstract class Koodistokoodiviite<T>(val koodistoUri: String) {
     abstract val koodiarvo: T
+}
+
+// https://koski.opintopolku.fi/koski/dokumentaatio/koodisto/vardajarjestamismuoto/latest
+enum class JärjestämismuotoKoodi {
+    @JsonProperty("JM02")
+    PURCHASED,
+
+    @JsonProperty("JM03")
+    PRIVATE_SERVICE_VOUCHER
 }
 
 // https://koski.opintopolku.fi/koski/dokumentaatio/koodisto/koulutus/latest
@@ -105,7 +119,9 @@ data class Opiskeluoikeus(
     val oid: String?,
     val tyyppi: OpiskeluoikeudenTyyppi,
     val lähdejärjestelmänId: LähdejärjestelmäId,
-    val lisätiedot: Lisätiedot?
+    val lisätiedot: Lisätiedot?,
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    val järjestämismuoto: Järjestämismuoto?
 )
 
 // https://github.com/Opetushallitus/koski/blob/1f1d05bb80cbac46cd873419975ed421370b5035/src/main/scala/fi/oph/koski/schema/Opiskeluoikeus.scala#L226

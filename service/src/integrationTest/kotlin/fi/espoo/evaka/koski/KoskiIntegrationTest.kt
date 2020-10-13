@@ -8,6 +8,7 @@ import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.assistanceaction.AssistanceActionType
 import fi.espoo.evaka.assistanceaction.AssistanceMeasure
 import fi.espoo.evaka.assistanceneed.AssistanceBasis
+import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.invoicing.domain.PersonData
 import fi.espoo.evaka.placement.PlacementType
@@ -17,11 +18,14 @@ import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.dev.DevAssistanceAction
 import fi.espoo.evaka.shared.dev.DevAssistanceNeed
+import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insertTestAssistanceAction
 import fi.espoo.evaka.shared.dev.insertTestAssistanceNeed
+import fi.espoo.evaka.shared.dev.insertTestDaycare
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.ClosedPeriod
+import fi.espoo.evaka.testAreaId
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDaycare2
@@ -566,6 +570,22 @@ class KoskiIntegrationTest : FullApplicationTest() {
         )
         assertNotNull(suoritus.vahvistus)
         assertEquals(preschoolTerm2020.end, suoritus.vahvistus?.päivä)
+    }
+
+    @Test
+    fun `a daycare with purchased provider type is marked as such in study rights`() {
+        val daycareId = jdbi.handle {
+            it.insertTestDaycare(
+                DevDaycare(areaId = testAreaId, providerType = ProviderType.PURCHASED)
+            )
+        }
+        insertPlacement(daycareId = daycareId)
+
+        val today = preschoolTerm2019.end.plusDays(1)
+        koskiTester.triggerUploads(today)
+
+        val opiskeluoikeus = koskiServer.getStudyRights().values.single().opiskeluoikeus
+        assertEquals(Järjestämismuoto(JärjestämismuotoKoodi.PURCHASED), opiskeluoikeus.järjestämismuoto)
     }
 
     private fun insertPlacement(
