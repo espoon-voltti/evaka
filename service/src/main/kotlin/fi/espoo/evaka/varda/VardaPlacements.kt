@@ -27,8 +27,9 @@ fun updatePlacements(h: Handle, client: VardaClient) {
 fun removeMarkedPlacements(h: Handle, client: VardaClient) {
     val placementIds: List<Long> = getPlacementsToDelete(h)
     placementIds.forEach { id ->
-        client.deletePlacement(id)
-        softDeletePlacement(h, id)
+        if (client.deletePlacement(id)) {
+            softDeletePlacement(h, id)
+        }
     }
 }
 

@@ -38,8 +38,9 @@ fun updateDecisions(h: Handle, client: VardaClient) {
 fun removeMarkedDecisions(h: Handle, client: VardaClient) {
     val decisionIds: List<Long> = getDecisionsToDelete(h)
     decisionIds.forEach { id ->
-        client.deleteDecision(id)
-        softDeleteDecision(h, id)
+        if (client.deleteDecision(id)) {
+            softDeleteDecision(h, id)
+        }
     }
 }
 
