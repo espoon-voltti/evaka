@@ -30,6 +30,7 @@ enum class Audit(
     ApplicationsReportRead("evaka.applications-report.read"),
     AssistanceActionsReportRead("evaka.assistance-actions-report.read"),
     AssistanceNeedsReportRead("evaka.assistance-needs-report.read"),
+    ChildAbsenceUpdate("evaka.child.absence.update"),
     ChildAdditionalInformationRead("evaka.child.additional-information.read"),
     ChildAdditionalInformationUpdate("evaka.child.additional-information.update"),
     ChildAgeLanguageReportRead("evaka.child-age-language-report.read"),

@@ -10,6 +10,8 @@ import fi.espoo.evaka.daycare.service.Absence
 import fi.espoo.evaka.daycare.service.AbsenceChildMinimal
 import fi.espoo.evaka.daycare.service.AbsenceGroup
 import fi.espoo.evaka.daycare.service.AbsenceService
+import fi.espoo.evaka.daycare.service.AbsenceType
+import fi.espoo.evaka.daycare.service.CareType
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole.ADMIN
@@ -69,4 +71,21 @@ class AbsenceController(private val absenceService: AbsenceService, private val 
         val absences = absenceService.getAbscencesByChild(childId, year, month)
         return ResponseEntity.ok(Wrapper(absences))
     }
+
+    @PostMapping("/child/{childId}")
+    fun upsertAbsence(
+        user: AuthenticatedUser,
+        @RequestBody absenceType: AbsenceBody,
+        @PathVariable childId: UUID
+    ): ResponseEntity<Unit> {
+        Audit.ChildAbsenceUpdate.log(targetId = childId)
+        user.requireOneOfRoles(ADMIN)
+        absenceService.upsertChildAbsence(childId, absenceType.absenceType, absenceType.careType, user.id)
+        return ResponseEntity.noContent().build()
+    }
 }
+
+data class AbsenceBody(
+    val absenceType: AbsenceType,
+    val careType: CareType
+)
