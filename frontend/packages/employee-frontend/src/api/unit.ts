@@ -55,6 +55,34 @@ export async function getDaycare(id: UUID): Promise<Result<UnitResponse>> {
     .catch(Failure)
 }
 
+export type AttendanceStatus = 'COMING' | 'PRESENT' | 'DEPARTED' | 'ABSENT'
+
+export interface ChildInGroup {
+  childId: UUID
+  firstName: string
+  lastName: string
+  status: AttendanceStatus
+}
+
+export async function getAttendance(
+  groupId: UUID
+): Promise<Result<ChildInGroup[]>> {
+  return client
+    .get<JsonOf<ChildInGroup[]>>(`/child-attendances/current`, {
+      params: { groupId }
+    })
+    .then(({ data }) => Success(data))
+    .catch(Failure)
+}
+
+export async function childArrives(childId: UUID): Promise<void> {
+  return client.post('/child-attendances/arrive', { childId, time: new Date() })
+}
+
+export async function childDeparts(childId: UUID): Promise<void> {
+  return client.post('/child-attendances/depart', { childId, time: new Date() })
+}
+
 export type UnitOccupancies = {
   planned: OccupancyResponse
   confirmed: OccupancyResponse
