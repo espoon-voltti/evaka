@@ -64,7 +64,9 @@ private fun minimalCover(first: Period, second: Period): Period = Period(
     if (first.end == null || second.end == null) null else maxOf(first.end, second.end)
 )
 
-fun <T> mergePeriods(values: List<Pair<Period, T>>): List<Pair<Period, T>> {
+private fun <T> simpleEquals(a: T, b: T): Boolean = a == b
+
+fun <T> mergePeriods(values: List<Pair<Period, T>>, equals: (T, T) -> Boolean = ::simpleEquals): List<Pair<Period, T>> {
     return values.sortedBy { (period, _) -> period.start }
         .fold(listOf()) { periods, (period, value) ->
             when {
@@ -72,7 +74,7 @@ fun <T> mergePeriods(values: List<Pair<Period, T>>): List<Pair<Period, T>> {
                 else ->
                     periods.last().let { (lastPeriod, lastValue) ->
                         when {
-                            lastValue == value && periodsCanMerge(lastPeriod, period) ->
+                            equals(lastValue, value) && periodsCanMerge(lastPeriod, period) ->
                                 periods.dropLast(1) + (minimalCover(lastPeriod, period) to value)
                             else -> periods + (period to value)
                         }

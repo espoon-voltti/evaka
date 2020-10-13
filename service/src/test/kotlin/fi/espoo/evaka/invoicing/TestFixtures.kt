@@ -217,7 +217,7 @@ val testIncome = Income(
     notes = ""
 )
 
-val testFeeDecisionIncome = DecisionIncome(
+val testDecisionIncome = DecisionIncome(
     effect = IncomeEffect.INCOME,
     data = mapOf(IncomeType.MAIN_INCOME to 314100),
     total = 314100,

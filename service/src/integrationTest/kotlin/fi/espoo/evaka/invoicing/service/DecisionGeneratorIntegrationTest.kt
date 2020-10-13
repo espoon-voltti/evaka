@@ -9,13 +9,12 @@ import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.invoicing.createFeeDecisionFixture
 import fi.espoo.evaka.invoicing.createFeeDecisionPartFixture
 import fi.espoo.evaka.invoicing.data.feeDecisionQueryBase
-import fi.espoo.evaka.invoicing.data.flatten
 import fi.espoo.evaka.invoicing.data.getPricing
 import fi.espoo.evaka.invoicing.data.toFeeDecision
 import fi.espoo.evaka.invoicing.data.upsertFeeDecisions
+import fi.espoo.evaka.invoicing.domain.DecisionIncome
 import fi.espoo.evaka.invoicing.domain.FeeAlteration
 import fi.espoo.evaka.invoicing.domain.FeeDecision
-import fi.espoo.evaka.invoicing.domain.FeeDecisionIncome
 import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus
 import fi.espoo.evaka.invoicing.domain.FeeDecisionType
 import fi.espoo.evaka.invoicing.domain.IncomeCoefficient
@@ -24,6 +23,7 @@ import fi.espoo.evaka.invoicing.domain.IncomeType
 import fi.espoo.evaka.invoicing.domain.IncomeValue
 import fi.espoo.evaka.invoicing.domain.PlacementType
 import fi.espoo.evaka.invoicing.domain.ServiceNeed
+import fi.espoo.evaka.invoicing.domain.merge
 import fi.espoo.evaka.invoicing.oldTestPricing
 import fi.espoo.evaka.invoicing.testPricing
 import fi.espoo.evaka.placement.PlacementType.CLUB
@@ -63,9 +63,9 @@ import java.time.Instant
 import java.time.LocalDate
 import java.util.UUID
 
-class FeeDecisionGeneratorIntegrationTest : FullApplicationTest() {
+class DecisionGeneratorIntegrationTest : FullApplicationTest() {
     @Autowired
-    private lateinit var generator: FeeDecisionGenerator
+    private lateinit var generator: DecisionGenerator
 
     @BeforeEach
     fun beforeEach() {
@@ -359,54 +359,9 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest() {
     }
 
     @Test
-    fun `get active placements works with single active placement`() {
-        val period = Period(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
-        insertPlacement(testChild_1.id, period, DAYCARE, testDaycare.id)
-
-        val result = jdbi.handle(getActivePlacements(testChild_1.id, period.start))
-
-        assertEquals(1, result.size)
-        result[0].let { placement ->
-            assertEquals(testDaycare.id, placement.unitId)
-            assertEquals(fi.espoo.evaka.placement.PlacementType.DAYCARE, placement.type)
-        }
-    }
-
-    @Test
-    fun `get active placements works with periods that only partly overlap it`() {
-        val period = Period(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
-        insertPlacement(testChild_1.id, period, DAYCARE, testDaycare.id)
-
-        jdbi.handle(getActivePlacements(testChild_1.id, period.start.plusDays(1))).let { result ->
-            assertEquals(1, result.size)
-            assertEquals(testDaycare.id, result[0].unitId)
-        }
-
-        jdbi.handle(getActivePlacements(testChild_1.id, period.end!!.minusDays(10))).let { result ->
-            assertEquals(1, result.size)
-            assertEquals(testDaycare.id, result[0].unitId)
-        }
-
-        jdbi.handle(getActivePlacements(testChild_1.id, period.start.plusDays(10))).let { result ->
-            assertEquals(1, result.size)
-            assertEquals(testDaycare.id, result[0].unitId)
-        }
-    }
-
-    @Test
-    fun `get active placements correctly leaves out placements not within period`() {
-        val period = Period(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
-        insertPlacement(testChild_1.id, period, DAYCARE, testDaycare.id)
-
-        val result = jdbi.handle(getActivePlacements(testChild_1.id, period.end!!.plusDays(1)))
-
-        assertEquals(0, result.size)
-    }
-
-    @Test
     fun `get pricing works when from is same as validFrom`() {
         val from = LocalDate.of(2000, 1, 1)
-        val result = jdbi.handle(getPricing(from))
+        val result = jdbi.handle { getPricing(it, from) }
 
         assertEquals(1, result.size)
         result[0].let { (period, pricing) ->
@@ -419,7 +374,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest() {
     @Test
     fun `get pricing works as expected when from is before any pricing configuration`() {
         val from = LocalDate.of(1990, 1, 1)
-        val result = jdbi.handle(getPricing(from))
+        val result = jdbi.handle { getPricing(it, from) }
 
         assertEquals(1, result.size)
         result[0].let { (period, pricing) ->
@@ -1764,7 +1719,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest() {
                         headOfFamilyId = testAdult_1.id,
                         period = period,
                         pricing = oldTestPricing,
-                        headOfFamilyIncome = FeeDecisionIncome(
+                        headOfFamilyIncome = DecisionIncome(
                             effect = IncomeEffect.INCOME,
                             data = mapOf(IncomeType.MAIN_INCOME to 0),
                             total = 0,
@@ -1900,7 +1855,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest() {
         return jdbi.handle { h ->
             h.createQuery(feeDecisionQueryBase)
                 .map(toFeeDecision(objectMapper))
-                .let(::flatten)
+                .let { it.merge() }
         }
     }
 }

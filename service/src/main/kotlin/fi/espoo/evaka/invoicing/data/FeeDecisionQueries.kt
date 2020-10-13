@@ -23,6 +23,7 @@ import fi.espoo.evaka.invoicing.domain.PersonData
 import fi.espoo.evaka.invoicing.domain.PlacementType
 import fi.espoo.evaka.invoicing.domain.ServiceNeed
 import fi.espoo.evaka.invoicing.domain.UnitData
+import fi.espoo.evaka.invoicing.domain.merge
 import fi.espoo.evaka.shared.db.disjointNumberQuery
 import fi.espoo.evaka.shared.db.freeTextSearchQuery
 import fi.espoo.evaka.shared.db.getEnum
@@ -422,7 +423,8 @@ fun searchFeeDecisions(
         .toList()
     val count = if (result.isEmpty()) 0 else result.first().first
 
-    return count to flattenSummary(result.map { (_, decisions) -> decisions })
+    return count to result.map { (_, decisions) -> decisions }
+        .merge()
 }
 
 fun getFeeDecisionsByIds(h: Handle, mapper: ObjectMapper, ids: List<UUID>): List<FeeDecision> {
@@ -437,7 +439,7 @@ fun getFeeDecisionsByIds(h: Handle, mapper: ObjectMapper, ids: List<UUID>): List
     return h.createQuery(sql)
         .bind("ids", ids.toTypedArray())
         .map(toFeeDecision(mapper))
-        .let(::flatten)
+        .let { it.merge() }
 }
 
 fun getDetailedFeeDecisionsByIds(h: Handle, mapper: ObjectMapper, ids: List<UUID>): List<FeeDecisionDetailed> {
@@ -453,7 +455,7 @@ fun getDetailedFeeDecisionsByIds(h: Handle, mapper: ObjectMapper, ids: List<UUID
     return h.createQuery(sql)
         .bind("ids", ids.toTypedArray())
         .map(toFeeDecisionDetailed(mapper))
-        .let(::flattenDetailed)
+        .let { it.merge() }
 }
 
 fun getFeeDecision(h: Handle, mapper: ObjectMapper, uuid: UUID): FeeDecisionDetailed? {
@@ -467,7 +469,7 @@ fun getFeeDecision(h: Handle, mapper: ObjectMapper, uuid: UUID): FeeDecisionDeta
     return h.createQuery(sql)
         .bind("id", uuid)
         .map(toFeeDecisionDetailed(mapper))
-        .let(::flattenDetailed)
+        .let { it.merge() }
         .firstOrNull()
 }
 
@@ -495,7 +497,7 @@ fun findFeeDecisionsForHeadOfFamily(
         }
         .let { query -> if (status != null) query.bind("status", status.map { it.name }.toTypedArray()) else query }
         .map(toFeeDecision(mapper))
-        .let(::flatten)
+        .let { it.merge() }
 }
 
 fun approveFeeDecisionDraftsForSending(h: Handle, ids: List<UUID>, approvedBy: UUID) {
@@ -603,6 +605,18 @@ fun setFeeDecisionType(h: Handle, id: UUID, type: FeeDecisionType) {
         .execute()
 }
 
+fun Handle.lockFeeDecisionsForHeadOfFamily(headOfFamily: UUID) {
+    createUpdate("SELECT id FROM fee_decision WHERE head_of_family = :headOfFamily FOR UPDATE")
+        .bind("headOfFamily", headOfFamily)
+        .execute()
+}
+
+fun Handle.lockFeeDecisions(ids: List<UUID>) {
+    createUpdate("SELECT id FROM fee_decision WHERE id = ANY(:ids) FOR UPDATE")
+        .bind("ids", ids.toTypedArray())
+        .execute()
+}
+
 fun toFeeDecision(mapper: ObjectMapper) = { rs: ResultSet, _: StatementContext ->
     FeeDecision(
         id = UUID.fromString(rs.getString("id")),
@@ -643,20 +657,6 @@ fun toFeeDecision(mapper: ObjectMapper) = { rs: ResultSet, _: StatementContext -
         createdAt = rs.getTimestamp("created_at").toInstant(),
         sentAt = rs.getTimestamp("sent_at")?.toInstant()
     )
-}
-
-fun flatten(decisions: Iterable<FeeDecision>): List<FeeDecision> {
-    val map = mutableMapOf<UUID, FeeDecision>()
-    for (decision in decisions) {
-        val id = decision.id
-        if (map.containsKey(id)) {
-            val existing = map.getValue(id)
-            map[id] = existing.copy(parts = existing.parts + decision.parts)
-        } else {
-            map[id] = decision
-        }
-    }
-    return map.values.toList()
 }
 
 fun toFeeDecisionDetailed(mapper: ObjectMapper) = { rs: ResultSet, _: StatementContext ->
@@ -745,20 +745,6 @@ fun toFeeDecisionDetailed(mapper: ObjectMapper) = { rs: ResultSet, _: StatementC
     )
 }
 
-fun flattenDetailed(decisions: Iterable<FeeDecisionDetailed>): List<FeeDecisionDetailed> {
-    val map = mutableMapOf<UUID, FeeDecisionDetailed>()
-    for (decision in decisions) {
-        val id = decision.id
-        if (map.containsKey(id)) {
-            val existing = map.getValue(id)
-            map[id] = existing.copy(parts = existing.parts + decision.parts)
-        } else {
-            map[id] = decision
-        }
-    }
-    return map.values.toList()
-}
-
 val toFeeDecisionSummary = { rs: ResultSet, _: StatementContext ->
     FeeDecisionSummary(
         id = UUID.fromString(rs.getString("id")),
@@ -793,18 +779,4 @@ val toFeeDecisionSummary = { rs: ResultSet, _: StatementContext ->
         sentAt = rs.getTimestamp("sent_at")?.toInstant(),
         finalPrice = rs.getInt("sum")
     )
-}
-
-fun flattenSummary(decisions: Iterable<FeeDecisionSummary>): List<FeeDecisionSummary> {
-    val map = mutableMapOf<UUID, FeeDecisionSummary>()
-    for (decision in decisions) {
-        val id = decision.id
-        if (map.containsKey(id)) {
-            val existing = map.getValue(id)
-            map[id] = existing.copy(parts = existing.parts + decision.parts)
-        } else {
-            map[id] = decision
-        }
-    }
-    return map.values.toList()
 }

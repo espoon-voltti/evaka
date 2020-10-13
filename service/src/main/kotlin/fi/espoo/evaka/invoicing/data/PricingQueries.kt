@@ -11,8 +11,8 @@ import org.jdbi.v3.core.statement.StatementContext
 import java.sql.ResultSet
 import java.time.LocalDate
 
-fun getPricing(from: LocalDate): (Handle) -> List<Pair<Period, Pricing>> = { h ->
-    h.createQuery("SELECT * FROM pricing WHERE valid_to IS NULL OR valid_to >= :from")
+fun getPricing(h: Handle, from: LocalDate): List<Pair<Period, Pricing>> {
+    return h.createQuery("SELECT * FROM pricing WHERE valid_to IS NULL OR valid_to >= :from")
         .bind("from", from)
         .map(toPricing)
         .toList()

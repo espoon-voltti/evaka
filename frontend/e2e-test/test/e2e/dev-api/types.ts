@@ -18,6 +18,7 @@ export interface FeeDecision {
   validFrom: ISODate
   validTo: ISODate
   headOfFamily: { id: UUID }
+  familySize: number
   pricing: {
     multiplier: string
     maxThresholdDifference: number
@@ -54,6 +55,12 @@ export interface FeeDecision {
       baseFee: number
       siblingDiscount: number
       fee: number
+      feeAlterations: Array<{
+        type: 'DISCOUNT' | 'INCREASE' | 'RELIEF'
+        amount: number
+        isAbsolute: boolean
+        effect: number
+      }>
     }
   ]
 }

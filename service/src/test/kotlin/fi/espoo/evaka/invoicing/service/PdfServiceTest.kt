@@ -12,7 +12,7 @@ import fi.espoo.evaka.invoicing.domain.PersonData
 import fi.espoo.evaka.invoicing.domain.Pricing
 import fi.espoo.evaka.invoicing.domain.UnitData
 import fi.espoo.evaka.invoicing.testDecision1
-import fi.espoo.evaka.invoicing.testFeeDecisionIncome
+import fi.espoo.evaka.invoicing.testDecisionIncome
 import fi.espoo.evaka.shared.config.PDFConfig
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
@@ -64,8 +64,8 @@ class PdfServiceTest {
             postOffice = "Espoo",
             restrictedDetailsEnabled = false
         ),
-        headOfFamilyIncome = testFeeDecisionIncome.copy(total = 214159),
-        partnerIncome = testFeeDecisionIncome.copy(total = 413195),
+        headOfFamilyIncome = testDecisionIncome.copy(total = 214159),
+        partnerIncome = testDecisionIncome.copy(total = 413195),
         familySize = 3,
         pricing = testPricing,
         approvedAt = Instant.parse("2019-04-15T10:15:30.00Z"),
