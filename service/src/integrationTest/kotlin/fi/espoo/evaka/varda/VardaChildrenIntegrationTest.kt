@@ -139,7 +139,7 @@ class VardaChildrenIntegrationTest : FullApplicationTest() {
     }
 
     private fun uploadChildren(h: Handle) {
-        updateChildren(h, vardaClient, unitFilter = false)
+        updateChildren(h, vardaClient)
     }
 }
 

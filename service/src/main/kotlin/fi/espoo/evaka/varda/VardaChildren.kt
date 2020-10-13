@@ -16,162 +16,6 @@ import java.sql.ResultSet
 import java.time.LocalDate
 import java.util.UUID
 
-// Add units to the list when rolling into production
-// next care areas: Espoon keskukset, Leppävaarat.
-private val unitsToUpload = listOf(
-    "Eestinmalmin päiväkoti",
-    "Kepelin päiväkoti",
-    "Kalajärvi-Niipperi perhepäivähoito",
-    "Kantokasken esiopetus",
-    "Niipperin esiopetus",
-    "Tiistilän esiopetus",
-    "Tiistilänraitin päiväkoti",
-    "Avokkaan päiväkoti",
-    "Aamunkoiton päiväkoti",
-    "Ellipsin päiväkoti",
-    "Friisilän päiväkoti",
-    "Kaarnapurren päiväkoti",
-    "Kala-Maijan päiväkoti",
-    "Kalamiehen päiväkoti",
-    "Kultakalat",
-    "Kuutamon päiväkoti",
-    "Lehtikalat",
-    "Lystimäen päiväkoti",
-    "Maakirjan päiväkoti",
-    "Matinkylän päiväkoti",
-    "Matinniityn päiväkoti",
-    "Nokkalanpuiston päiväkoti",
-    "Nuottakunnan päiväkoti",
-    "Nuottaniemen päiväkoti",
-    "Olarin päiväkoti",
-    "Opinmäen päiväkoti",
-    "Planeetan päiväkoti",
-    "Päivänsäteet",
-    "Suurpellon päiväkoti",
-    "Ryhmäperhepäiväkoti Karhunkolo",
-    "Ryhmäperhepäiväkoti Kuunsäteet",
-    "Ryhmäperhepäiväkoti Pikku-Helena",
-    "Ryhmäperhepäiväkoti Pikku-Mirja",
-    "Matinkylä-Olari perhepäivähoito",
-    "Siriuksen päiväkoti",
-    "Päivänkehrän kielikylpyesiopetus",
-    "Päivystys 2 (Svebi/Fågelsången)",
-    "Päivystys 1 (Svebi/Mattbergets)",
-    "Bergans daghem",
-    "Fågelsångens daghem",
-    "Askbackens daghem",
-    "Bemböle förskola",
-    "Kungsgårds daghem och förskola",
-    "Lagstads daghem och förskola",
-    "Fiskargrändens gruppfamiljedaghem",
-    "Meteorgatans gruppfamiljedaghem",
-    "Portängens gruppfamiljedaghem",
-    "Alberga familjedagvård",
-    "Boställs daghem och förskola",
-    "Karamalmens daghem och förskola",
-    "Niperts daghem",
-    "Rödskogs förskola",
-    "Smedsby daghem och förskola",
-    "Finno daghem och förskola",
-    "Klippans daghem",
-    "Skepparbackens daghem",
-    "Storängens daghem och förskola",
-    "Distby daghem",
-    "Kvis daghem",
-    "Mattbergets daghem och förskola",
-    "Portängens daghem",
-    "Westends daghem",
-    "Vindängens daghem och förskola",
-    "Esbo centrum -Norra Esbo familjedagvård",
-    "Ivisnäs daghem",
-    "Kongsbergs daghem",
-    "Daghemmet Knatte-Hörnan",
-    "Daghemmet Aftonstjärnan",
-    "Daghemmet Sockan",
-    "Daghemmet Mymlan",
-    "Olars daghem",
-    "Ryhmäperhepäiväkoti Tuohiset",
-    "Silkkiniityn päiväkoti, kielikylpy",
-    "Silkkiniityn ryhmäperhepäiväkoti",
-    "Haukilahden päiväkoti",
-    "Jousenkaaren päiväkoti",
-    "Kivimiehen päiväkoti",
-    "Koivumankkaan päiväkoti",
-    "Laajalahden päiväkoti",
-    "Laakakiven päiväkoti",
-    "Maarinniityn päiväkoti",
-    "Mankkaan päiväkoti",
-    "Niittykummun päiväkoti",
-    "Otaniemen päiväkoti",
-    "Pohjois-Tapiolan päiväkoti",
-    "Purolan päiväkoti",
-    "Seilimäen päiväkoti",
-    "Silkkiniityn päiväkoti",
-    "Taavinkylän lastentalo",
-    "Tapiolan päiväkoti",
-    "Tontunmäen päiväkoti",
-    "Toppelundin päiväkoti",
-    "Tuohimäen päiväkoti",
-    "Westendinpuiston päiväkoti",
-    "Taavintupa",
-    "Oravanpesä",
-    "Mankkaanpuron koulu, esiopetuksen liittyvä varhaiskasvatus",
-    "Ryhmäperhepäiväkoti Kalevala",
-    "Ryhmäperhepäiväkoti Kardemumma",
-    "Ryhmäperhepäiväkoti Oktaavi",
-    "Westendinpuiston esiopetus",
-    "Espoon kielikylpypäiväkoti",
-    "Niittymaan päiväkoti",
-    "Päiväkoti Pupuna",
-    "Päiväkoti Aurinkorinne",
-    "Servin-Maijan päiväkoti",
-    "Taavinkylän koulun esiopetus",
-    "Tapiola perhepäivähoito",
-    "Aallonhuipun päiväkoti",
-    "Eestinkallion koulu, esiopetuksen varhaiskasvatus",
-    "Eestinmetsän päiväkoti",
-    "Espoonlahden päiväkoti",
-    "Iivisniemen koulu, esiopetuksen varhaiskasvatus",
-    "Iivisniemen päiväkoti",
-    "Järvitorpan päiväkoti",
-    "Kaitaanniityn päiväkoti",
-    "Kaitaa - Soukka perhepäivähoito",
-    "Kanta-Espoonlahti perhepäivähoito",
-    "Kantokasken esiopetus",
-    "Kaskipihan päiväkoti",
-    "Kastevuoren päiväkoti",
-    "Kipparin päiväkoti",
-    "Kurkihirren päiväkoti",
-    "Latokasken päiväkoti",
-    "Laurinlahden päiväkoti",
-    "Lehtikasken päiväkoti",
-    "Mainingin esiopetus",
-    "Mainingin päiväkoti",
-    "Martinkallion esiopetus",
-    "Martinmäen päiväkoti",
-    "Merenkulkijan päiväkoti",
-    "Nöykkiönlaakson koulu, Esiopetus",
-    "Nöykkiönlaakson koulun esiopetus",
-    "Nöykkiön päiväkoti",
-    "Nöykkiö perhepäivähoito",
-    "Ohrakasken päiväkoti",
-    "Paapuurin päiväkoti",
-    "Pisan päiväkoti",
-    "Ryhmäperhepäiväkoti Aitola",
-    "Ryhmäperhepäiväkoti Lehtikuusi",
-    "Ryhmäperhepäiväkoti Pihlaja",
-    "Ryhmäperhepäiväkoti Rullavuori",
-    "Ryhmäperhepäiväkoti Vaahtera",
-    "Saapasaukion päiväkoti",
-    "Saunalahden koulu, esiopetuksen varhaiskasvatus",
-    "Saunalahden päiväkoti",
-    "Saunarannan päiväkoti",
-    "Soukan koulu, esiopetuksen varhaiskasvatus",
-    "Soukankujan päiväkoti",
-    "Suomenojan päiväkoti",
-    "Tillinmäen päiväkoti",
-    "Yläkartanon päiväkoti"
-)
 private val vardaMinDate = LocalDate.of(2019, 1, 1)
 private val vardaPlacementTypes = listOf(PlacementType.DAYCARE, PlacementType.DAYCARE_PART_TIME, PlacementType.PRESCHOOL_DAYCARE)
 
@@ -179,20 +23,17 @@ fun getVardaMinDate(): LocalDate = vardaMinDate
 
 fun updateChildren(
     h: Handle,
-    client: VardaClient,
-    unitFilter: Boolean = true
+    client: VardaClient
 ) {
-    createPersons(h, client, unitFilter)
+    createPersons(h, client)
     createChildren(h, client)
 }
 
 private fun createPersons(
     h: Handle,
-    client: VardaClient,
-    unitFilter: Boolean
+    client: VardaClient
 ) {
-    val units = if (unitFilter) unitsToUpload else emptyList()
-    val vardaPersons = getPersonsToUpload(h, units)
+    val vardaPersons = getPersonsToUpload(h)
     vardaPersons.forEach {
         val response = client.createPerson(it)
         if (response != null) {
@@ -209,9 +50,7 @@ private fun createChildren(h: Handle, client: VardaClient) {
     }
 }
 
-private fun getPersonsToUpload(h: Handle, units: List<String> = emptyList()): List<VardaPersonRequest> {
-    val unitQuery = if (units.isNotEmpty()) "AND daycare.name IN (<units>)" else ""
-    // TODO: join to daycare can be removed after varda is in production fully
+private fun getPersonsToUpload(h: Handle): List<VardaPersonRequest> {
     //language=SQL
     val sql =
         """
@@ -224,19 +63,17 @@ private fun getPersonsToUpload(h: Handle, units: List<String> = emptyList()): Li
             INNER JOIN placement ON placement.child_id = person.id
             LEFT JOIN varda_child ON person.id = varda_child.person_id
             INNER JOIN varda_unit ON placement.unit_id = varda_unit.evaka_daycare_id
-            LEFT JOIN daycare ON varda_unit.evaka_daycare_id = daycare.id
+            INNER JOIN daycare ON varda_unit.evaka_daycare_id = daycare.id
         WHERE placement.type IN (<placementTypes>)
             AND varda_child.id IS NULL
             AND placement.end_date >= :minDate
             AND person.social_security_number <> ''
             AND varda_unit.evaka_daycare_id IS NOT NULL 
-            $unitQuery
+            AND daycare.upload_to_varda = true
         """.trimIndent()
-
     return h.createQuery(sql)
         .bindList("placementTypes", vardaPlacementTypes)
         .bind("minDate", vardaMinDate)
-        .let { query -> if (units.isNotEmpty()) query.bindList("units", units) else query }
         .mapTo<VardaPersonRequest>()
         .list()
 }
