@@ -36,6 +36,27 @@ export interface FamilyConflictReportRow {
   childConflictCount: number
 }
 
+interface FamilyContact {
+  firstName: string
+  lastName: string
+  phone: string
+  email: string
+}
+
+export interface FamilyContactsReportRow {
+  id: UUID
+  firstName: string
+  lastName: string
+  ssn: string | null
+  group: string | null
+  streetAddress: string
+  postalCode: string
+  postOffice: string
+  headOfChild: FamilyContact | null
+  guardian1: FamilyContact | null
+  guardian2: FamilyContact | null
+}
+
 export interface ApplicationsReportRow {
   careAreaName: string
   unitId: UUID

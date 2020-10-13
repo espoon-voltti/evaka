@@ -31,6 +31,7 @@ import DecisionPage from '~components/decision-draft/DecisionDraft'
 import Reports from '~components/Reports'
 import ReportDuplicatePeople from '~components/reports/DuplicatePeople'
 import ReportFamilyConflicts from '~components/reports/FamilyConflicts'
+import ReportFamilyContacts from '~components/reports/FamilyContacts'
 import ReportMissingHeadOfFamily from '~components/reports/MissingHeadOfFamily'
 import ReportMissingServiceNeed from '~components/reports/MissingServiceNeed'
 import ReportPartnersInDifferentAddress from '~components/reports/PartnersInDifferentAddress'
@@ -116,6 +117,11 @@ function App() {
               exact
               path="/units/:id/details"
               component={ensureAuthenticated(UnitDetailsPage)}
+            />
+            <Route
+              exact
+              path="/units/:unitId/family-contacts"
+              component={ensureAuthenticated(ReportFamilyContacts)}
             />
             <RouteWithTitle
               exact

@@ -21,7 +21,8 @@ import {
   ApplicationsReportRow,
   PresenceReportRow,
   ServiceNeedReportRow,
-  RawReportRow
+  RawReportRow,
+  FamilyContactsReportRow
 } from '~types/reports'
 import { UUID } from '~types'
 import { JsonOf } from '@evaka/lib-common/src/json'
@@ -137,6 +138,17 @@ export async function getFamilyConflictsReport(): Promise<
 > {
   return client
     .get<JsonOf<FamilyConflictReportRow[]>>('/reports/family-conflicts')
+    .then((res) => Success(res.data))
+    .catch(Failure)
+}
+
+export async function getFamilyContactsReport(
+  unitId: UUID
+): Promise<Result<FamilyContactsReportRow[]>> {
+  return client
+    .get<JsonOf<FamilyContactsReportRow[]>>('/reports/family-contacts', {
+      params: { unitId }
+    })
     .then((res) => Success(res.data))
     .catch(Failure)
 }

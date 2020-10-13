@@ -74,6 +74,7 @@ enum class Audit(
     EmployeesRead("evaka.employees.read"),
     EndedPlacementsReportRead("evaka.ended-placements-report.read"),
     FamilyConflictReportRead("evaka.family-conflict-report.read"),
+    FamilyContactReportRead("evaka.family-contact-report.read"),
     FamilyContactsRead("evaka.family-contacts.read"),
     FeeDecisionConfirm("evaka.fee-decision.confirm"),
     FeeDecisionGenerate("evaka.fee-decision.generate"),
