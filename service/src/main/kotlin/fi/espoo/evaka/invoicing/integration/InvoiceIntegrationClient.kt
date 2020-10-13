@@ -190,7 +190,7 @@ private fun asRecipient(headOfFamily: PersonData.Detailed): CommunityRecipient {
         )
     }
 
-    return CommunityRecipient(lastname, firstnames, street, post, postalCode)
+    return CommunityRecipient(lastname.take(communityLastNameMaxLength), firstnames.take(communityFirstNameMaxLength), street, post, postalCode)
 }
 
 const val communityProductCodeLength = 12
