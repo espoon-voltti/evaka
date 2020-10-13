@@ -13,8 +13,9 @@ export default class InvoicingPage {
   readonly devLoginSubmitBtn = Selector('form button')
   readonly logoutBtn = Selector('[data-qa="logout-btn"]')
 
-  readonly decisionsNav = Selector('[data-qa="fee-decisions-nav"]')
-  readonly invoicesNav = Selector('[data-qa="invoices-nav"]')
+  readonly financeNav = Selector('[data-qa="finance-nav"]')
+  readonly decisionsTab = Selector('[data-qa="fee-decisions-tab"]')
+  readonly invoicesTab = Selector('[data-qa="invoices-tab"]')
   readonly navigateBack = Selector('[data-qa="navigate-back"]')
 
   readonly tabNavigation = Selector('[data-qa="tab-navigation"]')
@@ -99,12 +100,13 @@ export default class InvoicingPage {
   }
 
   async navigateToDecisions(t: TestController) {
-    await t.click(this.decisionsNav)
+    await t.click(this.financeNav)
+    await t.click(this.decisionsTab)
   }
 
   async navigateToInvoices(t: TestController) {
-    await t.click(this.invoicesNav)
-    await t.expect(this.loaderSpinner.exists).notOk()
+    await t.click(this.financeNav)
+    await t.click(this.invoicesTab)
   }
 
   async openFirstDecision(t: TestController) {

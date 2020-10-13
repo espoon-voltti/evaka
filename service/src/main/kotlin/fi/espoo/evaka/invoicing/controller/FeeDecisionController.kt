@@ -65,7 +65,7 @@ data class FeeDecisionSearchResult(
 )
 
 @RestController
-@RequestMapping("/decisions")
+@RequestMapping(path = ["/fee-decisions", "/decisions"])
 class FeeDecisionController(
     private val jdbi: Jdbi,
     private val objectMapper: ObjectMapper,

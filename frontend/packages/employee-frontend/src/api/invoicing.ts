@@ -50,7 +50,7 @@ export async function confirmDecisions(
   feeDecisionIds: string[]
 ): Promise<void> {
   return client
-    .post<void>('/decisions/confirm', feeDecisionIds)
+    .post<void>('/fee-decisions/confirm', feeDecisionIds)
     .then((res) => res.data)
 }
 
@@ -113,7 +113,7 @@ export async function getDecision(
   id: string
 ): Promise<Result<FeeDecisionDetailed>> {
   return client
-    .get<JsonOf<Response<FeeDecisionDetailed>>>(`/decisions/${id}`)
+    .get<JsonOf<Response<FeeDecisionDetailed>>>(`/fee-decisions/${id}`)
     .then(({ data: { data: json } }) =>
       Success({
         ...json,
@@ -171,7 +171,7 @@ export async function getDecisions(
   params: SearchParams
 ): Promise<Result<FeeDecisionSearchResponse>> {
   return client
-    .get<JsonOf<FeeDecisionSearchResponse>>('/decisions/search', {
+    .get<JsonOf<FeeDecisionSearchResponse>>('/fee-decisions/search', {
       params: { page: page - 1, pageSize, sortBy, sortDirection, ...params }
     })
     .then(({ data }) => ({
@@ -200,7 +200,7 @@ export async function getPersonFeeDecisions(
   id: string
 ): Promise<Result<FeeDecision[]>> {
   return client
-    .get<JsonOf<Response<FeeDecision[]>>>(`/decisions/head-of-family/${id}`)
+    .get<JsonOf<Response<FeeDecision[]>>>(`/fee-decisions/head-of-family/${id}`)
     .then((res) =>
       Success(
         res.data.data.map((json) => ({
@@ -305,21 +305,27 @@ export async function generateFeeDecisions(
 }
 
 export async function markDecisionSent(decisionIds: string[]): Promise<void> {
-  const request = await client.post<void>('/decisions/mark-sent', decisionIds)
+  const request = await client.post<void>(
+    '/fee-decisions/mark-sent',
+    decisionIds
+  )
   return request.data
 }
 
 export function getPdfUrl(decisionId: string): string {
-  return `${API_URL}/decisions/pdf/${decisionId}`
+  return `${API_URL}/fee-decisions/pdf/${decisionId}`
 }
 
 export async function setDecisionType(
   decisionId: string,
   type: string
 ): Promise<void> {
-  const request = await client.post<void>(`/decisions/set-type/${decisionId}`, {
-    type: type
-  })
+  const request = await client.post<void>(
+    `/fee-decisions/set-type/${decisionId}`,
+    {
+      type: type
+    }
+  )
   return request.data
 }
 
@@ -352,7 +358,7 @@ export async function createRetroactiveDecisions(
   date: LocalDate
 ): Promise<void> {
   await client.post(
-    `/decisions/head-of-family/${headOfFamily}/create-retroactive`,
+    `/fee-decisions/head-of-family/${headOfFamily}/create-retroactive`,
     {
       from: date
     }
