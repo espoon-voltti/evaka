@@ -13,6 +13,7 @@ import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.config.Roles
 import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.testAreaId
+import fi.espoo.evaka.testDaycare
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeAll
@@ -106,6 +107,15 @@ class ReportSmokeTests : FullApplicationTest() {
         assertOkResponse(
             http.get(
                 "/reports/family-conflicts"
+            )
+        )
+    }
+
+    @Test
+    fun `family-contacts report returns http 200`() {
+        assertOkResponse(
+            http.get(
+                "/reports/family-contacts?unitId=${testDaycare.id}"
             )
         )
     }

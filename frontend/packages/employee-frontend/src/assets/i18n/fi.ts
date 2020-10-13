@@ -1044,6 +1044,7 @@ export const fi = {
     },
     groups: {
       title: 'Toimipisteen ryhmät',
+      familyContacts: 'Näytä yhteystietokooste',
       create: 'Luo uusi ryhmä',
       createModal: {
         title: 'Uusi ryhmä',
@@ -1631,6 +1632,15 @@ export const fi = {
       ssn: 'Hetu',
       partnerConflictCount: 'Konflikteja puolisoissa',
       childConflictCount: 'Konflikteja lapsissa'
+    },
+    familyContacts: {
+      name: 'Lapsen nimi',
+      ssn: 'Hetu',
+      group: 'Ryhmä',
+      address: 'Osoite',
+      headOfChild: 'Päämies',
+      guardian1: 'Huoltaja',
+      guardian2: 'Toinen huoltaja'
     },
     endedPlacements: {
       title: 'Varhaiskasvatuksessa lopettavat lapset',

@@ -27,6 +27,10 @@ import GroupTransferModal from '~components/unit/groups/group/GroupTransferModal
 import { UnitBackupCare } from '~types/child'
 import BackupCareGroupModal from '~components/unit/placements/BackupCareGroupModal'
 import { UnitFilters } from '~utils/UnitFilters'
+import InlineButton from '~components/shared/atoms/buttons/InlineButton'
+import { Link } from 'react-router-dom'
+import { requireRole } from '~utils/roles'
+import { UserContext } from '~state/user'
 
 function renderGroups(
   unit: Unit,
@@ -118,6 +122,7 @@ export default React.memo(function Groups({
 }: Props) {
   const { i18n } = useTranslation()
   const { uiMode, toggleUiMode } = useContext(UIContext)
+  const { roles } = useContext(UserContext)
   const [transferredPlacement, setTransferredPlacement] = useState<
     DaycareGroupPlacementDetailed | UnitBackupCare | null
   >(null)
@@ -150,6 +155,23 @@ export default React.memo(function Groups({
             dataQa="toggle-all-groups-collapsible"
           />
         </TitleContainer>
+        {requireRole(
+          roles,
+          'ADMIN',
+          'SERVICE_WORKER',
+          'FINANCE_ADMIN',
+          'UNIT_SUPERVISOR'
+        ) && (
+          <div>
+            <Link to={`/units/${unit.id}/family-contacts`}>
+              <InlineButton
+                text={i18n.unit.groups.familyContacts}
+                onClick={() => undefined}
+                dataQa="open-family-contacts-button"
+              />
+            </Link>
+          </div>
+        )}
         {canManageGroups ? (
           <>
             <Gap size="L" horizontal />
@@ -157,6 +179,7 @@ export default React.memo(function Groups({
               text={i18n.unit.groups.create}
               onClick={() => toggleUiMode('create-new-daycare-group')}
               disabled={uiMode === 'create-new-daycare-group'}
+              flipped
             />
           </>
         ) : null}
@@ -208,6 +231,7 @@ export default React.memo(function Groups({
 const TitleBar = styled.div`
   display: flex;
   flex-direction: row;
+  align-items: center;
 `
 
 const TitleContainer = styled.div`
