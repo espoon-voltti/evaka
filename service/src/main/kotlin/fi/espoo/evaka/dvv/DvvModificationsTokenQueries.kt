@@ -1,12 +1,12 @@
 // SPDX-FileCopyrightText: 2017-2020 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
-import fi.espoo.evaka.shared.db.handle
-import fi.espoo.evaka.shared.db.transaction
-import org.jdbi.v3.core.Jdbi
+package fi.espoo.evaka.dvv
+
+import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.mapTo
 
-fun storeDvvModificationToken(jdbi: Jdbi, token: String, nextToken: String, ssnsSent: Int, modificationsReceived: Int) = jdbi.transaction { h ->
+fun storeDvvModificationToken(h: Handle, token: String, nextToken: String, ssnsSent: Int, modificationsReceived: Int) {
     h.createUpdate(
         """
 INSERT INTO dvv_modification_token (token, next_token, ssns_sent, modifications_received) 
@@ -20,8 +20,8 @@ VALUES (:token, :nextToken, :ssnsSent, :modificationsReceived)
         .execute()
 }
 
-fun getNextDvvModificationToken(jdbi: Jdbi): String = jdbi.handle { h ->
-    h.createQuery(
+fun getNextDvvModificationToken(h: Handle): String {
+    return h.createQuery(
         """
 SELECT next_token 
 FROM dvv_modification_token
@@ -31,15 +31,15 @@ LIMIT 1
     ).mapTo<String>().one()
 }
 
-fun getDvvModificationToken(jdbi: Jdbi, token: String): DvvModificationToken? = jdbi.handle { h ->
-    h.createQuery("""SELECT * FROM dvv_modification_token WHERE token = :token""")
+fun getDvvModificationToken(h: Handle, token: String): DvvModificationToken? {
+    return h.createQuery("""SELECT * FROM dvv_modification_token WHERE token = :token""")
         .bind("token", token)
         .mapTo<DvvModificationToken>()
         .one()
 }
 
-fun deleteDvvModificationToken(jdbi: Jdbi, token: String) = jdbi.handle { h ->
-    h.createUpdate("""DELETE FROM dvv_modification_token WHERE token = :token""").bind("token", token)
+fun deleteDvvModificationToken(h: Handle, token: String) {
+    h.createUpdate("""DELETE FROM dvv_modification_token WHERE token = :token""").bind("token", token).execute()
 }
 
 data class DvvModificationToken(

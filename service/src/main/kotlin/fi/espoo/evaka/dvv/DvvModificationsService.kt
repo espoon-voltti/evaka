@@ -4,18 +4,16 @@
 package fi.espoo.evaka.dvv
 
 import fi.espoo.evaka.pis.service.PersonService
+import fi.espoo.evaka.pis.updatePersonFromVtj
 import fi.espoo.evaka.shared.db.handle
-import getNextDvvModificationToken
+import fi.espoo.evaka.shared.db.transaction
 import mu.KotlinLogging
 import org.jdbi.v3.core.Jdbi
 import org.jdbi.v3.core.kotlin.mapTo
-import org.springframework.transaction.annotation.Transactional
-import storeDvvModificationToken
 import java.time.LocalDate
 
 private val logger = KotlinLogging.logger {}
 
-@Transactional
 class DvvModificationsService(
     private val jdbi: Jdbi,
     private val dvvModificationsServiceClient: DvvModificationsServiceClient,
@@ -38,15 +36,15 @@ class DvvModificationsService(
             val dateOfDeath = deathDvvInfoGroup.dateOfDeath?.asLocalDate() ?: LocalDate.now()
             logger.debug("Dvv modification: marking ${it.id} dead since $dateOfDeath")
             jdbi.handle { h ->
-                setPersonDateOfDeath(h, it.id, dateOfDeath)
+                h.updatePersonFromVtj(it.copy(dateOfDeath = dateOfDeath))
             }
         }
     }
 
-    fun getDvvModifications(ssns: List<String>): List<DvvModification> {
-        val token = getNextDvvModificationToken(jdbi)
-        return dvvModificationsServiceClient.getModifications(token, ssns)?.let { dvvModificationsResponse ->
-            storeDvvModificationToken(jdbi, token, dvvModificationsResponse.modificationToken, ssns.size, dvvModificationsResponse.modifications.size)
+    fun getDvvModifications(ssns: List<String>): List<DvvModification> = jdbi.transaction { h ->
+        val token = getNextDvvModificationToken(h)
+        dvvModificationsServiceClient.getModifications(token, ssns)?.let { dvvModificationsResponse ->
+            storeDvvModificationToken(h, token, dvvModificationsResponse.modificationToken, ssns.size, dvvModificationsResponse.modifications.size)
             dvvModificationsResponse.modifications
         } ?: emptyList()
     }

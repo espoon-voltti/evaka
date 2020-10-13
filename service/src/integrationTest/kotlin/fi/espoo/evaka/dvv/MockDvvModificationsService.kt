@@ -204,9 +204,9 @@ val modifications = mapOf<String, String>(
   "muutospv": "2019-09-24T21:00:00.000Z"
 }
     """.trimIndent(),
-    "kuollut" to """
+    "010180-999A" to """
 {
-  "henkilotunnus": "010579-9999",
+  "henkilotunnus": "010180-999A",
   "tietoryhmat": [
     {
       "tietoryhma": "KUOLINPAIVA",

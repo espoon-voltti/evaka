@@ -41,7 +41,7 @@ class DvvModificationServiceClientIntegrationTest : DvvModificationServiceIntegr
 
     @Test
     fun `person has died`() {
-        val response: DvvModificationsResponse = dvvModificationsServiceClient.getModifications("100000000", listOf("kuollut"))!!
+        val response: DvvModificationsResponse = dvvModificationsServiceClient.getModifications("100000000", listOf("010180-999A"))!!
         assertEquals("KUOLINPAIVA", response.modifications[0].infoGroups[0].type)
         val dead = response.modifications[0].infoGroups[0] as DeathDvvInfoGroup
         assertEquals(true, dead.dead)
