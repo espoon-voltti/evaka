@@ -35,7 +35,7 @@ class FeeDecisionsTest {
 
     @Test
     fun `calculateBaseFee basic case`() {
-        fun twoIncomesOf(amount1: Int, amount2: Int): List<FeeDecisionIncome?> {
+        fun twoIncomesOf(amount1: Int, amount2: Int): List<DecisionIncome?> {
             val income1 = testFeeDecisionIncome.copy(data = mapOf(IncomeType.MAIN_INCOME to amount1), total = amount1)
             val income2 = testFeeDecisionIncome.copy(data = mapOf(IncomeType.MAIN_INCOME to amount2), total = amount2)
             return listOf(income1, income2)

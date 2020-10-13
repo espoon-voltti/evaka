@@ -9,9 +9,9 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import fi.espoo.evaka.invoicing.controller.DistinctiveParams
 import fi.espoo.evaka.invoicing.controller.FeeDecisionSortParam
 import fi.espoo.evaka.invoicing.controller.SortDirection
+import fi.espoo.evaka.invoicing.domain.DecisionIncome
 import fi.espoo.evaka.invoicing.domain.FeeDecision
 import fi.espoo.evaka.invoicing.domain.FeeDecisionDetailed
-import fi.espoo.evaka.invoicing.domain.FeeDecisionIncome
 import fi.espoo.evaka.invoicing.domain.FeeDecisionPart
 import fi.espoo.evaka.invoicing.domain.FeeDecisionPartDetailed
 import fi.espoo.evaka.invoicing.domain.FeeDecisionPartSummary
@@ -613,8 +613,8 @@ fun toFeeDecision(mapper: ObjectMapper) = { rs: ResultSet, _: StatementContext -
         validTo = rs.getDate("valid_to")?.toLocalDate(),
         headOfFamily = PersonData.JustId(UUID.fromString(rs.getString("head_of_family"))),
         partner = rs.getString("partner")?.let { PersonData.JustId(UUID.fromString(it)) },
-        headOfFamilyIncome = rs.getString("head_of_family_income")?.let { mapper.readValue<FeeDecisionIncome>(it) },
-        partnerIncome = rs.getString("partner_income")?.let { mapper.readValue<FeeDecisionIncome>(it) },
+        headOfFamilyIncome = rs.getString("head_of_family_income")?.let { mapper.readValue<DecisionIncome>(it) },
+        partnerIncome = rs.getString("partner_income")?.let { mapper.readValue<DecisionIncome>(it) },
         familySize = rs.getInt("family_size"),
         pricing = mapper.readValue(rs.getString("pricing")),
         // child is not nullable so if it's missing there was nothing to join to the decision
@@ -693,8 +693,8 @@ fun toFeeDecisionDetailed(mapper: ObjectMapper) = { rs: ResultSet, _: StatementC
                 restrictedDetailsEnabled = rs.getBoolean("partner_restricted_details_enabled")
             )
         },
-        headOfFamilyIncome = rs.getString("head_of_family_income")?.let { mapper.readValue<FeeDecisionIncome>(it) },
-        partnerIncome = rs.getString("partner_income")?.let { mapper.readValue<FeeDecisionIncome>(it) },
+        headOfFamilyIncome = rs.getString("head_of_family_income")?.let { mapper.readValue<DecisionIncome>(it) },
+        partnerIncome = rs.getString("partner_income")?.let { mapper.readValue<DecisionIncome>(it) },
         familySize = rs.getInt("family_size"),
         pricing = mapper.readValue(rs.getString("pricing")),
         // child is not nullable so if it's missing there was nothing to join to the decision

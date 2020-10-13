@@ -31,7 +31,6 @@ import fi.espoo.evaka.invoicing.domain.getECHAIncrease
 import fi.espoo.evaka.invoicing.domain.getSiblingDiscountPercent
 import fi.espoo.evaka.invoicing.domain.serviceNeedIsNotInvoiced
 import fi.espoo.evaka.invoicing.domain.toFeeAlterationsWithEffects
-import fi.espoo.evaka.invoicing.domain.toFeeDecisionIncome
 import fi.espoo.evaka.pis.service.Parentship
 import fi.espoo.evaka.pis.service.ParentshipService
 import fi.espoo.evaka.pis.service.PartnershipService
@@ -558,7 +557,7 @@ internal fun generateNewDecisions(
 
         val income = incomes
             .find { headOfFamily.id == it.personId && Period(it.validFrom, it.validTo).contains(period) }
-            ?.let(::toFeeDecisionIncome)
+            ?.toDecisionIncome()
 
         val partnerIncome =
             partner?.let {
@@ -569,7 +568,7 @@ internal fun generateNewDecisions(
                             it.validTo
                         ).contains(period)
                     }
-                    ?.let(::toFeeDecisionIncome)
+                    ?.toDecisionIncome()
             }
 
         val validPlacements = allPlacements

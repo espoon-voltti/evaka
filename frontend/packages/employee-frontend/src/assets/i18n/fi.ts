@@ -16,6 +16,9 @@ export const fi = {
     feeDecisions: 'Maksupäätökset',
     feeDecision: 'Maksupäätös',
     feeDecisionDraft: 'Maksupäätösluonnos',
+    valueDecisions: 'Arvopäätökset',
+    valueDecision: 'Arvopäätös',
+    valueDecisionDraft: 'Arvopäätösluonnos',
     invoices: 'Laskut',
     invoice: 'Lasku',
     invoiceDraft: 'Laskuluonnos',
@@ -121,6 +124,7 @@ export const fi = {
     finance: 'Talous',
     invoices: 'Laskut',
     feeDecisions: 'Maksupäätökset',
+    valueDecisions: 'Arvopäätökset',
     reports: 'Raportit',
     logout: 'Kirjaudu ulos'
   },
@@ -1217,7 +1221,6 @@ export const fi = {
       head: 'Päämies',
       children: 'Lapset',
       validity: 'Maksupäätös voimassa',
-      until: 'Saakka',
       price: 'Summa',
       number: 'Numero',
       status: 'Tila',
@@ -1232,6 +1235,32 @@ export const fi = {
           : `${count} maksupäätöstä valittu`,
       createDecision: (count: number) =>
         count === 1 ? 'Luo maksupäätös' : 'Luo maksupäätökset',
+      markSent: 'Merkitse postitetuksi',
+      close: 'Sulje tallentamatta',
+      save: 'Tallenna muutokset'
+    }
+  },
+  valueDecisions: {
+    table: {
+      title: 'Arvopäätökset',
+      rowCount: (count: number) =>
+        count > 0 ? `Hakutuloksia: ${count}` : 'Ei hakutuloksia',
+      head: 'Päämies',
+      children: 'Lapset',
+      validity: 'Arvopäätös voimassa',
+      number: 'Numero',
+      status: 'Tila',
+      createdAt: 'Luotu',
+      sentAt: 'Lähetetty',
+      paging: 'Sivu'
+    },
+    buttons: {
+      checked: (count: number) =>
+        count === 1
+          ? `${count} arvopäätös valittu`
+          : `${count} arvopäätöstä valittu`,
+      createDecision: (count: number) =>
+        count === 1 ? 'Luo arvopäätös' : 'Luo arvopäätökset',
       markSent: 'Merkitse postitetuksi',
       close: 'Sulje tallentamatta',
       save: 'Tallenna muutokset'
@@ -1418,6 +1447,15 @@ export const fi = {
     searchByStartDate: 'Alkupäivä sijoittuu valitulle aikavälille',
     invoiceDate: 'Laskun päiväys',
     invoiceSearchByStartDate: 'Lähetä laskut valitulta kaudelta'
+  },
+  valueDecision: {
+    status: {
+      DRAFT: 'Luonnos',
+      WAITING_FOR_SENDING: 'Lähdössä',
+      WAITING_FOR_MANUAL_SENDING: 'Lähetetään manuaalisesti',
+      SENT: 'Lähetetty',
+      ANNULLED: 'Mitätöity'
+    }
   },
   // these are directly used by date picker so order and naming matters!
   datePicker: {

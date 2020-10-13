@@ -4,10 +4,10 @@
 
 package fi.espoo.evaka.invoicing
 
+import fi.espoo.evaka.invoicing.domain.DecisionIncome
 import fi.espoo.evaka.invoicing.domain.FeeAlteration
 import fi.espoo.evaka.invoicing.domain.FeeAlterationWithEffect
 import fi.espoo.evaka.invoicing.domain.FeeDecision
-import fi.espoo.evaka.invoicing.domain.FeeDecisionIncome
 import fi.espoo.evaka.invoicing.domain.FeeDecisionPart
 import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus
 import fi.espoo.evaka.invoicing.domain.FeeDecisionType
@@ -80,7 +80,8 @@ val testDecisionPart1 =
         placement = testPlacement,
         baseFee = 28900,
         siblingDiscount = 0,
-        fee = 28900
+        fee = 28900,
+        feeAlterations = listOf()
     )
 val testDecisionPart2 =
     FeeDecisionPart(
@@ -88,7 +89,8 @@ val testDecisionPart2 =
         placement = testPlacement,
         baseFee = 28900,
         siblingDiscount = 0,
-        fee = 28900
+        fee = 28900,
+        feeAlterations = listOf()
     )
 
 val testDecision1 = FeeDecision(
@@ -215,7 +217,7 @@ val testIncome = Income(
     notes = ""
 )
 
-val testFeeDecisionIncome = FeeDecisionIncome(
+val testFeeDecisionIncome = DecisionIncome(
     effect = IncomeEffect.INCOME,
     data = mapOf(IncomeType.MAIN_INCOME to 314100),
     total = 314100,
@@ -268,7 +270,7 @@ fun createFeeDecisionFixture(
     headOfFamilyId: UUID,
     parts: List<FeeDecisionPart>,
     pricing: Pricing = testPricing,
-    headOfFamilyIncome: FeeDecisionIncome? = null
+    headOfFamilyIncome: DecisionIncome? = null
 ) = FeeDecision(
     id = UUID.randomUUID(),
     status = status,

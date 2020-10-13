@@ -42,6 +42,39 @@ data class Income(
 
     @JsonProperty("total")
     fun total(): Int = incomeTotal(data)
+
+    fun toDecisionIncome() = DecisionIncome(
+        effect = effect,
+        data = data.mapValues { (_, value) -> value.monthlyAmount() },
+        total = total(),
+        worksAtECHA = worksAtECHA,
+        validFrom = validFrom,
+        validTo = validTo
+    )
+}
+
+@JsonIgnoreProperties(ignoreUnknown = true)
+data class DecisionIncome(
+    val effect: IncomeEffect,
+    val data: Map<IncomeType, Int>,
+    val total: Int,
+    val worksAtECHA: Boolean = false,
+    val validFrom: LocalDate?,
+    val validTo: LocalDate?
+) {
+    @JsonProperty("totalIncome")
+    fun totalIncome(): Int =
+        data.entries
+            .filter { (type, _) -> type.multiplier > 0 }
+            .map { (type, value) -> type.multiplier * value }
+            .sum()
+
+    @JsonProperty("totalExpenses")
+    fun totalExpenses(): Int =
+        data.entries
+            .filter { (type, _) -> type.multiplier < 0 }
+            .map { (type, value) -> -1 * type.multiplier * value }
+            .sum()
 }
 
 fun incomeTotal(data: Map<IncomeType, IncomeValue>) = data.entries

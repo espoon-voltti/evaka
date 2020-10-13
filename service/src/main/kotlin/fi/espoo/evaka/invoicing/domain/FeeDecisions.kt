@@ -25,8 +25,8 @@ data class FeeDecision(
     val validTo: LocalDate?,
     val headOfFamily: PersonData.JustId,
     val partner: PersonData.JustId?,
-    val headOfFamilyIncome: FeeDecisionIncome?,
-    val partnerIncome: FeeDecisionIncome?,
+    val headOfFamilyIncome: DecisionIncome?,
+    val partnerIncome: DecisionIncome?,
     val familySize: Int,
     val pricing: Pricing,
     val parts: List<FeeDecisionPart>,
@@ -42,48 +42,13 @@ data class FeeDecision(
 }
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-data class FeeDecisionIncome(
-    val effect: IncomeEffect,
-    val data: Map<IncomeType, Int>,
-    val total: Int,
-    @get:JsonProperty("isEntrepreneur") val isEntrepreneur: Boolean = false,
-    val worksAtECHA: Boolean = false,
-    val validFrom: LocalDate?,
-    val validTo: LocalDate?
-) {
-    @JsonProperty("totalIncome")
-    fun totalIncome(): Int =
-        data.entries
-            .filter { (type, _) -> type.multiplier > 0 }
-            .map { (type, value) -> type.multiplier * value }
-            .sum()
-
-    @JsonProperty("totalExpenses")
-    fun totalExpenses(): Int =
-        data.entries
-            .filter { (type, _) -> type.multiplier < 0 }
-            .map { (type, value) -> -1 * type.multiplier * value }
-            .sum()
-}
-
-fun toFeeDecisionIncome(income: Income) = FeeDecisionIncome(
-    effect = income.effect,
-    data = income.data.mapValues { (_, value) -> value.monthlyAmount() },
-    total = income.total(),
-    isEntrepreneur = income.isEntrepreneur,
-    worksAtECHA = income.worksAtECHA,
-    validFrom = income.validFrom,
-    validTo = income.validTo
-)
-
-@JsonIgnoreProperties(ignoreUnknown = true)
 data class FeeDecisionPart(
     val child: PersonData.WithDateOfBirth,
     val placement: PermanentPlacement,
     val baseFee: Int,
     val siblingDiscount: Int,
     val fee: Int,
-    val feeAlterations: List<FeeAlterationWithEffect> = listOf()
+    val feeAlterations: List<FeeAlterationWithEffect>
 ) {
     @JsonProperty("finalFee")
     fun finalFee(): Int = fee + feeAlterations.sumBy { it.effect }
@@ -114,8 +79,8 @@ enum class FeeDecisionType {
 data class FeeDecisionInvariant(
     val headOfFamily: PersonData.JustId,
     val partner: PersonData.JustId?,
-    val headOfFamilyIncome: FeeDecisionIncome?,
-    val partnerIncome: FeeDecisionIncome?,
+    val headOfFamilyIncome: DecisionIncome?,
+    val partnerIncome: DecisionIncome?,
     val familySize: Int,
     val pricing: Pricing,
     val parts: Set<FeeDecisionPart>
@@ -131,8 +96,8 @@ data class FeeDecisionDetailed(
     val validTo: LocalDate?,
     val headOfFamily: PersonData.Detailed,
     val partner: PersonData.Detailed?,
-    val headOfFamilyIncome: FeeDecisionIncome?,
-    val partnerIncome: FeeDecisionIncome?,
+    val headOfFamilyIncome: DecisionIncome?,
+    val partnerIncome: DecisionIncome?,
     val familySize: Int,
     val pricing: Pricing,
     val parts: List<FeeDecisionPartDetailed>,
@@ -225,14 +190,14 @@ data class FeeDecisionPartSummary(
     val child: PersonData.Basic
 )
 
-fun useMaxFee(incomes: List<FeeDecisionIncome?>): Boolean = incomes.filterNotNull().let {
+fun useMaxFee(incomes: List<DecisionIncome?>): Boolean = incomes.filterNotNull().let {
     it.size < incomes.size || it.any { income -> income.effect != IncomeEffect.INCOME }
 }
 
 fun calculateBaseFee(
     pricing: Pricing,
     familySize: Int,
-    incomes: List<FeeDecisionIncome?>
+    incomes: List<DecisionIncome?>
 ): Int {
     check(familySize > 1) { "Family size should not be less than 2" }
 
