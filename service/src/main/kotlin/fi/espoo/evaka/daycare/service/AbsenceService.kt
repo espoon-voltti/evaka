@@ -276,12 +276,13 @@ private fun upsertAbsences(absences: List<Absence>, modifiedBy: String, h: Handl
 
 private fun upsertChildAbsence(childId: UUID, absenceType: AbsenceType, careType: CareType, userId: UUID, h: Handle) {
     //language=SQL
-    val sql = """
+    val sql =
+        """
         INSERT INTO absence (child_id, date, care_type, absence_type, modified_by)
         VALUES (:childId, :date, :careType, :absenceType, :modifiedBy)
         ON CONFLICT (child_id, date, care_type)
             DO UPDATE SET absence_type = :absenceType, modified_at = now()
-    """.trimIndent()
+        """.trimIndent()
 
     h.createUpdate(sql)
         .bind("childId", childId)
@@ -290,7 +291,6 @@ private fun upsertChildAbsence(childId: UUID, absenceType: AbsenceType, careType
         .bind("modifiedBy", userId)
         .bind("careType", careType)
         .execute()
-
 }
 
 fun getEmployeeNameById(employeeId: UUID, h: Handle): String {
