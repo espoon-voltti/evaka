@@ -168,7 +168,7 @@ export const fi = {
       name: 'Lapsen nimi/hetu',
       dueDate: 'Käsiteltävä',
       startDate: 'Aloitus',
-      preferredUnits: 'Toive',
+      unit: 'Yksikkö',
       status: 'Tila',
       basis: 'Perusteet',
       lessthan3: 'Alle 3-vuotias hoidontarpeen alkaessa',
@@ -1727,7 +1727,8 @@ export const fi = {
         valueOnReport: 'Näytä tiedot',
         valuesOnReport: {
           percentage: 'Prosentteina',
-          headcount: 'Lukumääränä'
+          headcount: 'Lukumääränä',
+          raw: 'Summa ja kasvattajamäärä erikseen'
         }
       },
       average: 'Keskiarvo'
