@@ -15,7 +15,7 @@ import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import java.util.UUID
 
-class DvvModificationServiceIntegrationTest : DvvModificationServiceIntegrationTestBase() {
+class DvvModificationsServiceIntegrationTest : DvvModificationsServiceIntegrationTestBase() {
 
     @BeforeEach
     private fun beforeEach() {
@@ -49,20 +49,47 @@ class DvvModificationServiceIntegrationTest : DvvModificationServiceIntegrationT
 
     @Test
     fun `person date of death`() = jdbi.handle { h ->
-        h.insertTestPerson(
-            DevPerson(
-                id = UUID.randomUUID(),
-                dateOfBirth = LocalDate.parse("1920-11-01"),
-                dateOfDeath = null,
-                ssn = "010180-999A",
-                firstName = "etunimi",
-                lastName = "sukunimi",
-                streetAddress = "Katuosoite",
-                postalCode = "02230",
-                postOffice = "Espoo"
-            )
-        )
+        createTestPerson(testPerson.copy(ssn = "010180-999A"))
         dvvModificationsService.updatePersonsFromDvv(listOf("010180-999A"))
         assertEquals(LocalDate.parse("2019-07-30"), h.getPersonBySSN("010180-999A")?.dateOfDeath)
+    }
+
+    @Test
+    fun `person restricted details started`() = jdbi.handle { h ->
+        createTestPerson(testPerson.copy(ssn = "020180-999Y"))
+        dvvModificationsService.updatePersonsFromDvv(listOf("020180-999Y"))
+        assertEquals(true, h.getPersonBySSN("020180-999Y")?.restrictedDetailsEnabled)
+    }
+
+    @Test
+    fun `person restricted details ended`() = jdbi.handle { h ->
+        createTestPerson(testPerson.copy(ssn = "030180-999L", restrictedDetailsEnabled = true))
+        dvvModificationsService.updatePersonsFromDvv(listOf("030180-999L"))
+        assertEquals(false, h.getPersonBySSN("030180-999L")?.restrictedDetailsEnabled)
+        assertEquals(LocalDate.parse("2030-01-01"), h.getPersonBySSN("030180-999L")?.restrictedDetailsEndDate)
+    }
+
+    @Test
+    fun `person ssn change`() = jdbi.handle { h ->
+        val testId = createTestPerson(testPerson.copy(ssn = "010181-999K"))
+        dvvModificationsService.updatePersonsFromDvv(listOf("010181-999K"))
+        assertEquals(testId, h.getPersonBySSN("010281-999C")?.id)
+    }
+
+    val testPerson = DevPerson(
+        id = UUID.randomUUID(),
+        ssn = "set this",
+        dateOfBirth = LocalDate.parse("1980-01-01"),
+        dateOfDeath = null,
+        firstName = "etunimi",
+        lastName = "sukunimi",
+        streetAddress = "Katuosoite",
+        postalCode = "02230",
+        postOffice = "Espoo",
+        restrictedDetailsEnabled = false
+    )
+
+    private fun createTestPerson(devPerson: DevPerson): UUID = jdbi.handle { h ->
+        h.insertTestPerson(devPerson)
     }
 }

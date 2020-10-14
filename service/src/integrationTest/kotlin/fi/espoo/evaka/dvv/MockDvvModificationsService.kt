@@ -134,9 +134,9 @@ val modifications = mapOf<String, String>(
   "muutospv": "2019-09-24T21:00:00.000Z"
 }
     """.trimIndent(),
-    "turvakielto-lisatty" to """
+    "020180-999Y" to """
 {
-  "henkilotunnus": "010579-9999",
+  "henkilotunnus": "020180-999Y",
   "tietoryhmat": [
     {
       "tietoryhma": "TURVAKIELTO",
@@ -162,15 +162,15 @@ val modifications = mapOf<String, String>(
   "muutospv": "2019-09-24T21:00:00.000Z"
 }
     """.trimIndent(),
-    "turvakielto-poistettu" to """
+    "030180-999L" to """
 {
-  "henkilotunnus": "010579-9999",
+  "henkilotunnus": "030180-999L",
   "tietoryhmat": [
     {
       "tietoryhma": "TURVAKIELTO",
       "muutosattribuutti": "MUUTETTU",
       "turvaLoppuPv": {
-        "arvo": "2019-09-25",
+        "arvo": "2030-01-01",
         "tarkkuus": "PAIVA"
       },
       "turvakieltoAktiivinen": false
@@ -333,18 +333,18 @@ val modifications = mapOf<String, String>(
   "muutospv": "2020-10-01T04:38:04.394Z"
 }            
     """.trimIndent(),
-    "hetu-muutettu" to """
+    "010181-999K" to """
 {
-      "henkilotunnus": "010118-9999",
+      "henkilotunnus": "010181-999K",
       "tietoryhmat": [
         {
           "tietoryhma": "HENKILOTUNNUS_KORJAUS",
           "voimassaolo": "AKTIIVI",
           "muutosattribuutti": "LISATTY",
-          "muutettuHenkilotunnus": "010218-9999",
-          "aktiivinenHenkilotunnus": "010218-9999",
+          "muutettuHenkilotunnus": "010281-999C",
+          "aktiivinenHenkilotunnus": "010281-999C",
           "edellisetHenkilotunnukset": [
-            "010118-9999"
+            "010181-999K"
           ]
         },
         {
@@ -352,7 +352,7 @@ val modifications = mapOf<String, String>(
           "voimassaolo": "PASSIIVI",
           "muutosattribuutti": "MUUTETTU",
           "muutettuHenkilotunnus": "010118-9999",
-          "aktiivinenHenkilotunnus": "010218-9999",
+          "aktiivinenHenkilotunnus": "010281-999C",
           "edellisetHenkilotunnukset": [
             "010118-9999"
           ]

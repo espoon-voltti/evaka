@@ -28,6 +28,8 @@ class DvvModificationsServiceClient(
 ) {
     private val dvvUserId = env.getRequiredProperty("fi.espoo.integration.dvv-modifications-service.userId")
     private val dvvPassword = env.getRequiredProperty("fi.espoo.integration.dvv-modifications-service.password")
+    private val dvvXroadClientId: String = env.getRequiredProperty("fi.espoo.integration.dvv-modifications-service.xRoadClientId")
+    private val dvvProductCode: String = env.getRequiredProperty("fi.espoo.integration.dvv-modifications-service.productCode")
 
     // Fetch the first modification token of the given date
     fun getFirstModificationToken(date: LocalDate): DvvModificationServiceModificationTokenResponse? {
@@ -36,6 +38,7 @@ class DvvModificationsServiceClient(
             .header(Headers.ACCEPT, "application/json")
             .header("MUTP-Tunnus", dvvUserId)
             .header("MUTP-Salasana", dvvPassword)
+            .header("X-Road-Client", dvvXroadClientId)
             .responseString()
 
         return when (result) {
@@ -60,11 +63,12 @@ class DvvModificationsServiceClient(
             .header(Headers.ACCEPT, "application/json")
             .header("MUTP-Tunnus", dvvUserId)
             .header("MUTP-Salasana", dvvPassword)
+            .header("X-Road-Client", dvvXroadClientId)
             .jsonBody(
                 """{
                     "viimeisinKirjausavain": $updateToken,
-                    "tuotekoodi": "70015",
-                    "hetulista": [${ssns.map{ "\"$it\"" }.joinToString()}]
+                    "tuotekoodi": "$dvvProductCode",
+                    "hetulista": [${ssns.map { "\"$it\"" }.joinToString()}]
                 }
                 """.trimIndent()
             )

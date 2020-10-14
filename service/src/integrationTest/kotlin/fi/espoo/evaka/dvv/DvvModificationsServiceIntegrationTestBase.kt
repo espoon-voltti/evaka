@@ -5,28 +5,23 @@ package fi.espoo.evaka.dvv
 
 import com.github.kittinunf.fuel.core.FuelManager
 import fi.espoo.evaka.FullApplicationTest
-import fi.espoo.evaka.pis.service.PersonService
 import org.junit.jupiter.api.BeforeAll
-import org.springframework.beans.factory.annotation.Autowired
 import java.security.cert.X509Certificate
 import javax.net.ssl.HostnameVerifier
 import javax.net.ssl.SSLContext
 import javax.net.ssl.TrustManager
 import javax.net.ssl.X509TrustManager
 
-class DvvModificationServiceIntegrationTestBase : FullApplicationTest() {
+class DvvModificationsServiceIntegrationTestBase : FullApplicationTest() {
     protected lateinit var dvvModificationsServiceClient: DvvModificationsServiceClient
     protected lateinit var dvvModificationsService: DvvModificationsService
-
-    @Autowired
-    protected lateinit var personService: PersonService
 
     @BeforeAll
     protected fun initDvvModificationService() {
         assert(httpPort > 0)
         val mockDvvBaseUrl = "http://localhost:$httpPort/mock-integration/dvv/api"
         dvvModificationsServiceClient = DvvModificationsServiceClient(objectMapper, noCertCheckFuelManager(), env, mockDvvBaseUrl)
-        dvvModificationsService = DvvModificationsService(jdbi, dvvModificationsServiceClient, personService)
+        dvvModificationsService = DvvModificationsService(jdbi, dvvModificationsServiceClient)
     }
 
     fun noCertCheckFuelManager() = FuelManager().apply {

@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
 
-class DvvModificationServiceClientIntegrationTest : DvvModificationServiceIntegrationTestBase() {
+class DvvModificationsServiceClientIntegrationTest : DvvModificationsServiceIntegrationTestBase() {
 
     @Test
     fun `get modification token for today`() {
@@ -17,7 +17,7 @@ class DvvModificationServiceClientIntegrationTest : DvvModificationServiceIntegr
 
     @Test
     fun `restricted info has been added`() {
-        val response: DvvModificationsResponse = dvvModificationsServiceClient.getModifications("100000000", listOf("turvakielto-lisatty"))!!
+        val response: DvvModificationsResponse = dvvModificationsServiceClient.getModifications("100000000", listOf("020180-999Y"))!!
         assertEquals(true, response.modifications[0].infoGroups.size == 2)
         assertEquals("TURVAKIELTO", response.modifications[0].infoGroups[0].type)
         val restrictedInfo = response.modifications[0].infoGroups[0] as RestrictedInfoDvvInfoGroup
@@ -26,13 +26,13 @@ class DvvModificationServiceClientIntegrationTest : DvvModificationServiceIntegr
 
     @Test
     fun `restricted info has been removed and address is provided`() {
-        val response: DvvModificationsResponse = dvvModificationsServiceClient.getModifications("100000000", listOf("turvakielto-poistettu"))!!
+        val response: DvvModificationsResponse = dvvModificationsServiceClient.getModifications("100000000", listOf("030180-999L"))!!
         assertEquals(true, response.modifications[0].infoGroups.size == 2)
         assertEquals("TURVAKIELTO", response.modifications[0].infoGroups[0].type)
 
         val restrictedInfo = response.modifications[0].infoGroups[0] as RestrictedInfoDvvInfoGroup
         assertEquals(false, restrictedInfo.restrictedActive)
-        assertEquals("2019-09-25", restrictedInfo.restrictedEndDate?.date)
+        assertEquals("2030-01-01", restrictedInfo.restrictedEndDate?.date)
 
         val address = response.modifications[0].infoGroups[1] as AddressDvvInfoGroup
         assertEquals("Gamlagatan", address.streetName!!.sv)
@@ -76,12 +76,12 @@ class DvvModificationServiceClientIntegrationTest : DvvModificationServiceIntegr
 
     @Test
     fun `ssn change`() {
-        val response: DvvModificationsResponse = dvvModificationsServiceClient.getModifications("100000000", listOf("hetu-muutettu"))!!
+        val response: DvvModificationsResponse = dvvModificationsServiceClient.getModifications("100000000", listOf("010181-999K"))!!
         assertEquals("HENKILOTUNNUS_KORJAUS", response.modifications[0].infoGroups[0].type)
         val ssnModified = response.modifications[0].infoGroups[0] as SsnDvvInfoGroup
         assertEquals("LISATTY", ssnModified.changeAttribute)
         assertEquals("AKTIIVI", ssnModified.activeState)
-        assertEquals("010218-9999", ssnModified.activeSsn)
-        assertEquals("010118-9999", ssnModified.previousSsns.get(0))
+        assertEquals("010281-999C", ssnModified.activeSsn)
+        assertEquals("010181-999K", ssnModified.previousSsns.get(0))
     }
 }
