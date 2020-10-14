@@ -47,7 +47,7 @@ packages.
 eVaka uses [PM2](https://pm2.keymetrics.io/) for running multiple
 services in parallel. PM2 is an opinionated choice for
 development process in eVaka. Installing PM2 is not strictly
-mandatory. You can also run every sub-project in separate processes or
+mandatory. You can also run every sub-project separately or
 build Docker images and run the stack using Docker (please refer to the
 [documentation for this](#running-the-full-stack-for-e2e-tests)).
 
