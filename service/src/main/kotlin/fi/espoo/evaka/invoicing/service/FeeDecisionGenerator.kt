@@ -40,8 +40,6 @@ import fi.espoo.evaka.pis.service.PersonService
 import fi.espoo.evaka.placement.Placement
 import fi.espoo.evaka.serviceneed.ServiceNeed
 import fi.espoo.evaka.serviceneed.getServiceNeedsByChildDuringPeriod
-import fi.espoo.evaka.shared.async.AsyncJobRunner
-import fi.espoo.evaka.shared.async.NotifyFamilyUpdated
 import fi.espoo.evaka.shared.db.getEnum
 import fi.espoo.evaka.shared.db.getUUID
 import fi.espoo.evaka.shared.db.withSpringHandle
@@ -52,7 +50,6 @@ import fi.espoo.evaka.shared.domain.mergePeriods
 import fi.espoo.evaka.shared.domain.orMax
 import mu.KotlinLogging
 import org.jdbi.v3.core.Handle
-import org.jdbi.v3.core.kotlin.mapTo
 import org.springframework.core.env.Environment
 import org.springframework.stereotype.Component
 import org.springframework.transaction.PlatformTransactionManager
@@ -72,34 +69,10 @@ class FeeDecisionGenerator(
     private val txManager: PlatformTransactionManager,
     private val dataSource: DataSource,
     private val objectMapper: ObjectMapper,
-    private val asyncJobRunner: AsyncJobRunner,
-    private val env: Environment
+    env: Environment
 ) {
     private fun <T> toJson(data: T): String = objectMapper.writeValueAsString(data)
     private val feeDecisionMinDate: LocalDate = LocalDate.parse(env.getRequiredProperty("fee_decision_min_date"))
-
-    @Transactional
-    fun generateAllStartingFrom(starting: LocalDate, targetHeads: List<UUID>) {
-        val heads = if (targetHeads.isEmpty()) withSpringTx(txManager) {
-            withSpringHandle(dataSource) { h ->
-                h.createQuery("SELECT head_of_child FROM fridge_child WHERE COALESCE(end_date, '9999-01-01') >= :from AND conflict = false")
-                    .bind("from", starting)
-                    .mapTo<UUID>()
-                    .list()
-            }
-        } else targetHeads
-
-        logger.debug { "Generating fee decisions for $heads" }
-        val jobs = heads.distinct().map { headId ->
-            NotifyFamilyUpdated(headId, starting, null)
-        }
-
-        withSpringTx(txManager) {
-            withSpringHandle(dataSource) { h ->
-                asyncJobRunner.plan(h, jobs)
-            }
-        }
-    }
 
     @Transactional
     fun createRetroactive(headOfFamily: UUID, from: LocalDate) {

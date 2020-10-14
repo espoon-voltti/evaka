@@ -61,7 +61,6 @@ class FeeDecisionGeneratorTest {
             txManager,
             dataSource,
             objectMapper,
-            asyncJobRunner,
             env
         )
     }
