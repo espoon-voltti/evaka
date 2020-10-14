@@ -34,7 +34,7 @@ import Colors from './shared/Colors'
 import RoundIcon from './shared/atoms/RoundIcon'
 import { AbsenceType, AbsenceTypes } from '~types/absence'
 import { useTranslation } from '~state/i18n'
-import { postChildAttendance } from '~api/absences'
+import { postChildAbsence } from '~api/absences'
 import { isNotProduction } from '~constants'
 
 const CustomButton = styled(Button)`
@@ -354,7 +354,7 @@ function AttendancePage() {
     async function selectAbsenceType(absenceType: AbsenceType) {
       if (child && group) {
         // TODO: add careType selector to UI
-        await postChildAttendance(absenceType, 'PRESCHOOL', child.childId)
+        await postChildAbsence(absenceType, 'PRESCHOOL', child.childId)
         chooseGroup(group)
       }
     }
