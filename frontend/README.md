@@ -6,7 +6,6 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 
 # eVaka frontend
 
-
 This project contains all the frontend applications for eVaka. eVaka is an ERP for early childhood education.
 
 The user interface is split into two separate applications,
@@ -20,12 +19,12 @@ by user functionality:
   application for the citizen. Citizens may e.g. apply to early childhood education, or browse decisions made for their dependants.
 - [`maintenance-page`](packages/maintenance-page/README.md) - Static website to be shown during maintenance instead of the other frontends
 
-And into shared libraries:
+And into a shared library:
 
 - [`lib-common`](packages/lib-common/README.md)
 
-This repository uses [Yarn workspaces](https://yarnpkg.com/lang/en/docs/workspaces/) to share common code between
-packages / applications. See further instructions below.
+This repository uses [Yarn workspaces](https://yarnpkg.com/lang/en/docs/workspaces/) to share 
+common code between packages / applications. See further instructions below.
 
 **NOTE:** This project is currently under very active development.
 It is very likely, that the way the code is organised will change
@@ -47,9 +46,9 @@ environment's package manager, or alternatively download binaries
 from websites provided below.
 
 - [Node.js](https://nodejs.org/en/) – a JavaScript runtime built on
-  Chrome's V8 JavaScript engine, version 10.16
+  Chrome's V8 JavaScript engine, version 12.13+
 - [Yarn](https://yarnpkg.com/getting-started/install) – Package manager
-  for Node, version 1.16
+  for Node, version 1.22.10
 
 ## Overview of the repository structure
 
@@ -92,14 +91,14 @@ cd packages/employee-frontend
 ICONS=free yarn dev
 ```
 
-### Using pro icons
+### Using professional icons
 
 **NOTE:** If you've run `yarn install` with `--ignore-optional`, you must
 clear `node_modules` to force yarn to install the optional packages after
-you've fetched them. This appears to be a bug with `yarn` itself.
+you have fetched them. This appears to be a bug with `yarn` itself.
 
 Please refer to [Font Awesome documentation](https://fontawesome.com/plans)
-on how to get a license for the professional version of the icon library.
+on how to obtain a commercial license for the professional version of the icon library.
 
 By default, all builds will use the free icons, so you must set the environment
 variable `ICONS=pro` when running any builds, e.g.:
@@ -111,24 +110,12 @@ ICONS=pro yarn dev
 
 To fetch the icons, see:
 
-- [As a Voltti developer](#as-a-voltti-developer)
-- [As anybody else](#as-anybody-else)
+- [Instructions for developers with a license for Font Awesome Professional icons](#instructions-for-developers-with-a-license-for-font-awesome-professional-icons)
+- [Instructions for Voltti developers](#instructions-for-voltti-developers)
 
-#### As a Voltti developer
+#### Instructions for developers with a license for Font Awesome Professional icons
 
-Voltti developers can use the helper script to fetch the icon packages from
-a private S3 bucket: `./init-pro-icons.sh`
-
-For updating the icons, follow [the non-Voltti developer guide](#as-a-non-voltti-developer)
-for fetching the new versions. Once fetched, upload the packages to S3:
-
-```sh
-aws --profile voltti-local s3 sync ./vendor/fortawesome/ s3://evaka-deployment-local/frontend/vendor/fortawesome/
-```
-
-#### As anybody else
-
-Once you have a license, configure **temporary** access to Font's
+Once you have a license, configure **temporary** access to Font Awesome's
 private registry in your `.npmrc`:
 
 ```ini
@@ -145,7 +132,7 @@ cat << EOF > .npmrc
 EOF
 ```
 
-**IMPORTANT:** Once you've fetched the packages, remove the above configuration
+**IMPORTANT:** Once you have fetched the packages, remove the above configuration
 to avoid accidentally configuring all the public `@fortawesome/` packages to
 target the private registry in `yarn.lock`.
 
@@ -158,6 +145,18 @@ npm pack @fortawesome/fontawesome-pro@5.14.0 --userconfig=<path to your .npmrc>
 
 Place the fetched `.tgz` packages in the `./vendor/fortawesome/` directory,
 and run `yarn install` to install the packages to the `node_modules` directory.
+
+#### Instructions for Voltti developers
+
+Voltti developers can use the helper script to fetch the icon packages from
+a private S3 bucket: `./init-pro-icons.sh`
+
+For updating the icons, follow [the non-Voltti developer guide](#instructions-for-developers-with-a-license-for-font-awesome-professional-icons)
+for fetching the new versions. Once fetched, upload the packages to S3:
+
+```sh
+aws --profile voltti-local s3 sync ./vendor/fortawesome/ s3://evaka-deployment-local/frontend/vendor/fortawesome/
+```
 
 ## Development
 
