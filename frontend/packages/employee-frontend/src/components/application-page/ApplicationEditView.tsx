@@ -327,8 +327,10 @@ export default React.memo(function ApplicationEditView({
               <Label>{i18n.application.serviceNeed.assistanceDesc}</Label>
               <TextArea
                 value={child.assistanceDescription}
-                onChange={(value) => {
-                  setApplication(set('form.child.assistanceDescription', value))
+                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => {
+                  setApplication(
+                    set('form.child.assistanceDescription', e.target.value)
+                  )
                 }}
               />
             </>
