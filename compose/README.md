@@ -56,7 +56,7 @@ Install PM2 by running following command
 npm install -g pm2
 ```
 
-You will also need `nc/netcat` (Arbitrary TCP and UDP connections and listens) utility.
+You will also need the `nc/netcat` (Arbitrary TCP and UDP connections and listens) utility.
 If your operating system does not have this utility installed, please install
 it using your package manager. (E.g. on Ubuntu, run  `sudo apt-get install netcat`).
 
