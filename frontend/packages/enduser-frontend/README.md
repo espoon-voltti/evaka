@@ -27,7 +27,7 @@ These microservices can either be run with [compose](../../../compose/README.md)
 ## Packages
 
 The project uses a commercial version of [Font Awesome](https://fontawesome.com/),
-so you need to [configure that first](../README.md#using-pro-icons)
+so you need to [configure that first](../../README.md#using-professional-icons)
 and **always** set `ICONS=pro` when running builds/local dev servers.
 
 ## Development

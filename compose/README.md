@@ -120,7 +120,7 @@ With [free icons](../frontend/README.md#using-free-icons)
 ./build.sh
 ```
 
-With [pro icons](../frontend/README.md#using-pro-icons)
+With [pro icons](../frontend/README.md#using-professional-icons)
 
 ```sh
 ICONS=pro ./build.sh
@@ -139,12 +139,6 @@ Access the frontends at
 - <http://localhost:9999/employee> – Frontend for the employee
 
 ## Troubleshooting
-
-### Docker
-
-If you are having troubles starting Docker, make sure the user is added
-to `docker` group. See [post-installation steps for Linux](https://docs.docker.com/engine/install/linux-postinstall/) 
-for further reference.
 
 ### Database
 
