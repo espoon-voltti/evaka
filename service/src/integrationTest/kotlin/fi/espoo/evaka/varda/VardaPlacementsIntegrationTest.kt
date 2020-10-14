@@ -286,6 +286,29 @@ class VardaPlacementsIntegrationTest : FullApplicationTest() {
             assertEquals(1, getSoftDeletedVardaPlacements(h).size)
         }
     }
+
+    @Test
+    fun `placement is not updated if upload flag is turned off`() {
+        jdbi.handle { h ->
+            val unitId = testDaycare.id
+            val period = ClosedPeriod(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))
+            insertVardaUnit(h, unitId = unitId)
+            val placementId = insertPlacement(h, testChild_1.id, unitId = unitId, period = period)
+            insertTestVardaDecision(h, placementId = placementId)
+
+            updatePlacements(h, vardaClient)
+
+            h.createUpdate("UPDATE daycare SET upload_to_varda = false WHERE id = :id").bind("id", testDaycare.id).execute()
+
+            val originalUploadedAt = getVardaPlacements(h).first().uploadedAt
+
+            updatePlacement(h, placementId, originalUploadedAt.plusSeconds(1))
+            updatePlacements(h, vardaClient)
+
+            val result = getVardaPlacements(h)
+            assertEquals(originalUploadedAt, result.first().uploadedAt)
+        }
+    }
 }
 
 private fun getSoftDeletedVardaPlacements(h: Handle) = h.createQuery("SELECT * FROM varda_placement WHERE deleted IS NOT NULL")
