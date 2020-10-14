@@ -27,9 +27,9 @@ class DvvModificationsService(
                     is DeathDvvInfoGroup -> handleDeath(personDvvModifications.ssn, infoGroup)
                     is RestrictedInfoDvvInfoGroup -> handleRestrictedInfo(personDvvModifications.ssn, infoGroup)
                     is SsnDvvInfoGroup -> handleSsnDvvInfoGroup(personDvvModifications.ssn, infoGroup)
+                    is AddressDvvInfoGroup -> handleAddressDvvInfoGroup(personDvvModifications.ssn, infoGroup)
                     // is CustodianLimitedDvvInfoGroup -> handleCustodianLimitedDvvInfoGroup(personDvvModifications.ssn, infoGroup)
                     // is CaretakerLimitedDvvInfoGroup -> handleCaretakerLimitedDvvInfoGroup(personDvvModifications.ssn, infoGroup)
-                    // is AddressDvvInfoGroup -> handleAddressDvvInfoGroup(personDvvModifications.ssn, infoGroup)
                     // is PersonNameDvvInfoGroup -> handlePersonNameDvvInfoGroup(personDvvModifications.ssn, infoGroup)
                     // is PersonNameChangeDvvInfoGroup -> handlePersonNameChangeDvvInfoGroup(personDvvModifications.ssn, infoGroup)
                     else -> logger.info("Unsupported DVV modification: ${infoGroup.type}")
@@ -73,6 +73,22 @@ class DvvModificationsService(
         }
     }
 
+    private fun handleAddressDvvInfoGroup(ssn: String, addressDvvInfoGroup: AddressDvvInfoGroup) {
+        jdbi.handle { h ->
+            h.getPersonBySSN(ssn)?.let {
+                logger.debug("Dvv modification for ${it.id}: address change")
+                h.updatePersonFromVtj(
+                    it.copy(
+                        streetAddress = addressDvvInfoGroup.streetAddress(),
+                        postalCode = addressDvvInfoGroup.postalCode ?: "",
+                        postOffice = addressDvvInfoGroup.postOffice?.fi ?: ""
+                        // TODO: residence code
+                    )
+                )
+            }
+        }
+    }
+
     /*
         private fun handleCustodianLimitedDvvInfoGroup(ssn: String, custodianLimitedDvvInfoGroup: CustodianLimitedDvvInfoGroup) {
         }
@@ -80,8 +96,6 @@ class DvvModificationsService(
         private fun handleCaretakerLimitedDvvInfoGroup(ssn: String, caretakerLimitedDvvInfoGroup: CaretakerLimitedDvvInfoGroup) {
         }
 
-        private fun handleAddressDvvInfoGroup(ssn: String, addressDvvInfoGroup: AddressDvvInfoGroup) {
-        }
 
         private fun handlePersonNameDvvInfoGroup(ssn: String, personNameDvvInfoGroup: PersonNameDvvInfoGroup) {
         }

@@ -59,14 +59,20 @@ class DvvModificationsServiceIntegrationTest : DvvModificationsServiceIntegratio
         createTestPerson(testPerson.copy(ssn = "020180-999Y"))
         dvvModificationsService.updatePersonsFromDvv(listOf("020180-999Y"))
         assertEquals(true, h.getPersonBySSN("020180-999Y")?.restrictedDetailsEnabled)
+        assertEquals("", h.getPersonBySSN("020180-999Y")?.streetAddress)
+        assertEquals("", h.getPersonBySSN("020180-999Y")?.postalCode)
+        assertEquals("", h.getPersonBySSN("020180-999Y")?.postOffice)
     }
 
     @Test
-    fun `person restricted details ended`() = jdbi.handle { h ->
-        createTestPerson(testPerson.copy(ssn = "030180-999L", restrictedDetailsEnabled = true))
+    fun `person restricted details ended and address is set`() = jdbi.handle { h ->
+        createTestPerson(testPerson.copy(ssn = "030180-999L", restrictedDetailsEnabled = true, streetAddress = "", postalCode = "", postOffice = ""))
         dvvModificationsService.updatePersonsFromDvv(listOf("030180-999L"))
         assertEquals(false, h.getPersonBySSN("030180-999L")?.restrictedDetailsEnabled)
         assertEquals(LocalDate.parse("2030-01-01"), h.getPersonBySSN("030180-999L")?.restrictedDetailsEndDate)
+        assertEquals("Vanhakatu 10h5 3", h.getPersonBySSN("030180-999L")?.streetAddress)
+        assertEquals("02230", h.getPersonBySSN("030180-999L")?.postalCode)
+        assertEquals("Espoo", h.getPersonBySSN("030180-999L")?.postOffice)
     }
 
     @Test

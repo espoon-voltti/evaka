@@ -111,6 +111,10 @@ data class AddressDvvInfoGroup(
     val streetName: DvvFiSVValue?,
     @JsonProperty("katunumero")
     val streetNumber: String?,
+    @JsonProperty("huoneistonumero")
+    val appartmentNumber: String?,
+    @JsonProperty("huoneistokirjain")
+    val houseLetter: String?,
     @JsonProperty("postinumero")
     val postalCode: String?,
     @JsonProperty("postitoimipaikka")
@@ -119,7 +123,19 @@ data class AddressDvvInfoGroup(
     val startDate: DvvDate?,
     @JsonProperty("loppupv")
     val endDate: DvvDate?
-) : DvvInfoGroup
+) : DvvInfoGroup {
+    fun streetAddress(): String {
+        val streetAddress = (streetName?.fi ?: "") +
+            (if (streetNumber != null) " $streetNumber" else "") +
+            (if (houseLetter != null) " $houseLetter" else "") +
+            (if (appartmentNumber != null) " ${appartmentNumber.toInt()}" else "")
+        return streetAddress.trim()
+    }
+
+// TODO: calculate residence code
+// Asuinpaikan tunnus pitää sisällään VTJ-PRT (pysyvän rakennustunnuksen), osoitenron, portaan, numeron ja jakokirjaimen.
+// VAKITUINEN_KOTIMAINEN_OSOITE tietoryhmässä on nämä kaikki tiedot jo mukana.
+}
 
 data class DvvFiSVValue(
     @JsonProperty("fi")
