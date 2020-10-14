@@ -9,7 +9,9 @@ import {
   AbsencePayload,
   StaffAttendanceGroup,
   StaffAttendance,
-  deserializeChild
+  deserializeChild,
+  AbsenceType,
+  CareType
 } from '~types/absence'
 import { UUID } from '~types'
 import { JsonOf } from '@evaka/lib-common/src/json'
@@ -81,6 +83,17 @@ export async function postStaffAttendance(
 ): Promise<Result<void>> {
   return client
     .post(`/staff-attendances/${staffAttendance.groupId}`, staffAttendance)
+    .then((res) => Success(res.data))
+    .catch(Failure)
+}
+
+export async function postChildAbsence(
+  absenceType: AbsenceType,
+  careType: CareType,
+  childId: UUID
+): Promise<Result<void>> {
+  return client
+    .post<void>(`/absences/child/${childId}`, { absenceType, careType })
     .then((res) => Success(res.data))
     .catch(Failure)
 }

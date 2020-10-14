@@ -75,6 +75,17 @@ class AbsenceService(private val db: Jdbi, private val personService: PersonServ
         }
     }
 
+    fun upsertChildAbsence(childId: UUID, absenceType: AbsenceType, careType: CareType, userId: UUID) {
+        db.handle { h ->
+            try {
+                upsertChildAbsence(childId, absenceType, careType, userId, h)
+            } catch (e: Exception) {
+                logger.error { "Error: Updating absences by user $userId failed" }
+                throw BadRequest("Error: Updating absences failed: ${e.message}")
+            }
+        }
+    }
+
     fun getAbscencesByChild(childId: UUID, year: Int, month: Int): AbsenceChildMinimal {
         val startDate = LocalDate.of(year, month, 1)
         val endDate = startDate.with(lastDayOfMonth())
@@ -261,6 +272,25 @@ private fun upsertAbsences(absences: List<Absence>, modifiedBy: String, h: Handl
     }
 
     batch.execute()
+}
+
+private fun upsertChildAbsence(childId: UUID, absenceType: AbsenceType, careType: CareType, userId: UUID, h: Handle) {
+    //language=SQL
+    val sql =
+        """
+        INSERT INTO absence (child_id, date, care_type, absence_type, modified_by)
+        VALUES (:childId, :date, :careType, :absenceType, :modifiedBy)
+        ON CONFLICT (child_id, date, care_type)
+            DO UPDATE SET absence_type = :absenceType, modified_at = now()
+        """.trimIndent()
+
+    h.createUpdate(sql)
+        .bind("childId", childId)
+        .bind("absenceType", absenceType)
+        .bind("date", LocalDate.now())
+        .bind("modifiedBy", userId)
+        .bind("careType", careType)
+        .execute()
 }
 
 fun getEmployeeNameById(employeeId: UUID, h: Handle): String {

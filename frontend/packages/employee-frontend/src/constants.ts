@@ -34,6 +34,13 @@ export function getEmployeeUrlPrefix(): string {
   return isLocalMultiPortEnv ? 'http://localhost:9093' : ''
 }
 
+export function isNotProduction(): boolean {
+  return (
+    window.location.host.includes(':9093') ||
+    window.location.host.includes('staging')
+  )
+}
+
 export const ASSISTANCE_BASIS_LIST: AssistanceBasis[] = [
   'AUTISM',
   'DEVELOPMENTAL_DISABILITY_1',

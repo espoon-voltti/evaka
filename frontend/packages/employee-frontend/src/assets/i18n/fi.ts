@@ -945,6 +945,7 @@ export const fi = {
   unit: {
     create: 'Luo uusi yksikkö',
     openDetails: 'Näytä yksikön kaikki tiedot',
+    openMobilePOC: 'Länsäolojen merkkaus (POC)',
     info: {
       title: 'Yksikön tiedot',
       area: 'Alue',
@@ -1502,6 +1503,14 @@ export const fi = {
         : 'Lisää merkinnät valituille...'
     },
     weekend: 'Viikonloppu'
+  },
+  attendances: {
+    types: {
+      COMING: 'Tulossa',
+      PRESENT: 'Paikalla',
+      DEPARTED: 'Lähtenyt',
+      ABSENT: 'Poissa'
+    }
   },
   placementDraft: {
     preschoolDaycare: 'Liittyvä varhaiskasvatus',
