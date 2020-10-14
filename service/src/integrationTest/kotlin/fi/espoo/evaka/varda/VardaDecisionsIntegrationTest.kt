@@ -622,7 +622,55 @@ class VardaDecisionsIntegrationTest : FullApplicationTest() {
         }
     }
 
+    @Test
+    fun `decision is soft deleted if it is flagged with should_be_deleted`() {
+        jdbi.handle { h ->
+            val period = ClosedPeriod(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))
+            insertDecisionWithApplication(h, testChild_1, period)
+            insertVardaUnit(h)
+            insertServiceNeed(h, testChild_1.id, period)
+            insertVardaChild(h, testChild_1.id)
+
+            updateDecisions(h, vardaClient)
+
+            assertEquals(1, getVardaDecisions(h).size)
+            assertEquals(0, getSoftDeletedVardaDecisions(h).size)
+
+            h.createUpdate("UPDATE varda_decision SET should_be_deleted = true").execute()
+
+            updateDecisions(h, vardaClient)
+
+            assertEquals(1, getSoftDeletedVardaDecisions(h).size)
+        }
+    }
+
+    @Test
+    fun `decision is not updated if upload flag is turned off`() {
+        jdbi.handle { h ->
+            val period = ClosedPeriod(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))
+            insertDecisionWithApplication(h, testChild_1, period)
+            insertVardaUnit(h, unitId = testDaycare.id)
+            insertServiceNeed(h, testChild_1.id, period)
+            insertVardaChild(h, testChild_1.id)
+
+            updateDecisions(h, vardaClient)
+
+            h.createUpdate("UPDATE daycare SET upload_to_varda = false WHERE id = :id").bind("id", testDaycare.id).execute()
+
+            val newStart = period.start.minusMonths(1)
+            insertPlacement(h, testChild_1.id, ClosedPeriod(newStart, period.end))
+            updateDecisions(h, vardaClient)
+
+            val decision = mockEndpoint.decisions[0]
+            assertEquals(period.start, decision.startDate)
+        }
+    }
+
     private fun getVardaDecisions(h: Handle) = h.createQuery("SELECT * FROM varda_decision")
+        .map(toVardaDecisionRow)
+        .toList()
+
+    private fun getSoftDeletedVardaDecisions(h: Handle) = h.createQuery("SELECT * FROM varda_decision WHERE deleted IS NOT NULL")
         .map(toVardaDecisionRow)
         .toList()
 

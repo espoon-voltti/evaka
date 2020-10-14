@@ -25,12 +25,23 @@ private val logger = KotlinLogging.logger { }
 
 fun updateDecisions(h: Handle, client: VardaClient) {
     logger.debug { "Varda: Updating decisions" }
+    logger.debug { "Varda: removing decisions that are marked to be deleted from Varda" }
+    removeMarkedDecisions(h, client)
     logger.debug { "Varda: removing deleted decisions" }
     removeDeletedDecisions(h, client)
     logger.debug { "Varda: sending new decisions" }
     sendNewDecisions(h, client)
     logger.debug { "Varda: sending updated decisions" }
     sendUpdatedDecisions(h, client)
+}
+
+fun removeMarkedDecisions(h: Handle, client: VardaClient) {
+    val decisionIds: List<Long> = getDecisionsToDelete(h)
+    decisionIds.forEach { id ->
+        if (client.deleteDecision(id)) {
+            softDeleteDecision(h, id)
+        }
+    }
 }
 
 fun sendNewDecisions(h: Handle, client: VardaClient) {
@@ -150,7 +161,7 @@ SELECT
     latest_sn.shift_care AS shift_care,
     u.provider_type AS provider_type
 FROM accepted_daycare_decision d
-JOIN daycare u ON d.unit_id = u.id
+JOIN daycare u ON (d.unit_id = u.id AND u.upload_to_varda = true)
 JOIN varda_child vc ON d.child_id = vc.person_id
 LEFT JOIN varda_decision vd ON d.id = vd.evaka_decision_id
 LEFT JOIN LATERAL (
@@ -329,6 +340,25 @@ private fun deleteDecision(h: Handle, vardaDecisionId: Long) {
     h.createUpdate("DELETE FROM varda_decision WHERE varda_decision_id = :id")
         .bind("id", vardaDecisionId)
         .execute()
+}
+
+fun softDeleteDecision(h: Handle, vardaDecisionId: Long) {
+    h.createUpdate("UPDATE varda_decision SET deleted = NOW() WHERE varda_decision_id = :vardaDecisionId")
+        .bind("vardaDecisionId", vardaDecisionId)
+        .execute()
+}
+
+fun getDecisionsToDelete(h: Handle): List<Long> {
+    return h.createQuery(
+        """
+SELECT varda_decision_id 
+FROM varda_decision
+WHERE should_be_deleted = true
+AND deleted IS NULL
+"""
+    )
+        .mapTo(Long::class.java)
+        .toList()
 }
 
 @JsonIgnoreProperties(ignoreUnknown = true)

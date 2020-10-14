@@ -70,7 +70,7 @@ fun updateAll(
         updateUnits(h, client)
         if (uploadChildren) {
             logger.debug { "Updating Varda children" }
-            updateChildren(h, client, unitFilter = false)
+            updateChildren(h, client)
             logger.debug { "Updating Varda decisions" }
             updateDecisions(h, client)
             logger.debug { "Updating Varda placements" }

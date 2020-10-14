@@ -18,9 +18,19 @@ import java.time.LocalDate
 import java.util.UUID
 
 fun updatePlacements(h: Handle, client: VardaClient) {
+    removeMarkedPlacements(h, client)
     removeDeletedPlacements(h, client)
     sendNewPlacements(h, client)
     sendUpdatedPlacements(h, client)
+}
+
+fun removeMarkedPlacements(h: Handle, client: VardaClient) {
+    val placementIds: List<Long> = getPlacementsToDelete(h)
+    placementIds.forEach { id ->
+        if (client.deletePlacement(id)) {
+            softDeletePlacement(h, id)
+        }
+    }
 }
 
 fun sendNewPlacements(h: Handle, client: VardaClient) {
@@ -96,7 +106,7 @@ SELECT
 FROM daycare_placement p
 LEFT JOIN varda_placement vp ON p.id = vp.evaka_placement_id
 JOIN varda_unit vu ON p.unit_id = vu.evaka_daycare_id
-JOIN daycare ON vu.evaka_daycare_id = daycare.id AND daycare.oph_unit_oid IS NOT NULL
+JOIN daycare ON vu.evaka_daycare_id = daycare.id AND daycare.upload_to_varda = true AND daycare.oph_unit_oid IS NOT NULL
 JOIN sent_decision d
     ON p.child_id = d.child_id
     AND p.unit_id = d.unit_id
@@ -185,6 +195,18 @@ fun deletePlacement(h: Handle, vardaPlacementId: Long) {
     h.createUpdate("DELETE FROM varda_placement WHERE varda_placement_id = :id")
         .bind("id", vardaPlacementId)
         .execute()
+}
+
+fun softDeletePlacement(h: Handle, vardaPlacementId: Long) {
+    h.createUpdate("UPDATE varda_placement SET deleted = NOW() WHERE varda_placement_id = :id")
+        .bind("id", vardaPlacementId)
+        .execute()
+}
+
+fun getPlacementsToDelete(h: Handle): List<Long> {
+    return h.createQuery("SELECT varda_placement_id FROM varda_placement WHERE should_be_deleted = true AND deleted IS NULL")
+        .mapTo(Long::class.java)
+        .toList()
 }
 
 data class VardaPlacement(
