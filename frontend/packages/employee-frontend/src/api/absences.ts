@@ -87,7 +87,7 @@ export async function postStaffAttendance(
     .catch(Failure)
 }
 
-export async function postChildAttendance(
+export async function postChildAbsence(
   absenceType: AbsenceType,
   careType: CareType,
   childId: UUID
