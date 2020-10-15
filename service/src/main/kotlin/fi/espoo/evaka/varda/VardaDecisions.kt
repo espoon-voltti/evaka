@@ -25,8 +25,6 @@ private val logger = KotlinLogging.logger { }
 
 fun updateDecisions(h: Handle, client: VardaClient) {
     logger.debug { "Varda: Updating decisions" }
-    logger.debug { "Varda: removing decisions that are marked to be deleted from Varda" }
-    removeMarkedDecisions(h, client)
     logger.debug { "Varda: removing deleted decisions" }
     removeDeletedDecisions(h, client)
     logger.debug { "Varda: sending new decisions" }

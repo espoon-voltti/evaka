@@ -638,6 +638,7 @@ class VardaDecisionsIntegrationTest : FullApplicationTest() {
 
             h.createUpdate("UPDATE varda_decision SET should_be_deleted = true").execute()
 
+            removeMarkedDecisions(h, vardaClient)
             updateDecisions(h, vardaClient)
 
             assertEquals(1, getSoftDeletedVardaDecisions(h).size)
