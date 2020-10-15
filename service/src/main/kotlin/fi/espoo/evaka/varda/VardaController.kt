@@ -77,6 +77,10 @@ fun updateAll(
             updatePlacements(h, client)
             logger.debug { "Updating Varda fee decisions" }
             updateFeeData(h, client, mapper, personService)
+            logger.debug { "Removing placements that are marked to be deleted from Varda" }
+            removeMarkedPlacements(h, client)
+            logger.debug { "Removing decisions that are marked to be deleted from Varda" }
+            removeMarkedDecisions(h, client)
         }
         logger.debug { "Varda update finished" }
     }
