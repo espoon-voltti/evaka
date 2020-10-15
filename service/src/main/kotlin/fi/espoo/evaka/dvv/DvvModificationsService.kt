@@ -23,16 +23,20 @@ class DvvModificationsService(
     fun updatePersonsFromDvv(ssns: List<String>) {
         getDvvModifications(ssns).map { personDvvModifications ->
             personDvvModifications.infoGroups.map { infoGroup ->
-                when (infoGroup) {
-                    is DeathDvvInfoGroup -> handleDeath(personDvvModifications.ssn, infoGroup)
-                    is RestrictedInfoDvvInfoGroup -> handleRestrictedInfo(personDvvModifications.ssn, infoGroup)
-                    is SsnDvvInfoGroup -> handleSsnDvvInfoGroup(personDvvModifications.ssn, infoGroup)
-                    is AddressDvvInfoGroup -> handleAddressDvvInfoGroup(personDvvModifications.ssn, infoGroup)
-                    // is CustodianLimitedDvvInfoGroup -> handleCustodianLimitedDvvInfoGroup(personDvvModifications.ssn, infoGroup)
-                    // is CaretakerLimitedDvvInfoGroup -> handleCaretakerLimitedDvvInfoGroup(personDvvModifications.ssn, infoGroup)
-                    // is PersonNameDvvInfoGroup -> handlePersonNameDvvInfoGroup(personDvvModifications.ssn, infoGroup)
-                    // is PersonNameChangeDvvInfoGroup -> handlePersonNameChangeDvvInfoGroup(personDvvModifications.ssn, infoGroup)
-                    else -> logger.info("Unsupported DVV modification: ${infoGroup.type}")
+                try {
+                    when (infoGroup) {
+                        is DeathDvvInfoGroup -> handleDeath(personDvvModifications.ssn, infoGroup)
+                        is RestrictedInfoDvvInfoGroup -> handleRestrictedInfo(personDvvModifications.ssn, infoGroup)
+                        is SsnDvvInfoGroup -> handleSsnDvvInfoGroup(personDvvModifications.ssn, infoGroup)
+                        is AddressDvvInfoGroup -> handleAddressDvvInfoGroup(personDvvModifications.ssn, infoGroup)
+                        // is CustodianLimitedDvvInfoGroup -> handleCustodianLimitedDvvInfoGroup(personDvvModifications.ssn, infoGroup)
+                        // is CaretakerLimitedDvvInfoGroup -> handleCaretakerLimitedDvvInfoGroup(personDvvModifications.ssn, infoGroup)
+                        // is PersonNameDvvInfoGroup -> handlePersonNameDvvInfoGroup(personDvvModifications.ssn, infoGroup)
+                        // is PersonNameChangeDvvInfoGroup -> handlePersonNameChangeDvvInfoGroup(personDvvModifications.ssn, infoGroup)
+                        else -> logger.info("Unsupported DVV modification: ${infoGroup.type}")
+                    }
+                } catch (e: Throwable) {
+                    logger.error("Could not process dvv modification for ${personDvvModifications.ssn.substring(0, 6)}: ${e.message}")
                 }
             }
         }
@@ -57,7 +61,10 @@ class DvvModificationsService(
                 h.updatePersonFromVtj(
                     it.copy(
                         restrictedDetailsEnabled = restrictedInfoDvvInfoGroup.restrictedActive,
-                        restrictedDetailsEndDate = restrictedInfoDvvInfoGroup.restrictedEndDate?.asLocalDate()
+                        restrictedDetailsEndDate = restrictedInfoDvvInfoGroup.restrictedEndDate?.asLocalDate(),
+                        streetAddress = if (restrictedInfoDvvInfoGroup.restrictedActive) "" else it.streetAddress,
+                        postalCode = if (restrictedInfoDvvInfoGroup.restrictedActive) "" else it.postalCode,
+                        postOffice = if (restrictedInfoDvvInfoGroup.restrictedActive) "" else it.postOffice
                     )
                 )
             }
@@ -73,18 +80,25 @@ class DvvModificationsService(
         }
     }
 
+    // We get records LISATTY + MUUTETTU if address has changed (LISATTY is the new address),
+    // TURVAKIELTO=false and MUUTETTU if restrictions are lifted (MUUTETTU is the "new" address)
     private fun handleAddressDvvInfoGroup(ssn: String, addressDvvInfoGroup: AddressDvvInfoGroup) {
         jdbi.handle { h ->
             h.getPersonBySSN(ssn)?.let {
-                logger.debug("Dvv modification for ${it.id}: address change")
-                h.updatePersonFromVtj(
-                    it.copy(
-                        streetAddress = addressDvvInfoGroup.streetAddress(),
-                        postalCode = addressDvvInfoGroup.postalCode ?: "",
-                        postOffice = addressDvvInfoGroup.postOffice?.fi ?: ""
-                        // TODO: residence code
+                if (addressDvvInfoGroup.changeAttribute.equals("LISATTY") || (
+                    addressDvvInfoGroup.changeAttribute.equals("MUUTETTU") && it.streetAddress.isNullOrEmpty()
                     )
-                )
+                ) {
+                    logger.debug("Dvv modification for ${it.id}: address change, type: ${addressDvvInfoGroup.changeAttribute}")
+                    h.updatePersonFromVtj(
+                        it.copy(
+                            streetAddress = addressDvvInfoGroup.streetAddress(),
+                            postalCode = addressDvvInfoGroup.postalCode ?: "",
+                            postOffice = addressDvvInfoGroup.postOffice?.fi ?: ""
+                            // TODO: residence code
+                        )
+                    )
+                }
             }
         }
     }
@@ -105,6 +119,7 @@ class DvvModificationsService(
     */
     fun getDvvModifications(ssns: List<String>): List<DvvModification> = jdbi.transaction { h ->
         val token = getNextDvvModificationToken(h)
+        logger.debug("Fetching dvv modifications with $token")
         dvvModificationsServiceClient.getModifications(token, ssns)?.let { dvvModificationsResponse ->
             storeDvvModificationToken(h, token, dvvModificationsResponse.modificationToken, ssns.size, dvvModificationsResponse.modifications.size)
             dvvModificationsResponse.modifications

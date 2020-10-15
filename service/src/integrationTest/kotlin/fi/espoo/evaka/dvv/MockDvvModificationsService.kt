@@ -370,6 +370,62 @@ val modifications = mapOf<String, String>(
       ],
       "muutospv": "2019-09-24T21:00:00.000Z"
     }
+    """.trimIndent(),
+    "040180-9998" to """
+{
+  "henkilotunnus": "040180-9998",
+  "tietoryhmat": [
+    {
+      "tietoryhma": "VAKINAINEN_KOTIMAINEN_OSOITE",
+      "muutosattribuutti": "LISATTY",
+      "alkupv": {
+        "arvo": "2020-10-01",
+        "tarkkuus": "PAIVA"
+      },
+      "rakennustunnus": "1234567890",
+      "katunumero": "17",
+      "osoitenumero": 1,
+      "huoneistokirjain": "A",
+      "huoneistonumero": "002",
+      "postinumero": "02940",
+      "katunimi": {
+        "fi": "Uusitie",
+        "sv": "Nyvägen"
+      },
+      "postitoimipaikka": {
+        "fi": "ESPOO",
+        "sv": "ESBO"
+      }
+    },
+    {
+      "tietoryhma": "VAKINAINEN_KOTIMAINEN_OSOITE",
+      "muutosattribuutti": "MUUTETTU",
+      "alkupv": {
+        "arvo": "2018-03-01",
+        "tarkkuus": "PAIVA"
+      },
+      "loppupv": {
+        "arvo": "2020-09-30",
+        "tarkkuus": "PAIVA"
+      },
+      "rakennustunnus": "1234567880",
+      "katunumero": "2",
+      "osoitenumero": 1,
+      "huoneistokirjain": "A",
+      "huoneistonumero": "031",
+      "postinumero": "02600",
+      "katunimi": {
+        "fi": "Samatie",
+        "sv": "Sammavägen"
+      },
+      "postitoimipaikka": {
+        "fi": "ESPOO",
+        "sv": "ESBO"
+      }
+    }
+  ],
+  "muutospv": "2020-10-01T04:38:04.394Z"
+}
     """.trimIndent()
 )
 

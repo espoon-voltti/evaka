@@ -58,21 +58,33 @@ class DvvModificationsServiceIntegrationTest : DvvModificationsServiceIntegratio
     fun `person restricted details started`() = jdbi.handle { h ->
         createTestPerson(testPerson.copy(ssn = "020180-999Y"))
         dvvModificationsService.updatePersonsFromDvv(listOf("020180-999Y"))
-        assertEquals(true, h.getPersonBySSN("020180-999Y")?.restrictedDetailsEnabled)
-        assertEquals("", h.getPersonBySSN("020180-999Y")?.streetAddress)
-        assertEquals("", h.getPersonBySSN("020180-999Y")?.postalCode)
-        assertEquals("", h.getPersonBySSN("020180-999Y")?.postOffice)
+        val modifiedPerson = h.getPersonBySSN("020180-999Y")!!
+        assertEquals(true, modifiedPerson.restrictedDetailsEnabled)
+        assertEquals("", modifiedPerson.streetAddress)
+        assertEquals("", modifiedPerson.postalCode)
+        assertEquals("", modifiedPerson.postOffice)
     }
 
     @Test
     fun `person restricted details ended and address is set`() = jdbi.handle { h ->
         createTestPerson(testPerson.copy(ssn = "030180-999L", restrictedDetailsEnabled = true, streetAddress = "", postalCode = "", postOffice = ""))
         dvvModificationsService.updatePersonsFromDvv(listOf("030180-999L"))
-        assertEquals(false, h.getPersonBySSN("030180-999L")?.restrictedDetailsEnabled)
-        assertEquals(LocalDate.parse("2030-01-01"), h.getPersonBySSN("030180-999L")?.restrictedDetailsEndDate)
-        assertEquals("Vanhakatu 10h5 3", h.getPersonBySSN("030180-999L")?.streetAddress)
-        assertEquals("02230", h.getPersonBySSN("030180-999L")?.postalCode)
-        assertEquals("Espoo", h.getPersonBySSN("030180-999L")?.postOffice)
+        val modifiedPerson = h.getPersonBySSN("030180-999L")!!
+        assertEquals(false, modifiedPerson.restrictedDetailsEnabled)
+        assertEquals(LocalDate.parse("2030-01-01"), modifiedPerson.restrictedDetailsEndDate)
+        assertEquals("Vanhakatu 10h5 3", modifiedPerson.streetAddress)
+        assertEquals("02230", modifiedPerson.postalCode)
+        assertEquals("Espoo", modifiedPerson.postOffice)
+    }
+
+    @Test
+    fun `person address change`() = jdbi.handle { h ->
+        createTestPerson(testPerson.copy(ssn = "040180-9998"))
+        dvvModificationsService.updatePersonsFromDvv(listOf("040180-9998"))
+        val modifiedPerson = h.getPersonBySSN("040180-9998")!!
+        assertEquals("Uusitie 17 A 2", modifiedPerson.streetAddress)
+        assertEquals("02940", modifiedPerson.postalCode)
+        assertEquals("ESPOO", modifiedPerson.postOffice)
     }
 
     @Test
