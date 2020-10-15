@@ -20,7 +20,6 @@ import {
   ChildInGroup,
   getAttendance,
   getUnitData,
-  GroupOccupancies,
   UnitData,
   UnitResponse
 } from '~api/unit'
@@ -72,13 +71,6 @@ const Name = styled(Title)`
 const Titles = styled(FixedSpaceColumn)`
   margin-bottom: 32px;
 `
-
-const GroupInfo = styled.div`
-  display: flex;
-  justify-content: space-between;
-`
-
-const GroupInfoItem = styled.span``
 
 const Centered = styled.div`
   display: flex;
@@ -144,30 +136,6 @@ function AttendancePage() {
     setUiMode('absence')
   }
 
-  function getChildMinMaxHeadcounts(
-    occupancies: GroupOccupancies | undefined
-  ): { min: number; max: number } | undefined {
-    if (occupancies && group) {
-      const occupancyResponse = occupancies.confirmed?.[group.id]
-      const headcounts = occupancyResponse.occupancies?.map(
-        ({ headcount }) => headcount
-      )
-      return headcounts !== undefined
-        ? { min: Math.min(...headcounts), max: Math.max(...headcounts) }
-        : undefined
-    } else {
-      return undefined
-    }
-  }
-
-  const headcounts = isSuccess(unitData)
-    ? getChildMinMaxHeadcounts(unitData.data.groupOccupancies)
-    : undefined
-  const caretakers =
-    isSuccess(unitData) && group
-      ? unitData.data.caretakers.groupCaretakers[group.id]
-      : undefined
-
   function renderChooseGroup() {
     return (
       <FullHeightContentArea opaque>
@@ -231,31 +199,6 @@ function AttendancePage() {
                 .filter((elem) => group.id === elem.id)
                 .map((elem) => ({ label: elem.name, value: elem.id }))}
             ></Select>
-            <GroupInfo>
-              <GroupInfoItem>
-                Lapsia{' '}
-                {headcounts && headcounts.min === headcounts.max
-                  ? headcounts.min
-                  : headcounts && `${headcounts.min}-${headcounts.max}`}
-              </GroupInfoItem>
-              <GroupInfoItem>
-                Hlökunta{' '}
-                {caretakers && caretakers.maximum == caretakers.minimum
-                  ? caretakers.maximum
-                  : caretakers && `${caretakers.minimum}-${caretakers.maximum}`}
-              </GroupInfoItem>
-              <GroupInfoItem>
-                {headcounts &&
-                caretakers &&
-                caretakers.maximum == caretakers.minimum &&
-                headcounts.min === headcounts.max &&
-                caretakers.minimum > 0
-                  ? `Suhdeluku: ${(headcounts.min / caretakers.minimum).toFixed(
-                      2
-                    )}`
-                  : 'Suhdelukua ei voitu laskea'}
-              </GroupInfoItem>
-            </GroupInfo>
 
             <ChildAttendances
               groupAttendances={groupAttendances}
