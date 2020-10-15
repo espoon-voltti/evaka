@@ -301,14 +301,16 @@ function AttendancePage() {
             <Gap size={'s'} />
             <Bold>
               <Title size={2} centered>
-                {child.firstName}
+                {child.firstName} {child.lastName}
               </Title>
               <Title size={3} centered>
                 {group.name}
               </Title>
             </Bold>
             <Centered>
-              <ChildStatus>{child.status}</ChildStatus>
+              <ChildStatus>
+                {i18n.attendances.types[child.status].toUpperCase()}
+              </ChildStatus>
             </Centered>
             <Gap size={'s'} />
             <FixedSpaceColumn>
@@ -374,7 +376,7 @@ function AttendancePage() {
             <Gap size={'s'} />
             <Bold>
               <Title size={2} centered>
-                {child.firstName}
+                {child.firstName} {child.lastName}
               </Title>
               <Title size={4} centered>
                 {group.name}
@@ -439,63 +441,71 @@ function ChildAttendances({
     <div>
       <Gap size={'L'} />
       <Title size={3}>Ei vielä tullut</Title>
-      {isSuccess(groupAttendances) &&
-        groupAttendances.data
-          .filter((elem) => elem.status === 'COMING')
-          .map((groupAttendance) => (
-            <ChildListItem
-              type={'COMING'}
-              onClick={() => openChildView(groupAttendance)}
-              key={groupAttendance.childId}
-              childInGroup={groupAttendance}
-            />
-          ))}
+      <FixedSpaceColumn>
+        {isSuccess(groupAttendances) &&
+          groupAttendances.data
+            .filter((elem) => elem.status === 'COMING')
+            .map((groupAttendance) => (
+              <ChildListItem
+                type={'COMING'}
+                onClick={() => openChildView(groupAttendance)}
+                key={groupAttendance.childId}
+                childInGroup={groupAttendance}
+              />
+            ))}
+      </FixedSpaceColumn>
       {isSuccess(groupAttendances) &&
         groupAttendances.data.filter((elem) => elem.status === 'COMING')
           .length === 0 && <NoResults>Ei tulossa olevia</NoResults>}
       <Gap size={'m'} />
       <Title size={3}>Paikalla olevat</Title>
-      {isSuccess(groupAttendances) &&
-        groupAttendances.data
-          .filter((elem) => elem.status === 'PRESENT')
-          .map((groupAttendance) => (
-            <ChildListItem
-              type={'PRESENT'}
-              onClick={() => openChildView(groupAttendance)}
-              key={groupAttendance.childId}
-              childInGroup={groupAttendance}
-            />
-          ))}
+      <FixedSpaceColumn>
+        {isSuccess(groupAttendances) &&
+          groupAttendances.data
+            .filter((elem) => elem.status === 'PRESENT')
+            .map((groupAttendance) => (
+              <ChildListItem
+                type={'PRESENT'}
+                onClick={() => openChildView(groupAttendance)}
+                key={groupAttendance.childId}
+                childInGroup={groupAttendance}
+              />
+            ))}
+      </FixedSpaceColumn>
       {isSuccess(groupAttendances) &&
         groupAttendances.data.filter((elem) => elem.status === 'PRESENT')
           .length === 0 && <NoResults>Ei paikalla olevia</NoResults>}
       <Gap size={'m'} />
       <Title size={3}>Lähteneet</Title>
-      {isSuccess(groupAttendances) &&
-        groupAttendances.data
-          .filter((elem) => elem.status === 'DEPARTED')
-          .map((groupAttendance) => (
-            <ChildListItem
-              type={'DEPARTED'}
-              key={groupAttendance.childId}
-              childInGroup={groupAttendance}
-            />
-          ))}
+      <FixedSpaceColumn>
+        {isSuccess(groupAttendances) &&
+          groupAttendances.data
+            .filter((elem) => elem.status === 'DEPARTED')
+            .map((groupAttendance) => (
+              <ChildListItem
+                type={'DEPARTED'}
+                key={groupAttendance.childId}
+                childInGroup={groupAttendance}
+              />
+            ))}
+      </FixedSpaceColumn>
       {isSuccess(groupAttendances) &&
         groupAttendances.data.filter((elem) => elem.status === 'DEPARTED')
           .length === 0 && <NoResults>Ei lähteneitä</NoResults>}
       <Gap size={'m'} />
       <Title size={3}>Poissa tänään</Title>
-      {isSuccess(groupAttendances) &&
-        groupAttendances.data
-          .filter((elem) => elem.status === 'ABSENT')
-          .map((groupAttendance) => (
-            <ChildListItem
-              type={'ABSENT'}
-              key={groupAttendance.childId}
-              childInGroup={groupAttendance}
-            />
-          ))}
+      <FixedSpaceColumn>
+        {isSuccess(groupAttendances) &&
+          groupAttendances.data
+            .filter((elem) => elem.status === 'ABSENT')
+            .map((groupAttendance) => (
+              <ChildListItem
+                type={'ABSENT'}
+                key={groupAttendance.childId}
+                childInGroup={groupAttendance}
+              />
+            ))}
+      </FixedSpaceColumn>
       {isSuccess(groupAttendances) &&
         groupAttendances.data.filter((elem) => elem.status === 'ABSENT')
           .length === 0 && <NoResults>Ei poissaolevia</NoResults>}
