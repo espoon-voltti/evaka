@@ -284,6 +284,43 @@ export interface FeeDecisionSummary {
   finalPrice: number
 }
 
+export interface VoucherValueDecisionDetailed {
+  id: UUID
+  status: VoucherValueDecisionStatus
+  validFrom: LocalDate
+  validTo: LocalDate | null
+  decisionNumber: number | null
+  headOfFamily: PersonDetailed
+  partner: PersonDetailed | null
+  headOfFamilyIncome: Income | null
+  partnerIncome: Income | null
+  familySize: number
+  parts: VoucherValueDecisionPartDetailed[]
+  documentKey: string | null
+  approvedAt: Date | null
+  createdAt: Date
+  sentAt: Date | null
+  minThreshold: number
+  feePercent: number
+  totalCoPayment: number
+  incomeEffect: IncomeEffect | 'NOT_AVAILABLE'
+  totalIncome: number | null
+  requiresManualSending: boolean
+  isRetroactive: boolean
+}
+
+export interface VoucherValueDecisionPartDetailed {
+  child: PersonDetailed
+  placement: Placement
+  placementUnit: UnitDetailed
+  baseCoPayment: number
+  siblingDiscount: number
+  coPayment: number
+  feeAlterations: FeeDecisionAlteration[]
+  finalCoPayment: number
+  serviceNeedMultiplier: number
+}
+
 export interface VoucherValueDecisionSummary {
   id: UUID
   status: VoucherValueDecisionStatus

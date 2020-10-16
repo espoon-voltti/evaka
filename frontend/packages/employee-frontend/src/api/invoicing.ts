@@ -17,6 +17,7 @@ import {
   FeeDecisionDetailed,
   FeeDecisionSummary,
   VoucherValueDecisionSummary,
+  VoucherValueDecisionDetailed,
   Invoice,
   InvoiceCodes,
   InvoiceDetailed,
@@ -117,11 +118,43 @@ export async function markInvoiceSent(invoiceIds: string[]): Promise<void> {
   return request.data
 }
 
-export async function getDecision(
+export async function getFeeDecision(
   id: string
 ): Promise<Result<FeeDecisionDetailed>> {
   return client
     .get<JsonOf<Response<FeeDecisionDetailed>>>(`/fee-decisions/${id}`)
+    .then(({ data: { data: json } }) =>
+      Success({
+        ...json,
+        validFrom: LocalDate.parseIso(json.validFrom),
+        validTo: LocalDate.parseNullableIso(json.validTo),
+        headOfFamily: deserializePersonDetailed(json.headOfFamily),
+        partner: json.partner ? deserializePersonDetailed(json.partner) : null,
+        headOfFamilyIncome: json.headOfFamilyIncome
+          ? deserializeIncome(json.headOfFamilyIncome)
+          : null,
+        partnerIncome: json.partnerIncome
+          ? deserializeIncome(json.partnerIncome)
+          : null,
+        parts: json.parts.map((partJson) => ({
+          ...partJson,
+          child: deserializePersonDetailed(partJson.child)
+        })),
+        createdAt: new Date(json.createdAt),
+        sentAt: json.sentAt ? new Date(json.sentAt) : null,
+        approvedAt: json.approvedAt ? new Date(json.approvedAt) : null
+      })
+    )
+    .catch(Failure)
+}
+
+export async function getVoucherValueDecision(
+  id: string
+): Promise<Result<VoucherValueDecisionDetailed>> {
+  return client
+    .get<JsonOf<Response<VoucherValueDecisionDetailed>>>(
+      `/value-decisions/${id}`
+    )
     .then(({ data: { data: json } }) =>
       Success({
         ...json,
@@ -365,8 +398,12 @@ export async function markDecisionSent(decisionIds: string[]): Promise<void> {
   return request.data
 }
 
-export function getPdfUrl(decisionId: string): string {
+export function getFeeDecisionPdfUrl(decisionId: string): string {
   return `${API_URL}/fee-decisions/pdf/${decisionId}`
+}
+
+export function getVoucherValueDecisionPdfUrl(decisionId: string): string {
+  return `${API_URL}/value-decisions/pdf/${decisionId}`
 }
 
 export async function setDecisionType(

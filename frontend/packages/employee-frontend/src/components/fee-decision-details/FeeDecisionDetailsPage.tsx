@@ -14,7 +14,7 @@ import ChildSection from './ChildSection'
 import Summary from './Summary'
 import Actions from './Actions'
 import { isFailure, isSuccess, Loading, Result } from '../../api'
-import { getDecision } from '../../api/invoicing'
+import { getFeeDecision } from '../../api/invoicing'
 import { FeeDecisionDetailed } from '../../types/invoicing'
 import './FeeDecisionDetailsPage.scss'
 import styled from 'styled-components'
@@ -38,7 +38,7 @@ const FeeDecisionDetailsPage = React.memo(function FeeDecisionDetailsPage() {
   const [newDecisionType, setNewDecisionType] = useState<string>('')
   const [confirmingBack, setConfirmingBack] = useState<boolean>(false)
 
-  const loadDecision = () => getDecision(id).then((dec) => setDecision(dec))
+  const loadDecision = () => getFeeDecision(id).then((dec) => setDecision(dec))
   useEffect(() => void loadDecision(), [id])
 
   useEffect(() => {

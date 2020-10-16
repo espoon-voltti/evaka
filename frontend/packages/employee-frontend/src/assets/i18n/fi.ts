@@ -2,8 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { PlacementType, ServiceNeed } from '../../types/invoicing'
-
 export const fi = {
   titles: {
     defaultTitle: 'Varhaiskasvatus',
@@ -1281,14 +1279,14 @@ export const fi = {
       PRESCHOOL_DAYCARE: 'Esiopetus ja liittyvä varhaiskasvatus'
     },
     serviceNeed: {
-      MISSING: 'vahvistamaton palveluntarve',
-      GTE_35: 'vähintään 35h',
-      GTE_25: 'vähintään 25h',
-      GT_25_LT_35: 'yli 25h ja alle 35h',
-      GT_15_LT_25: 'yli 15h ja alle 25h',
-      LTE_25: 'enintään 25h',
-      LTE_15: 'enintään 15h',
-      LTE_0: ''
+      MISSING: 'Vahvistamaton palveluntarve',
+      GTE_35: 'Maksullista varhaiskasvatusta vähintään 35h',
+      GTE_25: 'Maksullista varhaiskasvatusta vähintään 25h',
+      GT_25_LT_35: 'Maksullista varhaiskasvatusta yli 25h ja alle 35h',
+      GT_15_LT_25: 'Maksullista varhaiskasvatusta yli 15h ja alle 25h',
+      LTE_25: 'Maksullista varhaiskasvatusta enintään 25h',
+      LTE_15: 'Maksullista varhaiskasvatusta enintään 15h',
+      LTE_0: 'Ei maksullista varhaiskasvatusta'
     }
   },
   product: {
@@ -1414,14 +1412,6 @@ export const fi = {
           siblingDiscount: 'sisaralennus',
           sum: 'Summa'
         },
-        part: {
-          serviceNeedAmount(type: PlacementType, serviceNeed: ServiceNeed) {
-            const defaultStr: string = fi.placement.serviceNeed[serviceNeed]
-            return type === 'DAYCARE'
-              ? defaultStr
-              : `maksullista varhaiskasvatusta ${defaultStr.toLowerCase()}`
-          }
-        },
         totalPrice: 'Perheen varhaiskasvatusmaksu yhteensä'
       },
       buttons: {
@@ -1450,12 +1440,81 @@ export const fi = {
     invoiceSearchByStartDate: 'Lähetä laskut valitulta kaudelta'
   },
   valueDecision: {
+    title: {
+      DRAFT: 'Arvopäätösluonnos',
+      WAITING_FOR_SENDING: 'Arvopäätös (lähdössä)',
+      WAITING_FOR_MANUAL_SENDING: 'Arvopäätös (lähetetään manuaalisesti)',
+      SENT: 'Arvopäätös',
+      ANNULLED: 'Mitätöity arvopäätös'
+    },
+    headOfFamily: 'Päämies',
+    decisionNUmber: 'Päätöksen numero',
+    validPeriod: 'Arvopäätös voimassa',
+    sentAt: 'Arvopäätös lähetetty',
+    pdfLabel: 'Arvopäätös PDF',
+    downloadPdf: 'Lataa PDF',
+    pdfInProgress:
+      '(PDF:ää muodostetaan. Lataa sivu hetken kuluttua uudelleen niin voit ladata sen oheisesta linkistä.)',
     status: {
       DRAFT: 'Luonnos',
       WAITING_FOR_SENDING: 'Lähdössä',
       WAITING_FOR_MANUAL_SENDING: 'Lähetetään manuaalisesti',
       SENT: 'Lähetetty',
       ANNULLED: 'Mitätöity'
+    },
+    child: {
+      name: 'Nimi',
+      ssn: 'Henkilötunnus',
+      city: 'Kotikunta',
+      placementType: 'Toimintamuoto',
+      careArea: 'Palvelualue',
+      unit: 'Toimipaikka',
+      serviceNeed: 'Palveluntarve'
+    },
+    summary: {
+      title: 'Kooste arvopäätöksen perusteista',
+      parts: 'Kooste perheen lasten omavastuuosuuksista',
+      sum: 'Summa',
+      siblingDiscount: 'Sisarusalennus',
+      totalCoPayment: 'Perheen omavastuu yhteensä',
+      income: {
+        title: 'Kooste perheen tuloista',
+        effect: {
+          label: 'Maksun peruste',
+          MAX_FEE_ACCEPTED:
+            'Huoltajan suostumus korkeimpaan varhaiskasvatusmaksuun',
+          INCOMPLETE: 'Perheen tulotiedot ovat puutteelliset.',
+          INCOME: 'Maksun perusteena huoltajien tulotiedot',
+          NOT_AVAILABLE: 'Maksun perusteena korkein tuloluokka (automaattinen)'
+        },
+        details: {
+          MAX_FEE_ACCEPTED: 'Suostumus korkeimpaan varhaiskasvatusmaksuun',
+          INCOMPLETE: 'Puutteelliset tulotiedot',
+          NOT_AVAILABLE: 'Tulotietoja ei ole toimitettu'
+        },
+        income: 'Tulot',
+        expenses: 'Menot',
+        types: {
+          MAIN_INCOME: 'Päätulot',
+          SHIFT_WORK_ADD_ON: 'Vuorotyölisät',
+          PERKS: 'Luontaisedut',
+          SECONDARY_INCOME: 'Sivutulo',
+          PENSION: 'Eläkkeet',
+          UNEMPLOYMENT_BENEFITS: 'Työttömyyskorvaus/työmarkkinatuki',
+          SICKNESS_ALLOWANCE: 'Sairauspäiväraha',
+          PARENTAL_ALLOWANCE: 'Äitiys- ja vanhempainraha',
+          HOME_CARE_ALLOWANCE: 'Kotihoidontuki, joustava/osittainen hoitoraha',
+          ALIMONY: 'Elatusapu/-tuki',
+          OTHER_INCOME: 'Muu tulo',
+          ALL_EXPENSES: 'Menot (esim. maksetut elatusmaksut tai syytinki)'
+        },
+        total: 'Perheen tulot yhteensä',
+        familyComposition: 'Perheen kokoonpano ja maksun perusteet',
+        familySize: 'Perhekoko',
+        persons: ' henkilöä',
+        feePercent: 'Maksuprosentti',
+        minThreshold: 'Vähimmäisbruttoraja'
+      }
     }
   },
   // these are directly used by date picker so order and naming matters!

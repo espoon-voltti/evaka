@@ -18,7 +18,7 @@ import {
   FeeDecisionType,
   PersonDetailed
 } from '../../types/invoicing'
-import { getPdfUrl } from '../../api/invoicing'
+import { getFeeDecisionPdfUrl } from '../../api/invoicing'
 import WarningLabel from '~components/common/WarningLabel'
 import { EspooColours } from '~utils/colours'
 import { formatName } from '~utils'
@@ -119,7 +119,7 @@ const Heading = React.memo(function Heading({
     )
 
   const pdfValue = documentKey ? (
-    <a href={getPdfUrl(id)} download>
+    <a href={getFeeDecisionPdfUrl(id)} download>
       {i18n.feeDecision.downloadPdf}
     </a>
   ) : (

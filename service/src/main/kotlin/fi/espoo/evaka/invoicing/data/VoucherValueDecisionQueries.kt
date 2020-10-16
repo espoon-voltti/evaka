@@ -9,8 +9,11 @@ import fi.espoo.evaka.invoicing.domain.PermanentPlacement
 import fi.espoo.evaka.invoicing.domain.PersonData
 import fi.espoo.evaka.invoicing.domain.PlacementType
 import fi.espoo.evaka.invoicing.domain.ServiceNeed
+import fi.espoo.evaka.invoicing.domain.UnitData
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecision
+import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionDetailed
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionPart
+import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionPartDetailed
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionPartSummary
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionSummary
@@ -331,6 +334,71 @@ fun Handle.searchValueDecisions(
     return count to result.map { (_, decision) -> decision }.merge()
 }
 
+fun Handle.getVoucherValueDecision(mapper: ObjectMapper, id: UUID): VoucherValueDecisionDetailed? {
+    // language=sql
+    val sql =
+        """
+        SELECT
+            decision.*,
+            part.child,
+            part.date_of_birth,
+            part.placement_unit,
+            part.placement_type,
+            part.service_need,
+            part.base_co_payment,
+            part.sibling_discount,
+            part.co_payment,
+            part.fee_alterations,
+            head.date_of_birth as head_date_of_birth,
+            head.first_name as head_first_name,
+            head.last_name as head_last_name,
+            head.social_security_number as head_ssn,
+            head.street_address as head_street_address,
+            head.postal_code as head_postal_code,
+            head.post_office as head_post_office,
+            head.language as head_language,
+            head.restricted_details_enabled as head_restricted_details_enabled,
+            head.force_manual_fee_decisions as head_force_manual_fee_decisions,
+            partner.date_of_birth as partner_date_of_birth,
+            partner.first_name as partner_first_name,
+            partner.last_name as partner_last_name,
+            partner.social_security_number as partner_ssn,
+            partner.street_address as partner_street_address,
+            partner.postal_code as partner_postal_code,
+            partner.post_office as partner_post_office,
+            partner.restricted_details_enabled as partner_restricted_details_enabled,
+            approved_by.first_name as approved_by_first_name,
+            approved_by.last_name as approved_by_last_name,
+            child.first_name as child_first_name,
+            child.last_name as child_last_name,
+            child.social_security_number as child_ssn,
+            child.street_address as child_address,
+            child.postal_code as child_postal_code,
+            child.post_office as child_post_office,
+            child.restricted_details_enabled as child_restricted_details_enabled,
+            daycare.name as placement_unit_name,
+            daycare.language as placement_unit_lang,
+            care_area.id as placement_unit_area_id,
+            care_area.name as placement_unit_area_name
+        FROM voucher_value_decision as decision
+            LEFT JOIN voucher_value_decision_part as part ON decision.id = part.voucher_value_decision_id
+            LEFT JOIN person as head ON decision.head_of_family = head.id
+            LEFT JOIN person as partner ON decision.partner = partner.id
+            LEFT JOIN person as child ON part.child = child.id
+            LEFT JOIN daycare ON part.placement_unit = daycare.id
+            LEFT JOIN care_area ON daycare.care_area_id = care_area.id
+            LEFT JOIN employee as approved_by ON decision.approved_by = approved_by.id
+        WHERE decision.id = :id
+        ORDER BY part.date_of_birth DESC
+    """
+
+    return createQuery(sql)
+        .bind("id", id)
+        .map(toVoucherValueDecisionDetailed(mapper))
+        .let { it.merge() }
+        .singleOrNull()
+}
+
 fun lockValueDecisionsForHeadOfFamily(h: Handle, headOfFamily: UUID) {
     h.createUpdate("SELECT id FROM voucher_value_decision WHERE head_of_family = :headOfFamily FOR UPDATE")
         .bind("headOfFamily", headOfFamily)
@@ -405,6 +473,91 @@ val toVoucherValueDecisionSummary = { rs: ResultSet, _: StatementContext ->
             )
         } ?: emptyList(),
         totalCoPayment = rs.getInt("total_co_payment"),
+        approvedAt = rs.getTimestamp("approved_at")?.toInstant(),
+        createdAt = rs.getTimestamp("created_at").toInstant(),
+        sentAt = rs.getTimestamp("sent_at")?.toInstant()
+    )
+}
+
+fun toVoucherValueDecisionDetailed(mapper: ObjectMapper) = { rs: ResultSet, _: StatementContext ->
+    VoucherValueDecisionDetailed(
+        id = rs.getUUID("id"),
+        status = rs.getEnum("status"),
+        decisionNumber = rs.getObject("decision_number") as Long?, // getLong returns 0 for null values
+        validFrom = rs.getDate("valid_from").toLocalDate(),
+        validTo = rs.getDate("valid_to")?.toLocalDate(),
+        headOfFamily = PersonData.Detailed(
+            id = UUID.fromString(rs.getString("head_of_family")),
+            dateOfBirth = rs.getDate("head_date_of_birth").toLocalDate(),
+            firstName = rs.getString("head_first_name"),
+            lastName = rs.getString("head_last_name"),
+            ssn = rs.getString("head_ssn"),
+            streetAddress = rs.getString("head_street_address"),
+            postalCode = rs.getString("head_postal_code"),
+            postOffice = rs.getString("head_post_office"),
+            language = rs.getString("head_language"),
+            restrictedDetailsEnabled = rs.getBoolean("head_restricted_details_enabled"),
+            forceManualFeeDecisions = rs.getBoolean("head_force_manual_fee_decisions")
+        ),
+        partner = rs.getString("partner")?.let { id ->
+            PersonData.Detailed(
+                id = UUID.fromString(id),
+                dateOfBirth = rs.getDate("partner_date_of_birth").toLocalDate(),
+                firstName = rs.getString("partner_first_name"),
+                lastName = rs.getString("partner_last_name"),
+                ssn = rs.getString("partner_ssn"),
+                streetAddress = rs.getString("partner_street_address"),
+                postalCode = rs.getString("partner_postal_code"),
+                postOffice = rs.getString("partner_post_office"),
+                restrictedDetailsEnabled = rs.getBoolean("partner_restricted_details_enabled")
+            )
+        },
+        headOfFamilyIncome = rs.getString("head_of_family_income")?.let { mapper.readValue<DecisionIncome>(it) },
+        partnerIncome = rs.getString("partner_income")?.let { mapper.readValue<DecisionIncome>(it) },
+        familySize = rs.getInt("family_size"),
+        pricing = mapper.readValue(rs.getString("pricing")),
+        // child is not nullable so if it's missing there was nothing to join to the decision
+        parts = rs.getString("child")?.let {
+            listOf(
+                VoucherValueDecisionPartDetailed(
+                    child = PersonData.Detailed(
+                        id = UUID.fromString(rs.getString("child")),
+                        dateOfBirth = rs.getDate("date_of_birth").toLocalDate(),
+                        firstName = rs.getString("child_first_name"),
+                        lastName = rs.getString("child_last_name"),
+                        ssn = rs.getString("child_ssn"),
+                        streetAddress = rs.getString("child_address"),
+                        postalCode = rs.getString("child_postal_code"),
+                        postOffice = rs.getString("child_post_office"),
+                        restrictedDetailsEnabled = rs.getBoolean("child_restricted_details_enabled")
+                    ),
+                    placement = PermanentPlacement(
+                        unit = UUID.fromString(rs.getString("placement_unit")),
+                        type = PlacementType.valueOf(rs.getString("placement_type")),
+                        serviceNeed = ServiceNeed.valueOf(rs.getString("service_need"))
+                    ),
+                    placementUnit = UnitData.Detailed(
+                        id = UUID.fromString(rs.getString("placement_unit")),
+                        name = rs.getString("placement_unit_name"),
+                        language = rs.getString("placement_unit_lang"),
+                        areaId = UUID.fromString(rs.getString("placement_unit_area_id")),
+                        areaName = rs.getString("placement_unit_area_name")
+                    ),
+                    baseCoPayment = rs.getInt("base_co_payment"),
+                    siblingDiscount = rs.getInt("sibling_discount"),
+                    coPayment = rs.getInt("co_payment"),
+                    feeAlterations = mapper.readValue(rs.getString("fee_alterations"))
+                )
+            )
+        } ?: emptyList(),
+        documentKey = rs.getString("document_key"),
+        approvedBy = rs.getString("approved_by")?.let { id ->
+            PersonData.WithName(
+                id = UUID.fromString(id),
+                firstName = rs.getString("approved_by_first_name"),
+                lastName = rs.getString("approved_by_last_name")
+            )
+        },
         approvedAt = rs.getTimestamp("approved_at")?.toInstant(),
         createdAt = rs.getTimestamp("created_at").toInstant(),
         sentAt = rs.getTimestamp("sent_at")?.toInstant()

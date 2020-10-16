@@ -1,24 +1,30 @@
 package fi.espoo.evaka.invoicing.controller
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.invoicing.data.getVoucherValueDecision
 import fi.espoo.evaka.invoicing.data.searchValueDecisions
+import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionDetailed
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionSummary
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.config.Roles
 import fi.espoo.evaka.shared.db.transaction
 import fi.espoo.evaka.shared.domain.BadRequest
+import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.utils.parseEnum
 import org.jdbi.v3.core.Jdbi
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
+import java.util.UUID
 
 @RestController
 @RequestMapping("/value-decisions")
-class VoucherValueDecisionController(private val jdbi: Jdbi) {
+class VoucherValueDecisionController(private val jdbi: Jdbi, private val objectMapper: ObjectMapper) {
     @GetMapping("/search")
     fun search(
         user: AuthenticatedUser,
@@ -51,6 +57,15 @@ class VoucherValueDecisionController(private val jdbi: Jdbi) {
             if (total % pageSize == 0) total / pageSize
             else (total / pageSize) + 1
         return ResponseEntity.ok(VoucherValueDecisionSearchResult(valueDecisions, total, pages))
+    }
+
+    @GetMapping("/{id}")
+    fun getDecision(user: AuthenticatedUser, @PathVariable id: UUID): ResponseEntity<Wrapper<VoucherValueDecisionDetailed>> {
+        Audit.VoucherValueDecisionRead.log(targetId = id)
+        user.requireOneOfRoles(Roles.FINANCE_ADMIN)
+        val res = jdbi.transaction { it.getVoucherValueDecision(objectMapper, id) }
+            ?: throw NotFound("No voucher value decision found with given ID ($id)")
+        return ResponseEntity.ok(Wrapper(res))
     }
 }
 

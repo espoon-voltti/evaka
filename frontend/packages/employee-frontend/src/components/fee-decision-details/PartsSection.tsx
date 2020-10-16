@@ -33,10 +33,9 @@ function PartsSection({ decision }: Props) {
         }) => {
           const mainDescription = `${
             i18n.placement.type[placement.type]
-          }, ${i18n.feeDecision.form.summary.part.serviceNeedAmount(
-            placement.type,
+          }, ${i18n.placement.serviceNeed[
             placement.serviceNeed
-          )} (${serviceNeedMultiplier} %)${
+          ].toLowerCase()} (${serviceNeedMultiplier} %)${
             siblingDiscount
               ? `, ${i18n.feeDecision.form.summary.parts.siblingDiscount} ${siblingDiscount}%`
               : ''
