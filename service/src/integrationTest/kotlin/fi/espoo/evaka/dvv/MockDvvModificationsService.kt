@@ -426,6 +426,35 @@ val modifications = mapOf<String, String>(
   ],
   "muutospv": "2020-10-01T04:38:04.394Z"
 }
+    """.trimIndent(),
+    "" to """
+{
+  "henkilotunnus": "050180-999W",
+  "tietoryhmat": [
+    {
+      "tietoryhma": "HUOLLETTAVA_SUPPEA",
+      "huollettava": {
+        "henkilotunnus": "050118-999W"
+      },
+      "huoltajanLaji": "LAKISAATEINEN_HUOLTAJA",
+      "huoltajanRooli": "AITI",
+      "huoltosuhteenAlkupv": {
+        "arvo": "2020-10-01",
+        "tarkkuus": "PAIVA"
+      },
+      "huoltosuhteenLoppupv": {
+        "arvo": "2038-10-01",
+        "tarkkuus": "PAIVA"
+      },
+      "oikeudet": [],
+      "muutosattribuutti": "LISATTY",
+      "lisatytOikeudet": [],
+      "poistetutOikeudet": [],
+      "muutetutOikeudet": []
+    }
+  ],
+  "muutospv": "2020-09-30T22:01:04.568Z"
+}            
     """.trimIndent()
 )
 

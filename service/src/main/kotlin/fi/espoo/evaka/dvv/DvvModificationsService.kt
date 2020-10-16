@@ -3,9 +3,12 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 package fi.espoo.evaka.dvv
 
+import fi.espoo.evaka.identity.ExternalIdentifier
 import fi.espoo.evaka.pis.addSSNToPerson
 import fi.espoo.evaka.pis.getPersonBySSN
+import fi.espoo.evaka.pis.service.PersonService
 import fi.espoo.evaka.pis.updatePersonFromVtj
+import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.db.transaction
 import mu.KotlinLogging
@@ -17,7 +20,8 @@ private val logger = KotlinLogging.logger {}
 
 class DvvModificationsService(
     private val jdbi: Jdbi,
-    private val dvvModificationsServiceClient: DvvModificationsServiceClient
+    private val dvvModificationsServiceClient: DvvModificationsServiceClient,
+    private val personService: PersonService
 ) {
 
     fun updatePersonsFromDvv(ssns: List<String>) {
@@ -29,7 +33,7 @@ class DvvModificationsService(
                         is RestrictedInfoDvvInfoGroup -> handleRestrictedInfo(personDvvModifications.ssn, infoGroup)
                         is SsnDvvInfoGroup -> handleSsnDvvInfoGroup(personDvvModifications.ssn, infoGroup)
                         is AddressDvvInfoGroup -> handleAddressDvvInfoGroup(personDvvModifications.ssn, infoGroup)
-                        // is CustodianLimitedDvvInfoGroup -> handleCustodianLimitedDvvInfoGroup(personDvvModifications.ssn, infoGroup)
+                        is CustodianLimitedDvvInfoGroup -> handleCustodianLimitedDvvInfoGroup(infoGroup)
                         // is CaretakerLimitedDvvInfoGroup -> handleCaretakerLimitedDvvInfoGroup(personDvvModifications.ssn, infoGroup)
                         // is PersonNameDvvInfoGroup -> handlePersonNameDvvInfoGroup(personDvvModifications.ssn, infoGroup)
                         // is PersonNameChangeDvvInfoGroup -> handlePersonNameChangeDvvInfoGroup(personDvvModifications.ssn, infoGroup)
@@ -103,9 +107,19 @@ class DvvModificationsService(
         }
     }
 
-    /*
-        private fun handleCustodianLimitedDvvInfoGroup(ssn: String, custodianLimitedDvvInfoGroup: CustodianLimitedDvvInfoGroup) {
+    private fun handleCustodianLimitedDvvInfoGroup(custodianLimitedDvvInfoGroup: CustodianLimitedDvvInfoGroup) {
+        if (custodianLimitedDvvInfoGroup.changeAttribute == "LISATTY") {
+            val user = AuthenticatedUser.anonymous
+            val custodianSsn = ExternalIdentifier.SSN.getInstance(custodianLimitedDvvInfoGroup.custodian.ssn)
+            personService.getOrCreatePerson(user, custodianSsn)?.let {
+                logger.debug("Dvv modification for ${it.id}: is a new custodian")
+                personService.getGuardians(user, it.id)
+            }
         }
+    }
+
+    /*
+
 
         private fun handleCaretakerLimitedDvvInfoGroup(ssn: String, caretakerLimitedDvvInfoGroup: CaretakerLimitedDvvInfoGroup) {
         }

@@ -180,7 +180,7 @@ data class CustodianLimitedDvvInfoGroup(
 
 data class DvvSsn(
     @JsonProperty("henkilotunnus")
-    val ssn: String?
+    val ssn: String
 )
 
 data class DeathDvvInfoGroup(
