@@ -14,7 +14,7 @@ import fi.espoo.evaka.invoicing.domain.FeeDecisionDetailed
 import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus
 import fi.espoo.evaka.invoicing.domain.FeeDecisionSummary
 import fi.espoo.evaka.invoicing.domain.FeeDecisionType
-import fi.espoo.evaka.invoicing.service.FeeDecisionGenerator
+import fi.espoo.evaka.invoicing.service.DecisionGenerator
 import fi.espoo.evaka.invoicing.service.FeeDecisionService
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.config.Roles
@@ -70,7 +70,7 @@ class FeeDecisionController(
     private val jdbi: Jdbi,
     private val objectMapper: ObjectMapper,
     private val service: FeeDecisionService,
-    private val generator: FeeDecisionGenerator
+    private val generator: DecisionGenerator
 ) {
     @GetMapping("/search")
     fun search(
@@ -180,7 +180,7 @@ class FeeDecisionController(
     ): ResponseEntity<Unit> {
         Audit.FeeDecisionHeadOfFamilyCreateRetroactive.log(targetId = id)
         user.requireOneOfRoles(Roles.FINANCE_ADMIN)
-        generator.createRetroactive(id, body.from)
+        jdbi.transaction { h -> generator.createRetroactive(h, id, body.from) }
         return ResponseEntity.noContent().build()
     }
 

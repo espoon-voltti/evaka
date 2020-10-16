@@ -325,6 +325,11 @@ export class ApplicationWorkbenchPage {
     return this.applicationStatus.textContent
   }
 
+  async openApplicationInbox() {
+    await t.click(this.applicationsInbox)
+    await t.expect(this.applicationList.visible).ok()
+  }
+
   async openPlacementQueue() {
     await t.click(this.applicationsWaitingPlacement)
     await t.expect(this.applicationList.visible).ok()

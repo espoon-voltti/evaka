@@ -9,7 +9,6 @@ import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.daycare.service.CareType
 import fi.espoo.evaka.invoicing.data.deleteDraftInvoicesByPeriod
 import fi.espoo.evaka.invoicing.data.feeDecisionQueryBase
-import fi.espoo.evaka.invoicing.data.flatten
 import fi.espoo.evaka.invoicing.data.toFeeDecision
 import fi.espoo.evaka.invoicing.data.upsertInvoices
 import fi.espoo.evaka.invoicing.domain.FeeAlteration
@@ -27,6 +26,7 @@ import fi.espoo.evaka.invoicing.domain.calculatePriceForTemporary
 import fi.espoo.evaka.invoicing.domain.getFeeAlterationProduct
 import fi.espoo.evaka.invoicing.domain.getProductFromActivity
 import fi.espoo.evaka.invoicing.domain.invoiceRowTotal
+import fi.espoo.evaka.invoicing.domain.merge
 import fi.espoo.evaka.pis.dao.PGConstants
 import fi.espoo.evaka.shared.db.getEnum
 import fi.espoo.evaka.shared.db.getUUID
@@ -466,7 +466,7 @@ fun getInvoiceableFeeDecisions(h: Handle, objectMapper: ObjectMapper, period: Pe
         .bind("period_end", period.end)
         .bind("status", FeeDecisionStatus.SENT.toString())
         .map(toFeeDecision(objectMapper))
-        .let(::flatten)
+        .let { it.merge() }
 }
 
 fun getInvoicedHeadsOfFamily(h: Handle, period: Period): List<UUID> {
@@ -579,7 +579,7 @@ internal fun toFamilyCompositions(
                     .filter { it.first.contains(period) }
                     .map { (_, child) -> child }
                     .sortedByDescending { it.dateOfBirth }
-            }.let(::mergePeriods)
+            }.let { mergePeriods(it) }
         }
 }
 

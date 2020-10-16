@@ -24,7 +24,7 @@ import { useTranslation } from '~state/i18n'
 
 function FeeDecisionFilters() {
   const {
-    decisions: {
+    feeDecisions: {
       searchFilters,
       setSearchFilters,
       searchTerms,

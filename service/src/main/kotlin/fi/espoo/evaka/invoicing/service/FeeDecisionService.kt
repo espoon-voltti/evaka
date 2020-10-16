@@ -13,6 +13,8 @@ import fi.espoo.evaka.invoicing.data.getDetailedFeeDecisionsByIds
 import fi.espoo.evaka.invoicing.data.getFeeDecision
 import fi.espoo.evaka.invoicing.data.getFeeDecisionDocumentKey
 import fi.espoo.evaka.invoicing.data.getFeeDecisionsByIds
+import fi.espoo.evaka.invoicing.data.lockFeeDecisions
+import fi.espoo.evaka.invoicing.data.lockFeeDecisionsForHeadOfFamily
 import fi.espoo.evaka.invoicing.data.setFeeDecisionSent
 import fi.espoo.evaka.invoicing.data.setFeeDecisionType
 import fi.espoo.evaka.invoicing.data.setFeeDecisionWaitingForManualSending
@@ -59,7 +61,7 @@ class FeeDecisionService(
     fun confirmDrafts(user: AuthenticatedUser, ids: List<UUID>) {
         val decisions = withSpringTx(txManager) {
             withSpringHandle(dataSource) { h ->
-                lockFeeDecisions(ids)(h)
+                h.lockFeeDecisions(ids)
                 getFeeDecisionsByIds(h, objectMapper, ids)
             }
         }
@@ -79,7 +81,7 @@ class FeeDecisionService(
             withSpringHandle(dataSource) { h ->
                 val conflicts = decisions
                     .flatMap {
-                        lockFeeDecisionsForHeadOfFamily(it.headOfFamily.id)(h)
+                        h.lockFeeDecisionsForHeadOfFamily(it.headOfFamily.id)
                         findFeeDecisionsForHeadOfFamily(
                             h,
                             objectMapper,
@@ -256,10 +258,4 @@ internal fun updateEndDatesOrStatusForConflictingDecisions(
         .map { it.copy(status = FeeDecisionStatus.ANNULLED) }
 
     return nonAnnulledConflicts + originalConflictsAnnulled
-}
-
-internal fun lockFeeDecisions(ids: List<UUID>): (Handle) -> Unit = { h ->
-    h.createUpdate("SELECT id FROM fee_decision WHERE id = ANY(:ids) FOR UPDATE")
-        .bind("ids", ids.toTypedArray())
-        .execute()
 }

@@ -472,6 +472,7 @@ export const feeDecisionsFixture = (
   validFrom: '2019-01-01',
   validTo: '2021-01-01',
   headOfFamily: { id: adultId },
+  familySize: 2,
   pricing: {
     multiplier: '0.1070',
     maxThresholdDifference: 269700,
@@ -492,7 +493,8 @@ export const feeDecisionsFixture = (
       },
       baseFee: 28900,
       fee: 28900,
-      siblingDiscount: 0.0
+      siblingDiscount: 0.0,
+      feeAlterations: []
     }
   ]
 })

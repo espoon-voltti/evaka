@@ -32,7 +32,7 @@ fun freeTextSearchQuery(tables: List<String>, searchText: String): DBQuery {
         if (dateParams.isNotEmpty()) dateQuery(tables, dateParams)
         else null
 
-    val wholeQuery = listOfNotNull(freeTextQuery, ssnQuery, dateQuery)
+    val wholeQuery = listOfNotNull("true", freeTextQuery, ssnQuery, dateQuery)
         .joinToString(" AND ")
 
     val allParams = (

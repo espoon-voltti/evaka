@@ -22,6 +22,13 @@ export type DecisionDistinctiveDetails =
   | 'EXTERNAL_CHILD'
   | 'RETROACTIVE'
 
+export type VoucherValueDecisionStatus =
+  | 'DRAFT'
+  | 'WAITING_FOR_SENDING'
+  | 'WAITING_FOR_MANUAL_SENDING'
+  | 'SENT'
+  | 'ANNULLED'
+
 export type InvoiceStatus =
   | 'DRAFT'
   | 'WAITING_FOR_SENDING'
@@ -275,4 +282,18 @@ export interface FeeDecisionSummary {
   createdAt: Date
   sentAt: Date | null
   finalPrice: number
+}
+
+export interface VoucherValueDecisionSummary {
+  id: UUID
+  status: VoucherValueDecisionStatus
+  validFrom: LocalDate
+  validTo: LocalDate | null
+  decisionNumber: number | null
+  headOfFamily: PersonBasic
+  parts: Array<{ child: PersonBasic }>
+  approvedAt: Date | null
+  createdAt: Date
+  sentAt: Date | null
+  coPaymentSum: number
 }

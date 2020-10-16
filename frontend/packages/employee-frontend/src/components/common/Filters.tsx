@@ -15,6 +15,7 @@ import { useTranslation } from '~state/i18n'
 import {
   DecisionDistinctiveDetails,
   FeeDecisionStatus,
+  VoucherValueDecisionStatus,
   InvoiceStatus,
   InvoiceDistinctiveDetails
 } from '~types/invoicing'
@@ -229,24 +230,29 @@ interface UnitFilterProps {
   select: (unit: string) => void
 }
 
-export function UnitFilter({ units, selected, select }: UnitFilterProps) {
+export const UnitFilter = React.memo(function UnitFilter({
+  units,
+  selected,
+  select
+}: UnitFilterProps) {
   const { i18n } = useTranslation()
+  const options = units.map(({ id, label }) => ({ id, label, value: id }))
   return (
     <>
       <Label>
         <LabelText>{i18n.filters.unit}</LabelText>
         <ReactSelect
           placeholder={i18n.filters.unitPlaceholder}
-          options={units}
+          options={options}
           onChange={(option) =>
             option && 'id' in option ? select(option.id) : undefined
           }
-          defaultValue={selected}
+          value={selected}
         />
       </Label>
     </>
   )
-}
+})
 
 interface FeeDecisionStatusFilterProps {
   toggled: FeeDecisionStatus
@@ -377,6 +383,46 @@ export function FeeDecisionDateFilter({
     </>
   )
 }
+
+export const ValueDecisionStatusFilter = React.memo(
+  function ValueDecisionStatusFilter({
+    toggled,
+    toggle
+  }: {
+    toggled: VoucherValueDecisionStatus
+    toggle(v: VoucherValueDecisionStatus): () => void
+  }) {
+    const { i18n } = useTranslation()
+
+    const statuses: VoucherValueDecisionStatus[] = [
+      'DRAFT',
+      'WAITING_FOR_SENDING',
+      'WAITING_FOR_MANUAL_SENDING',
+      'SENT',
+      'ANNULLED'
+    ]
+
+    return (
+      <>
+        <Label>
+          <LabelText>{i18n.filters.status}</LabelText>
+        </Label>
+        <FixedSpaceColumn spacing={'xs'}>
+          {statuses.map((id) => (
+            <Radio
+              key={id}
+              label={i18n.valueDecision.status[id]}
+              checked={toggled === id}
+              onChange={toggle(id)}
+              dataQa={`value-decision-status-filter-${id}`}
+              small
+            />
+          ))}
+        </FixedSpaceColumn>
+      </>
+    )
+  }
+)
 
 interface InvoiceStatusFilterProps {
   toggled: InvoiceStatus

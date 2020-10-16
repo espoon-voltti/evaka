@@ -30,9 +30,6 @@ fixture('Employee reads applications')
   .before(async () => {
     ;[fixtures, cleanUp] = await initializeAreaAndPersonData()
   })
-  .beforeEach(async (t) => {
-    await t.useRole(seppoAdminRole)
-  })
   .afterEach(logConsoleMessages)
   .afterEach(async () => {
     await deleteApplication(applicationFixtureId)
@@ -41,18 +38,19 @@ fixture('Employee reads applications')
     await cleanUp()
   })
 
-test('Daycare application opens by link', async () => {
+test('Daycare application opens by link', async (t) => {
   const fixture = applicationFixture(
     fixtures.enduserChildFixtureJari,
     fixtures.enduserGuardianFixture
   )
   await insertApplications([fixture])
+  await t.useRole(seppoAdminRole)
 
   await applicationReadView.openApplicationByLink(fixture.id)
   await applicationReadView.assertPageTitle('Varhaiskasvatushakemus')
 })
 
-test('Preschool application opens by link', async () => {
+test('Preschool application opens by link', async (t) => {
   const fixture = applicationFixture(
     fixtures.enduserChildFixtureJari,
     fixtures.enduserGuardianFixture,
@@ -60,18 +58,20 @@ test('Preschool application opens by link', async () => {
     'preschool'
   )
   await insertApplications([fixture])
+  await t.useRole(seppoAdminRole)
 
   await applicationReadView.openApplicationByLink(fixture.id)
   await applicationReadView.assertPageTitle('Esiopetushakemus')
 })
 
-test('Other VTJ guardian information is shown', async () => {
+test('Other VTJ guardian information is shown', async (t) => {
   const fixture = applicationFixture(
     fixtures.familyWithTwoGuardians.children[0],
     fixtures.familyWithTwoGuardians.guardian,
     fixtures.familyWithTwoGuardians.otherGuardian
   )
   await insertApplications([fixture])
+  await t.useRole(seppoAdminRole)
 
   await applicationReadView.openApplicationByLink(fixture.id)
   await applicationReadView.assertPageTitle('Varhaiskasvatushakemus')
@@ -88,12 +88,13 @@ test('Other VTJ guardian information is shown', async () => {
   )
 })
 
-test('If there is no other VTJ guardian it is mentioned', async () => {
+test('If there is no other VTJ guardian it is mentioned', async (t) => {
   const fixture = applicationFixture(
     fixtures.enduserChildFixtureKaarina,
     fixtures.enduserGuardianFixture
   )
   await insertApplications([fixture])
+  await t.useRole(seppoAdminRole)
 
   await applicationReadView.openApplicationByLink(fixture.id)
   await applicationReadView.assertPageTitle('Varhaiskasvatushakemus')
@@ -107,6 +108,7 @@ test('Move application from review queue to placement, place it, and confirm the
   )
   const applicationId = fixture.id
   await insertApplications([fixture])
+  await t.useRole(seppoAdminRole)
 
   await applicationWorkbench.moveToWaitingPlacement(applicationId)
 

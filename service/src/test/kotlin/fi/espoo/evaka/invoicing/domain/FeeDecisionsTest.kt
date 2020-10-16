@@ -4,8 +4,8 @@
 
 package fi.espoo.evaka.invoicing.domain
 
+import fi.espoo.evaka.invoicing.testDecisionIncome
 import fi.espoo.evaka.invoicing.testFeeAlteration
-import fi.espoo.evaka.invoicing.testFeeDecisionIncome
 import fi.espoo.evaka.invoicing.testPricing
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
@@ -17,7 +17,7 @@ class FeeDecisionsTest {
 
     @Test
     fun `useMaxFee behaviour`() {
-        val income1 = testFeeDecisionIncome.copy(data = mapOf(IncomeType.MAIN_INCOME to 2000))
+        val income1 = testDecisionIncome.copy(data = mapOf(IncomeType.MAIN_INCOME to 2000))
         val income2 = income1.copy(effect = IncomeEffect.MAX_FEE_ACCEPTED)
         val income3 = income1.copy(effect = IncomeEffect.INCOMPLETE)
 
@@ -35,9 +35,9 @@ class FeeDecisionsTest {
 
     @Test
     fun `calculateBaseFee basic case`() {
-        fun twoIncomesOf(amount1: Int, amount2: Int): List<FeeDecisionIncome?> {
-            val income1 = testFeeDecisionIncome.copy(data = mapOf(IncomeType.MAIN_INCOME to amount1), total = amount1)
-            val income2 = testFeeDecisionIncome.copy(data = mapOf(IncomeType.MAIN_INCOME to amount2), total = amount2)
+        fun twoIncomesOf(amount1: Int, amount2: Int): List<DecisionIncome?> {
+            val income1 = testDecisionIncome.copy(data = mapOf(IncomeType.MAIN_INCOME to amount1), total = amount1)
+            val income2 = testDecisionIncome.copy(data = mapOf(IncomeType.MAIN_INCOME to amount2), total = amount2)
             return listOf(income1, income2)
         }
 

@@ -16,6 +16,7 @@ import {
   FeeDecision,
   FeeDecisionDetailed,
   FeeDecisionSummary,
+  VoucherValueDecisionSummary,
   Invoice,
   InvoiceCodes,
   InvoiceDetailed,
@@ -34,6 +35,13 @@ export interface FeeDecisionSearchParams extends SearchParams {
   startDate?: string
   endDate?: string
   searchByStartDate: boolean
+}
+
+export interface VoucherValueDecisionSearchParams {
+  status?: string
+  area?: string
+  unit?: string
+  searchTerms?: string
 }
 
 export interface InvoiceSearchParams extends SearchParams {
@@ -155,6 +163,15 @@ export type SortByFeeDecisions =
   | 'STATUS'
   | 'FINAL_PRICE'
 
+export type VoucherValueDecisionSearchResponse = {
+  data: VoucherValueDecisionSummary[]
+  page: number
+  total: number
+  pages: number
+}
+
+export type SortByVoucherValueDecisions = 'HEAD_OF_FAMILY' | 'STATUS'
+
 export type SortByInvoices =
   | 'HEAD_OF_FAMILY'
   | 'CHILDREN'
@@ -163,12 +180,12 @@ export type SortByInvoices =
   | 'SUM'
   | 'STATUS'
 
-export async function getDecisions(
+export async function getFeeDecisions(
   page: number,
   pageSize: number,
   sortBy: SortByFeeDecisions,
   sortDirection: SearchOrder,
-  params: SearchParams
+  params: FeeDecisionSearchParams
 ): Promise<Result<FeeDecisionSearchResponse>> {
   return client
     .get<JsonOf<FeeDecisionSearchResponse>>('/fee-decisions/search', {
@@ -215,6 +232,42 @@ export async function getPersonFeeDecisions(
     .catch(Failure)
 }
 
+export async function getVoucherValueDecisions(
+  page: number,
+  pageSize: number,
+  sortBy: SortByVoucherValueDecisions,
+  sortDirection: SearchOrder,
+  params: VoucherValueDecisionSearchParams
+): Promise<Result<VoucherValueDecisionSearchResponse>> {
+  return client
+    .get<JsonOf<VoucherValueDecisionSearchResponse>>(
+      '/value-decisions/search',
+      {
+        params: { page: page - 1, pageSize, sortBy, sortDirection, ...params }
+      }
+    )
+    .then(({ data }) => ({
+      ...data,
+      data: data.data.map((json) => ({
+        ...json,
+        validFrom: LocalDate.parseIso(json.validFrom),
+        validTo: LocalDate.parseNullableIso(json.validTo),
+        headOfFamily: deserializePersonBasic(json.headOfFamily),
+        parts: json.parts.map((partJson) => ({
+          child: {
+            ...partJson.child,
+            dateOfBirth: LocalDate.parseIso(partJson.child.dateOfBirth)
+          }
+        })),
+        createdAt: new Date(json.createdAt),
+        sentAt: json.sentAt ? new Date(json.sentAt) : null,
+        approvedAt: json.approvedAt ? new Date(json.approvedAt) : null
+      }))
+    }))
+    .then(Success)
+    .catch(Failure)
+}
+
 export async function getPersonInvoices(
   id: string
 ): Promise<Result<Invoice[]>> {
@@ -257,7 +310,7 @@ export async function getInvoices(
   pageSize: number,
   sortBy: SortByInvoices,
   sortDirection: SearchOrder,
-  params: SearchParams
+  params: InvoiceSearchParams
 ): Promise<Result<InvoiceSearchResult>> {
   return client
     .get<JsonOf<InvoiceSearchResult>>('/invoices/search', {

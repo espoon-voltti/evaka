@@ -12,7 +12,7 @@ import Actions from './Actions'
 import GeneratorButton from './generation/GeneratorButton'
 import { isSuccess, Result, Success } from '../../api'
 import {
-  getDecisions,
+  getFeeDecisions,
   FeeDecisionSearchParams,
   SortByFeeDecisions,
   FeeDecisionSearchResponse
@@ -49,10 +49,10 @@ const FeeDecisionsPage = React.memo(function FeeDecisionsPage() {
     },
     [page, setTotalDecisions, setTotalPages, setDecisions]
   )
-  const reloadDecisions = useRestApi(getDecisions, setDecisionsResult)
+  const reloadDecisions = useRestApi(getFeeDecisions, setDecisionsResult)
 
   const {
-    decisions: {
+    feeDecisions: {
       searchFilters,
       debouncedSearchTerms,
       checked,

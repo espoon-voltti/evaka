@@ -17,64 +17,42 @@ import kotlin.math.max
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class FeeDecision(
-    val id: UUID,
+    override val id: UUID,
+    override val parts: List<FeeDecisionPart>,
+    override val validFrom: LocalDate,
+    override val validTo: LocalDate?,
     val status: FeeDecisionStatus,
     val decisionNumber: Long? = null,
     val decisionType: FeeDecisionType,
-    val validFrom: LocalDate,
-    val validTo: LocalDate?,
     val headOfFamily: PersonData.JustId,
     val partner: PersonData.JustId?,
-    val headOfFamilyIncome: FeeDecisionIncome?,
-    val partnerIncome: FeeDecisionIncome?,
+    val headOfFamilyIncome: DecisionIncome?,
+    val partnerIncome: DecisionIncome?,
     val familySize: Int,
     val pricing: Pricing,
-    val parts: List<FeeDecisionPart>,
     val documentKey: String? = null,
     val approvedBy: PersonData.JustId? = null,
     val approvedAt: Instant? = null,
     val createdAt: Instant = Instant.now(),
     val sentAt: Instant? = null
-) {
+) : FinanceDecision<FeeDecisionPart, FeeDecision>, MergeableDecision<FeeDecisionPart, FeeDecision> {
+    override fun withParts(parts: List<FeeDecisionPart>) = this.copy(parts = parts)
+    override fun withRandomId() = this.copy(id = UUID.randomUUID())
+    override fun withValidity(period: Period) = this.copy(validFrom = period.start, validTo = period.end)
+    override fun contentEquals(decision: FeeDecision): Boolean {
+        return this.parts.toSet() == decision.parts.toSet() &&
+            this.headOfFamily == decision.headOfFamily &&
+            this.partner == decision.partner &&
+            this.headOfFamilyIncome == decision.headOfFamilyIncome &&
+            this.partnerIncome == decision.partnerIncome &&
+            this.familySize == decision.familySize &&
+            this.pricing == decision.pricing
+    }
+
     @JsonProperty("totalFee")
     fun totalFee(): Int =
         max(0, parts.fold(0) { sum, part -> sum + part.finalFee() })
 }
-
-@JsonIgnoreProperties(ignoreUnknown = true)
-data class FeeDecisionIncome(
-    val effect: IncomeEffect,
-    val data: Map<IncomeType, Int>,
-    val total: Int,
-    @get:JsonProperty("isEntrepreneur") val isEntrepreneur: Boolean = false,
-    val worksAtECHA: Boolean = false,
-    val validFrom: LocalDate?,
-    val validTo: LocalDate?
-) {
-    @JsonProperty("totalIncome")
-    fun totalIncome(): Int =
-        data.entries
-            .filter { (type, _) -> type.multiplier > 0 }
-            .map { (type, value) -> type.multiplier * value }
-            .sum()
-
-    @JsonProperty("totalExpenses")
-    fun totalExpenses(): Int =
-        data.entries
-            .filter { (type, _) -> type.multiplier < 0 }
-            .map { (type, value) -> -1 * type.multiplier * value }
-            .sum()
-}
-
-fun toFeeDecisionIncome(income: Income) = FeeDecisionIncome(
-    effect = income.effect,
-    data = income.data.mapValues { (_, value) -> value.monthlyAmount() },
-    total = income.total(),
-    isEntrepreneur = income.isEntrepreneur,
-    worksAtECHA = income.worksAtECHA,
-    validFrom = income.validFrom,
-    validTo = income.validTo
-)
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class FeeDecisionPart(
@@ -83,8 +61,8 @@ data class FeeDecisionPart(
     val baseFee: Int,
     val siblingDiscount: Int,
     val fee: Int,
-    val feeAlterations: List<FeeAlterationWithEffect> = listOf()
-) {
+    val feeAlterations: List<FeeAlterationWithEffect>
+) : FinanceDecisionPart {
     @JsonProperty("finalFee")
     fun finalFee(): Int = fee + feeAlterations.sumBy { it.effect }
 }
@@ -111,37 +89,29 @@ enum class FeeDecisionType {
     RELIEF_ACCEPTED
 }
 
-data class FeeDecisionInvariant(
-    val headOfFamily: PersonData.JustId,
-    val partner: PersonData.JustId?,
-    val headOfFamilyIncome: FeeDecisionIncome?,
-    val partnerIncome: FeeDecisionIncome?,
-    val familySize: Int,
-    val pricing: Pricing,
-    val parts: Set<FeeDecisionPart>
-)
-
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class FeeDecisionDetailed(
-    val id: UUID,
+    override val id: UUID,
+    override val parts: List<FeeDecisionPartDetailed>,
+    val validFrom: LocalDate,
+    val validTo: LocalDate?,
     val status: FeeDecisionStatus,
     val decisionNumber: Long? = null,
     val decisionType: FeeDecisionType,
-    val validFrom: LocalDate,
-    val validTo: LocalDate?,
     val headOfFamily: PersonData.Detailed,
     val partner: PersonData.Detailed?,
-    val headOfFamilyIncome: FeeDecisionIncome?,
-    val partnerIncome: FeeDecisionIncome?,
+    val headOfFamilyIncome: DecisionIncome?,
+    val partnerIncome: DecisionIncome?,
     val familySize: Int,
     val pricing: Pricing,
-    val parts: List<FeeDecisionPartDetailed>,
     val documentKey: String? = null,
     val approvedBy: PersonData.WithName? = null,
     val approvedAt: Instant? = null,
     val createdAt: Instant = Instant.now(),
     val sentAt: Instant? = null
-) {
+) : MergeableDecision<FeeDecisionPartDetailed, FeeDecisionDetailed> {
+    override fun withParts(parts: List<FeeDecisionPartDetailed>) = this.copy(parts = parts)
+
     @JsonProperty("totalFee")
     fun totalFee(): Int =
         max(0, parts.fold(0) { sum, part -> sum + part.finalFee() })
@@ -197,7 +167,7 @@ data class FeeDecisionPartDetailed(
     val siblingDiscount: Int,
     val fee: Int,
     val feeAlterations: List<FeeAlterationWithEffect> = listOf()
-) {
+) : FinanceDecisionPart {
     @JsonProperty("finalFee")
     fun finalFee(): Int = fee + feeAlterations.sumBy { it.effect }
 
@@ -207,32 +177,34 @@ data class FeeDecisionPartDetailed(
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class FeeDecisionSummary(
-    val id: UUID,
-    val status: FeeDecisionStatus,
-    val decisionNumber: Long? = null,
+    override val id: UUID,
+    override val parts: List<FeeDecisionPartSummary>,
     val validFrom: LocalDate,
     val validTo: LocalDate?,
+    val status: FeeDecisionStatus,
+    val decisionNumber: Long? = null,
     val headOfFamily: PersonData.Basic,
-    val parts: List<FeeDecisionPartSummary>,
     val approvedAt: Instant? = null,
     val createdAt: Instant = Instant.now(),
     val sentAt: Instant? = null,
     val finalPrice: Int
-)
+) : MergeableDecision<FeeDecisionPartSummary, FeeDecisionSummary> {
+    override fun withParts(parts: List<FeeDecisionPartSummary>) = this.copy(parts = parts)
+}
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class FeeDecisionPartSummary(
     val child: PersonData.Basic
-)
+) : FinanceDecisionPart
 
-fun useMaxFee(incomes: List<FeeDecisionIncome?>): Boolean = incomes.filterNotNull().let {
+fun useMaxFee(incomes: List<DecisionIncome?>): Boolean = incomes.filterNotNull().let {
     it.size < incomes.size || it.any { income -> income.effect != IncomeEffect.INCOME }
 }
 
 fun calculateBaseFee(
     pricing: Pricing,
     familySize: Int,
-    incomes: List<FeeDecisionIncome?>
+    incomes: List<DecisionIncome?>
 ): Int {
     check(familySize > 1) { "Family size should not be less than 2" }
 

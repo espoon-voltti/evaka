@@ -70,8 +70,3 @@ fun calculateServiceNeed(type: PlacementType, hours: Double?): ServiceNeed {
         PlacementType.CLUB, PlacementType.PRESCHOOL, PlacementType.PREPARATORY -> ServiceNeed.LTE_0
     }
 }
-
-fun serviceNeedIsNotInvoiced(serviceNeed: ServiceNeed): Boolean = when (serviceNeed) {
-    ServiceNeed.LTE_0 -> true
-    else -> false
-}
