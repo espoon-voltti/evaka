@@ -4,6 +4,7 @@
 
 import React, { useMemo } from 'react'
 import { Redirect, Route, Switch } from 'react-router-dom'
+import { featureFlags } from '~config'
 import { useTranslation } from '~state/i18n'
 import { RouteWithTitle } from '~components/RouteWithTitle'
 import { Gap } from '~components/shared/layout/white-space'
@@ -22,11 +23,15 @@ export default React.memo(function FinancePage() {
         link: '/finance/fee-decisions',
         label: i18n.header.feeDecisions
       },
-      {
-        id: 'value-decisions',
-        link: '/finance/value-decisions',
-        label: i18n.header.valueDecisions
-      },
+      ...(featureFlags.voucherValueDecisionsPage
+        ? [
+            {
+              id: 'value-decisions',
+              link: '/finance/value-decisions',
+              label: i18n.header.valueDecisions
+            }
+          ]
+        : []),
       {
         id: 'invoices',
         link: '/finance/invoices',
@@ -48,12 +53,14 @@ export default React.memo(function FinancePage() {
           component={FeeDecisionsPage}
           title={i18n.titles.feeDecisions}
         />
-        <RouteWithTitle
-          exact
-          path="/finance/value-decisions"
-          component={VoucherValueDecisionsPage}
-          title={i18n.titles.valueDecisions}
-        />
+        {featureFlags.voucherValueDecisionsPage ? (
+          <RouteWithTitle
+            exact
+            path="/finance/value-decisions"
+            component={VoucherValueDecisionsPage}
+            title={i18n.titles.valueDecisions}
+          />
+        ) : null}
         <RouteWithTitle
           exact
           path="/finance/invoices"
