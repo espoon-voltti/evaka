@@ -31,15 +31,10 @@ fun updateFeeData(
     mapper: ObjectMapper,
     personService: PersonService
 ) {
-    logger.debug { "Deleting annulled Varda fee data" }
     deleteEntriesFromAnnulledFeeDecision(h, client)
-    logger.debug { "Deleting deleted Varda placements" }
     deleteEntriesFromDeletedPlacements(h, client)
-    logger.debug { "Updating Varda fee data" }
     updateEntriesFromModifiedPlacements(h, client, mapper, personService)
-    logger.debug { "Uploading new Varda fee data" }
     uploadNewFeeData(h, client, mapper, personService)
-    logger.debug { "Updating Varda fee data complete" }
 }
 
 fun deleteEntriesFromAnnulledFeeDecision(h: Handle, client: VardaClient) {
@@ -81,7 +76,6 @@ fun uploadNewFeeData(
     feeData.forEach { feeDataBase ->
         val newFeeData = baseToFeeData(feeDataBase, personService, client)
         if (newFeeData != null) {
-            logger.debug { "Uploading varda fee data (fee data: $newFeeData)" }
             val response = client.createFeeData(newFeeData)
             if (response != null) {
                 insertFeeDataUpload(h, feeDataBase, response.vardaId)
@@ -210,7 +204,8 @@ private val feeDataQueryBase =
             LEFT JOIN varda_fee_data vfd ON p.id = vfd.evaka_placement_id
             JOIN fee_decision_part fdp ON fdp.child = p.child_id
             JOIN fee_decision fd ON (fdp.fee_decision_id = fd.id AND daterange(p.start_date, p.end_date, '[]') && daterange(fd.valid_from, fd.valid_to, '[]') AND fd.status = :sentStatus)
-            JOIN varda_child vc ON p.child_id = vc.person_id
+            JOIN daycare u ON p.unit_id = u.id
+            JOIN varda_child vc ON p.child_id = vc.person_id AND vc.oph_organizer_oid = u.oph_organizer_oid
     """.trimIndent()
 
 private fun baseToFeeData(feeDataBase: VardaFeeDataBase, personService: PersonService, client: VardaClient): VardaFeeData? {

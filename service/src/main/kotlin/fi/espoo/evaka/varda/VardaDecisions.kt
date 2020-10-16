@@ -13,7 +13,6 @@ import fi.espoo.evaka.decision.DecisionType.PRESCHOOL_DAYCARE
 import fi.espoo.evaka.shared.db.getEnum
 import fi.espoo.evaka.shared.db.getUUID
 import fi.espoo.evaka.varda.integration.VardaClient
-import mu.KotlinLogging
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.statement.StatementContext
 import java.sql.ResultSet
@@ -21,15 +20,9 @@ import java.time.Instant
 import java.time.LocalDate
 import java.util.UUID
 
-private val logger = KotlinLogging.logger { }
-
 fun updateDecisions(h: Handle, client: VardaClient) {
-    logger.debug { "Varda: Updating decisions" }
-    logger.debug { "Varda: removing deleted decisions" }
     removeDeletedDecisions(h, client)
-    logger.debug { "Varda: sending new decisions" }
     sendNewDecisions(h, client)
-    logger.debug { "Varda: sending updated decisions" }
     sendUpdatedDecisions(h, client)
 }
 
@@ -43,11 +36,8 @@ fun removeMarkedDecisions(h: Handle, client: VardaClient) {
 }
 
 fun sendNewDecisions(h: Handle, client: VardaClient) {
-    logger.debug { "Varda: sending new decisions" }
     val newDecisions = getNewDecisions(h, client.getChildUrl)
-    logger.debug { "Varda: new decisions $newDecisions" }
     val newDerivedDecisions = getNewDerivedDecisions(h, client.getChildUrl)
-    logger.debug { "Varda: new derived decisions $newDerivedDecisions" }
 
     newDecisions.forEach { (decisionId, newDecision) ->
         client.createDecision(newDecision)?.let { (vardaDecisionId) ->
@@ -136,6 +126,7 @@ AND d.start_date < current_date
     """.trimIndent()
 
 private val decisionQueryBase =
+    // language=SQL
     """
 WITH accepted_daycare_decision AS (
     $acceptedDaycareDecisionsQuery
@@ -160,7 +151,7 @@ SELECT
     u.provider_type AS provider_type
 FROM accepted_daycare_decision d
 JOIN daycare u ON (d.unit_id = u.id AND u.upload_to_varda = true)
-JOIN varda_child vc ON d.child_id = vc.person_id
+JOIN varda_child vc ON d.child_id = vc.person_id AND u.oph_organizer_oid = vc.oph_organizer_oid
 LEFT JOIN varda_decision vd ON d.id = vd.evaka_decision_id
 LEFT JOIN LATERAL (
     SELECT * FROM placement p 
@@ -248,6 +239,7 @@ private fun updateDecisionUploadTimestamp(h: Handle, id: UUID, uploadedAt: Insta
 }
 
 private val derivedDecisionQueryBase =
+    // language=SQL
     """
 WITH placement_without_decision AS (
 SELECT p.*
@@ -278,7 +270,7 @@ SELECT
 FROM placement_without_decision p
 LEFT JOIN varda_decision vd ON p.id = vd.evaka_placement_id
 JOIN daycare u ON p.unit_id = u.id
-JOIN varda_child vc ON p.child_id = vc.person_id
+JOIN varda_child vc ON p.child_id = vc.person_id AND u.oph_organizer_oid = vc.oph_organizer_oid
 JOIN LATERAL (
     SELECT * FROM service_need sn
     WHERE sn.child_id = p.child_id

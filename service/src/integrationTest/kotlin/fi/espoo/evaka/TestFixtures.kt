@@ -36,6 +36,9 @@ val testArea2Code = 300
 val svebiTestId = UUID.randomUUID()
 val svebiTestCode = 400
 
+val defaultMunicipalOrganizerOid = "1.2.246.562.10.888888888888"
+val defaultPurchasedOrganizerOid = "1.2.246.562.10.66666666666"
+
 val testDaycare =
     UnitData.Detailed(
         id = UUID.randomUUID(),
@@ -268,6 +271,7 @@ val allBasicChildren = allChildren.map { PersonData.Basic(it.id, it.dateOfBirth,
 val allDaycares = setOf(testDaycare, testDaycare2)
 
 fun insertGeneralTestFixtures(h: Handle) {
+    insertTestVardaOrganizer(h)
     h.insertTestCareArea(DevCareArea(id = testAreaId, name = testDaycare.areaName, areaCode = testAreaCode))
     h.insertTestCareArea(
         DevCareArea(
@@ -277,7 +281,7 @@ fun insertGeneralTestFixtures(h: Handle) {
             areaCode = testArea2Code
         )
     )
-    h.insertTestDaycare(DevDaycare(areaId = testAreaId, id = testDaycare.id, name = testDaycare.name))
+    h.insertTestDaycare(DevDaycare(areaId = testAreaId, id = testDaycare.id, name = testDaycare.name, ophOrganizerOid = defaultMunicipalOrganizerOid))
     h.insertTestDaycare(DevDaycare(areaId = testArea2Id, id = testDaycare2.id, name = testDaycare2.name))
     h.insertTestDaycare(
         DevDaycare(
@@ -293,6 +297,7 @@ fun insertGeneralTestFixtures(h: Handle) {
             id = testPurchasedDaycare.id,
             name = testPurchasedDaycare.name,
             providerType = ProviderType.PURCHASED,
+            ophOrganizerOid = defaultPurchasedOrganizerOid,
             invoicedByMunicipality = false
         )
     )
@@ -378,4 +383,27 @@ fun insertGeneralTestFixtures(h: Handle) {
 
 fun resetDatabase(h: Handle) {
     h.transaction { it.execute("SELECT reset_database()") }
+}
+
+fun insertTestVardaOrganizer(h: Handle) {
+    //language=SQL
+    val sql =
+        """
+            INSERT INTO varda_organizer (organizer, email, phone, iban, varda_organizer_id, varda_organizer_oid, url, municipality_code)
+            VALUES (:organizer, :email, :phone, :iban, :varda_organizer_id, :varda_organizer_oid, :url, :municipality_code)
+        """.trimIndent()
+
+    h.createUpdate(sql)
+        .bindMap(
+            mapOf(
+                "organizer" to "Espoo",
+                "email" to "test@espoo.fi",
+                "phone" to "+358000000000",
+                "iban" to "FI123456677555",
+                "varda_organizer_id" to 1233,
+                "varda_organizer_oid" to defaultMunicipalOrganizerOid,
+                "url" to "http://path.to.organizer",
+                "municipality_code" to "049"
+            )
+        ).execute()
 }

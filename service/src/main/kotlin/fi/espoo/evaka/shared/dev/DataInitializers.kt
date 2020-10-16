@@ -870,29 +870,6 @@ VALUES (:id, :childId, :unitId, :groupId, :startDate, :endDate)
     .bind("endDate", backupCare.period.end)
     .execute()
 
-fun insertTestVardaOrganizer(h: Handle) {
-    //language=SQL
-    val sql =
-        """
-            INSERT INTO varda_organizer (organizer, email, phone, iban, varda_organizer_id, varda_organizer_oid, url, municipality_code)
-            VALUES (:organizer, :email, :phone, :iban, :varda_organizer_id, :varda_organizer_oid, :url, :municipality_code)
-        """.trimIndent()
-
-    h.createUpdate(sql)
-        .bindMap(
-            mapOf(
-                "organizer" to "Espoo",
-                "email" to "test@espoo.fi",
-                "phone" to "+358000000000",
-                "iban" to "FI123456677555",
-                "varda_organizer_id" to 1233,
-                "varda_organizer_oid" to "1.2.3",
-                "url" to "http://path.to.organizer",
-                "municipality_code" to "049"
-            )
-        ).execute()
-}
-
 fun insertApplication(h: Handle, application: ApplicationWithForm): UUID {
     val id = application.id ?: UUID.randomUUID()
 

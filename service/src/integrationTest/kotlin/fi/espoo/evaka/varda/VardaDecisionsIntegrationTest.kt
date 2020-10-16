@@ -11,6 +11,8 @@ import fi.espoo.evaka.application.persistence.daycare.CareDetails
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
 import fi.espoo.evaka.decision.DecisionStatus
 import fi.espoo.evaka.decision.DecisionType
+import fi.espoo.evaka.defaultMunicipalOrganizerOid
+import fi.espoo.evaka.defaultPurchasedOrganizerOid
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.invoicing.domain.PersonData
 import fi.espoo.evaka.placement.PlacementType
@@ -21,12 +23,14 @@ import fi.espoo.evaka.shared.dev.TestDecision
 import fi.espoo.evaka.shared.dev.insertTestApplication
 import fi.espoo.evaka.shared.dev.insertTestApplicationForm
 import fi.espoo.evaka.shared.dev.insertTestDecision
+import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.dev.insertTestServiceNeed
 import fi.espoo.evaka.shared.domain.ClosedPeriod
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDecisionMaker_1
+import fi.espoo.evaka.testPurchasedDaycare
 import fi.espoo.evaka.toDaycareFormAdult
 import fi.espoo.evaka.toDaycareFormChild
 import fi.espoo.evaka.varda.integration.MockVardaIntegrationEndpoint
@@ -34,6 +38,7 @@ import org.jdbi.v3.core.Handle
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotEquals
+import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -58,7 +63,7 @@ class VardaDecisionsIntegrationTest : FullApplicationTest() {
     }
 
     @Test
-    fun `a daycare decision is sent when it has all required data`() {
+    fun `municipal daycare decision is sent when it has all required data`() {
         jdbi.handle { h ->
             val period = ClosedPeriod(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))
             val decisionId = insertDecisionWithApplication(h, testChild_1, period)
@@ -70,6 +75,64 @@ class VardaDecisionsIntegrationTest : FullApplicationTest() {
             val result = getVardaDecisions(h)
             assertEquals(1, result.size)
             assertEquals(decisionId, result.first().evakaDecisionId)
+        }
+    }
+
+    @Test
+    fun `PAOS decision is sent when it has all required data`() {
+        jdbi.handle { h ->
+            val decisionId = insertPlacementWithDecision(h, testChild_1, testPurchasedDaycare.id, ClosedPeriod(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))).first
+            updateChildren(h)
+
+            val children = getUploadedChildren(h)
+            assertEquals(1, children.size)
+
+            updateDecisions(h, vardaClient)
+
+            val vardaDecisions = mockEndpoint.decisions
+            assertEquals(1, vardaDecisions.size)
+            assertEquals(VardaUnitProviderType.PURCHASED.vardaCode, vardaDecisions[0].providerTypeCode)
+
+            val decisionRows = getVardaDecisions(h)
+            assertEquals(1, decisionRows.size)
+            assertEquals(decisionId, decisionRows.first().evakaDecisionId)
+        }
+    }
+
+    @Test
+    fun `child with municipal and PAOS decisions is handled correctly`() {
+        jdbi.handle { h ->
+            val firstPeriod = ClosedPeriod(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))
+            val municipalDecisionId = insertPlacementWithDecision(h, testChild_1, testDaycare.id, firstPeriod).first
+            val paosDecisionId = insertPlacementWithDecision(h, testChild_1, testPurchasedDaycare.id, ClosedPeriod(firstPeriod.end.plusDays(1), firstPeriod.end.plusDays(300))).first
+            updateChildren(h)
+
+            updateDecisions(h, vardaClient)
+
+            val decisionRows = getVardaDecisions(h)
+            assertEquals(2, decisionRows.size)
+            assertNotNull(decisionRows.find { it.evakaDecisionId == municipalDecisionId })
+            assertNotNull(decisionRows.find { it.evakaDecisionId == paosDecisionId })
+
+            val children = getUploadedChildren(h)
+            val decisions = mockEndpoint.decisions
+            assertEquals(2, children.size)
+            assertEquals(2, decisions.size)
+
+            val paosChild = children.firstOrNull { it.ophOrganizerOid == defaultPurchasedOrganizerOid }
+            assertNotNull(paosChild)
+
+            val paosDecision = decisions.firstOrNull { it.childUrl.contains(paosChild!!.vardaChildId.toString()) }
+            assertNotNull(paosDecision)
+
+            val municipalChild = children.firstOrNull { it.ophOrganizerOid == defaultMunicipalOrganizerOid }
+            assertNotNull(municipalChild)
+
+            val municipalDecision = decisions.firstOrNull { it.childUrl.contains(municipalChild!!.vardaChildId.toString()) }
+            assertNotNull(municipalDecision)
+
+            assertEquals(VardaUnitProviderType.PURCHASED.vardaCode, paosDecision!!.providerTypeCode)
+            assertEquals(VardaUnitProviderType.MUNICIPAL.vardaCode, municipalDecision!!.providerTypeCode)
         }
     }
 
@@ -400,6 +463,33 @@ class VardaDecisionsIntegrationTest : FullApplicationTest() {
     }
 
     @Test
+    fun `PAOS daycare decision is sent with correct data`() {
+        jdbi.handle { h ->
+            val sentDate = LocalDate.of(2019, 6, 1)
+            val period = ClosedPeriod(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))
+            insertDecisionWithApplication(h, testChild_1, period, sentDate = sentDate, unitId = testPurchasedDaycare.id)
+            insertServiceNeed(h, testChild_1.id, period)
+            insertVardaChild(h, testChild_1.id, ophOrganizationOid = defaultPurchasedOrganizerOid)
+
+            updateDecisions(h, vardaClient)
+
+            val decisions = mockEndpoint.decisions
+            assertEquals(1, decisions.size)
+
+            val decision = decisions[0]
+            assertEquals(period.start, decision.startDate)
+            assertEquals(period.end, decision.endDate)
+            assertEquals(40.0, decision.hoursPerWeek)
+            assertEquals(true, decision.daily)
+            assertEquals(true, decision.fullDay)
+            assertEquals(false, decision.shiftCare)
+            assertEquals(VardaUnitProviderType.PURCHASED.vardaCode, decision.providerTypeCode)
+            assertEquals(false, decision.urgent)
+            assertEquals(sentDate, decision.applicationDate)
+        }
+    }
+
+    @Test
     fun `a preschool daycare decision without preparatory is sent with correct hours per week`() {
         jdbi.handle { h ->
             val weeklyHours = 50.0
@@ -681,6 +771,10 @@ class VardaDecisionsIntegrationTest : FullApplicationTest() {
             .bind("updatedAt", updatedAt)
             .execute()
     }
+
+    private fun updateChildren(h: Handle) {
+        updateChildren(h, vardaClient, vardaOrganizerName)
+    }
 }
 
 internal fun insertServiceNeed(
@@ -699,13 +793,13 @@ internal fun insertServiceNeed(
     )
 }
 
-internal fun insertVardaChild(h: Handle, childId: UUID, createdAt: Instant = Instant.now()) {
+internal fun insertVardaChild(h: Handle, childId: UUID, createdAt: Instant = Instant.now(), ophOrganizationOid: String = defaultMunicipalOrganizerOid) {
     h.createUpdate(
         """
 INSERT INTO varda_child
-    (id, person_id, varda_person_id, varda_person_oid, varda_child_id, created_at, modified_at, uploaded_at)
+    (id, person_id, varda_person_id, varda_person_oid, varda_child_id, created_at, modified_at, uploaded_at, oph_organizer_oid)
 VALUES
-    (:id, :personId, :vardaPersonId, :vardaPersonOid, :vardaChildId, :createdAt, :modifiedAt, :uploadedAt)
+    (:id, :personId, :vardaPersonId, :vardaPersonOid, :vardaChildId, :createdAt, :modifiedAt, :uploadedAt, :ophOrganizerOid)
 """
     )
         .bind("id", UUID.randomUUID())
@@ -716,6 +810,7 @@ VALUES
         .bind("createdAt", createdAt)
         .bind("modifiedAt", createdAt)
         .bind("uploadedAt", createdAt)
+        .bind("ophOrganizerOid", ophOrganizationOid)
         .execute()
 }
 
@@ -757,6 +852,19 @@ fun insertDecisionWithApplication(
         resolved = Instant.now()
     )
     return h.insertTestDecision(acceptedDecision)
+}
+
+private fun insertPlacementWithDecision(h: Handle, child: PersonData.Detailed, unitId: UUID, period: ClosedPeriod): Pair<UUID, UUID> {
+    val decisionId = insertDecisionWithApplication(h = h, child = child, period = period, unitId = unitId)
+    insertServiceNeed(h, child.id, period)
+    val placementId = insertTestPlacement(
+        h = h,
+        childId = child.id,
+        unitId = unitId,
+        startDate = period.start,
+        endDate = period.end
+    )
+    return Pair(decisionId, placementId)
 }
 
 private fun deletePlacement(h: Handle, id: UUID) {

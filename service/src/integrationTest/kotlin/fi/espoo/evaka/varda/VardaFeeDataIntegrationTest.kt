@@ -26,6 +26,7 @@ import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
 import fi.espoo.evaka.testChild_3
 import fi.espoo.evaka.testDaycare
+import fi.espoo.evaka.testPurchasedDaycare
 import fi.espoo.evaka.varda.integration.MockVardaIntegrationEndpoint
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.mapTo
@@ -39,6 +40,7 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import java.time.Instant
 import java.time.LocalDate
+import java.util.UUID
 
 class VardaFeeDataIntegrationTest : FullApplicationTest() {
     @Autowired
@@ -304,6 +306,46 @@ class VardaFeeDataIntegrationTest : FullApplicationTest() {
     }
 
     @Test
+    fun `child with decision to municipal and purchased units is handled correctly`() {
+        jdbi.handle { h ->
+            val period1 = ClosedPeriod(LocalDate.now().minusMonths(6), LocalDate.now().minusMonths(5))
+            val period2 = ClosedPeriod(period1.end.plusMonths(1), LocalDate.now().plusMonths(6))
+
+            val child = testChild_1
+
+            val paosDaycareId = testPurchasedDaycare.id
+
+            updateUnits(h, vardaClient, vardaOrganizerName)
+
+            createDecisionsAndPlacements(h = h, child = child, period = period1, daycareId = paosDaycareId)
+            insertFeeDecision(
+                h = h,
+                status = FeeDecisionStatus.SENT,
+                children = listOf(child),
+                objectMapper = objectMapper,
+                period = Period(period1.start, period1.end),
+                daycareId = paosDaycareId
+            )
+            updateFeeData(h)
+            assertEquals(1, getVardaFeeDataRows(h).size)
+
+            val daycareId = testDaycare.id
+            createDecisionsAndPlacements(h = h, child = child, period = period2, daycareId = daycareId)
+            insertFeeDecision(
+                h = h,
+                status = FeeDecisionStatus.SENT,
+                children = listOf(child),
+                objectMapper = objectMapper,
+                period = Period(period2.start, period2.end),
+                daycareId = daycareId
+            )
+            updateFeeData(h)
+
+            assertEquals(2, getVardaFeeDataRows(h).size)
+        }
+    }
+
+    @Test
     fun `two fee data entries is sent with two placements inside one fee decision`() {
         /*
             Fee decision |--------------------|
@@ -559,18 +601,18 @@ class VardaFeeDataIntegrationTest : FullApplicationTest() {
         h: Handle,
         child: PersonData.Detailed = testChild_1,
         period: ClosedPeriod = ClosedPeriod(LocalDate.now().minusMonths(6), LocalDate.now().plusMonths(6)),
-        childCreatedAt: Instant = Instant.now().minusSeconds(24 * 60 * 60)
+        daycareId: UUID = testDaycare.id
     ) {
-        insertDecisionWithApplication(h, child, period)
+        insertDecisionWithApplication(h, child, period, unitId = daycareId)
         insertServiceNeed(h, child.id, period)
-        insertVardaChild(h, child.id, childCreatedAt)
         insertTestPlacement(
             h = h,
             childId = child.id,
-            unitId = testDaycare.id,
+            unitId = daycareId,
             startDate = period.start,
             endDate = period.end
         )
+        updateChildren(h, vardaClient, organizerName = vardaOrganizerName)
         updateDecisions(h, vardaClient)
         updatePlacements(h, vardaClient)
     }
@@ -597,7 +639,8 @@ private fun insertFeeDecision(
     children: List<PersonData.Detailed>,
     objectMapper: ObjectMapper,
     period: Period = Period(LocalDate.now().minusMonths(6), LocalDate.now().plusMonths(6)),
-    placementType: PlacementType = PlacementType.DAYCARE
+    placementType: PlacementType = PlacementType.DAYCARE,
+    daycareId: UUID = testDaycare.id
 ): FeeDecision {
     val feeDecision = createFeeDecisionFixture(
         status = status,
@@ -608,7 +651,7 @@ private fun insertFeeDecision(
             createFeeDecisionPartFixture(
                 childId = child.id,
                 dateOfBirth = testChild_1.dateOfBirth,
-                daycareId = testDaycare.id,
+                daycareId = daycareId,
                 placementType = placementType
             )
         }
