@@ -63,7 +63,7 @@ const FeeDecisionDetailsPage = React.memo(function FeeDecisionDetailsPage() {
     }
   }
 
-  const goBack = () => history.push('/fee-decisions')
+  const goBack = () => history.goBack()
 
   const goToDecisions = useCallback(() => goBack(), [history])
 
