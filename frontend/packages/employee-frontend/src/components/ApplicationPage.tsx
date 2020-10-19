@@ -4,13 +4,19 @@
 
 import React, { useContext, useEffect, useState } from 'react'
 import { RouteComponentProps } from 'react-router-dom'
+import LocalDate from '@evaka/lib-common/src/local-date'
 import { UUID } from 'types'
 import { isSuccess, Loading, Result } from 'api'
-import { ApplicationDetails, ApplicationResponse } from 'types/application'
+import {
+  ApplicationDetails,
+  ApplicationResponse,
+  PreferredUnit
+} from 'types/application'
 import ApplicationEditView from 'components/application-page/ApplicationEditView'
 import ApplicationReadView from 'components/application-page/ApplicationReadView'
 import ApplicationActionsBar from 'components/application-page/ApplicationActionsBar'
 import { getApplication } from 'api/applications'
+import { getApplicationUnits } from 'api/daycare'
 import { renderResult } from 'components/shared/atoms/state/async-rendering'
 import { TitleContext, TitleState } from 'state/title'
 import { useTranslation, Translations } from 'state/i18n'
@@ -49,6 +55,27 @@ function ApplicationPage({ match }: RouteComponentProps<{ id: UUID }>) {
   const [validationErrors, setValidationErrors] = useState<
     Record<string, string>
   >({})
+  const [units, setUnits] = useState<Result<PreferredUnit[]>>(Loading())
+
+  useEffect(() => {
+    if (editing && editedApplication) {
+      const applicationType =
+        editedApplication.type === 'PRESCHOOL' &&
+        editedApplication.form.preferences.preparatory
+          ? 'PREPARATORY'
+          : editedApplication.type
+
+      void getApplicationUnits(
+        applicationType,
+        editedApplication.form.preferences.preferredStartDate ??
+          LocalDate.today()
+      ).then(setUnits)
+    }
+  }, [
+    editing,
+    editedApplication?.type,
+    editedApplication?.form.preferences.preferredStartDate
+  ])
 
   // this is used because text inputs become too sluggish without it
   const debouncedEditedApplication = useDebounce(editedApplication, 50)
@@ -76,8 +103,10 @@ function ApplicationPage({ match }: RouteComponentProps<{ id: UUID }>) {
   useEffect(reloadApplication, [applicationId])
 
   useEffect(() => {
-    if (debouncedEditedApplication) {
-      setValidationErrors(validateApplication(debouncedEditedApplication, i18n))
+    if (debouncedEditedApplication && isSuccess(units)) {
+      setValidationErrors(
+        validateApplication(debouncedEditedApplication, units.data, i18n)
+      )
     }
   }, [debouncedEditedApplication])
 
@@ -88,6 +117,7 @@ function ApplicationPage({ match }: RouteComponentProps<{ id: UUID }>) {
           application={editedApplication}
           setApplication={setEditedApplication}
           errors={validationErrors}
+          units={units}
         />
       ) : null
     ) : (
@@ -128,6 +158,7 @@ function ApplicationPage({ match }: RouteComponentProps<{ id: UUID }>) {
 
 function validateApplication(
   application: ApplicationDetails,
+  units: PreferredUnit[],
   i18n: Translations
 ): Record<string, string> {
   const errors = {}
@@ -144,6 +175,15 @@ function validateApplication(
   if (preferences.preferredUnits.length === 0) {
     errors['form.preferences.preferredUnits'] =
       i18n.application.preferences.missingPreferredUnits
+  }
+
+  if (
+    preferences.preferredUnits.some(
+      ({ id }) => units.find((unit) => unit.id === id) === undefined
+    )
+  ) {
+    errors['form.preferences.preferredUnits'] =
+      i18n.application.preferences.unitMismatch
   }
 
   if (preferences.serviceNeed) {

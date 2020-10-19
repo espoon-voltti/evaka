@@ -2,13 +2,15 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useEffect, useState } from 'react'
+import React from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 import { set } from 'lodash/fp'
 import ReactSelect from 'react-select'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
   faChild,
+  faExclamationTriangle,
   faFileAlt,
   faInfo,
   faMapMarkerAlt,
@@ -17,8 +19,7 @@ import {
   faUsers
 } from 'icon-set'
 import LocalDate from '@evaka/lib-common/src/local-date'
-import { Loading, Result, isSuccess, isLoading } from 'api'
-import { getApplicationUnits } from 'api/daycare'
+import { Result, isSuccess, isLoading } from 'api'
 import { H4, Label } from 'components/shared/Typography'
 import CollapsibleSection from 'components/shared/molecules/CollapsibleSection'
 import { Gap } from 'components/shared/layout/white-space'
@@ -30,6 +31,7 @@ import InputField from 'components/shared/atoms/form/InputField'
 import Radio from 'components/shared/atoms/form/Radio'
 import Checkbox from 'components/shared/atoms/form/Checkbox'
 import { TextArea } from 'components/shared/atoms/form/InputField'
+import Colors from 'components/shared/Colors'
 import { DatePicker } from 'components/common/DatePicker'
 import ApplicationTitle from 'components/application-page/ApplicationTitle'
 import VTJGuardian from 'components/application-page/VTJGuardian'
@@ -51,27 +53,16 @@ interface PreschoolApplicationProps {
     React.SetStateAction<ApplicationDetails | undefined>
   >
   errors: Record<string, string>
+  units: Result<PreferredUnit[]>
 }
 
 export default React.memo(function ApplicationEditView({
   application,
   setApplication,
-  errors
+  errors,
+  units
 }: PreschoolApplicationProps) {
   const { i18n } = useTranslation()
-  const [units, setUnits] = useState<Result<PreferredUnit[]>>(Loading())
-
-  const applicationType =
-    application.type === 'PRESCHOOL' && application.form.preferences.preparatory
-      ? 'PREPARATORY'
-      : application.type
-
-  useEffect(() => {
-    void getApplicationUnits(
-      applicationType,
-      application.form.preferences.preferredStartDate ?? LocalDate.today()
-    ).then(setUnits)
-  }, [applicationType])
 
   const {
     type,
@@ -100,6 +91,12 @@ export default React.memo(function ApplicationEditView({
     guardianRestricted,
     otherGuardianLivesInSameAddress
   } = application
+
+  const preferencesInUnitsList = isSuccess(units)
+    ? preferredUnits.filter(({ id }) =>
+        units.data.find((unit) => unit.id === id)
+      )
+    : preferredUnits
 
   const connectedDaycare = type === 'PRESCHOOL' && serviceNeed !== null
   const paid = type === 'DAYCARE' || connectedDaycare
@@ -383,6 +380,9 @@ export default React.memo(function ApplicationEditView({
                 text={i18n.application.preferences.missingPreferredUnits}
               />
             ) : null}
+            {preferencesInUnitsList.length !== preferredUnits.length ? (
+              <InputWarning text={i18n.application.preferences.unitMismatch} />
+            ) : null}
             {preferredUnits.map((unit, i) => (
               <HorizontalContainer key={unit.id}>
                 <Link to={`/units/${unit.id}`}>{`${i + 1}. ${unit.name}`}</Link>
@@ -400,6 +400,16 @@ export default React.memo(function ApplicationEditView({
                   }
                   dataQa="button-select-preferred-unit"
                 />
+                {!preferencesInUnitsList.some(({ id }) => id === unit.id) ? (
+                  <>
+                    <Gap size="s" horizontal />
+                    <FontAwesomeIcon
+                      size="sm"
+                      icon={faExclamationTriangle}
+                      color={Colors.accents.orange}
+                    />
+                  </>
+                ) : null}
               </HorizontalContainer>
             ))}
           </VerticalContainer>
