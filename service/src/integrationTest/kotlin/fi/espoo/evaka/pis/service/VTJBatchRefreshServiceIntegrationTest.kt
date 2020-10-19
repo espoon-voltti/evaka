@@ -4,14 +4,19 @@
 
 package fi.espoo.evaka.pis.service
 
+import com.nhaarman.mockito_kotlin.any
+import com.nhaarman.mockito_kotlin.eq
 import com.nhaarman.mockito_kotlin.verify
 import com.nhaarman.mockito_kotlin.verifyZeroInteractions
 import com.nhaarman.mockito_kotlin.whenever
+import fi.espoo.evaka.FullApplicationTest
+import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.invoicing.domain.PersonData
-import fi.espoo.evaka.shared.JdbcIntegrationTest
+import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.VTJRefresh
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
+import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_2
 import fi.espoo.evaka.testChild_1
@@ -20,12 +25,11 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.mock.mockito.MockBean
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
-import org.springframework.transaction.PlatformTransactionManager
 import java.time.LocalDate
 import java.util.UUID
 
-class VTJBatchRefreshServiceIntegrationTest : JdbcIntegrationTest() {
+class VTJBatchRefreshServiceIntegrationTest : FullApplicationTest() {
+
     @MockBean
     lateinit var personService: PersonService
 
@@ -33,13 +37,10 @@ class VTJBatchRefreshServiceIntegrationTest : JdbcIntegrationTest() {
     lateinit var parentshipService: ParentshipService
 
     @Autowired
-    lateinit var asyncJobRunner: AsyncJobRunner
+    lateinit var fridgeFamilyService: FridgeFamilyService
 
-    @Autowired
-    lateinit var jdbc: NamedParameterJdbcTemplate
-
-    @Autowired
-    lateinit var txManager: PlatformTransactionManager
+    @MockBean
+    protected lateinit var asyncJobRunner: AsyncJobRunner
 
     lateinit var service: VTJBatchRefreshService
 
@@ -48,12 +49,14 @@ class VTJBatchRefreshServiceIntegrationTest : JdbcIntegrationTest() {
 
     @BeforeEach
     internal fun setUp() {
+        jdbi.handle { h ->
+            resetDatabase(h)
+            insertGeneralTestFixtures(h)
+        }
         service = VTJBatchRefreshService(
-            personService = personService,
-            parentshipService = parentshipService,
+            fridgeFamilyService = fridgeFamilyService,
             asyncJobRunner = asyncJobRunner,
-            jdbc = jdbc,
-            txManager = txManager
+            jdbi = jdbi
         )
     }
 
@@ -89,12 +92,16 @@ class VTJBatchRefreshServiceIntegrationTest : JdbcIntegrationTest() {
         whenever(personService.getUpToDatePersonWithChildren(user, testAdult_1.id)).thenReturn(dto)
 
         service.doVTJRefresh(VTJRefresh(testAdult_1.id, user.id))
-        verify(parentshipService).createParentship(
-            headOfChildId = testAdult_1.id,
-            childId = testChild_1.id,
-            startDate = LocalDate.now(),
-            endDate = lastDayBefore18YearsOld
-        )
+        jdbi.handle {
+            verify(parentshipService).createParentship(
+                any(),
+                eq(testChild_1.id),
+                eq(testAdult_1.id),
+                eq(LocalDate.now()),
+                eq(lastDayBefore18YearsOld),
+                eq(false)
+            )
+        }
     }
 
     @Test
@@ -126,39 +133,39 @@ class VTJBatchRefreshServiceIntegrationTest : JdbcIntegrationTest() {
             VALUES (:partnershipId, :index, :personId, :startDate, 'infinity')
             """.trimIndent()
         val partnershipId = UUID.randomUUID()
-        jdbc.update(
-            sql,
-            mapOf(
-                "partnershipId" to partnershipId,
-                "index" to 1,
-                "personId" to testAdult_1.id,
-                "startDate" to LocalDate.of(2000, 1, 1)
-            )
-        )
-        jdbc.update(
-            sql,
-            mapOf(
-                "partnershipId" to partnershipId,
-                "index" to 2,
-                "personId" to testAdult_2.id,
-                "startDate" to LocalDate.of(2000, 1, 1)
-            )
-        )
+        jdbi.handle { h ->
 
-        val dto1 = getDto(testAdult_1)
-        val dto2 = getDto(testAdult_2).copy(
-            children = listOf(getDto(testChild_1))
-        )
-        whenever(personService.getUpToDatePersonWithChildren(user, testAdult_1.id)).thenReturn(dto1)
-        whenever(personService.getUpToDatePersonWithChildren(user, testAdult_2.id)).thenReturn(dto2)
+            h.createUpdate(sql)
+                .bind("partnershipId", partnershipId)
+                .bind("index", 1)
+                .bind("personId", testAdult_1.id)
+                .bind("startDate", LocalDate.of(2000, 1, 1))
+                .execute()
 
-        service.doVTJRefresh(VTJRefresh(testAdult_1.id, user.id))
-        verify(parentshipService).createParentship(
-            headOfChildId = testAdult_1.id,
-            childId = testChild_1.id,
-            startDate = LocalDate.now(),
-            endDate = lastDayBefore18YearsOld
-        )
+            h.createUpdate(sql)
+                .bind("partnershipId", partnershipId)
+                .bind("index", 2)
+                .bind("personId", testAdult_2.id)
+                .bind("startDate", LocalDate.of(2000, 1, 1))
+                .execute()
+
+            val dto1 = getDto(testAdult_1)
+            val dto2 = getDto(testAdult_2).copy(
+                children = listOf(getDto(testChild_1))
+            )
+            whenever(personService.getUpToDatePersonWithChildren(user, testAdult_1.id)).thenReturn(dto1)
+            whenever(personService.getUpToDatePersonWithChildren(user, testAdult_2.id)).thenReturn(dto2)
+
+            service.doVTJRefresh(VTJRefresh(testAdult_1.id, user.id))
+            verify(parentshipService).createParentship(
+                any(),
+                eq(testChild_1.id),
+                eq(testAdult_1.id),
+                eq(LocalDate.now()),
+                eq(lastDayBefore18YearsOld),
+                eq(false)
+            )
+        }
     }
 
     @Test
@@ -170,35 +177,32 @@ class VTJBatchRefreshServiceIntegrationTest : JdbcIntegrationTest() {
             VALUES (:partnershipId, :index, :personId, :startDate, :endDate)
             """.trimIndent()
         val partnershipId = UUID.randomUUID()
-        jdbc.update(
-            sql,
-            mapOf(
-                "partnershipId" to partnershipId,
-                "index" to 1,
-                "personId" to testAdult_1.id,
-                "startDate" to LocalDate.of(2000, 1, 1),
-                "endDate" to LocalDate.of(2010, 1, 1)
-            )
-        )
-        jdbc.update(
-            sql,
-            mapOf(
-                "partnershipId" to partnershipId,
-                "index" to 2,
-                "personId" to testAdult_2.id,
-                "startDate" to LocalDate.of(2000, 1, 1),
-                "endDate" to LocalDate.of(2010, 1, 1)
-            )
-        )
+        jdbi.handle { h ->
+            h.createUpdate(sql)
+                .bind("partnershipId", partnershipId)
+                .bind("index", 1)
+                .bind("personId", testAdult_1.id)
+                .bind("startDate", LocalDate.of(2000, 1, 1))
+                .bind("endDate", LocalDate.of(2010, 1, 1))
+                .execute()
 
-        val dto1 = getDto(testAdult_1)
-        val dto2 = getDto(testAdult_2).copy(
-            children = listOf(getDto(testChild_1))
-        )
-        whenever(personService.getUpToDatePersonWithChildren(user, testAdult_1.id)).thenReturn(dto1)
-        whenever(personService.getUpToDatePersonWithChildren(user, testAdult_2.id)).thenReturn(dto2)
+            h.createUpdate(sql)
+                .bind("partnershipId", partnershipId)
+                .bind("index", 2)
+                .bind("personId", testAdult_2.id)
+                .bind("startDate", LocalDate.of(2000, 1, 1))
+                .bind("endDate", LocalDate.of(2010, 1, 1))
+                .execute()
 
-        service.doVTJRefresh(VTJRefresh(testAdult_1.id, user.id))
-        verifyZeroInteractions(parentshipService)
+            val dto1 = getDto(testAdult_1)
+            val dto2 = getDto(testAdult_2).copy(
+                children = listOf(getDto(testChild_1))
+            )
+            whenever(personService.getUpToDatePersonWithChildren(user, testAdult_1.id)).thenReturn(dto1)
+            whenever(personService.getUpToDatePersonWithChildren(user, testAdult_2.id)).thenReturn(dto2)
+
+            service.doVTJRefresh(VTJRefresh(testAdult_1.id, user.id))
+            verifyZeroInteractions(parentshipService)
+        }
     }
 }

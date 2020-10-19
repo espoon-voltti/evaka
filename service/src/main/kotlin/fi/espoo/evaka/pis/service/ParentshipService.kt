@@ -4,33 +4,35 @@
 
 package fi.espoo.evaka.pis.service
 
-import fi.espoo.evaka.pis.dao.ParentshipDAO
+import fi.espoo.evaka.pis.createParentship
 import fi.espoo.evaka.pis.dao.mapPSQLException
+import fi.espoo.evaka.pis.deleteParentship
+import fi.espoo.evaka.pis.getParentship
+import fi.espoo.evaka.pis.getParentships
+import fi.espoo.evaka.pis.retryParentship
+import fi.espoo.evaka.pis.updateParentshipDuration
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.NotifyFamilyUpdated
 import fi.espoo.evaka.shared.db.runAfterCommit
-import fi.espoo.evaka.shared.db.withSpringTx
+import fi.espoo.evaka.shared.db.transaction
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.domain.maxEndDate
 import mu.KotlinLogging
+import org.jdbi.v3.core.Handle
 import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.stereotype.Service
-import org.springframework.transaction.PlatformTransactionManager
-import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDate
 import java.util.UUID
 
 @Service
-@Transactional(readOnly = true)
 class ParentshipService(
-    private val dao: ParentshipDAO,
-    private val asyncJobRunner: AsyncJobRunner,
-    private val txm: PlatformTransactionManager
+    private val asyncJobRunner: AsyncJobRunner
+
 ) {
     private val logger = KotlinLogging.logger { }
 
-    @Transactional
     fun createParentship(
+        h: Handle,
         childId: UUID,
         headOfChildId: UUID,
         startDate: LocalDate,
@@ -38,13 +40,12 @@ class ParentshipService(
         allowConflicts: Boolean = false
     ): Parentship {
         return try {
-            dao
-                .createParentship(childId, headOfChildId, startDate, endDate)
+            h.createParentship(childId, headOfChildId, startDate, endDate, allowConflicts)
                 .also { sendFamilyUpdatedMessage(headOfChildId, startDate, endDate) }
         } catch (e: DataIntegrityViolationException) {
             if (allowConflicts) {
-                withSpringTx(txm, requiresNew = true) {
-                    dao.createParentship(childId, headOfChildId, startDate, endDate, conflict = true)
+                h.transaction { t ->
+                    t.createParentship(childId, headOfChildId, startDate, endDate, true)
                 }
             } else {
                 throw mapPSQLException(e)
@@ -52,27 +53,26 @@ class ParentshipService(
         }
     }
 
-    fun getParentships(headOfChildId: UUID?, childId: UUID?, includeConflicts: Boolean = false): Set<Parentship> {
-        return dao.getParentships(headOfChildId = headOfChildId, childId = childId, includeConflicts = includeConflicts)
+    fun getParentships(h: Handle, headOfChildId: UUID?, childId: UUID?, includeConflicts: Boolean = false): Set<Parentship> {
+        return h.getParentships(headOfChildId = headOfChildId, childId = childId, includeConflicts = includeConflicts).toSet()
     }
 
-    fun getParentshipsByHeadOfChildId(headOfChildId: UUID, includeConflicts: Boolean = false): Set<Parentship> {
-        return dao.getParentships(headOfChildId = headOfChildId, childId = null, includeConflicts = includeConflicts)
+    fun getParentshipsByHeadOfChildId(h: Handle, headOfChildId: UUID, includeConflicts: Boolean = false): Set<Parentship> {
+        return h.getParentships(headOfChildId = headOfChildId, childId = null, includeConflicts = includeConflicts).toSet()
     }
 
-    fun getParentshipsByChildId(childId: UUID, includeConflicts: Boolean = false): Set<Parentship> {
-        return dao.getParentships(headOfChildId = null, childId = childId, includeConflicts = includeConflicts)
+    fun getParentshipsByChildId(h: Handle, childId: UUID, includeConflicts: Boolean = false): Set<Parentship> {
+        return h.getParentships(headOfChildId = null, childId = childId, includeConflicts = includeConflicts).toSet()
     }
 
-    fun getParentship(id: UUID): Parentship? {
-        return dao.getParentship(id)
+    fun getParentship(h: Handle, id: UUID): Parentship? {
+        return h.getParentship(id)
     }
 
-    @Transactional
-    fun updateParentshipDuration(id: UUID, startDate: LocalDate, endDate: LocalDate?): Parentship {
-        val oldParentship = dao.getParentship(id) ?: throw NotFound("No parentship found with id $id")
+    fun updateParentshipDuration(h: Handle, id: UUID, startDate: LocalDate, endDate: LocalDate?): Parentship {
+        val oldParentship = h.getParentship(id) ?: throw NotFound("No parentship found with id $id")
         try {
-            val success = dao.updateParentshipDuration(id, startDate, endDate)
+            val success = h.updateParentshipDuration(id, startDate, endDate)
             if (!success) throw NotFound("No parentship found with id $id")
         } catch (e: DataIntegrityViolationException) {
             throw mapPSQLException(e)
@@ -87,13 +87,12 @@ class ParentshipService(
         return oldParentship.copy(startDate = startDate, endDate = endDate)
     }
 
-    @Transactional
-    fun retryParentship(id: UUID) {
+    fun retryParentship(h: Handle, id: UUID) {
         try {
-            getParentship(id)
+            h.getParentship(id)
                 ?.takeIf { it.conflict }
                 ?.let {
-                    dao.retryParentship(it.id)
+                    h.retryParentship(it.id)
                     sendFamilyUpdatedMessage(
                         adultId = it.headOfChildId,
                         startDate = it.startDate,
@@ -105,10 +104,9 @@ class ParentshipService(
         }
     }
 
-    @Transactional
-    fun deleteParentship(id: UUID) {
-        val parentship = dao.getParentship(id)
-        val success = dao.deleteParentship(id)
+    fun deleteParentship(h: Handle, id: UUID) {
+        val parentship = h.getParentship(id)
+        val success = h.deleteParentship(id)
         if (parentship == null || !success) throw NotFound("No parentship found with id $id")
 
         with(parentship) {

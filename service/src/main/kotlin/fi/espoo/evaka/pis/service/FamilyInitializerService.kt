@@ -11,14 +11,18 @@ import fi.espoo.evaka.identity.ExternalIdentifier.SSN
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.InitializeFamilyFromApplication
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
+import fi.espoo.evaka.shared.db.transaction
+import fi.espoo.evaka.shared.db.withSpringHandle
 import fi.espoo.evaka.shared.db.withSpringTx
 import mu.KotlinLogging
+import org.jdbi.v3.core.Handle
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import org.springframework.stereotype.Service
 import org.springframework.transaction.PlatformTransactionManager
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDate
 import java.util.UUID
+import javax.sql.DataSource
 
 @Service
 class FamilyInitializerService(
@@ -26,6 +30,7 @@ class FamilyInitializerService(
     private val parentshipService: ParentshipService,
     private val partnershipService: PartnershipService,
     private val txm: PlatformTransactionManager,
+    private val dataSource: DataSource,
     private val asyncJobRunner: AsyncJobRunner,
     private val jdbc: NamedParameterJdbcTemplate,
     private val jackson: ObjectMapper
@@ -83,7 +88,11 @@ class FamilyInitializerService(
     ) {
         try {
             val members = parseFridgeFamilyMembersFromApplication(user, form, guardianId, childId)
-            tryInitFamilyFromApplication(members)
+            withSpringTx(txm) {
+                withSpringHandle(dataSource) { h ->
+                    tryInitFamilyFromApplication(h, members)
+                }
+            }
         } catch (e: Throwable) {
             logger.warn("Unexpected error when initializing family from application", e)
         }
@@ -93,13 +102,17 @@ class FamilyInitializerService(
     fun tryInitFamilyFromApplication(user: AuthenticatedUser, application: ApplicationDetails) {
         try {
             val members = parseFridgeFamilyMembersFromApplication(user, application)
-            tryInitFamilyFromApplication(members)
+            withSpringTx(txm) {
+                withSpringHandle(dataSource) { h ->
+                    tryInitFamilyFromApplication(h, members)
+                }
+            }
         } catch (e: Throwable) {
             logger.warn("Unexpected error when initializing family from application", e)
         }
     }
 
-    private fun tryInitFamilyFromApplication(members: FridgeFamilyMembers) {
+    private fun tryInitFamilyFromApplication(h: Handle, members: FridgeFamilyMembers) {
         try {
             if (members.headOfFamilyId == null) {
                 logger.warn("Cannot create family because head of family could not be found")
@@ -111,7 +124,7 @@ class FamilyInitializerService(
             }
 
             try {
-                createParentship(childId = members.fridgeChildId, headOfChildId = members.headOfFamilyId)
+                createParentship(h, childId = members.fridgeChildId, headOfChildId = members.headOfFamilyId)
             } catch (e: Throwable) {
                 logger.warn("Adding ${members.fridgeChildId} as the main fridge child to ${members.headOfFamilyId} failed.")
             }
@@ -126,7 +139,7 @@ class FamilyInitializerService(
 
             members.fridgeSiblingIds.forEach { siblingId ->
                 try {
-                    createParentship(childId = siblingId, headOfChildId = members.headOfFamilyId)
+                    createParentship(h, childId = siblingId, headOfChildId = members.headOfFamilyId)
                 } catch (e: Throwable) {
                     logger.warn("Adding $siblingId as a fridge child to ${members.headOfFamilyId} failed. Continuing with the rest of the family...")
                 }
@@ -229,10 +242,11 @@ class FamilyInitializerService(
         }
     }
 
-    private fun createParentship(childId: UUID, headOfChildId: UUID) {
-        withSpringTx(txm, requiresNew = true) {
+    private fun createParentship(t: Handle, childId: UUID, headOfChildId: UUID) {
+        t.transaction { h ->
             val startDate = LocalDate.now()
             val alreadyExists = parentshipService.getParentships(
+                h,
                 headOfChildId = headOfChildId,
                 childId = childId,
                 includeConflicts = true
@@ -244,6 +258,7 @@ class FamilyInitializerService(
                 logger.debug("Similar parentship already exists between $headOfChildId and $childId")
             } else {
                 parentshipService.createParentship(
+                    h,
                     childId = childId,
                     headOfChildId = headOfChildId,
                     startDate = startDate,

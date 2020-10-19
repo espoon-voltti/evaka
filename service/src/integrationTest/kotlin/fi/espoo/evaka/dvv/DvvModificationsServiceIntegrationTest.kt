@@ -8,6 +8,10 @@ import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.insertTestPerson
+import fi.espoo.evaka.vtjclient.dto.NativeLanguage
+import fi.espoo.evaka.vtjclient.dto.RestrictedDetails
+import fi.espoo.evaka.vtjclient.dto.VtjPerson
+import fi.espoo.evaka.vtjclient.service.persondetails.MockPersonDetailsService
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
@@ -94,6 +98,16 @@ class DvvModificationsServiceIntegrationTest : DvvModificationsServiceIntegratio
         assertEquals(testId, h.getPersonBySSN("010281-999C")?.id)
     }
 
+    @Test
+    fun `new custodian added`() = jdbi.handle { h ->
+        createTestPerson(testPerson.copy(ssn = "050180-999W"))
+        createVtjPerson(testPerson.copy(firstName = "Harri", lastName = "Huollettava", ssn = "050118A999W"))
+        dvvModificationsService.updatePersonsFromDvv(listOf("050180-999W"))
+        val custodian = h.getPersonBySSN("050118A999W")!!
+        assertEquals("Harri", custodian.firstName)
+        assertEquals("Huollettava", custodian.lastName)
+    }
+
     val testPerson = DevPerson(
         id = UUID.randomUUID(),
         ssn = "set this",
@@ -109,5 +123,21 @@ class DvvModificationsServiceIntegrationTest : DvvModificationsServiceIntegratio
 
     private fun createTestPerson(devPerson: DevPerson): UUID = jdbi.handle { h ->
         h.insertTestPerson(devPerson)
+    }
+
+    private fun createVtjPerson(person: DevPerson) {
+        MockPersonDetailsService.upsertPerson(
+            VtjPerson(
+                socialSecurityNumber = person.ssn!!,
+                firstNames = person.firstName,
+                lastName = person.lastName,
+                nativeLanguage = NativeLanguage(languageName = "FI", code = "fi"),
+                restrictedDetails = RestrictedDetails(enabled = person.restrictedDetailsEnabled, endDate = person.restrictedDetailsEndDate)
+            )
+        )
+    }
+
+    private fun deleteVtjPerson(ssn: String) {
+        MockPersonDetailsService.deletePerson(ssn)
     }
 }
