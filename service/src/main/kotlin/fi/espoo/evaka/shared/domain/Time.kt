@@ -37,6 +37,8 @@ data class ClosedPeriod(val start: LocalDate, val end: LocalDate) {
     fun includes(value: LocalDate) = this.start <= value && value <= this.end
     fun overlaps(value: ClosedPeriod) = this.start <= value.end && value.start <= this.end
 
+    fun adjacentTo(other: ClosedPeriod) = other.end.plusDays(1) == this.start || this.end.plusDays(1) == other.start
+
     fun intersection(value: ClosedPeriod): ClosedPeriod? {
         val start = maxOf(this.start, value.start)
         val end = minOf(this.end, value.end)

@@ -6,6 +6,7 @@ package fi.espoo.evaka.koski
 
 import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.derivePreschoolTerm
+import fi.espoo.evaka.shared.Timeline
 import fi.espoo.evaka.shared.domain.ClosedPeriod
 import org.jdbi.v3.core.mapper.Nested
 import java.time.LocalDate
@@ -245,27 +246,10 @@ data class KoskiActiveDataRaw(
 fun calculateStudyRightRanges(
     inclusiveRanges: Sequence<ClosedPeriod>,
     clampRange: ClosedPeriod? = null
-): List<ClosedPeriod> {
-    val iter = inclusiveRanges.sortedWith(compareBy({ it.start }, { it.end }))
-        .mapNotNull { if (clampRange == null) it else clampRange.intersection(it) }
-        .iterator()
-
-    var current: ClosedPeriod? = null
-    val result = mutableListOf<ClosedPeriod>()
-    while (iter.hasNext()) {
-        current = if (current == null) {
-            iter.next()
-        } else {
-            val next = iter.next()
-            check(current.end < next.start)
-            if (current.end.plusDays(1) == next.start) {
-                ClosedPeriod(current.start, next.end)
-            } else {
-                result.add(current)
-                next
-            }
-        }
-    }
-    current?.let { result.add(it) }
-    return result
-}
+): List<ClosedPeriod> = Timeline()
+    .addAll(
+        inclusiveRanges.sortedWith(compareBy({ it.start }, { it.end }))
+            .mapNotNull { if (clampRange == null) it else clampRange.intersection(it) }
+    )
+    .periods()
+    .toList()
