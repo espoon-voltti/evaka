@@ -342,14 +342,22 @@ const Decision = memo(function Decision({
                         label: i18n.decisionDraft.selectedUnit,
                         value: (
                           <UnitSelectContainer>
-                            <Select
-                              onChange={(value) =>
-                                value && 'value' in value
-                                  ? onUnitSelect(value.value)
-                                  : undefined
-                              }
-                              options={unitOptions}
-                            />
+                            {isSuccess(units) && (
+                              <Select
+                                onChange={(value) =>
+                                  value && 'value' in value
+                                    ? onUnitSelect(value.value)
+                                    : undefined
+                                }
+                                options={unitOptions}
+                                value={units.data
+                                  .filter((elem) => selectedUnit.id === elem.id)
+                                  .map((elem) => ({
+                                    label: elem.name,
+                                    value: elem.id
+                                  }))}
+                              />
+                            )}
                             <WarningContainer
                               visible={
                                 decisionDraftGroup.data.unit.id !==
