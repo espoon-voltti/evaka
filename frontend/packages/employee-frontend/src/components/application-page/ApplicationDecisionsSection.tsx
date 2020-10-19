@@ -3,25 +3,28 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
+import { Link } from 'react-router-dom'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+
 import { faFilePdf, faGavel } from 'icon-set'
 import { Label } from '~components/shared/Typography'
 import CollapsibleSection from '~components/shared/molecules/CollapsibleSection'
 import ListGrid from '~components/shared/layout/ListGrid'
 import { useTranslation } from '~state/i18n'
 import { Decision } from 'types/decision'
-import { Link } from 'react-router-dom'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'components/shared/layout/flex-helpers'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import DecisionResponse from 'components/application-page/DecisionResponse'
 import { UUID } from 'types'
+import LocalDate from '@evaka/lib-common/src/local-date'
 
 type Props = {
   applicationId: UUID
   decisions: Decision[]
   reloadApplication: () => void
+  preferredStartDate: LocalDate | null
 }
 
 const isPending = (decision: Decision) => decision.status === 'PENDING'
@@ -38,7 +41,8 @@ const isBlocked = (decisions: Decision[], decision: Decision) =>
 export default React.memo(function ApplicationDecisionsSection({
   applicationId,
   decisions,
-  reloadApplication
+  reloadApplication,
+  preferredStartDate
 }: Props) {
   const { i18n } = useTranslation()
 
@@ -92,6 +96,7 @@ export default React.memo(function ApplicationDecisionsSection({
                       applicationId={applicationId}
                       decision={decision}
                       reloadApplication={reloadApplication}
+                      preferredStartDate={preferredStartDate}
                     />
                   )}
                 </>

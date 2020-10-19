@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useContext, useState } from 'react'
+
 import { Decision } from 'types/decision'
 import {
   FixedSpaceColumn,
@@ -15,17 +16,20 @@ import { DatePicker } from 'components/common/DatePicker'
 import { acceptDecision, rejectDecision } from 'api/applications'
 import { UIContext } from 'state/ui'
 import { UUID } from 'types'
+import LocalDate from '@evaka/lib-common/src/local-date'
 
 interface Props {
   applicationId: UUID
   decision: Decision
   reloadApplication: () => void
+  preferredStartDate: LocalDate | null
 }
 
 export default React.memo(function DecisionResponse({
   applicationId,
   decision,
-  reloadApplication
+  reloadApplication,
+  preferredStartDate
 }: Props) {
   const { i18n } = useTranslation()
   const { setErrorMessage } = useContext(UIContext)
@@ -70,7 +74,11 @@ export default React.memo(function DecisionResponse({
           date={acceptDate}
           onChange={setAcceptDate}
           minDate={decision.startDate.subMonths(1)}
-          maxDate={decision.endDate}
+          maxDate={
+            preferredStartDate
+              ? preferredStartDate.addWeeks(2)
+              : decision.endDate
+          }
         />
       </FixedSpaceRow>
       <Radio
