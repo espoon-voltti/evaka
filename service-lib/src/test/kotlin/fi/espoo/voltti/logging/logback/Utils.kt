@@ -18,7 +18,6 @@ import net.logstash.logback.encoder.CompositeJsonEncoder
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.groups.Tuple
 import org.slf4j.LoggerFactory
-import java.util.UUID
 
 // DSL
 
@@ -85,8 +84,9 @@ data class TestLoggers(
 
 // assert utils
 
-const val testSSN = "130105A987A"
+val testSSNs = listOf("130105-0872", "130105A087A", "130105a087a", "130105+0872")
 const val redactedSSN = "REDACTED-SSN"
+const val UUIDWithSSN = "e1130765-2925-4549-b395-9abdd6c8e08a"
 
 fun TestLoggers.assertAudit() =
     assertThat(audit.appender.list.map { it.toJson(audit.encoder).asMap(mapper) }).extracting(*auditEventProps)
@@ -157,7 +157,7 @@ private val auditEventProps = arrayOf(
 data class DefaultEvent(
     val userIdHash: String
 ) {
-    val message: String = "${UUID.randomUUID()}.message"
+    val message: String = "$UUIDWithSSN.message"
     private val appName: String = "test-service"
     private val type: String = "app-misc"
     private val version: Int = 1
