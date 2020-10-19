@@ -34,7 +34,7 @@ class DvvModificationsService(
                         is SsnDvvInfoGroup -> handleSsnDvvInfoGroup(personDvvModifications.ssn, infoGroup)
                         is AddressDvvInfoGroup -> handleAddressDvvInfoGroup(personDvvModifications.ssn, infoGroup)
                         is CustodianLimitedDvvInfoGroup -> handleCustodianLimitedDvvInfoGroup(infoGroup)
-                        // is CaretakerLimitedDvvInfoGroup -> handleCaretakerLimitedDvvInfoGroup(personDvvModifications.ssn, infoGroup)
+                        is CaretakerLimitedDvvInfoGroup -> handleCaretakerLimitedDvvInfoGroup(personDvvModifications.ssn, infoGroup)
                         // is PersonNameDvvInfoGroup -> handlePersonNameDvvInfoGroup(personDvvModifications.ssn, infoGroup)
                         // is PersonNameChangeDvvInfoGroup -> handlePersonNameChangeDvvInfoGroup(personDvvModifications.ssn, infoGroup)
                         else -> logger.info("Unsupported DVV modification: ${infoGroup.type}")
@@ -118,19 +118,21 @@ class DvvModificationsService(
         }
     }
 
-    /*
-
-
-        private fun handleCaretakerLimitedDvvInfoGroup(ssn: String, caretakerLimitedDvvInfoGroup: CaretakerLimitedDvvInfoGroup) {
+    private fun handleCaretakerLimitedDvvInfoGroup(ssn: String, caretakerLimitedDvvInfoGroup: CaretakerLimitedDvvInfoGroup) {
+        if (caretakerLimitedDvvInfoGroup.changeAttribute == "LISATTY") {
+            val user = AuthenticatedUser.anonymous
+            val custodianSsn = ExternalIdentifier.SSN.getInstance(ssn)
+            personService.getOrCreatePerson(user, custodianSsn)?.let {
+                logger.debug("Dvv modification for ${it.id}: is a new custodian")
+                personService.getGuardians(user, it.id)
+            }
         }
+    }
 
+    // private fun handlePersonNameDvvInfoGroup(ssn: String, personNameDvvInfoGroup: PersonNameDvvInfoGroup) {}
 
-        private fun handlePersonNameDvvInfoGroup(ssn: String, personNameDvvInfoGroup: PersonNameDvvInfoGroup) {
-        }
+    // private fun handlePersonNameChangeDvvInfoGroup(ssn: String, personNameChangeDvvInfoGroup: PersonNameChangeDvvInfoGroup) {}
 
-        private fun handlePersonNameChangeDvvInfoGroup(ssn: String, personNameChangeDvvInfoGroup: PersonNameChangeDvvInfoGroup) {
-        }
-    */
     fun getDvvModifications(ssns: List<String>): List<DvvModification> = jdbi.transaction { h ->
         val token = getNextDvvModificationToken(h)
         logger.debug("Fetching dvv modifications with $token")

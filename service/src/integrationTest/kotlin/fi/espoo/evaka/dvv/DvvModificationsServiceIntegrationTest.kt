@@ -100,12 +100,34 @@ class DvvModificationsServiceIntegrationTest : DvvModificationsServiceIntegratio
 
     @Test
     fun `new custodian added`() = jdbi.handle { h ->
-        createTestPerson(testPerson.copy(ssn = "050180-999W"))
-        createVtjPerson(testPerson.copy(firstName = "Harri", lastName = "Huollettava", ssn = "050118A999W"))
-        dvvModificationsService.updatePersonsFromDvv(listOf("050180-999W"))
-        val custodian = h.getPersonBySSN("050118A999W")!!
-        assertEquals("Harri", custodian.firstName)
-        assertEquals("Huollettava", custodian.lastName)
+        var caretaker: DevPerson = testPerson.copy(ssn = "050180-999W")
+        val custodian = testPerson.copy(firstName = "Harri", lastName = "Huollettava", ssn = "050118A999W", guardians = listOf(caretaker))
+        caretaker = caretaker.copy(dependants = listOf(custodian))
+
+        createTestPerson(custodian)
+        createVtjPerson(custodian)
+        createVtjPerson(caretaker)
+
+        dvvModificationsService.updatePersonsFromDvv(listOf("050118A999W"))
+        val dvvCustodian = h.getPersonBySSN("050118A999W")!!
+        assertEquals("Harri", dvvCustodian.firstName)
+        assertEquals("Huollettava", dvvCustodian.lastName)
+    }
+
+    @Test
+    fun `new caretaker added`() = jdbi.handle { h ->
+        var custodian: DevPerson = testPerson.copy(ssn = "060118A999J")
+        val caretaker = testPerson.copy(firstName = "Harri", lastName = "Huoltaja", ssn = "060180-999J", dependants = listOf(custodian))
+        custodian = custodian.copy(guardians = listOf(caretaker))
+
+        createTestPerson(custodian)
+        createVtjPerson(custodian)
+        createVtjPerson(caretaker)
+
+        dvvModificationsService.updatePersonsFromDvv(listOf("060118A999J"))
+        val dvvCaretaker = h.getPersonBySSN("060180-999J")!!
+        assertEquals("Harri", dvvCaretaker.firstName)
+        assertEquals("Huoltaja", dvvCaretaker.lastName)
     }
 
     val testPerson = DevPerson(
@@ -126,16 +148,26 @@ class DvvModificationsServiceIntegrationTest : DvvModificationsServiceIntegratio
     }
 
     private fun createVtjPerson(person: DevPerson) {
-        MockPersonDetailsService.upsertPerson(
+        MockPersonDetailsService.addPerson(
             VtjPerson(
                 socialSecurityNumber = person.ssn!!,
                 firstNames = person.firstName,
                 lastName = person.lastName,
                 nativeLanguage = NativeLanguage(languageName = "FI", code = "fi"),
-                restrictedDetails = RestrictedDetails(enabled = person.restrictedDetailsEnabled, endDate = person.restrictedDetailsEndDate)
+                restrictedDetails = RestrictedDetails(enabled = person.restrictedDetailsEnabled, endDate = person.restrictedDetailsEndDate),
+                guardians = person.guardians.map(::asVtjPerson),
+                dependants = person.dependants.map(::asVtjPerson)
             )
         )
     }
+
+    private fun asVtjPerson(person: DevPerson): VtjPerson = VtjPerson(
+        socialSecurityNumber = person.ssn!!,
+        firstNames = person.firstName,
+        lastName = person.lastName,
+        nativeLanguage = NativeLanguage(languageName = "FI", code = "fi"),
+        restrictedDetails = RestrictedDetails(enabled = person.restrictedDetailsEnabled, endDate = person.restrictedDetailsEndDate)
+    )
 
     private fun deleteVtjPerson(ssn: String) {
         MockPersonDetailsService.deletePerson(ssn)
