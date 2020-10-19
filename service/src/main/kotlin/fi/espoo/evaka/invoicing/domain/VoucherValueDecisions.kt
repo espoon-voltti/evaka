@@ -20,9 +20,9 @@ data class VoucherValueDecision(
     override val parts: List<VoucherValueDecisionPart>,
     override val validFrom: LocalDate,
     override val validTo: LocalDate?,
+    override val headOfFamily: PersonData.JustId,
     val status: VoucherValueDecisionStatus,
     val decisionNumber: Long? = null,
-    val headOfFamily: PersonData.JustId,
     val partner: PersonData.JustId?,
     val headOfFamilyIncome: DecisionIncome?,
     val partnerIncome: DecisionIncome?,
@@ -46,6 +46,9 @@ data class VoucherValueDecision(
             this.familySize == decision.familySize &&
             this.pricing == decision.pricing
     }
+
+    override fun isAnnulled(): Boolean = this.status == VoucherValueDecisionStatus.ANNULLED
+    override fun annul() = this.copy(status = VoucherValueDecisionStatus.ANNULLED)
 
     @JsonProperty("totalCoPayment")
     fun totalCoPayment(): Int = parts.fold(0) { sum, part -> sum + part.finalCoPayment() }
@@ -109,6 +112,13 @@ data class VoucherValueDecisionDetailed(
         partnerIncome?.effect,
         partnerIncome?.total
     )
+
+    @JsonProperty("requiresManualSending")
+    fun requiresManualSending(): Boolean {
+        return this.headOfFamily.let {
+            listOf(it.ssn, it.streetAddress, it.postalCode, it.postOffice).any { item -> item.isNullOrBlank() }
+        }
+    }
 
     @JsonProperty("isRetroactive")
     fun isRetroactive(): Boolean {

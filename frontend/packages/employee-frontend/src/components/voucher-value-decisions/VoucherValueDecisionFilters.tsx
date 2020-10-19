@@ -45,7 +45,7 @@ export default React.memo(function VoucherValueDecisionFilters() {
       isSuccess(units) &&
       !units.data.map(({ id }) => id).includes(searchFilters.unit)
     ) {
-      setSearchFilters({ ...searchFilters, unit: undefined })
+      setSearchFilters((filters) => ({ ...filters, unit: undefined }))
     }
   }, [units])
 
@@ -54,8 +54,8 @@ export default React.memo(function VoucherValueDecisionFilters() {
       setSearchFilters(({ area, ...filters }) => ({
         ...filters,
         area: area.includes(code)
-          ? searchFilters.area.filter((v) => v !== code)
-          : [...searchFilters.area, code]
+          ? area.filter((v) => v !== code)
+          : [...area, code]
       }))
     },
     [setSearchFilters]
@@ -68,10 +68,10 @@ export default React.memo(function VoucherValueDecisionFilters() {
 
   const toggleStatus = useCallback(
     (status: VoucherValueDecisionStatus) => () => {
-      setSearchFilters({
-        ...searchFilters,
+      setSearchFilters((filters) => ({
+        ...filters,
         status
-      })
+      }))
     },
     [setSearchFilters]
   )

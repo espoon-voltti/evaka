@@ -20,11 +20,11 @@ import fi.espoo.evaka.invoicing.data.setFeeDecisionType
 import fi.espoo.evaka.invoicing.data.setFeeDecisionWaitingForManualSending
 import fi.espoo.evaka.invoicing.data.updateFeeDecisionDocumentKey
 import fi.espoo.evaka.invoicing.data.upsertFeeDecisions
-import fi.espoo.evaka.invoicing.domain.FeeDecision
 import fi.espoo.evaka.invoicing.domain.FeeDecisionDetailed
 import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus
 import fi.espoo.evaka.invoicing.domain.FeeDecisionType
 import fi.espoo.evaka.invoicing.domain.MailAddress
+import fi.espoo.evaka.invoicing.domain.updateEndDatesOrAnnulConflictingDecisions
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.NotifyFeeDecisionApproved
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -93,7 +93,7 @@ class FeeDecisionService(
                     .distinctBy { it.id }
                     .filter { !ids.contains(it.id) }
 
-                val updatedConflicts = updateEndDatesOrStatusForConflictingDecisions(decisions, conflicts)
+                val updatedConflicts = updateEndDatesOrAnnulConflictingDecisions(decisions, conflicts)
                 upsertFeeDecisions(h, objectMapper, updatedConflicts)
 
                 val (emptyDecisions, validDecisions) = decisions
@@ -225,37 +225,4 @@ class FeeDecisionService(
 
         setFeeDecisionType(h, decisionId, type)
     }
-}
-
-internal fun updateEndDatesOrStatusForConflictingDecisions(
-    newDecisions: List<FeeDecision>,
-    conflicting: List<FeeDecision>
-): List<FeeDecision> {
-    val fixedConflicts = newDecisions
-        .sortedBy { it.validFrom }
-        .fold(conflicting) { conflicts, newDecision ->
-            val updatedConflicts = conflicts
-                .filter { conflict ->
-                    conflict.headOfFamily.id == newDecision.headOfFamily.id && Period(
-                        conflict.validFrom,
-                        conflict.validTo
-                    ).overlaps(Period(newDecision.validFrom, newDecision.validTo))
-                }
-                .map { conflict ->
-                    if (newDecision.validFrom <= conflict.validFrom) {
-                        conflict.copy(status = FeeDecisionStatus.ANNULLED)
-                    } else {
-                        conflict.copy(validTo = newDecision.validFrom.minusDays(1))
-                    }
-                }
-
-            conflicts.map { conflict -> updatedConflicts.find { it.id == conflict.id } ?: conflict }
-        }
-
-    val (annulledConflicts, nonAnnulledConflicts) = fixedConflicts.partition { it.status == FeeDecisionStatus.ANNULLED }
-    val originalConflictsAnnulled = conflicting
-        .filter { conflict -> annulledConflicts.any { it.id == conflict.id } }
-        .map { it.copy(status = FeeDecisionStatus.ANNULLED) }
-
-    return nonAnnulledConflicts + originalConflictsAnnulled
 }

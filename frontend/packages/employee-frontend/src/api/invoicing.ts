@@ -55,7 +55,7 @@ interface AbsenceParams {
   month: number
 }
 
-export async function confirmDecisions(
+export async function confirmFeeDecisions(
   feeDecisionIds: string[]
 ): Promise<void> {
   return client
@@ -178,6 +178,10 @@ export async function getVoucherValueDecision(
       })
     )
     .catch(Failure)
+}
+
+export async function sendVoucherValueDecisions(ids: string[]): Promise<void> {
+  return client.post<void>('/value-decisions/send', ids).then((res) => res.data)
 }
 
 export type FeeDecisionSearchResponse = {

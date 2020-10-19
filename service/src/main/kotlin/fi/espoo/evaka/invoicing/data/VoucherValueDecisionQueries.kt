@@ -24,6 +24,7 @@ import fi.espoo.evaka.shared.db.getEnum
 import fi.espoo.evaka.shared.db.getUUID
 import fi.espoo.evaka.shared.domain.Period
 import org.jdbi.v3.core.Handle
+import org.jdbi.v3.core.kotlin.mapTo
 import org.jdbi.v3.core.statement.StatementContext
 import org.postgresql.util.PGobject
 import java.sql.ResultSet
@@ -186,6 +187,32 @@ private fun Handle.deleteParts(decisionIds: List<UUID>) {
     createUpdate("DELETE FROM voucher_value_decision_part WHERE voucher_value_decision_id = ANY(:decisionIds)")
         .bind("decisionIds", decisionIds.toTypedArray())
         .execute()
+}
+
+fun Handle.getValueDecisionsByIds(mapper: ObjectMapper, ids: List<UUID>): List<VoucherValueDecision> {
+    // language=sql
+    val sql =
+        """
+        SELECT
+            decision.*,
+            part.child,
+            part.date_of_birth,
+            part.placement_unit,
+            part.placement_type,
+            part.service_need,
+            part.base_co_payment,
+            part.sibling_discount,
+            part.co_payment,
+            part.fee_alterations
+        FROM voucher_value_decision as decision
+        LEFT JOIN voucher_value_decision_part as part ON decision.id = part.voucher_value_decision_id
+        WHERE decision.id = ANY(:ids)
+        """
+
+    return createQuery(sql)
+        .bind("ids", ids.toTypedArray())
+        .map(toVoucherValueDecision(mapper))
+        .let { it.merge() }
 }
 
 fun Handle.findValueDecisionsForHeadOfFamily(
@@ -399,9 +426,68 @@ fun Handle.getVoucherValueDecision(mapper: ObjectMapper, id: UUID): VoucherValue
         .singleOrNull()
 }
 
-fun lockValueDecisionsForHeadOfFamily(h: Handle, headOfFamily: UUID) {
-    h.createUpdate("SELECT id FROM voucher_value_decision WHERE head_of_family = :headOfFamily FOR UPDATE")
+fun Handle.approveValueDecisionDraftsForSending(ids: List<UUID>, approvedBy: UUID) {
+    // language=sql
+    val sql =
+        """
+        UPDATE voucher_value_decision SET
+            status = :status,
+            decision_number = nextval('voucher_value_decision_number_sequence'),
+            approved_by = :approvedBy,
+            approved_at = NOW()
+        WHERE id = :id
+        """.trimIndent()
+
+    val batch = prepareBatch(sql)
+    ids.forEach { id ->
+        batch
+            .bind("status", VoucherValueDecisionStatus.WAITING_FOR_SENDING)
+            .bind("approvedBy", approvedBy)
+            .bind("id", id)
+            .add()
+    }
+    batch.execute()
+}
+
+fun Handle.getVoucherValueDecisionDocumentKey(id: UUID): String? {
+    // language=sql
+    val sql = "SELECT document_key FROM voucher_value_decision WHERE id = :id"
+
+    return createQuery(sql)
+        .bind("id", id)
+        .mapTo<String>()
+        .singleOrNull()
+}
+
+fun Handle.updateVoucherValueDecisionDocumentKey(id: UUID, documentKey: String) {
+    // language=sql
+    val sql = "UPDATE voucher_value_decision SET document_key = :documentKey WHERE id = :id"
+
+    createUpdate(sql)
+        .bind("id", id)
+        .bind("documentKey", documentKey)
+        .execute()
+}
+
+fun Handle.updateVoucherValueDecisionStatus(id: UUID, status: VoucherValueDecisionStatus) {
+    // language=sql
+    val sql = "UPDATE voucher_value_decision SET status = :status WHERE id = :id"
+
+    createUpdate(sql)
+        .bind("id", id)
+        .bind("status", status)
+        .execute()
+}
+
+fun Handle.lockValueDecisionsForHeadOfFamily(headOfFamily: UUID) {
+    createUpdate("SELECT id FROM voucher_value_decision WHERE head_of_family = :headOfFamily FOR UPDATE")
         .bind("headOfFamily", headOfFamily)
+        .execute()
+}
+
+fun Handle.lockValueDecisions(ids: List<UUID>) {
+    createUpdate("SELECT id FROM voucher_value_decision WHERE id = ANY(:ids) FOR UPDATE")
+        .bind("ids", ids.toTypedArray())
         .execute()
 }
 

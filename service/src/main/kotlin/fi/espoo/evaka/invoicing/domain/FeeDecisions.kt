@@ -21,10 +21,10 @@ data class FeeDecision(
     override val parts: List<FeeDecisionPart>,
     override val validFrom: LocalDate,
     override val validTo: LocalDate?,
+    override val headOfFamily: PersonData.JustId,
     val status: FeeDecisionStatus,
     val decisionNumber: Long? = null,
     val decisionType: FeeDecisionType,
-    val headOfFamily: PersonData.JustId,
     val partner: PersonData.JustId?,
     val headOfFamilyIncome: DecisionIncome?,
     val partnerIncome: DecisionIncome?,
@@ -48,6 +48,9 @@ data class FeeDecision(
             this.familySize == decision.familySize &&
             this.pricing == decision.pricing
     }
+
+    override fun isAnnulled(): Boolean = this.status == FeeDecisionStatus.ANNULLED
+    override fun annul() = this.copy(status = FeeDecisionStatus.ANNULLED)
 
     @JsonProperty("totalFee")
     fun totalFee(): Int =

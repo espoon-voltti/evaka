@@ -162,6 +162,7 @@ enum class Audit(
     UnitView("evaka.unit.view"),
     VoucherValueDecisionRead("evaka.value-decision.read"),
     VoucherValueDecisionSearch("evaka.value-decision.search"),
+    VoucherValueDecisionSend("evaka.value-decision.send"),
     VtjBatchSchedule("evaka.vtj.batch-schedule"),
     VtjRequest("evaka.vtj.request", securityEvent = true, securityLevel = "high");
 

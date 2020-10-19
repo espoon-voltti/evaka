@@ -8,7 +8,7 @@ import Button from '~components/shared/atoms/buttons/Button'
 import { useTranslation } from '../../state/i18n'
 import { FeeDecisionDetailed } from '../../types/invoicing'
 import {
-  confirmDecisions,
+  confirmFeeDecisions,
   markDecisionSent,
   setDecisionType
 } from '../../api/invoicing'
@@ -41,7 +41,7 @@ const Actions = React.memo(function Actions({
       .catch(() => setError(true))
 
   const confirmDecision = () =>
-    confirmDecisions([decision.id])
+    confirmFeeDecisions([decision.id])
       .then(() => void setError(false))
       .catch(() => void setError(true))
 

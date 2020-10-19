@@ -59,6 +59,12 @@ class PDFService(
         return os.toByteArray()
     }
 
+    fun renderHtml(pages: List<String>): ByteArray {
+        val os = ByteArrayOutputStream()
+        renderHtmlPages(pages, os)
+        return os.toByteArray()
+    }
+
     private fun renderHtmlPages(pages: List<String>, os: OutputStream) {
         val textRenderer = ITextRenderer()
         val head = pages.first()

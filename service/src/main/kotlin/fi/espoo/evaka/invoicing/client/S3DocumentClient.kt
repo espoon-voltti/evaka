@@ -7,7 +7,6 @@ package fi.espoo.evaka.invoicing.client
 import com.amazonaws.services.s3.AmazonS3
 import com.amazonaws.services.s3.model.ObjectMetadata
 import com.amazonaws.services.s3.model.PutObjectRequest
-import com.amazonaws.util.IOUtils
 import mu.KotlinLogging
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
@@ -36,7 +35,7 @@ class S3DocumentClient(
         s3Client.putObject(request)
     }
 
-    private fun uploadPdfToS3(bucket: String, key: String, documentBytes: ByteArray) {
+    fun uploadPdfToS3(bucket: String, key: String, documentBytes: ByteArray) {
         upload(
             bucket,
             Document(key, documentBytes),
@@ -58,13 +57,20 @@ class S3DocumentClient(
         return documentKey
     }
 
+    fun getPdf(bucket: String, key: String): ByteArray {
+        val s3Object = s3Client.getObject(bucket, key)
+        return s3Object.objectContent.readBytes()
+    }
+
     fun getFeeDecisionPdf(documentKey: String): ByteArray {
         logger.debug { "Getting fee decision PDF for $documentKey." }
         val s3Object = s3Client.getObject(feeDecisionBucket, documentKey)
-        return IOUtils.toByteArray(s3Object.objectContent)
+        return s3Object.objectContent.readBytes()
     }
 
     fun getFeeDecisionDocumentUri(documentKey: String): String = "s3://$feeDecisionBucket/$documentKey"
+
+    fun getDocumentUri(bucket: String, key: String): String = "s3://$bucket/$key"
 }
 
 data class Document(val key: String, val bytes: ByteArray)

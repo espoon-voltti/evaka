@@ -245,7 +245,7 @@ private fun handleValueDecisionChanges(
             serviceVoucherUnits
         )
 
-    lockValueDecisionsForHeadOfFamily(h, headOfFamily.id)
+    h.lockValueDecisionsForHeadOfFamily(headOfFamily.id)
 
     val existingDrafts =
         h.findValueDecisionsForHeadOfFamily(objectMapper, headOfFamily.id, null, listOf(VoucherValueDecisionStatus.DRAFT))

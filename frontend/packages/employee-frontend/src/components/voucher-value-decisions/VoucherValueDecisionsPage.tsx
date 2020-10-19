@@ -3,21 +3,22 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useCallback, useContext, useEffect, useState } from 'react'
-import { Gap } from 'components/shared/layout/white-space'
-import { Container, ContentArea } from 'components/shared/layout/Container'
-import { InvoicingUiContext } from '../../state/invoicing-ui'
+import { Gap } from '~components/shared/layout/white-space'
+import { Container, ContentArea } from '~components/shared/layout/Container'
 import VoucherValueDecisions from './VoucherValueDecisions'
 import VoucherValueDecisionFilters from './VoucherValueDecisionFilters'
-import { isSuccess, Result, Success } from '../../api'
+import VoucherValueDecisionActions from './VoucherValueDecisionActions'
+import { isSuccess, Result, Success } from '~api'
 import {
   getVoucherValueDecisions,
   VoucherValueDecisionSearchParams,
   SortByVoucherValueDecisions,
   VoucherValueDecisionSearchResponse
-} from '../../api/invoicing'
+} from '~api/invoicing'
+import { InvoicingUiContext } from '~state/invoicing-ui'
+import { VoucherValueDecisionSummary } from '~types/invoicing'
+import { SearchOrder } from '~types'
 import { useRestApi } from '~utils/useRestApi'
-import { VoucherValueDecisionSummary } from '../../types/invoicing'
-import { SearchOrder } from '../../types'
 
 const pageSize = 200
 
@@ -126,6 +127,12 @@ export default React.memo(function VoucherValueDecisionsPage() {
           clearChecked={clearChecked}
         />
       </ContentArea>
+      <VoucherValueDecisionActions
+        status={searchFilters.status}
+        checkedIds={Object.keys(checked).filter((id) => !!checked[id])}
+        clearChecked={clearChecked}
+        loadDecisions={loadDecisions}
+      />
     </Container>
   )
 })

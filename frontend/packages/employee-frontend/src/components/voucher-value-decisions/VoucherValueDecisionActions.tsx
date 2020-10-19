@@ -7,8 +7,8 @@ import styled from 'styled-components'
 import AsyncButton from '~components/shared/atoms/buttons/AsyncButton'
 import { useTranslation } from '../../state/i18n'
 import StickyActionBar from '../common/StickyActionBar'
-import { confirmFeeDecisions } from '../../api/invoicing'
-import { FeeDecisionStatus } from '../../types/invoicing'
+import { sendVoucherValueDecisions } from '../../api/invoicing'
+import { VoucherValueDecisionStatus } from '../../types/invoicing'
 import { EspooColours } from '../../utils/colours'
 import { CheckedRowsInfo } from '~components/common/CheckedRowsInfo'
 
@@ -18,7 +18,7 @@ const ErrorMessage = styled.div`
 `
 
 type Props = {
-  status: FeeDecisionStatus
+  status: VoucherValueDecisionStatus
   checkedIds: string[]
   clearChecked: () => void
   loadDecisions: () => void
@@ -38,15 +38,15 @@ const Actions = React.memo(function Actions({
       {error ? <ErrorMessage>{i18n.common.error.unknown}</ErrorMessage> : null}
       {checkedIds.length > 0 ? (
         <CheckedRowsInfo>
-          {i18n.feeDecisions.buttons.checked(checkedIds.length)}
+          {i18n.valueDecisions.buttons.checked(checkedIds.length)}
         </CheckedRowsInfo>
       ) : null}
       <AsyncButton
         primary
-        text={i18n.feeDecisions.buttons.createDecision(checkedIds.length)}
+        text={i18n.valueDecisions.buttons.createDecision(checkedIds.length)}
         disabled={checkedIds.length === 0}
         onClick={() =>
-          confirmFeeDecisions(checkedIds)
+          sendVoucherValueDecisions(checkedIds)
             .then(() => setError(false))
             .catch((e) => {
               setError(true)
@@ -57,7 +57,6 @@ const Actions = React.memo(function Actions({
           clearChecked()
           loadDecisions()
         }}
-        data-qa="confirm-decisions"
       />
     </StickyActionBar>
   ) : null
