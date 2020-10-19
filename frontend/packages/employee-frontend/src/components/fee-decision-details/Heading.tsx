@@ -5,41 +5,23 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
-
 import LocalDate from '@evaka/lib-common/src/local-date'
 import { Gap } from '~components/shared/layout/white-space'
-import Title from '~components/shared/atoms/Title'
+import { H1 } from '~components/shared/Typography'
+import SimpleSelect from '~components/shared/atoms/form/SimpleSelect'
 import LabelValueList from '~components/common/LabelValueList'
-import { useTranslation } from '../../state/i18n'
-import { formatDate } from '../../utils/date'
+import WarningLabel from '~components/common/WarningLabel'
+import { getFeeDecisionPdfUrl } from '~api/invoicing'
+import { useTranslation } from '~state/i18n'
 import {
   FeeDecisionPartDetailed,
   FeeDecisionStatus,
   FeeDecisionType,
   PersonDetailed
-} from '../../types/invoicing'
-import { getFeeDecisionPdfUrl } from '../../api/invoicing'
-import WarningLabel from '~components/common/WarningLabel'
+} from '~types/invoicing'
 import { EspooColours } from '~utils/colours'
+import { formatDate } from '~utils/date'
 import { formatName } from '~utils'
-import SimpleSelect from '~components/shared/atoms/form/SimpleSelect'
-
-export const TitleRow = styled.div`
-  display: flex;
-  margin-bottom: 1.5rem;
-  justify-content: space-between;
-`
-
-export const InfoMarkers = styled.span``
-
-const DisabledLink = styled.span`
-  color: ${EspooColours.grey};
-`
-
-const Cursive = styled.span`
-  font-style: italic;
-  margin-left: 1rem;
-`
 
 interface TypeSelectProps {
   selected: string
@@ -93,7 +75,7 @@ function displayDecisionNumber(number: number) {
   return number.toString().padStart(12, '0')
 }
 
-const Heading = React.memo(function Heading({
+export default React.memo(function Heading({
   id,
   status,
   headOfFamily,
@@ -197,17 +179,32 @@ const Heading = React.memo(function Heading({
   return (
     <>
       <TitleRow>
-        <Title size={1}>{i18n.feeDecision.title[status]}</Title>
+        <H1>{i18n.feeDecision.title[status]}</H1>
         <InfoMarkers>
           {headOfFamily.restrictedDetailsEnabled && (
             <WarningLabel text={i18n.childInformation.restrictedDetails} />
           )}
         </InfoMarkers>
       </TitleRow>
-      <LabelValueList spacing="small" contents={contents()}></LabelValueList>
+      <LabelValueList spacing="small" contents={contents()} />
       <Gap size="L" />
     </>
   )
 })
 
-export default Heading
+export const TitleRow = styled.div`
+  display: flex;
+  margin-bottom: 1.5rem;
+  justify-content: space-between;
+`
+
+export const InfoMarkers = styled.span``
+
+const DisabledLink = styled.span`
+  color: ${EspooColours.grey};
+`
+
+const Cursive = styled.span`
+  font-style: italic;
+  margin-left: 1rem;
+`

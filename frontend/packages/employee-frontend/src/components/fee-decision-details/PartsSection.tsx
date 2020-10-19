@@ -2,20 +2,21 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React from 'react'
-
-import { useTranslation } from '../../state/i18n'
-import { FeeDecisionDetailed } from '../../types/invoicing'
-import { formatCents } from '../../utils/money'
-import { formatName } from '~utils'
+import React, { Fragment } from 'react'
+import styled from 'styled-components'
 import Section from '~components/shared/layout/Section'
+import { Gap } from '~components/shared/layout/white-space'
 import { H3, H4 } from '~components/shared/Typography'
+import { useTranslation } from '~state/i18n'
+import { FeeDecisionDetailed } from '~types/invoicing'
+import { formatCents } from '~utils/money'
+import { formatName } from '~utils'
 
 interface Props {
   decision: FeeDecisionDetailed
 }
 
-function PartsSection({ decision }: Props) {
+export default React.memo(function PartsSection({ decision }: Props) {
   const { i18n } = useTranslation()
 
   return (
@@ -42,38 +43,48 @@ function PartsSection({ decision }: Props) {
           }`
 
           return (
-            <div key={child.id} className="part">
-              <H4>{formatName(child.firstName, child.lastName, i18n)}</H4>
-              <div className="part-row">
-                <div>{mainDescription}</div>
-                <div>
-                  <b>{`${formatCents(price) ?? ''} €`}</b>
-                </div>
-              </div>
+            <Part key={child.id}>
+              <H4 noMargin>
+                {formatName(child.firstName, child.lastName, i18n)}
+              </H4>
+              <Gap size="xs" />
+              <PartRow>
+                <span>{mainDescription}</span>
+                <b>{`${formatCents(price) ?? ''} €`}</b>
+              </PartRow>
+              <Gap size="xs" />
               {feeAlterations.map((feeAlteration, index) => (
-                <div key={index} className="part-row">
-                  <div>{`${i18n.feeAlteration[feeAlteration.type]} ${
-                    feeAlteration.amount
-                  }${feeAlteration.isAbsolute ? '€' : '%'}`}</div>
-                  <div>
+                <Fragment key={index}>
+                  <PartRow>
+                    <span>{`${i18n.feeAlteration[feeAlteration.type]} ${
+                      feeAlteration.amount
+                    }${feeAlteration.isAbsolute ? '€' : '%'}`}</span>
                     <b>{`${formatCents(feeAlteration.effect) ?? ''} €`}</b>
-                  </div>
-                </div>
+                  </PartRow>
+                  <Gap size="xs" />
+                </Fragment>
               ))}
-              <div className="part-row">
-                <div>
-                  <b>{i18n.feeDecision.form.summary.parts.sum}</b>
-                </div>
-                <div>
-                  <b>{formatCents(finalPrice)} €</b>
-                </div>
-              </div>
-            </div>
+              <PartRow>
+                <b>{i18n.feeDecision.form.summary.parts.sum}</b>
+                <b>{formatCents(finalPrice)} €</b>
+              </PartRow>
+            </Part>
           )
         }
       )}
     </Section>
   )
-}
+})
 
-export default PartsSection
+const Part = styled.div`
+  display: flex;
+  flex-direction: column;
+`
+
+const PartRow = styled.div`
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  margin-left: 5vw;
+  margin-right: 30px;
+`

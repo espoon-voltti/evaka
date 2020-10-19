@@ -3,34 +3,34 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
-
+import styled from 'styled-components'
 import LabelValueList from '~components/common/LabelValueList'
 import { Gap } from '~components/shared/layout/white-space'
 import Section from '~components/shared/layout/Section'
-import { H3, H4 } from '~components/shared/Typography'
-import { useTranslation } from '../../state/i18n'
-import { formatCents } from '../../utils/money'
-import { Income, IncomeType, incomeTypes } from '../../types/income'
-import { FeeDecisionDetailed } from '../../types/invoicing'
+import { H3, H5 } from '~components/shared/Typography'
+import { useTranslation } from '~state/i18n'
+import { Income, IncomeType, incomeTypes } from '~types/income'
+import { FeeDecisionDetailed } from '~types/invoicing'
+import { formatCents } from '~utils/money'
 import { formatName, formatPercent } from '~utils'
 
 interface Props {
   decision: FeeDecisionDetailed
 }
 
-function IncomeSection({ decision }: Props) {
+export default React.memo(function IncomeSection({ decision }: Props) {
   const { i18n } = useTranslation()
 
   const personIncome = (income: Income | null) => {
     if (!income || income.effect !== 'INCOME') {
       return (
-        <div>
+        <span>
           {
             i18n.feeDecision.form.summary.income.details[
               income ? income.effect : 'NOT_AVAILABLE'
             ]
           }
-        </div>
+        </span>
       )
     }
 
@@ -41,25 +41,21 @@ function IncomeSection({ decision }: Props) {
       )
 
     return (
-      <div className="income-person-list">
-        <div className="income-person-value">
+      <div>
+        <IncomeItem>
           <span>
-            <span>{i18n.feeDecision.form.summary.income.income}</span>
-            {nonZeroIncomes.length > 0 ? (
-              <span>: {nonZeroIncomes.join(', ').toLowerCase()}</span>
-            ) : null}
+            {i18n.feeDecision.form.summary.income.income}
+            {nonZeroIncomes.length > 0
+              ? `: ${nonZeroIncomes.join(', ').toLowerCase()}`
+              : null}
           </span>
-          <span className="money">
-            <b>{formatCents(income.totalIncome)} €</b>
-          </span>
-        </div>
+          <Money>{formatCents(income.totalIncome)} €</Money>
+        </IncomeItem>
         {income.totalExpenses > 0 ? (
-          <div className="income-person-value">
+          <IncomeItem>
             <span>{i18n.feeDecision.form.summary.income.expenses}</span>
-            <span className="money">
-              <b>{formatCents(income.totalExpenses)} €</b>
-            </span>
-          </div>
+            <Money>{formatCents(income.totalExpenses)} €</Money>
+          </IncomeItem>
         ) : null}
       </div>
     )
@@ -122,23 +118,39 @@ function IncomeSection({ decision }: Props) {
       {decision.totalIncome && decision.totalIncome > 0 ? (
         <>
           <Gap size="s" />
-          <div
-            className="total-price slim"
-            data-qa="decision-summary-total-income"
-          >
-            <div>
-              <H4 noMargin>
-                <b>{i18n.feeDecision.form.summary.income.total}</b>
-              </H4>
-            </div>
-            <div>
-              <b>{formatCents(decision.totalIncome)} €</b>
-            </div>
-          </div>
+          <IncomeTotal data-qa="decision-summary-total-income">
+            <IncomeTotalTitle noMargin>
+              {i18n.feeDecision.form.summary.income.total}
+            </IncomeTotalTitle>
+            <Money>{formatCents(decision.totalIncome)} €</Money>
+          </IncomeTotal>
         </>
       ) : null}
     </Section>
   )
-}
+})
 
-export default IncomeSection
+const IncomeItem = styled.div`
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  justify-content: space-between;
+  margin-right: 30px;
+`
+
+const Money = styled.b`
+  white-space: nowrap;
+`
+
+const IncomeTotal = styled.div`
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  background: ghostwhite;
+  padding: 16px 30px;
+`
+
+const IncomeTotalTitle = styled(H5)`
+  font-weight: 600;
+`

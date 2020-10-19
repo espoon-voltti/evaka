@@ -3,24 +3,22 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
-
-import { faEuroSign } from 'icon-set'
+import styled from 'styled-components'
+import { faEuroSign } from '~icon-set'
 import { Gap } from '~components/shared/layout/white-space'
 import CollapsibleSection from '~components/shared/molecules/CollapsibleSection'
-import Title from '~components/shared/atoms/Title'
+import { H4 } from '~components/shared/Typography'
 import IncomeSection from './IncomeSection'
 import PartsSection from './PartsSection'
-import { useTranslation } from '../../state/i18n'
-import { FeeDecisionDetailed } from '../../types/invoicing'
-import { formatCents } from '../../utils/money'
-
-import './Summary.scss'
+import { useTranslation } from '~state/i18n'
+import { FeeDecisionDetailed } from '~types/invoicing'
+import { formatCents } from '~utils/money'
 
 interface Props {
   decision: FeeDecisionDetailed
 }
 
-const Summary = React.memo(function Summary({ decision }: Props) {
+export default React.memo(function Summary({ decision }: Props) {
   const { i18n } = useTranslation()
 
   return (
@@ -34,18 +32,25 @@ const Summary = React.memo(function Summary({ decision }: Props) {
       <Gap size="m" />
       <PartsSection decision={decision} />
       <Gap size="m" />
-      <div className="total-price" data-qa="decision-summary-total-price">
-        <div>
-          <Title size={3}>
-            <b>{i18n.feeDecision.form.summary.totalPrice}</b>
-          </Title>
-        </div>
-        <div>
-          <b>{formatCents(decision.totalFee)} €</b>
-        </div>
-      </div>
+      <Total data-qa="decision-summary-total-price">
+        <TotalTitle noMargin>
+          {i18n.feeDecision.form.summary.totalPrice}
+        </TotalTitle>
+        <b>{formatCents(decision.totalFee)} €</b>
+      </Total>
     </CollapsibleSection>
   )
 })
 
-export default Summary
+const Total = styled.div`
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  background: ghostwhite;
+  padding: 30px;
+`
+
+const TotalTitle = styled(H4)`
+  font-weight: 600;
+`

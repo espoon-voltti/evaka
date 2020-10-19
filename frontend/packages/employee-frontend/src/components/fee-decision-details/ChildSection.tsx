@@ -5,12 +5,11 @@
 import { faUserFriends } from 'icon-set'
 import React from 'react'
 import { Link } from 'react-router-dom'
-
 import CollapsibleSection from '~components/shared/molecules/CollapsibleSection'
 import LabelValueList from '~components/common/LabelValueList'
+import { useTranslation } from '~state/i18n'
+import { PersonDetailed, Placement, UnitDetailed } from '~types/invoicing'
 import { formatName } from '~utils'
-import { useTranslation } from '../../state/i18n'
-import { PersonDetailed, Placement, UnitDetailed } from '../../types/invoicing'
 
 interface Props {
   child: PersonDetailed
@@ -24,10 +23,6 @@ const ChildSection = React.memo(function ChildSection({
   placementUnit
 }: Props) {
   const { i18n } = useTranslation()
-
-  if (!child || !placement) {
-    return null
-  }
 
   return (
     <CollapsibleSection
