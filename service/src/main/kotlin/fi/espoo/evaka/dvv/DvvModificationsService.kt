@@ -6,8 +6,10 @@ package fi.espoo.evaka.dvv
 import fi.espoo.evaka.identity.ExternalIdentifier
 import fi.espoo.evaka.pis.addSSNToPerson
 import fi.espoo.evaka.pis.getPersonBySSN
+import fi.espoo.evaka.pis.service.FridgeFamilyService
 import fi.espoo.evaka.pis.service.PersonService
 import fi.espoo.evaka.pis.updatePersonFromVtj
+import fi.espoo.evaka.shared.async.VTJRefresh
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.db.transaction
@@ -21,7 +23,8 @@ private val logger = KotlinLogging.logger {}
 class DvvModificationsService(
     private val jdbi: Jdbi,
     private val dvvModificationsServiceClient: DvvModificationsServiceClient,
-    private val personService: PersonService
+    private val personService: PersonService,
+    private val fridgeFamilyService: FridgeFamilyService
 ) {
 
     fun updatePersonsFromDvv(ssns: List<String>) {
@@ -33,8 +36,8 @@ class DvvModificationsService(
                         is RestrictedInfoDvvInfoGroup -> handleRestrictedInfo(personDvvModifications.ssn, infoGroup)
                         is SsnDvvInfoGroup -> handleSsnDvvInfoGroup(personDvvModifications.ssn, infoGroup)
                         is AddressDvvInfoGroup -> handleAddressDvvInfoGroup(personDvvModifications.ssn, infoGroup)
-                        is CustodianLimitedDvvInfoGroup -> handleCustodianLimitedDvvInfoGroup(infoGroup)
-                        is CaretakerLimitedDvvInfoGroup -> handleCaretakerLimitedDvvInfoGroup(personDvvModifications.ssn, infoGroup)
+                        is CustodianLimitedDvvInfoGroup -> handleCustodianLimitedDvvInfoGroup(personDvvModifications.ssn, infoGroup)
+                        is CaretakerLimitedDvvInfoGroup -> handleCaretakerLimitedDvvInfoGroup(infoGroup)
                         // is PersonNameDvvInfoGroup -> handlePersonNameDvvInfoGroup(personDvvModifications.ssn, infoGroup)
                         // is PersonNameChangeDvvInfoGroup -> handlePersonNameChangeDvvInfoGroup(personDvvModifications.ssn, infoGroup)
                         else -> logger.info("Unsupported DVV modification: ${infoGroup.type}")
@@ -107,24 +110,22 @@ class DvvModificationsService(
         }
     }
 
-    private fun handleCustodianLimitedDvvInfoGroup(custodianLimitedDvvInfoGroup: CustodianLimitedDvvInfoGroup) {
+    private fun handleCustodianLimitedDvvInfoGroup(ssn: String, custodianLimitedDvvInfoGroup: CustodianLimitedDvvInfoGroup) {
         if (custodianLimitedDvvInfoGroup.changeAttribute == "LISATTY") {
             val user = AuthenticatedUser.anonymous
-            val custodianSsn = ExternalIdentifier.SSN.getInstance(custodianLimitedDvvInfoGroup.custodian.ssn)
-            personService.getOrCreatePerson(user, custodianSsn)?.let {
-                logger.debug("Dvv modification for ${it.id}: is a new custodian")
-                personService.getGuardians(user, it.id)
+            personService.getOrCreatePerson(user, ExternalIdentifier.SSN.getInstance(ssn))?.let {
+                logger.debug("Dvv modification for ${it.id}: has a new custodian, refreshing all info from DVV")
+                fridgeFamilyService.doVTJRefresh(VTJRefresh(it.id, user.id))
             }
         }
     }
 
-    private fun handleCaretakerLimitedDvvInfoGroup(ssn: String, caretakerLimitedDvvInfoGroup: CaretakerLimitedDvvInfoGroup) {
+    private fun handleCaretakerLimitedDvvInfoGroup(caretakerLimitedDvvInfoGroup: CaretakerLimitedDvvInfoGroup) {
         if (caretakerLimitedDvvInfoGroup.changeAttribute == "LISATTY") {
             val user = AuthenticatedUser.anonymous
-            val custodianSsn = ExternalIdentifier.SSN.getInstance(ssn)
-            personService.getOrCreatePerson(user, custodianSsn)?.let {
-                logger.debug("Dvv modification for ${it.id}: is a new custodian")
-                personService.getGuardians(user, it.id)
+            personService.getOrCreatePerson(user, ExternalIdentifier.SSN.getInstance(caretakerLimitedDvvInfoGroup.caretaker.ssn))?.let {
+                logger.debug("Dvv modification for ${it.id}: a new caretaker added, refreshing all info from DVV")
+                fridgeFamilyService.doVTJRefresh(VTJRefresh(it.id, user.id))
             }
         }
     }

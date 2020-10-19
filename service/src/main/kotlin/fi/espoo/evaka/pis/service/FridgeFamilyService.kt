@@ -25,62 +25,56 @@ class FridgeFamilyService(
     private val jdbi: Jdbi
 ) {
 
-    // fun doVTJRefresh_OLD(msg: VTJRefresh) = jdbi.transaction { h ->
+    fun doVTJRefresh(msg: VTJRefresh) = jdbi.transaction { h ->
+        logger.info("Refreshing ${msg.personId} from VTJ")
+        val head = personService.getUpToDatePersonWithChildren(
+            user = AuthenticatedUser(msg.requestingUserId, setOf()),
+            id = msg.personId
+        )
+        if (head != null) {
+            logger.info("Person to refresh has ${head.children.size} children")
 
-    fun doVTJRefresh(msg: VTJRefresh) {
-        val test = 1
-        println("$test")
-        jdbi.transaction { h ->
-            logger.info("Refreshing ${msg.personId} from VTJ")
-            val head = personService.getUpToDatePersonWithChildren(
-                user = AuthenticatedUser(msg.requestingUserId, setOf()),
-                id = msg.personId
-            )
-            if (head != null) {
-                logger.info("Person to refresh has ${head.children.size} children")
-
-                val partner = getPartnerId(h, msg.personId)
-                    ?.also { logger.info("Person has fridge partner $it") }
-                    ?.let { partnerId ->
-                        personService.getUpToDatePersonWithChildren(
-                            user = AuthenticatedUser(msg.requestingUserId, setOf()),
-                            id = partnerId
-                        )
-                    }
-                    ?.takeIf { livesInSameAddress(it.addresses, head.addresses) }
-                if (partner != null) logger.info("Partner lives in the same address and has ${partner.children.size} children")
-
-                val children = head.children + (partner?.children ?: emptyList())
-
-                val currentFridgeChildren = getCurrentFridgeChildren(h, msg.personId)
-                logger.info("Currently person has ${currentFridgeChildren.size} fridge children in evaka")
-
-                val newChildrenInSameAddress = children
-                    .asSequence()
-                    .distinct()
-                    .filter { child -> !child.socialSecurityNumber.isNullOrBlank() }
-                    .filter { child -> child.dateOfBirth.isAfter(LocalDate.now().minusYears(18)) }
-                    .filter { livesInSameAddress(it.addresses, head.addresses) }
-                    .filter { !currentFridgeChildren.contains(it.id) }
-                    .toList()
-                logger.info("New fridge children to add: ${newChildrenInSameAddress.size}")
-
-                newChildrenInSameAddress.forEach { child ->
-                    try {
-                        parentshipService.createParentship(
-                            h,
-                            childId = child.id,
-                            headOfChildId = msg.personId,
-                            startDate = LocalDate.now(),
-                            endDate = child.dateOfBirth.plusYears(18).minusDays(1)
-                        )
-                        logger.info("Child ${child.id} added")
-                    } catch (e: Exception) {
-                        logger.info("Ignored exception", e)
-                    }
+            val partner = getPartnerId(h, msg.personId)
+                ?.also { logger.info("Person has fridge partner $it") }
+                ?.let { partnerId ->
+                    personService.getUpToDatePersonWithChildren(
+                        user = AuthenticatedUser(msg.requestingUserId, setOf()),
+                        id = partnerId
+                    )
                 }
-                logger.info("Completed refreshing person ${msg.personId}")
+                ?.takeIf { livesInSameAddress(it.addresses, head.addresses) }
+            if (partner != null) logger.info("Partner lives in the same address and has ${partner.children.size} children")
+
+            val children = head.children + (partner?.children ?: emptyList())
+
+            val currentFridgeChildren = getCurrentFridgeChildren(h, msg.personId)
+            logger.info("Currently person has ${currentFridgeChildren.size} fridge children in evaka")
+
+            val newChildrenInSameAddress = children
+                .asSequence()
+                .distinct()
+                .filter { child -> !child.socialSecurityNumber.isNullOrBlank() }
+                .filter { child -> child.dateOfBirth.isAfter(LocalDate.now().minusYears(18)) }
+                .filter { livesInSameAddress(it.addresses, head.addresses) }
+                .filter { !currentFridgeChildren.contains(it.id) }
+                .toList()
+            logger.info("New fridge children to add: ${newChildrenInSameAddress.size}")
+
+            newChildrenInSameAddress.forEach { child ->
+                try {
+                    parentshipService.createParentship(
+                        h,
+                        childId = child.id,
+                        headOfChildId = msg.personId,
+                        startDate = LocalDate.now(),
+                        endDate = child.dateOfBirth.plusYears(18).minusDays(1)
+                    )
+                    logger.info("Child ${child.id} added")
+                } catch (e: Exception) {
+                    logger.info("Ignored exception", e)
+                }
             }
+            logger.info("Completed refreshing person ${msg.personId}")
         }
     }
 
