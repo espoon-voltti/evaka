@@ -5,10 +5,12 @@
 package fi.espoo.evaka.koski
 
 import fi.espoo.evaka.daycare.domain.ProviderType
+import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.derivePreschoolTerm
 import fi.espoo.evaka.shared.Timeline
 import fi.espoo.evaka.shared.domain.ClosedPeriod
 import org.jdbi.v3.core.mapper.Nested
+import org.jdbi.v3.json.Json
 import java.time.LocalDate
 import java.util.UUID
 
@@ -98,6 +100,8 @@ data class KoskiVoidedDataRaw(
     )
 }
 
+data class KoskiPreparatoryAbsence(val date: LocalDate, val type: AbsenceType)
+
 data class KoskiActiveDataRaw(
     @Nested("")
     val child: KoskiChildRaw,
@@ -107,6 +111,9 @@ data class KoskiActiveDataRaw(
     val approverName: String,
     val personOid: String?,
     val placementRanges: List<ClosedPeriod> = emptyList(),
+    val holidays: List<LocalDate> = emptyList(),
+    @Json
+    val preparatoryAbsences: List<KoskiPreparatoryAbsence> = emptyList(),
     val developmentalDisability1: List<ClosedPeriod> = emptyList(),
     val developmentalDisability2: List<ClosedPeriod> = emptyList(),
     val extendedCompulsoryEducation: ClosedPeriod? = null,

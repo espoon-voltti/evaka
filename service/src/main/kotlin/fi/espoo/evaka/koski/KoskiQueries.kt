@@ -104,13 +104,19 @@ SELECT
     um.name AS approver_name,
     pr.social_security_number ssn,
     pr.first_name,
-    pr.last_name
+    pr.last_name,
+    holidays
 FROM koski_study_right ksr
 JOIN koski_active_study_right(:today) kasr
 ON (kasr.child_id, kasr.unit_id, kasr.type) = (ksr.child_id, ksr.unit_id, ksr.type)
 JOIN daycare d ON ksr.unit_id = d.id
 JOIN unit_manager um ON d.unit_manager_id = um.id
 JOIN person pr ON ksr.child_id = pr.id
+LEFT JOIN LATERAL (
+    SELECT array_agg(date ORDER BY date) AS holidays
+    FROM holiday h
+    WHERE date <@ kasr.full_range
+) h ON ksr.type = 'PREPARATORY'
 WHERE ksr.id = :id
         """
             ).bind("id", id).bind("today", today)
