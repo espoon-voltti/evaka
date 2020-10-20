@@ -309,6 +309,7 @@ export const fi = {
       title: 'Hakutoive',
       preferredUnits: 'Hakutoiveet',
       missingPreferredUnits: 'Valitse vähintään yksi hakutoive',
+      unitMismatch: 'Hakutoiveet eivät vastaa haettavia yksiköitä',
       siblingBasisLabel: 'Sisarusperuste',
       siblingBasisValue: 'Haen paikkaa sisarusperusteella',
       siblingName: 'Sisaruksen nimi',
