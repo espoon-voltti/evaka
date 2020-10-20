@@ -54,7 +54,6 @@ services:
       NODE_ENV: local
       GATEWAY_ROLE: internal
       EVAKA_SERVICE_URL: ${EVAKA_SERVICE_URL}
-      GOOGLE_API_KEY: AIzaSyC6obUEPu6TBU47O500tZg99JC_yW8wCJA
       COOKIE_SECRET: cookie_secret
       REDIS_HOST: ${EVAKA_REDIS_HOST}
       REDIS_PORT: ${EVAKA_REDIS_PORT}
