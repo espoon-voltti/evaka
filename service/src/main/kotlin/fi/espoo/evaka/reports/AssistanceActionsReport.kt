@@ -76,7 +76,7 @@ fun getAssistanceActionsReportRows(jdbc: NamedParameterJdbcTemplate, date: Local
             unitName = rs.getString("unit_name"),
             groupId = rs.getUUID("group_id"),
             groupName = rs.getString("group_name"),
-            unitType = (rs.getArray("unit_type").array as? Array<String>)?.toSet()?.let(::getPrimaryUnitType),
+            unitType = (rs.getArray("unit_type").array as Array<out Any>).map { it.toString() }.toSet().let(::getPrimaryUnitType),
             unitProviderType = rs.getString("unit_provider_type"),
             assistanceServiceChild = rs.getInt("assistance_service_child"),
             assistanceServiceUnit = rs.getInt("assistance_service_unit"),

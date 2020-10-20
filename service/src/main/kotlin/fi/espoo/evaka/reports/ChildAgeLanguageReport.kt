@@ -94,7 +94,7 @@ fun getChildAgeLanguageRows(jdbc: NamedParameterJdbcTemplate, date: LocalDate): 
             careAreaName = rs.getString("care_area_name"),
             unitId = rs.getUUID("unit_id"),
             unitName = rs.getString("unit_name"),
-            unitType = (rs.getArray("unit_type").array as? Array<String>)?.toSet()?.let(::getPrimaryUnitType),
+            unitType = (rs.getArray("unit_type").array as Array<out Any>).map { it.toString() }.toSet().let(::getPrimaryUnitType),
             unitProviderType = rs.getString("unit_provider_type"),
 
             fi_0y = rs.getInt("fi_0y"),
