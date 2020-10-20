@@ -20,11 +20,18 @@ map $content_type $content_type_not_ok {
 # the latest resources (that can be cached, with their hashed names).
 map $sent_http_content_type $expires {
   default                    off;
-  text/html                  0;
+  text/html                  -1;
   text/css                   max;
   application/javascript     max;
   application/woff2          max;
   ~image/                    max;
+}
+
+# Extra Cache-Control header values based on response content type.
+# Enhances expires directive's functionality with "no-store" for "text/html".
+map $sent_http_content_type $cache_control {
+  default   '';
+  text/html 'no-store';
 }
 
 # Map nginx's request_time which is presented in seconds with a millisecond precision ("10.3 format")
@@ -126,6 +133,8 @@ server {
 
   # Sets Expires and Cache-Control headers
   expires       $expires;
+  # Add additional Cache-Control headers
+  add_header    Cache-Control $cache_control;
   # Gzipping to minimize network traffic
   gzip          on;
   gzip_vary     on;
