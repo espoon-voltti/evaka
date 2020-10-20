@@ -105,10 +105,9 @@ export const evakaServiceUrl = required(
     ifNodeEnv(['local', 'test'], 'http://localhost:8888')
   )
 )
-export const googleApiKey = choose(
-  process.env.GOOGLE_API_KEY,
-  ifNodeEnv(['local', 'test'], 'AIzaSyC6obUEPu6TBU47O500tZg99JC_yW8wCJA')
-)
+// Google API requires an API key even in local development and we cannot restrict its usage to local environments
+// so none is provided by default.
+export const googleApiKey = process.env.GOOGLE_API_KEY
 export const cookieSecret = required(
   choose(
     process.env.COOKIE_SECRET,

@@ -34,6 +34,10 @@ interface GeocodeData {
 }
 
 export async function autocomplete(address: string) {
+  if (!googleApiKey) {
+    throw new Error('GOOGLE_API_KEY must be configured to use this endpoint')
+  }
+
   return axios
     .get(`${GOOGLE_MAPS_API_URL}/place/autocomplete/json`, {
       params: {
@@ -65,6 +69,10 @@ export async function autocomplete(address: string) {
 }
 
 export async function geocode(id: string) {
+  if (!googleApiKey) {
+    throw new Error('GOOGLE_API_KEY must be configured to use this endpoint')
+  }
+
   return axios
     .get(`${GOOGLE_MAPS_API_URL}/geocode/json`, {
       params: {

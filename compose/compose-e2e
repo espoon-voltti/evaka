@@ -4,6 +4,15 @@
 #
 # SPDX-License-Identifier: LGPL-2.1-or-later
 
+GOOGLE_MAPS_ENV_FILE=.gmaps.env
+GOOGLE_MAPS_ENV_FILE_DEFAULT=.default.gmaps.env
+
+# Only use the default configuration if user hasn't created their own
+if [ ! -f "$GOOGLE_MAPS_ENV_FILE" ]; then
+    >&2 echo "INFO: No ${GOOGLE_MAPS_ENV_FILE} exists, replacing with default ${GOOGLE_MAPS_ENV_FILE_DEFAULT}"
+    cp -a "$GOOGLE_MAPS_ENV_FILE_DEFAULT" "$GOOGLE_MAPS_ENV_FILE"
+fi
+
 if [ "$1" = "up" ]; then
     S3_DIR=s3-mount/
     mkdir -p "$S3_DIR"
