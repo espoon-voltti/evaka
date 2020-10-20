@@ -7,7 +7,7 @@ package fi.espoo.evaka.reports
 fun getPrimaryUnitType(careTypes: Set<String>): UnitType? {
     if (careTypes.contains("FAMILY")) return UnitType.FAMILY
     if (careTypes.contains("GROUP_FAMILY")) return UnitType.GROUP_FAMILY
-    if (careTypes.contains("CENTRE")) return UnitType.DAYCARE
+    if (careTypes.contains("CENTRE") || careTypes.contains("PRESCHOOL")) return UnitType.DAYCARE
     if (careTypes.contains("CLUB")) return UnitType.CLUB
     return null
 }

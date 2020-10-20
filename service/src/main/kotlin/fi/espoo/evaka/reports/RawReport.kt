@@ -170,7 +170,7 @@ fun getRawRows(jdbc: NamedParameterJdbcTemplate, from: LocalDate, to: LocalDate)
             unitId = rs.getUUID("unit_id"),
             unitName = rs.getString("unit_name"),
             careArea = rs.getString("care_area"),
-            unitType = (rs.getArray("unit_type").array as? Array<String>)?.toSet()?.let(::getPrimaryUnitType),
+            unitType = (rs.getArray("unit_type").array as Array<out Any>).map { it.toString() }.toSet().let(::getPrimaryUnitType),
             unitProviderType = rs.getString("unit_provider_type"),
             daycareGroupId = rs.getNullableUUID("daycare_group_id"),
             groupName = rs.getString("group_name"),

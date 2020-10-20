@@ -68,7 +68,7 @@ fun getServiceNeedRows(jdbc: NamedParameterJdbcTemplate, date: LocalDate): List<
         ServiceNeedReportRow(
             careAreaName = rs.getString("care_area_name"),
             unitName = rs.getString("unit_name"),
-            unitType = (rs.getArray("unit_type").array as? Array<String>)?.toSet()?.let(::getPrimaryUnitType),
+            unitType = (rs.getArray("unit_type").array as Array<out Any>).map { it.toString() }.toSet().let(::getPrimaryUnitType),
             unitProviderType = rs.getString("unit_provider_type"),
             age = rs.getInt("age"),
             fullDay = rs.getInt("full_day"),
