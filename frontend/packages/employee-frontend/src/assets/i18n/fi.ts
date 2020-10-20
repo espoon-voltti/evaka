@@ -1689,7 +1689,9 @@ export const fi = {
       address: 'Osoite',
       headOfChild: 'Päämies',
       guardian1: 'Huoltaja',
-      guardian2: 'Toinen huoltaja'
+      guardian2: 'Toinen huoltaja',
+      phone: 'Puhelinnumero',
+      email: 'Sähköpostiosoite'
     },
     endedPlacements: {
       title: 'Varhaiskasvatuksessa lopettavat lapset',

@@ -18,7 +18,6 @@ import ReportDownload from '~components/reports/ReportDownload'
 import { TableScrollable } from 'components/reports/common'
 import { UUID } from '~types'
 import { getDaycare, UnitResponse } from '~api/unit'
-import _ from 'lodash'
 
 function FamilyContacts() {
   const { unitId } = useParams<{ unitId: UUID }>()
@@ -44,41 +43,29 @@ function FamilyContacts() {
         {isSuccess(rows) && (
           <>
             <ReportDownload
-              data={_.flatMap(rows.data, (row) => [
-                {
-                  name: row.lastName,
-                  ssn: row.ssn,
-                  group: row.group,
-                  address: row.streetAddress,
-                  headOfChild: row.headOfChild
-                    ? `${row.headOfChild.lastName} ${row.headOfChild.firstName}`
-                    : '',
-                  guardian1: row.guardian1
-                    ? `${row.guardian1.lastName} ${row.guardian1.firstName}`
-                    : '',
-                  guardian2: row.guardian2
-                    ? `${row.guardian2.lastName} ${row.guardian2.firstName}`
-                    : ''
-                },
-                {
-                  name: row.firstName,
-                  ssn: '',
-                  group: '',
-                  address: `${row.postalCode} ${row.postOffice}`,
-                  headOfChild: row.headOfChild?.phone ?? '',
-                  guardian1: row.guardian1?.phone ?? '',
-                  guardian2: row.guardian2?.phone ?? ''
-                },
-                {
-                  name: '',
-                  ssn: '',
-                  group: '',
-                  address: '',
-                  headOfChild: row.headOfChild?.email ?? '',
-                  guardian1: row.guardian1?.email ?? '',
-                  guardian2: row.guardian2?.email ?? ''
-                }
-              ])}
+              data={rows.data.map((row) => ({
+                name: `${row.lastName} ${row.firstName}`,
+                ssn: row.ssn,
+                group: row.group,
+                address: `${row.streetAddress}, ${row.postalCode} ${row.postOffice}`,
+                headOfChildName: row.headOfChild
+                  ? `${row.headOfChild.lastName} ${row.headOfChild.firstName}`
+                  : '',
+                headOfChildPhone: row.headOfChild?.phone ?? '',
+                headOfChildEmail: row.headOfChild?.email ?? '',
+
+                guardian1Name: row.guardian1
+                  ? `${row.guardian1.lastName} ${row.guardian1.firstName}`
+                  : '',
+                guardian1Phone: row.guardian1?.phone ?? '',
+                guardian1Email: row.guardian1?.email ?? '',
+
+                guardian2Name: row.guardian2
+                  ? `${row.guardian2.lastName} ${row.guardian2.firstName}`
+                  : '',
+                guardian2Phone: row.guardian2?.phone ?? '',
+                guardian2Email: row.guardian2?.email ?? ''
+              }))}
               headers={[
                 { label: i18n.reports.familyContacts.name, key: 'name' },
                 { label: i18n.reports.familyContacts.ssn, key: 'ssn' },
@@ -86,15 +73,39 @@ function FamilyContacts() {
                 { label: i18n.reports.familyContacts.address, key: 'address' },
                 {
                   label: i18n.reports.familyContacts.headOfChild,
-                  key: 'headOfChild'
+                  key: 'headOfChildName'
+                },
+                {
+                  label: `${i18n.reports.familyContacts.headOfChild}: ${i18n.reports.familyContacts.phone}`,
+                  key: 'headOfChildPhone'
+                },
+                {
+                  label: `${i18n.reports.familyContacts.headOfChild}: ${i18n.reports.familyContacts.email}`,
+                  key: 'headOfChildEmail'
                 },
                 {
                   label: i18n.reports.familyContacts.guardian1,
-                  key: 'guardian1'
+                  key: 'guardian1Name'
+                },
+                {
+                  label: `${i18n.reports.familyContacts.guardian1}: ${i18n.reports.familyContacts.phone}`,
+                  key: 'guardian1Phone'
+                },
+                {
+                  label: `${i18n.reports.familyContacts.guardian1}: ${i18n.reports.familyContacts.email}`,
+                  key: 'guardian1Email'
                 },
                 {
                   label: i18n.reports.familyContacts.guardian2,
-                  key: 'guardian2'
+                  key: 'guardian2Name'
+                },
+                {
+                  label: `${i18n.reports.familyContacts.guardian2}: ${i18n.reports.familyContacts.phone}`,
+                  key: 'guardian2Phone'
+                },
+                {
+                  label: `${i18n.reports.familyContacts.guardian2}: ${i18n.reports.familyContacts.email}`,
+                  key: 'guardian2Email'
                 }
               ]}
               filename="Perheiden yhteystiedot.csv"
