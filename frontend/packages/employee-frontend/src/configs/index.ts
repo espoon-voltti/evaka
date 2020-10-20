@@ -33,15 +33,6 @@ configs.staging = defaultsDeep(
   configs._default
 )
 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-configs.training = defaultsDeep(
-  {
-    sentry: {
-      enabled: true
-    }
-  },
-  configs._default
-)
-// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 configs.prod = defaultsDeep(
   {
     sentry: {

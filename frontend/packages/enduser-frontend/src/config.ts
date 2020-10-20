@@ -188,17 +188,6 @@ configs.staging = defaultsDeep(
   },
   configs._default
 )
-configs.training = defaultsDeep(
-  {
-    maps: {
-      googleApiKey: 'AIzaSyA7tW7leLFLjvrpATt4ZUkoGUbYs7TsdCM'
-    },
-    sentry: {
-      enabled: true
-    }
-  },
-  configs._default
-)
 configs.prod = defaultsDeep(
   {
     maps: {
