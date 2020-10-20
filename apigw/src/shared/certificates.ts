@@ -8,7 +8,6 @@ import path from 'path'
 const names = [
   'espooad-internal-prod.pem',
   'espooad-internal-staging.pem',
-  'espooad-internal-training.pem',
   'idp.test.espoon-voltti.fi.pem',
   'idp.tunnistus.suomi.fi.pem',
   'testi.apro.tunnistus.fi.pem'
