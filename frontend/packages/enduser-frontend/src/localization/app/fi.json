@@ -469,7 +469,7 @@
           "label": "Toivottu aloituspäivä",
           "noteOnDelay": "Hakemuksen käsittelyaika on 4 kuukautta.",
           "instructions": {
-            "text": "Hakemus on jätettävä viimeistään neljä kuukautta ennen varhaiskasvatuksen tarpeen alkamista. Voit harjoitella yhdessä lapsen kanssa varhaiskasvatuksessa oloa maksuttomasti ennen varsinaisen varhaiskasvatuksen alkamista. Merkitse tähän varsinaisen varhaiskasvatuksen alkamisajankohta ja sovi harjoittelusta suoraan myönnetyn varhaiskasvatuspaikan kanssa."
+            "text": "Toivottua aloituspäivää on mahdollista muuttaa myöhemmäksi niin kauan kuin hakemusta ei ole otettu käsittelyyn. Tämän jälkeen toivotun aloituspäivän muutokset tehdään ottamalla yhteyttä varhaiskasvatuksen palveluohjaukseen (puh. 09 816 31000)."
           },
           "placeholder": "Valitse aloituspäivä"
         },
@@ -621,6 +621,9 @@
           "description": "Suomenkielinen esiopetus alkaa <strong>13.8.2020</strong> ja ruotsinkielinen esiopetus <strong>18.8.2020</strong>.",
           "description2": "<br>Jos tarvitsette varhaiskasvatusta 1.8.2020 lähtien ennen esiopetuksen alkua, voitte hakea sitä tällä hakemuksella valitsemalla ”Haen myös esiopetukseen liittyvää varhaiskasvatusta”.",
           "label": "Elokuun aloituspäivä",
+          "instructions": {
+            "text": "Toivottua aloituspäivää on mahdollista muuttaa myöhemmäksi niin kauan kuin hakemusta ei ole otettu käsittelyyn. Tämän jälkeen toivotun aloituspäivän muutokset tehdään ottamalla yhteyttä varhaiskasvatuksen palveluohjaukseen (puh. 09 816 31000)."
+          },
           "placeholder": "Aloituspäivä pp.kk.vvvv"
         },
         "dailyTitle": "Esiopetukseen liittyvän varhaiskasvatuksen tarve",
