@@ -12,6 +12,7 @@ import com.github.kittinunf.fuel.core.extensions.jsonBody
 import com.github.kittinunf.result.Result
 import mu.KotlinLogging
 import org.springframework.core.env.Environment
+import org.springframework.stereotype.Service
 import java.time.LocalDate
 
 private val logger = KotlinLogging.logger {}
@@ -20,6 +21,7 @@ private val logger = KotlinLogging.logger {}
     Integration to DVV modifications service (muutostietopalvelu)
     See https://hiekkalaatikko.muutostietopalvelu.cloud.dvv.fi/
  */
+@Service
 class DvvModificationsServiceClient(
     private val objectMapper: ObjectMapper,
     private val fuel: FuelManager,
@@ -33,8 +35,8 @@ class DvvModificationsServiceClient(
 
     // Fetch the first modification token of the given date
     fun getFirstModificationToken(date: LocalDate): DvvModificationServiceModificationTokenResponse? {
-        logger.info { "Fetching the first modification token of $date from DVV modification service from $serviceUrl/kirjausavain/$date" }
-        val (_, _, result) = fuel.get("$serviceUrl/v1/kirjausavain/$date")
+        logger.info { "Fetching the first modification token of $date from DVV modification service from $serviceUrl/api/v1/kirjausavain/$date" }
+        val (_, _, result) = fuel.get("$serviceUrl/api/v1/kirjausavain/$date")
             .header(Headers.ACCEPT, "application/json")
             .header("MUTP-Tunnus", dvvUserId)
             .header("MUTP-Salasana", dvvPassword)
@@ -58,8 +60,8 @@ class DvvModificationsServiceClient(
     }
 
     fun getModifications(updateToken: String, ssns: List<String>): DvvModificationsResponse? {
-        logger.info { "Fetching modifications with token $updateToken from DVV modifications service from $serviceUrl/muutokset" }
-        val (x1, x2, result) = fuel.post("$serviceUrl/v1/muutokset")
+        logger.info { "Fetching modifications with token $updateToken from DVV modifications service from $serviceUrl/api/v1/muutokset" }
+        val (_, _, result) = fuel.post("$serviceUrl/api/v1/muutokset")
             .header(Headers.ACCEPT, "application/json")
             .header("MUTP-Tunnus", dvvUserId)
             .header("MUTP-Salasana", dvvPassword)
@@ -73,9 +75,6 @@ class DvvModificationsServiceClient(
                 """.trimIndent()
             )
             .responseString()
-
-        // TODO: Remove before merge
-        println("$x1 -- $x2")
 
         return when (result) {
             is Result.Success -> {

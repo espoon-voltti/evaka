@@ -29,7 +29,7 @@ class DvvModificationsServiceIntegrationTestBase : FullApplicationTest() {
     @BeforeAll
     protected fun initDvvModificationService() {
         assert(httpPort > 0)
-        val mockDvvBaseUrl = "http://localhost:$httpPort/mock-integration/dvv/api"
+        val mockDvvBaseUrl = "http://localhost:$httpPort/mock-integration/dvv"
         dvvModificationsServiceClient = DvvModificationsServiceClient(objectMapper, noCertCheckFuelManager(), env, mockDvvBaseUrl)
         dvvModificationsService = DvvModificationsService(jdbi, dvvModificationsServiceClient, personService, fridgeFamilyService)
     }

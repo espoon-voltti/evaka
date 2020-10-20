@@ -5,6 +5,7 @@
 package fi.espoo.evaka.pis.controllers
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.dvv.DvvModificationsBatchRefreshService
 import fi.espoo.evaka.identity.ExternalIdentifier
 import fi.espoo.evaka.identity.VolttiIdentifier
 import fi.espoo.evaka.identity.isValidSSN
@@ -47,6 +48,7 @@ import java.util.UUID
 class PersonController(
     private val personService: PersonService,
     private val vtjBatchRefreshService: VTJBatchRefreshService,
+    private val dvvModificationsBatchRefreshService: DvvModificationsBatchRefreshService,
     private val mergeService: MergeService,
     private val jdbi: Jdbi
 ) {
@@ -214,11 +216,18 @@ class PersonController(
             ?: ResponseEntity.notFound().build()
     }
 
-    @PostMapping("/batch-refresh")
-    fun batchRefresh(user: AuthenticatedUser): ResponseEntity<Int> {
+    @PostMapping("/batch-refresh/vtj")
+    fun batchRefreshVtj(user: AuthenticatedUser): ResponseEntity<Int> {
         Audit.VtjBatchSchedule.log()
         user.requireOneOfRoles(ADMIN)
         return ResponseEntity.ok(vtjBatchRefreshService.scheduleBatch())
+    }
+
+    @PostMapping("/batch-refresh/dvv")
+    fun batchRefreshDvv(user: AuthenticatedUser): ResponseEntity<Int> {
+        Audit.VtjBatchSchedule.log()
+        user.requireOneOfRoles(ADMIN)
+        return ResponseEntity.ok(dvvModificationsBatchRefreshService.scheduleBatch())
     }
 
     @GetMapping("/get-deceased/")
