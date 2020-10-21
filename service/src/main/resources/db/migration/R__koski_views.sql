@@ -8,7 +8,7 @@ CREATE FUNCTION koski_active_study_right(today date) RETURNS
 TABLE (
     child_id uuid, unit_id uuid, type koski_study_right_type,
     oph_unit_oid text, oph_organization_oid text, oph_organizer_oid text,
-    full_range daterange, placement_ranges daterange[], all_placements_in_past bool, preparatory_absences jsonb[],
+    full_range daterange, placement_ranges daterange[], all_placements_in_past bool, preparatory_absences jsonb,
     developmental_disability_1 daterange[], developmental_disability_2 daterange[],
     extended_compulsory_education daterange, transport_benefit daterange,
     special_assistance_decision_with_group daterange[], special_assistance_decision_without_group daterange[]
@@ -56,7 +56,7 @@ TABLE (
     JOIN daycare d ON p.unit_id = d.id
     JOIN person pr ON p.child_id = pr.id
     LEFT JOIN LATERAL (
-        SELECT array_agg(jsonb_build_object('date', a.date, 'type', a.absence_type) ORDER BY a.date) AS preparatory_absences
+        SELECT jsonb_agg(jsonb_build_object('date', a.date, 'type', a.absence_type) ORDER BY a.date) AS preparatory_absences
         FROM absence a
         WHERE a.child_id = p.child_id
         AND a.care_type = 'PRESCHOOL'
