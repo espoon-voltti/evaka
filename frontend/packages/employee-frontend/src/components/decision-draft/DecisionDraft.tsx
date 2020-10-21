@@ -44,7 +44,7 @@ import { AlertBox, InfoBox } from '~components/common/MessageBoxes'
 import { TitleContext, TitleState } from '~state/title'
 import { EspooColours } from '~utils/colours'
 import { formatName } from '~utils'
-import { FixedSpaceColumn } from '~components/shared/layout/flex-helpers'
+import { FixedSpaceRow } from '~components/shared/layout/flex-helpers'
 
 const ColumnTitle = styled.div`
   font-weight: 600;
@@ -342,14 +342,22 @@ const Decision = memo(function Decision({
                         label: i18n.decisionDraft.selectedUnit,
                         value: (
                           <UnitSelectContainer>
-                            <Select
-                              onChange={(value) =>
-                                value && 'value' in value
-                                  ? onUnitSelect(value.value)
-                                  : undefined
-                              }
-                              options={unitOptions}
-                            />
+                            {isSuccess(units) && (
+                              <Select
+                                onChange={(value) =>
+                                  value && 'value' in value
+                                    ? onUnitSelect(value.value)
+                                    : undefined
+                                }
+                                options={unitOptions}
+                                value={units.data
+                                  .filter((elem) => selectedUnit.id === elem.id)
+                                  .map((elem) => ({
+                                    label: elem.name,
+                                    value: elem.id
+                                  }))}
+                              />
+                            )}
                             <WarningContainer
                               visible={
                                 decisionDraftGroup.data.unit.id !==
@@ -507,7 +515,7 @@ const Decision = memo(function Decision({
               />
             )}
             <SendButtonContainer>
-              <FixedSpaceColumn>
+              <FixedSpaceRow>
                 <Button
                   dataQa="cancel-decisions-button"
                   onClick={RedirectToMainPage}
@@ -534,7 +542,7 @@ const Decision = memo(function Decision({
                   }}
                   text={i18n.common.save}
                 />
-              </FixedSpaceColumn>
+              </FixedSpaceRow>
             </SendButtonContainer>
           </Fragment>
         )}

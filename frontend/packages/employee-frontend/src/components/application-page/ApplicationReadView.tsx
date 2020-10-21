@@ -450,6 +450,9 @@ function ApplicationReadView({
       <ApplicationDecisionsSection
         applicationId={application.application.id}
         decisions={decisions}
+        preferredStartDate={
+          application.application.form.preferences.preferredStartDate
+        }
         reloadApplication={reloadApplication}
       />
 
