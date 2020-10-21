@@ -1274,7 +1274,7 @@ export const fi = {
       FIVE_YEARS_OLD_DAYCARE: '5-vuotiaiden varhaiskasvatus',
       PRESCHOOL_WITH_DAYCARE: 'Esiopetus ja liittyvä varhaiskasvatus',
       PREPARATORY_WITH_DAYCARE: 'Valmistava opetus ja liittyvä varhaiskasvatus',
-      DAYCARE_PART_TIME: 'Osa-aikainen varhaiskasvatus',
+      DAYCARE_PART_TIME: 'Osapäiväinen varhaiskasvatus',
       PRESCHOOL: 'Esiopetus',
       PREPARATORY: 'Valmistava opetus',
       PREPARATORY_DAYCARE: 'Valmistava opetus ja liittyvä varhaiskasvatus',
