@@ -20,7 +20,7 @@ class DvvModificationServiceConfig {
 
     @Bean
     fun dvvModificationsServiceClientFuel(env: Environment, xRoadProperties: XRoadProperties): FuelManager {
-        return when (env.getProperty("application.dvv-modifications-service.enabled", Boolean::class.java, false)) {
+        return when (env.getProperty("fi.espoo.integration.dvv-modifications-service.enabled", Boolean::class.java, false)) {
             true -> productionFuel(xRoadProperties)
             false -> noCertCheckFuelManager()
         }
