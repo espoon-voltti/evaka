@@ -12,6 +12,7 @@ import io.javalin.apibuilder.ApiBuilder.put
 import io.javalin.http.Context
 import mu.KotlinLogging
 import java.util.concurrent.locks.ReentrantLock
+import javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST
 import kotlin.concurrent.withLock
 import kotlin.random.Random
 
@@ -49,6 +50,19 @@ class MockKoskiServer(private val objectMapper: ObjectMapper, port: Int) : AutoC
     private fun oppija(ctx: Context) {
         logger.info { "Mock Koski received ${ctx.method()} body: ${ctx.body()}" }
         val oppija = objectMapper.readValue(ctx.body(), Oppija::class.java)
+
+        when (ctx.method()) {
+            "POST" -> if (oppija.opiskeluoikeudet.any { it.oid != null }) {
+                ctx.contentType("text/plain").status(SC_BAD_REQUEST).result("Trying to create a study right with OID")
+                return
+            }
+            "PUT" -> if (oppija.opiskeluoikeudet.mapNotNull { it.oid }.any { !studyRights.containsKey(it) }) {
+                ctx.contentType("text/plain").status(SC_BAD_REQUEST)
+                    .result("Can't update a study right that doesn't exist")
+                return
+            }
+        }
+
         val response = lock.withLock {
             val ssn = oppija.henkilö.hetu
             val personOid = persons.getOrPut(ssn) { "1.2.246.562.24.${personOid++}" }
@@ -63,8 +77,13 @@ class MockKoskiServer(private val objectMapper: ObjectMapper, port: Int) : AutoC
                         oppija.opiskeluoikeudet.map {
                             val studyRightOid = it.oid ?: "1.2.246.562.15.${studyRightOid++}"
                             val version = studyRights[studyRightOid]?.version?.let { v -> v + 1 } ?: 0
-                            studyRights[studyRightOid] =
-                                MockStudyRight(version, opiskeluoikeus = it.copy(oid = studyRightOid))
+
+                            if (it.tila.opiskeluoikeusjaksot.any { jakso -> jakso.tila.koodiarvo == OpiskeluoikeusjaksonTilaKoodi.VOIDED }) {
+                                studyRights.remove(studyRightOid)
+                            } else {
+                                studyRights[studyRightOid] =
+                                    MockStudyRight(version, opiskeluoikeus = it.copy(oid = studyRightOid))
+                            }
 
                             objectMapper.createObjectNode().apply {
                                 put("oid", studyRightOid)
