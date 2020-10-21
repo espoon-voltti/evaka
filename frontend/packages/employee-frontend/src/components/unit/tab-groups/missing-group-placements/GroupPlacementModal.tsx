@@ -13,12 +13,12 @@ import Section from '~components/shared/layout/Section'
 import { FixedSpaceColumn } from 'components/shared/layout/flex-helpers'
 import { isFailure, Result } from '~api'
 import { faChild } from 'icon-set'
-import { createPlacement } from '~api/unit'
+import { createPlacement, MissingGroupPlacement } from '~api/unit'
 import { UUID } from '~types'
 import Select from '~components/common/Select'
 import { DatePicker } from '~components/common/DatePicker'
 import { formatName } from '~utils'
-import { DaycareGroupPlacementDetailed, DaycareGroup } from '~types/unit'
+import { DaycareGroup } from '~types/unit'
 import { EVAKA_START } from '~constants'
 
 const Bold = styled.div`
@@ -27,7 +27,7 @@ const Bold = styled.div`
 
 interface Props {
   groups: DaycareGroup[]
-  missingPlacement: DaycareGroupPlacementDetailed
+  missingPlacement: MissingGroupPlacement
   reload: () => void
 }
 
@@ -44,10 +44,10 @@ export default React.memo(function GroupPlacementModal({
   reload
 }: Props) {
   const {
-    daycarePlacementId,
-    child,
-    startDate: minDate,
-    endDate: maxDate
+    placementId,
+    firstName,
+    lastName,
+    gap: { start: minDate, end: maxDate }
   } = missingPlacement
 
   const { i18n } = useTranslation()
@@ -104,7 +104,7 @@ export default React.memo(function GroupPlacementModal({
     if (form.groupId == null) return
 
     void createPlacement(
-      daycarePlacementId,
+      placementId,
       form.groupId,
       form.startDate,
       form.endDate
@@ -138,7 +138,7 @@ export default React.memo(function GroupPlacementModal({
       <FixedSpaceColumn>
         <Section>
           <Bold>{i18n.unit.placements.modal.child}</Bold>
-          <span>{formatName(child.firstName, child.lastName, i18n)}</span>
+          <span>{formatName(firstName, lastName, i18n)}</span>
         </Section>
         <Section>
           <Bold>{i18n.unit.placements.modal.group}</Bold>

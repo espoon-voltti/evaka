@@ -6,6 +6,7 @@ package fi.espoo.evaka.application
 
 import fi.espoo.evaka.placement.PlacementPlanConfirmationStatus
 import fi.espoo.evaka.placement.PlacementPlanRejectReason
+import fi.espoo.evaka.placement.PlacementType
 import java.time.Instant
 import java.time.LocalDate
 import java.time.OffsetDateTime
@@ -129,4 +130,18 @@ data class ApplicationNote(
     val updatedByName: String?,
     val created: Instant,
     val updated: Instant
+)
+
+data class ApplicationUnitSummary(
+    val applicationId: UUID,
+    val firstName: String,
+    val lastName: String,
+    val dateOfBirth: LocalDate,
+    val guardianFirstName: String,
+    val guardianLastName: String,
+    val guardianPhone: String?,
+    val guardianEmail: String?,
+    val requestedPlacementType: PlacementType,
+    val preferredStartDate: LocalDate,
+    val status: ApplicationStatus
 )

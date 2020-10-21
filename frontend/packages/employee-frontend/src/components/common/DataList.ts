@@ -14,7 +14,7 @@ export const DataList = styled.div<DataListProps>`
   flex-direction: column;
   margin-bottom: ${(p) => p.marginBottom || '0'};
 
-  div {
+  > div {
     display: flex;
     flex-direction: row;
     line-height: 2em;

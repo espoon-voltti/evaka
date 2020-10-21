@@ -70,6 +70,7 @@ fixture('Employee - Absences')
 
 test('User can place a child into a group and remove the child from the group', async (t) => {
   await unitPage.navigateHere(fixtures.daycareFixture.id)
+  await unitPage.openTabGroups()
   await unitPage.openGroups()
   const group = daycareGroupElement(unitPage.groups.nth(0))
 
@@ -85,6 +86,7 @@ test('User can place a child into a group and remove the child from the group', 
 
 test('User can open the absence dialog', async (t) => {
   await unitPage.navigateHere(fixtures.daycareFixture.id)
+  await unitPage.openTabGroups()
   await unitPage.openGroups()
   const group = daycareGroupElement(unitPage.groups.nth(0))
   await absencesPage.addDaycareGroupPlacement()
@@ -103,6 +105,7 @@ test('User can open the absence dialog', async (t) => {
 
 test('User can find the child in the absence dialog', async (t) => {
   await unitPage.navigateHere(fixtures.daycareFixture.id)
+  await unitPage.openTabGroups()
   await unitPage.openGroups()
   const group = daycareGroupElement(unitPage.groups.nth(0))
 
@@ -125,6 +128,7 @@ test('User can find the child in the absence dialog', async (t) => {
 
 test('User can add a sickleave to a child', async (t) => {
   await unitPage.navigateHere(fixtures.daycareFixture.id)
+  await unitPage.openTabGroups()
   await unitPage.openGroups()
   const group = daycareGroupElement(unitPage.groups.nth(0))
 
@@ -149,6 +153,7 @@ test('User can add a sickleave to a child', async (t) => {
 
 test('Adding another leave type will override the previous one', async (t) => {
   await unitPage.navigateHere(fixtures.daycareFixture.id)
+  await unitPage.openTabGroups()
   await unitPage.openGroups()
   const group = daycareGroupElement(unitPage.groups.nth(0))
 
@@ -178,6 +183,7 @@ test('Adding another leave type will override the previous one', async (t) => {
 
 test('User can clear an absence', async (t) => {
   await unitPage.navigateHere(fixtures.daycareFixture.id)
+  await unitPage.openTabGroups()
   await unitPage.openGroups()
   const group = daycareGroupElement(unitPage.groups.nth(0))
 
@@ -204,6 +210,7 @@ test('User can clear an absence', async (t) => {
 
 test('User can add a staff attendance', async (t) => {
   await unitPage.navigateHere(fixtures.daycareFixture.id)
+  await unitPage.openTabGroups()
   await unitPage.openGroups()
   const group = daycareGroupElement(unitPage.groups.nth(0))
 

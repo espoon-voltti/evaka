@@ -42,9 +42,9 @@ const NavbarEnd = styled.div`
 
 const NavbarItem = styled.div`
   padding: 1rem 1.2rem calc(1rem + 4px);
+  font-size: 15px;
 
   @media screen and (max-width: 1023px) {
-    color: tomato !important;
     box-sizing: inherit;
     color: #6e6e6e;
     line-height: 1.5;

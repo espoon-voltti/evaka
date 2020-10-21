@@ -186,7 +186,7 @@ const MemoizedCard = memo(function UnitCard({
       <CardTitle size={3}>{unitName}</CardTitle>
       <MarginBox>
         <Link
-          to={`/units/${unitId}?start=${startDate.formatIso()}`}
+          to={`/units/${unitId}/unit-info?start=${startDate.formatIso()}`}
           target="_blank"
         >
           {i18n.placementDraft.card.unitLink}

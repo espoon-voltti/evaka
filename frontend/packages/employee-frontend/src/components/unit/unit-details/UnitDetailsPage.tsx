@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useContext, useEffect, useState } from 'react'
-import UnitEditor from '~components/unit/UnitEditor'
+import UnitEditor from '~components/unit/unit-details/UnitEditor'
 import { isFailure, isLoading, isSuccess, Loading, Result, Success } from '~api'
 import { CareArea } from '~types/unit'
 import { getAreas } from '~api/daycare'

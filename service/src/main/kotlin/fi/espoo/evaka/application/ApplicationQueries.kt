@@ -15,6 +15,7 @@ import fi.espoo.evaka.application.persistence.club.ClubFormV0
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
 import fi.espoo.evaka.application.utils.exhaust
 import fi.espoo.evaka.placement.PlacementPlanConfirmationStatus
+import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.config.Roles
 import fi.espoo.evaka.shared.db.freeTextSearchQuery
@@ -27,6 +28,7 @@ import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.mapTo
 import org.jdbi.v3.core.statement.StatementContext
 import org.postgresql.util.PGobject
+import java.lang.Error
 import java.sql.ResultSet
 import java.time.LocalDate
 import java.util.UUID
@@ -530,6 +532,80 @@ fun fetchApplicationDetails(h: Handle, applicationId: UUID): ApplicationDetails?
             )
         )
     } else return null
+}
+
+fun Handle.getApplicationUnitSummaries(unitId: UUID): List<ApplicationUnitSummary> {
+    //language=sql
+    val sql =
+        """
+        SELECT
+            a.id,
+            f.document ->> 'type' AS type,
+            f.document,
+            (f.document ->> 'preferredStartDate')::date as preferred_start_date,
+            a.status,
+            c.first_name,
+            c.last_name,
+            c.date_of_birth,
+            g.first_name AS guardian_first_name,
+            g.first_name AS guardian_last_name,
+            g.phone AS guardian_phone,
+            g.email AS guardian_email
+        FROM application a
+        JOIN application_form f ON f.application_id = a.id AND f.latest IS TRUE
+        JOIN person c ON c.id = a.child_id
+        JOIN person g ON g.id = a.guardian_id
+        WHERE 
+            (f.document -> 'apply' -> 'preferredUnits' ->> 0)::uuid = :unitId AND
+            a.status = ANY ('{SENT,WAITING_PLACEMENT,WAITING_DECISION}'::application_status_type[])
+        ORDER BY c.last_name, c.first_name
+        """.trimIndent()
+
+    return this.createQuery(sql)
+        .bind("unitId", unitId)
+        .map { row ->
+            ApplicationUnitSummary(
+                applicationId = row.mapColumn("id"),
+                firstName = row.mapColumn("first_name"),
+                lastName = row.mapColumn("last_name"),
+                dateOfBirth = row.mapColumn("date_of_birth"),
+                guardianFirstName = row.mapColumn("guardian_first_name"),
+                guardianLastName = row.mapColumn("guardian_last_name"),
+                guardianPhone = row.mapColumn("guardian_phone"),
+                guardianEmail = row.mapColumn("guardian_email"),
+                requestedPlacementType = when (row.mapJsonColumn<FormWithType>("document").type) {
+                    "club" -> PlacementType.CLUB
+                    "daycare" -> {
+                        if (row.mapJsonColumn<DaycareFormV0>("document").partTime) {
+                            PlacementType.DAYCARE_PART_TIME
+                        } else {
+                            PlacementType.DAYCARE
+                        }
+                    }
+                    "preschool" -> {
+                        row.mapJsonColumn<DaycareFormV0>("document").let {
+                            if (it.careDetails.preparatory == true) {
+                                if (it.connectedDaycare == true) {
+                                    PlacementType.PREPARATORY_DAYCARE
+                                } else {
+                                    PlacementType.PREPARATORY
+                                }
+                            } else {
+                                if (it.connectedDaycare == true) {
+                                    PlacementType.PRESCHOOL_DAYCARE
+                                } else {
+                                    PlacementType.PRESCHOOL
+                                }
+                            }
+                        }
+                    }
+                    else -> throw Error("unknown form type")
+                },
+                preferredStartDate = row.mapColumn("preferred_start_date"),
+                status = row.mapColumn("status")
+            )
+        }
+        .list()
 }
 
 @JsonIgnoreProperties(ignoreUnknown = true)

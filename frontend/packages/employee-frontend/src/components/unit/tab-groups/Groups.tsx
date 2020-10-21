@@ -20,17 +20,19 @@ import {
   Unit
 } from '~types/unit'
 import { OccupancyResponse } from '~api/unit'
-import Group from '~components/unit/groups/Group'
+import Group from '~components/unit/tab-groups/groups/Group'
 import { UIContext } from '~state/ui'
-import GroupModal from '~components/unit/groups/GroupModal'
-import GroupTransferModal from '~components/unit/groups/group/GroupTransferModal'
+import GroupModal from '~components/unit/tab-groups/groups/GroupModal'
+import GroupTransferModal from '~components/unit/tab-groups/groups/group/GroupTransferModal'
 import { UnitBackupCare } from '~types/child'
-import BackupCareGroupModal from '~components/unit/placements/BackupCareGroupModal'
+import BackupCareGroupModal from '~components/unit/tab-groups/missing-group-placements/BackupCareGroupModal'
 import { UnitFilters } from '~utils/UnitFilters'
 import InlineButton from '~components/shared/atoms/buttons/InlineButton'
 import { Link } from 'react-router-dom'
 import { requireRole } from '~utils/roles'
 import { UserContext } from '~state/user'
+import { DataList } from '~components/common/DataList'
+import UnitDataFilters from '~components/unit/UnitDataFilters'
 
 function renderGroups(
   unit: Unit,
@@ -94,13 +96,14 @@ type Props = {
   canManageGroups: boolean
   canManageChildren: boolean
   filters: UnitFilters
+  setFilters: Dispatch<SetStateAction<UnitFilters>>
   groups: DaycareGroup[]
   placements: DaycarePlacement[]
   backupCares: UnitBackupCare[]
   groupCaretakers: Record<string, Stats>
   groupConfirmedOccupancies?: Record<string, OccupancyResponse>
   groupRealizedOccupancies?: Record<string, OccupancyResponse>
-  loadUnitData: () => void
+  reloadUnitData: () => void
   openGroups: Record<string, boolean>
   setOpenGroups: Dispatch<SetStateAction<Record<string, boolean>>>
 }
@@ -110,13 +113,14 @@ export default React.memo(function Groups({
   canManageGroups,
   canManageChildren,
   filters,
+  setFilters,
   groups,
   placements,
   backupCares,
   groupCaretakers,
   groupConfirmedOccupancies,
   groupRealizedOccupancies,
-  loadUnitData,
+  reloadUnitData,
   openGroups,
   setOpenGroups
 }: Props) {
@@ -185,8 +189,27 @@ export default React.memo(function Groups({
         ) : null}
       </TitleBar>
       <Gap size="s" />
+      <DataList>
+        <div>
+          <label>{i18n.unit.filters.title}</label>
+          <div>
+            <UnitDataFilters
+              canEdit={requireRole(
+                roles,
+                'ADMIN',
+                'SERVICE_WORKER',
+                'UNIT_SUPERVISOR',
+                'FINANCE_ADMIN'
+              )}
+              filters={filters}
+              setFilters={setFilters}
+            />
+          </div>
+        </div>
+      </DataList>
+      <Gap size="s" />
       {uiMode === 'create-new-daycare-group' && (
-        <GroupModal unitId={unit.id} reload={loadUnitData} />
+        <GroupModal unitId={unit.id} reload={reloadUnitData} />
       )}
       {uiMode === 'group-transfer' && transferredPlacement && (
         <>
@@ -194,13 +217,13 @@ export default React.memo(function Groups({
             <GroupTransferModal
               placement={transferredPlacement}
               groups={groups}
-              reload={loadUnitData}
+              reload={reloadUnitData}
             />
           ) : (
             <BackupCareGroupModal
               backupCare={transferredPlacement}
               groups={groups}
-              reload={loadUnitData}
+              reload={reloadUnitData}
             />
           )}
         </>
@@ -214,7 +237,7 @@ export default React.memo(function Groups({
         groupCaretakers,
         canManageGroups,
         canManageChildren,
-        loadUnitData,
+        reloadUnitData,
         (placement) => {
           setTransferredPlacement(placement)
           toggleUiMode('group-transfer')

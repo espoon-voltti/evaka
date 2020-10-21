@@ -25,6 +25,8 @@ import { UnitBackupCare } from '~types/child'
 import { AdRole, UUID } from '~types'
 import { JsonOf } from '@evaka/lib-common/src/json'
 import LocalDate from '@evaka/lib-common/src/local-date'
+import { Period, PlacementType } from '~types/placementdraft'
+import { ApplicationStatus } from '~types/application'
 
 function convertUnitJson(unit: JsonOf<Unit>): Unit {
   return {
@@ -99,6 +101,44 @@ export type Caretakers = {
   groupCaretakers: Record<UUID, Stats>
 }
 
+interface MissingGroupPlacementCommon {
+  placementId: UUID
+  placementPeriod: Period
+  childId: UUID
+  firstName: string | null
+  lastName: string | null
+  dateOfBirth: LocalDate
+  gap: Period
+}
+
+interface MissingGroupPlacementStandard extends MissingGroupPlacementCommon {
+  placementType: PlacementType
+  backup: false
+}
+
+interface MissingGroupPlacementBackupCare extends MissingGroupPlacementCommon {
+  placementType: null
+  backup: true
+}
+
+export type MissingGroupPlacement =
+  | MissingGroupPlacementStandard
+  | MissingGroupPlacementBackupCare
+
+export type ApplicationUnitSummary = {
+  applicationId: UUID
+  firstName: string
+  lastName: string
+  dateOfBirth: LocalDate
+  guardianFirstName: string
+  guardianLastName: string
+  guardianPhone: string | null
+  guardianEmail: string | null
+  requestedPlacementType: PlacementType
+  preferredStartDate: LocalDate
+  status: ApplicationStatus
+}
+
 export type UnitData = {
   groups: DaycareGroup[]
   placements: DaycarePlacement[]
@@ -106,8 +146,10 @@ export type UnitData = {
   caretakers: Caretakers
   unitOccupancies?: UnitOccupancies
   groupOccupancies?: GroupOccupancies
+  missingGroupPlacements: MissingGroupPlacement[]
   placementProposals?: DaycarePlacementPlan[]
   placementPlans?: DaycarePlacementPlan[]
+  applications?: ApplicationUnitSummary[]
 }
 
 export async function getUnitData(
@@ -125,6 +167,9 @@ export async function getUnitData(
       groups: response.data.groups.map(mapGroupJson),
       placements: response.data.placements.map(mapPlacementJson),
       backupCares: response.data.backupCares.map(mapBackupCareJson),
+      missingGroupPlacements: response.data.missingGroupPlacements.map(
+        mapMissingGroupPlacementJson
+      ),
       unitOccupancies:
         response.data.unitOccupancies &&
         mapUnitOccupancyJson(response.data.unitOccupancies),
@@ -134,7 +179,8 @@ export async function getUnitData(
       placementProposals: response.data.placementProposals?.map(
         mapPlacementPlanJson
       ),
-      placementPlans: response.data.placementPlans?.map(mapPlacementPlanJson)
+      placementPlans: response.data.placementPlans?.map(mapPlacementPlanJson),
+      applications: response.data.applications?.map(mapApplicationsJson)
     })
   } catch (e) {
     console.error(e)
@@ -178,6 +224,23 @@ function mapBackupCareJson(data: JsonOf<UnitBackupCare>): UnitBackupCare {
     period: {
       start: LocalDate.parseIso(data.period.start),
       end: LocalDate.parseIso(data.period.end)
+    }
+  }
+}
+
+function mapMissingGroupPlacementJson(
+  data: JsonOf<MissingGroupPlacement>
+): MissingGroupPlacement {
+  return {
+    ...data,
+    dateOfBirth: LocalDate.parseIso(data.dateOfBirth),
+    placementPeriod: {
+      start: LocalDate.parseIso(data.placementPeriod.start),
+      end: LocalDate.parseIso(data.placementPeriod.end)
+    },
+    gap: {
+      start: LocalDate.parseIso(data.gap.start),
+      end: LocalDate.parseIso(data.gap.end)
     }
   }
 }
@@ -228,6 +291,16 @@ function mapPlacementPlanJson(
       ...data.child,
       dateOfBirth: LocalDate.parseIso(data.child.dateOfBirth)
     }
+  }
+}
+
+function mapApplicationsJson(
+  data: JsonOf<ApplicationUnitSummary>
+): ApplicationUnitSummary {
+  return {
+    ...data,
+    dateOfBirth: LocalDate.parseIso(data.dateOfBirth),
+    preferredStartDate: LocalDate.parseIso(data.preferredStartDate)
   }
 }
 

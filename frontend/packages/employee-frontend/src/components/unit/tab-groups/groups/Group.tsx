@@ -13,7 +13,7 @@ import {
   Stats,
   Unit
 } from '~types/unit'
-import '~components/unit/groups/Group.scss'
+import '~components/unit/tab-groups/groups/Group.scss'
 import {
   Table,
   Td,
@@ -40,7 +40,6 @@ import CareTypeLabel, {
 } from '~components/common/CareTypeLabel'
 import styled from 'styled-components'
 import { EspooColours } from '~utils/colours'
-import Tooltip from '~components/common/Tooltip'
 import { capitalizeFirstLetter, formatName } from '~utils'
 import { StatusIconContainer } from '~components/common/StatusIconContainer'
 import { UnitBackupCare } from '~types/child'
@@ -55,6 +54,8 @@ import { UnitFilters } from '~utils/UnitFilters'
 import { rangesOverlap } from '~utils/date'
 import Colors from 'components/shared/Colors'
 import { FixedSpaceRow } from '~components/shared/layout/flex-helpers'
+import PlacementCircle from '~components/shared/atoms/PlacementCircle'
+import Tooltip from '~components/shared/atoms/Tooltip'
 
 interface Props {
   unit: Unit
@@ -302,11 +303,12 @@ function Group({
                   <Tr>
                     <Th>{i18n.unit.groups.name}</Th>
                     <Th>{i18n.unit.groups.birthday}</Th>
-                    <Th>{i18n.unit.groups.placementDuration}</Th>
+                    <Th>{i18n.unit.groups.placementType}</Th>
+                    <Th>{i18n.unit.groups.placementSubtype}</Th>
                     {showServiceNeed ? (
                       <Th>{i18n.unit.groups.serviceNeed}</Th>
                     ) : null}
-                    <Th>{i18n.unit.groups.placementType}</Th>
+                    <Th>{i18n.unit.groups.placementDuration}</Th>
                     {canManageChildren ? <Th /> : null}
                   </Tr>
                 </Thead>
@@ -336,18 +338,25 @@ function Group({
                             ? placement.child.dateOfBirth.format()
                             : placement.child.birthDate.format()}
                         </Td>
-                        <Td data-qa="placement-duration">
-                          {'type' in placement
-                            ? `${placement.startDate.format()} - ${placement.endDate.format()}`
-                            : `${placement.period.start.format()} - ${placement.period.end.format()}`}
+                        <Td data-qa="placement-type">
+                          {'type' in placement ? (
+                            careTypesFromPlacementType(placement.type)
+                          ) : (
+                            <CareTypeLabel type="backup-care" />
+                          )}
+                        </Td>
+                        <Td data-qa="placement-subtype">
+                          {'type' in placement ? (
+                            <PlacementCircle type={placement.type} />
+                          ) : null}
                         </Td>
                         {showServiceNeed ? (
                           <Td data-qa="service-need">
                             {missingServiceNeedDays > 0 ? (
                               <Tooltip
-                                tooltipId={`service-need-tooltip-${ind}`}
-                                tooltipText={`${i18n.unit.groups.serviceNeedMissing1} ${missingServiceNeedDays} ${i18n.unit.groups.serviceNeedMissing2}`}
-                                place={'right'}
+                                tooltip={
+                                  <span>{`${i18n.unit.groups.serviceNeedMissing1} ${missingServiceNeedDays} ${i18n.unit.groups.serviceNeedMissing2}`}</span>
+                                }
                               >
                                 <StatusIconContainer
                                   color={EspooColours.orange}
@@ -357,11 +366,11 @@ function Group({
                               </Tooltip>
                             ) : (
                               <Tooltip
-                                tooltipId={`service-need-tooltip-${ind}`}
-                                tooltipText={
-                                  i18n.unit.groups.serviceNeedChecked
+                                tooltip={
+                                  <span>
+                                    {i18n.unit.groups.serviceNeedChecked}
+                                  </span>
                                 }
-                                place={'right'}
                               >
                                 <StatusIconContainer color={EspooColours.green}>
                                   <FontAwesomeIcon icon={faCheck} inverse />
@@ -370,12 +379,10 @@ function Group({
                             )}
                           </Td>
                         ) : null}
-                        <Td data-qa="placement-type">
-                          {'type' in placement ? (
-                            careTypesFromPlacementType(placement.type)
-                          ) : (
-                            <CareTypeLabel type="backup-care" />
-                          )}
+                        <Td data-qa="placement-duration">
+                          {'type' in placement
+                            ? `${placement.startDate.format()} - ${placement.endDate.format()}`
+                            : `${placement.period.start.format()} - ${placement.period.end.format()}`}
                         </Td>
                         {canManageChildren ? (
                           <Td className="row-buttons">

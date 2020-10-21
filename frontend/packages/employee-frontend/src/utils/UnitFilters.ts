@@ -17,7 +17,7 @@ export class UnitFilters implements UnitFiltersType {
     this._period = period
     switch (period) {
       case '1 day':
-        this._endDate = startDate.addDays(1)
+        this._endDate = startDate.addDays(0)
         break
       case '3 months':
         this._endDate = startDate.addMonths(3)

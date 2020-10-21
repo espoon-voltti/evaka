@@ -14,7 +14,7 @@ import ChildInformation from '~/components/ChildInformation'
 import StateProvider from '~/state/StateProvider'
 import PersonProfile from '~components/PersonProfile'
 import ErrorMessage from '~components/common/ErrorMessage'
-import Unit from '~components/Unit'
+import UnitPage from '~components/UnitPage'
 import Header from '~components/Header'
 import Search from '~components/Search'
 import ensureAuthenticated from './components/ensureAuthenticated'
@@ -51,8 +51,8 @@ import ReportRaw from '~components/reports/Raw'
 import { RouteWithTitle } from '~components/RouteWithTitle'
 import { useTranslation } from '~state/i18n'
 import { UserContext, UserContextProvider } from '~state/user'
-import CreateUnitPage from '~components/unit/CreateUnitPage'
-import UnitDetailsPage from '~components/unit/UnitDetailsPage'
+import CreateUnitPage from '~components/unit/unit-details/CreateUnitPage'
+import UnitDetailsPage from '~components/unit/unit-details/UnitDetailsPage'
 import ApplicationPage from 'components/ApplicationPage'
 import AttendancePage from '~components/AttendancePage'
 import { hasRole } from '~utils/roles'
@@ -94,11 +94,6 @@ export default function App() {
               component={ensureAuthenticated(CreateUnitPage)}
               title={i18n.titles.createUnit}
             />
-            <RouteWithTitle
-              exact
-              path="/units/:id"
-              component={ensureAuthenticated(Unit)}
-            />
             <Route
               exact
               path="/units/:id/details"
@@ -113,6 +108,15 @@ export default function App() {
               exact
               path="/units/:id/attendance"
               component={ensureAuthenticated(AttendancePage)}
+            />
+            <RouteWithTitle
+              exact
+              path="/units/:unitId/groups/:groupId/caretakers"
+              component={ensureAuthenticated(GroupCaretakers)}
+            />
+            <RouteWithTitle
+              path="/units/:id"
+              component={ensureAuthenticated(UnitPage)}
             />
             <RouteWithTitle
               exact
@@ -177,11 +181,6 @@ export default function App() {
               exact
               path="/absences/:groupId"
               component={ensureAuthenticated(Absences)}
-            />
-            <RouteWithTitle
-              exact
-              path="/units/:unitId/groups/:groupId/caretakers"
-              component={ensureAuthenticated(GroupCaretakers)}
             />
             <RouteWithTitle
               exact

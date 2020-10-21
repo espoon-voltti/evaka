@@ -6,6 +6,8 @@ package fi.espoo.evaka.units
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.application.ApplicationStatus
+import fi.espoo.evaka.application.ApplicationUnitSummary
+import fi.espoo.evaka.application.getApplicationUnitSummaries
 import fi.espoo.evaka.backupcare.UnitBackupCare
 import fi.espoo.evaka.backupcare.getBackupCaresForDaycare
 import fi.espoo.evaka.daycare.getDaycareGroups
@@ -20,8 +22,10 @@ import fi.espoo.evaka.occupancy.OccupancyType
 import fi.espoo.evaka.occupancy.calculateOccupancyPeriods
 import fi.espoo.evaka.occupancy.calculateOccupancyPeriodsGroupLevel
 import fi.espoo.evaka.placement.DaycarePlacementWithGroups
+import fi.espoo.evaka.placement.MissingGroupPlacement
 import fi.espoo.evaka.placement.PlacementPlanDetails
 import fi.espoo.evaka.placement.getDaycarePlacements
+import fi.espoo.evaka.placement.getMissingGroupPlacements
 import fi.espoo.evaka.placement.getPlacementPlans
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -74,6 +78,7 @@ class UnitsView(
             val groups = it.getDaycareGroups(unitId, from, to)
             val placements = getDaycarePlacements(it, unitId, null, from, to).toList()
             val backupCares = it.getBackupCaresForDaycare(unitId, period)
+            val missingGroupPlacements = it.getMissingGroupPlacements(unitId)
             val caretakers = Caretakers(
                 unitCaretakers = it.getUnitStats(unitId, from, to),
                 groupCaretakers = it.getGroupStats(unitId, from, to)
@@ -83,6 +88,7 @@ class UnitsView(
                 groups = groups,
                 placements = placements,
                 backupCares = backupCares,
+                missingGroupPlacements = missingGroupPlacements,
                 caretakers = caretakers
             )
 
@@ -90,13 +96,15 @@ class UnitsView(
                 val unitOccupancies = getUnitOccupancies(it, unitId, period)
                 val groupOccupancies = getGroupOccupancies(it, unitId, period)
                 val placementProposals = getPlacementPlans(it, unitId, null, null, listOf(ApplicationStatus.WAITING_UNIT_CONFIRMATION))
-                val placementPlans = getPlacementPlans(it, unitId, from, to, listOf(ApplicationStatus.WAITING_CONFIRMATION))
+                val placementPlans = getPlacementPlans(it, unitId, null, null, listOf(ApplicationStatus.WAITING_CONFIRMATION, ApplicationStatus.WAITING_MAILING))
+                val applications = it.getApplicationUnitSummaries(unitId)
 
                 basicData.copy(
                     unitOccupancies = unitOccupancies,
                     groupOccupancies = groupOccupancies,
                     placementProposals = placementProposals,
-                    placementPlans = placementPlans
+                    placementPlans = placementPlans,
+                    applications = applications
                 )
             } else {
                 basicData
@@ -110,11 +118,13 @@ data class UnitDataResponse(
     val groups: List<DaycareGroup>,
     val placements: List<DaycarePlacementWithGroups>,
     val backupCares: List<UnitBackupCare>,
+    val missingGroupPlacements: List<MissingGroupPlacement>,
     val caretakers: Caretakers,
     val unitOccupancies: UnitOccupancies? = null,
     val groupOccupancies: GroupOccupancies? = null,
     val placementProposals: List<PlacementPlanDetails>? = null,
-    val placementPlans: List<PlacementPlanDetails>? = null
+    val placementPlans: List<PlacementPlanDetails>? = null,
+    val applications: List<ApplicationUnitSummary>? = null
 )
 
 data class Caretakers(

@@ -373,6 +373,77 @@ fun Handle.getDaycareGroupPlacements(
         .toList()
 }
 
+fun Handle.getMissingGroupPlacements(
+    unitId: UUID
+): List<MissingGroupPlacement> {
+    // language=SQL
+    val sql =
+        """
+        WITH gaps AS (
+            SELECT placement.id AS placement_id, gap * daterange(placement.start_date, placement.end_date, '[]') AS gap
+            FROM placement
+            JOIN (
+                SELECT
+                    daycare_placement_id,
+                    (CASE WHEN rank() OVER w = 1 THEN daterange(NULL, start_date, '()') END) AS gap
+                FROM daycare_group_placement
+                WINDOW w AS (PARTITION BY daycare_placement_id ORDER BY start_date)
+        
+                UNION ALL
+        
+                SELECT
+                    daycare_placement_id,
+                    nullif(daterange(end_date, lead(start_date) OVER w, '()'), 'empty') AS gap
+                FROM daycare_group_placement
+                WINDOW w AS (PARTITION BY daycare_placement_id ORDER BY start_date)
+            ) all_gaps
+            ON daycare_placement_id = placement.id
+            AND NOT isempty(gap * daterange(placement.start_date, placement.end_date, '[]'))
+        
+            UNION ALL
+        
+            SELECT placement.id, daterange(placement.start_date, placement.end_date, '[]') AS gap
+            FROM placement
+            WHERE NOT EXISTS (SELECT 1 FROM daycare_group_placement WHERE daycare_placement_id = placement.id)
+        )
+        SELECT
+            pl.id AS placement_id,
+            pl.type AS placement_type,
+            daterange(pl.start_date, pl.end_date, '[]') AS placement_period,
+            c.id AS child_id,
+            c.first_name,
+            c.last_name,
+            c.date_of_birth,
+            g.gap,
+            FALSE AS backup
+        FROM gaps g
+        JOIN placement pl ON pl.id = g.placement_id
+        JOIN person c on c.id = pl.child_id
+        WHERE pl.end_date > '2019-03-01'::date AND pl.unit_id = :unitId
+        
+        UNION ALL 
+        
+        SELECT 
+            bc.id AS placement_id,
+            NULL AS placement_type,
+            daterange(bc.start_date, bc.end_date, '[]') AS placement_period,
+            c.id AS child_id,
+            c.first_name,
+            c.last_name,
+            c.date_of_birth,
+            daterange(bc.start_date, bc.end_date, '[]') AS gap,
+            TRUE AS backup
+        FROM backup_care bc
+        JOIN person c on c.id = bc.child_id
+        WHERE bc.end_date > '2019-03-01'::date AND bc.unit_id = :unitId AND bc.group_id IS NULL
+        """.trimIndent()
+
+    return createQuery(sql)
+        .bind("unitId", unitId)
+        .mapTo<MissingGroupPlacement>()
+        .toList()
+}
+
 fun Handle.createGroupPlacement(
     placementId: UUID,
     groupId: UUID,

@@ -21,7 +21,7 @@ import {
   respondToPlacementProposal
 } from 'api/applications'
 import { UIContext } from 'state/ui'
-import PlacementProposalRow from '~components/unit/PlacementProposalRow'
+import PlacementProposalRow from '~components/unit/tab-placement-proposals/PlacementProposalRow'
 import { UUID } from '~types'
 import { InfoBox } from '~components/common/MessageBoxes'
 
@@ -136,6 +136,7 @@ export default React.memo(function PlacementProposals({
               <Th>{i18n.unit.placementProposals.birthday}</Th>
               <Th>{i18n.unit.placementProposals.placementDuration}</Th>
               <Th>{i18n.unit.placementProposals.type}</Th>
+              <Th>{i18n.unit.placementProposals.subtype}</Th>
               <Th>{i18n.unit.placementProposals.application}</Th>
               <Th>{i18n.unit.placementProposals.confirmation}</Th>
             </Tr>

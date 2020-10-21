@@ -41,10 +41,8 @@ const CareTypeLabelContainer = styled.div<CareTypeLabelContainerProps>`
     switch (props.type) {
       case 'daycare':
         return Colors.accents.green
-      case 'connected':
-        return Colors.accents.orange
       case 'preschool':
-        return Colors.accents.water
+        return Colors.blues.dark
       case 'preparatory':
         return Colors.accents.water
       case 'backup-care':
@@ -59,10 +57,8 @@ const CareTypeLabelContainer = styled.div<CareTypeLabelContainerProps>`
     switch (props.type) {
       case 'daycare':
         return Colors.greyscale.dark
-      case 'connected':
-        return Colors.greyscale.dark
       case 'preschool':
-        return Colors.greyscale.dark
+        return Colors.greyscale.white
       case 'preparatory':
         return Colors.greyscale.dark
       case 'backup-care':
@@ -97,9 +93,6 @@ export function careTypesFromPlacementType(type: PlacementType) {
       )}
       {(type === 'PREPARATORY' || type === 'PREPARATORY_DAYCARE') && (
         <CareTypeLabel type="preparatory" />
-      )}
-      {(type === 'PRESCHOOL_DAYCARE' || type === 'PREPARATORY_DAYCARE') && (
-        <CareTypeLabel type="connected" />
       )}
     </CareTypeLabelsContainer>
   )

@@ -7,7 +7,7 @@ import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 import Title from '~components/shared/atoms/Title'
 import { useTranslation } from '~state/i18n'
-import { Stats, Unit } from '~types/unit'
+import { Unit } from '~types/unit'
 import { DataList } from 'components/common/DataList'
 import { RequireRole } from '~utils/roles'
 import { Gap } from '~components/shared/layout/white-space'
@@ -19,27 +19,10 @@ const DetailsLink = styled(Link)`
 
 interface Props {
   unit: Unit
-  caretakers: Stats
 }
 
-function UnitInformation({ unit, caretakers }: Props) {
+function UnitInformation({ unit }: Props) {
   const { i18n } = useTranslation()
-
-  const renderCaretakers = () => {
-    const formatNumber = (num: number) =>
-      parseFloat(num.toFixed(2)).toLocaleString()
-
-    const min = formatNumber(caretakers.minimum)
-    const max = formatNumber(caretakers.maximum)
-
-    return min === max ? (
-      <span>
-        {min} {i18n.unit.info.caretakers.unitOfValue}
-      </span>
-    ) : (
-      <span>{`${min} - ${max} ${i18n.unit.info.caretakers.unitOfValue}`}</span>
-    )
-  }
 
   const renderDaycareManager = () => {
     const { unitManager } = unit
@@ -94,12 +77,6 @@ function UnitInformation({ unit, caretakers }: Props) {
         <div>
           <label>{i18n.unit.info.phone}</label>
           <span data-qa={'unit-phone'}>{unit.phone}</span>
-        </div>
-        <div>
-          <label>{i18n.unit.info.caretakers.titleLabel}</label>
-          <span data-qa={'unit-total-caretaker-count'}>
-            {renderCaretakers()}
-          </span>
         </div>
       </DataList>
 
