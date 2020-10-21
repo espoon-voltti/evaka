@@ -35,6 +35,7 @@ FROM koski_voided_study_right(:today) kvsr
 JOIN koski_study_right ksr
 ON (kvsr.child_id, kvsr.unit_id, kvsr.type) = (ksr.child_id, ksr.unit_id, ksr.type)
 WHERE to_jsonb(kvsr) IS DISTINCT FROM ksr.input_data
+AND ksr.void_date IS NULL
 AND (:personIds = '{}' OR kvsr.child_id = ANY(:personIds))
 AND (:daycareIds = '{}' OR kvsr.unit_id = ANY(:daycareIds))
 """
