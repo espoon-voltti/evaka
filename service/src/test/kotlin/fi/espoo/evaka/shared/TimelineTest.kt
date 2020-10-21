@@ -16,8 +16,6 @@ class TimelineTest {
     fun `an empty timeline contains nothing`() {
         val timeline = Timeline.of()
         assertFalse(timeline.contains(ClosedPeriod(LocalDate.of(2019, 1, 1), LocalDate.of(2020, 1, 1))))
-        assertFalse(timeline.includes(LocalDate.of(2019, 1, 1)))
-        assertEquals(emptyList<LocalDate>(), timeline.dates().toList())
         assertEquals(emptyList<ClosedPeriod>(), timeline.periods().toList())
     }
 
@@ -26,10 +24,7 @@ class TimelineTest {
         val period = ClosedPeriod(LocalDate.of(2019, 1, 1), LocalDate.of(2020, 1, 1))
         val timeline = Timeline.of(period)
         assertTrue(timeline.contains(period))
-        assertTrue(timeline.includes(period.start))
-        assertTrue(timeline.includes(period.end))
         assertEquals(listOf(period), timeline.periods().toList())
-        assertEquals(period.dates().toList(), timeline.dates().toList())
     }
 
     @Test
@@ -40,8 +35,6 @@ class TimelineTest {
         )
         val timeline = Timeline.of(periods)
         assertTrue(periods.all { timeline.contains(it) })
-        assertTrue(periods.all { timeline.includes(it.start) && timeline.includes(it.end) })
-        assertTrue(periods.asSequence().flatMap { it.dates() }.all { timeline.includes(it) })
         assertEquals(periods, timeline.periods().toList())
     }
 
@@ -53,8 +46,6 @@ class TimelineTest {
         )
         val timeline = Timeline.of(periods)
         assertTrue(periods.all { timeline.contains(it) })
-        assertTrue(periods.all { timeline.includes(it.start) && timeline.includes(it.end) })
-        assertTrue(periods.asSequence().flatMap { it.dates() }.all { timeline.includes(it) })
         assertEquals(listOf(ClosedPeriod(start = periods[0].start, end = periods[1].end)), timeline.periods().toList())
     }
 
@@ -67,8 +58,6 @@ class TimelineTest {
         )
         val timeline = Timeline.of(periods)
         assertTrue(periods.all { timeline.contains(it) })
-        assertTrue(periods.all { timeline.includes(it.start) && timeline.includes(it.end) })
-        assertTrue(periods.asSequence().flatMap { it.dates() }.all { timeline.includes(it) })
         assertEquals(listOf(ClosedPeriod(start = periods[0].start, end = periods[2].end)), timeline.periods().toList())
     }
 

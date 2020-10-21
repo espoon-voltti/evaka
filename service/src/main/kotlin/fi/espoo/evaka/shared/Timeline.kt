@@ -5,7 +5,6 @@
 package fi.espoo.evaka.shared
 
 import fi.espoo.evaka.shared.domain.ClosedPeriod
-import java.time.LocalDate
 
 /**
  * A timeline is basically an immutable set of dates, but provides simple read/write operations that involve periods
@@ -18,7 +17,7 @@ import java.time.LocalDate
  *
  * Note: this implementation is *not* very efficient
  */
-class Timeline private constructor(private val periods: List<ClosedPeriod>) : Iterable<ClosedPeriod> by periods {
+data class Timeline private constructor(private val periods: List<ClosedPeriod>) : Iterable<ClosedPeriod> by periods {
     constructor() : this(emptyList())
 
     fun add(period: ClosedPeriod) = this.periods.partition { it.overlaps(period) || it.adjacentTo(period) }
@@ -39,8 +38,6 @@ class Timeline private constructor(private val periods: List<ClosedPeriod>) : It
     fun addAll(periods: Iterable<ClosedPeriod>) = periods.fold(this) { timeline, period -> timeline.add(period) }
     fun addAll(periods: Sequence<ClosedPeriod>) = periods.fold(this) { timeline, period -> timeline.add(period) }
 
-    fun add(date: LocalDate) = this.add(ClosedPeriod(start = date, end = date))
-
     fun remove(period: ClosedPeriod) = this.periods.partition { it.overlaps(period) }
         .let { (conflicts, unchanged) ->
             val result = unchanged.toMutableList()
@@ -58,15 +55,40 @@ class Timeline private constructor(private val periods: List<ClosedPeriod>) : It
             Timeline(result)
         }
 
-    fun remove(date: LocalDate) = this.remove(ClosedPeriod(start = date, end = date))
     fun removeAll(periods: Iterable<ClosedPeriod>) = periods.fold(this) { timeline, period -> timeline.remove(period) }
     fun removeAll(periods: Sequence<ClosedPeriod>) = periods.fold(this) { timeline, period -> timeline.remove(period) }
 
-    fun includes(date: LocalDate) = this.periods.any { it.includes(date) }
     fun contains(period: ClosedPeriod) = this.periods.any { it.contains(period) }
 
+    fun intersection(other: Timeline): Timeline {
+        val iterA = this.iterator()
+        val iterB = other.iterator()
+        var a = if (iterA.hasNext()) iterA.next() else null
+        var b = if (iterB.hasNext()) iterB.next() else null
+        val periods = mutableListOf<ClosedPeriod>()
+        while (a != null && b != null) {
+            a.intersection(b)?.let { periods.add(it) }
+            if (a.end <= b.end) {
+                a = if (iterA.hasNext()) iterA.next() else null
+            } else {
+                b = if (iterB.hasNext()) iterB.next() else null
+            }
+        }
+        return Timeline(periods)
+    }
+
     fun periods() = this.periods.asSequence()
-    fun dates() = this.periods.asSequence().flatMap { it.dates() }
+    fun gaps() = this.periods().windowed(2).mapNotNull { pair ->
+        ClosedPeriod(pair[0].end.plusDays(1), pair[1].start.minusDays(1))
+    }
+
+    fun spanningPeriod() = this.periods.firstOrNull()?.let { first ->
+        this.periods.lastOrNull()?.let { last ->
+            ClosedPeriod(first.start, last.end)
+        }
+    }
+
+    fun isEmpty() = this.periods.isEmpty()
 
     companion object {
         fun of(): Timeline = Timeline()
