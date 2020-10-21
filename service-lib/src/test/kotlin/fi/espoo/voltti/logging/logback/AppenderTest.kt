@@ -80,7 +80,9 @@ class AppenderTest {
             it.assertSanitized().containsExactly(event1.tuple())
             it.withLatestSanitized { actual ->
                 defaultErrorAssertions(actual, meta, exception)
-                assertThat(actual["stackTrace"] as String).doesNotContain(UUIDWithSSN)
+                assertThat(actual["message"] as String).contains(UUIDWithSSN)
+                assertThat(actual["message"] as String).doesNotContain(redactedSSN)
+                assertThat(actual["stackTrace"] as String).doesNotContain(testSSNs[0])
                 assertThat(actual["stackTrace"] as String).contains(redactedSSN)
             }
 
