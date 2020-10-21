@@ -58,7 +58,10 @@ USING (child_id, unit_id, type)
 LEFT JOIN koski_voided_study_right(:today) kvsr
 USING (child_id, unit_id, type)
 ON CONFLICT (child_id, unit_id, type)
-DO UPDATE SET void_date = excluded.void_date, input_data = excluded.input_data
+DO UPDATE SET
+    void_date = excluded.void_date,
+    input_data = excluded.input_data,
+    study_right_oid = CASE WHEN koski_study_right.void_date IS NULL THEN koski_study_right.study_right_oid END
 RETURNING id, void_date IS NOT NULL AS voided
 """
 ).bindKotlin(key)
@@ -72,7 +75,8 @@ RETURNING id, void_date IS NOT NULL AS voided
                 """
 SELECT
     kvsr.*,
-    ksr.id AS study_right_id, ksr.study_right_oid,
+    ksr.id AS study_right_id,
+    ksr.study_right_oid,
     d.language AS daycare_language,
     d.provider_type AS daycare_provider_type,
     pr.social_security_number ssn,
@@ -93,7 +97,8 @@ WHERE ksr.id = :id
                 """
 SELECT
     kasr.*,
-    ksr.id AS study_right_id, ksr.study_right_oid,
+    ksr.id AS study_right_id,
+    ksr.study_right_oid,
     d.language AS daycare_language,
     d.provider_type AS daycare_provider_type,
     um.name AS approver_name,

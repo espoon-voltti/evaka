@@ -32,6 +32,7 @@ import fi.espoo.evaka.testDaycare2
 import fi.espoo.evaka.testDecisionMaker_1
 import org.jdbi.v3.core.Handle
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -570,6 +571,29 @@ class KoskiIntegrationTest : FullApplicationTest() {
         )
         assertNotNull(suoritus.vahvistus)
         assertEquals(preschoolTerm2020.end, suoritus.vahvistus?.päivä)
+    }
+
+    @Test
+    fun `if a study right is voided and a new placement is later added, a fresh study right is sent`() {
+        insertPlacement()
+
+        val today = preschoolTerm2019.end.plusDays(1)
+        koskiTester.triggerUploads(today)
+
+        val oldOid = koskiServer.getStudyRights().keys.single()
+        jdbi.handle { it.createUpdate("DELETE FROM placement").execute() }
+        koskiTester.triggerUploads(today.plusDays(1))
+        assertTrue(koskiServer.getStudyRights().isEmpty())
+
+        jdbi.handle { it.clearKoskiInputCache() }
+        koskiTester.triggerUploads(today.plusDays(2))
+        assertTrue(koskiServer.getStudyRights().isEmpty())
+
+        insertPlacement()
+        koskiTester.triggerUploads(today.plusDays(3))
+
+        val newOid = koskiServer.getStudyRights().keys.single()
+        assertNotEquals(oldOid, newOid)
     }
 
     @Test

@@ -13,9 +13,13 @@ import java.util.UUID
 
 data class KoskiData(
     val oppija: Oppija,
-    val isNew: Boolean,
+    val operation: KoskiOperation,
     val organizerOid: String
 )
+
+enum class KoskiOperation {
+    CREATE, UPDATE, VOID
+}
 
 data class KoskiChildRaw(
     val ssn: String,
@@ -50,6 +54,7 @@ data class KoskiUnitRaw(
         suorituskieli = Suorituskieli(daycareLanguage.toUpperCase()),
         tyyppi = SuorituksenTyyppi(SuorituksenTyyppiKoodi.PRESCHOOL)
     )
+
     fun haeJärjestämisMuoto() = when (daycareProviderType) {
         ProviderType.PURCHASED -> Järjestämismuoto(JärjestämismuotoKoodi.PURCHASED)
         ProviderType.PRIVATE_SERVICE_VOUCHER -> Järjestämismuoto(JärjestämismuotoKoodi.PRIVATE_SERVICE_VOUCHER)
@@ -74,8 +79,8 @@ data class KoskiVoidedDataRaw(
             henkilö = child.toHenkilö(),
             opiskeluoikeudet = listOf(haeOpiskeluOikeus(sourceSystem))
         ),
-        isNew = false,
-        organizerOid = unit.ophOrganizerOid
+        organizerOid = unit.ophOrganizerOid,
+        operation = KoskiOperation.VOID
     )
 
     private fun haeOpiskeluOikeus(sourceSystem: String) = Opiskeluoikeus(
@@ -134,7 +139,7 @@ data class KoskiActiveDataRaw(
                 henkilö = child.toHenkilö(),
                 opiskeluoikeudet = listOf(haeOpiskeluoikeus(sourceSystem, today, isQualified))
             ),
-            isNew = studyRightOid == null,
+            operation = if (studyRightOid == null) KoskiOperation.CREATE else KoskiOperation.UPDATE,
             organizerOid = unit.ophOrganizerOid
         )
     }
