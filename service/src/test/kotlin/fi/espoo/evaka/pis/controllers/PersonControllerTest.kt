@@ -10,6 +10,7 @@ import com.nhaarman.mockito_kotlin.argumentCaptor
 import com.nhaarman.mockito_kotlin.verify
 import com.nhaarman.mockito_kotlin.whenever
 import fi.espoo.evaka.application.enduser.objectMapper
+import fi.espoo.evaka.dvv.DvvModificationsBatchRefreshService
 import fi.espoo.evaka.pis.service.MergeService
 import fi.espoo.evaka.pis.service.PersonIdentityRequest
 import fi.espoo.evaka.pis.service.PersonJSON
@@ -50,6 +51,9 @@ class PersonControllerTest {
 
     @MockBean
     lateinit var vtjBatchRefreshService: VTJBatchRefreshService
+
+    @MockBean
+    lateinit var dvvModificationsBatchRefreshService: DvvModificationsBatchRefreshService
 
     @MockBean
     lateinit var jdbi: Jdbi
