@@ -64,7 +64,7 @@ it using your package manager. (E.g. on Ubuntu, run  `sudo apt-get install netca
 
 To use `enduser-gw`'s Google Maps backed endpoints, create a `.gmaps.env` file ([example](./.default.gmaps.env)).
 **NOTE:** By default, `compose-e2e` will copy a default file (`.default.gmaps.env`) to `.gmaps.env`, so `.gmaps.env`
-might already exist -- just fill/replace it.
+might already exist — just fill/replace it.
 
 Due to Google Maps APIs restriction capabilities (see [apigw README](../apigw/README.md#google-maps-api-key)),
 no API key can be provided by default **but `compose-e2e` can be run without an API key**.
