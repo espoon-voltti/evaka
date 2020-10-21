@@ -44,7 +44,6 @@ class Timeline private constructor(private val periods: List<ClosedPeriod>) : It
     fun remove(period: ClosedPeriod) = this.periods.partition { it.overlaps(period) }
         .let { (conflicts, unchanged) ->
             val result = unchanged.toMutableList()
-            result.addAll(unchanged)
             for (conflict in conflicts) {
                 conflict.intersection(period)?.let { intersection ->
                     if (conflict.start != intersection.start) {
