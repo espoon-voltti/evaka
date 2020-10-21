@@ -19,6 +19,9 @@
     "postcss-preset-env": "^6.7.0",
     "sass": "^1.23.3"
   },
+  "engines": {
+    "node": ">= 12.13.0"
+  },
   "husky": {
     "hooks": {
       "pre-commit": "yarn lint:fix"

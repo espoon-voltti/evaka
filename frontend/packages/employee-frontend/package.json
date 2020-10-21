@@ -104,9 +104,8 @@
       "pre-push": "yarn type-check && yarn test"
     }
   },
-  "enginesStrict": true,
   "engines": {
-    "node": ">=10"
+    "node": ">= 12.13.0"
   },
   "browserslist": [
     "Firefox ESR"

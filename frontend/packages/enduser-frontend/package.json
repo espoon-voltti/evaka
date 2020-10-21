@@ -80,6 +80,9 @@
     "typescript": "^3.9.5",
     "vue-template-compiler": "^2.6.11"
   },
+  "engines": {
+    "node": ">= 12.13.0"
+  },
   "browserslist": [
     "> 1% in FI",
     "last 2 versions",

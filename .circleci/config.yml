@@ -260,11 +260,11 @@ commands:
           command: |
             CI=true LOCAL_DIR='../frontend/packages' ./compose-e2e up -d
       - run:
-          name: Install node 10 and yarn
+          name: Install node 12 and yarn
           command: |
             source ~/.bashrc
-            nvm install 10.15.3
-            curl --silent --show-error --location --fail --retry 3 --output - https://yarnpkg.com/install.sh | bash
+            nvm install 12.13.0
+            curl --silent --show-error --location --fail --retry 3 --output - https://yarnpkg.com/install.sh | bash -s -- --version 1.22.5
             source ~/.bashrc
       - run:
           name: Install chrome
@@ -291,7 +291,7 @@ commands:
           working_directory: *workspace_e2e
           command: |
             source ~/.bashrc
-            nvm use 10.15.3
+            nvm use 12.13.0
             ./wait-for-dev-api.sh 'http://localhost:9999' || (cd ~/repo/compose && ./compose-e2e logs && false)
             yarn << parameters.suite >>
       - run:

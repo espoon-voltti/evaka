@@ -36,7 +36,7 @@ current user. Do not use elevated privileges, e.g. sudo to install
 packages.
 
 - [Node.js](https://nodejs.org/en/) – a JavaScript runtime built on Chrome's V8 JavaScript engine, version  12.13+
-- [Yarn](https://yarnpkg.com/getting-started/install) – Package manager for Node, version 1.22.10+
+- [Yarn](https://yarnpkg.com/getting-started/install) – Package manager for Node, version 1.22+
 - [JDK](https://openjdk.java.net/projects/jdk/11/) – Java Development
   Kit, version 11+. We recommend using OpenJDK implementation of JSR 384.
 - [Docker](https://docs.docker.com/get-docker/) – Docker is an open platform for developing, shipping, and running applications.
