@@ -4,7 +4,6 @@
 package fi.espoo.evaka.dvv
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
-import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import java.time.LocalDate
@@ -12,23 +11,16 @@ import java.time.format.DateTimeParseException
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class DvvModificationsResponse(
-    @JsonProperty("viimeisinKirjausavain")
-    val modificationToken: String,
-    @JsonProperty("muutokset")
-    val modifications: List<DvvModification>,
-    @JsonProperty("ajanTasalla")
-    val upToDate: Boolean
+    val viimeisinKirjausavain: String,
+    val muutokset: List<DvvModification>,
+    val ajanTasalla: Boolean
 )
 
 data class DvvModification(
-    @JsonProperty("muutospv")
-    val changed: String,
-    @JsonProperty("henkilotunnus")
-    val ssn: String,
-    @JsonProperty("tietoryhmat")
-    val infoGroups: List<DvvInfoGroup>,
-    @JsonProperty("ajanTasalla")
-    val upToDate: Boolean?
+    val muutospv: String,
+    val henkilotunnus: String,
+    val tietoryhmat: List<DvvInfoGroup>,
+    val ajanTasalla: Boolean?
 )
 
 @JsonTypeInfo(
@@ -51,84 +43,56 @@ data class DvvModification(
 )
 
 interface DvvInfoGroup {
-    val type: String
+    val tietoryhma: String
 }
 
 data class DefaultDvvInfoGroup(
-    @JsonProperty("tietoryhma")
-    override val type: String,
-    @JsonProperty("muutosattribuutti")
-    val changeAttribute: String?
+    override val tietoryhma: String,
+    val muutosattribuutti: String?
 ) : DvvInfoGroup
 
 data class PersonNameDvvInfoGroup(
-    @JsonProperty("tietoryhma")
-    override val type: String,
-    @JsonProperty("muutosattribuutti")
-    val changeAttribute: String?,
-    @JsonProperty("etunimi")
-    val firstName: String?,
-    @JsonProperty("sukunimi")
-    val lastName: String?,
-    @JsonProperty("alkupv")
-    val startDate: DvvDate?,
-    @JsonProperty("lisatieto")
-    val additionalInfo: String?
+    override val tietoryhma: String,
+    val muutosattribuutti: String?,
+    val etunimi: String?,
+    val sukunimi: String?,
+    val alkupv: DvvDate?,
+    val lisatieto: String?
 ) : DvvInfoGroup
 
 data class PersonNameChangeDvvInfoGroup(
-    @JsonProperty("tietoryhma")
-    override val type: String,
-    @JsonProperty("muutosattribuutti")
-    val changeAttribute: String?,
-    @JsonProperty("nimilaji")
-    val nameType: String?,
-    @JsonProperty("nimi")
-    val name: String?,
-    @JsonProperty("alkupv")
-    val startDate: DvvDate?,
-    @JsonProperty("loppupv")
-    val endDate: DvvDate?
+    override val tietoryhma: String,
+    val muutosattribuutti: String?,
+    val nimilaji: String?,
+    val nimi: String?,
+    val alkupv: DvvDate?,
+    val loppupv: DvvDate?
 ) : DvvInfoGroup
 
 data class RestrictedInfoDvvInfoGroup(
-    @JsonProperty("tietoryhma")
-    override val type: String,
-    @JsonProperty("muutosattribuutti")
-    val changeAttribute: String?,
-    @JsonProperty("turvakieltoAktiivinen")
-    val restrictedActive: Boolean,
-    @JsonProperty("turvaLoppuPv")
-    val restrictedEndDate: DvvDate?
+    override val tietoryhma: String,
+    val muutosattribuutti: String?,
+    val turvakieltoAktiivinen: Boolean,
+    val turvaLoppuPv: DvvDate?
 ) : DvvInfoGroup
 
 data class AddressDvvInfoGroup(
-    @JsonProperty("tietoryhma")
-    override val type: String,
-    @JsonProperty("muutosattribuutti")
-    val changeAttribute: String?,
-    @JsonProperty("katunimi")
-    val streetName: DvvFiSVValue?,
-    @JsonProperty("katunumero")
-    val streetNumber: String?,
-    @JsonProperty("huoneistonumero")
-    val appartmentNumber: String?,
-    @JsonProperty("huoneistokirjain")
-    val houseLetter: String?,
-    @JsonProperty("postinumero")
-    val postalCode: String?,
-    @JsonProperty("postitoimipaikka")
-    val postOffice: DvvFiSVValue?,
-    @JsonProperty("alkupv")
-    val startDate: DvvDate?,
-    @JsonProperty("loppupv")
-    val endDate: DvvDate?
+    override val tietoryhma: String,
+    val muutosattribuutti: String?,
+    val katunimi: DvvFiSVValue?,
+    val katunumero: String?,
+    val huoneistonumero: String?,
+    val huoneistokirjain: String?,
+    val postinumero: String?,
+    val postitoimipaikka: DvvFiSVValue?,
+    val alkupv: DvvDate?,
+    val loppupv: DvvDate?
 ) : DvvInfoGroup {
     fun streetAddress(): String {
-        val streetAddress = (streetName?.fi ?: "") +
-            (if (streetNumber != null) " $streetNumber" else "") +
-            (if (houseLetter != null) " $houseLetter" else "") +
-            (if (appartmentNumber != null) " ${appartmentNumber.toInt()}" else "")
+        val streetAddress = (katunimi?.fi ?: "") +
+            (if (katunumero != null) " $katunumero" else "") +
+            (if (huoneistokirjain != null) " $huoneistokirjain" else "") +
+            (if (huoneistonumero != null) " ${huoneistonumero.toInt()}" else "")
         return streetAddress.trim()
     }
 
@@ -138,87 +102,57 @@ data class AddressDvvInfoGroup(
 }
 
 data class DvvFiSVValue(
-    @JsonProperty("fi")
     val fi: String?,
-    @JsonProperty("sv")
     val sv: String?
 )
 
 data class CaretakerLimitedDvvInfoGroup(
-    @JsonProperty("tietoryhma")
-    override val type: String,
-    @JsonProperty("muutosattribuutti")
-    val changeAttribute: String?,
-    @JsonProperty("huoltaja")
-    val caretaker: DvvSsn,
-    @JsonProperty("huoltajanRooli")
-    val caretakersRole: String,
-    @JsonProperty("huoltajanLaji")
-    val caretakersKind: String,
-    @JsonProperty("huoltosuhteenAlkupv")
-    val caretakingStartDate: DvvDate?,
-    @JsonProperty("huoltosuhteenLoppupv")
-    val caretakingEndDate: DvvDate?
+    override val tietoryhma: String,
+    val muutosattribuutti: String?,
+    val huoltaja: DvvSsn,
+    val huoltajanRooli: String,
+    val huoltajanLaji: String,
+    val huoltosuhteenAlkupv: DvvDate?,
+    val huoltosuhteenLoppupv: DvvDate?
 ) : DvvInfoGroup
 
 data class CustodianLimitedDvvInfoGroup(
-    @JsonProperty("tietoryhma")
-    override val type: String,
-    @JsonProperty("muutosattribuutti")
-    val changeAttribute: String?,
-    @JsonProperty("huollettava")
-    val custodian: DvvSsn,
-    @JsonProperty("huoltajanRooli")
-    val caretakersRole: String,
-    @JsonProperty("huoltajanLaji")
-    val caretakersKind: String,
-    @JsonProperty("huoltosuhteenAlkupv")
-    val caretakingStartDate: DvvDate?,
-    @JsonProperty("huoltosuhteenLoppupv")
-    val caretakingEndDate: DvvDate?
+    override val tietoryhma: String,
+    val muutosattribuutti: String?,
+    val huollettava: DvvSsn,
+    val huoltajanRooli: String,
+    val huoltajanLaji: String,
+    val huoltosuhteenAlkupv: DvvDate?,
+    val huoltosuhteenLoppupv: DvvDate?
 ) : DvvInfoGroup
 
 data class DvvSsn(
-    @JsonProperty("henkilotunnus")
-    val ssn: String
+    val henkilotunnus: String
 )
 
 data class DeathDvvInfoGroup(
-    @JsonProperty("tietoryhma")
-    override val type: String,
-    @JsonProperty("muutosattribuutti")
-    val changeAttribute: String?,
-    @JsonProperty("kuollut")
-    val dead: Boolean?,
-    @JsonProperty("kuolinpv")
-    val dateOfDeath: DvvDate?
+    override val tietoryhma: String,
+    val muutosattribuutti: String?,
+    val kuollut: Boolean?,
+    val kuolinpv: DvvDate?
 ) : DvvInfoGroup
 
 data class SsnDvvInfoGroup(
-    @JsonProperty("tietoryhma")
-    override val type: String,
-    @JsonProperty("muutosattribuutti")
-    val changeAttribute: String?,
-    @JsonProperty("voimassaolo")
-    val activeState: String,
-    @JsonProperty("muutettuHenkilotunnus")
-    val modifiedSsn: String,
-    @JsonProperty("aktiivinenHenkilotunnus")
-    val activeSsn: String,
-    @JsonProperty("edellisetHenkilotunnukset")
-    val previousSsns: List<String>
+    override val tietoryhma: String,
+    val muutosattribuutti: String?,
+    val voimassaolo: String,
+    val muutettuHenkilotunnus: String,
+    val aktiivinenHenkilotunnus: String,
+    val edellisetHenkilotunnukset: List<String>
 ) : DvvInfoGroup
 
 data class DvvDate(
-    @JsonProperty("arvo")
-    val date: String,
-    @JsonProperty("tarkkuus")
-    val granularity: String
+    val arvo: String,
+    val tarkkuus: String
 ) {
-
     fun asLocalDate(): LocalDate? {
         try {
-            return LocalDate.parse(date)
+            return LocalDate.parse(arvo)
         } catch (e: DateTimeParseException) {
             return null
         }

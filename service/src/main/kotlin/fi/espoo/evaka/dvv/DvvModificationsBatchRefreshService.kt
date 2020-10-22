@@ -40,17 +40,16 @@ class DvvModificationsBatchRefreshService(
 
             val ssns = getPersonSsnsToUpdate(h)
 
-            kotlin.run {
-                asyncJobRunner.plan(
-                    payloads = listOf(
-                        DvvModificationsRefresh(
-                            ssns = ssns,
-                            requestingUserId = UUID.fromString("00000000-0000-0000-0000-000000000000")
-                        )
-                    ),
-                    runAt = Instant.now()
-                )
-            }
+            asyncJobRunner.plan(
+                h,
+                payloads = listOf(
+                    DvvModificationsRefresh(
+                        ssns = ssns,
+                        requestingUserId = UUID.fromString("00000000-0000-0000-0000-000000000000")
+                    )
+                ),
+                runAt = Instant.now()
+            )
 
             ssns.size
         }
