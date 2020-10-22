@@ -39,17 +39,16 @@ class VTJBatchRefreshService(
             val requestingUserId = UUID.fromString("00000000-0000-0000-0000-000000000000")
             val personIds = getPersonIdsToRefresh(h)
             personIds.forEachIndexed { i, personId ->
-                kotlin.run {
-                    asyncJobRunner.plan(
-                        payloads = listOf(
-                            VTJRefresh(
-                                personId = personId,
-                                requestingUserId = requestingUserId
-                            )
-                        ),
-                        runAt = Instant.now().plusSeconds(i.toLong())
-                    )
-                }
+                asyncJobRunner.plan(
+                    h,
+                    payloads = listOf(
+                        VTJRefresh(
+                            personId = personId,
+                            requestingUserId = requestingUserId
+                        )
+                    ),
+                    runAt = Instant.now().plusSeconds(i.toLong())
+                )
             }
 
             personIds.size

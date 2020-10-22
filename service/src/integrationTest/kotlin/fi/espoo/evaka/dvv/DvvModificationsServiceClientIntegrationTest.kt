@@ -18,70 +18,70 @@ class DvvModificationsServiceClientIntegrationTest : DvvModificationsServiceInte
     @Test
     fun `restricted info has been added`() {
         val response: DvvModificationsResponse = dvvModificationsServiceClient.getModifications("100000000", listOf("020180-999Y"))!!
-        assertEquals(true, response.modifications[0].infoGroups.size == 2)
-        assertEquals("TURVAKIELTO", response.modifications[0].infoGroups[0].type)
-        val restrictedInfo = response.modifications[0].infoGroups[0] as RestrictedInfoDvvInfoGroup
-        assertEquals(true, restrictedInfo.restrictedActive)
+        assertEquals(true, response.muutokset[0].tietoryhmat.size == 2)
+        assertEquals("TURVAKIELTO", response.muutokset[0].tietoryhmat[0].tietoryhma)
+        val restrictedInfo = response.muutokset[0].tietoryhmat[0] as RestrictedInfoDvvInfoGroup
+        assertEquals(true, restrictedInfo.turvakieltoAktiivinen)
     }
 
     @Test
     fun `restricted info has been removed and address is provided`() {
         val response: DvvModificationsResponse = dvvModificationsServiceClient.getModifications("100000000", listOf("030180-999L"))!!
-        assertEquals(true, response.modifications[0].infoGroups.size == 2)
-        assertEquals("TURVAKIELTO", response.modifications[0].infoGroups[0].type)
+        assertEquals(true, response.muutokset[0].tietoryhmat.size == 2)
+        assertEquals("TURVAKIELTO", response.muutokset[0].tietoryhmat[0].tietoryhma)
 
-        val restrictedInfo = response.modifications[0].infoGroups[0] as RestrictedInfoDvvInfoGroup
-        assertEquals(false, restrictedInfo.restrictedActive)
-        assertEquals("2030-01-01", restrictedInfo.restrictedEndDate?.date)
+        val restrictedInfo = response.muutokset[0].tietoryhmat[0] as RestrictedInfoDvvInfoGroup
+        assertEquals(false, restrictedInfo.turvakieltoAktiivinen)
+        assertEquals("2030-01-01", restrictedInfo.turvaLoppuPv?.arvo)
 
-        val address = response.modifications[0].infoGroups[1] as AddressDvvInfoGroup
-        assertEquals("Gamlagatan", address.streetName!!.sv)
-        assertEquals("Espoo", address.postOffice!!.fi)
+        val address = response.muutokset[0].tietoryhmat[1] as AddressDvvInfoGroup
+        assertEquals("Gamlagatan", address.katunimi!!.sv)
+        assertEquals("Espoo", address.postitoimipaikka!!.fi)
     }
 
     @Test
     fun `person has died`() {
         val response: DvvModificationsResponse = dvvModificationsServiceClient.getModifications("100000000", listOf("010180-999A"))!!
-        assertEquals("KUOLINPAIVA", response.modifications[0].infoGroups[0].type)
-        val dead = response.modifications[0].infoGroups[0] as DeathDvvInfoGroup
-        assertEquals(true, dead.dead)
-        assertEquals("2019-07-30", dead.dateOfDeath?.date)
+        assertEquals("KUOLINPAIVA", response.muutokset[0].tietoryhmat[0].tietoryhma)
+        val dead = response.muutokset[0].tietoryhmat[0] as DeathDvvInfoGroup
+        assertEquals(true, dead.kuollut)
+        assertEquals("2019-07-30", dead.kuolinpv?.arvo)
     }
 
     @Test
     fun `name change modification`() {
         val response: DvvModificationsResponse = dvvModificationsServiceClient.getModifications("100000000", listOf("nimenmuutos"))!!
-        assertEquals(true, response.modificationToken.length == 9)
-        assertEquals(true, response.modifications.size == 1)
-        assertEquals("HENKILON_NIMI", response.modifications[0].infoGroups[0].type)
+        assertEquals(true, response.viimeisinKirjausavain.length == 9)
+        assertEquals(true, response.muutokset.size == 1)
+        assertEquals("HENKILON_NIMI", response.muutokset[0].tietoryhmat[0].tietoryhma)
     }
 
     @Test
     fun `guardian is now a sole guardian`() {
         val response: DvvModificationsResponse = dvvModificationsServiceClient.getModifications("100000000", listOf("yksinhuoltaja-muutos"))!!
-        assertEquals("HUOLLETTAVA_SUPPEA", response.modifications[0].infoGroups[0].type)
-        val custodian = response.modifications[0].infoGroups[0] as CustodianLimitedDvvInfoGroup
-        assertEquals("010118-9999", custodian.custodian.ssn)
-        assertEquals("2020-09-08", custodian.caretakingStartDate?.date)
+        assertEquals("HUOLLETTAVA_SUPPEA", response.muutokset[0].tietoryhmat[0].tietoryhma)
+        val custodian = response.muutokset[0].tietoryhmat[0] as CustodianLimitedDvvInfoGroup
+        assertEquals("010118-9999", custodian.huollettava.henkilotunnus)
+        assertEquals("2020-09-08", custodian.huoltosuhteenAlkupv?.arvo)
     }
 
     @Test
     fun `custodian info`() {
         val response: DvvModificationsResponse = dvvModificationsServiceClient.getModifications("100000000", listOf("huoltaja"))!!
-        assertEquals("HUOLTAJA_SUPPEA", response.modifications[0].infoGroups[0].type)
-        val caretaker = response.modifications[0].infoGroups[0] as CaretakerLimitedDvvInfoGroup
-        assertEquals("010579-9999", caretaker.caretaker.ssn)
-        assertEquals("2020-09-08", caretaker.caretakingStartDate?.date)
+        assertEquals("HUOLTAJA_SUPPEA", response.muutokset[0].tietoryhmat[0].tietoryhma)
+        val caretaker = response.muutokset[0].tietoryhmat[0] as CaretakerLimitedDvvInfoGroup
+        assertEquals("010579-9999", caretaker.huoltaja.henkilotunnus)
+        assertEquals("2020-09-08", caretaker.huoltosuhteenAlkupv?.arvo)
     }
 
     @Test
     fun `ssn change`() {
         val response: DvvModificationsResponse = dvvModificationsServiceClient.getModifications("100000000", listOf("010181-999K"))!!
-        assertEquals("HENKILOTUNNUS_KORJAUS", response.modifications[0].infoGroups[0].type)
-        val ssnModified = response.modifications[0].infoGroups[0] as SsnDvvInfoGroup
-        assertEquals("LISATTY", ssnModified.changeAttribute)
-        assertEquals("AKTIIVI", ssnModified.activeState)
-        assertEquals("010281-999C", ssnModified.activeSsn)
-        assertEquals("010181-999K", ssnModified.previousSsns.get(0))
+        assertEquals("HENKILOTUNNUS_KORJAUS", response.muutokset[0].tietoryhmat[0].tietoryhma)
+        val ssnModified = response.muutokset[0].tietoryhmat[0] as SsnDvvInfoGroup
+        assertEquals("LISATTY", ssnModified.muutosattribuutti)
+        assertEquals("AKTIIVI", ssnModified.voimassaolo)
+        assertEquals("010281-999C", ssnModified.aktiivinenHenkilotunnus)
+        assertEquals("010181-999K", ssnModified.edellisetHenkilotunnukset.get(0))
     }
 }

@@ -15,7 +15,6 @@ import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.db.transaction
 import mu.KotlinLogging
 import org.jdbi.v3.core.Jdbi
-import org.jdbi.v3.core.kotlin.mapTo
 import org.springframework.stereotype.Service
 import java.time.LocalDate
 
@@ -31,21 +30,21 @@ class DvvModificationsService(
 
     fun updatePersonsFromDvv(ssns: List<String>) {
         getDvvModifications(ssns).map { personDvvModifications ->
-            personDvvModifications.infoGroups.map { infoGroup ->
+            personDvvModifications.tietoryhmat.map { infoGroup ->
                 try {
                     when (infoGroup) {
-                        is DeathDvvInfoGroup -> handleDeath(personDvvModifications.ssn, infoGroup)
-                        is RestrictedInfoDvvInfoGroup -> handleRestrictedInfo(personDvvModifications.ssn, infoGroup)
-                        is SsnDvvInfoGroup -> handleSsnDvvInfoGroup(personDvvModifications.ssn, infoGroup)
-                        is AddressDvvInfoGroup -> handleAddressDvvInfoGroup(personDvvModifications.ssn, infoGroup)
-                        is CustodianLimitedDvvInfoGroup -> handleCustodianLimitedDvvInfoGroup(personDvvModifications.ssn, infoGroup)
+                        is DeathDvvInfoGroup -> handleDeath(personDvvModifications.henkilotunnus, infoGroup)
+                        is RestrictedInfoDvvInfoGroup -> handleRestrictedInfo(personDvvModifications.henkilotunnus, infoGroup)
+                        is SsnDvvInfoGroup -> handleSsnDvvInfoGroup(personDvvModifications.henkilotunnus, infoGroup)
+                        is AddressDvvInfoGroup -> handleAddressDvvInfoGroup(personDvvModifications.henkilotunnus, infoGroup)
+                        is CustodianLimitedDvvInfoGroup -> handleCustodianLimitedDvvInfoGroup(personDvvModifications.henkilotunnus, infoGroup)
                         is CaretakerLimitedDvvInfoGroup -> handleCaretakerLimitedDvvInfoGroup(infoGroup)
                         // is PersonNameDvvInfoGroup -> handlePersonNameDvvInfoGroup(personDvvModifications.ssn, infoGroup)
                         // is PersonNameChangeDvvInfoGroup -> handlePersonNameChangeDvvInfoGroup(personDvvModifications.ssn, infoGroup)
-                        else -> logger.info("Unsupported DVV modification: ${infoGroup.type}")
+                        else -> logger.info("Unsupported DVV modification: ${infoGroup.tietoryhma}")
                     }
                 } catch (e: Throwable) {
-                    logger.error("Could not process dvv modification for ${personDvvModifications.ssn.substring(0, 6)}: ${e.message}")
+                    logger.error("Could not process dvv modification for ${personDvvModifications.henkilotunnus.substring(0, 6)}: ${e.message}")
                 }
             }
         }
@@ -56,7 +55,7 @@ class DvvModificationsService(
     private fun handleDeath(ssn: String, deathDvvInfoGroup: DeathDvvInfoGroup) {
         jdbi.handle { h ->
             h.getPersonBySSN(ssn)?.let {
-                val dateOfDeath = deathDvvInfoGroup.dateOfDeath?.asLocalDate() ?: LocalDate.now()
+                val dateOfDeath = deathDvvInfoGroup.kuolinpv?.asLocalDate() ?: LocalDate.now()
                 logger.debug("Dvv modification for ${it.id}: marking dead since $dateOfDeath")
                 h.updatePersonFromVtj(it.copy(dateOfDeath = dateOfDeath))
             }
@@ -66,14 +65,14 @@ class DvvModificationsService(
     private fun handleRestrictedInfo(ssn: String, restrictedInfoDvvInfoGroup: RestrictedInfoDvvInfoGroup) {
         jdbi.handle { h ->
             h.getPersonBySSN(ssn)?.let {
-                logger.debug("Dvv modification for ${it.id}: restricted ${restrictedInfoDvvInfoGroup.restrictedActive}")
+                logger.debug("Dvv modification for ${it.id}: restricted ${restrictedInfoDvvInfoGroup.turvakieltoAktiivinen}")
                 h.updatePersonFromVtj(
                     it.copy(
-                        restrictedDetailsEnabled = restrictedInfoDvvInfoGroup.restrictedActive,
-                        restrictedDetailsEndDate = restrictedInfoDvvInfoGroup.restrictedEndDate?.asLocalDate(),
-                        streetAddress = if (restrictedInfoDvvInfoGroup.restrictedActive) "" else it.streetAddress,
-                        postalCode = if (restrictedInfoDvvInfoGroup.restrictedActive) "" else it.postalCode,
-                        postOffice = if (restrictedInfoDvvInfoGroup.restrictedActive) "" else it.postOffice
+                        restrictedDetailsEnabled = restrictedInfoDvvInfoGroup.turvakieltoAktiivinen,
+                        restrictedDetailsEndDate = restrictedInfoDvvInfoGroup.turvaLoppuPv?.asLocalDate(),
+                        streetAddress = if (restrictedInfoDvvInfoGroup.turvakieltoAktiivinen) "" else it.streetAddress,
+                        postalCode = if (restrictedInfoDvvInfoGroup.turvakieltoAktiivinen) "" else it.postalCode,
+                        postOffice = if (restrictedInfoDvvInfoGroup.turvakieltoAktiivinen) "" else it.postOffice
                     )
                 )
             }
@@ -84,7 +83,7 @@ class DvvModificationsService(
         jdbi.handle { h ->
             h.getPersonBySSN(ssn)?.let {
                 logger.debug("Dvv modification for ${it.id}: ssn change")
-                h.addSSNToPerson(it.id, ssnDvvInfoGroup.activeSsn)
+                h.addSSNToPerson(it.id, ssnDvvInfoGroup.aktiivinenHenkilotunnus)
             }
         }
     }
@@ -94,16 +93,16 @@ class DvvModificationsService(
     private fun handleAddressDvvInfoGroup(ssn: String, addressDvvInfoGroup: AddressDvvInfoGroup) {
         jdbi.handle { h ->
             h.getPersonBySSN(ssn)?.let {
-                if (addressDvvInfoGroup.changeAttribute.equals("LISATTY") || (
-                    addressDvvInfoGroup.changeAttribute.equals("MUUTETTU") && it.streetAddress.isNullOrEmpty()
+                if (addressDvvInfoGroup.muutosattribuutti.equals("LISATTY") || (
+                    addressDvvInfoGroup.muutosattribuutti.equals("MUUTETTU") && it.streetAddress.isNullOrEmpty()
                     )
                 ) {
-                    logger.debug("Dvv modification for ${it.id}: address change, type: ${addressDvvInfoGroup.changeAttribute}")
+                    logger.debug("Dvv modification for ${it.id}: address change, type: ${addressDvvInfoGroup.muutosattribuutti}")
                     h.updatePersonFromVtj(
                         it.copy(
                             streetAddress = addressDvvInfoGroup.streetAddress(),
-                            postalCode = addressDvvInfoGroup.postalCode ?: "",
-                            postOffice = addressDvvInfoGroup.postOffice?.fi ?: ""
+                            postalCode = addressDvvInfoGroup.postinumero ?: "",
+                            postOffice = addressDvvInfoGroup.postitoimipaikka?.fi ?: ""
                             // TODO: residence code
                         )
                     )
@@ -113,7 +112,7 @@ class DvvModificationsService(
     }
 
     private fun handleCustodianLimitedDvvInfoGroup(ssn: String, custodianLimitedDvvInfoGroup: CustodianLimitedDvvInfoGroup) {
-        if (custodianLimitedDvvInfoGroup.changeAttribute == "LISATTY") {
+        if (custodianLimitedDvvInfoGroup.muutosattribuutti == "LISATTY") {
             val user = AuthenticatedUser.anonymous
             personService.getOrCreatePerson(user, ExternalIdentifier.SSN.getInstance(ssn))?.let {
                 logger.debug("Dvv modification for ${it.id}: has a new custodian, refreshing all info from DVV")
@@ -123,9 +122,9 @@ class DvvModificationsService(
     }
 
     private fun handleCaretakerLimitedDvvInfoGroup(caretakerLimitedDvvInfoGroup: CaretakerLimitedDvvInfoGroup) {
-        if (caretakerLimitedDvvInfoGroup.changeAttribute == "LISATTY") {
+        if (caretakerLimitedDvvInfoGroup.muutosattribuutti == "LISATTY") {
             val user = AuthenticatedUser.anonymous
-            personService.getOrCreatePerson(user, ExternalIdentifier.SSN.getInstance(caretakerLimitedDvvInfoGroup.caretaker.ssn))?.let {
+            personService.getOrCreatePerson(user, ExternalIdentifier.SSN.getInstance(caretakerLimitedDvvInfoGroup.huoltaja.henkilotunnus))?.let {
                 logger.debug("Dvv modification for ${it.id}: a new caretaker added, refreshing all info from DVV")
                 fridgeFamilyService.doVTJRefresh(VTJRefresh(it.id, user.id))
             }
@@ -140,22 +139,8 @@ class DvvModificationsService(
         val token = getNextDvvModificationToken(h)
         logger.debug("Fetching dvv modifications with $token")
         dvvModificationsServiceClient.getModifications(token, ssns)?.let { dvvModificationsResponse ->
-            storeDvvModificationToken(h, token, dvvModificationsResponse.modificationToken, ssns.size, dvvModificationsResponse.modifications.size)
-            dvvModificationsResponse.modifications
+            storeDvvModificationToken(h, token, dvvModificationsResponse.viimeisinKirjausavain, ssns.size, dvvModificationsResponse.muutokset.size)
+            dvvModificationsResponse.muutokset
         } ?: emptyList()
     }
-}
-
-// Forms a list of persons' ssn's that should be updated from DVV
-fun getPersonSsnsToUpdate(jdbi: Jdbi): List<String> = jdbi.handle { h ->
-    //language=sql
-    h.createQuery(
-        """
-SELECT DISTINCT(social_security_number) from PERSON p JOIN (
-SELECT head_of_child FROM fridge_child
-WHERE daterange(start_date, end_date, '[]') @> current_date AND conflict = false) hoc ON p.id = hoc.head_of_child
-        """.trimIndent()
-    )
-        .mapTo<String>()
-        .toList()
 }

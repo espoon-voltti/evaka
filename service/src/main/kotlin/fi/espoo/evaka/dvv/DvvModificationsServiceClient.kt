@@ -26,7 +26,7 @@ class DvvModificationsServiceClient(
     private val objectMapper: ObjectMapper,
     private val fuel: FuelManager,
     private val env: Environment,
-    private val serviceUrl: String = "${env.getRequiredProperty("fi.espoo.integration.dvv-modifications-service.url")}"
+    private val serviceUrl: String = env.getRequiredProperty("fi.espoo.integration.dvv-modifications-service.url")
 ) {
     private val dvvUserId = env.getRequiredProperty("fi.espoo.integration.dvv-modifications-service.userId")
     private val dvvPassword = env.getRequiredProperty("fi.espoo.integration.dvv-modifications-service.password")
