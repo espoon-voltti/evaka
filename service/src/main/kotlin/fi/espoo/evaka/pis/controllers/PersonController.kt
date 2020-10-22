@@ -189,9 +189,9 @@ class PersonController(
             throw BadRequest("Invalid social security number")
         }
 
-        return personService
-            .addSsn(user, personId, ExternalIdentifier.SSN.getInstance(body.ssn))
-            .let { ResponseEntity.ok(PersonJSON.from(it)) }
+        personService.addSsn(user, personId, ExternalIdentifier.SSN.getInstance(body.ssn))
+        val person = personService.getUpToDatePerson(user, personId)!!
+        return ResponseEntity.ok(PersonJSON.from(person))
     }
 
     @GetMapping("/details/ssn/{ssn}")

@@ -201,7 +201,7 @@ class PersonService(
         getPerson(id)!!
     }
 
-    fun addSsn(user: AuthenticatedUser, id: VolttiIdentifier, ssn: ExternalIdentifier.SSN): PersonDTO =
+    fun addSsn(user: AuthenticatedUser, id: VolttiIdentifier, ssn: ExternalIdentifier.SSN) =
         withSpringTx(txManager) {
             val person = getPerson(id) ?: throw NotFound("Person $id not found")
 
@@ -214,8 +214,6 @@ class PersonService(
                     personDAO.addSsn(id, ssn.toString())
                 }
             }.exhaust()
-
-            getUpToDatePerson(user, id)!!
         }
 
     fun findBySearchTerms(searchTerms: String, orderBy: String, sortDirection: String): List<PersonDTO> =
