@@ -24,6 +24,8 @@ enum class AsyncJobType {
     PLACEMENT_PLAN_APPLIED,
     FEE_DECISION_APPROVED,
     FEE_DECISION_PDF_GENERATED,
+    VOUCHER_VALUE_DECISION_APPROVED,
+    VOUCHER_VALUE_DECISION_PDF_GENERATED,
     INITIALIZE_FAMILY_FROM_APPLICATION,
     VTJ_REFRESH,
     DVV_MODIFICATIONS_REFRESH,
@@ -109,6 +111,16 @@ data class NotifyFeeDecisionApproved(val decisionId: UUID) : AsyncJobPayload {
 
 data class NotifyFeeDecisionPdfGenerated(val decisionId: UUID) : AsyncJobPayload {
     override val asyncJobType = AsyncJobType.FEE_DECISION_PDF_GENERATED
+    override val user: AuthenticatedUser? = null
+}
+
+data class NotifyVoucherValueDecisionApproved(val decisionId: UUID) : AsyncJobPayload {
+    override val asyncJobType = AsyncJobType.VOUCHER_VALUE_DECISION_APPROVED
+    override val user: AuthenticatedUser? = null
+}
+
+data class NotifyVoucherValueDecisionPdfGenerated(val decisionId: UUID) : AsyncJobPayload {
+    override val asyncJobType = AsyncJobType.VOUCHER_VALUE_DECISION_PDF_GENERATED
     override val user: AuthenticatedUser? = null
 }
 

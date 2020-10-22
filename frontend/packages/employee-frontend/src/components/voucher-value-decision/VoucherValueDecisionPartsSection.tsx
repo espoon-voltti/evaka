@@ -4,33 +4,36 @@
 
 import React, { Fragment } from 'react'
 import styled from 'styled-components'
+import { H3, H4 } from '~components/shared/Typography'
 import Section from '~components/shared/layout/Section'
 import { Gap } from '~components/shared/layout/white-space'
-import { H3, H4 } from '~components/shared/Typography'
 import { useTranslation } from '~state/i18n'
-import { FeeDecisionDetailed } from '~types/invoicing'
+import { VoucherValueDecisionDetailed } from '~types/invoicing'
 import { formatCents } from '~utils/money'
 import { formatName } from '~utils'
 
-interface Props {
-  decision: FeeDecisionDetailed
+type Props = {
+  decision: VoucherValueDecisionDetailed
 }
 
-export default React.memo(function PartsSection({ decision }: Props) {
+export default React.memo(function VoucherValueDecisionPartsSection({
+  decision
+}: Props) {
   const { i18n } = useTranslation()
 
   return (
     <Section>
-      <H3>{i18n.feeDecision.form.summary.parts.title}</H3>
+      <H3 noMargin>{i18n.valueDecision.summary.parts}</H3>
+      <Gap size="s" />
       {decision.parts.map(
         ({
           child,
           placement,
-          fee: price,
+          coPayment,
           siblingDiscount,
           serviceNeedMultiplier,
           feeAlterations,
-          finalFee: finalPrice
+          finalCoPayment
         }) => {
           const mainDescription = `${
             i18n.placement.type[placement.type]
@@ -38,7 +41,7 @@ export default React.memo(function PartsSection({ decision }: Props) {
             placement.serviceNeed
           ].toLowerCase()} (${serviceNeedMultiplier} %)${
             siblingDiscount
-              ? `, ${i18n.feeDecision.form.summary.parts.siblingDiscount} ${siblingDiscount}%`
+              ? `, ${i18n.valueDecision.summary.siblingDiscount} ${siblingDiscount}%`
               : ''
           }`
 
@@ -50,7 +53,7 @@ export default React.memo(function PartsSection({ decision }: Props) {
               <Gap size="xs" />
               <PartRow>
                 <span>{mainDescription}</span>
-                <b>{`${formatCents(price) ?? ''} €`}</b>
+                <b>{`${formatCents(coPayment) ?? ''} €`}</b>
               </PartRow>
               <Gap size="xs" />
               {feeAlterations.map((feeAlteration, index) => (
@@ -65,8 +68,8 @@ export default React.memo(function PartsSection({ decision }: Props) {
                 </Fragment>
               ))}
               <PartRow>
-                <b>{i18n.feeDecision.form.summary.parts.sum}</b>
-                <b>{formatCents(finalPrice)} €</b>
+                <b>{i18n.valueDecision.summary.sum}</b>
+                <b>{formatCents(finalCoPayment)} €</b>
               </PartRow>
             </Part>
           )

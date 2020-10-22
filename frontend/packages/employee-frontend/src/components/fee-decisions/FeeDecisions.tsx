@@ -105,7 +105,7 @@ const FeeDecisions = React.memo(function FeeDecisions({
           return (
             <Tr
               key={item.id}
-              onClick={() => history.push(`/fee-decisions/${item.id}`)}
+              onClick={() => history.push(`/finance/fee-decisions/${item.id}`)}
               data-qa="table-fee-decision-row"
             >
               <Td>

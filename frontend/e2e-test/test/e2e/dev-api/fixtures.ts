@@ -22,6 +22,7 @@ import {
   OtherGuardianAgreementStatus,
   PersonDetail,
   PlacementPlan,
+  VoucherValueDecision,
   UUID
 } from './types'
 import {
@@ -493,6 +494,43 @@ export const feeDecisionsFixture = (
       },
       baseFee: 28900,
       fee: 28900,
+      siblingDiscount: 0.0,
+      feeAlterations: []
+    }
+  ]
+})
+
+export const voucherValueDecisionsFixture = (
+  adultId: UUID,
+  childId: UUID,
+  daycareId: UUID
+): VoucherValueDecision => ({
+  id: 'ed462aca-f74e-4384-910f-628823201023',
+  status: 'DRAFT',
+  validFrom: '2019-01-01',
+  validTo: '2021-01-01',
+  headOfFamily: { id: adultId },
+  familySize: 2,
+  pricing: {
+    multiplier: '0.1070',
+    maxThresholdDifference: 269700,
+    minThreshold2: 210200,
+    minThreshold3: 271300,
+    minThreshold4: 308000,
+    minThreshold5: 344700,
+    minThreshold6: 381300,
+    thresholdIncrease6Plus: 14200
+  },
+  parts: [
+    {
+      child: { id: childId, dateOfBirth: '2017-06-30' },
+      placement: {
+        unit: daycareId,
+        type: 'DAYCARE',
+        serviceNeed: 'GTE_35'
+      },
+      baseCoPayment: 28900,
+      coPayment: 28900,
       siblingDiscount: 0.0,
       feeAlterations: []
     }

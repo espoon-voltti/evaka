@@ -32,8 +32,10 @@ import fi.espoo.evaka.emailclient.MockEmailClient
 import fi.espoo.evaka.identity.ExternalIdentifier
 import fi.espoo.evaka.invoicing.data.upsertFeeDecisions
 import fi.espoo.evaka.invoicing.data.upsertInvoices
+import fi.espoo.evaka.invoicing.data.upsertValueDecisions
 import fi.espoo.evaka.invoicing.domain.FeeDecision
 import fi.espoo.evaka.invoicing.domain.Invoice
+import fi.espoo.evaka.invoicing.domain.VoucherValueDecision
 import fi.espoo.evaka.pis.dao.PersonDAO
 import fi.espoo.evaka.pis.deleteEmployeeByAad
 import fi.espoo.evaka.pis.deleteEmployeeRolesByAad
@@ -269,6 +271,12 @@ class DevApi(
     @PostMapping("/fee-decisions")
     fun createFeeDecisions(@RequestBody decisions: List<FeeDecision>): ResponseEntity<Unit> {
         jdbi.transaction { h -> upsertFeeDecisions(h, objectMapper, decisions) }
+        return ResponseEntity.noContent().build()
+    }
+
+    @PostMapping("/value-decisions")
+    fun createVoucherValueDecisions(@RequestBody decisions: List<VoucherValueDecision>): ResponseEntity<Unit> {
+        jdbi.transaction { h -> h.upsertValueDecisions(objectMapper, decisions) }
         return ResponseEntity.noContent().build()
     }
 
@@ -606,6 +614,7 @@ fun Handle.clearDatabase() = listOf(
     "fee_alteration",
     "invoice",
     "fee_decision",
+    "voucher_value_decision",
     "async_job"
 ).forEach {
     execute("DELETE FROM $it")

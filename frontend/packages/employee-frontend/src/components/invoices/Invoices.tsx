@@ -121,7 +121,7 @@ const Invoices = React.memo(function Invoices({
       ? invoices.data.map((item: InvoiceSummary) => (
           <Tr
             key={item.id}
-            onClick={() => history.push(`/invoices/${item.id}`)}
+            onClick={() => history.push(`/finance/invoices/${item.id}`)}
             data-qa="table-invoice-row"
           >
             <Td>

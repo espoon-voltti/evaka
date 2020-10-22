@@ -100,7 +100,9 @@ export default React.memo(function VoucherValueDecisions({
           return (
             <Tr
               key={item.id}
-              onClick={() => history.push(`/value-decisions/${item.id}`)}
+              onClick={() =>
+                history.push(`/finance/value-decisions/${item.id}`)
+              }
               data-qa="table-value-decision-row"
             >
               <Td>

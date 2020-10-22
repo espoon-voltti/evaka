@@ -100,7 +100,7 @@ enum class VardaUnitProviderType(val vardaCode: String) {
     MUNICIPAL("jm01"),
     MUNICIPAL_SCHOOL("jm01"),
     PURCHASED("jm02"),
-    COUPON("jm03"),
+    PRIVATE_SERVICE_VOUCHER("jm03"),
     PRIVATE("jm04")
 }
 

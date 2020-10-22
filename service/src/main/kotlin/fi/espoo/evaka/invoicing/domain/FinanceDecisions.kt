@@ -9,10 +9,13 @@ interface FinanceDecision<Part : FinanceDecisionPart, Decision : FinanceDecision
     val parts: List<Part>
     val validFrom: LocalDate
     val validTo: LocalDate?
+    val headOfFamily: PersonData.JustId
 
     fun withRandomId(): Decision
     fun withValidity(period: Period): Decision
     fun contentEquals(decision: Decision): Boolean
+    fun isAnnulled(): Boolean
+    fun annul(): Decision
 }
 
 fun <Part : FinanceDecisionPart, Decision : FinanceDecision<Part, Decision>> decisionContentsAreEqual(
@@ -41,4 +44,37 @@ fun <Part : FinanceDecisionPart, Decision : MergeableDecision<Part, Decision>, D
         }
     }
     return map.values.toList()
+}
+
+fun <Part : FinanceDecisionPart, Decision : FinanceDecision<Part, Decision>> updateEndDatesOrAnnulConflictingDecisions(
+    newDecisions: List<Decision>,
+    conflicting: List<Decision>
+): List<Decision> {
+    val fixedConflicts = newDecisions
+        .sortedBy { it.validFrom }
+        .fold(conflicting) { conflicts, newDecision ->
+            val updatedConflicts = conflicts
+                .filter { conflict ->
+                    conflict.headOfFamily.id == newDecision.headOfFamily.id && Period(
+                        conflict.validFrom,
+                        conflict.validTo
+                    ).overlaps(Period(newDecision.validFrom, newDecision.validTo))
+                }
+                .map { conflict ->
+                    if (newDecision.validFrom <= conflict.validFrom) {
+                        conflict.annul()
+                    } else {
+                        conflict.withValidity(Period(conflict.validFrom, newDecision.validFrom.minusDays(1)))
+                    }
+                }
+
+            conflicts.map { conflict -> updatedConflicts.find { it.id == conflict.id } ?: conflict }
+        }
+
+    val (annulledConflicts, nonAnnulledConflicts) = fixedConflicts.partition { it.isAnnulled() }
+    val originalConflictsAnnulled = conflicting
+        .filter { conflict -> annulledConflicts.any { it.id == conflict.id } }
+        .map { it.annul() }
+
+    return nonAnnulledConflicts + originalConflictsAnnulled
 }

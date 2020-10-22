@@ -60,7 +60,7 @@ const PersonFeeDecisions = React.memo(function PersonFeeDecisions({
             return (
               <Tr key={`${feeDecision.id}`} data-qa="table-fee-decision-row">
                 <Td>
-                  <Link to={`/fee-decisions/${feeDecision.id}`}>
+                  <Link to={`/finance/fee-decisions/${feeDecision.id}`}>
                     Maksupäätös{' '}
                     {`${feeDecision.validFrom.format()} - ${
                       feeDecision.validTo?.format() ?? ''

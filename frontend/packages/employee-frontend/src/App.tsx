@@ -24,6 +24,7 @@ import ApplicationsPage from 'components/applications/ApplicationsPage'
 import FinancePage from '~components/FinancePage'
 import InvoicePage from '~components/invoice/InvoicePage'
 import FeeDecisionDetailsPage from '~components/fee-decision-details/FeeDecisionDetailsPage'
+import VoucherValueDecisionPage from '~components/voucher-value-decision/VoucherValueDecisionPage'
 import Absences from '~components/absences/Absences'
 import GroupCaretakers from '~components/GroupCaretakers'
 import PlacementDraftPage from '~components/placement-draft/PlacementDraft'
@@ -157,6 +158,11 @@ export default function App() {
               exact
               path="/finance/fee-decisions/:id"
               component={ensureAuthenticated(FeeDecisionDetailsPage)}
+            />
+            <Route
+              exact
+              path="/finance/value-decisions/:id"
+              component={ensureAuthenticated(VoucherValueDecisionPage)}
             />
             <Route
               exact

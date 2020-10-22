@@ -76,6 +76,12 @@ class AsyncJobRunner(
     var notifyFeeDecisionPdfGenerated: (msg: NotifyFeeDecisionPdfGenerated) -> Unit = noHandler
 
     @Volatile
+    var notifyVoucherValueDecisionApproved: (msg: NotifyVoucherValueDecisionApproved) -> Unit = noHandler
+
+    @Volatile
+    var notifyVoucherValueDecisionPdfGenerated: (msg: NotifyVoucherValueDecisionPdfGenerated) -> Unit = noHandler
+
+    @Volatile
     var initializeFamilyFromApplication: (msg: InitializeFamilyFromApplication) -> Unit = noHandler
 
     @Volatile
@@ -192,6 +198,9 @@ class AsyncJobRunner(
                 AsyncJobType.SEND_DECISION2 -> runJob(job, this.sendDecision2)
                 AsyncJobType.FEE_DECISION_APPROVED -> runJob(job, this.notifyFeeDecisionApproved)
                 AsyncJobType.FEE_DECISION_PDF_GENERATED -> runJob(job, this.notifyFeeDecisionPdfGenerated)
+                AsyncJobType.VOUCHER_VALUE_DECISION_APPROVED -> runJob(job, this.notifyVoucherValueDecisionApproved)
+                AsyncJobType.VOUCHER_VALUE_DECISION_PDF_GENERATED ->
+                    runJob(job, this.notifyVoucherValueDecisionPdfGenerated)
                 AsyncJobType.INITIALIZE_FAMILY_FROM_APPLICATION -> runJob(job, this.initializeFamilyFromApplication)
                 AsyncJobType.VTJ_REFRESH -> runJob(job, this.vtjRefresh)
                 AsyncJobType.DVV_MODIFICATIONS_REFRESH -> runJob(job, this.dvvModificationsRefresh)

@@ -42,7 +42,7 @@ const PersonInvoices = React.memo(function PersonInvoices({ id, open }: Props) {
             return (
               <Tr key={`${invoice.id}`} data-qa="table-invoice-row">
                 <Td>
-                  <Link to={`/invoices/${invoice.id}`}>
+                  <Link to={`/finance/invoices/${invoice.id}`}>
                     Lasku{' '}
                     {`${invoice.periodStart.format()} - ${invoice.periodEnd.format()}`}
                   </Link>

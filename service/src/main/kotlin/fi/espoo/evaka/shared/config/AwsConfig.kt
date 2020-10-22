@@ -50,6 +50,7 @@ class AwsConfig {
         client.createBucket(clubDecisionBucket)
         client.createBucket(daycareDecisionBucket)
         client.createBucket(feeDecisionBucket)
+        client.createBucket("voucher-value-decisions")
 
         return client
     }

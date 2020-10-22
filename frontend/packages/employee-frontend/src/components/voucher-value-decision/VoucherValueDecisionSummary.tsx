@@ -8,14 +8,14 @@ import { faEuroSign } from '~icon-set'
 import { Gap } from '~components/shared/layout/white-space'
 import CollapsibleSection from '~components/shared/molecules/CollapsibleSection'
 import { H4 } from '~components/shared/Typography'
-import IncomeSection from './IncomeSection'
-import PartsSection from './PartsSection'
+import VoucherValueDecisionIncomeSection from './VoucherValueDecisionIncomeSection'
+import VoucherValueDecisionPartsSection from './VoucherValueDecisionPartsSection'
 import { useTranslation } from '~state/i18n'
-import { FeeDecisionDetailed } from '~types/invoicing'
+import { VoucherValueDecisionDetailed } from '~types/invoicing'
 import { formatCents } from '~utils/money'
 
-interface Props {
-  decision: FeeDecisionDetailed
+type Props = {
+  decision: VoucherValueDecisionDetailed
 }
 
 export default React.memo(function Summary({ decision }: Props) {
@@ -23,20 +23,19 @@ export default React.memo(function Summary({ decision }: Props) {
 
   return (
     <CollapsibleSection
-      title={i18n.feeDecision.form.summary.title}
+      title={i18n.valueDecision.summary.title}
       icon={faEuroSign}
       startCollapsed={false}
-      className="income-summary"
     >
-      <IncomeSection decision={decision} />
+      <VoucherValueDecisionIncomeSection decision={decision} />
       <Gap size="m" />
-      <PartsSection decision={decision} />
+      <VoucherValueDecisionPartsSection decision={decision} />
       <Gap size="m" />
-      <Total data-qa="decision-summary-total-price">
+      <Total>
         <TotalTitle noMargin>
-          {i18n.feeDecision.form.summary.totalPrice}
+          {i18n.valueDecision.summary.totalCoPayment}
         </TotalTitle>
-        <b>{formatCents(decision.totalFee)} €</b>
+        <b>{formatCents(decision.totalCoPayment)} €</b>
       </Total>
     </CollapsibleSection>
   )

@@ -14,7 +14,8 @@ export default class InvoicingPage {
   readonly logoutBtn = Selector('[data-qa="logout-btn"]')
 
   readonly financeNav = Selector('[data-qa="finance-nav"]')
-  readonly decisionsTab = Selector('[data-qa="fee-decisions-tab"]')
+  readonly feeDecisionsTab = Selector('[data-qa="fee-decisions-tab"]')
+  readonly valueDecisionsTab = Selector('[data-qa="value-decisions-tab"]')
   readonly invoicesTab = Selector('[data-qa="invoices-tab"]')
   readonly navigateBack = Selector('[data-qa="navigate-back"]')
 
@@ -22,33 +23,58 @@ export default class InvoicingPage {
   readonly draftsTab = Selector('[data-qa="tab-navigation-drafts"]')
   readonly allTab = Selector('[data-qa="tab-navigation-all"]')
 
-  readonly decisionsPage = Selector('[data-qa="fee-decisions-page"]')
-  readonly decisionTable = Selector('[data-qa="table-of-decisions"]')
-  readonly decisionRows = Selector('[data-qa="table-fee-decision-row"]')
-  readonly firstDecisionRow = this.decisionRows.nth(0)
-  readonly toggleAllDecisions = new Checkbox(
+  readonly feeDecisionsPage = Selector('[data-qa="fee-decisions-page"]')
+  readonly feeDecisionTable = Selector('[data-qa="table-of-decisions"]')
+  readonly feeDecisionRows = Selector('[data-qa="table-fee-decision-row"]')
+  readonly firstFeeDecisionRow = this.feeDecisionRows.nth(0)
+  readonly toggleAllFeeDecisions = new Checkbox(
     Selector('[data-qa="toggle-all-decisions"]', { timeout: 50 })
   )
-  readonly toggleFirstDecision = new Checkbox(
-    this.firstDecisionRow.find('[data-qa="toggle-decision"]')
+  readonly toggleFirstFeeDecision = new Checkbox(
+    this.firstFeeDecisionRow.find('[data-qa="toggle-decision"]')
   )
-  readonly confirmDecisions = Selector('[data-qa="confirm-decisions"]')
-  readonly decisionsStatusFilterDraft = new Checkbox(
+  readonly confirmFeeDecisions = Selector('[data-qa="confirm-decisions"]')
+  readonly feeDecisionsStatusFilterDraft = new Checkbox(
     Selector('[data-qa="fee-decision-status-filter-DRAFT"]')
   )
-  readonly decisionsStatusFilterWaitingForSending = new Checkbox(
+  readonly feeDecisionsStatusFilterWaitingForSending = new Checkbox(
     Selector('[data-qa="fee-decision-status-filter-WAITING_FOR_SENDING"]')
   )
-  readonly decisionsStatusFilterSent = new Checkbox(
+  readonly feeDecisionsStatusFilterSent = new Checkbox(
     Selector('[data-qa="fee-decision-status-filter-SENT"]')
   )
 
-  readonly decisionDetailsPage = Selector(
+  readonly feeDecisionDetailsPage = Selector(
     '[data-qa="fee-decision-details-page"]'
   )
-  readonly maxFeeAcceptedCheckbox = Selector(
-    '[data-qa="checkbox-max-fee-accepted"]'
+
+  readonly valueDecisionsPage = Selector(
+    '[data-qa="voucher-value-decisions-page"]'
   )
+  readonly valueDecisionTable = Selector('[data-qa="table-of-decisions"]')
+  readonly valueDecisionRows = Selector('[data-qa="table-value-decision-row"]')
+  readonly firstValueDecisionRow = this.valueDecisionRows.nth(0)
+  readonly toggleAllValueDecisions = new Checkbox(
+    Selector('[data-qa="toggle-all-decisions"]', { timeout: 50 })
+  )
+  readonly toggleFirstValueDecision = new Checkbox(
+    this.firstFeeDecisionRow.find('[data-qa="toggle-decision"]')
+  )
+  readonly sendValueDecisions = Selector('[data-qa="send-decisions"]')
+  readonly valueDecisionsStatusFilterDraft = new Checkbox(
+    Selector('[data-qa="value-decision-status-filter-DRAFT"]')
+  )
+  readonly valueDecisionsStatusFilterWaitingForSending = new Checkbox(
+    Selector('[data-qa="value-decision-status-filter-WAITING_FOR_SENDING"]')
+  )
+  readonly valueDecisionsStatusFilterSent = new Checkbox(
+    Selector('[data-qa="value-decision-status-filter-SENT"]')
+  )
+  readonly valueDecisionPage = Selector(
+    '[data-qa="voucher-value-decision-page"]'
+  )
+  readonly areaFilter = (areaShortName: string) =>
+    Selector(`[data-qa="area-filter-${areaShortName}"]`)
 
   readonly invoicesPage = Selector('[data-qa="invoices-page"]')
   readonly invoiceTable = Selector('[data-qa="table-of-invoices"]')
@@ -99,9 +125,14 @@ export default class InvoicingPage {
     await t.click(this.devLoginSubmitBtn)
   }
 
-  async navigateToDecisions(t: TestController) {
+  async navigateToFeeDecisions(t: TestController) {
     await t.click(this.financeNav)
-    await t.click(this.decisionsTab)
+    await t.click(this.feeDecisionsTab)
+  }
+
+  async navigateToValueDecisions(t: TestController) {
+    await t.click(this.financeNav)
+    await t.click(this.valueDecisionsTab)
   }
 
   async navigateToInvoices(t: TestController) {
@@ -109,13 +140,17 @@ export default class InvoicingPage {
     await t.click(this.invoicesTab)
   }
 
-  async openFirstDecision(t: TestController) {
-    await scrollThenClick(t, this.firstDecisionRow)
+  async openFirstFeeDecision(t: TestController) {
+    await scrollThenClick(t, this.firstFeeDecisionRow)
   }
 
-  async confirmAllDecisions(t: TestController) {
-    await this.toggleAllDecisions.click()
-    await t.click(this.confirmDecisions)
+  async openFirstValueDecision(t: TestController) {
+    await scrollThenClick(t, this.firstValueDecisionRow)
+  }
+
+  async confirmAllFeeDecisions(t: TestController) {
+    await this.toggleAllFeeDecisions.click()
+    await t.click(this.confirmFeeDecisions)
   }
 
   async openFirstInvoice(t: TestController) {

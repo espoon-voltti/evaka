@@ -21,7 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired
 // todo: make this varda unit test
 class VardaIntegrationTest : FullApplicationTest() {
     // depends on how many units are created at insertGeneralTestFixtures()
-    private val staleUnitAmount = 4
+    private val staleUnitAmount = 5
 
     @Autowired
     lateinit var personService: PersonService
