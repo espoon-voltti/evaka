@@ -51,12 +51,6 @@ class PersonService(
         personDAO.getPersonByVolttiId(id)
     }
 
-    fun getPersonBySsn(ssn: String): PersonDTO? = withSpringTx(txManager) {
-        personDAO.getPersonByExternalId(
-            ExternalIdentifier.SSN.getInstance(ssn)
-        )
-    }
-
     fun getUpToDatePerson(user: AuthenticatedUser, id: VolttiIdentifier): PersonDTO? {
         val person = personDAO.getPersonByVolttiId(id) ?: return null
         if (person.identity is ExternalIdentifier.SSN && vtjDataIsStale(person)) {
