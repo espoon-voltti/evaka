@@ -65,7 +65,7 @@ class KoskiClient(
             logger.info { "Koski upload ${msg.key}: no change in payload -> skipping" }
         } else {
             val (_, _, result) = Fuel.request(
-                method = if (data.isNew) Method.POST else Method.PUT,
+                method = if (data.operation == KoskiOperation.CREATE) Method.POST else Method.PUT,
                 path = "$baseUrl/oppija"
             )
                 .authentication()
@@ -101,7 +101,7 @@ class KoskiClient(
                     )
                 )
             )
-            logger.info { "Koski upload ${msg.key}: finished" }
+            logger.info { "Koski upload ${msg.key}: finished ${data.operation}" }
         }
     }
 }
