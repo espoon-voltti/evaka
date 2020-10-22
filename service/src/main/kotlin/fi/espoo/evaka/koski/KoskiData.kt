@@ -271,14 +271,6 @@ internal data class StudyRightTimelines(
     val unknownAbsence: Timeline
 )
 
-/**
- * Calculates active date ranges for a Koski study right.
- *
- * Merges immediately adjacent date ranges, and provides optional clamping.
- *
- * `inclusiveRanges`: a sequence of non-overlapping date ranges that are considered *inclusive* (child is present)
- * `clampRange`: an optional clamping range. If available, all returned date ranges are guaranteed to be contained within this clamping range
- */
 internal fun calculateStudyRightTimelines(
     placementRanges: Sequence<ClosedPeriod>,
     holidays: Set<LocalDate>,
@@ -305,5 +297,5 @@ internal fun calculateStudyRightTimelines(
         present = placement.removeAll(plannedAbsence).removeAll(unknownAbsence),
         plannedAbsence = plannedAbsence,
         unknownAbsence = unknownAbsence
-    ).also { println(it) }
+    )
 }

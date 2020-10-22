@@ -24,7 +24,7 @@ Week 13  29 30 31  1 HH  3 HH
 Week 14  HH  6  7  8  9 10 11
 Week 15  12 13 14 15 16 17 18
 
-Absent 22.3 - 26.3, but no Koski absence is not generated:
+Absent 22.3 - 26.3, but no Koski absence is generated:
     - the actual absence period is just 5 days
      */
     @Test
