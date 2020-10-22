@@ -7,8 +7,11 @@ package fi.espoo.evaka.pis.service
 import fi.espoo.evaka.application.utils.exhaust
 import fi.espoo.evaka.identity.ExternalIdentifier
 import fi.espoo.evaka.identity.VolttiIdentifier
+import fi.espoo.evaka.pis.addSSNToPerson
 import fi.espoo.evaka.pis.controllers.CreatePersonBody
 import fi.espoo.evaka.pis.dao.PersonDAO
+import fi.espoo.evaka.pis.getPersonById
+import fi.espoo.evaka.pis.getPersonBySSN
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.withSpringTx
 import fi.espoo.evaka.shared.domain.BadRequest
@@ -22,6 +25,7 @@ import fi.espoo.evaka.vtjclient.service.persondetails.IPersonDetailsService
 import fi.espoo.evaka.vtjclient.service.persondetails.PersonDetails
 import fi.espoo.evaka.vtjclient.service.persondetails.PersonStorageService
 import fi.espoo.evaka.vtjclient.usecases.dto.PersonResult
+import org.jdbi.v3.core.Handle
 import org.springframework.stereotype.Service
 import org.springframework.transaction.PlatformTransactionManager
 import java.time.Instant
@@ -201,20 +205,19 @@ class PersonService(
         getPerson(id)!!
     }
 
-    fun addSsn(user: AuthenticatedUser, id: VolttiIdentifier, ssn: ExternalIdentifier.SSN) =
-        withSpringTx(txManager) {
-            val person = getPerson(id) ?: throw NotFound("Person $id not found")
+    fun addSsn(h: Handle, user: AuthenticatedUser, id: VolttiIdentifier, ssn: ExternalIdentifier.SSN) {
+        val person = h.getPersonById(id) ?: throw NotFound("Person $id not found")
 
-            when (person.identity) {
-                is ExternalIdentifier.SSN -> throw BadRequest("User already has ssn")
-                is ExternalIdentifier.NoID -> {
-                    if (personDAO.getPersonByExternalId(ssn) != null) {
-                        throw Conflict("User with same ssn already exists")
-                    }
-                    personDAO.addSsn(id, ssn.toString())
+        when (person.identity) {
+            is ExternalIdentifier.SSN -> throw BadRequest("User already has ssn")
+            is ExternalIdentifier.NoID -> {
+                if (h.getPersonBySSN(ssn.ssn) != null) {
+                    throw Conflict("User with same ssn already exists")
                 }
-            }.exhaust()
-        }
+                h.addSSNToPerson(id, ssn.toString())
+            }
+        }.exhaust()
+    }
 
     fun findBySearchTerms(searchTerms: String, orderBy: String, sortDirection: String): List<PersonDTO> =
         withSpringTx(txManager) {
