@@ -279,8 +279,10 @@ internal fun calculateStudyRightTimelines(
     val placement = Timeline().addAll(placementRanges)
     val plannedAbsence = Timeline().addAll(
         Timeline()
-            .addAll(absences.filter { it.type == AbsenceType.PLANNED_ABSENCE || it.type == AbsenceType.OTHER_ABSENCE }
-                .map { it.date.toClosedPeriod() })
+            .addAll(
+                absences.filter { it.type == AbsenceType.PLANNED_ABSENCE || it.type == AbsenceType.OTHER_ABSENCE }
+                    .map { it.date.toClosedPeriod() }
+            )
             .fillWeekendAndHolidayGaps(holidays)
             .intersection(placement)
             .periods().filter { it.durationInDays() > 7 }
