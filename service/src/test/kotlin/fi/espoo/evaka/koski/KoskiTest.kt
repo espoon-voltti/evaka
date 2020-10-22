@@ -141,7 +141,7 @@ Absent 29.3 - 6.4, and a Koski absence is generated
                 KoskiPreparatoryAbsence(LocalDate.of(2021, 3, 30), AbsenceType.PLANNED_ABSENCE),
                 KoskiPreparatoryAbsence(LocalDate.of(2021, 3, 31), AbsenceType.PLANNED_ABSENCE),
                 KoskiPreparatoryAbsence(LocalDate.of(2021, 4, 1), AbsenceType.PLANNED_ABSENCE),
-                KoskiPreparatoryAbsence(LocalDate.of(2021, 4, 6), AbsenceType.PLANNED_ABSENCE)
+                KoskiPreparatoryAbsence(LocalDate.of(2021, 4, 6), AbsenceType.OTHER_ABSENCE)
             )
         )
         assertEquals(
