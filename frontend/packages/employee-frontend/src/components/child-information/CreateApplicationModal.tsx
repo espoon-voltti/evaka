@@ -267,8 +267,8 @@ function CreateApplicationModal({
                   : undefined
               }
               value={{
-                value: 'DAYCARE',
-                label: i18nView.applicationTypes['DAYCARE']
+                value: type,
+                label: i18nView.applicationTypes[type]
               }}
             />
           </div>
