@@ -6,7 +6,9 @@ import { Strategy } from 'passport'
 import { Request } from 'express'
 import { SamlUser } from '../routes/auth/saml/types'
 
-type ProfileGetter = (
+type ProfileGetter = (userId: string) => Promise<SamlUser>
+
+type ProfileUpserter = (
   userId: string,
   roles: string[],
   firstName: string,
@@ -16,9 +18,11 @@ type ProfileGetter = (
 
 export default class DevPassportStrategy extends Strategy {
   private profileGetter: ProfileGetter
-  constructor(profileGetter: ProfileGetter) {
+  private profileUpserter: ProfileUpserter
+  constructor(profileGetter: ProfileGetter, profileUpserter: ProfileUpserter) {
     super()
     this.profileGetter = profileGetter
+    this.profileUpserter = profileUpserter
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -31,20 +35,26 @@ export default class DevPassportStrategy extends Strategy {
       )
     }
 
-    const roles = Array.isArray(req.body.roles)
-      ? req.body.roles
-      : req.body.roles !== undefined
-      ? [req.body.roles]
-      : []
+    if (req.body.preset === 'custom') {
+      const roles = Array.isArray(req.body.roles)
+        ? req.body.roles
+        : req.body.roles !== undefined
+        ? [req.body.roles]
+        : []
 
-    this.profileGetter(
-      req.body.aad,
-      roles,
-      req.body.firstName,
-      req.body.lastName,
-      req.body.email
-    )
-      .then((samlUser) => this.success(samlUser))
-      .catch(() => this.error('Something went wrong'))
+      this.profileUpserter(
+        req.body.aad,
+        roles,
+        req.body.firstName,
+        req.body.lastName,
+        req.body.email
+      )
+        .then((samlUser) => this.success(samlUser))
+        .catch(() => this.error('Something went wrong'))
+    } else {
+      this.profileGetter(req.body.preset)
+        .then((samlUser) => this.success(samlUser))
+        .catch(() => this.error('Something went wrong'))
+    }
   }
 }
