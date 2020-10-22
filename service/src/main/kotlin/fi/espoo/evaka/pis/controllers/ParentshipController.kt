@@ -13,6 +13,8 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.config.Roles.FINANCE_ADMIN
 import fi.espoo.evaka.shared.config.Roles.SERVICE_WORKER
 import fi.espoo.evaka.shared.config.Roles.UNIT_SUPERVISOR
+import fi.espoo.evaka.shared.db.transaction
+import org.jdbi.v3.core.Jdbi
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -29,7 +31,7 @@ import java.util.UUID
 
 @RestController
 @RequestMapping("/parentships")
-class ParentshipController(private val parentshipService: ParentshipService) {
+class ParentshipController(private val parentshipService: ParentshipService, private val jdbi: Jdbi) {
     @PostMapping
     fun createParentship(
         user: AuthenticatedUser,
@@ -39,8 +41,10 @@ class ParentshipController(private val parentshipService: ParentshipService) {
         user.requireOneOfRoles(SERVICE_WORKER, UNIT_SUPERVISOR, FINANCE_ADMIN)
 
         with(body) {
-            return parentshipService.createParentship(childId, headOfChildId, startDate, endDate)
-                .let { ResponseEntity.created(URI.create("/parentships/${it.id}")).body(it) }
+            return jdbi.transaction {
+                parentshipService.createParentship(it, childId, headOfChildId, startDate, endDate)
+                    .let { ResponseEntity.created(URI.create("/parentships/${it.id}")).body(it) }
+            }
         }
     }
 
@@ -53,12 +57,15 @@ class ParentshipController(private val parentshipService: ParentshipService) {
         Audit.ParentShipsRead.log(targetId = listOf(headOfChildId, childId))
         user.requireOneOfRoles(SERVICE_WORKER, UNIT_SUPERVISOR, FINANCE_ADMIN)
 
-        return parentshipService.getParentships(
-            headOfChildId = headOfChildId,
-            childId = childId,
-            includeConflicts = true
-        )
-            .let { ResponseEntity.ok().body(it) }
+        return jdbi.transaction {
+            parentshipService.getParentships(
+                it,
+                headOfChildId = headOfChildId,
+                childId = childId,
+                includeConflicts = true
+            )
+                .let { ResponseEntity.ok().body(it) }
+        }
     }
 
     @GetMapping("/{id}")
@@ -66,9 +73,11 @@ class ParentshipController(private val parentshipService: ParentshipService) {
         Audit.ParentShipsRead.log(targetId = id)
         user.requireOneOfRoles(SERVICE_WORKER, UNIT_SUPERVISOR, FINANCE_ADMIN)
 
-        return parentshipService.getParentship(id)
-            ?.let { ResponseEntity.ok().body(it) }
-            ?: ResponseEntity.notFound().build()
+        return jdbi.transaction {
+            parentshipService.getParentship(it, id)
+                ?.let { ResponseEntity.ok().body(it) }
+                ?: ResponseEntity.notFound().build()
+        }
     }
 
     @PutMapping("/{id}")
@@ -80,8 +89,10 @@ class ParentshipController(private val parentshipService: ParentshipService) {
         Audit.ParentShipsUpdate.log(targetId = id)
         user.requireOneOfRoles(SERVICE_WORKER, UNIT_SUPERVISOR, FINANCE_ADMIN)
 
-        return parentshipService.updateParentshipDuration(id, body.startDate, body.endDate)
-            .let { ResponseEntity.ok().body(it) }
+        return jdbi.transaction {
+            parentshipService.updateParentshipDuration(it, id, body.startDate, body.endDate)
+                .let { ResponseEntity.ok().body(it) }
+        }
     }
 
     @PutMapping("/{id}/retry")
@@ -92,7 +103,7 @@ class ParentshipController(private val parentshipService: ParentshipService) {
         Audit.ParentShipsRetry.log(targetId = parentshipId)
         user.requireOneOfRoles(SERVICE_WORKER, UNIT_SUPERVISOR, FINANCE_ADMIN)
 
-        parentshipService.retryParentship(parentshipId)
+        jdbi.transaction { parentshipService.retryParentship(it, parentshipId) }
         return noContent()
     }
 
@@ -101,7 +112,8 @@ class ParentshipController(private val parentshipService: ParentshipService) {
         Audit.ParentShipsDelete.log(targetId = id)
         user.requireOneOfRoles(SERVICE_WORKER, UNIT_SUPERVISOR, FINANCE_ADMIN)
 
-        parentshipService.deleteParentship(id)
+        jdbi.transaction { parentshipService.deleteParentship(it, id) }
+
         return ResponseEntity.noContent().build()
     }
 

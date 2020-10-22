@@ -9,5 +9,9 @@ export async function triggerFamilyBatch() {
 }
 
 export async function triggerVtjBatch() {
-  await client.post('/person/batch-refresh')
+  await client.post('/person/batch-refresh/vtj')
+}
+
+export async function triggerDvvBatch() {
+  await client.post('/person/batch-refresh/dvv')
 }

@@ -7,7 +7,7 @@ package fi.espoo.evaka.pis.controller
 import com.fasterxml.jackson.module.kotlin.readValue
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.insertGeneralTestFixtures
-import fi.espoo.evaka.pis.dao.ParentshipDAO
+import fi.espoo.evaka.pis.createParentship
 import fi.espoo.evaka.pis.dao.PartnershipDAO
 import fi.espoo.evaka.pis.service.FamilyOverview
 import fi.espoo.evaka.resetDatabase
@@ -29,9 +29,6 @@ import java.time.LocalDate
 import java.util.UUID
 
 class FamilyOverviewTest : FullApplicationTest() {
-    @Autowired
-    lateinit var parentshipDAO: ParentshipDAO
-
     @Autowired
     lateinit var partnershipDAO: PartnershipDAO
 
@@ -131,23 +128,27 @@ class FamilyOverviewTest : FullApplicationTest() {
         val (from, to) = LocalDate.now().let {
             listOf(it.minusYears(1), it.plusYears(1))
         }
-        parentshipDAO.createParentship(testChild_1.id, testAdult_1.id, from, to)
+        jdbi.handle { h -> h.createParentship(testChild_1.id, testAdult_1.id, from, to) }
     }
 
     private fun createTestFixture1plus2() {
         val (from, to) = LocalDate.now().let {
             listOf(it.minusYears(1), it.plusYears(1))
         }
-        parentshipDAO.createParentship(testChild_1.id, testAdult_1.id, from, to)
-        parentshipDAO.createParentship(testChild_2.id, testAdult_1.id, from, to)
+        jdbi.handle { h ->
+            h.createParentship(testChild_1.id, testAdult_1.id, from, to)
+            h.createParentship(testChild_2.id, testAdult_1.id, from, to)
+        }
     }
 
     private fun createTestFixture2plus2() {
         val (from, to) = LocalDate.now().let {
             listOf(it.minusYears(1), it.plusYears(1))
         }
-        parentshipDAO.createParentship(testChild_1.id, testAdult_1.id, from, to)
-        parentshipDAO.createParentship(testChild_2.id, testAdult_1.id, from, to)
+        jdbi.handle { h ->
+            h.createParentship(testChild_1.id, testAdult_1.id, from, to)
+            h.createParentship(testChild_2.id, testAdult_1.id, from, to)
+        }
         partnershipDAO.createPartnership(testAdult_1.id, testAdult_2.id, from, to)
     }
 }

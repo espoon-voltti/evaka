@@ -5,6 +5,7 @@
 package fi.espoo.evaka.shared.async
 
 import fi.espoo.evaka.application.utils.exhaust
+import fi.espoo.evaka.dvv.DvvModificationsRefresh
 import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.db.transaction
 import fi.espoo.evaka.shared.db.withSpringHandle
@@ -79,6 +80,9 @@ class AsyncJobRunner(
 
     @Volatile
     var vtjRefresh: (msg: VTJRefresh) -> Unit = noHandler
+
+    @Volatile
+    var dvvModificationsRefresh: (msg: DvvModificationsRefresh) -> Unit = noHandler
 
     @Volatile
     var uploadToKoski: (msg: UploadToKoski) -> Unit = noHandler
@@ -190,6 +194,7 @@ class AsyncJobRunner(
                 AsyncJobType.FEE_DECISION_PDF_GENERATED -> runJob(job, this.notifyFeeDecisionPdfGenerated)
                 AsyncJobType.INITIALIZE_FAMILY_FROM_APPLICATION -> runJob(job, this.initializeFamilyFromApplication)
                 AsyncJobType.VTJ_REFRESH -> runJob(job, this.vtjRefresh)
+                AsyncJobType.DVV_MODIFICATIONS_REFRESH -> runJob(job, this.dvvModificationsRefresh)
                 AsyncJobType.UPLOAD_TO_KOSKI -> runJob(job, this.uploadToKoski)
                 AsyncJobType.SEND_APPLICATION_EMAIL -> runJob(job, this.sendApplicationEmail)
             }.exhaust()

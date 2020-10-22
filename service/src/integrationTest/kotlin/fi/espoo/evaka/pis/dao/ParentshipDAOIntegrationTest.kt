@@ -6,9 +6,12 @@ package fi.espoo.evaka.pis.dao
 
 import fi.espoo.evaka.identity.ExternalIdentifier
 import fi.espoo.evaka.pis.AbstractIntegrationTest
+import fi.espoo.evaka.pis.createParentship
+import fi.espoo.evaka.pis.getParentships
 import fi.espoo.evaka.pis.service.Parentship
 import fi.espoo.evaka.pis.service.PersonIdentityRequest
 import fi.espoo.evaka.pis.service.PersonJSON
+import fi.espoo.evaka.shared.db.handle
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Test
@@ -16,8 +19,6 @@ import org.springframework.beans.factory.annotation.Autowired
 import java.time.LocalDate
 
 class ParentshipDAOIntegrationTest : AbstractIntegrationTest() {
-    @Autowired
-    lateinit var parentshipDAO: ParentshipDAO
 
     @Autowired
     lateinit var personDAO: PersonDAO
@@ -28,12 +29,14 @@ class ParentshipDAOIntegrationTest : AbstractIntegrationTest() {
         val parent = testPerson2()
         val startDate = LocalDate.now()
         val endDate = startDate.plusDays(100)
-        val parentship = parentshipDAO.createParentship(child.id, parent.id, startDate, endDate)
-        assertNotNull(parentship.id)
-        assertEquals(child, parentship.child)
-        assertEquals(parent.id, parentship.headOfChildId)
-        assertEquals(startDate, parentship.startDate)
-        assertEquals(endDate, parentship.endDate)
+        jdbi.handle { h ->
+            val parentship = h.createParentship(child.id, parent.id, startDate, endDate)
+            assertNotNull(parentship.id)
+            assertEquals(child, parentship.child)
+            assertEquals(parent.id, parentship.headOfChildId)
+            assertEquals(startDate, parentship.startDate)
+            assertEquals(endDate, parentship.endDate)
+        }
     }
 
     @Test
@@ -42,33 +45,37 @@ class ParentshipDAOIntegrationTest : AbstractIntegrationTest() {
         val startDate = LocalDate.now()
         val endDate = startDate.plusDays(100)
 
-        listOf(testPerson4(), testPerson5(), testPerson6()).map {
-            parentshipDAO.createParentship(it.id, parent.id, startDate, endDate)
-        }
+        jdbi.handle { h ->
 
-        val fetchedRelations = parentshipDAO.getParentships(headOfChildId = parent.id, childId = null)
-        assertEquals(3, fetchedRelations.size)
+            listOf(testPerson4(), testPerson5(), testPerson6()).map {
+                h.createParentship(it.id, parent.id, startDate, endDate)
+            }
+
+            val fetchedRelations = h.getParentships(headOfChildId = parent.id, childId = null)
+            assertEquals(3, fetchedRelations.size)
+        }
     }
 
     @Test
     fun `test moving child under different parent`() {
         val child = testPerson4()
         val now = LocalDate.now()
+        jdbi.handle { h ->
+            listOf(testPerson1(), testPerson2()).mapIndexed { index, parent ->
+                val startDate = now.plusDays(index * 51.toLong())
+                val endDate = startDate.plusDays((index + 1) * 50.toLong())
+                h.createParentship(child.id, parent.id, startDate, endDate)
+            }
 
-        listOf(testPerson1(), testPerson2()).mapIndexed { index, parent ->
-            val startDate = now.plusDays(index * 51.toLong())
-            val endDate = startDate.plusDays((index + 1) * 50.toLong())
-            parentshipDAO.createParentship(child.id, parent.id, startDate, endDate)
+            val fetchedRelationsByChild = h.getParentships(headOfChildId = null, childId = child.id)
+            assertEquals(2, fetchedRelationsByChild.size)
+
+            val fetchedRelationsByParent1 = h.getParentships(headOfChildId = testPerson1().id, childId = child.id)
+            assertEquals(1, fetchedRelationsByParent1.size)
+
+            val fetchedRelationsByParent2 = h.getParentships(headOfChildId = testPerson2().id, childId = child.id)
+            assertEquals(1, fetchedRelationsByParent2.size)
         }
-
-        val fetchedRelationsByChild = parentshipDAO.getParentships(headOfChildId = null, childId = child.id)
-        assertEquals(2, fetchedRelationsByChild.size)
-
-        val fetchedRelationsByParent1 = parentshipDAO.getParentships(headOfChildId = testPerson1().id, childId = child.id)
-        assertEquals(1, fetchedRelationsByParent1.size)
-
-        val fetchedRelationsByParent2 = parentshipDAO.getParentships(headOfChildId = testPerson2().id, childId = child.id)
-        assertEquals(1, fetchedRelationsByParent2.size)
     }
 
     @Test
@@ -77,15 +84,18 @@ class ParentshipDAOIntegrationTest : AbstractIntegrationTest() {
         val adult = testPerson2()
         val startDate = LocalDate.now()
         val endDate = startDate.plusDays(100)
-        val parentship = parentshipDAO.createParentship(child.id, adult.id, startDate, endDate)
+        jdbi.handle { h ->
 
-        assertEquals(setOf(parentship), parentshipDAO.getParentships(headOfChildId = adult.id, childId = child.id))
-        assertEquals(setOf(parentship), parentshipDAO.getParentships(headOfChildId = adult.id, childId = null))
-        assertEquals(setOf(parentship), parentshipDAO.getParentships(headOfChildId = null, childId = child.id))
+            val parentship = h.createParentship(child.id, adult.id, startDate, endDate)
 
-        assertEquals(emptySet<Parentship>(), parentshipDAO.getParentships(headOfChildId = child.id, childId = adult.id))
-        assertEquals(emptySet<Parentship>(), parentshipDAO.getParentships(headOfChildId = child.id, childId = null))
-        assertEquals(emptySet<Parentship>(), parentshipDAO.getParentships(headOfChildId = null, childId = adult.id))
+            assertEquals(setOf(parentship), h.getParentships(headOfChildId = adult.id, childId = child.id).toHashSet())
+            assertEquals(setOf(parentship), h.getParentships(headOfChildId = adult.id, childId = null).toHashSet())
+            assertEquals(setOf(parentship), h.getParentships(headOfChildId = null, childId = child.id).toHashSet())
+
+            assertEquals(emptySet<Parentship>(), h.getParentships(headOfChildId = child.id, childId = adult.id).toHashSet())
+            assertEquals(emptySet<Parentship>(), h.getParentships(headOfChildId = child.id, childId = null).toHashSet())
+            assertEquals(emptySet<Parentship>(), h.getParentships(headOfChildId = null, childId = adult.id).toHashSet())
+        }
     }
 
     private fun createPerson(ssn: String, firstName: String): PersonJSON {

@@ -47,6 +47,8 @@ class PersonService(
     fun getPerson(id: VolttiIdentifier): PersonDTO? =
         personDAO.getPersonByVolttiId(id)
 
+    fun getPersonBySsn(ssn: String): PersonDTO? = personDAO.getPersonByExternalId(ExternalIdentifier.SSN.getInstance(ssn))
+
     fun getUpToDatePerson(user: AuthenticatedUser, id: VolttiIdentifier): PersonDTO? {
         val person = personDAO.getPersonByVolttiId(id) ?: return null
         if (person.identity is ExternalIdentifier.SSN && vtjDataIsStale(person)) {

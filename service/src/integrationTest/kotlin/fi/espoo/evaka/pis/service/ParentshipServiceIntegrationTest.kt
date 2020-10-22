@@ -7,6 +7,7 @@ package fi.espoo.evaka.pis.service
 import fi.espoo.evaka.identity.ExternalIdentifier
 import fi.espoo.evaka.pis.AbstractIntegrationTest
 import fi.espoo.evaka.pis.dao.PersonDAO
+import fi.espoo.evaka.shared.db.handle
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -29,20 +30,23 @@ class ParentshipServiceIntegrationTest : AbstractIntegrationTest() {
         val startDate1 = LocalDate.now()
         val endDate1 = startDate1.plusDays(50)
 
-        parentshipService.createParentship(child.id, parent1.id, startDate1, endDate1)
+        jdbi.handle { h ->
 
-        val startDate2 = endDate1.plusDays(1)
-        val endDate2 = startDate2.plusDays(50)
+            parentshipService.createParentship(h, child.id, parent1.id, startDate1, endDate1)
 
-        parentshipService.createParentship(child.id, parent2.id, startDate2, endDate2)
+            val startDate2 = endDate1.plusDays(1)
+            val endDate2 = startDate2.plusDays(50)
 
-        val headsByChild = parentshipService.getParentshipsByChildId(child.id)
+            parentshipService.createParentship(h, child.id, parent2.id, startDate2, endDate2)
 
-        assertEquals(2, headsByChild.size)
+            val headsByChild = parentshipService.getParentshipsByChildId(h, child.id)
 
-        val childByHeads = headsByChild.map { parentshipService.getParentshipsByHeadOfChildId(it.headOfChildId) }
+            assertEquals(2, headsByChild.size)
 
-        assertEquals(2, childByHeads.size)
+            val childByHeads = headsByChild.map { parentshipService.getParentshipsByHeadOfChildId(h, it.headOfChildId) }
+
+            assertEquals(2, childByHeads.size)
+        }
     }
 
     private fun createPerson(ssn: String, firstName: String): PersonDTO {

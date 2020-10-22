@@ -11,7 +11,11 @@ import { getAge } from '@evaka/lib-common/src/utils/local-date'
 
 import { formatName } from '~/utils'
 import { isFailure, isLoading, isSuccess } from '~api'
-import { triggerFamilyBatch, triggerVtjBatch } from '~api/hidden'
+import {
+  triggerDvvBatch,
+  triggerFamilyBatch,
+  triggerVtjBatch
+} from '~api/hidden'
 import { Gap } from '~components/shared/layout/white-space'
 import AddButton from '~components/shared/atoms/buttons/AddButton'
 import Button from 'components/shared/atoms/buttons/Button'
@@ -111,6 +115,10 @@ function Search() {
                 <HiddenButton
                   onClick={() => triggerVtjBatch()}
                   text="VTJ-päivitys"
+                />
+                <HiddenButton
+                  onClick={() => triggerDvvBatch()}
+                  text="DVV-mutp -päivitys"
                 />
               </RequireRole>
             </ButtonsContainer>

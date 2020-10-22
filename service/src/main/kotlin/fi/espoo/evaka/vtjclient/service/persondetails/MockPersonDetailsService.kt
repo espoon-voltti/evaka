@@ -46,6 +46,10 @@ class MockPersonDetailsService() : IPersonDetailsService {
             }
         }
 
+        fun addPerson(person: VtjPerson) {
+            allPersons[person.socialSecurityNumber] = person
+        }
+
         fun getPerson(ssn: String) = allPersons[ssn]
 
         fun deletePerson(ssn: String) = allPersons.remove(ssn)
