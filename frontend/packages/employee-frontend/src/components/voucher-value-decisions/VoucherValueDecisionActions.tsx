@@ -57,6 +57,7 @@ const Actions = React.memo(function Actions({
           clearChecked()
           loadDecisions()
         }}
+        data-qa="send-decisions"
       />
     </StickyActionBar>
   ) : null

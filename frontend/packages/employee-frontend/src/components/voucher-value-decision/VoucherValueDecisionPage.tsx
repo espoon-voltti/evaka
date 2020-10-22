@@ -52,8 +52,8 @@ export default React.memo(function VoucherValueDecisionPage() {
   }
 
   return (
-    <Container>
-      <ReturnButton />
+    <Container data-qa="voucher-value-decision-page">
+      <ReturnButton dataQa="navigate-back" />
       {isSuccess(decision) && (
         <ContentArea opaque>
           <VoucherValueDecisionHeading {...decision.data} />

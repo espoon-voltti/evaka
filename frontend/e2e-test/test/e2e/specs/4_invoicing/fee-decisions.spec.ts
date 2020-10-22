@@ -40,7 +40,7 @@ fixture('Invoicing - fee decisions')
     ])
 
     await t.useRole(seppoAdminRole)
-    await page.navigateToDecisions(t)
+    await page.navigateToFeeDecisions(t)
   })
   .afterEach(logConsoleMessages)
   .after(async () => {
@@ -49,44 +49,44 @@ fixture('Invoicing - fee decisions')
   })
 
 test('List of fee decision drafts shows at least one row', async (t) => {
-  await t.expect(page.decisionTable.visible).ok()
-  await t.expect(page.decisionRows.count).gt(0)
+  await t.expect(page.feeDecisionTable.visible).ok()
+  await t.expect(page.feeDecisionRows.count).gt(0)
 })
 
 test('Navigate to and from decision details page', async (t) => {
-  await page.openFirstDecision(t)
-  await t.expect(page.decisionDetailsPage.exists).ok()
+  await page.openFirstFeeDecision(t)
+  await t.expect(page.feeDecisionDetailsPage.exists).ok()
 
   await t.expect(page.navigateBack.exists).ok()
   await t.click(page.navigateBack)
-  await t.expect(page.decisionsPage.exists).ok()
+  await t.expect(page.feeDecisionsPage.exists).ok()
 })
 
 test('Fee decisions are toggled and confirmed', async (t) => {
-  await t.expect(page.toggleAllDecisions.exists).ok()
-  await t.expect(page.toggleFirstDecision.exists).ok()
-  await t.expect(page.toggleAllDecisions.checked).eql(false)
-  await t.expect(page.toggleFirstDecision.checked).eql(false)
+  await t.expect(page.toggleAllFeeDecisions.exists).ok()
+  await t.expect(page.toggleFirstFeeDecision.exists).ok()
+  await t.expect(page.toggleAllFeeDecisions.checked).eql(false)
+  await t.expect(page.toggleFirstFeeDecision.checked).eql(false)
 
-  await page.toggleAllDecisions.click()
-  await t.expect(page.toggleAllDecisions.checked).eql(true)
-  await t.expect(page.toggleFirstDecision.checked).eql(true)
+  await page.toggleAllFeeDecisions.click()
+  await t.expect(page.toggleAllFeeDecisions.checked).eql(true)
+  await t.expect(page.toggleFirstFeeDecision.checked).eql(true)
 
-  await page.toggleAllDecisions.click()
-  await t.expect(page.toggleAllDecisions.checked).eql(false)
-  await t.expect(page.toggleFirstDecision.checked).eql(false)
+  await page.toggleAllFeeDecisions.click()
+  await t.expect(page.toggleAllFeeDecisions.checked).eql(false)
+  await t.expect(page.toggleFirstFeeDecision.checked).eql(false)
 
-  await page.toggleFirstDecision.click()
-  await t.expect(page.toggleFirstDecision.checked).eql(true)
+  await page.toggleFirstFeeDecision.click()
+  await t.expect(page.toggleFirstFeeDecision.checked).eql(true)
 
-  await page.toggleFirstDecision.click()
-  await t.expect(page.toggleFirstDecision.checked).eql(false)
+  await page.toggleFirstFeeDecision.click()
+  await t.expect(page.toggleFirstFeeDecision.checked).eql(false)
 
-  await page.toggleFirstDecision.click()
-  await t.click(page.confirmDecisions)
+  await page.toggleFirstFeeDecision.click()
+  await t.click(page.confirmFeeDecisions)
   await runPendingAsyncJobs()
 
-  await page.decisionsStatusFilterDraft.click()
-  await page.decisionsStatusFilterSent.click()
-  await t.expect(page.decisionRows.count).eql(1)
+  await page.feeDecisionsStatusFilterDraft.click()
+  await page.feeDecisionsStatusFilterSent.click()
+  await t.expect(page.feeDecisionRows.count).eql(1)
 })

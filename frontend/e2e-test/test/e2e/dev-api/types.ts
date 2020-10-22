@@ -65,6 +65,59 @@ export interface FeeDecision {
   ]
 }
 
+export interface VoucherValueDecision {
+  id: UUID
+  status: 'DRAFT'
+  validFrom: ISODate
+  validTo: ISODate
+  headOfFamily: { id: UUID }
+  familySize: number
+  pricing: {
+    multiplier: string
+    maxThresholdDifference: number
+    minThreshold2: number
+    minThreshold3: number
+    minThreshold4: number
+    minThreshold5: number
+    minThreshold6: number
+    thresholdIncrease6Plus: number
+  }
+  parts: [
+    {
+      child: {
+        id: UUID
+        dateOfBirth: string
+      }
+      placement: {
+        unit: UUID
+        type:
+          | 'DAYCARE'
+          | 'PRESCHOOL_WITH_DAYCARE'
+          | 'PREPARATORY_WITH_DAYCARE'
+          | 'FIVE_YEARS_OLD_DAYCARE'
+        serviceNeed:
+          | 'MISSING'
+          | 'GTE_35'
+          | 'GT_25_LT_35'
+          | 'LTE_25'
+          | 'GTE_25'
+          | 'GT_15_LT_25'
+          | 'LTE_15'
+          | 'LTE_0'
+      }
+      baseCoPayment: number
+      siblingDiscount: number
+      coPayment: number
+      feeAlterations: Array<{
+        type: 'DISCOUNT' | 'INCREASE' | 'RELIEF'
+        amount: number
+        isAbsolute: boolean
+        effect: number
+      }>
+    }
+  ]
+}
+
 export interface DevPricing {
   id?: string
   validFrom: ISODate

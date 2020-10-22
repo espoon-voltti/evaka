@@ -24,6 +24,7 @@ import {
   PlacementPlan,
   SuomiFiMessage,
   UUID,
+  VoucherValueDecision,
   VtjPerson
 } from './types'
 
@@ -327,6 +328,16 @@ export async function insertFeeDecisionFixtures(
 ): Promise<void> {
   try {
     await devClient.post(`/fee-decisions`, fixture)
+  } catch (e) {
+    throw new DevApiError(e)
+  }
+}
+
+export async function insertVoucherValueDecisionFixtures(
+  fixture: VoucherValueDecision[]
+): Promise<void> {
+  try {
+    await devClient.post(`/value-decisions`, fixture)
   } catch (e) {
     throw new DevApiError(e)
   }
