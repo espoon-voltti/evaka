@@ -227,4 +227,9 @@ class TimeTest {
         assertEquals(y, c.intersection(d))
         assertEquals(y, d.intersection(c))
     }
+
+    @Test
+    fun `ClosedPeriod durationInDays returns 1 for one day periods`() {
+        assertEquals(1, LocalDate.of(2019, 1, 1).toClosedPeriod().durationInDays())
+    }
 }

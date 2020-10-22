@@ -8,7 +8,7 @@ CREATE FUNCTION koski_active_study_right(today date) RETURNS
 TABLE (
     child_id uuid, unit_id uuid, type koski_study_right_type,
     oph_unit_oid text, oph_organization_oid text, oph_organizer_oid text,
-    placement_ranges daterange[], all_placements_in_past bool,
+    full_range daterange, placement_ranges daterange[], all_placements_in_past bool, preparatory_absences jsonb,
     developmental_disability_1 daterange[], developmental_disability_2 daterange[],
     extended_compulsory_education daterange, transport_benefit daterange,
     special_assistance_decision_with_group daterange[], special_assistance_decision_without_group daterange[]
@@ -20,8 +20,10 @@ TABLE (
         d.oph_unit_oid,
         d.oph_organization_oid,
         d.oph_organizer_oid,
+        full_range,
         placement_ranges,
         all_placements_in_past,
+        preparatory_absences,
         developmental_disability_1,
         developmental_disability_2,
         extended_compulsory_education,
@@ -53,6 +55,14 @@ TABLE (
     ) p
     JOIN daycare d ON p.unit_id = d.id
     JOIN person pr ON p.child_id = pr.id
+    LEFT JOIN LATERAL (
+        SELECT jsonb_agg(jsonb_build_object('date', a.date, 'type', a.absence_type) ORDER BY a.date) AS preparatory_absences
+        FROM absence a
+        WHERE a.child_id = p.child_id
+        AND a.care_type = 'PRESCHOOL'
+        AND a.date <@ full_range
+        AND a.date > '2020-08-01'
+    ) pa ON p.type = 'PREPARATORY'
     JOIN LATERAL (
         SELECT
             array_agg(date_interval) FILTER (WHERE 'DEVELOPMENTAL_DISABILITY_1' = ANY(bases)) AS developmental_disability_1,

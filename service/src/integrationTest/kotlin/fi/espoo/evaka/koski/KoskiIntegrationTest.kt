@@ -9,6 +9,8 @@ import fi.espoo.evaka.assistanceaction.AssistanceActionType
 import fi.espoo.evaka.assistanceaction.AssistanceMeasure
 import fi.espoo.evaka.assistanceneed.AssistanceBasis
 import fi.espoo.evaka.daycare.domain.ProviderType
+import fi.espoo.evaka.daycare.service.AbsenceType
+import fi.espoo.evaka.daycare.service.CareType
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.invoicing.domain.PersonData
 import fi.espoo.evaka.placement.PlacementType
@@ -16,10 +18,12 @@ import fi.espoo.evaka.preschoolTerm2019
 import fi.espoo.evaka.preschoolTerm2020
 import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.db.handle
+import fi.espoo.evaka.shared.db.transaction
 import fi.espoo.evaka.shared.dev.DevAssistanceAction
 import fi.espoo.evaka.shared.dev.DevAssistanceNeed
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevPlacement
+import fi.espoo.evaka.shared.dev.insertTestAbsence
 import fi.espoo.evaka.shared.dev.insertTestAssistanceAction
 import fi.espoo.evaka.shared.dev.insertTestAssistanceNeed
 import fi.espoo.evaka.shared.dev.insertTestDaycare
@@ -612,6 +616,73 @@ class KoskiIntegrationTest : FullApplicationTest() {
         assertEquals(Järjestämismuoto(JärjestämismuotoKoodi.PURCHASED), opiskeluoikeus.järjestämismuoto)
     }
 
+    @Test
+    fun `absences have no effect on preschool study rights`() {
+        insertPlacement(period = preschoolTerm2020, type = PlacementType.PRESCHOOL)
+
+        val today = preschoolTerm2020.end.plusDays(1)
+        koskiTester.triggerUploads(today)
+
+        insertAbsences(
+            testChild_1.id,
+            AbsenceType.UNKNOWN_ABSENCE,
+            ClosedPeriod(preschoolTerm2020.start.plusDays(1), preschoolTerm2020.end.minusDays(1))
+        )
+
+        val opiskeluoikeus = koskiServer.getStudyRights().values.single().opiskeluoikeus
+        assertEquals(
+            listOf(
+                Opiskeluoikeusjakso.läsnä(preschoolTerm2020.start),
+                Opiskeluoikeusjakso.valmistunut(preschoolTerm2020.end)
+            ),
+            opiskeluoikeus.tila.opiskeluoikeusjaksot
+        )
+    }
+
+    @Test
+    fun `absences have no effect on pre-2020 preparatory study rights`() {
+        insertPlacement(period = preschoolTerm2019, type = PlacementType.PRESCHOOL)
+
+        val today = preschoolTerm2019.end.plusDays(1)
+        koskiTester.triggerUploads(today)
+
+        insertAbsences(
+            testChild_1.id,
+            AbsenceType.UNKNOWN_ABSENCE,
+            ClosedPeriod(preschoolTerm2019.start.plusDays(1), preschoolTerm2019.end.minusDays(1))
+        )
+
+        val opiskeluoikeus = koskiServer.getStudyRights().values.single().opiskeluoikeus
+        assertEquals(
+            listOf(
+                Opiskeluoikeusjakso.läsnä(preschoolTerm2019.start),
+                Opiskeluoikeusjakso.valmistunut(preschoolTerm2019.end)
+            ),
+            opiskeluoikeus.tila.opiskeluoikeusjaksot
+        )
+    }
+
+    @Test
+    fun `holidays longer than 7 days are included in preparatory study rights`() {
+        val holiday = ClosedPeriod(preschoolTerm2020.start.plusDays(1), preschoolTerm2020.start.plusDays(1 + 8))
+        insertPlacement(period = preschoolTerm2020, type = PlacementType.PREPARATORY)
+        insertAbsences(testChild_1.id, AbsenceType.PLANNED_ABSENCE, holiday)
+
+        val today = preschoolTerm2020.end.plusDays(1)
+        koskiTester.triggerUploads(today)
+
+        val opiskeluoikeus = koskiServer.getStudyRights().values.single().opiskeluoikeus
+        assertEquals(
+            listOf(
+                Opiskeluoikeusjakso.läsnä(preschoolTerm2020.start),
+                Opiskeluoikeusjakso.loma(holiday.start),
+                Opiskeluoikeusjakso.läsnä(holiday.end.plusDays(1)),
+                Opiskeluoikeusjakso.valmistunut(preschoolTerm2020.end)
+            ),
+            opiskeluoikeus.tila.opiskeluoikeusjaksot
+        )
+    }
+
     private fun insertPlacement(
         child: PersonData.Detailed = testChild_1,
         daycareId: UUID = testDaycare.id,
@@ -628,6 +699,21 @@ class KoskiIntegrationTest : FullApplicationTest() {
             )
         )
     }
+
+    private fun insertAbsences(childId: UUID, absenceType: AbsenceType, vararg periods: ClosedPeriod) =
+        jdbi.transaction { h ->
+            for (period in periods) {
+                for (date in period.dates()) {
+                    insertTestAbsence(
+                        h,
+                        childId = childId,
+                        careType = CareType.PRESCHOOL,
+                        date = date,
+                        absenceType = absenceType
+                    )
+                }
+            }
+        }
 }
 
 private fun Handle.clearKoskiInputCache() = createUpdate("UPDATE koski_study_right SET input_data = NULL").execute()

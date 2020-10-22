@@ -9,6 +9,7 @@ import org.jdbi.v3.core.kotlin.mapTo
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.Month
+import java.time.temporal.ChronoUnit
 import java.util.UUID
 
 fun orMax(date: LocalDate?): LocalDate = date ?: LocalDate.MAX
@@ -37,6 +38,8 @@ data class ClosedPeriod(val start: LocalDate, val end: LocalDate) {
     fun includes(value: LocalDate) = this.start <= value && value <= this.end
     fun overlaps(value: ClosedPeriod) = this.start <= value.end && value.start <= this.end
 
+    fun adjacentTo(other: ClosedPeriod) = other.end.plusDays(1) == this.start || this.end.plusDays(1) == other.start
+
     fun intersection(value: ClosedPeriod): ClosedPeriod? {
         val start = maxOf(this.start, value.start)
         val end = minOf(this.end, value.end)
@@ -44,6 +47,7 @@ data class ClosedPeriod(val start: LocalDate, val end: LocalDate) {
     }
 
     fun dates(): Sequence<LocalDate> = generateSequence(start) { if (it < end) it.plusDays(1) else null }
+    fun durationInDays(): Long = ChronoUnit.DAYS.between(start, end.plusDays(1)) // adjust to exclusive range
 }
 
 data class Period(val start: LocalDate, val end: LocalDate?) {
@@ -133,3 +137,6 @@ fun operationalDays(year: Int, month: Month): (Handle) -> OperationalDays = { h 
 }
 
 val isWeekday = { date: LocalDate -> date.dayOfWeek != DayOfWeek.SATURDAY && date.dayOfWeek != DayOfWeek.SUNDAY }
+
+fun LocalDate.isWeekend() = this.dayOfWeek == DayOfWeek.SATURDAY || this.dayOfWeek == DayOfWeek.SUNDAY
+fun LocalDate.toClosedPeriod(): ClosedPeriod = ClosedPeriod(this, this)

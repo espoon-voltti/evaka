@@ -76,7 +76,10 @@ enum class OpiskeluoikeusjaksonTilaKoodi {
     VOIDED,
 
     @JsonProperty("valiaikaisestikeskeytynyt")
-    INTERRUPTED
+    INTERRUPTED,
+
+    @JsonProperty("loma")
+    HOLIDAY
 }
 
 // https://koski.opintopolku.fi/koski/dokumentaatio/koodisto/opiskeluoikeudentyyppi/latest
@@ -162,6 +165,11 @@ data class Opiskeluoikeusjakso(
         fun väliaikaisestiKeskeytynyt(alku: LocalDate) = Opiskeluoikeusjakso(
             alku = alku,
             tila = OpiskeluoikeusjaksonTila(OpiskeluoikeusjaksonTilaKoodi.INTERRUPTED)
+        )
+
+        fun loma(alku: LocalDate) = Opiskeluoikeusjakso(
+            alku = alku,
+            tila = OpiskeluoikeusjaksonTila(OpiskeluoikeusjaksonTilaKoodi.HOLIDAY)
         )
     }
 }

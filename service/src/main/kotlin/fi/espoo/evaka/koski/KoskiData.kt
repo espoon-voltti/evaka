@@ -5,9 +5,14 @@
 package fi.espoo.evaka.koski
 
 import fi.espoo.evaka.daycare.domain.ProviderType
+import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.derivePreschoolTerm
+import fi.espoo.evaka.shared.Timeline
 import fi.espoo.evaka.shared.domain.ClosedPeriod
+import fi.espoo.evaka.shared.domain.isWeekend
+import fi.espoo.evaka.shared.domain.toClosedPeriod
 import org.jdbi.v3.core.mapper.Nested
+import org.jdbi.v3.json.Json
 import java.time.LocalDate
 import java.util.UUID
 
@@ -97,6 +102,8 @@ data class KoskiVoidedDataRaw(
     )
 }
 
+data class KoskiPreparatoryAbsence(val date: LocalDate, val type: AbsenceType)
+
 data class KoskiActiveDataRaw(
     @Nested("")
     val child: KoskiChildRaw,
@@ -106,6 +113,9 @@ data class KoskiActiveDataRaw(
     val approverName: String,
     val personOid: String?,
     val placementRanges: List<ClosedPeriod> = emptyList(),
+    val holidays: List<LocalDate> = emptyList(),
+    @Json
+    val preparatoryAbsences: List<KoskiPreparatoryAbsence> = emptyList(),
     val developmentalDisability1: List<ClosedPeriod> = emptyList(),
     val developmentalDisability2: List<ClosedPeriod> = emptyList(),
     val extendedCompulsoryEducation: ClosedPeriod? = null,
@@ -119,16 +129,21 @@ data class KoskiActiveDataRaw(
     private val startTerm = derivePreschoolTerm(placementRanges.first().start)
     private val endTerm = derivePreschoolTerm(placementRanges.last().start)
 
-    private val studyRightRanges =
-        calculateStudyRightRanges(placementRanges.asSequence(), clampRange = ClosedPeriod(startTerm.start, endTerm.end))
+    private val studyRightTimelines = ClosedPeriod(startTerm.start, endTerm.end).let { clampRange ->
+        calculateStudyRightTimelines(
+            placementRanges = placementRanges.asSequence().mapNotNull { it.intersection(clampRange) },
+            holidays = holidays.asSequence().filter { clampRange.includes(it) }.toSet(),
+            absences = preparatoryAbsences.asSequence().filter { clampRange.includes(it.date) }
+        )
+    }
 
     private val approverTitle = "Esiopetusyksikön johtaja"
 
     fun toKoskiData(sourceSystem: String, today: LocalDate): KoskiData? {
         // It's possible clamping to preschool term has removed all placements -> no study right can be created
-        val lastDateRange = studyRightRanges.lastOrNull() ?: return null
+        val placementRange = studyRightTimelines.placement.spanningPeriod() ?: return null
 
-        val isQualified = lastDateRange.end.let {
+        val isQualified = placementRange.end.let {
             it.isAfter(LocalDate.of(endTerm.end.year, 4, 30)) &&
                 it.isBefore(endTerm.end.plusDays(1)) &&
                 it.isBefore(today)
@@ -145,22 +160,31 @@ data class KoskiActiveDataRaw(
     }
 
     private fun haeOpiskeluoikeusjaksot(today: LocalDate, isQualified: Boolean): List<Opiskeluoikeusjakso> {
+        val placementRange = studyRightTimelines.placement.spanningPeriod() ?: return emptyList()
+
+        val present = studyRightTimelines.present.periods()
+            .map { Opiskeluoikeusjakso.läsnä(it.start) }
+        val gaps = studyRightTimelines.placement
+            .gaps()
+            .map { Opiskeluoikeusjakso.väliaikaisestiKeskeytynyt(it.start) }
+        val holidays = studyRightTimelines.plannedAbsence.periods()
+            .map { Opiskeluoikeusjakso.loma(it.start) }
+        val absent = studyRightTimelines.unknownAbsence.periods()
+            .map { Opiskeluoikeusjakso.väliaikaisestiKeskeytynyt(it.start) }
+
         val result = mutableListOf<Opiskeluoikeusjakso>()
-        for (range in studyRightRanges.dropLast(1)) {
-            result.add(Opiskeluoikeusjakso.läsnä(range.start))
-            result.add(Opiskeluoikeusjakso.väliaikaisestiKeskeytynyt(range.end.plusDays(1)))
-        }
-        val range = studyRightRanges.last()
-        result.add(Opiskeluoikeusjakso.läsnä(range.start))
+        result.addAll((present + gaps + holidays + absent))
+
         when {
-            range.end.isAfter(today) -> {
+            placementRange.end.isAfter(today) -> {
                 // still ongoing
             }
             else -> result.add(
-                if (isQualified) Opiskeluoikeusjakso.valmistunut(range.end)
-                else Opiskeluoikeusjakso.eronnut(range.end)
+                if (isQualified) Opiskeluoikeusjakso.valmistunut(placementRange.end)
+                else Opiskeluoikeusjakso.eronnut(placementRange.end)
             )
         }
+        result.sortBy { it.alku }
         return result
     }
 
@@ -210,7 +234,7 @@ data class KoskiActiveDataRaw(
     }
 
     fun haeVahvistus() = Vahvistus(
-        päivä = studyRightRanges.last().end,
+        päivä = studyRightTimelines.placement.spanningPeriod()!!.end,
         paikkakunta = VahvistusPaikkakunta(koodiarvo = VahvistusPaikkakuntaKoodi.ESPOO),
         myöntäjäOrganisaatio = MyöntäjäOrganisaatio(oid = unit.ophOrganizerOid),
         myöntäjäHenkilöt = listOf(
@@ -235,37 +259,46 @@ data class KoskiActiveDataRaw(
 }
 
 /**
- * Calculates active date ranges for a Koski study right.
- *
- * Merges immediately adjacent date ranges, and provides optional clamping.
- *
- * `inclusiveRanges`: a sequence of non-overlapping date ranges that are considered *inclusive* (child is present)
- * `clampRange`: an optional clamping range. If available, all returned date ranges are guaranteed to be contained within this clamping range
+ * Fill gaps between periods if those gaps contain only holidays or weekend days
  */
-fun calculateStudyRightRanges(
-    inclusiveRanges: Sequence<ClosedPeriod>,
-    clampRange: ClosedPeriod? = null
-): List<ClosedPeriod> {
-    val iter = inclusiveRanges.sortedWith(compareBy({ it.start }, { it.end }))
-        .mapNotNull { if (clampRange == null) it else clampRange.intersection(it) }
-        .iterator()
+internal fun Timeline.fillWeekendAndHolidayGaps(holidays: Set<LocalDate>) =
+    this.addAll(this.gaps().filter { gap -> gap.dates().all { it.isWeekend() || holidays.contains(it) } })
 
-    var current: ClosedPeriod? = null
-    val result = mutableListOf<ClosedPeriod>()
-    while (iter.hasNext()) {
-        current = if (current == null) {
-            iter.next()
-        } else {
-            val next = iter.next()
-            check(current.end < next.start)
-            if (current.end.plusDays(1) == next.start) {
-                ClosedPeriod(current.start, next.end)
-            } else {
-                result.add(current)
-                next
-            }
-        }
-    }
-    current?.let { result.add(it) }
-    return result
+internal data class StudyRightTimelines(
+    val placement: Timeline,
+    val present: Timeline,
+    val plannedAbsence: Timeline,
+    val unknownAbsence: Timeline
+)
+
+internal fun calculateStudyRightTimelines(
+    placementRanges: Sequence<ClosedPeriod>,
+    holidays: Set<LocalDate>,
+    absences: Sequence<KoskiPreparatoryAbsence>
+): StudyRightTimelines {
+    val placement = Timeline().addAll(placementRanges)
+    val plannedAbsence = Timeline().addAll(
+        Timeline()
+            .addAll(
+                absences.filter { it.type == AbsenceType.PLANNED_ABSENCE || it.type == AbsenceType.OTHER_ABSENCE }
+                    .map { it.date.toClosedPeriod() }
+            )
+            .fillWeekendAndHolidayGaps(holidays)
+            .intersection(placement)
+            .periods().filter { it.durationInDays() > 7 }
+    )
+    val unknownAbsence = Timeline().addAll(
+        Timeline()
+            .addAll(absences.filter { it.type == AbsenceType.UNKNOWN_ABSENCE }.map { it.date.toClosedPeriod() })
+            .fillWeekendAndHolidayGaps(holidays)
+            .intersection(placement)
+            .periods().filter { it.durationInDays() > 7 }
+    )
+
+    return StudyRightTimelines(
+        placement = placement,
+        present = placement.removeAll(plannedAbsence).removeAll(unknownAbsence),
+        plannedAbsence = plannedAbsence,
+        unknownAbsence = unknownAbsence
+    )
 }
