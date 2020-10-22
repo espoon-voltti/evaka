@@ -80,8 +80,6 @@ class AppenderTest {
             it.assertSanitized().containsExactly(event1.tuple())
             it.withLatestSanitized { actual ->
                 defaultErrorAssertions(actual, meta, exception)
-                assertThat(actual["message"] as String).contains(UUIDWithSSN)
-                assertThat(actual["message"] as String).doesNotContain(redactedSSN)
                 assertThat(actual["stackTrace"] as String).doesNotContain(testSSNs[0])
                 assertThat(actual["stackTrace"] as String).contains(redactedSSN)
             }
@@ -97,6 +95,14 @@ class AppenderTest {
                     defaultInfoAssertions(actual)
                     assertThat(actual["message"] as String).doesNotContain(ssn)
                     assertThat(actual["message"] as String).contains(redactedSSN)
+                }
+            }
+
+            UUIDWithSSNs.forEach { uuid ->
+                logger.info { "UUID has SSN in it: $uuid" }
+                it.withLatestSanitized { actual ->
+                    assertThat(actual["message"] as String).contains(uuid)
+                    assertThat(actual["message"] as String).doesNotContain(redactedSSN)
                 }
             }
 
