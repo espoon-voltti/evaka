@@ -31,6 +31,24 @@ import java.sql.ResultSet
 import java.time.ZoneOffset
 import java.util.UUID
 
+// language=sql
+val voucherValueDecisionQueryBase =
+    """
+    SELECT
+        decision.*,
+        part.child,
+        part.date_of_birth,
+        part.placement_unit,
+        part.placement_type,
+        part.service_need,
+        part.base_co_payment,
+        part.sibling_discount,
+        part.co_payment,
+        part.fee_alterations
+    FROM voucher_value_decision as decision
+    LEFT JOIN voucher_value_decision_part as part ON decision.id = part.voucher_value_decision_id
+    """.trimIndent()
+
 fun Handle.upsertValueDecisions(mapper: ObjectMapper, decisions: List<VoucherValueDecision>) {
     upsertDecisions(mapper, decisions)
     replaceParts(mapper, decisions)
@@ -193,19 +211,7 @@ fun Handle.getValueDecisionsByIds(mapper: ObjectMapper, ids: List<UUID>): List<V
     // language=sql
     val sql =
         """
-        SELECT
-            decision.*,
-            part.child,
-            part.date_of_birth,
-            part.placement_unit,
-            part.placement_type,
-            part.service_need,
-            part.base_co_payment,
-            part.sibling_discount,
-            part.co_payment,
-            part.fee_alterations
-        FROM voucher_value_decision as decision
-        LEFT JOIN voucher_value_decision_part as part ON decision.id = part.voucher_value_decision_id
+        $voucherValueDecisionQueryBase
         WHERE decision.id = ANY(:ids)
         """
 
@@ -224,19 +230,7 @@ fun Handle.findValueDecisionsForHeadOfFamily(
     // language=sql
     val sql =
         """
-        SELECT
-            decision.*,
-            part.child,
-            part.date_of_birth,
-            part.placement_unit,
-            part.placement_type,
-            part.service_need,
-            part.base_co_payment,
-            part.sibling_discount,
-            part.co_payment,
-            part.fee_alterations
-        FROM voucher_value_decision as decision
-        LEFT JOIN voucher_value_decision_part as part ON decision.id = part.voucher_value_decision_id
+        $voucherValueDecisionQueryBase
         WHERE decision.head_of_family = :headOfFamily
         AND (:period::daterange IS NULL OR daterange(decision.valid_from, decision.valid_to, '[]') && :period)
         AND (:statuses::text[] IS NULL OR decision.status = ANY(:statuses))

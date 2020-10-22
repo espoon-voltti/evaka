@@ -71,6 +71,15 @@ val testPurchasedDaycare =
         language = "fi"
     )
 
+val testVoucherDaycare =
+    UnitData.Detailed(
+        id = UUID.randomUUID(),
+        name = "Test Voucher Daycare",
+        areaId = testAreaId,
+        areaName = "Lwiz Foo",
+        language = "fi"
+    )
+
 val testClub = DevDaycare(
     id = UUID.randomUUID(),
     name = "Test Club",
@@ -283,7 +292,17 @@ fun insertGeneralTestFixtures(h: Handle) {
             areaId = testAreaId,
             id = testPurchasedDaycare.id,
             name = testPurchasedDaycare.name,
-            providerType = ProviderType.PURCHASED
+            providerType = ProviderType.PURCHASED,
+            invoicedByMunicipality = false
+        )
+    )
+    h.insertTestDaycare(
+        DevDaycare(
+            areaId = testVoucherDaycare.areaId,
+            id = testVoucherDaycare.id,
+            name = testVoucherDaycare.name,
+            providerType = ProviderType.PRIVATE_SERVICE_VOUCHER,
+            invoicedByMunicipality = false
         )
     )
     h.insertTestDaycare(testClub)

@@ -11,7 +11,9 @@ import fi.espoo.evaka.invoicing.createFeeDecisionPartFixture
 import fi.espoo.evaka.invoicing.data.feeDecisionQueryBase
 import fi.espoo.evaka.invoicing.data.getPricing
 import fi.espoo.evaka.invoicing.data.toFeeDecision
+import fi.espoo.evaka.invoicing.data.toVoucherValueDecision
 import fi.espoo.evaka.invoicing.data.upsertFeeDecisions
+import fi.espoo.evaka.invoicing.data.voucherValueDecisionQueryBase
 import fi.espoo.evaka.invoicing.domain.DecisionIncome
 import fi.espoo.evaka.invoicing.domain.FeeAlteration
 import fi.espoo.evaka.invoicing.domain.FeeDecision
@@ -23,6 +25,8 @@ import fi.espoo.evaka.invoicing.domain.IncomeType
 import fi.espoo.evaka.invoicing.domain.IncomeValue
 import fi.espoo.evaka.invoicing.domain.PlacementType
 import fi.espoo.evaka.invoicing.domain.ServiceNeed
+import fi.espoo.evaka.invoicing.domain.VoucherValueDecision
+import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
 import fi.espoo.evaka.invoicing.domain.merge
 import fi.espoo.evaka.invoicing.oldTestPricing
 import fi.espoo.evaka.invoicing.testPricing
@@ -52,6 +56,7 @@ import fi.espoo.evaka.testClub
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDaycareNotInvoiced
 import fi.espoo.evaka.testDecisionMaker_1
+import fi.espoo.evaka.testVoucherDaycare
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -1761,6 +1766,52 @@ class DecisionGeneratorIntegrationTest : FullApplicationTest() {
         assertEquals(0, draft.totalFee())
     }
 
+    @Test
+    fun `family with children placed into voucher and municipal daycares get sibling discounts in fee and voucher value decisions`() {
+        val period = Period(LocalDate.of(2020, 1, 1), LocalDate.of(2020, 12, 31))
+        insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id, testChild_2.id, testChild_3.id), period)
+        insertPlacement(testChild_1.id, period, DAYCARE, testDaycare.id)
+        insertPlacement(testChild_2.id, period, DAYCARE, testVoucherDaycare.id)
+        insertPlacement(testChild_3.id, period, DAYCARE, testDaycare.id)
+
+        generator.handleFamilyUpdate(testAdult_1.id, period)
+
+        val feeDecisions = getAllFeeDecisions()
+        assertEquals(1, feeDecisions.size)
+        feeDecisions.first().let { decision ->
+            assertEquals(FeeDecisionStatus.DRAFT, decision.status)
+            assertEquals(period.start, decision.validFrom)
+            assertEquals(period.end, decision.validTo)
+            assertEquals(43400, decision.totalFee())
+            assertEquals(2, decision.parts.size)
+            decision.parts.first().let { part ->
+                assertEquals(testChild_3.id, part.child.id)
+                assertEquals(testDaycare.id, part.placement.unit)
+                assertEquals(28900, part.fee)
+            }
+            decision.parts.last().let { part ->
+                assertEquals(testChild_1.id, part.child.id)
+                assertEquals(testDaycare.id, part.placement.unit)
+                assertEquals(14500, part.fee)
+            }
+        }
+
+        val voucherValueDecisions = getAllVoucherValueDecisions()
+        assertEquals(1, voucherValueDecisions.size)
+        voucherValueDecisions.first().let { decision ->
+            assertEquals(VoucherValueDecisionStatus.DRAFT, decision.status)
+            assertEquals(period.start, decision.validFrom)
+            assertEquals(period.end, decision.validTo)
+            assertEquals(5800, decision.totalCoPayment())
+            assertEquals(1, decision.parts.size)
+            decision.parts.first().let { part ->
+                assertEquals(testChild_2.id, part.child.id)
+                assertEquals(testVoucherDaycare.id, part.placement.unit)
+                assertEquals(5800, part.coPayment)
+            }
+        }
+    }
+
     private fun assertEqualEnoughDecisions(expected: List<FeeDecision>, actual: List<FeeDecision>) {
         val createdAt = Instant.now()
         UUID.randomUUID().let { uuid ->
@@ -1855,6 +1906,14 @@ class DecisionGeneratorIntegrationTest : FullApplicationTest() {
         return jdbi.handle { h ->
             h.createQuery(feeDecisionQueryBase)
                 .map(toFeeDecision(objectMapper))
+                .let { it.merge() }
+        }
+    }
+
+    private fun getAllVoucherValueDecisions(): List<VoucherValueDecision> {
+        return jdbi.handle { h ->
+            h.createQuery(voucherValueDecisionQueryBase)
+                .map(toVoucherValueDecision(objectMapper))
                 .let { it.merge() }
         }
     }
