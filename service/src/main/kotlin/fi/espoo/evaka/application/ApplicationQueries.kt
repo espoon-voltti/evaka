@@ -457,7 +457,7 @@ fun fetchApplicationDetails(h: Handle, applicationId: UUID): ApplicationDetails?
             a.additionaldaycareapplication,
             a.hidefromguardian,
             a.created,
-            a.updated,
+            f.updated,
             a.sentdate,
             a.duedate,
             a.checkedbyadmin
