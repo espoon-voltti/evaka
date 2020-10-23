@@ -87,7 +87,7 @@ Lapsenne varhaiskasvatushakemus on vastaanotettu.
 Varhaiskasvatushakemuksella on <strong>neljän (4) kuukauden hakuaika.</strong> Hakemuksen tehnyt huoltaja voi muokata hakemusta osoitteessa <a href="www.espoonvarhaiskasvatus.fi">www.espoonvarhaiskasvatus.fi</a> siihen saakka, kun se on otettu käsittelyyn. 
 </p>
 <p>
-Saatte tiedon lapsenne varhaiskasvatuspaikasta noin kuukautta (1 kk) ennen hakemuksen hakuajan päättymistä. Päätös on nähtävissä ja hyväksyttävissä/hylättävissä <a href="www.espoonvarhaiskasvatus.fi">www.espoonvarhaiskasvatus.fi</a>.
+Saatte tiedon lapsenne varhaiskasvatuspaikasta noin kuukautta ennen hakemuksen lakisääteisen järjestelyajan päättymistä. Hakemuksen lakisääteinen järjestelyaika on yksi (1) kuukausi hakemuksen saapumisesta. Päätös on nähtävissä ja hyväksyttävissä/hylättävissä <a href="www.espoonvarhaiskasvatus.fi">www.espoonvarhaiskasvatus.fi</a>.
 </p>
 <p>
 Mikäli valitsitte hakemuksen kiireelliseksi, teidän tulee toimittaa hakemuksen liitteeksi <strong>todistus äkillisestä työllistymisestä uuteen työpaikkaan tai todistus äkillisesti saadusta uudesta opiskelupaikasta.</strong> Hakuaika on tällöin <strong>minimissään 2 viikkoa</strong> ja alkaa todistuksen saapumispäivämäärästä.
@@ -117,7 +117,7 @@ Lapsenne varhaiskasvatushakemus on vastaanotettu.
 
 Varhaiskasvatushakemuksella on neljän (4) kuukauden hakuaika. Hakemuksen tehnyt huoltaja voi muokata hakemusta osoitteessa www.espoonvarhaiskasvatus.fi siihen saakka, kun se on otettu käsittelyyn.
 
-Saatte tiedon lapsenne varhaiskasvatuspaikasta noin kuukautta (1 kk) ennen hakemuksen hakuajan päättymistä. Päätös on nähtävissä ja hyväksyttävissä/hylättävissä espoonvarhaiskasvatus.fi.
+Saatte tiedon lapsenne varhaiskasvatuspaikasta noin kuukautta ennen hakemuksen lakisääteisen järjestelyajan päättymistä. Hakemuksen lakisääteinen järjestelyaika on yksi (1) kuukausi hakemuksen saapumisesta. Päätös on nähtävissä ja hyväksyttävissä/hylättävissä www.espoonvarhaiskasvatus.fi.
 
 Mikäli valitsitte hakemuksen kiireelliseksi, teidän tulee toimittaa hakemuksen liitteeksi todistus äkillisestä työllistymisestä uuteen työpaikkaan tai todistus äkillisesti saadusta uudesta opiskelupaikasta. Hakuaika on tällöin minimissään 2 viikkoa ja alkaa todistuksen saapumispäivämäärästä.
 
