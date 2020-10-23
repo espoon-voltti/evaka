@@ -16,8 +16,12 @@ class DevDataInitializer(private val jdbi: Jdbi) {
     init {
         jdbi.transaction { h ->
             if (h.createQuery("SELECT count(*) FROM care_area").mapTo<Int>().first() == 0) {
-                val sql = ClassPathResource("dev-data/espoo-dev-data.sql").file.readText()
-                h.createUpdate(sql).execute()
+                ClassPathResource("dev-data/espoo-dev-data.sql").file.readText().let {
+                    h.createUpdate(it).execute()
+                }
+                ClassPathResource("dev-data/employees.sql").file.readText().let {
+                    h.createUpdate(it).execute()
+                }
             }
         }
     }

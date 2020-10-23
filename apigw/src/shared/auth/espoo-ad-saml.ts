@@ -67,30 +67,39 @@ export default function createEspooAdStrategy():
   | SamlStrategy
   | DevPassportStrategy {
   if (eadMock) {
-    return new DevPassportStrategy(
-      async (
-        userId: string,
-        roles: string[],
-        firstName: string,
-        lastName: string,
-        email: string
-      ) => {
-        await upsertEmployee({
-          firstName,
-          lastName,
-          email,
-          aad: userId,
-          roles: roles as UserRole[]
-        })
-        return verifyProfile({
-          [ESPOO_AD_USER_ID_KEY]: userId,
-          [ESPOO_AD_ROLES_KEY]: roles,
-          [ESPOO_AD_GIVEN_NAME_KEY]: firstName,
-          [ESPOO_AD_FAMILY_NAME_KEY]: lastName,
-          [ESPOO_AD_EMAIL_KEY]: email
-        })
-      }
-    )
+    const getter = async (userId: string) =>
+      verifyProfile({
+        [ESPOO_AD_USER_ID_KEY]: userId,
+        [ESPOO_AD_ROLES_KEY]: [],
+        [ESPOO_AD_GIVEN_NAME_KEY]: '',
+        [ESPOO_AD_FAMILY_NAME_KEY]: '',
+        [ESPOO_AD_EMAIL_KEY]: ''
+      })
+
+    const upserter = async (
+      userId: string,
+      roles: string[],
+      firstName: string,
+      lastName: string,
+      email: string
+    ) => {
+      await upsertEmployee({
+        firstName,
+        lastName,
+        email,
+        aad: userId,
+        roles: roles as UserRole[]
+      })
+      return verifyProfile({
+        [ESPOO_AD_USER_ID_KEY]: userId,
+        [ESPOO_AD_ROLES_KEY]: roles,
+        [ESPOO_AD_GIVEN_NAME_KEY]: firstName,
+        [ESPOO_AD_FAMILY_NAME_KEY]: lastName,
+        [ESPOO_AD_EMAIL_KEY]: email
+      })
+    }
+
+    return new DevPassportStrategy(getter, upserter)
   } else {
     if (!eadSamlPublicCert)
       throw new Error('No Espoo AD SAML public certificate configured')
