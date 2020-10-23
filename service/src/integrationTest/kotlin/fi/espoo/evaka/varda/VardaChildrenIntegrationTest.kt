@@ -201,10 +201,8 @@ class VardaChildrenIntegrationTest : FullApplicationTest() {
     @Test
     fun `varda child gets organizer oid from daycare`() {
         jdbi.handle { h ->
-            h.createUpdate("UPDATE daycare SET oph_organizer_oid = '1.1.1.1.1'")
-                .execute()
-
-            h.createUpdate("UPDATE varda_child SET oph_organizer_oid = '1.1.1.1.1'")
+            h.createUpdate("UPDATE daycare SET oph_organizer_oid = '1.22.333.4444.1' where id = :id")
+                .bind("id", testDaycare.id)
                 .execute()
 
             insertTestPlacement(
@@ -218,7 +216,31 @@ class VardaChildrenIntegrationTest : FullApplicationTest() {
             uploadChildren(h)
             val organizerOid = getUploadedChildren(h)[0].ophOrganizerOid
 
-            assertEquals("1.1.1.1.1", organizerOid)
+            assertEquals("1.22.333.4444.1", organizerOid)
+        }
+    }
+
+    @Test
+    fun `updating daycare organizer oid yields new varda_child`() {
+        jdbi.handle { h ->
+            insertTestPlacement(
+                h = h,
+                childId = testChild_1.id,
+                unitId = testDaycare.id,
+                startDate = LocalDate.now().minusMonths(2),
+                endDate = LocalDate.now().plusMonths(1)
+            )
+            uploadChildren(h)
+
+            assertEquals(1, getUploadedChildren(h).size)
+
+            h.createUpdate("UPDATE daycare SET oph_organizer_oid = '1.22.333.4444.1' where id = :id")
+                .bind("id", testDaycare.id)
+                .execute()
+
+            uploadChildren(h)
+
+            assertEquals(2, getUploadedChildren(h).size)
         }
     }
 

@@ -79,11 +79,11 @@ WITH accepted_daycare_decision AS (
 ), decision AS (
     SELECT d.child_id, d.unit_id, d.start_date, d.end_date, vd.id, vd.varda_decision_id
     FROM accepted_daycare_decision d
-    JOIN varda_decision vd ON d.id = vd.evaka_decision_id
+    JOIN varda_decision vd ON d.id = vd.evaka_decision_id AND vd.deleted IS NULL
 ), derived_decision AS (
     SELECT p.child_id, p.unit_id, p.start_date, p.end_date, vd.id, vd.varda_decision_id
     FROM placement p
-    JOIN varda_decision vd ON p.id = vd.evaka_placement_id
+    JOIN varda_decision vd ON p.id = vd.evaka_placement_id AND vd.deleted IS NULL
 ), sent_decision AS (
     SELECT * FROM decision
     UNION
@@ -118,7 +118,7 @@ fun getNewPlacements(
     val sql =
         """
 $placementBaseQuery
-WHERE vp.id IS NULL
+WHERE vp.id IS NULL OR vp.deleted IS NOT NULL
         """.trimIndent()
 
     return h.createQuery(sql)

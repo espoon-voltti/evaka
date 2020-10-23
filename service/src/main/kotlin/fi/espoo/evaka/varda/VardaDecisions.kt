@@ -180,7 +180,7 @@ private fun getNewDecisions(h: Handle, getChildUrl: (Long) -> String): List<Pair
     val sql =
         """
 $decisionQueryBase
-WHERE vd.id IS NULL
+WHERE vd.id IS NULL OR vd.deleted IS NOT NULL
         """.trimIndent()
 
     return h.createQuery(sql)
@@ -284,7 +284,7 @@ private fun getNewDerivedDecisions(h: Handle, getChildUrl: (Long) -> String): Li
     val sql =
         """
 $derivedDecisionQueryBase
-WHERE vd.id IS NULL
+WHERE vd.id IS NULL OR vd.deleted IS NOT NULL
         """.trimIndent()
 
     return h.createQuery(sql)

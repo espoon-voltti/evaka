@@ -757,6 +757,29 @@ class VardaDecisionsIntegrationTest : FullApplicationTest() {
         }
     }
 
+    @Test
+    fun `updating daycare organizer oid yields new varda decision if old is soft deleted`() {
+        jdbi.handle { h ->
+            val period = ClosedPeriod(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))
+
+            insertPlacementWithDecision(h, child = testChild_1, unitId = testDaycare.id, period = period)
+            updateChildren(h)
+            updateDecisions(h, vardaClient)
+
+            assertEquals(1, getVardaDecisions(h).size)
+
+            h.createUpdate("update varda_decision set deleted = NOW()").execute()
+
+            h.createUpdate("UPDATE daycare SET oph_organizer_oid = '1.22.333.4444.1' where id = :id")
+                .bind("id", testDaycare.id)
+                .execute()
+
+            updateChildren(h)
+            updateDecisions(h, vardaClient)
+            assertEquals(2, getVardaDecisions(h).size)
+        }
+    }
+
     private fun getVardaDecisions(h: Handle) = h.createQuery("SELECT * FROM varda_decision")
         .map(toVardaDecisionRow)
         .toList()
@@ -854,7 +877,7 @@ fun insertDecisionWithApplication(
     return h.insertTestDecision(acceptedDecision)
 }
 
-private fun insertPlacementWithDecision(h: Handle, child: PersonData.Detailed, unitId: UUID, period: ClosedPeriod): Pair<UUID, UUID> {
+fun insertPlacementWithDecision(h: Handle, child: PersonData.Detailed, unitId: UUID, period: ClosedPeriod): Pair<UUID, UUID> {
     val decisionId = insertDecisionWithApplication(h = h, child = child, period = period, unitId = unitId)
     insertServiceNeed(h, child.id, period)
     val placementId = insertTestPlacement(

@@ -319,6 +319,34 @@ class VardaPlacementsIntegrationTest : FullApplicationTest() {
             assertEquals(originalUploadedAt, result.first().uploadedAt)
         }
     }
+
+    @Test
+    fun `updating daycare organizer oid yields new varda placement if old is soft deleted`() {
+        jdbi.handle { h ->
+            val period = ClosedPeriod(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))
+
+            insertPlacementWithDecision(h, child = testChild_1, unitId = testDaycare.id, period = period)
+
+            updateChildren(h, vardaClient, vardaOrganizerName)
+            updateDecisions(h, vardaClient)
+            updatePlacements(h, vardaClient)
+
+            assertEquals(1, getVardaPlacements(h).size)
+
+            h.createUpdate("update varda_decision set deleted = NOW()").execute()
+            h.createUpdate("update varda_placement set deleted = NOW()").execute()
+
+            h.createUpdate("UPDATE daycare SET oph_organizer_oid = '1.22.333.4444.1' where id = :id")
+                .bind("id", testDaycare.id)
+                .execute()
+
+            updateChildren(h, vardaClient, vardaOrganizerName)
+            updateDecisions(h, vardaClient)
+            updatePlacements(h, vardaClient)
+
+            assertEquals(2, getVardaPlacements(h).size)
+        }
+    }
 }
 
 private fun getSoftDeletedVardaPlacements(h: Handle) = h.createQuery("SELECT * FROM varda_placement WHERE deleted IS NOT NULL")
