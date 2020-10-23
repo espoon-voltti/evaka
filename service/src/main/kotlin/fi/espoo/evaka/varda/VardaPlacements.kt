@@ -33,7 +33,7 @@ fun removeMarkedPlacements(h: Handle, client: VardaClient) {
 }
 
 fun sendNewPlacements(h: Handle, client: VardaClient) {
-    val newPlacements = getNewPlacements(h, client.getUnitUrl, client.getDecisionUrl)
+    val newPlacements = getNewPlacements(h, client.getDecisionUrl)
     newPlacements.forEach { (decisionId, placementId, newPlacement) ->
         client.createPlacement(newPlacement)?.let { (vardaPlacementId) ->
             insertVardaPlacement(
@@ -52,7 +52,7 @@ fun sendNewPlacements(h: Handle, client: VardaClient) {
 }
 
 fun sendUpdatedPlacements(h: Handle, client: VardaClient) {
-    val updatedPlacements = getUpdatedPlacements(h, client.getUnitUrl, client.getDecisionUrl)
+    val updatedPlacements = getUpdatedPlacements(h, client.getDecisionUrl)
     updatedPlacements.forEach { (id, vardaPlacementId, updatedPlacement) ->
         client.updatePlacement(vardaPlacementId, updatedPlacement)?.let {
             updatePlacementUploadTimestamp(h, id)
@@ -72,6 +72,7 @@ fun removeDeletedPlacements(h: Handle, client: VardaClient) {
 internal val daycarePlacementTypes = arrayOf(DAYCARE.name, DAYCARE_PART_TIME.name, PRESCHOOL_DAYCARE.name)
 
 private val placementBaseQuery =
+    // language=SQL
     """
 WITH accepted_daycare_decision AS (
     $acceptedDaycareDecisionsQuery
@@ -98,13 +99,11 @@ SELECT
     p.id AS placement_id,
     d.id AS decision_id,
     d.varda_decision_id,
-    vu.varda_unit_id,
     u.oph_unit_oid oph_unit_oid,
     p.start_date,
     p.end_date
 FROM daycare_placement p
 LEFT JOIN varda_placement vp ON p.id = vp.evaka_placement_id
-LEFT JOIN varda_unit vu ON p.unit_id = vu.evaka_daycare_id
 JOIN daycare u ON p.unit_id = u.id AND u.upload_to_varda = true AND u.oph_unit_oid IS NOT NULL
 JOIN sent_decision d
     ON p.child_id = d.child_id
@@ -114,7 +113,6 @@ JOIN sent_decision d
 
 fun getNewPlacements(
     h: Handle,
-    getUnitUrl: (Long) -> String,
     getDecisionUrl: (Long) -> String
 ): List<Triple<UUID, UUID, VardaPlacement>> {
     val sql =
@@ -125,7 +123,7 @@ WHERE vp.id IS NULL
 
     return h.createQuery(sql)
         .bind("types", daycarePlacementTypes)
-        .map(toVardaPlacementWithDecisionAndPlacementId(getUnitUrl, getDecisionUrl))
+        .map(toVardaPlacementWithDecisionAndPlacementId(getDecisionUrl))
         .toList()
 }
 
@@ -161,7 +159,6 @@ INSERT INTO varda_placement (
 
 private fun getUpdatedPlacements(
     h: Handle,
-    getUnitUrl: (Long) -> String,
     getDecisionUrl: (Long) -> String
 ): List<Triple<UUID, Long, VardaPlacement>> {
     val sql =
@@ -172,7 +169,7 @@ WHERE vp.uploaded_at < p.updated
 
     return h.createQuery(sql)
         .bind("types", daycarePlacementTypes)
-        .map(toVardaPlacementWithIdAndVardaId(getUnitUrl, getDecisionUrl))
+        .map(toVardaPlacementWithIdAndVardaId(getDecisionUrl))
         .toList()
 }
 
@@ -211,8 +208,6 @@ fun getPlacementsToDelete(h: Handle): List<Long> {
 data class VardaPlacement(
     @JsonProperty("varhaiskasvatuspaatos")
     val decisionUrl: String,
-    @JsonProperty("toimipaikka")
-    val unitUrl: String,
     @JsonProperty("toimipaikka_oid")
     val unitOid: String,
     @JsonProperty("alkamis_pvm")
@@ -236,36 +231,32 @@ data class VardaPlacementTableRow(
 )
 
 private fun toVardaPlacementWithDecisionAndPlacementId(
-    getUnitUrl: (Long) -> String,
     getDecisionUrl: (Long) -> String
 ): (ResultSet, StatementContext) -> Triple<UUID, UUID, VardaPlacement> =
     { rs, _ ->
         Triple(
             rs.getUUID("decision_id"),
             rs.getUUID("placement_id"),
-            toVardaPlacement(rs, getUnitUrl, getDecisionUrl)
+            toVardaPlacement(rs, getDecisionUrl)
         )
     }
 
 private fun toVardaPlacementWithIdAndVardaId(
-    getUnitUrl: (Long) -> String,
     getDecisionUrl: (Long) -> String
 ): (ResultSet, StatementContext) -> Triple<UUID, Long, VardaPlacement> =
     { rs, _ ->
         Triple(
             rs.getUUID("id"),
             rs.getLong("varda_placement_id"),
-            toVardaPlacement(rs, getUnitUrl, getDecisionUrl)
+            toVardaPlacement(rs, getDecisionUrl)
         )
     }
 
 private fun toVardaPlacement(
     rs: ResultSet,
-    getUnitUrl: (Long) -> String,
     getDecisionUrl: (Long) -> String
 ): VardaPlacement = VardaPlacement(
     getDecisionUrl(rs.getLong("varda_decision_id")),
-    getUnitUrl(rs.getLong("varda_unit_id")),
     rs.getString("oph_unit_oid"),
     rs.getDate("start_date").toLocalDate(),
     rs.getDate("end_date")?.toLocalDate()
