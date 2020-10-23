@@ -68,9 +68,11 @@ class EmailClient(private val client: AmazonSimpleEmailService, env: Environment
     }
 
     private fun getSubject(language: Language): String {
+        val postfix = if (System.getenv("VOLTTI_ENV") == "staging") " [staging]" else ""
+
         return when (language) {
-            Language.fi -> "Olemme vastaanottaneet hakemuksenne"
-            Language.sv -> "Vi har tagit emot er ansökan"
+            Language.fi -> "Olemme vastaanottaneet hakemuksenne$postfix"
+            Language.sv -> "Vi har tagit emot er ansökan$postfix"
         }
     }
 
