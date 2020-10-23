@@ -25,6 +25,6 @@ class MockEmailClient : IEmailClient {
 
 data class MockApplicationEmail(
     val personId: VolttiIdentifier,
-    val toAddress: String?,
+    val toAddress: String,
     val language: String
 )
