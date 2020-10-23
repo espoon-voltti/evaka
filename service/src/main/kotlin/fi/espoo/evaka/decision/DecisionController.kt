@@ -86,8 +86,10 @@ class DecisionController(
         @PathVariable("id") decisionId: UUID
     ): ResponseEntity<ByteArray> {
         Audit.DecisionDownloadPdf.log(targetId = decisionId)
-        if (!user.hasOneOfRoles(Roles.SERVICE_WORKER, Roles.ADMIN)) {
-            user.requireOneOfRoles(Roles.END_USER)
+
+        val roles = acl.getRolesForDecision(user, decisionId)
+        roles.requireOneOfRoles(Roles.SERVICE_WORKER, Roles.ADMIN, Roles.UNIT_SUPERVISOR, Roles.END_USER)
+        if (user.hasOneOfRoles(Roles.END_USER)) {
             if (!decisionService.getDecisionsByGuardian(user.id, AclAuthorization.All).any { it.id == decisionId }) {
                 throw Forbidden("Access denied")
             }
