@@ -28,8 +28,10 @@ class EmailClientIntegrationTest : FullApplicationTest() {
         emailClient.sendApplicationEmail(personId, valid1, Language.fi)
         emailClient.sendApplicationEmail(personId, valid2, Language.fi)
         emailClient.sendApplicationEmail(personId, valid3, Language.fi)
+        assertEquals(3, MockEmailClient.applicationEmails.size)
         emailClient.sendApplicationEmail(personId, notValid1, Language.fi)
         emailClient.sendApplicationEmail(personId, notValid2, Language.fi)
+        emailClient.sendApplicationEmail(personId, null, Language.fi)
 
         assertEquals(3, MockEmailClient.applicationEmails.size)
     }

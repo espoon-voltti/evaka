@@ -67,15 +67,15 @@ class EmailClient(private val client: AmazonSimpleEmailService, env: Environment
         }
     }
 
-    // TODO ruotsinkieliset teksit
     private fun getSubject(language: Language): String {
+        val postfix = if (System.getenv("VOLTTI_ENV") == "staging") " [staging]" else ""
+
         return when (language) {
-            Language.fi -> "Olemme vastaanottaneet hakemuksenne"
-            Language.sv -> "Ruotsinkielinen otsikko"
+            Language.fi -> "Olemme vastaanottaneet hakemuksenne$postfix"
+            Language.sv -> "Vi har tagit emot er ansökan$postfix"
         }
     }
 
-    // TODO ruotsinkieliset teksit
     private fun getHtml(language: Language): String {
         return when (language) {
             Language.fi -> """
@@ -87,7 +87,7 @@ Lapsenne varhaiskasvatushakemus on vastaanotettu.
 Varhaiskasvatushakemuksella on <strong>neljän (4) kuukauden hakuaika.</strong> Hakemuksen tehnyt huoltaja voi muokata hakemusta osoitteessa <a href="www.espoonvarhaiskasvatus.fi">www.espoonvarhaiskasvatus.fi</a> siihen saakka, kun se on otettu käsittelyyn. 
 </p>
 <p>
-Saatte tiedon lapsenne varhaiskasvatuspaikasta noin kuukautta (1 kk) ennen hakemuksen hakuajan päättymistä. Päätös on nähtävissä ja hyväksyttävissä/hylättävissä <a href="www.espoonvarhaiskasvatus.fi">www.espoonvarhaiskasvatus.fi</a>.
+Saatte tiedon lapsenne varhaiskasvatuspaikasta noin kuukautta ennen hakemuksen lakisääteisen järjestelyajan päättymistä. Hakemuksen lakisääteinen järjestelyaika on yksi (1) kuukausi hakemuksen saapumisesta. Päätös on nähtävissä ja hyväksyttävissä/hylättävissä <a href="www.espoonvarhaiskasvatus.fi">www.espoonvarhaiskasvatus.fi</a>.
 </p>
 <p>
 Mikäli valitsitte hakemuksen kiireelliseksi, teidän tulee toimittaa hakemuksen liitteeksi <strong>todistus äkillisestä työllistymisestä uuteen työpaikkaan tai todistus äkillisesti saadusta uudesta opiskelupaikasta.</strong> Hakuaika on tällöin <strong>minimissään 2 viikkoa</strong> ja alkaa todistuksen saapumispäivämäärästä.
@@ -105,7 +105,33 @@ Hakeminen yksityisiin varhaiskasvatusyksiköihin <a href="https://www.espoo.fi/f
 Hakemuksen liitteet toimitetaan joko postitse osoitteeseen Espoon kaupunki, Varhaiskasvatuksen palveluohjaus, PL 3125, 02070 Espoon kaupunki tai liitetiedostona <a href="mailto:varhaiskasvatuksen.palveluohjaus@espoo.fi">varhaiskasvatuksen.palveluohjaus@espoo.fi</a> (huomioithan että yhteys ei ole salattu).
 </p>
             """.trimIndent()
-            Language.sv -> "Ruotsinkielinen teksti"
+            Language.sv -> """
+<p>
+Bästa vårdnadshavare, <br>
+Vi har tagit emot en ansökan om småbarnspedagogik för ditt barn.
+</p>
+<p>
+Ansökan om småbarnspedagogik har en ansökningstid på fyra (4) månader. Den vårdnadshavare som har lämnat in ansökan kan redigera ansökan på adressen www.espoonvarhaiskasvatus.fi tills den har tagits upp till behandling.
+</p>
+<p>
+Du får information om platsen för småbarnspedagogik för ditt barn cirka en månad (1 månad) innan ansökningstiden för ansökan går ut. Du kan se och godkänna/förkasta beslutet på espoonvarhaiskasvatus.fi.
+</p>
+<p>
+Om du valde att ansökan är brådskande, ska du bifoga ansökan ett intyg över att du plötsligt fått ett nytt jobb eller en ny studieplats. Ansökningstiden är då minst 2 veckor och börjar den dag då intyget inkom.
+</p>
+<p>
+När du ansöker om vård dygnet runt eller kvällstid, ska du lämna in arbetsgivarens intyg över skiftarbete eller läroanstaltens intyg över kvällsstudier för båda vårdnadshavarna som bor i samma hushåll. Ansökan behandlas som ansökan om skiftvård först när de ovannämnda intygen har lämnats in.
+</p>
+<p>
+Ansökan till privata enheter för småbarnspedagogik https://www.espoo.fi/fi-FI/Kasvatus_ja_opetus/Varhaiskasvatus/Yksityinen_varhaiskasvatus
+</p>
+<p>
+Bilagorna till ansökan skickas antingen per post till adressen Esbo stad, Småbarnspedagogikens servicehänvisning, PB 3125, 02070 Esbo stad eller som e-postbilaga till varhaiskasvatuksen.palveluohjaus@espoo.fi (observera att förbindelsen inte är krypterad).
+</p>
+<p>
+”Du kan göra ändringar i ansökan så länge den inte har tagits upp till behandling. Därefter kan du göra ändringar i ansökan genom att kontakta småbarnspedagogikens servicehänvisning (tfn 09 816 31000). Du kan återta en ansökan som du redan lämnat in genom att meddela detta per e-post till småbarnspedagogikens servicehänvisning varhaiskasvatuksen.palveluohjaus@espoo.fi
+</p>
+            """.trimIndent()
         }
     }
 
@@ -117,7 +143,7 @@ Lapsenne varhaiskasvatushakemus on vastaanotettu.
 
 Varhaiskasvatushakemuksella on neljän (4) kuukauden hakuaika. Hakemuksen tehnyt huoltaja voi muokata hakemusta osoitteessa www.espoonvarhaiskasvatus.fi siihen saakka, kun se on otettu käsittelyyn.
 
-Saatte tiedon lapsenne varhaiskasvatuspaikasta noin kuukautta (1 kk) ennen hakemuksen hakuajan päättymistä. Päätös on nähtävissä ja hyväksyttävissä/hylättävissä espoonvarhaiskasvatus.fi.
+Saatte tiedon lapsenne varhaiskasvatuspaikasta noin kuukautta ennen hakemuksen lakisääteisen järjestelyajan päättymistä. Hakemuksen lakisääteinen järjestelyaika on yksi (1) kuukausi hakemuksen saapumisesta. Päätös on nähtävissä ja hyväksyttävissä/hylättävissä www.espoonvarhaiskasvatus.fi.
 
 Mikäli valitsitte hakemuksen kiireelliseksi, teidän tulee toimittaa hakemuksen liitteeksi todistus äkillisestä työllistymisestä uuteen työpaikkaan tai todistus äkillisesti saadusta uudesta opiskelupaikasta. Hakuaika on tällöin minimissään 2 viikkoa ja alkaa todistuksen saapumispäivämäärästä.
 
@@ -129,7 +155,26 @@ Hakeminen yksityisiin varhaiskasvatusyksiköihin https://www.espoo.fi/fi-FI/Kasv
 
 Hakemuksen liitteet toimitetaan joko postitse osoitteeseen Espoon kaupunki, Varhaiskasvatuksen palveluohjaus, PL 3125, 02070 Espoon kaupunki tai liitetiedostona varhaiskasvatuksen.palveluohjaus@espoo.fi (huomioithan että yhteys ei ole salattu).
             """.trimIndent()
-            Language.sv -> "Ruotsinkielinen teksti"
+            Language.sv -> """
+Bästa vårdnadshavare,
+Vi har tagit emot en ansökan om småbarnspedagogik för ditt barn.
+
+Ansökan om småbarnspedagogik har en ansökningstid på fyra (4) månader. Den vårdnadshavare som har lämnat in ansökan kan redigera ansökan på adressen www.espoonvarhaiskasvatus.fi tills den har tagits upp till behandling.
+
+Du får information om platsen för småbarnspedagogik för ditt barn cirka en månad (1 månad) innan ansökningstiden för ansökan går ut. Du kan se och godkänna/förkasta beslutet på espoonvarhaiskasvatus.fi.
+
+Om du valde att ansökan är brådskande, ska du bifoga ansökan ett intyg över att du plötsligt fått ett nytt jobb eller en ny studieplats. Ansökningstiden är då minst 2 veckor och börjar den dag då intyget inkom.
+
+När du ansöker om vård dygnet runt eller kvällstid, ska du lämna in arbetsgivarens intyg över skiftarbete eller läroanstaltens intyg över kvällsstudier för båda vårdnadshavarna som bor i samma hushåll. Ansökan behandlas som ansökan om skiftvård först när de ovannämnda intygen har lämnats in.
+
+När du ansöker om flyttning till en annan kommunal enhet för småbarnspedagogik har ansökan ingen ansökningstid. Ansökan gäller ett år från den dag då ansökan inkom.
+
+Ansökan till privata enheter för småbarnspedagogik https://www.espoo.fi/fi-FI/Kasvatus_ja_opetus/Varhaiskasvatus/Yksityinen_varhaiskasvatus
+
+Bilagorna till ansökan skickas antingen per post till adressen Esbo stad, Småbarnspedagogikens servicehänvisning, PB 3125, 02070 Esbo stad eller som e-postbilaga till varhaiskasvatuksen.palveluohjaus@espoo.fi (observera att förbindelsen inte är krypterad).
+
+”Du kan göra ändringar i ansökan så länge den inte har tagits upp till behandling. Därefter kan du göra ändringar i ansökan genom att kontakta småbarnspedagogikens servicehänvisning (tfn 09 816 31000). Du kan återta en ansökan som du redan lämnat in genom att meddela detta per e-post till småbarnspedagogikens servicehänvisning varhaiskasvatuksen.palveluohjaus@espoo.fi
+            """.trimIndent()
         }
     }
 }
