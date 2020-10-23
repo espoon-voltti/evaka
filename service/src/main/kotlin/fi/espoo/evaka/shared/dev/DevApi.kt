@@ -36,9 +36,11 @@ import fi.espoo.evaka.invoicing.data.upsertValueDecisions
 import fi.espoo.evaka.invoicing.domain.FeeDecision
 import fi.espoo.evaka.invoicing.domain.Invoice
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecision
+import fi.espoo.evaka.pis.Employee
 import fi.espoo.evaka.pis.dao.PersonDAO
 import fi.espoo.evaka.pis.deleteEmployeeByAad
 import fi.espoo.evaka.pis.deleteEmployeeRolesByAad
+import fi.espoo.evaka.pis.getEmployees
 import fi.espoo.evaka.pis.service.PersonDTO
 import fi.espoo.evaka.pis.service.PersonService
 import fi.espoo.evaka.placement.PlacementPlanService
@@ -378,6 +380,11 @@ DELETE FROM application_form USING applications WHERE application_id = applicati
             deletePerson(uuid)
         }
         return ResponseEntity.ok().build()
+    }
+
+    @GetMapping("/employee")
+    fun getEmployees(): ResponseEntity<List<Employee>> {
+        return ResponseEntity.ok(jdbi.transaction { it.getEmployees() })
     }
 
     @PostMapping("/employee")

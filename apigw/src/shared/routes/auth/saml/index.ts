@@ -17,6 +17,7 @@ import {
   SessionType
 } from '../../../session'
 import { fromCallback } from '../../../promise-utils'
+import { client } from '../../../service-client'
 
 const urlencodedParser = urlencoded({ extended: false })
 
@@ -200,11 +201,21 @@ export default function createSamlRouter(config: SamlEndpointConfig): Router {
 
   if (eadMock) {
     router.get('/dev-auth/login', (req, res) => {
-      res.contentType('text/html').send(`
+      client.get('/dev-api/employee').then((res2) => {
+        res.contentType('text/html').send(`
         <html>
         <body>
             <h1>Devausympäristön AD-kirjautuminen</h1>
-            <form action="${req.baseUrl}/auth/saml/login/callback?RelayState=${req.query.RelayState}" method="post">
+            <form action="${req.baseUrl}/auth/saml/login/callback?RelayState=${
+          req.query.RelayState
+        }" method="post">
+                ${res2.data.map(
+                  (e: { aad: string; firstName: string; lastName: string }) =>
+                    `<input type="radio" id="${e.aad}" name="preset" value="${e.aad}" /><label for="${e.aad}">${e.firstName} ${e.lastName}</label><br/>`
+                )}
+                <input type="radio" id="custom" name="preset" value="custom" checked/><label for="custom">Custom (täytä tiedot alle)</label><br/>
+                <br/>
+                <h2>Custom</h2>
                 <label for="aad">AAD: </label>
                 <input id="aad-input" name="aad" value="cf5bcd6e-3d0e-4d8e-84a0-5ae2e4e65034" required
                     pattern="[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"/>
@@ -229,6 +240,7 @@ export default function createSamlRouter(config: SamlEndpointConfig): Router {
         </body>
         </html>
         `)
+      })
     })
   }
 

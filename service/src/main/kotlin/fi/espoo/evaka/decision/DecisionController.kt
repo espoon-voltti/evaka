@@ -86,13 +86,15 @@ class DecisionController(
         @PathVariable("id") decisionId: UUID
     ): ResponseEntity<ByteArray> {
         Audit.DecisionDownloadPdf.log(targetId = decisionId)
-        if (!user.hasOneOfRoles(Roles.SERVICE_WORKER, Roles.ADMIN)) {
+        if (!user.hasOneOfRoles(Roles.SERVICE_WORKER, Roles.ADMIN, Roles.UNIT_SUPERVISOR)) {
             user.requireOneOfRoles(Roles.END_USER)
             if (!decisionService.getDecisionsByGuardian(user.id, AclAuthorization.All).any { it.id == decisionId }) {
                 throw Forbidden("Access denied")
             }
             return getDecisionPdf(decisionId)
         }
+
+        user.requireOneOfRoles()
 
         val decision =
             decisionService.getDecision(decisionId) ?: error("Cannot find decision for decision id '$decisionId'")
