@@ -47,7 +47,6 @@ import fi.espoo.evaka.pis.service.Partner
 import fi.espoo.evaka.placement.Placement
 import fi.espoo.evaka.serviceneed.getServiceNeedsByChildDuringPeriod
 import fi.espoo.evaka.shared.db.getUUID
-import fi.espoo.evaka.shared.db.withSpringHandle
 import fi.espoo.evaka.shared.domain.Period
 import fi.espoo.evaka.shared.domain.asDistinctPeriods
 import fi.espoo.evaka.shared.domain.mergePeriods
@@ -92,53 +91,43 @@ class DecisionGenerator(
     }
 
     @Transactional
-    fun handlePlacement(childId: UUID, period: Period) {
+    fun handlePlacement(h: Handle, childId: UUID, period: Period) {
         logger.debug { "Generating fee decisions from new placement (childId: $childId, period: $period)" }
 
-        withSpringHandle(dataSource) { h ->
-            val families = findFamiliesByChild(h, childId, period)
-            handleDecisionChangesForFamilies(h, period, families)
-        }
+        val families = findFamiliesByChild(h, childId, period)
+        handleDecisionChangesForFamilies(h, period, families)
     }
 
     @Transactional
-    fun handleServiceNeed(childId: UUID, period: Period) {
+    fun handleServiceNeed(h: Handle, childId: UUID, period: Period) {
         logger.debug { "Generating fee decisions from changed service need (childId: $childId, period: $period)" }
 
-        withSpringHandle(dataSource) { h ->
-            val families = findFamiliesByChild(h, childId, period)
-            handleDecisionChangesForFamilies(h, period, families)
-        }
+        val families = findFamiliesByChild(h, childId, period)
+        handleDecisionChangesForFamilies(h, period, families)
     }
 
     @Transactional
-    fun handleFamilyUpdate(adultId: UUID, period: Period) {
+    fun handleFamilyUpdate(h: Handle, adultId: UUID, period: Period) {
         logger.debug { "Generating fee decisions from changed family (adultId: $adultId, period: $period)" }
 
-        withSpringHandle(dataSource) { h ->
-            val families = findFamiliesByHeadOfFamily(h, adultId, period) + findFamiliesByPartner(h, adultId, period)
-            handleDecisionChangesForFamilies(h, period, families)
-        }
+        val families = findFamiliesByHeadOfFamily(h, adultId, period) + findFamiliesByPartner(h, adultId, period)
+        handleDecisionChangesForFamilies(h, period, families)
     }
 
     @Transactional
-    fun handleIncomeChange(personId: UUID, period: Period) {
+    fun handleIncomeChange(h: Handle, personId: UUID, period: Period) {
         logger.debug { "Generating fee decisions from changed income (personId: $personId, period: $period)" }
 
-        withSpringHandle(dataSource) { h ->
-            val families = findFamiliesByHeadOfFamily(h, personId, period) + findFamiliesByPartner(h, personId, period)
-            handleDecisionChangesForFamilies(h, period, families)
-        }
+        val families = findFamiliesByHeadOfFamily(h, personId, period) + findFamiliesByPartner(h, personId, period)
+        handleDecisionChangesForFamilies(h, period, families)
     }
 
     @Transactional
-    fun handleFeeAlterationChange(childId: UUID, period: Period) {
+    fun handleFeeAlterationChange(h: Handle, childId: UUID, period: Period) {
         logger.debug { "Generating fee decisions from changed fee alteration (childId: $childId, period: $period)" }
 
-        withSpringHandle(dataSource) { h ->
-            val families = findFamiliesByChild(h, childId, period)
-            handleDecisionChangesForFamilies(h, period, families)
-        }
+        val families = findFamiliesByChild(h, childId, period)
+        handleDecisionChangesForFamilies(h, period, families)
     }
 
     private fun handleDecisionChangesForFamilies(h: Handle, period: Period, families: List<FridgeFamily>) {

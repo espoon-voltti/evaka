@@ -120,7 +120,7 @@ class IncomeController(
 
             deleteIncome(h, parseUUID(incomeId))
 
-            asyncJobRunner.plan(listOf(NotifyIncomeUpdated(existing.personId, period.start, period.end)))
+            asyncJobRunner.plan(h, listOf(NotifyIncomeUpdated(existing.personId, period.start, period.end)))
         }
 
         asyncJobRunner.scheduleImmediateRun()

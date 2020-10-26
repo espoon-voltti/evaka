@@ -74,6 +74,25 @@ class PersonService(
         }
     }
 
+    fun getUpToDatePerson(h: Handle, user: AuthenticatedUser, id: VolttiIdentifier): PersonDTO? {
+        val person = h.getPersonById(id) ?: return null
+        if (person.identity is ExternalIdentifier.SSN && vtjDataIsStale(person)) {
+            val personDetails =
+                personDetailsService.getBasicDetailsFor(
+                    IPersonDetailsService.DetailsQuery(user, person.identity)
+                )
+            if (personDetails is PersonDetails.Result) {
+                val personResult = PersonResult.Result(personDetails.vtjPerson.mapToDto())
+                personStorageService.upsertVtjPerson(h, personResult)
+                return h.getPersonById(id)
+            } else {
+                return hideNonDisclosureInfo(person)
+            }
+        } else {
+            return person
+        }
+    }
+
     fun personsLiveInTheSameAddress(user: AuthenticatedUser, person1Id: UUID, person2Id: UUID): Boolean =
         withSpringTx(txManager) {
             val person1 = personDAO.getPersonByVolttiId(person1Id)

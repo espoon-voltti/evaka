@@ -8,7 +8,9 @@ import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.NotifyFamilyUpdated
 import fi.espoo.evaka.shared.db.getUUID
 import fi.espoo.evaka.shared.db.runAfterCommit
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
+import fi.espoo.evaka.shared.db.transaction
+import org.jdbi.v3.core.Handle
+import org.jdbi.v3.core.Jdbi
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDate
@@ -16,11 +18,10 @@ import java.util.UUID
 
 @Service
 class MergeService(
-    private val jdbc: NamedParameterJdbcTemplate,
+    private val jdbi: Jdbi,
     private val asyncJobRunner: AsyncJobRunner
 ) {
-    @Transactional
-    fun mergePeople(master: UUID, duplicate: UUID) {
+    fun mergePeople(master: UUID, duplicate: UUID) = jdbi.transaction { h ->
         // language=sql
         val feeAffectingDatesSQL =
             """
@@ -39,12 +40,15 @@ class MergeService(
             )
             SELECT min(min_date) AS min_date, max(max_date) AS max_date FROM dates HAVING min(min_date) IS NOT NULL;
             """.trimIndent()
-        val feeAffectingDateRange = jdbc.query(feeAffectingDatesSQL, mapOf("id_duplicate" to duplicate)) { rs, _ ->
-            Pair(
-                rs.getDate("min_date").toLocalDate(),
-                rs.getDate("max_date")?.toLocalDate()?.takeIf { it.isBefore(LocalDate.of(2200, 1, 1)) } // infinity -> null
-            )
-        }.firstOrNull()
+        val feeAffectingDateRange = h.createQuery(feeAffectingDatesSQL)
+            .bind("id_duplicate", duplicate)
+            .map { rs, _ ->
+                Pair(
+                    rs.getDate("min_date").toLocalDate(),
+                    rs.getDate("max_date")?.toLocalDate()?.takeIf { it.isBefore(LocalDate.of(2200, 1, 1)) } // infinity -> null
+                )
+            }
+            .firstOrNull()
 
         // language=sql
         val updateSQL =
@@ -81,13 +85,10 @@ class MergeService(
             UPDATE placement SET child_id = :id_master WHERE child_id = :id_duplicate;
             UPDATE service_need SET child_id = :id_master WHERE child_id = :id_duplicate;
             """.trimIndent()
-        jdbc.update(
-            updateSQL,
-            mapOf(
-                "id_master" to master,
-                "id_duplicate" to duplicate
-            )
-        )
+        h.createUpdate(updateSQL)
+            .bind("id_master", master)
+            .bind("id_duplicate", duplicate)
+            .execute()
 
         if (feeAffectingDateRange != null) {
             // language=sql
@@ -97,21 +98,24 @@ class MergeService(
                 FROM fridge_child
                 WHERE head_of_child = :id OR child_id = :id
                 """.trimIndent()
-            jdbc.query(parentsSQL, mapOf("id" to master)) { rs, _ -> rs.getUUID("head_of_child") }.forEach { parentId ->
-                sendFamilyUpdatedMessage(parentId, feeAffectingDateRange.first, feeAffectingDateRange.second)
-            }
+            h.createQuery(parentsSQL)
+                .bind("id", master)
+                .map { rs, _ -> rs.getUUID("head_of_child") }
+                .forEach { parentId ->
+                    sendFamilyUpdatedMessage(h, parentId, feeAffectingDateRange.first, feeAffectingDateRange.second)
+                }
         }
     }
 
     @Transactional
-    fun deleteEmptyPerson(id: UUID) {
+    fun deleteEmptyPerson(id: UUID) = jdbi.transaction { h ->
         // language=sql
         val sql1 =
             """
             SELECT ensure_empty_person(:id);
             """.trimIndent()
 
-        jdbc.query(sql1, mapOf("id" to id)) { }
+        h.createUpdate(sql1).bind("id", id).execute()
 
         // language=sql
         val sql2 =
@@ -120,11 +124,11 @@ class MergeService(
             DELETE FROM person WHERE id = :id;
             """.trimIndent()
 
-        jdbc.update(sql2, mapOf("id" to id))
+        h.createUpdate(sql2).bind("id", id).execute()
     }
 
-    private fun sendFamilyUpdatedMessage(adultId: UUID, startDate: LocalDate, endDate: LocalDate?) {
-        asyncJobRunner.plan(listOf(NotifyFamilyUpdated(adultId, startDate, endDate)))
+    private fun sendFamilyUpdatedMessage(h: Handle, adultId: UUID, startDate: LocalDate, endDate: LocalDate?) {
+        asyncJobRunner.plan(h, listOf(NotifyFamilyUpdated(adultId, startDate, endDate)))
         runAfterCommit { asyncJobRunner.scheduleImmediateRun() }
     }
 }

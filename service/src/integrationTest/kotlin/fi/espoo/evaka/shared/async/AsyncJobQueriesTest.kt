@@ -35,7 +35,7 @@ class AsyncJobQueriesTest : PureJdbiTest() {
         val id = UUID.randomUUID()
         jdbi.open().use { h ->
             h.transaction { tx ->
-                insertJob(tx, JobParams(NotifyDecisionCreated(id, user), 1234, Duration.ofMinutes(42)))
+                insertJob(tx, JobParams(NotifyDecisionCreated(id, user, sendAsMessage = false), 1234, Duration.ofMinutes(42)))
             }
             val runAt = h.createQuery("SELECT run_at FROM async_job").mapTo<ZonedDateTime>().one()
 
@@ -50,7 +50,7 @@ class AsyncJobQueriesTest : PureJdbiTest() {
 
             h.transaction { tx ->
                 val payload = startJob(tx, ref, NotifyDecisionCreated::class.java)!!
-                assertEquals(NotifyDecisionCreated(id, user), payload)
+                assertEquals(NotifyDecisionCreated(id, user, sendAsMessage = false), payload)
 
                 completeJob(tx, ref)
             }
@@ -62,7 +62,7 @@ class AsyncJobQueriesTest : PureJdbiTest() {
 
     @Test
     fun testParallelClaimContention() {
-        val payloads = (0..1).map { _ -> NotifyDecisionCreated(UUID.randomUUID(), user) }
+        val payloads = (0..1).map { _ -> NotifyDecisionCreated(UUID.randomUUID(), user, sendAsMessage = false) }
         jdbi.open().use { h ->
             h.transaction { tx ->
                 payloads.map { insertJob(tx, JobParams(it, 999, Duration.ZERO)) }

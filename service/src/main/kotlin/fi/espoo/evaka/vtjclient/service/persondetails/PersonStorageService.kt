@@ -17,6 +17,7 @@ import fi.espoo.evaka.vtjclient.dto.NativeLanguage
 import fi.espoo.evaka.vtjclient.dto.PersonDataSource
 import fi.espoo.evaka.vtjclient.dto.VtjPersonDTO
 import fi.espoo.evaka.vtjclient.usecases.dto.PersonResult
+import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.Jdbi
 import org.springframework.stereotype.Service
 import java.util.UUID
@@ -26,6 +27,13 @@ class PersonStorageService(private val jdbi: Jdbi) {
     fun upsertVtjPerson(personResult: PersonResult): PersonResult {
         return when (personResult) {
             is PersonResult.Result -> PersonResult.Result(createOrUpdateOnePerson(personResult.vtjPersonDTO))
+            else -> personResult
+        }
+    }
+
+    fun upsertVtjPerson(h: Handle, personResult: PersonResult): PersonResult {
+        return when (personResult) {
+            is PersonResult.Result -> PersonResult.Result(createOrUpdateOnePerson(h, personResult.vtjPersonDTO))
             else -> personResult
         }
     }
@@ -76,21 +84,23 @@ class PersonStorageService(private val jdbi: Jdbi) {
         guardianIds.forEach { guardianId -> insertGuardian(h, guardianId, childId) }
     }
 
-    private fun createOrUpdateOnePerson(inputPerson: VtjPersonDTO): VtjPersonDTO {
+    private fun createOrUpdateOnePerson(inputPerson: VtjPersonDTO): VtjPersonDTO = jdbi.transaction { tx ->
+        createOrUpdateOnePerson(tx, inputPerson)
+    }
+
+    private fun createOrUpdateOnePerson(h: Handle, inputPerson: VtjPersonDTO): VtjPersonDTO {
         if (inputPerson.source != PersonDataSource.VTJ) {
             return inputPerson
         }
 
-        return jdbi.transaction { tx ->
-            val existingPerson = tx.getPersonBySSN(inputPerson.socialSecurityNumber)
+        val existingPerson = h.getPersonBySSN(inputPerson.socialSecurityNumber)
 
-            if (existingPerson == null) {
-                val newPerson = newPersonFromVtjData(inputPerson)
-                map(tx.createPersonFromVtj(newPerson), inputPerson.source)
-            } else {
-                val updatedPerson = getPersonWithUpdatedProperties(inputPerson, existingPerson)
-                map(tx.updatePersonFromVtj(updatedPerson), inputPerson.source)
-            }
+        return if (existingPerson == null) {
+            val newPerson = newPersonFromVtjData(inputPerson)
+            map(h.createPersonFromVtj(newPerson), inputPerson.source)
+        } else {
+            val updatedPerson = getPersonWithUpdatedProperties(inputPerson, existingPerson)
+            map(h.updatePersonFromVtj(updatedPerson), inputPerson.source)
         }
     }
 

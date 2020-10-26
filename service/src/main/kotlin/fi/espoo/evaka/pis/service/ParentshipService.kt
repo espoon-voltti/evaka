@@ -15,6 +15,7 @@ import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.NotifyFamilyUpdated
 import fi.espoo.evaka.shared.db.runAfterCommit
 import fi.espoo.evaka.shared.db.transaction
+import fi.espoo.evaka.shared.db.withSpringHandle
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.domain.maxEndDate
 import mu.KotlinLogging
@@ -23,11 +24,12 @@ import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.stereotype.Service
 import java.time.LocalDate
 import java.util.UUID
+import javax.sql.DataSource
 
 @Service
 class ParentshipService(
-    private val asyncJobRunner: AsyncJobRunner
-
+    private val asyncJobRunner: AsyncJobRunner,
+    private val dataSource: DataSource
 ) {
     private val logger = KotlinLogging.logger { }
 
@@ -120,7 +122,9 @@ class ParentshipService(
 
     private fun sendFamilyUpdatedMessage(adultId: UUID, startDate: LocalDate, endDate: LocalDate?) {
         logger.info("Sending update family message with adult $adultId")
-        asyncJobRunner.plan(listOf(NotifyFamilyUpdated(adultId, startDate, endDate)))
+        withSpringHandle(dataSource) {
+            asyncJobRunner.plan(it, listOf(NotifyFamilyUpdated(adultId, startDate, endDate)))
+        }
         runAfterCommit { asyncJobRunner.scheduleImmediateRun() }
     }
 }

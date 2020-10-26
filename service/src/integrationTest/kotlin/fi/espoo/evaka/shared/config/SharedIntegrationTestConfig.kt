@@ -92,9 +92,7 @@ class SharedIntegrationTestConfig {
         jdbi: Jdbi,
         dataSource: DataSource,
         platformTransactionManager: PlatformTransactionManager
-    ) = AsyncJobRunner(
-        jdbi, dataSource, platformTransactionManager, syncMode = true
-    )
+    ) = AsyncJobRunner(jdbi, syncMode = true)
 
     @Bean
     fun dataSource(): DataSource = getTestDataSource()

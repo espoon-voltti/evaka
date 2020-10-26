@@ -6,11 +6,12 @@ package fi.espoo.evaka.application
 
 import fi.espoo.evaka.decision.DecisionService
 import fi.espoo.evaka.shared.async.AsyncJobRunner
-import fi.espoo.evaka.shared.async.NotifyDecision2Created
-import fi.espoo.evaka.shared.async.SendDecision2
+import fi.espoo.evaka.shared.async.NotifyDecisionCreated
+import fi.espoo.evaka.shared.async.SendDecision
 import fi.espoo.evaka.shared.config.Roles
 import fi.espoo.evaka.shared.db.runAfterCommit
 import mu.KotlinLogging
+import org.jdbi.v3.core.Handle
 import org.springframework.stereotype.Component
 
 private val logger = KotlinLogging.logger {}
@@ -21,30 +22,30 @@ class DecisionMessageProcessor(
     private val decisionService: DecisionService
 ) {
     init {
-        asyncJobRunner.notifyDecision2Created = ::runCreateJob2
-        asyncJobRunner.sendDecision2 = ::runSendJob2
+        asyncJobRunner.notifyDecisionCreated = ::runCreateJob
+        asyncJobRunner.sendDecision = ::runSendJob
     }
 
-    fun runCreateJob2(msg: NotifyDecision2Created) {
+    fun runCreateJob(h: Handle, msg: NotifyDecisionCreated) {
         val user = msg.user
         val decisionId = msg.decisionId
 
         user.requireOneOfRoles(Roles.ADMIN, Roles.SERVICE_WORKER, Roles.UNIT_SUPERVISOR)
 
-        decisionService.createDecisionPdfs(user, decisionId)
+        decisionService.createDecisionPdfs(h, user, decisionId)
 
         logger.info { "Successfully created decision pdf(s) for decision (id: $decisionId)." }
         if (msg.sendAsMessage) {
             logger.info { "Sending decision pdf(s) for decision (id: $decisionId)." }
-            asyncJobRunner.plan(listOf(SendDecision2(decisionId, msg.user)))
+            asyncJobRunner.plan(h, listOf(SendDecision(decisionId, msg.user)))
             runAfterCommit { asyncJobRunner.scheduleImmediateRun() }
         }
     }
 
-    fun runSendJob2(msg: SendDecision2) {
+    fun runSendJob(h: Handle, msg: SendDecision) {
         val decisionId = msg.decisionId
 
-        decisionService.deliverDecisionToGuardians(decisionId)
+        decisionService.deliverDecisionToGuardians(h, decisionId)
         logger.info { "Successfully sent decision(s) pdf for decision (id: $decisionId)." }
     }
 }

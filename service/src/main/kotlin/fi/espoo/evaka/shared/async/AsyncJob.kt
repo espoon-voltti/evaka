@@ -13,14 +13,12 @@ import java.time.LocalDate
 import java.util.UUID
 
 enum class AsyncJobType {
-    DECISION_CREATED,
     SERVICE_NEED_UPDATED,
     FAMILY_UPDATED,
     FEE_ALTERATION_UPDATED,
     INCOME_UPDATED,
+    DECISION_CREATED,
     SEND_DECISION,
-    DECISION2_CREATED,
-    SEND_DECISION2,
     PLACEMENT_PLAN_APPLIED,
     FEE_DECISION_APPROVED,
     FEE_DECISION_PDF_GENERATED,
@@ -52,11 +50,6 @@ data class NotifyPlacementPlanApplied(val childId: UUID, val startDate: LocalDat
     AsyncJobPayload {
     override val asyncJobType = AsyncJobType.PLACEMENT_PLAN_APPLIED
     override val user: AuthenticatedUser? = null
-}
-
-data class NotifyDecisionCreated(val decisionId: UUID, override val user: AuthenticatedUser) :
-    AsyncJobPayload {
-    override val asyncJobType = AsyncJobType.DECISION_CREATED
 }
 
 data class NotifyServiceNeedUpdated(val childId: UUID, val startDate: LocalDate, val endDate: LocalDate?) :
@@ -92,16 +85,12 @@ data class NotifyIncomeUpdated(
     override val user: AuthenticatedUser? = null
 }
 
+data class NotifyDecisionCreated(val decisionId: UUID, override val user: AuthenticatedUser, val sendAsMessage: Boolean) : AsyncJobPayload {
+    override val asyncJobType = AsyncJobType.DECISION_CREATED
+}
+
 data class SendDecision(val decisionId: UUID, override val user: AuthenticatedUser) : AsyncJobPayload {
     override val asyncJobType = AsyncJobType.SEND_DECISION
-}
-
-data class NotifyDecision2Created(val decisionId: UUID, override val user: AuthenticatedUser, val sendAsMessage: Boolean) : AsyncJobPayload {
-    override val asyncJobType = AsyncJobType.DECISION2_CREATED
-}
-
-data class SendDecision2(val decisionId: UUID, override val user: AuthenticatedUser) : AsyncJobPayload {
-    override val asyncJobType = AsyncJobType.SEND_DECISION2
 }
 
 data class NotifyFeeDecisionApproved(val decisionId: UUID) : AsyncJobPayload {

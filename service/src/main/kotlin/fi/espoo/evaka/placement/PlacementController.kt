@@ -20,6 +20,7 @@ import fi.espoo.evaka.shared.config.Roles.UNIT_SUPERVISOR
 import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.db.runAfterCommit
 import fi.espoo.evaka.shared.db.transaction
+import fi.espoo.evaka.shared.db.withSpringHandle
 import fi.espoo.evaka.shared.domain.BadRequest
 import org.jdbi.v3.core.Jdbi
 import org.springframework.format.annotation.DateTimeFormat
@@ -37,6 +38,7 @@ import org.springframework.web.bind.annotation.RequestParam
 import java.net.URI
 import java.time.LocalDate
 import java.util.UUID
+import javax.sql.DataSource
 
 @Controller
 @RequestMapping("/placements")
@@ -46,7 +48,8 @@ class PlacementController(
     private val placementPlanService: PlacementPlanService,
     private val childService: ChildService,
     private val asyncJobRunner: AsyncJobRunner,
-    private val jdbi: Jdbi
+    private val jdbi: Jdbi,
+    private val dataSource: DataSource
 ) {
     @GetMapping
     fun getPlacements(
@@ -120,7 +123,9 @@ class PlacementController(
             endDate = body.endDate
         )
 
-        asyncJobRunner.plan(listOf(NotifyPlacementPlanApplied(body.childId, body.startDate, body.endDate)))
+        withSpringHandle(dataSource) {
+            asyncJobRunner.plan(it, listOf(NotifyPlacementPlanApplied(body.childId, body.startDate, body.endDate)))
+        }
         runAfterCommit { asyncJobRunner.scheduleImmediateRun() }
 
         return ResponseEntity.created(URI.create("/placements/${placement.id}")).body(placement)
@@ -137,17 +142,19 @@ class PlacementController(
             .requireOneOfRoles(SERVICE_WORKER, UNIT_SUPERVISOR)
 
         val aclAuth = acl.getAuthorizedDaycares(user)
-        val oldPlacement = jdbi.transaction { updatePlacement(it, placementId, body.startDate, body.endDate, aclAuth) }
-
-        asyncJobRunner.plan(
-            listOf(
-                NotifyPlacementPlanApplied(
-                    oldPlacement.childId,
-                    minOf(body.startDate, oldPlacement.startDate),
-                    maxOf(body.endDate, oldPlacement.endDate)
+        jdbi.transaction { h ->
+            val oldPlacement = updatePlacement(h, placementId, body.startDate, body.endDate, aclAuth)
+            asyncJobRunner.plan(
+                h,
+                listOf(
+                    NotifyPlacementPlanApplied(
+                        oldPlacement.childId,
+                        minOf(body.startDate, oldPlacement.startDate),
+                        maxOf(body.endDate, oldPlacement.endDate)
+                    )
                 )
             )
-        )
+        }
         runAfterCommit { asyncJobRunner.scheduleImmediateRun() }
 
         return ResponseEntity.noContent().build()
@@ -162,9 +169,10 @@ class PlacementController(
         acl.getRolesForPlacement(user, placementId)
             .requireOneOfRoles(SERVICE_WORKER, UNIT_SUPERVISOR)
 
-        val (childId, startDate, endDate) = jdbi.transaction { it.cancelPlacement(placementId) }
-
-        asyncJobRunner.plan(listOf(NotifyPlacementPlanApplied(childId, startDate, endDate)))
+        jdbi.transaction { h ->
+            val (childId, startDate, endDate) = h.cancelPlacement(placementId)
+            asyncJobRunner.plan(h, listOf(NotifyPlacementPlanApplied(childId, startDate, endDate)))
+        }
         runAfterCommit { asyncJobRunner.scheduleImmediateRun() }
 
         return ResponseEntity.noContent().build()
