@@ -465,7 +465,7 @@
           "label": "Desired start date",
           "noteOnDelay": "The application processing time is 4 months.",
           "instructions": {
-            "text": "Hakemus on jätettävä viimeistään neljä kuukautta ennen varhaiskasvatuksen tarpeen alkamista. Voit harjoitella yhdessä lapsen kanssa varhaiskasvatuksessa oloa maksuttomasti ennen varsinaisen varhaiskasvatuksen alkamista. Merkitse tähän varsinaisen varhaiskasvatuksen alkamisajankohta ja sovi harjoittelusta suoraan myönnetyn varhaiskasvatuspaikan kanssa."
+            "text": "You can postpone your desired start date until the processing of your application starts. After this, you can make changes to your desired start date by contacting early childhood education service counselling (tel. 09 816 31000)."
           },
           "placeholder": "Select the start date"
         },

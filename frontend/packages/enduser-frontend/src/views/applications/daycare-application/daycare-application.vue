@@ -91,11 +91,15 @@ SPDX-License-Identifier: LGPL-2.1-or-later
                       $t(`form.${type}-application.service.startDate.label`)
                     )
                   }}
+                  <c-instructions
+                      :instruction="
+                        $t(
+                          `form.${type}-application.service.startDate.instructions.text`
+                        )
+                      "
+                    />
                 </div>
-                <div v-if="hasBeenSent" class="column is-4">
-                  <c-input :value="formattedStartDate" :disabled="true" />
-                </div>
-                <div class="column column-startdate" v-else>
+                <div class="column column-startdate" v-if="startDateShouldBeEditable">
                   <c-datepicker
                     id="daycare-preschool-datepicker"
                     v-model="model"
@@ -136,6 +140,9 @@ SPDX-License-Identifier: LGPL-2.1-or-later
                       }}
                     </div>
                   </c-message-box>
+                </div>
+                <div v-else class="column is-4">
+                  <c-input :value="formattedStartDate" :disabled="true" />
                 </div>
               </div>
               <div class="columns" v-if="!isPreschool">
@@ -1157,9 +1164,9 @@ SPDX-License-Identifier: LGPL-2.1-or-later
           (this as any).model.status.value === APPLICATION_STATUS.CREATED.value
         )
       },
-      hasBeenSent(): boolean {
+      startDateShouldBeEditable(): boolean {
         return (
-          (this as any).model.status.value === APPLICATION_STATUS.SENT.value
+          [APPLICATION_STATUS.SENT.value, APPLICATION_STATUS.CREATED.value].includes((this as any).model.status.value)
         )
       },
       errorSections() {

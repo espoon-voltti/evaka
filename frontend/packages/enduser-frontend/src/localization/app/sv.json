@@ -465,7 +465,7 @@
           "label": "Önskat inledningsdatum",
           "noteOnDelay": "Behandlingstiden för ansökningen är 4 månader.",
           "instructions": {
-            "text": "Hakemus on jätettävä viimeistään neljä kuukautta ennen varhaiskasvatuksen tarpeen alkamista. Voit harjoitella yhdessä lapsen kanssa varhaiskasvatuksessa oloa maksuttomasti ennen varsinaisen varhaiskasvatuksen alkamista. Merkitse tähän varsinaisen varhaiskasvatuksen alkamisajankohta ja sovi harjoittelusta suoraan myönnetyn varhaiskasvatuspaikan kanssa."
+            "text": "Det är möjligt att senarelägga det önskade startdatumet så länge ansökan inte har tagits upp till behandling. Därefter kan du ändra det önskade startdatumet genom att kontakta småbarnspedagogikens servicehänvisning (tfn 09 816 27600)."
           },
           "placeholder": "Välj inledningsdatum"
         },
