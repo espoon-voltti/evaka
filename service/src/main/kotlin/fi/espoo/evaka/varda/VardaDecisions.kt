@@ -180,7 +180,7 @@ private fun getNewDecisions(h: Handle, getChildUrl: (Long) -> String): List<Pair
     val sql =
         """
 $decisionQueryBase
-WHERE vd.id IS NULL OR vd.deleted IS NOT NULL
+WHERE vd.id IS NULL OR vd.deleted_at IS NOT NULL
         """.trimIndent()
 
     return h.createQuery(sql)
@@ -284,7 +284,7 @@ private fun getNewDerivedDecisions(h: Handle, getChildUrl: (Long) -> String): Li
     val sql =
         """
 $derivedDecisionQueryBase
-WHERE vd.id IS NULL OR vd.deleted IS NOT NULL
+WHERE vd.id IS NULL OR vd.deleted_at IS NOT NULL
         """.trimIndent()
 
     return h.createQuery(sql)
@@ -333,18 +333,19 @@ private fun deleteDecision(h: Handle, vardaDecisionId: Long) {
 }
 
 fun softDeleteDecision(h: Handle, vardaDecisionId: Long) {
-    h.createUpdate("UPDATE varda_decision SET deleted = NOW() WHERE varda_decision_id = :vardaDecisionId")
+    h.createUpdate("UPDATE varda_decision SET deleted_at = NOW() WHERE varda_decision_id = :vardaDecisionId")
         .bind("vardaDecisionId", vardaDecisionId)
         .execute()
 }
 
 fun getDecisionsToDelete(h: Handle): List<Long> {
     return h.createQuery(
+        // language=SQL
         """
 SELECT varda_decision_id 
 FROM varda_decision
 WHERE should_be_deleted = true
-AND deleted IS NULL
+AND deleted_at IS NULL
 """
     )
         .mapTo(Long::class.java)

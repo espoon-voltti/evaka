@@ -593,6 +593,100 @@ class VardaFeeDataIntegrationTest : FullApplicationTest() {
         }
     }
 
+    @Test
+    fun `fee data is soft deleted if it is flagged with should_be_deleted`() {
+        jdbi.handle { h ->
+            val period = ClosedPeriod(LocalDate.now().minusMonths(1), LocalDate.now().plusMonths(1))
+            createDecisionsAndPlacements(h, period = period)
+            insertFeeDecision(
+                h = h,
+                status = FeeDecisionStatus.SENT,
+                children = listOf(testChild_1),
+                objectMapper = objectMapper,
+                period = Period(period.start, period.end)
+            )
+            updateFeeData(h)
+
+            assertEquals(1, getVardaFeeDataRows(h).size)
+            assertEquals(0, getSoftDeletedVardaFeeData(h).size)
+
+            h.createUpdate("UPDATE varda_fee_data SET should_be_deleted = true").execute()
+
+            removeMarkedFeeDataFromVarda(h, vardaClient)
+            updateFeeData(h)
+
+            assertEquals(1, getSoftDeletedVardaFeeData(h).size)
+            assertEquals(2, getVardaFeeDataRows(h).size)
+        }
+    }
+
+    @Test
+    fun `fee_data is not updated if upload flag is turned off`() {
+        jdbi.handle { h ->
+            val period = ClosedPeriod(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))
+
+            createDecisionsAndPlacements(h, period = period)
+            insertFeeDecision(
+                h = h,
+                status = FeeDecisionStatus.SENT,
+                children = listOf(testChild_1),
+                objectMapper = objectMapper,
+                period = Period(period.start, period.end)
+            )
+
+            updateAll(h)
+
+            h.createUpdate("UPDATE daycare SET upload_to_varda = false WHERE id = :id").bind("id", testDaycare.id).execute()
+
+            val newStart = period.start.minusMonths(1)
+
+            h.createUpdate("UPDATE placement SET start_date = :newStart WHERE 1 = 1")
+                .bind("newStart", newStart)
+                .execute()
+
+            updateFeeData(h)
+
+            val feeData = mockEndpoint.feeData
+            assertEquals(1, feeData.size)
+            assertEquals(period.start, feeData[0].startDate)
+        }
+    }
+
+    @Test
+    fun `updating daycare organizer oid yields new varda fee data row if old is soft deleted`() {
+        jdbi.handle { h ->
+            val period = ClosedPeriod(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))
+
+            createDecisionsAndPlacements(h, period = period)
+            insertFeeDecision(
+                h = h,
+                status = FeeDecisionStatus.SENT,
+                children = listOf(testChild_1),
+                objectMapper = objectMapper,
+                period = Period(period.start, period.end)
+            )
+
+            updateAll(h)
+
+            assertEquals(1, getVardaFeeDataRows(h).size)
+
+            h.createUpdate("update varda_fee_data set should_be_deleted = true, deleted_at = NOW()").execute()
+            h.createUpdate("UPDATE daycare SET oph_organizer_oid = '1.22.333.4444.1' where id = :id")
+                .bind("id", testDaycare.id)
+                .execute()
+
+            updateAll(h)
+
+            assertEquals(2, getVardaFeeDataRows(h).size)
+        }
+    }
+
+    private fun updateAll(h: Handle) {
+        updateChildren(h, vardaClient, vardaOrganizerName)
+        updateDecisions(h, vardaClient)
+        updateFeeData(h)
+    }
+
     private fun updateFeeData(h: Handle) {
         updateFeeData(h, vardaClient, objectMapper, personService)
     }
@@ -617,6 +711,10 @@ class VardaFeeDataIntegrationTest : FullApplicationTest() {
         updatePlacements(h, vardaClient)
     }
 }
+
+private fun getSoftDeletedVardaFeeData(h: Handle): List<VardaFeeDataRow> =
+    h.createQuery("SELECT * FROM varda_fee_data WHERE deleted_at IS NOT NULL")
+        .mapTo<VardaFeeDataRow>().list() ?: emptyList()
 
 private fun clearVardaPlacements(h: Handle) {
     h.createUpdate("TRUNCATE varda_placement")

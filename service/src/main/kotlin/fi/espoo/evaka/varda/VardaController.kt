@@ -70,6 +70,7 @@ fun updateAll(
         updateDecisions(h, client)
         updatePlacements(h, client)
         updateFeeData(h, client, mapper, personService)
+        removeMarkedFeeDataFromVarda(h, client)
         removeMarkedPlacements(h, client)
         removeMarkedDecisions(h, client)
     }

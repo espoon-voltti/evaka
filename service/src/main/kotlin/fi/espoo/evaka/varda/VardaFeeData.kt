@@ -37,6 +37,15 @@ fun updateFeeData(
     uploadNewFeeData(h, client, mapper, personService)
 }
 
+fun removeMarkedFeeDataFromVarda(h: Handle, client: VardaClient) {
+    val feeDataIds: List<Int> = getFeeDataToDelete(h)
+    feeDataIds.forEach { id ->
+        if (client.deleteFeeData(id)) {
+            softDeleteFeeData(h, id)
+        }
+    }
+}
+
 fun deleteEntriesFromAnnulledFeeDecision(h: Handle, client: VardaClient) {
     getAnnulledFeeDecisions(h)
         .forEach { vardaId ->
@@ -86,6 +95,26 @@ fun uploadNewFeeData(
     }
 }
 
+fun getFeeDataToDelete(h: Handle): List<Int> {
+    return h.createQuery(
+        // language=SQL
+        """
+SELECT varda_fee_data_id 
+FROM varda_fee_data
+WHERE should_be_deleted = true
+AND deleted_at IS NULL
+"""
+    )
+        .mapTo(Int::class.java)
+        .toList()
+}
+
+fun softDeleteFeeData(h: Handle, vardaFeeDataId: Int) {
+    h.createUpdate("UPDATE varda_fee_data SET deleted_at = NOW() WHERE varda_fee_data_id = :vardaFeeDataId")
+        .bind("vardaFeeDataId", vardaFeeDataId)
+        .execute()
+}
+
 private fun getStaleFeeData(
     h: Handle,
     mapper: ObjectMapper
@@ -95,7 +124,7 @@ private fun getStaleFeeData(
     val sql =
         """
          $feeDataQueryBase
-        WHERE vfd.id IS NULL
+        WHERE vfd.id IS NULL OR vfd.deleted_at IS NOT NULL
             AND fdp.placement_type = ANY(:placementTypes)
         """.trimIndent()
 
@@ -113,7 +142,7 @@ private fun insertFeeDataUpload(h: Handle, feeDataBase: VardaFeeDataBase, vardaI
         """
         INSERT INTO varda_fee_data (evaka_fee_decision_id, evaka_placement_id, varda_fee_data_id, uploaded_at)
         VALUES (:decisionId, :placementId, :vardaId, :checkTimestamp)
-        ON CONFLICT (evaka_fee_decision_id, evaka_placement_id)
+        ON CONFLICT ON CONSTRAINT varda_fee_data_evaka_fee_decision_id_evaka_placement_id_key
         DO UPDATE SET uploaded_at = :checkTimestamp
         """.trimIndent()
 

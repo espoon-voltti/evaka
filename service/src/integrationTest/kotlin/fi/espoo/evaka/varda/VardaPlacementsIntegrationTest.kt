@@ -333,8 +333,8 @@ class VardaPlacementsIntegrationTest : FullApplicationTest() {
 
             assertEquals(1, getVardaPlacements(h).size)
 
-            h.createUpdate("update varda_decision set deleted = NOW()").execute()
-            h.createUpdate("update varda_placement set deleted = NOW()").execute()
+            h.createUpdate("update varda_decision set deleted_at = NOW()").execute()
+            h.createUpdate("update varda_placement set deleted_at = NOW()").execute()
 
             h.createUpdate("UPDATE daycare SET oph_organizer_oid = '1.22.333.4444.1' where id = :id")
                 .bind("id", testDaycare.id)
@@ -349,7 +349,7 @@ class VardaPlacementsIntegrationTest : FullApplicationTest() {
     }
 }
 
-private fun getSoftDeletedVardaPlacements(h: Handle) = h.createQuery("SELECT * FROM varda_placement WHERE deleted IS NOT NULL")
+private fun getSoftDeletedVardaPlacements(h: Handle) = h.createQuery("SELECT * FROM varda_placement WHERE deleted_at IS NOT NULL")
     .map(toVardaPlacementRow)
     .toList()
 

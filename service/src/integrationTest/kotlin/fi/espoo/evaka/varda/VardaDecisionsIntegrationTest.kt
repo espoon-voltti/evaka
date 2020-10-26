@@ -768,7 +768,7 @@ class VardaDecisionsIntegrationTest : FullApplicationTest() {
 
             assertEquals(1, getVardaDecisions(h).size)
 
-            h.createUpdate("update varda_decision set deleted = NOW()").execute()
+            h.createUpdate("update varda_decision set deleted_at = NOW()").execute()
 
             h.createUpdate("UPDATE daycare SET oph_organizer_oid = '1.22.333.4444.1' where id = :id")
                 .bind("id", testDaycare.id)
@@ -784,7 +784,7 @@ class VardaDecisionsIntegrationTest : FullApplicationTest() {
         .map(toVardaDecisionRow)
         .toList()
 
-    private fun getSoftDeletedVardaDecisions(h: Handle) = h.createQuery("SELECT * FROM varda_decision WHERE deleted IS NOT NULL")
+    private fun getSoftDeletedVardaDecisions(h: Handle) = h.createQuery("SELECT * FROM varda_decision WHERE deleted_at IS NOT NULL")
         .map(toVardaDecisionRow)
         .toList()
 
