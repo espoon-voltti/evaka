@@ -13,10 +13,14 @@ import fi.espoo.evaka.daycare.VisitingAddress
 import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.daycare.getApplicationUnits
-import fi.espoo.evaka.daycare.service.LocationService
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
+import fi.espoo.evaka.shared.db.bindNullable
 import fi.espoo.evaka.shared.db.handle
+import fi.espoo.evaka.shared.db.mapColumn
+import fi.espoo.evaka.shared.db.transaction
+import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.Coordinate
+import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.Jdbi
 import org.jdbi.v3.core.kotlin.mapTo
 import org.springframework.format.annotation.DateTimeFormat
@@ -28,10 +32,7 @@ import java.time.LocalDate
 import java.util.UUID
 
 @RestController
-class LocationController(
-    val jdbi: Jdbi,
-    val locationService: LocationService
-) {
+class LocationController(val jdbi: Jdbi) {
     @GetMapping("/public/units")
     fun getApplicationUnits(
         user: AuthenticatedUser,
@@ -45,16 +46,20 @@ class LocationController(
     // Units by areas, only including units that can be applied to
     @GetMapping("/enduser/areas")
     fun getEnduserUnitsByArea(): ResponseEntity<Collection<CareAreaResponseJSON>> {
-        val areas = locationService.getAreas().map { area: CareArea ->
-            CareArea(
-                area.id,
-                area.name,
-                area.shortName,
-                area.locations.filter {
-                    it.type.contains(CareType.CLUB) || it.canApplyDaycare || it.canApplyPreschool
+        val areas = jdbi.transaction { h ->
+            h.getAreas()
+                .map { area: CareArea ->
+                    CareArea(
+                        area.id,
+                        area.name,
+                        area.shortName,
+                        area.locations.filter {
+                            it.type.contains(CareType.CLUB) || it.canApplyDaycare || it.canApplyPreschool
+                        }
+                    )
                 }
-            )
-        }.toSet()
+                .toSet()
+        }
 
         return ResponseEntity.ok(toCareAreaResponses(areas))
     }
@@ -74,10 +79,12 @@ class LocationController(
     @GetMapping("/filters/units")
     fun getUnits(@RequestParam type: String, @RequestParam area: String?): ResponseEntity<List<UnitStub>> {
         val areas = area?.split(",") ?: listOf()
-        val units = when (type.toLowerCase()) {
-            "club" -> locationService.getClubs(areas)
-            "daycare" -> locationService.getDaycares(areas)
-            else -> return ResponseEntity.badRequest().build()
+        val units = jdbi.transaction { h ->
+            when (type.toLowerCase()) {
+                "club" -> h.getClubs(areas)
+                "daycare" -> h.getDaycares(areas)
+                else -> throw BadRequest("Unsupported type $type")
+            }
         }
         return ResponseEntity.ok(units)
     }
@@ -173,3 +180,66 @@ data class AreaJSON(
     val name: String,
     val shortName: String
 )
+
+fun Handle.getAreas(): List<CareArea> = createQuery(
+    // language=SQL
+    """
+SELECT
+  ca.id AS care_area_id, ca.name AS care_area_name, ca.short_name AS care_area_short_name,
+  u.id, u.name, u.street_address, u.location, u.phone, u.postal_code, u.post_office,
+  u.mailing_street_address, u.mailing_po_box, u.mailing_postal_code, u.mailing_post_office,
+  u.type, u.url, u.provider_type, u.language, u.can_apply_daycare, u.can_apply_preschool, u.can_apply_club
+FROM care_area ca
+LEFT JOIN daycare u ON ca.id = u.care_area_id
+WHERE (u.can_apply_daycare OR u.can_apply_preschool OR u.can_apply_club)
+AND (u.closing_date IS NULL OR u.closing_date >= current_date)
+    """.trimIndent()
+)
+    .reduceRows(mutableMapOf<UUID, Pair<CareArea, MutableList<Location>>>()) { map, row ->
+        val (_, locations) = map.computeIfAbsent(row.mapColumn("care_area_id")) { id ->
+            Pair(
+                CareArea(
+                    id = id,
+                    name = row.mapColumn("care_area_name"),
+                    shortName = row.mapColumn("care_area_short_name"),
+                    locations = listOf()
+                ),
+                mutableListOf()
+            )
+        }
+        row.mapColumn<UUID?>("id")?.let {
+            locations.add(row.getRow(Location::class.java))
+        }
+
+        map
+    }
+    .values
+    .map { (area, locations) ->
+        area.copy(locations = locations.toList())
+    }
+
+fun Handle.getDaycares(areaShortNames: Collection<String>): List<UnitStub> = createQuery(
+    // language=SQL
+    """
+SELECT daycare.id, daycare.name
+FROM daycare
+JOIN care_area ON care_area_id = care_area.id
+WHERE :areaShortNames::text[] IS NULL OR care_area.short_name = ANY(:areaShortNames)
+ORDER BY name
+    """.trimIndent()
+).bindNullable("areaShortNames", areaShortNames.toTypedArray().takeIf { it.isNotEmpty() })
+    .mapTo<UnitStub>()
+    .list()
+
+fun Handle.getClubs(areaShortNames: Collection<String>): List<UnitStub> = createQuery(
+    // language=SQL
+    """
+SELECT club_group.id, club_group.name
+FROM club_group
+JOIN care_area ON care_area_id = care_area.id
+WHERE :areaShortNames::text[] IS NULL OR care_area.short_name = ANY(:areaShortNames)
+ORDER BY name
+    """.trimIndent()
+).bindNullable("areaShortNames", areaShortNames.toTypedArray().takeIf { it.isNotEmpty() })
+    .mapTo<UnitStub>()
+    .list()
