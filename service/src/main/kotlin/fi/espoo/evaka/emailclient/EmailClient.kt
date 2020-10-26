@@ -72,7 +72,7 @@ class EmailClient(private val client: AmazonSimpleEmailService, env: Environment
 
         return when (language) {
             Language.fi -> "Olemme vastaanottaneet hakemuksenne$postfix"
-            Language.sv -> "Vi har tagit emot er ansökan$postfix"
+            Language.sv -> "Vi har tagit emot din ansökan$postfix"
         }
     }
 
