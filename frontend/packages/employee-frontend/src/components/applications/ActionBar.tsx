@@ -151,7 +151,6 @@ export default React.memo(function ActionBar({
 
   return actions.length > 0 ? (
     <StickyActionBar align={'right'} fullWidth={fullWidth}>
-      xD
       <Centered>
         {checkedIds.length > 0 ? (
           <CheckedRowsInfo>

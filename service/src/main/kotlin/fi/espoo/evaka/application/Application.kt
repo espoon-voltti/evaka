@@ -19,6 +19,7 @@ data class ApplicationSummary(
     val socialSecurityNumber: String? = null,
     val dateOfBirth: String? = null,
     val type: ApplicationType,
+    val placementType: PlacementType,
     val dueDate: String?,
     val startDate: String?,
     val preferredUnits: List<PreferredUnit>,

@@ -10,6 +10,7 @@ import {
   PlacementPlanConfirmationStatus,
   PlacementPlanRejectReason
 } from '~types/unit'
+import { PlacementType } from '~types/placementdraft'
 
 export interface ApplicationSummary {
   applicationId: UUID
@@ -185,6 +186,7 @@ export interface ApplicationListSummary {
   socialSecurityNumber: string
   dateOfBirth: LocalDate | null
   type: string
+  placementType: PlacementType
   dueDate: LocalDate | null
   startDate: LocalDate | null
   preferredUnits: Unit[]

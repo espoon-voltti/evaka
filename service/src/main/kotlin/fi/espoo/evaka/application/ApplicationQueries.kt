@@ -26,6 +26,7 @@ import fi.espoo.evaka.shared.db.mapJsonColumn
 import fi.espoo.evaka.shared.db.transaction
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.mapTo
+import org.jdbi.v3.core.result.RowView
 import org.jdbi.v3.core.statement.StatementContext
 import org.postgresql.util.PGobject
 import java.lang.Error
@@ -214,6 +215,7 @@ fun fetchApplicationSummaries(
             child.last_name,
             child.date_of_birth,
             child.social_security_number,
+            f.document,
             f.document ->> 'type' as type,
             a.duedate,
             f.document ->> 'preferredStartDate' as preferredStartDate,
@@ -291,6 +293,7 @@ fun fetchApplicationSummaries(
                 socialSecurityNumber = row.mapColumn("social_security_number"),
                 dateOfBirth = row.mapColumn("date_of_birth"),
                 type = row.mapColumn("type"),
+                placementType = mapRequestedPlacementType(row, "document"),
                 dueDate = row.mapColumn("duedate"),
                 startDate = row.mapColumn("preferredStartDate"),
                 preferredUnits = row.mapJsonColumn<List<String>>("preferredUnits").map {
@@ -579,34 +582,7 @@ fun Handle.getApplicationUnitSummaries(unitId: UUID): List<ApplicationUnitSummar
                 guardianLastName = row.mapColumn("guardian_last_name"),
                 guardianPhone = row.mapColumn("guardian_phone"),
                 guardianEmail = row.mapColumn("guardian_email"),
-                requestedPlacementType = when (row.mapJsonColumn<FormWithType>("document").type) {
-                    "club" -> PlacementType.CLUB
-                    "daycare" -> {
-                        if (row.mapJsonColumn<DaycareFormV0>("document").partTime) {
-                            PlacementType.DAYCARE_PART_TIME
-                        } else {
-                            PlacementType.DAYCARE
-                        }
-                    }
-                    "preschool" -> {
-                        row.mapJsonColumn<DaycareFormV0>("document").let {
-                            if (it.careDetails.preparatory == true) {
-                                if (it.connectedDaycare == true) {
-                                    PlacementType.PREPARATORY_DAYCARE
-                                } else {
-                                    PlacementType.PREPARATORY
-                                }
-                            } else {
-                                if (it.connectedDaycare == true) {
-                                    PlacementType.PRESCHOOL_DAYCARE
-                                } else {
-                                    PlacementType.PRESCHOOL
-                                }
-                            }
-                        }
-                    }
-                    else -> throw Error("unknown form type")
-                },
+                requestedPlacementType = mapRequestedPlacementType(row, "document"),
                 preferredStartDate = row.mapColumn("preferred_start_date"),
                 preferenceOrder = row.mapColumn("preference_order"),
                 status = row.mapColumn("status")
@@ -617,6 +593,35 @@ fun Handle.getApplicationUnitSummaries(unitId: UUID): List<ApplicationUnitSummar
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class FormWithType(val type: String)
+
+fun mapRequestedPlacementType(row: RowView, colName: String): PlacementType = when (row.mapJsonColumn<FormWithType>(colName).type) {
+    "club" -> PlacementType.CLUB
+    "daycare" -> {
+        if (row.mapJsonColumn<DaycareFormV0>(colName).partTime) {
+            PlacementType.DAYCARE_PART_TIME
+        } else {
+            PlacementType.DAYCARE
+        }
+    }
+    "preschool" -> {
+        row.mapJsonColumn<DaycareFormV0>(colName).let {
+            if (it.careDetails.preparatory == true) {
+                if (it.connectedDaycare == true) {
+                    PlacementType.PREPARATORY_DAYCARE
+                } else {
+                    PlacementType.PREPARATORY
+                }
+            } else {
+                if (it.connectedDaycare == true) {
+                    PlacementType.PRESCHOOL_DAYCARE
+                } else {
+                    PlacementType.PRESCHOOL
+                }
+            }
+        }
+    }
+    else -> throw Error("unknown form type")
+}
 
 fun updateForm(h: Handle, id: UUID, form: ApplicationForm, formType: ApplicationType, childRestricted: Boolean, guardianRestricted: Boolean) {
     val transformedForm =

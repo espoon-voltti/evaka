@@ -159,6 +159,7 @@ export const fi = {
       resultCount: 'Hakutuloksia',
       noResults: 'Ei hakutuloksia',
       type: 'Hakutyyppi',
+      subtype: 'Osa/Koko',
       transferFilter: {
         title: 'Siirtohakemukset',
         transferOnly: 'Näytä vain siirtohakemukset',
