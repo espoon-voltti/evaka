@@ -12,7 +12,6 @@ import fi.espoo.evaka.shared.db.transaction
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.Jdbi
 import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDate
 import java.util.UUID
 
@@ -107,7 +106,6 @@ class MergeService(
         }
     }
 
-    @Transactional
     fun deleteEmptyPerson(id: UUID) = jdbi.transaction { h ->
         // language=sql
         val sql1 =

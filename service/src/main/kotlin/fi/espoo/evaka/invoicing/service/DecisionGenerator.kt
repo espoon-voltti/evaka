@@ -57,7 +57,6 @@ import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.mapTo
 import org.springframework.core.env.Environment
 import org.springframework.stereotype.Component
-import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDate
 import java.util.UUID
 import javax.sql.DataSource
@@ -72,7 +71,6 @@ class DecisionGenerator(
 ) {
     private val feeDecisionMinDate: LocalDate = LocalDate.parse(env.getRequiredProperty("fee_decision_min_date"))
 
-    @Transactional
     fun createRetroactive(h: Handle, headOfFamily: UUID, from: LocalDate) {
         val period = Period(from, null)
         findFamiliesByHeadOfFamily(h, headOfFamily, period)
@@ -90,7 +88,6 @@ class DecisionGenerator(
             }
     }
 
-    @Transactional
     fun handlePlacement(h: Handle, childId: UUID, period: Period) {
         logger.debug { "Generating fee decisions from new placement (childId: $childId, period: $period)" }
 
@@ -98,7 +95,6 @@ class DecisionGenerator(
         handleDecisionChangesForFamilies(h, period, families)
     }
 
-    @Transactional
     fun handleServiceNeed(h: Handle, childId: UUID, period: Period) {
         logger.debug { "Generating fee decisions from changed service need (childId: $childId, period: $period)" }
 
@@ -106,7 +102,6 @@ class DecisionGenerator(
         handleDecisionChangesForFamilies(h, period, families)
     }
 
-    @Transactional
     fun handleFamilyUpdate(h: Handle, adultId: UUID, period: Period) {
         logger.debug { "Generating fee decisions from changed family (adultId: $adultId, period: $period)" }
 
@@ -114,7 +109,6 @@ class DecisionGenerator(
         handleDecisionChangesForFamilies(h, period, families)
     }
 
-    @Transactional
     fun handleIncomeChange(h: Handle, personId: UUID, period: Period) {
         logger.debug { "Generating fee decisions from changed income (personId: $personId, period: $period)" }
 
@@ -122,7 +116,6 @@ class DecisionGenerator(
         handleDecisionChangesForFamilies(h, period, families)
     }
 
-    @Transactional
     fun handleFeeAlterationChange(h: Handle, childId: UUID, period: Period) {
         logger.debug { "Generating fee decisions from changed fee alteration (childId: $childId, period: $period)" }
 

@@ -23,6 +23,7 @@ import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.runAfterCommit
 import fi.espoo.evaka.shared.db.withSpringHandle
+import fi.espoo.evaka.shared.db.withSpringTx
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.message.IEvakaMessageClient
 import fi.espoo.evaka.shared.message.SuomiFiMessage
@@ -33,7 +34,7 @@ import mu.KotlinLogging
 import org.jdbi.v3.core.Handle
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Transactional
+import org.springframework.transaction.PlatformTransactionManager
 import org.thymeleaf.context.Context
 import java.net.URI
 import java.time.LocalDate
@@ -44,56 +45,55 @@ import javax.sql.DataSource
 val logger = KotlinLogging.logger { }
 
 @Service
-@Transactional(readOnly = true)
 class DecisionService(
     @Value("\${fi.espoo.voltti.document.bucket.daycaredecision}")
     private val decisionBucket: String,
     private val dataSource: DataSource,
+    private val txManager: PlatformTransactionManager,
     private val personService: PersonService,
     private val s3Client: DocumentService,
     private val pdfService: PDFService,
     private val evakaMessageClient: IEvakaMessageClient,
     private val asyncJobRunner: AsyncJobRunner
 ) {
-    @Transactional
-    fun finalizeDecisions(user: AuthenticatedUser, applicationId: UUID, sendAsMessage: Boolean): List<UUID> {
-        val decisionIds = withSpringHandle(dataSource) { h -> finalizeDecisions(h, applicationId) }
+    fun finalizeDecisions(user: AuthenticatedUser, applicationId: UUID, sendAsMessage: Boolean): List<UUID> =
+        withSpringTx(txManager) {
+            val decisionIds = withSpringHandle(dataSource) { h -> finalizeDecisions(h, applicationId) }
 
-        withSpringHandle(dataSource) {
-            asyncJobRunner.plan(it, decisionIds.map { NotifyDecisionCreated(it, user, sendAsMessage) })
+            withSpringHandle(dataSource) {
+                asyncJobRunner.plan(it, decisionIds.map { NotifyDecisionCreated(it, user, sendAsMessage) })
+            }
+            runAfterCommit { asyncJobRunner.scheduleImmediateRun() }
+
+            decisionIds
         }
-        runAfterCommit { asyncJobRunner.scheduleImmediateRun() }
 
-        return decisionIds
-    }
+    fun markDecisionAccepted(user: AuthenticatedUser, decisionId: UUID, requestedStartDate: LocalDate) =
+        withSpringTx(txManager) {
+            withSpringHandle(dataSource, { h -> markDecisionAccepted(h, user, decisionId, requestedStartDate) })
+        }
 
-    @Transactional
-    fun markDecisionAccepted(user: AuthenticatedUser, decisionId: UUID, requestedStartDate: LocalDate) {
-        withSpringHandle(dataSource, { h -> markDecisionAccepted(h, user, decisionId, requestedStartDate) })
-    }
-
-    @Transactional
-    fun markDecisionRejected(user: AuthenticatedUser, decisionId: UUID) {
+    fun markDecisionRejected(user: AuthenticatedUser, decisionId: UUID) = withSpringTx(txManager) {
         withSpringHandle(dataSource, { h -> markDecisionRejected(h, user, decisionId) })
     }
 
-    fun getDecision(decisionId: UUID): Decision? {
-        return withSpringHandle(dataSource, { h -> getDecision(h, decisionId) })
+    fun getDecision(decisionId: UUID): Decision? = withSpringTx(txManager) {
+        withSpringHandle(dataSource, { h -> getDecision(h, decisionId) })
     }
 
-    fun getDecisionsByChild(childId: UUID, authorizedUnits: AclAuthorization): List<Decision> {
-        return withSpringHandle(dataSource, { h -> getDecisionsByChild(h, childId, authorizedUnits) })
+    fun getDecisionsByChild(childId: UUID, authorizedUnits: AclAuthorization): List<Decision> = withSpringTx(txManager) {
+        withSpringHandle(dataSource, { h -> getDecisionsByChild(h, childId, authorizedUnits) })
     }
 
-    fun getDecisionsByApplication(applicationId: UUID, authorizedUnits: AclAuthorization = AclAuthorization.All): List<Decision> {
-        return withSpringHandle(dataSource, { h -> getDecisionsByApplication(h, applicationId, authorizedUnits) })
+    fun getDecisionsByApplication(applicationId: UUID, authorizedUnits: AclAuthorization = AclAuthorization.All): List<Decision> =
+        withSpringTx(txManager) {
+            withSpringHandle(dataSource, { h -> getDecisionsByApplication(h, applicationId, authorizedUnits) })
+        }
+
+    fun getDecisionsByGuardian(guardianId: UUID, authorizedUnits: AclAuthorization): List<Decision> = withSpringTx(txManager) {
+        withSpringHandle(dataSource, { h -> getDecisionsByGuardian(h, guardianId, authorizedUnits) })
     }
 
-    fun getDecisionsByGuardian(guardianId: UUID, authorizedUnits: AclAuthorization): List<Decision> {
-        return withSpringHandle(dataSource, { h -> getDecisionsByGuardian(h, guardianId, authorizedUnits) })
-    }
-
-    @Transactional
     fun createDecisionPdfs(
         h: Handle,
         user: AuthenticatedUser,
@@ -297,8 +297,8 @@ class DecisionService(
         evakaMessageClient.send(message)
     }
 
-    fun getDecisionPdf(decisionId: UUID): Document {
-        return withSpringHandle(dataSource) { h ->
+    fun getDecisionPdf(decisionId: UUID): Document = withSpringTx(txManager) {
+        withSpringHandle(dataSource) { h ->
             val decision = getDecision(h, decisionId)
                 ?: throw NotFound("No decision $decisionId found")
             val lang = getDecisionLanguage(h, decisionId)
