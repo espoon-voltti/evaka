@@ -118,6 +118,7 @@ function ApplicationPage({ match }: RouteComponentProps<{ id: UUID }>) {
           setApplication={setEditedApplication}
           errors={validationErrors}
           units={units}
+          guardians={applicationData.guardians}
         />
       ) : null
     ) : (

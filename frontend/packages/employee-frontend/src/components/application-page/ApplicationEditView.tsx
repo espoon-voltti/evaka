@@ -46,6 +46,7 @@ import {
 } from 'types/application'
 import { formatName } from 'utils'
 import { InputWarning } from '~components/common/InputWarning'
+import { PersonDetails } from '~types/person'
 
 interface PreschoolApplicationProps {
   application: ApplicationDetails
@@ -54,13 +55,15 @@ interface PreschoolApplicationProps {
   >
   errors: Record<string, string>
   units: Result<PreferredUnit[]>
+  guardians: PersonDetails[]
 }
 
 export default React.memo(function ApplicationEditView({
   application,
   setApplication,
   errors,
-  units
+  units,
+  guardians
 }: PreschoolApplicationProps) {
   const { i18n } = useTranslation()
 
@@ -100,6 +103,8 @@ export default React.memo(function ApplicationEditView({
 
   const connectedDaycare = type === 'PRESCHOOL' && serviceNeed !== null
   const paid = type === 'DAYCARE' || connectedDaycare
+
+  const otherGuardian = guardians.find((guardian) => guardian.id !== guardianId)
 
   const formatPersonName = (person: PersonBasics) =>
     formatName(person.firstName, person.lastName, i18n, true)
@@ -731,7 +736,7 @@ export default React.memo(function ApplicationEditView({
           )}
 
           <VTJGuardian
-            guardianId={otherGuardianId}
+            guardianId={otherGuardian?.id}
             otherGuardianLivesInSameAddress={otherGuardianLivesInSameAddress}
           />
         </FixedSpaceColumn>
