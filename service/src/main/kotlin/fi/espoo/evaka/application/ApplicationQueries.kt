@@ -543,6 +543,10 @@ fun Handle.getApplicationUnitSummaries(unitId: UUID): List<ApplicationUnitSummar
             f.document ->> 'type' AS type,
             f.document,
             (f.document ->> 'preferredStartDate')::date as preferred_start_date,
+            (array_position((
+                SELECT array_agg(e)
+                FROM jsonb_array_elements_text(f.document -> 'apply' -> 'preferredUnits') e
+            ), :unitId::text)) as preference_order,
             a.status,
             c.first_name,
             c.last_name,
@@ -555,9 +559,11 @@ fun Handle.getApplicationUnitSummaries(unitId: UUID): List<ApplicationUnitSummar
         JOIN application_form f ON f.application_id = a.id AND f.latest IS TRUE
         JOIN person c ON c.id = a.child_id
         JOIN person g ON g.id = a.guardian_id
-        WHERE 
-            (f.document -> 'apply' -> 'preferredUnits' ->> 0)::uuid = :unitId AND
-            a.status = ANY ('{SENT,WAITING_PLACEMENT,WAITING_DECISION}'::application_status_type[])
+        WHERE EXISTS (
+            SELECT 1
+            FROM jsonb_array_elements_text(f.document -> 'apply' -> 'preferredUnits') e
+            WHERE e = :unitId::text
+        ) AND a.status = ANY ('{SENT,WAITING_PLACEMENT,WAITING_DECISION}'::application_status_type[])
         ORDER BY c.last_name, c.first_name
         """.trimIndent()
 
@@ -602,6 +608,7 @@ fun Handle.getApplicationUnitSummaries(unitId: UUID): List<ApplicationUnitSummar
                     else -> throw Error("unknown form type")
                 },
                 preferredStartDate = row.mapColumn("preferred_start_date"),
+                preferenceOrder = row.mapColumn("preference_order"),
                 status = row.mapColumn("status")
             )
         }

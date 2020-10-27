@@ -136,6 +136,7 @@ export type ApplicationUnitSummary = {
   guardianEmail: string | null
   requestedPlacementType: PlacementType
   preferredStartDate: LocalDate
+  preferenceOrder: number
   status: ApplicationStatus
 }
 

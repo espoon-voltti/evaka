@@ -143,5 +143,6 @@ data class ApplicationUnitSummary(
     val guardianEmail: String?,
     val requestedPlacementType: PlacementType,
     val preferredStartDate: LocalDate,
+    val preferenceOrder: Int,
     val status: ApplicationStatus
 )

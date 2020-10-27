@@ -41,6 +41,7 @@ function TabApplications() {
               <Th>{i18n.unit.applications.guardian}</Th>
               <Th>{i18n.unit.applications.type}</Th>
               <Th>{i18n.unit.applications.placement}</Th>
+              <Th>{i18n.unit.applications.preferenceOrder}</Th>
               <Th>{i18n.unit.applications.startDate}</Th>
               <Th>{i18n.unit.applications.status}</Th>
             </Tr>
@@ -72,6 +73,7 @@ function TabApplications() {
                 <Td data-qa="placement-subtype">
                   <PlacementCircle type={row.requestedPlacementType} />
                 </Td>
+                <Td data-qa="preference-order">{`${row.preferenceOrder}.`}</Td>
                 <Td data-qa="preferred-start">
                   {row.preferredStartDate.format()}
                 </Td>

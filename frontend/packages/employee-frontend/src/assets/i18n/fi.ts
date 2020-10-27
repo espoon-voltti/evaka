@@ -1050,6 +1050,7 @@ export const fi = {
         PREPARATORY_DAYCARE: 'Valmistava'
       },
       placement: 'Osa/Koko',
+      preferenceOrder: 'Toive',
       startDate: 'Aloitus',
       status: 'Tila'
     },
