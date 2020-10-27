@@ -25,11 +25,7 @@ import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus
 import fi.espoo.evaka.invoicing.domain.FeeDecisionType
 import fi.espoo.evaka.invoicing.domain.MailAddress
 import fi.espoo.evaka.invoicing.domain.updateEndDatesOrAnnulConflictingDecisions
-import fi.espoo.evaka.shared.async.AsyncJobRunner
-import fi.espoo.evaka.shared.async.NotifyFeeDecisionApproved
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.db.withSpringHandle
-import fi.espoo.evaka.shared.db.withSpringTx
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.shared.domain.NotFound
@@ -39,33 +35,22 @@ import fi.espoo.evaka.shared.message.SuomiFiMessage
 import mu.KotlinLogging
 import org.jdbi.v3.core.Handle
 import org.springframework.stereotype.Component
-import org.springframework.transaction.PlatformTransactionManager
-import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDate
 import java.util.UUID
-import javax.sql.DataSource
 
 private val logger = KotlinLogging.logger {}
 
 @Component
 class FeeDecisionService(
     private val objectMapper: ObjectMapper,
-    private val txManager: PlatformTransactionManager,
-    private val dataSource: DataSource,
     private val pdfService: PDFService,
     private val s3Client: S3DocumentClient,
-    private val evakaMessageClient: IEvakaMessageClient,
-    private val asyncJobRunner: AsyncJobRunner
+    private val evakaMessageClient: IEvakaMessageClient
 ) {
-    @Transactional
-    fun confirmDrafts(user: AuthenticatedUser, ids: List<UUID>) {
-        val decisions = withSpringTx(txManager) {
-            withSpringHandle(dataSource) { h ->
-                h.lockFeeDecisions(ids)
-                getFeeDecisionsByIds(h, objectMapper, ids)
-            }
-        }
-        if (decisions.isEmpty()) return
+    fun confirmDrafts(h: Handle, user: AuthenticatedUser, ids: List<UUID>): List<UUID> {
+        h.lockFeeDecisions(ids)
+        val decisions = getFeeDecisionsByIds(h, objectMapper, ids)
+        if (decisions.isEmpty()) return listOf()
 
         val notDrafts = decisions.filterNot { it.status == FeeDecisionStatus.DRAFT }
         if (notDrafts.isNotEmpty()) {
@@ -77,41 +62,32 @@ class FeeDecisionService(
             throw BadRequest("Some of the fee decisions are not valid yet")
         }
 
-        withSpringTx(txManager) {
-            withSpringHandle(dataSource) { h ->
-                val conflicts = decisions
-                    .flatMap {
-                        h.lockFeeDecisionsForHeadOfFamily(it.headOfFamily.id)
-                        findFeeDecisionsForHeadOfFamily(
-                            h,
-                            objectMapper,
-                            it.headOfFamily.id,
-                            Period(it.validFrom, it.validTo),
-                            listOf(FeeDecisionStatus.SENT)
-                        )
-                    }
-                    .distinctBy { it.id }
-                    .filter { !ids.contains(it.id) }
-
-                val updatedConflicts = updateEndDatesOrAnnulConflictingDecisions(decisions, conflicts)
-                upsertFeeDecisions(h, objectMapper, updatedConflicts)
-
-                val (emptyDecisions, validDecisions) = decisions
-                    .partition { it.parts.isEmpty() }
-
-                deleteFeeDecisions(h, emptyDecisions.map { it.id })
-
-                val validIds = validDecisions.map { it.id }
-
-                approveFeeDecisionDraftsForSending(h, validIds, user.id)
-
-                validIds.forEach {
-                    asyncJobRunner.plan(h, listOf(NotifyFeeDecisionApproved(it)))
-                }
+        val conflicts = decisions
+            .flatMap {
+                h.lockFeeDecisionsForHeadOfFamily(it.headOfFamily.id)
+                findFeeDecisionsForHeadOfFamily(
+                    h,
+                    objectMapper,
+                    it.headOfFamily.id,
+                    Period(it.validFrom, it.validTo),
+                    listOf(FeeDecisionStatus.SENT)
+                )
             }
-        }
+            .distinctBy { it.id }
+            .filter { !ids.contains(it.id) }
 
-        asyncJobRunner.scheduleImmediateRun()
+        val updatedConflicts = updateEndDatesOrAnnulConflictingDecisions(decisions, conflicts)
+        upsertFeeDecisions(h, objectMapper, updatedConflicts)
+
+        val (emptyDecisions, validDecisions) = decisions
+            .partition { it.parts.isEmpty() }
+
+        deleteFeeDecisions(h, emptyDecisions.map { it.id })
+
+        val validIds = validDecisions.map { it.id }
+
+        approveFeeDecisionDraftsForSending(h, validIds, user.id)
+        return validIds
     }
 
     private fun getDecisionLanguage(decision: FeeDecisionDetailed): String {

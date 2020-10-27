@@ -201,7 +201,9 @@ class PlacementPlanService(
             effectivePeriod = period
         }
         effectivePeriod?.also {
-            asyncJobRunner.plan(listOf(NotifyPlacementPlanApplied(childId, it.start, it.end)))
+            withSpringHandle(dataSource) { h ->
+                asyncJobRunner.plan(h, listOf(NotifyPlacementPlanApplied(childId, it.start, it.end)))
+            }
         }
         runAfterCommit { asyncJobRunner.scheduleImmediateRun() }
     }

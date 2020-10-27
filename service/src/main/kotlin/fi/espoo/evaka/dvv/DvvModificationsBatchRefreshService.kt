@@ -29,9 +29,9 @@ class DvvModificationsBatchRefreshService(
         asyncJobRunner.dvvModificationsRefresh = ::doDvvModificationsRefresh
     }
 
-    fun doDvvModificationsRefresh(msg: DvvModificationsRefresh) {
+    fun doDvvModificationsRefresh(h: Handle, msg: DvvModificationsRefresh) {
         logger.info("DvvModificationsRefresh: updating ${msg.ssns.size} ssns")
-        dvvModificationsService.updatePersonsFromDvv(msg.ssns)
+        dvvModificationsService.updatePersonsFromDvv(h, msg.ssns)
     }
 
     fun scheduleBatch(): Int {

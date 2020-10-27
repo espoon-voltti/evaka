@@ -9,6 +9,7 @@ import fi.espoo.evaka.pis.dao.mapPSQLException
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.NotifyFamilyUpdated
 import fi.espoo.evaka.shared.db.runAfterCommit
+import fi.espoo.evaka.shared.db.withSpringHandle
 import fi.espoo.evaka.shared.db.withSpringTx
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.domain.maxEndDate
@@ -20,13 +21,15 @@ import org.springframework.transaction.PlatformTransactionManager
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDate
 import java.util.UUID
+import javax.sql.DataSource
 
 @Service
 @Transactional(readOnly = true)
 class PartnershipService(
     private val dao: PartnershipDAO,
     private val asyncJobRunner: AsyncJobRunner,
-    private val txm: PlatformTransactionManager
+    private val txm: PlatformTransactionManager,
+    private val dataSource: DataSource
 ) {
     private val logger = KotlinLogging.logger { }
 
@@ -129,7 +132,9 @@ class PartnershipService(
 
     private fun sendFamilyUpdatedMessage(adultId: UUID, startDate: LocalDate, endDate: LocalDate?) {
         logger.info("Sending update family message with adult $adultId")
-        asyncJobRunner.plan(listOf(NotifyFamilyUpdated(adultId, startDate, endDate)))
+        withSpringHandle(dataSource) {
+            asyncJobRunner.plan(it, listOf(NotifyFamilyUpdated(adultId, startDate, endDate)))
+        }
         runAfterCommit { asyncJobRunner.scheduleImmediateRun() }
     }
 }

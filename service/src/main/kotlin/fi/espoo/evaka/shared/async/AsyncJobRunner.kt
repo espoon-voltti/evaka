@@ -8,13 +8,10 @@ import fi.espoo.evaka.application.utils.exhaust
 import fi.espoo.evaka.dvv.DvvModificationsRefresh
 import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.db.transaction
-import fi.espoo.evaka.shared.db.withSpringHandle
-import fi.espoo.evaka.shared.db.withSpringTx
 import fi.espoo.voltti.logging.MdcKey
 import mu.KotlinLogging
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.Jdbi
-import org.springframework.transaction.PlatformTransactionManager
 import java.lang.reflect.UndeclaredThrowableException
 import java.time.Duration
 import java.time.Instant
@@ -22,7 +19,6 @@ import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.ScheduledThreadPoolExecutor
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
-import javax.sql.DataSource
 
 private val logger = KotlinLogging.logger { }
 
@@ -30,12 +26,10 @@ private const val threadPoolSize = 1
 private const val defaultRetryCount = 24 * 60 / 5 // 24h when used with default 5 minute retry interval
 private val defaultRetryInterval = Duration.ofMinutes(5)
 
-private val noHandler = { msg: Any -> logger.warn("No job handler configured for $msg") }
+private val noHandler = { _: Handle, msg: Any -> logger.warn("No job handler configured for $msg") }
 
 class AsyncJobRunner(
     private val jdbi: Jdbi,
-    private val dataSource: DataSource,
-    private val platformTransactionManager: PlatformTransactionManager,
     private val syncMode: Boolean = false
 ) : AutoCloseable {
     private val executor: ScheduledThreadPoolExecutor = ScheduledThreadPoolExecutor(threadPoolSize)
@@ -43,67 +37,53 @@ class AsyncJobRunner(
     private val runningCount: AtomicInteger = AtomicInteger(0)
 
     @Volatile
-    var notifyDecisionCreated: (msg: NotifyDecisionCreated) -> Unit = noHandler
+    var notifyPlacementPlanApplied: (h: Handle, msg: NotifyPlacementPlanApplied) -> Unit = noHandler
 
     @Volatile
-    var notifyPlacementPlanApplied: (msg: NotifyPlacementPlanApplied) -> Unit = noHandler
+    var notifyServiceNeedUpdated: (h: Handle, msg: NotifyServiceNeedUpdated) -> Unit = noHandler
 
     @Volatile
-    var notifyServiceNeedUpdated: (msg: NotifyServiceNeedUpdated) -> Unit = noHandler
+    var notifyFamilyUpdated: (h: Handle, msg: NotifyFamilyUpdated) -> Unit = noHandler
 
     @Volatile
-    var notifyFamilyUpdated: (msg: NotifyFamilyUpdated) -> Unit = noHandler
+    var notifyFeeAlterationUpdated: (h: Handle, msg: NotifyFeeAlterationUpdated) -> Unit = noHandler
 
     @Volatile
-    var notifyFeeAlterationUpdated: (msg: NotifyFeeAlterationUpdated) -> Unit = noHandler
+    var notifyIncomeUpdated: (h: Handle, msg: NotifyIncomeUpdated) -> Unit = noHandler
 
     @Volatile
-    var notifyIncomeUpdated: (msg: NotifyIncomeUpdated) -> Unit = noHandler
+    var notifyDecisionCreated: (h: Handle, msg: NotifyDecisionCreated) -> Unit = noHandler
 
     @Volatile
-    var sendDecision: (msg: SendDecision) -> Unit = noHandler
+    var sendDecision: (h: Handle, msg: SendDecision) -> Unit = noHandler
 
     @Volatile
-    var notifyDecision2Created: (msg: NotifyDecision2Created) -> Unit = noHandler
+    var notifyFeeDecisionApproved: (h: Handle, msg: NotifyFeeDecisionApproved) -> Unit = noHandler
 
     @Volatile
-    var sendDecision2: (msg: SendDecision2) -> Unit = noHandler
+    var notifyFeeDecisionPdfGenerated: (h: Handle, msg: NotifyFeeDecisionPdfGenerated) -> Unit = noHandler
 
     @Volatile
-    var notifyFeeDecisionApproved: (msg: NotifyFeeDecisionApproved) -> Unit = noHandler
+    var notifyVoucherValueDecisionApproved: (h: Handle, msg: NotifyVoucherValueDecisionApproved) -> Unit = noHandler
 
     @Volatile
-    var notifyFeeDecisionPdfGenerated: (msg: NotifyFeeDecisionPdfGenerated) -> Unit = noHandler
+    var notifyVoucherValueDecisionPdfGenerated: (h: Handle, msg: NotifyVoucherValueDecisionPdfGenerated) -> Unit =
+        noHandler
 
     @Volatile
-    var notifyVoucherValueDecisionApproved: (msg: NotifyVoucherValueDecisionApproved) -> Unit = noHandler
+    var initializeFamilyFromApplication: (h: Handle, msg: InitializeFamilyFromApplication) -> Unit = noHandler
 
     @Volatile
-    var notifyVoucherValueDecisionPdfGenerated: (msg: NotifyVoucherValueDecisionPdfGenerated) -> Unit = noHandler
+    var vtjRefresh: (h: Handle, msg: VTJRefresh) -> Unit = noHandler
 
     @Volatile
-    var initializeFamilyFromApplication: (msg: InitializeFamilyFromApplication) -> Unit = noHandler
+    var dvvModificationsRefresh: (h: Handle, msg: DvvModificationsRefresh) -> Unit = noHandler
 
     @Volatile
-    var vtjRefresh: (msg: VTJRefresh) -> Unit = noHandler
+    var uploadToKoski: (h: Handle, msg: UploadToKoski) -> Unit = noHandler
 
     @Volatile
-    var dvvModificationsRefresh: (msg: DvvModificationsRefresh) -> Unit = noHandler
-
-    @Volatile
-    var uploadToKoski: (msg: UploadToKoski) -> Unit = noHandler
-
-    @Volatile
-    var sendApplicationEmail: (msg: SendApplicationEmail) -> Unit = noHandler
-
-    fun plan(
-        payloads: Iterable<AsyncJobPayload>,
-        retryCount: Int = defaultRetryCount,
-        retryInterval: Duration = defaultRetryInterval,
-        runAt: Instant = Instant.now()
-    ) {
-        withSpringHandle(dataSource) { h -> plan(h, payloads, retryCount, retryInterval, runAt) }
-    }
+    var sendApplicationEmail: (h: Handle, msg: SendApplicationEmail) -> Unit = noHandler
 
     fun plan(
         h: Handle,
@@ -187,15 +167,13 @@ class AsyncJobRunner(
             runningCount.incrementAndGet()
             logger.info { "Running async job $job" }
             val completed = when (job.jobType) {
-                AsyncJobType.DECISION_CREATED -> runJob(job, this.notifyDecisionCreated)
                 AsyncJobType.PLACEMENT_PLAN_APPLIED -> runJob(job, this.notifyPlacementPlanApplied)
                 AsyncJobType.SERVICE_NEED_UPDATED -> runJob(job, this.notifyServiceNeedUpdated)
                 AsyncJobType.FAMILY_UPDATED -> runJob(job, this.notifyFamilyUpdated)
                 AsyncJobType.FEE_ALTERATION_UPDATED -> runJob(job, this.notifyFeeAlterationUpdated)
                 AsyncJobType.INCOME_UPDATED -> runJob(job, this.notifyIncomeUpdated)
+                AsyncJobType.DECISION_CREATED -> runJob(job, this.notifyDecisionCreated)
                 AsyncJobType.SEND_DECISION -> runJob(job, this.sendDecision)
-                AsyncJobType.DECISION2_CREATED -> runJob(job, this.notifyDecision2Created)
-                AsyncJobType.SEND_DECISION2 -> runJob(job, this.sendDecision2)
                 AsyncJobType.FEE_DECISION_APPROVED -> runJob(job, this.notifyFeeDecisionApproved)
                 AsyncJobType.FEE_DECISION_PDF_GENERATED -> runJob(job, this.notifyFeeDecisionPdfGenerated)
                 AsyncJobType.VOUCHER_VALUE_DECISION_APPROVED -> runJob(job, this.notifyVoucherValueDecisionApproved)
@@ -223,16 +201,14 @@ class AsyncJobRunner(
         }
     }
 
-    private inline fun <reified T : AsyncJobPayload> runJob(job: ClaimedJobRef, crossinline f: (msg: T) -> Unit) =
-        withSpringTx(platformTransactionManager, requiresNew = true) {
-            withSpringHandle(dataSource) { tx ->
-                startJob(tx, job, T::class.java)?.let { msg ->
-                    msg.user?.let { MdcKey.USER_ID.set(it.id.toString()) }
-                    f(msg)
-                    completeJob(tx, job)
-                    true
-                } ?: false
-            }
+    private inline fun <reified T : AsyncJobPayload> runJob(job: ClaimedJobRef, crossinline f: (h: Handle, msg: T) -> Unit) =
+        jdbi.transaction { h ->
+            startJob(h, job, T::class.java)?.let { msg ->
+                msg.user?.let { MdcKey.USER_ID.set(it.id.toString()) }
+                f(h, msg)
+                completeJob(h, job)
+                true
+            } ?: false
         }
 
     override fun close() {

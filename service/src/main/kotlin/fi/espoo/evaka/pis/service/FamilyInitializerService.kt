@@ -42,11 +42,11 @@ class FamilyInitializerService(
     }
 
     @Transactional
-    fun handleInitializeFamilyFromApplication(msg: InitializeFamilyFromApplication) {
+    fun handleInitializeFamilyFromApplication(h: Handle, msg: InitializeFamilyFromApplication) {
         val user = msg.user
         val daycareForm = getForm(msg.applicationId)
         if (daycareForm != null) {
-            tryInitFamilyFromApplication(user, daycareForm, msg.applicationId, getGuardianId(msg.applicationId))
+            tryInitFamilyFromApplication(h, user, daycareForm, msg.applicationId, getGuardianId(msg.applicationId))
         } else {
             logger.warn("Could not initialize family, daycare application ${msg.applicationId} not found")
         }
@@ -79,8 +79,8 @@ class FamilyInitializerService(
             .first()
     }
 
-    @Transactional
     fun tryInitFamilyFromApplication(
+        h: Handle,
         user: AuthenticatedUser,
         form: DaycareFormV0,
         childId: UUID,
@@ -88,11 +88,7 @@ class FamilyInitializerService(
     ) {
         try {
             val members = parseFridgeFamilyMembersFromApplication(user, form, guardianId, childId)
-            withSpringTx(txm) {
-                withSpringHandle(dataSource) { h ->
-                    tryInitFamilyFromApplication(h, members)
-                }
-            }
+            tryInitFamilyFromApplication(h, members)
         } catch (e: Throwable) {
             logger.warn("Unexpected error when initializing family from application", e)
         }

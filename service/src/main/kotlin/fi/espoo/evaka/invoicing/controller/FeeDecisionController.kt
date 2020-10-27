@@ -16,6 +16,8 @@ import fi.espoo.evaka.invoicing.domain.FeeDecisionSummary
 import fi.espoo.evaka.invoicing.domain.FeeDecisionType
 import fi.espoo.evaka.invoicing.service.DecisionGenerator
 import fi.espoo.evaka.invoicing.service.FeeDecisionService
+import fi.espoo.evaka.shared.async.AsyncJobRunner
+import fi.espoo.evaka.shared.async.NotifyFeeDecisionApproved
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.config.Roles
 import fi.espoo.evaka.shared.db.transaction
@@ -70,7 +72,8 @@ class FeeDecisionController(
     private val jdbi: Jdbi,
     private val objectMapper: ObjectMapper,
     private val service: FeeDecisionService,
-    private val generator: DecisionGenerator
+    private val generator: DecisionGenerator,
+    private val asyncJobRunner: AsyncJobRunner
 ) {
     @GetMapping("/search")
     fun search(
@@ -121,7 +124,13 @@ class FeeDecisionController(
     fun confirmDrafts(user: AuthenticatedUser, @RequestBody feeDecisionIds: List<UUID>): ResponseEntity<Unit> {
         Audit.FeeDecisionConfirm.log(targetId = feeDecisionIds)
         user.requireOneOfRoles(Roles.FINANCE_ADMIN)
-        service.confirmDrafts(user, feeDecisionIds)
+        jdbi.transaction { h ->
+            val confirmedDecisions = service.confirmDrafts(h, user, feeDecisionIds)
+            confirmedDecisions.forEach {
+                asyncJobRunner.plan(h, listOf(NotifyFeeDecisionApproved(it)))
+            }
+            asyncJobRunner.scheduleImmediateRun()
+        }
         return ResponseEntity.noContent().build()
     }
 

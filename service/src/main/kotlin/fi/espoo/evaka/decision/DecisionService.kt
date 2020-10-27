@@ -8,8 +8,9 @@ import fi.espoo.evaka.application.ApplicationDetails
 import fi.espoo.evaka.application.fetchApplicationDetails
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
 import fi.espoo.evaka.daycare.domain.ProviderType
-import fi.espoo.evaka.daycare.service.DaycareService
+import fi.espoo.evaka.daycare.getUnitManager
 import fi.espoo.evaka.identity.ExternalIdentifier
+import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.pis.service.PersonDTO
 import fi.espoo.evaka.pis.service.PersonService
 import fi.espoo.evaka.s3.Document
@@ -17,11 +18,12 @@ import fi.espoo.evaka.s3.DocumentLocation
 import fi.espoo.evaka.s3.DocumentService
 import fi.espoo.evaka.s3.DocumentWrapper
 import fi.espoo.evaka.shared.async.AsyncJobRunner
-import fi.espoo.evaka.shared.async.NotifyDecision2Created
+import fi.espoo.evaka.shared.async.NotifyDecisionCreated
 import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.runAfterCommit
 import fi.espoo.evaka.shared.db.withSpringHandle
+import fi.espoo.evaka.shared.db.withSpringTx
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.message.IEvakaMessageClient
 import fi.espoo.evaka.shared.message.SuomiFiMessage
@@ -29,9 +31,10 @@ import fi.espoo.voltti.pdfgen.PDFService
 import fi.espoo.voltti.pdfgen.Page
 import fi.espoo.voltti.pdfgen.Template
 import mu.KotlinLogging
+import org.jdbi.v3.core.Handle
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Transactional
+import org.springframework.transaction.PlatformTransactionManager
 import org.thymeleaf.context.Context
 import java.net.URI
 import java.time.LocalDate
@@ -42,78 +45,71 @@ import javax.sql.DataSource
 val logger = KotlinLogging.logger { }
 
 @Service
-@Transactional(readOnly = true)
 class DecisionService(
     @Value("\${fi.espoo.voltti.document.bucket.daycaredecision}")
     private val decisionBucket: String,
     private val dataSource: DataSource,
-    private val daycareService: DaycareService,
+    private val txManager: PlatformTransactionManager,
     private val personService: PersonService,
     private val s3Client: DocumentService,
     private val pdfService: PDFService,
     private val evakaMessageClient: IEvakaMessageClient,
     private val asyncJobRunner: AsyncJobRunner
 ) {
-    @Transactional
-    fun finalizeDecisions(user: AuthenticatedUser, applicationId: UUID, sendAsMessage: Boolean): List<UUID> {
-        val decisionIds = withSpringHandle(dataSource) { h -> finalizeDecisions(h, applicationId) }
+    fun finalizeDecisions(user: AuthenticatedUser, applicationId: UUID, sendAsMessage: Boolean): List<UUID> =
+        withSpringTx(txManager) {
+            val decisionIds = withSpringHandle(dataSource) { h -> finalizeDecisions(h, applicationId) }
 
-        asyncJobRunner.plan(decisionIds.map { NotifyDecision2Created(it, user, sendAsMessage) })
-        runAfterCommit { asyncJobRunner.scheduleImmediateRun() }
+            withSpringHandle(dataSource) {
+                asyncJobRunner.plan(it, decisionIds.map { NotifyDecisionCreated(it, user, sendAsMessage) })
+            }
+            runAfterCommit { asyncJobRunner.scheduleImmediateRun() }
 
-        return decisionIds
-    }
+            decisionIds
+        }
 
-    @Transactional
-    fun markDecisionAccepted(user: AuthenticatedUser, decisionId: UUID, requestedStartDate: LocalDate) {
-        withSpringHandle(dataSource, { h -> markDecisionAccepted(h, user, decisionId, requestedStartDate) })
-    }
+    fun markDecisionAccepted(user: AuthenticatedUser, decisionId: UUID, requestedStartDate: LocalDate) =
+        withSpringTx(txManager) {
+            withSpringHandle(dataSource, { h -> markDecisionAccepted(h, user, decisionId, requestedStartDate) })
+        }
 
-    @Transactional
-    fun markDecisionRejected(user: AuthenticatedUser, decisionId: UUID) {
+    fun markDecisionRejected(user: AuthenticatedUser, decisionId: UUID) = withSpringTx(txManager) {
         withSpringHandle(dataSource, { h -> markDecisionRejected(h, user, decisionId) })
     }
 
-    fun getDecision(decisionId: UUID): Decision? {
-        return withSpringHandle(dataSource, { h -> getDecision(h, decisionId) })
+    fun getDecision(decisionId: UUID): Decision? = withSpringTx(txManager) {
+        withSpringHandle(dataSource, { h -> getDecision(h, decisionId) })
     }
 
-    fun getDecisionsByChild(childId: UUID, authorizedUnits: AclAuthorization): List<Decision> {
-        return withSpringHandle(dataSource, { h -> getDecisionsByChild(h, childId, authorizedUnits) })
+    fun getDecisionsByChild(childId: UUID, authorizedUnits: AclAuthorization): List<Decision> = withSpringTx(txManager) {
+        withSpringHandle(dataSource, { h -> getDecisionsByChild(h, childId, authorizedUnits) })
     }
 
-    fun getDecisionsByApplication(applicationId: UUID, authorizedUnits: AclAuthorization = AclAuthorization.All): List<Decision> {
-        return withSpringHandle(dataSource, { h -> getDecisionsByApplication(h, applicationId, authorizedUnits) })
+    fun getDecisionsByApplication(applicationId: UUID, authorizedUnits: AclAuthorization = AclAuthorization.All): List<Decision> =
+        withSpringTx(txManager) {
+            withSpringHandle(dataSource, { h -> getDecisionsByApplication(h, applicationId, authorizedUnits) })
+        }
+
+    fun getDecisionsByGuardian(guardianId: UUID, authorizedUnits: AclAuthorization): List<Decision> = withSpringTx(txManager) {
+        withSpringHandle(dataSource, { h -> getDecisionsByGuardian(h, guardianId, authorizedUnits) })
     }
 
-    fun getDecisionsByGuardian(guardianId: UUID, authorizedUnits: AclAuthorization): List<Decision> {
-        return withSpringHandle(dataSource, { h -> getDecisionsByGuardian(h, guardianId, authorizedUnits) })
-    }
-
-    fun updateDecisionGuardianDocumentUri(decisionId: UUID, pdfUri: URI) {
-        withSpringHandle(dataSource, { h -> updateDecisionGuardianDocumentUri(h, decisionId, pdfUri) })
-    }
-
-    fun updateDecisionOtherGuardianDocumentUri(decisionId: UUID, pdfUri: URI) {
-        withSpringHandle(dataSource, { h -> updateDecisionOtherGuardianDocumentUri(h, decisionId, pdfUri) })
-    }
-
-    @Transactional
     fun createDecisionPdfs(
+        h: Handle,
         user: AuthenticatedUser,
         decisionId: UUID
     ) {
-        val decision = getDecision(decisionId) ?: throw NotFound("No decision with id: $decisionId")
+        val decision = getDecision(h, decisionId) ?: throw NotFound("No decision with id: $decisionId")
         val applicationId = decision.applicationId
-        val application = withSpringHandle(dataSource) { h -> fetchApplicationDetails(h, applicationId) }
+        val application = fetchApplicationDetails(h, applicationId)
             ?: throw NotFound("Application $applicationId was not found")
-        val guardian = personService.getUpToDatePerson(user, application.guardianId)
+        val guardian = personService.getUpToDatePerson(h, user, application.guardianId)
             ?: error("Guardian not found with id: ${application.guardianId}")
-        val child = personService.getUpToDatePerson(user, application.childId)
+        val child = personService.getUpToDatePerson(h, user, application.childId)
             ?: error("Child not found with id: ${application.childId}")
 
-        createDecisionPdf(decision, application, guardian, child)
-            .let { uri -> updateDecisionGuardianDocumentUri(decisionId, uri) }
+        createDecisionPdf(h, decision, application, guardian, child)
+            .let { uri -> updateDecisionGuardianDocumentUri(h, decisionId, uri) }
 
         if (
             decision.type != DecisionType.CLUB &&
@@ -124,25 +120,26 @@ class DecisionService(
                 application.otherGuardianId
             )
         ) {
-            val otherGuardian = personService.getUpToDatePerson(user, application.otherGuardianId)
+            val otherGuardian = personService.getUpToDatePerson(h, user, application.otherGuardianId)
                 ?: throw NotFound("Other guardian not found with id: ${application.otherGuardianId}")
 
-            createDecisionPdf(decision, application, otherGuardian, child)
-                .let { uri -> updateDecisionOtherGuardianDocumentUri(decisionId, uri) }
+            createDecisionPdf(h, decision, application, otherGuardian, child)
+                .let { uri -> updateDecisionOtherGuardianDocumentUri(h, decisionId, uri) }
         }
     }
 
     private fun createDecisionPdf(
+        h: Handle,
         decision: Decision,
         application: ApplicationDetails,
         guardian: PersonDTO,
         child: PersonDTO
     ): URI {
-        val manager = daycareService.getDaycareManager(decision.unit.id)
+        val manager = h.getUnitManager(decision.unit.id)
             ?: throw NotFound("Daycare manager not found with daycare id: ${decision.unit.id}.")
         val lang =
             if (decision.type == DecisionType.CLUB) "fi"
-            else withSpringHandle(dataSource) { h -> getDecisionLanguage(h, decision.id) }
+            else getDecisionLanguage(h, decision.id)
         val sendAddress = getSendAddress(guardian, lang)
 
         val templates = when (decision.type) {
@@ -241,23 +238,24 @@ class DecisionService(
             logger.debug { "PDF (object name: $key) uploaded to S3 with URL ${it.uri}." }
         }
 
-    fun deliverDecisionToGuardians(decisionId: UUID) {
-        val decision = getDecision(decisionId) ?: throw NotFound("No decision with id: $decisionId")
+    fun deliverDecisionToGuardians(h: Handle, decisionId: UUID) {
+        val decision = getDecision(h, decisionId) ?: throw NotFound("No decision with id: $decisionId")
 
         val applicationId = decision.applicationId
-        val application = withSpringHandle(dataSource) { h -> fetchApplicationDetails(h, applicationId) }
+        val application = fetchApplicationDetails(h, applicationId)
             ?: throw NotFound("Application $applicationId was not found")
 
-        val applicationGuardian = personService.getPerson(application.guardianId)
+        val applicationGuardian = h.getPersonById(application.guardianId)
             ?: error("Guardian not found with id: ${application.guardianId}")
 
-        deliverDecisionToGuardian(decision, applicationGuardian, decision.documentUri.toString())
+        deliverDecisionToGuardian(h, decision, applicationGuardian, decision.documentUri.toString())
 
         if (application.otherGuardianId != null && !decision.otherGuardianDocumentUri.isNullOrBlank()) {
-            val otherGuardian = personService.getPerson(application.otherGuardianId)
+            val otherGuardian = h.getPersonById(application.otherGuardianId)
                 ?: error("Other guardian not found with id: ${application.otherGuardianId}")
 
             deliverDecisionToGuardian(
+                h,
                 decision,
                 otherGuardian,
                 decision.otherGuardianDocumentUri.toString()
@@ -266,6 +264,7 @@ class DecisionService(
     }
 
     fun deliverDecisionToGuardian(
+        h: Handle,
         decision: Decision,
         guardian: PersonDTO,
         documentUri: String
@@ -275,33 +274,31 @@ class DecisionService(
             return
         }
 
-        withSpringHandle(dataSource) { h ->
-            val lang = getDecisionLanguage(h, decision.id)
-            val sendAddress = getSendAddress(guardian, lang)
-            // SFI expects unique string for each message so document.id is not suitable as it is NOT string and NOT unique
-            val uniqueId = "${decision.id}|${guardian.id}"
-            val message = SuomiFiMessage(
-                messageId = uniqueId,
-                documentId = uniqueId.toString(),
-                documentDisplayName = calculateDecisionFileName(decision, lang),
-                documentUri = documentUri,
-                firstName = guardian.firstName!!,
-                lastName = guardian.lastName!!,
-                streetAddress = sendAddress.street,
-                postalCode = sendAddress.postalCode,
-                postOffice = sendAddress.postOffice,
-                ssn = guardian.identity.ssn,
-                language = lang,
-                messageHeader = messageHeader.getValue(langWithDefault(lang)),
-                messageContent = messageContent.getValue(langWithDefault(lang))
-            )
+        val lang = getDecisionLanguage(h, decision.id)
+        val sendAddress = getSendAddress(guardian, lang)
+        // SFI expects unique string for each message so document.id is not suitable as it is NOT string and NOT unique
+        val uniqueId = "${decision.id}|${guardian.id}"
+        val message = SuomiFiMessage(
+            messageId = uniqueId,
+            documentId = uniqueId.toString(),
+            documentDisplayName = calculateDecisionFileName(decision, lang),
+            documentUri = documentUri,
+            firstName = guardian.firstName!!,
+            lastName = guardian.lastName!!,
+            streetAddress = sendAddress.street,
+            postalCode = sendAddress.postalCode,
+            postOffice = sendAddress.postOffice,
+            ssn = guardian.identity.ssn,
+            language = lang,
+            messageHeader = messageHeader.getValue(langWithDefault(lang)),
+            messageContent = messageContent.getValue(langWithDefault(lang))
+        )
 
-            evakaMessageClient.send(message)
-        }
+        evakaMessageClient.send(message)
     }
 
-    fun getDecisionPdf(decisionId: UUID): Document {
-        return withSpringHandle(dataSource) { h ->
+    fun getDecisionPdf(decisionId: UUID): Document = withSpringTx(txManager) {
+        withSpringHandle(dataSource) { h ->
             val decision = getDecision(h, decisionId)
                 ?: throw NotFound("No decision $decisionId found")
             val lang = getDecisionLanguage(h, decisionId)

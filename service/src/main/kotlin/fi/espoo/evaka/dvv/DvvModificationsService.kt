@@ -14,6 +14,7 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.db.transaction
 import mu.KotlinLogging
+import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.Jdbi
 import org.springframework.stereotype.Service
 import java.time.LocalDate
@@ -28,8 +29,8 @@ class DvvModificationsService(
     private val fridgeFamilyService: FridgeFamilyService
 ) {
 
-    fun updatePersonsFromDvv(ssns: List<String>) {
-        getDvvModifications(ssns).map { personDvvModifications ->
+    fun updatePersonsFromDvv(h: Handle, ssns: List<String>) {
+        getDvvModifications(h, ssns).map { personDvvModifications ->
             personDvvModifications.tietoryhmat.map { infoGroup ->
                 try {
                     when (infoGroup) {
@@ -116,7 +117,7 @@ class DvvModificationsService(
             val user = AuthenticatedUser.anonymous
             personService.getOrCreatePerson(user, ExternalIdentifier.SSN.getInstance(ssn))?.let {
                 logger.debug("Dvv modification for ${it.id}: has a new custodian, refreshing all info from DVV")
-                fridgeFamilyService.doVTJRefresh(VTJRefresh(it.id, user.id))
+                jdbi.transaction { h -> fridgeFamilyService.doVTJRefresh(h, VTJRefresh(it.id, user.id)) }
             }
         }
     }
@@ -126,7 +127,7 @@ class DvvModificationsService(
             val user = AuthenticatedUser.anonymous
             personService.getOrCreatePerson(user, ExternalIdentifier.SSN.getInstance(caretakerLimitedDvvInfoGroup.huoltaja.henkilotunnus))?.let {
                 logger.debug("Dvv modification for ${it.id}: a new caretaker added, refreshing all info from DVV")
-                fridgeFamilyService.doVTJRefresh(VTJRefresh(it.id, user.id))
+                jdbi.transaction { h -> fridgeFamilyService.doVTJRefresh(h, VTJRefresh(it.id, user.id)) }
             }
         }
     }
@@ -135,10 +136,10 @@ class DvvModificationsService(
 
     // private fun handlePersonNameChangeDvvInfoGroup(ssn: String, personNameChangeDvvInfoGroup: PersonNameChangeDvvInfoGroup) {}
 
-    fun getDvvModifications(ssns: List<String>): List<DvvModification> = jdbi.transaction { h ->
+    fun getDvvModifications(h: Handle, ssns: List<String>): List<DvvModification> {
         val token = getNextDvvModificationToken(h)
         logger.debug("Fetching dvv modifications with $token")
-        dvvModificationsServiceClient.getModifications(token, ssns)?.let { dvvModificationsResponse ->
+        return dvvModificationsServiceClient.getModifications(token, ssns)?.let { dvvModificationsResponse ->
             storeDvvModificationToken(h, token, dvvModificationsResponse.viimeisinKirjausavain, ssns.size, dvvModificationsResponse.muutokset.size)
             dvvModificationsResponse.muutokset
         } ?: emptyList()

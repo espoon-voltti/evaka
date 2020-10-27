@@ -39,7 +39,7 @@ class DvvModificationsServiceIntegrationTest : DvvModificationsServiceIntegratio
     @Test
     fun `get modification token for today`() = jdbi.handle { h ->
         assertEquals("101", getNextDvvModificationToken(h))
-        val response = dvvModificationsService.getDvvModifications(listOf("nimenmuutos"))
+        val response = dvvModificationsService.getDvvModifications(h, listOf("nimenmuutos"))
         assertEquals(1, response.size)
         assertEquals("102", getNextDvvModificationToken(h))
         val createdDvvModificationToken = getDvvModificationToken(h, "101")!!
@@ -54,14 +54,14 @@ class DvvModificationsServiceIntegrationTest : DvvModificationsServiceIntegratio
     @Test
     fun `person date of death`() = jdbi.handle { h ->
         createTestPerson(testPerson.copy(ssn = "010180-999A"))
-        dvvModificationsService.updatePersonsFromDvv(listOf("010180-999A"))
+        dvvModificationsService.updatePersonsFromDvv(h, listOf("010180-999A"))
         assertEquals(LocalDate.parse("2019-07-30"), h.getPersonBySSN("010180-999A")?.dateOfDeath)
     }
 
     @Test
     fun `person restricted details started`() = jdbi.handle { h ->
         createTestPerson(testPerson.copy(ssn = "020180-999Y"))
-        dvvModificationsService.updatePersonsFromDvv(listOf("020180-999Y"))
+        dvvModificationsService.updatePersonsFromDvv(h, listOf("020180-999Y"))
         val modifiedPerson = h.getPersonBySSN("020180-999Y")!!
         assertEquals(true, modifiedPerson.restrictedDetailsEnabled)
         assertEquals("", modifiedPerson.streetAddress)
@@ -72,7 +72,7 @@ class DvvModificationsServiceIntegrationTest : DvvModificationsServiceIntegratio
     @Test
     fun `person restricted details ended and address is set`() = jdbi.handle { h ->
         createTestPerson(testPerson.copy(ssn = "030180-999L", restrictedDetailsEnabled = true, streetAddress = "", postalCode = "", postOffice = ""))
-        dvvModificationsService.updatePersonsFromDvv(listOf("030180-999L"))
+        dvvModificationsService.updatePersonsFromDvv(h, listOf("030180-999L"))
         val modifiedPerson = h.getPersonBySSN("030180-999L")!!
         assertEquals(false, modifiedPerson.restrictedDetailsEnabled)
         assertEquals(LocalDate.parse("2030-01-01"), modifiedPerson.restrictedDetailsEndDate)
@@ -84,7 +84,7 @@ class DvvModificationsServiceIntegrationTest : DvvModificationsServiceIntegratio
     @Test
     fun `person address change`() = jdbi.handle { h ->
         createTestPerson(testPerson.copy(ssn = "040180-9998"))
-        dvvModificationsService.updatePersonsFromDvv(listOf("040180-9998"))
+        dvvModificationsService.updatePersonsFromDvv(h, listOf("040180-9998"))
         val modifiedPerson = h.getPersonBySSN("040180-9998")!!
         assertEquals("Uusitie 17 A 2", modifiedPerson.streetAddress)
         assertEquals("02940", modifiedPerson.postalCode)
@@ -94,7 +94,7 @@ class DvvModificationsServiceIntegrationTest : DvvModificationsServiceIntegratio
     @Test
     fun `person ssn change`() = jdbi.handle { h ->
         val testId = createTestPerson(testPerson.copy(ssn = "010181-999K"))
-        dvvModificationsService.updatePersonsFromDvv(listOf("010181-999K"))
+        dvvModificationsService.updatePersonsFromDvv(h, listOf("010181-999K"))
         assertEquals(testId, h.getPersonBySSN("010281-999C")?.id)
     }
 
@@ -108,7 +108,7 @@ class DvvModificationsServiceIntegrationTest : DvvModificationsServiceIntegratio
         createVtjPerson(custodian)
         createVtjPerson(caretaker)
 
-        dvvModificationsService.updatePersonsFromDvv(listOf("050118A999W"))
+        dvvModificationsService.updatePersonsFromDvv(h, listOf("050118A999W"))
         val dvvCustodian = h.getPersonBySSN("050118A999W")!!
         assertEquals("Harri", dvvCustodian.firstName)
         assertEquals("Huollettava", dvvCustodian.lastName)
@@ -124,7 +124,7 @@ class DvvModificationsServiceIntegrationTest : DvvModificationsServiceIntegratio
         createVtjPerson(custodian)
         createVtjPerson(caretaker)
 
-        dvvModificationsService.updatePersonsFromDvv(listOf("060118A999J"))
+        dvvModificationsService.updatePersonsFromDvv(h, listOf("060118A999J"))
         val dvvCaretaker = h.getPersonBySSN("060180-999J")!!
         assertEquals("Harri", dvvCaretaker.firstName)
         assertEquals("Huoltaja", dvvCaretaker.lastName)

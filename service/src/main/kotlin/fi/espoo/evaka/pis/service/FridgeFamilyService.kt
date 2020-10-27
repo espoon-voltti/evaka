@@ -6,7 +6,6 @@ package fi.espoo.evaka.pis.service
 
 import fi.espoo.evaka.shared.async.VTJRefresh
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.db.transaction
 import mu.KotlinLogging
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.Jdbi
@@ -25,7 +24,7 @@ class FridgeFamilyService(
     private val jdbi: Jdbi
 ) {
 
-    fun doVTJRefresh(msg: VTJRefresh) = jdbi.transaction { h ->
+    fun doVTJRefresh(h: Handle, msg: VTJRefresh) {
         logger.info("Refreshing ${msg.personId} from VTJ")
         val head = personService.getUpToDatePersonWithChildren(
             user = AuthenticatedUser(msg.requestingUserId, setOf()),

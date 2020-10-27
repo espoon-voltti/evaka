@@ -28,8 +28,8 @@ class VTJBatchRefreshService(
         asyncJobRunner.vtjRefresh = ::doVTJRefresh
     }
 
-    fun doVTJRefresh(msg: VTJRefresh) {
-        fridgeFamilyService.doVTJRefresh(msg)
+    fun doVTJRefresh(h: Handle, msg: VTJRefresh) {
+        fridgeFamilyService.doVTJRefresh(h, msg)
     }
 
     fun scheduleBatch(): Int {

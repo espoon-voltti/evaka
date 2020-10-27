@@ -10,20 +10,12 @@ import org.springframework.boot.context.event.ApplicationReadyEvent
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.event.EventListener
-import org.springframework.transaction.PlatformTransactionManager
 import java.time.Duration
-import javax.sql.DataSource
 
 @Configuration
 class AsyncJobConfig {
     @Bean
-    fun asyncJobRunner(
-        jdbi: Jdbi,
-        dataSource: DataSource,
-        platformTransactionManager: PlatformTransactionManager
-    ) = AsyncJobRunner(
-        jdbi, dataSource, platformTransactionManager
-    )
+    fun asyncJobRunner(jdbi: Jdbi) = AsyncJobRunner(jdbi)
 
     @Bean
     fun asyncJobRunnerSchedule(asyncJobRunner: AsyncJobRunner) = object {

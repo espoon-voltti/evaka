@@ -4,7 +4,7 @@
 
 package fi.espoo.evaka.daycare.service
 
-import fi.espoo.evaka.daycare.AbstractIntegrationTest
+import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.daycare.CareType.CENTRE
 import fi.espoo.evaka.daycare.CareType.CLUB
 import fi.espoo.evaka.daycare.CareType.PREPARATORY_EDUCATION
@@ -15,6 +15,7 @@ import fi.espoo.evaka.daycare.Location
 import fi.espoo.evaka.daycare.MailingAddress
 import fi.espoo.evaka.daycare.UnitManager
 import fi.espoo.evaka.daycare.VisitingAddress
+import fi.espoo.evaka.daycare.controllers.getAreas
 import fi.espoo.evaka.daycare.createDaycare
 import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.daycare.domain.ProviderType
@@ -28,25 +29,25 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.springframework.beans.factory.annotation.Autowired
 import java.time.LocalDate
 import java.util.UUID
 
-class LocationServiceIntegrationTest : AbstractIntegrationTest() {
-    @Autowired
-    lateinit var service: LocationService
-
+class LocationServiceIntegrationTest : PureJdbiTest() {
     private val areaId = UUID.randomUUID()
 
     @BeforeEach
     internal fun setUp() {
-        jdbcTemplate.update("INSERT INTO care_area (id, name, short_name) VALUES ('$areaId', 'test', 'test')")
+        jdbi.handle {
+            it.execute("INSERT INTO care_area (id, name, short_name) VALUES ('$areaId', 'test', 'test')")
+        }
     }
 
     @AfterEach
     internal fun tearDown() {
-        jdbcTemplate.update("DELETE FROM daycare WHERE care_area_id = '$areaId';")
-        jdbcTemplate.update("DELETE FROM care_area WHERE id = '$areaId';")
+        jdbi.handle {
+            it.execute("DELETE FROM daycare WHERE care_area_id = '$areaId'")
+            it.execute("DELETE FROM care_area WHERE id = '$areaId'")
+        }
     }
 
     @Test
@@ -63,7 +64,7 @@ class LocationServiceIntegrationTest : AbstractIntegrationTest() {
         )
         val prepPreschoolId = createDaycare(prepPreschool)
 
-        val areas = service.getAreas().filter { it.id == areaId }
+        val areas = jdbi.handle { it.getAreas().filter { it.id == areaId } }
         assertThat(areas).size().isEqualTo(1)
         val locationResults = areas.first().locations
 
@@ -87,7 +88,7 @@ class LocationServiceIntegrationTest : AbstractIntegrationTest() {
         val preschool2 = createDaycare(createGenericUnit(areaId = areaId), openingDate = LocalDate.now().minusYears(1), closingDate = LocalDate.now().plusMonths(1))
         val preschool3 = createDaycare(createGenericUnit(areaId = areaId), openingDate = LocalDate.now().plusYears(1), closingDate = LocalDate.now().plusYears(2))
 
-        val areas = service.getAreas().filter { it.id == areaId }
+        val areas = jdbi.handle { it.getAreas().filter { it.id == areaId } }
         assertThat(areas).size().isEqualTo(1)
         val locationResults = areas.first().locations
 

@@ -130,7 +130,9 @@ class ApplicationStateService(
                 ?.let { withSpringHandle(dataSource) { h -> h.getDaycare(it.id)?.language } }
                 ?: Language.fi
 
-            asyncJobRunner.plan(listOf(SendApplicationEmail(application.guardianId, language)))
+            withSpringHandle(dataSource) { h ->
+                asyncJobRunner.plan(h, listOf(SendApplicationEmail(application.guardianId, language)))
+            }
         }
 
         updateStatus(application, SENT)

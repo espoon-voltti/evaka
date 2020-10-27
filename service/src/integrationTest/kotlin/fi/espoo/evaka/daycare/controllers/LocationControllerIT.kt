@@ -4,16 +4,28 @@
 
 package fi.espoo.evaka.daycare.controllers
 
-import fi.espoo.evaka.daycare.AbstractIntegrationTest
+import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.daycare.CareType
+import fi.espoo.evaka.resetDatabase
+import fi.espoo.evaka.shared.db.handle
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 
-class LocationControllerIT : AbstractIntegrationTest() {
-
+class LocationControllerIT : FullApplicationTest() {
     @Autowired
     lateinit var controller: LocationController
+
+    @BeforeEach
+    fun beforeEach() {
+        val legacyDataSql = this.javaClass.getResource("/legacy_db_data.sql").readText()
+        jdbi.handle { h ->
+            resetDatabase(h)
+            h.execute(legacyDataSql)
+        }
+    }
 
     @Test
     fun `enduser only sees locations that can be applied to`() {
@@ -37,5 +49,11 @@ class LocationControllerIT : AbstractIntegrationTest() {
         with(response.body!!) {
             assertTrue(this.any { it.daycares.any { it.type.contains(CareType.CLUB) } })
         }
+    }
+
+    @Test
+    fun `areas endpoint works without login`() {
+        val (_, response, _) = http.get("/enduser/areas").responseString()
+        assertEquals(200, response.statusCode)
     }
 }
