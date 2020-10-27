@@ -72,7 +72,7 @@ function AbsenceTableRow({
             key={`${id}${date.formatIso()}`}
             className={`${
               date.isToday() ? 'absence-cell-today' : ''
-            } hover-highlight`}
+            } hover-highlight absence-cell-wrapper`}
           >
             <AbsenceCellWrapper
               careTypes={placements[date.formatIso()]}
@@ -108,8 +108,8 @@ function AbsenceTableHead({ dateCols, emptyCols }: AbsenceHeadProps) {
         {dateCols.map((item) => (
           <th
             key={item.getDate()}
-            align="center"
             className={classNames({
+              'absence-header': true,
               'absence-header-today': item.isToday(),
               'absence-header-weekday': item.isWeekend()
             })}
@@ -150,7 +150,7 @@ function AbsenceTable({ groupId, childList }: AbsenceTableProps) {
 
   const renderEmptyRow = () => (
     <tr>
-      <td className={'empty-row'}>.</td>
+      <td className={'empty-row'}></td>
     </tr>
   )
 

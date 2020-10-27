@@ -13,31 +13,37 @@
     }
   }
 
-  .container {
-    @media screen and (min-width: $screen-small) and (max-width: $screen-medium) {
-      width: 100%;
-      max-width: 100%;
-    }
-  }
-
-  .content-area {
-    margin-bottom: 20px;
+  .table {
+    border-collapse: collapse;
+    width: 100%;
   }
 
   .table th {
     text-align: left;
     text-transform: uppercase;
     color: #6e6e6e;
+    vertical-align: bottom;
+
+    &.absence-header {
+      text-align: center;
+    }
   }
 
   .table td {
-    text-align: center;
+    text-align: left;
     color: #0f0f0f;
+
+    &.absence-cell-wrapper {
+      text-align: center;
+    }
+    &.absence-cell-wrapper > div {
+      margin: 0 auto;
+    }
   }
 
   .table td,
   .table th {
-    padding: 5px 2px !important;
+    padding: 5px 3px !important;
     border-bottom: none !important;
   }
 
@@ -48,6 +54,11 @@
 
   .table td {
     cursor: pointer;
+
+    &.empty-row {
+      cursor: inherit;
+      height: 20px;
+    }
   }
 
   .table .has-text-center {
@@ -135,15 +146,6 @@
     width: $cell-size;
     border-style: solid;
     border-color: transparent;
-  }
-
-  .absence-cell-left,
-  .absence-cell-right,
-  .absence-cell-selected {
-    // center cells with bigger screens
-    @media screen and (min-width: $screen-big) {
-      left: 3px;
-    }
   }
 
   .absence-cell-left {
@@ -254,6 +256,7 @@
         /* disable spin buttons Firefox */
         -moz-appearance: textfield;
         text-align: center;
+        margin: 0 auto;
         padding: 0;
         font-weight: 600;
         font-size: 0.8rem;

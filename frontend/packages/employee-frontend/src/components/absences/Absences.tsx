@@ -39,6 +39,11 @@ import PeriodPicker, {
 import { TitleContext, TitleState } from '~state/title'
 import ColorInfo from '~components/absences/ColorInfo'
 import ReturnButton from 'components/shared/atoms/buttons/ReturnButton'
+import styled from 'styled-components'
+
+const AbsencesContentArea = styled(ContentArea)`
+  overflow-x: auto;
+`
 
 function Absences({ match }: RouteComponentProps<{ groupId: string }>) {
   const { i18n } = useTranslation()
@@ -182,7 +187,7 @@ function Absences({ match }: RouteComponentProps<{ groupId: string }>) {
     <div className="absences-page" data-qa="absences-page">
       <Container>
         <ReturnButton dataQa="absences-page-return-button" />
-        <ContentArea opaque>
+        <AbsencesContentArea opaque>
           {renderAbsenceModal()}
           {isSuccess(absences) ? (
             <div>
@@ -211,7 +216,7 @@ function Absences({ match }: RouteComponentProps<{ groupId: string }>) {
           {isFailure(absences) && (
             <div>Something went wrong ({absences.error.message})</div>
           )}
-        </ContentArea>
+        </AbsencesContentArea>
         <ColorInfo />
       </Container>
     </div>

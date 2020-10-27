@@ -9,16 +9,19 @@
 .color-info {
   display: flex;
   justify-content: flex-start;
+  padding: 0 20px;
   flex-wrap: wrap;
-  padding: 0 60px;
   font-size: 15px;
-  margin-top: 32px;
+  margin: 20px auto;
+
+  > div {
+    margin: 10px;
+  }
 
   .color-info-container {
     display: flex;
     flex: auto;
     max-width: 130px;
-    margin: 0 10px;
 
     .info-ball {
       vertical-align: top;
