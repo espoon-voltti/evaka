@@ -613,10 +613,7 @@ class VardaFeeDataIntegrationTest : FullApplicationTest() {
             h.createUpdate("UPDATE varda_fee_data SET should_be_deleted = true").execute()
 
             removeMarkedFeeDataFromVarda(h, vardaClient)
-            updateFeeData(h)
-
             assertEquals(1, getSoftDeletedVardaFeeData(h).size)
-            assertEquals(2, getVardaFeeDataRows(h).size)
         }
     }
 
@@ -636,15 +633,15 @@ class VardaFeeDataIntegrationTest : FullApplicationTest() {
 
             updateAll(h)
 
+            assertEquals(1, mockEndpoint.feeData.size)
+
             h.createUpdate("UPDATE daycare SET upload_to_varda = false WHERE id = :id").bind("id", testDaycare.id).execute()
 
-            val newStart = period.start.minusMonths(1)
-
-            h.createUpdate("UPDATE placement SET start_date = :newStart WHERE 1 = 1")
-                .bind("newStart", newStart)
+            h.createUpdate("UPDATE placement SET start_date = :newStart")
+                .bind("newStart", period.start.minusMonths(1))
                 .execute()
 
-            updateFeeData(h)
+            updateAll(h)
 
             val feeData = mockEndpoint.feeData
             assertEquals(1, feeData.size)
