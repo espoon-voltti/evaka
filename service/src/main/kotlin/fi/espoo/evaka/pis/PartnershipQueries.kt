@@ -7,7 +7,9 @@ package fi.espoo.evaka.pis
 import fi.espoo.evaka.pis.dao.PGConstants
 import fi.espoo.evaka.pis.service.Partner
 import fi.espoo.evaka.pis.service.Partnership
+import fi.espoo.evaka.shared.db.bindNullable
 import fi.espoo.evaka.shared.db.getUUID
+import fi.espoo.evaka.shared.domain.Period
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.mapTo
 import org.jdbi.v3.core.statement.StatementContext
@@ -65,7 +67,7 @@ fun Handle.getPartnershipsForPerson(personId: UUID, includeConflicts: Boolean = 
         .toList()
 }
 
-fun Handle.getPartnersForPerson(personId: UUID, includeConflicts: Boolean): List<Partner> {
+fun Handle.getPartnersForPerson(personId: UUID, includeConflicts: Boolean, period: Period? = null): List<Partner> {
     // language=SQL
     val sql =
         """
@@ -76,11 +78,14 @@ fun Handle.getPartnersForPerson(personId: UUID, includeConflicts: Boolean): List
         JOIN fridge_partner partner ON fp.partnership_id = partner.partnership_id AND fp.indx != partner.indx
         JOIN person p ON partner.person_id = p.id
         WHERE fp.person_id = :personId
+        AND daterange(fp.start_date, fp.end_date, '[]') && daterange(:from, :to, '[]')
         AND (:includeConflicts OR fp.conflict = false)
         """.trimIndent()
 
     return createQuery(sql)
         .bind("personId", personId)
+        .bindNullable("from", period?.start)
+        .bindNullable("to", period?.end)
         .bind("includeConflicts", includeConflicts)
         .map(toPartner("p"))
         .toList()

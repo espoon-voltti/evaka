@@ -469,11 +469,11 @@ private fun getServiceVoucherUnits(h: Handle): List<UUID> {
 }
 
 private fun findFamiliesByChild(h: Handle, childId: UUID, period: Period): List<FridgeFamily> {
-    val parentRelations = h.getParentships(null, childId, includeConflicts = false)
+    val parentRelations = h.getParentships(null, childId, includeConflicts = false, period = period)
 
     return parentRelations.flatMap {
-        val fridgePartners = h.getPartnersForPerson(it.headOfChildId, includeConflicts = false)
-        val fridgeChildren = h.getParentships(it.headOfChildId, null, includeConflicts = false)
+        val fridgePartners = h.getPartnersForPerson(it.headOfChildId, includeConflicts = false, period = period)
+        val fridgeChildren = h.getParentships(it.headOfChildId, null, includeConflicts = false, period = period)
         generateFamilyCompositions(
             it.headOfChild.id,
             fridgePartners,
@@ -484,13 +484,13 @@ private fun findFamiliesByChild(h: Handle, childId: UUID, period: Period): List<
 }
 
 private fun findFamiliesByHeadOfFamily(h: Handle, headOfFamilyId: UUID, period: Period): List<FridgeFamily> {
-    val childRelations = h.getParentships(headOfFamilyId, null, includeConflicts = false)
-    val partners = h.getPartnersForPerson(headOfFamilyId, includeConflicts = false)
+    val childRelations = h.getParentships(headOfFamilyId, null, includeConflicts = false, period = period)
+    val partners = h.getPartnersForPerson(headOfFamilyId, includeConflicts = false, period = period)
     return generateFamilyCompositions(headOfFamilyId, partners, childRelations, period)
 }
 
 private fun findFamiliesByPartner(h: Handle, personId: UUID, period: Period): List<FridgeFamily> {
-    val possibleHeadsOfFamily = h.getPartnersForPerson(personId, includeConflicts = false)
+    val possibleHeadsOfFamily = h.getPartnersForPerson(personId, includeConflicts = false, period = period)
     return possibleHeadsOfFamily.flatMap { findFamiliesByHeadOfFamily(h, it.person.id, period) }
 }
 

@@ -10,6 +10,7 @@ import fi.espoo.evaka.pis.service.PersonJSON
 import fi.espoo.evaka.shared.db.bindNullable
 import fi.espoo.evaka.shared.db.getUUID
 import fi.espoo.evaka.shared.domain.BadRequest
+import fi.espoo.evaka.shared.domain.Period
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.mapTo
 import org.jdbi.v3.core.statement.StatementContext
@@ -40,7 +41,8 @@ fun Handle.getParentship(id: UUID): Parentship? {
 fun Handle.getParentships(
     headOfChildId: UUID?,
     childId: UUID?,
-    includeConflicts: Boolean = false
+    includeConflicts: Boolean = false,
+    period: Period? = null
 ): List<Parentship> {
     if (headOfChildId == null && childId == null) throw BadRequest("Must give either headOfChildId or childId")
 
@@ -56,12 +58,15 @@ fun Handle.getParentships(
         JOIN person head ON fc.head_of_child = head.id
         WHERE (:headOfChild::uuid IS NULL OR head_of_child = :headOfChild)
         AND (:child::uuid IS NULL OR child_id = :child)
+        AND daterange(fc.start_date, fc.end_date, '[]') && daterange(:from, :to, '[]')
         AND (:includeConflicts OR conflict = false)
         """.trimIndent()
 
     return createQuery(sql)
         .bindNullable("headOfChild", headOfChildId)
         .bindNullable("child", childId)
+        .bindNullable("from", period?.start)
+        .bindNullable("to", period?.end)
         .bind("includeConflicts", includeConflicts)
         .map(toParentship("child", "head"))
         .toList()
