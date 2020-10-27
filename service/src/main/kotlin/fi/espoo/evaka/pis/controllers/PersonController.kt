@@ -25,6 +25,7 @@ import fi.espoo.evaka.shared.config.Roles.END_USER
 import fi.espoo.evaka.shared.config.Roles.FINANCE_ADMIN
 import fi.espoo.evaka.shared.config.Roles.SERVICE_WORKER
 import fi.espoo.evaka.shared.config.Roles.UNIT_SUPERVISOR
+import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.db.transaction
 import fi.espoo.evaka.shared.domain.BadRequest
 import org.jdbi.v3.core.Jdbi
@@ -189,9 +190,11 @@ class PersonController(
             throw BadRequest("Invalid social security number")
         }
 
-        return personService
-            .addSsn(user, personId, ExternalIdentifier.SSN.getInstance(body.ssn))
-            .let { ResponseEntity.ok(PersonJSON.from(it)) }
+        jdbi.handle { h ->
+            personService.addSsn(h, user, personId, ExternalIdentifier.SSN.getInstance(body.ssn))
+        }
+        val person = personService.getUpToDatePerson(user, personId)!!
+        return ResponseEntity.ok(PersonJSON.from(person))
     }
 
     @GetMapping("/details/ssn/{ssn}")
