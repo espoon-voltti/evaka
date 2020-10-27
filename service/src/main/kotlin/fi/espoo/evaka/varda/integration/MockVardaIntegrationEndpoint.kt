@@ -6,6 +6,7 @@ package fi.espoo.evaka.varda.integration
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
+import fi.espoo.evaka.varda.VardaChildRequest
 import fi.espoo.evaka.varda.VardaDecision
 import fi.espoo.evaka.varda.VardaFeeData
 import fi.espoo.evaka.varda.VardaPersonRequest
@@ -33,6 +34,7 @@ private val logger = KotlinLogging.logger {}
 class MockVardaIntegrationEndpoint(private val mapper: ObjectMapper) {
     val decisions = mutableListOf<VardaDecision>()
     val feeData = mutableListOf<VardaFeeData>()
+    val children = mutableListOf<VardaChildRequest>()
 
     @GetMapping("/user/apikey/")
     fun getApiKey(): ResponseEntity<String> {
@@ -84,6 +86,7 @@ class MockVardaIntegrationEndpoint(private val mapper: ObjectMapper) {
         @RequestHeader(name = "Authorization") auth: String
     ): ResponseEntity<String> {
         logger.info { "Mock varda integration endpoint POST /lapset received body: $body" }
+        this.children.add(mapper.readValue(body))
         return ResponseEntity.ok(getMockChildResponse())
     }
 

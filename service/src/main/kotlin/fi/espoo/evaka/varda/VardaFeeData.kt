@@ -31,15 +31,19 @@ fun updateFeeData(
     mapper: ObjectMapper,
     personService: PersonService
 ) {
-    logger.debug { "Deleting annulled Varda fee data" }
     deleteEntriesFromAnnulledFeeDecision(h, client)
-    logger.debug { "Deleting deleted Varda placements" }
     deleteEntriesFromDeletedPlacements(h, client)
-    logger.debug { "Updating Varda fee data" }
     updateEntriesFromModifiedPlacements(h, client, mapper, personService)
-    logger.debug { "Uploading new Varda fee data" }
     uploadNewFeeData(h, client, mapper, personService)
-    logger.debug { "Updating Varda fee data complete" }
+}
+
+fun removeMarkedFeeDataFromVarda(h: Handle, client: VardaClient) {
+    val feeDataIds: List<Int> = getFeeDataToDelete(h)
+    feeDataIds.forEach { id ->
+        if (client.deleteFeeData(id)) {
+            softDeleteFeeData(h, id)
+        }
+    }
 }
 
 fun deleteEntriesFromAnnulledFeeDecision(h: Handle, client: VardaClient) {
@@ -81,7 +85,6 @@ fun uploadNewFeeData(
     feeData.forEach { feeDataBase ->
         val newFeeData = baseToFeeData(feeDataBase, personService, client)
         if (newFeeData != null) {
-            logger.debug { "Uploading varda fee data (fee data: $newFeeData)" }
             val response = client.createFeeData(newFeeData)
             if (response != null) {
                 insertFeeDataUpload(h, feeDataBase, response.vardaId)
@@ -90,6 +93,26 @@ fun uploadNewFeeData(
             logger.info { "Not sending Varda fee data because child has no guardians in VTJ (child: ${feeDataBase.evakaChildId})" }
         }
     }
+}
+
+fun getFeeDataToDelete(h: Handle): List<Int> {
+    return h.createQuery(
+        // language=SQL
+        """
+SELECT varda_fee_data_id 
+FROM varda_fee_data
+WHERE should_be_deleted = true
+AND deleted_at IS NULL
+"""
+    )
+        .mapTo(Int::class.java)
+        .toList()
+}
+
+fun softDeleteFeeData(h: Handle, vardaFeeDataId: Int) {
+    h.createUpdate("UPDATE varda_fee_data SET deleted_at = NOW() WHERE varda_fee_data_id = :vardaFeeDataId")
+        .bind("vardaFeeDataId", vardaFeeDataId)
+        .execute()
 }
 
 private fun getStaleFeeData(
@@ -101,7 +124,7 @@ private fun getStaleFeeData(
     val sql =
         """
          $feeDataQueryBase
-        WHERE vfd.id IS NULL
+        WHERE vfd.id IS NULL OR vfd.deleted_at IS NOT NULL
             AND fdp.placement_type = ANY(:placementTypes)
         """.trimIndent()
 
@@ -119,7 +142,7 @@ private fun insertFeeDataUpload(h: Handle, feeDataBase: VardaFeeDataBase, vardaI
         """
         INSERT INTO varda_fee_data (evaka_fee_decision_id, evaka_placement_id, varda_fee_data_id, uploaded_at)
         VALUES (:decisionId, :placementId, :vardaId, :checkTimestamp)
-        ON CONFLICT (evaka_fee_decision_id, evaka_placement_id)
+        ON CONFLICT ON CONSTRAINT varda_fee_data_evaka_fee_decision_id_evaka_placement_id_key
         DO UPDATE SET uploaded_at = :checkTimestamp
         """.trimIndent()
 
@@ -210,7 +233,8 @@ private val feeDataQueryBase =
             LEFT JOIN varda_fee_data vfd ON p.id = vfd.evaka_placement_id
             JOIN fee_decision_part fdp ON fdp.child = p.child_id
             JOIN fee_decision fd ON (fdp.fee_decision_id = fd.id AND daterange(p.start_date, p.end_date, '[]') && daterange(fd.valid_from, fd.valid_to, '[]') AND fd.status = :sentStatus)
-            JOIN varda_child vc ON p.child_id = vc.person_id
+            JOIN daycare u ON p.unit_id = u.id
+            JOIN varda_child vc ON p.child_id = vc.person_id AND vc.oph_organizer_oid = u.oph_organizer_oid
     """.trimIndent()
 
 private fun baseToFeeData(feeDataBase: VardaFeeDataBase, personService: PersonService, client: VardaClient): VardaFeeData? {

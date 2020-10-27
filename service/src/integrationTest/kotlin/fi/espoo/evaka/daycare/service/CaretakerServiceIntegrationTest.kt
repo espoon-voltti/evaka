@@ -6,6 +6,7 @@ package fi.espoo.evaka.daycare.service
 
 import fi.espoo.evaka.daycare.AbstractIntegrationTest
 import fi.espoo.evaka.insertGeneralTestFixtures
+import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.db.withSpringHandle
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
@@ -32,6 +33,7 @@ class CaretakerServiceIntegrationTest : AbstractIntegrationTest() {
     @BeforeEach
     fun setup() {
         withSpringHandle(dataSource) {
+            resetDatabase(it)
             insertGeneralTestFixtures(it)
             it.insertTestDaycareGroup(
                 DevDaycareGroup(

@@ -30,18 +30,18 @@ class VardaController(
     private val mapper: ObjectMapper,
     private val personService: PersonService
 ) {
-    private val uploadChildren = env.getProperty("fi.espoo.varda.upload.children", Boolean::class.java, false)
     private val forceSync = env.getProperty("fi.espoo.varda.force.sync", Boolean::class.java, false)
+    private val organizer = env.getProperty("fi.espoo.varda.organizer", String::class.java, "Espoo")
 
     @PostMapping("/update")
     fun updateAll(): ResponseEntity<Unit> {
         val client = VardaClient(tokenProvider, env, mapper)
         if (forceSync) {
-            updateAll(jdbi, client, uploadChildren, mapper, personService)
+            updateAll(jdbi, client, mapper, personService, organizer)
         } else {
             thread {
                 try {
-                    updateAll(jdbi, client, uploadChildren, mapper, personService)
+                    updateAll(jdbi, client, mapper, personService, organizer)
                 } catch (e: Throwable) {
                     val exception = (e as? UndeclaredThrowableException)?.cause ?: e
                     logger.error(exception) { "Failed to run Varda update" }
@@ -59,29 +59,19 @@ class VardaController(
 fun updateAll(
     jdbi: Jdbi,
     client: VardaClient,
-    uploadChildren: Boolean,
     mapper: ObjectMapper,
-    personService: PersonService
+    personService: PersonService,
+    organizer: String
 ) {
     jdbi.handle { h ->
-        logger.debug { "Updating Varda organizer" }
-        updateOrganizer(h, client)
-        logger.debug { "Updating Varda units" }
-        updateUnits(h, client)
-        if (uploadChildren) {
-            logger.debug { "Updating Varda children" }
-            updateChildren(h, client)
-            logger.debug { "Updating Varda decisions" }
-            updateDecisions(h, client)
-            logger.debug { "Updating Varda placements" }
-            updatePlacements(h, client)
-            logger.debug { "Updating Varda fee decisions" }
-            updateFeeData(h, client, mapper, personService)
-            logger.debug { "Removing placements that are marked to be deleted from Varda" }
-            removeMarkedPlacements(h, client)
-            logger.debug { "Removing decisions that are marked to be deleted from Varda" }
-            removeMarkedDecisions(h, client)
-        }
-        logger.debug { "Varda update finished" }
+        updateOrganizer(h, client, organizer)
+        updateUnits(h, client, organizer)
+        updateChildren(h, client, organizer)
+        updateDecisions(h, client)
+        updatePlacements(h, client)
+        updateFeeData(h, client, mapper, personService)
+        removeMarkedFeeDataFromVarda(h, client)
+        removeMarkedPlacements(h, client)
+        removeMarkedDecisions(h, client)
     }
 }

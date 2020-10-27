@@ -5,6 +5,7 @@
 package fi.espoo.evaka.koski
 
 import fi.espoo.evaka.FullApplicationTest
+import fi.espoo.evaka.defaultMunicipalOrganizerOid
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.preschoolTerm2019
@@ -119,7 +120,7 @@ class KoskiPayloadIntegrationTest : FullApplicationTest() {
                                 "vahvistus": {
                                     "päivä":"2020-05-29",
                                     "paikkakunta":{"koodiarvo":"049","koodistoUri":"kunta"},
-                                    "myöntäjäOrganisaatio":{"oid":"1.2.3.4.5"},
+                                    "myöntäjäOrganisaatio":{"oid":"$defaultMunicipalOrganizerOid"},
                                     "myöntäjäHenkilöt":[{
                                         "nimi":"Unit Manager",
                                         "titteli":{"fi":"Esiopetusyksikön johtaja"},
@@ -420,7 +421,7 @@ class KoskiPayloadIntegrationTest : FullApplicationTest() {
                                     "vahvistus": {
                                         "päivä":"2019-05-31",
                                         "paikkakunta":{"koodiarvo":"049","koodistoUri":"kunta"},
-                                        "myöntäjäOrganisaatio":{"oid":"1.2.3.4.5"},
+                                        "myöntäjäOrganisaatio":{"oid":"$defaultMunicipalOrganizerOid"},
                                         "myöntäjäHenkilöt":[{
                                             "nimi":"Unit Manager",
                                             "titteli":{"fi":"Esiopetusyksikön johtaja"},
@@ -671,7 +672,7 @@ class KoskiPayloadIntegrationTest : FullApplicationTest() {
                                         "koodistoUri": "kunta"
                                     },
                                     "myöntäjäOrganisaatio": {
-                                        "oid": "1.2.3.4.5"
+                                        "oid": "$defaultMunicipalOrganizerOid"
                                     },
                                     "myöntäjäHenkilöt": [
                                         {

@@ -14,8 +14,8 @@ import org.jdbi.v3.core.kotlin.mapTo
 import java.time.Instant
 import java.util.UUID
 
-fun updateOrganizer(h: Handle, client: VardaClient) {
-    val organizer = getStaleOrganizer(h)
+fun updateOrganizer(h: Handle, client: VardaClient, organizerName: String) {
+    val organizer = getStaleOrganizer(h, organizerName)
 
     organizer?.let {
         client.updateOrganizer(organizer.toUpdateObject()).let { success ->
@@ -24,15 +24,20 @@ fun updateOrganizer(h: Handle, client: VardaClient) {
     }
 }
 
-fun getStaleOrganizer(h: Handle): VardaOrganizer? {
+fun getStaleOrganizer(h: Handle, organizerName: String): VardaOrganizer? {
     //language=SQL
     val sql =
         """
         SELECT id, varda_organizer_id, varda_organizer_oid, url, email, phone, iban, municipality_code
         FROM varda_organizer
-        WHERE updated_at > uploaded_at OR uploaded_at IS NULL
+        WHERE organizer = :organizer
+        AND (updated_at > uploaded_at OR uploaded_at IS NULL)
         """.trimIndent()
-    return h.createQuery(sql).mapTo<VardaOrganizer>().firstOrNull()
+
+    return h.createQuery(sql)
+        .bind("organizer", organizerName)
+        .mapTo<VardaOrganizer>()
+        .firstOrNull()
 }
 
 fun setOrganizerUploaded(organizer: VardaOrganizer, h: Handle) {

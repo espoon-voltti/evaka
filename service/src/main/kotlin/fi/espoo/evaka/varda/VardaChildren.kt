@@ -10,7 +10,6 @@ import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.db.getUUID
 import fi.espoo.evaka.varda.integration.VardaClient
 import org.jdbi.v3.core.Handle
-import org.jdbi.v3.core.kotlin.mapTo
 import org.jdbi.v3.core.statement.StatementContext
 import java.sql.ResultSet
 import java.time.LocalDate
@@ -23,10 +22,11 @@ fun getVardaMinDate(): LocalDate = vardaMinDate
 
 fun updateChildren(
     h: Handle,
-    client: VardaClient
+    client: VardaClient,
+    organizerName: String
 ) {
     createPersons(h, client)
-    createChildren(h, client)
+    createChildren(h, client, organizerName)
 }
 
 private fun createPersons(
@@ -34,94 +34,138 @@ private fun createPersons(
     client: VardaClient
 ) {
     val vardaPersons = getPersonsToUpload(h)
-    vardaPersons.forEach {
-        val response = client.createPerson(it)
+    vardaPersons.forEach { (oid, payload) ->
+        val response = client.createPerson(payload)
         if (response != null) {
-            insertPerson(response, it.id, h)
+            initVardaChild(response, oid, payload.id, h)
         }
     }
 }
 
-private fun createChildren(h: Handle, client: VardaClient) {
-    val vardaChildren = getChildrenToUpload(client.getPersonUrl, client.getOrganizerUrl, h)
+private fun createChildren(h: Handle, client: VardaClient, organizerName: String) {
+    initNewChildRows(h)
+    val vardaChildren = getChildrenToUpload(client.getPersonUrl, h, organizerName)
     vardaChildren.forEach { vardaChild ->
         client.createChild(vardaChild)
             ?.let { vardaChildResponse -> updateChild(vardaChildResponse, vardaChild.id, h) }
     }
 }
 
-private fun getPersonsToUpload(h: Handle): List<VardaPersonRequest> {
+private fun getPersonsToUpload(h: Handle): List<Pair<String, VardaPersonRequest>> {
+    fun toVardaPersonRequestWithOrganizerOid(): (ResultSet, StatementContext) -> Pair<String, VardaPersonRequest> =
+        { rs, _ ->
+            Pair(
+                rs.getString("oph_organizer_oid"),
+                VardaPersonRequest(
+                    id = rs.getUUID("id"),
+                    firstName = rs.getString("first_name"),
+                    lastName = rs.getString("last_name"),
+                    nickName = rs.getString("nick_name"),
+                    ssn = rs.getString("ssn")
+                )
+            )
+        }
+
     //language=SQL
     val sql =
         """
+        WITH child_unit AS (
+            SELECT unit_id, child_id, row_number() OVER (PARTITION BY child_id ORDER BY child_id, start_date) FROM placement 
+            WHERE placement.type IN (<placementTypes>)
+            AND end_date >= :minDate
+        )
         SELECT DISTINCT person.id,
                         person.first_name,
                         person.last_name,
                         person.social_security_number         AS ssn,
-                        split_part(person.first_name, ' ', 1) AS nick_name
-        FROM person
-            INNER JOIN placement ON placement.child_id = person.id
-            LEFT JOIN varda_child ON person.id = varda_child.person_id
-            INNER JOIN varda_unit ON placement.unit_id = varda_unit.evaka_daycare_id
-            INNER JOIN daycare ON varda_unit.evaka_daycare_id = daycare.id
-        WHERE placement.type IN (<placementTypes>)
-            AND varda_child.id IS NULL
-            AND placement.end_date >= :minDate
-            AND person.social_security_number <> ''
-            AND varda_unit.evaka_daycare_id IS NOT NULL 
+                        split_part(person.first_name, ' ', 1) AS nick_name,
+                        daycare.oph_organizer_oid
+        FROM child_unit cu
+            INNER JOIN person ON cu.child_id = person.id AND cu.row_number = 1
+            LEFT JOIN varda_child ON person.id = varda_child.person_id 
+            INNER JOIN daycare ON cu.unit_id = daycare.id
+        WHERE person.social_security_number <> ''
             AND daycare.upload_to_varda = true
+            AND varda_child.id IS NULL
         """.trimIndent()
+
     return h.createQuery(sql)
         .bindList("placementTypes", vardaPlacementTypes)
         .bind("minDate", vardaMinDate)
-        .mapTo<VardaPersonRequest>()
+        .map(toVardaPersonRequestWithOrganizerOid())
         .list()
 }
 
-private fun insertPerson(vardaPersonResponse: VardaPersonResponse, personId: UUID, h: Handle) {
+private fun initVardaChild(vardaPersonResponse: VardaPersonResponse, ophOrganizerOid: String, personId: UUID, h: Handle) {
     //language=SQL
     val sql =
         """
-        INSERT INTO varda_child (person_id, varda_person_id, varda_person_oid, modified_at, uploaded_at)
-        VALUES (:personId, :vardaId, :personOid, now(), now())
+        INSERT INTO varda_child (person_id, varda_person_id, varda_person_oid, modified_at, uploaded_at, oph_organizer_oid)
+        VALUES (:personId, :vardaId, :personOid, now(), now(), :ophOrganizerOid)
         """.trimIndent()
 
     h.createUpdate(sql)
         .bind("personId", personId)
+        .bind("ophOrganizerOid", ophOrganizerOid)
         .bind("vardaId", vardaPersonResponse.vardaId)
         .bind("personOid", vardaPersonResponse.personOid)
         .execute()
 }
 
+private fun initNewChildRows(h: Handle) {
+    val sql =
+        """
+        WITH child_organizer AS (
+            SELECT vc.person_id, vc.varda_person_id, vc.varda_person_oid, d.oph_organizer_oid 
+            FROM varda_child vc
+            JOIN placement p ON vc.person_id = p.child_id     
+            JOIN daycare d ON p.unit_id = d.id
+        )
+        INSERT INTO varda_child (person_id, varda_person_id, varda_person_oid, oph_organizer_oid) 
+        SELECT person_id, varda_person_id, varda_person_oid, oph_organizer_oid FROM child_organizer
+        ON CONFLICT ON CONSTRAINT unique_varda_child_organizer DO NOTHING;
+        """.trimIndent()
+
+    h.createUpdate(sql)
+        .execute()
+}
+
 private fun getChildrenToUpload(
     getPersonUrl: (Long) -> String,
-    getOrganizerUrl: (Long) -> String,
-    h: Handle
+    h: Handle,
+    organizerName: String
 ): List<VardaChildRequest> {
     //language=SQL
     val sql =
         """
-        SELECT varda_child.id, varda_person_id, varda_organizer.varda_organizer_id
-            FROM varda_child
-            LEFT JOIN LATERAL (SELECT varda_organizer_id FROM varda_organizer WHERE organizer = 'Espoo') varda_organizer
-                ON TRUE
-            WHERE varda_child.varda_child_id IS NULL;
+        SELECT vc.id, vc.varda_person_id, vc.oph_organizer_oid, vo.varda_organizer_oid,
+        CASE 
+            WHEN oph_organizer_oid = varda_organizer_oid
+            THEN false
+            ELSE true
+        END AS is_paos
+        FROM varda_child vc
+        JOIN varda_organizer vo ON vo.organizer ilike :organizer
+        WHERE varda_child_id IS NULL AND oph_organizer_oid IS NOT NULL
         """.trimIndent()
 
     return h.createQuery(sql)
-        .map(toVardaChildRequest(getPersonUrl, getOrganizerUrl))
+        .bind("organizer", organizerName)
+        .map(toVardaChildRequest(getPersonUrl))
         .list()
 }
 
 private fun toVardaChildRequest(
-    getPersonUrl: (Long) -> String,
-    getOrganizerUrl: (Long) -> String
+    getPersonUrl: (Long) -> String
 ): (ResultSet, StatementContext) -> VardaChildRequest =
     { rs, _ ->
+        val isPaos = rs.getBoolean("is_paos")
         VardaChildRequest(
             id = rs.getUUID("id"),
             personUrl = getPersonUrl(rs.getLong("varda_person_id")),
-            organizerUrl = getOrganizerUrl(rs.getLong("varda_organizer_id"))
+            organizerOid = if (isPaos) null else rs.getString("varda_organizer_oid"),
+            ownOrganizationOid = if (isPaos) rs.getString("varda_organizer_oid") else null,
+            paosOrganizationOid = if (isPaos) rs.getString("oph_organizer_oid") else null
         )
     }
 
@@ -175,8 +219,12 @@ data class VardaChildRequest(
     val id: UUID,
     @JsonProperty("henkilo")
     val personUrl: String,
-    @JsonProperty("vakatoimija")
-    val organizerUrl: String
+    @JsonProperty("vakatoimija_oid")
+    val organizerOid: String?,
+    @JsonProperty("oma_organisaatio_oid")
+    val ownOrganizationOid: String?,
+    @JsonProperty("paos_organisaatio_oid")
+    val paosOrganizationOid: String?
 )
 
 @JsonIgnoreProperties(ignoreUnknown = true)

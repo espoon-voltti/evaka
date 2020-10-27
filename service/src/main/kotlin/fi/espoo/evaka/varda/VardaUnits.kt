@@ -16,8 +16,10 @@ import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.mapTo
 import java.util.UUID
 
-fun updateUnits(h: Handle, client: VardaClient) {
-    val units = getNewOrStaleUnits(h)
+val unitTypesToUpload = listOf(VardaUnitProviderType.MUNICIPAL, VardaUnitProviderType.MUNICIPAL_SCHOOL)
+
+fun updateUnits(h: Handle, client: VardaClient, organizerName: String) {
+    val units = getNewOrStaleUnits(h, organizerName)
 
     units.forEach { unit ->
         val response =
@@ -30,7 +32,7 @@ fun updateUnits(h: Handle, client: VardaClient) {
     }
 }
 
-fun getNewOrStaleUnits(h: Handle): List<VardaUnit> {
+fun getNewOrStaleUnits(h: Handle, organizerName: String): List<VardaUnit> {
     //language=SQL
     val sql =
         """
@@ -38,8 +40,8 @@ fun getNewOrStaleUnits(h: Handle): List<VardaUnit> {
             daycare.id AS evakaDaycareId,
             varda_unit.varda_unit_id AS vardaUnitId,
             daycare.oph_unit_oid AS ophUnitOid,
-            (SELECT url from varda_organizer WHERE organizer = 'Espoo') AS organizer,
-            (SELECT municipality_code from varda_organizer WHERE organizer = 'Espoo') AS municipalityCode,
+            (SELECT url from varda_organizer WHERE organizer = :organizer) AS organizer,
+            (SELECT municipality_code from varda_organizer WHERE organizer = :organizer) AS municipalityCode,
             daycare.name AS name,
             daycare.street_address AS address,
             daycare.postal_code AS postalCode,
@@ -65,9 +67,14 @@ fun getNewOrStaleUnits(h: Handle): List<VardaUnit> {
                 daycare.id NOT IN (SELECT evaka_daycare_id from varda_unit) OR
                 daycare.oph_unit_oid IS NULL
             )
+            AND daycare.provider_type IN (<providerTypes>)
         """.trimIndent()
 
-    return h.createQuery(sql).mapTo<VardaUnit>().toList()
+    return h.createQuery(sql)
+        .bind("organizer", organizerName)
+        .bindList("providerTypes", unitTypesToUpload)
+        .mapTo<VardaUnit>()
+        .toList()
 }
 
 fun setUnitUploaded(vardaUnit: VardaUnit, h: Handle) {

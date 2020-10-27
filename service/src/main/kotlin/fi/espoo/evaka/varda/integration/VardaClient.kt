@@ -47,9 +47,7 @@ class VardaClient(
     private val placementUrl = "$baseUrl/v1/varhaiskasvatussuhteet/"
     private val feeDataUrl = "$baseUrl/v1/maksutiedot/"
 
-    val getOrganizerUrl = { organizerId: Long -> "$organizerUrl$organizerId/" }
     val getPersonUrl = { personId: Long -> "$personUrl$personId/" }
-    val getUnitUrl = { unitId: Long -> "$unitUrl$unitId/" }
     val getChildUrl = { childId: Long -> "$childUrl$childId/" }
     val getDecisionUrl = { decisionId: Long -> "$decisionUrl$decisionId/" }
     val getPlacementUrl = { placementId: Long -> "$placementUrl$placementId/" }

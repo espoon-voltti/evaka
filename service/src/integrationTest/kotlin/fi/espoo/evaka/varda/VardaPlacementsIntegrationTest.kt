@@ -19,6 +19,7 @@ import fi.espoo.evaka.testDaycare
 import org.jdbi.v3.core.Handle
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -71,17 +72,25 @@ class VardaPlacementsIntegrationTest : FullApplicationTest() {
     }
 
     @Test
-    fun `a daycare placement is not sent when the corresponding varda unit is missing`() {
+    fun `a daycare placement is sent if upload_to_varda flag is true even if the corresponding varda unit is missing`() {
         jdbi.handle { h ->
+            val daycareId = testDaycare.id
+            h.createUpdate("update daycare set upload_to_varda = true where id = :id")
+                .bind("id", daycareId)
+                .execute()
             val period = ClosedPeriod(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))
-            val decisionId = insertDecisionWithApplication(h, testChild_1, period)
+            val decisionId = insertDecisionWithApplication(h, testChild_1, period, unitId = daycareId)
+
+            val vardaUnits = getVardaUnits(h)
+            assertNull(vardaUnits.find { it.evakaDaycareId == daycareId })
+
             insertTestVardaDecision(h, decisionId = decisionId)
-            insertPlacement(h, testChild_1.id, period)
+            insertPlacement(h, testChild_1.id, period, unitId = daycareId)
 
             updatePlacements(h, vardaClient)
 
             val result = getVardaPlacements(h)
-            assertEquals(0, result.size)
+            assertEquals(1, result.size)
         }
     }
 
@@ -310,9 +319,37 @@ class VardaPlacementsIntegrationTest : FullApplicationTest() {
             assertEquals(originalUploadedAt, result.first().uploadedAt)
         }
     }
+
+    @Test
+    fun `updating daycare organizer oid yields new varda placement if old is soft deleted`() {
+        jdbi.handle { h ->
+            val period = ClosedPeriod(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))
+
+            insertPlacementWithDecision(h, child = testChild_1, unitId = testDaycare.id, period = period)
+
+            updateChildren(h, vardaClient, vardaOrganizerName)
+            updateDecisions(h, vardaClient)
+            updatePlacements(h, vardaClient)
+
+            assertEquals(1, getVardaPlacements(h).size)
+
+            h.createUpdate("update varda_decision set deleted_at = NOW()").execute()
+            h.createUpdate("update varda_placement set deleted_at = NOW()").execute()
+
+            h.createUpdate("UPDATE daycare SET oph_organizer_oid = '1.22.333.4444.1' where id = :id")
+                .bind("id", testDaycare.id)
+                .execute()
+
+            updateChildren(h, vardaClient, vardaOrganizerName)
+            updateDecisions(h, vardaClient)
+            updatePlacements(h, vardaClient)
+
+            assertEquals(2, getVardaPlacements(h).size)
+        }
+    }
 }
 
-private fun getSoftDeletedVardaPlacements(h: Handle) = h.createQuery("SELECT * FROM varda_placement WHERE deleted IS NOT NULL")
+private fun getSoftDeletedVardaPlacements(h: Handle) = h.createQuery("SELECT * FROM varda_placement WHERE deleted_at IS NOT NULL")
     .map(toVardaPlacementRow)
     .toList()
 

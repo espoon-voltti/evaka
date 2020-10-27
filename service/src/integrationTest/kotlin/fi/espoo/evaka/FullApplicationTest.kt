@@ -47,6 +47,7 @@ abstract class FullApplicationTest {
     protected lateinit var env: Environment
 
     protected lateinit var feeDecisionMinDate: LocalDate
+    protected lateinit var vardaOrganizerName: String
 
     @BeforeAll
     protected fun beforeAll() {
@@ -58,5 +59,6 @@ abstract class FullApplicationTest {
         val vardaBaseUrl = "http://localhost:$httpPort/mock-integration/varda/api"
         vardaTokenProvider = VardaTempTokenProvider(env, objectMapper, vardaBaseUrl)
         vardaClient = VardaClient(vardaTokenProvider, env, objectMapper, vardaBaseUrl)
+        vardaOrganizerName = env.getProperty("fi.espoo.varda.organizer", "Espoo")
     }
 }
