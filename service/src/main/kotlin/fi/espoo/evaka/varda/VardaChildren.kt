@@ -120,6 +120,7 @@ private fun initNewChildRows(h: Handle) {
             FROM varda_child vc
             JOIN placement p ON vc.person_id = p.child_id     
             JOIN daycare d ON p.unit_id = d.id
+            WHERE d.oph_organizer_oid IS NOT NULL
         )
         INSERT INTO varda_child (person_id, varda_person_id, varda_person_oid, oph_organizer_oid) 
         SELECT person_id, varda_person_id, varda_person_oid, oph_organizer_oid FROM child_organizer
