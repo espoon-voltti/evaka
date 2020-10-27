@@ -17,7 +17,6 @@ import fi.espoo.evaka.application.utils.exhaust
 import fi.espoo.evaka.placement.PlacementPlanConfirmationStatus
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.config.Roles
 import fi.espoo.evaka.shared.db.freeTextSearchQuery
 import fi.espoo.evaka.shared.db.getEnum
 import fi.espoo.evaka.shared.db.getUUID
@@ -188,21 +187,7 @@ fun fetchApplicationSummaries(
             TransferApplicationFilter.TRANSFER_ONLY -> "a.transferApplication"
             TransferApplicationFilter.NO_TRANSFER -> "NOT a.transferApplication"
             else -> null
-        },
-        if (!user.hasOneOfRoles(Roles.ADMIN, Roles.SERVICE_WORKER, Roles.FINANCE_ADMIN)) """
-                a.status = ANY ('{SENT,WAITING_PLACEMENT,WAITING_CONFIRMATION,WAITING_DECISION,WAITING_MAILING,WAITING_UNIT_CONFIRMATION,ACTIVE}'::application_status_type[]) AND (
-                    EXISTS (
-                        SELECT 1 
-                        FROM daycare_acl acl 
-                        WHERE acl.employee_id = :userId AND acl.role = 'UNIT_SUPERVISOR' AND acl.daycare_id = ANY(f.preferredunits)
-                    ) OR EXISTS (
-                        SELECT 1 
-                        FROM daycare_acl acl 
-                        JOIN placement_plan pp ON pp.application_id = a.id AND pp.unit_id = acl.daycare_id AND pp.deleted = false
-                        WHERE acl.employee_id = :userId AND acl.role = 'UNIT_SUPERVISOR'
-                    )
-                )
-        """.trimIndent() else null
+        }
     )
 
     val andWhere = conditions.takeIf { it.isNotEmpty() }?.joinToString(" AND ")?.let { " AND $it" } ?: ""

@@ -183,7 +183,7 @@ class ApplicationControllerV2(
         @RequestParam(required = false) transferApplications: TransferApplicationFilter?
     ): ResponseEntity<ApplicationSummaries> {
         Audit.ApplicationSearch.log()
-        user.requireOneOfRoles(Roles.ADMIN, Roles.FINANCE_ADMIN, Roles.SERVICE_WORKER, Roles.UNIT_SUPERVISOR)
+        user.requireOneOfRoles(Roles.ADMIN, Roles.FINANCE_ADMIN, Roles.SERVICE_WORKER)
         return jdbi.transaction { h ->
             fetchApplicationSummaries(
                 h = h.setReadOnly(true),
