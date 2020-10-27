@@ -124,7 +124,7 @@ private fun getStaleFeeData(
     val sql =
         """
          $feeDataQueryBase
-        WHERE vfd.id IS NULL OR vfd.deleted_at IS NOT NULL
+        WHERE vfd.id IS NULL
             AND fdp.placement_type = ANY(:placementTypes)
         """.trimIndent()
 
@@ -203,7 +203,7 @@ private fun getModifiedFeeData(h: Handle, mapper: ObjectMapper): List<Pair<Long,
     val sql =
         """
          $feeDataQueryBase
-        WHERE vfd.varda_fee_data_id IS NOT NULL
+        WHERE vfd.varda_fee_data_id IS NOT NULL 
         AND vfd.uploaded_at < p.updated
         """.trimIndent()
 
@@ -215,6 +215,7 @@ private fun getModifiedFeeData(h: Handle, mapper: ObjectMapper): List<Pair<Long,
 }
 
 private val feeDataQueryBase =
+    // language=SQL
     """
         SELECT fd.id                              AS fee_decision_id,
             vfd.varda_fee_data_id                 AS varda_id,
@@ -230,7 +231,7 @@ private val feeDataQueryBase =
             now()                               AS check_timestamp
         FROM varda_placement vp
             JOIN placement p ON vp.evaka_placement_id = p.id
-            LEFT JOIN varda_fee_data vfd ON p.id = vfd.evaka_placement_id
+            LEFT JOIN varda_fee_data vfd ON p.id = vfd.evaka_placement_id AND vfd.deleted_at IS NULL
             JOIN fee_decision_part fdp ON fdp.child = p.child_id
             JOIN fee_decision fd ON (fdp.fee_decision_id = fd.id AND daterange(p.start_date, p.end_date, '[]') && daterange(fd.valid_from, fd.valid_to, '[]') AND fd.status = :sentStatus)
             JOIN daycare u ON p.unit_id = u.id

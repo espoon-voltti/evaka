@@ -113,13 +113,14 @@ private fun initVardaChild(vardaPersonResponse: VardaPersonResponse, ophOrganize
 }
 
 private fun initNewChildRows(h: Handle) {
+    // language=SQL
     val sql =
         """
         WITH child_organizer AS (
             SELECT vc.person_id, vc.varda_person_id, vc.varda_person_oid, d.oph_organizer_oid 
             FROM varda_child vc
             JOIN placement p ON vc.person_id = p.child_id     
-            JOIN daycare d ON p.unit_id = d.id
+            JOIN daycare d ON p.unit_id = d.id AND d.upload_to_varda = true AND d.oph_organizer_oid IS NOT NULL AND char_length(trim(d.oph_organizer_oid)) > 14
         )
         INSERT INTO varda_child (person_id, varda_person_id, varda_person_oid, oph_organizer_oid) 
         SELECT person_id, varda_person_id, varda_person_oid, oph_organizer_oid FROM child_organizer
