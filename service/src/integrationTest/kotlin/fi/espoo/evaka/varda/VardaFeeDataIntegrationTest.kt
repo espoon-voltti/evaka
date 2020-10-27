@@ -678,6 +678,40 @@ class VardaFeeDataIntegrationTest : FullApplicationTest() {
         }
     }
 
+    @Test
+    fun `fee data only sent once if it's soft deleted`() {
+        jdbi.handle { h ->
+            val period = ClosedPeriod(LocalDate.now().minusMonths(1), LocalDate.now().plusMonths(1))
+            createDecisionsAndPlacements(h, period = period)
+            insertFeeDecision(
+                h = h,
+                status = FeeDecisionStatus.SENT,
+                children = listOf(testChild_1),
+                objectMapper = objectMapper,
+                period = Period(period.start, period.end)
+            )
+            updateFeeData(h)
+
+            assertEquals(1, getVardaFeeDataRows(h).size)
+            assertEquals(0, getSoftDeletedVardaFeeData(h).size)
+
+            h.createUpdate("UPDATE varda_fee_data SET should_be_deleted = true").execute()
+
+            removeMarkedFeeDataFromVarda(h, vardaClient)
+            assertEquals(1, getSoftDeletedVardaFeeData(h).size)
+            assertEquals(1, getVardaFeeDataRows(h).size)
+            mockEndpoint.feeData.clear()
+
+            updateFeeData(h)
+            assertEquals(2, getVardaFeeDataRows(h).size)
+            assertEquals(1, mockEndpoint.feeData.size)
+
+            updateFeeData(h)
+            assertEquals(2, getVardaFeeDataRows(h).size)
+            assertEquals(1, mockEndpoint.feeData.size)
+        }
+    }
+
     private fun updateAll(h: Handle) {
         updateChildren(h, vardaClient, vardaOrganizerName)
         updateDecisions(h, vardaClient)
