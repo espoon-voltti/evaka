@@ -12,6 +12,7 @@ import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.message.IEvakaMessageClient
 import fi.espoo.evaka.shared.message.SuomiFiMessage
 import org.jdbi.v3.core.Handle
+import org.springframework.core.env.Environment
 import org.springframework.stereotype.Component
 import java.time.Instant
 import java.time.ZoneId
@@ -24,8 +25,11 @@ class VoucherValueDecisionService(
     private val objectMapper: ObjectMapper,
     private val pdfService: PDFService,
     private val s3Client: S3DocumentClient,
-    private val messageClient: IEvakaMessageClient
+    private val messageClient: IEvakaMessageClient,
+    env: Environment
 ) {
+    private val bucket = env.getRequiredProperty("fi.espoo.voltti.document.bucket.vouchervaluedecision")
+
     fun createDecisionPdf(h: Handle, decisionId: UUID) {
         val decision = getDecision(h, decisionId)
         check(decision.documentKey.isNullOrBlank()) { "Voucher value decision $decisionId has document key already!" }
@@ -85,7 +89,6 @@ class VoucherValueDecisionService(
         h.getVoucherValueDecision(objectMapper, decisionId)
             ?: error("No voucher value decision found with ID ($decisionId)")
 
-    private val bucket = "voucher-value-decisions"
     private val key = { id: UUID -> "value_decision_$id.pdf" }
     private fun uploadPdf(decisionId: UUID, file: ByteArray): String {
         val key = key(decisionId)

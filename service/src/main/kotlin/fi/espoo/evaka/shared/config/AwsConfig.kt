@@ -36,6 +36,7 @@ class AwsConfig {
     fun amazonS3Local(
         @Value("\${fi.espoo.voltti.s3mock.url}") s3MockUrl: String,
         @Value("\${fi.espoo.voltti.document.bucket.paymentdecision}") feeDecisionBucket: String,
+        @Value("\${fi.espoo.voltti.document.bucket.vouchervaluedecision}") voucherValueDecisionBucket: String,
         @Value("\${fi.espoo.voltti.document.bucket.clubdecision}") clubDecisionBucket: String,
         @Value("\${fi.espoo.voltti.document.bucket.daycaredecision}") daycareDecisionBucket: String
     ): AmazonS3 {
@@ -50,7 +51,7 @@ class AwsConfig {
         client.createBucket(clubDecisionBucket)
         client.createBucket(daycareDecisionBucket)
         client.createBucket(feeDecisionBucket)
-        client.createBucket("voucher-value-decisions")
+        client.createBucket(voucherValueDecisionBucket)
 
         return client
     }
