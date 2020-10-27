@@ -10,8 +10,8 @@ Displayed when eVaka sites are down for maintenance.
 
 ## Requirements
 
-* Node version >= 10
-* Yarn version >= 1.16
+- Node version 12.13+
+- Yarn version 1.22+ (2.x not tested)
 
 ## Development
 

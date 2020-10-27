@@ -41,6 +41,9 @@
     "testcafe": "~1.9.4",
     "testcafe-reporter-junit": "3.0.2"
   },
+  "engines": {
+    "node": ">= 12.13.0"
+  },
   "husky": {
     "hooks": {
       "pre-commit": "yarn lint",

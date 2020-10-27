@@ -20,7 +20,7 @@ We recommend using the package manager (e.g. `aptitude`, `homebrew` etc.)
 for your operating system for obtaining required software and packages.
 
 Development in Windows environment should also be possible, but we
-cannot guarantee it works out-of-the-box. In any case, we strongly recommend 
+cannot guarantee it works out-of-the-box. In any case, we strongly recommend
 installing [Windows Subsystem for Linux](https://docs.microsoft.com/en-us/windows/wsl/install-win10)
 for developing in Windows operating system.
 
@@ -31,16 +31,16 @@ environment locally. You can install them through your development
 environment's package manager, or alternatively download binaries
 from websites provided below.
 
-Please note that all the dependencies should be installed as 
+Please note that all the dependencies should be installed as
 current user. Do not use elevated privileges, e.g. sudo to install
 packages.
 
 - [Node.js](https://nodejs.org/en/) – a JavaScript runtime built on Chrome's V8 JavaScript engine, version  12.13+
-- [Yarn](https://yarnpkg.com/getting-started/install) – Package manager for Node, version 1.22.10+
+- [Yarn](https://yarnpkg.com/getting-started/install) – Package manager for Node, version 1.22+
 - [JDK](https://openjdk.java.net/projects/jdk/11/) – Java Development
   Kit, version 11+. We recommend using OpenJDK implementation of JSR 384.
 - [Docker](https://docs.docker.com/get-docker/) – Docker is an open platform for developing, shipping, and running applications.
-
+- [docker-compose](https://docs.docker.com/compose/install/) - Tool for running multi-container Docker applications, version 1.26.0+
 
 ### Required tooling
 
@@ -59,6 +59,25 @@ npm install -g pm2
 You will also need the `nc/netcat` (Arbitrary TCP and UDP connections and listens) utility.
 If your operating system does not have this utility installed, please install
 it using your package manager. (E.g. on Ubuntu, run  `sudo apt-get install netcat`).
+
+### Google Maps API key
+
+To use `enduser-gw`'s Google Maps backed endpoints, create a `.gmaps.env` file ([example](./.default.gmaps.env)).
+**NOTE:** By default, `compose-e2e` will copy a default file (`.default.gmaps.env`) to `.gmaps.env`, so `.gmaps.env`
+might already exist — just fill/replace it.
+
+Due to Google Maps APIs restriction capabilities (see [apigw README](../apigw/README.md#google-maps-api-key)),
+no API key can be provided by default **but `compose-e2e` can be run without an API key**.
+
+⚠️ **DO NOT COMMIT `.gmaps.env` to git!** ⚠️
+
+#### Instructions for Voltti developers
+
+Generate `.gmaps.env` with:
+
+```sh
+echo "GOOGLE_API_KEY=$(aws --profile voltti-local ssm get-parameter --name /local/evaka/google/maps_backend_api_key --query 'Parameter.Value' --with-decryption --output text)" > .gmaps.env
+```
 
 ## Starting all sub-projects in development mode
 
@@ -193,3 +212,7 @@ pm2 logs apigw
 
 You should be able to start all the services without any modifications
 if you have followed the instructions carefully.
+
+### GOOGLE_API_KEY must be configured to use this endpoint
+
+You must configure [a Google Maps API key](#google-maps-api-key) for `enduser-gw`.

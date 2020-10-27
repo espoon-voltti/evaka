@@ -12,17 +12,17 @@ Made with [Vue](https://vuejs.org/).
 
 ## Requirements
 
-* Node version 10.16
-* Yarn version 1.16
+- Node version 12.13+
+- Yarn version 1.22+ (2.x not tested)
 
 ## Prerequisites for running locally
 
 These microservices can either be run with [compose](../../../compose/README.md) or locally with a terminal/IDE.
 
-* The following microservices have to be running locally:
-  * [service](../../../service/README.md)
-  * [enduser-gw](../../../apigw/README.md)
-  * evaka-db (through docker-compose)
+- The following microservices have to be running locally:
+  - [service](../../../service/README.md)
+  - [enduser-gw](../../../apigw/README.md)
+  - evaka-db (through docker-compose)
 
 ## Packages
 

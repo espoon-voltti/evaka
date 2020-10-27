@@ -4,6 +4,9 @@
 
 db/init
 s3-mount
+# Secret Google Maps API configuration for local development, see README
+.gmaps.env
+
 # Editors & IDEs
 .idea/
 cmake-build-debug/

@@ -19,6 +19,9 @@
     "@fortawesome/pro-regular-svg-icons": "file:./vendor/fortawesome/fortawesome-pro-regular-svg-icons-5.14.0.tgz",
     "@fortawesome/pro-solid-svg-icons": "file:./vendor/fortawesome/fortawesome-pro-solid-svg-icons-5.14.0.tgz"
   },
+  "engines": {
+    "node": ">= 12.13.0"
+  },
   "workspaces": [
     "packages/*",
     "e2e-test",

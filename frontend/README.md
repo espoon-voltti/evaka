@@ -23,7 +23,7 @@ And into a shared library:
 
 - [`lib-common`](packages/lib-common/README.md)
 
-This repository uses [Yarn workspaces](https://yarnpkg.com/lang/en/docs/workspaces/) to share 
+This repository uses [Yarn workspaces](https://yarnpkg.com/lang/en/docs/workspaces/) to share
 common code between packages / applications. See further instructions below.
 
 **NOTE:** This project is currently under very active development.
@@ -48,7 +48,7 @@ from websites provided below.
 - [Node.js](https://nodejs.org/en/) – a JavaScript runtime built on
   Chrome's V8 JavaScript engine, version 12.13+
 - [Yarn](https://yarnpkg.com/getting-started/install) – Package manager
-  for Node, version 1.22.10
+  for Node, version 1.22+
 
 ## Overview of the repository structure
 

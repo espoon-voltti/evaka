@@ -11,20 +11,24 @@ orbs:
   slack: circleci/slack@3.4.2
 
 aliases:
-  - &workspace_root ~/repo
-  - &workspace_evaka_base ~/repo/evaka-base
-  - &workspace_apigw ~/repo/apigw
-  - &workspace_frontend ~/repo/frontend
-  - &workspace_e2e ~/repo/frontend/e2e-test
-  - &workspace_proxy ~/repo/proxy
-  - &workspace_service ~/repo/service
-  - &workspace_message_service ~/repo/message-service
-  - &workspace_compose ~/repo/compose
+  - &workspace_root /home/circleci/repo
+  - &workspace_evaka_base /home/circleci/repo/evaka-base
+  - &workspace_apigw /home/circleci/repo/apigw
+  - &workspace_frontend /home/circleci/repo/frontend
+  - &workspace_e2e /home/circleci/repo/frontend/e2e-test
+  - &workspace_proxy /home/circleci/repo/proxy
+  - &workspace_service /home/circleci/repo/service
+  - &workspace_message_service /home/circleci/repo/message-service
+  - &workspace_compose /home/circleci/repo/compose
   - &yarn_cache .yarn_cache
   # SSH key fingerprint for checking out other eVaka repositories
   - &ci_evaka_fingerprint 86:d0:b3:3d:aa:fc:d5:b9:6b:69:1e:c7:f5:56:66:aa
   # Version of remote Docker engine used with setup_remote_docker (not including machine executors)
   - &remote_docker_version '19.03.13'
+  - &nodejs_version '12.13'
+  - &yarn_version '1.22.\*'
+  - &nodejs_image cimg/node:12.13
+  - &openjdk_image cimg/openjdk:11.0
   - &ubuntu_machine_image ubuntu-2004:202010-01
   - &builder_aws_image 307238562370.dkr.ecr.eu-west-1.amazonaws.com/voltti/builder-aws:1a7e0dec664ec27fa49d3eb76992be870c3f5b99
 
@@ -175,11 +179,11 @@ executors:
   apigw_executor:
     <<: *node_config
     docker:
-      - image: circleci/node:lts-buster
+      - image: *nodejs_image
   frontend_executor:
     <<: *node_config
     docker:
-      - image: circleci/node:dubnium
+      - image: *nodejs_image
   e2e_executor:
     <<: *default_config
     machine:
@@ -191,7 +195,7 @@ executors:
     environment:
       GRADLE_USER_HOME: /home/circleci/repo/service/.gradle-user-home
     docker:
-      - image: circleci/openjdk:11
+      - image: *openjdk_image
   service_test_executor:
     <<: *jvm_config
     environment:
@@ -204,7 +208,7 @@ executors:
     environment:
       GRADLE_USER_HOME: /home/circleci/repo/message-service/.gradle-user-home
     docker:
-      - image: circleci/openjdk:11
+      - image: *openjdk_image
   message_service_test_executor:
     <<: *jvm_config
     environment:
@@ -234,8 +238,8 @@ commands:
   build_storybook:
     steps:
       - run:
-          name: yarn build-storybook ~/repo/frontend/packages/employee-frontend
-          working_directory: ~/repo/frontend/packages/employee-frontend
+          name: yarn build-storybook /home/circleci/repo/frontend/packages/employee-frontend
+          working_directory: /home/circleci/repo/frontend/packages/employee-frontend
           environment:
             SENTRY_NO_PROGRESS_BAR: "1"
           command: |
@@ -246,6 +250,12 @@ commands:
     parameters:
       suite:
         type: string
+      nodejs_version:
+        type: string
+        default: *nodejs_version
+      yarn_version:
+        type: string
+        default: *yarn_version
     steps:
       - *restore_repo
       - *attach_workspace
@@ -260,12 +270,16 @@ commands:
           command: |
             CI=true LOCAL_DIR='../frontend/packages' ./compose-e2e up -d
       - run:
-          name: Install node 10 and yarn
+          name: Install node 12 and yarn
           command: |
-            source ~/.bashrc
-            nvm install 10.15.3
-            curl --silent --show-error --location --fail --retry 3 --output - https://yarnpkg.com/install.sh | bash
-            source ~/.bashrc
+            export DEBIAN_FRONTEND=noninteractive
+            nvm install << parameters.nodejs_version >>
+            node --version
+
+            curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add -
+            echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list
+            sudo apt-get update && sudo apt-get --yes install --no-install-recommends yarn=<< parameters.yarn_version >>
+            yarn --version
       - run:
           name: Install chrome
           command: |
@@ -290,14 +304,13 @@ commands:
           name: Run e2e tests against compose
           working_directory: *workspace_e2e
           command: |
-            source ~/.bashrc
-            nvm use 10.15.3
-            ./wait-for-dev-api.sh 'http://localhost:9999' || (cd ~/repo/compose && ./compose-e2e logs && false)
+            nvm use << parameters.nodejs_version >>
+            ./wait-for-dev-api.sh 'http://localhost:9999' || (cd /home/circleci/repo/compose && ./compose-e2e logs && false)
             yarn << parameters.suite >>
       - run:
           name: Collect error logs
           command: |
-            cd ~/repo/compose
+            cd /home/circleci/repo/compose
             ./compose-e2e logs --tail=all > /tmp/docker-compose-logs.txt
           when: on_fail
       - store_artifacts:
@@ -318,7 +331,7 @@ commands:
     steps:
       - run:
           name: Deploy (<< parameters.from >>)
-          working_directory: ~/repo/<< parameters.from >>
+          working_directory: /home/circleci/repo/<< parameters.from >>
           command: |
             aws s3 cp dist/index.html s3://evaka-static-$TARGET_ENV/<< parameters.to >>/index.html \
               --acl public-read \
@@ -342,7 +355,7 @@ commands:
     steps:
       - run:
           name: Deploy Storybook
-          working_directory: ~/repo/frontend/packages/employee-frontend
+          working_directory: /home/circleci/repo/frontend/packages/employee-frontend
           command: |
             if [ "$TARGET_ENV" = "dev" ]; then
               aws --profile voltti-dev s3 cp storybook-build/ s3://evaka-static-dev/master/storybook/ --recursive --acl public-read
@@ -519,7 +532,7 @@ jobs:
           working_directory: *workspace_apigw
           command: yarn test-ci
       - store_test_results:
-          path: ~/repo/apigw/build/test-reports
+          path: /home/circleci/repo/apigw/build/test-reports
       - notify_slack
 
   apigw_build_image:
@@ -575,11 +588,11 @@ jobs:
           command: yarn install --frozen-lockfile
       - *store_frontend_node_modules
       - build_frontend:
-          dir: ~/repo/frontend/packages/employee-frontend
+          dir: /home/circleci/repo/frontend/packages/employee-frontend
       - build_frontend:
-          dir: ~/repo/frontend/packages/enduser-frontend
+          dir: /home/circleci/repo/frontend/packages/enduser-frontend
       - build_frontend:
-          dir: ~/repo/frontend/packages/maintenance-page
+          dir: /home/circleci/repo/frontend/packages/maintenance-page
       - build_storybook
       - *persist_workspace_frontend
       - run:
@@ -589,11 +602,11 @@ jobs:
           working_directory: *workspace_frontend
           command: yarn test --maxWorkers=2
       - store_test_results:
-          path: ~/repo/frontend/packages/lib-common/test-results
+          path: /home/circleci/repo/frontend/packages/lib-common/test-results
       - store_test_results:
-          path: ~/repo/frontend/packages/employee-frontend/test-results
+          path: /home/circleci/repo/frontend/packages/employee-frontend/test-results
       - store_test_results:
-          path: ~/repo/frontend/packages/enduser-frontend/test-results
+          path: /home/circleci/repo/frontend/packages/enduser-frontend/test-results
       - notify_slack
 
   e2e-test-application:
@@ -707,16 +720,16 @@ jobs:
           working_directory: *workspace_service
           command: ./gradlew test
       - store_test_results:
-          path: ~/repo/service/build/test-results/test/
+          path: /home/circleci/repo/service/build/test-results/test/
       - run:
           working_directory: *workspace_service
           command: ./gradlew integrationTest
       - store_test_results:
-          path: ~/repo/service/build/test-results/integrationTest/
+          path: /home/circleci/repo/service/build/test-results/integrationTest/
       - store_artifacts:
-          path: ~/repo/service/build/reports/
+          path: /home/circleci/repo/service/build/reports/
       - store_artifacts:
-          path: ~/repo/service-lib/build/reports/
+          path: /home/circleci/repo/service-lib/build/reports/
       - notify_slack
 
   service_push_image:
@@ -759,14 +772,14 @@ jobs:
           working_directory: *workspace_message_service
           command: ./gradlew test
       - store_test_results:
-          path: ~/repo/message-service/build/test-results/test/
+          path: /home/circleci/repo/message-service/build/test-results/test/
       - run:
           working_directory: *workspace_message_service
           command: ./gradlew integrationTest
       - store_test_results:
-          path: ~/repo/message-service/build/test-results/integrationTest/
+          path: /home/circleci/repo/message-service/build/test-results/integrationTest/
       - store_artifacts:
-          path: ~/repo/message-service/build/reports/
+          path: /home/circleci/repo/message-service/build/reports/
       - notify_slack
 
   message_service_build_and_push_image:

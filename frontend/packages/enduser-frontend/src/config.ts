@@ -63,7 +63,7 @@ configs._default = {
   },
 
   maps: {
-    googleApiKey: 'AIzaSyC6obUEPu6TBU47O500tZg99JC_yW8wCJA',
+    googleApiKey: 'AIzaSyDsQ-afaWGiGbIUd9JMmdknJ9zuAvXDv1k',
     espooCoordinates: { lat: 60.2051256, lng: 24.6541313 },
     styles: [
       {
@@ -180,8 +180,27 @@ configs._default = {
     selectApplicationType: true
   }
 }
+configs.dev = defaultsDeep(
+  {
+    maps: {
+      googleApiKey: 'AIzaSyCo8b3pEGS4IvVOBHExYePR7ru1SoHtKOs'
+    }
+  },
+  configs._default
+)
+configs.test = defaultsDeep(
+  {
+    maps: {
+      googleApiKey: 'AIzaSyAhPTjH3-vK8U6RJblEabS7JJYNgZmjzV8'
+    }
+  },
+  configs._default
+)
 configs.staging = defaultsDeep(
   {
+    maps: {
+      googleApiKey: 'AIzaSyBiPAcmG0YW6dfMQhXCePRh3YUgfVFJ8d8'
+    },
     sentry: {
       enabled: true
     }
