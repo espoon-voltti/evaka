@@ -17,7 +17,7 @@ class DvvModificationsServiceClientIntegrationTest : DvvModificationsServiceInte
 
     @Test
     fun `restricted info has been added`() {
-        val response: DvvModificationsResponse = dvvModificationsServiceClient.getModifications("100000000", listOf("020180-999Y"))!!
+        val response: DvvModificationsResponse = dvvModificationsServiceClient.getModifications("100000000", listOf("020180-999Y"))
         assertEquals(true, response.muutokset[0].tietoryhmat.size == 2)
         assertEquals("TURVAKIELTO", response.muutokset[0].tietoryhmat[0].tietoryhma)
         val restrictedInfo = response.muutokset[0].tietoryhmat[0] as RestrictedInfoDvvInfoGroup
@@ -26,7 +26,7 @@ class DvvModificationsServiceClientIntegrationTest : DvvModificationsServiceInte
 
     @Test
     fun `restricted info has been removed and address is provided`() {
-        val response: DvvModificationsResponse = dvvModificationsServiceClient.getModifications("100000000", listOf("030180-999L"))!!
+        val response: DvvModificationsResponse = dvvModificationsServiceClient.getModifications("100000000", listOf("030180-999L"))
         assertEquals(true, response.muutokset[0].tietoryhmat.size == 3)
         assertEquals("TURVAKIELTO", response.muutokset[0].tietoryhmat[0].tietoryhma)
 
@@ -41,7 +41,7 @@ class DvvModificationsServiceClientIntegrationTest : DvvModificationsServiceInte
 
     @Test
     fun `person has died`() {
-        val response: DvvModificationsResponse = dvvModificationsServiceClient.getModifications("100000000", listOf("010180-999A"))!!
+        val response: DvvModificationsResponse = dvvModificationsServiceClient.getModifications("100000000", listOf("010180-999A"))
         assertEquals("KUOLINPAIVA", response.muutokset[0].tietoryhmat[0].tietoryhma)
         val dead = response.muutokset[0].tietoryhmat[0] as DeathDvvInfoGroup
         assertEquals(true, dead.kuollut)
@@ -50,7 +50,7 @@ class DvvModificationsServiceClientIntegrationTest : DvvModificationsServiceInte
 
     @Test
     fun `name change modification`() {
-        val response: DvvModificationsResponse = dvvModificationsServiceClient.getModifications("100000000", listOf("nimenmuutos"))!!
+        val response: DvvModificationsResponse = dvvModificationsServiceClient.getModifications("100000000", listOf("nimenmuutos"))
         assertEquals(true, response.viimeisinKirjausavain.length == 9)
         assertEquals(true, response.muutokset.size == 1)
         assertEquals("HENKILON_NIMI", response.muutokset[0].tietoryhmat[0].tietoryhma)
@@ -58,7 +58,7 @@ class DvvModificationsServiceClientIntegrationTest : DvvModificationsServiceInte
 
     @Test
     fun `guardian is now a sole guardian`() {
-        val response: DvvModificationsResponse = dvvModificationsServiceClient.getModifications("100000000", listOf("yksinhuoltaja-muutos"))!!
+        val response: DvvModificationsResponse = dvvModificationsServiceClient.getModifications("100000000", listOf("yksinhuoltaja-muutos"))
         assertEquals("HUOLLETTAVA_SUPPEA", response.muutokset[0].tietoryhmat[0].tietoryhma)
         val custodian = response.muutokset[0].tietoryhmat[0] as CustodianLimitedDvvInfoGroup
         assertEquals("010118-9999", custodian.huollettava.henkilotunnus)
@@ -67,7 +67,7 @@ class DvvModificationsServiceClientIntegrationTest : DvvModificationsServiceInte
 
     @Test
     fun `custodian info`() {
-        val response: DvvModificationsResponse = dvvModificationsServiceClient.getModifications("100000000", listOf("huoltaja"))!!
+        val response: DvvModificationsResponse = dvvModificationsServiceClient.getModifications("100000000", listOf("huoltaja"))
         assertEquals("HUOLTAJA_SUPPEA", response.muutokset[0].tietoryhmat[0].tietoryhma)
         val caretaker = response.muutokset[0].tietoryhmat[0] as CaretakerLimitedDvvInfoGroup
         assertEquals("010579-9999", caretaker.huoltaja.henkilotunnus)
@@ -76,7 +76,7 @@ class DvvModificationsServiceClientIntegrationTest : DvvModificationsServiceInte
 
     @Test
     fun `ssn change`() {
-        val response: DvvModificationsResponse = dvvModificationsServiceClient.getModifications("100000000", listOf("010181-999K"))!!
+        val response: DvvModificationsResponse = dvvModificationsServiceClient.getModifications("100000000", listOf("010181-999K"))
         assertEquals("HENKILOTUNNUS_KORJAUS", response.muutokset[0].tietoryhmat[0].tietoryhma)
         val ssnModified = response.muutokset[0].tietoryhmat[0] as SsnDvvInfoGroup
         assertEquals("LISATTY", ssnModified.muutosattribuutti)

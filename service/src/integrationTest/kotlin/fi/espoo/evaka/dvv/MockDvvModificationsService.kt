@@ -33,12 +33,14 @@ class MockDvvModificationsService(private val mapper: ObjectMapper) {
         @RequestBody body: ModificationsRequest
     ): ResponseEntity<String> {
         logger.info { "Mock dvv POST /muutokset called, body: $body" }
+
+        val nextToken = body.viimeisinKirjausavain.toInt() + 1
         return ResponseEntity.ok(
             """
             {
-              "viimeisinKirjausavain": ${body.viimeisinKirjausavain.toInt() + 1},
+              "viimeisinKirjausavain": $nextToken,
               "muutokset": [${getModifications(body.hetulista)}],
-              "ajanTasalla": true
+              "ajanTasalla": ${nextToken > 0}
             }
         """
         )

@@ -146,6 +146,24 @@ class DvvModificationsServiceIntegrationTest : DvvModificationsServiceIntegratio
         assertEquals("Uusinimi", updatedPerson.lastName)
     }
 
+    @Test
+    fun `paging works`() = jdbi.handle { h ->
+        // The mock server has been rigged so that if the token is negative, it will return the requested batch with
+        // ajanTasalla=false and next token = token + 1 causing the dvv client to do a request for the subsequent page,
+        // until token is 0 and then it will return ajanTasalla=true
+        // So if the paging works correctly there should Math.abs(original_token) + 1 identical records
+        resetDatabase(h)
+        storeDvvModificationToken(h, "10000", "-2", 0, 0)
+        try {
+            createTestPerson(testPerson.copy(ssn = "010180-999A"))
+            assertEquals(3, dvvModificationsService.updatePersonsFromDvv(h, listOf("010180-999A")))
+            assertEquals("1", getNextDvvModificationToken(h))
+            assertEquals(LocalDate.parse("2019-07-30"), h.getPersonBySSN("010180-999A")?.dateOfDeath)
+        } finally {
+            deleteDvvModificationToken(h, "0")
+        }
+    }
+
     val testPerson = DevPerson(
         id = UUID.randomUUID(),
         ssn = "set this",
