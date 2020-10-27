@@ -89,6 +89,7 @@ class DvvModificationsServiceIntegrationTest : DvvModificationsServiceIntegratio
         assertEquals("Uusitie 17 A 2", modifiedPerson.streetAddress)
         assertEquals("02940", modifiedPerson.postalCode)
         assertEquals("ESPOO", modifiedPerson.postOffice)
+        assertEquals("123456789V1B033 ", modifiedPerson.residenceCode)
     }
 
     @Test
@@ -128,6 +129,21 @@ class DvvModificationsServiceIntegrationTest : DvvModificationsServiceIntegratio
         val dvvCaretaker = h.getPersonBySSN("060180-999J")!!
         assertEquals("Harri", dvvCaretaker.firstName)
         assertEquals("Huoltaja", dvvCaretaker.lastName)
+    }
+
+    @Test
+    fun `name changed`() = jdbi.handle { h ->
+        val SSN = "010179-9992"
+        var personWithOldName: DevPerson = testPerson.copy(firstName = "Ville", lastName = "Vanhanimi", ssn = SSN)
+        val personWithNewName = testPerson.copy(firstName = "Urkki", lastName = "Uusinimi", ssn = SSN)
+
+        createTestPerson(personWithOldName)
+        createVtjPerson(personWithNewName)
+
+        dvvModificationsService.updatePersonsFromDvv(h, listOf(SSN))
+        val updatedPerson = h.getPersonBySSN(SSN)!!
+        assertEquals("Urkki", updatedPerson.firstName)
+        assertEquals("Uusinimi", updatedPerson.lastName)
     }
 
     val testPerson = DevPerson(

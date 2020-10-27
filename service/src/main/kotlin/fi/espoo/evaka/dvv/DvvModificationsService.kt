@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: 2017-2020 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
+
 package fi.espoo.evaka.dvv
 
 import fi.espoo.evaka.identity.ExternalIdentifier
@@ -38,10 +39,11 @@ class DvvModificationsService(
                         is RestrictedInfoDvvInfoGroup -> handleRestrictedInfo(personDvvModifications.henkilotunnus, infoGroup)
                         is SsnDvvInfoGroup -> handleSsnDvvInfoGroup(personDvvModifications.henkilotunnus, infoGroup)
                         is AddressDvvInfoGroup -> handleAddressDvvInfoGroup(personDvvModifications.henkilotunnus, infoGroup)
+                        is ResidenceCodeDvvInfoGroup -> handleResidenceCodeDvvInfoGroup(personDvvModifications.henkilotunnus, infoGroup)
                         is CustodianLimitedDvvInfoGroup -> handleCustodianLimitedDvvInfoGroup(personDvvModifications.henkilotunnus, infoGroup)
                         is CaretakerLimitedDvvInfoGroup -> handleCaretakerLimitedDvvInfoGroup(infoGroup)
-                        // is PersonNameDvvInfoGroup -> handlePersonNameDvvInfoGroup(personDvvModifications.ssn, infoGroup)
-                        // is PersonNameChangeDvvInfoGroup -> handlePersonNameChangeDvvInfoGroup(personDvvModifications.ssn, infoGroup)
+                        is PersonNameDvvInfoGroup -> handlePersonNameDvvInfoGroup(personDvvModifications.henkilotunnus, infoGroup)
+                        is PersonNameChangeDvvInfoGroup -> handlePersonNameChangeDvvInfoGroup(personDvvModifications.henkilotunnus, infoGroup)
                         else -> logger.info("Unsupported DVV modification: ${infoGroup.tietoryhma}")
                     }
                 } catch (e: Throwable) {
@@ -95,17 +97,31 @@ class DvvModificationsService(
         jdbi.handle { h ->
             h.getPersonBySSN(ssn)?.let {
                 if (addressDvvInfoGroup.muutosattribuutti.equals("LISATTY") || (
-                    addressDvvInfoGroup.muutosattribuutti.equals("MUUTETTU") && it.streetAddress.isNullOrEmpty()
-                    )
+                                addressDvvInfoGroup.muutosattribuutti.equals("MUUTETTU") && it.streetAddress.isNullOrEmpty()
+                                )
                 ) {
                     logger.debug("Dvv modification for ${it.id}: address change, type: ${addressDvvInfoGroup.muutosattribuutti}")
                     h.updatePersonFromVtj(
-                        it.copy(
-                            streetAddress = addressDvvInfoGroup.streetAddress(),
-                            postalCode = addressDvvInfoGroup.postinumero ?: "",
-                            postOffice = addressDvvInfoGroup.postitoimipaikka?.fi ?: ""
-                            // TODO: residence code
-                        )
+                            it.copy(
+                                    streetAddress = addressDvvInfoGroup.katuosoite(),
+                                    postalCode = addressDvvInfoGroup.postinumero ?: "",
+                                    postOffice = addressDvvInfoGroup.postitoimipaikka?.fi ?: ""
+                            )
+                    )
+                }
+            }
+        }
+    }
+
+    private fun handleResidenceCodeDvvInfoGroup(ssn: String, residenceCodeDvvInfoGroup: ResidenceCodeDvvInfoGroup) {
+        if (residenceCodeDvvInfoGroup.muutosattribuutti.equals("LISATTY")) {
+            jdbi.handle { h ->
+                h.getPersonBySSN(ssn)?.let {
+                    logger.debug("Dvv modification for ${it.id}: residence code change")
+                    h.updatePersonFromVtj(
+                            it.copy(
+                                    residenceCode = residenceCodeDvvInfoGroup.asuinpaikantunnus
+                            )
                     )
                 }
             }
@@ -132,9 +148,27 @@ class DvvModificationsService(
         }
     }
 
-    // private fun handlePersonNameDvvInfoGroup(ssn: String, personNameDvvInfoGroup: PersonNameDvvInfoGroup) {}
+    private fun handlePersonNameDvvInfoGroup(ssn: String, personNameDvvInfoGroup: PersonNameDvvInfoGroup) {
+        jdbi.handle { h ->
+            h.getPersonBySSN(ssn)?.let {
+                val user = AuthenticatedUser.anonymous
+                personService.getOrCreatePerson(user, ExternalIdentifier.SSN.getInstance(ssn))?.let {
+                    logger.debug("Dvv modification for ${it.id}: name ${personNameDvvInfoGroup.muutosattribuutti}, refreshed all info from DVV")
+                }
+            }
+        }
+    }
 
-    // private fun handlePersonNameChangeDvvInfoGroup(ssn: String, personNameChangeDvvInfoGroup: PersonNameChangeDvvInfoGroup) {}
+    private fun handlePersonNameChangeDvvInfoGroup(ssn: String, personNameChangeDvvInfoGroup: PersonNameChangeDvvInfoGroup) {
+        jdbi.handle { h ->
+            h.getPersonBySSN(ssn)?.let {
+                val user = AuthenticatedUser.anonymous
+                personService.getOrCreatePerson(user, ExternalIdentifier.SSN.getInstance(ssn))?.let {
+                    logger.debug("Dvv modification for ${it.id}: name has changed: ${personNameChangeDvvInfoGroup.muutosattribuutti} - ${personNameChangeDvvInfoGroup.nimilaji}, refreshed all info from DVV")
+                }
+            }
+        }
+    }
 
     fun getDvvModifications(h: Handle, ssns: List<String>): List<DvvModification> {
         val token = getNextDvvModificationToken(h)

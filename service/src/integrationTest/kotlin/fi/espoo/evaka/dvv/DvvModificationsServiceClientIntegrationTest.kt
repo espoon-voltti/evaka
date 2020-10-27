@@ -27,7 +27,7 @@ class DvvModificationsServiceClientIntegrationTest : DvvModificationsServiceInte
     @Test
     fun `restricted info has been removed and address is provided`() {
         val response: DvvModificationsResponse = dvvModificationsServiceClient.getModifications("100000000", listOf("030180-999L"))!!
-        assertEquals(true, response.muutokset[0].tietoryhmat.size == 2)
+        assertEquals(true, response.muutokset[0].tietoryhmat.size == 3)
         assertEquals("TURVAKIELTO", response.muutokset[0].tietoryhmat[0].tietoryhma)
 
         val restrictedInfo = response.muutokset[0].tietoryhmat[0] as RestrictedInfoDvvInfoGroup
