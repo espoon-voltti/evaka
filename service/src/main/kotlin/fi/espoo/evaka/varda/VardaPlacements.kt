@@ -23,7 +23,7 @@ fun updatePlacements(h: Handle, client: VardaClient) {
     sendUpdatedPlacements(h, client)
 }
 
-fun removeMarkedPlacements(h: Handle, client: VardaClient) {
+fun removeMarkedPlacementsFromVarda(h: Handle, client: VardaClient) {
     val placementIds: List<Long> = getPlacementsToDelete(h)
     placementIds.forEach { id ->
         if (client.deletePlacement(id)) {
