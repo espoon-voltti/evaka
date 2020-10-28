@@ -103,7 +103,7 @@ SELECT
     p.start_date,
     p.end_date
 FROM daycare_placement p
-LEFT JOIN varda_placement vp ON p.id = vp.evaka_placement_id
+LEFT JOIN varda_placement vp ON p.id = vp.evaka_placement_id AND vp.deleted_at IS NULL
 JOIN daycare u ON p.unit_id = u.id AND u.upload_to_varda = true AND u.oph_unit_oid IS NOT NULL
 JOIN sent_decision d
     ON p.child_id = d.child_id
@@ -118,7 +118,7 @@ fun getNewPlacements(
     val sql =
         """
 $placementBaseQuery
-WHERE vp.id IS NULL OR vp.deleted_at IS NOT NULL
+WHERE vp.id IS NULL
         """.trimIndent()
 
     return h.createQuery(sql)
