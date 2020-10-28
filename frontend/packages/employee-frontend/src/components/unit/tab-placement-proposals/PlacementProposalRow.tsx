@@ -28,6 +28,7 @@ import FormModal from '~components/common/FormModal'
 import Radio from '~components/shared/atoms/form/Radio'
 import InputField from '~components/shared/atoms/form/InputField'
 import { Gap } from '~components/shared/layout/white-space'
+import PlacementCircle from '~components/shared/atoms/PlacementCircle'
 
 const CenteredDiv = styled.div`
   display: flex;
@@ -131,6 +132,9 @@ export default React.memo(function PlacementProposalRow({
         </Td>
         <Td data-qa="placement-type">
           {careTypesFromPlacementType(placementPlan.type)}
+        </Td>
+        <Td data-qa="placement-subtype">
+          <PlacementCircle type={placementPlan.type} />
         </Td>
         <Td data-qa="application-link">
           <CenteredDiv>

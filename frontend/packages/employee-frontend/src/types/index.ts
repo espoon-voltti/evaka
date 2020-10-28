@@ -7,7 +7,6 @@ export type UUID = string
 export type CareTypeLabel =
   | 'club'
   | 'daycare'
-  | 'connected'
   | 'preschool'
   | 'preparatory'
   | 'backup-care'

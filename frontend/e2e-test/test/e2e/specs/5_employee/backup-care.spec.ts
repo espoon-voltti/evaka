@@ -58,6 +58,7 @@ fixture('Employee - Backup care')
 
 test('daycare has one backup care child missing group', async (t) => {
   await unitPage.navigateHere(fixtures.daycareFixture.id)
+  await unitPage.openTabGroups()
   await unitPage.selectPeriodYear()
   await t.expect(unitPage.missingPlacementRows.count).eql(1)
   const row = missingPlacementElement(unitPage.missingPlacementRows.nth(0))
@@ -78,6 +79,7 @@ test('daycare has one backup care child missing group', async (t) => {
 
 test('backup care child can be placed into a group and removed from it', async (t) => {
   await unitPage.navigateHere(fixtures.daycareFixture.id)
+  await unitPage.openTabGroups()
   await unitPage.selectPeriodYear()
   await unitPage.openGroups()
 

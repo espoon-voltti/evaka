@@ -10,6 +10,7 @@ import fi.espoo.evaka.daycare.getDaycareGroup
 import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.db.withSpringHandle
 import fi.espoo.evaka.shared.domain.BadRequest
+import fi.espoo.evaka.shared.domain.ClosedPeriod
 import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.shared.domain.NotFound
 import org.jdbi.v3.core.Handle
@@ -333,6 +334,18 @@ data class DaycareGroupPlacement(
     val daycarePlacementId: UUID,
     val startDate: LocalDate,
     val endDate: LocalDate
+)
+
+data class MissingGroupPlacement(
+    val placementId: UUID,
+    val placementType: PlacementType?, // null for backup care
+    val backup: Boolean,
+    val placementPeriod: ClosedPeriod,
+    val childId: UUID,
+    val firstName: String?,
+    val lastName: String?,
+    val dateOfBirth: LocalDate,
+    val gap: ClosedPeriod
 )
 
 data class ChildBasics(

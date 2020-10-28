@@ -39,6 +39,8 @@ import { ApplicationUIContext } from '~state/application-ui'
 import ActionBar from '~components/applications/ActionBar'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import Tooltip from '~components/shared/atoms/Tooltip'
+import { careTypesFromPlacementType } from '~components/common/CareTypeLabel'
+import PlacementCircle from '~components/shared/atoms/PlacementCircle'
 
 const CircleIcon = styled.div`
   display: flex;
@@ -237,7 +239,6 @@ const ApplicationsList = React.memo(function Applications({
   }
 
   // todo: check new logic for status color border
-  // todo: show siirtohakemus and paperihakemus labels
   const rows = applications.map((application) => (
     <Tr
       key={application.id}
@@ -252,7 +253,7 @@ const ApplicationsList = React.memo(function Applications({
     >
       <StatusColorTd color={getAccentColor(application)}>
         <FixedSpaceColumn spacing="xs">
-          <span>{i18n.application.types[application.type]}</span>
+          {careTypesFromPlacementType(application.placementType)}
           {application.transferApplication && (
             <Light>{i18n.applications.list.transfer}</Light>
           )}
@@ -261,6 +262,9 @@ const ApplicationsList = React.memo(function Applications({
           )}
         </FixedSpaceColumn>
       </StatusColorTd>
+      <Td>
+        <PlacementCircle type={application.placementType} />
+      </Td>
       <Td>
         <FixedSpaceColumn spacing="xs">
           <Bold>
@@ -398,6 +402,9 @@ const ApplicationsList = React.memo(function Applications({
               >
                 {i18n.applications.list.type}
               </SortableTh>
+              <Th sticky top={'106px'}>
+                {i18n.applications.list.subtype}
+              </Th>
               <SortableTh
                 sticky
                 top={'106px'}

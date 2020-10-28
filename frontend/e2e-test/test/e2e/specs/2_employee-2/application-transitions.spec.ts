@@ -188,6 +188,7 @@ test('Placement proposal flow', async (t) => {
 
   await t.useRole(seppoManagerRole)
   await unitPage.navigateHere(fixtures.daycareFixture.id)
+  await unitPage.openTabPlacementProposals()
 
   await t
     .expect(unitPage.placementProposalsAcceptButton.hasAttribute('disabled'))
@@ -216,6 +217,7 @@ test('Placement proposal flow', async (t) => {
 
   await t.useRole(seppoManagerRole)
   await unitPage.navigateHere(fixtures.daycareFixture.id)
+  await unitPage.openTabPlacementProposals()
   await t
     .expect(unitPage.placementProposalsAcceptButton.hasAttribute('disabled'))
     .notOk()
@@ -224,5 +226,6 @@ test('Placement proposal flow', async (t) => {
   await execSimpleApplicationAction(applicationId, 'confirm-decision-mailed')
 
   await unitPage.navigateHere(fixtures.daycareFixture.id)
+  await unitPage.openTabWaitingConfirmation()
   await t.expect(unitPage.waitingGuardianConfirmationRow.count).eql(1)
 })

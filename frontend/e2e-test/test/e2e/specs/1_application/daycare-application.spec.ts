@@ -5,7 +5,6 @@
 import EnduserPage from '../../pages/enduser/enduser-navigation'
 import { ApplicationWorkbenchPage } from '../../pages/admin/application-workbench-page'
 import DaycareApplication from '../../pages/enduser/daycare-application'
-import Home from '../../pages/home'
 import config from '../../config'
 import {
   initializeAreaAndPersonData,
@@ -30,10 +29,11 @@ import {
   seppoManagerRole
 } from '../../config/users'
 import assert from 'assert'
+import ApplicationReadView from '../../pages/employee/applications/application-read-view'
 
-const home = new Home()
 const enduserPage = new EnduserPage()
 const applicationWorkbench = new ApplicationWorkbenchPage()
+const applicationReadView = new ApplicationReadView()
 const supervisor: EmployeeDetail = {
   id: '552e5bde-92fb-4807-a388-40016f85f593',
   aad: config.supervisorAad,
@@ -108,8 +108,7 @@ test('Service worker adds a note to application and unit supervisor reads it', a
   await applicationWorkbench.addNote('Make evaka great again')
   await applicationWorkbench.closeApplication()
   await t.useRole(seppoManagerRole)
-  await t.navigateTo(home.homePage('admin'))
-  await applicationWorkbench.openApplicationById(applicationId)
+  await applicationReadView.openApplicationByLink(applicationId)
   await applicationWorkbench.verifyNoteExists('Make evaka great again')
   await applicationWorkbench.closeApplication()
   await t.useRole(seppoAdminRole)

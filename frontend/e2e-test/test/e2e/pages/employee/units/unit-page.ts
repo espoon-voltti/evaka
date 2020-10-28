@@ -18,6 +18,26 @@ export default class UnitPage {
     await t.navigateTo(`${this.baseUrl}/units/${id}`)
   }
 
+  async openTabUnitInfo() {
+    await t.click(Selector('[data-qa="unit-info-tab"]'))
+  }
+
+  async openTabGroups() {
+    await t.click(Selector('[data-qa="groups-tab"]'))
+  }
+
+  async openTabWaitingConfirmation() {
+    await t.click(Selector('[data-qa="waiting-confirmation-tab"]'))
+  }
+
+  async openTabPlacementProposals() {
+    await t.click(Selector('[data-qa="placement-proposals-tab"]'))
+  }
+
+  async openTabApplications() {
+    await t.click(Selector('[data-qa="applications-tab"]'))
+  }
+
   async selectPeriodYear() {
     await t.click(Selector('[data-qa="unit-filter-period-1-year"]'))
   }

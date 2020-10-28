@@ -15,8 +15,8 @@ import fi.espoo.evaka.application.persistence.club.ClubFormV0
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
 import fi.espoo.evaka.application.utils.exhaust
 import fi.espoo.evaka.placement.PlacementPlanConfirmationStatus
+import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.config.Roles
 import fi.espoo.evaka.shared.db.freeTextSearchQuery
 import fi.espoo.evaka.shared.db.getEnum
 import fi.espoo.evaka.shared.db.getUUID
@@ -25,8 +25,10 @@ import fi.espoo.evaka.shared.db.mapJsonColumn
 import fi.espoo.evaka.shared.db.transaction
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.mapTo
+import org.jdbi.v3.core.result.RowView
 import org.jdbi.v3.core.statement.StatementContext
 import org.postgresql.util.PGobject
+import java.lang.Error
 import java.sql.ResultSet
 import java.time.LocalDate
 import java.util.UUID
@@ -185,21 +187,7 @@ fun fetchApplicationSummaries(
             TransferApplicationFilter.TRANSFER_ONLY -> "a.transferApplication"
             TransferApplicationFilter.NO_TRANSFER -> "NOT a.transferApplication"
             else -> null
-        },
-        if (!user.hasOneOfRoles(Roles.ADMIN, Roles.SERVICE_WORKER, Roles.FINANCE_ADMIN)) """
-                a.status = ANY ('{SENT,WAITING_PLACEMENT,WAITING_CONFIRMATION,WAITING_DECISION,WAITING_MAILING,WAITING_UNIT_CONFIRMATION,ACTIVE}'::application_status_type[]) AND (
-                    EXISTS (
-                        SELECT 1 
-                        FROM daycare_acl acl 
-                        WHERE acl.employee_id = :userId AND acl.role = 'UNIT_SUPERVISOR' AND acl.daycare_id = ANY(f.preferredunits)
-                    ) OR EXISTS (
-                        SELECT 1 
-                        FROM daycare_acl acl 
-                        JOIN placement_plan pp ON pp.application_id = a.id AND pp.unit_id = acl.daycare_id AND pp.deleted = false
-                        WHERE acl.employee_id = :userId AND acl.role = 'UNIT_SUPERVISOR'
-                    )
-                )
-        """.trimIndent() else null
+        }
     )
 
     val andWhere = conditions.takeIf { it.isNotEmpty() }?.joinToString(" AND ")?.let { " AND $it" } ?: ""
@@ -212,6 +200,7 @@ fun fetchApplicationSummaries(
             child.last_name,
             child.date_of_birth,
             child.social_security_number,
+            f.document,
             f.document ->> 'type' as type,
             a.duedate,
             f.document ->> 'preferredStartDate' as preferredStartDate,
@@ -289,6 +278,7 @@ fun fetchApplicationSummaries(
                 socialSecurityNumber = row.mapColumn("social_security_number"),
                 dateOfBirth = row.mapColumn("date_of_birth"),
                 type = row.mapColumn("type"),
+                placementType = mapRequestedPlacementType(row, "document"),
                 dueDate = row.mapColumn("duedate"),
                 startDate = row.mapColumn("preferredStartDate"),
                 preferredUnits = row.mapJsonColumn<List<String>>("preferredUnits").map {
@@ -532,8 +522,91 @@ fun fetchApplicationDetails(h: Handle, applicationId: UUID): ApplicationDetails?
     } else return null
 }
 
+fun Handle.getApplicationUnitSummaries(unitId: UUID): List<ApplicationUnitSummary> {
+    //language=sql
+    val sql =
+        """
+        SELECT
+            a.id,
+            f.document ->> 'type' AS type,
+            f.document,
+            (f.document ->> 'preferredStartDate')::date as preferred_start_date,
+            (array_position((
+                SELECT array_agg(e)
+                FROM jsonb_array_elements_text(f.document -> 'apply' -> 'preferredUnits') e
+            ), :unitId::text)) as preference_order,
+            a.status,
+            c.first_name,
+            c.last_name,
+            c.date_of_birth,
+            g.first_name AS guardian_first_name,
+            g.first_name AS guardian_last_name,
+            g.phone AS guardian_phone,
+            g.email AS guardian_email
+        FROM application a
+        JOIN application_form f ON f.application_id = a.id AND f.latest IS TRUE
+        JOIN person c ON c.id = a.child_id
+        JOIN person g ON g.id = a.guardian_id
+        WHERE EXISTS (
+            SELECT 1
+            FROM jsonb_array_elements_text(f.document -> 'apply' -> 'preferredUnits') e
+            WHERE e = :unitId::text
+        ) AND a.status = ANY ('{SENT,WAITING_PLACEMENT,WAITING_DECISION}'::application_status_type[])
+        ORDER BY c.last_name, c.first_name
+        """.trimIndent()
+
+    return this.createQuery(sql)
+        .bind("unitId", unitId)
+        .map { row ->
+            ApplicationUnitSummary(
+                applicationId = row.mapColumn("id"),
+                firstName = row.mapColumn("first_name"),
+                lastName = row.mapColumn("last_name"),
+                dateOfBirth = row.mapColumn("date_of_birth"),
+                guardianFirstName = row.mapColumn("guardian_first_name"),
+                guardianLastName = row.mapColumn("guardian_last_name"),
+                guardianPhone = row.mapColumn("guardian_phone"),
+                guardianEmail = row.mapColumn("guardian_email"),
+                requestedPlacementType = mapRequestedPlacementType(row, "document"),
+                preferredStartDate = row.mapColumn("preferred_start_date"),
+                preferenceOrder = row.mapColumn("preference_order"),
+                status = row.mapColumn("status")
+            )
+        }
+        .list()
+}
+
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class FormWithType(val type: String)
+
+fun mapRequestedPlacementType(row: RowView, colName: String): PlacementType = when (row.mapJsonColumn<FormWithType>(colName).type) {
+    "club" -> PlacementType.CLUB
+    "daycare" -> {
+        if (row.mapJsonColumn<DaycareFormV0>(colName).partTime) {
+            PlacementType.DAYCARE_PART_TIME
+        } else {
+            PlacementType.DAYCARE
+        }
+    }
+    "preschool" -> {
+        row.mapJsonColumn<DaycareFormV0>(colName).let {
+            if (it.careDetails.preparatory == true) {
+                if (it.connectedDaycare == true) {
+                    PlacementType.PREPARATORY_DAYCARE
+                } else {
+                    PlacementType.PREPARATORY
+                }
+            } else {
+                if (it.connectedDaycare == true) {
+                    PlacementType.PRESCHOOL_DAYCARE
+                } else {
+                    PlacementType.PRESCHOOL
+                }
+            }
+        }
+    }
+    else -> throw Error("unknown form type")
+}
 
 fun updateForm(h: Handle, id: UUID, form: ApplicationForm, formType: ApplicationType, childRestricted: Boolean, guardianRestricted: Boolean) {
     val transformedForm =

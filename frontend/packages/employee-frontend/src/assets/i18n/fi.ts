@@ -53,7 +53,6 @@ export const fi = {
       club: 'Kerho',
       preschool: 'Esiopetus',
       daycare: 'Varhaiskasvatus',
-      connected: 'Liittyvä',
       preparatory: 'Valmistava',
       'backup-care': 'Varasijoitus'
     },
@@ -160,6 +159,7 @@ export const fi = {
       resultCount: 'Hakutuloksia',
       noResults: 'Ei hakutuloksia',
       type: 'Hakutyyppi',
+      subtype: 'Osa/Koko',
       transferFilter: {
         title: 'Siirtohakemukset',
         transferOnly: 'Näytä vain siirtohakemukset',
@@ -946,9 +946,17 @@ export const fi = {
     noResults: 'Ei tuloksia'
   },
   unit: {
+    tabs: {
+      unitInfo: 'Yksikön tiedot',
+      groups: 'Ryhmät',
+      waitingConfirmation: 'Vahvistettavana huoltajalla',
+      placementProposals: 'Sijoitusehdotukset',
+      applications: 'Hakemukset'
+    },
     create: 'Luo uusi yksikkö',
     openDetails: 'Näytä yksikön kaikki tiedot',
     openMobilePOC: 'Länsäolojen merkkaus (POC)',
+    occupancies: 'Käyttö- ja täyttöaste',
     info: {
       title: 'Yksikön tiedot',
       area: 'Alue',
@@ -1004,6 +1012,7 @@ export const fi = {
       birthday: 'Syntymäaika',
       placementDuration: 'Sijoitettu yksikköön',
       type: 'Toimintamuoto',
+      subtype: 'Osa/Koko',
       application: 'Hakemus'
     },
     placementProposals: {
@@ -1012,6 +1021,7 @@ export const fi = {
       birthday: 'Syntymäaika',
       placementDuration: 'Sijoitettu yksikköön',
       type: 'Toimintamuoto',
+      subtype: 'Osa/Koko',
       application: 'Hakemus',
       confirmation: 'Hyväksyntä',
       acceptAllButton: 'Vahvista hyväksytyt',
@@ -1027,6 +1037,25 @@ export const fi = {
       infoBoxText:
         'Merkitse lapset, jotka pystyt ottamaan vastaan. Kun olet hyväksynyt kaikki lapset voit painaa Vahvista hyväksytyt -nappia. Mikäli et pysty hyväksymään kaikkia lapsia, merkitse rasti ja lisää perustelu. Palveluohjaus tekee tällöin uuden sijoitusehdotuksen tai ottaa yhteyttä.'
     },
+    applications: {
+      title: 'Hakemukset',
+      child: 'Lapsen nimi/synt.aika',
+      guardian: 'Hakenut huoltaja',
+      type: 'Toimintamuoto',
+      types: {
+        CLUB: 'Kerho',
+        DAYCARE: 'Varhaiskasvatus',
+        DAYCARE_PART_TIME: 'Varhaiskasvatus',
+        PRESCHOOL: 'Esiopetus',
+        PRESCHOOL_DAYCARE: 'Esiopetus',
+        PREPARATORY: 'Valmistava',
+        PREPARATORY_DAYCARE: 'Valmistava'
+      },
+      placement: 'Osa/Koko',
+      preferenceOrder: 'Toive',
+      startDate: 'Aloitus',
+      status: 'Tila'
+    },
     placements: {
       title: 'Ryhmää odottavat lapset',
       name: 'Nimi',
@@ -1034,6 +1063,7 @@ export const fi = {
       placementDuration: 'Sijoitettu yksikköön',
       missingGroup: 'Ryhmä puuttuu',
       type: 'Toimintamuoto',
+      subtype: 'Osa/Koko',
       addToGroup: 'Ryhmitä',
       modal: {
         createTitle: 'Lapsen sijoitus ryhmään',
@@ -1082,6 +1112,7 @@ export const fi = {
       serviceNeedMissing1: 'Palveluntarve puuttuu (',
       serviceNeedMissing2: 'päivää)',
       placementType: 'Toimintamuoto',
+      placementSubtype: 'Osa/Koko',
       noChildren: 'Ryhmään ei ole sijoitettu lapsia.',
       returnBtn: 'Palauta',
       transferBtn: 'Siirrä',

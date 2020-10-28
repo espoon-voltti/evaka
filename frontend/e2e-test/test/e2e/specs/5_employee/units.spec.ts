@@ -78,6 +78,7 @@ test('filtering units, navigating to one, contact details', async (t) => {
 
 test('daycare has an empty group', async (t) => {
   await unitPage.navigateHere(fixtures.daycareFixture.id)
+  await unitPage.openTabGroups()
   await unitPage.openGroups()
   await t.expect(unitPage.groups.count).eql(1)
   const group = daycareGroupElement(unitPage.groups.nth(0))
@@ -88,6 +89,7 @@ test('daycare has an empty group', async (t) => {
 
 test('daycare has one child missing group', async (t) => {
   await unitPage.navigateHere(fixtures.daycareFixture.id)
+  await unitPage.openTabGroups()
   await t.expect(unitPage.missingPlacementRows.count).eql(1)
   const row = missingPlacementElement(unitPage.missingPlacementRows.nth(0))
   await t
@@ -113,6 +115,7 @@ test('daycare has one child missing group', async (t) => {
 
 test('child can be placed into a group and removed from it', async (t) => {
   await unitPage.navigateHere(fixtures.daycareFixture.id)
+  await unitPage.openTabGroups()
   await unitPage.openGroups()
 
   // open the group placement modal and submit it with default values

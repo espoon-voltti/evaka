@@ -6,6 +6,7 @@ package fi.espoo.evaka.application
 
 import fi.espoo.evaka.placement.PlacementPlanConfirmationStatus
 import fi.espoo.evaka.placement.PlacementPlanRejectReason
+import fi.espoo.evaka.placement.PlacementType
 import java.time.Instant
 import java.time.LocalDate
 import java.time.OffsetDateTime
@@ -18,6 +19,7 @@ data class ApplicationSummary(
     val socialSecurityNumber: String? = null,
     val dateOfBirth: String? = null,
     val type: ApplicationType,
+    val placementType: PlacementType,
     val dueDate: String?,
     val startDate: String?,
     val preferredUnits: List<PreferredUnit>,
@@ -129,4 +131,19 @@ data class ApplicationNote(
     val updatedByName: String?,
     val created: Instant,
     val updated: Instant
+)
+
+data class ApplicationUnitSummary(
+    val applicationId: UUID,
+    val firstName: String,
+    val lastName: String,
+    val dateOfBirth: LocalDate,
+    val guardianFirstName: String,
+    val guardianLastName: String,
+    val guardianPhone: String?,
+    val guardianEmail: String?,
+    val requestedPlacementType: PlacementType,
+    val preferredStartDate: LocalDate,
+    val preferenceOrder: Int,
+    val status: ApplicationStatus
 )
