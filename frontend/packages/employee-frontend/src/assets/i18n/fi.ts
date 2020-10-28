@@ -238,7 +238,7 @@ export const fi = {
       SENT: 'Saapunut',
       WAITING_PLACEMENT: 'Odottaa sijoitusta',
       WAITING_DECISION: 'Päätöksen valmistelu',
-      WAITING_UNIT_CONFIRMATION: 'Esimiehen tarkistettavana',
+      WAITING_UNIT_CONFIRMATION: 'Johtajan tarkistettavana',
       WAITING_MAILING: 'Odottaa postitusta',
       WAITING_CONFIRMATION: 'Vahvistettavana huoltajalla',
       ACTIVE: 'Paikka vastaanotettu',
@@ -438,7 +438,7 @@ export const fi = {
         'Kirjoita tähän viikoittainen palveluntarve, joka sisältää kokonaisuudessaan perheen ilmoittaman läsnäoloajan, mukaan lukien mahdollisen esiopetusajan, 5-vuotiaan maksuttoman varhaiskasvatuksen ja valmistavan opetuksen.',
       hoursInWeek: 'h / viikko',
       serviceNeedDetails: 'Tarkennus palveluntarpeeseen',
-      createdByName: 'Esimiehen vahvistus',
+      createdByName: 'Yksikön johtajan vahvistus',
       create: 'Luo uusi palveluntarve',
       removeServiceNeed: 'Haluatko poistaa palveluntarpeen?',
       previousServiceNeeds: 'Aiemmin luodut palveluntarpeet',
@@ -578,7 +578,7 @@ export const fi = {
         SENT: 'Saapunut',
         WAITING_PLACEMENT: 'Odottaa sijoitusta',
         WAITING_DECISION: 'Päätöksen valmistelu',
-        WAITING_UNIT_CONFIRMATION: 'Odottaa esimiehen hyväksyntää',
+        WAITING_UNIT_CONFIRMATION: 'Odottaa johtajan hyväksyntää',
         WAITING_MAILING: 'Odottaa postitusta',
         WAITING_CONFIRMATION: 'Vahvistettavana huoltajalla',
         REJECTED: 'Paikka hylätty',
@@ -846,7 +846,7 @@ export const fi = {
         SENT: 'Saapunut',
         WAITING_PLACEMENT: 'Odottaa sijoitusta',
         WAITING_DECISION: 'Päätöksen valmistelu',
-        WAITING_UNIT_CONFIRMATION: 'Odottaa esimiehen hyväksyntää',
+        WAITING_UNIT_CONFIRMATION: 'Odottaa johtajan hyväksyntää',
         WAITING_MAILING: 'Odottaa postitusta',
         WAITING_CONFIRMATION: 'Vahvistettavana huoltajalla',
         REJECTED: 'Paikka hylätty',
@@ -969,13 +969,13 @@ export const fi = {
       }
     },
     manager: {
-      title: 'Yksikön esimies',
+      title: 'Yksikön johtaja',
       name: 'Nimi',
       email: 'Sähköpostiosoite',
       phone: 'Puhelinnumero'
     },
     accessControl: {
-      unitSupervisors: 'Yksikön esimiehet',
+      unitSupervisors: 'Yksikön johtajat',
       staff: 'Yksikön henkilökunta',
       email: 'Sähköpostiosoite',
       removeConfirmation:
@@ -1033,7 +1033,7 @@ export const fi = {
           'YKSIKÖN KOKONAISTILANNE, sovittu varhaiskasvatuksen aluepäällikön kanssa.',
         OTHER: 'Muu syy'
       },
-      infoBoxTitle: 'Ohje esimiehelle',
+      infoBoxTitle: 'Ohje yksikön johtajalle',
       infoBoxText:
         'Merkitse lapset, jotka pystyt ottamaan vastaan. Kun olet hyväksynyt kaikki lapset voit painaa Vahvista hyväksytyt -nappia. Mikäli et pysty hyväksymään kaikkia lapsia, merkitse rasti ja lisää perustelu. Palveluohjaus tekee tällöin uuden sijoitusehdotuksen tai ottaa yhteyttä.'
     },
@@ -1695,7 +1695,7 @@ export const fi = {
     unitDetailsHeading: 'Päätöksellä näytettävät tiedot',
     preschoolDecisionName: 'Yksikön nimi esiopetuspäätöksellä',
     daycareDecisionName: 'Yksikön nimi varhaiskasvatuspäätöksellä',
-    unitManager: 'Yksikön esimies',
+    unitManager: 'Yksikön johtaja',
     unitAddress: 'Yksikön osoite',
     handlerName: 'Käsittelijän nimi',
     handlerAddress: 'Käsittelijän osoite',
