@@ -152,7 +152,7 @@ SELECT
 FROM accepted_daycare_decision d
 JOIN daycare u ON (d.unit_id = u.id AND u.upload_to_varda = true)
 JOIN varda_child vc ON d.child_id = vc.person_id AND u.oph_organizer_oid = vc.oph_organizer_oid
-LEFT JOIN varda_decision vd ON d.id = vd.evaka_decision_id
+LEFT JOIN varda_decision vd ON d.id = vd.evaka_decision_id AND vd.deleted_at IS NULL
 LEFT JOIN LATERAL (
     SELECT * FROM placement p 
     WHERE p.child_id = vc.person_id 
@@ -180,7 +180,7 @@ private fun getNewDecisions(h: Handle, getChildUrl: (Long) -> String): List<Pair
     val sql =
         """
 $decisionQueryBase
-WHERE vd.id IS NULL OR vd.deleted_at IS NOT NULL
+WHERE vd.id IS NULL
         """.trimIndent()
 
     return h.createQuery(sql)
@@ -268,7 +268,7 @@ SELECT
     latest_sn.shift_care AS shift_care,
     u.provider_type AS provider_type
 FROM placement_without_decision p
-LEFT JOIN varda_decision vd ON p.id = vd.evaka_placement_id
+LEFT JOIN varda_decision vd ON p.id = vd.evaka_placement_id AND vd.deleted_at IS NULL
 JOIN daycare u ON p.unit_id = u.id
 JOIN varda_child vc ON p.child_id = vc.person_id AND u.oph_organizer_oid = vc.oph_organizer_oid
 JOIN LATERAL (

@@ -780,6 +780,34 @@ class VardaDecisionsIntegrationTest : FullApplicationTest() {
         }
     }
 
+    @Test
+    fun `soft deleted decisions are not sent`() {
+        jdbi.handle { h ->
+            val period = ClosedPeriod(LocalDate.now().minusMonths(1), LocalDate.now().plusMonths(1))
+
+            insertPlacementWithDecision(h, child = testChild_1, unitId = testDaycare.id, period = period)
+            updateChildren(h)
+            updateDecisions(h, vardaClient)
+
+            assertEquals(1, getVardaDecisions(h).size)
+            assertEquals(1, mockEndpoint.decisions.size)
+
+            h.createUpdate("update varda_decision set deleted_at = NOW()").execute()
+
+            removeMarkedDecisionsFromVarda(h, vardaClient)
+
+            mockEndpoint.decisions.clear()
+
+            updateDecisions(h, vardaClient)
+            assertEquals(2, getVardaDecisions(h).size)
+            assertEquals(1, mockEndpoint.decisions.size)
+
+            updateDecisions(h, vardaClient)
+            assertEquals(2, getVardaDecisions(h).size)
+            assertEquals(1, mockEndpoint.decisions.size)
+        }
+    }
+
     private fun getVardaDecisions(h: Handle) = h.createQuery("SELECT * FROM varda_decision")
         .map(toVardaDecisionRow)
         .toList()
