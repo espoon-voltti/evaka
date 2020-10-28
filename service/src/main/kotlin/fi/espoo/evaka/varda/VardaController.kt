@@ -64,14 +64,14 @@ fun updateAll(
     organizer: String
 ) {
     jdbi.handle { h ->
+        removeMarkedFeeDataFromVarda(h, client)
+        removeMarkedPlacements(h, client)
+        removeMarkedDecisions(h, client)
         updateOrganizer(h, client, organizer)
         updateUnits(h, client, organizer)
         updateChildren(h, client, organizer)
         updateDecisions(h, client)
         updatePlacements(h, client)
         updateFeeData(h, client, mapper, personService)
-        removeMarkedFeeDataFromVarda(h, client)
-        removeMarkedPlacements(h, client)
-        removeMarkedDecisions(h, client)
     }
 }
