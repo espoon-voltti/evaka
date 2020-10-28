@@ -54,7 +54,7 @@ function TabUnitInformation() {
       <ContentArea opaque>
         <H2 data-qa="unit-name">{unitInformation.data.daycare.name}</H2>
         <Gap size="s" />
-        <H3>Käyttö- ja täyttöaste</H3>
+        <H3>{i18n.unit.occupancies}</H3>
         <Gap size="s" />
         <DataList>
           <div>

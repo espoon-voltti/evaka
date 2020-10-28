@@ -956,6 +956,7 @@ export const fi = {
     create: 'Luo uusi yksikkö',
     openDetails: 'Näytä yksikön kaikki tiedot',
     openMobilePOC: 'Länsäolojen merkkaus (POC)',
+    occupancies: 'Käyttö- ja täyttöaste',
     info: {
       title: 'Yksikön tiedot',
       area: 'Alue',
