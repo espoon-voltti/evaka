@@ -26,7 +26,7 @@ fun updateDecisions(h: Handle, client: VardaClient) {
     sendUpdatedDecisions(h, client)
 }
 
-fun removeMarkedDecisions(h: Handle, client: VardaClient) {
+fun removeMarkedDecisionsFromVarda(h: Handle, client: VardaClient) {
     val decisionIds: List<Long> = getDecisionsToDelete(h)
     decisionIds.forEach { id ->
         if (client.deleteDecision(id)) {

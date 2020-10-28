@@ -65,8 +65,8 @@ fun updateAll(
 ) {
     jdbi.handle { h ->
         removeMarkedFeeDataFromVarda(h, client)
-        removeMarkedPlacements(h, client)
-        removeMarkedDecisions(h, client)
+        removeMarkedPlacementsFromVarda(h, client)
+        removeMarkedDecisionsFromVarda(h, client)
         updateOrganizer(h, client, organizer)
         updateUnits(h, client, organizer)
         updateChildren(h, client, organizer)
