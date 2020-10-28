@@ -1813,6 +1813,36 @@ class DecisionGeneratorIntegrationTest : FullApplicationTest() {
         }
     }
 
+    @Test
+    fun `decision is generated correctly from two identical and concurrent placements`() {
+        val period = Period(LocalDate.of(2020, 1, 1), LocalDate.of(2020, 12, 31))
+        insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
+        insertPlacement(testChild_1.id, period.copy(end = period.start.plusMonths(1)), DAYCARE, testDaycare.id)
+        insertPlacement(
+            testChild_1.id,
+            period.copy(start = period.start.plusMonths(1).plusDays(1)),
+            DAYCARE,
+            testDaycare.id
+        )
+
+        jdbi.handle { generator.handleFamilyUpdate(it, testAdult_1.id, period) }
+
+        val feeDecisions = getAllFeeDecisions()
+        assertEquals(1, feeDecisions.size)
+        feeDecisions.first().let { decision ->
+            assertEquals(FeeDecisionStatus.DRAFT, decision.status)
+            assertEquals(period.start, decision.validFrom)
+            assertEquals(period.end, decision.validTo)
+            assertEquals(28900, decision.totalFee())
+            assertEquals(1, decision.parts.size)
+            decision.parts.first().let { part ->
+                assertEquals(testChild_1.id, part.child.id)
+                assertEquals(testDaycare.id, part.placement.unit)
+                assertEquals(28900, part.fee)
+            }
+        }
+    }
+
     private fun assertEqualEnoughDecisions(expected: List<FeeDecision>, actual: List<FeeDecision>) {
         val createdAt = Instant.now()
         UUID.randomUUID().let { uuid ->

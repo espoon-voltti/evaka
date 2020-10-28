@@ -352,7 +352,7 @@ private fun generateNewFeeDecisions(
             )
         }
         .let { mergePeriods(it, ::decisionContentsAreEqual) }
-        .map { (_, decision) -> decision }
+        .map { (period, decision) -> decision.withValidity(period) }
 }
 
 private fun generateNewValueDecisions(
@@ -451,7 +451,7 @@ private fun generateNewValueDecisions(
             )
         }
         .let { mergePeriods(it, ::decisionContentsAreEqual) }
-        .map { (_, decision) -> decision }
+        .map { (period, decision) -> decision.withValidity(period) }
 }
 
 private fun getUnitsThatAreInvoiced(h: Handle): List<UUID> {
