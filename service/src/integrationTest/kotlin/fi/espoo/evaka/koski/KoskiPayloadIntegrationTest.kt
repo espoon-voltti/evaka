@@ -710,7 +710,7 @@ class KoskiPayloadIntegrationTest : FullApplicationTest() {
                                                     "koodistoUri": "arviointiasteikkoyleissivistava"
                                                 },
                                                 "kuvaus": {
-                                                    "fi": "Keskustelee sujuvasti suomeksi"
+                                                    "fi": "Suorittanut perusopetukseen valmistavan opetuksen esiopetuksen yhteydessä"
                                                 }
                                             }
                                         ],

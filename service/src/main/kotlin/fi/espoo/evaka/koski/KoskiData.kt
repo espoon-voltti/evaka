@@ -206,7 +206,7 @@ data class KoskiActiveDataRaw(
                                 koodiarvo = ArvosanaKoodiarvo.OSALLISTUNUT
                             ),
                             kuvaus = LokalisoituTeksti(
-                                fi = "Keskustelee sujuvasti suomeksi"
+                                fi = "Suorittanut perusopetukseen valmistavan opetuksen esiopetuksen yhteydessä"
                             )
                         )
                     )
