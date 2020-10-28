@@ -679,7 +679,7 @@ class VardaFeeDataIntegrationTest : FullApplicationTest() {
     }
 
     @Test
-    fun `fee data only sent once if it's soft deleted`() {
+    fun `fee data is sent once if it's soft deleted`() {
         jdbi.handle { h ->
             val period = ClosedPeriod(LocalDate.now().minusMonths(1), LocalDate.now().plusMonths(1))
             createDecisionsAndPlacements(h, period = period)
@@ -690,31 +690,83 @@ class VardaFeeDataIntegrationTest : FullApplicationTest() {
                 objectMapper = objectMapper,
                 period = Period(period.start, period.end)
             )
-            updateFeeData(h)
+            updateAll(h)
 
             assertEquals(1, getVardaFeeDataRows(h).size)
             assertEquals(0, getSoftDeletedVardaFeeData(h).size)
 
+            h.createUpdate("UPDATE varda_placement SET should_be_deleted = true").execute()
+            h.createUpdate("UPDATE varda_decision SET should_be_deleted = true").execute()
             h.createUpdate("UPDATE varda_fee_data SET should_be_deleted = true").execute()
+            h.createUpdate("UPDATE daycare SET oph_organizer_oid = '1.22.333.4444.1' where id = :id").bind("id", testDaycare.id).execute()
 
+            removeMarkedPlacementsFromVarda(h, vardaClient)
+            removeMarkedDecisionsFromVarda(h, vardaClient)
             removeMarkedFeeDataFromVarda(h, vardaClient)
-            assertEquals(1, getSoftDeletedVardaFeeData(h).size)
-            assertEquals(1, getVardaFeeDataRows(h).size)
             mockEndpoint.feeData.clear()
 
-            updateFeeData(h)
+            updateAll(h)
             assertEquals(2, getVardaFeeDataRows(h).size)
+            assertEquals(1, getSoftDeletedVardaFeeData(h).size)
             assertEquals(1, mockEndpoint.feeData.size)
 
-            updateFeeData(h)
+            updateAll(h)
             assertEquals(2, getVardaFeeDataRows(h).size)
             assertEquals(1, mockEndpoint.feeData.size)
+        }
+    }
+
+    @Test
+    fun `fee data is not sent multiple times for multiple fee decisions`() {
+        jdbi.handle { h ->
+            val period = ClosedPeriod(LocalDate.now().minusMonths(1), LocalDate.now().plusMonths(1))
+            val period2 = ClosedPeriod(period.start.minusMonths(6), period.start.minusMonths(1))
+            createDecisionsAndPlacements(h, period = period)
+            createDecisionsAndPlacements(h, period = period2)
+            insertFeeDecision(
+                h = h,
+                status = FeeDecisionStatus.SENT,
+                children = listOf(testChild_1),
+                objectMapper = objectMapper,
+                period = Period(period.start, period.end)
+            )
+            insertFeeDecision(
+                h = h,
+                status = FeeDecisionStatus.SENT,
+                children = listOf(testChild_1),
+                objectMapper = objectMapper,
+                period = Period(period2.start, period2.end)
+            )
+            updateAll(h)
+
+            assertEquals(2, getVardaFeeDataRows(h).size)
+            assertEquals(0, getSoftDeletedVardaFeeData(h).size)
+
+            h.createUpdate("UPDATE varda_placement SET should_be_deleted = true").execute()
+            h.createUpdate("UPDATE varda_decision SET should_be_deleted = true").execute()
+            h.createUpdate("UPDATE varda_fee_data SET should_be_deleted = true").execute()
+            h.createUpdate("UPDATE daycare SET oph_organizer_oid = '1.22.333.4444.1' where id = :id").bind("id", testDaycare.id).execute()
+
+            removeMarkedPlacementsFromVarda(h, vardaClient)
+            removeMarkedDecisionsFromVarda(h, vardaClient)
+            removeMarkedFeeDataFromVarda(h, vardaClient)
+            mockEndpoint.feeData.clear()
+
+            updateAll(h)
+            assertEquals(4, getVardaFeeDataRows(h).size)
+            assertEquals(2, getSoftDeletedVardaFeeData(h).size)
+            assertEquals(2, mockEndpoint.feeData.size)
+
+            updateAll(h)
+            assertEquals(4, getVardaFeeDataRows(h).size)
+            assertEquals(2, mockEndpoint.feeData.size)
         }
     }
 
     private fun updateAll(h: Handle) {
         updateChildren(h, vardaClient, vardaOrganizerName)
         updateDecisions(h, vardaClient)
+        updatePlacements(h, vardaClient)
         updateFeeData(h)
     }
 

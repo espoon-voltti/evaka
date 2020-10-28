@@ -122,8 +122,8 @@ private fun getStaleFeeData(
     val placementTypes = listOf(PlacementType.DAYCARE, PlacementType.FIVE_YEARS_OLD_DAYCARE, PlacementType.PRESCHOOL_WITH_DAYCARE, PlacementType.PREPARATORY_WITH_DAYCARE).toTypedArray()
     // language=SQL
     val sql =
-        """
-         $feeDataQueryBase
+        """    
+        $feeDataQueryBase
         WHERE vfd.id IS NULL
             AND fdp.placement_type = ANY(:placementTypes)
         """.trimIndent()
@@ -230,7 +230,7 @@ private val feeDataQueryBase =
             fdp.placement_type,
             now()                               AS check_timestamp
         FROM varda_placement vp
-            JOIN placement p ON vp.evaka_placement_id = p.id
+            JOIN placement p ON vp.evaka_placement_id = p.id AND vp.deleted_at IS NULL
             LEFT JOIN varda_fee_data vfd ON p.id = vfd.evaka_placement_id AND vfd.deleted_at IS NULL
             JOIN fee_decision_part fdp ON fdp.child = p.child_id
             JOIN fee_decision fd ON (fdp.fee_decision_id = fd.id AND daterange(p.start_date, p.end_date, '[]') && daterange(fd.valid_from, fd.valid_to, '[]') AND fd.status = :sentStatus)

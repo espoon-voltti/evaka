@@ -284,7 +284,7 @@ private fun getNewDerivedDecisions(h: Handle, getChildUrl: (Long) -> String): Li
     val sql =
         """
 $derivedDecisionQueryBase
-WHERE vd.id IS NULL OR vd.deleted_at IS NOT NULL
+WHERE vd.id IS NULL
         """.trimIndent()
 
     return h.createQuery(sql)
