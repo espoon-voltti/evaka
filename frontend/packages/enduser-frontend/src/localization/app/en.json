@@ -448,7 +448,7 @@
       "requestAnotherUnit": {
         "label": "Lapseni on jo varhaiskasvatuksessa ja haluan tehdä siirtohakemuksen toiseen toimipisteeseen.",
         "instructions": {
-          "text": "Kun lapsella on jo paikka Espoon kunnallisessa varhaiskasvatuksessa ja lapselle halutaan hakea varhaiskasvatuspaikkaa toisesta toimipisteestä, tehdään siirtohakemus. Siirtohakemus on voimassa vuoden hakemuksen jättöpäivämäärästä. Sillä ei ole käsittelyaikaa vaan siirtopäätöksiä tehdään hakija- ja paikkatilanteen sen mahdollistaessa. Voit halutessasi antaa siirtoa koskien tietoa lisätieto-osiossa. Mikäli lapselle halutaan hakea siirtoa toiseen ryhmään saman toimipisteen sisällä, otathan yhteyttä nykyisen toimipisteen esimieheen."
+          "text": "Kun lapsella on jo paikka Espoon kunnallisessa varhaiskasvatuksessa ja lapselle halutaan hakea varhaiskasvatuspaikkaa toisesta toimipisteestä, tehdään siirtohakemus. Siirtohakemus on voimassa vuoden hakemuksen jättöpäivämäärästä. Sillä ei ole käsittelyaikaa vaan siirtopäätöksiä tehdään hakija- ja paikkatilanteen sen mahdollistaessa. Voit halutessasi antaa siirtoa koskien tietoa lisätieto-osiossa. Mikäli lapselle halutaan hakea siirtoa toiseen ryhmään saman toimipisteen sisällä, otathan yhteyttä nykyisen toimipisteen johtajaan."
         }
       },
       "service": {
@@ -599,7 +599,7 @@
       "requestAnotherUnit": {
         "label": "Lapseni on jo esiopetuksessa / varhaiskasvatuksessa ja haluan tehdä siirtohakemuksen toiseen toimipisteeseen.",
         "instructions": {
-          "text": "Kun lapsella on jo paikka Espoon kunnallisessa varhaiskasvatuksessa ja lapselle halutaan hakea varhaiskasvatuspaikkaa toisesta toimipisteestä, tehdään siirtohakemus. Siirtohakemus on voimassa vuoden hakemuksen jättöpäivämäärästä. Sillä ei ole käsittelyaikaa vaan siirtopäätöksiä tehdään hakija- ja paikkatilanteen sen mahdollistaessa. Voit halutessasi antaa siirtoa koskien tietoa lisätieto-osiossa. Mikäli lapselle halutaan hakea siirtoa toiseen kerhoryhmään saman toimipisteen sisällä, otathan yhteyttä nykyisen toimipisteen esimieheen."
+          "text": "Kun lapsella on jo paikka Espoon kunnallisessa varhaiskasvatuksessa ja lapselle halutaan hakea varhaiskasvatuspaikkaa toisesta toimipisteestä, tehdään siirtohakemus. Siirtohakemus on voimassa vuoden hakemuksen jättöpäivämäärästä. Sillä ei ole käsittelyaikaa vaan siirtopäätöksiä tehdään hakija- ja paikkatilanteen sen mahdollistaessa. Voit halutessasi antaa siirtoa koskien tietoa lisätieto-osiossa. Mikäli lapselle halutaan hakea siirtoa toiseen kerhoryhmään saman toimipisteen sisällä, otathan yhteyttä nykyisen toimipisteen johtajaan."
         }
       },
       "service": {
