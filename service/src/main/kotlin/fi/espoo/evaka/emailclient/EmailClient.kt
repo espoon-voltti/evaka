@@ -22,8 +22,10 @@ import org.springframework.core.env.Environment
 private val logger = KotlinLogging.logger {}
 
 class EmailClient(private val client: AmazonSimpleEmailService, env: Environment) : IEmailClient {
-    private val finnishApplicationAddress = env.getProperty("application.email.from.fi", "")
-    private val swedishApplicationAddress = env.getProperty("application.email.from.sv", "")
+    private val senderAddressFi = env.getProperty("application.email.address.fi", "")
+    private val senderNameFi = env.getProperty("application.email.name.fi", "")
+    private val senderAddressSv = env.getProperty("application.email.address.sv", "")
+    private val senderNameSv = env.getProperty("application.email.name.sv", "")
 
     override fun sendApplicationEmail(personId: VolttiIdentifier, toAddress: String?, language: Language) {
         val charset = "UTF-8"
@@ -31,8 +33,8 @@ class EmailClient(private val client: AmazonSimpleEmailService, env: Environment
         val htmlBody = getHtml(language)
         val textBody = getText(language)
         val fromAddress = when (language) {
-            Language.fi -> finnishApplicationAddress
-            Language.sv -> swedishApplicationAddress
+            Language.fi -> "$senderNameFi <$senderAddressFi>"
+            Language.sv -> "$senderNameSv <$senderAddressSv>"
         }
 
         logger.info { "Sending application email (personId: $personId)" }
