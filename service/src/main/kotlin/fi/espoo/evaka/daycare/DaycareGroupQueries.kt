@@ -8,6 +8,7 @@ import fi.espoo.evaka.daycare.dao.PGConstants.maxDate
 import fi.espoo.evaka.daycare.service.DaycareGroup
 import fi.espoo.evaka.shared.db.bindNullable
 import fi.espoo.evaka.shared.domain.ClosedPeriod
+import fi.espoo.evaka.shared.domain.NotFound
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.mapTo
 import java.time.LocalDate
@@ -44,6 +45,16 @@ RETURNING id, daycare_id, name, start_date, NULL::date AS end_date, true AS dele
     .mapTo<DaycareGroup>()
     .asSequence()
     .first()
+
+fun Handle.renameGroup(groupId: UUID, name: String) {
+    // language=SQL
+    val sql = "UPDATE daycare_group SET name = :name WHERE id = :id"
+    this.createUpdate(sql)
+        .bind("id", groupId)
+        .bind("name", name)
+        .execute()
+        .let { if (it != 1) throw NotFound("Group $groupId not found") }
+}
 
 fun Handle.getDaycareGroup(groupId: UUID): DaycareGroup? =
     createDaycareGroupQuery(groupId = groupId, daycareId = null, period = null)

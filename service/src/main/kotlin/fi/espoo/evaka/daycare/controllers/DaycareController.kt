@@ -14,6 +14,7 @@ import fi.espoo.evaka.daycare.createDaycare
 import fi.espoo.evaka.daycare.getDaycare
 import fi.espoo.evaka.daycare.getDaycareStub
 import fi.espoo.evaka.daycare.getDaycares
+import fi.espoo.evaka.daycare.renameGroup
 import fi.espoo.evaka.daycare.service.CaretakerAmount
 import fi.espoo.evaka.daycare.service.CaretakerService
 import fi.espoo.evaka.daycare.service.DaycareCapacityStats
@@ -109,6 +110,25 @@ class DaycareController(
             .let { created(it, URI.create("/$daycareId/groups/${it.id}")) }
     }
 
+    data class GroupUpdateRequest(
+        val name: String
+    )
+    @PutMapping("/{daycareId}/groups/{groupId}")
+    fun updateGroup(
+        user: AuthenticatedUser,
+        @PathVariable("daycareId") daycareId: UUID,
+        @PathVariable("groupId") groupId: UUID,
+        @RequestBody body: GroupUpdateRequest
+    ): ResponseEntity<Unit> {
+        Audit.UnitGroupsUpdate.log(targetId = groupId)
+        acl.getRolesForUnitGroup(user, groupId)
+            .requireOneOfRoles(ADMIN, SERVICE_WORKER, UNIT_SUPERVISOR)
+
+        jdbi.transaction { it.renameGroup(groupId, body.name) }
+
+        return noContent()
+    }
+
     @DeleteMapping("/{daycareId}/groups/{groupId}")
     fun deleteGroup(
         user: AuthenticatedUser,
@@ -116,7 +136,7 @@ class DaycareController(
         @PathVariable("groupId") groupId: UUID
     ): ResponseEntity<Unit> {
         Audit.UnitGroupsDelete.log(targetId = groupId)
-        acl.getRolesForUnit(user, daycareId)
+        acl.getRolesForUnitGroup(user, groupId)
             .requireOneOfRoles(ADMIN, SERVICE_WORKER, UNIT_SUPERVISOR)
 
         daycareService.deleteGroup(daycareId, groupId)
