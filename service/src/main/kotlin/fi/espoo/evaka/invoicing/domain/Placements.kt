@@ -17,6 +17,15 @@ data class PermanentPlacement(
 
 data class TemporaryPlacement(override val unit: UUID, val partDay: Boolean) : Placement(unit)
 
+data class PermanentPlacementWithHours(
+    val unit: UUID,
+    val type: PlacementType,
+    val serviceNeed: ServiceNeed,
+    val hours: Double?
+) {
+    fun withoutHours() = PermanentPlacement(this.unit, this.type, this.serviceNeed)
+}
+
 sealed class UnitData {
     @JsonIgnoreProperties(ignoreUnknown = true)
     data class JustId(val id: UUID) : UnitData()

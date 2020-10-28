@@ -25,19 +25,23 @@ import fi.espoo.evaka.invoicing.domain.FinanceDecision
 import fi.espoo.evaka.invoicing.domain.FinanceDecisionPart
 import fi.espoo.evaka.invoicing.domain.FridgeFamily
 import fi.espoo.evaka.invoicing.domain.Income
-import fi.espoo.evaka.invoicing.domain.PermanentPlacement
+import fi.espoo.evaka.invoicing.domain.PermanentPlacementWithHours
 import fi.espoo.evaka.invoicing.domain.PersonData
 import fi.espoo.evaka.invoicing.domain.PlacementType
 import fi.espoo.evaka.invoicing.domain.Pricing
 import fi.espoo.evaka.invoicing.domain.ServiceNeed
+import fi.espoo.evaka.invoicing.domain.VoucherValue
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecision
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionPart
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
 import fi.espoo.evaka.invoicing.domain.calculateBaseFee
 import fi.espoo.evaka.invoicing.domain.calculateFeeBeforeFeeAlterations
 import fi.espoo.evaka.invoicing.domain.calculateServiceNeed
+import fi.espoo.evaka.invoicing.domain.calculateVoucherValue
 import fi.espoo.evaka.invoicing.domain.decisionContentsAreEqual
+import fi.espoo.evaka.invoicing.domain.getAgeCoefficient
 import fi.espoo.evaka.invoicing.domain.getECHAIncrease
+import fi.espoo.evaka.invoicing.domain.getServiceCoefficient
 import fi.espoo.evaka.invoicing.domain.getSiblingDiscountPercent
 import fi.espoo.evaka.invoicing.domain.toFeeAlterationsWithEffects
 import fi.espoo.evaka.pis.getParentships
@@ -207,6 +211,7 @@ private fun handleValueDecisionChanges(
 ) {
     val familySize = 1 + (partner?.let { 1 } ?: 0) + children.size
     val prices = getPricing(h, from)
+    val voucherValues = h.getVoucherValues(from)
     val incomes = getIncomesFrom(h, objectMapper, listOfNotNull(headOfFamily.id, partner?.id), from)
     val feeAlterations =
         getFeeAlterationsFrom(h, children.map { it.id }, from) + addECHAFeeAlterations(children, incomes)
@@ -222,6 +227,7 @@ private fun handleValueDecisionChanges(
             familySize,
             placements,
             prices,
+            voucherValues,
             incomes,
             feeAlterations,
             serviceVoucherUnits
@@ -261,7 +267,7 @@ private fun generateNewFeeDecisions(
     headOfFamily: PersonData.JustId,
     partner: PersonData.JustId?,
     familySize: Int,
-    allPlacements: List<Pair<PersonData.WithDateOfBirth, List<Pair<Period, PermanentPlacement>>>>,
+    allPlacements: List<Pair<PersonData.WithDateOfBirth, List<Pair<Period, PermanentPlacementWithHours>>>>,
     prices: List<Pair<Period, Pricing>>,
     incomes: List<Income>,
     feeAlterations: List<FeeAlteration>,
@@ -318,14 +324,14 @@ private fun generateNewFeeDecisions(
                         }
 
                         val siblingDiscount = getSiblingDiscountPercent(index + 1)
-                        val feeBeforeAlterations = calculateFeeBeforeFeeAlterations(baseFee, placement, siblingDiscount)
+                        val feeBeforeAlterations = calculateFeeBeforeFeeAlterations(baseFee, placement.withoutHours(), siblingDiscount)
                         val relevantFeeAlterations = feeAlterations.filter {
                             it.personId == child.id && Period(it.validFrom, it.validTo).contains(period)
                         }
 
                         FeeDecisionPart(
                             child,
-                            placement,
+                            placement.withoutHours(),
                             baseFee,
                             siblingDiscount,
                             feeBeforeAlterations,
@@ -360,23 +366,30 @@ private fun generateNewValueDecisions(
     headOfFamily: PersonData.JustId,
     partner: PersonData.JustId?,
     familySize: Int,
-    allPlacements: List<Pair<PersonData.WithDateOfBirth, List<Pair<Period, PermanentPlacement>>>>,
+    allPlacements: List<Pair<PersonData.WithDateOfBirth, List<Pair<Period, PermanentPlacementWithHours>>>>,
     prices: List<Pair<Period, Pricing>>,
+    voucherValues: List<Pair<Period, Int>>,
     incomes: List<Income>,
     feeAlterations: List<FeeAlteration>,
     serviceVoucherUnits: List<UUID>
 ): List<VoucherValueDecision> {
     val periods = incomes.map { Period(it.validFrom, it.validTo) } +
         prices.map { it.first } +
-        allPlacements.flatMap { (_, placements) ->
-            placements.map { it.first }
+        allPlacements.flatMap { (child, placements) ->
+            placements.map { it.first } + listOf(
+                Period(child.dateOfBirth, child.dateOfBirth.plusYears(3).minusDays(1)),
+                Period(child.dateOfBirth.plusYears(3), null)
+            )
         } +
         feeAlterations.map { Period(it.validFrom, it.validTo) }
 
     return asDistinctPeriods(periods, Period(from, null))
         .map { period ->
             val price = prices.find { it.first.contains(period) }?.second
-                ?: error("Missing price for period ${period.start} - ${period.end}, cannot generate fee decision")
+                ?: error("Missing price for period ${period.start} - ${period.end}, cannot generate voucher value decision")
+
+            val baseValue = voucherValues.find { it.first.contains(period) }?.second
+                ?: error("Missing voucher value for period ${period.start} - ${period.end}, cannot generate voucher value decision")
 
             val income = incomes
                 .find { headOfFamily.id == it.personId && Period(it.validFrom, it.validTo).contains(period) }
@@ -411,17 +424,16 @@ private fun generateNewValueDecisions(
                             return@mapIndexed null
                         }
 
-                        val serviceNeedIsFree = placement.serviceNeed == ServiceNeed.LTE_0
-                        if (serviceNeedIsFree) {
-                            return@mapIndexed null
-                        }
-
                         val siblingDiscount = getSiblingDiscountPercent(index + 1)
                         val coPaymentBeforeAlterations =
-                            calculateFeeBeforeFeeAlterations(baseCoPayment, placement, siblingDiscount)
+                            calculateFeeBeforeFeeAlterations(baseCoPayment, placement.withoutHours(), siblingDiscount)
                         val relevantFeeAlterations = feeAlterations.filter {
                             it.personId == child.id && Period(it.validFrom, it.validTo).contains(period)
                         }
+
+                        val ageCoefficient = getAgeCoefficient(period, child.dateOfBirth)
+                        val serviceCoefficient = getServiceCoefficient(placement)
+                        val value = calculateVoucherValue(baseValue, ageCoefficient, serviceCoefficient)
 
                         VoucherValueDecisionPart(
                             child,
@@ -429,7 +441,11 @@ private fun generateNewValueDecisions(
                             baseCoPayment,
                             siblingDiscount,
                             coPaymentBeforeAlterations,
-                            toFeeAlterationsWithEffects(coPaymentBeforeAlterations, relevantFeeAlterations)
+                            toFeeAlterationsWithEffects(coPaymentBeforeAlterations, relevantFeeAlterations),
+                            baseValue,
+                            ageCoefficient,
+                            serviceCoefficient,
+                            value
                         )
                     }.filterNotNull()
             } else {
@@ -537,10 +553,10 @@ private fun getPaidPlacements(
     h: Handle,
     from: LocalDate,
     children: List<PersonData.WithDateOfBirth>
-): List<Pair<PersonData.WithDateOfBirth, List<Pair<Period, PermanentPlacement>>>> {
+): List<Pair<PersonData.WithDateOfBirth, List<Pair<Period, PermanentPlacementWithHours>>>> {
     return children.map { child ->
         val placements = getActivePaidPlacements(h, child.id, from)
-        if (placements.isEmpty()) return@map child to listOf<Pair<Period, PermanentPlacement>>()
+        if (placements.isEmpty()) return@map child to listOf<Pair<Period, PermanentPlacementWithHours>>()
 
         val serviceNeeds = getServiceNeedsByChildDuringPeriod(h, child.id, from, null)
         val placementsWithServiceNeeds = addServiceNeedsToPlacements(child.dateOfBirth, placements, serviceNeeds)
@@ -568,7 +584,7 @@ private fun addServiceNeedsToPlacements(
     dateOfBirth: LocalDate,
     placements: List<Placement>,
     serviceNeeds: List<fi.espoo.evaka.serviceneed.ServiceNeed>
-): List<Pair<Period, PermanentPlacement>> {
+): List<Pair<Period, PermanentPlacementWithHours>> {
     val yearTheChildTurns5 = dateOfBirth.year + 5
     val fiveYearOldTerm = Period(LocalDate.of(yearTheChildTurns5, 8, 1), LocalDate.of(yearTheChildTurns5 + 1, 7, 31))
 
@@ -582,10 +598,11 @@ private fun addServiceNeedsToPlacements(
                 else {
                     val isFiveYearOld = fiveYearOldTerm.contains(period)
                     val placementType = getPlacementType(placement, isFiveYearOld)
-                    period to PermanentPlacement(
+                    period to PermanentPlacementWithHours(
                         unit = placement.unitId,
                         type = placementType,
-                        serviceNeed = calculateServiceNeed(placementType, serviceNeed?.hoursPerWeek)
+                        serviceNeed = calculateServiceNeed(placementType, serviceNeed?.hoursPerWeek),
+                        hours = serviceNeed?.hoursPerWeek
                     )
                 }
             }
@@ -741,4 +758,15 @@ internal fun <Part : FinanceDecisionPart, Decision : FinanceDecision<Part, Decis
     val filteredDrafts = mergeAndFilterUnnecessaryDrafts(keptDrafts, allUpdatedActives)
 
     return Pair(updatedActives, filteredDrafts)
+}
+
+private fun Handle.getVoucherValues(from: LocalDate): List<Pair<Period, Int>> {
+    // language=sql
+    val sql = "SELECT * FROM voucher_value WHERE validity && daterange(:from, null, '[]')"
+
+    return createQuery(sql)
+        .bind("from", from)
+        .mapTo<VoucherValue>()
+        .map { it.validity to it.voucherValue }
+        .toList()
 }

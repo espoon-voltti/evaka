@@ -17,6 +17,7 @@ import fi.espoo.evaka.invoicing.domain.FeeAlteration
 import fi.espoo.evaka.invoicing.domain.IncomeEffect
 import fi.espoo.evaka.invoicing.domain.IncomeType
 import fi.espoo.evaka.invoicing.domain.IncomeValue
+import fi.espoo.evaka.invoicing.domain.VoucherValue
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.auth.UserRole
 import org.intellij.lang.annotations.Language
@@ -576,6 +577,11 @@ INSERT INTO pricing (id, valid_from, valid_to, multiplier, max_threshold_differe
 VALUES (:id, :validFrom, :validTo, :multiplier, :maxThresholdDifference, :minThreshold2, :minThreshold3, :minThreshold4, :minThreshold5, :minThreshold6, :thresholdIncrease6Plus)
 RETURNING id
     """.trimIndent()
+)
+
+fun Handle.insertTestVoucherValue(voucherValue: VoucherValue) = insertTestDataRow(
+    voucherValue,
+    "INSERT INTO voucher_value (id, validity, voucher_value) VALUES (:id, :validity, :voucherValue)"
 )
 
 fun Handle.insertTestDaycareGroup(group: DevDaycareGroup) = insertTestDataRow(

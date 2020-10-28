@@ -844,6 +844,7 @@ INSERT INTO daycare (id, name, type, care_area_id, phone, url, created, updated,
 
 INSERT INTO pricing (id, valid_from, valid_to, multiplier, max_threshold_difference, min_threshold_2, min_threshold_3, min_threshold_4, min_threshold_5, min_threshold_6, threshold_increase_6_plus) VALUES ('51c2ec8a-bc76-40b3-9b5e-abba4042e361', '2000-01-01', '2020-07-31', 0.1070, 269700, 210200, 271300, 308000, 344700, 381300, 14200);
 INSERT INTO pricing (id, valid_from, valid_to, multiplier, max_threshold_difference, min_threshold_2, min_threshold_3, min_threshold_4, min_threshold_5, min_threshold_6, threshold_increase_6_plus) VALUES ('236e3ee8-a97f-11ea-889d-eb365ac53e7c', '2020-08-01', NULL, 0.1070, 268700, 213600, 275600, 312900, 350200, 387400, 14200);
+INSERT INTO voucher_value (id, validity, voucher_value) VALUES ('084314dc-ed7f-4725-92f2-5c220bb4bb7e', daterange('2000-01-01', NULL, '[]'), 87000);
 
 
 
