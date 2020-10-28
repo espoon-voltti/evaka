@@ -268,7 +268,9 @@ function Reports() {
               <Description>{i18n.reports.serviceNeeds.description}</Description>
             </ReportItem>
           </RequireRole>
-          <RequireRole oneOf={['ADMIN', 'SERVICE_WORKER', 'DIRECTOR']}>
+          <RequireRole
+            oneOf={['ADMIN', 'SERVICE_WORKER', 'DIRECTOR', 'UNIT_SUPERVISOR']}
+          >
             <ReportItem>
               <TitleRow>
                 <RoundIcon

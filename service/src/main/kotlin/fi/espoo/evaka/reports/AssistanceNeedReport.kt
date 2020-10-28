@@ -6,10 +6,12 @@ package fi.espoo.evaka.reports
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.daycare.controllers.utils.ok
+import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.config.Roles.ADMIN
 import fi.espoo.evaka.shared.config.Roles.DIRECTOR
 import fi.espoo.evaka.shared.config.Roles.SERVICE_WORKER
+import fi.espoo.evaka.shared.config.Roles.UNIT_SUPERVISOR
 import fi.espoo.evaka.shared.db.getUUID
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.http.ResponseEntity
@@ -21,19 +23,23 @@ import java.time.LocalDate
 import java.util.UUID
 
 @RestController
-class AssistanceNeedsReportController(private val jdbc: NamedParameterJdbcTemplate) {
+class AssistanceNeedsReportController(
+    private val jdbc: NamedParameterJdbcTemplate,
+    private val acl: AccessControlList
+) {
     @GetMapping("/reports/assistance-needs")
     fun getAssistanceNeedReport(
         user: AuthenticatedUser,
         @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) date: LocalDate
     ): ResponseEntity<List<AssistanceNeedReportRow>> {
         Audit.AssistanceNeedsReportRead.log()
-        user.requireOneOfRoles(SERVICE_WORKER, ADMIN, DIRECTOR)
-        return getAssistanceNeedReportRows(jdbc, date).let(::ok)
+        user.requireOneOfRoles(SERVICE_WORKER, ADMIN, DIRECTOR, UNIT_SUPERVISOR)
+        val units = acl.getAuthorizedUnits(user)
+        return getAssistanceNeedReportRows(jdbc, date, units.ids).let(::ok)
     }
 }
 
-fun getAssistanceNeedReportRows(jdbc: NamedParameterJdbcTemplate, date: LocalDate): List<AssistanceNeedReportRow> {
+fun getAssistanceNeedReportRows(jdbc: NamedParameterJdbcTemplate, date: LocalDate, units: Collection<UUID>? = null): List<AssistanceNeedReportRow> {
     // language=sql
     val sql =
         """
@@ -64,6 +70,7 @@ fun getAssistanceNeedReportRows(jdbc: NamedParameterJdbcTemplate, date: LocalDat
         LEFT JOIN daycare_group_placement gpl ON gpl.daycare_group_id = g.id AND daterange(gpl.start_date, gpl.end_date, '[]') @> :target_date
         LEFT JOIN placement pl ON pl.id = gpl.daycare_placement_id
         LEFT JOIN assistance_need an on an.child_id = pl.child_id AND daterange(an.start_date, an.end_date, '[]') @> :target_date
+        ${if (units != null) "WHERE u.id IN (:units)" else ""}
         GROUP BY ca.name, u.id, u.name, g.id, g.name, u.type, u.provider_type
         ORDER BY ca.name, u.name, g.name;
         """.trimIndent()
@@ -71,7 +78,7 @@ fun getAssistanceNeedReportRows(jdbc: NamedParameterJdbcTemplate, date: LocalDat
     @Suppress("UNCHECKED_CAST")
     return jdbc.query(
         sql,
-        mapOf("target_date" to date)
+        mapOf("target_date" to date, "units" to units)
     ) { rs, _ ->
         AssistanceNeedReportRow(
             careAreaName = rs.getString("care_area_name"),
