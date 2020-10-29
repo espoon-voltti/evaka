@@ -419,7 +419,7 @@ fun Handle.getMissingGroupPlacements(
         FROM gaps g
         JOIN placement pl ON pl.id = g.placement_id
         JOIN person c on c.id = pl.child_id
-        WHERE pl.end_date > '2019-03-01'::date AND pl.unit_id = :unitId
+        WHERE pl.end_date > '2020-03-01'::date AND pl.unit_id = :unitId
         
         UNION ALL 
         
@@ -435,7 +435,7 @@ fun Handle.getMissingGroupPlacements(
             TRUE AS backup
         FROM backup_care bc
         JOIN person c on c.id = bc.child_id
-        WHERE bc.end_date > '2019-03-01'::date AND bc.unit_id = :unitId AND bc.group_id IS NULL
+        WHERE bc.end_date > '2020-03-01'::date AND bc.unit_id = :unitId AND bc.group_id IS NULL
         """.trimIndent()
 
     return createQuery(sql)
