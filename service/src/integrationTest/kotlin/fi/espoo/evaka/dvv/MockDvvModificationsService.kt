@@ -33,12 +33,14 @@ class MockDvvModificationsService(private val mapper: ObjectMapper) {
         @RequestBody body: ModificationsRequest
     ): ResponseEntity<String> {
         logger.info { "Mock dvv POST /muutokset called, body: $body" }
+
+        val nextToken = body.viimeisinKirjausavain.toInt() + 1
         return ResponseEntity.ok(
             """
             {
-              "viimeisinKirjausavain": ${body.viimeisinKirjausavain.toInt() + 1},
+              "viimeisinKirjausavain": $nextToken,
               "muutokset": [${getModifications(body.hetulista)}],
-              "ajanTasalla": true
+              "ajanTasalla": ${nextToken > 0}
             }
         """
         )
@@ -116,9 +118,9 @@ val modifications = mapOf<String, String>(
   "muutospv": "2019-09-24T21:00:00.000Z"
 }
     """.trimIndent(),
-    "010180-9999" to """
+    "010179-9992" to """
 {
-  "henkilotunnus": "010180-9999",
+  "henkilotunnus": "010179-9992",
   "tietoryhmat": [
     {
       "tietoryhma": "HENKILON_NIMI",
@@ -127,8 +129,8 @@ val modifications = mapOf<String, String>(
         "arvo": "2019-09-25",
         "tarkkuus": "PAIVA"
       },
-      "etunimi": "Etunimi5_muutos",
-      "sukunimi": "Sukunimi5"
+      "etunimi": "Uusinimi",
+      "sukunimi": "Urkki"
     }
   ],
   "muutospv": "2019-09-24T21:00:00.000Z"
@@ -199,6 +201,19 @@ val modifications = mapOf<String, String>(
         "tarkkuus": "PAIVA"
       },
       "muutosattribuutti": "MUUTETTU"
+    },
+    {
+      "tietoryhma": "KOTIKUNTA",
+      "kuntakoodi": "049",
+      "kuntaanMuuttopv": {
+        "arvo": "1986-06-02",
+        "tarkkuus": "PAIVA"
+      },
+      "kuntaanMuuttoPv": {
+        "arvo": "1986-06-02",
+        "tarkkuus": "PAIVA"
+      },
+      "muutosattribuutti": "LISATIETO"
     }
   ],
   "muutospv": "2019-09-24T21:00:00.000Z"
@@ -422,7 +437,21 @@ val modifications = mapOf<String, String>(
         "fi": "ESPOO",
         "sv": "ESBO"
       }
-    }
+    },
+    {
+      "tietoryhma": "VAKINAINEN_KOTIMAINEN_ASUINPAIKKATUNNUS",
+      "muutosattribuutti": "LISATTY",
+      "rakennustunnus": "123456789V",
+      "osoitenumero": 1,
+      "huoneistonumero": "033",
+      "huoneistokirjain": "B",
+      "kuntakoodi": "049",
+      "alkupv": {
+        "arvo": "2020-10-12",
+        "tarkkuus": "PAIVA"
+      },
+      "asuinpaikantunnus": "123456789V1B033 "
+    }    
   ],
   "muutospv": "2020-10-01T04:38:04.394Z"
 }

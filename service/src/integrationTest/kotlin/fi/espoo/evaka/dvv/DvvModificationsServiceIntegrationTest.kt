@@ -89,6 +89,7 @@ class DvvModificationsServiceIntegrationTest : DvvModificationsServiceIntegratio
         assertEquals("Uusitie 17 A 2", modifiedPerson.streetAddress)
         assertEquals("02940", modifiedPerson.postalCode)
         assertEquals("ESPOO", modifiedPerson.postOffice)
+        assertEquals("123456789V1B033 ", modifiedPerson.residenceCode)
     }
 
     @Test
@@ -128,6 +129,39 @@ class DvvModificationsServiceIntegrationTest : DvvModificationsServiceIntegratio
         val dvvCaretaker = h.getPersonBySSN("060180-999J")!!
         assertEquals("Harri", dvvCaretaker.firstName)
         assertEquals("Huoltaja", dvvCaretaker.lastName)
+    }
+
+    @Test
+    fun `name changed`() = jdbi.handle { h ->
+        val SSN = "010179-9992"
+        var personWithOldName: DevPerson = testPerson.copy(firstName = "Ville", lastName = "Vanhanimi", ssn = SSN)
+        val personWithNewName = testPerson.copy(firstName = "Urkki", lastName = "Uusinimi", ssn = SSN)
+
+        createTestPerson(personWithOldName)
+        createVtjPerson(personWithNewName)
+
+        dvvModificationsService.updatePersonsFromDvv(h, listOf(SSN))
+        val updatedPerson = h.getPersonBySSN(SSN)!!
+        assertEquals("Urkki", updatedPerson.firstName)
+        assertEquals("Uusinimi", updatedPerson.lastName)
+    }
+
+    @Test
+    fun `paging works`() = jdbi.handle { h ->
+        // The mock server has been rigged so that if the token is negative, it will return the requested batch with
+        // ajanTasalla=false and next token = token + 1 causing the dvv client to do a request for the subsequent page,
+        // until token is 0 and then it will return ajanTasalla=true
+        // So if the paging works correctly there should Math.abs(original_token) + 1 identical records
+        resetDatabase(h)
+        storeDvvModificationToken(h, "10000", "-2", 0, 0)
+        try {
+            createTestPerson(testPerson.copy(ssn = "010180-999A"))
+            assertEquals(3, dvvModificationsService.updatePersonsFromDvv(h, listOf("010180-999A")))
+            assertEquals("1", getNextDvvModificationToken(h))
+            assertEquals(LocalDate.parse("2019-07-30"), h.getPersonBySSN("010180-999A")?.dateOfDeath)
+        } finally {
+            deleteDvvModificationToken(h, "0")
+        }
     }
 
     val testPerson = DevPerson(

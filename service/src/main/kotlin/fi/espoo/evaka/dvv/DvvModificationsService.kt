@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: 2017-2020 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
+
 package fi.espoo.evaka.dvv
 
 import fi.espoo.evaka.identity.ExternalIdentifier
@@ -29,28 +30,32 @@ class DvvModificationsService(
     private val fridgeFamilyService: FridgeFamilyService
 ) {
 
-    fun updatePersonsFromDvv(h: Handle, ssns: List<String>) {
-        getDvvModifications(h, ssns).map { personDvvModifications ->
-            personDvvModifications.tietoryhmat.map { infoGroup ->
-                try {
-                    when (infoGroup) {
-                        is DeathDvvInfoGroup -> handleDeath(personDvvModifications.henkilotunnus, infoGroup)
-                        is RestrictedInfoDvvInfoGroup -> handleRestrictedInfo(personDvvModifications.henkilotunnus, infoGroup)
-                        is SsnDvvInfoGroup -> handleSsnDvvInfoGroup(personDvvModifications.henkilotunnus, infoGroup)
-                        is AddressDvvInfoGroup -> handleAddressDvvInfoGroup(personDvvModifications.henkilotunnus, infoGroup)
-                        is CustodianLimitedDvvInfoGroup -> handleCustodianLimitedDvvInfoGroup(personDvvModifications.henkilotunnus, infoGroup)
-                        is CaretakerLimitedDvvInfoGroup -> handleCaretakerLimitedDvvInfoGroup(infoGroup)
-                        // is PersonNameDvvInfoGroup -> handlePersonNameDvvInfoGroup(personDvvModifications.ssn, infoGroup)
-                        // is PersonNameChangeDvvInfoGroup -> handlePersonNameChangeDvvInfoGroup(personDvvModifications.ssn, infoGroup)
-                        else -> logger.info("Unsupported DVV modification: ${infoGroup.tietoryhma}")
+    fun updatePersonsFromDvv(h: Handle, ssns: List<String>): Int {
+        return getDvvModifications(h, ssns).let { modificationsForPersons ->
+            modificationsForPersons.map { personModifications ->
+                personModifications.tietoryhmat.map { infoGroup ->
+                    try {
+                        when (infoGroup) {
+                            is DeathDvvInfoGroup -> handleDeath(personModifications.henkilotunnus, infoGroup)
+                            is RestrictedInfoDvvInfoGroup -> handleRestrictedInfo(personModifications.henkilotunnus, infoGroup)
+                            is SsnDvvInfoGroup -> handleSsnDvvInfoGroup(personModifications.henkilotunnus, infoGroup)
+                            is AddressDvvInfoGroup -> handleAddressDvvInfoGroup(personModifications.henkilotunnus, infoGroup)
+                            is ResidenceCodeDvvInfoGroup -> handleResidenceCodeDvvInfoGroup(personModifications.henkilotunnus, infoGroup)
+                            is CustodianLimitedDvvInfoGroup -> handleCustodianLimitedDvvInfoGroup(personModifications.henkilotunnus, infoGroup)
+                            is CaretakerLimitedDvvInfoGroup -> handleCaretakerLimitedDvvInfoGroup(infoGroup)
+                            is PersonNameDvvInfoGroup -> handlePersonNameDvvInfoGroup(personModifications.henkilotunnus, infoGroup)
+                            is PersonNameChangeDvvInfoGroup -> handlePersonNameChangeDvvInfoGroup(personModifications.henkilotunnus, infoGroup)
+                            else -> logger.info("Unsupported DVV modification: ${infoGroup.tietoryhma}")
+                        }
+                    } catch (e: Throwable) {
+                        logger.error("Could not process dvv modification for ${personModifications.henkilotunnus.substring(0, 6)}: ${e.message}")
                     }
-                } catch (e: Throwable) {
-                    logger.error("Could not process dvv modification for ${personDvvModifications.henkilotunnus.substring(0, 6)}: ${e.message}")
                 }
             }
-        }
 
-        // Todo: flush VTJ cache
+            logger.info("Processed ${modificationsForPersons.size} DVV person modifications")
+            modificationsForPersons.size
+        }
     }
 
     private fun handleDeath(ssn: String, deathDvvInfoGroup: DeathDvvInfoGroup) {
@@ -101,10 +106,24 @@ class DvvModificationsService(
                     logger.debug("Dvv modification for ${it.id}: address change, type: ${addressDvvInfoGroup.muutosattribuutti}")
                     h.updatePersonFromVtj(
                         it.copy(
-                            streetAddress = addressDvvInfoGroup.streetAddress(),
+                            streetAddress = addressDvvInfoGroup.katuosoite(),
                             postalCode = addressDvvInfoGroup.postinumero ?: "",
                             postOffice = addressDvvInfoGroup.postitoimipaikka?.fi ?: ""
-                            // TODO: residence code
+                        )
+                    )
+                }
+            }
+        }
+    }
+
+    private fun handleResidenceCodeDvvInfoGroup(ssn: String, residenceCodeDvvInfoGroup: ResidenceCodeDvvInfoGroup) {
+        if (residenceCodeDvvInfoGroup.muutosattribuutti.equals("LISATTY")) {
+            jdbi.handle { h ->
+                h.getPersonBySSN(ssn)?.let {
+                    logger.debug("Dvv modification for ${it.id}: residence code change")
+                    h.updatePersonFromVtj(
+                        it.copy(
+                            residenceCode = residenceCodeDvvInfoGroup.asuinpaikantunnus
                         )
                     )
                 }
@@ -132,16 +151,43 @@ class DvvModificationsService(
         }
     }
 
-    // private fun handlePersonNameDvvInfoGroup(ssn: String, personNameDvvInfoGroup: PersonNameDvvInfoGroup) {}
+    private fun handlePersonNameDvvInfoGroup(ssn: String, personNameDvvInfoGroup: PersonNameDvvInfoGroup) {
+        jdbi.handle { h ->
+            h.getPersonBySSN(ssn)?.let {
+                val user = AuthenticatedUser.anonymous
+                personService.getOrCreatePerson(user, ExternalIdentifier.SSN.getInstance(ssn))?.let {
+                    logger.debug("Dvv modification for ${it.id}: name ${personNameDvvInfoGroup.muutosattribuutti}, refreshed all info from DVV")
+                }
+            }
+        }
+    }
 
-    // private fun handlePersonNameChangeDvvInfoGroup(ssn: String, personNameChangeDvvInfoGroup: PersonNameChangeDvvInfoGroup) {}
+    private fun handlePersonNameChangeDvvInfoGroup(ssn: String, personNameChangeDvvInfoGroup: PersonNameChangeDvvInfoGroup) {
+        jdbi.handle { h ->
+            h.getPersonBySSN(ssn)?.let {
+                val user = AuthenticatedUser.anonymous
+                personService.getOrCreatePerson(user, ExternalIdentifier.SSN.getInstance(ssn))?.let {
+                    logger.debug("Dvv modification for ${it.id}: name has changed: ${personNameChangeDvvInfoGroup.muutosattribuutti} - ${personNameChangeDvvInfoGroup.nimilaji}, refreshed all info from DVV")
+                }
+            }
+        }
+    }
 
     fun getDvvModifications(h: Handle, ssns: List<String>): List<DvvModification> {
         val token = getNextDvvModificationToken(h)
-        logger.debug("Fetching dvv modifications with $token")
-        return dvvModificationsServiceClient.getModifications(token, ssns)?.let { dvvModificationsResponse ->
-            storeDvvModificationToken(h, token, dvvModificationsResponse.viimeisinKirjausavain, ssns.size, dvvModificationsResponse.muutokset.size)
-            dvvModificationsResponse.muutokset
-        } ?: emptyList()
+        return getAllPagesOfDvvModifications(h, ssns, token, emptyList())
+    }
+
+    fun getAllPagesOfDvvModifications(h: Handle, ssns: List<String>, token: String, alreadyFoundDvvModifications: List<DvvModification>): List<DvvModification> {
+        logger.debug("Fetching dvv modifications with $token, found modifications so far: ${alreadyFoundDvvModifications.size}")
+        return dvvModificationsServiceClient.getModifications(token, ssns).let { dvvModificationsResponse ->
+            val combinedModifications = alreadyFoundDvvModifications + dvvModificationsResponse.muutokset
+            if (dvvModificationsResponse.ajanTasalla) {
+                storeDvvModificationToken(h, token, dvvModificationsResponse.viimeisinKirjausavain, ssns.size, dvvModificationsResponse.muutokset.size)
+                combinedModifications
+            } else {
+                getAllPagesOfDvvModifications(h, ssns, dvvModificationsResponse.viimeisinKirjausavain, combinedModifications)
+            }
+        }
     }
 }

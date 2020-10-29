@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: 2017-2020 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
+
 package fi.espoo.evaka.dvv
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
@@ -20,7 +21,7 @@ data class DvvModification(
     val muutospv: String,
     val henkilotunnus: String,
     val tietoryhmat: List<DvvInfoGroup>,
-    val ajanTasalla: Boolean?
+    val ajanTasalla: Boolean
 )
 
 @JsonTypeInfo(
@@ -39,7 +40,9 @@ data class DvvModification(
     JsonSubTypes.Type(value = DeathDvvInfoGroup::class, name = "KUOLINPAIVA"),
     JsonSubTypes.Type(value = CustodianLimitedDvvInfoGroup::class, name = "HUOLLETTAVA_SUPPEA"),
     JsonSubTypes.Type(value = CaretakerLimitedDvvInfoGroup::class, name = "HUOLTAJA_SUPPEA"),
-    JsonSubTypes.Type(value = SsnDvvInfoGroup::class, name = "HENKILOTUNNUS_KORJAUS")
+    JsonSubTypes.Type(value = SsnDvvInfoGroup::class, name = "HENKILOTUNNUS_KORJAUS"),
+    JsonSubTypes.Type(value = ResidenceCodeDvvInfoGroup::class, name = "VAKINAINEN_KOTIMAINEN_ASUINPAIKKATUNNUS"),
+    JsonSubTypes.Type(value = HomeMunicipalityDvvInfoGroup::class, name = "KOTIKUNTA")
 )
 
 interface DvvInfoGroup {
@@ -83,23 +86,40 @@ data class AddressDvvInfoGroup(
     val katunumero: String?,
     val huoneistonumero: String?,
     val huoneistokirjain: String?,
+    val osoitenumero: String?,
     val postinumero: String?,
     val postitoimipaikka: DvvFiSVValue?,
+    val rakennustunnus: String?,
     val alkupv: DvvDate?,
     val loppupv: DvvDate?
 ) : DvvInfoGroup {
-    fun streetAddress(): String {
+    fun katuosoite(): String {
         val streetAddress = (katunimi?.fi ?: "") +
             (if (katunumero != null) " $katunumero" else "") +
             (if (huoneistokirjain != null) " $huoneistokirjain" else "") +
             (if (huoneistonumero != null) " ${huoneistonumero.toInt()}" else "")
         return streetAddress.trim()
     }
-
-// TODO: calculate residence code
-// Asuinpaikan tunnus pitää sisällään VTJ-PRT (pysyvän rakennustunnuksen), osoitenron, portaan, numeron ja jakokirjaimen.
-// VAKITUINEN_KOTIMAINEN_OSOITE tietoryhmässä on nämä kaikki tiedot jo mukana.
 }
+
+data class ResidenceCodeDvvInfoGroup(
+    override val tietoryhma: String,
+    val muutosattribuutti: String?,
+    val rakennustunnus: String?,
+    val osoitenumero: String?,
+    val huoneistonumero: String?,
+    val huoneistokirjain: String?,
+    val kuntakoodi: String?,
+    val alkupv: DvvDate?,
+    val asuinpaikantunnus: String?
+) : DvvInfoGroup
+
+data class HomeMunicipalityDvvInfoGroup(
+    override val tietoryhma: String,
+    val muutosattribuutti: String?,
+    val kuntakoodi: String?,
+    val kuntaanMuuttopv: DvvDate?
+) : DvvInfoGroup
 
 data class DvvFiSVValue(
     val fi: String?,

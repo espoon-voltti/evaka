@@ -59,7 +59,7 @@ class DvvModificationsServiceClient(
         }
     }
 
-    fun getModifications(updateToken: String, ssns: List<String>): DvvModificationsResponse? {
+    fun getModifications(updateToken: String, ssns: List<String>): DvvModificationsResponse {
         logger.info { "Fetching modifications with token $updateToken from DVV modifications service from $serviceUrl/api/v1/muutokset" }
         val (_, _, result) = fuel.post("$serviceUrl/api/v1/muutokset")
             .header(Headers.ACCEPT, "application/json")
@@ -87,7 +87,7 @@ class DvvModificationsServiceClient(
                 logger.error(result.getException()) {
                     "Fetching modifications with token $updateToken from DVV modifications service failed, message: ${String(result.error.errorData)}"
                 }
-                null
+                throw result.getException()
             }
         }
     }
