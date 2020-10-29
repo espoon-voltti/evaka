@@ -62,7 +62,7 @@ class KoskiClient(
         }
         val payload = objectMapper.writeValueAsString(data.oppija)
         if (!h.isPayloadChanged(msg.key, payload)) {
-            logger.info { "Koski upload ${msg.key}: no change in payload -> skipping" }
+            logger.info { "Koski upload ${msg.key} ${data.operation}: no change in payload -> skipping" }
         } else {
             val (_, _, result) = Fuel.request(
                 method = if (data.operation == KoskiOperation.CREATE) Method.POST else Method.PUT,
@@ -78,7 +78,7 @@ class KoskiClient(
             val response: HenkilönOpiskeluoikeusVersiot = try {
                 objectMapper.readValue(result.get())
             } catch (error: FuelError) {
-                logger.error { "Koski upload ${msg.key}: ${error.response}" }
+                logger.error(error) { "Koski upload ${msg.key} ${data.operation} failed: ${error.response}" }
                 throw error
             }
             h.finishKoskiUpload(
@@ -101,7 +101,7 @@ class KoskiClient(
                     )
                 )
             )
-            logger.info { "Koski upload ${msg.key}: finished ${data.operation}" }
+            logger.info { "Koski upload ${msg.key} ${data.operation}: finished" }
         }
     }
 }
