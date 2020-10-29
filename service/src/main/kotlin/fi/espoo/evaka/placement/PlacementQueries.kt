@@ -234,7 +234,7 @@ fun Handle.getDaycarePlacements(
             ch.first_name, ch.last_name, ch.social_security_number, ch.date_of_birth,
             (
                 SELECT count(*)
-                FROM generate_series(pl.start_date, pl.end_date, '1 day') t
+                FROM generate_series(greatest(pl.start_date, '2020-03-01'::date), pl.end_date, '1 day') t
                 LEFT OUTER JOIN service_need sn
                     ON sn.child_id = pl.child_id AND daterange(sn.start_date, sn.end_date, '[]') @> t::date
                 WHERE sn.id IS NULL
@@ -419,7 +419,7 @@ fun Handle.getMissingGroupPlacements(
         FROM gaps g
         JOIN placement pl ON pl.id = g.placement_id
         JOIN person c on c.id = pl.child_id
-        WHERE upper(g.gap) > '2020-03-01'::date AND pl.unit_id = :unitId
+        WHERE g.gap && daterange('2020-03-01', NULL) AND pl.unit_id = :unitId
         
         UNION ALL 
         
