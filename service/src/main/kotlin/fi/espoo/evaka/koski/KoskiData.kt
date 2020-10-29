@@ -143,23 +143,34 @@ data class KoskiActiveDataRaw(
         // It's possible clamping to preschool term has removed all placements -> no study right can be created
         val placementRange = studyRightTimelines.placement.spanningPeriod() ?: return null
 
-        val isQualified = placementRange.end.let {
-            it.isAfter(LocalDate.of(endTerm.end.year, 4, 30)) &&
-                it.isBefore(endTerm.end.plusDays(1)) &&
-                it.isBefore(today)
+        val isQualifiedByDate = placementRange.end.let {
+            it.isAfter(LocalDate.of(endTerm.end.year, 4, 30)) && it.isBefore(today)
+        }
+        val qualifiedDate = placementRange.end.takeIf {
+            when (type) {
+                OpiskeluoikeudenTyyppiKoodi.PRESCHOOL -> isQualifiedByDate
+                OpiskeluoikeudenTyyppiKoodi.PREPARATORY -> {
+                    // We intentionally only include here absence periods longer than one week
+                    // So, it doesn't matter even if the child is randomly absent for 31 or more individual days
+                    // if they don't form long enough continuous absence periods
+                    val totalAbsences = studyRightTimelines.plannedAbsence.addAll(studyRightTimelines.unknownAbsence)
+                        .periods().map { it.durationInDays() }.sum()
+                    isQualifiedByDate && totalAbsences <= 30
+                }
+            }
         }
 
         return KoskiData(
             oppija = Oppija(
                 henkilö = child.toHenkilö(),
-                opiskeluoikeudet = listOf(haeOpiskeluoikeus(sourceSystem, today, isQualified))
+                opiskeluoikeudet = listOf(haeOpiskeluoikeus(sourceSystem, today, qualifiedDate))
             ),
             operation = if (studyRightOid == null) KoskiOperation.CREATE else KoskiOperation.UPDATE,
             organizerOid = unit.ophOrganizerOid
         )
     }
 
-    private fun haeOpiskeluoikeusjaksot(today: LocalDate, isQualified: Boolean): List<Opiskeluoikeusjakso> {
+    private fun haeOpiskeluoikeusjaksot(today: LocalDate, qualifiedDate: LocalDate?): List<Opiskeluoikeusjakso> {
         val placementRange = studyRightTimelines.placement.spanningPeriod() ?: return emptyList()
 
         val present = studyRightTimelines.present.periods()
@@ -180,7 +191,7 @@ data class KoskiActiveDataRaw(
                 // still ongoing
             }
             else -> result.add(
-                if (isQualified) Opiskeluoikeusjakso.valmistunut(placementRange.end)
+                if (qualifiedDate != null) Opiskeluoikeusjakso.valmistunut(qualifiedDate)
                 else Opiskeluoikeusjakso.eronnut(placementRange.end)
             )
         }
@@ -188,7 +199,7 @@ data class KoskiActiveDataRaw(
         return result
     }
 
-    private fun haeSuoritus(isQualified: Boolean) = unit.haeSuoritus(type).let {
+    private fun haeSuoritus(qualifiedDate: LocalDate?) = unit.haeSuoritus(type).let {
         if (type == OpiskeluoikeudenTyyppiKoodi.PREPARATORY) it.copy(
             osasuoritukset = listOf(
                 Osasuoritus(
@@ -212,17 +223,17 @@ data class KoskiActiveDataRaw(
                     )
                 )
             ),
-            vahvistus = if (isQualified) haeVahvistus() else null
+            vahvistus = if (qualifiedDate != null) haeVahvistus(qualifiedDate) else null
         ) else it.copy(
-            vahvistus = if (isQualified) haeVahvistus() else null
+            vahvistus = if (qualifiedDate != null) haeVahvistus(qualifiedDate) else null
         )
     }
 
-    fun haeOpiskeluoikeus(sourceSystem: String, today: LocalDate, isQualified: Boolean): Opiskeluoikeus {
+    fun haeOpiskeluoikeus(sourceSystem: String, today: LocalDate, qualifiedDate: LocalDate?): Opiskeluoikeus {
         return Opiskeluoikeus(
             oid = studyRightOid,
-            tila = OpiskeluoikeudenTila(haeOpiskeluoikeusjaksot(today, isQualified)),
-            suoritukset = listOf(haeSuoritus(isQualified)),
+            tila = OpiskeluoikeudenTila(haeOpiskeluoikeusjaksot(today, qualifiedDate)),
+            suoritukset = listOf(haeSuoritus(qualifiedDate)),
             lähdejärjestelmänId = LähdejärjestelmäId(
                 id = studyRightId,
                 lähdejärjestelmä = Lähdejärjestelmä(koodiarvo = sourceSystem)
@@ -233,8 +244,8 @@ data class KoskiActiveDataRaw(
         )
     }
 
-    fun haeVahvistus() = Vahvistus(
-        päivä = studyRightTimelines.placement.spanningPeriod()!!.end,
+    fun haeVahvistus(qualifiedDate: LocalDate) = Vahvistus(
+        päivä = qualifiedDate,
         paikkakunta = VahvistusPaikkakunta(koodiarvo = VahvistusPaikkakuntaKoodi.ESPOO),
         myöntäjäOrganisaatio = MyöntäjäOrganisaatio(oid = unit.ophOrganizerOid),
         myöntäjäHenkilöt = listOf(
