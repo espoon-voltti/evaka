@@ -98,7 +98,7 @@ data class KoskiVoidedDataRaw(
         ),
         tyyppi = OpiskeluoikeudenTyyppi(type),
         lisätiedot = null,
-        järjestämismuoto = unit.haeJärjestämisMuoto()
+        järjestämismuoto = if (type == OpiskeluoikeudenTyyppiKoodi.PREPARATORY) null else unit.haeJärjestämisMuoto()
     )
 }
 
@@ -240,7 +240,7 @@ data class KoskiActiveDataRaw(
             ),
             tyyppi = OpiskeluoikeudenTyyppi(type),
             lisätiedot = if (type == OpiskeluoikeudenTyyppiKoodi.PREPARATORY) null else haeLisätiedot(),
-            järjestämismuoto = unit.haeJärjestämisMuoto()
+            järjestämismuoto = if (type == OpiskeluoikeudenTyyppiKoodi.PREPARATORY) null else unit.haeJärjestämisMuoto()
         )
     }
 
