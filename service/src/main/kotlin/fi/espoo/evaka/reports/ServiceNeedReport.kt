@@ -12,9 +12,11 @@ import fi.espoo.evaka.shared.config.Roles.ADMIN
 import fi.espoo.evaka.shared.config.Roles.DIRECTOR
 import fi.espoo.evaka.shared.config.Roles.SERVICE_WORKER
 import fi.espoo.evaka.shared.config.Roles.UNIT_SUPERVISOR
+import fi.espoo.evaka.shared.db.handle
+import org.jdbi.v3.core.Handle
+import org.jdbi.v3.core.Jdbi
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.http.ResponseEntity
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
@@ -23,8 +25,8 @@ import java.util.UUID
 
 @RestController
 class ServiceNeedReport(
-    private val jdbc: NamedParameterJdbcTemplate,
-    private val acl: AccessControlList
+    private val acl: AccessControlList,
+    private val jdbi: Jdbi
 ) {
     @GetMapping("/reports/service-need")
     fun getChildAgeLanguageReport(
@@ -34,11 +36,13 @@ class ServiceNeedReport(
         Audit.ServiceNeedReportRead.log()
         user.requireOneOfRoles(SERVICE_WORKER, ADMIN, DIRECTOR, UNIT_SUPERVISOR)
         val authorizedUnits = acl.getAuthorizedUnits(user)
-        return getServiceNeedRows(jdbc, date, authorizedUnits.ids).let(::ok)
+        return jdbi.handle { h ->
+            getServiceNeedRows(h, date, authorizedUnits.ids?.toList()).let(::ok)
+        }
     }
 }
 
-fun getServiceNeedRows(jdbc: NamedParameterJdbcTemplate, date: LocalDate, units: Collection<UUID>? = null): List<ServiceNeedReportRow> {
+fun getServiceNeedRows(h: Handle, date: LocalDate, units: List<UUID>? = null): List<ServiceNeedReportRow> {
     // language=sql
     val sql =
         """
@@ -63,31 +67,32 @@ fun getServiceNeedRows(jdbc: NamedParameterJdbcTemplate, date: LocalDate, units:
         LEFT JOIN placement pl ON d.id = pl.unit_id AND daterange(pl.start_date, pl.end_date, '[]') @> :target_date AND pl.type != 'CLUB'::placement_type
         LEFT JOIN person p ON pl.child_id = p.id AND date_part('year', age(p.date_of_birth)) = ages.age
         LEFT JOIN service_need sn ON sn.child_id = p.id AND daterange(sn.start_date, sn.end_date, '[]') @> :target_date
-        ${if (units != null) "WHERE d.id IN (:units)" else ""}
+        ${if (units != null) "WHERE d.id = ANY(:units :: uuid[])" else ""}
         GROUP BY care_area_name, ages.age, unit_name, unit_provider_type, unit_type
         ORDER BY care_area_name, unit_name, ages.age
         """.trimIndent()
 
     @Suppress("UNCHECKED_CAST")
-    return jdbc.query(
-        sql,
-        mapOf("target_date" to date, "units" to units)
-    ) { rs, _ ->
-        ServiceNeedReportRow(
-            careAreaName = rs.getString("care_area_name"),
-            unitName = rs.getString("unit_name"),
-            unitType = (rs.getArray("unit_type").array as Array<out Any>).map { it.toString() }.toSet().let(::getPrimaryUnitType),
-            unitProviderType = rs.getString("unit_provider_type"),
-            age = rs.getInt("age"),
-            fullDay = rs.getInt("full_day"),
-            partDay = rs.getInt("part_day"),
-            fullWeek = rs.getInt("full_week"),
-            partWeek = rs.getInt("part_week"),
-            shiftCare = rs.getInt("shift_care"),
-            missingServiceNeed = rs.getInt("missing_service_need"),
-            total = rs.getInt("total")
-        )
-    }
+    return h.createQuery(sql)
+        .bind("target_date", date)
+        .bind("units", units?.toTypedArray())
+        .map { rs, _ ->
+            ServiceNeedReportRow(
+                careAreaName = rs.getString("care_area_name"),
+                unitName = rs.getString("unit_name"),
+                unitType = (rs.getArray("unit_type").array as Array<out Any>).map { it.toString() }.toSet().let(::getPrimaryUnitType),
+                unitProviderType = rs.getString("unit_provider_type"),
+                age = rs.getInt("age"),
+                fullDay = rs.getInt("full_day"),
+                partDay = rs.getInt("part_day"),
+                fullWeek = rs.getInt("full_week"),
+                partWeek = rs.getInt("part_week"),
+                shiftCare = rs.getInt("shift_care"),
+                missingServiceNeed = rs.getInt("missing_service_need"),
+                total = rs.getInt("total")
+            )
+        }
+        .toList()
 }
 
 data class ServiceNeedReportRow(

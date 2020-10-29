@@ -13,9 +13,11 @@ import fi.espoo.evaka.shared.config.Roles.DIRECTOR
 import fi.espoo.evaka.shared.config.Roles.SERVICE_WORKER
 import fi.espoo.evaka.shared.config.Roles.UNIT_SUPERVISOR
 import fi.espoo.evaka.shared.db.getUUID
+import fi.espoo.evaka.shared.db.handle
+import org.jdbi.v3.core.Handle
+import org.jdbi.v3.core.Jdbi
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.http.ResponseEntity
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
@@ -24,7 +26,7 @@ import java.util.UUID
 
 @RestController
 class AssistanceNeedsReportController(
-    private val jdbc: NamedParameterJdbcTemplate,
+    private val jdbi: Jdbi,
     private val acl: AccessControlList
 ) {
     @GetMapping("/reports/assistance-needs")
@@ -35,11 +37,11 @@ class AssistanceNeedsReportController(
         Audit.AssistanceNeedsReportRead.log()
         user.requireOneOfRoles(SERVICE_WORKER, ADMIN, DIRECTOR, UNIT_SUPERVISOR)
         val units = acl.getAuthorizedUnits(user)
-        return getAssistanceNeedReportRows(jdbc, date, units.ids).let(::ok)
+        return jdbi.handle { h -> getAssistanceNeedReportRows(h, date, units.ids).let(::ok) }
     }
 }
 
-fun getAssistanceNeedReportRows(jdbc: NamedParameterJdbcTemplate, date: LocalDate, units: Collection<UUID>? = null): List<AssistanceNeedReportRow> {
+fun getAssistanceNeedReportRows(h: Handle, date: LocalDate, units: Collection<UUID>? = null): List<AssistanceNeedReportRow> {
     // language=sql
     val sql =
         """
@@ -70,39 +72,39 @@ fun getAssistanceNeedReportRows(jdbc: NamedParameterJdbcTemplate, date: LocalDat
         LEFT JOIN daycare_group_placement gpl ON gpl.daycare_group_id = g.id AND daterange(gpl.start_date, gpl.end_date, '[]') @> :target_date
         LEFT JOIN placement pl ON pl.id = gpl.daycare_placement_id
         LEFT JOIN assistance_need an on an.child_id = pl.child_id AND daterange(an.start_date, an.end_date, '[]') @> :target_date
-        ${if (units != null) "WHERE u.id IN (:units)" else ""}
+        ${if (units != null) "WHERE u.id = ANY(:units)" else ""}
         GROUP BY ca.name, u.id, u.name, g.id, g.name, u.type, u.provider_type
         ORDER BY ca.name, u.name, g.name;
         """.trimIndent()
 
     @Suppress("UNCHECKED_CAST")
-    return jdbc.query(
-        sql,
-        mapOf("target_date" to date, "units" to units)
-    ) { rs, _ ->
-        AssistanceNeedReportRow(
-            careAreaName = rs.getString("care_area_name"),
-            unitId = rs.getUUID("unit_id"),
-            unitName = rs.getString("unit_name"),
-            groupId = rs.getUUID("group_id"),
-            groupName = rs.getString("group_name"),
-            unitType = (rs.getArray("unit_type").array as Array<out Any>).map { it.toString() }.toSet().let(::getPrimaryUnitType),
-            unitProviderType = rs.getString("unit_provider_type"),
-            autism = rs.getInt("autism"),
-            developmentalDisability1 = rs.getInt("developmental_disability_1"),
-            developmentalDisability2 = rs.getInt("developmental_disability_2"),
-            focusChallenge = rs.getInt("focus_challenge"),
-            linguisticChallenge = rs.getInt("linguistic_challenge"),
-            developmentMonitoring = rs.getInt("development_monitoring"),
-            developmentMonitoringPending = rs.getInt("development_monitoring_pending"),
-            multiDisability = rs.getInt("multi_disability"),
-            longTermCondition = rs.getInt("long_term_condition"),
-            regulationSkillChallenge = rs.getInt("regulation_skill_challenge"),
-            disability = rs.getInt("disability"),
-            other = rs.getInt("other"),
-            none = rs.getInt("none")
-        )
-    }
+    return h.createQuery(sql)
+        .bind("target_date", date)
+        .bind("units", units?.toTypedArray())
+        .map { rs, _ ->
+            AssistanceNeedReportRow(
+                careAreaName = rs.getString("care_area_name"),
+                unitId = rs.getUUID("unit_id"),
+                unitName = rs.getString("unit_name"),
+                groupId = rs.getUUID("group_id"),
+                groupName = rs.getString("group_name"),
+                unitType = (rs.getArray("unit_type").array as Array<out Any>).map { it.toString() }.toSet().let(::getPrimaryUnitType),
+                unitProviderType = rs.getString("unit_provider_type"),
+                autism = rs.getInt("autism"),
+                developmentalDisability1 = rs.getInt("developmental_disability_1"),
+                developmentalDisability2 = rs.getInt("developmental_disability_2"),
+                focusChallenge = rs.getInt("focus_challenge"),
+                linguisticChallenge = rs.getInt("linguistic_challenge"),
+                developmentMonitoring = rs.getInt("development_monitoring"),
+                developmentMonitoringPending = rs.getInt("development_monitoring_pending"),
+                multiDisability = rs.getInt("multi_disability"),
+                longTermCondition = rs.getInt("long_term_condition"),
+                regulationSkillChallenge = rs.getInt("regulation_skill_challenge"),
+                disability = rs.getInt("disability"),
+                other = rs.getInt("other"),
+                none = rs.getInt("none")
+            )
+        }.toList()
 }
 
 data class AssistanceNeedReportRow(
