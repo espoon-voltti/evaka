@@ -12,9 +12,11 @@ import fi.espoo.evaka.shared.auth.UserRole.FINANCE_ADMIN
 import fi.espoo.evaka.shared.auth.UserRole.SERVICE_WORKER
 import fi.espoo.evaka.shared.auth.UserRole.UNIT_SUPERVISOR
 import fi.espoo.evaka.shared.db.getUUID
+import fi.espoo.evaka.shared.db.handle
+import org.jdbi.v3.core.Handle
+import org.jdbi.v3.core.Jdbi
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.http.ResponseEntity
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
@@ -23,7 +25,7 @@ import java.util.UUID
 
 @RestController
 class MissingHeadOfFamilyReportController(
-    private val jdbc: NamedParameterJdbcTemplate,
+    private val jdbi: Jdbi,
     private val acl: AccessControlList
 ) {
     @GetMapping("/reports/missing-head-of-family")
@@ -35,12 +37,12 @@ class MissingHeadOfFamilyReportController(
         Audit.MissingHeadOfFamilyReportRead.log()
         user.requireOneOfRoles(ADMIN, SERVICE_WORKER, FINANCE_ADMIN, UNIT_SUPERVISOR)
         val authorizedUnits = acl.getAuthorizedUnits(user)
-        return ResponseEntity.ok(getMissingHeadOfFamilyRows(jdbc, from, to, authorizedUnits.ids))
+        return jdbi.handle { h -> ResponseEntity.ok(getMissingHeadOfFamilyRows(h, from, to, authorizedUnits.ids)) }
     }
 }
 
 fun getMissingHeadOfFamilyRows(
-    jdbc: NamedParameterJdbcTemplate,
+    h: Handle,
     from: LocalDate,
     to: LocalDate?,
     units: Collection<UUID>? = null
@@ -81,28 +83,25 @@ fun getMissingHeadOfFamilyRows(
         JOIN person ON person.id = child_id
         JOIN daycare ON daycare.id = unit_id
         JOIN care_area ca ON ca.id = daycare.care_area_id
-        ${if (units != null) "WHERE daycare.id IN (:units)" else ""}
+        ${if (units != null) "WHERE daycare.id = ANY(:units)" else ""}
         GROUP BY ca.name, daycare.name, unit_id, child_id, first_name, last_name, unit_id
         ORDER BY ca.name, daycare.name, last_name, first_name
         """.trimIndent()
-    return jdbc.query(
-        sql,
-        mapOf(
-            "units" to units,
-            "from" to from,
-            "to" to to
-        )
-    ) { rs, _ ->
-        MissingHeadOfFamilyReportRow(
-            careAreaName = rs.getString("care_area_name"),
-            unitId = rs.getUUID("unit_id"),
-            unitName = rs.getString("unit_name"),
-            childId = rs.getUUID("child_id"),
-            firstName = rs.getString("first_name"),
-            lastName = rs.getString("last_name"),
-            daysWithoutHead = rs.getInt("days_without_head")
-        )
-    }
+    return h.createQuery(sql)
+        .bind("units", units?.toTypedArray())
+        .bind("from", from)
+        .bind("to", to)
+        .map { rs, _ ->
+            MissingHeadOfFamilyReportRow(
+                careAreaName = rs.getString("care_area_name"),
+                unitId = rs.getUUID("unit_id"),
+                unitName = rs.getString("unit_name"),
+                childId = rs.getUUID("child_id"),
+                firstName = rs.getString("first_name"),
+                lastName = rs.getString("last_name"),
+                daysWithoutHead = rs.getInt("days_without_head")
+            )
+        }.toList()
 }
 
 data class MissingHeadOfFamilyReportRow(

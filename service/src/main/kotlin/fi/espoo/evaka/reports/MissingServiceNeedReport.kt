@@ -12,10 +12,12 @@ import fi.espoo.evaka.shared.auth.UserRole.FINANCE_ADMIN
 import fi.espoo.evaka.shared.auth.UserRole.SERVICE_WORKER
 import fi.espoo.evaka.shared.auth.UserRole.UNIT_SUPERVISOR
 import fi.espoo.evaka.shared.db.getUUID
+import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.domain.BadRequest
+import org.jdbi.v3.core.Handle
+import org.jdbi.v3.core.Jdbi
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.http.ResponseEntity
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
@@ -24,7 +26,7 @@ import java.util.UUID
 
 @RestController
 class MissingServiceNeedReportController(
-    private val jdbc: NamedParameterJdbcTemplate,
+    private val jdbi: Jdbi,
     private val acl: AccessControlList
 ) {
     @GetMapping("/reports/missing-service-need")
@@ -38,12 +40,12 @@ class MissingServiceNeedReportController(
         if (to != null && to.isBefore(from)) throw BadRequest("Invalid time range")
 
         val authorizedUnits = acl.getAuthorizedUnits(user)
-        return ResponseEntity.ok(getMissingServiceNeedRows(jdbc, from, to, authorizedUnits.ids))
+        return jdbi.handle { h -> ResponseEntity.ok(getMissingServiceNeedRows(h, from, to, authorizedUnits.ids)) }
     }
 }
 
 fun getMissingServiceNeedRows(
-    jdbc: NamedParameterJdbcTemplate,
+    h: Handle,
     from: LocalDate,
     to: LocalDate?,
     units: Collection<UUID>? = null
@@ -66,12 +68,12 @@ fun getMissingServiceNeedRows(
               days_in_range(pl.period) AS days,
               coalesce(sum(days_in_range(pl.period * sn.period)) OVER w, 0) AS days_with_sn
             FROM (
-              SELECT id, child_id, unit_id, daterange(start_date, end_date, '[]') * daterange(:from, :to) AS period
+              SELECT id, child_id, unit_id, daterange(start_date, end_date, '[]') * daterange(:from, :to, '[]') AS period
               FROM placement
               WHERE placement.type != 'CLUB'::placement_type
             ) AS pl
             LEFT JOIN (
-              SELECT child_id, daterange(start_date, end_date, '[]') * daterange(:from, :to) AS period
+              SELECT child_id, daterange(start_date, end_date, '[]') * daterange(:from, :to, '[]') AS period
               FROM service_need
             ) AS sn
             ON pl.child_id = sn.child_id
@@ -83,28 +85,25 @@ fun getMissingServiceNeedRows(
         JOIN person ON person.id = child_id
         JOIN daycare ON daycare.id = unit_id AND 'CLUB'::care_types != ANY(daycare.type)
         JOIN care_area ca ON ca.id = daycare.care_area_id
-        ${if (units != null) "WHERE daycare.id IN (:units)" else ""}
+        ${if (units != null) "WHERE daycare.id = ANY(:units)" else ""}
         GROUP BY ca.name, daycare.name, unit_id, child_id, first_name, last_name, unit_id
         ORDER BY ca.name, daycare.name, last_name, first_name
         """.trimIndent()
-    return jdbc.query(
-        sql,
-        mapOf(
-            "units" to units,
-            "from" to from,
-            "to" to to
-        )
-    ) { rs, _ ->
-        MissingServiceNeedReportRow(
-            careAreaName = rs.getString("care_area_name"),
-            unitId = rs.getUUID("unit_id"),
-            unitName = rs.getString("unit_name"),
-            childId = rs.getUUID("child_id"),
-            firstName = rs.getString("first_name"),
-            lastName = rs.getString("last_name"),
-            daysWithoutServiceNeed = rs.getInt("days_without_sn")
-        )
-    }
+    return h.createQuery(sql)
+        .bind("units", units?.toTypedArray())
+        .bind("from", from)
+        .bind("to", to)
+        .map { rs, _ ->
+            MissingServiceNeedReportRow(
+                careAreaName = rs.getString("care_area_name"),
+                unitId = rs.getUUID("unit_id"),
+                unitName = rs.getString("unit_name"),
+                childId = rs.getUUID("child_id"),
+                firstName = rs.getString("first_name"),
+                lastName = rs.getString("last_name"),
+                daysWithoutServiceNeed = rs.getInt("days_without_sn")
+            )
+        }.toList()
 }
 
 data class MissingServiceNeedReportRow(

@@ -30,6 +30,7 @@ import org.springframework.transaction.support.DefaultTransactionDefinition
 import org.springframework.transaction.support.TransactionSynchronization
 import org.springframework.transaction.support.TransactionSynchronizationManager
 import java.sql.ResultSet
+import java.util.UUID
 import javax.sql.DataSource
 
 /**
@@ -83,6 +84,7 @@ fun configureJdbi(jdbi: Jdbi): Jdbi {
     jdbi.registerColumnMapper(ClosedPeriod::class.java, closedPeriodColumnMapper)
     jdbi.registerColumnMapper(Period::class.java, periodColumnMapper)
     jdbi.registerColumnMapper(Coordinate::class.java, coordinateColumnMapper)
+    jdbi.registerArrayType(UUID::class.java, "uuid")
     return jdbi
 }
 
