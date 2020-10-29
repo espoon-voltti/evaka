@@ -22,7 +22,6 @@ import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.UploadToKoski
 import mu.KotlinLogging
 import org.jdbi.v3.core.Handle
-import org.jdbi.v3.core.Jdbi
 import org.springframework.core.env.Environment
 import org.springframework.stereotype.Component
 import java.time.LocalDate
@@ -31,7 +30,6 @@ private val logger = KotlinLogging.logger { }
 
 @Component
 class KoskiClient(
-    private val jdbi: Jdbi,
     private val env: Environment,
     private val baseUrl: String = env.getRequiredProperty("fi.espoo.integration.koski.url"),
     private val sourceSystem: String = env.getRequiredProperty("fi.espoo.integration.koski.source_system"),

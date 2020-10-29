@@ -57,7 +57,6 @@ class KoskiIntegrationTest : FullApplicationTest() {
         koskiTester = KoskiTester(
             jdbi,
             KoskiClient(
-                jdbi = jdbi,
                 env = env,
                 baseUrl = "http://localhost:${koskiServer.port}",
                 asyncJobRunner = null
