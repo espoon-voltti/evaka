@@ -40,4 +40,7 @@ class DaycareDAO(private val dataSource: DataSource) {
 
     fun deleteGroup(daycareId: UUID, groupId: UUID): Unit =
         withSpringHandle(dataSource) { it.deleteDaycareGroup(groupId) }
+
+    fun getDaycare(id: UUID) = withSpringHandle(dataSource) {
+    }
 }

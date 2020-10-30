@@ -10,3 +10,4 @@ V9__update_varda_child.sql
 V10__update_varda_tables.sql
 V11__add_constraint_to_varda_child.sql
 V12__voucher_value_decision_value.sql
+V13__daycare_operation_days.sql

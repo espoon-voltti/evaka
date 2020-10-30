@@ -203,6 +203,7 @@ function Absences({ match }: RouteComponentProps<{ groupId: string }>) {
               <AbsenceTable
                 groupId={groupId}
                 childList={absences.data.children}
+                operationDays={absences.data.operationDays}
               />
               <Button
                 data-qa="add-absences-button"
