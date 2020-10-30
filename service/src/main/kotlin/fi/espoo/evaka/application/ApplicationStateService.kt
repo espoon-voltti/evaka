@@ -17,7 +17,7 @@ import fi.espoo.evaka.application.ApplicationStatus.WAITING_MAILING
 import fi.espoo.evaka.application.ApplicationStatus.WAITING_PLACEMENT
 import fi.espoo.evaka.application.ApplicationStatus.WAITING_UNIT_CONFIRMATION
 import fi.espoo.evaka.application.persistence.DatabaseForm
-import fi.espoo.evaka.daycare.domain.Language
+import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.daycare.getDaycare
 import fi.espoo.evaka.daycare.service.AdditionalInformation
 import fi.espoo.evaka.daycare.service.Child
@@ -126,12 +126,14 @@ class ApplicationStateService(
         }
 
         if (!application.hideFromGuardian && application.type == ApplicationType.DAYCARE) {
-            val language = application.form.preferences.preferredUnits.firstOrNull()
-                ?.let { withSpringHandle(dataSource) { h -> h.getDaycare(it.id)?.language } }
-                ?: Language.fi
+            val preferredUnit = withSpringHandle(dataSource) { h ->
+                h.getDaycare(application.form.preferences.preferredUnits.first().id)!! // should never be null after validation
+            }
 
-            withSpringHandle(dataSource) { h ->
-                asyncJobRunner.plan(h, listOf(SendApplicationEmail(application.guardianId, language)))
+            if (preferredUnit.providerType != ProviderType.PRIVATE_SERVICE_VOUCHER) {
+                withSpringHandle(dataSource) { h ->
+                    asyncJobRunner.plan(h, listOf(SendApplicationEmail(application.guardianId, preferredUnit.language)))
+                }
             }
         }
 
