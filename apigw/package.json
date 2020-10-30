@@ -65,7 +65,6 @@
     "@types/pino-http": "^4.3.2",
     "@types/pino-std-serializers": "^2.4.1",
     "@types/pump": "^1.1.0",
-    "@types/query-string": "^6.3.0",
     "@types/redis": "^2.8.28",
     "@types/source-map-support": "^0.5.3",
     "@types/split2": "^2.1.6",
