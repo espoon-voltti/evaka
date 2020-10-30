@@ -113,10 +113,10 @@ Bästa vårdnadshavare, <br>
 Vi har tagit emot en ansökan om småbarnspedagogik för ditt barn.
 </p>
 <p>
-Ansökan om småbarnspedagogik har en ansökningstid på fyra (4) månader. Den vårdnadshavare som har lämnat in ansökan kan redigera ansökan på adressen www.espoonvarhaiskasvatus.fi tills den har tagits upp till behandling.
+Ansökan om småbarnspedagogik har en ansökningstid på fyra (4) månader. Den vårdnadshavare som har lämnat in ansökan kan redigera ansökan på adressen <a href="www.espoonvarhaiskasvatus.fi">www.espoonvarhaiskasvatus.fi</a> tills den har tagits upp till behandling.
 </p>
 <p>
-Du får information om platsen för småbarnspedagogik för ditt barn cirka en månad (1 månad) innan ansökningstiden för ansökan går ut. Du kan se och godkänna/förkasta beslutet på espoonvarhaiskasvatus.fi.
+Du får information om platsen för småbarnspedagogik för ditt barn cirka en månad (1 månad) innan ansökningstiden för ansökan går ut. Du kan se och godkänna/förkasta beslutet på <a href="www.espoonvarhaiskasvatus.fi">www.espoonvarhaiskasvatus.fi</a>.
 </p>
 <p>
 Om du valde att ansökan är brådskande, ska du bifoga ansökan ett intyg över att du plötsligt fått ett nytt jobb eller en ny studieplats. Ansökningstiden är då minst 2 veckor och börjar den dag då intyget inkom.
@@ -125,13 +125,13 @@ Om du valde att ansökan är brådskande, ska du bifoga ansökan ett intyg över
 När du ansöker om vård dygnet runt eller kvällstid, ska du lämna in arbetsgivarens intyg över skiftarbete eller läroanstaltens intyg över kvällsstudier för båda vårdnadshavarna som bor i samma hushåll. Ansökan behandlas som ansökan om skiftvård först när de ovannämnda intygen har lämnats in.
 </p>
 <p>
-Ansökan till privata enheter för småbarnspedagogik https://www.espoo.fi/fi-FI/Kasvatus_ja_opetus/Varhaiskasvatus/Yksityinen_varhaiskasvatus
+Ansökan till privata enheter för småbarnspedagogik <a href="https://www.esbo.fi/sv-FI/Utbildning_och_fostran/Smabarnspedagogik/Privat_smabarnspedagogik">https://www.esbo.fi/sv-FI/Utbildning_och_fostran/Smabarnspedagogik/Privat_smabarnspedagogik</a>
 </p>
 <p>
-Bilagorna till ansökan skickas antingen per post till adressen Esbo stad, Småbarnspedagogikens servicehänvisning, PB 3125, 02070 Esbo stad eller som e-postbilaga till varhaiskasvatuksen.palveluohjaus@espoo.fi (observera att förbindelsen inte är krypterad).
+Bilagorna till ansökan skickas antingen per post till adressen Esbo stad, Småbarnspedagogikens servicehänvisning, PB 3125, 02070 Esbo stad eller som e-postbilaga till <a href="mailto:dagis@esbo.fi">dagis@esbo.fi</a> (observera att förbindelsen inte är krypterad).
 </p>
 <p>
-”Du kan göra ändringar i ansökan så länge den inte har tagits upp till behandling. Därefter kan du göra ändringar i ansökan genom att kontakta småbarnspedagogikens servicehänvisning (tfn 09 816 31000). Du kan återta en ansökan som du redan lämnat in genom att meddela detta per e-post till småbarnspedagogikens servicehänvisning varhaiskasvatuksen.palveluohjaus@espoo.fi
+”Du kan göra ändringar i ansökan så länge den inte har tagits upp till behandling. Därefter kan du göra ändringar i ansökan genom att kontakta småbarnspedagogikens servicehänvisning (tfn 09 816 31000). Du kan återta en ansökan som du redan lämnat in genom att meddela detta per e-post till småbarnspedagogikens servicehänvisning <a href="mailto:dagis@esbo.fi">dagis@esbo.fi</a>
 </p>
             """.trimIndent()
         }
@@ -161,9 +161,9 @@ Hakemuksen liitteet toimitetaan joko postitse osoitteeseen Espoon kaupunki, Varh
 Bästa vårdnadshavare,
 Vi har tagit emot en ansökan om småbarnspedagogik för ditt barn.
 
-Ansökan om småbarnspedagogik har en ansökningstid på fyra (4) månader. Den vårdnadshavare som har lämnat in ansökan kan redigera ansökan på adressen www.espoonvarhaiskasvatus.fi tills den har tagits upp till behandling.
+Ansökan om småbarnspedagogik har en ansökningstid på fyra (4) månader. Den vårdnadshavare som har lämnat in ansökan kan redigera ansökan på adressen <a href="www.espoonvarhaiskasvatus.fi">www.espoonvarhaiskasvatus.fi</a> tills den har tagits upp till behandling.
 
-Du får information om platsen för småbarnspedagogik för ditt barn cirka en månad (1 månad) innan ansökningstiden för ansökan går ut. Du kan se och godkänna/förkasta beslutet på espoonvarhaiskasvatus.fi.
+Du får information om platsen för småbarnspedagogik för ditt barn cirka en månad (1 månad) innan ansökningstiden för ansökan går ut. Du kan se och godkänna/förkasta beslutet på <a href="www.espoonvarhaiskasvatus.fi">www.espoonvarhaiskasvatus.fi</a>.
 
 Om du valde att ansökan är brådskande, ska du bifoga ansökan ett intyg över att du plötsligt fått ett nytt jobb eller en ny studieplats. Ansökningstiden är då minst 2 veckor och börjar den dag då intyget inkom.
 
@@ -171,11 +171,11 @@ När du ansöker om vård dygnet runt eller kvällstid, ska du lämna in arbetsg
 
 När du ansöker om flyttning till en annan kommunal enhet för småbarnspedagogik har ansökan ingen ansökningstid. Ansökan gäller ett år från den dag då ansökan inkom.
 
-Ansökan till privata enheter för småbarnspedagogik https://www.espoo.fi/fi-FI/Kasvatus_ja_opetus/Varhaiskasvatus/Yksityinen_varhaiskasvatus
+Ansökan till privata enheter för småbarnspedagogik <a href="https://www.esbo.fi/sv-FI/Utbildning_och_fostran/Smabarnspedagogik/Privat_smabarnspedagogik">https://www.esbo.fi/sv-FI/Utbildning_och_fostran/Smabarnspedagogik/Privat_smabarnspedagogik</a>
 
-Bilagorna till ansökan skickas antingen per post till adressen Esbo stad, Småbarnspedagogikens servicehänvisning, PB 3125, 02070 Esbo stad eller som e-postbilaga till varhaiskasvatuksen.palveluohjaus@espoo.fi (observera att förbindelsen inte är krypterad).
+Bilagorna till ansökan skickas antingen per post till adressen Esbo stad, Småbarnspedagogikens servicehänvisning, PB 3125, 02070 Esbo stad eller som e-postbilaga till dagis@esbo.fi (observera att förbindelsen inte är krypterad).
 
-”Du kan göra ändringar i ansökan så länge den inte har tagits upp till behandling. Därefter kan du göra ändringar i ansökan genom att kontakta småbarnspedagogikens servicehänvisning (tfn 09 816 31000). Du kan återta en ansökan som du redan lämnat in genom att meddela detta per e-post till småbarnspedagogikens servicehänvisning varhaiskasvatuksen.palveluohjaus@espoo.fi
+”Du kan göra ändringar i ansökan så länge den inte har tagits upp till behandling. Därefter kan du göra ändringar i ansökan genom att kontakta småbarnspedagogikens servicehänvisning (tfn 09 816 31000). Du kan återta en ansökan som du redan lämnat in genom att meddela detta per e-post till småbarnspedagogikens servicehänvisning dagis@esbo.fi
             """.trimIndent()
         }
     }
