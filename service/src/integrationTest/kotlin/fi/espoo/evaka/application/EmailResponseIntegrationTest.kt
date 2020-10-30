@@ -30,11 +30,14 @@ import fi.espoo.evaka.testAreaId
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testSvebiDaycare
+import fi.espoo.evaka.testVoucherDaycare
+import org.jdbi.v3.core.Handle
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import java.time.LocalDate
+import java.util.UUID
 
 class EmailResponseIntegrationTest : FullApplicationTest() {
     @Autowired
@@ -90,6 +93,7 @@ class EmailResponseIntegrationTest : FullApplicationTest() {
                 .response()
 
             assertEquals(204, res.statusCode)
+            assertApplicationIsSent(h, applicationId)
             assertEquals(1, asyncJobRunner.getPendingJobCount())
 
             asyncJobRunner.runPendingJobsSync()
@@ -124,6 +128,7 @@ class EmailResponseIntegrationTest : FullApplicationTest() {
                 .response()
 
             assertEquals(204, res.statusCode)
+            assertApplicationIsSent(h, applicationId)
             asyncJobRunner.runPendingJobsSync(1)
 
             val sentMails = MockEmailClient.applicationEmails
@@ -161,6 +166,7 @@ class EmailResponseIntegrationTest : FullApplicationTest() {
                 .response()
 
             assertEquals(204, res.statusCode)
+            assertApplicationIsSent(h, applicationId)
             assertEquals(1, asyncJobRunner.getPendingJobCount())
 
             asyncJobRunner.runPendingJobsSync(1)
@@ -190,14 +196,38 @@ class EmailResponseIntegrationTest : FullApplicationTest() {
                 .response()
 
             assertEquals(204, res.statusCode)
-            val application = jdbi.handle { fetchApplicationDetails(it, applicationId) }!!
-            assertEquals(ApplicationStatus.SENT, application.status)
-
+            assertApplicationIsSent(h, applicationId)
             assertEquals(0, asyncJobRunner.getPendingJobCount())
 
             val sentMails = MockEmailClient.applicationEmails
 
             assertEquals(0, sentMails.size)
+        }
+    }
+
+    @Test
+    fun `email is not sent when provider type of preferred unit is private voucher`() {
+        jdbi.handle { h ->
+            val applicationId = insertTestApplication(h = h, childId = testChild_1.id, guardianId = guardian.id, status = ApplicationStatus.CREATED)
+            insertTestApplicationForm(
+                h = h,
+                applicationId = applicationId,
+                document = validDaycareForm.copy(
+                    guardian = guardianAsDaycareAdult,
+                    apply = validDaycareForm.apply.copy(
+                        preferredUnits = listOf(testVoucherDaycare.id)
+                    )
+                )
+            )
+
+            val (_, res, _) = http.post("/enduser/v2/applications/$applicationId/actions/send-application")
+                .asUser(endUser)
+                .response()
+
+            assertEquals(204, res.statusCode)
+            assertApplicationIsSent(h, applicationId)
+            assertEquals(0, asyncJobRunner.getPendingJobCount())
+            assertEquals(0, MockEmailClient.applicationEmails.size)
         }
     }
 
@@ -226,6 +256,7 @@ class EmailResponseIntegrationTest : FullApplicationTest() {
                 .response()
 
             assertEquals(204, res.statusCode)
+            assertApplicationIsSent(h, applicationId)
             assertEquals(0, asyncJobRunner.getPendingJobCount())
 
             val sentMails = MockEmailClient.applicationEmails
@@ -253,6 +284,7 @@ class EmailResponseIntegrationTest : FullApplicationTest() {
                 .response()
 
             assertEquals(204, res.statusCode)
+            assertApplicationIsSent(h, applicationId)
             assertEquals(1, asyncJobRunner.getPendingJobCount())
 
             asyncJobRunner.runPendingJobsSync()
@@ -284,6 +316,7 @@ class EmailResponseIntegrationTest : FullApplicationTest() {
                 .response()
 
             assertEquals(204, res.statusCode)
+            assertApplicationIsSent(h, applicationId)
             assertEquals(1, asyncJobRunner.getPendingJobCount())
 
             asyncJobRunner.runPendingJobsSync()
@@ -291,5 +324,9 @@ class EmailResponseIntegrationTest : FullApplicationTest() {
             val result = fetchApplicationDetails(h, applicationId)
             assertEquals(manuallySetSentDate, result?.sentDate)
         }
+    }
+
+    private fun assertApplicationIsSent(h: Handle, applicationId: UUID) {
+        assertEquals(ApplicationStatus.SENT, fetchApplicationDetails(h, applicationId)!!.status)
     }
 }
