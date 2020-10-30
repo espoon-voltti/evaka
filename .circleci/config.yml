@@ -863,6 +863,7 @@ workflows:
 
       - frontend_build_and_test:
           context:
+            - sentry-release
             - voltti-dockerhub
           requires:
             - fetch_private_dependencies
