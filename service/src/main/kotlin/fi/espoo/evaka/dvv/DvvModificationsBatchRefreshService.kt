@@ -48,7 +48,8 @@ class DvvModificationsBatchRefreshService(
                         requestingUserId = UUID.fromString("00000000-0000-0000-0000-000000000000")
                     )
                 ),
-                runAt = Instant.now()
+                runAt = Instant.now(),
+                retryCount = 10
             )
 
             ssns.size

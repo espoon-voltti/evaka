@@ -183,7 +183,8 @@ class DvvModificationsService(
         return dvvModificationsServiceClient.getModifications(token, ssns).let { dvvModificationsResponse ->
             val combinedModifications = alreadyFoundDvvModifications + dvvModificationsResponse.muutokset
             if (dvvModificationsResponse.ajanTasalla) {
-                storeDvvModificationToken(h, token, dvvModificationsResponse.viimeisinKirjausavain, ssns.size, dvvModificationsResponse.muutokset.size)
+                if (dvvModificationsResponse.viimeisinKirjausavain != token)
+                    storeDvvModificationToken(h, token, dvvModificationsResponse.viimeisinKirjausavain, ssns.size, dvvModificationsResponse.muutokset.size)
                 combinedModifications
             } else {
                 getAllPagesOfDvvModifications(h, ssns, dvvModificationsResponse.viimeisinKirjausavain, combinedModifications)
