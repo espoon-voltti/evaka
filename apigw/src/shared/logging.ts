@@ -38,7 +38,9 @@ const BASE_LOGGER_OPTS: pino.LoggerOptions = {
   },
   messageKey: 'message',
   timestamp: () => `,"@timestamp":"${new Date().toISOString()}"`,
-  useLevelLabels: true
+  formatters: {
+    level: (label) => ({ level: label })
+  }
 }
 
 const APP_LOGGER_OPTS: pino.LoggerOptions = {
