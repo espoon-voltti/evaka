@@ -8,8 +8,8 @@ import { fromCallback } from './promise-utils'
 // A RedisClient wrapper that uses promises instead of callbacks
 export default class AsyncRedisClient {
   constructor(private client: RedisClient) {}
-  async get(key: string): Promise<string | undefined> {
-    return fromCallback<string | undefined>((cb) => this.client.get(key, cb))
+  async get(key: string): Promise<string | null> {
+    return fromCallback<string | null>((cb) => this.client.get(key, cb))
   }
   async del(...keys: string[]): Promise<number> {
     return fromCallback<number>((cb) => this.client.del(...keys, cb))
