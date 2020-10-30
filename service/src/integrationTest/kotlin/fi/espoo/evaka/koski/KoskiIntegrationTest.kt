@@ -29,6 +29,7 @@ import fi.espoo.evaka.shared.dev.insertTestAssistanceNeed
 import fi.espoo.evaka.shared.dev.insertTestDaycare
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.ClosedPeriod
+import fi.espoo.evaka.shared.domain.toClosedPeriod
 import fi.espoo.evaka.testAreaId
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
@@ -56,7 +57,6 @@ class KoskiIntegrationTest : FullApplicationTest() {
         koskiTester = KoskiTester(
             jdbi,
             KoskiClient(
-                jdbi = jdbi,
                 env = env,
                 baseUrl = "http://localhost:${koskiServer.port}",
                 asyncJobRunner = null
@@ -677,6 +677,56 @@ class KoskiIntegrationTest : FullApplicationTest() {
                 Opiskeluoikeusjakso.läsnä(preschoolTerm2020.start),
                 Opiskeluoikeusjakso.loma(holiday.start),
                 Opiskeluoikeusjakso.läsnä(holiday.end.plusDays(1)),
+                Opiskeluoikeusjakso.valmistunut(preschoolTerm2020.end)
+            ),
+            opiskeluoikeus.tila.opiskeluoikeusjaksot
+        )
+    }
+
+    @Test
+    fun `preparatory is considered resigned if absence periods longer than week make up more than 30 days in total`() {
+        insertPlacement(period = preschoolTerm2020, type = PlacementType.PREPARATORY)
+        val absences = listOf(
+            ClosedPeriod(preschoolTerm2020.start.plusDays(1), preschoolTerm2020.start.plusDays(20)),
+            ClosedPeriod(preschoolTerm2020.start.plusDays(50), preschoolTerm2020.start.plusDays(80))
+        )
+        insertAbsences(testChild_1.id, AbsenceType.UNKNOWN_ABSENCE, *absences.toTypedArray())
+
+        val today = preschoolTerm2020.end.plusDays(1)
+        koskiTester.triggerUploads(today)
+
+        val opiskeluoikeus = koskiServer.getStudyRights().values.single().opiskeluoikeus
+        assertEquals(
+            listOf(
+                Opiskeluoikeusjakso.läsnä(preschoolTerm2020.start),
+                Opiskeluoikeusjakso.väliaikaisestiKeskeytynyt(absences[0].start),
+                Opiskeluoikeusjakso.läsnä(absences[0].end.plusDays(1)),
+                Opiskeluoikeusjakso.väliaikaisestiKeskeytynyt(absences[1].start),
+                Opiskeluoikeusjakso.läsnä(absences[1].end.plusDays(1)),
+                Opiskeluoikeusjakso.eronnut(preschoolTerm2020.end)
+            ),
+            opiskeluoikeus.tila.opiskeluoikeusjaksot
+        )
+        val suoritus = opiskeluoikeus.suoritukset.single()
+        assertNull(suoritus.vahvistus)
+    }
+
+    @Test
+    fun `preparatory is not considered resigned even with many random absence days which are non-contiguous`() {
+        insertPlacement(period = preschoolTerm2020, type = PlacementType.PREPARATORY)
+
+        val absencesEveryOtherDay =
+            (1..90 step 2).map { preschoolTerm2020.start.plusDays(it.toLong()).toClosedPeriod() }
+        assertEquals(45, absencesEveryOtherDay.size)
+        insertAbsences(testChild_1.id, AbsenceType.UNKNOWN_ABSENCE, *absencesEveryOtherDay.toTypedArray())
+
+        val today = preschoolTerm2020.end.plusDays(1)
+        koskiTester.triggerUploads(today)
+
+        val opiskeluoikeus = koskiServer.getStudyRights().values.single().opiskeluoikeus
+        assertEquals(
+            listOf(
+                Opiskeluoikeusjakso.läsnä(preschoolTerm2020.start),
                 Opiskeluoikeusjakso.valmistunut(preschoolTerm2020.end)
             ),
             opiskeluoikeus.tila.opiskeluoikeusjaksot

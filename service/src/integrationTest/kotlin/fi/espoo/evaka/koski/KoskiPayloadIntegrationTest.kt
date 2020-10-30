@@ -34,7 +34,6 @@ class KoskiPayloadIntegrationTest : FullApplicationTest() {
         koskiTester = KoskiTester(
             jdbi,
             KoskiClient(
-                jdbi = jdbi,
                 env = env,
                 baseUrl = "http://localhost:${koskiServer.port}",
                 asyncJobRunner = null
@@ -710,7 +709,7 @@ class KoskiPayloadIntegrationTest : FullApplicationTest() {
                                                     "koodistoUri": "arviointiasteikkoyleissivistava"
                                                 },
                                                 "kuvaus": {
-                                                    "fi": "Keskustelee sujuvasti suomeksi"
+                                                    "fi": "Suorittanut perusopetukseen valmistavan opetuksen esiopetuksen yhteydessä"
                                                 }
                                             }
                                         ],

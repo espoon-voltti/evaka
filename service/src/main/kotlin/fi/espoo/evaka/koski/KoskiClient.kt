@@ -22,7 +22,6 @@ import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.UploadToKoski
 import mu.KotlinLogging
 import org.jdbi.v3.core.Handle
-import org.jdbi.v3.core.Jdbi
 import org.springframework.core.env.Environment
 import org.springframework.stereotype.Component
 import java.time.LocalDate
@@ -31,7 +30,6 @@ private val logger = KotlinLogging.logger { }
 
 @Component
 class KoskiClient(
-    private val jdbi: Jdbi,
     private val env: Environment,
     private val baseUrl: String = env.getRequiredProperty("fi.espoo.integration.koski.url"),
     private val sourceSystem: String = env.getRequiredProperty("fi.espoo.integration.koski.source_system"),
@@ -62,7 +60,7 @@ class KoskiClient(
         }
         val payload = objectMapper.writeValueAsString(data.oppija)
         if (!h.isPayloadChanged(msg.key, payload)) {
-            logger.info { "Koski upload ${msg.key}: no change in payload -> skipping" }
+            logger.info { "Koski upload ${msg.key} ${data.operation}: no change in payload -> skipping" }
         } else {
             val (_, _, result) = Fuel.request(
                 method = if (data.operation == KoskiOperation.CREATE) Method.POST else Method.PUT,
@@ -78,7 +76,7 @@ class KoskiClient(
             val response: HenkilönOpiskeluoikeusVersiot = try {
                 objectMapper.readValue(result.get())
             } catch (error: FuelError) {
-                logger.error { "Koski upload ${msg.key}: ${error.response}" }
+                logger.error(error) { "Koski upload ${msg.key} ${data.operation} failed: ${error.response}" }
                 throw error
             }
             h.finishKoskiUpload(
@@ -101,7 +99,7 @@ class KoskiClient(
                     )
                 )
             )
-            logger.info { "Koski upload ${msg.key}: finished ${data.operation}" }
+            logger.info { "Koski upload ${msg.key} ${data.operation}: finished" }
         }
     }
 }
