@@ -180,10 +180,16 @@ executors:
     <<: *node_config
     docker:
       - image: *nodejs_image
+        auth:
+          username: $DOCKERHUB_USERNAME
+          password: $DOCKERHUB_PASSWORD
   frontend_executor:
     <<: *node_config
     docker:
       - image: *nodejs_image
+        auth:
+          username: $DOCKERHUB_USERNAME
+          password: $DOCKERHUB_PASSWORD
   e2e_executor:
     <<: *default_config
     machine:
@@ -196,6 +202,9 @@ executors:
       GRADLE_USER_HOME: /home/circleci/repo/service/.gradle-user-home
     docker:
       - image: *openjdk_image
+        auth:
+          username: $DOCKERHUB_USERNAME
+          password: $DOCKERHUB_PASSWORD
   service_test_executor:
     <<: *jvm_config
     environment:
@@ -209,6 +218,9 @@ executors:
       GRADLE_USER_HOME: /home/circleci/repo/message-service/.gradle-user-home
     docker:
       - image: *openjdk_image
+        auth:
+          username: $DOCKERHUB_USERNAME
+          password: $DOCKERHUB_PASSWORD
   message_service_test_executor:
     <<: *jvm_config
     environment:
@@ -217,6 +229,19 @@ executors:
       image: *ubuntu_machine_image
 
 commands:
+  login_docker_hub:
+    description: Log in to Docker Hub for authenticated pulls
+    steps:
+      - run: echo "$DOCKERHUB_PASSWORD" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+
+  setup_authenticated_remote_docker:
+    description: Setup remote Docker execution environment with Docker Hub authentication
+    steps:
+      - setup_remote_docker:
+          version: *remote_docker_version
+          docker_layer_caching: true
+      - login_docker_hub
+
   build_frontend:
     parameters:
       dir:
@@ -264,6 +289,7 @@ commands:
           command: |
             docker load -i apigw/image.tar
             docker load -i service/image.tar
+      - login_docker_hub
       - run:
           name: Start up compose stack
           working_directory: *workspace_compose
@@ -497,8 +523,7 @@ jobs:
     steps:
       - *restore_repo
       - *attach_workspace
-      - setup_remote_docker:
-          version: *remote_docker_version
+      - setup_authenticated_remote_docker
       - run:
           name: Build base image
           working_directory: *workspace_evaka_base
@@ -661,8 +686,7 @@ jobs:
     executor: aws_executor
     steps:
       - *restore_repo
-      - setup_remote_docker:
-          version: *remote_docker_version
+      - setup_authenticated_remote_docker
       - build_docker_image:
           image: evaka/proxy
           dir: *workspace_proxy
@@ -721,6 +745,7 @@ jobs:
           command: ./gradlew test
       - store_test_results:
           path: /home/circleci/repo/service/build/test-results/test/
+      - login_docker_hub
       - run:
           working_directory: *workspace_service
           command: ./gradlew integrationTest
@@ -773,6 +798,7 @@ jobs:
           command: ./gradlew test
       - store_test_results:
           path: /home/circleci/repo/message-service/build/test-results/test/
+      - login_docker_hub
       - run:
           working_directory: *workspace_message_service
           command: ./gradlew integrationTest
@@ -804,89 +830,121 @@ workflows:
   version: 2
   build_test_and_deploy:
     jobs:
-      - checkout_repo
+      - checkout_repo:
+          context:
+            - voltti-dockerhub
       - fetch_private_dependencies:
-          context: org-global
+          context:
+            - org-global
           requires:
             - checkout_repo
       - build_base_image:
+          context:
+            - voltti-dockerhub
           requires:
             - checkout_repo
 
       - apigw_build_and_test:
+          context:
+            - voltti-dockerhub
           requires:
             - checkout_repo
       - apigw_build_image:
-          context: org-global
+          context:
+            - org-global
           requires:
             - build_base_image
             - apigw_build_and_test
       - apigw_push_image:
-          context: org-global
+          context:
+            - org-global
           requires:
             - apigw_build_image
 
       - frontend_build_and_test:
-          context: org-global
+          context:
+            - voltti-dockerhub
           requires:
             - fetch_private_dependencies
       - e2e-test-application:
+          context:
+            - voltti-dockerhub
           requires:
             - frontend_build_and_test
             - apigw_build_image
             - service_build_image
       - e2e-test-invoicing:
+          context:
+            - voltti-dockerhub
           requires:
             - frontend_build_and_test
             - apigw_build_image
             - service_build_image
       - e2e-test-employee:
+          context:
+            - voltti-dockerhub
           requires:
             - frontend_build_and_test
             - apigw_build_image
             - service_build_image
       - e2e-test-employee-2:
+          context:
+            - voltti-dockerhub
           requires:
             - frontend_build_and_test
             - apigw_build_image
             - service_build_image
 
       - proxy_build_and_push_image:
-          context: org-global
+          context:
+            - org-global
+            - voltti-dockerhub
           requires:
             - checkout_repo
 
       - service_build:
+          context:
+            - voltti-dockerhub
           requires:
             - checkout_repo
       - service_build_image:
-          context: org-global
+          context:
+            - org-global
           requires:
             - build_base_image
             - service_build
       - service_test:
+          context:
+            - voltti-dockerhub
           requires:
             - service_build
       - service_push_image:
-          context: org-global
+          context:
+            - org-global
           requires:
             - service_build_image
             - service_test
 
       - message_service_build:
+          context:
+            - voltti-dockerhub
           requires:
             - checkout_repo
       - message_service_test:
+          context:
+            - voltti-dockerhub
           requires:
             - message_service_build
       - message_service_build_and_push_image:
-          context: org-global
+          context:
+            - org-global
           requires:
             - build_base_image
             - message_service_test
 
       - clone_infra_repo:
-          context: org-global
+          context:
+            - org-global
           requires:
             - e2e-test-application
             - e2e-test-invoicing
@@ -901,7 +959,8 @@ workflows:
               only: master
 
       - services_deploy_dev:
-          context: org-global
+          context:
+            - org-global
           requires:
             - clone_infra_repo
           filters:
@@ -909,7 +968,8 @@ workflows:
               only: master
 
       - services_deploy_test:
-          context: org-global
+          context:
+            - org-global
           requires:
             - clone_infra_repo
           filters:
@@ -917,14 +977,16 @@ workflows:
               only: master
 
       - frontend_deploy_dev:
-          context: org-global
+          context:
+            - org-global
           requires:
             - clone_infra_repo
           filters:
             branches:
               only: master
       - frontend_deploy_test:
-          context: org-global
+          context:
+            - org-global
           requires:
             - clone_infra_repo
           filters:
@@ -939,7 +1001,8 @@ workflows:
             branches:
               only: master
       - frontend_deploy_staging:
-          context: org-global
+          context:
+            - org-global
           requires:
             - frontend_approve_staging_deploy
           filters:
@@ -953,7 +1016,8 @@ workflows:
             branches:
               only: master
       - frontend_deploy_prod:
-          context: org-global
+          context:
+            - org-global
           requires:
             - frontend_approve_prod_deploy
           filters:
