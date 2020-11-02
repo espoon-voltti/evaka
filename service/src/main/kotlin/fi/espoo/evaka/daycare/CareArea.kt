@@ -8,7 +8,6 @@ import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.shared.domain.Coordinate
 import org.jdbi.v3.core.mapper.Nested
-import java.time.DayOfWeek
 import java.time.LocalDate
 import java.util.UUID
 
@@ -62,9 +61,7 @@ data class Daycare(
     val ophOrganizerOid: String?,
     val ophOrganizationOid: String?,
     val operationDays: Set<Int>
-) {
-    fun operationDaysOfWeek(): Set<DayOfWeek> = operationDays.map(DayOfWeek::of).toSet()
-}
+)
 
 data class UnitManager(
     val name: String?,

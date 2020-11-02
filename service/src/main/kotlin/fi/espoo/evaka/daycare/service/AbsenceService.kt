@@ -17,7 +17,6 @@ import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.Jdbi
 import org.jdbi.v3.core.kotlin.mapTo
 import org.springframework.stereotype.Service
-import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.temporal.TemporalAdjusters.lastDayOfMonth
 import java.util.UUID
@@ -61,7 +60,7 @@ class AbsenceService(private val db: Jdbi, private val personService: PersonServ
                 }
                 .distinct()
 
-            AbsenceGroup(groupId, daycare.name, groupName, children, daycare.operationDaysOfWeek())
+            AbsenceGroup(groupId, daycare.name, groupName, children, daycare.operationDays)
         }
     }
 
@@ -189,7 +188,7 @@ data class AbsenceGroup(
     val daycareName: String,
     var groupName: String,
     var children: List<AbsenceChild>,
-    val operationDays: Set<DayOfWeek>
+    val operationDays: Set<Int>
 )
 
 data class AbsenceChild(

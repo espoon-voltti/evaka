@@ -121,14 +121,7 @@ export const deserializeAbsence = (absence: JsonOf<Absence>): Absence => ({
   modifiedAt: absence.modifiedAt ? new Date(absence.modifiedAt) : undefined
 })
 
-export type DayOfWeek =
-  | 'MONDAY'
-  | 'TUESDAY'
-  | 'WEDNESDAY'
-  | 'THURSDAY'
-  | 'FRIDAY'
-  | 'SATURDAY'
-  | 'SUNDAY'
+export type DayOfWeek = 0 | 1 | 2 | 3 | 4 | 5 | 6
 
 export interface Group {
   groupId: UUID

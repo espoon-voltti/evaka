@@ -12,7 +12,6 @@ import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.Jdbi
 import org.jdbi.v3.core.kotlin.mapTo
 import org.springframework.stereotype.Service
-import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.temporal.TemporalAdjusters.lastDayOfMonth
 import java.util.UUID
@@ -31,7 +30,7 @@ class StaffAttendanceService(private val jdbi: Jdbi) {
             val attendanceMap = composeAttendanceMap(rangeStart, rangeEnd, groupId, attendanceList)
 
             val daycare = h.getDaycare(getDaycareIdByGroup(groupId, h)) ?: throw BadRequest("Couldn't find daycare with group with id $groupId")
-            StaffAttendanceGroup(groupId, groupInfo.groupName, groupInfo.startDate, endDate, attendanceMap, daycare.operationDaysOfWeek())
+            StaffAttendanceGroup(groupId, groupInfo.groupName, groupInfo.startDate, endDate, attendanceMap, daycare.operationDays)
         }
     }
 
@@ -66,7 +65,7 @@ data class StaffAttendanceGroup(
     val startDate: LocalDate,
     val endDate: LocalDate?,
     val attendances: Map<LocalDate, StaffAttendance?>,
-    val operationDays: Set<DayOfWeek>
+    val operationDays: Set<Int>
 )
 
 data class StaffAttendance(

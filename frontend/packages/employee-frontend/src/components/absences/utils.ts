@@ -16,18 +16,8 @@ export function getRange(num: number) {
   return nums
 }
 
-const weekdayNumberToDayOfWeek = {
-  0: 'SUNDAY',
-  1: 'MONDAY',
-  2: 'TUESDAY',
-  3: 'WEDNESDAY',
-  4: 'THURSDAY',
-  5: 'FRIDAY',
-  6: 'SATURDAY'
-}
-
 export function dateIsDayOfWeek(date: LocalDate, dayOfWeek: DayOfWeek) {
-  return weekdayNumberToDayOfWeek[date.toSystemTzDate().getDay()] == dayOfWeek
+  return date.toSystemTzDate().getDay() == dayOfWeek
 }
 
 export function getWeekDay(date: LocalDate) {
