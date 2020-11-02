@@ -47,7 +47,7 @@ export default React.memo(function GroupRenameModal({ group, reload }: Props) {
       <FixedSpaceColumn>
         <Section>
           <div className="bold">{i18n.unit.groups.renameModal.name}</div>
-          <InputField value={name} onChange={setName} />
+          <InputField value={name} onChange={setName} data-qa={'name-input'} />
         </Section>
         <InfoBox message={i18n.unit.groups.renameModal.info} thin />
       </FixedSpaceColumn>

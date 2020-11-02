@@ -87,6 +87,21 @@ test('daycare has an empty group', async (t) => {
   await t.expect(group.noChildrenPlaceholder.visible).ok()
 })
 
+test('Unit group can be renamed', async (t) => {
+  await unitPage.navigateHere(fixtures.daycareFixture.id)
+  await unitPage.openTabGroups()
+
+  await t.expect(unitPage.groups.count).eql(1)
+  const group = daycareGroupElement(unitPage.groups.nth(0))
+
+  await t.click(group.groupRenameBtn)
+  await t.selectText(unitPage.groupRenameModal.input)
+  await t.typeText(unitPage.groupRenameModal.input, 'Uusi nimi')
+  await t.click(unitPage.groupRenameModal.submit)
+
+  await t.expect(group.groupName.textContent).eql('Uusi nimi')
+})
+
 test('daycare has one child missing group', async (t) => {
   await unitPage.navigateHere(fixtures.daycareFixture.id)
   await unitPage.openTabGroups()
