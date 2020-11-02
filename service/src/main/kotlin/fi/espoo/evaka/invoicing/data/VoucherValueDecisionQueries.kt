@@ -315,7 +315,7 @@ fun Handle.searchValueDecisions(
                 LEFT JOIN daycare ON voucher_value_decision_part.placement_unit = daycare.id
                 LEFT JOIN care_area ON daycare.care_area_id = care_area.id
             )
-            SELECT decision.id, count(*) OVER (), max(sums.sum) total_co_payment
+            SELECT decision.id, count(*) OVER (), max(sums.co_payment) total_co_payment, max(sums.voucher_value) total_value
             FROM voucher_value_decision AS decision
             LEFT JOIN voucher_value_decision_part AS part ON decision.id = part.voucher_value_decision_id
             LEFT JOIN person AS head ON decision.head_of_family = head.id
@@ -323,16 +323,16 @@ fun Handle.searchValueDecisions(
             LEFT JOIN person AS child ON part.child = child.id
             LEFT JOIN youngest_child ON decision.id = youngest_child.decision_id AND rownum = 1
             LEFT JOIN (
-                SELECT final_co_payments.id, sum(final_co_payments.final_co_payment) sum
+                SELECT final_co_payments.id, sum(final_co_payments.final_co_payment) co_payment, sum(final_co_payments.voucher_value) voucher_value
                 FROM (
-                    SELECT vd.id, coalesce(vdp.co_payment + coalesce(sum(effects.effect), 0), 0) AS final_co_payment
+                    SELECT vd.id, coalesce(vdp.co_payment + coalesce(sum(effects.effect), 0), 0) AS final_co_payment, voucher_value
                     FROM voucher_value_decision vd
                     LEFT JOIN voucher_value_decision_part vdp ON vd.id = vdp.voucher_value_decision_id
                     LEFT JOIN (
                         SELECT id, (jsonb_array_elements(fee_alterations)->>'effect')::integer effect
                         FROM voucher_value_decision_part
                     ) effects ON vdp.id = effects.id
-                    GROUP BY vd.id, vdp.id, vdp.co_payment
+                    GROUP BY vd.id, vdp.id, vdp.co_payment, vdp.voucher_value
                 ) final_co_payments
                 GROUP BY final_co_payments.id
             ) sums ON decision.id = sums.id
@@ -349,6 +349,7 @@ fun Handle.searchValueDecisions(
         SELECT
             decision_ids.count,
             decision_ids.total_co_payment,
+            decision_ids.total_value,
             decision.*,
             part.child,
             part.date_of_birth,
@@ -396,6 +397,7 @@ fun Handle.getVoucherValueDecision(mapper: ObjectMapper, id: UUID): VoucherValue
             part.co_payment,
             part.fee_alterations,
             part.base_value,
+            date_part('year', age(decision.valid_from, part.date_of_birth)) child_age,
             part.age_coefficient,
             part.service_coefficient,
             part.voucher_value,
@@ -587,6 +589,7 @@ val toVoucherValueDecisionSummary = { rs: ResultSet, _: StatementContext ->
             )
         } ?: emptyList(),
         totalCoPayment = rs.getInt("total_co_payment"),
+        totalValue = rs.getInt("total_value"),
         approvedAt = rs.getTimestamp("approved_at")?.toInstant(),
         createdAt = rs.getTimestamp("created_at").toInstant(),
         sentAt = rs.getTimestamp("sent_at")?.toInstant()
@@ -663,6 +666,7 @@ fun toVoucherValueDecisionDetailed(mapper: ObjectMapper) = { rs: ResultSet, _: S
                     coPayment = rs.getInt("co_payment"),
                     feeAlterations = mapper.readValue(rs.getString("fee_alterations")),
                     baseValue = rs.getInt("base_value"),
+                    childAge = rs.getInt("child_age"),
                     ageCoefficient = rs.getInt("age_coefficient"),
                     serviceCoefficient = rs.getInt("service_coefficient"),
                     value = rs.getInt("voucher_value")

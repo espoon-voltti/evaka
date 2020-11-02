@@ -642,9 +642,9 @@ fun setCheckedByAdminToDefault(h: Handle, id: UUID, form: ApplicationForm) {
     val sql = "UPDATE application SET checkedbyadmin = :checked WHERE id = :applicationId"
 
     val default = !form.child.assistanceNeeded &&
-        form.child.allergies.isEmpty() &&
-        form.child.diet.isEmpty() &&
-        form.otherInfo.isEmpty()
+        form.child.allergies.isBlank() &&
+        form.child.diet.isBlank() &&
+        form.otherInfo.isBlank()
 
     h.createUpdate(sql)
         .bind("applicationId", id)

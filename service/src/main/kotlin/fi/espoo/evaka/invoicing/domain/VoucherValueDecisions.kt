@@ -17,7 +17,6 @@ import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
 import java.util.UUID
-import kotlin.math.max
 
 data class VoucherValueDecision(
     override val id: UUID,
@@ -104,8 +103,10 @@ data class VoucherValueDecisionDetailed(
     override fun withParts(parts: List<VoucherValueDecisionPartDetailed>) = this.copy(parts = parts)
 
     @JsonProperty("totalCoPayment")
-    fun totalCoPayment(): Int =
-        max(0, parts.fold(0) { sum, part -> sum + part.finalCoPayment() })
+    fun totalCoPayment() = parts.fold(0) { sum, part -> sum + part.finalCoPayment() }
+
+    @JsonProperty("totalValue")
+    fun totalValue() = parts.fold(0) { sum, part -> sum + part.value }
 
     @JsonProperty("incomeEffect")
     fun incomeEffect(): IncomeEffect =
@@ -151,6 +152,7 @@ data class VoucherValueDecisionPartDetailed(
     val coPayment: Int,
     val feeAlterations: List<FeeAlterationWithEffect>,
     val baseValue: Int,
+    val childAge: Int,
     val ageCoefficient: Int,
     val serviceCoefficient: Int,
     val value: Int
@@ -172,6 +174,7 @@ data class VoucherValueDecisionSummary(
     val decisionNumber: Long? = null,
     val headOfFamily: PersonData.Basic,
     val totalCoPayment: Int,
+    val totalValue: Int,
     val approvedAt: Instant? = null,
     val createdAt: Instant = Instant.now(),
     val sentAt: Instant? = null

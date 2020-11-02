@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { Fragment } from 'react'
+import React from 'react'
 import styled from 'styled-components'
 import { H3, H4 } from '~components/shared/Typography'
 import Section from '~components/shared/layout/Section'
@@ -16,34 +16,35 @@ type Props = {
   decision: VoucherValueDecisionDetailed
 }
 
-export default React.memo(function VoucherValueDecisionPartsSection({
+export default React.memo(function VoucherValueDecisionValueSection({
   decision
 }: Props) {
   const { i18n } = useTranslation()
 
   return (
     <Section>
-      <H3 noMargin>{i18n.valueDecision.summary.parts}</H3>
+      <H3 noMargin>{i18n.valueDecision.summary.values}</H3>
       <Gap size="s" />
       {decision.parts.map(
         ({
           child,
           placement,
-          coPayment,
-          siblingDiscount,
-          serviceNeedMultiplier,
-          feeAlterations,
-          finalCoPayment
+          childAge,
+          ageCoefficient,
+          serviceCoefficient,
+          value
         }) => {
           const mainDescription = `${
-            i18n.placement.type[placement.type]
-          }, ${i18n.placement.serviceNeed[
-            placement.serviceNeed
-          ].toLowerCase()} (${serviceNeedMultiplier} %)${
-            siblingDiscount
-              ? `, ${i18n.valueDecision.summary.siblingDiscount} ${siblingDiscount}%`
+            i18n.valueDecision.summary.age[
+              childAge < 3 ? 'LESS_THAN_3' : 'OVER_3'
+            ]
+          } (${ageCoefficient} %), ${i18n.placement.type[
+            placement.type
+          ].toLowerCase()}${
+            placement.hours
+              ? `, ${placement.hours} ${i18n.valueDecision.summary.hoursPerWeek}`
               : ''
-          }`
+          } (${serviceCoefficient} %)`
 
           return (
             <Part key={child.id}>
@@ -53,23 +54,7 @@ export default React.memo(function VoucherValueDecisionPartsSection({
               <Gap size="xs" />
               <PartRow>
                 <span>{mainDescription}</span>
-                <b>{`${formatCents(coPayment) ?? ''} €`}</b>
-              </PartRow>
-              <Gap size="xs" />
-              {feeAlterations.map((feeAlteration, index) => (
-                <Fragment key={index}>
-                  <PartRow>
-                    <span>{`${i18n.feeAlteration[feeAlteration.type]} ${
-                      feeAlteration.amount
-                    }${feeAlteration.isAbsolute ? '€' : '%'}`}</span>
-                    <b>{`${formatCents(feeAlteration.effect) ?? ''} €`}</b>
-                  </PartRow>
-                  <Gap size="xs" />
-                </Fragment>
-              ))}
-              <PartRow>
-                <b>{i18n.valueDecision.summary.sum}</b>
-                <b>{formatCents(finalCoPayment)} €</b>
+                <b>{`${formatCents(value) ?? ''} €`}</b>
               </PartRow>
             </Part>
           )

@@ -24,6 +24,7 @@ import { VoucherValueDecisionSummary } from '../../types/invoicing'
 import { SearchOrder } from '~types'
 import { isFailure, isLoading, isSuccess, Result } from '../../api'
 import { formatDate } from '../../utils/date'
+import { formatCents } from '../../utils/money'
 import { SortByVoucherValueDecisions } from '../../api/invoicing'
 import Pagination from '~components/shared/Pagination'
 
@@ -114,6 +115,8 @@ export default React.memo(function VoucherValueDecisions({
               <Td>{`${item.validFrom.format()} - ${
                 item.validTo?.format() ?? ''
               }`}</Td>
+              <Td>{formatCents(item.totalValue)}</Td>
+              <Td>{formatCents(item.totalCoPayment)}</Td>
               <Td>{item.decisionNumber}</Td>
               <Td>{formatDate(item.createdAt)}</Td>
               <Td>{formatDate(item.sentAt)}</Td>
@@ -162,6 +165,8 @@ export default React.memo(function VoucherValueDecisions({
             </SortableTh>
             <Th>{i18n.valueDecisions.table.children}</Th>
             <Th>{i18n.valueDecisions.table.validity}</Th>
+            <Th>{i18n.valueDecisions.table.totalValue}</Th>
+            <Th>{i18n.valueDecisions.table.totalCoPayment}</Th>
             <Th>{i18n.valueDecisions.table.number}</Th>
             <Th>{i18n.valueDecisions.table.createdAt}</Th>
             <Th>{i18n.valueDecisions.table.sentAt}</Th>

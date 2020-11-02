@@ -1278,6 +1278,8 @@ export const fi = {
       head: 'Päämies',
       children: 'Lapset',
       validity: 'Arvopäätös voimassa',
+      totalValue: 'PS-Arvo',
+      totalCoPayment: 'Omavastuu',
       number: 'Numero',
       status: 'Tila',
       createdAt: 'Luotu',
@@ -1508,6 +1510,7 @@ export const fi = {
       sum: 'Summa',
       siblingDiscount: 'Sisarusalennus',
       totalCoPayment: 'Perheen omavastuu yhteensä',
+      totalValue: 'Perheen palvelusetelien arvo yhteensä',
       income: {
         title: 'Kooste perheen tuloista',
         effect: {
@@ -1545,7 +1548,13 @@ export const fi = {
         persons: ' henkilöä',
         feePercent: 'Maksuprosentti',
         minThreshold: 'Vähimmäisbruttoraja'
-      }
+      },
+      values: 'Kooste perheen palvelusetelien arvoista',
+      age: {
+        LESS_THAN_3: 'Alle 3-vuotias',
+        OVER_3: 'Vähintään 3-vuotias'
+      },
+      hoursPerWeek: 'tuntia viikossa'
     }
   },
   // these are directly used by date picker so order and naming matters!

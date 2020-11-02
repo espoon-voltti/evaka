@@ -141,6 +141,10 @@ export interface Placement {
   serviceNeed: ServiceNeed
 }
 
+export interface PlacementWithHours extends Placement {
+  hours: number | null
+}
+
 export interface InvoiceCodes {
   products: Product[]
   agreementTypes: number[]
@@ -303,6 +307,7 @@ export interface VoucherValueDecisionDetailed {
   minThreshold: number
   feePercent: number
   totalCoPayment: number
+  totalValue: number
   incomeEffect: IncomeEffect | 'NOT_AVAILABLE'
   totalIncome: number | null
   requiresManualSending: boolean
@@ -311,7 +316,7 @@ export interface VoucherValueDecisionDetailed {
 
 export interface VoucherValueDecisionPartDetailed {
   child: PersonDetailed
-  placement: Placement
+  placement: PlacementWithHours
   placementUnit: UnitDetailed
   baseCoPayment: number
   siblingDiscount: number
@@ -319,6 +324,11 @@ export interface VoucherValueDecisionPartDetailed {
   feeAlterations: FeeDecisionAlteration[]
   finalCoPayment: number
   serviceNeedMultiplier: number
+  baseValue: number
+  childAge: number
+  ageCoefficient: number
+  serviceCoefficient: number
+  value: number
 }
 
 export interface VoucherValueDecisionSummary {
@@ -332,5 +342,6 @@ export interface VoucherValueDecisionSummary {
   approvedAt: Date | null
   createdAt: Date
   sentAt: Date | null
-  coPaymentSum: number
+  totalCoPayment: number
+  totalValue: number
 }
