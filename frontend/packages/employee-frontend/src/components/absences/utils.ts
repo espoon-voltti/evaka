@@ -4,7 +4,7 @@
 
 import LocalDate from '@evaka/lib-common/src/local-date'
 import { translations } from '~assets/i18n'
-import { DayOfWeek } from '~types/absence'
+import { DayOfWeek } from '~types'
 
 export function getRange(num: number) {
   const nums = []

@@ -28,3 +28,5 @@ export const adRoles = [
 export type AdRole = typeof adRoles[number]
 
 export type SearchOrder = 'ASC' | 'DESC'
+
+export type DayOfWeek = 0 | 1 | 2 | 3 | 4 | 5 | 6

@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { UUID } from '~types'
+import { DayOfWeek, UUID } from '~types'
 import LocalDate from '@evaka/lib-common/src/local-date'
 import { JsonOf } from '@evaka/lib-common/src/json'
 
@@ -120,8 +120,6 @@ export const deserializeAbsence = (absence: JsonOf<Absence>): Absence => ({
   date: LocalDate.parseIso(absence.date),
   modifiedAt: absence.modifiedAt ? new Date(absence.modifiedAt) : undefined
 })
-
-export type DayOfWeek = 0 | 1 | 2 | 3 | 4 | 5 | 6
 
 export interface Group {
   groupId: UUID

@@ -14,7 +14,7 @@ import { Td, Tr } from '~components/shared/layout/Table'
 import { DisabledCell } from '~components/absences/AbsenceCell'
 import { useTranslation } from '~state/i18n'
 import { AbsencesContext } from '~state/absence'
-import {DayOfWeek, StaffAttendance, StaffAttendanceGroup} from '~types/absence'
+import { StaffAttendance, StaffAttendanceGroup } from '~types/absence'
 import { isSuccess, Loading, Result } from '~api'
 import { getStaffAttendances, postStaffAttendance } from '~api/absences'
 import './Absences.scss'
@@ -25,7 +25,8 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import styled from 'styled-components'
 import Tooltip from '~components/common/Tooltip'
 import { EspooColours } from '~utils/colours'
-import {isOperationDay} from "~components/absences/utils";
+import { isOperationDay } from '~components/absences/utils'
+import { DayOfWeek } from '~types'
 
 type Props = {
   groupId: string
@@ -33,7 +34,11 @@ type Props = {
   operationDays: DayOfWeek[]
 }
 
-export default memo(function StaffAttendance({ groupId, emptyCols, operationDays }: Props) {
+export default memo(function StaffAttendance({
+  groupId,
+  emptyCols,
+  operationDays
+}: Props) {
   const isMountedRef = useRef(true)
   const { selectedDate } = useContext(AbsencesContext)
 
@@ -113,16 +118,18 @@ const StaffAttendanceRow = memo(function StaffAttendanceRow({
       {Object.keys(attendanceMap)
         .sort()
         .map((key) => {
-          return (
-            isOperationDay(attendanceMap[key].date, operationDays) ? <Td key={key}>
+          return isOperationDay(attendanceMap[key].date, operationDays) ? (
+            <Td key={key}>
               <StaffAttendanceCell
                 updateAttendances={updateAttendances}
                 attendance={attendanceMap[key]}
                 disabled={isDisabled(attendanceMap[key])}
               />
-            </Td> : <Td key={key}>
-            <DisabledCell />
-          </Td>
+            </Td>
+          ) : (
+            <Td key={key}>
+              <DisabledCell />
+            </Td>
           )
         })}
       {emptyCols.map((item) => (

@@ -20,7 +20,7 @@ import Button from '~components/shared/atoms/buttons/Button'
 import Radio from '~components/shared/atoms/form/Radio'
 import Checkbox from '~components/shared/atoms/form/Checkbox'
 import { DaycareFields } from '~api/unit'
-import { UUID } from '~types'
+import { DayOfWeek, UUID } from '~types'
 import { isFailure, isLoading, Result } from '~api'
 import { Translations, useTranslation } from '~state/i18n'
 import { EspooColours } from '~utils/colours'
@@ -66,6 +66,7 @@ interface FormData {
   ophUnitOid: string
   ophOrganizerOid: string
   ophOrganizationOid: string
+  operationDays: DayOfWeek[]
 }
 
 interface UnitDecisionCustomization {
@@ -129,6 +130,11 @@ const DaycareTypeSelectContainer = styled.div`
   & > * {
     flex: 0 1 auto;
   }
+`
+
+const OperationDaysContainer = styled.div`
+  display: flex;
+  align-items: center;
 `
 
 const CapacityInputContainer = styled.div`
@@ -339,7 +345,8 @@ function validateForm(
     invoicedByMunicipality,
     ophUnitOid,
     ophOrganizerOid,
-    ophOrganizationOid
+    ophOrganizationOid,
+    operationDays
   } = form
 
   if (
@@ -386,7 +393,8 @@ function validateForm(
         },
         ophUnitOid,
         ophOrganizerOid,
-        ophOrganizationOid
+        ophOrganizationOid,
+        operationDays
       },
       errors
     ]
@@ -457,7 +465,8 @@ function toFormData(unit: Unit | undefined): FormData {
       name: unit?.unitManager?.name ?? '',
       phone: unit?.unitManager?.phone ?? '',
       email: unit?.unitManager?.email ?? ''
-    }
+    },
+    operationDays: unit?.operationDays ?? []
   }
 }
 
@@ -702,6 +711,61 @@ export default function UnitEditor(props: Props): JSX.Element {
         ) : (
           i18n.common.providerType[form.providerType]
         )}
+      </FormPart>
+      <FormPart>
+        <div>{showRequired(i18n.unitEditor.label.operationDays)}</div>
+        <OperationDaysContainer>
+          {[1, 2, 3, 4, 5, 6, 0].map((day) => (
+            <FixedSpaceColumn
+              key={`"weekday-${day}"`}
+              spacing={'xs'}
+              marginRight={'m'}
+              alignItems={'center'}
+            >
+              <div>{i18n.unitEditor.label.operationDay[day]}</div>
+              <Checkbox
+                disabled={!props.editable}
+                checked={
+                  form.operationDays.some(
+                    (selectedDay) => selectedDay == day
+                  ) ?? false
+                }
+                hiddenLabel={true}
+                label={''}
+                onChange={(checked) => {
+                  updateForm({
+                    operationDays: checked
+                      ? [...form.operationDays, day as DayOfWeek]
+                      : form.operationDays.filter((d) => d != day)
+                  })
+                }}
+              />
+            </FixedSpaceColumn>
+          ))}
+        </OperationDaysContainer>
+      </FormPart>
+      <FormPart>
+        <div>{showRequired(i18n.unitEditor.label.canApply)}</div>
+        <FixedSpaceColumn>
+          <Checkbox
+            disabled={!props.editable}
+            label={i18n.unitEditor.field.canApplyDaycare}
+            checked={form.canApplyDaycare}
+            onChange={(canApplyDaycare) => updateForm({ canApplyDaycare })}
+          />
+          <Checkbox
+            disabled={!props.editable}
+            label={i18n.unitEditor.field.canApplyPreschool}
+            checked={form.canApplyPreschool}
+            onChange={(canApplyPreschool) => updateForm({ canApplyPreschool })}
+          />
+          <Checkbox
+            disabled={!props.editable}
+            label={i18n.unitEditor.field.canApplyClub}
+            checked={form.canApplyClub}
+            onChange={(canApplyClub) => updateForm({ canApplyClub })}
+          />
+        </FixedSpaceColumn>
       </FormPart>
       <FormPart>
         <div>{i18n.unitEditor.label.roundTheClock}</div>

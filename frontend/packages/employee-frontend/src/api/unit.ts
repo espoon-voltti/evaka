@@ -22,7 +22,7 @@ import {
   VisitingAddress
 } from '~types/unit'
 import { UnitBackupCare } from '~types/child'
-import { AdRole, UUID } from '~types'
+import { AdRole, DayOfWeek, UUID } from '~types'
 import { JsonOf } from '@evaka/lib-common/src/json'
 import LocalDate from '@evaka/lib-common/src/local-date'
 import { Period, PlacementType } from '~types/placementdraft'
@@ -513,6 +513,7 @@ export interface DaycareFields {
   ophUnitOid: string | null
   ophOrganizerOid: string | null
   ophOrganizationOid: string | null
+  operationDays: DayOfWeek[] | null
 }
 
 interface CreateDaycareResponse {
