@@ -24,7 +24,12 @@ const app = express()
 trustReverseProxy(app)
 app.set('etag', false)
 app.use(nocache())
-app.use(helmet())
+app.use(
+  helmet({
+    // Content-Security-Policy is set by the nginx proxy
+    contentSecurityPolicy: false
+  })
+)
 app.get('/health', (req, res) => res.status(200).json({ status: 'UP' }))
 app.use(tracing)
 app.use(bodyParser.json())
