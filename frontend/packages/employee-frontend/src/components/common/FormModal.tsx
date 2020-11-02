@@ -201,7 +201,10 @@ function FormModal({
               ) : (
                 <Gap size={'L'} />
               )}
-              <form>
+              <form onSubmit={event => {
+                event.preventDefault()
+                if(!resolveDisabled) resolve()
+              }}>
                 {children}
                 <ModalButtons>
                   {reject && (
