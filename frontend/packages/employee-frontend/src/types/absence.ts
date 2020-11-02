@@ -155,4 +155,5 @@ export interface StaffAttendanceGroup {
   startDate: LocalDate
   endDate: LocalDate | null
   attendances: { [key: string]: StaffAttendance }
+  operationDays: DayOfWeek[]
 }

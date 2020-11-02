@@ -7,7 +7,7 @@ import { Link } from 'react-router-dom'
 import classNames from 'classnames'
 import LocalDate from '@evaka/lib-common/src/local-date'
 import { Child, DayOfWeek, TableMode } from '~types/absence'
-import { getRange, getWeekDay, getMonthDays, dateIsDayOfWeek } from './utils'
+import {getRange, getWeekDay, getMonthDays, isOperationDay} from './utils'
 import AbsenceCellWrapper, { DisabledCell } from './AbsenceCell'
 import StaffAttendance from './StaffAttendance'
 import { AbsencesState, AbsencesContext } from '~state/absence'
@@ -69,7 +69,7 @@ function AbsenceTableRow({
       </td>
       <td className={'hover-highlight'}>{child.dob.format()}</td>
       {dateCols.map((date) => {
-        return isOperationDate(date, operationDays) ? (
+        return isOperationDay(date, operationDays) ? (
           <td
             key={`${id}${date.formatIso()}`}
             className={`${
@@ -98,8 +98,6 @@ function AbsenceTableRow({
     </tr>
   )
 }
-const isOperationDate = (date: LocalDate, operationDays: DayOfWeek[]) =>
-  operationDays.some((operationDay) => dateIsDayOfWeek(date, operationDay))
 
 interface AbsenceHeadProps {
   dateCols: LocalDate[]
@@ -119,7 +117,7 @@ function AbsenceTableHead({
         <th>{i18n.absences.table.nameCol}</th>
         <th>{i18n.absences.table.dobCol}</th>
         {dateCols.map((item) =>
-          isOperationDate(item, operationDays) ? (
+          isOperationDay(item, operationDays) ? (
             <th
               key={item.getDate()}
               className={classNames({
@@ -195,7 +193,7 @@ function AbsenceTable({
           />
         ))}
         {renderEmptyRow()}
-        <StaffAttendance groupId={groupId} emptyCols={emptyCols} />
+        <StaffAttendance groupId={groupId} emptyCols={emptyCols} operationDays={operationDays}/>
       </tbody>
     </table>
   )

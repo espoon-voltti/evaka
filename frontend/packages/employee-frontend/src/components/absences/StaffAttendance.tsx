@@ -14,7 +14,7 @@ import { Td, Tr } from '~components/shared/layout/Table'
 import { DisabledCell } from '~components/absences/AbsenceCell'
 import { useTranslation } from '~state/i18n'
 import { AbsencesContext } from '~state/absence'
-import { StaffAttendance, StaffAttendanceGroup } from '~types/absence'
+import {DayOfWeek, StaffAttendance, StaffAttendanceGroup} from '~types/absence'
 import { isSuccess, Loading, Result } from '~api'
 import { getStaffAttendances, postStaffAttendance } from '~api/absences'
 import './Absences.scss'
@@ -25,13 +25,15 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import styled from 'styled-components'
 import Tooltip from '~components/common/Tooltip'
 import { EspooColours } from '~utils/colours'
+import {isOperationDay} from "~components/absences/utils";
 
 type Props = {
   groupId: string
   emptyCols: number[]
+  operationDays: DayOfWeek[]
 }
 
-export default memo(function StaffAttendance({ groupId, emptyCols }: Props) {
+export default memo(function StaffAttendance({ groupId, emptyCols, operationDays }: Props) {
   const isMountedRef = useRef(true)
   const { selectedDate } = useContext(AbsencesContext)
 
@@ -76,6 +78,7 @@ export default memo(function StaffAttendance({ groupId, emptyCols }: Props) {
       emptyCols={emptyCols}
       attendanceGroup={attendance.data}
       updateAttendances={updateAttendances}
+      operationDays={operationDays}
     />
   ) : null
 })
@@ -84,12 +87,14 @@ interface StaffAttendanceRowProps {
   attendanceGroup: StaffAttendanceGroup
   emptyCols: number[]
   updateAttendances: (staffAttendance: StaffAttendance) => Promise<() => void>
+  operationDays: DayOfWeek[]
 }
 
 const StaffAttendanceRow = memo(function StaffAttendanceRow({
   emptyCols,
   attendanceGroup,
-  updateAttendances
+  updateAttendances,
+  operationDays
 }: StaffAttendanceRowProps) {
   const { i18n } = useTranslation()
   const attendanceMap = attendanceGroup.attendances
@@ -109,13 +114,15 @@ const StaffAttendanceRow = memo(function StaffAttendanceRow({
         .sort()
         .map((key) => {
           return (
-            <Td key={key}>
+            isOperationDay(attendanceMap[key].date, operationDays) ? <Td key={key}>
               <StaffAttendanceCell
                 updateAttendances={updateAttendances}
                 attendance={attendanceMap[key]}
                 disabled={isDisabled(attendanceMap[key])}
               />
-            </Td>
+            </Td> : <Td key={key}>
+            <DisabledCell />
+          </Td>
           )
         })}
       {emptyCols.map((item) => (

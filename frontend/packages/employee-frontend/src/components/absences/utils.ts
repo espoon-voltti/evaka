@@ -49,3 +49,6 @@ export function getMonthDays(date: LocalDate): LocalDate[] {
 
   return dates
 }
+
+export const isOperationDay = (date: LocalDate, operationDays: DayOfWeek[]) =>
+  operationDays.some((operationDay) => dateIsDayOfWeek(date, operationDay))
