@@ -8,6 +8,7 @@ import fi.espoo.evaka.daycare.CareType
 import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.invoicing.domain.PersonData
 import fi.espoo.evaka.invoicing.domain.UnitData
+import fi.espoo.evaka.invoicing.domain.VoucherValue
 import fi.espoo.evaka.shared.db.transaction
 import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevChild
@@ -21,6 +22,8 @@ import fi.espoo.evaka.shared.dev.insertTestDaycare
 import fi.espoo.evaka.shared.dev.insertTestEmployee
 import fi.espoo.evaka.shared.dev.insertTestPerson
 import fi.espoo.evaka.shared.dev.insertTestPricing
+import fi.espoo.evaka.shared.dev.insertTestVoucherValue
+import fi.espoo.evaka.shared.domain.Period
 import org.jdbi.v3.core.Handle
 import java.time.LocalDate
 import java.util.UUID
@@ -378,6 +381,10 @@ fun insertGeneralTestFixtures(h: Handle) {
             minThreshold6 = 381300,
             thresholdIncrease6Plus = 14200
         )
+    )
+
+    h.insertTestVoucherValue(
+        VoucherValue(id = UUID.randomUUID(), validity = Period(LocalDate.of(2000, 1, 1), null), voucherValue = 87000)
     )
 }
 

@@ -9,7 +9,8 @@ import { Gap } from '~components/shared/layout/white-space'
 import CollapsibleSection from '~components/shared/molecules/CollapsibleSection'
 import { H4 } from '~components/shared/Typography'
 import VoucherValueDecisionIncomeSection from './VoucherValueDecisionIncomeSection'
-import VoucherValueDecisionPartsSection from './VoucherValueDecisionPartsSection'
+import VoucherValueDecisionCoPaymentSection from './VoucherValueDecisionCoPaymentSection'
+import VoucherValueDecisionValueSection from './VoucherValueDecisionValueSection'
 import { useTranslation } from '~state/i18n'
 import { VoucherValueDecisionDetailed } from '~types/invoicing'
 import { formatCents } from '~utils/money'
@@ -29,13 +30,22 @@ export default React.memo(function Summary({ decision }: Props) {
     >
       <VoucherValueDecisionIncomeSection decision={decision} />
       <Gap size="m" />
-      <VoucherValueDecisionPartsSection decision={decision} />
+      <VoucherValueDecisionCoPaymentSection decision={decision} />
       <Gap size="m" />
       <Total>
         <TotalTitle noMargin>
           {i18n.valueDecision.summary.totalCoPayment}
         </TotalTitle>
         <b>{formatCents(decision.totalCoPayment)} €</b>
+      </Total>
+      <Gap size="m" />
+      <VoucherValueDecisionValueSection decision={decision} />
+      <Gap size="m" />
+      <Total>
+        <TotalTitle noMargin>
+          {i18n.valueDecision.summary.totalValue}
+        </TotalTitle>
+        <b>{formatCents(decision.totalValue)} €</b>
       </Total>
     </CollapsibleSection>
   )

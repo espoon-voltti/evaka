@@ -6,6 +6,10 @@ package fi.espoo.evaka.invoicing.domain
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
+import fi.espoo.evaka.invoicing.domain.PlacementType.PREPARATORY
+import fi.espoo.evaka.invoicing.domain.PlacementType.PREPARATORY_WITH_DAYCARE
+import fi.espoo.evaka.invoicing.domain.PlacementType.PRESCHOOL
+import fi.espoo.evaka.invoicing.domain.PlacementType.PRESCHOOL_WITH_DAYCARE
 import fi.espoo.evaka.shared.domain.Period
 import java.math.BigDecimal
 import java.math.RoundingMode
@@ -13,7 +17,6 @@ import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
 import java.util.UUID
-import kotlin.math.max
 
 data class VoucherValueDecision(
     override val id: UUID,
@@ -50,19 +53,22 @@ data class VoucherValueDecision(
     override fun isAnnulled(): Boolean = this.status == VoucherValueDecisionStatus.ANNULLED
     override fun annul() = this.copy(status = VoucherValueDecisionStatus.ANNULLED)
 
-    @JsonProperty("totalCoPayment")
     fun totalCoPayment(): Int = parts.fold(0) { sum, part -> sum + part.finalCoPayment() }
+    fun totalValue(): Int = parts.fold(0) { sum, part -> sum + part.value }
 }
 
 data class VoucherValueDecisionPart(
     val child: PersonData.WithDateOfBirth,
-    val placement: PermanentPlacement,
+    val placement: PermanentPlacementWithHours,
     val baseCoPayment: Int,
     val siblingDiscount: Int,
     val coPayment: Int,
-    val feeAlterations: List<FeeAlterationWithEffect>
+    val feeAlterations: List<FeeAlterationWithEffect>,
+    val baseValue: Int,
+    val ageCoefficient: Int,
+    val serviceCoefficient: Int,
+    val value: Int
 ) : FinanceDecisionPart {
-    @JsonProperty("finalCoPayment")
     fun finalCoPayment(): Int = coPayment + feeAlterations.sumBy { it.effect }
 }
 
@@ -97,8 +103,10 @@ data class VoucherValueDecisionDetailed(
     override fun withParts(parts: List<VoucherValueDecisionPartDetailed>) = this.copy(parts = parts)
 
     @JsonProperty("totalCoPayment")
-    fun totalCoPayment(): Int =
-        max(0, parts.fold(0) { sum, part -> sum + part.finalCoPayment() })
+    fun totalCoPayment() = parts.fold(0) { sum, part -> sum + part.finalCoPayment() }
+
+    @JsonProperty("totalValue")
+    fun totalValue() = parts.fold(0) { sum, part -> sum + part.value }
 
     @JsonProperty("incomeEffect")
     fun incomeEffect(): IncomeEffect =
@@ -137,18 +145,23 @@ data class VoucherValueDecisionDetailed(
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class VoucherValueDecisionPartDetailed(
     val child: PersonData.Detailed,
-    val placement: PermanentPlacement,
+    val placement: PermanentPlacementWithHours,
     val placementUnit: UnitData.Detailed,
     val baseCoPayment: Int,
     val siblingDiscount: Int,
     val coPayment: Int,
-    val feeAlterations: List<FeeAlterationWithEffect> = listOf()
+    val feeAlterations: List<FeeAlterationWithEffect>,
+    val baseValue: Int,
+    val childAge: Int,
+    val ageCoefficient: Int,
+    val serviceCoefficient: Int,
+    val value: Int
 ) : FinanceDecisionPart {
     @JsonProperty("finalCoPayment")
     fun finalCoPayment(): Int = coPayment + feeAlterations.sumBy { it.effect }
 
     @JsonProperty("serviceNeedMultiplier")
-    fun serviceNeedMultiplier(): Int = getServiceNeedPercentage(placement)
+    fun serviceNeedMultiplier(): Int = getServiceNeedPercentage(placement.withoutHours())
 }
 
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -161,6 +174,7 @@ data class VoucherValueDecisionSummary(
     val decisionNumber: Long? = null,
     val headOfFamily: PersonData.Basic,
     val totalCoPayment: Int,
+    val totalValue: Int,
     val approvedAt: Instant? = null,
     val createdAt: Instant = Instant.now(),
     val sentAt: Instant? = null
@@ -172,3 +186,29 @@ data class VoucherValueDecisionSummary(
 data class VoucherValueDecisionPartSummary(
     val child: PersonData.Basic
 ) : FinanceDecisionPart
+
+fun getAgeCoefficient(period: Period, dateOfBirth: LocalDate): Int {
+    val thirdBirthday = dateOfBirth.plusYears(3)
+    val birthdayInMiddleOfPeriod = period.includes(thirdBirthday) && thirdBirthday != period.start && thirdBirthday != period.end
+
+    check(!birthdayInMiddleOfPeriod) {
+        "Third birthday ($thirdBirthday) is in the middle of the period ($period), cannot calculate an unambiguous age coefficient"
+    }
+
+    return when {
+        period.start < thirdBirthday -> 145
+        else -> 100
+    }
+}
+
+fun getServiceCoefficient(placement: PermanentPlacementWithHours): Int = when {
+    listOf(PRESCHOOL, PRESCHOOL_WITH_DAYCARE, PREPARATORY, PREPARATORY_WITH_DAYCARE).contains(placement.type) -> 50
+    placement.hours != null && placement.hours <= 25.0 -> 60
+    else -> 100
+}
+
+fun calculateVoucherValue(baseValue: Int, ageCoefficient: Int, serviceCoefficient: Int): Int {
+    val ageMultiplier = BigDecimal(ageCoefficient).divide(BigDecimal(100), 2, RoundingMode.HALF_UP)
+    val serviceMultiplier = BigDecimal(serviceCoefficient).divide(BigDecimal(100), 2, RoundingMode.HALF_UP)
+    return (BigDecimal(baseValue) * ageMultiplier * serviceMultiplier).toInt()
+}

@@ -9,7 +9,7 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import fi.espoo.evaka.invoicing.controller.SortDirection
 import fi.espoo.evaka.invoicing.controller.VoucherValueDecisionSortParam
 import fi.espoo.evaka.invoicing.domain.DecisionIncome
-import fi.espoo.evaka.invoicing.domain.PermanentPlacement
+import fi.espoo.evaka.invoicing.domain.PermanentPlacementWithHours
 import fi.espoo.evaka.invoicing.domain.PersonData
 import fi.espoo.evaka.invoicing.domain.PlacementType
 import fi.espoo.evaka.invoicing.domain.ServiceNeed
@@ -45,10 +45,15 @@ val voucherValueDecisionQueryBase =
         part.placement_unit,
         part.placement_type,
         part.service_need,
+        part.hours_per_week,
         part.base_co_payment,
         part.sibling_discount,
         part.co_payment,
-        part.fee_alterations
+        part.fee_alterations,
+        part.base_value,
+        part.age_coefficient,
+        part.service_coefficient,
+        part.voucher_value
     FROM voucher_value_decision as decision
     LEFT JOIN voucher_value_decision_part as part ON decision.id = part.voucher_value_decision_id
     """.trimIndent()
@@ -156,10 +161,15 @@ private fun Handle.insertParts(mapper: ObjectMapper, decisions: List<Pair<UUID, 
             placement_unit,
             placement_type,
             service_need,
+            hours_per_week,
             base_co_payment,
             sibling_discount,
             co_payment,
-            fee_alterations
+            fee_alterations,
+            base_value,
+            age_coefficient,
+            service_coefficient,
+            voucher_value
         ) VALUES (
             :id,
             :value_decision_id,
@@ -168,10 +178,15 @@ private fun Handle.insertParts(mapper: ObjectMapper, decisions: List<Pair<UUID, 
             :placement_unit,
             :placement_type,
             :service_need,
+            :hours_per_week,
             :base_co_payment,
             :sibling_discount,
             :co_payment,
-            :fee_alterations
+            :fee_alterations,
+            :base_value,
+            :age_coefficient,
+            :service_coefficient,
+            :voucher_value
         )
     """
 
@@ -186,15 +201,20 @@ private fun Handle.insertParts(mapper: ObjectMapper, decisions: List<Pair<UUID, 
                         "child" to part.child.id,
                         "date_of_birth" to part.child.dateOfBirth,
                         "placement_unit" to part.placement.unit,
-                        "placement_type" to part.placement.type.toString(),
-                        "service_need" to part.placement.serviceNeed.toString(),
+                        "placement_type" to part.placement.type.name,
+                        "service_need" to part.placement.serviceNeed.name,
+                        "hours_per_week" to part.placement.hours,
                         "base_co_payment" to part.baseCoPayment,
                         "sibling_discount" to part.siblingDiscount,
                         "co_payment" to part.coPayment,
                         "fee_alterations" to PGobject().apply {
                             type = "jsonb"
                             value = mapper.writeValueAsString(part.feeAlterations)
-                        }
+                        },
+                        "base_value" to part.baseValue,
+                        "age_coefficient" to part.ageCoefficient,
+                        "service_coefficient" to part.serviceCoefficient,
+                        "voucher_value" to part.value
                     )
                 )
                 .add()
@@ -295,7 +315,7 @@ fun Handle.searchValueDecisions(
                 LEFT JOIN daycare ON voucher_value_decision_part.placement_unit = daycare.id
                 LEFT JOIN care_area ON daycare.care_area_id = care_area.id
             )
-            SELECT decision.id, count(*) OVER (), max(sums.sum) total_co_payment
+            SELECT decision.id, count(*) OVER (), max(sums.co_payment) total_co_payment, max(sums.voucher_value) total_value
             FROM voucher_value_decision AS decision
             LEFT JOIN voucher_value_decision_part AS part ON decision.id = part.voucher_value_decision_id
             LEFT JOIN person AS head ON decision.head_of_family = head.id
@@ -303,16 +323,16 @@ fun Handle.searchValueDecisions(
             LEFT JOIN person AS child ON part.child = child.id
             LEFT JOIN youngest_child ON decision.id = youngest_child.decision_id AND rownum = 1
             LEFT JOIN (
-                SELECT final_co_payments.id, sum(final_co_payments.final_co_payment) sum
+                SELECT final_co_payments.id, sum(final_co_payments.final_co_payment) co_payment, sum(final_co_payments.voucher_value) voucher_value
                 FROM (
-                    SELECT vd.id, coalesce(vdp.co_payment + coalesce(sum(effects.effect), 0), 0) AS final_co_payment
+                    SELECT vd.id, coalesce(vdp.co_payment + coalesce(sum(effects.effect), 0), 0) AS final_co_payment, voucher_value
                     FROM voucher_value_decision vd
                     LEFT JOIN voucher_value_decision_part vdp ON vd.id = vdp.voucher_value_decision_id
                     LEFT JOIN (
                         SELECT id, (jsonb_array_elements(fee_alterations)->>'effect')::integer effect
                         FROM voucher_value_decision_part
                     ) effects ON vdp.id = effects.id
-                    GROUP BY vd.id, vdp.id, vdp.co_payment
+                    GROUP BY vd.id, vdp.id, vdp.co_payment, vdp.voucher_value
                 ) final_co_payments
                 GROUP BY final_co_payments.id
             ) sums ON decision.id = sums.id
@@ -329,6 +349,7 @@ fun Handle.searchValueDecisions(
         SELECT
             decision_ids.count,
             decision_ids.total_co_payment,
+            decision_ids.total_value,
             decision.*,
             part.child,
             part.date_of_birth,
@@ -370,10 +391,16 @@ fun Handle.getVoucherValueDecision(mapper: ObjectMapper, id: UUID): VoucherValue
             part.placement_unit,
             part.placement_type,
             part.service_need,
+            part.hours_per_week,
             part.base_co_payment,
             part.sibling_discount,
             part.co_payment,
             part.fee_alterations,
+            part.base_value,
+            date_part('year', age(decision.valid_from, part.date_of_birth)) child_age,
+            part.age_coefficient,
+            part.service_coefficient,
+            part.voucher_value,
             head.date_of_birth as head_date_of_birth,
             head.first_name as head_first_name,
             head.last_name as head_last_name,
@@ -510,15 +537,20 @@ fun toVoucherValueDecision(mapper: ObjectMapper) = { rs: ResultSet, _: Statement
                         id = rs.getUUID("child"),
                         dateOfBirth = rs.getDate("date_of_birth").toLocalDate()
                     ),
-                    placement = PermanentPlacement(
+                    placement = PermanentPlacementWithHours(
                         unit = rs.getUUID("placement_unit"),
                         type = PlacementType.valueOf(rs.getString("placement_type")),
-                        serviceNeed = ServiceNeed.valueOf(rs.getString("service_need"))
+                        serviceNeed = ServiceNeed.valueOf(rs.getString("service_need")),
+                        hours = rs.getDouble("hours_per_week")
                     ),
                     baseCoPayment = rs.getInt("base_co_payment"),
                     siblingDiscount = rs.getInt("sibling_discount"),
                     coPayment = rs.getInt("co_payment"),
-                    feeAlterations = mapper.readValue(rs.getString("fee_alterations"))
+                    feeAlterations = mapper.readValue(rs.getString("fee_alterations")),
+                    baseValue = rs.getInt("base_value"),
+                    ageCoefficient = rs.getInt("age_coefficient"),
+                    serviceCoefficient = rs.getInt("service_coefficient"),
+                    value = rs.getInt("voucher_value")
                 )
             )
         } ?: emptyList(),
@@ -557,6 +589,7 @@ val toVoucherValueDecisionSummary = { rs: ResultSet, _: StatementContext ->
             )
         } ?: emptyList(),
         totalCoPayment = rs.getInt("total_co_payment"),
+        totalValue = rs.getInt("total_value"),
         approvedAt = rs.getTimestamp("approved_at")?.toInstant(),
         createdAt = rs.getTimestamp("created_at").toInstant(),
         sentAt = rs.getTimestamp("sent_at")?.toInstant()
@@ -615,10 +648,11 @@ fun toVoucherValueDecisionDetailed(mapper: ObjectMapper) = { rs: ResultSet, _: S
                         postOffice = rs.getString("child_post_office"),
                         restrictedDetailsEnabled = rs.getBoolean("child_restricted_details_enabled")
                     ),
-                    placement = PermanentPlacement(
+                    placement = PermanentPlacementWithHours(
                         unit = UUID.fromString(rs.getString("placement_unit")),
                         type = PlacementType.valueOf(rs.getString("placement_type")),
-                        serviceNeed = ServiceNeed.valueOf(rs.getString("service_need"))
+                        serviceNeed = ServiceNeed.valueOf(rs.getString("service_need")),
+                        hours = rs.getDouble("hours_per_week")
                     ),
                     placementUnit = UnitData.Detailed(
                         id = UUID.fromString(rs.getString("placement_unit")),
@@ -630,7 +664,12 @@ fun toVoucherValueDecisionDetailed(mapper: ObjectMapper) = { rs: ResultSet, _: S
                     baseCoPayment = rs.getInt("base_co_payment"),
                     siblingDiscount = rs.getInt("sibling_discount"),
                     coPayment = rs.getInt("co_payment"),
-                    feeAlterations = mapper.readValue(rs.getString("fee_alterations"))
+                    feeAlterations = mapper.readValue(rs.getString("fee_alterations")),
+                    baseValue = rs.getInt("base_value"),
+                    childAge = rs.getInt("child_age"),
+                    ageCoefficient = rs.getInt("age_coefficient"),
+                    serviceCoefficient = rs.getInt("service_coefficient"),
+                    value = rs.getInt("voucher_value")
                 )
             )
         } ?: emptyList(),

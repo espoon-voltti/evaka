@@ -53,8 +53,7 @@ data class FeeDecision(
     override fun annul() = this.copy(status = FeeDecisionStatus.ANNULLED)
 
     @JsonProperty("totalFee")
-    fun totalFee(): Int =
-        max(0, parts.fold(0) { sum, part -> sum + part.finalFee() })
+    fun totalFee(): Int = parts.fold(0) { sum, part -> sum + part.finalFee() }
 }
 
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -116,8 +115,7 @@ data class FeeDecisionDetailed(
     override fun withParts(parts: List<FeeDecisionPartDetailed>) = this.copy(parts = parts)
 
     @JsonProperty("totalFee")
-    fun totalFee(): Int =
-        max(0, parts.fold(0) { sum, part -> sum + part.finalFee() })
+    fun totalFee(): Int = parts.fold(0) { sum, part -> sum + part.finalFee() }
 
     @JsonProperty("incomeEffect")
     fun incomeEffect(): IncomeEffect =
