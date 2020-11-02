@@ -456,7 +456,7 @@ class VardaDecisionsIntegrationTest : FullApplicationTest() {
             assertEquals(true, decision.daily)
             assertEquals(true, decision.fullDay)
             assertEquals(false, decision.shiftCare)
-            assertEquals("jm01", decision.providerTypeCode)
+            assertEquals(VardaUnitProviderType.MUNICIPAL.vardaCode, decision.providerTypeCode)
             assertEquals(false, decision.urgent)
             assertEquals(sentDate, decision.applicationDate)
         }
@@ -563,7 +563,21 @@ class VardaDecisionsIntegrationTest : FullApplicationTest() {
     }
 
     @Test
-    fun `a decision is not full day with 25 hours`() {
+    fun `a decision is not full day with 24 hours`() {
+        jdbi.handle { h ->
+            val period = ClosedPeriod(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))
+            insertDecisionWithApplication(h, testChild_1, period)
+            insertServiceNeed(h, testChild_1.id, period, hours = 24.0)
+            insertVardaChild(h, testChild_1.id)
+
+            updateDecisions(h, vardaClient)
+            val result = mockEndpoint.decisions[0]
+            assertEquals(false, result.fullDay)
+        }
+    }
+
+    @Test
+    fun `a decision is full day with 25 hours`() {
         jdbi.handle { h ->
             val period = ClosedPeriod(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))
             insertDecisionWithApplication(h, testChild_1, period)
@@ -572,7 +586,7 @@ class VardaDecisionsIntegrationTest : FullApplicationTest() {
 
             updateDecisions(h, vardaClient)
             val result = mockEndpoint.decisions[0]
-            assertEquals(false, result.fullDay)
+            assertEquals(true, result.fullDay)
         }
     }
 

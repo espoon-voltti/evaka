@@ -374,7 +374,7 @@ data class VardaDecision(
     val providerTypeCode: String
 ) {
     @JsonProperty("kokopaivainen_vaka_kytkin")
-    val fullDay: Boolean = hoursPerWeek > 25
+    val fullDay: Boolean = hoursPerWeek >= 25
 }
 
 data class VardaDecisionResponse(
