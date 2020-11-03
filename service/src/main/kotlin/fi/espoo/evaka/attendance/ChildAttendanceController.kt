@@ -14,7 +14,9 @@ import org.jdbi.v3.core.Jdbi
 import org.jdbi.v3.core.JdbiException
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
+import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
@@ -98,6 +100,15 @@ class ChildAttendanceController(
         return jdbi.transaction { it.getDaycareAttendances(daycareId) }
             .let { ResponseEntity.ok(it) }
     }
+
+    @DeleteMapping("/{attendanceId}")
+    fun deleteAttendance(
+        user: AuthenticatedUser,
+        @PathVariable(value = "attendanceId") attendanceId: UUID
+    ): ResponseEntity<Unit> {
+        jdbi.transaction { it.deleteAttendance(attendanceId) }
+        return ResponseEntity.noContent().build()
+    }
 }
 
 data class ArrivalRequest(
@@ -121,5 +132,6 @@ data class ChildInGroup(
     val status: AttendanceStatus,
     val daycareGroupId: UUID,
     val arrived: OffsetDateTime?,
-    val departed: OffsetDateTime?
+    val departed: OffsetDateTime?,
+    val childAttendanceId: UUID?
 )

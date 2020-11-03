@@ -73,12 +73,13 @@ fun Handle.getChildrenInGroup(groupId: UUID): List<ChildInGroup> {
                 ELSE 'COMING'
             END ) AS status,
             ca.arrived,
-            ca.departed
+            ca.departed,
+            ca.id AS child_attendance_id
         FROM daycare_group_placement gp
         JOIN placement p ON p.id = gp.daycare_placement_id
         JOIN person ch ON ch.id = p.child_id
         LEFT JOIN (
-            SELECT child_id, arrived, departed
+            SELECT child_id, arrived, departed, id
             FROM child_attendance ca 
             WHERE ca.arrived > current_date) ca 
         ON p.child_id = ca.child_id
@@ -124,12 +125,13 @@ fun Handle.getDaycareAttendances(daycareId: UUID): List<ChildInGroup> {
                 ELSE 'COMING'
             END ) AS status,
             ca.arrived,
-            ca.departed
+            ca.departed,
+            ca.id AS child_attendance_id
         FROM daycare_group_placement gp
         JOIN placement p ON p.id = gp.daycare_placement_id
         JOIN person ch ON ch.id = p.child_id
         LEFT JOIN (
-            SELECT child_id, arrived, departed
+            SELECT child_id, arrived, departed, id
             FROM child_attendance ca 
             WHERE ca.arrived > current_date) ca 
         ON p.child_id = ca.child_id
@@ -141,3 +143,11 @@ fun Handle.getDaycareAttendances(daycareId: UUID): List<ChildInGroup> {
         .mapTo<ChildInGroup>()
         .list()
 }
+
+fun Handle.deleteAttendance(attendanceId: UUID) = createUpdate(
+    // language=sql
+    """
+        DELETE FROM child_attendance
+        WHERE id = :attendanceId
+    """.trimIndent()
+).bind("attendanceId", attendanceId).execute()
