@@ -1651,10 +1651,24 @@ export const fi = {
   attendances: {
     types: {
       COMING: 'Tulossa',
-      PRESENT: 'Paikalla',
+      PRESENT: 'Läsnä',
       DEPARTED: 'Lähtenyt',
       ABSENT: 'Poissa'
-    }
+    },
+    status: {
+      COMING: 'Tulossa',
+      PRESENT: 'Saapunut',
+      DEPARTED: 'Lähtenyt',
+      ABSENT: 'Poissa'
+    },
+    groupSelectError: 'Valitun ryhmän nimeä ei löytynyt',
+    actions: {
+      markAbsent: 'Merkitse poissa',
+      markPresent: 'Merkitse saapuneeksi',
+      markLeaving: 'Markitse lähteväksi'
+    },
+    timeLabel: 'Merkintä',
+    chooseGroup: 'Valitse ryhmä'
   },
   placementDraft: {
     preschoolDaycare: 'Liittyvä varhaiskasvatus',
