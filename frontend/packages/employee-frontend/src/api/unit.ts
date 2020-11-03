@@ -67,6 +67,7 @@ export interface ChildInGroup {
   daycareGroupId: UUID
   arrived?: Date
   departed?: Date
+  childAttendanceId?: UUID
 }
 
 export async function getChildrenInGroup(
@@ -121,6 +122,10 @@ export async function childArrives(childId: UUID, time: Date): Promise<void> {
 
 export async function childDeparts(childId: UUID, time: Date): Promise<void> {
   return client.post('/child-attendances/depart', { childId, time })
+}
+
+export async function deleteAttendance(attendanceId: UUID): Promise<void> {
+  return client.delete(`/child-attendances/${attendanceId}`)
 }
 
 export type UnitOccupancies = {
