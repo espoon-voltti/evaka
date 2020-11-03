@@ -11,7 +11,12 @@ import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.insertTestDaycare
 import fi.espoo.evaka.testAreaId
+import fi.espoo.evaka.testClub
 import fi.espoo.evaka.testDaycare
+import fi.espoo.evaka.testDaycare2
+import fi.espoo.evaka.testDaycareNotInvoiced
+import fi.espoo.evaka.testPurchasedDaycare
+import fi.espoo.evaka.testVoucherDaycare
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
@@ -33,28 +38,24 @@ class TimeIntegrationTest : PureJdbiTest() {
 
     @Test
     fun `operational days with no holidays or round the clock units in database`() {
-        val result = jdbi.handle(operationalDays(2020, Month.JANUARY))
+        val result = jdbi.handle { operationalDays(it, 2020, Month.JANUARY) }
 
-        assertEquals(OperationalDays(default = january2020Weekdays, exceptions = mapOf()), result)
+        val expected = january2020OperationalDaysMap()
+        assertEquals(expected.toSortedMap(), result.toSortedMap())
     }
 
     @Test
     fun `operational days with no holidays and a round the clock unit in database`() {
         jdbi.handle { h ->
-            h.createUpdate("UPDATE daycare SET round_the_clock = true WHERE id = :id")
+            h.createUpdate("UPDATE daycare SET operation_days = '{1, 2, 3, 4, 5, 6, 7}' WHERE id = :id")
                 .bind("id", testDaycare.id)
                 .execute()
         }
 
-        val result = jdbi.handle(operationalDays(2020, Month.JANUARY))
+        val result = jdbi.handle { operationalDays(it, 2020, Month.JANUARY) }
 
-        assertEquals(
-            OperationalDays(
-                default = january2020Weekdays,
-                exceptions = mapOf(testDaycare.id to january2020Days)
-            ),
-            result
-        )
+        val expected = january2020OperationalDaysMap() + mapOf(testDaycare.id to january2020Days)
+        assertEquals(expected.toSortedMap(), result.toSortedMap())
     }
 
     @Test
@@ -64,24 +65,16 @@ class TimeIntegrationTest : PureJdbiTest() {
         jdbi.handle { h ->
             secondUnitId = h.insertTestDaycare(DevDaycare(areaId = testAreaId, name = "second round the clock unit"))
             thirdUnitId = h.insertTestDaycare(DevDaycare(areaId = testAreaId, name = "third round the clock unit"))
-            h.createUpdate("UPDATE daycare SET round_the_clock = true WHERE id IN (<ids>)")
-                .bindList("ids", listOf(testDaycare.id, secondUnitId, thirdUnitId))
+            h.createUpdate("UPDATE daycare SET operation_days = '{1, 2, 3, 4, 5, 6, 7}' WHERE id = ANY(:ids)")
+                .bind("ids", arrayOf(secondUnitId, thirdUnitId))
                 .execute()
         }
 
-        val result = jdbi.handle(operationalDays(2020, Month.JANUARY))
+        val result = jdbi.handle { operationalDays(it, 2020, Month.JANUARY) }
 
-        assertEquals(
-            OperationalDays(
-                default = january2020Weekdays,
-                exceptions = mapOf(
-                    testDaycare.id to january2020Days,
-                    secondUnitId!! to january2020Days,
-                    thirdUnitId!! to january2020Days
-                )
-            ),
-            result
-        )
+        val expected =
+            january2020OperationalDaysMap() + mapOf(secondUnitId!! to january2020Days, thirdUnitId!! to january2020Days)
+        assertEquals(expected.toSortedMap(), result.toSortedMap())
     }
 
     @Test
@@ -93,15 +86,10 @@ class TimeIntegrationTest : PureJdbiTest() {
                 .execute()
         }
 
-        val result = jdbi.handle(operationalDays(2020, Month.JANUARY))
+        val result = jdbi.handle { operationalDays(it, 2020, Month.JANUARY) }
 
-        assertEquals(
-            OperationalDays(
-                default = january2020Weekdays.filter { it != newYear },
-                exceptions = mapOf()
-            ),
-            result
-        )
+        val expected = january2020OperationalDaysMap { it != newYear }
+        assertEquals(expected.toSortedMap(), result.toSortedMap())
     }
 
     @Test
@@ -115,15 +103,10 @@ class TimeIntegrationTest : PureJdbiTest() {
                 .execute()
         }
 
-        val result = jdbi.handle(operationalDays(2020, Month.JANUARY))
+        val result = jdbi.handle { operationalDays(it, 2020, Month.JANUARY) }
 
-        assertEquals(
-            OperationalDays(
-                default = january2020Weekdays.filter { it != newYear && it != epiphany },
-                exceptions = mapOf()
-            ),
-            result
-        )
+        val expected = january2020OperationalDaysMap { it != newYear && it != epiphany }
+        assertEquals(expected.toSortedMap(), result.toSortedMap())
     }
 
     @Test
@@ -135,15 +118,10 @@ class TimeIntegrationTest : PureJdbiTest() {
                 .execute()
         }
 
-        val result = jdbi.handle(operationalDays(2020, Month.JANUARY))
+        val result = jdbi.handle { operationalDays(it, 2020, Month.JANUARY) }
 
-        assertEquals(
-            OperationalDays(
-                default = january2020Weekdays,
-                exceptions = mapOf()
-            ),
-            result
-        )
+        val expected = january2020OperationalDaysMap()
+        assertEquals(expected.toSortedMap(), result.toSortedMap())
     }
 
     @Test
@@ -156,21 +134,23 @@ class TimeIntegrationTest : PureJdbiTest() {
                 .bind("date2", epiphany)
                 .execute()
 
-            h.createUpdate("UPDATE daycare SET round_the_clock = true WHERE id = :id")
+            h.createUpdate("UPDATE daycare SET operation_days = '{1, 2, 3, 4, 5, 6, 7}' WHERE id = :id")
                 .bind("id", testDaycare.id)
                 .execute()
         }
 
-        val result = jdbi.handle(operationalDays(2020, Month.JANUARY))
+        val result = jdbi.handle { operationalDays(it, 2020, Month.JANUARY) }
 
-        assertEquals(
-            OperationalDays(
-                default = january2020Weekdays.filter { it != newYear && it != epiphany },
-                exceptions = mapOf(testDaycare.id to january2020Days)
-            ),
-            result
-        )
+        val expected =
+            january2020OperationalDaysMap { it != newYear && it != epiphany } + mapOf(testDaycare.id to january2020Days)
+        assertEquals(expected.toSortedMap(), result.toSortedMap())
     }
+
+    private fun january2020OperationalDaysMap(filterDates: (LocalDate) -> Boolean = { true }) = defaultUnitIds
+        .map { it to january2020Weekdays.filter(filterDates) }
+        .toMap()
+
+    private val defaultUnitIds: List<UUID> = listOf(testDaycare.id, testDaycare2.id, testDaycareNotInvoiced.id, testPurchasedDaycare.id, testVoucherDaycare.id, testClub.id!!)
 
     private val january2020Days = listOf(
         LocalDate.of(2020, 1, 1),

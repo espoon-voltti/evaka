@@ -9,7 +9,6 @@ import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus
 import fi.espoo.evaka.invoicing.testDaycareCodes
 import fi.espoo.evaka.invoicing.testDecision1
 import fi.espoo.evaka.invoicing.testDecision2
-import fi.espoo.evaka.shared.domain.OperationalDays
 import fi.espoo.evaka.shared.domain.Period
 import fi.espoo.evaka.shared.domain.isWeekday
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -52,6 +51,11 @@ val may2019operationalDays = generateSequence(LocalDate.of(2019, 5, 2)) { it.plu
     .filterNot { it == LocalDate.of(2019, 5, 30) } // ascension thursday
     .toList()
 
+val may2019operationalDaysMap = (splittedDecision1 + splittedDecision2)
+    .flatMap { d -> d.parts.map { p -> p.placement.unit } }
+    .map { unit -> unit to may2019operationalDays }
+    .toMap()
+
 class InvoiceGeneratorTest {
     @Test
     fun `a set of sent decisions leads to one invoice for each head of family`() {
@@ -60,7 +64,7 @@ class InvoiceGeneratorTest {
             mapOf(),
             Period(LocalDate.of(2019, 5, 1), LocalDate.of(2019, 5, 31)),
             testDaycareCodes,
-            OperationalDays(may2019operationalDays, mapOf())
+            may2019operationalDaysMap
         )
 
         assertEquals(2, invoices.size)
@@ -74,7 +78,7 @@ class InvoiceGeneratorTest {
             mapOf(),
             Period(LocalDate.of(2019, 5, 1), LocalDate.of(2019, 5, 31)),
             testDaycareCodes,
-            OperationalDays(may2019operationalDays, mapOf())
+            may2019operationalDaysMap
         )
 
         with(invoices.first()) {
@@ -101,7 +105,7 @@ class InvoiceGeneratorTest {
             mapOf(),
             Period(LocalDate.of(2019, 5, 1), LocalDate.of(2019, 5, 31)),
             testDaycareCodes,
-            OperationalDays(may2019operationalDays, mapOf())
+            may2019operationalDaysMap
         )
 
         val expectedChildren =

@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.shared.domain
 
+import fi.espoo.evaka.shared.db.getUUID
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.mapTo
 import java.time.DayOfWeek
@@ -105,35 +106,32 @@ fun asDistinctPeriods(periods: List<Period>, spanningPeriod: Period): List<Perio
     return allStartDates.map { start -> Period(start, allEndDates.find { end -> start <= orMax(end) }) }.toList()
 }
 
-data class OperationalDays(
-    val default: List<LocalDate>,
-    val exceptions: Map<UUID, List<LocalDate>>
-)
-
-fun operationalDays(year: Int, month: Month): (Handle) -> OperationalDays = { h ->
+fun operationalDays(h: Handle, year: Int, month: Month): Map<UUID, List<LocalDate>> {
     val firstDayOfMonth = LocalDate.of(year, month, 1)
     val days = generateSequence(firstDayOfMonth) { it.plusDays(1) }
         .takeWhile { date -> date.month == month }
 
-    val roundTheClockUnits = h.createQuery("SELECT id FROM daycare WHERE round_the_clock")
-        .mapTo<UUID>()
-        .list()
+    val unitOperationalDays = h.createQuery("SELECT id, operation_days FROM daycare")
+        .map { rs, _ -> rs.getUUID("id") to rs.getArray("operation_days").array as Array<*> }
+        .map { (id, days) -> id to days.map { it as Int }.map { DayOfWeek.of(it) } }
+        .toList()
 
-    val holidays = h.createQuery("SELECT date FROM holiday WHERE date BETWEEN :start AND :end")
+    val holidays = h.createQuery("SELECT date FROM holiday WHERE daterange(:start, :end, '[]') @> date")
         .bind("start", firstDayOfMonth)
         .bind("end", firstDayOfMonth.plusMonths(1))
         .mapTo<LocalDate>()
         .list()
 
-    val default = days
-        .filter(isWeekday)
-        .filterNot(holidays::contains)
-        .toList()
+    return unitOperationalDays
+        .map { (unitId, operationalDays) ->
+            val operationalDates = days
+                .filter { operationalDays.contains(it.dayOfWeek) }
+                // units that are operational every day of the week are also operational during holidays
+                .filter { operationalDays.size == 7 || !holidays.contains(it) }
 
-    val allDays = days.toList()
-    val exceptions = roundTheClockUnits.map { id -> id to allDays }.toMap()
-
-    OperationalDays(default = default, exceptions = exceptions)
+            unitId to operationalDates.toList()
+        }
+        .toMap()
 }
 
 val isWeekday = { date: LocalDate -> date.dayOfWeek != DayOfWeek.SATURDAY && date.dayOfWeek != DayOfWeek.SUNDAY }
