@@ -26,7 +26,13 @@ export default React.memo(function Tabs({ tabs, mobile }: Props) {
       <Container>
         <TabsContainer>
           {tabs.map(({ id, link, label, counter }) => (
-            <TabContainer key={id} to={link} data-qa={`${id}-tab`}>
+            <TabContainer
+              key={id}
+              to={link}
+              data-qa={`${id}-tab`}
+              maxWidth={maxWidth}
+              mobile={mobile}
+            >
               <TabTitle>{label}</TabTitle>
               {counter && <TabCounter>{counter}</TabCounter>}
             </TabContainer>
@@ -46,7 +52,12 @@ const TabsContainer = styled.div`
   flex-direction: row;
 `
 
-const TabContainer = styled(NavLink)`
+interface TabContainerProps {
+  maxWidth?: string
+  mobile?: boolean
+}
+
+const TabContainer = styled(NavLink)<TabContainerProps>`
   display: flex;
   flex-direction: row;
   justify-content: center;
@@ -55,14 +66,19 @@ const TabContainer = styled(NavLink)`
   flex-basis: content;
   flex-grow: 1;
   background-color: ${Colors.greyscale.white};
-  font-family: Montserrat, sans-serif;
-  font-size: 15px;
+  font-family: ${(p) =>
+    p.mobile ? 'Open Sans, sans-serif' : 'Montserrat, sans-serif'};
+  font-size: ${(p) => (p.mobile ? '14px' : '15px')};
   text-align: center;
   text-transform: uppercase;
   letter-spacing: 1px;
+  max-width: ${(p) => (p.maxWidth ? p.maxWidth : 'none')};
 
   &.active {
-    background-color: ${Colors.blues.light}33;
+    background-color: ${(p) =>
+      p.mobile ? Colors.greyscale.white : `${Colors.blues.light}33`};
+    border-bottom: ${(p) =>
+      p.mobile ? `3px solid ${Colors.blues.medium}` : 'none'};
   }
 `
 
