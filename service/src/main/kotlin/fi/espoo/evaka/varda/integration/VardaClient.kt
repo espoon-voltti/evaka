@@ -188,7 +188,7 @@ class VardaClient(
     }
 
     fun updateFeeData(vardaFeeDataId: Long, feeData: VardaFeeData): Boolean {
-        logger.info { "Updating fee data $vardaFeeDataId to Varda (body: $feeData)" }
+        logger.info { "Updating fee data $vardaFeeDataId to Varda" }
         val (_, _, result) = Fuel.put("$feeDataUrl$vardaFeeDataId")
             .jsonBody(objectMapper.writeValueAsString(feeData)).authenticatedResponseStringWithRetries()
 
@@ -202,6 +202,7 @@ class VardaClient(
                     "Updating fee data $vardaFeeDataId to Varda failed." +
                         " message: ${String(result.error.errorData)}"
                 }
+                logger.debug { "Updating feeData to Varda failed: (vardaId: $vardaFeeDataId, body: $feeData)" }
                 false
             }
         }
