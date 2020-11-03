@@ -148,6 +148,7 @@ enum class Audit(
     UnitAclDelete("evaka.unit-acl.delete"),
     UnitAclRead("evaka.unit-acl.read"),
     UnitGroupsCreate("evaka.unit.groups.create"),
+    UnitGroupsUpdate("evaka.unit.groups.update"),
     UnitGroupsDelete("evaka.unit.groups.delete"),
     UnitGroupsSearch("evaka.unit.groups.search"),
     UnitGroupsCaretakersCreate("evaka.unit.groups.caretakers.create"),

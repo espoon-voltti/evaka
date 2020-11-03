@@ -14,6 +14,11 @@ export default class UnitPage {
   readonly missingPlacementRows = Selector('[data-qa="missing-placement-row"]')
   readonly groups = Selector('[data-qa="daycare-group-collapsible"]')
 
+  readonly groupRenameModal = {
+    input: Selector('[data-qa="group-rename-modal"] [data-qa="name-input"]'),
+    submit: Selector('[data-qa="group-rename-modal"] [data-qa="modal-okBtn"]')
+  }
+
   async navigateHere(id: string) {
     await t.navigateTo(`${this.baseUrl}/units/${id}`)
   }
@@ -164,7 +169,8 @@ export const daycareGroupElement = (root: Selector) => ({
   groupName: root.find('[data-qa="group-name"]'),
   groupFounded: root.find('[data-qa="group-founded"]'),
   noChildrenPlaceholder: root.find('[data-qa="no-children-placeholder"]'),
-  groupPlacementRows: root.find('[data-qa="group-placement-row"]')
+  groupPlacementRows: root.find('[data-qa="group-placement-row"]'),
+  groupRenameBtn: root.find('[data-qa="btn-rename-group"]')
 })
 
 export const daycareGroupPlacementElement = (root: Selector) => ({

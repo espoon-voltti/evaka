@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React from 'react'
+import React, { useContext } from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import * as _ from 'lodash'
 
@@ -56,6 +56,8 @@ import Colors from 'components/shared/Colors'
 import { FixedSpaceRow } from '~components/shared/layout/flex-helpers'
 import PlacementCircle from '~components/shared/atoms/PlacementCircle'
 import Tooltip from '~components/shared/atoms/Tooltip'
+import { UIContext } from '~state/ui'
+import GroupRenameModal from '~components/unit/tab-groups/groups/group/GroupRenameModal'
 
 interface Props {
   unit: Unit
@@ -112,6 +114,7 @@ function Group({
   toggleOpen
 }: Props) {
   const { i18n } = useTranslation()
+  const { uiMode, toggleUiMode } = useContext(UIContext)
 
   const maxOccupancy = getMaxOccupancy(confirmedOccupancy)
   const maxRealizedOccupancy = getMaxOccupancy(realizedOccupancy)
@@ -174,6 +177,9 @@ function Group({
       data-qa="daycare-group-collapsible"
       data-status={open ? 'open' : 'closed'}
     >
+      {uiMode === `rename-group-${group.id}` && (
+        <GroupRenameModal group={group} reload={reload} />
+      )}
       <TitleBar>
         <TitleContainer onClick={toggleOpen}>
           <H3 fitted data-qa="group-name">
@@ -216,11 +222,18 @@ function Group({
           {canManageGroups ? (
             <>
               <InlineButton
+                icon={faPen}
+                text={i18n.unit.groups.rename}
+                onClick={() => toggleUiMode(`rename-group-${group.id}`)}
+                dataQa="btn-rename-group"
+              />
+              <Gap size="s" horizontal />
+              <InlineButton
                 icon={faTrash}
                 text={i18n.unit.groups.deleteGroup}
                 onClick={() => onDeleteGroup()}
                 disabled={sortedPlacements.length > 0 || !group.deletable}
-                dataQa="btn-remove-service-need"
+                dataQa="btn-remove-group"
               />
               <Gap size="s" horizontal />
             </>
