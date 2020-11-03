@@ -71,7 +71,10 @@ const Header = React.memo(function Header({ location }: RouteComponentProps) {
   const atCustomerInfo =
     path.includes('/profile') || path.includes('/child-information')
 
-  const isMobileView = location.pathname.includes('/attendance')
+  const isMobileView =
+    location.pathname.includes('/attendance') ||
+    location.pathname.includes('/groupselector') ||
+    location.pathname.includes('/childattendance')
 
   return (
     <>
