@@ -5,7 +5,6 @@
 package fi.espoo.evaka.daycare.service
 
 import fi.espoo.evaka.daycare.dao.PGConstants.maxDate
-import fi.espoo.evaka.daycare.getDaycare
 import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.domain.BadRequest
 import org.jdbi.v3.core.Handle
@@ -29,8 +28,7 @@ class StaffAttendanceService(private val jdbi: Jdbi) {
             val attendanceList = getStaffAttendanceByRange(rangeStart, rangeEnd, groupId, h)
             val attendanceMap = composeAttendanceMap(rangeStart, rangeEnd, groupId, attendanceList)
 
-            val daycare = h.getDaycare(getDaycareIdByGroup(groupId, h)) ?: throw BadRequest("Couldn't find daycare with group with id $groupId")
-            StaffAttendanceGroup(groupId, groupInfo.groupName, groupInfo.startDate, endDate, attendanceMap, daycare.operationDays)
+            StaffAttendanceGroup(groupId, groupInfo.groupName, groupInfo.startDate, endDate, attendanceMap)
         }
     }
 
@@ -64,8 +62,7 @@ data class StaffAttendanceGroup(
     val groupName: String,
     val startDate: LocalDate,
     val endDate: LocalDate?,
-    val attendances: Map<LocalDate, StaffAttendance?>,
-    val operationDays: Set<Int>
+    val attendances: Map<LocalDate, StaffAttendance?>
 )
 
 data class StaffAttendance(

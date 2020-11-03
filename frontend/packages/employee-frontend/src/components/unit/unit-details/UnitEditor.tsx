@@ -725,11 +725,9 @@ export default function UnitEditor(props: Props): JSX.Element {
               <div>{i18n.unitEditor.label.operationDay[day]}</div>
               <Checkbox
                 disabled={!props.editable}
-                checked={
-                  form.operationDays.some(
-                    (selectedDay) => selectedDay == day
-                  ) ?? false
-                }
+                checked={form.operationDays.some(
+                  (selectedDay) => selectedDay == day
+                )}
                 hiddenLabel={true}
                 label={''}
                 onChange={(checked) => {
@@ -743,29 +741,6 @@ export default function UnitEditor(props: Props): JSX.Element {
             </FixedSpaceColumn>
           ))}
         </OperationDaysContainer>
-      </FormPart>
-      <FormPart>
-        <div>{showRequired(i18n.unitEditor.label.canApply)}</div>
-        <FixedSpaceColumn>
-          <Checkbox
-            disabled={!props.editable}
-            label={i18n.unitEditor.field.canApplyDaycare}
-            checked={form.canApplyDaycare}
-            onChange={(canApplyDaycare) => updateForm({ canApplyDaycare })}
-          />
-          <Checkbox
-            disabled={!props.editable}
-            label={i18n.unitEditor.field.canApplyPreschool}
-            checked={form.canApplyPreschool}
-            onChange={(canApplyPreschool) => updateForm({ canApplyPreschool })}
-          />
-          <Checkbox
-            disabled={!props.editable}
-            label={i18n.unitEditor.field.canApplyClub}
-            checked={form.canApplyClub}
-            onChange={(canApplyClub) => updateForm({ canApplyClub })}
-          />
-        </FixedSpaceColumn>
       </FormPart>
       <FormPart>
         <div>{i18n.unitEditor.label.roundTheClock}</div>
