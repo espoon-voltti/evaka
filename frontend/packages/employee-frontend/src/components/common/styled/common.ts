@@ -12,3 +12,8 @@ export const LabelText = styled.span`
 export const Label = styled.label`
   margin-bottom: 8px;
 `
+
+export const UnorderedList = styled.ul`
+  list-style: none;
+  padding: 0;
+`
