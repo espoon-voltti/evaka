@@ -54,7 +54,9 @@ import { UserContext, UserContextProvider } from '~state/user'
 import CreateUnitPage from '~components/unit/unit-details/CreateUnitPage'
 import UnitDetailsPage from '~components/unit/unit-details/UnitDetailsPage'
 import ApplicationPage from 'components/ApplicationPage'
-import AttendancePage from '~components/AttendancePage'
+import AttendancePageWrapper from '~components/attendances/AttendancePageWrapper'
+import AttendanceGroupSelectorPage from '~components/attendances/AttendanceGroupSelectorPage'
+import AttendanceChildPage from '~components/attendances/AttendanceChildPage'
 import { hasRole } from '~utils/roles'
 import { getAuthStatus, AuthStatus } from '~api/auth'
 
@@ -106,8 +108,21 @@ export default function App() {
             />
             <Route
               exact
+              path="/units/:id/groupselector"
+              component={ensureAuthenticated(AttendanceGroupSelectorPage)}
+            />
+            <Route
+              path="/units/:id/attendance/:groupid"
+              component={ensureAuthenticated(AttendancePageWrapper)}
+            />
+            <Route
+              exact
+              path="/units/:id/groups/:groupid/childattendance/:childid"
+              component={ensureAuthenticated(AttendanceChildPage)}
+            />
+            <Route
               path="/units/:id/attendance"
-              component={ensureAuthenticated(AttendancePage)}
+              component={ensureAuthenticated(AttendancePageWrapper)}
             />
             <RouteWithTitle
               exact

@@ -95,7 +95,7 @@ function UnitInformation({ unit }: Props) {
       {isNotProduction() && (
         <RequireRole oneOf={['ADMIN']}>
           <Gap size={'L'} />
-          <DetailsLink to={`/units/${unit.id}/attendance`}>
+          <DetailsLink to={`/units/${unit.id}/groupselector`}>
             {i18n.unit.openMobilePOC}
           </DetailsLink>
         </RequireRole>
