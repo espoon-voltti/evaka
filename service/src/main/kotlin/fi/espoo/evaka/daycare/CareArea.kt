@@ -37,7 +37,6 @@ data class Daycare(
     val canApplyPreschool: Boolean,
     val canApplyClub: Boolean,
     val providerType: ProviderType,
-    val roundTheClock: Boolean,
     val capacity: Int,
     val language: Language,
     val uploadToVarda: Boolean,
