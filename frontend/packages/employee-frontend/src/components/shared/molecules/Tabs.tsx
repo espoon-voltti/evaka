@@ -16,9 +16,11 @@ type Props = {
     label: string
     counter?: number
   }>
+  mobile?: boolean
 }
 
-export default React.memo(function Tabs({ tabs }: Props) {
+export default React.memo(function Tabs({ tabs, mobile }: Props) {
+  const maxWidth = mobile ? `${100 / tabs.length}vw` : undefined
   return (
     <Background>
       <Container>
