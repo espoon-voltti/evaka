@@ -229,21 +229,15 @@ class VardaClient(
 
     fun createDecision(newDecision: VardaDecision): VardaDecisionResponse? {
         logger.info { "Creating a new decision to Varda (body: $newDecision)" }
-        logger.debug { "Varda: creating new decision $newDecision" }
         val (_, _, result) = Fuel.post(decisionUrl)
             .jsonBody(objectMapper.writeValueAsString(newDecision)).authenticatedResponseStringWithRetries()
 
         return when (result) {
             is Result.Success -> {
                 logger.info { "Creating a new decision to Varda succeeded (body: $newDecision)" }
-                logger.debug { "Varda: creating new decision succeeded $newDecision" }
                 objectMapper.readValue(result.get())
             }
             is Result.Failure -> {
-                logger.debug {
-                    "Varda: creating new decision failed $newDecision." +
-                        " message: ${String(result.error.errorData)}"
-                }
                 logger.error(result.getException()) {
                     "Creating new decision to Varda failed (body: $newDecision)." +
                         " message: ${String(result.error.errorData)}"
