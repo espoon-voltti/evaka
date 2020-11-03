@@ -13,7 +13,7 @@ type Props = {
   tabs: Array<{
     id: string
     link: string
-    label: string
+    label: string | JSX.Element
     counter?: number
   }>
   mobile?: boolean
