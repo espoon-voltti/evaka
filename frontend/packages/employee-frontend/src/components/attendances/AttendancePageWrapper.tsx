@@ -151,10 +151,7 @@ export default React.memo(function AttendancePageWrapper() {
     }
   ]
 
-  console.log('groupAttendances: ', groupAttendances)
-
   function RedirectToGroupSelector() {
-    console.log('redirectToGroupSelector')
     return <Redirect to={`/units/${id}/groupselector`} />
   }
 

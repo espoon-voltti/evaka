@@ -8,7 +8,7 @@ import { useParams } from 'react-router-dom'
 import styled from 'styled-components'
 import MetaTags from 'react-meta-tags'
 
-import { isLoading, isSuccess, Loading, Result } from '~api'
+import { isFailure, isLoading, isSuccess, Loading, Result } from '~api'
 import { getDaycare, getUnitData, UnitData, UnitResponse } from '~api/unit'
 import Button from '~components/shared/atoms/buttons/Button'
 import Loader from '~components/shared/atoms/Loader'
@@ -94,10 +94,6 @@ export default React.memo(function AttendanceGroupSelectorPage() {
     void getDaycare(id).then(setUnit)
   }, [])
 
-  function chooseGroup(selectedGroup: DaycareGroup) {
-    console.log('selectedGroup: ', selectedGroup)
-  }
-
   return (
     <Fragment>
       <MetaTags>
@@ -105,6 +101,8 @@ export default React.memo(function AttendanceGroupSelectorPage() {
       </MetaTags>
 
       {loading && <Loader />}
+      {isFailure(unitData) ||
+        (isFailure(unit) && <div>{i18n.common.loadingFailed}</div>)}
       {isSuccess(unitData) && isSuccess(unit) && (
         <Fragment>
           <Title size={1} centered smaller bold>
@@ -121,12 +119,7 @@ export default React.memo(function AttendanceGroupSelectorPage() {
                 </a>
                 {unitData.data.groups.map((elem: DaycareGroup) => (
                   <a key={elem.id} href={`attendance/${elem.id}/coming`}>
-                    <CustomButton
-                      primary
-                      key={elem.id}
-                      text={elem.name}
-                      onClick={() => chooseGroup(elem)}
-                    />
+                    <CustomButton primary key={elem.id} text={elem.name} />
                   </a>
                 ))}
               </Flex>
