@@ -38,8 +38,8 @@ Sanitized default appender logback configuration provided for import
           <pattern>
             {
             <!--Hide social security numbers in message and in stack trace-->
-            "message": "%replace(%message){'(^|[^-])(\\d{2})(\\d{2})(\\d{2})[Aa+-](\\d{3})[\\dA-z](.{0}$|[^-])', 'REDACTED-SSN'}",
-            "stackTrace": "%replace(%stacktrace{60,40,32000,rootFirst,inlineHash}){'(^|[^-])(\\d{2})(\\d{2})(\\d{2})[Aa+-](\\d{3})[\\dA-z](.{0}$|[^-])', 'REDACTED-SSN'}",
+            "message": "%replace(%message){'(?&lt;!-|[\\dA-z])(\\d{2})(\\d{2})(\\d{2})[Aa+-](\\d{3})[\\dA-z](?!-)', 'REDACTED-SSN'}",
+            "stackTrace": "%replace(%stacktrace{60,40,32000,rootFirst,inlineHash}){'(?&lt;!-|[\\dA-z])(\\d{2})(\\d{2})(\\d{2})[Aa+-](\\d{3})[\\dA-z](?!-)', 'REDACTED-SSN'}",
             "type": "app-misc",
             "appBuild": "${APP_BUILD}",
             "appCommit": "${APP_COMMIT}",
