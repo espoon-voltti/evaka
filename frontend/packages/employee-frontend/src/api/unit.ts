@@ -64,25 +64,63 @@ export interface ChildInGroup {
   firstName: string
   lastName: string
   status: AttendanceStatus
+  daycareGroupId: UUID
+  arrived?: Date
+  departed?: Date
 }
 
-export async function getAttendance(
+export async function getChildrenInGroup(
   groupId: UUID
 ): Promise<Result<ChildInGroup[]>> {
   return client
     .get<JsonOf<ChildInGroup[]>>(`/child-attendances/current`, {
       params: { groupId }
     })
-    .then(({ data }) => Success(data))
+    .then((res) => res.data)
+    .then((data) =>
+      data.map((childInGroup) => ({
+        ...childInGroup,
+        arrived: childInGroup.arrived
+          ? new Date(childInGroup.arrived)
+          : undefined,
+        departed: childInGroup.departed
+          ? new Date(childInGroup.departed)
+          : undefined
+      }))
+    )
+    .then(Success)
     .catch(Failure)
 }
 
-export async function childArrives(childId: UUID): Promise<void> {
-  return client.post('/child-attendances/arrive', { childId, time: new Date() })
+export async function getDaycareAttendances(
+  daycareId: UUID
+): Promise<Result<ChildInGroup[]>> {
+  return client
+    .get<JsonOf<ChildInGroup[]>>(`/child-attendances/current/all`, {
+      params: { daycareId }
+    })
+    .then((res) => res.data)
+    .then((data) =>
+      data.map((childInGroup) => ({
+        ...childInGroup,
+        arrived: childInGroup.arrived
+          ? new Date(childInGroup.arrived)
+          : undefined,
+        departed: childInGroup.departed
+          ? new Date(childInGroup.departed)
+          : undefined
+      }))
+    )
+    .then(Success)
+    .catch(Failure)
 }
 
-export async function childDeparts(childId: UUID): Promise<void> {
-  return client.post('/child-attendances/depart', { childId, time: new Date() })
+export async function childArrives(childId: UUID, time: Date): Promise<void> {
+  return client.post('/child-attendances/arrive', { childId, time })
+}
+
+export async function childDeparts(childId: UUID, time: Date): Promise<void> {
+  return client.post('/child-attendances/depart', { childId, time })
 }
 
 export type UnitOccupancies = {
