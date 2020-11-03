@@ -11,6 +11,7 @@ import fi.espoo.evaka.invoicing.data.getVoucherValueDecisionDocumentKey
 import fi.espoo.evaka.invoicing.data.updateVoucherValueDecisionDocumentKey
 import fi.espoo.evaka.invoicing.data.updateVoucherValueDecisionStatus
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionDetailed
+import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionPartDetailed
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.message.IEvakaMessageClient
@@ -143,10 +144,38 @@ private fun coverPage(decision: VoucherValueDecisionDetailed): String {
     <body class="cover-page">
         ${coverPageHeader(decision)}
         <div class="content">
-            <h1>ARVOPÄÄTÖS</h1>
+            <h1>PÄÄTÖS VARHAISKASVATUKSEN PALVELUSETELIN ARVOSTA</h1>
+            <table>
+                ${decision.parts.joinToString(transform = ::tablePart)}
+            </table>
         </div>
     </body>
 </html>
+    """.trimIndent()
+}
+
+private fun tablePart(part: VoucherValueDecisionPartDetailed): String {
+    // language=html
+    return """
+        <tr>
+            <td colspan="2">${part.child.firstName} ${part.child.lastName}</td>
+        </tr>
+        <tr>
+            <td>Yksikkö</td>
+            <td>${part.placementUnit.name}</td>
+        </tr>
+        <tr>
+            <td>Palveluntarve</td>
+            <td>${part.placement.hours ?: "ei asetettu"}</td>
+        </tr>
+        <tr>
+            <td>Palvelusetelin enimmäisarvo</td>
+            <td>${part.value / 100},${part.value % 100} €</td>
+        </tr>
+        <tr>
+            <td>Omavastuu</td>
+            <td>${part.coPayment / 100},${part.coPayment % 100} €</td>
+        </tr>
     """.trimIndent()
 }
 
@@ -171,9 +200,9 @@ private fun coverPageHeader(decision: VoucherValueDecisionDetailed): String {
     </div>
     <div class="heading">
         <div class="left">
-            <div class="detail">PÄÄTÖS</div>
-            <div class="detail">Salassa pidettävä</div>
-            <div class="detail">JulkL 24.1 §:n 23- ja 25 -kohta</div>
+            <div class="detail">PÄÄTÖS varhaiskasvatuksen</div>
+            <div class="detail">palvelusetelin arvosta</div>
+            <div class="detail"></div>
             <div class="detail">Päätöspvm ${formatInstant(decision.approvedAt!!)}</div>
         </div>
         <div class="right">
