@@ -833,8 +833,10 @@ export const fi = {
       type: 'Palvelumuoto',
       types: {
         PRESCHOOL: 'Esiopetus',
+        PRESCHOOL_WITH_DAYCARE: 'Esiopetus + liittyvä',
         PRESCHOOL_DAYCARE: 'Liittyvä varhaiskasvatus',
         PREPARATORY_EDUCATION: 'Valmistava opetus',
+        PREPARATORY_WITH_DAYCARE: 'Valmistava opetus + liittyvä',
         DAYCARE: 'Varhaiskasvatus',
         DAYCARE_PART_TIME: 'Varhaiskasvatus',
         CLUB: 'Kerho'

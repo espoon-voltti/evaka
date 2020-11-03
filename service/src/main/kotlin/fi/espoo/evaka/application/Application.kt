@@ -57,7 +57,9 @@ data class PersonApplicationSummary(
     val startDate: LocalDate?,
     val sentDate: LocalDate?,
     val type: String,
-    val status: ApplicationStatus
+    val status: ApplicationStatus,
+    val connectedDaycare: Boolean = false,
+    val preparatoryEducation: Boolean = false
 )
 
 data class ApplicationSummaries(
