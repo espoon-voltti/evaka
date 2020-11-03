@@ -25,13 +25,20 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import styled from 'styled-components'
 import Tooltip from '~components/common/Tooltip'
 import { EspooColours } from '~utils/colours'
+import { isOperationDay } from '~components/absences/utils'
+import { DayOfWeek } from '~types'
 
 type Props = {
   groupId: string
   emptyCols: number[]
+  operationDays: DayOfWeek[]
 }
 
-export default memo(function StaffAttendance({ groupId, emptyCols }: Props) {
+export default memo(function StaffAttendance({
+  groupId,
+  emptyCols,
+  operationDays
+}: Props) {
   const isMountedRef = useRef(true)
   const { selectedDate } = useContext(AbsencesContext)
 
@@ -76,6 +83,7 @@ export default memo(function StaffAttendance({ groupId, emptyCols }: Props) {
       emptyCols={emptyCols}
       attendanceGroup={attendance.data}
       updateAttendances={updateAttendances}
+      operationDays={operationDays}
     />
   ) : null
 })
@@ -84,12 +92,14 @@ interface StaffAttendanceRowProps {
   attendanceGroup: StaffAttendanceGroup
   emptyCols: number[]
   updateAttendances: (staffAttendance: StaffAttendance) => Promise<() => void>
+  operationDays: DayOfWeek[]
 }
 
 const StaffAttendanceRow = memo(function StaffAttendanceRow({
   emptyCols,
   attendanceGroup,
-  updateAttendances
+  updateAttendances,
+  operationDays
 }: StaffAttendanceRowProps) {
   const { i18n } = useTranslation()
   const attendanceMap = attendanceGroup.attendances
@@ -108,13 +118,17 @@ const StaffAttendanceRow = memo(function StaffAttendanceRow({
       {Object.keys(attendanceMap)
         .sort()
         .map((key) => {
-          return (
+          return isOperationDay(attendanceMap[key].date, operationDays) ? (
             <Td key={key}>
               <StaffAttendanceCell
                 updateAttendances={updateAttendances}
                 attendance={attendanceMap[key]}
                 disabled={isDisabled(attendanceMap[key])}
               />
+            </Td>
+          ) : (
+            <Td key={key}>
+              <DisabledCell />
             </Td>
           )
         })}
@@ -204,6 +218,7 @@ const StaffAttendanceCell = memo(function StaffAttendanceCell({
             onChange={update}
             onFocus={toggleEditing}
             onBlur={toggleEditing}
+            data-qa="staff-attendance-input"
           />
         )}
       </div>

@@ -4,6 +4,7 @@
 
 import LocalDate from '@evaka/lib-common/src/local-date'
 import { translations } from '~assets/i18n'
+import { DayOfWeek } from '~types'
 
 export function getRange(num: number) {
   const nums = []
@@ -13,6 +14,10 @@ export function getRange(num: number) {
     i++
   }
   return nums
+}
+
+export function dateIsDayOfWeek(date: LocalDate, dayOfWeek: DayOfWeek) {
+  return date.toSystemTzDate().getDay() == dayOfWeek
 }
 
 export function getWeekDay(date: LocalDate) {
@@ -34,3 +39,6 @@ export function getMonthDays(date: LocalDate): LocalDate[] {
 
   return dates
 }
+
+export const isOperationDay = (date: LocalDate, operationDays: DayOfWeek[]) =>
+  operationDays.some((operationDay) => dateIsDayOfWeek(date, operationDay))

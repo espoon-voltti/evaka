@@ -45,14 +45,14 @@ export default class AbsencesPage {
   )
   readonly absencesTitle: Selector = Selector('[data-qa="absences-title"]')
   readonly absenceTableChildLink: Selector = Selector('.absence-child-link')
-  readonly absenceCell: Selector = Selector('.absence-cell')
+  readonly absenceCell: Selector = Selector('[data-qa="absence-cell"]')
   readonly btnAddAbsence: Selector = Selector('[data-qa="add-absences-button"]')
   readonly checkboxBillable = new Checkbox(
     Selector('[data-qa="absences-select-caretype-BILLABLE"]')
   )
   readonly btnSaveAbsence: Selector = Selector('[data-qa="modal-okBtn"]')
   readonly staffAttendanceInput: Selector = Selector(
-    '.staff-attendance-row > td:nth-child(2) > div > div > input'
+    '[data-qa="staff-attendance-input"]'
   )
 
   absenceIndicatorRight(type: AbsenceType): Selector {
@@ -90,9 +90,8 @@ export default class AbsencesPage {
 
   async addBillableAbsence(type: AbsenceType) {
     await t.click(this.absenceCell)
-    await t
-      .expect(this.absenceCell.classNames)
-      .contains('absence-cell-selected')
+    await t.expect(this.absenceCell.find('.absence-cell-selected').exists).ok()
+
     await t.click(this.btnAddAbsence)
     await t.click(Selector(`#${type}`, { timeout: 50 }))
     await t.expect(this.checkboxBillable.checked).eql(true)

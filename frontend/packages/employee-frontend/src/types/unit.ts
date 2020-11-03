@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { UUID } from '~types'
+import { DayOfWeek, UUID } from '~types'
 import { PlacementType } from '~types/placementdraft'
 import LocalDate from '@evaka/lib-common/src/local-date'
 
@@ -59,6 +59,7 @@ export interface Unit {
   ophUnitOid: string | null
   ophOrganizerOid: string | null
   ophOrganizationOid: string | null
+  operationDays: DayOfWeek[] | null
 }
 
 export interface DecisionCustomization {

@@ -47,7 +47,8 @@ data class DaycareFields(
     val decisionCustomization: DaycareDecisionCustomization,
     val ophUnitOid: String?,
     val ophOrganizerOid: String?,
-    val ophOrganizationOid: String?
+    val ophOrganizationOid: String?,
+    val operationDays: Set<Int>?
 ) {
     fun validate() {
         if (name.isBlank()) {
@@ -186,7 +187,8 @@ SET
   decision_preschool_name = :decisionCustomization.preschoolName,
   oph_unit_oid = :ophUnitOid,
   oph_organizer_oid = :ophOrganizerOid,
-  oph_organization_oid = :ophOrganizationOid
+  oph_organization_oid = :ophOrganizationOid,
+  operation_days = :operationDays
 WHERE id = :id
 """
 ).bind("id", id)

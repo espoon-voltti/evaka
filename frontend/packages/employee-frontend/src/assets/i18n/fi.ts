@@ -1646,7 +1646,8 @@ export const fi = {
         ? 'Lisää merkintä valitulle...'
         : 'Lisää merkinnät valituille...'
     },
-    weekend: 'Viikonloppu'
+    weekend: 'Viikonloppu',
+    notOperationDay: 'Ei toimintapäivä'
   },
   attendances: {
     types: {
@@ -1935,6 +1936,17 @@ export const fi = {
       careTypes: 'Toimintamuodot',
       canApply: 'Näytä yksikkö',
       providerType: 'Järjestämismuoto',
+      operationDays: 'Toimintapäivät',
+      operationDay: {
+        0: 'SU',
+        1: 'MA',
+        2: 'TI',
+        3: 'KE',
+        4: 'TO',
+        5: 'PE',
+        6: 'LA',
+        7: 'SU'
+      },
       roundTheClock: 'Ilta- ja vuorohoito',
       capacity: 'Yksikön kapasiteetti',
       language: 'Yksikön kieli',

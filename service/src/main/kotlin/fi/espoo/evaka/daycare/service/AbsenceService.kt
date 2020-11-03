@@ -5,6 +5,7 @@
 package fi.espoo.evaka.daycare.service
 
 import fi.espoo.evaka.backupcare.GroupBackupCare
+import fi.espoo.evaka.daycare.getDaycare
 import fi.espoo.evaka.pis.service.PersonService
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.db.handle
@@ -30,8 +31,8 @@ class AbsenceService(private val db: Jdbi, private val personService: PersonServ
         val period = ClosedPeriod(startDate, endDate)
 
         return db.handle { h ->
+            val daycare = h.getDaycare(getDaycareIdByGroup(groupId, h)) ?: throw BadRequest("Couldn't find daycare with group with id $groupId")
             val groupName = getGroupName(groupId, h) ?: throw BadRequest("Couldn't find group with id $groupId")
-            val daycareName = getDaycareName(groupId, h)
             val placementList = getPlacementsByRange(groupId, period, h)
             val absenceList = getAbsencesByRange(groupId, period, h)
             val backupCareList = h.getBackupCaresAffectingGroup(groupId, period)
@@ -59,7 +60,7 @@ class AbsenceService(private val db: Jdbi, private val personService: PersonServ
                 }
                 .distinct()
 
-            AbsenceGroup(groupId, daycareName, groupName, children)
+            AbsenceGroup(groupId, daycare.name, groupName, children, daycare.operationDays)
         }
     }
 
@@ -182,12 +183,12 @@ enum class CareType {
     CLUB
 }
 
-// objects needed
 data class AbsenceGroup(
     val groupId: UUID,
     val daycareName: String,
     var groupName: String,
-    var children: List<AbsenceChild>
+    var children: List<AbsenceChild>,
+    val operationDays: Set<Int>
 )
 
 data class AbsenceChild(
@@ -351,6 +352,22 @@ fun getDaycareName(groupId: UUID, h: Handle): String {
     return h.createQuery(sql)
         .bind("groupId", groupId)
         .mapTo(String::class.java)
+        .first()
+}
+
+fun getDaycareIdByGroup(groupId: UUID, h: Handle): UUID {
+    //language=SQL
+    val sql =
+        """
+            SELECT daycare.id 
+            FROM daycare_group 
+                LEFT JOIN daycare ON daycare_group.daycare_id = daycare.id
+            WHERE daycare_group.id = :groupId;
+        """.trimIndent()
+
+    return h.createQuery(sql)
+        .bind("groupId", groupId)
+        .mapTo<UUID>()
         .first()
 }
 

@@ -59,7 +59,7 @@ fun getPresenceRows(jdbc: NamedParameterJdbcTemplate, from: LocalDate, to: Local
         LEFT JOIN placement pl ON dgp.daycare_placement_id = pl.id AND pl.type != 'CLUB'::placement_type
         LEFT JOIN person p ON pl.child_id = p.id
         LEFT JOIN holiday h ON t = h.date
-        WHERE dw NOT IN (6,0) AND
+        WHERE dw = ANY(daycare.operation_days) AND
           h.date IS NULL AND
           (daycare.provider_type = 'MUNICIPAL' OR daycare.id IS NULL);
         """.trimIndent()

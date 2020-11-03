@@ -7,17 +7,19 @@ import { Link } from 'react-router-dom'
 import classNames from 'classnames'
 import LocalDate from '@evaka/lib-common/src/local-date'
 import { Child, TableMode } from '~types/absence'
-import { getRange, getWeekDay, getMonthDays } from './utils'
+import { getRange, getWeekDay, getMonthDays, isOperationDay } from './utils'
 import AbsenceCellWrapper, { DisabledCell } from './AbsenceCell'
 import StaffAttendance from './StaffAttendance'
 import { AbsencesState, AbsencesContext } from '~state/absence'
 import { Translations, useTranslation } from '~state/i18n'
 import Tooltip from '~components/common/Tooltip'
+import { DayOfWeek } from '~types'
 
 interface AbsenceRowProps {
   child: Child
   dateCols: LocalDate[]
   emptyCols: number[]
+  operationDays: DayOfWeek[]
   i18n: Translations
 }
 
@@ -44,6 +46,7 @@ function AbsenceTableRow({
   child,
   dateCols,
   emptyCols,
+  operationDays,
   i18n
 }: AbsenceRowProps) {
   const { id, placements, absences, backupCares } = child
@@ -67,12 +70,13 @@ function AbsenceTableRow({
       </td>
       <td className={'hover-highlight'}>{child.dob.format()}</td>
       {dateCols.map((date) => {
-        return (
+        return isOperationDay(date, operationDays) ? (
           <td
             key={`${id}${date.formatIso()}`}
             className={`${
               date.isToday() ? 'absence-cell-today' : ''
             } hover-highlight absence-cell-wrapper`}
+            data-qa={'absence-cell'}
           >
             <AbsenceCellWrapper
               careTypes={placements[date.formatIso()]}
@@ -81,6 +85,10 @@ function AbsenceTableRow({
               date={date}
               childId={id}
             />
+          </td>
+        ) : (
+          <td key={`${id}${date.formatIso()}`}>
+            <DisabledCell />
           </td>
         )
       })}
@@ -96,28 +104,37 @@ function AbsenceTableRow({
 interface AbsenceHeadProps {
   dateCols: LocalDate[]
   emptyCols: number[]
+  operationDays: DayOfWeek[]
 }
 
-function AbsenceTableHead({ dateCols, emptyCols }: AbsenceHeadProps) {
+function AbsenceTableHead({
+  dateCols,
+  emptyCols,
+  operationDays
+}: AbsenceHeadProps) {
   const { i18n } = useTranslation()
   return (
     <thead>
       <tr>
         <th>{i18n.absences.table.nameCol}</th>
         <th>{i18n.absences.table.dobCol}</th>
-        {dateCols.map((item) => (
-          <th
-            key={item.getDate()}
-            className={classNames({
-              'absence-header': true,
-              'absence-header-today': item.isToday(),
-              'absence-header-weekday': item.isWeekend()
-            })}
-          >
-            <div>{getWeekDay(item)}</div>
-            <div>{item.getDate()}</div>
-          </th>
-        ))}
+        {dateCols.map((item) =>
+          isOperationDay(item, operationDays) ? (
+            <th
+              key={item.getDate()}
+              className={classNames({
+                'absence-header': true,
+                'absence-header-today': item.isToday(),
+                'absence-header-weekday': item.isWeekend()
+              })}
+            >
+              <div>{getWeekDay(item)}</div>
+              <div>{item.getDate()}</div>
+            </th>
+          ) : (
+            <th key={item.getDate()} />
+          )
+        )}
         {emptyCols.map((item) => (
           <th key={item} />
         ))}
@@ -129,9 +146,14 @@ function AbsenceTableHead({ dateCols, emptyCols }: AbsenceHeadProps) {
 interface AbsenceTableProps {
   groupId: string
   childList: Child[]
+  operationDays: DayOfWeek[]
 }
 
-function AbsenceTable({ groupId, childList }: AbsenceTableProps) {
+function AbsenceTable({
+  groupId,
+  childList,
+  operationDays
+}: AbsenceTableProps) {
   const { i18n } = useTranslation()
 
   const { selectedDate, tableMode } = useContext<AbsencesState>(AbsencesContext)
@@ -156,7 +178,11 @@ function AbsenceTable({ groupId, childList }: AbsenceTableProps) {
 
   return (
     <table className="table">
-      <AbsenceTableHead dateCols={dateColsHead} emptyCols={emptyCols} />
+      <AbsenceTableHead
+        dateCols={dateColsHead}
+        emptyCols={emptyCols}
+        operationDays={operationDays}
+      />
       <tbody>
         {childList.map((item) => (
           <AbsenceTableRow
@@ -164,11 +190,16 @@ function AbsenceTable({ groupId, childList }: AbsenceTableProps) {
             child={item}
             dateCols={dateColsBody}
             emptyCols={emptyCols}
+            operationDays={operationDays}
             i18n={i18n}
           />
         ))}
         {renderEmptyRow()}
-        <StaffAttendance groupId={groupId} emptyCols={emptyCols} />
+        <StaffAttendance
+          groupId={groupId}
+          emptyCols={emptyCols}
+          operationDays={operationDays}
+        />
       </tbody>
     </table>
   )

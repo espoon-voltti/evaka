@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { UUID } from '~types'
+import { DayOfWeek, UUID } from '~types'
 import LocalDate from '@evaka/lib-common/src/local-date'
 import { JsonOf } from '@evaka/lib-common/src/json'
 
@@ -126,6 +126,7 @@ export interface Group {
   daycareName: string
   groupName: string
   children: Child[]
+  operationDays: DayOfWeek[]
 }
 
 export interface AbsenceBackupCare {
