@@ -1665,7 +1665,8 @@ export const fi = {
     actions: {
       markAbsent: 'Merkitse poissa',
       markPresent: 'Merkitse saapuneeksi',
-      markLeaving: 'Markitse lähteväksi'
+      markLeaving: 'Markitse lähteväksi',
+      returnToComing: 'Palauta tulossa oleviin'
     },
     timeLabel: 'Merkintä',
     chooseGroup: 'Valitse ryhmä'
