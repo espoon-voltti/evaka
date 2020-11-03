@@ -66,6 +66,7 @@ import {
   faUserFriends,
   faUsers
 } from '@fortawesome/free-solid-svg-icons'
+import { faUser as farUser } from '@fortawesome/free-regular-svg-icons'
 import { IconSet } from 'icon-set'
 
 const icons: IconSet = {
@@ -139,7 +140,8 @@ const icons: IconSet = {
   fasExclamationTriangle: faExclamationTriangle,
   fasInfo: faInfo,
   fasArrowDown: faArrowDown,
-  fasArrowUp: faArrowUp
+  fasArrowUp: faArrowUp,
+  farUser
 }
 
 export default icons
