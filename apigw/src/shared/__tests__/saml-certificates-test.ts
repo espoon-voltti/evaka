@@ -26,7 +26,9 @@ describe('SAML certificates', () => {
         new Date()
       )
       if (monthsToExpiry < 1) {
-        console.warn('⚠ Certificate expired or about to expire! ⚠')
+        console.warn(
+          `⚠ Certificate ${certificateName} expired or about to expire! ⚠`
+        )
       }
     })
   }
