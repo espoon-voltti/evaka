@@ -715,7 +715,7 @@ export default function UnitEditor(props: Props): JSX.Element {
       <FormPart>
         <div>{showRequired(i18n.unitEditor.label.operationDays)}</div>
         <OperationDaysContainer>
-          {[1, 2, 3, 4, 5, 6, 0].map((day) => (
+          {[1, 2, 3, 4, 5, 6, 7].map((day) => (
             <FixedSpaceColumn
               key={`"weekday-${day}"`}
               spacing={'xs'}
