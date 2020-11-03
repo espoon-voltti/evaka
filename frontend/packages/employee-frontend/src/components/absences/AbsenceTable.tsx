@@ -76,6 +76,7 @@ function AbsenceTableRow({
             className={`${
               date.isToday() ? 'absence-cell-today' : ''
             } hover-highlight absence-cell-wrapper`}
+            data-qa={'absence-cell'}
           >
             <AbsenceCellWrapper
               careTypes={placements[date.formatIso()]}

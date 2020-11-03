@@ -141,6 +141,7 @@ test('User can add a sickleave to a child', async (t) => {
       fixtures.daycareFixture.id
     )
   )
+
   await absencesPage.addBillableAbsence('SICKLEAVE')
   await t.expect(absencesPage.absenceIndicatorRight('SICKLEAVE').exists).ok()
 

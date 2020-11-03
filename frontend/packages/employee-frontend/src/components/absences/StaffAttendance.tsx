@@ -218,6 +218,7 @@ const StaffAttendanceCell = memo(function StaffAttendanceCell({
             onChange={update}
             onFocus={toggleEditing}
             onBlur={toggleEditing}
+            data-qa="staff-attendance-input"
           />
         )}
       </div>
