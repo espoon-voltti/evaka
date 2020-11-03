@@ -45,6 +45,7 @@ enum class Audit(
     ChildAttendanceArrive("evaka.child-attendance.arrive"),
     ChildAttendanceDepart("evaka.child-attendance.depart"),
     ChildAttendanceReadGroup("evaka.child-attendance.read-group"),
+    ChildAttendanceReadUnit("evaka.child-attendance.read-unit"),
     ChildFeeAlterationsCreate("evaka.child.fee-alterations.create"),
     ChildFeeAlterationsDelete("evaka.child.fee-alterations.delete"),
     ChildFeeAlterationsRead("evaka.child.fee-alterations.read"),

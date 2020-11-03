@@ -85,6 +85,19 @@ class ChildAttendanceController(
         return jdbi.transaction { it.getChildrenInGroup(groupId) }
             .let { ResponseEntity.ok(it) }
     }
+
+    @GetMapping("/current/all")
+    fun getDaycareAttendances(
+        user: AuthenticatedUser,
+        @RequestParam daycareId: UUID
+    ): ResponseEntity<List<ChildInGroup>> {
+        Audit.ChildAttendanceReadUnit.log(targetId = daycareId)
+        acl.getRolesForUnit(user, daycareId)
+            .requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF)
+
+        return jdbi.transaction { it.getDaycareAttendances(daycareId) }
+            .let { ResponseEntity.ok(it) }
+    }
 }
 
 data class ArrivalRequest(
@@ -105,5 +118,8 @@ data class ChildInGroup(
     val childId: UUID,
     val firstName: String,
     val lastName: String,
-    val status: AttendanceStatus
+    val status: AttendanceStatus,
+    val daycareGroupId: UUID,
+    val arrived: OffsetDateTime?,
+    val departed: OffsetDateTime?
 )
