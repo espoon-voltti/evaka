@@ -7,7 +7,7 @@ import styled from 'styled-components'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import ReactSelect from 'react-select'
 
-import { faSearch, faTimes, faTrash } from 'icon-set'
+import { faSearch, faTimes, faTrash, fasExclamationTriangle } from 'icon-set'
 import LocalDate from '@evaka/lib-common/src/local-date'
 import InlineButton from 'components/shared/atoms/buttons/InlineButton'
 import { DatePickerClearable } from '~components/common/DatePicker'
@@ -371,6 +371,19 @@ export function FeeDecisionDateFilter({
           onCleared={() => setEndDate(undefined)}
         />
       </FlexRow>
+      {startDate && endDate && startDate.isAfter(endDate) ? (
+        <>
+          <Gap size="xs" />
+          <span>
+            {i18n.common.checkDates}
+            <Gap size="xs" horizontal />
+            <FontAwesomeIcon
+              icon={fasExclamationTriangle}
+              color={Colors.accents.orange}
+            />
+          </span>
+        </>
+      ) : null}
 
       <Gap size="s" />
 
@@ -500,6 +513,19 @@ export function InvoiceDateFilter({
           onCleared={() => setEndDate(undefined)}
         />
       </FlexRow>
+      {startDate && endDate && startDate.isAfter(endDate) ? (
+        <>
+          <Gap size="xs" />
+          <span>
+            {i18n.common.checkDates}
+            <Gap size="xs" horizontal />
+            <FontAwesomeIcon
+              icon={fasExclamationTriangle}
+              color={Colors.accents.orange}
+            />
+          </span>
+        </>
+      ) : null}
 
       <Gap size="s" />
 
@@ -786,6 +812,19 @@ export function ApplicationDateFilter({
           onCleared={() => setEndDate(undefined)}
         />
       </FlexRow>
+      {startDate && endDate && startDate.isAfter(endDate) ? (
+        <>
+          <Gap size="xs" />
+          <span>
+            {i18n.common.checkDates}
+            <Gap size="xs" horizontal />
+            <FontAwesomeIcon
+              icon={fasExclamationTriangle}
+              color={Colors.accents.orange}
+            />
+          </span>
+        </>
+      ) : null}
     </>
   )
 }

@@ -97,6 +97,7 @@ export const fi = {
     },
     ok: 'Selvä!',
     tryAgain: 'Yritä uudestaan',
+    checkDates: 'Tarkista päivämäärät',
     multipleChildren: 'Useita lapsia',
     today: 'Tänään',
     error: {
