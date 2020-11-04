@@ -56,7 +56,7 @@ const emptyInvoiceRow = (
   description: '',
   costCenter: '',
   subCostCenter: '',
-  amount: 1,
+  amount: 0,
   unitPrice: 0,
   price: 0
 })
@@ -85,7 +85,7 @@ const CostCenterTh = styled(Th)`
 `
 
 const AmountTh = styled(Th)`
-  width: 90px;
+  width: 100px;
 `
 
 const UnitPriceTh = styled(Th)`

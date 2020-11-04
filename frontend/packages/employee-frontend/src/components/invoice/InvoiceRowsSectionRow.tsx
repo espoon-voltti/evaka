@@ -15,7 +15,6 @@ import EuroInput from '../common/EuroInput'
 import { useTranslation } from '../../state/i18n'
 import { isSuccess, Result } from '../../api'
 import { Product, InvoiceCodes } from '../../types/invoicing'
-import { round } from '../utils'
 import { formatCents, parseCents } from '../../utils/money'
 import IconButton from '~components/shared/atoms/buttons/IconButton'
 
@@ -120,7 +119,11 @@ function InvoiceRowSectionRow({
             placeholder={i18n.invoice.form.rows.costCenter}
             onChange={(value) => update({ costCenter: value })}
             data-qa="input-cost-center"
-            info={!costCenterValueIsValid ? { text: 'Virhe', status: 'warning' } : undefined}
+            info={
+              !costCenterValueIsValid
+                ? { text: 'Virhe', status: 'warning' }
+                : undefined
+            }
           />
         ) : (
           <div>{costCenter}</div>
@@ -165,15 +168,9 @@ function InvoiceRowSectionRow({
       </Td>
       <Td>
         {editable ? (
-          <InputField
-            value={amount ? amount.toString() : ''}
-            type={'number'}
-            onChange={(value) =>
-              update({
-                amount: round(Math.max(1, Math.min(1000, Number(value))))
-              })
-            }
-            dataQa="input-amount"
+          <AmountInput
+            value={amount}
+            onChange={(amount) => void update({ amount })}
           />
         ) : (
           amount
@@ -226,6 +223,42 @@ const TotalPrice = styled.div`
 const NarrowEuroInput = styled(EuroInput)`
   width: 5em;
 `
+
+const AmountInput = React.memo(function AmountInput({
+  value,
+  onChange
+}: {
+  value: number
+  onChange: (v: number) => void
+}) {
+  const [stringValue, setStringValue] = useState(value ? value.toString() : '')
+  const [invalid, setInvalid] = useState(false)
+
+  useEffect(() => {
+    const parsed = Number(stringValue)
+    if (!Number.isNaN(parsed)) {
+      onChange(parsed)
+      setInvalid(false)
+    }
+  }, [stringValue])
+
+  return (
+    <InputField
+      type={'number'}
+      min={1}
+      max={1000}
+      value={stringValue}
+      onChange={setStringValue}
+      onBlur={() => {
+        if (!stringValue || Number.isNaN(stringValue)) {
+          setInvalid(true)
+        }
+      }}
+      dataQa="input-amount"
+      info={invalid ? { status: 'warning', text: 'Virhe' } : undefined}
+    />
+  )
+})
 
 const UnitPriceInput = React.memo(function UnitPriceInput({
   value,
