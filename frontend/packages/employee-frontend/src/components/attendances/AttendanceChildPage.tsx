@@ -175,9 +175,9 @@ export default React.memo(function AttendanceChildPage() {
                     groupid={groupid}
                   />
                 )}
-                {child.status === 'DEPARTED' && (
+                {child.status === 'DEPARTED' && child.childAttendanceId && (
                   <AttendanceChildDeparted
-                    child={child}
+                    childAttendanceId={child.childAttendanceId}
                     id={id}
                     groupid={groupid}
                   />

@@ -1,23 +1,12 @@
 import React, { Fragment, useState } from 'react'
 import { useHistory } from 'react-router-dom'
-import styled from 'styled-components'
 
 import { childDeparts, ChildInGroup } from '~api/unit'
-import Button from '~components/shared/atoms/buttons/Button'
 import InputField from '~components/shared/atoms/form/InputField'
-import { DefaultMargins } from '~components/shared/layout/white-space'
 import { useTranslation } from '~state/i18n'
 import { UUID } from '~types'
+import { WideAsyncButton } from './AttendanceChildDeparted'
 import { FlexLabel } from './AttendanceChildPage'
-
-const WideButton = styled(Button)`
-  @media screen and (max-width: 1023px) {
-    margin-bottom: ${DefaultMargins.s};
-    width: 100%;
-    white-space: normal;
-    height: 64px;
-  }
-`
 
 interface Props {
   child: ChildInGroup
@@ -43,26 +32,35 @@ export default React.memo(function AttendanceChildPresent({
       : `${new Date().getHours()}:${new Date().getMinutes()}`
   )
 
-  async function markDeparted() {
+  function markDeparted() {
     const hours = parseInt(time.slice(0, 2))
     const minutes = parseInt(time.slice(3, 5))
     const today = new Date()
     today.setHours(hours)
     today.setMinutes(minutes)
-    await childDeparts(child.childId, today)
-    history.push(`/units/${id}/attendance/${groupid}/departed`)
+    return childDeparts(child.childId, today)
   }
 
   return (
     <Fragment>
-      <WideButton
+      <WideAsyncButton
         primary
         text={i18n.attendances.actions.markLeaving}
         onClick={markDeparted}
+        onSuccess={() =>
+          history.push(`/units/${id}/attendance/${groupid}/departed`)
+        }
+        data-qa="mark-departed"
       />
       <FlexLabel>
         <span>{i18n.attendances.timeLabel}</span>
-        <InputField onChange={setTime} value={time} width="s" type="time" />
+        <InputField
+          onChange={setTime}
+          value={time}
+          width="s"
+          type="time"
+          data-qa="set-time"
+        />
       </FlexLabel>
     </Fragment>
   )

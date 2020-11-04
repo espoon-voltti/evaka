@@ -117,15 +117,21 @@ export async function getDaycareAttendances(
 }
 
 export async function childArrives(childId: UUID, time: Date): Promise<void> {
-  return client.post('/child-attendances/arrive', { childId, time })
+  return client
+    .post<void>('/child-attendances/arrive', { childId, time })
+    .then((res) => res.data)
 }
 
 export async function childDeparts(childId: UUID, time: Date): Promise<void> {
-  return client.post('/child-attendances/depart', { childId, time })
+  return client
+    .post<void>('/child-attendances/depart', { childId, time })
+    .then((res) => res.data)
 }
 
 export async function deleteAttendance(attendanceId: UUID): Promise<void> {
-  return client.delete(`/child-attendances/${attendanceId}`)
+  return client
+    .delete<void>(`/child-attendances/${attendanceId}`)
+    .then((res) => res.data)
 }
 
 export type UnitOccupancies = {

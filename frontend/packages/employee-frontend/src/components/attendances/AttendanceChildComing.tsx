@@ -4,19 +4,25 @@
 
 import React, { Fragment, useState } from 'react'
 import { useHistory } from 'react-router-dom'
+import styled from 'styled-components'
 import { postChildAbsence } from '~api/absences'
 
 import { childArrives, ChildInGroup } from '~api/unit'
+import AsyncButton from '~components/shared/atoms/buttons/AsyncButton'
 import InputField from '~components/shared/atoms/form/InputField'
 import Loader from '~components/shared/atoms/Loader'
 import Colors from '~components/shared/Colors'
-import { Gap } from '~components/shared/layout/white-space'
+import { DefaultMargins, Gap } from '~components/shared/layout/white-space'
 import { useTranslation } from '~state/i18n'
 import { UUID } from '~types'
 import { AbsenceType, AbsenceTypes } from '~types/absence'
 import { DaycareGroup } from '~types/unit'
 import { FlexLabel } from './AttendanceChildPage'
-import { CustomButton, Flex } from './AttendanceGroupSelectorPage'
+import {
+  CustomButton,
+  CustomButtonProps,
+  Flex
+} from './AttendanceGroupSelectorPage'
 
 export const absenceBackgroundColours: { [key in AbsenceType]: string } = {
   UNKNOWN_ABSENCE: Colors.accents.green,
@@ -61,6 +67,29 @@ interface Props {
   groupId: UUID | 'all'
 }
 
+const CustomAsyncButton = styled(AsyncButton)<CustomButtonProps>`
+  @media screen and (max-width: 1023px) {
+    margin-bottom: ${DefaultMargins.s};
+    width: calc(50vw - 40px);
+    white-space: normal;
+    height: 64px;
+  }
+
+  @media screen and (min-width: 1024px) {
+    margin-right: ${DefaultMargins.s};
+  }
+  ${(p) => (p.color ? `color: ${p.color};` : '')}
+  ${(p) => (p.backgroundColor ? `background-color: ${p.backgroundColor};` : '')}
+  ${(p) => (p.borderColor ? `border-color: ${p.borderColor};` : '')}
+
+  :hover {
+    ${(p) => (p.color ? `color: ${p.color};` : '')}
+    ${(p) =>
+      p.backgroundColor ? `background-color: ${p.backgroundColor};` : ''}
+  ${(p) => (p.borderColor ? `border-color: ${p.borderColor};` : '')}
+  }
+`
+
 export default React.memo(function AttendanceChildComing({
   unitId,
   child,
@@ -81,24 +110,23 @@ export default React.memo(function AttendanceChildComing({
   )
   const [markAbsence, setMarkAbsence] = useState<boolean>(false)
 
-  async function markPresent() {
+  function markPresent() {
     const hours = parseInt(time.slice(0, 2))
     const minutes = parseInt(time.slice(3, 5))
     const today = new Date()
     today.setHours(hours)
     today.setMinutes(minutes)
-    await childArrives(child.childId, today)
-    history.push(`/units/${unitId}/attendance/${groupId}/present`)
+    return childArrives(child.childId, today)
   }
 
-  async function selectAbsenceType(absenceType: AbsenceType) {
+  function selectAbsenceType(absenceType: AbsenceType) {
     const hours = parseInt(time.slice(0, 2))
     const minutes = parseInt(time.slice(3, 5))
     const today = new Date()
     today.setHours(hours)
     today.setMinutes(minutes)
-    await postChildAbsence(absenceType, 'PRESCHOOL', child.childId)
-    history.push(`/units/${unitId}/attendance/${groupId}/absent`)
+    // TODO: remove hardcoded 'PRESCHOOL
+    return postChildAbsence(absenceType, 'PRESCHOOL', child.childId)
   }
 
   return (
@@ -111,13 +139,19 @@ export default React.memo(function AttendanceChildComing({
               {AbsenceTypes.filter(
                 (absenceType) => absenceType !== 'PRESENCE'
               ).map((absenceType) => (
-                <CustomButton
+                <CustomAsyncButton
                   backgroundColor={absenceBackgroundColours[absenceType]}
                   borderColor={absenceBorderColours[absenceType]}
                   color={absenceColours[absenceType]}
                   key={absenceType}
                   text={i18n.absences.absenceTypes[absenceType]}
                   onClick={() => selectAbsenceType(absenceType)}
+                  onSuccess={() =>
+                    history.push(
+                      `/units/${unitId}/attendance/${groupId}/absent`
+                    )
+                  }
+                  data-qa={`mark-absent-${absenceType}`}
                 />
               ))}
             </Flex>
@@ -133,15 +167,25 @@ export default React.memo(function AttendanceChildComing({
               onClick={() => setMarkAbsence(!markAbsence)}
             />
 
-            <CustomButton
+            <CustomAsyncButton
               primary
               text={i18n.attendances.actions.markPresent}
               onClick={markPresent}
+              onSuccess={() =>
+                history.push(`/units/${unitId}/attendance/${groupId}/present`)
+              }
+              data-qa="mark-present"
             />
           </Flex>
           <FlexLabel>
             <span>{i18n.attendances.timeLabel}</span>
-            <InputField onChange={setTime} value={time} width="s" type="time" />
+            <InputField
+              onChange={setTime}
+              value={time}
+              width="s"
+              type="time"
+              data-qa="set-time"
+            />
           </FlexLabel>
         </Fragment>
       )}
