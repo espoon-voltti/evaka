@@ -9,7 +9,6 @@ import fi.espoo.evaka.pis.dao.mapPSQLException
 import fi.espoo.evaka.shared.db.getUUID
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.NotFound
-import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -64,7 +63,7 @@ class CaretakerService(
                 sql,
                 mapOf("groupId" to groupId, "start" to startDate, "end" to endDate, "amount" to amount)
             )
-        } catch (e: DataIntegrityViolationException) {
+        } catch (e: Exception) {
             throw mapPSQLException(e)
         }
     }
@@ -102,7 +101,7 @@ class CaretakerService(
                 sql,
                 mapOf("groupId" to groupId, "id" to id, "start" to startDate, "end" to endDate, "amount" to amount)
             ).let { updated -> if (updated == 0) throw NotFound("Caretakers $id not found") }
-        } catch (e: DataIntegrityViolationException) {
+        } catch (e: Exception) {
             throw mapPSQLException(e)
         }
     }

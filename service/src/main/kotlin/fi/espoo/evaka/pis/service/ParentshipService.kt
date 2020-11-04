@@ -20,7 +20,6 @@ import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.domain.maxEndDate
 import mu.KotlinLogging
 import org.jdbi.v3.core.Handle
-import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.stereotype.Service
 import java.time.LocalDate
 import java.util.UUID
@@ -44,7 +43,7 @@ class ParentshipService(
         return try {
             h.createParentship(childId, headOfChildId, startDate, endDate, allowConflicts)
                 .also { sendFamilyUpdatedMessage(headOfChildId, startDate, endDate) }
-        } catch (e: DataIntegrityViolationException) {
+        } catch (e: Exception) {
             if (allowConflicts) {
                 h.transaction { t ->
                     t.createParentship(childId, headOfChildId, startDate, endDate, true)
@@ -76,7 +75,7 @@ class ParentshipService(
         try {
             val success = h.updateParentshipDuration(id, startDate, endDate)
             if (!success) throw NotFound("No parentship found with id $id")
-        } catch (e: DataIntegrityViolationException) {
+        } catch (e: Exception) {
             throw mapPSQLException(e)
         }
 
@@ -101,7 +100,7 @@ class ParentshipService(
                         endDate = it.endDate
                     )
                 }
-        } catch (e: DataIntegrityViolationException) {
+        } catch (e: Exception) {
             throw mapPSQLException(e)
         }
     }
