@@ -27,14 +27,14 @@ sealed class AclAuthorization {
 
 class AccessControlList(private val jdbi: Jdbi) {
     fun getAuthorizedDaycares(user: AuthenticatedUser): AclAuthorization =
-        if (user.hasOneOfRoles(UserRole.ADMIN, UserRole.FINANCE_ADMIN, UserRole.SERVICE_WORKER)) {
+        if (user.hasOneOfRoles(UserRole.ADMIN, UserRole.FINANCE_ADMIN, UserRole.SERVICE_WORKER, UserRole.DIRECTOR)) {
             AclAuthorization.All
         } else {
             AclAuthorization.Subset(jdbi.handle { it.selectAuthorizedDaycares(user) })
         }
 
     fun getAuthorizedUnits(user: AuthenticatedUser): AclAuthorization =
-        if (user.hasOneOfRoles(UserRole.ADMIN, UserRole.FINANCE_ADMIN, UserRole.SERVICE_WORKER)) {
+        if (user.hasOneOfRoles(UserRole.ADMIN, UserRole.FINANCE_ADMIN, UserRole.SERVICE_WORKER, UserRole.DIRECTOR)) {
             AclAuthorization.All
         } else {
             AclAuthorization.Subset(jdbi.handle { it.selectAuthorizedDaycares(user) })
