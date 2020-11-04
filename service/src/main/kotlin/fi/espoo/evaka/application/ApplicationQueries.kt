@@ -546,7 +546,7 @@ fun Handle.getApplicationUnitSummaries(unitId: UUID): List<ApplicationUnitSummar
             c.last_name,
             c.date_of_birth,
             g.first_name AS guardian_first_name,
-            g.first_name AS guardian_last_name,
+            g.last_name AS guardian_last_name,
             g.phone AS guardian_phone,
             g.email AS guardian_email
         FROM application a
