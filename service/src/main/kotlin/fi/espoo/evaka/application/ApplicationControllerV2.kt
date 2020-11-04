@@ -184,6 +184,10 @@ class ApplicationControllerV2(
     ): ResponseEntity<ApplicationSummaries> {
         Audit.ApplicationSearch.log()
         user.requireOneOfRoles(Roles.ADMIN, Roles.FINANCE_ADMIN, Roles.SERVICE_WORKER)
+
+        if (periodStart != null && periodEnd != null && periodStart > periodEnd)
+            throw BadRequest("Date parameter periodEnd ($periodEnd) cannot be before periodStart ($periodStart)")
+
         return jdbi.transaction { h ->
             fetchApplicationSummaries(
                 h = h.setReadOnly(true),
