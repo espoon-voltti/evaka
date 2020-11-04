@@ -92,7 +92,6 @@ fun Handle.getChildrenInGroup(groupId: UUID): List<ChildInGroup> {
         .list()
 }
 
-
 fun Handle.getDaycareAttendances(daycareId: UUID): List<ChildInGroup> {
     // language=sql
     val sql =
