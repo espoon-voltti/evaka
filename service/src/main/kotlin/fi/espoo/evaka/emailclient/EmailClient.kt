@@ -116,7 +116,7 @@ Vi har tagit emot en ansökan om småbarnspedagogik för ditt barn.
 Ansökan om småbarnspedagogik har en ansökningstid på fyra (4) månader. Den vårdnadshavare som har lämnat in ansökan kan redigera ansökan på adressen <a href="www.espoonvarhaiskasvatus.fi">www.espoonvarhaiskasvatus.fi</a> tills den har tagits upp till behandling.
 </p>
 <p>
-Du får information om platsen för småbarnspedagogik för ditt barn cirka fyra (4) månader innan ansökningstiden för ansökan går ut. Du kan se och godkänna/förkasta beslutet på <a href="www.espoonvarhaiskasvatus.fi">www.espoonvarhaiskasvatus.fi</a>.
+Du får information om platsen för småbarnspedagogik för ditt barn cirka en månad (1 månad) innan ansökningstiden för ansökan går ut. Du kan se och godkänna/förkasta beslutet på <a href="www.espoonvarhaiskasvatus.fi">www.espoonvarhaiskasvatus.fi</a>.
 </p>
 <p>
 Om du valde att ansökan är brådskande, ska du bifoga ansökan ett intyg över att du plötsligt fått ett nytt jobb eller en ny studieplats. Ansökningstiden är då minst 2 veckor och börjar den dag då intyget inkom.
@@ -163,7 +163,7 @@ Vi har tagit emot en ansökan om småbarnspedagogik för ditt barn.
 
 Ansökan om småbarnspedagogik har en ansökningstid på fyra (4) månader. Den vårdnadshavare som har lämnat in ansökan kan redigera ansökan på adressen <a href="www.espoonvarhaiskasvatus.fi">www.espoonvarhaiskasvatus.fi</a> tills den har tagits upp till behandling.
 
-Du får information om platsen för småbarnspedagogik för ditt barn cirka fyra (4) månader innan ansökningstiden för ansökan går ut. Du kan se och godkänna/förkasta beslutet på <a href="www.espoonvarhaiskasvatus.fi">www.espoonvarhaiskasvatus.fi</a>.
+Du får information om platsen för småbarnspedagogik för ditt barn cirka en månad (1 månad) innan ansökningstiden för ansökan går ut. Du kan se och godkänna/förkasta beslutet på <a href="www.espoonvarhaiskasvatus.fi">www.espoonvarhaiskasvatus.fi</a>.
 
 Om du valde att ansökan är brådskande, ska du bifoga ansökan ett intyg över att du plötsligt fått ett nytt jobb eller en ny studieplats. Ansökningstiden är då minst 2 veckor och börjar den dag då intyget inkom.
 
