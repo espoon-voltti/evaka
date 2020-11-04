@@ -18,12 +18,6 @@ import { DefaultMargins } from '~components/shared/layout/white-space'
 import { DaycareGroup } from '~types/unit'
 import { useTranslation } from '~state/i18n'
 
-// const FullHeightContentArea = styled(ContentArea)`
-//   min-height: 100vh;
-//   display: flex;
-//   flex-direction: column;
-// `
-
 export const Flex = styled.div`
   @media screen and (max-width: 1023px) {
     justify-content: space-between;
@@ -42,7 +36,7 @@ export const FlexColumn = styled.div`
   flex-wrap: wrap;
 `
 
-interface CustomButtonProps {
+export interface CustomButtonProps {
   color?: string
   backgroundColor?: string
   borderColor?: string
@@ -115,7 +109,7 @@ export default React.memo(function AttendanceGroupSelectorPage() {
               </AllCapsTitle>
               <Flex>
                 <a href={`attendance/all/coming`}>
-                  <CustomButton primary text={'Kaikki'} />
+                  <CustomButton primary text={i18n.common.all} />
                 </a>
                 {unitData.data.groups.map((elem: DaycareGroup) => (
                   <a key={elem.id} href={`attendance/${elem.id}/coming`}>
