@@ -15,7 +15,6 @@ import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.domain.maxEndDate
 import mu.KotlinLogging
 import org.jdbi.v3.core.statement.UnableToExecuteStatementException
-import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.PlatformTransactionManager
 import org.springframework.transaction.annotation.Transactional
@@ -79,7 +78,7 @@ class PartnershipService(
         try {
             val success = dao.updatePartnershipDuration(partnershipId, startDate, endDate)
             if (!success) throw NotFound("No partnership found with id $partnershipId")
-        } catch (e: UnableToExecuteStatementException) {
+        } catch (e: Exception) {
             throw mapPSQLException(e)
         }
 
@@ -108,7 +107,7 @@ class PartnershipService(
                     }
                 }
             dao.retryPartnership(partnershipId)
-        } catch (e: DataIntegrityViolationException) {
+        } catch (e: Exception) {
             throw mapPSQLException(e)
         }
     }

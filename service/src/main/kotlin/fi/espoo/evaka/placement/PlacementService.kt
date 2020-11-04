@@ -14,7 +14,6 @@ import fi.espoo.evaka.shared.domain.ClosedPeriod
 import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.shared.domain.NotFound
 import org.jdbi.v3.core.Handle
-import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.lang.Error
@@ -69,7 +68,7 @@ fun updatePlacement(
 
     try {
         h.updatePlacementStartAndEndDate(id, startDate, endDate)
-    } catch (e: DataIntegrityViolationException) {
+    } catch (e: Exception) {
         throw mapPSQLException(e)
     }
 
@@ -121,7 +120,7 @@ fun createGroupPlacement(
             // no merging needed, create new
             h.createGroupPlacement(daycarePlacementId, groupId, startDate, endDate).id!!
         }
-    } catch (e: DataIntegrityViolationException) {
+    } catch (e: Exception) {
         throw mapPSQLException(e)
     }
 }
