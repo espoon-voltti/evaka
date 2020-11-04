@@ -30,10 +30,10 @@ export default React.memo(function Tabs({ tabs, mobile }: Props) {
               key={id}
               to={link}
               data-qa={`${id}-tab`}
-              maxWidth={maxWidth}
-              mobile={mobile}
+              $maxWidth={maxWidth}
+              $mobile={mobile}
             >
-              <TabTitle>{label}</TabTitle>
+              <TabTitle $mobile={mobile}>{label}</TabTitle>
               {counter && <TabCounter>{counter}</TabCounter>}
             </TabContainer>
           ))}
@@ -53,8 +53,8 @@ const TabsContainer = styled.div`
 `
 
 interface TabContainerProps {
-  maxWidth?: string
-  mobile?: boolean
+  $maxWidth?: string
+  $mobile?: boolean
 }
 
 const TabContainer = styled(NavLink)<TabContainerProps>`
@@ -67,27 +67,33 @@ const TabContainer = styled(NavLink)<TabContainerProps>`
   flex-grow: 1;
   background-color: ${Colors.greyscale.white};
   font-family: ${(p) =>
-    p.mobile ? 'Open Sans, sans-serif' : 'Montserrat, sans-serif'};
-  font-size: ${(p) => (p.mobile ? '14px' : '15px')};
+    p.$mobile ? 'Open Sans, sans-serif' : 'Montserrat, sans-serif'};
+  font-size: ${(p) => (p.$mobile ? '14px' : '15px')};
   text-align: center;
   text-transform: uppercase;
   letter-spacing: 1px;
-  max-width: ${(p) => (p.maxWidth ? p.maxWidth : 'none')};
+  max-width: ${(p) => (p.$maxWidth ? p.$maxWidth : 'none')};
 
   &.active {
     background-color: ${(p) =>
-      p.mobile ? Colors.greyscale.white : `${Colors.blues.light}33`};
+      p.$mobile ? Colors.greyscale.white : `${Colors.blues.light}33`};
     border-bottom: ${(p) =>
-      p.mobile ? `3px solid ${Colors.blues.medium}` : 'none'};
+      p.$mobile ? `3px solid ${Colors.blues.medium}` : 'none'};
+
+    span {
+      div {
+        color: ${(p) =>
+          p.$mobile ? Colors.blues.medium : Colors.greyscale.dark};
+      }
+    }
   }
 `
 
-const TabTitle = styled.span`
+const TabTitle = styled.span<TabContainerProps>`
   color: ${Colors.greyscale.dark};
 
   &.active {
     font-weight: 700;
-    color: ${Colors.blues.medium};
   }
 `
 
