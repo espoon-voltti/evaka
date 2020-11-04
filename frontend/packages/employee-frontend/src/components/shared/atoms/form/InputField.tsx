@@ -58,7 +58,7 @@ const StyledInput = styled.input<StyledInputProps>`
     border-color: ${Colors.accents.petrol};
     margin-top: -2px;
     margin-bottom: -1px;
-    padding-left: 10px;
+    padding-${(p) => (p.align === 'right' ? 'right' : 'left')}: 10px;
   }
 
   &.success,
