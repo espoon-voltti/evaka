@@ -58,7 +58,7 @@ function InvoiceRowSectionRow({
 }: Props) {
   const { i18n } = useTranslation()
 
-  const producOpts: SelectOptionProps[] = isSuccess(invoiceCodes)
+  const productOpts: SelectOptionProps[] = isSuccess(invoiceCodes)
     ? invoiceCodes.data.products.map((product) => ({
         value: product,
         label: i18n.product[product]
@@ -80,41 +80,37 @@ function InvoiceRowSectionRow({
   return (
     <Tr data-qa="invoice-details-invoice-row">
       <Td>
-        <div>
-          {editable ? (
-            <Select
-              name="product"
-              placeholder=" "
-              value={producOpts.filter((elem) => elem.value == product)}
-              options={producOpts}
-              onChange={(value) =>
-                value && 'value' in value
-                  ? update({ product: value.value as Product })
-                  : undefined
-              }
-              data-qa="select-product"
-            />
-          ) : (
-            <div>{i18n.product[product]}</div>
-          )}
-        </div>
+        {editable ? (
+          <ProductSelect
+            name="product"
+            placeholder=" "
+            value={productOpts.find((elem) => elem.value === product)}
+            options={productOpts}
+            onChange={(value) =>
+              value && 'value' in value
+                ? update({ product: value.value as Product })
+                : undefined
+            }
+            data-qa="select-product"
+          />
+        ) : (
+          <div>{i18n.product[product]}</div>
+        )}
       </Td>
       <Td>
-        <div>
-          {editable ? (
-            <InputField
-              placeholder={i18n.invoice.form.rows.description}
-              type="text"
-              value={description}
-              onChange={(value) =>
-                update({ description: value.substring(0, 52) })
-              }
-              dataQa="input-description"
-            />
-          ) : (
-            <div>{description}</div>
-          )}
-        </div>
+        {editable ? (
+          <InputField
+            placeholder={i18n.invoice.form.rows.description}
+            type="text"
+            value={description}
+            onChange={(value) =>
+              update({ description: value.substring(0, 52) })
+            }
+            dataQa="input-description"
+          />
+        ) : (
+          <div>{description}</div>
+        )}
       </Td>
       <Td>
         {editable ? (
@@ -124,11 +120,7 @@ function InvoiceRowSectionRow({
             placeholder={i18n.invoice.form.rows.costCenter}
             onChange={(value) => update({ costCenter: value })}
             data-qa="input-cost-center"
-            info={
-              !costCenterValueIsValid
-                ? { text: 'Virheellinen arvo', status: 'warning' }
-                : undefined
-            }
+            info={!costCenterValueIsValid ? { text: 'Virhe', status: 'warning' } : undefined}
           />
         ) : (
           <div>{costCenter}</div>
@@ -136,10 +128,10 @@ function InvoiceRowSectionRow({
       </Td>
       <Td>
         {editable ? (
-          <Select
+          <SubCostCenterSelect
             name="subCostCenter"
             placeholder=" "
-            value={subCostCenterOpts.filter(
+            value={subCostCenterOpts.find(
               (elem) => elem.value == subCostCenter
             )}
             options={subCostCenterOpts}
@@ -198,11 +190,13 @@ function InvoiceRowSectionRow({
         )}
       </Td>
       <Td align="right">
-        {formatCents(editable ? amount * unitPrice : price)}
+        <TotalPrice>
+          {formatCents(editable ? amount * unitPrice : price)}
+        </TotalPrice>
       </Td>
       <Td>
         {editable ? (
-          <IconButton
+          <DeleteButton
             icon={faTrash}
             onClick={remove}
             dataQa="delete-invoice-row-button"
@@ -212,6 +206,22 @@ function InvoiceRowSectionRow({
     </Tr>
   )
 }
+
+const ProductSelect = styled(Select)`
+  min-width: 280px;
+`
+
+const SubCostCenterSelect = styled(Select)`
+  min-width: 80px;
+`
+
+const DeleteButton = styled(IconButton)`
+  margin: 6px 0;
+`
+
+const TotalPrice = styled.div`
+  padding: 6px 12px 6px 12px;
+`
 
 const NarrowEuroInput = styled(EuroInput)`
   width: 5em;
@@ -235,6 +245,7 @@ const UnitPriceInput = React.memo(function UnitPriceInput({
 
   return (
     <NarrowEuroInput
+      invalidText="Virhe"
       value={stringValue}
       onChange={setStringValue}
       allowEmpty={false}

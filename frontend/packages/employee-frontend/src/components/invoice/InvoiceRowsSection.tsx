@@ -68,6 +68,34 @@ interface Props {
   editable: boolean
 }
 
+const InvoiceRowsTable = styled(Table)`
+  border-collapse: collapse;
+  margin-bottom: 15px;
+  td {
+    padding: 16px 0 24px 16px;
+    vertical-align: bottom;
+  }
+  td:nth-child(1) {
+    padding-left: 0;
+  }
+`
+
+const CostCenterTh = styled(Th)`
+  width: 100px;
+`
+
+const AmountTh = styled(Th)`
+  width: 90px;
+`
+
+const UnitPriceTh = styled(Th)`
+  width: 100px;
+`
+
+const TotalPriceTh = styled(Th)`
+  width: 100px;
+`
+
 const InvoiceRowsSection = React.memo(function InvoiceRowsSection({
   rows,
   updateRows,
@@ -124,7 +152,7 @@ const InvoiceRowsSection = React.memo(function InvoiceRowsSection({
                     text={i18n.invoice.openAbsenceSummary}
                   />
                 </TitleContainer>
-                <Table data-qa="table-of-invoice-rows">
+                <InvoiceRowsTable data-qa="table-of-invoice-rows">
                   <Thead>
                     <Tr>
                       <Th data-qa="invoice-row-product">
@@ -133,24 +161,30 @@ const InvoiceRowsSection = React.memo(function InvoiceRowsSection({
                       <Th data-qa="invoice-row-description">
                         {i18n.invoice.form.rows.description}
                       </Th>
-                      <Th data-qa="invoice-row-costcenter">
+                      <CostCenterTh data-qa="invoice-row-costcenter">
                         {i18n.invoice.form.rows.costCenter}
-                      </Th>
+                      </CostCenterTh>
                       <Th data-qa="invoice-row-subcostcenter">
                         {i18n.invoice.form.rows.subCostCenter}
                       </Th>
                       <Th data-qa="invoice-row-daterange">
                         {i18n.invoice.form.rows.daterange}
                       </Th>
-                      <Th data-qa="invoice-row-amount">
+                      <AmountTh data-qa="invoice-row-amount">
                         {i18n.invoice.form.rows.amount}
-                      </Th>
-                      <Th align="right" data-qa="invoice-row-unitprice">
+                      </AmountTh>
+                      <UnitPriceTh
+                        align="right"
+                        data-qa="invoice-row-unitprice"
+                      >
                         {i18n.invoice.form.rows.unitPrice}
-                      </Th>
-                      <Th align="right" data-qa="invoice-row-totalprice">
+                      </UnitPriceTh>
+                      <TotalPriceTh
+                        align="right"
+                        data-qa="invoice-row-totalprice"
+                      >
                         {i18n.invoice.form.rows.price}
-                      </Th>
+                      </TotalPriceTh>
                       <Th />
                     </Tr>
                   </Thead>
@@ -178,7 +212,7 @@ const InvoiceRowsSection = React.memo(function InvoiceRowsSection({
                       />
                     ))}
                   </Tbody>
-                </Table>
+                </InvoiceRowsTable>
                 <Button
                   disabled={!editable}
                   onClick={getAddInvoiceRow(firstRow)}
