@@ -85,9 +85,9 @@ data class TestLoggers(
 
 // assert utils
 
-const val testSSN = "130105A987A"
+val testSSNs = listOf("130105-0872", "130105A087A", "130105a087a", "130105+0872")
 const val redactedSSN = "REDACTED-SSN"
-
+val UUIDWithSSNs = listOf("e1130765-2925-4549-b395-9abdd6c8e08a", "e1130765-b9b5-4549-b395-922222a8208a", "5c0250a8-a3fa-449c-a188-6010108a000a")
 fun TestLoggers.assertAudit() =
     assertThat(audit.appender.list.map { it.toJson(audit.encoder).asMap(mapper) }).extracting(*auditEventProps)
 

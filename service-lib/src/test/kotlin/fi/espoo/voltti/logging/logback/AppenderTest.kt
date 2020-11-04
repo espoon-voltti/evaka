@@ -80,7 +80,7 @@ class AppenderTest {
             it.assertSanitized().containsExactly(event1.tuple())
             it.withLatestSanitized { actual ->
                 defaultErrorAssertions(actual, meta, exception)
-                assertThat(actual["stackTrace"] as String).doesNotContain(testSSN)
+                assertThat(actual["stackTrace"] as String).doesNotContain(testSSNs[0])
                 assertThat(actual["stackTrace"] as String).contains(redactedSSN)
             }
 
@@ -89,11 +89,21 @@ class AppenderTest {
             it.assertSanitized().containsExactly(event1.tuple(), event2.tuple())
             it.withLatestSanitized { actual -> defaultInfoAssertions(actual) }
 
-            logger.info { "Accidental SSN logging: $testSSN" }
-            it.withLatestSanitized { actual ->
-                defaultInfoAssertions(actual)
-                assertThat(actual["message"] as String).doesNotContain(testSSN)
-                assertThat(actual["message"] as String).contains(redactedSSN)
+            testSSNs.forEach { ssn ->
+                logger.info { "Accidental SSN logging: $ssn}" }
+                it.withLatestSanitized { actual ->
+                    defaultInfoAssertions(actual)
+                    assertThat(actual["message"] as String).doesNotContain(ssn)
+                    assertThat(actual["message"] as String).contains(redactedSSN)
+                }
+            }
+
+            UUIDWithSSNs.forEach { uuid ->
+                logger.info { "UUID has SSN in it: $uuid" }
+                it.withLatestSanitized { actual ->
+                    assertThat(actual["message"] as String).contains(uuid)
+                    assertThat(actual["message"] as String).doesNotContain(redactedSSN)
+                }
             }
 
             it.assertAudit().isEmpty()
@@ -123,4 +133,4 @@ data class TestMeta(val key1: String, val key2: String) {
     }
 }
 class TestException : RuntimeException("BOOM!")
-class TestExceptionSensitive : RuntimeException("BOOM! (social_security_number)=($testSSN)")
+class TestExceptionSensitive : RuntimeException("BOOM! (social_security_number)=(${testSSNs[0]})")

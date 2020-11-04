@@ -188,7 +188,7 @@ class VardaClient(
     }
 
     fun updateFeeData(vardaFeeDataId: Long, feeData: VardaFeeData): Boolean {
-        logger.info { "Updating fee data $vardaFeeDataId to Varda (body: $feeData)" }
+        logger.info { "Updating fee data $vardaFeeDataId to Varda" }
         val (_, _, result) = Fuel.put("$feeDataUrl$vardaFeeDataId")
             .jsonBody(objectMapper.writeValueAsString(feeData)).authenticatedResponseStringWithRetries()
 
@@ -202,6 +202,7 @@ class VardaClient(
                     "Updating fee data $vardaFeeDataId to Varda failed." +
                         " message: ${String(result.error.errorData)}"
                 }
+                logger.debug { "Updating feeData to Varda failed: (vardaId: $vardaFeeDataId, body: $feeData)" }
                 false
             }
         }
@@ -228,21 +229,15 @@ class VardaClient(
 
     fun createDecision(newDecision: VardaDecision): VardaDecisionResponse? {
         logger.info { "Creating a new decision to Varda (body: $newDecision)" }
-        logger.debug { "Varda: creating new decision $newDecision" }
         val (_, _, result) = Fuel.post(decisionUrl)
             .jsonBody(objectMapper.writeValueAsString(newDecision)).authenticatedResponseStringWithRetries()
 
         return when (result) {
             is Result.Success -> {
                 logger.info { "Creating a new decision to Varda succeeded (body: $newDecision)" }
-                logger.debug { "Varda: creating new decision succeeded $newDecision" }
                 objectMapper.readValue(result.get())
             }
             is Result.Failure -> {
-                logger.debug {
-                    "Varda: creating new decision failed $newDecision." +
-                        " message: ${String(result.error.errorData)}"
-                }
                 logger.error(result.getException()) {
                     "Creating new decision to Varda failed (body: $newDecision)." +
                         " message: ${String(result.error.errorData)}"
