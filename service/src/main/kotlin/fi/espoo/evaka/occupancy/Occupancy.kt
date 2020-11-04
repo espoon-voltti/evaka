@@ -37,9 +37,10 @@ private fun locationsQuery(
     includeGroups: Boolean
 ) =
     """
-    SELECT 
-        u.id AS unit_id, 
-        u.type && array['FAMILY', 'GROUP_FAMILY']::care_types[] AS is_family_unit
+    SELECT
+        u.id AS unit_id,
+        u.type && array['FAMILY', 'GROUP_FAMILY']::care_types[] AS is_family_unit,
+        u.operation_days
         ${if (includeGroups) """,
         dg.id AS group_id,
         dg.name AS group_name
@@ -114,7 +115,7 @@ private fun coefficientParameters(realized: Boolean, includeGroups: Boolean) =
         loc.is_family_unit
         ${if (realized) """,
             EXISTS (
-                SELECT 1 FROM absence ab 
+                SELECT 1 FROM absence ab
                 WHERE ab.child_id = c.id AND ab.date = t::date AND ab.absence_type != 'PRESENCE'
             ) AS absent
         """ else ""}
@@ -247,7 +248,7 @@ private fun caretakerAmountsPlanned(includeGroups: Boolean) =
     SELECT loc.unit_id, ${if (includeGroups) "g.id AS group_id," else ""} t AS day, sum(ct.amount) AS caretakers
     FROM locations loc
     CROSS JOIN dates t
-    LEFT JOIN daycare_group g 
+    LEFT JOIN daycare_group g
         ON g.daycare_id = loc.unit_id AND ${if (includeGroups) "g.id = loc.group_id AND" else ""} daterange(g.start_date, g.end_date, '[]') @> t::date
     LEFT JOIN daycare_caretaker ct ON g.id = ct.group_id AND daterange(ct.start_date, ct.end_date, '[]') @> t::date
     GROUP BY unit_id, ${if (includeGroups) "g.id," else ""} t
@@ -258,7 +259,7 @@ private fun caretakerAmountsRealised(includeGroups: Boolean) =
     SELECT loc.unit_id, ${if (includeGroups) "g.id AS group_id," else ""} t AS day, sum(sa.count) AS caretakers
     FROM locations loc
     CROSS JOIN dates t
-    LEFT JOIN daycare_group g 
+    LEFT JOIN daycare_group g
         ON g.daycare_id = loc.unit_id AND ${if (includeGroups) "g.id = loc.group_id AND" else ""} daterange(g.start_date, g.end_date, '[]') @> t::date
     LEFT JOIN staff_attendance sa ON g.id = sa.group_id AND sa.date = t::date
     GROUP BY loc.unit_id, ${if (includeGroups) "g.id," else ""} t
@@ -266,18 +267,18 @@ private fun caretakerAmountsRealised(includeGroups: Boolean) =
 
 private fun finalValues(includeGroups: Boolean) =
     """
-    SELECT 
-        unit_id, 
-        ${if (includeGroups) "group_id," else ""} 
-        day, 
+    SELECT
+        unit_id,
+        ${if (includeGroups) "group_id," else ""}
+        day,
         sum,
         headcount,
-        caretakers, 
+        caretakers,
         rank() OVER (PARTITION BY sum, headcount, ${if (includeGroups) "group_id," else ""} caretakers ORDER BY day)
     FROM (
         SELECT c.unit_id, ${if (includeGroups) "c.group_id," else ""} c.day, c.sum, c.headcount, ct.caretakers
         FROM daily_coefficients c
-        LEFT JOIN caretaker_amounts ct 
+        LEFT JOIN caretaker_amounts ct
             ON c.unit_id = ct.unit_id ${if (includeGroups) "AND c.group_id = ct.group_id" else ""} AND c.day = ct.day
     ) params
     """.trimIndent()
@@ -314,6 +315,7 @@ private fun finalSelectorReport(includeGroups: Boolean) =
         g.name AS group_name,
         """ else ""}
         day,
+        date_part('isodow', day) = ANY(dc.operation_days) is_operation_day,
         sum,
         headcount,
         round(CASE
@@ -343,27 +345,27 @@ fun getSql(type: OccupancyType, singleUnit: Boolean, includeGroups: Boolean): St
         ${if (type == OccupancyType.REALIZED) """
             dates as (${datesQuery(true)}),
             realized_placements AS (${realizedPlacements(includeGroups = includeGroups)}),
-            coefficient_parameters AS (${coefficientParameters(realized = true, includeGroups = includeGroups)}), 
+            coefficient_parameters AS (${coefficientParameters(realized = true, includeGroups = includeGroups)}),
             coefficients AS (${coefficients(excludeAbsent = true, includeGroups = includeGroups)}),
         """ else """
             dates as (${datesQuery(false)}),
-            coefficient_parameters AS (${coefficientParameters(realized = false, includeGroups = includeGroups)}), 
+            coefficient_parameters AS (${coefficientParameters(realized = false, includeGroups = includeGroups)}),
             coefficients AS (${coefficients(excludeAbsent = false, includeGroups = includeGroups)}),
         """}
-        
+
         ${if (type == OccupancyType.PLANNED) """
-            planned_coefficient_parameters AS ($plannedCoefficientParameters), 
-            planned_coefficients AS ($plannedCoefficients), 
+            planned_coefficient_parameters AS ($plannedCoefficientParameters),
+            planned_coefficients AS ($plannedCoefficients),
             planned_max_coefficients AS ($plannedMaxCoefficients),
         """ else ""}
-        
+
         final_coefficients AS (${finalCoefficients(type == OccupancyType.PLANNED)}),
-        daily_coefficients AS (${dailyCoefficients(includeGroups = includeGroups)}), 
+        daily_coefficients AS (${dailyCoefficients(includeGroups = includeGroups)}),
         caretaker_amounts AS (
             ${if (type == OccupancyType.REALIZED) caretakerAmountsRealised(includeGroups = includeGroups)
     else caretakerAmountsPlanned(includeGroups = includeGroups)}
-        ), 
-        final_values AS (${finalValues(includeGroups = includeGroups)}) 
+        ),
+        final_values AS (${finalValues(includeGroups = includeGroups)})
         ${if (singleUnit) finalSelectorSingleUnit(includeGroups = includeGroups)
     else finalSelectorReport(includeGroups = includeGroups)}
     """.trimIndent()

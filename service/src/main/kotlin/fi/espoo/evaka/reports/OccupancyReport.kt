@@ -19,7 +19,6 @@ import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
-import java.time.DayOfWeek
 import java.time.LocalDate
 import java.util.UUID
 
@@ -225,7 +224,7 @@ private fun calculateOccupancyUnitReport(
         .bind("startDate", period.start)
         .bind("endDate", period.end)
         .map { rs, _ ->
-            OccupancyUnitReportRowRaw(
+            rs.getBoolean("is_operation_day") to OccupancyUnitReportRowRaw(
                 unitId = rs.getUUID("unit_id"),
                 unitName = rs.getString("unit_name"),
                 date = rs.getDate("day").toLocalDate(),
@@ -236,7 +235,8 @@ private fun calculateOccupancyUnitReport(
             )
         }
         .list()
-        .filter { it.date.dayOfWeek != DayOfWeek.SATURDAY && it.date.dayOfWeek != DayOfWeek.SUNDAY }
+        .filter { (isOperationDay, _) -> isOperationDay }
+        .map { (_, reportRow) -> reportRow }
 }
 
 private fun calculateOccupancyGroupReport(
@@ -259,7 +259,7 @@ private fun calculateOccupancyGroupReport(
         .bind("startDate", period.start)
         .bind("endDate", period.end)
         .map { rs, _ ->
-            OccupancyGroupReportRowRaw(
+            rs.getBoolean("is_operation_day") to OccupancyGroupReportRowRaw(
                 unitId = rs.getUUID("unit_id"),
                 unitName = rs.getString("unit_name"),
                 groupId = rs.getUUID("group_id"),
@@ -272,5 +272,6 @@ private fun calculateOccupancyGroupReport(
             )
         }
         .list()
-        .filter { it.date.dayOfWeek != DayOfWeek.SATURDAY && it.date.dayOfWeek != DayOfWeek.SUNDAY }
+        .filter { (isOperationDay, _) -> isOperationDay }
+        .map { (_, reportRow) -> reportRow }
 }
