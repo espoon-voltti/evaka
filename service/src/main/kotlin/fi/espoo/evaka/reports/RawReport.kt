@@ -93,10 +93,12 @@ fun getRawRows(jdbc: NamedParameterJdbcTemplate, from: LocalDate, to: LocalDate)
                 LEFT JOIN daycare_caretaker dc on dg.id = dc.group_id AND daterange(dc.start_date, dc.end_date, '[]') @> t::date
                 LEFT JOIN staff_attendance sa on dg.id = sa.group_id AND sa.date = t::date
                 LEFT JOIN backup_care bc on bc.child_id = p.id AND daterange(bc.start_date, bc.end_date, '[]') @> t::date
+                LEFT JOIN daycare bcu on bc.unit_id = bcu.id
                 LEFT JOIN service_need sn on sn.child_id = p.id AND daterange(sn.start_date, sn.end_date, '[]') @> t::date
                 LEFT JOIN assistance_need an on an.child_id = p.id AND daterange(an.start_date, an.end_date, '[]') @> t::date
                 LEFT JOIN absence ab1 on ab1.child_id = p.id and ab1.date = t::date and ab1.absence_type != 'PRESENCE' AND ab1.care_type IN ('DAYCARE', 'PRESCHOOL_DAYCARE')
                 LEFT JOIN absence ab2 on ab2.child_id = p.id and ab2.date = t::date and ab2.absence_type != 'PRESENCE' AND ab2.care_type NOT IN ('DAYCARE', 'PRESCHOOL_DAYCARE')
+                WHERE date_part('isodow', t) = ANY(u.operation_days) OR date_part('isodow', t) = ANY(bcu.operation_days)
             )
             SELECT
                 day,
