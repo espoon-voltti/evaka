@@ -46,7 +46,7 @@ environment's package manager, or alternatively download binaries
 from websites provided below.
 
 - [Node.js](https://nodejs.org/en/) – a JavaScript runtime built on
-  Chrome's V8 JavaScript engine, version 12.13+
+  Chrome's V8 JavaScript engine, version 14.15+
 - [Yarn](https://yarnpkg.com/getting-started/install) – Package manager
   for Node, version 1.22+
 

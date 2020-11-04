@@ -105,7 +105,7 @@
     }
   },
   "engines": {
-    "node": ">= 12.13.0"
+    "node": ">= 14.15.0"
   },
   "browserslist": [
     "Firefox ESR"

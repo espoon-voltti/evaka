@@ -12,7 +12,7 @@ Made with [Vue](https://vuejs.org/).
 
 ## Requirements
 
-- Node version 12.13+
+- Node version 14.15+
 - Yarn version 1.22+ (2.x not tested)
 
 ## Prerequisites for running locally
