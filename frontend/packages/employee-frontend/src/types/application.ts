@@ -25,6 +25,8 @@ export interface ApplicationSummary {
   preferredUnitName: string
   type: string
   status: string
+  connectedDaycare: boolean
+  preparatoryEducation: boolean
 }
 
 export type ApplicationType = 'CLUB' | 'DAYCARE' | 'PRESCHOOL'

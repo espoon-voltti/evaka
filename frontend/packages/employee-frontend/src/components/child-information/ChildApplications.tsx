@@ -24,6 +24,7 @@ import { RequireRole } from 'utils/roles'
 import { AddButtonRow } from 'components/shared/atoms/buttons/AddButton'
 import { UIContext } from 'state/ui'
 import CreateApplicationModal from 'components/child-information/CreateApplicationModal'
+import { inferApplicationType } from 'components/person-profile/PersonApplications'
 
 interface Props {
   id: UUID
@@ -82,7 +83,7 @@ const ChildApplications = React.memo(function ChildApplications({
             <Td data-qa="application-type">
               {
                 i18n.personProfile.application.types[
-                  application.type.toUpperCase()
+                  inferApplicationType(application)
                 ]
               }
             </Td>

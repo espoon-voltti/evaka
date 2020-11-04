@@ -71,7 +71,7 @@ const PersonApplications = React.memo(function PersonApplications({
               <Td data-qa="application-type">
                 {
                   i18n.personProfile.application.types[
-                    application.type.toUpperCase()
+                    inferApplicationType(application)
                   ]
                 }
               </Td>
@@ -123,3 +123,18 @@ const PersonApplications = React.memo(function PersonApplications({
 })
 
 export default PersonApplications
+
+export function inferApplicationType(application: ApplicationSummary) {
+  const baseType = application.type.toUpperCase()
+  if (baseType !== 'PRESCHOOL') return baseType
+  else if (application.connectedDaycare && !application.preparatoryEducation) {
+    return 'PRESCHOOL_WITH_DAYCARE'
+  } else if (application.connectedDaycare && application.preparatoryEducation) {
+    return 'PREPARATORY_WITH_DAYCARE'
+  } else if (
+    !application.connectedDaycare &&
+    application.preparatoryEducation
+  ) {
+    return 'PREPARATORY_EDUCATION'
+  } else return 'PRESCHOOL'
+}

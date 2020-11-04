@@ -370,6 +370,8 @@ fun fetchApplicationSummariesForGuardian(h: Handle, guardianId: UUID): List<Pers
             a.id, a.preferredUnit, a.startDate, a.sentDate, a.document->>'type' AS type,
             a.childId, a.childName, a.childSsn,
             a.guardianId, concat(p.first_name, ' ', p.last_name) as guardianName,
+            a.connecteddaycare,
+            a.preparatoryeducation,
             d.name AS daycareName,
             a.status AS application_status
         FROM application_view a
@@ -394,6 +396,8 @@ fun fetchApplicationSummariesForChild(h: Handle, childId: UUID): List<PersonAppl
             a.id, a.preferredUnit, a.startDate, a.sentDate, a.document->>'type' AS type,
             a.childId, a.childName, a.childSsn,
             a.guardianId, concat(p.first_name, ' ', p.last_name) as guardianName,
+            a.connecteddaycare,
+            a.preparatoryeducation,
             d.name AS daycareName,
             a.status AS application_status
         FROM application_view a
@@ -423,7 +427,9 @@ private val toPersonApplicationSummary: (ResultSet, StatementContext) -> PersonA
         startDate = rs.getDate("startDate")?.toLocalDate(),
         sentDate = rs.getDate("sentDate")?.toLocalDate(),
         type = rs.getString("type"),
-        status = rs.getEnum("application_status")
+        status = rs.getEnum("application_status"),
+        connectedDaycare = rs.getBoolean("connecteddaycare"),
+        preparatoryEducation = rs.getBoolean("preparatoryeducation")
     )
 }
 
