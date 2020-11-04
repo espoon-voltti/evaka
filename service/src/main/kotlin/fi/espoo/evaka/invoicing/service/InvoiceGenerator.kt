@@ -30,7 +30,6 @@ import fi.espoo.evaka.invoicing.domain.merge
 import fi.espoo.evaka.pis.dao.PGConstants
 import fi.espoo.evaka.shared.db.getEnum
 import fi.espoo.evaka.shared.db.getUUID
-import fi.espoo.evaka.shared.domain.OperationalDays
 import fi.espoo.evaka.shared.domain.Period
 import fi.espoo.evaka.shared.domain.asDistinctPeriods
 import fi.espoo.evaka.shared.domain.mergePeriods
@@ -53,7 +52,7 @@ fun createAllDraftInvoices(objectMapper: ObjectMapper, period: Period = getPrevi
     val unhandledDecisions = sentDecisions.filterNot { invoicedHeadsOfFamily.contains(it.key) }
     val unhandledPlacements = temporaryPlacements.filterNot { invoicedHeadsOfFamily.contains(it.key) }
     val daycareCodes = getDaycareCodes(h)
-    val operationalDays = operationalDays(period.start.year, period.start.month)(h)
+    val operationalDays = operationalDays(h, period.start.year, period.start.month)
 
     val absences: List<AbsenceStub> = getAbsenceStubs(h, period, listOf(CareType.DAYCARE, CareType.PRESCHOOL_DAYCARE))
 
@@ -82,7 +81,7 @@ internal fun generateDraftInvoices(
     temporaryPlacements: Map<UUID, List<TemporaryPlacements>>,
     period: Period,
     daycareCodes: Map<UUID, DaycareCodes>,
-    operationalDays: OperationalDays,
+    operationalDays: Map<UUID, List<LocalDate>>,
     absences: List<AbsenceStub> = listOf(),
     freeChildren: List<UUID> = listOf()
 ): List<Invoice> {
@@ -113,7 +112,7 @@ internal fun generateDraftInvoice(
     temporaryPlacements: List<TemporaryPlacements>,
     invoicePeriod: Period,
     daycareCodes: Map<UUID, DaycareCodes>,
-    operationalDays: OperationalDays,
+    operationalDays: Map<UUID, List<LocalDate>>,
     absences: List<AbsenceStub>,
     freeChildren: List<UUID>
 ): Invoice? {
@@ -153,7 +152,8 @@ internal fun generateDraftInvoice(
         .flatMap { (period, rowStub) ->
             val codes = daycareCodes[rowStub.placement.unit]
                 ?: error("Couldn't find invoice codes for daycare (${rowStub.placement.unit})")
-            val unitOperationalDays = operationalDays.exceptions[rowStub.placement.unit] ?: operationalDays.default
+            val unitOperationalDays = operationalDays[rowStub.placement.unit]
+                ?: error("Couldn't find operational days for daycare (${rowStub.placement.unit})")
             toInvoiceRows(
                 period,
                 rowStub,

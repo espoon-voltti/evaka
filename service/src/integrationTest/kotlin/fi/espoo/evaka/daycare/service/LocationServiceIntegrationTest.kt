@@ -133,7 +133,6 @@ class LocationServiceIntegrationTest : PureJdbiTest() {
                 uploadToVarda = false,
                 uploadToKoski = false,
                 capacity = 0,
-                roundTheClock = false,
                 ophOrganizationOid = null,
                 ophOrganizerOid = null,
                 ophUnitOid = null,

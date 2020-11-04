@@ -45,7 +45,6 @@ class DaycareEditIntegrationTest : FullApplicationTest() {
         canApplyPreschool = false,
         canApplyClub = false,
         providerType = ProviderType.MUNICIPAL,
-        roundTheClock = false,
         capacity = 1,
         language = Language.fi,
         uploadToVarda = false,
@@ -129,7 +128,6 @@ class DaycareEditIntegrationTest : FullApplicationTest() {
         assertEquals(fields.canApplyDaycare, daycare.canApplyDaycare)
         assertEquals(fields.canApplyPreschool, daycare.canApplyPreschool)
         assertEquals(fields.providerType, daycare.providerType)
-        assertEquals(fields.roundTheClock, daycare.roundTheClock)
         assertEquals(fields.capacity, daycare.capacity)
         assertEquals(fields.language, daycare.language)
         assertEquals(fields.uploadToVarda, daycare.uploadToVarda)

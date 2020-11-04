@@ -766,7 +766,6 @@ data class DevDaycare(
     val canApplyDaycare: Boolean = true,
     val canApplyPreschool: Boolean = true,
     val providerType: ProviderType = ProviderType.MUNICIPAL,
-    val roundTheClock: Boolean = false,
     val capacity: Int = 0,
     val language: Language = Language.fi,
     val uploadToVarda: Boolean = true,
