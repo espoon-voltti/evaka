@@ -20,7 +20,7 @@
     "@fortawesome/pro-solid-svg-icons": "file:./vendor/fortawesome/fortawesome-pro-solid-svg-icons-5.14.0.tgz"
   },
   "engines": {
-    "node": ">= 12.13.0"
+    "node": ">= 14.15.0"
   },
   "workspaces": [
     "packages/*",
