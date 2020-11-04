@@ -25,7 +25,6 @@ aliases:
   - &ci_evaka_fingerprint 86:d0:b3:3d:aa:fc:d5:b9:6b:69:1e:c7:f5:56:66:aa
   # Version of remote Docker engine used with setup_remote_docker (not including machine executors)
   - &remote_docker_version '19.03.13'
-  - &nodejs_version '14.15'
   - &yarn_version '1.22.\*'
   - &nodejs_image cimg/node:14.15
   - &openjdk_image cimg/openjdk:11.0
@@ -275,9 +274,6 @@ commands:
     parameters:
       suite:
         type: string
-      nodejs_version:
-        type: string
-        default: *nodejs_version
       yarn_version:
         type: string
         default: *yarn_version
@@ -296,10 +292,10 @@ commands:
           command: |
             CI=true LOCAL_DIR='../frontend/packages' ./compose-e2e up -d
       - run:
-          name: Install node 12 and yarn
+          name: Install Node.js and yarn
           command: |
             export DEBIAN_FRONTEND=noninteractive
-            nvm install << parameters.nodejs_version >>
+            nvm install
             node --version
 
             curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add -
@@ -330,7 +326,7 @@ commands:
           name: Run e2e tests against compose
           working_directory: *workspace_e2e
           command: |
-            nvm use << parameters.nodejs_version >>
+            nvm use
             ./wait-for-dev-api.sh 'http://localhost:9999' || (cd /home/circleci/repo/compose && ./compose-e2e logs && false)
             yarn << parameters.suite >>
       - run:

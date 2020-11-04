@@ -13,8 +13,9 @@ Gateway between eVaka frontends and backend services
 
 ## Requirements
 
-- Node version 14.15+
-- Yarn version 1.22+ (2.x not tested)
+- [Node.js](https://nodejs.org/en/) – a JavaScript runtime built on Chrome's V8 JavaScript engine, version  14.15+
+  - Install correct version automatically with [nvm](https://github.com/nvm-sh/nvm): `nvm install` (see [`.nvmrc`](../.nvmrc))
+- [Yarn](https://yarnpkg.com/getting-started/install) – Package manager for Node, version 1.22+
 - (OPTIONAL) [Google Maps JavaScript API key](#google-maps-api-key)
   - If you want to use the geocoding & autocomplete endpoints
 
