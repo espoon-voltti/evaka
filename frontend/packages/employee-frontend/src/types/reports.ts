@@ -315,12 +315,12 @@ export interface StartingPlacementsRow {
 }
 
 export interface VoucherServiceProviderRow {
-  areaName: string
-  unitId: UUID
-  unitName: string
-  voucherChildCount: number
-  voucherSum: number
-  startDate: LocalDate
-  endDate: LocalDate
-  unitVoucherReportUri: string
+  unit: {
+    id: UUID
+    name: string
+    areaId: UUID
+    areaName: string
+  }
+  childCount: number
+  monthlyPaymentSum: number
 }

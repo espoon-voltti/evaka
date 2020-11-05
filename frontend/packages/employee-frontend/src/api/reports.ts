@@ -360,21 +360,13 @@ export async function getVoucherServiceProvidersReport(
 ): Promise<Result<VoucherServiceProviderRow[]>> {
   return client
     .get<JsonOf<VoucherServiceProviderRow[]>>(
-      `/reports/voucher-service-providers`,
+      `/reports/service-voucher-value/units`,
       {
         params: {
           ...filters
         }
       }
     )
-    .then((res) =>
-      Success(
-        res.data.map((row) => ({
-          ...row,
-          startDate: LocalDate.parseIso(row.startDate),
-          endDate: LocalDate.parseIso(row.endDate)
-        }))
-      )
-    )
+    .then((res) => Success(res.data))
     .catch(Failure)
 }
