@@ -126,11 +126,9 @@ class FeeDecisionController(
         user.requireOneOfRoles(Roles.FINANCE_ADMIN)
         jdbi.transaction { h ->
             val confirmedDecisions = service.confirmDrafts(h, user, feeDecisionIds)
-            confirmedDecisions.forEach {
-                asyncJobRunner.plan(h, listOf(NotifyFeeDecisionApproved(it)))
-            }
-            asyncJobRunner.scheduleImmediateRun()
+            asyncJobRunner.plan(h, confirmedDecisions.map { NotifyFeeDecisionApproved(it) })
         }
+        asyncJobRunner.scheduleImmediateRun()
         return ResponseEntity.noContent().build()
     }
 
