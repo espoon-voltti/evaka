@@ -155,7 +155,7 @@ class PlacementController(
                 )
             )
         }
-        runAfterCommit { asyncJobRunner.scheduleImmediateRun() }
+        asyncJobRunner.scheduleImmediateRun()
 
         return ResponseEntity.noContent().build()
     }
@@ -173,7 +173,7 @@ class PlacementController(
             val (childId, startDate, endDate) = h.cancelPlacement(placementId)
             asyncJobRunner.plan(h, listOf(NotifyPlacementPlanApplied(childId, startDate, endDate)))
         }
-        runAfterCommit { asyncJobRunner.scheduleImmediateRun() }
+        asyncJobRunner.scheduleImmediateRun()
 
         return ResponseEntity.noContent().build()
     }
