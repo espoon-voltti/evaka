@@ -1649,7 +1649,6 @@ export const fi = {
         ? 'Lisää merkintä valitulle...'
         : 'Lisää merkinnät valituille...'
     },
-    weekend: 'Viikonloppu',
     notOperationDay: 'Ei toimintapäivä'
   },
   attendances: {
