@@ -9,26 +9,26 @@ import fi.espoo.evaka.daycare.controllers.utils.ok
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.config.Roles
 import fi.espoo.evaka.shared.db.getUUID
+import fi.espoo.evaka.shared.db.transaction
+import org.jdbi.v3.core.Handle
+import org.jdbi.v3.core.Jdbi
 import org.springframework.http.ResponseEntity
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RestController
 import java.time.LocalDate
 import java.util.UUID
 
 @RestController
-class DuplicatePeopleReportController(
-    private val jdbc: NamedParameterJdbcTemplate
-) {
+class DuplicatePeopleReportController(private val jdbi: Jdbi) {
     @GetMapping("/reports/duplicate-people")
     fun getDuplicatePeopleReport(user: AuthenticatedUser): ResponseEntity<List<DuplicatePeopleReportRow>> {
         Audit.DuplicatePeopleReportRead.log()
         user.requireOneOfRoles(Roles.ADMIN)
-        return getDuplicatePeople(jdbc).let(::ok)
+        return jdbi.transaction { getDuplicatePeople(it) }.let(::ok)
     }
 }
 
-fun getDuplicatePeople(jdbc: NamedParameterJdbcTemplate): List<DuplicatePeopleReportRow> {
+fun getDuplicatePeople(h: Handle): List<DuplicatePeopleReportRow> {
     // language=sql
     val sql =
         """
@@ -88,7 +88,7 @@ fun getDuplicatePeople(jdbc: NamedParameterJdbcTemplate): List<DuplicatePeopleRe
         ORDER BY key, social_security_number, p.id;
         """.trimIndent()
 
-    return jdbc.query(sql, emptyMap<String, String>()) { rs, _ ->
+    return h.createQuery(sql).map { rs, _ ->
         DuplicatePeopleReportRow(
             groupIndex = rs.getInt("group_index"),
             duplicateNumber = rs.getInt("duplicate_number"),
@@ -119,7 +119,7 @@ fun getDuplicatePeople(jdbc: NamedParameterJdbcTemplate): List<DuplicatePeopleRe
             placements = rs.getInt("placements"),
             serviceNeeds = rs.getInt("service_needs")
         )
-    }
+    }.toList()
 }
 
 data class DuplicatePeopleReportRow(

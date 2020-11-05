@@ -11,16 +11,19 @@ import fi.espoo.evaka.shared.auth.UserRole.ADMIN
 import fi.espoo.evaka.shared.auth.UserRole.FINANCE_ADMIN
 import fi.espoo.evaka.shared.auth.UserRole.SERVICE_WORKER
 import fi.espoo.evaka.shared.auth.UserRole.UNIT_SUPERVISOR
+import fi.espoo.evaka.shared.db.bindNullable
 import fi.espoo.evaka.shared.db.getUUID
+import fi.espoo.evaka.shared.db.transaction
+import org.jdbi.v3.core.Handle
+import org.jdbi.v3.core.Jdbi
 import org.springframework.http.ResponseEntity
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RestController
 import java.util.UUID
 
 @RestController
 class FamilyConflictReportController(
-    private val jdbc: NamedParameterJdbcTemplate,
+    private val jdbi: Jdbi,
     private val acl: AccessControlList
 ) {
     @GetMapping("/reports/family-conflicts")
@@ -28,12 +31,13 @@ class FamilyConflictReportController(
         Audit.FamilyConflictReportRead.log()
         user.requireOneOfRoles(ADMIN, SERVICE_WORKER, FINANCE_ADMIN, UNIT_SUPERVISOR)
         val authorizedUnits = acl.getAuthorizedUnits(user)
-        return ResponseEntity.ok(getFamilyConflicts(jdbc, authorizedUnits.ids))
+        return jdbi.transaction { getFamilyConflicts(it, authorizedUnits.ids) }
+            .let { ResponseEntity.ok(it) }
     }
 }
 
 fun getFamilyConflicts(
-    jdbc: NamedParameterJdbcTemplate,
+    h: Handle,
     units: Collection<UUID>? = null
 ): List<FamilyConflictReportRow> {
     // language=sql
@@ -76,27 +80,25 @@ fun getFamilyConflicts(
         JOIN primary_units_view pu ON co.id = pu.head_of_child
         JOIN daycare u ON u.id = pu.unit_id
         JOIN care_area ca ON ca.id = u.care_area_id
-        ${if (units != null) "WHERE u.id IN (:units)" else ""}
+        WHERE (:units::uuid[] IS NULL OR u.id = ANY(:units))
         ORDER BY ca.name, u.name, co.last_name, co.first_name
         """.trimIndent()
-    return jdbc.query(
-        sql,
-        mapOf(
-            "units" to units
-        )
-    ) { rs, _ ->
-        FamilyConflictReportRow(
-            careAreaName = rs.getString("care_area_name"),
-            unitId = rs.getUUID("unit_id"),
-            unitName = rs.getString("unit_name"),
-            id = rs.getUUID("id"),
-            firstName = rs.getString("first_name"),
-            lastName = rs.getString("last_name"),
-            socialSecurityNumber = rs.getString("social_security_number"),
-            partnerConflictCount = rs.getInt("partner_conflict_count"),
-            childConflictCount = rs.getInt("child_conflict_count")
-        )
-    }
+    return h.createQuery(sql)
+        .bindNullable("units", units)
+        .map { rs, _ ->
+            FamilyConflictReportRow(
+                careAreaName = rs.getString("care_area_name"),
+                unitId = rs.getUUID("unit_id"),
+                unitName = rs.getString("unit_name"),
+                id = rs.getUUID("id"),
+                firstName = rs.getString("first_name"),
+                lastName = rs.getString("last_name"),
+                socialSecurityNumber = rs.getString("social_security_number"),
+                partnerConflictCount = rs.getInt("partner_conflict_count"),
+                childConflictCount = rs.getInt("child_conflict_count")
+            )
+        }
+        .toList()
 }
 
 data class FamilyConflictReportRow(
