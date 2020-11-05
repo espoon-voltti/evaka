@@ -10,6 +10,7 @@ import {
   addYears,
   differenceInYears,
   format,
+  getISODay,
   isAfter,
   isBefore,
   isToday,
@@ -39,6 +40,9 @@ export default class LocalDate {
   }
   getDate(): number {
     return this.date
+  }
+  getIsoDayOfWeek(): number {
+    return getISODay(this.toSystemTzDate())
   }
   withYear(year: number): LocalDate {
     return LocalDate.of(year, this.month, this.date)
