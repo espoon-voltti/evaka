@@ -52,7 +52,7 @@ const InvoiceDetailsPage = React.memo(function InvoiceDetailsPage() {
   const editable = isSuccess(invoice) && invoice.data.status === 'DRAFT'
 
   if (isFailure(invoice)) {
-    return <Redirect to="/invoices" />
+    return <Redirect to="/finance/invoices" />
   }
 
   const updateRows = (rows: InvoiceRowDetailed[]) =>
