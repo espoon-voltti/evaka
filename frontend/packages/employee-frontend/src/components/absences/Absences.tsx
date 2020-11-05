@@ -43,6 +43,10 @@ import styled from 'styled-components'
 
 const AbsencesContentArea = styled(ContentArea)`
   overflow-x: auto;
+
+  @media print {
+    padding: 0;
+  }
 `
 
 function Absences({ match }: RouteComponentProps<{ groupId: string }>) {
@@ -205,7 +209,7 @@ function Absences({ match }: RouteComponentProps<{ groupId: string }>) {
                 childList={absences.data.children}
                 operationDays={absences.data.operationDays}
               />
-              <Button
+              <AddAbsencesButton
                 data-qa="add-absences-button"
                 onClick={() => setModalVisible(true)}
                 disabled={selectedCells.length === 0}
@@ -223,5 +227,11 @@ function Absences({ match }: RouteComponentProps<{ groupId: string }>) {
     </div>
   )
 }
+
+const AddAbsencesButton = styled(Button)`
+  @media print {
+    display: none;
+  }
+`
 
 export default Absences

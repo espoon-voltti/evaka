@@ -19,6 +19,10 @@ const ReturnButtonWrapper = styled.div`
     margin-left: 0;
     justify-content: flex-start;
   }
+
+  @media print {
+    display: none;
+  }
 `
 
 interface Props {

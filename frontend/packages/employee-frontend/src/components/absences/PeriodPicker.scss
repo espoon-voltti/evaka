@@ -20,6 +20,10 @@
   button {
     border: 0;
     background: transparent;
+
+    @media print {
+      display: none;
+    }
   }
 
   button:hover {

@@ -17,7 +17,7 @@ const InfoBall = styled.div<InfoBallProps>`
   vertical-align: top;
   height: 20px;
   width: 20px;
-  border-radius: 100%;
+  border-radius: 50%;
   margin-right: 12px;
   margin-top: 2px;
   flex-shrink: 0;
@@ -45,6 +45,14 @@ const InfoBall = styled.div<InfoBallProps>`
         return 'none'
     }
   }};
+
+  @media print {
+    -webkit-print-color-adjust: exact;
+    color-adjust: exact;
+    margin-right: 6px;
+    width: 16px;
+    height: 16px;
+  }
 `
 
 interface ColourInfoContainerProps {

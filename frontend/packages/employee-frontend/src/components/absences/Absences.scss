@@ -13,6 +13,12 @@
     }
   }
 
+  h1, h2 {
+    @media print {
+      margin: 0;
+    }
+  }
+
   .table {
     border-collapse: collapse;
     width: 100%;
@@ -123,6 +129,12 @@
   .absence-header-today {
     background-color: #9e9e9e;
     color: $white !important;
+
+    @media print {
+      background: none;
+      color: inherit !important;
+      font-weight: bolder;
+    }
   }
 
   .absence-header-weekday {
@@ -243,6 +255,7 @@
 
     td {
       cursor: default;
+      vertical-align: middle;
     }
 
     .staff-attendance-cell {
@@ -272,6 +285,10 @@
         border-radius: 0;
         border-width: 0 0 1px;
         background-color: transparent;
+
+        @media print {
+          border: none;
+        }
       }
     }
 

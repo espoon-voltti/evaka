@@ -14,8 +14,17 @@
   font-size: 15px;
   margin: 20px auto;
 
+  @media print {
+    font-size: 12px;
+    padding: 0;
+  }
+
   > div {
     margin: 10px;
+
+    @media print {
+      margin: 0 6px 0 0;
+    }
   }
 
   .color-info-container {
