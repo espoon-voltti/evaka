@@ -15,7 +15,6 @@ import EuroInput from '../common/EuroInput'
 import { useTranslation } from '../../state/i18n'
 import { isSuccess, Result } from '../../api'
 import { Product, InvoiceCodes } from '../../types/invoicing'
-import { round } from '../utils'
 import { formatCents, parseCents } from '../../utils/money'
 import IconButton from '~components/shared/atoms/buttons/IconButton'
 
@@ -58,7 +57,7 @@ function InvoiceRowSectionRow({
 }: Props) {
   const { i18n } = useTranslation()
 
-  const producOpts: SelectOptionProps[] = isSuccess(invoiceCodes)
+  const productOpts: SelectOptionProps[] = isSuccess(invoiceCodes)
     ? invoiceCodes.data.products.map((product) => ({
         value: product,
         label: i18n.product[product]
@@ -80,41 +79,37 @@ function InvoiceRowSectionRow({
   return (
     <Tr data-qa="invoice-details-invoice-row">
       <Td>
-        <div>
-          {editable ? (
-            <Select
-              name="product"
-              placeholder=" "
-              value={producOpts.filter((elem) => elem.value == product)}
-              options={producOpts}
-              onChange={(value) =>
-                value && 'value' in value
-                  ? update({ product: value.value as Product })
-                  : undefined
-              }
-              data-qa="select-product"
-            />
-          ) : (
-            <div>{i18n.product[product]}</div>
-          )}
-        </div>
+        {editable ? (
+          <ProductSelect
+            name="product"
+            placeholder=" "
+            value={productOpts.find((elem) => elem.value === product)}
+            options={productOpts}
+            onChange={(value) =>
+              value && 'value' in value
+                ? update({ product: value.value as Product })
+                : undefined
+            }
+            data-qa="select-product"
+          />
+        ) : (
+          <div>{i18n.product[product]}</div>
+        )}
       </Td>
       <Td>
-        <div>
-          {editable ? (
-            <InputField
-              placeholder={i18n.invoice.form.rows.description}
-              type="text"
-              value={description}
-              onChange={(value) =>
-                update({ description: value.substring(0, 52) })
-              }
-              dataQa="input-description"
-            />
-          ) : (
-            <div>{description}</div>
-          )}
-        </div>
+        {editable ? (
+          <InputField
+            placeholder={i18n.invoice.form.rows.description}
+            type="text"
+            value={description}
+            onChange={(value) =>
+              update({ description: value.substring(0, 52) })
+            }
+            dataQa="input-description"
+          />
+        ) : (
+          <div>{description}</div>
+        )}
       </Td>
       <Td>
         {editable ? (
@@ -126,7 +121,7 @@ function InvoiceRowSectionRow({
             data-qa="input-cost-center"
             info={
               !costCenterValueIsValid
-                ? { text: 'Virheellinen arvo', status: 'warning' }
+                ? { text: 'Tarkista', status: 'warning' }
                 : undefined
             }
           />
@@ -136,10 +131,10 @@ function InvoiceRowSectionRow({
       </Td>
       <Td>
         {editable ? (
-          <Select
+          <SubCostCenterSelect
             name="subCostCenter"
             placeholder=" "
-            value={subCostCenterOpts.filter(
+            value={subCostCenterOpts.find(
               (elem) => elem.value == subCostCenter
             )}
             options={subCostCenterOpts}
@@ -173,15 +168,9 @@ function InvoiceRowSectionRow({
       </Td>
       <Td>
         {editable ? (
-          <InputField
-            value={amount ? amount.toString() : ''}
-            type={'number'}
-            onChange={(value) =>
-              update({
-                amount: round(Math.max(1, Math.min(1000, Number(value))))
-              })
-            }
-            dataQa="input-amount"
+          <AmountInput
+            value={amount}
+            onChange={(amount) => void update({ amount })}
           />
         ) : (
           amount
@@ -198,11 +187,13 @@ function InvoiceRowSectionRow({
         )}
       </Td>
       <Td align="right">
-        {formatCents(editable ? amount * unitPrice : price)}
+        <TotalPrice>
+          {formatCents(editable ? amount * unitPrice : price)}
+        </TotalPrice>
       </Td>
       <Td>
         {editable ? (
-          <IconButton
+          <DeleteButton
             icon={faTrash}
             onClick={remove}
             dataQa="delete-invoice-row-button"
@@ -213,9 +204,61 @@ function InvoiceRowSectionRow({
   )
 }
 
+const ProductSelect = styled(Select)`
+  min-width: 280px;
+`
+
+const SubCostCenterSelect = styled(Select)`
+  min-width: 80px;
+`
+
+const DeleteButton = styled(IconButton)`
+  margin: 6px 0;
+`
+
+const TotalPrice = styled.div`
+  padding: 6px 12px 6px 12px;
+`
+
 const NarrowEuroInput = styled(EuroInput)`
   width: 5em;
 `
+
+const AmountInput = React.memo(function AmountInput({
+  value,
+  onChange
+}: {
+  value: number
+  onChange: (v: number) => void
+}) {
+  const [stringValue, setStringValue] = useState(value ? value.toString() : '')
+  const [invalid, setInvalid] = useState(false)
+
+  useEffect(() => {
+    const parsed = Number(stringValue)
+    if (!Number.isNaN(parsed)) {
+      onChange(parsed)
+      setInvalid(false)
+    }
+  }, [stringValue])
+
+  return (
+    <InputField
+      type={'number'}
+      min={1}
+      max={1000}
+      value={stringValue}
+      onChange={setStringValue}
+      onBlur={() => {
+        if (!stringValue || Number.isNaN(stringValue)) {
+          setInvalid(true)
+        }
+      }}
+      dataQa="input-amount"
+      info={invalid ? { status: 'warning', text: 'Tarkista' } : undefined}
+    />
+  )
+})
 
 const UnitPriceInput = React.memo(function UnitPriceInput({
   value,
@@ -235,6 +278,7 @@ const UnitPriceInput = React.memo(function UnitPriceInput({
 
   return (
     <NarrowEuroInput
+      invalidText="Tarkista"
       value={stringValue}
       onChange={setStringValue}
       allowEmpty={false}

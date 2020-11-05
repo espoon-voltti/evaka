@@ -12,6 +12,7 @@ export interface SelectOptionProps {
 }
 
 export interface SelectProps {
+  className?: string
   disabled?: boolean
   id?: string
   name?: string
@@ -40,6 +41,7 @@ const Container = styled.div<ContainerProps>`
 type SelectComponentProps = SelectProps & ContainerProps
 
 const Select = memo(function Select({
+  className,
   fullWidth,
   disabled,
   id,
@@ -52,7 +54,7 @@ const Select = memo(function Select({
   value
 }: SelectComponentProps) {
   return (
-    <Container fullWidth={fullWidth} data-qa={dataQa}>
+    <Container fullWidth={fullWidth} data-qa={dataQa} className={className}>
       <ReactSelect
         isDisabled={disabled}
         id={id}

@@ -58,7 +58,7 @@ const StyledInput = styled.input<StyledInputProps>`
     border-color: ${Colors.accents.petrol};
     margin-top: -2px;
     margin-bottom: -1px;
-    padding-left: 10px;
+    padding-${(p) => (p.align === 'right' ? 'right' : 'left')}: 10px;
   }
 
   &.success,
@@ -143,6 +143,7 @@ interface TextInputProps extends BaseProps {
   value: string
   onChange?: (value: string) => void
   onFocus?: (e: React.FocusEvent<HTMLInputElement>) => void
+  onBlur?: (e: React.FocusEvent<HTMLInputElement>) => void
   readonly?: boolean
   width?: InputWidth
 
@@ -166,6 +167,7 @@ function InputField({
   value,
   onChange,
   onFocus,
+  onBlur,
   readonly,
   width = 'full',
   placeholder,
@@ -192,6 +194,7 @@ function InputField({
             if (onChange && !readonly) onChange(e.target.value)
           }}
           onFocus={onFocus}
+          onBlur={onBlur}
           placeholder={placeholder}
           readOnly={readonly}
           disabled={readonly}
