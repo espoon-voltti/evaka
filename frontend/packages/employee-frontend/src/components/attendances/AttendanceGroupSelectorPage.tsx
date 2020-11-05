@@ -2,12 +2,12 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import LocalDate from '@evaka/lib-common/src/local-date'
 import React, { Fragment, useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import styled from 'styled-components'
 import MetaTags from 'react-meta-tags'
 
+import LocalDate from '@evaka/lib-common/src/local-date'
 import { isFailure, isLoading, isSuccess, Loading, Result } from '~api'
 import { getDaycare, getUnitData, UnitData, UnitResponse } from '~api/unit'
 import Button from '~components/shared/atoms/buttons/Button'

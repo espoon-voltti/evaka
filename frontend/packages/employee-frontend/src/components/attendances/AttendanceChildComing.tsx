@@ -5,8 +5,8 @@
 import React, { Fragment, useState } from 'react'
 import { useHistory } from 'react-router-dom'
 import styled from 'styled-components'
-import { postChildAbsence } from '~api/absences'
 
+import { postChildAbsence } from '~api/absences'
 import { childArrives, ChildInGroup } from '~api/unit'
 import AsyncButton from '~components/shared/atoms/buttons/AsyncButton'
 import InputField from '~components/shared/atoms/form/InputField'
