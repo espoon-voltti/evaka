@@ -17,7 +17,7 @@ export function getRange(num: number) {
 }
 
 export function dateIsDayOfWeek(date: LocalDate, dayOfWeek: DayOfWeek) {
-  return date.toSystemTzDate().getDay() == dayOfWeek
+  return date.getIsoDayOfWeek() == dayOfWeek
 }
 
 export function getWeekDay(date: LocalDate) {
