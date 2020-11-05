@@ -67,7 +67,7 @@ export default React.memo(function FeeDecisionDetailsPage() {
   const goToDecisions = useCallback(() => goBack(), [history])
 
   if (isFailure(decision)) {
-    return <Redirect to="/decisions" />
+    return <Redirect to="/finance/fee-decisions" />
   }
 
   return (
