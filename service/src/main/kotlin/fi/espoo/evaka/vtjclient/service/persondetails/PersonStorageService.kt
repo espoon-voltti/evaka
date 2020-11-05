@@ -52,6 +52,22 @@ class PersonStorageService(private val jdbi: Jdbi) {
         }
     }
 
+    fun upsertVtjChildAndGuardians(h: Handle, personResult: PersonResult): PersonResult {
+        return when (personResult) {
+            is PersonResult.Result -> {
+                val child = createOrUpdateOnePerson(h, personResult.vtjPersonDTO)
+                child.guardians.addAll(personResult.vtjPersonDTO.guardians.map(::createOrUpdateOnePerson))
+                createOrReplaceChildRelationships(
+                    childId = child.id,
+                    guardianIds = child.guardians.map { guardian -> guardian.id }
+                )
+
+                return PersonResult.Result(child)
+            }
+            else -> personResult
+        }
+    }
+
     private fun upsertVtjGuardianAndChildren(vtjPersonDTO: VtjPersonDTO): PersonResult {
         val guardian = createOrUpdateOnePerson(vtjPersonDTO)
         guardian.children.addAll(vtjPersonDTO.children.map(::createOrUpdateOnePerson))
@@ -75,6 +91,10 @@ class PersonStorageService(private val jdbi: Jdbi) {
     }
 
     private fun createOrReplaceGuardianRelationships(guardianId: UUID, childIds: List<UUID>) = jdbi.transaction { h ->
+        createOrReplaceGuardianRelationships(h, guardianId, childIds)
+    }
+
+    private fun createOrReplaceGuardianRelationships(h: Handle, guardianId: UUID, childIds: List<UUID>) {
         deleteGuardianChildRelationShips(h, guardianId)
         childIds.forEach { childId -> insertGuardian(h, guardianId, childId) }
     }

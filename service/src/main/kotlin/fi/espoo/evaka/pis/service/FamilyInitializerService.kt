@@ -11,15 +11,14 @@ import fi.espoo.evaka.identity.ExternalIdentifier.SSN
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.InitializeFamilyFromApplication
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
+import fi.espoo.evaka.shared.db.getUUID
 import fi.espoo.evaka.shared.db.transaction
 import fi.espoo.evaka.shared.db.withSpringHandle
 import fi.espoo.evaka.shared.db.withSpringTx
 import mu.KotlinLogging
 import org.jdbi.v3.core.Handle
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import org.springframework.stereotype.Service
 import org.springframework.transaction.PlatformTransactionManager
-import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDate
 import java.util.UUID
 import javax.sql.DataSource
@@ -32,7 +31,6 @@ class FamilyInitializerService(
     private val txm: PlatformTransactionManager,
     private val dataSource: DataSource,
     private val asyncJobRunner: AsyncJobRunner,
-    private val jdbc: NamedParameterJdbcTemplate,
     private val jackson: ObjectMapper
 ) {
     private val logger = KotlinLogging.logger {}
@@ -41,31 +39,31 @@ class FamilyInitializerService(
         asyncJobRunner.initializeFamilyFromApplication = ::handleInitializeFamilyFromApplication
     }
 
-    @Transactional
     fun handleInitializeFamilyFromApplication(h: Handle, msg: InitializeFamilyFromApplication) {
         val user = msg.user
-        val daycareForm = getForm(msg.applicationId)
+        val daycareForm = getForm(h, msg.applicationId)
         if (daycareForm != null) {
-            tryInitFamilyFromApplication(h, user, daycareForm, msg.applicationId, getGuardianId(msg.applicationId))
+            tryInitFamilyFromApplication(h, user, daycareForm, msg.applicationId, getGuardianId(h, msg.applicationId))
         } else {
             logger.warn("Could not initialize family, daycare application ${msg.applicationId} not found")
         }
     }
 
-    private fun getForm(applicationId: UUID): DaycareFormV0? {
+    private fun getForm(h: Handle, applicationId: UUID): DaycareFormV0? {
         // language=sql
         val sql =
             """
             SELECT document FROM application_view
             WHERE id = :id AND type != 'club'
             """.trimIndent()
-        return jdbc
-            .query(sql, mapOf("id" to applicationId)) { rs, _ -> rs.getString("document") }
+        return h.createQuery(sql)
+            .bind("id", applicationId)
+            .map { rs, _ -> rs.getString("document") }
             .firstOrNull()
             ?.let { jackson.readValue(it, DaycareFormV0::class.java) }
     }
 
-    private fun getGuardianId(applicationId: UUID): UUID {
+    private fun getGuardianId(h: Handle, applicationId: UUID): UUID {
         // language=sql
         val sql =
             """
@@ -73,9 +71,9 @@ class FamilyInitializerService(
             FROM application
             WHERE id = :id
             """.trimIndent()
-        return jdbc
-            .query(sql, mapOf("id" to applicationId)) { rs, _ -> rs.getString("guardian_id") }
-            .mapNotNull { guardianId -> UUID.fromString(guardianId) }
+        return h.createQuery(sql)
+            .bind("id", applicationId)
+            .map { rs, _ -> rs.getUUID("guardian_id") }
             .first()
     }
 
@@ -94,7 +92,6 @@ class FamilyInitializerService(
         }
     }
 
-    @Transactional
     fun tryInitFamilyFromApplication(user: AuthenticatedUser, application: ApplicationDetails) {
         try {
             val members = parseFridgeFamilyMembersFromApplication(user, application)

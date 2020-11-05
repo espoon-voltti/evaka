@@ -10,37 +10,28 @@ import fi.espoo.evaka.placement.PlacementPlanService
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.getEnum
-import fi.espoo.evaka.shared.db.withSpringHandle
 import fi.espoo.evaka.shared.domain.NotFound
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
+import org.jdbi.v3.core.Handle
 import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Transactional
 import java.sql.ResultSet
 import java.time.LocalDate
 import java.util.UUID
-import javax.sql.DataSource
 
 @Service
-class DecisionDraftService(
-    private val placementPlanService: PlacementPlanService,
-    private val jdbc: NamedParameterJdbcTemplate,
-    private val dataSource: DataSource
-) {
-    fun getDecisionDrafts(applicationId: UUID): List<DecisionDraft> {
-        return withSpringHandle(dataSource) { h -> fetchDecisionDrafts(h, applicationId) }
+class DecisionDraftService(private val placementPlanService: PlacementPlanService) {
+    fun getDecisionDrafts(h: Handle, applicationId: UUID): List<DecisionDraft> {
+        return fetchDecisionDrafts(h, applicationId)
     }
 
-    @Transactional
-    fun clearDecisionDrafts(applicationId: UUID) {
+    fun clearDecisionDrafts(h: Handle, applicationId: UUID) {
         // language=sql
         val sql =
             """DELETE FROM decision WHERE application_id = :applicationId AND sent_date IS NULL""".trimIndent()
 
-        jdbc.update(sql, mapOf("applicationId" to applicationId))
+        h.createUpdate(sql).bind("applicationId", applicationId).execute()
     }
 
-    @Transactional
-    fun createDecisionDrafts(user: AuthenticatedUser, application: ApplicationDetails) {
+    fun createDecisionDrafts(h: Handle, user: AuthenticatedUser, application: ApplicationDetails) {
         val placementPlan = placementPlanService.getPlacementPlanByApplication((application.id))
             ?: throw NotFound("Application ${application.id} has no placement")
 
@@ -56,24 +47,22 @@ class DecisionDraftService(
             INSERT INTO decision (created_by, unit_id, application_id, type, start_date, end_date, planned)
             VALUES (:createdBy, :unitId, :applicationId, :type::decision_type, :startDate, :endDate, :planned);
             """.trimIndent()
+        val batch = h.prepareBatch(sql)
         drafts.forEach { draft ->
-            jdbc.update(
-                sql,
-                mapOf(
-                    "createdBy" to user.id,
-                    "unitId" to draft.unitId,
-                    "applicationId" to application.id,
-                    "type" to draft.type.toString(),
-                    "startDate" to draft.startDate,
-                    "endDate" to draft.endDate,
-                    "planned" to draft.planned
-                )
-            )
+            batch
+                .bind("createdBy", user.id)
+                .bind("unitId", draft.unitId)
+                .bind("applicationId", application.id)
+                .bind("type", draft.type.toString())
+                .bind("startDate", draft.startDate)
+                .bind("endDate", draft.endDate)
+                .bind("planned", draft.planned)
+                .add()
         }
+        batch.execute()
     }
 
-    @Transactional
-    fun updateDecisionDrafts(applicationId: UUID, updates: List<DecisionDraftUpdate>) {
+    fun updateDecisionDrafts(h: Handle, applicationId: UUID, updates: List<DecisionDraftUpdate>) {
         // language=sql
         val sql =
             """
@@ -82,19 +71,18 @@ class DecisionDraftService(
             WHERE id = :decisionId AND application_id = :applicationId
             """.trimIndent()
 
-        val successfulUpdates = jdbc.batchUpdate(
-            sql,
-            updates.map {
-                mutableMapOf(
-                    "applicationId" to applicationId,
-                    "decisionId" to it.id,
-                    "unitId" to it.unitId,
-                    "startDate" to it.startDate,
-                    "endDate" to it.endDate,
-                    "planned" to it.planned
-                )
-            }.toTypedArray()
-        ).sum()
+        val batch = h.prepareBatch(sql)
+        updates.forEach {
+            batch
+                .bind("applicationId", applicationId)
+                .bind("decisionId", it.id)
+                .bind("unitId", it.unitId)
+                .bind("startDate", it.startDate)
+                .bind("endDate", it.endDate)
+                .bind("planned", it.planned)
+                .add()
+        }
+        val successfulUpdates = batch.execute().sum()
 
         if (successfulUpdates < updates.size) {
             throw NotFound("Some decision draft was not found")
@@ -109,16 +97,18 @@ class DecisionDraftService(
         val planned: Boolean
     )
 
-    fun getDecisionUnits(): List<DecisionUnit> {
+    fun getDecisionUnits(h: Handle): List<DecisionUnit> {
         val sql =
             """
             $decisionUnitQuery
             ORDER BY name
             """.trimIndent()
-        return jdbc.query(sql, mapOf<String, String>()) { rs, _ -> toDecisionUnit(rs) }
+        return h.createQuery(sql)
+            .map { rs, _ -> toDecisionUnit(rs) }
+            .toList()
     }
 
-    fun getDecisionUnit(unitId: UUID): DecisionUnit {
+    fun getDecisionUnit(h: Handle, unitId: UUID): DecisionUnit {
         // language=SQL
         val sql =
             """
@@ -126,9 +116,10 @@ class DecisionDraftService(
              WHERE u.id = :id
             """.trimIndent()
 
-        val params = mapOf("id" to unitId)
-
-        return jdbc.query(sql, params) { rs, _ -> toDecisionUnit(rs) }.first()
+        return h.createQuery(sql)
+            .bind("id", unitId)
+            .map { rs, _ -> toDecisionUnit(rs) }
+            .first()
     }
 
     private fun planClubDecisionDrafts(plan: PlacementPlan): List<DecisionDraft> {

@@ -11,18 +11,15 @@ import fi.espoo.evaka.invoicing.domain.IncomeEffect
 import fi.espoo.evaka.invoicing.domain.getTotalIncome
 import fi.espoo.evaka.invoicing.domain.getTotalIncomeEffect
 import fi.espoo.evaka.invoicing.domain.incomeTotal
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
+import org.jdbi.v3.core.Handle
 import org.springframework.stereotype.Service
 import java.sql.ResultSet
 import java.time.LocalDate
 import java.util.UUID
 
 @Service
-class FamilyOverviewService(
-    private val jdbc: NamedParameterJdbcTemplate,
-    private val objectMapper: ObjectMapper
-) {
-    fun getFamilyByAdult(adultId: UUID): FamilyOverview? {
+class FamilyOverviewService(private val objectMapper: ObjectMapper) {
+    fun getFamilyByAdult(h: Handle, adultId: UUID): FamilyOverview? {
         val sql =
             """
 WITH adult_ids AS
@@ -73,9 +70,8 @@ WHERE tsrange(fc.start_date, fc.end_date) @> localtimestamp
 AND fc.conflict = FALSE
 ORDER BY date_of_birth ASC
 """
-        val params = mapOf("id" to adultId)
-
-        val familyMembersNow = jdbc.query(sql, params) { rs, _ -> toFamilyOverviewPerson(rs, objectMapper) }
+        val familyMembersNow =
+            h.createQuery(sql).bind("id", adultId).map { rs, _ -> toFamilyOverviewPerson(rs, objectMapper) }
 
         val (adults, children) = familyMembersNow.partition { it.headOfChild == null }
 

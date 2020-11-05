@@ -474,20 +474,23 @@ RETURNING id
         @PathVariable("application-id") applicationId: UUID,
         @RequestBody placementPlan: PlacementPlan
     ): ResponseEntity<Unit> {
-        val application = withSpringHandle(dataSource) { h -> fetchApplicationDetails(h, applicationId) }
-            ?: throw NotFound("application $applicationId not found")
-        val preschoolDaycarePeriod = if (placementPlan.preschoolDaycarePeriodStart != null) ClosedPeriod(
-            placementPlan.preschoolDaycarePeriodStart, placementPlan.preschoolDaycarePeriodEnd!!
-        ) else null
+        withSpringHandle(dataSource) { h ->
+            val application = fetchApplicationDetails(h, applicationId)
+                ?: throw NotFound("application $applicationId not found")
+            val preschoolDaycarePeriod = if (placementPlan.preschoolDaycarePeriodStart != null) ClosedPeriod(
+                placementPlan.preschoolDaycarePeriodStart, placementPlan.preschoolDaycarePeriodEnd!!
+            ) else null
 
-        placementPlanService.createPlacementPlan(
-            application,
-            DaycarePlacementPlan(
-                placementPlan.unitId,
-                ClosedPeriod(placementPlan.periodStart, placementPlan.periodEnd),
-                preschoolDaycarePeriod
+            placementPlanService.createPlacementPlan(
+                h,
+                application,
+                DaycarePlacementPlan(
+                    placementPlan.unitId,
+                    ClosedPeriod(placementPlan.periodStart, placementPlan.periodEnd),
+                    preschoolDaycarePeriod
+                )
             )
-        )
+        }
 
         return ResponseEntity.noContent().build()
     }
