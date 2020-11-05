@@ -1615,7 +1615,7 @@ export const fi = {
     },
     careTypeCategories: {
       NONBILLABLE:
-        'Esiopetus, valmistava, 5-vuotiaiden varhaiskasvatus tai kerho (maksuton)',
+        'Esiopetus, valmistava, 5-vuotiaiden varhaiskasvatus tai kerhotoiminta',
       BILLABLE: 'Varhaiskasvatus (maksullinen)'
     },
     modal: {
