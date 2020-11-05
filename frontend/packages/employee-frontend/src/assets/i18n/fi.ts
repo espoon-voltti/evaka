@@ -1669,7 +1669,8 @@ export const fi = {
       returnToComing: 'Palauta tulossa oleviin'
     },
     timeLabel: 'Merkintä',
-    chooseGroup: 'Valitse ryhmä'
+    chooseGroup: 'Valitse ryhmä',
+    searchPlaceholder: 'Etsi lapsen nimellä'
   },
   placementDraft: {
     preschoolDaycare: 'Liittyvä varhaiskasvatus',
