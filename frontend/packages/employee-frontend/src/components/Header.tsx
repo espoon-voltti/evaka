@@ -390,11 +390,18 @@ interface Header2Props {
   link?: string
 }
 
-function Header2({ dataQa, logo, title, children, link }: Header2Props) {
+function Header2({
+  dataQa,
+  logo,
+  title,
+  children,
+  link,
+  className
+}: Header2Props) {
   const [menuActive, setMenuActive] = useState(false)
 
   return (
-    <HeaderWrapper data-qa={dataQa}>
+    <HeaderWrapper data-qa={dataQa} className={className}>
       <NavbarContainer>
         <NavbarBrand>
           <HeaderTitleWrapper href={link ? link : '/'}>
