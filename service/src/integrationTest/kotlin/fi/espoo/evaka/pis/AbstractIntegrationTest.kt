@@ -20,7 +20,6 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.context.annotation.ComponentScan
 import org.springframework.context.annotation.FilterType
 import org.springframework.context.annotation.Import
-import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.test.context.junit.jupiter.SpringExtension
 
 @DisableSecurity
@@ -39,9 +38,6 @@ abstract class AbstractIntegrationTest {
 
     @Autowired
     lateinit var jdbi: Jdbi
-
-    @Autowired
-    lateinit var jdbcTemplate: JdbcTemplate
 
     @BeforeEach
     private fun beforeEach() {

@@ -12,6 +12,7 @@ import fi.espoo.evaka.daycare.controllers.utils.noContent
 import fi.espoo.evaka.daycare.controllers.utils.ok
 import fi.espoo.evaka.daycare.createDaycare
 import fi.espoo.evaka.daycare.getDaycare
+import fi.espoo.evaka.daycare.getDaycareGroup
 import fi.espoo.evaka.daycare.getDaycareStub
 import fi.espoo.evaka.daycare.getDaycares
 import fi.espoo.evaka.daycare.renameGroup
@@ -153,14 +154,16 @@ class DaycareController(
         acl.getRolesForUnitGroup(user, groupId)
             .requireOneOfRoles(ADMIN, SERVICE_WORKER, FINANCE_ADMIN, UNIT_SUPERVISOR, STAFF)
 
-        val daycareStub = jdbi.handle { it.getDaycareStub(daycareId) }
-        return ok(
-            CaretakersResponse(
-                caretakers = caretakerService.getCaretakers(groupId),
-                unitName = daycareStub?.name ?: "",
-                groupName = daycareService.getDaycareGroup(groupId)?.name ?: ""
+        return jdbi.transaction {
+            val daycareStub = it.getDaycareStub(daycareId)
+            ok(
+                CaretakersResponse(
+                    caretakers = caretakerService.getCaretakers(it, groupId),
+                    unitName = daycareStub?.name ?: "",
+                    groupName = it.getDaycareGroup(groupId)?.name ?: ""
+                )
             )
-        )
+        }
     }
 
     @PostMapping("/{daycareId}/groups/{groupId}/caretakers")
@@ -174,12 +177,15 @@ class DaycareController(
         acl.getRolesForUnitGroup(user, groupId)
             .requireOneOfRoles(ADMIN, SERVICE_WORKER, UNIT_SUPERVISOR)
 
-        caretakerService.insert(
-            groupId = groupId,
-            startDate = body.startDate,
-            endDate = body.endDate,
-            amount = body.amount
-        )
+        jdbi.transaction {
+            caretakerService.insert(
+                it,
+                groupId = groupId,
+                startDate = body.startDate,
+                endDate = body.endDate,
+                amount = body.amount
+            )
+        }
         return noContent()
     }
 
@@ -195,13 +201,16 @@ class DaycareController(
         acl.getRolesForUnitGroup(user, groupId)
             .requireOneOfRoles(ADMIN, SERVICE_WORKER, UNIT_SUPERVISOR)
 
-        caretakerService.update(
-            groupId = groupId,
-            id = id,
-            startDate = body.startDate,
-            endDate = body.endDate,
-            amount = body.amount
-        )
+        jdbi.transaction {
+            caretakerService.update(
+                it,
+                groupId = groupId,
+                id = id,
+                startDate = body.startDate,
+                endDate = body.endDate,
+                amount = body.amount
+            )
+        }
         return noContent()
     }
 
@@ -216,10 +225,13 @@ class DaycareController(
         acl.getRolesForUnitGroup(user, groupId)
             .requireOneOfRoles(ADMIN, SERVICE_WORKER, UNIT_SUPERVISOR)
 
-        caretakerService.delete(
-            groupId = groupId,
-            id = id
-        )
+        jdbi.transaction {
+            caretakerService.delete(
+                it,
+                groupId = groupId,
+                id = id
+            )
+        }
         return noContent()
     }
 

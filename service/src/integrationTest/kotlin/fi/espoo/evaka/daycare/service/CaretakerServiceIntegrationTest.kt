@@ -4,27 +4,21 @@
 
 package fi.espoo.evaka.daycare.service
 
-import fi.espoo.evaka.daycare.AbstractIntegrationTest
+import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.resetDatabase
-import fi.espoo.evaka.shared.db.withSpringHandle
+import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
 import fi.espoo.evaka.testDaycare
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.time.LocalDate
 import java.util.UUID
 
-class CaretakerServiceIntegrationTest : AbstractIntegrationTest() {
-    @Autowired
-    lateinit var jdbc: NamedParameterJdbcTemplate
-
-    @Autowired
-    lateinit var service: CaretakerService
+class CaretakerServiceIntegrationTest : PureJdbiTest() {
+    val service = CaretakerService()
 
     private val daycareId = testDaycare.id
     private val groupId = UUID.randomUUID()
@@ -32,7 +26,7 @@ class CaretakerServiceIntegrationTest : AbstractIntegrationTest() {
 
     @BeforeEach
     fun setup() {
-        withSpringHandle(dataSource) {
+        jdbi.handle {
             resetDatabase(it)
             insertGeneralTestFixtures(it)
             it.insertTestDaycareGroup(
@@ -42,16 +36,16 @@ class CaretakerServiceIntegrationTest : AbstractIntegrationTest() {
                     startDate = groupStart
                 )
             )
+            it.execute(
+                "INSERT INTO daycare_caretaker (group_id, start_date, amount) VALUES (?, ?, 3)",
+                groupId,
+                groupStart
+            )
         }
-        jdbc.update(
-            "INSERT INTO daycare_caretaker (group_id, start_date, amount) VALUES (:groupId, :start, :amount)",
-            mapOf("groupId" to groupId, "start" to groupStart, "amount" to 3)
-        )
     }
-
     @Test
-    fun `group initially has one row`() {
-        val caretakers = service.getCaretakers(groupId)
+    fun `group initially has one row`() = jdbi.handle { h ->
+        val caretakers = service.getCaretakers(h, groupId)
         assertEquals(1, caretakers.size)
         assertEquals(groupId, caretakers[0].groupId)
         assertEquals(groupStart, caretakers[0].startDate)
@@ -60,15 +54,16 @@ class CaretakerServiceIntegrationTest : AbstractIntegrationTest() {
     }
 
     @Test
-    fun `inserting caretaker row`() {
+    fun `inserting caretaker row`() = jdbi.handle { h ->
         val start2 = LocalDate.of(2000, 6, 1)
         service.insert(
+            h,
             groupId = groupId,
             startDate = start2,
             endDate = null,
             amount = 5.0
         )
-        val caretakers = service.getCaretakers(groupId)
+        val caretakers = service.getCaretakers(h, groupId)
         assertEquals(2, caretakers.size)
 
         assertEquals(start2, caretakers[0].startDate)
@@ -81,9 +76,10 @@ class CaretakerServiceIntegrationTest : AbstractIntegrationTest() {
     }
 
     @Test
-    fun `updating caretaker row`() {
-        val id = service.getCaretakers(groupId).first().id
+    fun `updating caretaker row`() = jdbi.handle { h ->
+        val id = service.getCaretakers(h, groupId).first().id
         service.update(
+            h,
             groupId = groupId,
             id = id,
             startDate = LocalDate.of(2000, 7, 1),
@@ -91,7 +87,7 @@ class CaretakerServiceIntegrationTest : AbstractIntegrationTest() {
             amount = 2.0
         )
 
-        val rows = service.getCaretakers(groupId)
+        val rows = service.getCaretakers(h, groupId)
         assertEquals(1, rows.size)
         val updated = rows.first()
         assertEquals(LocalDate.of(2000, 7, 1), updated.startDate)

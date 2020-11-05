@@ -27,7 +27,6 @@ import org.jdbi.v3.core.kotlin.mapTo
 import org.jdbi.v3.core.qualifier.QualifiedType
 import org.jdbi.v3.json.Json
 import org.postgresql.util.PGobject
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.sql.Timestamp
 import java.time.Instant
 import java.time.LocalDate
@@ -165,30 +164,6 @@ fun insertTestParentship(
     return id
 }
 
-fun insertTestParentship(
-    jdbcTemplate: NamedParameterJdbcTemplate,
-    headOfChild: UUID,
-    childId: UUID,
-    id: UUID = UUID.randomUUID(),
-    startDate: LocalDate = LocalDate.of(2019, 1, 1),
-    endDate: LocalDate = LocalDate.of(2019, 12, 31)
-): UUID {
-    jdbcTemplate.update(
-        """
-        INSERT INTO fridge_child (id, head_of_child, child_id, start_date, end_date)
-        VALUES (:id, :headOfChild, :childId, :startDate, :endDate)
-        """,
-        mapOf(
-            "id" to id,
-            "headOfChild" to headOfChild,
-            "childId" to childId,
-            "startDate" to startDate,
-            "endDate" to endDate
-        )
-    )
-    return id
-}
-
 fun insertTestPartnership(
     h: Handle,
     adult1: UUID,
@@ -265,34 +240,6 @@ fun insertTestApplication(
             )
         )
         .execute()
-    return id
-}
-
-fun insertTestApplication(
-    jdbcTemplate: NamedParameterJdbcTemplate,
-    id: UUID = UUID.randomUUID(),
-    sentDate: LocalDate = LocalDate.of(2019, 1, 1),
-    dueDate: LocalDate = LocalDate.of(2019, 5, 1),
-    status: ApplicationStatus = ApplicationStatus.SENT,
-    guardianId: UUID = UUID.randomUUID(),
-    childId: UUID = UUID.randomUUID(),
-    otherGuardianId: UUID? = null
-): UUID {
-    jdbcTemplate.update(
-        """
-            INSERT INTO application (id, sentdate, duedate, status, guardian_id, child_id, other_guardian_id, origin)
-            VALUES (:id, :sentDate, :dueDate, :status::application_status_type, :guardianId, :childId, :otherGuardianId, 'ELECTRONIC'::application_origin_type)
-        """,
-        mapOf(
-            "id" to id,
-            "sentDate" to sentDate,
-            "dueDate" to dueDate,
-            "status" to status,
-            "guardianId" to guardianId,
-            "childId" to childId,
-            "otherGuardianId" to otherGuardianId
-        )
-    )
     return id
 }
 
@@ -426,74 +373,6 @@ fun insertTestServiceNeed(
     return id
 }
 
-fun insertTestServiceNeed(
-    jdbcTemplate: NamedParameterJdbcTemplate,
-    childId: UUID,
-    id: UUID = UUID.randomUUID(),
-    startDate: LocalDate = LocalDate.of(2019, 1, 1),
-    endDate: LocalDate = LocalDate.of(2019, 12, 31),
-    hoursPerWeek: Double = 40.0,
-    partDay: Boolean = false,
-    partWeek: Boolean = false,
-    shiftCare: Boolean = false,
-    temporary: Boolean = false,
-    updatedBy: UUID
-): UUID {
-    jdbcTemplate.update(
-        """
-        INSERT INTO service_need (id, child_id, start_date, end_date, hours_per_week, part_day, part_week, shift_care, temporary, updated_by)
-        VALUES (:id, :childId, :startDate, :endDate, :hoursPerWeek, :partDay, :partWeek, :shiftCare, :temporary, :updatedBy)
-        """,
-        mapOf(
-            "id" to id,
-            "childId" to childId,
-            "startDate" to startDate,
-            "endDate" to endDate,
-            "hoursPerWeek" to hoursPerWeek,
-            "partDay" to partDay,
-            "partWeek" to partWeek,
-            "shiftCare" to shiftCare,
-            "temporary" to temporary,
-            "updatedBy" to updatedBy
-        )
-    )
-    return id
-}
-
-fun insertTestIncome(
-    jdbcTemplate: NamedParameterJdbcTemplate,
-    objectMapper: ObjectMapper,
-    personId: UUID,
-    id: UUID = UUID.randomUUID(),
-    validFrom: LocalDate = LocalDate.of(2019, 1, 1),
-    validTo: LocalDate? = null,
-    data: Map<IncomeType, IncomeValue> = mapOf(),
-    effect: IncomeEffect = IncomeEffect.MAX_FEE_ACCEPTED,
-    updatedAt: Instant = Instant.now(),
-    updatedBy: UUID = UUID.randomUUID()
-): UUID {
-    jdbcTemplate.update(
-        """
-        INSERT INTO income (id, person_id, valid_from, valid_to, data, effect, updated_at, updated_by)
-        VALUES (:id, :personId, :validFrom, :validTo, :data, :effect, :updatedAt, :updatedBy)
-        """,
-        mapOf(
-            "id" to id,
-            "personId" to personId,
-            "validFrom" to validFrom,
-            "validTo" to validTo,
-            "data" to PGobject().apply {
-                type = "jsonb"
-                value = objectMapper.writeValueAsString(data)
-            },
-            "effect" to effect.toString(),
-            "updatedAt" to Timestamp(updatedAt.toEpochMilli()),
-            "updatedBy" to updatedBy
-        )
-    )
-    return id
-}
-
 fun insertTestIncome(
     h: Handle,
     objectMapper: ObjectMapper,
@@ -617,30 +496,6 @@ fun insertTestDaycareGroupPlacement(
             )
         )
         .execute()
-    return id
-}
-
-fun insertTestDaycareGroupPlacement(
-    jdbcTemplate: NamedParameterJdbcTemplate,
-    daycarePlacementId: UUID = UUID.randomUUID(),
-    groupId: UUID = UUID.randomUUID(),
-    id: UUID = UUID.randomUUID(),
-    startDate: LocalDate = LocalDate.of(2019, 1, 1),
-    endDate: LocalDate = LocalDate.of(2019, 12, 31)
-): UUID {
-    jdbcTemplate.update(
-        """
-            INSERT INTO daycare_group_placement (id, daycare_placement_id, daycare_group_id, start_date, end_date)
-            VALUES (:id, :placementId, :groupId, :startDate, :endDate)
-        """,
-        mapOf(
-            "id" to id,
-            "placementId" to daycarePlacementId,
-            "groupId" to groupId,
-            "startDate" to startDate,
-            "endDate" to endDate
-        )
-    )
     return id
 }
 
