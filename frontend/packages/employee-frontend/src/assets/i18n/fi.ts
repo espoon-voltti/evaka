@@ -183,7 +183,7 @@ export const fi = {
       cancelApplication: 'Poista käsittelystä',
       check: 'Tarkista',
       setVerified: 'Merkitse tarkistetuksi',
-      setUnverified: 'Markitse tarkistamattomaksi',
+      setUnverified: 'Merkitse tarkistamattomaksi',
       createPlacementPlan: 'Sijoita',
       cancelPlacementPlan: 'Palauta sijoitettaviin',
       editDecisions: 'Päätökset',
