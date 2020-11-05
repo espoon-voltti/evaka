@@ -121,7 +121,7 @@ function InvoiceRowSectionRow({
             data-qa="input-cost-center"
             info={
               !costCenterValueIsValid
-                ? { text: 'Virhe', status: 'warning' }
+                ? { text: 'Tarkista', status: 'warning' }
                 : undefined
             }
           />
@@ -255,7 +255,7 @@ const AmountInput = React.memo(function AmountInput({
         }
       }}
       dataQa="input-amount"
-      info={invalid ? { status: 'warning', text: 'Virhe' } : undefined}
+      info={invalid ? { status: 'warning', text: 'Tarkista' } : undefined}
     />
   )
 })
@@ -278,7 +278,7 @@ const UnitPriceInput = React.memo(function UnitPriceInput({
 
   return (
     <NarrowEuroInput
-      invalidText="Virhe"
+      invalidText="Tarkista"
       value={stringValue}
       onChange={setStringValue}
       allowEmpty={false}

@@ -81,19 +81,19 @@ const InvoiceRowsTable = styled(Table)`
 `
 
 const CostCenterTh = styled(Th)`
-  width: 100px;
+  width: 110px;
 `
 
 const AmountTh = styled(Th)`
-  width: 100px;
+  width: 110px;
 `
 
 const UnitPriceTh = styled(Th)`
-  width: 100px;
+  width: 110px;
 `
 
 const TotalPriceTh = styled(Th)`
-  width: 100px;
+  width: 110px;
 `
 
 const InvoiceRowsSection = React.memo(function InvoiceRowsSection({
