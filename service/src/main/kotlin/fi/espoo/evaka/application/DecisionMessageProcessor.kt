@@ -9,7 +9,6 @@ import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.NotifyDecisionCreated
 import fi.espoo.evaka.shared.async.SendDecision
 import fi.espoo.evaka.shared.config.Roles
-import fi.espoo.evaka.shared.db.runAfterCommit
 import mu.KotlinLogging
 import org.jdbi.v3.core.Handle
 import org.springframework.stereotype.Component
@@ -38,7 +37,6 @@ class DecisionMessageProcessor(
         if (msg.sendAsMessage) {
             logger.info { "Sending decision pdf(s) for decision (id: $decisionId)." }
             asyncJobRunner.plan(h, listOf(SendDecision(decisionId, msg.user)))
-            runAfterCommit { asyncJobRunner.scheduleImmediateRun() }
         }
     }
 
