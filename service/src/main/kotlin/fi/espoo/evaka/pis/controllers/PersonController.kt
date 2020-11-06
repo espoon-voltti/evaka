@@ -23,6 +23,7 @@ import fi.espoo.evaka.pis.service.PersonPatch
 import fi.espoo.evaka.pis.service.PersonService
 import fi.espoo.evaka.pis.service.PersonWithChildrenDTO
 import fi.espoo.evaka.pis.service.VTJBatchRefreshService
+import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.config.Roles.ADMIN
 import fi.espoo.evaka.shared.config.Roles.END_USER
@@ -55,7 +56,8 @@ class PersonController(
     private val vtjBatchRefreshService: VTJBatchRefreshService,
     private val dvvModificationsBatchRefreshService: DvvModificationsBatchRefreshService,
     private val mergeService: MergeService,
-    private val jdbi: Jdbi
+    private val jdbi: Jdbi,
+    private val asyncJobRunner: AsyncJobRunner
 ) {
     @PostMapping("/identity")
     fun postPersonIdentity(@RequestBody person: PersonIdentityJSON): ResponseEntity<AuthenticatedUser> {
@@ -264,6 +266,7 @@ class PersonController(
         Audit.PersonMerge.log(targetId = body.master, objectId = body.duplicate)
         user.requireOneOfRoles(ADMIN)
         mergeService.mergePeople(master = body.master, duplicate = body.duplicate)
+        asyncJobRunner.scheduleImmediateRun()
         return ResponseEntity.ok().build()
     }
 

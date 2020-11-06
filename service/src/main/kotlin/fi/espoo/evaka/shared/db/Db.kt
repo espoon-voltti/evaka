@@ -23,8 +23,6 @@ import org.jdbi.v3.jackson2.Jackson2Config
 import org.jdbi.v3.jackson2.Jackson2Plugin
 import org.jdbi.v3.json.Json
 import org.jdbi.v3.postgres.PostgresPlugin
-import org.springframework.transaction.support.TransactionSynchronization
-import org.springframework.transaction.support.TransactionSynchronizationManager
 import java.sql.ResultSet
 import java.util.UUID
 
@@ -115,22 +113,6 @@ inline fun <reified T : Any> StatementContext.mapNullableColumn(rs: ResultSet, n
     findColumnMapperFor(T::class.java).orElseThrow {
         throw IllegalStateException("No column mapper found for type ${T::class}")
     }.map(rs, name, this)
-
-/**
- * Registers a callback to be called after the current transaction is committed.
- *
- * If the transaction is rolled back, the function will not be called.
- * Does nothing if no transaction is active.
- */
-fun runAfterCommit(f: () -> Unit) {
-    if (TransactionSynchronizationManager.isSynchronizationActive()) {
-        TransactionSynchronizationManager.registerSynchronization(object : TransactionSynchronization {
-            override fun afterCommit() {
-                f()
-            }
-        })
-    }
-}
 
 /**
  * Maps a row column to a value.
