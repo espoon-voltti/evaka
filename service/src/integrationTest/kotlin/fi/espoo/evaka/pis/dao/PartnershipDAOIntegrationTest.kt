@@ -6,8 +6,11 @@ package fi.espoo.evaka.pis.dao
 
 import fi.espoo.evaka.identity.ExternalIdentifier
 import fi.espoo.evaka.pis.AbstractIntegrationTest
+import fi.espoo.evaka.pis.createPartnership
+import fi.espoo.evaka.pis.getPartnershipsForPerson
 import fi.espoo.evaka.pis.service.PersonDTO
 import fi.espoo.evaka.pis.service.PersonIdentityRequest
+import fi.espoo.evaka.shared.db.handle
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Test
@@ -16,18 +19,15 @@ import java.time.LocalDate
 
 class PartnershipDAOIntegrationTest : AbstractIntegrationTest() {
     @Autowired
-    lateinit var partnershipDAO: PartnershipDAO
-
-    @Autowired
     lateinit var personDAO: PersonDAO
 
     @Test
-    fun `test creating partnership`() {
+    fun `test creating partnership`() = jdbi.handle { h ->
         val person1 = testPerson1()
         val person2 = testPerson2()
         val startDate = LocalDate.now()
         val endDate = startDate.plusDays(100)
-        val partnership = partnershipDAO.createPartnership(person1.id, person2.id, startDate, endDate)
+        val partnership = h.createPartnership(person1.id, person2.id, startDate, endDate)
         assertNotNull(partnership.id)
         assertEquals(2, partnership.partners.size)
         assertEquals(startDate, partnership.startDate)
@@ -35,36 +35,36 @@ class PartnershipDAOIntegrationTest : AbstractIntegrationTest() {
     }
 
     @Test
-    fun `test fetching partnerships by person`() {
+    fun `test fetching partnerships by person`() = jdbi.handle { h ->
         val person1 = testPerson1()
         val person2 = testPerson2()
         val person3 = testPerson3()
 
-        val partnership1 = partnershipDAO.createPartnership(person1.id, person2.id, LocalDate.now(), LocalDate.now().plusDays(200))
-        val partnership2 = partnershipDAO.createPartnership(person2.id, person3.id, LocalDate.now().plusDays(300), LocalDate.now().plusDays(400))
+        val partnership1 = h.createPartnership(person1.id, person2.id, LocalDate.now(), LocalDate.now().plusDays(200))
+        val partnership2 = h.createPartnership(person2.id, person3.id, LocalDate.now().plusDays(300), LocalDate.now().plusDays(400))
 
-        val person1Partnerships = partnershipDAO.getPartnershipsForPerson(person1.id)
-        assertEquals(setOf(partnership1), person1Partnerships)
+        val person1Partnerships = h.getPartnershipsForPerson(person1.id)
+        assertEquals(listOf(partnership1), person1Partnerships)
 
-        val person2Partnerships = partnershipDAO.getPartnershipsForPerson(person2.id)
-        assertEquals(setOf(partnership1, partnership2), person2Partnerships)
+        val person2Partnerships = h.getPartnershipsForPerson(person2.id)
+        assertEquals(listOf(partnership1, partnership2), person2Partnerships)
 
-        val person3Partnerships = partnershipDAO.getPartnershipsForPerson(person3.id)
-        assertEquals(setOf(partnership2), person3Partnerships)
+        val person3Partnerships = h.getPartnershipsForPerson(person3.id)
+        assertEquals(listOf(partnership2), person3Partnerships)
     }
 
     @Test
-    fun `test partnership without endDate`() {
+    fun `test partnership without endDate`() = jdbi.handle { h ->
         val person1 = testPerson1()
         val person2 = testPerson2()
         val startDate = LocalDate.now()
-        val partnership = partnershipDAO.createPartnership(person1.id, person2.id, startDate, endDate = null)
+        val partnership = h.createPartnership(person1.id, person2.id, startDate, endDate = null)
         assertNotNull(partnership.id)
         assertEquals(2, partnership.partners.size)
         assertEquals(startDate, partnership.startDate)
         assertEquals(null, partnership.endDate)
 
-        val fetched = partnershipDAO.getPartnershipsForPerson(person1.id).first()
+        val fetched = h.getPartnershipsForPerson(person1.id).first()
         assertEquals(partnership.id, fetched.id)
         assertEquals(2, fetched.partners.size)
         assertEquals(startDate, fetched.startDate)

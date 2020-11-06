@@ -4,123 +4,67 @@
 
 package fi.espoo.evaka.pis.service
 
-import fi.espoo.evaka.pis.dao.PartnershipDAO
+import fi.espoo.evaka.pis.createPartnership
 import fi.espoo.evaka.pis.dao.mapPSQLException
-import fi.espoo.evaka.shared.async.AsyncJobRunner
-import fi.espoo.evaka.shared.async.NotifyFamilyUpdated
-import fi.espoo.evaka.shared.db.runAfterCommit
-import fi.espoo.evaka.shared.db.withSpringHandle
+import fi.espoo.evaka.pis.deletePartnership
+import fi.espoo.evaka.pis.getPartnership
+import fi.espoo.evaka.pis.retryPartnership
+import fi.espoo.evaka.pis.updatePartnershipDuration
 import fi.espoo.evaka.shared.domain.NotFound
-import fi.espoo.evaka.shared.domain.maxEndDate
-import mu.KotlinLogging
+import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.statement.UnableToExecuteStatementException
 import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDate
 import java.util.UUID
-import javax.sql.DataSource
 
 @Service
-@Transactional(readOnly = true)
-class PartnershipService(
-    private val dao: PartnershipDAO,
-    private val asyncJobRunner: AsyncJobRunner,
-    private val dataSource: DataSource
-) {
-    private val logger = KotlinLogging.logger { }
-
-    @Transactional
+class PartnershipService {
     fun createPartnership(
+        h: Handle,
         personId1: UUID,
         personId2: UUID,
         startDate: LocalDate,
         endDate: LocalDate?
     ): Partnership {
         return try {
-            dao
-                .createPartnership(personId1, personId2, startDate, endDate)
-                .also { sendFamilyUpdatedMessage(personId2, startDate, endDate) }
+            h.createPartnership(personId1, personId2, startDate, endDate)
         } catch (e: UnableToExecuteStatementException) {
             throw mapPSQLException(e)
         }
     }
 
-    fun getPartnershipsForPerson(personId: UUID, includeConflicts: Boolean): Set<Partnership> {
-        return dao.getPartnershipsForPerson(personId, includeConflicts)
-    }
-
-    fun getPartnership(partnershipId: UUID): Partnership? {
-        return dao.getPartnership(partnershipId)
-    }
-
-    @Transactional
     fun updatePartnershipDuration(
+        h: Handle,
         partnershipId: UUID,
         startDate: LocalDate,
         endDate: LocalDate?
     ): Partnership {
-        val partnership =
-            dao.getPartnership(partnershipId) ?: throw NotFound("No partnership found with id $partnershipId")
+        val partnership = h.getPartnership(partnershipId)
+            ?: throw NotFound("No partnership found with id $partnershipId")
         try {
-            val success = dao.updatePartnershipDuration(partnershipId, startDate, endDate)
+            val success = h.updatePartnershipDuration(partnershipId, startDate, endDate)
             if (!success) throw NotFound("No partnership found with id $partnershipId")
         } catch (e: Exception) {
             throw mapPSQLException(e)
         }
 
-        sendFamilyUpdatedMessage(
-            partnership.partners.last().id,
-            minOf(startDate, partnership.startDate),
-            maxEndDate(endDate, partnership.endDate)
-        )
-
         return partnership.copy(startDate = startDate, endDate = endDate)
     }
 
-    @Transactional
-    fun retryPartnership(partnershipId: UUID) {
-        try {
-            getPartnership(partnershipId)
+    fun retryPartnership(h: Handle, partnershipId: UUID): Partnership? {
+        return try {
+            h.getPartnership(partnershipId)
                 ?.takeIf { it.conflict }
-                ?.let { partnership ->
-                    dao.retryPartnership(partnershipId)
-                    partnership.partners.forEach { partner ->
-                        sendFamilyUpdatedMessage(
-                            adultId = partner.id,
-                            startDate = partnership.startDate,
-                            endDate = partnership.endDate
-                        )
-                    }
-                }
-            dao.retryPartnership(partnershipId)
+                ?.also { h.retryPartnership(partnershipId) }
         } catch (e: Exception) {
             throw mapPSQLException(e)
         }
     }
 
-    @Transactional
-    fun deletePartnership(partnershipId: UUID) {
-        val partnership =
-            dao.getPartnership(partnershipId) ?: throw NotFound("No partnership found with id $partnershipId")
-        dao.deletePartnership(partnershipId)
-
-        with(partnership) {
-            partners.forEach {
-                sendFamilyUpdatedMessage(
-                    it.id,
-                    startDate,
-                    endDate
-                )
-            }
+    fun deletePartnership(h: Handle, partnershipId: UUID): Partnership? {
+        return h.getPartnership(partnershipId)?.also {
+            h.deletePartnership(partnershipId)
         }
-    }
-
-    private fun sendFamilyUpdatedMessage(adultId: UUID, startDate: LocalDate, endDate: LocalDate?) {
-        logger.info("Sending update family message with adult $adultId")
-        withSpringHandle(dataSource) {
-            asyncJobRunner.plan(it, listOf(NotifyFamilyUpdated(adultId, startDate, endDate)))
-        }
-        runAfterCommit { asyncJobRunner.scheduleImmediateRun() }
     }
 }
 

@@ -8,7 +8,7 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.pis.createParentship
-import fi.espoo.evaka.pis.dao.PartnershipDAO
+import fi.espoo.evaka.pis.createPartnership
 import fi.espoo.evaka.pis.service.FamilyOverview
 import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -24,14 +24,10 @@ import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.springframework.beans.factory.annotation.Autowired
 import java.time.LocalDate
 import java.util.UUID
 
 class FamilyOverviewTest : FullApplicationTest() {
-    @Autowired
-    lateinit var partnershipDAO: PartnershipDAO
-
     @BeforeEach
     fun beforeEach() {
         jdbi.handle(::insertGeneralTestFixtures)
@@ -148,7 +144,7 @@ class FamilyOverviewTest : FullApplicationTest() {
         jdbi.handle { h ->
             h.createParentship(testChild_1.id, testAdult_1.id, from, to)
             h.createParentship(testChild_2.id, testAdult_1.id, from, to)
+            h.createPartnership(testAdult_1.id, testAdult_2.id, from, to)
         }
-        partnershipDAO.createPartnership(testAdult_1.id, testAdult_2.id, from, to)
     }
 }
