@@ -9,18 +9,14 @@ import fi.espoo.evaka.pis.dao.mapPSQLException
 import fi.espoo.evaka.shared.db.getUUID
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.NotFound
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
+import org.jdbi.v3.core.Handle
 import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDate
 import java.util.UUID
 
 @Service
-@Transactional(readOnly = true)
-class CaretakerService(
-    private val jdbc: NamedParameterJdbcTemplate
-) {
-    fun getCaretakers(groupId: UUID): List<CaretakerAmount> {
+class CaretakerService {
+    fun getCaretakers(h: Handle, groupId: UUID): List<CaretakerAmount> {
         // language=sql
         val sql =
             """
@@ -30,25 +26,24 @@ class CaretakerService(
             ORDER BY start_date DESC
             """.trimIndent()
 
-        return jdbc.query(
-            sql,
-            mapOf("groupId" to groupId)
-        ) { rs, _ ->
-            CaretakerAmount(
-                id = rs.getUUID("id"),
-                groupId = rs.getUUID("group_id"),
-                startDate = rs.getDate("start_date").toLocalDate(),
-                endDate = rs.getDate("end_date").toLocalDate().takeIf { it.isBefore(PGConstants.infinity) },
-                amount = rs.getDouble("amount")
-            )
-        }
+        return h.createQuery(sql)
+            .bind("groupId", groupId)
+            .map { rs, _ ->
+                CaretakerAmount(
+                    id = rs.getUUID("id"),
+                    groupId = rs.getUUID("group_id"),
+                    startDate = rs.getDate("start_date").toLocalDate(),
+                    endDate = rs.getDate("end_date").toLocalDate().takeIf { it.isBefore(PGConstants.infinity) },
+                    amount = rs.getDouble("amount")
+                )
+            }
+            .toList()
     }
 
-    @Transactional
-    fun insert(groupId: UUID, startDate: LocalDate, endDate: LocalDate?, amount: Double) {
+    fun insert(h: Handle, groupId: UUID, startDate: LocalDate, endDate: LocalDate?, amount: Double) {
         if (endDate != null && endDate.isBefore(startDate)) throw BadRequest("End date cannot be before start")
 
-        endPreviousRow(groupId, startDate)
+        endPreviousRow(h, groupId, startDate)
 
         val end = if (endDate == null) "DEFAULT" else ":end"
         // language=sql
@@ -59,16 +54,18 @@ class CaretakerService(
             """.trimIndent()
 
         try {
-            jdbc.update(
-                sql,
-                mapOf("groupId" to groupId, "start" to startDate, "end" to endDate, "amount" to amount)
-            )
+            h.createUpdate(sql)
+                .bind("groupId", groupId)
+                .bind("start", startDate)
+                .bind("end", endDate)
+                .bind("amount", amount)
+                .execute()
         } catch (e: Exception) {
             throw mapPSQLException(e)
         }
     }
 
-    private fun endPreviousRow(groupId: UUID, startDate: LocalDate) {
+    private fun endPreviousRow(h: Handle, groupId: UUID, startDate: LocalDate) {
         // language=sql
         val sql =
             """
@@ -77,14 +74,10 @@ class CaretakerService(
             WHERE group_id = :groupId AND start_date < :start AND end_date >= :start
             """.trimIndent()
 
-        jdbc.update(
-            sql,
-            mapOf("groupId" to groupId, "start" to startDate)
-        )
+        h.createUpdate(sql).bind("groupId", groupId).bind("start", startDate).execute()
     }
 
-    @Transactional
-    fun update(groupId: UUID, id: UUID, startDate: LocalDate, endDate: LocalDate?, amount: Double) {
+    fun update(h: Handle, groupId: UUID, id: UUID, startDate: LocalDate, endDate: LocalDate?, amount: Double) {
         if (endDate != null && endDate.isBefore(startDate)) throw BadRequest("End date cannot be before start")
 
         val end = if (endDate == null) "DEFAULT" else ":end"
@@ -97,21 +90,25 @@ class CaretakerService(
             """.trimIndent()
 
         try {
-            jdbc.update(
-                sql,
-                mapOf("groupId" to groupId, "id" to id, "start" to startDate, "end" to endDate, "amount" to amount)
-            ).let { updated -> if (updated == 0) throw NotFound("Caretakers $id not found") }
+            h.createUpdate(sql)
+                .bind("groupId", groupId)
+                .bind("id", id)
+                .bind("start", startDate)
+                .bind("end", endDate)
+                .bind("amount", amount)
+                .execute()
+                .let { updated -> if (updated == 0) throw NotFound("Caretakers $id not found") }
         } catch (e: Exception) {
             throw mapPSQLException(e)
         }
     }
 
-    @Transactional
-    fun delete(groupId: UUID, id: UUID) {
-        jdbc.update(
-            "DELETE FROM daycare_caretaker WHERE id = :id AND group_id = :groupId",
-            mapOf("groupId" to groupId, "id" to id)
-        ).let { deleted -> if (deleted == 0) throw NotFound("Caretakers $id not found") }
+    fun delete(h: Handle, groupId: UUID, id: UUID) {
+        h.createUpdate("DELETE FROM daycare_caretaker WHERE id = :id AND group_id = :groupId")
+            .bind("groupId", groupId)
+            .bind("id", id)
+            .execute()
+            .let { deleted -> if (deleted == 0) throw NotFound("Caretakers $id not found") }
     }
 }
 

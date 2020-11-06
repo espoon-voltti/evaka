@@ -12,9 +12,11 @@ import fi.espoo.evaka.shared.config.Roles.DIRECTOR
 import fi.espoo.evaka.shared.config.Roles.FINANCE_ADMIN
 import fi.espoo.evaka.shared.config.Roles.SERVICE_WORKER
 import fi.espoo.evaka.shared.db.getUUID
+import fi.espoo.evaka.shared.db.transaction
+import org.jdbi.v3.core.Handle
+import org.jdbi.v3.core.Jdbi
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.http.ResponseEntity
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
@@ -22,7 +24,7 @@ import java.time.LocalDate
 import java.util.UUID
 
 @RestController
-class ChildAgeLanguageReportController(private val jdbc: NamedParameterJdbcTemplate) {
+class ChildAgeLanguageReportController(private val jdbi: Jdbi) {
     @GetMapping("/reports/child-age-language")
     fun getChildAgeLanguageReport(
         user: AuthenticatedUser,
@@ -30,11 +32,11 @@ class ChildAgeLanguageReportController(private val jdbc: NamedParameterJdbcTempl
     ): ResponseEntity<List<ChildAgeLanguageReportRow>> {
         Audit.ChildAgeLanguageReportRead.log()
         user.requireOneOfRoles(SERVICE_WORKER, FINANCE_ADMIN, ADMIN, DIRECTOR)
-        return getChildAgeLanguageRows(jdbc, date).let(::ok)
+        return jdbi.transaction { getChildAgeLanguageRows(it, date) }.let(::ok)
     }
 }
 
-fun getChildAgeLanguageRows(jdbc: NamedParameterJdbcTemplate, date: LocalDate): List<ChildAgeLanguageReportRow> {
+fun getChildAgeLanguageRows(h: Handle, date: LocalDate): List<ChildAgeLanguageReportRow> {
     // language=sql
     val sql =
         """
@@ -86,45 +88,45 @@ fun getChildAgeLanguageRows(jdbc: NamedParameterJdbcTemplate, date: LocalDate): 
         """.trimIndent()
 
     @Suppress("UNCHECKED_CAST")
-    return jdbc.query(
-        sql,
-        mapOf("target_date" to date)
-    ) { rs, _ ->
-        ChildAgeLanguageReportRow(
-            careAreaName = rs.getString("care_area_name"),
-            unitId = rs.getUUID("unit_id"),
-            unitName = rs.getString("unit_name"),
-            unitType = (rs.getArray("unit_type").array as Array<out Any>).map { it.toString() }.toSet().let(::getPrimaryUnitType),
-            unitProviderType = rs.getString("unit_provider_type"),
+    return h.createQuery(sql)
+        .bind("target_date", date)
+        .map { rs, _ ->
+            ChildAgeLanguageReportRow(
+                careAreaName = rs.getString("care_area_name"),
+                unitId = rs.getUUID("unit_id"),
+                unitName = rs.getString("unit_name"),
+                unitType = (rs.getArray("unit_type").array as Array<out Any>).map { it.toString() }.toSet().let(::getPrimaryUnitType),
+                unitProviderType = rs.getString("unit_provider_type"),
 
-            fi_0y = rs.getInt("fi_0y"),
-            fi_1y = rs.getInt("fi_1y"),
-            fi_2y = rs.getInt("fi_2y"),
-            fi_3y = rs.getInt("fi_3y"),
-            fi_4y = rs.getInt("fi_4y"),
-            fi_5y = rs.getInt("fi_5y"),
-            fi_6y = rs.getInt("fi_6y"),
-            fi_7y = rs.getInt("fi_7y"),
+                fi_0y = rs.getInt("fi_0y"),
+                fi_1y = rs.getInt("fi_1y"),
+                fi_2y = rs.getInt("fi_2y"),
+                fi_3y = rs.getInt("fi_3y"),
+                fi_4y = rs.getInt("fi_4y"),
+                fi_5y = rs.getInt("fi_5y"),
+                fi_6y = rs.getInt("fi_6y"),
+                fi_7y = rs.getInt("fi_7y"),
 
-            sv_0y = rs.getInt("sv_0y"),
-            sv_1y = rs.getInt("sv_1y"),
-            sv_2y = rs.getInt("sv_2y"),
-            sv_3y = rs.getInt("sv_3y"),
-            sv_4y = rs.getInt("sv_4y"),
-            sv_5y = rs.getInt("sv_5y"),
-            sv_6y = rs.getInt("sv_6y"),
-            sv_7y = rs.getInt("sv_7y"),
+                sv_0y = rs.getInt("sv_0y"),
+                sv_1y = rs.getInt("sv_1y"),
+                sv_2y = rs.getInt("sv_2y"),
+                sv_3y = rs.getInt("sv_3y"),
+                sv_4y = rs.getInt("sv_4y"),
+                sv_5y = rs.getInt("sv_5y"),
+                sv_6y = rs.getInt("sv_6y"),
+                sv_7y = rs.getInt("sv_7y"),
 
-            other_0y = rs.getInt("other_0y"),
-            other_1y = rs.getInt("other_1y"),
-            other_2y = rs.getInt("other_2y"),
-            other_3y = rs.getInt("other_3y"),
-            other_4y = rs.getInt("other_4y"),
-            other_5y = rs.getInt("other_5y"),
-            other_6y = rs.getInt("other_6y"),
-            other_7y = rs.getInt("other_7y")
-        )
-    }
+                other_0y = rs.getInt("other_0y"),
+                other_1y = rs.getInt("other_1y"),
+                other_2y = rs.getInt("other_2y"),
+                other_3y = rs.getInt("other_3y"),
+                other_4y = rs.getInt("other_4y"),
+                other_5y = rs.getInt("other_5y"),
+                other_6y = rs.getInt("other_6y"),
+                other_7y = rs.getInt("other_7y")
+            )
+        }
+        .toList()
 }
 
 data class ChildAgeLanguageReportRow(

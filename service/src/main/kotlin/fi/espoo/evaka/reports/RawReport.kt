@@ -13,10 +13,12 @@ import fi.espoo.evaka.shared.config.Roles
 import fi.espoo.evaka.shared.db.getEnum
 import fi.espoo.evaka.shared.db.getNullableUUID
 import fi.espoo.evaka.shared.db.getUUID
+import fi.espoo.evaka.shared.db.transaction
 import fi.espoo.evaka.shared.domain.BadRequest
+import org.jdbi.v3.core.Handle
+import org.jdbi.v3.core.Jdbi
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.http.ResponseEntity
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
@@ -24,7 +26,7 @@ import java.time.LocalDate
 import java.util.UUID
 
 @RestController
-class RawReportController(private val jdbc: NamedParameterJdbcTemplate) {
+class RawReportController(private val jdbi: Jdbi) {
     @GetMapping("/reports/raw")
     fun getRawReport(
         user: AuthenticatedUser,
@@ -36,11 +38,11 @@ class RawReportController(private val jdbc: NamedParameterJdbcTemplate) {
         if (to.isBefore(from)) throw BadRequest("Inverted time range")
         if (to.isAfter(from.plusDays(7))) throw BadRequest("Time range too long")
 
-        return getRawRows(jdbc, from, to).let(::ok)
+        return jdbi.transaction { getRawRows(it, from, to) }.let(::ok)
     }
 }
 
-fun getRawRows(jdbc: NamedParameterJdbcTemplate, from: LocalDate, to: LocalDate): List<RawReportRow> {
+fun getRawRows(h: Handle, from: LocalDate, to: LocalDate): List<RawReportRow> {
     // language=sql
     val sql =
         """
@@ -155,43 +157,41 @@ fun getRawRows(jdbc: NamedParameterJdbcTemplate, from: LocalDate, to: LocalDate)
         """.trimIndent()
 
     @Suppress("UNCHECKED_CAST")
-    return jdbc.query(
-        sql,
-        mapOf(
-            "start_date" to from,
-            "end_date" to to
-        )
-    ) { rs, _ ->
-        RawReportRow(
-            day = rs.getDate("day").toLocalDate(),
-            childId = rs.getUUID("child_id"),
-            dateOfBirth = rs.getDate("date_of_birth").toLocalDate(),
-            age = rs.getInt("age"),
-            language = rs.getString("language"),
-            placementType = rs.getEnum("placement_type"),
-            unitId = rs.getUUID("unit_id"),
-            unitName = rs.getString("unit_name"),
-            careArea = rs.getString("care_area"),
-            unitType = (rs.getArray("unit_type").array as Array<out Any>).map { it.toString() }.toSet().let(::getPrimaryUnitType),
-            unitProviderType = rs.getString("unit_provider_type"),
-            daycareGroupId = rs.getNullableUUID("daycare_group_id"),
-            groupName = rs.getString("group_name"),
-            caretakersPlanned = rs.getBigDecimal("caretakers_planned")?.toDouble(),
-            caretakersRealized = rs.getBigDecimal("caretakers_realized")?.toDouble(),
-            backupUnitId = rs.getNullableUUID("backup_unit_id"),
-            backupGroupId = rs.getNullableUUID("backup_group_id"),
-            hasServiceNeed = rs.getBoolean("has_service_need"),
-            partDay = rs.getBoolean("part_day"),
-            partWeek = rs.getBoolean("part_week"),
-            shiftCare = rs.getBoolean("shift_care"),
-            hoursPerWeek = rs.getDouble("hours_per_week"),
-            hasAssistanceNeed = rs.getBoolean("has_assistance_need"),
-            capacityFactor = rs.getBigDecimal("capacity_factor").toDouble(),
-            capacity = rs.getBigDecimal("capacity").toDouble(),
-            absencePaid = rs.getString("absence_paid")?.let { AbsenceType.valueOf(it) },
-            absenceFree = rs.getString("absence_free")?.let { AbsenceType.valueOf(it) }
-        )
-    }
+    return h.createQuery(sql)
+        .bind("start_date", from)
+        .bind("end_date", to)
+        .map { rs, _ ->
+            RawReportRow(
+                day = rs.getDate("day").toLocalDate(),
+                childId = rs.getUUID("child_id"),
+                dateOfBirth = rs.getDate("date_of_birth").toLocalDate(),
+                age = rs.getInt("age"),
+                language = rs.getString("language"),
+                placementType = rs.getEnum("placement_type"),
+                unitId = rs.getUUID("unit_id"),
+                unitName = rs.getString("unit_name"),
+                careArea = rs.getString("care_area"),
+                unitType = (rs.getArray("unit_type").array as Array<out Any>).map { it.toString() }.toSet().let(::getPrimaryUnitType),
+                unitProviderType = rs.getString("unit_provider_type"),
+                daycareGroupId = rs.getNullableUUID("daycare_group_id"),
+                groupName = rs.getString("group_name"),
+                caretakersPlanned = rs.getBigDecimal("caretakers_planned")?.toDouble(),
+                caretakersRealized = rs.getBigDecimal("caretakers_realized")?.toDouble(),
+                backupUnitId = rs.getNullableUUID("backup_unit_id"),
+                backupGroupId = rs.getNullableUUID("backup_group_id"),
+                hasServiceNeed = rs.getBoolean("has_service_need"),
+                partDay = rs.getBoolean("part_day"),
+                partWeek = rs.getBoolean("part_week"),
+                shiftCare = rs.getBoolean("shift_care"),
+                hoursPerWeek = rs.getDouble("hours_per_week"),
+                hasAssistanceNeed = rs.getBoolean("has_assistance_need"),
+                capacityFactor = rs.getBigDecimal("capacity_factor").toDouble(),
+                capacity = rs.getBigDecimal("capacity").toDouble(),
+                absencePaid = rs.getString("absence_paid")?.let { AbsenceType.valueOf(it) },
+                absenceFree = rs.getString("absence_free")?.let { AbsenceType.valueOf(it) }
+            )
+        }
+        .toList()
 }
 
 data class RawReportRow(

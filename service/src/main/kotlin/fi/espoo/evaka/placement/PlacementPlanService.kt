@@ -16,6 +16,7 @@ import fi.espoo.evaka.shared.db.runAfterCommit
 import fi.espoo.evaka.shared.db.withSpringHandle
 import fi.espoo.evaka.shared.domain.ClosedPeriod
 import fi.espoo.evaka.shared.domain.NotFound
+import org.jdbi.v3.core.Handle
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDate
@@ -110,23 +111,17 @@ class PlacementPlanService(
     fun getPlacementPlansByUnit(unitId: UUID, from: LocalDate, to: LocalDate): List<PlacementPlanDetails> =
         withSpringHandle(dataSource) { h -> getPlacementPlans(h, unitId, from, to) }
 
-    @Transactional
-    fun deletePlacementPlanByApplication(applicationId: UUID) =
-        withSpringHandle(dataSource) { h -> deletePlacementPlan(h, applicationId) }
+    fun deletePlacementPlanByApplication(h: Handle, applicationId: UUID) = deletePlacementPlan(h, applicationId)
 
     @Transactional
     fun softDeletePlacementPlanByApplication(applicationId: UUID) =
         withSpringHandle(dataSource) { h -> softDeletePlacementPlan(h, applicationId) }
 
-    @Transactional
-    fun softDeleteUnusedPlacementPlanByApplication(applicationId: UUID) =
-        withSpringHandle(dataSource) { h -> softDeletePlacementPlanIfUnused(h, applicationId) }
+    fun softDeleteUnusedPlacementPlanByApplication(h: Handle, applicationId: UUID) =
+        softDeletePlacementPlanIfUnused(h, applicationId)
 
-    @Transactional
-    fun createPlacementPlan(application: ApplicationDetails, placementPlan: DaycarePlacementPlan) =
-        withSpringHandle(dataSource) { h ->
-            createPlacementPlan(h, application.id, derivePlacementType(application), placementPlan)
-        }
+    fun createPlacementPlan(h: Handle, application: ApplicationDetails, placementPlan: DaycarePlacementPlan) =
+        createPlacementPlan(h, application.id, derivePlacementType(application), placementPlan)
 
     @Transactional
     fun applyPlacementPlan(

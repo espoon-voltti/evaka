@@ -33,7 +33,8 @@ class FamilyController(
     fun getFamilyByPerson(user: AuthenticatedUser, @PathVariable(value = "id") id: UUID): ResponseEntity<FamilyOverview> {
         Audit.PisFamilyRead.log(targetId = id)
         user.requireOneOfRoles(Roles.FINANCE_ADMIN)
-        val result = familyOverviewService.getFamilyByAdult(id) ?: return ResponseEntity.notFound().build()
+        val result = jdbi.transaction { familyOverviewService.getFamilyByAdult(it, id) }
+            ?: return ResponseEntity.notFound().build()
         return ResponseEntity.ok(result)
     }
 

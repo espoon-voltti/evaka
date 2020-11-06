@@ -24,7 +24,6 @@ import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.config.Roles
 import fi.espoo.evaka.shared.db.transaction
-import fi.espoo.evaka.shared.db.withSpringHandle
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.ClosedPeriod
 import fi.espoo.evaka.shared.domain.NotFound
@@ -286,7 +285,6 @@ class ApplicationControllerV2(
     }
 
     @GetMapping("/{applicationId}/decision-drafts")
-    @Transactional
     fun getDecisionDrafts(
         user: AuthenticatedUser,
         @PathVariable(value = "applicationId") applicationId: UUID
@@ -294,50 +292,52 @@ class ApplicationControllerV2(
         Audit.DecisionDraftRead.log(targetId = applicationId)
         user.requireOneOfRoles(Roles.SERVICE_WORKER, Roles.ADMIN)
 
-        val application = withSpringHandle(dataSource) { h -> fetchApplicationDetails(h, applicationId) }
-            ?: throw NotFound("Application $applicationId not found")
+        return jdbi.transaction { h ->
+            val application = fetchApplicationDetails(h, applicationId)
+                ?: throw NotFound("Application $applicationId not found")
 
-        val placementUnitName = placementPlanService.getPlacementPlanUnitNameByApplication(applicationId)
+            val placementUnitName = placementPlanService.getPlacementPlanUnitNameByApplication(applicationId)
 
-        val decisionDrafts = decisionDraftService.getDecisionDrafts(applicationId)
-        val unit = decisionDraftService.getDecisionUnit(decisionDrafts[0].unitId)
+            val decisionDrafts = decisionDraftService.getDecisionDrafts(h, applicationId)
+            val unit = decisionDraftService.getDecisionUnit(h, decisionDrafts[0].unitId)
 
-        val applicationGuardian = personService.getUpToDatePerson(user, application.guardianId)
-            ?: throw NotFound("Guardian ${application.guardianId} not found")
-        val child = personService.getUpToDatePerson(user, application.childId)
-            ?: throw NotFound("Child ${application.childId} not found")
-        val vtjGuardians = personService.getGuardians(user, child.id)
+            val applicationGuardian = personService.getUpToDatePerson(h, user, application.guardianId)
+                ?: throw NotFound("Guardian ${application.guardianId} not found")
+            val child = personService.getUpToDatePerson(h, user, application.childId)
+                ?: throw NotFound("Child ${application.childId} not found")
+            val vtjGuardians = personService.getGuardians(h, user, child.id)
 
-        val applicationGuardianIsVtjGuardian: Boolean = vtjGuardians.any { it.id == application.guardianId }
-        val otherGuardian = application.otherGuardianId?.let { personService.getUpToDatePerson(user, it) }
+            val applicationGuardianIsVtjGuardian: Boolean = vtjGuardians.any { it.id == application.guardianId }
+            val otherGuardian = application.otherGuardianId?.let { personService.getUpToDatePerson(h, user, it) }
 
-        return ok(
-            DecisionDraftJSON(
-                decisions = decisionDrafts,
-                placementUnitName = placementUnitName,
-                unit = unit,
-                guardian = GuardianInfo(
-                    firstName = applicationGuardian.firstName ?: "",
-                    lastName = applicationGuardian.lastName ?: "",
-                    ssn = (applicationGuardian.identity as? ExternalIdentifier.SSN)?.toString(),
-                    isVtjGuardian = applicationGuardianIsVtjGuardian
-                ),
-                child = ChildInfo(
-                    firstName = child.firstName ?: "",
-                    lastName = child.lastName ?: "",
-                    ssn = (child.identity as? ExternalIdentifier.SSN)?.toString()
-                ),
-                otherGuardian = otherGuardian?.let {
-                    GuardianInfo(
-                        id = it.id,
-                        firstName = it.firstName ?: "",
-                        lastName = it.lastName ?: "",
-                        ssn = (it.identity as? ExternalIdentifier.SSN)?.toString(),
-                        isVtjGuardian = true
-                    )
-                }
+            ok(
+                DecisionDraftJSON(
+                    decisions = decisionDrafts,
+                    placementUnitName = placementUnitName,
+                    unit = unit,
+                    guardian = GuardianInfo(
+                        firstName = applicationGuardian.firstName ?: "",
+                        lastName = applicationGuardian.lastName ?: "",
+                        ssn = (applicationGuardian.identity as? ExternalIdentifier.SSN)?.toString(),
+                        isVtjGuardian = applicationGuardianIsVtjGuardian
+                    ),
+                    child = ChildInfo(
+                        firstName = child.firstName ?: "",
+                        lastName = child.lastName ?: "",
+                        ssn = (child.identity as? ExternalIdentifier.SSN)?.toString()
+                    ),
+                    otherGuardian = otherGuardian?.let {
+                        GuardianInfo(
+                            id = it.id,
+                            firstName = it.firstName ?: "",
+                            lastName = it.lastName ?: "",
+                            ssn = (it.identity as? ExternalIdentifier.SSN)?.toString(),
+                            isVtjGuardian = true
+                        )
+                    }
+                )
             )
-        )
+        }
     }
 
     @PutMapping("/{applicationId}/decision-drafts")
@@ -350,7 +350,7 @@ class ApplicationControllerV2(
         Audit.DecisionDraftUpdate.log(targetId = applicationId)
         user.requireOneOfRoles(Roles.SERVICE_WORKER, Roles.ADMIN)
 
-        decisionDraftService.updateDecisionDrafts(applicationId, body)
+        jdbi.transaction { decisionDraftService.updateDecisionDrafts(it, applicationId, body) }
         return ResponseEntity.noContent().build()
     }
 

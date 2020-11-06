@@ -12,6 +12,7 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.endUser
 import fi.espoo.evaka.shared.auth.financeAdmin
 import fi.espoo.evaka.shared.auth.serviceWorker
+import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.domain.Forbidden
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -37,7 +38,9 @@ class ChildrenControllerIntegrationTest : AbstractIntegrationTest() {
 
     @BeforeEach
     internal fun setUp() {
-        jdbcTemplate.update("INSERT INTO person (id, date_of_birth) VALUES ('$childId', '${LocalDate.now().minusYears(1)}')")
+        jdbi.handle {
+            it.execute("INSERT INTO person (id, date_of_birth) VALUES ('$childId', '${LocalDate.now().minusYears(1)}')")
+        }
         child = childDAO.createChild(
             Child(
                 id = childId,
@@ -52,9 +55,11 @@ class ChildrenControllerIntegrationTest : AbstractIntegrationTest() {
 
     @AfterEach
     internal fun tearDown() {
-        jdbcTemplate.update("DELETE FROM assistance_need")
-        jdbcTemplate.update("DELETE FROM service_need")
-        jdbcTemplate.update("DELETE FROM person WHERE id = '$childId'")
+        jdbi.handle {
+            it.execute("DELETE FROM assistance_need")
+            it.execute("DELETE FROM service_need")
+            it.execute("DELETE FROM person WHERE id = '$childId'")
+        }
     }
 
     @Test

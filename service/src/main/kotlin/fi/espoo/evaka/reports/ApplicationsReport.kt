@@ -9,10 +9,12 @@ import fi.espoo.evaka.daycare.controllers.utils.ok
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.config.Roles
 import fi.espoo.evaka.shared.db.getUUID
+import fi.espoo.evaka.shared.db.transaction
 import fi.espoo.evaka.shared.domain.BadRequest
+import org.jdbi.v3.core.Handle
+import org.jdbi.v3.core.Jdbi
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.http.ResponseEntity
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
@@ -20,7 +22,7 @@ import java.time.LocalDate
 import java.util.UUID
 
 @RestController
-class ApplicationsReportController(private val jdbc: NamedParameterJdbcTemplate) {
+class ApplicationsReportController(private val jdbi: Jdbi) {
     @GetMapping("/reports/applications")
     fun getApplicationsReport(
         user: AuthenticatedUser,
@@ -31,11 +33,11 @@ class ApplicationsReportController(private val jdbc: NamedParameterJdbcTemplate)
         user.requireOneOfRoles(Roles.SERVICE_WORKER, Roles.DIRECTOR, Roles.ADMIN)
         if (to.isBefore(from)) throw BadRequest("Inverted time range")
 
-        return getApplicationsRows(jdbc, from, to).let(::ok)
+        return jdbi.transaction { getApplicationsRows(it, from, to) }.let(::ok)
     }
 }
 
-fun getApplicationsRows(jdbc: NamedParameterJdbcTemplate, from: LocalDate, to: LocalDate): List<ApplicationsReportRow> {
+fun getApplicationsRows(h: Handle, from: LocalDate, to: LocalDate): List<ApplicationsReportRow> {
     // language=sql
     val sql =
         """
@@ -68,25 +70,23 @@ fun getApplicationsRows(jdbc: NamedParameterJdbcTemplate, from: LocalDate, to: L
         GROUP BY care_area_name, unit_id, unit_name, provider_type
         ORDER BY care_area_name, unit_name;
         """.trimIndent()
-    return jdbc.query(
-        sql,
-        mapOf(
-            "from" to from,
-            "to" to to
-        )
-    ) { rs, _ ->
-        ApplicationsReportRow(
-            careAreaName = rs.getString("care_area_name"),
-            unitId = rs.getUUID("unit_id"),
-            unitName = rs.getString("unit_name"),
-            unitProviderType = rs.getString("provider_type"),
-            under3Years = rs.getInt("under_3_years_count"),
-            over3Years = rs.getInt("over_3_years_count"),
-            preschool = rs.getInt("preschool_count"),
-            club = rs.getInt("club_count"),
-            total = rs.getInt("total_count")
-        )
-    }
+    return h.createQuery(sql)
+        .bind("from", from)
+        .bind("to", to)
+        .map { rs, _ ->
+            ApplicationsReportRow(
+                careAreaName = rs.getString("care_area_name"),
+                unitId = rs.getUUID("unit_id"),
+                unitName = rs.getString("unit_name"),
+                unitProviderType = rs.getString("provider_type"),
+                under3Years = rs.getInt("under_3_years_count"),
+                over3Years = rs.getInt("over_3_years_count"),
+                preschool = rs.getInt("preschool_count"),
+                club = rs.getInt("club_count"),
+                total = rs.getInt("total_count")
+            )
+        }
+        .toList()
 }
 
 data class ApplicationsReportRow(

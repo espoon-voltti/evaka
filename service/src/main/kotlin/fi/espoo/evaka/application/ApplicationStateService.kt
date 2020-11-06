@@ -233,9 +233,11 @@ class ApplicationStateService(
                 it.id != guardian.id && !livesInSameAddress(guardian.residenceCode, it.residenceCode)
             }?.id
 
-        withSpringHandle(dataSource) { h -> updateApplicationOtherGuardian(h, applicationId, secondDecisionTo) }
-        placementPlanService.createPlacementPlan(application, placementPlan)
-        decisionDraftService.createDecisionDrafts(user, application)
+        withSpringHandle(dataSource) { h ->
+            updateApplicationOtherGuardian(h, applicationId, secondDecisionTo)
+            placementPlanService.createPlacementPlan(h, application, placementPlan)
+            decisionDraftService.createDecisionDrafts(h, user, application)
+        }
 
         updateStatus(application, WAITING_DECISION)
     }
@@ -247,8 +249,10 @@ class ApplicationStateService(
 
         val application = getApplication(applicationId)
         verifyStatus(application, WAITING_DECISION)
-        placementPlanService.deletePlacementPlanByApplication(application.id)
-        decisionDraftService.clearDecisionDrafts(application.id)
+        withSpringHandle(dataSource) { h ->
+            placementPlanService.deletePlacementPlanByApplication(h, application.id)
+            decisionDraftService.clearDecisionDrafts(h, application.id)
+        }
         updateStatus(application, WAITING_PLACEMENT)
     }
 
@@ -267,8 +271,10 @@ class ApplicationStateService(
             allowPreschool = true,
             allowPreschoolDaycare = true
         )
-        decisionDraftService.clearDecisionDrafts(application.id)
-        placementPlanService.softDeleteUnusedPlacementPlanByApplication(applicationId)
+        withSpringHandle(dataSource) { h ->
+            decisionDraftService.clearDecisionDrafts(h, application.id)
+            placementPlanService.softDeleteUnusedPlacementPlanByApplication(h, applicationId)
+        }
         updateStatus(application, ACTIVE)
     }
 
@@ -418,7 +424,9 @@ class ApplicationStateService(
             requestedStartDate = requestedStartDate
         )
 
-        placementPlanService.softDeleteUnusedPlacementPlanByApplication(applicationId)
+        withSpringHandle(dataSource) {
+            placementPlanService.softDeleteUnusedPlacementPlanByApplication(it, applicationId)
+        }
 
         if (application.status == WAITING_CONFIRMATION) {
             updateStatus(application, ACTIVE)
@@ -454,7 +462,9 @@ class ApplicationStateService(
         } else null
         alsoReject?.let { decisionService.markDecisionRejected(user, it.id) }
 
-        placementPlanService.softDeleteUnusedPlacementPlanByApplication(applicationId)
+        withSpringHandle(dataSource) {
+            placementPlanService.softDeleteUnusedPlacementPlanByApplication(it, applicationId)
+        }
 
         if (application.status == WAITING_CONFIRMATION) {
             updateStatus(application, REJECTED)
@@ -663,7 +673,10 @@ class ApplicationStateService(
     private fun finalizeDecisions(user: AuthenticatedUser, application: ApplicationDetails) {
         val sendBySfi = canSendDecisionsBySfi(user, application)
 
-        if (decisionDraftService.getDecisionDrafts(application.id).any { it.planned }) {
+        val decisionDrafts = withSpringHandle(dataSource) {
+            decisionDraftService.getDecisionDrafts(it, application.id)
+        }
+        if (decisionDrafts.any { it.planned }) {
             decisionService.finalizeDecisions(user, application.id, sendBySfi)
             updateStatus(application, if (sendBySfi) WAITING_CONFIRMATION else WAITING_MAILING)
         } else {

@@ -1263,15 +1263,17 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 preschoolDaycarePeriod = connectedPeriod
             )
         )
-        decisionDraftService.getDecisionDrafts(applicationId).map { draft ->
-            DecisionDraftService.DecisionDraftUpdate(
-                id = draft.id,
-                unitId = draft.unitId,
-                startDate = draft.startDate,
-                endDate = draft.endDate,
-                planned = false
-            )
-        }.let { updates -> decisionDraftService.updateDecisionDrafts(applicationId, updates) }
+        jdbi.handle { h ->
+            decisionDraftService.getDecisionDrafts(h, applicationId).map { draft ->
+                DecisionDraftService.DecisionDraftUpdate(
+                    id = draft.id,
+                    unitId = draft.unitId,
+                    startDate = draft.startDate,
+                    endDate = draft.endDate,
+                    planned = false
+                )
+            }.let { updates -> decisionDraftService.updateDecisionDrafts(h, applicationId, updates) }
+        }
         service.sendPlacementProposal(serviceWorker, applicationId)
 
         // when
@@ -1284,7 +1286,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
         val application = jdbi.handle { h -> fetchApplicationDetails(h, applicationId) }!!
         assertEquals(ApplicationStatus.ACTIVE, application.status)
 
-        val decisionDrafts = decisionDraftService.getDecisionDrafts(applicationId)
+        val decisionDrafts = jdbi.handle { h -> decisionDraftService.getDecisionDrafts(h, applicationId) }
         assertEquals(0, decisionDrafts.size)
 
         val decisionsByApplication = decisionService.getDecisionsByApplication(applicationId)

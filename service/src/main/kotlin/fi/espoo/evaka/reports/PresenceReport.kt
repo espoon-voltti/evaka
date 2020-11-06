@@ -8,10 +8,12 @@ import fi.espoo.evaka.Audit
 import fi.espoo.evaka.daycare.controllers.utils.ok
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.config.Roles
+import fi.espoo.evaka.shared.db.transaction
 import fi.espoo.evaka.shared.domain.BadRequest
+import org.jdbi.v3.core.Handle
+import org.jdbi.v3.core.Jdbi
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.http.ResponseEntity
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
@@ -21,7 +23,7 @@ import java.util.UUID
 val MAX_NUMBER_OF_DAYS = 14
 
 @RestController
-class PresenceReportController(private val jdbc: NamedParameterJdbcTemplate) {
+class PresenceReportController(private val jdbi: Jdbi) {
     @GetMapping("/reports/presences")
     fun getPresenceReport(
         user: AuthenticatedUser,
@@ -33,11 +35,11 @@ class PresenceReportController(private val jdbc: NamedParameterJdbcTemplate) {
         if (to.isBefore(from)) throw BadRequest("Inverted time range")
         if (to.isAfter(from.plusDays(MAX_NUMBER_OF_DAYS.toLong()))) throw BadRequest("Period is too long. Use maximum of $MAX_NUMBER_OF_DAYS days")
 
-        return getPresenceRows(jdbc, from, to).let(::ok)
+        return jdbi.transaction { getPresenceRows(it, from, to) }.let(::ok)
     }
 }
 
-fun getPresenceRows(jdbc: NamedParameterJdbcTemplate, from: LocalDate, to: LocalDate): List<PresenceReportRow> {
+fun getPresenceRows(h: Handle, from: LocalDate, to: LocalDate): List<PresenceReportRow> {
     // language=sql
     val sql =
         """
@@ -63,21 +65,19 @@ fun getPresenceRows(jdbc: NamedParameterJdbcTemplate, from: LocalDate, to: Local
           h.date IS NULL AND
           (daycare.provider_type = 'MUNICIPAL' OR daycare.id IS NULL);
         """.trimIndent()
-    return jdbc.query(
-        sql,
-        mapOf(
-            "from" to from,
-            "to" to to
-        )
-    ) { rs, _ ->
-        PresenceReportRow(
-            date = rs.getDate("date").toLocalDate(),
-            socialSecurityNumber = rs.getString("social_security_number"),
-            daycareId = rs.getString("daycare_id")?.let { UUID.fromString(it) },
-            daycareGroupName = rs.getString("name"),
-            present = rs.getBoolean("present").takeIf { rs.getString("daycare_id") != null }
-        )
-    }
+    return h.createQuery(sql)
+        .bind("from", from)
+        .bind("to", to)
+        .map { rs, _ ->
+            PresenceReportRow(
+                date = rs.getDate("date").toLocalDate(),
+                socialSecurityNumber = rs.getString("social_security_number"),
+                daycareId = rs.getString("daycare_id")?.let { UUID.fromString(it) },
+                daycareGroupName = rs.getString("name"),
+                present = rs.getBoolean("present").takeIf { rs.getString("daycare_id") != null }
+            )
+        }
+        .toList()
 }
 
 data class PresenceReportRow(

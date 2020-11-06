@@ -167,6 +167,24 @@ class PersonService(
         }
     }
 
+    fun getGuardians(h: Handle, user: AuthenticatedUser, id: VolttiIdentifier): List<PersonDTO> {
+        val child = h.getPersonById(id) ?: return emptyList()
+
+        return when (child.identity) {
+            is ExternalIdentifier.NoID -> emptyList()
+            is ExternalIdentifier.SSN ->
+                getPersonWithGuardians(user, child.identity)
+                    ?.let { personStorageService.upsertVtjChildAndGuardians(h, PersonResult.Result(it)) }
+                    ?.let {
+                        when (it) {
+                            is PersonResult.Error -> throw IllegalStateException(it.msg)
+                            is PersonResult.NotFound -> emptyList()
+                            is PersonResult.Result -> it.vtjPersonDTO.guardians.map(::toPersonDTO)
+                        }
+                    } ?: emptyList()
+        }
+    }
+
     fun getOrCreatePerson(
         user: AuthenticatedUser,
         ssn: ExternalIdentifier.SSN,

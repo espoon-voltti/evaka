@@ -15,8 +15,10 @@ import fi.espoo.evaka.shared.auth.UserRole.FINANCE_ADMIN
 import fi.espoo.evaka.shared.auth.UserRole.SERVICE_WORKER
 import fi.espoo.evaka.shared.auth.UserRole.UNIT_SUPERVISOR
 import fi.espoo.evaka.shared.config.Roles
+import fi.espoo.evaka.shared.db.transaction
 import fi.espoo.evaka.shared.db.withSpringHandle
 import fi.espoo.evaka.shared.domain.Forbidden
+import org.jdbi.v3.core.Jdbi
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
@@ -30,6 +32,7 @@ import javax.sql.DataSource
 @RestController
 @RequestMapping("/decisions2")
 class DecisionController(
+    private val jdbi: Jdbi,
     private val dataSource: DataSource,
     private val acl: AccessControlList,
     private val decisionService: DecisionService,
@@ -76,7 +79,7 @@ class DecisionController(
     fun getDecisionUnits(user: AuthenticatedUser): ResponseEntity<List<DecisionUnit>> {
         Audit.UnitRead.log()
         user.requireOneOfRoles(Roles.ADMIN, Roles.SERVICE_WORKER, Roles.UNIT_SUPERVISOR, Roles.FINANCE_ADMIN)
-        val units = decisionDraftService.getDecisionUnits()
+        val units = jdbi.transaction { decisionDraftService.getDecisionUnits(it) }
         return ResponseEntity.ok(units)
     }
 

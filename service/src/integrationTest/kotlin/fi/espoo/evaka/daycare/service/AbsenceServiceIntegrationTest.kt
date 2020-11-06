@@ -34,14 +34,10 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.time.LocalDate
 import java.util.UUID
 
 class AbsenceServiceIntegrationTest : AbstractIntegrationTest() {
-    @Autowired
-    lateinit var dbTemplate: NamedParameterJdbcTemplate
-
     @Autowired
     lateinit var db: Jdbi
 
@@ -468,9 +464,7 @@ class AbsenceServiceIntegrationTest : AbstractIntegrationTest() {
         jdbi.transaction {
             it.insertTestPerson(DevPerson(id = childId, dateOfBirth = dob))
             it.insertTestChild(DevChild(childId))
-        }
-        val daycarePlacementId = jdbi.transaction {
-            it.insertTestPlacement(
+            val daycarePlacementId = it.insertTestPlacement(
                 DevPlacement(
                     childId = childId,
                     unitId = daycareId,
@@ -479,11 +473,11 @@ class AbsenceServiceIntegrationTest : AbstractIntegrationTest() {
                     endDate = placementPeriod.end
                 )
             )
+            insertTestDaycareGroupPlacement(
+                h = it, daycarePlacementId = daycarePlacementId, groupId = groupId,
+                startDate = placementPeriod.start, endDate = placementPeriod.end
+            )
         }
-        insertTestDaycareGroupPlacement(
-            jdbcTemplate = dbTemplate, daycarePlacementId = daycarePlacementId, groupId = groupId,
-            startDate = placementPeriod.start, endDate = placementPeriod.end
-        )
     }
 
     data class ChildSeed(
@@ -505,9 +499,7 @@ class AbsenceServiceIntegrationTest : AbstractIntegrationTest() {
                     )
                 )
                 h.insertTestChild(DevChild(it.id))
-            }
-            val daycarePlacementId = jdbi.transaction { h ->
-                h.insertTestPlacement(
+                val daycarePlacementId = h.insertTestPlacement(
                     DevPlacement(
                         childId = it.id,
                         unitId = daycareId,
@@ -516,11 +508,11 @@ class AbsenceServiceIntegrationTest : AbstractIntegrationTest() {
                         endDate = placementEnd
                     )
                 )
+                insertTestDaycareGroupPlacement(
+                    h = h, daycarePlacementId = daycarePlacementId, groupId = groupId,
+                    startDate = placementStart, endDate = placementEnd
+                )
             }
-            insertTestDaycareGroupPlacement(
-                jdbcTemplate = dbTemplate, daycarePlacementId = daycarePlacementId, groupId = groupId,
-                startDate = placementStart, endDate = placementEnd
-            )
         }
     }
 

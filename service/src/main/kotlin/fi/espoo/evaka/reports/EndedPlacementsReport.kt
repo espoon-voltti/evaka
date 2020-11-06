@@ -9,8 +9,10 @@ import fi.espoo.evaka.daycare.controllers.utils.ok
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.config.Roles
 import fi.espoo.evaka.shared.db.getUUID
+import fi.espoo.evaka.shared.db.transaction
+import org.jdbi.v3.core.Handle
+import org.jdbi.v3.core.Jdbi
 import org.springframework.http.ResponseEntity
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
@@ -18,7 +20,7 @@ import java.time.LocalDate
 import java.util.UUID
 
 @RestController
-class EndedPlacementsReportController(private val jdbc: NamedParameterJdbcTemplate) {
+class EndedPlacementsReportController(private val jdbi: Jdbi) {
     @GetMapping("/reports/ended-placements")
     fun getEndedPlacementsReport(
         user: AuthenticatedUser,
@@ -30,11 +32,11 @@ class EndedPlacementsReportController(private val jdbc: NamedParameterJdbcTempla
         val to = from.plusMonths(1).minusDays(1)
         user.requireOneOfRoles(Roles.DIRECTOR, Roles.ADMIN, Roles.FINANCE_ADMIN)
 
-        return getEndedPlacementsRows(jdbc, from, to).let(::ok)
+        return jdbi.transaction { getEndedPlacementsRows(it, from, to) }.let(::ok)
     }
 }
 
-fun getEndedPlacementsRows(jdbc: NamedParameterJdbcTemplate, from: LocalDate, to: LocalDate?): List<EndedPlacementsReportRow> {
+fun getEndedPlacementsRows(h: Handle, from: LocalDate, to: LocalDate): List<EndedPlacementsReportRow> {
     // language=sql
     val sql =
         """
@@ -57,22 +59,20 @@ fun getEndedPlacementsRows(jdbc: NamedParameterJdbcTemplate, from: LocalDate, to
         HAVING min(next.start_date) IS NULL OR min(next.start_date) > :to
         ORDER BY last_name, first_name, social_security_number
         """.trimIndent()
-    return jdbc.query(
-        sql,
-        mapOf(
-            "from" to from,
-            "to" to to
-        )
-    ) { rs, _ ->
-        EndedPlacementsReportRow(
-            childId = rs.getUUID("child_id"),
-            firstName = rs.getString("first_name"),
-            lastName = rs.getString("last_name"),
-            ssn = rs.getString("social_security_number"),
-            placementEnd = rs.getDate("placement_end").toLocalDate(),
-            nextPlacementStart = rs.getDate("next_placement_start")?.toLocalDate()
-        )
-    }
+    return h.createQuery(sql)
+        .bind("from", from)
+        .bind("to", to)
+        .map { rs, _ ->
+            EndedPlacementsReportRow(
+                childId = rs.getUUID("child_id"),
+                firstName = rs.getString("first_name"),
+                lastName = rs.getString("last_name"),
+                ssn = rs.getString("social_security_number"),
+                placementEnd = rs.getDate("placement_end").toLocalDate(),
+                nextPlacementStart = rs.getDate("next_placement_start")?.toLocalDate()
+            )
+        }
+        .toList()
 }
 
 data class EndedPlacementsReportRow(

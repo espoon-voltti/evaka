@@ -5,6 +5,7 @@
 package fi.espoo.evaka.daycare.service
 
 import fi.espoo.evaka.daycare.AbstractIntegrationTest
+import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.db.transaction
 import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevDaycare
@@ -20,14 +21,10 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.time.LocalDate
 import java.util.UUID
 
 class StaffAttendanceServiceIntegrationTest : AbstractIntegrationTest() {
-    @Autowired
-    lateinit var dbTemplate: NamedParameterJdbcTemplate
-
     @Autowired
     lateinit var db: Jdbi
 
@@ -127,18 +124,19 @@ class StaffAttendanceServiceIntegrationTest : AbstractIntegrationTest() {
     }
 
     private fun cleanTestData() {
-        dbTemplate.update(
-            //language=SQL
-            """
-            DELETE FROM staff_attendance;
-            DELETE FROM daycare_group where daycare_id = :daycareId;
-            DELETE FROM daycare WHERE care_area_id = :areaId;
-            DELETE FROM care_area WHERE id = :areaId;
-        """,
-            mapOf(
-                "areaId" to areaId,
-                "daycareId" to daycareId
+        jdbi.handle {
+            it.createUpdate(
+                //language=SQL
+                """
+                DELETE FROM staff_attendance;
+                DELETE FROM daycare_group where daycare_id = :daycareId;
+                DELETE FROM daycare WHERE care_area_id = :areaId;
+                DELETE FROM care_area WHERE id = :areaId;
+                """.trimIndent()
             )
-        )
+                .bind("areaId", areaId)
+                .bind("daycareId", daycareId)
+                .execute()
+        }
     }
 }

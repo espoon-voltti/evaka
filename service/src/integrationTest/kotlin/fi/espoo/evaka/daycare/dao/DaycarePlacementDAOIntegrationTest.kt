@@ -6,6 +6,7 @@ package fi.espoo.evaka.daycare.dao
 
 import fi.espoo.evaka.daycare.AbstractIntegrationTest
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.shared.db.handle
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeAll
@@ -29,24 +30,28 @@ class DaycarePlacementDAOIntegrationTest : AbstractIntegrationTest() {
 
     @BeforeAll
     fun beforeAll() {
-        jdbcTemplate.update("DELETE FROM daycare_group_placement WHERE EXISTS (SELECT 1 FROM placement WHERE child_id = ?)", childId)
-        jdbcTemplate.update("DELETE FROM placement WHERE child_id = ?", childId)
+        jdbi.handle {
+            it.execute("DELETE FROM daycare_group_placement WHERE EXISTS (SELECT 1 FROM placement WHERE child_id = ?)", childId)
+            it.execute("DELETE FROM placement WHERE child_id = ?", childId)
+        }
     }
 
     @BeforeEach
     fun setUp() {
-        jdbcTemplate.update(
-            // language=sql
-            """
-            INSERT INTO placement (id, type, child_id, unit_id, start_date, end_date)
-            VALUES ('$placementId', '${PlacementType.DAYCARE}'::placement_type, '$childId', '$daycareId', '$placementStart', '$placementEnd')
-            """.trimIndent()
-        )
+        jdbi.handle {
+            it.execute(
+                // language=sql
+                """
+                INSERT INTO placement (id, type, child_id, unit_id, start_date, end_date)
+                VALUES ('$placementId', '${PlacementType.DAYCARE}'::placement_type, '$childId', '$daycareId', '$placementStart', '$placementEnd')
+                """.trimIndent()
+            )
+        }
     }
 
     @AfterEach
     fun afterEach() {
-        jdbcTemplate.update("DELETE FROM placement WHERE id = '$placementId'")
+        jdbi.handle { it.execute("DELETE FROM placement WHERE id = '$placementId'") }
     }
 
     @Test
