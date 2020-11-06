@@ -44,7 +44,6 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import java.time.LocalDate
 import java.util.UUID
-import javax.sql.DataSource
 
 enum class ApplicationTypeToggle {
     CLUB,
@@ -103,7 +102,6 @@ enum class TransferApplicationFilter {
 @RequestMapping("/v2/applications")
 class ApplicationControllerV2(
     private val jdbi: Jdbi,
-    private val dataSource: DataSource,
     private val acl: AccessControlList,
     private val personService: PersonService,
     private val applicationStateService: ApplicationStateService,

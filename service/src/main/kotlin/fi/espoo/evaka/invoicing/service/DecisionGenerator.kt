@@ -63,16 +63,11 @@ import org.springframework.core.env.Environment
 import org.springframework.stereotype.Component
 import java.time.LocalDate
 import java.util.UUID
-import javax.sql.DataSource
 
 private val logger = KotlinLogging.logger {}
 
 @Component
-class DecisionGenerator(
-    private val dataSource: DataSource,
-    private val objectMapper: ObjectMapper,
-    env: Environment
-) {
+class DecisionGenerator(private val objectMapper: ObjectMapper, env: Environment) {
     private val feeDecisionMinDate: LocalDate = LocalDate.parse(env.getRequiredProperty("fee_decision_min_date"))
 
     fun createRetroactive(h: Handle, headOfFamily: UUID, from: LocalDate) {

@@ -22,7 +22,6 @@ import fi.espoo.evaka.daycare.controllers.Child
 import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.daycare.getDaycare
 import fi.espoo.evaka.daycare.getDaycareApplyFlags
-import fi.espoo.evaka.daycare.service.DaycareService
 import fi.espoo.evaka.daycare.upsertChild
 import fi.espoo.evaka.decision.DecisionDraftService
 import fi.espoo.evaka.decision.DecisionService
@@ -39,7 +38,6 @@ import fi.espoo.evaka.invoicing.data.splitEarlierIncome
 import fi.espoo.evaka.invoicing.data.upsertIncome
 import fi.espoo.evaka.invoicing.domain.Income
 import fi.espoo.evaka.invoicing.domain.IncomeEffect
-import fi.espoo.evaka.pis.service.FamilyInitializerService
 import fi.espoo.evaka.pis.service.PersonService
 import fi.espoo.evaka.pis.updatePersonBasicContactInfo
 import fi.espoo.evaka.placement.PlacementPlanConfirmationStatus
@@ -67,16 +65,12 @@ import org.jdbi.v3.core.Handle
 import org.springframework.stereotype.Service
 import java.time.LocalDate
 import java.util.UUID
-import javax.sql.DataSource
 
 private val logger = KotlinLogging.logger { }
 
 @Service
 class ApplicationStateService(
-    private val dataSource: DataSource,
     private val acl: AccessControlList,
-    private val daycareService: DaycareService,
-    private val familyInitializerService: FamilyInitializerService,
     private val placementPlanService: PlacementPlanService,
     private val decisionService: DecisionService,
     private val decisionDraftService: DecisionDraftService,
