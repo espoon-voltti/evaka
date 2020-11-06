@@ -73,7 +73,7 @@ class FridgeFamilyService(
                     }
                     logger.info("Child ${child.id} added")
                 } catch (e: Exception) {
-                    logger.info("Ignored the following:", e)
+                    logger.debug("Ignored the following:", e)
                 }
             }
             logger.info("Completed refreshing person ${msg.personId}")
