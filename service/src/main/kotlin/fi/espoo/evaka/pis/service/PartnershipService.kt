@@ -10,13 +10,11 @@ import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.NotifyFamilyUpdated
 import fi.espoo.evaka.shared.db.runAfterCommit
 import fi.espoo.evaka.shared.db.withSpringHandle
-import fi.espoo.evaka.shared.db.withSpringTx
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.domain.maxEndDate
 import mu.KotlinLogging
 import org.jdbi.v3.core.statement.UnableToExecuteStatementException
 import org.springframework.stereotype.Service
-import org.springframework.transaction.PlatformTransactionManager
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDate
 import java.util.UUID
@@ -27,7 +25,6 @@ import javax.sql.DataSource
 class PartnershipService(
     private val dao: PartnershipDAO,
     private val asyncJobRunner: AsyncJobRunner,
-    private val txm: PlatformTransactionManager,
     private val dataSource: DataSource
 ) {
     private val logger = KotlinLogging.logger { }
@@ -37,30 +34,19 @@ class PartnershipService(
         personId1: UUID,
         personId2: UUID,
         startDate: LocalDate,
-        endDate: LocalDate?,
-        allowConflicts: Boolean = false
+        endDate: LocalDate?
     ): Partnership {
         return try {
             dao
                 .createPartnership(personId1, personId2, startDate, endDate)
                 .also { sendFamilyUpdatedMessage(personId2, startDate, endDate) }
         } catch (e: UnableToExecuteStatementException) {
-            if (allowConflicts) {
-                withSpringTx(txm, requiresNew = true) {
-                    dao.createPartnership(personId1, personId2, startDate, endDate, conflict = true)
-                }
-            } else {
-                throw mapPSQLException(e)
-            }
+            throw mapPSQLException(e)
         }
     }
 
     fun getPartnershipsForPerson(personId: UUID, includeConflicts: Boolean): Set<Partnership> {
         return dao.getPartnershipsForPerson(personId, includeConflicts)
-    }
-
-    fun getPartnersForPerson(personId: UUID, includeConflicts: Boolean = false): Set<Partner> {
-        return dao.getPartnersForPerson(personId, includeConflicts)
     }
 
     fun getPartnership(partnershipId: UUID): Partnership? {

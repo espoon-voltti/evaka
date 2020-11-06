@@ -97,8 +97,7 @@ class VTJBatchRefreshServiceIntegrationTest : FullApplicationTest() {
             eq(testChild_1.id),
             eq(testAdult_1.id),
             eq(LocalDate.now()),
-            eq(lastDayBefore18YearsOld),
-            eq(false)
+            eq(lastDayBefore18YearsOld)
         )
     }
 
@@ -160,8 +159,7 @@ class VTJBatchRefreshServiceIntegrationTest : FullApplicationTest() {
                 eq(testChild_1.id),
                 eq(testAdult_1.id),
                 eq(LocalDate.now()),
-                eq(lastDayBefore18YearsOld),
-                eq(false)
+                eq(lastDayBefore18YearsOld)
             )
         }
     }

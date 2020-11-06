@@ -14,7 +14,6 @@ import fi.espoo.evaka.pis.updateParentshipDuration
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.NotifyFamilyUpdated
 import fi.espoo.evaka.shared.db.runAfterCommit
-import fi.espoo.evaka.shared.db.transaction
 import fi.espoo.evaka.shared.db.withSpringHandle
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.domain.maxEndDate
@@ -37,20 +36,13 @@ class ParentshipService(
         childId: UUID,
         headOfChildId: UUID,
         startDate: LocalDate,
-        endDate: LocalDate?,
-        allowConflicts: Boolean = false
+        endDate: LocalDate?
     ): Parentship {
         return try {
-            h.createParentship(childId, headOfChildId, startDate, endDate, allowConflicts)
+            h.createParentship(childId, headOfChildId, startDate, endDate, false)
                 .also { sendFamilyUpdatedMessage(headOfChildId, startDate, endDate) }
         } catch (e: Exception) {
-            if (allowConflicts) {
-                h.transaction { t ->
-                    t.createParentship(childId, headOfChildId, startDate, endDate, true)
-                }
-            } else {
-                throw mapPSQLException(e)
-            }
+            throw mapPSQLException(e)
         }
     }
 

@@ -81,6 +81,7 @@ class DecisionService(
             decision.type != DecisionType.CLUB &&
             application.otherGuardianId != null &&
             !personService.personsLiveInTheSameAddress(
+                h,
                 user,
                 application.guardianId,
                 application.otherGuardianId

@@ -77,13 +77,12 @@ class PersonService(
         }
     }
 
-    fun personsLiveInTheSameAddress(user: AuthenticatedUser, person1Id: UUID, person2Id: UUID): Boolean =
-        withSpringTx(txManager) {
-            val person1 = personDAO.getPersonByVolttiId(person1Id)
-            val person2 = personDAO.getPersonByVolttiId(person2Id)
+    fun personsLiveInTheSameAddress(h: Handle, user: AuthenticatedUser, person1Id: UUID, person2Id: UUID): Boolean {
+        val person1 = h.getPersonById(person1Id)
+        val person2 = h.getPersonById(person2Id)
 
-            personsHaveSameResidenceCode(person1, person2) || personsHaveSameAddress(person1, person2)
-        }
+        return personsHaveSameResidenceCode(person1, person2) || personsHaveSameAddress(person1, person2)
+    }
 
     private fun personsHaveSameResidenceCode(person1: PersonDTO?, person2: PersonDTO?): Boolean {
         return person1 != null && person2 != null &&

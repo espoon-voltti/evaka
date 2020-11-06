@@ -40,6 +40,7 @@ class ApplicationSerializer(private val personService: PersonService) {
     ): ApplicationJson {
         val otherGuardian = if (requireFreshPersonData) personService.getOtherGuardian(h, user, application.guardianId, application.childId) else null
         val guardiansLiveInSameAddress = if (otherGuardian != null && requireFreshPersonData) personService.personsLiveInTheSameAddress(
+            h,
             user,
             application.guardianId,
             otherGuardian.id

@@ -48,6 +48,7 @@ import fi.espoo.evaka.placement.deletePlacementPlan
 import fi.espoo.evaka.placement.getPlacementPlan
 import fi.espoo.evaka.placement.updatePlacementPlanUnitConfirmation
 import fi.espoo.evaka.shared.async.AsyncJobRunner
+import fi.espoo.evaka.shared.async.InitializeFamilyFromApplication
 import fi.espoo.evaka.shared.async.NotifyIncomeUpdated
 import fi.espoo.evaka.shared.async.SendApplicationEmail
 import fi.espoo.evaka.shared.auth.AccessControlList
@@ -140,7 +141,6 @@ class ApplicationStateService(
             email = application.form.guardian.email,
             phone = application.form.guardian.phoneNumber
         )
-
         h.upsertChild(
             Child(
                 id = application.childId,
@@ -152,11 +152,9 @@ class ApplicationStateService(
         )
 
         setCheckedByAdminToDefault(h, applicationId, application.form)
-
-        familyInitializerService.tryInitFamilyFromApplication(user, application)
-
         if (application.form.maxFeeAccepted) setHighestFeeForUser(h, application)
 
+        asyncJobRunner.plan(h, listOf(InitializeFamilyFromApplication(application.id, user)))
         updateApplicationStatus(h, application.id, WAITING_PLACEMENT)
     }
 

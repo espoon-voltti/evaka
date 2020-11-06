@@ -6,11 +6,9 @@ package fi.espoo.evaka.pis.dao
 
 import fi.espoo.evaka.pis.createPartnership
 import fi.espoo.evaka.pis.deletePartnership
-import fi.espoo.evaka.pis.getPartnersForPerson
 import fi.espoo.evaka.pis.getPartnership
 import fi.espoo.evaka.pis.getPartnershipsForPerson
 import fi.espoo.evaka.pis.retryPartnership
-import fi.espoo.evaka.pis.service.Partner
 import fi.espoo.evaka.pis.service.Partnership
 import fi.espoo.evaka.pis.updatePartnershipDuration
 import fi.espoo.evaka.shared.db.withSpringHandle
@@ -40,9 +38,6 @@ class PartnershipDAO(private val dataSource: DataSource) {
 
     fun getPartnershipsForPerson(personId: UUID, includeConflicts: Boolean = false): Set<Partnership> =
         withSpringHandle(dataSource) { h -> h.getPartnershipsForPerson(personId, includeConflicts) }.toSet()
-
-    fun getPartnersForPerson(personId: UUID, includeConflicts: Boolean): Set<Partner> =
-        withSpringHandle(dataSource) { h -> h.getPartnersForPerson(personId, includeConflicts) }.toSet()
 
     @Transactional
     fun updatePartnershipDuration(partnershipId: UUID, startDate: LocalDate, endDate: LocalDate?): Boolean =
