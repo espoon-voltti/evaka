@@ -6,6 +6,7 @@ package fi.espoo.evaka.pis.service
 
 import fi.espoo.evaka.shared.async.VTJRefresh
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
+import fi.espoo.evaka.shared.db.transaction
 import mu.KotlinLogging
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.Jdbi
@@ -61,16 +62,18 @@ class FridgeFamilyService(
 
             newChildrenInSameAddress.forEach { child ->
                 try {
-                    parentshipService.createParentship(
-                        h,
-                        childId = child.id,
-                        headOfChildId = msg.personId,
-                        startDate = LocalDate.now(),
-                        endDate = child.dateOfBirth.plusYears(18).minusDays(1)
-                    )
+                    h.transaction { t ->
+                        parentshipService.createParentship(
+                            t,
+                            childId = child.id,
+                            headOfChildId = msg.personId,
+                            startDate = LocalDate.now(),
+                            endDate = child.dateOfBirth.plusYears(18).minusDays(1)
+                        )
+                    }
                     logger.info("Child ${child.id} added")
                 } catch (e: Exception) {
-                    logger.info("Ignored exception", e)
+                    logger.info("Ignored the following:", e)
                 }
             }
             logger.info("Completed refreshing person ${msg.personId}")
