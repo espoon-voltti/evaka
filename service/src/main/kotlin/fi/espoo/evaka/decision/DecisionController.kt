@@ -17,6 +17,7 @@ import fi.espoo.evaka.shared.auth.UserRole.UNIT_SUPERVISOR
 import fi.espoo.evaka.shared.config.Roles
 import fi.espoo.evaka.shared.db.transaction
 import fi.espoo.evaka.shared.domain.Forbidden
+import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.Jdbi
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
@@ -95,7 +96,7 @@ class DecisionController(
                 if (!getDecisionsByGuardian(h, user.id, AclAuthorization.All).any { it.id == decisionId }) {
                     throw Forbidden("Access denied")
                 }
-                return@transaction getDecisionPdf(decisionId)
+                return@transaction getDecisionPdf(h, decisionId)
             }
 
             val decision = getDecision(h, decisionId) ?: error("Cannot find decision for decision id '$decisionId'")
@@ -117,12 +118,12 @@ class DecisionController(
             if ((child.restrictedDetailsEnabled || guardian.restrictedDetailsEnabled) && !user.isAdmin())
                 throw Forbidden("Päätöksen alaisella henkilöllä on voimassa turvakielto. Osoitetietojen suojaamiseksi vain pääkäyttäjä voi ladata tämän päätöksen.")
 
-            getDecisionPdf(decisionId)
+            getDecisionPdf(h, decisionId)
         }
     }
 
-    private fun getDecisionPdf(decisionId: UUID): ResponseEntity<ByteArray> {
-        return decisionService.getDecisionPdf(decisionId)
+    private fun getDecisionPdf(h: Handle, decisionId: UUID): ResponseEntity<ByteArray> {
+        return decisionService.getDecisionPdf(h, decisionId)
             .let { document ->
                 ResponseEntity.ok()
                     .header("Content-Disposition", "attachment;filename=${document.getName()}")
