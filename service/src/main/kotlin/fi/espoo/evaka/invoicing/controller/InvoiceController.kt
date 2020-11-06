@@ -111,7 +111,7 @@ class InvoiceController(
     fun createDraftInvoices(user: AuthenticatedUser): ResponseEntity<Unit> {
         Audit.InvoicesCreate.log()
         user.requireOneOfRoles(Roles.FINANCE_ADMIN)
-        jdbi.transaction(createAllDraftInvoices(objectMapper))
+        jdbi.transaction { createAllDraftInvoices(it, objectMapper) }
         return ResponseEntity.noContent().build()
     }
 
@@ -134,12 +134,15 @@ class InvoiceController(
     ): ResponseEntity<Unit> {
         Audit.InvoicesSend.log(targetId = invoiceIds)
         user.requireOneOfRoles(Roles.FINANCE_ADMIN)
-        service.sendInvoices(
-            user,
-            invoiceIds,
-            invoiceDate,
-            dueDate
-        )
+        jdbi.transaction {
+            service.sendInvoices(
+                it,
+                user,
+                invoiceIds,
+                invoiceDate,
+                dueDate
+            )
+        }
         return ResponseEntity.noContent().build()
     }
 
@@ -149,14 +152,17 @@ class InvoiceController(
         @RequestBody payload: InvoicePayload
     ): ResponseEntity<Unit> {
         Audit.InvoicesSendByDate.log()
-        val invoiceIds = service.getInvoiceIds(payload.from, payload.to, payload.areas)
         user.requireOneOfRoles(Roles.FINANCE_ADMIN)
-        service.sendInvoices(
-            user,
-            invoiceIds,
-            payload.invoiceDate,
-            payload.dueDate
-        )
+        jdbi.transaction { h ->
+            val invoiceIds = service.getInvoiceIds(h, payload.from, payload.to, payload.areas)
+            service.sendInvoices(
+                h,
+                user,
+                invoiceIds,
+                payload.invoiceDate,
+                payload.dueDate
+            )
+        }
         return ResponseEntity.noContent().build()
     }
 
@@ -164,7 +170,7 @@ class InvoiceController(
     fun markInvoicesSent(user: AuthenticatedUser, @RequestBody invoiceIds: List<UUID>): ResponseEntity<Unit> {
         Audit.InvoicesMarkSent.log(targetId = invoiceIds)
         user.requireOneOfRoles(Roles.FINANCE_ADMIN)
-        jdbi.transaction(markManuallySent(user, invoiceIds))
+        jdbi.transaction { markManuallySent(it, user, invoiceIds) }
         return ResponseEntity.noContent().build()
     }
 
@@ -199,7 +205,7 @@ class InvoiceController(
         Audit.InvoicesUpdate.log(targetId = uuid)
         user.requireOneOfRoles(Roles.FINANCE_ADMIN)
         val parsedUuid = parseUUID(uuid)
-        service.updateInvoice(parsedUuid, invoice)
+        jdbi.transaction { service.updateInvoice(it, parsedUuid, invoice) }
         return ResponseEntity.noContent().build()
     }
 
