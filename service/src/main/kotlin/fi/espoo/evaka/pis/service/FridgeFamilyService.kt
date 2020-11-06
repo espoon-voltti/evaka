@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.pis.service
 
+import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.VTJRefresh
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.transaction
@@ -22,7 +23,8 @@ private val logger = KotlinLogging.logger {}
 class FridgeFamilyService(
     private val personService: PersonService,
     private val parentshipService: ParentshipService,
-    private val jdbi: Jdbi
+    private val jdbi: Jdbi,
+    private val asyncJobRunner: AsyncJobRunner
 ) {
 
     fun doVTJRefresh(msg: VTJRefresh) {
@@ -77,6 +79,7 @@ class FridgeFamilyService(
                             endDate = child.dateOfBirth.plusYears(18).minusDays(1)
                         )
                     }
+                    asyncJobRunner.scheduleImmediateRun()
                     logger.info("Child ${child.id} added")
                 } catch (e: Exception) {
                     logger.debug("Ignored the following:", e)
