@@ -13,8 +13,6 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.getEnum
 import fi.espoo.evaka.shared.db.getUUID
 import fi.espoo.evaka.shared.db.handle
-import fi.espoo.evaka.shared.db.withSpringHandle
-import fi.espoo.evaka.shared.db.withSpringTx
 import fi.espoo.evaka.shared.domain.ClosedPeriod
 import fi.espoo.evaka.vtjclient.dto.NativeLanguage
 import fi.espoo.evaka.vtjclient.dto.PersonDataSource
@@ -27,13 +25,11 @@ import org.jdbi.v3.core.Jdbi
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.AccessDeniedException
-import org.springframework.transaction.PlatformTransactionManager
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import java.util.UUID
-import javax.sql.DataSource
 
 private val logger = KotlinLogging.logger { }
 
@@ -45,9 +41,7 @@ class UseCaseDeniedException : AccessDeniedException("Use case not allowed for c
 class VtjController(
     private val personStorageService: PersonStorageService,
     private val personService: PersonService,
-    private val jdbi: Jdbi,
-    private val txManager: PlatformTransactionManager,
-    private val dataSource: DataSource
+    private val jdbi: Jdbi
 ) {
     @GetMapping("/uuid/{personId}")
     fun getDetails(
@@ -96,34 +90,32 @@ class VtjController(
             ?: PersonResult.NotFound()
     }
 
-    private fun withChildPlacements(guardian: VtjPersonDTO): VtjPersonDTO = withSpringTx(txManager) {
-        withSpringHandle(dataSource) { h ->
-            val sql =
-                "SELECT child_id, start_date, end_date, type FROM placement WHERE child_id = ANY(:children) AND end_date > current_date"
+    private fun withChildPlacements(guardian: VtjPersonDTO): VtjPersonDTO = jdbi.handle { h ->
+        val sql =
+            "SELECT child_id, start_date, end_date, type FROM placement WHERE child_id = ANY(:children) AND end_date > current_date"
 
-            val placements = h.createQuery(sql)
-                .bind("children", guardian.children.map { it.id }.toTypedArray())
-                .map { rs, _ ->
-                    rs.getUUID("child_id") to Placement(
-                        period = ClosedPeriod(
-                            rs.getDate("start_date").toLocalDate(),
-                            rs.getDate("end_date").toLocalDate()
-                        ),
-                        type = rs.getEnum("type")
-                    )
-                }
+        val placements = h.createQuery(sql)
+            .bind("children", guardian.children.map { it.id }.toTypedArray())
+            .map { rs, _ ->
+                rs.getUUID("child_id") to Placement(
+                    period = ClosedPeriod(
+                        rs.getDate("start_date").toLocalDate(),
+                        rs.getDate("end_date").toLocalDate()
+                    ),
+                    type = rs.getEnum("type")
+                )
+            }
 
-            guardian.copy(
-                children = guardian.children.map { child ->
-                    val childPlacements = placements
-                        .filter { (id, _) -> id == child.id }
-                        .map { (_, placement) -> placement }
-                        .sortedBy { it.period.start }
+        guardian.copy(
+            children = guardian.children.map { child ->
+                val childPlacements = placements
+                    .filter { (id, _) -> id == child.id }
+                    .map { (_, placement) -> placement }
+                    .sortedBy { it.period.start }
 
-                    child.copy(existingPlacements = childPlacements)
-                }.toMutableList()
-            )
-        }
+                child.copy(existingPlacements = childPlacements)
+            }.toMutableList()
+        )
     }
 
     private fun mapPisPerson(person: PersonDTO): VtjPersonDTO {
