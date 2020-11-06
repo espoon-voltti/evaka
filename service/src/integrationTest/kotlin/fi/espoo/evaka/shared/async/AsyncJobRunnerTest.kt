@@ -7,7 +7,6 @@ package fi.espoo.evaka.shared.async
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.config.SharedIntegrationTestConfig
 import fi.espoo.evaka.shared.db.transaction
-import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.Jdbi
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -44,7 +43,7 @@ class AsyncJobRunnerTest {
     @BeforeEach
     @AfterAll
     fun clean() {
-        asyncJobRunner.notifyDecisionCreated = { _, _ -> }
+        asyncJobRunner.notifyDecisionCreated = { _ -> }
         jdbi.open().use { h -> h.execute("TRUNCATE async_job") }
     }
 
@@ -62,10 +61,7 @@ class AsyncJobRunnerTest {
     @Test
     fun testCompleteHappyCase() {
         val decisionId = UUID.randomUUID()
-        val future = this.setAsyncJobCallback { h, msg ->
-            assertTrue(h.isInTransaction)
-            msg
-        }
+        val future = this.setAsyncJobCallback { msg -> msg }
         jdbi.transaction { asyncJobRunner.plan(it, listOf(NotifyDecisionCreated(decisionId, user, false))) }
         asyncJobRunner.scheduleImmediateRun(maxCount = 1)
         val result = future.get(10, TimeUnit.SECONDS)
@@ -76,7 +72,7 @@ class AsyncJobRunnerTest {
     @Test
     fun testCompleteRetry() {
         val decisionId = UUID.randomUUID()
-        val failingFuture = this.setAsyncJobCallback { _, _ -> throw LetsRollbackException() }
+        val failingFuture = this.setAsyncJobCallback { _ -> throw LetsRollbackException() }
         jdbi.transaction { asyncJobRunner.plan(it, listOf(NotifyDecisionCreated(decisionId, user, false)), 20, Duration.ZERO) }
         asyncJobRunner.scheduleImmediateRun(maxCount = 1)
 
@@ -85,17 +81,17 @@ class AsyncJobRunnerTest {
         asyncJobRunner.waitUntilNoRunningJobs()
         assertEquals(1, asyncJobRunner.getPendingJobCount())
 
-        val future = this.setAsyncJobCallback { _, msg -> msg }
+        val future = this.setAsyncJobCallback { msg -> msg }
         asyncJobRunner.scheduleImmediateRun(maxCount = 1)
         future.get(10, TimeUnit.SECONDS)
         asyncJobRunner.waitUntilNoRunningJobs()
     }
 
-    private fun <R> setAsyncJobCallback(f: (h: Handle, msg: NotifyDecisionCreated) -> R): Future<R> {
+    private fun <R> setAsyncJobCallback(f: (msg: NotifyDecisionCreated) -> R): Future<R> {
         val future = CompletableFuture<R>()
-        asyncJobRunner.notifyDecisionCreated = { h, msg ->
+        asyncJobRunner.notifyDecisionCreated = { msg ->
             try {
-                future.complete(f(h, msg))
+                future.complete(f(msg))
             } catch (t: Throwable) {
                 future.completeExceptionally(t)
                 throw t

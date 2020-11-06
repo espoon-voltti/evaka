@@ -9,14 +9,16 @@ import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.NotifyDecisionCreated
 import fi.espoo.evaka.shared.async.SendDecision
 import fi.espoo.evaka.shared.config.Roles
+import fi.espoo.evaka.shared.db.transaction
 import mu.KotlinLogging
-import org.jdbi.v3.core.Handle
+import org.jdbi.v3.core.Jdbi
 import org.springframework.stereotype.Component
 
 private val logger = KotlinLogging.logger {}
 
 @Component
 class DecisionMessageProcessor(
+    private val jdbi: Jdbi,
     private val asyncJobRunner: AsyncJobRunner,
     private val decisionService: DecisionService
 ) {
@@ -25,7 +27,7 @@ class DecisionMessageProcessor(
         asyncJobRunner.sendDecision = ::runSendJob
     }
 
-    fun runCreateJob(h: Handle, msg: NotifyDecisionCreated) {
+    fun runCreateJob(msg: NotifyDecisionCreated) = jdbi.transaction { h ->
         val user = msg.user
         val decisionId = msg.decisionId
 
@@ -40,7 +42,7 @@ class DecisionMessageProcessor(
         }
     }
 
-    fun runSendJob(h: Handle, msg: SendDecision) {
+    fun runSendJob(msg: SendDecision) = jdbi.transaction { h ->
         val decisionId = msg.decisionId
 
         decisionService.deliverDecisionToGuardians(h, decisionId)

@@ -30,8 +30,8 @@ class DvvModificationsService(
     private val fridgeFamilyService: FridgeFamilyService
 ) {
 
-    fun updatePersonsFromDvv(h: Handle, ssns: List<String>): Int {
-        return getDvvModifications(h, ssns).let { modificationsForPersons ->
+    fun updatePersonsFromDvv(ssns: List<String>): Int {
+        return jdbi.handle { getDvvModifications(it, ssns) }.let { modificationsForPersons ->
             modificationsForPersons.map { personModifications ->
                 personModifications.tietoryhmat.map { infoGroup ->
                     try {

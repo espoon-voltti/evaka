@@ -42,9 +42,8 @@ internal fun Handle.setUnitOids() {
 }
 
 internal class KoskiTester(private val jdbi: Jdbi, private val client: KoskiClient) {
-    fun triggerUploads(today: LocalDate, params: KoskiSearchParams = KoskiSearchParams()) = jdbi.handle {
-        it.getPendingStudyRights(today, params).forEach { request ->
-            client.uploadToKoski(it, UploadToKoski(request), today)
+    fun triggerUploads(today: LocalDate, params: KoskiSearchParams = KoskiSearchParams()) =
+        jdbi.handle { it.getPendingStudyRights(today, params) }.forEach { request ->
+            client.uploadToKoski(UploadToKoski(request), today)
         }
-    }
 }
