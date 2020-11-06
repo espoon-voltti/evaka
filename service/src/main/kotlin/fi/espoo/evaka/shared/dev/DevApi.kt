@@ -51,7 +51,6 @@ import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.config.Roles
 import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.db.transaction
-import fi.espoo.evaka.shared.db.withSpringHandle
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.ClosedPeriod
 import fi.espoo.evaka.shared.domain.Coordinate
@@ -113,7 +112,6 @@ private val fakeAdmin = AuthenticatedUser(
 class DevApi(
     private val jdbi: Jdbi,
     private val objectMapper: ObjectMapper,
-    private val dataSource: DataSource,
     private val personDao: PersonDAO,
     private val personService: PersonService,
     private val asyncJobRunner: AsyncJobRunner,
@@ -474,7 +472,7 @@ RETURNING id
         @PathVariable("application-id") applicationId: UUID,
         @RequestBody placementPlan: PlacementPlan
     ): ResponseEntity<Unit> {
-        withSpringHandle(dataSource) { h ->
+        jdbi.transaction { h ->
             val application = fetchApplicationDetails(h, applicationId)
                 ?: throw NotFound("application $applicationId not found")
             val preschoolDaycarePeriod = if (placementPlan.preschoolDaycarePeriodStart != null) ClosedPeriod(
