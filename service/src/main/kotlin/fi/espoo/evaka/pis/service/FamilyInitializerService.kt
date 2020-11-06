@@ -164,7 +164,9 @@ class FamilyInitializerService(
                 ?.let { personService.getOrCreatePerson(user, it, updateStale) }
                 ?.id
 
-            val otherGuardianId = personService.getOtherGuardian(user, guardianId, childId)?.let { it.id }
+            val otherGuardianId = withSpringHandle(dataSource) { h ->
+                personService.getOtherGuardian(h, user, guardianId, childId)?.id
+            }
 
             val fridgePartnerSSN = if (otherGuardianId != null && personService.personsLiveInTheSameAddress(
                 user,

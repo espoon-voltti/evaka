@@ -16,7 +16,6 @@ import fi.espoo.evaka.shared.auth.UserRole.SERVICE_WORKER
 import fi.espoo.evaka.shared.auth.UserRole.UNIT_SUPERVISOR
 import fi.espoo.evaka.shared.config.Roles
 import fi.espoo.evaka.shared.db.transaction
-import fi.espoo.evaka.shared.db.withSpringHandle
 import fi.espoo.evaka.shared.domain.Forbidden
 import org.jdbi.v3.core.Jdbi
 import org.springframework.http.MediaType
@@ -27,13 +26,11 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import java.util.UUID
-import javax.sql.DataSource
 
 @RestController
 @RequestMapping("/decisions2")
 class DecisionController(
     private val jdbi: Jdbi,
-    private val dataSource: DataSource,
     private val acl: AccessControlList,
     private val decisionService: DecisionService,
     private val decisionDraftService: DecisionDraftService,
@@ -46,7 +43,7 @@ class DecisionController(
     ): ResponseEntity<DecisionListResponse> {
         Audit.DecisionRead.log(targetId = guardianId)
         user.requireOneOfRoles(ADMIN, SERVICE_WORKER, FINANCE_ADMIN, UNIT_SUPERVISOR)
-        val decisions = decisionService.getDecisionsByGuardian(guardianId, acl.getAuthorizedUnits(user))
+        val decisions = jdbi.transaction { getDecisionsByGuardian(it, guardianId, acl.getAuthorizedUnits(user)) }
 
         return ResponseEntity.ok(DecisionListResponse(withPublicDocumentUri(decisions)))
     }
@@ -58,7 +55,7 @@ class DecisionController(
     ): ResponseEntity<DecisionListResponse> {
         Audit.DecisionRead.log(targetId = childId)
         user.requireOneOfRoles(ADMIN, SERVICE_WORKER, UNIT_SUPERVISOR)
-        val decisions = decisionService.getDecisionsByChild(childId, acl.getAuthorizedUnits(user))
+        val decisions = jdbi.transaction { getDecisionsByChild(it, childId, acl.getAuthorizedUnits(user)) }
 
         return ResponseEntity.ok(DecisionListResponse(withPublicDocumentUri(decisions)))
     }
@@ -70,7 +67,7 @@ class DecisionController(
     ): ResponseEntity<DecisionListResponse> {
         Audit.DecisionRead.log(targetId = applicationId)
         user.requireOneOfRoles(ADMIN, SERVICE_WORKER, UNIT_SUPERVISOR)
-        val decisions = decisionService.getDecisionsByApplication(applicationId, acl.getAuthorizedUnits(user))
+        val decisions = jdbi.transaction { getDecisionsByApplication(it, applicationId, acl.getAuthorizedUnits(user)) }
 
         return ResponseEntity.ok(DecisionListResponse(withPublicDocumentUri(decisions)))
     }
@@ -92,33 +89,36 @@ class DecisionController(
 
         val roles = acl.getRolesForDecision(user, decisionId)
         roles.requireOneOfRoles(Roles.SERVICE_WORKER, Roles.ADMIN, Roles.UNIT_SUPERVISOR, Roles.END_USER)
-        if (user.hasOneOfRoles(Roles.END_USER)) {
-            if (!decisionService.getDecisionsByGuardian(user.id, AclAuthorization.All).any { it.id == decisionId }) {
-                throw Forbidden("Access denied")
+
+        return jdbi.transaction { h ->
+            if (user.hasOneOfRoles(Roles.END_USER)) {
+                if (!getDecisionsByGuardian(h, user.id, AclAuthorization.All).any { it.id == decisionId }) {
+                    throw Forbidden("Access denied")
+                }
+                return@transaction getDecisionPdf(decisionId)
             }
-            return getDecisionPdf(decisionId)
+
+            val decision = getDecision(h, decisionId) ?: error("Cannot find decision for decision id '$decisionId'")
+            val application = fetchApplicationDetails(h, decision.applicationId)
+                ?: error("Cannot find application for decision id '$decisionId'")
+
+            val child = personService.getUpToDatePerson(
+                h,
+                user,
+                application.childId
+            ) ?: error("Cannot find user for child id '${application.childId}'")
+
+            val guardian = personService.getUpToDatePerson(
+                h,
+                user,
+                application.guardianId
+            ) ?: error("Cannot find user for guardian id '${application.guardianId}'")
+
+            if ((child.restrictedDetailsEnabled || guardian.restrictedDetailsEnabled) && !user.isAdmin())
+                throw Forbidden("Päätöksen alaisella henkilöllä on voimassa turvakielto. Osoitetietojen suojaamiseksi vain pääkäyttäjä voi ladata tämän päätöksen.")
+
+            getDecisionPdf(decisionId)
         }
-
-        val decision =
-            decisionService.getDecision(decisionId) ?: error("Cannot find decision for decision id '$decisionId'")
-
-        val application = withSpringHandle(dataSource) { h -> fetchApplicationDetails(h, decision.applicationId) }
-            ?: error("Cannot find application for decision id '$decisionId'")
-
-        val child = personService.getUpToDatePerson(
-            user,
-            application.childId
-        ) ?: error("Cannot find user for child id '${application.childId}'")
-
-        val guardian = personService.getUpToDatePerson(
-            user,
-            application.guardianId
-        ) ?: error("Cannot find user for guardian id '${application.guardianId}'")
-
-        if ((child.restrictedDetailsEnabled || guardian.restrictedDetailsEnabled) && !user.isAdmin())
-            throw Forbidden("Päätöksen alaisella henkilöllä on voimassa turvakielto. Osoitetietojen suojaamiseksi vain pääkäyttäjä voi ladata tämän päätöksen.")
-
-        return getDecisionPdf(decisionId)
     }
 
     private fun getDecisionPdf(decisionId: UUID): ResponseEntity<ByteArray> {

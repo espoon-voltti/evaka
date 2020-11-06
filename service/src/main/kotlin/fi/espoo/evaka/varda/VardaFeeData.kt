@@ -68,7 +68,7 @@ fun deleteEntriesFromDeletedPlacements(h: Handle, client: VardaClient) {
 fun updateEntriesFromModifiedPlacements(h: Handle, client: VardaClient, mapper: ObjectMapper, personService: PersonService) {
     getModifiedFeeData(h, mapper)
         .forEach { (vardaId, feeDataBase) ->
-            val feeData = baseToFeeData(feeDataBase, personService, client)
+            val feeData = baseToFeeData(h, feeDataBase, personService, client)
             if (feeData != null && client.updateFeeData(vardaId, feeData)) {
                 insertFeeDataUpload(h, feeDataBase, vardaId)
             }
@@ -83,7 +83,7 @@ fun uploadNewFeeData(
 ) {
     val feeData = getStaleFeeData(h, mapper)
     feeData.forEach { feeDataBase ->
-        val newFeeData = baseToFeeData(feeDataBase, personService, client)
+        val newFeeData = baseToFeeData(h, feeDataBase, personService, client)
         if (newFeeData != null) {
             val response = client.createFeeData(newFeeData)
             if (response != null) {
@@ -238,9 +238,9 @@ private val feeDataQueryBase =
             JOIN varda_child vc ON p.child_id = vc.person_id AND vc.oph_organizer_oid = u.oph_organizer_oid
     """.trimIndent()
 
-private fun baseToFeeData(feeDataBase: VardaFeeDataBase, personService: PersonService, client: VardaClient): VardaFeeData? {
+private fun baseToFeeData(h: Handle, feeDataBase: VardaFeeDataBase, personService: PersonService, client: VardaClient): VardaFeeData? {
     val guardians = personService
-        .getGuardians(AuthenticatedUser.anonymous, feeDataBase.evakaChildId)
+        .getGuardians(h, AuthenticatedUser.anonymous, feeDataBase.evakaChildId)
         .map { guardian ->
             VardaGuardian(
                 ssn = guardian.identity.toString(),

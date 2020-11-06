@@ -440,7 +440,9 @@ WHERE id = :unitId
         )
 
         applicationStateService.createPlacementPlan(
-            serviceWorker, applicationId,
+            h,
+            serviceWorker,
+            applicationId,
             DaycarePlacementPlan(
                 unitId = unit.id,
                 period = period,

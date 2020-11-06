@@ -5,39 +5,38 @@
 package fi.espoo.evaka.daycare.dao
 
 import fi.espoo.evaka.daycare.AbstractIntegrationTest
-import fi.espoo.evaka.daycare.service.AdditionalInformation
-import fi.espoo.evaka.daycare.service.Child
+import fi.espoo.evaka.daycare.controllers.AdditionalInformation
+import fi.espoo.evaka.daycare.controllers.Child
+import fi.espoo.evaka.daycare.createChild
+import fi.espoo.evaka.daycare.getChild
+import fi.espoo.evaka.daycare.updateChild
 import fi.espoo.evaka.shared.db.handle
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.springframework.beans.factory.annotation.Autowired
 import java.time.LocalDate
 import java.util.UUID.randomUUID
 
 class ChildDAOIntegrationTest : AbstractIntegrationTest() {
-    @Autowired
-    lateinit var childDAO: ChildDAO
-
     private val childId = randomUUID()
     private lateinit var child: Child
 
     @BeforeEach
     internal fun setUp() {
-        jdbi.handle {
-            it.execute("INSERT INTO person (id, date_of_birth) VALUES ('$childId', '${LocalDate.now().minusYears(1)}')")
-        }
-        child = childDAO.createChild(
-            Child(
-                id = childId,
-                additionalInformation = AdditionalInformation(
-                    allergies = "Pähkinäallergia",
-                    diet = "Kasvisruokavalio",
-                    additionalInfo = "Ei osaa solmia kengännauhoja"
+        jdbi.handle { h ->
+            h.execute("INSERT INTO person (id, date_of_birth) VALUES ('$childId', '${LocalDate.now().minusYears(1)}')")
+            child = h.createChild(
+                Child(
+                    id = childId,
+                    additionalInformation = AdditionalInformation(
+                        allergies = "Pähkinäallergia",
+                        diet = "Kasvisruokavalio",
+                        additionalInfo = "Ei osaa solmia kengännauhoja"
+                    )
                 )
             )
-        )
+        }
     }
 
     @AfterEach
@@ -47,7 +46,7 @@ class ChildDAOIntegrationTest : AbstractIntegrationTest() {
 
     @Test
     fun `add and fetch child data`() {
-        val fetchedChild = childDAO.getChild(childId)
+        val fetchedChild = jdbi.handle { it.getChild(childId) }
 
         assertEquals(child, fetchedChild)
     }
@@ -62,9 +61,9 @@ class ChildDAOIntegrationTest : AbstractIntegrationTest() {
             )
         )
 
-        childDAO.updateChild(updated)
+        jdbi.handle { it.updateChild(updated) }
 
-        val actual = childDAO.getChild(childId)
+        val actual = jdbi.handle { it.getChild(childId) }
         assertEquals(actual, updated)
     }
 }

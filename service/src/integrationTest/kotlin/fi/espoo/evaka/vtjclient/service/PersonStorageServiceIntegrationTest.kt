@@ -36,7 +36,7 @@ class PersonStorageServiceIntegrationTest : PureJdbiTest() {
     @Test
     fun `upsert new person with no children creates new person`() {
         val testGuardian = generatePerson(ssn = "130535-531K")
-        val personResult = service.upsertVtjPerson(PersonResult.Result(testGuardian))
+        val personResult = jdbi.handle { service.upsertVtjPerson(it, PersonResult.Result(testGuardian)) }
         assertTrue(personResult is PersonResult.Result)
         val createdPerson = (personResult as PersonResult.Result).vtjPersonDTO
         assertEquals(testGuardian.socialSecurityNumber, createdPerson.socialSecurityNumber)
@@ -46,9 +46,10 @@ class PersonStorageServiceIntegrationTest : PureJdbiTest() {
     @Test
     fun `upsert existing person with no children updates person`() {
         val testGuardian = generatePerson(ssn = "130535-531K")
-        service.upsertVtjPerson(PersonResult.Result(generatePerson(ssn = "130535-531K")))
-        val modifiedPersonResult =
-            service.upsertVtjPerson(PersonResult.Result(testGuardian.copy(streetAddress = "Modified")))
+        val modifiedPersonResult = jdbi.handle {
+            service.upsertVtjPerson(it, PersonResult.Result(testGuardian))
+            service.upsertVtjPerson(it, PersonResult.Result(testGuardian.copy(streetAddress = "Modified")))
+        }
 
         assertTrue(modifiedPersonResult is PersonResult.Result)
         val modifiedPerson = (modifiedPersonResult as PersonResult.Result).vtjPersonDTO

@@ -27,6 +27,7 @@ import fi.espoo.evaka.pis.service.PersonDTO
 import fi.espoo.evaka.pis.service.PersonService
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.config.Roles
+import org.jdbi.v3.core.Handle
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -49,6 +50,9 @@ class ClubApplicationSerializerTest {
     @Mock
     lateinit var personService: PersonService
 
+    @Mock
+    lateinit var handle: Handle
+
     @InjectMocks
     lateinit var serializer: ApplicationSerializer
 
@@ -68,7 +72,7 @@ class ClubApplicationSerializerTest {
     @Test
     fun toEnduserJSONFromClubApplication() {
         val user = AuthenticatedUser(requestingUserId, setOf(Roles.END_USER))
-        val clubJSON = serializer.serialize(user, mockEnduserClubApplication())
+        val clubJSON = serializer.serialize(handle, user, mockEnduserClubApplication())
         assertTrue(clubJSON.form is EnduserClubFormJSON)
     }
 
@@ -85,12 +89,12 @@ class ClubApplicationSerializerTest {
     fun `enduser serialized json matches expected`() {
         val user = AuthenticatedUser(requestingUserId, setOf(Roles.END_USER))
         val expectedApplication = mockEnduserClubApplication()
-        val applicationJson = serializer.serialize(user, expectedApplication)
+        val applicationJson = serializer.serialize(handle, user, expectedApplication)
         assertTrue(ReflectionEquals(mockEnduserClubFormJson(expectedApplication)).matches(applicationJson.form))
     }
 
     private fun mockPersonService(personId: UUID, restricted: Boolean = false) {
-        lenient().`when`(personService.getUpToDatePerson(any(), eq(personId))).thenReturn(
+        lenient().`when`(personService.getUpToDatePerson(any(), any(), eq(personId))).thenReturn(
             PersonDTO(
                 id = personId,
                 identity = ExternalIdentifier.NoID(),

@@ -83,7 +83,9 @@ class PersonController(
         @PathVariable(value = "personId") personId: VolttiIdentifier
     ): ResponseEntity<PersonJSON> {
         Audit.PersonDetailsRead.log(targetId = personId)
-        return personService.getUpToDatePerson(user, personId)
+        return jdbi.transaction {
+            personService.getUpToDatePerson(it, user, personId)
+        }
             ?.let { ResponseEntity.ok().body(PersonJSON.from(it)) }
             ?: ResponseEntity.notFound().build()
     }
@@ -107,7 +109,7 @@ class PersonController(
     ): ResponseEntity<List<PersonJSON>> {
         Audit.PersonGuardianRead.log(targetId = personId)
         user.requireOneOfRoles(SERVICE_WORKER, UNIT_SUPERVISOR, FINANCE_ADMIN, ADMIN)
-        return personService.getGuardians(user, personId)
+        return jdbi.transaction { personService.getGuardians(it, user, personId) }
             .let { ResponseEntity.ok().body(it.map { personDTO -> PersonJSON.from(personDTO) }) }
             ?: ResponseEntity.notFound().build()
     }
@@ -193,7 +195,7 @@ class PersonController(
         jdbi.handle { h ->
             personService.addSsn(h, user, personId, ExternalIdentifier.SSN.getInstance(body.ssn))
         }
-        val person = personService.getUpToDatePerson(user, personId)!!
+        val person = jdbi.handle { h -> personService.getUpToDatePerson(h, user, personId)!! }
         return ResponseEntity.ok(PersonJSON.from(person))
     }
 

@@ -5,9 +5,7 @@
 package fi.espoo.evaka.daycare.controllers
 
 import fi.espoo.evaka.daycare.AbstractIntegrationTest
-import fi.espoo.evaka.daycare.dao.ChildDAO
-import fi.espoo.evaka.daycare.service.AdditionalInformation
-import fi.espoo.evaka.daycare.service.Child
+import fi.espoo.evaka.daycare.createChild
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.endUser
 import fi.espoo.evaka.shared.auth.financeAdmin
@@ -29,28 +27,25 @@ class ChildrenControllerIntegrationTest : AbstractIntegrationTest() {
     @Autowired
     lateinit var childController: ChildController
 
-    @Autowired
-    lateinit var childDAO: ChildDAO
-
     private val childId = UUID.randomUUID()
 
     private lateinit var child: Child
 
     @BeforeEach
     internal fun setUp() {
-        jdbi.handle {
-            it.execute("INSERT INTO person (id, date_of_birth) VALUES ('$childId', '${LocalDate.now().minusYears(1)}')")
-        }
-        child = childDAO.createChild(
-            Child(
-                id = childId,
-                additionalInformation = AdditionalInformation(
-                    allergies = "dghsfhed",
-                    diet = "bcvxnvgmn",
-                    additionalInfo = "fjmhj"
+        jdbi.handle { h ->
+            h.execute("INSERT INTO person (id, date_of_birth) VALUES ('$childId', '${LocalDate.now().minusYears(1)}')")
+            child = h.createChild(
+                Child(
+                    id = childId,
+                    additionalInformation = AdditionalInformation(
+                        allergies = "dghsfhed",
+                        diet = "bcvxnvgmn",
+                        additionalInfo = "fjmhj"
+                    )
                 )
             )
-        )
+        }
     }
 
     @AfterEach

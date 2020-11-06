@@ -5,9 +5,12 @@
 package fi.espoo.evaka.placement
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.daycare.controllers.AdditionalInformation
+import fi.espoo.evaka.daycare.controllers.Child
 import fi.espoo.evaka.daycare.controllers.utils.noContent
 import fi.espoo.evaka.daycare.controllers.utils.ok
-import fi.espoo.evaka.daycare.service.ChildService
+import fi.espoo.evaka.daycare.createChild
+import fi.espoo.evaka.daycare.getChild
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.NotifyPlacementPlanApplied
 import fi.espoo.evaka.shared.auth.AccessControlList
@@ -18,15 +21,12 @@ import fi.espoo.evaka.shared.config.Roles.SERVICE_WORKER
 import fi.espoo.evaka.shared.config.Roles.STAFF
 import fi.espoo.evaka.shared.config.Roles.UNIT_SUPERVISOR
 import fi.espoo.evaka.shared.db.handle
-import fi.espoo.evaka.shared.db.runAfterCommit
 import fi.espoo.evaka.shared.db.transaction
-import fi.espoo.evaka.shared.db.withSpringHandle
 import fi.espoo.evaka.shared.domain.BadRequest
 import org.jdbi.v3.core.Jdbi
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller
-import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -38,18 +38,14 @@ import org.springframework.web.bind.annotation.RequestParam
 import java.net.URI
 import java.time.LocalDate
 import java.util.UUID
-import javax.sql.DataSource
 
 @Controller
 @RequestMapping("/placements")
 class PlacementController(
     private val acl: AccessControlList,
     private val placementService: PlacementService,
-    private val placementPlanService: PlacementPlanService,
-    private val childService: ChildService,
     private val asyncJobRunner: AsyncJobRunner,
-    private val jdbi: Jdbi,
-    private val dataSource: DataSource
+    private val jdbi: Jdbi
 ) {
     @GetMapping
     fun getPlacements(
@@ -99,11 +95,10 @@ class PlacementController(
         acl.getRolesForUnit(user, daycareId)
             .requireOneOfRoles(SERVICE_WORKER, FINANCE_ADMIN, UNIT_SUPERVISOR)
 
-        return placementPlanService.getPlacementPlansByUnit(daycareId, startDate, endDate).let(::ok)
+        return jdbi.transaction { getPlacementPlans(it, daycareId, startDate, endDate) }.let(::ok)
     }
 
     @PostMapping
-    @Transactional
     fun createPlacement(
         user: AuthenticatedUser,
         @RequestBody body: PlacementCreateRequestBody
@@ -114,20 +109,29 @@ class PlacementController(
 
         if (body.startDate > body.endDate) throw BadRequest("Placement start date cannot be after the end date")
 
-        childService.initEmptyIfNotExists(body.childId)
-        val placement = placementService.createPlacement(
-            type = body.type,
-            childId = body.childId,
-            unitId = body.unitId,
-            startDate = body.startDate,
-            endDate = body.endDate
-        )
+        val placement = jdbi.transaction { h ->
+            if (h.getChild(body.childId) == null) {
+                h.createChild(
+                    Child(
+                        id = body.childId,
+                        additionalInformation = AdditionalInformation()
+                    )
+                )
+            }
 
-        withSpringHandle(dataSource) {
-            asyncJobRunner.plan(it, listOf(NotifyPlacementPlanApplied(body.childId, body.startDate, body.endDate)))
+            val placement = placementService.createPlacement(
+                h = h,
+                type = body.type,
+                childId = body.childId,
+                unitId = body.unitId,
+                startDate = body.startDate,
+                endDate = body.endDate
+            )
+            asyncJobRunner.plan(h, listOf(NotifyPlacementPlanApplied(body.childId, body.startDate, body.endDate)))
+            placement
         }
-        runAfterCommit { asyncJobRunner.scheduleImmediateRun() }
 
+        asyncJobRunner.scheduleImmediateRun()
         return ResponseEntity.created(URI.create("/placements/${placement.id}")).body(placement)
     }
 
@@ -155,8 +159,8 @@ class PlacementController(
                 )
             )
         }
-        asyncJobRunner.scheduleImmediateRun()
 
+        asyncJobRunner.scheduleImmediateRun()
         return ResponseEntity.noContent().build()
     }
 
@@ -173,8 +177,8 @@ class PlacementController(
             val (childId, startDate, endDate) = h.cancelPlacement(placementId)
             asyncJobRunner.plan(h, listOf(NotifyPlacementPlanApplied(childId, startDate, endDate)))
         }
-        asyncJobRunner.scheduleImmediateRun()
 
+        asyncJobRunner.scheduleImmediateRun()
         return ResponseEntity.noContent().build()
     }
 

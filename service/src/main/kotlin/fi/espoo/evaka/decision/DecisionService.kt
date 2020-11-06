@@ -19,9 +19,7 @@ import fi.espoo.evaka.s3.DocumentService
 import fi.espoo.evaka.s3.DocumentWrapper
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.NotifyDecisionCreated
-import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.db.runAfterCommit
 import fi.espoo.evaka.shared.db.withSpringHandle
 import fi.espoo.evaka.shared.db.withSpringTx
 import fi.espoo.evaka.shared.domain.NotFound
@@ -56,42 +54,10 @@ class DecisionService(
     private val evakaMessageClient: IEvakaMessageClient,
     private val asyncJobRunner: AsyncJobRunner
 ) {
-    fun finalizeDecisions(user: AuthenticatedUser, applicationId: UUID, sendAsMessage: Boolean): List<UUID> =
-        withSpringTx(txManager) {
-            val decisionIds = withSpringHandle(dataSource) { h -> finalizeDecisions(h, applicationId) }
-
-            withSpringHandle(dataSource) {
-                asyncJobRunner.plan(it, decisionIds.map { NotifyDecisionCreated(it, user, sendAsMessage) })
-            }
-            runAfterCommit { asyncJobRunner.scheduleImmediateRun() }
-
-            decisionIds
-        }
-
-    fun markDecisionAccepted(user: AuthenticatedUser, decisionId: UUID, requestedStartDate: LocalDate) =
-        withSpringTx(txManager) {
-            withSpringHandle(dataSource, { h -> markDecisionAccepted(h, user, decisionId, requestedStartDate) })
-        }
-
-    fun markDecisionRejected(user: AuthenticatedUser, decisionId: UUID) = withSpringTx(txManager) {
-        withSpringHandle(dataSource, { h -> markDecisionRejected(h, user, decisionId) })
-    }
-
-    fun getDecision(decisionId: UUID): Decision? = withSpringTx(txManager) {
-        withSpringHandle(dataSource, { h -> getDecision(h, decisionId) })
-    }
-
-    fun getDecisionsByChild(childId: UUID, authorizedUnits: AclAuthorization): List<Decision> = withSpringTx(txManager) {
-        withSpringHandle(dataSource, { h -> getDecisionsByChild(h, childId, authorizedUnits) })
-    }
-
-    fun getDecisionsByApplication(applicationId: UUID, authorizedUnits: AclAuthorization = AclAuthorization.All): List<Decision> =
-        withSpringTx(txManager) {
-            withSpringHandle(dataSource, { h -> getDecisionsByApplication(h, applicationId, authorizedUnits) })
-        }
-
-    fun getDecisionsByGuardian(guardianId: UUID, authorizedUnits: AclAuthorization): List<Decision> = withSpringTx(txManager) {
-        withSpringHandle(dataSource, { h -> getDecisionsByGuardian(h, guardianId, authorizedUnits) })
+    fun finalizeDecisions(h: Handle, user: AuthenticatedUser, applicationId: UUID, sendAsMessage: Boolean): List<UUID> {
+        val decisionIds = finalizeDecisions(h, applicationId)
+        asyncJobRunner.plan(h, decisionIds.map { NotifyDecisionCreated(it, user, sendAsMessage) })
+        return decisionIds
     }
 
     fun createDecisionPdfs(

@@ -4,7 +4,7 @@
 
 package fi.espoo.evaka.daycare
 
-import fi.espoo.evaka.daycare.service.Child
+import fi.espoo.evaka.daycare.controllers.Child
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.mapTo
 import java.util.UUID

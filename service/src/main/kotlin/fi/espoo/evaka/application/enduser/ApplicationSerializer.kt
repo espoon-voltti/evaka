@@ -21,6 +21,7 @@ import fi.espoo.evaka.application.persistence.club.ClubFormV0
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
 import fi.espoo.evaka.pis.service.PersonService
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
+import org.jdbi.v3.core.Handle
 import org.springframework.stereotype.Component
 
 fun objectMapper(): ObjectMapper {
@@ -32,11 +33,12 @@ fun objectMapper(): ObjectMapper {
 @Component
 class ApplicationSerializer(private val personService: PersonService) {
     fun serialize(
+        h: Handle,
         user: AuthenticatedUser,
         application: ApplicationDetails,
         requireFreshPersonData: Boolean = true
     ): ApplicationJson {
-        val otherGuardian = if (requireFreshPersonData) personService.getOtherGuardian(user, application.guardianId, application.childId) else null
+        val otherGuardian = if (requireFreshPersonData) personService.getOtherGuardian(h, user, application.guardianId, application.childId) else null
         val guardiansLiveInSameAddress = if (otherGuardian != null && requireFreshPersonData) personService.personsLiveInTheSameAddress(
             user,
             application.guardianId,

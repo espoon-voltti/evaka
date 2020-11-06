@@ -38,21 +38,24 @@ class ApplicationControllerEnduser(
 ) {
 
     @PostMapping
-    fun createApplication(user: AuthenticatedUser, @RequestBody body: CreateApplicationEnduserRequest): ResponseEntity<UUID> {
+    fun createApplication(
+        user: AuthenticatedUser,
+        @RequestBody body: CreateApplicationEnduserRequest
+    ): ResponseEntity<UUID> {
         Audit.ApplicationCreate.log(targetId = user.id, objectId = body.childId)
         user.requireOneOfRoles(UserRole.END_USER)
 
-        val guardian = personService.getUpToDatePerson(user, user.id)
-            ?: throw NotFound("Guardian not found")
-        val child = personService.getUpToDatePerson(user, body.childId)
-            ?: throw NotFound("Child not found")
-        val type = when (body.type) {
-            ApplicationJsonType.CLUB -> ApplicationType.CLUB
-            ApplicationJsonType.DAYCARE -> ApplicationType.DAYCARE
-            ApplicationJsonType.PRESCHOOL -> ApplicationType.PRESCHOOL
-        }
-
         val id = jdbi.transaction { h ->
+            val guardian = personService.getUpToDatePerson(h, user, user.id)
+                ?: throw NotFound("Guardian not found")
+            val child = personService.getUpToDatePerson(h, user, body.childId)
+                ?: throw NotFound("Child not found")
+            val type = when (body.type) {
+                ApplicationJsonType.CLUB -> ApplicationType.CLUB
+                ApplicationJsonType.DAYCARE -> ApplicationType.DAYCARE
+                ApplicationJsonType.PRESCHOOL -> ApplicationType.PRESCHOOL
+            }
+
             if (duplicateApplicationExists(h, body.childId, user.id, type)) {
                 throw BadRequest("Duplicate application exsts")
             }
@@ -82,7 +85,7 @@ class ApplicationControllerEnduser(
         val applications = jdbi.transaction { h ->
             fetchOwnApplicationIds(h, user.id)
                 .mapNotNull { fetchApplicationDetails(h, it) }
-                .map { serializer.serialize(user, it) }
+                .map { serializer.serialize(h, user, it) }
         }
 
         return ResponseEntity.ok(applications)
@@ -96,10 +99,12 @@ class ApplicationControllerEnduser(
         Audit.ApplicationRead.log(targetId = applicationId)
         user.requireOneOfRoles(UserRole.END_USER)
 
-        val application = jdbi.transaction { h -> fetchApplicationDetails(h, applicationId) }
-            ?.takeIf { it.guardianId == user.id }
-            ?.let { serializer.serialize(user, it) }
-            ?: throw NotFound("Application $applicationId of guardian ${user.id} not found")
+        val application = jdbi.transaction { h ->
+            fetchApplicationDetails(h, applicationId)
+                ?.takeIf { it.guardianId == user.id }
+                ?.let { serializer.serialize(h, user, it) }
+                ?: throw NotFound("Application $applicationId of guardian ${user.id} not found")
+        }
 
         return ResponseEntity.ok(application)
     }
@@ -110,10 +115,15 @@ class ApplicationControllerEnduser(
         @PathVariable(value = "applicationId") applicationId: UUID,
         @RequestBody formJson: String
     ): ResponseEntity<ApplicationJson> {
+        Audit.ApplicationUpdate.log(targetId = applicationId)
+        user.requireOneOfRoles(UserRole.END_USER)
+
         val formV0 = serializer.deserialize(user, formJson)
-        val updatedApplication = applicationStateService
-            .updateOwnApplicationContents(user, applicationId, formV0)
-            .let { serializer.serialize(user, it) }
+        val updatedApplication = jdbi.transaction { h ->
+            applicationStateService
+                .updateOwnApplicationContents(h, user, applicationId, formV0)
+                .let { serializer.serialize(h, user, it) }
+        }
 
         return ResponseEntity.ok(updatedApplication)
     }
@@ -145,7 +155,7 @@ class ApplicationControllerEnduser(
         user: AuthenticatedUser,
         @PathVariable applicationId: UUID
     ): ResponseEntity<Unit> {
-        applicationStateService.sendApplication(user, applicationId, isEnduser = true)
+        jdbi.transaction { applicationStateService.sendApplication(it, user, applicationId, isEnduser = true) }
         return ResponseEntity.noContent().build()
     }
 
@@ -155,7 +165,16 @@ class ApplicationControllerEnduser(
         @PathVariable applicationId: UUID,
         @RequestBody body: AcceptDecisionRequest
     ): ResponseEntity<Unit> {
-        applicationStateService.acceptDecision(user, applicationId, body.decisionId, body.requestedStartDate, isEnduser = true)
+        jdbi.transaction {
+            applicationStateService.acceptDecision(
+                it,
+                user,
+                applicationId,
+                body.decisionId,
+                body.requestedStartDate,
+                isEnduser = true
+            )
+        }
         return ResponseEntity.noContent().build()
     }
 
@@ -165,7 +184,9 @@ class ApplicationControllerEnduser(
         @PathVariable applicationId: UUID,
         @RequestBody body: RejectDecisionRequest
     ): ResponseEntity<Unit> {
-        applicationStateService.rejectDecision(user, applicationId, body.decisionId, isEnduser = true)
+        jdbi.transaction {
+            applicationStateService.rejectDecision(it, user, applicationId, body.decisionId, isEnduser = true)
+        }
         return ResponseEntity.noContent().build()
     }
 }

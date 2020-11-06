@@ -10,16 +10,19 @@ import fi.espoo.evaka.decision.Decision
 import fi.espoo.evaka.decision.DecisionDraft
 import fi.espoo.evaka.decision.DecisionDraftService
 import fi.espoo.evaka.decision.DecisionUnit
+import fi.espoo.evaka.decision.fetchDecisionDrafts
 import fi.espoo.evaka.decision.getDecisionsByApplication
 import fi.espoo.evaka.identity.ExternalIdentifier
 import fi.espoo.evaka.invoicing.controller.parseUUID
 import fi.espoo.evaka.pis.controllers.CreatePersonBody
+import fi.espoo.evaka.pis.createPerson
 import fi.espoo.evaka.pis.service.PersonJSON
 import fi.espoo.evaka.pis.service.PersonService
 import fi.espoo.evaka.placement.PlacementPlanConfirmationStatus
 import fi.espoo.evaka.placement.PlacementPlanDraft
 import fi.espoo.evaka.placement.PlacementPlanRejectReason
 import fi.espoo.evaka.placement.PlacementPlanService
+import fi.espoo.evaka.placement.getPlacementPlanUnitName
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.config.Roles
@@ -31,7 +34,6 @@ import org.jdbi.v3.core.Jdbi
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
-import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -116,25 +118,26 @@ class ApplicationControllerV2(
         Audit.ApplicationCreate.log(targetId = body.guardianId, objectId = body.childId)
         user.requireOneOfRoles(Roles.SERVICE_WORKER, Roles.ADMIN)
 
-        val child = personService.getUpToDatePerson(user, body.childId)
-            ?: throw BadRequest("Could not find the child with id ${body.childId}")
-
-        val guardianId =
-            body.guardianId
-                ?: if (!body.guardianSsn.isNullOrEmpty())
-                    personService.getOrCreatePerson(
-                        user,
-                        ExternalIdentifier.SSN.getInstance(body.guardianSsn)
-                    )?.id ?: throw BadRequest("Could not find the guardian with ssn ${body.guardianSsn}")
-                else if (body.guardianToBeCreated != null)
-                    personService.createNoSsnPerson(body.guardianToBeCreated)
-                else
-                    throw BadRequest("Could not find guardian info from paper application request for ${body.childId}")
-
-        val guardian = personService.getUpToDatePerson(user, guardianId)
-            ?: throw BadRequest("Could not find the guardian with id $guardianId")
-
         val id = jdbi.transaction { h ->
+            val child = personService.getUpToDatePerson(h, user, body.childId)
+                ?: throw BadRequest("Could not find the child with id ${body.childId}")
+
+            val guardianId =
+                body.guardianId
+                    ?: if (!body.guardianSsn.isNullOrEmpty())
+                        personService.getOrCreatePerson(
+                            h,
+                            user,
+                            ExternalIdentifier.SSN.getInstance(body.guardianSsn)
+                        )?.id ?: throw BadRequest("Could not find the guardian with ssn ${body.guardianSsn}")
+                    else if (body.guardianToBeCreated != null)
+                        h.createPerson(body.guardianToBeCreated)
+                    else
+                        throw BadRequest("Could not find guardian info from paper application request for ${body.childId}")
+
+            val guardian = personService.getUpToDatePerson(h, user, guardianId)
+                ?: throw BadRequest("Could not find the guardian with id $guardianId")
+
             val id = insertApplication(
                 h = h,
                 guardianId = guardianId,
@@ -199,7 +202,8 @@ class ApplicationControllerV2(
                 units = units?.split(",")?.map { parseUUID(it) } ?: listOf(),
                 basis = basis?.split(",")?.map { ApplicationBasis.valueOf(it) } ?: listOf(),
                 type = type,
-                preschoolType = preschoolType?.split(",")?.map { ApplicationPreschoolTypeToggle.valueOf(it) } ?: listOf(),
+                preschoolType = preschoolType?.split(",")?.map { ApplicationPreschoolTypeToggle.valueOf(it) }
+                    ?: listOf(),
                 statuses = status?.split(",")?.map { ApplicationStatusOption.valueOf(it) } ?: listOf(),
                 dateType = dateType?.split(",")?.map { ApplicationDateType.valueOf(it) } ?: listOf(),
                 distinctions = distinctions?.split(",")?.map { ApplicationDistinctions.valueOf(it) } ?: listOf(),
@@ -212,7 +216,10 @@ class ApplicationControllerV2(
     }
 
     @GetMapping("/by-guardian/{guardianId}")
-    fun getGuardianApplicationSummaries(user: AuthenticatedUser, @PathVariable(value = "guardianId") guardianId: UUID): ResponseEntity<List<PersonApplicationSummary>> {
+    fun getGuardianApplicationSummaries(
+        user: AuthenticatedUser,
+        @PathVariable(value = "guardianId") guardianId: UUID
+    ): ResponseEntity<List<PersonApplicationSummary>> {
         Audit.ApplicationRead.log(targetId = guardianId)
         user.requireOneOfRoles(Roles.ADMIN, Roles.SERVICE_WORKER, Roles.FINANCE_ADMIN, Roles.UNIT_SUPERVISOR)
 
@@ -221,9 +228,13 @@ class ApplicationControllerV2(
     }
 
     @GetMapping("/by-child/{childId}")
-    fun getChildApplicationSummaries(user: AuthenticatedUser, @PathVariable(value = "childId") childId: UUID): ResponseEntity<List<PersonApplicationSummary>> {
+    fun getChildApplicationSummaries(
+        user: AuthenticatedUser,
+        @PathVariable(value = "childId") childId: UUID
+    ): ResponseEntity<List<PersonApplicationSummary>> {
         Audit.ApplicationRead.log(targetId = childId)
-        acl.getRolesForChild(user, childId).requireOneOfRoles(Roles.ADMIN, Roles.SERVICE_WORKER, Roles.FINANCE_ADMIN, Roles.UNIT_SUPERVISOR)
+        acl.getRolesForChild(user, childId)
+            .requireOneOfRoles(Roles.ADMIN, Roles.SERVICE_WORKER, Roles.FINANCE_ADMIN, Roles.UNIT_SUPERVISOR)
 
         return jdbi.transaction { h -> fetchApplicationSummariesForChild(h, childId) }
             .let { ResponseEntity.ok().body(it) }
@@ -239,20 +250,21 @@ class ApplicationControllerV2(
         acl.getRolesForApplication(user, applicationId)
             .requireOneOfRoles(Roles.ADMIN, Roles.FINANCE_ADMIN, Roles.SERVICE_WORKER, Roles.UNIT_SUPERVISOR)
 
-        val application = jdbi.transaction { h -> fetchApplicationDetails(h.setReadOnly(true), applicationId) }
-            ?: throw NotFound("Application $applicationId was not found")
+        return jdbi.transaction { h ->
+            val application = fetchApplicationDetails(h, applicationId)
+                ?: throw NotFound("Application $applicationId was not found")
+            val decisions = getDecisionsByApplication(h, applicationId, acl.getAuthorizedUnits(user))
+            val guardians =
+                personService.getGuardians(h, user, application.childId).map { personDTO -> PersonJSON.from(personDTO) }
 
-        val decisions = jdbi.transaction { h -> getDecisionsByApplication(h.setReadOnly(true), applicationId, acl.getAuthorizedUnits(user)) }
-
-        val guardians = personService.getGuardians(user, application.childId).map { personDTO -> PersonJSON.from(personDTO) }
-
-        return ResponseEntity.ok(
-            ApplicationResponse(
-                application = application,
-                decisions = decisions.map { it.copy(documentUri = null) },
-                guardians = guardians
+            ResponseEntity.ok(
+                ApplicationResponse(
+                    application = application,
+                    decisions = decisions.map { it.copy(documentUri = null) },
+                    guardians = guardians
+                )
             )
-        )
+        }
     }
 
     @PutMapping("/{applicationId}")
@@ -261,7 +273,7 @@ class ApplicationControllerV2(
         @PathVariable applicationId: UUID,
         @RequestBody applicationForm: ApplicationForm
     ): ResponseEntity<Unit> {
-        applicationStateService.updateApplicationContents(user, applicationId, applicationForm)
+        jdbi.transaction { applicationStateService.updateApplicationContents(it, user, applicationId, applicationForm) }
         return ResponseEntity.noContent().build()
     }
 
@@ -270,7 +282,7 @@ class ApplicationControllerV2(
         user: AuthenticatedUser,
         @PathVariable applicationId: UUID
     ): ResponseEntity<Unit> {
-        applicationStateService.sendApplication(user, applicationId)
+        jdbi.transaction { applicationStateService.sendApplication(it, user, applicationId) }
         return ResponseEntity.noContent().build()
     }
 
@@ -281,7 +293,8 @@ class ApplicationControllerV2(
     ): ResponseEntity<PlacementPlanDraft> {
         Audit.PlacementPlanDraftRead.log(targetId = applicationId)
         user.requireOneOfRoles(Roles.SERVICE_WORKER, Roles.ADMIN)
-        return placementPlanService.getPlacementPlanDraft(applicationId).let { ResponseEntity.ok(it) }
+        return jdbi.transaction { placementPlanService.getPlacementPlanDraft(it, applicationId) }
+            .let { ResponseEntity.ok(it) }
     }
 
     @GetMapping("/{applicationId}/decision-drafts")
@@ -296,9 +309,9 @@ class ApplicationControllerV2(
             val application = fetchApplicationDetails(h, applicationId)
                 ?: throw NotFound("Application $applicationId not found")
 
-            val placementUnitName = placementPlanService.getPlacementPlanUnitNameByApplication(applicationId)
+            val placementUnitName = getPlacementPlanUnitName(h, applicationId)
 
-            val decisionDrafts = decisionDraftService.getDecisionDrafts(h, applicationId)
+            val decisionDrafts = fetchDecisionDrafts(h, applicationId)
             val unit = decisionDraftService.getDecisionUnit(h, decisionDrafts[0].unitId)
 
             val applicationGuardian = personService.getUpToDatePerson(h, user, application.guardianId)
@@ -341,7 +354,6 @@ class ApplicationControllerV2(
     }
 
     @PutMapping("/{applicationId}/decision-drafts")
-    @Transactional
     fun updateDecisionDrafts(
         user: AuthenticatedUser,
         @PathVariable(value = "applicationId") applicationId: UUID,
@@ -355,12 +367,11 @@ class ApplicationControllerV2(
     }
 
     @PostMapping("/placement-proposals/{unitId}/accept")
-    @Transactional
     fun acceptPlacementProposal(
         user: AuthenticatedUser,
         @PathVariable(value = "unitId") unitId: UUID
     ): ResponseEntity<Unit> {
-        applicationStateService.acceptPlacementProposal(user, unitId)
+        jdbi.transaction { applicationStateService.acceptPlacementProposal(it, user, unitId) }
         return ResponseEntity.noContent().build()
     }
 
@@ -381,9 +392,10 @@ class ApplicationControllerV2(
             "confirm-decision-mailed" to applicationStateService::confirmDecisionMailed
         )
 
-        simpleBatchActions[action]
-            ?.let { applicationStateService.batchAction(user, body.applicationIds, it) }
-            ?: NotFound("Batch action not recognized")
+        val actionFn = simpleBatchActions[action] ?: throw NotFound("Batch action not recognized")
+        jdbi.transaction { h ->
+            body.applicationIds.forEach { applicationId -> actionFn.invoke(h, user, applicationId) }
+        }
 
         return ResponseEntity.noContent().build()
     }
@@ -394,7 +406,10 @@ class ApplicationControllerV2(
         @PathVariable applicationId: UUID,
         @RequestBody body: DaycarePlacementPlan
     ): ResponseEntity<Unit> {
-        applicationStateService.createPlacementPlan(user, applicationId, body)
+        Audit.PlacementPlanCreate.log(targetId = applicationId, objectId = body.unitId)
+        user.requireOneOfRoles(Roles.ADMIN, Roles.SERVICE_WORKER)
+
+        jdbi.transaction { applicationStateService.createPlacementPlan(it, user, applicationId, body) }
         return ResponseEntity.noContent().build()
     }
 
@@ -404,7 +419,16 @@ class ApplicationControllerV2(
         @PathVariable applicationId: UUID,
         @RequestBody body: PlacementProposalConfirmationUpdate
     ): ResponseEntity<Unit> {
-        applicationStateService.respondToPlacementProposal(user, applicationId, body.status, body.reason, body.otherReason)
+        jdbi.transaction {
+            applicationStateService.respondToPlacementProposal(
+                it,
+                user,
+                applicationId,
+                body.status,
+                body.reason,
+                body.otherReason
+            )
+        }
         return ResponseEntity.noContent().build()
     }
 
@@ -414,7 +438,9 @@ class ApplicationControllerV2(
         @PathVariable applicationId: UUID,
         @RequestBody body: AcceptDecisionRequest
     ): ResponseEntity<Unit> {
-        applicationStateService.acceptDecision(user, applicationId, body.decisionId, body.requestedStartDate)
+        jdbi.transaction {
+            applicationStateService.acceptDecision(it, user, applicationId, body.decisionId, body.requestedStartDate)
+        }
         return ResponseEntity.noContent().build()
     }
 
@@ -424,7 +450,7 @@ class ApplicationControllerV2(
         @PathVariable applicationId: UUID,
         @RequestBody body: RejectDecisionRequest
     ): ResponseEntity<Unit> {
-        applicationStateService.rejectDecision(user, applicationId, body.decisionId)
+        jdbi.transaction { applicationStateService.rejectDecision(it, user, applicationId, body.decisionId) }
         return ResponseEntity.noContent().build()
     }
 
@@ -448,7 +474,8 @@ class ApplicationControllerV2(
             "confirm-decision-mailed" to applicationStateService::confirmDecisionMailed
         )
 
-        simpleActions[action]?.invoke(user, applicationId) ?: NotFound("Action not recognized")
+        val actionFn = simpleActions[action] ?: throw NotFound("Action not recognized")
+        jdbi.transaction { actionFn.invoke(it, user, applicationId) }
         return ResponseEntity.noContent().build()
     }
 

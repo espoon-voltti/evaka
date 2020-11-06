@@ -510,14 +510,16 @@ RETURNING id
     fun upsertPerson(@RequestBody person: VtjPerson): ResponseEntity<Unit> {
         MockPersonDetailsService.upsertPerson(person)
         jdbi.handle { h ->
-            h.createQuery("SELECT id FROM person WHERE social_security_number = :ssn")
+            val uuid = h.createQuery("SELECT id FROM person WHERE social_security_number = :ssn")
                 .bind("ssn", person.socialSecurityNumber)
                 .mapTo<UUID>()
                 .firstOrNull()
-        }?.let { uuid ->
-            // Refresh Pis data by forcing refresh from VTJ
-            val dummyUser = AuthenticatedUser(uuid, setOf(Roles.SERVICE_WORKER))
-            personService.getUpToDatePerson(dummyUser, uuid)
+
+            uuid?.let {
+                // Refresh Pis data by forcing refresh from VTJ
+                val dummyUser = AuthenticatedUser(it, setOf(Roles.SERVICE_WORKER))
+                personService.getUpToDatePerson(h, dummyUser, it)
+            }
         }
         return ResponseEntity.noContent().build()
     }
@@ -561,8 +563,11 @@ RETURNING id
             "confirm-decision-mailed" to applicationStateService::confirmDecisionMailed
         )
 
-        jdbi.transaction { h -> ensureFakeAdminExists(h) }
-        simpleActions[action]?.invoke(fakeAdmin, applicationId) ?: NotFound("Action not recognized")
+        val actionFn = simpleActions[action] ?: throw NotFound("Action not recognized")
+        jdbi.transaction { h ->
+            ensureFakeAdminExists(h)
+            actionFn.invoke(h, fakeAdmin, applicationId)
+        }
         return ResponseEntity.noContent().build()
     }
 
@@ -571,8 +576,10 @@ RETURNING id
         @PathVariable applicationId: UUID,
         @RequestBody body: DaycarePlacementPlan
     ): ResponseEntity<Unit> {
-        jdbi.transaction { h -> ensureFakeAdminExists(h) }
-        applicationStateService.createPlacementPlan(fakeAdmin, applicationId, body)
+        jdbi.transaction { h ->
+            ensureFakeAdminExists(h)
+            applicationStateService.createPlacementPlan(h, fakeAdmin, applicationId, body)
+        }
         return ResponseEntity.noContent().build()
     }
 
@@ -580,16 +587,18 @@ RETURNING id
     fun createDefaultPlacementPlan(
         @PathVariable applicationId: UUID
     ): ResponseEntity<Unit> {
-        jdbi.transaction { h -> ensureFakeAdminExists(h) }
-        placementPlanService.getPlacementPlanDraft(applicationId)
-            .let {
-                DaycarePlacementPlan(
-                    unitId = it.preferredUnits.first().id,
-                    period = it.period,
-                    preschoolDaycarePeriod = it.preschoolDaycarePeriod
-                )
-            }
-            .let { applicationStateService.createPlacementPlan(fakeAdmin, applicationId, it) }
+        jdbi.transaction { h ->
+            ensureFakeAdminExists(h)
+            placementPlanService.getPlacementPlanDraft(h, applicationId)
+                .let {
+                    DaycarePlacementPlan(
+                        unitId = it.preferredUnits.first().id,
+                        period = it.period,
+                        preschoolDaycarePeriod = it.preschoolDaycarePeriod
+                    )
+                }
+                .let { applicationStateService.createPlacementPlan(h, fakeAdmin, applicationId, it) }
+        }
 
         return ResponseEntity.noContent().build()
     }
