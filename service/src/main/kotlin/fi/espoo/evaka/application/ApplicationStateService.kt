@@ -21,6 +21,7 @@ import fi.espoo.evaka.daycare.controllers.AdditionalInformation
 import fi.espoo.evaka.daycare.controllers.Child
 import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.daycare.getDaycare
+import fi.espoo.evaka.daycare.getDaycareApplyFlags
 import fi.espoo.evaka.daycare.service.DaycareService
 import fi.espoo.evaka.daycare.upsertChild
 import fi.espoo.evaka.decision.DecisionDraftService
@@ -98,7 +99,7 @@ class ApplicationStateService(
         }
 
         verifyStatus(application, CREATED)
-        validateApplication(application)
+        validateApplication(h, application)
 
         val applicationFlags = applicationFlags(h, application)
         updateApplicationFlags(h, application.id, applicationFlags)
@@ -573,14 +574,14 @@ class ApplicationStateService(
             throw BadRequest("Expected status to be one of [${statuses.joinToString(separator = ", ")}] but was ${application.status}")
     }
 
-    private fun validateApplication(application: ApplicationDetails) {
+    private fun validateApplication(h: Handle, application: ApplicationDetails) {
         val result = ValidationResult()
 
         val unitIds = application.form.preferences.preferredUnits.map { it.id }
         if (unitIds.isEmpty()) {
             result.add(ValidationError("form.preferences.preferredUnits", "Must have at least one preferred unit"))
         } else {
-            val daycares = daycareService.getDaycareApplyFlags(unitIds.toSet())
+            val daycares = h.getDaycareApplyFlags(unitIds.toSet())
             if (daycares.size < unitIds.toSet().size) {
                 result.add(ValidationError("form.preferences.preferredUnits", "Some unit was not found"))
             }
