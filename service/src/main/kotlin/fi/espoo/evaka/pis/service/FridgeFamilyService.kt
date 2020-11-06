@@ -62,7 +62,7 @@ class FridgeFamilyService(
 
             newChildrenInSameAddress.forEach { child ->
                 try {
-                    h.transaction { t ->
+                    jdbi.transaction { t ->
                         parentshipService.createParentship(
                             t,
                             childId = child.id,
