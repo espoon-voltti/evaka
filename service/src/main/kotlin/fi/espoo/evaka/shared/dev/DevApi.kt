@@ -37,12 +37,14 @@ import fi.espoo.evaka.invoicing.domain.FeeDecision
 import fi.espoo.evaka.invoicing.domain.Invoice
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecision
 import fi.espoo.evaka.pis.Employee
-import fi.espoo.evaka.pis.dao.PersonDAO
+import fi.espoo.evaka.pis.createPersonFromVtj
 import fi.espoo.evaka.pis.deleteEmployeeByAad
 import fi.espoo.evaka.pis.deleteEmployeeRolesByAad
 import fi.espoo.evaka.pis.getEmployees
+import fi.espoo.evaka.pis.getPersonBySSN
 import fi.espoo.evaka.pis.service.PersonDTO
 import fi.espoo.evaka.pis.service.PersonService
+import fi.espoo.evaka.pis.updatePersonFromVtj
 import fi.espoo.evaka.placement.PlacementPlanService
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.async.AsyncJobRunner
@@ -83,7 +85,6 @@ import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.time.ZoneId
 import java.util.UUID
-import javax.sql.DataSource
 
 @Profile("enable_dev_api")
 @Configuration
@@ -112,7 +113,6 @@ private val fakeAdmin = AuthenticatedUser(
 class DevApi(
     private val jdbi: Jdbi,
     private val objectMapper: ObjectMapper,
-    private val personDao: PersonDAO,
     private val personService: PersonService,
     private val asyncJobRunner: AsyncJobRunner,
     private val placementPlanService: PlacementPlanService,
@@ -320,25 +320,28 @@ RETURNING id
     @PostMapping("/person")
     fun upsertPerson(@RequestBody body: DevPerson): ResponseEntity<PersonDTO> {
         if (body.ssn == null) throw BadRequest("SSN is required for using this endpoint")
-        val person = personDao.getPersonByExternalId(ExternalIdentifier.SSN.getInstance(body.ssn))
+        return jdbi.transaction { h ->
+            val person = h.getPersonBySSN(body.ssn)
+            val personDTO = body.toPersonDTO()
 
-        val personDTO = body.toPersonDTO()
-
-        return if (person != null) {
-            personDao.updatePersonFromVtj(personDTO).let { ResponseEntity.ok(it) }
-        } else {
-            personDao.createPersonFromVtj(personDTO).let { ResponseEntity.ok(it) }
+            if (person != null) {
+                h.updatePersonFromVtj(personDTO).let { ResponseEntity.ok(it) }
+            } else {
+                h.createPersonFromVtj(personDTO).let { ResponseEntity.ok(it) }
+            }
         }
     }
 
     @PostMapping("/person/create")
     fun createPerson(@RequestBody body: DevPerson): ResponseEntity<UUID> {
-        val personId = jdbi.transaction { it.insertTestPerson(body) }
-        val dto = body.copy(id = personId).toPersonDTO()
-        if (dto.identity is ExternalIdentifier.SSN) {
-            personDao.updatePersonFromVtj(dto)
+        return jdbi.transaction { h ->
+            val personId = h.insertTestPerson(body)
+            val dto = body.copy(id = personId).toPersonDTO()
+            if (dto.identity is ExternalIdentifier.SSN) {
+                h.updatePersonFromVtj(dto)
+            }
+            ResponseEntity.ok(personId)
         }
-        return ResponseEntity.ok(personId)
     }
 
     @DeleteMapping("/person/{id}")

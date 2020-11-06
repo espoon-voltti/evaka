@@ -6,8 +6,9 @@ package fi.espoo.evaka.pis.service
 
 import fi.espoo.evaka.identity.ExternalIdentifier
 import fi.espoo.evaka.pis.AbstractIntegrationTest
-import fi.espoo.evaka.pis.dao.PersonDAO
+import fi.espoo.evaka.pis.createPerson
 import fi.espoo.evaka.shared.db.handle
+import fi.espoo.evaka.shared.db.transaction
 import fi.espoo.evaka.shared.domain.Conflict
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -17,9 +18,6 @@ import java.time.LocalDate
 class PartnershipServiceIntegrationTest : AbstractIntegrationTest() {
     @Autowired
     lateinit var partnershipService: PartnershipService
-
-    @Autowired
-    lateinit var personDAO: PersonDAO
 
     @Test
     fun `creating an overlapping partnership throws conflict`() = jdbi.handle { h ->
@@ -36,15 +34,17 @@ class PartnershipServiceIntegrationTest : AbstractIntegrationTest() {
     }
 
     private fun createPerson(ssn: String, firstName: String): PersonDTO {
-        return personDAO.getOrCreatePersonIdentity(
-            PersonIdentityRequest(
-                identity = ExternalIdentifier.SSN.getInstance(ssn),
-                firstName = firstName,
-                lastName = "Meikäläinen",
-                email = "",
-                language = "fi"
+        return jdbi.transaction {
+            it.createPerson(
+                PersonIdentityRequest(
+                    identity = ExternalIdentifier.SSN.getInstance(ssn),
+                    firstName = firstName,
+                    lastName = "Meikäläinen",
+                    email = "",
+                    language = "fi"
+                )
             )
-        )
+        }
     }
 
     private fun testPerson1() = createPerson("140881-172X", "Aku")

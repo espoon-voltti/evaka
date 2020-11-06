@@ -9,7 +9,11 @@ import fi.espoo.evaka.dvv.DvvModificationsBatchRefreshService
 import fi.espoo.evaka.identity.ExternalIdentifier
 import fi.espoo.evaka.identity.VolttiIdentifier
 import fi.espoo.evaka.identity.isValidSSN
+import fi.espoo.evaka.pis.createEmptyPerson
 import fi.espoo.evaka.pis.createPerson
+import fi.espoo.evaka.pis.getDeceasedPeople
+import fi.espoo.evaka.pis.getPersonBySSN
+import fi.espoo.evaka.pis.searchPeople
 import fi.espoo.evaka.pis.service.ContactInfo
 import fi.espoo.evaka.pis.service.MergeService
 import fi.espoo.evaka.pis.service.PersonDTO
@@ -56,8 +60,8 @@ class PersonController(
     @PostMapping("/identity")
     fun postPersonIdentity(@RequestBody person: PersonIdentityJSON): ResponseEntity<AuthenticatedUser> {
         Audit.PersonCreate.log()
-        return personService
-            .getOrCreatePersonIdentity(
+        return jdbi.transaction { h ->
+            h.getPersonBySSN(person.socialSecurityNumber) ?: h.createPerson(
                 PersonIdentityRequest(
                     identity = person.toIdentifier(),
                     firstName = person.firstName,
@@ -66,6 +70,7 @@ class PersonController(
                     language = person.language
                 )
             )
+        }
             .let { ResponseEntity.ok().body(AuthenticatedUser(it.id, setOf(END_USER))) }
     }
 
@@ -73,7 +78,7 @@ class PersonController(
     fun createEmpty(user: AuthenticatedUser): ResponseEntity<PersonIdentityResponseJSON> {
         Audit.PersonCreate.log()
         user.requireOneOfRoles(SERVICE_WORKER, FINANCE_ADMIN, ADMIN)
-        return personService.createEmpty()
+        return jdbi.transaction { it.createEmptyPerson() }
             .let { ResponseEntity.ok().body(PersonIdentityResponseJSON.from(it)) }
     }
 
@@ -97,7 +102,7 @@ class PersonController(
     ): ResponseEntity<List<PersonWithChildrenDTO>> {
         Audit.PersonDependantRead.log(targetId = personId)
         user.requireOneOfRoles(SERVICE_WORKER, UNIT_SUPERVISOR, FINANCE_ADMIN, ADMIN)
-        return personService.getUpToDatePersonWithChildren(user, personId)
+        return jdbi.transaction { personService.getUpToDatePersonWithChildren(it, user, personId) }
             ?.let { ResponseEntity.ok().body(it.children) }
             ?: ResponseEntity.notFound().build()
     }
@@ -134,11 +139,13 @@ class PersonController(
         user.requireOneOfRoles(SERVICE_WORKER, UNIT_SUPERVISOR, FINANCE_ADMIN)
         return ResponseEntity.ok()
             .body(
-                personService.findBySearchTerms(
-                    searchTerm,
-                    orderBy,
-                    sortDirection
-                ).map { personDTO -> PersonJSON.from(personDTO) }
+                jdbi.transaction {
+                    it.searchPeople(
+                        searchTerm,
+                        orderBy,
+                        sortDirection
+                    )
+                }.map { personDTO -> PersonJSON.from(personDTO) }
             )
     }
 
@@ -150,7 +157,7 @@ class PersonController(
     ): ResponseEntity<ContactInfo> {
         Audit.PersonContactInfoUpdate.log(targetId = personId)
         user.requireOneOfRoles(SERVICE_WORKER, UNIT_SUPERVISOR, FINANCE_ADMIN)
-        return if (personService.updateEndUsersContactInfo(personId, contactInfo)) {
+        return if (jdbi.transaction { personService.updateEndUsersContactInfo(it, personId, contactInfo) }) {
             ResponseEntity.ok().body(contactInfo)
         } else {
             ResponseEntity.notFound().build()
@@ -165,7 +172,7 @@ class PersonController(
     ): ResponseEntity<PersonJSON> {
         Audit.PersonUpdate.log(targetId = personId)
         user.requireOneOfRoles(SERVICE_WORKER, UNIT_SUPERVISOR, FINANCE_ADMIN)
-        return personService.patchUserDetails(personId, data).let { ResponseEntity.ok(PersonJSON.from(it)) }
+        return jdbi.transaction { personService.patchUserDetails(it, personId, data) }.let { ResponseEntity.ok(PersonJSON.from(it)) }
     }
 
     @DeleteMapping("/{personId}")
@@ -213,7 +220,7 @@ class PersonController(
         val person = if (readonly) {
             personService.getPersonFromVTJ(user, ExternalIdentifier.SSN.getInstance(ssn))
         } else {
-            personService.getOrCreatePerson(user, ExternalIdentifier.SSN.getInstance(ssn))
+            jdbi.transaction { h -> personService.getOrCreatePerson(h, user, ExternalIdentifier.SSN.getInstance(ssn)) }
         }
 
         return person
@@ -245,7 +252,7 @@ class PersonController(
 
         return ResponseEntity.ok()
             .body(
-                personService.getDeceased(sinceDate).map { personDTO -> PersonJSON.from(personDTO) }
+                jdbi.transaction { it.getDeceasedPeople(sinceDate) }.map { personDTO -> PersonJSON.from(personDTO) }
             )
     }
 

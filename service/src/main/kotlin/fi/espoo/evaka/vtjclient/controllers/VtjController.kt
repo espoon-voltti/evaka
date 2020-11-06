@@ -12,6 +12,7 @@ import fi.espoo.evaka.pis.service.PersonService
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.getEnum
 import fi.espoo.evaka.shared.db.getUUID
+import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.db.withSpringHandle
 import fi.espoo.evaka.shared.db.withSpringTx
 import fi.espoo.evaka.shared.domain.ClosedPeriod
@@ -22,6 +23,7 @@ import fi.espoo.evaka.vtjclient.dto.VtjPersonDTO
 import fi.espoo.evaka.vtjclient.service.persondetails.PersonStorageService
 import fi.espoo.evaka.vtjclient.usecases.dto.PersonResult
 import mu.KotlinLogging
+import org.jdbi.v3.core.Jdbi
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.AccessDeniedException
@@ -43,6 +45,7 @@ class UseCaseDeniedException : AccessDeniedException("Use case not allowed for c
 class VtjController(
     private val personStorageService: PersonStorageService,
     private val personService: PersonService,
+    private val jdbi: Jdbi,
     private val txManager: PlatformTransactionManager,
     private val dataSource: DataSource
 ) {
@@ -80,7 +83,7 @@ class VtjController(
     }
 
     private fun personResult(user: AuthenticatedUser, personId: VolttiIdentifier): PersonResult {
-        val guardianResult = personService.getPerson(personId)
+        val guardianResult = jdbi.handle { personService.getPerson(it, personId) }
             ?.let { person ->
                 when (person.identity) {
                     is ExternalIdentifier.NoID -> mapPisPerson(person)

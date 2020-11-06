@@ -8,13 +8,14 @@ import fi.espoo.evaka.identity.ExternalIdentifier
 import fi.espoo.evaka.pis.AbstractIntegrationTest
 import fi.espoo.evaka.pis.controllers.PartnershipsController
 import fi.espoo.evaka.pis.createPartnership
-import fi.espoo.evaka.pis.dao.PersonDAO
+import fi.espoo.evaka.pis.createPerson
 import fi.espoo.evaka.pis.getPartnershipsForPerson
 import fi.espoo.evaka.pis.service.PersonIdentityRequest
 import fi.espoo.evaka.pis.service.PersonJSON
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.config.Roles
 import fi.espoo.evaka.shared.db.handle
+import fi.espoo.evaka.shared.db.transaction
 import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.shared.domain.Forbidden
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -29,9 +30,6 @@ import java.util.UUID
 class PartnershipsControllerIntegrationTest : AbstractIntegrationTest() {
     @Autowired
     lateinit var controller: PartnershipsController
-
-    @Autowired
-    lateinit var personDAO: PersonDAO
 
     @Test
     fun `service worker can create and fetch partnerships`() {
@@ -206,8 +204,8 @@ class PartnershipsControllerIntegrationTest : AbstractIntegrationTest() {
         }
     }
 
-    private fun createPerson(ssn: String, firstName: String): PersonJSON {
-        return personDAO.getOrCreatePersonIdentity(
+    private fun createPerson(ssn: String, firstName: String): PersonJSON = jdbi.transaction { h ->
+        h.createPerson(
             PersonIdentityRequest(
                 identity = ExternalIdentifier.SSN.getInstance(ssn),
                 firstName = firstName,

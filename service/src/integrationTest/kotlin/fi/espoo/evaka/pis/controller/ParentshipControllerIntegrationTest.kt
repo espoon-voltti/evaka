@@ -8,13 +8,14 @@ import fi.espoo.evaka.identity.ExternalIdentifier
 import fi.espoo.evaka.pis.AbstractIntegrationTest
 import fi.espoo.evaka.pis.controllers.ParentshipController
 import fi.espoo.evaka.pis.createParentship
-import fi.espoo.evaka.pis.dao.PersonDAO
+import fi.espoo.evaka.pis.createPerson
 import fi.espoo.evaka.pis.getParentships
 import fi.espoo.evaka.pis.service.PersonIdentityRequest
 import fi.espoo.evaka.pis.service.PersonJSON
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.config.Roles
 import fi.espoo.evaka.shared.db.handle
+import fi.espoo.evaka.shared.db.transaction
 import fi.espoo.evaka.shared.domain.Forbidden
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
@@ -28,9 +29,6 @@ import java.util.UUID
 class ParentshipControllerIntegrationTest : AbstractIntegrationTest() {
     @Autowired
     lateinit var controller: ParentshipController
-
-    @Autowired
-    lateinit var personDAO: PersonDAO
 
     @Test
     fun `service worker can create and fetch parentships`() {
@@ -223,8 +221,8 @@ class ParentshipControllerIntegrationTest : AbstractIntegrationTest() {
         }
     }
 
-    private fun createPerson(ssn: String, firstName: String): PersonJSON {
-        return personDAO.getOrCreatePersonIdentity(
+    private fun createPerson(ssn: String, firstName: String): PersonJSON = jdbi.transaction { h ->
+        h.createPerson(
             PersonIdentityRequest(
                 identity = ExternalIdentifier.SSN.getInstance(ssn),
                 firstName = firstName,

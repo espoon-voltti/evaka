@@ -7,20 +7,18 @@ package fi.espoo.evaka.pis.dao
 import fi.espoo.evaka.identity.ExternalIdentifier
 import fi.espoo.evaka.pis.AbstractIntegrationTest
 import fi.espoo.evaka.pis.createPartnership
+import fi.espoo.evaka.pis.createPerson
 import fi.espoo.evaka.pis.getPartnershipsForPerson
 import fi.espoo.evaka.pis.service.PersonDTO
 import fi.espoo.evaka.pis.service.PersonIdentityRequest
 import fi.espoo.evaka.shared.db.handle
+import fi.espoo.evaka.shared.db.transaction
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Test
-import org.springframework.beans.factory.annotation.Autowired
 import java.time.LocalDate
 
 class PartnershipDAOIntegrationTest : AbstractIntegrationTest() {
-    @Autowired
-    lateinit var personDAO: PersonDAO
-
     @Test
     fun `test creating partnership`() = jdbi.handle { h ->
         val person1 = testPerson1()
@@ -72,15 +70,17 @@ class PartnershipDAOIntegrationTest : AbstractIntegrationTest() {
     }
 
     private fun createPerson(ssn: String, firstName: String): PersonDTO {
-        return personDAO.getOrCreatePersonIdentity(
-            PersonIdentityRequest(
-                identity = ExternalIdentifier.SSN.getInstance(ssn),
-                firstName = firstName,
-                lastName = "Meikäläinen",
-                email = "${firstName.toLowerCase()}.meikalainen@example.com",
-                language = "fi"
+        return jdbi.transaction {
+            it.createPerson(
+                PersonIdentityRequest(
+                    identity = ExternalIdentifier.SSN.getInstance(ssn),
+                    firstName = firstName,
+                    lastName = "Meikäläinen",
+                    email = "${firstName.toLowerCase()}.meikalainen@example.com",
+                    language = "fi"
+                )
             )
-        )
+        }
     }
 
     private fun testPerson1() = createPerson("140881-172X", "Aku")
