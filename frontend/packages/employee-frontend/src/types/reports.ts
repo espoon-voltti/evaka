@@ -313,3 +313,14 @@ export interface StartingPlacementsRow {
   ssn?: string
   placementStart: LocalDate
 }
+
+export interface VoucherServiceProviderRow {
+  careAreaName: string
+  unitId: UUID
+  unitName: string
+  voucherChildCount: number
+  voucherSum: number
+  startDate: LocalDate
+  endDate: LocalDate
+  unitVoucherReportUri: string
+}

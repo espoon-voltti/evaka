@@ -376,6 +376,23 @@ function Reports() {
                 <RoundIcon
                   size="L"
                   color={EspooColours.bluePrimary}
+                  content={faDiagnoses}
+                />
+                <LinkTitle to="/reports/voucher-service-providers">
+                  {i18n.reports.voucherServiceProviders.title}
+                </LinkTitle>
+              </TitleRow>
+              <Description>
+                {i18n.reports.voucherServiceProviders.description}
+              </Description>
+            </ReportItem>
+          </RequireRole>
+          <RequireRole oneOf={['ADMIN', 'DIRECTOR']}>
+            <ReportItem>
+              <TitleRow>
+                <RoundIcon
+                  size="L"
+                  color={EspooColours.bluePrimary}
                   content={faDatabase}
                 />
                 <LinkTitle to="/reports/raw">
