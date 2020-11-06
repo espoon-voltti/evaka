@@ -23,9 +23,6 @@ import org.jdbi.v3.core.Jdbi
 import org.springframework.boot.test.context.TestConfiguration
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.PropertySource
-import org.springframework.jdbc.datasource.DataSourceTransactionManager
-import org.springframework.transaction.PlatformTransactionManager
-import org.springframework.transaction.annotation.EnableTransactionManagement
 import redis.clients.jedis.JedisPool
 import javax.sql.DataSource
 
@@ -80,7 +77,6 @@ fun getTestDataSource(): TestDataSource = synchronized(globalLock) {
 
 val mockS3Bucket = "test-bucket"
 
-@EnableTransactionManagement
 @TestConfiguration
 @PropertySource("classpath:integration-test-common.properties")
 class SharedIntegrationTestConfig {
@@ -88,17 +84,10 @@ class SharedIntegrationTestConfig {
     fun jdbi(dataSource: DataSource) = configureJdbi(Jdbi.create(dataSource))
 
     @Bean
-    fun asyncJobRunner(
-        jdbi: Jdbi,
-        dataSource: DataSource,
-        platformTransactionManager: PlatformTransactionManager
-    ) = AsyncJobRunner(jdbi, syncMode = true)
+    fun asyncJobRunner(jdbi: Jdbi, dataSource: DataSource) = AsyncJobRunner(jdbi, syncMode = true)
 
     @Bean
     fun dataSource(): DataSource = getTestDataSource()
-
-    @Bean
-    fun txManager(dataSource: DataSource): PlatformTransactionManager = DataSourceTransactionManager(dataSource)
 
     @Bean
     fun redisPool(): JedisPool =
