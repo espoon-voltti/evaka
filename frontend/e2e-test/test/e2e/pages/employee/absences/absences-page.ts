@@ -94,6 +94,11 @@ export default class AbsencesPage {
 
     await t.click(this.btnAddAbsence)
     await t.click(Selector(`#${type}`, { timeout: 50 }))
+    await t.click(
+      Selector('[data-qa="absences-select-caretype-BILLABLE"]', {
+        timeout: 200
+      })
+    )
     await t.expect(this.checkboxBillable.checked).eql(true)
     await t.click(this.btnSaveAbsence)
   }

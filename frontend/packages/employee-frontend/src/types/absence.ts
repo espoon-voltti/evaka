@@ -30,7 +30,7 @@ export const AbsenceTypes: AbsenceType[] = [
 ]
 
 export const defaultAbsenceType = 'SICKLEAVE'
-export const defaultCareTypeCategory: CareTypeCategory[] = ['BILLABLE']
+export const defaultCareTypeCategory: CareTypeCategory[] = []
 
 export type CareType =
   | 'PRESCHOOL'
