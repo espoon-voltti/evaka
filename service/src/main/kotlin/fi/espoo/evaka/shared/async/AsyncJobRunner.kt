@@ -151,13 +151,11 @@ class AsyncJobRunner(
     }
 
     private fun runPendingJobs(maxCount: Int) {
-        jdbi.handle { h ->
-            var remaining = maxCount
-            do {
-                val job = h.transaction { tx -> claimJob(tx) }?.also(this::runPendingJob)
-                remaining -= 1
-            } while (job != null && remaining > 0)
-        }
+        var remaining = maxCount
+        do {
+            val job = jdbi.transaction { tx -> claimJob(tx) }?.also(this::runPendingJob)
+            remaining -= 1
+        } while (job != null && remaining > 0)
     }
 
     private fun runPendingJob(job: ClaimedJobRef) {
