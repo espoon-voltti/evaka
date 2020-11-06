@@ -26,7 +26,7 @@ private const val threadPoolSize = 1
 private const val defaultRetryCount = 24 * 60 / 5 // 24h when used with default 5 minute retry interval
 private val defaultRetryInterval = Duration.ofMinutes(5)
 
-private val noHandler = { _: Handle, msg: Any -> logger.warn("No job handler configured for $msg") }
+private val noHandler = { msg: Any -> logger.warn("No job handler configured for $msg") }
 
 class AsyncJobRunner(
     private val jdbi: Jdbi,
@@ -37,53 +37,53 @@ class AsyncJobRunner(
     private val runningCount: AtomicInteger = AtomicInteger(0)
 
     @Volatile
-    var notifyPlacementPlanApplied: (h: Handle, msg: NotifyPlacementPlanApplied) -> Unit = noHandler
+    var notifyPlacementPlanApplied: (msg: NotifyPlacementPlanApplied) -> Unit = noHandler
 
     @Volatile
-    var notifyServiceNeedUpdated: (h: Handle, msg: NotifyServiceNeedUpdated) -> Unit = noHandler
+    var notifyServiceNeedUpdated: (msg: NotifyServiceNeedUpdated) -> Unit = noHandler
 
     @Volatile
-    var notifyFamilyUpdated: (h: Handle, msg: NotifyFamilyUpdated) -> Unit = noHandler
+    var notifyFamilyUpdated: (msg: NotifyFamilyUpdated) -> Unit = noHandler
 
     @Volatile
-    var notifyFeeAlterationUpdated: (h: Handle, msg: NotifyFeeAlterationUpdated) -> Unit = noHandler
+    var notifyFeeAlterationUpdated: (msg: NotifyFeeAlterationUpdated) -> Unit = noHandler
 
     @Volatile
-    var notifyIncomeUpdated: (h: Handle, msg: NotifyIncomeUpdated) -> Unit = noHandler
+    var notifyIncomeUpdated: (msg: NotifyIncomeUpdated) -> Unit = noHandler
 
     @Volatile
-    var notifyDecisionCreated: (h: Handle, msg: NotifyDecisionCreated) -> Unit = noHandler
+    var notifyDecisionCreated: (msg: NotifyDecisionCreated) -> Unit = noHandler
 
     @Volatile
-    var sendDecision: (h: Handle, msg: SendDecision) -> Unit = noHandler
+    var sendDecision: (msg: SendDecision) -> Unit = noHandler
 
     @Volatile
-    var notifyFeeDecisionApproved: (h: Handle, msg: NotifyFeeDecisionApproved) -> Unit = noHandler
+    var notifyFeeDecisionApproved: (msg: NotifyFeeDecisionApproved) -> Unit = noHandler
 
     @Volatile
-    var notifyFeeDecisionPdfGenerated: (h: Handle, msg: NotifyFeeDecisionPdfGenerated) -> Unit = noHandler
+    var notifyFeeDecisionPdfGenerated: (msg: NotifyFeeDecisionPdfGenerated) -> Unit = noHandler
 
     @Volatile
-    var notifyVoucherValueDecisionApproved: (h: Handle, msg: NotifyVoucherValueDecisionApproved) -> Unit = noHandler
+    var notifyVoucherValueDecisionApproved: (msg: NotifyVoucherValueDecisionApproved) -> Unit = noHandler
 
     @Volatile
-    var notifyVoucherValueDecisionPdfGenerated: (h: Handle, msg: NotifyVoucherValueDecisionPdfGenerated) -> Unit =
+    var notifyVoucherValueDecisionPdfGenerated: (msg: NotifyVoucherValueDecisionPdfGenerated) -> Unit =
         noHandler
 
     @Volatile
-    var initializeFamilyFromApplication: (h: Handle, msg: InitializeFamilyFromApplication) -> Unit = noHandler
+    var initializeFamilyFromApplication: (msg: InitializeFamilyFromApplication) -> Unit = noHandler
 
     @Volatile
-    var vtjRefresh: (h: Handle, msg: VTJRefresh) -> Unit = noHandler
+    var vtjRefresh: (msg: VTJRefresh) -> Unit = noHandler
 
     @Volatile
-    var dvvModificationsRefresh: (h: Handle, msg: DvvModificationsRefresh) -> Unit = noHandler
+    var dvvModificationsRefresh: (msg: DvvModificationsRefresh) -> Unit = noHandler
 
     @Volatile
-    var uploadToKoski: (h: Handle, msg: UploadToKoski) -> Unit = noHandler
+    var uploadToKoski: (msg: UploadToKoski) -> Unit = noHandler
 
     @Volatile
-    var sendApplicationEmail: (h: Handle, msg: SendApplicationEmail) -> Unit = noHandler
+    var sendApplicationEmail: (msg: SendApplicationEmail) -> Unit = noHandler
 
     fun plan(
         h: Handle,
@@ -151,13 +151,11 @@ class AsyncJobRunner(
     }
 
     private fun runPendingJobs(maxCount: Int) {
-        jdbi.handle { h ->
-            var remaining = maxCount
-            do {
-                val job = h.transaction { tx -> claimJob(tx) }?.also(this::runPendingJob)
-                remaining -= 1
-            } while (job != null && remaining > 0)
-        }
+        var remaining = maxCount
+        do {
+            val job = jdbi.transaction { tx -> claimJob(tx) }?.also(this::runPendingJob)
+            remaining -= 1
+        } while (job != null && remaining > 0)
     }
 
     private fun runPendingJob(job: ClaimedJobRef) {
@@ -201,11 +199,11 @@ class AsyncJobRunner(
         }
     }
 
-    private inline fun <reified T : AsyncJobPayload> runJob(job: ClaimedJobRef, crossinline f: (h: Handle, msg: T) -> Unit) =
+    private inline fun <reified T : AsyncJobPayload> runJob(job: ClaimedJobRef, crossinline f: (msg: T) -> Unit) =
         jdbi.transaction { h ->
             startJob(h, job, T::class.java)?.let { msg ->
                 msg.user?.let { MdcKey.USER_ID.set(it.id.toString()) }
-                f(h, msg)
+                f(msg)
                 completeJob(h, job)
                 true
             } ?: false

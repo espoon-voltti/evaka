@@ -17,6 +17,7 @@ import fi.espoo.evaka.shared.db.withSpringHandle
 import fi.espoo.evaka.shared.db.withSpringTx
 import mu.KotlinLogging
 import org.jdbi.v3.core.Handle
+import org.jdbi.v3.core.Jdbi
 import org.springframework.stereotype.Service
 import org.springframework.transaction.PlatformTransactionManager
 import java.time.LocalDate
@@ -30,6 +31,7 @@ class FamilyInitializerService(
     private val partnershipService: PartnershipService,
     private val txm: PlatformTransactionManager,
     private val dataSource: DataSource,
+    private val jdbi: Jdbi,
     private val asyncJobRunner: AsyncJobRunner,
     private val jackson: ObjectMapper
 ) {
@@ -39,7 +41,7 @@ class FamilyInitializerService(
         asyncJobRunner.initializeFamilyFromApplication = ::handleInitializeFamilyFromApplication
     }
 
-    fun handleInitializeFamilyFromApplication(h: Handle, msg: InitializeFamilyFromApplication) {
+    fun handleInitializeFamilyFromApplication(msg: InitializeFamilyFromApplication) = jdbi.transaction { h ->
         val user = msg.user
         val daycareForm = getForm(h, msg.applicationId)
         if (daycareForm != null) {

@@ -7,23 +7,23 @@ package fi.espoo.evaka.emailclient
 import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.SendApplicationEmail
-import org.jdbi.v3.core.Handle
+import fi.espoo.evaka.shared.db.handle
+import org.jdbi.v3.core.Jdbi
 import org.springframework.stereotype.Component
-import javax.sql.DataSource
 
 @Component
 class EmailAsyncJobs(
     asyncJobRunner: AsyncJobRunner,
     private val emailClient: IEmailClient,
-    private val dataSource: DataSource
+    private val jdbi: Jdbi
 ) {
 
     init {
         asyncJobRunner.sendApplicationEmail = ::runSendApplicationEmail
     }
 
-    private fun runSendApplicationEmail(h: Handle, msg: SendApplicationEmail) {
-        val guardian = h.getPersonById(msg.guardianId)
+    private fun runSendApplicationEmail(msg: SendApplicationEmail) {
+        val guardian = jdbi.handle { it.getPersonById(msg.guardianId) }
             ?: throw Exception("Didn't find guardian when sending application email (guardianId: ${msg.guardianId})")
         emailClient.sendApplicationEmail(guardian.id, guardian.email, msg.language)
     }

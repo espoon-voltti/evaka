@@ -11,8 +11,9 @@ import fi.espoo.evaka.shared.async.NotifyFeeDecisionApproved
 import fi.espoo.evaka.shared.async.NotifyFeeDecisionPdfGenerated
 import fi.espoo.evaka.shared.async.NotifyVoucherValueDecisionApproved
 import fi.espoo.evaka.shared.async.NotifyVoucherValueDecisionPdfGenerated
+import fi.espoo.evaka.shared.db.transaction
 import mu.KotlinLogging
-import org.jdbi.v3.core.Handle
+import org.jdbi.v3.core.Jdbi
 import org.springframework.stereotype.Component
 
 private val logger = KotlinLogging.logger {}
@@ -21,6 +22,7 @@ private val logger = KotlinLogging.logger {}
 class InvoicingAsyncJobs(
     private val feeService: FeeDecisionService,
     private val valueDecisionService: VoucherValueDecisionService,
+    private val jdbi: Jdbi,
     private val asyncJobRunner: AsyncJobRunner
 ) {
     init {
@@ -30,27 +32,27 @@ class InvoicingAsyncJobs(
         asyncJobRunner.notifyVoucherValueDecisionPdfGenerated = ::runSendVoucherValueDecisionPdf
     }
 
-    fun runCreateFeeDecisionPdf(h: Handle, msg: NotifyFeeDecisionApproved) {
+    fun runCreateFeeDecisionPdf(msg: NotifyFeeDecisionApproved) = jdbi.transaction { h ->
         val decisionId = msg.decisionId
         feeService.createFeeDecisionPdf(h, decisionId)
         logger.info { "Successfully created fee decision pdf (id: $decisionId)." }
         asyncJobRunner.plan(h, listOf(NotifyFeeDecisionPdfGenerated(decisionId)))
     }
 
-    fun runSendFeeDecisionPdf(h: Handle, msg: NotifyFeeDecisionPdfGenerated) {
+    fun runSendFeeDecisionPdf(msg: NotifyFeeDecisionPdfGenerated) = jdbi.transaction { h ->
         val decisionId = msg.decisionId
         feeService.sendDecision(h, decisionId)
         logger.info { "Successfully sent fee decision msg to suomi.fi (id: $decisionId)." }
     }
 
-    fun runCreateVoucherValueDecisionPdf(h: Handle, msg: NotifyVoucherValueDecisionApproved) {
+    fun runCreateVoucherValueDecisionPdf(msg: NotifyVoucherValueDecisionApproved) = jdbi.transaction { h ->
         val decisionId = msg.decisionId
         valueDecisionService.createDecisionPdf(h, decisionId)
         logger.info { "Successfully created voucher value decision pdf (id: $decisionId)." }
         asyncJobRunner.plan(h, listOf(NotifyVoucherValueDecisionPdfGenerated(decisionId)))
     }
 
-    fun runSendVoucherValueDecisionPdf(h: Handle, msg: NotifyVoucherValueDecisionPdfGenerated) {
+    fun runSendVoucherValueDecisionPdf(msg: NotifyVoucherValueDecisionPdfGenerated) = jdbi.transaction { h ->
         val decisionId = msg.decisionId
         valueDecisionService.sendDecision(h, decisionId)
         logger.info { "Successfully sent fee decision msg to suomi.fi (id: $decisionId)." }

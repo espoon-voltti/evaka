@@ -20,8 +20,9 @@ import com.github.kittinunf.fuel.core.extensions.authentication
 import com.github.kittinunf.fuel.core.extensions.jsonBody
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.UploadToKoski
+import fi.espoo.evaka.shared.db.transaction
 import mu.KotlinLogging
-import org.jdbi.v3.core.Handle
+import org.jdbi.v3.core.Jdbi
 import org.springframework.core.env.Environment
 import org.springframework.stereotype.Component
 import java.time.LocalDate
@@ -35,6 +36,7 @@ class KoskiClient(
     private val sourceSystem: String = env.getRequiredProperty("fi.espoo.integration.koski.source_system"),
     private val koskiUser: String = env.getRequiredProperty("fi.espoo.integration.koski.user"),
     private val koskiSecret: String = env.getRequiredProperty("fi.espoo.integration.koski.secret"),
+    private val jdbi: Jdbi,
     asyncJobRunner: AsyncJobRunner?
 ) {
     // Use a local Jackson instance so the configuration doesn't get changed accidentally if the global defaults change.
@@ -48,15 +50,15 @@ class KoskiClient(
         .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
 
     init {
-        asyncJobRunner?.uploadToKoski = { h, msg -> uploadToKoski(h, msg, today = LocalDate.now()) }
+        asyncJobRunner?.uploadToKoski = { msg -> uploadToKoski(msg, today = LocalDate.now()) }
     }
 
-    fun uploadToKoski(h: Handle, msg: UploadToKoski, today: LocalDate) {
+    fun uploadToKoski(msg: UploadToKoski, today: LocalDate) = jdbi.transaction { h ->
         logger.info { "Koski upload ${msg.key}: starting" }
         val data = h.beginKoskiUpload(sourceSystem, msg.key, today)
         if (data == null) {
             logger.info { "Koski upload ${msg.key}: no data -> skipping" }
-            return
+            return@transaction
         }
         val payload = objectMapper.writeValueAsString(data.oppija)
         if (!h.isPayloadChanged(msg.key, payload)) {
