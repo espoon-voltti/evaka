@@ -11,7 +11,7 @@ import LocalDate from '@evaka/lib-common/src/local-date'
 import { isLoading, isSuccess, Loading, Result } from '~api'
 import {
   ChildInGroup,
-  getChildrenInGroup,
+  getDaycareAttendances,
   getUnitData,
   UnitData
 } from '~api/unit'
@@ -87,10 +87,10 @@ export default React.memo(function AttendanceChildPage() {
   const { i18n } = useTranslation()
   const history = useHistory()
 
-  const { id, groupid, childid } = useParams<{
-    id: UUID
-    groupid: UUID | 'all'
-    childid: UUID
+  const { unitId, groupId, childId } = useParams<{
+    unitId: UUID
+    groupId: UUID | 'all'
+    childId: UUID
   }>()
 
   const [child, setChild] = useState<ChildInGroup | undefined>(undefined)
@@ -101,16 +101,18 @@ export default React.memo(function AttendanceChildPage() {
   >(Loading())
 
   useEffect(() => {
-    void getUnitData(id, LocalDate.today(), LocalDate.today()).then(setUnitData)
-    void getChildrenInGroup(groupid).then(setGoupAttendances)
+    void getUnitData(unitId, LocalDate.today(), LocalDate.today()).then(
+      setUnitData
+    )
+    void getDaycareAttendances(unitId).then(setGoupAttendances)
   }, [])
 
   useEffect(() => {
     if (isSuccess(groupAttendances))
-      setChild(groupAttendances.data.find((elem) => elem.childId === childid))
+      setChild(groupAttendances.data.find((elem) => elem.childId === childId))
     if (isSuccess(unitData))
       setGroup(
-        unitData.data.groups.find((elem: DaycareGroup) => elem.id === groupid)
+        unitData.data.groups.find((elem: DaycareGroup) => elem.id === groupId)
       )
   }, [groupAttendances, unitData])
 
@@ -162,24 +164,24 @@ export default React.memo(function AttendanceChildPage() {
               <FlexColumn>
                 {child.status === 'COMING' && (
                   <AttendanceChildComing
-                    unitId={id}
+                    unitId={unitId}
                     child={child}
                     group={group}
-                    groupId={groupid}
+                    groupId={groupId}
                   />
                 )}
                 {child.status === 'PRESENT' && (
                   <AttendanceChildPresent
                     child={child}
-                    id={id}
-                    groupid={groupid}
+                    unitId={unitId}
+                    groupid={groupId}
                   />
                 )}
                 {child.status === 'DEPARTED' && child.childAttendanceId && (
                   <AttendanceChildDeparted
                     childAttendanceId={child.childAttendanceId}
-                    id={id}
-                    groupid={groupid}
+                    unitId={unitId}
+                    groupid={groupId}
                   />
                 )}
               </FlexColumn>

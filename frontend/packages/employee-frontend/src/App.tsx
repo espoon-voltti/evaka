@@ -108,20 +108,20 @@ export default function App() {
             />
             <Route
               exact
-              path="/units/:id/groupselector"
+              path="/units/:unitId/groupselector"
               component={ensureAuthenticated(AttendanceGroupSelectorPage)}
             />
             <Route
-              path="/units/:id/attendance/:groupid"
+              path="/units/:unitId/attendance/:groupId"
               component={ensureAuthenticated(AttendancePageWrapper)}
             />
             <Route
               exact
-              path="/units/:id/groups/:groupid/childattendance/:childid"
+              path="/units/:unitId/groups/:groupId/childattendance/:childId"
               component={ensureAuthenticated(AttendanceChildPage)}
             />
             <Route
-              path="/units/:id/attendance"
+              path="/units/:unitId/attendance"
               component={ensureAuthenticated(AttendancePageWrapper)}
             />
             <RouteWithTitle

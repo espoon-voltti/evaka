@@ -77,15 +77,17 @@ const Padding = styled.div`
 
 export default React.memo(function AttendanceGroupSelectorPage() {
   const { i18n } = useTranslation()
-  const { id } = useParams<{ id: string }>()
+  const { unitId } = useParams<{ unitId: string }>()
   const [unitData, setUnitData] = useState<Result<UnitData>>(Loading())
   const [unit, setUnit] = useState<Result<UnitResponse>>(Loading())
 
   const loading = isLoading(unit) || isLoading(unitData)
 
   useEffect(() => {
-    void getUnitData(id, LocalDate.today(), LocalDate.today()).then(setUnitData)
-    void getDaycare(id).then(setUnit)
+    void getUnitData(unitId, LocalDate.today(), LocalDate.today()).then(
+      setUnitData
+    )
+    void getDaycare(unitId).then(setUnit)
   }, [])
 
   return (

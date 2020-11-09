@@ -13,13 +13,13 @@ import { FlexLabel } from './AttendanceChildPage'
 
 interface Props {
   child: ChildInGroup
-  id: UUID
+  unitId: UUID
   groupid: UUID | 'all'
 }
 
 export default React.memo(function AttendanceChildPresent({
   child,
-  id,
+  unitId,
   groupid
 }: Props) {
   const history = useHistory()
@@ -51,7 +51,7 @@ export default React.memo(function AttendanceChildPresent({
         text={i18n.attendances.actions.markLeaving}
         onClick={markDeparted}
         onSuccess={() =>
-          history.push(`/units/${id}/attendance/${groupid}/departed`)
+          history.push(`/units/${unitId}/attendance/${groupid}/departed`)
         }
         data-qa="mark-departed"
       />

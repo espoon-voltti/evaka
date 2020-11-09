@@ -20,9 +20,8 @@ export default React.memo(function AttendanceList({
   groupAttendances,
   type
 }: Props) {
-  const { id } = useParams<{
-    id: UUID
-    groupid: UUID | 'all'
+  const { unitId } = useParams<{
+    unitId: UUID
   }>()
 
   if (type) {
@@ -37,7 +36,7 @@ export default React.memo(function AttendanceList({
         {groupAttendances.map((groupAttendance) => (
           <li key={groupAttendance.childId}>
             <a
-              href={`/units/${id}/groups/${groupAttendance.daycareGroupId}/childattendance/${groupAttendance.childId}`}
+              href={`/units/${unitId}/groups/${groupAttendance.daycareGroupId}/childattendance/${groupAttendance.childId}`}
             >
               <ChildListItem
                 type={groupAttendance.status}

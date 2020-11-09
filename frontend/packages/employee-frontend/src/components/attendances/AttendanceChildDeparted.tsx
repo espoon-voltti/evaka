@@ -22,13 +22,13 @@ export const WideAsyncButton = styled(AsyncButton)`
 
 interface Props {
   childAttendanceId: UUID
-  id: UUID
+  unitId: UUID
   groupid: UUID | 'all'
 }
 
 export default React.memo(function AttendanceChildDeparted({
   childAttendanceId,
-  id,
+  unitId,
   groupid
 }: Props) {
   const history = useHistory()
@@ -41,7 +41,7 @@ export default React.memo(function AttendanceChildDeparted({
         text={i18n.attendances.actions.returnToComing}
         onClick={() => deleteAttendance(childAttendanceId)}
         onSuccess={() =>
-          history.push(`/units/${id}/attendance/${groupid}/coming`)
+          history.push(`/units/${unitId}/attendance/${groupid}/coming`)
         }
         data-qa="delete-attendance"
       />
