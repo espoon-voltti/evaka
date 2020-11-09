@@ -315,7 +315,7 @@ export interface StartingPlacementsRow {
 }
 
 export interface VoucherServiceProviderRow {
-  careAreaName: string
+  areaName: string
   unitId: UUID
   unitName: string
   voucherChildCount: number

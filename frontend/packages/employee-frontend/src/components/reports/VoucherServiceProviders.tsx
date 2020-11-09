@@ -68,10 +68,10 @@ function getFilename(
   i18n: Translations,
   year: number,
   month: number,
-  careAreaName: string
+  areaName: string
 ) {
   const time = formatDate(new Date(year, month - 1, 1), 'yyyy-MM')
-  return `${time}-${careAreaName}.csv`.replace(/ /g, '_')
+  return `${time}-${areaName}.csv`.replace(/ /g, '_')
 }
 
 function VoucherServiceProviders() {
@@ -83,7 +83,7 @@ function VoucherServiceProviders() {
   const [filters, setFilters] = useState<VoucherServiceProvidersFilters>({
     year: new Date().getFullYear(),
     month: new Date().getMonth() + 1,
-    careAreaId: ''
+    areaId: ''
   })
 
   useEffect(() => {
@@ -91,7 +91,7 @@ function VoucherServiceProviders() {
   }, [])
 
   useEffect(() => {
-    if (filters.careAreaId == '') return
+    if (filters.areaId == '') return
 
     setRows(Loading())
     void getVoucherServiceProvidersReport(filters).then(setRows)
@@ -149,7 +149,7 @@ function VoucherServiceProviders() {
               ]}
               onChange={(value) => {
                 if (value && 'value' in value) {
-                  setFilters({ ...filters, careAreaId: value.value })
+                  setFilters({ ...filters, areaId: value.value })
                 }
               }}
               styles={reactSelectStyles}
@@ -158,12 +158,12 @@ function VoucherServiceProviders() {
         </FilterRow>
         {isLoading(rows) && <Loader />}
         {isFailure(rows) && <span>{i18n.common.loadingFailed}</span>}
-        {isSuccess(rows) && filters.careAreaId != '' && (
+        {isSuccess(rows) && filters.areaId != '' && (
           <>
             <ReportDownload
               data={rows.data}
               headers={[
-                { label: 'Palvelualue', key: 'careAreaName' },
+                { label: 'Palvelualue', key: 'areaName' },
                 { label: 'Yksikkö', key: 'unitName' },
                 { label: 'PS lasten lkm', key: 'voucherChildCount' },
                 { label: 'PS summa', key: 'voucherSum' }
@@ -172,7 +172,7 @@ function VoucherServiceProviders() {
                 i18n,
                 filters.year,
                 filters.month,
-                areas.find((area) => area.id == filters.careAreaId)?.name ?? ''
+                areas.find((area) => area.id == filters.areaId)?.name ?? ''
               )}
             />
             <TableScrollable>
@@ -188,7 +188,7 @@ function VoucherServiceProviders() {
               <Tbody>
                 {rows.data.map((row) => (
                   <Tr key={row.unitId}>
-                    <StyledTd>{row.careAreaName}</StyledTd>
+                    <StyledTd>{row.areaName}</StyledTd>
                     <StyledTd>
                       <Link to={`/units/${row.unitId}`}>{row.unitName}</Link>
                     </StyledTd>

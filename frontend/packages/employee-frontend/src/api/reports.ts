@@ -352,7 +352,7 @@ export function getStartingPlacementsReport(
 export interface VoucherServiceProvidersFilters {
   year: number
   month: number
-  careAreaId: UUID
+  areaId: UUID
 }
 
 export async function getVoucherServiceProvidersReport(

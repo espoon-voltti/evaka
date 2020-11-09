@@ -17,12 +17,12 @@ class DummyVoucherServiceProviderReport(
 ) {
     @GetMapping("/reports/voucher-service-providers")
     fun getVoucherServiceProviders(
-        user: AuthenticatedUser,
-        @RequestParam careAreaId: UUID,
-        @RequestParam year: Int,
-        @RequestParam month: Int
+            user: AuthenticatedUser,
+            @RequestParam areaId: UUID,
+            @RequestParam year: Int,
+            @RequestParam month: Int
     ): ResponseEntity<List<VoucherServiceProviderReportResultRow>> {
-        Audit.OccupancyReportRead.log(targetId = careAreaId)
+        Audit.OccupancyReportRead.log(targetId = areaId)
         user.requireOneOfRoles(Roles.SERVICE_WORKER, Roles.ADMIN, Roles.FINANCE_ADMIN, Roles.DIRECTOR)
         val from = LocalDate.of(year, month, 1)
         val to = from.plusMonths(1).minusDays(1)
@@ -44,12 +44,12 @@ class DummyVoucherServiceProviderReport(
 }
 
 data class VoucherServiceProviderReportResultRow(
-    val careAreaName: String,
-    val unitId: UUID,
-    val unitName: String,
-    val voucherChildCount: Int,
-    val voucherSum: Int,
-    val unitVoucherReportUri: String,
-    val startDate: LocalDate,
-    val endDate: LocalDate
+        val areaName: String,
+        val unitId: UUID,
+        val unitName: String,
+        val voucherChildCount: Int,
+        val voucherSum: Int,
+        val unitVoucherReportUri: String,
+        val startDate: LocalDate,
+        val endDate: LocalDate
 )
