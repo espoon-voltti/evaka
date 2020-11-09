@@ -165,8 +165,8 @@ function VoucherServiceProviders() {
               headers={[
                 { label: 'Palvelualue', key: 'careAreaName' },
                 { label: 'Yksikkö', key: 'unitName' },
-                { label: 'PS lasten lkm', key: 'childCount' },
-                { label: 'PS summa', key: 'unitVoucherSum' }
+                { label: 'PS lasten lkm', key: 'voucherChildCount' },
+                { label: 'PS summa', key: 'voucherSum' }
               ]}
               filename={getFilename(
                 i18n,
@@ -194,7 +194,6 @@ function VoucherServiceProviders() {
                     </StyledTd>
                     <StyledTd>{row.voucherChildCount}</StyledTd>
                     <StyledTd>{row.voucherSum}</StyledTd>
-                    <StyledTd>{row.voucherChildCount}</StyledTd>
                     <StyledTd>{row.unitVoucherReportUri}</StyledTd>
                   </Tr>
                 ))}

@@ -360,7 +360,7 @@ export async function getVoucherServiceProvidersReport(
 ): Promise<Result<VoucherServiceProviderRow[]>> {
   return client
     .get<JsonOf<VoucherServiceProviderRow[]>>(
-      `/reports/voucher-service-providers}`,
+      `/reports/voucher-service-providers`,
       {
         params: {
           ...filters
