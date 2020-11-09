@@ -14,7 +14,9 @@ import org.jdbi.v3.core.Jdbi
 import org.jdbi.v3.core.JdbiException
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
+import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
@@ -74,16 +76,25 @@ class ChildAttendanceController(
     }
 
     @GetMapping("/current")
-    fun getChildrenInGroup(
+    fun getDaycareAttendances(
         user: AuthenticatedUser,
-        @RequestParam groupId: UUID
+        @RequestParam daycareId: UUID
     ): ResponseEntity<List<ChildInGroup>> {
-        Audit.ChildAttendanceReadGroup.log(targetId = groupId)
-        acl.getRolesForUnitGroup(user, groupId)
+        Audit.ChildAttendanceReadUnit.log(targetId = daycareId)
+        acl.getRolesForUnit(user, daycareId)
             .requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF)
 
-        return jdbi.transaction { it.getChildrenInGroup(groupId) }
+        return jdbi.transaction { it.getDaycareAttendances(daycareId) }
             .let { ResponseEntity.ok(it) }
+    }
+
+    @DeleteMapping("/{attendanceId}")
+    fun deleteAttendance(
+        user: AuthenticatedUser,
+        @PathVariable(value = "attendanceId") attendanceId: UUID
+    ): ResponseEntity<Unit> {
+        jdbi.transaction { it.deleteAttendance(attendanceId) }
+        return ResponseEntity.noContent().build()
     }
 }
 
@@ -105,5 +116,9 @@ data class ChildInGroup(
     val childId: UUID,
     val firstName: String,
     val lastName: String,
-    val status: AttendanceStatus
+    val status: AttendanceStatus,
+    val daycareGroupId: UUID,
+    val arrived: OffsetDateTime?,
+    val departed: OffsetDateTime?,
+    val childAttendanceId: UUID?
 )

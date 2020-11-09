@@ -6,12 +6,13 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faCheck, faTimes } from 'icon-set'
 import Colors from 'components/shared/Colors'
 import { StyledButton } from './Button'
+import { Result } from '~api'
 
 type Props = {
   text: string
   textInProgress?: string
   textDone?: string
-  onClick: () => Promise<void>
+  onClick: () => Promise<void | Result<void>>
   onSuccess: () => void
   primary?: boolean
   disabled?: boolean
@@ -97,7 +98,9 @@ export default React.memo(function AsyncButton({
             <FontAwesomeIcon icon={faTimes} color={Colors.accents.red} />
           </IconWrapper>
         </IconContainer>
-        {inProgress ? textInProgress : showSuccess ? textDone : text}
+        <span>
+          {inProgress ? textInProgress : showSuccess ? textDone : text}
+        </span>
       </Content>
     </StyledButton>
   )
@@ -124,6 +127,7 @@ const IconContainer = animated(styled.div`
   position: relative;
   overflow: hidden;
   height: 24px;
+  flex: none;
 `)
 
 const Spinner = animated(styled.div`

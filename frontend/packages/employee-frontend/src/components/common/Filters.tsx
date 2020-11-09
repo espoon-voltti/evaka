@@ -99,12 +99,6 @@ export function Filters({
   )
 }
 
-type FreeTextSearchProps = {
-  value: string
-  setValue: (s: string) => void
-  placeholder: string
-}
-
 const SearchInputContainer = styled.div`
   height: 50px;
   display: flex;
@@ -112,11 +106,11 @@ const SearchInputContainer = styled.div`
   align-items: center;
 `
 
-const SearchInput = styled.input`
+const SearchInput = styled.input<{ background?: string }>`
   width: 100%;
   border: none;
   font-size: 1rem;
-  background: ${Colors.greyscale.lightest};
+  background: ${(p) => p.background ?? Colors.greyscale.lightest};
   width: 100%;
   display: flex;
   flex-direction: row;
@@ -124,7 +118,6 @@ const SearchInput = styled.input`
   padding: 0.75rem;
   padding-left: 55px;
   font-size: 17px;
-  background: ${Colors.greyscale.lightest};
   outline: none;
   margin-left: -38px;
   margin-right: -25px;
@@ -162,7 +155,19 @@ const CustomIconButton = styled(IconButton)`
   right: 20px;
 `
 
-function FreeTextSearch({ value, setValue, placeholder }: FreeTextSearchProps) {
+type FreeTextSearchProps = {
+  value: string
+  setValue: (s: string) => void
+  placeholder: string
+  background?: string
+}
+
+export function FreeTextSearch({
+  value,
+  setValue,
+  placeholder,
+  background
+}: FreeTextSearchProps) {
   const clear = useCallback(() => setValue(''), [setValue])
 
   return (
@@ -173,6 +178,7 @@ function FreeTextSearch({ value, setValue, placeholder }: FreeTextSearchProps) {
         value={value}
         onChange={(e) => setValue(e.target.value)}
         data-qa="free-text-search-input"
+        background={background}
       ></SearchInput>
       <CustomIconButton icon={faTimes} onClick={clear} size={'m'} />
     </SearchInputContainer>

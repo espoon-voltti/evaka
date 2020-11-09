@@ -12,13 +12,15 @@ interface HeadingProps extends BaseProps {
   'data-qa'?: string
   centered?: boolean
   noMargin?: boolean
+  smaller?: boolean
+  bold?: boolean
 }
 
 export const H1 = styled.h1<HeadingProps>`
   color: ${Greyscale.dark};
-  font-size: 36px;
+  font-size: ${(p) => (p.smaller ? '24px' : '36px')};
   font-family: Montserrat, sans-serif;
-  font-weight: 200;
+  font-weight: ${(p) => (p.bold ? 600 : 200)};
   line-height: 58px;
   ${(p) => (!p.fitted ? `margin-bottom: ${DefaultMargins.m};` : '')}
   ${(p) => (p.centered ? `text-align: center;` : '')}
@@ -27,9 +29,9 @@ export const H1 = styled.h1<HeadingProps>`
 
 export const H2 = styled.h2<HeadingProps>`
   color: ${Greyscale.dark};
-  font-size: 24px;
+  font-size: ${(p) => (p.smaller ? '20px' : '24px')};
   font-family: Montserrat, sans-serif;
-  font-weight: 300;
+  font-weight: ${(p) => (p.bold ? 600 : 300)};
   ${(p) => (!p.fitted ? `margin-bottom: ${DefaultMargins.s};` : '')}
   ${(p) => (p.centered ? `text-align: center;` : '')}
   ${(p) => (p.noMargin ? `margin: 0;` : '')}
@@ -37,9 +39,9 @@ export const H2 = styled.h2<HeadingProps>`
 
 export const H3 = styled.h3<HeadingProps>`
   color: ${Greyscale.dark};
-  font-size: 20px;
+  font-size: ${(p) => (p.smaller ? '18px' : '20px')};
   font-family: Montserrat, sans-serif;
-  font-weight: normal;
+  font-weight: ${(p) => (p.bold ? 600 : 'normal')};
   ${(p) => (!p.fitted ? `margin-bottom: ${DefaultMargins.s};` : '')}
   ${(p) => (p.centered ? `text-align: center;` : '')}
   ${(p) => (p.noMargin ? `margin: 0;` : '')}
@@ -47,9 +49,9 @@ export const H3 = styled.h3<HeadingProps>`
 
 export const H4 = styled.h4<HeadingProps>`
   color: ${Greyscale.dark};
-  font-size: 18px;
+  font-size: ${(p) => (p.smaller ? '16px' : '18px')};
   font-family: Montserrat, sans-serif;
-  font-weight: normal;
+  font-weight: ${(p) => (p.bold ? 600 : 'normal')};
   ${(p) => (!p.fitted ? `margin-bottom: ${DefaultMargins.s};` : '')}
   ${(p) => (p.centered ? `text-align: center;` : '')}
   ${(p) => (p.noMargin ? `margin: 0;` : '')}
@@ -57,9 +59,9 @@ export const H4 = styled.h4<HeadingProps>`
 
 export const H5 = styled.h4<HeadingProps>`
   color: ${Greyscale.dark};
-  font-size: 16px;
+  font-size: ${(p) => (p.smaller ? '14px' : '16px')};
   font-family: Montserrat, sans-serif;
-  font-weight: normal;
+  font-weight: ${(p) => (p.bold ? 600 : 'normal')};
   ${(p) => (!p.fitted ? `margin-bottom: ${DefaultMargins.s};` : '')}
   ${(p) => (p.centered ? `text-align: center;` : '')}
   ${(p) => (p.noMargin ? `margin: 0;` : '')}

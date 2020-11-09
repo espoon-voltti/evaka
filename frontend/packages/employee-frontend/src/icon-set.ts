@@ -79,6 +79,7 @@ export interface IconSet {
   fasInfo: IconDefinition
   fasArrowDown: IconDefinition
   fasArrowUp: IconDefinition
+  farUser: IconDefinition
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
@@ -157,3 +158,4 @@ export const fasExclamationTriangle = iconSet.fasExclamationTriangle
 export const fasInfo = iconSet.fasInfo
 export const fasArrowDown = iconSet.fasArrowDown
 export const fasArrowUp = iconSet.fasArrowUp
+export const farUser = iconSet.farUser

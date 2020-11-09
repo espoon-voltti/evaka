@@ -13,19 +13,27 @@ type Props = {
   tabs: Array<{
     id: string
     link: string
-    label: string
+    label: string | JSX.Element
     counter?: number
   }>
+  mobile?: boolean
 }
 
-export default React.memo(function Tabs({ tabs }: Props) {
+export default React.memo(function Tabs({ tabs, mobile }: Props) {
+  const maxWidth = mobile ? `${100 / tabs.length}vw` : undefined
   return (
     <Background>
       <Container>
         <TabsContainer>
           {tabs.map(({ id, link, label, counter }) => (
-            <TabContainer key={id} to={link} data-qa={`${id}-tab`}>
-              <TabTitle>{label}</TabTitle>
+            <TabContainer
+              key={id}
+              to={link}
+              data-qa={`${id}-tab`}
+              $maxWidth={maxWidth}
+              $mobile={mobile}
+            >
+              <TabTitle $mobile={mobile}>{label}</TabTitle>
               {counter && <TabCounter>{counter}</TabCounter>}
             </TabContainer>
           ))}
@@ -44,7 +52,12 @@ const TabsContainer = styled.div`
   flex-direction: row;
 `
 
-const TabContainer = styled(NavLink)`
+interface TabContainerProps {
+  $maxWidth?: string
+  $mobile?: boolean
+}
+
+const TabContainer = styled(NavLink)<TabContainerProps>`
   display: flex;
   flex-direction: row;
   justify-content: center;
@@ -53,23 +66,34 @@ const TabContainer = styled(NavLink)`
   flex-basis: content;
   flex-grow: 1;
   background-color: ${Colors.greyscale.white};
-  font-family: Montserrat, sans-serif;
-  font-size: 15px;
+  font-family: ${(p) =>
+    p.$mobile ? 'Open Sans, sans-serif' : 'Montserrat, sans-serif'};
+  font-size: ${(p) => (p.$mobile ? '14px' : '15px')};
   text-align: center;
   text-transform: uppercase;
   letter-spacing: 1px;
+  max-width: ${(p) => (p.$maxWidth ? p.$maxWidth : 'none')};
 
   &.active {
-    background-color: ${Colors.blues.light}33;
+    background-color: ${(p) =>
+      p.$mobile ? Colors.greyscale.white : `${Colors.blues.light}33`};
+    border-bottom: ${(p) =>
+      p.$mobile ? `3px solid ${Colors.blues.medium}` : 'none'};
+
+    span {
+      div {
+        color: ${(p) =>
+          p.$mobile ? Colors.blues.medium : Colors.greyscale.dark};
+      }
+    }
   }
 `
 
-const TabTitle = styled.span`
+const TabTitle = styled.span<TabContainerProps>`
   color: ${Colors.greyscale.dark};
 
   &.active {
     font-weight: 700;
-    color: ${Colors.blues.medium};
   }
 `
 

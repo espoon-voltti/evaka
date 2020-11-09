@@ -12,6 +12,8 @@ interface Props extends BaseProps {
   children: React.ReactNode
   centered?: boolean
   noMargin?: boolean
+  smaller?: boolean
+  bold?: boolean
 }
 
 export default function Title({
@@ -20,7 +22,9 @@ export default function Title({
   children,
   centered,
   className,
-  noMargin
+  noMargin,
+  smaller,
+  bold
 }: Props) {
   switch (size) {
     case 1:
@@ -31,6 +35,8 @@ export default function Title({
           fitted
           className={className}
           noMargin={noMargin}
+          smaller={smaller}
+          bold={bold}
         >
           {children}
         </H1>
@@ -43,6 +49,8 @@ export default function Title({
           fitted
           className={className}
           noMargin={noMargin}
+          smaller={smaller}
+          bold={bold}
         >
           {children}
         </H2>
@@ -55,6 +63,8 @@ export default function Title({
           fitted
           className={className}
           noMargin={noMargin}
+          smaller={smaller}
+          bold={bold}
         >
           {children}
         </H3>
@@ -67,6 +77,8 @@ export default function Title({
           fitted
           className={className}
           noMargin={noMargin}
+          smaller={smaller}
+          bold={bold}
         >
           {children}
         </H4>
@@ -79,6 +91,8 @@ export default function Title({
           fitted
           className={className}
           noMargin={noMargin}
+          smaller={smaller}
+          bold={bold}
         >
           {children}
         </H1>

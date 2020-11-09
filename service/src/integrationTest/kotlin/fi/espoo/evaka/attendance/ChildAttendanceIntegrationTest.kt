@@ -138,7 +138,7 @@ class ChildAttendanceIntegrationTest : FullApplicationTest() {
     }
 
     private fun fetchChildrenInGroup(): List<ChildInGroup> {
-        val (_, res, result) = http.get("/child-attendances/current?groupId=$groupId")
+        val (_, res, result) = http.get("/child-attendances/current?daycareId=${testDaycare.id}")
             .asUser(staffUser)
             .responseObject<List<ChildInGroup>>(objectMapper)
 

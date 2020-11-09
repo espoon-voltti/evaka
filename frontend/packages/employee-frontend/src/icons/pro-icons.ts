@@ -153,7 +153,8 @@ const icons: IconSet = {
   fasExclamationTriangle,
   fasInfo,
   fasArrowDown,
-  fasArrowUp
+  fasArrowUp,
+  farUser: faUser
 }
 
 export default icons

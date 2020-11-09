@@ -41,7 +41,7 @@ fun Handle.updateCurrentAttendanceEnd(childId: UUID, departed: OffsetDateTime) {
         .execute()
 }
 
-fun Handle.getChildrenInGroup(groupId: UUID): List<ChildInGroup> {
+fun Handle.getDaycareAttendances(daycareId: UUID): List<ChildInGroup> {
     // language=sql
     val sql =
         """
@@ -49,6 +49,7 @@ fun Handle.getChildrenInGroup(groupId: UUID): List<ChildInGroup> {
             ch.id AS child_id,
             ch.first_name,
             ch.last_name,
+            gp.daycare_group_id,
             ( CASE 
                 WHEN EXISTS (
                     SELECT 1 FROM child_attendance ca
@@ -70,15 +71,31 @@ fun Handle.getChildrenInGroup(groupId: UUID): List<ChildInGroup> {
                     WHERE ab.child_id = ch.id AND ab.date = now()::date AND ab.absence_type != 'PRESENCE'
                 ) THEN 'ABSENT'
                 ELSE 'COMING'
-            END ) AS status
+            END ) AS status,
+            ca.arrived,
+            ca.departed,
+            ca.id AS child_attendance_id
         FROM daycare_group_placement gp
         JOIN placement p ON p.id = gp.daycare_placement_id
         JOIN person ch ON ch.id = p.child_id
-        WHERE gp.daycare_group_id = :groupId AND daterange(gp.start_date, gp.end_date, '[]') @> current_date
+        LEFT JOIN (
+            SELECT child_id, arrived, departed, id
+            FROM child_attendance ca 
+            WHERE ca.arrived > current_date) ca 
+        ON p.child_id = ca.child_id
+        WHERE p.unit_id = :daycareId AND daterange(gp.start_date, gp.end_date, '[]') @> current_date
         """.trimIndent()
 
     return createQuery(sql)
-        .bind("groupId", groupId)
+        .bind("daycareId", daycareId)
         .mapTo<ChildInGroup>()
         .list()
 }
+
+fun Handle.deleteAttendance(attendanceId: UUID) = createUpdate(
+    // language=sql
+    """
+        DELETE FROM child_attendance
+        WHERE id = :attendanceId
+    """.trimIndent()
+).bind("attendanceId", attendanceId).execute()

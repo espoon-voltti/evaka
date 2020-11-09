@@ -64,25 +64,51 @@ export interface ChildInGroup {
   firstName: string
   lastName: string
   status: AttendanceStatus
+  daycareGroupId: UUID
+  arrived?: Date
+  departed?: Date
+  childAttendanceId?: UUID
 }
 
-export async function getAttendance(
-  groupId: UUID
+export async function getDaycareAttendances(
+  daycareId: UUID
 ): Promise<Result<ChildInGroup[]>> {
   return client
     .get<JsonOf<ChildInGroup[]>>(`/child-attendances/current`, {
-      params: { groupId }
+      params: { daycareId }
     })
-    .then(({ data }) => Success(data))
+    .then((res) => res.data)
+    .then((data) =>
+      data.map((childInGroup) => ({
+        ...childInGroup,
+        arrived: childInGroup.arrived
+          ? new Date(childInGroup.arrived)
+          : undefined,
+        departed: childInGroup.departed
+          ? new Date(childInGroup.departed)
+          : undefined
+      }))
+    )
+    .then(Success)
     .catch(Failure)
 }
 
-export async function childArrives(childId: UUID): Promise<void> {
-  return client.post('/child-attendances/arrive', { childId, time: new Date() })
+export async function childArrives(childId: UUID, time: Date): Promise<void> {
+  return client
+    .post<void>('/child-attendances/arrive', { childId, time })
+    .then((res) => res.data)
 }
 
-export async function childDeparts(childId: UUID): Promise<void> {
-  return client.post('/child-attendances/depart', { childId, time: new Date() })
+export async function childDeparts(childId: UUID, time: Date): Promise<void> {
+  return client
+    .post<void>('/child-attendances/depart', { childId, time })
+    .then((res) => res.data)
+}
+
+export async function deleteAttendance(attendanceId: UUID): Promise<void> {
+  return client
+    .delete<void>(`/child-attendances/${attendanceId}`)
+    .then((res) => res.data)
 }
 
 export type UnitOccupancies = {
