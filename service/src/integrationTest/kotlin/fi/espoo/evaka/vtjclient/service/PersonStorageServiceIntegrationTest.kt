@@ -26,7 +26,7 @@ class PersonStorageServiceIntegrationTest : PureJdbiTest() {
 
     @BeforeEach
     private fun beforeEach() {
-        service = PersonStorageService(jdbi)
+        service = PersonStorageService()
         jdbi.handle { h ->
             resetDatabase(h)
             insertGeneralTestFixtures(h)
@@ -57,32 +57,30 @@ class PersonStorageServiceIntegrationTest : PureJdbiTest() {
     }
 
     @Test
-    fun `create new person with children creates guardian relationships`() {
+    fun `create new person with children creates guardian relationships`() = jdbi.handle { h ->
         val testChild = generatePerson("020319A123K")
         val testGuardian = generatePerson(ssn = "130535-531K", children = mutableListOf(testChild))
 
-        val personResult = service.upsertVtjGuardianAndChildren(PersonResult.Result(testGuardian))
+        val personResult = service.upsertVtjGuardianAndChildren(h, PersonResult.Result(testGuardian))
         assertTrue(personResult is PersonResult.Result)
         val createdPerson = (personResult as PersonResult.Result).vtjPersonDTO
         assertEquals(testGuardian.socialSecurityNumber, createdPerson.socialSecurityNumber)
         assertEquals(1, createdPerson.children.size)
         assertEquals(testChild.socialSecurityNumber, createdPerson.children.first().socialSecurityNumber)
 
-        jdbi.handle { h ->
-            val guardianChildren = getGuardianChildren(h, createdPerson.id)
-            assertEquals(1, guardianChildren.size)
-            assertEquals(createdPerson.children.first().id, guardianChildren.first())
-        }
+        val guardianChildren = getGuardianChildren(h, createdPerson.id)
+        assertEquals(1, guardianChildren.size)
+        assertEquals(createdPerson.children.first().id, guardianChildren.first())
     }
 
     @Test
-    fun `upsert person with children updates guardian relationships`() {
+    fun `upsert person with children updates guardian relationships`() = jdbi.handle { h ->
         val testGuardian = generatePerson(ssn = "130535-531K", children = mutableListOf(generatePerson("020319A123K")))
-        service.upsertVtjGuardianAndChildren(PersonResult.Result(testGuardian))
+        service.upsertVtjGuardianAndChildren(h, PersonResult.Result(testGuardian))
 
         val testChild2 = generatePerson("241220A321N")
         val personResult =
-            service.upsertVtjGuardianAndChildren(PersonResult.Result(testGuardian.copy(children = mutableListOf(testChild2))))
+            service.upsertVtjGuardianAndChildren(h, PersonResult.Result(testGuardian.copy(children = mutableListOf(testChild2))))
 
         assertTrue(personResult is PersonResult.Result)
         val createdPerson = (personResult as PersonResult.Result).vtjPersonDTO
@@ -90,11 +88,9 @@ class PersonStorageServiceIntegrationTest : PureJdbiTest() {
         assertEquals(1, createdPerson.children.size)
         assertEquals(testChild2.socialSecurityNumber, createdPerson.children.first().socialSecurityNumber)
 
-        jdbi.handle { h ->
-            val guardianChildren = getGuardianChildren(h, createdPerson.id)
-            assertEquals(1, guardianChildren.size)
-            assertEquals(createdPerson.children.first().id, guardianChildren.first())
-        }
+        val guardianChildren = getGuardianChildren(h, createdPerson.id)
+        assertEquals(1, guardianChildren.size)
+        assertEquals(createdPerson.children.first().id, guardianChildren.first())
     }
 
     private fun generatePerson(ssn: String, children: MutableList<VtjPersonDTO> = mutableListOf()): VtjPersonDTO {

@@ -13,6 +13,7 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.getEnum
 import fi.espoo.evaka.shared.db.getUUID
 import fi.espoo.evaka.shared.db.handle
+import fi.espoo.evaka.shared.db.transaction
 import fi.espoo.evaka.shared.domain.ClosedPeriod
 import fi.espoo.evaka.vtjclient.dto.NativeLanguage
 import fi.espoo.evaka.vtjclient.dto.PersonDataSource
@@ -49,7 +50,7 @@ class VtjController(
         @PathVariable(value = "personId") personId: UUID
     ): ResponseEntity<VtjPersonDTO> {
         val vtjData = getPersonDataWithChildren(user, personId)
-            .let { personStorageService.upsertVtjGuardianAndChildren(it) }
+            .let { jdbi.transaction { h -> personStorageService.upsertVtjGuardianAndChildren(h, it) } }
 
         return when (vtjData) {
             is PersonResult.Error -> ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build()

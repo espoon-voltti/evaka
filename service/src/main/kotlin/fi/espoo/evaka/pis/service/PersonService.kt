@@ -95,7 +95,7 @@ class PersonService(
             is ExternalIdentifier.NoID -> toPersonWithChildrenDTO(guardian)
             is ExternalIdentifier.SSN ->
                 getPersonWithDependants(user, guardian.identity)
-                    ?.let { personStorageService.upsertVtjGuardianAndChildren(PersonResult.Result(it)) }
+                    ?.let { personStorageService.upsertVtjGuardianAndChildren(h, PersonResult.Result(it)) }
                     ?.let {
                         when (it) {
                             is PersonResult.Error -> throw IllegalStateException(it.msg)
