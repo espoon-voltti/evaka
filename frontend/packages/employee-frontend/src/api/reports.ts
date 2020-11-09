@@ -23,7 +23,8 @@ import {
   ServiceNeedReportRow,
   RawReportRow,
   FamilyContactsReportRow,
-  VoucherServiceProviderRow
+  VoucherServiceProviderRow,
+  VoucherServiceProviderUnitRow
 } from '~types/reports'
 import { UUID } from '~types'
 import { JsonOf } from '@evaka/lib-common/src/json'
@@ -368,5 +369,44 @@ export async function getVoucherServiceProvidersReport(
       }
     )
     .then((res) => Success(res.data))
+}
+
+export function getVoucherServiceProviderUnitReport(
+  unitId: UUID,
+  params: VoucherProviderChildrenReportFilters
+): Promise<Result<VoucherServiceProviderUnitRow[]>> {
+  return client
+    .get<JsonOf<VoucherServiceProviderUnitRow[]>>(
+      `/reports/service-voucher-value/units/${unitId}`,
+      {
+        params
+      }
+    )
+    .then((res) =>
+      Success(
+        res.data.map((row) => ({
+          ...row,
+          childDateOfBirth: LocalDate.parseIso(row.childDateOfBirth),
+          serviceVoucherPeriod: {
+            start: LocalDate.parseIso(row.serviceVoucherPeriod.start),
+            end: LocalDate.parseIso(row.serviceVoucherPeriod.end)
+          },
+          derivatives: {
+            realizedAmount: row.derivatives.realizedAmount,
+            coefficient: row.derivatives.coefficient,
+            realizedPeriod: {
+              start: LocalDate.parseIso(row.derivatives.realizedPeriod.start),
+              end: LocalDate.parseIso(row.derivatives.realizedPeriod.end)
+            },
+            numberOfDays: row.derivatives.numberOfDays
+          }
+        }))
+      )
+    )
     .catch(Failure)
+}
+
+export interface VoucherProviderChildrenReportFilters {
+  month: number
+  year: number
 }
