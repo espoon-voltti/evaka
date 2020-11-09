@@ -96,7 +96,7 @@ class AbsenceService(private val db: Jdbi, private val personService: PersonServ
             val absenceList = getAbsencesByChildByRange(childId, period, h)
             val backupCareList = h.getBackupCaresAffectingChild(childId, period)
             val child =
-                personService.getPerson(childId) ?: throw BadRequest("Error: Could not find child with id: $childId")
+                personService.getPerson(h, childId) ?: throw BadRequest("Error: Could not find child with id: $childId")
             AbsenceChildMinimal(
                 id = child.id,
                 firstName = child.firstName ?: "",

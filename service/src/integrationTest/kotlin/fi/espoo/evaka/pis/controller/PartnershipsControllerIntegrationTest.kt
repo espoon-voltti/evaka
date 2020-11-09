@@ -7,12 +7,15 @@ package fi.espoo.evaka.pis.controller
 import fi.espoo.evaka.identity.ExternalIdentifier
 import fi.espoo.evaka.pis.AbstractIntegrationTest
 import fi.espoo.evaka.pis.controllers.PartnershipsController
-import fi.espoo.evaka.pis.dao.PartnershipDAO
-import fi.espoo.evaka.pis.dao.PersonDAO
+import fi.espoo.evaka.pis.createPartnership
+import fi.espoo.evaka.pis.createPerson
+import fi.espoo.evaka.pis.getPartnershipsForPerson
 import fi.espoo.evaka.pis.service.PersonIdentityRequest
 import fi.espoo.evaka.pis.service.PersonJSON
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.config.Roles
+import fi.espoo.evaka.shared.db.handle
+import fi.espoo.evaka.shared.db.transaction
 import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.shared.domain.Forbidden
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -27,12 +30,6 @@ import java.util.UUID
 class PartnershipsControllerIntegrationTest : AbstractIntegrationTest() {
     @Autowired
     lateinit var controller: PartnershipsController
-
-    @Autowired
-    lateinit var personDAO: PersonDAO
-
-    @Autowired
-    lateinit var partnershipDAO: PartnershipDAO
 
     @Test
     fun `service worker can create and fetch partnerships`() {
@@ -91,16 +88,16 @@ class PartnershipsControllerIntegrationTest : AbstractIntegrationTest() {
         `can delete partnership`(AuthenticatedUser(UUID.randomUUID(), setOf(Roles.FINANCE_ADMIN)))
     }
 
-    fun `can delete partnership`(user: AuthenticatedUser) {
+    fun `can delete partnership`(user: AuthenticatedUser) = jdbi.handle { h ->
         val adult1 = testPerson1()
         val adult2 = testPerson2()
-        val partnership1 = partnershipDAO.createPartnership(adult1.id, adult2.id, LocalDate.now(), LocalDate.now().plusDays(100))
-        partnershipDAO.createPartnership(adult1.id, adult2.id, LocalDate.now().plusDays(200), LocalDate.now().plusDays(300))
-        assertEquals(2, partnershipDAO.getPartnershipsForPerson(adult1.id).size)
+        val partnership1 = h.createPartnership(adult1.id, adult2.id, LocalDate.now(), LocalDate.now().plusDays(100))
+        h.createPartnership(adult1.id, adult2.id, LocalDate.now().plusDays(200), LocalDate.now().plusDays(300))
+        assertEquals(2, h.getPartnershipsForPerson(adult1.id).size)
 
         val delResponse = controller.deletePartnership(user, partnership1.id)
         assertEquals(HttpStatus.NO_CONTENT, delResponse.statusCode)
-        assertEquals(1, partnershipDAO.getPartnershipsForPerson(adult1.id).size)
+        assertEquals(1, h.getPartnershipsForPerson(adult1.id).size)
     }
 
     @Test
@@ -118,11 +115,11 @@ class PartnershipsControllerIntegrationTest : AbstractIntegrationTest() {
         `can update partnership duration`(AuthenticatedUser(UUID.randomUUID(), setOf(Roles.FINANCE_ADMIN)))
     }
 
-    fun `can update partnership duration`(user: AuthenticatedUser) {
+    fun `can update partnership duration`(user: AuthenticatedUser) = jdbi.handle { h ->
         val adult1 = testPerson1()
         val adult2 = testPerson2()
-        val partnership1 = partnershipDAO.createPartnership(adult1.id, adult2.id, LocalDate.now(), LocalDate.now().plusDays(200))
-        partnershipDAO.createPartnership(adult1.id, adult2.id, LocalDate.now().plusDays(500), LocalDate.now().plusDays(700))
+        val partnership1 = h.createPartnership(adult1.id, adult2.id, LocalDate.now(), LocalDate.now().plusDays(200))
+        h.createPartnership(adult1.id, adult2.id, LocalDate.now().plusDays(500), LocalDate.now().plusDays(700))
 
         val newStartDate = LocalDate.now().plusDays(100)
         val newEndDate = LocalDate.now().plusDays(300)
@@ -143,12 +140,12 @@ class PartnershipsControllerIntegrationTest : AbstractIntegrationTest() {
     }
 
     @Test
-    fun `can updating partnership duration to overlap throws conflict`() {
+    fun `can updating partnership duration to overlap throws conflict`() = jdbi.handle { h ->
         val user = AuthenticatedUser(UUID.randomUUID(), setOf(Roles.SERVICE_WORKER))
         val adult1 = testPerson1()
         val adult2 = testPerson2()
-        val partnership1 = partnershipDAO.createPartnership(adult1.id, adult2.id, LocalDate.now(), LocalDate.now().plusDays(200))
-        partnershipDAO.createPartnership(adult1.id, adult2.id, LocalDate.now().plusDays(500), LocalDate.now().plusDays(700))
+        val partnership1 = h.createPartnership(adult1.id, adult2.id, LocalDate.now(), LocalDate.now().plusDays(200))
+        h.createPartnership(adult1.id, adult2.id, LocalDate.now().plusDays(500), LocalDate.now().plusDays(700))
 
         val newStartDate = LocalDate.now().plusDays(100)
         val newEndDate = LocalDate.now().plusDays(600)
@@ -159,11 +156,11 @@ class PartnershipsControllerIntegrationTest : AbstractIntegrationTest() {
     }
 
     @Test
-    fun `error is thrown if enduser tries to get partnerships`() {
+    fun `error is thrown if enduser tries to get partnerships`() = jdbi.handle { h ->
         val user = AuthenticatedUser(UUID.randomUUID(), setOf(Roles.END_USER))
         val adult1 = testPerson1()
         val adult2 = testPerson2()
-        partnershipDAO.createPartnership(adult1.id, adult2.id, LocalDate.now(), LocalDate.now().plusDays(200))
+        h.createPartnership(adult1.id, adult2.id, LocalDate.now(), LocalDate.now().plusDays(200))
 
         assertThrows<Forbidden> {
             controller.getPartnerships(user, adult1.id)
@@ -185,11 +182,11 @@ class PartnershipsControllerIntegrationTest : AbstractIntegrationTest() {
     }
 
     @Test
-    fun `error is thrown if enduser tries to update partnerships`() {
+    fun `error is thrown if enduser tries to update partnerships`() = jdbi.handle { h ->
         val user = AuthenticatedUser(UUID.randomUUID(), setOf(Roles.END_USER))
         val adult1 = testPerson1()
         val adult2 = testPerson2()
-        val partnership = partnershipDAO.createPartnership(adult1.id, adult2.id, LocalDate.now(), LocalDate.now().plusDays(200))
+        val partnership = h.createPartnership(adult1.id, adult2.id, LocalDate.now(), LocalDate.now().plusDays(200))
 
         val requestBody = PartnershipsController.PartnershipUpdateRequest(LocalDate.now(), LocalDate.now().plusDays(999))
         assertThrows<Forbidden> {
@@ -198,17 +195,17 @@ class PartnershipsControllerIntegrationTest : AbstractIntegrationTest() {
     }
 
     @Test
-    fun `error is thrown if enduser tries to delete a partnership`() {
+    fun `error is thrown if enduser tries to delete a partnership`() = jdbi.handle { h ->
         val user = AuthenticatedUser(UUID.randomUUID(), setOf(Roles.END_USER))
-        val partnership = partnershipDAO.createPartnership(testPerson1().id, testPerson2().id, LocalDate.now(), LocalDate.now().plusDays(200))
+        val partnership = h.createPartnership(testPerson1().id, testPerson2().id, LocalDate.now(), LocalDate.now().plusDays(200))
 
         assertThrows<Forbidden> {
             controller.deletePartnership(user, partnership.id)
         }
     }
 
-    private fun createPerson(ssn: String, firstName: String): PersonJSON {
-        return personDAO.getOrCreatePersonIdentity(
+    private fun createPerson(ssn: String, firstName: String): PersonJSON = jdbi.transaction { h ->
+        h.createPerson(
             PersonIdentityRequest(
                 identity = ExternalIdentifier.SSN.getInstance(ssn),
                 firstName = firstName,

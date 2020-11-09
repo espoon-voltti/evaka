@@ -17,16 +17,12 @@ import fi.espoo.evaka.invoicing.domain.InvoiceStatus
 import fi.espoo.evaka.invoicing.domain.Product
 import fi.espoo.evaka.invoicing.integration.InvoiceIntegrationClient
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.db.withSpringHandle
-import fi.espoo.evaka.shared.db.withSpringTx
 import fi.espoo.evaka.shared.domain.BadRequest
 import org.jdbi.v3.core.Handle
 import org.springframework.stereotype.Component
-import org.springframework.transaction.PlatformTransactionManager
 import java.time.Instant
 import java.time.LocalDate
 import java.util.UUID
-import javax.sql.DataSource
 
 data class DaycareCodes(val areaCode: Int?, val costCenter: String?, val subCostCenter: String?)
 
@@ -38,17 +34,9 @@ data class InvoiceCodes(
 )
 
 @Component
-class InvoiceService(
-    private val integrationClient: InvoiceIntegrationClient,
-    private val dataSource: DataSource,
-    private val txManager: PlatformTransactionManager
-) {
-    fun sendInvoices(user: AuthenticatedUser, invoiceIds: List<UUID>, invoiceDate: LocalDate?, dueDate: LocalDate?) {
-        val invoices = withSpringTx(txManager) {
-            withSpringHandle(dataSource) { h ->
-                getInvoicesByIds(h, invoiceIds)
-            }
-        }
+class InvoiceService(private val integrationClient: InvoiceIntegrationClient) {
+    fun sendInvoices(h: Handle, user: AuthenticatedUser, invoiceIds: List<UUID>, invoiceDate: LocalDate?, dueDate: LocalDate?) {
+        val invoices = getInvoicesByIds(h, invoiceIds)
         if (invoices.isEmpty()) return
 
         val notDrafts = invoices.filterNot { it.status == InvoiceStatus.DRAFT }
@@ -59,11 +47,7 @@ class InvoiceService(
         val (withSSNs, withoutSSNs) = invoices
             .partition { invoice -> invoice.headOfFamily.ssn != null }
 
-        val maxInvoiceNumber = withSpringTx(txManager) {
-            withSpringHandle(dataSource) { h ->
-                getMaxInvoiceNumber(h).let { if (it >= 5000000000) it + 1 else 5000000000 }
-            }
-        }
+        val maxInvoiceNumber = getMaxInvoiceNumber(h).let { if (it >= 5000000000) it + 1 else 5000000000 }
         val updatedInvoices = withSSNs.mapIndexed { index, invoice ->
             invoice.copy(
                 number = maxInvoiceNumber + index,
@@ -83,43 +67,33 @@ class InvoiceService(
             }
             .partition { (succeeded, _) -> succeeded }
 
-        withSpringTx(txManager) {
-            withSpringHandle(dataSource) { h ->
-                if (invoiceDate != null && dueDate != null) {
-                    updateInvoiceDates(h, invoices.map { it.id }, invoiceDate, dueDate)
-                }
-                setDraftsSent(h, succeeded.map { (_, invoice) -> invoice.id to invoice.number!! }, user.id)
-                updateToWaitingForSending(h, withoutSSNs.map { it.id })
-            }
+        if (invoiceDate != null && dueDate != null) {
+            updateInvoiceDates(h, invoices.map { it.id }, invoiceDate, dueDate)
         }
+        setDraftsSent(h, succeeded.map { (_, invoice) -> invoice.id to invoice.number!! }, user.id)
+        updateToWaitingForSending(h, withoutSSNs.map { it.id })
     }
 
-    fun updateInvoice(uuid: UUID, invoice: Invoice) {
-        withSpringTx(txManager) {
-            withSpringHandle(dataSource) { h ->
-                val original = getInvoice(h, uuid)
-                    ?: throw BadRequest("No original found for invoice with given ID ($uuid)")
+    fun updateInvoice(h: Handle, uuid: UUID, invoice: Invoice) {
+        val original = getInvoice(h, uuid)
+            ?: throw BadRequest("No original found for invoice with given ID ($uuid)")
 
-                val updated = when (original.status) {
-                    InvoiceStatus.DRAFT -> original.copy(
-                        rows = invoice.rows.map { row -> if (row.id == null) row.copy(id = UUID.randomUUID()) else row }
-                    )
-                    else -> throw BadRequest("Only draft invoices can be updated")
-                }
-
-                upsertInvoices(h, listOf(updated))
-            }
+        val updated = when (original.status) {
+            InvoiceStatus.DRAFT -> original.copy(
+                rows = invoice.rows.map { row -> if (row.id == null) row.copy(id = UUID.randomUUID()) else row }
+            )
+            else -> throw BadRequest("Only draft invoices can be updated")
         }
+
+        upsertInvoices(h, listOf(updated))
     }
 
-    fun getInvoiceIds(from: LocalDate, to: LocalDate, areas: List<String>): List<UUID> {
-        return withSpringHandle(dataSource) { h ->
-            getInvoiceIdsByDates(h, from, to, areas)
-        }
+    fun getInvoiceIds(h: Handle, from: LocalDate, to: LocalDate, areas: List<String>): List<UUID> {
+        return getInvoiceIdsByDates(h, from, to, areas)
     }
 }
 
-fun markManuallySent(user: AuthenticatedUser, invoiceIds: List<UUID>): (Handle) -> Unit = { h: Handle ->
+fun markManuallySent(h: Handle, user: AuthenticatedUser, invoiceIds: List<UUID>) {
     val sql =
         """
         UPDATE invoice SET status = :status_sent, sent_at = :sent_at, sent_by = :sent_by

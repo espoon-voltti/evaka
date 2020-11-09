@@ -6,8 +6,8 @@ package fi.espoo.evaka.decision
 
 import fi.espoo.evaka.application.ApplicationDetails
 import fi.espoo.evaka.placement.PlacementPlan
-import fi.espoo.evaka.placement.PlacementPlanService
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.placement.getPlacementPlan
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.getEnum
 import fi.espoo.evaka.shared.domain.NotFound
@@ -18,11 +18,7 @@ import java.time.LocalDate
 import java.util.UUID
 
 @Service
-class DecisionDraftService(private val placementPlanService: PlacementPlanService) {
-    fun getDecisionDrafts(h: Handle, applicationId: UUID): List<DecisionDraft> {
-        return fetchDecisionDrafts(h, applicationId)
-    }
-
+class DecisionDraftService {
     fun clearDecisionDrafts(h: Handle, applicationId: UUID) {
         // language=sql
         val sql =
@@ -32,7 +28,7 @@ class DecisionDraftService(private val placementPlanService: PlacementPlanServic
     }
 
     fun createDecisionDrafts(h: Handle, user: AuthenticatedUser, application: ApplicationDetails) {
-        val placementPlan = placementPlanService.getPlacementPlanByApplication((application.id))
+        val placementPlan = getPlacementPlan(h, application.id)
             ?: throw NotFound("Application ${application.id} has no placement")
 
         val drafts: List<DecisionDraft> = when (placementPlan.type) {

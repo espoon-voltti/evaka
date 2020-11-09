@@ -28,6 +28,7 @@ import fi.espoo.evaka.pis.service.PersonDTO
 import fi.espoo.evaka.pis.service.PersonService
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.config.Roles
+import org.jdbi.v3.core.Handle
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
@@ -49,6 +50,9 @@ private val childId = UUID.randomUUID()
 class DaycareApplicationSerializerTest {
     @Mock
     lateinit var personService: PersonService
+
+    @Mock
+    lateinit var handle: Handle
 
     @InjectMocks
     lateinit var serializer: ApplicationSerializer
@@ -76,13 +80,13 @@ class DaycareApplicationSerializerTest {
     @Test
     fun `enduser serialized daycare json matches expected`() {
         val user = AuthenticatedUser(requestingUserId, setOf(Roles.END_USER))
-        val json = serializer.serialize(user, expectedEnduserDaycareApplication)
+        val json = serializer.serialize(handle, user, expectedEnduserDaycareApplication)
         assertTrue(json.form is EnduserDaycareFormJSON)
         assertEquals(expectedEnduserDaycareFormJSON, json.form)
     }
 
     private fun mockPersonService(personId: UUID, restricted: Boolean = false) {
-        lenient().`when`(personService.getUpToDatePerson(any(), eq(personId))).thenReturn(
+        lenient().`when`(personService.getUpToDatePerson(any(), any(), eq(personId))).thenReturn(
             PersonDTO(
                 id = personId,
                 identity = ExternalIdentifier.NoID(),

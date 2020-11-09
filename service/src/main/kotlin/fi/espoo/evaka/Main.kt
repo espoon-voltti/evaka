@@ -6,9 +6,11 @@ package fi.espoo.evaka
 
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.autoconfigure.flyway.FlywayAutoConfiguration
+import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
+import org.springframework.boot.autoconfigure.transaction.TransactionAutoConfiguration
 import org.springframework.boot.builder.SpringApplicationBuilder
 
-@SpringBootApplication(exclude = [FlywayAutoConfiguration::class])
+@SpringBootApplication(exclude = [DataSourceAutoConfiguration::class, FlywayAutoConfiguration::class, TransactionAutoConfiguration::class])
 class Main
 
 fun main(args: Array<String>) {

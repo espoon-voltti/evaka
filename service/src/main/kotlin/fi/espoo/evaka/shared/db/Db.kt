@@ -23,15 +23,8 @@ import org.jdbi.v3.jackson2.Jackson2Config
 import org.jdbi.v3.jackson2.Jackson2Plugin
 import org.jdbi.v3.json.Json
 import org.jdbi.v3.postgres.PostgresPlugin
-import org.springframework.jdbc.datasource.DataSourceUtils
-import org.springframework.transaction.PlatformTransactionManager
-import org.springframework.transaction.TransactionDefinition
-import org.springframework.transaction.support.DefaultTransactionDefinition
-import org.springframework.transaction.support.TransactionSynchronization
-import org.springframework.transaction.support.TransactionSynchronizationManager
 import java.sql.ResultSet
 import java.util.UUID
-import javax.sql.DataSource
 
 /**
  * Starts a transaction, runs the given function, and commits or rolls back the transaction depending on whether
@@ -120,71 +113,6 @@ inline fun <reified T : Any> StatementContext.mapNullableColumn(rs: ResultSet, n
     findColumnMapperFor(T::class.java).orElseThrow {
         throw IllegalStateException("No column mapper found for type ${T::class}")
     }.map(rs, name, this)
-
-/**
- * Runs a function within a Spring-managed transaction.
- *
- * Similar to annotating a method with @Transactional, and calling that method from outside declaring class so Spring
- * reflection-based proxying works.
- */
-fun <T> withSpringTx(
-    txManager: PlatformTransactionManager,
-    readOnly: Boolean = false,
-    requiresNew: Boolean = false,
-    f: () -> T
-): T {
-    val status = txManager.getTransaction(
-        DefaultTransactionDefinition().apply {
-            this.isReadOnly = readOnly
-            this.propagationBehavior = if (requiresNew) {
-                TransactionDefinition.PROPAGATION_REQUIRES_NEW
-            } else {
-                TransactionDefinition.PROPAGATION_REQUIRED
-            }
-        }
-    )
-    val result = try {
-        f()
-    } catch (e: Throwable) {
-        try {
-            txManager.rollback(status)
-        } catch (rollback: Exception) {
-            e.addSuppressed(rollback)
-        }
-        throw e
-    }
-    txManager.commit(status)
-    return result
-}
-
-/**
- * Acquires the current thread-local Spring JDBC connection for the given data source, converts it into a JDBI handle,
- * runs the given function, and closes the connection.
- */
-inline fun <T> withSpringHandle(dataSource: DataSource, crossinline f: (Handle) -> T): T {
-    val connection = DataSourceUtils.getConnection(dataSource)
-    try {
-        return configureJdbi(Jdbi.create(connection)).handle(f)
-    } finally {
-        DataSourceUtils.releaseConnection(connection, dataSource)
-    }
-}
-
-/**
- * Registers a callback to be called after the current transaction is committed.
- *
- * If the transaction is rolled back, the function will not be called.
- * Does nothing if no transaction is active.
- */
-fun runAfterCommit(f: () -> Unit) {
-    if (TransactionSynchronizationManager.isSynchronizationActive()) {
-        TransactionSynchronizationManager.registerSynchronization(object : TransactionSynchronization {
-            override fun afterCommit() {
-                f()
-            }
-        })
-    }
-}
 
 /**
  * Maps a row column to a value.

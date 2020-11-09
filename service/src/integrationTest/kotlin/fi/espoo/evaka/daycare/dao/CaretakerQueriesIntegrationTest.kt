@@ -4,7 +4,9 @@
 
 package fi.espoo.evaka.daycare.dao
 
-import fi.espoo.evaka.daycare.AbstractIntegrationTest
+import fi.espoo.evaka.PureJdbiTest
+import fi.espoo.evaka.daycare.getGroupStats
+import fi.espoo.evaka.daycare.getUnitStats
 import fi.espoo.evaka.daycare.service.Stats
 import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.domain.BadRequest
@@ -14,14 +16,10 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import org.springframework.beans.factory.annotation.Autowired
 import java.time.LocalDate
 import java.util.UUID
 
-class DaycareCaretakerDAOIntegrationTest : AbstractIntegrationTest() {
-    @Autowired
-    lateinit var daycareCaretakerDAO: DaycareCaretakerDAO
-
+class CaretakerQueriesIntegrationTest : PureJdbiTest() {
     val careAreaId = UUID.randomUUID()
     val daycareId = UUID.randomUUID()
     val daycareId2 = UUID.randomUUID()
@@ -71,8 +69,8 @@ class DaycareCaretakerDAOIntegrationTest : AbstractIntegrationTest() {
     }
 
     @Test
-    fun `test getGroupStats`() {
-        val groupStats = daycareCaretakerDAO.getGroupStats(daycareId, LocalDate.of(2000, 1, 1), LocalDate.of(2000, 6, 1))
+    fun `test getGroupStats`() = jdbi.handle { h ->
+        val groupStats = h.getGroupStats(daycareId, LocalDate.of(2000, 1, 1), LocalDate.of(2000, 6, 1))
         assertEquals(4, groupStats.keys.size)
         assertEquals(Stats(3.0, 5.0), groupStats.get(groupId1))
         assertEquals(Stats(1.0, 3.0), groupStats.get(groupId2))
@@ -81,8 +79,8 @@ class DaycareCaretakerDAOIntegrationTest : AbstractIntegrationTest() {
     }
 
     @Test
-    fun `test getGroupStats with limited range`() {
-        val groupStats = daycareCaretakerDAO.getGroupStats(daycareId, LocalDate.of(2000, 2, 3), LocalDate.of(2000, 4, 1))
+    fun `test getGroupStats with limited range`() = jdbi.handle { h ->
+        val groupStats = h.getGroupStats(daycareId, LocalDate.of(2000, 2, 3), LocalDate.of(2000, 4, 1))
         assertEquals(4, groupStats.keys.size)
         assertEquals(Stats(4.0, 5.0), groupStats.get(groupId1))
         assertEquals(Stats(1.0, 3.0), groupStats.get(groupId2))
@@ -91,56 +89,56 @@ class DaycareCaretakerDAOIntegrationTest : AbstractIntegrationTest() {
     }
 
     @Test
-    fun `test getGroupStats with limited range 2`() {
+    fun `test getGroupStats with limited range 2`() = jdbi.handle { h ->
         val singleDate = LocalDate.of(2000, 2, 1)
-        val groupStats = daycareCaretakerDAO.getGroupStats(daycareId, singleDate, singleDate)
+        val groupStats = h.getGroupStats(daycareId, singleDate, singleDate)
         assertEquals(Stats(3.0, 3.0), groupStats.get(groupId1))
     }
 
     @Test
-    fun `test getGroupStats with limited range 3`() {
+    fun `test getGroupStats with limited range 3`() = jdbi.handle { h ->
         val singleDate = LocalDate.of(2000, 2, 2)
-        val groupStats = daycareCaretakerDAO.getGroupStats(daycareId, singleDate, singleDate)
+        val groupStats = h.getGroupStats(daycareId, singleDate, singleDate)
         assertEquals(Stats(5.0, 5.0), groupStats.get(groupId1))
     }
 
     @Test
-    fun `test getUnitStats`() {
-        val unitStats = daycareCaretakerDAO.getUnitStats(daycareId, LocalDate.of(2000, 1, 1), LocalDate.of(2000, 6, 1))
+    fun `test getUnitStats`() = jdbi.handle { h ->
+        val unitStats = h.getUnitStats(daycareId, LocalDate.of(2000, 1, 1), LocalDate.of(2000, 6, 1))
         assertEquals(Stats(9.0, 13.0), unitStats)
     }
 
     @Test
-    fun `test getUnitStats with no groups`() {
-        val unitStats = daycareCaretakerDAO.getUnitStats(daycareId2, LocalDate.of(2000, 1, 1), LocalDate.of(2000, 6, 1))
+    fun `test getUnitStats with no groups`() = jdbi.handle { h ->
+        val unitStats = h.getUnitStats(daycareId2, LocalDate.of(2000, 1, 1), LocalDate.of(2000, 6, 1))
         assertEquals(Stats(0.0, 0.0), unitStats)
     }
 
     @Test
-    fun `test getUnitStats with limited range 1`() {
-        val unitStats = daycareCaretakerDAO.getUnitStats(daycareId, LocalDate.of(2000, 3, 1), LocalDate.of(2000, 3, 2))
+    fun `test getUnitStats with limited range 1`() = jdbi.handle { h ->
+        val unitStats = h.getUnitStats(daycareId, LocalDate.of(2000, 3, 1), LocalDate.of(2000, 3, 2))
         assertEquals(Stats(9.0, 10.0), unitStats)
     }
 
     @Test
-    fun `test getUnitStats with limited range 2`() {
-        val unitStats = daycareCaretakerDAO.getUnitStats(daycareId, LocalDate.of(2000, 3, 1), LocalDate.of(2000, 3, 1))
+    fun `test getUnitStats with limited range 2`() = jdbi.handle { h ->
+        val unitStats = h.getUnitStats(daycareId, LocalDate.of(2000, 3, 1), LocalDate.of(2000, 3, 1))
         assertEquals(Stats(10.0, 10.0), unitStats)
     }
 
     @Test
-    fun `test getUnitStats with limited range 3`() {
-        val unitStats = daycareCaretakerDAO.getUnitStats(daycareId, LocalDate.of(2000, 3, 2), LocalDate.of(2000, 3, 2))
+    fun `test getUnitStats with limited range 3`() = jdbi.handle { h ->
+        val unitStats = h.getUnitStats(daycareId, LocalDate.of(2000, 3, 2), LocalDate.of(2000, 3, 2))
         assertEquals(Stats(9.0, 9.0), unitStats)
     }
 
     @Test
-    fun `test getUnitStats with long time range`() {
-        assertDoesNotThrow { daycareCaretakerDAO.getUnitStats(daycareId, LocalDate.of(2005, 1, 1), LocalDate.of(2010, 1, 1)) }
+    fun `test getUnitStats with long time range`() = jdbi.handle { h ->
+        assertDoesNotThrow { h.getUnitStats(daycareId, LocalDate.of(2005, 1, 1), LocalDate.of(2010, 1, 1)) }
     }
 
     @Test
-    fun `test getUnitStats with too long time range`() {
-        assertThrows<BadRequest> { daycareCaretakerDAO.getUnitStats(daycareId, LocalDate.of(2005, 1, 1), LocalDate.of(2010, 1, 2)) }
+    fun `test getUnitStats with too long time range`() = jdbi.handle { h ->
+        assertThrows<BadRequest> { h.getUnitStats(daycareId, LocalDate.of(2005, 1, 1), LocalDate.of(2010, 1, 2)) }
     }
 }

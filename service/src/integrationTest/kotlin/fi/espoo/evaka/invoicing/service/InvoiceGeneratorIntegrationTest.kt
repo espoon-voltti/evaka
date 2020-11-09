@@ -83,7 +83,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
         jdbi.handle(insertPlacement(testChild_1.id, placementPeriod))
         jdbi.handle(insertTemporaryServiceNeed(testChild_1.id, period))
 
-        jdbi.transaction(createAllDraftInvoices(objectMapper, period))
+        jdbi.transaction { createAllDraftInvoices(it, objectMapper, period) }
 
         val result = jdbi.handle(getAllInvoices)
 
@@ -113,7 +113,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
         jdbi.handle(insertPlacement(testChild_1.id, placementPeriod))
         jdbi.handle(insertTemporaryServiceNeed(testChild_1.id, period, partDay = true))
 
-        jdbi.transaction(createAllDraftInvoices(objectMapper, period))
+        jdbi.transaction { createAllDraftInvoices(it, objectMapper, period) }
 
         val result = jdbi.handle(getAllInvoices)
 
@@ -140,7 +140,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
         jdbi.handle(insertPlacement(testChild_1.id, placementPeriod))
         jdbi.handle(insertTemporaryServiceNeed(testChild_1.id, period))
 
-        jdbi.transaction(createAllDraftInvoices(objectMapper, period))
+        jdbi.transaction { createAllDraftInvoices(it, objectMapper, period) }
 
         val result = jdbi.handle(getAllInvoices)
 
@@ -179,7 +179,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
             )
         )
 
-        jdbi.transaction(createAllDraftInvoices(objectMapper, period))
+        jdbi.transaction { createAllDraftInvoices(it, objectMapper, period) }
 
         val result = jdbi.handle(getAllInvoices)
 
@@ -217,7 +217,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
         jdbi.handle(insertPlacement(testChild_2.id, placementPeriod))
         jdbi.handle(insertTemporaryServiceNeed(testChild_2.id, period))
 
-        jdbi.transaction(createAllDraftInvoices(objectMapper, period))
+        jdbi.transaction { createAllDraftInvoices(it, objectMapper, period) }
 
         val result = jdbi.handle(getAllInvoices)
 
@@ -255,7 +255,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
         jdbi.handle(insertPlacement(testChild_2.id, placementPeriod))
         jdbi.handle(insertTemporaryServiceNeed(testChild_2.id, period, partDay = true))
 
-        jdbi.transaction(createAllDraftInvoices(objectMapper, period))
+        jdbi.transaction { createAllDraftInvoices(it, objectMapper, period) }
 
         val result = jdbi.handle(getAllInvoices)
 
@@ -303,7 +303,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
             )
         )
 
-        jdbi.transaction(createAllDraftInvoices(objectMapper, period))
+        jdbi.transaction { createAllDraftInvoices(it, objectMapper, period) }
 
         val result = jdbi.handle(getAllInvoices)
 
@@ -341,7 +341,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
         jdbi.handle(insertPlacement(testChild_1.id, placementPeriod))
         jdbi.handle(insertTemporaryServiceNeed(testChild_1.id, period))
 
-        jdbi.transaction(createAllDraftInvoices(objectMapper, period))
+        jdbi.transaction { createAllDraftInvoices(it, objectMapper, period) }
 
         val result = jdbi.handle(getAllInvoices)
 
@@ -368,7 +368,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
             )
         }
 
-        jdbi.transaction(createAllDraftInvoices(objectMapper, period))
+        jdbi.transaction { createAllDraftInvoices(it, objectMapper, period) }
 
         val result = jdbi.handle(getAllInvoices)
 
@@ -405,7 +405,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
             )
         )
 
-        jdbi.transaction(createAllDraftInvoices(objectMapper, period))
+        jdbi.transaction { createAllDraftInvoices(it, objectMapper, period) }
 
         val result = jdbi.handle(getAllInvoices)
 
@@ -445,7 +445,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
         jdbi.handle(insertTemporaryServiceNeed(testChild_1.id, Period(serviceNeedDate_1, serviceNeedDate_1)))
         jdbi.handle(insertTemporaryServiceNeed(testChild_1.id, Period(serviceNeedDate_2, serviceNeedDate_2)))
 
-        jdbi.transaction(createAllDraftInvoices(objectMapper, period))
+        jdbi.transaction { createAllDraftInvoices(it, objectMapper, period) }
 
         val result = jdbi.handle(getAllInvoices)
 
@@ -504,7 +504,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
             )
         }
 
-        jdbi.transaction(createAllDraftInvoices(objectMapper, period))
+        jdbi.transaction { createAllDraftInvoices(it, objectMapper, period) }
 
         val result = jdbi.handle(getAllInvoices)
 
@@ -560,7 +560,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
             )
         }
 
-        jdbi.transaction(createAllDraftInvoices(objectMapper, period))
+        jdbi.transaction { createAllDraftInvoices(it, objectMapper, period) }
 
         val result = jdbi.handle(getAllInvoices)
 
@@ -627,7 +627,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
             )
         }
 
-        jdbi.transaction(createAllDraftInvoices(objectMapper, period))
+        jdbi.transaction { createAllDraftInvoices(it, objectMapper, period) }
 
         val result = jdbi.handle(getAllInvoices)
 
@@ -691,7 +691,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
         )
         jdbi.handle { h -> upsertFeeDecisions(h, objectMapper, decisions) }
 
-        jdbi.transaction(createAllDraftInvoices(objectMapper, period))
+        jdbi.transaction { createAllDraftInvoices(it, objectMapper, period) }
 
         val result = jdbi.handle(getAllInvoices)
 
@@ -762,7 +762,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
         )
         jdbi.handle { h -> upsertFeeDecisions(h, objectMapper, decisions) }
 
-        jdbi.transaction(createAllDraftInvoices(objectMapper, period))
+        jdbi.transaction { createAllDraftInvoices(it, objectMapper, period) }
 
         val result = jdbi.handle(getAllInvoices)
 
@@ -833,7 +833,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
         )
         jdbi.handle { h -> upsertFeeDecisions(h, objectMapper, decisions) }
 
-        jdbi.transaction(createAllDraftInvoices(objectMapper, period))
+        jdbi.transaction { createAllDraftInvoices(it, objectMapper, period) }
 
         val result = jdbi.handle(getAllInvoices)
 
@@ -900,7 +900,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
             )
         }
 
-        jdbi.transaction(createAllDraftInvoices(objectMapper, period))
+        jdbi.transaction { createAllDraftInvoices(it, objectMapper, period) }
 
         val result = jdbi.handle(getAllInvoices)
 
@@ -961,7 +961,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
         )
         jdbi.handle { h -> upsertFeeDecisions(h, objectMapper, listOf(decision)) }
 
-        jdbi.transaction(createAllDraftInvoices(objectMapper, period))
+        jdbi.transaction { createAllDraftInvoices(it, objectMapper, period) }
 
         val result = jdbi.handle(getAllInvoices)
 
@@ -1021,7 +1021,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
         )
         jdbi.handle { h -> upsertFeeDecisions(h, objectMapper, listOf(decision)) }
 
-        jdbi.transaction(createAllDraftInvoices(objectMapper, period))
+        jdbi.transaction { createAllDraftInvoices(it, objectMapper, period) }
 
         val result = jdbi.handle(getAllInvoices)
 
@@ -1083,7 +1083,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
         )
         jdbi.handle { h -> upsertFeeDecisions(h, objectMapper, listOf(decision)) }
 
-        jdbi.transaction(createAllDraftInvoices(objectMapper, period))
+        jdbi.transaction { createAllDraftInvoices(it, objectMapper, period) }
 
         val result = jdbi.handle(getAllInvoices)
 
@@ -1120,7 +1120,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
 
         initDataForAbsences(listOf(period), absenceDays)
 
-        jdbi.transaction(createAllDraftInvoices(objectMapper, period))
+        jdbi.transaction { createAllDraftInvoices(it, objectMapper, period) }
 
         val result = jdbi.handle(getAllInvoices)
 
@@ -1154,7 +1154,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
 
         initDataForAbsences(listOf(period), absenceDays)
 
-        jdbi.transaction(createAllDraftInvoices(objectMapper, period))
+        jdbi.transaction { createAllDraftInvoices(it, objectMapper, period) }
 
         val result = jdbi.handle(getAllInvoices)
 
@@ -1188,7 +1188,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
 
         initDataForAbsences(listOf(period), absenceDays)
 
-        jdbi.transaction(createAllDraftInvoices(objectMapper, period))
+        jdbi.transaction { createAllDraftInvoices(it, objectMapper, period) }
 
         val result = jdbi.handle(getAllInvoices)
 
@@ -1215,7 +1215,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
 
         initDataForAbsences(listOf(period), absenceDays)
 
-        jdbi.transaction(createAllDraftInvoices(objectMapper, period))
+        jdbi.transaction { createAllDraftInvoices(it, objectMapper, period) }
 
         val result = jdbi.handle(getAllInvoices)
 
@@ -1248,7 +1248,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
 
         initDataForAbsences(listOf(period), absenceDays)
 
-        jdbi.transaction(createAllDraftInvoices(objectMapper, period))
+        jdbi.transaction { createAllDraftInvoices(it, objectMapper, period) }
 
         val result = jdbi.handle(getAllInvoices)
 
@@ -1287,7 +1287,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
 
         initDataForAbsences(listOf(period), absenceDays)
 
-        jdbi.transaction(createAllDraftInvoices(objectMapper, period))
+        jdbi.transaction { createAllDraftInvoices(it, objectMapper, period) }
 
         val result = jdbi.handle(getAllInvoices)
 
@@ -1327,7 +1327,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
 
         initDataForAbsences(listOf(period), absenceDays, child = testChild_2)
 
-        jdbi.transaction(createAllDraftInvoices(objectMapper, period))
+        jdbi.transaction { createAllDraftInvoices(it, objectMapper, period) }
 
         val result = jdbi.handle(getAllInvoices)
 
@@ -1359,12 +1359,13 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
 
         initDataForAbsences(periods, absenceDays)
 
-        jdbi.transaction(
+        jdbi.transaction {
             createAllDraftInvoices(
+                it,
                 objectMapper,
                 Period(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
             )
-        )
+        }
 
         val result = jdbi.handle(getAllInvoices)
 
@@ -1422,12 +1423,13 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
 
         initDataForAbsences(periods, absenceDays)
 
-        jdbi.transaction(
+        jdbi.transaction {
             createAllDraftInvoices(
+                it,
                 objectMapper,
                 Period(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
             )
-        )
+        }
 
         val result = jdbi.handle(getAllInvoices)
 
@@ -1480,7 +1482,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
 
         initDataForAbsences(listOf(period), absenceDays)
 
-        jdbi.transaction(createAllDraftInvoices(objectMapper, period))
+        jdbi.transaction { createAllDraftInvoices(it, objectMapper, period) }
 
         val result = jdbi.handle(getAllInvoices)
 
@@ -1525,7 +1527,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
         )
         jdbi.handle { h -> upsertFeeDecisions(h, objectMapper, listOf(decision)) }
 
-        jdbi.transaction(createAllDraftInvoices(objectMapper, period))
+        jdbi.transaction { createAllDraftInvoices(it, objectMapper, period) }
 
         val result = jdbi.handle(getAllInvoices)
         assertEquals(0, result.size)
@@ -1541,7 +1543,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
             .toMap()
         initDataForAbsences(listOf(weekEnd), absenceDays)
 
-        jdbi.transaction(createAllDraftInvoices(objectMapper, period))
+        jdbi.transaction { createAllDraftInvoices(it, objectMapper, period) }
 
         val result = jdbi.handle(getAllInvoices)
         assertEquals(0, result.size)
@@ -1717,7 +1719,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
         }
 
         placementPeriods.forEach { period -> jdbi.handle(insertPlacement(testChild_1.id, period, placementType)) }
-        jdbi.transaction(createAllDraftInvoices(objectMapper, invoicingPeriod))
+        jdbi.transaction { createAllDraftInvoices(it, objectMapper, invoicingPeriod) }
     }
 
     private fun initDataForAbsences(

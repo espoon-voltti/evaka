@@ -37,12 +37,14 @@ import fi.espoo.evaka.invoicing.domain.FeeDecision
 import fi.espoo.evaka.invoicing.domain.Invoice
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecision
 import fi.espoo.evaka.pis.Employee
-import fi.espoo.evaka.pis.dao.PersonDAO
+import fi.espoo.evaka.pis.createPersonFromVtj
 import fi.espoo.evaka.pis.deleteEmployeeByAad
 import fi.espoo.evaka.pis.deleteEmployeeRolesByAad
 import fi.espoo.evaka.pis.getEmployees
+import fi.espoo.evaka.pis.getPersonBySSN
 import fi.espoo.evaka.pis.service.PersonDTO
 import fi.espoo.evaka.pis.service.PersonService
+import fi.espoo.evaka.pis.updatePersonFromVtj
 import fi.espoo.evaka.placement.PlacementPlanService
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.async.AsyncJobRunner
@@ -51,7 +53,6 @@ import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.config.Roles
 import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.db.transaction
-import fi.espoo.evaka.shared.db.withSpringHandle
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.ClosedPeriod
 import fi.espoo.evaka.shared.domain.Coordinate
@@ -84,7 +85,6 @@ import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.time.ZoneId
 import java.util.UUID
-import javax.sql.DataSource
 
 @Profile("enable_dev_api")
 @Configuration
@@ -113,8 +113,6 @@ private val fakeAdmin = AuthenticatedUser(
 class DevApi(
     private val jdbi: Jdbi,
     private val objectMapper: ObjectMapper,
-    private val dataSource: DataSource,
-    private val personDao: PersonDAO,
     private val personService: PersonService,
     private val asyncJobRunner: AsyncJobRunner,
     private val placementPlanService: PlacementPlanService,
@@ -322,25 +320,28 @@ RETURNING id
     @PostMapping("/person")
     fun upsertPerson(@RequestBody body: DevPerson): ResponseEntity<PersonDTO> {
         if (body.ssn == null) throw BadRequest("SSN is required for using this endpoint")
-        val person = personDao.getPersonByExternalId(ExternalIdentifier.SSN.getInstance(body.ssn))
+        return jdbi.transaction { h ->
+            val person = h.getPersonBySSN(body.ssn)
+            val personDTO = body.toPersonDTO()
 
-        val personDTO = body.toPersonDTO()
-
-        return if (person != null) {
-            personDao.updatePersonFromVtj(personDTO).let { ResponseEntity.ok(it) }
-        } else {
-            personDao.createPersonFromVtj(personDTO).let { ResponseEntity.ok(it) }
+            if (person != null) {
+                h.updatePersonFromVtj(personDTO).let { ResponseEntity.ok(it) }
+            } else {
+                h.createPersonFromVtj(personDTO).let { ResponseEntity.ok(it) }
+            }
         }
     }
 
     @PostMapping("/person/create")
     fun createPerson(@RequestBody body: DevPerson): ResponseEntity<UUID> {
-        val personId = jdbi.transaction { it.insertTestPerson(body) }
-        val dto = body.copy(id = personId).toPersonDTO()
-        if (dto.identity is ExternalIdentifier.SSN) {
-            personDao.updatePersonFromVtj(dto)
+        return jdbi.transaction { h ->
+            val personId = h.insertTestPerson(body)
+            val dto = body.copy(id = personId).toPersonDTO()
+            if (dto.identity is ExternalIdentifier.SSN) {
+                h.updatePersonFromVtj(dto)
+            }
+            ResponseEntity.ok(personId)
         }
-        return ResponseEntity.ok(personId)
     }
 
     @DeleteMapping("/person/{id}")
@@ -474,7 +475,7 @@ RETURNING id
         @PathVariable("application-id") applicationId: UUID,
         @RequestBody placementPlan: PlacementPlan
     ): ResponseEntity<Unit> {
-        withSpringHandle(dataSource) { h ->
+        jdbi.transaction { h ->
             val application = fetchApplicationDetails(h, applicationId)
                 ?: throw NotFound("application $applicationId not found")
             val preschoolDaycarePeriod = if (placementPlan.preschoolDaycarePeriodStart != null) ClosedPeriod(
@@ -510,14 +511,16 @@ RETURNING id
     fun upsertPerson(@RequestBody person: VtjPerson): ResponseEntity<Unit> {
         MockPersonDetailsService.upsertPerson(person)
         jdbi.handle { h ->
-            h.createQuery("SELECT id FROM person WHERE social_security_number = :ssn")
+            val uuid = h.createQuery("SELECT id FROM person WHERE social_security_number = :ssn")
                 .bind("ssn", person.socialSecurityNumber)
                 .mapTo<UUID>()
                 .firstOrNull()
-        }?.let { uuid ->
-            // Refresh Pis data by forcing refresh from VTJ
-            val dummyUser = AuthenticatedUser(uuid, setOf(Roles.SERVICE_WORKER))
-            personService.getUpToDatePerson(dummyUser, uuid)
+
+            uuid?.let {
+                // Refresh Pis data by forcing refresh from VTJ
+                val dummyUser = AuthenticatedUser(it, setOf(Roles.SERVICE_WORKER))
+                personService.getUpToDatePerson(h, dummyUser, it)
+            }
         }
         return ResponseEntity.noContent().build()
     }
@@ -561,8 +564,11 @@ RETURNING id
             "confirm-decision-mailed" to applicationStateService::confirmDecisionMailed
         )
 
-        jdbi.transaction { h -> ensureFakeAdminExists(h) }
-        simpleActions[action]?.invoke(fakeAdmin, applicationId) ?: NotFound("Action not recognized")
+        val actionFn = simpleActions[action] ?: throw NotFound("Action not recognized")
+        jdbi.transaction { h ->
+            ensureFakeAdminExists(h)
+            actionFn.invoke(h, fakeAdmin, applicationId)
+        }
         return ResponseEntity.noContent().build()
     }
 
@@ -571,8 +577,10 @@ RETURNING id
         @PathVariable applicationId: UUID,
         @RequestBody body: DaycarePlacementPlan
     ): ResponseEntity<Unit> {
-        jdbi.transaction { h -> ensureFakeAdminExists(h) }
-        applicationStateService.createPlacementPlan(fakeAdmin, applicationId, body)
+        jdbi.transaction { h ->
+            ensureFakeAdminExists(h)
+            applicationStateService.createPlacementPlan(h, fakeAdmin, applicationId, body)
+        }
         return ResponseEntity.noContent().build()
     }
 
@@ -580,16 +588,18 @@ RETURNING id
     fun createDefaultPlacementPlan(
         @PathVariable applicationId: UUID
     ): ResponseEntity<Unit> {
-        jdbi.transaction { h -> ensureFakeAdminExists(h) }
-        placementPlanService.getPlacementPlanDraft(applicationId)
-            .let {
-                DaycarePlacementPlan(
-                    unitId = it.preferredUnits.first().id,
-                    period = it.period,
-                    preschoolDaycarePeriod = it.preschoolDaycarePeriod
-                )
-            }
-            .let { applicationStateService.createPlacementPlan(fakeAdmin, applicationId, it) }
+        jdbi.transaction { h ->
+            ensureFakeAdminExists(h)
+            placementPlanService.getPlacementPlanDraft(h, applicationId)
+                .let {
+                    DaycarePlacementPlan(
+                        unitId = it.preferredUnits.first().id,
+                        period = it.period,
+                        preschoolDaycarePeriod = it.preschoolDaycarePeriod
+                    )
+                }
+                .let { applicationStateService.createPlacementPlan(h, fakeAdmin, applicationId, it) }
+        }
 
         return ResponseEntity.noContent().build()
     }

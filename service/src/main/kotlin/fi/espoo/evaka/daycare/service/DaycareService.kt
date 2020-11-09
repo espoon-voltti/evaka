@@ -4,91 +4,70 @@
 
 package fi.espoo.evaka.daycare.service
 
-import fi.espoo.evaka.daycare.dao.DaycareCaretakerDAO
-import fi.espoo.evaka.daycare.dao.DaycareDAO
-import fi.espoo.evaka.daycare.dao.DaycarePlacementDAO
-import fi.espoo.evaka.daycare.getDaycareApplyFlags
-import fi.espoo.evaka.shared.db.withSpringHandle
-import fi.espoo.evaka.shared.db.withSpringTx
+import fi.espoo.evaka.daycare.createDaycareGroup
+import fi.espoo.evaka.daycare.deleteDaycareGroup
+import fi.espoo.evaka.daycare.getDaycareGroups
+import fi.espoo.evaka.daycare.getGroupStats
+import fi.espoo.evaka.daycare.getUnitStats
+import fi.espoo.evaka.daycare.initCaretakers
+import fi.espoo.evaka.daycare.isValidDaycareId
+import fi.espoo.evaka.placement.getDaycareGroupPlacements
 import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.shared.domain.NotFound
+import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.statement.UnableToExecuteStatementException
 import org.postgresql.util.PSQLException
 import org.postgresql.util.PSQLState
 import org.springframework.stereotype.Service
-import org.springframework.transaction.PlatformTransactionManager
 import java.time.LocalDate
 import java.util.UUID
-import javax.sql.DataSource
 
 @Service
-class DaycareService(
-    private val daycareDAO: DaycareDAO,
-    private val placementDAO: DaycarePlacementDAO,
-    private val caretakerDAO: DaycareCaretakerDAO,
-    private val txManager: PlatformTransactionManager,
-    private val dataSource: DataSource
-) {
+class DaycareService {
     fun getDaycareCapacityStats(
+        h: Handle,
         daycareId: UUID,
         startDate: LocalDate,
         endDate: LocalDate
-    ): DaycareCapacityStats = withSpringTx(txManager, readOnly = true) {
-        val unitStats = caretakerDAO.getUnitStats(daycareId, startDate, endDate)
-        DaycareCapacityStats(
+    ): DaycareCapacityStats {
+        val unitStats = h.getUnitStats(daycareId, startDate, endDate)
+        return DaycareCapacityStats(
             unitTotalCaretakers = unitStats,
-            groupCaretakers = caretakerDAO.getGroupStats(daycareId, startDate, endDate)
+            groupCaretakers = h.getGroupStats(daycareId, startDate, endDate)
         )
     }
 
-    fun getDaycareApplyFlags(ids: Collection<UUID>) = withSpringTx(txManager, readOnly = true) {
-        withSpringHandle(dataSource) {
-            it.getDaycareApplyFlags(ids)
-        }
-    }
-
-    fun getDaycareManager(daycareId: UUID): DaycareManager? =
-        withSpringTx(txManager, readOnly = true) { daycareDAO.getDaycareManager(daycareId) }
-
     fun createGroup(
+        h: Handle,
         daycareId: UUID,
         name: String,
         startDate: LocalDate,
         initialCaretakers: Double
-    ): DaycareGroup = withSpringTx(txManager) {
-        daycareDAO.createGroup(daycareId, name, startDate).also {
-            caretakerDAO.initCaretakers(it.id, it.startDate, initialCaretakers)
-        }
+    ): DaycareGroup = h.createDaycareGroup(daycareId, name, startDate).also {
+        h.initCaretakers(it.id, it.startDate, initialCaretakers)
     }
 
-    fun deleteGroup(daycareId: UUID, groupId: UUID) = try {
-        withSpringTx(txManager) {
-            val isEmpty = placementDAO.getDaycareGroupPlacements(
-                daycareId = daycareId,
-                groupId = groupId,
-                startDate = null,
-                endDate = null
-            ).isEmpty()
+    fun deleteGroup(h: Handle, daycareId: UUID, groupId: UUID) = try {
+        val isEmpty = h.getDaycareGroupPlacements(
+            daycareId = daycareId,
+            groupId = groupId,
+            startDate = null,
+            endDate = null
+        ).isEmpty()
 
-            if (!isEmpty) throw Conflict("Cannot delete group which has children placed in it")
+        if (!isEmpty) throw Conflict("Cannot delete group which has children placed in it")
 
-            daycareDAO.deleteGroup(daycareId, groupId)
-        }
+        h.deleteDaycareGroup(groupId)
     } catch (e: UnableToExecuteStatementException) {
         throw (e.cause as? PSQLException)?.takeIf { it.serverErrorMessage?.sqlState == PSQLState.FOREIGN_KEY_VIOLATION.state }
             ?.let { Conflict("Cannot delete group which is still referred to from other data") }
             ?: e
     }
 
-    fun getDaycareGroups(daycareId: UUID, startDate: LocalDate?, endDate: LocalDate?): List<DaycareGroup> =
-        withSpringTx(txManager, readOnly = true) {
-            if (!daycareDAO.isValidDaycareId(daycareId)) throw NotFound("No daycare found with id $daycareId")
+    fun getDaycareGroups(h: Handle, daycareId: UUID, startDate: LocalDate?, endDate: LocalDate?): List<DaycareGroup> {
+        if (!h.isValidDaycareId(daycareId)) throw NotFound("No daycare found with id $daycareId")
 
-            daycareDAO.getDaycareGroups(daycareId, startDate, endDate)
-        }
-
-    fun getDaycareGroup(groupId: UUID): DaycareGroup? = withSpringTx(txManager, readOnly = true) {
-        daycareDAO.getDaycareGroupById(groupId)
+        return h.getDaycareGroups(daycareId, startDate, endDate)
     }
 }
 

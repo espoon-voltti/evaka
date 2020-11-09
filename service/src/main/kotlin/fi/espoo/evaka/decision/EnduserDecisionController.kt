@@ -8,6 +8,8 @@ import fi.espoo.evaka.Audit
 import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.config.Roles
+import fi.espoo.evaka.shared.db.transaction
+import org.jdbi.v3.core.Jdbi
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RestController
@@ -15,14 +17,12 @@ import java.time.LocalDate
 import java.util.UUID
 
 @RestController
-class EnduserDecisionController(
-    private val decisionService: DecisionService
-) {
+class EnduserDecisionController(private val jdbi: Jdbi) {
     @GetMapping("/enduser/decisions")
     fun getDecisions(user: AuthenticatedUser): ResponseEntity<EnduserDecisionsResponse> {
         Audit.DecisionRead.log(targetId = user.id)
         user.requireOneOfRoles(Roles.END_USER)
-        val decisions = decisionService.getDecisionsByGuardian(user.id, AclAuthorization.All)
+        val decisions = jdbi.transaction { getDecisionsByGuardian(it, user.id, AclAuthorization.All) }
             .map {
                 val unit = when (it.type) {
                     DecisionType.CLUB -> it.unit.name

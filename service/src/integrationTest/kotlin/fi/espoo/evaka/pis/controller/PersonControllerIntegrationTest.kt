@@ -7,12 +7,15 @@ package fi.espoo.evaka.pis.controller
 import fi.espoo.evaka.identity.ExternalIdentifier
 import fi.espoo.evaka.pis.AbstractIntegrationTest
 import fi.espoo.evaka.pis.controllers.PersonController
-import fi.espoo.evaka.pis.dao.PersonDAO
+import fi.espoo.evaka.pis.createPerson
+import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.pis.service.ContactInfo
 import fi.espoo.evaka.pis.service.PersonDTO
 import fi.espoo.evaka.pis.service.PersonIdentityRequest
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.config.Roles
+import fi.espoo.evaka.shared.db.handle
+import fi.espoo.evaka.shared.db.transaction
 import fi.espoo.evaka.shared.domain.Forbidden
 import junit.framework.TestCase.assertEquals
 import org.junit.jupiter.api.Test
@@ -24,9 +27,6 @@ import java.util.UUID
 class PersonControllerIntegrationTest : AbstractIntegrationTest() {
     @Autowired
     lateinit var controller: PersonController
-
-    @Autowired
-    lateinit var personDAO: PersonDAO
 
     private val contactInfo = ContactInfo(
         email = "test@hii",
@@ -145,7 +145,7 @@ class PersonControllerIntegrationTest : AbstractIntegrationTest() {
 
         assertEquals(HttpStatus.OK, actual.statusCode)
 
-        val updated = personDAO.getPersonByVolttiId(person.id)
+        val updated = jdbi.handle { it.getPersonById(person.id) }
         assertEquals(contactInfo.email, updated?.email)
         assertEquals(contactInfo.invoicingStreetAddress, updated?.invoicingStreetAddress)
         assertEquals(contactInfo.invoicingPostalCode, updated?.invoicingPostalCode)
@@ -155,14 +155,16 @@ class PersonControllerIntegrationTest : AbstractIntegrationTest() {
 
     private fun createPerson(): PersonDTO {
         val ssn = "140881-172X"
-        return personDAO.getOrCreatePersonIdentity(
-            PersonIdentityRequest(
-                identity = ExternalIdentifier.SSN.getInstance(ssn),
-                firstName = "Matti",
-                lastName = "Meikäläinen",
-                email = "",
-                language = "fi"
+        return jdbi.transaction {
+            it.createPerson(
+                PersonIdentityRequest(
+                    identity = ExternalIdentifier.SSN.getInstance(ssn),
+                    firstName = "Matti",
+                    lastName = "Meikäläinen",
+                    email = "",
+                    language = "fi"
+                )
             )
-        )
+        }
     }
 }

@@ -94,7 +94,7 @@ class DaycareController(
         acl.getRolesForUnit(user, daycareId)
             .requireOneOfRoles(ADMIN, SERVICE_WORKER, FINANCE_ADMIN, UNIT_SUPERVISOR, STAFF)
 
-        return daycareService.getDaycareGroups(daycareId, startDate, endDate).let(::ok)
+        return jdbi.transaction { daycareService.getDaycareGroups(it, daycareId, startDate, endDate) }.let(::ok)
     }
 
     @PostMapping("/{daycareId}/groups")
@@ -107,7 +107,7 @@ class DaycareController(
         acl.getRolesForUnit(user, daycareId)
             .requireOneOfRoles(ADMIN, SERVICE_WORKER, UNIT_SUPERVISOR)
 
-        return daycareService.createGroup(daycareId, body.name, body.startDate, body.initialCaretakers)
+        return jdbi.transaction { daycareService.createGroup(it, daycareId, body.name, body.startDate, body.initialCaretakers) }
             .let { created(it, URI.create("/$daycareId/groups/${it.id}")) }
     }
 
@@ -140,7 +140,7 @@ class DaycareController(
         acl.getRolesForUnitGroup(user, groupId)
             .requireOneOfRoles(ADMIN, SERVICE_WORKER, UNIT_SUPERVISOR)
 
-        daycareService.deleteGroup(daycareId, groupId)
+        jdbi.transaction { daycareService.deleteGroup(it, daycareId, groupId) }
         return noContent()
     }
 
@@ -249,7 +249,7 @@ class DaycareController(
         acl.getRolesForUnit(user, daycareId)
             .requireOneOfRoles(ADMIN, SERVICE_WORKER, FINANCE_ADMIN, UNIT_SUPERVISOR, STAFF)
 
-        return daycareService.getDaycareCapacityStats(daycareId, startDate, endDate).let(::ok)
+        return jdbi.transaction { daycareService.getDaycareCapacityStats(it, daycareId, startDate, endDate) }.let(::ok)
     }
 
     @PutMapping("/{daycareId}")

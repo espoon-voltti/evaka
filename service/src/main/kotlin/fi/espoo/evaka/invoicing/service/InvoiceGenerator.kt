@@ -44,7 +44,7 @@ import java.time.temporal.ChronoUnit
 import java.time.temporal.TemporalAdjusters
 import java.util.UUID
 
-fun createAllDraftInvoices(objectMapper: ObjectMapper, period: Period = getPreviousMonthRange()) = { h: Handle ->
+fun createAllDraftInvoices(h: Handle, objectMapper: ObjectMapper, period: Period = getPreviousMonthRange()) {
     val sentDecisions = getInvoiceableFeeDecisions(h, objectMapper, period).groupBy { it.headOfFamily.id }
     val temporaryPlacements = getInvoiceableTemporaryPlacements(h, period).groupBy { it.headOfFamily.id }
     val invoicedHeadsOfFamily = getInvoicedHeadsOfFamily(h, period)

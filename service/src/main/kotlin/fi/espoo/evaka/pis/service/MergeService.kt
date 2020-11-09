@@ -7,7 +7,6 @@ package fi.espoo.evaka.pis.service
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.NotifyFamilyUpdated
 import fi.espoo.evaka.shared.db.getUUID
-import fi.espoo.evaka.shared.db.runAfterCommit
 import fi.espoo.evaka.shared.db.transaction
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.Jdbi
@@ -127,6 +126,5 @@ class MergeService(
 
     private fun sendFamilyUpdatedMessage(h: Handle, adultId: UUID, startDate: LocalDate, endDate: LocalDate?) {
         asyncJobRunner.plan(h, listOf(NotifyFamilyUpdated(adultId, startDate, endDate)))
-        runAfterCommit { asyncJobRunner.scheduleImmediateRun() }
     }
 }

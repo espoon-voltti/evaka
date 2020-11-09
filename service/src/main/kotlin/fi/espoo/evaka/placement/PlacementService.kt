@@ -8,50 +8,32 @@ import fi.espoo.evaka.application.utils.exhaust
 import fi.espoo.evaka.daycare.dao.mapPSQLException
 import fi.espoo.evaka.daycare.getDaycareGroup
 import fi.espoo.evaka.shared.auth.AclAuthorization
-import fi.espoo.evaka.shared.db.withSpringHandle
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.ClosedPeriod
 import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.shared.domain.NotFound
 import org.jdbi.v3.core.Handle
 import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Transactional
 import java.lang.Error
 import java.lang.IllegalArgumentException
 import java.time.LocalDate
 import java.util.UUID
-import javax.sql.DataSource
 
 @Service
-@Transactional(readOnly = true)
-class PlacementService(
-    private val dataSource: DataSource
-) {
-    // todo: maybe use jdbi at some point
-    @Transactional
+class PlacementService {
     fun createPlacement(
+        h: Handle,
         type: PlacementType,
         childId: UUID,
         unitId: UUID,
         startDate: LocalDate,
         endDate: LocalDate
     ): Placement {
-        return withSpringHandle(dataSource) { h ->
-            clearOldPlacements(h, childId, startDate, endDate)
-            h.insertPlacement(type, childId, unitId, startDate, endDate)
-        }
-    }
-
-    // todo: maybe use jdbi at some point
-    @Transactional
-    fun getPlacementDraftPlacements(childId: UUID): List<PlacementDraftPlacement> {
-        return withSpringHandle(dataSource) { h ->
-            h.getPlacementDraftPlacements(childId)
-        }
+        clearOldPlacements(h, childId, startDate, endDate)
+        return h.insertPlacement(type, childId, unitId, startDate, endDate)
     }
 }
 
-// todo: use handle
 fun updatePlacement(
     h: Handle,
     id: UUID,
@@ -125,7 +107,6 @@ fun createGroupPlacement(
     }
 }
 
-// todo: use handle
 fun transferGroup(h: Handle, daycarePlacementId: UUID, groupPlacementId: UUID, groupId: UUID, startDate: LocalDate) {
     val groupPlacement = h.getDaycareGroupPlacement(groupPlacementId)
         ?: throw NotFound("Group placement not found")
@@ -155,7 +136,6 @@ fun transferGroup(h: Handle, daycarePlacementId: UUID, groupPlacementId: UUID, g
     createGroupPlacement(h, daycarePlacementId, groupId, startDate, groupPlacement.endDate)
 }
 
-// todo: use handle
 fun deleteGroupPlacement(h: Handle, groupPlacementId: UUID) {
     val success = h.deleteGroupPlacement(groupPlacementId)
     if (!success) throw NotFound("Group placement not found")

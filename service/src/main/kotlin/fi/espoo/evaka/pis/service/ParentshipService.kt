@@ -13,9 +13,6 @@ import fi.espoo.evaka.pis.retryParentship
 import fi.espoo.evaka.pis.updateParentshipDuration
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.NotifyFamilyUpdated
-import fi.espoo.evaka.shared.db.runAfterCommit
-import fi.espoo.evaka.shared.db.transaction
-import fi.espoo.evaka.shared.db.withSpringHandle
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.domain.maxEndDate
 import mu.KotlinLogging
@@ -23,13 +20,9 @@ import org.jdbi.v3.core.Handle
 import org.springframework.stereotype.Service
 import java.time.LocalDate
 import java.util.UUID
-import javax.sql.DataSource
 
 @Service
-class ParentshipService(
-    private val asyncJobRunner: AsyncJobRunner,
-    private val dataSource: DataSource
-) {
+class ParentshipService(private val asyncJobRunner: AsyncJobRunner) {
     private val logger = KotlinLogging.logger { }
 
     fun createParentship(
@@ -37,29 +30,33 @@ class ParentshipService(
         childId: UUID,
         headOfChildId: UUID,
         startDate: LocalDate,
-        endDate: LocalDate?,
-        allowConflicts: Boolean = false
+        endDate: LocalDate?
     ): Parentship {
         return try {
-            h.createParentship(childId, headOfChildId, startDate, endDate, allowConflicts)
-                .also { sendFamilyUpdatedMessage(headOfChildId, startDate, endDate) }
+            h.createParentship(childId, headOfChildId, startDate, endDate, false)
+                .also { sendFamilyUpdatedMessage(h, headOfChildId, startDate, endDate) }
         } catch (e: Exception) {
-            if (allowConflicts) {
-                h.transaction { t ->
-                    t.createParentship(childId, headOfChildId, startDate, endDate, true)
-                }
-            } else {
-                throw mapPSQLException(e)
-            }
+            throw mapPSQLException(e)
         }
     }
 
-    fun getParentships(h: Handle, headOfChildId: UUID?, childId: UUID?, includeConflicts: Boolean = false): Set<Parentship> {
-        return h.getParentships(headOfChildId = headOfChildId, childId = childId, includeConflicts = includeConflicts).toSet()
+    fun getParentships(
+        h: Handle,
+        headOfChildId: UUID?,
+        childId: UUID?,
+        includeConflicts: Boolean = false
+    ): Set<Parentship> {
+        return h.getParentships(headOfChildId = headOfChildId, childId = childId, includeConflicts = includeConflicts)
+            .toSet()
     }
 
-    fun getParentshipsByHeadOfChildId(h: Handle, headOfChildId: UUID, includeConflicts: Boolean = false): Set<Parentship> {
-        return h.getParentships(headOfChildId = headOfChildId, childId = null, includeConflicts = includeConflicts).toSet()
+    fun getParentshipsByHeadOfChildId(
+        h: Handle,
+        headOfChildId: UUID,
+        includeConflicts: Boolean = false
+    ): Set<Parentship> {
+        return h.getParentships(headOfChildId = headOfChildId, childId = null, includeConflicts = includeConflicts)
+            .toSet()
     }
 
     fun getParentshipsByChildId(h: Handle, childId: UUID, includeConflicts: Boolean = false): Set<Parentship> {
@@ -80,6 +77,7 @@ class ParentshipService(
         }
 
         sendFamilyUpdatedMessage(
+            h,
             oldParentship.headOfChildId,
             minOf(startDate, oldParentship.startDate),
             maxEndDate(endDate, oldParentship.endDate)
@@ -95,6 +93,7 @@ class ParentshipService(
                 ?.let {
                     h.retryParentship(it.id)
                     sendFamilyUpdatedMessage(
+                        h,
                         adultId = it.headOfChildId,
                         startDate = it.startDate,
                         endDate = it.endDate
@@ -112,6 +111,7 @@ class ParentshipService(
 
         with(parentship) {
             sendFamilyUpdatedMessage(
+                h,
                 headOfChildId,
                 startDate,
                 endDate
@@ -119,12 +119,9 @@ class ParentshipService(
         }
     }
 
-    private fun sendFamilyUpdatedMessage(adultId: UUID, startDate: LocalDate, endDate: LocalDate?) {
+    private fun sendFamilyUpdatedMessage(h: Handle, adultId: UUID, startDate: LocalDate, endDate: LocalDate?) {
         logger.info("Sending update family message with adult $adultId")
-        withSpringHandle(dataSource) {
-            asyncJobRunner.plan(it, listOf(NotifyFamilyUpdated(adultId, startDate, endDate)))
-        }
-        runAfterCommit { asyncJobRunner.scheduleImmediateRun() }
+        asyncJobRunner.plan(h, listOf(NotifyFamilyUpdated(adultId, startDate, endDate)))
     }
 }
 

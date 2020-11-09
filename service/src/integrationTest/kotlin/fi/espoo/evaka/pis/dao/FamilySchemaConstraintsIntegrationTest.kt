@@ -7,6 +7,7 @@ package fi.espoo.evaka.pis.dao
 import fi.espoo.evaka.identity.ExternalIdentifier
 import fi.espoo.evaka.pis.AbstractIntegrationTest
 import fi.espoo.evaka.pis.createParentship
+import fi.espoo.evaka.pis.createPerson
 import fi.espoo.evaka.pis.service.PersonDTO
 import fi.espoo.evaka.pis.service.PersonIdentityRequest
 import fi.espoo.evaka.shared.db.handle
@@ -14,14 +15,10 @@ import fi.espoo.evaka.shared.db.transaction
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.jdbi.v3.core.Handle
 import org.junit.jupiter.api.Test
-import org.springframework.beans.factory.annotation.Autowired
 import java.time.LocalDate
 import java.util.UUID
 
 class FamilySchemaConstraintsIntegrationTest : AbstractIntegrationTest() {
-    @Autowired
-    lateinit var personDAO: PersonDAO
-
     @Test
     fun `basic partnership is ok`() {
         val person1 = testPerson1()
@@ -280,15 +277,17 @@ class FamilySchemaConstraintsIntegrationTest : AbstractIntegrationTest() {
         jdbi.handle { h -> h.createParentship(childId, parentId, startDate, endDate) }
 
     private fun createPerson(ssn: String, firstName: String): PersonDTO {
-        return personDAO.getOrCreatePersonIdentity(
-            PersonIdentityRequest(
-                identity = ExternalIdentifier.SSN.getInstance(ssn),
-                firstName = firstName,
-                lastName = "Meikäläinen",
-                email = "${firstName.toLowerCase()}.meikalainen@example.com",
-                language = "fi"
+        return jdbi.transaction {
+            it.createPerson(
+                PersonIdentityRequest(
+                    identity = ExternalIdentifier.SSN.getInstance(ssn),
+                    firstName = firstName,
+                    lastName = "Meikäläinen",
+                    email = "${firstName.toLowerCase()}.meikalainen@example.com",
+                    language = "fi"
+                )
             )
-        )
+        }
     }
 
     private fun testPerson1() = createPerson("140881-172X", "Aku")

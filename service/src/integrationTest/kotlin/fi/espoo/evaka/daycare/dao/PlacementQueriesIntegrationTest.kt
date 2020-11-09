@@ -4,41 +4,32 @@
 
 package fi.espoo.evaka.daycare.dao
 
-import fi.espoo.evaka.daycare.AbstractIntegrationTest
+import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.placement.getDaycarePlacements
+import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.db.handle
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.springframework.beans.factory.annotation.Autowired
 import java.time.LocalDate
 import java.util.UUID
 
-class DaycarePlacementDAOIntegrationTest : AbstractIntegrationTest() {
-    @Autowired
-    lateinit var placementDAO: DaycarePlacementDAO
-
+class PlacementQueriesIntegrationTest : PureJdbiTest() {
     // data from migration scripts
-    final val childId = UUID.fromString("2b929594-13ab-4042-9b13-74e84921e6f0")
-    final val daycareId = UUID.fromString("68851e10-eb86-443e-b28d-0f6ee9642a3c")
+    val childId = UUID.fromString("2b929594-13ab-4042-9b13-74e84921e6f0")
+    val daycareId = UUID.fromString("68851e10-eb86-443e-b28d-0f6ee9642a3c")
 
-    final val placementId = UUID.randomUUID()
-    final val placementStart = LocalDate.now().plusDays(300)
-    final val placementEnd = placementStart.plusDays(200)
-
-    @BeforeAll
-    fun beforeAll() {
-        jdbi.handle {
-            it.execute("DELETE FROM daycare_group_placement WHERE EXISTS (SELECT 1 FROM placement WHERE child_id = ?)", childId)
-            it.execute("DELETE FROM placement WHERE child_id = ?", childId)
-        }
-    }
+    val placementId = UUID.randomUUID()
+    val placementStart = LocalDate.now().plusDays(300)
+    val placementEnd = placementStart.plusDays(200)
 
     @BeforeEach
     fun setUp() {
+        val legacyDataSql = this.javaClass.getResource("/legacy_db_data.sql").readText()
         jdbi.handle {
+            resetDatabase(it)
+            it.execute(legacyDataSql)
             it.execute(
                 // language=sql
                 """
@@ -49,14 +40,9 @@ class DaycarePlacementDAOIntegrationTest : AbstractIntegrationTest() {
         }
     }
 
-    @AfterEach
-    fun afterEach() {
-        jdbi.handle { it.execute("DELETE FROM placement WHERE id = '$placementId'") }
-    }
-
     @Test
-    fun `get daycare placements returns correct data`() {
-        val placements = placementDAO.getDaycarePlacements(daycareId, null, null, null)
+    fun `get daycare placements returns correct data`() = jdbi.handle { h ->
+        val placements = h.getDaycarePlacements(daycareId, null, null, null)
         assertThat(placements).hasSize(1)
         val placement = placements.first()
         assertThat(placement.id).isNotNull()
@@ -72,10 +58,10 @@ class DaycarePlacementDAOIntegrationTest : AbstractIntegrationTest() {
     matches: yes
      */
     @Test
-    fun `get daycare placements overlap test #01`() {
+    fun `get daycare placements overlap test #01`() = jdbi.handle { h ->
         val fromDate = null
         val toDate = null
-        val placements = placementDAO.getDaycarePlacements(daycareId, null, fromDate, toDate)
+        val placements = h.getDaycarePlacements(daycareId, null, fromDate, toDate)
         assertThat(placements).isNotEmpty
     }
 
@@ -85,10 +71,10 @@ class DaycarePlacementDAOIntegrationTest : AbstractIntegrationTest() {
     matches: no
      */
     @Test
-    fun `get daycare placements overlap test #02`() {
+    fun `get daycare placements overlap test #02`() = jdbi.handle { h ->
         val fromDate = null
         val toDate = placementStart.minusDays(100)
-        val placements = placementDAO.getDaycarePlacements(daycareId, null, fromDate, toDate)
+        val placements = h.getDaycarePlacements(daycareId, null, fromDate, toDate)
         assertThat(placements).isEmpty()
     }
 
@@ -98,10 +84,10 @@ class DaycarePlacementDAOIntegrationTest : AbstractIntegrationTest() {
     matches: yes
      */
     @Test
-    fun `get daycare placements overlap test #03`() {
+    fun `get daycare placements overlap test #03`() = jdbi.handle { h ->
         val fromDate = null
         val toDate = placementStart.plusDays(100)
-        val placements = placementDAO.getDaycarePlacements(daycareId, null, fromDate, toDate)
+        val placements = h.getDaycarePlacements(daycareId, null, fromDate, toDate)
         assertThat(placements).isNotEmpty
     }
 
@@ -111,10 +97,10 @@ class DaycarePlacementDAOIntegrationTest : AbstractIntegrationTest() {
     matches: yes
      */
     @Test
-    fun `get daycare placements overlap test #04`() {
+    fun `get daycare placements overlap test #04`() = jdbi.handle { h ->
         val fromDate = null
         val toDate = placementEnd.plusDays(100)
-        val placements = placementDAO.getDaycarePlacements(daycareId, null, fromDate, toDate)
+        val placements = h.getDaycarePlacements(daycareId, null, fromDate, toDate)
         assertThat(placements).isNotEmpty
     }
 
@@ -124,10 +110,10 @@ class DaycarePlacementDAOIntegrationTest : AbstractIntegrationTest() {
     matches: yes
      */
     @Test
-    fun `get daycare placements overlap test #05`() {
+    fun `get daycare placements overlap test #05`() = jdbi.handle { h ->
         val fromDate = placementStart.minusDays(100)
         val toDate = null
-        val placements = placementDAO.getDaycarePlacements(daycareId, null, fromDate, toDate)
+        val placements = h.getDaycarePlacements(daycareId, null, fromDate, toDate)
         assertThat(placements).isNotEmpty
     }
 
@@ -137,10 +123,10 @@ class DaycarePlacementDAOIntegrationTest : AbstractIntegrationTest() {
     matches: yes
      */
     @Test
-    fun `get daycare placements overlap test #06`() {
+    fun `get daycare placements overlap test #06`() = jdbi.handle { h ->
         val fromDate = placementStart.plusDays(100)
         val toDate = null
-        val placements = placementDAO.getDaycarePlacements(daycareId, null, fromDate, toDate)
+        val placements = h.getDaycarePlacements(daycareId, null, fromDate, toDate)
         assertThat(placements).isNotEmpty
     }
 
@@ -150,10 +136,10 @@ class DaycarePlacementDAOIntegrationTest : AbstractIntegrationTest() {
     matches: no
      */
     @Test
-    fun `get daycare placements overlap test #07`() {
+    fun `get daycare placements overlap test #07`() = jdbi.handle { h ->
         val fromDate = placementEnd.plusDays(100)
         val toDate = null
-        val placements = placementDAO.getDaycarePlacements(daycareId, null, fromDate, toDate)
+        val placements = h.getDaycarePlacements(daycareId, null, fromDate, toDate)
         assertThat(placements).isEmpty()
     }
 
@@ -163,10 +149,10 @@ class DaycarePlacementDAOIntegrationTest : AbstractIntegrationTest() {
     matches: no
      */
     @Test
-    fun `get daycare placements overlap test #08`() {
+    fun `get daycare placements overlap test #08`() = jdbi.handle { h ->
         val fromDate = placementStart.minusDays(100)
         val toDate = placementStart.minusDays(1)
-        val placements = placementDAO.getDaycarePlacements(daycareId, null, fromDate, toDate)
+        val placements = h.getDaycarePlacements(daycareId, null, fromDate, toDate)
         assertThat(placements).isEmpty()
     }
 
@@ -176,10 +162,10 @@ class DaycarePlacementDAOIntegrationTest : AbstractIntegrationTest() {
     matches: yes
      */
     @Test
-    fun `get daycare placements overlap test #09`() {
+    fun `get daycare placements overlap test #09`() = jdbi.handle { h ->
         val fromDate = placementStart.minusDays(100)
         val toDate = placementStart.plusDays(100)
-        val placements = placementDAO.getDaycarePlacements(daycareId, null, fromDate, toDate)
+        val placements = h.getDaycarePlacements(daycareId, null, fromDate, toDate)
         assertThat(placements).isNotEmpty
     }
 
@@ -189,10 +175,10 @@ class DaycarePlacementDAOIntegrationTest : AbstractIntegrationTest() {
     matches: yes
      */
     @Test
-    fun `get daycare placements overlap test #09b`() {
+    fun `get daycare placements overlap test #09b`() = jdbi.handle { h ->
         val fromDate = placementStart.minusDays(100)
         val toDate = placementStart
-        val placements = placementDAO.getDaycarePlacements(daycareId, null, fromDate, toDate)
+        val placements = h.getDaycarePlacements(daycareId, null, fromDate, toDate)
         assertThat(placements).isNotEmpty
     }
 
@@ -202,10 +188,10 @@ class DaycarePlacementDAOIntegrationTest : AbstractIntegrationTest() {
     matches: yes
      */
     @Test
-    fun `get daycare placements overlap test #10`() {
+    fun `get daycare placements overlap test #10`() = jdbi.handle { h ->
         val fromDate = placementStart.plusDays(100)
         val toDate = placementEnd.plusDays(100)
-        val placements = placementDAO.getDaycarePlacements(daycareId, null, fromDate, toDate)
+        val placements = h.getDaycarePlacements(daycareId, null, fromDate, toDate)
         assertThat(placements).isNotEmpty
     }
 
@@ -215,10 +201,10 @@ class DaycarePlacementDAOIntegrationTest : AbstractIntegrationTest() {
     matches: yes
      */
     @Test
-    fun `get daycare placements overlap test #11`() {
+    fun `get daycare placements overlap test #11`() = jdbi.handle { h ->
         val fromDate = placementEnd
         val toDate = placementEnd.plusDays(150)
-        val placements = placementDAO.getDaycarePlacements(daycareId, null, fromDate, toDate)
+        val placements = h.getDaycarePlacements(daycareId, null, fromDate, toDate)
         assertThat(placements).isNotEmpty
     }
 
@@ -228,10 +214,10 @@ class DaycarePlacementDAOIntegrationTest : AbstractIntegrationTest() {
     matches: no
      */
     @Test
-    fun `get daycare placements overlap test #12`() {
+    fun `get daycare placements overlap test #12`() = jdbi.handle { h ->
         val fromDate = placementEnd.plusDays(1)
         val toDate = placementEnd.plusDays(150)
-        val placements = placementDAO.getDaycarePlacements(daycareId, null, fromDate, toDate)
+        val placements = h.getDaycarePlacements(daycareId, null, fromDate, toDate)
         assertThat(placements).isEmpty()
     }
 
@@ -241,10 +227,10 @@ class DaycarePlacementDAOIntegrationTest : AbstractIntegrationTest() {
     matches: yes
      */
     @Test
-    fun `get daycare placements overlap test #13`() {
+    fun `get daycare placements overlap test #13`() = jdbi.handle { h ->
         val fromDate = placementStart.minusDays(100)
         val toDate = placementEnd.plusDays(100)
-        val placements = placementDAO.getDaycarePlacements(daycareId, null, fromDate, toDate)
+        val placements = h.getDaycarePlacements(daycareId, null, fromDate, toDate)
         assertThat(placements).isNotEmpty
     }
 }

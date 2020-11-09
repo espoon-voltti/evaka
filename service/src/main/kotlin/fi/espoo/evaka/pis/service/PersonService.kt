@@ -8,12 +8,12 @@ import fi.espoo.evaka.application.utils.exhaust
 import fi.espoo.evaka.identity.ExternalIdentifier
 import fi.espoo.evaka.identity.VolttiIdentifier
 import fi.espoo.evaka.pis.addSSNToPerson
-import fi.espoo.evaka.pis.controllers.CreatePersonBody
-import fi.espoo.evaka.pis.dao.PersonDAO
+import fi.espoo.evaka.pis.createEmptyPerson
 import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.pis.getPersonBySSN
+import fi.espoo.evaka.pis.updatePersonContactInfo
+import fi.espoo.evaka.pis.updatePersonDetails
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.db.withSpringTx
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.shared.domain.NotFound
@@ -27,56 +27,24 @@ import fi.espoo.evaka.vtjclient.service.persondetails.PersonStorageService
 import fi.espoo.evaka.vtjclient.usecases.dto.PersonResult
 import org.jdbi.v3.core.Handle
 import org.springframework.stereotype.Service
-import org.springframework.transaction.PlatformTransactionManager
 import java.time.Instant
 import java.time.LocalDate
 import java.util.UUID
 
 @Service
 class PersonService(
-    private val txManager: PlatformTransactionManager,
-    private val personDAO: PersonDAO,
     private val personDetailsService: IPersonDetailsService,
     private val personStorageService: PersonStorageService
 ) {
     private val forceRefreshIntervalSeconds = 1 * 24 * 60 * 60 // 1 day
 
-    fun createEmpty() = withSpringTx(txManager) { personDAO.createEmpty() }
+    fun createEmpty(h: Handle) = h.createEmptyPerson()
 
-    fun createNoSsnPerson(person: CreatePersonBody): UUID = withSpringTx(txManager) {
-        personDAO.createPerson(person)
-    }
-
-    fun getOrCreatePersonIdentity(person: PersonIdentityRequest): PersonDTO = withSpringTx(txManager) {
-        personDAO.getOrCreatePersonIdentity(person)
-    }
-
-    fun getPerson(id: VolttiIdentifier): PersonDTO? = withSpringTx(txManager) {
-        personDAO.getPersonByVolttiId(id)
-    }
-
-    fun getUpToDatePerson(user: AuthenticatedUser, id: VolttiIdentifier): PersonDTO? {
-        val person = personDAO.getPersonByVolttiId(id) ?: return null
-        if (person.identity is ExternalIdentifier.SSN && vtjDataIsStale(person)) {
-            val personDetails =
-                personDetailsService.getBasicDetailsFor(
-                    IPersonDetailsService.DetailsQuery(user, person.identity)
-                )
-            if (personDetails is PersonDetails.Result) {
-                val personResult = PersonResult.Result(personDetails.vtjPerson.mapToDto())
-                personStorageService.upsertVtjPerson(personResult)
-                return personDAO.getPersonByVolttiId(id)
-            } else {
-                return hideNonDisclosureInfo(person)
-            }
-        } else {
-            return person
-        }
-    }
+    fun getPerson(h: Handle, id: VolttiIdentifier): PersonDTO? = h.getPersonById(id)
 
     fun getUpToDatePerson(h: Handle, user: AuthenticatedUser, id: VolttiIdentifier): PersonDTO? {
         val person = h.getPersonById(id) ?: return null
-        if (person.identity is ExternalIdentifier.SSN && vtjDataIsStale(person)) {
+        return if (person.identity is ExternalIdentifier.SSN && vtjDataIsStale(person)) {
             val personDetails =
                 personDetailsService.getBasicDetailsFor(
                     IPersonDetailsService.DetailsQuery(user, person.identity)
@@ -84,22 +52,21 @@ class PersonService(
             if (personDetails is PersonDetails.Result) {
                 val personResult = PersonResult.Result(personDetails.vtjPerson.mapToDto())
                 personStorageService.upsertVtjPerson(h, personResult)
-                return h.getPersonById(id)
+                h.getPersonById(id)
             } else {
-                return hideNonDisclosureInfo(person)
+                hideNonDisclosureInfo(person)
             }
         } else {
-            return person
+            person
         }
     }
 
-    fun personsLiveInTheSameAddress(user: AuthenticatedUser, person1Id: UUID, person2Id: UUID): Boolean =
-        withSpringTx(txManager) {
-            val person1 = personDAO.getPersonByVolttiId(person1Id)
-            val person2 = personDAO.getPersonByVolttiId(person2Id)
+    fun personsLiveInTheSameAddress(h: Handle, user: AuthenticatedUser, person1Id: UUID, person2Id: UUID): Boolean {
+        val person1 = h.getPersonById(person1Id)
+        val person2 = h.getPersonById(person2Id)
 
-            personsHaveSameResidenceCode(person1, person2) || personsHaveSameAddress(person1, person2)
-        }
+        return personsHaveSameResidenceCode(person1, person2) || personsHaveSameAddress(person1, person2)
+    }
 
     private fun personsHaveSameResidenceCode(person1: PersonDTO?, person2: PersonDTO?): Boolean {
         return person1 != null && person2 != null &&
@@ -117,55 +84,36 @@ class PersonService(
             person1.postalCode.equals(person2.postalCode)
     }
 
-    fun getDeceased(sinceDate: LocalDate): List<PersonDTO> =
-        withSpringTx(txManager) { personDAO.getDeceased(sinceDate) }
+    fun getUpToDatePersonWithChildren(
+        h: Handle,
+        user: AuthenticatedUser,
+        id: VolttiIdentifier
+    ): PersonWithChildrenDTO? {
+        val guardian = h.getPersonById(id) ?: return null
 
-    fun getUpToDatePersonWithChildren(user: AuthenticatedUser, id: VolttiIdentifier): PersonWithChildrenDTO? =
-        withSpringTx(txManager) {
-            val guardian = personDAO.getPersonByVolttiId(id) ?: return@withSpringTx null
-
-            when (guardian.identity) {
-                is ExternalIdentifier.NoID -> toPersonWithChildrenDTO(guardian)
-                is ExternalIdentifier.SSN ->
-                    getPersonWithDependants(user, guardian.identity)
-                        ?.let { personStorageService.upsertVtjGuardianAndChildren(PersonResult.Result(it)) }
-                        ?.let {
-                            when (it) {
-                                is PersonResult.Error -> throw IllegalStateException(it.msg)
-                                is PersonResult.NotFound -> null
-                                is PersonResult.Result -> toPersonWithChildrenDTO(it.vtjPersonDTO)
-                            }
+        return when (guardian.identity) {
+            is ExternalIdentifier.NoID -> toPersonWithChildrenDTO(guardian)
+            is ExternalIdentifier.SSN ->
+                getPersonWithDependants(user, guardian.identity)
+                    ?.let { personStorageService.upsertVtjGuardianAndChildren(PersonResult.Result(it)) }
+                    ?.let {
+                        when (it) {
+                            is PersonResult.Error -> throw IllegalStateException(it.msg)
+                            is PersonResult.NotFound -> null
+                            is PersonResult.Result -> toPersonWithChildrenDTO(it.vtjPersonDTO)
                         }
-            }
+                    }
         }
+    }
 
     // In extremely rare cases there might be more than 2 guardians, but it was agreed with product management to use
     // just one of these as the other guardian.
     fun getOtherGuardian(
+        h: Handle,
         user: AuthenticatedUser,
         otherGuardianId: VolttiIdentifier,
         childId: VolttiIdentifier
-    ): PersonDTO? = withSpringTx(txManager) {
-        getGuardians(user, childId).filter { guardian -> guardian.id != otherGuardianId }.firstOrNull()
-    }
-
-    fun getGuardians(user: AuthenticatedUser, id: VolttiIdentifier): List<PersonDTO> = withSpringTx(txManager) {
-        val child = personDAO.getPersonByVolttiId(id) ?: return@withSpringTx emptyList()
-
-        when (child.identity) {
-            is ExternalIdentifier.NoID -> emptyList()
-            is ExternalIdentifier.SSN ->
-                getPersonWithGuardians(user, child.identity)
-                    ?.let { personStorageService.upsertVtjChildAndGuardians(PersonResult.Result(it)) }
-                    ?.let {
-                        when (it) {
-                            is PersonResult.Error -> throw IllegalStateException(it.msg)
-                            is PersonResult.NotFound -> emptyList()
-                            is PersonResult.Result -> it.vtjPersonDTO.guardians.map(::toPersonDTO)
-                        }
-                    } ?: emptyList()
-        }
-    }
+    ): PersonDTO? = getGuardians(h, user, childId).firstOrNull { guardian -> guardian.id != otherGuardianId }
 
     fun getGuardians(h: Handle, user: AuthenticatedUser, id: VolttiIdentifier): List<PersonDTO> {
         val child = h.getPersonById(id) ?: return emptyList()
@@ -186,19 +134,20 @@ class PersonService(
     }
 
     fun getOrCreatePerson(
+        h: Handle,
         user: AuthenticatedUser,
         ssn: ExternalIdentifier.SSN,
         updateStale: Boolean = true
-    ): PersonDTO? = withSpringTx(txManager) {
-        val person = personDAO.getPersonByExternalId(ssn)
-        if (person == null || (updateStale && vtjDataIsStale(person))) {
+    ): PersonDTO? {
+        val person = h.getPersonBySSN(ssn.ssn)
+        return if (person == null || (updateStale && vtjDataIsStale(person))) {
             val personDetails = personDetailsService.getBasicDetailsFor(
                 IPersonDetailsService.DetailsQuery(user, ssn)
             )
             if (personDetails is PersonDetails.Result) {
                 val personResult = PersonResult.Result(personDetails.vtjPerson.mapToDto())
-                personStorageService.upsertVtjPerson(personResult)
-                personDAO.getPersonByExternalId(ssn)
+                personStorageService.upsertVtjPerson(h, personResult)
+                h.getPersonBySSN(ssn.ssn)
             } else {
                 hideNonDisclosureInfo(person)
             }
@@ -207,24 +156,23 @@ class PersonService(
         }
     }
 
-    fun getPersonFromVTJ(user: AuthenticatedUser, ssn: ExternalIdentifier.SSN): PersonDTO? = withSpringTx(txManager) {
+    fun getPersonFromVTJ(user: AuthenticatedUser, ssn: ExternalIdentifier.SSN): PersonDTO? {
         val personDetails = personDetailsService.getBasicDetailsFor(
             IPersonDetailsService.DetailsQuery(user, ssn)
         )
-        if (personDetails is PersonDetails.Result) {
+        return if (personDetails is PersonDetails.Result) {
             personDetails.vtjPerson.mapToDto().let { toPersonDTO(it) }
         } else null
     }
 
-    fun updateEndUsersContactInfo(id: VolttiIdentifier, contactInfo: ContactInfo): Boolean = withSpringTx(txManager) {
-        personDAO.updateEndUsersContactInfo(id, contactInfo)
-    }
+    fun updateEndUsersContactInfo(h: Handle, id: VolttiIdentifier, contactInfo: ContactInfo): Boolean =
+        h.updatePersonContactInfo(id, contactInfo)
 
-    fun patchUserDetails(id: VolttiIdentifier, data: PersonPatch): PersonDTO = withSpringTx(txManager) {
-        val person = getPerson(id) ?: throw NotFound("Person $id not found")
+    fun patchUserDetails(h: Handle, id: VolttiIdentifier, data: PersonPatch): PersonDTO {
+        val person = getPerson(h, id) ?: throw NotFound("Person $id not found")
 
         when (person.identity) {
-            is ExternalIdentifier.SSN -> personDAO.updateEndUsersContactInfo(
+            is ExternalIdentifier.SSN -> h.updatePersonContactInfo(
                 id,
                 ContactInfo(
                     email = data.email ?: person.email ?: "",
@@ -236,10 +184,10 @@ class PersonService(
                     forceManualFeeDecisions = data.forceManualFeeDecisions ?: person.forceManualFeeDecisions ?: false
                 )
             )
-            is ExternalIdentifier.NoID -> personDAO.updateEndUserDetails(id, data)
+            is ExternalIdentifier.NoID -> h.updatePersonDetails(id, data)
         }.exhaust()
 
-        getPerson(id)!!
+        return getPerson(h, id)!!
     }
 
     fun addSsn(h: Handle, user: AuthenticatedUser, id: VolttiIdentifier, ssn: ExternalIdentifier.SSN) {
@@ -255,11 +203,6 @@ class PersonService(
             }
         }.exhaust()
     }
-
-    fun findBySearchTerms(searchTerms: String, orderBy: String, sortDirection: String): List<PersonDTO> =
-        withSpringTx(txManager) {
-            personDAO.findBySearchTerms(searchTerms, orderBy, sortDirection)
-        }
 
     private fun vtjDataIsStale(person: PersonDTO): Boolean {
         return person.updatedFromVtj

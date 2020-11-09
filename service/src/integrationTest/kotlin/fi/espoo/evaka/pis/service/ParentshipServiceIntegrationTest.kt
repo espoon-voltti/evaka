@@ -6,8 +6,9 @@ package fi.espoo.evaka.pis.service
 
 import fi.espoo.evaka.identity.ExternalIdentifier
 import fi.espoo.evaka.pis.AbstractIntegrationTest
-import fi.espoo.evaka.pis.dao.PersonDAO
+import fi.espoo.evaka.pis.createPerson
 import fi.espoo.evaka.shared.db.handle
+import fi.espoo.evaka.shared.db.transaction
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -16,9 +17,6 @@ import java.time.LocalDate
 class ParentshipServiceIntegrationTest : AbstractIntegrationTest() {
     @Autowired
     lateinit var parentshipService: ParentshipService
-
-    @Autowired
-    lateinit var personDAO: PersonDAO
 
     @Test
     fun `fetch child with two heads`() {
@@ -50,15 +48,17 @@ class ParentshipServiceIntegrationTest : AbstractIntegrationTest() {
     }
 
     private fun createPerson(ssn: String, firstName: String): PersonDTO {
-        return personDAO.getOrCreatePersonIdentity(
-            PersonIdentityRequest(
-                identity = ExternalIdentifier.SSN.getInstance(ssn),
-                firstName = firstName,
-                lastName = "Meikäläinen",
-                email = "",
-                language = "fi"
+        return jdbi.transaction {
+            it.createPerson(
+                PersonIdentityRequest(
+                    identity = ExternalIdentifier.SSN.getInstance(ssn),
+                    firstName = firstName,
+                    lastName = "Meikäläinen",
+                    email = "",
+                    language = "fi"
+                )
             )
-        )
+        }
     }
 
     private fun testPerson1() = createPerson("140881-172X", "Aku")

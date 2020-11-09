@@ -19,11 +19,7 @@ import fi.espoo.evaka.s3.DocumentService
 import fi.espoo.evaka.s3.DocumentWrapper
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.NotifyDecisionCreated
-import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.db.runAfterCommit
-import fi.espoo.evaka.shared.db.withSpringHandle
-import fi.espoo.evaka.shared.db.withSpringTx
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.message.IEvakaMessageClient
 import fi.espoo.evaka.shared.message.SuomiFiMessage
@@ -34,13 +30,11 @@ import mu.KotlinLogging
 import org.jdbi.v3.core.Handle
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
-import org.springframework.transaction.PlatformTransactionManager
 import org.thymeleaf.context.Context
 import java.net.URI
 import java.time.LocalDate
 import java.util.Locale
 import java.util.UUID
-import javax.sql.DataSource
 
 val logger = KotlinLogging.logger { }
 
@@ -48,50 +42,16 @@ val logger = KotlinLogging.logger { }
 class DecisionService(
     @Value("\${fi.espoo.voltti.document.bucket.daycaredecision}")
     private val decisionBucket: String,
-    private val dataSource: DataSource,
-    private val txManager: PlatformTransactionManager,
     private val personService: PersonService,
     private val s3Client: DocumentService,
     private val pdfService: PDFService,
     private val evakaMessageClient: IEvakaMessageClient,
     private val asyncJobRunner: AsyncJobRunner
 ) {
-    fun finalizeDecisions(user: AuthenticatedUser, applicationId: UUID, sendAsMessage: Boolean): List<UUID> =
-        withSpringTx(txManager) {
-            val decisionIds = withSpringHandle(dataSource) { h -> finalizeDecisions(h, applicationId) }
-
-            withSpringHandle(dataSource) {
-                asyncJobRunner.plan(it, decisionIds.map { NotifyDecisionCreated(it, user, sendAsMessage) })
-            }
-            runAfterCommit { asyncJobRunner.scheduleImmediateRun() }
-
-            decisionIds
-        }
-
-    fun markDecisionAccepted(user: AuthenticatedUser, decisionId: UUID, requestedStartDate: LocalDate) =
-        withSpringTx(txManager) {
-            withSpringHandle(dataSource, { h -> markDecisionAccepted(h, user, decisionId, requestedStartDate) })
-        }
-
-    fun markDecisionRejected(user: AuthenticatedUser, decisionId: UUID) = withSpringTx(txManager) {
-        withSpringHandle(dataSource, { h -> markDecisionRejected(h, user, decisionId) })
-    }
-
-    fun getDecision(decisionId: UUID): Decision? = withSpringTx(txManager) {
-        withSpringHandle(dataSource, { h -> getDecision(h, decisionId) })
-    }
-
-    fun getDecisionsByChild(childId: UUID, authorizedUnits: AclAuthorization): List<Decision> = withSpringTx(txManager) {
-        withSpringHandle(dataSource, { h -> getDecisionsByChild(h, childId, authorizedUnits) })
-    }
-
-    fun getDecisionsByApplication(applicationId: UUID, authorizedUnits: AclAuthorization = AclAuthorization.All): List<Decision> =
-        withSpringTx(txManager) {
-            withSpringHandle(dataSource, { h -> getDecisionsByApplication(h, applicationId, authorizedUnits) })
-        }
-
-    fun getDecisionsByGuardian(guardianId: UUID, authorizedUnits: AclAuthorization): List<Decision> = withSpringTx(txManager) {
-        withSpringHandle(dataSource, { h -> getDecisionsByGuardian(h, guardianId, authorizedUnits) })
+    fun finalizeDecisions(h: Handle, user: AuthenticatedUser, applicationId: UUID, sendAsMessage: Boolean): List<UUID> {
+        val decisionIds = finalizeDecisions(h, applicationId)
+        asyncJobRunner.plan(h, decisionIds.map { NotifyDecisionCreated(it, user, sendAsMessage) })
+        return decisionIds
     }
 
     fun createDecisionPdfs(
@@ -115,6 +75,7 @@ class DecisionService(
             decision.type != DecisionType.CLUB &&
             application.otherGuardianId != null &&
             !personService.personsLiveInTheSameAddress(
+                h,
                 user,
                 application.guardianId,
                 application.otherGuardianId
@@ -281,7 +242,7 @@ class DecisionService(
         val message = SuomiFiMessage(
             messageId = uniqueId,
             documentId = uniqueId.toString(),
-            documentDisplayName = calculateDecisionFileName(decision, lang),
+            documentDisplayName = calculateDecisionFileName(h, decision, lang),
             documentUri = documentUri,
             firstName = guardian.firstName!!,
             lastName = guardian.lastName!!,
@@ -297,26 +258,24 @@ class DecisionService(
         evakaMessageClient.send(message)
     }
 
-    fun getDecisionPdf(decisionId: UUID): Document = withSpringTx(txManager) {
-        withSpringHandle(dataSource) { h ->
-            val decision = getDecision(h, decisionId)
-                ?: throw NotFound("No decision $decisionId found")
-            val lang = getDecisionLanguage(h, decisionId)
-            decision.documentUri
-                ?.let(URI::create)
-                ?.let(s3Client::get)
-                ?.let {
-                    DocumentWrapper(
-                        name = calculateDecisionFileName(decision, lang),
-                        path = "/",
-                        bytes = it.getBytes()
-                    )
-                } ?: error("Decision S3 url is not set for $decisionId.")
-        }
+    fun getDecisionPdf(h: Handle, decisionId: UUID): Document {
+        val decision = getDecision(h, decisionId)
+            ?: throw NotFound("No decision $decisionId found")
+        val lang = getDecisionLanguage(h, decisionId)
+        return decision.documentUri
+            ?.let(URI::create)
+            ?.let(s3Client::get)
+            ?.let {
+                DocumentWrapper(
+                    name = calculateDecisionFileName(h, decision, lang),
+                    path = "/",
+                    bytes = it.getBytes()
+                )
+            } ?: error("Decision S3 url is not set for $decisionId.")
     }
 
-    private fun calculateDecisionFileName(decision: Decision, lang: String): String {
-        val child = personService.getPerson(decision.childId)
+    private fun calculateDecisionFileName(h: Handle, decision: Decision, lang: String): String {
+        val child = personService.getPerson(h, decision.childId)
         val childName = "${child?.firstName}_${child?.lastName}"
         val prefix = getLocalizedFilename(decision.type, lang)
         return "${prefix}_$childName.pdf".replace(" ", "_")

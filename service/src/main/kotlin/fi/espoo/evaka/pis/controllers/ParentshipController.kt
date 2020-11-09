@@ -9,6 +9,7 @@ import fi.espoo.evaka.application.utils.noContent
 import fi.espoo.evaka.identity.VolttiIdentifier
 import fi.espoo.evaka.pis.service.Parentship
 import fi.espoo.evaka.pis.service.ParentshipService
+import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.config.Roles.FINANCE_ADMIN
 import fi.espoo.evaka.shared.config.Roles.SERVICE_WORKER
@@ -31,7 +32,11 @@ import java.util.UUID
 
 @RestController
 @RequestMapping("/parentships")
-class ParentshipController(private val parentshipService: ParentshipService, private val jdbi: Jdbi) {
+class ParentshipController(
+    private val parentshipService: ParentshipService,
+    private val jdbi: Jdbi,
+    private val asyncJobRunner: AsyncJobRunner
+) {
     @PostMapping
     fun createParentship(
         user: AuthenticatedUser,
@@ -43,8 +48,9 @@ class ParentshipController(private val parentshipService: ParentshipService, pri
         with(body) {
             return jdbi.transaction {
                 parentshipService.createParentship(it, childId, headOfChildId, startDate, endDate)
-                    .let { ResponseEntity.created(URI.create("/parentships/${it.id}")).body(it) }
             }
+                .also { asyncJobRunner.scheduleImmediateRun() }
+                .let { ResponseEntity.created(URI.create("/parentships/${it.id}")).body(it) }
         }
     }
 
@@ -91,8 +97,9 @@ class ParentshipController(private val parentshipService: ParentshipService, pri
 
         return jdbi.transaction {
             parentshipService.updateParentshipDuration(it, id, body.startDate, body.endDate)
-                .let { ResponseEntity.ok().body(it) }
         }
+            .also { asyncJobRunner.scheduleImmediateRun() }
+            .let { ResponseEntity.ok().body(it) }
     }
 
     @PutMapping("/{id}/retry")
@@ -104,6 +111,7 @@ class ParentshipController(private val parentshipService: ParentshipService, pri
         user.requireOneOfRoles(SERVICE_WORKER, UNIT_SUPERVISOR, FINANCE_ADMIN)
 
         jdbi.transaction { parentshipService.retryParentship(it, parentshipId) }
+        asyncJobRunner.scheduleImmediateRun()
         return noContent()
     }
 
@@ -113,6 +121,7 @@ class ParentshipController(private val parentshipService: ParentshipService, pri
         user.requireOneOfRoles(SERVICE_WORKER, UNIT_SUPERVISOR, FINANCE_ADMIN)
 
         jdbi.transaction { parentshipService.deleteParentship(it, id) }
+        asyncJobRunner.scheduleImmediateRun()
 
         return ResponseEntity.noContent().build()
     }

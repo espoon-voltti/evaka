@@ -8,43 +8,23 @@ import fi.espoo.evaka.application.persistence.FormType
 import fi.espoo.evaka.placement.Placement
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.getPlacementsForChildDuring
-import fi.espoo.evaka.shared.db.withSpringHandle
-import fi.espoo.evaka.shared.db.withSpringTx
 import org.jdbi.v3.core.Handle
-import org.springframework.stereotype.Service
-import org.springframework.transaction.PlatformTransactionManager
 import java.time.LocalDate
 import java.util.UUID
-import javax.sql.DataSource
 
-// Only created because DaycareApplication and ClubApplication tests rely purely on mocks
-@Service
-class ApplicationDetailsService(val dataSource: DataSource, val txManager: PlatformTransactionManager) {
-    fun applicationFlags(
-        childId: UUID,
-        formType: FormType,
-        startDate: LocalDate,
-        preferredUnits: List<UUID>,
-        connectedDaycare: Boolean
-    ): ApplicationFlags = withSpringTx(txManager) {
-        withSpringHandle(dataSource) { h ->
-            applicationFlags(h, childId, formType, startDate, preferredUnits, connectedDaycare)
-        }
-    }
-
-    fun applicationFlags(application: ApplicationDetails): ApplicationFlags {
-        return applicationFlags(
-            childId = application.childId,
-            formType = when (application.type) {
-                ApplicationType.CLUB -> FormType.CLUB
-                ApplicationType.DAYCARE -> FormType.DAYCARE
-                ApplicationType.PRESCHOOL -> FormType.PRESCHOOL
-            },
-            startDate = application.form.preferences.preferredStartDate ?: LocalDate.now(),
-            preferredUnits = application.form.preferences.preferredUnits.map { it.id },
-            connectedDaycare = application.form.preferences.serviceNeed != null
-        )
-    }
+fun applicationFlags(h: Handle, application: ApplicationDetails): ApplicationFlags {
+    return applicationFlags(
+        h = h,
+        childId = application.childId,
+        formType = when (application.type) {
+            ApplicationType.CLUB -> FormType.CLUB
+            ApplicationType.DAYCARE -> FormType.DAYCARE
+            ApplicationType.PRESCHOOL -> FormType.PRESCHOOL
+        },
+        startDate = application.form.preferences.preferredStartDate ?: LocalDate.now(),
+        preferredUnits = application.form.preferences.preferredUnits.map { it.id },
+        connectedDaycare = application.form.preferences.serviceNeed != null
+    )
 }
 
 fun applicationFlags(

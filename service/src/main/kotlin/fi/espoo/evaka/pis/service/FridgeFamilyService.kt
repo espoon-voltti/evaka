@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.pis.service
 
+import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.VTJRefresh
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.transaction
@@ -22,32 +23,39 @@ private val logger = KotlinLogging.logger {}
 class FridgeFamilyService(
     private val personService: PersonService,
     private val parentshipService: ParentshipService,
-    private val jdbi: Jdbi
+    private val jdbi: Jdbi,
+    private val asyncJobRunner: AsyncJobRunner
 ) {
 
-    fun doVTJRefresh(h: Handle, msg: VTJRefresh) {
+    fun doVTJRefresh(msg: VTJRefresh) {
         logger.info("Refreshing ${msg.personId} from VTJ")
-        val head = personService.getUpToDatePersonWithChildren(
-            user = AuthenticatedUser(msg.requestingUserId, setOf()),
-            id = msg.personId
-        )
+        val head = jdbi.transaction {
+            personService.getUpToDatePersonWithChildren(
+                it,
+                user = AuthenticatedUser(msg.requestingUserId, setOf()),
+                id = msg.personId
+            )
+        }
         if (head != null) {
             logger.info("Person to refresh has ${head.children.size} children")
 
-            val partner = getPartnerId(h, msg.personId)
-                ?.also { logger.info("Person has fridge partner $it") }
-                ?.let { partnerId ->
-                    personService.getUpToDatePersonWithChildren(
-                        user = AuthenticatedUser(msg.requestingUserId, setOf()),
-                        id = partnerId
-                    )
-                }
-                ?.takeIf { livesInSameAddress(it.addresses, head.addresses) }
+            val partner = jdbi.transaction { h ->
+                getPartnerId(h, msg.personId)
+                    ?.also { logger.info("Person has fridge partner $it") }
+                    ?.let { partnerId ->
+                        personService.getUpToDatePersonWithChildren(
+                            h,
+                            user = AuthenticatedUser(msg.requestingUserId, setOf()),
+                            id = partnerId
+                        )
+                    }
+                    ?.takeIf { livesInSameAddress(it.addresses, head.addresses) }
+            }
             if (partner != null) logger.info("Partner lives in the same address and has ${partner.children.size} children")
 
             val children = head.children + (partner?.children ?: emptyList())
 
-            val currentFridgeChildren = getCurrentFridgeChildren(h, msg.personId)
+            val currentFridgeChildren = jdbi.transaction { getCurrentFridgeChildren(it, msg.personId) }
             logger.info("Currently person has ${currentFridgeChildren.size} fridge children in evaka")
 
             val newChildrenInSameAddress = children
@@ -71,6 +79,7 @@ class FridgeFamilyService(
                             endDate = child.dateOfBirth.plusYears(18).minusDays(1)
                         )
                     }
+                    asyncJobRunner.scheduleImmediateRun()
                     logger.info("Child ${child.id} added")
                 } catch (e: Exception) {
                     logger.debug("Ignored the following:", e)

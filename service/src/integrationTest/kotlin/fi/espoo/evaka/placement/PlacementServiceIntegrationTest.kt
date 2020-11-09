@@ -63,6 +63,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
             )
 
             oldPlacement = placementService.createPlacement(
+                h,
                 PlacementType.PRESCHOOL,
                 childId,
                 unitId,
@@ -89,6 +90,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
     @Test
     fun `inserting placement without overlap`() = jdbi.handle { h ->
         val newPlacement = placementService.createPlacement(
+            h,
             PlacementType.PRESCHOOL,
             childId,
             unitId,
@@ -110,6 +112,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
     @Test
     fun `inserting identical placement`() = jdbi.handle { h ->
         val newPlacement = placementService.createPlacement(
+            h,
             PlacementType.PRESCHOOL,
             childId,
             unitId,
@@ -130,6 +133,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
     @Test
     fun `old placement starts earlier`() = jdbi.handle { h ->
         val newPlacement = placementService.createPlacement(
+            h,
             PlacementType.PRESCHOOL,
             childId,
             unitId,
@@ -153,6 +157,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
     @Test
     fun `updating placement calls clearOldPlacements`() = jdbi.handle { h ->
         val newPlacement = placementService.createPlacement(
+            h,
             PlacementType.PRESCHOOL,
             childId,
             unitId,
@@ -187,6 +192,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
     @Test
     fun `old placement starts earlier, ends earlier`() = jdbi.handle { h ->
         val newPlacement = placementService.createPlacement(
+            h,
             PlacementType.PRESCHOOL,
             childId,
             unitId,
@@ -215,6 +221,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
     @Test
     fun `old placement starts earlier, ends later`() = jdbi.handle { h ->
         val newPlacement = placementService.createPlacement(
+            h,
             PlacementType.PRESCHOOL,
             childId,
             unitId,
@@ -250,6 +257,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
     @Test
     fun `old placement ends earlier`() = jdbi.handle { h ->
         val newPlacement = placementService.createPlacement(
+            h,
             PlacementType.PRESCHOOL,
             childId,
             unitId,
@@ -271,6 +279,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
     @Test
     fun `old placement ends later`() = jdbi.handle { h ->
         val newPlacement = placementService.createPlacement(
+            h,
             PlacementType.PRESCHOOL,
             childId,
             unitId,
@@ -299,6 +308,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
     @Test
     fun `old placement starts later`() = jdbi.handle { h ->
         val newPlacement = placementService.createPlacement(
+            h,
             PlacementType.PRESCHOOL,
             childId,
             unitId,
@@ -320,6 +330,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
     @Test
     fun `old placement starts later, ends earlier`() = jdbi.handle { h ->
         val newPlacement = placementService.createPlacement(
+            h,
             PlacementType.PRESCHOOL,
             childId,
             unitId,
@@ -341,6 +352,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
     @Test
     fun `old placement starts later, ends later`() = jdbi.handle { h ->
         val newPlacement = placementService.createPlacement(
+            h,
             PlacementType.PRESCHOOL,
             childId,
             unitId,
@@ -369,6 +381,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
     @Test
     fun `preparatory overlaps with two earlier placements`() = jdbi.handle { h ->
         val old2 = placementService.createPlacement(
+            h,
             PlacementType.PRESCHOOL_DAYCARE,
             childId,
             unitId,
@@ -376,6 +389,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
             LocalDate.of(year, month, 31)
         )
         val newPlacement = placementService.createPlacement(
+            h,
             PlacementType.PREPARATORY,
             childId,
             unitId,
@@ -406,6 +420,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
     @Test
     fun `updating placement endDate to be earlier`() = jdbi.handle { h ->
         val oldPlacement = placementService.createPlacement(
+            h,
             PlacementType.DAYCARE,
             childId,
             unitId,
@@ -423,6 +438,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
     @Test
     fun `updating placement endDate to be earlier cuts group placements`() = jdbi.handle { h ->
         val oldPlacement = placementService.createPlacement(
+            h,
             PlacementType.DAYCARE,
             childId,
             unitId,
@@ -452,6 +468,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
     @Test
     fun `changing placement type by creating new placement preserves group placement history`() = jdbi.handle { h ->
         val oldPlacement = placementService.createPlacement(
+            h,
             PlacementType.DAYCARE,
             childId,
             unitId,
@@ -468,6 +485,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
         )
 
         placementService.createPlacement(
+            h,
             PlacementType.PRESCHOOL_DAYCARE,
             childId,
             unitId,
@@ -500,6 +518,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
     fun `changing placement type to preparatory by creating new placement preserves group placement history`() =
         jdbi.handle { h ->
             val oldPlacement = placementService.createPlacement(
+                h,
                 PlacementType.PRESCHOOL,
                 childId,
                 unitId,
@@ -516,6 +535,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
             )
 
             placementService.createPlacement(
+                h,
                 PlacementType.PREPARATORY,
                 childId,
                 unitId,
@@ -547,6 +567,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
     @Test
     fun `updating placement endDate to be later`() = jdbi.handle { h ->
         val oldPlacement = placementService.createPlacement(
+            h,
             PlacementType.DAYCARE,
             childId,
             unitId,
@@ -564,6 +585,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
     @Test
     fun `updating placement endDate to be earlier than startDate is not allowed`() = jdbi.handle { h ->
         val oldPlacement = placementService.createPlacement(
+            h,
             PlacementType.DAYCARE,
             childId,
             unitId,

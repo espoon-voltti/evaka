@@ -7,22 +7,20 @@ package fi.espoo.evaka.pis.dao
 import fi.espoo.evaka.identity.ExternalIdentifier
 import fi.espoo.evaka.pis.AbstractIntegrationTest
 import fi.espoo.evaka.pis.createParentship
+import fi.espoo.evaka.pis.createPerson
 import fi.espoo.evaka.pis.getParentships
+import fi.espoo.evaka.pis.getPersonBySSN
 import fi.espoo.evaka.pis.service.Parentship
 import fi.espoo.evaka.pis.service.PersonIdentityRequest
 import fi.espoo.evaka.pis.service.PersonJSON
 import fi.espoo.evaka.shared.db.handle
+import fi.espoo.evaka.shared.db.transaction
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Test
-import org.springframework.beans.factory.annotation.Autowired
 import java.time.LocalDate
 
 class ParentshipDAOIntegrationTest : AbstractIntegrationTest() {
-
-    @Autowired
-    lateinit var personDAO: PersonDAO
-
     @Test
     fun `test creating parentship`() {
         val child = testPerson1()
@@ -99,15 +97,17 @@ class ParentshipDAOIntegrationTest : AbstractIntegrationTest() {
     }
 
     private fun createPerson(ssn: String, firstName: String): PersonJSON {
-        return personDAO.getOrCreatePersonIdentity(
-            PersonIdentityRequest(
-                identity = ExternalIdentifier.SSN.getInstance(ssn),
-                firstName = firstName,
-                lastName = "Meikäläinen",
-                email = "${firstName.toLowerCase()}.meikalainen@example.com",
-                language = "fi"
+        return jdbi.transaction {
+            it.getPersonBySSN(ssn) ?: it.createPerson(
+                PersonIdentityRequest(
+                    identity = ExternalIdentifier.SSN.getInstance(ssn),
+                    firstName = firstName,
+                    lastName = "Meikäläinen",
+                    email = "${firstName.toLowerCase()}.meikalainen@example.com",
+                    language = "fi"
+                )
             )
-        ).let { PersonJSON.from(it) }
+        }.let { PersonJSON.from(it) }
     }
 
     private fun testPerson1() = createPerson("140881-172X", "Aku")
