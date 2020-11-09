@@ -40,6 +40,7 @@ const StyledInput = styled.input<StyledInputProps>`
   outline: none;
   box-sizing: border-box;
   text-align: ${(p) => p.align ?? 'left'};
+  background-color: ${Colors.greyscale.white};
 
   font-size: 15px;
   color: ${Colors.greyscale.darkest};
