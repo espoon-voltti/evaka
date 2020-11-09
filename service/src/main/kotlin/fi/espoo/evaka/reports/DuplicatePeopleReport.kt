@@ -9,7 +9,7 @@ import fi.espoo.evaka.daycare.controllers.utils.ok
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.config.Roles
 import fi.espoo.evaka.shared.db.getUUID
-import fi.espoo.evaka.shared.db.transaction
+import fi.espoo.evaka.shared.db.handle
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.Jdbi
 import org.springframework.http.ResponseEntity
@@ -24,7 +24,7 @@ class DuplicatePeopleReportController(private val jdbi: Jdbi) {
     fun getDuplicatePeopleReport(user: AuthenticatedUser): ResponseEntity<List<DuplicatePeopleReportRow>> {
         Audit.DuplicatePeopleReportRead.log()
         user.requireOneOfRoles(Roles.ADMIN)
-        return jdbi.transaction { getDuplicatePeople(it) }.let(::ok)
+        return jdbi.handle { getDuplicatePeople(it) }.let(::ok)
     }
 }
 

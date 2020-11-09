@@ -94,7 +94,7 @@ class DaycareController(
         acl.getRolesForUnit(user, daycareId)
             .requireOneOfRoles(ADMIN, SERVICE_WORKER, FINANCE_ADMIN, UNIT_SUPERVISOR, STAFF)
 
-        return jdbi.transaction { daycareService.getDaycareGroups(it, daycareId, startDate, endDate) }.let(::ok)
+        return jdbi.handle { daycareService.getDaycareGroups(it, daycareId, startDate, endDate) }.let(::ok)
     }
 
     @PostMapping("/{daycareId}/groups")
@@ -154,7 +154,7 @@ class DaycareController(
         acl.getRolesForUnitGroup(user, groupId)
             .requireOneOfRoles(ADMIN, SERVICE_WORKER, FINANCE_ADMIN, UNIT_SUPERVISOR, STAFF)
 
-        return jdbi.transaction {
+        return jdbi.handle {
             val daycareStub = it.getDaycareStub(daycareId)
             ok(
                 CaretakersResponse(
@@ -249,7 +249,7 @@ class DaycareController(
         acl.getRolesForUnit(user, daycareId)
             .requireOneOfRoles(ADMIN, SERVICE_WORKER, FINANCE_ADMIN, UNIT_SUPERVISOR, STAFF)
 
-        return jdbi.transaction { daycareService.getDaycareCapacityStats(it, daycareId, startDate, endDate) }.let(::ok)
+        return jdbi.handle { daycareService.getDaycareCapacityStats(it, daycareId, startDate, endDate) }.let(::ok)
     }
 
     @PutMapping("/{daycareId}")

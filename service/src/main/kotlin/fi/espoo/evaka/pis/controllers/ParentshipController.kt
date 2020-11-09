@@ -7,6 +7,8 @@ package fi.espoo.evaka.pis.controllers
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.application.utils.noContent
 import fi.espoo.evaka.identity.VolttiIdentifier
+import fi.espoo.evaka.pis.getParentship
+import fi.espoo.evaka.pis.getParentships
 import fi.espoo.evaka.pis.service.Parentship
 import fi.espoo.evaka.pis.service.ParentshipService
 import fi.espoo.evaka.shared.async.AsyncJobRunner
@@ -14,6 +16,7 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.config.Roles.FINANCE_ADMIN
 import fi.espoo.evaka.shared.config.Roles.SERVICE_WORKER
 import fi.espoo.evaka.shared.config.Roles.UNIT_SUPERVISOR
+import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.db.transaction
 import org.jdbi.v3.core.Jdbi
 import org.springframework.http.ResponseEntity
@@ -59,13 +62,12 @@ class ParentshipController(
         user: AuthenticatedUser,
         @RequestParam(value = "headOfChildId", required = false) headOfChildId: VolttiIdentifier? = null,
         @RequestParam(value = "childId", required = false) childId: VolttiIdentifier? = null
-    ): ResponseEntity<Set<Parentship>> {
+    ): ResponseEntity<List<Parentship>> {
         Audit.ParentShipsRead.log(targetId = listOf(headOfChildId, childId))
         user.requireOneOfRoles(SERVICE_WORKER, UNIT_SUPERVISOR, FINANCE_ADMIN)
 
-        return jdbi.transaction {
-            parentshipService.getParentships(
-                it,
+        return jdbi.handle {
+            it.getParentships(
                 headOfChildId = headOfChildId,
                 childId = childId,
                 includeConflicts = true
@@ -79,8 +81,8 @@ class ParentshipController(
         Audit.ParentShipsRead.log(targetId = id)
         user.requireOneOfRoles(SERVICE_WORKER, UNIT_SUPERVISOR, FINANCE_ADMIN)
 
-        return jdbi.transaction {
-            parentshipService.getParentship(it, id)
+        return jdbi.handle {
+            it.getParentship(id)
                 ?.let { ResponseEntity.ok().body(it) }
                 ?: ResponseEntity.notFound().build()
         }

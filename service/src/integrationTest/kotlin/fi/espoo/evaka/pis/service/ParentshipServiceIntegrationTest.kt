@@ -7,6 +7,7 @@ package fi.espoo.evaka.pis.service
 import fi.espoo.evaka.identity.ExternalIdentifier
 import fi.espoo.evaka.pis.AbstractIntegrationTest
 import fi.espoo.evaka.pis.createPerson
+import fi.espoo.evaka.pis.getParentships
 import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.db.transaction
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -37,11 +38,11 @@ class ParentshipServiceIntegrationTest : AbstractIntegrationTest() {
 
             parentshipService.createParentship(h, child.id, parent2.id, startDate2, endDate2)
 
-            val headsByChild = parentshipService.getParentshipsByChildId(h, child.id)
+            val headsByChild = h.getParentships(headOfChildId = null, childId = child.id)
 
             assertEquals(2, headsByChild.size)
 
-            val childByHeads = headsByChild.map { parentshipService.getParentshipsByHeadOfChildId(h, it.headOfChildId) }
+            val childByHeads = headsByChild.map { h.getParentships(headOfChildId = it.headOfChildId, childId = null) }
 
             assertEquals(2, childByHeads.size)
         }

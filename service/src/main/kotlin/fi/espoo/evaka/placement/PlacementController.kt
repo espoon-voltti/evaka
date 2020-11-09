@@ -95,7 +95,7 @@ class PlacementController(
         acl.getRolesForUnit(user, daycareId)
             .requireOneOfRoles(SERVICE_WORKER, FINANCE_ADMIN, UNIT_SUPERVISOR)
 
-        return jdbi.transaction { getPlacementPlans(it, daycareId, startDate, endDate) }.let(::ok)
+        return jdbi.handle { getPlacementPlans(it, daycareId, startDate, endDate) }.let(::ok)
     }
 
     @PostMapping

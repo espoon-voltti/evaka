@@ -12,7 +12,7 @@ import fi.espoo.evaka.shared.config.Roles.ADMIN
 import fi.espoo.evaka.shared.config.Roles.FINANCE_ADMIN
 import fi.espoo.evaka.shared.config.Roles.SERVICE_WORKER
 import fi.espoo.evaka.shared.db.getUUID
-import fi.espoo.evaka.shared.db.transaction
+import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.ClosedPeriod
 import org.jdbi.v3.core.Handle
@@ -45,7 +45,7 @@ class OccupancyController(
         acl.getRolesForUnit(user, unitId)
             .requireOneOfRoles(ADMIN, SERVICE_WORKER, FINANCE_ADMIN, Roles.UNIT_SUPERVISOR)
 
-        val occupancies = jdbi.transaction(calculateOccupancyPeriods(unitId, ClosedPeriod(from, to), type))
+        val occupancies = jdbi.handle(calculateOccupancyPeriods(unitId, ClosedPeriod(from, to), type))
 
         val response = OccupancyResponse(
             occupancies = occupancies,
@@ -67,7 +67,7 @@ class OccupancyController(
         acl.getRolesForUnit(user, unitId)
             .requireOneOfRoles(ADMIN, SERVICE_WORKER, FINANCE_ADMIN, Roles.UNIT_SUPERVISOR)
 
-        val occupancies = jdbi.transaction(calculateOccupancyPeriodsGroupLevel(unitId, ClosedPeriod(from, to), type))
+        val occupancies = jdbi.handle(calculateOccupancyPeriodsGroupLevel(unitId, ClosedPeriod(from, to), type))
 
         val response = occupancies.groupBy({ it.groupId }) {
             OccupancyPeriod(it.period, it.sum, it.headcount, it.caretakers, it.percentage)

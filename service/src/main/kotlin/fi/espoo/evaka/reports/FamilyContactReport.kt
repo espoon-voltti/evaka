@@ -13,7 +13,7 @@ import fi.espoo.evaka.shared.auth.UserRole.SERVICE_WORKER
 import fi.espoo.evaka.shared.auth.UserRole.UNIT_SUPERVISOR
 import fi.espoo.evaka.shared.db.bindNullable
 import fi.espoo.evaka.shared.db.getUUID
-import fi.espoo.evaka.shared.db.transaction
+import fi.espoo.evaka.shared.db.handle
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.Jdbi
 import org.springframework.http.ResponseEntity
@@ -31,7 +31,7 @@ class FamilyConflictReportController(
         Audit.FamilyConflictReportRead.log()
         user.requireOneOfRoles(ADMIN, SERVICE_WORKER, FINANCE_ADMIN, UNIT_SUPERVISOR)
         val authorizedUnits = acl.getAuthorizedUnits(user)
-        return jdbi.transaction { getFamilyConflicts(it, authorizedUnits.ids) }
+        return jdbi.handle { getFamilyConflicts(it, authorizedUnits.ids) }
             .let { ResponseEntity.ok(it) }
     }
 }

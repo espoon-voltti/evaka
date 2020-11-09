@@ -9,7 +9,7 @@ import fi.espoo.evaka.daycare.controllers.utils.ok
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.config.Roles
 import fi.espoo.evaka.shared.db.getUUID
-import fi.espoo.evaka.shared.db.transaction
+import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.domain.BadRequest
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.Jdbi
@@ -33,7 +33,7 @@ class ApplicationsReportController(private val jdbi: Jdbi) {
         user.requireOneOfRoles(Roles.SERVICE_WORKER, Roles.DIRECTOR, Roles.ADMIN)
         if (to.isBefore(from)) throw BadRequest("Inverted time range")
 
-        return jdbi.transaction { getApplicationsRows(it, from, to) }.let(::ok)
+        return jdbi.handle { getApplicationsRows(it, from, to) }.let(::ok)
     }
 }
 

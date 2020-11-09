@@ -13,7 +13,7 @@ import fi.espoo.evaka.shared.config.Roles
 import fi.espoo.evaka.shared.db.getEnum
 import fi.espoo.evaka.shared.db.getNullableUUID
 import fi.espoo.evaka.shared.db.getUUID
-import fi.espoo.evaka.shared.db.transaction
+import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.domain.BadRequest
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.Jdbi
@@ -38,7 +38,7 @@ class RawReportController(private val jdbi: Jdbi) {
         if (to.isBefore(from)) throw BadRequest("Inverted time range")
         if (to.isAfter(from.plusDays(7))) throw BadRequest("Time range too long")
 
-        return jdbi.transaction { getRawRows(it, from, to) }.let(::ok)
+        return jdbi.handle { getRawRows(it, from, to) }.let(::ok)
     }
 }
 

@@ -141,7 +141,7 @@ class PersonController(
         user.requireOneOfRoles(SERVICE_WORKER, UNIT_SUPERVISOR, FINANCE_ADMIN)
         return ResponseEntity.ok()
             .body(
-                jdbi.transaction {
+                jdbi.handle {
                     it.searchPeople(
                         searchTerm,
                         orderBy,
@@ -254,7 +254,7 @@ class PersonController(
 
         return ResponseEntity.ok()
             .body(
-                jdbi.transaction { it.getDeceasedPeople(sinceDate) }.map { personDTO -> PersonJSON.from(personDTO) }
+                jdbi.handle { it.getDeceasedPeople(sinceDate) }.map { personDTO -> PersonJSON.from(personDTO) }
             )
     }
 

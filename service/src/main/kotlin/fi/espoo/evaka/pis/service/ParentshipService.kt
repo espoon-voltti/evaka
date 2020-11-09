@@ -8,7 +8,6 @@ import fi.espoo.evaka.pis.createParentship
 import fi.espoo.evaka.pis.dao.mapPSQLException
 import fi.espoo.evaka.pis.deleteParentship
 import fi.espoo.evaka.pis.getParentship
-import fi.espoo.evaka.pis.getParentships
 import fi.espoo.evaka.pis.retryParentship
 import fi.espoo.evaka.pis.updateParentshipDuration
 import fi.espoo.evaka.shared.async.AsyncJobRunner
@@ -38,33 +37,6 @@ class ParentshipService(private val asyncJobRunner: AsyncJobRunner) {
         } catch (e: Exception) {
             throw mapPSQLException(e)
         }
-    }
-
-    fun getParentships(
-        h: Handle,
-        headOfChildId: UUID?,
-        childId: UUID?,
-        includeConflicts: Boolean = false
-    ): Set<Parentship> {
-        return h.getParentships(headOfChildId = headOfChildId, childId = childId, includeConflicts = includeConflicts)
-            .toSet()
-    }
-
-    fun getParentshipsByHeadOfChildId(
-        h: Handle,
-        headOfChildId: UUID,
-        includeConflicts: Boolean = false
-    ): Set<Parentship> {
-        return h.getParentships(headOfChildId = headOfChildId, childId = null, includeConflicts = includeConflicts)
-            .toSet()
-    }
-
-    fun getParentshipsByChildId(h: Handle, childId: UUID, includeConflicts: Boolean = false): Set<Parentship> {
-        return h.getParentships(headOfChildId = null, childId = childId, includeConflicts = includeConflicts).toSet()
-    }
-
-    fun getParentship(h: Handle, id: UUID): Parentship? {
-        return h.getParentship(id)
     }
 
     fun updateParentshipDuration(h: Handle, id: UUID, startDate: LocalDate, endDate: LocalDate?): Parentship {

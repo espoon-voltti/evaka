@@ -12,7 +12,7 @@ import fi.espoo.evaka.shared.config.Roles.DIRECTOR
 import fi.espoo.evaka.shared.config.Roles.FINANCE_ADMIN
 import fi.espoo.evaka.shared.config.Roles.SERVICE_WORKER
 import fi.espoo.evaka.shared.db.getUUID
-import fi.espoo.evaka.shared.db.transaction
+import fi.espoo.evaka.shared.db.handle
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.Jdbi
 import org.springframework.format.annotation.DateTimeFormat
@@ -32,7 +32,7 @@ class ChildAgeLanguageReportController(private val jdbi: Jdbi) {
     ): ResponseEntity<List<ChildAgeLanguageReportRow>> {
         Audit.ChildAgeLanguageReportRead.log()
         user.requireOneOfRoles(SERVICE_WORKER, FINANCE_ADMIN, ADMIN, DIRECTOR)
-        return jdbi.transaction { getChildAgeLanguageRows(it, date) }.let(::ok)
+        return jdbi.handle { getChildAgeLanguageRows(it, date) }.let(::ok)
     }
 }
 

@@ -24,6 +24,7 @@ import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.NotifyVoucherValueDecisionApproved
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.config.Roles
+import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.db.transaction
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.NotFound
@@ -68,7 +69,7 @@ class VoucherValueDecisionController(
         user.requireOneOfRoles(Roles.FINANCE_ADMIN)
         val maxPageSize = 5000
         if (pageSize > maxPageSize) throw BadRequest("Maximum page size is $maxPageSize")
-        val (total, valueDecisions) = jdbi.transaction { h ->
+        val (total, valueDecisions) = jdbi.handle { h ->
             h.searchValueDecisions(
                 page,
                 pageSize,
@@ -94,7 +95,7 @@ class VoucherValueDecisionController(
     ): ResponseEntity<Wrapper<VoucherValueDecisionDetailed>> {
         Audit.VoucherValueDecisionRead.log(targetId = id)
         user.requireOneOfRoles(Roles.FINANCE_ADMIN)
-        val res = jdbi.transaction { it.getVoucherValueDecision(objectMapper, id) }
+        val res = jdbi.handle { it.getVoucherValueDecision(objectMapper, id) }
             ?: throw NotFound("No voucher value decision found with given ID ($id)")
         return ResponseEntity.ok(Wrapper(res))
     }
@@ -112,7 +113,7 @@ class VoucherValueDecisionController(
     fun getDecisionPdf(user: AuthenticatedUser, @PathVariable id: UUID): ResponseEntity<ByteArray> {
         Audit.FeeDecisionPdfRead.log(targetId = id)
         user.requireOneOfRoles(Roles.FINANCE_ADMIN)
-        val (filename, pdf) = jdbi.transaction { h -> valueDecisionService.getDecisionPdf(h, id) }
+        val (filename, pdf) = jdbi.handle { h -> valueDecisionService.getDecisionPdf(h, id) }
         val headers = HttpHeaders().apply {
             add("Content-Disposition", "attachment; filename=\"$filename\"")
             add("Content-Type", "application/pdf")

@@ -12,6 +12,7 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole.ADMIN
 import fi.espoo.evaka.shared.auth.UserRole.SERVICE_WORKER
 import fi.espoo.evaka.shared.auth.UserRole.UNIT_SUPERVISOR
+import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.db.transaction
 import fi.espoo.evaka.shared.domain.Forbidden
 import org.jdbi.v3.core.Handle
@@ -42,7 +43,7 @@ class NoteController(private val jdbi: Jdbi, private val acl: AccessControlList)
             acl.getRolesForApplication(user, applicationId).requireOneOfRoles(ADMIN, SERVICE_WORKER, UNIT_SUPERVISOR)
         }
 
-        val notes = jdbi.transaction { h ->
+        val notes = jdbi.handle { h ->
             getApplicationNotes(h, search.applicationIds.first())
         }
         return ResponseEntity.ok(notes.map(NoteJSON.DomainMapping::toJSON))

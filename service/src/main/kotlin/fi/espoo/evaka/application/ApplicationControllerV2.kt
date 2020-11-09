@@ -26,6 +26,7 @@ import fi.espoo.evaka.placement.getPlacementPlanUnitName
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.config.Roles
+import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.db.transaction
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.ClosedPeriod
@@ -188,7 +189,7 @@ class ApplicationControllerV2(
         if (periodStart != null && periodEnd != null && periodStart > periodEnd)
             throw BadRequest("Date parameter periodEnd ($periodEnd) cannot be before periodStart ($periodStart)")
 
-        return jdbi.transaction { h ->
+        return jdbi.handle { h ->
             fetchApplicationSummaries(
                 h = h.setReadOnly(true),
                 user = user,
@@ -221,7 +222,7 @@ class ApplicationControllerV2(
         Audit.ApplicationRead.log(targetId = guardianId)
         user.requireOneOfRoles(Roles.ADMIN, Roles.SERVICE_WORKER, Roles.FINANCE_ADMIN, Roles.UNIT_SUPERVISOR)
 
-        return jdbi.transaction { h -> fetchApplicationSummariesForGuardian(h, guardianId) }
+        return jdbi.handle { h -> fetchApplicationSummariesForGuardian(h, guardianId) }
             .let { ResponseEntity.ok().body(it) }
     }
 
@@ -234,7 +235,7 @@ class ApplicationControllerV2(
         acl.getRolesForChild(user, childId)
             .requireOneOfRoles(Roles.ADMIN, Roles.SERVICE_WORKER, Roles.FINANCE_ADMIN, Roles.UNIT_SUPERVISOR)
 
-        return jdbi.transaction { h -> fetchApplicationSummariesForChild(h, childId) }
+        return jdbi.handle { h -> fetchApplicationSummariesForChild(h, childId) }
             .let { ResponseEntity.ok().body(it) }
     }
 
@@ -291,7 +292,7 @@ class ApplicationControllerV2(
     ): ResponseEntity<PlacementPlanDraft> {
         Audit.PlacementPlanDraftRead.log(targetId = applicationId)
         user.requireOneOfRoles(Roles.SERVICE_WORKER, Roles.ADMIN)
-        return jdbi.transaction { placementPlanService.getPlacementPlanDraft(it, applicationId) }
+        return jdbi.handle { placementPlanService.getPlacementPlanDraft(it, applicationId) }
             .let { ResponseEntity.ok(it) }
     }
 

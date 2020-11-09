@@ -34,7 +34,7 @@ import fi.espoo.evaka.shared.auth.UserRole.FINANCE_ADMIN
 import fi.espoo.evaka.shared.auth.UserRole.SERVICE_WORKER
 import fi.espoo.evaka.shared.auth.UserRole.STAFF
 import fi.espoo.evaka.shared.auth.UserRole.UNIT_SUPERVISOR
-import fi.espoo.evaka.shared.db.transaction
+import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.domain.ClosedPeriod
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.Jdbi
@@ -72,9 +72,7 @@ class UnitsView(
         currentUserRoles.requireOneOfRoles(*basicDataRoles)
 
         val period = ClosedPeriod(from, to)
-        val unitData = jdbi.transaction {
-            it.isReadOnly = true
-
+        val unitData = jdbi.handle {
             val groups = it.getDaycareGroups(unitId, from, to)
             val placements = getDaycarePlacements(it, unitId, null, from, to).toList()
             val backupCares = it.getBackupCaresForDaycare(unitId, period)

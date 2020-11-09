@@ -11,7 +11,7 @@ import fi.espoo.evaka.pis.service.FamilyOverviewService
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.config.Roles
-import fi.espoo.evaka.shared.db.transaction
+import fi.espoo.evaka.shared.db.handle
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.Jdbi
 import org.springframework.http.ResponseEntity
@@ -33,7 +33,7 @@ class FamilyController(
     fun getFamilyByPerson(user: AuthenticatedUser, @PathVariable(value = "id") id: UUID): ResponseEntity<FamilyOverview> {
         Audit.PisFamilyRead.log(targetId = id)
         user.requireOneOfRoles(Roles.FINANCE_ADMIN)
-        val result = jdbi.transaction { familyOverviewService.getFamilyByAdult(it, id) }
+        val result = jdbi.handle { familyOverviewService.getFamilyByAdult(it, id) }
             ?: return ResponseEntity.notFound().build()
         return ResponseEntity.ok(result)
     }
@@ -46,7 +46,7 @@ class FamilyController(
         Audit.FamilyContactsRead.log(targetId = childId)
         acl.getRolesForChild(user, childId).requireOneOfRoles(Roles.ADMIN, Roles.STAFF)
         return jdbi
-            .transaction { h -> fetchFamilyContacts(h.setReadOnly(true), childId) }
+            .handle { h -> fetchFamilyContacts(h, childId) }
             .let { ResponseEntity.ok(it) }
     }
 }
