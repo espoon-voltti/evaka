@@ -153,6 +153,7 @@ function VoucherServiceProviders() {
                 }
               }}
               styles={reactSelectStyles}
+              placeholder={i18n.reports.common.careAreaName}
             />
           </Wrapper>
         </FilterRow>

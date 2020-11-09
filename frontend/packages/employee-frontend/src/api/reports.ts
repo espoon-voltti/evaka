@@ -369,14 +369,11 @@ export async function getVoucherServiceProvidersReport(
     )
     .then((res) =>
       Success(
-        res.data.map(
-          (row) =>
-            ({
-              ...row,
-              startDate: LocalDate.parseIso(row.startDate),
-              endDate: LocalDate.parseIso(row.endDate)
-            } as VoucherServiceProviderRow)
-        )
+        res.data.map((row) => ({
+          ...row,
+          startDate: LocalDate.parseIso(row.startDate),
+          endDate: LocalDate.parseIso(row.endDate)
+        }))
       )
     )
     .catch(Failure)
