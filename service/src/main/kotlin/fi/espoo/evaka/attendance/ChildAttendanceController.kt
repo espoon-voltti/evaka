@@ -76,19 +76,6 @@ class ChildAttendanceController(
     }
 
     @GetMapping("/current")
-    fun getChildrenInGroup(
-        user: AuthenticatedUser,
-        @RequestParam groupId: UUID
-    ): ResponseEntity<List<ChildInGroup>> {
-        Audit.ChildAttendanceReadGroup.log(targetId = groupId)
-        acl.getRolesForUnitGroup(user, groupId)
-            .requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF)
-
-        return jdbi.transaction { it.getChildrenInGroup(groupId) }
-            .let { ResponseEntity.ok(it) }
-    }
-
-    @GetMapping("/current/all")
     fun getDaycareAttendances(
         user: AuthenticatedUser,
         @RequestParam daycareId: UUID

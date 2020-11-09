@@ -41,57 +41,6 @@ fun Handle.updateCurrentAttendanceEnd(childId: UUID, departed: OffsetDateTime) {
         .execute()
 }
 
-fun Handle.getChildrenInGroup(groupId: UUID): List<ChildInGroup> {
-    // language=sql
-    val sql =
-        """
-        SELECT 
-            ch.id AS child_id,
-            ch.first_name,
-            ch.last_name,
-            gp.daycare_group_id,
-            ( CASE 
-                WHEN EXISTS (
-                    SELECT 1 FROM child_attendance ca
-                    WHERE ca.child_id = ch.id AND ca.departed IS NULL
-                ) THEN 'PRESENT'
-                WHEN EXISTS (
-                    SELECT 1 FROM child_attendance ca
-                    WHERE ca.child_id = ch.id 
-                        AND ca.arrived < now()
-                        AND ca.departed >= make_timestamptz(
-                            extract(year from now())::int, 
-                            extract(month from now())::int, 
-                            extract(day from now())::int, 
-                            0, 0, 0.0
-                        )
-                ) THEN 'DEPARTED'
-                WHEN EXISTS (
-                    SELECT 1 FROM absence ab
-                    WHERE ab.child_id = ch.id AND ab.date = now()::date AND ab.absence_type != 'PRESENCE'
-                ) THEN 'ABSENT'
-                ELSE 'COMING'
-            END ) AS status,
-            ca.arrived,
-            ca.departed,
-            ca.id AS child_attendance_id
-        FROM daycare_group_placement gp
-        JOIN placement p ON p.id = gp.daycare_placement_id
-        JOIN person ch ON ch.id = p.child_id
-        LEFT JOIN (
-            SELECT child_id, arrived, departed, id
-            FROM child_attendance ca 
-            WHERE ca.arrived > current_date) ca 
-        ON p.child_id = ca.child_id
-        WHERE gp.daycare_group_id = :groupId AND daterange(gp.start_date, gp.end_date, '[]') @> current_date
-        """.trimIndent()
-
-    return createQuery(sql)
-        .bind("groupId", groupId)
-        .mapTo<ChildInGroup>()
-        .list()
-}
-
 fun Handle.getDaycareAttendances(daycareId: UUID): List<ChildInGroup> {
     // language=sql
     val sql =
