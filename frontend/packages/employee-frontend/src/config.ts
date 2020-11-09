@@ -18,6 +18,7 @@ const env = (): Env | 'default' => {
 
 type FeatureFlags = {
   voucherValueDecisionsPage: boolean
+  voucherServiceProviders: boolean
 }
 
 type Features = {
@@ -28,13 +29,16 @@ type Features = {
 
 const features: Features = {
   default: {
-    voucherValueDecisionsPage: true
+    voucherValueDecisionsPage: true,
+    voucherServiceProviders: true
   },
   staging: {
-    voucherValueDecisionsPage: true
+    voucherValueDecisionsPage: true,
+    voucherServiceProviders: true
   },
   prod: {
-    voucherValueDecisionsPage: false
+    voucherValueDecisionsPage: false,
+    voucherServiceProviders: false
   }
 }
 

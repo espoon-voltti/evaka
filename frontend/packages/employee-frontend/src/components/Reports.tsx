@@ -29,6 +29,7 @@ import { EspooColours } from '~utils/colours'
 import { RequireRole } from '~utils/roles'
 import RoundIcon from 'components/shared/atoms/RoundIcon'
 import { DefaultMargins } from 'components/shared/layout/white-space'
+import { featureFlags } from '~config'
 
 const ReportItems = styled.div`
   margin: 20px 0;
@@ -370,23 +371,25 @@ function Reports() {
               <Description>{i18n.reports.presence.description}</Description>
             </ReportItem>
           </RequireRole>
-          <RequireRole oneOf={['ADMIN', 'DIRECTOR']}>
-            <ReportItem>
-              <TitleRow>
-                <RoundIcon
-                  size="L"
-                  color={EspooColours.bluePrimary}
-                  content={faDiagnoses}
-                />
-                <LinkTitle to="/reports/voucher-service-providers">
-                  {i18n.reports.voucherServiceProviders.title}
-                </LinkTitle>
-              </TitleRow>
-              <Description>
-                {i18n.reports.voucherServiceProviders.description}
-              </Description>
-            </ReportItem>
-          </RequireRole>
+          {featureFlags.voucherValueDecisionsPage && (
+            <RequireRole oneOf={['ADMIN', 'DIRECTOR']}>
+              <ReportItem>
+                <TitleRow>
+                  <RoundIcon
+                    size="L"
+                    color={EspooColours.bluePrimary}
+                    content={faDiagnoses}
+                  />
+                  <LinkTitle to="/reports/voucher-service-providers">
+                    {i18n.reports.voucherServiceProviders.title}
+                  </LinkTitle>
+                </TitleRow>
+                <Description>
+                  {i18n.reports.voucherServiceProviders.description}
+                </Description>
+              </ReportItem>
+            </RequireRole>
+          )}
           <RequireRole oneOf={['ADMIN', 'DIRECTOR']}>
             <ReportItem>
               <TitleRow>
