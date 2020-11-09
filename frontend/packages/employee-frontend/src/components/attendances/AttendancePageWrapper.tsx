@@ -17,7 +17,6 @@ import { animated, useSpring } from 'react-spring'
 import { useTranslation } from '~state/i18n'
 import {
   ChildInGroup,
-  getChildrenInGroup,
   getDaycare,
   getDaycareAttendances,
   getUnitData,
@@ -94,12 +93,12 @@ const SearchBar = animated(styled.div`
 
 export default React.memo(function AttendancePageWrapper() {
   const { i18n } = useTranslation()
-  const { id, groupid } = useParams<{ id: string; groupid: string }>()
+  const { unitId, groupId } = useParams<{ unitId: string; groupId: string }>()
   const location = useLocation()
 
   const [unitData, setUnitData] = useState<Result<UnitData>>(Loading())
   const [unit, setUnit] = useState<Result<UnitResponse>>(Loading())
-  const [groupAttendances, setGoupAttendances] = useState<
+  const [groupAttendances, setGroupAttendances] = useState<
     Result<ChildInGroup[]>
   >(Loading())
   const [showSearch, setShowSearch] = useState<boolean>(false)
@@ -108,20 +107,12 @@ export default React.memo(function AttendancePageWrapper() {
   const debouncedSearchTerms = useDebounce(freeText, 500)
 
   useEffect(() => {
-    void getUnitData(id, LocalDate.today(), LocalDate.today()).then(setUnitData)
-    void getDaycare(id).then(setUnit)
-    groupid === 'all'
-      ? void getDaycareAttendances(id).then(setGoupAttendances)
-      : void getChildrenInGroup(groupid).then(setGoupAttendances)
+    void getUnitData(unitId, LocalDate.today(), LocalDate.today()).then(
+      setUnitData
+    )
+    void getDaycare(unitId).then(setUnit)
+    void getDaycareAttendances(unitId).then(filterAndSetGroupAttendances)
   }, [location])
-
-  useEffect(() => {
-    void getUnitData(id, LocalDate.today(), LocalDate.today()).then(setUnitData)
-    void getDaycare(id).then(setUnit)
-    groupid === 'all'
-      ? void getDaycareAttendances(id).then(setGoupAttendances)
-      : void getChildrenInGroup(groupid).then(setGoupAttendances)
-  }, [])
 
   useEffect(() => {
     if (isSuccess(groupAttendances)) {
@@ -135,6 +126,17 @@ export default React.memo(function AttendancePageWrapper() {
       setSearchResults(filteredData)
     }
   }, [debouncedSearchTerms])
+
+  function filterAndSetGroupAttendances(
+    groupAttendances: Result<ChildInGroup[]>
+  ) {
+    if (isSuccess(groupAttendances)) {
+      groupAttendances.data = groupAttendances.data.filter(
+        (childInGroup) => childInGroup.daycareGroupId === groupId
+      )
+    }
+    setGroupAttendances(groupAttendances)
+  }
 
   const totalAttendances = isSuccess(groupAttendances)
     ? groupAttendances.data.length
@@ -163,7 +165,7 @@ export default React.memo(function AttendancePageWrapper() {
   const tabs = [
     {
       id: 'coming',
-      link: `/units/${id}/attendance/${groupid}/coming`,
+      link: `/units/${unitId}/attendance/${groupId}/coming`,
       label: (
         <Bold>
           {i18n.attendances.types.COMING}
@@ -174,7 +176,7 @@ export default React.memo(function AttendancePageWrapper() {
     },
     {
       id: 'present',
-      link: `/units/${id}/attendance/${groupid}/present`,
+      link: `/units/${unitId}/attendance/${groupId}/present`,
       label: (
         <Bold>
           {i18n.attendances.types.PRESENT}
@@ -185,7 +187,7 @@ export default React.memo(function AttendancePageWrapper() {
     },
     {
       id: 'departed',
-      link: `/units/${id}/attendance/${groupid}/departed`,
+      link: `/units/${unitId}/attendance/${groupId}/departed`,
       label: (
         <Bold>
           {i18n.attendances.types.DEPARTED}
@@ -196,7 +198,7 @@ export default React.memo(function AttendancePageWrapper() {
     },
     {
       id: 'absent',
-      link: `/units/${id}/attendance/${groupid}/absent`,
+      link: `/units/${unitId}/attendance/${groupId}/absent`,
       label: (
         <Bold>
           {i18n.attendances.types.ABSENT}
@@ -208,13 +210,13 @@ export default React.memo(function AttendancePageWrapper() {
   ]
 
   function RedirectToGroupSelector() {
-    return <Redirect to={`/units/${id}/groupselector`} />
+    return <Redirect to={`/units/${unitId}/groupselector`} />
   }
 
   const selectedGroup =
     isSuccess(unitData) &&
-    groupid !== 'all' &&
-    unitData.data.groups.find((elem: DaycareGroup) => elem.id === groupid)
+    groupId !== 'all' &&
+    unitData.data.groups.find((elem: DaycareGroup) => elem.id === groupId)
 
   const container = useSpring({ x: showSearch ? 1 : 0 })
 
@@ -263,13 +265,13 @@ export default React.memo(function AttendancePageWrapper() {
             paddingVertical={'s'}
             paddingHorozontal={'s'}
           >
-            <a href={`/units/${id}/groupselector`}>
+            <a href={`/units/${unitId}/groupselector`}>
               <WideButton
                 primary
                 text={
                   selectedGroup
                     ? selectedGroup.name
-                    : groupid === 'all'
+                    : groupId === 'all'
                     ? i18n.common.all
                     : i18n.attendances.groupSelectError
                 }
@@ -278,33 +280,33 @@ export default React.memo(function AttendancePageWrapper() {
             <Switch>
               <Route
                 exact
-                path="/units/:id/attendance/groups"
+                path="/units/:unitId/attendance/groups"
                 component={AttendanceGroupSelectorPage}
               />
               <Route
                 exact
-                path="/units/:id/attendance/:groupid/coming"
+                path="/units/:unitId/attendance/:groupId/coming"
                 render={() => (
                   <AttendanceComingPage groupAttendances={groupAttendances} />
                 )}
               />
               <Route
                 exact
-                path="/units/:id/attendance/:groupid/present"
+                path="/units/:unitId/attendance/:groupId/present"
                 render={() => (
                   <AttendancePresentPage groupAttendances={groupAttendances} />
                 )}
               />
               <Route
                 exact
-                path="/units/:id/attendance/:groupid/departed"
+                path="/units/:unitId/attendance/:groupId/departed"
                 render={() => (
                   <AttendanceDepartedPage groupAttendances={groupAttendances} />
                 )}
               />
               <Route
                 exact
-                path="/units/:id/attendance/:groupid/absent"
+                path="/units/:unitId/attendance/:groupId/absent"
                 render={() => (
                   <AttendanceAbsentPage groupAttendances={groupAttendances} />
                 )}

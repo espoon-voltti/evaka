@@ -70,34 +70,11 @@ export interface ChildInGroup {
   childAttendanceId?: UUID
 }
 
-export async function getChildrenInGroup(
-  groupId: UUID
-): Promise<Result<ChildInGroup[]>> {
-  return client
-    .get<JsonOf<ChildInGroup[]>>(`/child-attendances/current`, {
-      params: { groupId }
-    })
-    .then((res) => res.data)
-    .then((data) =>
-      data.map((childInGroup) => ({
-        ...childInGroup,
-        arrived: childInGroup.arrived
-          ? new Date(childInGroup.arrived)
-          : undefined,
-        departed: childInGroup.departed
-          ? new Date(childInGroup.departed)
-          : undefined
-      }))
-    )
-    .then(Success)
-    .catch(Failure)
-}
-
 export async function getDaycareAttendances(
   daycareId: UUID
 ): Promise<Result<ChildInGroup[]>> {
   return client
-    .get<JsonOf<ChildInGroup[]>>(`/child-attendances/current/all`, {
+    .get<JsonOf<ChildInGroup[]>>(`/child-attendances/current`, {
       params: { daycareId }
     })
     .then((res) => res.data)
