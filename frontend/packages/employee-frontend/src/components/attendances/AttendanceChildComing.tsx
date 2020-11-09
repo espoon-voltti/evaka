@@ -172,7 +172,7 @@ export default React.memo(function AttendanceChildComing({
               text={i18n.attendances.actions.markPresent}
               onClick={markPresent}
               onSuccess={() =>
-                history.push(`/units/${unitId}/attendance/${groupId}/present`)
+                history.push(`/units/${unitId}/attendance/${groupId}/coming`)
               }
               data-qa="mark-present"
             />
