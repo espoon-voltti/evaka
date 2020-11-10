@@ -63,6 +63,7 @@ class DvvModificationsService(
                                 personModifications.henkilotunnus,
                                 infoGroup
                             )
+                            is HomeMunicipalityDvvInfoGroup -> handleHomeMunicipalityChangeDvvInfoGroup()
                             else -> logger.info("Unsupported DVV modification: ${infoGroup.tietoryhma}")
                         }
                     } catch (e: Throwable) {
@@ -210,6 +211,12 @@ class DvvModificationsService(
                 }
             }
         }
+    }
+
+    // KOTIKUNTA is received as part of the other address change info groups, the actual address change
+    // is done in those
+    private fun handleHomeMunicipalityChangeDvvInfoGroup() {
+        logger.debug("DVV change KOTIKUNTA received")
     }
 
     fun getDvvModifications(h: Handle, ssns: List<String>): List<DvvModification> {
