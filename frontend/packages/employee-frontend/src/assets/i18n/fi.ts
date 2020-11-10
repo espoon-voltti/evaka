@@ -1947,7 +1947,8 @@ export const fi = {
       childCount: 'PS lasten lkm',
       unitVoucherSum: 'PS summa / kk',
       detailsLink: 'Näytä erittely',
-      average: 'Keskiarvo'
+      average: 'Keskiarvo',
+      breakdown: 'Erittely'
     }
   },
   unitEditor: {

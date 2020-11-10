@@ -6,19 +6,20 @@ import React, { useEffect, useState } from 'react'
 import ReactSelect from 'react-select'
 import styled from 'styled-components'
 import { Link } from 'react-router-dom'
-
+import { faFile } from '~icon-set'
 import { Container, ContentArea } from '~components/shared/layout/Container'
 import Loader from '~components/shared/atoms/Loader'
 import Title from '~components/shared/atoms/Title'
 import { Th, Tr, Td, Thead, Tbody } from '~components/shared/layout/Table'
 import { reactSelectStyles } from '~components/shared/utils'
-import { Translations, useTranslation } from '~state/i18n'
+import { useTranslation } from '~state/i18n'
 import { isFailure, isLoading, isSuccess, Loading, Result, Success } from '~api'
 import { VoucherServiceProviderRow } from '~types/reports'
 import {
   getVoucherServiceProvidersReport,
   VoucherServiceProvidersFilters
 } from '~api/reports'
+import InlineButton from 'components/shared/atoms/buttons/InlineButton'
 import ReturnButton from 'components/shared/atoms/buttons/ReturnButton'
 import ReportDownload from '~components/reports/ReportDownload'
 import { formatDate } from '~utils/date'
@@ -32,6 +33,7 @@ import {
   TableScrollable
 } from '~components/reports/common'
 import { FlexRow } from 'components/common/styled/containers'
+import { formatCents } from '~utils/money'
 
 const StyledTd = styled(Td)`
   white-space: nowrap;
@@ -64,12 +66,7 @@ function yearOptions(): SelectOptionProps[] {
   return yearOptions
 }
 
-function getFilename(
-  i18n: Translations,
-  year: number,
-  month: number,
-  areaName: string
-) {
+function getFilename(year: number, month: number, areaName: string) {
   const time = formatDate(new Date(year, month - 1, 1), 'yyyy-MM')
   return `${time}-${areaName}.csv`.replace(/ /g, '_')
 }
@@ -99,6 +96,16 @@ function VoucherServiceProviders() {
 
   const months = monthOptions()
   const years = yearOptions()
+
+  const mappedData = isSuccess(rows)
+    ? rows.data.map(({ unit, childCount, monthlyPaymentSum }) => ({
+        unitId: unit.id,
+        unitName: unit.name,
+        areaName: unit.areaName,
+        childCount: childCount,
+        sum: formatCents(monthlyPaymentSum)
+      }))
+    : undefined
 
   return (
     <Container>
@@ -159,21 +166,20 @@ function VoucherServiceProviders() {
         </FilterRow>
         {isLoading(rows) && <Loader />}
         {isFailure(rows) && <span>{i18n.common.loadingFailed}</span>}
-        {isSuccess(rows) && filters.areaId != '' && (
+        {mappedData && filters.areaId && (
           <>
             <ReportDownload
-              data={rows.data}
+              data={mappedData}
               headers={[
                 { label: 'Palvelualue', key: 'areaName' },
                 { label: 'Yksikkö', key: 'unitName' },
-                { label: 'PS lasten lkm', key: 'voucherChildCount' },
-                { label: 'PS summa', key: 'voucherSum' }
+                { label: 'PS lasten lkm', key: 'childCount' },
+                { label: 'PS summa', key: 'sum' }
               ]}
               filename={getFilename(
-                i18n,
                 filters.year,
                 filters.month,
-                areas.find((area) => area.id == filters.areaId)?.name ?? ''
+                areas.find((area) => area.id === filters.areaId)?.name ?? ''
               )}
             />
             <TableScrollable>
@@ -187,15 +193,23 @@ function VoucherServiceProviders() {
                 </Tr>
               </Thead>
               <Tbody>
-                {rows.data.map((row) => (
+                {mappedData.map((row) => (
                   <Tr key={row.unitId}>
                     <StyledTd>{row.areaName}</StyledTd>
                     <StyledTd>
                       <Link to={`/units/${row.unitId}`}>{row.unitName}</Link>
                     </StyledTd>
-                    <StyledTd>{row.voucherChildCount}</StyledTd>
-                    <StyledTd>{row.voucherSum}</StyledTd>
-                    <StyledTd>{row.unitVoucherReportUri}</StyledTd>
+                    <StyledTd>{row.childCount}</StyledTd>
+                    <StyledTd>{row.sum}</StyledTd>
+                    <StyledTd>
+                      <Link to={`/units/${row.unitId}`}>
+                        <InlineButton
+                          icon={faFile}
+                          text={i18n.reports.voucherServiceProviders.breakdown}
+                          onClick={() => undefined}
+                        />
+                      </Link>
+                    </StyledTd>
                   </Tr>
                 ))}
               </Tbody>
