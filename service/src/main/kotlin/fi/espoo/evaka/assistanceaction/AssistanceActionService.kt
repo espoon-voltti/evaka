@@ -6,6 +6,7 @@ package fi.espoo.evaka.assistanceaction
 
 import fi.espoo.evaka.pis.dao.mapPSQLException
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
+import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.db.transaction
 import org.jdbi.v3.core.Jdbi
 import org.jdbi.v3.core.JdbiException
@@ -26,7 +27,7 @@ class AssistanceActionService(private val jdbi: Jdbi) {
     }
 
     fun getAssistanceActionsByChildId(childId: UUID): List<AssistanceAction> {
-        return jdbi.transaction { h -> getAssistanceActionsByChild(h.setReadOnly(true), childId) }
+        return jdbi.handle { h -> getAssistanceActionsByChild(h.setReadOnly(true), childId) }
     }
 
     fun updateAssistanceAction(user: AuthenticatedUser, id: UUID, data: AssistanceActionRequest): AssistanceAction {

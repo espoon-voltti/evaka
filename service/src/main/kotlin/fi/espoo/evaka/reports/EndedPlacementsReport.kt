@@ -9,7 +9,7 @@ import fi.espoo.evaka.daycare.controllers.utils.ok
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.config.Roles
 import fi.espoo.evaka.shared.db.getUUID
-import fi.espoo.evaka.shared.db.transaction
+import fi.espoo.evaka.shared.db.handle
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.Jdbi
 import org.springframework.http.ResponseEntity
@@ -32,7 +32,7 @@ class EndedPlacementsReportController(private val jdbi: Jdbi) {
         val to = from.plusMonths(1).minusDays(1)
         user.requireOneOfRoles(Roles.DIRECTOR, Roles.ADMIN, Roles.FINANCE_ADMIN)
 
-        return jdbi.transaction { getEndedPlacementsRows(it, from, to) }.let(::ok)
+        return jdbi.handle { getEndedPlacementsRows(it, from, to) }.let(::ok)
     }
 }
 

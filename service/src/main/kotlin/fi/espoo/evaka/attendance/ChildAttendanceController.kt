@@ -9,6 +9,7 @@ import fi.espoo.evaka.pis.dao.mapPSQLException
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
+import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.db.transaction
 import org.jdbi.v3.core.Jdbi
 import org.jdbi.v3.core.JdbiException
@@ -84,7 +85,7 @@ class ChildAttendanceController(
         acl.getRolesForUnit(user, daycareId)
             .requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF)
 
-        return jdbi.transaction { it.getDaycareAttendances(daycareId) }
+        return jdbi.handle { it.getDaycareAttendances(daycareId) }
             .let { ResponseEntity.ok(it) }
     }
 

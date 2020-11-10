@@ -14,6 +14,7 @@ import fi.espoo.evaka.pis.getEmployeeAuthenticatedUser
 import fi.espoo.evaka.pis.getEmployees
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.config.Roles
+import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.db.transaction
 import fi.espoo.evaka.shared.domain.BadRequest
 import org.jdbi.v3.core.Jdbi
@@ -35,7 +36,7 @@ class EmployeeController(private val jdbi: Jdbi) {
     fun getEmployees(user: AuthenticatedUser): ResponseEntity<List<Employee>> {
         Audit.EmployeesRead.log()
         user.requireOneOfRoles(Roles.ADMIN, Roles.SERVICE_WORKER, Roles.UNIT_SUPERVISOR)
-        return ResponseEntity.ok(jdbi.transaction { it.getEmployees() }.sortedBy { it.email })
+        return ResponseEntity.ok(jdbi.handle { it.getEmployees() }.sortedBy { it.email })
     }
 
     @GetMapping("/{id}")
@@ -51,7 +52,7 @@ class EmployeeController(private val jdbi: Jdbi) {
                 Roles.DIRECTOR
             )
         }
-        return jdbi.transaction { it.getEmployee(id) }?.let { ResponseEntity.ok().body(it) }
+        return jdbi.handle { it.getEmployee(id) }?.let { ResponseEntity.ok().body(it) }
             ?: ResponseEntity.notFound().build()
     }
 
@@ -69,7 +70,7 @@ class EmployeeController(private val jdbi: Jdbi) {
             throw BadRequest("Cannot create or fetch employee without aad")
         }
         return ResponseEntity.ok(
-            jdbi.transaction {
+            jdbi.handle {
                 it.getEmployeeAuthenticatedUser(employee.aad)
                     ?: AuthenticatedUser(it.createEmployee(employee).id, employee.roles)
             }

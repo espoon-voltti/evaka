@@ -8,10 +8,7 @@ import fi.espoo.evaka.pis.dao.mapPSQLException
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole.ADMIN
-import fi.espoo.evaka.shared.auth.UserRole.FINANCE_ADMIN
-import fi.espoo.evaka.shared.auth.UserRole.SERVICE_WORKER
 import fi.espoo.evaka.shared.auth.UserRole.STAFF
-import fi.espoo.evaka.shared.auth.UserRole.UNIT_SUPERVISOR
 import fi.espoo.evaka.shared.config.Roles.FINANCE_ADMIN
 import fi.espoo.evaka.shared.config.Roles.SERVICE_WORKER
 import fi.espoo.evaka.shared.config.Roles.UNIT_SUPERVISOR
@@ -90,7 +87,7 @@ class BackupCareController(private val jdbi: Jdbi, private val acl: AccessContro
     ): ResponseEntity<UnitBackupCaresResponse> {
         acl.getRolesForUnit(user, daycareId)
             .requireOneOfRoles(ADMIN, SERVICE_WORKER, FINANCE_ADMIN, UNIT_SUPERVISOR, STAFF)
-        val backupCares = jdbi.transaction { it.getBackupCaresForDaycare(daycareId, ClosedPeriod(startDate, endDate)) }
+        val backupCares = jdbi.handle { it.getBackupCaresForDaycare(daycareId, ClosedPeriod(startDate, endDate)) }
         return ResponseEntity.ok(UnitBackupCaresResponse(backupCares))
     }
 }

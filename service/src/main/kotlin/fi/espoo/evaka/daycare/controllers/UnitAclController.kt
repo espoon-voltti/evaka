@@ -14,6 +14,7 @@ import fi.espoo.evaka.shared.auth.UserRole.UNIT_SUPERVISOR
 import fi.espoo.evaka.shared.auth.deleteDaycareAclRow
 import fi.espoo.evaka.shared.auth.getDaycareAclRows
 import fi.espoo.evaka.shared.auth.insertDaycareAclRow
+import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.db.transaction
 import org.jdbi.v3.core.Jdbi
 import org.springframework.http.ResponseEntity
@@ -34,7 +35,7 @@ class UnitAclController(private val acl: AccessControlList, private val jdbi: Jd
         Audit.UnitAclRead.log()
         acl.getRolesForUnit(user, daycareId)
             .requireOneOfRoles(ADMIN, UNIT_SUPERVISOR)
-        val acls = jdbi.transaction { it.getDaycareAclRows(daycareId) }
+        val acls = jdbi.handle { it.getDaycareAclRows(daycareId) }
         return ResponseEntity.ok(DaycareAclResponse(acls))
     }
 

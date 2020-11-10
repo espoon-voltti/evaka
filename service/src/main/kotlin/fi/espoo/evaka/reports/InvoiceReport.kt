@@ -12,7 +12,7 @@ import fi.espoo.evaka.invoicing.domain.InvoiceStatus
 import fi.espoo.evaka.invoicing.domain.addressUsable
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.config.Roles
-import fi.espoo.evaka.shared.db.transaction
+import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.domain.Period
 import org.jdbi.v3.core.Jdbi
 import org.springframework.format.annotation.DateTimeFormat
@@ -44,7 +44,7 @@ class InvoiceReportController(private val jdbi: Jdbi) {
     }
 
     fun getInvoiceReportWithRows(period: Period): InvoiceReport {
-        val rows = jdbi.transaction { h ->
+        val rows = jdbi.handle { h ->
             val invoices = searchInvoices(
                 h,
                 statuses = listOf(InvoiceStatus.SENT),

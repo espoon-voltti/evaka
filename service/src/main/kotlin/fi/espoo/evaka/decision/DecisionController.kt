@@ -15,6 +15,7 @@ import fi.espoo.evaka.shared.auth.UserRole.FINANCE_ADMIN
 import fi.espoo.evaka.shared.auth.UserRole.SERVICE_WORKER
 import fi.espoo.evaka.shared.auth.UserRole.UNIT_SUPERVISOR
 import fi.espoo.evaka.shared.config.Roles
+import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.db.transaction
 import fi.espoo.evaka.shared.domain.Forbidden
 import org.jdbi.v3.core.Handle
@@ -44,7 +45,7 @@ class DecisionController(
     ): ResponseEntity<DecisionListResponse> {
         Audit.DecisionRead.log(targetId = guardianId)
         user.requireOneOfRoles(ADMIN, SERVICE_WORKER, FINANCE_ADMIN, UNIT_SUPERVISOR)
-        val decisions = jdbi.transaction { getDecisionsByGuardian(it, guardianId, acl.getAuthorizedUnits(user)) }
+        val decisions = jdbi.handle { getDecisionsByGuardian(it, guardianId, acl.getAuthorizedUnits(user)) }
 
         return ResponseEntity.ok(DecisionListResponse(withPublicDocumentUri(decisions)))
     }
@@ -56,7 +57,7 @@ class DecisionController(
     ): ResponseEntity<DecisionListResponse> {
         Audit.DecisionRead.log(targetId = childId)
         user.requireOneOfRoles(ADMIN, SERVICE_WORKER, UNIT_SUPERVISOR)
-        val decisions = jdbi.transaction { getDecisionsByChild(it, childId, acl.getAuthorizedUnits(user)) }
+        val decisions = jdbi.handle { getDecisionsByChild(it, childId, acl.getAuthorizedUnits(user)) }
 
         return ResponseEntity.ok(DecisionListResponse(withPublicDocumentUri(decisions)))
     }
@@ -68,7 +69,7 @@ class DecisionController(
     ): ResponseEntity<DecisionListResponse> {
         Audit.DecisionRead.log(targetId = applicationId)
         user.requireOneOfRoles(ADMIN, SERVICE_WORKER, UNIT_SUPERVISOR)
-        val decisions = jdbi.transaction { getDecisionsByApplication(it, applicationId, acl.getAuthorizedUnits(user)) }
+        val decisions = jdbi.handle { getDecisionsByApplication(it, applicationId, acl.getAuthorizedUnits(user)) }
 
         return ResponseEntity.ok(DecisionListResponse(withPublicDocumentUri(decisions)))
     }
@@ -77,7 +78,7 @@ class DecisionController(
     fun getDecisionUnits(user: AuthenticatedUser): ResponseEntity<List<DecisionUnit>> {
         Audit.UnitRead.log()
         user.requireOneOfRoles(Roles.ADMIN, Roles.SERVICE_WORKER, Roles.UNIT_SUPERVISOR, Roles.FINANCE_ADMIN)
-        val units = jdbi.transaction { decisionDraftService.getDecisionUnits(it) }
+        val units = jdbi.handle { decisionDraftService.getDecisionUnits(it) }
         return ResponseEntity.ok(units)
     }
 

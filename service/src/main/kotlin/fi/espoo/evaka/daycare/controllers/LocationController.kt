@@ -17,7 +17,6 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.bindNullable
 import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.db.mapColumn
-import fi.espoo.evaka.shared.db.transaction
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.Coordinate
 import org.jdbi.v3.core.Handle
@@ -46,7 +45,7 @@ class LocationController(val jdbi: Jdbi) {
     // Units by areas, only including units that can be applied to
     @GetMapping("/enduser/areas")
     fun getEnduserUnitsByArea(): ResponseEntity<Collection<CareAreaResponseJSON>> {
-        val areas = jdbi.transaction { h ->
+        val areas = jdbi.handle { h ->
             h.getAreas()
                 .map { area: CareArea ->
                     CareArea(
@@ -79,7 +78,7 @@ class LocationController(val jdbi: Jdbi) {
     @GetMapping("/filters/units")
     fun getUnits(@RequestParam type: String, @RequestParam area: String?): ResponseEntity<List<UnitStub>> {
         val areas = area?.split(",") ?: listOf()
-        val units = jdbi.transaction { h ->
+        val units = jdbi.handle { h ->
             when (type.toLowerCase()) {
                 "club" -> h.getClubs(areas)
                 "daycare" -> h.getDaycares(areas)

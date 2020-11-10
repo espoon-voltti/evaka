@@ -8,7 +8,7 @@ import fi.espoo.evaka.Audit
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.config.Roles
 import fi.espoo.evaka.shared.db.getUUID
-import fi.espoo.evaka.shared.db.transaction
+import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.domain.ClosedPeriod
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.Jdbi
@@ -31,7 +31,7 @@ class StartingPlacementsReportController(private val jdbi: Jdbi) {
     ): ResponseEntity<List<StartingPlacementsRow>> {
         Audit.StartingPlacementsReportRead.log()
         user.requireOneOfRoles(Roles.ADMIN, Roles.SERVICE_WORKER, Roles.FINANCE_ADMIN, Roles.DIRECTOR)
-        val rows = jdbi.transaction { h -> getStartingPlacementsRows(h, year, month) }
+        val rows = jdbi.handle { h -> getStartingPlacementsRows(h, year, month) }
         return ResponseEntity.ok(rows)
     }
 }

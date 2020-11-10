@@ -20,6 +20,7 @@ import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.NotifyFeeDecisionApproved
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.config.Roles
+import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.db.transaction
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.NotFound
@@ -97,7 +98,7 @@ class FeeDecisionController(
         if (pageSize > maxPageSize) throw BadRequest("Maximum page size is $maxPageSize")
         if (startDate != null && endDate != null && endDate < startDate)
             throw BadRequest("End date cannot be before start date")
-        val (total, feeDecisions) = jdbi.transaction { h ->
+        val (total, feeDecisions) = jdbi.handle { h ->
             searchFeeDecisions(
                 h,
                 page,
@@ -145,7 +146,7 @@ class FeeDecisionController(
         Audit.FeeDecisionPdfRead.log(targetId = uuid)
         user.requireOneOfRoles(Roles.FINANCE_ADMIN)
         val headers = HttpHeaders()
-        val (filename, pdf) = jdbi.transaction { h -> service.getFeeDecisionPdf(h, uuid) }
+        val (filename, pdf) = jdbi.handle { h -> service.getFeeDecisionPdf(h, uuid) }
         headers.add("Content-Disposition", "attachment; filename=\"$filename\"")
         headers.add("Content-Type", "application/pdf")
         return ResponseEntity(pdf, headers, HttpStatus.OK)
@@ -155,7 +156,7 @@ class FeeDecisionController(
     fun getDecision(user: AuthenticatedUser, @PathVariable uuid: UUID): ResponseEntity<Wrapper<FeeDecisionDetailed>> {
         Audit.FeeDecisionRead.log(targetId = uuid)
         user.requireOneOfRoles(Roles.FINANCE_ADMIN)
-        val res = jdbi.transaction { h -> getFeeDecision(h, objectMapper, uuid) }
+        val res = jdbi.handle { h -> getFeeDecision(h, objectMapper, uuid) }
             ?: throw NotFound("No fee decision found with given ID ($uuid)")
         return ResponseEntity.ok(Wrapper(res))
     }
@@ -167,7 +168,7 @@ class FeeDecisionController(
     ): ResponseEntity<Wrapper<List<FeeDecision>>> {
         Audit.FeeDecisionHeadOfFamilyRead.log(targetId = uuid)
         user.requireOneOfRoles(Roles.FINANCE_ADMIN)
-        val res = jdbi.transaction { h ->
+        val res = jdbi.handle { h ->
             findFeeDecisionsForHeadOfFamily(
                 h,
                 objectMapper,

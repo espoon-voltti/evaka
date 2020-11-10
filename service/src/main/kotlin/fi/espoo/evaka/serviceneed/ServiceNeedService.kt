@@ -8,6 +8,7 @@ import fi.espoo.evaka.pis.dao.mapPSQLException
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.NotifyServiceNeedUpdated
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
+import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.db.transaction
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.Jdbi
@@ -36,7 +37,7 @@ class ServiceNeedService(
     }
 
     fun getServiceNeedsByChildId(childId: UUID): List<ServiceNeed> {
-        return jdbi.transaction { h -> getServiceNeedsByChild(h.setReadOnly(true), childId) }
+        return jdbi.handle { h -> getServiceNeedsByChild(h.setReadOnly(true), childId) }
     }
 
     fun updateServiceNeed(user: AuthenticatedUser, id: UUID, data: ServiceNeedRequest): ServiceNeed {

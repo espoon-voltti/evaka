@@ -10,7 +10,7 @@ import fi.espoo.evaka.occupancy.getSql
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.config.Roles
 import fi.espoo.evaka.shared.db.getUUID
-import fi.espoo.evaka.shared.db.transaction
+import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.ClosedPeriod
 import org.jdbi.v3.core.Handle
@@ -39,7 +39,7 @@ class OccupancyReportController(
         val from = LocalDate.of(year, month, 1)
         val to = from.plusMonths(1).minusDays(1)
 
-        val occupancies = jdbi.transaction(
+        val occupancies = jdbi.handle(
             calculateOccupancyUnitReport(
                 careAreaId,
                 ClosedPeriod(from, to),
@@ -95,7 +95,7 @@ class OccupancyReportController(
         val from = LocalDate.of(year, month, 1)
         val to = from.plusMonths(1).minusDays(1)
 
-        val occupancies = jdbi.transaction(
+        val occupancies = jdbi.handle(
             calculateOccupancyGroupReport(
                 careAreaId,
                 ClosedPeriod(from, to),

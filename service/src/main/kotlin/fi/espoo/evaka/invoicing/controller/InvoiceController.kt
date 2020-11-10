@@ -21,6 +21,7 @@ import fi.espoo.evaka.invoicing.service.getInvoiceCodes
 import fi.espoo.evaka.invoicing.service.markManuallySent
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.config.Roles
+import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.db.transaction
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.NotFound
@@ -85,7 +86,7 @@ class InvoiceController(
         user.requireOneOfRoles(Roles.FINANCE_ADMIN)
         val maxPageSize = 5000
         if (pageSize > maxPageSize) throw BadRequest("Maximum page size is $maxPageSize")
-        val (total, invoices) = jdbi.transaction { h ->
+        val (total, invoices) = jdbi.handle { h ->
             paginatedSearch(
                 h,
                 page,
@@ -179,7 +180,7 @@ class InvoiceController(
         Audit.InvoicesRead.log(targetId = uuid)
         user.requireOneOfRoles(Roles.FINANCE_ADMIN)
         val parsedUuid = parseUUID(uuid)
-        val res = jdbi.transaction { h -> getDetailedInvoice(h, parsedUuid) }
+        val res = jdbi.handle { h -> getDetailedInvoice(h, parsedUuid) }
             ?: throw NotFound("No invoice found with given ID ($uuid)")
         return ResponseEntity.ok(Wrapper(res))
     }
@@ -192,7 +193,7 @@ class InvoiceController(
         Audit.InvoicesRead.log(targetId = uuid)
         user.requireOneOfRoles(Roles.FINANCE_ADMIN)
         val parsedUuid = parseUUID(uuid)
-        val res = jdbi.transaction { h -> getHeadOfFamilyInvoices(h, parsedUuid) }
+        val res = jdbi.handle { h -> getHeadOfFamilyInvoices(h, parsedUuid) }
         return ResponseEntity.ok(Wrapper(res))
     }
 
@@ -212,7 +213,7 @@ class InvoiceController(
     @GetMapping("/codes")
     fun getInvoiceCodes(user: AuthenticatedUser): ResponseEntity<Wrapper<InvoiceCodes>> {
         user.requireOneOfRoles(Roles.FINANCE_ADMIN)
-        val codes = jdbi.transaction { h -> getInvoiceCodes(h) }
+        val codes = jdbi.handle { h -> getInvoiceCodes(h) }
         return ResponseEntity.ok(Wrapper(codes))
     }
 }
