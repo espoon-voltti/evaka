@@ -44,13 +44,13 @@ class FamilyInitializerService(
         val application = db.read { fetchApplicationDetails(it.handle, msg.applicationId) }
         if (application != null) {
             val members = db.transaction { parseFridgeFamilyMembersFromApplication(it, user, application) }
-            tryInitFamilyFromApplication(db, members)
+            db.transaction { tryInitFamilyFromApplication(it, members) }
         } else {
             logger.warn("Could not initialize family, daycare application ${msg.applicationId} not found")
         }
     }
 
-    private fun tryInitFamilyFromApplication(db: Database.Connection, members: FridgeFamilyMembers) {
+    private fun tryInitFamilyFromApplication(tx: Database.Transaction, members: FridgeFamilyMembers) {
         try {
             if (members.headOfFamilyId == null) {
                 logger.warn("Cannot create family because head of family could not be found")
@@ -62,18 +62,22 @@ class FamilyInitializerService(
             }
 
             try {
-                createParentship(
-                    db,
-                    childId = members.fridgeChildId,
-                    headOfChildId = members.headOfFamilyId
-                )
+                tx.withSavepoint {
+                    createParentship(
+                        tx,
+                        childId = members.fridgeChildId,
+                        headOfChildId = members.headOfFamilyId
+                    )
+                }
             } catch (e: Throwable) {
                 logger.warn("Adding ${members.fridgeChildId} as the main fridge child to ${members.headOfFamilyId} failed.")
             }
 
             if (members.fridgePartnerId != null) {
                 try {
-                    createPartnership(db, members.headOfFamilyId, members.fridgePartnerId)
+                    tx.withSavepoint {
+                        createPartnership(tx, members.headOfFamilyId, members.fridgePartnerId)
+                    }
                 } catch (e: Throwable) {
                     logger.warn("Adding fridge partner ${members.fridgePartnerId} to ${members.headOfFamilyId} failed. Continuing with the rest of the family...")
                 }
@@ -81,7 +85,9 @@ class FamilyInitializerService(
 
             members.fridgeSiblingIds.forEach { siblingId ->
                 try {
-                    createParentship(db, childId = siblingId, headOfChildId = members.headOfFamilyId)
+                    tx.withSavepoint {
+                        createParentship(tx, childId = siblingId, headOfChildId = members.headOfFamilyId)
+                    }
                 } catch (e: Throwable) {
                     logger.warn("Adding $siblingId as a fridge child to ${members.headOfFamilyId} failed. Continuing with the rest of the family...")
                 }
@@ -140,24 +146,23 @@ class FamilyInitializerService(
         }
     }
 
-    private fun createParentship(db: Database.Connection, childId: UUID, headOfChildId: UUID) {
+    private fun createParentship(tx: Database.Transaction, childId: UUID, headOfChildId: UUID) {
         val startDate = LocalDate.now()
-        val alreadyExists = db.read {
-            it.handle.getParentships(
-                headOfChildId = headOfChildId,
-                childId = childId,
-                includeConflicts = true
-            )
-        }.any {
-            (it.startDate.isBefore(startDate) || it.startDate.isEqual(startDate)) &&
-                (it.endDate == null || it.endDate.isAfter(startDate))
-        }
+        val alreadyExists = tx.handle.getParentships(
+            headOfChildId = headOfChildId,
+            childId = childId,
+            includeConflicts = true
+        )
+            .any {
+                (it.startDate.isBefore(startDate) || it.startDate.isEqual(startDate)) &&
+                    (it.endDate == null || it.endDate.isAfter(startDate))
+            }
         if (alreadyExists) {
             logger.debug("Similar parentship already exists between $headOfChildId and $childId")
         } else {
             try {
-                db.transaction {
-                    it.handle.createParentship(
+                tx.withSavepoint {
+                    tx.handle.createParentship(
                         childId = childId,
                         headOfChildId = headOfChildId,
                         startDate = startDate,
@@ -166,23 +171,21 @@ class FamilyInitializerService(
                     )
                 }
             } catch (e: UnableToExecuteStatementException) {
-                db.transaction {
-                    it.handle.createParentship(
-                        childId = childId,
-                        headOfChildId = headOfChildId,
-                        startDate = startDate,
-                        endDate = null,
-                        conflict = true
-                    )
-                }
+                tx.handle.createParentship(
+                    childId = childId,
+                    headOfChildId = headOfChildId,
+                    startDate = startDate,
+                    endDate = null,
+                    conflict = true
+                )
             }
         }
     }
 
-    private fun createPartnership(db: Database.Connection, personId1: UUID, personId2: UUID) {
+    private fun createPartnership(tx: Database.Transaction, personId1: UUID, personId2: UUID) {
         val startDate = LocalDate.now()
         val alreadyExists =
-            db.read { it.handle.getPartnershipsForPerson(personId = personId1, includeConflicts = true) }
+            tx.handle.getPartnershipsForPerson(personId = personId1, includeConflicts = true)
                 .any { partnership ->
                     partnership.partners.any { partner -> partner.id == personId2 } &&
                         (partnership.startDate.isBefore(startDate) || partnership.startDate.isEqual(startDate)) &&
@@ -192,8 +195,8 @@ class FamilyInitializerService(
             logger.debug("Similar partnership already exists between $personId1 and $personId2")
         } else {
             try {
-                db.transaction {
-                    it.handle.createPartnership(
+                tx.withSavepoint {
+                    tx.handle.createPartnership(
                         personId1 = personId1,
                         personId2 = personId2,
                         startDate = startDate,
@@ -202,15 +205,13 @@ class FamilyInitializerService(
                     )
                 }
             } catch (e: UnableToExecuteStatementException) {
-                db.transaction {
-                    it.handle.createPartnership(
-                        personId1 = personId1,
-                        personId2 = personId2,
-                        startDate = startDate,
-                        endDate = null,
-                        conflict = true
-                    )
-                }
+                tx.handle.createPartnership(
+                    personId1 = personId1,
+                    personId2 = personId2,
+                    startDate = startDate,
+                    endDate = null,
+                    conflict = true
+                )
             }
         }
     }
