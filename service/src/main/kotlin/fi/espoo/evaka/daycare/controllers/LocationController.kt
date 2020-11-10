@@ -17,7 +17,6 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.bindNullable
 import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.db.mapColumn
-import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.Coordinate
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.Jdbi
@@ -74,17 +73,10 @@ class LocationController(val jdbi: Jdbi) {
             .let { ResponseEntity.ok(it) }
     }
 
-    // TODO: fix this
     @GetMapping("/filters/units")
-    fun getUnits(@RequestParam type: String, @RequestParam area: String?): ResponseEntity<List<UnitStub>> {
+    fun getUnits(@RequestParam type: UnitTypeFilter, @RequestParam area: String?): ResponseEntity<List<UnitStub>> {
         val areas = area?.split(",") ?: listOf()
-        val units = jdbi.handle { h ->
-            when (type.toLowerCase()) {
-                "club" -> h.getClubs(areas)
-                "daycare" -> h.getDaycares(areas)
-                else -> throw BadRequest("Unsupported type $type")
-            }
-        }
+        val units = jdbi.handle { h -> h.getUnits(areas, type) }
         return ResponseEntity.ok(units)
     }
 
@@ -217,28 +209,25 @@ AND (u.closing_date IS NULL OR u.closing_date >= current_date)
         area.copy(locations = locations.toList())
     }
 
-fun Handle.getDaycares(areaShortNames: Collection<String>): List<UnitStub> = createQuery(
-    // language=SQL
-    """
-SELECT daycare.id, daycare.name
-FROM daycare
-JOIN care_area ON care_area_id = care_area.id
-WHERE :areaShortNames::text[] IS NULL OR care_area.short_name = ANY(:areaShortNames)
-ORDER BY name
-    """.trimIndent()
-).bindNullable("areaShortNames", areaShortNames.toTypedArray().takeIf { it.isNotEmpty() })
-    .mapTo<UnitStub>()
-    .list()
+enum class UnitTypeFilter {
+    ALL, CLUB, DAYCARE, PRESCHOOL
+}
 
-fun Handle.getClubs(areaShortNames: Collection<String>): List<UnitStub> = createQuery(
+fun Handle.getUnits(areaShortNames: Collection<String>, type: UnitTypeFilter): List<UnitStub> = createQuery(
     // language=SQL
     """
-SELECT club_group.id, club_group.name
-FROM club_group
-JOIN care_area ON care_area_id = care_area.id
-WHERE :areaShortNames::text[] IS NULL OR care_area.short_name = ANY(:areaShortNames)
+SELECT unit.id, unit.name
+FROM daycare unit
+JOIN care_area area ON unit.care_area_id = area.id
+WHERE (:areaShortNames::text[] IS NULL OR area.short_name = ANY(:areaShortNames))
+AND (:type = 'ALL' OR
+    (:type = 'CLUB' AND 'CLUB' = ANY(unit.type)) OR
+    (:type = 'DAYCARE' AND '{CENTRE, FAMILY, GROUP_FAMILY}' && unit.type) OR
+    (:type = 'PRESCHOOL' AND '{PRESCHOOL, PREPARATORY_EDUCATION}' && unit.type)
+)
 ORDER BY name
     """.trimIndent()
 ).bindNullable("areaShortNames", areaShortNames.toTypedArray().takeIf { it.isNotEmpty() })
+    .bind("type", type)
     .mapTo<UnitStub>()
     .list()

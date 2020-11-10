@@ -38,7 +38,7 @@ function InvoiceFilters() {
   }, [])
 
   useEffect(() => {
-    void getUnits([]).then(setUnits)
+    void getUnits([], 'DAYCARE').then(setUnits)
   }, [])
 
   // remove selected unit filter if the unit is not included in the selected areas

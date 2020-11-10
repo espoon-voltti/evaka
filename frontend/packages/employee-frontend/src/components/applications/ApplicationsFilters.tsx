@@ -76,8 +76,11 @@ function ApplicationFilters() {
   }, [])
 
   useEffect(() => {
-    void getUnits([]).then(setAllUnits)
-  }, [])
+    const areas = isSuccess(availableAreas)
+      ? availableAreas.data.map(({ shortName }) => shortName)
+      : []
+    void getUnits(areas, type).then(setAllUnits)
+  }, [type, availableAreas])
 
   useEffect(() => {
     if (units.length === 0 && distinctions.includes('SECONDARY')) {

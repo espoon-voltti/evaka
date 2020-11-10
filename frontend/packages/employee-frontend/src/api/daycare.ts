@@ -11,10 +11,13 @@ import { PlacementType } from '~types/placementdraft'
 import { JsonOf } from '@evaka/lib-common/src/json'
 import LocalDate from '@evaka/lib-common/src/local-date'
 
-export async function getUnits(areas: string[]): Promise<Result<Unit[]>> {
+export async function getUnits(
+  areas: string[],
+  type: 'ALL' | 'CLUB' | 'DAYCARE' | 'PRESCHOOL'
+): Promise<Result<Unit[]>> {
   return client
     .get<JsonOf<Unit[]>>(
-      `/filters/units?type=daycare${
+      `/filters/units?type=${type}${
         areas.length > 0 ? `&area=${areas.join(',')}` : ''
       }`
     )
