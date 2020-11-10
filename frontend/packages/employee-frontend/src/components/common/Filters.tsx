@@ -19,7 +19,6 @@ import {
   InvoiceStatus,
   InvoiceDistinctiveDetails
 } from '~types/invoicing'
-import './Filters.scss'
 import { ApplicationType, ApplicationSummaryStatus } from '~types/application'
 import {
   FixedSpaceColumn,
@@ -63,6 +62,24 @@ const ClearOptions = styled.div<ClearOptionsProps>`
   }
 `
 
+const FiltersContainer = styled.div`
+  position: relative;
+  z-index: 4;
+  display: flex;
+  flex-direction: column;
+`
+
+const FilterColumns = styled.div`
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+`
+
+const Column = styled.div`
+  display: flex;
+  flex-direction: column;
+  padding: 0.75rem;
+`
+
 export function Filters({
   freeText,
   setFreeText,
@@ -76,17 +93,17 @@ export function Filters({
   const { i18n } = useTranslation()
 
   return (
-    <div className="filters-container">
+    <FiltersContainer>
       <FreeTextSearch
         value={freeText}
         setValue={setFreeText}
         placeholder={searchPlaceholder}
       />
-      <div className="filters">
-        <div className="column c1">{column1}</div>
-        <div className="column c2">{column2}</div>
-        <div className="column c3">{column3}</div>
-      </div>
+      <FilterColumns>
+        <Column>{column1}</Column>
+        <Column>{column2}</Column>
+        <Column>{column3}</Column>
+      </FilterColumns>
       <ClearOptions clearMargin={clearMargin}>
         <InlineButton
           icon={faTrash}
@@ -94,7 +111,7 @@ export function Filters({
           text={i18n.filters.clear}
         />
       </ClearOptions>
-    </div>
+    </FiltersContainer>
   )
 }
 

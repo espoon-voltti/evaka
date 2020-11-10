@@ -35,7 +35,7 @@ export default React.memo(function VoucherValueDecisionFilters() {
   }, [])
 
   useEffect(() => {
-    void getUnits([]).then(setUnits)
+    void getUnits([], 'DAYCARE').then(setUnits)
   }, [])
 
   // remove selected unit filter if the unit is not included in the selected areas
