@@ -12,18 +12,16 @@ import fi.espoo.evaka.pis.service.deleteChildGuardianRelationships
 import fi.espoo.evaka.pis.service.deleteGuardianChildRelationShips
 import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.pis.updatePersonFromVtj
-import fi.espoo.evaka.shared.db.transaction
 import fi.espoo.evaka.vtjclient.dto.NativeLanguage
 import fi.espoo.evaka.vtjclient.dto.PersonDataSource
 import fi.espoo.evaka.vtjclient.dto.VtjPersonDTO
 import fi.espoo.evaka.vtjclient.usecases.dto.PersonResult
 import org.jdbi.v3.core.Handle
-import org.jdbi.v3.core.Jdbi
 import org.springframework.stereotype.Service
 import java.util.UUID
 
 @Service
-class PersonStorageService(private val jdbi: Jdbi) {
+class PersonStorageService {
     fun upsertVtjPerson(h: Handle, personResult: PersonResult): PersonResult {
         return when (personResult) {
             is PersonResult.Result -> PersonResult.Result(createOrUpdateOnePerson(h, personResult.vtjPersonDTO))
@@ -31,9 +29,9 @@ class PersonStorageService(private val jdbi: Jdbi) {
         }
     }
 
-    fun upsertVtjGuardianAndChildren(personResult: PersonResult): PersonResult {
+    fun upsertVtjGuardianAndChildren(h: Handle, personResult: PersonResult): PersonResult {
         return when (personResult) {
-            is PersonResult.Result -> upsertVtjGuardianAndChildren(personResult.vtjPersonDTO)
+            is PersonResult.Result -> upsertVtjGuardianAndChildren(h, personResult.vtjPersonDTO)
             else -> personResult
         }
     }
@@ -55,19 +53,16 @@ class PersonStorageService(private val jdbi: Jdbi) {
         }
     }
 
-    private fun upsertVtjGuardianAndChildren(vtjPersonDTO: VtjPersonDTO): PersonResult {
-        val guardian = createOrUpdateOnePerson(vtjPersonDTO)
-        guardian.children.addAll(vtjPersonDTO.children.map(::createOrUpdateOnePerson))
+    private fun upsertVtjGuardianAndChildren(h: Handle, vtjPersonDTO: VtjPersonDTO): PersonResult {
+        val guardian = createOrUpdateOnePerson(h, vtjPersonDTO)
+        guardian.children.addAll(vtjPersonDTO.children.map { createOrUpdateOnePerson(h, it) })
         createOrReplaceGuardianRelationships(
+            h,
             guardianId = guardian.id,
             childIds = guardian.children.map { child -> child.id }
         )
 
         return PersonResult.Result(guardian)
-    }
-
-    private fun createOrReplaceGuardianRelationships(guardianId: UUID, childIds: List<UUID>) = jdbi.transaction { h ->
-        createOrReplaceGuardianRelationships(h, guardianId, childIds)
     }
 
     private fun createOrReplaceGuardianRelationships(h: Handle, guardianId: UUID, childIds: List<UUID>) {
@@ -78,10 +73,6 @@ class PersonStorageService(private val jdbi: Jdbi) {
     private fun createOrReplaceChildRelationships(h: Handle, childId: UUID, guardianIds: List<UUID>) {
         deleteChildGuardianRelationships(h, childId)
         guardianIds.forEach { guardianId -> insertGuardian(h, guardianId, childId) }
-    }
-
-    private fun createOrUpdateOnePerson(inputPerson: VtjPersonDTO): VtjPersonDTO = jdbi.transaction { tx ->
-        createOrUpdateOnePerson(tx, inputPerson)
     }
 
     private fun createOrUpdateOnePerson(h: Handle, inputPerson: VtjPersonDTO): VtjPersonDTO {
