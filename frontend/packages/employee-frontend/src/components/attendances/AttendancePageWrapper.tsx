@@ -131,9 +131,10 @@ export default React.memo(function AttendancePageWrapper() {
     groupAttendances: Result<ChildInGroup[]>
   ) {
     if (isSuccess(groupAttendances)) {
-      groupAttendances.data = groupAttendances.data.filter(
-        (childInGroup) => childInGroup.daycareGroupId === groupId
-      )
+      if (groupId !== 'all')
+        groupAttendances.data = groupAttendances.data.filter(
+          (childInGroup) => childInGroup.daycareGroupId === groupId
+        )
     }
     setGroupAttendances(groupAttendances)
   }
@@ -265,7 +266,7 @@ export default React.memo(function AttendancePageWrapper() {
             paddingVertical={'s'}
             paddingHorozontal={'s'}
           >
-            <a href={`/units/${unitId}/groupselector`}>
+            <a href={`/employee/units/${unitId}/groupselector`}>
               <WideButton
                 primary
                 text={
