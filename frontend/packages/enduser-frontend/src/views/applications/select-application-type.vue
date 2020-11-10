@@ -215,9 +215,9 @@ SPDX-License-Identifier: LGPL-2.1-or-later
       duplicateExists() {
         return this.applications
           .map(app => ({
-            child: app.child.id,
-            type: app.type.value,
-            status: app.status.value
+            child: app.childId,
+            type: app.type,
+            status: app.status
           }))
           .filter(({status}) => !['REJECTED', 'ACTIVE', 'CANCELLED', 'ARCHIVED', 'TERMINATED'].includes(status))
           .some(({child, type}) =>

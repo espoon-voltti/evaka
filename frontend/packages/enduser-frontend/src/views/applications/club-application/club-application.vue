@@ -17,7 +17,6 @@ SPDX-License-Identifier: LGPL-2.1-or-later
           class="container"
         >
           <!-- Form -->
-
           <div v-if="!showSummary">
             <club-form
               v-if="hasClubType"
@@ -172,9 +171,6 @@ SPDX-License-Identifier: LGPL-2.1-or-later
     },
     computed: {
       ...mapGetters([
-        'applicationForm',
-        'isShiftCare',
-        'hasCarePlan',
         'hasClubType',
         'getChildBirthday',
         'hasErrors',
@@ -195,7 +191,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
         return this.loading
       },
       hasCreatedStatus() {
-        return this.status.value === APPLICATION_STATUS.CREATED.value
+        return this.status === APPLICATION_STATUS.CREATED.value
       },
       isNewApplication() {
         return localStorage.getItem('isNew') === 'true'
@@ -208,7 +204,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
       save() {
         return this.$store
           .dispatch('saveApplication', {
-            type: this.type.value,
+            type: this.type,
             applicationId: this.id,
             form: {}
           })
@@ -232,7 +228,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
         this.spinner = true
         this.$store
           .dispatch('sendApplication', {
-            type: this.type.value,
+            type: this.type,
             applicationId: this.id,
             form: {}
           })
@@ -246,7 +242,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
       },
       deleteForm() {
         this.$store.dispatch('removeApplication', {
-          type: this.type.value,
+          type: this.type,
           applicationId: this.id
         })
       },
@@ -307,7 +303,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
       this.loading = true
 
       await this.$store.dispatch('loadApplication', {
-        type: this.type.value,
+        type: this.type,
         applicationId: this.id
       })
       if (this.isNewApplication) {

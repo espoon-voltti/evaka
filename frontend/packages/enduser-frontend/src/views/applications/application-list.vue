@@ -96,7 +96,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
         return _.sortBy(this.children, ['age'])
       },
       applicationsByChild() {
-        const applicationsByChild = _.groupBy(this.applications, 'child.id')
+        const applicationsByChild = _.groupBy(this.applications, 'childId')
         Object.keys(applicationsByChild).forEach((key) => {
           _.sortBy(applicationsByChild[key], ['createdDate'])
         })

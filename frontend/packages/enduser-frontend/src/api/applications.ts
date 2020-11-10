@@ -31,74 +31,43 @@ const mapDateToAPIFormat = (o, path) =>
   )
 
 const deserializeApplication = (applicationData) => {
-  const application = applicationData.form
+  const application = applicationData
   if (typeof application !== 'object') {
     return
   }
 
-  application.id = applicationData.id
-  application.createdDate = applicationData.createdDate
-  application.modifiedDate = applicationData.modifiedDate
-  application.status = applicationData.status
-  application.transferApplication = applicationData.transferApplication
-  application.hasOtherVtjGuardian = applicationData.hasOtherVtjGuardian
-  application.otherVtjGuardianHasSameAddress = applicationData.otherVtjGuardianHasSameAddress
+  application.type = application.type.toLowerCase()
+  application.form.preferences.preferredUnits = application.form.preferences.preferredUnits.map(unit => unit.id)
 
-  if (application.type === APPLICATION_TYPE.CLUB.value) {
-    mapValueToConst(application, 'daycare.weeklyHours', WEEKLY_HOURS)
-    mapValueToConst(application, 'apply.primaryCareType', DAYCARE_TYPES)
-    mapValueToConst(application, 'apply.secondaryCareType', DAYCARE_TYPES)
-    mapValueToConst(application, 'careDetails.daysPerWeek', CLUB_DAYS)
-    mapValueToConst(application, 'careDetails.hoursPerDay', CLUB_HOURS)
-    // FIXME use a proper datepicker component or do formatting at backend
-    mapDateToUIFormat(application, 'child.childMovingDate')
-    mapDateToUIFormat(application, 'guardian.guardianMovingDate')
-    mapDateToUIFormat(application, 'preferredStartDate')
+  mapDateToUIFormat(application, 'form.preferences.preferredStartDate')
+  if (application.form.child.futureAddress){
+    mapDateToUIFormat(application, 'form.child.futureAddress.movingDate')
   }
-
-  mapValueToConst(application, 'type', APPLICATION_TYPE)
-  mapValueToConst(application, 'status', APPLICATION_STATUS)
-
-  application.child.id = applicationData.childId
-  application.guardian.id = applicationData.guardianId
+  if (application.form.guardian.futureAddress){
+    mapDateToUIFormat(application, 'form.guardian.futureAddress.movingDate')
+  }
+  if(application.form.secondGuardian && application.form.secondGuardian.futureAddress){
+    mapDateToUIFormat(application, 'form.secondGuardian.futureAddress.movingDate')
+  }
 
   return application
 }
 
-
-const serializeApplication = (application) => {
-  if (typeof application !== 'object') {
-    return
+const serializeApplicationForm = (form) => {
+  mapDateToAPIFormat(form, 'preferences.preferredStartDate')
+  if (form.child.futureAddress){
+    mapDateToAPIFormat(form, 'child.futureAddress.movingDate')
   }
-
-  if (application.type.value === APPLICATION_TYPE.CLUB.value) {
-    mapConstToValue(application, 'daycare.weeklyHours')
-    mapConstToValue(application, 'apply.primaryCareType')
-    mapConstToValue(application, 'apply.secondaryCareType')
-    mapConstToValue(application, 'careDetails.daysPerWeek')
-    mapConstToValue(application, 'careDetails.hoursPerDay')
-    mapDateToAPIFormat(application, 'child.childMovingDate')
-    mapDateToAPIFormat(application, 'guardian.guardianMovingDate')
-    // FIXME use a proper datepicker component or do formatting at backend
-    mapDateToAPIFormat(application, 'preferredStartDate')
+  if (form.guardian.futureAddress){
+    mapDateToAPIFormat(form, 'guardian.futureAddress.movingDate')
   }
+  if(form.secondGuardian && form.secondGuardian.futureAddress){
+    mapDateToAPIFormat(form, 'secondGuardian.futureAddress.movingDate')
+  }
+  form.preferences.preferredUnits = form.preferences.preferredUnits.map(id => ({ id, name: '' }))
 
-  mapConstToValue(application, 'type')
-  mapConstToValue(application, 'status')
-
-  application.guardianId = application.guardian.id
-  application.guardian.id = undefined
-  application.childId = application.child.id
-  application.child.id = undefined
-
-  return application
+  return form
 }
-
-const APPLICATION_API_V1 = rest.createClient(
-  '/api/application',
-  [serializeApplication],
-  [deserializeApplication]
-)
 
 const client = axios.create({
   baseURL: '/api/application'
@@ -112,8 +81,10 @@ export default {
       .then((applications) => _.map(applications, deserializeApplication))
   },
   removeApplication: (id) => client.delete(`/enduser/v2/applications/${id}`),
-  getApplication: (id) => APPLICATION_API_V1.get(`/enduser/v2/applications/${id}`),
+  getApplication: (id) => client.get(`/enduser/v2/applications/${id}`).then(res => deserializeApplication(res.data)),
   createApplication: (type, childId) => client.post('/enduser/v2/applications', { type, childId }),
-  updateApplication: (type, application) => APPLICATION_API_V1.put(`/enduser/v2/applications/${application.id}`, application),
+  updateApplication: (type, application) => client
+    .put(`/enduser/v2/applications/${application.id}`, serializeApplicationForm(application.form))
+    .then(res => deserializeApplication(res.data)),
   sendApplication: (applicationId) => client.post(`/enduser/v2/applications/${applicationId}/actions/send-application`)
 }

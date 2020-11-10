@@ -165,12 +165,12 @@ SPDX-License-Identifier: LGPL-2.1-or-later
     },
     computed: {
       ...mapGetters(['getChildAge', 'clubTerms', 'selectedTerm', 'activeTerm']),
-      wasOnDaycare: bind('application', 'wasOnDaycare'),
-      wasOnClubCare: bind('application', 'wasOnClubCare'),
-      assistanceNeeded: bind('application', 'careDetails.assistanceNeeded'),
+      wasOnDaycare: bind('application', 'form.clubDetails.wasOnDaycare'),
+      wasOnClubCare: bind('application', 'form.clubDetails.wasOnClubCare'),
+      assistanceNeeded: bind('application', 'form.child.assistanceNeeded'),
       assistanceDescription: bind(
         'application',
-        'careDetails.assistanceDescription'
+        'form.child.assistanceDescription'
       ),
       hasClubTerms() {
         return this.clubTerms.length > 0
@@ -210,7 +210,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
         this.dateConfig.maxDate = this.activeTerm.end
         let preferredStartDate = this.$store.getters.fieldValue(
           'application',
-          'preferredStartDate'
+          'form.preferences.preferredStartDate'
         )
         if (preferredStartDate) {
           preferredStartDate = parse(
@@ -241,7 +241,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
         }
         this.$store.dispatch('updateForm', {
           form: 'application',
-          field: 'preferredStartDate',
+          field: 'form.preferences.preferredStartDate',
           value: formatted
         })
       }

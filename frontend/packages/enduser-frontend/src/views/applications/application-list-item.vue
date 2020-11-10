@@ -7,7 +7,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 <template>
   <li
     class="has-text-left application-list-item"
-    :data-qa-type="application.type.value"
+    :data-qa-type="application.type"
   >
     <div class="application-item-details">
       <c-title :size="4" :isGreyDark="true">{{ applicationTitle }}</c-title>
@@ -149,7 +149,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
           returnObjects: true
         })
         return this.application.type
-          ? types[this.application.type.value].label.toUpperCase()
+          ? types[this.application.type].label.toUpperCase()
           : null
       },
       // application-list.application-type
@@ -159,35 +159,35 @@ SPDX-License-Identifier: LGPL-2.1-or-later
         })
         const isTransferApplication = this.application.transferApplication
         return this.application.type
-          ? titles[`${this.application.type.value}${isTransferApplication ? '-transfer' : ''}`]
+          ? titles[`${this.application.type}${isTransferApplication ? '-transfer' : ''}`]
           : null
       },
       canEdit() {
         return (
-          this.application.status.value === APPLICATION_STATUS.CREATED.value ||
-          this.application.status.value === APPLICATION_STATUS.SENT.value
+          this.application.status === APPLICATION_STATUS.CREATED.value ||
+          this.application.status === APPLICATION_STATUS.SENT.value
         )
       },
       canDelete() {
         return (
-          this.application.status.value === APPLICATION_STATUS.CREATED.value
+          this.application.status === APPLICATION_STATUS.CREATED.value
         )
       },
       statusText() {
         const statuses = this.$t('constants.application-status', {
           returnObjects: true
         })
-        return statuses[this.application.status.value].label.toUpperCase()
+        return statuses[this.application.status].label.toUpperCase()
       },
       waitingForPlacement() {
         return (
-          this.application.status.value ===
+          this.application.status ===
           APPLICATION_STATUS.WAITING_PLACEMENT.value
         )
       },
       waitingForConfirmation() {
         return (
-          this.application.status.value ===
+          this.application.status ===
           APPLICATION_STATUS.WAITING_CONFIRMATION.value
         )
       },
@@ -228,7 +228,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
           [APPLICATION_STATUS.REJECTED.value]: { type: 'times', color: 'grey' },
           [APPLICATION_STATUS.CANCELLED.value]: { type: 'trash', color: 'grey' },
           [APPLICATION_STATUS.TERMINATED.value]: { type: 'times', color: 'grey' }
-        }[this.application.status.value]
+        }[this.application.status]
       }
     },
     methods: {
@@ -239,7 +239,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
         const m = this.$t('application-list.confirm-modal.success-title')
         this.$store
           .dispatch('removeApplication', {
-            type: this.application.type.value,
+            type: this.application.type,
             applicationId: this.application.id
           })
           .then(this.showSuccessMessage(m), () => {
@@ -257,13 +257,13 @@ SPDX-License-Identifier: LGPL-2.1-or-later
       onEdit() {
         this.$store.dispatch('editApplication', {
           id: this.application.id,
-          type: this.application.type.value
+          type: this.application.type
         })
       },
       showPreview() {
         this.$store.dispatch('previewApplication', {
           id: this.application.id,
-          type: this.application.type.value
+          type: this.application.type
         })
       },
       navigateToDecisions() {

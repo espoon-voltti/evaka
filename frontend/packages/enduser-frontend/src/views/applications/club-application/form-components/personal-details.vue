@@ -24,7 +24,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
           <div class="column is-half-tablet is-one-third-desktop">
             <text-field
               :required="true"
-              :value="child.firstName"
+              :value="child.person.firstName"
               name="childFirstName"
               :label="$t('form.persons.child.first-name')"
               :placeholder="$t('form.persons.child.first-name-placeholder')"
@@ -36,7 +36,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
           <div class="column is-half-tablet is-one-third-desktop">
             <text-field
               :required="true"
-              :value="child.lastName"
+              :value="child.person.lastName"
               name="childLastName"
               :label="$t('form.persons.child.last-name')"
               :placeholder="$t('form.persons.child.last-name-placeholder')"
@@ -47,7 +47,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
           </div>
           <div class="column is-half-tablet is-one-third-desktop">
             <identity-number
-              :value="child.socialSecurityNumber"
+              :value="child.person.socialSecurityNumber"
               :required="true"
               disabled
             >
@@ -65,9 +65,9 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 
         <div class="address-changed">
           <c-form-checkbox
-            @input="childCorrectingAddressSelected"
+            @input="toggleChildCorrectingAddress"
             name="childHasCorrectingAddress"
-            v-model="childHasCorrectingAddress"
+            :value="childHasCorrectingAddress"
             :label="$t('form.persons.new-addr')"
             class="tag is-medium incorrect-address"
             :class="{ active: childHasCorrectingAddress }"
@@ -79,7 +79,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
             <div class="changed-address-date">
               <validation
                 :name="$t('general.input.moving-date')"
-                :value="model.childMovingDate"
+                :value="childMovingDate"
                 :validators="getValidators('childMovingDate')"
               >
                 <c-datepicker
@@ -98,57 +98,11 @@ SPDX-License-Identifier: LGPL-2.1-or-later
             <address-component
               v-model="childCorrectingAddress"
               :isRequired="true"
-              :disabled="!childCorrectingAddress.editable"
               icon="home"
             >
             </address-component>
           </div>
         </div>
-
-        <!--
-        <div class="columns">
-          <div class="is-one-third column field">
-            <label class="label">
-              {{$t('form.persons.child.nationality')}}:
-            </label>
-            <validation
-              :name="$t('form.persons.child.nationality')"
-              :value="childNationality"
-              :validators="getNationalityValidators"
-            >
-              <select-list
-                v-model="childNationality"
-                name="childNationality"
-                id="childNationality"
-                :isRequired="true"
-                :options="countries"
-                :placeholder="$t('form.persons.child.nationality-placeholder')"
-              ></select-list>
-            </validation>
-          </div>
-
-          <div class="is-one-third column field">
-            <validation
-              :name="$t('form.persons.child.language')"
-              :value="childLanguage"
-              :validators="getLanguageValidators"
-            >
-              <label class="label">
-                {{$t('form.persons.child.language')}}:
-              </label>
-              <select-list
-                isDisabled
-                v-model="childLanguage"
-                name="childLanguage"
-                id="list-child-language"
-                :isRequired="true"
-                :options="languages"
-                :placeholder="$t('form.persons.child.language-placeholder')"
-              ></select-list>
-            </validation>
-          </div>
-        </div>
-        -->
       </div>
     </section>
 
@@ -168,7 +122,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
           <div class="column is-half-tablet is-one-third-desktop">
             <text-field
               :required="true"
-              :value="guardian.firstName"
+              :value="guardian.person.firstName"
               name="guardianFirstName"
               :label="$t('form.persons.guardian1.first-name')"
               :placeholder="$t('form.persons.guardian1.first-name-placeholder')"
@@ -180,7 +134,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
           <div class="column is-half-tablet is-one-third-desktop">
             <text-field
               :required="true"
-              v-model="guardian.lastName"
+              v-model="guardian.person.lastName"
               name="guardianLastName"
               :label="$t('form.persons.guardian1.last-name')"
               :placeholder="$t('form.persons.guardian1.last-name-placeholder')"
@@ -191,7 +145,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
           </div>
           <div class="column is-half-tablet is-one-third-desktop">
             <identity-number
-              :value="guardian.socialSecurityNumber"
+              :value="guardian.person.socialSecurityNumber"
               :required="true"
               disabled
             >
@@ -209,9 +163,9 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 
         <div class="address-changed">
           <c-form-checkbox
-            @input="guardianCorrectingAddressSelected"
+            @input="toggleGuardianCorrectingAddress"
             name="guardianHasCorrectingAddress"
-            v-model="guardianHasCorrectingAddress"
+            :value="guardianHasCorrectingAddress"
             :label="$t('form.persons.new-addr')"
             class="tag is-medium incorrect-address"
             :class="{ active: guardianHasCorrectingAddress }"
@@ -223,8 +177,8 @@ SPDX-License-Identifier: LGPL-2.1-or-later
             <div class="changed-address-date">
               <validation
                 :name="$t('general.input.moving-date')"
-                :value="model.childMovingDate"
-                :validators="getValidators('childMovingDate')"
+                :value="guardianMovingDate"
+                :validators="getValidators('guardianMovingDate')"
               >
                 <c-datepicker
                   :label="$t('general.input.moving-date')"
@@ -242,7 +196,6 @@ SPDX-License-Identifier: LGPL-2.1-or-later
             <address-component
               v-model="guardianCorrectingAddress"
               :isRequired="true"
-              :disabled="!guardianCorrectingAddress.editable"
               icon="home"
             >
             </address-component>
@@ -313,28 +266,28 @@ SPDX-License-Identifier: LGPL-2.1-or-later
         'countries',
         'languages'
       ]),
-      child: bind('application', 'child'),
-      childAddress: bind('application', 'child.address'),
-      childHasCorrectingAddress: bind(
-        'application',
-        'child.hasCorrectingAddress'
-      ),
-      childCorrectingAddress: bind('application', 'child.correctingAddress'),
-      childNationality: bind('application', 'child.nationality'),
-      childLanguage: bind('application', 'child.language'),
-      guardian: bind('application', 'guardian'),
-      guardianAddress: bind('application', 'guardian.address'),
-      guardianPhoneNumber: bind('application', 'guardian.phoneNumber'),
-      guardianEmail: bind('application', 'guardian.email'),
-      guardianHasCorrectingAddress: bind(
-        'application',
-        'guardian.hasCorrectingAddress'
-      ),
+      child: bind('application', 'form.child'),
+      childAddress: bind('application', 'form.child.address'),
+      childCorrectingAddress: bind('application', 'form.child.futureAddress'),
+      childMovingDate: bind('application', 'form.child.futureAddress.movingDate'),
+      childNationality: bind('application', 'form.child.nationality'),
+      childLanguage: bind('application', 'form.child.language'),
+      guardian: bind('application', 'form.guardian'),
+      guardianAddress: bind('application', 'form.guardian.address'),
+      guardianPhoneNumber: bind('application', 'form.guardian.phoneNumber'),
+      guardianEmail: bind('application', 'form.guardian.email'),
       guardianCorrectingAddress: bind(
         'application',
-        'guardian.correctingAddress'
+        'form.guardian.futureAddress'
       ),
+      guardianMovingDate: bind('application', 'form.guardian.futureAddress.movingDate'),
       type: bind('application', 'type'),
+      childHasCorrectingAddress(){
+        return this.childCorrectingAddress !== null
+      },
+      guardianHasCorrectingAddress(){
+        return this.guardianCorrectingAddress !== null
+      },
       getNationalityValidators() {
         return [requiredValidator]
       },
@@ -346,62 +299,62 @@ SPDX-License-Identifier: LGPL-2.1-or-later
       getValidators(value) {
         return value ? [requiredValidator, ...this.validators] : this.validators
       },
-      childCorrectingAddressSelected(value) {
-        if (!value) {
-          this.model.childMovingDate = null
-          this.updateMovingDate('child', 'childMovingDate', null)
+      toggleChildCorrectingAddress(selected) {
+        if (selected) {
           this.childCorrectingAddress = {
-            ...this.childCorrectingAddress,
+            movingDate: null,
             street: '',
-            city: '',
-            postalCode: ''
+            postalCode: '',
+            postOffice: ''
           }
+        } else {
+          this.childCorrectingAddress = null
         }
       },
-      guardianCorrectingAddressSelected(value) {
-        if (!value) {
-          this.model.guardianMovingDate = null
-          this.updateMovingDate('guardian', 'guardianMovingDate', null)
+      toggleGuardianCorrectingAddress(selected) {
+        if (selected) {
           this.guardianCorrectingAddress = {
-            ...this.guardianCorrectingAddress,
+            movingDate: null,
             street: '',
-            city: '',
-            postalCode: ''
+            postalCode: '',
+            postOffice: ''
           }
+        } else {
+          this.guardianCorrectingAddress = null
         }
       },
-      setMovingDates(key, value) {
+      setMovingDates(key) {
         let movingDate = this.$store.getters.fieldValue(
           'application',
-          `${key}.${value}`
+          `form.${key}.futureAddress.movingDate`
         )
         if (movingDate) {
           movingDate = parse(movingDate, 'dd.MM.yyyy', new Date())
-          this.model[value] = format(movingDate, 'yyyy-MM-dd')
+          this.model[`${key}MovingDate`] = format(movingDate, 'yyyy-MM-dd')
         }
       },
       onChildMovingDateSelected(val) {
-        this.updateMovingDate('child', 'childMovingDate', val)
+        this.updateMovingDate('child', val)
       },
       onGuardianMovingDateSelected(val) {
-        this.updateMovingDate('guardian', 'guardianMovingDate', val)
+        this.updateMovingDate('guardian', val)
       },
-      updateMovingDate(key, value, inputValue) {
+      updateMovingDate(key, inputValue) {
         let formatted = null
-        if (inputValue && inputValue[value]) {
-          const date = parse(inputValue[value], 'yyyy-MM-dd', new Date())
+        if (inputValue && inputValue[`${key}MovingDate`]) {
+          const date = parse(inputValue[`${key}MovingDate`], 'yyyy-MM-dd', new Date())
           formatted = format(date, 'dd.MM.yyyy')
         }
         this.$store.dispatch('updateForm', {
           form: 'application',
-          field: `${key}.${value}`,
+          field: `form.${key}.futureAddress.movingDate`,
           value: formatted
         })
       }
     },
     mounted() {
-      this.setMovingDates('child', 'childMovingDate')
-      this.setMovingDates('guardian', 'guardianMovingDate')
+      this.setMovingDates('child')
+      this.setMovingDates('guardian')
     }
   }
 </script>

@@ -21,15 +21,15 @@ SPDX-License-Identifier: LGPL-2.1-or-later
       <c-tooltip :message="$t('form.apply.sibling-basis-info')"> </c-tooltip>
       <c-form-checkbox
         name="siblingBasis"
-        @input="siblingBasisSelected"
-        v-model="siblingBasis"
+        @input="toggleSiblingBasis"
+        :value="siblingBasisSelected"
         :noLabelDots="true"
         :label="$t('form.apply.sibling-basis-check')"
         class="sibling-basis"
       >
       </c-form-checkbox>
 
-      <div v-if="siblingBasis" class="sibling-details columns">
+      <div v-if="siblingBasisSelected" class="sibling-details columns">
         <div class="column is-half">
           <text-field
             v-model="siblingName"
@@ -37,13 +37,13 @@ SPDX-License-Identifier: LGPL-2.1-or-later
             :leftIcon="['far', 'id-card']"
             :label="$t('form.apply.sibling-name')"
             :placeholder="$t('form.apply.first-surname')"
-            :required="siblingBasis"
+            :required="siblingBasisSelected"
           >
           </text-field>
         </div>
         <div class="column is-half">
           <identity-number
-            :required="siblingBasis"
+            :required="siblingBasisSelected"
             :leftIcon="['far', 'id-card']"
             v-model="siblingSsn"
             name="siblingSsn"
@@ -158,7 +158,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
       Validation
     },
     props: {
-      type: Object,
+      type: String,
       isLoading: Boolean,
       clubs: Array,
       validator(value) {
@@ -167,12 +167,15 @@ SPDX-License-Identifier: LGPL-2.1-or-later
       }
     },
     computed: {
-      ...mapGetters(['hasCarePlan', 'activeTerm', 'applicationUnits']),
-      siblingBasis: bind('application', 'apply.siblingBasis'),
-      siblingName: bind('application', 'apply.siblingName'),
-      siblingSsn: bind('application', 'apply.siblingSsn'),
-      selectedUnits: bind('application', 'apply.preferredUnits'),
-      preliminaryCourse: bind('application', 'apply.preliminaryCourse'),
+      ...mapGetters(['hasServiceNeed', 'activeTerm', 'applicationUnits']),
+      siblingBasis: bind('application', 'form.preferences.siblingBasis'),
+      siblingName: bind('application', 'form.preferences.siblingBasis.siblingName'),
+      siblingSsn: bind('application', 'form.preferences.siblingBasis.siblingSsn'),
+      selectedUnits: bind('application', 'form.preferences.preferredUnits'),
+      preliminaryCourse: bind('application', 'form.preferences.preparatory'),
+      siblingBasisSelected() {
+        return this.siblingBasis !== null
+      },
       unitSelectorLabel() {
         return this.$t('form.apply.preferred-locations')
       },
@@ -210,9 +213,11 @@ SPDX-License-Identifier: LGPL-2.1-or-later
       isSelected(id) {
         return _.includes(this.selectedUnits, id)
       },
-      siblingBasisSelected() {
-        this.siblingName = ''
-        this.siblingSsn = ''
+      toggleSiblingBasis(selected) {
+        this.siblingBasis = selected ? {
+          siblingName: '',
+          siblingSsn: ''
+        } : null
       }
     },
     watch: {

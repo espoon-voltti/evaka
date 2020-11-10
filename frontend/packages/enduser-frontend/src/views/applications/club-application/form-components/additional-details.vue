@@ -65,7 +65,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
         <c-section-title :icon="['fal', 'info']">
           {{ $t('form.additional.other.application-details-label') }}
         </c-section-title>
-        
+
         <div class="other-info info-block">
           <textarea
             name="otherInfo"
@@ -88,9 +88,9 @@ SPDX-License-Identifier: LGPL-2.1-or-later
     mixins: [form],
     props: ['applicationType'],
     computed: {
-      allergyType: bind('application', 'additionalDetails.allergyType'),
-      dietType: bind('application', 'additionalDetails.dietType'),
-      otherInfo: bind('application', 'additionalDetails.otherInfo'),
+      allergyType: bind('application', 'form.child.allergies'),
+      dietType: bind('application', 'form.child.diet'),
+      otherInfo: bind('application', 'form.otherInfo'),
       isDaycareType() {
         if (this.applicationType) {
           return this.applicationType[0] === 'DAYCARE'

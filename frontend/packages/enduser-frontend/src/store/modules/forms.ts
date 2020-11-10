@@ -15,86 +15,65 @@ import { RootState } from '@/store'
 
 const currentState = {
   application: {
-    status: '',
-    type: APPLICATION_TYPE.CLUB,
-    preferredStartDate: null,
-    wasOnDaycare: false,
-    wasOnClubCare: false,
-    term: null,
-    careDetails: {
-      assistanceNeeded: false,
-      assistanceDescription: ''
-    },
-    apply: {
-      preferredUnits: [],
-      siblingBasis: false,
-      siblingName: ''
-    },
-    child: {
-      firstName: '',
-      lastName: '',
-      socialSecurityNumber: '',
-      address: {
-        street: '',
-        postalCode: '',
-        city: ''
+    type: APPLICATION_TYPE.CLUB.value,
+    form: {
+      child: {
+        person: {
+          firstName: '',
+          lastName: '',
+          socialSecurityNumber: ''
+        },
+        address: {
+          street: '',
+          postalCode: '',
+          city: ''
+        },
+        futureAddress: null,
+        nationality: '',
+        language: '',
+        allergies: '',
+        diet: '',
+        assistanceNeeded: false,
+        assistanceDescription: ''
       },
-      hasCorrectingAddress: false,
-      childMovingDate: null,
-      correctingAddress: {
-        street: '',
-        postalCode: '',
-        city: ''
+      guardian: {
+        person: {
+          firstName: '',
+          lastName: '',
+          socialSecurityNumber: ''
+        },
+        address: {
+          street: '',
+          postalCode: '',
+          city: ''
+        },
+        futureAddress: null,
+        phoneNumber: '',
+        email: ''
       },
-      nationality: '',
-      language: ''
-    },
-    guardian: {
-      firstName: '',
-      lastName: '',
-      socialSecurityNumber: '',
-      phoneNumber: null,
-      email: null,
-      address: {
-        street: '',
-        postalCode: '',
-        city: ''
+      secondGuardian: null,
+      otherPartner: null,
+      otherChildren: [],
+      preferences: {
+        preferredUnits: [],
+        preferredStartDate: null,
+        serviceNeed: null,
+        siblingBasis: null,
+        preparatory: false,
+        urgent: false
       },
-      hasCorrectingAddress: false,
-      guardianMovingDate: null,
-      correctingAddress: {
-        street: '',
-        postalCode: '',
-        city: ''
-      }
+      otherInfo: '',
+      maxFeeAccepted: false,
+      clubDetails: null
     },
-    guardian2: {
-      firstName: '',
-      lastName: '',
-      socialSecurityNumber: '',
-      phoneNumber: null,
-      email: null,
-      address: {
-        street: '',
-        postalCode: '',
-        city: ''
-      },
-      correctingAddress: {
-        street: '',
-        postalCode: '',
-        city: ''
-      }
-    },
-    otherGuardianAgreementStatus: null,
+    status: 'CREATED',
+    otherGuardianLivesInSameAddress: false,
+
     hasSecondGuardian: true,
     hasOtherVtjGuardian: false,
-    otherVtjGuardianHasSameAddress: false,
-    guardiansSeparated: false,
-    additionalDetails: {
-      otherInfo: ''
-    },
-    maxFeeAccepted: false
+    term: null
   },
+
   loadedApplication: null,
   modified: {
     application: false
@@ -106,8 +85,7 @@ const currentState = {
       validations: {},
       activeSection: undefined
     }
-  },
-  daycare: {}
+  }
 }
 
 const defaultChild = {
@@ -138,19 +116,12 @@ const getAge = (birthday) => {
 const module: Module<any, RootState> = {
   state: currentState,
   getters: {
+    application: (state) => state.application,
     applicationId: (state) => state.application.id,
-    daycareForm: (state) => state.daycare,
     fieldValue: (state) => (form, path) => _.get(state[form], path),
-    applicationForm: (state) => state.application,
-    isExtendedCare: (state, getters) =>
-      getters.hasCarePlan &&
-      (isBeforeHours(state.application.daycare.arrival, NORMAL_CARE_START) ||
-        isAfterHours(state.application.daycare.departure, NORMAL_CARE_END)),
-    isShiftCare: (state, getters) =>
-      getters.hasCarePlan &&
-      (state.application.daycare.roundTheClockCare ||
-        state.application.daycare.weekendCare ||
-        getters.isExtendedCare),
+    isShiftCare: (state) =>
+      state.application.form.preferences.serviceNeed &&
+      state.application.form.preferences.serviceNeed.shiftCare,
     isPreschool: (state) => {
       const application = state.application
       return application.type === APPLICATION_TYPE.PRESCHOOL
@@ -166,22 +137,18 @@ const module: Module<any, RootState> = {
         state.editing.application.validations,
         (validation) => validation.validator.invalid
       ).length > 0,
-    hasCarePlan: (state) => {
-      const application = state.application
-      return (
-        application.type === APPLICATION_TYPE.DAYCARE || application.withDaycare
-      )
+    hasServiceNeed: (state) => {
+      return state.application.form.preferences.serviceNeed !== null
     },
     hasClubType: (state) => {
       return (
-        state.application.type.value.toUpperCase() ===
-        APPLICATION_TYPE.CLUB.value.toUpperCase()
+        state.application.type === APPLICATION_TYPE.CLUB.value
       )
     },
-    hasOtherChildren: (state) => !_.isEmpty(state.application.otherChildren),
-    getOtherChildren: (state) => state.application.otherChildren,
+    hasOtherChildren: (state) => !_.isEmpty(state.application.form.otherChildren),
+    getOtherChildren: (state) => state.application.form.otherChildren,
     getChildBirthday: (state) => {
-      const ssn = state.application.child.socialSecurityNumber
+      const ssn = state.application.form.child.socialSecurityNumber
       return ssn ? ssn.slice(0, 6) : null
     },
     getChildAge: (state, getters) =>
@@ -224,12 +191,6 @@ const module: Module<any, RootState> = {
       state.editing.application.validateAll = false
       state.editing.application.validations = {}
     },
-    [types.CLEAR_DAYCARE_FORM](state) {
-      state.daycare = {}
-    },
-    [types.UPDATE_DAYCARE_FORM](state, form) {
-      state.daycare = form
-    },
     [types.UPDATE_FORM](state, { form, field, value }) {
       const oldValue = _.get(state[form], field)
       _.set(state[form], field, value)
@@ -240,9 +201,6 @@ const module: Module<any, RootState> = {
     [types.LOAD_APPLICATION_FORM](state, { application }) {
       state.application = Object.assign(state.application, application)
       state.loadedApplication = _.cloneDeep(state.application)
-    },
-    [types.LOAD_DAYCARE_APPLICATION_FORM](state, { application }) {
-      state.daycare = Object.assign(state.daycare, application)
     },
     [types.REVERT_APPLICATION_FORM](state) {
       state.application = _.cloneDeep(state.loadedApplication)
@@ -259,16 +217,16 @@ const module: Module<any, RootState> = {
       )
     },
     [types.ADD_CHILD](state, newChild) {
-      state.application.otherChildren.push(newChild)
+      state.application.form.otherChildren.push(newChild)
     },
     [types.UPDATE_CHILD](state, params) {
-      _.merge(state.application.otherChildren[params.index], params.value)
+      _.merge(state.application.form.otherChildren[params.index], params.value)
     },
     [types.REMOVE_CHILD](state, index) {
-      state.application.otherChildren.splice(index, 1)
+      state.application.form.otherChildren.splice(index, 1)
     },
     [types.REMOVE_CHILDREN](state) {
-      state.application.otherChildren = []
+      state.application.form.otherChildren = []
     },
     [types.VALIDATE_ALL](state) {
       state.editing.application.validateAll = true

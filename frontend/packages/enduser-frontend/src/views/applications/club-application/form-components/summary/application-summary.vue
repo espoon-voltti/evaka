@@ -18,19 +18,18 @@ SPDX-License-Identifier: LGPL-2.1-or-later
         <span class="strong"
           >{{ $t('form.summary.application-created') }}:</span
         >
-        {{ applicationForm.createdDate | date }}
+        {{ applicationCreated | date }}
       </span>
       <span class="application-modified">
         <span class="strong"
           >{{ $t('form.summary.application-last-updated') }}:</span
         >
-        {{ applicationForm.modifiedDate | date }}
+        {{ applicationModified | date }}
       </span>
     </div>
     <div class="application-summary">
       <club-summary
         v-if="showClubSummary"
-        :applicationForm="applicationForm"
       />
     </div>
     <div class="summary-checkbox-wrapper">
@@ -53,8 +52,8 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 </template>
 
 <script>
-  import { mapGetters } from 'vuex'
   import ClubSummary from '@/views/applications/club-application/form-components/summary/application-club-summary'
+  import form, {bind} from "@/mixins/form";
 
   export default {
     props: {
@@ -63,10 +62,13 @@ SPDX-License-Identifier: LGPL-2.1-or-later
     components: {
       ClubSummary
     },
+    mixins: [form],
     computed: {
-      ...mapGetters(['applicationForm']),
+      applicationType: bind('application', 'type'),
+      applicationCreated: bind('application', 'createdDate'),
+      applicationModified: bind('application', 'modifiedDate'),
       showClubSummary() {
-        return this.applicationForm.type === this.$const.APPLICATION_TYPE.CLUB
+        return this.applicationType === 'club'
       }
     },
     methods: {

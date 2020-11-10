@@ -5,7 +5,6 @@
 package fi.espoo.evaka.application
 
 import fi.espoo.evaka.Audit
-import fi.espoo.evaka.application.enduser.ApplicationJson
 import fi.espoo.evaka.application.enduser.ApplicationJsonType
 import fi.espoo.evaka.application.enduser.ApplicationSerializer
 import fi.espoo.evaka.pis.service.PersonService
@@ -75,14 +74,13 @@ class ApplicationControllerEnduser(
     }
 
     @GetMapping
-    fun getApplications(user: AuthenticatedUser): ResponseEntity<List<ApplicationJson>> {
+    fun getApplications(user: AuthenticatedUser): ResponseEntity<List<ApplicationDetails>> {
         Audit.ApplicationRead.log(targetId = user.id)
         user.requireOneOfRoles(UserRole.END_USER)
 
         val applications = jdbi.transaction { h ->
             fetchOwnApplicationIds(h, user.id)
                 .mapNotNull { fetchApplicationDetails(h, it) }
-                .map { serializer.serialize(user, it) }
         }
 
         return ResponseEntity.ok(applications)
@@ -92,13 +90,12 @@ class ApplicationControllerEnduser(
     fun getApplication(
         user: AuthenticatedUser,
         @PathVariable(value = "applicationId") applicationId: UUID
-    ): ResponseEntity<ApplicationJson> {
+    ): ResponseEntity<ApplicationDetails> {
         Audit.ApplicationRead.log(targetId = applicationId)
         user.requireOneOfRoles(UserRole.END_USER)
 
         val application = jdbi.transaction { h -> fetchApplicationDetails(h, applicationId) }
             ?.takeIf { it.guardianId == user.id }
-            ?.let { serializer.serialize(user, it) }
             ?: throw NotFound("Application $applicationId of guardian ${user.id} not found")
 
         return ResponseEntity.ok(application)
@@ -108,12 +105,10 @@ class ApplicationControllerEnduser(
     fun updateApplication(
         user: AuthenticatedUser,
         @PathVariable(value = "applicationId") applicationId: UUID,
-        @RequestBody formJson: String
-    ): ResponseEntity<ApplicationJson> {
-        val formV0 = serializer.deserialize(user, formJson)
+        @RequestBody applicationForm: ApplicationForm
+    ): ResponseEntity<ApplicationDetails> {
         val updatedApplication = applicationStateService
-            .updateOwnApplicationContents(user, applicationId, formV0)
-            .let { serializer.serialize(user, it) }
+            .updateOwnApplicationContents(user, applicationId, applicationForm)
 
         return ResponseEntity.ok(updatedApplication)
     }

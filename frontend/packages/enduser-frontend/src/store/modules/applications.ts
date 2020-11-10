@@ -59,10 +59,7 @@ const module: Module<ApplicationsState, RootState> = {
           application = form
           break
         case APPLICATION_TYPE.CLUB.value:
-          application = {
-            ...getters.applicationForm,
-            guardianInformed: getters.applicationForm.guardiansSeparated
-          }
+          application = { ...getters.application }
           break
         default:
           throw new Error('invalid application type')

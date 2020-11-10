@@ -15,19 +15,17 @@ SPDX-License-Identifier: LGPL-2.1-or-later
           <span class="strong"
             >{{ $t('form.summary.application-created') }}:</span
           >
-          {{ applicationForm.createdDate | date }}
+          {{ applicationCreated | date }}
         </span>
         <span class="application-modified">
           <span class="strong"
             >{{ $t('form.summary.application-last-updated') }}:</span
           >
-          {{ applicationForm.modifiedDate | date }}
+          {{ applicationModified | date }}
         </span>
       </div>
       <div class="application-preview">
-        <club-summary
-          :applicationForm="applicationForm"
-        />
+        <club-summary />
       </div>
 
       <div class="buttons has-text-centered">
@@ -41,15 +39,17 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 
 <script>
   import moment from 'moment'
-  import { mapGetters } from 'vuex'
   import ClubSummary from '@/views/applications/club-application/form-components/summary/application-club-summary'
+  import form, {bind} from "@/mixins/form";
 
   export default {
     components: {
       ClubSummary
     },
+    mixins: [form],
     computed: {
-      ...mapGetters(['applicationForm']),
+      applicationCreated: bind('application', 'createdDate'),
+      applicationModified: bind('application', 'modifiedDate'),
       id() {
         return this.$route.params.id
       }
@@ -70,7 +70,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
     },
     async created() {
       await this.$store.dispatch('loadApplication', {
-        type: this.applicationForm.type.value,
+        type: this.application.type,
         applicationId: this.id
       })
       this.loadUnits()

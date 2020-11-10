@@ -42,8 +42,8 @@ SPDX-License-Identifier: LGPL-2.1-or-later
         name="city"
         :label="labelCity || $t('form.persons.address.city-label')"
         :placeholder="placeholderCity || $t('form.persons.address.city-label')"
-        :value="value.city"
-        @input="cityChanged"
+        :value="value.postOffice"
+        @input="postOfficeChanged"
         :icon="icon"
         :required="isRequired"
         :disabled="disabled"
@@ -86,8 +86,8 @@ SPDX-License-Identifier: LGPL-2.1-or-later
       postalCodeChanged(value) {
         this.updateAddress({ postalCode: value })
       },
-      cityChanged(value) {
-        this.updateAddress({ city: value })
+      postOfficeChanged(value) {
+        this.updateAddress({ postOffice: value })
       },
       updateAddress(value) {
         this.$emit('input', Object.assign({}, this.value, value))

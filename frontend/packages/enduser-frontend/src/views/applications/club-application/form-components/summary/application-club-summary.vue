@@ -28,7 +28,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
             <div class="strong">
               {{ $t('form.summary.care-section.start-date') }}
             </div>
-            <div>{{ applicationForm.preferredStartDate }}</div>
+            <div>{{ applicationForm.preferences.preferredStartDate }}</div>
           </div>
         </div>
 
@@ -97,7 +97,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
         <div class="columns">
           <div class="selected-units-list column is-6">
             <c-unit-list-item
-              v-for="(clubGroupId, index) in applicationForm.apply
+              v-for="(clubGroupId, index) in applicationForm.preferences
                 .preferredUnits"
               :key="clubGroupId"
               :removable="false"
@@ -128,7 +128,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
           <c-summary-field
             class="is-4 column"
             :label="$t('form.summary.child-section.identity-number')"
-            :value="applicationForm.child.socialSecurityNumber"
+            :value="applicationForm.child.person.socialSecurityNumber"
           >
           </c-summary-field>
         </div>
@@ -137,7 +137,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
           <c-summary-field
             class="column"
             :class="{
-              'corrected-address': applicationForm.child.hasCorrectingAddress
+              'corrected-address': applicationForm.child.futureAddress !== null
             }"
             :label="$t('form.summary.child-section.address')"
             :value="childAddress"
@@ -147,17 +147,17 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 
         <div class="summary-data correcting-address">
           <c-summary-field
-            :value="applicationForm.child.hasCorrectingAddress"
+            :value="applicationForm.child.futureAddress !== null"
             :label="$t('form.summary.persons-section.new-addr')"
           />
 
           <div
             class="columns summary-data-field"
-            v-if="applicationForm.child.hasCorrectingAddress"
+            v-if="applicationForm.child.futureAddress !== null"
           >
             <div class="is-4 column">
               <p class="strong">{{ $t('general.input.moving-date') }}:</p>
-              {{ applicationForm.child.childMovingDate }}
+              {{ applicationForm.child.futureAddress.movingDate }}
             </div>
             <div class="is-4 column">
               <p class="strong">
@@ -168,23 +168,6 @@ SPDX-License-Identifier: LGPL-2.1-or-later
           </div>
         </div>
 
-        <!--
-        <div class="columns">
-          <c-summary-field
-            class="is-4 column"
-            :label="$t('form.summary.child-section.nationality')"
-            :value="mapCountry"
-          >
-          </c-summary-field>
-
-          <c-summary-field
-            class="is-4 column"
-            :label="$t('form.summary.child-section.language')"
-            :value="mapLanguage"
-          >
-          </c-summary-field>
-        </div>
-        -->
       </c-summary-subsection>
 
       <hr class="divider" />
@@ -204,7 +187,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
           <c-summary-field
             class="is-4 column"
             :label="$t('form.summary.guardian-section.identity-number')"
-            :value="applicationForm.guardian.socialSecurityNumber"
+            :value="applicationForm.guardian.person.socialSecurityNumber"
           >
           </c-summary-field>
         </div>
@@ -213,7 +196,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
           <c-summary-field
             class="column"
             :class="{
-              'corrected-address': applicationForm.guardian.hasCorrectingAddress
+              'corrected-address': applicationForm.guardian.futureAddress !== null
             }"
             :label="$t('form.summary.guardian-section.address')"
             :value="guardianAddress"
@@ -223,16 +206,16 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 
         <div class="summary-data correcting-address">
           <c-summary-field
-            :value="applicationForm.guardian.hasCorrectingAddress"
+            :value="applicationForm.guardian.futureAddress !== null"
             :label="$t('form.summary.persons-section.new-addr')"
           />
           <div
             class="columns summary-data-field"
-            v-if="applicationForm.guardian.hasCorrectingAddress"
+            v-if="applicationForm.guardian.futureAddress !== null"
           >
             <div class="is-4 column">
               <p class="strong">{{ $t('general.input.moving-date') }}:</p>
-              {{ applicationForm.guardian.guardianMovingDate }}
+              {{ applicationForm.guardian.futureAddress.movingDate }}
             </div>
             <div class="is-4 column">
               <p class="strong">
@@ -272,7 +255,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
           <c-summary-field
             class="is-4 column"
             :label="''"
-            :value="applicationForm.additionalDetails.otherInfo"
+            :value="applicationForm.otherInfo"
           >
           </c-summary-field>
         </div>
@@ -284,28 +267,25 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 <script>
   import { mapGetters } from 'vuex'
   import _ from 'lodash'
+  import form, {bind} from "@/mixins/form";
 
   export default {
-    props: {
-      applicationForm: Object,
-      summaryChecked: Boolean
-    },
     methods: {
       summaryCheckedChanged(value) {
         this.$emit('summaryCheckedChanged', value)
       }
     },
+    mixins: [form],
     computed: {
       ...mapGetters(['countries', 'languages', 'clubTerms']),
-      applicationType() {
-        return this.applicationForm.type.label
-      },
+      applicationType: bind('application', 'type'),
+      applicationForm: bind('application', 'form'),
       childFullName() {
-        if (this.applicationForm.child.firstName) {
+        if (this.applicationForm.child.person.firstName) {
           return (
-            this.applicationForm.child.firstName +
+            this.applicationForm.child.person.firstName +
             ' ' +
-            this.applicationForm.child.lastName
+            this.applicationForm.child.person.lastName
           )
         }
       },
@@ -316,18 +296,18 @@ SPDX-License-Identifier: LGPL-2.1-or-later
             ', ' +
             this.applicationForm.child.address.postalCode +
             ' ' +
-            this.applicationForm.child.address.city
+            this.applicationForm.child.address.postOffice
           )
         }
       },
       childCorrectingAddress() {
-        if (this.applicationForm.child.hasCorrectingAddress) {
+        if (this.applicationForm.child.futureAddress !== null) {
           return (
-            this.applicationForm.child.correctingAddress.street +
+            this.applicationForm.child.futureAddress.street +
             ', ' +
-            this.applicationForm.child.correctingAddress.postalCode +
+            this.applicationForm.child.futureAddress.postalCode +
             ' ' +
-            this.applicationForm.child.correctingAddress.city
+            this.applicationForm.child.futureAddress.postOffice
           )
         }
       },
@@ -348,11 +328,11 @@ SPDX-License-Identifier: LGPL-2.1-or-later
         }
       },
       guardianFullName() {
-        if (this.applicationForm.guardian.firstName) {
+        if (this.applicationForm.guardian.person.firstName) {
           return (
-            this.applicationForm.guardian.firstName +
+            this.applicationForm.guardian.person.firstName +
             ' ' +
-            this.applicationForm.guardian.lastName
+            this.applicationForm.guardian.person.lastName
           )
         }
       },
@@ -363,72 +343,72 @@ SPDX-License-Identifier: LGPL-2.1-or-later
             ', ' +
             this.applicationForm.guardian.address.postalCode +
             ' ' +
-            this.applicationForm.guardian.address.city
+            this.applicationForm.guardian.address.postOffice
           )
         }
       },
       guardianCorrectingAddress() {
-        if (this.applicationForm.guardian.hasCorrectingAddress) {
+        if (this.applicationForm.guardian.futureAddress !== null) {
           return (
-            this.applicationForm.guardian.correctingAddress.street +
+            this.applicationForm.guardian.futureAddress.street +
             ', ' +
-            this.applicationForm.guardian.correctingAddress.postalCode +
+            this.applicationForm.guardian.futureAddress.postalCode +
             ' ' +
-            this.applicationForm.guardian.correctingAddress.city
+            this.applicationForm.guardian.futureAddress.postOffice
           )
         }
       },
-      guardian2FullName() {
-        if (this.applicationForm.guardian2.firstName) {
+      secondGuardianFullName() {
+        if (this.applicationForm.secondGuardian !== null) {
           return (
-            this.applicationForm.guardian2.firstName +
+            this.applicationForm.secondGuardian.person.firstName +
             ' ' +
-            this.applicationForm.guardian2.lastName
+            this.applicationForm.secondGuardian.person.lastName
           )
         }
       },
-      guardian2Address() {
-        if (this.applicationForm.guardian2.address.street) {
+      secondGuardianAddress() {
+        if (this.applicationForm.secondGuardian !== null && this.applicationForm.secondGuardian.address !== null) {
           return (
-            this.applicationForm.guardian2.address.street +
+            this.applicationForm.secondGuardian.address.street +
             ', ' +
-            this.applicationForm.guardian2.address.postalCode +
+            this.applicationForm.secondGuardian.address.postalCode +
             ' ' +
-            this.applicationForm.guardian2.address.city
+            this.applicationForm.secondGuardian.address.postOffice
           )
         }
       },
-      guardian2CorrectingAddress() {
-        if (this.applicationForm.guardian2.hasCorrectingAddress) {
+      secondGuardianCorrectingAddress() {
+        if (this.applicationForm.secondGuardian !== null && this.applicationForm.secondGuardian.futureAddress !== null) {
           return (
-            this.applicationForm.guardian2.correctingAddress.street +
+            this.applicationForm.secondGuardian.futureAddress.street +
             ', ' +
-            this.applicationForm.guardian2.correctingAddress.postalCode +
+            this.applicationForm.secondGuardian.futureAddress.postalCode +
             ' ' +
-            this.applicationForm.guardian2.correctingAddress.city
+            this.applicationForm.secondGuardian.futureAddress.postOffice
           )
         }
       },
       isSiblingBasis() {
-        return this.applicationForm.apply.siblingBasis
+        return this.applicationForm.preferences.siblingBasis !== null
       },
       siblingName() {
-        return this.applicationForm.apply.siblingName
+        return this.applicationForm.preferences.siblingBasis?.siblingName
       },
       siblingSsn() {
-        return this.applicationForm.apply.siblingSsn
+        return this.applicationForm.preferences.siblingBasis?.siblingSsn
       },
       assistanceNeeded() {
-        return this.applicationForm.careDetails.assistanceNeeded
+        return this.applicationForm.child.assistanceNeeded
       },
       assistanceDescription() {
-        return this.applicationForm.careDetails.assistanceDescription
+        return this.applicationForm.child.assistanceDescription
       },
       wasOnDaycare() {
-        return this.applicationForm.wasOnDaycare
+        return this.applicationForm.clubDetails.wasOnDaycare
       },
       wasOnClubCare() {
-        return this.applicationForm.wasOnClubCare
+        return this.applicationForm.clubDetails.wasOnClubCare
       },
       clubTerm() {
         return this.clubTerms.find((t) => t.id === this.applicationForm.term)

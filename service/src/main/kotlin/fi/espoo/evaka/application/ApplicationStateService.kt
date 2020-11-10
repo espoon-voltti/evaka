@@ -16,7 +16,6 @@ import fi.espoo.evaka.application.ApplicationStatus.WAITING_DECISION
 import fi.espoo.evaka.application.ApplicationStatus.WAITING_MAILING
 import fi.espoo.evaka.application.ApplicationStatus.WAITING_PLACEMENT
 import fi.espoo.evaka.application.ApplicationStatus.WAITING_UNIT_CONFIRMATION
-import fi.espoo.evaka.application.persistence.DatabaseForm
 import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.daycare.getDaycare
 import fi.espoo.evaka.daycare.service.AdditionalInformation
@@ -485,7 +484,7 @@ class ApplicationStateService(
         }
     }
 
-    fun updateOwnApplicationContents(user: AuthenticatedUser, applicationId: UUID, formV0: DatabaseForm): ApplicationDetails {
+    fun updateOwnApplicationContents(user: AuthenticatedUser, applicationId: UUID, form: ApplicationForm): ApplicationDetails {
         Audit.ApplicationUpdate.log(targetId = applicationId)
         user.requireOneOfRoles(UserRole.END_USER)
 
@@ -493,8 +492,6 @@ class ApplicationStateService(
             val original = fetchApplicationDetails(h, applicationId)
                 ?.takeIf { it.guardianId == user.id }
                 ?: throw NotFound("Application $applicationId of guardian ${user.id} not found")
-
-            val form = ApplicationForm.fromV0(formV0, original.childRestricted, original.guardianRestricted)
 
             updateApplicationContents(h, original, form)
             getApplication(applicationId)
