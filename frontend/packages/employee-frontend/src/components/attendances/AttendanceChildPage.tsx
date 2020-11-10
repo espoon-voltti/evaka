@@ -110,10 +110,13 @@ export default React.memo(function AttendanceChildPage() {
   useEffect(() => {
     if (isSuccess(groupAttendances))
       setChild(groupAttendances.data.find((elem) => elem.childId === childId))
-    if (isSuccess(unitData))
+    if (isSuccess(unitData) && child) {
       setGroup(
-        unitData.data.groups.find((elem: DaycareGroup) => elem.id === groupId)
+        unitData.data.groups.find(
+          (elem: DaycareGroup) => elem.id === child.daycareGroupId
+        )
       )
+    }
   }, [groupAttendances, unitData])
 
   const loading = isLoading(groupAttendances)
