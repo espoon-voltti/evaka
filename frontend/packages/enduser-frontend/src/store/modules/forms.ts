@@ -5,9 +5,7 @@
 import * as types from '@/store/mutation-types'
 import _ from 'lodash'
 import {
-  APPLICATION_TYPE,
-  NORMAL_CARE_END,
-  NORMAL_CARE_START
+  APPLICATION_TYPE
 } from '@/constants.ts'
 import moment from 'moment'
 import { Module } from 'vuex'
@@ -64,7 +62,7 @@ const currentState = {
       },
       otherInfo: '',
       maxFeeAccepted: false,
-      clubDetails: null
+      clubDetails: {}
     },
     status: 'CREATED',
     otherGuardianLivesInSameAddress: false,

@@ -37,12 +37,12 @@ const module: Module<ApplicationsState, RootState> = {
     },
     async loadApplication(
       { commit, state, dispatch },
-      { type, applicationId }
+      { applicationId }
     ) {
       commit(types.CLEAR_FORM, 'application')
       commit(types.CLEAR_DAYCARE_FORM)
       const application = await applicationApi.getApplication(applicationId)
-      commit(type === 'club' ? types.LOAD_APPLICATION_FORM : types.LOAD_DAYCARE_APPLICATION_FORM, { application })
+      commit(types.LOAD_APPLICATION_FORM, { application })
     },
     async removeApplication({ commit }, { applicationId }) {
       await applicationApi.removeApplication(applicationId)

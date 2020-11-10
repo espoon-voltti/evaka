@@ -50,6 +50,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
     computed: {
       applicationCreated: bind('application', 'createdDate'),
       applicationModified: bind('application', 'modifiedDate'),
+      preferredStartDate: bind('application', 'form.preferences.preferredStartDate'),
       id() {
         return this.$route.params.id
       }
@@ -58,7 +59,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
       async loadUnits() {
         // the value is in "UI format"
         const date = moment(
-          this.applicationForm.preferredStartDate,
+          this.preferredStartDate,
           'DD.MM.YYYY'
         ).format('YYYY-MM-DD')
         const type = 'CLUB'
@@ -70,7 +71,6 @@ SPDX-License-Identifier: LGPL-2.1-or-later
     },
     async created() {
       await this.$store.dispatch('loadApplication', {
-        type: this.application.type,
         applicationId: this.id
       })
       this.loadUnits()
