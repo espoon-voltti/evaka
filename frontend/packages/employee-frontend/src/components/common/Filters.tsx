@@ -33,7 +33,6 @@ import RoundIcon from '~components/shared/atoms/RoundIcon'
 import IconButton from '~components/shared/atoms/buttons/IconButton'
 import Colors from '~components/shared/Colors'
 import { faAngleDown, faAngleUp } from 'icon-set'
-import MultiSelect, { SelectOptionProp } from './MultiSelect'
 import Tooltip from '~components/common/Tooltip'
 import { CareArea } from '~types/unit'
 import { Label, LabelText } from '~components/common/styled/common'
@@ -972,15 +971,15 @@ export function ApplicationBasisFilter({
 }
 
 interface MultiUnitsProps {
-  units: { id: string; label: string }[]
-  onSelect: (joku: SelectOptionProp[]) => void
-  onRemove: (joku: SelectOptionProp[]) => void
+  units: { id: string; name: string }[]
+  selectedUnits: string[]
+  onChange: (v: string[]) => void
 }
 
 export function MultiSelectUnitFilter({
   units,
-  onSelect,
-  onRemove
+  selectedUnits,
+  onChange
 }: MultiUnitsProps) {
   const { i18n } = useTranslation()
   return (
@@ -988,12 +987,18 @@ export function MultiSelectUnitFilter({
       <Label>
         <LabelText>{i18n.filters.unit}</LabelText>
       </Label>
-      <MultiSelect
+      <ReactSelect
+        isMulti
         placeholder={i18n.filters.unitPlaceholder}
+        value={units.filter((unit) => selectedUnits.includes(unit.id))}
         options={units}
-        onSelect={onSelect}
-        onRemove={onRemove}
-        data-qa="application-units-filter"
+        onChange={(selected) => {
+          selected &&
+            'length' in selected &&
+            onChange(selected.map(({ id }) => id))
+        }}
+        getOptionValue={(option) => option.id}
+        getOptionLabel={(option) => option.name}
       />
     </Fragment>
   )

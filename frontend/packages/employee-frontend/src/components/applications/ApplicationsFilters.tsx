@@ -28,7 +28,6 @@ import { isSuccess, Loading } from '../../api'
 import { getAreas, getUnits } from '../../api/daycare'
 import { Gap } from '~components/shared/layout/white-space'
 import { useTranslation } from '~state/i18n'
-import { SelectOptionProp } from '~components/common/MultiSelect'
 
 const CustomGap = styled.div`
   height: 52px;
@@ -164,9 +163,9 @@ function ApplicationFilters() {
       : setAllStatuses([...allStatuses, status])
   }
 
-  const changeUnits = (selectedUnits: SelectOptionProp[]) => {
+  const changeUnits = (selectedUnits: string[]) => {
     setApplicationsResult(Loading())
-    setUnits(selectedUnits.map((selectedUnit) => selectedUnit.id))
+    setUnits(selectedUnits.map((selectedUnit) => selectedUnit))
   }
 
   const toggleApplicationDistinctions = (
@@ -196,13 +195,9 @@ function ApplicationFilters() {
           />
           <Gap size="L" />
           <MultiSelectUnitFilter
-            units={
-              isSuccess(allUnits)
-                ? allUnits.data.map(({ id, name }) => ({ id, label: name }))
-                : []
-            }
-            onSelect={changeUnits}
-            onRemove={changeUnits}
+            units={isSuccess(allUnits) ? allUnits.data : []}
+            selectedUnits={units}
+            onChange={changeUnits}
           />
           <Gap size="m" />
           <ApplicationBasisFilter toggled={basis} toggle={toggleBasis} />
