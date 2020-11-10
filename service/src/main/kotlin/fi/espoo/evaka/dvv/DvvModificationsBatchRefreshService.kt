@@ -30,8 +30,9 @@ class DvvModificationsBatchRefreshService(
     }
 
     fun doDvvModificationsRefresh(msg: DvvModificationsRefresh) {
-        logger.info("DvvModificationsRefresh: updating ${msg.ssns.size} ssns")
-        dvvModificationsService.updatePersonsFromDvv(msg.ssns)
+        logger.info("DvvModificationsRefresh: starting to process ${msg.ssns.size} ssns")
+        val modificationCount = dvvModificationsService.updatePersonsFromDvv(msg.ssns)
+        logger.info("DvvModificationsRefresh: finished processing $modificationCount DVV person modifications for ${msg.ssns.size} ssns")
     }
 
     fun scheduleBatch(): Int {
