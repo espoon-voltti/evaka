@@ -85,7 +85,7 @@ class Database(private val jdbi: Jdbi) {
         fun <T> transaction(f: (db: Transaction) -> T): T {
             threadId.assertCurrentThread()
             check(!handle.isInTransaction) { "Already in a transaction" }
-            return handle.inTransaction<T, Exception> { f(Transaction(handle)) }
+            return handle.transaction { f(Transaction(it)) }
         }
     }
 
@@ -104,8 +104,28 @@ class Database(private val jdbi: Jdbi) {
      * Tied to the thread that created it, and throws `IllegalStateException` if used in the wrong thread.
      */
     inner class Transaction internal constructor(handle: Handle) : Database.Read(handle) {
+        private var savepointId: Long = 0
+
+        fun nextSavepoint(): String = "savepoint-${savepointId++}"
         fun createUpdate(@Language("sql") sql: String): Update = handle.createUpdate(sql)
         fun prepareBatch(@Language("sql") sql: String): PreparedBatch = handle.prepareBatch(sql)
         fun execute(@Language("sql") sql: String, vararg args: Any): Int = handle.execute(sql, *args)
+
+        inline fun <reified T> withSavepoint(crossinline f: () -> T): T {
+            val savepointName = nextSavepoint()
+            handle.savepoint(savepointName)
+            val result = try {
+                f()
+            } catch (e: Throwable) {
+                try {
+                    handle.rollbackToSavepoint(savepointName)
+                } catch (rollback: Exception) {
+                    e.addSuppressed(rollback)
+                }
+                throw e
+            }
+            handle.release(savepointName)
+            return result
+        }
     }
 }
