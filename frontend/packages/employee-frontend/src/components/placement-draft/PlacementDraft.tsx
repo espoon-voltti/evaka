@@ -184,14 +184,18 @@ function PlacementDraft({ match }: RouteComponentProps<{ id: UUID }>) {
           preschoolDaycarePeriod: placementDraft.data.preschoolDaycarePeriod
         })
         calculateOverLaps(placementDraft)
-
-        void getApplicationUnits(
-          placementDraft.data.type,
-          placementDraft.data.period.start
-        ).then(setUnits)
       }
     })
   }, [id])
+
+  useEffect(() => {
+    if (isSuccess(placementDraft)) {
+      void getApplicationUnits(
+        placementDraft.data.type,
+        placement.period?.start ?? placementDraft.data.period.start
+      ).then(setUnits)
+    }
+  }, [placementDraft, placement.period?.start])
 
   useEffect(() => {
     if (isSuccess(placementDraft)) {
