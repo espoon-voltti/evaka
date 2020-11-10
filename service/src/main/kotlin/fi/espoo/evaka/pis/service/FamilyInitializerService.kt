@@ -15,8 +15,7 @@ import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.InitializeFamilyFromApplication
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.db.handle
-import fi.espoo.evaka.shared.db.transaction
+import fi.espoo.evaka.shared.db.Database
 import mu.KotlinLogging
 import org.jdbi.v3.core.Jdbi
 import org.jdbi.v3.core.statement.UnableToExecuteStatementException
@@ -33,21 +32,25 @@ class FamilyInitializerService(
     private val logger = KotlinLogging.logger {}
 
     init {
-        asyncJobRunner.initializeFamilyFromApplication = ::handleInitializeFamilyFromApplication
+        asyncJobRunner.initializeFamilyFromApplication =
+            { msg -> handleInitializeFamilyFromApplication(Database(jdbi), msg) }
     }
 
-    fun handleInitializeFamilyFromApplication(msg: InitializeFamilyFromApplication) {
+    fun handleInitializeFamilyFromApplication(db: Database, msg: InitializeFamilyFromApplication) =
+        db.connect { handleInitializeFamilyFromApplication(it, msg) }
+
+    fun handleInitializeFamilyFromApplication(db: Database.Connection, msg: InitializeFamilyFromApplication) {
         val user = msg.user
-        val application = jdbi.handle { h -> fetchApplicationDetails(h, msg.applicationId) }
+        val application = db.read { fetchApplicationDetails(it.handle, msg.applicationId) }
         if (application != null) {
-            val members = parseFridgeFamilyMembersFromApplication(user, application)
-            tryInitFamilyFromApplication(members)
+            val members = db.transaction { parseFridgeFamilyMembersFromApplication(it, user, application) }
+            tryInitFamilyFromApplication(db, members)
         } else {
             logger.warn("Could not initialize family, daycare application ${msg.applicationId} not found")
         }
     }
 
-    private fun tryInitFamilyFromApplication(members: FridgeFamilyMembers) {
+    private fun tryInitFamilyFromApplication(db: Database.Connection, members: FridgeFamilyMembers) {
         try {
             if (members.headOfFamilyId == null) {
                 logger.warn("Cannot create family because head of family could not be found")
@@ -60,6 +63,7 @@ class FamilyInitializerService(
 
             try {
                 createParentship(
+                    db,
                     childId = members.fridgeChildId,
                     headOfChildId = members.headOfFamilyId
                 )
@@ -69,7 +73,7 @@ class FamilyInitializerService(
 
             if (members.fridgePartnerId != null) {
                 try {
-                    createPartnership(members.headOfFamilyId, members.fridgePartnerId)
+                    createPartnership(db, members.headOfFamilyId, members.fridgePartnerId)
                 } catch (e: Throwable) {
                     logger.warn("Adding fridge partner ${members.fridgePartnerId} to ${members.headOfFamilyId} failed. Continuing with the rest of the family...")
                 }
@@ -77,7 +81,7 @@ class FamilyInitializerService(
 
             members.fridgeSiblingIds.forEach { siblingId ->
                 try {
-                    createParentship(childId = siblingId, headOfChildId = members.headOfFamilyId)
+                    createParentship(db, childId = siblingId, headOfChildId = members.headOfFamilyId)
                 } catch (e: Throwable) {
                     logger.warn("Adding $siblingId as a fridge child to ${members.headOfFamilyId} failed. Continuing with the rest of the family...")
                 }
@@ -95,9 +99,10 @@ class FamilyInitializerService(
     )
 
     private fun parseFridgeFamilyMembersFromApplication(
+        db: Database.Transaction,
         user: AuthenticatedUser,
         application: ApplicationDetails
-    ): FridgeFamilyMembers = jdbi.transaction { h ->
+    ): FridgeFamilyMembers {
         val updateStale = false
 
         val headOfFamilyId = application.guardianId
@@ -105,16 +110,16 @@ class FamilyInitializerService(
         val otherGuardianId = application.otherGuardianId
         val fridgePartnerSSN = if (
             otherGuardianId != null &&
-            personService.personsLiveInTheSameAddress(h, user, headOfFamilyId, otherGuardianId)
+            personService.personsLiveInTheSameAddress(db.handle, user, headOfFamilyId, otherGuardianId)
         ) {
-            (h.getPersonById(otherGuardianId)?.identity as? SSN)?.ssn
+            (db.handle.getPersonById(otherGuardianId)?.identity as? SSN)?.ssn
         } else {
             application.form.otherPartner?.socialSecurityNumber
         }
 
         val fridgePartnerId = fridgePartnerSSN
             ?.let { stringToSSN(it) }
-            ?.let { personService.getOrCreatePerson(h, user, it, updateStale) }
+            ?.let { personService.getOrCreatePerson(db.handle, user, it, updateStale) }
             ?.id
 
         val fridgeChildId = application.childId
@@ -122,9 +127,9 @@ class FamilyInitializerService(
         val fridgeSiblingIds = application.form.otherChildren
             .mapNotNull { it.socialSecurityNumber }
             .mapNotNull { stringToSSN(it) }
-            .mapNotNull { personService.getOrCreatePerson(h, user, it, updateStale)?.id }
+            .mapNotNull { personService.getOrCreatePerson(db.handle, user, it, updateStale)?.id }
 
-        FridgeFamilyMembers(headOfFamilyId, fridgePartnerId, fridgeChildId, fridgeSiblingIds)
+        return FridgeFamilyMembers(headOfFamilyId, fridgePartnerId, fridgeChildId, fridgeSiblingIds)
     }
 
     private fun stringToSSN(ssn: String): SSN? {
@@ -135,10 +140,10 @@ class FamilyInitializerService(
         }
     }
 
-    private fun createParentship(childId: UUID, headOfChildId: UUID) {
+    private fun createParentship(db: Database.Connection, childId: UUID, headOfChildId: UUID) {
         val startDate = LocalDate.now()
-        val alreadyExists = jdbi.handle { h ->
-            h.getParentships(
+        val alreadyExists = db.read {
+            it.handle.getParentships(
                 headOfChildId = headOfChildId,
                 childId = childId,
                 includeConflicts = true
@@ -151,8 +156,8 @@ class FamilyInitializerService(
             logger.debug("Similar parentship already exists between $headOfChildId and $childId")
         } else {
             try {
-                jdbi.transaction {
-                    it.createParentship(
+                db.transaction {
+                    it.handle.createParentship(
                         childId = childId,
                         headOfChildId = headOfChildId,
                         startDate = startDate,
@@ -161,8 +166,8 @@ class FamilyInitializerService(
                     )
                 }
             } catch (e: UnableToExecuteStatementException) {
-                jdbi.transaction {
-                    it.createParentship(
+                db.transaction {
+                    it.handle.createParentship(
                         childId = childId,
                         headOfChildId = headOfChildId,
                         startDate = startDate,
@@ -174,10 +179,10 @@ class FamilyInitializerService(
         }
     }
 
-    private fun createPartnership(personId1: UUID, personId2: UUID) {
+    private fun createPartnership(db: Database.Connection, personId1: UUID, personId2: UUID) {
         val startDate = LocalDate.now()
         val alreadyExists =
-            jdbi.handle { h -> h.getPartnershipsForPerson(personId = personId1, includeConflicts = true) }
+            db.read { it.handle.getPartnershipsForPerson(personId = personId1, includeConflicts = true) }
                 .any { partnership ->
                     partnership.partners.any { partner -> partner.id == personId2 } &&
                         (partnership.startDate.isBefore(startDate) || partnership.startDate.isEqual(startDate)) &&
@@ -187,8 +192,8 @@ class FamilyInitializerService(
             logger.debug("Similar partnership already exists between $personId1 and $personId2")
         } else {
             try {
-                jdbi.transaction {
-                    it.createPartnership(
+                db.transaction {
+                    it.handle.createPartnership(
                         personId1 = personId1,
                         personId2 = personId2,
                         startDate = startDate,
@@ -197,8 +202,8 @@ class FamilyInitializerService(
                     )
                 }
             } catch (e: UnableToExecuteStatementException) {
-                jdbi.transaction {
-                    it.createPartnership(
+                db.transaction {
+                    it.handle.createPartnership(
                         personId1 = personId1,
                         personId2 = personId2,
                         startDate = startDate,
