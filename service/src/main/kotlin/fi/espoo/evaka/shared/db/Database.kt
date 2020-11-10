@@ -111,7 +111,7 @@ class Database(private val jdbi: Jdbi) {
         fun prepareBatch(@Language("sql") sql: String): PreparedBatch = handle.prepareBatch(sql)
         fun execute(@Language("sql") sql: String, vararg args: Any): Int = handle.execute(sql, *args)
 
-        inline fun <reified T> withSavepoint(crossinline f: () -> T): T {
+        inline fun <reified T> subTransaction(crossinline f: () -> T): T {
             val savepointName = nextSavepoint()
             handle.savepoint(savepointName)
             val result = try {

@@ -62,7 +62,7 @@ class FamilyInitializerService(
             }
 
             try {
-                tx.withSavepoint {
+                tx.subTransaction {
                     createParentship(
                         tx,
                         childId = members.fridgeChildId,
@@ -75,7 +75,7 @@ class FamilyInitializerService(
 
             if (members.fridgePartnerId != null) {
                 try {
-                    tx.withSavepoint {
+                    tx.subTransaction {
                         createPartnership(tx, members.headOfFamilyId, members.fridgePartnerId)
                     }
                 } catch (e: Throwable) {
@@ -85,7 +85,7 @@ class FamilyInitializerService(
 
             members.fridgeSiblingIds.forEach { siblingId ->
                 try {
-                    tx.withSavepoint {
+                    tx.subTransaction {
                         createParentship(tx, childId = siblingId, headOfChildId = members.headOfFamilyId)
                     }
                 } catch (e: Throwable) {
@@ -161,7 +161,7 @@ class FamilyInitializerService(
             logger.debug("Similar parentship already exists between $headOfChildId and $childId")
         } else {
             try {
-                tx.withSavepoint {
+                tx.subTransaction {
                     tx.handle.createParentship(
                         childId = childId,
                         headOfChildId = headOfChildId,
@@ -195,7 +195,7 @@ class FamilyInitializerService(
             logger.debug("Similar partnership already exists between $personId1 and $personId2")
         } else {
             try {
-                tx.withSavepoint {
+                tx.subTransaction {
                     tx.handle.createPartnership(
                         personId1 = personId1,
                         personId2 = personId2,

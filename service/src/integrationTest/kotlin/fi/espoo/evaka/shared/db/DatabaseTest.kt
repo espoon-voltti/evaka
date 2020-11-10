@@ -25,7 +25,7 @@ class DatabaseTest : PureJdbiTest() {
             db.transaction { tx ->
                 tx.execute("INSERT INTO holiday (date) VALUES ('2020-01-01')")
                 assertThrows<UnableToExecuteStatementException> {
-                    tx.withSavepoint {
+                    tx.subTransaction {
                         tx.execute("INSERT INTO holiday (date) VALUES ('2020-01-01')")
                     }
                 }
@@ -44,7 +44,7 @@ class DatabaseTest : PureJdbiTest() {
             db.transaction { tx ->
                 tx.execute("INSERT INTO holiday (date) VALUES ('2020-01-01')")
                 assertThrows<RuntimeException> {
-                    tx.withSavepoint<Unit> {
+                    tx.subTransaction<Unit> {
                         tx.execute("INSERT INTO holiday (date) VALUES ('2020-01-02')")
                         throw RuntimeException("Test")
                     }
