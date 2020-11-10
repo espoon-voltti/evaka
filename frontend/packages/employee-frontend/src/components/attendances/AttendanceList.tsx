@@ -36,7 +36,7 @@ export default React.memo(function AttendanceList({
         {groupAttendances.map((groupAttendance) => (
           <li key={groupAttendance.childId}>
             <a
-              href={`/units/${unitId}/groups/${groupAttendance.daycareGroupId}/childattendance/${groupAttendance.childId}`}
+              href={`/employee/units/${unitId}/groups/${groupAttendance.daycareGroupId}/childattendance/${groupAttendance.childId}`}
             >
               <ChildListItem
                 type={groupAttendance.status}
