@@ -22,7 +22,8 @@ import {
   PresenceReportRow,
   ServiceNeedReportRow,
   RawReportRow,
-  FamilyContactsReportRow
+  FamilyContactsReportRow,
+  VoucherServiceProviderRow
 } from '~types/reports'
 import { UUID } from '~types'
 import { JsonOf } from '@evaka/lib-common/src/json'
@@ -342,6 +343,36 @@ export function getStartingPlacementsReport(
           ...row,
           dateOfBirth: LocalDate.parseIso(row.dateOfBirth),
           placementStart: LocalDate.parseIso(row.placementStart)
+        }))
+      )
+    )
+    .catch(Failure)
+}
+
+export interface VoucherServiceProvidersFilters {
+  year: number
+  month: number
+  areaId: UUID
+}
+
+export async function getVoucherServiceProvidersReport(
+  filters: VoucherServiceProvidersFilters
+): Promise<Result<VoucherServiceProviderRow[]>> {
+  return client
+    .get<JsonOf<VoucherServiceProviderRow[]>>(
+      `/reports/voucher-service-providers`,
+      {
+        params: {
+          ...filters
+        }
+      }
+    )
+    .then((res) =>
+      Success(
+        res.data.map((row) => ({
+          ...row,
+          startDate: LocalDate.parseIso(row.startDate),
+          endDate: LocalDate.parseIso(row.endDate)
         }))
       )
     )

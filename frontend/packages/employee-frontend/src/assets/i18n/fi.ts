@@ -1936,6 +1936,18 @@ export const fi = {
       ssn: 'Hetu',
       placementStart: 'Aloittaa varhaiskasvatuksessa',
       reportFileName: 'alkavat_sijoitukset'
+    },
+    voucherServiceProviders: {
+      title: 'Palveluseteliyksiköt',
+      description:
+        'Raportti tarjoaa tiedot palveluseteliyksiköiden laskutuksesta.',
+      filters: {
+        areaPlaceholder: 'Valitse palvelualue'
+      },
+      childCount: 'PS lasten lkm',
+      unitVoucherSum: 'PS summa / kk',
+      detailsLink: 'Näytä erittely',
+      average: 'Keskiarvo'
     }
   },
   unitEditor: {
