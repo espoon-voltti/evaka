@@ -168,7 +168,7 @@ class FamilyInitializerService(
                         headOfChildId = headOfChildId,
                         startDate = startDate,
                         endDate = null,
-                        conflict = false
+                        conflict = true
                     )
                 }
             }
