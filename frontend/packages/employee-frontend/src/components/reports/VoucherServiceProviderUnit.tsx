@@ -46,6 +46,7 @@ function VoucherServiceProviderUnit() {
   const [rows, setRows] = useState<Result<VoucherServiceProviderUnitRow[]>>(
     Loading()
   )
+  const [unitName, setUnitName] = useState<string>('')
 
   const now = new Date()
 
@@ -56,7 +57,14 @@ function VoucherServiceProviderUnit() {
 
   useEffect(() => {
     setRows(Loading())
-    void getVoucherServiceProviderUnitReport(unitId, filters).then(setRows)
+    void getVoucherServiceProviderUnitReport(unitId, filters).then(
+      (rowsResult) => {
+        setRows(rowsResult)
+        if (isSuccess(rowsResult) && rowsResult.data.length > 0) {
+          setUnitName(rowsResult.data[0].unitName)
+        }
+      }
+    )
   }, [filters])
 
   const monthOptions = range(0, 12).map((num) => ({
@@ -76,9 +84,7 @@ function VoucherServiceProviderUnit() {
     <Container>
       <ReturnButton />
       <ContentArea opaque>
-        {isSuccess(rows) && rows.data.length > 0 && (
-          <Title size={1}>{rows.data[0].unitName}</Title>
-        )}
+        {isSuccess(rows) && <Title size={1}>{unitName}</Title>}
         <Title size={2}>{i18n.reports.voucherServiceProviderUnit.title}</Title>
         <FilterRow>
           <FilterLabel>
@@ -128,22 +134,20 @@ function VoucherServiceProviderUnit() {
               data={rows.data}
               headers={[
                 {
-                  label: i18n.reports.voucherServiceProviderUnit.child,
-                  key: 'childName'
+                  label: i18n.reports.voucherServiceProviderUnit.childFirstName,
+                  key: 'childFirstName'
+                },
+                {
+                  label: i18n.reports.voucherServiceProviderUnit.childLastName,
+                  key: 'childLastName'
                 },
                 {
                   label: i18n.reports.common.groupName,
-                  key: 'groupName'
+                  key: 'childGroupName'
                 },
                 {
                   label: i18n.reports.voucherServiceProviderUnit.numberOfDays,
-                  key: 'serviceVoucherValueSum'
-                },
-                {
-                  label:
-                    i18n.reports.voucherServiceProviderUnit
-                      .serviceVoucherValueSum,
-                  key: 'serviceVoucherValueSum'
+                  key: 'derivatives.numberOfDays'
                 },
                 {
                   label:
@@ -157,11 +161,17 @@ function VoucherServiceProviderUnit() {
                   key: 'serviceVoucherCoPayment'
                 },
                 {
+                  label:
+                    i18n.reports.voucherServiceProviderUnit
+                      .serviceVoucherRealizedValue,
+                  key: 'derivatives.realizedAmount'
+                },
+                {
                   label: i18n.reports.voucherServiceProviderUnit.coefficient,
                   key: 'serviceVoucherServiceCoefficient'
                 }
               ]}
-              filename={`Palvelusetelilapset yksikössä.csv`}
+              filename={`Palvelusetelilapset yksikössä ${unitName} ${filters.month}/${filters.year}.csv`}
             />
             <TableScrollable>
               <Thead>
@@ -174,7 +184,7 @@ function VoucherServiceProviderUnit() {
                   <Th>
                     {
                       i18n.reports.voucherServiceProviderUnit
-                        .serviceVoucherValueSum
+                        .serviceVoucherValue
                     }
                   </Th>
                   <Th>
@@ -186,7 +196,7 @@ function VoucherServiceProviderUnit() {
                   <Th>
                     {
                       i18n.reports.voucherServiceProviderUnit
-                        .serviceVoucherValue
+                        .serviceVoucherRealizedValue
                     }
                   </Th>
                   <Th>{i18n.reports.voucherServiceProviderUnit.coefficient}</Th>
@@ -221,11 +231,7 @@ function VoucherServiceProviderUnit() {
                         {row.derivatives.numberOfDays}
                       </Tooltip>
                     </Td>
-                    <Td>
-                      {formatCents(
-                        row.serviceVoucherValue + row.serviceVoucherCoPayment
-                      )}
-                    </Td>
+                    <Td>{formatCents(row.serviceVoucherValue)}</Td>
                     <Td>{formatCents(row.serviceVoucherCoPayment)}</Td>
                     <Td>{formatCents(row.derivatives.realizedAmount)}</Td>
                     <Td>{row.serviceVoucherServiceCoefficient}</Td>

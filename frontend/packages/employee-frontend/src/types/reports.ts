@@ -330,7 +330,6 @@ export interface VoucherServiceProviderUnitRow {
   childId: UUID
   childFirstName: string
   childLastName: string
-  childSsn?: string
   childDateOfBirth: LocalDate
   childGroupName: string
   serviceVoucherPeriod: Period
