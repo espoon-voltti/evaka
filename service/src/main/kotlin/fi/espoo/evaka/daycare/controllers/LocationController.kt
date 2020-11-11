@@ -225,6 +225,7 @@ AND (:type = 'ALL' OR
     (:type = 'DAYCARE' AND '{CENTRE, FAMILY, GROUP_FAMILY}' && unit.type) OR
     (:type = 'PRESCHOOL' AND '{PRESCHOOL, PREPARATORY_EDUCATION}' && unit.type)
 )
+AND daterange(unit.opening_date, unit.closing_date) && daterange(current_date, null, '[]')
 ORDER BY name
     """.trimIndent()
 ).bindNullable("areaShortNames", areaShortNames.toTypedArray().takeIf { it.isNotEmpty() })
