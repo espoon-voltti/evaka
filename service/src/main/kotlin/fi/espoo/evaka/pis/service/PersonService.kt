@@ -8,7 +8,6 @@ import fi.espoo.evaka.application.utils.exhaust
 import fi.espoo.evaka.identity.ExternalIdentifier
 import fi.espoo.evaka.identity.VolttiIdentifier
 import fi.espoo.evaka.pis.addSSNToPerson
-import fi.espoo.evaka.pis.createEmptyPerson
 import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.pis.getPersonBySSN
 import fi.espoo.evaka.pis.updatePersonContactInfo
@@ -37,10 +36,6 @@ class PersonService(
     private val personStorageService: PersonStorageService
 ) {
     private val forceRefreshIntervalSeconds = 1 * 24 * 60 * 60 // 1 day
-
-    fun createEmpty(h: Handle) = h.createEmptyPerson()
-
-    fun getPerson(h: Handle, id: VolttiIdentifier): PersonDTO? = h.getPersonById(id)
 
     fun getUpToDatePerson(h: Handle, user: AuthenticatedUser, id: VolttiIdentifier): PersonDTO? {
         val person = h.getPersonById(id) ?: return null
@@ -165,11 +160,8 @@ class PersonService(
         } else null
     }
 
-    fun updateEndUsersContactInfo(h: Handle, id: VolttiIdentifier, contactInfo: ContactInfo): Boolean =
-        h.updatePersonContactInfo(id, contactInfo)
-
     fun patchUserDetails(h: Handle, id: VolttiIdentifier, data: PersonPatch): PersonDTO {
-        val person = getPerson(h, id) ?: throw NotFound("Person $id not found")
+        val person = h.getPersonById(id) ?: throw NotFound("Person $id not found")
 
         when (person.identity) {
             is ExternalIdentifier.SSN -> h.updatePersonContactInfo(
@@ -187,7 +179,7 @@ class PersonService(
             is ExternalIdentifier.NoID -> h.updatePersonDetails(id, data)
         }.exhaust()
 
-        return getPerson(h, id)!!
+        return h.getPersonById(id)!!
     }
 
     fun addSsn(h: Handle, user: AuthenticatedUser, id: VolttiIdentifier, ssn: ExternalIdentifier.SSN) {

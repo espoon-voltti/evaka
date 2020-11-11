@@ -23,6 +23,7 @@ import fi.espoo.evaka.pis.service.PersonPatch
 import fi.espoo.evaka.pis.service.PersonService
 import fi.espoo.evaka.pis.service.PersonWithChildrenDTO
 import fi.espoo.evaka.pis.service.VTJBatchRefreshService
+import fi.espoo.evaka.pis.updatePersonContactInfo
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.config.Roles.ADMIN
@@ -159,7 +160,7 @@ class PersonController(
     ): ResponseEntity<ContactInfo> {
         Audit.PersonContactInfoUpdate.log(targetId = personId)
         user.requireOneOfRoles(SERVICE_WORKER, UNIT_SUPERVISOR, FINANCE_ADMIN)
-        return if (jdbi.transaction { personService.updateEndUsersContactInfo(it, personId, contactInfo) }) {
+        return if (jdbi.transaction { it.updatePersonContactInfo(personId, contactInfo) }) {
             ResponseEntity.ok().body(contactInfo)
         } else {
             ResponseEntity.notFound().build()

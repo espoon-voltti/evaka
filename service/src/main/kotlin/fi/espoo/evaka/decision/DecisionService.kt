@@ -275,7 +275,7 @@ class DecisionService(
     }
 
     private fun calculateDecisionFileName(h: Handle, decision: Decision, lang: String): String {
-        val child = personService.getPerson(h, decision.childId)
+        val child = h.getPersonById(decision.childId)
         val childName = "${child?.firstName}_${child?.lastName}"
         val prefix = getLocalizedFilename(decision.type, lang)
         return "${prefix}_$childName.pdf".replace(" ", "_")

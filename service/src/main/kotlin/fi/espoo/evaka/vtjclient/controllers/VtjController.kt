@@ -7,6 +7,7 @@ package fi.espoo.evaka.vtjclient.controllers
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.identity.ExternalIdentifier
 import fi.espoo.evaka.identity.VolttiIdentifier
+import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.pis.service.PersonDTO
 import fi.espoo.evaka.pis.service.PersonService
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -78,7 +79,7 @@ class VtjController(
     }
 
     private fun personResult(user: AuthenticatedUser, personId: VolttiIdentifier): PersonResult {
-        val guardianResult = jdbi.handle { personService.getPerson(it, personId) }
+        val guardianResult = jdbi.handle { it.getPersonById(personId) }
             ?.let { person ->
                 when (person.identity) {
                     is ExternalIdentifier.NoID -> mapPisPerson(person)
