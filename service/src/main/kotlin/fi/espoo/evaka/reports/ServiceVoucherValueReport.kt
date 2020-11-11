@@ -172,13 +172,14 @@ private fun getServiceVoucherValues(
         JOIN person child ON part.child = child.id
         JOIN daycare unit ON part.placement_unit = unit.id
         JOIN care_area area ON unit.care_area_id = area.id
-        LEFT JOIN (
-            SELECT p.child_id, dg.name, p.start_date, p.end_date
+        LEFT JOIN LATERAL (
+            SELECT p.child_id, STRING_AGG(dg.name, ', ') AS name
             FROM placement p
             JOIN daycare_group_placement dgp ON p.id = dgp.daycare_placement_id
             JOIN daycare_group dg ON dgp.daycare_group_id = dg.id
-        ) child_group ON child.id = child_group.child_id AND daterange(decision.valid_from, decision.valid_to, '[]') && 
-                daterange(child_group.start_date, child_group.end_date, '[]')
+            WHERE daterange(decision.valid_from, decision.valid_to, '[]') && daterange(dgp.start_date, dgp.end_date, '[]')
+            GROUP BY p.child_id, dgp.daycare_placement_id
+        ) child_group ON child.id = child_group.child_id 
         WHERE decision.status = :sent
         AND daterange(decision.valid_from, decision.valid_to, '[]') && :period
         AND (:areaId::uuid IS NULL OR area.id = :areaId)
