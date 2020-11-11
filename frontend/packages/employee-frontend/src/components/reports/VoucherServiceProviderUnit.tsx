@@ -201,7 +201,6 @@ function VoucherServiceProviderUnit() {
                   </Th>
                   <Th>{i18n.reports.voucherServiceProviderUnit.coefficient}</Th>
                   <Th>{i18n.reports.voucherServiceProviderUnit.serviceNeed}</Th>
-                  <Th>{i18n.reports.voucherServiceProviderUnit.partTime}</Th>
                 </Tr>
               </Thead>
               <Tbody>
@@ -236,7 +235,6 @@ function VoucherServiceProviderUnit() {
                     <Td>{formatCents(row.derivatives.realizedAmount)}</Td>
                     <Td>{row.serviceVoucherServiceCoefficient}</Td>
                     <Td>{formatServiceNeed(row.serviceVoucherHoursPerWeek)}</Td>
-                    <Td></Td>
                   </Tr>
                 ))}
               </Tbody>
