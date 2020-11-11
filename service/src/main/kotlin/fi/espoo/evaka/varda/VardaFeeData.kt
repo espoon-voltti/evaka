@@ -244,8 +244,8 @@ private fun baseToFeeData(h: Handle, feeDataBase: VardaFeeDataBase, personServic
         .map { guardian ->
             VardaGuardian(
                 ssn = guardian.identity.toString(),
-                firstName = guardian.firstName!!,
-                lastName = guardian.lastName!!
+                firstName = guardian.firstName ?: "etunimi_puuttuu",
+                lastName = guardian.lastName ?: "sukunimi_puuttuu"
             )
         }
 
