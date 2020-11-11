@@ -104,6 +104,7 @@ const StartingPlacements = React.memo(function StartingPlacements() {
                   }
                 }}
                 styles={reactSelectStyles}
+                placeholder={i18n.common.month}
               />
             </Wrapper>
             <Wrapper>
@@ -116,6 +117,7 @@ const StartingPlacements = React.memo(function StartingPlacements() {
                   }
                 }}
                 styles={reactSelectStyles}
+                placeholder={i18n.common.year}
               />
             </Wrapper>
           </FlexRow>
