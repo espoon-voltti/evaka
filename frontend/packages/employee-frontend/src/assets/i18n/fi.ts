@@ -111,7 +111,9 @@ export const fi = {
     noFirstName: 'Etunimi puuttuu',
     noLastName: 'Sukunimi puuttuu',
     noName: 'Nimi puuttuu',
-    date: 'Päivämäärä'
+    date: 'Päivämäärä',
+    month: 'Kuukausi',
+    year: 'Vuosi'
   },
   header: {
     title: 'Varhaiskasvatus',
