@@ -121,12 +121,13 @@ data class ServiceVoucherValueRow(
     val serviceVoucherPeriod: Period,
     val serviceVoucherValue: Int,
     val serviceVoucherCoPayment: Int,
+    val serviceVoucherServiceCoefficient: Int,
+    val serviceVoucherHoursPerWeek: Int,
     val derivatives: ValueRowDerivatives? = null
 )
 
 data class ValueRowDerivatives(
     val realizedAmount: Int,
-    val coefficient: BigDecimal,
     val realizedPeriod: ClosedPeriod,
     val numberOfDays: Long
 )
@@ -141,7 +142,7 @@ private fun realizedMonthlyAmount(value: Int, decisionPeriod: Period, monthPerio
     val coefficient = BigDecimal(numberOfDays).divide(BigDecimal(monthPeriod.durationInDays()), 10, RoundingMode.HALF_UP)
     val realizedAmount = (BigDecimal(value) * coefficient).setScale(0, RoundingMode.HALF_UP).toInt()
 
-    return ValueRowDerivatives(realizedAmount, coefficient, realizedPeriod, numberOfDays)
+    return ValueRowDerivatives(realizedAmount, realizedPeriod, numberOfDays)
 }
 
 private fun getServiceVoucherValues(
@@ -166,7 +167,7 @@ private fun getServiceVoucherValues(
             daterange(decision.valid_from, decision.valid_to, '[]') AS service_voucher_period,
             part.voucher_value AS service_voucher_value,
             part.co_payment AS service_voucher_co_payment,
-            part.service_coefficient AS service_voucher_service_coefficient
+            part.service_coefficient AS service_voucher_service_coefficient,
         FROM voucher_value_decision decision
         JOIN voucher_value_decision_part part ON decision.id = part.voucher_value_decision_id
         JOIN person child ON part.child = child.id

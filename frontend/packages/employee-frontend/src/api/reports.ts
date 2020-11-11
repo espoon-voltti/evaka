@@ -393,7 +393,6 @@ export function getVoucherServiceProviderUnitReport(
           },
           derivatives: {
             realizedAmount: row.derivatives.realizedAmount,
-            coefficient: row.derivatives.coefficient,
             realizedPeriod: {
               start: LocalDate.parseIso(row.derivatives.realizedPeriod.start),
               end: LocalDate.parseIso(row.derivatives.realizedPeriod.end)

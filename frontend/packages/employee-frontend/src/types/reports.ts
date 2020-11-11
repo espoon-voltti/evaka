@@ -336,6 +336,7 @@ export interface VoucherServiceProviderUnitRow {
   serviceVoucherPeriod: Period
   serviceVoucherValue: number
   serviceVoucherCoPayment: number
+  serviceVoucherServiceCoefficient: number
   unitId: UUID
   unitName: string
   areaId: UUID
@@ -345,7 +346,6 @@ export interface VoucherServiceProviderUnitRow {
 
 export interface VoucherServiceProviderUnitRowDerivatives {
   realizedAmount: number
-  coefficient: number
   realizedPeriod: Period
   numberOfDays: number
 }

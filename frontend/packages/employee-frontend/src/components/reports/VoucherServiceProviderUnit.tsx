@@ -221,8 +221,7 @@ function VoucherServiceProviderUnit() {
                     </Td>
                     <Td>{formatCents(row.serviceVoucherCoPayment)}</Td>
                     <Td>{formatCents(row.derivatives.realizedAmount)}</Td>
-                    <Td>{row.derivatives.coefficient}</Td>
-                    <Td></Td>
+                    <Td>{row.serviceVoucherServiceCoefficient}</Td>
                     <Td></Td>
                   </Tr>
                 ))}
