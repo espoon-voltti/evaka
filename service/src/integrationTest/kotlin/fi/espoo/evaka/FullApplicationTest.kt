@@ -9,6 +9,7 @@ import com.github.kittinunf.fuel.core.FuelManager
 import fi.espoo.evaka.shared.config.SharedIntegrationTestConfig
 import fi.espoo.evaka.shared.config.defaultObjectMapper
 import fi.espoo.evaka.shared.config.getTestDataSource
+import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.configureJdbi
 import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.varda.integration.VardaClient
@@ -39,6 +40,7 @@ abstract class FullApplicationTest {
     protected val objectMapper: ObjectMapper = defaultObjectMapper()
 
     protected lateinit var jdbi: Jdbi
+    protected lateinit var db: Database
 
     protected lateinit var vardaTokenProvider: VardaTokenProvider
     protected lateinit var vardaClient: VardaClient
@@ -54,6 +56,7 @@ abstract class FullApplicationTest {
         assert(httpPort > 0)
         http.basePath = "http://localhost:$httpPort/"
         jdbi = configureJdbi(Jdbi.create(getTestDataSource()))
+        db = Database(jdbi)
         jdbi.handle(::resetDatabase)
         feeDecisionMinDate = LocalDate.parse(env.getRequiredProperty("fee_decision_min_date"))
         val vardaBaseUrl = "http://localhost:$httpPort/mock-integration/varda/api"

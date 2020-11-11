@@ -4,8 +4,8 @@
 
 package fi.espoo.evaka.koski
 
+import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapColumn
-import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.bindKotlin
 import org.jdbi.v3.core.kotlin.mapTo
 import java.time.LocalDate
@@ -13,7 +13,7 @@ import java.util.UUID
 
 data class KoskiStudyRightKey(val childId: UUID, val unitId: UUID, val type: OpiskeluoikeudenTyyppiKoodi)
 
-fun Handle.getPendingStudyRights(
+fun Database.Read.getPendingStudyRights(
     today: LocalDate,
     params: KoskiSearchParams = KoskiSearchParams()
 ): List<KoskiStudyRightKey> =
@@ -45,9 +45,10 @@ AND (:daycareIds = '{}' OR kvsr.unit_id = ANY(:daycareIds))
         .mapTo<KoskiStudyRightKey>()
         .list()
 
-fun Handle.beginKoskiUpload(sourceSystem: String, key: KoskiStudyRightKey, today: LocalDate) = createQuery(
-    // language=SQL
-    """
+fun Database.Transaction.beginKoskiUpload(sourceSystem: String, key: KoskiStudyRightKey, today: LocalDate) =
+    createQuery(
+        // language=SQL
+        """
 INSERT INTO koski_study_right (child_id, unit_id, type, void_date, input_data, payload, version)
 SELECT child_id, unit_id, type, kvsr.void_date, coalesce(to_jsonb(kasr), to_jsonb(kvsr)), '{}', 0
 FROM (
@@ -64,15 +65,15 @@ DO UPDATE SET
     study_right_oid = CASE WHEN koski_study_right.void_date IS NULL THEN koski_study_right.study_right_oid END
 RETURNING id, void_date IS NOT NULL AS voided
 """
-).bindKotlin(key)
-    .bind("today", today)
-    .map { row -> Pair(row.mapColumn<UUID>("id"), row.mapColumn<Boolean>("voided")) }
-    .single()
-    .let { (id, voided) ->
-        if (voided) {
-            createQuery(
-                // language=SQL
-                """
+    ).bindKotlin(key)
+        .bind("today", today)
+        .map { row -> Pair(row.mapColumn<UUID>("id"), row.mapColumn<Boolean>("voided")) }
+        .single()
+        .let { (id, voided) ->
+            if (voided) {
+                createQuery(
+                    // language=SQL
+                    """
 SELECT
     kvsr.*,
     ksr.id AS study_right_id,
@@ -89,12 +90,12 @@ JOIN daycare d ON ksr.unit_id = d.id
 JOIN person pr ON ksr.child_id = pr.id
 WHERE ksr.id = :id
         """
-            ).bind("id", id).bind("today", today)
-                .mapTo<KoskiVoidedDataRaw>().singleOrNull()?.let { it.toKoskiData(sourceSystem) }
-        } else {
-            createQuery(
-                // language=SQL
-                """
+                ).bind("id", id).bind("today", today)
+                    .mapTo<KoskiVoidedDataRaw>().singleOrNull()?.let { it.toKoskiData(sourceSystem) }
+            } else {
+                createQuery(
+                    // language=SQL
+                    """
 SELECT
     kasr.*,
     ksr.id AS study_right_id,
@@ -119,10 +120,10 @@ LEFT JOIN LATERAL (
 ) h ON ksr.type = 'PREPARATORY'
 WHERE ksr.id = :id
         """
-            ).bind("id", id).bind("today", today)
-                .mapTo<KoskiActiveDataRaw>().singleOrNull()?.let { it.toKoskiData(sourceSystem, today) }
+                ).bind("id", id).bind("today", today)
+                    .mapTo<KoskiActiveDataRaw>().singleOrNull()?.let { it.toKoskiData(sourceSystem, today) }
+            }
         }
-    }
 
 data class KoskiUploadResponse(
     val id: UUID,
@@ -132,7 +133,7 @@ data class KoskiUploadResponse(
     val payload: String
 )
 
-fun Handle.isPayloadChanged(key: KoskiStudyRightKey, payload: String): Boolean = createQuery(
+fun Database.Read.isPayloadChanged(key: KoskiStudyRightKey, payload: String): Boolean = createQuery(
     // language=SQL
     """
 SELECT ksr.payload != :payload::jsonb
@@ -147,7 +148,7 @@ USING (child_id, unit_id, type)
     .mapTo<Boolean>()
     .single()
 
-fun Handle.finishKoskiUpload(response: KoskiUploadResponse) = createUpdate(
+fun Database.Transaction.finishKoskiUpload(response: KoskiUploadResponse) = createUpdate(
     // language=SQL
     """
 UPDATE koski_study_right

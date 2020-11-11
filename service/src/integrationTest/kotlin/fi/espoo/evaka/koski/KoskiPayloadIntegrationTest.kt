@@ -10,7 +10,6 @@ import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.preschoolTerm2019
 import fi.espoo.evaka.resetDatabase
-import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.testChild_1
@@ -44,18 +43,18 @@ class KoskiPayloadIntegrationTest : FullApplicationTest() {
 
     @BeforeEach
     fun beforeEach() {
-        jdbi.handle { h ->
-            resetDatabase(h)
-            insertGeneralTestFixtures(h)
-            h.setUnitOids()
+        db.transaction { tx ->
+            tx.resetDatabase()
+            insertGeneralTestFixtures(tx.handle)
+            tx.setUnitOids()
         }
         koskiServer.clearData()
     }
 
     @Test
     fun `simple preschool placement in 2019`() {
-        jdbi.handle {
-            it.insertTestPlacement(
+        db.transaction {
+            it.handle.insertTestPlacement(
                 DevPlacement(
                     childId = testChild_1.id,
                     unitId = testDaycare.id,
@@ -68,7 +67,7 @@ class KoskiPayloadIntegrationTest : FullApplicationTest() {
 
         koskiTester.triggerUploads(today = preschoolTerm2019.end.plusDays(1))
 
-        val stored = jdbi.handle { it.getStoredResults() }.single()
+        val stored = db.read { it.getStoredResults() }.single()
         val expected =
             """
             {
@@ -152,8 +151,8 @@ class KoskiPayloadIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `child with two preschool placements in the past`() {
-        jdbi.handle {
-            it.insertTestPlacement(
+        db.transaction {
+            it.handle.insertTestPlacement(
                 DevPlacement(
                     childId = testChild_1.id,
                     unitId = testDaycare.id,
@@ -162,7 +161,7 @@ class KoskiPayloadIntegrationTest : FullApplicationTest() {
                     type = PlacementType.PRESCHOOL
                 )
             )
-            it.insertTestPlacement(
+            it.handle.insertTestPlacement(
                 DevPlacement(
                     childId = testChild_1.id,
                     unitId = testDaycare2.id,
@@ -174,7 +173,7 @@ class KoskiPayloadIntegrationTest : FullApplicationTest() {
         }
 
         koskiTester.triggerUploads(today = preschoolTerm2019.end.plusDays(1))
-        val stored = jdbi.handle { it.getStoredResults() }.let { studyRights ->
+        val stored = db.read { it.getStoredResults() }.let { studyRights ->
             Pair(
                 studyRights.single { it.unitId == testDaycare.id },
                 studyRights.single { it.unitId == testDaycare2.id }
@@ -335,7 +334,7 @@ class KoskiPayloadIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `two children with placements in the past`() {
-        jdbi.handle { h ->
+        db.transaction { tx ->
             listOf(
                 DevPlacement(
                     childId = testChild_2.id,
@@ -358,11 +357,11 @@ class KoskiPayloadIntegrationTest : FullApplicationTest() {
                     endDate = LocalDate.of(2019, 5, 31),
                     type = PlacementType.PRESCHOOL
                 )
-            ).forEach { h.insertTestPlacement(it) }
+            ).forEach { tx.handle.insertTestPlacement(it) }
         }
 
         koskiTester.triggerUploads(today = preschoolTerm2019.end.plusDays(1))
-        val stored = jdbi.handle { it.getStoredResults() }.let { studyRights ->
+        val stored = db.read { it.getStoredResults() }.let { studyRights ->
             Triple(
                 studyRights.single { it.childId == testChild_2.id },
                 studyRights.single { it.childId == testChild_1.id && it.unitId == testDaycare.id },
@@ -602,8 +601,8 @@ class KoskiPayloadIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `simple preparatory education placement in the past`() {
-        jdbi.handle {
-            it.insertTestPlacement(
+        db.transaction {
+            it.handle.insertTestPlacement(
                 DevPlacement(
                     childId = testChild_1.id,
                     unitId = testDaycare.id,
@@ -616,7 +615,7 @@ class KoskiPayloadIntegrationTest : FullApplicationTest() {
 
         koskiTester.triggerUploads(today = preschoolTerm2019.end.plusDays(1))
 
-        val stored = jdbi.handle { it.getStoredResults() }.single()
+        val stored = db.read { it.getStoredResults() }.single()
         val expected =
             """
             {
@@ -745,8 +744,8 @@ class KoskiPayloadIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `deleting all placements voids the study right`() {
-        val placementId = jdbi.handle {
-            it.insertTestPlacement(
+        val placementId = db.transaction {
+            it.handle.insertTestPlacement(
                 DevPlacement(
                     childId = testChild_1.id,
                     unitId = testDaycare.id,
@@ -759,12 +758,12 @@ class KoskiPayloadIntegrationTest : FullApplicationTest() {
 
         koskiTester.triggerUploads(today = preschoolTerm2019.end.plusDays(1))
 
-        jdbi.handle {
+        db.transaction {
             it.createUpdate("DELETE FROM placement WHERE id = :placementId").bind("placementId", placementId).execute()
         }
         koskiTester.triggerUploads(today = preschoolTerm2019.end.plusDays(2))
 
-        val stored = jdbi.handle { it.getStoredResults() }.single()
+        val stored = db.read { it.getStoredResults() }.single()
         val expected =
             """
             {

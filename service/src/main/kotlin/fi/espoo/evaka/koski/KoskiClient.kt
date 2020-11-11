@@ -20,7 +20,7 @@ import com.github.kittinunf.fuel.core.extensions.authentication
 import com.github.kittinunf.fuel.core.extensions.jsonBody
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.UploadToKoski
-import fi.espoo.evaka.shared.db.transaction
+import fi.espoo.evaka.shared.db.Database
 import mu.KotlinLogging
 import org.jdbi.v3.core.Jdbi
 import org.springframework.core.env.Environment
@@ -50,18 +50,18 @@ class KoskiClient(
         .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
 
     init {
-        asyncJobRunner?.uploadToKoski = { msg -> uploadToKoski(msg, today = LocalDate.now()) }
+        asyncJobRunner?.uploadToKoski = { msg -> uploadToKoski(Database(jdbi), msg, today = LocalDate.now()) }
     }
 
-    fun uploadToKoski(msg: UploadToKoski, today: LocalDate) = jdbi.transaction { h ->
+    fun uploadToKoski(db: Database, msg: UploadToKoski, today: LocalDate) = db.transaction { tx ->
         logger.info { "Koski upload ${msg.key}: starting" }
-        val data = h.beginKoskiUpload(sourceSystem, msg.key, today)
+        val data = tx.beginKoskiUpload(sourceSystem, msg.key, today)
         if (data == null) {
             logger.info { "Koski upload ${msg.key}: no data -> skipping" }
             return@transaction
         }
         val payload = objectMapper.writeValueAsString(data.oppija)
-        if (!h.isPayloadChanged(msg.key, payload)) {
+        if (!tx.isPayloadChanged(msg.key, payload)) {
             logger.info { "Koski upload ${msg.key} ${data.operation}: no change in payload -> skipping" }
         } else {
             val (_, _, result) = Fuel.request(
@@ -81,7 +81,7 @@ class KoskiClient(
                 logger.error(error) { "Koski upload ${msg.key} ${data.operation} failed: ${error.response}" }
                 throw error
             }
-            h.finishKoskiUpload(
+            tx.finishKoskiUpload(
                 KoskiUploadResponse(
                     id = response.opiskeluoikeudet[0].lähdejärjestelmänId.id,
                     studyRightOid = response.opiskeluoikeudet[0].oid,

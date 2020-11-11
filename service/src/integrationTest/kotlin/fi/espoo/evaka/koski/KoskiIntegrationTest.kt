@@ -17,6 +17,7 @@ import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.preschoolTerm2019
 import fi.espoo.evaka.preschoolTerm2020
 import fi.espoo.evaka.resetDatabase
+import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.db.transaction
 import fi.espoo.evaka.shared.dev.DevAssistanceAction
@@ -35,7 +36,6 @@ import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDaycare2
 import fi.espoo.evaka.testDecisionMaker_1
-import org.jdbi.v3.core.Handle
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
@@ -67,10 +67,10 @@ class KoskiIntegrationTest : FullApplicationTest() {
 
     @BeforeEach
     fun beforeEach() {
-        jdbi.handle { h ->
-            resetDatabase(h)
-            insertGeneralTestFixtures(h)
-            h.setUnitOids()
+        db.transaction { tx ->
+            tx.resetDatabase()
+            insertGeneralTestFixtures(tx.handle)
+            tx.setUnitOids()
         }
         koskiServer.clearData()
     }
@@ -79,7 +79,7 @@ class KoskiIntegrationTest : FullApplicationTest() {
     fun `won't send same data twice (input cache check)`() {
         insertPlacement()
 
-        fun assertSingleStudyRight() = jdbi.handle { it.getStoredResults() }.let {
+        fun assertSingleStudyRight() = db.read { it.getStoredResults() }.let {
             val stored = it.single()
             val sent = koskiServer.getStudyRights().entries.single()
             assertEquals(stored.studyRightOid, sent.key)
@@ -97,7 +97,7 @@ class KoskiIntegrationTest : FullApplicationTest() {
     fun `won't send same data twice (payload check)`() {
         insertPlacement()
 
-        fun assertSingleStudyRight() = jdbi.handle { it.getStoredResults() }.let {
+        fun assertSingleStudyRight() = db.read { it.getStoredResults() }.let {
             val stored = it.single()
             val sent = koskiServer.getStudyRights().entries.single()
             assertEquals(stored.studyRightOid, sent.key)
@@ -107,7 +107,7 @@ class KoskiIntegrationTest : FullApplicationTest() {
         koskiTester.triggerUploads(today = preschoolTerm2019.end.plusDays(1))
         assertSingleStudyRight()
 
-        jdbi.handle { it.clearKoskiInputCache() }
+        db.transaction { it.clearKoskiInputCache() }
 
         koskiTester.triggerUploads(today = preschoolTerm2019.end.plusDays(2))
         assertSingleStudyRight()
@@ -117,7 +117,7 @@ class KoskiIntegrationTest : FullApplicationTest() {
     fun `will send again if placement updated`() {
         val placementId = insertPlacement()
 
-        fun assertSingleStudyRight(version: Int) = jdbi.handle { it.getStoredResults() }.let {
+        fun assertSingleStudyRight(version: Int) = db.read { it.getStoredResults() }.let {
             val stored = it.single()
             val sent = koskiServer.getStudyRights().entries.single()
             assertEquals(stored.studyRightOid, sent.key)
@@ -274,7 +274,7 @@ class KoskiIntegrationTest : FullApplicationTest() {
         )
 
         koskiTester.triggerUploads(today = preschoolTerm2019.end.plusDays(1))
-        val stored = jdbi.handle { it.getStoredResults() }.let { studyRights ->
+        val stored = db.read { it.getStoredResults() }.let { studyRights ->
             listOf(
                 studyRights.single { it.unitId == testDaycare.id },
                 studyRights.single { it.unitId == testDaycare2.id }
@@ -305,22 +305,22 @@ class KoskiIntegrationTest : FullApplicationTest() {
         val today = preschoolTerm2019.end
         insertPlacement()
 
-        val searchByExistingPerson = jdbi.handle {
+        val searchByExistingPerson = db.read {
             it.getPendingStudyRights(today, KoskiSearchParams(personIds = listOf(testChild_1.id)))
         }
         assertEquals(1, searchByExistingPerson.size)
 
-        val searchByRandomPerson = jdbi.handle {
+        val searchByRandomPerson = db.read {
             it.getPendingStudyRights(today, KoskiSearchParams(personIds = listOf(UUID.randomUUID())))
         }
         assertEquals(0, searchByRandomPerson.size)
 
-        val searchByExistingDaycare = jdbi.handle {
+        val searchByExistingDaycare = db.read {
             it.getPendingStudyRights(today, KoskiSearchParams(daycareIds = listOf(testDaycare.id)))
         }
         assertEquals(1, searchByExistingDaycare.size)
 
-        val searchByRandomDaycare = jdbi.handle {
+        val searchByRandomDaycare = db.read {
             it.getPendingStudyRights(today, KoskiSearchParams(daycareIds = listOf(UUID.randomUUID())))
         }
         assertEquals(0, searchByRandomDaycare.size)
@@ -538,7 +538,7 @@ class KoskiIntegrationTest : FullApplicationTest() {
         val today = preschoolTerm2019.end.plusDays(1)
         koskiTester.triggerUploads(today)
 
-        val stored = jdbi.handle { it.getStoredResults() }.single()
+        val stored = db.read { it.getStoredResults() }.single()
         assertNull(stored.studyRightOid)
         assertNull(stored.personOid)
         assertEquals("{}", stored.payload)
@@ -546,7 +546,7 @@ class KoskiIntegrationTest : FullApplicationTest() {
         assertTrue(koskiServer.getStudyRights().isEmpty())
 
         // The study right should now be ignored by the diffing mechanism, so it won't be tried again unless input data changes
-        assertTrue(jdbi.handle { it.getPendingStudyRights(today) }.isEmpty())
+        assertTrue(db.read { it.getPendingStudyRights(today) }.isEmpty())
     }
 
     @Test
@@ -586,11 +586,11 @@ class KoskiIntegrationTest : FullApplicationTest() {
         koskiTester.triggerUploads(today)
 
         val oldOid = koskiServer.getStudyRights().keys.single()
-        jdbi.handle { it.createUpdate("DELETE FROM placement").execute() }
+        db.transaction { it.createUpdate("DELETE FROM placement").execute() }
         koskiTester.triggerUploads(today.plusDays(1))
         assertTrue(koskiServer.getStudyRights().isEmpty())
 
-        jdbi.handle { it.clearKoskiInputCache() }
+        db.transaction { it.clearKoskiInputCache() }
         koskiTester.triggerUploads(today.plusDays(2))
         assertTrue(koskiServer.getStudyRights().isEmpty())
 
@@ -767,7 +767,7 @@ class KoskiIntegrationTest : FullApplicationTest() {
         }
 }
 
-private fun Handle.clearKoskiInputCache() = createUpdate("UPDATE koski_study_right SET input_data = NULL").execute()
+private fun Database.Transaction.clearKoskiInputCache() = createUpdate("UPDATE koski_study_right SET input_data = NULL").execute()
 
 private fun testPeriod(offsets: Pair<Long, Long?>) = ClosedPeriod(
     preschoolTerm2019.start.plusDays(offsets.first),

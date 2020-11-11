@@ -11,12 +11,9 @@ import org.junit.jupiter.api.assertThrows
 import java.time.LocalDate
 
 class DatabaseTest : PureJdbiTest() {
-    private lateinit var db: Database
-
     @BeforeEach
     fun beforeEach() {
-        db = Database(jdbi)
-        jdbi.handle { resetDatabase(it) }
+        db.transaction { it.resetDatabase() }
     }
 
     @Test

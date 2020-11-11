@@ -7,6 +7,7 @@ package fi.espoo.evaka.koski
 import fi.espoo.evaka.invoicing.controller.parseUUID
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.UploadToKoski
+import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.transaction
 import mu.KotlinLogging
 import org.jdbi.v3.core.Jdbi
@@ -34,14 +35,14 @@ class KoskiUpdateService(
     ) {
         val isEnabled: Boolean = env.getRequiredProperty("fi.espoo.integration.koski.enabled", Boolean::class.java)
         if (isEnabled) {
-            jdbi.transaction { h ->
+            Database(jdbi).transaction { tx ->
                 val params = KoskiSearchParams(
                     personIds = personIds?.split(",")?.map(::parseUUID) ?: listOf(),
                     daycareIds = daycareIds?.split(",")?.map(::parseUUID) ?: listOf()
                 )
-                val requests = h.getPendingStudyRights(LocalDate.now(), params)
+                val requests = tx.getPendingStudyRights(LocalDate.now(), params)
                 logger.info { "Scheduling ${requests.size} upload requests" }
-                asyncJobRunner.plan(h, requests.map { UploadToKoski(it) }, retryCount = 1)
+                asyncJobRunner.plan(tx, requests.map { UploadToKoski(it) }, retryCount = 1)
             }
             asyncJobRunner.scheduleImmediateRun()
         }

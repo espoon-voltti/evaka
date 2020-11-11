@@ -24,11 +24,8 @@ import java.util.UUID
 class AsyncJobQueriesTest : PureJdbiTest() {
     private val user = AuthenticatedUser(UUID.randomUUID(), setOf())
 
-    private lateinit var db: Database
-
     @BeforeEach
     fun beforeEach() {
-        db = Database(jdbi)
         db.transaction { it.execute("TRUNCATE async_job") }
     }
 
