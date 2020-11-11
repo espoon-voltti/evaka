@@ -303,20 +303,20 @@ export default function App() {
               title={i18n.titles.reports}
             />
             {featureFlags.voucherValueDecisionsPage && (
-              <>
-                <RouteWithTitle
-                  exact
-                  path="/reports/voucher-service-providers"
-                  component={ensureAuthenticated(VoucherServiceProviders)}
-                  title={i18n.titles.reports}
-                />
-                <RouteWithTitle
-                  exact
-                  path="/reports/voucher-service-provider-unit/:unitId"
-                  component={ensureAuthenticated(VoucherServiceProviderUnit)}
-                  title={i18n.titles.reports}
-                />
-              </>
+              <RouteWithTitle
+                exact
+                path="/reports/voucher-service-providers"
+                component={ensureAuthenticated(VoucherServiceProviders)}
+                title={i18n.titles.reports}
+              />
+            )}
+            {featureFlags.voucherValueDecisionsPage && (
+              <RouteWithTitle
+                exact
+                path="/reports/voucher-service-provider-unit/:unitId"
+                component={ensureAuthenticated(VoucherServiceProviderUnit)}
+                title={i18n.titles.reports}
+              />
             )}
             <RouteWithTitle
               exact
