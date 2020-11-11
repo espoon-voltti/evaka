@@ -38,11 +38,11 @@ fun getDobFromSsn(ssn: String): LocalDate {
 }
 
 fun getYearFromSSN(ssn: String): Int {
-    val century = when {
-        ssn.indexOf('A') == 6 -> 2000
-        ssn.indexOf('-') == 6 -> 1900
-        ssn.indexOf('+') == 6 -> 1800
-        else -> throw java.lang.IllegalArgumentException("Invalid century in SSN [$ssn]")
+    val century = when (val c = ssn[6]) {
+        'A' -> 2000
+        '-' -> 1900
+        '+' -> 1800
+        else -> throw java.lang.IllegalArgumentException("Invalid century in SSN ('$c')")
     }
     return century + ssn.substring(4, 6).toInt()
 }
