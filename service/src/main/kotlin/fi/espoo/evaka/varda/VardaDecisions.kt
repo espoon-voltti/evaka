@@ -136,7 +136,7 @@ SELECT
     vd.varda_decision_id,
     d.id AS evaka_decision_id,
     vc.varda_child_id,
-    least(d.application_date, first_placement.start_date) AS application_date,
+    least(d.start_date, d.application_date, first_placement.start_date) AS application_date,
     least(d.start_date, first_placement.start_date) AS start_date,
     greatest(d.end_date, last_placement.end_date) AS end_date,
     d.urgent,

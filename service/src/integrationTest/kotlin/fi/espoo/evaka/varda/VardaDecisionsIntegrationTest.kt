@@ -463,6 +463,23 @@ class VardaDecisionsIntegrationTest : FullApplicationTest() {
     }
 
     @Test
+    fun `application date is never after decision start date`() {
+        jdbi.handle { h ->
+            val sentDate = LocalDate.of(2019, 6, 1)
+            val period = ClosedPeriod(sentDate.minusMonths(1), sentDate.plusMonths(1))
+            insertDecisionWithApplication(h, testChild_1, period, sentDate = sentDate)
+            insertServiceNeed(h, testChild_1.id, period)
+            insertVardaChild(h, testChild_1.id)
+
+            updateDecisions(h, vardaClient)
+
+            val decision = mockEndpoint.decisions[0]
+            assertNotEquals(sentDate, decision.applicationDate)
+            assertEquals(period.start, decision.applicationDate)
+        }
+    }
+
+    @Test
     fun `PAOS daycare decision is sent with correct data`() {
         jdbi.handle { h ->
             val sentDate = LocalDate.of(2019, 6, 1)
