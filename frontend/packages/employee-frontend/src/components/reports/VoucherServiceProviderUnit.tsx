@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useEffect, useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { Link, useParams } from 'react-router-dom'
 import ReactSelect from 'react-select'
 import styled from 'styled-components'
 import { range } from 'lodash'
@@ -198,7 +198,13 @@ function VoucherServiceProviderUnit() {
                 {rows.data.map((row: VoucherServiceProviderUnitRow) => (
                   <Tr key={`${row.childId}`}>
                     <Td>
-                      {formatName(row.childFirstName, row.childLastName, i18n)}{' '}
+                      <Link to={`/child-information/${row.childId}`}>
+                        {formatName(
+                          row.childFirstName,
+                          row.childLastName,
+                          i18n
+                        )}
+                      </Link>
                       <br />
                       {row.childDateOfBirth.format()}
                     </Td>
