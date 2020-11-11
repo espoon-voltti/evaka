@@ -13,12 +13,15 @@ import fi.espoo.evaka.decision.DecisionType.PRESCHOOL_DAYCARE
 import fi.espoo.evaka.shared.db.getEnum
 import fi.espoo.evaka.shared.db.getUUID
 import fi.espoo.evaka.varda.integration.VardaClient
+import mu.KotlinLogging
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.statement.StatementContext
 import java.sql.ResultSet
 import java.time.Instant
 import java.time.LocalDate
 import java.util.UUID
+
+private val logger = KotlinLogging.logger { }
 
 fun updateDecisions(h: Handle, client: VardaClient) {
     removeDeletedDecisions(h, client)
@@ -40,34 +43,38 @@ fun sendNewDecisions(h: Handle, client: VardaClient) {
     val newDerivedDecisions = getNewDerivedDecisions(h, client.getChildUrl)
 
     newDecisions.forEach { (decisionId, newDecision) ->
-        client.createDecision(newDecision)?.let { (vardaDecisionId) ->
-            insertVardaDecision(
-                h,
-                VardaDecisionTableRow(
-                    id = UUID.randomUUID(),
-                    vardaDecisionId = vardaDecisionId,
-                    evakaDecisionId = decisionId,
-                    evakaPlacementId = null,
-                    createdAt = Instant.now(),
-                    uploadedAt = Instant.now()
+        if (validateDecision(decisionId, newDecision)) {
+            client.createDecision(newDecision)?.let { (vardaDecisionId) ->
+                insertVardaDecision(
+                    h,
+                    VardaDecisionTableRow(
+                        id = UUID.randomUUID(),
+                        vardaDecisionId = vardaDecisionId,
+                        evakaDecisionId = decisionId,
+                        evakaPlacementId = null,
+                        createdAt = Instant.now(),
+                        uploadedAt = Instant.now()
+                    )
                 )
-            )
+            }
         }
     }
 
     newDerivedDecisions.forEach { (placementId, newDecision) ->
-        client.createDecision(newDecision)?.let { (vardaDecisionId) ->
-            insertVardaDecision(
-                h,
-                VardaDecisionTableRow(
-                    id = UUID.randomUUID(),
-                    vardaDecisionId = vardaDecisionId,
-                    evakaDecisionId = null,
-                    evakaPlacementId = placementId,
-                    createdAt = Instant.now(),
-                    uploadedAt = Instant.now()
+        if (validateDecision(placementId, newDecision)) {
+            client.createDecision(newDecision)?.let { (vardaDecisionId) ->
+                insertVardaDecision(
+                    h,
+                    VardaDecisionTableRow(
+                        id = UUID.randomUUID(),
+                        vardaDecisionId = vardaDecisionId,
+                        evakaDecisionId = null,
+                        evakaPlacementId = placementId,
+                        createdAt = Instant.now(),
+                        uploadedAt = Instant.now()
+                    )
                 )
-            )
+            }
         }
     }
 }
@@ -76,8 +83,10 @@ fun sendUpdatedDecisions(h: Handle, client: VardaClient) {
     val updatedDecisions = getUpdatedDecisions(h, client.getChildUrl)
     val updatedDerivedDecisions = getUpdatedDerivedDecisions(h, client.getChildUrl)
     (updatedDecisions + updatedDerivedDecisions).forEach { (id, vardaDecisionId, updatedDecision) ->
-        client.updateDecision(vardaDecisionId, updatedDecision)?.let {
-            updateDecisionUploadTimestamp(h, id)
+        if (validateDecision(id, updatedDecision)) {
+            client.updateDecision(vardaDecisionId, updatedDecision)?.let {
+                updateDecisionUploadTimestamp(h, id)
+            }
         }
     }
 }
@@ -350,6 +359,14 @@ AND deleted_at IS NULL
     )
         .mapTo(Long::class.java)
         .toList()
+}
+
+private fun validateDecision(id: UUID, decision: VardaDecision): Boolean {
+    if (decision.hoursPerWeek < 1.0) {
+        logger.info { "Won't create Varda decision (decision/placement id: $id, reason: hours per week < 1)" }
+        return false
+    }
+    return true
 }
 
 @JsonIgnoreProperties(ignoreUnknown = true)

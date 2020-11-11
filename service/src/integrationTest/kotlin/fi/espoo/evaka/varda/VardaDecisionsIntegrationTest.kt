@@ -166,6 +166,21 @@ class VardaDecisionsIntegrationTest : FullApplicationTest() {
     }
 
     @Test
+    fun `daycare decision is not sent when hours per week is zero`() {
+        jdbi.handle { h ->
+            val period = ClosedPeriod(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))
+            insertDecisionWithApplication(h, testChild_1, period)
+            insertServiceNeed(h, testChild_1.id, period, 0.0)
+            insertVardaChild(h, testChild_1.id)
+
+            updateDecisions(h, vardaClient)
+
+            val result = getVardaDecisions(h)
+            assertEquals(0, result.size)
+        }
+    }
+
+    @Test
     fun `a daycare decision is not sent when the child has not been imported to varda yet`() {
         jdbi.handle { h ->
             val period = ClosedPeriod(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))
