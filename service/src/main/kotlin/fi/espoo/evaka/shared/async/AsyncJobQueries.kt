@@ -4,34 +4,32 @@
 
 package fi.espoo.evaka.shared.async
 
-import org.jdbi.v3.core.Handle
+import fi.espoo.evaka.shared.db.Database
 import org.jdbi.v3.core.kotlin.bindKotlin
 import org.jdbi.v3.core.kotlin.mapTo
 import org.jdbi.v3.core.qualifier.QualifiedType
 import org.jdbi.v3.json.Json
 import java.util.UUID
 
-fun <T : AsyncJobPayload> insertJob(h: Handle, jobParams: JobParams<T>): UUID {
-    return h.createUpdate(
-        // language=SQL
-        """
+fun <T : AsyncJobPayload> Database.Transaction.insertJob(jobParams: JobParams<T>): UUID = createUpdate(
+    // language=SQL
+    """
 INSERT INTO async_job (type, retry_count, retry_interval, run_at, payload)
 VALUES (:jobType, :retryCount, :retryInterval, :runAt, :payload)
 RETURNING id
 """
-    )
-        .bind("jobType", jobParams.payload.asyncJobType)
-        .bind("retryCount", jobParams.retryCount)
-        .bind("retryInterval", jobParams.retryInterval)
-        .bind("runAt", jobParams.runAt)
-        .bindByType("payload", jobParams.payload, QualifiedType.of(jobParams.payload.javaClass).with(Json::class.java))
-        .executeAndReturnGeneratedKeys()
-        .mapTo(UUID::class.java)
-        .one()
-}
+)
+    .bind("jobType", jobParams.payload.asyncJobType)
+    .bind("retryCount", jobParams.retryCount)
+    .bind("retryInterval", jobParams.retryInterval)
+    .bind("runAt", jobParams.runAt)
+    .bindByType("payload", jobParams.payload, QualifiedType.of(jobParams.payload.javaClass).with(Json::class.java))
+    .executeAndReturnGeneratedKeys()
+    .mapTo(UUID::class.java)
+    .one()
 
-fun getPendingJobCount(h: Handle, jobTypes: Collection<AsyncJobType> = AsyncJobType.values().toList()): Int {
-    return h.createQuery(
+fun Database.Read.getPendingJobCount(jobTypes: Collection<AsyncJobType> = AsyncJobType.values().toList()): Int =
+    createQuery(
         // language=SQL
         """
 SELECT count(*)
@@ -42,10 +40,9 @@ AND type = ANY(:jobTypes)
     ).bind("jobTypes", jobTypes.toTypedArray())
         .mapTo<Int>()
         .one()
-}
 
-fun claimJob(h: Handle, jobTypes: Collection<AsyncJobType> = AsyncJobType.values().toList()): ClaimedJobRef? {
-    return h.createUpdate(
+fun Database.Transaction.claimJob(jobTypes: Collection<AsyncJobType> = AsyncJobType.values().toList()): ClaimedJobRef? =
+    createUpdate(
         // language=SQL
         """
 WITH claimed_job AS (
@@ -73,12 +70,10 @@ RETURNING id AS jobId, type AS jobType, txid_current() AS txId
         .mapTo<ClaimedJobRef>()
         .findOne()
         .orElse(null)
-}
 
-fun <T : AsyncJobPayload> startJob(h: Handle, job: ClaimedJobRef, payloadClass: Class<T>): T? {
-    return h.createUpdate(
-        // language=SQL
-        """
+fun <T : AsyncJobPayload> Database.Transaction.startJob(job: ClaimedJobRef, payloadClass: Class<T>): T? = createUpdate(
+    // language=SQL
+    """
 WITH started_job AS (
   SELECT id
   FROM async_job
@@ -91,21 +86,18 @@ SET started_at = clock_timestamp()
 WHERE id = (SELECT id FROM started_job)
 RETURNING payload
 """
-    ).bindKotlin(job)
-        .executeAndReturnGeneratedKeys()
-        .map { row -> row.getColumn("payload", QualifiedType.of(payloadClass).with(Json::class.java)) }
-        .findOne()
-        .orElse(null)
-}
+).bindKotlin(job)
+    .executeAndReturnGeneratedKeys()
+    .map { row -> row.getColumn("payload", QualifiedType.of(payloadClass).with(Json::class.java)) }
+    .findOne()
+    .orElse(null)
 
-fun completeJob(h: Handle, job: ClaimedJobRef) {
-    h.createUpdate(
-        // language=SQL
-        """
+fun Database.Transaction.completeJob(job: ClaimedJobRef) = createUpdate(
+    // language=SQL
+    """
 UPDATE async_job
 SET completed_at = clock_timestamp()
 WHERE id = :jobId
 """
-    ).bindKotlin(job)
-        .execute()
-}
+).bindKotlin(job)
+    .execute()

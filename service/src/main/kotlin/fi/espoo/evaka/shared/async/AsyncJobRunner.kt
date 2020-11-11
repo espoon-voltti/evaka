@@ -6,7 +6,7 @@ package fi.espoo.evaka.shared.async
 
 import fi.espoo.evaka.application.utils.exhaust
 import fi.espoo.evaka.dvv.DvvModificationsRefresh
-import fi.espoo.evaka.shared.db.handle
+import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.transaction
 import fi.espoo.voltti.logging.MdcKey
 import mu.KotlinLogging
@@ -91,10 +91,17 @@ class AsyncJobRunner(
         retryCount: Int = defaultRetryCount,
         retryInterval: Duration = defaultRetryInterval,
         runAt: Instant = Instant.now()
+    ) = h.transaction { plan(Database.Transaction.wrap(it), payloads, retryCount, retryInterval, runAt) }
+
+    fun plan(
+        tx: Database.Transaction,
+        payloads: Iterable<AsyncJobPayload>,
+        retryCount: Int = defaultRetryCount,
+        retryInterval: Duration = defaultRetryInterval,
+        runAt: Instant = Instant.now()
     ) {
         payloads.forEach { payload ->
-            insertJob(
-                h,
+            tx.insertJob(
                 JobParams(
                     payload = payload,
                     retryCount = retryCount,
@@ -139,7 +146,7 @@ class AsyncJobRunner(
     fun getRunningCount(): Int = runningCount.get()
 
     fun getPendingJobCount(types: Collection<AsyncJobType> = AsyncJobType.values().toList()): Int =
-        jdbi.handle { h -> getPendingJobCount(h, types) }
+        Database(jdbi).read { it.getPendingJobCount(types) }
 
     fun waitUntilNoRunningJobs(timeout: Duration = Duration.ofSeconds(10)) {
         val start = Instant.now()
@@ -150,39 +157,50 @@ class AsyncJobRunner(
         error { "Timed out while waiting for running jobs to finish" }
     }
 
-    private fun runPendingJobs(maxCount: Int) {
+    private fun runPendingJobs(maxCount: Int) = Database(jdbi).connect { db ->
         var remaining = maxCount
         do {
-            val job = jdbi.transaction { tx -> claimJob(tx) }?.also(this::runPendingJob)
+            val job = db.transaction { it.claimJob() }
+            if (job != null) {
+                runPendingJob(db, job)
+            }
             remaining -= 1
         } while (job != null && remaining > 0)
     }
 
-    private fun runPendingJob(job: ClaimedJobRef) {
+    private fun runPendingJob(db: Database.Connection, job: ClaimedJobRef) {
         try {
             MdcKey.TRACE_ID.set(job.jobId.toString())
             MdcKey.SPAN_ID.set(job.jobId.toString())
             runningCount.incrementAndGet()
             logger.info { "Running async job $job" }
-            val completed = when (job.jobType) {
-                AsyncJobType.PLACEMENT_PLAN_APPLIED -> runJob(job, this.notifyPlacementPlanApplied)
-                AsyncJobType.SERVICE_NEED_UPDATED -> runJob(job, this.notifyServiceNeedUpdated)
-                AsyncJobType.FAMILY_UPDATED -> runJob(job, this.notifyFamilyUpdated)
-                AsyncJobType.FEE_ALTERATION_UPDATED -> runJob(job, this.notifyFeeAlterationUpdated)
-                AsyncJobType.INCOME_UPDATED -> runJob(job, this.notifyIncomeUpdated)
-                AsyncJobType.DECISION_CREATED -> runJob(job, this.notifyDecisionCreated)
-                AsyncJobType.SEND_DECISION -> runJob(job, this.sendDecision)
-                AsyncJobType.FEE_DECISION_APPROVED -> runJob(job, this.notifyFeeDecisionApproved)
-                AsyncJobType.FEE_DECISION_PDF_GENERATED -> runJob(job, this.notifyFeeDecisionPdfGenerated)
-                AsyncJobType.VOUCHER_VALUE_DECISION_APPROVED -> runJob(job, this.notifyVoucherValueDecisionApproved)
-                AsyncJobType.VOUCHER_VALUE_DECISION_PDF_GENERATED ->
-                    runJob(job, this.notifyVoucherValueDecisionPdfGenerated)
-                AsyncJobType.INITIALIZE_FAMILY_FROM_APPLICATION -> runJob(job, this.initializeFamilyFromApplication)
-                AsyncJobType.VTJ_REFRESH -> runJob(job, this.vtjRefresh)
-                AsyncJobType.DVV_MODIFICATIONS_REFRESH -> runJob(job, this.dvvModificationsRefresh)
-                AsyncJobType.UPLOAD_TO_KOSKI -> runJob(job, this.uploadToKoski)
-                AsyncJobType.SEND_APPLICATION_EMAIL -> runJob(job, this.sendApplicationEmail)
-            }.exhaust()
+            val completed = db.transaction {
+                when (job.jobType) {
+                    AsyncJobType.PLACEMENT_PLAN_APPLIED -> it.runJob(job, this.notifyPlacementPlanApplied)
+                    AsyncJobType.SERVICE_NEED_UPDATED -> it.runJob(job, this.notifyServiceNeedUpdated)
+                    AsyncJobType.FAMILY_UPDATED -> it.runJob(job, this.notifyFamilyUpdated)
+                    AsyncJobType.FEE_ALTERATION_UPDATED -> it.runJob(job, this.notifyFeeAlterationUpdated)
+                    AsyncJobType.INCOME_UPDATED -> it.runJob(job, this.notifyIncomeUpdated)
+                    AsyncJobType.DECISION_CREATED -> it.runJob(job, this.notifyDecisionCreated)
+                    AsyncJobType.SEND_DECISION -> it.runJob(job, this.sendDecision)
+                    AsyncJobType.FEE_DECISION_APPROVED -> it.runJob(job, this.notifyFeeDecisionApproved)
+                    AsyncJobType.FEE_DECISION_PDF_GENERATED -> it.runJob(job, this.notifyFeeDecisionPdfGenerated)
+                    AsyncJobType.VOUCHER_VALUE_DECISION_APPROVED -> it.runJob(
+                        job,
+                        this.notifyVoucherValueDecisionApproved
+                    )
+                    AsyncJobType.VOUCHER_VALUE_DECISION_PDF_GENERATED ->
+                        it.runJob(job, this.notifyVoucherValueDecisionPdfGenerated)
+                    AsyncJobType.INITIALIZE_FAMILY_FROM_APPLICATION -> it.runJob(
+                        job,
+                        this.initializeFamilyFromApplication
+                    )
+                    AsyncJobType.VTJ_REFRESH -> it.runJob(job, this.vtjRefresh)
+                    AsyncJobType.DVV_MODIFICATIONS_REFRESH -> it.runJob(job, this.dvvModificationsRefresh)
+                    AsyncJobType.UPLOAD_TO_KOSKI -> it.runJob(job, this.uploadToKoski)
+                    AsyncJobType.SEND_APPLICATION_EMAIL -> it.runJob(job, this.sendApplicationEmail)
+                }.exhaust()
+            }
             if (completed) {
                 logger.info { "Completed async job $job" }
             } else {
@@ -199,19 +217,20 @@ class AsyncJobRunner(
         }
     }
 
-    private inline fun <reified T : AsyncJobPayload> runJob(job: ClaimedJobRef, crossinline f: (msg: T) -> Unit) =
-        jdbi.transaction { h ->
-            startJob(h, job, T::class.java)?.let { msg ->
-                msg.user?.let { MdcKey.USER_ID.set(it.id.toString()) }
-                f(msg)
-                completeJob(h, job)
-                true
-            } ?: false
-        }
-
     override fun close() {
         this.executor.shutdown()
         this.executor.awaitTermination(10, TimeUnit.SECONDS)
         this.executor.shutdownNow()
     }
+}
+
+private inline fun <reified T : AsyncJobPayload> Database.Transaction.runJob(
+    job: ClaimedJobRef,
+    crossinline f: (msg: T) -> Unit
+): Boolean {
+    val msg = startJob(job, T::class.java) ?: return false
+    msg.user?.let { MdcKey.USER_ID.set(it.id.toString()) }
+    f(msg)
+    completeJob(job)
+    return true
 }

@@ -11,7 +11,7 @@ import org.jdbi.v3.core.statement.PreparedBatch
 import org.jdbi.v3.core.statement.Query
 import org.jdbi.v3.core.statement.Update
 
-private data class ThreadId(val id: Long = Thread.currentThread().id) {
+internal data class ThreadId(val id: Long = Thread.currentThread().id) {
     fun assertCurrentThread() = assert(Thread.currentThread().id == id) { "Database accessed from the wrong thread" }
 }
 
@@ -35,7 +35,7 @@ class Database(private val jdbi: Jdbi) {
         try {
             connected = true
             return jdbi.open().use {
-                f(Connection(it))
+                f(Connection(threadId, it))
             }
         } finally {
             connected = false
@@ -59,7 +59,7 @@ class Database(private val jdbi: Jdbi) {
     /**
      * A single database connection tied to a single thread
      */
-    inner class Connection internal constructor(private val handle: Handle) {
+    class Connection internal constructor(private val threadId: ThreadId, private val handle: Handle) {
         /**
          * Enters read mode, runs the given function, and exits read mode regardless of any exceptions the function may have thrown.
          *
@@ -87,6 +87,19 @@ class Database(private val jdbi: Jdbi) {
             check(!handle.isInTransaction) { "Already in a transaction" }
             return handle.transaction { f(Transaction(it)) }
         }
+
+        companion object {
+            /**
+             * Wraps an existing raw JDBI handle into a `Connection` object.
+             *
+             * This is mostly intended for tests where the main API can't be used. Use *very* sparingly!
+             */
+            fun wrap(handle: Handle): Connection {
+                check(!handle.isInTransaction) { "Wrapped handle must not have an active transaction" }
+                check(!handle.isReadOnly) { "Wrapped handle must not be read-only" }
+                return Connection(ThreadId(), handle)
+            }
+        }
     }
 
     /**
@@ -94,8 +107,21 @@ class Database(private val jdbi: Jdbi) {
      *
      * Tied to the thread that created it, and throws `IllegalStateException` if used in the wrong thread.
      */
-    open inner class Read internal constructor(val handle: Handle) {
+    open class Read internal constructor(val handle: Handle) {
         fun createQuery(@Language("sql") sql: String): Query = handle.createQuery(sql)
+
+        companion object {
+            /**
+             * Wraps an existing raw JDBI handle into a `Read` object.
+             *
+             * This is mostly intended for tests where the main API can't be used. Use *very* sparingly!
+             */
+            fun wrap(handle: Handle): Read {
+                check(handle.isInTransaction) { "Wrapped handle must have an active transaction" }
+                check(handle.isReadOnly) { "Wrapped handle must be read-only" }
+                return Read(handle)
+            }
+        }
     }
 
     /**
@@ -103,7 +129,7 @@ class Database(private val jdbi: Jdbi) {
      *
      * Tied to the thread that created it, and throws `IllegalStateException` if used in the wrong thread.
      */
-    inner class Transaction internal constructor(handle: Handle) : Database.Read(handle) {
+    class Transaction internal constructor(handle: Handle) : Database.Read(handle) {
         private var savepointId: Long = 0
 
         fun nextSavepoint(): String = "savepoint-${savepointId++}"
@@ -126,6 +152,19 @@ class Database(private val jdbi: Jdbi) {
             }
             handle.release(savepointName)
             return result
+        }
+
+        companion object {
+            /**
+             * Wraps an existing raw JDBI handle into a `Transaction` object.
+             *
+             * This is mostly intended for tests where the main API can't be used. Use *very* sparingly!
+             */
+            fun wrap(handle: Handle): Transaction {
+                check(handle.isInTransaction) { "Wrapped handle must have an active transaction" }
+                check(!handle.isReadOnly) { "Wrapped handle must not be read-only" }
+                return Transaction(handle)
+            }
         }
     }
 }

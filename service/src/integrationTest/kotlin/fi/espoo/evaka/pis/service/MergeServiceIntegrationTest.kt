@@ -28,6 +28,7 @@ import fi.espoo.evaka.shared.dev.insertTestPerson
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.dev.insertTestServiceNeed
 import fi.espoo.evaka.testDaycare
+import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.statement.UnableToExecuteStatementException
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
@@ -108,7 +109,7 @@ class MergeServiceIntegrationTest : PureJdbiTest() {
         assertEquals(1, countAfter)
 
         verify(asyncJobRunnerMock).plan(
-            any(), eq(listOf(NotifyFamilyUpdated(adultId, validFrom, validTo))), any(), any(), any()
+            any<Handle>(), eq(listOf(NotifyFamilyUpdated(adultId, validFrom, validTo))), any(), any(), any()
         )
     }
 
@@ -160,7 +161,7 @@ class MergeServiceIntegrationTest : PureJdbiTest() {
         mergeService.mergePeople(childId, childIdDuplicate)
 
         verify(asyncJobRunnerMock).plan(
-            any(),
+            any<Handle>(),
             eq(listOf(NotifyFamilyUpdated(adultId, placementStart, placementEnd))), any(), any(), any()
         )
     }
