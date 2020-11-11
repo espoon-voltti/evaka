@@ -168,6 +168,7 @@ private fun getServiceVoucherValues(
             part.voucher_value AS service_voucher_value,
             part.co_payment AS service_voucher_co_payment,
             part.service_coefficient AS service_voucher_service_coefficient,
+            part.hours_per_week service_voucher_hours_per_week
         FROM voucher_value_decision decision
         JOIN voucher_value_decision_part part ON decision.id = part.voucher_value_decision_id
         JOIN person child ON part.child = child.id

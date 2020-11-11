@@ -337,6 +337,7 @@ export interface VoucherServiceProviderUnitRow {
   serviceVoucherValue: number
   serviceVoucherCoPayment: number
   serviceVoucherServiceCoefficient: number
+  serviceVoucherHoursPerWeek: number
   unitId: UUID
   unitName: string
   areaId: UUID

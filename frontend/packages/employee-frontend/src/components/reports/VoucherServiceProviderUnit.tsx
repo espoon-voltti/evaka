@@ -69,6 +69,9 @@ function VoucherServiceProviderUnit() {
     label: num
   }))
 
+  const formatServiceNeed = (amount: number) =>
+    `${amount} ${i18n.reports.voucherServiceProviderUnit.serviceNeedType}`
+
   return (
     <Container>
       <ReturnButton />
@@ -187,9 +190,7 @@ function VoucherServiceProviderUnit() {
                     }
                   </Th>
                   <Th>{i18n.reports.voucherServiceProviderUnit.coefficient}</Th>
-                  <Th>
-                    {i18n.reports.voucherServiceProviderUnit.serviceNeedDays}
-                  </Th>
+                  <Th>{i18n.reports.voucherServiceProviderUnit.serviceNeed}</Th>
                   <Th>{i18n.reports.voucherServiceProviderUnit.partTime}</Th>
                 </Tr>
               </Thead>
@@ -222,6 +223,7 @@ function VoucherServiceProviderUnit() {
                     <Td>{formatCents(row.serviceVoucherCoPayment)}</Td>
                     <Td>{formatCents(row.derivatives.realizedAmount)}</Td>
                     <Td>{row.serviceVoucherServiceCoefficient}</Td>
+                    <Td>{formatServiceNeed(row.serviceVoucherHoursPerWeek)}</Td>
                     <Td></Td>
                   </Tr>
                 ))}
