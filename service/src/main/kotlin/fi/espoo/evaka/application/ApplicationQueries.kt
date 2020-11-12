@@ -235,13 +235,13 @@ fun fetchApplicationSummaries(
             ) AS preferredUnits
             FROM application_form af
         ) f ON f.application_id = a.id AND f.latest IS TRUE
-        JOIN daycare d on (f.document -> 'apply' -> 'preferredUnits' ->> 0)::uuid = d.id
-        JOIN care_area ca on d.care_area_id = ca.id
         JOIN person child ON child.id = a.child_id
         LEFT JOIN placement_plan pp ON pp.application_id = a.id AND a.status = 'WAITING_UNIT_CONFIRMATION'::application_status_type
         LEFT JOIN  (
-            SELECT placement_plan.application_id, daycare.name unit_name FROM daycare JOIN placement_plan ON daycare.id = placement_plan.unit_id
+            SELECT placement_plan.application_id, placement_plan.unit_id, daycare.name unit_name FROM daycare JOIN placement_plan ON daycare.id = placement_plan.unit_id
         ) ppd ON ppd.application_id = a.id
+        JOIN daycare d ON COALESCE(ppd.unit_id, (f.document -> 'apply' -> 'preferredUnits' ->> 0)::uuid) = d.id
+        JOIN care_area ca ON d.care_area_id = ca.id
         LEFT JOIN (
             SELECT
                 l.id, array_agg(r.id) AS duplicate_application_ids
