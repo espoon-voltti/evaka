@@ -26,7 +26,6 @@ import java.util.UUID
 
 @RestController
 @RequestMapping("/reports/service-voucher-value")
-
 class ServiceVoucherValueReportController(private val jdbi: Jdbi, private val acl: AccessControlList) {
     @GetMapping("/units")
     fun getServiceVoucherValuesForAllUnits(
@@ -180,7 +179,8 @@ private fun getServiceVoucherValues(
             JOIN daycare_group_placement dgp ON p.id = dgp.daycare_placement_id
             JOIN daycare_group dg ON dgp.daycare_group_id = dg.id
             WHERE daterange(decision.valid_from, decision.valid_to, '[]') && daterange(dgp.start_date, dgp.end_date, '[]')
-            GROUP BY p.child_id, dgp.daycare_placement_id
+            AND p.unit_id = part.placement_unit
+            GROUP BY p.child_id
         ) child_group ON child.id = child_group.child_id 
         WHERE decision.status = :sent
         AND daterange(decision.valid_from, decision.valid_to, '[]') && :period

@@ -202,7 +202,9 @@ function VoucherServiceProviders() {
                     <StyledTd>{row.childCount}</StyledTd>
                     <StyledTd>{row.sum}</StyledTd>
                     <StyledTd>
-                      <Link to={`/reports/voucher-service-providers/${row.unitId}`}>
+                      <Link
+                        to={`/reports/voucher-service-providers/${row.unitId}`}
+                      >
                         <InlineButton
                           icon={faFile}
                           text={i18n.reports.voucherServiceProviders.breakdown}
