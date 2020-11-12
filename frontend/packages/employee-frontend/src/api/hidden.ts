@@ -5,5 +5,5 @@
 import { client } from './client'
 
 export async function triggerDvvBatch() {
-  await client.post('/scheduled/batch-refresh/dvv')
+  await client.post('/scheduled/dvv/update')
 }
