@@ -4,14 +4,6 @@
 
 import { client } from './client'
 
-export async function triggerFamilyBatch() {
-  await client.post('/family/batch-schedule')
-}
-
-export async function triggerVtjBatch() {
-  await client.post('/person/batch-refresh/vtj')
-}
-
 export async function triggerDvvBatch() {
-  await client.post('/person/batch-refresh/dvv')
+  await client.post('/scheduled/batch-refresh/dvv')
 }

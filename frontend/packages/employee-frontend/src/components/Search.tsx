@@ -11,11 +11,7 @@ import { getAge } from '@evaka/lib-common/src/utils/local-date'
 
 import { formatName } from '~/utils'
 import { isFailure, isLoading, isSuccess } from '~api'
-import {
-  triggerDvvBatch,
-  triggerFamilyBatch,
-  triggerVtjBatch
-} from '~api/hidden'
+import { triggerDvvBatch } from '~api/hidden'
 import { Gap } from '~components/shared/layout/white-space'
 import AddButton from '~components/shared/atoms/buttons/AddButton'
 import Button from 'components/shared/atoms/buttons/Button'
@@ -108,14 +104,6 @@ function Search() {
                 dataQa="create-person-button"
               />
               <RequireRole oneOf={['ADMIN']}>
-                <HiddenButton
-                  onClick={() => triggerFamilyBatch()}
-                  text="Luo perheet"
-                />
-                <HiddenButton
-                  onClick={() => triggerVtjBatch()}
-                  text="VTJ-päivitys"
-                />
                 <HiddenButton
                   onClick={() => triggerDvvBatch()}
                   text="DVV-mutp -päivitys"
