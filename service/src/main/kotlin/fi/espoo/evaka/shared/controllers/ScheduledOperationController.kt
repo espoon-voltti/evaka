@@ -55,9 +55,7 @@ class ScheduledOperationController(
     }
 
     @PostMapping("/application/clear-old-drafts")
-    fun removeOldDraftApplications(
-        user: AuthenticatedUser
-    ): ResponseEntity<Unit> {
+    fun removeOldDraftApplications(): ResponseEntity<Unit> {
         Audit.ApplicationsDeleteDrafts.log()
         jdbi.transaction { removeOldDrafts(it) }
         return ResponseEntity.noContent().build()
