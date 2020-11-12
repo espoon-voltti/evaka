@@ -26,7 +26,7 @@ private const val threadPoolSize = 1
 private const val defaultRetryCount = 24 * 60 / 5 // 24h when used with default 5 minute retry interval
 private val defaultRetryInterval = Duration.ofMinutes(5)
 
-private val noHandler = { msg: Any -> logger.warn("No job handler configured for $msg") }
+private val noHandler = { _: Database, msg: Any -> logger.warn("No job handler configured for $msg") }
 
 class AsyncJobRunner(
     private val jdbi: Jdbi,
@@ -37,53 +37,53 @@ class AsyncJobRunner(
     private val runningCount: AtomicInteger = AtomicInteger(0)
 
     @Volatile
-    var notifyPlacementPlanApplied: (msg: NotifyPlacementPlanApplied) -> Unit = noHandler
+    var notifyPlacementPlanApplied: (db: Database, msg: NotifyPlacementPlanApplied) -> Unit = noHandler
 
     @Volatile
-    var notifyServiceNeedUpdated: (msg: NotifyServiceNeedUpdated) -> Unit = noHandler
+    var notifyServiceNeedUpdated: (db: Database, msg: NotifyServiceNeedUpdated) -> Unit = noHandler
 
     @Volatile
-    var notifyFamilyUpdated: (msg: NotifyFamilyUpdated) -> Unit = noHandler
+    var notifyFamilyUpdated: (db: Database, msg: NotifyFamilyUpdated) -> Unit = noHandler
 
     @Volatile
-    var notifyFeeAlterationUpdated: (msg: NotifyFeeAlterationUpdated) -> Unit = noHandler
+    var notifyFeeAlterationUpdated: (db: Database, msg: NotifyFeeAlterationUpdated) -> Unit = noHandler
 
     @Volatile
-    var notifyIncomeUpdated: (msg: NotifyIncomeUpdated) -> Unit = noHandler
+    var notifyIncomeUpdated: (db: Database, msg: NotifyIncomeUpdated) -> Unit = noHandler
 
     @Volatile
-    var notifyDecisionCreated: (msg: NotifyDecisionCreated) -> Unit = noHandler
+    var notifyDecisionCreated: (db: Database, msg: NotifyDecisionCreated) -> Unit = noHandler
 
     @Volatile
-    var sendDecision: (msg: SendDecision) -> Unit = noHandler
+    var sendDecision: (db: Database, msg: SendDecision) -> Unit = noHandler
 
     @Volatile
-    var notifyFeeDecisionApproved: (msg: NotifyFeeDecisionApproved) -> Unit = noHandler
+    var notifyFeeDecisionApproved: (db: Database, msg: NotifyFeeDecisionApproved) -> Unit = noHandler
 
     @Volatile
-    var notifyFeeDecisionPdfGenerated: (msg: NotifyFeeDecisionPdfGenerated) -> Unit = noHandler
+    var notifyFeeDecisionPdfGenerated: (db: Database, msg: NotifyFeeDecisionPdfGenerated) -> Unit = noHandler
 
     @Volatile
-    var notifyVoucherValueDecisionApproved: (msg: NotifyVoucherValueDecisionApproved) -> Unit = noHandler
+    var notifyVoucherValueDecisionApproved: (db: Database, msg: NotifyVoucherValueDecisionApproved) -> Unit = noHandler
 
     @Volatile
-    var notifyVoucherValueDecisionPdfGenerated: (msg: NotifyVoucherValueDecisionPdfGenerated) -> Unit =
+    var notifyVoucherValueDecisionPdfGenerated: (db: Database, msg: NotifyVoucherValueDecisionPdfGenerated) -> Unit =
         noHandler
 
     @Volatile
-    var initializeFamilyFromApplication: (msg: InitializeFamilyFromApplication) -> Unit = noHandler
+    var initializeFamilyFromApplication: (db: Database, msg: InitializeFamilyFromApplication) -> Unit = noHandler
 
     @Volatile
-    var vtjRefresh: (msg: VTJRefresh) -> Unit = noHandler
+    var vtjRefresh: (db: Database, msg: VTJRefresh) -> Unit = noHandler
 
     @Volatile
-    var dvvModificationsRefresh: (msg: DvvModificationsRefresh) -> Unit = noHandler
+    var dvvModificationsRefresh: (db: Database, msg: DvvModificationsRefresh) -> Unit = noHandler
 
     @Volatile
-    var uploadToKoski: (msg: UploadToKoski) -> Unit = noHandler
+    var uploadToKoski: (db: Database, msg: UploadToKoski) -> Unit = noHandler
 
     @Volatile
-    var sendApplicationEmail: (msg: SendApplicationEmail) -> Unit = noHandler
+    var sendApplicationEmail: (db: Database, msg: SendApplicationEmail) -> Unit = noHandler
 
     fun plan(
         h: Handle,
@@ -217,20 +217,20 @@ class AsyncJobRunner(
         }
     }
 
+    private inline fun <reified T : AsyncJobPayload> Database.Transaction.runJob(
+        job: ClaimedJobRef,
+        crossinline f: (db: Database, msg: T) -> Unit
+    ): Boolean {
+        val msg = startJob(job, T::class.java) ?: return false
+        msg.user?.let { MdcKey.USER_ID.set(it.id.toString()) }
+        f(Database(jdbi), msg)
+        completeJob(job)
+        return true
+    }
+
     override fun close() {
         this.executor.shutdown()
         this.executor.awaitTermination(10, TimeUnit.SECONDS)
         this.executor.shutdownNow()
     }
-}
-
-private inline fun <reified T : AsyncJobPayload> Database.Transaction.runJob(
-    job: ClaimedJobRef,
-    crossinline f: (msg: T) -> Unit
-): Boolean {
-    val msg = startJob(job, T::class.java) ?: return false
-    msg.user?.let { MdcKey.USER_ID.set(it.id.toString()) }
-    f(msg)
-    completeJob(job)
-    return true
 }

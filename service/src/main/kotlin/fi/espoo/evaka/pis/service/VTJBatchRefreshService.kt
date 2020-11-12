@@ -26,7 +26,7 @@ class VTJBatchRefreshService(
 ) {
 
     init {
-        asyncJobRunner.vtjRefresh = { msg -> fridgeFamilyService.doVTJRefresh(Database(jdbi), msg) }
+        asyncJobRunner.vtjRefresh = ::doVTJRefresh
     }
 
     fun doVTJRefresh(db: Database, msg: VTJRefresh) {

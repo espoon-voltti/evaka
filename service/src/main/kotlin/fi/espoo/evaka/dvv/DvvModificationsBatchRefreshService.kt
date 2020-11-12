@@ -27,7 +27,7 @@ class DvvModificationsBatchRefreshService(
     private val dvvModificationsService: DvvModificationsService
 ) {
     init {
-        asyncJobRunner.dvvModificationsRefresh = { msg -> doDvvModificationsRefresh(Database(jdbi), msg) }
+        asyncJobRunner.dvvModificationsRefresh = ::doDvvModificationsRefresh
     }
 
     fun doDvvModificationsRefresh(db: Database, msg: DvvModificationsRefresh) {

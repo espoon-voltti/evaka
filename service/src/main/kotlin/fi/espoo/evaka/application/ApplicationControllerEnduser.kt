@@ -40,13 +40,14 @@ class ApplicationControllerEnduser(
 
     @PostMapping
     fun createApplication(
+        db: Database,
         user: AuthenticatedUser,
         @RequestBody body: CreateApplicationEnduserRequest
     ): ResponseEntity<UUID> {
         Audit.ApplicationCreate.log(targetId = user.id, objectId = body.childId)
         user.requireOneOfRoles(UserRole.END_USER)
 
-        val id = Database(jdbi).transaction { tx ->
+        val id = db.transaction { tx ->
             val guardian = personService.getUpToDatePerson(tx, user, user.id)
                 ?: throw NotFound("Guardian not found")
             val child = personService.getUpToDatePerson(tx, user, body.childId)
@@ -79,11 +80,11 @@ class ApplicationControllerEnduser(
     }
 
     @GetMapping
-    fun getApplications(user: AuthenticatedUser): ResponseEntity<List<ApplicationJson>> {
+    fun getApplications(db: Database, user: AuthenticatedUser): ResponseEntity<List<ApplicationJson>> {
         Audit.ApplicationRead.log(targetId = user.id)
         user.requireOneOfRoles(UserRole.END_USER)
 
-        val applications = Database(jdbi).transaction { tx ->
+        val applications = db.transaction { tx ->
             fetchOwnApplicationIds(tx.handle, user.id)
                 .mapNotNull { fetchApplicationDetails(tx.handle, it) }
                 .map { serializer.serialize(tx, user, it) }
@@ -94,13 +95,14 @@ class ApplicationControllerEnduser(
 
     @GetMapping("/{applicationId}")
     fun getApplication(
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable(value = "applicationId") applicationId: UUID
     ): ResponseEntity<ApplicationJson> {
         Audit.ApplicationRead.log(targetId = applicationId)
         user.requireOneOfRoles(UserRole.END_USER)
 
-        val application = Database(jdbi).transaction { tx ->
+        val application = db.transaction { tx ->
             fetchApplicationDetails(tx.handle, applicationId)
                 ?.takeIf { it.guardianId == user.id }
                 ?.let { serializer.serialize(tx, user, it) }
@@ -112,6 +114,7 @@ class ApplicationControllerEnduser(
 
     @PutMapping("/{applicationId}", consumes = [MediaType.APPLICATION_JSON_VALUE])
     fun updateApplication(
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable(value = "applicationId") applicationId: UUID,
         @RequestBody formJson: String
@@ -120,7 +123,7 @@ class ApplicationControllerEnduser(
         user.requireOneOfRoles(UserRole.END_USER)
 
         val formV0 = serializer.deserialize(user, formJson)
-        val updatedApplication = Database(jdbi).transaction { tx ->
+        val updatedApplication = db.transaction { tx ->
             applicationStateService
                 .updateOwnApplicationContents(tx.handle, user, applicationId, formV0)
                 .let { serializer.serialize(tx, user, it) }

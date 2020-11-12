@@ -85,6 +85,7 @@ class DecisionController(
 
     @GetMapping("/{id}/download", produces = [MediaType.APPLICATION_PDF_VALUE])
     fun downloadDecisionPdf(
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable("id") decisionId: UUID
     ): ResponseEntity<ByteArray> {
@@ -93,7 +94,7 @@ class DecisionController(
         val roles = acl.getRolesForDecision(user, decisionId)
         roles.requireOneOfRoles(Roles.SERVICE_WORKER, Roles.ADMIN, Roles.UNIT_SUPERVISOR, Roles.END_USER)
 
-        return Database(jdbi).transaction { tx ->
+        return db.transaction { tx ->
             if (user.hasOneOfRoles(Roles.END_USER)) {
                 if (!getDecisionsByGuardian(tx.handle, user.id, AclAuthorization.All).any { it.id == decisionId }) {
                     throw Forbidden("Access denied")

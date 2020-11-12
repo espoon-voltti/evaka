@@ -9,6 +9,7 @@ import fi.espoo.evaka.application.removeOldDrafts
 import fi.espoo.evaka.dvv.DvvModificationsBatchRefreshService
 import fi.espoo.evaka.koski.KoskiUpdateService
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
+import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.transaction
 import fi.espoo.evaka.varda.VardaUpdateService
 import org.jdbi.v3.core.Jdbi
@@ -35,10 +36,11 @@ class ScheduledOperationController(
 
     @PostMapping("/koski/update")
     fun koskiUpdate(
+        db: Database,
         @RequestParam(required = false) personIds: String?,
         @RequestParam(required = false) daycareIds: String?
     ): ResponseEntity<Unit> {
-        koskiUpdateService.update(personIds, daycareIds)
+        koskiUpdateService.update(db, personIds, daycareIds)
         return ResponseEntity.noContent().build()
     }
 

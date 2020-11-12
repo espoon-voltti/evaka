@@ -8,9 +8,7 @@ import fi.espoo.evaka.invoicing.controller.parseUUID
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.UploadToKoski
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.db.transaction
 import mu.KotlinLogging
-import org.jdbi.v3.core.Jdbi
 import org.springframework.core.env.Environment
 import org.springframework.stereotype.Service
 import java.time.LocalDate
@@ -25,17 +23,17 @@ data class KoskiSearchParams(
 
 @Service
 class KoskiUpdateService(
-    private val jdbi: Jdbi,
     private val env: Environment,
     private val asyncJobRunner: AsyncJobRunner
 ) {
     fun update(
+        db: Database,
         personIds: String?,
         daycareIds: String?
     ) {
         val isEnabled: Boolean = env.getRequiredProperty("fi.espoo.integration.koski.enabled", Boolean::class.java)
         if (isEnabled) {
-            Database(jdbi).transaction { tx ->
+            db.transaction { tx ->
                 val params = KoskiSearchParams(
                     personIds = personIds?.split(",")?.map(::parseUUID) ?: listOf(),
                     daycareIds = daycareIds?.split(",")?.map(::parseUUID) ?: listOf()

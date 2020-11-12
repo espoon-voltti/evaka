@@ -24,7 +24,7 @@ class DecisionMessageProcessor(
     private val decisionService: DecisionService
 ) {
     init {
-        asyncJobRunner.notifyDecisionCreated = { msg -> runCreateJob(Database(jdbi), msg) }
+        asyncJobRunner.notifyDecisionCreated = ::runCreateJob
         asyncJobRunner.sendDecision = ::runSendJob
     }
 
@@ -43,7 +43,7 @@ class DecisionMessageProcessor(
         }
     }
 
-    fun runSendJob(msg: SendDecision) = jdbi.transaction { h ->
+    fun runSendJob(db: Database, msg: SendDecision) = jdbi.transaction { h ->
         val decisionId = msg.decisionId
 
         decisionService.deliverDecisionToGuardians(h, decisionId)

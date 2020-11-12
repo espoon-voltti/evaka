@@ -15,7 +15,7 @@ import org.jdbi.v3.core.statement.Update
 //
 //     fun doStuff(db: Database):
 //         To call this function, you need to have a database reference *without* an active connection or transaction.
-//         The can connect/disconnect from the database 0 to N times, and do whatever it wants using the connection(s).
+//         The function can connect/disconnect from the database 0 to N times, and do whatever it wants using the connection(s).
 //     fun doStuff(db: Database.Connection)
 //         To call this function, you need to have an active database connection *without* an active transaction.
 //         The function can read/write the database and freely execute 0 to N individual transactions.
@@ -70,7 +70,7 @@ class Database(private val jdbi: Jdbi) {
     /**
      * A single database connection tied to a single thread
      */
-    class Connection internal constructor(private val threadId: ThreadId, private val handle: Handle) {
+    class Connection internal constructor(private val threadId: ThreadId, private val handle: Handle) : AutoCloseable {
         /**
          * Enters read mode, runs the given function, and exits read mode regardless of any exceptions the function may have thrown.
          *
@@ -110,6 +110,11 @@ class Database(private val jdbi: Jdbi) {
                 check(!handle.isReadOnly) { "Wrapped handle must not be read-only" }
                 return Connection(ThreadId(), handle)
             }
+        }
+
+        override fun close() {
+            threadId.assertCurrentThread()
+            handle.close()
         }
     }
 

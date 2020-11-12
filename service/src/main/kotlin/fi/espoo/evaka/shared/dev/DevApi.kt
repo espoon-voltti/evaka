@@ -515,9 +515,9 @@ RETURNING id
     }
 
     @PostMapping("/vtj-persons")
-    fun upsertPerson(@RequestBody person: VtjPerson): ResponseEntity<Unit> {
+    fun upsertPerson(db: Database, @RequestBody person: VtjPerson): ResponseEntity<Unit> {
         MockPersonDetailsService.upsertPerson(person)
-        Database(jdbi).transaction { tx ->
+        db.transaction { tx ->
             val uuid = tx.createQuery("SELECT id FROM person WHERE social_security_number = :ssn")
                 .bind("ssn", person.socialSecurityNumber)
                 .mapTo<UUID>()
@@ -557,6 +557,7 @@ RETURNING id
 
     @PostMapping("/applications/{applicationId}/actions/{action}")
     fun simpleAction(
+        db: Database,
         @PathVariable applicationId: UUID,
         @PathVariable action: String
     ): ResponseEntity<Unit> {
@@ -572,7 +573,7 @@ RETURNING id
         )
 
         val actionFn = simpleActions[action] ?: throw NotFound("Action not recognized")
-        Database(jdbi).transaction { tx ->
+        db.transaction { tx ->
             ensureFakeAdminExists(tx.handle)
             actionFn.invoke(tx, fakeAdmin, applicationId)
         }
@@ -581,10 +582,11 @@ RETURNING id
 
     @PostMapping("/applications/{applicationId}/actions/create-placement-plan")
     fun createPlacementPlan(
+        db: Database,
         @PathVariable applicationId: UUID,
         @RequestBody body: DaycarePlacementPlan
     ): ResponseEntity<Unit> {
-        Database(jdbi).transaction { tx ->
+        db.transaction { tx ->
             ensureFakeAdminExists(tx.handle)
             applicationStateService.createPlacementPlan(tx, fakeAdmin, applicationId, body)
         }
@@ -593,9 +595,10 @@ RETURNING id
 
     @PostMapping("/applications/{applicationId}/actions/create-default-placement-plan")
     fun createDefaultPlacementPlan(
+        db: Database,
         @PathVariable applicationId: UUID
     ): ResponseEntity<Unit> {
-        Database(jdbi).transaction { tx ->
+        db.transaction { tx ->
             ensureFakeAdminExists(tx.handle)
             placementPlanService.getPlacementPlanDraft(tx.handle, applicationId)
                 .let {

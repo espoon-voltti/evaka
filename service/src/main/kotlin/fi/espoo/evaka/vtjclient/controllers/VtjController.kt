@@ -47,10 +47,10 @@ class VtjController(
 ) {
     @GetMapping("/uuid/{personId}")
     fun getDetails(
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable(value = "personId") personId: UUID
     ): ResponseEntity<VtjPersonDTO> {
-        val db = Database(jdbi)
         val vtjData = getPersonDataWithChildren(db, user, personId)
             .let { db.transaction { tx -> personStorageService.upsertVtjGuardianAndChildren(tx, it) } }
 

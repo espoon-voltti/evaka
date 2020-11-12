@@ -17,7 +17,6 @@ import fi.espoo.evaka.shared.async.InitializeFamilyFromApplication
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import mu.KotlinLogging
-import org.jdbi.v3.core.Jdbi
 import org.jdbi.v3.core.statement.UnableToExecuteStatementException
 import org.springframework.stereotype.Service
 import java.time.LocalDate
@@ -26,14 +25,12 @@ import java.util.UUID
 @Service
 class FamilyInitializerService(
     private val personService: PersonService,
-    private val jdbi: Jdbi,
     asyncJobRunner: AsyncJobRunner
 ) {
     private val logger = KotlinLogging.logger {}
 
     init {
-        asyncJobRunner.initializeFamilyFromApplication =
-            { msg -> handleInitializeFamilyFromApplication(Database(jdbi), msg) }
+        asyncJobRunner.initializeFamilyFromApplication = ::handleInitializeFamilyFromApplication
     }
 
     fun handleInitializeFamilyFromApplication(db: Database, msg: InitializeFamilyFromApplication) =

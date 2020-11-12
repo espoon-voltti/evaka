@@ -112,13 +112,14 @@ class ApplicationControllerV2(
 ) {
     @PostMapping
     fun createPaperApplication(
+        db: Database,
         user: AuthenticatedUser,
         @RequestBody body: PaperApplicationCreateRequest
     ): ResponseEntity<UUID> {
         Audit.ApplicationCreate.log(targetId = body.guardianId, objectId = body.childId)
         user.requireOneOfRoles(Roles.SERVICE_WORKER, Roles.ADMIN)
 
-        val id = Database(jdbi).transaction { tx ->
+        val id = db.transaction { tx ->
             val child = personService.getUpToDatePerson(tx, user, body.childId)
                 ?: throw BadRequest("Could not find the child with id ${body.childId}")
 
@@ -242,6 +243,7 @@ class ApplicationControllerV2(
 
     @GetMapping("/{applicationId}")
     fun getApplicationDetails(
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable(value = "applicationId") applicationId: UUID
     ): ResponseEntity<ApplicationResponse> {
@@ -250,7 +252,7 @@ class ApplicationControllerV2(
         acl.getRolesForApplication(user, applicationId)
             .requireOneOfRoles(Roles.ADMIN, Roles.FINANCE_ADMIN, Roles.SERVICE_WORKER, Roles.UNIT_SUPERVISOR)
 
-        return Database(jdbi).transaction { tx ->
+        return db.transaction { tx ->
             val application = fetchApplicationDetails(tx.handle, applicationId)
                 ?: throw NotFound("Application $applicationId was not found")
             val decisions = getDecisionsByApplication(tx.handle, applicationId, acl.getAuthorizedUnits(user))
@@ -299,13 +301,14 @@ class ApplicationControllerV2(
 
     @GetMapping("/{applicationId}/decision-drafts")
     fun getDecisionDrafts(
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable(value = "applicationId") applicationId: UUID
     ): ResponseEntity<DecisionDraftJSON> {
         Audit.DecisionDraftRead.log(targetId = applicationId)
         user.requireOneOfRoles(Roles.SERVICE_WORKER, Roles.ADMIN)
 
-        return Database(jdbi).transaction { tx ->
+        return db.transaction { tx ->
             val application = fetchApplicationDetails(tx.handle, applicationId)
                 ?: throw NotFound("Application $applicationId not found")
 
@@ -368,15 +371,17 @@ class ApplicationControllerV2(
 
     @PostMapping("/placement-proposals/{unitId}/accept")
     fun acceptPlacementProposal(
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable(value = "unitId") unitId: UUID
     ): ResponseEntity<Unit> {
-        Database(jdbi).transaction { applicationStateService.acceptPlacementProposal(it, user, unitId) }
+        db.transaction { applicationStateService.acceptPlacementProposal(it, user, unitId) }
         return ResponseEntity.noContent().build()
     }
 
     @PostMapping("/batch/actions/{action}")
     fun simpleBatchAction(
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable action: String,
         @RequestBody body: SimpleBatchRequest
@@ -393,7 +398,7 @@ class ApplicationControllerV2(
         )
 
         val actionFn = simpleBatchActions[action] ?: throw NotFound("Batch action not recognized")
-        Database(jdbi).transaction { tx ->
+        db.transaction { tx ->
             body.applicationIds.forEach { applicationId -> actionFn.invoke(tx, user, applicationId) }
         }
 
@@ -402,6 +407,7 @@ class ApplicationControllerV2(
 
     @PostMapping("/{applicationId}/actions/create-placement-plan")
     fun createPlacementPlan(
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable applicationId: UUID,
         @RequestBody body: DaycarePlacementPlan
@@ -409,7 +415,7 @@ class ApplicationControllerV2(
         Audit.PlacementPlanCreate.log(targetId = applicationId, objectId = body.unitId)
         user.requireOneOfRoles(Roles.ADMIN, Roles.SERVICE_WORKER)
 
-        Database(jdbi).transaction { applicationStateService.createPlacementPlan(it, user, applicationId, body) }
+        db.transaction { applicationStateService.createPlacementPlan(it, user, applicationId, body) }
         return ResponseEntity.noContent().build()
     }
 
@@ -456,6 +462,7 @@ class ApplicationControllerV2(
 
     @PostMapping("/{applicationId}/actions/{action}")
     fun simpleAction(
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable applicationId: UUID,
         @PathVariable action: String
@@ -475,7 +482,7 @@ class ApplicationControllerV2(
         )
 
         val actionFn = simpleActions[action] ?: throw NotFound("Action not recognized")
-        Database(jdbi).transaction { actionFn.invoke(it, user, applicationId) }
+        db.transaction { actionFn.invoke(it, user, applicationId) }
         return ResponseEntity.noContent().build()
     }
 }

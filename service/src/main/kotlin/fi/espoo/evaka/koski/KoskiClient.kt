@@ -22,7 +22,6 @@ import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.UploadToKoski
 import fi.espoo.evaka.shared.db.Database
 import mu.KotlinLogging
-import org.jdbi.v3.core.Jdbi
 import org.springframework.core.env.Environment
 import org.springframework.stereotype.Component
 import java.time.LocalDate
@@ -36,7 +35,6 @@ class KoskiClient(
     private val sourceSystem: String = env.getRequiredProperty("fi.espoo.integration.koski.source_system"),
     private val koskiUser: String = env.getRequiredProperty("fi.espoo.integration.koski.user"),
     private val koskiSecret: String = env.getRequiredProperty("fi.espoo.integration.koski.secret"),
-    private val jdbi: Jdbi,
     asyncJobRunner: AsyncJobRunner?
 ) {
     // Use a local Jackson instance so the configuration doesn't get changed accidentally if the global defaults change.
@@ -50,7 +48,7 @@ class KoskiClient(
         .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
 
     init {
-        asyncJobRunner?.uploadToKoski = { msg -> uploadToKoski(Database(jdbi), msg, today = LocalDate.now()) }
+        asyncJobRunner?.uploadToKoski = { db, msg -> uploadToKoski(db, msg, today = LocalDate.now()) }
     }
 
     fun uploadToKoski(db: Database, msg: UploadToKoski, today: LocalDate) = db.transaction { tx ->

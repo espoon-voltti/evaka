@@ -88,11 +88,12 @@ class PersonController(
 
     @GetMapping(value = ["/details/{personId}", "/identity/{personId}"])
     fun getPerson(
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable(value = "personId") personId: VolttiIdentifier
     ): ResponseEntity<PersonJSON> {
         Audit.PersonDetailsRead.log(targetId = personId)
-        return Database(jdbi).transaction {
+        return db.transaction {
             personService.getUpToDatePerson(it, user, personId)
         }
             ?.let { ResponseEntity.ok().body(PersonJSON.from(it)) }
@@ -101,24 +102,26 @@ class PersonController(
 
     @GetMapping("/dependants/{personId}")
     fun getPersonDependants(
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable(value = "personId") personId: VolttiIdentifier
     ): ResponseEntity<List<PersonWithChildrenDTO>> {
         Audit.PersonDependantRead.log(targetId = personId)
         user.requireOneOfRoles(SERVICE_WORKER, UNIT_SUPERVISOR, FINANCE_ADMIN, ADMIN)
-        return Database(jdbi).transaction { personService.getUpToDatePersonWithChildren(it, user, personId) }
+        return db.transaction { personService.getUpToDatePersonWithChildren(it, user, personId) }
             ?.let { ResponseEntity.ok().body(it.children) }
             ?: ResponseEntity.notFound().build()
     }
 
     @GetMapping("/guardians/{personId}")
     fun getPersonGuardians(
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable(value = "personId") personId: VolttiIdentifier
     ): ResponseEntity<List<PersonJSON>> {
         Audit.PersonGuardianRead.log(targetId = personId)
         user.requireOneOfRoles(SERVICE_WORKER, UNIT_SUPERVISOR, FINANCE_ADMIN, ADMIN)
-        return Database(jdbi).transaction { personService.getGuardians(it, user, personId) }
+        return db.transaction { personService.getGuardians(it, user, personId) }
             .let { ResponseEntity.ok().body(it.map { personDTO -> PersonJSON.from(personDTO) }) }
             ?: ResponseEntity.notFound().build()
     }
@@ -170,29 +173,32 @@ class PersonController(
 
     @PatchMapping("/{personId}")
     fun updatePersonDetails(
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable(value = "personId") personId: VolttiIdentifier,
         @RequestBody data: PersonPatch
     ): ResponseEntity<PersonJSON> {
         Audit.PersonUpdate.log(targetId = personId)
         user.requireOneOfRoles(SERVICE_WORKER, UNIT_SUPERVISOR, FINANCE_ADMIN)
-        return Database(jdbi).transaction { personService.patchUserDetails(it, personId, data) }
+        return db.transaction { personService.patchUserDetails(it, personId, data) }
             .let { ResponseEntity.ok(PersonJSON.from(it)) }
     }
 
     @DeleteMapping("/{personId}")
     fun safeDeletePerson(
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable(value = "personId") personId: VolttiIdentifier
     ): ResponseEntity<Unit> {
         Audit.PersonDelete.log(targetId = personId)
         user.requireOneOfRoles(ADMIN)
-        Database(jdbi).transaction { mergeService.deleteEmptyPerson(it, personId) }
+        db.transaction { mergeService.deleteEmptyPerson(it, personId) }
         return ResponseEntity.noContent().build()
     }
 
     @PutMapping("/{personId}/ssn")
     fun addSsn(
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable(value = "personId") personId: VolttiIdentifier,
         @RequestBody body: AddSsnRequest
@@ -203,8 +209,6 @@ class PersonController(
         if (!isValidSSN(body.ssn)) {
             throw BadRequest("Invalid social security number")
         }
-
-        val db = Database(jdbi)
         db.transaction {
             personService.addSsn(it, user, personId, ExternalIdentifier.SSN.getInstance(body.ssn))
         }
@@ -214,6 +218,7 @@ class PersonController(
 
     @GetMapping("/details/ssn/{ssn}")
     fun getOrCreatePersonBySsn(
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable("ssn") ssn: String,
         @RequestParam("readonly", required = false) readonly: Boolean = false
@@ -226,7 +231,7 @@ class PersonController(
         val person = if (readonly) {
             personService.getPersonFromVTJ(user, ExternalIdentifier.SSN.getInstance(ssn))
         } else {
-            Database(jdbi).transaction {
+            db.transaction {
                 personService.getOrCreatePerson(
                     it,
                     user,
@@ -256,12 +261,13 @@ class PersonController(
 
     @PostMapping("/merge")
     fun mergePeople(
+        db: Database,
         user: AuthenticatedUser,
         @RequestBody body: MergeRequest
     ): ResponseEntity<Unit> {
         Audit.PersonMerge.log(targetId = body.master, objectId = body.duplicate)
         user.requireOneOfRoles(ADMIN)
-        Database(jdbi).transaction { tx ->
+        db.transaction { tx ->
             mergeService.mergePeople(tx, master = body.master, duplicate = body.duplicate)
         }
         asyncJobRunner.scheduleImmediateRun()

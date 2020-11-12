@@ -43,7 +43,7 @@ class AsyncJobRunnerTest {
     @BeforeEach
     @AfterAll
     fun clean() {
-        asyncJobRunner.notifyDecisionCreated = { _ -> }
+        asyncJobRunner.notifyDecisionCreated = { _, _ -> }
         jdbi.open().use { h -> h.execute("TRUNCATE async_job") }
     }
 
@@ -89,7 +89,7 @@ class AsyncJobRunnerTest {
 
     private fun <R> setAsyncJobCallback(f: (msg: NotifyDecisionCreated) -> R): Future<R> {
         val future = CompletableFuture<R>()
-        asyncJobRunner.notifyDecisionCreated = { msg ->
+        asyncJobRunner.notifyDecisionCreated = { _, msg ->
             try {
                 future.complete(f(msg))
             } catch (t: Throwable) {
