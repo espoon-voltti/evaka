@@ -313,7 +313,7 @@ export default function App() {
             {featureFlags.voucherValueDecisionsPage && (
               <RouteWithTitle
                 exact
-                path="/reports/voucher-service-provider-unit/:unitId"
+                path="/reports/voucher-service-providers/:unitId"
                 component={ensureAuthenticated(VoucherServiceProviderUnit)}
                 title={i18n.titles.reports}
               />
