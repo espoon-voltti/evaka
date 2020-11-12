@@ -75,6 +75,7 @@ function PartnersInDifferentAddress() {
           <Wrapper>
             <ReactSelect
               options={[
+                { value: '', label: i18n.common.all },
                 ...(isSuccess(rows)
                   ? distinct(
                       rows.data.map((row) => row.careAreaName)
