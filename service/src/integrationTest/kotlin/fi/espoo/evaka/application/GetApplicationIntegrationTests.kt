@@ -201,7 +201,7 @@ class GetApplicationIntegrationTests : FullApplicationTest() {
             assertEquals(3, data.size)
         }
 
-        val (_, res, _) = http.post("/v2/applications/clear-old-drafts")
+        val (_, res, _) = http.post("/scheduled/application/clear-old-drafts")
             .asUser(serviceWorker)
             .responseObject<ApplicationResponse>(objectMapper)
 
