@@ -187,7 +187,7 @@ class PersonController(
     ): ResponseEntity<Unit> {
         Audit.PersonDelete.log(targetId = personId)
         user.requireOneOfRoles(ADMIN)
-        mergeService.deleteEmptyPerson(personId)
+        Database(jdbi).transaction { mergeService.deleteEmptyPerson(it, personId) }
         return ResponseEntity.noContent().build()
     }
 
@@ -261,7 +261,9 @@ class PersonController(
     ): ResponseEntity<Unit> {
         Audit.PersonMerge.log(targetId = body.master, objectId = body.duplicate)
         user.requireOneOfRoles(ADMIN)
-        mergeService.mergePeople(master = body.master, duplicate = body.duplicate)
+        Database(jdbi).transaction { tx ->
+            mergeService.mergePeople(tx, master = body.master, duplicate = body.duplicate)
+        }
         asyncJobRunner.scheduleImmediateRun()
         return ResponseEntity.ok().build()
     }
