@@ -9,6 +9,7 @@ import {
   AreaAndPersonFixtures
 } from '../../dev-api/data-init'
 import {
+  createDaycarePlacementFixture,
   feeDecisionsFixture,
   invoiceFixture,
   adultFixtureWihtoutSSN
@@ -19,6 +20,7 @@ import GuardianPage from '../../pages/employee/guardian-page'
 import {
   cleanUpInvoicingDatabase,
   deletePersonFixture,
+  insertDaycarePlacementFixtures,
   insertFeeDecisionFixtures,
   insertInvoiceFixtures,
   insertPersonFixture
@@ -40,12 +42,19 @@ fixture('Invoicing - invoices')
   })
   .beforeEach(async (t) => {
     await cleanUpInvoicingDatabase()
-    await insertFeeDecisionFixtures([
-      feeDecisionsFixture(
-        'SENT',
-        fixtures.enduserGuardianFixture.id,
+    const feeDecision = feeDecisionsFixture(
+      'SENT',
+      fixtures.enduserGuardianFixture.id,
+      fixtures.enduserChildFixtureKaarina.id,
+      fixtures.daycareFixture.id
+    )
+    await insertFeeDecisionFixtures([feeDecision])
+    await insertDaycarePlacementFixtures([
+      createDaycarePlacementFixture(
         fixtures.enduserChildFixtureKaarina.id,
-        fixtures.daycareFixture.id
+        fixtures.daycareFixture.id,
+        feeDecision.validFrom,
+        feeDecision.validTo
       )
     ])
     await t.useRole(seppoAdminRole)

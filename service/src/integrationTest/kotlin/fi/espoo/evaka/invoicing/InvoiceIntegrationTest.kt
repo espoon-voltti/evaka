@@ -19,6 +19,7 @@ import fi.espoo.evaka.invoicing.data.paginatedSearch
 import fi.espoo.evaka.invoicing.data.searchInvoices
 import fi.espoo.evaka.invoicing.data.upsertFeeDecisions
 import fi.espoo.evaka.invoicing.data.upsertInvoices
+import fi.espoo.evaka.invoicing.domain.FeeDecision
 import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus
 import fi.espoo.evaka.invoicing.domain.FeeDecisionType
 import fi.espoo.evaka.invoicing.domain.InvoiceDetailed
@@ -36,8 +37,11 @@ import fi.espoo.evaka.shared.config.Roles
 import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevDaycare
+import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insertTestCareArea
 import fi.espoo.evaka.shared.dev.insertTestDaycare
+import fi.espoo.evaka.shared.dev.insertTestParentship
+import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.Period
 import fi.espoo.evaka.svebiTestCode
 import fi.espoo.evaka.svebiTestId
@@ -50,6 +54,7 @@ import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDecisionMaker_1
 import fi.espoo.evaka.testSvebiDaycare
 import org.assertj.core.api.Assertions.assertThat
+import org.jdbi.v3.core.Handle
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
@@ -758,7 +763,7 @@ class InvoiceIntegrationTest : FullApplicationTest() {
     @Test
     fun `createAllDraftInvoices works with one decision`() {
         val decision = testDecisions.find { it.status == FeeDecisionStatus.SENT }!!
-        jdbi.handle { h -> upsertFeeDecisions(h, objectMapper, listOf(decision)) }
+        jdbi.handle { h -> insertDecisions(h, listOf(decision)) }
 
         val (_, response, _) = http.post("/invoices/create-drafts")
             .asUser(testUser)
@@ -785,7 +790,7 @@ class InvoiceIntegrationTest : FullApplicationTest() {
     @Test
     fun `createAllDraftInvoices works with two decisions`() {
         val testDecisions2 = testDecisions.filter { it.status == FeeDecisionStatus.SENT }.take(2)
-        jdbi.handle { h -> upsertFeeDecisions(h, objectMapper, testDecisions2) }
+        jdbi.handle { h -> insertDecisions(h, testDecisions2) }
 
         val (_, response, _) = http.post("/invoices/create-drafts")
             .asUser(testUser)
@@ -812,7 +817,7 @@ class InvoiceIntegrationTest : FullApplicationTest() {
     @Test
     fun `createAllDraftInvoices is idempotent`() {
         val decisions = listOf(testDecisions.find { it.status == FeeDecisionStatus.SENT }!!)
-        jdbi.handle { h -> upsertFeeDecisions(h, objectMapper, decisions) }
+        jdbi.handle { h -> insertDecisions(h, decisions) }
 
         for (i in 1..4) {
             val (_, response, _) = http.post("/invoices/create-drafts")
@@ -841,7 +846,7 @@ class InvoiceIntegrationTest : FullApplicationTest() {
     @Test
     fun `createAllDraftInvoices generates no drafts from already invoiced decisions`() {
         val decisions = listOf(testDecisions.find { it.status == FeeDecisionStatus.SENT }!!)
-        jdbi.handle { h -> upsertFeeDecisions(h, objectMapper, decisions) }
+        jdbi.handle { h -> insertDecisions(h, decisions) }
 
         val (_, response1, _) = http.post("/invoices/create-drafts")
             .asUser(testUser)
@@ -878,7 +883,7 @@ class InvoiceIntegrationTest : FullApplicationTest() {
     @Test
     fun `createAllDraftInvoices overrides drafts`() {
         val decisions = listOf(testDecisions.find { it.status == FeeDecisionStatus.SENT }!!).take(1)
-        jdbi.handle { h -> upsertFeeDecisions(h, objectMapper, decisions) }
+        jdbi.handle { h -> insertDecisions(h, decisions) }
 
         val (_, response1, _) = http.post("/invoices/create-drafts")
             .asUser(testUser)
@@ -1037,6 +1042,29 @@ class InvoiceIntegrationTest : FullApplicationTest() {
             assertEquals("${testChild_2.lastName} ${testChild_2.firstName}", invoice.rows[4].description)
             assertEquals("Varhaiskasvatus", invoice.rows[5].description)
             assertEquals("", invoice.rows[6].description)
+        }
+    }
+
+    private fun insertDecisions(h: Handle, decisions: List<FeeDecision>) {
+        upsertFeeDecisions(h, objectMapper, decisions)
+        decisions.forEach { decision ->
+            decision.parts.forEach { part ->
+                h.insertTestPlacement(
+                    DevPlacement(
+                        childId = part.child.id,
+                        unitId = part.placement.unit,
+                        startDate = decision.validFrom,
+                        endDate = decision.validTo!!
+                    )
+                )
+                insertTestParentship(
+                    h,
+                    headOfChild = decision.headOfFamily.id,
+                    childId = part.child.id,
+                    startDate = decision.validFrom,
+                    endDate = decision.validTo!!
+                )
+            }
         }
     }
 }
