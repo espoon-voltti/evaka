@@ -12,18 +12,14 @@ import fi.espoo.evaka.varda.integration.VardaTokenProvider
 import mu.KotlinLogging
 import org.jdbi.v3.core.Jdbi
 import org.springframework.core.env.Environment
-import org.springframework.http.ResponseEntity
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.stereotype.Service
 import java.lang.reflect.UndeclaredThrowableException
 import kotlin.concurrent.thread
 
 private val logger = KotlinLogging.logger { }
 
-@RestController
-@RequestMapping("/varda")
-class VardaController(
+@Service
+class VardaUpdateService(
     private val jdbi: Jdbi,
     private val tokenProvider: VardaTokenProvider,
     private val env: Environment,
@@ -33,8 +29,7 @@ class VardaController(
     private val forceSync = env.getProperty("fi.espoo.varda.force.sync", Boolean::class.java, false)
     private val organizer = env.getProperty("fi.espoo.varda.organizer", String::class.java, "Espoo")
 
-    @PostMapping("/update")
-    fun updateAll(): ResponseEntity<Unit> {
+    fun updateAll() {
         val client = VardaClient(tokenProvider, env, mapper)
         if (forceSync) {
             updateAll(jdbi, client, mapper, personService, organizer)
@@ -48,12 +43,10 @@ class VardaController(
                 }
             }
         }
-        return ResponseEntity.noContent().build()
     }
 
-    // This path is left for backwards compatibility, but should be removed later
-    @PostMapping("/units/update-units")
-    fun updateUnits(): ResponseEntity<Unit> = updateAll()
+    // This is left for backwards compatibility, but should be removed later
+    fun updateUnits() = updateAll()
 }
 
 fun updateAll(
