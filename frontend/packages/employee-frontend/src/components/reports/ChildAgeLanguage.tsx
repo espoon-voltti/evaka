@@ -108,7 +108,10 @@ function ChildAgeLanguage() {
                       label: displayFilters.careArea,
                       value: displayFilters.careArea
                     }
-                  : null
+                  : {
+                      label: i18n.common.all,
+                      value: ''
+                    }
               }
               styles={reactSelectStyles}
               placeholder={i18n.reports.occupancies.filters.areaPlaceholder}

@@ -88,7 +88,10 @@ function ChildrenInDifferentAddress() {
                       ...displayFilters,
                       careArea: option.value
                     })
-                  : null
+                  : {
+                      label: i18n.common.all,
+                      value: ''
+                    }
               }
               value={
                 displayFilters.careArea !== ''
