@@ -15,6 +15,7 @@ import fi.espoo.evaka.shared.auth.UserRole.FINANCE_ADMIN
 import fi.espoo.evaka.shared.auth.UserRole.SERVICE_WORKER
 import fi.espoo.evaka.shared.auth.UserRole.UNIT_SUPERVISOR
 import fi.espoo.evaka.shared.config.Roles
+import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.db.transaction
 import fi.espoo.evaka.shared.domain.Forbidden
@@ -92,26 +93,26 @@ class DecisionController(
         val roles = acl.getRolesForDecision(user, decisionId)
         roles.requireOneOfRoles(Roles.SERVICE_WORKER, Roles.ADMIN, Roles.UNIT_SUPERVISOR, Roles.END_USER)
 
-        return jdbi.transaction { h ->
+        return Database(jdbi).transaction { tx ->
             if (user.hasOneOfRoles(Roles.END_USER)) {
-                if (!getDecisionsByGuardian(h, user.id, AclAuthorization.All).any { it.id == decisionId }) {
+                if (!getDecisionsByGuardian(tx.handle, user.id, AclAuthorization.All).any { it.id == decisionId }) {
                     throw Forbidden("Access denied")
                 }
-                return@transaction getDecisionPdf(h, decisionId)
+                return@transaction getDecisionPdf(tx.handle, decisionId)
             }
 
-            val decision = getDecision(h, decisionId) ?: error("Cannot find decision for decision id '$decisionId'")
-            val application = fetchApplicationDetails(h, decision.applicationId)
+            val decision = getDecision(tx.handle, decisionId) ?: error("Cannot find decision for decision id '$decisionId'")
+            val application = fetchApplicationDetails(tx.handle, decision.applicationId)
                 ?: error("Cannot find application for decision id '$decisionId'")
 
             val child = personService.getUpToDatePerson(
-                h,
+                tx,
                 user,
                 application.childId
             ) ?: error("Cannot find user for child id '${application.childId}'")
 
             val guardian = personService.getUpToDatePerson(
-                h,
+                tx,
                 user,
                 application.guardianId
             ) ?: error("Cannot find user for guardian id '${application.guardianId}'")
@@ -119,7 +120,7 @@ class DecisionController(
             if ((child.restrictedDetailsEnabled || guardian.restrictedDetailsEnabled) && !user.isAdmin())
                 throw Forbidden("Päätöksen alaisella henkilöllä on voimassa turvakielto. Osoitetietojen suojaamiseksi vain pääkäyttäjä voi ladata tämän päätöksen.")
 
-            getDecisionPdf(h, decisionId)
+            getDecisionPdf(tx.handle, decisionId)
         }
     }
 

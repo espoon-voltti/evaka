@@ -9,6 +9,7 @@ import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.NotifyDecisionCreated
 import fi.espoo.evaka.shared.async.SendDecision
 import fi.espoo.evaka.shared.config.Roles
+import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.transaction
 import mu.KotlinLogging
 import org.jdbi.v3.core.Jdbi
@@ -23,22 +24,22 @@ class DecisionMessageProcessor(
     private val decisionService: DecisionService
 ) {
     init {
-        asyncJobRunner.notifyDecisionCreated = ::runCreateJob
+        asyncJobRunner.notifyDecisionCreated = { msg -> runCreateJob(Database(jdbi), msg) }
         asyncJobRunner.sendDecision = ::runSendJob
     }
 
-    fun runCreateJob(msg: NotifyDecisionCreated) = jdbi.transaction { h ->
+    fun runCreateJob(db: Database, msg: NotifyDecisionCreated) = db.transaction { tx ->
         val user = msg.user
         val decisionId = msg.decisionId
 
         user.requireOneOfRoles(Roles.ADMIN, Roles.SERVICE_WORKER, Roles.UNIT_SUPERVISOR)
 
-        decisionService.createDecisionPdfs(h, user, decisionId)
+        decisionService.createDecisionPdfs(tx, user, decisionId)
 
         logger.info { "Successfully created decision pdf(s) for decision (id: $decisionId)." }
         if (msg.sendAsMessage) {
             logger.info { "Sending decision pdf(s) for decision (id: $decisionId)." }
-            asyncJobRunner.plan(h, listOf(SendDecision(decisionId, msg.user)))
+            asyncJobRunner.plan(tx, listOf(SendDecision(decisionId, msg.user)))
         }
     }
 

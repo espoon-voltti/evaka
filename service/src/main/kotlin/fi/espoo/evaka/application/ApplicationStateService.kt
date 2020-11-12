@@ -55,6 +55,7 @@ import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.config.Roles
+import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.Forbidden
@@ -124,19 +125,19 @@ class ApplicationStateService(
         updateApplicationStatus(h, application.id, SENT)
     }
 
-    fun moveToWaitingPlacement(h: Handle, user: AuthenticatedUser, applicationId: UUID) {
+    fun moveToWaitingPlacement(tx: Database.Transaction, user: AuthenticatedUser, applicationId: UUID) {
         Audit.ApplicationVerify.log(targetId = applicationId)
         user.requireOneOfRoles(Roles.ADMIN, Roles.SERVICE_WORKER)
 
-        val application = getApplication(h, applicationId)
+        val application = getApplication(tx.handle, applicationId)
         verifyStatus(application, SENT)
 
-        h.updatePersonBasicContactInfo(
+        tx.handle.updatePersonBasicContactInfo(
             id = application.guardianId,
             email = application.form.guardian.email,
             phone = application.form.guardian.phoneNumber
         )
-        h.upsertChild(
+        tx.handle.upsertChild(
             Child(
                 id = application.childId,
                 additionalInformation = AdditionalInformation(
@@ -146,124 +147,124 @@ class ApplicationStateService(
             )
         )
 
-        setCheckedByAdminToDefault(h, applicationId, application.form)
-        if (application.form.maxFeeAccepted) setHighestFeeForUser(h, application)
+        setCheckedByAdminToDefault(tx.handle, applicationId, application.form)
+        if (application.form.maxFeeAccepted) setHighestFeeForUser(tx.handle, application)
 
-        asyncJobRunner.plan(h, listOf(InitializeFamilyFromApplication(application.id, user)))
-        updateApplicationStatus(h, application.id, WAITING_PLACEMENT)
+        asyncJobRunner.plan(tx, listOf(InitializeFamilyFromApplication(application.id, user)))
+        updateApplicationStatus(tx.handle, application.id, WAITING_PLACEMENT)
     }
 
-    fun returnToSent(h: Handle, user: AuthenticatedUser, applicationId: UUID) {
+    fun returnToSent(tx: Database.Transaction, user: AuthenticatedUser, applicationId: UUID) {
         Audit.ApplicationReturnToSent.log(targetId = applicationId)
         user.requireOneOfRoles(Roles.ADMIN, Roles.SERVICE_WORKER)
 
-        val application = getApplication(h, applicationId)
+        val application = getApplication(tx.handle, applicationId)
         verifyStatus(application, WAITING_PLACEMENT)
-        updateApplicationStatus(h, application.id, SENT)
+        updateApplicationStatus(tx.handle, application.id, SENT)
     }
 
-    fun cancelApplication(h: Handle, user: AuthenticatedUser, applicationId: UUID) {
+    fun cancelApplication(tx: Database.Transaction, user: AuthenticatedUser, applicationId: UUID) {
         Audit.ApplicationCancel.log(targetId = applicationId)
         user.requireOneOfRoles(Roles.ADMIN, Roles.SERVICE_WORKER)
 
-        val application = getApplication(h, applicationId)
+        val application = getApplication(tx.handle, applicationId)
         verifyStatus(application, setOf(SENT, WAITING_PLACEMENT))
-        updateApplicationStatus(h, application.id, CANCELLED)
+        updateApplicationStatus(tx.handle, application.id, CANCELLED)
     }
 
-    fun setVerified(h: Handle, user: AuthenticatedUser, applicationId: UUID) {
+    fun setVerified(tx: Database.Transaction, user: AuthenticatedUser, applicationId: UUID) {
         Audit.ApplicationAdminDetailsUpdate.log(targetId = applicationId)
         user.requireOneOfRoles(Roles.ADMIN, Roles.SERVICE_WORKER)
 
-        val application = getApplication(h, applicationId)
+        val application = getApplication(tx.handle, applicationId)
         verifyStatus(application, WAITING_PLACEMENT)
-        setApplicationVerified(h, applicationId, true)
+        setApplicationVerified(tx.handle, applicationId, true)
     }
 
-    fun setUnverified(h: Handle, user: AuthenticatedUser, applicationId: UUID) {
+    fun setUnverified(tx: Database.Transaction, user: AuthenticatedUser, applicationId: UUID) {
         Audit.ApplicationAdminDetailsUpdate.log(targetId = applicationId)
         user.requireOneOfRoles(Roles.ADMIN, Roles.SERVICE_WORKER)
 
-        val application = getApplication(h, applicationId)
+        val application = getApplication(tx.handle, applicationId)
         verifyStatus(application, WAITING_PLACEMENT)
-        setApplicationVerified(h, applicationId, false)
+        setApplicationVerified(tx.handle, applicationId, false)
     }
 
-    fun createPlacementPlan(h: Handle, user: AuthenticatedUser, applicationId: UUID, placementPlan: DaycarePlacementPlan) {
-        val application = getApplication(h, applicationId)
+    fun createPlacementPlan(tx: Database.Transaction, user: AuthenticatedUser, applicationId: UUID, placementPlan: DaycarePlacementPlan) {
+        val application = getApplication(tx.handle, applicationId)
         verifyStatus(application, WAITING_PLACEMENT)
 
-        val guardian = personService.getUpToDatePerson(h, user, application.guardianId)
+        val guardian = personService.getUpToDatePerson(tx, user, application.guardianId)
             ?: throw NotFound("Guardian not found")
         val secondDecisionTo = personService
-            .getGuardians(h, user, application.childId)
+            .getGuardians(tx, user, application.childId)
             .firstOrNull {
                 it.id != guardian.id && !livesInSameAddress(guardian.residenceCode, it.residenceCode)
             }?.id
 
-        updateApplicationOtherGuardian(h, applicationId, secondDecisionTo)
-        placementPlanService.createPlacementPlan(h, application, placementPlan)
-        decisionDraftService.createDecisionDrafts(h, user, application)
+        updateApplicationOtherGuardian(tx.handle, applicationId, secondDecisionTo)
+        placementPlanService.createPlacementPlan(tx.handle, application, placementPlan)
+        decisionDraftService.createDecisionDrafts(tx.handle, user, application)
 
-        updateApplicationStatus(h, application.id, WAITING_DECISION)
+        updateApplicationStatus(tx.handle, application.id, WAITING_DECISION)
     }
 
-    fun cancelPlacementPlan(h: Handle, user: AuthenticatedUser, applicationId: UUID) {
+    fun cancelPlacementPlan(tx: Database.Transaction, user: AuthenticatedUser, applicationId: UUID) {
         Audit.ApplicationReturnToWaitingPlacement.log(targetId = applicationId)
         user.requireOneOfRoles(Roles.ADMIN, Roles.SERVICE_WORKER)
 
-        val application = getApplication(h, applicationId)
+        val application = getApplication(tx.handle, applicationId)
         verifyStatus(application, WAITING_DECISION)
-        deletePlacementPlan(h, application.id)
-        decisionDraftService.clearDecisionDrafts(h, application.id)
-        updateApplicationStatus(h, application.id, WAITING_PLACEMENT)
+        deletePlacementPlan(tx.handle, application.id)
+        decisionDraftService.clearDecisionDrafts(tx.handle, application.id)
+        updateApplicationStatus(tx.handle, application.id, WAITING_PLACEMENT)
     }
 
-    fun confirmPlacementWithoutDecision(h: Handle, user: AuthenticatedUser, applicationId: UUID) {
+    fun confirmPlacementWithoutDecision(tx: Database.Transaction, user: AuthenticatedUser, applicationId: UUID) {
         Audit.PlacementCreate.log(targetId = applicationId)
         user.requireOneOfRoles(Roles.ADMIN, Roles.SERVICE_WORKER)
 
-        val application = getApplication(h, applicationId)
+        val application = getApplication(tx.handle, applicationId)
         verifyStatus(application, setOf(WAITING_DECISION, WAITING_UNIT_CONFIRMATION))
-        val plan = getPlacementPlan(h, applicationId)
+        val plan = getPlacementPlan(tx.handle, applicationId)
             ?: throw IllegalStateException("Application $applicationId has no placement plan")
         placementPlanService.applyPlacementPlan(
-            h,
+            tx.handle,
             application.childId,
             plan,
             allowPreschool = true,
             allowPreschoolDaycare = true
         )
-        decisionDraftService.clearDecisionDrafts(h, application.id)
-        placementPlanService.softDeleteUnusedPlacementPlanByApplication(h, applicationId)
-        updateApplicationStatus(h, application.id, ACTIVE)
+        decisionDraftService.clearDecisionDrafts(tx.handle, application.id)
+        placementPlanService.softDeleteUnusedPlacementPlanByApplication(tx.handle, applicationId)
+        updateApplicationStatus(tx.handle, application.id, ACTIVE)
     }
 
-    fun sendDecisionsWithoutProposal(h: Handle, user: AuthenticatedUser, applicationId: UUID) {
+    fun sendDecisionsWithoutProposal(tx: Database.Transaction, user: AuthenticatedUser, applicationId: UUID) {
         Audit.DecisionCreate.log(targetId = applicationId)
         user.requireOneOfRoles(Roles.ADMIN, Roles.SERVICE_WORKER)
 
-        val application = getApplication(h, applicationId)
+        val application = getApplication(tx.handle, applicationId)
         verifyStatus(application, WAITING_DECISION)
-        finalizeDecisions(h, user, application)
+        finalizeDecisions(tx, user, application)
     }
 
-    fun sendPlacementProposal(h: Handle, user: AuthenticatedUser, applicationId: UUID) {
+    fun sendPlacementProposal(tx: Database.Transaction, user: AuthenticatedUser, applicationId: UUID) {
         Audit.PlacementProposalCreate.log(targetId = applicationId)
         user.requireOneOfRoles(Roles.ADMIN, Roles.SERVICE_WORKER)
 
-        val application = getApplication(h, applicationId)
+        val application = getApplication(tx.handle, applicationId)
         verifyStatus(application, WAITING_DECISION)
-        updateApplicationStatus(h, application.id, WAITING_UNIT_CONFIRMATION)
+        updateApplicationStatus(tx.handle, application.id, WAITING_UNIT_CONFIRMATION)
     }
 
-    fun withdrawPlacementProposal(h: Handle, user: AuthenticatedUser, applicationId: UUID) {
+    fun withdrawPlacementProposal(tx: Database.Transaction, user: AuthenticatedUser, applicationId: UUID) {
         Audit.ApplicationReturnToWaitingDecision.log(targetId = applicationId)
         user.requireOneOfRoles(Roles.ADMIN, Roles.SERVICE_WORKER)
 
-        val application = getApplication(h, applicationId)
+        val application = getApplication(tx.handle, applicationId)
         verifyStatus(application, WAITING_UNIT_CONFIRMATION)
-        updateApplicationStatus(h, application.id, WAITING_DECISION)
+        updateApplicationStatus(tx.handle, application.id, WAITING_DECISION)
     }
 
     fun respondToPlacementProposal(
@@ -292,7 +293,7 @@ class ApplicationStateService(
         }
     }
 
-    fun acceptPlacementProposal(h: Handle, user: AuthenticatedUser, unitId: UUID) {
+    fun acceptPlacementProposal(tx: Database.Transaction, user: AuthenticatedUser, unitId: UUID) {
         Audit.PlacementProposalAccept.log(targetId = unitId)
         if (!acl.getAuthorizedUnits(user).isAuthorized(unitId))
             throw Forbidden("Not authorized to accept placement proposal for unit $unitId")
@@ -305,7 +306,7 @@ class ApplicationStateService(
             JOIN application a ON a.id = pp.application_id
             WHERE a.status = 'WAITING_UNIT_CONFIRMATION'::application_status_type AND pp.unit_id = :unitId
             """.trimIndent()
-        val applicationStates = h.createQuery(sql)
+        val applicationStates = tx.createQuery(sql)
             .bind("unitId", unitId)
             .map { row ->
                 Pair<UUID, PlacementPlanConfirmationStatus>(
@@ -319,17 +320,17 @@ class ApplicationStateService(
             throw BadRequest("Must accept all children")
 
         applicationStates
-            .map { getApplication(h, it.first) }
-            .forEach { finalizeDecisions(h, user, it) }
+            .map { getApplication(tx.handle, it.first) }
+            .forEach { finalizeDecisions(tx, user, it) }
     }
 
-    fun confirmDecisionMailed(h: Handle, user: AuthenticatedUser, applicationId: UUID) {
+    fun confirmDecisionMailed(tx: Database.Transaction, user: AuthenticatedUser, applicationId: UUID) {
         Audit.DecisionConfirmMailed.log(targetId = applicationId)
         user.requireOneOfRoles(Roles.ADMIN, Roles.SERVICE_WORKER)
 
-        val application = getApplication(h, applicationId)
+        val application = getApplication(tx.handle, applicationId)
         verifyStatus(application, WAITING_MAILING)
-        updateApplicationStatus(h, application.id, WAITING_CONFIRMATION)
+        updateApplicationStatus(tx.handle, application.id, WAITING_CONFIRMATION)
     }
 
     fun acceptDecision(h: Handle, user: AuthenticatedUser, applicationId: UUID, decisionId: UUID, requestedStartDate: LocalDate, isEnduser: Boolean = false) {
@@ -611,25 +612,25 @@ class ApplicationStateService(
         }
     }
 
-    private fun finalizeDecisions(h: Handle, user: AuthenticatedUser, application: ApplicationDetails) {
-        val sendBySfi = canSendDecisionsBySfi(h, user, application)
-        val decisionDrafts = fetchDecisionDrafts(h, application.id)
+    private fun finalizeDecisions(tx: Database.Transaction, user: AuthenticatedUser, application: ApplicationDetails) {
+        val sendBySfi = canSendDecisionsBySfi(tx, user, application)
+        val decisionDrafts = fetchDecisionDrafts(tx.handle, application.id)
         if (decisionDrafts.any { it.planned }) {
-            decisionService.finalizeDecisions(h, user, application.id, sendBySfi)
-            updateApplicationStatus(h, application.id, if (sendBySfi) WAITING_CONFIRMATION else WAITING_MAILING)
+            decisionService.finalizeDecisions(tx.handle, user, application.id, sendBySfi)
+            updateApplicationStatus(tx.handle, application.id, if (sendBySfi) WAITING_CONFIRMATION else WAITING_MAILING)
         } else {
-            confirmPlacementWithoutDecision(h, user, application.id)
+            confirmPlacementWithoutDecision(tx, user, application.id)
         }
     }
 
-    private fun canSendDecisionsBySfi(h: Handle, user: AuthenticatedUser, application: ApplicationDetails): Boolean {
+    private fun canSendDecisionsBySfi(tx: Database.Transaction, user: AuthenticatedUser, application: ApplicationDetails): Boolean {
         val hasSsn = (
-            personService.getUpToDatePerson(h, user, application.guardianId)!!
-                .identity is ExternalIdentifier.SSN && personService.getUpToDatePerson(h, user, application.childId)!!
+            personService.getUpToDatePerson(tx, user, application.guardianId)!!
+                .identity is ExternalIdentifier.SSN && personService.getUpToDatePerson(tx, user, application.childId)!!
                 .identity is ExternalIdentifier.SSN
             )
         val guardianIsVtjGuardian =
-            personService.getGuardians(h, user, application.childId).any { it.id == application.guardianId }
+            personService.getGuardians(tx, user, application.childId).any { it.id == application.guardianId }
 
         return hasSsn && guardianIsVtjGuardian
     }

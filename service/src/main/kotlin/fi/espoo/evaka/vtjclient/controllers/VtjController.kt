@@ -11,10 +11,10 @@ import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.pis.service.PersonDTO
 import fi.espoo.evaka.pis.service.PersonService
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
+import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.getEnum
 import fi.espoo.evaka.shared.db.getUUID
 import fi.espoo.evaka.shared.db.handle
-import fi.espoo.evaka.shared.db.transaction
 import fi.espoo.evaka.shared.domain.ClosedPeriod
 import fi.espoo.evaka.vtjclient.dto.NativeLanguage
 import fi.espoo.evaka.vtjclient.dto.PersonDataSource
@@ -50,8 +50,9 @@ class VtjController(
         user: AuthenticatedUser,
         @PathVariable(value = "personId") personId: UUID
     ): ResponseEntity<VtjPersonDTO> {
-        val vtjData = getPersonDataWithChildren(user, personId)
-            .let { jdbi.transaction { h -> personStorageService.upsertVtjGuardianAndChildren(h, it) } }
+        val db = Database(jdbi)
+        val vtjData = getPersonDataWithChildren(db, user, personId)
+            .let { db.transaction { tx -> personStorageService.upsertVtjGuardianAndChildren(tx, it) } }
 
         return when (vtjData) {
             is PersonResult.Error -> ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build()
@@ -61,6 +62,7 @@ class VtjController(
     }
 
     private fun getPersonDataWithChildren(
+        db: Database,
         user: AuthenticatedUser,
         personId: VolttiIdentifier
     ): PersonResult {
@@ -71,15 +73,15 @@ class VtjController(
                     PersonResult.Error("Query not allowed")
                         .also { logger.error { "Error preparing request for person data: ${it.msg}" } }
                 } else {
-                    personResult(user, personId)
+                    personResult(db, user, personId)
                 }
             }
             else -> failAuthentication()
         }
     }
 
-    private fun personResult(user: AuthenticatedUser, personId: VolttiIdentifier): PersonResult {
-        val guardianResult = jdbi.handle { it.getPersonById(personId) }
+    private fun personResult(db: Database, user: AuthenticatedUser, personId: VolttiIdentifier): PersonResult {
+        val guardianResult = db.read { it.handle.getPersonById(personId) }
             ?.let { person ->
                 when (person.identity) {
                     is ExternalIdentifier.NoID -> mapPisPerson(person)

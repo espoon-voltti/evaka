@@ -26,6 +26,7 @@ import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.config.Roles
+import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.dev.insertTestApplication
 import fi.espoo.evaka.shared.dev.insertTestApplicationForm
@@ -87,16 +88,18 @@ WHERE id = :unitId
     }
 
     @Test
-    fun testDaycareFullTime(): Unit = jdbi.handle { h ->
+    fun testDaycareFullTime() {
         val period = ClosedPeriod(
             LocalDate.of(2020, 3, 17),
             LocalDate.of(2023, 7, 31)
         )
-        val applicationId = insertInitialData(
-            h,
-            type = PlacementType.DAYCARE,
-            period = period
-        )
+        val applicationId = db.transaction {
+            insertInitialData(
+                it,
+                type = PlacementType.DAYCARE,
+                period = period
+            )
+        }
         checkDecisionDrafts(
             applicationId,
             decisions = listOf(
@@ -112,7 +115,7 @@ WHERE id = :unitId
             otherGuardian = testAdult_6
         )
 
-        val decisions = createDecisions(h, applicationId)
+        val decisions = db.transaction { createDecisions(it.handle, applicationId) }
         assertEquals(1, decisions.size)
 
         val decision = decisions[0]
@@ -123,16 +126,18 @@ WHERE id = :unitId
     }
 
     @Test
-    fun testDaycarePartTime(): Unit = jdbi.handle { h ->
+    fun testDaycarePartTime() {
         val period = ClosedPeriod(
             LocalDate.of(2020, 3, 18),
             LocalDate.of(2023, 7, 29)
         )
-        val applicationId = insertInitialData(
-            h,
-            type = PlacementType.DAYCARE_PART_TIME,
-            period = period
-        )
+        val applicationId = db.transaction {
+            insertInitialData(
+                it,
+                type = PlacementType.DAYCARE_PART_TIME,
+                period = period
+            )
+        }
         checkDecisionDrafts(
             applicationId,
             decisions = listOf(
@@ -148,7 +153,7 @@ WHERE id = :unitId
             otherGuardian = testAdult_6
         )
 
-        val decisions = createDecisions(h, applicationId)
+        val decisions = db.transaction { createDecisions(it.handle, applicationId) }
         assertEquals(1, decisions.size)
 
         val decision = decisions[0]
@@ -159,16 +164,18 @@ WHERE id = :unitId
     }
 
     @Test
-    fun testPreschoolOnly(): Unit = jdbi.handle { h ->
+    fun testPreschoolOnly() {
         val period = ClosedPeriod(
             LocalDate.of(2020, 8, 15),
             LocalDate.of(2021, 5, 31)
         )
-        val applicationId = insertInitialData(
-            h,
-            type = PlacementType.PRESCHOOL,
-            period = period
-        )
+        val applicationId = db.transaction {
+            insertInitialData(
+                it,
+                type = PlacementType.PRESCHOOL,
+                period = period
+            )
+        }
         checkDecisionDrafts(
             applicationId,
             decisions = listOf(
@@ -192,7 +199,7 @@ WHERE id = :unitId
             otherGuardian = testAdult_6
         )
 
-        val decisions = createDecisions(h, applicationId)
+        val decisions = db.transaction { createDecisions(it.handle, applicationId) }
         assertEquals(1, decisions.size)
 
         val decision = decisions[0]
@@ -203,7 +210,7 @@ WHERE id = :unitId
     }
 
     @Test
-    fun testPreschoolAll(): Unit = jdbi.handle { h ->
+    fun testPreschoolAll() {
         val period = ClosedPeriod(
             LocalDate.of(2020, 8, 15),
             LocalDate.of(2021, 5, 31)
@@ -212,13 +219,15 @@ WHERE id = :unitId
             LocalDate.of(2020, 8, 1),
             LocalDate.of(2021, 7, 31)
         )
-        val applicationId = insertInitialData(
-            h,
-            type = PlacementType.PRESCHOOL_DAYCARE,
-            period = period,
-            preschoolDaycarePeriod = preschoolDaycarePeriod,
-            preparatoryEducation = false
-        )
+        val applicationId = db.transaction {
+            insertInitialData(
+                it,
+                type = PlacementType.PRESCHOOL_DAYCARE,
+                period = period,
+                preschoolDaycarePeriod = preschoolDaycarePeriod,
+                preparatoryEducation = false
+            )
+        }
         checkDecisionDrafts(
             applicationId,
             decisions = listOf(
@@ -242,7 +251,7 @@ WHERE id = :unitId
             otherGuardian = testAdult_6
         )
 
-        val decisions = createDecisions(h, applicationId)
+        val decisions = db.transaction { createDecisions(it.handle, applicationId) }
         assertEquals(2, decisions.size)
 
         val decision = decisions.find { it.type == DecisionType.PRESCHOOL }!!
@@ -257,7 +266,7 @@ WHERE id = :unitId
     }
 
     @Test
-    fun testPreparatoryAll(): Unit = jdbi.handle { h ->
+    fun testPreparatoryAll() {
         val period = ClosedPeriod(
             LocalDate.of(2020, 8, 15),
             LocalDate.of(2021, 5, 31)
@@ -266,13 +275,15 @@ WHERE id = :unitId
             LocalDate.of(2020, 8, 1),
             LocalDate.of(2021, 7, 31)
         )
-        val applicationId = insertInitialData(
-            h,
-            type = PlacementType.PRESCHOOL_DAYCARE,
-            period = period,
-            preschoolDaycarePeriod = preschoolDaycarePeriod,
-            preparatoryEducation = true
-        )
+        val applicationId = db.transaction {
+            insertInitialData(
+                it,
+                type = PlacementType.PRESCHOOL_DAYCARE,
+                period = period,
+                preschoolDaycarePeriod = preschoolDaycarePeriod,
+                preparatoryEducation = true
+            )
+        }
         checkDecisionDrafts(
             applicationId,
             decisions = listOf(
@@ -296,7 +307,7 @@ WHERE id = :unitId
             otherGuardian = testAdult_6
         )
 
-        val decisions = createDecisions(h, applicationId)
+        val decisions = db.transaction { createDecisions(it.handle, applicationId) }
         assertEquals(2, decisions.size)
 
         val decision = decisions.find { it.type == DecisionType.PREPARATORY_EDUCATION }!!
@@ -382,16 +393,18 @@ WHERE id = :unitId
     }
 
     @Test
-    fun testEndpointSecurity(): Unit = jdbi.handle { h ->
+    fun testEndpointSecurity() {
         val period = ClosedPeriod(
             LocalDate.of(2020, 3, 17),
             LocalDate.of(2023, 7, 31)
         )
-        val applicationId = insertInitialData(
-            h,
-            type = PlacementType.DAYCARE,
-            period = period
-        )
+        val applicationId = db.transaction {
+            insertInitialData(
+                it,
+                type = PlacementType.DAYCARE,
+                period = period
+            )
+        }
         val invalidRoleLists = listOf(
             setOf(Roles.UNIT_SUPERVISOR),
             setOf(Roles.FINANCE_ADMIN),
@@ -407,7 +420,7 @@ WHERE id = :unitId
     }
 
     private fun insertInitialData(
-        h: Handle,
+        tx: Database.Transaction,
         type: PlacementType,
         unit: UnitData.Detailed = testDaycare,
         adult: PersonData.Detailed = testAdult_5,
@@ -417,14 +430,14 @@ WHERE id = :unitId
         preparatoryEducation: Boolean = false
     ): UUID {
         val applicationId = insertTestApplication(
-            h,
+            tx.handle,
             status = ApplicationStatus.WAITING_PLACEMENT,
             guardianId = adult.id,
             childId = child.id
         )
         val preschoolDaycare = type == PlacementType.PRESCHOOL_DAYCARE
         insertTestApplicationForm(
-            h, applicationId,
+            tx.handle, applicationId,
             DaycareFormV0(
                 type = type.toFormType(),
                 partTime = type == PlacementType.DAYCARE_PART_TIME,
@@ -440,7 +453,7 @@ WHERE id = :unitId
         )
 
         applicationStateService.createPlacementPlan(
-            h,
+            tx,
             serviceWorker,
             applicationId,
             DaycarePlacementPlan(

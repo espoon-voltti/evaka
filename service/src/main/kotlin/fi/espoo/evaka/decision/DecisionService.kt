@@ -20,6 +20,7 @@ import fi.espoo.evaka.s3.DocumentWrapper
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.NotifyDecisionCreated
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
+import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.message.IEvakaMessageClient
 import fi.espoo.evaka.shared.message.SuomiFiMessage
@@ -55,37 +56,37 @@ class DecisionService(
     }
 
     fun createDecisionPdfs(
-        h: Handle,
+        tx: Database.Transaction,
         user: AuthenticatedUser,
         decisionId: UUID
     ) {
-        val decision = getDecision(h, decisionId) ?: throw NotFound("No decision with id: $decisionId")
+        val decision = getDecision(tx.handle, decisionId) ?: throw NotFound("No decision with id: $decisionId")
         val applicationId = decision.applicationId
-        val application = fetchApplicationDetails(h, applicationId)
+        val application = fetchApplicationDetails(tx.handle, applicationId)
             ?: throw NotFound("Application $applicationId was not found")
-        val guardian = personService.getUpToDatePerson(h, user, application.guardianId)
+        val guardian = personService.getUpToDatePerson(tx, user, application.guardianId)
             ?: error("Guardian not found with id: ${application.guardianId}")
-        val child = personService.getUpToDatePerson(h, user, application.childId)
+        val child = personService.getUpToDatePerson(tx, user, application.childId)
             ?: error("Child not found with id: ${application.childId}")
 
-        createDecisionPdf(h, decision, application, guardian, child)
-            .let { uri -> updateDecisionGuardianDocumentUri(h, decisionId, uri) }
+        createDecisionPdf(tx.handle, decision, application, guardian, child)
+            .let { uri -> updateDecisionGuardianDocumentUri(tx.handle, decisionId, uri) }
 
         if (
             decision.type != DecisionType.CLUB &&
             application.otherGuardianId != null &&
             !personService.personsLiveInTheSameAddress(
-                h,
+                tx,
                 user,
                 application.guardianId,
                 application.otherGuardianId
             )
         ) {
-            val otherGuardian = personService.getUpToDatePerson(h, user, application.otherGuardianId)
+            val otherGuardian = personService.getUpToDatePerson(tx, user, application.otherGuardianId)
                 ?: throw NotFound("Other guardian not found with id: ${application.otherGuardianId}")
 
-            createDecisionPdf(h, decision, application, otherGuardian, child)
-                .let { uri -> updateDecisionOtherGuardianDocumentUri(h, decisionId, uri) }
+            createDecisionPdf(tx.handle, decision, application, otherGuardian, child)
+                .let { uri -> updateDecisionOtherGuardianDocumentUri(tx.handle, decisionId, uri) }
         }
     }
 

@@ -28,7 +28,7 @@ import fi.espoo.evaka.pis.service.PersonDTO
 import fi.espoo.evaka.pis.service.PersonService
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.config.Roles
-import org.jdbi.v3.core.Handle
+import fi.espoo.evaka.shared.db.Database
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
@@ -52,7 +52,7 @@ class DaycareApplicationSerializerTest {
     lateinit var personService: PersonService
 
     @Mock
-    lateinit var handle: Handle
+    lateinit var tx: Database.Transaction
 
     @InjectMocks
     lateinit var serializer: ApplicationSerializer
@@ -80,7 +80,7 @@ class DaycareApplicationSerializerTest {
     @Test
     fun `enduser serialized daycare json matches expected`() {
         val user = AuthenticatedUser(requestingUserId, setOf(Roles.END_USER))
-        val json = serializer.serialize(handle, user, expectedEnduserDaycareApplication)
+        val json = serializer.serialize(tx, user, expectedEnduserDaycareApplication)
         assertTrue(json.form is EnduserDaycareFormJSON)
         assertEquals(expectedEnduserDaycareFormJSON, json.form)
     }

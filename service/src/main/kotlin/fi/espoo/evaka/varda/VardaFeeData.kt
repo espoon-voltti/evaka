@@ -13,6 +13,7 @@ import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus
 import fi.espoo.evaka.invoicing.domain.PlacementType
 import fi.espoo.evaka.pis.service.PersonService
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
+import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.getUUID
 import fi.espoo.evaka.varda.integration.VardaClient
 import mu.KotlinLogging
@@ -26,15 +27,15 @@ import java.util.UUID
 private val logger = KotlinLogging.logger {}
 
 fun updateFeeData(
-    h: Handle,
+    tx: Database.Transaction,
     client: VardaClient,
     mapper: ObjectMapper,
     personService: PersonService
 ) {
-    deleteEntriesFromAnnulledFeeDecision(h, client)
-    deleteEntriesFromDeletedPlacements(h, client)
-    updateEntriesFromModifiedPlacements(h, client, mapper, personService)
-    uploadNewFeeData(h, client, mapper, personService)
+    deleteEntriesFromAnnulledFeeDecision(tx.handle, client)
+    deleteEntriesFromDeletedPlacements(tx.handle, client)
+    updateEntriesFromModifiedPlacements(tx, client, mapper, personService)
+    uploadNewFeeData(tx, client, mapper, personService)
 }
 
 fun removeMarkedFeeDataFromVarda(h: Handle, client: VardaClient) {
@@ -65,29 +66,29 @@ fun deleteEntriesFromDeletedPlacements(h: Handle, client: VardaClient) {
         }
 }
 
-fun updateEntriesFromModifiedPlacements(h: Handle, client: VardaClient, mapper: ObjectMapper, personService: PersonService) {
-    getModifiedFeeData(h, mapper)
+fun updateEntriesFromModifiedPlacements(tx: Database.Transaction, client: VardaClient, mapper: ObjectMapper, personService: PersonService) {
+    getModifiedFeeData(tx.handle, mapper)
         .forEach { (vardaId, feeDataBase) ->
-            val feeData = baseToFeeData(h, feeDataBase, personService, client)
+            val feeData = baseToFeeData(tx, feeDataBase, personService, client)
             if (feeData != null && client.updateFeeData(vardaId, feeData)) {
-                insertFeeDataUpload(h, feeDataBase, vardaId)
+                insertFeeDataUpload(tx.handle, feeDataBase, vardaId)
             }
         }
 }
 
 fun uploadNewFeeData(
-    h: Handle,
+    tx: Database.Transaction,
     client: VardaClient,
     mapper: ObjectMapper,
     personService: PersonService
 ) {
-    val feeData = getStaleFeeData(h, mapper)
+    val feeData = getStaleFeeData(tx.handle, mapper)
     feeData.forEach { feeDataBase ->
-        val newFeeData = baseToFeeData(h, feeDataBase, personService, client)
+        val newFeeData = baseToFeeData(tx, feeDataBase, personService, client)
         if (newFeeData != null) {
             val response = client.createFeeData(newFeeData)
             if (response != null) {
-                insertFeeDataUpload(h, feeDataBase, response.vardaId)
+                insertFeeDataUpload(tx.handle, feeDataBase, response.vardaId)
             }
         } else {
             logger.info { "Not sending Varda fee data because child has no guardians in VTJ (child: ${feeDataBase.evakaChildId})" }
@@ -238,9 +239,9 @@ private val feeDataQueryBase =
             JOIN varda_child vc ON p.child_id = vc.person_id AND vc.oph_organizer_oid = u.oph_organizer_oid
     """.trimIndent()
 
-private fun baseToFeeData(h: Handle, feeDataBase: VardaFeeDataBase, personService: PersonService, client: VardaClient): VardaFeeData? {
+private fun baseToFeeData(tx: Database.Transaction, feeDataBase: VardaFeeDataBase, personService: PersonService, client: VardaClient): VardaFeeData? {
     val guardians = personService
-        .getGuardians(h, AuthenticatedUser.anonymous, feeDataBase.evakaChildId)
+        .getGuardians(tx, AuthenticatedUser.anonymous, feeDataBase.evakaChildId)
         .filter {
             if ((it.firstName + it.lastName).isNotBlank()) {
                 true

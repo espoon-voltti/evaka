@@ -51,6 +51,7 @@ import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.config.Roles
+import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.db.transaction
 import fi.espoo.evaka.shared.domain.BadRequest
@@ -516,8 +517,8 @@ RETURNING id
     @PostMapping("/vtj-persons")
     fun upsertPerson(@RequestBody person: VtjPerson): ResponseEntity<Unit> {
         MockPersonDetailsService.upsertPerson(person)
-        jdbi.handle { h ->
-            val uuid = h.createQuery("SELECT id FROM person WHERE social_security_number = :ssn")
+        Database(jdbi).transaction { tx ->
+            val uuid = tx.createQuery("SELECT id FROM person WHERE social_security_number = :ssn")
                 .bind("ssn", person.socialSecurityNumber)
                 .mapTo<UUID>()
                 .firstOrNull()
@@ -525,7 +526,7 @@ RETURNING id
             uuid?.let {
                 // Refresh Pis data by forcing refresh from VTJ
                 val dummyUser = AuthenticatedUser(it, setOf(Roles.SERVICE_WORKER))
-                personService.getUpToDatePerson(h, dummyUser, it)
+                personService.getUpToDatePerson(tx, dummyUser, it)
             }
         }
         return ResponseEntity.noContent().build()
@@ -571,9 +572,9 @@ RETURNING id
         )
 
         val actionFn = simpleActions[action] ?: throw NotFound("Action not recognized")
-        jdbi.transaction { h ->
-            ensureFakeAdminExists(h)
-            actionFn.invoke(h, fakeAdmin, applicationId)
+        Database(jdbi).transaction { tx ->
+            ensureFakeAdminExists(tx.handle)
+            actionFn.invoke(tx, fakeAdmin, applicationId)
         }
         return ResponseEntity.noContent().build()
     }
@@ -583,9 +584,9 @@ RETURNING id
         @PathVariable applicationId: UUID,
         @RequestBody body: DaycarePlacementPlan
     ): ResponseEntity<Unit> {
-        jdbi.transaction { h ->
-            ensureFakeAdminExists(h)
-            applicationStateService.createPlacementPlan(h, fakeAdmin, applicationId, body)
+        Database(jdbi).transaction { tx ->
+            ensureFakeAdminExists(tx.handle)
+            applicationStateService.createPlacementPlan(tx, fakeAdmin, applicationId, body)
         }
         return ResponseEntity.noContent().build()
     }
@@ -594,9 +595,9 @@ RETURNING id
     fun createDefaultPlacementPlan(
         @PathVariable applicationId: UUID
     ): ResponseEntity<Unit> {
-        jdbi.transaction { h ->
-            ensureFakeAdminExists(h)
-            placementPlanService.getPlacementPlanDraft(h, applicationId)
+        Database(jdbi).transaction { tx ->
+            ensureFakeAdminExists(tx.handle)
+            placementPlanService.getPlacementPlanDraft(tx.handle, applicationId)
                 .let {
                     DaycarePlacementPlan(
                         unitId = it.preferredUnits.first().id,
@@ -604,7 +605,7 @@ RETURNING id
                         preschoolDaycarePeriod = it.preschoolDaycarePeriod
                     )
                 }
-                .let { applicationStateService.createPlacementPlan(h, fakeAdmin, applicationId, it) }
+                .let { applicationStateService.createPlacementPlan(tx, fakeAdmin, applicationId, it) }
         }
 
         return ResponseEntity.noContent().build()

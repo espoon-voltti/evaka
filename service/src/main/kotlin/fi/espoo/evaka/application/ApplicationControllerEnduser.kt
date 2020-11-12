@@ -11,6 +11,7 @@ import fi.espoo.evaka.application.enduser.ApplicationSerializer
 import fi.espoo.evaka.pis.service.PersonService
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
+import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.transaction
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.NotFound
@@ -45,10 +46,10 @@ class ApplicationControllerEnduser(
         Audit.ApplicationCreate.log(targetId = user.id, objectId = body.childId)
         user.requireOneOfRoles(UserRole.END_USER)
 
-        val id = jdbi.transaction { h ->
-            val guardian = personService.getUpToDatePerson(h, user, user.id)
+        val id = Database(jdbi).transaction { tx ->
+            val guardian = personService.getUpToDatePerson(tx, user, user.id)
                 ?: throw NotFound("Guardian not found")
-            val child = personService.getUpToDatePerson(h, user, body.childId)
+            val child = personService.getUpToDatePerson(tx, user, body.childId)
                 ?: throw NotFound("Child not found")
             val type = when (body.type) {
                 ApplicationJsonType.CLUB -> ApplicationType.CLUB
@@ -56,11 +57,11 @@ class ApplicationControllerEnduser(
                 ApplicationJsonType.PRESCHOOL -> ApplicationType.PRESCHOOL
             }
 
-            if (duplicateApplicationExists(h, body.childId, user.id, type)) {
+            if (duplicateApplicationExists(tx.handle, body.childId, user.id, type)) {
                 throw BadRequest("Duplicate application exsts")
             }
             val id = insertApplication(
-                h = h,
+                h = tx.handle,
                 guardianId = user.id,
                 childId = body.childId,
                 origin = ApplicationOrigin.ELECTRONIC
@@ -70,7 +71,7 @@ class ApplicationControllerEnduser(
                 guardian = guardian,
                 child = child
             )
-            updateForm(h, id, form, type, child.restrictedDetailsEnabled, guardian.restrictedDetailsEnabled)
+            updateForm(tx.handle, id, form, type, child.restrictedDetailsEnabled, guardian.restrictedDetailsEnabled)
             id
         }
 
@@ -82,10 +83,10 @@ class ApplicationControllerEnduser(
         Audit.ApplicationRead.log(targetId = user.id)
         user.requireOneOfRoles(UserRole.END_USER)
 
-        val applications = jdbi.transaction { h ->
-            fetchOwnApplicationIds(h, user.id)
-                .mapNotNull { fetchApplicationDetails(h, it) }
-                .map { serializer.serialize(h, user, it) }
+        val applications = Database(jdbi).transaction { tx ->
+            fetchOwnApplicationIds(tx.handle, user.id)
+                .mapNotNull { fetchApplicationDetails(tx.handle, it) }
+                .map { serializer.serialize(tx, user, it) }
         }
 
         return ResponseEntity.ok(applications)
@@ -99,10 +100,10 @@ class ApplicationControllerEnduser(
         Audit.ApplicationRead.log(targetId = applicationId)
         user.requireOneOfRoles(UserRole.END_USER)
 
-        val application = jdbi.transaction { h ->
-            fetchApplicationDetails(h, applicationId)
+        val application = Database(jdbi).transaction { tx ->
+            fetchApplicationDetails(tx.handle, applicationId)
                 ?.takeIf { it.guardianId == user.id }
-                ?.let { serializer.serialize(h, user, it) }
+                ?.let { serializer.serialize(tx, user, it) }
                 ?: throw NotFound("Application $applicationId of guardian ${user.id} not found")
         }
 
@@ -119,10 +120,10 @@ class ApplicationControllerEnduser(
         user.requireOneOfRoles(UserRole.END_USER)
 
         val formV0 = serializer.deserialize(user, formJson)
-        val updatedApplication = jdbi.transaction { h ->
+        val updatedApplication = Database(jdbi).transaction { tx ->
             applicationStateService
-                .updateOwnApplicationContents(h, user, applicationId, formV0)
-                .let { serializer.serialize(h, user, it) }
+                .updateOwnApplicationContents(tx.handle, user, applicationId, formV0)
+                .let { serializer.serialize(tx, user, it) }
         }
 
         return ResponseEntity.ok(updatedApplication)

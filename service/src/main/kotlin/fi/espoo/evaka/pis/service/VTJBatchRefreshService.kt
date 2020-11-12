@@ -6,6 +6,7 @@ package fi.espoo.evaka.pis.service
 
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.VTJRefresh
+import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.transaction
 import mu.KotlinLogging
 import org.jdbi.v3.core.Handle
@@ -25,11 +26,11 @@ class VTJBatchRefreshService(
 ) {
 
     init {
-        asyncJobRunner.vtjRefresh = ::doVTJRefresh
+        asyncJobRunner.vtjRefresh = { msg -> fridgeFamilyService.doVTJRefresh(Database(jdbi), msg) }
     }
 
-    fun doVTJRefresh(msg: VTJRefresh) {
-        fridgeFamilyService.doVTJRefresh(msg)
+    fun doVTJRefresh(db: Database, msg: VTJRefresh) {
+        fridgeFamilyService.doVTJRefresh(db, msg)
     }
 
     fun scheduleBatch(): Int {

@@ -31,6 +31,7 @@ import fi.espoo.evaka.shared.config.Roles.END_USER
 import fi.espoo.evaka.shared.config.Roles.FINANCE_ADMIN
 import fi.espoo.evaka.shared.config.Roles.SERVICE_WORKER
 import fi.espoo.evaka.shared.config.Roles.UNIT_SUPERVISOR
+import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.db.transaction
 import fi.espoo.evaka.shared.domain.BadRequest
@@ -91,7 +92,7 @@ class PersonController(
         @PathVariable(value = "personId") personId: VolttiIdentifier
     ): ResponseEntity<PersonJSON> {
         Audit.PersonDetailsRead.log(targetId = personId)
-        return jdbi.transaction {
+        return Database(jdbi).transaction {
             personService.getUpToDatePerson(it, user, personId)
         }
             ?.let { ResponseEntity.ok().body(PersonJSON.from(it)) }
@@ -105,7 +106,7 @@ class PersonController(
     ): ResponseEntity<List<PersonWithChildrenDTO>> {
         Audit.PersonDependantRead.log(targetId = personId)
         user.requireOneOfRoles(SERVICE_WORKER, UNIT_SUPERVISOR, FINANCE_ADMIN, ADMIN)
-        return jdbi.transaction { personService.getUpToDatePersonWithChildren(it, user, personId) }
+        return Database(jdbi).transaction { personService.getUpToDatePersonWithChildren(it, user, personId) }
             ?.let { ResponseEntity.ok().body(it.children) }
             ?: ResponseEntity.notFound().build()
     }
@@ -117,7 +118,7 @@ class PersonController(
     ): ResponseEntity<List<PersonJSON>> {
         Audit.PersonGuardianRead.log(targetId = personId)
         user.requireOneOfRoles(SERVICE_WORKER, UNIT_SUPERVISOR, FINANCE_ADMIN, ADMIN)
-        return jdbi.transaction { personService.getGuardians(it, user, personId) }
+        return Database(jdbi).transaction { personService.getGuardians(it, user, personId) }
             .let { ResponseEntity.ok().body(it.map { personDTO -> PersonJSON.from(personDTO) }) }
             ?: ResponseEntity.notFound().build()
     }
@@ -175,7 +176,8 @@ class PersonController(
     ): ResponseEntity<PersonJSON> {
         Audit.PersonUpdate.log(targetId = personId)
         user.requireOneOfRoles(SERVICE_WORKER, UNIT_SUPERVISOR, FINANCE_ADMIN)
-        return jdbi.transaction { personService.patchUserDetails(it, personId, data) }.let { ResponseEntity.ok(PersonJSON.from(it)) }
+        return Database(jdbi).transaction { personService.patchUserDetails(it, personId, data) }
+            .let { ResponseEntity.ok(PersonJSON.from(it)) }
     }
 
     @DeleteMapping("/{personId}")
@@ -202,10 +204,11 @@ class PersonController(
             throw BadRequest("Invalid social security number")
         }
 
-        jdbi.handle { h ->
-            personService.addSsn(h, user, personId, ExternalIdentifier.SSN.getInstance(body.ssn))
+        val db = Database(jdbi)
+        db.transaction {
+            personService.addSsn(it, user, personId, ExternalIdentifier.SSN.getInstance(body.ssn))
         }
-        val person = jdbi.handle { h -> personService.getUpToDatePerson(h, user, personId)!! }
+        val person = db.transaction { personService.getUpToDatePerson(it, user, personId)!! }
         return ResponseEntity.ok(PersonJSON.from(person))
     }
 
@@ -223,7 +226,13 @@ class PersonController(
         val person = if (readonly) {
             personService.getPersonFromVTJ(user, ExternalIdentifier.SSN.getInstance(ssn))
         } else {
-            jdbi.transaction { h -> personService.getOrCreatePerson(h, user, ExternalIdentifier.SSN.getInstance(ssn)) }
+            Database(jdbi).transaction {
+                personService.getOrCreatePerson(
+                    it,
+                    user,
+                    ExternalIdentifier.SSN.getInstance(ssn)
+                )
+            }
         }
 
         return person

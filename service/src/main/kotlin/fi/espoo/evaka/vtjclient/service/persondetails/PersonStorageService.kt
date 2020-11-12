@@ -12,37 +12,37 @@ import fi.espoo.evaka.pis.service.deleteChildGuardianRelationships
 import fi.espoo.evaka.pis.service.deleteGuardianChildRelationShips
 import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.pis.updatePersonFromVtj
+import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.vtjclient.dto.NativeLanguage
 import fi.espoo.evaka.vtjclient.dto.PersonDataSource
 import fi.espoo.evaka.vtjclient.dto.VtjPersonDTO
 import fi.espoo.evaka.vtjclient.usecases.dto.PersonResult
-import org.jdbi.v3.core.Handle
 import org.springframework.stereotype.Service
 import java.util.UUID
 
 @Service
 class PersonStorageService {
-    fun upsertVtjPerson(h: Handle, personResult: PersonResult): PersonResult {
+    fun upsertVtjPerson(tx: Database.Transaction, personResult: PersonResult): PersonResult {
         return when (personResult) {
-            is PersonResult.Result -> PersonResult.Result(createOrUpdateOnePerson(h, personResult.vtjPersonDTO))
+            is PersonResult.Result -> PersonResult.Result(createOrUpdateOnePerson(tx, personResult.vtjPersonDTO))
             else -> personResult
         }
     }
 
-    fun upsertVtjGuardianAndChildren(h: Handle, personResult: PersonResult): PersonResult {
+    fun upsertVtjGuardianAndChildren(tx: Database.Transaction, personResult: PersonResult): PersonResult {
         return when (personResult) {
-            is PersonResult.Result -> upsertVtjGuardianAndChildren(h, personResult.vtjPersonDTO)
+            is PersonResult.Result -> upsertVtjGuardianAndChildren(tx, personResult.vtjPersonDTO)
             else -> personResult
         }
     }
 
-    fun upsertVtjChildAndGuardians(h: Handle, personResult: PersonResult): PersonResult {
+    fun upsertVtjChildAndGuardians(tx: Database.Transaction, personResult: PersonResult): PersonResult {
         return when (personResult) {
             is PersonResult.Result -> {
-                val child = createOrUpdateOnePerson(h, personResult.vtjPersonDTO)
-                child.guardians.addAll(personResult.vtjPersonDTO.guardians.map { createOrUpdateOnePerson(h, it) })
+                val child = createOrUpdateOnePerson(tx, personResult.vtjPersonDTO)
+                child.guardians.addAll(personResult.vtjPersonDTO.guardians.map { createOrUpdateOnePerson(tx, it) })
                 createOrReplaceChildRelationships(
-                    h,
+                    tx,
                     childId = child.id,
                     guardianIds = child.guardians.map { guardian -> guardian.id }
                 )
@@ -53,11 +53,11 @@ class PersonStorageService {
         }
     }
 
-    private fun upsertVtjGuardianAndChildren(h: Handle, vtjPersonDTO: VtjPersonDTO): PersonResult {
-        val guardian = createOrUpdateOnePerson(h, vtjPersonDTO)
-        guardian.children.addAll(vtjPersonDTO.children.map { createOrUpdateOnePerson(h, it) })
+    private fun upsertVtjGuardianAndChildren(tx: Database.Transaction, vtjPersonDTO: VtjPersonDTO): PersonResult {
+        val guardian = createOrUpdateOnePerson(tx, vtjPersonDTO)
+        guardian.children.addAll(vtjPersonDTO.children.map { createOrUpdateOnePerson(tx, it) })
         createOrReplaceGuardianRelationships(
-            h,
+            tx,
             guardianId = guardian.id,
             childIds = guardian.children.map { child -> child.id }
         )
@@ -65,29 +65,29 @@ class PersonStorageService {
         return PersonResult.Result(guardian)
     }
 
-    private fun createOrReplaceGuardianRelationships(h: Handle, guardianId: UUID, childIds: List<UUID>) {
-        deleteGuardianChildRelationShips(h, guardianId)
-        childIds.forEach { childId -> insertGuardian(h, guardianId, childId) }
+    private fun createOrReplaceGuardianRelationships(tx: Database.Transaction, guardianId: UUID, childIds: List<UUID>) {
+        deleteGuardianChildRelationShips(tx.handle, guardianId)
+        childIds.forEach { childId -> insertGuardian(tx.handle, guardianId, childId) }
     }
 
-    private fun createOrReplaceChildRelationships(h: Handle, childId: UUID, guardianIds: List<UUID>) {
-        deleteChildGuardianRelationships(h, childId)
-        guardianIds.forEach { guardianId -> insertGuardian(h, guardianId, childId) }
+    private fun createOrReplaceChildRelationships(tx: Database.Transaction, childId: UUID, guardianIds: List<UUID>) {
+        deleteChildGuardianRelationships(tx.handle, childId)
+        guardianIds.forEach { guardianId -> insertGuardian(tx.handle, guardianId, childId) }
     }
 
-    private fun createOrUpdateOnePerson(h: Handle, inputPerson: VtjPersonDTO): VtjPersonDTO {
+    private fun createOrUpdateOnePerson(tx: Database.Transaction, inputPerson: VtjPersonDTO): VtjPersonDTO {
         if (inputPerson.source != PersonDataSource.VTJ) {
             return inputPerson
         }
 
-        val existingPerson = h.getPersonBySSN(inputPerson.socialSecurityNumber)
+        val existingPerson = tx.handle.getPersonBySSN(inputPerson.socialSecurityNumber)
 
         return if (existingPerson == null) {
             val newPerson = newPersonFromVtjData(inputPerson)
-            map(h.createPersonFromVtj(newPerson), inputPerson.source)
+            map(tx.handle.createPersonFromVtj(newPerson), inputPerson.source)
         } else {
             val updatedPerson = getPersonWithUpdatedProperties(inputPerson, existingPerson)
-            map(h.updatePersonFromVtj(updatedPerson), inputPerson.source)
+            map(tx.handle.updatePersonFromVtj(updatedPerson), inputPerson.source)
         }
     }
 

@@ -105,7 +105,7 @@ class FamilyInitializerService(
     )
 
     private fun parseFridgeFamilyMembersFromApplication(
-        db: Database.Transaction,
+        tx: Database.Transaction,
         user: AuthenticatedUser,
         application: ApplicationDetails
     ): FridgeFamilyMembers {
@@ -116,16 +116,16 @@ class FamilyInitializerService(
         val otherGuardianId = application.otherGuardianId
         val fridgePartnerSSN = if (
             otherGuardianId != null &&
-            personService.personsLiveInTheSameAddress(db.handle, user, headOfFamilyId, otherGuardianId)
+            personService.personsLiveInTheSameAddress(tx, user, headOfFamilyId, otherGuardianId)
         ) {
-            (db.handle.getPersonById(otherGuardianId)?.identity as? SSN)?.ssn
+            (tx.handle.getPersonById(otherGuardianId)?.identity as? SSN)?.ssn
         } else {
             application.form.otherPartner?.socialSecurityNumber
         }
 
         val fridgePartnerId = fridgePartnerSSN
             ?.let { stringToSSN(it) }
-            ?.let { personService.getOrCreatePerson(db.handle, user, it, updateStale) }
+            ?.let { personService.getOrCreatePerson(tx, user, it, updateStale) }
             ?.id
 
         val fridgeChildId = application.childId
@@ -133,7 +133,7 @@ class FamilyInitializerService(
         val fridgeSiblingIds = application.form.otherChildren
             .mapNotNull { it.socialSecurityNumber }
             .mapNotNull { stringToSSN(it) }
-            .mapNotNull { personService.getOrCreatePerson(db.handle, user, it, updateStale)?.id }
+            .mapNotNull { personService.getOrCreatePerson(tx, user, it, updateStale)?.id }
 
         return FridgeFamilyMembers(headOfFamilyId, fridgePartnerId, fridgeChildId, fridgeSiblingIds)
     }

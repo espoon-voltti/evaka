@@ -8,6 +8,7 @@ import fi.espoo.evaka.shared.async.AsyncJobPayload
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.AsyncJobType
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
+import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.transaction
 import mu.KotlinLogging
 import org.jdbi.v3.core.Handle
@@ -26,12 +27,12 @@ class DvvModificationsBatchRefreshService(
     private val dvvModificationsService: DvvModificationsService
 ) {
     init {
-        asyncJobRunner.dvvModificationsRefresh = ::doDvvModificationsRefresh
+        asyncJobRunner.dvvModificationsRefresh = { msg -> doDvvModificationsRefresh(Database(jdbi), msg) }
     }
 
-    fun doDvvModificationsRefresh(msg: DvvModificationsRefresh) {
+    fun doDvvModificationsRefresh(db: Database, msg: DvvModificationsRefresh) {
         logger.info("DvvModificationsRefresh: starting to process ${msg.ssns.size} ssns")
-        val modificationCount = dvvModificationsService.updatePersonsFromDvv(msg.ssns)
+        val modificationCount = dvvModificationsService.updatePersonsFromDvv(db, msg.ssns)
         logger.info("DvvModificationsRefresh: finished processing $modificationCount DVV person modifications for ${msg.ssns.size} ssns")
     }
 
@@ -62,7 +63,8 @@ class DvvModificationsBatchRefreshService(
     }
 
     private fun deleteOldJobs(h: Handle) {
-        h.createUpdate("DELETE FROM async_job WHERE type = 'DVV_MODIFICATIONS_REFRESH' AND (claimed_by IS NULL OR completed_at IS NOT NULL)").execute()
+        h.createUpdate("DELETE FROM async_job WHERE type = 'DVV_MODIFICATIONS_REFRESH' AND (claimed_by IS NULL OR completed_at IS NOT NULL)")
+            .execute()
     }
 
     fun getPersonSsnsToUpdate(h: Handle): List<String> {
