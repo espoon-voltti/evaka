@@ -536,6 +536,7 @@ export default function UnitEditor(props: Props): JSX.Element {
               icon={faPen}
               onClick={onClickEditHandler}
               text={i18n.common.edit}
+              dataQa={'enable-edit-button'}
             />
           )}
         </TopBar>
@@ -993,6 +994,7 @@ export default function UnitEditor(props: Props): JSX.Element {
             placeholder={i18n.unitEditor.placeholder.phone}
             value={unitManager.phone}
             onChange={(value) => updateUnitManager({ phone: value })}
+            dataQa={'qa-unit-manager-phone-input-field'}
           />
         ) : (
           unitManager.phone
@@ -1008,6 +1010,7 @@ export default function UnitEditor(props: Props): JSX.Element {
             placeholder={i18n.unitEditor.placeholder.email}
             value={unitManager.email}
             onChange={(value) => updateUnitManager({ email: value })}
+            dataQa={'qa-unit-manager-email-input-field'}
           />
         ) : (
           unitManager.email
