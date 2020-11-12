@@ -99,7 +99,6 @@ function Applications() {
           <Wrapper>
             <ReactSelect
               options={[
-                { value: '', label: i18n.common.all },
                 ...(isSuccess(rows)
                   ? distinct(
                       rows.data.map((row) => row.careAreaName)
@@ -120,7 +119,7 @@ function Applications() {
                       label: displayFilters.careArea,
                       value: displayFilters.careArea
                     }
-                  : undefined
+                  : null
               }
               styles={reactSelectStyles}
               placeholder={i18n.reports.occupancies.filters.areaPlaceholder}

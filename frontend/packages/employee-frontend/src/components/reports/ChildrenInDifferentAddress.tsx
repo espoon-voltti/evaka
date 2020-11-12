@@ -88,7 +88,7 @@ function ChildrenInDifferentAddress() {
                       ...displayFilters,
                       careArea: option.value
                     })
-                  : undefined
+                  : null
               }
               value={
                 displayFilters.careArea !== ''

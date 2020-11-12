@@ -94,7 +94,7 @@ function FamilyConflicts() {
                       label: displayFilters.careArea,
                       value: displayFilters.careArea
                     }
-                  : undefined
+                  : null
               }
               styles={reactSelectStyles}
               placeholder={i18n.reports.occupancies.filters.areaPlaceholder}
