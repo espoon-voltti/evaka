@@ -1119,6 +1119,117 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
     }
 
     @Test
+    fun `when two people have active fee decisions for the same child only one of them is invoiced`() {
+        val period = Period(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
+        jdbi.handle(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
+        val decision = createFeeDecisionFixture(
+            FeeDecisionStatus.SENT,
+            FeeDecisionType.NORMAL,
+            period,
+            testAdult_1.id,
+            listOf(
+                createFeeDecisionPartFixture(
+                    childId = testChild_1.id,
+                    dateOfBirth = testChild_1.dateOfBirth,
+                    daycareId = testDaycare.id,
+                    baseFee = 28900,
+                    fee = 28900,
+                    feeAlterations = listOf()
+                )
+            )
+        )
+        jdbi.handle { h ->
+            insertTestPlacement(
+                h,
+                childId = testChild_1.id,
+                unitId = testDaycare.id,
+                startDate = period.start,
+                endDate = period.end!!
+            )
+            upsertFeeDecisions(
+                h,
+                objectMapper,
+                listOf(decision, decision.copy(id = UUID.randomUUID(), headOfFamily = PersonData.JustId(testAdult_2.id)))
+            )
+        }
+
+        jdbi.transaction { createAllDraftInvoices(it, objectMapper, period) }
+
+        val result = jdbi.handle(getAllInvoices)
+
+        assertEquals(1, result.size)
+        result.first().let { invoice ->
+            assertEquals(testAdult_1.id, invoice.headOfFamily.id)
+            assertEquals(28900, invoice.totalPrice())
+            assertEquals(1, invoice.rows.size)
+            invoice.rows.first().let { invoiceRow ->
+                assertEquals(testChild_1.id, invoiceRow.child.id)
+                assertEquals(Product.DAYCARE, invoiceRow.product)
+                assertEquals(1, invoiceRow.amount)
+                assertEquals(28900, invoiceRow.unitPrice)
+                assertEquals(28900, invoiceRow.price())
+            }
+        }
+    }
+
+    @Test
+    fun `when a placement ends before the fee decision only the placement period is invoiced`() {
+        val period = Period(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
+        val placementPeriod = period.copy(end = period.start.plusDays(7))
+        jdbi.handle(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
+        val decision = createFeeDecisionFixture(
+            FeeDecisionStatus.SENT,
+            FeeDecisionType.NORMAL,
+            period,
+            testAdult_1.id,
+            listOf(
+                createFeeDecisionPartFixture(
+                    childId = testChild_1.id,
+                    dateOfBirth = testChild_1.dateOfBirth,
+                    daycareId = testDaycare.id,
+                    baseFee = 28900,
+                    fee = 28900,
+                    feeAlterations = listOf()
+                )
+            )
+        )
+        jdbi.handle { h ->
+            insertTestPlacement(
+                h,
+                childId = testChild_1.id,
+                unitId = testDaycare.id,
+                startDate = placementPeriod.start,
+                endDate = placementPeriod.end!!
+            )
+            upsertFeeDecisions(
+                h,
+                objectMapper,
+                listOf(decision, decision.copy(id = UUID.randomUUID(), headOfFamily = PersonData.JustId(testAdult_2.id)))
+            )
+        }
+
+        jdbi.transaction { createAllDraftInvoices(it, objectMapper, period) }
+
+        val result = jdbi.handle(getAllInvoices)
+
+        assertEquals(1, result.size)
+        result.first().let { invoice ->
+            assertEquals(testAdult_1.id, invoice.headOfFamily.id)
+            assertEquals(6570, invoice.totalPrice())
+            assertEquals(1, invoice.rows.size)
+            invoice.rows.first().let { invoiceRow ->
+                assertEquals(testChild_1.id, invoiceRow.child.id)
+                assertEquals(placementPeriod.start, invoiceRow.periodStart)
+                assertEquals(placementPeriod.end, invoiceRow.periodEnd)
+                assertEquals(Product.DAYCARE, invoiceRow.product)
+                assertEquals(5, invoiceRow.amount)
+                assertEquals(1314, invoiceRow.unitPrice)
+                assertEquals(6570, invoiceRow.price())
+            }
+        }
+    }
+
+    @Test
     fun `invoice generation with sick leave absences covering period`() {
         val period = Period(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
 
