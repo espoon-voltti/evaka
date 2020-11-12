@@ -11,9 +11,20 @@ import org.jdbi.v3.core.statement.PreparedBatch
 import org.jdbi.v3.core.statement.Query
 import org.jdbi.v3.core.statement.Update
 
-internal data class ThreadId(val id: Long = Thread.currentThread().id) {
-    fun assertCurrentThread() = assert(Thread.currentThread().id == id) { "Database accessed from the wrong thread" }
-}
+// What does it mean when a function accepts a Database/Database.* parameter?
+//
+//     fun doStuff(db: Database):
+//         To call this function, you need to have a database reference *without* an active connection or transaction.
+//         The can connect/disconnect from the database 0 to N times, and do whatever it wants using the connection(s).
+//     fun doStuff(db: Database.Connection)
+//         To call this function, you need to have an active database connection *without* an active transaction.
+//         The function can read/write the database and freely execute 0 to N individual transactions.
+//     fun doStuff(tx: Database.Read)
+//         To call this function, you need to have an active read-only transaction.
+//         The function can only read the database, and can't manage transactions by itself.
+//     fun doStuff(tx: Database.Transaction)
+//         To call this function, you need to have an active transaction.
+//         The function can read/write the database, and can't manage transactions by itself.
 
 /**
  * A database reference that can be used to obtain *one database connection at a time*.
@@ -167,4 +178,8 @@ class Database(private val jdbi: Jdbi) {
             }
         }
     }
+}
+
+internal data class ThreadId(val id: Long = Thread.currentThread().id) {
+    fun assertCurrentThread() = assert(Thread.currentThread().id == id) { "Database accessed from the wrong thread" }
 }
