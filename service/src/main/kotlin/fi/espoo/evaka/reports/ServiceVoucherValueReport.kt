@@ -1,6 +1,7 @@
 package fi.espoo.evaka.reports
 
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
+import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.bindNullable
@@ -25,13 +26,14 @@ import java.util.UUID
 
 @RestController
 @RequestMapping("/reports/service-voucher-value")
-class ServiceVoucherValueReportController(private val jdbi: Jdbi) {
+class ServiceVoucherValueReportController(private val jdbi: Jdbi, private val acl: AccessControlList) {
     @GetMapping("/units")
     fun getServiceVoucherValuesForAllUnits(
         user: AuthenticatedUser,
         @RequestParam year: Int,
         @RequestParam month: Int,
         @RequestParam areaId: UUID
+
     ): ResponseEntity<List<ServiceVoucherValueUnitAggregate>> {
         user.requireOneOfRoles(UserRole.ADMIN, UserRole.FINANCE_ADMIN)
 
@@ -41,6 +43,7 @@ class ServiceVoucherValueReportController(private val jdbi: Jdbi) {
                 LocalDate.of(year, month, Month.of(month).length(Year.isLeap(year.toLong())))
             )
             val rows = getServiceVoucherValues(h, period, areaId = areaId)
+
             val aggregates = rows
                 .groupBy { ServiceVoucherValueUnitAggregate.UnitData(it.unitId, it.unitName, it.areaId, it.areaName) }
                 .map { (unit, rows) ->
@@ -52,7 +55,7 @@ class ServiceVoucherValueReportController(private val jdbi: Jdbi) {
                                 row.serviceVoucherValue - row.serviceVoucherCoPayment,
                                 row.serviceVoucherPeriod,
                                 period
-                            )
+                            ).realizedAmount
                         }
                     )
                 }
@@ -64,18 +67,27 @@ class ServiceVoucherValueReportController(private val jdbi: Jdbi) {
     @GetMapping("/units/{unitId}")
     fun getServiceVoucherValuesForUnit(
         user: AuthenticatedUser,
-        @PathVariable unitId: UUID,
+        @PathVariable("unitId") unitId: UUID,
         @RequestParam year: Int,
-        @RequestParam month: Month
+        @RequestParam month: Int
     ): ResponseEntity<List<ServiceVoucherValueRow>> {
         user.requireOneOfRoles(UserRole.ADMIN, UserRole.FINANCE_ADMIN)
 
         return jdbi.handle { h ->
             val period = ClosedPeriod(
                 LocalDate.of(year, month, 1),
-                LocalDate.of(year, month, month.length(Year.isLeap(year.toLong())))
+                LocalDate.of(year, month, Month.of(month).length(Year.isLeap(year.toLong())))
             )
             val rows = getServiceVoucherValues(h, period, unitId = unitId)
+                .map { row ->
+                    row.copy(
+                        derivatives = realizedMonthlyAmount(
+                            row.serviceVoucherValue - row.serviceVoucherCoPayment,
+                            row.serviceVoucherPeriod,
+                            period
+                        )
+                    )
+                }
 
             ResponseEntity.ok(rows)
         }
@@ -100,6 +112,7 @@ data class ServiceVoucherValueRow(
     val childFirstName: String,
     val childLastName: String,
     val childDateOfBirth: LocalDate,
+    val childGroupName: String?,
     val unitId: UUID,
     val unitName: String,
     val areaId: UUID,
@@ -107,17 +120,28 @@ data class ServiceVoucherValueRow(
     val serviceVoucherPeriod: Period,
     val serviceVoucherValue: Int,
     val serviceVoucherCoPayment: Int,
-    val serviceVoucherServiceCoefficient: Int
+    val serviceVoucherServiceCoefficient: Int,
+    val serviceVoucherHoursPerWeek: Int,
+    val derivatives: ValueRowDerivatives? = null
 )
 
-private fun realizedMonthlyAmount(value: Int, decisionPeriod: Period, monthPeriod: ClosedPeriod): Int {
+data class ValueRowDerivatives(
+    val realizedAmount: Int,
+    val realizedPeriod: ClosedPeriod,
+    val numberOfDays: Long
+)
+
+private fun realizedMonthlyAmount(value: Int, decisionPeriod: Period, monthPeriod: ClosedPeriod): ValueRowDerivatives {
     val realizedPeriod = ClosedPeriod(
         maxOf(decisionPeriod.start, monthPeriod.start),
         minOf(decisionPeriod.end ?: monthPeriod.end, monthPeriod.end)
     )
-    val coefficient = BigDecimal(realizedPeriod.durationInDays())
-        .divide(BigDecimal(monthPeriod.durationInDays()), 10, RoundingMode.HALF_UP)
-    return (BigDecimal(value) * coefficient).setScale(0, RoundingMode.HALF_UP).toInt()
+
+    val numberOfDays = realizedPeriod.durationInDays()
+    val coefficient = BigDecimal(numberOfDays).divide(BigDecimal(monthPeriod.durationInDays()), 10, RoundingMode.HALF_UP)
+    val realizedAmount = (BigDecimal(value) * coefficient).setScale(0, RoundingMode.HALF_UP).toInt()
+
+    return ValueRowDerivatives(realizedAmount, realizedPeriod, numberOfDays)
 }
 
 private fun getServiceVoucherValues(
@@ -134,6 +158,7 @@ private fun getServiceVoucherValues(
             child.first_name AS child_first_name,
             child.last_name AS child_last_name,
             child.date_of_birth AS child_date_of_birth,
+            child_group.name as child_group_name,
             unit.id AS unit_id,
             unit.name AS unit_name,
             area.id AS area_id,
@@ -141,12 +166,22 @@ private fun getServiceVoucherValues(
             daterange(decision.valid_from, decision.valid_to, '[]') AS service_voucher_period,
             part.voucher_value AS service_voucher_value,
             part.co_payment AS service_voucher_co_payment,
-            part.service_coefficient AS service_voucher_service_coefficient
+            part.service_coefficient AS service_voucher_service_coefficient,
+            part.hours_per_week service_voucher_hours_per_week
         FROM voucher_value_decision decision
         JOIN voucher_value_decision_part part ON decision.id = part.voucher_value_decision_id
         JOIN person child ON part.child = child.id
         JOIN daycare unit ON part.placement_unit = unit.id
         JOIN care_area area ON unit.care_area_id = area.id
+        LEFT JOIN LATERAL (
+            SELECT p.child_id, STRING_AGG(dg.name, ', ') AS name
+            FROM placement p
+            JOIN daycare_group_placement dgp ON p.id = dgp.daycare_placement_id
+            JOIN daycare_group dg ON dgp.daycare_group_id = dg.id
+            WHERE daterange(decision.valid_from, decision.valid_to, '[]') && daterange(dgp.start_date, dgp.end_date, '[]')
+            AND p.unit_id = part.placement_unit
+            GROUP BY p.child_id
+        ) child_group ON child.id = child_group.child_id 
         WHERE decision.status = :sent
         AND daterange(decision.valid_from, decision.valid_to, '[]') && :period
         AND (:areaId::uuid IS NULL OR area.id = :areaId)

@@ -60,6 +60,7 @@ import AttendanceChildPage from '~components/attendances/AttendanceChildPage'
 import { hasRole } from '~utils/roles'
 import { getAuthStatus, AuthStatus } from '~api/auth'
 import VoucherServiceProviders from '~components/reports/VoucherServiceProviders'
+import VoucherServiceProviderUnit from '~components/reports/VoucherServiceProviderUnit'
 import { featureFlags } from '~config'
 
 export default function App() {
@@ -306,6 +307,14 @@ export default function App() {
                 exact
                 path="/reports/voucher-service-providers"
                 component={ensureAuthenticated(VoucherServiceProviders)}
+                title={i18n.titles.reports}
+              />
+            )}
+            {featureFlags.voucherValueDecisionsPage && (
+              <RouteWithTitle
+                exact
+                path="/reports/voucher-service-providers/:unitId"
+                component={ensureAuthenticated(VoucherServiceProviderUnit)}
                 title={i18n.titles.reports}
               />
             )}

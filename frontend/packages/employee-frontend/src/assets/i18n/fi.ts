@@ -1951,6 +1951,22 @@ export const fi = {
       detailsLink: 'Näytä erittely',
       average: 'Keskiarvo',
       breakdown: 'Erittely'
+    },
+    voucherServiceProviderUnit: {
+      title: 'Palvelusetelilapset yksikössä',
+      month: 'Kuukausi',
+      description: '',
+      child: 'Lapsen nimi / synt. aika',
+      childFirstName: 'Etunimi',
+      childLastName: 'Sukunimi',
+      numberOfDays: 'Päivät',
+      serviceVoucherValue: 'Ps kokonaisarvo',
+      serviceVoucherRealizedValue: 'Ps arvo / kk',
+      serviceVoucherCoPayment: 'Omavastuu',
+      coefficient: 'Kerroin',
+      serviceNeed: 'Palveluntarve',
+      serviceNeedType: 'h / vk',
+      partTime: 'Osa/Koko'
     }
   },
   unitEditor: {

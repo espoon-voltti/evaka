@@ -5,6 +5,7 @@
 import { UUID } from '~types/index'
 import LocalDate from '@evaka/lib-common/src/local-date'
 import { AbsenceType } from 'types/absence'
+import { Period } from './placementdraft'
 
 export interface InvoiceReportRow {
   areaCode: number
@@ -323,4 +324,28 @@ export interface VoucherServiceProviderRow {
   }
   childCount: number
   monthlyPaymentSum: number
+}
+
+export interface VoucherServiceProviderUnitRow {
+  childId: UUID
+  childFirstName: string
+  childLastName: string
+  childDateOfBirth: LocalDate
+  childGroupName: string
+  serviceVoucherPeriod: Period
+  serviceVoucherValue: number
+  serviceVoucherCoPayment: number
+  serviceVoucherServiceCoefficient: number
+  serviceVoucherHoursPerWeek: number
+  unitId: UUID
+  unitName: string
+  areaId: UUID
+  areaName: string
+  derivatives: VoucherServiceProviderUnitRowDerivatives
+}
+
+export interface VoucherServiceProviderUnitRowDerivatives {
+  realizedAmount: number
+  realizedPeriod: Period
+  numberOfDays: number
 }
