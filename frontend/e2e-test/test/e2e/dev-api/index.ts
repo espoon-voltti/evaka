@@ -283,6 +283,21 @@ export async function deletePersonFixture(id: UUID): Promise<void> {
   }
 }
 
+export async function insertParentshipFixtures(
+  fixtures: {
+    childId: UUID
+    headOfChildId: UUID
+    startDate: string
+    endDate: string | null
+  }[]
+): Promise<void> {
+  try {
+    await devClient.post(`/parentship`, fixtures)
+  } catch (e) {
+    throw new DevApiError(e)
+  }
+}
+
 export async function setAclForDaycares(
   personAad: UUID,
   daycareId: UUID

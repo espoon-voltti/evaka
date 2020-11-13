@@ -363,6 +363,7 @@ DELETE FROM application_form USING applications WHERE application_id = applicati
                 id
             )
             it.execute("DELETE FROM placement WHERE child_id = ?", id)
+            it.execute("DELETE FROM fridge_child WHERE head_of_child = ? OR child_id = ?", id, id)
             it.execute("DELETE FROM guardian WHERE (guardian_id = ? OR child_id = ?)", id, id)
             it.execute("DELETE FROM child WHERE id = ?", id)
             it.execute("DELETE FROM person WHERE id = ?", id)
@@ -381,6 +382,11 @@ DELETE FROM application_form USING applications WHERE application_id = applicati
             deletePerson(uuid)
         }
         return ResponseEntity.ok().build()
+    }
+
+    @PostMapping("/parentship")
+    fun createParentships(@RequestBody parentships: List<DevParentship>): ResponseEntity<List<DevParentship>> {
+        return jdbi.handle { h -> parentships.map { h.insertTestParentship(it) } }.let { ResponseEntity.ok(it) }
     }
 
     @GetMapping("/employee")
@@ -897,6 +903,14 @@ data class DevPerson(
         invoicingPostOffice = this.invoicingPostOffice
     )
 }
+
+data class DevParentship(
+    val id: UUID?,
+    val childId: UUID,
+    val headOfChildId: UUID,
+    val startDate: LocalDate,
+    val endDate: LocalDate
+)
 
 data class DevEmployee(
     val id: UUID = UUID.randomUUID(),

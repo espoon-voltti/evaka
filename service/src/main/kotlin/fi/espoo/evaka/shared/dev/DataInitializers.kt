@@ -164,6 +164,18 @@ fun insertTestParentship(
     return id
 }
 
+fun Handle.insertTestParentship(parentship: DevParentship): DevParentship {
+    val withId = if (parentship.id == null) parentship.copy(id = UUID.randomUUID()) else parentship
+    // language=sql
+    val sql =
+        """
+        INSERT INTO fridge_child (id, head_of_child, child_id, start_date, end_date)
+        VALUES (:id, :headOfChildId, :childId, :startDate, :endDate)
+        """.trimIndent()
+    createUpdate(sql).bindKotlin(withId).execute()
+    return withId
+}
+
 fun insertTestPartnership(
     h: Handle,
     adult1: UUID,

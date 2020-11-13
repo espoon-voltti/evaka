@@ -463,8 +463,8 @@ export const decisionFixture = (
 
 export const feeDecisionsFixture = (
   status: FeeDecisionStatus,
-  adultId: UUID,
-  childId: UUID,
+  adult: ApplicationPersonDetail,
+  child: ApplicationPersonDetail,
   daycareId: UUID
 ): FeeDecision => ({
   id: 'bcc42d48-765d-4fe1-bc90-7a7b4c8205fe',
@@ -472,7 +472,7 @@ export const feeDecisionsFixture = (
   decisionType: 'NORMAL',
   validFrom: '2019-01-01',
   validTo: '2021-01-01',
-  headOfFamily: { id: adultId },
+  headOfFamily: { id: adult.id },
   familySize: 2,
   pricing: {
     multiplier: '0.1070',
@@ -486,7 +486,7 @@ export const feeDecisionsFixture = (
   },
   parts: [
     {
-      child: { id: childId, dateOfBirth: '2017-06-30' },
+      child: { id: child.id, dateOfBirth: child.dateOfBirth },
       placement: {
         unit: daycareId,
         type: 'DAYCARE',
@@ -583,15 +583,17 @@ export function createChildFixture(childId: string): Child {
 
 export function createDaycarePlacementFixture(
   childId: string,
-  unitId: string
+  unitId: string,
+  startDate = '2020-05-01',
+  endDate = '2021-08-31'
 ): DaycarePlacement {
   return {
     id: '2226ce62-4fac-42df-b18f-6400a3a9105e',
     type: 'DAYCARE',
     childId,
     unitId: unitId,
-    startDate: '2020-05-01',
-    endDate: '2021-08-31'
+    startDate,
+    endDate
   }
 }
 

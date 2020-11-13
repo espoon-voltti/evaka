@@ -18,6 +18,7 @@ import fi.espoo.evaka.invoicing.data.invoiceQueryBase
 import fi.espoo.evaka.invoicing.data.toInvoice
 import fi.espoo.evaka.invoicing.data.upsertFeeDecisions
 import fi.espoo.evaka.invoicing.domain.FeeAlteration
+import fi.espoo.evaka.invoicing.domain.FeeDecision
 import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus
 import fi.espoo.evaka.invoicing.domain.FeeDecisionType
 import fi.espoo.evaka.invoicing.domain.Invoice
@@ -478,6 +479,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
     @Test
     fun `invoice generation from two fee decision with same price results in one invoice row`() {
         val period = Period(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
+        jdbi.handle(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
         val decision = createFeeDecisionFixture(
             FeeDecisionStatus.SENT,
             FeeDecisionType.NORMAL,
@@ -494,9 +496,8 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
             )
         )
         jdbi.handle { h ->
-            upsertFeeDecisions(
+            insertDecisionsAndPlacements(
                 h,
-                objectMapper,
                 listOf(
                     decision.copy(validTo = period.start.plusDays(7)),
                     decision.copy(id = UUID.randomUUID(), validFrom = period.start.plusDays(8))
@@ -526,6 +527,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
     @Test
     fun `invoice generation from two fee decision with same price and same fee alterations results in one invoice row`() {
         val period = Period(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
+        jdbi.handle(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
         val decision = createFeeDecisionFixture(
             FeeDecisionStatus.SENT,
             FeeDecisionType.NORMAL,
@@ -550,9 +552,8 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
             )
         )
         jdbi.handle { h ->
-            upsertFeeDecisions(
+            insertDecisionsAndPlacements(
                 h,
-                objectMapper,
                 listOf(
                     decision.copy(validTo = period.start.plusDays(7)),
                     decision.copy(id = UUID.randomUUID(), validFrom = period.start.plusDays(8))
@@ -589,6 +590,8 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
     @Test
     fun `invoice generation from two fee decision with the second one having another child results in one invoice row for the first child`() {
         val period = Period(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
+        jdbi.handle(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
+        jdbi.handle(insertChildParentRelation(testAdult_1.id, testChild_2.id, period))
         val decision = createFeeDecisionFixture(
             FeeDecisionStatus.SENT,
             FeeDecisionType.NORMAL,
@@ -605,9 +608,8 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
             )
         )
         jdbi.handle { h ->
-            upsertFeeDecisions(
+            insertDecisionsAndPlacements(
                 h,
-                objectMapper,
                 listOf(
                     decision.copy(validTo = period.start.plusDays(7)),
                     decision.copy(
@@ -657,6 +659,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
     fun `invoice generation from two fee decisions makes sure the sum is at most the monthly fee`() {
         // January 2019 has 22 operational days which results in daily price being rounded up
         val period = Period(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
+        jdbi.handle(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
         val decisions = listOf(
             createFeeDecisionFixture(
                 FeeDecisionStatus.SENT,
@@ -689,7 +692,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
                 )
             )
         )
-        jdbi.handle { h -> upsertFeeDecisions(h, objectMapper, decisions) }
+        jdbi.handle { h -> insertDecisionsAndPlacements(h, decisions) }
 
         jdbi.transaction { createAllDraftInvoices(it, objectMapper, period) }
 
@@ -728,6 +731,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
     fun `invoice generation from two fee decisions makes sure the sum is at least the monthly fee`() {
         // March 2019 has 21 operational days which results in daily price being rounded down
         val period = Period(LocalDate.of(2019, 3, 1), LocalDate.of(2019, 3, 31))
+        jdbi.handle(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
         val decisions = listOf(
             createFeeDecisionFixture(
                 FeeDecisionStatus.SENT,
@@ -760,7 +764,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
                 )
             )
         )
-        jdbi.handle { h -> upsertFeeDecisions(h, objectMapper, decisions) }
+        jdbi.handle { h -> insertDecisionsAndPlacements(h, decisions) }
 
         jdbi.transaction { createAllDraftInvoices(it, objectMapper, period) }
 
@@ -799,6 +803,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
     fun `invoice generation from two fee decisions with cleanly split daily prices does not result in a rounding row`() {
         // February 2019 has 20 operational days which results in daily price being split evenly
         val period = Period(LocalDate.of(2019, 2, 1), LocalDate.of(2019, 2, 28))
+        jdbi.handle(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
         val decisions = listOf(
             createFeeDecisionFixture(
                 FeeDecisionStatus.SENT,
@@ -831,7 +836,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
                 )
             )
         )
-        jdbi.handle { h -> upsertFeeDecisions(h, objectMapper, decisions) }
+        jdbi.handle { h -> insertDecisionsAndPlacements(h, decisions) }
 
         jdbi.transaction { createAllDraftInvoices(it, objectMapper, period) }
 
@@ -862,6 +867,8 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
     @Test
     fun `invoice generation from two fee decision with the second one having changed fee for second child results in one invoice row for the first child`() {
         val period = Period(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
+        jdbi.handle(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
+        jdbi.handle(insertChildParentRelation(testAdult_1.id, testChild_2.id, period))
         val decision = createFeeDecisionFixture(
             FeeDecisionStatus.SENT,
             FeeDecisionType.NORMAL,
@@ -886,9 +893,8 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
             )
         )
         jdbi.handle { h ->
-            upsertFeeDecisions(
+            insertDecisionsAndPlacements(
                 h,
-                objectMapper,
                 listOf(
                     decision.copy(validTo = period.start.plusDays(7)),
                     decision.copy(
@@ -936,6 +942,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
     @Test
     fun `invoice generation from fee decision with one fee alteration creates additional invoice row`() {
         val period = Period(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
+        jdbi.handle(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
         val decision = createFeeDecisionFixture(
             FeeDecisionStatus.SENT,
             FeeDecisionType.NORMAL,
@@ -959,7 +966,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
                 )
             )
         )
-        jdbi.handle { h -> upsertFeeDecisions(h, objectMapper, listOf(decision)) }
+        jdbi.handle { h -> insertDecisionsAndPlacements(h, listOf(decision)) }
 
         jdbi.transaction { createAllDraftInvoices(it, objectMapper, period) }
 
@@ -990,6 +997,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
     @Test
     fun `invoice generation from fee decision with multiple fee alterations creates additional invoice rows`() {
         val period = Period(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
+        jdbi.handle(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
         val decision = createFeeDecisionFixture(
             FeeDecisionStatus.SENT,
             FeeDecisionType.NORMAL,
@@ -1019,7 +1027,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
                 )
             )
         )
-        jdbi.handle { h -> upsertFeeDecisions(h, objectMapper, listOf(decision)) }
+        jdbi.handle { h -> insertDecisionsAndPlacements(h, listOf(decision)) }
 
         jdbi.transaction { createAllDraftInvoices(it, objectMapper, period) }
 
@@ -1058,6 +1066,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
     @Test
     fun `invoice generation from fee decision with a 95% discount fee alteration`() {
         val period = Period(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
+        jdbi.handle(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
         val decision = createFeeDecisionFixture(
             FeeDecisionStatus.SENT,
             FeeDecisionType.NORMAL,
@@ -1081,7 +1090,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
                 )
             )
         )
-        jdbi.handle { h -> upsertFeeDecisions(h, objectMapper, listOf(decision)) }
+        jdbi.handle { h -> insertDecisionsAndPlacements(h, listOf(decision)) }
 
         jdbi.transaction { createAllDraftInvoices(it, objectMapper, period) }
 
@@ -1105,6 +1114,117 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(-27455, invoiceRow.unitPrice)
                 assertEquals(-27455, invoiceRow.price())
+            }
+        }
+    }
+
+    @Test
+    fun `when two people have active fee decisions for the same child only one of them is invoiced`() {
+        val period = Period(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
+        jdbi.handle(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
+        val decision = createFeeDecisionFixture(
+            FeeDecisionStatus.SENT,
+            FeeDecisionType.NORMAL,
+            period,
+            testAdult_1.id,
+            listOf(
+                createFeeDecisionPartFixture(
+                    childId = testChild_1.id,
+                    dateOfBirth = testChild_1.dateOfBirth,
+                    daycareId = testDaycare.id,
+                    baseFee = 28900,
+                    fee = 28900,
+                    feeAlterations = listOf()
+                )
+            )
+        )
+        jdbi.handle { h ->
+            insertTestPlacement(
+                h,
+                childId = testChild_1.id,
+                unitId = testDaycare.id,
+                startDate = period.start,
+                endDate = period.end!!
+            )
+            upsertFeeDecisions(
+                h,
+                objectMapper,
+                listOf(decision, decision.copy(id = UUID.randomUUID(), headOfFamily = PersonData.JustId(testAdult_2.id)))
+            )
+        }
+
+        jdbi.transaction { createAllDraftInvoices(it, objectMapper, period) }
+
+        val result = jdbi.handle(getAllInvoices)
+
+        assertEquals(1, result.size)
+        result.first().let { invoice ->
+            assertEquals(testAdult_1.id, invoice.headOfFamily.id)
+            assertEquals(28900, invoice.totalPrice())
+            assertEquals(1, invoice.rows.size)
+            invoice.rows.first().let { invoiceRow ->
+                assertEquals(testChild_1.id, invoiceRow.child.id)
+                assertEquals(Product.DAYCARE, invoiceRow.product)
+                assertEquals(1, invoiceRow.amount)
+                assertEquals(28900, invoiceRow.unitPrice)
+                assertEquals(28900, invoiceRow.price())
+            }
+        }
+    }
+
+    @Test
+    fun `when a placement ends before the fee decision only the placement period is invoiced`() {
+        val period = Period(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
+        val placementPeriod = period.copy(end = period.start.plusDays(7))
+        jdbi.handle(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
+        val decision = createFeeDecisionFixture(
+            FeeDecisionStatus.SENT,
+            FeeDecisionType.NORMAL,
+            period,
+            testAdult_1.id,
+            listOf(
+                createFeeDecisionPartFixture(
+                    childId = testChild_1.id,
+                    dateOfBirth = testChild_1.dateOfBirth,
+                    daycareId = testDaycare.id,
+                    baseFee = 28900,
+                    fee = 28900,
+                    feeAlterations = listOf()
+                )
+            )
+        )
+        jdbi.handle { h ->
+            insertTestPlacement(
+                h,
+                childId = testChild_1.id,
+                unitId = testDaycare.id,
+                startDate = placementPeriod.start,
+                endDate = placementPeriod.end!!
+            )
+            upsertFeeDecisions(
+                h,
+                objectMapper,
+                listOf(decision, decision.copy(id = UUID.randomUUID(), headOfFamily = PersonData.JustId(testAdult_2.id)))
+            )
+        }
+
+        jdbi.transaction { createAllDraftInvoices(it, objectMapper, period) }
+
+        val result = jdbi.handle(getAllInvoices)
+
+        assertEquals(1, result.size)
+        result.first().let { invoice ->
+            assertEquals(testAdult_1.id, invoice.headOfFamily.id)
+            assertEquals(6570, invoice.totalPrice())
+            assertEquals(1, invoice.rows.size)
+            invoice.rows.first().let { invoiceRow ->
+                assertEquals(testChild_1.id, invoiceRow.child.id)
+                assertEquals(placementPeriod.start, invoiceRow.periodStart)
+                assertEquals(placementPeriod.end, invoiceRow.periodEnd)
+                assertEquals(Product.DAYCARE, invoiceRow.product)
+                assertEquals(5, invoiceRow.amount)
+                assertEquals(1314, invoiceRow.unitPrice)
+                assertEquals(6570, invoiceRow.price())
             }
         }
     }
@@ -1509,6 +1629,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
     fun `invoice generation when fee decision is valid only during weekend`() {
         val period = Period(LocalDate.of(2020, 5, 1), LocalDate.of(2020, 5, 31))
         val weekEnd = Period(LocalDate.of(2020, 5, 2), LocalDate.of(2020, 5, 3))
+        jdbi.handle(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
         val decision = createFeeDecisionFixture(
             FeeDecisionStatus.SENT,
             FeeDecisionType.NORMAL,
@@ -1525,7 +1646,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
                 )
             )
         )
-        jdbi.handle { h -> upsertFeeDecisions(h, objectMapper, listOf(decision)) }
+        jdbi.handle { h -> insertDecisionsAndPlacements(h, listOf(decision)) }
 
         jdbi.transaction { createAllDraftInvoices(it, objectMapper, period) }
 
@@ -1657,14 +1778,14 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
         initFreeJulyTestData(
             Period(LocalDate.of(2020, 7, 1), LocalDate.of(2020, 7, 31)),
             listOf(
-                Period(LocalDate.of(2020, 9, 1), LocalDate.of(2020, 9, 30)),
-                Period(LocalDate.of(2020, 10, 1), LocalDate.of(2020, 10, 31)),
-                Period(LocalDate.of(2020, 11, 1), LocalDate.of(2020, 11, 30)),
-                Period(LocalDate.of(2020, 12, 1), LocalDate.of(2020, 12, 31)),
-                Period(LocalDate.of(2021, 2, 1), LocalDate.of(2021, 2, 28)),
-                Period(LocalDate.of(2021, 3, 1), LocalDate.of(2021, 3, 31)),
-                Period(LocalDate.of(2021, 6, 1), LocalDate.of(2021, 6, 30)),
-                Period(LocalDate.of(2021, 7, 1), LocalDate.of(2021, 7, 31))
+                Period(LocalDate.of(2019, 9, 1), LocalDate.of(2019, 9, 30)),
+                Period(LocalDate.of(2019, 10, 1), LocalDate.of(2019, 10, 31)),
+                Period(LocalDate.of(2019, 11, 1), LocalDate.of(2019, 11, 30)),
+                Period(LocalDate.of(2019, 12, 1), LocalDate.of(2019, 12, 31)),
+                Period(LocalDate.of(2020, 2, 1), LocalDate.of(2020, 2, 28)),
+                Period(LocalDate.of(2020, 3, 1), LocalDate.of(2020, 3, 31)),
+                Period(LocalDate.of(2020, 6, 1), LocalDate.of(2020, 6, 30)),
+                Period(LocalDate.of(2020, 7, 1), LocalDate.of(2020, 7, 31))
             )
         )
 
@@ -1675,17 +1796,17 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
     @Test
     fun `free july 2020 applies only on july`() {
         initFreeJulyTestData(
-            Period(LocalDate.of(2020, 8, 1), LocalDate.of(2020, 8, 31)),
+            Period(LocalDate.of(2020, 6, 1), LocalDate.of(2020, 6, 30)),
             listOf(
-                Period(LocalDate.of(2020, 9, 1), LocalDate.of(2020, 9, 30)),
-                Period(LocalDate.of(2020, 10, 1), LocalDate.of(2020, 10, 31)),
-                Period(LocalDate.of(2020, 11, 1), LocalDate.of(2020, 11, 30)),
-                Period(LocalDate.of(2020, 12, 1), LocalDate.of(2020, 12, 31)),
-                Period(LocalDate.of(2021, 1, 1), LocalDate.of(2021, 1, 31)),
-                Period(LocalDate.of(2021, 2, 1), LocalDate.of(2021, 2, 28)),
-                Period(LocalDate.of(2021, 3, 1), LocalDate.of(2021, 3, 31)),
-                Period(LocalDate.of(2021, 6, 1), LocalDate.of(2021, 6, 30)),
-                Period(LocalDate.of(2021, 7, 1), LocalDate.of(2021, 7, 31))
+                Period(LocalDate.of(2019, 9, 1), LocalDate.of(2019, 9, 30)),
+                Period(LocalDate.of(2019, 10, 1), LocalDate.of(2019, 10, 31)),
+                Period(LocalDate.of(2019, 11, 1), LocalDate.of(2019, 11, 30)),
+                Period(LocalDate.of(2019, 12, 1), LocalDate.of(2019, 12, 31)),
+                Period(LocalDate.of(2020, 1, 1), LocalDate.of(2020, 1, 31)),
+                Period(LocalDate.of(2020, 2, 1), LocalDate.of(2020, 2, 28)),
+                Period(LocalDate.of(2020, 3, 1), LocalDate.of(2020, 3, 31)),
+                Period(LocalDate.of(2020, 6, 1), LocalDate.of(2020, 6, 30)),
+                Period(LocalDate.of(2020, 7, 1), LocalDate.of(2020, 7, 31))
             )
         )
         val result = jdbi.handle(getAllInvoices)
@@ -1708,6 +1829,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
                 )
             )
         )
+        jdbi.handle(insertChildParentRelation(testAdult_1.id, testChild_1.id, invoicingPeriod))
         jdbi.handle { h ->
             upsertFeeDecisions(
                 h,
@@ -1752,6 +1874,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
                 )
             )
 
+            jdbi.handle(insertChildParentRelation(testAdult_1.id, child.id, period))
             jdbi.handle { h -> upsertFeeDecisions(h, objectMapper, listOf(decision)) }
 
             val placementId = jdbi.handle(insertPlacement(child.id, period))
@@ -1778,6 +1901,30 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
                 groupId, testDecisionMaker_1.id
             )
         }
+
+    private fun insertDecisionsAndPlacements(h: Handle, feeDecisions: List<FeeDecision>) {
+        upsertFeeDecisions(h, objectMapper, feeDecisions)
+        feeDecisions.forEach { decision ->
+            decision.parts.forEach { part ->
+                insertTestPlacement(
+                    h,
+                    childId = part.child.id,
+                    unitId = part.placement.unit,
+                    startDate = decision.validFrom,
+                    endDate = decision.validTo!!,
+                    type = when (part.placement.type) {
+                        fi.espoo.evaka.invoicing.domain.PlacementType.CLUB -> PlacementType.CLUB
+                        fi.espoo.evaka.invoicing.domain.PlacementType.DAYCARE,
+                        fi.espoo.evaka.invoicing.domain.PlacementType.FIVE_YEARS_OLD_DAYCARE -> PlacementType.DAYCARE
+                        fi.espoo.evaka.invoicing.domain.PlacementType.PRESCHOOL,
+                        fi.espoo.evaka.invoicing.domain.PlacementType.PRESCHOOL_WITH_DAYCARE -> PlacementType.PRESCHOOL_DAYCARE
+                        fi.espoo.evaka.invoicing.domain.PlacementType.PREPARATORY,
+                        fi.espoo.evaka.invoicing.domain.PlacementType.PREPARATORY_WITH_DAYCARE -> PlacementType.PREPARATORY_DAYCARE
+                    }
+                )
+            }
+        }
+    }
 
     private fun insertPlacement(childId: UUID, period: Period, type: PlacementType = PlacementType.DAYCARE) = { h: Handle ->
         insertTestPlacement(
