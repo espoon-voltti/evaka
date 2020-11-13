@@ -85,6 +85,7 @@ private fun getPersonsToUpload(h: Handle): List<Pair<String, VardaPersonRequest>
             LEFT JOIN varda_child ON person.id = varda_child.person_id 
             INNER JOIN daycare ON cu.unit_id = daycare.id
         WHERE person.social_security_number <> ''
+            AND (person.first_name <> '' AND person.last_name <> '')
             AND daycare.upload_to_varda = true
             AND varda_child.id IS NULL
         """.trimIndent()

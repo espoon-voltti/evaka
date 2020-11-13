@@ -3151,5 +3151,91 @@
       "postOfficeSe": "Esbo"
     },
     "dependants": []
+  },
+  {
+    "firstNames": "",
+    "lastName": "",
+    "socialSecurityNumber": "311288A999L",
+    "nationalities": [
+      {
+        "countryName": "Suomi",
+        "countryCode": "FIN"
+      }
+    ],
+    "nativeLanguage": {
+      "languageName": "suomi",
+      "code": "fi"
+    },
+    "restrictedDetails": {
+      "enabled": false,
+      "endDate": null
+    },
+    "residenceCode": "nimeton_kankkulankaivo1",
+    "address": {
+      "streetAddress": "Kankkulankaivo 1",
+      "postalCode": "00340",
+      "postOffice": "Espoo",
+      "streetAddressSe": "Kankkulaswell 1",
+      "postOfficeSe": "Esbo"
+    },
+    "dependants": [
+      {
+        "firstNames": "Niilo",
+        "lastName": "Nimettömänpoika",
+        "socialSecurityNumber": "311218A999J",
+        "nationalities": [
+          {
+            "countryName": "Suomi",
+            "countryCode": "FIN"
+          }
+        ],
+        "nativeLanguage": {
+          "languageName": "suomi",
+          "code": "fi"
+        },
+        "restrictedDetails": {
+          "enabled": false,
+          "endDate": null
+        },
+        "residenceCode": "nimeton_kankkulankaivo1",
+        "address": {
+          "streetAddress": "Kankkulankaivo 1",
+          "postalCode": "00340",
+          "postOffice": "Espoo",
+          "streetAddressSe": "Kankkulaswell 1",
+          "postOfficeSe": "Esbo"
+        },
+        "dependants": [],
+        "guardians": [
+          {
+            "firstNames": "",
+            "lastName": "",
+            "socialSecurityNumber": "311288A999L",
+            "nationalities": [
+              {
+                "countryName": "Suomi",
+                "countryCode": "FIN"
+              }
+            ],
+            "nativeLanguage": {
+              "languageName": "suomi",
+              "code": "fi"
+            },
+            "restrictedDetails": {
+              "enabled": false,
+              "endDate": null
+            },
+            "residenceCode": "hogfors_kamreerintie1",
+            "address": {
+              "streetAddress": "Kankkulankaivo 1",
+              "postalCode": "00340",
+              "postOffice": "Espoo",
+              "streetAddressSe": "Kankkulaswell 1",
+              "postOfficeSe": "Esbo"
+            }
+          }
+        ]
+      }
+    ]
   }
 ]

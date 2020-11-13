@@ -241,6 +241,14 @@ private val feeDataQueryBase =
 private fun baseToFeeData(h: Handle, feeDataBase: VardaFeeDataBase, personService: PersonService, client: VardaClient): VardaFeeData? {
     val guardians = personService
         .getGuardians(h, AuthenticatedUser.anonymous, feeDataBase.evakaChildId)
+        .filter {
+            if ((it.firstName + it.lastName).isNotBlank()) {
+                true
+            } else {
+                logger.warn("Skipped Varda guardian because name was blank: ${it.id}")
+                false
+            }
+        }
         .map { guardian ->
             VardaGuardian(
                 ssn = guardian.identity.toString(),
