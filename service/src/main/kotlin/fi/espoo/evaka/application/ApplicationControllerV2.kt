@@ -477,16 +477,6 @@ class ApplicationControllerV2(
         jdbi.transaction { actionFn.invoke(it, user, applicationId) }
         return ResponseEntity.noContent().build()
     }
-
-    @PostMapping("/clear-old-drafts")
-    fun removeOldDraftApplications(
-        user: AuthenticatedUser
-    ): ResponseEntity<Unit> {
-        Audit.ApplicationsDeleteDrafts.log()
-        jdbi.transaction { removeOldDrafts(it) }
-
-        return ResponseEntity.noContent().build()
-    }
 }
 
 data class PaperApplicationCreateRequest(

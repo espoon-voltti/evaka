@@ -46,8 +46,15 @@ setupLoggingMiddleware(app)
 
 app.use('/api/csp', csp)
 
+function scheduledApiRouter() {
+  const router = Router()
+  router.all('*', (req, res) => res.sendStatus(404))
+  return router
+}
+
 function internalApiRouter() {
   const router = Router()
+  router.use('/scheduled', scheduledApiRouter())
   router.use(createAuthEndpoints('employee'))
 
   if (enableDevApi) {
@@ -56,12 +63,12 @@ function internalApiRouter() {
       createProxy({ path: ({ path }) => `/dev-api${path}` })
     )
   }
+
   router.use(csrf)
   router.use(userDetails('employee'))
   router.use(authenticate)
   router.use(createProxy())
   router.use(errorHandler(true))
-
   return router
 }
 

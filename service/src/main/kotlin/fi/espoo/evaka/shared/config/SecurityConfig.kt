@@ -72,9 +72,10 @@ class PublicResourcesConfigurerAdapter : WebSecurityConfigurerAdapter() {
     override fun configure(http: HttpSecurity) {
         http
             .csrf().ignoringAntMatchers(
-                "/varda/update",
-                "/varda/units/update-units",
-                "/koski/update",
+                "/scheduled/varda/update",
+                "/scheduled/varda/units/update-units",
+                "/scheduled/koski/update",
+                "/scheduled/dvv/update",
                 "/mock-integration/varda/api/**",
                 "/mock-integration/koski/api/**",
                 "/mock-integration/dvv/api/**"
@@ -86,12 +87,13 @@ class PublicResourcesConfigurerAdapter : WebSecurityConfigurerAdapter() {
                 "/enduser/areas",
                 "/location",
                 "/report/offices",
-                "/varda/update",
-                "/varda/units/update-units",
+                "/scheduled/varda/update",
+                "/scheduled/varda/units/update-units",
                 "/mock-integration/varda/api/**",
-                "/koski/update",
+                "/scheduled/koski/update",
                 "/mock-integration/koski/api/**",
-                "/mock-integration/dvv/api/**"
+                "/mock-integration/dvv/api/**",
+                "/scheduled/dvv/update"
             )
             .and()
             .authorizeRequests()

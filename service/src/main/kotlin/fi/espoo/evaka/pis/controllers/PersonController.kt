@@ -230,20 +230,6 @@ class PersonController(
             ?: ResponseEntity.notFound().build()
     }
 
-    @PostMapping("/batch-refresh/vtj")
-    fun batchRefreshVtj(user: AuthenticatedUser): ResponseEntity<Int> {
-        Audit.VtjBatchSchedule.log()
-        user.requireOneOfRoles(ADMIN)
-        return ResponseEntity.ok(vtjBatchRefreshService.scheduleBatch())
-    }
-
-    @PostMapping("/batch-refresh/dvv")
-    fun batchRefreshDvv(user: AuthenticatedUser): ResponseEntity<Int> {
-        Audit.VtjBatchSchedule.log()
-        user.requireOneOfRoles(ADMIN)
-        return ResponseEntity.ok(dvvModificationsBatchRefreshService.scheduleBatch())
-    }
-
     @GetMapping("/get-deceased/")
     fun getDeceased(
         user: AuthenticatedUser,
