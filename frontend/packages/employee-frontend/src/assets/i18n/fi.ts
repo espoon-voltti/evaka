@@ -1962,7 +1962,7 @@ export const fi = {
       serviceVoucherRealizedValue: 'Ps arvo / kk',
       serviceVoucherCoPayment: 'Omavastuu',
       coefficient: 'Kerroin',
-      serviceNeed: 'Sopimuspäivät',
+      serviceNeed: 'Palveluntarve',
       serviceNeedType: 'h / vk',
       partTime: 'Osa/Koko'
     }
