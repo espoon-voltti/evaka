@@ -18,6 +18,10 @@ import fi.espoo.evaka.invoicing.domain.PlacementType
 import fi.espoo.evaka.pis.service.PersonService
 import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.db.handle
+import fi.espoo.evaka.shared.dev.DevChild
+import fi.espoo.evaka.shared.dev.DevPerson
+import fi.espoo.evaka.shared.dev.insertTestChild
+import fi.espoo.evaka.shared.dev.insertTestPerson
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.ClosedPeriod
 import fi.espoo.evaka.shared.domain.Period
@@ -763,6 +767,33 @@ class VardaFeeDataIntegrationTest : FullApplicationTest() {
         }
     }
 
+    @Test
+    fun `child whose guardians has no name is not sent to Varda`() {
+        jdbi.handle { h ->
+            h.insertTestPerson(
+                DevPerson(
+                    id = childWithNamelessParent.id,
+                    dateOfBirth = childWithNamelessParent.dateOfBirth,
+                    ssn = childWithNamelessParent.ssn,
+                    firstName = childWithNamelessParent.firstName,
+                    lastName = childWithNamelessParent.lastName,
+                    streetAddress = childWithNamelessParent.streetAddress!!,
+                    postalCode = childWithNamelessParent.postalCode!!,
+                    postOffice = childWithNamelessParent.postOffice!!
+                )
+            )
+            h.insertTestChild(DevChild(id = childWithNamelessParent.id))
+
+            // Niilo Nimettömänpoika's guardian doesn't have a name in mock VTJ data
+            createDecisionsAndPlacements(h = h, child = childWithNamelessParent)
+            insertFeeDecision(h, FeeDecisionStatus.SENT, listOf(childWithNamelessParent), objectMapper)
+
+            updateFeeData(h)
+
+            assertEquals(0, getVardaFeeDataRows(h).size)
+        }
+    }
+
     private fun updateAll(h: Handle) {
         updateChildren(h, vardaClient, vardaOrganizerName)
         updateDecisions(h, vardaClient)
@@ -845,3 +876,15 @@ private fun clearPlacements(h: Handle) {
     h.createUpdate("DELETE FROM placement WHERE 1 = 1")
         .execute()
 }
+
+val childWithNamelessParent = PersonData.Detailed(
+    id = UUID.randomUUID(),
+    dateOfBirth = LocalDate.of(2018, 12, 31),
+    ssn = "311218A999J",
+    firstName = "Niilo",
+    lastName = "Nimettömänpoika",
+    streetAddress = "Kankkulankaivo 1",
+    postalCode = "00340",
+    postOffice = "Espoo",
+    restrictedDetailsEnabled = false
+)
