@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.attendance
 
+import com.github.kittinunf.fuel.core.extensions.jsonBody
 import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.daycare.service.AbsenceType
@@ -28,14 +29,14 @@ import fi.espoo.evaka.testDecisionMaker_1
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.Instant
 import java.time.LocalDate
-import java.time.OffsetDateTime
 import java.util.UUID
 
-class GetAttendancesIntegrationTest : FullApplicationTest() {
+class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
     private val staffUser = AuthenticatedUser(testDecisionMaker_1.id, emptySet())
     private val groupId = UUID.randomUUID()
     private val groupName = "Testaajat"
@@ -70,93 +71,21 @@ class GetAttendancesIntegrationTest : FullApplicationTest() {
     }
 
     @Test
-    fun `unit info is correct`() {
-        val response = fetchAttendances()
-        assertEquals(testDaycare.name, response.unit.name)
-        assertEquals(1, response.unit.groups.size)
-        assertEquals(groupId, response.unit.groups.first().id)
-        assertEquals(groupName, response.unit.groups.first().name)
-    }
-
-    @Test
-    fun `child is coming`() {
-        jdbi.handle {
-            insertTestChildAttendance(
-                h = it,
-                childId = testChild_1.id,
-                arrived = OffsetDateTime.now().minusDays(1).minusHours(8).toInstant(),
-                departed = OffsetDateTime.now().minusDays(1).toInstant()
-            )
-        }
-        val child = expectOneChild()
-        assertEquals(AttendanceStatus.COMING, child.status)
-        assertNull(child.attendance)
-        assertEquals(0, child.absences.size)
-    }
-
-    @Test
-    fun `child is present`() {
-        val arrived = OffsetDateTime.now().minusHours(3).toInstant()
-        jdbi.handle {
-            insertTestChildAttendance(
-                h = it,
-                childId = testChild_1.id,
-                arrived = arrived,
-                departed = null
-            )
-        }
-        val child = expectOneChild()
+    fun `child arrives - happy case`() {
+        givenChildComing()
+        val arrival = Instant.now()
+        val child = markArrived(arrival)
+        expectOneChild()
         assertEquals(AttendanceStatus.PRESENT, child.status)
         assertNotNull(child.attendance)
-        assertEquals(arrived, child.attendance!!.arrived)
+        assertNotNull(child.attendance!!.arrived)
         assertNull(child.attendance!!.departed)
-        assertEquals(0, child.absences.size)
+        assertTrue(child.absences.isEmpty())
     }
 
-    @Test
-    fun `child has departed`() {
-        val arrived = OffsetDateTime.now().minusHours(3).toInstant()
-        val departed = OffsetDateTime.now().minusMinutes(1).toInstant()
-        jdbi.handle {
-            insertTestChildAttendance(
-                h = it,
-                childId = testChild_1.id,
-                arrived = arrived,
-                departed = departed
-            )
-        }
-        val child = expectOneChild()
-        assertEquals(AttendanceStatus.DEPARTED, child.status)
-        assertNotNull(child.attendance)
-        assertEquals(arrived, child.attendance!!.arrived)
-        assertEquals(departed, child.attendance!!.departed)
-        assertEquals(0, child.absences.size)
-    }
-
-    @Test
-    fun `child is absent`() {
-        jdbi.handle {
-            insertTestAbsence(
-                h = it,
-                childId = testChild_1.id,
-                careType = CareType.PRESCHOOL,
-                date = LocalDate.now(),
-                absenceType = AbsenceType.SICKLEAVE
-            )
-            insertTestAbsence(
-                h = it,
-                childId = testChild_1.id,
-                careType = CareType.PRESCHOOL_DAYCARE,
-                date = LocalDate.now(),
-                absenceType = AbsenceType.SICKLEAVE
-            )
-        }
-        val child = expectOneChild()
-        assertEquals(AttendanceStatus.ABSENT, child.status)
-        assertNull(child.attendance)
-        assertEquals(2, child.absences.size)
-        assertEquals(1, child.absences.filter { it.careType == CareType.PRESCHOOL && it.absenceType == AbsenceType.SICKLEAVE }.size)
-        assertEquals(1, child.absences.filter { it.careType == CareType.PRESCHOOL_DAYCARE && it.absenceType == AbsenceType.SICKLEAVE }.size)
+    private fun givenChildComing() {
+        val childBefore = expectOneChild()
+        assertEquals(AttendanceStatus.COMING, childBefore.status)
     }
 
     private fun fetchAttendances(): AttendanceResponse {
@@ -166,6 +95,18 @@ class GetAttendancesIntegrationTest : FullApplicationTest() {
 
         assertEquals(200, res.statusCode)
         return result.get()
+    }
+
+    private fun markArrived(arrived: Instant): Child {
+        val (_, res, result) = http.post("/attendances/units/${testDaycare.id}/children/${testChild_1.id}/arrival")
+            .jsonBody(objectMapper.writeValueAsString(ChildAttendanceController.ArrivalRequest(arrived)))
+            .asUser(staffUser)
+            .responseObject<AttendanceResponse>(objectMapper)
+
+        assertEquals(200, res.statusCode)
+        val response = result.get()
+        assertEquals(1, response.children.size)
+        return response.children.first()
     }
 
     private fun expectOneChild(): Child {

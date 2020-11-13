@@ -15,7 +15,7 @@ import java.time.OffsetDateTime
 import java.time.ZoneId
 import java.util.UUID
 
-fun Handle.insertAttendance(childId: UUID, arrived: OffsetDateTime, departed: OffsetDateTime? = null): ChildAttendance {
+fun Handle.insertAttendance(childId: UUID, arrived: Instant, departed: Instant? = null): ChildAttendance {
     // language=sql
     val sql =
         """
@@ -32,7 +32,7 @@ fun Handle.insertAttendance(childId: UUID, arrived: OffsetDateTime, departed: Of
         .first()
 }
 
-fun Handle.updateCurrentAttendanceEnd(childId: UUID, departed: OffsetDateTime) {
+fun Handle.updateCurrentAttendanceEnd(childId: UUID, departed: Instant) {
     // language=sql
     val sql =
         """
@@ -70,12 +70,13 @@ fun Handle.fetchUnitInfo(unitId: UUID): UnitInfo {
         """
         SELECT g.id, g.name
         FROM daycare u
-        JOIN daycare_group g on u.id = g.daycare_id AND daterange(g.start_date, g.end_date, '[]') @> current_date
+        JOIN daycare_group g on u.id = g.daycare_id AND daterange(g.start_date, g.end_date, '[]') @> :today
         WHERE u.id = :unitId
         """.trimIndent()
 
     return createQuery(groupsSql)
         .bind("unitId", unitId)
+        .bind("today", LocalDate.now(ZoneId.of("Europe/Helsinki")))
         .mapTo<GroupInfo>()
         .list()
         .let { groups ->
@@ -120,12 +121,13 @@ fun Handle.fetchChildrenAttendances(unitId: UUID): List<ChildAttendance> {
             ca.arrived,
             ca.departed
         FROM child_attendance ca
-        JOIN placement p ON ca.child_id = p.child_id AND daterange(p.start_date, p.end_date, '[]') @> current_date
-        WHERE p.unit_id = :unitId AND ca.departed IS NULL OR ca.departed::date = current_date
+        JOIN placement p ON ca.child_id = p.child_id AND daterange(p.start_date, p.end_date, '[]') @> :today
+        WHERE p.unit_id = :unitId AND ca.departed IS NULL OR ca.departed::date = :today
         """.trimIndent()
 
     return createQuery(sql)
         .bind("unitId", unitId)
+        .bind("today", LocalDate.now(ZoneId.of("Europe/Helsinki")))
         .mapTo<ChildAttendance>()
         .list()
 }
@@ -140,12 +142,13 @@ fun Handle.fetchChildrenAbsences(unitId: UUID): List<ChildAbsence> {
             ab.absence_type,
             ab.care_type
         FROM absence ab
-        JOIN placement p ON ab.child_id = p.child_id AND daterange(p.start_date, p.end_date, '[]') @> current_date
-        WHERE p.unit_id = :unitId AND ab.date = current_date AND ab.absence_type != 'PRESENCE'
+        JOIN placement p ON ab.child_id = p.child_id AND daterange(p.start_date, p.end_date, '[]') @> :today
+        WHERE p.unit_id = :unitId AND ab.date = :today AND ab.absence_type != 'PRESENCE'
         """.trimIndent()
 
     return createQuery(sql)
         .bind("unitId", unitId)
+        .bind("today", LocalDate.now(ZoneId.of("Europe/Helsinki")))
         .mapTo<ChildAbsence>()
         .list()
 }
