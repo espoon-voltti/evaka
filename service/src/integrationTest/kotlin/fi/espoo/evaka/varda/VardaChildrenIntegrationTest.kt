@@ -7,8 +7,13 @@ package fi.espoo.evaka.varda
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.defaultMunicipalOrganizerOid
 import fi.espoo.evaka.insertGeneralTestFixtures
+import fi.espoo.evaka.invoicing.domain.PersonData
 import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.db.handle
+import fi.espoo.evaka.shared.dev.DevChild
+import fi.espoo.evaka.shared.dev.DevPerson
+import fi.espoo.evaka.shared.dev.insertTestChild
+import fi.espoo.evaka.shared.dev.insertTestPerson
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
@@ -244,6 +249,40 @@ class VardaChildrenIntegrationTest : FullApplicationTest() {
         }
     }
 
+    @Test
+    fun `nameless child is not uploaded to Varda`() {
+        val child = namelessChild
+        val daycare = testDaycare
+        jdbi.handle { h ->
+            h.insertTestPerson(
+                DevPerson(
+                    id = child.id,
+                    dateOfBirth = child.dateOfBirth,
+                    ssn = child.ssn,
+                    firstName = child.firstName,
+                    lastName = child.lastName,
+                    streetAddress = child.streetAddress ?: "",
+                    postalCode = child.postalCode ?: "",
+                    postOffice = child.postOffice ?: ""
+                )
+            )
+            h.insertTestChild(DevChild(id = child.id))
+
+            insertTestPlacement(
+                h = h,
+                childId = child.id,
+                unitId = daycare.id,
+                startDate = LocalDate.now().minusMonths(1),
+                endDate = LocalDate.now().plusMonths(1)
+            )
+
+            uploadChildren(h)
+
+            val uploads = getUploadedChildren(h)
+            assertEquals(0, uploads.size)
+        }
+    }
+
     private fun uploadChildren(h: Handle) {
         updateChildren(h, vardaClient, vardaOrganizerName)
     }
@@ -283,4 +322,16 @@ data class VardaChildRow(
     val createdAt: Instant,
     val modifiedAt: Instant,
     val uploadedAt: Instant?
+)
+
+val namelessChild = PersonData.Detailed(
+    id = UUID.randomUUID(),
+    dateOfBirth = LocalDate.of(2017, 6, 1),
+    ssn = "311219A999T",
+    firstName = "",
+    lastName = "",
+    streetAddress = "Kamreerintie 2",
+    postalCode = "02770",
+    postOffice = "Espoo",
+    restrictedDetailsEnabled = false
 )
