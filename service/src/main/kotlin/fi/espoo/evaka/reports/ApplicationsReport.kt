@@ -53,7 +53,10 @@ fun getApplicationsRows(h: Handle, from: LocalDate, to: LocalDate): List<Applica
             FROM care_area ca
             JOIN daycare u ON ca.id = u.care_area_id AND u.closing_date IS NULL
             LEFT JOIN application_view a 
-                ON a.preferredunit = u.id AND a.status = ANY ('{SENT,WAITING_PLACEMENT,WAITING_DECISION}'::application_status_type[]) AND a.startdate BETWEEN :from AND :to
+                ON a.preferredunit = u.id 
+                AND a.status = ANY ('{SENT,WAITING_PLACEMENT,WAITING_DECISION}'::application_status_type[]) 
+                AND a.startdate BETWEEN :from AND :to
+                AND a.transferapplication != true
             LEFT JOIN person ch ON ch.id = a.childid
         )
         SELECT
