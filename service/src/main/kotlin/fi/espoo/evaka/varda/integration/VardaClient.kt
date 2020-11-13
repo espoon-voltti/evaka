@@ -122,13 +122,13 @@ class VardaClient(
     }
 
     fun createPerson(newPerson: VardaPersonRequest): VardaPersonResponse? {
-        logger.info { "Creating a new person ${newPerson.firstName} ${newPerson.lastName} to Varda" }
+        logger.info { "Creating a new person ${newPerson.id} to Varda" }
         val (_, _, result) = Fuel.post(personUrl)
             .jsonBody(objectMapper.writeValueAsString(newPerson)).authenticatedResponseStringWithRetries()
 
         return when (result) {
             is Result.Success -> {
-                logger.info { "Creating a new person ${newPerson.firstName} ${newPerson.lastName} to Varda succeeded" }
+                logger.info { "Creating a new person ${newPerson.id} to Varda succeeded" }
                 objectMapper.readValue<VardaPersonResponse>(
                     objectMapper.readTree(result.get()).toString()
                 )
