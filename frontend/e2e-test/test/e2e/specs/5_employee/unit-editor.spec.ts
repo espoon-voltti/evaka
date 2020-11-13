@@ -37,5 +37,7 @@ fixture('Unit - unit details')
 test('Admin can edit unit details', async () => {
   await unitDetailsPage.openUnitDetailsPageById(daycare1.id)
   await unitDetailsPage.enableUnitEditor()
-  await unitDetailsPage.fillManagerDataAndSubmitForm()
+  await unitDetailsPage.fillManagerData()
+  await unitDetailsPage.submitForm()
+  // todo: verify that the updated manager data is visible somewhere
 })

@@ -22,13 +22,15 @@ export class UnitDetailsPage {
     await t.click(this.enableEditButton)
   }
 
-  async fillManagerDataAndSubmitForm() {
+  async fillManagerData() {
     await t.click(this.managerPhoneInputField)
     await t.typeText(this.managerPhoneInputField, '123456789')
 
     await t.click(this.managerEmailInputField)
     await t.typeText(this.managerEmailInputField, 'manager@unitmanagers.fi')
+  }
 
+  async submitForm() {
     await t.pressKey('enter')
   }
 
