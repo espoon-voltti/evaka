@@ -33,8 +33,8 @@ fixture('Invoicing - fee decisions')
     await insertFeeDecisionFixtures([
       feeDecisionsFixture(
         'DRAFT',
-        fixtures.enduserGuardianFixture.id,
-        fixtures.enduserChildFixtureKaarina.id,
+        fixtures.enduserGuardianFixture,
+        fixtures.enduserChildFixtureKaarina,
         fixtures.daycareFixture.id
       )
     ])
