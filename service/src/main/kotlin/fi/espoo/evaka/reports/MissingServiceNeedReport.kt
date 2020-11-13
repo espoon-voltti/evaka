@@ -83,7 +83,7 @@ fun getMissingServiceNeedRows(
           WHERE days - days_with_sn > 0
         ) results
         JOIN person ON person.id = child_id
-        JOIN daycare ON daycare.id = unit_id AND 'CLUB'::care_types != ANY(daycare.type)
+        JOIN daycare ON daycare.id = unit_id AND 'CLUB'::care_types != ANY(daycare.type) AND daycare.invoiced_by_municipality
         JOIN care_area ca ON ca.id = daycare.care_area_id
         ${if (units != null) "WHERE daycare.id = ANY(:units)" else ""}
         GROUP BY ca.name, daycare.name, unit_id, child_id, first_name, last_name, unit_id
