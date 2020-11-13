@@ -75,22 +75,34 @@ function PartnersInDifferentAddress() {
           <Wrapper>
             <ReactSelect
               options={[
-                { id: '', label: '' },
+                { value: '', label: i18n.common.all },
                 ...(isSuccess(rows)
                   ? distinct(
                       rows.data.map((row) => row.careAreaName)
-                    ).map((s) => ({ id: s, label: s }))
+                    ).map((s) => ({ value: s, label: s }))
                   : [])
               ]}
               onChange={(option) =>
-                option && 'id' in option
+                option && 'value' in option
                   ? setDisplayFilters({
                       ...displayFilters,
-                      careArea: option.id
+                      careArea: option.value
                     })
                   : undefined
               }
+              value={
+                displayFilters.careArea !== ''
+                  ? {
+                      label: displayFilters.careArea,
+                      value: displayFilters.careArea
+                    }
+                  : {
+                      label: i18n.common.all,
+                      value: ''
+                    }
+              }
               styles={reactSelectStyles}
+              placeholder={i18n.reports.occupancies.filters.areaPlaceholder}
             />
           </Wrapper>
         </FilterRow>

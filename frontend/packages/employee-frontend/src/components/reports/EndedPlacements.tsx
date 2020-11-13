@@ -99,6 +99,7 @@ function EndedPlacements() {
                   }
                 }}
                 styles={reactSelectStyles}
+                placeholder={i18n.common.month}
               />
             </Wrapper>
             <Wrapper>
@@ -111,6 +112,7 @@ function EndedPlacements() {
                   }
                 }}
                 styles={reactSelectStyles}
+                placeholder={i18n.common.year}
               />
             </Wrapper>
           </FlexRow>

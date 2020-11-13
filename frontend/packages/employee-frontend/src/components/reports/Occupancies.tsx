@@ -329,6 +329,7 @@ function Occupancies() {
                 }
               }}
               styles={reactSelectStyles}
+              placeholder={i18n.reports.occupancies.filters.areaPlaceholder}
             />
           </Wrapper>
         </FilterRow>
