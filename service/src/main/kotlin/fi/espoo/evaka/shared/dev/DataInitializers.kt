@@ -675,8 +675,8 @@ fun insertTestChildAttendance(
     h: Handle,
     id: UUID = UUID.randomUUID(),
     childId: UUID,
-    arrived: OffsetDateTime,
-    departed: OffsetDateTime?
+    arrived: Instant,
+    departed: Instant?
 ) {
     //language=sql
     val sql =

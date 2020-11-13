@@ -4,12 +4,12 @@
 
 package fi.espoo.evaka.attendance
 
-import com.github.kittinunf.fuel.core.extensions.jsonBody
 import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.daycare.service.CareType
 import fi.espoo.evaka.insertGeneralTestFixtures
+import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
@@ -26,15 +26,19 @@ import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDecisionMaker_1
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import java.time.Instant
 import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.util.UUID
 
-class ChildAttendanceIntegrationTest : FullApplicationTest() {
+class GetAttendancesIntegrationTest : FullApplicationTest() {
     private val staffUser = AuthenticatedUser(testDecisionMaker_1.id, emptySet())
     private val groupId = UUID.randomUUID()
+    private val groupName = "Testaajat"
     private val daycarePlacementId = UUID.randomUUID()
     private val placementStart = LocalDate.now().minusDays(30)
     private val placementEnd = LocalDate.now().plusDays(30)
@@ -44,14 +48,15 @@ class ChildAttendanceIntegrationTest : FullApplicationTest() {
         jdbi.handle { h ->
             resetDatabase(h)
             insertGeneralTestFixtures(h)
-            h.insertTestDaycareGroup(DevDaycareGroup(id = groupId, daycareId = testDaycare.id))
+            h.insertTestDaycareGroup(DevDaycareGroup(id = groupId, daycareId = testDaycare.id, name = groupName))
             insertTestPlacement(
                 h = h,
                 id = daycarePlacementId,
                 childId = testChild_1.id,
                 unitId = testDaycare.id,
                 startDate = placementStart,
-                endDate = placementEnd
+                endDate = placementEnd,
+                type = PlacementType.PRESCHOOL_DAYCARE
             )
             insertTestDaycareGroupPlacement(
                 h = h,
@@ -65,108 +70,107 @@ class ChildAttendanceIntegrationTest : FullApplicationTest() {
     }
 
     @Test
-    fun `get group children - child is coming`() {
-        jdbi.handle {
-            insertTestChildAttendance(
-                h = it,
-                childId = testChild_1.id,
-                arrived = OffsetDateTime.now().minusDays(1).minusHours(8),
-                departed = OffsetDateTime.now().minusDays(1)
-            )
-        }
-        assertOneChildWithStatus(AttendanceStatus.COMING)
+    fun `unit info is correct`() {
+        val response = fetchAttendances()
+        assertEquals(testDaycare.name, response.unit.name)
+        assertEquals(1, response.unit.groups.size)
+        assertEquals(groupId, response.unit.groups.first().id)
+        assertEquals(groupName, response.unit.groups.first().name)
     }
 
     @Test
-    fun `get group children - child is present`() {
+    fun `child is coming`() {
         jdbi.handle {
             insertTestChildAttendance(
                 h = it,
                 childId = testChild_1.id,
-                arrived = OffsetDateTime.now().minusHours(3),
+                arrived = OffsetDateTime.now().minusDays(1).minusHours(8).toInstant(),
+                departed = OffsetDateTime.now().minusDays(1).toInstant()
+            )
+        }
+        val child = expectOneChild()
+        assertEquals(AttendanceStatus.COMING, child.status)
+        assertNull(child.attendance)
+        assertEquals(0, child.absences.size)
+    }
+
+    @Test
+    fun `child is present`() {
+        val arrived = OffsetDateTime.now().minusHours(3).toInstant()
+        jdbi.handle {
+            insertTestChildAttendance(
+                h = it,
+                childId = testChild_1.id,
+                arrived = arrived,
                 departed = null
             )
         }
-        assertOneChildWithStatus(AttendanceStatus.PRESENT)
+        val child = expectOneChild()
+        assertEquals(AttendanceStatus.PRESENT, child.status)
+        assertNotNull(child.attendance)
+        assertEquals(arrived, child.attendance!!.arrived)
+        assertNull(child.attendance!!.departed)
+        assertEquals(0, child.absences.size)
     }
 
     @Test
-    fun `get group children - child has departed`() {
+    fun `child has departed`() {
+        val arrived = OffsetDateTime.now().minusHours(3).toInstant()
+        val departed = OffsetDateTime.now().minusMinutes(1).toInstant()
         jdbi.handle {
             insertTestChildAttendance(
                 h = it,
                 childId = testChild_1.id,
-                arrived = OffsetDateTime.now().minusHours(8),
-                departed = OffsetDateTime.now().minusMinutes(1)
+                arrived = arrived,
+                departed = departed
             )
         }
-        assertOneChildWithStatus(AttendanceStatus.DEPARTED)
+        val child = expectOneChild()
+        assertEquals(AttendanceStatus.DEPARTED, child.status)
+        assertNotNull(child.attendance)
+        assertEquals(arrived, child.attendance!!.arrived)
+        assertEquals(departed, child.attendance!!.departed)
+        assertEquals(0, child.absences.size)
     }
 
     @Test
-    fun `get group children - child is absent`() {
+    fun `child is absent`() {
         jdbi.handle {
             insertTestAbsence(
                 h = it,
                 childId = testChild_1.id,
-                careType = CareType.DAYCARE,
+                careType = CareType.PRESCHOOL,
+                date = LocalDate.now(),
+                absenceType = AbsenceType.SICKLEAVE
+            )
+            insertTestAbsence(
+                h = it,
+                childId = testChild_1.id,
+                careType = CareType.PRESCHOOL_DAYCARE,
                 date = LocalDate.now(),
                 absenceType = AbsenceType.SICKLEAVE
             )
         }
-        assertOneChildWithStatus(AttendanceStatus.ABSENT)
+        val child = expectOneChild()
+        assertEquals(AttendanceStatus.ABSENT, child.status)
+        assertNull(child.attendance)
+        assertEquals(2, child.absences.size)
+        assertEquals(1, child.absences.filter { it.careType == CareType.PRESCHOOL && it.absenceType == AbsenceType.SICKLEAVE }.size)
+        assertEquals(1, child.absences.filter { it.careType == CareType.PRESCHOOL_DAYCARE && it.absenceType == AbsenceType.SICKLEAVE }.size)
     }
 
-    @Test
-    fun `marking child arrived`() {
-        markArrived(ArrivalRequest(childId = testChild_1.id))
-        assertOneChildWithStatus(AttendanceStatus.PRESENT)
-    }
-
-    @Test
-    fun `marking child departed`() {
-        jdbi.handle {
-            insertTestChildAttendance(
-                h = it,
-                childId = testChild_1.id,
-                arrived = OffsetDateTime.now().minusHours(3),
-                departed = null
-            )
-        }
-        markDeparted(DepartureRequest(childId = testChild_1.id))
-        assertOneChildWithStatus(AttendanceStatus.DEPARTED)
-    }
-
-    private fun fetchChildrenInGroup(): List<ChildInGroup> {
-        val (_, res, result) = http.get("/child-attendances/current?daycareId=${testDaycare.id}")
+    private fun fetchAttendances(): AttendanceResponse {
+        val (_, res, result) = http.get("/attendances?unitId=${testDaycare.id}")
             .asUser(staffUser)
-            .responseObject<List<ChildInGroup>>(objectMapper)
+            .responseObject<AttendanceResponse>(objectMapper)
 
         assertEquals(200, res.statusCode)
         return result.get()
     }
 
-    private fun markArrived(request: ArrivalRequest) {
-        val (_, res, _) = http.post("/child-attendances/arrive")
-            .jsonBody(objectMapper.writeValueAsString(request))
-            .asUser(staffUser)
-            .responseObject<Unit>()
-
-        assertEquals(200, res.statusCode)
-    }
-
-    private fun markDeparted(request: DepartureRequest) {
-        val (_, res, _) = http.post("/child-attendances/depart")
-            .jsonBody(objectMapper.writeValueAsString(request))
-            .asUser(staffUser)
-            .responseObject<Unit>()
-
-        assertEquals(200, res.statusCode)
-    }
-
-    private fun assertOneChildWithStatus(status: AttendanceStatus) {
-        val children = fetchChildrenInGroup()
-        assertEquals(1, children.size)
-        assertEquals(status, children.first().status)
+    private fun expectOneChild(): Child {
+        val response = fetchAttendances()
+        assertEquals(1, response.children.size)
+        return response.children.first()
     }
 }

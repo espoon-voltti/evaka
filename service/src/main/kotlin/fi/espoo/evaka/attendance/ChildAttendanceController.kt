@@ -4,121 +4,92 @@
 
 package fi.espoo.evaka.attendance
 
-import fi.espoo.evaka.Audit
+import fi.espoo.evaka.application.utils.exhaust
+import fi.espoo.evaka.daycare.service.CareType
+import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
-import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.db.mapPSQLException
-import org.jdbi.v3.core.JdbiException
-import org.springframework.http.HttpStatus
+import fi.espoo.evaka.shared.db.transaction
+import org.jdbi.v3.core.Jdbi
 import org.springframework.http.ResponseEntity
-import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PathVariable
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
-import java.time.OffsetDateTime
 import java.util.UUID
 
 @RestController
-@RequestMapping("/child-attendances")
-class ChildAttendanceController(private val acl: AccessControlList) {
+@RequestMapping("/attendances")
+class ChildAttendanceController(
+    private val jdbi: Jdbi,
+    private val acl: AccessControlList
+) {
+    val authorizedRoles = arrayOf(
+        UserRole.ADMIN,
+        UserRole.SERVICE_WORKER,
+        UserRole.UNIT_SUPERVISOR,
+        UserRole.STAFF
+    )
 
-    @PostMapping("/arrive")
-    fun childArrives(
-        db: Database.Connection,
+    @GetMapping
+    fun getAttendances(
         user: AuthenticatedUser,
-        @RequestBody body: ArrivalRequest
-    ): ResponseEntity<ChildAttendance> {
-        Audit.ChildAttendanceArrive.log(targetId = body.childId)
-        acl.getRolesForChild(user, body.childId)
-            .requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF)
+        @RequestParam unitId: UUID
+    ): ResponseEntity<AttendanceResponse> {
+        acl.getRolesForUnit(user, unitId).requireOneOfRoles(*authorizedRoles)
 
-        try {
-            return db.transaction {
-                it.handle.createAttendance(
-                    childId = body.childId,
-                    arrived = body.time ?: OffsetDateTime.now()
-                )
-            }.let { ResponseEntity.ok(it) }
-        } catch (e: JdbiException) {
-            throw mapPSQLException(e)
-        }
-    }
+        val response = jdbi.transaction { h ->
+            val unitInfo = h.fetchUnitInfo(unitId)
+            val childrenBasics = h.fetchChildrenBasics(unitId)
+            val childrenAttendances = h.fetchChildrenAttendances(unitId)
+            val childrenAbsences = h.fetchChildrenAbsences(unitId)
 
-    @PostMapping("/depart")
-    fun childDeparts(
-        db: Database.Connection,
-        user: AuthenticatedUser,
-        @RequestBody body: DepartureRequest
-    ): ResponseEntity<Unit> {
-        Audit.ChildAttendanceDepart.log(targetId = body.childId)
-        acl.getRolesForChild(user, body.childId)
-            .requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF)
+            val children = childrenBasics.map { child ->
+                val attendance = childrenAttendances.firstOrNull { it.childId == child.id }
+                val absences = childrenAbsences.filter { it.childId == child.id }
+                val status = getChildStatus(child.placementType, attendance, absences)
 
-        try {
-            db.transaction {
-                it.handle.updateCurrentAttendanceEnd(
-                    childId = body.childId,
-                    departed = body.time ?: OffsetDateTime.now()
+                Child(
+                    id = child.id,
+                    firstName = child.firstName,
+                    lastName = child.lastName,
+                    placementType = child.placementType,
+                    groupId = child.groupId,
+                    status = status,
+                    attendance = attendance,
+                    absences = absences
                 )
             }
-            return ResponseEntity.status(HttpStatus.OK).build()
-        } catch (e: JdbiException) {
-            throw mapPSQLException(e)
+
+            AttendanceResponse(unitInfo, children)
         }
-    }
 
-    @GetMapping("/current")
-    fun getDaycareAttendances(
-        db: Database.Connection,
-        user: AuthenticatedUser,
-        @RequestParam daycareId: UUID
-    ): ResponseEntity<List<ChildInGroup>> {
-        Audit.ChildAttendanceReadUnit.log(targetId = daycareId)
-        acl.getRolesForUnit(user, daycareId)
-            .requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF)
-
-        return db.read { it.handle.getDaycareAttendances(daycareId) }
-            .let { ResponseEntity.ok(it) }
-    }
-
-    @DeleteMapping("/{attendanceId}")
-    fun deleteAttendance(
-        db: Database.Connection,
-        user: AuthenticatedUser,
-        @PathVariable(value = "attendanceId") attendanceId: UUID
-    ): ResponseEntity<Unit> {
-        db.transaction { it.handle.deleteAttendance(attendanceId) }
-        return ResponseEntity.noContent().build()
+        return ResponseEntity.ok(response)
     }
 }
 
-data class ArrivalRequest(
-    val childId: UUID,
-    val time: OffsetDateTime? = null
-)
+fun getChildStatus(placementType: PlacementType, attendance: ChildAttendance?, absences: List<ChildAbsence>): AttendanceStatus {
+    if (attendance != null) {
+        return if (attendance.departed == null) AttendanceStatus.PRESENT else AttendanceStatus.DEPARTED
+    }
 
-data class DepartureRequest(
-    val childId: UUID,
-    val time: OffsetDateTime? = null
-)
+    if (isAbsent(placementType, absences)) {
+        return AttendanceStatus.ABSENT
+    }
 
-enum class AttendanceStatus {
-    COMING, PRESENT, DEPARTED, ABSENT
+    return AttendanceStatus.COMING
 }
 
-data class ChildInGroup(
-    val childId: UUID,
-    val firstName: String,
-    val lastName: String,
-    val status: AttendanceStatus,
-    val daycareGroupId: UUID,
-    val arrived: OffsetDateTime?,
-    val departed: OffsetDateTime?,
-    val childAttendanceId: UUID?
-)
+fun isAbsent(placementType: PlacementType, absences: List<ChildAbsence>): Boolean {
+    return when (placementType) {
+        PlacementType.PRESCHOOL, PlacementType.PREPARATORY ->
+            absences.any { it.careType == CareType.PRESCHOOL }
+        PlacementType.PRESCHOOL_DAYCARE, PlacementType.PREPARATORY_DAYCARE ->
+            absences.any { it.careType == CareType.PRESCHOOL } && absences.any { it.careType == CareType.PRESCHOOL_DAYCARE }
+        PlacementType.DAYCARE, PlacementType.DAYCARE_PART_TIME ->
+            absences.any { it.careType == CareType.DAYCARE }
+        PlacementType.CLUB ->
+            absences.any { it.careType == CareType.CLUB }
+    }.exhaust()
+}
