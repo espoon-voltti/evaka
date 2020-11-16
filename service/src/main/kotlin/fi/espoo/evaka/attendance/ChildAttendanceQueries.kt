@@ -4,6 +4,10 @@
 
 package fi.espoo.evaka.attendance
 
+import fi.espoo.evaka.daycare.service.Absence
+import fi.espoo.evaka.daycare.service.AbsenceType
+import fi.espoo.evaka.daycare.service.CareType
+import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.domain.NotFound
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.mapTo
@@ -27,6 +31,25 @@ fun Handle.insertAttendance(childId: UUID, unitId: UUID, arrived: Instant, depar
         .bind("arrived", arrived)
         .bind("departed", departed)
         .mapTo<ChildAttendance>()
+        .first()
+}
+
+fun Handle.insertAbsence(user: AuthenticatedUser, childId: UUID, date: LocalDate, careType: CareType, absenceType: AbsenceType): Absence {
+    // language=sql
+    val sql =
+        """
+        INSERT INTO absence (child_id, date, care_type, absence_type, modified_by)
+        VALUES (:childId, :date, :careType, :absenceType, :userId)
+        RETURNING *
+        """.trimIndent()
+
+    return createQuery(sql)
+        .bind("childId", childId)
+        .bind("date", date)
+        .bind("careType", careType)
+        .bind("absenceType", absenceType)
+        .bind("userId", user.id)
+        .mapTo<Absence>()
         .first()
 }
 

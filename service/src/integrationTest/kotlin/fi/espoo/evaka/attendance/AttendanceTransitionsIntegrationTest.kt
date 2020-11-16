@@ -51,28 +51,13 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
             resetDatabase(h)
             insertGeneralTestFixtures(h)
             h.insertTestDaycareGroup(DevDaycareGroup(id = groupId, daycareId = testDaycare.id, name = groupName))
-            insertTestPlacement(
-                h = h,
-                id = daycarePlacementId,
-                childId = testChild_1.id,
-                unitId = testDaycare.id,
-                startDate = placementStart,
-                endDate = placementEnd,
-                type = PlacementType.PRESCHOOL_DAYCARE
-            )
-            insertTestDaycareGroupPlacement(
-                h = h,
-                daycarePlacementId = daycarePlacementId,
-                groupId = groupId,
-                startDate = placementStart,
-                endDate = placementEnd
-            )
             updateDaycareAclWithEmployee(h, testDaycare.id, staffUser.id, UserRole.STAFF)
         }
     }
 
     @Test
     fun `get child arrival info - happy case`() {
+        givenChildPlacement(PlacementType.PRESCHOOL_DAYCARE)
         givenChildComing()
         val info = getArrivalInfoAssertOk(Instant.now())
         assertEquals(false, info.absentFromPreschool)
@@ -80,12 +65,14 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `get child arrival info - already present is error`() {
+        givenChildPlacement(PlacementType.PRESCHOOL_DAYCARE)
         givenChildPresent()
         getArrivalInfoAssertFail(Instant.now(), 409)
     }
 
     @Test
     fun `post child arrives - happy case`() {
+        givenChildPlacement(PlacementType.PRESCHOOL_DAYCARE)
         givenChildComing()
 
         val arrived = Instant.now()
@@ -100,6 +87,7 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `post child arrives - arriving twice is error`() {
+        givenChildPlacement(PlacementType.PRESCHOOL_DAYCARE)
         givenChildPresent()
 
         val arrived = Instant.now()
@@ -108,6 +96,7 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `post return to coming - happy case when present`() {
+        givenChildPlacement(PlacementType.PRESCHOOL_DAYCARE)
         givenChildPresent()
 
         val child = returnToComingAssertOkOneChild()
@@ -119,6 +108,7 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `post return to coming - happy case when absent`() {
+        givenChildPlacement(PlacementType.PRESCHOOL_DAYCARE)
         givenChildAbsent(listOf(CareType.PRESCHOOL, CareType.PRESCHOOL_DAYCARE), AbsenceType.UNKNOWN_ABSENCE)
 
         val child = returnToComingAssertOkOneChild()
@@ -130,12 +120,14 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `post return to coming - error when departed`() {
+        givenChildPlacement(PlacementType.PRESCHOOL_DAYCARE)
         givenChildDeparted()
         returnToComingAssertFail(409)
     }
 
     @Test
     fun `get child departure info - happy case`() {
+        givenChildPlacement(PlacementType.PRESCHOOL_DAYCARE)
         givenChildPresent()
         val info = getDepartureInfoAssertOk(Instant.now())
         assertTrue(info.absentFrom.isEmpty())
@@ -143,18 +135,21 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `get child departure info - not yet present is error`() {
+        givenChildPlacement(PlacementType.PRESCHOOL_DAYCARE)
         givenChildComing()
         getDepartureInfoAssertFail(Instant.now(), 409)
     }
 
     @Test
     fun `get child departure info - already departed is error`() {
+        givenChildPlacement(PlacementType.PRESCHOOL_DAYCARE)
         givenChildDeparted()
         getDepartureInfoAssertFail(Instant.now(), 409)
     }
 
     @Test
     fun `post child departs - happy case`() {
+        givenChildPlacement(PlacementType.PRESCHOOL_DAYCARE)
         givenChildPresent()
 
         val departed = Instant.now()
@@ -168,6 +163,7 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `post child departs - departing twice is error`() {
+        givenChildPlacement(PlacementType.PRESCHOOL_DAYCARE)
         givenChildDeparted()
 
         val departed = Instant.now()
@@ -176,6 +172,7 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `post return to present - happy case when departed`() {
+        givenChildPlacement(PlacementType.PRESCHOOL_DAYCARE)
         givenChildDeparted()
 
         val child = returnToPresentAssertOkOneChild()
@@ -189,25 +186,156 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `post return to present - error when coming`() {
+        givenChildPlacement(PlacementType.PRESCHOOL_DAYCARE)
         givenChildComing()
         returnToPresentAssertFail(409)
     }
 
     @Test
     fun `post return to present - error when present`() {
+        givenChildPlacement(PlacementType.PRESCHOOL_DAYCARE)
         givenChildPresent()
         returnToPresentAssertFail(409)
     }
 
     @Test
     fun `post return to present - error when absent`() {
+        givenChildPlacement(PlacementType.PRESCHOOL_DAYCARE)
         givenChildAbsent(listOf(CareType.PRESCHOOL, CareType.PRESCHOOL_DAYCARE), AbsenceType.UNKNOWN_ABSENCE)
         returnToPresentAssertFail(409)
     }
 
+    @Test
+    fun `post full day absence - happy case when coming to preschool`() {
+        givenChildPlacement(PlacementType.PRESCHOOL)
+        givenChildComing()
+
+        val child = markFullDayAbsenceAssertOkOneChild(AbsenceType.SICKLEAVE)
+
+        assertEquals(AttendanceStatus.ABSENT, child.status)
+        assertEquals(1, child.absences.size)
+        assertEquals(AbsenceType.SICKLEAVE, child.absences.first { it.careType == CareType.PRESCHOOL }.absenceType)
+    }
+
+    @Test
+    fun `post full day absence - happy case when coming to preschool_daycare`() {
+        givenChildPlacement(PlacementType.PRESCHOOL_DAYCARE)
+        givenChildComing()
+
+        val child = markFullDayAbsenceAssertOkOneChild(AbsenceType.SICKLEAVE)
+
+        assertEquals(AttendanceStatus.ABSENT, child.status)
+        assertEquals(2, child.absences.size)
+        assertEquals(AbsenceType.SICKLEAVE, child.absences.first { it.careType == CareType.PRESCHOOL }.absenceType)
+        assertEquals(AbsenceType.SICKLEAVE, child.absences.first { it.careType == CareType.PRESCHOOL_DAYCARE }.absenceType)
+    }
+
+    @Test
+    fun `post full day absence - happy case when coming to preparatory`() {
+        givenChildPlacement(PlacementType.PREPARATORY)
+        givenChildComing()
+
+        val child = markFullDayAbsenceAssertOkOneChild(AbsenceType.SICKLEAVE)
+
+        assertEquals(AttendanceStatus.ABSENT, child.status)
+        assertEquals(1, child.absences.size)
+        assertEquals(AbsenceType.SICKLEAVE, child.absences.first { it.careType == CareType.PRESCHOOL }.absenceType)
+    }
+
+    @Test
+    fun `post full day absence - happy case when coming to prepaatory_daycare`() {
+        givenChildPlacement(PlacementType.PREPARATORY_DAYCARE)
+        givenChildComing()
+
+        val child = markFullDayAbsenceAssertOkOneChild(AbsenceType.SICKLEAVE)
+
+        assertEquals(AttendanceStatus.ABSENT, child.status)
+        assertEquals(2, child.absences.size)
+        assertEquals(AbsenceType.SICKLEAVE, child.absences.first { it.careType == CareType.PRESCHOOL }.absenceType)
+        assertEquals(AbsenceType.SICKLEAVE, child.absences.first { it.careType == CareType.PRESCHOOL_DAYCARE }.absenceType)
+    }
+
+    @Test
+    fun `post full day absence - happy case when coming to daycare`() {
+        givenChildPlacement(PlacementType.DAYCARE)
+        givenChildComing()
+
+        val child = markFullDayAbsenceAssertOkOneChild(AbsenceType.SICKLEAVE)
+
+        assertEquals(AttendanceStatus.ABSENT, child.status)
+        assertEquals(1, child.absences.size)
+        assertEquals(AbsenceType.SICKLEAVE, child.absences.first { it.careType == CareType.DAYCARE }.absenceType)
+    }
+
+    @Test
+    fun `post full day absence - happy case when coming to daycare_part_time`() {
+        givenChildPlacement(PlacementType.DAYCARE_PART_TIME)
+        givenChildComing()
+
+        val child = markFullDayAbsenceAssertOkOneChild(AbsenceType.SICKLEAVE)
+
+        assertEquals(AttendanceStatus.ABSENT, child.status)
+        assertEquals(1, child.absences.size)
+        assertEquals(AbsenceType.SICKLEAVE, child.absences.first { it.careType == CareType.DAYCARE }.absenceType)
+    }
+
+    @Test
+    fun `post full day absence - happy case when coming to club`() {
+        givenChildPlacement(PlacementType.CLUB)
+        givenChildComing()
+
+        val child = markFullDayAbsenceAssertOkOneChild(AbsenceType.SICKLEAVE)
+
+        assertEquals(AttendanceStatus.ABSENT, child.status)
+        assertEquals(1, child.absences.size)
+        assertEquals(AbsenceType.SICKLEAVE, child.absences.first { it.careType == CareType.CLUB }.absenceType)
+    }
+
+    @Test
+    fun `post full day absence - error when no placement`() {
+        markFullDayAbsenceAssertFail(AbsenceType.SICKLEAVE, 400)
+    }
+
+    @Test
+    fun `post full day absence - error when present`() {
+        givenChildPlacement(PlacementType.PREPARATORY_DAYCARE)
+        givenChildPresent()
+
+        markFullDayAbsenceAssertFail(AbsenceType.SICKLEAVE, 409)
+    }
+
+    @Test
+    fun `post full day absence - error when departed`() {
+        givenChildPlacement(PlacementType.PREPARATORY_DAYCARE)
+        givenChildDeparted()
+
+        markFullDayAbsenceAssertFail(AbsenceType.SICKLEAVE, 409)
+    }
+
+    private fun givenChildPlacement(placementType: PlacementType) {
+        jdbi.handle { h ->
+            insertTestPlacement(
+                h = h,
+                id = daycarePlacementId,
+                childId = testChild_1.id,
+                unitId = testDaycare.id,
+                startDate = placementStart,
+                endDate = placementEnd,
+                type = placementType
+            )
+            insertTestDaycareGroupPlacement(
+                h = h,
+                daycarePlacementId = daycarePlacementId,
+                groupId = groupId,
+                startDate = placementStart,
+                endDate = placementEnd
+            )
+        }
+    }
+
     private fun givenChildComing() {
-        val childBefore = expectOneChild()
-        assertEquals(AttendanceStatus.COMING, childBefore.status)
+        val child = expectOneChild()
+        assertEquals(AttendanceStatus.COMING, child.status)
     }
 
     private fun givenChildPresent() {
@@ -221,8 +349,8 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
                 departed = null
             )
         }
-        val childBefore = expectOneChild()
-        assertEquals(AttendanceStatus.PRESENT, childBefore.status)
+        val child = expectOneChild()
+        assertEquals(AttendanceStatus.PRESENT, child.status)
     }
 
     private fun givenChildDeparted() {
@@ -237,8 +365,8 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
                 departed = departed
             )
         }
-        val childBefore = expectOneChild()
-        assertEquals(AttendanceStatus.DEPARTED, childBefore.status)
+        val child = expectOneChild()
+        assertEquals(AttendanceStatus.DEPARTED, child.status)
     }
 
     private fun givenChildAbsent(absentFrom: List<CareType>, absenceType: AbsenceType) {
@@ -366,6 +494,27 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
 
     private fun returnToPresentAssertFail(status: Int) {
         val (_, res, _) = http.post("/attendances/units/${testDaycare.id}/children/${testChild_1.id}/return-to-present")
+            .asUser(staffUser)
+            .responseObject<AttendanceResponse>(objectMapper)
+
+        assertEquals(status, res.statusCode)
+    }
+
+    private fun markFullDayAbsenceAssertOkOneChild(absenceType: AbsenceType): Child {
+        val (_, res, result) = http.post("/attendances/units/${testDaycare.id}/children/${testChild_1.id}/full-day-absence")
+            .jsonBody(objectMapper.writeValueAsString(ChildAttendanceController.FullDayAbsenceRequest(absenceType)))
+            .asUser(staffUser)
+            .responseObject<AttendanceResponse>(objectMapper)
+
+        assertEquals(200, res.statusCode)
+        val response = result.get()
+        assertEquals(1, response.children.size)
+        return response.children.first()
+    }
+
+    private fun markFullDayAbsenceAssertFail(absenceType: AbsenceType, status: Int) {
+        val (_, res, _) = http.post("/attendances/units/${testDaycare.id}/children/${testChild_1.id}/full-day-absence")
+            .jsonBody(objectMapper.writeValueAsString(ChildAttendanceController.FullDayAbsenceRequest(absenceType)))
             .asUser(staffUser)
             .responseObject<AttendanceResponse>(objectMapper)
 

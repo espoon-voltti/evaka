@@ -5,6 +5,7 @@
 package fi.espoo.evaka.attendance
 
 import fi.espoo.evaka.application.utils.exhaust
+import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.daycare.service.CareType
 import fi.espoo.evaka.pis.dao.mapPSQLException
 import fi.espoo.evaka.placement.PlacementType
@@ -26,6 +27,7 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import java.time.Instant
+import java.time.LocalDate
 import java.util.UUID
 
 @RestController
@@ -234,9 +236,44 @@ class ChildAttendanceController(
             getAttendancesResponse(h, unitId)
         }.let { ResponseEntity.ok(it) }
     }
+
+    data class FullDayAbsenceRequest(
+        val absenceType: AbsenceType
+    )
+    @PostMapping("/units/{unitId}/children/{childId}/full-day-absence")
+    fun postFullDayAbsence(
+        user: AuthenticatedUser,
+        @PathVariable unitId: UUID,
+        @PathVariable childId: UUID,
+        @RequestBody body: FullDayAbsenceRequest
+    ): ResponseEntity<AttendanceResponse> {
+        acl.getRolesForUnit(user, unitId).requireOneOfRoles(*authorizedRoles)
+
+        return jdbi.transaction { h ->
+            assertChildPlacement(h, childId, unitId, Instant.now())
+
+            val attendance = h.getChildCurrentDayAttendance(childId, unitId)
+            if (attendance != null) {
+                throw Conflict("Cannot add full day absence, child already has attendance")
+            }
+
+            try {
+                h.deleteCurrentDayAbsences(childId)
+
+                val placementType = fetchChildPlacementType(h, childId, unitId, Instant.now())
+                getCareTypes(placementType).forEach { careType ->
+                    h.insertAbsence(user, childId, LocalDate.now(), careType, body.absenceType)
+                }
+            } catch (e: Exception) {
+                throw mapPSQLException(e)
+            }
+
+            getAttendancesResponse(h, unitId)
+        }.let { ResponseEntity.ok(it) }
+    }
 }
 
-fun assertChildPlacement(h: Handle, childId: UUID, unitId: UUID, time: Instant) {
+private fun assertChildPlacement(h: Handle, childId: UUID, unitId: UUID, time: Instant) {
     // language=sql
     val sql =
         """
@@ -262,7 +299,24 @@ fun assertChildPlacement(h: Handle, childId: UUID, unitId: UUID, time: Instant) 
     }
 }
 
-fun getAttendancesResponse(h: Handle, unitId: UUID): AttendanceResponse {
+private fun fetchChildPlacementType(h: Handle, childId: UUID, unitId: UUID, time: Instant): PlacementType {
+    // language=sql
+    val sql =
+        """
+        SELECT type FROM placement
+        WHERE child_id = :childId AND unit_id = :unitId AND daterange(start_date, end_date, '[]') @> :time::date
+        """.trimIndent()
+
+    return h.createQuery(sql)
+        .bind("childId", childId)
+        .bind("unitId", unitId)
+        .bind("time", time)
+        .mapTo<PlacementType>()
+        .list()
+        .first()
+}
+
+private fun getAttendancesResponse(h: Handle, unitId: UUID): AttendanceResponse {
     val unitInfo = h.fetchUnitInfo(unitId)
     val childrenBasics = h.fetchChildrenBasics(unitId)
     val childrenAttendances = h.fetchChildrenAttendances(unitId)
@@ -288,7 +342,7 @@ fun getAttendancesResponse(h: Handle, unitId: UUID): AttendanceResponse {
     return AttendanceResponse(unitInfo, children)
 }
 
-fun getChildStatus(placementType: PlacementType, attendance: ChildAttendance?, absences: List<ChildAbsence>): AttendanceStatus {
+private fun getChildStatus(placementType: PlacementType, attendance: ChildAttendance?, absences: List<ChildAbsence>): AttendanceStatus {
     if (attendance != null) {
         return if (attendance.departed == null) AttendanceStatus.PRESENT else AttendanceStatus.DEPARTED
     }
@@ -300,7 +354,7 @@ fun getChildStatus(placementType: PlacementType, attendance: ChildAttendance?, a
     return AttendanceStatus.COMING
 }
 
-fun isAbsent(placementType: PlacementType, absences: List<ChildAbsence>): Boolean {
+private fun isAbsent(placementType: PlacementType, absences: List<ChildAbsence>): Boolean {
     return when (placementType) {
         PlacementType.PRESCHOOL, PlacementType.PREPARATORY ->
             absences.any { it.careType == CareType.PRESCHOOL }
@@ -310,5 +364,18 @@ fun isAbsent(placementType: PlacementType, absences: List<ChildAbsence>): Boolea
             absences.any { it.careType == CareType.DAYCARE }
         PlacementType.CLUB ->
             absences.any { it.careType == CareType.CLUB }
+    }.exhaust()
+}
+
+private fun getCareTypes(placementType: PlacementType): List<CareType> {
+    return when (placementType) {
+        PlacementType.PRESCHOOL, PlacementType.PREPARATORY ->
+            listOf(CareType.PRESCHOOL)
+        PlacementType.PRESCHOOL_DAYCARE, PlacementType.PREPARATORY_DAYCARE ->
+            listOf(CareType.PRESCHOOL, CareType.PRESCHOOL_DAYCARE)
+        PlacementType.DAYCARE, PlacementType.DAYCARE_PART_TIME ->
+            listOf(CareType.DAYCARE)
+        PlacementType.CLUB ->
+            listOf(CareType.CLUB)
     }.exhaust()
 }
