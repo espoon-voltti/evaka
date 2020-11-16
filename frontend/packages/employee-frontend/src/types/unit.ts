@@ -43,6 +43,7 @@ export interface Unit {
   roundTheClock: boolean
   capacity: number
   language: UnitLanguage
+  ghostUnit: boolean
   uploadToVarda: boolean
   uploadToKoski: boolean
   invoicedByMunicipality: boolean

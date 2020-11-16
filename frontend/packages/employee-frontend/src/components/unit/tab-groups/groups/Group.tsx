@@ -326,7 +326,7 @@ function Group({
                   </Tr>
                 </Thead>
                 <Tbody>
-                  {sortedPlacements.map((placement, ind) => {
+                  {sortedPlacements.map((placement) => {
                     const missingServiceNeedDays =
                       'type' in placement
                         ? placement.daycarePlacementMissingServiceNeedDays

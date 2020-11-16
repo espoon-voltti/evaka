@@ -50,6 +50,7 @@ interface FormData {
   roundTheClock: boolean
   capacity: string
   language: UnitLanguage
+  ghostUnit: boolean
   uploadToVarda: boolean
   uploadToKoski: boolean
   invoicedByMunicipality: boolean
@@ -340,6 +341,7 @@ function validateForm(
     providerType,
     roundTheClock,
     language,
+    ghostUnit,
     uploadToVarda,
     uploadToKoski,
     invoicedByMunicipality,
@@ -369,6 +371,7 @@ function validateForm(
         roundTheClock,
         capacity,
         language,
+        ghostUnit,
         uploadToVarda,
         uploadToKoski,
         invoicedByMunicipality,
@@ -433,6 +436,7 @@ function toFormData(unit: Unit | undefined): FormData {
     roundTheClock: unit?.roundTheClock ?? false,
     capacity: (unit?.capacity ?? 0).toString(),
     language: unit?.language ?? 'fi',
+    ghostUnit: unit?.ghostUnit ?? false,
     uploadToVarda: unit?.uploadToVarda ?? false,
     uploadToKoski: unit?.uploadToKoski ?? false,
     invoicedByMunicipality: unit?.invoicedByMunicipality ?? false,
@@ -532,6 +536,7 @@ export default function UnitEditor(props: Props): JSX.Element {
               icon={faPen}
               onClick={onClickEditHandler}
               text={i18n.common.edit}
+              dataQa={'enable-edit-button'}
             />
           )}
         </TopBar>
@@ -788,6 +793,15 @@ export default function UnitEditor(props: Props): JSX.Element {
         )}
       </FormPart>
       <FormPart>
+        <div>{i18n.unitEditor.label.ghostUnit}</div>
+        <Checkbox
+          disabled={!props.editable}
+          label={i18n.unitEditor.field.ghostUnit}
+          checked={form.ghostUnit}
+          onChange={(ghostUnit) => updateForm({ ghostUnit })}
+        />
+      </FormPart>
+      <FormPart>
         <div>{showRequired(i18n.unitEditor.label.integrations)}</div>
         <FixedSpaceColumn>
           <Checkbox
@@ -980,6 +994,7 @@ export default function UnitEditor(props: Props): JSX.Element {
             placeholder={i18n.unitEditor.placeholder.phone}
             value={unitManager.phone}
             onChange={(value) => updateUnitManager({ phone: value })}
+            dataQa={'qa-unit-manager-phone-input-field'}
           />
         ) : (
           unitManager.phone
@@ -995,6 +1010,7 @@ export default function UnitEditor(props: Props): JSX.Element {
             placeholder={i18n.unitEditor.placeholder.email}
             value={unitManager.email}
             onChange={(value) => updateUnitManager({ email: value })}
+            dataQa={'qa-unit-manager-email-input-field'}
           />
         ) : (
           unitManager.email

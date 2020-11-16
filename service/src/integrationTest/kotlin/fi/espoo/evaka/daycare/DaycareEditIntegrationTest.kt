@@ -47,6 +47,7 @@ class DaycareEditIntegrationTest : FullApplicationTest() {
         providerType = ProviderType.MUNICIPAL,
         capacity = 1,
         language = Language.fi,
+        ghostUnit = false,
         uploadToVarda = false,
         uploadToKoski = false,
         invoicedByMunicipality = false,
@@ -130,6 +131,7 @@ class DaycareEditIntegrationTest : FullApplicationTest() {
         assertEquals(fields.providerType, daycare.providerType)
         assertEquals(fields.capacity, daycare.capacity)
         assertEquals(fields.language, daycare.language)
+        assertEquals(fields.ghostUnit, daycare.ghostUnit)
         assertEquals(fields.uploadToVarda, daycare.uploadToVarda)
         assertEquals(fields.invoicedByMunicipality, daycare.invoicedByMunicipality)
         assertEquals(fields.costCenter, daycare.costCenter)
