@@ -12,7 +12,6 @@ import fi.espoo.evaka.shared.async.NotifyFeeDecisionPdfGenerated
 import fi.espoo.evaka.shared.async.NotifyVoucherValueDecisionApproved
 import fi.espoo.evaka.shared.async.NotifyVoucherValueDecisionPdfGenerated
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.db.transaction
 import mu.KotlinLogging
 import org.springframework.stereotype.Component
 

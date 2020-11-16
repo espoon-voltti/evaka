@@ -15,8 +15,6 @@ import fi.espoo.evaka.shared.async.NotifyFeeAlterationUpdated
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.config.Roles
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.db.handle
-import fi.espoo.evaka.shared.db.transaction
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.Period
 import fi.espoo.evaka.shared.domain.maxEndDate

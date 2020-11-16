@@ -10,8 +10,6 @@ import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.db.handle
-import fi.espoo.evaka.shared.db.transaction
 import org.jdbi.v3.core.JdbiException
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity

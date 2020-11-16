@@ -17,8 +17,6 @@ import fi.espoo.evaka.shared.config.Roles.FINANCE_ADMIN
 import fi.espoo.evaka.shared.config.Roles.SERVICE_WORKER
 import fi.espoo.evaka.shared.config.Roles.UNIT_SUPERVISOR
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.db.handle
-import fi.espoo.evaka.shared.db.transaction
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.mapper.Nested
 import org.springframework.http.ResponseEntity

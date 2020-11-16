@@ -7,7 +7,6 @@ package fi.espoo.evaka.varda
 import com.fasterxml.jackson.databind.ObjectMapper
 import fi.espoo.evaka.pis.service.PersonService
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.varda.integration.VardaClient
 import fi.espoo.evaka.varda.integration.VardaTokenProvider
 import mu.KotlinLogging

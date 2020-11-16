@@ -10,7 +10,6 @@ import fi.espoo.evaka.shared.async.NotifyFamilyUpdated
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.config.Roles
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.db.transaction
 import org.jdbi.v3.core.kotlin.mapTo
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.PostMapping

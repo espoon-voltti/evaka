@@ -13,7 +13,6 @@ import fi.espoo.evaka.invoicing.domain.addressUsable
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.config.Roles
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.domain.Period
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.http.ResponseEntity

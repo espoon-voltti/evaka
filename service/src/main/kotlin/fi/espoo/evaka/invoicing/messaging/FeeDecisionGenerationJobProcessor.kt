@@ -12,7 +12,6 @@ import fi.espoo.evaka.shared.async.NotifyIncomeUpdated
 import fi.espoo.evaka.shared.async.NotifyPlacementPlanApplied
 import fi.espoo.evaka.shared.async.NotifyServiceNeedUpdated
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.db.transaction
 import fi.espoo.evaka.shared.domain.Period
 import mu.KotlinLogging
 import org.springframework.stereotype.Component

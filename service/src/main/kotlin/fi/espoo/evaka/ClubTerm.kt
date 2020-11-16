@@ -5,7 +5,6 @@
 package fi.espoo.evaka
 
 import fi.espoo.evaka.shared.domain.ClosedPeriod
-import java.lang.IllegalStateException
 import java.time.LocalDate
 
 // TODO: hard-coding is not a good solution

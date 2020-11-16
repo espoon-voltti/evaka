@@ -15,8 +15,6 @@ import fi.espoo.evaka.shared.auth.deleteDaycareAclRow
 import fi.espoo.evaka.shared.auth.getDaycareAclRows
 import fi.espoo.evaka.shared.auth.insertDaycareAclRow
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.db.handle
-import fi.espoo.evaka.shared.db.transaction
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping

@@ -12,7 +12,6 @@ import mu.KotlinLogging
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.mapTo
 import org.springframework.stereotype.Service
-import java.lang.Exception
 import java.time.LocalDate
 import java.util.UUID
 

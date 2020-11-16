@@ -14,8 +14,6 @@ import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.shared.domain.NotFound
 import org.jdbi.v3.core.Handle
 import org.springframework.stereotype.Service
-import java.lang.Error
-import java.lang.IllegalArgumentException
 import java.time.LocalDate
 import java.util.UUID
 
