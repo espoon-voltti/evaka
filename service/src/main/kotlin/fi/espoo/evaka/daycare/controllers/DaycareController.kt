@@ -161,7 +161,7 @@ class DaycareController(
             val daycareStub = it.handle.getDaycareStub(daycareId)
             ok(
                 CaretakersResponse(
-                    caretakers = caretakerService.getCaretakers(it.handle, groupId),
+                    caretakers = caretakerService.getCaretakers(it, groupId),
                     unitName = daycareStub?.name ?: "",
                     groupName = it.handle.getDaycareGroup(groupId)?.name ?: ""
                 )
@@ -183,7 +183,7 @@ class DaycareController(
 
         db.transaction {
             caretakerService.insert(
-                it.handle,
+                it,
                 groupId = groupId,
                 startDate = body.startDate,
                 endDate = body.endDate,
@@ -208,7 +208,7 @@ class DaycareController(
 
         db.transaction {
             caretakerService.update(
-                it.handle,
+                it,
                 groupId = groupId,
                 id = id,
                 startDate = body.startDate,
@@ -233,7 +233,7 @@ class DaycareController(
 
         db.transaction {
             caretakerService.delete(
-                it.handle,
+                it,
                 groupId = groupId,
                 id = id
             )
