@@ -129,7 +129,7 @@ function AssistanceActions() {
         {isSuccess(rows) && (
           <>
             <ReportDownload
-              data={rows.data.map((row) => ({
+              data={filteredRows.map((row) => ({
                 ...row,
                 unitType: row.unitType
                   ? i18n.reports.common.unitTypes[row.unitType]

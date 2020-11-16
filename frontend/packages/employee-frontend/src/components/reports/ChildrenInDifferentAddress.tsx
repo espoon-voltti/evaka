@@ -112,7 +112,7 @@ function ChildrenInDifferentAddress() {
         {isSuccess(rows) && (
           <>
             <ReportDownload
-              data={rows.data}
+              data={filteredRows}
               headers={[
                 { label: 'Palvelualue', key: 'careAreaName' },
                 { label: 'Yksikön nimi', key: 'unitName' },
