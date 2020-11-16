@@ -6,7 +6,7 @@ package fi.espoo.evaka.daycare.service
 
 import fi.espoo.evaka.backupcare.GroupBackupCare
 import fi.espoo.evaka.daycare.getDaycare
-import fi.espoo.evaka.pis.service.PersonService
+import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.domain.BadRequest
@@ -24,7 +24,7 @@ import java.util.UUID
 private val logger = KotlinLogging.logger { }
 
 @Service
-class AbsenceService(private val db: Jdbi, private val personService: PersonService) {
+class AbsenceService(private val db: Jdbi) {
     fun getAbsencesByMonth(groupId: UUID, year: Int, month: Int): AbsenceGroup {
         val startDate = LocalDate.of(year, month, 1)
         val endDate = startDate.with(lastDayOfMonth())
@@ -96,7 +96,7 @@ class AbsenceService(private val db: Jdbi, private val personService: PersonServ
             val absenceList = getAbsencesByChildByRange(childId, period, h)
             val backupCareList = h.getBackupCaresAffectingChild(childId, period)
             val child =
-                personService.getPerson(h, childId) ?: throw BadRequest("Error: Could not find child with id: $childId")
+                h.getPersonById(childId) ?: throw BadRequest("Error: Could not find child with id: $childId")
             AbsenceChildMinimal(
                 id = child.id,
                 firstName = child.firstName ?: "",

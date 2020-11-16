@@ -9,6 +9,7 @@ import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.invoicing.domain.PersonData
 import fi.espoo.evaka.invoicing.domain.UnitData
 import fi.espoo.evaka.invoicing.domain.VoucherValue
+import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.transaction
 import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevChild
@@ -388,6 +389,7 @@ fun insertGeneralTestFixtures(h: Handle) {
     )
 }
 
+fun Database.Transaction.resetDatabase() = execute("SELECT reset_database()")
 fun resetDatabase(h: Handle) {
     h.transaction { it.execute("SELECT reset_database()") }
 }

@@ -5,10 +5,9 @@
 package fi.espoo.evaka.koski
 
 import fi.espoo.evaka.shared.async.UploadToKoski
-import fi.espoo.evaka.shared.db.handle
+import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDaycare2
-import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.Jdbi
 import org.jdbi.v3.core.kotlin.mapTo
 import java.time.LocalDate
@@ -25,11 +24,11 @@ internal data class KoskiStudyRightRaw(
     val payload: String
 )
 
-internal fun Handle.getStoredResults() = createQuery("select * from koski_study_right")
+internal fun Database.Read.getStoredResults() = createQuery("select * from koski_study_right")
     .mapTo<KoskiStudyRightRaw>()
     .toList()
 
-internal fun Handle.setUnitOids() {
+internal fun Database.Transaction.setUnitOids() {
     createUpdate("UPDATE daycare SET oph_unit_oid = :unitOid WHERE daycare.id = :unitId")
         .bind("unitId", testDaycare.id)
         .bind("unitOid", "1.2.246.562.10.1111111111")
@@ -42,8 +41,10 @@ internal fun Handle.setUnitOids() {
 }
 
 internal class KoskiTester(private val jdbi: Jdbi, private val client: KoskiClient) {
-    fun triggerUploads(today: LocalDate, params: KoskiSearchParams = KoskiSearchParams()) =
-        jdbi.handle { it.getPendingStudyRights(today, params) }.forEach { request ->
-            client.uploadToKoski(UploadToKoski(request), today)
+    fun triggerUploads(today: LocalDate, params: KoskiSearchParams = KoskiSearchParams()) {
+        val db = Database(jdbi)
+        db.read { it.getPendingStudyRights(today, params) }.forEach { request ->
+            client.uploadToKoski(db, UploadToKoski(request), today)
         }
+    }
 }

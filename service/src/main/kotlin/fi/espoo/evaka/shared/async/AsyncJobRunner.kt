@@ -6,7 +6,7 @@ package fi.espoo.evaka.shared.async
 
 import fi.espoo.evaka.application.utils.exhaust
 import fi.espoo.evaka.dvv.DvvModificationsRefresh
-import fi.espoo.evaka.shared.db.handle
+import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.transaction
 import fi.espoo.voltti.logging.MdcKey
 import mu.KotlinLogging
@@ -26,7 +26,7 @@ private const val threadPoolSize = 1
 private const val defaultRetryCount = 24 * 60 / 5 // 24h when used with default 5 minute retry interval
 private val defaultRetryInterval = Duration.ofMinutes(5)
 
-private val noHandler = { msg: Any -> logger.warn("No job handler configured for $msg") }
+private val noHandler = { _: Database, msg: Any -> logger.warn("No job handler configured for $msg") }
 
 class AsyncJobRunner(
     private val jdbi: Jdbi,
@@ -37,53 +37,53 @@ class AsyncJobRunner(
     private val runningCount: AtomicInteger = AtomicInteger(0)
 
     @Volatile
-    var notifyPlacementPlanApplied: (msg: NotifyPlacementPlanApplied) -> Unit = noHandler
+    var notifyPlacementPlanApplied: (db: Database, msg: NotifyPlacementPlanApplied) -> Unit = noHandler
 
     @Volatile
-    var notifyServiceNeedUpdated: (msg: NotifyServiceNeedUpdated) -> Unit = noHandler
+    var notifyServiceNeedUpdated: (db: Database, msg: NotifyServiceNeedUpdated) -> Unit = noHandler
 
     @Volatile
-    var notifyFamilyUpdated: (msg: NotifyFamilyUpdated) -> Unit = noHandler
+    var notifyFamilyUpdated: (db: Database, msg: NotifyFamilyUpdated) -> Unit = noHandler
 
     @Volatile
-    var notifyFeeAlterationUpdated: (msg: NotifyFeeAlterationUpdated) -> Unit = noHandler
+    var notifyFeeAlterationUpdated: (db: Database, msg: NotifyFeeAlterationUpdated) -> Unit = noHandler
 
     @Volatile
-    var notifyIncomeUpdated: (msg: NotifyIncomeUpdated) -> Unit = noHandler
+    var notifyIncomeUpdated: (db: Database, msg: NotifyIncomeUpdated) -> Unit = noHandler
 
     @Volatile
-    var notifyDecisionCreated: (msg: NotifyDecisionCreated) -> Unit = noHandler
+    var notifyDecisionCreated: (db: Database, msg: NotifyDecisionCreated) -> Unit = noHandler
 
     @Volatile
-    var sendDecision: (msg: SendDecision) -> Unit = noHandler
+    var sendDecision: (db: Database, msg: SendDecision) -> Unit = noHandler
 
     @Volatile
-    var notifyFeeDecisionApproved: (msg: NotifyFeeDecisionApproved) -> Unit = noHandler
+    var notifyFeeDecisionApproved: (db: Database, msg: NotifyFeeDecisionApproved) -> Unit = noHandler
 
     @Volatile
-    var notifyFeeDecisionPdfGenerated: (msg: NotifyFeeDecisionPdfGenerated) -> Unit = noHandler
+    var notifyFeeDecisionPdfGenerated: (db: Database, msg: NotifyFeeDecisionPdfGenerated) -> Unit = noHandler
 
     @Volatile
-    var notifyVoucherValueDecisionApproved: (msg: NotifyVoucherValueDecisionApproved) -> Unit = noHandler
+    var notifyVoucherValueDecisionApproved: (db: Database, msg: NotifyVoucherValueDecisionApproved) -> Unit = noHandler
 
     @Volatile
-    var notifyVoucherValueDecisionPdfGenerated: (msg: NotifyVoucherValueDecisionPdfGenerated) -> Unit =
+    var notifyVoucherValueDecisionPdfGenerated: (db: Database, msg: NotifyVoucherValueDecisionPdfGenerated) -> Unit =
         noHandler
 
     @Volatile
-    var initializeFamilyFromApplication: (msg: InitializeFamilyFromApplication) -> Unit = noHandler
+    var initializeFamilyFromApplication: (db: Database, msg: InitializeFamilyFromApplication) -> Unit = noHandler
 
     @Volatile
-    var vtjRefresh: (msg: VTJRefresh) -> Unit = noHandler
+    var vtjRefresh: (db: Database, msg: VTJRefresh) -> Unit = noHandler
 
     @Volatile
-    var dvvModificationsRefresh: (msg: DvvModificationsRefresh) -> Unit = noHandler
+    var dvvModificationsRefresh: (db: Database, msg: DvvModificationsRefresh) -> Unit = noHandler
 
     @Volatile
-    var uploadToKoski: (msg: UploadToKoski) -> Unit = noHandler
+    var uploadToKoski: (db: Database, msg: UploadToKoski) -> Unit = noHandler
 
     @Volatile
-    var sendApplicationEmail: (msg: SendApplicationEmail) -> Unit = noHandler
+    var sendApplicationEmail: (db: Database, msg: SendApplicationEmail) -> Unit = noHandler
 
     fun plan(
         h: Handle,
@@ -91,10 +91,17 @@ class AsyncJobRunner(
         retryCount: Int = defaultRetryCount,
         retryInterval: Duration = defaultRetryInterval,
         runAt: Instant = Instant.now()
+    ) = h.transaction { plan(Database.Transaction.wrap(it), payloads, retryCount, retryInterval, runAt) }
+
+    fun plan(
+        tx: Database.Transaction,
+        payloads: Iterable<AsyncJobPayload>,
+        retryCount: Int = defaultRetryCount,
+        retryInterval: Duration = defaultRetryInterval,
+        runAt: Instant = Instant.now()
     ) {
         payloads.forEach { payload ->
-            insertJob(
-                h,
+            tx.insertJob(
                 JobParams(
                     payload = payload,
                     retryCount = retryCount,
@@ -139,7 +146,7 @@ class AsyncJobRunner(
     fun getRunningCount(): Int = runningCount.get()
 
     fun getPendingJobCount(types: Collection<AsyncJobType> = AsyncJobType.values().toList()): Int =
-        jdbi.handle { h -> getPendingJobCount(h, types) }
+        Database(jdbi).read { it.getPendingJobCount(types) }
 
     fun waitUntilNoRunningJobs(timeout: Duration = Duration.ofSeconds(10)) {
         val start = Instant.now()
@@ -150,39 +157,50 @@ class AsyncJobRunner(
         error { "Timed out while waiting for running jobs to finish" }
     }
 
-    private fun runPendingJobs(maxCount: Int) {
+    private fun runPendingJobs(maxCount: Int) = Database(jdbi).connect { db ->
         var remaining = maxCount
         do {
-            val job = jdbi.transaction { tx -> claimJob(tx) }?.also(this::runPendingJob)
+            val job = db.transaction { it.claimJob() }
+            if (job != null) {
+                runPendingJob(db, job)
+            }
             remaining -= 1
         } while (job != null && remaining > 0)
     }
 
-    private fun runPendingJob(job: ClaimedJobRef) {
+    private fun runPendingJob(db: Database.Connection, job: ClaimedJobRef) {
         try {
             MdcKey.TRACE_ID.set(job.jobId.toString())
             MdcKey.SPAN_ID.set(job.jobId.toString())
             runningCount.incrementAndGet()
             logger.info { "Running async job $job" }
-            val completed = when (job.jobType) {
-                AsyncJobType.PLACEMENT_PLAN_APPLIED -> runJob(job, this.notifyPlacementPlanApplied)
-                AsyncJobType.SERVICE_NEED_UPDATED -> runJob(job, this.notifyServiceNeedUpdated)
-                AsyncJobType.FAMILY_UPDATED -> runJob(job, this.notifyFamilyUpdated)
-                AsyncJobType.FEE_ALTERATION_UPDATED -> runJob(job, this.notifyFeeAlterationUpdated)
-                AsyncJobType.INCOME_UPDATED -> runJob(job, this.notifyIncomeUpdated)
-                AsyncJobType.DECISION_CREATED -> runJob(job, this.notifyDecisionCreated)
-                AsyncJobType.SEND_DECISION -> runJob(job, this.sendDecision)
-                AsyncJobType.FEE_DECISION_APPROVED -> runJob(job, this.notifyFeeDecisionApproved)
-                AsyncJobType.FEE_DECISION_PDF_GENERATED -> runJob(job, this.notifyFeeDecisionPdfGenerated)
-                AsyncJobType.VOUCHER_VALUE_DECISION_APPROVED -> runJob(job, this.notifyVoucherValueDecisionApproved)
-                AsyncJobType.VOUCHER_VALUE_DECISION_PDF_GENERATED ->
-                    runJob(job, this.notifyVoucherValueDecisionPdfGenerated)
-                AsyncJobType.INITIALIZE_FAMILY_FROM_APPLICATION -> runJob(job, this.initializeFamilyFromApplication)
-                AsyncJobType.VTJ_REFRESH -> runJob(job, this.vtjRefresh)
-                AsyncJobType.DVV_MODIFICATIONS_REFRESH -> runJob(job, this.dvvModificationsRefresh)
-                AsyncJobType.UPLOAD_TO_KOSKI -> runJob(job, this.uploadToKoski)
-                AsyncJobType.SEND_APPLICATION_EMAIL -> runJob(job, this.sendApplicationEmail)
-            }.exhaust()
+            val completed = db.transaction {
+                when (job.jobType) {
+                    AsyncJobType.PLACEMENT_PLAN_APPLIED -> it.runJob(job, this.notifyPlacementPlanApplied)
+                    AsyncJobType.SERVICE_NEED_UPDATED -> it.runJob(job, this.notifyServiceNeedUpdated)
+                    AsyncJobType.FAMILY_UPDATED -> it.runJob(job, this.notifyFamilyUpdated)
+                    AsyncJobType.FEE_ALTERATION_UPDATED -> it.runJob(job, this.notifyFeeAlterationUpdated)
+                    AsyncJobType.INCOME_UPDATED -> it.runJob(job, this.notifyIncomeUpdated)
+                    AsyncJobType.DECISION_CREATED -> it.runJob(job, this.notifyDecisionCreated)
+                    AsyncJobType.SEND_DECISION -> it.runJob(job, this.sendDecision)
+                    AsyncJobType.FEE_DECISION_APPROVED -> it.runJob(job, this.notifyFeeDecisionApproved)
+                    AsyncJobType.FEE_DECISION_PDF_GENERATED -> it.runJob(job, this.notifyFeeDecisionPdfGenerated)
+                    AsyncJobType.VOUCHER_VALUE_DECISION_APPROVED -> it.runJob(
+                        job,
+                        this.notifyVoucherValueDecisionApproved
+                    )
+                    AsyncJobType.VOUCHER_VALUE_DECISION_PDF_GENERATED ->
+                        it.runJob(job, this.notifyVoucherValueDecisionPdfGenerated)
+                    AsyncJobType.INITIALIZE_FAMILY_FROM_APPLICATION -> it.runJob(
+                        job,
+                        this.initializeFamilyFromApplication
+                    )
+                    AsyncJobType.VTJ_REFRESH -> it.runJob(job, this.vtjRefresh)
+                    AsyncJobType.DVV_MODIFICATIONS_REFRESH -> it.runJob(job, this.dvvModificationsRefresh)
+                    AsyncJobType.UPLOAD_TO_KOSKI -> it.runJob(job, this.uploadToKoski)
+                    AsyncJobType.SEND_APPLICATION_EMAIL -> it.runJob(job, this.sendApplicationEmail)
+                }.exhaust()
+            }
             if (completed) {
                 logger.info { "Completed async job $job" }
             } else {
@@ -199,15 +217,16 @@ class AsyncJobRunner(
         }
     }
 
-    private inline fun <reified T : AsyncJobPayload> runJob(job: ClaimedJobRef, crossinline f: (msg: T) -> Unit) =
-        jdbi.transaction { h ->
-            startJob(h, job, T::class.java)?.let { msg ->
-                msg.user?.let { MdcKey.USER_ID.set(it.id.toString()) }
-                f(msg)
-                completeJob(h, job)
-                true
-            } ?: false
-        }
+    private inline fun <reified T : AsyncJobPayload> Database.Transaction.runJob(
+        job: ClaimedJobRef,
+        crossinline f: (db: Database, msg: T) -> Unit
+    ): Boolean {
+        val msg = startJob(job, T::class.java) ?: return false
+        msg.user?.let { MdcKey.USER_ID.set(it.id.toString()) }
+        f(Database(jdbi), msg)
+        completeJob(job)
+        return true
+    }
 
     override fun close() {
         this.executor.shutdown()

@@ -11,7 +11,6 @@ import fi.espoo.evaka.daycare.getChild
 import fi.espoo.evaka.decision.Decision
 import fi.espoo.evaka.decision.DecisionDraft
 import fi.espoo.evaka.decision.DecisionDraftService
-import fi.espoo.evaka.decision.DecisionService
 import fi.espoo.evaka.decision.DecisionStatus
 import fi.espoo.evaka.decision.DecisionType
 import fi.espoo.evaka.decision.fetchDecisionDrafts
@@ -37,6 +36,7 @@ import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.config.Roles
+import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insertTestApplication
@@ -72,9 +72,6 @@ import java.util.UUID
 class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
     @Autowired
     private lateinit var service: ApplicationStateService
-
-    @Autowired
-    private lateinit var decisionService: DecisionService
 
     @Autowired
     private lateinit var decisionDraftService: DecisionDraftService
@@ -169,57 +166,67 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
     }
 
     @Test
-    fun `moveToWaitingPlacement without otherInfo - status is changed and checkedByAdmin defaults true`() =
-        jdbi.handle { h ->
+    fun `moveToWaitingPlacement without otherInfo - status is changed and checkedByAdmin defaults true`() {
+        db.transaction { tx ->
             // given
-            insertDraftApplication(h, hasAdditionalInfo = false)
-            service.sendApplication(h, serviceWorker, applicationId)
-
+            insertDraftApplication(tx.handle, hasAdditionalInfo = false)
+            service.sendApplication(tx.handle, serviceWorker, applicationId)
+        }
+        db.transaction { tx ->
             // when
-            service.moveToWaitingPlacement(h, serviceWorker, applicationId)
-
+            service.moveToWaitingPlacement(tx, serviceWorker, applicationId)
+        }
+        db.read {
             // then
-            val application = fetchApplicationDetails(h, applicationId)!!
+            val application = fetchApplicationDetails(it.handle, applicationId)!!
             assertEquals(ApplicationStatus.WAITING_PLACEMENT, application.status)
             assertEquals(true, application.checkedByAdmin)
         }
-
-    @Test
-    fun `moveToWaitingPlacement with otherInfo - status is changed and checkedByAdmin defaults false`() =
-        jdbi.handle { h ->
-            // given
-            insertDraftApplication(h, hasAdditionalInfo = true)
-            service.sendApplication(h, serviceWorker, applicationId)
-
-            // when
-            service.moveToWaitingPlacement(h, serviceWorker, applicationId)
-
-            // then
-            val application = fetchApplicationDetails(h, applicationId)!!
-            assertEquals(false, application.checkedByAdmin)
-        }
-
-    @Test
-    fun `moveToWaitingPlacement with maxFeeAccepted - new income has been created`() = jdbi.handle { h ->
-        // given
-        insertDraftApplication(h, guardian = testAdult_5, maxFeeAccepted = true)
-        service.sendApplication(h, serviceWorker, applicationId)
-
-        // when
-        service.moveToWaitingPlacement(h, serviceWorker, applicationId)
-
-        // then
-        val application = fetchApplicationDetails(h, applicationId)!!
-        assertEquals(true, application.form.maxFeeAccepted)
-        val incomes = getIncomesForPerson(h, mapper, testAdult_5.id)
-        assertEquals(ApplicationStatus.WAITING_PLACEMENT, application.status)
-        assertEquals(1, incomes.size)
-        assertEquals(IncomeEffect.MAX_FEE_ACCEPTED, incomes.first().effect)
     }
 
     @Test
-    fun `moveToWaitingPlacement with maxFeeAccepted - existing overlapping indefinite income will be handled`() =
-        jdbi.handle { h ->
+    fun `moveToWaitingPlacement with otherInfo - status is changed and checkedByAdmin defaults false`() {
+        db.transaction { tx ->
+            // given
+            insertDraftApplication(tx.handle, hasAdditionalInfo = true)
+            service.sendApplication(tx.handle, serviceWorker, applicationId)
+        }
+        db.transaction { tx ->
+            // when
+            service.moveToWaitingPlacement(tx, serviceWorker, applicationId)
+        }
+        db.read {
+            // then
+            val application = fetchApplicationDetails(it.handle, applicationId)!!
+            assertEquals(false, application.checkedByAdmin)
+        }
+    }
+
+    @Test
+    fun `moveToWaitingPlacement with maxFeeAccepted - new income has been created`() {
+        db.transaction { tx ->
+            // given
+            insertDraftApplication(tx.handle, guardian = testAdult_5, maxFeeAccepted = true)
+            service.sendApplication(tx.handle, serviceWorker, applicationId)
+        }
+        db.transaction { tx ->
+            // when
+            service.moveToWaitingPlacement(tx, serviceWorker, applicationId)
+        }
+        db.read {
+            // then
+            val application = fetchApplicationDetails(it.handle, applicationId)!!
+            assertEquals(true, application.form.maxFeeAccepted)
+            val incomes = getIncomesForPerson(it.handle, mapper, testAdult_5.id)
+            assertEquals(ApplicationStatus.WAITING_PLACEMENT, application.status)
+            assertEquals(1, incomes.size)
+            assertEquals(IncomeEffect.MAX_FEE_ACCEPTED, incomes.first().effect)
+        }
+    }
+
+    @Test
+    fun `moveToWaitingPlacement with maxFeeAccepted - existing overlapping indefinite income will be handled`() {
+        db.transaction { tx ->
             // given
             val financeUser = AuthenticatedUser(id = testDecisionMaker_1.id, roles = setOf(Roles.FINANCE_ADMIN))
             val earlierIndefinite = Income(
@@ -231,26 +238,29 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 validFrom = LocalDate.now().minusDays(10),
                 validTo = null
             )
-            upsertIncome(h, mapper, earlierIndefinite, financeUser.id)
-            insertDraftApplication(h, guardian = testAdult_5, maxFeeAccepted = true)
-            service.sendApplication(h, serviceWorker, applicationId)
-
+            upsertIncome(tx.handle, mapper, earlierIndefinite, financeUser.id)
+            insertDraftApplication(tx.handle, guardian = testAdult_5, maxFeeAccepted = true)
+            service.sendApplication(tx.handle, serviceWorker, applicationId)
+        }
+        db.transaction { tx ->
             // when
-            service.moveToWaitingPlacement(h, serviceWorker, applicationId)
-
+            service.moveToWaitingPlacement(tx, serviceWorker, applicationId)
+        }
+        db.read {
             // then
-            val application = fetchApplicationDetails(h, applicationId)!!
+            val application = fetchApplicationDetails(it.handle, applicationId)!!
             assertEquals(true, application.form.maxFeeAccepted)
-            val incomes = getIncomesForPerson(h, mapper, testAdult_5.id)
+            val incomes = getIncomesForPerson(it.handle, mapper, testAdult_5.id)
             assertEquals(ApplicationStatus.WAITING_PLACEMENT, application.status)
             assertEquals(2, incomes.size)
             assertEquals(IncomeEffect.MAX_FEE_ACCEPTED, incomes.first().effect)
             assertEquals(IncomeEffect.NOT_AVAILABLE, incomes[1].effect)
         }
+    }
 
     @Test
-    fun `moveToWaitingPlacement with maxFeeAccepted - existing overlapping income will be handled by not adding a new income for user`() =
-        jdbi.handle { h ->
+    fun `moveToWaitingPlacement with maxFeeAccepted - existing overlapping income will be handled by not adding a new income for user`() {
+        db.transaction { tx ->
             // given
             val financeUser = AuthenticatedUser(id = testDecisionMaker_1.id, roles = setOf(Roles.FINANCE_ADMIN))
             val earlierIncome = Income(
@@ -262,25 +272,28 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 validFrom = LocalDate.now().minusDays(10),
                 validTo = LocalDate.now().plusMonths(5)
             )
-            upsertIncome(h, mapper, earlierIncome, financeUser.id)
-            insertDraftApplication(h, guardian = testAdult_5, maxFeeAccepted = true)
-            service.sendApplication(h, serviceWorker, applicationId)
-
+            upsertIncome(tx.handle, mapper, earlierIncome, financeUser.id)
+            insertDraftApplication(tx.handle, guardian = testAdult_5, maxFeeAccepted = true)
+            service.sendApplication(tx.handle, serviceWorker, applicationId)
+        }
+        db.transaction { tx ->
             // when
-            service.moveToWaitingPlacement(h, serviceWorker, applicationId)
-
+            service.moveToWaitingPlacement(tx, serviceWorker, applicationId)
+        }
+        db.read {
             // then
-            val application = fetchApplicationDetails(h, applicationId)!!
+            val application = fetchApplicationDetails(it.handle, applicationId)!!
             assertEquals(true, application.form.maxFeeAccepted)
-            val incomes = getIncomesForPerson(h, mapper, testAdult_5.id)
+            val incomes = getIncomesForPerson(it.handle, mapper, testAdult_5.id)
             assertEquals(ApplicationStatus.WAITING_PLACEMENT, application.status)
             assertEquals(1, incomes.size)
             assertEquals(IncomeEffect.NOT_AVAILABLE, incomes.first().effect)
         }
+    }
 
     @Test
-    fun `moveToWaitingPlacement with maxFeeAccepted - later indefinite income will be handled by not adding a new income`() =
-        jdbi.handle { h ->
+    fun `moveToWaitingPlacement with maxFeeAccepted - later indefinite income will be handled by not adding a new income`() {
+        db.transaction { tx ->
             // given
             val financeUser = AuthenticatedUser(id = testDecisionMaker_1.id, roles = setOf(Roles.FINANCE_ADMIN))
             val laterIndefiniteIncome = Income(
@@ -292,25 +305,28 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 validFrom = LocalDate.now().plusMonths(5),
                 validTo = null
             )
-            upsertIncome(h, mapper, laterIndefiniteIncome, financeUser.id)
-            insertDraftApplication(h, guardian = testAdult_5, maxFeeAccepted = true)
-            service.sendApplication(h, serviceWorker, applicationId)
-
+            upsertIncome(tx.handle, mapper, laterIndefiniteIncome, financeUser.id)
+            insertDraftApplication(tx.handle, guardian = testAdult_5, maxFeeAccepted = true)
+            service.sendApplication(tx.handle, serviceWorker, applicationId)
+        }
+        db.transaction { tx ->
             // when
-            service.moveToWaitingPlacement(h, serviceWorker, applicationId)
-
+            service.moveToWaitingPlacement(tx, serviceWorker, applicationId)
+        }
+        db.read {
             // then
-            val application = fetchApplicationDetails(h, applicationId)!!
+            val application = fetchApplicationDetails(it.handle, applicationId)!!
             assertEquals(true, application.form.maxFeeAccepted)
-            val incomes = getIncomesForPerson(h, mapper, testAdult_5.id)
+            val incomes = getIncomesForPerson(it.handle, mapper, testAdult_5.id)
             assertEquals(ApplicationStatus.WAITING_PLACEMENT, application.status)
             assertEquals(1, incomes.size)
             assertEquals(IncomeEffect.NOT_AVAILABLE, incomes.first().effect)
         }
+    }
 
     @Test
-    fun `moveToWaitingPlacement with maxFeeAccepted - earlier income does not affect creating a new income`() =
-        jdbi.handle { h ->
+    fun `moveToWaitingPlacement with maxFeeAccepted - earlier income does not affect creating a new income`() {
+        db.transaction { tx ->
             // given
             val financeUser = AuthenticatedUser(id = testDecisionMaker_1.id, roles = setOf(Roles.FINANCE_ADMIN))
             val earlierIncome = Income(
@@ -322,26 +338,29 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 validFrom = LocalDate.now().minusMonths(7),
                 validTo = LocalDate.now().minusMonths(5)
             )
-            upsertIncome(h, mapper, earlierIncome, financeUser.id)
-            insertDraftApplication(h, guardian = testAdult_5, maxFeeAccepted = true)
-            service.sendApplication(h, serviceWorker, applicationId)
-
+            upsertIncome(tx.handle, mapper, earlierIncome, financeUser.id)
+            insertDraftApplication(tx.handle, guardian = testAdult_5, maxFeeAccepted = true)
+            service.sendApplication(tx.handle, serviceWorker, applicationId)
+        }
+        db.transaction { tx ->
             // when
-            service.moveToWaitingPlacement(h, serviceWorker, applicationId)
-
+            service.moveToWaitingPlacement(tx, serviceWorker, applicationId)
+        }
+        db.read {
             // then
-            val application = fetchApplicationDetails(h, applicationId)!!
+            val application = fetchApplicationDetails(it.handle, applicationId)!!
             assertEquals(true, application.form.maxFeeAccepted)
-            val incomes = getIncomesForPerson(h, mapper, testAdult_5.id)
+            val incomes = getIncomesForPerson(it.handle, mapper, testAdult_5.id)
             assertEquals(ApplicationStatus.WAITING_PLACEMENT, application.status)
             assertEquals(2, incomes.size)
             assertEquals(IncomeEffect.MAX_FEE_ACCEPTED, incomes.first().effect)
             assertEquals(IncomeEffect.NOT_AVAILABLE, incomes[1].effect)
         }
+    }
 
     @Test
-    fun `moveToWaitingPlacement with maxFeeAccepted - later income will be handled by not adding a new income`() =
-        jdbi.handle { h ->
+    fun `moveToWaitingPlacement with maxFeeAccepted - later income will be handled by not adding a new income`() {
+        db.transaction { tx ->
             // given
             val financeUser = AuthenticatedUser(id = testDecisionMaker_1.id, roles = setOf(Roles.FINANCE_ADMIN))
             val laterIncome = Income(
@@ -353,25 +372,28 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 validFrom = LocalDate.now().plusMonths(5),
                 validTo = LocalDate.now().plusMonths(6)
             )
-            upsertIncome(h, mapper, laterIncome, financeUser.id)
-            insertDraftApplication(h, guardian = testAdult_5, maxFeeAccepted = true)
-            service.sendApplication(h, serviceWorker, applicationId)
-
+            upsertIncome(tx.handle, mapper, laterIncome, financeUser.id)
+            insertDraftApplication(tx.handle, guardian = testAdult_5, maxFeeAccepted = true)
+            service.sendApplication(tx.handle, serviceWorker, applicationId)
+        }
+        db.transaction { tx ->
             // when
-            service.moveToWaitingPlacement(h, serviceWorker, applicationId)
-
+            service.moveToWaitingPlacement(tx, serviceWorker, applicationId)
+        }
+        db.read {
             // then
-            val application = fetchApplicationDetails(h, applicationId)!!
+            val application = fetchApplicationDetails(it.handle, applicationId)!!
             assertEquals(true, application.form.maxFeeAccepted)
-            val incomes = getIncomesForPerson(h, mapper, testAdult_5.id)
+            val incomes = getIncomesForPerson(it.handle, mapper, testAdult_5.id)
             assertEquals(ApplicationStatus.WAITING_PLACEMENT, application.status)
             assertEquals(1, incomes.size)
             assertEquals(IncomeEffect.NOT_AVAILABLE, incomes.first().effect)
         }
+    }
 
     @Test
-    fun `moveToWaitingPlacement with maxFeeAccepted - if application does not have a preferred start date income will not be created`() =
-        jdbi.handle { h ->
+    fun `moveToWaitingPlacement with maxFeeAccepted - if application does not have a preferred start date income will not be created`() {
+        db.transaction { tx ->
             // given
             val financeUser = AuthenticatedUser(id = testDecisionMaker_1.id, roles = setOf(Roles.FINANCE_ADMIN))
             val earlierIndefinite = Income(
@@ -383,25 +405,28 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 validFrom = LocalDate.now().minusDays(10),
                 validTo = null
             )
-            upsertIncome(h, mapper, earlierIndefinite, financeUser.id)
-            insertDraftApplication(h, guardian = testAdult_5, maxFeeAccepted = true, preferredStartDate = null)
-            service.sendApplication(h, serviceWorker, applicationId)
-
+            upsertIncome(tx.handle, mapper, earlierIndefinite, financeUser.id)
+            insertDraftApplication(tx.handle, guardian = testAdult_5, maxFeeAccepted = true, preferredStartDate = null)
+            service.sendApplication(tx.handle, serviceWorker, applicationId)
+        }
+        db.transaction { tx ->
             // when
-            service.moveToWaitingPlacement(h, serviceWorker, applicationId)
-
+            service.moveToWaitingPlacement(tx, serviceWorker, applicationId)
+        }
+        db.read {
             // then
-            val application = fetchApplicationDetails(h, applicationId)!!
+            val application = fetchApplicationDetails(it.handle, applicationId)!!
             assertEquals(true, application.form.maxFeeAccepted)
-            val incomes = getIncomesForPerson(h, mapper, testAdult_5.id)
+            val incomes = getIncomesForPerson(it.handle, mapper, testAdult_5.id)
             assertEquals(ApplicationStatus.WAITING_PLACEMENT, application.status)
             assertEquals(1, incomes.size)
             assertEquals(IncomeEffect.NOT_AVAILABLE, incomes.first().effect)
         }
+    }
 
     @Test
-    fun `moveToWaitingPlacement with maxFeeAccepted - no new income will be created if there exists indefinite income for the same day `() =
-        jdbi.handle { h ->
+    fun `moveToWaitingPlacement with maxFeeAccepted - no new income will be created if there exists indefinite income for the same day `() {
+        db.transaction { tx ->
             // given
             val financeUser = AuthenticatedUser(id = testDecisionMaker_1.id, roles = setOf(Roles.FINANCE_ADMIN))
             val sameDayIncomeIndefinite = Income(
@@ -413,25 +438,28 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 validFrom = LocalDate.now().plusMonths(4),
                 validTo = null
             )
-            upsertIncome(h, mapper, sameDayIncomeIndefinite, financeUser.id)
-            insertDraftApplication(h, guardian = testAdult_5, maxFeeAccepted = true)
-            service.sendApplication(h, serviceWorker, applicationId)
-
+            upsertIncome(tx.handle, mapper, sameDayIncomeIndefinite, financeUser.id)
+            insertDraftApplication(tx.handle, guardian = testAdult_5, maxFeeAccepted = true)
+            service.sendApplication(tx.handle, serviceWorker, applicationId)
+        }
+        db.transaction { tx ->
             // when
-            service.moveToWaitingPlacement(h, serviceWorker, applicationId)
-
+            service.moveToWaitingPlacement(tx, serviceWorker, applicationId)
+        }
+        db.read { tx ->
             // then
-            val application = fetchApplicationDetails(h, applicationId)!!
+            val application = fetchApplicationDetails(tx.handle, applicationId)!!
             assertEquals(true, application.form.maxFeeAccepted)
-            val incomes = getIncomesForPerson(h, mapper, testAdult_5.id)
+            val incomes = getIncomesForPerson(tx.handle, mapper, testAdult_5.id)
             assertEquals(ApplicationStatus.WAITING_PLACEMENT, application.status)
             assertEquals(1, incomes.size)
             assertEquals(IncomeEffect.NOT_AVAILABLE, incomes.first().effect)
         }
+    }
 
     @Test
-    fun `moveToWaitingPlacement with maxFeeAccepted - no new income will be created if there exists income for the same day `() =
-        jdbi.handle { h ->
+    fun `moveToWaitingPlacement with maxFeeAccepted - no new income will be created if there exists income for the same day `() {
+        db.transaction { tx ->
             // given
             val financeUser = AuthenticatedUser(id = testDecisionMaker_1.id, roles = setOf(Roles.FINANCE_ADMIN))
             val sameDayIncome = Income(
@@ -443,25 +471,28 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 validFrom = LocalDate.now().plusMonths(4),
                 validTo = LocalDate.now().plusMonths(5)
             )
-            upsertIncome(h, mapper, sameDayIncome, financeUser.id)
-            insertDraftApplication(h, guardian = testAdult_5, maxFeeAccepted = true)
-            service.sendApplication(h, serviceWorker, applicationId)
-
+            upsertIncome(tx.handle, mapper, sameDayIncome, financeUser.id)
+            insertDraftApplication(tx.handle, guardian = testAdult_5, maxFeeAccepted = true)
+            service.sendApplication(tx.handle, serviceWorker, applicationId)
+        }
+        db.transaction { tx ->
             // when
-            service.moveToWaitingPlacement(h, serviceWorker, applicationId)
-
+            service.moveToWaitingPlacement(tx, serviceWorker, applicationId)
+        }
+        db.read { tx ->
             // then
-            val application = fetchApplicationDetails(h, applicationId)!!
+            val application = fetchApplicationDetails(tx.handle, applicationId)!!
             assertEquals(true, application.form.maxFeeAccepted)
-            val incomes = getIncomesForPerson(h, mapper, testAdult_5.id)
+            val incomes = getIncomesForPerson(tx.handle, mapper, testAdult_5.id)
             assertEquals(ApplicationStatus.WAITING_PLACEMENT, application.status)
             assertEquals(1, incomes.size)
             assertEquals(IncomeEffect.NOT_AVAILABLE, incomes.first().effect)
         }
+    }
 
     @Test
-    fun `moveToWaitingPlacement with maxFeeAccepted - new income will be created if there exists indefinite income for the same day - 1 `() =
-        jdbi.handle { h ->
+    fun `moveToWaitingPlacement with maxFeeAccepted - new income will be created if there exists indefinite income for the same day - 1 `() {
+        db.transaction { tx ->
             // given
             val financeUser = AuthenticatedUser(id = testDecisionMaker_1.id, roles = setOf(Roles.FINANCE_ADMIN))
             val dayBeforeIncomeIndefinite = Income(
@@ -473,26 +504,29 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 validFrom = LocalDate.now().plusMonths(4).minusDays(1),
                 validTo = null
             )
-            upsertIncome(h, mapper, dayBeforeIncomeIndefinite, financeUser.id)
-            insertDraftApplication(h, guardian = testAdult_5, maxFeeAccepted = true)
-            service.sendApplication(h, serviceWorker, applicationId)
-
+            upsertIncome(tx.handle, mapper, dayBeforeIncomeIndefinite, financeUser.id)
+            insertDraftApplication(tx.handle, guardian = testAdult_5, maxFeeAccepted = true)
+            service.sendApplication(tx.handle, serviceWorker, applicationId)
+        }
+        db.transaction { tx ->
             // when
-            service.moveToWaitingPlacement(h, serviceWorker, applicationId)
-
+            service.moveToWaitingPlacement(tx, serviceWorker, applicationId)
+        }
+        db.read { tx ->
             // then
-            val application = fetchApplicationDetails(h, applicationId)!!
+            val application = fetchApplicationDetails(tx.handle, applicationId)!!
             assertEquals(true, application.form.maxFeeAccepted)
-            val incomes = getIncomesForPerson(h, mapper, testAdult_5.id)
+            val incomes = getIncomesForPerson(tx.handle, mapper, testAdult_5.id)
             assertEquals(ApplicationStatus.WAITING_PLACEMENT, application.status)
             assertEquals(2, incomes.size)
             assertEquals(IncomeEffect.MAX_FEE_ACCEPTED, incomes.first().effect)
             assertEquals(IncomeEffect.NOT_AVAILABLE, incomes[1].effect)
         }
+    }
 
     @Test
-    fun `moveToWaitingPlacement with maxFeeAccepted - no new income will be created if there exists indefinite income for the same day + 1 `() =
-        jdbi.handle { h ->
+    fun `moveToWaitingPlacement with maxFeeAccepted - no new income will be created if there exists indefinite income for the same day + 1 `() {
+        db.transaction { tx ->
             // given
             val financeUser = AuthenticatedUser(id = testDecisionMaker_1.id, roles = setOf(Roles.FINANCE_ADMIN))
             val nextDayIncomeIndefinite = Income(
@@ -504,25 +538,28 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 validFrom = LocalDate.now().plusMonths(4).plusDays(1),
                 validTo = null
             )
-            upsertIncome(h, mapper, nextDayIncomeIndefinite, financeUser.id)
-            insertDraftApplication(h, guardian = testAdult_5, maxFeeAccepted = true)
-            service.sendApplication(h, serviceWorker, applicationId)
-
+            upsertIncome(tx.handle, mapper, nextDayIncomeIndefinite, financeUser.id)
+            insertDraftApplication(tx.handle, guardian = testAdult_5, maxFeeAccepted = true)
+            service.sendApplication(tx.handle, serviceWorker, applicationId)
+        }
+        db.transaction { tx ->
             // when
-            service.moveToWaitingPlacement(h, serviceWorker, applicationId)
-
+            service.moveToWaitingPlacement(tx, serviceWorker, applicationId)
+        }
+        db.read { tx ->
             // then
-            val application = fetchApplicationDetails(h, applicationId)!!
+            val application = fetchApplicationDetails(tx.handle, applicationId)!!
             assertEquals(true, application.form.maxFeeAccepted)
-            val incomes = getIncomesForPerson(h, mapper, testAdult_5.id)
+            val incomes = getIncomesForPerson(tx.handle, mapper, testAdult_5.id)
             assertEquals(ApplicationStatus.WAITING_PLACEMENT, application.status)
             assertEquals(1, incomes.size)
             assertEquals(IncomeEffect.NOT_AVAILABLE, incomes.first().effect)
         }
+    }
 
     @Test
-    fun `moveToWaitingPlacement with maxFeeAccepted - no new income will be created if there exists income for the same day - 1 `() =
-        jdbi.handle { h ->
+    fun `moveToWaitingPlacement with maxFeeAccepted - no new income will be created if there exists income for the same day - 1 `() {
+        db.transaction { tx ->
             // given
             val financeUser = AuthenticatedUser(id = testDecisionMaker_1.id, roles = setOf(Roles.FINANCE_ADMIN))
             val IncomeDayBefore = Income(
@@ -534,25 +571,28 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 validFrom = LocalDate.now().plusMonths(4).minusDays(1),
                 validTo = LocalDate.now().plusMonths(5)
             )
-            upsertIncome(h, mapper, IncomeDayBefore, financeUser.id)
-            insertDraftApplication(h, guardian = testAdult_5, maxFeeAccepted = true)
-            service.sendApplication(h, serviceWorker, applicationId)
-
+            upsertIncome(tx.handle, mapper, IncomeDayBefore, financeUser.id)
+            insertDraftApplication(tx.handle, guardian = testAdult_5, maxFeeAccepted = true)
+            service.sendApplication(tx.handle, serviceWorker, applicationId)
+        }
+        db.transaction { tx ->
             // when
-            service.moveToWaitingPlacement(h, serviceWorker, applicationId)
-
+            service.moveToWaitingPlacement(tx, serviceWorker, applicationId)
+        }
+        db.read { tx ->
             // then
-            val application = fetchApplicationDetails(h, applicationId)!!
+            val application = fetchApplicationDetails(tx.handle, applicationId)!!
             assertEquals(true, application.form.maxFeeAccepted)
-            val incomes = getIncomesForPerson(h, mapper, testAdult_5.id)
+            val incomes = getIncomesForPerson(tx.handle, mapper, testAdult_5.id)
             assertEquals(ApplicationStatus.WAITING_PLACEMENT, application.status)
             assertEquals(1, incomes.size)
             assertEquals(IncomeEffect.NOT_AVAILABLE, incomes.first().effect)
         }
+    }
 
     @Test
-    fun `moveToWaitingPlacement with maxFeeAccepted - no new income will be created if there exists income that ends on the same day`() =
-        jdbi.handle { h ->
+    fun `moveToWaitingPlacement with maxFeeAccepted - no new income will be created if there exists income that ends on the same day`() {
+        db.transaction { tx ->
             // given
             val financeUser = AuthenticatedUser(id = testDecisionMaker_1.id, roles = setOf(Roles.FINANCE_ADMIN))
             val earlierIncomeEndingOnSameDay = Income(
@@ -564,25 +604,28 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 validFrom = LocalDate.now().minusMonths(4),
                 validTo = LocalDate.now().plusMonths(4)
             )
-            upsertIncome(h, mapper, earlierIncomeEndingOnSameDay, financeUser.id)
-            insertDraftApplication(h, guardian = testAdult_5, maxFeeAccepted = true)
-            service.sendApplication(h, serviceWorker, applicationId)
-
+            upsertIncome(tx.handle, mapper, earlierIncomeEndingOnSameDay, financeUser.id)
+            insertDraftApplication(tx.handle, guardian = testAdult_5, maxFeeAccepted = true)
+            service.sendApplication(tx.handle, serviceWorker, applicationId)
+        }
+        db.transaction { tx ->
             // when
-            service.moveToWaitingPlacement(h, serviceWorker, applicationId)
-
+            service.moveToWaitingPlacement(tx, serviceWorker, applicationId)
+        }
+        db.read { tx ->
             // then
-            val application = fetchApplicationDetails(h, applicationId)!!
+            val application = fetchApplicationDetails(tx.handle, applicationId)!!
             assertEquals(true, application.form.maxFeeAccepted)
-            val incomes = getIncomesForPerson(h, mapper, testAdult_5.id)
+            val incomes = getIncomesForPerson(tx.handle, mapper, testAdult_5.id)
             assertEquals(ApplicationStatus.WAITING_PLACEMENT, application.status)
             assertEquals(1, incomes.size)
             assertEquals(IncomeEffect.NOT_AVAILABLE, incomes.first().effect)
         }
+    }
 
     @Test
-    fun `moveToWaitingPlacement with maxFeeAccepted - no new income will be created if there exists income that ends on the same day + 1`() =
-        jdbi.handle { h ->
+    fun `moveToWaitingPlacement with maxFeeAccepted - no new income will be created if there exists income that ends on the same day + 1`() {
+        db.transaction { tx ->
             // given
             val financeUser = AuthenticatedUser(id = testDecisionMaker_1.id, roles = setOf(Roles.FINANCE_ADMIN))
             val earlierIncomeEndingOnNextDay = Income(
@@ -594,25 +637,28 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 validFrom = LocalDate.now().minusMonths(4),
                 validTo = LocalDate.now().plusMonths(4).plusDays(1)
             )
-            upsertIncome(h, mapper, earlierIncomeEndingOnNextDay, financeUser.id)
-            insertDraftApplication(h, guardian = testAdult_5, maxFeeAccepted = true)
-            service.sendApplication(h, serviceWorker, applicationId)
-
+            upsertIncome(tx.handle, mapper, earlierIncomeEndingOnNextDay, financeUser.id)
+            insertDraftApplication(tx.handle, guardian = testAdult_5, maxFeeAccepted = true)
+            service.sendApplication(tx.handle, serviceWorker, applicationId)
+        }
+        db.transaction { tx ->
             // when
-            service.moveToWaitingPlacement(h, serviceWorker, applicationId)
-
+            service.moveToWaitingPlacement(tx, serviceWorker, applicationId)
+        }
+        db.read { tx ->
             // then
-            val application = fetchApplicationDetails(h, applicationId)!!
+            val application = fetchApplicationDetails(tx.handle, applicationId)!!
             assertEquals(true, application.form.maxFeeAccepted)
-            val incomes = getIncomesForPerson(h, mapper, testAdult_5.id)
+            val incomes = getIncomesForPerson(tx.handle, mapper, testAdult_5.id)
             assertEquals(ApplicationStatus.WAITING_PLACEMENT, application.status)
             assertEquals(1, incomes.size)
             assertEquals(IncomeEffect.NOT_AVAILABLE, incomes.first().effect)
         }
+    }
 
     @Test
-    fun `moveToWaitingPlacement with maxFeeAccepted - no new income will be created if there exists income that ends on the same day - 1`() =
-        jdbi.handle { h ->
+    fun `moveToWaitingPlacement with maxFeeAccepted - no new income will be created if there exists income that ends on the same day - 1`() {
+        db.transaction { tx ->
             // given
             val financeUser = AuthenticatedUser(id = testDecisionMaker_1.id, roles = setOf(Roles.FINANCE_ADMIN))
             val earlierIncomeEndingOnDayBefore = Income(
@@ -624,395 +670,340 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 validFrom = LocalDate.now().minusMonths(4),
                 validTo = LocalDate.now().plusMonths(4).minusDays(1)
             )
-            upsertIncome(h, mapper, earlierIncomeEndingOnDayBefore, financeUser.id)
-            insertDraftApplication(h, guardian = testAdult_5, maxFeeAccepted = true)
-            service.sendApplication(h, serviceWorker, applicationId)
-
+            upsertIncome(tx.handle, mapper, earlierIncomeEndingOnDayBefore, financeUser.id)
+            insertDraftApplication(tx.handle, guardian = testAdult_5, maxFeeAccepted = true)
+            service.sendApplication(tx.handle, serviceWorker, applicationId)
+        }
+        db.transaction { tx ->
             // when
-            service.moveToWaitingPlacement(h, serviceWorker, applicationId)
-
+            service.moveToWaitingPlacement(tx, serviceWorker, applicationId)
+        }
+        db.read { tx ->
             // then
-            val application = fetchApplicationDetails(h, applicationId)!!
+            val application = fetchApplicationDetails(tx.handle, applicationId)!!
             assertEquals(true, application.form.maxFeeAccepted)
-            val incomes = getIncomesForPerson(h, mapper, testAdult_5.id)
+            val incomes = getIncomesForPerson(tx.handle, mapper, testAdult_5.id)
             assertEquals(ApplicationStatus.WAITING_PLACEMENT, application.status)
             assertEquals(2, incomes.size)
             assertEquals(IncomeEffect.MAX_FEE_ACCEPTED, incomes.first().effect)
             assertEquals(IncomeEffect.NOT_AVAILABLE, incomes[1].effect)
         }
-
-    @Test
-    fun `moveToWaitingPlacement - guardian contact details are updated`() = jdbi.handle { h ->
-        // given
-        insertDraftApplication(h, appliedType = PlacementType.DAYCARE)
-        service.sendApplication(h, serviceWorker, applicationId)
-
-        // when
-        service.moveToWaitingPlacement(h, serviceWorker, applicationId)
-
-        // then
-        val guardian = h.getPersonById(testAdult_5.id)!!
-        assertEquals("abc@espoo.fi", guardian.email)
-        assertEquals("0501234567", guardian.phone)
     }
 
     @Test
-    fun `moveToWaitingPlacement - child is upserted with diet and allergies`() = jdbi.handle { h ->
-        // given
-        insertDraftApplication(h, appliedType = PlacementType.DAYCARE, hasAdditionalInfo = true)
-        service.sendApplication(h, serviceWorker, applicationId)
-
-        // when
-        service.moveToWaitingPlacement(h, serviceWorker, applicationId)
-
-        // then
-        val childDetails = h.getChild(testChild_6.id)!!.additionalInformation
-        assertEquals("diet", childDetails.diet)
-        assertEquals("allergies", childDetails.allergies)
-    }
-
-    @Test
-    fun `setVerified and setUnverified - changes checkedByAdmin`() = jdbi.handle { h ->
-        // given
-        insertDraftApplication(h, hasAdditionalInfo = true)
-        service.sendApplication(h, serviceWorker, applicationId)
-        service.moveToWaitingPlacement(h, serviceWorker, applicationId)
-
-        // when
-        service.setVerified(h, serviceWorker, applicationId)
-
-        // then
-        var application = fetchApplicationDetails(h, applicationId)!!
-        assertEquals(ApplicationStatus.WAITING_PLACEMENT, application.status)
-        assertEquals(true, application.checkedByAdmin)
-
-        // when
-        service.setUnverified(h, serviceWorker, applicationId)
-
-        // then
-        application = fetchApplicationDetails(h, applicationId)!!
-        assertEquals(ApplicationStatus.WAITING_PLACEMENT, application.status)
-        assertEquals(false, application.checkedByAdmin)
-    }
-
-    @Test
-    fun `cancelApplication from SENT - status is changed`() = jdbi.handle { h ->
-        // given
-        insertDraftApplication(h)
-        service.sendApplication(h, serviceWorker, applicationId)
-
-        // when
-        service.cancelApplication(h, serviceWorker, applicationId)
-
-        // then
-        val application = fetchApplicationDetails(h, applicationId)!!
-        assertEquals(ApplicationStatus.CANCELLED, application.status)
-    }
-
-    @Test
-    fun `cancelApplication from WAITING_PLACEMENT - status is changed`() = jdbi.handle { h ->
-        // given
-        insertDraftApplication(h)
-        service.sendApplication(h, serviceWorker, applicationId)
-        service.moveToWaitingPlacement(h, serviceWorker, applicationId)
-
-        // when
-        service.cancelApplication(h, serviceWorker, applicationId)
-
-        // then
-        val application = fetchApplicationDetails(h, applicationId)!!
-        assertEquals(ApplicationStatus.CANCELLED, application.status)
-    }
-
-    @Test
-    fun `returnToSent - status is changed`() = jdbi.handle { h ->
-        // given
-        insertDraftApplication(h)
-        service.sendApplication(h, serviceWorker, applicationId)
-        service.moveToWaitingPlacement(h, serviceWorker, applicationId)
-
-        // when
-        service.returnToSent(h, serviceWorker, applicationId)
-
-        // then
-        val application = fetchApplicationDetails(h, applicationId)!!
-        assertEquals(ApplicationStatus.SENT, application.status)
-    }
-
-    @Test
-    fun `createPlacementPlan - daycare`() = jdbi.handle { h ->
-        // given
-        insertDraftApplication(h, appliedType = PlacementType.DAYCARE)
-        service.sendApplication(h, serviceWorker, applicationId)
-        service.moveToWaitingPlacement(h, serviceWorker, applicationId)
-
-        // when
-        service.createPlacementPlan(
-            h,
-            serviceWorker,
-            applicationId,
-            DaycarePlacementPlan(
-                unitId = testDaycare.id,
-                period = mainPeriod
-            )
-        )
-
-        // then
-        val application = fetchApplicationDetails(h, applicationId)!!
-        assertEquals(ApplicationStatus.WAITING_DECISION, application.status)
-
-        val placementPlan = getPlacementPlan(h, applicationId)!!
-        assertEquals(
-            PlacementPlan(
-                id = placementPlan.id,
-                unitId = testDaycare.id,
-                applicationId = applicationId,
-                type = PlacementType.DAYCARE,
-                period = mainPeriod,
-                preschoolDaycarePeriod = null
-            ),
-            placementPlan
-        )
-
-        val decisionDrafts = fetchDecisionDrafts(h, applicationId)
-        assertEquals(1, decisionDrafts.size)
-        assertEquals(
-            DecisionDraft(
-                id = decisionDrafts.first().id,
-                type = DecisionType.DAYCARE,
-                startDate = mainPeriod.start,
-                endDate = mainPeriod.end,
-                unitId = testDaycare.id,
-                planned = true
-            ),
-            decisionDrafts.first()
-        )
-    }
-
-    @Test
-    fun `createPlacementPlan - daycare part-time`() = jdbi.handle { h ->
-        // given
-        insertDraftApplication(h, appliedType = PlacementType.DAYCARE_PART_TIME)
-        service.sendApplication(h, serviceWorker, applicationId)
-        service.moveToWaitingPlacement(h, serviceWorker, applicationId)
-
-        // when
-        service.createPlacementPlan(
-            h,
-            serviceWorker,
-            applicationId,
-            DaycarePlacementPlan(
-                unitId = testDaycare.id,
-                period = mainPeriod
-            )
-        )
-
-        // then
-        val application = fetchApplicationDetails(h, applicationId)!!
-        assertEquals(ApplicationStatus.WAITING_DECISION, application.status)
-
-        val placementPlan = getPlacementPlan(h, applicationId)!!
-        assertEquals(
-            PlacementPlan(
-                id = placementPlan.id,
-                unitId = testDaycare.id,
-                applicationId = applicationId,
-                type = PlacementType.DAYCARE_PART_TIME,
-                period = mainPeriod,
-                preschoolDaycarePeriod = null
-            ),
-            placementPlan
-        )
-
-        val decisionDrafts = fetchDecisionDrafts(h, applicationId)
-        assertEquals(1, decisionDrafts.size)
-        assertEquals(
-            DecisionDraft(
-                id = decisionDrafts.first().id,
-                type = DecisionType.DAYCARE_PART_TIME,
-                startDate = mainPeriod.start,
-                endDate = mainPeriod.end,
-                unitId = testDaycare.id,
-                planned = true
-            ),
-            decisionDrafts.first()
-        )
-    }
-
-    @Test
-    fun `createPlacementPlan - preschool`() = jdbi.handle { h ->
-        // given
-        insertDraftApplication(h, appliedType = PlacementType.PRESCHOOL)
-        service.sendApplication(h, serviceWorker, applicationId)
-        service.moveToWaitingPlacement(h, serviceWorker, applicationId)
-
-        // when
-        service.createPlacementPlan(
-            h,
-            serviceWorker,
-            applicationId,
-            DaycarePlacementPlan(
-                unitId = testDaycare.id,
-                period = mainPeriod
-            )
-        )
-
-        // then
-        val application = fetchApplicationDetails(h, applicationId)!!
-        assertEquals(ApplicationStatus.WAITING_DECISION, application.status)
-
-        val placementPlan = getPlacementPlan(h, applicationId)!!
-        assertEquals(
-            PlacementPlan(
-                id = placementPlan.id,
-                unitId = testDaycare.id,
-                applicationId = applicationId,
-                type = PlacementType.PRESCHOOL,
-                period = mainPeriod,
-                preschoolDaycarePeriod = null
-            ),
-            placementPlan
-        )
-
-        val decisionDrafts = fetchDecisionDrafts(h, applicationId)
-        assertEquals(2, decisionDrafts.size)
-
-        decisionDrafts.find { it.type == DecisionType.PRESCHOOL }!!.let {
-            assertEquals(
-                DecisionDraft(
-                    id = it.id,
-                    type = DecisionType.PRESCHOOL,
-                    startDate = mainPeriod.start,
-                    endDate = mainPeriod.end,
-                    unitId = testDaycare.id,
-                    planned = true
-                ),
-                it
-            )
-        }
-        decisionDrafts.find { it.type == DecisionType.PRESCHOOL_DAYCARE }!!.let {
-            assertEquals(
-                DecisionDraft(
-                    id = it.id,
-                    type = DecisionType.PRESCHOOL_DAYCARE,
-                    startDate = mainPeriod.start,
-                    endDate = mainPeriod.end,
-                    unitId = testDaycare.id,
-                    planned = false
-                ),
-                it
-            )
-        }
-    }
-
-    @Test
-    fun `createPlacementPlan - preschool with daycare`() = jdbi.handle { h ->
-        // given
-        insertDraftApplication(h, appliedType = PlacementType.PRESCHOOL_DAYCARE)
-        service.sendApplication(h, serviceWorker, applicationId)
-        service.moveToWaitingPlacement(h, serviceWorker, applicationId)
-
-        // when
-        service.createPlacementPlan(
-            h,
-            serviceWorker,
-            applicationId,
-            DaycarePlacementPlan(
-                unitId = testDaycare.id,
-                period = mainPeriod,
-                preschoolDaycarePeriod = connectedPeriod
-            )
-        )
-
-        // then
-        val application = fetchApplicationDetails(h, applicationId)!!
-        assertEquals(ApplicationStatus.WAITING_DECISION, application.status)
-
-        val placementPlan = getPlacementPlan(h, applicationId)!!
-        assertEquals(
-            PlacementPlan(
-                id = placementPlan.id,
-                unitId = testDaycare.id,
-                applicationId = applicationId,
-                type = PlacementType.PRESCHOOL_DAYCARE,
-                period = mainPeriod,
-                preschoolDaycarePeriod = connectedPeriod
-            ),
-            placementPlan
-        )
-
-        val decisionDrafts = fetchDecisionDrafts(h, applicationId)
-        assertEquals(2, decisionDrafts.size)
-
-        decisionDrafts.find { it.type == DecisionType.PRESCHOOL }!!.let {
-            assertEquals(
-                DecisionDraft(
-                    id = it.id,
-                    type = DecisionType.PRESCHOOL,
-                    startDate = mainPeriod.start,
-                    endDate = mainPeriod.end,
-                    unitId = testDaycare.id,
-                    planned = true
-                ),
-                it
-            )
-        }
-        decisionDrafts.find { it.type == DecisionType.PRESCHOOL_DAYCARE }!!.let {
-            assertEquals(
-                DecisionDraft(
-                    id = it.id,
-                    type = DecisionType.PRESCHOOL_DAYCARE,
-                    startDate = connectedPeriod.start,
-                    endDate = connectedPeriod.end,
-                    unitId = testDaycare.id,
-                    planned = true
-                ),
-                it
-            )
-        }
-    }
-
-    @Test
-    fun `cancelPlacementPlan - removes placement plan and decision drafts and changes status`() = jdbi.handle { h ->
-        // given
-        insertDraftApplication(h, appliedType = PlacementType.PRESCHOOL_DAYCARE)
-        service.sendApplication(h, serviceWorker, applicationId)
-        service.moveToWaitingPlacement(h, serviceWorker, applicationId)
-        service.createPlacementPlan(
-            h,
-            serviceWorker,
-            applicationId,
-            DaycarePlacementPlan(
-                unitId = testDaycare.id,
-                period = mainPeriod,
-                preschoolDaycarePeriod = connectedPeriod
-            )
-        )
-
-        // when
-        service.cancelPlacementPlan(h, serviceWorker, applicationId)
-
-        // then
-        val application = fetchApplicationDetails(h, applicationId)!!
-        assertEquals(ApplicationStatus.WAITING_PLACEMENT, application.status)
-
-        val placementPlan = getPlacementPlan(h, applicationId)
-        assertEquals(null, placementPlan)
-
-        val decisionDrafts = fetchDecisionDrafts(h, applicationId)
-        assertEquals(0, decisionDrafts.size)
-    }
-
-    @Test
-    fun `confirmPlacementWithoutDecision - applies placement plan, removes decision drafts and changes status`() =
-        jdbi.handle { h ->
+    fun `moveToWaitingPlacement - guardian contact details are updated`() {
+        db.transaction { tx ->
             // given
-            val child = testChild_6
-            insertDraftApplication(h, appliedType = PlacementType.PRESCHOOL_DAYCARE, child = child)
-            service.sendApplication(h, serviceWorker, applicationId)
-            service.moveToWaitingPlacement(h, serviceWorker, applicationId)
+            insertDraftApplication(tx.handle, appliedType = PlacementType.DAYCARE)
+            service.sendApplication(tx.handle, serviceWorker, applicationId)
+        }
+        db.transaction { tx ->
+            // when
+            service.moveToWaitingPlacement(tx, serviceWorker, applicationId)
+        }
+        db.read { tx ->
+            // then
+            val guardian = tx.handle.getPersonById(testAdult_5.id)!!
+            assertEquals("abc@espoo.fi", guardian.email)
+            assertEquals("0501234567", guardian.phone)
+        }
+    }
+
+    @Test
+    fun `moveToWaitingPlacement - child is upserted with diet and allergies`() {
+        db.transaction { tx ->
+            // given
+            insertDraftApplication(tx.handle, appliedType = PlacementType.DAYCARE, hasAdditionalInfo = true)
+            service.sendApplication(tx.handle, serviceWorker, applicationId)
+        }
+        db.transaction { tx ->
+            // when
+            service.moveToWaitingPlacement(tx, serviceWorker, applicationId)
+        }
+        db.read { tx ->
+            // then
+            val childDetails = tx.handle.getChild(testChild_6.id)!!.additionalInformation
+            assertEquals("diet", childDetails.diet)
+            assertEquals("allergies", childDetails.allergies)
+        }
+    }
+
+    @Test
+    fun `setVerified and setUnverified - changes checkedByAdmin`() {
+        db.transaction { tx ->
+            // given
+            insertDraftApplication(tx.handle, hasAdditionalInfo = true)
+            service.sendApplication(tx.handle, serviceWorker, applicationId)
+            service.moveToWaitingPlacement(tx, serviceWorker, applicationId)
+        }
+        db.transaction { tx ->
+            // when
+            service.setVerified(tx, serviceWorker, applicationId)
+        }
+        db.read { tx ->
+            // then
+            val application = fetchApplicationDetails(tx.handle, applicationId)!!
+            assertEquals(ApplicationStatus.WAITING_PLACEMENT, application.status)
+            assertEquals(true, application.checkedByAdmin)
+        }
+        db.transaction { tx ->
+            // when
+            service.setUnverified(tx, serviceWorker, applicationId)
+        }
+        db.read { tx ->
+            // then
+            val application = fetchApplicationDetails(tx.handle, applicationId)!!
+            assertEquals(ApplicationStatus.WAITING_PLACEMENT, application.status)
+            assertEquals(false, application.checkedByAdmin)
+        }
+    }
+
+    @Test
+    fun `cancelApplication from SENT - status is changed`() {
+        db.transaction { tx ->
+            // given
+            insertDraftApplication(tx.handle)
+            service.sendApplication(tx.handle, serviceWorker, applicationId)
+        }
+        db.transaction { tx ->
+            // when
+            service.cancelApplication(tx, serviceWorker, applicationId)
+        }
+        db.read { tx ->
+            // then
+            val application = fetchApplicationDetails(tx.handle, applicationId)!!
+            assertEquals(ApplicationStatus.CANCELLED, application.status)
+        }
+    }
+
+    @Test
+    fun `cancelApplication from WAITING_PLACEMENT - status is changed`() {
+        db.transaction { tx ->
+            // given
+            insertDraftApplication(tx.handle)
+            service.sendApplication(tx.handle, serviceWorker, applicationId)
+            service.moveToWaitingPlacement(tx, serviceWorker, applicationId)
+        }
+        db.transaction { tx ->
+            // when
+            service.cancelApplication(tx, serviceWorker, applicationId)
+        }
+        db.read { tx ->
+            // then
+            val application = fetchApplicationDetails(tx.handle, applicationId)!!
+            assertEquals(ApplicationStatus.CANCELLED, application.status)
+        }
+    }
+
+    @Test
+    fun `returnToSent - status is changed`() {
+        db.transaction { tx ->
+            // given
+            insertDraftApplication(tx.handle)
+            service.sendApplication(tx.handle, serviceWorker, applicationId)
+            service.moveToWaitingPlacement(tx, serviceWorker, applicationId)
+        }
+        db.transaction { tx ->
+            // when
+            service.returnToSent(tx, serviceWorker, applicationId)
+        }
+        db.read { tx ->
+            // then
+            val application = fetchApplicationDetails(tx.handle, applicationId)!!
+            assertEquals(ApplicationStatus.SENT, application.status)
+        }
+    }
+
+    @Test
+    fun `createPlacementPlan - daycare`() {
+        db.transaction { tx ->
+            // given
+            insertDraftApplication(tx.handle, appliedType = PlacementType.DAYCARE)
+            service.sendApplication(tx.handle, serviceWorker, applicationId)
+            service.moveToWaitingPlacement(tx, serviceWorker, applicationId)
+        }
+        db.transaction { tx ->
+            // when
             service.createPlacementPlan(
-                h,
+                tx,
+                serviceWorker,
+                applicationId,
+                DaycarePlacementPlan(
+                    unitId = testDaycare.id,
+                    period = mainPeriod
+                )
+            )
+        }
+        db.read { tx ->
+            // then
+            val application = fetchApplicationDetails(tx.handle, applicationId)!!
+            assertEquals(ApplicationStatus.WAITING_DECISION, application.status)
+
+            val placementPlan = getPlacementPlan(tx.handle, applicationId)!!
+            assertEquals(
+                PlacementPlan(
+                    id = placementPlan.id,
+                    unitId = testDaycare.id,
+                    applicationId = applicationId,
+                    type = PlacementType.DAYCARE,
+                    period = mainPeriod,
+                    preschoolDaycarePeriod = null
+                ),
+                placementPlan
+            )
+
+            val decisionDrafts = fetchDecisionDrafts(tx.handle, applicationId)
+            assertEquals(1, decisionDrafts.size)
+            assertEquals(
+                DecisionDraft(
+                    id = decisionDrafts.first().id,
+                    type = DecisionType.DAYCARE,
+                    startDate = mainPeriod.start,
+                    endDate = mainPeriod.end,
+                    unitId = testDaycare.id,
+                    planned = true
+                ),
+                decisionDrafts.first()
+            )
+        }
+    }
+
+    @Test
+    fun `createPlacementPlan - daycare part-time`() {
+        db.transaction { tx ->
+            // given
+            insertDraftApplication(tx.handle, appliedType = PlacementType.DAYCARE_PART_TIME)
+            service.sendApplication(tx.handle, serviceWorker, applicationId)
+            service.moveToWaitingPlacement(tx, serviceWorker, applicationId)
+        }
+        db.transaction { tx ->
+            // when
+            service.createPlacementPlan(
+                tx,
+                serviceWorker,
+                applicationId,
+                DaycarePlacementPlan(
+                    unitId = testDaycare.id,
+                    period = mainPeriod
+                )
+            )
+        }
+        db.read { tx ->
+            // then
+            val application = fetchApplicationDetails(tx.handle, applicationId)!!
+            assertEquals(ApplicationStatus.WAITING_DECISION, application.status)
+
+            val placementPlan = getPlacementPlan(tx.handle, applicationId)!!
+            assertEquals(
+                PlacementPlan(
+                    id = placementPlan.id,
+                    unitId = testDaycare.id,
+                    applicationId = applicationId,
+                    type = PlacementType.DAYCARE_PART_TIME,
+                    period = mainPeriod,
+                    preschoolDaycarePeriod = null
+                ),
+                placementPlan
+            )
+
+            val decisionDrafts = fetchDecisionDrafts(tx.handle, applicationId)
+            assertEquals(1, decisionDrafts.size)
+            assertEquals(
+                DecisionDraft(
+                    id = decisionDrafts.first().id,
+                    type = DecisionType.DAYCARE_PART_TIME,
+                    startDate = mainPeriod.start,
+                    endDate = mainPeriod.end,
+                    unitId = testDaycare.id,
+                    planned = true
+                ),
+                decisionDrafts.first()
+            )
+        }
+    }
+
+    @Test
+    fun `createPlacementPlan - preschool`() {
+        db.transaction { tx ->
+            // given
+            insertDraftApplication(tx.handle, appliedType = PlacementType.PRESCHOOL)
+            service.sendApplication(tx.handle, serviceWorker, applicationId)
+            service.moveToWaitingPlacement(tx, serviceWorker, applicationId)
+        }
+        db.transaction { tx ->
+            // when
+            service.createPlacementPlan(
+                tx,
+                serviceWorker,
+                applicationId,
+                DaycarePlacementPlan(
+                    unitId = testDaycare.id,
+                    period = mainPeriod
+                )
+            )
+        }
+        db.read { tx ->
+            // then
+            val application = fetchApplicationDetails(tx.handle, applicationId)!!
+            assertEquals(ApplicationStatus.WAITING_DECISION, application.status)
+
+            val placementPlan = getPlacementPlan(tx.handle, applicationId)!!
+            assertEquals(
+                PlacementPlan(
+                    id = placementPlan.id,
+                    unitId = testDaycare.id,
+                    applicationId = applicationId,
+                    type = PlacementType.PRESCHOOL,
+                    period = mainPeriod,
+                    preschoolDaycarePeriod = null
+                ),
+                placementPlan
+            )
+
+            val decisionDrafts = fetchDecisionDrafts(tx.handle, applicationId)
+            assertEquals(2, decisionDrafts.size)
+
+            decisionDrafts.find { it.type == DecisionType.PRESCHOOL }!!.let {
+                assertEquals(
+                    DecisionDraft(
+                        id = it.id,
+                        type = DecisionType.PRESCHOOL,
+                        startDate = mainPeriod.start,
+                        endDate = mainPeriod.end,
+                        unitId = testDaycare.id,
+                        planned = true
+                    ),
+                    it
+                )
+            }
+            decisionDrafts.find { it.type == DecisionType.PRESCHOOL_DAYCARE }!!.let {
+                assertEquals(
+                    DecisionDraft(
+                        id = it.id,
+                        type = DecisionType.PRESCHOOL_DAYCARE,
+                        startDate = mainPeriod.start,
+                        endDate = mainPeriod.end,
+                        unitId = testDaycare.id,
+                        planned = false
+                    ),
+                    it
+                )
+            }
+        }
+    }
+
+    @Test
+    fun `createPlacementPlan - preschool with daycare`() {
+        db.transaction { tx ->
+            // given
+            insertDraftApplication(tx.handle, appliedType = PlacementType.PRESCHOOL_DAYCARE)
+            service.sendApplication(tx.handle, serviceWorker, applicationId)
+            service.moveToWaitingPlacement(tx, serviceWorker, applicationId)
+        }
+        db.transaction { tx ->
+            // when
+            service.createPlacementPlan(
+                tx,
                 serviceWorker,
                 applicationId,
                 DaycarePlacementPlan(
@@ -1021,18 +1012,124 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                     preschoolDaycarePeriod = connectedPeriod
                 )
             )
-
-            // when
-            service.confirmPlacementWithoutDecision(h, serviceWorker, applicationId)
-
+        }
+        db.read { tx ->
             // then
-            val application = fetchApplicationDetails(h, applicationId)!!
-            assertEquals(ApplicationStatus.ACTIVE, application.status)
+            val application = fetchApplicationDetails(tx.handle, applicationId)!!
+            assertEquals(ApplicationStatus.WAITING_DECISION, application.status)
 
-            val placementPlan = getPlacementPlan(h, applicationId)
+            val placementPlan = getPlacementPlan(tx.handle, applicationId)!!
+            assertEquals(
+                PlacementPlan(
+                    id = placementPlan.id,
+                    unitId = testDaycare.id,
+                    applicationId = applicationId,
+                    type = PlacementType.PRESCHOOL_DAYCARE,
+                    period = mainPeriod,
+                    preschoolDaycarePeriod = connectedPeriod
+                ),
+                placementPlan
+            )
+
+            val decisionDrafts = fetchDecisionDrafts(tx.handle, applicationId)
+            assertEquals(2, decisionDrafts.size)
+
+            decisionDrafts.find { it.type == DecisionType.PRESCHOOL }!!.let {
+                assertEquals(
+                    DecisionDraft(
+                        id = it.id,
+                        type = DecisionType.PRESCHOOL,
+                        startDate = mainPeriod.start,
+                        endDate = mainPeriod.end,
+                        unitId = testDaycare.id,
+                        planned = true
+                    ),
+                    it
+                )
+            }
+            decisionDrafts.find { it.type == DecisionType.PRESCHOOL_DAYCARE }!!.let {
+                assertEquals(
+                    DecisionDraft(
+                        id = it.id,
+                        type = DecisionType.PRESCHOOL_DAYCARE,
+                        startDate = connectedPeriod.start,
+                        endDate = connectedPeriod.end,
+                        unitId = testDaycare.id,
+                        planned = true
+                    ),
+                    it
+                )
+            }
+        }
+    }
+
+    @Test
+    fun `cancelPlacementPlan - removes placement plan and decision drafts and changes status`() {
+        db.transaction { tx ->
+            // given
+            insertDraftApplication(tx.handle, appliedType = PlacementType.PRESCHOOL_DAYCARE)
+            service.sendApplication(tx.handle, serviceWorker, applicationId)
+            service.moveToWaitingPlacement(tx, serviceWorker, applicationId)
+            service.createPlacementPlan(
+                tx,
+                serviceWorker,
+                applicationId,
+                DaycarePlacementPlan(
+                    unitId = testDaycare.id,
+                    period = mainPeriod,
+                    preschoolDaycarePeriod = connectedPeriod
+                )
+            )
+        }
+        db.transaction { tx ->
+            // when
+            service.cancelPlacementPlan(tx, serviceWorker, applicationId)
+        }
+        db.read { tx ->
+            // then
+            val application = fetchApplicationDetails(tx.handle, applicationId)!!
+            assertEquals(ApplicationStatus.WAITING_PLACEMENT, application.status)
+
+            val placementPlan = getPlacementPlan(tx.handle, applicationId)
             assertEquals(null, placementPlan)
 
-            val placements = h.getPlacementsForChild(child.id)
+            val decisionDrafts = fetchDecisionDrafts(tx.handle, applicationId)
+            assertEquals(0, decisionDrafts.size)
+        }
+    }
+
+    @Test
+    fun `confirmPlacementWithoutDecision - applies placement plan, removes decision drafts and changes status`() {
+        val child = testChild_6
+        db.transaction { tx ->
+            // given
+            insertDraftApplication(tx.handle, appliedType = PlacementType.PRESCHOOL_DAYCARE, child = child)
+            service.sendApplication(tx.handle, serviceWorker, applicationId)
+            service.moveToWaitingPlacement(tx, serviceWorker, applicationId)
+            service.createPlacementPlan(
+                tx,
+                serviceWorker,
+                applicationId,
+                DaycarePlacementPlan(
+                    unitId = testDaycare.id,
+                    period = mainPeriod,
+                    preschoolDaycarePeriod = connectedPeriod
+                )
+            )
+        }
+        db.transaction { tx ->
+            // when
+            service.confirmPlacementWithoutDecision(tx, serviceWorker, applicationId)
+        }
+        db.read { tx ->
+            // then
+            val application = fetchApplicationDetails(tx.handle, applicationId)!!
+            assertEquals(ApplicationStatus.ACTIVE, application.status)
+
+            val placementPlan = getPlacementPlan(tx.handle, applicationId)
+            assertEquals(null, placementPlan)
+
+            val placements = tx.handle.getPlacementsForChild(child.id)
             assertEquals(2, placements.size)
             placements
                 .find { it.type === PlacementType.PRESCHOOL_DAYCARE }!!
@@ -1065,122 +1162,111 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                     )
                 }
 
-            val decisionDrafts = fetchDecisionDrafts(h, applicationId)
+            val decisionDrafts = fetchDecisionDrafts(tx.handle, applicationId)
             assertEquals(0, decisionDrafts.size)
 
-            val decisions = getDecisionsByApplication(h, applicationId, AclAuthorization.All)
+            val decisions = getDecisionsByApplication(tx.handle, applicationId, AclAuthorization.All)
             assertEquals(0, decisions.size)
         }
+    }
 
     @Test
-    fun `sendDecisionsWithoutProposal - applier is the only guardian`() = jdbi.handle { h ->
+    fun `sendDecisionsWithoutProposal - applier is the only guardian`() = sendDecisionsWithoutProposalTest(
+        child = testChild_2,
+        applier = testAdult_1,
+        secondDecisionTo = null,
+        manualMailing = false
+    )
+
+    @Test
+    fun `sendDecisionsWithoutProposal - applier is guardian and other guardian exists in same address`() =
         sendDecisionsWithoutProposalTest(
-            h,
-            child = testChild_2,
+            child = testChild_1,
             applier = testAdult_1,
             secondDecisionTo = null,
             manualMailing = false
         )
-    }
-
-    @Test
-    fun `sendDecisionsWithoutProposal - applier is guardian and other guardian exists in same address`() =
-        jdbi.handle { h ->
-            sendDecisionsWithoutProposalTest(
-                h,
-                child = testChild_1,
-                applier = testAdult_1,
-                secondDecisionTo = null,
-                manualMailing = false
-            )
-        }
 
     @Test
     fun `sendDecisionsWithoutProposal - applier is guardian and other guardian exists in different address`() =
-        jdbi.handle { h ->
-            sendDecisionsWithoutProposalTest(
-                h,
-                child = testChild_6,
-                applier = testAdult_5,
-                secondDecisionTo = testAdult_6,
-                manualMailing = false
-            )
-        }
-
-    @Test
-    fun `sendDecisionsWithoutProposal - child has no ssn`() = jdbi.handle { h ->
         sendDecisionsWithoutProposalTest(
-            h,
-            child = testChild_7,
+            child = testChild_6,
             applier = testAdult_5,
-            secondDecisionTo = null,
-            manualMailing = true
+            secondDecisionTo = testAdult_6,
+            manualMailing = false
         )
-    }
 
     @Test
-    fun `sendDecisionsWithoutProposal - applier has no ssn, child has no guardian`() = jdbi.handle { h ->
-        sendDecisionsWithoutProposalTest(
-            h,
-            child = testChild_7,
-            applier = testAdult_4,
-            secondDecisionTo = null,
-            manualMailing = true
-        )
-    }
+    fun `sendDecisionsWithoutProposal - child has no ssn`() = sendDecisionsWithoutProposalTest(
+        child = testChild_7,
+        applier = testAdult_5,
+        secondDecisionTo = null,
+        manualMailing = true
+    )
 
     @Test
-    fun `sendDecisionsWithoutProposal - applier has no ssn, child has another guardian`() = jdbi.handle { h ->
+    fun `sendDecisionsWithoutProposal - applier has no ssn, child has no guardian`() = sendDecisionsWithoutProposalTest(
+        child = testChild_7,
+        applier = testAdult_4,
+        secondDecisionTo = null,
+        manualMailing = true
+    )
+
+    @Test
+    fun `sendDecisionsWithoutProposal - applier has no ssn, child has another guardian`() =
         sendDecisionsWithoutProposalTest(
-            h,
             child = testChild_2,
             applier = testAdult_4,
             secondDecisionTo = testChild_1,
             manualMailing = true
         )
-    }
 
     private fun sendDecisionsWithoutProposalTest(
-        h: Handle,
         child: PersonData.Detailed,
         applier: PersonData.Detailed,
         secondDecisionTo: PersonData.Detailed?,
         manualMailing: Boolean
     ) {
         // given
-        insertDraftApplication(h, appliedType = PlacementType.PRESCHOOL, guardian = applier, child = child)
-        service.sendApplication(h, serviceWorker, applicationId)
-        service.moveToWaitingPlacement(h, serviceWorker, applicationId)
-        service.createPlacementPlan(
-            h,
-            serviceWorker,
-            applicationId,
-            DaycarePlacementPlan(unitId = testDaycare.id, period = mainPeriod)
-        )
+        db.transaction { tx ->
+            insertDraftApplication(tx.handle, appliedType = PlacementType.PRESCHOOL, guardian = applier, child = child)
+            service.sendApplication(tx.handle, serviceWorker, applicationId)
+            service.moveToWaitingPlacement(tx, serviceWorker, applicationId)
+            service.createPlacementPlan(
+                tx,
+                serviceWorker,
+                applicationId,
+                DaycarePlacementPlan(unitId = testDaycare.id, period = mainPeriod)
+            )
+        }
 
         // when
-        service.sendDecisionsWithoutProposal(h, serviceWorker, applicationId)
+        db.transaction { tx ->
+            service.sendDecisionsWithoutProposal(tx, serviceWorker, applicationId)
+        }
         asyncJobRunner.runPendingJobsSync()
         asyncJobRunner.runPendingJobsSync()
 
         // then
-        val application = fetchApplicationDetails(h, applicationId)!!
-        if (manualMailing) {
-            assertEquals(ApplicationStatus.WAITING_MAILING, application.status)
-        } else {
-            assertEquals(ApplicationStatus.WAITING_CONFIRMATION, application.status)
-        }
+        db.read {
+            val application = fetchApplicationDetails(it.handle, applicationId)!!
+            if (manualMailing) {
+                assertEquals(ApplicationStatus.WAITING_MAILING, application.status)
+            } else {
+                assertEquals(ApplicationStatus.WAITING_CONFIRMATION, application.status)
+            }
 
-        val decisionsByApplication = getDecisionsByApplication(h, applicationId, AclAuthorization.All)
-        assertEquals(1, decisionsByApplication.size)
-        val decision = decisionsByApplication.first()
-        assertNotNull(decision.sentDate)
-        assertNotNull(decision.documentUri)
+            val decisionsByApplication = getDecisionsByApplication(it.handle, applicationId, AclAuthorization.All)
+            assertEquals(1, decisionsByApplication.size)
+            val decision = decisionsByApplication.first()
+            assertNotNull(decision.sentDate)
+            assertNotNull(decision.documentUri)
 
-        if (secondDecisionTo == null) {
-            assertNull(decision.otherGuardianDocumentUri)
-        } else {
-            assertNotNull(decision.otherGuardianDocumentUri)
+            if (secondDecisionTo == null) {
+                assertNull(decision.otherGuardianDocumentUri)
+            } else {
+                assertNotNull(decision.otherGuardianDocumentUri)
+            }
         }
 
         val messages = MockEvakaMessageClient.getMessages()
@@ -1198,488 +1284,600 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
     }
 
     @Test
-    fun `sendPlacementProposal - updates status`() = jdbi.handle { h ->
-        // given
-        insertDraftApplication(h, appliedType = PlacementType.PRESCHOOL_DAYCARE)
-        service.sendApplication(h, serviceWorker, applicationId)
-        service.moveToWaitingPlacement(h, serviceWorker, applicationId)
-        service.createPlacementPlan(
-            h,
-            serviceWorker,
-            applicationId,
-            DaycarePlacementPlan(
-                unitId = testDaycare.id,
-                period = mainPeriod,
-                preschoolDaycarePeriod = connectedPeriod
+    fun `sendPlacementProposal - updates status`() {
+        db.transaction { tx ->
+            // given
+            insertDraftApplication(tx.handle, appliedType = PlacementType.PRESCHOOL_DAYCARE)
+            service.sendApplication(tx.handle, serviceWorker, applicationId)
+            service.moveToWaitingPlacement(tx, serviceWorker, applicationId)
+            service.createPlacementPlan(
+                tx,
+                serviceWorker,
+                applicationId,
+                DaycarePlacementPlan(
+                    unitId = testDaycare.id,
+                    period = mainPeriod,
+                    preschoolDaycarePeriod = connectedPeriod
+                )
             )
-        )
+            // when
+            service.sendPlacementProposal(tx, serviceWorker, applicationId)
+        }
+        db.read { tx ->
+            // then
+            val application = fetchApplicationDetails(tx.handle, applicationId)!!
+            assertEquals(ApplicationStatus.WAITING_UNIT_CONFIRMATION, application.status)
 
-        // when
-        service.sendPlacementProposal(h, serviceWorker, applicationId)
-
-        // then
-        val application = fetchApplicationDetails(h, applicationId)!!
-        assertEquals(ApplicationStatus.WAITING_UNIT_CONFIRMATION, application.status)
-
-        val decisions = getDecisionsByApplication(h, applicationId, AclAuthorization.All)
-        assertEquals(0, decisions.size)
+            val decisions = getDecisionsByApplication(tx.handle, applicationId, AclAuthorization.All)
+            assertEquals(0, decisions.size)
+        }
     }
 
     @Test
-    fun `withdrawPlacementProposal - updates status`() = jdbi.handle { h ->
-        // given
-        insertDraftApplication(h, appliedType = PlacementType.PRESCHOOL_DAYCARE)
-        service.sendApplication(h, serviceWorker, applicationId)
-        service.moveToWaitingPlacement(h, serviceWorker, applicationId)
-        service.createPlacementPlan(
-            h,
-            serviceWorker,
-            applicationId,
-            DaycarePlacementPlan(
-                unitId = testDaycare.id,
-                period = mainPeriod,
-                preschoolDaycarePeriod = connectedPeriod
+    fun `withdrawPlacementProposal - updates status`() {
+        db.transaction { tx ->
+            // given
+            insertDraftApplication(tx.handle, appliedType = PlacementType.PRESCHOOL_DAYCARE)
+            service.sendApplication(tx.handle, serviceWorker, applicationId)
+            service.moveToWaitingPlacement(tx, serviceWorker, applicationId)
+            service.createPlacementPlan(
+                tx,
+                serviceWorker,
+                applicationId,
+                DaycarePlacementPlan(
+                    unitId = testDaycare.id,
+                    period = mainPeriod,
+                    preschoolDaycarePeriod = connectedPeriod
+                )
             )
-        )
-        service.sendPlacementProposal(h, serviceWorker, applicationId)
+            service.sendPlacementProposal(tx, serviceWorker, applicationId)
+        }
+        db.transaction { tx ->
+            // when
+            service.withdrawPlacementProposal(tx, serviceWorker, applicationId)
+        }
+        db.read { tx ->
+            // then
+            val application = fetchApplicationDetails(tx.handle, applicationId)!!
+            assertEquals(ApplicationStatus.WAITING_DECISION, application.status)
 
-        // when
-        service.withdrawPlacementProposal(h, serviceWorker, applicationId)
-
-        // then
-        val application = fetchApplicationDetails(h, applicationId)!!
-        assertEquals(ApplicationStatus.WAITING_DECISION, application.status)
-
-        val decisions = getDecisionsByApplication(h, applicationId, AclAuthorization.All)
-        assertEquals(0, decisions.size)
+            val decisions = getDecisionsByApplication(tx.handle, applicationId, AclAuthorization.All)
+            assertEquals(0, decisions.size)
+        }
     }
 
     @Test
-    fun `acceptPlacementProposal - sends decisions and updates status`() = jdbi.handle { h ->
-        // given
-        insertDraftApplication(
-            h, appliedType = PlacementType.PRESCHOOL_DAYCARE,
-            child = testChild_2,
-            guardian = testAdult_1
-        )
-        service.sendApplication(h, serviceWorker, applicationId)
-        service.moveToWaitingPlacement(h, serviceWorker, applicationId)
-        service.createPlacementPlan(
-            h,
-            serviceWorker,
-            applicationId,
-            DaycarePlacementPlan(
-                unitId = testDaycare.id,
-                period = mainPeriod,
-                preschoolDaycarePeriod = connectedPeriod
+    fun `acceptPlacementProposal - sends decisions and updates status`() {
+        db.transaction { tx ->
+            // given
+            insertDraftApplication(
+                tx.handle, appliedType = PlacementType.PRESCHOOL_DAYCARE,
+                child = testChild_2,
+                guardian = testAdult_1
             )
-        )
-        service.sendPlacementProposal(h, serviceWorker, applicationId)
-
-        // when
-        service.respondToPlacementProposal(h, serviceWorker, applicationId, PlacementPlanConfirmationStatus.ACCEPTED)
-        service.acceptPlacementProposal(h, serviceWorker, testDaycare.id)
+            service.sendApplication(tx.handle, serviceWorker, applicationId)
+            service.moveToWaitingPlacement(tx, serviceWorker, applicationId)
+            service.createPlacementPlan(
+                tx,
+                serviceWorker,
+                applicationId,
+                DaycarePlacementPlan(
+                    unitId = testDaycare.id,
+                    period = mainPeriod,
+                    preschoolDaycarePeriod = connectedPeriod
+                )
+            )
+            service.sendPlacementProposal(tx, serviceWorker, applicationId)
+        }
+        db.transaction { tx ->
+            // when
+            service.respondToPlacementProposal(
+                tx.handle,
+                serviceWorker,
+                applicationId,
+                PlacementPlanConfirmationStatus.ACCEPTED
+            )
+            service.acceptPlacementProposal(tx, serviceWorker, testDaycare.id)
+        }
         asyncJobRunner.runPendingJobsSync()
         asyncJobRunner.runPendingJobsSync()
+        db.read { tx ->
+            // then
+            val application = fetchApplicationDetails(tx.handle, applicationId)!!
+            assertEquals(ApplicationStatus.WAITING_CONFIRMATION, application.status)
 
-        // then
-        val application = fetchApplicationDetails(h, applicationId)!!
-        assertEquals(ApplicationStatus.WAITING_CONFIRMATION, application.status)
-
-        val decisionsByApplication = getDecisionsByApplication(h, applicationId, AclAuthorization.All)
-        assertEquals(2, decisionsByApplication.size)
-        decisionsByApplication.forEach { decision ->
-            assertNotNull(decision.sentDate)
-            assertNotNull(decision.documentUri)
-            assertNull(decision.otherGuardianDocumentUri)
+            val decisionsByApplication = getDecisionsByApplication(tx.handle, applicationId, AclAuthorization.All)
+            assertEquals(2, decisionsByApplication.size)
+            decisionsByApplication.forEach { decision ->
+                assertNotNull(decision.sentDate)
+                assertNotNull(decision.documentUri)
+                assertNull(decision.otherGuardianDocumentUri)
+            }
+            val messages = MockEvakaMessageClient.getMessages()
+            assertEquals(2, messages.size)
+            assertEquals(2, messages.filter { it.ssn == testAdult_1.ssn }.size)
         }
-        val messages = MockEvakaMessageClient.getMessages()
-        assertEquals(2, messages.size)
-        assertEquals(2, messages.filter { it.ssn == testAdult_1.ssn }.size)
     }
 
     @Test
-    fun `acceptPlacementProposal - if no decisions are marked for sending go straight to active`() = jdbi.handle { h ->
-        // given
-        insertDraftApplication(
-            h, appliedType = PlacementType.PRESCHOOL_DAYCARE,
-            child = testChild_2,
-            guardian = testAdult_1
-        )
-        service.sendApplication(h, serviceWorker, applicationId)
-        service.moveToWaitingPlacement(h, serviceWorker, applicationId)
-        service.createPlacementPlan(
-            h,
-            serviceWorker,
-            applicationId,
-            DaycarePlacementPlan(
-                unitId = testDaycare.id,
-                period = mainPeriod,
-                preschoolDaycarePeriod = connectedPeriod
+    fun `acceptPlacementProposal - if no decisions are marked for sending go straight to active`() {
+        db.transaction { tx ->
+            // given
+            insertDraftApplication(
+                tx.handle, appliedType = PlacementType.PRESCHOOL_DAYCARE,
+                child = testChild_2,
+                guardian = testAdult_1
             )
-        )
-        fetchDecisionDrafts(h, applicationId).map { draft ->
-            DecisionDraftService.DecisionDraftUpdate(
-                id = draft.id,
-                unitId = draft.unitId,
-                startDate = draft.startDate,
-                endDate = draft.endDate,
-                planned = false
+            service.sendApplication(tx.handle, serviceWorker, applicationId)
+            service.moveToWaitingPlacement(tx, serviceWorker, applicationId)
+            service.createPlacementPlan(
+                tx,
+                serviceWorker,
+                applicationId,
+                DaycarePlacementPlan(
+                    unitId = testDaycare.id,
+                    period = mainPeriod,
+                    preschoolDaycarePeriod = connectedPeriod
+                )
             )
-        }.let { updates -> decisionDraftService.updateDecisionDrafts(h, applicationId, updates) }
-        service.sendPlacementProposal(h, serviceWorker, applicationId)
-
-        // when
-        service.respondToPlacementProposal(h, serviceWorker, applicationId, PlacementPlanConfirmationStatus.ACCEPTED)
-        service.acceptPlacementProposal(h, serviceWorker, testDaycare.id)
+            fetchDecisionDrafts(tx.handle, applicationId).map { draft ->
+                DecisionDraftService.DecisionDraftUpdate(
+                    id = draft.id,
+                    unitId = draft.unitId,
+                    startDate = draft.startDate,
+                    endDate = draft.endDate,
+                    planned = false
+                )
+            }.let { updates -> decisionDraftService.updateDecisionDrafts(tx.handle, applicationId, updates) }
+            service.sendPlacementProposal(tx, serviceWorker, applicationId)
+        }
+        db.transaction { tx ->
+            // when
+            service.respondToPlacementProposal(
+                tx.handle,
+                serviceWorker,
+                applicationId,
+                PlacementPlanConfirmationStatus.ACCEPTED
+            )
+            service.acceptPlacementProposal(tx, serviceWorker, testDaycare.id)
+        }
         asyncJobRunner.runPendingJobsSync()
         asyncJobRunner.runPendingJobsSync()
+        db.read { tx ->
+            // then
+            val application = fetchApplicationDetails(tx.handle, applicationId)!!
+            assertEquals(ApplicationStatus.ACTIVE, application.status)
 
-        // then
-        val application = fetchApplicationDetails(h, applicationId)!!
-        assertEquals(ApplicationStatus.ACTIVE, application.status)
+            val decisionDrafts = fetchDecisionDrafts(tx.handle, applicationId)
+            assertEquals(0, decisionDrafts.size)
 
-        val decisionDrafts = fetchDecisionDrafts(h, applicationId)
-        assertEquals(0, decisionDrafts.size)
+            val decisionsByApplication = getDecisionsByApplication(tx.handle, applicationId, AclAuthorization.All)
+            assertEquals(0, decisionsByApplication.size)
 
-        val decisionsByApplication = getDecisionsByApplication(h, applicationId, AclAuthorization.All)
-        assertEquals(0, decisionsByApplication.size)
+            val messages = MockEvakaMessageClient.getMessages()
+            assertEquals(0, messages.size)
 
-        val messages = MockEvakaMessageClient.getMessages()
-        assertEquals(0, messages.size)
+            val placementPlan = getPlacementPlan(tx.handle, applicationId)
+            assertNull(placementPlan)
 
-        val placementPlan = getPlacementPlan(h, applicationId)
-        assertNull(placementPlan)
-
-        val placements = h.getPlacementsForChild(testChild_2.id)
-        assertEquals(2, placements.size)
-        with(placements.first { it.type == PlacementType.PRESCHOOL_DAYCARE }) {
-            assertEquals(connectedPeriod.start, startDate)
-            assertEquals(mainPeriod.end, endDate)
-        }
-        with(placements.first { it.type == PlacementType.DAYCARE }) {
-            assertEquals(mainPeriod.end.plusDays(1), startDate)
-            assertEquals(connectedPeriod.end, endDate)
+            val placements = tx.handle.getPlacementsForChild(testChild_2.id)
+            assertEquals(2, placements.size)
+            with(placements.first { it.type == PlacementType.PRESCHOOL_DAYCARE }) {
+                assertEquals(connectedPeriod.start, startDate)
+                assertEquals(mainPeriod.end, endDate)
+            }
+            with(placements.first { it.type == PlacementType.DAYCARE }) {
+                assertEquals(mainPeriod.end.plusDays(1), startDate)
+                assertEquals(connectedPeriod.end, endDate)
+            }
         }
     }
 
     @Test
-    fun `acceptPlacementProposal - throws if some application is pending response`() = jdbi.handle { h ->
-        // given
-        insertDraftApplication(h, appliedType = PlacementType.PRESCHOOL, child = testChild_2, guardian = testAdult_1)
-        service.sendApplication(h, serviceWorker, applicationId)
-        service.moveToWaitingPlacement(h, serviceWorker, applicationId)
-        service.createPlacementPlan(
-            h,
-            serviceWorker,
-            applicationId,
-            DaycarePlacementPlan(
-                unitId = testDaycare.id,
-                period = mainPeriod
+    fun `acceptPlacementProposal - throws if some application is pending response`() {
+        db.transaction { tx ->
+            // given
+            insertDraftApplication(
+                tx.handle,
+                appliedType = PlacementType.PRESCHOOL,
+                child = testChild_2,
+                guardian = testAdult_1
             )
-        )
-        service.sendPlacementProposal(h, serviceWorker, applicationId)
-
-        // when / then
-        assertThrows<BadRequest> { service.acceptPlacementProposal(h, serviceWorker, testDaycare.id) }
-    }
-
-    @Test
-    fun `acceptPlacementProposal - throws if some application has been rejected`() = jdbi.handle { h ->
-        // given
-        insertDraftApplication(h, appliedType = PlacementType.PRESCHOOL, child = testChild_2, guardian = testAdult_1)
-        service.sendApplication(h, serviceWorker, applicationId)
-        service.moveToWaitingPlacement(h, serviceWorker, applicationId)
-        service.createPlacementPlan(
-            h,
-            serviceWorker,
-            applicationId,
-            DaycarePlacementPlan(
-                unitId = testDaycare.id,
-                period = mainPeriod
+            service.sendApplication(tx.handle, serviceWorker, applicationId)
+            service.moveToWaitingPlacement(tx, serviceWorker, applicationId)
+            service.createPlacementPlan(
+                tx,
+                serviceWorker,
+                applicationId,
+                DaycarePlacementPlan(
+                    unitId = testDaycare.id,
+                    period = mainPeriod
+                )
             )
-        )
-        service.sendPlacementProposal(h, serviceWorker, applicationId)
-
-        // when / then
-        service.respondToPlacementProposal(
-            h,
-            serviceWorker,
-            applicationId,
-            PlacementPlanConfirmationStatus.REJECTED,
-            PlacementPlanRejectReason.REASON_1
-        )
-        assertThrows<BadRequest> { service.acceptPlacementProposal(h, serviceWorker, testDaycare.id) }
-    }
-
-    @Test
-    fun `reject preschool decision rejects preschool daycare decision too`() = jdbi.handle { h ->
-        // given
-        workflowForPreschoolDaycareDecisions(h)
-
-        // when
-        service.rejectDecision(h, serviceWorker, applicationId, getDecision(h, DecisionType.PRESCHOOL).id)
-
-        // then
-        val application = fetchApplicationDetails(h, applicationId)!!
-        assertEquals(ApplicationStatus.REJECTED, application.status)
-
-        with(getDecision(h, DecisionType.PRESCHOOL)) {
-            assertEquals(DecisionStatus.REJECTED, status)
+            service.sendPlacementProposal(tx, serviceWorker, applicationId)
         }
-        with(getDecision(h, DecisionType.PRESCHOOL_DAYCARE)) {
-            assertEquals(DecisionStatus.REJECTED, status)
-        }
-
-        val placementPlan = getPlacementPlan(h, applicationId)
-        assertNull(placementPlan)
-
-        val placements = h.getPlacementsForChild(testChild_6.id)
-        assertEquals(0, placements.size)
-    }
-
-    @Test
-    fun `accept preschool and reject preschool daycare`() = jdbi.handle { h ->
-        // given
-        workflowForPreschoolDaycareDecisions(h)
-
-        // when
-        service.acceptDecision(
-            h,
-            serviceWorker,
-            applicationId,
-            getDecision(h, DecisionType.PRESCHOOL).id,
-            mainPeriod.start
-        )
-        service.rejectDecision(h, serviceWorker, applicationId, getDecision(h, DecisionType.PRESCHOOL_DAYCARE).id)
-
-        // then
-        val application = fetchApplicationDetails(h, applicationId)!!
-        assertEquals(ApplicationStatus.ACTIVE, application.status)
-
-        with(getDecision(h, DecisionType.PRESCHOOL)) {
-            assertEquals(DecisionStatus.ACCEPTED, status)
-        }
-        with(getDecision(h, DecisionType.PRESCHOOL_DAYCARE)) {
-            assertEquals(DecisionStatus.REJECTED, status)
-        }
-
-        val placementPlan = getPlacementPlan(h, applicationId)
-        assertNull(placementPlan)
-
-        val placements = h.getPlacementsForChild(testChild_6.id)
-        assertEquals(1, placements.size)
-        with(placements.first()) {
-            assertEquals(mainPeriod.start, startDate)
-            assertEquals(mainPeriod.end, endDate)
-            assertEquals(PlacementType.PRESCHOOL, type)
+        db.transaction { tx ->
+            // when / then
+            assertThrows<BadRequest> { service.acceptPlacementProposal(tx, serviceWorker, testDaycare.id) }
         }
     }
 
     @Test
-    fun `enduser can accept and reject own decisions`() = jdbi.handle { h ->
-        // given
-        workflowForPreschoolDaycareDecisions(h)
-        val user = AuthenticatedUser(testAdult_5.id, setOf(UserRole.END_USER))
-
-        // when
-        service.acceptDecision(
-            h,
-            user,
-            applicationId,
-            getDecision(h, DecisionType.PRESCHOOL).id,
-            mainPeriod.start,
-            isEnduser = true
-        )
-        service.rejectDecision(
-            h,
-            user,
-            applicationId,
-            getDecision(h, DecisionType.PRESCHOOL_DAYCARE).id,
-            isEnduser = true
-        )
-
-        // then
-        val application = fetchApplicationDetails(h, applicationId)!!
-        assertEquals(ApplicationStatus.ACTIVE, application.status)
+    fun `acceptPlacementProposal - throws if some application has been rejected`() {
+        db.transaction { tx ->
+            // given
+            insertDraftApplication(
+                tx.handle,
+                appliedType = PlacementType.PRESCHOOL,
+                child = testChild_2,
+                guardian = testAdult_1
+            )
+            service.sendApplication(tx.handle, serviceWorker, applicationId)
+            service.moveToWaitingPlacement(tx, serviceWorker, applicationId)
+            service.createPlacementPlan(
+                tx,
+                serviceWorker,
+                applicationId,
+                DaycarePlacementPlan(
+                    unitId = testDaycare.id,
+                    period = mainPeriod
+                )
+            )
+            service.sendPlacementProposal(tx, serviceWorker, applicationId)
+        }
+        db.transaction { tx ->
+            // when / then
+            service.respondToPlacementProposal(
+                tx.handle,
+                serviceWorker,
+                applicationId,
+                PlacementPlanConfirmationStatus.REJECTED,
+                PlacementPlanRejectReason.REASON_1
+            )
+            assertThrows<BadRequest> { service.acceptPlacementProposal(tx, serviceWorker, testDaycare.id) }
+        }
     }
 
     @Test
-    fun `enduser can not accept decision of someone else`() = jdbi.handle { h ->
-        // given
-        workflowForPreschoolDaycareDecisions(h)
-        val user = AuthenticatedUser(testAdult_1.id, setOf(UserRole.END_USER))
+    fun `reject preschool decision rejects preschool daycare decision too`() {
+        db.transaction { tx ->
+            // given
+            workflowForPreschoolDaycareDecisions(tx)
+        }
+        db.transaction { tx ->
+            // when
+            service.rejectDecision(
+                tx.handle,
+                serviceWorker,
+                applicationId,
+                getDecision(tx.handle, DecisionType.PRESCHOOL).id
+            )
+        }
+        db.read { tx ->
+            // then
+            val application = fetchApplicationDetails(tx.handle, applicationId)!!
+            assertEquals(ApplicationStatus.REJECTED, application.status)
 
-        // when
-        assertThrows<Forbidden> {
+            with(getDecision(tx.handle, DecisionType.PRESCHOOL)) {
+                assertEquals(DecisionStatus.REJECTED, status)
+            }
+            with(getDecision(tx.handle, DecisionType.PRESCHOOL_DAYCARE)) {
+                assertEquals(DecisionStatus.REJECTED, status)
+            }
+
+            val placementPlan = getPlacementPlan(tx.handle, applicationId)
+            assertNull(placementPlan)
+
+            val placements = tx.handle.getPlacementsForChild(testChild_6.id)
+            assertEquals(0, placements.size)
+        }
+    }
+
+    @Test
+    fun `accept preschool and reject preschool daycare`() {
+        db.transaction { tx ->
+            // given
+            workflowForPreschoolDaycareDecisions(tx)
+        }
+        db.transaction { tx ->
+            // when
             service.acceptDecision(
-                h,
+                tx.handle,
+                serviceWorker,
+                applicationId,
+                getDecision(tx.handle, DecisionType.PRESCHOOL).id,
+                mainPeriod.start
+            )
+            service.rejectDecision(
+                tx.handle,
+                serviceWorker,
+                applicationId,
+                getDecision(tx.handle, DecisionType.PRESCHOOL_DAYCARE).id
+            )
+        }
+        db.read { tx ->
+            // then
+            val application = fetchApplicationDetails(tx.handle, applicationId)!!
+            assertEquals(ApplicationStatus.ACTIVE, application.status)
+
+            with(getDecision(tx.handle, DecisionType.PRESCHOOL)) {
+                assertEquals(DecisionStatus.ACCEPTED, status)
+            }
+            with(getDecision(tx.handle, DecisionType.PRESCHOOL_DAYCARE)) {
+                assertEquals(DecisionStatus.REJECTED, status)
+            }
+
+            val placementPlan = getPlacementPlan(tx.handle, applicationId)
+            assertNull(placementPlan)
+
+            val placements = tx.handle.getPlacementsForChild(testChild_6.id)
+            assertEquals(1, placements.size)
+            with(placements.first()) {
+                assertEquals(mainPeriod.start, startDate)
+                assertEquals(mainPeriod.end, endDate)
+                assertEquals(PlacementType.PRESCHOOL, type)
+            }
+        }
+    }
+
+    @Test
+    fun `enduser can accept and reject own decisions`() {
+        db.transaction { tx ->
+            // given
+            workflowForPreschoolDaycareDecisions(tx)
+        }
+        db.transaction { tx ->
+            // when
+            val user = AuthenticatedUser(testAdult_5.id, setOf(UserRole.END_USER))
+            service.acceptDecision(
+                tx.handle,
                 user,
                 applicationId,
-                getDecision(h, DecisionType.PRESCHOOL).id,
+                getDecision(tx.handle, DecisionType.PRESCHOOL).id,
                 mainPeriod.start,
                 isEnduser = true
             )
+            service.rejectDecision(
+                tx.handle,
+                user,
+                applicationId,
+                getDecision(tx.handle, DecisionType.PRESCHOOL_DAYCARE).id,
+                isEnduser = true
+            )
+
+            // then
+            val application = fetchApplicationDetails(tx.handle, applicationId)!!
+            assertEquals(ApplicationStatus.ACTIVE, application.status)
         }
     }
 
     @Test
-    fun `enduser can not reject decision of someone else`() = jdbi.handle { h ->
-        // given
-        workflowForPreschoolDaycareDecisions(h)
-        val user = AuthenticatedUser(testAdult_1.id, setOf(UserRole.END_USER))
-
-        // when
-        assertThrows<Forbidden> {
-            service.rejectDecision(h, user, applicationId, getDecision(h, DecisionType.PRESCHOOL).id, isEnduser = true)
+    fun `enduser can not accept decision of someone else`() {
+        db.transaction { tx ->
+            // given
+            workflowForPreschoolDaycareDecisions(tx)
+        }
+        db.transaction { tx ->
+            val user = AuthenticatedUser(testAdult_1.id, setOf(UserRole.END_USER))
+            // when
+            assertThrows<Forbidden> {
+                service.acceptDecision(
+                    tx.handle,
+                    user,
+                    applicationId,
+                    getDecision(tx.handle, DecisionType.PRESCHOOL).id,
+                    mainPeriod.start,
+                    isEnduser = true
+                )
+            }
         }
     }
 
     @Test
-    fun `accept preschool and accept preschool daycare`() = jdbi.handle { h ->
-        // given
-        workflowForPreschoolDaycareDecisions(h)
-
-        // when
-        service.acceptDecision(
-            h,
-            serviceWorker,
-            applicationId,
-            getDecision(h, DecisionType.PRESCHOOL).id,
-            mainPeriod.start
-        )
-        service.acceptDecision(
-            h,
-            serviceWorker,
-            applicationId,
-            getDecision(h, DecisionType.PRESCHOOL_DAYCARE).id,
-            connectedPeriod.start
-        )
-
-        // then
-        val application = fetchApplicationDetails(h, applicationId)!!
-        assertEquals(ApplicationStatus.ACTIVE, application.status)
-
-        with(getDecision(h, DecisionType.PRESCHOOL)) {
-            assertEquals(DecisionStatus.ACCEPTED, status)
+    fun `enduser can not reject decision of someone else`() {
+        db.transaction { tx ->
+            // given
+            workflowForPreschoolDaycareDecisions(tx)
         }
-        with(getDecision(h, DecisionType.PRESCHOOL_DAYCARE)) {
-            assertEquals(DecisionStatus.ACCEPTED, status)
-        }
-
-        val placementPlan = getPlacementPlan(h, applicationId)
-        assertNull(placementPlan)
-
-        val placements = h.getPlacementsForChild(testChild_6.id)
-        assertEquals(2, placements.size)
-        with(placements.first { it.type == PlacementType.PRESCHOOL_DAYCARE }) {
-            assertEquals(connectedPeriod.start, startDate)
-            assertEquals(mainPeriod.end, endDate)
-        }
-        with(placements.first { it.type == PlacementType.DAYCARE }) {
-            assertEquals(mainPeriod.end.plusDays(1), startDate)
-            assertEquals(connectedPeriod.end, endDate)
+        db.transaction { tx ->
+            // when
+            val user = AuthenticatedUser(testAdult_1.id, setOf(UserRole.END_USER))
+            assertThrows<Forbidden> {
+                service.rejectDecision(
+                    tx.handle,
+                    user,
+                    applicationId,
+                    getDecision(tx.handle, DecisionType.PRESCHOOL).id,
+                    isEnduser = true
+                )
+            }
         }
     }
 
     @Test
-    fun `accept preschool daycare first throws`() = jdbi.handle { h ->
-        // given
-        workflowForPreschoolDaycareDecisions(h)
-
-        // when / then
-        assertThrows<BadRequest> {
+    fun `accept preschool and accept preschool daycare`() {
+        db.transaction { tx ->
+            // given
+            workflowForPreschoolDaycareDecisions(tx)
+        }
+        db.transaction { tx ->
+            // when
             service.acceptDecision(
-                h,
+                tx.handle,
                 serviceWorker,
                 applicationId,
-                getDecision(h, DecisionType.PRESCHOOL_DAYCARE).id,
+                getDecision(tx.handle, DecisionType.PRESCHOOL).id,
+                mainPeriod.start
+            )
+            service.acceptDecision(
+                tx.handle,
+                serviceWorker,
+                applicationId,
+                getDecision(tx.handle, DecisionType.PRESCHOOL_DAYCARE).id,
+                connectedPeriod.start
+            )
+        }
+        db.read { tx ->
+            // then
+            val application = fetchApplicationDetails(tx.handle, applicationId)!!
+            assertEquals(ApplicationStatus.ACTIVE, application.status)
+
+            with(getDecision(tx.handle, DecisionType.PRESCHOOL)) {
+                assertEquals(DecisionStatus.ACCEPTED, status)
+            }
+            with(getDecision(tx.handle, DecisionType.PRESCHOOL_DAYCARE)) {
+                assertEquals(DecisionStatus.ACCEPTED, status)
+            }
+
+            val placementPlan = getPlacementPlan(tx.handle, applicationId)
+            assertNull(placementPlan)
+
+            val placements = tx.handle.getPlacementsForChild(testChild_6.id)
+            assertEquals(2, placements.size)
+            with(placements.first { it.type == PlacementType.PRESCHOOL_DAYCARE }) {
+                assertEquals(connectedPeriod.start, startDate)
+                assertEquals(mainPeriod.end, endDate)
+            }
+            with(placements.first { it.type == PlacementType.DAYCARE }) {
+                assertEquals(mainPeriod.end.plusDays(1), startDate)
+                assertEquals(connectedPeriod.end, endDate)
+            }
+        }
+    }
+
+    @Test
+    fun `accept preschool daycare first throws`() {
+        db.transaction { tx ->
+            // given
+            workflowForPreschoolDaycareDecisions(tx)
+        }
+        db.transaction { tx ->
+            // when / then
+            assertThrows<BadRequest> {
+                service.acceptDecision(
+                    tx.handle,
+                    serviceWorker,
+                    applicationId,
+                    getDecision(tx.handle, DecisionType.PRESCHOOL_DAYCARE).id,
+                    mainPeriod.start
+                )
+            }
+        }
+    }
+
+    @Test
+    fun `accepting already accepted decision throws`() {
+        db.transaction { tx ->
+            // given
+            workflowForPreschoolDaycareDecisions(tx)
+            service.acceptDecision(
+                tx.handle,
+                serviceWorker,
+                applicationId,
+                getDecision(tx.handle, DecisionType.PRESCHOOL).id,
                 mainPeriod.start
             )
         }
+        db.transaction { tx ->
+            // when / then
+            assertThrows<BadRequest> {
+                service.acceptDecision(
+                    tx.handle,
+                    serviceWorker,
+                    applicationId,
+                    getDecision(tx.handle, DecisionType.PRESCHOOL).id,
+                    mainPeriod.start
+                )
+            }
+        }
     }
 
     @Test
-    fun `accepting already accepted decision throws`() = jdbi.handle { h ->
-        // given
-        workflowForPreschoolDaycareDecisions(h)
-        service.acceptDecision(
-            h,
-            serviceWorker,
-            applicationId,
-            getDecision(h, DecisionType.PRESCHOOL).id,
-            mainPeriod.start
-        )
-
-        // when / then
-        assertThrows<BadRequest> {
-            service.acceptDecision(
-                h,
+    fun `accepting already rejected decision throws`() {
+        db.transaction { tx ->
+            // given
+            workflowForPreschoolDaycareDecisions(tx)
+            service.rejectDecision(
+                tx.handle,
                 serviceWorker,
                 applicationId,
-                getDecision(h, DecisionType.PRESCHOOL).id,
+                getDecision(tx.handle, DecisionType.PRESCHOOL).id
+            )
+        }
+        db.transaction { tx ->
+            // when / then
+            assertThrows<BadRequest> {
+                service.acceptDecision(
+                    tx.handle,
+                    serviceWorker,
+                    applicationId,
+                    getDecision(tx.handle, DecisionType.PRESCHOOL).id,
+                    mainPeriod.start
+                )
+            }
+        }
+    }
+
+    @Test
+    fun `rejecting already accepted decision throws`() {
+        db.transaction { tx ->
+            // given
+            workflowForPreschoolDaycareDecisions(tx)
+            service.acceptDecision(
+                tx.handle,
+                serviceWorker,
+                applicationId,
+                getDecision(tx.handle, DecisionType.PRESCHOOL).id,
                 mainPeriod.start
             )
         }
+        db.transaction { tx ->
+            // when / then
+            assertThrows<BadRequest> {
+                service.rejectDecision(
+                    tx.handle,
+                    serviceWorker,
+                    applicationId,
+                    getDecision(tx.handle, DecisionType.PRESCHOOL).id
+                )
+            }
+        }
     }
 
     @Test
-    fun `accepting already rejected decision throws`() = jdbi.handle { h ->
-        // given
-        workflowForPreschoolDaycareDecisions(h)
-        service.rejectDecision(h, serviceWorker, applicationId, getDecision(h, DecisionType.PRESCHOOL).id)
-
-        // when / then
-        assertThrows<BadRequest> {
-            service.acceptDecision(
-                h,
+    fun `rejecting already rejected decision throws`() {
+        db.transaction { tx ->
+            // given
+            workflowForPreschoolDaycareDecisions(tx)
+            service.rejectDecision(
+                tx.handle,
                 serviceWorker,
                 applicationId,
-                getDecision(h, DecisionType.PRESCHOOL).id,
-                mainPeriod.start
+                getDecision(tx.handle, DecisionType.PRESCHOOL).id
             )
         }
-    }
-
-    @Test
-    fun `rejecting already accepted decision throws`() = jdbi.handle { h ->
-        // given
-        workflowForPreschoolDaycareDecisions(h)
-        service.acceptDecision(
-            h,
-            serviceWorker,
-            applicationId,
-            getDecision(h, DecisionType.PRESCHOOL).id,
-            mainPeriod.start
-        )
-
-        // when / then
-        assertThrows<BadRequest> {
-            service.rejectDecision(h, serviceWorker, applicationId, getDecision(h, DecisionType.PRESCHOOL).id)
-        }
-    }
-
-    @Test
-    fun `rejecting already rejected decision throws`() = jdbi.handle { h ->
-        // given
-        workflowForPreschoolDaycareDecisions(h)
-        service.rejectDecision(h, serviceWorker, applicationId, getDecision(h, DecisionType.PRESCHOOL).id)
-
-        // when / then
-        assertThrows<BadRequest> {
-            service.rejectDecision(h, serviceWorker, applicationId, getDecision(h, DecisionType.PRESCHOOL).id)
+        db.transaction { tx ->
+            // when / then
+            assertThrows<BadRequest> {
+                service.rejectDecision(
+                    tx.handle,
+                    serviceWorker,
+                    applicationId,
+                    getDecision(tx.handle, DecisionType.PRESCHOOL).id
+                )
+            }
         }
     }
 
     private fun getDecision(h: Handle, type: DecisionType): Decision =
         getDecisionsByApplication(h, applicationId, AclAuthorization.All).first { it.type == type }
 
-    private fun workflowForPreschoolDaycareDecisions(h: Handle) {
-        insertDraftApplication(h, appliedType = PlacementType.PRESCHOOL_DAYCARE)
-        service.sendApplication(h, serviceWorker, applicationId)
-        service.moveToWaitingPlacement(h, serviceWorker, applicationId)
+    private fun workflowForPreschoolDaycareDecisions(tx: Database.Transaction) {
+        insertDraftApplication(tx.handle, appliedType = PlacementType.PRESCHOOL_DAYCARE)
+        service.sendApplication(tx.handle, serviceWorker, applicationId)
+        service.moveToWaitingPlacement(tx, serviceWorker, applicationId)
         service.createPlacementPlan(
-            h,
+            tx,
             serviceWorker,
             applicationId,
             DaycarePlacementPlan(
@@ -1688,7 +1886,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 preschoolDaycarePeriod = connectedPeriod
             )
         )
-        service.sendDecisionsWithoutProposal(h, serviceWorker, applicationId)
+        service.sendDecisionsWithoutProposal(tx, serviceWorker, applicationId)
     }
 
     private fun insertDraftApplication(

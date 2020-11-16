@@ -15,10 +15,8 @@ import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.InitializeFamilyFromApplication
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.db.handle
-import fi.espoo.evaka.shared.db.transaction
+import fi.espoo.evaka.shared.db.Database
 import mu.KotlinLogging
-import org.jdbi.v3.core.Jdbi
 import org.jdbi.v3.core.statement.UnableToExecuteStatementException
 import org.springframework.stereotype.Service
 import java.time.LocalDate
@@ -27,7 +25,6 @@ import java.util.UUID
 @Service
 class FamilyInitializerService(
     private val personService: PersonService,
-    private val jdbi: Jdbi,
     asyncJobRunner: AsyncJobRunner
 ) {
     private val logger = KotlinLogging.logger {}
@@ -36,18 +33,21 @@ class FamilyInitializerService(
         asyncJobRunner.initializeFamilyFromApplication = ::handleInitializeFamilyFromApplication
     }
 
-    fun handleInitializeFamilyFromApplication(msg: InitializeFamilyFromApplication) {
+    fun handleInitializeFamilyFromApplication(db: Database, msg: InitializeFamilyFromApplication) =
+        db.connect { handleInitializeFamilyFromApplication(it, msg) }
+
+    fun handleInitializeFamilyFromApplication(db: Database.Connection, msg: InitializeFamilyFromApplication) {
         val user = msg.user
-        val application = jdbi.handle { h -> fetchApplicationDetails(h, msg.applicationId) }
+        val application = db.read { fetchApplicationDetails(it.handle, msg.applicationId) }
         if (application != null) {
-            val members = parseFridgeFamilyMembersFromApplication(user, application)
-            tryInitFamilyFromApplication(members)
+            val members = db.transaction { parseFridgeFamilyMembersFromApplication(it, user, application) }
+            db.transaction { tryInitFamilyFromApplication(it, members) }
         } else {
             logger.warn("Could not initialize family, daycare application ${msg.applicationId} not found")
         }
     }
 
-    private fun tryInitFamilyFromApplication(members: FridgeFamilyMembers) {
+    private fun tryInitFamilyFromApplication(tx: Database.Transaction, members: FridgeFamilyMembers) {
         try {
             if (members.headOfFamilyId == null) {
                 logger.warn("Cannot create family because head of family could not be found")
@@ -59,17 +59,22 @@ class FamilyInitializerService(
             }
 
             try {
-                createParentship(
-                    childId = members.fridgeChildId,
-                    headOfChildId = members.headOfFamilyId
-                )
+                tx.subTransaction {
+                    createParentship(
+                        tx,
+                        childId = members.fridgeChildId,
+                        headOfChildId = members.headOfFamilyId
+                    )
+                }
             } catch (e: Throwable) {
                 logger.warn("Adding ${members.fridgeChildId} as the main fridge child to ${members.headOfFamilyId} failed.")
             }
 
             if (members.fridgePartnerId != null) {
                 try {
-                    createPartnership(members.headOfFamilyId, members.fridgePartnerId)
+                    tx.subTransaction {
+                        createPartnership(tx, members.headOfFamilyId, members.fridgePartnerId)
+                    }
                 } catch (e: Throwable) {
                     logger.warn("Adding fridge partner ${members.fridgePartnerId} to ${members.headOfFamilyId} failed. Continuing with the rest of the family...")
                 }
@@ -77,7 +82,9 @@ class FamilyInitializerService(
 
             members.fridgeSiblingIds.forEach { siblingId ->
                 try {
-                    createParentship(childId = siblingId, headOfChildId = members.headOfFamilyId)
+                    tx.subTransaction {
+                        createParentship(tx, childId = siblingId, headOfChildId = members.headOfFamilyId)
+                    }
                 } catch (e: Throwable) {
                     logger.warn("Adding $siblingId as a fridge child to ${members.headOfFamilyId} failed. Continuing with the rest of the family...")
                 }
@@ -95,9 +102,10 @@ class FamilyInitializerService(
     )
 
     private fun parseFridgeFamilyMembersFromApplication(
+        tx: Database.Transaction,
         user: AuthenticatedUser,
         application: ApplicationDetails
-    ): FridgeFamilyMembers = jdbi.transaction { h ->
+    ): FridgeFamilyMembers {
         val updateStale = false
 
         val headOfFamilyId = application.guardianId
@@ -105,16 +113,16 @@ class FamilyInitializerService(
         val otherGuardianId = application.otherGuardianId
         val fridgePartnerSSN = if (
             otherGuardianId != null &&
-            personService.personsLiveInTheSameAddress(h, user, headOfFamilyId, otherGuardianId)
+            personService.personsLiveInTheSameAddress(tx, user, headOfFamilyId, otherGuardianId)
         ) {
-            (h.getPersonById(otherGuardianId)?.identity as? SSN)?.ssn
+            (tx.handle.getPersonById(otherGuardianId)?.identity as? SSN)?.ssn
         } else {
             application.form.otherPartner?.socialSecurityNumber
         }
 
         val fridgePartnerId = fridgePartnerSSN
             ?.let { stringToSSN(it) }
-            ?.let { personService.getOrCreatePerson(h, user, it, updateStale) }
+            ?.let { personService.getOrCreatePerson(tx, user, it, updateStale) }
             ?.id
 
         val fridgeChildId = application.childId
@@ -122,9 +130,9 @@ class FamilyInitializerService(
         val fridgeSiblingIds = application.form.otherChildren
             .mapNotNull { it.socialSecurityNumber }
             .mapNotNull { stringToSSN(it) }
-            .mapNotNull { personService.getOrCreatePerson(h, user, it, updateStale)?.id }
+            .mapNotNull { personService.getOrCreatePerson(tx, user, it, updateStale)?.id }
 
-        FridgeFamilyMembers(headOfFamilyId, fridgePartnerId, fridgeChildId, fridgeSiblingIds)
+        return FridgeFamilyMembers(headOfFamilyId, fridgePartnerId, fridgeChildId, fridgeSiblingIds)
     }
 
     private fun stringToSSN(ssn: String): SSN? {
@@ -135,24 +143,23 @@ class FamilyInitializerService(
         }
     }
 
-    private fun createParentship(childId: UUID, headOfChildId: UUID) {
+    private fun createParentship(tx: Database.Transaction, childId: UUID, headOfChildId: UUID) {
         val startDate = LocalDate.now()
-        val alreadyExists = jdbi.handle { h ->
-            h.getParentships(
-                headOfChildId = headOfChildId,
-                childId = childId,
-                includeConflicts = true
-            )
-        }.any {
-            (it.startDate.isBefore(startDate) || it.startDate.isEqual(startDate)) &&
-                (it.endDate == null || it.endDate.isAfter(startDate))
-        }
+        val alreadyExists = tx.handle.getParentships(
+            headOfChildId = headOfChildId,
+            childId = childId,
+            includeConflicts = true
+        )
+            .any {
+                (it.startDate.isBefore(startDate) || it.startDate.isEqual(startDate)) &&
+                    (it.endDate == null || it.endDate.isAfter(startDate))
+            }
         if (alreadyExists) {
             logger.debug("Similar parentship already exists between $headOfChildId and $childId")
         } else {
             try {
-                jdbi.transaction {
-                    it.createParentship(
+                tx.subTransaction {
+                    tx.handle.createParentship(
                         childId = childId,
                         headOfChildId = headOfChildId,
                         startDate = startDate,
@@ -161,23 +168,21 @@ class FamilyInitializerService(
                     )
                 }
             } catch (e: UnableToExecuteStatementException) {
-                jdbi.transaction {
-                    it.createParentship(
-                        childId = childId,
-                        headOfChildId = headOfChildId,
-                        startDate = startDate,
-                        endDate = null,
-                        conflict = true
-                    )
-                }
+                tx.handle.createParentship(
+                    childId = childId,
+                    headOfChildId = headOfChildId,
+                    startDate = startDate,
+                    endDate = null,
+                    conflict = true
+                )
             }
         }
     }
 
-    private fun createPartnership(personId1: UUID, personId2: UUID) {
+    private fun createPartnership(tx: Database.Transaction, personId1: UUID, personId2: UUID) {
         val startDate = LocalDate.now()
         val alreadyExists =
-            jdbi.handle { h -> h.getPartnershipsForPerson(personId = personId1, includeConflicts = true) }
+            tx.handle.getPartnershipsForPerson(personId = personId1, includeConflicts = true)
                 .any { partnership ->
                     partnership.partners.any { partner -> partner.id == personId2 } &&
                         (partnership.startDate.isBefore(startDate) || partnership.startDate.isEqual(startDate)) &&
@@ -187,8 +192,8 @@ class FamilyInitializerService(
             logger.debug("Similar partnership already exists between $personId1 and $personId2")
         } else {
             try {
-                jdbi.transaction {
-                    it.createPartnership(
+                tx.subTransaction {
+                    tx.handle.createPartnership(
                         personId1 = personId1,
                         personId2 = personId2,
                         startDate = startDate,
@@ -197,15 +202,13 @@ class FamilyInitializerService(
                     )
                 }
             } catch (e: UnableToExecuteStatementException) {
-                jdbi.transaction {
-                    it.createPartnership(
-                        personId1 = personId1,
-                        personId2 = personId2,
-                        startDate = startDate,
-                        endDate = null,
-                        conflict = true
-                    )
-                }
+                tx.handle.createPartnership(
+                    personId1 = personId1,
+                    personId2 = personId2,
+                    startDate = startDate,
+                    endDate = null,
+                    conflict = true
+                )
             }
         }
     }

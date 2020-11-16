@@ -15,6 +15,7 @@ import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.NotifyFamilyUpdated
 import fi.espoo.evaka.shared.config.defaultObjectMapper
+import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.dev.DevChild
 import fi.espoo.evaka.shared.dev.DevEmployee
@@ -45,7 +46,7 @@ class MergeServiceIntegrationTest : PureJdbiTest() {
 
     @BeforeEach
     internal fun setUp() {
-        mergeService = MergeService(jdbi, asyncJobRunnerMock)
+        mergeService = MergeService(asyncJobRunnerMock)
         jdbi.handle(::resetDatabase)
         jdbi.handle(::insertGeneralTestFixtures)
     }
@@ -61,7 +62,9 @@ class MergeServiceIntegrationTest : PureJdbiTest() {
         val countBefore = jdbi.handle { it.createQuery("SELECT 1 FROM person WHERE id = :id").bind("id", id).map { _, _ -> 1 }.list().size }
         assertEquals(1, countBefore)
 
-        mergeService.deleteEmptyPerson(id)
+        db.transaction {
+            mergeService.deleteEmptyPerson(it, id)
+        }
 
         val countAfter = jdbi.handle { it.createQuery("SELECT 1 FROM person WHERE id = :id").bind("id", id).map { _, _ -> 1 }.list().size }
         assertEquals(0, countAfter)
@@ -81,7 +84,7 @@ class MergeServiceIntegrationTest : PureJdbiTest() {
             )
         }
 
-        assertThrows<UnableToExecuteStatementException> { mergeService.deleteEmptyPerson(id) }
+        assertThrows<UnableToExecuteStatementException> { db.transaction { mergeService.deleteEmptyPerson(it, id) } }
     }
 
     @Test
@@ -102,13 +105,15 @@ class MergeServiceIntegrationTest : PureJdbiTest() {
         val countBefore = jdbi.handle { it.createQuery("SELECT 1 FROM income WHERE person_id = :id").bind("id", adultIdDuplicate).map { _, _ -> 1 }.list().size }
         assertEquals(1, countBefore)
 
-        mergeService.mergePeople(adultId, adultIdDuplicate)
+        db.transaction {
+            mergeService.mergePeople(it, adultId, adultIdDuplicate)
+        }
 
         val countAfter = jdbi.handle { it.createQuery("SELECT 1 FROM income WHERE person_id = :id").bind("id", adultId).map { _, _ -> 1 }.list().size }
         assertEquals(1, countAfter)
 
         verify(asyncJobRunnerMock).plan(
-            any(), eq(listOf(NotifyFamilyUpdated(adultId, validFrom, validTo))), any(), any(), any()
+            any<Database.Transaction>(), eq(listOf(NotifyFamilyUpdated(adultId, validFrom, validTo))), any(), any(), any()
         )
     }
 
@@ -132,7 +137,9 @@ class MergeServiceIntegrationTest : PureJdbiTest() {
         val countBefore = jdbi.handle { it.createQuery("SELECT 1 FROM placement WHERE child_id = :id").bind("id", childIdDuplicate).map { _, _ -> 1 }.list().size }
         assertEquals(1, countBefore)
 
-        mergeService.mergePeople(childId, childIdDuplicate)
+        db.transaction {
+            mergeService.mergePeople(it, childId, childIdDuplicate)
+        }
 
         val countAfter = jdbi.handle { it.createQuery("SELECT 1 FROM placement WHERE child_id = :id").bind("id", childId).map { _, _ -> 1 }.list().size }
         assertEquals(1, countAfter)
@@ -157,10 +164,12 @@ class MergeServiceIntegrationTest : PureJdbiTest() {
         val placementEnd = LocalDate.of(2020, 12, 30)
         jdbi.handle { it.insertTestPlacement(DevPlacement(childId = childIdDuplicate, unitId = testDaycare.id, startDate = placementStart, endDate = placementEnd)) }
 
-        mergeService.mergePeople(childId, childIdDuplicate)
+        db.transaction {
+            mergeService.mergePeople(it, childId, childIdDuplicate)
+        }
 
         verify(asyncJobRunnerMock).plan(
-            any(),
+            any<Database.Transaction>(),
             eq(listOf(NotifyFamilyUpdated(adultId, placementStart, placementEnd))), any(), any(), any()
         )
     }

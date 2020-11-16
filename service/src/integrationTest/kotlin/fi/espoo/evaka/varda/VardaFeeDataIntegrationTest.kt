@@ -17,7 +17,9 @@ import fi.espoo.evaka.invoicing.domain.PersonData
 import fi.espoo.evaka.invoicing.domain.PlacementType
 import fi.espoo.evaka.pis.service.PersonService
 import fi.espoo.evaka.resetDatabase
+import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.handle
+import fi.espoo.evaka.shared.db.transaction
 import fi.espoo.evaka.shared.dev.DevChild
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.insertTestChild
@@ -802,7 +804,9 @@ class VardaFeeDataIntegrationTest : FullApplicationTest() {
     }
 
     private fun updateFeeData(h: Handle) {
-        updateFeeData(h, vardaClient, objectMapper, personService)
+        h.transaction {
+            updateFeeData(Database.Transaction.wrap(it), vardaClient, objectMapper, personService)
+        }
     }
 
     private fun createDecisionsAndPlacements(
