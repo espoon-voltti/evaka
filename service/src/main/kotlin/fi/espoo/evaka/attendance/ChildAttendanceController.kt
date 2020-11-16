@@ -93,7 +93,9 @@ class ChildAttendanceController(
         return jdbi.transaction { h ->
             assertChildPlacement(h, childId, unitId, body.arrived)
 
-            // todo: handle absence clearing? (EVAKA-4004)
+            val attendance = h.getChildCurrentDayAttendance(childId, unitId)
+            if (attendance != null)
+                throw Conflict("Cannot arrive, already arrived today")
 
             try {
                 h.insertAttendance(
@@ -102,6 +104,7 @@ class ChildAttendanceController(
                     arrived = body.arrived,
                     departed = null
                 )
+                // todo: handle absence clearing? (EVAKA-4004)
             } catch (e: Exception) {
                 throw mapPSQLException(e)
             }
@@ -184,19 +187,48 @@ class ChildAttendanceController(
         return jdbi.transaction { h ->
             assertChildPlacement(h, childId, unitId, body.departed)
 
-            // todo: handle absence clearing? (EVAKA-4004)
+            val attendance = h.getChildCurrentDayAttendance(childId, unitId)
+            if (attendance == null) {
+                throw Conflict("Cannot depart, has not yet arrived")
+            } else if (attendance.departed != null) {
+                throw Conflict("Cannot depart, already departed")
+            }
 
             try {
-                val success = h.updateCurrentAttendanceEnd(
-                    childId = childId,
-                    unitId = unitId,
+                h.updateAttendanceEnd(
+                    attendanceId = attendance.id,
                     departed = body.departed
                 )
-                if (!success) {
-                    throw Conflict("No ongoing absence")
-                }
+                // todo: handle absence clearing? (EVAKA-4004)
             } catch (e: Exception) {
                 throw mapPSQLException(e)
+            }
+
+            getAttendancesResponse(h, unitId)
+        }.let { ResponseEntity.ok(it) }
+    }
+
+    @PostMapping("/units/{unitId}/children/{childId}/return-to-present")
+    fun returnToPresent(
+        user: AuthenticatedUser,
+        @PathVariable unitId: UUID,
+        @PathVariable childId: UUID
+    ): ResponseEntity<AttendanceResponse> {
+        acl.getRolesForUnit(user, unitId).requireOneOfRoles(*authorizedRoles)
+
+        return jdbi.transaction { h ->
+            assertChildPlacement(h, childId, unitId, Instant.now())
+
+            val attendance = h.getChildCurrentDayAttendance(childId, unitId)
+
+            if (attendance?.departed == null) {
+                throw Conflict("Can not return to present since not yet departed")
+            } else {
+                try {
+                    h.updateAttendance(attendance.id, attendance.arrived, null)
+                } catch (e: Exception) {
+                    throw mapPSQLException(e)
+                }
             }
 
             getAttendancesResponse(h, unitId)

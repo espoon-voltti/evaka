@@ -172,20 +172,19 @@ fun Handle.updateAttendance(attendanceId: UUID, arrived: Instant, departed: Inst
         .execute()
 }
 
-fun Handle.updateCurrentAttendanceEnd(childId: UUID, unitId: UUID, departed: Instant): Boolean {
+fun Handle.updateAttendanceEnd(attendanceId: UUID, departed: Instant?) {
     // language=sql
     val sql =
         """
         UPDATE child_attendance
         SET departed = :departed
-        WHERE child_id = :childId AND unit_id = :unitId AND departed IS NULL
+        WHERE id = :id
         """.trimIndent()
 
-    return createUpdate(sql)
-        .bind("childId", childId)
-        .bind("unitId", unitId)
+    createUpdate(sql)
+        .bind("id", attendanceId)
         .bind("departed", departed)
-        .execute() > 0
+        .execute()
 }
 
 fun Handle.deleteAttendance(id: UUID) {
