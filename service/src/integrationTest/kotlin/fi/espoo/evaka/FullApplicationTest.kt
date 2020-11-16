@@ -35,12 +35,14 @@ abstract class FullApplicationTest {
     protected var httpPort: Int = 0
 
     // HTTP client for testing the application
-    protected val http: FuelManager = FuelManager()
 
     protected val objectMapper: ObjectMapper = defaultObjectMapper()
 
     protected lateinit var jdbi: Jdbi
     protected lateinit var db: Database
+
+    @Autowired
+    protected lateinit var http: FuelManager
 
     protected lateinit var vardaTokenProvider: VardaTokenProvider
     protected lateinit var vardaClient: VardaClient
@@ -61,7 +63,7 @@ abstract class FullApplicationTest {
         feeDecisionMinDate = LocalDate.parse(env.getRequiredProperty("fee_decision_min_date"))
         val vardaBaseUrl = "http://localhost:$httpPort/mock-integration/varda/api"
         vardaTokenProvider = VardaTempTokenProvider(env, objectMapper, vardaBaseUrl)
-        vardaClient = VardaClient(vardaTokenProvider, env, objectMapper, vardaBaseUrl)
+        vardaClient = VardaClient(vardaTokenProvider, http, env, objectMapper, vardaBaseUrl)
         vardaOrganizerName = env.getProperty("fi.espoo.varda.organizer", "Espoo")
     }
 }

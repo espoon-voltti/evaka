@@ -5,6 +5,7 @@
 package fi.espoo.evaka.varda
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.github.kittinunf.fuel.core.FuelManager
 import fi.espoo.evaka.pis.service.PersonService
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.handle
@@ -23,6 +24,7 @@ private val logger = KotlinLogging.logger { }
 class VardaUpdateService(
     private val jdbi: Jdbi,
     private val tokenProvider: VardaTokenProvider,
+    private val fuel: FuelManager,
     private val env: Environment,
     private val mapper: ObjectMapper,
     private val personService: PersonService
@@ -31,7 +33,7 @@ class VardaUpdateService(
     private val organizer = env.getProperty("fi.espoo.varda.organizer", String::class.java, "Espoo")
 
     fun updateAll() {
-        val client = VardaClient(tokenProvider, env, mapper)
+        val client = VardaClient(tokenProvider, fuel, env, mapper)
         if (forceSync) {
             updateAll(jdbi, client, mapper, personService, organizer)
         } else {
