@@ -30,7 +30,6 @@ import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import java.time.Instant
 import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.util.UUID
@@ -84,6 +83,7 @@ class GetAttendancesIntegrationTest : FullApplicationTest() {
             insertTestChildAttendance(
                 h = it,
                 childId = testChild_1.id,
+                unitId = testDaycare.id,
                 arrived = OffsetDateTime.now().minusDays(1).minusHours(8).toInstant(),
                 departed = OffsetDateTime.now().minusDays(1).toInstant()
             )
@@ -101,6 +101,7 @@ class GetAttendancesIntegrationTest : FullApplicationTest() {
             insertTestChildAttendance(
                 h = it,
                 childId = testChild_1.id,
+                unitId = testDaycare.id,
                 arrived = arrived,
                 departed = null
             )
@@ -110,6 +111,7 @@ class GetAttendancesIntegrationTest : FullApplicationTest() {
         assertNotNull(child.attendance)
         assertEquals(arrived, child.attendance!!.arrived)
         assertNull(child.attendance!!.departed)
+        assertEquals(testDaycare.id, child.attendance!!.unitId)
         assertEquals(0, child.absences.size)
     }
 
@@ -121,6 +123,7 @@ class GetAttendancesIntegrationTest : FullApplicationTest() {
             insertTestChildAttendance(
                 h = it,
                 childId = testChild_1.id,
+                unitId = testDaycare.id,
                 arrived = arrived,
                 departed = departed
             )
@@ -130,6 +133,7 @@ class GetAttendancesIntegrationTest : FullApplicationTest() {
         assertNotNull(child.attendance)
         assertEquals(arrived, child.attendance!!.arrived)
         assertEquals(departed, child.attendance!!.departed)
+        assertEquals(testDaycare.id, child.attendance!!.unitId)
         assertEquals(0, child.absences.size)
     }
 

@@ -30,7 +30,6 @@ import org.postgresql.util.PGobject
 import java.sql.Timestamp
 import java.time.Instant
 import java.time.LocalDate
-import java.time.OffsetDateTime
 import java.util.UUID
 
 /**
@@ -675,20 +674,22 @@ fun insertTestChildAttendance(
     h: Handle,
     id: UUID = UUID.randomUUID(),
     childId: UUID,
+    unitId: UUID,
     arrived: Instant,
     departed: Instant?
 ) {
     //language=sql
     val sql =
         """
-        INSERT INTO child_attendance (id, child_id, arrived, departed)
-        VALUES (:id, :childId, :arrived, :departed)
+        INSERT INTO child_attendance (id, child_id, unit_id, arrived, departed)
+        VALUES (:id, :childId, :unitId, :arrived, :departed)
         """.trimIndent()
     h.createUpdate(sql)
         .bindMap(
             mapOf(
                 "id" to id,
                 "childId" to childId,
+                "unitId" to unitId,
                 "arrived" to arrived,
                 "departed" to departed
             )

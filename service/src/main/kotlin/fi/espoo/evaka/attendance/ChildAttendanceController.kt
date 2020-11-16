@@ -13,6 +13,7 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.transaction
 import fi.espoo.evaka.shared.domain.BadRequest
+import fi.espoo.evaka.shared.domain.Conflict
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.Jdbi
 import org.jdbi.v3.core.kotlin.mapTo
@@ -22,10 +23,9 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import java.time.Instant
-import java.time.LocalDate
-import java.time.ZoneId
 import java.util.UUID
 
 @RestController
@@ -48,8 +48,32 @@ class ChildAttendanceController(
     ): ResponseEntity<AttendanceResponse> {
         acl.getRolesForUnit(user, unitId).requireOneOfRoles(*authorizedRoles)
 
-        val response = jdbi.transaction { h -> getAttendancesResponse(h, unitId) }
-        return ResponseEntity.ok(response)
+        return jdbi.transaction { h ->
+            getAttendancesResponse(h, unitId)
+        }.let { ResponseEntity.ok(it) }
+    }
+
+    data class ArrivalInfoResponse(
+        val absentFromPreschool: Boolean
+    )
+    @GetMapping("/units/{unitId}/children/{childId}/arrival")
+    fun getChildArrival(
+        user: AuthenticatedUser,
+        @PathVariable unitId: UUID,
+        @PathVariable childId: UUID,
+        @RequestParam time: Instant
+    ): ResponseEntity<ArrivalInfoResponse> {
+        acl.getRolesForUnit(user, unitId).requireOneOfRoles(*authorizedRoles)
+
+        return jdbi.transaction { h ->
+            assertChildPlacement(h, childId, unitId, Instant.now())
+            if (h.getCurrentAttendance(childId, unitId) != null)
+                throw Conflict("Cannot arrive, already present")
+
+            ArrivalInfoResponse(
+                absentFromPreschool = false // todo
+            )
+        }.let { ResponseEntity.ok(it) }
     }
 
     data class ArrivalRequest(
@@ -64,14 +88,15 @@ class ChildAttendanceController(
     ): ResponseEntity<AttendanceResponse> {
         acl.getRolesForUnit(user, unitId).requireOneOfRoles(*authorizedRoles)
 
-        val response = jdbi.transaction { h ->
-            assertChildPlacement(h, childId, unitId, LocalDate.ofInstant(body.arrived, ZoneId.of("Europe/Helsinki")))
+        return jdbi.transaction { h ->
+            assertChildPlacement(h, childId, unitId, body.arrived)
 
             // todo: handle absence clearing
 
             try {
                 h.insertAttendance(
                     childId = childId,
+                    unitId = unitId,
                     arrived = body.arrived,
                     departed = null
                 )
@@ -80,37 +105,94 @@ class ChildAttendanceController(
             }
 
             getAttendancesResponse(h, unitId)
-        }
-        return ResponseEntity.ok(response)
+        }.let { ResponseEntity.ok(it) }
+    }
+
+    data class DepartureInfoResponse(
+        val absentFrom: Set<CareType>
+    )
+    @GetMapping("/units/{unitId}/children/{childId}/departure")
+    fun getChildDeparture(
+        user: AuthenticatedUser,
+        @PathVariable unitId: UUID,
+        @PathVariable childId: UUID,
+        @RequestParam time: Instant
+    ): ResponseEntity<DepartureInfoResponse> {
+        acl.getRolesForUnit(user, unitId).requireOneOfRoles(*authorizedRoles)
+
+        return jdbi.transaction { h ->
+            assertChildPlacement(h, childId, unitId, Instant.now())
+            h.getCurrentAttendance(childId, unitId)
+                ?: throw Conflict("Cannot depart, no current attendance")
+
+            DepartureInfoResponse(
+                absentFrom = emptySet() // todo
+            )
+        }.let { ResponseEntity.ok(it) }
+    }
+
+    data class DepartureRequest(
+        val departed: Instant
+    )
+    @PostMapping("/units/{unitId}/children/{childId}/departure")
+    fun postDeparture(
+        user: AuthenticatedUser,
+        @PathVariable unitId: UUID,
+        @PathVariable childId: UUID,
+        @RequestBody body: DepartureRequest
+    ): ResponseEntity<AttendanceResponse> {
+        acl.getRolesForUnit(user, unitId).requireOneOfRoles(*authorizedRoles)
+
+        return jdbi.transaction { h ->
+            assertChildPlacement(h, childId, unitId, body.departed)
+
+            // todo: handle absence clearing
+
+            try {
+                val success = h.updateCurrentAttendanceEnd(
+                    childId = childId,
+                    unitId = unitId,
+                    departed = body.departed
+                )
+                if (!success) {
+                    throw Conflict("No ongoing absence")
+                }
+            } catch (e: Exception) {
+                throw mapPSQLException(e)
+            }
+
+            getAttendancesResponse(h, unitId)
+        }.let { ResponseEntity.ok(it) }
     }
 }
 
-fun assertChildPlacement(h: Handle, childId: UUID, unitId: UUID, date: LocalDate){
+fun assertChildPlacement(h: Handle, childId: UUID, unitId: UUID, time: Instant) {
     // language=sql
-    val sql = """
+    val sql =
+        """
         SELECT id FROM placement
-        WHERE child_id = :childId AND unit_id = :unitId AND daterange(start_date, end_date, '[]') @> :date
+        WHERE child_id = :childId AND unit_id = :unitId AND daterange(start_date, end_date, '[]') @> :time::date
         
         UNION ALL
         
         SELECT id FROM backup_care
-        WHERE child_id = :childId AND unit_id = :unitId AND daterange(start_date, end_date, '[]') @> :date
-    """.trimIndent()
+        WHERE child_id = :childId AND unit_id = :unitId AND daterange(start_date, end_date, '[]') @> :time::date
+        """.trimIndent()
 
     val placementMissing = h.createQuery(sql)
         .bind("childId", childId)
         .bind("unitId", unitId)
-        .bind("date", date)
+        .bind("time", time)
         .mapTo<UUID>()
         .list()
         .isEmpty()
 
-    if(placementMissing){
+    if (placementMissing) {
         throw BadRequest("Child $childId has no placement in unit $unitId on the given day")
     }
 }
 
-fun getAttendancesResponse(h: Handle, unitId: UUID): AttendanceResponse{
+fun getAttendancesResponse(h: Handle, unitId: UUID): AttendanceResponse {
     val unitInfo = h.fetchUnitInfo(unitId)
     val childrenBasics = h.fetchChildrenBasics(unitId)
     val childrenAttendances = h.fetchChildrenAttendances(unitId)

@@ -7,44 +7,76 @@ package fi.espoo.evaka.attendance
 import fi.espoo.evaka.shared.domain.NotFound
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.mapTo
-import java.time.Clock
 import java.time.Instant
 import java.time.LocalDate
-import java.time.LocalDateTime
-import java.time.OffsetDateTime
 import java.time.ZoneId
 import java.util.UUID
 
-fun Handle.insertAttendance(childId: UUID, arrived: Instant, departed: Instant? = null): ChildAttendance {
+fun Handle.insertAttendance(childId: UUID, unitId: UUID, arrived: Instant, departed: Instant? = null): ChildAttendance {
     // language=sql
     val sql =
         """
-        INSERT INTO child_attendance (child_id, arrived, departed)
-        VALUES (:childId, :arrived, :departed)
+        INSERT INTO child_attendance (child_id, unit_id, arrived, departed)
+        VALUES (:childId, :unitId, :arrived, :departed)
         RETURNING *
         """.trimIndent()
 
     return createQuery(sql)
         .bind("childId", childId)
+        .bind("unitId", unitId)
         .bind("arrived", arrived)
         .bind("departed", departed)
         .mapTo<ChildAttendance>()
         .first()
 }
 
-fun Handle.updateCurrentAttendanceEnd(childId: UUID, departed: Instant) {
+fun Handle.getCurrentAttendance(childId: UUID, unitId: UUID): ChildAttendance? {
+    // language=sql
+    val sql =
+        """
+        SELECT id, child_id, unit_id, arrived, departed
+        FROM child_attendance
+        WHERE child_id = :childId AND unit_id = :unitId AND departed IS NULL
+        """.trimIndent()
+
+    return createQuery(sql)
+        .bind("childId", childId)
+        .bind("unitId", unitId)
+        .mapTo<ChildAttendance>()
+        .list()
+        .firstOrNull()
+}
+
+fun Handle.updateAttendance(attendanceId: UUID, arrived: Instant, departed: Instant?) {
+    // language=sql
+    val sql =
+        """
+        UPDATE child_attendance
+        SET arrived = :arrived, departed = :departed
+        WHERE id = :id
+        """.trimIndent()
+
+    createUpdate(sql)
+        .bind("id", attendanceId)
+        .bind("arrived", arrived)
+        .bind("departed", departed)
+        .execute()
+}
+
+fun Handle.updateCurrentAttendanceEnd(childId: UUID, unitId: UUID, departed: Instant): Boolean {
     // language=sql
     val sql =
         """
         UPDATE child_attendance
         SET departed = :departed
-        WHERE child_id = :childId AND departed IS NULL
+        WHERE child_id = :childId AND unit_id = :unitId AND departed IS NULL
         """.trimIndent()
 
-    createUpdate(sql)
+    return createUpdate(sql)
         .bind("childId", childId)
+        .bind("unitId", unitId)
         .bind("departed", departed)
-        .execute()
+        .execute() > 0
 }
 
 fun Handle.fetchUnitInfo(unitId: UUID): UnitInfo {
@@ -118,6 +150,7 @@ fun Handle.fetchChildrenAttendances(unitId: UUID): List<ChildAttendance> {
         SELECT 
             ca.id,
             ca.child_id,
+            ca.unit_id,
             ca.arrived,
             ca.departed
         FROM child_attendance ca

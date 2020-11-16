@@ -52,6 +52,7 @@ enum class AttendanceStatus {
 data class ChildAttendance(
     val id: UUID,
     val childId: UUID,
+    val unitId: UUID,
     val arrived: Instant,
     val departed: Instant?
 )
