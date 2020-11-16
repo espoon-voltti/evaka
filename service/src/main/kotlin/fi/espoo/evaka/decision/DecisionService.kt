@@ -310,7 +310,7 @@ class DecisionService(
     val messageContent = mapOf(
         "fi" to """Olette hakenut lapsellenne Espoon kaupungin varhaiskasvatus-, esiopetus- ja/tai kerhopaikkaa. Koska olette ottanut Suomi.fi viestit -palvelun käyttöönne, on päätös luettavissa alla olevista liitteistä.
 
-Päätöksen voi lukea ja siihen voi vastata Espoon kaupungin varhaiskasvatuksen sähköisessä palvelussa osoitteessa espoonvarhaiskasvatus.fi . Suomi.fi -palvelussa ei voi antaa vastausta sähköisesti, mutta päätöksen yhteydestä voi tulostaa paperisen vastauslomakkeen.
+Päätös on hakemuksen tehneen huoltajan hyväksyttävissä/hylättävissä Espoon kaupungin varhaiskasvatuksen sähköisessä palvelussa osoitteessa espoonvarhaiskasvatus.fi . Suomi.fi -palvelussa ei voi antaa vastausta sähköisesti, mutta päätöksen yhteydestä voi tulostaa paperisen vastauslomakkeen.
 
 Huomioittehan, että vastaus päätökseen tulee antaa kahden viikon kuluessa.
 
@@ -320,11 +320,13 @@ In English:
 
 You have applied for a place in the City of Espoo’s early childhood education, pre-primary education and/or a club for your child. As you are a user of Suomi.fi Messages, you can find the decision in the attachments below.
 
-You can read and respond to the decision through the online service of the City of Espoo Early Childhood Education at espoonvarhaiskasvatus.fi. You cannot respond to the decision online through the Suomi.fi service, but you can print out a response form that is attached to the decision.
+The guardian who submitted the application can accept or reject the decision through the online service of the City of Espoo Early Childhood Education at espoonvarhaiskasvatus.fi. You cannot respond to the decision online through the Suomi.fi service, but you can print out a response form that is attached to the decision.
 
 Please note that you have to respond to the decision within two weeks.""",
-        "sv" to """Du har ansökt om plats i Esbo stads småbarnspedagogiska verksamhet, förskoleundervisning och/eller klubbverksamhet. Eftersom du har tagit i bruk Suomi.fi-meddelandetjänsten kan du läsa beslutet från bilagorna nedan. Du kan läsa beslutet och svara på det i Esbo stads elektroniska tjänst på adressen espoonvarhaiskasvatus.fi.
+        "sv" to """Du har ansökt om plats i Esbo stads småbarnspedagogiska verksamhet, förskoleundervisning och/eller klubbverksamhet. Eftersom du har tagit i bruk Suomi.fi-meddelandetjänsten kan du läsa beslutet från bilagorna nedan.
 
-I tjänsten Suomi.fi kan du inte svara elektroniskt, men du kan skriva ut en svarsblankett. Vänligen observera att du ska ge ditt svar till beslutet inom två veckor."""
+Vårdnadshavaren, som har gjort ansökan om plats inom småbarnspedagogik, kan godkänna eller avstå från platsen i Esbo stads elektroniska tjänst på adressen espoonvarhaiskasvatus.fi. I tjänsten Suomi.fi kan du inte svara elektroniskt, men du kan skriva ut en svarsblankett.
+
+Vänligen observera att du ska ge ditt svar till beslutet inom två veckor."""
     )
 }
