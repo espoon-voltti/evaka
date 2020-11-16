@@ -17,10 +17,10 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.config.Roles.FINANCE_ADMIN
 import fi.espoo.evaka.shared.config.Roles.SERVICE_WORKER
 import fi.espoo.evaka.shared.config.Roles.UNIT_SUPERVISOR
+import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.db.transaction
 import fi.espoo.evaka.shared.domain.BadRequest
-import org.jdbi.v3.core.Jdbi
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -37,9 +37,10 @@ import java.util.UUID
 
 @RestController
 @RequestMapping("/partnerships")
-class PartnershipsController(private val jdbi: Jdbi, private val asyncJobRunner: AsyncJobRunner, private val partnershipService: PartnershipService) {
+class PartnershipsController(private val asyncJobRunner: AsyncJobRunner, private val partnershipService: PartnershipService) {
     @PostMapping
     fun createPartnership(
+        db: Database,
         user: AuthenticatedUser,
         @RequestBody body: PartnershipRequest
     ): ResponseEntity<Partnership> {
@@ -49,10 +50,10 @@ class PartnershipsController(private val jdbi: Jdbi, private val asyncJobRunner:
         with(body) {
             if (personIds.size != 2) throw BadRequest("Must have exactly two partners")
             val (personId1, personId2) = personIds.toList()
-            return jdbi
-                .transaction { h ->
-                    val partnership = partnershipService.createPartnership(h, personId1, personId2, startDate, endDate)
-                    asyncJobRunner.plan(h, listOf(NotifyFamilyUpdated(personId2, startDate, endDate)))
+            return db
+                .transaction { tx ->
+                    val partnership = partnershipService.createPartnership(tx.handle, personId1, personId2, startDate, endDate)
+                    asyncJobRunner.plan(tx, listOf(NotifyFamilyUpdated(personId2, startDate, endDate)))
                     partnership
                 }
                 .also { asyncJobRunner.scheduleImmediateRun() }
@@ -62,31 +63,34 @@ class PartnershipsController(private val jdbi: Jdbi, private val asyncJobRunner:
 
     @GetMapping
     fun getPartnerships(
+        db: Database,
         user: AuthenticatedUser,
         @RequestParam(name = "personId", required = true) personId: VolttiIdentifier
     ): ResponseEntity<List<Partnership>> {
         Audit.PartnerShipsRead.log(targetId = personId)
         user.requireOneOfRoles(SERVICE_WORKER, UNIT_SUPERVISOR, FINANCE_ADMIN)
 
-        return jdbi.handle { it.getPartnershipsForPerson(personId, includeConflicts = true) }
+        return db.read { it.handle.getPartnershipsForPerson(personId, includeConflicts = true) }
             .let { ResponseEntity.ok().body(it) }
     }
 
     @GetMapping("/{id}")
     fun getPartnership(
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable(value = "id") partnershipId: UUID
     ): ResponseEntity<Partnership> {
         Audit.PartnerShipsRead.log(targetId = partnershipId)
         user.requireOneOfRoles(SERVICE_WORKER, UNIT_SUPERVISOR, FINANCE_ADMIN)
 
-        return jdbi.handle { it.getPartnership(partnershipId) }
+        return db.read { it.handle.getPartnership(partnershipId) }
             ?.let { ResponseEntity.ok().body(it) }
             ?: ResponseEntity.notFound().build()
     }
 
     @PutMapping("/{id}")
     fun updatePartnership(
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable(value = "id") partnershipId: UUID,
         @RequestBody body: PartnershipUpdateRequest
@@ -94,11 +98,11 @@ class PartnershipsController(private val jdbi: Jdbi, private val asyncJobRunner:
         Audit.PartnerShipsUpdate.log(targetId = partnershipId)
         user.requireOneOfRoles(SERVICE_WORKER, UNIT_SUPERVISOR, FINANCE_ADMIN)
 
-        return jdbi
-            .transaction { h ->
-                val partnership = partnershipService.updatePartnershipDuration(h, partnershipId, body.startDate, body.endDate)
+        return db
+            .transaction { tx ->
+                val partnership = partnershipService.updatePartnershipDuration(tx.handle, partnershipId, body.startDate, body.endDate)
                 asyncJobRunner.plan(
-                    h,
+                    tx,
                     listOf(NotifyFamilyUpdated(partnership.partners.last().id, partnership.startDate, partnership.endDate))
                 )
                 partnership
@@ -109,15 +113,16 @@ class PartnershipsController(private val jdbi: Jdbi, private val asyncJobRunner:
 
     @PutMapping("/{id}/retry")
     fun retryPartnership(
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable(value = "id") partnershipId: UUID
     ): ResponseEntity<Unit> {
         Audit.PartnerShipsRetry.log(targetId = partnershipId)
         user.requireOneOfRoles(SERVICE_WORKER, UNIT_SUPERVISOR, FINANCE_ADMIN)
 
-        jdbi.transaction { h ->
-            partnershipService.retryPartnership(h, partnershipId)?.let {
-                asyncJobRunner.plan(h, listOf(NotifyFamilyUpdated(it.partners.first().id, it.startDate, it.endDate)))
+        db.transaction { tx ->
+            partnershipService.retryPartnership(tx.handle, partnershipId)?.let {
+                asyncJobRunner.plan(tx, listOf(NotifyFamilyUpdated(it.partners.first().id, it.startDate, it.endDate)))
             }
         }
         asyncJobRunner.scheduleImmediateRun()
@@ -126,16 +131,17 @@ class PartnershipsController(private val jdbi: Jdbi, private val asyncJobRunner:
 
     @DeleteMapping("/{id}")
     fun deletePartnership(
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable(value = "id") partnershipId: UUID
     ): ResponseEntity<Unit> {
         Audit.PartnerShipsDelete.log(targetId = partnershipId)
         user.requireOneOfRoles(SERVICE_WORKER, UNIT_SUPERVISOR, FINANCE_ADMIN)
 
-        jdbi.transaction { h ->
-            partnershipService.deletePartnership(h, partnershipId)?.also { partnership ->
+        db.transaction { tx ->
+            partnershipService.deletePartnership(tx.handle, partnershipId)?.also { partnership ->
                 asyncJobRunner.plan(
-                    h,
+                    tx,
                     partnership.partners.map { NotifyFamilyUpdated(it.id, partnership.startDate, partnership.endDate) }
                 )
             }

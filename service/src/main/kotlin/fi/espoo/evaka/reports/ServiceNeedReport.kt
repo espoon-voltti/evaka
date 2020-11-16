@@ -12,9 +12,7 @@ import fi.espoo.evaka.shared.config.Roles.ADMIN
 import fi.espoo.evaka.shared.config.Roles.DIRECTOR
 import fi.espoo.evaka.shared.config.Roles.SERVICE_WORKER
 import fi.espoo.evaka.shared.config.Roles.UNIT_SUPERVISOR
-import fi.espoo.evaka.shared.db.handle
-import org.jdbi.v3.core.Handle
-import org.jdbi.v3.core.Jdbi
+import fi.espoo.evaka.shared.db.Database
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
@@ -24,25 +22,23 @@ import java.time.LocalDate
 import java.util.UUID
 
 @RestController
-class ServiceNeedReport(
-    private val acl: AccessControlList,
-    private val jdbi: Jdbi
-) {
+class ServiceNeedReport(private val acl: AccessControlList) {
     @GetMapping("/reports/service-need")
     fun getChildAgeLanguageReport(
+        db: Database,
         user: AuthenticatedUser,
         @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) date: LocalDate
     ): ResponseEntity<List<ServiceNeedReportRow>> {
         Audit.ServiceNeedReportRead.log()
         user.requireOneOfRoles(SERVICE_WORKER, ADMIN, DIRECTOR, UNIT_SUPERVISOR)
         val authorizedUnits = acl.getAuthorizedUnits(user)
-        return jdbi.handle { h ->
-            getServiceNeedRows(h, date, authorizedUnits.ids?.toList()).let(::ok)
-        }
+        return db.read {
+            it.getServiceNeedRows(date, authorizedUnits.ids?.toList())
+        }.let(::ok)
     }
 }
 
-fun getServiceNeedRows(h: Handle, date: LocalDate, units: List<UUID>? = null): List<ServiceNeedReportRow> {
+private fun Database.Read.getServiceNeedRows(date: LocalDate, units: List<UUID>? = null): List<ServiceNeedReportRow> {
     // language=sql
     val sql =
         """
@@ -73,7 +69,7 @@ fun getServiceNeedRows(h: Handle, date: LocalDate, units: List<UUID>? = null): L
         """.trimIndent()
 
     @Suppress("UNCHECKED_CAST")
-    return h.createQuery(sql)
+    return createQuery(sql)
         .bind("target_date", date)
         .bind("units", units?.toTypedArray())
         .map { rs, _ ->

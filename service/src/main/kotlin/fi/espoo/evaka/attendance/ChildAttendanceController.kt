@@ -9,9 +9,9 @@ import fi.espoo.evaka.pis.dao.mapPSQLException
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
+import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.db.transaction
-import org.jdbi.v3.core.Jdbi
 import org.jdbi.v3.core.JdbiException
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -28,13 +28,11 @@ import java.util.UUID
 
 @RestController
 @RequestMapping("/child-attendances")
-class ChildAttendanceController(
-    private val jdbi: Jdbi,
-    private val acl: AccessControlList
-) {
+class ChildAttendanceController(private val acl: AccessControlList) {
 
     @PostMapping("/arrive")
     fun childArrives(
+        db: Database,
         user: AuthenticatedUser,
         @RequestBody body: ArrivalRequest
     ): ResponseEntity<ChildAttendance> {
@@ -43,8 +41,8 @@ class ChildAttendanceController(
             .requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF)
 
         try {
-            return jdbi.transaction {
-                it.createAttendance(
+            return db.transaction {
+                it.handle.createAttendance(
                     childId = body.childId,
                     arrived = body.time ?: OffsetDateTime.now()
                 )
@@ -56,6 +54,7 @@ class ChildAttendanceController(
 
     @PostMapping("/depart")
     fun childDeparts(
+        db: Database,
         user: AuthenticatedUser,
         @RequestBody body: DepartureRequest
     ): ResponseEntity<Unit> {
@@ -64,8 +63,8 @@ class ChildAttendanceController(
             .requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF)
 
         try {
-            jdbi.transaction {
-                it.updateCurrentAttendanceEnd(
+            db.transaction {
+                it.handle.updateCurrentAttendanceEnd(
                     childId = body.childId,
                     departed = body.time ?: OffsetDateTime.now()
                 )
@@ -78,6 +77,7 @@ class ChildAttendanceController(
 
     @GetMapping("/current")
     fun getDaycareAttendances(
+        db: Database,
         user: AuthenticatedUser,
         @RequestParam daycareId: UUID
     ): ResponseEntity<List<ChildInGroup>> {
@@ -85,16 +85,17 @@ class ChildAttendanceController(
         acl.getRolesForUnit(user, daycareId)
             .requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF)
 
-        return jdbi.handle { it.getDaycareAttendances(daycareId) }
+        return db.read { it.handle.getDaycareAttendances(daycareId) }
             .let { ResponseEntity.ok(it) }
     }
 
     @DeleteMapping("/{attendanceId}")
     fun deleteAttendance(
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable(value = "attendanceId") attendanceId: UUID
     ): ResponseEntity<Unit> {
-        jdbi.transaction { it.deleteAttendance(attendanceId) }
+        db.transaction { it.handle.deleteAttendance(attendanceId) }
         return ResponseEntity.noContent().build()
     }
 }

@@ -55,8 +55,7 @@ class VTJBatchRefreshServiceIntegrationTest : FullApplicationTest() {
         }
         service = VTJBatchRefreshService(
             fridgeFamilyService = fridgeFamilyService,
-            asyncJobRunner = asyncJobRunner,
-            jdbi = jdbi
+            asyncJobRunner = asyncJobRunner
         )
     }
 

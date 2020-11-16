@@ -12,10 +12,10 @@ import fi.espoo.evaka.shared.auth.UserRole.STAFF
 import fi.espoo.evaka.shared.config.Roles.FINANCE_ADMIN
 import fi.espoo.evaka.shared.config.Roles.SERVICE_WORKER
 import fi.espoo.evaka.shared.config.Roles.UNIT_SUPERVISOR
+import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.db.transaction
 import fi.espoo.evaka.shared.domain.ClosedPeriod
-import org.jdbi.v3.core.Jdbi
 import org.jdbi.v3.core.JdbiException
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.http.ResponseEntity
@@ -30,26 +30,28 @@ import java.time.LocalDate
 import java.util.UUID
 
 @RestController
-class BackupCareController(private val jdbi: Jdbi, private val acl: AccessControlList) {
+class BackupCareController(private val acl: AccessControlList) {
     @GetMapping("/children/{childId}/backup-cares")
     fun getForChild(
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable("childId") childId: UUID
     ): ResponseEntity<ChildBackupCaresResponse> {
         acl.getRolesForChild(user, childId).requireOneOfRoles(SERVICE_WORKER, UNIT_SUPERVISOR, FINANCE_ADMIN, STAFF)
-        val backupCares = jdbi.handle { it.getBackupCaresForChild(childId) }
+        val backupCares = db.read { it.handle.getBackupCaresForChild(childId) }
         return ResponseEntity.ok(ChildBackupCaresResponse(backupCares))
     }
 
     @PostMapping("/children/{childId}/backup-cares")
     fun createForChild(
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable("childId") childId: UUID,
         @RequestBody body: NewBackupCare
     ): ResponseEntity<BackupCareCreateResponse> {
         user.requireOneOfRoles(SERVICE_WORKER, UNIT_SUPERVISOR)
         try {
-            val id = jdbi.transaction { it.createBackupCare(childId, body) }
+            val id = db.transaction { it.handle.createBackupCare(childId, body) }
             return ResponseEntity.ok(BackupCareCreateResponse(id))
         } catch (e: JdbiException) {
             throw mapPSQLException(e)
@@ -58,13 +60,14 @@ class BackupCareController(private val jdbi: Jdbi, private val acl: AccessContro
 
     @PostMapping("/backup-cares/{id}")
     fun update(
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable("id") id: UUID,
         @RequestBody body: BackupCareUpdateRequest
     ): ResponseEntity<Unit> {
         user.requireOneOfRoles(SERVICE_WORKER, UNIT_SUPERVISOR)
         try {
-            jdbi.transaction { it.updateBackupCare(id, body.period, body.groupId) }
+            db.transaction { it.handle.updateBackupCare(id, body.period, body.groupId) }
             return ResponseEntity.noContent().build()
         } catch (e: JdbiException) {
             throw mapPSQLException(e)
@@ -72,14 +75,15 @@ class BackupCareController(private val jdbi: Jdbi, private val acl: AccessContro
     }
 
     @DeleteMapping("/backup-cares/{id}")
-    fun delete(user: AuthenticatedUser, @PathVariable("id") id: UUID): ResponseEntity<Unit> {
+    fun delete(db: Database, user: AuthenticatedUser, @PathVariable("id") id: UUID): ResponseEntity<Unit> {
         user.requireOneOfRoles(SERVICE_WORKER, UNIT_SUPERVISOR)
-        jdbi.transaction { it.deleteBackupCare(id) }
+        db.transaction { it.handle.deleteBackupCare(id) }
         return ResponseEntity.noContent().build()
     }
 
     @GetMapping("/daycares/{daycareId}/backup-cares")
     fun getForDaycare(
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable("daycareId") daycareId: UUID,
         @RequestParam("startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) startDate: LocalDate,
@@ -87,7 +91,7 @@ class BackupCareController(private val jdbi: Jdbi, private val acl: AccessContro
     ): ResponseEntity<UnitBackupCaresResponse> {
         acl.getRolesForUnit(user, daycareId)
             .requireOneOfRoles(ADMIN, SERVICE_WORKER, FINANCE_ADMIN, UNIT_SUPERVISOR, STAFF)
-        val backupCares = jdbi.handle { it.getBackupCaresForDaycare(daycareId, ClosedPeriod(startDate, endDate)) }
+        val backupCares = db.read { it.handle.getBackupCaresForDaycare(daycareId, ClosedPeriod(startDate, endDate)) }
         return ResponseEntity.ok(UnitBackupCaresResponse(backupCares))
     }
 }

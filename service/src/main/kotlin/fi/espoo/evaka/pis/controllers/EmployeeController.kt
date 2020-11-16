@@ -14,10 +14,8 @@ import fi.espoo.evaka.pis.getEmployeeAuthenticatedUser
 import fi.espoo.evaka.pis.getEmployees
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.config.Roles
-import fi.espoo.evaka.shared.db.handle
-import fi.espoo.evaka.shared.db.transaction
+import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
-import org.jdbi.v3.core.Jdbi
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -30,17 +28,17 @@ import java.util.UUID
 
 @RestController
 @RequestMapping("/employee")
-class EmployeeController(private val jdbi: Jdbi) {
+class EmployeeController {
 
     @GetMapping()
-    fun getEmployees(user: AuthenticatedUser): ResponseEntity<List<Employee>> {
+    fun getEmployees(db: Database, user: AuthenticatedUser): ResponseEntity<List<Employee>> {
         Audit.EmployeesRead.log()
         user.requireOneOfRoles(Roles.ADMIN, Roles.SERVICE_WORKER, Roles.UNIT_SUPERVISOR)
-        return ResponseEntity.ok(jdbi.handle { it.getEmployees() }.sortedBy { it.email })
+        return ResponseEntity.ok(db.read { it.handle.getEmployees() }.sortedBy { it.email })
     }
 
     @GetMapping("/{id}")
-    fun getEmployee(user: AuthenticatedUser, @PathVariable(value = "id") id: UUID): ResponseEntity<Employee> {
+    fun getEmployee(db: Database, user: AuthenticatedUser, @PathVariable(value = "id") id: UUID): ResponseEntity<Employee> {
         Audit.EmployeeRead.log(targetId = id)
         if (user.id != id) {
             user.requireOneOfRoles(
@@ -52,36 +50,36 @@ class EmployeeController(private val jdbi: Jdbi) {
                 Roles.DIRECTOR
             )
         }
-        return jdbi.handle { it.getEmployee(id) }?.let { ResponseEntity.ok().body(it) }
+        return db.read { it.handle.getEmployee(id) }?.let { ResponseEntity.ok().body(it) }
             ?: ResponseEntity.notFound().build()
     }
 
     @PostMapping("")
-    fun createEmployee(user: AuthenticatedUser, @RequestBody employee: NewEmployee): ResponseEntity<Employee> {
+    fun createEmployee(db: Database, user: AuthenticatedUser, @RequestBody employee: NewEmployee): ResponseEntity<Employee> {
         Audit.EmployeeCreate.log(targetId = employee.aad)
         user.requireOneOfRoles(Roles.ADMIN)
-        return ResponseEntity.ok().body(jdbi.transaction { it.createEmployee(employee) })
+        return ResponseEntity.ok().body(db.transaction { it.handle.createEmployee(employee) })
     }
 
     @PostMapping("/identity")
-    fun getOrCreateEmployee(@RequestBody employee: NewEmployee): ResponseEntity<AuthenticatedUser> {
+    fun getOrCreateEmployee(db: Database, @RequestBody employee: NewEmployee): ResponseEntity<AuthenticatedUser> {
         Audit.EmployeeGetOrCreate.log(targetId = employee.aad)
         if (employee.aad == null) {
             throw BadRequest("Cannot create or fetch employee without aad")
         }
         return ResponseEntity.ok(
-            jdbi.handle {
-                it.getEmployeeAuthenticatedUser(employee.aad)
-                    ?: AuthenticatedUser(it.createEmployee(employee).id, employee.roles)
+            db.transaction {
+                it.handle.getEmployeeAuthenticatedUser(employee.aad)
+                    ?: AuthenticatedUser(it.handle.createEmployee(employee).id, employee.roles)
             }
         )
     }
 
     @DeleteMapping("/{id}")
-    fun deleteEmployee(user: AuthenticatedUser, @PathVariable(value = "id") id: UUID): ResponseEntity<Unit> {
+    fun deleteEmployee(db: Database, user: AuthenticatedUser, @PathVariable(value = "id") id: UUID): ResponseEntity<Unit> {
         Audit.EmployeeDelete.log(targetId = id)
         user.requireOneOfRoles(Roles.ADMIN)
-        jdbi.transaction { it.deleteEmployee(id) }
+        db.transaction { it.handle.deleteEmployee(id) }
         return ResponseEntity.ok().build()
     }
 }

@@ -10,16 +10,13 @@ import fi.espoo.evaka.shared.async.NotifyDecisionCreated
 import fi.espoo.evaka.shared.async.SendDecision
 import fi.espoo.evaka.shared.config.Roles
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.db.transaction
 import mu.KotlinLogging
-import org.jdbi.v3.core.Jdbi
 import org.springframework.stereotype.Component
 
 private val logger = KotlinLogging.logger {}
 
 @Component
 class DecisionMessageProcessor(
-    private val jdbi: Jdbi,
     private val asyncJobRunner: AsyncJobRunner,
     private val decisionService: DecisionService
 ) {
@@ -43,10 +40,10 @@ class DecisionMessageProcessor(
         }
     }
 
-    fun runSendJob(db: Database, msg: SendDecision) = jdbi.transaction { h ->
+    fun runSendJob(db: Database, msg: SendDecision) = db.transaction { tx ->
         val decisionId = msg.decisionId
 
-        decisionService.deliverDecisionToGuardians(h, decisionId)
+        decisionService.deliverDecisionToGuardians(tx.handle, decisionId)
         logger.info { "Successfully sent decision(s) pdf for decision (id: $decisionId)." }
     }
 }

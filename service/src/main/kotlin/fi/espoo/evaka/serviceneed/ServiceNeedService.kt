@@ -8,25 +8,19 @@ import fi.espoo.evaka.pis.dao.mapPSQLException
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.NotifyServiceNeedUpdated
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.db.handle
-import fi.espoo.evaka.shared.db.transaction
-import org.jdbi.v3.core.Handle
-import org.jdbi.v3.core.Jdbi
+import fi.espoo.evaka.shared.db.Database
 import org.jdbi.v3.core.JdbiException
 import org.springframework.stereotype.Service
 import java.util.UUID
 
 @Service
-class ServiceNeedService(
-    private val jdbi: Jdbi,
-    private val asyncJobRunner: AsyncJobRunner
-) {
-    fun createServiceNeed(user: AuthenticatedUser, childId: UUID, data: ServiceNeedRequest): ServiceNeed {
+class ServiceNeedService(private val asyncJobRunner: AsyncJobRunner) {
+    fun createServiceNeed(db: Database, user: AuthenticatedUser, childId: UUID, data: ServiceNeedRequest): ServiceNeed {
         try {
-            return jdbi.transaction { h ->
-                shortenOverlappingServiceNeed(h, user, childId, data.startDate, data.endDate)
-                insertServiceNeed(h, user, childId, data).also {
-                    notifyServiceNeedUpdated(h, it)
+            return db.transaction { tx ->
+                shortenOverlappingServiceNeed(tx.handle, user, childId, data.startDate, data.endDate)
+                insertServiceNeed(tx.handle, user, childId, data).also {
+                    tx.notifyServiceNeedUpdated(it)
                 }
             }.also {
                 asyncJobRunner.scheduleImmediateRun()
@@ -36,15 +30,15 @@ class ServiceNeedService(
         }
     }
 
-    fun getServiceNeedsByChildId(childId: UUID): List<ServiceNeed> {
-        return jdbi.handle { h -> getServiceNeedsByChild(h.setReadOnly(true), childId) }
+    fun getServiceNeedsByChildId(db: Database, childId: UUID): List<ServiceNeed> {
+        return db.read { tx -> getServiceNeedsByChild(tx.handle, childId) }
     }
 
-    fun updateServiceNeed(user: AuthenticatedUser, id: UUID, data: ServiceNeedRequest): ServiceNeed {
+    fun updateServiceNeed(db: Database, user: AuthenticatedUser, id: UUID, data: ServiceNeedRequest): ServiceNeed {
         try {
-            return jdbi.transaction { h ->
-                updateServiceNeed(h, user, id, data).also {
-                    notifyServiceNeedUpdated(h, it)
+            return db.transaction { tx ->
+                updateServiceNeed(tx.handle, user, id, data).also {
+                    tx.notifyServiceNeedUpdated(it)
                 }
             }.also {
                 asyncJobRunner.scheduleImmediateRun()
@@ -54,14 +48,14 @@ class ServiceNeedService(
         }
     }
 
-    fun deleteServiceNeed(id: UUID) {
-        jdbi.transaction { h ->
-            deleteServiceNeed(h, id).also {
-                notifyServiceNeedUpdated(h, it)
+    fun deleteServiceNeed(db: Database, id: UUID) {
+        db.transaction { tx ->
+            deleteServiceNeed(tx.handle, id).also {
+                tx.notifyServiceNeedUpdated(it)
             }
         }
         asyncJobRunner.scheduleImmediateRun()
     }
 
-    fun notifyServiceNeedUpdated(h: Handle, sn: ServiceNeed) = asyncJobRunner.plan(h, listOf(NotifyServiceNeedUpdated(sn.childId, sn.startDate, sn.endDate)))
+    private fun Database.Transaction.notifyServiceNeedUpdated(sn: ServiceNeed) = asyncJobRunner.plan(this, listOf(NotifyServiceNeedUpdated(sn.childId, sn.startDate, sn.endDate)))
 }

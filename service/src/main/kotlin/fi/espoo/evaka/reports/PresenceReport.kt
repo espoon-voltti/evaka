@@ -8,10 +8,8 @@ import fi.espoo.evaka.Audit
 import fi.espoo.evaka.daycare.controllers.utils.ok
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.config.Roles
-import fi.espoo.evaka.shared.db.handle
+import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
-import org.jdbi.v3.core.Handle
-import org.jdbi.v3.core.Jdbi
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
@@ -23,9 +21,10 @@ import java.util.UUID
 val MAX_NUMBER_OF_DAYS = 14
 
 @RestController
-class PresenceReportController(private val jdbi: Jdbi) {
+class PresenceReportController {
     @GetMapping("/reports/presences")
     fun getPresenceReport(
+        db: Database,
         user: AuthenticatedUser,
         @RequestParam("from") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
         @RequestParam("to") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate
@@ -35,11 +34,11 @@ class PresenceReportController(private val jdbi: Jdbi) {
         if (to.isBefore(from)) throw BadRequest("Inverted time range")
         if (to.isAfter(from.plusDays(MAX_NUMBER_OF_DAYS.toLong()))) throw BadRequest("Period is too long. Use maximum of $MAX_NUMBER_OF_DAYS days")
 
-        return jdbi.handle { getPresenceRows(it, from, to) }.let(::ok)
+        return db.read { it.getPresenceRows(from, to) }.let(::ok)
     }
 }
 
-fun getPresenceRows(h: Handle, from: LocalDate, to: LocalDate): List<PresenceReportRow> {
+private fun Database.Read.getPresenceRows(from: LocalDate, to: LocalDate): List<PresenceReportRow> {
     // language=sql
     val sql =
         """
@@ -65,7 +64,7 @@ fun getPresenceRows(h: Handle, from: LocalDate, to: LocalDate): List<PresenceRep
           h.date IS NULL AND
           (daycare.provider_type = 'MUNICIPAL' OR daycare.id IS NULL);
         """.trimIndent()
-    return h.createQuery(sql)
+    return createQuery(sql)
         .bind("from", from)
         .bind("to", to)
         .map { rs, _ ->

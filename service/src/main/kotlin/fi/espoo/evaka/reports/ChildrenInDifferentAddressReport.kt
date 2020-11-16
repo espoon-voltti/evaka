@@ -12,35 +12,27 @@ import fi.espoo.evaka.shared.auth.UserRole.ADMIN
 import fi.espoo.evaka.shared.auth.UserRole.FINANCE_ADMIN
 import fi.espoo.evaka.shared.auth.UserRole.SERVICE_WORKER
 import fi.espoo.evaka.shared.auth.UserRole.UNIT_SUPERVISOR
+import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.bindNullable
 import fi.espoo.evaka.shared.db.getUUID
-import fi.espoo.evaka.shared.db.handle
-import org.jdbi.v3.core.Handle
-import org.jdbi.v3.core.Jdbi
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RestController
 import java.util.UUID
 
 @RestController
-class ChildrenInDifferentAddressReportController(
-    private val jdbi: Jdbi,
-    private val acl: AccessControlList
-) {
+class ChildrenInDifferentAddressReportController(private val acl: AccessControlList) {
     @GetMapping("/reports/children-in-different-address")
-    fun getChildrenInDifferentAddressReport(user: AuthenticatedUser): ResponseEntity<List<ChildrenInDifferentAddressReportRow>> {
+    fun getChildrenInDifferentAddressReport(db: Database, user: AuthenticatedUser): ResponseEntity<List<ChildrenInDifferentAddressReportRow>> {
         Audit.ChildrenInDifferentAddressReportRead.log()
         user.requireOneOfRoles(ADMIN, SERVICE_WORKER, FINANCE_ADMIN, UNIT_SUPERVISOR)
         val authorizedUnits = acl.getAuthorizedUnits(user)
-        val rows = jdbi.handle { getChildrenInDifferentAddressRows(it, authorizedUnits) }
+        val rows = db.read { it.getChildrenInDifferentAddressRows(authorizedUnits) }
         return ResponseEntity.ok(rows)
     }
 }
 
-fun getChildrenInDifferentAddressRows(
-    h: Handle,
-    authorizedUnits: AclAuthorization
-): List<ChildrenInDifferentAddressReportRow> {
+private fun Database.Read.getChildrenInDifferentAddressRows(authorizedUnits: AclAuthorization): List<ChildrenInDifferentAddressReportRow> {
     val units = authorizedUnits.ids
     // language=sql
     val sql =
@@ -82,7 +74,7 @@ fun getChildrenInDifferentAddressRows(
             lower(ch.street_address) <> 'poste restante'
         ORDER BY u.name, p.last_name, p.first_name, ch.last_name, ch.first_name;
         """.trimIndent()
-    return h.createQuery(sql)
+    return createQuery(sql)
         .bindNullable("units", units?.toTypedArray())
         .map { rs, _ ->
             ChildrenInDifferentAddressReportRow(

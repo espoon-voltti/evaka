@@ -27,7 +27,6 @@ import fi.espoo.evaka.shared.dev.insertTestEmployee
 import fi.espoo.evaka.shared.dev.insertTestPerson
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.ClosedPeriod
-import org.jdbi.v3.core.Jdbi
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -38,9 +37,6 @@ import java.time.LocalDate
 import java.util.UUID
 
 class AbsenceServiceIntegrationTest : AbstractIntegrationTest() {
-    @Autowired
-    lateinit var db: Jdbi
-
     @Autowired
     lateinit var absenceService: AbsenceService
 
@@ -57,7 +53,7 @@ class AbsenceServiceIntegrationTest : AbstractIntegrationTest() {
     @BeforeEach
     private fun beforeEach() {
         insertDaycareGroup()
-        db.handle {
+        jdbi.handle {
             it.insertTestPerson(DevPerson(id = testUserId))
             it.insertTestEmployee(DevEmployee(id = testUserId))
         }
@@ -254,7 +250,7 @@ class AbsenceServiceIntegrationTest : AbstractIntegrationTest() {
         val result = absenceService.getAbsencesByMonth(groupId, absenceDate.year, absenceDate.monthValue)
         val absence = result.children[0].absences.getValue(absenceDate)[0]
         var modifiedBy = ""
-        db.handle { h ->
+        jdbi.handle { h ->
             modifiedBy = getUserNameById(testUserId, h)
         }
 
@@ -411,7 +407,7 @@ class AbsenceServiceIntegrationTest : AbstractIntegrationTest() {
             it.insertTestPerson(DevPerson(id = childId, dateOfBirth = LocalDate.of(2013, 1, 1)))
             it.insertTestChild(DevChild(childId))
         }
-        db.handle { h ->
+        jdbi.handle { h ->
             insertTestPlacement(
                 h,
                 childId = childId,
@@ -529,6 +525,6 @@ class AbsenceServiceIntegrationTest : AbstractIntegrationTest() {
     }
 
     private fun cleanTestData() {
-        db.handle(::resetDatabase)
+        jdbi.handle(::resetDatabase)
     }
 }

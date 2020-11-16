@@ -11,35 +11,27 @@ import fi.espoo.evaka.shared.auth.UserRole.ADMIN
 import fi.espoo.evaka.shared.auth.UserRole.FINANCE_ADMIN
 import fi.espoo.evaka.shared.auth.UserRole.SERVICE_WORKER
 import fi.espoo.evaka.shared.auth.UserRole.UNIT_SUPERVISOR
+import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.bindNullable
 import fi.espoo.evaka.shared.db.getUUID
-import fi.espoo.evaka.shared.db.handle
-import org.jdbi.v3.core.Handle
-import org.jdbi.v3.core.Jdbi
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RestController
 import java.util.UUID
 
 @RestController
-class PartnersInDifferentAddressReportController(
-    private val jdbi: Jdbi,
-    private val acl: AccessControlList
-) {
+class PartnersInDifferentAddressReportController(private val acl: AccessControlList) {
     @GetMapping("/reports/partners-in-different-address")
-    fun getPartnersInDifferentAddressReport(user: AuthenticatedUser): ResponseEntity<List<PartnersInDifferentAddressReportRow>> {
+    fun getPartnersInDifferentAddressReport(db: Database, user: AuthenticatedUser): ResponseEntity<List<PartnersInDifferentAddressReportRow>> {
         Audit.PartnersInDifferentAddressReportRead.log()
         user.requireOneOfRoles(ADMIN, SERVICE_WORKER, FINANCE_ADMIN, UNIT_SUPERVISOR)
         val authorizedUnits = acl.getAuthorizedUnits(user)
-        return jdbi.handle { getPartnersInDifferentAddressRows(it, authorizedUnits.ids) }
+        return db.read { it.getPartnersInDifferentAddressRows(authorizedUnits.ids) }
             .let { ResponseEntity.ok(it) }
     }
 }
 
-fun getPartnersInDifferentAddressRows(
-    h: Handle,
-    units: Collection<UUID>? = null
-): List<PartnersInDifferentAddressReportRow> {
+private fun Database.Read.getPartnersInDifferentAddressRows(units: Collection<UUID>? = null): List<PartnersInDifferentAddressReportRow> {
     // language=sql
     val sql =
         """
@@ -80,7 +72,7 @@ fun getPartnersInDifferentAddressRows(
             lower(p2.street_address) <> 'poste restante'
         ORDER BY u.name, p1.last_name, p1.first_name, p2.last_name, p2.first_name;
         """.trimIndent()
-    return h.createQuery(sql)
+    return createQuery(sql)
         .bindNullable("units", units?.toTypedArray())
         .map { rs, _ ->
             PartnersInDifferentAddressReportRow(

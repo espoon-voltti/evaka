@@ -20,7 +20,6 @@ import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.db.transaction
 import fi.espoo.evaka.shared.domain.Forbidden
 import org.jdbi.v3.core.Handle
-import org.jdbi.v3.core.Jdbi
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
@@ -33,7 +32,6 @@ import java.util.UUID
 @RestController
 @RequestMapping("/decisions2")
 class DecisionController(
-    private val jdbi: Jdbi,
     private val acl: AccessControlList,
     private val decisionService: DecisionService,
     private val decisionDraftService: DecisionDraftService,
@@ -41,45 +39,48 @@ class DecisionController(
 ) {
     @GetMapping("/by-guardian")
     fun getDecisionsByGuardian(
+        db: Database,
         user: AuthenticatedUser,
         @RequestParam("id") guardianId: UUID
     ): ResponseEntity<DecisionListResponse> {
         Audit.DecisionRead.log(targetId = guardianId)
         user.requireOneOfRoles(ADMIN, SERVICE_WORKER, FINANCE_ADMIN, UNIT_SUPERVISOR)
-        val decisions = jdbi.handle { getDecisionsByGuardian(it, guardianId, acl.getAuthorizedUnits(user)) }
+        val decisions = db.read { getDecisionsByGuardian(it.handle, guardianId, acl.getAuthorizedUnits(user)) }
 
         return ResponseEntity.ok(DecisionListResponse(withPublicDocumentUri(decisions)))
     }
 
     @GetMapping("/by-child")
     fun getDecisionsByChild(
+        db: Database,
         user: AuthenticatedUser,
         @RequestParam("id") childId: UUID
     ): ResponseEntity<DecisionListResponse> {
         Audit.DecisionRead.log(targetId = childId)
         user.requireOneOfRoles(ADMIN, SERVICE_WORKER, UNIT_SUPERVISOR)
-        val decisions = jdbi.handle { getDecisionsByChild(it, childId, acl.getAuthorizedUnits(user)) }
+        val decisions = db.read { getDecisionsByChild(it.handle, childId, acl.getAuthorizedUnits(user)) }
 
         return ResponseEntity.ok(DecisionListResponse(withPublicDocumentUri(decisions)))
     }
 
     @GetMapping("/by-application")
     fun getDecisionsByApplication(
+        db: Database,
         user: AuthenticatedUser,
         @RequestParam("id") applicationId: UUID
     ): ResponseEntity<DecisionListResponse> {
         Audit.DecisionRead.log(targetId = applicationId)
         user.requireOneOfRoles(ADMIN, SERVICE_WORKER, UNIT_SUPERVISOR)
-        val decisions = jdbi.handle { getDecisionsByApplication(it, applicationId, acl.getAuthorizedUnits(user)) }
+        val decisions = db.read { getDecisionsByApplication(it.handle, applicationId, acl.getAuthorizedUnits(user)) }
 
         return ResponseEntity.ok(DecisionListResponse(withPublicDocumentUri(decisions)))
     }
 
     @GetMapping("/units")
-    fun getDecisionUnits(user: AuthenticatedUser): ResponseEntity<List<DecisionUnit>> {
+    fun getDecisionUnits(db: Database, user: AuthenticatedUser): ResponseEntity<List<DecisionUnit>> {
         Audit.UnitRead.log()
         user.requireOneOfRoles(Roles.ADMIN, Roles.SERVICE_WORKER, Roles.UNIT_SUPERVISOR, Roles.FINANCE_ADMIN)
-        val units = jdbi.handle { decisionDraftService.getDecisionUnits(it) }
+        val units = db.read { decisionDraftService.getDecisionUnits(it.handle) }
         return ResponseEntity.ok(units)
     }
 

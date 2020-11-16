@@ -52,7 +52,7 @@ class ParentshipControllerIntegrationTest : AbstractIntegrationTest() {
         val startDate = LocalDate.now()
         val endDate = startDate.plusDays(200)
         val reqBody = ParentshipController.ParentshipRequest(parent.id, child.id, startDate, endDate)
-        val createResponse = controller.createParentship(user, reqBody)
+        val createResponse = controller.createParentship(db, user, reqBody)
         assertEquals(HttpStatus.CREATED, createResponse.statusCode)
         with(createResponse.body!!) {
             assertNotNull(this.id)
@@ -62,7 +62,7 @@ class ParentshipControllerIntegrationTest : AbstractIntegrationTest() {
             assertEquals(endDate, this.endDate)
         }
 
-        val getResponse = controller.getParentships(user, headOfChildId = parent.id)
+        val getResponse = controller.getParentships(db, user, headOfChildId = parent.id)
         assertEquals(HttpStatus.OK, getResponse.statusCode)
         assertEquals(1, getResponse.body?.size ?: 0)
         with(getResponse.body!!.first()) {
@@ -73,7 +73,7 @@ class ParentshipControllerIntegrationTest : AbstractIntegrationTest() {
             assertEquals(endDate, this.endDate)
         }
 
-        assertEquals(0, controller.getParentships(user, headOfChildId = child.id).body!!.size)
+        assertEquals(0, controller.getParentships(db, user, headOfChildId = child.id).body!!.size)
     }
 
     @Test
@@ -101,7 +101,7 @@ class ParentshipControllerIntegrationTest : AbstractIntegrationTest() {
         val newStartDate = LocalDate.now().plusDays(100)
         val newEndDate = LocalDate.now().plusDays(300)
         val requestBody = ParentshipController.ParentshipUpdateRequest(newStartDate, newEndDate)
-        val updateResponse = controller.updateParentship(user, parentship.id, requestBody)
+        val updateResponse = controller.updateParentship(db, user, parentship.id, requestBody)
         assertEquals(HttpStatus.OK, updateResponse.statusCode)
         with(updateResponse.body!!) {
             assertEquals(parentship.id, this.id)
@@ -110,7 +110,7 @@ class ParentshipControllerIntegrationTest : AbstractIntegrationTest() {
         }
 
         // child1 should have new dates
-        val fetched1 = controller.getParentship(user, parentship.id).body!!
+        val fetched1 = controller.getParentship(db, user, parentship.id).body!!
         assertEquals(newStartDate, fetched1.startDate)
         assertEquals(newEndDate, fetched1.endDate)
     }
@@ -138,7 +138,7 @@ class ParentshipControllerIntegrationTest : AbstractIntegrationTest() {
             h.createParentship(child.id, adult.id, LocalDate.now().plusDays(200), LocalDate.now().plusDays(300))
             assertEquals(2, h.getParentships(headOfChildId = adult.id, childId = null).size)
 
-            val delResponse = controller.deleteParentship(user, parentship.id)
+            val delResponse = controller.deleteParentship(db, user, parentship.id)
             assertEquals(HttpStatus.NO_CONTENT, delResponse.statusCode)
             assertEquals(1, h.getParentships(headOfChildId = adult.id, childId = null).size)
         }
@@ -152,7 +152,7 @@ class ParentshipControllerIntegrationTest : AbstractIntegrationTest() {
         jdbi.handle { h ->
             h.createParentship(child.id, parent.id, LocalDate.now(), LocalDate.now().plusDays(200))
         }
-        assertThrows<Forbidden> { controller.getParentships(user, headOfChildId = parent.id) }
+        assertThrows<Forbidden> { controller.getParentships(db, user, headOfChildId = parent.id) }
     }
 
     @Test
@@ -165,7 +165,7 @@ class ParentshipControllerIntegrationTest : AbstractIntegrationTest() {
             val newStartDate = LocalDate.now().plusDays(100)
             val newEndDate = LocalDate.now().plusDays(300)
             val requestBody = ParentshipController.ParentshipUpdateRequest(newStartDate, newEndDate)
-            assertThrows<Forbidden> { controller.updateParentship(user, parentship.id, requestBody) }
+            assertThrows<Forbidden> { controller.updateParentship(db, user, parentship.id, requestBody) }
         }
     }
 
@@ -176,7 +176,7 @@ class ParentshipControllerIntegrationTest : AbstractIntegrationTest() {
         val child = testPerson2()
         jdbi.handle { h ->
             val parentship = h.createParentship(child.id, parent.id, LocalDate.now(), LocalDate.now().plusDays(200))
-            assertThrows<Forbidden> { controller.deleteParentship(user, parentship.id) }
+            assertThrows<Forbidden> { controller.deleteParentship(db, user, parentship.id) }
         }
     }
 
@@ -189,7 +189,7 @@ class ParentshipControllerIntegrationTest : AbstractIntegrationTest() {
         val startDate = LocalDate.now()
         val endDate = null
         val reqBody = ParentshipController.ParentshipRequest(parent.id, child.id, startDate, endDate)
-        val createResponse = controller.createParentship(user, reqBody)
+        val createResponse = controller.createParentship(db, user, reqBody)
         assertEquals(HttpStatus.CREATED, createResponse.statusCode)
         with(createResponse.body!!) {
             assertNotNull(this.id)
@@ -211,7 +211,7 @@ class ParentshipControllerIntegrationTest : AbstractIntegrationTest() {
             val newStartDate = LocalDate.now().plusDays(100)
             val newEndDate = null
             val requestBody = ParentshipController.ParentshipUpdateRequest(newStartDate, newEndDate)
-            val updateResponse = controller.updateParentship(user, parentship.id, requestBody)
+            val updateResponse = controller.updateParentship(db, user, parentship.id, requestBody)
             assertEquals(HttpStatus.OK, updateResponse.statusCode)
             with(updateResponse.body!!) {
                 assertEquals(parentship.id, this.id)

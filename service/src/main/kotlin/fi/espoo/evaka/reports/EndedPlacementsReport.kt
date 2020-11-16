@@ -8,10 +8,8 @@ import fi.espoo.evaka.Audit
 import fi.espoo.evaka.daycare.controllers.utils.ok
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.config.Roles
+import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.getUUID
-import fi.espoo.evaka.shared.db.handle
-import org.jdbi.v3.core.Handle
-import org.jdbi.v3.core.Jdbi
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestParam
@@ -20,9 +18,10 @@ import java.time.LocalDate
 import java.util.UUID
 
 @RestController
-class EndedPlacementsReportController(private val jdbi: Jdbi) {
+class EndedPlacementsReportController {
     @GetMapping("/reports/ended-placements")
     fun getEndedPlacementsReport(
+        db: Database,
         user: AuthenticatedUser,
         @RequestParam year: Int,
         @RequestParam month: Int
@@ -32,11 +31,11 @@ class EndedPlacementsReportController(private val jdbi: Jdbi) {
         val to = from.plusMonths(1).minusDays(1)
         user.requireOneOfRoles(Roles.DIRECTOR, Roles.ADMIN, Roles.FINANCE_ADMIN)
 
-        return jdbi.handle { getEndedPlacementsRows(it, from, to) }.let(::ok)
+        return db.read { it.getEndedPlacementsRows(from, to) }.let(::ok)
     }
 }
 
-fun getEndedPlacementsRows(h: Handle, from: LocalDate, to: LocalDate): List<EndedPlacementsReportRow> {
+private fun Database.Read.getEndedPlacementsRows(from: LocalDate, to: LocalDate): List<EndedPlacementsReportRow> {
     // language=sql
     val sql =
         """
@@ -59,7 +58,7 @@ fun getEndedPlacementsRows(h: Handle, from: LocalDate, to: LocalDate): List<Ende
         HAVING min(next.start_date) IS NULL OR min(next.start_date) > :to
         ORDER BY last_name, first_name, social_security_number
         """.trimIndent()
-    return h.createQuery(sql)
+    return createQuery(sql)
         .bind("from", from)
         .bind("to", to)
         .map { rs, _ ->

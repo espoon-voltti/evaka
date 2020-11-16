@@ -11,35 +11,27 @@ import fi.espoo.evaka.shared.auth.UserRole.ADMIN
 import fi.espoo.evaka.shared.auth.UserRole.FINANCE_ADMIN
 import fi.espoo.evaka.shared.auth.UserRole.SERVICE_WORKER
 import fi.espoo.evaka.shared.auth.UserRole.UNIT_SUPERVISOR
+import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.bindNullable
 import fi.espoo.evaka.shared.db.getUUID
-import fi.espoo.evaka.shared.db.handle
-import org.jdbi.v3.core.Handle
-import org.jdbi.v3.core.Jdbi
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RestController
 import java.util.UUID
 
 @RestController
-class FamilyConflictReportController(
-    private val jdbi: Jdbi,
-    private val acl: AccessControlList
-) {
+class FamilyConflictReportController(private val acl: AccessControlList) {
     @GetMapping("/reports/family-conflicts")
-    fun getFamilyConflictsReport(user: AuthenticatedUser): ResponseEntity<List<FamilyConflictReportRow>> {
+    fun getFamilyConflictsReport(db: Database, user: AuthenticatedUser): ResponseEntity<List<FamilyConflictReportRow>> {
         Audit.FamilyConflictReportRead.log()
         user.requireOneOfRoles(ADMIN, SERVICE_WORKER, FINANCE_ADMIN, UNIT_SUPERVISOR)
         val authorizedUnits = acl.getAuthorizedUnits(user)
-        return jdbi.handle { getFamilyConflicts(it, authorizedUnits.ids) }
+        return db.read { it.getFamilyConflicts(authorizedUnits.ids) }
             .let { ResponseEntity.ok(it) }
     }
 }
 
-fun getFamilyConflicts(
-    h: Handle,
-    units: Collection<UUID>? = null
-): List<FamilyConflictReportRow> {
+private fun Database.Read.getFamilyConflicts(units: Collection<UUID>? = null): List<FamilyConflictReportRow> {
     // language=sql
     val sql =
         """
@@ -83,7 +75,7 @@ fun getFamilyConflicts(
         WHERE (:units::uuid[] IS NULL OR u.id = ANY(:units))
         ORDER BY ca.name, u.name, co.last_name, co.first_name
         """.trimIndent()
-    return h.createQuery(sql)
+    return createQuery(sql)
         .bindNullable("units", units)
         .map { rs, _ ->
             FamilyConflictReportRow(

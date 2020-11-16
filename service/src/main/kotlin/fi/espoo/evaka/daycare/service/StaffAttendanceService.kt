@@ -5,10 +5,10 @@
 package fi.espoo.evaka.daycare.service
 
 import fi.espoo.evaka.daycare.dao.PGConstants.maxDate
+import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.domain.BadRequest
 import org.jdbi.v3.core.Handle
-import org.jdbi.v3.core.Jdbi
 import org.jdbi.v3.core.kotlin.mapTo
 import org.springframework.stereotype.Service
 import java.time.LocalDate
@@ -16,28 +16,28 @@ import java.time.temporal.TemporalAdjusters.lastDayOfMonth
 import java.util.UUID
 
 @Service
-class StaffAttendanceService(private val jdbi: Jdbi) {
-    fun getAttendancesByMonth(year: Int, month: Int, groupId: UUID): StaffAttendanceGroup {
+class StaffAttendanceService {
+    fun getAttendancesByMonth(db: Database, year: Int, month: Int, groupId: UUID): StaffAttendanceGroup {
         val rangeStart = LocalDate.of(year, month, 1)
         val rangeEnd = rangeStart.with(lastDayOfMonth())
 
-        return jdbi.handle { h ->
-            val groupInfo = getGroupInfo(groupId, h) ?: throw BadRequest("Couldn't find group info with id $groupId")
+        return db.read { tx ->
+            val groupInfo = getGroupInfo(groupId, tx.handle) ?: throw BadRequest("Couldn't find group info with id $groupId")
             val endDate = groupInfo.endDate.let { if (it.isBefore(maxDate)) it else null }
 
-            val attendanceList = getStaffAttendanceByRange(rangeStart, rangeEnd, groupId, h)
+            val attendanceList = getStaffAttendanceByRange(rangeStart, rangeEnd, groupId, tx.handle)
             val attendanceMap = composeAttendanceMap(rangeStart, rangeEnd, groupId, attendanceList)
 
             StaffAttendanceGroup(groupId, groupInfo.groupName, groupInfo.startDate, endDate, attendanceMap)
         }
     }
 
-    fun upsertStaffAttendance(staffAttendance: StaffAttendance) {
-        jdbi.handle { h ->
-            if (!isValidStaffAttendanceDate(staffAttendance, h)) {
+    fun upsertStaffAttendance(db: Database, staffAttendance: StaffAttendance) {
+        db.transaction { tx ->
+            if (!isValidStaffAttendanceDate(staffAttendance, tx.handle)) {
                 throw BadRequest("Error: Upserting staff count failed. Group is not operating in given date")
             }
-            upsertStaffAttendance(staffAttendance, h)
+            upsertStaffAttendance(staffAttendance, tx.handle)
         }
     }
 

@@ -32,7 +32,6 @@ import fi.espoo.evaka.shared.db.transaction
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.ClosedPeriod
 import fi.espoo.evaka.shared.domain.NotFound
-import org.jdbi.v3.core.Jdbi
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -103,7 +102,6 @@ enum class TransferApplicationFilter {
 @RestController
 @RequestMapping("/v2/applications")
 class ApplicationControllerV2(
-    private val jdbi: Jdbi,
     private val acl: AccessControlList,
     private val personService: PersonService,
     private val applicationStateService: ApplicationStateService,
@@ -161,6 +159,7 @@ class ApplicationControllerV2(
 
     @GetMapping
     fun getApplicationSummaries(
+        db: Database,
         user: AuthenticatedUser,
         @RequestParam(required = false) page: Int?,
         @RequestParam(required = false) pageSize: Int?,
@@ -191,9 +190,9 @@ class ApplicationControllerV2(
         if (periodStart != null && periodEnd != null && periodStart > periodEnd)
             throw BadRequest("Date parameter periodEnd ($periodEnd) cannot be before periodStart ($periodStart)")
 
-        return jdbi.handle { h ->
+        return db.read { tx ->
             fetchApplicationSummaries(
-                h = h.setReadOnly(true),
+                h = tx.handle,
                 user = user,
                 page = page ?: 1,
                 pageSize = pageSize ?: 100,
@@ -218,18 +217,20 @@ class ApplicationControllerV2(
 
     @GetMapping("/by-guardian/{guardianId}")
     fun getGuardianApplicationSummaries(
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable(value = "guardianId") guardianId: UUID
     ): ResponseEntity<List<PersonApplicationSummary>> {
         Audit.ApplicationRead.log(targetId = guardianId)
         user.requireOneOfRoles(Roles.ADMIN, Roles.SERVICE_WORKER, Roles.FINANCE_ADMIN, Roles.UNIT_SUPERVISOR)
 
-        return jdbi.handle { h -> fetchApplicationSummariesForGuardian(h, guardianId) }
+        return db.read { fetchApplicationSummariesForGuardian(it.handle, guardianId) }
             .let { ResponseEntity.ok().body(it) }
     }
 
     @GetMapping("/by-child/{childId}")
     fun getChildApplicationSummaries(
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable(value = "childId") childId: UUID
     ): ResponseEntity<List<PersonApplicationSummary>> {
@@ -237,7 +238,7 @@ class ApplicationControllerV2(
         acl.getRolesForChild(user, childId)
             .requireOneOfRoles(Roles.ADMIN, Roles.SERVICE_WORKER, Roles.FINANCE_ADMIN, Roles.UNIT_SUPERVISOR)
 
-        return jdbi.handle { h -> fetchApplicationSummariesForChild(h, childId) }
+        return db.read { fetchApplicationSummariesForChild(it.handle, childId) }
             .let { ResponseEntity.ok().body(it) }
     }
 
@@ -271,31 +272,34 @@ class ApplicationControllerV2(
 
     @PutMapping("/{applicationId}")
     fun updateApplication(
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable applicationId: UUID,
         @RequestBody applicationForm: ApplicationForm
     ): ResponseEntity<Unit> {
-        jdbi.transaction { applicationStateService.updateApplicationContents(it, user, applicationId, applicationForm) }
+        db.transaction { applicationStateService.updateApplicationContents(it.handle, user, applicationId, applicationForm) }
         return ResponseEntity.noContent().build()
     }
 
     @PostMapping("/{applicationId}/actions/send-application")
     fun sendApplication(
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable applicationId: UUID
     ): ResponseEntity<Unit> {
-        jdbi.transaction { applicationStateService.sendApplication(it, user, applicationId) }
+        db.transaction { applicationStateService.sendApplication(it.handle, user, applicationId) }
         return ResponseEntity.noContent().build()
     }
 
     @GetMapping("/{applicationId}/placement-draft")
     fun getPlacementPlanDraft(
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable(value = "applicationId") applicationId: UUID
     ): ResponseEntity<PlacementPlanDraft> {
         Audit.PlacementPlanDraftRead.log(targetId = applicationId)
         user.requireOneOfRoles(Roles.SERVICE_WORKER, Roles.ADMIN)
-        return jdbi.handle { placementPlanService.getPlacementPlanDraft(it, applicationId) }
+        return db.read { placementPlanService.getPlacementPlanDraft(it.handle, applicationId) }
             .let { ResponseEntity.ok(it) }
     }
 
@@ -358,6 +362,7 @@ class ApplicationControllerV2(
 
     @PutMapping("/{applicationId}/decision-drafts")
     fun updateDecisionDrafts(
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable(value = "applicationId") applicationId: UUID,
         @RequestBody body: List<DecisionDraftService.DecisionDraftUpdate>
@@ -365,7 +370,7 @@ class ApplicationControllerV2(
         Audit.DecisionDraftUpdate.log(targetId = applicationId)
         user.requireOneOfRoles(Roles.SERVICE_WORKER, Roles.ADMIN)
 
-        jdbi.transaction { decisionDraftService.updateDecisionDrafts(it, applicationId, body) }
+        db.transaction { decisionDraftService.updateDecisionDrafts(it.handle, applicationId, body) }
         return ResponseEntity.noContent().build()
     }
 
@@ -421,13 +426,14 @@ class ApplicationControllerV2(
 
     @PostMapping("/{applicationId}/actions/respond-to-placement-proposal")
     fun respondToPlacementProposal(
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable applicationId: UUID,
         @RequestBody body: PlacementProposalConfirmationUpdate
     ): ResponseEntity<Unit> {
-        jdbi.transaction {
+        db.transaction {
             applicationStateService.respondToPlacementProposal(
-                it,
+                it.handle,
                 user,
                 applicationId,
                 body.status,
@@ -440,23 +446,25 @@ class ApplicationControllerV2(
 
     @PostMapping("/{applicationId}/actions/accept-decision")
     fun acceptDecision(
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable applicationId: UUID,
         @RequestBody body: AcceptDecisionRequest
     ): ResponseEntity<Unit> {
-        jdbi.transaction {
-            applicationStateService.acceptDecision(it, user, applicationId, body.decisionId, body.requestedStartDate)
+        db.transaction {
+            applicationStateService.acceptDecision(it.handle, user, applicationId, body.decisionId, body.requestedStartDate)
         }
         return ResponseEntity.noContent().build()
     }
 
     @PostMapping("/{applicationId}/actions/reject-decision")
     fun rejectDecision(
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable applicationId: UUID,
         @RequestBody body: RejectDecisionRequest
     ): ResponseEntity<Unit> {
-        jdbi.transaction { applicationStateService.rejectDecision(it, user, applicationId, body.decisionId) }
+        db.transaction { applicationStateService.rejectDecision(it.handle, user, applicationId, body.decisionId) }
         return ResponseEntity.noContent().build()
     }
 

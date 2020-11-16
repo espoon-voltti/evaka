@@ -8,11 +8,9 @@ import fi.espoo.evaka.Audit
 import fi.espoo.evaka.daycare.controllers.utils.ok
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.config.Roles
+import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.getUUID
-import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.domain.BadRequest
-import org.jdbi.v3.core.Handle
-import org.jdbi.v3.core.Jdbi
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
@@ -22,9 +20,10 @@ import java.time.LocalDate
 import java.util.UUID
 
 @RestController
-class ApplicationsReportController(private val jdbi: Jdbi) {
+class ApplicationsReportController {
     @GetMapping("/reports/applications")
     fun getApplicationsReport(
+        db: Database,
         user: AuthenticatedUser,
         @RequestParam("from") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
         @RequestParam("to") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate
@@ -33,11 +32,11 @@ class ApplicationsReportController(private val jdbi: Jdbi) {
         user.requireOneOfRoles(Roles.SERVICE_WORKER, Roles.DIRECTOR, Roles.ADMIN)
         if (to.isBefore(from)) throw BadRequest("Inverted time range")
 
-        return jdbi.handle { getApplicationsRows(it, from, to) }.let(::ok)
+        return db.read { it.getApplicationsRows(from, to) }.let(::ok)
     }
 }
 
-fun getApplicationsRows(h: Handle, from: LocalDate, to: LocalDate): List<ApplicationsReportRow> {
+private fun Database.Read.getApplicationsRows(from: LocalDate, to: LocalDate): List<ApplicationsReportRow> {
     // language=sql
     val sql =
         """
@@ -73,7 +72,7 @@ fun getApplicationsRows(h: Handle, from: LocalDate, to: LocalDate): List<Applica
         GROUP BY care_area_name, unit_id, unit_name, provider_type
         ORDER BY care_area_name, unit_name;
         """.trimIndent()
-    return h.createQuery(sql)
+    return createQuery(sql)
         .bind("from", from)
         .bind("to", to)
         .map { rs, _ ->

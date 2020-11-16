@@ -11,12 +11,10 @@ import fi.espoo.evaka.shared.config.Roles
 import fi.espoo.evaka.shared.config.Roles.ADMIN
 import fi.espoo.evaka.shared.config.Roles.FINANCE_ADMIN
 import fi.espoo.evaka.shared.config.Roles.SERVICE_WORKER
+import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.getUUID
-import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.ClosedPeriod
-import org.jdbi.v3.core.Handle
-import org.jdbi.v3.core.Jdbi
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
@@ -29,12 +27,10 @@ import java.util.UUID
 
 @RestController
 @RequestMapping("/occupancy")
-class OccupancyController(
-    private val jdbi: Jdbi,
-    private val acl: AccessControlList
-) {
+class OccupancyController(private val acl: AccessControlList) {
     @GetMapping("/by-unit/{unitId}")
     fun getOccupancyPeriods(
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable unitId: UUID,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
@@ -45,7 +41,7 @@ class OccupancyController(
         acl.getRolesForUnit(user, unitId)
             .requireOneOfRoles(ADMIN, SERVICE_WORKER, FINANCE_ADMIN, Roles.UNIT_SUPERVISOR)
 
-        val occupancies = jdbi.handle(calculateOccupancyPeriods(unitId, ClosedPeriod(from, to), type))
+        val occupancies = db.read { it.calculateOccupancyPeriods(unitId, ClosedPeriod(from, to), type) }
 
         val response = OccupancyResponse(
             occupancies = occupancies,
@@ -57,6 +53,7 @@ class OccupancyController(
 
     @GetMapping("/by-unit/{unitId}/groups")
     fun getOccupancyPeriodsOnGroups(
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable unitId: UUID,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
@@ -67,7 +64,7 @@ class OccupancyController(
         acl.getRolesForUnit(user, unitId)
             .requireOneOfRoles(ADMIN, SERVICE_WORKER, FINANCE_ADMIN, Roles.UNIT_SUPERVISOR)
 
-        val occupancies = jdbi.handle(calculateOccupancyPeriodsGroupLevel(unitId, ClosedPeriod(from, to), type))
+        val occupancies = db.read { it.calculateOccupancyPeriodsGroupLevel(unitId, ClosedPeriod(from, to), type) }
 
         val response = occupancies.groupBy({ it.groupId }) {
             OccupancyPeriod(it.period, it.sum, it.headcount, it.caretakers, it.percentage)
@@ -105,11 +102,11 @@ data class OccupancyResponse(
  * - service need coefficient, full time daycare / preschool = 1.0, part time daycare = 0.54, part time daycare with preschool = 0.5
  * - assistance need coefficient = X, or default = 1.0
  */
-fun calculateOccupancyPeriods(
+fun Database.Read.calculateOccupancyPeriods(
     unitId: UUID,
     period: ClosedPeriod,
     type: OccupancyType
-): (Handle) -> List<OccupancyPeriod> = { h ->
+): List<OccupancyPeriod> {
     if (period.start.plusYears(2) < period.end) {
         throw BadRequest("Date range ${period.start} - ${period.end} is too long. Maximum range is two years.")
     }
@@ -120,7 +117,7 @@ fun calculateOccupancyPeriods(
         includeGroups = false
     )
 
-    h.createQuery(sql)
+    return createQuery(sql)
         .bind("unitId", unitId)
         .bind("startDate", period.start)
         .bind("endDate", period.end)
@@ -139,11 +136,11 @@ fun calculateOccupancyPeriods(
         .list()
 }
 
-fun calculateOccupancyPeriodsGroupLevel(
+fun Database.Read.calculateOccupancyPeriodsGroupLevel(
     unitId: UUID,
     period: ClosedPeriod,
     type: OccupancyType
-): (Handle) -> List<OccupancyPeriodGroupLevel> = { h ->
+): List<OccupancyPeriodGroupLevel> {
     if (period.start.plusYears(2) < period.end) {
         throw BadRequest("Date range ${period.start} - ${period.end} is too long. Maximum range is two years.")
     }
@@ -154,7 +151,7 @@ fun calculateOccupancyPeriodsGroupLevel(
         includeGroups = true
     )
 
-    h.createQuery(sql)
+    return createQuery(sql)
         .bind("unitId", unitId)
         .bind("startDate", period.start)
         .bind("endDate", period.end)

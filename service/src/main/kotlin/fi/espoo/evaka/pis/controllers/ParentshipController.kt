@@ -16,9 +16,9 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.config.Roles.FINANCE_ADMIN
 import fi.espoo.evaka.shared.config.Roles.SERVICE_WORKER
 import fi.espoo.evaka.shared.config.Roles.UNIT_SUPERVISOR
+import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.db.transaction
-import org.jdbi.v3.core.Jdbi
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -37,11 +37,11 @@ import java.util.UUID
 @RequestMapping("/parentships")
 class ParentshipController(
     private val parentshipService: ParentshipService,
-    private val jdbi: Jdbi,
     private val asyncJobRunner: AsyncJobRunner
 ) {
     @PostMapping
     fun createParentship(
+        db: Database,
         user: AuthenticatedUser,
         @RequestBody body: ParentshipRequest
     ): ResponseEntity<Parentship> {
@@ -49,8 +49,8 @@ class ParentshipController(
         user.requireOneOfRoles(SERVICE_WORKER, UNIT_SUPERVISOR, FINANCE_ADMIN)
 
         with(body) {
-            return jdbi.transaction {
-                parentshipService.createParentship(it, childId, headOfChildId, startDate, endDate)
+            return db.transaction {
+                parentshipService.createParentship(it.handle, childId, headOfChildId, startDate, endDate)
             }
                 .also { asyncJobRunner.scheduleImmediateRun() }
                 .let { ResponseEntity.created(URI.create("/parentships/${it.id}")).body(it) }
@@ -59,6 +59,7 @@ class ParentshipController(
 
     @GetMapping
     fun getParentships(
+        db: Database,
         user: AuthenticatedUser,
         @RequestParam(value = "headOfChildId", required = false) headOfChildId: VolttiIdentifier? = null,
         @RequestParam(value = "childId", required = false) childId: VolttiIdentifier? = null
@@ -66,8 +67,8 @@ class ParentshipController(
         Audit.ParentShipsRead.log(targetId = listOf(headOfChildId, childId))
         user.requireOneOfRoles(SERVICE_WORKER, UNIT_SUPERVISOR, FINANCE_ADMIN)
 
-        return jdbi.handle {
-            it.getParentships(
+        return db.read {
+            it.handle.getParentships(
                 headOfChildId = headOfChildId,
                 childId = childId,
                 includeConflicts = true
@@ -77,12 +78,12 @@ class ParentshipController(
     }
 
     @GetMapping("/{id}")
-    fun getParentship(user: AuthenticatedUser, @PathVariable(value = "id") id: UUID): ResponseEntity<Parentship> {
+    fun getParentship(db: Database, user: AuthenticatedUser, @PathVariable(value = "id") id: UUID): ResponseEntity<Parentship> {
         Audit.ParentShipsRead.log(targetId = id)
         user.requireOneOfRoles(SERVICE_WORKER, UNIT_SUPERVISOR, FINANCE_ADMIN)
 
-        return jdbi.handle {
-            it.getParentship(id)
+        return db.read {
+            it.handle.getParentship(id)
                 ?.let { ResponseEntity.ok().body(it) }
                 ?: ResponseEntity.notFound().build()
         }
@@ -90,6 +91,7 @@ class ParentshipController(
 
     @PutMapping("/{id}")
     fun updateParentship(
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable(value = "id") id: UUID,
         @RequestBody body: ParentshipUpdateRequest
@@ -97,8 +99,8 @@ class ParentshipController(
         Audit.ParentShipsUpdate.log(targetId = id)
         user.requireOneOfRoles(SERVICE_WORKER, UNIT_SUPERVISOR, FINANCE_ADMIN)
 
-        return jdbi.transaction {
-            parentshipService.updateParentshipDuration(it, id, body.startDate, body.endDate)
+        return db.transaction {
+            parentshipService.updateParentshipDuration(it.handle, id, body.startDate, body.endDate)
         }
             .also { asyncJobRunner.scheduleImmediateRun() }
             .let { ResponseEntity.ok().body(it) }
@@ -106,23 +108,24 @@ class ParentshipController(
 
     @PutMapping("/{id}/retry")
     fun retryPartnership(
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable(value = "id") parentshipId: UUID
     ): ResponseEntity<Unit> {
         Audit.ParentShipsRetry.log(targetId = parentshipId)
         user.requireOneOfRoles(SERVICE_WORKER, UNIT_SUPERVISOR, FINANCE_ADMIN)
 
-        jdbi.transaction { parentshipService.retryParentship(it, parentshipId) }
+        db.transaction { parentshipService.retryParentship(it.handle, parentshipId) }
         asyncJobRunner.scheduleImmediateRun()
         return noContent()
     }
 
     @DeleteMapping("/{id}")
-    fun deleteParentship(user: AuthenticatedUser, @PathVariable(value = "id") id: UUID): ResponseEntity<Unit> {
+    fun deleteParentship(db: Database, user: AuthenticatedUser, @PathVariable(value = "id") id: UUID): ResponseEntity<Unit> {
         Audit.ParentShipsDelete.log(targetId = id)
         user.requireOneOfRoles(SERVICE_WORKER, UNIT_SUPERVISOR, FINANCE_ADMIN)
 
-        jdbi.transaction { parentshipService.deleteParentship(it, id) }
+        db.transaction { parentshipService.deleteParentship(it.handle, id) }
         asyncJobRunner.scheduleImmediateRun()
 
         return ResponseEntity.noContent().build()

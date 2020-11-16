@@ -7,6 +7,7 @@ package fi.espoo.evaka.daycare
 import fi.espoo.evaka.placement.PlacementService
 import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.config.SharedIntegrationTestConfig
+import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.utils.DisableSecurity
 import org.jdbi.v3.core.Jdbi
@@ -49,6 +50,8 @@ abstract class AbstractIntegrationTest() {
     @Autowired
     lateinit var jdbi: Jdbi
 
+    lateinit var db: Database
+
     @BeforeAll
     private fun beforeAll() {
         jdbi.handle(::resetDatabase)
@@ -61,5 +64,6 @@ abstract class AbstractIntegrationTest() {
             resetDatabase(h)
             h.execute(legacyDataSql)
         }
+        db = Database(jdbi)
     }
 }

@@ -12,11 +12,9 @@ import fi.espoo.evaka.shared.auth.UserRole.DIRECTOR
 import fi.espoo.evaka.shared.auth.UserRole.FINANCE_ADMIN
 import fi.espoo.evaka.shared.auth.UserRole.SERVICE_WORKER
 import fi.espoo.evaka.shared.auth.UserRole.UNIT_SUPERVISOR
-import fi.espoo.evaka.shared.db.handle
+import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.db.mapNullableColumn
-import org.jdbi.v3.core.Handle
-import org.jdbi.v3.core.Jdbi
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestParam
@@ -24,25 +22,20 @@ import org.springframework.web.bind.annotation.RestController
 import java.util.UUID
 
 @RestController
-class FamilyContactReportController(
-    private val jdbi: Jdbi,
-    private val acl: AccessControlList
-) {
+class FamilyContactReportController(private val acl: AccessControlList) {
     @GetMapping("/reports/family-contacts")
     fun getFamilyContactsReport(
+        db: Database,
         user: AuthenticatedUser,
         @RequestParam unitId: UUID
     ): ResponseEntity<List<FamilyContactReportRow>> {
         Audit.FamilyContactReportRead.log()
         acl.getRolesForUnit(user, unitId).requireOneOfRoles(ADMIN, SERVICE_WORKER, FINANCE_ADMIN, DIRECTOR, UNIT_SUPERVISOR)
-        return jdbi.handle { h -> getFamilyContacts(h, unitId) }.let { ResponseEntity.ok(it) }
+        return db.read { it.getFamilyContacts(unitId) }.let { ResponseEntity.ok(it) }
     }
 }
 
-fun getFamilyContacts(
-    h: Handle,
-    unitId: UUID
-): List<FamilyContactReportRow> {
+private fun Database.Read.getFamilyContacts(unitId: UUID): List<FamilyContactReportRow> {
     // language=sql
     val sql =
         """
@@ -87,7 +80,7 @@ fun getFamilyContacts(
             ORDER BY dg.name, ch.last_name, ch.first_name
         """.trimIndent()
 
-    return h.createQuery(sql)
+    return createQuery(sql)
         .bind("unitId", unitId)
         .map { rs, ctx ->
             FamilyContactReportRow(

@@ -7,11 +7,9 @@ package fi.espoo.evaka.reports
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.config.Roles
+import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.getUUID
-import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.domain.ClosedPeriod
-import org.jdbi.v3.core.Handle
-import org.jdbi.v3.core.Jdbi
 import org.jdbi.v3.core.statement.StatementContext
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
@@ -22,16 +20,17 @@ import java.time.LocalDate
 import java.util.UUID
 
 @RestController
-class StartingPlacementsReportController(private val jdbi: Jdbi) {
+class StartingPlacementsReportController {
     @GetMapping("/reports/starting-placements")
     fun getStartingPlacementsReport(
+        db: Database,
         user: AuthenticatedUser,
         @RequestParam("year") year: Int,
         @RequestParam("month") month: Int
     ): ResponseEntity<List<StartingPlacementsRow>> {
         Audit.StartingPlacementsReportRead.log()
         user.requireOneOfRoles(Roles.ADMIN, Roles.SERVICE_WORKER, Roles.FINANCE_ADMIN, Roles.DIRECTOR)
-        val rows = jdbi.handle { h -> getStartingPlacementsRows(h, year, month) }
+        val rows = db.read { it.getStartingPlacementsRows(year, month) }
         return ResponseEntity.ok(rows)
     }
 }
@@ -48,7 +47,7 @@ data class StartingPlacementsRow(
 /*
  * The preceding placement logic has to be checked if club placements are to be added to the placements table
  */
-fun getStartingPlacementsRows(h: Handle, year: Int, month: Int): List<StartingPlacementsRow> {
+private fun Database.Read.getStartingPlacementsRows(year: Int, month: Int): List<StartingPlacementsRow> {
     val beginningOfMonth = LocalDate.of(year, month, 1)
     val period = ClosedPeriod(
         beginningOfMonth,
@@ -65,7 +64,7 @@ fun getStartingPlacementsRows(h: Handle, year: Int, month: Int): List<StartingPl
         WHERE daterange(:from, :to, '[]') @> p.start_date AND preceding.id IS NULL AND p.type != 'CLUB'::placement_type
         """.trimIndent()
 
-    return h.createQuery(sql)
+    return createQuery(sql)
         .bind("from", period.start)
         .bind("to", period.end)
         .map(toRow)

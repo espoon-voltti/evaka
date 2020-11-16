@@ -16,10 +16,10 @@ import fi.espoo.evaka.shared.auth.UserRole.STAFF
 import fi.espoo.evaka.shared.config.Roles.FINANCE_ADMIN
 import fi.espoo.evaka.shared.config.Roles.SERVICE_WORKER
 import fi.espoo.evaka.shared.config.Roles.UNIT_SUPERVISOR
+import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.db.transaction
 import org.jdbi.v3.core.Handle
-import org.jdbi.v3.core.Jdbi
 import org.jdbi.v3.core.mapper.Nested
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
@@ -30,26 +30,24 @@ import org.springframework.web.bind.annotation.RestController
 import java.util.UUID
 
 @RestController
-class ChildController(
-    private val jdbi: Jdbi,
-    private val acl: AccessControlList
-) {
+class ChildController(private val acl: AccessControlList) {
     @GetMapping("/children/{childId}/additional-information")
-    fun getAdditionalInfo(user: AuthenticatedUser, @PathVariable childId: UUID): ResponseEntity<AdditionalInformation> {
+    fun getAdditionalInfo(db: Database, user: AuthenticatedUser, @PathVariable childId: UUID): ResponseEntity<AdditionalInformation> {
         Audit.ChildAdditionalInformationRead.log(targetId = childId)
         acl.getRolesForChild(user, childId).requireOneOfRoles(SERVICE_WORKER, UNIT_SUPERVISOR, FINANCE_ADMIN, STAFF)
-        return jdbi.handle { getAdditionalInformation(it, childId) }.let(::ok)
+        return db.read { getAdditionalInformation(it.handle, childId) }.let(::ok)
     }
 
     @PutMapping("/children/{childId}/additional-information")
     fun updateAdditionalInfo(
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable childId: UUID,
         @RequestBody data: AdditionalInformation
     ): ResponseEntity<Unit> {
         Audit.ChildAdditionalInformationUpdate.log(targetId = childId)
         acl.getRolesForChild(user, childId).requireOneOfRoles(SERVICE_WORKER, UNIT_SUPERVISOR, FINANCE_ADMIN)
-        jdbi.transaction { upsertAdditionalInformation(it, childId, data) }
+        db.transaction { upsertAdditionalInformation(it.handle, childId, data) }
         return noContent()
     }
 }

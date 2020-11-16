@@ -33,11 +33,11 @@ class VardaUpdateService(
     fun updateAll() {
         val client = VardaClient(tokenProvider, env, mapper)
         if (forceSync) {
-            updateAll(jdbi, client, mapper, personService, organizer)
+            updateAll(Database(jdbi), client, mapper, personService, organizer)
         } else {
             thread {
                 try {
-                    updateAll(jdbi, client, mapper, personService, organizer)
+                    updateAll(Database(jdbi), client, mapper, personService, organizer)
                 } catch (e: Throwable) {
                     val exception = (e as? UndeclaredThrowableException)?.cause ?: e
                     logger.error(exception) { "Failed to run Varda update" }
@@ -51,23 +51,19 @@ class VardaUpdateService(
 }
 
 fun updateAll(
-    jdbi: Jdbi,
+    db: Database,
     client: VardaClient,
     mapper: ObjectMapper,
     personService: PersonService,
     organizer: String
 ) {
-    jdbi.handle { h ->
-        removeMarkedFeeDataFromVarda(h, client)
-        removeMarkedPlacementsFromVarda(h, client)
-        removeMarkedDecisionsFromVarda(h, client)
-        updateOrganizer(h, client, organizer)
-        updateUnits(h, client, organizer)
-        updateChildren(h, client, organizer)
-        updateDecisions(h, client)
-        updatePlacements(h, client)
-    }
-    Database(jdbi).transaction { tx ->
-        updateFeeData(tx, client, mapper, personService)
-    }
+    db.transaction { removeMarkedFeeDataFromVarda(it.handle, client) }
+    db.transaction { removeMarkedPlacementsFromVarda(it.handle, client) }
+    db.transaction { removeMarkedDecisionsFromVarda(it.handle, client) }
+    db.transaction { updateOrganizer(it.handle, client, organizer) }
+    db.transaction { updateUnits(it.handle, client, organizer) }
+    db.transaction { updateChildren(it.handle, client, organizer) }
+    db.transaction { updateDecisions(it.handle, client) }
+    db.transaction { updatePlacements(it.handle, client) }
+    db.transaction { updateFeeData(it, client, mapper, personService) }
 }

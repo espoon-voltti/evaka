@@ -27,10 +27,11 @@ class DaycareControllerIntegrationTest : AbstractIntegrationTest() {
     @Test
     fun `smoke test for groups`() {
         val user = AuthenticatedUser(UUID.randomUUID(), setOf(Roles.ADMIN))
-        val existingGroups = daycareController.getGroups(user, daycareId).body!!
+        val existingGroups = daycareController.getGroups(db, user, daycareId).body!!
         assertEquals(2, existingGroups.size)
 
         val created = daycareController.createGroup(
+            db,
             user,
             daycareId,
             DaycareController.CreateGroupRequest(
@@ -40,7 +41,7 @@ class DaycareControllerIntegrationTest : AbstractIntegrationTest() {
             )
         ).body!!
 
-        val groups = daycareController.getGroups(user, daycareId).body!!
+        val groups = daycareController.getGroups(db, user, daycareId).body!!
         assertEquals(3, groups.size)
 
         val group = groups.find { it.id == created.id }!!
@@ -49,14 +50,14 @@ class DaycareControllerIntegrationTest : AbstractIntegrationTest() {
         assertEquals(groupFounded, group.startDate)
         assertNull(group.endDate)
 
-        val stats = daycareController.getStats(user, daycareId, LocalDate.now(), LocalDate.now().plusDays(50)).body!!
+        val stats = daycareController.getStats(db, user, daycareId, LocalDate.now(), LocalDate.now().plusDays(50)).body!!
         val groupStats = stats.groupCaretakers[group.id]!!
         assertEquals(initialCaretakers, groupStats.minimum)
         assertEquals(initialCaretakers, groupStats.maximum)
 
-        val deleteStatus = daycareController.deleteGroup(user, daycareId, group.id).statusCode
+        val deleteStatus = daycareController.deleteGroup(db, user, daycareId, group.id).statusCode
         assertEquals(HttpStatus.NO_CONTENT, deleteStatus)
-        val groupsAfterDelete = daycareController.getGroups(user, daycareId).body!!
+        val groupsAfterDelete = daycareController.getGroups(db, user, daycareId).body!!
         assertEquals(2, groupsAfterDelete.size)
     }
 }

@@ -6,6 +6,7 @@ package fi.espoo.evaka.pis
 
 import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.config.SharedIntegrationTestConfig
+import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.utils.DisableSecurity
 import fi.espoo.evaka.vtjclient.VtjIntegrationTestConfig
@@ -39,8 +40,11 @@ abstract class AbstractIntegrationTest {
     @Autowired
     lateinit var jdbi: Jdbi
 
+    lateinit var db: Database
+
     @BeforeEach
     private fun beforeEach() {
         jdbi.handle { h -> resetDatabase(h) }
+        db = Database(jdbi)
     }
 }

@@ -24,6 +24,7 @@ import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.NotifyVoucherValueDecisionApproved
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.config.Roles
+import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.db.transaction
 import fi.espoo.evaka.shared.domain.BadRequest
@@ -31,7 +32,6 @@ import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.domain.Period
 import fi.espoo.evaka.shared.utils.parseEnum
 import org.jdbi.v3.core.Handle
-import org.jdbi.v3.core.Jdbi
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -49,12 +49,12 @@ import java.util.UUID
 @RequestMapping("/value-decisions")
 class VoucherValueDecisionController(
     private val valueDecisionService: VoucherValueDecisionService,
-    private val jdbi: Jdbi,
     private val objectMapper: ObjectMapper,
     private val asyncJobRunner: AsyncJobRunner
 ) {
     @GetMapping("/search")
     fun search(
+        db: Database,
         user: AuthenticatedUser,
         @RequestParam(required = true) page: Int,
         @RequestParam(required = true) pageSize: Int,
@@ -69,8 +69,8 @@ class VoucherValueDecisionController(
         user.requireOneOfRoles(Roles.FINANCE_ADMIN)
         val maxPageSize = 5000
         if (pageSize > maxPageSize) throw BadRequest("Maximum page size is $maxPageSize")
-        val (total, valueDecisions) = jdbi.handle { h ->
-            h.searchValueDecisions(
+        val (total, valueDecisions) = db.read { tx ->
+            tx.handle.searchValueDecisions(
                 page,
                 pageSize,
                 sortBy ?: VoucherValueDecisionSortParam.STATUS,
@@ -90,30 +90,31 @@ class VoucherValueDecisionController(
 
     @GetMapping("/{id}")
     fun getDecision(
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable id: UUID
     ): ResponseEntity<Wrapper<VoucherValueDecisionDetailed>> {
         Audit.VoucherValueDecisionRead.log(targetId = id)
         user.requireOneOfRoles(Roles.FINANCE_ADMIN)
-        val res = jdbi.handle { it.getVoucherValueDecision(objectMapper, id) }
+        val res = db.read { it.handle.getVoucherValueDecision(objectMapper, id) }
             ?: throw NotFound("No voucher value decision found with given ID ($id)")
         return ResponseEntity.ok(Wrapper(res))
     }
 
     @PostMapping("/send")
-    fun sendDrafts(user: AuthenticatedUser, @RequestBody decisionIds: List<UUID>): ResponseEntity<Unit> {
+    fun sendDrafts(db: Database, user: AuthenticatedUser, @RequestBody decisionIds: List<UUID>): ResponseEntity<Unit> {
         Audit.VoucherValueDecisionSend.log(targetId = decisionIds)
         user.requireOneOfRoles(Roles.FINANCE_ADMIN)
-        jdbi.transaction { sendVoucherValueDecisions(it, user, decisionIds) }
+        db.transaction { sendVoucherValueDecisions(it.handle, user, decisionIds) }
         asyncJobRunner.scheduleImmediateRun()
         return ResponseEntity.noContent().build()
     }
 
     @GetMapping("/pdf/{id}")
-    fun getDecisionPdf(user: AuthenticatedUser, @PathVariable id: UUID): ResponseEntity<ByteArray> {
+    fun getDecisionPdf(db: Database, user: AuthenticatedUser, @PathVariable id: UUID): ResponseEntity<ByteArray> {
         Audit.FeeDecisionPdfRead.log(targetId = id)
         user.requireOneOfRoles(Roles.FINANCE_ADMIN)
-        val (filename, pdf) = jdbi.handle { h -> valueDecisionService.getDecisionPdf(h, id) }
+        val (filename, pdf) = db.read { valueDecisionService.getDecisionPdf(it.handle, id) }
         val headers = HttpHeaders().apply {
             add("Content-Disposition", "attachment; filename=\"$filename\"")
             add("Content-Type", "application/pdf")

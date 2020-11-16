@@ -21,12 +21,12 @@ import fi.espoo.evaka.invoicing.service.getInvoiceCodes
 import fi.espoo.evaka.invoicing.service.markManuallySent
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.config.Roles
+import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.db.transaction
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.utils.parseEnum
-import org.jdbi.v3.core.Jdbi
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
@@ -64,11 +64,11 @@ data class InvoiceSearchResult(
 @RequestMapping("/invoices")
 class InvoiceController(
     private val service: InvoiceService,
-    private val jdbi: Jdbi,
     private val objectMapper: ObjectMapper
 ) {
     @GetMapping("/search")
     fun searchInvoices(
+        db: Database,
         user: AuthenticatedUser,
         @RequestParam(required = true) page: Int,
         @RequestParam(required = true) pageSize: Int,
@@ -86,9 +86,9 @@ class InvoiceController(
         user.requireOneOfRoles(Roles.FINANCE_ADMIN)
         val maxPageSize = 5000
         if (pageSize > maxPageSize) throw BadRequest("Maximum page size is $maxPageSize")
-        val (total, invoices) = jdbi.handle { h ->
+        val (total, invoices) = db.read { tx ->
             paginatedSearch(
-                h,
+                tx.handle,
                 page,
                 pageSize,
                 sortBy ?: InvoiceSortParam.STATUS,
@@ -109,23 +109,24 @@ class InvoiceController(
     }
 
     @PostMapping("/create-drafts")
-    fun createDraftInvoices(user: AuthenticatedUser): ResponseEntity<Unit> {
+    fun createDraftInvoices(db: Database, user: AuthenticatedUser): ResponseEntity<Unit> {
         Audit.InvoicesCreate.log()
         user.requireOneOfRoles(Roles.FINANCE_ADMIN)
-        jdbi.transaction { createAllDraftInvoices(it, objectMapper) }
+        db.transaction { createAllDraftInvoices(it.handle, objectMapper) }
         return ResponseEntity.noContent().build()
     }
 
     @PostMapping("/delete-drafts")
-    fun deleteDraftInvoices(user: AuthenticatedUser, @RequestBody invoiceIds: List<UUID>): ResponseEntity<Unit> {
+    fun deleteDraftInvoices(db: Database, user: AuthenticatedUser, @RequestBody invoiceIds: List<UUID>): ResponseEntity<Unit> {
         Audit.InvoicesDeleteDrafts.log(targetId = invoiceIds)
         user.requireOneOfRoles(Roles.FINANCE_ADMIN)
-        jdbi.transaction { h -> deleteDraftInvoices(h, invoiceIds) }
+        db.transaction { deleteDraftInvoices(it.handle, invoiceIds) }
         return ResponseEntity.noContent().build()
     }
 
     @PostMapping("/send")
     fun sendInvoices(
+        db: Database,
         user: AuthenticatedUser,
         @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
         @RequestParam(required = false) invoiceDate: LocalDate?,
@@ -135,9 +136,9 @@ class InvoiceController(
     ): ResponseEntity<Unit> {
         Audit.InvoicesSend.log(targetId = invoiceIds)
         user.requireOneOfRoles(Roles.FINANCE_ADMIN)
-        jdbi.transaction {
+        db.transaction {
             service.sendInvoices(
-                it,
+                it.handle,
                 user,
                 invoiceIds,
                 invoiceDate,
@@ -149,15 +150,16 @@ class InvoiceController(
 
     @PostMapping("/send/by-date")
     fun sendInvoicesByDate(
+        db: Database,
         user: AuthenticatedUser,
         @RequestBody payload: InvoicePayload
     ): ResponseEntity<Unit> {
         Audit.InvoicesSendByDate.log()
         user.requireOneOfRoles(Roles.FINANCE_ADMIN)
-        jdbi.transaction { h ->
-            val invoiceIds = service.getInvoiceIds(h, payload.from, payload.to, payload.areas)
+        db.transaction { tx ->
+            val invoiceIds = service.getInvoiceIds(tx.handle, payload.from, payload.to, payload.areas)
             service.sendInvoices(
-                h,
+                tx.handle,
                 user,
                 invoiceIds,
                 payload.invoiceDate,
@@ -168,37 +170,39 @@ class InvoiceController(
     }
 
     @PostMapping("/mark-sent")
-    fun markInvoicesSent(user: AuthenticatedUser, @RequestBody invoiceIds: List<UUID>): ResponseEntity<Unit> {
+    fun markInvoicesSent(db: Database, user: AuthenticatedUser, @RequestBody invoiceIds: List<UUID>): ResponseEntity<Unit> {
         Audit.InvoicesMarkSent.log(targetId = invoiceIds)
         user.requireOneOfRoles(Roles.FINANCE_ADMIN)
-        jdbi.transaction { markManuallySent(it, user, invoiceIds) }
+        db.transaction { markManuallySent(it.handle, user, invoiceIds) }
         return ResponseEntity.noContent().build()
     }
 
     @GetMapping("/{uuid}")
-    fun getInvoice(user: AuthenticatedUser, @PathVariable uuid: String): ResponseEntity<Wrapper<InvoiceDetailed>> {
+    fun getInvoice(db: Database, user: AuthenticatedUser, @PathVariable uuid: String): ResponseEntity<Wrapper<InvoiceDetailed>> {
         Audit.InvoicesRead.log(targetId = uuid)
         user.requireOneOfRoles(Roles.FINANCE_ADMIN)
         val parsedUuid = parseUUID(uuid)
-        val res = jdbi.handle { h -> getDetailedInvoice(h, parsedUuid) }
+        val res = db.read { getDetailedInvoice(it.handle, parsedUuid) }
             ?: throw NotFound("No invoice found with given ID ($uuid)")
         return ResponseEntity.ok(Wrapper(res))
     }
 
     @GetMapping("/head-of-family/{uuid}")
     fun getHeadOfFamilyInvoices(
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable uuid: String
     ): ResponseEntity<Wrapper<List<Invoice>>> {
         Audit.InvoicesRead.log(targetId = uuid)
         user.requireOneOfRoles(Roles.FINANCE_ADMIN)
         val parsedUuid = parseUUID(uuid)
-        val res = jdbi.handle { h -> getHeadOfFamilyInvoices(h, parsedUuid) }
+        val res = db.read { getHeadOfFamilyInvoices(it.handle, parsedUuid) }
         return ResponseEntity.ok(Wrapper(res))
     }
 
     @PutMapping("/{uuid}")
     fun putInvoice(
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable uuid: String,
         @RequestBody invoice: Invoice
@@ -206,14 +210,14 @@ class InvoiceController(
         Audit.InvoicesUpdate.log(targetId = uuid)
         user.requireOneOfRoles(Roles.FINANCE_ADMIN)
         val parsedUuid = parseUUID(uuid)
-        jdbi.transaction { service.updateInvoice(it, parsedUuid, invoice) }
+        db.transaction { service.updateInvoice(it.handle, parsedUuid, invoice) }
         return ResponseEntity.noContent().build()
     }
 
     @GetMapping("/codes")
-    fun getInvoiceCodes(user: AuthenticatedUser): ResponseEntity<Wrapper<InvoiceCodes>> {
+    fun getInvoiceCodes(db: Database, user: AuthenticatedUser): ResponseEntity<Wrapper<InvoiceCodes>> {
         user.requireOneOfRoles(Roles.FINANCE_ADMIN)
-        val codes = jdbi.handle { h -> getInvoiceCodes(h) }
+        val codes = db.read { getInvoiceCodes(it.handle) }
         return ResponseEntity.ok(Wrapper(codes))
     }
 }

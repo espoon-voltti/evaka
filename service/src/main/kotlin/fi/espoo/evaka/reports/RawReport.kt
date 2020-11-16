@@ -10,13 +10,11 @@ import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.config.Roles
+import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.getEnum
 import fi.espoo.evaka.shared.db.getNullableUUID
 import fi.espoo.evaka.shared.db.getUUID
-import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.domain.BadRequest
-import org.jdbi.v3.core.Handle
-import org.jdbi.v3.core.Jdbi
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
@@ -26,9 +24,10 @@ import java.time.LocalDate
 import java.util.UUID
 
 @RestController
-class RawReportController(private val jdbi: Jdbi) {
+class RawReportController {
     @GetMapping("/reports/raw")
     fun getRawReport(
+        db: Database,
         user: AuthenticatedUser,
         @RequestParam("from") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
         @RequestParam("to") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate
@@ -38,11 +37,11 @@ class RawReportController(private val jdbi: Jdbi) {
         if (to.isBefore(from)) throw BadRequest("Inverted time range")
         if (to.isAfter(from.plusDays(7))) throw BadRequest("Time range too long")
 
-        return jdbi.handle { getRawRows(it, from, to) }.let(::ok)
+        return db.read { it.getRawRows(from, to) }.let(::ok)
     }
 }
 
-fun getRawRows(h: Handle, from: LocalDate, to: LocalDate): List<RawReportRow> {
+private fun Database.Read.getRawRows(from: LocalDate, to: LocalDate): List<RawReportRow> {
     // language=sql
     val sql =
         """
@@ -157,7 +156,7 @@ fun getRawRows(h: Handle, from: LocalDate, to: LocalDate): List<RawReportRow> {
         """.trimIndent()
 
     @Suppress("UNCHECKED_CAST")
-    return h.createQuery(sql)
+    return createQuery(sql)
         .bind("start_date", from)
         .bind("end_date", to)
         .map { rs, _ ->

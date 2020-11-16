@@ -9,12 +9,10 @@ import fi.espoo.evaka.occupancy.OccupancyType
 import fi.espoo.evaka.occupancy.getSql
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.config.Roles
+import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.getUUID
-import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.ClosedPeriod
-import org.jdbi.v3.core.Handle
-import org.jdbi.v3.core.Jdbi
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestParam
@@ -23,11 +21,10 @@ import java.time.LocalDate
 import java.util.UUID
 
 @RestController
-class OccupancyReportController(
-    private val jdbi: Jdbi
-) {
+class OccupancyReportController {
     @GetMapping("/reports/occupancy-by-unit")
     fun getOccupancyUnitReport(
+        db: Database,
         user: AuthenticatedUser,
         @RequestParam type: OccupancyType,
         @RequestParam careAreaId: UUID,
@@ -39,13 +36,13 @@ class OccupancyReportController(
         val from = LocalDate.of(year, month, 1)
         val to = from.plusMonths(1).minusDays(1)
 
-        val occupancies = jdbi.handle(
-            calculateOccupancyUnitReport(
+        val occupancies = db.read {
+            it.calculateOccupancyUnitReport(
                 careAreaId,
                 ClosedPeriod(from, to),
                 type
             )
-        )
+        }
 
         val result = occupancies
             .groupBy(
@@ -84,6 +81,7 @@ class OccupancyReportController(
 
     @GetMapping("/reports/occupancy-by-group")
     fun getOccupancyGroupReport(
+        db: Database,
         user: AuthenticatedUser,
         @RequestParam type: OccupancyType,
         @RequestParam careAreaId: UUID,
@@ -95,13 +93,13 @@ class OccupancyReportController(
         val from = LocalDate.of(year, month, 1)
         val to = from.plusMonths(1).minusDays(1)
 
-        val occupancies = jdbi.handle(
-            calculateOccupancyGroupReport(
+        val occupancies = db.read {
+            it.calculateOccupancyGroupReport(
                 careAreaId,
                 ClosedPeriod(from, to),
                 type
             )
-        )
+        }
 
         val result = occupancies
             .groupBy(
@@ -204,11 +202,11 @@ private data class OccupancyGroupReportRowRaw(
     val percentage: Double? = null
 )
 
-private fun calculateOccupancyUnitReport(
+private fun Database.Read.calculateOccupancyUnitReport(
     careAreaId: UUID,
     period: ClosedPeriod,
     type: OccupancyType
-): (Handle) -> List<OccupancyUnitReportRowRaw> = { h ->
+): List<OccupancyUnitReportRowRaw> {
     if (period.start.plusDays(50) < period.end) {
         throw BadRequest("Date range ${period.start} - ${period.end} is too long. Maximum range is 50 days.")
     }
@@ -219,7 +217,7 @@ private fun calculateOccupancyUnitReport(
         includeGroups = false
     )
 
-    h.createQuery(sql)
+    return createQuery(sql)
         .bind("careAreaId", careAreaId)
         .bind("startDate", period.start)
         .bind("endDate", period.end)
@@ -239,11 +237,11 @@ private fun calculateOccupancyUnitReport(
         .map { (_, reportRow) -> reportRow }
 }
 
-private fun calculateOccupancyGroupReport(
+private fun Database.Read.calculateOccupancyGroupReport(
     careAreaId: UUID,
     period: ClosedPeriod,
     type: OccupancyType
-): (Handle) -> List<OccupancyGroupReportRowRaw> = { h ->
+): List<OccupancyGroupReportRowRaw> {
     if (period.start.plusDays(50) < period.end) {
         throw BadRequest("Date range ${period.start} - ${period.end} is too long. Maximum range is 50 days.")
     }
@@ -254,7 +252,7 @@ private fun calculateOccupancyGroupReport(
         includeGroups = true
     )
 
-    h.createQuery(sql)
+    return createQuery(sql)
         .bind("careAreaId", careAreaId)
         .bind("startDate", period.start)
         .bind("endDate", period.end)
