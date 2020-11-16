@@ -48,7 +48,7 @@ class ParentshipController(
 
         with(body) {
             return db.transaction {
-                parentshipService.createParentship(it.handle, childId, headOfChildId, startDate, endDate)
+                parentshipService.createParentship(it, childId, headOfChildId, startDate, endDate)
             }
                 .also { asyncJobRunner.scheduleImmediateRun() }
                 .let { ResponseEntity.created(URI.create("/parentships/${it.id}")).body(it) }
@@ -71,8 +71,8 @@ class ParentshipController(
                 childId = childId,
                 includeConflicts = true
             )
-                .let { ResponseEntity.ok().body(it) }
         }
+            .let { ResponseEntity.ok().body(it) }
     }
 
     @GetMapping("/{id}")
@@ -82,9 +82,9 @@ class ParentshipController(
 
         return db.read {
             it.handle.getParentship(id)
-                ?.let { ResponseEntity.ok().body(it) }
-                ?: ResponseEntity.notFound().build()
         }
+            ?.let { ResponseEntity.ok().body(it) }
+            ?: ResponseEntity.notFound().build()
     }
 
     @PutMapping("/{id}")
@@ -98,7 +98,7 @@ class ParentshipController(
         user.requireOneOfRoles(SERVICE_WORKER, UNIT_SUPERVISOR, FINANCE_ADMIN)
 
         return db.transaction {
-            parentshipService.updateParentshipDuration(it.handle, id, body.startDate, body.endDate)
+            parentshipService.updateParentshipDuration(it, id, body.startDate, body.endDate)
         }
             .also { asyncJobRunner.scheduleImmediateRun() }
             .let { ResponseEntity.ok().body(it) }
@@ -113,7 +113,7 @@ class ParentshipController(
         Audit.ParentShipsRetry.log(targetId = parentshipId)
         user.requireOneOfRoles(SERVICE_WORKER, UNIT_SUPERVISOR, FINANCE_ADMIN)
 
-        db.transaction { parentshipService.retryParentship(it.handle, parentshipId) }
+        db.transaction { parentshipService.retryParentship(it, parentshipId) }
         asyncJobRunner.scheduleImmediateRun()
         return noContent()
     }
@@ -123,7 +123,7 @@ class ParentshipController(
         Audit.ParentShipsDelete.log(targetId = id)
         user.requireOneOfRoles(SERVICE_WORKER, UNIT_SUPERVISOR, FINANCE_ADMIN)
 
-        db.transaction { parentshipService.deleteParentship(it.handle, id) }
+        db.transaction { parentshipService.deleteParentship(it, id) }
         asyncJobRunner.scheduleImmediateRun()
 
         return ResponseEntity.noContent().build()

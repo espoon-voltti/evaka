@@ -486,7 +486,7 @@ RETURNING id
             ) else null
 
             placementPlanService.createPlacementPlan(
-                tx.handle,
+                tx,
                 application,
                 DaycarePlacementPlan(
                     placementPlan.unitId,
@@ -596,7 +596,7 @@ RETURNING id
     ): ResponseEntity<Unit> {
         db.transaction { tx ->
             ensureFakeAdminExists(tx.handle)
-            placementPlanService.getPlacementPlanDraft(tx.handle, applicationId)
+            placementPlanService.getPlacementPlanDraft(tx, applicationId)
                 .let {
                     DaycarePlacementPlan(
                         unitId = it.preferredUnits.first().id,

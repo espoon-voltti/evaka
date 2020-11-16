@@ -49,9 +49,9 @@ class DecisionService(
     private val evakaMessageClient: IEvakaMessageClient,
     private val asyncJobRunner: AsyncJobRunner
 ) {
-    fun finalizeDecisions(h: Handle, user: AuthenticatedUser, applicationId: UUID, sendAsMessage: Boolean): List<UUID> {
-        val decisionIds = finalizeDecisions(h, applicationId)
-        asyncJobRunner.plan(h, decisionIds.map { NotifyDecisionCreated(it, user, sendAsMessage) })
+    fun finalizeDecisions(tx: Database.Transaction, user: AuthenticatedUser, applicationId: UUID, sendAsMessage: Boolean): List<UUID> {
+        val decisionIds = finalizeDecisions(tx.handle, applicationId)
+        asyncJobRunner.plan(tx, decisionIds.map { NotifyDecisionCreated(it, user, sendAsMessage) })
         return decisionIds
     }
 

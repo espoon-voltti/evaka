@@ -10,7 +10,6 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.transaction
 import fi.espoo.voltti.logging.MdcKey
 import mu.KotlinLogging
-import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.Jdbi
 import java.lang.reflect.UndeclaredThrowableException
 import java.time.Duration
@@ -84,14 +83,6 @@ class AsyncJobRunner(
 
     @Volatile
     var sendApplicationEmail: (db: Database, msg: SendApplicationEmail) -> Unit = noHandler
-
-    fun plan(
-        h: Handle,
-        payloads: Iterable<AsyncJobPayload>,
-        retryCount: Int = defaultRetryCount,
-        retryInterval: Duration = defaultRetryInterval,
-        runAt: Instant = Instant.now()
-    ) = h.transaction { plan(Database.Transaction.wrap(it), payloads, retryCount, retryInterval, runAt) }
 
     fun plan(
         tx: Database.Transaction,

@@ -8,8 +8,6 @@ import fi.espoo.evaka.identity.ExternalIdentifier
 import fi.espoo.evaka.pis.AbstractIntegrationTest
 import fi.espoo.evaka.pis.createPerson
 import fi.espoo.evaka.pis.getParentships
-import fi.espoo.evaka.shared.db.handle
-import fi.espoo.evaka.shared.db.transaction
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -29,28 +27,27 @@ class ParentshipServiceIntegrationTest : AbstractIntegrationTest() {
         val startDate1 = LocalDate.now()
         val endDate1 = startDate1.plusDays(50)
 
-        jdbi.handle { h ->
-
-            parentshipService.createParentship(h, child.id, parent1.id, startDate1, endDate1)
+        db.transaction { tx ->
+            parentshipService.createParentship(tx, child.id, parent1.id, startDate1, endDate1)
 
             val startDate2 = endDate1.plusDays(1)
             val endDate2 = startDate2.plusDays(50)
 
-            parentshipService.createParentship(h, child.id, parent2.id, startDate2, endDate2)
+            parentshipService.createParentship(tx, child.id, parent2.id, startDate2, endDate2)
 
-            val headsByChild = h.getParentships(headOfChildId = null, childId = child.id)
+            val headsByChild = tx.handle.getParentships(headOfChildId = null, childId = child.id)
 
             assertEquals(2, headsByChild.size)
 
-            val childByHeads = headsByChild.map { h.getParentships(headOfChildId = it.headOfChildId, childId = null) }
+            val childByHeads = headsByChild.map { tx.handle.getParentships(headOfChildId = it.headOfChildId, childId = null) }
 
             assertEquals(2, childByHeads.size)
         }
     }
 
     private fun createPerson(ssn: String, firstName: String): PersonDTO {
-        return jdbi.transaction {
-            it.createPerson(
+        return db.transaction {
+            it.handle.createPerson(
                 PersonIdentityRequest(
                     identity = ExternalIdentifier.SSN.getInstance(ssn),
                     firstName = firstName,

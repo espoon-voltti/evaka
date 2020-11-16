@@ -12,9 +12,9 @@ import fi.espoo.evaka.deriveClubTerm
 import fi.espoo.evaka.derivePreschoolTerm
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.NotifyPlacementPlanApplied
+import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.ClosedPeriod
 import fi.espoo.evaka.shared.domain.NotFound
-import org.jdbi.v3.core.Handle
 import org.springframework.stereotype.Service
 import java.time.LocalDate
 import java.time.Month
@@ -25,13 +25,13 @@ class PlacementPlanService(
     private val placementService: PlacementService,
     private val asyncJobRunner: AsyncJobRunner
 ) {
-    fun getPlacementPlanDraft(h: Handle, applicationId: UUID): PlacementPlanDraft {
-        val application = fetchApplicationDetails(h, applicationId)
+    fun getPlacementPlanDraft(tx: Database.Read, applicationId: UUID): PlacementPlanDraft {
+        val application = fetchApplicationDetails(tx.handle, applicationId)
             ?: throw NotFound("Application $applicationId not found")
 
         val type = derivePlacementType(application)
         val form = application.form
-        val child = getPlacementDraftChild(h, application.childId)
+        val child = getPlacementDraftChild(tx.handle, application.childId)
             ?: throw NotFound("Cannot find child with id ${application.childId} to application ${application.id}")
         val preferredUnits = form.preferences.preferredUnits.map {
             PlacementDraftUnit(
@@ -39,7 +39,7 @@ class PlacementPlanService(
                 name = it.name
             )
         }
-        val placements = h.getPlacementDraftPlacements(application.childId)
+        val placements = tx.handle.getPlacementDraftPlacements(application.childId)
 
         val startDate = form.preferences.preferredStartDate!!
 
@@ -93,14 +93,14 @@ class PlacementPlanService(
         }
     }
 
-    fun softDeleteUnusedPlacementPlanByApplication(h: Handle, applicationId: UUID) =
-        softDeletePlacementPlanIfUnused(h, applicationId)
+    fun softDeleteUnusedPlacementPlanByApplication(tx: Database.Transaction, applicationId: UUID) =
+        softDeletePlacementPlanIfUnused(tx.handle, applicationId)
 
-    fun createPlacementPlan(h: Handle, application: ApplicationDetails, placementPlan: DaycarePlacementPlan) =
-        createPlacementPlan(h, application.id, derivePlacementType(application), placementPlan)
+    fun createPlacementPlan(tx: Database.Transaction, application: ApplicationDetails, placementPlan: DaycarePlacementPlan) =
+        createPlacementPlan(tx.handle, application.id, derivePlacementType(application), placementPlan)
 
     fun applyPlacementPlan(
-        h: Handle,
+        tx: Database.Transaction,
         childId: UUID,
         plan: PlacementPlan,
         allowPreschool: Boolean = true,
@@ -112,7 +112,7 @@ class PlacementPlanService(
             if (allowPreschool) {
                 val period = requestedStartDate?.let { plan.period.copy(start = it) } ?: plan.period
                 placementService.createPlacement(
-                    h = h,
+                    h = tx.handle,
                     type = if (plan.type == PlacementType.PRESCHOOL_DAYCARE) PlacementType.PRESCHOOL else PlacementType.PREPARATORY,
                     childId = childId,
                     unitId = plan.unitId,
@@ -132,7 +132,7 @@ class PlacementPlanService(
                 // placement is used because invoices are handled differently
                 if (period.end.isAfter(term.end)) {
                     placementService.createPlacement(
-                        h = h,
+                        h = tx.handle,
                         type = plan.type,
                         childId = childId,
                         unitId = plan.unitId,
@@ -140,7 +140,7 @@ class PlacementPlanService(
                         endDate = term.end
                     )
                     placementService.createPlacement(
-                        h = h,
+                        h = tx.handle,
                         type = PlacementType.DAYCARE,
                         childId = childId,
                         unitId = plan.unitId,
@@ -149,7 +149,7 @@ class PlacementPlanService(
                     )
                 } else {
                     placementService.createPlacement(
-                        h = h,
+                        h = tx.handle,
                         type = plan.type,
                         childId = childId,
                         unitId = plan.unitId,
@@ -167,7 +167,7 @@ class PlacementPlanService(
         } else {
             val period = requestedStartDate?.let { plan.period.copy(start = it) } ?: plan.period
             placementService.createPlacement(
-                h = h,
+                h = tx.handle,
                 type = plan.type,
                 childId = childId,
                 unitId = plan.unitId,
@@ -177,7 +177,7 @@ class PlacementPlanService(
             effectivePeriod = period
         }
         effectivePeriod?.also {
-            asyncJobRunner.plan(h, listOf(NotifyPlacementPlanApplied(childId, it.start, it.end)))
+            asyncJobRunner.plan(tx, listOf(NotifyPlacementPlanApplied(childId, it.start, it.end)))
         }
     }
 

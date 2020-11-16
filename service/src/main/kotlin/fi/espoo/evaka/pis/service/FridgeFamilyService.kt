@@ -69,7 +69,7 @@ class FridgeFamilyService(
                 try {
                     db.transaction { tx ->
                         parentshipService.createParentship(
-                            tx.handle,
+                            tx,
                             childId = child.id,
                             headOfChildId = msg.personId,
                             startDate = LocalDate.now(),

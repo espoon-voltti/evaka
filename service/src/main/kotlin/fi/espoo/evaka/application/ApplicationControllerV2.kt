@@ -285,7 +285,7 @@ class ApplicationControllerV2(
         user: AuthenticatedUser,
         @PathVariable applicationId: UUID
     ): ResponseEntity<Unit> {
-        db.transaction { applicationStateService.sendApplication(it.handle, user, applicationId) }
+        db.transaction { applicationStateService.sendApplication(it, user, applicationId) }
         return ResponseEntity.noContent().build()
     }
 
@@ -297,7 +297,7 @@ class ApplicationControllerV2(
     ): ResponseEntity<PlacementPlanDraft> {
         Audit.PlacementPlanDraftRead.log(targetId = applicationId)
         user.requireOneOfRoles(Roles.SERVICE_WORKER, Roles.ADMIN)
-        return db.read { placementPlanService.getPlacementPlanDraft(it.handle, applicationId) }
+        return db.read { placementPlanService.getPlacementPlanDraft(it, applicationId) }
             .let { ResponseEntity.ok(it) }
     }
 
@@ -450,7 +450,7 @@ class ApplicationControllerV2(
         @RequestBody body: AcceptDecisionRequest
     ): ResponseEntity<Unit> {
         db.transaction {
-            applicationStateService.acceptDecision(it.handle, user, applicationId, body.decisionId, body.requestedStartDate)
+            applicationStateService.acceptDecision(it, user, applicationId, body.decisionId, body.requestedStartDate)
         }
         return ResponseEntity.noContent().build()
     }
@@ -462,7 +462,7 @@ class ApplicationControllerV2(
         @PathVariable applicationId: UUID,
         @RequestBody body: RejectDecisionRequest
     ): ResponseEntity<Unit> {
-        db.transaction { applicationStateService.rejectDecision(it.handle, user, applicationId, body.decisionId) }
+        db.transaction { applicationStateService.rejectDecision(it, user, applicationId, body.decisionId) }
         return ResponseEntity.noContent().build()
     }
 

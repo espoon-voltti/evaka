@@ -158,7 +158,7 @@ class ApplicationControllerEnduser(
         user: AuthenticatedUser,
         @PathVariable applicationId: UUID
     ): ResponseEntity<Unit> {
-        db.transaction { applicationStateService.sendApplication(it.handle, user, applicationId, isEnduser = true) }
+        db.transaction { applicationStateService.sendApplication(it, user, applicationId, isEnduser = true) }
         return ResponseEntity.noContent().build()
     }
 
@@ -171,7 +171,7 @@ class ApplicationControllerEnduser(
     ): ResponseEntity<Unit> {
         db.transaction {
             applicationStateService.acceptDecision(
-                it.handle,
+                it,
                 user,
                 applicationId,
                 body.decisionId,
@@ -190,7 +190,7 @@ class ApplicationControllerEnduser(
         @RequestBody body: RejectDecisionRequest
     ): ResponseEntity<Unit> {
         db.transaction {
-            applicationStateService.rejectDecision(it.handle, user, applicationId, body.decisionId, isEnduser = true)
+            applicationStateService.rejectDecision(it, user, applicationId, body.decisionId, isEnduser = true)
         }
         return ResponseEntity.noContent().build()
     }

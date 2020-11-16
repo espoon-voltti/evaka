@@ -6,7 +6,7 @@ package fi.espoo.evaka.shared.async
 
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.config.SharedIntegrationTestConfig
-import fi.espoo.evaka.shared.db.transaction
+import fi.espoo.evaka.shared.db.Database
 import org.jdbi.v3.core.Jdbi
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -33,6 +33,8 @@ class AsyncJobRunnerTest {
     @Autowired
     lateinit var jdbi: Jdbi
 
+    lateinit var db: Database
+
     private val user = AuthenticatedUser(UUID.randomUUID(), setOf())
 
     @BeforeAll
@@ -45,13 +47,14 @@ class AsyncJobRunnerTest {
     fun clean() {
         asyncJobRunner.notifyDecisionCreated = { _, _ -> }
         jdbi.open().use { h -> h.execute("TRUNCATE async_job") }
+        db = Database(jdbi)
     }
 
     @Test
     fun testPlanRollback() {
         assertThrows<LetsRollbackException> {
-            jdbi.transaction { h ->
-                asyncJobRunner.plan(h, listOf(NotifyDecisionCreated(UUID.randomUUID(), user, false)))
+            db.transaction { tx ->
+                asyncJobRunner.plan(tx, listOf(NotifyDecisionCreated(UUID.randomUUID(), user, false)))
                 throw LetsRollbackException()
             }
         }
@@ -62,7 +65,7 @@ class AsyncJobRunnerTest {
     fun testCompleteHappyCase() {
         val decisionId = UUID.randomUUID()
         val future = this.setAsyncJobCallback { msg -> msg }
-        jdbi.transaction { asyncJobRunner.plan(it, listOf(NotifyDecisionCreated(decisionId, user, false))) }
+        db.transaction { asyncJobRunner.plan(it, listOf(NotifyDecisionCreated(decisionId, user, false))) }
         asyncJobRunner.scheduleImmediateRun(maxCount = 1)
         val result = future.get(10, TimeUnit.SECONDS)
         asyncJobRunner.waitUntilNoRunningJobs()
@@ -72,8 +75,8 @@ class AsyncJobRunnerTest {
     @Test
     fun testCompleteRetry() {
         val decisionId = UUID.randomUUID()
-        val failingFuture = this.setAsyncJobCallback { _ -> throw LetsRollbackException() }
-        jdbi.transaction { asyncJobRunner.plan(it, listOf(NotifyDecisionCreated(decisionId, user, false)), 20, Duration.ZERO) }
+        val failingFuture = this.setAsyncJobCallback { throw LetsRollbackException() }
+        db.transaction { asyncJobRunner.plan(it, listOf(NotifyDecisionCreated(decisionId, user, false)), 20, Duration.ZERO) }
         asyncJobRunner.scheduleImmediateRun(maxCount = 1)
 
         val exception = assertThrows<ExecutionException> { failingFuture.get(10, TimeUnit.SECONDS) }
