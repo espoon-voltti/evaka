@@ -7,6 +7,8 @@ package fi.espoo.evaka.attendance
 import com.github.kittinunf.fuel.core.extensions.jsonBody
 import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
+import fi.espoo.evaka.daycare.service.AbsenceType
+import fi.espoo.evaka.daycare.service.CareType
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.resetDatabase
@@ -15,6 +17,7 @@ import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
+import fi.espoo.evaka.shared.dev.insertTestAbsence
 import fi.espoo.evaka.shared.dev.insertTestChildAttendance
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroupPlacement
@@ -104,6 +107,34 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
     }
 
     @Test
+    fun `post return to coming - happy case when present`() {
+        givenChildPresent()
+
+        val child = returnToComingAssertOkOneChild()
+
+        assertEquals(AttendanceStatus.COMING, child.status)
+        assertNull(child.attendance)
+        assertTrue(child.absences.isEmpty())
+    }
+
+    @Test
+    fun `post return to coming - happy case when absent`() {
+        givenChildAbsent(listOf(CareType.PRESCHOOL, CareType.PRESCHOOL_DAYCARE), AbsenceType.UNKNOWN_ABSENCE)
+
+        val child = returnToComingAssertOkOneChild()
+
+        assertEquals(AttendanceStatus.COMING, child.status)
+        assertNull(child.attendance)
+        assertTrue(child.absences.isEmpty())
+    }
+
+    @Test
+    fun `post return to coming - error when departed`() {
+        givenChildDeparted()
+        returnToComingAssertFail(409)
+    }
+
+    @Test
     fun `get child departure info - happy case`() {
         givenChildPresent()
         val info = getDepartureInfoAssertOk(Instant.now())
@@ -179,6 +210,14 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
         assertEquals(AttendanceStatus.DEPARTED, childBefore.status)
     }
 
+    private fun givenChildAbsent(absentFrom: List<CareType>, absenceType: AbsenceType) {
+        absentFrom.forEach { careType ->
+            jdbi.handle {
+                insertTestAbsence(h = it, childId = testChild_1.id, absenceType = absenceType, careType = careType, date = LocalDate.now())
+            } 
+        }
+    }
+
     private fun getAttendances(): AttendanceResponse {
         val (_, res, result) = http.get("/attendances/units/${testDaycare.id}")
             .asUser(staffUser)
@@ -220,6 +259,25 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
     private fun markArrivedAssertFail(arrived: Instant, status: Int) {
         val (_, res, _) = http.post("/attendances/units/${testDaycare.id}/children/${testChild_1.id}/arrival")
             .jsonBody(objectMapper.writeValueAsString(ChildAttendanceController.ArrivalRequest(arrived)))
+            .asUser(staffUser)
+            .responseObject<AttendanceResponse>(objectMapper)
+
+        assertEquals(status, res.statusCode)
+    }
+
+    private fun returnToComingAssertOkOneChild(): Child {
+        val (_, res, result) = http.post("/attendances/units/${testDaycare.id}/children/${testChild_1.id}/return-to-coming")
+            .asUser(staffUser)
+            .responseObject<AttendanceResponse>(objectMapper)
+
+        assertEquals(200, res.statusCode)
+        val response = result.get()
+        assertEquals(1, response.children.size)
+        return response.children.first()
+    }
+
+    private fun returnToComingAssertFail(status: Int) {
+        val (_, res, _) = http.post("/attendances/units/${testDaycare.id}/children/${testChild_1.id}/return-to-coming")
             .asUser(staffUser)
             .responseObject<AttendanceResponse>(objectMapper)
 

@@ -30,13 +30,15 @@ fun Handle.insertAttendance(childId: UUID, unitId: UUID, arrived: Instant, depar
         .first()
 }
 
-fun Handle.getCurrentAttendance(childId: UUID, unitId: UUID): ChildAttendance? {
+fun Handle.getChildCurrentDayAttendance(childId: UUID, unitId: UUID): ChildAttendance? {
     // language=sql
     val sql =
         """
         SELECT id, child_id, unit_id, arrived, departed
         FROM child_attendance
-        WHERE child_id = :childId AND unit_id = :unitId AND departed IS NULL
+        WHERE child_id = :childId AND unit_id = :unitId
+        ORDER BY arrived DESC
+        LIMIT 1
         """.trimIndent()
 
     return createQuery(sql)
@@ -45,38 +47,6 @@ fun Handle.getCurrentAttendance(childId: UUID, unitId: UUID): ChildAttendance? {
         .mapTo<ChildAttendance>()
         .list()
         .firstOrNull()
-}
-
-fun Handle.updateAttendance(attendanceId: UUID, arrived: Instant, departed: Instant?) {
-    // language=sql
-    val sql =
-        """
-        UPDATE child_attendance
-        SET arrived = :arrived, departed = :departed
-        WHERE id = :id
-        """.trimIndent()
-
-    createUpdate(sql)
-        .bind("id", attendanceId)
-        .bind("arrived", arrived)
-        .bind("departed", departed)
-        .execute()
-}
-
-fun Handle.updateCurrentAttendanceEnd(childId: UUID, unitId: UUID, departed: Instant): Boolean {
-    // language=sql
-    val sql =
-        """
-        UPDATE child_attendance
-        SET departed = :departed
-        WHERE child_id = :childId AND unit_id = :unitId AND departed IS NULL
-        """.trimIndent()
-
-    return createUpdate(sql)
-        .bind("childId", childId)
-        .bind("unitId", unitId)
-        .bind("departed", departed)
-        .execute() > 0
 }
 
 fun Handle.fetchUnitInfo(unitId: UUID): UnitInfo {
@@ -186,10 +156,61 @@ fun Handle.fetchChildrenAbsences(unitId: UUID): List<ChildAbsence> {
         .list()
 }
 
-fun Handle.deleteAttendance(attendanceId: UUID) = createUpdate(
+fun Handle.updateAttendance(attendanceId: UUID, arrived: Instant, departed: Instant?) {
     // language=sql
-    """
+    val sql =
+        """
+        UPDATE child_attendance
+        SET arrived = :arrived, departed = :departed
+        WHERE id = :id
+        """.trimIndent()
+
+    createUpdate(sql)
+        .bind("id", attendanceId)
+        .bind("arrived", arrived)
+        .bind("departed", departed)
+        .execute()
+}
+
+fun Handle.updateCurrentAttendanceEnd(childId: UUID, unitId: UUID, departed: Instant): Boolean {
+    // language=sql
+    val sql =
+        """
+        UPDATE child_attendance
+        SET departed = :departed
+        WHERE child_id = :childId AND unit_id = :unitId AND departed IS NULL
+        """.trimIndent()
+
+    return createUpdate(sql)
+        .bind("childId", childId)
+        .bind("unitId", unitId)
+        .bind("departed", departed)
+        .execute() > 0
+}
+
+fun Handle.deleteAttendance(id: UUID) {
+    // language=sql
+    val sql =
+        """
         DELETE FROM child_attendance
-        WHERE id = :attendanceId
-    """.trimIndent()
-).bind("attendanceId", attendanceId).execute()
+        WHERE id = :id
+        """.trimIndent()
+
+    createUpdate(sql)
+        .bind("id", id)
+        .execute()
+}
+
+fun Handle.deleteCurrentDayAbsences(childId: UUID) {
+    // language=sql
+    val sql =
+        """
+        DELETE FROM absence
+        WHERE child_id = :childId AND date = :today
+        """.trimIndent()
+
+    createUpdate(sql)
+        .bind("childId", childId)
+        .bind("today", LocalDate.now(ZoneId.of("Europe/Helsinki")))
+        .execute()
+}

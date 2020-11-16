@@ -67,8 +67,10 @@ class ChildAttendanceController(
 
         return jdbi.transaction { h ->
             assertChildPlacement(h, childId, unitId, Instant.now())
-            if (h.getCurrentAttendance(childId, unitId) != null)
-                throw Conflict("Cannot arrive, already present")
+
+            val attendance = h.getChildCurrentDayAttendance(childId, unitId)
+            if (attendance != null)
+                throw Conflict("Cannot arrive, already arrived today")
 
             ArrivalInfoResponse(
                 absentFromPreschool = false // todo
@@ -91,7 +93,7 @@ class ChildAttendanceController(
         return jdbi.transaction { h ->
             assertChildPlacement(h, childId, unitId, body.arrived)
 
-            // todo: handle absence clearing
+            // todo: handle absence clearing? (EVAKA-4004)
 
             try {
                 h.insertAttendance(
@@ -102,6 +104,37 @@ class ChildAttendanceController(
                 )
             } catch (e: Exception) {
                 throw mapPSQLException(e)
+            }
+
+            getAttendancesResponse(h, unitId)
+        }.let { ResponseEntity.ok(it) }
+    }
+
+    @PostMapping("/units/{unitId}/children/{childId}/return-to-coming")
+    fun returnToComing(
+        user: AuthenticatedUser,
+        @PathVariable unitId: UUID,
+        @PathVariable childId: UUID
+    ): ResponseEntity<AttendanceResponse> {
+        acl.getRolesForUnit(user, unitId).requireOneOfRoles(*authorizedRoles)
+
+        return jdbi.transaction { h ->
+            assertChildPlacement(h, childId, unitId, Instant.now())
+
+            val attendance = h.getChildCurrentDayAttendance(childId, unitId)
+
+            if (attendance == null) {
+                h.deleteCurrentDayAbsences(childId)
+            } else {
+                if (attendance.departed == null) {
+                    try {
+                        h.deleteAttendance(attendance.id)
+                    } catch (e: Exception) {
+                        throw mapPSQLException(e)
+                    }
+                } else {
+                    throw Conflict("Already departed, did you mean return-to-present?")
+                }
             }
 
             getAttendancesResponse(h, unitId)
@@ -122,8 +155,13 @@ class ChildAttendanceController(
 
         return jdbi.transaction { h ->
             assertChildPlacement(h, childId, unitId, Instant.now())
-            h.getCurrentAttendance(childId, unitId)
-                ?: throw Conflict("Cannot depart, no current attendance")
+
+            val attendance = h.getChildCurrentDayAttendance(childId, unitId)
+            if (attendance == null) {
+                throw Conflict("Cannot depart, has not yet arrived")
+            } else if (attendance.departed != null) {
+                throw Conflict("Cannot depart, already departed")
+            }
 
             DepartureInfoResponse(
                 absentFrom = emptySet() // todo
@@ -146,7 +184,7 @@ class ChildAttendanceController(
         return jdbi.transaction { h ->
             assertChildPlacement(h, childId, unitId, body.departed)
 
-            // todo: handle absence clearing
+            // todo: handle absence clearing? (EVAKA-4004)
 
             try {
                 val success = h.updateCurrentAttendanceEnd(
