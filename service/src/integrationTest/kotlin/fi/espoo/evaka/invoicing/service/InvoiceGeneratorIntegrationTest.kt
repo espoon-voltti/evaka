@@ -1888,18 +1888,20 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
                     endDate = period.end!!
                 )
             }
-
-            absenceService.upsertAbsences(
-                absenceDays.map { (date, type) ->
-                    Absence(
-                        absenceType = type,
-                        childId = child.id,
-                        date = date,
-                        careType = CareType.DAYCARE
-                    )
-                },
-                groupId, testDecisionMaker_1.id
-            )
+            db.transaction { tx ->
+                absenceService.upsertAbsences(
+                    tx,
+                    absenceDays.map { (date, type) ->
+                        Absence(
+                            absenceType = type,
+                            childId = child.id,
+                            date = date,
+                            careType = CareType.DAYCARE
+                        )
+                    },
+                    groupId, testDecisionMaker_1.id
+                )
+            }
         }
 
     private fun insertDecisionsAndPlacements(h: Handle, feeDecisions: List<FeeDecision>) {
