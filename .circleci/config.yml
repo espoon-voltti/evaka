@@ -738,6 +738,8 @@ jobs:
           command: ./gradlew test
       - store_test_results:
           path: /home/circleci/repo/service/build/test-results/test/
+      - store_test_results:
+          path: /home/circleci/repo/service-lib/build/test-results/test/
       - login_docker_hub
       - run:
           working_directory: *workspace_service
@@ -788,6 +790,8 @@ jobs:
           command: ./gradlew test
       - store_test_results:
           path: /home/circleci/repo/message-service/build/test-results/test/
+      - store_test_results:
+          path: /home/circleci/repo/service-lib/build/test-results/test/
       - login_docker_hub
       - run:
           working_directory: *workspace_message_service
@@ -796,6 +800,8 @@ jobs:
           path: /home/circleci/repo/message-service/build/test-results/integrationTest/
       - store_artifacts:
           path: /home/circleci/repo/message-service/build/reports/
+      - store_artifacts:
+          path: /home/circleci/repo/service-lib/build/reports/
       - notify_slack
 
   message_service_build_and_push_image:
