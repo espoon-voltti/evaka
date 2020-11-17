@@ -35,7 +35,7 @@ class StaffAttendanceController(
 ) {
     @GetMapping("/{groupId}")
     fun getAttendancesByGroup(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @RequestParam year: Int,
         @RequestParam month: Int,
@@ -50,7 +50,7 @@ class StaffAttendanceController(
 
     @PostMapping("/{groupId}")
     fun upsertStaffAttendance(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @RequestBody staffAttendance: StaffAttendance,
         @PathVariable groupId: UUID

@@ -30,7 +30,7 @@ class ChildAttendanceController(private val acl: AccessControlList) {
 
     @PostMapping("/arrive")
     fun childArrives(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @RequestBody body: ArrivalRequest
     ): ResponseEntity<ChildAttendance> {
@@ -52,7 +52,7 @@ class ChildAttendanceController(private val acl: AccessControlList) {
 
     @PostMapping("/depart")
     fun childDeparts(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @RequestBody body: DepartureRequest
     ): ResponseEntity<Unit> {
@@ -75,7 +75,7 @@ class ChildAttendanceController(private val acl: AccessControlList) {
 
     @GetMapping("/current")
     fun getDaycareAttendances(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @RequestParam daycareId: UUID
     ): ResponseEntity<List<ChildInGroup>> {
@@ -89,7 +89,7 @@ class ChildAttendanceController(private val acl: AccessControlList) {
 
     @DeleteMapping("/{attendanceId}")
     fun deleteAttendance(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable(value = "attendanceId") attendanceId: UUID
     ): ResponseEntity<Unit> {

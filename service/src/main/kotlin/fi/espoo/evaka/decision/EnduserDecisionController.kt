@@ -18,7 +18,7 @@ import java.util.UUID
 @RestController
 class EnduserDecisionController {
     @GetMapping("/enduser/decisions")
-    fun getDecisions(db: Database, user: AuthenticatedUser): ResponseEntity<EnduserDecisionsResponse> {
+    fun getDecisions(db: Database.Connection, user: AuthenticatedUser): ResponseEntity<EnduserDecisionsResponse> {
         Audit.DecisionRead.log(targetId = user.id)
         user.requireOneOfRoles(Roles.END_USER)
         val decisions = db.read { getDecisionsByGuardian(it.handle, user.id, AclAuthorization.All) }

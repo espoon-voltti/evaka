@@ -47,7 +47,7 @@ class PlacementController(
 ) {
     @GetMapping
     fun getPlacements(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @RequestParam(value = "daycareId", required = false) daycareId: UUID? = null,
         @RequestParam(value = "childId", required = false) childId: UUID? = null,
@@ -82,7 +82,7 @@ class PlacementController(
 
     @GetMapping("/plans")
     fun getPlacementPlans(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @RequestParam(value = "daycareId", required = true) daycareId: UUID,
         @RequestParam(
@@ -100,7 +100,7 @@ class PlacementController(
 
     @PostMapping
     fun createPlacement(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @RequestBody body: PlacementCreateRequestBody
     ): ResponseEntity<Placement> {
@@ -138,7 +138,7 @@ class PlacementController(
 
     @PutMapping("/{placementId}")
     fun updatePlacementById(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable("placementId") placementId: UUID,
         @RequestBody body: PlacementUpdateRequestBody
@@ -168,7 +168,7 @@ class PlacementController(
 
     @DeleteMapping("/{placementId}")
     fun deletePlacement(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable("placementId") placementId: UUID
     ): ResponseEntity<Unit> {
@@ -187,7 +187,7 @@ class PlacementController(
 
     @PostMapping("/{placementId}/group-placements")
     fun createGroupPlacement(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable("placementId") placementId: UUID,
         @RequestBody body: GroupPlacementRequestBody
@@ -210,7 +210,7 @@ class PlacementController(
 
     @DeleteMapping("/{daycarePlacementId}/group-placements/{groupPlacementId}")
     fun deleteGroupPlacement(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable("daycarePlacementId") daycarePlacementId: UUID,
         @PathVariable("groupPlacementId") groupPlacementId: UUID
@@ -226,7 +226,7 @@ class PlacementController(
 
     @PostMapping("/{daycarePlacementId}/group-placements/{groupPlacementId}/transfer")
     fun transferGroupPlacement(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable("daycarePlacementId") daycarePlacementId: UUID,
         @PathVariable("groupPlacementId") groupPlacementId: UUID,

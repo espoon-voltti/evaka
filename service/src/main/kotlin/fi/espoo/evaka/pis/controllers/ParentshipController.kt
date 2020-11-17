@@ -39,7 +39,7 @@ class ParentshipController(
 ) {
     @PostMapping
     fun createParentship(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @RequestBody body: ParentshipRequest
     ): ResponseEntity<Parentship> {
@@ -57,7 +57,7 @@ class ParentshipController(
 
     @GetMapping
     fun getParentships(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @RequestParam(value = "headOfChildId", required = false) headOfChildId: VolttiIdentifier? = null,
         @RequestParam(value = "childId", required = false) childId: VolttiIdentifier? = null
@@ -76,7 +76,7 @@ class ParentshipController(
     }
 
     @GetMapping("/{id}")
-    fun getParentship(db: Database, user: AuthenticatedUser, @PathVariable(value = "id") id: UUID): ResponseEntity<Parentship> {
+    fun getParentship(db: Database.Connection, user: AuthenticatedUser, @PathVariable(value = "id") id: UUID): ResponseEntity<Parentship> {
         Audit.ParentShipsRead.log(targetId = id)
         user.requireOneOfRoles(SERVICE_WORKER, UNIT_SUPERVISOR, FINANCE_ADMIN)
 
@@ -89,7 +89,7 @@ class ParentshipController(
 
     @PutMapping("/{id}")
     fun updateParentship(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable(value = "id") id: UUID,
         @RequestBody body: ParentshipUpdateRequest
@@ -106,7 +106,7 @@ class ParentshipController(
 
     @PutMapping("/{id}/retry")
     fun retryPartnership(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable(value = "id") parentshipId: UUID
     ): ResponseEntity<Unit> {
@@ -119,7 +119,7 @@ class ParentshipController(
     }
 
     @DeleteMapping("/{id}")
-    fun deleteParentship(db: Database, user: AuthenticatedUser, @PathVariable(value = "id") id: UUID): ResponseEntity<Unit> {
+    fun deleteParentship(db: Database.Connection, user: AuthenticatedUser, @PathVariable(value = "id") id: UUID): ResponseEntity<Unit> {
         Audit.ParentShipsDelete.log(targetId = id)
         user.requireOneOfRoles(SERVICE_WORKER, UNIT_SUPERVISOR, FINANCE_ADMIN)
 

@@ -75,7 +75,7 @@ class FeeDecisionController(
 ) {
     @GetMapping("/search")
     fun search(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @RequestParam(required = true) page: Int,
         @RequestParam(required = true) pageSize: Int,
@@ -120,7 +120,7 @@ class FeeDecisionController(
     }
 
     @PostMapping("/confirm")
-    fun confirmDrafts(db: Database, user: AuthenticatedUser, @RequestBody feeDecisionIds: List<UUID>): ResponseEntity<Unit> {
+    fun confirmDrafts(db: Database.Connection, user: AuthenticatedUser, @RequestBody feeDecisionIds: List<UUID>): ResponseEntity<Unit> {
         Audit.FeeDecisionConfirm.log(targetId = feeDecisionIds)
         user.requireOneOfRoles(Roles.FINANCE_ADMIN)
         db.transaction { tx ->
@@ -132,7 +132,7 @@ class FeeDecisionController(
     }
 
     @PostMapping("/mark-sent")
-    fun setSent(db: Database, user: AuthenticatedUser, @RequestBody feeDecisionIds: List<UUID>): ResponseEntity<Unit> {
+    fun setSent(db: Database.Connection, user: AuthenticatedUser, @RequestBody feeDecisionIds: List<UUID>): ResponseEntity<Unit> {
         Audit.FeeDecisionMarkSent.log(targetId = feeDecisionIds)
         user.requireOneOfRoles(Roles.FINANCE_ADMIN)
         db.transaction { service.setSent(it, feeDecisionIds) }
@@ -140,7 +140,7 @@ class FeeDecisionController(
     }
 
     @GetMapping("/pdf/{uuid}")
-    fun getDecisionPdf(db: Database, user: AuthenticatedUser, @PathVariable uuid: UUID): ResponseEntity<ByteArray> {
+    fun getDecisionPdf(db: Database.Connection, user: AuthenticatedUser, @PathVariable uuid: UUID): ResponseEntity<ByteArray> {
         Audit.FeeDecisionPdfRead.log(targetId = uuid)
         user.requireOneOfRoles(Roles.FINANCE_ADMIN)
         val headers = HttpHeaders()
@@ -151,7 +151,7 @@ class FeeDecisionController(
     }
 
     @GetMapping("/{uuid}")
-    fun getDecision(db: Database, user: AuthenticatedUser, @PathVariable uuid: UUID): ResponseEntity<Wrapper<FeeDecisionDetailed>> {
+    fun getDecision(db: Database.Connection, user: AuthenticatedUser, @PathVariable uuid: UUID): ResponseEntity<Wrapper<FeeDecisionDetailed>> {
         Audit.FeeDecisionRead.log(targetId = uuid)
         user.requireOneOfRoles(Roles.FINANCE_ADMIN)
         val res = db.read { getFeeDecision(it.handle, objectMapper, uuid) }
@@ -161,7 +161,7 @@ class FeeDecisionController(
 
     @GetMapping("/head-of-family/{uuid}")
     fun getHeadOfFamilyFeeDecisions(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable uuid: UUID
     ): ResponseEntity<Wrapper<List<FeeDecision>>> {
@@ -181,7 +181,7 @@ class FeeDecisionController(
 
     @PostMapping("/head-of-family/{id}/create-retroactive")
     fun generateRetroactiveDecisions(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable id: UUID,
         @RequestBody body: CreateRetroactiveFeeDecisionsBody
@@ -194,7 +194,7 @@ class FeeDecisionController(
 
     @PostMapping("/set-type/{uuid}")
     fun setType(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable uuid: UUID,
         @RequestBody request: FeeDecisionTypeRequest

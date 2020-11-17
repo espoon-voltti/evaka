@@ -54,7 +54,7 @@ class PersonController(
     private val asyncJobRunner: AsyncJobRunner
 ) {
     @PostMapping("/identity")
-    fun postPersonIdentity(db: Database, @RequestBody person: PersonIdentityJSON): ResponseEntity<AuthenticatedUser> {
+    fun postPersonIdentity(db: Database.Connection, @RequestBody person: PersonIdentityJSON): ResponseEntity<AuthenticatedUser> {
         Audit.PersonCreate.log()
         return db.transaction { tx ->
             tx.handle.getPersonBySSN(person.socialSecurityNumber) ?: tx.handle.createPerson(
@@ -71,7 +71,7 @@ class PersonController(
     }
 
     @PostMapping
-    fun createEmpty(db: Database, user: AuthenticatedUser): ResponseEntity<PersonIdentityResponseJSON> {
+    fun createEmpty(db: Database.Connection, user: AuthenticatedUser): ResponseEntity<PersonIdentityResponseJSON> {
         Audit.PersonCreate.log()
         user.requireOneOfRoles(SERVICE_WORKER, FINANCE_ADMIN, ADMIN)
         return db.transaction { it.handle.createEmptyPerson() }
@@ -80,7 +80,7 @@ class PersonController(
 
     @GetMapping(value = ["/details/{personId}", "/identity/{personId}"])
     fun getPerson(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable(value = "personId") personId: VolttiIdentifier
     ): ResponseEntity<PersonJSON> {
@@ -94,7 +94,7 @@ class PersonController(
 
     @GetMapping("/dependants/{personId}")
     fun getPersonDependants(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable(value = "personId") personId: VolttiIdentifier
     ): ResponseEntity<List<PersonWithChildrenDTO>> {
@@ -107,7 +107,7 @@ class PersonController(
 
     @GetMapping("/guardians/{personId}")
     fun getPersonGuardians(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable(value = "personId") personId: VolttiIdentifier
     ): ResponseEntity<List<PersonJSON>> {
@@ -120,7 +120,7 @@ class PersonController(
 
     @GetMapping("/search")
     fun findBySearchTerms(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @RequestParam(
             value = "searchTerm",
@@ -151,7 +151,7 @@ class PersonController(
 
     @PutMapping(value = ["/{personId}/contact-info"])
     fun updateContactInfo(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable(value = "personId") personId: VolttiIdentifier,
         @RequestBody contactInfo: ContactInfo
@@ -167,7 +167,7 @@ class PersonController(
 
     @PatchMapping("/{personId}")
     fun updatePersonDetails(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable(value = "personId") personId: VolttiIdentifier,
         @RequestBody data: PersonPatch
@@ -180,7 +180,7 @@ class PersonController(
 
     @DeleteMapping("/{personId}")
     fun safeDeletePerson(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable(value = "personId") personId: VolttiIdentifier
     ): ResponseEntity<Unit> {
@@ -192,7 +192,7 @@ class PersonController(
 
     @PutMapping("/{personId}/ssn")
     fun addSsn(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable(value = "personId") personId: VolttiIdentifier,
         @RequestBody body: AddSsnRequest
@@ -212,7 +212,7 @@ class PersonController(
 
     @GetMapping("/details/ssn/{ssn}")
     fun getOrCreatePersonBySsn(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable("ssn") ssn: String,
         @RequestParam("readonly", required = false) readonly: Boolean = false
@@ -241,7 +241,7 @@ class PersonController(
 
     @GetMapping("/get-deceased/")
     fun getDeceased(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @RequestParam("sinceDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) sinceDate: LocalDate
     ): ResponseEntity<List<PersonJSON>> {
@@ -256,7 +256,7 @@ class PersonController(
 
     @PostMapping("/merge")
     fun mergePeople(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @RequestBody body: MergeRequest
     ): ResponseEntity<Unit> {
@@ -271,7 +271,7 @@ class PersonController(
 
     @PostMapping("/create")
     fun createPerson(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @RequestBody body: CreatePersonBody
     ): ResponseEntity<UUID> {

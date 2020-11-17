@@ -25,14 +25,14 @@ class ScheduledOperationController(
 ) {
 
     @PostMapping("/dvv/update")
-    fun dvvUpdate(db: Database): ResponseEntity<Int> {
+    fun dvvUpdate(db: Database.Connection): ResponseEntity<Int> {
         Audit.VtjBatchSchedule.log()
         return ResponseEntity.ok(dvvModificationsBatchRefreshService.scheduleBatch(db))
     }
 
     @PostMapping("/koski/update")
     fun koskiUpdate(
-        db: Database,
+        db: Database.Connection,
         @RequestParam(required = false) personIds: String?,
         @RequestParam(required = false) daycareIds: String?
     ): ResponseEntity<Unit> {
@@ -53,7 +53,7 @@ class ScheduledOperationController(
     }
 
     @PostMapping("/application/clear-old-drafts")
-    fun removeOldDraftApplications(db: Database): ResponseEntity<Unit> {
+    fun removeOldDraftApplications(db: Database.Connection): ResponseEntity<Unit> {
         Audit.ApplicationsDeleteDrafts.log()
         db.transaction { removeOldDrafts(it.handle) }
         return ResponseEntity.noContent().build()

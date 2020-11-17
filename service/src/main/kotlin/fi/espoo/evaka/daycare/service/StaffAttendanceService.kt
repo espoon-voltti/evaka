@@ -15,7 +15,7 @@ import java.util.UUID
 
 @Service
 class StaffAttendanceService {
-    fun getAttendancesByMonth(db: Database, year: Int, month: Int, groupId: UUID): StaffAttendanceGroup {
+    fun getAttendancesByMonth(db: Database.Connection, year: Int, month: Int, groupId: UUID): StaffAttendanceGroup {
         val rangeStart = LocalDate.of(year, month, 1)
         val rangeEnd = rangeStart.with(lastDayOfMonth())
 
@@ -30,7 +30,7 @@ class StaffAttendanceService {
         }
     }
 
-    fun upsertStaffAttendance(db: Database, staffAttendance: StaffAttendance) {
+    fun upsertStaffAttendance(db: Database.Connection, staffAttendance: StaffAttendance) {
         db.transaction { tx ->
             if (!tx.isValidStaffAttendanceDate(staffAttendance)) {
                 throw BadRequest("Error: Upserting staff count failed. Group is not operating in given date")

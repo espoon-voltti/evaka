@@ -33,7 +33,7 @@ class ServiceNeedController(
 ) {
     @PostMapping("/children/{childId}/service-needs")
     fun createServiceNeed(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable childId: UUID,
         @RequestBody body: ServiceNeedRequest
@@ -50,7 +50,7 @@ class ServiceNeedController(
 
     @GetMapping("/children/{childId}/service-needs")
     fun getServiceNeeds(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable childId: UUID
     ): ResponseEntity<List<ServiceNeed>> {
@@ -61,7 +61,7 @@ class ServiceNeedController(
 
     @PutMapping("/service-needs/{id}")
     fun updateServiceNeed(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable id: UUID,
         @RequestBody body: ServiceNeedRequest
@@ -78,7 +78,7 @@ class ServiceNeedController(
 
     @DeleteMapping("/service-needs/{id}")
     fun deleteServiceNeed(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable id: UUID
     ): ResponseEntity<Unit> {

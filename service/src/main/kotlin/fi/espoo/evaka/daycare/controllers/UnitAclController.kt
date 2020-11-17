@@ -27,7 +27,7 @@ import java.util.UUID
 class UnitAclController(private val acl: AccessControlList) {
     @GetMapping("/daycares/{daycareId}/acl")
     fun getAcl(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable daycareId: UUID
     ): ResponseEntity<DaycareAclResponse> {
@@ -40,7 +40,7 @@ class UnitAclController(private val acl: AccessControlList) {
 
     @PutMapping("/daycares/{daycareId}/supervisors/{employeeId}")
     fun insertUnitSupervisor(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable daycareId: UUID,
         @PathVariable employeeId: UUID
@@ -54,7 +54,7 @@ class UnitAclController(private val acl: AccessControlList) {
 
     @DeleteMapping("/daycares/{daycareId}/supervisors/{employeeId}")
     fun deleteUnitSupervisor(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable daycareId: UUID,
         @PathVariable employeeId: UUID
@@ -69,7 +69,7 @@ class UnitAclController(private val acl: AccessControlList) {
 
     @PutMapping("/daycares/{daycareId}/staff/{employeeId}")
     fun insertStaff(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable daycareId: UUID,
         @PathVariable employeeId: UUID
@@ -83,7 +83,7 @@ class UnitAclController(private val acl: AccessControlList) {
 
     @DeleteMapping("/daycares/{daycareId}/staff/{employeeId}")
     fun deleteStaff(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable daycareId: UUID,
         @PathVariable employeeId: UUID

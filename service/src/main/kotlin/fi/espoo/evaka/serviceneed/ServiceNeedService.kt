@@ -15,7 +15,7 @@ import java.util.UUID
 
 @Service
 class ServiceNeedService(private val asyncJobRunner: AsyncJobRunner) {
-    fun createServiceNeed(db: Database, user: AuthenticatedUser, childId: UUID, data: ServiceNeedRequest): ServiceNeed {
+    fun createServiceNeed(db: Database.Connection, user: AuthenticatedUser, childId: UUID, data: ServiceNeedRequest): ServiceNeed {
         try {
             return db.transaction { tx ->
                 shortenOverlappingServiceNeed(tx.handle, user, childId, data.startDate, data.endDate)
@@ -30,11 +30,11 @@ class ServiceNeedService(private val asyncJobRunner: AsyncJobRunner) {
         }
     }
 
-    fun getServiceNeedsByChildId(db: Database, childId: UUID): List<ServiceNeed> {
+    fun getServiceNeedsByChildId(db: Database.Connection, childId: UUID): List<ServiceNeed> {
         return db.read { tx -> getServiceNeedsByChild(tx.handle, childId) }
     }
 
-    fun updateServiceNeed(db: Database, user: AuthenticatedUser, id: UUID, data: ServiceNeedRequest): ServiceNeed {
+    fun updateServiceNeed(db: Database.Connection, user: AuthenticatedUser, id: UUID, data: ServiceNeedRequest): ServiceNeed {
         try {
             return db.transaction { tx ->
                 updateServiceNeed(tx.handle, user, id, data).also {
@@ -48,7 +48,7 @@ class ServiceNeedService(private val asyncJobRunner: AsyncJobRunner) {
         }
     }
 
-    fun deleteServiceNeed(db: Database, id: UUID) {
+    fun deleteServiceNeed(db: Database.Connection, id: UUID) {
         db.transaction { tx ->
             deleteServiceNeed(tx.handle, id).also {
                 tx.notifyServiceNeedUpdated(it)

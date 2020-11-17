@@ -30,7 +30,7 @@ import java.util.UUID
 @RestController
 class ChildController(private val acl: AccessControlList) {
     @GetMapping("/children/{childId}/additional-information")
-    fun getAdditionalInfo(db: Database, user: AuthenticatedUser, @PathVariable childId: UUID): ResponseEntity<AdditionalInformation> {
+    fun getAdditionalInfo(db: Database.Connection, user: AuthenticatedUser, @PathVariable childId: UUID): ResponseEntity<AdditionalInformation> {
         Audit.ChildAdditionalInformationRead.log(targetId = childId)
         acl.getRolesForChild(user, childId).requireOneOfRoles(SERVICE_WORKER, UNIT_SUPERVISOR, FINANCE_ADMIN, STAFF)
         return db.read { getAdditionalInformation(it.handle, childId) }.let(::ok)
@@ -38,7 +38,7 @@ class ChildController(private val acl: AccessControlList) {
 
     @PutMapping("/children/{childId}/additional-information")
     fun updateAdditionalInfo(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable childId: UUID,
         @RequestBody data: AdditionalInformation

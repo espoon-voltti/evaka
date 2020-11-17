@@ -31,7 +31,7 @@ import java.util.UUID
 class BackupCareController(private val acl: AccessControlList) {
     @GetMapping("/children/{childId}/backup-cares")
     fun getForChild(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable("childId") childId: UUID
     ): ResponseEntity<ChildBackupCaresResponse> {
@@ -42,7 +42,7 @@ class BackupCareController(private val acl: AccessControlList) {
 
     @PostMapping("/children/{childId}/backup-cares")
     fun createForChild(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable("childId") childId: UUID,
         @RequestBody body: NewBackupCare
@@ -58,7 +58,7 @@ class BackupCareController(private val acl: AccessControlList) {
 
     @PostMapping("/backup-cares/{id}")
     fun update(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable("id") id: UUID,
         @RequestBody body: BackupCareUpdateRequest
@@ -73,7 +73,7 @@ class BackupCareController(private val acl: AccessControlList) {
     }
 
     @DeleteMapping("/backup-cares/{id}")
-    fun delete(db: Database, user: AuthenticatedUser, @PathVariable("id") id: UUID): ResponseEntity<Unit> {
+    fun delete(db: Database.Connection, user: AuthenticatedUser, @PathVariable("id") id: UUID): ResponseEntity<Unit> {
         user.requireOneOfRoles(SERVICE_WORKER, UNIT_SUPERVISOR)
         db.transaction { it.handle.deleteBackupCare(id) }
         return ResponseEntity.noContent().build()
@@ -81,7 +81,7 @@ class BackupCareController(private val acl: AccessControlList) {
 
     @GetMapping("/daycares/{daycareId}/backup-cares")
     fun getForDaycare(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable("daycareId") daycareId: UUID,
         @RequestParam("startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) startDate: LocalDate,

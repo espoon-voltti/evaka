@@ -8,9 +8,9 @@ import fi.espoo.evaka.placement.PlacementService
 import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.config.SharedIntegrationTestConfig
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.utils.DisableSecurity
 import org.jdbi.v3.core.Jdbi
+import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.TestInstance
@@ -50,20 +50,22 @@ abstract class AbstractIntegrationTest() {
     @Autowired
     lateinit var jdbi: Jdbi
 
-    lateinit var db: Database
+    lateinit var db: Database.Connection
 
     @BeforeAll
-    private fun beforeAll() {
-        jdbi.handle(::resetDatabase)
+    protected fun beforeAll() {
+        db = Database(jdbi).connect()
+    }
+
+    @AfterAll
+    protected fun afterAll() {
+        db.close()
     }
 
     @BeforeEach
-    private fun beforeEach() {
+    protected fun beforeEach() {
         val legacyDataSql = this.javaClass.getResource("/legacy_db_data.sql").readText()
-        jdbi.handle { h ->
-            resetDatabase(h)
-            h.execute(legacyDataSql)
-        }
-        db = Database(jdbi)
+        db.transaction { it.resetDatabase() }
+        db.transaction { it.execute(legacyDataSql) }
     }
 }

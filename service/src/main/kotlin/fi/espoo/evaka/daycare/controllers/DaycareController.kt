@@ -55,7 +55,7 @@ class DaycareController(
     private val acl: AccessControlList
 ) {
     @GetMapping
-    fun getDaycares(db: Database, user: AuthenticatedUser): ResponseEntity<List<Daycare>> {
+    fun getDaycares(db: Database.Connection, user: AuthenticatedUser): ResponseEntity<List<Daycare>> {
         Audit.UnitSearch.log()
         user.requireOneOfRoles(ADMIN, SERVICE_WORKER, FINANCE_ADMIN, UNIT_SUPERVISOR, STAFF)
         return ResponseEntity.ok(db.read { it.handle.getDaycares(acl.getAuthorizedDaycares(user)) })
@@ -63,7 +63,7 @@ class DaycareController(
 
     @GetMapping("/{daycareId}")
     fun getDaycare(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable("daycareId") daycareId: UUID
     ): ResponseEntity<DaycareResponse> {
@@ -77,7 +77,7 @@ class DaycareController(
 
     @GetMapping("/{daycareId}/groups")
     fun getGroups(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable("daycareId") daycareId: UUID,
         @RequestParam(
@@ -98,7 +98,7 @@ class DaycareController(
 
     @PostMapping("/{daycareId}/groups")
     fun createGroup(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable("daycareId") daycareId: UUID,
         @RequestBody body: CreateGroupRequest
@@ -116,7 +116,7 @@ class DaycareController(
     )
     @PutMapping("/{daycareId}/groups/{groupId}")
     fun updateGroup(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable("daycareId") daycareId: UUID,
         @PathVariable("groupId") groupId: UUID,
@@ -133,7 +133,7 @@ class DaycareController(
 
     @DeleteMapping("/{daycareId}/groups/{groupId}")
     fun deleteGroup(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable("daycareId") daycareId: UUID,
         @PathVariable("groupId") groupId: UUID
@@ -148,7 +148,7 @@ class DaycareController(
 
     @GetMapping("/{daycareId}/groups/{groupId}/caretakers")
     fun getCaretakers(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable("daycareId") daycareId: UUID,
         @PathVariable("groupId") groupId: UUID
@@ -171,7 +171,7 @@ class DaycareController(
 
     @PostMapping("/{daycareId}/groups/{groupId}/caretakers")
     fun createCaretakers(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable("daycareId") daycareId: UUID,
         @PathVariable("groupId") groupId: UUID,
@@ -195,7 +195,7 @@ class DaycareController(
 
     @PutMapping("/{daycareId}/groups/{groupId}/caretakers/{id}")
     fun updateCaretakers(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable("daycareId") daycareId: UUID,
         @PathVariable("groupId") groupId: UUID,
@@ -221,7 +221,7 @@ class DaycareController(
 
     @DeleteMapping("/{daycareId}/groups/{groupId}/caretakers/{id}")
     fun removeCaretakers(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable("daycareId") daycareId: UUID,
         @PathVariable("groupId") groupId: UUID,
@@ -243,7 +243,7 @@ class DaycareController(
 
     @GetMapping("/{daycareId}/stats")
     fun getStats(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable("daycareId") daycareId: UUID,
         @RequestParam(
@@ -261,7 +261,7 @@ class DaycareController(
 
     @PutMapping("/{daycareId}")
     fun updateDaycare(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable("daycareId") daycareId: UUID,
         @RequestBody fields: DaycareFields
@@ -280,7 +280,7 @@ class DaycareController(
 
     @PutMapping("")
     fun createDaycare(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @RequestBody fields: DaycareFields
     ): ResponseEntity<CreateDaycareResponse> {

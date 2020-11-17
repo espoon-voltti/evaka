@@ -29,7 +29,7 @@ class LocationControllerIT : FullApplicationTest() {
 
     @Test
     fun `enduser only sees locations that can be applied to`() {
-        val response = controller.getEnduserUnitsByArea(dbInstance())
+        val response = controller.getEnduserUnitsByArea(db)
 
         with(response.body!!) {
             assertTrue(
@@ -44,7 +44,7 @@ class LocationControllerIT : FullApplicationTest() {
 
     @Test
     fun `clubs are included in results although they do not offer daycare nor preschool`() {
-        val response = controller.getEnduserUnitsByArea(dbInstance())
+        val response = controller.getEnduserUnitsByArea(db)
 
         with(response.body!!) {
             assertTrue(this.any { it.daycares.any { it.type.contains(CareType.CLUB) } })

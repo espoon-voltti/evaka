@@ -34,7 +34,7 @@ import java.util.UUID
 @RequestMapping("/fee-alterations")
 class FeeAlterationController(private val asyncJobRunner: AsyncJobRunner) {
     @GetMapping
-    fun getFeeAlterations(db: Database, user: AuthenticatedUser, @RequestParam personId: String?): ResponseEntity<Wrapper<List<FeeAlteration>>> {
+    fun getFeeAlterations(db: Database.Connection, user: AuthenticatedUser, @RequestParam personId: String?): ResponseEntity<Wrapper<List<FeeAlteration>>> {
         Audit.ChildFeeAlterationsRead.log(targetId = personId)
         user.requireOneOfRoles(Roles.FINANCE_ADMIN)
         val parsedId = personId?.let { parseUUID(personId) }
@@ -45,7 +45,7 @@ class FeeAlterationController(private val asyncJobRunner: AsyncJobRunner) {
     }
 
     @PostMapping
-    fun createFeeAlteration(db: Database, user: AuthenticatedUser, @RequestBody feeAlteration: FeeAlteration): ResponseEntity<Unit> {
+    fun createFeeAlteration(db: Database.Connection, user: AuthenticatedUser, @RequestBody feeAlteration: FeeAlteration): ResponseEntity<Unit> {
         Audit.ChildFeeAlterationsCreate.log(targetId = feeAlteration.personId)
         user.requireOneOfRoles(Roles.FINANCE_ADMIN)
         db.transaction { tx ->
@@ -67,7 +67,7 @@ class FeeAlterationController(private val asyncJobRunner: AsyncJobRunner) {
     }
 
     @PutMapping("/{feeAlterationId}")
-    fun updateFeeAlteration(db: Database, user: AuthenticatedUser, @PathVariable feeAlterationId: String, @RequestBody feeAlteration: FeeAlteration): ResponseEntity<Unit> {
+    fun updateFeeAlteration(db: Database.Connection, user: AuthenticatedUser, @PathVariable feeAlterationId: String, @RequestBody feeAlteration: FeeAlteration): ResponseEntity<Unit> {
         Audit.ChildFeeAlterationsUpdate.log(targetId = feeAlterationId)
         user.requireOneOfRoles(Roles.FINANCE_ADMIN)
         val parsedId = parseUUID(feeAlterationId)
@@ -90,7 +90,7 @@ class FeeAlterationController(private val asyncJobRunner: AsyncJobRunner) {
     }
 
     @DeleteMapping("/{feeAlterationId}")
-    fun deleteFeeAlteration(db: Database, user: AuthenticatedUser, @PathVariable feeAlterationId: String): ResponseEntity<Unit> {
+    fun deleteFeeAlteration(db: Database.Connection, user: AuthenticatedUser, @PathVariable feeAlterationId: String): ResponseEntity<Unit> {
         Audit.ChildFeeAlterationsDelete.log(targetId = feeAlterationId)
         user.requireOneOfRoles(Roles.FINANCE_ADMIN)
         val parsedId = parseUUID(feeAlterationId)

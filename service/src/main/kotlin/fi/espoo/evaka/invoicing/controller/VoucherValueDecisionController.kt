@@ -51,7 +51,7 @@ class VoucherValueDecisionController(
 ) {
     @GetMapping("/search")
     fun search(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @RequestParam(required = true) page: Int,
         @RequestParam(required = true) pageSize: Int,
@@ -87,7 +87,7 @@ class VoucherValueDecisionController(
 
     @GetMapping("/{id}")
     fun getDecision(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable id: UUID
     ): ResponseEntity<Wrapper<VoucherValueDecisionDetailed>> {
@@ -99,7 +99,7 @@ class VoucherValueDecisionController(
     }
 
     @PostMapping("/send")
-    fun sendDrafts(db: Database, user: AuthenticatedUser, @RequestBody decisionIds: List<UUID>): ResponseEntity<Unit> {
+    fun sendDrafts(db: Database.Connection, user: AuthenticatedUser, @RequestBody decisionIds: List<UUID>): ResponseEntity<Unit> {
         Audit.VoucherValueDecisionSend.log(targetId = decisionIds)
         user.requireOneOfRoles(Roles.FINANCE_ADMIN)
         db.transaction { sendVoucherValueDecisions(it, user, decisionIds) }
@@ -108,7 +108,7 @@ class VoucherValueDecisionController(
     }
 
     @GetMapping("/pdf/{id}")
-    fun getDecisionPdf(db: Database, user: AuthenticatedUser, @PathVariable id: UUID): ResponseEntity<ByteArray> {
+    fun getDecisionPdf(db: Database.Connection, user: AuthenticatedUser, @PathVariable id: UUID): ResponseEntity<ByteArray> {
         Audit.FeeDecisionPdfRead.log(targetId = id)
         user.requireOneOfRoles(Roles.FINANCE_ADMIN)
         val (filename, pdf) = db.read { valueDecisionService.getDecisionPdf(it, id) }

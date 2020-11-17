@@ -30,7 +30,7 @@ import java.util.UUID
 class OccupancyController(private val acl: AccessControlList) {
     @GetMapping("/by-unit/{unitId}")
     fun getOccupancyPeriods(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable unitId: UUID,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
@@ -53,7 +53,7 @@ class OccupancyController(private val acl: AccessControlList) {
 
     @GetMapping("/by-unit/{unitId}/groups")
     fun getOccupancyPeriodsOnGroups(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable unitId: UUID,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,

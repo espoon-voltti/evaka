@@ -32,7 +32,7 @@ class DvvModificationsBatchRefreshService(
         logger.info("DvvModificationsRefresh: finished processing $modificationCount DVV person modifications for ${msg.ssns.size} ssns")
     }
 
-    fun scheduleBatch(db: Database): Int {
+    fun scheduleBatch(db: Database.Connection): Int {
         val jobCount = db.transaction { tx ->
             tx.deleteOldJobs()
 

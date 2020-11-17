@@ -38,7 +38,7 @@ import java.util.UUID
 class PartnershipsController(private val asyncJobRunner: AsyncJobRunner, private val partnershipService: PartnershipService) {
     @PostMapping
     fun createPartnership(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @RequestBody body: PartnershipRequest
     ): ResponseEntity<Partnership> {
@@ -61,7 +61,7 @@ class PartnershipsController(private val asyncJobRunner: AsyncJobRunner, private
 
     @GetMapping
     fun getPartnerships(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @RequestParam(name = "personId", required = true) personId: VolttiIdentifier
     ): ResponseEntity<List<Partnership>> {
@@ -74,7 +74,7 @@ class PartnershipsController(private val asyncJobRunner: AsyncJobRunner, private
 
     @GetMapping("/{id}")
     fun getPartnership(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable(value = "id") partnershipId: UUID
     ): ResponseEntity<Partnership> {
@@ -88,7 +88,7 @@ class PartnershipsController(private val asyncJobRunner: AsyncJobRunner, private
 
     @PutMapping("/{id}")
     fun updatePartnership(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable(value = "id") partnershipId: UUID,
         @RequestBody body: PartnershipUpdateRequest
@@ -111,7 +111,7 @@ class PartnershipsController(private val asyncJobRunner: AsyncJobRunner, private
 
     @PutMapping("/{id}/retry")
     fun retryPartnership(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable(value = "id") partnershipId: UUID
     ): ResponseEntity<Unit> {
@@ -129,7 +129,7 @@ class PartnershipsController(private val asyncJobRunner: AsyncJobRunner, private
 
     @DeleteMapping("/{id}")
     fun deletePartnership(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable(value = "id") partnershipId: UUID
     ): ResponseEntity<Unit> {

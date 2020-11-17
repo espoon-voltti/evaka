@@ -66,7 +66,7 @@ class InvoiceController(
 ) {
     @GetMapping("/search")
     fun searchInvoices(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @RequestParam(required = true) page: Int,
         @RequestParam(required = true) pageSize: Int,
@@ -107,7 +107,7 @@ class InvoiceController(
     }
 
     @PostMapping("/create-drafts")
-    fun createDraftInvoices(db: Database, user: AuthenticatedUser): ResponseEntity<Unit> {
+    fun createDraftInvoices(db: Database.Connection, user: AuthenticatedUser): ResponseEntity<Unit> {
         Audit.InvoicesCreate.log()
         user.requireOneOfRoles(Roles.FINANCE_ADMIN)
         db.transaction { createAllDraftInvoices(it.handle, objectMapper) }
@@ -115,7 +115,7 @@ class InvoiceController(
     }
 
     @PostMapping("/delete-drafts")
-    fun deleteDraftInvoices(db: Database, user: AuthenticatedUser, @RequestBody invoiceIds: List<UUID>): ResponseEntity<Unit> {
+    fun deleteDraftInvoices(db: Database.Connection, user: AuthenticatedUser, @RequestBody invoiceIds: List<UUID>): ResponseEntity<Unit> {
         Audit.InvoicesDeleteDrafts.log(targetId = invoiceIds)
         user.requireOneOfRoles(Roles.FINANCE_ADMIN)
         db.transaction { deleteDraftInvoices(it.handle, invoiceIds) }
@@ -124,7 +124,7 @@ class InvoiceController(
 
     @PostMapping("/send")
     fun sendInvoices(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
         @RequestParam(required = false) invoiceDate: LocalDate?,
@@ -142,7 +142,7 @@ class InvoiceController(
 
     @PostMapping("/send/by-date")
     fun sendInvoicesByDate(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @RequestBody payload: InvoicePayload
     ): ResponseEntity<Unit> {
@@ -156,7 +156,7 @@ class InvoiceController(
     }
 
     @PostMapping("/mark-sent")
-    fun markInvoicesSent(db: Database, user: AuthenticatedUser, @RequestBody invoiceIds: List<UUID>): ResponseEntity<Unit> {
+    fun markInvoicesSent(db: Database.Connection, user: AuthenticatedUser, @RequestBody invoiceIds: List<UUID>): ResponseEntity<Unit> {
         Audit.InvoicesMarkSent.log(targetId = invoiceIds)
         user.requireOneOfRoles(Roles.FINANCE_ADMIN)
         db.transaction { it.markManuallySent(user, invoiceIds) }
@@ -164,7 +164,7 @@ class InvoiceController(
     }
 
     @GetMapping("/{uuid}")
-    fun getInvoice(db: Database, user: AuthenticatedUser, @PathVariable uuid: String): ResponseEntity<Wrapper<InvoiceDetailed>> {
+    fun getInvoice(db: Database.Connection, user: AuthenticatedUser, @PathVariable uuid: String): ResponseEntity<Wrapper<InvoiceDetailed>> {
         Audit.InvoicesRead.log(targetId = uuid)
         user.requireOneOfRoles(Roles.FINANCE_ADMIN)
         val parsedUuid = parseUUID(uuid)
@@ -175,7 +175,7 @@ class InvoiceController(
 
     @GetMapping("/head-of-family/{uuid}")
     fun getHeadOfFamilyInvoices(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable uuid: String
     ): ResponseEntity<Wrapper<List<Invoice>>> {
@@ -188,7 +188,7 @@ class InvoiceController(
 
     @PutMapping("/{uuid}")
     fun putInvoice(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable uuid: String,
         @RequestBody invoice: Invoice
@@ -201,7 +201,7 @@ class InvoiceController(
     }
 
     @GetMapping("/codes")
-    fun getInvoiceCodes(db: Database, user: AuthenticatedUser): ResponseEntity<Wrapper<InvoiceCodes>> {
+    fun getInvoiceCodes(db: Database.Connection, user: AuthenticatedUser): ResponseEntity<Wrapper<InvoiceCodes>> {
         user.requireOneOfRoles(Roles.FINANCE_ADMIN)
         val codes = db.read { it.getInvoiceCodes() }
         return ResponseEntity.ok(Wrapper(codes))

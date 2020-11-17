@@ -42,7 +42,7 @@ class IncomeController(
     private val asyncJobRunner: AsyncJobRunner
 ) {
     @GetMapping
-    fun getIncome(db: Database, user: AuthenticatedUser, @RequestParam personId: String?): ResponseEntity<Wrapper<List<Income>>> {
+    fun getIncome(db: Database.Connection, user: AuthenticatedUser, @RequestParam personId: String?): ResponseEntity<Wrapper<List<Income>>> {
         Audit.PersonIncomeRead.log(targetId = personId)
         user.requireOneOfRoles(Roles.FINANCE_ADMIN)
         val parsedId = personId?.let { parseUUID(personId) }
@@ -53,7 +53,7 @@ class IncomeController(
     }
 
     @PostMapping
-    fun createIncome(db: Database, user: AuthenticatedUser, @RequestBody income: Income): ResponseEntity<UUID> {
+    fun createIncome(db: Database.Connection, user: AuthenticatedUser, @RequestBody income: Income): ResponseEntity<UUID> {
         Audit.PersonIncomeCreate.log(targetId = income.personId)
         user.requireOneOfRoles(Roles.FINANCE_ADMIN)
         val period = try {
@@ -79,7 +79,7 @@ class IncomeController(
 
     @PutMapping("/{incomeId}")
     fun updateIncome(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable incomeId: String,
         @RequestBody income: Income
@@ -107,7 +107,7 @@ class IncomeController(
     }
 
     @DeleteMapping("/{incomeId}")
-    fun deleteIncome(db: Database, user: AuthenticatedUser, @PathVariable incomeId: String): ResponseEntity<Unit> {
+    fun deleteIncome(db: Database.Connection, user: AuthenticatedUser, @PathVariable incomeId: String): ResponseEntity<Unit> {
         Audit.PersonIncomeDelete.log(targetId = incomeId)
         user.requireOneOfRoles(Roles.FINANCE_ADMIN)
 

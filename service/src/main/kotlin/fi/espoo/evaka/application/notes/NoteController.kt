@@ -33,7 +33,7 @@ import java.util.UUID
 class NoteController(private val acl: AccessControlList) {
     @PostMapping("/search")
     fun getNotes(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @RequestBody search: NoteSearchDTO
     ): ResponseEntity<List<NoteJSON>> {
@@ -50,7 +50,7 @@ class NoteController(private val acl: AccessControlList) {
 
     @PostMapping("/application/{id}")
     fun createNote(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable("id") applicationId: UUID,
         @RequestBody note: NoteRequest
@@ -67,7 +67,7 @@ class NoteController(private val acl: AccessControlList) {
     @PutMapping("/update")
     @Deprecated("use updateNote instead (PUT /note/:id)")
     fun updateNotes(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @RequestBody notes: List<NoteJSON>
     ): ResponseEntity<NotesWrapperJSON> {
@@ -87,7 +87,7 @@ class NoteController(private val acl: AccessControlList) {
 
     @PutMapping("/{noteId}")
     fun updateNote(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable("noteId") noteId: UUID,
         @RequestBody note: NoteRequest
@@ -107,7 +107,7 @@ class NoteController(private val acl: AccessControlList) {
 
     @DeleteMapping("/{noteId}")
     fun deleteNote(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable("noteId") noteId: UUID
     ): ResponseEntity<Unit> {

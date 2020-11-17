@@ -29,7 +29,7 @@ data class GenerateDecisionsBody(
 @RequestMapping("/fee-decision-generator")
 class FeeDecisionGeneratorController(private val asyncJobRunner: AsyncJobRunner) {
     @PostMapping("/generate")
-    fun generateDecisions(db: Database, user: AuthenticatedUser, @RequestBody data: GenerateDecisionsBody): ResponseEntity<Unit> {
+    fun generateDecisions(db: Database.Connection, user: AuthenticatedUser, @RequestBody data: GenerateDecisionsBody): ResponseEntity<Unit> {
         Audit.FeeDecisionGenerate.log(targetId = data.targetHeads)
         user.requireOneOfRoles(Roles.FINANCE_ADMIN)
         generateAllStartingFrom(
@@ -40,7 +40,7 @@ class FeeDecisionGeneratorController(private val asyncJobRunner: AsyncJobRunner)
         return ResponseEntity.noContent().build()
     }
 
-    private fun generateAllStartingFrom(db: Database, starting: LocalDate, targetHeads: List<UUID>) {
+    private fun generateAllStartingFrom(db: Database.Connection, starting: LocalDate, targetHeads: List<UUID>) {
         db.transaction { tx ->
             val heads = if (targetHeads.isEmpty()) {
                 tx.createQuery("SELECT head_of_child FROM fridge_child WHERE COALESCE(end_date, '9999-01-01') >= :from AND conflict = false")

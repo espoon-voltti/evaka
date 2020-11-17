@@ -31,14 +31,14 @@ import java.util.UUID
 class EmployeeController {
 
     @GetMapping()
-    fun getEmployees(db: Database, user: AuthenticatedUser): ResponseEntity<List<Employee>> {
+    fun getEmployees(db: Database.Connection, user: AuthenticatedUser): ResponseEntity<List<Employee>> {
         Audit.EmployeesRead.log()
         user.requireOneOfRoles(Roles.ADMIN, Roles.SERVICE_WORKER, Roles.UNIT_SUPERVISOR)
         return ResponseEntity.ok(db.read { it.handle.getEmployees() }.sortedBy { it.email })
     }
 
     @GetMapping("/{id}")
-    fun getEmployee(db: Database, user: AuthenticatedUser, @PathVariable(value = "id") id: UUID): ResponseEntity<Employee> {
+    fun getEmployee(db: Database.Connection, user: AuthenticatedUser, @PathVariable(value = "id") id: UUID): ResponseEntity<Employee> {
         Audit.EmployeeRead.log(targetId = id)
         if (user.id != id) {
             user.requireOneOfRoles(
@@ -55,14 +55,14 @@ class EmployeeController {
     }
 
     @PostMapping("")
-    fun createEmployee(db: Database, user: AuthenticatedUser, @RequestBody employee: NewEmployee): ResponseEntity<Employee> {
+    fun createEmployee(db: Database.Connection, user: AuthenticatedUser, @RequestBody employee: NewEmployee): ResponseEntity<Employee> {
         Audit.EmployeeCreate.log(targetId = employee.aad)
         user.requireOneOfRoles(Roles.ADMIN)
         return ResponseEntity.ok().body(db.transaction { it.handle.createEmployee(employee) })
     }
 
     @PostMapping("/identity")
-    fun getOrCreateEmployee(db: Database, @RequestBody employee: NewEmployee): ResponseEntity<AuthenticatedUser> {
+    fun getOrCreateEmployee(db: Database.Connection, @RequestBody employee: NewEmployee): ResponseEntity<AuthenticatedUser> {
         Audit.EmployeeGetOrCreate.log(targetId = employee.aad)
         if (employee.aad == null) {
             throw BadRequest("Cannot create or fetch employee without aad")
@@ -76,7 +76,7 @@ class EmployeeController {
     }
 
     @DeleteMapping("/{id}")
-    fun deleteEmployee(db: Database, user: AuthenticatedUser, @PathVariable(value = "id") id: UUID): ResponseEntity<Unit> {
+    fun deleteEmployee(db: Database.Connection, user: AuthenticatedUser, @PathVariable(value = "id") id: UUID): ResponseEntity<Unit> {
         Audit.EmployeeDelete.log(targetId = id)
         user.requireOneOfRoles(Roles.ADMIN)
         db.transaction { it.handle.deleteEmployee(id) }

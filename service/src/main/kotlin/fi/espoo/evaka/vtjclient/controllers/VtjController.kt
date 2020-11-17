@@ -44,7 +44,7 @@ class VtjController(
 ) {
     @GetMapping("/uuid/{personId}")
     fun getDetails(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable(value = "personId") personId: UUID
     ): ResponseEntity<VtjPersonDTO> {
@@ -59,7 +59,7 @@ class VtjController(
     }
 
     private fun getPersonDataWithChildren(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         personId: VolttiIdentifier
     ): PersonResult {
@@ -77,7 +77,7 @@ class VtjController(
         }
     }
 
-    private fun personResult(db: Database, user: AuthenticatedUser, personId: VolttiIdentifier): PersonResult {
+    private fun personResult(db: Database.Connection, user: AuthenticatedUser, personId: VolttiIdentifier): PersonResult {
         val guardianResult = db.read { it.handle.getPersonById(personId) }
             ?.let { person ->
                 when (person.identity) {

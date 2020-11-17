@@ -32,7 +32,7 @@ import java.util.UUID
 class LocationController {
     @GetMapping("/public/units")
     fun getApplicationUnits(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @RequestParam type: ApplicationUnitType,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) date: LocalDate
@@ -43,7 +43,7 @@ class LocationController {
 
     // Units by areas, only including units that can be applied to
     @GetMapping("/enduser/areas")
-    fun getEnduserUnitsByArea(db: Database): ResponseEntity<Collection<CareAreaResponseJSON>> {
+    fun getEnduserUnitsByArea(db: Database.Connection): ResponseEntity<Collection<CareAreaResponseJSON>> {
         val areas = db.read { it.handle.getAreas() }
             .map { area: CareArea ->
                 CareArea(
@@ -61,7 +61,7 @@ class LocationController {
     }
 
     @GetMapping("/areas")
-    fun getAreas(db: Database, user: AuthenticatedUser): ResponseEntity<Collection<AreaJSON>> {
+    fun getAreas(db: Database.Connection, user: AuthenticatedUser): ResponseEntity<Collection<AreaJSON>> {
         return db
             .read {
                 it.createQuery("SELECT id, name, short_name FROM care_area")
@@ -72,7 +72,7 @@ class LocationController {
     }
 
     @GetMapping("/filters/units")
-    fun getUnits(db: Database, @RequestParam type: UnitTypeFilter, @RequestParam area: String?): ResponseEntity<List<UnitStub>> {
+    fun getUnits(db: Database.Connection, @RequestParam type: UnitTypeFilter, @RequestParam area: String?): ResponseEntity<List<UnitStub>> {
         val areas = area?.split(",") ?: listOf()
         val units = db.read { it.handle.getUnits(areas, type) }
         return ResponseEntity.ok(units)

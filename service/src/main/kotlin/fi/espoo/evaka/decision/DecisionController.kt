@@ -36,7 +36,7 @@ class DecisionController(
 ) {
     @GetMapping("/by-guardian")
     fun getDecisionsByGuardian(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @RequestParam("id") guardianId: UUID
     ): ResponseEntity<DecisionListResponse> {
@@ -49,7 +49,7 @@ class DecisionController(
 
     @GetMapping("/by-child")
     fun getDecisionsByChild(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @RequestParam("id") childId: UUID
     ): ResponseEntity<DecisionListResponse> {
@@ -62,7 +62,7 @@ class DecisionController(
 
     @GetMapping("/by-application")
     fun getDecisionsByApplication(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @RequestParam("id") applicationId: UUID
     ): ResponseEntity<DecisionListResponse> {
@@ -74,7 +74,7 @@ class DecisionController(
     }
 
     @GetMapping("/units")
-    fun getDecisionUnits(db: Database, user: AuthenticatedUser): ResponseEntity<List<DecisionUnit>> {
+    fun getDecisionUnits(db: Database.Connection, user: AuthenticatedUser): ResponseEntity<List<DecisionUnit>> {
         Audit.UnitRead.log()
         user.requireOneOfRoles(Roles.ADMIN, Roles.SERVICE_WORKER, Roles.UNIT_SUPERVISOR, Roles.FINANCE_ADMIN)
         val units = db.read { decisionDraftService.getDecisionUnits(it) }
@@ -83,7 +83,7 @@ class DecisionController(
 
     @GetMapping("/{id}/download", produces = [MediaType.APPLICATION_PDF_VALUE])
     fun downloadDecisionPdf(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable("id") decisionId: UUID
     ): ResponseEntity<ByteArray> {

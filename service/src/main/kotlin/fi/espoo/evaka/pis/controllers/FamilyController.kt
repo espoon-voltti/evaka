@@ -27,7 +27,7 @@ class FamilyController(
     private val acl: AccessControlList
 ) {
     @GetMapping("/by-adult/{id}")
-    fun getFamilyByPerson(db: Database, user: AuthenticatedUser, @PathVariable(value = "id") id: UUID): ResponseEntity<FamilyOverview> {
+    fun getFamilyByPerson(db: Database.Connection, user: AuthenticatedUser, @PathVariable(value = "id") id: UUID): ResponseEntity<FamilyOverview> {
         Audit.PisFamilyRead.log(targetId = id)
         user.requireOneOfRoles(Roles.FINANCE_ADMIN)
         val result = db.read { familyOverviewService.getFamilyByAdult(it, id) }
@@ -37,7 +37,7 @@ class FamilyController(
 
     @GetMapping("/contacts")
     fun getFamilyContactSummary(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @RequestParam(value = "childId", required = true) childId: UUID
     ): ResponseEntity<List<FamilyContact>> {

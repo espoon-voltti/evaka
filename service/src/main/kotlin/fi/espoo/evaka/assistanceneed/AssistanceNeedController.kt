@@ -28,7 +28,7 @@ class AssistanceNeedController(
 ) {
     @PostMapping("/children/{childId}/assistance-needs")
     fun createAssistanceNeed(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable childId: UUID,
         @RequestBody body: AssistanceNeedRequest
@@ -45,7 +45,7 @@ class AssistanceNeedController(
 
     @GetMapping("/children/{childId}/assistance-needs")
     fun getAssistanceNeeds(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable childId: UUID
     ): ResponseEntity<List<AssistanceNeed>> {
@@ -56,7 +56,7 @@ class AssistanceNeedController(
 
     @PutMapping("/assistance-needs/{id}")
     fun updateAssistanceNeed(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable id: UUID,
         @RequestBody body: AssistanceNeedRequest
@@ -73,7 +73,7 @@ class AssistanceNeedController(
 
     @DeleteMapping("/assistance-needs/{id}")
     fun deleteAssistanceNeed(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable id: UUID
     ): ResponseEntity<Unit> {

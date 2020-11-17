@@ -13,7 +13,7 @@ import java.util.UUID
 
 @Service
 class AssistanceNeedService {
-    fun createAssistanceNeed(db: Database, user: AuthenticatedUser, childId: UUID, data: AssistanceNeedRequest): AssistanceNeed {
+    fun createAssistanceNeed(db: Database.Connection, user: AuthenticatedUser, childId: UUID, data: AssistanceNeedRequest): AssistanceNeed {
         try {
             return db.transaction {
                 shortenOverlappingAssistanceNeed(it.handle, user, childId, data.startDate, data.endDate)
@@ -24,11 +24,11 @@ class AssistanceNeedService {
         }
     }
 
-    fun getAssistanceNeedsByChildId(db: Database, childId: UUID): List<AssistanceNeed> {
+    fun getAssistanceNeedsByChildId(db: Database.Connection, childId: UUID): List<AssistanceNeed> {
         return db.transaction { getAssistanceNeedsByChild(it.handle, childId) }
     }
 
-    fun updateAssistanceNeed(db: Database, user: AuthenticatedUser, id: UUID, data: AssistanceNeedRequest): AssistanceNeed {
+    fun updateAssistanceNeed(db: Database.Connection, user: AuthenticatedUser, id: UUID, data: AssistanceNeedRequest): AssistanceNeed {
         try {
             return db.transaction { updateAssistanceNeed(it.handle, user, id, data) }
         } catch (e: JdbiException) {
@@ -36,7 +36,7 @@ class AssistanceNeedService {
         }
     }
 
-    fun deleteAssistanceNeed(db: Database, id: UUID) {
+    fun deleteAssistanceNeed(db: Database.Connection, id: UUID) {
         db.transaction { deleteAssistanceNeed(it.handle, id) }
     }
 }

@@ -35,7 +35,7 @@ import java.util.UUID
 class AbsenceController(private val absenceService: AbsenceService, private val acl: AccessControlList) {
     @GetMapping("/{groupId}")
     fun getAbsencesByGroupAndMonth(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @RequestParam year: Int,
         @RequestParam month: Int,
@@ -50,7 +50,7 @@ class AbsenceController(private val absenceService: AbsenceService, private val 
 
     @PostMapping("/{groupId}")
     fun upsertAbsences(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @RequestBody absences: Wrapper<List<Absence>>,
         @PathVariable groupId: UUID
@@ -64,7 +64,7 @@ class AbsenceController(private val absenceService: AbsenceService, private val 
 
     @GetMapping("/by-child/{childId}")
     fun getAbsencesByChild(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable childId: UUID,
         @RequestParam year: Int,
@@ -78,7 +78,7 @@ class AbsenceController(private val absenceService: AbsenceService, private val 
 
     @PostMapping("/child/{childId}")
     fun upsertAbsence(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @RequestBody absenceType: AbsenceBody,
         @PathVariable childId: UUID
