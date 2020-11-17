@@ -8,13 +8,12 @@ import fi.espoo.evaka.application.persistence.FormType
 import fi.espoo.evaka.placement.Placement
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.getPlacementsForChildDuring
-import org.jdbi.v3.core.Handle
+import fi.espoo.evaka.shared.db.Database
 import java.time.LocalDate
 import java.util.UUID
 
-fun applicationFlags(h: Handle, application: ApplicationDetails): ApplicationFlags {
+fun Database.Read.applicationFlags(application: ApplicationDetails): ApplicationFlags {
     return applicationFlags(
-        h = h,
         childId = application.childId,
         formType = when (application.type) {
             ApplicationType.CLUB -> FormType.CLUB
@@ -27,8 +26,7 @@ fun applicationFlags(h: Handle, application: ApplicationDetails): ApplicationFla
     )
 }
 
-fun applicationFlags(
-    h: Handle,
+fun Database.Read.applicationFlags(
     childId: UUID,
     formType: FormType,
     startDate: LocalDate,
@@ -37,15 +35,15 @@ fun applicationFlags(
 ): ApplicationFlags {
     return when (formType) {
         FormType.CLUB -> ApplicationFlags(
-            isTransferApplication = h.getPlacementsForChildDuring(childId, startDate, null)
+            isTransferApplication = handle.getPlacementsForChildDuring(childId, startDate, null)
                 .any { it.type == PlacementType.CLUB }
         )
         FormType.DAYCARE -> ApplicationFlags(
-            isTransferApplication = h.getPlacementsForChildDuring(childId, startDate, null)
+            isTransferApplication = handle.getPlacementsForChildDuring(childId, startDate, null)
                 .any { listOf(PlacementType.DAYCARE, PlacementType.DAYCARE_PART_TIME).contains(it.type) }
         )
         FormType.PRESCHOOL -> {
-            val existingPlacements = h.getPlacementsForChildDuring(childId, startDate, null)
+            val existingPlacements = handle.getPlacementsForChildDuring(childId, startDate, null)
                 .filter {
                     listOf(
                         PlacementType.PRESCHOOL,

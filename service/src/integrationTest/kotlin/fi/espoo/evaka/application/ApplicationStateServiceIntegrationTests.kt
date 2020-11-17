@@ -1389,7 +1389,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
         db.transaction { tx ->
             // when
             service.respondToPlacementProposal(
-                tx.handle,
+                tx,
                 serviceWorker,
                 applicationId,
                 PlacementPlanConfirmationStatus.ACCEPTED
@@ -1445,13 +1445,13 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                     endDate = draft.endDate,
                     planned = false
                 )
-            }.let { updates -> decisionDraftService.updateDecisionDrafts(tx.handle, applicationId, updates) }
+            }.let { updates -> decisionDraftService.updateDecisionDrafts(tx, applicationId, updates) }
             service.sendPlacementProposal(tx, serviceWorker, applicationId)
         }
         db.transaction { tx ->
             // when
             service.respondToPlacementProposal(
-                tx.handle,
+                tx,
                 serviceWorker,
                 applicationId,
                 PlacementPlanConfirmationStatus.ACCEPTED
@@ -1545,7 +1545,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
         db.transaction { tx ->
             // when / then
             service.respondToPlacementProposal(
-                tx.handle,
+                tx,
                 serviceWorker,
                 applicationId,
                 PlacementPlanConfirmationStatus.REJECTED,

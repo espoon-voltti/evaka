@@ -17,7 +17,6 @@ import fi.espoo.evaka.shared.auth.UserRole.UNIT_SUPERVISOR
 import fi.espoo.evaka.shared.config.Roles
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.Forbidden
-import org.jdbi.v3.core.Handle
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
@@ -78,7 +77,7 @@ class DecisionController(
     fun getDecisionUnits(db: Database, user: AuthenticatedUser): ResponseEntity<List<DecisionUnit>> {
         Audit.UnitRead.log()
         user.requireOneOfRoles(Roles.ADMIN, Roles.SERVICE_WORKER, Roles.UNIT_SUPERVISOR, Roles.FINANCE_ADMIN)
-        val units = db.read { decisionDraftService.getDecisionUnits(it.handle) }
+        val units = db.read { decisionDraftService.getDecisionUnits(it) }
         return ResponseEntity.ok(units)
     }
 
@@ -98,7 +97,7 @@ class DecisionController(
                 if (!getDecisionsByGuardian(tx.handle, user.id, AclAuthorization.All).any { it.id == decisionId }) {
                     throw Forbidden("Access denied")
                 }
-                return@transaction getDecisionPdf(tx.handle, decisionId)
+                return@transaction getDecisionPdf(tx, decisionId)
             }
 
             val decision = getDecision(tx.handle, decisionId) ?: error("Cannot find decision for decision id '$decisionId'")
@@ -120,12 +119,12 @@ class DecisionController(
             if ((child.restrictedDetailsEnabled || guardian.restrictedDetailsEnabled) && !user.isAdmin())
                 throw Forbidden("Päätöksen alaisella henkilöllä on voimassa turvakielto. Osoitetietojen suojaamiseksi vain pääkäyttäjä voi ladata tämän päätöksen.")
 
-            getDecisionPdf(tx.handle, decisionId)
+            getDecisionPdf(tx, decisionId)
         }
     }
 
-    private fun getDecisionPdf(h: Handle, decisionId: UUID): ResponseEntity<ByteArray> {
-        return decisionService.getDecisionPdf(h, decisionId)
+    private fun getDecisionPdf(tx: Database.Read, decisionId: UUID): ResponseEntity<ByteArray> {
+        return decisionService.getDecisionPdf(tx, decisionId)
             .let { document ->
                 ResponseEntity.ok()
                     .header("Content-Disposition", "attachment;filename=${document.getName()}")

@@ -43,7 +43,7 @@ class DecisionMessageProcessor(
     fun runSendJob(db: Database, msg: SendDecision) = db.transaction { tx ->
         val decisionId = msg.decisionId
 
-        decisionService.deliverDecisionToGuardians(tx.handle, decisionId)
+        decisionService.deliverDecisionToGuardians(tx, decisionId)
         logger.info { "Successfully sent decision(s) pdf for decision (id: $decisionId)." }
     }
 }

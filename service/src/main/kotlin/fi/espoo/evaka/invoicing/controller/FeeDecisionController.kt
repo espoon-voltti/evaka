@@ -124,7 +124,7 @@ class FeeDecisionController(
         Audit.FeeDecisionConfirm.log(targetId = feeDecisionIds)
         user.requireOneOfRoles(Roles.FINANCE_ADMIN)
         db.transaction { tx ->
-            val confirmedDecisions = service.confirmDrafts(tx.handle, user, feeDecisionIds)
+            val confirmedDecisions = service.confirmDrafts(tx, user, feeDecisionIds)
             asyncJobRunner.plan(tx, confirmedDecisions.map { NotifyFeeDecisionApproved(it) })
         }
         asyncJobRunner.scheduleImmediateRun()
@@ -135,7 +135,7 @@ class FeeDecisionController(
     fun setSent(db: Database, user: AuthenticatedUser, @RequestBody feeDecisionIds: List<UUID>): ResponseEntity<Unit> {
         Audit.FeeDecisionMarkSent.log(targetId = feeDecisionIds)
         user.requireOneOfRoles(Roles.FINANCE_ADMIN)
-        db.transaction { service.setSent(it.handle, feeDecisionIds) }
+        db.transaction { service.setSent(it, feeDecisionIds) }
         return ResponseEntity.noContent().build()
     }
 
@@ -144,7 +144,7 @@ class FeeDecisionController(
         Audit.FeeDecisionPdfRead.log(targetId = uuid)
         user.requireOneOfRoles(Roles.FINANCE_ADMIN)
         val headers = HttpHeaders()
-        val (filename, pdf) = db.read { service.getFeeDecisionPdf(it.handle, uuid) }
+        val (filename, pdf) = db.read { service.getFeeDecisionPdf(it, uuid) }
         headers.add("Content-Disposition", "attachment; filename=\"$filename\"")
         headers.add("Content-Type", "application/pdf")
         return ResponseEntity(pdf, headers, HttpStatus.OK)
@@ -201,7 +201,7 @@ class FeeDecisionController(
     ): ResponseEntity<Unit> {
         Audit.FeeDecisionSetType.log(targetId = uuid)
         user.requireOneOfRoles(Roles.FINANCE_ADMIN)
-        db.transaction { service.setType(it.handle, uuid, request.type) }
+        db.transaction { service.setType(it, uuid, request.type) }
         return ResponseEntity.noContent().build()
     }
 }

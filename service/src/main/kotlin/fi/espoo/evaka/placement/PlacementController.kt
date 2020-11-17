@@ -22,6 +22,7 @@ import fi.espoo.evaka.shared.config.Roles.STAFF
 import fi.espoo.evaka.shared.config.Roles.UNIT_SUPERVISOR
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
+import fi.espoo.evaka.shared.domain.NotFound
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller
@@ -71,7 +72,7 @@ class PlacementController(
         val authorizedDaycares = auth.ids ?: emptySet()
 
         return db.read {
-            getDaycarePlacements(it.handle, daycareId, childId, startDate, endDate).map { placement ->
+            it.getDaycarePlacements(daycareId, childId, startDate, endDate).map { placement ->
                 if (auth !is AclAuthorization.All && !authorizedDaycares.contains(placement.daycare.id))
                     placement.copy(isRestrictedFromUser = true)
                 else placement
@@ -120,7 +121,7 @@ class PlacementController(
             }
 
             val placement = placementService.createPlacement(
-                h = tx.handle,
+                tx,
                 type = body.type,
                 childId = body.childId,
                 unitId = body.unitId,
@@ -148,7 +149,7 @@ class PlacementController(
 
         val aclAuth = acl.getAuthorizedDaycares(user)
         db.transaction { tx ->
-            val oldPlacement = updatePlacement(tx.handle, placementId, body.startDate, body.endDate, aclAuth)
+            val oldPlacement = tx.updatePlacement(placementId, body.startDate, body.endDate, aclAuth)
             asyncJobRunner.plan(
                 tx,
                 listOf(
@@ -196,8 +197,7 @@ class PlacementController(
             .requireOneOfRoles(SERVICE_WORKER, UNIT_SUPERVISOR)
 
         return db.transaction { tx ->
-            createGroupPlacement(
-                h = tx.handle,
+            tx.createGroupPlacement(
                 daycarePlacementId = placementId,
                 groupId = body.groupId,
                 startDate = body.startDate,
@@ -219,9 +219,9 @@ class PlacementController(
         acl.getRolesForPlacement(user, daycarePlacementId)
             .requireOneOfRoles(SERVICE_WORKER, UNIT_SUPERVISOR)
 
-        return db.transaction {
-            deleteGroupPlacement(it.handle, groupPlacementId).let(::noContent)
-        }
+        val success = db.transaction { it.handle.deleteGroupPlacement(groupPlacementId) }
+        if (!success) throw NotFound("Group placement not found")
+        return noContent()
     }
 
     @PostMapping("/{daycarePlacementId}/group-placements/{groupPlacementId}/transfer")
@@ -237,7 +237,7 @@ class PlacementController(
             .requireOneOfRoles(SERVICE_WORKER, UNIT_SUPERVISOR)
 
         return db.transaction {
-            transferGroup(it.handle, daycarePlacementId, groupPlacementId, body.groupId, body.startDate).let(::noContent)
+            it.transferGroup(daycarePlacementId, groupPlacementId, body.groupId, body.startDate).let(::noContent)
         }
     }
 }

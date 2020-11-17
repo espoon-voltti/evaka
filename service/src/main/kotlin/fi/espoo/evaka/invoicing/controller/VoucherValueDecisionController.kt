@@ -111,7 +111,7 @@ class VoucherValueDecisionController(
     fun getDecisionPdf(db: Database, user: AuthenticatedUser, @PathVariable id: UUID): ResponseEntity<ByteArray> {
         Audit.FeeDecisionPdfRead.log(targetId = id)
         user.requireOneOfRoles(Roles.FINANCE_ADMIN)
-        val (filename, pdf) = db.read { valueDecisionService.getDecisionPdf(it.handle, id) }
+        val (filename, pdf) = db.read { valueDecisionService.getDecisionPdf(it, id) }
         val headers = HttpHeaders().apply {
             add("Content-Disposition", "attachment; filename=\"$filename\"")
             add("Content-Type", "application/pdf")

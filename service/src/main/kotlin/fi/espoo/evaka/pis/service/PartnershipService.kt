@@ -10,8 +10,8 @@ import fi.espoo.evaka.pis.deletePartnership
 import fi.espoo.evaka.pis.getPartnership
 import fi.espoo.evaka.pis.retryPartnership
 import fi.espoo.evaka.pis.updatePartnershipDuration
+import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.NotFound
-import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.statement.UnableToExecuteStatementException
 import org.springframework.stereotype.Service
 import java.time.LocalDate
@@ -20,29 +20,29 @@ import java.util.UUID
 @Service
 class PartnershipService {
     fun createPartnership(
-        h: Handle,
+        tx: Database.Transaction,
         personId1: UUID,
         personId2: UUID,
         startDate: LocalDate,
         endDate: LocalDate?
     ): Partnership {
         return try {
-            h.createPartnership(personId1, personId2, startDate, endDate)
+            tx.handle.createPartnership(personId1, personId2, startDate, endDate)
         } catch (e: UnableToExecuteStatementException) {
             throw mapPSQLException(e)
         }
     }
 
     fun updatePartnershipDuration(
-        h: Handle,
+        tx: Database.Transaction,
         partnershipId: UUID,
         startDate: LocalDate,
         endDate: LocalDate?
     ): Partnership {
-        val partnership = h.getPartnership(partnershipId)
+        val partnership = tx.handle.getPartnership(partnershipId)
             ?: throw NotFound("No partnership found with id $partnershipId")
         try {
-            val success = h.updatePartnershipDuration(partnershipId, startDate, endDate)
+            val success = tx.handle.updatePartnershipDuration(partnershipId, startDate, endDate)
             if (!success) throw NotFound("No partnership found with id $partnershipId")
         } catch (e: Exception) {
             throw mapPSQLException(e)
@@ -51,19 +51,19 @@ class PartnershipService {
         return partnership.copy(startDate = startDate, endDate = endDate)
     }
 
-    fun retryPartnership(h: Handle, partnershipId: UUID): Partnership? {
+    fun retryPartnership(tx: Database.Transaction, partnershipId: UUID): Partnership? {
         return try {
-            h.getPartnership(partnershipId)
+            tx.handle.getPartnership(partnershipId)
                 ?.takeIf { it.conflict }
-                ?.also { h.retryPartnership(partnershipId) }
+                ?.also { tx.handle.retryPartnership(partnershipId) }
         } catch (e: Exception) {
             throw mapPSQLException(e)
         }
     }
 
-    fun deletePartnership(h: Handle, partnershipId: UUID): Partnership? {
-        return h.getPartnership(partnershipId)?.also {
-            h.deletePartnership(partnershipId)
+    fun deletePartnership(tx: Database.Transaction, partnershipId: UUID): Partnership? {
+        return tx.handle.getPartnership(partnershipId)?.also {
+            tx.handle.deletePartnership(partnershipId)
         }
     }
 }

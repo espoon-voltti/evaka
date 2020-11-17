@@ -122,7 +122,7 @@ class ApplicationControllerEnduser(
         val formV0 = serializer.deserialize(user, formJson)
         val updatedApplication = db.transaction { tx ->
             applicationStateService
-                .updateOwnApplicationContents(tx.handle, user, applicationId, formV0)
+                .updateOwnApplicationContents(tx, user, applicationId, formV0)
                 .let { serializer.serialize(tx, user, it) }
         }
 

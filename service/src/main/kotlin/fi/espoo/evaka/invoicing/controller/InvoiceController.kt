@@ -135,13 +135,7 @@ class InvoiceController(
         Audit.InvoicesSend.log(targetId = invoiceIds)
         user.requireOneOfRoles(Roles.FINANCE_ADMIN)
         db.transaction {
-            service.sendInvoices(
-                it.handle,
-                user,
-                invoiceIds,
-                invoiceDate,
-                dueDate
-            )
+            service.sendInvoices(it, user, invoiceIds, invoiceDate, dueDate)
         }
         return ResponseEntity.noContent().build()
     }
@@ -155,14 +149,8 @@ class InvoiceController(
         Audit.InvoicesSendByDate.log()
         user.requireOneOfRoles(Roles.FINANCE_ADMIN)
         db.transaction { tx ->
-            val invoiceIds = service.getInvoiceIds(tx.handle, payload.from, payload.to, payload.areas)
-            service.sendInvoices(
-                tx.handle,
-                user,
-                invoiceIds,
-                payload.invoiceDate,
-                payload.dueDate
-            )
+            val invoiceIds = service.getInvoiceIds(tx, payload.from, payload.to, payload.areas)
+            service.sendInvoices(tx, user, invoiceIds, payload.invoiceDate, payload.dueDate)
         }
         return ResponseEntity.noContent().build()
     }
@@ -171,7 +159,7 @@ class InvoiceController(
     fun markInvoicesSent(db: Database, user: AuthenticatedUser, @RequestBody invoiceIds: List<UUID>): ResponseEntity<Unit> {
         Audit.InvoicesMarkSent.log(targetId = invoiceIds)
         user.requireOneOfRoles(Roles.FINANCE_ADMIN)
-        db.transaction { markManuallySent(it.handle, user, invoiceIds) }
+        db.transaction { it.markManuallySent(user, invoiceIds) }
         return ResponseEntity.noContent().build()
     }
 
@@ -208,14 +196,14 @@ class InvoiceController(
         Audit.InvoicesUpdate.log(targetId = uuid)
         user.requireOneOfRoles(Roles.FINANCE_ADMIN)
         val parsedUuid = parseUUID(uuid)
-        db.transaction { service.updateInvoice(it.handle, parsedUuid, invoice) }
+        db.transaction { service.updateInvoice(it, parsedUuid, invoice) }
         return ResponseEntity.noContent().build()
     }
 
     @GetMapping("/codes")
     fun getInvoiceCodes(db: Database, user: AuthenticatedUser): ResponseEntity<Wrapper<InvoiceCodes>> {
         user.requireOneOfRoles(Roles.FINANCE_ADMIN)
-        val codes = db.read { getInvoiceCodes(it.handle) }
+        val codes = db.read { it.getInvoiceCodes() }
         return ResponseEntity.ok(Wrapper(codes))
     }
 }

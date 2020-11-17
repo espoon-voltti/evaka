@@ -11,7 +11,7 @@ import fi.espoo.evaka.invoicing.domain.IncomeEffect
 import fi.espoo.evaka.invoicing.domain.getTotalIncome
 import fi.espoo.evaka.invoicing.domain.getTotalIncomeEffect
 import fi.espoo.evaka.invoicing.domain.incomeTotal
-import org.jdbi.v3.core.Handle
+import fi.espoo.evaka.shared.db.Database
 import org.springframework.stereotype.Service
 import java.sql.ResultSet
 import java.time.LocalDate
@@ -19,7 +19,7 @@ import java.util.UUID
 
 @Service
 class FamilyOverviewService(private val objectMapper: ObjectMapper) {
-    fun getFamilyByAdult(h: Handle, adultId: UUID): FamilyOverview? {
+    fun getFamilyByAdult(tx: Database.Read, adultId: UUID): FamilyOverview? {
         val sql =
             """
 WITH adult_ids AS
@@ -71,7 +71,7 @@ AND fc.conflict = FALSE
 ORDER BY date_of_birth ASC
 """
         val familyMembersNow =
-            h.createQuery(sql).bind("id", adultId).map { rs, _ -> toFamilyOverviewPerson(rs, objectMapper) }
+            tx.createQuery(sql).bind("id", adultId).map { rs, _ -> toFamilyOverviewPerson(rs, objectMapper) }
 
         val (adults, children) = familyMembersNow.partition { it.headOfChild == null }
 

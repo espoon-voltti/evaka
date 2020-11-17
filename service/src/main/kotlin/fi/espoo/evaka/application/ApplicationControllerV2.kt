@@ -275,7 +275,7 @@ class ApplicationControllerV2(
         @PathVariable applicationId: UUID,
         @RequestBody applicationForm: ApplicationForm
     ): ResponseEntity<Unit> {
-        db.transaction { applicationStateService.updateApplicationContents(it.handle, user, applicationId, applicationForm) }
+        db.transaction { applicationStateService.updateApplicationContents(it, user, applicationId, applicationForm) }
         return ResponseEntity.noContent().build()
     }
 
@@ -317,7 +317,7 @@ class ApplicationControllerV2(
             val placementUnitName = getPlacementPlanUnitName(tx.handle, applicationId)
 
             val decisionDrafts = fetchDecisionDrafts(tx.handle, applicationId)
-            val unit = decisionDraftService.getDecisionUnit(tx.handle, decisionDrafts[0].unitId)
+            val unit = decisionDraftService.getDecisionUnit(tx, decisionDrafts[0].unitId)
 
             val applicationGuardian = personService.getUpToDatePerson(tx, user, application.guardianId)
                 ?: throw NotFound("Guardian ${application.guardianId} not found")
@@ -368,7 +368,7 @@ class ApplicationControllerV2(
         Audit.DecisionDraftUpdate.log(targetId = applicationId)
         user.requireOneOfRoles(Roles.SERVICE_WORKER, Roles.ADMIN)
 
-        db.transaction { decisionDraftService.updateDecisionDrafts(it.handle, applicationId, body) }
+        db.transaction { decisionDraftService.updateDecisionDrafts(it, applicationId, body) }
         return ResponseEntity.noContent().build()
     }
 
@@ -431,7 +431,7 @@ class ApplicationControllerV2(
     ): ResponseEntity<Unit> {
         db.transaction {
             applicationStateService.respondToPlacementProposal(
-                it.handle,
+                it,
                 user,
                 applicationId,
                 body.status,

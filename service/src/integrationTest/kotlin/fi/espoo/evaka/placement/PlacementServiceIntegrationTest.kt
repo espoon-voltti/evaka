@@ -7,7 +7,6 @@ package fi.espoo.evaka.placement
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.resetDatabase
-import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroupPlacement
@@ -46,16 +45,18 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
 
     @BeforeEach
     internal fun setUp() {
-        jdbi.handle { h ->
-            resetDatabase(h)
-            insertGeneralTestFixtures(h)
-            groupId1 = h.insertTestDaycareGroup(
+        db.transaction {
+            it.resetDatabase()
+            insertGeneralTestFixtures(it.handle)
+        }
+        db.transaction {
+            groupId1 = it.handle.insertTestDaycareGroup(
                 DevDaycareGroup(
                     daycareId = unitId,
                     startDate = placementStart
                 )
             )
-            groupId2 = h.insertTestDaycareGroup(
+            groupId2 = it.handle.insertTestDaycareGroup(
                 DevDaycareGroup(
                     daycareId = unitId,
                     startDate = placementStart
@@ -63,7 +64,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
             )
 
             oldPlacement = placementService.createPlacement(
-                h,
+                it,
                 PlacementType.PRESCHOOL,
                 childId,
                 unitId,
@@ -73,7 +74,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
             daycarePlacementId = oldPlacement.id
 
             groupPlacementId = insertTestDaycareGroupPlacement(
-                h = h,
+                it.handle,
                 daycarePlacementId = daycarePlacementId,
                 groupId = groupId1,
                 startDate = placementStart,
@@ -88,17 +89,19 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
     result       XXXXXyyyyy
      */
     @Test
-    fun `inserting placement without overlap`() = jdbi.handle { h ->
-        val newPlacement = placementService.createPlacement(
-            h,
-            PlacementType.PRESCHOOL,
-            childId,
-            unitId,
-            LocalDate.of(year, month, 21),
-            LocalDate.of(year, month, 30)
-        )
+    fun `inserting placement without overlap`() {
+        val newPlacement = db.transaction {
+            placementService.createPlacement(
+                it,
+                PlacementType.PRESCHOOL,
+                childId,
+                unitId,
+                LocalDate.of(year, month, 21),
+                LocalDate.of(year, month, 30)
+            )
+        }
 
-        val placements = h.getPlacementsForChild(childId)
+        val placements = db.read { it.handle.getPlacementsForChild(childId) }
 
         assertEquals(2, placements.size)
         assertTrue(placements.containsAll(listOf(oldPlacement, newPlacement)))
@@ -110,17 +113,19 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
     result       yyyyy
      */
     @Test
-    fun `inserting identical placement`() = jdbi.handle { h ->
-        val newPlacement = placementService.createPlacement(
-            h,
-            PlacementType.PRESCHOOL,
-            childId,
-            unitId,
-            LocalDate.of(year, month, 10),
-            LocalDate.of(year, month, 20)
-        )
+    fun `inserting identical placement`() {
+        val newPlacement = db.transaction {
+            placementService.createPlacement(
+                it,
+                PlacementType.PRESCHOOL,
+                childId,
+                unitId,
+                LocalDate.of(year, month, 10),
+                LocalDate.of(year, month, 20)
+            )
+        }
 
-        val placements = h.getPlacementsForChild(childId)
+        val placements = db.read { it.handle.getPlacementsForChild(childId) }
 
         assertEquals(listOf(newPlacement), placements)
     }
@@ -131,17 +136,19 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
     result       Xyyyy
      */
     @Test
-    fun `old placement starts earlier`() = jdbi.handle { h ->
-        val newPlacement = placementService.createPlacement(
-            h,
-            PlacementType.PRESCHOOL,
-            childId,
-            unitId,
-            LocalDate.of(year, month, 11),
-            LocalDate.of(year, month, 20)
-        )
+    fun `old placement starts earlier`() {
+        val newPlacement = db.transaction {
+            placementService.createPlacement(
+                it,
+                PlacementType.PRESCHOOL,
+                childId,
+                unitId,
+                LocalDate.of(year, month, 11),
+                LocalDate.of(year, month, 20)
+            )
+        }
 
-        val placements = h.getPlacementsForChild(childId)
+        val placements = db.read { it.handle.getPlacementsForChild(childId) }
 
         assertEquals(2, placements.size)
         assertTrue(placements.contains(newPlacement))
@@ -155,25 +162,27 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
     }
 
     @Test
-    fun `updating placement calls clearOldPlacements`() = jdbi.handle { h ->
-        val newPlacement = placementService.createPlacement(
-            h,
-            PlacementType.PRESCHOOL,
-            childId,
-            unitId,
-            LocalDate.of(year, month, 21),
-            LocalDate.of(year, month, 30)
-        )
+    fun `updating placement calls clearOldPlacements`() {
+        val newPlacement = db.transaction {
+            placementService.createPlacement(
+                it,
+                PlacementType.PRESCHOOL,
+                childId,
+                unitId,
+                LocalDate.of(year, month, 21),
+                LocalDate.of(year, month, 30)
+            )
+        }
 
-        val originalPlacements = h.getPlacementsForChild(childId)
+        val originalPlacements = db.read { it.handle.getPlacementsForChild(childId) }
 
         assertEquals(2, originalPlacements.size)
         assertTrue(originalPlacements.containsAll(listOf(oldPlacement, newPlacement)))
 
         val newStart = oldPlacement.endDate.minusDays(5)
-        updatePlacement(h, newPlacement.id, newStart, newPlacement.endDate)
+        db.transaction { it.updatePlacement(newPlacement.id, newStart, newPlacement.endDate) }
 
-        val newPlacements = h.getPlacementsForChild(childId)
+        val newPlacements = db.read { it.handle.getPlacementsForChild(childId) }
         val old = newPlacements.find { it.id == oldPlacement.id }!!
         val updated = newPlacements.find { it.id == newPlacement.id }!!
 
@@ -190,17 +199,19 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
     result       Xyyyyy
      */
     @Test
-    fun `old placement starts earlier, ends earlier`() = jdbi.handle { h ->
-        val newPlacement = placementService.createPlacement(
-            h,
-            PlacementType.PRESCHOOL,
-            childId,
-            unitId,
-            LocalDate.of(year, month, 11),
-            LocalDate.of(year, month, 21)
-        )
+    fun `old placement starts earlier, ends earlier`() {
+        val newPlacement = db.transaction {
+            placementService.createPlacement(
+                it,
+                PlacementType.PRESCHOOL,
+                childId,
+                unitId,
+                LocalDate.of(year, month, 11),
+                LocalDate.of(year, month, 21)
+            )
+        }
 
-        val placements = h.getPlacementsForChild(childId)
+        val placements = db.read { it.handle.getPlacementsForChild(childId) }
 
         assertEquals(2, placements.size)
         assertTrue(placements.contains(newPlacement))
@@ -219,17 +230,19 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
     result       XyyyX
      */
     @Test
-    fun `old placement starts earlier, ends later`() = jdbi.handle { h ->
-        val newPlacement = placementService.createPlacement(
-            h,
-            PlacementType.PRESCHOOL,
-            childId,
-            unitId,
-            LocalDate.of(year, month, 11),
-            LocalDate.of(year, month, 19)
-        )
+    fun `old placement starts earlier, ends later`() {
+        val newPlacement = db.transaction {
+            placementService.createPlacement(
+                it,
+                PlacementType.PRESCHOOL,
+                childId,
+                unitId,
+                LocalDate.of(year, month, 11),
+                LocalDate.of(year, month, 19)
+            )
+        }
 
-        val placements = h.getPlacementsForChild(childId)
+        val placements = db.read { it.handle.getPlacementsForChild(childId) }
 
         assertEquals(3, placements.size)
         assertTrue(placements.contains(newPlacement))
@@ -255,17 +268,19 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
     result       yyyyyy
      */
     @Test
-    fun `old placement ends earlier`() = jdbi.handle { h ->
-        val newPlacement = placementService.createPlacement(
-            h,
-            PlacementType.PRESCHOOL,
-            childId,
-            unitId,
-            LocalDate.of(year, month, 10),
-            LocalDate.of(year, month, 21)
-        )
+    fun `old placement ends earlier`() {
+        val newPlacement = db.transaction {
+            placementService.createPlacement(
+                it,
+                PlacementType.PRESCHOOL,
+                childId,
+                unitId,
+                LocalDate.of(year, month, 10),
+                LocalDate.of(year, month, 21)
+            )
+        }
 
-        val placements = h.getPlacementsForChild(childId)
+        val placements = db.read { it.handle.getPlacementsForChild(childId) }
 
         assertEquals(1, placements.size)
         assertEquals(listOf(newPlacement), placements)
@@ -277,17 +292,19 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
     result       yyyyX
      */
     @Test
-    fun `old placement ends later`() = jdbi.handle { h ->
-        val newPlacement = placementService.createPlacement(
-            h,
-            PlacementType.PRESCHOOL,
-            childId,
-            unitId,
-            LocalDate.of(year, month, 10),
-            LocalDate.of(year, month, 19)
-        )
+    fun `old placement ends later`() {
+        val newPlacement = db.transaction {
+            placementService.createPlacement(
+                it,
+                PlacementType.PRESCHOOL,
+                childId,
+                unitId,
+                LocalDate.of(year, month, 10),
+                LocalDate.of(year, month, 19)
+            )
+        }
 
-        val placements = h.getPlacementsForChild(childId)
+        val placements = db.read { it.handle.getPlacementsForChild(childId) }
 
         assertEquals(2, placements.size)
         assertTrue(placements.contains(newPlacement))
@@ -306,17 +323,19 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
     result      yyyyyy
      */
     @Test
-    fun `old placement starts later`() = jdbi.handle { h ->
-        val newPlacement = placementService.createPlacement(
-            h,
-            PlacementType.PRESCHOOL,
-            childId,
-            unitId,
-            LocalDate.of(year, month, 9),
-            LocalDate.of(year, month, 20)
-        )
+    fun `old placement starts later`() {
+        val newPlacement = db.transaction {
+            placementService.createPlacement(
+                it,
+                PlacementType.PRESCHOOL,
+                childId,
+                unitId,
+                LocalDate.of(year, month, 9),
+                LocalDate.of(year, month, 20)
+            )
+        }
 
-        val placements = h.getPlacementsForChild(childId)
+        val placements = db.read { it.handle.getPlacementsForChild(childId) }
 
         assertEquals(1, placements.size)
         assertTrue(placements.contains(newPlacement))
@@ -328,17 +347,19 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
     result      yyyyyyy
      */
     @Test
-    fun `old placement starts later, ends earlier`() = jdbi.handle { h ->
-        val newPlacement = placementService.createPlacement(
-            h,
-            PlacementType.PRESCHOOL,
-            childId,
-            unitId,
-            LocalDate.of(year, month, 9),
-            LocalDate.of(year, month, 21)
-        )
+    fun `old placement starts later, ends earlier`() {
+        val newPlacement = db.transaction {
+            placementService.createPlacement(
+                it,
+                PlacementType.PRESCHOOL,
+                childId,
+                unitId,
+                LocalDate.of(year, month, 9),
+                LocalDate.of(year, month, 21)
+            )
+        }
 
-        val placements = h.getPlacementsForChild(childId)
+        val placements = db.read { it.handle.getPlacementsForChild(childId) }
 
         assertEquals(1, placements.size)
         assertTrue(placements.contains(newPlacement))
@@ -350,17 +371,19 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
     result      yyyyyX
      */
     @Test
-    fun `old placement starts later, ends later`() = jdbi.handle { h ->
-        val newPlacement = placementService.createPlacement(
-            h,
-            PlacementType.PRESCHOOL,
-            childId,
-            unitId,
-            LocalDate.of(year, month, 9),
-            LocalDate.of(year, month, 19)
-        )
+    fun `old placement starts later, ends later`() {
+        val newPlacement = db.transaction {
+            placementService.createPlacement(
+                it,
+                PlacementType.PRESCHOOL,
+                childId,
+                unitId,
+                LocalDate.of(year, month, 9),
+                LocalDate.of(year, month, 19)
+            )
+        }
 
-        val placements = h.getPlacementsForChild(childId)
+        val placements = db.read { it.handle.getPlacementsForChild(childId) }
 
         assertEquals(2, placements.size)
         assertTrue(placements.contains(newPlacement))
@@ -379,25 +402,29 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
    result      XZZZZY
     */
     @Test
-    fun `preparatory overlaps with two earlier placements`() = jdbi.handle { h ->
-        val old2 = placementService.createPlacement(
-            h,
-            PlacementType.PRESCHOOL_DAYCARE,
-            childId,
-            unitId,
-            LocalDate.of(year, month, 21),
-            LocalDate.of(year, month, 31)
-        )
-        val newPlacement = placementService.createPlacement(
-            h,
-            PlacementType.PREPARATORY,
-            childId,
-            unitId,
-            LocalDate.of(year, month, 15),
-            LocalDate.of(year, month, 25)
-        )
+    fun `preparatory overlaps with two earlier placements`() {
+        val old2 = db.transaction {
+            placementService.createPlacement(
+                it,
+                PlacementType.PRESCHOOL_DAYCARE,
+                childId,
+                unitId,
+                LocalDate.of(year, month, 21),
+                LocalDate.of(year, month, 31)
+            )
+        }
+        val newPlacement = db.transaction {
+            placementService.createPlacement(
+                it,
+                PlacementType.PREPARATORY,
+                childId,
+                unitId,
+                LocalDate.of(year, month, 15),
+                LocalDate.of(year, month, 25)
+            )
+        }
 
-        val placements = h.getPlacementsForChild(childId)
+        val placements = db.read { it.handle.getPlacementsForChild(childId) }
 
         assertEquals(3, placements.size)
         assertTrue(placements.contains(newPlacement))
@@ -418,96 +445,106 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
     }
 
     @Test
-    fun `updating placement endDate to be earlier`() = jdbi.handle { h ->
-        val oldPlacement = placementService.createPlacement(
-            h,
-            PlacementType.DAYCARE,
-            childId,
-            unitId,
-            LocalDate.of(year, month, 10),
-            LocalDate.of(year, month, 20)
-        )
+    fun `updating placement endDate to be earlier`() {
+        val oldPlacement = db.transaction {
+            placementService.createPlacement(
+                it,
+                PlacementType.DAYCARE,
+                childId,
+                unitId,
+                LocalDate.of(year, month, 10),
+                LocalDate.of(year, month, 20)
+            )
+        }
 
-        updatePlacement(h, oldPlacement.id, oldPlacement.startDate, LocalDate.of(year, month, 19))
+        db.transaction { it.updatePlacement(oldPlacement.id, oldPlacement.startDate, LocalDate.of(year, month, 19)) }
 
-        val updated = h.getPlacement(oldPlacement.id)
+        val updated = db.read { it.handle.getPlacement(oldPlacement.id) }
         val expected = oldPlacement.copy(endDate = LocalDate.of(year, month, 19))
         assertEquals(expected, updated)
     }
 
     @Test
-    fun `updating placement endDate to be earlier cuts group placements`() = jdbi.handle { h ->
-        val oldPlacement = placementService.createPlacement(
-            h,
-            PlacementType.DAYCARE,
-            childId,
-            unitId,
-            LocalDate.of(year, month, 10),
-            LocalDate.of(year, month, 20)
-        )
-        val groupId = h.insertTestDaycareGroup(DevDaycareGroup(daycareId = unitId))
-        insertTestDaycareGroupPlacement(
-            h,
-            groupId = groupId,
-            daycarePlacementId = oldPlacement.id,
-            startDate = oldPlacement.startDate,
-            endDate = oldPlacement.endDate
-        )
+    fun `updating placement endDate to be earlier cuts group placements`() {
+        val oldPlacement = db.transaction {
+            placementService.createPlacement(
+                it,
+                PlacementType.DAYCARE,
+                childId,
+                unitId,
+                LocalDate.of(year, month, 10),
+                LocalDate.of(year, month, 20)
+            )
+        }
+        val groupId = db.transaction { it.handle.insertTestDaycareGroup(DevDaycareGroup(daycareId = unitId)) }
+        db.transaction {
+            insertTestDaycareGroupPlacement(
+                it.handle,
+                groupId = groupId,
+                daycarePlacementId = oldPlacement.id,
+                startDate = oldPlacement.startDate,
+                endDate = oldPlacement.endDate
+            )
+        }
 
-        updatePlacement(h, oldPlacement.id, oldPlacement.startDate, LocalDate.of(year, month, 15))
+        db.transaction { it.updatePlacement(oldPlacement.id, oldPlacement.startDate, LocalDate.of(year, month, 15)) }
 
-        val endDates = h.createQuery("SELECT end_date FROM daycare_group_placement WHERE daycare_group_id = :id")
-            .bind("id", groupId)
-            .mapTo<LocalDate>()
-            .list()
+        val endDates = db.read {
+            it.createQuery("SELECT end_date FROM daycare_group_placement WHERE daycare_group_id = :id")
+                .bind("id", groupId)
+                .mapTo<LocalDate>()
+                .list()
+        }
 
         assertEquals(1, endDates.size)
         assertEquals(LocalDate.of(year, month, 15), endDates.first())
     }
 
     @Test
-    fun `changing placement type by creating new placement preserves group placement history`() = jdbi.handle { h ->
-        val oldPlacement = placementService.createPlacement(
-            h,
-            PlacementType.DAYCARE,
-            childId,
-            unitId,
-            LocalDate.of(year, month, 1),
-            LocalDate.of(year, month, 30)
-        )
-        val groupId = h.insertTestDaycareGroup(DevDaycareGroup(daycareId = unitId))
-        insertTestDaycareGroupPlacement(
-            h,
-            groupId = groupId,
-            daycarePlacementId = oldPlacement.id,
-            startDate = oldPlacement.startDate,
-            endDate = oldPlacement.endDate
-        )
+    fun `changing placement type by creating new placement preserves group placement history`() {
+        val oldPlacement = db.transaction {
+            placementService.createPlacement(
+                it,
+                PlacementType.DAYCARE,
+                childId,
+                unitId,
+                LocalDate.of(year, month, 1),
+                LocalDate.of(year, month, 30)
+            )
+        }
+        val groupId = db.transaction { it.handle.insertTestDaycareGroup(DevDaycareGroup(daycareId = unitId)) }
+        db.transaction {
+            insertTestDaycareGroupPlacement(
+                it.handle,
+                groupId = groupId,
+                daycarePlacementId = oldPlacement.id,
+                startDate = oldPlacement.startDate,
+                endDate = oldPlacement.endDate
+            )
+        }
 
-        placementService.createPlacement(
-            h,
-            PlacementType.PRESCHOOL_DAYCARE,
-            childId,
-            unitId,
-            LocalDate.of(year, month, 15),
-            LocalDate.of(year, month, 30)
-        )
+        db.transaction {
+            placementService.createPlacement(
+                it,
+                PlacementType.PRESCHOOL_DAYCARE,
+                childId,
+                unitId,
+                LocalDate.of(year, month, 15),
+                LocalDate.of(year, month, 30)
+            )
+        }
 
         data class QueryResult(
             val startDate: LocalDate,
             val endDate: LocalDate
         )
 
-        val groupPlacements =
-            h.createQuery("SELECT start_date, end_date FROM daycare_group_placement WHERE daycare_group_id = :id")
+        val groupPlacements = db.read {
+            it.createQuery("SELECT start_date, end_date FROM daycare_group_placement WHERE daycare_group_id = :id")
                 .bind("id", groupId)
-                .map { r ->
-                    QueryResult(
-                        startDate = r.getColumn("start_date", LocalDate::class.java),
-                        endDate = r.getColumn("end_date", LocalDate::class.java)
-                    )
-                }
+                .mapTo<QueryResult>()
                 .list()
+        }
 
         assertEquals(1, groupPlacements.size)
         assertEquals(LocalDate.of(year, month, 1), groupPlacements.first().startDate)
@@ -515,105 +552,116 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
     }
 
     @Test
-    fun `changing placement type to preparatory by creating new placement preserves group placement history`() =
-        jdbi.handle { h ->
-            val oldPlacement = placementService.createPlacement(
-                h,
+    fun `changing placement type to preparatory by creating new placement preserves group placement history`() {
+        val oldPlacement = db.transaction {
+            placementService.createPlacement(
+                it,
                 PlacementType.PRESCHOOL,
                 childId,
                 unitId,
                 LocalDate.of(year, month, 1),
                 LocalDate.of(year, month, 30)
             )
-            val groupId = h.insertTestDaycareGroup(DevDaycareGroup(daycareId = unitId))
+        }
+        val groupId = db.transaction { it.handle.insertTestDaycareGroup(DevDaycareGroup(daycareId = unitId)) }
+        db.transaction {
             insertTestDaycareGroupPlacement(
-                h,
+                it.handle,
                 groupId = groupId,
                 daycarePlacementId = oldPlacement.id,
                 startDate = oldPlacement.startDate,
                 endDate = oldPlacement.endDate
             )
+        }
 
+        db.transaction {
             placementService.createPlacement(
-                h,
+                it,
                 PlacementType.PREPARATORY,
                 childId,
                 unitId,
                 LocalDate.of(year, month, 15),
                 LocalDate.of(year, month, 30)
             )
-
-            data class QueryResult(
-                val startDate: LocalDate,
-                val endDate: LocalDate
-            )
-
-            val groupPlacements =
-                h.createQuery("SELECT start_date, end_date FROM daycare_group_placement WHERE daycare_group_id = :id")
-                    .bind("id", groupId)
-                    .map { r ->
-                        QueryResult(
-                            startDate = r.getColumn("start_date", LocalDate::class.java),
-                            endDate = r.getColumn("end_date", LocalDate::class.java)
-                        )
-                    }
-                    .list()
-
-            assertEquals(1, groupPlacements.size)
-            assertEquals(LocalDate.of(year, month, 1), groupPlacements.first().startDate)
-            assertEquals(LocalDate.of(year, month, 14), groupPlacements.first().endDate)
         }
 
-    @Test
-    fun `updating placement endDate to be later`() = jdbi.handle { h ->
-        val oldPlacement = placementService.createPlacement(
-            h,
-            PlacementType.DAYCARE,
-            childId,
-            unitId,
-            LocalDate.of(year, month, 10),
-            LocalDate.of(year, month, 20)
+        data class QueryResult(
+            val startDate: LocalDate,
+            val endDate: LocalDate
         )
 
-        updatePlacement(h, oldPlacement.id, oldPlacement.startDate, LocalDate.of(year, month, 21))
+        val groupPlacements = db.read {
+            it.createQuery("SELECT start_date, end_date FROM daycare_group_placement WHERE daycare_group_id = :id")
+                .bind("id", groupId)
+                .mapTo<QueryResult>()
+                .list()
+        }
 
-        val updated = h.getPlacement(oldPlacement.id)
+        assertEquals(1, groupPlacements.size)
+        assertEquals(LocalDate.of(year, month, 1), groupPlacements.first().startDate)
+        assertEquals(LocalDate.of(year, month, 14), groupPlacements.first().endDate)
+    }
+
+    @Test
+    fun `updating placement endDate to be later`() {
+        val oldPlacement = db.transaction {
+            placementService.createPlacement(
+                it,
+                PlacementType.DAYCARE,
+                childId,
+                unitId,
+                LocalDate.of(year, month, 10),
+                LocalDate.of(year, month, 20)
+            )
+        }
+
+        db.transaction {
+            it.updatePlacement(oldPlacement.id, oldPlacement.startDate, LocalDate.of(year, month, 21))
+        }
+
+        val updated = db.read { it.handle.getPlacement(oldPlacement.id) }
         val expected = oldPlacement.copy(endDate = LocalDate.of(year, month, 21))
         assertEquals(expected, updated)
     }
 
     @Test
-    fun `updating placement endDate to be earlier than startDate is not allowed`() = jdbi.handle { h ->
-        val oldPlacement = placementService.createPlacement(
-            h,
-            PlacementType.DAYCARE,
-            childId,
-            unitId,
-            LocalDate.of(year, month, 10),
-            LocalDate.of(year, month, 20)
-        )
-        assertThrows<BadRequest> {
-            updatePlacement(
-                h,
-                oldPlacement.id,
-                oldPlacement.startDate,
-                oldPlacement.startDate.minusDays(1)
+    fun `updating placement endDate to be earlier than startDate is not allowed`() {
+        val oldPlacement = db.transaction {
+            placementService.createPlacement(
+                it,
+                PlacementType.DAYCARE,
+                childId,
+                unitId,
+                LocalDate.of(year, month, 10),
+                LocalDate.of(year, month, 20)
             )
+        }
+        db.transaction {
+            assertThrows<BadRequest> {
+                it.updatePlacement(
+                    oldPlacement.id,
+                    oldPlacement.startDate,
+                    oldPlacement.startDate.minusDays(1)
+                )
+            }
         }
     }
 
     @Test
-    fun `transferring splits the group placement`() = jdbi.handle { h ->
+    fun `transferring splits the group placement`() {
         val transferDate = placementStart.plusDays(5)
-        transferGroup(h, daycarePlacementId, groupPlacementId, groupId2, transferDate)
+        db.transaction {
+            it.transferGroup(daycarePlacementId, groupPlacementId, groupId2, transferDate)
+        }
 
-        val groupPlacements = getDaycarePlacements(
-            h,
-            daycareId = unitId,
-            childId = childId,
-            startDate = null,
-            endDate = null
-        )
+        val groupPlacements = db.read {
+            it.getDaycarePlacements(
+                daycareId = unitId,
+                childId = childId,
+                startDate = null,
+                endDate = null
+            )
+        }
             .also { assertEquals(1, it.size) }
             .first()
             .groupPlacements
@@ -628,17 +676,18 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
     }
 
     @Test
-    fun `transferring deletes old group placement if start dates match`() = jdbi.handle { h ->
+    fun `transferring deletes old group placement if start dates match`() {
         val transferDate = placementStart
-        transferGroup(h, daycarePlacementId, groupPlacementId, groupId2, transferDate)
+        db.transaction { it.transferGroup(daycarePlacementId, groupPlacementId, groupId2, transferDate) }
 
-        val groupPlacements = getDaycarePlacements(
-            h,
-            daycareId = unitId,
-            childId = childId,
-            startDate = null,
-            endDate = null
-        )
+        val groupPlacements = db.read {
+            it.getDaycarePlacements(
+                daycareId = unitId,
+                childId = childId,
+                startDate = null,
+                endDate = null
+            )
+        }
             .also { assertEquals(1, it.size) }
             .first()
             .groupPlacements
@@ -650,23 +699,25 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
     }
 
     @Test
-    fun `if no group placements then getDaycarePlacements shows full range without groupId`() = jdbi.handle { h ->
+    fun `if no group placements then getDaycarePlacements shows full range without groupId`() {
         val daycarePlacementId = UUID.randomUUID()
         val daycarePlacementStartDate = placementStart
         val daycarePlacementEndDate = placementStart.plusDays(5)
         val daycarePlacementType = PlacementType.DAYCARE
 
-        insertTestPlacement(
-            h,
-            id = daycarePlacementId,
-            childId = testChild_2.id,
-            unitId = testDaycare2.id,
-            startDate = daycarePlacementStartDate,
-            endDate = daycarePlacementEndDate,
-            type = daycarePlacementType
-        )
+        db.transaction {
+            insertTestPlacement(
+                it.handle,
+                id = daycarePlacementId,
+                childId = testChild_2.id,
+                unitId = testDaycare2.id,
+                startDate = daycarePlacementStartDate,
+                endDate = daycarePlacementEndDate,
+                type = daycarePlacementType
+            )
+        }
 
-        val placements = getDaycarePlacements(h, testDaycare2.id, null, null, null)
+        val placements = db.read { it.getDaycarePlacements(testDaycare2.id, null, null, null) }
 
         assertEquals(
             setOf(
@@ -700,7 +751,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
     }
 
     @Test
-    fun `if there are group placements then getDaycarePlacements also shows gaps without groupId`() = jdbi.handle { h ->
+    fun `if there are group placements then getDaycarePlacements also shows gaps without groupId`() {
         val date = { day: Int -> LocalDate.of(year, month, day) }
 
         val daycarePlacementId = UUID.randomUUID()
@@ -708,15 +759,17 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
         val daycarePlacementEndDate = date(20)
         val daycarePlacementType = PlacementType.DAYCARE
 
-        insertTestPlacement(
-            h,
-            id = daycarePlacementId,
-            childId = testChild_2.id,
-            unitId = testDaycare2.id,
-            startDate = daycarePlacementStartDate,
-            endDate = daycarePlacementEndDate,
-            type = daycarePlacementType
-        )
+        db.transaction {
+            insertTestPlacement(
+                it.handle,
+                id = daycarePlacementId,
+                childId = testChild_2.id,
+                unitId = testDaycare2.id,
+                startDate = daycarePlacementStartDate,
+                endDate = daycarePlacementEndDate,
+                type = daycarePlacementType
+            )
+        }
 
         val groupPlacementId1 = UUID.randomUUID()
         val groupPlacementId2 = UUID.randomUUID()
@@ -727,18 +780,20 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
             listOf(groupPlacementId1, groupPlacementId2, groupPlacementId3, groupPlacementId4, groupPlacementId5)
         val groupPlacementDays = listOf(3 to 5, 6 to 9, 12 to 12, 16 to 17, 19 to 20)
 
-        groupPlacementDays.forEachIndexed { index, (startDate, endDate) ->
-            insertTestDaycareGroupPlacement(
-                h,
-                id = groupPlacementIds[index],
-                groupId = groupId1,
-                daycarePlacementId = daycarePlacementId,
-                startDate = date(startDate),
-                endDate = date(endDate)
-            )
+        db.transaction { tx ->
+            groupPlacementDays.forEachIndexed { index, (startDate, endDate) ->
+                insertTestDaycareGroupPlacement(
+                    tx.handle,
+                    id = groupPlacementIds[index],
+                    groupId = groupId1,
+                    daycarePlacementId = daycarePlacementId,
+                    startDate = date(startDate),
+                    endDate = date(endDate)
+                )
+            }
         }
 
-        val placements = getDaycarePlacements(h, testDaycare2.id, null, null, null)
+        val placements = db.read { it.getDaycarePlacements(testDaycare2.id, null, null, null) }
 
         assertEquals(
             setOf(

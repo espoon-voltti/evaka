@@ -28,7 +28,6 @@ import fi.espoo.voltti.pdfgen.PDFService
 import fi.espoo.voltti.pdfgen.Page
 import fi.espoo.voltti.pdfgen.Template
 import mu.KotlinLogging
-import org.jdbi.v3.core.Handle
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import org.thymeleaf.context.Context
@@ -69,7 +68,7 @@ class DecisionService(
         val child = personService.getUpToDatePerson(tx, user, application.childId)
             ?: error("Child not found with id: ${application.childId}")
 
-        createDecisionPdf(tx.handle, decision, application, guardian, child)
+        createDecisionPdf(tx, decision, application, guardian, child)
             .let { uri -> updateDecisionGuardianDocumentUri(tx.handle, decisionId, uri) }
 
         if (
@@ -85,23 +84,23 @@ class DecisionService(
             val otherGuardian = personService.getUpToDatePerson(tx, user, application.otherGuardianId)
                 ?: throw NotFound("Other guardian not found with id: ${application.otherGuardianId}")
 
-            createDecisionPdf(tx.handle, decision, application, otherGuardian, child)
+            createDecisionPdf(tx, decision, application, otherGuardian, child)
                 .let { uri -> updateDecisionOtherGuardianDocumentUri(tx.handle, decisionId, uri) }
         }
     }
 
     private fun createDecisionPdf(
-        h: Handle,
+        tx: Database.Transaction,
         decision: Decision,
         application: ApplicationDetails,
         guardian: PersonDTO,
         child: PersonDTO
     ): URI {
-        val manager = h.getUnitManager(decision.unit.id)
+        val manager = tx.handle.getUnitManager(decision.unit.id)
             ?: throw NotFound("Daycare manager not found with daycare id: ${decision.unit.id}.")
         val lang =
             if (decision.type == DecisionType.CLUB) "fi"
-            else getDecisionLanguage(h, decision.id)
+            else getDecisionLanguage(tx.handle, decision.id)
         val sendAddress = getSendAddress(guardian, lang)
 
         val templates = when (decision.type) {
@@ -200,24 +199,24 @@ class DecisionService(
             logger.debug { "PDF (object name: $key) uploaded to S3 with URL ${it.uri}." }
         }
 
-    fun deliverDecisionToGuardians(h: Handle, decisionId: UUID) {
-        val decision = getDecision(h, decisionId) ?: throw NotFound("No decision with id: $decisionId")
+    fun deliverDecisionToGuardians(tx: Database.Transaction, decisionId: UUID) {
+        val decision = getDecision(tx.handle, decisionId) ?: throw NotFound("No decision with id: $decisionId")
 
         val applicationId = decision.applicationId
-        val application = fetchApplicationDetails(h, applicationId)
+        val application = fetchApplicationDetails(tx.handle, applicationId)
             ?: throw NotFound("Application $applicationId was not found")
 
-        val applicationGuardian = h.getPersonById(application.guardianId)
+        val applicationGuardian = tx.handle.getPersonById(application.guardianId)
             ?: error("Guardian not found with id: ${application.guardianId}")
 
-        deliverDecisionToGuardian(h, decision, applicationGuardian, decision.documentUri.toString())
+        deliverDecisionToGuardian(tx, decision, applicationGuardian, decision.documentUri.toString())
 
         if (application.otherGuardianId != null && !decision.otherGuardianDocumentUri.isNullOrBlank()) {
-            val otherGuardian = h.getPersonById(application.otherGuardianId)
+            val otherGuardian = tx.handle.getPersonById(application.otherGuardianId)
                 ?: error("Other guardian not found with id: ${application.otherGuardianId}")
 
             deliverDecisionToGuardian(
-                h,
+                tx,
                 decision,
                 otherGuardian,
                 decision.otherGuardianDocumentUri.toString()
@@ -226,7 +225,7 @@ class DecisionService(
     }
 
     fun deliverDecisionToGuardian(
-        h: Handle,
+        tx: Database.Transaction,
         decision: Decision,
         guardian: PersonDTO,
         documentUri: String
@@ -236,14 +235,14 @@ class DecisionService(
             return
         }
 
-        val lang = getDecisionLanguage(h, decision.id)
+        val lang = getDecisionLanguage(tx.handle, decision.id)
         val sendAddress = getSendAddress(guardian, lang)
         // SFI expects unique string for each message so document.id is not suitable as it is NOT string and NOT unique
         val uniqueId = "${decision.id}|${guardian.id}"
         val message = SuomiFiMessage(
             messageId = uniqueId,
             documentId = uniqueId.toString(),
-            documentDisplayName = calculateDecisionFileName(h, decision, lang),
+            documentDisplayName = calculateDecisionFileName(tx, decision, lang),
             documentUri = documentUri,
             firstName = guardian.firstName!!,
             lastName = guardian.lastName!!,
@@ -259,24 +258,24 @@ class DecisionService(
         evakaMessageClient.send(message)
     }
 
-    fun getDecisionPdf(h: Handle, decisionId: UUID): Document {
-        val decision = getDecision(h, decisionId)
+    fun getDecisionPdf(tx: Database.Read, decisionId: UUID): Document {
+        val decision = getDecision(tx.handle, decisionId)
             ?: throw NotFound("No decision $decisionId found")
-        val lang = getDecisionLanguage(h, decisionId)
+        val lang = getDecisionLanguage(tx.handle, decisionId)
         return decision.documentUri
             ?.let(URI::create)
             ?.let(s3Client::get)
             ?.let {
                 DocumentWrapper(
-                    name = calculateDecisionFileName(h, decision, lang),
+                    name = calculateDecisionFileName(tx, decision, lang),
                     path = "/",
                     bytes = it.getBytes()
                 )
             } ?: error("Decision S3 url is not set for $decisionId.")
     }
 
-    private fun calculateDecisionFileName(h: Handle, decision: Decision, lang: String): String {
-        val child = h.getPersonById(decision.childId)
+    private fun calculateDecisionFileName(tx: Database.Read, decision: Decision, lang: String): String {
+        val child = tx.handle.getPersonById(decision.childId)
         val childName = "${child?.firstName}_${child?.lastName}"
         val prefix = getLocalizedFilename(decision.type, lang)
         return "${prefix}_$childName.pdf".replace(" ", "_")

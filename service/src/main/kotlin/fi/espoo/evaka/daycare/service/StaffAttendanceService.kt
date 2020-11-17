@@ -7,7 +7,6 @@ package fi.espoo.evaka.daycare.service
 import fi.espoo.evaka.daycare.dao.PGConstants.maxDate
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
-import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.mapTo
 import org.springframework.stereotype.Service
 import java.time.LocalDate
@@ -21,10 +20,10 @@ class StaffAttendanceService {
         val rangeEnd = rangeStart.with(lastDayOfMonth())
 
         return db.read { tx ->
-            val groupInfo = getGroupInfo(groupId, tx.handle) ?: throw BadRequest("Couldn't find group info with id $groupId")
+            val groupInfo = tx.getGroupInfo(groupId) ?: throw BadRequest("Couldn't find group info with id $groupId")
             val endDate = groupInfo.endDate.let { if (it.isBefore(maxDate)) it else null }
 
-            val attendanceList = getStaffAttendanceByRange(rangeStart, rangeEnd, groupId, tx.handle)
+            val attendanceList = tx.getStaffAttendanceByRange(rangeStart, rangeEnd, groupId)
             val attendanceMap = composeAttendanceMap(rangeStart, rangeEnd, groupId, attendanceList)
 
             StaffAttendanceGroup(groupId, groupInfo.groupName, groupInfo.startDate, endDate, attendanceMap)
@@ -33,10 +32,10 @@ class StaffAttendanceService {
 
     fun upsertStaffAttendance(db: Database, staffAttendance: StaffAttendance) {
         db.transaction { tx ->
-            if (!isValidStaffAttendanceDate(staffAttendance, tx.handle)) {
+            if (!tx.isValidStaffAttendanceDate(staffAttendance)) {
                 throw BadRequest("Error: Upserting staff count failed. Group is not operating in given date")
             }
-            upsertStaffAttendance(staffAttendance, tx.handle)
+            tx.upsertStaffAttendance(staffAttendance)
         }
     }
 
@@ -77,7 +76,7 @@ data class GroupInfo(
     val endDate: LocalDate
 )
 
-fun getGroupInfo(groupId: UUID, h: Handle): GroupInfo? {
+fun Database.Read.getGroupInfo(groupId: UUID): GroupInfo? {
     //language=SQL
     val sql =
         """
@@ -86,13 +85,13 @@ fun getGroupInfo(groupId: UUID, h: Handle): GroupInfo? {
             WHERE id = :groupId;
         """.trimIndent()
 
-    return h.createQuery(sql)
+    return createQuery(sql)
         .bind("groupId", groupId)
         .mapTo<GroupInfo>()
         .firstOrNull()
 }
 
-fun isValidStaffAttendanceDate(staffAttendance: StaffAttendance, h: Handle): Boolean {
+fun Database.Read.isValidStaffAttendanceDate(staffAttendance: StaffAttendance): Boolean {
     //language=SQL
     val sql =
         """
@@ -102,13 +101,13 @@ fun isValidStaffAttendanceDate(staffAttendance: StaffAttendance, h: Handle): Boo
             AND :date BETWEEN start_date AND end_date
         """.trimIndent()
 
-    return h.createQuery(sql)
+    return createQuery(sql)
         .bind("id", staffAttendance.groupId)
         .bind("date", staffAttendance.date)
         .mapToMap().list().size > 0
 }
 
-fun upsertStaffAttendance(staffAttendance: StaffAttendance, h: Handle) {
+fun Database.Transaction.upsertStaffAttendance(staffAttendance: StaffAttendance) {
     //language=SQL
     val sql =
         """
@@ -117,14 +116,14 @@ fun upsertStaffAttendance(staffAttendance: StaffAttendance, h: Handle) {
         ON CONFLICT (group_id, date) DO UPDATE SET count = :count
         """.trimIndent()
 
-    h.createUpdate(sql)
+    createUpdate(sql)
         .bind("groupId", staffAttendance.groupId)
         .bind("date", staffAttendance.date)
         .bind("count", staffAttendance.count)
         .execute()
 }
 
-fun getStaffAttendanceByRange(rangeStart: LocalDate, rangeEnd: LocalDate, groupId: UUID, h: Handle): List<StaffAttendance> {
+fun Database.Read.getStaffAttendanceByRange(rangeStart: LocalDate, rangeEnd: LocalDate, groupId: UUID): List<StaffAttendance> {
     //language=SQL
     val sql =
         """
@@ -134,7 +133,7 @@ fun getStaffAttendanceByRange(rangeStart: LocalDate, rangeEnd: LocalDate, groupI
             AND date BETWEEN :rangeStart AND :rangeEnd;
         """.trimIndent()
 
-    return h.createQuery(sql)
+    return createQuery(sql)
         .bind("groupId", groupId)
         .bind("rangeStart", rangeStart)
         .bind("rangeEnd", rangeEnd)

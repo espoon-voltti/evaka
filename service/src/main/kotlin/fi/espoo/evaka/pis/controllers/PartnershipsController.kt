@@ -50,7 +50,7 @@ class PartnershipsController(private val asyncJobRunner: AsyncJobRunner, private
             val (personId1, personId2) = personIds.toList()
             return db
                 .transaction { tx ->
-                    val partnership = partnershipService.createPartnership(tx.handle, personId1, personId2, startDate, endDate)
+                    val partnership = partnershipService.createPartnership(tx, personId1, personId2, startDate, endDate)
                     asyncJobRunner.plan(tx, listOf(NotifyFamilyUpdated(personId2, startDate, endDate)))
                     partnership
                 }
@@ -98,7 +98,7 @@ class PartnershipsController(private val asyncJobRunner: AsyncJobRunner, private
 
         return db
             .transaction { tx ->
-                val partnership = partnershipService.updatePartnershipDuration(tx.handle, partnershipId, body.startDate, body.endDate)
+                val partnership = partnershipService.updatePartnershipDuration(tx, partnershipId, body.startDate, body.endDate)
                 asyncJobRunner.plan(
                     tx,
                     listOf(NotifyFamilyUpdated(partnership.partners.last().id, partnership.startDate, partnership.endDate))
@@ -119,7 +119,7 @@ class PartnershipsController(private val asyncJobRunner: AsyncJobRunner, private
         user.requireOneOfRoles(SERVICE_WORKER, UNIT_SUPERVISOR, FINANCE_ADMIN)
 
         db.transaction { tx ->
-            partnershipService.retryPartnership(tx.handle, partnershipId)?.let {
+            partnershipService.retryPartnership(tx, partnershipId)?.let {
                 asyncJobRunner.plan(tx, listOf(NotifyFamilyUpdated(it.partners.first().id, it.startDate, it.endDate)))
             }
         }
@@ -137,7 +137,7 @@ class PartnershipsController(private val asyncJobRunner: AsyncJobRunner, private
         user.requireOneOfRoles(SERVICE_WORKER, UNIT_SUPERVISOR, FINANCE_ADMIN)
 
         db.transaction { tx ->
-            partnershipService.deletePartnership(tx.handle, partnershipId)?.also { partnership ->
+            partnershipService.deletePartnership(tx, partnershipId)?.also { partnership ->
                 asyncJobRunner.plan(
                     tx,
                     partnership.partners.map { NotifyFamilyUpdated(it.id, partnership.startDate, partnership.endDate) }

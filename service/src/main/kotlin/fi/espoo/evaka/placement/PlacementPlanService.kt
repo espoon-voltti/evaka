@@ -112,7 +112,7 @@ class PlacementPlanService(
             if (allowPreschool) {
                 val period = requestedStartDate?.let { plan.period.copy(start = it) } ?: plan.period
                 placementService.createPlacement(
-                    h = tx.handle,
+                    tx,
                     type = if (plan.type == PlacementType.PRESCHOOL_DAYCARE) PlacementType.PRESCHOOL else PlacementType.PREPARATORY,
                     childId = childId,
                     unitId = plan.unitId,
@@ -132,7 +132,7 @@ class PlacementPlanService(
                 // placement is used because invoices are handled differently
                 if (period.end.isAfter(term.end)) {
                     placementService.createPlacement(
-                        h = tx.handle,
+                        tx,
                         type = plan.type,
                         childId = childId,
                         unitId = plan.unitId,
@@ -140,7 +140,7 @@ class PlacementPlanService(
                         endDate = term.end
                     )
                     placementService.createPlacement(
-                        h = tx.handle,
+                        tx,
                         type = PlacementType.DAYCARE,
                         childId = childId,
                         unitId = plan.unitId,
@@ -149,7 +149,7 @@ class PlacementPlanService(
                     )
                 } else {
                     placementService.createPlacement(
-                        h = tx.handle,
+                        tx,
                         type = plan.type,
                         childId = childId,
                         unitId = plan.unitId,
@@ -167,7 +167,7 @@ class PlacementPlanService(
         } else {
             val period = requestedStartDate?.let { plan.period.copy(start = it) } ?: plan.period
             placementService.createPlacement(
-                h = tx.handle,
+                tx,
                 type = plan.type,
                 childId = childId,
                 unitId = plan.unitId,
