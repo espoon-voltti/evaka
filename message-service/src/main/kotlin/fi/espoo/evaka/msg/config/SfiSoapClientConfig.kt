@@ -73,18 +73,8 @@ class SfiSoapClientConfig {
 
         override fun resolveFault(message: WebServiceMessage) {
             when (message) {
-                is FaultAwareWebServiceMessage -> {
-                    logger.error(
-                        "Fault while doing SFI Message request: {message.faultCode}. " +
-                            "Reason: ${message.faultReason}",
-                        message
-                    )
-                    throw WebServiceFaultException(message)
-                }
-                else -> {
-                    logger.error("Unknown error while doing SFI Message request: \"$message\".", message)
-                    throw WebServiceFaultException("Message has unknown fault: $message")
-                }
+                is FaultAwareWebServiceMessage -> throw WebServiceFaultException(message)
+                else -> throw WebServiceFaultException("Message has unknown fault: $message")
             }
         }
     }
