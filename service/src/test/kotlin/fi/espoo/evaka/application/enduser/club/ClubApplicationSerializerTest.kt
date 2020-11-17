@@ -199,7 +199,8 @@ class ClubApplicationSerializerTest {
             hideFromGuardian = false,
             transferApplication = false,
             additionalDaycareApplication = false,
-            type = ApplicationType.CLUB
+            type = ApplicationType.CLUB,
+            attachments = listOf()
         )
     }
 

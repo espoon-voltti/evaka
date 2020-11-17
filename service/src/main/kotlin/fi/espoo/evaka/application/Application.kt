@@ -87,7 +87,14 @@ data class ApplicationDetails(
     val dueDate: LocalDate?,
     val transferApplication: Boolean,
     val additionalDaycareApplication: Boolean,
-    val hideFromGuardian: Boolean
+    val hideFromGuardian: Boolean,
+    val attachments: List<Attachment>
+)
+
+data class Attachment(
+    val id: UUID,
+    val name: String,
+    val contentType: String
 )
 
 enum class ApplicationType(val type: String) {

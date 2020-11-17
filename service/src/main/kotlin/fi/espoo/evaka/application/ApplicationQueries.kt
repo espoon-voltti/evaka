@@ -456,12 +456,17 @@ fun fetchApplicationDetails(h: Handle, applicationId: UUID): ApplicationDetails?
             f.updated,
             a.sentdate,
             a.duedate,
-            a.checkedbyadmin
+            a.checkedbyadmin,
+            coalesce(att.json, '[]'::jsonb) attachments
         FROM application a
         JOIN application_form f ON f.application_id = a.id
         LEFT JOIN person c ON c.id = a.child_id
         LEFT JOIN person g1 ON g1.id = a.guardian_id
-        WHERE a.id = :id 
+        LEFT JOIN (
+            SELECT application_id, jsonb_agg(jsonb_build_object('id', id, 'name', name, 'contentType', content_type)) json
+            FROM attachment GROUP BY application_id
+        ) att ON a.id = att.application_id
+        WHERE a.id = :id
         AND f.latest IS TRUE
         """.trimIndent()
 
@@ -494,7 +499,14 @@ fun fetchApplicationDetails(h: Handle, applicationId: UUID): ApplicationDetails?
                 sentDate = row.mapColumn("sentdate"),
                 dueDate = row.mapColumn("duedate"),
                 checkedByAdmin = row.mapColumn("checkedbyadmin"),
-                hideFromGuardian = row.mapColumn("hidefromguardian")
+                hideFromGuardian = row.mapColumn("hidefromguardian"),
+                attachments = row.mapJsonColumn<List<Map<String, String>>>("attachments").map {
+                    Attachment(
+                        id = UUID.fromString(it["id"]),
+                        name = it["name"]!!,
+                        contentType = it["contentType"]!!
+                    )
+                }
             )
         }
         .firstOrNull()
