@@ -8,7 +8,10 @@ import {
   AreaAndPersonFixtures
 } from '../../dev-api/data-init'
 import {
+  careArea2Fixture,
+  daycare2Fixture,
   daycareFixture,
+  Fixture,
   voucherValueDecisionsFixture
 } from '../../dev-api/fixtures'
 import {
@@ -29,6 +32,8 @@ fixture('Reporting - voucher reports')
   .page(page.url)
   .before(async () => {
     ;[fixtures, cleanUp] = await initializeAreaAndPersonData()
+    const careArea = await Fixture.careArea().with(careArea2Fixture).save()
+    await Fixture.daycare().with(daycare2Fixture).careArea(careArea).save()
   })
   .beforeEach(async () => {
     await cleanUpInvoicingDatabase()
@@ -37,6 +42,12 @@ fixture('Reporting - voucher reports')
         fixtures.enduserGuardianFixture.id,
         fixtures.enduserChildFixtureKaarina.id,
         fixtures.daycareFixture.id,
+        'SENT'
+      ),
+      voucherValueDecisionsFixture(
+        fixtures.enduserGuardianFixture.id,
+        fixtures.enduserChildFixtureJari.id,
+        daycare2Fixture.id,
         'SENT'
       )
     ])
@@ -49,7 +60,7 @@ fixture('Reporting - voucher reports')
 
 const reports = new ReportsPage()
 
-test('voucher service providers are reported correctly', async (t) => {
+test('voucher service providers are reported correctly, respecting the area filter', async (t) => {
   await t.useRole(seppoAdminRole)
   await reports.selectReportsTab()
   await reports.selectVoucherServiceProvidersReport()
@@ -58,5 +69,6 @@ test('voucher service providers are reported correctly', async (t) => {
   await reports.selectYear(2020)
   await reports.selectArea('Superkeskus')
 
+  await reports.assertVoucherServiceProviderRowCount(1)
   await reports.assertVoucherServiceProviderRow(daycareFixture.id, '1', '-289')
 })

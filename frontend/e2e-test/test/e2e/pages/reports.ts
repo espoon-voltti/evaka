@@ -37,6 +37,10 @@ export default class ReportsPage {
     await t.pressKey('enter')
   }
 
+  async assertVoucherServiceProviderRowCount(expectedChildCount: number) {
+    await t.expect(Selector('.reportRow').count).eql(expectedChildCount)
+  }
+
   async assertVoucherServiceProviderRow(
     unitId: string,
     expectedChildCount: string,

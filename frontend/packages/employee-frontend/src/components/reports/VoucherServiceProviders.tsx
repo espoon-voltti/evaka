@@ -195,7 +195,11 @@ function VoucherServiceProviders() {
               </Thead>
               <Tbody>
                 {mappedData.map((row) => (
-                  <Tr key={row.unitId} data-qa={row.unitId}>
+                  <Tr
+                    key={row.unitId}
+                    data-qa={row.unitId}
+                    className={'reportRow'}
+                  >
                     <StyledTd>{row.areaName}</StyledTd>
                     <StyledTd>
                       <Link to={`/units/${row.unitId}`}>{row.unitName}</Link>
