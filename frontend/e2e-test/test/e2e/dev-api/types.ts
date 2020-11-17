@@ -67,7 +67,7 @@ export interface FeeDecision {
 
 export interface VoucherValueDecision {
   id: UUID
-  status: 'DRAFT'
+  status: 'DRAFT' | 'SENT'
   validFrom: ISODate
   validTo: ISODate
   headOfFamily: { id: UUID }

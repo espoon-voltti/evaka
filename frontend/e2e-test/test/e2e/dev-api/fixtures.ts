@@ -503,10 +503,11 @@ export const feeDecisionsFixture = (
 export const voucherValueDecisionsFixture = (
   adultId: UUID,
   childId: UUID,
-  daycareId: UUID
+  daycareId: UUID,
+  status: 'DRAFT' | 'SENT' = 'DRAFT'
 ): VoucherValueDecision => ({
   id: 'ed462aca-f74e-4384-910f-628823201023',
-  status: 'DRAFT',
+  status,
   validFrom: '2019-01-01',
   validTo: '2021-01-01',
   headOfFamily: { id: adultId },

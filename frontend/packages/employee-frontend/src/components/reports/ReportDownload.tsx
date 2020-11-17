@@ -31,9 +31,10 @@ interface Props {
   data: object[] | string[][]
   headers?: LabelKeyObject[]
   filename: string
+  dataQa?: string
 }
 
-function ReportDownload({ data, headers, filename }: Props) {
+function ReportDownload({ data, headers, filename, dataQa }: Props) {
   const { i18n } = useTranslation()
   const [reloadCSV, setReloadCSV] = useState(true)
 
@@ -54,22 +55,24 @@ function ReportDownload({ data, headers, filename }: Props) {
 
   return (
     <RowRightAligned>
-      {data.length > 0 && !reloadCSV ? (
-        <CSVLink
-          data={data}
-          headers={headers}
-          separator=";"
-          filename={filename}
-        >
-          <FontAwesomeIcon icon={faFileSpreadsheet} size="lg" />
-          <LinkText>{i18n.reports.downloadButton}</LinkText>
-        </CSVLink>
-      ) : (
-        <DisabledLink>
-          <FontAwesomeIcon icon={faFileSpreadsheet} size="lg" />
-          <LinkText>{i18n.reports.downloadButton}</LinkText>
-        </DisabledLink>
-      )}
+      <div data-qa={dataQa}>
+        {data.length > 0 && !reloadCSV ? (
+          <CSVLink
+            data={data}
+            headers={headers}
+            separator=";"
+            filename={filename}
+          >
+            <FontAwesomeIcon icon={faFileSpreadsheet} size="lg" />
+            <LinkText>{i18n.reports.downloadButton}</LinkText>
+          </CSVLink>
+        ) : (
+          <DisabledLink>
+            <FontAwesomeIcon icon={faFileSpreadsheet} size="lg" />
+            <LinkText>{i18n.reports.downloadButton}</LinkText>
+          </DisabledLink>
+        )}
+      </div>
     </RowRightAligned>
   )
 }
