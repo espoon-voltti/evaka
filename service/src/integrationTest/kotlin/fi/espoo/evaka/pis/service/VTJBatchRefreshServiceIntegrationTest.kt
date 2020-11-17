@@ -90,7 +90,7 @@ class VTJBatchRefreshServiceIntegrationTest : FullApplicationTest() {
         )
         whenever(personService.getUpToDatePersonWithChildren(any(), eq(user), eq(testAdult_1.id))).thenReturn(dto)
 
-        service.doVTJRefresh(db, VTJRefresh(testAdult_1.id, user.id))
+        service.doVTJRefresh(dbInstance(), VTJRefresh(testAdult_1.id, user.id))
         verify(parentshipService).createParentship(
             any(),
             eq(testChild_1.id),
@@ -115,7 +115,7 @@ class VTJBatchRefreshServiceIntegrationTest : FullApplicationTest() {
             )
         )
         whenever(personService.getUpToDatePersonWithChildren(any(), eq(user), eq(testAdult_1.id))).thenReturn(dto)
-        service.doVTJRefresh(db, VTJRefresh(testAdult_1.id, user.id))
+        service.doVTJRefresh(dbInstance(), VTJRefresh(testAdult_1.id, user.id))
         verifyZeroInteractions(parentshipService)
     }
 
@@ -151,7 +151,7 @@ class VTJBatchRefreshServiceIntegrationTest : FullApplicationTest() {
         whenever(personService.getUpToDatePersonWithChildren(any(), eq(user), eq(testAdult_1.id))).thenReturn(dto1)
         whenever(personService.getUpToDatePersonWithChildren(any(), eq(user), eq(testAdult_2.id))).thenReturn(dto2)
 
-        service.doVTJRefresh(db, VTJRefresh(testAdult_1.id, user.id))
+        service.doVTJRefresh(dbInstance(), VTJRefresh(testAdult_1.id, user.id))
         verify(parentshipService).createParentship(
             any(),
             eq(testChild_1.id),
@@ -195,7 +195,7 @@ class VTJBatchRefreshServiceIntegrationTest : FullApplicationTest() {
         whenever(personService.getUpToDatePersonWithChildren(any(), eq(user), eq(testAdult_1.id))).thenReturn(dto1)
         whenever(personService.getUpToDatePersonWithChildren(any(), eq(user), eq(testAdult_2.id))).thenReturn(dto2)
 
-        service.doVTJRefresh(db, VTJRefresh(testAdult_1.id, user.id))
+        service.doVTJRefresh(dbInstance(), VTJRefresh(testAdult_1.id, user.id))
         verifyZeroInteractions(parentshipService)
     }
 }
