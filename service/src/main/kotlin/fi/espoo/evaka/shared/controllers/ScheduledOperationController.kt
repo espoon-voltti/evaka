@@ -8,7 +8,6 @@ import fi.espoo.evaka.Audit
 import fi.espoo.evaka.application.removeOldDrafts
 import fi.espoo.evaka.dvv.DvvModificationsBatchRefreshService
 import fi.espoo.evaka.koski.KoskiUpdateService
-import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.transaction
 import fi.espoo.evaka.varda.VardaUpdateService
@@ -29,7 +28,7 @@ class ScheduledOperationController(
 ) {
 
     @PostMapping("/dvv/update")
-    fun dvvUpdate(user: AuthenticatedUser): ResponseEntity<Int> {
+    fun dvvUpdate(): ResponseEntity<Int> {
         Audit.VtjBatchSchedule.log()
         return ResponseEntity.ok(dvvModificationsBatchRefreshService.scheduleBatch())
     }
