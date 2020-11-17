@@ -15,9 +15,12 @@ import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.transaction
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.Conflict
+import fi.espoo.evaka.shared.utils.dateNow
+import fi.espoo.evaka.shared.utils.zoneId
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.Jdbi
 import org.jdbi.v3.core.kotlin.mapTo
+import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -26,8 +29,9 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
-import java.time.Instant
 import java.time.LocalDate
+import java.time.LocalTime
+import java.time.ZonedDateTime
 import java.util.UUID
 
 @RestController
@@ -63,12 +67,12 @@ class ChildAttendanceController(
         user: AuthenticatedUser,
         @PathVariable unitId: UUID,
         @PathVariable childId: UUID,
-        @RequestParam time: Instant
+        @RequestParam @DateTimeFormat(pattern = "HH:mm") time: LocalTime
     ): ResponseEntity<ArrivalInfoResponse> {
         acl.getRolesForUnit(user, unitId).requireOneOfRoles(*authorizedRoles)
 
         return jdbi.transaction { h ->
-            assertChildPlacement(h, childId, unitId, Instant.now())
+            assertChildPlacement(h, childId, unitId)
 
             val attendance = h.getChildCurrentDayAttendance(childId, unitId)
             if (attendance != null)
@@ -81,7 +85,7 @@ class ChildAttendanceController(
     }
 
     data class ArrivalRequest(
-        val arrived: Instant
+        @DateTimeFormat(pattern = "HH:mm") val arrived: LocalTime
     )
     @PostMapping("/units/{unitId}/children/{childId}/arrival")
     fun postArrival(
@@ -93,17 +97,19 @@ class ChildAttendanceController(
         acl.getRolesForUnit(user, unitId).requireOneOfRoles(*authorizedRoles)
 
         return jdbi.transaction { h ->
-            assertChildPlacement(h, childId, unitId, body.arrived)
+            assertChildPlacement(h, childId, unitId)
 
             val attendance = h.getChildCurrentDayAttendance(childId, unitId)
             if (attendance != null)
                 throw Conflict("Cannot arrive, already arrived today")
 
+            val arrived = ZonedDateTime.of(LocalDate.now(zoneId).atTime(body.arrived), zoneId).toInstant()
+
             try {
                 h.insertAttendance(
                     childId = childId,
                     unitId = unitId,
-                    arrived = body.arrived,
+                    arrived = arrived,
                     departed = null
                 )
                 // todo: handle absence clearing? (EVAKA-4004)
@@ -124,7 +130,7 @@ class ChildAttendanceController(
         acl.getRolesForUnit(user, unitId).requireOneOfRoles(*authorizedRoles)
 
         return jdbi.transaction { h ->
-            assertChildPlacement(h, childId, unitId, Instant.now())
+            assertChildPlacement(h, childId, unitId)
 
             val attendance = h.getChildCurrentDayAttendance(childId, unitId)
 
@@ -154,12 +160,12 @@ class ChildAttendanceController(
         user: AuthenticatedUser,
         @PathVariable unitId: UUID,
         @PathVariable childId: UUID,
-        @RequestParam time: Instant
+        @RequestParam @DateTimeFormat(pattern = "HH:mm") time: LocalTime
     ): ResponseEntity<DepartureInfoResponse> {
         acl.getRolesForUnit(user, unitId).requireOneOfRoles(*authorizedRoles)
 
         return jdbi.transaction { h ->
-            assertChildPlacement(h, childId, unitId, Instant.now())
+            assertChildPlacement(h, childId, unitId)
 
             val attendance = h.getChildCurrentDayAttendance(childId, unitId)
             if (attendance == null) {
@@ -175,7 +181,7 @@ class ChildAttendanceController(
     }
 
     data class DepartureRequest(
-        val departed: Instant
+        @DateTimeFormat(pattern = "HH:mm") val departed: LocalTime
     )
     @PostMapping("/units/{unitId}/children/{childId}/departure")
     fun postDeparture(
@@ -187,7 +193,7 @@ class ChildAttendanceController(
         acl.getRolesForUnit(user, unitId).requireOneOfRoles(*authorizedRoles)
 
         return jdbi.transaction { h ->
-            assertChildPlacement(h, childId, unitId, body.departed)
+            assertChildPlacement(h, childId, unitId)
 
             val attendance = h.getChildCurrentDayAttendance(childId, unitId)
             if (attendance == null) {
@@ -196,10 +202,12 @@ class ChildAttendanceController(
                 throw Conflict("Cannot depart, already departed")
             }
 
+            val departed = ZonedDateTime.of(LocalDate.now(zoneId).atTime(body.departed), zoneId).toInstant()
+
             try {
                 h.updateAttendanceEnd(
                     attendanceId = attendance.id,
-                    departed = body.departed
+                    departed = departed
                 )
                 // todo: handle absence clearing? (EVAKA-4004)
             } catch (e: Exception) {
@@ -219,7 +227,7 @@ class ChildAttendanceController(
         acl.getRolesForUnit(user, unitId).requireOneOfRoles(*authorizedRoles)
 
         return jdbi.transaction { h ->
-            assertChildPlacement(h, childId, unitId, Instant.now())
+            assertChildPlacement(h, childId, unitId)
 
             val attendance = h.getChildCurrentDayAttendance(childId, unitId)
 
@@ -250,7 +258,7 @@ class ChildAttendanceController(
         acl.getRolesForUnit(user, unitId).requireOneOfRoles(*authorizedRoles)
 
         return jdbi.transaction { h ->
-            assertChildPlacement(h, childId, unitId, Instant.now())
+            assertChildPlacement(h, childId, unitId)
 
             val attendance = h.getChildCurrentDayAttendance(childId, unitId)
             if (attendance != null) {
@@ -260,7 +268,7 @@ class ChildAttendanceController(
             try {
                 h.deleteCurrentDayAbsences(childId)
 
-                val placementType = fetchChildPlacementType(h, childId, unitId, Instant.now())
+                val placementType = fetchChildPlacementType(h, childId, unitId, dateNow())
                 getCareTypes(placementType).forEach { careType ->
                     h.insertAbsence(user, childId, LocalDate.now(), careType, body.absenceType)
                 }
@@ -273,23 +281,23 @@ class ChildAttendanceController(
     }
 }
 
-private fun assertChildPlacement(h: Handle, childId: UUID, unitId: UUID, time: Instant) {
+private fun assertChildPlacement(h: Handle, childId: UUID, unitId: UUID) {
     // language=sql
     val sql =
         """
         SELECT id FROM placement
-        WHERE child_id = :childId AND unit_id = :unitId AND daterange(start_date, end_date, '[]') @> :time::date
+        WHERE child_id = :childId AND unit_id = :unitId AND daterange(start_date, end_date, '[]') @> :date
         
         UNION ALL
         
         SELECT id FROM backup_care
-        WHERE child_id = :childId AND unit_id = :unitId AND daterange(start_date, end_date, '[]') @> :time::date
+        WHERE child_id = :childId AND unit_id = :unitId AND daterange(start_date, end_date, '[]') @> :date
         """.trimIndent()
 
     val placementMissing = h.createQuery(sql)
         .bind("childId", childId)
         .bind("unitId", unitId)
-        .bind("time", time)
+        .bind("date", dateNow())
         .mapTo<UUID>()
         .list()
         .isEmpty()
@@ -299,18 +307,18 @@ private fun assertChildPlacement(h: Handle, childId: UUID, unitId: UUID, time: I
     }
 }
 
-private fun fetchChildPlacementType(h: Handle, childId: UUID, unitId: UUID, time: Instant): PlacementType {
+private fun fetchChildPlacementType(h: Handle, childId: UUID, unitId: UUID, date: LocalDate): PlacementType {
     // language=sql
     val sql =
         """
         SELECT type FROM placement
-        WHERE child_id = :childId AND unit_id = :unitId AND daterange(start_date, end_date, '[]') @> :time::date
+        WHERE child_id = :childId AND unit_id = :unitId AND daterange(start_date, end_date, '[]') @> :date
         """.trimIndent()
 
     return h.createQuery(sql)
         .bind("childId", childId)
         .bind("unitId", unitId)
-        .bind("time", time)
+        .bind("date", date)
         .mapTo<PlacementType>()
         .list()
         .first()

@@ -23,6 +23,7 @@ import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroupPlacement
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.dev.updateDaycareAclWithEmployee
+import fi.espoo.evaka.shared.utils.zoneId
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDecisionMaker_1
@@ -34,7 +35,10 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.Instant
 import java.time.LocalDate
+import java.time.LocalTime
 import java.time.OffsetDateTime
+import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
 import java.util.UUID
 
 class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
@@ -75,7 +79,7 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
         givenChildPlacement(PlacementType.PRESCHOOL_DAYCARE)
         givenChildComing()
 
-        val arrived = Instant.now()
+        val arrived = instantMinuteStart()
         val child = markArrivedAssertOkOneChild(arrived)
 
         assertEquals(AttendanceStatus.PRESENT, child.status)
@@ -90,7 +94,7 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
         givenChildPlacement(PlacementType.PRESCHOOL_DAYCARE)
         givenChildPresent()
 
-        val arrived = Instant.now()
+        val arrived = instantMinuteStart()
         markArrivedAssertFail(arrived, 409)
     }
 
@@ -129,7 +133,7 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
     fun `get child departure info - happy case`() {
         givenChildPlacement(PlacementType.PRESCHOOL_DAYCARE)
         givenChildPresent()
-        val info = getDepartureInfoAssertOk(Instant.now())
+        val info = getDepartureInfoAssertOk(instantMinuteStart())
         assertTrue(info.absentFrom.isEmpty())
     }
 
@@ -137,14 +141,14 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
     fun `get child departure info - not yet present is error`() {
         givenChildPlacement(PlacementType.PRESCHOOL_DAYCARE)
         givenChildComing()
-        getDepartureInfoAssertFail(Instant.now(), 409)
+        getDepartureInfoAssertFail(instantMinuteStart(), 409)
     }
 
     @Test
     fun `get child departure info - already departed is error`() {
         givenChildPlacement(PlacementType.PRESCHOOL_DAYCARE)
         givenChildDeparted()
-        getDepartureInfoAssertFail(Instant.now(), 409)
+        getDepartureInfoAssertFail(instantMinuteStart(), 409)
     }
 
     @Test
@@ -152,7 +156,7 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
         givenChildPlacement(PlacementType.PRESCHOOL_DAYCARE)
         givenChildPresent()
 
-        val departed = Instant.now()
+        val departed = instantMinuteStart()
         val child = markDepartedAssertOkOneChild(departed)
 
         assertEquals(AttendanceStatus.DEPARTED, child.status)
@@ -166,7 +170,7 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
         givenChildPlacement(PlacementType.PRESCHOOL_DAYCARE)
         givenChildDeparted()
 
-        val departed = Instant.now()
+        val departed = instantMinuteStart()
         markDepartedAssertFail(departed, 409)
     }
 
@@ -339,7 +343,7 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
     }
 
     private fun givenChildPresent() {
-        val arrived = OffsetDateTime.now().minusHours(3).toInstant()
+        val arrived = OffsetDateTime.now(zoneId).minusHours(3).toInstant()
         jdbi.handle {
             insertTestChildAttendance(
                 h = it,
@@ -354,8 +358,8 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
     }
 
     private fun givenChildDeparted() {
-        val arrived = OffsetDateTime.now().minusHours(3).toInstant()
-        val departed = OffsetDateTime.now().minusHours(1).toInstant()
+        val arrived = OffsetDateTime.now(zoneId).minusHours(3).toInstant()
+        val departed = OffsetDateTime.now(zoneId).minusHours(1).toInstant()
         jdbi.handle {
             insertTestChildAttendance(
                 h = it,
@@ -386,7 +390,8 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
         return result.get()
     }
 
-    private fun getArrivalInfoAssertOk(time: Instant): ChildAttendanceController.ArrivalInfoResponse {
+    private fun getArrivalInfoAssertOk(arrived: Instant): ChildAttendanceController.ArrivalInfoResponse {
+        val time = LocalTime.ofInstant(arrived, zoneId).format(DateTimeFormatter.ofPattern("HH:mm"))
         val (_, res, result) = http.get("/attendances/units/${testDaycare.id}/children/${testChild_1.id}/arrival?time=$time")
             .asUser(staffUser)
             .responseObject<ChildAttendanceController.ArrivalInfoResponse>(objectMapper)
@@ -395,7 +400,8 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
         return result.get()
     }
 
-    private fun getArrivalInfoAssertFail(time: Instant, status: Int) {
+    private fun getArrivalInfoAssertFail(arrived: Instant, status: Int) {
+        val time = LocalTime.ofInstant(arrived, zoneId).format(DateTimeFormatter.ofPattern("HH:mm"))
         val (_, res, _) = http.get("/attendances/units/${testDaycare.id}/children/${testChild_1.id}/arrival?time=$time")
             .asUser(staffUser)
             .responseObject<ChildAttendanceController.ArrivalInfoResponse>(objectMapper)
@@ -404,8 +410,9 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
     }
 
     private fun markArrivedAssertOkOneChild(arrived: Instant): Child {
+        val time = LocalTime.ofInstant(arrived, zoneId).format(DateTimeFormatter.ofPattern("HH:mm"))
         val (_, res, result) = http.post("/attendances/units/${testDaycare.id}/children/${testChild_1.id}/arrival")
-            .jsonBody(objectMapper.writeValueAsString(ChildAttendanceController.ArrivalRequest(arrived)))
+            .jsonBody("{\"arrived\": \"$time\"}") // test HH:mm deserialization
             .asUser(staffUser)
             .responseObject<AttendanceResponse>(objectMapper)
 
@@ -416,8 +423,9 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
     }
 
     private fun markArrivedAssertFail(arrived: Instant, status: Int) {
+        val time = LocalTime.ofInstant(arrived, zoneId)
         val (_, res, _) = http.post("/attendances/units/${testDaycare.id}/children/${testChild_1.id}/arrival")
-            .jsonBody(objectMapper.writeValueAsString(ChildAttendanceController.ArrivalRequest(arrived)))
+            .jsonBody(objectMapper.writeValueAsString(ChildAttendanceController.ArrivalRequest(time)))
             .asUser(staffUser)
             .responseObject<AttendanceResponse>(objectMapper)
 
@@ -443,7 +451,8 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
         assertEquals(status, res.statusCode)
     }
 
-    private fun getDepartureInfoAssertOk(time: Instant): ChildAttendanceController.DepartureInfoResponse {
+    private fun getDepartureInfoAssertOk(departed: Instant): ChildAttendanceController.DepartureInfoResponse {
+        val time = LocalTime.ofInstant(departed, zoneId).format(DateTimeFormatter.ofPattern("HH:mm"))
         val (_, res, result) = http.get("/attendances/units/${testDaycare.id}/children/${testChild_1.id}/departure?time=$time")
             .asUser(staffUser)
             .responseObject<ChildAttendanceController.DepartureInfoResponse>(objectMapper)
@@ -452,7 +461,8 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
         return result.get()
     }
 
-    private fun getDepartureInfoAssertFail(time: Instant, status: Int) {
+    private fun getDepartureInfoAssertFail(departed: Instant, status: Int) {
+        val time = LocalTime.ofInstant(departed, zoneId).format(DateTimeFormatter.ofPattern("HH:mm"))
         val (_, res, _) = http.get("/attendances/units/${testDaycare.id}/children/${testChild_1.id}/departure?time=$time")
             .asUser(staffUser)
             .responseObject<ChildAttendanceController.DepartureInfoResponse>(objectMapper)
@@ -461,8 +471,9 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
     }
 
     private fun markDepartedAssertOkOneChild(departed: Instant): Child {
+        val time = LocalTime.ofInstant(departed, zoneId)
         val (_, res, result) = http.post("/attendances/units/${testDaycare.id}/children/${testChild_1.id}/departure")
-            .jsonBody(objectMapper.writeValueAsString(ChildAttendanceController.DepartureRequest(departed)))
+            .jsonBody(objectMapper.writeValueAsString(ChildAttendanceController.DepartureRequest(time)))
             .asUser(staffUser)
             .responseObject<AttendanceResponse>(objectMapper)
 
@@ -473,8 +484,9 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
     }
 
     private fun markDepartedAssertFail(departed: Instant, status: Int) {
+        val time = LocalTime.ofInstant(departed, zoneId)
         val (_, res, _) = http.post("/attendances/units/${testDaycare.id}/children/${testChild_1.id}/departure")
-            .jsonBody(objectMapper.writeValueAsString(ChildAttendanceController.DepartureRequest(departed)))
+            .jsonBody(objectMapper.writeValueAsString(ChildAttendanceController.DepartureRequest(time)))
             .asUser(staffUser)
             .responseObject<AttendanceResponse>(objectMapper)
 
@@ -526,4 +538,9 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
         assertEquals(1, response.children.size)
         return response.children.first()
     }
+
+    private fun instantMinuteStart(): Instant = ZonedDateTime.now(zoneId)
+        .withSecond(0)
+        .withNano(0)
+        .toInstant()
 }
