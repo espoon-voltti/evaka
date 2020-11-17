@@ -36,6 +36,7 @@ type AppConfig = DeepReadonly<
       daycareApplication: boolean
       preschoolApplication: boolean
       selectApplicationType: boolean
+      attachments: boolean
     }
   }
 >
@@ -177,7 +178,8 @@ configs._default = {
   feature: {
     daycareApplication: true,
     preschoolApplication: true,
-    selectApplicationType: true
+    selectApplicationType: true,
+    attachments: true
   }
 }
 configs.dev = defaultsDeep(
@@ -218,7 +220,8 @@ configs.prod = defaultsDeep(
     feature: {
       daycareApplication: true,
       preschoolApplication: true,
-      selectApplicationType: true
+      selectApplicationType: true,
+      attachments: false
     }
   },
   configs._default

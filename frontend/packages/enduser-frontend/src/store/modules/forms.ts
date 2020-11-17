@@ -12,6 +12,7 @@ import {
 import moment from 'moment'
 import { Module } from 'vuex'
 import { RootState } from '@/store'
+import applicationApi from '@/api/applications'
 
 const currentState = {
   application: {
@@ -107,7 +108,10 @@ const currentState = {
       activeSection: undefined
     }
   },
-  daycare: {}
+  daycare: {},
+  files: {
+    urgent: []
+  }
 }
 
 const defaultChild = {
@@ -186,7 +190,8 @@ const module: Module<any, RootState> = {
     },
     getChildAge: (state, getters) =>
       getAge(moment(getters.getChildBirthday, 'DDMMYY')),
-    selectedTerm: (state) => state.application.term
+    selectedTerm: (state) => state.application.term,
+    applicationFiles: (state) => state.files.urgent
   },
   actions: {
     updateForm({ commit }, payload) {
@@ -215,6 +220,10 @@ const module: Module<any, RootState> = {
     },
     removeChildren({ commit }, index) {
       commit(types.REMOVE_CHILDREN, index)
+    },
+    async updateUrgentFiles({ commit }, { file, id }) {
+      const { data } = await applicationApi.saveAttachment(id, file)
+      commit(types.UPDATE_URGENT_FILES, { id: data, file })
     }
   },
   mutations: {
@@ -289,6 +298,9 @@ const module: Module<any, RootState> = {
       const activeSection = state.editing.application.activeSection
       state.editing.application.activeSection =
         sectionId === activeSection ? undefined : sectionId
+    },
+    [types.UPDATE_URGENT_FILES](state, file) {
+      state.files.urgent = [...state.files.urgent, file]
     }
   }
 }

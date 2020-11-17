@@ -115,5 +115,14 @@ export default {
   getApplication: (id) => APPLICATION_API_V1.get(`/enduser/v2/applications/${id}`),
   createApplication: (type, childId) => client.post('/enduser/v2/applications', { type, childId }),
   updateApplication: (type, application) => APPLICATION_API_V1.put(`/enduser/v2/applications/${application.id}`, application),
-  sendApplication: (applicationId) => client.post(`/enduser/v2/applications/${applicationId}/actions/send-application`)
+  sendApplication: (applicationId) => client.post(`/enduser/v2/applications/${applicationId}/actions/send-application`),
+  saveAttachment: (applicationId, file) => {
+    const formData = new FormData()
+    formData.append('file', file)
+    return client.post(`/attachments/enduser/applications/${applicationId}`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+  })
+  }
 }
