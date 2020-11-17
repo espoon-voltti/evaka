@@ -673,7 +673,8 @@ export const fi = {
         }
       },
       warning: {
-        overlap: 'Ajalle on jo sijoitus'
+        overlap: 'Ajalle on jo sijoitus',
+        ghostUnit: 'Yksikkö on merkattu haamuyksiköksi.'
       }
     },
     fridgeParents: {

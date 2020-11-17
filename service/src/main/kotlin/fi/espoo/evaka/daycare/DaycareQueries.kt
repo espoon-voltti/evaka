@@ -214,7 +214,8 @@ SELECT
     can_apply_daycare,
     can_apply_preschool,
     opening_date,
-    closing_date
+    closing_date,
+    ghost_unit
 FROM daycare
 WHERE daterange(opening_date, closing_date, '[]') @> :date AND (
     (:club AND type && '{CLUB}'::care_types[] AND (NOT :onlyApplicable OR can_apply_club))

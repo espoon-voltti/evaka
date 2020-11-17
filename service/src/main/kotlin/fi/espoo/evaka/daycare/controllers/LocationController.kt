@@ -127,7 +127,8 @@ data class PublicUnit(
     val phone: String?,
     val email: String?,
     val url: String?,
-    val location: Coordinate?
+    val location: Coordinate?,
+    val ghostUnit: Boolean?
 )
 
 data class CareAreaResponseJSON(

@@ -60,6 +60,7 @@ interface ServiceNeed {
 export interface PreferredUnit {
   id: UUID
   name: string
+  ghostUnit?: boolean
 }
 
 interface Preferences {

@@ -9,6 +9,7 @@ import { PlacementDraft } from '~types/placementdraft'
 export interface Unit {
   id: string
   name: string
+  ghostUnit?: boolean
 }
 
 export interface PlacementDraftState {
