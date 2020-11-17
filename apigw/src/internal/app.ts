@@ -67,6 +67,7 @@ function internalApiRouter() {
   router.use(csrf)
   router.use(userDetails('employee'))
   router.use(authenticate)
+  router.post('/attachments', createProxy({ multipart: true }))
   router.use(createProxy())
   router.use(errorHandler(true))
   return router

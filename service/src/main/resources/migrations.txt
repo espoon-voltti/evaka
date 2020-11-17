@@ -13,3 +13,4 @@ V12__voucher_value_decision_value.sql
 V13__daycare_operation_days.sql
 V14__drop_round_the_clock_flag.sql
 V15__add_ghost_unit_flag.sql
+V16__attachments.sql

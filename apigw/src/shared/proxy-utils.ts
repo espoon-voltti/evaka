@@ -9,10 +9,12 @@ import { createHeaders } from './auth'
 
 interface ProxyOptions {
   path?: string | ((req: express.Request) => string)
+  multipart?: boolean
 }
 
-export function createProxy({ path }: ProxyOptions = {}) {
+export function createProxy({ path, multipart = false }: ProxyOptions = {}) {
   return expressHttpProxy(evakaServiceUrl, {
+    parseReqBody: !multipart,
     proxyReqPathResolver: typeof path === 'string' ? () => path : path,
     proxyReqOptDecorator: (proxyReqOpts, srcReq) => {
       const headers = createHeaders(srcReq)
