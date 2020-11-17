@@ -150,22 +150,35 @@ SPDX-License-Identifier: LGPL-2.1-or-later
                   <c-checkbox v-model="model" name="urgent">{{
                     $t('form.daycare-application.service.expedited.label')
                   }}</c-checkbox>
-                  <c-message-box
-                    :title="
-                      $t(
-                        'form.daycare-application.service.expedited.message.title'
-                      )
-                    "
-                    v-if="model.urgent"
-                  >
-                    <div
-                      v-html="
+                  <div v-if="model.urgent">
+                    <c-message-box
+                      :title="
                         $t(
-                          `form.${type}-application.service.expedited.message.text`
+                          'form.daycare-application.service.expedited.message.title'
                         )
                       "
-                    ></div>
-                  </c-message-box>
+                    >
+                      <div
+                        v-html="
+                          $t(
+                            `form.${type}-application.service.expedited.message.text`
+                          )
+                        "
+                      ></div>
+                    </c-message-box>
+                    <div v-if="attachmentsEnabled">
+                      <input
+                        type="file"
+                        accept="image/jpeg, image/png, application/pdf, application/msword, application/vnd.openxmlformats-officedocument.wordprocessingml.document, application/vnd.oasis.opendocument.text"
+                        @change="onFileChange"
+                      />
+                      <div
+                        v-for="file in applicationFiles"
+                        v-bind:key="file.id"
+                        v-text="file.file.name"
+                      ></div>
+                    </div>
+                  </div>
                 </div>
               </div>
 
@@ -1024,6 +1037,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
   import Vue from 'vue'
   import router from '@/router'
   import { mapGetters } from 'vuex'
+  import { config } from '@evaka/enduser-frontend/src/config'
   import DaycareSelectList from './daycare-select-list.vue'
   import SortableUnitList from '@/components/unit-list/sortable-unit-list.vue'
   import { Unit } from '@/types'
@@ -1103,7 +1117,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
       }
     },
     computed: {
-      ...mapGetters(['daycareForm', 'applicationUnits']),
+      ...mapGetters(['daycareForm', 'applicationUnits', 'applicationFiles']),
       id(): string {
         return this.$route.params.id
       },
@@ -1191,6 +1205,9 @@ SPDX-License-Identifier: LGPL-2.1-or-later
           !this.isPreschool ||
           (this.model as PreschoolFormModel).connectedDaycare
         )
+      },
+      attachmentsEnabled() {
+        return config.feature.attachments
       }
     },
     filters: {
@@ -1204,6 +1221,12 @@ SPDX-License-Identifier: LGPL-2.1-or-later
       }
     },
     methods: {
+      onFileChange(event) {
+        this.$store.dispatch('updateUrgentFiles', {
+          file: event.target.files[0],
+          id: this.id
+        })
+      },
       onAssistanceNeededChanged(): void {
         if (!this.model.careDetails.assistanceNeeded) {
           this.model.careDetails.assistanceDescription = ''

@@ -44,6 +44,7 @@ val validDaycareApplication = ApplicationDetails(
     transferApplication = false,
     additionalDaycareApplication = false,
     hideFromGuardian = false,
+    attachments = listOf(),
 
     form = ApplicationForm(
         child = ChildDetails(
@@ -127,6 +128,7 @@ val validPreschoolApplication = ApplicationDetails(
     transferApplication = false,
     additionalDaycareApplication = false,
     hideFromGuardian = false,
+    attachments = listOf(),
 
     form = ApplicationForm(
         child = ChildDetails(
@@ -210,6 +212,7 @@ val validClubApplication = ApplicationDetails(
     transferApplication = false,
     additionalDaycareApplication = false,
     hideFromGuardian = false,
+    attachments = listOf(),
 
     form = ApplicationForm(
         child = ChildDetails(

@@ -31,4 +31,7 @@ router.post(
   proxy
 )
 
+const multipartProxy = createProxy({ multipart: true })
+router.post('/attachments/enduser/applications/:applicationId', multipartProxy)
+
 export default router

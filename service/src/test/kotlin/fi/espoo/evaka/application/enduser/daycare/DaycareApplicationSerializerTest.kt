@@ -212,7 +212,8 @@ private val expectedEnduserDaycareApplication = ApplicationDetails(
     checkedByAdmin = false,
     hideFromGuardian = false,
     transferApplication = false,
-    additionalDaycareApplication = false
+    additionalDaycareApplication = false,
+    attachments = listOf()
 )
 
 private val expectedEnduserDaycareFormJSON = with(expectedEnduserDaycareApplication.form) {

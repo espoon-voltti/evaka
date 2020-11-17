@@ -6,6 +6,8 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
+import fi.espoo.evaka.shared.domain.Forbidden
+import org.jdbi.v3.core.kotlin.mapTo
 import org.springframework.core.env.Environment
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
@@ -37,14 +39,33 @@ class AttachmentsController(
     private val filesBucket = env.getProperty("fi.espoo.voltti.document.bucket.files")
 
     @PostMapping("/applications/{applicationId}", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
-    fun handleFileUpload(
+    fun uploadApplicationAttachment(
         db: Database,
         user: AuthenticatedUser,
         @PathVariable applicationId: UUID,
         @RequestPart("file") file: MultipartFile
-    ): ResponseEntity<Unit> {
+    ): ResponseEntity<UUID> {
         user.requireOneOfRoles(UserRole.ADMIN)
 
+        val id = handleFileUpload(db, applicationId, file)
+        return ResponseEntity.ok(id)
+    }
+
+    @PostMapping("/enduser/applications/{applicationId}", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
+    fun uploadEnduserApplicationAttachment(
+        db: Database,
+        user: AuthenticatedUser,
+        @PathVariable applicationId: UUID,
+        @RequestPart("file") file: MultipartFile
+    ): ResponseEntity<UUID> {
+        user.requireOneOfRoles(UserRole.END_USER)
+        if (!db.read { isOwnApplication(it, applicationId, user) }) throw Forbidden("Permission denied")
+
+        val id = handleFileUpload(db, applicationId, file)
+        return ResponseEntity.ok(id)
+    }
+
+    private fun handleFileUpload(db: Database, applicationId: UUID, file: MultipartFile): UUID {
         if (filesBucket == null) error("Files bucket is missing")
 
         val name = file.originalFilename
@@ -68,7 +89,15 @@ class AttachmentsController(
                 contentType
             )
         }
-
-        return ResponseEntity.noContent().build()
+        return id
     }
+}
+
+fun isOwnApplication(r: Database.Read, applicationId: UUID, user: AuthenticatedUser): Boolean {
+    return r.createQuery("SELECT 1 FROM application WHERE id = :id AND guardian_id = :userId")
+        .bind("id", applicationId)
+        .bind("userId", user.id)
+        .mapTo<Int>()
+        .toList()
+        .isNotEmpty()
 }

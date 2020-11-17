@@ -1981,7 +1981,8 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
             additionalDaycareApplication = false,
             otherGuardianId = null,
             checkedByAdmin = false,
-            hideFromGuardian = false
+            hideFromGuardian = false,
+            attachments = listOf()
         )
         insertTestApplicationForm(
             h = h,
