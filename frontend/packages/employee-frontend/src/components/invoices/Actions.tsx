@@ -23,6 +23,7 @@ import { InvoiceStatus } from '../../types/invoicing'
 import { EspooColours } from '../../utils/colours'
 import { faEnvelope } from '@fortawesome/free-solid-svg-icons'
 import { DatePicker } from '~components/common/DatePicker'
+import { InvoicesAction } from './invoices-state'
 
 const LeftSideContent = styled.div`
   margin-right: auto;
@@ -45,22 +46,20 @@ const ModalContent = styled.div`
 `
 
 type Props = {
+  dispatch: React.Dispatch<InvoicesAction>
   status: InvoiceStatus
-  checkedIds: string[]
+  checkedInvoices: Record<string, boolean>
   checkedAreas: string[]
-  clearChecked: () => void
-  loadInvoices: () => void
   periodStart: LocalDate | undefined
   periodEnd: LocalDate | undefined
   useCustomDatesForInvoiceSending: boolean
 }
 
 const Actions = React.memo(function Actions({
+  dispatch,
   status,
-  checkedIds,
+  checkedInvoices,
   checkedAreas,
-  clearChecked,
-  loadInvoices,
   periodStart,
   periodEnd,
   useCustomDatesForInvoiceSending
@@ -72,6 +71,10 @@ const Actions = React.memo(function Actions({
   const [dueDate, setDueDate] = useState(LocalDate.today().addBusinessDays(10))
   const [individualInvoices, setIndividualInvoices] = useState(false)
   const [sendWholeArea, setSendWholeArea] = useState(false)
+
+  const checkedIds = Object.entries(checkedInvoices)
+    .filter(([, checked]) => checked)
+    .map(([id]) => id)
 
   useEffect(() => {
     if (checkedIds.length > 0 && sendWholeArea) {
@@ -93,9 +96,11 @@ const Actions = React.memo(function Actions({
           useCustomDatesForInvoiceSending
         )
     request
-      .then(() => clearChecked())
-      .then(() => loadInvoices())
-      .then(() => void setError(false))
+      .then(() => {
+        dispatch({ type: 'CLEAR_CHECKED' })
+        dispatch({ type: 'RELOAD_INVOICES' })
+        setError(false)
+      })
       .catch(() => void setError(true))
     closeModal()
   }
@@ -120,7 +125,7 @@ const Actions = React.memo(function Actions({
           checked={sendWholeArea}
           onChange={() => {
             if (checkedIds.length > 0) {
-              clearChecked()
+              dispatch({ type: 'CLEAR_CHECKED' })
             }
             setSendWholeArea(!sendWholeArea)
           }}
@@ -192,8 +197,8 @@ const Actions = React.memo(function Actions({
             .catch(() => void setError(true))
         }
         onSuccess={() => {
-          clearChecked()
-          loadInvoices()
+          dispatch({ type: 'CLEAR_CHECKED' })
+          dispatch({ type: 'RELOAD_INVOICES' })
         }}
         data-qa="delete-invoices"
       />

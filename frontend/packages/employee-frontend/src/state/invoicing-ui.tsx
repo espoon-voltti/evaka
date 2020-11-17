@@ -97,7 +97,7 @@ interface SharedState {
 interface UiState {
   feeDecisions: PageState & FeeDecisionSearchFilterState
   valueDecisions: PageState & ValueDecisionSearchFilterState
-  invoices: PageState & InvoiceSearchFilterState
+  invoices: InvoiceSearchFilterState
   shared: SharedState
 }
 
@@ -149,11 +149,7 @@ const defaultState = {
     searchTerms: '',
     setSearchTerms: () => undefined,
     debouncedSearchTerms: '',
-    clearSearchFilters: () => undefined,
-    checked: {},
-    toggleChecked: () => undefined,
-    checkIds: () => undefined,
-    clearChecked: () => undefined
+    clearSearchFilters: () => undefined
   },
   shared: {
     units: Loading(),
@@ -246,17 +242,6 @@ export const InvoicingUIContextProvider = React.memo(
       () => setInvoiceSearchFilters(defaultState.invoices.searchFilters),
       [setInvoiceSearchFilters]
     )
-    const [invoiceChecked, setInvoiceChecked] = useState<Checked>({})
-    const toggleInvoiceChecked = (id: string) =>
-      setInvoiceChecked({ ...invoiceChecked, [id]: !invoiceChecked[id] })
-    const checkInvoiceIds = (ids: string[]) => {
-      const idsChecked = ids.map((id) => ({ [id]: true }))
-      setInvoiceChecked({
-        ...invoiceChecked,
-        ...Object.assign({}, ...idsChecked)
-      })
-    }
-    const clearInvoiceChecked = () => setInvoiceChecked({})
 
     const [units, setUnits] = useState<Result<Unit[]>>(
       defaultState.shared.units
@@ -299,12 +284,7 @@ export const InvoicingUIContextProvider = React.memo(
           searchTerms: invoiceFreeTextSearch,
           setSearchTerms: setInvoiceFreeTextSearch,
           debouncedSearchTerms: invoiceDebouncedFreeText,
-          clearSearchFilters: clearInvoiceSearchFilters,
-          checked: invoiceChecked,
-          setChecked: setInvoiceChecked,
-          toggleChecked: toggleInvoiceChecked,
-          checkIds: checkInvoiceIds,
-          clearChecked: clearInvoiceChecked
+          clearSearchFilters: clearInvoiceSearchFilters
         },
         shared: {
           units,
@@ -340,8 +320,6 @@ export const InvoicingUIContextProvider = React.memo(
         setInvoiceFreeTextSearch,
         invoiceDebouncedFreeText,
         clearInvoiceSearchFilters,
-        invoiceChecked,
-        setInvoiceChecked,
         units,
         setUnits,
         availableAreas,

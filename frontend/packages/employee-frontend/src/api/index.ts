@@ -72,6 +72,13 @@ export function isSuccess<T>(value: Result<T>): value is Success<T> {
   return value.done && 'data' in value
 }
 
+export function mapResult<A, B>(value: Result<A>, f: (v: A) => B): Result<B> {
+  if (isSuccess(value)) {
+    return Success(f(value.data))
+  }
+  return value
+}
+
 export function isCancelled<T>(
   value: Result<T> | Cancelled
 ): value is Cancelled {

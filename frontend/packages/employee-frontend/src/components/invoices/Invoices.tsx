@@ -32,6 +32,7 @@ import { EspooColours } from '~utils/colours'
 import { SearchOrder } from '~types'
 import { SortByInvoices } from '~api/invoicing'
 import Pagination from '~components/shared/Pagination'
+import { InvoicesAction } from './invoices-state'
 
 const RefreshInvoices = styled.div`
   position: absolute;
@@ -62,39 +63,29 @@ const SectionTitle = styled(Title)`
 `
 
 interface Props {
+  dispatch: React.Dispatch<InvoicesAction>
   invoices?: Result<InvoiceSummary[]>
-  createInvoices: () => Promise<void>
+  refreshInvoices: () => Promise<void>
   total?: number
   pages?: number
   currentPage: number
-  setPage: (page: number) => void
   sortBy: SortByInvoices
-  setSortBy: (v: SortByInvoices) => void
   sortDirection: SearchOrder
-  setSortDirection: (v: SearchOrder) => void
   showCheckboxes: boolean
-  checked: { [id: string]: boolean }
-  toggleChecked: (id: string) => void
-  checkAll: () => void
-  clearChecked: () => void
+  checked: Record<string, boolean>
 }
 
 const Invoices = React.memo(function Invoices({
+  dispatch,
   invoices,
-  createInvoices,
+  refreshInvoices,
   total,
   pages,
   currentPage,
-  setPage,
   sortBy,
-  setSortBy,
   sortDirection,
-  setSortDirection,
   showCheckboxes,
-  checked,
-  toggleChecked,
-  checkAll,
-  clearChecked
+  checked
 }: Props) {
   const { i18n } = useTranslation()
   const history = useHistory()
@@ -109,10 +100,13 @@ const Invoices = React.memo(function Invoices({
 
   const toggleSort = (column: SortByInvoices) => () => {
     if (sortBy === column) {
-      setSortDirection(sortDirection === 'ASC' ? 'DESC' : 'ASC')
+      dispatch({
+        type: 'SET_SORT_DIRECTION',
+        payload: sortDirection === 'ASC' ? 'DESC' : 'ASC'
+      })
     } else {
-      setSortBy(column)
-      setSortDirection('ASC')
+      dispatch({ type: 'SET_SORT_BY', payload: column })
+      dispatch({ type: 'SET_SORT_DIRECTION', payload: 'ASC' })
     }
   }
 
@@ -152,7 +146,9 @@ const Invoices = React.memo(function Invoices({
                   hiddenLabel
                   label=""
                   checked={!!checked[item.id]}
-                  onChange={() => toggleChecked(item.id)}
+                  onChange={() =>
+                    dispatch({ type: 'TOGGLE_CHECKED', payload: item.id })
+                  }
                   dataQa="toggle-invoice"
                 />
               </Td>
@@ -171,7 +167,7 @@ const Invoices = React.memo(function Invoices({
           icon={faSync}
           onClick={() => {
             setRefreshError(false)
-            createInvoices().catch(() => setRefreshError(true))
+            refreshInvoices().catch(() => setRefreshError(true))
           }}
           text={i18n.invoices.buttons.createInvoices}
           dataQa="create-invoices"
@@ -185,7 +181,9 @@ const Invoices = React.memo(function Invoices({
             <Pagination
               pages={pages}
               currentPage={currentPage}
-              setPage={setPage}
+              setPage={(payload: number) =>
+                dispatch({ type: 'SET_PAGE', payload })
+              }
             />
           </ResultsContainer>
         )}
@@ -227,7 +225,11 @@ const Invoices = React.memo(function Invoices({
                   hiddenLabel
                   label=""
                   checked={allChecked}
-                  onChange={allChecked ? clearChecked : checkAll}
+                  onChange={() =>
+                    allChecked
+                      ? dispatch({ type: 'CLEAR_CHECKED' })
+                      : dispatch({ type: 'CHECK_ALL' })
+                  }
                   dataQa="toggle-all-invoices"
                 />
               </Th>
@@ -241,7 +243,9 @@ const Invoices = React.memo(function Invoices({
           <Pagination
             pages={pages}
             currentPage={currentPage}
-            setPage={setPage}
+            setPage={(payload: number) =>
+              dispatch({ type: 'SET_PAGE', payload })
+            }
           />
         </ResultsContainer>
       )}
