@@ -983,6 +983,7 @@
     }
   },
   "file-upload": {
-    "loading": "Ladataan..."
+    "loading": "Ladataan...",
+    "loaded": "Ladattu"
   }
 }

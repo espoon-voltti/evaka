@@ -31,6 +31,7 @@ router.post(
   '/enduser/v2/applications/:applicationId/actions/reject-decision',
   proxy
 )
+router.delete('/attachments/enduser/:id', proxy)
 
 router.get('/attachments/:applicationId/download', proxy)
 

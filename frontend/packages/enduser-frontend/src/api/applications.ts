@@ -123,6 +123,7 @@ export default {
         'Content-Type': 'multipart/form-data'
       },
       onUploadProgress
-  })
-  }
+    })
+  },
+  deleteAttachment: (id) => client.delete(`/attachments/enduser/${id}`)
 }

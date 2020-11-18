@@ -174,7 +174,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
                       v-if="attachmentsEnabled"
                       :files="urgentFiles"
                       :onUpload="onFileUpload"
-                      :onDelete="() => undefined"
+                      :onDelete="onFileDelete"
                     />
                   </div>
                 </div>
@@ -1225,6 +1225,9 @@ SPDX-License-Identifier: LGPL-2.1-or-later
           file,
           applicationId: this.id
         })
+      },
+      onFileDelete(file) {
+        this.$store.dispatch('deleteUrgentFile', file)
       },
       onAssistanceNeededChanged(): void {
         if (!this.model.careDetails.assistanceNeeded) {

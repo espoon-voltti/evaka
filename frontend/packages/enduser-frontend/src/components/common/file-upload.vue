@@ -15,14 +15,29 @@ SPDX-License-Identifier: LGPL-2.1-or-later
     <div class="files">
       <div class="file" v-for="file in files" v-bind:key="file.key">
         <div class="file-icon-container">
-          <font-awesome-icon :icon="['fal', fileIcon(file)]" size="lg"></font-awesome-icon>
+          <font-awesome-icon
+            :icon="['fal', fileIcon(file)]"
+            size="lg"
+          ></font-awesome-icon>
         </div>
         <div class="file-details">
           <div class="file-header">
             <span>{{ file.file.name }}</span>
+            <div>
+              <button
+                class="file-header-icon-button"
+                @click="deleteFile(file)"
+                :disabled="!file.done"
+              >
+                <font-awesome-icon
+                  :icon="['fal', 'times']"
+                  size="2x"
+                ></font-awesome-icon>
+              </button>
+            </div>
           </div>
           <transition name="progress-bar">
-            <div class="file-progress-bar" v-show="showProgressBar(file)">
+            <div class="file-progress-bar" v-show="!file.done">
               <div class="file-progress-bar-background">
                 <div
                   class="file-progress-bar-progress"
@@ -30,7 +45,11 @@ SPDX-License-Identifier: LGPL-2.1-or-later
                 />
               </div>
               <div class="file-progress-bar-details">
-                <span>{{ $t('file-upload.loading') }}</span>
+                <span>{{
+                  file.done
+                    ? $t('file-upload.loaded')
+                    : $t('file-upload.loading')
+                }}</span>
                 <span>{{ file.progress }} %</span>
               </div>
             </div>
@@ -52,8 +71,8 @@ SPDX-License-Identifier: LGPL-2.1-or-later
       onChange(event) {
         this.onUpload(event.target.files[0])
       },
-      showProgressBar(file) {
-        return !file.done
+      deleteFile(file) {
+        this.onDelete(file)
       },
       fileIcon(file) {
         switch (file.file.type) {
@@ -97,7 +116,6 @@ SPDX-License-Identifier: LGPL-2.1-or-later
     .files {
       display: flex;
       flex-direction: column;
-      max-width: 600px;
 
       > *:not(:last-child) {
         margin-bottom: 20px;
@@ -126,6 +144,31 @@ SPDX-License-Identifier: LGPL-2.1-or-later
             flex-wrap: nowrap;
             justify-content: space-between;
             font-size: 15px;
+
+            .file-header-icon-button {
+              border: none;
+              background: none;
+              padding: 4px;
+              margin-left: 12px;
+              color: $grey;
+              cursor: pointer;
+
+              &:hover {
+                color: $blue;
+              }
+
+              &:disabled {
+                color: $grey-light;
+                cursor: not-allowed;
+              }
+            }
+
+            span {
+              width: min(400px, 50vw);
+              white-space: nowrap;
+              overflow: hidden;
+              text-overflow: ellipsis;
+            }
           }
 
           .file-progress-bar {

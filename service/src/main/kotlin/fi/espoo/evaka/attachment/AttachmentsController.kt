@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
+
 package fi.espoo.evaka.attachment
 
 import fi.espoo.evaka.s3.DocumentService
@@ -12,6 +16,7 @@ import org.jdbi.v3.core.kotlin.mapTo
 import org.springframework.core.env.Environment
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
+import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -61,7 +66,7 @@ class AttachmentsController(
         @RequestPart("file") file: MultipartFile
     ): ResponseEntity<UUID> {
         user.requireOneOfRoles(UserRole.END_USER)
-        if (!db.read { isOwnApplication(it, applicationId, user) }) throw Forbidden("Permission denied")
+        if (!db.read { it.isOwnApplication(applicationId, user) }) throw Forbidden("Permission denied")
 
         val id = handleFileUpload(db, applicationId, file)
         return ResponseEntity.ok(id)
@@ -80,7 +85,7 @@ class AttachmentsController(
 
         val id = UUID.randomUUID()
         db.transaction { tx ->
-            tx.handle.insertAttachment(id, name, contentType, applicationId)
+            tx.insertAttachment(id, name, contentType, applicationId)
             s3Client.upload(
                 filesBucket,
                 DocumentWrapper(
@@ -101,10 +106,10 @@ class AttachmentsController(
         @PathVariable attachmentId: UUID
     ): ResponseEntity<ByteArray> {
         if (!user.hasOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN)) {
-            if (!db.read { it.handle.isOwnAttachment(attachmentId, user.id) }) throw Forbidden("Permission denied")
+            if (!db.read { it.isOwnAttachment(attachmentId, user) }) throw Forbidden("Permission denied")
         }
 
-        val attachment = db.read { it.handle.getAttachment(attachmentId) ?: throw NotFound("Attachment $attachmentId not found") }
+        val attachment = db.read { it.getAttachment(attachmentId) ?: throw NotFound("Attachment $attachmentId not found") }
 
         return s3Client.get(filesBucket, "$attachmentId").let { document ->
             ResponseEntity.ok()
@@ -113,10 +118,19 @@ class AttachmentsController(
                 .body(document.getBytes())
         }
     }
+
+    @DeleteMapping("/enduser/{id}")
+    fun deleteEnduserAttachment(db: Database, user: AuthenticatedUser, @PathVariable id: UUID): ResponseEntity<Unit> {
+        user.requireOneOfRoles(UserRole.END_USER)
+        if (!db.read { it.isOwnAttachment(id, user) }) throw Forbidden("Permission denied")
+
+        db.transaction { it.deleteAttachment(id) }
+        return ResponseEntity.noContent().build()
+    }
 }
 
-fun isOwnApplication(r: Database.Read, applicationId: UUID, user: AuthenticatedUser): Boolean {
-    return r.createQuery("SELECT 1 FROM application WHERE id = :id AND guardian_id = :userId")
+fun Database.Read.isOwnApplication(applicationId: UUID, user: AuthenticatedUser): Boolean {
+    return this.createQuery("SELECT 1 FROM application WHERE id = :id AND guardian_id = :userId")
         .bind("id", applicationId)
         .bind("userId", user.id)
         .mapTo<Int>()

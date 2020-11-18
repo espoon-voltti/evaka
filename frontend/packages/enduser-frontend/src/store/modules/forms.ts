@@ -222,7 +222,7 @@ const module: Module<any, RootState> = {
     removeChildren({ commit }, index) {
       commit(types.REMOVE_CHILDREN, index)
     },
-    async addUrgentFile({ commit, state }, { file, applicationId }) {
+    async addUrgentFile({ commit }, { file, applicationId }) {
       const key = getUUID()
       commit(types.ADD_URGENT_FILE, { key, file, progress: 0 })
       const onUploadProgress = (event) => {
@@ -241,6 +241,10 @@ const module: Module<any, RootState> = {
         progress: 100,
         done: true
       })
+    },
+    async deleteUrgentFile({ commit }, { id }) {
+      await applicationApi.deleteAttachment(id)
+      commit(types.DELETE_URGENT_FILE, id)
     }
   },
   mutations: {
@@ -323,6 +327,9 @@ const module: Module<any, RootState> = {
       state.files.urgent = state.files.urgent.map((f) =>
         f.key === file.key ? file : f
       )
+    },
+    [types.DELETE_URGENT_FILE](state, id) {
+      state.files.urgent = state.files.urgent.filter((f) => f.id !== id)
     }
   }
 }
