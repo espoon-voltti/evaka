@@ -26,7 +26,6 @@ import CareTypeLabel, {
   careTypesFromPlacementType
 } from '~components/common/CareTypeLabel'
 import { UnitBackupCare } from '~types/child'
-import BackupCareGroupModal from './missing-group-placements/BackupCareGroupModal'
 import { formatName } from '~utils'
 import PlacementCircle from '~components/shared/atoms/PlacementCircle'
 import { MissingGroupPlacement } from '~api/unit'
@@ -104,7 +103,6 @@ export default React.memo(function MissingGroupPlacements({
   canManageChildren,
   groups,
   missingGroupPlacements,
-  backupCares,
   savePosition,
   reloadUnitData
 }: Props) {
@@ -130,10 +128,6 @@ export default React.memo(function MissingGroupPlacements({
     (p: MissingGroupPlacement) => p.placementPeriod.start,
     (p: MissingGroupPlacement) => p.gap.start
   ])
-
-  const activeBackupCare =
-    activeMissingPlacement &&
-    backupCares.find((bc) => bc.id === activeMissingPlacement.placementId)
 
   return (
     <>
@@ -169,20 +163,14 @@ export default React.memo(function MissingGroupPlacements({
           </Tbody>
         </Table>
       </div>
-      {uiMode == 'group-placement' && activeMissingPlacement && (
-        <GroupPlacementModal
-          groups={groups}
-          missingPlacement={activeMissingPlacement}
-          reload={reloadUnitData}
-        />
-      )}
-      {uiMode == 'backup-care-group' && activeBackupCare && (
-        <BackupCareGroupModal
-          backupCare={activeBackupCare}
-          groups={groups}
-          reload={reloadUnitData}
-        />
-      )}
+      {['group-placement', 'backup-care-group'].includes(uiMode) &&
+        activeMissingPlacement && (
+          <GroupPlacementModal
+            groups={groups}
+            missingPlacement={activeMissingPlacement}
+            reload={reloadUnitData}
+          />
+        )}
     </>
   )
 })
