@@ -6,7 +6,7 @@ package fi.espoo.evaka.varda.integration
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
-import com.github.kittinunf.fuel.Fuel
+import com.github.kittinunf.fuel.core.FuelManager
 import com.github.kittinunf.fuel.core.Headers
 import com.github.kittinunf.fuel.core.Request
 import com.github.kittinunf.fuel.core.ResponseResultOf
@@ -35,6 +35,7 @@ private val logger = KotlinLogging.logger {}
 
 class VardaClient(
     private val tokenProvider: VardaTokenProvider,
+    private val fuel: FuelManager,
     private val env: Environment,
     private val objectMapper: ObjectMapper,
     baseUrl: String = env.getRequiredProperty("fi.espoo.integration.varda.url")
@@ -54,7 +55,7 @@ class VardaClient(
 
     fun createUnit(unit: VardaUnit): VardaUnitResponse? {
         logger.info { "Creating a new unit ${unit.name} to Varda" }
-        val (_, _, result) = Fuel.post(unitUrl)
+        val (_, _, result) = fuel.post(unitUrl)
             .jsonBody(objectMapper.writeValueAsString(unit))
             .authenticatedResponseStringWithRetries()
 
@@ -78,7 +79,7 @@ class VardaClient(
     fun updateUnit(unit: VardaUnit): VardaUnitResponse? {
         logger.info { "Updating unit ${unit.name} to Varda" }
         val url = "$unitUrl${unit.vardaUnitId}/"
-        val (_, _, result) = Fuel.put(url)
+        val (_, _, result) = fuel.put(url)
             .jsonBody(objectMapper.writeValueAsString(unit))
             .authenticatedResponseStringWithRetries()
 
@@ -101,7 +102,7 @@ class VardaClient(
 
     fun updateOrganizer(organizer: VardaUpdateOrganizer): Boolean {
         logger.info { "Updating organizer to Varda" }
-        val (_, _, result) = Fuel.put("$organizerUrl${organizer.vardaOrganizerId}")
+        val (_, _, result) = fuel.put("$organizerUrl${organizer.vardaOrganizerId}")
             .header(Headers.CONTENT_TYPE, "application/json")
             .jsonBody(objectMapper.writeValueAsString(organizer))
             .authenticatedResponseStringWithRetries()
@@ -123,7 +124,7 @@ class VardaClient(
 
     fun createPerson(newPerson: VardaPersonRequest): VardaPersonResponse? {
         logger.info { "Creating a new person ${newPerson.id} to Varda" }
-        val (_, _, result) = Fuel.post(personUrl)
+        val (_, _, result) = fuel.post(personUrl)
             .jsonBody(objectMapper.writeValueAsString(newPerson)).authenticatedResponseStringWithRetries()
 
         return when (result) {
@@ -145,7 +146,7 @@ class VardaClient(
 
     fun createChild(child: VardaChildRequest): VardaChildResponse? {
         logger.info { "Creating child to Varda (body: $child)" }
-        val (_, _, result) = Fuel.post(childUrl)
+        val (_, _, result) = fuel.post(childUrl)
             .jsonBody(objectMapper.writeValueAsString(child)).authenticatedResponseStringWithRetries()
 
         return when (result) {
@@ -167,7 +168,7 @@ class VardaClient(
 
     fun createFeeData(feeData: VardaFeeData): VardaFeeDataResponse? {
         logger.info { "Creating fee data for child ${feeData.childUrl} to Varda" }
-        val (_, _, result) = Fuel.post(feeDataUrl)
+        val (_, _, result) = fuel.post(feeDataUrl)
             .jsonBody(objectMapper.writeValueAsString(feeData)).authenticatedResponseStringWithRetries()
 
         return when (result) {
@@ -189,7 +190,7 @@ class VardaClient(
 
     fun updateFeeData(vardaFeeDataId: Long, feeData: VardaFeeData): Boolean {
         logger.info { "Updating fee data $vardaFeeDataId to Varda" }
-        val (_, _, result) = Fuel.put("$feeDataUrl$vardaFeeDataId")
+        val (_, _, result) = fuel.put("$feeDataUrl$vardaFeeDataId")
             .jsonBody(objectMapper.writeValueAsString(feeData)).authenticatedResponseStringWithRetries()
 
         return when (result) {
@@ -210,7 +211,7 @@ class VardaClient(
 
     fun deleteFeeData(vardaId: Int): Boolean {
         logger.info { "Deleting fee data $vardaId from Varda" }
-        val (_, _, result) = Fuel.delete("$feeDataUrl$vardaId/").authenticatedResponseStringWithRetries()
+        val (_, _, result) = fuel.delete("$feeDataUrl$vardaId/").authenticatedResponseStringWithRetries()
 
         return when (result) {
             is Result.Success -> {
@@ -229,7 +230,7 @@ class VardaClient(
 
     fun createDecision(newDecision: VardaDecision): VardaDecisionResponse? {
         logger.info { "Creating a new decision to Varda (body: $newDecision)" }
-        val (_, _, result) = Fuel.post(decisionUrl)
+        val (_, _, result) = fuel.post(decisionUrl)
             .jsonBody(objectMapper.writeValueAsString(newDecision)).authenticatedResponseStringWithRetries()
 
         return when (result) {
@@ -249,7 +250,7 @@ class VardaClient(
 
     fun updateDecision(vardaDecisionId: Long, updatedDecision: VardaDecision): VardaDecisionResponse? {
         logger.info { "Updating a decision to Varda (vardaId: $vardaDecisionId, body: $updatedDecision)" }
-        val (_, _, result) = Fuel.put(getDecisionUrl(vardaDecisionId))
+        val (_, _, result) = fuel.put(getDecisionUrl(vardaDecisionId))
             .jsonBody(objectMapper.writeValueAsString(updatedDecision)).authenticatedResponseStringWithRetries()
 
         return when (result) {
@@ -269,7 +270,7 @@ class VardaClient(
 
     fun deleteDecision(vardaDecisionId: Long): Boolean {
         logger.info { "Deleting decision from Varda (id: $vardaDecisionId)" }
-        val (_, _, result) = Fuel.delete(getDecisionUrl(vardaDecisionId))
+        val (_, _, result) = fuel.delete(getDecisionUrl(vardaDecisionId))
             .authenticatedResponseStringWithRetries()
 
         return when (result) {
@@ -289,7 +290,7 @@ class VardaClient(
 
     fun createPlacement(newPlacement: VardaPlacement): VardaPlacementResponse? {
         logger.info { "Creating a new placement to Varda (body: $newPlacement)" }
-        val (_, _, result) = Fuel.post(placementUrl)
+        val (_, _, result) = fuel.post(placementUrl)
             .jsonBody(objectMapper.writeValueAsString(newPlacement))
             .authenticatedResponseStringWithRetries()
 
@@ -313,7 +314,7 @@ class VardaClient(
         updatedPlacement: VardaPlacement
     ): VardaPlacementResponse? {
         logger.info { "Updating a placement to Varda (body: $updatedPlacement)" }
-        val (_, _, result) = Fuel.put(getPlacementUrl(vardaPlacementId))
+        val (_, _, result) = fuel.put(getPlacementUrl(vardaPlacementId))
             .jsonBody(objectMapper.writeValueAsString(updatedPlacement))
             .authenticatedResponseStringWithRetries()
 
@@ -334,7 +335,7 @@ class VardaClient(
 
     fun deletePlacement(vardaPlacementId: Long): Boolean {
         logger.info { "Deleting placement from Varda (id: $vardaPlacementId)" }
-        val (_, _, result) = Fuel.delete(getPlacementUrl(vardaPlacementId)).authenticatedResponseStringWithRetries()
+        val (_, _, result) = fuel.delete(getPlacementUrl(vardaPlacementId)).authenticatedResponseStringWithRetries()
 
         return when (result) {
             is Result.Success -> {

@@ -47,8 +47,10 @@ class VardaClientTest {
 
     @Test
     fun `refreshes API token on invalid token error and retries request`() {
-        val fuelClient = mock<Client>()
-        `when`(fuelClient.executeRequest(any()))
+        var fuel = FuelManager()
+
+        fuel.client = mock<Client>()
+        `when`(fuel.client.executeRequest(any()))
             .thenReturn(
                 Response(
                     statusCode = 403,
@@ -60,15 +62,14 @@ class VardaClientTest {
                 ) // This should trigger the token refresh
             )
             .thenReturn(Response(statusCode = 204, url = URL("https://example.com")))
-        FuelManager.instance.client = fuelClient
 
-        val client = VardaClient(mockTokenProvider, env, objectMapper)
+        val client = VardaClient(mockTokenProvider, fuel, env, objectMapper)
 
         assertTrue(client.deleteFeeData(0))
         // NOTE: As the original Request is modified instead of replaced in a retry
         // the _new_ authorization header appears to be used twice.
         verify(
-            fuelClient,
+            fuel.client,
             times(2)
         ).executeRequest(argThat { this[Headers.AUTHORIZATION].first() == "Token refreshed" })
     }

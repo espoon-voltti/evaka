@@ -13,6 +13,7 @@ import java.io.File
 import java.security.KeyStore
 import java.security.cert.X509Certificate
 import javax.net.ssl.HostnameVerifier
+import javax.net.ssl.KeyManager
 import javax.net.ssl.KeyManagerFactory
 import javax.net.ssl.SSLContext
 import javax.net.ssl.TrustManager
@@ -20,36 +21,34 @@ import javax.net.ssl.TrustManagerFactory
 import javax.net.ssl.X509TrustManager
 
 @Configuration
-class DvvModificationServiceConfig {
-
+class FuelManagerConfig {
     @Bean
-    fun dvvModificationsServiceClientFuel(env: Environment, xRoadProperties: XRoadProperties): FuelManager {
-        return when (env.getProperty("fi.espoo.integration.dvv-modifications-service.enabled", Boolean::class.java, false)) {
-            true -> productionFuel(xRoadProperties)
+    fun fuel(env: Environment, xRoadProperties: XRoadProperties): FuelManager {
+        return when (env.getProperty("fuel.certificate.check", Boolean::class.java, true)) {
+            true -> certCheckFuelManager(xRoadProperties)
             false -> noCertCheckFuelManager()
         }
     }
 
-    private fun productionFuel(xRoadProperties: XRoadProperties): FuelManager = FuelManager().apply {
-        keystore = KeyStore.getInstance(
-            File(xRoadProperties.keyStore.location),
-            xRoadProperties.keyStore.password?.toCharArray()
-        )
+    fun certCheckFuelManager(xRoadProperties: XRoadProperties): FuelManager = FuelManager().apply {
+        var keyManagers = arrayOf<KeyManager>()
+        if (xRoadProperties.keyStore.location != null) {
+            val keyManagerFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm())
+            keystore = KeyStore.getInstance(File(xRoadProperties.keyStore.location), xRoadProperties.keyStore.password?.toCharArray())
+            keyManagerFactory.init(keystore, xRoadProperties.keyStore.password?.toCharArray())
+            keyManagers = keyManagerFactory.keyManagers
+        }
 
-        val trustKeyStore = KeyStore.getInstance(
-            File(xRoadProperties.trustStore.location),
-            xRoadProperties.trustStore.password?.toCharArray()
-        )
-
-        val keyManagerFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm())
-        keyManagerFactory.init(keystore, xRoadProperties.keyStore.password?.toCharArray())
-
-        val trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm())
-
-        trustManagerFactory.init(trustKeyStore)
+        var trustManagers = arrayOf<TrustManager>()
+        if (xRoadProperties.trustStore.location != null) {
+            val trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm())
+            val trustKeyStore = KeyStore.getInstance(File(xRoadProperties.trustStore.location), xRoadProperties.trustStore.password?.toCharArray())
+            trustManagerFactory.init(trustKeyStore)
+            trustManagers = trustManagerFactory.trustManagers
+        }
 
         socketFactory = SSLContext.getInstance("SSL").apply {
-            init(keyManagerFactory.keyManagers, trustManagerFactory.trustManagers, java.security.SecureRandom())
+            init(keyManagers, trustManagers, java.security.SecureRandom())
         }.socketFactory
 
         hostnameVerifier = HostnameVerifier { _, _ -> true }
