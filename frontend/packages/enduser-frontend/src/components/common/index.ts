@@ -12,6 +12,7 @@ import cMessageBox from '@/components/common/c-message-box.vue'
 import cViewToolbar from '@/components/common/c-view-toolbar.vue'
 import cTextContent from '@/components/common/c-text-content.vue'
 import ClubTermSelect from '@/components/common/club-term-select.vue'
+import FileUpload from '@/components/common/file-upload.vue'
 import selectButtonGroup from '@/components/common/select-button-group.vue'
 import selectList from '@/components/common/select-list.vue'
 import spinner from '@/components/common/spinner.vue'
@@ -26,6 +27,7 @@ Vue.component('cMessageBox', cMessageBox)
 Vue.component('cTextContent', cTextContent)
 Vue.component('cViewToolbar', cViewToolbar)
 Vue.component('ClubTermSelect', ClubTermSelect)
+Vue.component('FileUpload', FileUpload)
 Vue.component('selectButtonGroup', selectButtonGroup)
 Vue.component('selectList', selectList)
 Vue.component('spinner', spinner)

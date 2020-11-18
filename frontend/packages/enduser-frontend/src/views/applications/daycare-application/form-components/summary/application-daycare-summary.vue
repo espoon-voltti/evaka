@@ -26,9 +26,9 @@ SPDX-License-Identifier: LGPL-2.1-or-later
         <!-- Liitteet -->
         <div class="attachment-list-wrapper" v-if="attachmentsEnabled" v-show="applicationForm.urgent">
           <p class="strong">{{$t('form.daycare-application.service.attachments-label')}}</p>
-          <p v-if="applicationFiles.length === 0">{{$t('form.daycare-application.service.no-attachments')}}</p>
+          <p v-if="urgentFiles.length === 0">{{$t('form.daycare-application.service.no-attachments')}}</p>
           <ul v-else>
-            <li v-for="file in applicationFiles" v-bind:key="file.id">
+            <li v-for="file in urgentFiles" v-bind:key="file.id">
               <span class="attachment-icon">
                 <font-awesome-icon
                   :icon="['fal', 'file']"
@@ -496,7 +496,7 @@ export default {
     }
   },
   computed: {
-    ...mapGetters(['countries', 'languages', 'applicationFiles']),
+    ...mapGetters(['countries', 'languages', 'urgentFiles']),
     type() {
       return this.applicationForm.type.value
     },

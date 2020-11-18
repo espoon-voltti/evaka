@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import _ from 'lodash'
-import { config } from '@evaka/enduser-frontend/src/config'
 import {
   APPLICATION_STATUS,
   APPLICATION_TYPE,
@@ -116,13 +115,14 @@ export default {
   createApplication: (type, childId) => client.post('/enduser/v2/applications', { type, childId }),
   updateApplication: (type, application) => APPLICATION_API_V1.put(`/enduser/v2/applications/${application.id}`, application),
   sendApplication: (applicationId) => client.post(`/enduser/v2/applications/${applicationId}/actions/send-application`),
-  saveAttachment: (applicationId, file) => {
+  saveAttachment: (applicationId, file, onUploadProgress) => {
     const formData = new FormData()
     formData.append('file', file)
     return client.post(`/attachments/enduser/applications/${applicationId}`, formData, {
       headers: {
         'Content-Type': 'multipart/form-data'
-      }
+      },
+      onUploadProgress
   })
   }
 }

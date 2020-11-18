@@ -48,6 +48,9 @@ export type IconSet = {
   falExclamation: IconDefinition
   falExclamationTriangle: IconDefinition
   falFile: IconDefinition
+  falFileImage: IconDefinition
+  falFilePdf: IconDefinition
+  falFileWord: IconDefinition
   falGavel: IconDefinition
   falHands: IconDefinition
   falInfo: IconDefinition

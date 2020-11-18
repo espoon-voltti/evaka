@@ -13,6 +13,7 @@ import moment from 'moment'
 import { Module } from 'vuex'
 import { RootState } from '@/store'
 import applicationApi from '@/api/applications'
+import { getUUID } from '@/utils/uuid'
 
 const currentState = {
   application: {
@@ -191,7 +192,7 @@ const module: Module<any, RootState> = {
     getChildAge: (state, getters) =>
       getAge(moment(getters.getChildBirthday, 'DDMMYY')),
     selectedTerm: (state) => state.application.term,
-    applicationFiles: (state) => state.files.urgent
+    urgentFiles: (state) => state.files.urgent
   },
   actions: {
     updateForm({ commit }, payload) {
@@ -221,9 +222,25 @@ const module: Module<any, RootState> = {
     removeChildren({ commit }, index) {
       commit(types.REMOVE_CHILDREN, index)
     },
-    async updateUrgentFiles({ commit }, { file, id }) {
-      const { data } = await applicationApi.saveAttachment(id, file)
-      commit(types.UPDATE_URGENT_FILES, { id: data, file })
+    async addUrgentFile({ commit, state }, { file, applicationId }) {
+      const key = getUUID()
+      commit(types.ADD_URGENT_FILE, { key, file, progress: 0 })
+      const onUploadProgress = (event) => {
+        const progress = Math.round((event.loaded / event.total) * 100)
+        commit(types.UPDATE_URGENT_FILE, { key, file, progress })
+      }
+      const { data } = await applicationApi.saveAttachment(
+        applicationId,
+        file,
+        onUploadProgress
+      )
+      commit(types.UPDATE_URGENT_FILE, {
+        key,
+        id: data,
+        file,
+        progress: 100,
+        done: true
+      })
     }
   },
   mutations: {
@@ -299,8 +316,13 @@ const module: Module<any, RootState> = {
       state.editing.application.activeSection =
         sectionId === activeSection ? undefined : sectionId
     },
-    [types.UPDATE_URGENT_FILES](state, file) {
+    [types.ADD_URGENT_FILE](state, file) {
       state.files.urgent = [...state.files.urgent, file]
+    },
+    [types.UPDATE_URGENT_FILE](state, file) {
+      state.files.urgent = state.files.urgent.map((f) =>
+        f.key === file.key ? file : f
+      )
     }
   }
 }
