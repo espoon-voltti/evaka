@@ -5,7 +5,6 @@
 package fi.espoo.evaka.pis.service
 
 import fi.espoo.evaka.pis.createParentship
-import fi.espoo.evaka.pis.dao.mapPSQLException
 import fi.espoo.evaka.pis.deleteParentship
 import fi.espoo.evaka.pis.getParentship
 import fi.espoo.evaka.pis.retryParentship
@@ -13,6 +12,7 @@ import fi.espoo.evaka.pis.updateParentshipDuration
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.NotifyFamilyUpdated
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.db.mapPSQLException
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.domain.maxEndDate
 import mu.KotlinLogging

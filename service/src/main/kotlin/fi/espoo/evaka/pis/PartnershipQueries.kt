@@ -4,9 +4,9 @@
 
 package fi.espoo.evaka.pis
 
-import fi.espoo.evaka.pis.dao.PGConstants
 import fi.espoo.evaka.pis.service.Partner
 import fi.espoo.evaka.pis.service.Partnership
+import fi.espoo.evaka.shared.db.PGConstants
 import fi.espoo.evaka.shared.db.bindNullable
 import fi.espoo.evaka.shared.db.getUUID
 import fi.espoo.evaka.shared.domain.Period

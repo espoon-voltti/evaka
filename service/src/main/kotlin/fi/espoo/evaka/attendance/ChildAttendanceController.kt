@@ -5,11 +5,11 @@
 package fi.espoo.evaka.attendance
 
 import fi.espoo.evaka.Audit
-import fi.espoo.evaka.pis.dao.mapPSQLException
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.db.mapPSQLException
 import org.jdbi.v3.core.JdbiException
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity

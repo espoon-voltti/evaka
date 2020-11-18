@@ -27,7 +27,7 @@ import fi.espoo.evaka.invoicing.domain.getFeeAlterationProduct
 import fi.espoo.evaka.invoicing.domain.getProductFromActivity
 import fi.espoo.evaka.invoicing.domain.invoiceRowTotal
 import fi.espoo.evaka.invoicing.domain.merge
-import fi.espoo.evaka.pis.dao.PGConstants
+import fi.espoo.evaka.shared.db.PGConstants
 import fi.espoo.evaka.shared.db.getEnum
 import fi.espoo.evaka.shared.db.getUUID
 import fi.espoo.evaka.shared.domain.Period

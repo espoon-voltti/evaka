@@ -4,9 +4,9 @@
 
 package fi.espoo.evaka.assistanceaction
 
-import fi.espoo.evaka.pis.dao.mapPSQLException
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.db.mapPSQLException
 import org.jdbi.v3.core.JdbiException
 import org.springframework.stereotype.Service
 import java.util.UUID

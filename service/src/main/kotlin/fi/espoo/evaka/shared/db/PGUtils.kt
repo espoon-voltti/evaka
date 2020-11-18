@@ -2,28 +2,36 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-package fi.espoo.evaka.pis.dao
+package fi.espoo.evaka.shared.db
 
 import fi.espoo.evaka.shared.domain.Conflict
 import org.postgresql.util.PSQLException
+import org.postgresql.util.PSQLState
 import java.time.LocalDate
 
 object PGConstants {
+    val minDate: LocalDate = LocalDate.of(0, 1, 1)
+    val maxDate: LocalDate = LocalDate.of(9999, 1, 1)
     // Jooq can't handle the actual postgres infinity value well, so just using some date far in the future instead
     val infinity: LocalDate = LocalDate.of(9999, 1, 1)
 }
 
-// postgres does not seem to have a proper enum class for these so listing necessary ones here...
-enum class PSQLErrorCodes(val code: String) {
-    UNIQUE_VIOLATION("23505"),
-    EXCLUSION_VIOLATION("23P01")
+/**
+ * Locates the closest PSQLException (if any) in the cause chain of the throwable
+ */
+fun Throwable.psqlCause(): PSQLException? {
+    var cause = this.cause
+    while (cause != null && cause !is PSQLException) {
+        cause = cause.cause
+    }
+    return cause as? PSQLException
 }
 
 fun mapPSQLException(e: Exception): Exception {
     return if (e.cause is PSQLException) {
         val ex = e.cause as PSQLException
         when (ex.sqlState) {
-            PSQLErrorCodes.UNIQUE_VIOLATION.code, PSQLErrorCodes.EXCLUSION_VIOLATION.code ->
+            PSQLState.UNIQUE_VIOLATION.state, PSQLState.EXCLUSION_VIOLATION.state ->
                 Conflict("Unique or exclusion constraint violation in database")
             else -> ex
         }
