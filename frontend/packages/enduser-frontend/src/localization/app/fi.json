@@ -458,6 +458,8 @@
       "service": {
         "title": "Palvelun tarve",
         "section-title": "Varhaiskasvatuksen alkaminen",
+        "attachments-label": "Tarvittavat liitteet",
+        "no-attachments": "Ei liitetty, lähetetään postilla",
         "expedited": {
           "label": "Hakemus on kiireellinen",
           "message": {

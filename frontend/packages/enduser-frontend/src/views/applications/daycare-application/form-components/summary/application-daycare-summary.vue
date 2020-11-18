@@ -23,6 +23,21 @@ SPDX-License-Identifier: LGPL-2.1-or-later
           v-if="!isPreschool"
         />
 
+        <div class="attachment-list-wrapper" v-show="applicationForm.urgent">
+          <p class="strong">{{$t('form.daycare-application.service.attachments-label')}}</p>
+          <p v-if="applicationFiles.length === 0">{{$t('form.daycare-application.service.no-attachments')}}</p>
+          <ul v-else>
+            <li v-for="file in applicationFiles" v-bind:key="file.id">
+              <span class="attachment-icon">
+                <font-awesome-icon
+                  :icon="['fal', 'file']"
+                ></font-awesome-icon>
+              </span>
+              <a :href="`/enduser/applications/attachments/${file.id}`">{{ file.file.name }}</a>
+            </li>
+          </ul>
+        </div>
+
         <div class="columns is-gapless">
           <div class="column">
             <div class="strong">{{ $t(`form.${type}-application.service.startDate.label`) }}</div>
@@ -476,7 +491,7 @@ export default {
     }
   },
   computed: {
-    ...mapGetters(['countries', 'languages']),
+    ...mapGetters(['countries', 'languages', 'applicationFiles']),
     type() {
       return this.applicationForm.type.value
     },
@@ -582,6 +597,15 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+
+.attachment-list-wrapper {
+  margin-bottom: 1rem;
+
+  & .attachment-icon {
+    margin-right: 1rem;
+  }
+}
+
 .club-summary-title {
   margin-top: 1.5rem;
 }
