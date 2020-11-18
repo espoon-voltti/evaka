@@ -4,7 +4,12 @@
 
 import React from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faFileImage } from '@fortawesome/free-solid-svg-icons'
+import {
+  faFileImage,
+  faFilePdf,
+  faFileWord,
+  faFile
+} from '@fortawesome/free-solid-svg-icons'
 
 import { Attachment } from '~types/application'
 import styled from 'styled-components'
@@ -20,9 +25,18 @@ interface Props {
   dataQa: string
 }
 
-// TODO
 const contentTypeIcon = (contentType: string) => {
-  return faFileImage
+  switch (contentType) {
+    case 'image/jpeg':
+    case 'image/png':
+      return faFileImage
+    case 'application/pdf':
+      return faFilePdf
+    case 'application/msword':
+      return faFileWord
+    default:
+      return faFile
+  }
 }
 
 function Attachment({ attachment, dataQa }: Props) {
@@ -32,6 +46,7 @@ function Attachment({ attachment, dataQa }: Props) {
         <FontAwesomeIcon
           icon={contentTypeIcon(attachment.contentType)}
           className={'attachment-icon'}
+          color={'Dodgerblue'}
         />
         <span>{attachment.name}</span>
       </FixedSpaceRow>
