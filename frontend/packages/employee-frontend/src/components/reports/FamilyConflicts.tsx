@@ -110,7 +110,7 @@ function FamilyConflicts() {
         {isSuccess(rows) && (
           <>
             <ReportDownload
-              data={rows.data.map((row) => ({
+              data={filteredRows.map((row) => ({
                 careAreaName: row.careAreaName,
                 unitName: row.unitName,
                 firstName: row.firstName,

@@ -56,6 +56,14 @@ export const careAreaFixture: CareArea = {
   subCostCenter: '99'
 }
 
+export const careArea2Fixture: CareArea = {
+  id: '7a5b42db-451b-4394-b6a6-86993ea0ed45',
+  name: 'Hyperkeskus',
+  shortName: 'hyper-keskus',
+  areaCode: '298',
+  subCostCenter: '98'
+}
+
 export const clubFixture: Daycare = {
   id: '0b5ffd40-2f1a-476a-ad06-2861f433b0d1',
   careAreaId: careAreaFixture.id,
@@ -88,6 +96,21 @@ export const daycareFixture: Daycare = {
   decisionPreschoolName: 'Päiväkoti päätöksellä',
   decisionHandler: 'Käsittelijä',
   decisionHandlerAddress: 'Käsittelijän osoite'
+}
+
+export const daycare2Fixture: Daycare = {
+  id: '6f540c39-e7f6-4222-a004-c527403378ec',
+  careAreaId: careArea2Fixture.id,
+  name: 'Mustan aukon päiväkoti',
+  type: ['CENTRE'],
+  costCenter: '31501',
+  streetAddress: 'Kamreerintie 2',
+  postalCode: '02210',
+  postOffice: 'Espoo',
+  decisionDaycareName: 'Päiväkoti 2 päätöksellä',
+  decisionPreschoolName: 'Päiväkoti 2 päätöksellä',
+  decisionHandler: 'Käsittelijä 2',
+  decisionHandlerAddress: 'Käsittelijän 2 osoite'
 }
 
 export const preschoolFixture: Daycare = {
@@ -503,10 +526,11 @@ export const feeDecisionsFixture = (
 export const voucherValueDecisionsFixture = (
   adultId: UUID,
   childId: UUID,
-  daycareId: UUID
+  daycareId: UUID,
+  status: 'DRAFT' | 'SENT' = 'DRAFT'
 ): VoucherValueDecision => ({
   id: 'ed462aca-f74e-4384-910f-628823201023',
-  status: 'DRAFT',
+  status,
   validFrom: '2019-01-01',
   validTo: '2021-01-01',
   headOfFamily: { id: adultId },

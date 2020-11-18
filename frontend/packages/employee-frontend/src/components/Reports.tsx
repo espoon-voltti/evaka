@@ -380,7 +380,10 @@ function Reports() {
                     color={EspooColours.bluePrimary}
                     content={faDiagnoses}
                   />
-                  <LinkTitle to="/reports/voucher-service-providers">
+                  <LinkTitle
+                    data-qa={'report-voucher-service-providers'}
+                    to="/reports/voucher-service-providers"
+                  >
                     {i18n.reports.voucherServiceProviders.title}
                   </LinkTitle>
                 </TitleRow>

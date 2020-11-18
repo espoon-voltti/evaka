@@ -109,13 +109,13 @@ function VoucherServiceProviders() {
 
   return (
     <Container>
-      <ReturnButton />
+      <ReturnButton dataQa={'return-button'} />
       <ContentArea opaque>
         <Title size={1}>{i18n.reports.voucherServiceProviders.title}</Title>
         <FilterRow>
           <FilterLabel>{i18n.reports.common.period}</FilterLabel>
           <FlexRow>
-            <Wrapper>
+            <Wrapper data-qa="select-month">
               <ReactSelect
                 options={months}
                 value={months.find(
@@ -130,7 +130,7 @@ function VoucherServiceProviders() {
                 styles={reactSelectStyles}
               />
             </Wrapper>
-            <Wrapper>
+            <Wrapper data-qa="select-year">
               <ReactSelect
                 options={years}
                 value={years.find(
@@ -149,7 +149,7 @@ function VoucherServiceProviders() {
         </FilterRow>
         <FilterRow>
           <FilterLabel>{i18n.reports.common.careAreaName}</FilterLabel>
-          <Wrapper>
+          <Wrapper data-qa="select-area">
             <ReactSelect
               options={[
                 ...areas.map((area) => ({ value: area.id, label: area.name }))
@@ -181,6 +181,7 @@ function VoucherServiceProviders() {
                 filters.month,
                 areas.find((area) => area.id === filters.areaId)?.name ?? ''
               )}
+              dataQa={'download-csv'}
             />
             <TableScrollable>
               <Thead>
@@ -194,13 +195,19 @@ function VoucherServiceProviders() {
               </Thead>
               <Tbody>
                 {mappedData.map((row) => (
-                  <Tr key={row.unitId}>
+                  <Tr
+                    key={row.unitId}
+                    data-qa={row.unitId}
+                    className={'reportRow'}
+                  >
                     <StyledTd>{row.areaName}</StyledTd>
                     <StyledTd>
                       <Link to={`/units/${row.unitId}`}>{row.unitName}</Link>
                     </StyledTd>
-                    <StyledTd>{row.childCount}</StyledTd>
-                    <StyledTd>{row.sum}</StyledTd>
+                    <StyledTd data-qa={'child-count'}>
+                      {row.childCount}
+                    </StyledTd>
+                    <StyledTd data-qa={'child-sum'}>{row.sum}</StyledTd>
                     <StyledTd>
                       <Link
                         to={`/reports/voucher-service-providers/${row.unitId}`}
