@@ -48,7 +48,13 @@ function Attachment({ attachment, dataQa }: Props) {
           className={'attachment-icon'}
           color={'Dodgerblue'}
         />
-        <span>{attachment.name}</span>
+        <a
+          href={`/api/internal/attachments/${attachment.id}/download`}
+          target="_blank"
+          rel="noreferrer"
+        >
+          <span>{attachment.name}</span>
+        </a>
       </FixedSpaceRow>
     </AttachmentContainer>
   )
