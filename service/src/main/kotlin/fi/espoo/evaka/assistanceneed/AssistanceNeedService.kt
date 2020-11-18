@@ -6,38 +6,37 @@ package fi.espoo.evaka.assistanceneed
 
 import fi.espoo.evaka.pis.dao.mapPSQLException
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.db.transaction
-import org.jdbi.v3.core.Jdbi
+import fi.espoo.evaka.shared.db.Database
 import org.jdbi.v3.core.JdbiException
 import org.springframework.stereotype.Service
 import java.util.UUID
 
 @Service
-class AssistanceNeedService(private val jdbi: Jdbi) {
-    fun createAssistanceNeed(user: AuthenticatedUser, childId: UUID, data: AssistanceNeedRequest): AssistanceNeed {
+class AssistanceNeedService {
+    fun createAssistanceNeed(db: Database.Connection, user: AuthenticatedUser, childId: UUID, data: AssistanceNeedRequest): AssistanceNeed {
         try {
-            return jdbi.transaction { h ->
-                shortenOverlappingAssistanceNeed(h, user, childId, data.startDate, data.endDate)
-                insertAssistanceNeed(h, user, childId, data)
+            return db.transaction {
+                shortenOverlappingAssistanceNeed(it.handle, user, childId, data.startDate, data.endDate)
+                insertAssistanceNeed(it.handle, user, childId, data)
             }
         } catch (e: JdbiException) {
             throw mapPSQLException(e)
         }
     }
 
-    fun getAssistanceNeedsByChildId(childId: UUID): List<AssistanceNeed> {
-        return jdbi.transaction { h -> getAssistanceNeedsByChild(h.setReadOnly(true), childId) }
+    fun getAssistanceNeedsByChildId(db: Database.Connection, childId: UUID): List<AssistanceNeed> {
+        return db.transaction { getAssistanceNeedsByChild(it.handle, childId) }
     }
 
-    fun updateAssistanceNeed(user: AuthenticatedUser, id: UUID, data: AssistanceNeedRequest): AssistanceNeed {
+    fun updateAssistanceNeed(db: Database.Connection, user: AuthenticatedUser, id: UUID, data: AssistanceNeedRequest): AssistanceNeed {
         try {
-            return jdbi.transaction { h -> updateAssistanceNeed(h, user, id, data) }
+            return db.transaction { updateAssistanceNeed(it.handle, user, id, data) }
         } catch (e: JdbiException) {
             throw mapPSQLException(e)
         }
     }
 
-    fun deleteAssistanceNeed(id: UUID) {
-        jdbi.transaction { h -> deleteAssistanceNeed(h, id) }
+    fun deleteAssistanceNeed(db: Database.Connection, id: UUID) {
+        db.transaction { deleteAssistanceNeed(it.handle, id) }
     }
 }

@@ -34,10 +34,8 @@ import fi.espoo.evaka.shared.auth.UserRole.FINANCE_ADMIN
 import fi.espoo.evaka.shared.auth.UserRole.SERVICE_WORKER
 import fi.espoo.evaka.shared.auth.UserRole.STAFF
 import fi.espoo.evaka.shared.auth.UserRole.UNIT_SUPERVISOR
-import fi.espoo.evaka.shared.db.handle
+import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.ClosedPeriod
-import org.jdbi.v3.core.Handle
-import org.jdbi.v3.core.Jdbi
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller
@@ -53,12 +51,10 @@ val detailedDataRoles = arrayOf(ADMIN, SERVICE_WORKER, FINANCE_ADMIN, UNIT_SUPER
 
 @Controller
 @RequestMapping("/views/units")
-class UnitsView(
-    private val jdbi: Jdbi,
-    private val acl: AccessControlList
-) {
+class UnitsView(private val acl: AccessControlList) {
     @GetMapping("/{unitId}")
     fun getUnitViewData(
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable unitId: UUID,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
@@ -72,14 +68,14 @@ class UnitsView(
         currentUserRoles.requireOneOfRoles(*basicDataRoles)
 
         val period = ClosedPeriod(from, to)
-        val unitData = jdbi.handle {
-            val groups = it.getDaycareGroups(unitId, from, to)
-            val placements = getDaycarePlacements(it, unitId, null, from, to).toList()
-            val backupCares = it.getBackupCaresForDaycare(unitId, period)
-            val missingGroupPlacements = it.getMissingGroupPlacements(unitId)
+        val unitData = db.read {
+            val groups = it.handle.getDaycareGroups(unitId, from, to)
+            val placements = it.getDaycarePlacements(unitId, null, from, to).toList()
+            val backupCares = it.handle.getBackupCaresForDaycare(unitId, period)
+            val missingGroupPlacements = it.handle.getMissingGroupPlacements(unitId)
             val caretakers = Caretakers(
-                unitCaretakers = it.getUnitStats(unitId, from, to),
-                groupCaretakers = it.getGroupStats(unitId, from, to)
+                unitCaretakers = it.handle.getUnitStats(unitId, from, to),
+                groupCaretakers = it.handle.getGroupStats(unitId, from, to)
             )
 
             val basicData = UnitDataResponse(
@@ -93,9 +89,9 @@ class UnitsView(
             if (currentUserRoles.hasOneOfRoles(*detailedDataRoles)) {
                 val unitOccupancies = getUnitOccupancies(it, unitId, period)
                 val groupOccupancies = getGroupOccupancies(it, unitId, period)
-                val placementProposals = getPlacementPlans(it, unitId, null, null, listOf(ApplicationStatus.WAITING_UNIT_CONFIRMATION))
-                val placementPlans = getPlacementPlans(it, unitId, null, null, listOf(ApplicationStatus.WAITING_CONFIRMATION, ApplicationStatus.WAITING_MAILING))
-                val applications = it.getApplicationUnitSummaries(unitId)
+                val placementProposals = getPlacementPlans(it.handle, unitId, null, null, listOf(ApplicationStatus.WAITING_UNIT_CONFIRMATION))
+                val placementPlans = getPlacementPlans(it.handle, unitId, null, null, listOf(ApplicationStatus.WAITING_CONFIRMATION, ApplicationStatus.WAITING_MAILING))
+                val applications = it.handle.getApplicationUnitSummaries(unitId)
 
                 basicData.copy(
                     unitOccupancies = unitOccupancies,
@@ -136,19 +132,19 @@ data class UnitOccupancies(
     val realized: OccupancyResponse
 )
 
-fun getUnitOccupancies(
-    h: Handle,
+private fun getUnitOccupancies(
+    tx: Database.Read,
     unitId: UUID,
     period: ClosedPeriod
 ): UnitOccupancies {
     return UnitOccupancies(
-        planned = getOccupancyResponse(calculateOccupancyPeriods(unitId, period, OccupancyType.PLANNED)(h)),
-        confirmed = getOccupancyResponse(calculateOccupancyPeriods(unitId, period, OccupancyType.CONFIRMED)(h)),
-        realized = getOccupancyResponse(calculateOccupancyPeriods(unitId, period, OccupancyType.REALIZED)(h))
+        planned = getOccupancyResponse(tx.calculateOccupancyPeriods(unitId, period, OccupancyType.PLANNED)),
+        confirmed = getOccupancyResponse(tx.calculateOccupancyPeriods(unitId, period, OccupancyType.CONFIRMED)),
+        realized = getOccupancyResponse(tx.calculateOccupancyPeriods(unitId, period, OccupancyType.REALIZED))
     )
 }
 
-fun getOccupancyResponse(occupancies: List<OccupancyPeriod>): OccupancyResponse {
+private fun getOccupancyResponse(occupancies: List<OccupancyPeriod>): OccupancyResponse {
     return OccupancyResponse(
         occupancies = occupancies,
         max = occupancies.filter { it.percentage != null }.maxBy { it.percentage!! },
@@ -161,30 +157,30 @@ data class GroupOccupancies(
     val realized: Map<UUID, OccupancyResponse>
 )
 
-fun getGroupOccupancies(
-    h: Handle,
+private fun getGroupOccupancies(
+    tx: Database.Read,
     unitId: UUID,
     period: ClosedPeriod
 ): GroupOccupancies {
     return GroupOccupancies(
         confirmed = getGroupOccupancyResponses(
-            calculateOccupancyPeriodsGroupLevel(
+            tx.calculateOccupancyPeriodsGroupLevel(
                 unitId,
                 period,
                 OccupancyType.CONFIRMED
-            )(h)
+            )
         ),
         realized = getGroupOccupancyResponses(
-            calculateOccupancyPeriodsGroupLevel(
+            tx.calculateOccupancyPeriodsGroupLevel(
                 unitId,
                 period,
                 OccupancyType.REALIZED
-            )(h)
+            )
         )
     )
 }
 
-fun getGroupOccupancyResponses(occupancies: List<OccupancyPeriodGroupLevel>): Map<UUID, OccupancyResponse> {
+private fun getGroupOccupancyResponses(occupancies: List<OccupancyPeriodGroupLevel>): Map<UUID, OccupancyResponse> {
     return occupancies
         .groupBy { it.groupId }
         .mapValues { (_, value) ->

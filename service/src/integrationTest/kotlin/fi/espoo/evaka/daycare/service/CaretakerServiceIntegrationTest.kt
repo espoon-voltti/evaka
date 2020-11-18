@@ -43,9 +43,10 @@ class CaretakerServiceIntegrationTest : PureJdbiTest() {
             )
         }
     }
+
     @Test
-    fun `group initially has one row`() = jdbi.handle { h ->
-        val caretakers = service.getCaretakers(h, groupId)
+    fun `group initially has one row`() {
+        val caretakers = db.transaction { service.getCaretakers(it, groupId) }
         assertEquals(1, caretakers.size)
         assertEquals(groupId, caretakers[0].groupId)
         assertEquals(groupStart, caretakers[0].startDate)
@@ -54,16 +55,18 @@ class CaretakerServiceIntegrationTest : PureJdbiTest() {
     }
 
     @Test
-    fun `inserting caretaker row`() = jdbi.handle { h ->
+    fun `inserting caretaker row`() {
         val start2 = LocalDate.of(2000, 6, 1)
-        service.insert(
-            h,
-            groupId = groupId,
-            startDate = start2,
-            endDate = null,
-            amount = 5.0
-        )
-        val caretakers = service.getCaretakers(h, groupId)
+        val caretakers = db.transaction { tx ->
+            service.insert(
+                tx,
+                groupId = groupId,
+                startDate = start2,
+                endDate = null,
+                amount = 5.0
+            )
+            service.getCaretakers(tx, groupId)
+        }
         assertEquals(2, caretakers.size)
 
         assertEquals(start2, caretakers[0].startDate)
@@ -76,18 +79,20 @@ class CaretakerServiceIntegrationTest : PureJdbiTest() {
     }
 
     @Test
-    fun `updating caretaker row`() = jdbi.handle { h ->
-        val id = service.getCaretakers(h, groupId).first().id
-        service.update(
-            h,
-            groupId = groupId,
-            id = id,
-            startDate = LocalDate.of(2000, 7, 1),
-            endDate = LocalDate.of(2000, 8, 1),
-            amount = 2.0
-        )
+    fun `updating caretaker row`() {
+        val rows = db.transaction { tx ->
+            val id = service.getCaretakers(tx, groupId).first().id
+            service.update(
+                tx,
+                groupId = groupId,
+                id = id,
+                startDate = LocalDate.of(2000, 7, 1),
+                endDate = LocalDate.of(2000, 8, 1),
+                amount = 2.0
+            )
 
-        val rows = service.getCaretakers(h, groupId)
+            service.getCaretakers(tx, groupId)
+        }
         assertEquals(1, rows.size)
         val updated = rows.first()
         assertEquals(LocalDate.of(2000, 7, 1), updated.startDate)

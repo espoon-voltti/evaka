@@ -4,8 +4,7 @@
 
 package fi.espoo.evaka.shared.auth
 
-import fi.espoo.evaka.shared.db.handle
-import org.jdbi.v3.core.Handle
+import fi.espoo.evaka.shared.db.Database
 import org.jdbi.v3.core.Jdbi
 import org.jdbi.v3.core.kotlin.mapTo
 import java.util.UUID
@@ -30,18 +29,18 @@ class AccessControlList(private val jdbi: Jdbi) {
         if (user.hasOneOfRoles(UserRole.ADMIN, UserRole.FINANCE_ADMIN, UserRole.SERVICE_WORKER, UserRole.DIRECTOR)) {
             AclAuthorization.All
         } else {
-            AclAuthorization.Subset(jdbi.handle { it.selectAuthorizedDaycares(user) })
+            AclAuthorization.Subset(Database(jdbi).read { it.selectAuthorizedDaycares(user) })
         }
 
     fun getAuthorizedUnits(user: AuthenticatedUser): AclAuthorization =
         if (user.hasOneOfRoles(UserRole.ADMIN, UserRole.FINANCE_ADMIN, UserRole.SERVICE_WORKER, UserRole.DIRECTOR)) {
             AclAuthorization.All
         } else {
-            AclAuthorization.Subset(jdbi.handle { it.selectAuthorizedDaycares(user) })
+            AclAuthorization.Subset(Database(jdbi).read { it.selectAuthorizedDaycares(user) })
         }
 
     fun getRolesForUnit(user: AuthenticatedUser, daycareId: UUID): AclAppliedRoles = AclAppliedRoles(
-        (user.roles - UserRole.ACL_ROLES) + jdbi.handle {
+        (user.roles - UserRole.ACL_ROLES) + Database(jdbi).read {
             it.createQuery(
                 // language=SQL
                 """
@@ -54,7 +53,7 @@ WHERE employee_id = :userId AND daycare_id = :daycareId
     )
 
     fun getRolesForApplication(user: AuthenticatedUser, applicationId: UUID): AclAppliedRoles = AclAppliedRoles(
-        (user.roles - UserRole.ACL_ROLES) + jdbi.handle {
+        (user.roles - UserRole.ACL_ROLES) + Database(jdbi).read {
             it.createQuery(
                 // language=SQL
                 """
@@ -69,7 +68,7 @@ WHERE employee_id = :userId AND av.id = :applicationId AND av.status = ANY ('{SE
     )
 
     fun getRolesForUnitGroup(user: AuthenticatedUser, groupId: UUID): AclAppliedRoles = AclAppliedRoles(
-        (user.roles - UserRole.ACL_ROLES) + jdbi.handle {
+        (user.roles - UserRole.ACL_ROLES) + Database(jdbi).read {
             it.createQuery(
                 // language=SQL
                 """
@@ -83,7 +82,7 @@ WHERE employee_id = :userId AND daycare_group.id = :groupId
     )
 
     fun getRolesForPlacement(user: AuthenticatedUser, placementId: UUID): AclAppliedRoles = AclAppliedRoles(
-        (user.roles - UserRole.ACL_ROLES) + jdbi.handle {
+        (user.roles - UserRole.ACL_ROLES) + Database(jdbi).read {
             it.createQuery(
                 // language=SQL
                 """
@@ -97,7 +96,7 @@ WHERE employee_id = :userId AND placement.id = :placementId
     )
 
     fun getRolesForChild(user: AuthenticatedUser, childId: UUID): AclAppliedRoles = AclAppliedRoles(
-        (user.roles - UserRole.ACL_ROLES) + jdbi.handle {
+        (user.roles - UserRole.ACL_ROLES) + Database(jdbi).read {
             it.createQuery(
                 // language=SQL
                 """
@@ -114,7 +113,7 @@ WHERE employee_id = :userId AND ch.id = :childId
     )
 
     fun getRolesForDecision(user: AuthenticatedUser, decisionId: UUID): AclAppliedRoles = AclAppliedRoles(
-        (user.roles - UserRole.ACL_ROLES) + jdbi.handle {
+        (user.roles - UserRole.ACL_ROLES) + Database(jdbi).read {
             it.createQuery(
                 // language=SQL
                 """
@@ -128,7 +127,7 @@ WHERE employee_id = :userId AND decision.id = :decisionId
     )
 }
 
-private fun Handle.selectAuthorizedDaycares(user: AuthenticatedUser): Set<UUID> = createQuery(
+private fun Database.Read.selectAuthorizedDaycares(user: AuthenticatedUser): Set<UUID> = createQuery(
     // language=SQL
     "SELECT daycare_id FROM daycare_acl WHERE employee_id = :userId"
 ).bind("userId", user.id).mapTo<UUID>().toSet()

@@ -10,6 +10,7 @@ import org.jdbi.v3.core.Jdbi
 import org.jdbi.v3.core.statement.PreparedBatch
 import org.jdbi.v3.core.statement.Query
 import org.jdbi.v3.core.statement.Update
+import java.util.concurrent.atomic.AtomicBoolean
 
 // What does it mean when a function accepts a Database/Database.* parameter?
 //
@@ -33,24 +34,25 @@ import org.jdbi.v3.core.statement.Update
  */
 class Database(private val jdbi: Jdbi) {
     private val threadId = ThreadId()
-    private var connected = false
+    private var connected = AtomicBoolean()
 
     /**
      * Opens a database connection, runs the given function, and closes the connection.
      *
      * Throws `IllegalStateException` if a connection is already open
      */
-    fun <T> connect(f: (db: Connection) -> T): T {
+    fun <T> connect(f: (db: Connection) -> T): T = connect().use(f)
+
+    /**
+     * Opens a new database connection and returns it. The connection *must be closed after use*.
+     *
+     * Throws `IllegalStateException` if a connection is already open
+     */
+    fun connect(): Connection {
         threadId.assertCurrentThread()
-        check(!connected) { "Already connected to database" }
-        try {
-            connected = true
-            return jdbi.open().use {
-                f(Connection(threadId, it))
-            }
-        } finally {
-            connected = false
-        }
+        check(!connected.get()) { "Already connected to database" }
+        connected.set(true)
+        return Connection(threadId, connected, jdbi.open())
     }
 
     /**
@@ -70,7 +72,7 @@ class Database(private val jdbi: Jdbi) {
     /**
      * A single database connection tied to a single thread
      */
-    class Connection internal constructor(private val threadId: ThreadId, private val handle: Handle) : AutoCloseable {
+    class Connection internal constructor(private val threadId: ThreadId, private val connected: AtomicBoolean, private val handle: Handle) : AutoCloseable {
         /**
          * Enters read mode, runs the given function, and exits read mode regardless of any exceptions the function may have thrown.
          *
@@ -99,22 +101,12 @@ class Database(private val jdbi: Jdbi) {
             return handle.transaction { f(Transaction(it)) }
         }
 
-        companion object {
-            /**
-             * Wraps an existing raw JDBI handle into a `Connection` object.
-             *
-             * This is mostly intended for tests where the main API can't be used. Use *very* sparingly!
-             */
-            fun wrap(handle: Handle): Connection {
-                check(!handle.isInTransaction) { "Wrapped handle must not have an active transaction" }
-                check(!handle.isReadOnly) { "Wrapped handle must not be read-only" }
-                return Connection(ThreadId(), handle)
-            }
-        }
-
         override fun close() {
             threadId.assertCurrentThread()
-            handle.close()
+            if (!handle.isClosed) {
+                connected.set(false)
+                handle.close()
+            }
         }
     }
 
@@ -125,19 +117,6 @@ class Database(private val jdbi: Jdbi) {
      */
     open class Read internal constructor(val handle: Handle) {
         fun createQuery(@Language("sql") sql: String): Query = handle.createQuery(sql)
-
-        companion object {
-            /**
-             * Wraps an existing raw JDBI handle into a `Read` object.
-             *
-             * This is mostly intended for tests where the main API can't be used. Use *very* sparingly!
-             */
-            fun wrap(handle: Handle): Read {
-                check(handle.isInTransaction) { "Wrapped handle must have an active transaction" }
-                check(handle.isReadOnly) { "Wrapped handle must be read-only" }
-                return Read(handle)
-            }
-        }
     }
 
     /**

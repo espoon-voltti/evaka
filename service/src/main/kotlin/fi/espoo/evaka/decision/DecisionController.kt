@@ -16,11 +16,7 @@ import fi.espoo.evaka.shared.auth.UserRole.SERVICE_WORKER
 import fi.espoo.evaka.shared.auth.UserRole.UNIT_SUPERVISOR
 import fi.espoo.evaka.shared.config.Roles
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.db.handle
-import fi.espoo.evaka.shared.db.transaction
 import fi.espoo.evaka.shared.domain.Forbidden
-import org.jdbi.v3.core.Handle
-import org.jdbi.v3.core.Jdbi
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
@@ -33,7 +29,6 @@ import java.util.UUID
 @RestController
 @RequestMapping("/decisions2")
 class DecisionController(
-    private val jdbi: Jdbi,
     private val acl: AccessControlList,
     private val decisionService: DecisionService,
     private val decisionDraftService: DecisionDraftService,
@@ -41,51 +36,54 @@ class DecisionController(
 ) {
     @GetMapping("/by-guardian")
     fun getDecisionsByGuardian(
+        db: Database.Connection,
         user: AuthenticatedUser,
         @RequestParam("id") guardianId: UUID
     ): ResponseEntity<DecisionListResponse> {
         Audit.DecisionRead.log(targetId = guardianId)
         user.requireOneOfRoles(ADMIN, SERVICE_WORKER, FINANCE_ADMIN, UNIT_SUPERVISOR)
-        val decisions = jdbi.handle { getDecisionsByGuardian(it, guardianId, acl.getAuthorizedUnits(user)) }
+        val decisions = db.read { getDecisionsByGuardian(it.handle, guardianId, acl.getAuthorizedUnits(user)) }
 
         return ResponseEntity.ok(DecisionListResponse(withPublicDocumentUri(decisions)))
     }
 
     @GetMapping("/by-child")
     fun getDecisionsByChild(
+        db: Database.Connection,
         user: AuthenticatedUser,
         @RequestParam("id") childId: UUID
     ): ResponseEntity<DecisionListResponse> {
         Audit.DecisionRead.log(targetId = childId)
         user.requireOneOfRoles(ADMIN, SERVICE_WORKER, UNIT_SUPERVISOR)
-        val decisions = jdbi.handle { getDecisionsByChild(it, childId, acl.getAuthorizedUnits(user)) }
+        val decisions = db.read { getDecisionsByChild(it.handle, childId, acl.getAuthorizedUnits(user)) }
 
         return ResponseEntity.ok(DecisionListResponse(withPublicDocumentUri(decisions)))
     }
 
     @GetMapping("/by-application")
     fun getDecisionsByApplication(
+        db: Database.Connection,
         user: AuthenticatedUser,
         @RequestParam("id") applicationId: UUID
     ): ResponseEntity<DecisionListResponse> {
         Audit.DecisionRead.log(targetId = applicationId)
         user.requireOneOfRoles(ADMIN, SERVICE_WORKER, UNIT_SUPERVISOR)
-        val decisions = jdbi.handle { getDecisionsByApplication(it, applicationId, acl.getAuthorizedUnits(user)) }
+        val decisions = db.read { getDecisionsByApplication(it.handle, applicationId, acl.getAuthorizedUnits(user)) }
 
         return ResponseEntity.ok(DecisionListResponse(withPublicDocumentUri(decisions)))
     }
 
     @GetMapping("/units")
-    fun getDecisionUnits(user: AuthenticatedUser): ResponseEntity<List<DecisionUnit>> {
+    fun getDecisionUnits(db: Database.Connection, user: AuthenticatedUser): ResponseEntity<List<DecisionUnit>> {
         Audit.UnitRead.log()
         user.requireOneOfRoles(Roles.ADMIN, Roles.SERVICE_WORKER, Roles.UNIT_SUPERVISOR, Roles.FINANCE_ADMIN)
-        val units = jdbi.handle { decisionDraftService.getDecisionUnits(it) }
+        val units = db.read { decisionDraftService.getDecisionUnits(it) }
         return ResponseEntity.ok(units)
     }
 
     @GetMapping("/{id}/download", produces = [MediaType.APPLICATION_PDF_VALUE])
     fun downloadDecisionPdf(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable("id") decisionId: UUID
     ): ResponseEntity<ByteArray> {
@@ -99,7 +97,7 @@ class DecisionController(
                 if (!getDecisionsByGuardian(tx.handle, user.id, AclAuthorization.All).any { it.id == decisionId }) {
                     throw Forbidden("Access denied")
                 }
-                return@transaction getDecisionPdf(tx.handle, decisionId)
+                return@transaction getDecisionPdf(tx, decisionId)
             }
 
             val decision = getDecision(tx.handle, decisionId) ?: error("Cannot find decision for decision id '$decisionId'")
@@ -121,12 +119,12 @@ class DecisionController(
             if ((child.restrictedDetailsEnabled || guardian.restrictedDetailsEnabled) && !user.isAdmin())
                 throw Forbidden("Päätöksen alaisella henkilöllä on voimassa turvakielto. Osoitetietojen suojaamiseksi vain pääkäyttäjä voi ladata tämän päätöksen.")
 
-            getDecisionPdf(tx.handle, decisionId)
+            getDecisionPdf(tx, decisionId)
         }
     }
 
-    private fun getDecisionPdf(h: Handle, decisionId: UUID): ResponseEntity<ByteArray> {
-        return decisionService.getDecisionPdf(h, decisionId)
+    private fun getDecisionPdf(tx: Database.Read, decisionId: UUID): ResponseEntity<ByteArray> {
+        return decisionService.getDecisionPdf(tx, decisionId)
             .let { document ->
                 ResponseEntity.ok()
                     .header("Content-Disposition", "attachment;filename=${document.getName()}")

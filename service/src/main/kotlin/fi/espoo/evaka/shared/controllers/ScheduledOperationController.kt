@@ -9,9 +9,7 @@ import fi.espoo.evaka.application.removeOldDrafts
 import fi.espoo.evaka.dvv.DvvModificationsBatchRefreshService
 import fi.espoo.evaka.koski.KoskiUpdateService
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.db.transaction
 import fi.espoo.evaka.varda.VardaUpdateService
-import org.jdbi.v3.core.Jdbi
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestMapping
@@ -21,21 +19,20 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @RequestMapping("/scheduled")
 class ScheduledOperationController(
-    private val jdbi: Jdbi,
     private val vardaUpdateService: VardaUpdateService,
     private val koskiUpdateService: KoskiUpdateService,
     private val dvvModificationsBatchRefreshService: DvvModificationsBatchRefreshService
 ) {
 
     @PostMapping("/dvv/update")
-    fun dvvUpdate(): ResponseEntity<Int> {
+    fun dvvUpdate(db: Database.Connection): ResponseEntity<Int> {
         Audit.VtjBatchSchedule.log()
-        return ResponseEntity.ok(dvvModificationsBatchRefreshService.scheduleBatch())
+        return ResponseEntity.ok(dvvModificationsBatchRefreshService.scheduleBatch(db))
     }
 
     @PostMapping("/koski/update")
     fun koskiUpdate(
-        db: Database,
+        db: Database.Connection,
         @RequestParam(required = false) personIds: String?,
         @RequestParam(required = false) daycareIds: String?
     ): ResponseEntity<Unit> {
@@ -56,9 +53,9 @@ class ScheduledOperationController(
     }
 
     @PostMapping("/application/clear-old-drafts")
-    fun removeOldDraftApplications(): ResponseEntity<Unit> {
+    fun removeOldDraftApplications(db: Database.Connection): ResponseEntity<Unit> {
         Audit.ApplicationsDeleteDrafts.log()
-        jdbi.transaction { removeOldDrafts(it) }
+        db.transaction { removeOldDrafts(it.handle) }
         return ResponseEntity.noContent().build()
     }
 }

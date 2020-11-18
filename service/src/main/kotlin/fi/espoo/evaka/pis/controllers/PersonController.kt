@@ -5,7 +5,6 @@
 package fi.espoo.evaka.pis.controllers
 
 import fi.espoo.evaka.Audit
-import fi.espoo.evaka.dvv.DvvModificationsBatchRefreshService
 import fi.espoo.evaka.identity.ExternalIdentifier
 import fi.espoo.evaka.identity.VolttiIdentifier
 import fi.espoo.evaka.identity.isValidSSN
@@ -22,7 +21,6 @@ import fi.espoo.evaka.pis.service.PersonJSON
 import fi.espoo.evaka.pis.service.PersonPatch
 import fi.espoo.evaka.pis.service.PersonService
 import fi.espoo.evaka.pis.service.PersonWithChildrenDTO
-import fi.espoo.evaka.pis.service.VTJBatchRefreshService
 import fi.espoo.evaka.pis.updatePersonContactInfo
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -32,10 +30,7 @@ import fi.espoo.evaka.shared.config.Roles.FINANCE_ADMIN
 import fi.espoo.evaka.shared.config.Roles.SERVICE_WORKER
 import fi.espoo.evaka.shared.config.Roles.UNIT_SUPERVISOR
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.db.handle
-import fi.espoo.evaka.shared.db.transaction
 import fi.espoo.evaka.shared.domain.BadRequest
-import org.jdbi.v3.core.Jdbi
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -55,17 +50,14 @@ import java.util.UUID
 @RequestMapping("/person")
 class PersonController(
     private val personService: PersonService,
-    private val vtjBatchRefreshService: VTJBatchRefreshService,
-    private val dvvModificationsBatchRefreshService: DvvModificationsBatchRefreshService,
     private val mergeService: MergeService,
-    private val jdbi: Jdbi,
     private val asyncJobRunner: AsyncJobRunner
 ) {
     @PostMapping("/identity")
-    fun postPersonIdentity(@RequestBody person: PersonIdentityJSON): ResponseEntity<AuthenticatedUser> {
+    fun postPersonIdentity(db: Database.Connection, @RequestBody person: PersonIdentityJSON): ResponseEntity<AuthenticatedUser> {
         Audit.PersonCreate.log()
-        return jdbi.transaction { h ->
-            h.getPersonBySSN(person.socialSecurityNumber) ?: h.createPerson(
+        return db.transaction { tx ->
+            tx.handle.getPersonBySSN(person.socialSecurityNumber) ?: tx.handle.createPerson(
                 PersonIdentityRequest(
                     identity = person.toIdentifier(),
                     firstName = person.firstName,
@@ -79,16 +71,16 @@ class PersonController(
     }
 
     @PostMapping
-    fun createEmpty(user: AuthenticatedUser): ResponseEntity<PersonIdentityResponseJSON> {
+    fun createEmpty(db: Database.Connection, user: AuthenticatedUser): ResponseEntity<PersonIdentityResponseJSON> {
         Audit.PersonCreate.log()
         user.requireOneOfRoles(SERVICE_WORKER, FINANCE_ADMIN, ADMIN)
-        return jdbi.transaction { it.createEmptyPerson() }
+        return db.transaction { it.handle.createEmptyPerson() }
             .let { ResponseEntity.ok().body(PersonIdentityResponseJSON.from(it)) }
     }
 
     @GetMapping(value = ["/details/{personId}", "/identity/{personId}"])
     fun getPerson(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable(value = "personId") personId: VolttiIdentifier
     ): ResponseEntity<PersonJSON> {
@@ -102,7 +94,7 @@ class PersonController(
 
     @GetMapping("/dependants/{personId}")
     fun getPersonDependants(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable(value = "personId") personId: VolttiIdentifier
     ): ResponseEntity<List<PersonWithChildrenDTO>> {
@@ -115,7 +107,7 @@ class PersonController(
 
     @GetMapping("/guardians/{personId}")
     fun getPersonGuardians(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable(value = "personId") personId: VolttiIdentifier
     ): ResponseEntity<List<PersonJSON>> {
@@ -128,6 +120,7 @@ class PersonController(
 
     @GetMapping("/search")
     fun findBySearchTerms(
+        db: Database.Connection,
         user: AuthenticatedUser,
         @RequestParam(
             value = "searchTerm",
@@ -146,8 +139,8 @@ class PersonController(
         user.requireOneOfRoles(SERVICE_WORKER, UNIT_SUPERVISOR, FINANCE_ADMIN)
         return ResponseEntity.ok()
             .body(
-                jdbi.handle {
-                    it.searchPeople(
+                db.read {
+                    it.handle.searchPeople(
                         searchTerm,
                         orderBy,
                         sortDirection
@@ -158,13 +151,14 @@ class PersonController(
 
     @PutMapping(value = ["/{personId}/contact-info"])
     fun updateContactInfo(
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable(value = "personId") personId: VolttiIdentifier,
         @RequestBody contactInfo: ContactInfo
     ): ResponseEntity<ContactInfo> {
         Audit.PersonContactInfoUpdate.log(targetId = personId)
         user.requireOneOfRoles(SERVICE_WORKER, UNIT_SUPERVISOR, FINANCE_ADMIN)
-        return if (jdbi.transaction { it.updatePersonContactInfo(personId, contactInfo) }) {
+        return if (db.transaction { it.handle.updatePersonContactInfo(personId, contactInfo) }) {
             ResponseEntity.ok().body(contactInfo)
         } else {
             ResponseEntity.notFound().build()
@@ -173,7 +167,7 @@ class PersonController(
 
     @PatchMapping("/{personId}")
     fun updatePersonDetails(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable(value = "personId") personId: VolttiIdentifier,
         @RequestBody data: PersonPatch
@@ -186,7 +180,7 @@ class PersonController(
 
     @DeleteMapping("/{personId}")
     fun safeDeletePerson(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable(value = "personId") personId: VolttiIdentifier
     ): ResponseEntity<Unit> {
@@ -198,7 +192,7 @@ class PersonController(
 
     @PutMapping("/{personId}/ssn")
     fun addSsn(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable(value = "personId") personId: VolttiIdentifier,
         @RequestBody body: AddSsnRequest
@@ -218,7 +212,7 @@ class PersonController(
 
     @GetMapping("/details/ssn/{ssn}")
     fun getOrCreatePersonBySsn(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable("ssn") ssn: String,
         @RequestParam("readonly", required = false) readonly: Boolean = false
@@ -247,6 +241,7 @@ class PersonController(
 
     @GetMapping("/get-deceased/")
     fun getDeceased(
+        db: Database.Connection,
         user: AuthenticatedUser,
         @RequestParam("sinceDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) sinceDate: LocalDate
     ): ResponseEntity<List<PersonJSON>> {
@@ -255,13 +250,13 @@ class PersonController(
 
         return ResponseEntity.ok()
             .body(
-                jdbi.handle { it.getDeceasedPeople(sinceDate) }.map { personDTO -> PersonJSON.from(personDTO) }
+                db.read { it.handle.getDeceasedPeople(sinceDate) }.map { personDTO -> PersonJSON.from(personDTO) }
             )
     }
 
     @PostMapping("/merge")
     fun mergePeople(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @RequestBody body: MergeRequest
     ): ResponseEntity<Unit> {
@@ -276,12 +271,13 @@ class PersonController(
 
     @PostMapping("/create")
     fun createPerson(
+        db: Database.Connection,
         user: AuthenticatedUser,
         @RequestBody body: CreatePersonBody
     ): ResponseEntity<UUID> {
         Audit.PersonCreate.log()
         user.requireOneOfRoles(ADMIN, SERVICE_WORKER, FINANCE_ADMIN)
-        return jdbi.transaction { it.createPerson(body) }
+        return db.transaction { it.handle.createPerson(body) }
             .let { ResponseEntity.ok(it) }
     }
 

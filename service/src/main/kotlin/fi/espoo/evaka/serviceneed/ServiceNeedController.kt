@@ -14,6 +14,7 @@ import fi.espoo.evaka.shared.auth.UserRole.STAFF
 import fi.espoo.evaka.shared.config.Roles.FINANCE_ADMIN
 import fi.espoo.evaka.shared.config.Roles.SERVICE_WORKER
 import fi.espoo.evaka.shared.config.Roles.UNIT_SUPERVISOR
+import fi.espoo.evaka.shared.db.Database
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -32,6 +33,7 @@ class ServiceNeedController(
 ) {
     @PostMapping("/children/{childId}/service-needs")
     fun createServiceNeed(
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable childId: UUID,
         @RequestBody body: ServiceNeedRequest
@@ -39,6 +41,7 @@ class ServiceNeedController(
         Audit.ChildServiceNeedCreate.log(targetId = childId)
         user.requireOneOfRoles(SERVICE_WORKER, UNIT_SUPERVISOR)
         return serviceNeedService.createServiceNeed(
+            db,
             user = user,
             childId = childId,
             data = body
@@ -47,16 +50,18 @@ class ServiceNeedController(
 
     @GetMapping("/children/{childId}/service-needs")
     fun getServiceNeeds(
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable childId: UUID
     ): ResponseEntity<List<ServiceNeed>> {
         Audit.ChildServiceNeedRead.log(targetId = childId)
         acl.getRolesForChild(user, childId).requireOneOfRoles(SERVICE_WORKER, UNIT_SUPERVISOR, FINANCE_ADMIN, STAFF)
-        return serviceNeedService.getServiceNeedsByChildId(childId).let(::ok)
+        return serviceNeedService.getServiceNeedsByChildId(db, childId).let(::ok)
     }
 
     @PutMapping("/service-needs/{id}")
     fun updateServiceNeed(
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable id: UUID,
         @RequestBody body: ServiceNeedRequest
@@ -64,6 +69,7 @@ class ServiceNeedController(
         Audit.ChildServiceNeedUpdate.log(targetId = id)
         user.requireOneOfRoles(SERVICE_WORKER, UNIT_SUPERVISOR)
         return serviceNeedService.updateServiceNeed(
+            db,
             user = user,
             id = id,
             data = body
@@ -72,12 +78,13 @@ class ServiceNeedController(
 
     @DeleteMapping("/service-needs/{id}")
     fun deleteServiceNeed(
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable id: UUID
     ): ResponseEntity<Unit> {
         Audit.ChildServiceNeedDelete.log(targetId = id)
         user.requireOneOfRoles(SERVICE_WORKER, UNIT_SUPERVISOR)
-        serviceNeedService.deleteServiceNeed(id)
+        serviceNeedService.deleteServiceNeed(db, id)
         return noContent()
     }
 }

@@ -6,39 +6,37 @@ package fi.espoo.evaka.assistanceaction
 
 import fi.espoo.evaka.pis.dao.mapPSQLException
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.db.handle
-import fi.espoo.evaka.shared.db.transaction
-import org.jdbi.v3.core.Jdbi
+import fi.espoo.evaka.shared.db.Database
 import org.jdbi.v3.core.JdbiException
 import org.springframework.stereotype.Service
 import java.util.UUID
 
 @Service
-class AssistanceActionService(private val jdbi: Jdbi) {
-    fun createAssistanceAction(user: AuthenticatedUser, childId: UUID, data: AssistanceActionRequest): AssistanceAction {
+class AssistanceActionService {
+    fun createAssistanceAction(db: Database.Connection, user: AuthenticatedUser, childId: UUID, data: AssistanceActionRequest): AssistanceAction {
         try {
-            return jdbi.transaction { h ->
-                shortenOverlappingAssistanceAction(h, user, childId, data.startDate, data.endDate)
-                insertAssistanceAction(h, user, childId, data)
+            return db.transaction {
+                shortenOverlappingAssistanceAction(it.handle, user, childId, data.startDate, data.endDate)
+                insertAssistanceAction(it.handle, user, childId, data)
             }
         } catch (e: JdbiException) {
             throw mapPSQLException(e)
         }
     }
 
-    fun getAssistanceActionsByChildId(childId: UUID): List<AssistanceAction> {
-        return jdbi.handle { h -> getAssistanceActionsByChild(h.setReadOnly(true), childId) }
+    fun getAssistanceActionsByChildId(db: Database.Connection, childId: UUID): List<AssistanceAction> {
+        return db.read { getAssistanceActionsByChild(it.handle, childId) }
     }
 
-    fun updateAssistanceAction(user: AuthenticatedUser, id: UUID, data: AssistanceActionRequest): AssistanceAction {
+    fun updateAssistanceAction(db: Database.Connection, user: AuthenticatedUser, id: UUID, data: AssistanceActionRequest): AssistanceAction {
         try {
-            return jdbi.transaction { h -> updateAssistanceAction(h, user, id, data) }
+            return db.transaction { updateAssistanceAction(it.handle, user, id, data) }
         } catch (e: JdbiException) {
             throw mapPSQLException(e)
         }
     }
 
-    fun deleteAssistanceAction(id: UUID) {
-        jdbi.transaction { h -> deleteAssistanceAction(h, id) }
+    fun deleteAssistanceAction(db: Database.Connection, id: UUID) {
+        db.transaction { deleteAssistanceAction(it.handle, id) }
     }
 }

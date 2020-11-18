@@ -28,7 +28,6 @@ import org.jdbi.v3.core.kotlin.mapTo
 import org.jdbi.v3.core.result.RowView
 import org.jdbi.v3.core.statement.StatementContext
 import org.postgresql.util.PGobject
-import java.lang.Error
 import java.sql.ResultSet
 import java.time.LocalDate
 import java.util.UUID

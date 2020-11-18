@@ -12,10 +12,8 @@ import fi.espoo.evaka.pis.service.PersonService
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.db.transaction
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.NotFound
-import org.jdbi.v3.core.Jdbi
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
@@ -32,7 +30,6 @@ import java.util.UUID
 @RestController
 @RequestMapping("/enduser/v2/applications")
 class ApplicationControllerEnduser(
-    private val jdbi: Jdbi,
     private val personService: PersonService,
     private val serializer: ApplicationSerializer,
     private val applicationStateService: ApplicationStateService
@@ -125,7 +122,7 @@ class ApplicationControllerEnduser(
         val formV0 = serializer.deserialize(user, formJson)
         val updatedApplication = db.transaction { tx ->
             applicationStateService
-                .updateOwnApplicationContents(tx.handle, user, applicationId, formV0)
+                .updateOwnApplicationContents(tx, user, applicationId, formV0)
                 .let { serializer.serialize(tx, user, it) }
         }
 
@@ -134,21 +131,22 @@ class ApplicationControllerEnduser(
 
     @DeleteMapping("/{applicationId}")
     fun deleteApplication(
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable(value = "applicationId") applicationId: UUID
     ): ResponseEntity<Unit> {
         Audit.ApplicationDelete.log(targetId = applicationId)
         user.requireOneOfRoles(UserRole.END_USER)
 
-        jdbi.transaction { h ->
-            val application = fetchApplicationDetails(h, applicationId)
+        db.transaction { tx ->
+            val application = fetchApplicationDetails(tx.handle, applicationId)
                 ?.takeIf { it.guardianId == user.id }
                 ?: throw NotFound("Application $applicationId of guardian ${user.id} not found")
 
             if (application.status != ApplicationStatus.CREATED)
                 throw BadRequest("Only drafts can be deleted")
 
-            deleteApplication(h, applicationId)
+            deleteApplication(tx.handle, applicationId)
         }
 
         return ResponseEntity.noContent().build()
@@ -156,20 +154,22 @@ class ApplicationControllerEnduser(
 
     @PostMapping("/{applicationId}/actions/send-application")
     fun sendApplication(
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable applicationId: UUID
     ): ResponseEntity<Unit> {
-        jdbi.transaction { applicationStateService.sendApplication(it, user, applicationId, isEnduser = true) }
+        db.transaction { applicationStateService.sendApplication(it, user, applicationId, isEnduser = true) }
         return ResponseEntity.noContent().build()
     }
 
     @PostMapping("/{applicationId}/actions/accept-decision")
     fun acceptDecision(
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable applicationId: UUID,
         @RequestBody body: AcceptDecisionRequest
     ): ResponseEntity<Unit> {
-        jdbi.transaction {
+        db.transaction {
             applicationStateService.acceptDecision(
                 it,
                 user,
@@ -184,11 +184,12 @@ class ApplicationControllerEnduser(
 
     @PostMapping("/{applicationId}/actions/reject-decision")
     fun rejectDecision(
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable applicationId: UUID,
         @RequestBody body: RejectDecisionRequest
     ): ResponseEntity<Unit> {
-        jdbi.transaction {
+        db.transaction {
             applicationStateService.rejectDecision(it, user, applicationId, body.decisionId, isEnduser = true)
         }
         return ResponseEntity.noContent().build()

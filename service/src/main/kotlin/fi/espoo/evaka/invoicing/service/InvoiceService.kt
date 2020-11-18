@@ -17,8 +17,8 @@ import fi.espoo.evaka.invoicing.domain.InvoiceStatus
 import fi.espoo.evaka.invoicing.domain.Product
 import fi.espoo.evaka.invoicing.integration.InvoiceIntegrationClient
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
+import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
-import org.jdbi.v3.core.Handle
 import org.springframework.stereotype.Component
 import java.time.Instant
 import java.time.LocalDate
@@ -35,8 +35,8 @@ data class InvoiceCodes(
 
 @Component
 class InvoiceService(private val integrationClient: InvoiceIntegrationClient) {
-    fun sendInvoices(h: Handle, user: AuthenticatedUser, invoiceIds: List<UUID>, invoiceDate: LocalDate?, dueDate: LocalDate?) {
-        val invoices = getInvoicesByIds(h, invoiceIds)
+    fun sendInvoices(tx: Database.Transaction, user: AuthenticatedUser, invoiceIds: List<UUID>, invoiceDate: LocalDate?, dueDate: LocalDate?) {
+        val invoices = getInvoicesByIds(tx.handle, invoiceIds)
         if (invoices.isEmpty()) return
 
         val notDrafts = invoices.filterNot { it.status == InvoiceStatus.DRAFT }
@@ -47,7 +47,7 @@ class InvoiceService(private val integrationClient: InvoiceIntegrationClient) {
         val (withSSNs, withoutSSNs) = invoices
             .partition { invoice -> invoice.headOfFamily.ssn != null }
 
-        val maxInvoiceNumber = getMaxInvoiceNumber(h).let { if (it >= 5000000000) it + 1 else 5000000000 }
+        val maxInvoiceNumber = getMaxInvoiceNumber(tx.handle).let { if (it >= 5000000000) it + 1 else 5000000000 }
         val updatedInvoices = withSSNs.mapIndexed { index, invoice ->
             invoice.copy(
                 number = maxInvoiceNumber + index,
@@ -68,14 +68,14 @@ class InvoiceService(private val integrationClient: InvoiceIntegrationClient) {
             .partition { (succeeded, _) -> succeeded }
 
         if (invoiceDate != null && dueDate != null) {
-            updateInvoiceDates(h, invoices.map { it.id }, invoiceDate, dueDate)
+            updateInvoiceDates(tx.handle, invoices.map { it.id }, invoiceDate, dueDate)
         }
-        setDraftsSent(h, succeeded.map { (_, invoice) -> invoice.id to invoice.number!! }, user.id)
-        updateToWaitingForSending(h, withoutSSNs.map { it.id })
+        setDraftsSent(tx.handle, succeeded.map { (_, invoice) -> invoice.id to invoice.number!! }, user.id)
+        updateToWaitingForSending(tx.handle, withoutSSNs.map { it.id })
     }
 
-    fun updateInvoice(h: Handle, uuid: UUID, invoice: Invoice) {
-        val original = getInvoice(h, uuid)
+    fun updateInvoice(tx: Database.Transaction, uuid: UUID, invoice: Invoice) {
+        val original = getInvoice(tx.handle, uuid)
             ?: throw BadRequest("No original found for invoice with given ID ($uuid)")
 
         val updated = when (original.status) {
@@ -85,15 +85,15 @@ class InvoiceService(private val integrationClient: InvoiceIntegrationClient) {
             else -> throw BadRequest("Only draft invoices can be updated")
         }
 
-        upsertInvoices(h, listOf(updated))
+        upsertInvoices(tx.handle, listOf(updated))
     }
 
-    fun getInvoiceIds(h: Handle, from: LocalDate, to: LocalDate, areas: List<String>): List<UUID> {
-        return getInvoiceIdsByDates(h, from, to, areas)
+    fun getInvoiceIds(tx: Database.Read, from: LocalDate, to: LocalDate, areas: List<String>): List<UUID> {
+        return getInvoiceIdsByDates(tx.handle, from, to, areas)
     }
 }
 
-fun markManuallySent(h: Handle, user: AuthenticatedUser, invoiceIds: List<UUID>) {
+fun Database.Transaction.markManuallySent(user: AuthenticatedUser, invoiceIds: List<UUID>) {
     val sql =
         """
         UPDATE invoice SET status = :status_sent, sent_at = :sent_at, sent_by = :sent_by
@@ -101,7 +101,7 @@ fun markManuallySent(h: Handle, user: AuthenticatedUser, invoiceIds: List<UUID>)
         RETURNING id
         """.trimIndent()
 
-    val updatedIds = h.createQuery(sql)
+    val updatedIds = createQuery(sql)
         .bind("status_sent", InvoiceStatus.SENT.toString())
         .bind("status_waiting", InvoiceStatus.WAITING_FOR_SENDING.toString())
         .bind("sent_at", Instant.now())
@@ -113,8 +113,8 @@ fun markManuallySent(h: Handle, user: AuthenticatedUser, invoiceIds: List<UUID>)
     if (updatedIds.toSet() != invoiceIds.toSet()) throw BadRequest("Some invoices have incorrect status")
 }
 
-fun getInvoiceCodes(h: Handle): InvoiceCodes {
-    val daycareCodes = getDaycareCodes(h)
+fun Database.Read.getInvoiceCodes(): InvoiceCodes {
+    val daycareCodes = getDaycareCodes(handle)
 
     val specialAreaCode = 255
     val specialSubCostCenter = "06"

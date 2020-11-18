@@ -9,8 +9,7 @@ import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.NotifyFamilyUpdated
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.config.Roles
-import fi.espoo.evaka.shared.db.transaction
-import org.jdbi.v3.core.Jdbi
+import fi.espoo.evaka.shared.db.Database
 import org.jdbi.v3.core.kotlin.mapTo
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.PostMapping
@@ -28,25 +27,23 @@ data class GenerateDecisionsBody(
 
 @RestController
 @RequestMapping("/fee-decision-generator")
-class FeeDecisionGeneratorController(
-    private val asyncJobRunner: AsyncJobRunner,
-    private val jdbi: Jdbi
-) {
+class FeeDecisionGeneratorController(private val asyncJobRunner: AsyncJobRunner) {
     @PostMapping("/generate")
-    fun generateDecisions(user: AuthenticatedUser, @RequestBody data: GenerateDecisionsBody): ResponseEntity<Unit> {
+    fun generateDecisions(db: Database.Connection, user: AuthenticatedUser, @RequestBody data: GenerateDecisionsBody): ResponseEntity<Unit> {
         Audit.FeeDecisionGenerate.log(targetId = data.targetHeads)
         user.requireOneOfRoles(Roles.FINANCE_ADMIN)
         generateAllStartingFrom(
+            db,
             LocalDate.parse(data.starting, DateTimeFormatter.ISO_DATE),
             data.targetHeads.filterNotNull().distinct()
         )
         return ResponseEntity.noContent().build()
     }
 
-    private fun generateAllStartingFrom(starting: LocalDate, targetHeads: List<UUID>) {
-        jdbi.transaction { h ->
+    private fun generateAllStartingFrom(db: Database.Connection, starting: LocalDate, targetHeads: List<UUID>) {
+        db.transaction { tx ->
             val heads = if (targetHeads.isEmpty()) {
-                h.createQuery("SELECT head_of_child FROM fridge_child WHERE COALESCE(end_date, '9999-01-01') >= :from AND conflict = false")
+                tx.createQuery("SELECT head_of_child FROM fridge_child WHERE COALESCE(end_date, '9999-01-01') >= :from AND conflict = false")
                     .bind("from", starting)
                     .mapTo<UUID>()
                     .list()
@@ -56,7 +53,7 @@ class FeeDecisionGeneratorController(
                 NotifyFamilyUpdated(headId, starting, null)
             }
 
-            asyncJobRunner.plan(h, jobs)
+            asyncJobRunner.plan(tx, jobs)
         }
         asyncJobRunner.scheduleImmediateRun()
     }

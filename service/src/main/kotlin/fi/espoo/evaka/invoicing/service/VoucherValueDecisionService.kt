@@ -13,10 +13,10 @@ import fi.espoo.evaka.invoicing.data.updateVoucherValueDecisionStatus
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionDetailed
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionPartDetailed
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
+import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.message.IEvakaMessageClient
 import fi.espoo.evaka.shared.message.SuomiFiMessage
-import org.jdbi.v3.core.Handle
 import org.springframework.core.env.Environment
 import org.springframework.stereotype.Component
 import java.time.Instant
@@ -35,23 +35,23 @@ class VoucherValueDecisionService(
 ) {
     private val bucket = env.getRequiredProperty("fi.espoo.voltti.document.bucket.vouchervaluedecision")
 
-    fun createDecisionPdf(h: Handle, decisionId: UUID) {
-        val decision = getDecision(h, decisionId)
+    fun createDecisionPdf(tx: Database.Transaction, decisionId: UUID) {
+        val decision = getDecision(tx, decisionId)
         check(decision.documentKey.isNullOrBlank()) { "Voucher value decision $decisionId has document key already!" }
 
         val pdf = generatePdf(decision)
         val key = uploadPdf(decision.id, pdf)
-        h.updateVoucherValueDecisionDocumentKey(decision.id, key)
+        tx.handle.updateVoucherValueDecisionDocumentKey(decision.id, key)
     }
 
-    fun getDecisionPdf(h: Handle, decisionId: UUID): Pair<String, ByteArray> {
-        val key = h.getVoucherValueDecisionDocumentKey(decisionId)
+    fun getDecisionPdf(tx: Database.Read, decisionId: UUID): Pair<String, ByteArray> {
+        val key = tx.handle.getVoucherValueDecisionDocumentKey(decisionId)
             ?: throw NotFound("No voucher value decision found with ID ($decisionId)")
         return key to s3Client.getPdf(bucket, key)
     }
 
-    fun sendDecision(h: Handle, decisionId: UUID) {
-        val decision = getDecision(h, decisionId)
+    fun sendDecision(tx: Database.Transaction, decisionId: UUID) {
+        val decision = getDecision(tx, decisionId)
         check(decision.status == VoucherValueDecisionStatus.WAITING_FOR_SENDING) {
             "Cannot send voucher value decision ${decision.id} - has status ${decision.status}"
         }
@@ -60,7 +60,7 @@ class VoucherValueDecisionService(
         }
 
         if (decision.requiresManualSending()) {
-            h.updateVoucherValueDecisionStatus(decision.id, VoucherValueDecisionStatus.WAITING_FOR_MANUAL_SENDING)
+            tx.handle.updateVoucherValueDecisionStatus(decision.id, VoucherValueDecisionStatus.WAITING_FOR_MANUAL_SENDING)
             return
         }
 
@@ -87,11 +87,11 @@ class VoucherValueDecisionService(
             )
         )
 
-        h.updateVoucherValueDecisionStatus(decision.id, VoucherValueDecisionStatus.SENT)
+        tx.handle.updateVoucherValueDecisionStatus(decision.id, VoucherValueDecisionStatus.SENT)
     }
 
-    private fun getDecision(h: Handle, decisionId: UUID): VoucherValueDecisionDetailed =
-        h.getVoucherValueDecision(objectMapper, decisionId)
+    private fun getDecision(tx: Database.Read, decisionId: UUID): VoucherValueDecisionDetailed =
+        tx.handle.getVoucherValueDecision(objectMapper, decisionId)
             ?: error("No voucher value decision found with ID ($decisionId)")
 
     private val key = { id: UUID -> "value_decision_$id.pdf" }

@@ -10,6 +10,7 @@ import fi.espoo.evaka.daycare.controllers.utils.noContent
 import fi.espoo.evaka.daycare.controllers.utils.ok
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.config.Roles
+import fi.espoo.evaka.shared.db.Database
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -27,6 +28,7 @@ class AssistanceActionController(
 ) {
     @PostMapping("/children/{childId}/assistance-actions")
     fun createAssistanceAction(
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable childId: UUID,
         @RequestBody body: AssistanceActionRequest
@@ -34,6 +36,7 @@ class AssistanceActionController(
         Audit.ChildAssistanceActionCreate.log(targetId = childId)
         user.requireOneOfRoles(Roles.SERVICE_WORKER, Roles.UNIT_SUPERVISOR)
         return assistanceActionService.createAssistanceAction(
+            db,
             user = user,
             childId = childId,
             data = body
@@ -42,16 +45,18 @@ class AssistanceActionController(
 
     @GetMapping("/children/{childId}/assistance-actions")
     fun getAssistanceActions(
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable childId: UUID
     ): ResponseEntity<List<AssistanceAction>> {
         Audit.ChildAssistanceActionRead.log(targetId = childId)
         user.requireOneOfRoles(Roles.SERVICE_WORKER, Roles.UNIT_SUPERVISOR, Roles.FINANCE_ADMIN)
-        return assistanceActionService.getAssistanceActionsByChildId(childId).let(::ok)
+        return assistanceActionService.getAssistanceActionsByChildId(db, childId).let(::ok)
     }
 
     @PutMapping("/assistance-actions/{id}")
     fun updateAssistanceAction(
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable id: UUID,
         @RequestBody body: AssistanceActionRequest
@@ -59,6 +64,7 @@ class AssistanceActionController(
         Audit.ChildAssistanceActionUpdate.log(targetId = id)
         user.requireOneOfRoles(Roles.SERVICE_WORKER, Roles.UNIT_SUPERVISOR)
         return assistanceActionService.updateAssistanceAction(
+            db,
             user = user,
             id = id,
             data = body
@@ -67,12 +73,13 @@ class AssistanceActionController(
 
     @DeleteMapping("/assistance-actions/{id}")
     fun deleteAssistanceAction(
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable id: UUID
     ): ResponseEntity<Unit> {
         Audit.ChildAssistanceActionDelete.log(targetId = id)
         user.requireOneOfRoles(Roles.SERVICE_WORKER, Roles.UNIT_SUPERVISOR)
-        assistanceActionService.deleteAssistanceAction(id)
+        assistanceActionService.deleteAssistanceAction(db, id)
         return noContent()
     }
 }

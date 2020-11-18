@@ -14,12 +14,11 @@ import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.daycare.getApplicationUnits
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
+import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.bindNullable
-import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.domain.Coordinate
 import org.jdbi.v3.core.Handle
-import org.jdbi.v3.core.Jdbi
 import org.jdbi.v3.core.kotlin.mapTo
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.http.ResponseEntity
@@ -30,42 +29,41 @@ import java.time.LocalDate
 import java.util.UUID
 
 @RestController
-class LocationController(val jdbi: Jdbi) {
+class LocationController {
     @GetMapping("/public/units")
     fun getApplicationUnits(
+        db: Database.Connection,
         user: AuthenticatedUser,
         @RequestParam type: ApplicationUnitType,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) date: LocalDate
     ): ResponseEntity<List<PublicUnit>> {
-        val units = jdbi.handle { h -> h.getApplicationUnits(type, date, onlyApplicable = user.isEndUser()) }
+        val units = db.read { it.handle.getApplicationUnits(type, date, onlyApplicable = user.isEndUser()) }
         return ResponseEntity.ok(units)
     }
 
     // Units by areas, only including units that can be applied to
     @GetMapping("/enduser/areas")
-    fun getEnduserUnitsByArea(): ResponseEntity<Collection<CareAreaResponseJSON>> {
-        val areas = jdbi.handle { h ->
-            h.getAreas()
-                .map { area: CareArea ->
-                    CareArea(
-                        area.id,
-                        area.name,
-                        area.shortName,
-                        area.locations.filter {
-                            it.type.contains(CareType.CLUB) || it.canApplyDaycare || it.canApplyPreschool
-                        }
-                    )
-                }
-                .toSet()
-        }
+    fun getEnduserUnitsByArea(db: Database.Connection): ResponseEntity<Collection<CareAreaResponseJSON>> {
+        val areas = db.read { it.handle.getAreas() }
+            .map { area: CareArea ->
+                CareArea(
+                    area.id,
+                    area.name,
+                    area.shortName,
+                    area.locations.filter {
+                        it.type.contains(CareType.CLUB) || it.canApplyDaycare || it.canApplyPreschool
+                    }
+                )
+            }
+            .toSet()
 
         return ResponseEntity.ok(toCareAreaResponses(areas))
     }
 
     @GetMapping("/areas")
-    fun getAreas(user: AuthenticatedUser): ResponseEntity<Collection<AreaJSON>> {
-        return jdbi
-            .handle {
+    fun getAreas(db: Database.Connection, user: AuthenticatedUser): ResponseEntity<Collection<AreaJSON>> {
+        return db
+            .read {
                 it.createQuery("SELECT id, name, short_name FROM care_area")
                     .mapTo<AreaJSON>()
                     .toList()
@@ -74,9 +72,9 @@ class LocationController(val jdbi: Jdbi) {
     }
 
     @GetMapping("/filters/units")
-    fun getUnits(@RequestParam type: UnitTypeFilter, @RequestParam area: String?): ResponseEntity<List<UnitStub>> {
+    fun getUnits(db: Database.Connection, @RequestParam type: UnitTypeFilter, @RequestParam area: String?): ResponseEntity<List<UnitStub>> {
         val areas = area?.split(",") ?: listOf()
-        val units = jdbi.handle { h -> h.getUnits(areas, type) }
+        val units = db.read { it.handle.getUnits(areas, type) }
         return ResponseEntity.ok(units)
     }
 

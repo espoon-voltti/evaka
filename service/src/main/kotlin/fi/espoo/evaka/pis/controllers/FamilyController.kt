@@ -11,9 +11,7 @@ import fi.espoo.evaka.pis.service.FamilyOverviewService
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.config.Roles
-import fi.espoo.evaka.shared.db.handle
-import org.jdbi.v3.core.Handle
-import org.jdbi.v3.core.Jdbi
+import fi.espoo.evaka.shared.db.Database
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -26,32 +24,32 @@ import java.util.UUID
 @RequestMapping("/family")
 class FamilyController(
     private val familyOverviewService: FamilyOverviewService,
-    private val acl: AccessControlList,
-    private val jdbi: Jdbi
+    private val acl: AccessControlList
 ) {
     @GetMapping("/by-adult/{id}")
-    fun getFamilyByPerson(user: AuthenticatedUser, @PathVariable(value = "id") id: UUID): ResponseEntity<FamilyOverview> {
+    fun getFamilyByPerson(db: Database.Connection, user: AuthenticatedUser, @PathVariable(value = "id") id: UUID): ResponseEntity<FamilyOverview> {
         Audit.PisFamilyRead.log(targetId = id)
         user.requireOneOfRoles(Roles.FINANCE_ADMIN)
-        val result = jdbi.handle { familyOverviewService.getFamilyByAdult(it, id) }
+        val result = db.read { familyOverviewService.getFamilyByAdult(it, id) }
             ?: return ResponseEntity.notFound().build()
         return ResponseEntity.ok(result)
     }
 
     @GetMapping("/contacts")
     fun getFamilyContactSummary(
+        db: Database.Connection,
         user: AuthenticatedUser,
         @RequestParam(value = "childId", required = true) childId: UUID
     ): ResponseEntity<List<FamilyContact>> {
         Audit.FamilyContactsRead.log(targetId = childId)
         acl.getRolesForChild(user, childId).requireOneOfRoles(Roles.ADMIN, Roles.STAFF)
-        return jdbi
-            .handle { h -> fetchFamilyContacts(h, childId) }
+        return db
+            .read { it.fetchFamilyContacts(childId) }
             .let { ResponseEntity.ok(it) }
     }
 }
 
-fun fetchFamilyContacts(h: Handle, childId: UUID): List<FamilyContact> {
+private fun Database.Read.fetchFamilyContacts(childId: UUID): List<FamilyContact> {
     // language=sql
     val sql =
         """
@@ -110,8 +108,7 @@ fun fetchFamilyContacts(h: Handle, childId: UUID): List<FamilyContact> {
             )
     """
 
-    return h
-        .createQuery(sql)
+    return createQuery(sql)
         .bind("id", childId)
         .mapTo(FamilyContact::class.java)
         .list()

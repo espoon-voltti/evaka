@@ -1,15 +1,12 @@
 package fi.espoo.evaka.reports
 
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
-import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
+import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.bindNullable
-import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.domain.ClosedPeriod
 import fi.espoo.evaka.shared.domain.Period
-import org.jdbi.v3.core.Handle
-import org.jdbi.v3.core.Jdbi
 import org.jdbi.v3.core.kotlin.mapTo
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
@@ -26,23 +23,23 @@ import java.util.UUID
 
 @RestController
 @RequestMapping("/reports/service-voucher-value")
-class ServiceVoucherValueReportController(private val jdbi: Jdbi, private val acl: AccessControlList) {
+class ServiceVoucherValueReportController {
     @GetMapping("/units")
     fun getServiceVoucherValuesForAllUnits(
+        db: Database,
         user: AuthenticatedUser,
         @RequestParam year: Int,
         @RequestParam month: Int,
         @RequestParam areaId: UUID
-
     ): ResponseEntity<List<ServiceVoucherValueUnitAggregate>> {
         user.requireOneOfRoles(UserRole.ADMIN, UserRole.FINANCE_ADMIN)
 
-        return jdbi.handle { h ->
+        return db.read { tx ->
             val period = ClosedPeriod(
                 LocalDate.of(year, month, 1),
                 LocalDate.of(year, month, Month.of(month).length(Year.isLeap(year.toLong())))
             )
-            val rows = getServiceVoucherValues(h, period, areaId = areaId)
+            val rows = tx.getServiceVoucherValues(period, areaId = areaId)
 
             val aggregates = rows
                 .groupBy { ServiceVoucherValueUnitAggregate.UnitData(it.unitId, it.unitName, it.areaId, it.areaName) }
@@ -66,6 +63,7 @@ class ServiceVoucherValueReportController(private val jdbi: Jdbi, private val ac
 
     @GetMapping("/units/{unitId}")
     fun getServiceVoucherValuesForUnit(
+        db: Database,
         user: AuthenticatedUser,
         @PathVariable("unitId") unitId: UUID,
         @RequestParam year: Int,
@@ -73,12 +71,12 @@ class ServiceVoucherValueReportController(private val jdbi: Jdbi, private val ac
     ): ResponseEntity<List<ServiceVoucherValueRow>> {
         user.requireOneOfRoles(UserRole.ADMIN, UserRole.FINANCE_ADMIN)
 
-        return jdbi.handle { h ->
+        return db.read { tx ->
             val period = ClosedPeriod(
                 LocalDate.of(year, month, 1),
                 LocalDate.of(year, month, Month.of(month).length(Year.isLeap(year.toLong())))
             )
-            val rows = getServiceVoucherValues(h, period, unitId = unitId)
+            val rows = tx.getServiceVoucherValues(period, unitId = unitId)
                 .map { row ->
                     row.copy(
                         derivatives = realizedMonthlyAmount(
@@ -144,8 +142,7 @@ private fun realizedMonthlyAmount(value: Int, decisionPeriod: Period, monthPerio
     return ValueRowDerivatives(realizedAmount, realizedPeriod, numberOfDays)
 }
 
-private fun getServiceVoucherValues(
-    h: Handle,
+private fun Database.Read.getServiceVoucherValues(
     period: ClosedPeriod,
     areaId: UUID? = null,
     unitId: UUID? = null
@@ -188,7 +185,7 @@ private fun getServiceVoucherValues(
         AND (:unitId::uuid IS NULL OR unit.id = :unitId)
         """.trimIndent()
 
-    return h.createQuery(sql)
+    return createQuery(sql)
         .bind("sent", VoucherValueDecisionStatus.SENT)
         .bind("period", period)
         .bindNullable("areaId", areaId)

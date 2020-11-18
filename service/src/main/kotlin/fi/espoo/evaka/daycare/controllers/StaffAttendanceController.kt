@@ -15,6 +15,7 @@ import fi.espoo.evaka.shared.auth.UserRole.ADMIN
 import fi.espoo.evaka.shared.auth.UserRole.FINANCE_ADMIN
 import fi.espoo.evaka.shared.auth.UserRole.STAFF
 import fi.espoo.evaka.shared.auth.UserRole.UNIT_SUPERVISOR
+import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
@@ -34,6 +35,7 @@ class StaffAttendanceController(
 ) {
     @GetMapping("/{groupId}")
     fun getAttendancesByGroup(
+        db: Database.Connection,
         user: AuthenticatedUser,
         @RequestParam year: Int,
         @RequestParam month: Int,
@@ -42,12 +44,13 @@ class StaffAttendanceController(
         Audit.StaffAttendanceRead.log(targetId = groupId)
         acl.getRolesForUnitGroup(user, groupId)
             .requireOneOfRoles(ADMIN, FINANCE_ADMIN, UNIT_SUPERVISOR, STAFF)
-        val result = staffAttendanceService.getAttendancesByMonth(year, month, groupId)
+        val result = staffAttendanceService.getAttendancesByMonth(db, year, month, groupId)
         return ResponseEntity.ok(Wrapper(result))
     }
 
     @PostMapping("/{groupId}")
     fun upsertStaffAttendance(
+        db: Database.Connection,
         user: AuthenticatedUser,
         @RequestBody staffAttendance: StaffAttendance,
         @PathVariable groupId: UUID
@@ -59,7 +62,7 @@ class StaffAttendanceController(
             throw BadRequest("Count can't be null")
         }
         staffAttendance.groupId = groupId
-        staffAttendanceService.upsertStaffAttendance(staffAttendance)
+        staffAttendanceService.upsertStaffAttendance(db, staffAttendance)
         return ResponseEntity.noContent().build()
     }
 }

@@ -31,9 +31,7 @@ import fi.espoo.evaka.shared.auth.UserRole.FINANCE_ADMIN
 import fi.espoo.evaka.shared.auth.UserRole.SERVICE_WORKER
 import fi.espoo.evaka.shared.auth.UserRole.STAFF
 import fi.espoo.evaka.shared.auth.UserRole.UNIT_SUPERVISOR
-import fi.espoo.evaka.shared.db.handle
-import fi.espoo.evaka.shared.db.transaction
-import org.jdbi.v3.core.Jdbi
+import fi.espoo.evaka.shared.db.Database
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller
@@ -54,31 +52,32 @@ import java.util.UUID
 class DaycareController(
     private val daycareService: DaycareService,
     private val caretakerService: CaretakerService,
-    private val acl: AccessControlList,
-    private val jdbi: Jdbi
+    private val acl: AccessControlList
 ) {
     @GetMapping
-    fun getDaycares(user: AuthenticatedUser): ResponseEntity<List<Daycare>> {
+    fun getDaycares(db: Database.Connection, user: AuthenticatedUser): ResponseEntity<List<Daycare>> {
         Audit.UnitSearch.log()
         user.requireOneOfRoles(ADMIN, SERVICE_WORKER, FINANCE_ADMIN, UNIT_SUPERVISOR, STAFF)
-        return ResponseEntity.ok(jdbi.handle { it.getDaycares(acl.getAuthorizedDaycares(user)) })
+        return ResponseEntity.ok(db.read { it.handle.getDaycares(acl.getAuthorizedDaycares(user)) })
     }
 
     @GetMapping("/{daycareId}")
     fun getDaycare(
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable("daycareId") daycareId: UUID
     ): ResponseEntity<DaycareResponse> {
         Audit.UnitRead.log(targetId = daycareId)
         val currentUserRoles = acl.getRolesForUnit(user, daycareId)
         currentUserRoles.requireOneOfRoles(ADMIN, SERVICE_WORKER, FINANCE_ADMIN, UNIT_SUPERVISOR, STAFF)
-        return jdbi.handle { it.getDaycare(daycareId) }
+        return db.read { it.handle.getDaycare(daycareId) }
             ?.let { ResponseEntity.ok(DaycareResponse(it, currentUserRoles.roles)) } ?: ResponseEntity.notFound()
             .build()
     }
 
     @GetMapping("/{daycareId}/groups")
     fun getGroups(
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable("daycareId") daycareId: UUID,
         @RequestParam(
@@ -94,11 +93,12 @@ class DaycareController(
         acl.getRolesForUnit(user, daycareId)
             .requireOneOfRoles(ADMIN, SERVICE_WORKER, FINANCE_ADMIN, UNIT_SUPERVISOR, STAFF)
 
-        return jdbi.handle { daycareService.getDaycareGroups(it, daycareId, startDate, endDate) }.let(::ok)
+        return db.read { daycareService.getDaycareGroups(it, daycareId, startDate, endDate) }.let(::ok)
     }
 
     @PostMapping("/{daycareId}/groups")
     fun createGroup(
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable("daycareId") daycareId: UUID,
         @RequestBody body: CreateGroupRequest
@@ -107,7 +107,7 @@ class DaycareController(
         acl.getRolesForUnit(user, daycareId)
             .requireOneOfRoles(ADMIN, SERVICE_WORKER, UNIT_SUPERVISOR)
 
-        return jdbi.transaction { daycareService.createGroup(it, daycareId, body.name, body.startDate, body.initialCaretakers) }
+        return db.transaction { daycareService.createGroup(it, daycareId, body.name, body.startDate, body.initialCaretakers) }
             .let { created(it, URI.create("/$daycareId/groups/${it.id}")) }
     }
 
@@ -116,6 +116,7 @@ class DaycareController(
     )
     @PutMapping("/{daycareId}/groups/{groupId}")
     fun updateGroup(
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable("daycareId") daycareId: UUID,
         @PathVariable("groupId") groupId: UUID,
@@ -125,13 +126,14 @@ class DaycareController(
         acl.getRolesForUnitGroup(user, groupId)
             .requireOneOfRoles(ADMIN, SERVICE_WORKER, UNIT_SUPERVISOR)
 
-        jdbi.transaction { it.renameGroup(groupId, body.name) }
+        db.transaction { it.handle.renameGroup(groupId, body.name) }
 
         return noContent()
     }
 
     @DeleteMapping("/{daycareId}/groups/{groupId}")
     fun deleteGroup(
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable("daycareId") daycareId: UUID,
         @PathVariable("groupId") groupId: UUID
@@ -140,12 +142,13 @@ class DaycareController(
         acl.getRolesForUnitGroup(user, groupId)
             .requireOneOfRoles(ADMIN, SERVICE_WORKER, UNIT_SUPERVISOR)
 
-        jdbi.transaction { daycareService.deleteGroup(it, daycareId, groupId) }
+        db.transaction { daycareService.deleteGroup(it, daycareId, groupId) }
         return noContent()
     }
 
     @GetMapping("/{daycareId}/groups/{groupId}/caretakers")
     fun getCaretakers(
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable("daycareId") daycareId: UUID,
         @PathVariable("groupId") groupId: UUID
@@ -154,13 +157,13 @@ class DaycareController(
         acl.getRolesForUnitGroup(user, groupId)
             .requireOneOfRoles(ADMIN, SERVICE_WORKER, FINANCE_ADMIN, UNIT_SUPERVISOR, STAFF)
 
-        return jdbi.handle {
-            val daycareStub = it.getDaycareStub(daycareId)
+        return db.read {
+            val daycareStub = it.handle.getDaycareStub(daycareId)
             ok(
                 CaretakersResponse(
                     caretakers = caretakerService.getCaretakers(it, groupId),
                     unitName = daycareStub?.name ?: "",
-                    groupName = it.getDaycareGroup(groupId)?.name ?: ""
+                    groupName = it.handle.getDaycareGroup(groupId)?.name ?: ""
                 )
             )
         }
@@ -168,6 +171,7 @@ class DaycareController(
 
     @PostMapping("/{daycareId}/groups/{groupId}/caretakers")
     fun createCaretakers(
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable("daycareId") daycareId: UUID,
         @PathVariable("groupId") groupId: UUID,
@@ -177,7 +181,7 @@ class DaycareController(
         acl.getRolesForUnitGroup(user, groupId)
             .requireOneOfRoles(ADMIN, SERVICE_WORKER, UNIT_SUPERVISOR)
 
-        jdbi.transaction {
+        db.transaction {
             caretakerService.insert(
                 it,
                 groupId = groupId,
@@ -191,6 +195,7 @@ class DaycareController(
 
     @PutMapping("/{daycareId}/groups/{groupId}/caretakers/{id}")
     fun updateCaretakers(
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable("daycareId") daycareId: UUID,
         @PathVariable("groupId") groupId: UUID,
@@ -201,7 +206,7 @@ class DaycareController(
         acl.getRolesForUnitGroup(user, groupId)
             .requireOneOfRoles(ADMIN, SERVICE_WORKER, UNIT_SUPERVISOR)
 
-        jdbi.transaction {
+        db.transaction {
             caretakerService.update(
                 it,
                 groupId = groupId,
@@ -216,6 +221,7 @@ class DaycareController(
 
     @DeleteMapping("/{daycareId}/groups/{groupId}/caretakers/{id}")
     fun removeCaretakers(
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable("daycareId") daycareId: UUID,
         @PathVariable("groupId") groupId: UUID,
@@ -225,7 +231,7 @@ class DaycareController(
         acl.getRolesForUnitGroup(user, groupId)
             .requireOneOfRoles(ADMIN, SERVICE_WORKER, UNIT_SUPERVISOR)
 
-        jdbi.transaction {
+        db.transaction {
             caretakerService.delete(
                 it,
                 groupId = groupId,
@@ -237,6 +243,7 @@ class DaycareController(
 
     @GetMapping("/{daycareId}/stats")
     fun getStats(
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable("daycareId") daycareId: UUID,
         @RequestParam(
@@ -249,11 +256,12 @@ class DaycareController(
         acl.getRolesForUnit(user, daycareId)
             .requireOneOfRoles(ADMIN, SERVICE_WORKER, FINANCE_ADMIN, UNIT_SUPERVISOR, STAFF)
 
-        return jdbi.handle { daycareService.getDaycareCapacityStats(it, daycareId, startDate, endDate) }.let(::ok)
+        return db.read { daycareService.getDaycareCapacityStats(it, daycareId, startDate, endDate) }.let(::ok)
     }
 
     @PutMapping("/{daycareId}")
     fun updateDaycare(
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable("daycareId") daycareId: UUID,
         @RequestBody fields: DaycareFields
@@ -262,16 +270,17 @@ class DaycareController(
         user.requireOneOfRoles(ADMIN)
         fields.validate()
         return ResponseEntity.ok(
-            jdbi.transaction {
-                it.updateDaycareManager(daycareId, fields.unitManager)
-                it.updateDaycare(daycareId, fields)
-                it.getDaycare(daycareId)!!
+            db.transaction {
+                it.handle.updateDaycareManager(daycareId, fields.unitManager)
+                it.handle.updateDaycare(daycareId, fields)
+                it.handle.getDaycare(daycareId)!!
             }
         )
     }
 
     @PutMapping("")
     fun createDaycare(
+        db: Database.Connection,
         user: AuthenticatedUser,
         @RequestBody fields: DaycareFields
     ): ResponseEntity<CreateDaycareResponse> {
@@ -280,10 +289,10 @@ class DaycareController(
         fields.validate()
         return ResponseEntity.ok(
             CreateDaycareResponse(
-                jdbi.transaction {
-                    val id = it.createDaycare(fields.areaId, fields.name)
-                    it.updateDaycareManager(id, fields.unitManager)
-                    it.updateDaycare(id, fields)
+                db.transaction {
+                    val id = it.handle.createDaycare(fields.areaId, fields.name)
+                    it.handle.updateDaycareManager(id, fields.unitManager)
+                    it.handle.updateDaycare(id, fields)
                     id
                 }
             )

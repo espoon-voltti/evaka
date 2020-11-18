@@ -11,11 +11,9 @@ import fi.espoo.evaka.shared.auth.UserRole.ADMIN
 import fi.espoo.evaka.shared.auth.UserRole.FINANCE_ADMIN
 import fi.espoo.evaka.shared.auth.UserRole.SERVICE_WORKER
 import fi.espoo.evaka.shared.auth.UserRole.UNIT_SUPERVISOR
+import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.getUUID
-import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.domain.BadRequest
-import org.jdbi.v3.core.Handle
-import org.jdbi.v3.core.Jdbi
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
@@ -25,12 +23,10 @@ import java.time.LocalDate
 import java.util.UUID
 
 @RestController
-class MissingServiceNeedReportController(
-    private val jdbi: Jdbi,
-    private val acl: AccessControlList
-) {
+class MissingServiceNeedReportController(private val acl: AccessControlList) {
     @GetMapping("/reports/missing-service-need")
     fun getMissingServiceNeedReport(
+        db: Database,
         user: AuthenticatedUser,
         @RequestParam("from") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
         @RequestParam("to") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate?
@@ -40,12 +36,11 @@ class MissingServiceNeedReportController(
         if (to != null && to.isBefore(from)) throw BadRequest("Invalid time range")
 
         val authorizedUnits = acl.getAuthorizedUnits(user)
-        return jdbi.handle { h -> ResponseEntity.ok(getMissingServiceNeedRows(h, from, to, authorizedUnits.ids)) }
+        return db.read { ResponseEntity.ok(it.getMissingServiceNeedRows(from, to, authorizedUnits.ids)) }
     }
 }
 
-fun getMissingServiceNeedRows(
-    h: Handle,
+private fun Database.Read.getMissingServiceNeedRows(
     from: LocalDate,
     to: LocalDate?,
     units: Collection<UUID>? = null
@@ -89,7 +84,7 @@ fun getMissingServiceNeedRows(
         GROUP BY ca.name, daycare.name, unit_id, child_id, first_name, last_name, unit_id
         ORDER BY ca.name, daycare.name, last_name, first_name
         """.trimIndent()
-    return h.createQuery(sql)
+    return createQuery(sql)
         .bind("units", units?.toTypedArray())
         .bind("from", from)
         .bind("to", to)

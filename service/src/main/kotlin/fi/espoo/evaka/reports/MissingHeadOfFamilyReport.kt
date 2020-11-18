@@ -11,10 +11,8 @@ import fi.espoo.evaka.shared.auth.UserRole.ADMIN
 import fi.espoo.evaka.shared.auth.UserRole.FINANCE_ADMIN
 import fi.espoo.evaka.shared.auth.UserRole.SERVICE_WORKER
 import fi.espoo.evaka.shared.auth.UserRole.UNIT_SUPERVISOR
+import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.getUUID
-import fi.espoo.evaka.shared.db.handle
-import org.jdbi.v3.core.Handle
-import org.jdbi.v3.core.Jdbi
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
@@ -24,12 +22,10 @@ import java.time.LocalDate
 import java.util.UUID
 
 @RestController
-class MissingHeadOfFamilyReportController(
-    private val jdbi: Jdbi,
-    private val acl: AccessControlList
-) {
+class MissingHeadOfFamilyReportController(private val acl: AccessControlList) {
     @GetMapping("/reports/missing-head-of-family")
     fun getMissingHeadOfFamilyReport(
+        db: Database,
         user: AuthenticatedUser,
         @RequestParam("from") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
         @RequestParam("to") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate?
@@ -37,12 +33,11 @@ class MissingHeadOfFamilyReportController(
         Audit.MissingHeadOfFamilyReportRead.log()
         user.requireOneOfRoles(ADMIN, SERVICE_WORKER, FINANCE_ADMIN, UNIT_SUPERVISOR)
         val authorizedUnits = acl.getAuthorizedUnits(user)
-        return jdbi.handle { h -> ResponseEntity.ok(getMissingHeadOfFamilyRows(h, from, to, authorizedUnits.ids)) }
+        return db.read { ResponseEntity.ok(it.getMissingHeadOfFamilyRows(from, to, authorizedUnits.ids)) }
     }
 }
 
-fun getMissingHeadOfFamilyRows(
-    h: Handle,
+private fun Database.Read.getMissingHeadOfFamilyRows(
     from: LocalDate,
     to: LocalDate?,
     units: Collection<UUID>? = null
@@ -87,7 +82,7 @@ fun getMissingHeadOfFamilyRows(
         GROUP BY ca.name, daycare.name, unit_id, child_id, first_name, last_name, unit_id
         ORDER BY ca.name, daycare.name, last_name, first_name
         """.trimIndent()
-    return h.createQuery(sql)
+    return createQuery(sql)
         .bind("units", units?.toTypedArray())
         .bind("from", from)
         .bind("to", to)

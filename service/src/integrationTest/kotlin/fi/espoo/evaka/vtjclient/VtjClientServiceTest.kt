@@ -69,7 +69,8 @@ class VtjClientServiceTest : AbstractIntegrationTest() {
     lateinit var useVtj: String
 
     @BeforeEach
-    fun beforeEach() {
+    override fun beforeEach() {
+        super.beforeEach()
         if (useVtj != "true") {
             mockServer = MockWebServiceServer.createServer(wsTemplate)
         }

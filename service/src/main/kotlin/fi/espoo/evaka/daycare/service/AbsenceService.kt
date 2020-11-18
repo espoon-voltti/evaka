@@ -8,13 +8,11 @@ import fi.espoo.evaka.backupcare.GroupBackupCare
 import fi.espoo.evaka.daycare.getDaycare
 import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.placement.PlacementType
-import fi.espoo.evaka.shared.db.handle
+import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.ClosedPeriod
 import fi.espoo.evaka.shared.domain.Period
 import mu.KotlinLogging
-import org.jdbi.v3.core.Handle
-import org.jdbi.v3.core.Jdbi
 import org.jdbi.v3.core.kotlin.mapTo
 import org.springframework.stereotype.Service
 import java.time.LocalDate
@@ -24,93 +22,85 @@ import java.util.UUID
 private val logger = KotlinLogging.logger { }
 
 @Service
-class AbsenceService(private val db: Jdbi) {
-    fun getAbsencesByMonth(groupId: UUID, year: Int, month: Int): AbsenceGroup {
+class AbsenceService {
+    fun getAbsencesByMonth(tx: Database.Read, groupId: UUID, year: Int, month: Int): AbsenceGroup {
         val startDate = LocalDate.of(year, month, 1)
         val endDate = startDate.with(lastDayOfMonth())
         val period = ClosedPeriod(startDate, endDate)
 
-        return db.handle { h ->
-            val daycare = h.getDaycare(getDaycareIdByGroup(groupId, h)) ?: throw BadRequest("Couldn't find daycare with group with id $groupId")
-            val groupName = getGroupName(groupId, h) ?: throw BadRequest("Couldn't find group with id $groupId")
-            val placementList = getPlacementsByRange(groupId, period, h)
-            val absenceList = getAbsencesByRange(groupId, period, h)
-            val backupCareList = h.getBackupCaresAffectingGroup(groupId, period)
+        val daycare = tx.handle.getDaycare(tx.getDaycareIdByGroup(groupId)) ?: throw BadRequest("Couldn't find daycare with group with id $groupId")
+        val groupName = tx.getGroupName(groupId) ?: throw BadRequest("Couldn't find group with id $groupId")
+        val placementList = tx.getPlacementsByRange(groupId, period)
+        val absenceList = tx.getAbsencesByRange(groupId, period)
+        val backupCareList = tx.getBackupCaresAffectingGroup(groupId, period)
 
-            val children = placementList
-                .map { placement ->
-                    AbsenceChild(
-                        id = placement.childId,
-                        firstName = placement.firstName,
-                        lastName = placement.lastName,
-                        dob = placement.dob,
-                        placements = composePlacementMap(
-                            period,
-                            placementList.filter { it.childId == placement.childId }
-                        ),
-                        absences = composeAbsenceMap(
-                            period,
-                            absenceList.filter { it.childId == placement.childId }
-                        ),
-                        backupCares = composeBackupCareMap(
-                            period,
-                            backupCareList.filter { it.childId == placement.childId }
-                        )
+        val children = placementList
+            .map { placement ->
+                AbsenceChild(
+                    id = placement.childId,
+                    firstName = placement.firstName,
+                    lastName = placement.lastName,
+                    dob = placement.dob,
+                    placements = composePlacementMap(
+                        period,
+                        placementList.filter { it.childId == placement.childId }
+                    ),
+                    absences = composeAbsenceMap(
+                        period,
+                        absenceList.filter { it.childId == placement.childId }
+                    ),
+                    backupCares = composeBackupCareMap(
+                        period,
+                        backupCareList.filter { it.childId == placement.childId }
                     )
-                }
-                .distinct()
-
-            AbsenceGroup(groupId, daycare.name, groupName, children, daycare.operationDays)
-        }
-    }
-
-    fun upsertAbsences(absences: List<Absence>, groupId: UUID, userId: UUID) {
-        db.handle { h ->
-            try {
-                val userName = getEmployeeNameById(userId, h)
-                upsertAbsences(absences, userName, h)
-            } catch (e: Exception) {
-                logger.error { "Error: Updating absences by user $userId failed" }
-                throw BadRequest("Error: Updating absences failed: ${e.message}")
+                )
             }
+            .distinct()
+
+        return AbsenceGroup(groupId, daycare.name, groupName, children, daycare.operationDays)
+    }
+
+    fun upsertAbsences(tx: Database.Transaction, absences: List<Absence>, groupId: UUID, userId: UUID) {
+        try {
+            val userName = tx.getEmployeeNameById(userId)
+            tx.upsertAbsences(absences, userName)
+        } catch (e: Exception) {
+            logger.error { "Error: Updating absences by user $userId failed" }
+            throw BadRequest("Error: Updating absences failed: ${e.message}")
         }
     }
 
-    fun upsertChildAbsence(childId: UUID, absenceType: AbsenceType, careType: CareType, userId: UUID) {
-        db.handle { h ->
-            try {
-                upsertChildAbsence(childId, absenceType, careType, userId, h)
-            } catch (e: Exception) {
-                logger.error { "Error: Updating absences by user $userId failed" }
-                throw BadRequest("Error: Updating absences failed: ${e.message}")
-            }
+    fun upsertChildAbsence(tx: Database.Transaction, childId: UUID, absenceType: AbsenceType, careType: CareType, userId: UUID) {
+        try {
+            tx.upsertChildAbsence(childId, absenceType, careType, userId)
+        } catch (e: Exception) {
+            logger.error { "Error: Updating absences by user $userId failed" }
+            throw BadRequest("Error: Updating absences failed: ${e.message}")
         }
     }
 
-    fun getAbscencesByChild(childId: UUID, year: Int, month: Int): AbsenceChildMinimal {
+    fun getAbscencesByChild(tx: Database.Read, childId: UUID, year: Int, month: Int): AbsenceChildMinimal {
         val startDate = LocalDate.of(year, month, 1)
         val endDate = startDate.with(lastDayOfMonth())
         val period = ClosedPeriod(startDate, endDate)
 
-        return db.handle { h ->
-            val absenceList = getAbsencesByChildByRange(childId, period, h)
-            val backupCareList = h.getBackupCaresAffectingChild(childId, period)
-            val child =
-                h.getPersonById(childId) ?: throw BadRequest("Error: Could not find child with id: $childId")
-            AbsenceChildMinimal(
-                id = child.id,
-                firstName = child.firstName ?: "",
-                lastName = child.lastName ?: "",
-                absences = composeAbsenceMap(
-                    period,
-                    absenceList
-                ),
-                backupCares = composeBackupCareMap(
-                    period,
-                    backupCareList
-                )
+        val absenceList = tx.getAbsencesByChildByRange(childId, period)
+        val backupCareList = tx.getBackupCaresAffectingChild(childId, period)
+        val child =
+            tx.handle.getPersonById(childId) ?: throw BadRequest("Error: Could not find child with id: $childId")
+        return AbsenceChildMinimal(
+            id = child.id,
+            firstName = child.firstName ?: "",
+            lastName = child.lastName ?: "",
+            absences = composeAbsenceMap(
+                period,
+                absenceList
+            ),
+            backupCares = composeBackupCareMap(
+                period,
+                backupCareList
             )
-        }
+        )
     }
 
     private fun composeAbsenceMap(
@@ -251,7 +241,7 @@ data class AbsencePlacement(
 )
 
 // database functions
-private fun upsertAbsences(absences: List<Absence>, modifiedBy: String, h: Handle) {
+private fun Database.Transaction.upsertAbsences(absences: List<Absence>, modifiedBy: String) {
     //language=SQL
     val sql =
         """
@@ -261,7 +251,7 @@ private fun upsertAbsences(absences: List<Absence>, modifiedBy: String, h: Handl
             DO UPDATE SET absence_type = :absenceType, modified_by = :modifiedBy, modified_at = now()
         """.trimIndent()
 
-    val batch = h.prepareBatch(sql)
+    val batch = prepareBatch(sql)
     for (absence in absences) {
         batch
             .bind("childId", absence.childId)
@@ -275,7 +265,7 @@ private fun upsertAbsences(absences: List<Absence>, modifiedBy: String, h: Handl
     batch.execute()
 }
 
-private fun upsertChildAbsence(childId: UUID, absenceType: AbsenceType, careType: CareType, userId: UUID, h: Handle) {
+private fun Database.Transaction.upsertChildAbsence(childId: UUID, absenceType: AbsenceType, careType: CareType, userId: UUID) {
     //language=SQL
     val sql =
         """
@@ -285,7 +275,7 @@ private fun upsertChildAbsence(childId: UUID, absenceType: AbsenceType, careType
             DO UPDATE SET absence_type = :absenceType, modified_at = now()
         """.trimIndent()
 
-    h.createUpdate(sql)
+    createUpdate(sql)
         .bind("childId", childId)
         .bind("absenceType", absenceType)
         .bind("date", LocalDate.now())
@@ -294,7 +284,7 @@ private fun upsertChildAbsence(childId: UUID, absenceType: AbsenceType, careType
         .execute()
 }
 
-fun getEmployeeNameById(employeeId: UUID, h: Handle): String {
+fun Database.Read.getEmployeeNameById(employeeId: UUID): String {
     //language=SQL
     val sql =
         """
@@ -303,13 +293,13 @@ fun getEmployeeNameById(employeeId: UUID, h: Handle): String {
         WHERE id = :employeeId
         """.trimIndent()
 
-    return h.createQuery(sql)
+    return createQuery(sql)
         .bind("employeeId", employeeId)
         .mapTo(String::class.java)
         .first()
 }
 
-fun getUserNameById(userId: UUID, h: Handle): String {
+fun Database.Read.getUserNameById(userId: UUID): String {
     //language=SQL
     val sql =
         """
@@ -318,13 +308,13 @@ fun getUserNameById(userId: UUID, h: Handle): String {
         WHERE id = :userId
         """.trimIndent()
 
-    return h.createQuery(sql)
+    return createQuery(sql)
         .bind("userId", userId)
         .mapTo(String::class.java)
         .first()
 }
 
-fun getGroupName(groupId: UUID, h: Handle): String? {
+fun Database.Read.getGroupName(groupId: UUID): String? {
     //language=SQL
     val sql =
         """
@@ -333,13 +323,13 @@ fun getGroupName(groupId: UUID, h: Handle): String? {
             WHERE id = :groupId;
         """.trimIndent()
 
-    return h.createQuery(sql)
+    return createQuery(sql)
         .bind("groupId", groupId)
         .mapTo(String::class.java)
         .firstOrNull()
 }
 
-fun getDaycareName(groupId: UUID, h: Handle): String {
+fun Database.Read.getDaycareName(groupId: UUID): String {
     //language=SQL
     val sql =
         """
@@ -349,13 +339,13 @@ fun getDaycareName(groupId: UUID, h: Handle): String {
             WHERE daycare_group.id = :groupId;
         """.trimIndent()
 
-    return h.createQuery(sql)
+    return createQuery(sql)
         .bind("groupId", groupId)
         .mapTo(String::class.java)
         .first()
 }
 
-fun getDaycareIdByGroup(groupId: UUID, h: Handle): UUID {
+fun Database.Read.getDaycareIdByGroup(groupId: UUID): UUID {
     //language=SQL
     val sql =
         """
@@ -365,13 +355,13 @@ fun getDaycareIdByGroup(groupId: UUID, h: Handle): UUID {
             WHERE daycare_group.id = :groupId;
         """.trimIndent()
 
-    return h.createQuery(sql)
+    return createQuery(sql)
         .bind("groupId", groupId)
         .mapTo<UUID>()
         .first()
 }
 
-fun getPlacementsByRange(groupId: UUID, period: ClosedPeriod, h: Handle): List<AbsencePlacement> {
+fun Database.Read.getPlacementsByRange(groupId: UUID, period: ClosedPeriod): List<AbsencePlacement> {
     //language=SQL
     val sql =
         """
@@ -401,14 +391,14 @@ fun getPlacementsByRange(groupId: UUID, period: ClosedPeriod, h: Handle): List<A
         ORDER BY person.last_name ASC, person.first_name ASC;
     """
 
-    return h.createQuery(sql)
+    return createQuery(sql)
         .bind("groupId", groupId)
         .bind("period", period)
         .mapTo<AbsencePlacement>()
         .list()
 }
 
-fun getAbsencesByRange(groupId: UUID, period: ClosedPeriod, h: Handle): List<Absence> {
+fun Database.Read.getAbsencesByRange(groupId: UUID, period: ClosedPeriod): List<Absence> {
     //language=SQL
     val sql =
         """
@@ -431,14 +421,14 @@ fun getAbsencesByRange(groupId: UUID, period: ClosedPeriod, h: Handle): List<Abs
         AND date <@ :period
         """.trimIndent()
 
-    return h.createQuery(sql)
+    return createQuery(sql)
         .bind("groupId", groupId)
         .bind("period", period)
         .mapTo<Absence>()
         .list()
 }
 
-fun getAbsencesByChildByRange(childId: UUID, period: ClosedPeriod, h: Handle): List<Absence> {
+fun Database.Read.getAbsencesByChildByRange(childId: UUID, period: ClosedPeriod): List<Absence> {
     //language=SQL
     val sql =
         """
@@ -448,14 +438,14 @@ fun getAbsencesByChildByRange(childId: UUID, period: ClosedPeriod, h: Handle): L
         AND a.child_id = :childId
         """.trimIndent()
 
-    return h.createQuery(sql)
+    return createQuery(sql)
         .bind("childId", childId)
         .bind("period", period)
         .mapTo<Absence>()
         .list()
 }
 
-private fun Handle.getBackupCaresAffectingGroup(groupId: UUID, period: ClosedPeriod): List<GroupBackupCare> =
+private fun Database.Read.getBackupCaresAffectingGroup(groupId: UUID, period: ClosedPeriod): List<GroupBackupCare> =
     createQuery(
         // language=SQL
         """
@@ -475,7 +465,7 @@ AND daterange(gp.start_date, gp.end_date, '[]') && :period
         .mapTo<GroupBackupCare>()
         .list()
 
-private fun Handle.getBackupCaresAffectingChild(childId: UUID, period: ClosedPeriod): List<GroupBackupCare> =
+private fun Database.Read.getBackupCaresAffectingChild(childId: UUID, period: ClosedPeriod): List<GroupBackupCare> =
     createQuery(
         // language=SQL
         """

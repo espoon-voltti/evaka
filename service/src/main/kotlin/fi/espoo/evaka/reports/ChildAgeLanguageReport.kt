@@ -11,10 +11,8 @@ import fi.espoo.evaka.shared.config.Roles.ADMIN
 import fi.espoo.evaka.shared.config.Roles.DIRECTOR
 import fi.espoo.evaka.shared.config.Roles.FINANCE_ADMIN
 import fi.espoo.evaka.shared.config.Roles.SERVICE_WORKER
+import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.getUUID
-import fi.espoo.evaka.shared.db.handle
-import org.jdbi.v3.core.Handle
-import org.jdbi.v3.core.Jdbi
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
@@ -24,19 +22,20 @@ import java.time.LocalDate
 import java.util.UUID
 
 @RestController
-class ChildAgeLanguageReportController(private val jdbi: Jdbi) {
+class ChildAgeLanguageReportController {
     @GetMapping("/reports/child-age-language")
     fun getChildAgeLanguageReport(
+        db: Database,
         user: AuthenticatedUser,
         @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) date: LocalDate
     ): ResponseEntity<List<ChildAgeLanguageReportRow>> {
         Audit.ChildAgeLanguageReportRead.log()
         user.requireOneOfRoles(SERVICE_WORKER, FINANCE_ADMIN, ADMIN, DIRECTOR)
-        return jdbi.handle { getChildAgeLanguageRows(it, date) }.let(::ok)
+        return db.read { it.getChildAgeLanguageRows(date) }.let(::ok)
     }
 }
 
-fun getChildAgeLanguageRows(h: Handle, date: LocalDate): List<ChildAgeLanguageReportRow> {
+private fun Database.Read.getChildAgeLanguageRows(date: LocalDate): List<ChildAgeLanguageReportRow> {
     // language=sql
     val sql =
         """
@@ -88,7 +87,7 @@ fun getChildAgeLanguageRows(h: Handle, date: LocalDate): List<ChildAgeLanguageRe
         """.trimIndent()
 
     @Suppress("UNCHECKED_CAST")
-    return h.createQuery(sql)
+    return createQuery(sql)
         .bind("target_date", date)
         .map { rs, _ ->
             ChildAgeLanguageReportRow(

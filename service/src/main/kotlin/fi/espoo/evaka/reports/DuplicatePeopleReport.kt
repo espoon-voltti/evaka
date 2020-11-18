@@ -8,10 +8,8 @@ import fi.espoo.evaka.Audit
 import fi.espoo.evaka.daycare.controllers.utils.ok
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.config.Roles
+import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.getUUID
-import fi.espoo.evaka.shared.db.handle
-import org.jdbi.v3.core.Handle
-import org.jdbi.v3.core.Jdbi
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RestController
@@ -19,16 +17,16 @@ import java.time.LocalDate
 import java.util.UUID
 
 @RestController
-class DuplicatePeopleReportController(private val jdbi: Jdbi) {
+class DuplicatePeopleReportController {
     @GetMapping("/reports/duplicate-people")
-    fun getDuplicatePeopleReport(user: AuthenticatedUser): ResponseEntity<List<DuplicatePeopleReportRow>> {
+    fun getDuplicatePeopleReport(db: Database, user: AuthenticatedUser): ResponseEntity<List<DuplicatePeopleReportRow>> {
         Audit.DuplicatePeopleReportRead.log()
         user.requireOneOfRoles(Roles.ADMIN)
-        return jdbi.handle { getDuplicatePeople(it) }.let(::ok)
+        return db.read { it.getDuplicatePeople() }.let(::ok)
     }
 }
 
-fun getDuplicatePeople(h: Handle): List<DuplicatePeopleReportRow> {
+private fun Database.Read.getDuplicatePeople(): List<DuplicatePeopleReportRow> {
     // language=sql
     val sql =
         """
@@ -88,7 +86,7 @@ fun getDuplicatePeople(h: Handle): List<DuplicatePeopleReportRow> {
         ORDER BY key, social_security_number, p.id;
         """.trimIndent()
 
-    return h.createQuery(sql).map { rs, _ ->
+    return createQuery(sql).map { rs, _ ->
         DuplicatePeopleReportRow(
             groupIndex = rs.getInt("group_index"),
             duplicateNumber = rs.getInt("duplicate_number"),

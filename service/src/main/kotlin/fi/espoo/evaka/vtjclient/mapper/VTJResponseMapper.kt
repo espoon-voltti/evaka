@@ -10,7 +10,6 @@ import fi.espoo.evaka.vtjclient.soap.ObjectFactory
 import fi.espoo.evaka.vtjclient.soap.VTJHenkiloVastaussanoma
 import mu.KotlinLogging
 import org.springframework.stereotype.Service
-import java.lang.RuntimeException
 import javax.xml.bind.JAXBElement
 
 private val logger = KotlinLogging.logger {}

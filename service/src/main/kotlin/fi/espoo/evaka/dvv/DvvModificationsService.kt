@@ -13,8 +13,6 @@ import fi.espoo.evaka.pis.updatePersonFromVtj
 import fi.espoo.evaka.shared.async.VTJRefresh
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.db.handle
-import fi.espoo.evaka.shared.db.transaction
 import mu.KotlinLogging
 import org.springframework.stereotype.Service
 import java.time.LocalDate

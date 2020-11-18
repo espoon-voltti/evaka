@@ -14,9 +14,7 @@ import fi.espoo.evaka.shared.auth.UserRole.UNIT_SUPERVISOR
 import fi.espoo.evaka.shared.auth.deleteDaycareAclRow
 import fi.espoo.evaka.shared.auth.getDaycareAclRows
 import fi.espoo.evaka.shared.auth.insertDaycareAclRow
-import fi.espoo.evaka.shared.db.handle
-import fi.espoo.evaka.shared.db.transaction
-import org.jdbi.v3.core.Jdbi
+import fi.espoo.evaka.shared.db.Database
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -26,21 +24,23 @@ import org.springframework.web.bind.annotation.RestController
 import java.util.UUID
 
 @RestController
-class UnitAclController(private val acl: AccessControlList, private val jdbi: Jdbi) {
+class UnitAclController(private val acl: AccessControlList) {
     @GetMapping("/daycares/{daycareId}/acl")
     fun getAcl(
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable daycareId: UUID
     ): ResponseEntity<DaycareAclResponse> {
         Audit.UnitAclRead.log()
         acl.getRolesForUnit(user, daycareId)
             .requireOneOfRoles(ADMIN, UNIT_SUPERVISOR)
-        val acls = jdbi.handle { it.getDaycareAclRows(daycareId) }
+        val acls = db.read { it.handle.getDaycareAclRows(daycareId) }
         return ResponseEntity.ok(DaycareAclResponse(acls))
     }
 
     @PutMapping("/daycares/{daycareId}/supervisors/{employeeId}")
     fun insertUnitSupervisor(
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable daycareId: UUID,
         @PathVariable employeeId: UUID
@@ -48,12 +48,13 @@ class UnitAclController(private val acl: AccessControlList, private val jdbi: Jd
         Audit.UnitAclCreate.log(targetId = daycareId, objectId = employeeId)
         acl.getRolesForUnit(user, daycareId)
             .requireOneOfRoles(ADMIN)
-        jdbi.transaction { it.insertDaycareAclRow(daycareId, employeeId, UNIT_SUPERVISOR) }
+        db.transaction { it.handle.insertDaycareAclRow(daycareId, employeeId, UNIT_SUPERVISOR) }
         return ResponseEntity.noContent().build()
     }
 
     @DeleteMapping("/daycares/{daycareId}/supervisors/{employeeId}")
     fun deleteUnitSupervisor(
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable daycareId: UUID,
         @PathVariable employeeId: UUID
@@ -62,12 +63,13 @@ class UnitAclController(private val acl: AccessControlList, private val jdbi: Jd
         acl.getRolesForUnit(user, daycareId)
             .requireOneOfRoles(ADMIN)
 
-        jdbi.transaction { it.deleteDaycareAclRow(daycareId, employeeId, UNIT_SUPERVISOR) }
+        db.transaction { it.handle.deleteDaycareAclRow(daycareId, employeeId, UNIT_SUPERVISOR) }
         return ResponseEntity.noContent().build()
     }
 
     @PutMapping("/daycares/{daycareId}/staff/{employeeId}")
     fun insertStaff(
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable daycareId: UUID,
         @PathVariable employeeId: UUID
@@ -75,12 +77,13 @@ class UnitAclController(private val acl: AccessControlList, private val jdbi: Jd
         Audit.UnitAclCreate.log(targetId = daycareId, objectId = employeeId)
         acl.getRolesForUnit(user, daycareId)
             .requireOneOfRoles(ADMIN, UNIT_SUPERVISOR)
-        jdbi.transaction { it.insertDaycareAclRow(daycareId, employeeId, STAFF) }
+        db.transaction { it.handle.insertDaycareAclRow(daycareId, employeeId, STAFF) }
         return ResponseEntity.noContent().build()
     }
 
     @DeleteMapping("/daycares/{daycareId}/staff/{employeeId}")
     fun deleteStaff(
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable daycareId: UUID,
         @PathVariable employeeId: UUID
@@ -89,7 +92,7 @@ class UnitAclController(private val acl: AccessControlList, private val jdbi: Jd
         acl.getRolesForUnit(user, daycareId)
             .requireOneOfRoles(ADMIN, UNIT_SUPERVISOR)
 
-        jdbi.transaction { it.deleteDaycareAclRow(daycareId, employeeId, STAFF) }
+        db.transaction { it.handle.deleteDaycareAclRow(daycareId, employeeId, STAFF) }
         return ResponseEntity.noContent().build()
     }
 }

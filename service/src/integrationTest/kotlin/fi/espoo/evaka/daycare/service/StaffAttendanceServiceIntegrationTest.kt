@@ -14,7 +14,6 @@ import fi.espoo.evaka.shared.dev.insertTestCareArea
 import fi.espoo.evaka.shared.dev.insertTestDaycare
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
 import fi.espoo.evaka.shared.domain.BadRequest
-import org.jdbi.v3.core.Jdbi
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
@@ -26,9 +25,6 @@ import java.util.UUID
 
 class StaffAttendanceServiceIntegrationTest : AbstractIntegrationTest() {
     @Autowired
-    lateinit var db: Jdbi
-
-    @Autowired
     lateinit var staffAttendanceService: StaffAttendanceService
 
     val areaId = UUID.randomUUID()
@@ -36,11 +32,6 @@ class StaffAttendanceServiceIntegrationTest : AbstractIntegrationTest() {
     val groupId = UUID.randomUUID()
     val groupName = "Testiryhmä"
     val groupStartDate = LocalDate.of(2019, 1, 1)
-
-    @BeforeEach
-    private fun beforeEach() {
-        insertDaycareGroup()
-    }
 
     @AfterEach
     private fun afterEach() {
@@ -50,7 +41,7 @@ class StaffAttendanceServiceIntegrationTest : AbstractIntegrationTest() {
     @Test
     fun `get attendances for every day of month`() {
         val result =
-            staffAttendanceService.getAttendancesByMonth(groupStartDate.year, groupStartDate.monthValue, groupId)
+            staffAttendanceService.getAttendancesByMonth(db, groupStartDate.year, groupStartDate.monthValue, groupId)
 
         assertEquals(result.groupId, groupId)
         assertEquals(result.groupName, groupName)
@@ -61,7 +52,7 @@ class StaffAttendanceServiceIntegrationTest : AbstractIntegrationTest() {
     fun `attendances are composed correctly`() {
         val attendanceDate = groupStartDate
         val result =
-            staffAttendanceService.getAttendancesByMonth(attendanceDate.year, attendanceDate.monthValue, groupId)
+            staffAttendanceService.getAttendancesByMonth(db, attendanceDate.year, attendanceDate.monthValue, groupId)
 
         assertEquals(result.groupId, groupId)
         assertEquals(result.groupName, groupName)
@@ -78,10 +69,10 @@ class StaffAttendanceServiceIntegrationTest : AbstractIntegrationTest() {
     @Test
     fun `create attendance`() {
         val attendanceDate = groupStartDate
-        staffAttendanceService.upsertStaffAttendance(StaffAttendance(groupId, attendanceDate, 1.0))
+        staffAttendanceService.upsertStaffAttendance(db, StaffAttendance(groupId, attendanceDate, 1.0))
 
         val result =
-            staffAttendanceService.getAttendancesByMonth(attendanceDate.year, attendanceDate.monthValue, groupId)
+            staffAttendanceService.getAttendancesByMonth(db, attendanceDate.year, attendanceDate.monthValue, groupId)
 
         assertEquals(result.attendances.size, attendanceDate.month.length(false))
         assertEquals(result.attendances[attendanceDate]?.count, 1.0)
@@ -90,14 +81,14 @@ class StaffAttendanceServiceIntegrationTest : AbstractIntegrationTest() {
     @Test
     fun `modify attendance`() {
         val attendanceDate = groupStartDate
-        staffAttendanceService.upsertStaffAttendance(StaffAttendance(groupId, attendanceDate, 1.0))
+        staffAttendanceService.upsertStaffAttendance(db, StaffAttendance(groupId, attendanceDate, 1.0))
 
         var result =
-            staffAttendanceService.getAttendancesByMonth(attendanceDate.year, attendanceDate.monthValue, groupId)
+            staffAttendanceService.getAttendancesByMonth(db, attendanceDate.year, attendanceDate.monthValue, groupId)
         assertEquals(result.attendances[attendanceDate]?.count, 1.0)
 
-        staffAttendanceService.upsertStaffAttendance(StaffAttendance(groupId, attendanceDate, 2.5))
-        result = staffAttendanceService.getAttendancesByMonth(attendanceDate.year, attendanceDate.monthValue, groupId)
+        staffAttendanceService.upsertStaffAttendance(db, StaffAttendance(groupId, attendanceDate, 2.5))
+        result = staffAttendanceService.getAttendancesByMonth(db, attendanceDate.year, attendanceDate.monthValue, groupId)
         assertEquals(result.attendances[attendanceDate]?.count, 2.5)
     }
 
@@ -105,15 +96,16 @@ class StaffAttendanceServiceIntegrationTest : AbstractIntegrationTest() {
     fun `create attendance for a date when group is not operating`() {
         val attendanceDate = groupStartDate.minusDays(1)
         assertThrows<BadRequest> {
-            staffAttendanceService.upsertStaffAttendance(StaffAttendance(groupId, attendanceDate, 1.0))
+            staffAttendanceService.upsertStaffAttendance(db, StaffAttendance(groupId, attendanceDate, 1.0))
         }
 
         val result =
-            staffAttendanceService.getAttendancesByMonth(attendanceDate.year, attendanceDate.monthValue, groupId)
+            staffAttendanceService.getAttendancesByMonth(db, attendanceDate.year, attendanceDate.monthValue, groupId)
         assertEquals(result.attendances[attendanceDate]?.count, null)
     }
 
-    private fun insertDaycareGroup() {
+    @BeforeEach
+    protected fun insertDaycareGroup() {
         jdbi.transaction {
             it.insertTestCareArea(DevCareArea(id = areaId))
             it.insertTestDaycare(DevDaycare(areaId = areaId, id = daycareId))

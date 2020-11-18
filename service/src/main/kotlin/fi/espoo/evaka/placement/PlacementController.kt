@@ -20,10 +20,9 @@ import fi.espoo.evaka.shared.config.Roles.FINANCE_ADMIN
 import fi.espoo.evaka.shared.config.Roles.SERVICE_WORKER
 import fi.espoo.evaka.shared.config.Roles.STAFF
 import fi.espoo.evaka.shared.config.Roles.UNIT_SUPERVISOR
-import fi.espoo.evaka.shared.db.handle
-import fi.espoo.evaka.shared.db.transaction
+import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
-import org.jdbi.v3.core.Jdbi
+import fi.espoo.evaka.shared.domain.NotFound
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller
@@ -44,11 +43,11 @@ import java.util.UUID
 class PlacementController(
     private val acl: AccessControlList,
     private val placementService: PlacementService,
-    private val asyncJobRunner: AsyncJobRunner,
-    private val jdbi: Jdbi
+    private val asyncJobRunner: AsyncJobRunner
 ) {
     @GetMapping
     fun getPlacements(
+        db: Database.Connection,
         user: AuthenticatedUser,
         @RequestParam(value = "daycareId", required = false) daycareId: UUID? = null,
         @RequestParam(value = "childId", required = false) childId: UUID? = null,
@@ -72,8 +71,8 @@ class PlacementController(
         val auth = acl.getAuthorizedDaycares(user)
         val authorizedDaycares = auth.ids ?: emptySet()
 
-        return jdbi.handle {
-            getDaycarePlacements(it, daycareId, childId, startDate, endDate).map { placement ->
+        return db.read {
+            it.getDaycarePlacements(daycareId, childId, startDate, endDate).map { placement ->
                 if (auth !is AclAuthorization.All && !authorizedDaycares.contains(placement.daycare.id))
                     placement.copy(isRestrictedFromUser = true)
                 else placement
@@ -83,6 +82,7 @@ class PlacementController(
 
     @GetMapping("/plans")
     fun getPlacementPlans(
+        db: Database.Connection,
         user: AuthenticatedUser,
         @RequestParam(value = "daycareId", required = true) daycareId: UUID,
         @RequestParam(
@@ -95,11 +95,12 @@ class PlacementController(
         acl.getRolesForUnit(user, daycareId)
             .requireOneOfRoles(SERVICE_WORKER, FINANCE_ADMIN, UNIT_SUPERVISOR)
 
-        return jdbi.handle { getPlacementPlans(it, daycareId, startDate, endDate) }.let(::ok)
+        return db.read { getPlacementPlans(it.handle, daycareId, startDate, endDate) }.let(::ok)
     }
 
     @PostMapping
     fun createPlacement(
+        db: Database.Connection,
         user: AuthenticatedUser,
         @RequestBody body: PlacementCreateRequestBody
     ): ResponseEntity<Placement> {
@@ -109,9 +110,9 @@ class PlacementController(
 
         if (body.startDate > body.endDate) throw BadRequest("Placement start date cannot be after the end date")
 
-        val placement = jdbi.transaction { h ->
-            if (h.getChild(body.childId) == null) {
-                h.createChild(
+        val placement = db.transaction { tx ->
+            if (tx.handle.getChild(body.childId) == null) {
+                tx.handle.createChild(
                     Child(
                         id = body.childId,
                         additionalInformation = AdditionalInformation()
@@ -120,14 +121,14 @@ class PlacementController(
             }
 
             val placement = placementService.createPlacement(
-                h = h,
+                tx,
                 type = body.type,
                 childId = body.childId,
                 unitId = body.unitId,
                 startDate = body.startDate,
                 endDate = body.endDate
             )
-            asyncJobRunner.plan(h, listOf(NotifyPlacementPlanApplied(body.childId, body.startDate, body.endDate)))
+            asyncJobRunner.plan(tx, listOf(NotifyPlacementPlanApplied(body.childId, body.startDate, body.endDate)))
             placement
         }
 
@@ -137,6 +138,7 @@ class PlacementController(
 
     @PutMapping("/{placementId}")
     fun updatePlacementById(
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable("placementId") placementId: UUID,
         @RequestBody body: PlacementUpdateRequestBody
@@ -146,10 +148,10 @@ class PlacementController(
             .requireOneOfRoles(SERVICE_WORKER, UNIT_SUPERVISOR)
 
         val aclAuth = acl.getAuthorizedDaycares(user)
-        jdbi.transaction { h ->
-            val oldPlacement = updatePlacement(h, placementId, body.startDate, body.endDate, aclAuth)
+        db.transaction { tx ->
+            val oldPlacement = tx.updatePlacement(placementId, body.startDate, body.endDate, aclAuth)
             asyncJobRunner.plan(
-                h,
+                tx,
                 listOf(
                     NotifyPlacementPlanApplied(
                         oldPlacement.childId,
@@ -166,6 +168,7 @@ class PlacementController(
 
     @DeleteMapping("/{placementId}")
     fun deletePlacement(
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable("placementId") placementId: UUID
     ): ResponseEntity<Unit> {
@@ -173,9 +176,9 @@ class PlacementController(
         acl.getRolesForPlacement(user, placementId)
             .requireOneOfRoles(SERVICE_WORKER, UNIT_SUPERVISOR)
 
-        jdbi.transaction { h ->
-            val (childId, startDate, endDate) = h.cancelPlacement(placementId)
-            asyncJobRunner.plan(h, listOf(NotifyPlacementPlanApplied(childId, startDate, endDate)))
+        db.transaction { tx ->
+            val (childId, startDate, endDate) = tx.handle.cancelPlacement(placementId)
+            asyncJobRunner.plan(tx, listOf(NotifyPlacementPlanApplied(childId, startDate, endDate)))
         }
 
         asyncJobRunner.scheduleImmediateRun()
@@ -184,6 +187,7 @@ class PlacementController(
 
     @PostMapping("/{placementId}/group-placements")
     fun createGroupPlacement(
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable("placementId") placementId: UUID,
         @RequestBody body: GroupPlacementRequestBody
@@ -192,9 +196,8 @@ class PlacementController(
         acl.getRolesForPlacement(user, placementId)
             .requireOneOfRoles(SERVICE_WORKER, UNIT_SUPERVISOR)
 
-        return jdbi.transaction { h ->
-            createGroupPlacement(
-                h = h,
+        return db.transaction { tx ->
+            tx.createGroupPlacement(
                 daycarePlacementId = placementId,
                 groupId = body.groupId,
                 startDate = body.startDate,
@@ -207,6 +210,7 @@ class PlacementController(
 
     @DeleteMapping("/{daycarePlacementId}/group-placements/{groupPlacementId}")
     fun deleteGroupPlacement(
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable("daycarePlacementId") daycarePlacementId: UUID,
         @PathVariable("groupPlacementId") groupPlacementId: UUID
@@ -215,13 +219,14 @@ class PlacementController(
         acl.getRolesForPlacement(user, daycarePlacementId)
             .requireOneOfRoles(SERVICE_WORKER, UNIT_SUPERVISOR)
 
-        return jdbi.transaction {
-            deleteGroupPlacement(it, groupPlacementId).let(::noContent)
-        }
+        val success = db.transaction { it.handle.deleteGroupPlacement(groupPlacementId) }
+        if (!success) throw NotFound("Group placement not found")
+        return noContent()
     }
 
     @PostMapping("/{daycarePlacementId}/group-placements/{groupPlacementId}/transfer")
     fun transferGroupPlacement(
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable("daycarePlacementId") daycarePlacementId: UUID,
         @PathVariable("groupPlacementId") groupPlacementId: UUID,
@@ -231,8 +236,8 @@ class PlacementController(
         acl.getRolesForPlacement(user, daycarePlacementId)
             .requireOneOfRoles(SERVICE_WORKER, UNIT_SUPERVISOR)
 
-        return jdbi.transaction {
-            transferGroup(it, daycarePlacementId, groupPlacementId, body.groupId, body.startDate).let(::noContent)
+        return db.transaction {
+            it.transferGroup(daycarePlacementId, groupPlacementId, body.groupId, body.startDate).let(::noContent)
         }
     }
 }

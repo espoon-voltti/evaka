@@ -53,7 +53,7 @@ class PartnershipsControllerIntegrationTest : AbstractIntegrationTest() {
         val startDate = LocalDate.now()
         val endDate = startDate.plusDays(200)
         val reqBody = PartnershipsController.PartnershipRequest(setOf(adult1.id, adult2.id), startDate, endDate)
-        val createResponse = controller.createPartnership(user, reqBody)
+        val createResponse = controller.createPartnership(db, user, reqBody)
         assertEquals(HttpStatus.CREATED, createResponse.statusCode)
         with(createResponse.body!!) {
             assertNotNull(this.id)
@@ -62,7 +62,7 @@ class PartnershipsControllerIntegrationTest : AbstractIntegrationTest() {
             assertEquals(setOf(adult1, adult2), this.partners)
         }
 
-        val getResponse = controller.getPartnerships(user, adult1.id)
+        val getResponse = controller.getPartnerships(db, user, adult1.id)
         assertEquals(HttpStatus.OK, getResponse.statusCode)
         assertEquals(1, getResponse.body?.size ?: 0)
         with(getResponse.body!!.first()) {
@@ -95,7 +95,7 @@ class PartnershipsControllerIntegrationTest : AbstractIntegrationTest() {
         h.createPartnership(adult1.id, adult2.id, LocalDate.now().plusDays(200), LocalDate.now().plusDays(300))
         assertEquals(2, h.getPartnershipsForPerson(adult1.id).size)
 
-        val delResponse = controller.deletePartnership(user, partnership1.id)
+        val delResponse = controller.deletePartnership(db, user, partnership1.id)
         assertEquals(HttpStatus.NO_CONTENT, delResponse.statusCode)
         assertEquals(1, h.getPartnershipsForPerson(adult1.id).size)
     }
@@ -124,7 +124,7 @@ class PartnershipsControllerIntegrationTest : AbstractIntegrationTest() {
         val newStartDate = LocalDate.now().plusDays(100)
         val newEndDate = LocalDate.now().plusDays(300)
         val requestBody = PartnershipsController.PartnershipUpdateRequest(newStartDate, newEndDate)
-        val updateResponse = controller.updatePartnership(user, partnership1.id, requestBody)
+        val updateResponse = controller.updatePartnership(db, user, partnership1.id, requestBody)
         assertEquals(HttpStatus.OK, updateResponse.statusCode)
         with(updateResponse.body!!) {
             assertEquals(partnership1.id, this.id)
@@ -134,7 +134,7 @@ class PartnershipsControllerIntegrationTest : AbstractIntegrationTest() {
         }
 
         // partnership1 should have new dates
-        val fetched1 = controller.getPartnership(user, partnership1.id).body!!
+        val fetched1 = controller.getPartnership(db, user, partnership1.id).body!!
         assertEquals(newStartDate, fetched1.startDate)
         assertEquals(newEndDate, fetched1.endDate)
     }
@@ -151,7 +151,7 @@ class PartnershipsControllerIntegrationTest : AbstractIntegrationTest() {
         val newEndDate = LocalDate.now().plusDays(600)
         val requestBody = PartnershipsController.PartnershipUpdateRequest(newStartDate, newEndDate)
         assertThrows<Conflict> {
-            controller.updatePartnership(user, partnership1.id, requestBody)
+            controller.updatePartnership(db, user, partnership1.id, requestBody)
         }
     }
 
@@ -163,7 +163,7 @@ class PartnershipsControllerIntegrationTest : AbstractIntegrationTest() {
         h.createPartnership(adult1.id, adult2.id, LocalDate.now(), LocalDate.now().plusDays(200))
 
         assertThrows<Forbidden> {
-            controller.getPartnerships(user, adult1.id)
+            controller.getPartnerships(db, user, adult1.id)
         }
     }
 
@@ -177,7 +177,7 @@ class PartnershipsControllerIntegrationTest : AbstractIntegrationTest() {
         val reqBody = PartnershipsController.PartnershipRequest(setOf(adult1.id, adult2.id), startDate, endDate)
 
         assertThrows<Forbidden> {
-            controller.createPartnership(user, reqBody)
+            controller.createPartnership(db, user, reqBody)
         }
     }
 
@@ -190,7 +190,7 @@ class PartnershipsControllerIntegrationTest : AbstractIntegrationTest() {
 
         val requestBody = PartnershipsController.PartnershipUpdateRequest(LocalDate.now(), LocalDate.now().plusDays(999))
         assertThrows<Forbidden> {
-            controller.updatePartnership(user, partnership.id, requestBody)
+            controller.updatePartnership(db, user, partnership.id, requestBody)
         }
     }
 
@@ -200,7 +200,7 @@ class PartnershipsControllerIntegrationTest : AbstractIntegrationTest() {
         val partnership = h.createPartnership(testPerson1().id, testPerson2().id, LocalDate.now(), LocalDate.now().plusDays(200))
 
         assertThrows<Forbidden> {
-            controller.deletePartnership(user, partnership.id)
+            controller.deletePartnership(db, user, partnership.id)
         }
     }
 

@@ -11,12 +11,12 @@ import fi.espoo.evaka.shared.config.defaultObjectMapper
 import fi.espoo.evaka.shared.config.getTestDataSource
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.configureJdbi
-import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.varda.integration.VardaClient
 import fi.espoo.evaka.varda.integration.VardaTempTokenProvider
 import fi.espoo.evaka.varda.integration.VardaTokenProvider
 import fi.espoo.evaka.vtjclient.VtjIntegrationTestConfig
 import org.jdbi.v3.core.Jdbi
+import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.TestInstance
 import org.springframework.beans.factory.annotation.Autowired
@@ -39,7 +39,6 @@ abstract class FullApplicationTest {
     protected val objectMapper: ObjectMapper = defaultObjectMapper()
 
     protected lateinit var jdbi: Jdbi
-    protected lateinit var db: Database
 
     @Autowired
     protected lateinit var http: FuelManager
@@ -53,17 +52,26 @@ abstract class FullApplicationTest {
     protected lateinit var feeDecisionMinDate: LocalDate
     protected lateinit var vardaOrganizerName: String
 
+    protected lateinit var db: Database.Connection
+
+    protected fun dbInstance(): Database = Database(jdbi)
+
     @BeforeAll
     protected fun beforeAll() {
         assert(httpPort > 0)
         http.basePath = "http://localhost:$httpPort/"
         jdbi = configureJdbi(Jdbi.create(getTestDataSource()))
-        db = Database(jdbi)
-        jdbi.handle(::resetDatabase)
+        db = Database(jdbi).connect()
+        db.transaction { it.resetDatabase() }
         feeDecisionMinDate = LocalDate.parse(env.getRequiredProperty("fee_decision_min_date"))
         val vardaBaseUrl = "http://localhost:$httpPort/mock-integration/varda/api"
         vardaTokenProvider = VardaTempTokenProvider(env, objectMapper, vardaBaseUrl)
         vardaClient = VardaClient(vardaTokenProvider, http, env, objectMapper, vardaBaseUrl)
         vardaOrganizerName = env.getProperty("fi.espoo.varda.organizer", "Espoo")
+    }
+
+    @AfterAll
+    protected fun afterAll() {
+        db.close()
     }
 }

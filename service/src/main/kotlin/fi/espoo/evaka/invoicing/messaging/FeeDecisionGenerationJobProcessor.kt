@@ -12,10 +12,8 @@ import fi.espoo.evaka.shared.async.NotifyIncomeUpdated
 import fi.espoo.evaka.shared.async.NotifyPlacementPlanApplied
 import fi.espoo.evaka.shared.async.NotifyServiceNeedUpdated
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.db.transaction
 import fi.espoo.evaka.shared.domain.Period
 import mu.KotlinLogging
-import org.jdbi.v3.core.Jdbi
 import org.springframework.stereotype.Component
 
 private val logger = KotlinLogging.logger {}
@@ -23,7 +21,6 @@ private val logger = KotlinLogging.logger {}
 @Component
 class FeeDecisionGenerationJobProcessor(
     private val generator: DecisionGenerator,
-    private val jdbi: Jdbi,
     asyncJobRunner: AsyncJobRunner
 ) {
     init {
@@ -34,28 +31,28 @@ class FeeDecisionGenerationJobProcessor(
         asyncJobRunner.notifyServiceNeedUpdated = ::runJob
     }
 
-    fun runJob(db: Database, msg: NotifyFamilyUpdated) = jdbi.transaction { h ->
+    fun runJob(db: Database, msg: NotifyFamilyUpdated) = db.transaction { tx ->
         logger.info { "Handling family updated event for person (id: ${msg.adultId})" }
-        generator.handleFamilyUpdate(h, msg.adultId, Period(msg.startDate, msg.endDate))
+        generator.handleFamilyUpdate(tx.handle, msg.adultId, Period(msg.startDate, msg.endDate))
     }
 
-    fun runJob(db: Database, msg: NotifyFeeAlterationUpdated) = jdbi.transaction { h ->
+    fun runJob(db: Database, msg: NotifyFeeAlterationUpdated) = db.transaction { tx ->
         logger.info { "Handling fee alteration updated event ($msg)" }
-        generator.handleFeeAlterationChange(h, msg.personId, Period(msg.startDate, msg.endDate))
+        generator.handleFeeAlterationChange(tx.handle, msg.personId, Period(msg.startDate, msg.endDate))
     }
 
-    fun runJob(db: Database, msg: NotifyIncomeUpdated) = jdbi.transaction { h ->
+    fun runJob(db: Database, msg: NotifyIncomeUpdated) = db.transaction { tx ->
         logger.info { "Handling income updated event ($msg)" }
-        generator.handleIncomeChange(h, msg.personId, Period(msg.startDate, msg.endDate))
+        generator.handleIncomeChange(tx.handle, msg.personId, Period(msg.startDate, msg.endDate))
     }
 
-    fun runJob(db: Database, msg: NotifyPlacementPlanApplied) = jdbi.transaction { h ->
+    fun runJob(db: Database, msg: NotifyPlacementPlanApplied) = db.transaction { tx ->
         logger.info { "Handling placement plan accepted event ($msg)" }
-        generator.handlePlacement(h, msg.childId, Period(msg.startDate, msg.endDate))
+        generator.handlePlacement(tx.handle, msg.childId, Period(msg.startDate, msg.endDate))
     }
 
-    fun runJob(db: Database, msg: NotifyServiceNeedUpdated) = jdbi.transaction { h ->
+    fun runJob(db: Database, msg: NotifyServiceNeedUpdated) = db.transaction { tx ->
         logger.info { "Handling service need updated event for child (id: ${msg.childId})" }
-        generator.handleServiceNeed(h, msg.childId, Period(msg.startDate, msg.endDate))
+        generator.handleServiceNeed(tx.handle, msg.childId, Period(msg.startDate, msg.endDate))
     }
 }

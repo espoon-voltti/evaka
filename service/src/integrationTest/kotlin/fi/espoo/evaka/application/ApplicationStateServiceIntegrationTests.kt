@@ -37,7 +37,6 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.config.Roles
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insertTestApplication
 import fi.espoo.evaka.shared.dev.insertTestApplicationForm
@@ -96,73 +95,91 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
     @BeforeEach
     private fun beforeEach() {
         MockEvakaMessageClient.clearMessages()
-        jdbi.handle { h ->
-            resetDatabase(h)
-            insertGeneralTestFixtures(h)
+        db.transaction { tx ->
+            tx.resetDatabase()
+            insertGeneralTestFixtures(tx.handle)
         }
     }
 
     @Test
-    fun `sendApplication - preschool has due date same as sent date`() = jdbi.handle { h ->
-        // given
-        insertDraftApplication(h, appliedType = PlacementType.PRESCHOOL)
+    fun `sendApplication - preschool has due date same as sent date`() {
+        db.transaction { tx ->
+            // given
+            insertDraftApplication(tx.handle, appliedType = PlacementType.PRESCHOOL)
+        }
 
-        // when
-        service.sendApplication(h, serviceWorker, applicationId)
+        db.transaction { tx ->
+            // when
+            service.sendApplication(tx, serviceWorker, applicationId)
+        }
 
-        // then
-        val application = fetchApplicationDetails(h, applicationId)!!
-        assertEquals(ApplicationStatus.SENT, application.status)
-        assertEquals(LocalDate.now(), application.sentDate)
-        assertEquals(LocalDate.now(), application.dueDate)
+        db.read {
+            // then
+            val application = fetchApplicationDetails(it.handle, applicationId)!!
+            assertEquals(ApplicationStatus.SENT, application.status)
+            assertEquals(LocalDate.now(), application.sentDate)
+            assertEquals(LocalDate.now(), application.dueDate)
+        }
     }
 
     @Test
-    fun `sendApplication - daycare has due date after 4 months if not urgent`() = jdbi.handle { h ->
-        // given
-        insertDraftApplication(h, appliedType = PlacementType.DAYCARE, urgent = false)
-
-        // when
-        service.sendApplication(h, serviceWorker, applicationId)
-
-        // then
-        val application = fetchApplicationDetails(h, applicationId)!!
-        assertEquals(LocalDate.now().plusMonths(4), application.dueDate)
+    fun `sendApplication - daycare has due date after 4 months if not urgent`() {
+        db.transaction { tx ->
+            // given
+            insertDraftApplication(tx.handle, appliedType = PlacementType.DAYCARE, urgent = false)
+        }
+        db.transaction { tx ->
+            // when
+            service.sendApplication(tx, serviceWorker, applicationId)
+        }
+        db.read {
+            // then
+            val application = fetchApplicationDetails(it.handle, applicationId)!!
+            assertEquals(LocalDate.now().plusMonths(4), application.dueDate)
+        }
     }
 
     @Test
-    fun `sendApplication - daycare has due date after 2 weeks if urgent`() = jdbi.handle { h ->
-        // given
-        insertDraftApplication(h, appliedType = PlacementType.DAYCARE, urgent = true)
-
-        // when
-        service.sendApplication(h, serviceWorker, applicationId)
-
-        // then
-        val application = fetchApplicationDetails(h, applicationId)!!
-        assertEquals(LocalDate.now().plusWeeks(2), application.dueDate)
+    fun `sendApplication - daycare has due date after 2 weeks if urgent`() {
+        db.transaction { tx ->
+            // given
+            insertDraftApplication(tx.handle, appliedType = PlacementType.DAYCARE, urgent = true)
+        }
+        db.transaction { tx ->
+            // when
+            service.sendApplication(tx, serviceWorker, applicationId)
+        }
+        db.read {
+            // then
+            val application = fetchApplicationDetails(it.handle, applicationId)!!
+            assertEquals(LocalDate.now().plusWeeks(2), application.dueDate)
+        }
     }
 
     @Test
-    fun `sendApplication - daycare has not due date if a transfer application`() = jdbi.handle { h ->
-        // given
-        val draft = insertDraftApplication(h, appliedType = PlacementType.DAYCARE, urgent = false)
-        h.insertTestPlacement(
-            DevPlacement(
-                childId = draft.childId,
-                unitId = testDaycare2.id,
-                startDate = draft.form.preferences.preferredStartDate!!,
-                endDate = draft.form.preferences.preferredStartDate!!.plusYears(1)
+    fun `sendApplication - daycare has not due date if a transfer application`() {
+        db.transaction { tx ->
+            // given
+            val draft = insertDraftApplication(tx.handle, appliedType = PlacementType.DAYCARE, urgent = false)
+            tx.handle.insertTestPlacement(
+                DevPlacement(
+                    childId = draft.childId,
+                    unitId = testDaycare2.id,
+                    startDate = draft.form.preferences.preferredStartDate!!,
+                    endDate = draft.form.preferences.preferredStartDate!!.plusYears(1)
+                )
             )
-        )
-
-        // when
-        service.sendApplication(h, serviceWorker, applicationId)
-
-        // then
-        val application = fetchApplicationDetails(h, applicationId)!!
-        assertEquals(true, application.transferApplication)
-        assertEquals(null, application.dueDate)
+        }
+        db.transaction { tx ->
+            // when
+            service.sendApplication(tx, serviceWorker, applicationId)
+        }
+        db.read {
+            // then
+            val application = fetchApplicationDetails(it.handle, applicationId)!!
+            assertEquals(true, application.transferApplication)
+            assertEquals(null, application.dueDate)
+        }
     }
 
     @Test
@@ -170,7 +187,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
         db.transaction { tx ->
             // given
             insertDraftApplication(tx.handle, hasAdditionalInfo = false)
-            service.sendApplication(tx.handle, serviceWorker, applicationId)
+            service.sendApplication(tx, serviceWorker, applicationId)
         }
         db.transaction { tx ->
             // when
@@ -189,7 +206,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
         db.transaction { tx ->
             // given
             insertDraftApplication(tx.handle, hasAdditionalInfo = true)
-            service.sendApplication(tx.handle, serviceWorker, applicationId)
+            service.sendApplication(tx, serviceWorker, applicationId)
         }
         db.transaction { tx ->
             // when
@@ -207,7 +224,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
         db.transaction { tx ->
             // given
             insertDraftApplication(tx.handle, guardian = testAdult_5, maxFeeAccepted = true)
-            service.sendApplication(tx.handle, serviceWorker, applicationId)
+            service.sendApplication(tx, serviceWorker, applicationId)
         }
         db.transaction { tx ->
             // when
@@ -240,7 +257,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
             )
             upsertIncome(tx.handle, mapper, earlierIndefinite, financeUser.id)
             insertDraftApplication(tx.handle, guardian = testAdult_5, maxFeeAccepted = true)
-            service.sendApplication(tx.handle, serviceWorker, applicationId)
+            service.sendApplication(tx, serviceWorker, applicationId)
         }
         db.transaction { tx ->
             // when
@@ -274,7 +291,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
             )
             upsertIncome(tx.handle, mapper, earlierIncome, financeUser.id)
             insertDraftApplication(tx.handle, guardian = testAdult_5, maxFeeAccepted = true)
-            service.sendApplication(tx.handle, serviceWorker, applicationId)
+            service.sendApplication(tx, serviceWorker, applicationId)
         }
         db.transaction { tx ->
             // when
@@ -307,7 +324,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
             )
             upsertIncome(tx.handle, mapper, laterIndefiniteIncome, financeUser.id)
             insertDraftApplication(tx.handle, guardian = testAdult_5, maxFeeAccepted = true)
-            service.sendApplication(tx.handle, serviceWorker, applicationId)
+            service.sendApplication(tx, serviceWorker, applicationId)
         }
         db.transaction { tx ->
             // when
@@ -340,7 +357,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
             )
             upsertIncome(tx.handle, mapper, earlierIncome, financeUser.id)
             insertDraftApplication(tx.handle, guardian = testAdult_5, maxFeeAccepted = true)
-            service.sendApplication(tx.handle, serviceWorker, applicationId)
+            service.sendApplication(tx, serviceWorker, applicationId)
         }
         db.transaction { tx ->
             // when
@@ -374,7 +391,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
             )
             upsertIncome(tx.handle, mapper, laterIncome, financeUser.id)
             insertDraftApplication(tx.handle, guardian = testAdult_5, maxFeeAccepted = true)
-            service.sendApplication(tx.handle, serviceWorker, applicationId)
+            service.sendApplication(tx, serviceWorker, applicationId)
         }
         db.transaction { tx ->
             // when
@@ -407,7 +424,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
             )
             upsertIncome(tx.handle, mapper, earlierIndefinite, financeUser.id)
             insertDraftApplication(tx.handle, guardian = testAdult_5, maxFeeAccepted = true, preferredStartDate = null)
-            service.sendApplication(tx.handle, serviceWorker, applicationId)
+            service.sendApplication(tx, serviceWorker, applicationId)
         }
         db.transaction { tx ->
             // when
@@ -440,7 +457,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
             )
             upsertIncome(tx.handle, mapper, sameDayIncomeIndefinite, financeUser.id)
             insertDraftApplication(tx.handle, guardian = testAdult_5, maxFeeAccepted = true)
-            service.sendApplication(tx.handle, serviceWorker, applicationId)
+            service.sendApplication(tx, serviceWorker, applicationId)
         }
         db.transaction { tx ->
             // when
@@ -473,7 +490,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
             )
             upsertIncome(tx.handle, mapper, sameDayIncome, financeUser.id)
             insertDraftApplication(tx.handle, guardian = testAdult_5, maxFeeAccepted = true)
-            service.sendApplication(tx.handle, serviceWorker, applicationId)
+            service.sendApplication(tx, serviceWorker, applicationId)
         }
         db.transaction { tx ->
             // when
@@ -506,7 +523,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
             )
             upsertIncome(tx.handle, mapper, dayBeforeIncomeIndefinite, financeUser.id)
             insertDraftApplication(tx.handle, guardian = testAdult_5, maxFeeAccepted = true)
-            service.sendApplication(tx.handle, serviceWorker, applicationId)
+            service.sendApplication(tx, serviceWorker, applicationId)
         }
         db.transaction { tx ->
             // when
@@ -540,7 +557,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
             )
             upsertIncome(tx.handle, mapper, nextDayIncomeIndefinite, financeUser.id)
             insertDraftApplication(tx.handle, guardian = testAdult_5, maxFeeAccepted = true)
-            service.sendApplication(tx.handle, serviceWorker, applicationId)
+            service.sendApplication(tx, serviceWorker, applicationId)
         }
         db.transaction { tx ->
             // when
@@ -573,7 +590,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
             )
             upsertIncome(tx.handle, mapper, IncomeDayBefore, financeUser.id)
             insertDraftApplication(tx.handle, guardian = testAdult_5, maxFeeAccepted = true)
-            service.sendApplication(tx.handle, serviceWorker, applicationId)
+            service.sendApplication(tx, serviceWorker, applicationId)
         }
         db.transaction { tx ->
             // when
@@ -606,7 +623,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
             )
             upsertIncome(tx.handle, mapper, earlierIncomeEndingOnSameDay, financeUser.id)
             insertDraftApplication(tx.handle, guardian = testAdult_5, maxFeeAccepted = true)
-            service.sendApplication(tx.handle, serviceWorker, applicationId)
+            service.sendApplication(tx, serviceWorker, applicationId)
         }
         db.transaction { tx ->
             // when
@@ -639,7 +656,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
             )
             upsertIncome(tx.handle, mapper, earlierIncomeEndingOnNextDay, financeUser.id)
             insertDraftApplication(tx.handle, guardian = testAdult_5, maxFeeAccepted = true)
-            service.sendApplication(tx.handle, serviceWorker, applicationId)
+            service.sendApplication(tx, serviceWorker, applicationId)
         }
         db.transaction { tx ->
             // when
@@ -672,7 +689,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
             )
             upsertIncome(tx.handle, mapper, earlierIncomeEndingOnDayBefore, financeUser.id)
             insertDraftApplication(tx.handle, guardian = testAdult_5, maxFeeAccepted = true)
-            service.sendApplication(tx.handle, serviceWorker, applicationId)
+            service.sendApplication(tx, serviceWorker, applicationId)
         }
         db.transaction { tx ->
             // when
@@ -695,7 +712,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
         db.transaction { tx ->
             // given
             insertDraftApplication(tx.handle, appliedType = PlacementType.DAYCARE)
-            service.sendApplication(tx.handle, serviceWorker, applicationId)
+            service.sendApplication(tx, serviceWorker, applicationId)
         }
         db.transaction { tx ->
             // when
@@ -714,7 +731,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
         db.transaction { tx ->
             // given
             insertDraftApplication(tx.handle, appliedType = PlacementType.DAYCARE, hasAdditionalInfo = true)
-            service.sendApplication(tx.handle, serviceWorker, applicationId)
+            service.sendApplication(tx, serviceWorker, applicationId)
         }
         db.transaction { tx ->
             // when
@@ -733,7 +750,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
         db.transaction { tx ->
             // given
             insertDraftApplication(tx.handle, hasAdditionalInfo = true)
-            service.sendApplication(tx.handle, serviceWorker, applicationId)
+            service.sendApplication(tx, serviceWorker, applicationId)
             service.moveToWaitingPlacement(tx, serviceWorker, applicationId)
         }
         db.transaction { tx ->
@@ -763,7 +780,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
         db.transaction { tx ->
             // given
             insertDraftApplication(tx.handle)
-            service.sendApplication(tx.handle, serviceWorker, applicationId)
+            service.sendApplication(tx, serviceWorker, applicationId)
         }
         db.transaction { tx ->
             // when
@@ -781,7 +798,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
         db.transaction { tx ->
             // given
             insertDraftApplication(tx.handle)
-            service.sendApplication(tx.handle, serviceWorker, applicationId)
+            service.sendApplication(tx, serviceWorker, applicationId)
             service.moveToWaitingPlacement(tx, serviceWorker, applicationId)
         }
         db.transaction { tx ->
@@ -800,7 +817,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
         db.transaction { tx ->
             // given
             insertDraftApplication(tx.handle)
-            service.sendApplication(tx.handle, serviceWorker, applicationId)
+            service.sendApplication(tx, serviceWorker, applicationId)
             service.moveToWaitingPlacement(tx, serviceWorker, applicationId)
         }
         db.transaction { tx ->
@@ -819,7 +836,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
         db.transaction { tx ->
             // given
             insertDraftApplication(tx.handle, appliedType = PlacementType.DAYCARE)
-            service.sendApplication(tx.handle, serviceWorker, applicationId)
+            service.sendApplication(tx, serviceWorker, applicationId)
             service.moveToWaitingPlacement(tx, serviceWorker, applicationId)
         }
         db.transaction { tx ->
@@ -873,7 +890,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
         db.transaction { tx ->
             // given
             insertDraftApplication(tx.handle, appliedType = PlacementType.DAYCARE_PART_TIME)
-            service.sendApplication(tx.handle, serviceWorker, applicationId)
+            service.sendApplication(tx, serviceWorker, applicationId)
             service.moveToWaitingPlacement(tx, serviceWorker, applicationId)
         }
         db.transaction { tx ->
@@ -927,7 +944,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
         db.transaction { tx ->
             // given
             insertDraftApplication(tx.handle, appliedType = PlacementType.PRESCHOOL)
-            service.sendApplication(tx.handle, serviceWorker, applicationId)
+            service.sendApplication(tx, serviceWorker, applicationId)
             service.moveToWaitingPlacement(tx, serviceWorker, applicationId)
         }
         db.transaction { tx ->
@@ -997,7 +1014,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
         db.transaction { tx ->
             // given
             insertDraftApplication(tx.handle, appliedType = PlacementType.PRESCHOOL_DAYCARE)
-            service.sendApplication(tx.handle, serviceWorker, applicationId)
+            service.sendApplication(tx, serviceWorker, applicationId)
             service.moveToWaitingPlacement(tx, serviceWorker, applicationId)
         }
         db.transaction { tx ->
@@ -1068,7 +1085,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
         db.transaction { tx ->
             // given
             insertDraftApplication(tx.handle, appliedType = PlacementType.PRESCHOOL_DAYCARE)
-            service.sendApplication(tx.handle, serviceWorker, applicationId)
+            service.sendApplication(tx, serviceWorker, applicationId)
             service.moveToWaitingPlacement(tx, serviceWorker, applicationId)
             service.createPlacementPlan(
                 tx,
@@ -1104,7 +1121,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
         db.transaction { tx ->
             // given
             insertDraftApplication(tx.handle, appliedType = PlacementType.PRESCHOOL_DAYCARE, child = child)
-            service.sendApplication(tx.handle, serviceWorker, applicationId)
+            service.sendApplication(tx, serviceWorker, applicationId)
             service.moveToWaitingPlacement(tx, serviceWorker, applicationId)
             service.createPlacementPlan(
                 tx,
@@ -1230,7 +1247,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
         // given
         db.transaction { tx ->
             insertDraftApplication(tx.handle, appliedType = PlacementType.PRESCHOOL, guardian = applier, child = child)
-            service.sendApplication(tx.handle, serviceWorker, applicationId)
+            service.sendApplication(tx, serviceWorker, applicationId)
             service.moveToWaitingPlacement(tx, serviceWorker, applicationId)
             service.createPlacementPlan(
                 tx,
@@ -1288,7 +1305,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
         db.transaction { tx ->
             // given
             insertDraftApplication(tx.handle, appliedType = PlacementType.PRESCHOOL_DAYCARE)
-            service.sendApplication(tx.handle, serviceWorker, applicationId)
+            service.sendApplication(tx, serviceWorker, applicationId)
             service.moveToWaitingPlacement(tx, serviceWorker, applicationId)
             service.createPlacementPlan(
                 tx,
@@ -1318,7 +1335,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
         db.transaction { tx ->
             // given
             insertDraftApplication(tx.handle, appliedType = PlacementType.PRESCHOOL_DAYCARE)
-            service.sendApplication(tx.handle, serviceWorker, applicationId)
+            service.sendApplication(tx, serviceWorker, applicationId)
             service.moveToWaitingPlacement(tx, serviceWorker, applicationId)
             service.createPlacementPlan(
                 tx,
@@ -1355,7 +1372,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 child = testChild_2,
                 guardian = testAdult_1
             )
-            service.sendApplication(tx.handle, serviceWorker, applicationId)
+            service.sendApplication(tx, serviceWorker, applicationId)
             service.moveToWaitingPlacement(tx, serviceWorker, applicationId)
             service.createPlacementPlan(
                 tx,
@@ -1372,7 +1389,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
         db.transaction { tx ->
             // when
             service.respondToPlacementProposal(
-                tx.handle,
+                tx,
                 serviceWorker,
                 applicationId,
                 PlacementPlanConfirmationStatus.ACCEPTED
@@ -1408,7 +1425,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 child = testChild_2,
                 guardian = testAdult_1
             )
-            service.sendApplication(tx.handle, serviceWorker, applicationId)
+            service.sendApplication(tx, serviceWorker, applicationId)
             service.moveToWaitingPlacement(tx, serviceWorker, applicationId)
             service.createPlacementPlan(
                 tx,
@@ -1428,13 +1445,13 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                     endDate = draft.endDate,
                     planned = false
                 )
-            }.let { updates -> decisionDraftService.updateDecisionDrafts(tx.handle, applicationId, updates) }
+            }.let { updates -> decisionDraftService.updateDecisionDrafts(tx, applicationId, updates) }
             service.sendPlacementProposal(tx, serviceWorker, applicationId)
         }
         db.transaction { tx ->
             // when
             service.respondToPlacementProposal(
-                tx.handle,
+                tx,
                 serviceWorker,
                 applicationId,
                 PlacementPlanConfirmationStatus.ACCEPTED
@@ -1483,7 +1500,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 child = testChild_2,
                 guardian = testAdult_1
             )
-            service.sendApplication(tx.handle, serviceWorker, applicationId)
+            service.sendApplication(tx, serviceWorker, applicationId)
             service.moveToWaitingPlacement(tx, serviceWorker, applicationId)
             service.createPlacementPlan(
                 tx,
@@ -1512,7 +1529,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 child = testChild_2,
                 guardian = testAdult_1
             )
-            service.sendApplication(tx.handle, serviceWorker, applicationId)
+            service.sendApplication(tx, serviceWorker, applicationId)
             service.moveToWaitingPlacement(tx, serviceWorker, applicationId)
             service.createPlacementPlan(
                 tx,
@@ -1528,7 +1545,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
         db.transaction { tx ->
             // when / then
             service.respondToPlacementProposal(
-                tx.handle,
+                tx,
                 serviceWorker,
                 applicationId,
                 PlacementPlanConfirmationStatus.REJECTED,
@@ -1547,7 +1564,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
         db.transaction { tx ->
             // when
             service.rejectDecision(
-                tx.handle,
+                tx,
                 serviceWorker,
                 applicationId,
                 getDecision(tx.handle, DecisionType.PRESCHOOL).id
@@ -1582,14 +1599,14 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
         db.transaction { tx ->
             // when
             service.acceptDecision(
-                tx.handle,
+                tx,
                 serviceWorker,
                 applicationId,
                 getDecision(tx.handle, DecisionType.PRESCHOOL).id,
                 mainPeriod.start
             )
             service.rejectDecision(
-                tx.handle,
+                tx,
                 serviceWorker,
                 applicationId,
                 getDecision(tx.handle, DecisionType.PRESCHOOL_DAYCARE).id
@@ -1630,7 +1647,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
             // when
             val user = AuthenticatedUser(testAdult_5.id, setOf(UserRole.END_USER))
             service.acceptDecision(
-                tx.handle,
+                tx,
                 user,
                 applicationId,
                 getDecision(tx.handle, DecisionType.PRESCHOOL).id,
@@ -1638,7 +1655,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 isEnduser = true
             )
             service.rejectDecision(
-                tx.handle,
+                tx,
                 user,
                 applicationId,
                 getDecision(tx.handle, DecisionType.PRESCHOOL_DAYCARE).id,
@@ -1662,7 +1679,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
             // when
             assertThrows<Forbidden> {
                 service.acceptDecision(
-                    tx.handle,
+                    tx,
                     user,
                     applicationId,
                     getDecision(tx.handle, DecisionType.PRESCHOOL).id,
@@ -1684,7 +1701,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
             val user = AuthenticatedUser(testAdult_1.id, setOf(UserRole.END_USER))
             assertThrows<Forbidden> {
                 service.rejectDecision(
-                    tx.handle,
+                    tx,
                     user,
                     applicationId,
                     getDecision(tx.handle, DecisionType.PRESCHOOL).id,
@@ -1703,14 +1720,14 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
         db.transaction { tx ->
             // when
             service.acceptDecision(
-                tx.handle,
+                tx,
                 serviceWorker,
                 applicationId,
                 getDecision(tx.handle, DecisionType.PRESCHOOL).id,
                 mainPeriod.start
             )
             service.acceptDecision(
-                tx.handle,
+                tx,
                 serviceWorker,
                 applicationId,
                 getDecision(tx.handle, DecisionType.PRESCHOOL_DAYCARE).id,
@@ -1755,7 +1772,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
             // when / then
             assertThrows<BadRequest> {
                 service.acceptDecision(
-                    tx.handle,
+                    tx,
                     serviceWorker,
                     applicationId,
                     getDecision(tx.handle, DecisionType.PRESCHOOL_DAYCARE).id,
@@ -1771,7 +1788,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
             // given
             workflowForPreschoolDaycareDecisions(tx)
             service.acceptDecision(
-                tx.handle,
+                tx,
                 serviceWorker,
                 applicationId,
                 getDecision(tx.handle, DecisionType.PRESCHOOL).id,
@@ -1782,7 +1799,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
             // when / then
             assertThrows<BadRequest> {
                 service.acceptDecision(
-                    tx.handle,
+                    tx,
                     serviceWorker,
                     applicationId,
                     getDecision(tx.handle, DecisionType.PRESCHOOL).id,
@@ -1798,7 +1815,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
             // given
             workflowForPreschoolDaycareDecisions(tx)
             service.rejectDecision(
-                tx.handle,
+                tx,
                 serviceWorker,
                 applicationId,
                 getDecision(tx.handle, DecisionType.PRESCHOOL).id
@@ -1808,7 +1825,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
             // when / then
             assertThrows<BadRequest> {
                 service.acceptDecision(
-                    tx.handle,
+                    tx,
                     serviceWorker,
                     applicationId,
                     getDecision(tx.handle, DecisionType.PRESCHOOL).id,
@@ -1824,7 +1841,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
             // given
             workflowForPreschoolDaycareDecisions(tx)
             service.acceptDecision(
-                tx.handle,
+                tx,
                 serviceWorker,
                 applicationId,
                 getDecision(tx.handle, DecisionType.PRESCHOOL).id,
@@ -1835,7 +1852,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
             // when / then
             assertThrows<BadRequest> {
                 service.rejectDecision(
-                    tx.handle,
+                    tx,
                     serviceWorker,
                     applicationId,
                     getDecision(tx.handle, DecisionType.PRESCHOOL).id
@@ -1850,7 +1867,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
             // given
             workflowForPreschoolDaycareDecisions(tx)
             service.rejectDecision(
-                tx.handle,
+                tx,
                 serviceWorker,
                 applicationId,
                 getDecision(tx.handle, DecisionType.PRESCHOOL).id
@@ -1860,7 +1877,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
             // when / then
             assertThrows<BadRequest> {
                 service.rejectDecision(
-                    tx.handle,
+                    tx,
                     serviceWorker,
                     applicationId,
                     getDecision(tx.handle, DecisionType.PRESCHOOL).id
@@ -1874,7 +1891,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
 
     private fun workflowForPreschoolDaycareDecisions(tx: Database.Transaction) {
         insertDraftApplication(tx.handle, appliedType = PlacementType.PRESCHOOL_DAYCARE)
-        service.sendApplication(tx.handle, serviceWorker, applicationId)
+        service.sendApplication(tx, serviceWorker, applicationId)
         service.moveToWaitingPlacement(tx, serviceWorker, applicationId)
         service.createPlacementPlan(
             tx,

@@ -19,12 +19,10 @@ import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.NotifyIncomeUpdated
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.config.Roles
-import fi.espoo.evaka.shared.db.handle
-import fi.espoo.evaka.shared.db.transaction
+import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.Period
 import fi.espoo.evaka.shared.domain.maxEndDate
-import org.jdbi.v3.core.Jdbi
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -40,23 +38,22 @@ import java.util.UUID
 @RestController
 @RequestMapping("/incomes")
 class IncomeController(
-    private val jdbi: Jdbi,
     private val mapper: ObjectMapper,
     private val asyncJobRunner: AsyncJobRunner
 ) {
     @GetMapping
-    fun getIncome(user: AuthenticatedUser, @RequestParam personId: String?): ResponseEntity<Wrapper<List<Income>>> {
+    fun getIncome(db: Database.Connection, user: AuthenticatedUser, @RequestParam personId: String?): ResponseEntity<Wrapper<List<Income>>> {
         Audit.PersonIncomeRead.log(targetId = personId)
         user.requireOneOfRoles(Roles.FINANCE_ADMIN)
         val parsedId = personId?.let { parseUUID(personId) }
             ?: throw BadRequest("Query parameter personId is mandatory")
 
-        val incomes = jdbi.handle { h -> getIncomesForPerson(h, mapper, parsedId) }
+        val incomes = db.read { getIncomesForPerson(it.handle, mapper, parsedId) }
         return ResponseEntity.ok(Wrapper(incomes))
     }
 
     @PostMapping
-    fun createIncome(user: AuthenticatedUser, @RequestBody income: Income): ResponseEntity<UUID> {
+    fun createIncome(db: Database.Connection, user: AuthenticatedUser, @RequestBody income: Income): ResponseEntity<UUID> {
         Audit.PersonIncomeCreate.log(targetId = income.personId)
         user.requireOneOfRoles(Roles.FINANCE_ADMIN)
         val period = try {
@@ -67,12 +64,12 @@ class IncomeController(
             }
         }
 
-        val id = jdbi.transaction { h ->
+        val id = db.transaction { tx ->
             val id = UUID.randomUUID()
             val validIncome = income.copy(id = id).let(::validateIncome)
-            splitEarlierIncome(h, validIncome.personId, period)
-            upsertIncome(h, mapper, validIncome, user.id)
-            asyncJobRunner.plan(h, listOf(NotifyIncomeUpdated(validIncome.personId, period.start, period.end)))
+            splitEarlierIncome(tx.handle, validIncome.personId, period)
+            upsertIncome(tx.handle, mapper, validIncome, user.id)
+            asyncJobRunner.plan(tx, listOf(NotifyIncomeUpdated(validIncome.personId, period.start, period.end)))
             id
         }
 
@@ -82,6 +79,7 @@ class IncomeController(
 
     @PutMapping("/{incomeId}")
     fun updateIncome(
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable incomeId: String,
         @RequestBody income: Income
@@ -89,17 +87,17 @@ class IncomeController(
         Audit.PersonIncomeUpdate.log(targetId = incomeId)
         user.requireOneOfRoles(Roles.FINANCE_ADMIN)
 
-        jdbi.transaction { h ->
-            val existing = getIncome(h, mapper, parseUUID(incomeId))
+        db.transaction { tx ->
+            val existing = getIncome(tx.handle, mapper, parseUUID(incomeId))
             val validIncome = income.copy(id = parseUUID(incomeId)).let(::validateIncome)
-            upsertIncome(h, mapper, validIncome, user.id)
+            upsertIncome(tx.handle, mapper, validIncome, user.id)
 
             val expandedPeriod = existing?.let {
                 Period(minOf(it.validFrom, income.validFrom), maxEndDate(it.validTo, income.validTo))
             } ?: Period(income.validFrom, income.validTo)
 
             asyncJobRunner.plan(
-                h,
+                tx,
                 listOf(NotifyIncomeUpdated(validIncome.personId, expandedPeriod.start, expandedPeriod.end))
             )
         }
@@ -109,18 +107,18 @@ class IncomeController(
     }
 
     @DeleteMapping("/{incomeId}")
-    fun deleteIncome(user: AuthenticatedUser, @PathVariable incomeId: String): ResponseEntity<Unit> {
+    fun deleteIncome(db: Database.Connection, user: AuthenticatedUser, @PathVariable incomeId: String): ResponseEntity<Unit> {
         Audit.PersonIncomeDelete.log(targetId = incomeId)
         user.requireOneOfRoles(Roles.FINANCE_ADMIN)
 
-        jdbi.transaction { h ->
-            val existing = getIncome(h, mapper, parseUUID(incomeId))
+        db.transaction { tx ->
+            val existing = getIncome(tx.handle, mapper, parseUUID(incomeId))
                 ?: throw BadRequest("Income not found")
             val period = Period(existing.validFrom, existing.validTo)
 
-            deleteIncome(h, parseUUID(incomeId))
+            deleteIncome(tx.handle, parseUUID(incomeId))
 
-            asyncJobRunner.plan(h, listOf(NotifyIncomeUpdated(existing.personId, period.start, period.end)))
+            asyncJobRunner.plan(tx, listOf(NotifyIncomeUpdated(existing.personId, period.start, period.end)))
         }
 
         asyncJobRunner.scheduleImmediateRun()

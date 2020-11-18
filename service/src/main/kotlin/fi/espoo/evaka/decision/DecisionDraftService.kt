@@ -9,9 +9,9 @@ import fi.espoo.evaka.placement.PlacementPlan
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.getPlacementPlan
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
+import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.getEnum
 import fi.espoo.evaka.shared.domain.NotFound
-import org.jdbi.v3.core.Handle
 import org.springframework.stereotype.Service
 import java.sql.ResultSet
 import java.time.LocalDate
@@ -19,16 +19,16 @@ import java.util.UUID
 
 @Service
 class DecisionDraftService {
-    fun clearDecisionDrafts(h: Handle, applicationId: UUID) {
+    fun clearDecisionDrafts(tx: Database.Transaction, applicationId: UUID) {
         // language=sql
         val sql =
             """DELETE FROM decision WHERE application_id = :applicationId AND sent_date IS NULL""".trimIndent()
 
-        h.createUpdate(sql).bind("applicationId", applicationId).execute()
+        tx.createUpdate(sql).bind("applicationId", applicationId).execute()
     }
 
-    fun createDecisionDrafts(h: Handle, user: AuthenticatedUser, application: ApplicationDetails) {
-        val placementPlan = getPlacementPlan(h, application.id)
+    fun createDecisionDrafts(tx: Database.Transaction, user: AuthenticatedUser, application: ApplicationDetails) {
+        val placementPlan = getPlacementPlan(tx.handle, application.id)
             ?: throw NotFound("Application ${application.id} has no placement")
 
         val drafts: List<DecisionDraft> = when (placementPlan.type) {
@@ -43,7 +43,7 @@ class DecisionDraftService {
             INSERT INTO decision (created_by, unit_id, application_id, type, start_date, end_date, planned)
             VALUES (:createdBy, :unitId, :applicationId, :type::decision_type, :startDate, :endDate, :planned);
             """.trimIndent()
-        val batch = h.prepareBatch(sql)
+        val batch = tx.prepareBatch(sql)
         drafts.forEach { draft ->
             batch
                 .bind("createdBy", user.id)
@@ -58,7 +58,7 @@ class DecisionDraftService {
         batch.execute()
     }
 
-    fun updateDecisionDrafts(h: Handle, applicationId: UUID, updates: List<DecisionDraftUpdate>) {
+    fun updateDecisionDrafts(tx: Database.Transaction, applicationId: UUID, updates: List<DecisionDraftUpdate>) {
         // language=sql
         val sql =
             """
@@ -67,7 +67,7 @@ class DecisionDraftService {
             WHERE id = :decisionId AND application_id = :applicationId
             """.trimIndent()
 
-        val batch = h.prepareBatch(sql)
+        val batch = tx.prepareBatch(sql)
         updates.forEach {
             batch
                 .bind("applicationId", applicationId)
@@ -93,18 +93,18 @@ class DecisionDraftService {
         val planned: Boolean
     )
 
-    fun getDecisionUnits(h: Handle): List<DecisionUnit> {
+    fun getDecisionUnits(tx: Database.Read): List<DecisionUnit> {
         val sql =
             """
             $decisionUnitQuery
             ORDER BY name
             """.trimIndent()
-        return h.createQuery(sql)
+        return tx.createQuery(sql)
             .map { rs, _ -> toDecisionUnit(rs) }
             .toList()
     }
 
-    fun getDecisionUnit(h: Handle, unitId: UUID): DecisionUnit {
+    fun getDecisionUnit(tx: Database.Read, unitId: UUID): DecisionUnit {
         // language=SQL
         val sql =
             """
@@ -112,7 +112,7 @@ class DecisionDraftService {
              WHERE u.id = :id
             """.trimIndent()
 
-        return h.createQuery(sql)
+        return tx.createQuery(sql)
             .bind("id", unitId)
             .map { rs, _ -> toDecisionUnit(rs) }
             .first()

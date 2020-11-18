@@ -7,7 +7,6 @@ package fi.espoo.evaka
 import fi.espoo.evaka.shared.config.getTestDataSource
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.configureJdbi
-import fi.espoo.evaka.shared.db.handle
 import org.jdbi.v3.core.Jdbi
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.TestInstance
@@ -21,6 +20,6 @@ abstract class PureJdbiTest {
     protected fun initializeJdbi() {
         jdbi = configureJdbi(Jdbi.create(getTestDataSource()))
         db = Database(jdbi)
-        jdbi.handle(::resetDatabase)
+        db.transaction { it.resetDatabase() }
     }
 }

@@ -12,10 +12,10 @@ import fi.espoo.evaka.pis.retryParentship
 import fi.espoo.evaka.pis.updateParentshipDuration
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.NotifyFamilyUpdated
+import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.domain.maxEndDate
 import mu.KotlinLogging
-import org.jdbi.v3.core.Handle
 import org.springframework.stereotype.Service
 import java.time.LocalDate
 import java.util.UUID
@@ -25,31 +25,30 @@ class ParentshipService(private val asyncJobRunner: AsyncJobRunner) {
     private val logger = KotlinLogging.logger { }
 
     fun createParentship(
-        h: Handle,
+        tx: Database.Transaction,
         childId: UUID,
         headOfChildId: UUID,
         startDate: LocalDate,
         endDate: LocalDate?
     ): Parentship {
         return try {
-            h.createParentship(childId, headOfChildId, startDate, endDate, false)
-                .also { sendFamilyUpdatedMessage(h, headOfChildId, startDate, endDate) }
+            tx.handle.createParentship(childId, headOfChildId, startDate, endDate, false)
+                .also { tx.sendFamilyUpdatedMessage(headOfChildId, startDate, endDate) }
         } catch (e: Exception) {
             throw mapPSQLException(e)
         }
     }
 
-    fun updateParentshipDuration(h: Handle, id: UUID, startDate: LocalDate, endDate: LocalDate?): Parentship {
-        val oldParentship = h.getParentship(id) ?: throw NotFound("No parentship found with id $id")
+    fun updateParentshipDuration(tx: Database.Transaction, id: UUID, startDate: LocalDate, endDate: LocalDate?): Parentship {
+        val oldParentship = tx.handle.getParentship(id) ?: throw NotFound("No parentship found with id $id")
         try {
-            val success = h.updateParentshipDuration(id, startDate, endDate)
+            val success = tx.handle.updateParentshipDuration(id, startDate, endDate)
             if (!success) throw NotFound("No parentship found with id $id")
         } catch (e: Exception) {
             throw mapPSQLException(e)
         }
 
-        sendFamilyUpdatedMessage(
-            h,
+        tx.sendFamilyUpdatedMessage(
             oldParentship.headOfChildId,
             minOf(startDate, oldParentship.startDate),
             maxEndDate(endDate, oldParentship.endDate)
@@ -58,14 +57,13 @@ class ParentshipService(private val asyncJobRunner: AsyncJobRunner) {
         return oldParentship.copy(startDate = startDate, endDate = endDate)
     }
 
-    fun retryParentship(h: Handle, id: UUID) {
+    fun retryParentship(tx: Database.Transaction, id: UUID) {
         try {
-            h.getParentship(id)
+            tx.handle.getParentship(id)
                 ?.takeIf { it.conflict }
                 ?.let {
-                    h.retryParentship(it.id)
-                    sendFamilyUpdatedMessage(
-                        h,
+                    tx.handle.retryParentship(it.id)
+                    tx.sendFamilyUpdatedMessage(
                         adultId = it.headOfChildId,
                         startDate = it.startDate,
                         endDate = it.endDate
@@ -76,24 +74,19 @@ class ParentshipService(private val asyncJobRunner: AsyncJobRunner) {
         }
     }
 
-    fun deleteParentship(h: Handle, id: UUID) {
-        val parentship = h.getParentship(id)
-        val success = h.deleteParentship(id)
+    fun deleteParentship(tx: Database.Transaction, id: UUID) {
+        val parentship = tx.handle.getParentship(id)
+        val success = tx.handle.deleteParentship(id)
         if (parentship == null || !success) throw NotFound("No parentship found with id $id")
 
         with(parentship) {
-            sendFamilyUpdatedMessage(
-                h,
-                headOfChildId,
-                startDate,
-                endDate
-            )
+            tx.sendFamilyUpdatedMessage(headOfChildId, startDate, endDate)
         }
     }
 
-    private fun sendFamilyUpdatedMessage(h: Handle, adultId: UUID, startDate: LocalDate, endDate: LocalDate?) {
+    private fun Database.Transaction.sendFamilyUpdatedMessage(adultId: UUID, startDate: LocalDate, endDate: LocalDate?) {
         logger.info("Sending update family message with adult $adultId")
-        asyncJobRunner.plan(h, listOf(NotifyFamilyUpdated(adultId, startDate, endDate)))
+        asyncJobRunner.plan(this, listOf(NotifyFamilyUpdated(adultId, startDate, endDate)))
     }
 }
 

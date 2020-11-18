@@ -6,17 +6,17 @@ package fi.espoo.evaka.daycare.service
 
 import fi.espoo.evaka.pis.dao.PGConstants
 import fi.espoo.evaka.pis.dao.mapPSQLException
+import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.getUUID
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.NotFound
-import org.jdbi.v3.core.Handle
 import org.springframework.stereotype.Service
 import java.time.LocalDate
 import java.util.UUID
 
 @Service
 class CaretakerService {
-    fun getCaretakers(h: Handle, groupId: UUID): List<CaretakerAmount> {
+    fun getCaretakers(tx: Database.Read, groupId: UUID): List<CaretakerAmount> {
         // language=sql
         val sql =
             """
@@ -26,7 +26,7 @@ class CaretakerService {
             ORDER BY start_date DESC
             """.trimIndent()
 
-        return h.createQuery(sql)
+        return tx.createQuery(sql)
             .bind("groupId", groupId)
             .map { rs, _ ->
                 CaretakerAmount(
@@ -40,10 +40,10 @@ class CaretakerService {
             .toList()
     }
 
-    fun insert(h: Handle, groupId: UUID, startDate: LocalDate, endDate: LocalDate?, amount: Double) {
+    fun insert(tx: Database.Transaction, groupId: UUID, startDate: LocalDate, endDate: LocalDate?, amount: Double) {
         if (endDate != null && endDate.isBefore(startDate)) throw BadRequest("End date cannot be before start")
 
-        endPreviousRow(h, groupId, startDate)
+        tx.endPreviousRow(groupId, startDate)
 
         val end = if (endDate == null) "DEFAULT" else ":end"
         // language=sql
@@ -54,7 +54,7 @@ class CaretakerService {
             """.trimIndent()
 
         try {
-            h.createUpdate(sql)
+            tx.createUpdate(sql)
                 .bind("groupId", groupId)
                 .bind("start", startDate)
                 .bind("end", endDate)
@@ -65,7 +65,7 @@ class CaretakerService {
         }
     }
 
-    private fun endPreviousRow(h: Handle, groupId: UUID, startDate: LocalDate) {
+    private fun Database.Transaction.endPreviousRow(groupId: UUID, startDate: LocalDate) {
         // language=sql
         val sql =
             """
@@ -74,10 +74,10 @@ class CaretakerService {
             WHERE group_id = :groupId AND start_date < :start AND end_date >= :start
             """.trimIndent()
 
-        h.createUpdate(sql).bind("groupId", groupId).bind("start", startDate).execute()
+        createUpdate(sql).bind("groupId", groupId).bind("start", startDate).execute()
     }
 
-    fun update(h: Handle, groupId: UUID, id: UUID, startDate: LocalDate, endDate: LocalDate?, amount: Double) {
+    fun update(tx: Database.Transaction, groupId: UUID, id: UUID, startDate: LocalDate, endDate: LocalDate?, amount: Double) {
         if (endDate != null && endDate.isBefore(startDate)) throw BadRequest("End date cannot be before start")
 
         val end = if (endDate == null) "DEFAULT" else ":end"
@@ -90,7 +90,7 @@ class CaretakerService {
             """.trimIndent()
 
         try {
-            h.createUpdate(sql)
+            tx.createUpdate(sql)
                 .bind("groupId", groupId)
                 .bind("id", id)
                 .bind("start", startDate)
@@ -103,8 +103,8 @@ class CaretakerService {
         }
     }
 
-    fun delete(h: Handle, groupId: UUID, id: UUID) {
-        h.createUpdate("DELETE FROM daycare_caretaker WHERE id = :id AND group_id = :groupId")
+    fun delete(tx: Database.Transaction, groupId: UUID, id: UUID) {
+        tx.createUpdate("DELETE FROM daycare_caretaker WHERE id = :id AND group_id = :groupId")
             .bind("groupId", groupId)
             .bind("id", id)
             .execute()

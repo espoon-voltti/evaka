@@ -14,7 +14,6 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.getEnum
 import fi.espoo.evaka.shared.db.getUUID
-import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.domain.ClosedPeriod
 import fi.espoo.evaka.vtjclient.dto.NativeLanguage
 import fi.espoo.evaka.vtjclient.dto.PersonDataSource
@@ -23,7 +22,6 @@ import fi.espoo.evaka.vtjclient.dto.VtjPersonDTO
 import fi.espoo.evaka.vtjclient.service.persondetails.PersonStorageService
 import fi.espoo.evaka.vtjclient.usecases.dto.PersonResult
 import mu.KotlinLogging
-import org.jdbi.v3.core.Jdbi
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.AccessDeniedException
@@ -42,12 +40,11 @@ class UseCaseDeniedException : AccessDeniedException("Use case not allowed for c
 @RequestMapping("/persondetails")
 class VtjController(
     private val personStorageService: PersonStorageService,
-    private val personService: PersonService,
-    private val jdbi: Jdbi
+    private val personService: PersonService
 ) {
     @GetMapping("/uuid/{personId}")
     fun getDetails(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable(value = "personId") personId: UUID
     ): ResponseEntity<VtjPersonDTO> {
@@ -57,12 +54,12 @@ class VtjController(
         return when (vtjData) {
             is PersonResult.Error -> ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build()
             is PersonResult.NotFound -> ResponseEntity.notFound().build()
-            is PersonResult.Result -> ResponseEntity.ok(withChildPlacements(vtjData.vtjPersonDTO))
+            is PersonResult.Result -> ResponseEntity.ok(db.read { withChildPlacements(it, vtjData.vtjPersonDTO) })
         }
     }
 
     private fun getPersonDataWithChildren(
-        db: Database,
+        db: Database.Connection,
         user: AuthenticatedUser,
         personId: VolttiIdentifier
     ): PersonResult {
@@ -80,7 +77,7 @@ class VtjController(
         }
     }
 
-    private fun personResult(db: Database, user: AuthenticatedUser, personId: VolttiIdentifier): PersonResult {
+    private fun personResult(db: Database.Connection, user: AuthenticatedUser, personId: VolttiIdentifier): PersonResult {
         val guardianResult = db.read { it.handle.getPersonById(personId) }
             ?.let { person ->
                 when (person.identity) {
@@ -94,11 +91,11 @@ class VtjController(
             ?: PersonResult.NotFound()
     }
 
-    private fun withChildPlacements(guardian: VtjPersonDTO): VtjPersonDTO = jdbi.handle { h ->
+    private fun withChildPlacements(tx: Database.Read, guardian: VtjPersonDTO): VtjPersonDTO {
         val sql =
             "SELECT child_id, start_date, end_date, type FROM placement WHERE child_id = ANY(:children) AND end_date > current_date"
 
-        val placements = h.createQuery(sql)
+        val placements = tx.createQuery(sql)
             .bind("children", guardian.children.map { it.id }.toTypedArray())
             .map { rs, _ ->
                 rs.getUUID("child_id") to Placement(
@@ -110,7 +107,7 @@ class VtjController(
                 )
             }
 
-        guardian.copy(
+        return guardian.copy(
             children = guardian.children.map { child ->
                 val childPlacements = placements
                     .filter { (id, _) -> id == child.id }

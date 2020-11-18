@@ -27,7 +27,7 @@ class KoskiUpdateService(
     private val asyncJobRunner: AsyncJobRunner
 ) {
     fun update(
-        db: Database,
+        db: Database.Connection,
         personIds: String?,
         daycareIds: String?
     ) {

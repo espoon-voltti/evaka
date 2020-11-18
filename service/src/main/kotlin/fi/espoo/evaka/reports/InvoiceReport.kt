@@ -12,9 +12,8 @@ import fi.espoo.evaka.invoicing.domain.InvoiceStatus
 import fi.espoo.evaka.invoicing.domain.addressUsable
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.config.Roles
-import fi.espoo.evaka.shared.db.handle
+import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.Period
-import org.jdbi.v3.core.Jdbi
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
@@ -30,46 +29,47 @@ internal fun getMonthPeriod(date: LocalDate): Period {
 }
 
 @RestController
-class InvoiceReportController(private val jdbi: Jdbi) {
+class InvoiceReportController {
     @GetMapping("/reports/invoices")
     fun getInvoiceReport(
+        db: Database,
         user: AuthenticatedUser,
         @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) date: LocalDate
     ): ResponseEntity<InvoiceReport> {
         Audit.InvoicesReportRead.log()
         user.requireOneOfRoles(Roles.FINANCE_ADMIN, Roles.DIRECTOR, Roles.ADMIN)
-        return getInvoiceReportWithRows(
-            getMonthPeriod(date)
-        ).let(::ok)
-    }
-
-    fun getInvoiceReportWithRows(period: Period): InvoiceReport {
-        val rows = jdbi.handle { h ->
-            val invoices = searchInvoices(
-                h,
-                statuses = listOf(InvoiceStatus.SENT),
-                sentAt = period
+        return db.read {
+            it.getInvoiceReportWithRows(
+                getMonthPeriod(date)
             )
-
-            invoices.groupBy { it.agreementType }
-                .map { (agreementType, invoices) ->
-                    InvoiceReportRow(
-                        areaCode = agreementType,
-                        amountOfInvoices = invoices.size,
-                        totalSumCents = invoices.sumBy { it.totalPrice() },
-                        amountWithoutSSN = invoices.count { it.headOfFamily.ssn.isNullOrBlank() },
-                        amountWithoutAddress = invoices.count { withoutAddress(it) },
-                        amountWithZeroPrice = invoices.count { it.totalPrice() == 0 }
-                    )
-                }
-                .sortedBy { it.areaCode }
-        }
-
-        return InvoiceReport(reportRows = rows)
+        }.let(::ok)
     }
 }
 
-fun withoutAddress(invoice: InvoiceDetailed): Boolean = !addressUsable(
+private fun Database.Read.getInvoiceReportWithRows(period: Period): InvoiceReport {
+    val invoices = searchInvoices(
+        handle,
+        statuses = listOf(InvoiceStatus.SENT),
+        sentAt = period
+    )
+
+    val rows = invoices.groupBy { it.agreementType }
+        .map { (agreementType, invoices) ->
+            InvoiceReportRow(
+                areaCode = agreementType,
+                amountOfInvoices = invoices.size,
+                totalSumCents = invoices.sumBy { it.totalPrice() },
+                amountWithoutSSN = invoices.count { it.headOfFamily.ssn.isNullOrBlank() },
+                amountWithoutAddress = invoices.count { withoutAddress(it) },
+                amountWithZeroPrice = invoices.count { it.totalPrice() == 0 }
+            )
+        }
+        .sortedBy { it.areaCode }
+
+    return InvoiceReport(reportRows = rows)
+}
+
+private fun withoutAddress(invoice: InvoiceDetailed): Boolean = !addressUsable(
     invoice.headOfFamily.streetAddress,
     invoice.headOfFamily.postalCode,
     invoice.headOfFamily.postOffice

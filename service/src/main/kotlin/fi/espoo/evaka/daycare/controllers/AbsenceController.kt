@@ -19,6 +19,7 @@ import fi.espoo.evaka.shared.auth.UserRole.FINANCE_ADMIN
 import fi.espoo.evaka.shared.auth.UserRole.SERVICE_WORKER
 import fi.espoo.evaka.shared.auth.UserRole.STAFF
 import fi.espoo.evaka.shared.auth.UserRole.UNIT_SUPERVISOR
+import fi.espoo.evaka.shared.db.Database
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -34,6 +35,7 @@ import java.util.UUID
 class AbsenceController(private val absenceService: AbsenceService, private val acl: AccessControlList) {
     @GetMapping("/{groupId}")
     fun getAbsencesByGroupAndMonth(
+        db: Database.Connection,
         user: AuthenticatedUser,
         @RequestParam year: Int,
         @RequestParam month: Int,
@@ -42,12 +44,13 @@ class AbsenceController(private val absenceService: AbsenceService, private val 
         Audit.AbsenceRead.log(targetId = groupId)
         acl.getRolesForUnitGroup(user, groupId)
             .requireOneOfRoles(ADMIN, SERVICE_WORKER, FINANCE_ADMIN, UNIT_SUPERVISOR, STAFF)
-        val absences = absenceService.getAbsencesByMonth(groupId, year, month)
+        val absences = db.read { absenceService.getAbsencesByMonth(it, groupId, year, month) }
         return ResponseEntity.ok(Wrapper(absences))
     }
 
     @PostMapping("/{groupId}")
     fun upsertAbsences(
+        db: Database.Connection,
         user: AuthenticatedUser,
         @RequestBody absences: Wrapper<List<Absence>>,
         @PathVariable groupId: UUID
@@ -55,12 +58,13 @@ class AbsenceController(private val absenceService: AbsenceService, private val 
         Audit.AbsenceUpdate.log(targetId = groupId)
         acl.getRolesForUnitGroup(user, groupId)
             .requireOneOfRoles(ADMIN, UNIT_SUPERVISOR, STAFF)
-        absenceService.upsertAbsences(absences.data, groupId, user.id)
+        db.transaction { absenceService.upsertAbsences(it, absences.data, groupId, user.id) }
         return ResponseEntity.noContent().build()
     }
 
     @GetMapping("/by-child/{childId}")
     fun getAbsencesByChild(
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable childId: UUID,
         @RequestParam year: Int,
@@ -68,19 +72,20 @@ class AbsenceController(private val absenceService: AbsenceService, private val 
     ): ResponseEntity<Wrapper<AbsenceChildMinimal>> {
         Audit.AbsenceRead.log(targetId = childId)
         user.requireOneOfRoles(ADMIN, UNIT_SUPERVISOR, FINANCE_ADMIN)
-        val absences = absenceService.getAbscencesByChild(childId, year, month)
+        val absences = db.read { absenceService.getAbscencesByChild(it, childId, year, month) }
         return ResponseEntity.ok(Wrapper(absences))
     }
 
     @PostMapping("/child/{childId}")
     fun upsertAbsence(
+        db: Database.Connection,
         user: AuthenticatedUser,
         @RequestBody absenceType: AbsenceBody,
         @PathVariable childId: UUID
     ): ResponseEntity<Unit> {
         Audit.ChildAbsenceUpdate.log(targetId = childId)
         user.requireOneOfRoles(ADMIN)
-        absenceService.upsertChildAbsence(childId, absenceType.absenceType, absenceType.careType, user.id)
+        db.transaction { absenceService.upsertChildAbsence(it, childId, absenceType.absenceType, absenceType.careType, user.id) }
         return ResponseEntity.noContent().build()
     }
 }

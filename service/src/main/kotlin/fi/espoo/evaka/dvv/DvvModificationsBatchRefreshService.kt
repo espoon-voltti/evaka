@@ -9,10 +9,7 @@ import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.AsyncJobType
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.db.transaction
 import mu.KotlinLogging
-import org.jdbi.v3.core.Handle
-import org.jdbi.v3.core.Jdbi
 import org.jdbi.v3.core.kotlin.mapTo
 import org.springframework.stereotype.Service
 import java.time.Instant
@@ -23,7 +20,6 @@ private val logger = KotlinLogging.logger {}
 @Service
 class DvvModificationsBatchRefreshService(
     private val asyncJobRunner: AsyncJobRunner,
-    private val jdbi: Jdbi,
     private val dvvModificationsService: DvvModificationsService
 ) {
     init {
@@ -36,14 +32,14 @@ class DvvModificationsBatchRefreshService(
         logger.info("DvvModificationsRefresh: finished processing $modificationCount DVV person modifications for ${msg.ssns.size} ssns")
     }
 
-    fun scheduleBatch(): Int {
-        val jobCount = jdbi.transaction { h ->
-            deleteOldJobs(h)
+    fun scheduleBatch(db: Database.Connection): Int {
+        val jobCount = db.transaction { tx ->
+            tx.deleteOldJobs()
 
-            val ssns = getPersonSsnsToUpdate(h)
+            val ssns = tx.getPersonSsnsToUpdate()
 
             asyncJobRunner.plan(
-                h,
+                tx,
                 payloads = listOf(
                     DvvModificationsRefresh(
                         ssns = ssns,
@@ -61,25 +57,22 @@ class DvvModificationsBatchRefreshService(
 
         return jobCount
     }
+}
 
-    private fun deleteOldJobs(h: Handle) {
-        h.createUpdate("DELETE FROM async_job WHERE type = 'DVV_MODIFICATIONS_REFRESH' AND (claimed_by IS NULL OR completed_at IS NOT NULL)")
-            .execute()
-    }
+private fun Database.Transaction.deleteOldJobs() =
+    createUpdate("DELETE FROM async_job WHERE type = 'DVV_MODIFICATIONS_REFRESH' AND (claimed_by IS NULL OR completed_at IS NOT NULL)")
+        .execute()
 
-    fun getPersonSsnsToUpdate(h: Handle): List<String> {
-        //language=sql
-        return h.createQuery(
-            """
+private fun Database.Read.getPersonSsnsToUpdate(): List<String> = createQuery(
+    //language=sql
+    """
 SELECT DISTINCT(social_security_number) from PERSON p JOIN (
 SELECT head_of_child FROM fridge_child
 WHERE daterange(start_date, end_date, '[]') @> current_date AND conflict = false) hoc ON p.id = hoc.head_of_child
-            """.trimIndent()
-        )
-            .mapTo<String>()
-            .toList()
-    }
-}
+    """.trimIndent()
+)
+    .mapTo<String>()
+    .toList()
 
 data class DvvModificationsRefresh(val ssns: List<String>, val requestingUserId: UUID) : AsyncJobPayload {
     override val asyncJobType = AsyncJobType.DVV_MODIFICATIONS_REFRESH

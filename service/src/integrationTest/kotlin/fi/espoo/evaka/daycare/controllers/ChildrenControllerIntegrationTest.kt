@@ -73,7 +73,7 @@ class ChildrenControllerIntegrationTest : AbstractIntegrationTest() {
     }
 
     fun getAdditionalInfo(user: AuthenticatedUser) {
-        val response = childController.getAdditionalInfo(user, childId)
+        val response = childController.getAdditionalInfo(db, user, childId)
         val body = response.body!!
 
         assertEquals(HttpStatus.OK, response.statusCode)

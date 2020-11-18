@@ -52,8 +52,6 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.config.Roles
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.db.handle
-import fi.espoo.evaka.shared.db.transaction
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.ClosedPeriod
 import fi.espoo.evaka.shared.domain.Coordinate
@@ -63,7 +61,6 @@ import fi.espoo.evaka.shared.message.SuomiFiMessage
 import fi.espoo.evaka.vtjclient.dto.VtjPerson
 import fi.espoo.evaka.vtjclient.service.persondetails.MockPersonDetailsService
 import org.jdbi.v3.core.Handle
-import org.jdbi.v3.core.Jdbi
 import org.jdbi.v3.core.kotlin.bindKotlin
 import org.jdbi.v3.core.kotlin.mapTo
 import org.springframework.context.annotation.Configuration
@@ -112,7 +109,6 @@ private val fakeAdmin = AuthenticatedUser(
 @RestController
 @RequestMapping("/dev-api")
 class DevApi(
-    private val jdbi: Jdbi,
     private val objectMapper: ObjectMapper,
     private val personService: PersonService,
     private val asyncJobRunner: AsyncJobRunner,
@@ -120,8 +116,8 @@ class DevApi(
     private val applicationStateService: ApplicationStateService
 ) {
     @PostMapping("/clean-up")
-    fun cleanUpDatabase(): ResponseEntity<Unit> {
-        jdbi.transaction { it.clearDatabase() }
+    fun cleanUpDatabase(db: Database): ResponseEntity<Unit> {
+        db.transaction { it.handle.clearDatabase() }
         return ResponseEntity.noContent().build()
     }
 
@@ -133,66 +129,67 @@ class DevApi(
     }
 
     @DeleteMapping("/applications/{id}")
-    fun deleteApplicationByApplicationId(@PathVariable id: UUID): ResponseEntity<Unit> {
-        jdbi.transaction { it.deleteApplication(id) }
+    fun deleteApplicationByApplicationId(db: Database, @PathVariable id: UUID): ResponseEntity<Unit> {
+        db.transaction { it.handle.deleteApplication(id) }
         return ResponseEntity.noContent().build()
     }
 
     @PostMapping("/care-areas")
-    fun createCareAreas(@RequestBody careAreas: List<DevCareArea>): ResponseEntity<Unit> {
-        jdbi.transaction { careAreas.forEach { careArea -> it.insertTestCareArea(careArea) } }
+    fun createCareAreas(db: Database, @RequestBody careAreas: List<DevCareArea>): ResponseEntity<Unit> {
+        db.transaction { careAreas.forEach { careArea -> it.handle.insertTestCareArea(careArea) } }
         return ResponseEntity.noContent().build()
     }
 
     @DeleteMapping("/care-areas/{id}")
-    fun deleteArea(@PathVariable id: UUID): ResponseEntity<Unit> {
-        jdbi.transaction { it.deleteCareArea(id) }
+    fun deleteArea(db: Database, @PathVariable id: UUID): ResponseEntity<Unit> {
+        db.transaction { it.handle.deleteCareArea(id) }
         return ResponseEntity.noContent().build()
     }
 
     @PostMapping("/daycares")
-    fun createDaycares(@RequestBody daycares: List<DevDaycare>): ResponseEntity<Unit> {
-        jdbi.transaction { daycares.forEach { daycare -> it.insertTestDaycare(daycare) } }
+    fun createDaycares(db: Database, @RequestBody daycares: List<DevDaycare>): ResponseEntity<Unit> {
+        db.transaction { daycares.forEach { daycare -> it.handle.insertTestDaycare(daycare) } }
         return ResponseEntity.noContent().build()
     }
 
     @DeleteMapping("/daycares/{id}")
-    fun deleteDaycare(@PathVariable id: UUID): ResponseEntity<Unit> {
-        jdbi.transaction { it.deleteDaycare(id) }
+    fun deleteDaycare(db: Database, @PathVariable id: UUID): ResponseEntity<Unit> {
+        db.transaction { it.handle.deleteDaycare(id) }
         return ResponseEntity.noContent().build()
     }
 
     @PutMapping("/daycares/{daycareId}/acl")
     fun allowSupervisorToAccessDaycare(
+        db: Database,
         @PathVariable daycareId: UUID,
         @RequestBody body: DaycareAclInsert
     ): ResponseEntity<Unit> {
-        jdbi.transaction { h ->
-            updateDaycareAcl(h, daycareId, body.personAad, UserRole.UNIT_SUPERVISOR)
+        db.transaction { tx ->
+            updateDaycareAcl(tx.handle, daycareId, body.personAad, UserRole.UNIT_SUPERVISOR)
         }
         return ResponseEntity.noContent().build()
     }
 
     @DeleteMapping("/daycares/{daycareId}/acl/{userAad}")
-    fun removeUserAccessToDaycare(@PathVariable daycareId: UUID, @PathVariable userAad: UUID): ResponseEntity<Unit> {
-        jdbi.transaction { h ->
-            removeDaycareAcl(h, daycareId, userAad)
+    fun removeUserAccessToDaycare(db: Database, @PathVariable daycareId: UUID, @PathVariable userAad: UUID): ResponseEntity<Unit> {
+        db.transaction { tx ->
+            removeDaycareAcl(tx.handle, daycareId, userAad)
         }
         return ResponseEntity.ok().build()
     }
 
     @PostMapping("/daycare-groups")
-    fun createDaycareGroups(@RequestBody groups: List<DevDaycareGroup>): ResponseEntity<Unit> {
-        jdbi.transaction {
-            groups.forEach { group -> it.insertTestDaycareGroup(group) }
+    fun createDaycareGroups(db: Database, @RequestBody groups: List<DevDaycareGroup>): ResponseEntity<Unit> {
+        db.transaction {
+            groups.forEach { group -> it.handle.insertTestDaycareGroup(group) }
         }
         return ResponseEntity.noContent().build()
     }
 
     @DeleteMapping("/daycare-groups/{id}")
-    fun removeDaycareGroup(@PathVariable id: UUID): ResponseEntity<Unit> {
-        jdbi.transaction { h ->
-            h.deleteDaycareGroup(id)
+    fun removeDaycareGroup(db: Database, @PathVariable id: UUID): ResponseEntity<Unit> {
+        db.transaction { tx ->
+            tx.handle.deleteDaycareGroup(id)
         }
         return ResponseEntity.ok().build()
     }
@@ -205,11 +202,11 @@ class DevApi(
     )
 
     @PostMapping("/daycare-caretakers")
-    fun createDaycareCaretakers(@RequestBody caretakers: List<Caretaker>): ResponseEntity<Unit> {
-        jdbi.transaction { h ->
+    fun createDaycareCaretakers(db: Database, @RequestBody caretakers: List<Caretaker>): ResponseEntity<Unit> {
+        db.transaction { tx ->
             caretakers.forEach { caretaker ->
                 insertTestCaretakers(
-                    h,
+                    tx.handle,
                     caretaker.groupId,
                     amount = caretaker.amount,
                     startDate = caretaker.startDate,
@@ -221,21 +218,21 @@ class DevApi(
     }
 
     @PostMapping("/children")
-    fun createChildren(@RequestBody children: List<DevChild>): ResponseEntity<Unit> {
-        jdbi.transaction { children.forEach { child -> it.insertTestChild(child) } }
+    fun createChildren(db: Database, @RequestBody children: List<DevChild>): ResponseEntity<Unit> {
+        db.transaction { children.forEach { child -> it.handle.insertTestChild(child) } }
         return ResponseEntity.noContent().build()
     }
 
     // also cascades delete to daycare_placement and group_placement
     @DeleteMapping("/children/{id}")
-    fun deleteChild(@PathVariable id: UUID): ResponseEntity<Unit> {
-        jdbi.transaction { it.deleteChild(id) }
+    fun deleteChild(db: Database, @PathVariable id: UUID): ResponseEntity<Unit> {
+        db.transaction { it.handle.deleteChild(id) }
         return ResponseEntity.noContent().build()
     }
 
     @PostMapping("/daycare-placements")
-    fun createDaycarePlacements(@RequestBody placements: List<DevPlacement>): ResponseEntity<Unit> {
-        jdbi.transaction { placements.forEach { placement -> it.insertTestPlacement(placement) } }
+    fun createDaycarePlacements(db: Database, @RequestBody placements: List<DevPlacement>): ResponseEntity<Unit> {
+        db.transaction { placements.forEach { placement -> it.handle.insertTestPlacement(placement) } }
         return ResponseEntity.noContent().build()
     }
 
@@ -250,11 +247,11 @@ class DevApi(
     )
 
     @PostMapping("/decisions")
-    fun createDecisions(@RequestBody decisions: List<DecisionRequest>): ResponseEntity<Unit> {
-        decisions.forEach { decision ->
-            jdbi.handle { h ->
+    fun createDecisions(db: Database, @RequestBody decisions: List<DecisionRequest>): ResponseEntity<Unit> {
+        db.transaction { tx ->
+            decisions.forEach { decision ->
                 insertDecision(
-                    h,
+                    tx.handle,
                     decision.id,
                     decision.employeeId,
                     LocalDate.now(ZoneId.of("Europe/Helsinki")),
@@ -270,25 +267,25 @@ class DevApi(
     }
 
     @PostMapping("/fee-decisions")
-    fun createFeeDecisions(@RequestBody decisions: List<FeeDecision>): ResponseEntity<Unit> {
-        jdbi.transaction { h -> upsertFeeDecisions(h, objectMapper, decisions) }
+    fun createFeeDecisions(db: Database, @RequestBody decisions: List<FeeDecision>): ResponseEntity<Unit> {
+        db.transaction { tx -> upsertFeeDecisions(tx.handle, objectMapper, decisions) }
         return ResponseEntity.noContent().build()
     }
 
     @PostMapping("/value-decisions")
-    fun createVoucherValueDecisions(@RequestBody decisions: List<VoucherValueDecision>): ResponseEntity<Unit> {
-        jdbi.transaction { h -> h.upsertValueDecisions(objectMapper, decisions) }
+    fun createVoucherValueDecisions(db: Database, @RequestBody decisions: List<VoucherValueDecision>): ResponseEntity<Unit> {
+        db.transaction { tx -> tx.handle.upsertValueDecisions(objectMapper, decisions) }
         return ResponseEntity.noContent().build()
     }
 
     @PostMapping("/invoices")
-    fun createInvoices(@RequestBody invoices: List<Invoice>): ResponseEntity<Unit> {
-        jdbi.handle(insertInvoices(invoices))
+    fun createInvoices(db: Database, @RequestBody invoices: List<Invoice>): ResponseEntity<Unit> {
+        db.transaction { tx -> insertInvoices(invoices)(tx.handle) }
         return ResponseEntity.noContent().build()
     }
 
     @PostMapping("/pricing")
-    fun createPricing(@RequestBody pricing: DevPricing): ResponseEntity<UUID> = jdbi.transaction {
+    fun createPricing(db: Database, @RequestBody pricing: DevPricing): ResponseEntity<UUID> = db.transaction {
         ResponseEntity.ok(
             it.createUpdate(
                 """
@@ -301,53 +298,53 @@ RETURNING id
     }
 
     @PostMapping("/pricing/clean-up")
-    fun clearPricing(): ResponseEntity<Unit> {
-        jdbi.handle { it.createUpdate("DELETE FROM pricing").execute() }
+    fun clearPricing(db: Database): ResponseEntity<Unit> {
+        db.transaction { it.execute("DELETE FROM pricing") }
         return ResponseEntity.noContent().build()
     }
 
     @DeleteMapping("/pricing/{id}")
-    fun deletePricing(@PathVariable id: UUID): ResponseEntity<Unit> {
-        jdbi.transaction { it.deletePricing(id) }
+    fun deletePricing(db: Database, @PathVariable id: UUID): ResponseEntity<Unit> {
+        db.transaction { it.handle.deletePricing(id) }
         return ResponseEntity.noContent().build()
     }
 
     @DeleteMapping("/incomes/person/{id}")
-    fun deleteIncomesByPerson(@PathVariable id: UUID): ResponseEntity<Unit> {
-        jdbi.transaction { it.deleteIncome(id) }
+    fun deleteIncomesByPerson(db: Database, @PathVariable id: UUID): ResponseEntity<Unit> {
+        db.transaction { it.handle.deleteIncome(id) }
         return ResponseEntity.noContent().build()
     }
 
     @PostMapping("/person")
-    fun upsertPerson(@RequestBody body: DevPerson): ResponseEntity<PersonDTO> {
+    fun upsertPerson(db: Database, @RequestBody body: DevPerson): ResponseEntity<PersonDTO> {
         if (body.ssn == null) throw BadRequest("SSN is required for using this endpoint")
-        return jdbi.transaction { h ->
-            val person = h.getPersonBySSN(body.ssn)
+        return db.transaction { tx ->
+            val person = tx.handle.getPersonBySSN(body.ssn)
             val personDTO = body.toPersonDTO()
 
             if (person != null) {
-                h.updatePersonFromVtj(personDTO).let { ResponseEntity.ok(it) }
+                tx.handle.updatePersonFromVtj(personDTO).let { ResponseEntity.ok(it) }
             } else {
-                h.createPersonFromVtj(personDTO).let { ResponseEntity.ok(it) }
+                tx.handle.createPersonFromVtj(personDTO).let { ResponseEntity.ok(it) }
             }
         }
     }
 
     @PostMapping("/person/create")
-    fun createPerson(@RequestBody body: DevPerson): ResponseEntity<UUID> {
-        return jdbi.transaction { h ->
-            val personId = h.insertTestPerson(body)
+    fun createPerson(db: Database, @RequestBody body: DevPerson): ResponseEntity<UUID> {
+        return db.transaction { tx ->
+            val personId = tx.handle.insertTestPerson(body)
             val dto = body.copy(id = personId).toPersonDTO()
             if (dto.identity is ExternalIdentifier.SSN) {
-                h.updatePersonFromVtj(dto)
+                tx.handle.updatePersonFromVtj(dto)
             }
             ResponseEntity.ok(personId)
         }
     }
 
     @DeleteMapping("/person/{id}")
-    fun deletePerson(@PathVariable id: UUID): ResponseEntity<Unit> {
-        jdbi.transaction {
+    fun deletePerson(db: Database, @PathVariable id: UUID): ResponseEntity<Unit> {
+        db.transaction {
             it.execute(
                 """
 WITH applications AS (DELETE FROM application WHERE child_id = ? OR guardian_id = ? RETURNING id)
@@ -373,41 +370,39 @@ DELETE FROM application_form USING applications WHERE application_id = applicati
     }
 
     @DeleteMapping("/person/ssn/{ssn}")
-    fun deletePersonBySsn(@PathVariable ssn: String): ResponseEntity<Unit> {
-        jdbi.handle { h ->
+    fun deletePersonBySsn(db: Database, @PathVariable ssn: String): ResponseEntity<Unit> {
+        db.read { h ->
             h.createQuery("SELECT id FROM person WHERE social_security_number = :ssn")
                 .bind("ssn", ssn)
                 .mapTo<UUID>()
                 .firstOrNull()
-        }?.let { uuid ->
-            deletePerson(uuid)
-        }
+        }?.let { uuid -> deletePerson(db, uuid) }
         return ResponseEntity.ok().build()
     }
 
     @PostMapping("/parentship")
-    fun createParentships(@RequestBody parentships: List<DevParentship>): ResponseEntity<List<DevParentship>> {
-        return jdbi.handle { h -> parentships.map { h.insertTestParentship(it) } }.let { ResponseEntity.ok(it) }
+    fun createParentships(db: Database, @RequestBody parentships: List<DevParentship>): ResponseEntity<List<DevParentship>> {
+        return db.transaction { tx -> parentships.map { tx.handle.insertTestParentship(it) } }.let { ResponseEntity.ok(it) }
     }
 
     @GetMapping("/employee")
-    fun getEmployees(): ResponseEntity<List<Employee>> {
-        return ResponseEntity.ok(jdbi.transaction { it.getEmployees() })
+    fun getEmployees(db: Database): ResponseEntity<List<Employee>> {
+        return ResponseEntity.ok(db.read { it.handle.getEmployees() })
     }
 
     @PostMapping("/employee")
-    fun createEmployee(@RequestBody body: DevEmployee): ResponseEntity<UUID> {
-        return ResponseEntity.ok(jdbi.transaction { it.insertTestEmployee(body) })
+    fun createEmployee(db: Database, @RequestBody body: DevEmployee): ResponseEntity<UUID> {
+        return ResponseEntity.ok(db.transaction { it.handle.insertTestEmployee(body) })
     }
 
     @DeleteMapping("/employee/{aad}")
-    fun deleteEmployee(@PathVariable aad: UUID): ResponseEntity<Unit> {
-        jdbi.transaction { it.deleteEmployeeByAad(aad) }
+    fun deleteEmployee(db: Database, @PathVariable aad: UUID): ResponseEntity<Unit> {
+        db.transaction { it.handle.deleteEmployeeByAad(aad) }
         return ResponseEntity.ok().build()
     }
 
     @PostMapping("/employee/aad/{aad}")
-    fun upsertEmployeeByAad(@PathVariable aad: UUID, @RequestBody employee: DevEmployee): ResponseEntity<UUID> = jdbi.transaction {
+    fun upsertEmployeeByAad(db: Database, @PathVariable aad: UUID, @RequestBody employee: DevEmployee): ResponseEntity<UUID> = db.transaction {
         ResponseEntity.ok(
             it.createUpdate(
                 """
@@ -425,14 +420,14 @@ RETURNING id
     }
 
     @DeleteMapping("/employee/roles/aad/{aad}")
-    fun deleteEmployeeRolesByAad(@PathVariable aad: UUID): ResponseEntity<Unit> {
-        jdbi.transaction { it.deleteEmployeeRolesByAad(aad) }
+    fun deleteEmployeeRolesByAad(db: Database, @PathVariable aad: UUID): ResponseEntity<Unit> {
+        db.transaction { it.handle.deleteEmployeeRolesByAad(aad) }
         return ResponseEntity.ok().build()
     }
 
     @PostMapping("/child")
-    fun insertChild(@RequestBody body: DevPerson): ResponseEntity<UUID> = jdbi.transaction {
-        val id = it.insertTestPerson(
+    fun insertChild(db: Database, @RequestBody body: DevPerson): ResponseEntity<UUID> = db.transaction {
+        val id = it.handle.insertTestPerson(
             DevPerson(
                 id = body.id,
                 dateOfBirth = body.dateOfBirth,
@@ -445,25 +440,25 @@ RETURNING id
                 restrictedDetailsEnabled = body.restrictedDetailsEnabled
             )
         )
-        it.insertTestChild(DevChild(id = id))
+        it.handle.insertTestChild(DevChild(id = id))
         ResponseEntity.ok(id)
     }
 
     @PostMapping("/backup-cares")
-    fun createBackupCares(@RequestBody backupCares: List<DevBackupCare>): ResponseEntity<Unit> {
-        jdbi.transaction { h -> backupCares.forEach { insertTestBackupCare(h, it) } }
+    fun createBackupCares(db: Database, @RequestBody backupCares: List<DevBackupCare>): ResponseEntity<Unit> {
+        db.transaction { tx -> backupCares.forEach { insertTestBackupCare(tx.handle, it) } }
         return ResponseEntity.noContent().build()
     }
 
     @PostMapping("/applications")
-    fun createApplications(@RequestBody applications: List<ApplicationWithForm>): ResponseEntity<List<UUID>> {
+    fun createApplications(db: Database, @RequestBody applications: List<ApplicationWithForm>): ResponseEntity<List<UUID>> {
         val uuids =
-            jdbi.transaction { h ->
+            db.transaction { tx ->
                 applications.map { application ->
-                    val id = insertApplication(h, application)
+                    val id = insertApplication(tx.handle, application)
                     application.form?.let { applicationFormString ->
                         insertApplicationForm(
-                            h,
+                            tx.handle,
                             ApplicationForm(
                                 applicationId = id,
                                 revision = 1,
@@ -479,18 +474,19 @@ RETURNING id
 
     @PostMapping("/placement-plan/{application-id}")
     fun createPlacementPlan(
+        db: Database,
         @PathVariable("application-id") applicationId: UUID,
         @RequestBody placementPlan: PlacementPlan
     ): ResponseEntity<Unit> {
-        jdbi.transaction { h ->
-            val application = fetchApplicationDetails(h, applicationId)
+        db.transaction { tx ->
+            val application = fetchApplicationDetails(tx.handle, applicationId)
                 ?: throw NotFound("application $applicationId not found")
             val preschoolDaycarePeriod = if (placementPlan.preschoolDaycarePeriodStart != null) ClosedPeriod(
                 placementPlan.preschoolDaycarePeriodStart, placementPlan.preschoolDaycarePeriodEnd!!
             ) else null
 
             placementPlanService.createPlacementPlan(
-                h,
+                tx,
                 application,
                 DaycarePlacementPlan(
                     placementPlan.unitId,
@@ -504,12 +500,12 @@ RETURNING id
     }
 
     @GetMapping("/messages")
-    fun getMessages(): ResponseEntity<List<SuomiFiMessage>> {
+    fun getMessages(db: Database): ResponseEntity<List<SuomiFiMessage>> {
         return ResponseEntity.ok(MockEvakaMessageClient.getMessages())
     }
 
     @PostMapping("/messages/clean-up")
-    fun cleanUpMessages(): ResponseEntity<Unit> {
+    fun cleanUpMessages(db: Database): ResponseEntity<Unit> {
         MockEvakaMessageClient.clearMessages()
         return ResponseEntity.noContent().build()
     }
@@ -533,13 +529,13 @@ RETURNING id
     }
 
     @GetMapping("/vtj-persons/{ssn}")
-    fun getVtjPerson(@PathVariable ssn: String): ResponseEntity<VtjPerson> {
+    fun getVtjPerson(db: Database, @PathVariable ssn: String): ResponseEntity<VtjPerson> {
         return MockPersonDetailsService.getPerson(ssn)?.let { person -> ResponseEntity.ok(person) }
             ?: throw NotFound("vtj person $ssn was not found")
     }
 
     @DeleteMapping("/vtj-persons/{ssn}")
-    fun deleteVtjPerson(@PathVariable ssn: String): ResponseEntity<Unit> {
+    fun deleteVtjPerson(db: Database, @PathVariable ssn: String): ResponseEntity<Unit> {
         MockPersonDetailsService.deletePerson(ssn)
         return ResponseEntity.noContent().build()
     }
@@ -600,7 +596,7 @@ RETURNING id
     ): ResponseEntity<Unit> {
         db.transaction { tx ->
             ensureFakeAdminExists(tx.handle)
-            placementPlanService.getPlacementPlanDraft(tx.handle, applicationId)
+            placementPlanService.getPlacementPlanDraft(tx, applicationId)
                 .let {
                     DaycarePlacementPlan(
                         unitId = it.preferredUnits.first().id,
