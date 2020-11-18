@@ -102,6 +102,9 @@ export async function getApplication(
         ...guardian,
         dateOfBirth: LocalDate.parseIso(guardian.dateOfBirth),
         dateOfDeath: LocalDate.parseNullableIso(guardian.dateOfDeath)
+      })),
+      attachments: data.attachments.map((attachment) => ({
+        ...attachment
       }))
     }))
     .then(Success)

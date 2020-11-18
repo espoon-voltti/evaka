@@ -380,6 +380,13 @@ export const fi = {
       blocked:
         'Tämän päätöksen voi hyväksyä vasta esiopetuspäätöksen hyväksymisen jälkeen'
     },
+    attachments: {
+      title: 'Liitteet',
+      none: 'Hakemukseen ei liity liitteitä',
+      name: 'Tiedostonimi',
+      updated: 'Muutettu',
+      contentType: 'Tyyppi'
+    },
     state: {
       title: 'Hakemuksen tila',
       status: 'Hakemuksen tila',

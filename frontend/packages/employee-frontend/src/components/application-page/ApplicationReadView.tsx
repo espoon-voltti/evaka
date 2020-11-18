@@ -27,6 +27,7 @@ import VTJGuardian from 'components/application-page/VTJGuardian'
 import ApplicationStatusSection from 'components/application-page/ApplicationStatusSection'
 import ApplicationDecisionsSection from 'components/application-page/ApplicationDecisionsSection'
 import Colors from 'components/shared/Colors'
+import ApplicationAttachmentsSection from '~components/application-page/ApplicationAttachmentsSection'
 
 function YesNoValue({ value }: { value: boolean | null | undefined }) {
   const { i18n } = useTranslation()
@@ -92,7 +93,8 @@ function ApplicationReadView({
       guardianRestricted
     },
     decisions,
-    guardians
+    guardians,
+    attachments
   } = application
 
   const connectedDaycare = type === 'PRESCHOOL' && serviceNeed !== null
@@ -455,6 +457,8 @@ function ApplicationReadView({
         }
         reloadApplication={reloadApplication}
       />
+
+      <ApplicationAttachmentsSection attachments={attachments} />
 
       <ApplicationStatusSection application={application.application} />
     </div>
