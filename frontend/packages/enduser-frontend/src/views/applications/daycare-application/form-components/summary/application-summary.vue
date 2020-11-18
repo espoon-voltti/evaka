@@ -13,6 +13,24 @@ SPDX-License-Identifier: LGPL-2.1-or-later
       class="check-application-information"
       v-html="$t('form.summary.send-information')"
     ></p>
+
+    <div class="application-attachments-info" v-show="form.urgent && applicationFiles.length === 0">
+      <span class="float-left">
+        <font-awesome-icon
+          :icon="['fas', 'info-circle']"
+          size="1x"
+        ></font-awesome-icon>
+      </span>
+      <div class="application-attachments-info-content" >
+        <p v-html="$t('form.summary.attachments-info.headline')"></p>
+        <ul>
+          <li>{{ $t('form.daycare-application.service.expedited.label') }}</li>
+          <li>{{ $t('form.daycare-application.service.extended.label') }}</li>
+        </ul>
+        <a @click="goBack">{{ $t('form.summary.attachments-info.go-back-1') }}</a> <span>{{ $t('form.summary.attachments-info.go-back-2') }}</span>
+      </div>
+    </div>
+
     <div class="application-date-details">
       <span class="application-created">
         <span class="strong"
@@ -56,6 +74,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 </template>
 
 <script>
+  import { mapGetters } from 'vuex'
   import DaycareSummary from '@/views/applications/daycare-application/form-components/summary/application-daycare-summary'
 
   export default {
@@ -67,6 +86,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
       DaycareSummary
     },
     computed: {
+      ...mapGetters(['applicationFiles']),
       type() {
         return this.form.type.value
       }
@@ -78,6 +98,9 @@ SPDX-License-Identifier: LGPL-2.1-or-later
       },
       summaryCheckedChanged(event) {
         this.$emit('summaryCheckedChanged', event.target.checked)
+      },
+      goBack() {
+        return history.go(-1)
       }
     }
   }
@@ -195,5 +218,28 @@ SPDX-License-Identifier: LGPL-2.1-or-later
         border-color: rgba(gray, 0.8);
       }
     }
+  }
+
+  .application-attachments-info {
+    border: 1px solid $soft-blue;
+    padding: 1rem;
+    margin: 1rem 0;
+
+    & ul {
+      list-style-type: circle;
+      list-style-position: inside;
+    }
+
+    & li {
+      margin-left: 1rem;
+    }
+  }
+
+  .application-attachments-info-content {
+    padding: 0 2rem;
+  }
+
+  .float-left {
+    float: left;
   }
 </style>
