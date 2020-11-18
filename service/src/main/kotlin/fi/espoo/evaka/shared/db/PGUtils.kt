@@ -6,6 +6,7 @@ package fi.espoo.evaka.shared.db
 
 import fi.espoo.evaka.shared.domain.Conflict
 import org.postgresql.util.PSQLException
+import org.postgresql.util.PSQLState
 import java.time.LocalDate
 
 object PGConstants {
@@ -15,17 +16,11 @@ object PGConstants {
     val infinity: LocalDate = LocalDate.of(9999, 1, 1)
 }
 
-// postgres does not seem to have a proper enum class for these so listing necessary ones here...
-enum class PSQLErrorCodes(val code: String) {
-    UNIQUE_VIOLATION("23505"),
-    EXCLUSION_VIOLATION("23P01")
-}
-
 fun mapPSQLException(e: Exception): Exception {
     return if (e.cause is PSQLException) {
         val ex = e.cause as PSQLException
         when (ex.sqlState) {
-            PSQLErrorCodes.UNIQUE_VIOLATION.code, PSQLErrorCodes.EXCLUSION_VIOLATION.code ->
+            PSQLState.UNIQUE_VIOLATION.state, PSQLState.EXCLUSION_VIOLATION.state ->
                 Conflict("Unique or exclusion constraint violation in database")
             else -> ex
         }
