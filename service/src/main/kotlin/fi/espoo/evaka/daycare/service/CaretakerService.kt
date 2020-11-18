@@ -4,10 +4,10 @@
 
 package fi.espoo.evaka.daycare.service
 
-import fi.espoo.evaka.pis.dao.PGConstants
-import fi.espoo.evaka.pis.dao.mapPSQLException
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.db.PGConstants
 import fi.espoo.evaka.shared.db.getUUID
+import fi.espoo.evaka.shared.db.mapPSQLException
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.NotFound
 import org.springframework.stereotype.Service

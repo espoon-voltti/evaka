@@ -5,12 +5,12 @@
 package fi.espoo.evaka.pis.service
 
 import fi.espoo.evaka.pis.createPartnership
-import fi.espoo.evaka.pis.dao.mapPSQLException
 import fi.espoo.evaka.pis.deletePartnership
 import fi.espoo.evaka.pis.getPartnership
 import fi.espoo.evaka.pis.retryPartnership
 import fi.espoo.evaka.pis.updatePartnershipDuration
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.db.mapPSQLException
 import fi.espoo.evaka.shared.domain.NotFound
 import org.jdbi.v3.core.statement.UnableToExecuteStatementException
 import org.springframework.stereotype.Service

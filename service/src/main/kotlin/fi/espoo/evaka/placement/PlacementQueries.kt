@@ -4,7 +4,7 @@
 
 package fi.espoo.evaka.placement
 
-import fi.espoo.evaka.daycare.dao.PGConstants
+import fi.espoo.evaka.shared.db.PGConstants
 import fi.espoo.evaka.shared.db.bindNullable
 import fi.espoo.evaka.shared.db.getEnum
 import fi.espoo.evaka.shared.db.getUUID

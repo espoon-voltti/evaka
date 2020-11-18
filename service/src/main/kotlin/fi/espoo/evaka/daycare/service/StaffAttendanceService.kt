@@ -4,7 +4,7 @@
 
 package fi.espoo.evaka.daycare.service
 
-import fi.espoo.evaka.daycare.dao.PGConstants.maxDate
+import fi.espoo.evaka.shared.db.PGConstants.maxDate
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import org.jdbi.v3.core.kotlin.mapTo

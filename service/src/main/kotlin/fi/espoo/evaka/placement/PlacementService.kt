@@ -5,7 +5,7 @@
 package fi.espoo.evaka.placement
 
 import fi.espoo.evaka.application.utils.exhaust
-import fi.espoo.evaka.daycare.dao.mapPSQLException
+import fi.espoo.evaka.shared.db.mapPSQLException
 import fi.espoo.evaka.daycare.getDaycareGroup
 import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.db.Database

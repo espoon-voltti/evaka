@@ -2,13 +2,15 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-package fi.espoo.evaka.pis.dao
+package fi.espoo.evaka.shared.db
 
 import fi.espoo.evaka.shared.domain.Conflict
 import org.postgresql.util.PSQLException
 import java.time.LocalDate
 
 object PGConstants {
+    val minDate: LocalDate = LocalDate.of(0, 1, 1)
+    val maxDate: LocalDate = LocalDate.of(9999, 1, 1)
     // Jooq can't handle the actual postgres infinity value well, so just using some date far in the future instead
     val infinity: LocalDate = LocalDate.of(9999, 1, 1)
 }
