@@ -8,6 +8,7 @@ import fi.espoo.evaka.msg.mapper.ISfiMapper
 import fi.espoo.evaka.msg.service.sfi.ISfiClientService.MessageMetadata
 import fi.espoo.evaka.msg.sficlient.soap.LahetaViestiResponse
 import fi.espoo.evaka.msg.sficlient.soap.ObjectFactory
+import fi.espoo.voltti.logging.loggers.info
 import mu.KotlinLogging
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
@@ -30,7 +31,14 @@ class SfiClientService(
         val uniqueSfiMessageId = metadata.message.messageId ?: randomUUID().toString()
         val caseId = metadata.message.uniqueCaseIdentifier
 
-        logger.info { "Sending SFI message about $caseId with messageId: $uniqueSfiMessageId" }
+        logger.info(
+            mapOf(
+                "meta" to mapOf(
+                    "caseId" to caseId,
+                    "messageId" to uniqueSfiMessageId
+                )
+            )
+        ) { "Sending SFI message about $caseId with messageId: $uniqueSfiMessageId" }
 
         val request = sfiObjectFactory.createLahetaViesti()
             .apply {
@@ -48,10 +56,15 @@ class SfiClientService(
         return soapResponse.let(SfiResponse.Mapper::from)
             .let {
                 if (it.isOkResponse()) {
-                    logger.info {
-                        "Successfully sent SFI message about $caseId with messageId: $uniqueSfiMessageId " +
-                            "response: ${it.text}"
-                    }
+                    logger.info(
+                        mapOf(
+                            "meta" to mapOf(
+                                "caseId" to caseId,
+                                "messageId" to uniqueSfiMessageId,
+                                "response" to it.text
+                            )
+                        )
+                    ) { "Successfully sent SFI message about $caseId with messageId: $uniqueSfiMessageId response: ${it.text}" }
                 } else {
                     sfiErrorResponseHandler.handleError(it)
                 }
