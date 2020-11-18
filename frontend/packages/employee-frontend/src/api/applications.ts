@@ -104,7 +104,8 @@ export async function getApplication(
         dateOfDeath: LocalDate.parseNullableIso(guardian.dateOfDeath)
       })),
       attachments: data.attachments.map((attachment) => ({
-        ...attachment
+        ...attachment,
+        updated: new Date(attachment.updated)
       }))
     }))
     .then(Success)

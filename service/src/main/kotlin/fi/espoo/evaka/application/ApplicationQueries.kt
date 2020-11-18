@@ -30,6 +30,7 @@ import org.jdbi.v3.core.statement.StatementContext
 import org.postgresql.util.PGobject
 import java.sql.ResultSet
 import java.time.LocalDate
+import java.time.OffsetDateTime
 import java.util.UUID
 import kotlin.math.ceil
 import kotlin.math.max
@@ -462,7 +463,7 @@ fun fetchApplicationDetails(h: Handle, applicationId: UUID): ApplicationDetails?
         LEFT JOIN person c ON c.id = a.child_id
         LEFT JOIN person g1 ON g1.id = a.guardian_id
         LEFT JOIN (
-            SELECT application_id, jsonb_agg(jsonb_build_object('id', id, 'name', name, 'contentType', content_type)) json
+            SELECT application_id, jsonb_agg(jsonb_build_object('id', id, 'name', name, 'contentType', content_type, 'updated', updated)) json
             FROM attachment GROUP BY application_id
         ) att ON a.id = att.application_id
         WHERE a.id = :id
@@ -503,7 +504,8 @@ fun fetchApplicationDetails(h: Handle, applicationId: UUID): ApplicationDetails?
                     Attachment(
                         id = UUID.fromString(it["id"]),
                         name = it["name"]!!,
-                        contentType = it["contentType"]!!
+                        contentType = it["contentType"]!!,
+                        updated = OffsetDateTime.parse(it["updated"]!!) // LocalDate.parse(it["updated"]!!, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
                     )
                 }
             )
