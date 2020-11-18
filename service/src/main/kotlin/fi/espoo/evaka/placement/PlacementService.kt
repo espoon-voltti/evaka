@@ -5,10 +5,10 @@
 package fi.espoo.evaka.placement
 
 import fi.espoo.evaka.application.utils.exhaust
-import fi.espoo.evaka.shared.db.mapPSQLException
 import fi.espoo.evaka.daycare.getDaycareGroup
 import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.db.mapPSQLException
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.ClosedPeriod
 import fi.espoo.evaka.shared.domain.Conflict

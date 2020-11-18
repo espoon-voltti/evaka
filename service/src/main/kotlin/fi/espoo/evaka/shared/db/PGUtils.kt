@@ -16,6 +16,17 @@ object PGConstants {
     val infinity: LocalDate = LocalDate.of(9999, 1, 1)
 }
 
+/**
+ * Locates the closest PSQLException (if any) in the cause chain of the throwable
+ */
+fun Throwable.psqlCause(): PSQLException? {
+    var cause = this.cause
+    while (cause != null && cause !is PSQLException) {
+        cause = cause.cause
+    }
+    return cause as? PSQLException
+}
+
 fun mapPSQLException(e: Exception): Exception {
     return if (e.cause is PSQLException) {
         val ex = e.cause as PSQLException

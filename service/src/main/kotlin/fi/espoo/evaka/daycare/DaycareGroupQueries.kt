@@ -4,8 +4,8 @@
 
 package fi.espoo.evaka.daycare
 
-import fi.espoo.evaka.shared.db.PGConstants.maxDate
 import fi.espoo.evaka.daycare.service.DaycareGroup
+import fi.espoo.evaka.shared.db.PGConstants.maxDate
 import fi.espoo.evaka.shared.db.bindNullable
 import fi.espoo.evaka.shared.domain.ClosedPeriod
 import fi.espoo.evaka.shared.domain.NotFound

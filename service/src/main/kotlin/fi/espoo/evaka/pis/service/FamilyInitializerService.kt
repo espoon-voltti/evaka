@@ -16,8 +16,10 @@ import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.InitializeFamilyFromApplication
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.db.psqlCause
 import mu.KotlinLogging
 import org.jdbi.v3.core.statement.UnableToExecuteStatementException
+import org.postgresql.util.PSQLState
 import org.springframework.stereotype.Service
 import java.time.LocalDate
 import java.util.UUID
@@ -168,13 +170,18 @@ class FamilyInitializerService(
                     )
                 }
             } catch (e: UnableToExecuteStatementException) {
-                tx.handle.createParentship(
-                    childId = childId,
-                    headOfChildId = headOfChildId,
-                    startDate = startDate,
-                    endDate = null,
-                    conflict = true
-                )
+                when (e.psqlCause()?.sqlState) {
+                    PSQLState.UNIQUE_VIOLATION.state, PSQLState.EXCLUSION_VIOLATION.state -> {
+                        tx.handle.createParentship(
+                            childId = childId,
+                            headOfChildId = headOfChildId,
+                            startDate = startDate,
+                            endDate = null,
+                            conflict = true
+                        )
+                    }
+                    else -> throw e
+                }
             }
         }
     }
@@ -202,13 +209,18 @@ class FamilyInitializerService(
                     )
                 }
             } catch (e: UnableToExecuteStatementException) {
-                tx.handle.createPartnership(
-                    personId1 = personId1,
-                    personId2 = personId2,
-                    startDate = startDate,
-                    endDate = null,
-                    conflict = true
-                )
+                when (e.psqlCause()?.sqlState) {
+                    PSQLState.UNIQUE_VIOLATION.state, PSQLState.EXCLUSION_VIOLATION.state -> {
+                        tx.handle.createPartnership(
+                            personId1 = personId1,
+                            personId2 = personId2,
+                            startDate = startDate,
+                            endDate = null,
+                            conflict = true
+                        )
+                    }
+                    else -> throw e
+                }
             }
         }
     }

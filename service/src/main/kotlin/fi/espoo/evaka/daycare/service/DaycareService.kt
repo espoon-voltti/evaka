@@ -13,10 +13,10 @@ import fi.espoo.evaka.daycare.initCaretakers
 import fi.espoo.evaka.daycare.isValidDaycareId
 import fi.espoo.evaka.placement.getDaycareGroupPlacements
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.db.psqlCause
 import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.shared.domain.NotFound
 import org.jdbi.v3.core.statement.UnableToExecuteStatementException
-import org.postgresql.util.PSQLException
 import org.postgresql.util.PSQLState
 import org.springframework.stereotype.Service
 import java.time.LocalDate
@@ -59,7 +59,7 @@ class DaycareService {
 
         tx.handle.deleteDaycareGroup(groupId)
     } catch (e: UnableToExecuteStatementException) {
-        throw (e.cause as? PSQLException)?.takeIf { it.serverErrorMessage?.sqlState == PSQLState.FOREIGN_KEY_VIOLATION.state }
+        throw e.psqlCause()?.takeIf { it.sqlState == PSQLState.FOREIGN_KEY_VIOLATION.state }
             ?.let { Conflict("Cannot delete group which is still referred to from other data") }
             ?: e
     }
