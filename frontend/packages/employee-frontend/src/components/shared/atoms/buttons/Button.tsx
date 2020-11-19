@@ -10,8 +10,9 @@ import classNames from 'classnames'
 import { defaultButtonTextStyle } from 'components/shared/atoms/buttons/button-commons'
 import { BaseProps } from 'components/shared/utils'
 import { DefaultMargins } from 'components/shared/layout/white-space'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { fasCheckCircle, fasExclamationTriangle } from 'icon-set'
+import UnderRowStatusIcon, {
+  InfoStatus
+} from 'components/shared/UnderRowStatusIcon'
 
 const Wrapper = styled.div`
   min-width: 0; // needed for correct overflow behavior
@@ -76,7 +77,7 @@ export const StyledButton = styled.button`
   ${defaultButtonTextStyle}
 `
 
-const UnderRow = styled.div`
+const ButtonUnderRow = styled.div`
   padding: 0 12px;
   margin-top: ${DefaultMargins.xxs};
   margin-bottom: -20px;
@@ -102,13 +103,6 @@ const UnderRow = styled.div`
     color: ${Colors.accents.orangeDark};
   }
 `
-
-const StatusIcon = styled.div`
-  font-size: 15px;
-  margin-left: ${DefaultMargins.xs};
-`
-
-export type InfoStatus = 'warning' | 'success'
 
 interface ButtonProps extends BaseProps {
   onClick?: (e: React.MouseEvent) => unknown
@@ -161,23 +155,10 @@ function Button({
       >
         {text}
       </StyledButton>
-      <UnderRow className={classNames(info?.status)}>
+      <ButtonUnderRow className={classNames(info?.status)}>
         <span>{info?.text}</span>
-        <StatusIcon>
-          {info?.status === 'warning' && (
-            <FontAwesomeIcon
-              icon={fasExclamationTriangle}
-              color={Colors.accents.orange}
-            />
-          )}
-          {info?.status === 'success' && (
-            <FontAwesomeIcon
-              icon={fasCheckCircle}
-              color={Colors.accents.green}
-            />
-          )}
-        </StatusIcon>
-      </UnderRow>
+        <UnderRowStatusIcon status={info?.status} />
+      </ButtonUnderRow>
     </Wrapper>
   )
 }

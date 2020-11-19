@@ -9,11 +9,12 @@ import styled from 'styled-components'
 import FocusLock from 'react-focus-lock'
 
 import Title from '~components/shared/atoms/Title'
-import Button, { InfoStatus } from '~components/shared/atoms/buttons/Button'
+import Button from '~components/shared/atoms/buttons/Button'
 import Colors from '~components/shared/Colors'
 import { DefaultMargins, Gap } from 'components/shared/layout/white-space'
 import { useTranslation } from '~state/i18n'
 import { modalZIndex } from '~components/shared/layout/z-helpers'
+import { InfoStatus } from 'components/shared/UnderRowStatusIcon'
 
 export const DimmedModal = styled.div``
 

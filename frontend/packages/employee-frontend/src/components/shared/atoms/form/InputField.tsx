@@ -8,10 +8,13 @@ import styled from 'styled-components'
 import Colors from 'components/shared/Colors'
 import classNames from 'classnames'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { fasCheckCircle, fasExclamationTriangle, faTimes } from 'icon-set'
+import { faTimes } from 'icon-set'
 import { DefaultMargins } from 'components/shared/layout/white-space'
 import { IconProp } from '@fortawesome/fontawesome-svg-core'
 import TextareaAutosize from 'react-autosize-textarea'
+import UnderRowStatusIcon, {
+  InfoStatus
+} from 'components/shared/UnderRowStatusIcon'
 
 const Wrapper = styled.div`
   min-width: 0; // needed for correct overflow behavior
@@ -108,7 +111,7 @@ const InputIcon = styled.div`
   }
 `
 
-const UnderRow = styled.div`
+const InputFieldUnderRow = styled.div`
   height: 16px;
   padding: 0 12px;
   margin-top: ${DefaultMargins.xxs};
@@ -132,13 +135,6 @@ const UnderRow = styled.div`
     color: ${Colors.accents.orangeDark};
   }
 `
-
-const StatusIcon = styled.div`
-  font-size: 15px;
-  margin-left: ${DefaultMargins.xs};
-`
-
-type InfoStatus = 'warning' | 'success'
 
 interface TextInputProps extends BaseProps {
   value: string
@@ -222,23 +218,10 @@ function InputField({
         )}
       </InputRow>
       {info && (
-        <UnderRow className={classNames(info.status)}>
+        <InputFieldUnderRow className={classNames(info.status)}>
           <span>{info.text}</span>
-          <StatusIcon>
-            {info.status === 'warning' && (
-              <FontAwesomeIcon
-                icon={fasExclamationTriangle}
-                color={Colors.accents.orange}
-              />
-            )}
-            {info.status === 'success' && (
-              <FontAwesomeIcon
-                icon={fasCheckCircle}
-                color={Colors.accents.green}
-              />
-            )}
-          </StatusIcon>
-        </UnderRow>
+          <UnderRowStatusIcon status={info?.status} />
+        </InputFieldUnderRow>
       )}
     </Wrapper>
   )

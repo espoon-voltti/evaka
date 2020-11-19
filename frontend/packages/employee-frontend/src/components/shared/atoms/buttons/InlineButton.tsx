@@ -11,7 +11,9 @@ import classNames from 'classnames'
 import { defaultButtonTextStyle } from 'components/shared/atoms/buttons/button-commons'
 import { BaseProps } from 'components/shared/utils'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { fasCheckCircle, fasExclamationTriangle } from 'icon-set'
+import UnderRowStatusIcon, {
+  InfoStatus
+} from 'components/shared/UnderRowStatusIcon'
 
 const Wrapper = styled.div`
   min-width: 0; // needed for correct overflow behavior
@@ -50,7 +52,7 @@ const StyledButton = styled.button`
   ${defaultButtonTextStyle}
 `
 
-const UnderRow = styled.div`
+const InlineButtonUnderRow = styled.div`
   height: 16px;
   padding: 0 12px;
   margin-top: ${DefaultMargins.xxs};
@@ -77,17 +79,10 @@ const UnderRow = styled.div`
   }
 `
 
-const StatusIcon = styled.div`
-  font-size: 15px;
-  margin-left: ${DefaultMargins.xs};
-`
-
 const UnderRowWrapper = styled.div`
   position: absolute;
   left: 50%;
 `
-
-type InfoStatus = 'warning' | 'success'
 
 interface InlineButtonProps extends BaseProps {
   onClick: () => unknown
@@ -123,23 +118,10 @@ function InlineButton({
       </StyledButton>
       {info && (
         <UnderRowWrapper>
-          <UnderRow className={classNames(info.status)}>
+          <InlineButtonUnderRow className={classNames(info.status)}>
             <span>{info.text}</span>
-            <StatusIcon>
-              {info.status === 'warning' && (
-                <FontAwesomeIcon
-                  icon={fasExclamationTriangle}
-                  color={Colors.accents.orange}
-                />
-              )}
-              {info.status === 'success' && (
-                <FontAwesomeIcon
-                  icon={fasCheckCircle}
-                  color={Colors.accents.green}
-                />
-              )}
-            </StatusIcon>
-          </UnderRow>
+            <UnderRowStatusIcon status={info?.status} />
+          </InlineButtonUnderRow>
         </UnderRowWrapper>
       )}
     </Wrapper>
