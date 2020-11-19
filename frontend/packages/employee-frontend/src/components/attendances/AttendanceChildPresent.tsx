@@ -1,70 +1,157 @@
 // SPDX-FileCopyrightText: 2017-2020 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
-import React, { Fragment, useState } from 'react'
+import React, { Fragment, useContext, useEffect, useState } from 'react'
 import { useHistory } from 'react-router-dom'
 
-import { childDeparts, ChildInGroup } from '~api/unit'
+import {
+  AttendanceChild,
+  childDeparts,
+  getDaycareAttendances,
+  returnToComing
+} from '~api/attendances'
 import InputField from '~components/shared/atoms/form/InputField'
+import { FixedSpaceColumn } from '~components/shared/layout/flex-helpers'
+import { AttendanceUIContext } from '~state/attendance-ui'
 import { useTranslation } from '~state/i18n'
 import { UUID } from '~types'
-import { WideAsyncButton } from './AttendanceChildDeparted'
-import { FlexLabel } from './AttendanceChildPage'
+import { FlexLabel, getCurrentTime, getTimeString } from './AttendanceChildPage'
+import {
+  BigWideButton,
+  InlineWideAsyncButton,
+  WideAsyncButton
+} from './components'
 
 interface Props {
-  child: ChildInGroup
+  child: AttendanceChild
   unitId: UUID
-  groupid: UUID | 'all'
+  groupId: UUID | 'all'
 }
 
 export default React.memo(function AttendanceChildPresent({
   child,
   unitId,
-  groupid
+  groupId: groupIdOrAll
 }: Props) {
   const history = useHistory()
   const { i18n } = useTranslation()
 
-  const [time, setTime] = useState<string>(
-    new Date().getHours() < 10
-      ? new Date().getMinutes() < 10
-        ? `0${new Date().getHours()}:0${new Date().getMinutes()}`
-        : `0${new Date().getHours()}:${new Date().getMinutes()}`
-      : new Date().getMinutes() < 10
-      ? `${new Date().getHours()}:0${new Date().getMinutes()}`
-      : `${new Date().getHours()}:${new Date().getMinutes()}`
-  )
+  const [time, setTime] = useState<string>(getCurrentTime())
+  const [markDepart, setMarkDepart] = useState<boolean>(false)
+
+  const { filterAndSetAttendanceResponse } = useContext(AttendanceUIContext)
+
+  useEffect(() => {
+    void getDaycareAttendances(unitId).then((res) =>
+      filterAndSetAttendanceResponse(res, groupIdOrAll)
+    )
+    return history.listen((location) => {
+      if (location.pathname.includes('/depart')) {
+        setTime(getCurrentTime())
+        setMarkDepart(true)
+      } else {
+        setMarkDepart(false)
+        void getDaycareAttendances(unitId).then((res) =>
+          filterAndSetAttendanceResponse(res, groupIdOrAll)
+        )
+      }
+    })
+  }, [])
 
   function markDeparted() {
-    const hours = parseInt(time.slice(0, 2))
-    const minutes = parseInt(time.slice(3, 5))
-    const today = new Date()
-    today.setHours(hours)
-    today.setMinutes(minutes)
-    return childDeparts(child.childId, today)
+    return childDeparts(unitId, child.id, time)
+  }
+
+  function returnToComingCall() {
+    return returnToComing(unitId, child.id)
   }
 
   return (
     <Fragment>
-      <WideAsyncButton
-        primary
-        text={i18n.attendances.actions.markLeaving}
-        onClick={markDeparted}
-        onSuccess={() =>
-          history.push(`/units/${unitId}/attendance/${groupid}/departed`)
-        }
-        data-qa="mark-departed"
-      />
-      <FlexLabel>
-        <span>{i18n.attendances.timeLabel}</span>
-        <InputField
-          onChange={setTime}
-          value={time}
-          width="s"
-          type="time"
-          data-qa="set-time"
-        />
-      </FlexLabel>
+      {!markDepart && (
+        <FixedSpaceColumn>
+          <FlexLabel>
+            <span>{i18n.attendances.arrivalTime}</span>
+            <InputField
+              onChange={undefined}
+              value={
+                child.attendance?.arrived
+                  ? getTimeString(child.attendance.arrived)
+                  : 'xx:xx'
+              }
+              width="s"
+              type="time"
+              data-qa="arrival-time"
+              readonly
+            />
+          </FlexLabel>
+
+          <BigWideButton
+            primary
+            text={i18n.attendances.actions.markLeaving}
+            onClick={() =>
+              history.push(
+                `/units/${unitId}/groups/${groupIdOrAll}/childattendance/${child.id}/depart`
+              )
+            }
+          />
+          <InlineWideAsyncButton
+            text={i18n.attendances.actions.returnToComing}
+            onClick={() => returnToComingCall()}
+            onSuccess={async () => {
+              await getDaycareAttendances(unitId).then((res) =>
+                filterAndSetAttendanceResponse(res, groupIdOrAll)
+              )
+              history.goBack()
+            }}
+            data-qa="delete-attendance"
+          />
+        </FixedSpaceColumn>
+      )}
+
+      {markDepart && (
+        <FixedSpaceColumn>
+          <FlexLabel>
+            <span>{i18n.attendances.arrivalTime}</span>
+            <InputField
+              onChange={setTime}
+              value={
+                child.attendance?.arrived
+                  ? getTimeString(child.attendance.arrived)
+                  : 'xx:xx'
+              }
+              width="s"
+              type="time"
+              data-qa="set-time"
+              readonly
+            />
+          </FlexLabel>
+
+          <FlexLabel>
+            <span>{i18n.attendances.departureTime}</span>
+            <InputField
+              onChange={setTime}
+              value={time}
+              width="s"
+              type="time"
+              data-qa="set-time"
+            />
+          </FlexLabel>
+
+          <WideAsyncButton
+            primary
+            text={i18n.common.confirm}
+            onClick={markDeparted}
+            onSuccess={async () => {
+              await getDaycareAttendances(unitId).then((res) =>
+                filterAndSetAttendanceResponse(res, groupIdOrAll)
+              )
+              history.goBack()
+            }}
+            data-qa="mark-departed"
+          />
+        </FixedSpaceColumn>
+      )}
     </Fragment>
   )
 })

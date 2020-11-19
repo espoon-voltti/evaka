@@ -2,27 +2,18 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { Fragment, useEffect, useState } from 'react'
+import React, { Fragment, useContext, useEffect, useState } from 'react'
 import { useHistory, useParams } from 'react-router-dom'
 import styled from 'styled-components'
 import MetaTags from 'react-meta-tags'
 
-import LocalDate from '@evaka/lib-common/src/local-date'
-import { isLoading, isSuccess, Loading, Result } from '~api'
-import {
-  ChildInGroup,
-  getDaycareAttendances,
-  getUnitData,
-  UnitData
-} from '~api/unit'
+import { isLoading, isSuccess } from '~api'
 import { ContentArea } from '~components/shared/layout/Container'
-import { DaycareGroup } from '~types/unit'
 import { UUID } from '~types'
 import RoundIcon from '~components/shared/atoms/RoundIcon'
 import { faChevronLeft, farUser } from '~icon-set'
 import Colors from '~components/shared/Colors'
 import { DefaultMargins, Gap } from '~components/shared/layout/white-space'
-import Title from '~components/shared/atoms/Title'
 import { useTranslation } from '~state/i18n'
 import Loader from '~components/shared/atoms/Loader'
 import { FlexColumn } from './AttendanceGroupSelectorPage'
@@ -31,6 +22,9 @@ import AttendanceChildComing from './AttendanceChildComing'
 import AttendanceChildPresent from './AttendanceChildPresent'
 import AttendanceChildDeparted from './AttendanceChildDeparted'
 import IconButton from '~components/shared/atoms/buttons/IconButton'
+import { AttendanceChild, getDaycareAttendances, Group } from '~api/attendances'
+import { AttendanceUIContext } from '~state/attendance-ui'
+import { FixedSpaceRow } from '~components/shared/layout/flex-helpers'
 
 const FullHeightContentArea = styled(ContentArea)`
   min-height: 100vh;
@@ -38,22 +32,7 @@ const FullHeightContentArea = styled(ContentArea)`
   flex-direction: column;
 `
 
-const Centered = styled.div`
-  display: flex;
-  justify-content: center;
-`
-
-const Titles = styled.div`
-  h1,
-  h2 {
-    font-weight: 600;
-  }
-
-  h2 {
-    font-family: 'Open Sans', 'Arial', sans-serif;
-    text-transform: uppercase;
-  }
-`
+const Titles = styled.div``
 
 export const FlexLabel = styled(Label)`
   display: flex;
@@ -62,10 +41,6 @@ export const FlexLabel = styled(Label)`
   span {
     margin-right: ${DefaultMargins.m};
   }
-`
-
-const BlackTitle = styled(Title)`
-  color: ${Colors.greyscale.darkest};
 `
 
 const ChildStatus = styled.div`
@@ -83,43 +58,64 @@ const BackButton = styled(IconButton)`
   color: ${Colors.greyscale.medium};
 `
 
+const CustomTitle = styled.h1`
+  font-style: normal;
+  font-weight: 600;
+  font-size: 20px;
+  line-height: 30px;
+  margin-block-start: 0;
+  margin-block-end: 0;
+`
+
+const GroupName = styled.div`
+  font-family: 'Open Sans', 'Arial', sans-serif;
+  font-style: normal;
+  font-weight: 600;
+  font-size: 15px;
+  line-height: 22px;
+  text-transform: uppercase;
+  color: ${Colors.greyscale.dark};
+`
+
 export default React.memo(function AttendanceChildPage() {
   const { i18n } = useTranslation()
   const history = useHistory()
 
-  const { unitId, groupId, childId } = useParams<{
+  const { unitId, groupId: groupIdOrAll, childId } = useParams<{
     unitId: UUID
     groupId: UUID | 'all'
     childId: UUID
   }>()
 
-  const [child, setChild] = useState<ChildInGroup | undefined>(undefined)
-  const [group, setGroup] = useState<DaycareGroup | undefined>(undefined)
-  const [unitData, setUnitData] = useState<Result<UnitData>>(Loading())
-  const [groupAttendances, setGoupAttendances] = useState<
-    Result<ChildInGroup[]>
-  >(Loading())
+  const [child, setChild] = useState<AttendanceChild | undefined>(undefined)
+  const [group, setGroup] = useState<Group | undefined>(undefined)
+  const { attendanceResponse, filterAndSetAttendanceResponse } = useContext(
+    AttendanceUIContext
+  )
 
   useEffect(() => {
-    void getUnitData(unitId, LocalDate.today(), LocalDate.today()).then(
-      setUnitData
+    void getDaycareAttendances(unitId).then((res) =>
+      filterAndSetAttendanceResponse(res, groupIdOrAll)
     )
-    void getDaycareAttendances(unitId).then(setGoupAttendances)
   }, [])
 
   useEffect(() => {
-    if (isSuccess(groupAttendances))
-      setChild(groupAttendances.data.find((elem) => elem.childId === childId))
-    if (isSuccess(unitData) && child) {
+    if (isSuccess(attendanceResponse)) {
+      const child = attendanceResponse.data.children.find(
+        (child) => child.id === childId
+      )
+      setChild(child)
       setGroup(
-        unitData.data.groups.find(
-          (elem: DaycareGroup) => elem.id === child.daycareGroupId
+        attendanceResponse.data.unit.groups.find(
+          (group: Group) => group.id === child?.groupId
         )
       )
     }
-  }, [groupAttendances, unitData])
+  }, [attendanceResponse])
 
-  const loading = isLoading(groupAttendances)
+  const loading = isLoading(attendanceResponse)
+
+  console.log('loading: ', loading)
 
   return (
     <Fragment>
@@ -132,7 +128,7 @@ export default React.memo(function AttendanceChildPage() {
           <BackButton onClick={() => history.goBack()} icon={faChevronLeft} />
           {child && group && !loading ? (
             <Fragment>
-              <Centered>
+              <FixedSpaceRow>
                 <RoundIcon
                   content={farUser}
                   color={
@@ -148,21 +144,18 @@ export default React.memo(function AttendanceChildPage() {
                   }
                   size="XXL"
                 />
-              </Centered>
-              <Gap size={'s'} />
-              <Titles>
-                <BlackTitle size={1} centered smaller>
-                  {child.firstName} {child.lastName}
-                </BlackTitle>
-                <Title size={2} centered smaller>
-                  {group.name}
-                </Title>
-              </Titles>
-              <Centered>
-                <ChildStatus>
-                  {i18n.attendances.types[child.status]}
-                </ChildStatus>
-              </Centered>
+                <Titles>
+                  <CustomTitle>
+                    {child.firstName} {child.lastName}
+                  </CustomTitle>
+                  <GroupName>{group.name}</GroupName>
+                  <Gap size={'s'} />
+                  <ChildStatus>
+                    {i18n.attendances.types[child.status]}
+                  </ChildStatus>
+                </Titles>
+              </FixedSpaceRow>
+
               <Gap size={'s'} />
               <FlexColumn>
                 {child.status === 'COMING' && (
@@ -170,21 +163,21 @@ export default React.memo(function AttendanceChildPage() {
                     unitId={unitId}
                     child={child}
                     group={group}
-                    groupId={groupId}
+                    groupId={groupIdOrAll}
                   />
                 )}
                 {child.status === 'PRESENT' && (
                   <AttendanceChildPresent
                     child={child}
                     unitId={unitId}
-                    groupid={groupId}
+                    groupId={groupIdOrAll}
                   />
                 )}
-                {child.status === 'DEPARTED' && child.childAttendanceId && (
+                {child.status === 'DEPARTED' && (
                   <AttendanceChildDeparted
-                    childAttendanceId={child.childAttendanceId}
+                    child={child}
                     unitId={unitId}
-                    groupid={groupId}
+                    groupId={groupIdOrAll}
                   />
                 )}
               </FlexColumn>
@@ -197,3 +190,17 @@ export default React.memo(function AttendanceChildPage() {
     </Fragment>
   )
 })
+
+export function getCurrentTime() {
+  return getTimeString(new Date())
+}
+
+export function getTimeString(date: Date) {
+  return date.getHours() < 10
+    ? date.getMinutes() < 10
+      ? `0${date.getHours()}:0${date.getMinutes()}`
+      : `0${date.getHours()}:${date.getMinutes()}`
+    : date.getMinutes() < 10
+    ? `${date.getHours()}:0${date.getMinutes()}`
+    : `${date.getHours()}:${date.getMinutes()}`
+}

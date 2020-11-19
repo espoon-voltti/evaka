@@ -2,27 +2,33 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { Fragment, useState } from 'react'
+import React, { Fragment, useContext, useEffect, useState } from 'react'
 import { useHistory } from 'react-router-dom'
-import styled from 'styled-components'
 
-import { postChildAbsence } from '~api/absences'
-import { childArrives, ChildInGroup } from '~api/unit'
-import AsyncButton from '~components/shared/atoms/buttons/AsyncButton'
+import {
+  AttendanceChild,
+  childArrivesPOST,
+  getDaycareAttendances,
+  Group,
+  postFullDayAbsence
+} from '~api/attendances'
 import InputField from '~components/shared/atoms/form/InputField'
 import Loader from '~components/shared/atoms/Loader'
 import Colors from '~components/shared/Colors'
-import { DefaultMargins, Gap } from '~components/shared/layout/white-space'
+import { FixedSpaceColumn } from '~components/shared/layout/flex-helpers'
+import { Gap } from '~components/shared/layout/white-space'
+import { AttendanceUIContext } from '~state/attendance-ui'
 import { useTranslation } from '~state/i18n'
 import { UUID } from '~types'
 import { AbsenceType, AbsenceTypes } from '~types/absence'
-import { DaycareGroup } from '~types/unit'
-import { FlexLabel } from './AttendanceChildPage'
+import { FlexLabel, getCurrentTime } from './AttendanceChildPage'
+import { Flex } from './AttendanceGroupSelectorPage'
 import {
-  CustomButton,
-  CustomButtonProps,
-  Flex
-} from './AttendanceGroupSelectorPage'
+  CustomAsyncButton,
+  BigWideButton,
+  BigWideInlineButton,
+  WideAsyncButton
+} from './components'
 
 export const absenceBackgroundColours: { [key in AbsenceType]: string } = {
   UNKNOWN_ABSENCE: Colors.accents.green,
@@ -62,82 +68,66 @@ export const absenceColours: { [key in AbsenceType]: string } = {
 
 interface Props {
   unitId: UUID
-  child: ChildInGroup
-  group: DaycareGroup
+  child: AttendanceChild
+  group: Group
   groupId: UUID | 'all'
 }
-
-const CustomAsyncButton = styled(AsyncButton)<CustomButtonProps>`
-  @media screen and (max-width: 1023px) {
-    margin-bottom: ${DefaultMargins.s};
-    width: calc(50vw - 40px);
-    white-space: normal;
-    height: 64px;
-  }
-
-  @media screen and (min-width: 1024px) {
-    margin-right: ${DefaultMargins.s};
-  }
-  ${(p) => (p.color ? `color: ${p.color};` : '')}
-  ${(p) => (p.backgroundColor ? `background-color: ${p.backgroundColor};` : '')}
-  ${(p) => (p.borderColor ? `border-color: ${p.borderColor};` : '')}
-
-  :hover {
-    ${(p) => (p.color ? `color: ${p.color};` : '')}
-    ${(p) =>
-      p.backgroundColor ? `background-color: ${p.backgroundColor};` : ''}
-  ${(p) => (p.borderColor ? `border-color: ${p.borderColor};` : '')}
-  }
-`
 
 export default React.memo(function AttendanceChildComing({
   unitId,
   child,
   group,
-  groupId
+  groupId: groupIdOrAll
 }: Props) {
   const history = useHistory()
   const { i18n } = useTranslation()
 
-  const [time, setTime] = useState<string>(
-    new Date().getHours() < 10
-      ? new Date().getMinutes() < 10
-        ? `0${new Date().getHours()}:0${new Date().getMinutes()}`
-        : `0${new Date().getHours()}:${new Date().getMinutes()}`
-      : new Date().getMinutes() < 10
-      ? `${new Date().getHours()}:0${new Date().getMinutes()}`
-      : `${new Date().getHours()}:${new Date().getMinutes()}`
-  )
+  const [time, setTime] = useState<string>(getCurrentTime())
   const [markAbsence, setMarkAbsence] = useState<boolean>(false)
+  const [markPresent, setMarkPresent] = useState<boolean>(false)
 
-  function markPresent() {
-    const hours = parseInt(time.slice(0, 2))
-    const minutes = parseInt(time.slice(3, 5))
-    const today = new Date()
-    today.setHours(hours)
-    today.setMinutes(minutes)
-    return childArrives(child.childId, today)
-  }
+  const { filterAndSetAttendanceResponse } = useContext(AttendanceUIContext)
+
+  useEffect(() => {
+    void getDaycareAttendances(unitId).then((res) =>
+      filterAndSetAttendanceResponse(res, groupIdOrAll)
+    )
+    return history.listen((location) => {
+      if (location.pathname.includes('/present')) {
+        setTime(getCurrentTime())
+        setMarkPresent(true)
+      } else if (location.pathname.includes('/absent')) {
+        setMarkAbsence(true)
+      } else {
+        setMarkPresent(false)
+        setMarkAbsence(false)
+        void getDaycareAttendances(unitId).then((res) =>
+          filterAndSetAttendanceResponse(res, groupIdOrAll)
+        )
+      }
+    })
+  }, [])
 
   function selectAbsenceType(absenceType: AbsenceType) {
-    const hours = parseInt(time.slice(0, 2))
-    const minutes = parseInt(time.slice(3, 5))
-    const today = new Date()
-    today.setHours(hours)
-    today.setMinutes(minutes)
-    // TODO: remove hardcoded 'PRESCHOOL
-    return postChildAbsence(absenceType, 'PRESCHOOL', child.childId)
+    return postFullDayAbsence(unitId, child.id, absenceType)
+  }
+
+  function childArrives() {
+    return childArrivesPOST(unitId, child.id, time)
   }
 
   return (
     <Fragment>
-      {markAbsence ? (
-        child && group ? (
+      {markAbsence &&
+        (child && group ? (
           <Fragment>
             <Gap size={'s'} />
             <Flex>
               {AbsenceTypes.filter(
-                (absenceType) => absenceType !== 'PRESENCE'
+                (absenceType) =>
+                  absenceType !== 'PRESENCE' &&
+                  absenceType !== 'PARENTLEAVE' &&
+                  absenceType !== 'FORCE_MAJEURE'
               ).map((absenceType) => (
                 <CustomAsyncButton
                   backgroundColor={absenceBackgroundColours[absenceType]}
@@ -146,11 +136,12 @@ export default React.memo(function AttendanceChildComing({
                   key={absenceType}
                   text={i18n.absences.absenceTypes[absenceType]}
                   onClick={() => selectAbsenceType(absenceType)}
-                  onSuccess={() =>
-                    history.push(
-                      `/units/${unitId}/attendance/${groupId}/absent`
+                  onSuccess={async () => {
+                    await getDaycareAttendances(unitId).then((res) =>
+                      filterAndSetAttendanceResponse(res, groupIdOrAll)
                     )
-                  }
+                    history.goBack()
+                  }}
                   data-qa={`mark-absent-${absenceType}`}
                 />
               ))}
@@ -158,35 +149,61 @@ export default React.memo(function AttendanceChildComing({
           </Fragment>
         ) : (
           <Loader />
-        )
-      ) : (
-        <Fragment>
-          <Flex>
-            <CustomButton
-              text={i18n.attendances.actions.markAbsent}
-              onClick={() => setMarkAbsence(!markAbsence)}
-            />
+        ))}
 
-            <CustomAsyncButton
+      {!markAbsence && !markPresent && (
+        <Fragment>
+          <FixedSpaceColumn>
+            <BigWideButton
               primary
               text={i18n.attendances.actions.markPresent}
-              onClick={markPresent}
-              onSuccess={() =>
-                history.push(`/units/${unitId}/attendance/${groupId}/coming`)
+              onClick={() =>
+                history.push(
+                  `/units/${unitId}/groups/${groupIdOrAll}/childattendance/${child.id}/present`
+                )
               }
               data-qa="mark-present"
             />
-          </Flex>
-          <FlexLabel>
-            <span>{i18n.attendances.timeLabel}</span>
-            <InputField
-              onChange={setTime}
-              value={time}
-              width="s"
-              type="time"
-              data-qa="set-time"
+
+            <BigWideInlineButton
+              text={i18n.attendances.actions.markAbsent}
+              onClick={() =>
+                history.push(
+                  `/units/${unitId}/groups/${groupIdOrAll}/childattendance/${child.id}/absent`
+                )
+              }
             />
-          </FlexLabel>
+          </FixedSpaceColumn>
+        </Fragment>
+      )}
+
+      {markPresent && (
+        <Fragment>
+          <FixedSpaceColumn>
+            <FlexLabel>
+              <span>{i18n.attendances.arrivalTime}</span>
+              <InputField
+                onChange={setTime}
+                value={time}
+                width="s"
+                type="time"
+                data-qa="set-time"
+              />
+            </FlexLabel>
+
+            <WideAsyncButton
+              primary
+              text={i18n.common.confirm}
+              onClick={() => childArrives()}
+              onSuccess={async () => {
+                await getDaycareAttendances(unitId).then((res) =>
+                  filterAndSetAttendanceResponse(res, groupIdOrAll)
+                )
+                history.goBack()
+              }}
+              data-qa="mark-present"
+            />
+          </FixedSpaceColumn>
         </Fragment>
       )}
     </Fragment>
