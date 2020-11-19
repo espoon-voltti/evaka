@@ -225,13 +225,17 @@ private val plannedMaxCoefficients =
     """.trimIndent()
 
 private fun finalCoefficients(planned: Boolean) = if (planned) """
-    SELECT
-        coalesce(p.unit_id, c.unit_id) AS unit_id,
-        coalesce(p.day, c.day) AS day,
-        coalesce(p.child_id, c.child_id) AS child_id,
-        coalesce(p.coefficient, c.coefficient) AS coefficient
-    FROM coefficients c
-    FULL JOIN planned_max_coefficients p ON c.day = p.day AND c.child_id = p.child_id
+    SELECT unit_id, day, child_id, max(coefficient) AS coefficient
+    FROM (
+        SELECT unit_id, day, child_id, coefficient
+        FROM planned_max_coefficients
+
+        UNION ALL
+
+        SELECT unit_id, day, child_id, coefficient
+        FROM coefficients c
+    ) AS all_coefficients
+    GROUP BY unit_id, day, child_id
 """.trimIndent() else """
     SELECT * FROM coefficients
 """.trimIndent()
