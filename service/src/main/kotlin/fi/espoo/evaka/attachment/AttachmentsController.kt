@@ -100,14 +100,12 @@ class AttachmentsController(
         user: AuthenticatedUser,
         @PathVariable attachmentId: UUID
     ): ResponseEntity<ByteArray> {
-        if (!user.hasOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN)) {
-            // TODO: support end users by checking whether attachment belongs to an application from the user
-            throw Forbidden("Permission denied")
-        }
         val attachment = db.read { it.handle.getAttachment(attachmentId) ?: throw NotFound("Attachment $attachmentId not found") }
 
-        // TODO
-        // http://s3.lvh.me:9876/evaka-files-dev/537a6c81-e515-40d1-afd3-6be80f77be25
+        if (!user.hasOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN)) {
+            if (!db.read { it.handle.isOwnAttachment(attachmentId, user.id) }) throw Forbidden("Permission denied")
+        }
+
         val uri = "$attachmentId"
         return s3Client.get(filesBucket, uri).let { document ->
             ResponseEntity.ok()

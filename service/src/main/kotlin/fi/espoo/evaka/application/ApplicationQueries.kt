@@ -505,7 +505,8 @@ fun fetchApplicationDetails(h: Handle, applicationId: UUID): ApplicationDetails?
                         id = UUID.fromString(it["id"]),
                         name = it["name"]!!,
                         contentType = it["contentType"]!!,
-                        updated = OffsetDateTime.parse(it["updated"]!!) // LocalDate.parse(it["updated"]!!, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+                        updated = OffsetDateTime.parse(it["updated"]!!),
+                        applicationId = if (it["application_id"] != null) UUID.fromString(it["application_id"]!!) else null
                     )
                 }
             )

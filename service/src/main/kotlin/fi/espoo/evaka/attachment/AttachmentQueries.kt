@@ -21,7 +21,23 @@ fun Handle.insertAttachment(id: UUID, name: String, contentType: String, applica
         .execute()
 }
 
-fun Handle.getAttachment(id: UUID) = this
+fun Handle.getAttachment(id: UUID): Attachment? = this
     .createQuery("SELECT * FROM attachment WHERE id = :id")
     .bind("id", id).mapTo<Attachment>()
     .first()
+
+fun Handle.isOwnAttachment(attachmentId: UUID, guardianId: UUID): Boolean {
+    val sql =
+        """
+        SELECT EXISTS 
+            (SELECT 1 FROM attachment 
+             WHERE id = :attachmentId 
+             AND application_id IN (SELECT id FROM application WHERE guardian_id = :guardianId))
+        """.trimIndent()
+
+    return this.createQuery(sql)
+        .bind("attachmentId", attachmentId)
+        .bind("guardianId", guardianId)
+        .mapTo<Boolean>()
+        .first()
+}
