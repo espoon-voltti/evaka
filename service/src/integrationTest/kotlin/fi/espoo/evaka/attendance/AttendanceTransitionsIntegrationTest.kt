@@ -51,11 +51,11 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
 
     @BeforeEach
     fun beforeEach() {
-        jdbi.handle { h ->
-            resetDatabase(h)
-            insertGeneralTestFixtures(h)
-            h.insertTestDaycareGroup(DevDaycareGroup(id = groupId, daycareId = testDaycare.id, name = groupName))
-            updateDaycareAclWithEmployee(h, testDaycare.id, staffUser.id, UserRole.STAFF)
+        db.transaction { tx ->
+            tx.resetDatabase()
+            insertGeneralTestFixtures(tx.handle)
+            tx.handle.insertTestDaycareGroup(DevDaycareGroup(id = groupId, daycareId = testDaycare.id, name = groupName))
+            updateDaycareAclWithEmployee(tx.handle, testDaycare.id, staffUser.id, UserRole.STAFF)
         }
     }
 
@@ -317,9 +317,9 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
     }
 
     private fun givenChildPlacement(placementType: PlacementType) {
-        jdbi.handle { h ->
+        db.transaction { tx ->
             insertTestPlacement(
-                h = h,
+                h = tx.handle,
                 id = daycarePlacementId,
                 childId = testChild_1.id,
                 unitId = testDaycare.id,
@@ -328,7 +328,7 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
                 type = placementType
             )
             insertTestDaycareGroupPlacement(
-                h = h,
+                h = tx.handle,
                 daycarePlacementId = daycarePlacementId,
                 groupId = groupId,
                 startDate = placementStart,
@@ -344,9 +344,9 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
 
     private fun givenChildPresent() {
         val arrived = OffsetDateTime.now(zoneId).minusHours(3).toInstant()
-        jdbi.handle {
+        db.transaction {
             insertTestChildAttendance(
-                h = it,
+                h = it.handle,
                 childId = testChild_1.id,
                 unitId = testDaycare.id,
                 arrived = arrived,
@@ -360,9 +360,9 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
     private fun givenChildDeparted() {
         val arrived = OffsetDateTime.now(zoneId).minusHours(3).toInstant()
         val departed = OffsetDateTime.now(zoneId).minusHours(1).toInstant()
-        jdbi.handle {
+        db.transaction {
             insertTestChildAttendance(
-                h = it,
+                h = it.handle,
                 childId = testChild_1.id,
                 unitId = testDaycare.id,
                 arrived = arrived,
@@ -375,8 +375,8 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
 
     private fun givenChildAbsent(absentFrom: List<CareType>, absenceType: AbsenceType) {
         absentFrom.forEach { careType ->
-            jdbi.handle {
-                insertTestAbsence(h = it, childId = testChild_1.id, absenceType = absenceType, careType = careType, date = LocalDate.now())
+            db.transaction {
+                insertTestAbsence(h = it.handle, childId = testChild_1.id, absenceType = absenceType, careType = careType, date = LocalDate.now())
             }
         }
     }

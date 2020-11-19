@@ -14,7 +14,6 @@ import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
-import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.insertTestAbsence
 import fi.espoo.evaka.shared.dev.insertTestChildAttendance
@@ -44,12 +43,12 @@ class GetAttendancesIntegrationTest : FullApplicationTest() {
 
     @BeforeEach
     fun beforeEach() {
-        jdbi.handle { h ->
-            resetDatabase(h)
-            insertGeneralTestFixtures(h)
-            h.insertTestDaycareGroup(DevDaycareGroup(id = groupId, daycareId = testDaycare.id, name = groupName))
+        db.transaction { tx ->
+            tx.resetDatabase()
+            insertGeneralTestFixtures(tx.handle)
+            tx.handle.insertTestDaycareGroup(DevDaycareGroup(id = groupId, daycareId = testDaycare.id, name = groupName))
             insertTestPlacement(
-                h = h,
+                h = tx.handle,
                 id = daycarePlacementId,
                 childId = testChild_1.id,
                 unitId = testDaycare.id,
@@ -58,13 +57,13 @@ class GetAttendancesIntegrationTest : FullApplicationTest() {
                 type = PlacementType.PRESCHOOL_DAYCARE
             )
             insertTestDaycareGroupPlacement(
-                h = h,
+                h = tx.handle,
                 daycarePlacementId = daycarePlacementId,
                 groupId = groupId,
                 startDate = placementStart,
                 endDate = placementEnd
             )
-            updateDaycareAclWithEmployee(h, testDaycare.id, staffUser.id, UserRole.STAFF)
+            updateDaycareAclWithEmployee(tx.handle, testDaycare.id, staffUser.id, UserRole.STAFF)
         }
     }
 
@@ -79,9 +78,9 @@ class GetAttendancesIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `child is coming`() {
-        jdbi.handle {
+        db.transaction {
             insertTestChildAttendance(
-                h = it,
+                h = it.handle,
                 childId = testChild_1.id,
                 unitId = testDaycare.id,
                 arrived = OffsetDateTime.now().minusDays(1).minusHours(8).toInstant(),
@@ -97,9 +96,9 @@ class GetAttendancesIntegrationTest : FullApplicationTest() {
     @Test
     fun `child is present`() {
         val arrived = OffsetDateTime.now().minusHours(3).toInstant()
-        jdbi.handle {
+        db.transaction {
             insertTestChildAttendance(
-                h = it,
+                h = it.handle,
                 childId = testChild_1.id,
                 unitId = testDaycare.id,
                 arrived = arrived,
@@ -119,9 +118,9 @@ class GetAttendancesIntegrationTest : FullApplicationTest() {
     fun `child has departed`() {
         val arrived = OffsetDateTime.now().minusHours(3).toInstant()
         val departed = OffsetDateTime.now().minusMinutes(1).toInstant()
-        jdbi.handle {
+        db.transaction {
             insertTestChildAttendance(
-                h = it,
+                h = it.handle,
                 childId = testChild_1.id,
                 unitId = testDaycare.id,
                 arrived = arrived,
@@ -139,16 +138,16 @@ class GetAttendancesIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `child is absent`() {
-        jdbi.handle {
+        db.transaction {
             insertTestAbsence(
-                h = it,
+                h = it.handle,
                 childId = testChild_1.id,
                 careType = CareType.PRESCHOOL,
                 date = LocalDate.now(),
                 absenceType = AbsenceType.SICKLEAVE
             )
             insertTestAbsence(
-                h = it,
+                h = it.handle,
                 childId = testChild_1.id,
                 careType = CareType.PRESCHOOL_DAYCARE,
                 date = LocalDate.now(),

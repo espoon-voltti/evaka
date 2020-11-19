@@ -7,18 +7,16 @@ package fi.espoo.evaka.attendance
 import fi.espoo.evaka.application.utils.exhaust
 import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.daycare.service.CareType
-import fi.espoo.evaka.pis.dao.mapPSQLException
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
-import fi.espoo.evaka.shared.db.transaction
+import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.db.mapPSQLException
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.shared.utils.dateNow
 import fi.espoo.evaka.shared.utils.zoneId
-import org.jdbi.v3.core.Handle
-import org.jdbi.v3.core.Jdbi
 import org.jdbi.v3.core.kotlin.mapTo
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.http.ResponseEntity
@@ -37,7 +35,6 @@ import java.util.UUID
 @RestController
 @RequestMapping("/attendances")
 class ChildAttendanceController(
-    private val jdbi: Jdbi,
     private val acl: AccessControlList
 ) {
     val authorizedRoles = arrayOf(
@@ -49,13 +46,14 @@ class ChildAttendanceController(
 
     @GetMapping("/units/{unitId}")
     fun getAttendances(
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable unitId: UUID
     ): ResponseEntity<AttendanceResponse> {
         acl.getRolesForUnit(user, unitId).requireOneOfRoles(*authorizedRoles)
 
-        return jdbi.transaction { h ->
-            getAttendancesResponse(h, unitId)
+        return db.read { tx ->
+            tx.getAttendancesResponse(unitId)
         }.let { ResponseEntity.ok(it) }
     }
 
@@ -64,6 +62,7 @@ class ChildAttendanceController(
     )
     @GetMapping("/units/{unitId}/children/{childId}/arrival")
     fun getChildArrival(
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable unitId: UUID,
         @PathVariable childId: UUID,
@@ -71,10 +70,10 @@ class ChildAttendanceController(
     ): ResponseEntity<ArrivalInfoResponse> {
         acl.getRolesForUnit(user, unitId).requireOneOfRoles(*authorizedRoles)
 
-        return jdbi.transaction { h ->
-            assertChildPlacement(h, childId, unitId)
+        return db.read { tx ->
+            tx.assertChildPlacement(childId, unitId)
 
-            val attendance = h.getChildCurrentDayAttendance(childId, unitId)
+            val attendance = tx.getChildCurrentDayAttendance(childId, unitId)
             if (attendance != null)
                 throw Conflict("Cannot arrive, already arrived today")
 
@@ -89,6 +88,7 @@ class ChildAttendanceController(
     )
     @PostMapping("/units/{unitId}/children/{childId}/arrival")
     fun postArrival(
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable unitId: UUID,
         @PathVariable childId: UUID,
@@ -96,17 +96,17 @@ class ChildAttendanceController(
     ): ResponseEntity<AttendanceResponse> {
         acl.getRolesForUnit(user, unitId).requireOneOfRoles(*authorizedRoles)
 
-        return jdbi.transaction { h ->
-            assertChildPlacement(h, childId, unitId)
+        return db.transaction { tx ->
+            tx.assertChildPlacement(childId, unitId)
 
-            val attendance = h.getChildCurrentDayAttendance(childId, unitId)
+            val attendance = tx.getChildCurrentDayAttendance(childId, unitId)
             if (attendance != null)
                 throw Conflict("Cannot arrive, already arrived today")
 
             val arrived = ZonedDateTime.of(LocalDate.now(zoneId).atTime(body.arrived), zoneId).toInstant()
 
             try {
-                h.insertAttendance(
+                tx.insertAttendance(
                     childId = childId,
                     unitId = unitId,
                     arrived = arrived,
@@ -117,29 +117,30 @@ class ChildAttendanceController(
                 throw mapPSQLException(e)
             }
 
-            getAttendancesResponse(h, unitId)
+            tx.getAttendancesResponse(unitId)
         }.let { ResponseEntity.ok(it) }
     }
 
     @PostMapping("/units/{unitId}/children/{childId}/return-to-coming")
     fun returnToComing(
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable unitId: UUID,
         @PathVariable childId: UUID
     ): ResponseEntity<AttendanceResponse> {
         acl.getRolesForUnit(user, unitId).requireOneOfRoles(*authorizedRoles)
 
-        return jdbi.transaction { h ->
-            assertChildPlacement(h, childId, unitId)
+        return db.transaction { tx ->
+            tx.assertChildPlacement(childId, unitId)
 
-            val attendance = h.getChildCurrentDayAttendance(childId, unitId)
+            val attendance = tx.getChildCurrentDayAttendance(childId, unitId)
 
             if (attendance == null) {
-                h.deleteCurrentDayAbsences(childId)
+                tx.deleteCurrentDayAbsences(childId)
             } else {
                 if (attendance.departed == null) {
                     try {
-                        h.deleteAttendance(attendance.id)
+                        tx.deleteAttendance(attendance.id)
                     } catch (e: Exception) {
                         throw mapPSQLException(e)
                     }
@@ -148,7 +149,7 @@ class ChildAttendanceController(
                 }
             }
 
-            getAttendancesResponse(h, unitId)
+            tx.getAttendancesResponse(unitId)
         }.let { ResponseEntity.ok(it) }
     }
 
@@ -157,6 +158,7 @@ class ChildAttendanceController(
     )
     @GetMapping("/units/{unitId}/children/{childId}/departure")
     fun getChildDeparture(
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable unitId: UUID,
         @PathVariable childId: UUID,
@@ -164,10 +166,10 @@ class ChildAttendanceController(
     ): ResponseEntity<DepartureInfoResponse> {
         acl.getRolesForUnit(user, unitId).requireOneOfRoles(*authorizedRoles)
 
-        return jdbi.transaction { h ->
-            assertChildPlacement(h, childId, unitId)
+        return db.read { tx ->
+            tx.assertChildPlacement(childId, unitId)
 
-            val attendance = h.getChildCurrentDayAttendance(childId, unitId)
+            val attendance = tx.getChildCurrentDayAttendance(childId, unitId)
             if (attendance == null) {
                 throw Conflict("Cannot depart, has not yet arrived")
             } else if (attendance.departed != null) {
@@ -185,6 +187,7 @@ class ChildAttendanceController(
     )
     @PostMapping("/units/{unitId}/children/{childId}/departure")
     fun postDeparture(
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable unitId: UUID,
         @PathVariable childId: UUID,
@@ -192,10 +195,10 @@ class ChildAttendanceController(
     ): ResponseEntity<AttendanceResponse> {
         acl.getRolesForUnit(user, unitId).requireOneOfRoles(*authorizedRoles)
 
-        return jdbi.transaction { h ->
-            assertChildPlacement(h, childId, unitId)
+        return db.transaction { tx ->
+            tx.assertChildPlacement(childId, unitId)
 
-            val attendance = h.getChildCurrentDayAttendance(childId, unitId)
+            val attendance = tx.getChildCurrentDayAttendance(childId, unitId)
             if (attendance == null) {
                 throw Conflict("Cannot depart, has not yet arrived")
             } else if (attendance.departed != null) {
@@ -205,7 +208,7 @@ class ChildAttendanceController(
             val departed = ZonedDateTime.of(LocalDate.now(zoneId).atTime(body.departed), zoneId).toInstant()
 
             try {
-                h.updateAttendanceEnd(
+                tx.updateAttendanceEnd(
                     attendanceId = attendance.id,
                     departed = departed
                 )
@@ -214,34 +217,35 @@ class ChildAttendanceController(
                 throw mapPSQLException(e)
             }
 
-            getAttendancesResponse(h, unitId)
+            tx.getAttendancesResponse(unitId)
         }.let { ResponseEntity.ok(it) }
     }
 
     @PostMapping("/units/{unitId}/children/{childId}/return-to-present")
     fun returnToPresent(
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable unitId: UUID,
         @PathVariable childId: UUID
     ): ResponseEntity<AttendanceResponse> {
         acl.getRolesForUnit(user, unitId).requireOneOfRoles(*authorizedRoles)
 
-        return jdbi.transaction { h ->
-            assertChildPlacement(h, childId, unitId)
+        return db.transaction { tx ->
+            tx.assertChildPlacement(childId, unitId)
 
-            val attendance = h.getChildCurrentDayAttendance(childId, unitId)
+            val attendance = tx.getChildCurrentDayAttendance(childId, unitId)
 
             if (attendance?.departed == null) {
                 throw Conflict("Can not return to present since not yet departed")
             } else {
                 try {
-                    h.updateAttendance(attendance.id, attendance.arrived, null)
+                    tx.updateAttendance(attendance.id, attendance.arrived, null)
                 } catch (e: Exception) {
                     throw mapPSQLException(e)
                 }
             }
 
-            getAttendancesResponse(h, unitId)
+            tx.getAttendancesResponse(unitId)
         }.let { ResponseEntity.ok(it) }
     }
 
@@ -250,6 +254,7 @@ class ChildAttendanceController(
     )
     @PostMapping("/units/{unitId}/children/{childId}/full-day-absence")
     fun postFullDayAbsence(
+        db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable unitId: UUID,
         @PathVariable childId: UUID,
@@ -257,31 +262,31 @@ class ChildAttendanceController(
     ): ResponseEntity<AttendanceResponse> {
         acl.getRolesForUnit(user, unitId).requireOneOfRoles(*authorizedRoles)
 
-        return jdbi.transaction { h ->
-            assertChildPlacement(h, childId, unitId)
+        return db.transaction { tx ->
+            tx.assertChildPlacement(childId, unitId)
 
-            val attendance = h.getChildCurrentDayAttendance(childId, unitId)
+            val attendance = tx.getChildCurrentDayAttendance(childId, unitId)
             if (attendance != null) {
                 throw Conflict("Cannot add full day absence, child already has attendance")
             }
 
             try {
-                h.deleteCurrentDayAbsences(childId)
+                tx.deleteCurrentDayAbsences(childId)
 
-                val placementType = fetchChildPlacementType(h, childId, unitId, dateNow())
+                val placementType = tx.fetchChildPlacementType(childId, unitId, dateNow())
                 getCareTypes(placementType).forEach { careType ->
-                    h.insertAbsence(user, childId, LocalDate.now(), careType, body.absenceType)
+                    tx.insertAbsence(user, childId, LocalDate.now(), careType, body.absenceType)
                 }
             } catch (e: Exception) {
                 throw mapPSQLException(e)
             }
 
-            getAttendancesResponse(h, unitId)
+            tx.getAttendancesResponse(unitId)
         }.let { ResponseEntity.ok(it) }
     }
 }
 
-private fun assertChildPlacement(h: Handle, childId: UUID, unitId: UUID) {
+private fun Database.Read.assertChildPlacement(childId: UUID, unitId: UUID) {
     // language=sql
     val sql =
         """
@@ -294,7 +299,7 @@ private fun assertChildPlacement(h: Handle, childId: UUID, unitId: UUID) {
         WHERE child_id = :childId AND unit_id = :unitId AND daterange(start_date, end_date, '[]') @> :date
         """.trimIndent()
 
-    val placementMissing = h.createQuery(sql)
+    val placementMissing = createQuery(sql)
         .bind("childId", childId)
         .bind("unitId", unitId)
         .bind("date", dateNow())
@@ -307,7 +312,7 @@ private fun assertChildPlacement(h: Handle, childId: UUID, unitId: UUID) {
     }
 }
 
-private fun fetchChildPlacementType(h: Handle, childId: UUID, unitId: UUID, date: LocalDate): PlacementType {
+private fun Database.Read.fetchChildPlacementType(childId: UUID, unitId: UUID, date: LocalDate): PlacementType {
     // language=sql
     val sql =
         """
@@ -315,7 +320,7 @@ private fun fetchChildPlacementType(h: Handle, childId: UUID, unitId: UUID, date
         WHERE child_id = :childId AND unit_id = :unitId AND daterange(start_date, end_date, '[]') @> :date
         """.trimIndent()
 
-    return h.createQuery(sql)
+    return createQuery(sql)
         .bind("childId", childId)
         .bind("unitId", unitId)
         .bind("date", date)
@@ -324,11 +329,11 @@ private fun fetchChildPlacementType(h: Handle, childId: UUID, unitId: UUID, date
         .first()
 }
 
-private fun getAttendancesResponse(h: Handle, unitId: UUID): AttendanceResponse {
-    val unitInfo = h.fetchUnitInfo(unitId)
-    val childrenBasics = h.fetchChildrenBasics(unitId)
-    val childrenAttendances = h.fetchChildrenAttendances(unitId)
-    val childrenAbsences = h.fetchChildrenAbsences(unitId)
+private fun Database.Read.getAttendancesResponse(unitId: UUID): AttendanceResponse {
+    val unitInfo = fetchUnitInfo(unitId)
+    val childrenBasics = fetchChildrenBasics(unitId)
+    val childrenAttendances = fetchChildrenAttendances(unitId)
+    val childrenAbsences = fetchChildrenAbsences(unitId)
 
     val children = childrenBasics.map { child ->
         val attendance = childrenAttendances.firstOrNull { it.childId == child.id }

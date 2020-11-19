@@ -8,15 +8,15 @@ import fi.espoo.evaka.daycare.service.Absence
 import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.daycare.service.CareType
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
+import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.NotFound
-import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.mapTo
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
 import java.util.UUID
 
-fun Handle.insertAttendance(childId: UUID, unitId: UUID, arrived: Instant, departed: Instant? = null): ChildAttendance {
+fun Database.Transaction.insertAttendance(childId: UUID, unitId: UUID, arrived: Instant, departed: Instant? = null): ChildAttendance {
     // language=sql
     val sql =
         """
@@ -34,7 +34,7 @@ fun Handle.insertAttendance(childId: UUID, unitId: UUID, arrived: Instant, depar
         .first()
 }
 
-fun Handle.insertAbsence(user: AuthenticatedUser, childId: UUID, date: LocalDate, careType: CareType, absenceType: AbsenceType): Absence {
+fun Database.Transaction.insertAbsence(user: AuthenticatedUser, childId: UUID, date: LocalDate, careType: CareType, absenceType: AbsenceType): Absence {
     // language=sql
     val sql =
         """
@@ -53,7 +53,7 @@ fun Handle.insertAbsence(user: AuthenticatedUser, childId: UUID, date: LocalDate
         .first()
 }
 
-fun Handle.getChildCurrentDayAttendance(childId: UUID, unitId: UUID): ChildAttendance? {
+fun Database.Read.getChildCurrentDayAttendance(childId: UUID, unitId: UUID): ChildAttendance? {
     // language=sql
     val sql =
         """
@@ -72,7 +72,7 @@ fun Handle.getChildCurrentDayAttendance(childId: UUID, unitId: UUID): ChildAtten
         .firstOrNull()
 }
 
-fun Handle.fetchUnitInfo(unitId: UUID): UnitInfo {
+fun Database.Read.fetchUnitInfo(unitId: UUID): UnitInfo {
     data class UnitBasics(
         val id: UUID,
         val name: String
@@ -113,7 +113,7 @@ fun Handle.fetchUnitInfo(unitId: UUID): UnitInfo {
         }
 }
 
-fun Handle.fetchChildrenBasics(unitId: UUID): List<ChildBasics> {
+fun Database.Read.fetchChildrenBasics(unitId: UUID): List<ChildBasics> {
     // language=sql
     val sql =
         """
@@ -136,7 +136,7 @@ fun Handle.fetchChildrenBasics(unitId: UUID): List<ChildBasics> {
         .list()
 }
 
-fun Handle.fetchChildrenAttendances(unitId: UUID): List<ChildAttendance> {
+fun Database.Read.fetchChildrenAttendances(unitId: UUID): List<ChildAttendance> {
     // language=sql
     val sql =
         """
@@ -158,7 +158,7 @@ fun Handle.fetchChildrenAttendances(unitId: UUID): List<ChildAttendance> {
         .list()
 }
 
-fun Handle.fetchChildrenAbsences(unitId: UUID): List<ChildAbsence> {
+fun Database.Read.fetchChildrenAbsences(unitId: UUID): List<ChildAbsence> {
     // language=sql
     val sql =
         """
@@ -179,7 +179,7 @@ fun Handle.fetchChildrenAbsences(unitId: UUID): List<ChildAbsence> {
         .list()
 }
 
-fun Handle.updateAttendance(attendanceId: UUID, arrived: Instant, departed: Instant?) {
+fun Database.Transaction.updateAttendance(attendanceId: UUID, arrived: Instant, departed: Instant?) {
     // language=sql
     val sql =
         """
@@ -195,7 +195,7 @@ fun Handle.updateAttendance(attendanceId: UUID, arrived: Instant, departed: Inst
         .execute()
 }
 
-fun Handle.updateAttendanceEnd(attendanceId: UUID, departed: Instant?) {
+fun Database.Transaction.updateAttendanceEnd(attendanceId: UUID, departed: Instant?) {
     // language=sql
     val sql =
         """
@@ -210,7 +210,7 @@ fun Handle.updateAttendanceEnd(attendanceId: UUID, departed: Instant?) {
         .execute()
 }
 
-fun Handle.deleteAttendance(id: UUID) {
+fun Database.Transaction.deleteAttendance(id: UUID) {
     // language=sql
     val sql =
         """
@@ -223,7 +223,7 @@ fun Handle.deleteAttendance(id: UUID) {
         .execute()
 }
 
-fun Handle.deleteCurrentDayAbsences(childId: UUID) {
+fun Database.Transaction.deleteCurrentDayAbsences(childId: UUID) {
     // language=sql
     val sql =
         """
