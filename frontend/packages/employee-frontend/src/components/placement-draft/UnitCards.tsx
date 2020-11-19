@@ -21,6 +21,7 @@ interface Props {
   placement: DaycarePlacementPlan
   setPlacement: Dispatch<SetStateAction<DaycarePlacementPlan>>
   placementDraft: PlacementDraft
+  selectedUnitIsGhostUnit: boolean
 }
 
 const MemoizedCards = memo(function UnitCards({
@@ -28,7 +29,8 @@ const MemoizedCards = memo(function UnitCards({
   setAdditionalUnits,
   placement,
   setPlacement,
-  placementDraft
+  placementDraft,
+  selectedUnitIsGhostUnit
 }: Props) {
   if (!placement.period) return null
 
@@ -39,19 +41,23 @@ const MemoizedCards = memo(function UnitCards({
 
   return (
     <FlexContainer data-qa="placement-list">
-      {placementDraft.preferredUnits.concat(additionalUnits).map((unit) => (
-        <MemoizedCard
-          unitId={unit.id}
-          unitName={unit.name}
-          key={unit.id}
-          startDate={startDate}
-          endDate={endDate}
-          additionalUnits={additionalUnits}
-          setAdditionalUnits={setAdditionalUnits}
-          setPlacement={setPlacement}
-          isSelectedUnit={placement.unitId === unit.id}
-        />
-      ))}
+      {placementDraft.preferredUnits.concat(additionalUnits).map((unit) => {
+        const isSelectedUnit = placement.unitId === unit.id
+        return (
+          <MemoizedCard
+            unitId={unit.id}
+            unitName={unit.name}
+            key={unit.id}
+            startDate={startDate}
+            endDate={endDate}
+            additionalUnits={additionalUnits}
+            setAdditionalUnits={setAdditionalUnits}
+            setPlacement={setPlacement}
+            isSelectedUnit={isSelectedUnit}
+            displayGhostUnitWarning={isSelectedUnit && selectedUnitIsGhostUnit}
+          />
+        )
+      })}
     </FlexContainer>
   )
 })

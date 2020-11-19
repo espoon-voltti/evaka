@@ -9,6 +9,14 @@ import Colors, { Greyscale } from 'components/shared/Colors'
 import classNames from 'classnames'
 import { defaultButtonTextStyle } from 'components/shared/atoms/buttons/button-commons'
 import { BaseProps } from 'components/shared/utils'
+import { DefaultMargins } from 'components/shared/layout/white-space'
+import UnderRowStatusIcon, {
+  InfoStatus
+} from 'components/shared/UnderRowStatusIcon'
+
+const Wrapper = styled.div`
+  min-width: 0; // needed for correct overflow behavior
+`
 
 export const StyledButton = styled.button`
   min-height: 45px;
@@ -69,6 +77,33 @@ export const StyledButton = styled.button`
   ${defaultButtonTextStyle}
 `
 
+const ButtonUnderRow = styled.div`
+  padding: 0 12px;
+  margin-top: ${DefaultMargins.xxs};
+  margin-bottom: -20px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  position: absolute;
+
+  font-size: 12px;
+  text-overflow: ellipsis;
+
+  word-wrap:break-word;
+  width: 120px;
+  white-space: normal
+
+  color: ${Colors.greyscale.dark};
+
+  &.success {
+    color: ${Colors.accents.greenDark};
+  }
+
+  &.warning {
+    color: ${Colors.accents.orangeDark};
+  }
+`
+
 interface ButtonProps extends BaseProps {
   onClick?: (e: React.MouseEvent) => unknown
   text: string
@@ -76,6 +111,10 @@ interface ButtonProps extends BaseProps {
   disabled?: boolean
   type?: 'submit' | 'button'
   'data-qa'?: string
+  info?: {
+    text: string
+    status?: InfoStatus
+  }
 }
 
 function Button({
@@ -86,7 +125,8 @@ function Button({
   text,
   primary = false,
   disabled = false,
-  type = 'button'
+  type = 'button',
+  info
 }: ButtonProps) {
   const [ignoreClick, setIgnoreClick] = React.useState(false)
   const [, , startUnignoreClickTimer] = useTimeoutFn(() => {
@@ -105,15 +145,21 @@ function Button({
     }
   }
   return (
-    <StyledButton
-      className={classNames(className, { primary, disabled })}
-      data-qa={dataQa2 ?? dataQa}
-      onClick={handleOnClick}
-      disabled={disabled}
-      type={type}
-    >
-      {text}
-    </StyledButton>
+    <Wrapper>
+      <StyledButton
+        className={classNames(className, { primary, disabled })}
+        data-qa={dataQa2 ?? dataQa}
+        onClick={handleOnClick}
+        disabled={disabled}
+        type={type}
+      >
+        {text}
+      </StyledButton>
+      <ButtonUnderRow className={classNames(info?.status)}>
+        <span>{info?.text}</span>
+        <UnderRowStatusIcon status={info?.status} />
+      </ButtonUnderRow>
+    </Wrapper>
   )
 }
 

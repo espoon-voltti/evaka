@@ -117,6 +117,7 @@ interface Props {
   setAdditionalUnits: Dispatch<SetStateAction<Unit[]>>
   setPlacement: Dispatch<SetStateAction<DaycarePlacementPlan>>
   isSelectedUnit: boolean
+  displayGhostUnitWarning: boolean
 }
 
 const MemoizedCard = memo(function UnitCard({
@@ -127,7 +128,8 @@ const MemoizedCard = memo(function UnitCard({
   additionalUnits,
   setAdditionalUnits,
   setPlacement,
-  isSelectedUnit
+  isSelectedUnit,
+  displayGhostUnitWarning
 }: Props) {
   const { i18n } = useTranslation()
 
@@ -213,7 +215,19 @@ const MemoizedCard = memo(function UnitCard({
           dataQa="select-placement-unit"
           onClick={() => selectUnit(unitId)}
           icon={(isSelectedUnit && faCheck) || undefined}
-          text={isSelectedUnit ? 'Valittu yksikkö' : 'Valitse'}
+          text={
+            isSelectedUnit
+              ? i18n.placementDraft.selectedUnit
+              : i18n.common.select
+          }
+          info={
+            displayGhostUnitWarning
+              ? {
+                  text: i18n.childInformation.placements.warning.ghostUnit,
+                  status: 'warning'
+                }
+              : undefined
+          }
         />
       </MarginBox>
     </Card>

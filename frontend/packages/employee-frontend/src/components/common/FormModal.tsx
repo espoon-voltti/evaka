@@ -14,6 +14,7 @@ import Colors from '~components/shared/Colors'
 import { DefaultMargins, Gap } from 'components/shared/layout/white-space'
 import { useTranslation } from '~state/i18n'
 import { modalZIndex } from '~components/shared/layout/z-helpers'
+import { InfoStatus } from 'components/shared/UnderRowStatusIcon'
 
 export const DimmedModal = styled.div``
 
@@ -149,6 +150,10 @@ interface Props {
   'data-qa'?: string
   children: React.ReactNode
   iconColour?: IconColour
+  resolveInfo?: {
+    text: string
+    status?: InfoStatus
+  }
 }
 
 const handleClick = (click: () => void) => () => click()
@@ -166,7 +171,8 @@ function FormModal({
   size = 'md',
   resolveDisabled = false,
   children,
-  iconColour = 'blue'
+  iconColour = 'blue',
+  resolveInfo
 }: Props) {
   const { i18n } = useTranslation()
   return (
@@ -221,6 +227,7 @@ function FormModal({
                   )}
                   <Button
                     primary
+                    info={resolveInfo}
                     dataQa="modal-okBtn"
                     onClick={handleClick(resolve)}
                     disabled={resolveDisabled}

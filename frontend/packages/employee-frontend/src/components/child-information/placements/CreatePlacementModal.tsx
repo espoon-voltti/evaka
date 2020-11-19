@@ -30,6 +30,7 @@ interface Form {
   unitId: UUID | undefined
   startDate: LocalDate
   endDate: LocalDate
+  ghostUnit: boolean
 }
 
 const placementTypes: PlacementType[] = [
@@ -50,7 +51,8 @@ function CreatePlacementModal({ childId, reload }: Props) {
     type: 'DAYCARE',
     unitId: undefined,
     startDate: LocalDate.today(),
-    endDate: LocalDate.today()
+    endDate: LocalDate.today(),
+    ghostUnit: false
   })
   const [submitting, setSubmitting] = useState<boolean>(false)
 
@@ -61,11 +63,16 @@ function CreatePlacementModal({ childId, reload }: Props) {
     setUnits(Loading())
     void void getApplicationUnits(form.type, form.startDate).then((units) => {
       setUnits(units)
-      if (isSuccess(units) && !form.unitId)
+      if (isSuccess(units) && !form.unitId) {
+        const defaultUnit = units.data.sort((a, b) =>
+          a.name < b.name ? -1 : 1
+        )[0]
         setForm({
           ...form,
-          unitId: units.data.sort((a, b) => (a.name < b.name ? -1 : 1))[0].id
+          unitId: defaultUnit.id,
+          ghostUnit: defaultUnit.ghostUnit || false
         })
+      }
     })
   }, [setUnits, form.type, form.startDate])
 
@@ -98,8 +105,16 @@ function CreatePlacementModal({ childId, reload }: Props) {
       resolveLabel={i18n.common.confirm}
       rejectLabel={i18n.common.cancel}
       reject={() => clearUiMode()}
-      resolveDisabled={errors.length > 0 || submitting}
+      resolveDisabled={errors.length > 0 || submitting || form.ghostUnit}
       resolve={() => submitForm()}
+      resolveInfo={
+        form.ghostUnit
+          ? {
+              text: i18n.childInformation.placements.warning.ghostUnit,
+              status: 'warning'
+            }
+          : undefined
+      }
     >
       <FixedSpaceColumn>
         <Section>
@@ -132,7 +147,11 @@ function CreatePlacementModal({ childId, reload }: Props) {
             options={
               isSuccess(units)
                 ? units.data
-                    .map(({ id, name }) => ({ label: name, value: id }))
+                    .map(({ id, name, ghostUnit }) => ({
+                      label: name,
+                      value: id,
+                      ghostUnit: ghostUnit
+                    }))
                     .sort((a, b) => (a.label < b.label ? -1 : 1))
                 : []
             }
@@ -140,7 +159,8 @@ function CreatePlacementModal({ childId, reload }: Props) {
               option && 'value' in option
                 ? setForm({
                     ...form,
-                    unitId: option.value
+                    unitId: option.value,
+                    ghostUnit: option.ghostUnit || false
                   })
                 : undefined
             }
