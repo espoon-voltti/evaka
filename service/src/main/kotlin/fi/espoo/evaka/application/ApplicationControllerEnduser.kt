@@ -9,6 +9,7 @@ import fi.espoo.evaka.application.enduser.ApplicationJson
 import fi.espoo.evaka.application.enduser.ApplicationJsonType
 import fi.espoo.evaka.application.enduser.ApplicationSerializer
 import fi.espoo.evaka.pis.service.PersonService
+import fi.espoo.evaka.pis.service.getChildGuardians
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
@@ -84,7 +85,7 @@ class ApplicationControllerEnduser(
         val applications = db.read { tx ->
             fetchOwnApplicationIds(tx.handle, user.id)
                 .mapNotNull { fetchApplicationDetails(tx.handle, it) }
-                .map { serializer.serialize(tx, user, it) }
+                .map { serialize(tx, user, it) }
         }
 
         return ResponseEntity.ok(applications)
@@ -102,7 +103,7 @@ class ApplicationControllerEnduser(
         val application = db.read { tx ->
             fetchApplicationDetails(tx.handle, applicationId)
                 ?.takeIf { it.guardianId == user.id }
-                ?.let { serializer.serialize(tx, user, it) }
+                ?.let { serialize(tx, user, it) }
                 ?: throw NotFound("Application $applicationId of guardian ${user.id} not found")
         }
 
@@ -123,7 +124,7 @@ class ApplicationControllerEnduser(
         val updatedApplication = db.transaction { tx ->
             applicationStateService
                 .updateOwnApplicationContents(tx, user, applicationId, formV0)
-                .let { serializer.serialize(tx, user, it) }
+                .let { serialize(tx, user, it) }
         }
 
         return ResponseEntity.ok(updatedApplication)
@@ -193,6 +194,30 @@ class ApplicationControllerEnduser(
             applicationStateService.rejectDecision(it, user, applicationId, body.decisionId, isEnduser = true)
         }
         return ResponseEntity.noContent().build()
+    }
+
+    private fun serialize(
+        tx: Database.Read,
+        user: AuthenticatedUser,
+        application: ApplicationDetails
+    ): ApplicationJson {
+        // In extremely rare cases there might be more than 2 guardians, but it was agreed with product management to use
+        // just one of these as the other guardian.
+        val otherGuardian = tx.getChildGuardians(application.childId).firstOrNull { it != application.guardianId }
+
+        val guardiansLiveInSameAddress = if (otherGuardian != null) personService.personsLiveInTheSameAddress(
+            tx,
+            user,
+            application.guardianId,
+            otherGuardian
+        ) else false
+
+        return serializer.serialize(
+            user,
+            application,
+            hasOtherVtjGuardian = otherGuardian != null,
+            guardiansLiveInSameAddress = guardiansLiveInSameAddress
+        )
     }
 }
 

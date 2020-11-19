@@ -19,10 +19,7 @@ import fi.espoo.evaka.application.enduser.daycare.toEnduserDaycareJson
 import fi.espoo.evaka.application.persistence.DatabaseForm
 import fi.espoo.evaka.application.persistence.club.ClubFormV0
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
-import fi.espoo.evaka.pis.service.PersonService
-import fi.espoo.evaka.pis.service.getChildGuardians
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.db.Database
 import org.springframework.stereotype.Component
 
 fun objectMapper(): ObjectMapper {
@@ -32,24 +29,13 @@ fun objectMapper(): ObjectMapper {
 }
 
 @Component
-class ApplicationSerializer(private val personService: PersonService) {
+class ApplicationSerializer {
     fun serialize(
-        tx: Database.Read,
         user: AuthenticatedUser,
         application: ApplicationDetails,
-        requireFreshPersonData: Boolean = true
+        hasOtherVtjGuardian: Boolean,
+        guardiansLiveInSameAddress: Boolean
     ): ApplicationJson {
-        // In extremely rare cases there might be more than 2 guardians, but it was agreed with product management to use
-        // just one of these as the other guardian.
-        val otherGuardian = tx.getChildGuardians(application.childId).firstOrNull { it != application.guardianId }
-
-        val guardiansLiveInSameAddress = if (otherGuardian != null && requireFreshPersonData) personService.personsLiveInTheSameAddress(
-            tx,
-            user,
-            application.guardianId,
-            otherGuardian
-        ) else false
-
         val form = when (application.type) {
             ApplicationType.CLUB -> ClubFormV0.fromForm2(application.form, application.childRestricted, application.guardianRestricted).toEnduserJson()
             else -> DaycareFormV0.fromForm2(application.form, application.type, application.childRestricted, application.guardianRestricted).toEnduserDaycareJson()
@@ -68,7 +54,7 @@ class ApplicationSerializer(private val personService: PersonService) {
             origin = application.origin,
             form = form,
             transferApplication = application.transferApplication,
-            hasOtherVtjGuardian = otherGuardian != null,
+            hasOtherVtjGuardian = hasOtherVtjGuardian,
             otherVtjGuardianHasSameAddress = guardiansLiveInSameAddress,
             otherGuardianAgreementStatus = application.form.secondGuardian?.agreementStatus
         )

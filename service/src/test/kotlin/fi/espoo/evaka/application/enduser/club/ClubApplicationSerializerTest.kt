@@ -4,8 +4,6 @@
 
 package fi.espoo.evaka.application.enduser.club
 
-import com.nhaarman.mockito_kotlin.any
-import com.nhaarman.mockito_kotlin.eq
 import fi.espoo.evaka.application.Address
 import fi.espoo.evaka.application.ApplicationDetails
 import fi.espoo.evaka.application.ApplicationForm
@@ -22,21 +20,12 @@ import fi.espoo.evaka.application.PreferredUnit
 import fi.espoo.evaka.application.SiblingBasis
 import fi.espoo.evaka.application.enduser.ApplicationSerializer
 import fi.espoo.evaka.application.persistence.club.ClubFormV0
-import fi.espoo.evaka.identity.ExternalIdentifier
-import fi.espoo.evaka.pis.service.PersonDTO
-import fi.espoo.evaka.pis.service.PersonService
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.config.Roles
-import fi.espoo.evaka.shared.db.Database
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.extension.ExtendWith
-import org.mockito.InjectMocks
-import org.mockito.Mock
-import org.mockito.Mockito.lenient
 import org.mockito.internal.matchers.apachecommons.ReflectionEquals
-import org.mockito.junit.jupiter.MockitoExtension
 import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.util.UUID
@@ -45,21 +34,12 @@ private val requestingUserId = UUID.randomUUID()
 private val guardianId = UUID.randomUUID()
 private val childId = UUID.randomUUID()
 
-@ExtendWith(MockitoExtension::class)
 class ClubApplicationSerializerTest {
-    @Mock
-    lateinit var personService: PersonService
-
-    @Mock
-    lateinit var tx: Database.Transaction
-
-    @InjectMocks
-    lateinit var serializer: ApplicationSerializer
+    private lateinit var serializer: ApplicationSerializer
 
     @BeforeEach
-    internal fun setUp() {
-        mockPersonService(guardianId)
-        mockPersonService(childId)
+    private fun beforeEach() {
+        serializer = ApplicationSerializer()
     }
 
     @Test
@@ -72,7 +52,7 @@ class ClubApplicationSerializerTest {
     @Test
     fun toEnduserJSONFromClubApplication() {
         val user = AuthenticatedUser(requestingUserId, setOf(Roles.END_USER))
-        val clubJSON = serializer.serialize(tx, user, mockEnduserClubApplication())
+        val clubJSON = serializer.serialize(user, mockEnduserClubApplication(), hasOtherVtjGuardian = false, guardiansLiveInSameAddress = false)
         assertTrue(clubJSON.form is EnduserClubFormJSON)
     }
 
@@ -89,25 +69,8 @@ class ClubApplicationSerializerTest {
     fun `enduser serialized json matches expected`() {
         val user = AuthenticatedUser(requestingUserId, setOf(Roles.END_USER))
         val expectedApplication = mockEnduserClubApplication()
-        val applicationJson = serializer.serialize(tx, user, expectedApplication)
+        val applicationJson = serializer.serialize(user, expectedApplication, hasOtherVtjGuardian = false, guardiansLiveInSameAddress = false)
         assertTrue(ReflectionEquals(mockEnduserClubFormJson(expectedApplication)).matches(applicationJson.form))
-    }
-
-    private fun mockPersonService(personId: UUID, restricted: Boolean = false) {
-        lenient().`when`(personService.getUpToDatePerson(any(), any(), eq(personId))).thenReturn(
-            PersonDTO(
-                id = personId,
-                identity = ExternalIdentifier.NoID(),
-                customerId = 1L,
-                firstName = "",
-                lastName = "",
-                email = "",
-                phone = "",
-                language = "fi",
-                dateOfBirth = LocalDate.now(),
-                restrictedDetailsEnabled = restricted
-            )
-        )
     }
 
     private fun mockEnduserClubApplication(): ApplicationDetails {

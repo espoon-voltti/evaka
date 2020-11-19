@@ -4,8 +4,6 @@
 
 package fi.espoo.evaka.application.enduser.daycare
 
-import com.nhaarman.mockito_kotlin.any
-import com.nhaarman.mockito_kotlin.eq
 import fi.espoo.evaka.application.ApplicationDetails
 import fi.espoo.evaka.application.ApplicationForm
 import fi.espoo.evaka.application.ApplicationOrigin
@@ -23,21 +21,12 @@ import fi.espoo.evaka.application.SiblingBasis
 import fi.espoo.evaka.application.enduser.ApplicationJsonType
 import fi.espoo.evaka.application.enduser.ApplicationSerializer
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
-import fi.espoo.evaka.identity.ExternalIdentifier
-import fi.espoo.evaka.pis.service.PersonDTO
-import fi.espoo.evaka.pis.service.PersonService
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.config.Roles
-import fi.espoo.evaka.shared.db.Database
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.extension.ExtendWith
-import org.mockito.InjectMocks
-import org.mockito.Mock
-import org.mockito.Mockito.lenient
-import org.mockito.junit.jupiter.MockitoExtension
 import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.util.UUID
@@ -46,21 +35,12 @@ private val requestingUserId = UUID.randomUUID()
 private val guardianId = UUID.randomUUID()
 private val childId = UUID.randomUUID()
 
-@ExtendWith(MockitoExtension::class)
 class DaycareApplicationSerializerTest {
-    @Mock
-    lateinit var personService: PersonService
-
-    @Mock
-    lateinit var tx: Database.Transaction
-
-    @InjectMocks
-    lateinit var serializer: ApplicationSerializer
+    private lateinit var serializer: ApplicationSerializer
 
     @BeforeEach
-    internal fun setUp() {
-        mockPersonService(guardianId)
-        mockPersonService(childId)
+    private fun beforeEach() {
+        serializer = ApplicationSerializer()
     }
 
     @Test
@@ -80,26 +60,14 @@ class DaycareApplicationSerializerTest {
     @Test
     fun `enduser serialized daycare json matches expected`() {
         val user = AuthenticatedUser(requestingUserId, setOf(Roles.END_USER))
-        val json = serializer.serialize(tx, user, expectedEnduserDaycareApplication)
+        val json = serializer.serialize(
+            user,
+            expectedEnduserDaycareApplication,
+            hasOtherVtjGuardian = false,
+            guardiansLiveInSameAddress = false
+        )
         assertTrue(json.form is EnduserDaycareFormJSON)
         assertEquals(expectedEnduserDaycareFormJSON, json.form)
-    }
-
-    private fun mockPersonService(personId: UUID, restricted: Boolean = false) {
-        lenient().`when`(personService.getUpToDatePerson(any(), any(), eq(personId))).thenReturn(
-            PersonDTO(
-                id = personId,
-                identity = ExternalIdentifier.NoID(),
-                customerId = 1L,
-                firstName = "",
-                lastName = "",
-                email = "",
-                phone = "",
-                language = "fi",
-                dateOfBirth = LocalDate.now(),
-                restrictedDetailsEnabled = restricted
-            )
-        )
     }
 }
 
