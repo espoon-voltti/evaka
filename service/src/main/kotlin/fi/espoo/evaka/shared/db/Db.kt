@@ -14,6 +14,7 @@ import fi.espoo.evaka.shared.domain.Coordinate
 import fi.espoo.evaka.shared.domain.Period
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.Jdbi
+import org.jdbi.v3.core.generic.GenericType
 import org.jdbi.v3.core.kotlin.KotlinPlugin
 import org.jdbi.v3.core.qualifier.QualifiedType
 import org.jdbi.v3.core.result.RowView
@@ -131,4 +132,4 @@ inline fun <reified T> RowView.mapColumn(name: String, type: QualifiedType<T> = 
  * Maps a row json column to a value.
  */
 inline fun <reified T : Any> RowView.mapJsonColumn(name: String): T =
-    mapColumn(name, QualifiedType.of(T::class.java).with(Json::class.java))
+    mapColumn(name, QualifiedType.of(object : GenericType<T>() {}).with(Json::class.java))
