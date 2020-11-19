@@ -81,7 +81,7 @@ class ApplicationControllerEnduser(
         Audit.ApplicationRead.log(targetId = user.id)
         user.requireOneOfRoles(UserRole.END_USER)
 
-        val applications = db.transaction { tx ->
+        val applications = db.read { tx ->
             fetchOwnApplicationIds(tx.handle, user.id)
                 .mapNotNull { fetchApplicationDetails(tx.handle, it) }
                 .map { serializer.serialize(tx, user, it) }
@@ -99,7 +99,7 @@ class ApplicationControllerEnduser(
         Audit.ApplicationRead.log(targetId = applicationId)
         user.requireOneOfRoles(UserRole.END_USER)
 
-        val application = db.transaction { tx ->
+        val application = db.read { tx ->
             fetchApplicationDetails(tx.handle, applicationId)
                 ?.takeIf { it.guardianId == user.id }
                 ?.let { serializer.serialize(tx, user, it) }

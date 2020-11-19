@@ -108,15 +108,6 @@ class PersonService(
         }
     }
 
-    // In extremely rare cases there might be more than 2 guardians, but it was agreed with product management to use
-    // just one of these as the other guardian.
-    fun getOtherGuardian(
-        tx: Database.Transaction,
-        user: AuthenticatedUser,
-        otherGuardianId: VolttiIdentifier,
-        childId: VolttiIdentifier
-    ): PersonDTO? = getGuardians(tx, user, childId).firstOrNull { guardian -> guardian.id != otherGuardianId }
-
     // Does a request to VTJ if SSN is present
     fun getGuardians(tx: Database.Transaction, user: AuthenticatedUser, id: VolttiIdentifier): List<PersonDTO> {
         val child = tx.handle.getPersonById(id) ?: return emptyList()

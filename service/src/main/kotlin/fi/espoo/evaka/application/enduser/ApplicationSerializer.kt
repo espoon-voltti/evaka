@@ -20,6 +20,7 @@ import fi.espoo.evaka.application.persistence.DatabaseForm
 import fi.espoo.evaka.application.persistence.club.ClubFormV0
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
 import fi.espoo.evaka.pis.service.PersonService
+import fi.espoo.evaka.pis.service.getChildGuardians
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import org.springframework.stereotype.Component
@@ -33,17 +34,20 @@ fun objectMapper(): ObjectMapper {
 @Component
 class ApplicationSerializer(private val personService: PersonService) {
     fun serialize(
-        tx: Database.Transaction,
+        tx: Database.Read,
         user: AuthenticatedUser,
         application: ApplicationDetails,
         requireFreshPersonData: Boolean = true
     ): ApplicationJson {
-        val otherGuardian = if (requireFreshPersonData) personService.getOtherGuardian(tx, user, application.guardianId, application.childId) else null
+        // In extremely rare cases there might be more than 2 guardians, but it was agreed with product management to use
+        // just one of these as the other guardian.
+        val otherGuardian = tx.getChildGuardians(application.childId).firstOrNull { it != application.guardianId }
+
         val guardiansLiveInSameAddress = if (otherGuardian != null && requireFreshPersonData) personService.personsLiveInTheSameAddress(
             tx,
             user,
             application.guardianId,
-            otherGuardian.id
+            otherGuardian
         ) else false
 
         val form = when (application.type) {
