@@ -29,9 +29,7 @@ import org.jdbi.v3.core.result.RowView
 import org.jdbi.v3.core.statement.StatementContext
 import org.postgresql.util.PGobject
 import java.sql.ResultSet
-import java.time.Instant
 import java.time.LocalDate
-import java.time.OffsetDateTime
 import java.util.UUID
 import kotlin.math.ceil
 import kotlin.math.max
@@ -501,14 +499,7 @@ fun fetchApplicationDetails(h: Handle, applicationId: UUID): ApplicationDetails?
                 dueDate = row.mapColumn("duedate"),
                 checkedByAdmin = row.mapColumn("checkedbyadmin"),
                 hideFromGuardian = row.mapColumn("hidefromguardian"),
-                attachments = row.mapJsonColumn<List<Map<String, String>>>("attachments").map {
-                    Attachment(
-                        id = UUID.fromString(it["id"]),
-                        name = it["name"]!!,
-                        contentType = it["contentType"]!!,
-                        updated = Instant.ofEpochSecond(OffsetDateTime.parse(it["updated"]!!).toEpochSecond())
-                    )
-                }
+                attachments = row.mapJsonColumn<Array<Attachment>>("attachments").toList()
             )
         }
         .firstOrNull()
