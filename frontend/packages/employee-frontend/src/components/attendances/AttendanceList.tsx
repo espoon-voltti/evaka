@@ -5,44 +5,42 @@
 import React from 'react'
 import { useParams } from 'react-router-dom'
 
-import { AttendanceStatus, ChildInGroup } from '~api/unit'
 import { FixedSpaceColumn } from '~components/shared/layout/flex-helpers'
 import ChildListItem from './ChildListItem'
 import { UnorderedList } from '~components/common/styled/common'
 import { UUID } from '~types'
+import { AttendanceChild, AttendanceStatus } from '~api/attendances'
 
 interface Props {
-  groupAttendances: ChildInGroup[]
+  attendanceChildren: AttendanceChild[]
   type?: AttendanceStatus
 }
 
 export default React.memo(function AttendanceList({
-  groupAttendances,
+  attendanceChildren,
   type
 }: Props) {
-  const { unitId, groupId } = useParams<{
+  const { unitId, groupId: groupIdOrAll } = useParams<{
     unitId: UUID
     groupId: UUID | 'all'
   }>()
 
   if (type) {
-    groupAttendances = groupAttendances.filter(
-      (groupAttendance) => groupAttendance.status === type
-    )
+    attendanceChildren = attendanceChildren.filter((ac) => ac.status === type)
   }
 
   return (
     <FixedSpaceColumn>
       <UnorderedList spacing={'xs'}>
-        {groupAttendances.map((groupAttendance) => (
-          <li key={groupAttendance.childId}>
+        {attendanceChildren.map((ac) => (
+          <li key={ac.id}>
             <a
-              href={`/employee/units/${unitId}/groups/${groupId}/childattendance/${groupAttendance.childId}`}
+              href={`/employee/units/${unitId}/groups/${groupIdOrAll}/childattendance/${ac.id}`}
             >
               <ChildListItem
-                type={groupAttendance.status}
-                key={groupAttendance.childId}
-                childInGroup={groupAttendance}
+                type={ac.status}
+                key={ac.id}
+                attendanceChild={ac}
               />
             </a>
           </li>
