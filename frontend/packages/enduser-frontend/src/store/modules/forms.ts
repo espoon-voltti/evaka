@@ -224,10 +224,11 @@ const module: Module<any, RootState> = {
     },
     async addUrgentFile({ commit }, { file, applicationId }) {
       const key = getUUID()
-      commit(types.ADD_URGENT_FILE, { key, file, progress: 0 })
+      const fileObject = { key, file, name: file.name, contentType: file.type }
+      commit(types.ADD_URGENT_FILE, { ...fileObject, progress: 0 })
       const onUploadProgress = (event) => {
         const progress = Math.round((event.loaded / event.total) * 100)
-        commit(types.UPDATE_URGENT_FILE, { key, file, progress })
+        commit(types.UPDATE_URGENT_FILE, { ...fileObject, progress })
       }
       const { data } = await applicationApi.saveAttachment(
         applicationId,
@@ -235,11 +236,9 @@ const module: Module<any, RootState> = {
         onUploadProgress
       )
       commit(types.UPDATE_URGENT_FILE, {
-        key,
+        ...fileObject,
         id: data,
-        file,
-        progress: 100,
-        done: true
+        progress: 100
       })
     },
     async deleteUrgentFile({ commit }, { id }) {
@@ -270,9 +269,11 @@ const module: Module<any, RootState> = {
     [types.LOAD_APPLICATION_FORM](state, { application }) {
       state.application = Object.assign(state.application, application)
       state.loadedApplication = _.cloneDeep(state.application)
+      state.files.urgent = [...application.attachments]
     },
     [types.LOAD_DAYCARE_APPLICATION_FORM](state, { application }) {
       state.daycare = Object.assign(state.daycare, application)
+      state.files.urgent = [...application.attachments]
     },
     [types.REVERT_APPLICATION_FORM](state) {
       state.application = _.cloneDeep(state.loadedApplication)

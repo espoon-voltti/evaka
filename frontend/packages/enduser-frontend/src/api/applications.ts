@@ -60,6 +60,7 @@ const deserializeApplication = (applicationData) => {
 
   application.child.id = applicationData.childId
   application.guardian.id = applicationData.guardianId
+  application.attachments = applicationData.attachments
 
   return application
 }

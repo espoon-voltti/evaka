@@ -22,12 +22,12 @@ SPDX-License-Identifier: LGPL-2.1-or-later
         </div>
         <div class="file-details">
           <div class="file-header">
-            <span>{{ file.file.name }}</span>
+            <span>{{ file.name }}</span>
             <div>
               <button
                 class="file-header-icon-button"
                 @click="deleteFile(file)"
-                :disabled="!file.done"
+                :disabled="inProgress(file)"
               >
                 <font-awesome-icon
                   :icon="['fal', 'times']"
@@ -37,7 +37,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
             </div>
           </div>
           <transition name="progress-bar">
-            <div class="file-progress-bar" v-show="!file.done">
+            <div class="file-progress-bar" v-show="inProgress(file)">
               <div class="file-progress-bar-background">
                 <div
                   class="file-progress-bar-progress"
@@ -46,9 +46,9 @@ SPDX-License-Identifier: LGPL-2.1-or-later
               </div>
               <div class="file-progress-bar-details">
                 <span>{{
-                  file.done
-                    ? $t('file-upload.loaded')
-                    : $t('file-upload.loading')
+                  inProgress(file)
+                    ? $t('file-upload.loading')
+                    : $t('file-upload.loaded')
                 }}</span>
                 <span>{{ file.progress }} %</span>
               </div>
@@ -75,7 +75,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
         this.onDelete(file)
       },
       fileIcon(file) {
-        switch (file.file.type) {
+        switch (file.contentType) {
           case 'image/jpeg':
           case 'image/png':
             return 'file-image'
@@ -88,6 +88,9 @@ SPDX-License-Identifier: LGPL-2.1-or-later
           default:
             return 'file'
         }
+      },
+      inProgress(file) {
+        return !file.id
       },
       progressBarStyles(file) {
         return `width: ${file.progress}%;`

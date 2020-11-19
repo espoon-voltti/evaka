@@ -37,7 +37,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
               <a :href="`/api/application/attachments/${file.id}/download`"
                 target="_blank"
                 rel="noreferrer"
-              >{{ file.file.name }}</a>
+              >{{ file.name }}</a>
             </li>
           </ul>
         </div>

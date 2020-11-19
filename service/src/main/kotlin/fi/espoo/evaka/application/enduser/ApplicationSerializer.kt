@@ -66,7 +66,8 @@ class ApplicationSerializer(private val personService: PersonService) {
             transferApplication = application.transferApplication,
             hasOtherVtjGuardian = otherGuardian != null,
             otherVtjGuardianHasSameAddress = guardiansLiveInSameAddress,
-            otherGuardianAgreementStatus = application.form.secondGuardian?.agreementStatus
+            otherGuardianAgreementStatus = application.form.secondGuardian?.agreementStatus,
+            attachments = application.attachments
         )
     }
 

@@ -7,6 +7,7 @@ package fi.espoo.evaka.application.enduser
 import com.fasterxml.jackson.annotation.JsonProperty
 import fi.espoo.evaka.application.ApplicationOrigin
 import fi.espoo.evaka.application.ApplicationStatus
+import fi.espoo.evaka.application.Attachment
 import fi.espoo.evaka.application.enduser.daycare.OtherGuardianAgreementStatus
 import fi.espoo.evaka.application.persistence.DatabaseForm
 import java.time.LocalDate
@@ -28,7 +29,8 @@ data class ApplicationJson(
     val transferApplication: Boolean,
     val otherGuardianAgreementStatus: OtherGuardianAgreementStatus?,
     val otherVtjGuardianHasSameAddress: Boolean,
-    val hasOtherVtjGuardian: Boolean
+    val hasOtherVtjGuardian: Boolean,
+    val attachments: List<Attachment>
 )
 
 sealed class FormJson {
