@@ -16,7 +16,7 @@ import UnitPage, {
   missingPlacementElement
 } from '../../pages/employee/units/unit-page'
 import { logConsoleMessages } from '../../utils/fixture'
-import BackupCareGroupModal from '../../pages/employee/units/backup-care-group-modal'
+import GroupPlacementModal from '../../pages/employee/units/group-placement-modal'
 import { ApplicationPersonDetail, BackupCare } from '../../dev-api/types'
 import {
   insertBackupCareFixtures,
@@ -28,7 +28,7 @@ import { formatISODateString } from '../../utils/dates'
 const adminHome = new AdminHome()
 const employeeHome = new EmployeeHome()
 const unitPage = new UnitPage()
-const backupCareGroupModal = new BackupCareGroupModal()
+const groupPlacementModal = new GroupPlacementModal()
 let fixtures: AreaAndPersonFixtures
 let cleanUp: () => Promise<void>
 let childFixture: ApplicationPersonDetail
@@ -88,8 +88,8 @@ test('backup care child can be placed into a group and removed from it', async (
     unitPage.missingPlacementRows.nth(0)
   )
   await missingPlacement.addToGroup()
-  await t.expect(backupCareGroupModal.root.visible).ok()
-  await backupCareGroupModal.submit()
+  await t.expect(groupPlacementModal.root.visible).ok()
+  await groupPlacementModal.submit()
 
   // no more missing placements
   await t.expect(unitPage.missingPlacementRows.count).eql(0)

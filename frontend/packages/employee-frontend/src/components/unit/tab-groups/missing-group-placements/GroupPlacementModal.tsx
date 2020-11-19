@@ -14,6 +14,7 @@ import { FixedSpaceColumn } from 'components/shared/layout/flex-helpers'
 import { isFailure, Result } from '~api'
 import { faChild } from 'icon-set'
 import { createPlacement, MissingGroupPlacement } from '~api/unit'
+import { updateBackupCare } from 'api/child/backup-care'
 import { UUID } from '~types'
 import Select from '~components/common/Select'
 import { DatePicker } from '~components/common/DatePicker'
@@ -100,7 +101,7 @@ export default React.memo(function GroupPlacementModal({
     })
   }
 
-  const submitForm = () => {
+  const submitGroupPlacement = () => {
     if (form.groupId == null) return
 
     void createPlacement(
@@ -122,6 +123,39 @@ export default React.memo(function GroupPlacementModal({
       }
     })
   }
+
+  const submitBackupCarePlacement = () => {
+    if (form.groupId == null) return
+
+    void updateBackupCare(placementId, {
+      period: { start: form.startDate, end: form.endDate },
+      groupId: form.groupId
+    }).then((res) => {
+      if (isFailure(res)) {
+        clearUiMode()
+        setErrorMessage({
+          type: 'error',
+          title: i18n.unit.error.placement.create,
+          text: i18n.common.tryAgain
+        })
+      } else {
+        clearUiMode()
+        reload()
+      }
+    })
+  }
+
+  const submitForm = missingPlacement.backup
+    ? submitBackupCarePlacement
+    : submitGroupPlacement
+
+  const disableDateEditIfBackupPlacement = missingPlacement.backup
+    ? {
+        disabled: true,
+        onFocus: (e: React.FocusEvent<HTMLInputElement>): void =>
+          e.target.blur()
+      }
+    : {}
 
   return (
     <FormModal
@@ -159,6 +193,7 @@ export default React.memo(function GroupPlacementModal({
         <Section>
           <Bold>{i18n.common.form.startDate}</Bold>
           <DatePicker
+            {...disableDateEditIfBackupPlacement}
             date={form.startDate}
             onChange={(startDate) => assignFormValues({ startDate })}
             type="full-width"
@@ -169,6 +204,7 @@ export default React.memo(function GroupPlacementModal({
         <Section>
           <Bold>{i18n.common.form.endDate}</Bold>
           <DatePicker
+            {...disableDateEditIfBackupPlacement}
             date={form.endDate}
             onChange={(endDate) => assignFormValues({ endDate })}
             type="full-width"
