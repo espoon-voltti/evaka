@@ -674,7 +674,7 @@ export const fi = {
       },
       warning: {
         overlap: 'Ajalle on jo sijoitus',
-        ghostUnit: 'Yksikkö on merkattu haamuyksiköksi.'
+        ghostUnit: 'Yksikkö on merkitty haamuyksiköksi.'
       }
     },
     fridgeParents: {
@@ -1696,7 +1696,8 @@ export const fi = {
     date: 'Sijoituspäivämäärä',
     dateError: 'Päällekkäinen sijoitus ajanjaksolle.',
     preparatoryPeriod: 'Valmistava opetus',
-    dateOfBirth: 'Syntymäaika'
+    dateOfBirth: 'Syntymäaika',
+    selectedUnit: 'Valittu yksikkö'
   },
   decisionDraft: {
     title: 'Päätöksen teko ja lähetys',

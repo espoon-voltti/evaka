@@ -304,7 +304,7 @@ function PlacementDraft({ match }: RouteComponentProps<{ id: UUID }>) {
         {isSuccess(placementDraft) && placement.period && (
           <Fragment>
             <PlacementDraftInfo>
-              <Title size={2}>{i18n.placementDraft.createPlacementDraft}</Title>
+              <Title size={1}>{i18n.placementDraft.createPlacementDraft}</Title>
               <ChildName>
                 <Title size={3}>
                   {formatName(
@@ -379,7 +379,7 @@ function PlacementDraft({ match }: RouteComponentProps<{ id: UUID }>) {
                     redirectToMainPage()
                   )
                 }}
-                text={i18n.common.send}
+                text={i18n.placementDraft.createPlacementDraft}
               />
             </SendButtonContainer>
           </Fragment>

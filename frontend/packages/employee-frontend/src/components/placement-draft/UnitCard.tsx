@@ -215,7 +215,11 @@ const MemoizedCard = memo(function UnitCard({
           dataQa="select-placement-unit"
           onClick={() => selectUnit(unitId)}
           icon={(isSelectedUnit && faCheck) || undefined}
-          text={isSelectedUnit ? 'Valittu yksikkö' : 'Valitse'}
+          text={
+            isSelectedUnit
+              ? i18n.placementDraft.selectedUnit
+              : i18n.common.select
+          }
           info={
             displayGhostUnitWarning
               ? {
