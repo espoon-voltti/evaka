@@ -166,6 +166,7 @@ export interface ApplicationResponse {
   application: ApplicationDetails
   decisions: Decision[]
   guardians: PersonDetails[]
+  attachments: Attachment[]
 }
 
 export type SortByApplications =
@@ -254,4 +255,11 @@ export interface ApplicationNote {
   updated: Date
   updatedBy: UUID | null
   updatedByName: string | null
+}
+
+export interface Attachment {
+  id: UUID
+  name: string
+  contentType: string
+  updated: Date
 }

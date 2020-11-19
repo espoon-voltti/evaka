@@ -262,7 +262,8 @@ class ApplicationControllerV2(
                 ApplicationResponse(
                     application = application,
                     decisions = decisions.map { it.copy(documentUri = null) },
-                    guardians = guardians
+                    guardians = guardians,
+                    attachments = application.attachments
                 )
             )
         }
@@ -507,7 +508,8 @@ data class PaperApplicationCreateRequest(
 data class ApplicationResponse(
     val application: ApplicationDetails,
     val decisions: List<Decision>,
-    val guardians: List<PersonJSON>
+    val guardians: List<PersonJSON>,
+    val attachments: List<Attachment>
 )
 
 data class SimpleBatchRequest(

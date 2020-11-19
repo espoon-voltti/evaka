@@ -149,7 +149,7 @@ export default React.memo(function ApplicationEditView({
             <>
               <Label>{i18n.application.serviceNeed.urgentLabel}</Label>
               <Checkbox
-                label={i18n.application.serviceNeed.urgentValue}
+                label={i18n.application.serviceNeed.urgentLabel}
                 checked={urgent}
                 onChange={(value) =>
                   setApplication(set('form.preferences.urgent', value))

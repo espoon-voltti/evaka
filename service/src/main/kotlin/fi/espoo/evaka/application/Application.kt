@@ -94,7 +94,8 @@ data class ApplicationDetails(
 data class Attachment(
     val id: UUID,
     val name: String,
-    val contentType: String
+    val contentType: String,
+    val updated: OffsetDateTime
 )
 
 enum class ApplicationType(val type: String) {

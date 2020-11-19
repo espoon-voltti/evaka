@@ -462,7 +462,7 @@ fun fetchApplicationDetails(h: Handle, applicationId: UUID): ApplicationDetails?
         LEFT JOIN person c ON c.id = a.child_id
         LEFT JOIN person g1 ON g1.id = a.guardian_id
         LEFT JOIN (
-            SELECT application_id, jsonb_agg(jsonb_build_object('id', id, 'name', name, 'contentType', content_type)) json
+            SELECT application_id, jsonb_agg(jsonb_build_object('id', id, 'name', name, 'contentType', content_type, 'updated', updated)) json
             FROM attachment GROUP BY application_id
         ) att ON a.id = att.application_id
         WHERE a.id = :id
@@ -499,13 +499,7 @@ fun fetchApplicationDetails(h: Handle, applicationId: UUID): ApplicationDetails?
                 dueDate = row.mapColumn("duedate"),
                 checkedByAdmin = row.mapColumn("checkedbyadmin"),
                 hideFromGuardian = row.mapColumn("hidefromguardian"),
-                attachments = row.mapJsonColumn<List<Map<String, String>>>("attachments").map {
-                    Attachment(
-                        id = UUID.fromString(it["id"]),
-                        name = it["name"]!!,
-                        contentType = it["contentType"]!!
-                    )
-                }
+                attachments = row.mapJsonColumn<Array<Attachment>>("attachments").toList()
             )
         }
         .firstOrNull()

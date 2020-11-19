@@ -7,10 +7,12 @@ import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.Forbidden
+import fi.espoo.evaka.shared.domain.NotFound
 import org.jdbi.v3.core.kotlin.mapTo
 import org.springframework.core.env.Environment
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
+import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestMapping
@@ -90,6 +92,27 @@ class AttachmentsController(
             )
         }
         return id
+    }
+
+    @GetMapping("/{attachmentId}/download")
+    fun getAttachment(
+        db: Database,
+        user: AuthenticatedUser,
+        @PathVariable attachmentId: UUID
+    ): ResponseEntity<ByteArray> {
+        val attachment = db.read { it.handle.getAttachment(attachmentId) ?: throw NotFound("Attachment $attachmentId not found") }
+
+        if (!user.hasOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN)) {
+            if (!db.read { it.handle.isOwnAttachment(attachmentId, user.id) }) throw Forbidden("Permission denied")
+        }
+
+        val uri = "$attachmentId"
+        return s3Client.get(filesBucket, uri).let { document ->
+            ResponseEntity.ok()
+                .header("Content-Disposition", "attachment;filename=${document.getName()}")
+                .contentType(MediaType.valueOf(attachment.contentType))
+                .body(document.getBytes())
+        }
     }
 }
 

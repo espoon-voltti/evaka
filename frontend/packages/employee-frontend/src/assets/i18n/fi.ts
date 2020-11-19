@@ -288,7 +288,9 @@ export const fi = {
       shiftCareLabel: 'Ilta- ja vuorohoito',
       shiftCareValue: 'Tarvitaan ilta- ja vuorohoitoa',
       urgentLabel: 'Kiireellinen hakemus',
-      urgentValue: 'Hakemus on kiireellinen',
+      notUrgent: 'Ei',
+      isUrgent: 'On',
+      isUrgentWithAttachments: 'On kiireellinen, liitteet:',
       preparatoryLabel: 'Valmistava opetus',
       preparatoryValue: 'Haen myös valmistavaan opetukseen',
       assistanceLabel: 'Tuen tarve',
@@ -379,6 +381,13 @@ export const fi = {
       },
       blocked:
         'Tämän päätöksen voi hyväksyä vasta esiopetuspäätöksen hyväksymisen jälkeen'
+    },
+    attachments: {
+      title: 'Liitteet',
+      none: 'Hakemukseen ei liity liitteitä',
+      name: 'Tiedostonimi',
+      updated: 'Muutettu',
+      contentType: 'Tyyppi'
     },
     state: {
       title: 'Hakemuksen tila',

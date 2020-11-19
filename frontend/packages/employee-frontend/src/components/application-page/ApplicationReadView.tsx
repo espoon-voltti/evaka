@@ -27,6 +27,7 @@ import VTJGuardian from 'components/application-page/VTJGuardian'
 import ApplicationStatusSection from 'components/application-page/ApplicationStatusSection'
 import ApplicationDecisionsSection from 'components/application-page/ApplicationDecisionsSection'
 import Colors from 'components/shared/Colors'
+import Attachment from '~components/common/Attachment'
 
 function YesNoValue({ value }: { value: boolean | null | undefined }) {
   const { i18n } = useTranslation()
@@ -36,6 +37,15 @@ function YesNoValue({ value }: { value: boolean | null | undefined }) {
 
 const Dimmed = styled.span`
   color: ${Colors.greyscale.medium};
+`
+
+const AttachmentContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  & > div {
+    margin-top: 5px;
+    margin-bottom: 5px;
+  }
 `
 
 function BooleanValue({
@@ -92,7 +102,8 @@ function ApplicationReadView({
       guardianRestricted
     },
     decisions,
-    guardians
+    guardians,
+    attachments
   } = application
 
   const connectedDaycare = type === 'PRESCHOOL' && serviceNeed !== null
@@ -132,10 +143,26 @@ function ApplicationReadView({
           {type === 'DAYCARE' && (
             <>
               <Label>{i18n.application.serviceNeed.urgentLabel}</Label>
-              <BooleanValue
-                value={urgent}
-                selectedLabel={i18n.application.serviceNeed.urgentValue}
-              />
+              {!urgent ? (
+                <span>{i18n.application.serviceNeed.notUrgent}</span>
+              ) : (
+                <AttachmentContainer>
+                  {attachments.length ? (
+                    <span>
+                      {i18n.application.serviceNeed.isUrgentWithAttachments}
+                    </span>
+                  ) : (
+                    <span>{i18n.application.serviceNeed.isUrgent}</span>
+                  )}
+                  {attachments.map((attachment) => (
+                    <Attachment
+                      key={attachment.id}
+                      attachment={attachment}
+                      dataQa={`urgent-attachment-${attachment.name}`}
+                    />
+                  ))}
+                </AttachmentContainer>
+              )}
 
               {serviceNeed !== null && (
                 <>
