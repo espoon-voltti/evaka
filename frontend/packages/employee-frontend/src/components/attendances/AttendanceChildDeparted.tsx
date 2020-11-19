@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 import React, { Fragment, useContext } from 'react'
-import { useHistory } from 'react-router-dom'
 
 import {
   AttendanceChild,
