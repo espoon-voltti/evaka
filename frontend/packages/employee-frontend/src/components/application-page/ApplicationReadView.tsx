@@ -27,7 +27,6 @@ import VTJGuardian from 'components/application-page/VTJGuardian'
 import ApplicationStatusSection from 'components/application-page/ApplicationStatusSection'
 import ApplicationDecisionsSection from 'components/application-page/ApplicationDecisionsSection'
 import Colors from 'components/shared/Colors'
-import ApplicationAttachmentsSection from '~components/application-page/ApplicationAttachmentsSection'
 import Attachment from '~components/common/Attachment'
 
 function YesNoValue({ value }: { value: boolean | null | undefined }) {
@@ -483,8 +482,6 @@ function ApplicationReadView({
         }
         reloadApplication={reloadApplication}
       />
-
-      <ApplicationAttachmentsSection attachments={attachments} />
 
       <ApplicationStatusSection application={application.application} />
     </div>
