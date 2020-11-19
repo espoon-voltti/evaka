@@ -19,7 +19,6 @@ plugins {
     id("org.flywaydb.flyway") version Version.flyway
 
     id("com.github.ben-manes.versions") version Version.GradlePlugin.versions
-    id("io.gitlab.arturbosch.detekt") version Version.GradlePlugin.detekt
     id("org.jlleitschuh.gradle.ktlint") version Version.GradlePlugin.ktlint
 
     idea
@@ -163,10 +162,6 @@ tasks.withType<KotlinCompile> {
         jvmTarget = Version.java
         allWarningsAsErrors = name != "compileIntegrationTestKotlin"
     }
-}
-
-detekt {
-    config = files("$projectDir/detekt.yml")
 }
 
 ktlint {

@@ -74,12 +74,6 @@ If you want to set ktlint formatter rules as your IDEA kotlin formatting rules, 
 ./gradlew ktlintApplyToIdea
 ```
 
-Run static code analysis:
-
-```sh
-./gradlew detekt
-```
-
 ## Dev API
 
 The service has a dev API in local, dev and test environments.

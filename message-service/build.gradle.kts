@@ -25,7 +25,6 @@ plugins {
     id("org.springframework.boot") version Version.springBoot
 
     id("com.github.ben-manes.versions") version Version.GradlePlugin.versions
-    id("io.gitlab.arturbosch.detekt") version Version.GradlePlugin.detekt
     id("org.jlleitschuh.gradle.ktlint") version Version.GradlePlugin.ktlint
     id("no.nils.wsdl2java") version "0.10"
 
@@ -150,10 +149,6 @@ tasks.withType<KotlinCompile> {
         jvmTarget = Version.java
         allWarningsAsErrors = true
     }
-}
-
-detekt {
-    config = files("$projectDir/detekt.yml")
 }
 
 ktlint {
