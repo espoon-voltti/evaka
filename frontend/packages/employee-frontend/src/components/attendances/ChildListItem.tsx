@@ -5,7 +5,7 @@
 import React from 'react'
 import styled from 'styled-components'
 
-import { AttendanceStatus, ChildInGroup } from '~api/unit'
+import { AttendanceChild, AttendanceStatus } from '~api/attendances'
 import RoundIcon from '~components/shared/atoms/RoundIcon'
 import Colors from '~components/shared/Colors'
 import { DefaultMargins } from '~components/shared/layout/white-space'
@@ -59,13 +59,13 @@ const Time = styled.span`
 `
 
 interface ChildListItemProps {
-  childInGroup: ChildInGroup
+  attendanceChild: AttendanceChild
   onClick?: () => void
   type: AttendanceStatus
 }
 
 export default React.memo(function ChildListItem({
-  childInGroup,
+  attendanceChild,
   onClick,
   type
 }: ChildListItemProps) {
@@ -92,32 +92,32 @@ export default React.memo(function ChildListItem({
       </IconBox>
       <ChildBoxInfo onClick={onClick}>
         <Bold>
-          {childInGroup.firstName} {childInGroup.lastName}
+          {attendanceChild.firstName} {attendanceChild.lastName}
         </Bold>
         <ChildBoxStatus>
-          {i18n.attendances.status[childInGroup.status]}
+          {i18n.attendances.status[attendanceChild.status]}
           <Time>
-            {childInGroup.status === 'PRESENT' &&
-              childInGroup.arrived &&
+            {attendanceChild.status === 'PRESENT' &&
+              attendanceChild.attendance?.arrived &&
               `${
-                childInGroup.arrived?.getHours() < 10
-                  ? `0${childInGroup.arrived?.getHours()}`
-                  : childInGroup.arrived?.getHours()
+                attendanceChild.attendance.arrived.getHours() < 10
+                  ? `0${attendanceChild.attendance.arrived.getHours()}`
+                  : attendanceChild.attendance.arrived?.getHours()
               }:${
-                childInGroup.arrived?.getMinutes() < 10
-                  ? `0${childInGroup.arrived?.getMinutes()}`
-                  : childInGroup.arrived?.getMinutes()
+                attendanceChild.attendance.arrived?.getMinutes() < 10
+                  ? `0${attendanceChild.attendance.arrived?.getMinutes()}`
+                  : attendanceChild.attendance.arrived?.getMinutes()
               }`}
-            {childInGroup.status === 'DEPARTED' &&
-              childInGroup.departed &&
+            {attendanceChild.status === 'DEPARTED' &&
+              attendanceChild.attendance?.departed &&
               `${
-                childInGroup.departed?.getHours() < 10
-                  ? `0${childInGroup.departed?.getHours()}`
-                  : childInGroup.departed?.getHours()
+                attendanceChild.attendance.departed.getHours() < 10
+                  ? `0${attendanceChild.attendance.departed.getHours()}`
+                  : attendanceChild.attendance.departed.getHours()
               }:${
-                childInGroup.departed?.getMinutes() < 10
-                  ? `0${childInGroup.departed?.getMinutes()}`
-                  : childInGroup.departed?.getMinutes()
+                attendanceChild.attendance.departed.getMinutes() < 10
+                  ? `0${attendanceChild.attendance.departed.getMinutes()}`
+                  : attendanceChild.attendance.departed.getMinutes()
               }`}
           </Time>
         </ChildBoxStatus>

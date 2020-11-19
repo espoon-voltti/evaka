@@ -2,7 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { Fragment, useEffect, useState } from 'react'
+import React, { Fragment, useContext, useEffect, useState } from 'react'
+
 import {
   Redirect,
   Route,
@@ -15,26 +16,15 @@ import styled from 'styled-components'
 import { animated, useSpring } from 'react-spring'
 
 import { useTranslation } from '~state/i18n'
-import {
-  ChildInGroup,
-  getDaycare,
-  getDaycareAttendances,
-  getUnitData,
-  UnitData,
-  UnitResponse
-} from '~api/unit'
 import Tabs from '~components/shared/molecules/Tabs'
 import AttendanceGroupSelectorPage from './AttendanceGroupSelectorPage'
 import AttendanceComingPage from './AttendanceComingPage'
 import AttendancePresentPage from './AttendancePresentPage'
-import { isSuccess, Loading, Result } from '~api'
-import LocalDate from '@evaka/lib-common/src/local-date'
+import { isSuccess } from '~api'
 import Title from '~components/shared/atoms/Title'
 import AttendanceDepartedPage from './AttendanceDepartedPage'
 import AttendanceAbsentPage from './AttendanceAbsentPage'
 import { ContentArea } from '~components/shared/layout/Container'
-import Button from '~components/shared/atoms/buttons/Button'
-import { DaycareGroup } from '~types/unit'
 import IconButton from '~components/shared/atoms/buttons/IconButton'
 import Colors from '~components/shared/Colors'
 import { faSearch, faTimes } from '~icon-set'
@@ -42,25 +32,15 @@ import { DefaultMargins } from '~components/shared/layout/white-space'
 import { FreeTextSearch } from '~components/common/Filters'
 import { useDebounce } from '~utils/useDebounce'
 import AttendanceList from './AttendanceList'
+import { AttendanceChild, getDaycareAttendances, Group } from '~api/attendances'
+import { AttendanceUIContext } from '~state/attendance-ui'
+import { WideButton } from './components'
 
 const Name = styled.div`
   background: white;
 `
 
 const NoMarginTitle = styled(Title)`
-  margin-top: 0;
-  margin-bottom: 0;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-
-  button {
-    margin-left: ${DefaultMargins.m};
-    color: ${Colors.greyscale.medium};
-  }
-`
-
-const NoMarginTitle2 = styled(Title)`
   margin-top: 0;
   margin-bottom: 0;
   display: flex;
@@ -73,10 +53,6 @@ const NoMarginTitle2 = styled(Title)`
     margin-left: ${DefaultMargins.m};
     color: ${Colors.greyscale.white};
   }
-`
-
-export const WideButton = styled(Button)`
-  width: 100%;
 `
 
 const Bold = styled.div`
@@ -93,72 +69,60 @@ const SearchBar = animated(styled.div`
 
 export default React.memo(function AttendancePageWrapper() {
   const { i18n } = useTranslation()
-  const { unitId, groupId } = useParams<{ unitId: string; groupId: string }>()
+  const { unitId, groupId: groupIdOrAll } = useParams<{
+    unitId: string
+    groupId: string
+  }>()
   const location = useLocation()
 
-  const [unitData, setUnitData] = useState<Result<UnitData>>(Loading())
-  const [unit, setUnit] = useState<Result<UnitResponse>>(Loading())
-  const [groupAttendances, setGroupAttendances] = useState<
-    Result<ChildInGroup[]>
-  >(Loading())
+  const { attendanceResponse, filterAndSetAttendanceResponse } = useContext(
+    AttendanceUIContext
+  )
+
   const [showSearch, setShowSearch] = useState<boolean>(false)
   const [freeText, setFreeText] = useState<string>('')
-  const [searchResults, setSearchResults] = useState<ChildInGroup[]>([])
+  const [searchResults, setSearchResults] = useState<AttendanceChild[]>([])
   const debouncedSearchTerms = useDebounce(freeText, 500)
 
   useEffect(() => {
-    void getUnitData(unitId, LocalDate.today(), LocalDate.today()).then(
-      setUnitData
+    void getDaycareAttendances(unitId).then((res) =>
+      filterAndSetAttendanceResponse(res, groupIdOrAll)
     )
-    void getDaycare(unitId).then(setUnit)
-    void getDaycareAttendances(unitId).then(filterAndSetGroupAttendances)
   }, [location])
 
   useEffect(() => {
-    if (isSuccess(groupAttendances)) {
-      const filteredData = groupAttendances.data.filter(
-        (ga) =>
-          ga.firstName
+    if (isSuccess(attendanceResponse)) {
+      const filteredData = attendanceResponse.data.children.filter(
+        (ac) =>
+          ac.firstName
             .toLowerCase()
             .includes(debouncedSearchTerms.toLowerCase()) ||
-          ga.lastName.toLowerCase().includes(debouncedSearchTerms.toLowerCase())
+          ac.lastName.toLowerCase().includes(debouncedSearchTerms.toLowerCase())
       )
       setSearchResults(filteredData)
     }
   }, [debouncedSearchTerms])
 
-  function filterAndSetGroupAttendances(
-    groupAttendances: Result<ChildInGroup[]>
-  ) {
-    if (isSuccess(groupAttendances)) {
-      if (groupId !== 'all')
-        groupAttendances.data = groupAttendances.data.filter(
-          (childInGroup) => childInGroup.daycareGroupId === groupId
-        )
-    }
-    setGroupAttendances(groupAttendances)
-  }
-
-  const totalAttendances = isSuccess(groupAttendances)
-    ? groupAttendances.data.length
+  const totalAttendances = isSuccess(attendanceResponse)
+    ? attendanceResponse.data.children.length
     : 0
-  const totalComing = isSuccess(groupAttendances)
-    ? groupAttendances.data.filter(
+  const totalComing = isSuccess(attendanceResponse)
+    ? attendanceResponse.data.children.filter(
         (attendance) => attendance.status === 'COMING'
       ).length
     : 0
-  const totalPresent = isSuccess(groupAttendances)
-    ? groupAttendances.data.filter(
+  const totalPresent = isSuccess(attendanceResponse)
+    ? attendanceResponse.data.children.filter(
         (attendance) => attendance.status === 'PRESENT'
       ).length
     : 0
-  const totalDeparted = isSuccess(groupAttendances)
-    ? groupAttendances.data.filter(
+  const totalDeparted = isSuccess(attendanceResponse)
+    ? attendanceResponse.data.children.filter(
         (attendance) => attendance.status === 'DEPARTED'
       ).length
     : 0
-  const totalAbsent = isSuccess(groupAttendances)
-    ? groupAttendances.data.filter(
+  const totalAbsent = isSuccess(attendanceResponse)
+    ? attendanceResponse.data.children.filter(
         (attendance) => attendance.status === 'ABSENT'
       ).length
     : 0
@@ -166,7 +130,7 @@ export default React.memo(function AttendancePageWrapper() {
   const tabs = [
     {
       id: 'coming',
-      link: `/units/${unitId}/attendance/${groupId}/coming`,
+      link: `/units/${unitId}/attendance/${groupIdOrAll}/coming`,
       label: (
         <Bold>
           {i18n.attendances.types.COMING}
@@ -177,7 +141,7 @@ export default React.memo(function AttendancePageWrapper() {
     },
     {
       id: 'present',
-      link: `/units/${unitId}/attendance/${groupId}/present`,
+      link: `/units/${unitId}/attendance/${groupIdOrAll}/present`,
       label: (
         <Bold>
           {i18n.attendances.types.PRESENT}
@@ -188,7 +152,7 @@ export default React.memo(function AttendancePageWrapper() {
     },
     {
       id: 'departed',
-      link: `/units/${unitId}/attendance/${groupId}/departed`,
+      link: `/units/${unitId}/attendance/${groupIdOrAll}/departed`,
       label: (
         <Bold>
           {i18n.attendances.types.DEPARTED}
@@ -199,7 +163,7 @@ export default React.memo(function AttendancePageWrapper() {
     },
     {
       id: 'absent',
-      link: `/units/${unitId}/attendance/${groupId}/absent`,
+      link: `/units/${unitId}/attendance/${groupIdOrAll}/absent`,
       label: (
         <Bold>
           {i18n.attendances.types.ABSENT}
@@ -215,9 +179,11 @@ export default React.memo(function AttendancePageWrapper() {
   }
 
   const selectedGroup =
-    isSuccess(unitData) &&
-    groupId !== 'all' &&
-    unitData.data.groups.find((elem: DaycareGroup) => elem.id === groupId)
+    isSuccess(attendanceResponse) &&
+    groupIdOrAll !== 'all' &&
+    attendanceResponse.data.unit.groups.find(
+      (elem: Group) => elem.id === groupIdOrAll
+    )
 
   const container = useSpring({ x: showSearch ? 1 : 0 })
 
@@ -226,20 +192,20 @@ export default React.memo(function AttendancePageWrapper() {
       <MetaTags>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
       </MetaTags>
-      {isSuccess(unitData) && isSuccess(unit) && (
+      {isSuccess(attendanceResponse) && (
         <Fragment>
           <SearchBar
             style={{
               height: container.x.interpolate((x) => `${100 * x}vh`)
             }}
           >
-            <NoMarginTitle2 size={1} centered smaller bold>
-              {unit.data.daycare.name}{' '}
+            <NoMarginTitle size={1} centered smaller bold>
+              {attendanceResponse.data.unit.name}{' '}
               <IconButton
                 onClick={() => setShowSearch(!showSearch)}
                 icon={faTimes}
               />
-            </NoMarginTitle2>
+            </NoMarginTitle>
             <ContentArea opaque={false} paddingHorozontal={'s'}>
               <FreeTextSearch
                 value={freeText}
@@ -247,12 +213,12 @@ export default React.memo(function AttendancePageWrapper() {
                 placeholder={i18n.attendances.searchPlaceholder}
                 background={Colors.greyscale.white}
               />
-              <AttendanceList groupAttendances={searchResults} />
+              <AttendanceList attendanceChildren={searchResults} />
             </ContentArea>
           </SearchBar>
           <Name>
             <NoMarginTitle size={1} centered smaller bold>
-              {unit.data.daycare.name}{' '}
+              {attendanceResponse.data.unit.name}{' '}
               <IconButton
                 onClick={() => setShowSearch(!showSearch)}
                 icon={faSearch}
@@ -272,7 +238,7 @@ export default React.memo(function AttendancePageWrapper() {
                 text={
                   selectedGroup
                     ? selectedGroup.name
-                    : groupId === 'all'
+                    : groupIdOrAll === 'all'
                     ? i18n.common.all
                     : i18n.attendances.groupSelectError
                 }
@@ -288,28 +254,36 @@ export default React.memo(function AttendancePageWrapper() {
                 exact
                 path="/units/:unitId/attendance/:groupId/coming"
                 render={() => (
-                  <AttendanceComingPage groupAttendances={groupAttendances} />
+                  <AttendanceComingPage
+                    attendanceResponse={attendanceResponse}
+                  />
                 )}
               />
               <Route
                 exact
                 path="/units/:unitId/attendance/:groupId/present"
                 render={() => (
-                  <AttendancePresentPage groupAttendances={groupAttendances} />
+                  <AttendancePresentPage
+                    attendanceResponse={attendanceResponse}
+                  />
                 )}
               />
               <Route
                 exact
                 path="/units/:unitId/attendance/:groupId/departed"
                 render={() => (
-                  <AttendanceDepartedPage groupAttendances={groupAttendances} />
+                  <AttendanceDepartedPage
+                    attendanceResponse={attendanceResponse}
+                  />
                 )}
               />
               <Route
                 exact
                 path="/units/:unitId/attendance/:groupId/absent"
                 render={() => (
-                  <AttendanceAbsentPage groupAttendances={groupAttendances} />
+                  <AttendanceAbsentPage
+                    attendanceResponse={attendanceResponse}
+                  />
                 )}
               />
               <Route path="/" component={RedirectToGroupSelector} />
