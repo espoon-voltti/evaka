@@ -13,11 +13,9 @@ import { UUID } from '~types'
 import RoundIcon from '~components/shared/atoms/RoundIcon'
 import { faChevronLeft, farUser } from '~icon-set'
 import Colors from '~components/shared/Colors'
-import { DefaultMargins, Gap } from '~components/shared/layout/white-space'
+import { Gap } from '~components/shared/layout/white-space'
 import { useTranslation } from '~state/i18n'
 import Loader from '~components/shared/atoms/Loader'
-import { FlexColumn } from './AttendanceGroupSelectorPage'
-import { Label } from '~components/shared/Typography'
 import AttendanceChildComing from './AttendanceChildComing'
 import AttendanceChildPresent from './AttendanceChildPresent'
 import AttendanceChildDeparted from './AttendanceChildDeparted'
@@ -25,6 +23,7 @@ import IconButton from '~components/shared/atoms/buttons/IconButton'
 import { AttendanceChild, getDaycareAttendances, Group } from '~api/attendances'
 import { AttendanceUIContext } from '~state/attendance-ui'
 import { FixedSpaceRow } from '~components/shared/layout/flex-helpers'
+import { FlexColumn } from './components'
 
 const FullHeightContentArea = styled(ContentArea)`
   min-height: 100vh;
@@ -33,15 +32,6 @@ const FullHeightContentArea = styled(ContentArea)`
 `
 
 const Titles = styled.div``
-
-export const FlexLabel = styled(Label)`
-  display: flex;
-  align-items: center;
-
-  span {
-    margin-right: ${DefaultMargins.m};
-  }
-`
 
 const ChildStatus = styled.div`
   color: ${Colors.greyscale.medium};

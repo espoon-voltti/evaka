@@ -14,57 +14,26 @@ import {
 } from '~api/attendances'
 import InputField from '~components/shared/atoms/form/InputField'
 import Loader from '~components/shared/atoms/Loader'
-import Colors from '~components/shared/Colors'
+import {
+  absenceBackgroundColours,
+  absenceBorderColours,
+  absenceColours
+} from '~components/shared/Colors'
 import { FixedSpaceColumn } from '~components/shared/layout/flex-helpers'
 import { Gap } from '~components/shared/layout/white-space'
 import { AttendanceUIContext } from '~state/attendance-ui'
 import { useTranslation } from '~state/i18n'
 import { UUID } from '~types'
 import { AbsenceType, AbsenceTypes } from '~types/absence'
-import { FlexLabel, getCurrentTime } from './AttendanceChildPage'
-import { Flex } from './AttendanceGroupSelectorPage'
+import { getCurrentTime } from './AttendanceChildPage'
 import {
   CustomAsyncButton,
   BigWideButton,
   BigWideInlineButton,
-  WideAsyncButton
+  WideAsyncButton,
+  Flex,
+  FlexLabel
 } from './components'
-
-export const absenceBackgroundColours: { [key in AbsenceType]: string } = {
-  UNKNOWN_ABSENCE: Colors.accents.green,
-  OTHER_ABSENCE: Colors.blues.dark,
-  SICKLEAVE: Colors.accents.violet,
-  PLANNED_ABSENCE: Colors.blues.light,
-  PARENTLEAVE: Colors.blues.primary,
-  FORCE_MAJEURE: Colors.accents.red,
-  TEMPORARY_RELOCATION: Colors.accents.orange,
-  TEMPORARY_VISITOR: Colors.accents.yellow,
-  PRESENCE: Colors.greyscale.white
-}
-
-export const absenceBorderColours: { [key in AbsenceType]: string } = {
-  UNKNOWN_ABSENCE: Colors.accents.green,
-  OTHER_ABSENCE: Colors.blues.dark,
-  SICKLEAVE: Colors.accents.violet,
-  PLANNED_ABSENCE: Colors.blues.light,
-  PARENTLEAVE: Colors.blues.primary,
-  FORCE_MAJEURE: Colors.accents.red,
-  TEMPORARY_RELOCATION: Colors.accents.orange,
-  TEMPORARY_VISITOR: Colors.accents.yellow,
-  PRESENCE: Colors.greyscale.white
-}
-
-export const absenceColours: { [key in AbsenceType]: string } = {
-  UNKNOWN_ABSENCE: Colors.greyscale.darkest,
-  OTHER_ABSENCE: Colors.greyscale.white,
-  SICKLEAVE: Colors.greyscale.white,
-  PLANNED_ABSENCE: Colors.greyscale.darkest,
-  PARENTLEAVE: Colors.greyscale.white,
-  FORCE_MAJEURE: Colors.greyscale.white,
-  TEMPORARY_RELOCATION: Colors.greyscale.white,
-  TEMPORARY_VISITOR: Colors.greyscale.white,
-  PRESENCE: Colors.greyscale.white
-}
 
 interface Props {
   unitId: UUID

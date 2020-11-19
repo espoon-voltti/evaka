@@ -14,8 +14,8 @@ import { FixedSpaceColumn } from '~components/shared/layout/flex-helpers'
 import { AttendanceUIContext } from '~state/attendance-ui'
 import { useTranslation } from '~state/i18n'
 import { UUID } from '~types'
-import { FlexLabel, getTimeString } from './AttendanceChildPage'
-import { InlineWideAsyncButton } from './components'
+import { getTimeString } from './AttendanceChildPage'
+import { FlexLabel, InlineWideAsyncButton } from './components'
 
 interface Props {
   child: AttendanceChild
@@ -28,7 +28,6 @@ export default React.memo(function AttendanceChildDeparted({
   unitId,
   groupId: groupIdOrAll
 }: Props) {
-  const history = useHistory()
   const { i18n } = useTranslation()
 
   const { filterAndSetAttendanceResponse } = useContext(AttendanceUIContext)
@@ -79,7 +78,6 @@ export default React.memo(function AttendanceChildDeparted({
             await getDaycareAttendances(unitId).then((res) =>
               filterAndSetAttendanceResponse(res, groupIdOrAll)
             )
-            history.goBack()
           }}
           data-qa="delete-attendance"
         />

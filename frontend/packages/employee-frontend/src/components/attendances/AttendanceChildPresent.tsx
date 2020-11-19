@@ -15,9 +15,10 @@ import { FixedSpaceColumn } from '~components/shared/layout/flex-helpers'
 import { AttendanceUIContext } from '~state/attendance-ui'
 import { useTranslation } from '~state/i18n'
 import { UUID } from '~types'
-import { FlexLabel, getCurrentTime, getTimeString } from './AttendanceChildPage'
+import { getCurrentTime, getTimeString } from './AttendanceChildPage'
 import {
   BigWideButton,
+  FlexLabel,
   InlineWideAsyncButton,
   WideAsyncButton
 } from './components'
@@ -146,7 +147,6 @@ export default React.memo(function AttendanceChildPresent({
               await getDaycareAttendances(unitId).then((res) =>
                 filterAndSetAttendanceResponse(res, groupIdOrAll)
               )
-              history.goBack()
             }}
             data-qa="mark-departed"
           />
