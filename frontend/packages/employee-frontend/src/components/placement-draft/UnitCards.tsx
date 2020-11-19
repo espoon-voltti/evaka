@@ -42,7 +42,7 @@ const MemoizedCards = memo(function UnitCards({
   return (
     <FlexContainer data-qa="placement-list">
       {placementDraft.preferredUnits.concat(additionalUnits).map((unit) => {
-        const isSelectedUnit = placement.unitId == unit.id
+        const isSelectedUnit = placement.unitId === unit.id
         return (
           <MemoizedCard
             unitId={unit.id}
