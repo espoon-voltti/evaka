@@ -179,7 +179,7 @@ configs._default = {
     daycareApplication: true,
     preschoolApplication: true,
     selectApplicationType: true,
-    attachments: true
+    attachments: false
   }
 }
 configs.dev = defaultsDeep(
