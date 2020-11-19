@@ -1671,9 +1671,12 @@ export const fi = {
       markAbsent: 'Merkitse poissa',
       markPresent: 'Merkitse saapuneeksi',
       markLeaving: 'Merkitse lähteväksi',
-      returnToComing: 'Palauta tulossa oleviin'
+      returnToComing: 'Palauta tulossa oleviin',
+      returnToPresent: 'Palauta läsnäoleviin'
     },
     timeLabel: 'Merkintä',
+    departureTime: 'Lähtöaika',
+    arrivalTime: 'Saapumisaika',
     chooseGroup: 'Valitse ryhmä',
     searchPlaceholder: 'Etsi lapsen nimellä'
   },
