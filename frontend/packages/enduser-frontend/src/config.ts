@@ -221,7 +221,7 @@ configs.prod = defaultsDeep(
       daycareApplication: true,
       preschoolApplication: true,
       selectApplicationType: true,
-      attachments: true
+      attachments: false
     }
   },
   configs._default
