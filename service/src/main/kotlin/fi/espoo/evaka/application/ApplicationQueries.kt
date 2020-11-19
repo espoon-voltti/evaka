@@ -29,6 +29,7 @@ import org.jdbi.v3.core.result.RowView
 import org.jdbi.v3.core.statement.StatementContext
 import org.postgresql.util.PGobject
 import java.sql.ResultSet
+import java.time.Instant
 import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.util.UUID
@@ -505,8 +506,7 @@ fun fetchApplicationDetails(h: Handle, applicationId: UUID): ApplicationDetails?
                         id = UUID.fromString(it["id"]),
                         name = it["name"]!!,
                         contentType = it["contentType"]!!,
-                        updated = OffsetDateTime.parse(it["updated"]!!),
-                        applicationId = if (it["application_id"] != null) UUID.fromString(it["application_id"]!!) else null
+                        updated = Instant.ofEpochSecond(OffsetDateTime.parse(it["updated"]!!).toEpochSecond())
                     )
                 }
             )
