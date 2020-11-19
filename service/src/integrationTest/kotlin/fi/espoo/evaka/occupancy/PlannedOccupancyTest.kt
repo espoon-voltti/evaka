@@ -15,14 +15,10 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.config.Roles
 import fi.espoo.evaka.shared.db.handle
-import fi.espoo.evaka.shared.dev.DevChild
 import fi.espoo.evaka.shared.dev.DevDaycare
-import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insertTestApplication
-import fi.espoo.evaka.shared.dev.insertTestChild
 import fi.espoo.evaka.shared.dev.insertTestDaycare
-import fi.espoo.evaka.shared.dev.insertTestPerson
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.dev.insertTestPlacementPlan
 import fi.espoo.evaka.shared.domain.ClosedPeriod
@@ -49,8 +45,8 @@ class PlannedOccupancyTest : FullApplicationTest() {
     }
 
     private val defaultPeriod = ClosedPeriod(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
-    val period1 = ClosedPeriod(defaultPeriod.start, LocalDate.of(2019, 1, 15))
-    val period2 = ClosedPeriod(LocalDate.of(2019, 1, 16), defaultPeriod.end)
+    val defaultPeriodSplit1 = ClosedPeriod(defaultPeriod.start, LocalDate.of(2019, 1, 15))
+    val defaultPeriodSplit2 = ClosedPeriod(LocalDate.of(2019, 1, 16), defaultPeriod.end)
 
     @Test
     fun `planned occupancy calculation does not break when there are no children placed into a unit`() {
@@ -260,7 +256,7 @@ class PlannedOccupancyTest : FullApplicationTest() {
                 testDaycare.id,
                 defaultPeriod,
                 LocalDate.of(2015, 1, 1),
-                period2
+                defaultPeriodSplit2
             )
         )
 
@@ -268,16 +264,16 @@ class PlannedOccupancyTest : FullApplicationTest() {
 
         assertEquals(
             listOf(
-                OccupancyPeriod(period1, 0.5, 1),
-                OccupancyPeriod(period2, 1.0, 1)
+                OccupancyPeriod(defaultPeriodSplit1, 0.5, 1),
+                OccupancyPeriod(defaultPeriodSplit2, 1.0, 1)
             ),
             result
         )
 
-        val reportResult1 = fetchAndParsePlannedOccupancyReportForUnitDay(testAreaId, testDaycare.id, period1.end)
+        val reportResult1 = fetchAndParsePlannedOccupancyReportForUnitDay(testAreaId, testDaycare.id, defaultPeriodSplit1.end)
         assertEquals(0.5, reportResult1?.sum)
         assertEquals(1, reportResult1?.headcount)
-        val reportResult2 = fetchAndParsePlannedOccupancyReportForUnitDay(testAreaId, testDaycare.id, period2.start)
+        val reportResult2 = fetchAndParsePlannedOccupancyReportForUnitDay(testAreaId, testDaycare.id, defaultPeriodSplit2.start)
         assertEquals(1.0, reportResult2?.sum)
         assertEquals(1, reportResult2?.headcount)
     }
@@ -299,8 +295,8 @@ class PlannedOccupancyTest : FullApplicationTest() {
                 applicationId = applicationId,
                 unitId = testDaycare.id,
                 type = PlacementType.DAYCARE,
-                startDate = period2.start,
-                endDate = period2.end
+                startDate = defaultPeriodSplit2.start,
+                endDate = defaultPeriodSplit2.end
             )
         }
 
@@ -308,16 +304,16 @@ class PlannedOccupancyTest : FullApplicationTest() {
 
         assertEquals(
             listOf(
-                OccupancyPeriod(period1, 0.54, 1),
-                OccupancyPeriod(period2, 1.0, 1)
+                OccupancyPeriod(defaultPeriodSplit1, 0.54, 1),
+                OccupancyPeriod(defaultPeriodSplit2, 1.0, 1)
             ),
             result
         )
 
-        val reportResult1 = fetchAndParsePlannedOccupancyReportForUnitDay(testAreaId, testDaycare.id, period1.end)
+        val reportResult1 = fetchAndParsePlannedOccupancyReportForUnitDay(testAreaId, testDaycare.id, defaultPeriodSplit1.end)
         assertEquals(0.54, reportResult1?.sum)
         assertEquals(1, reportResult1?.headcount)
-        val reportResult2 = fetchAndParsePlannedOccupancyReportForUnitDay(testAreaId, testDaycare.id, period2.start)
+        val reportResult2 = fetchAndParsePlannedOccupancyReportForUnitDay(testAreaId, testDaycare.id, defaultPeriodSplit2.start)
         assertEquals(1.0, reportResult2?.sum)
         assertEquals(1, reportResult2?.headcount)
     }
@@ -339,8 +335,8 @@ class PlannedOccupancyTest : FullApplicationTest() {
                 applicationId = applicationId,
                 unitId = testDaycare.id,
                 type = PlacementType.DAYCARE_PART_TIME,
-                startDate = period2.start,
-                endDate = period2.end
+                startDate = defaultPeriodSplit2.start,
+                endDate = defaultPeriodSplit2.end
             )
         }
 
@@ -362,6 +358,50 @@ class PlannedOccupancyTest : FullApplicationTest() {
     }
 
     @Test
+    fun `when child is planned to transfer to another unit the child is counted into both units`() {
+        val childId = UUID.randomUUID()
+        val daycareId1 = testDaycare.id
+        val daycareId2 = UUID.randomUUID()
+
+        db.transaction { tx ->
+            tx.handle.insertTestDaycare(DevDaycare(id = daycareId2, areaId = testDaycare.areaId, name = "foo"))
+
+            createPlanOccupancyTestFixture(
+                childId,
+                daycareId2,
+                defaultPeriodSplit2,
+                LocalDate.of(2015, 1, 1),
+                PlacementType.DAYCARE_PART_TIME
+            )(tx.handle)
+
+            tx.handle.insertTestPlacement(DevPlacement(type = PlacementType.DAYCARE, childId = childId, unitId = daycareId1, startDate = defaultPeriod.start, endDate = defaultPeriod.end))
+        }
+
+        val result1 = fetchAndParseOccupancy(daycareId1, defaultPeriod)
+        assertEquals(
+            listOf(OccupancyPeriod(defaultPeriod, 1.0, 1)),
+            result1
+        )
+
+        val result2 = fetchAndParseOccupancy(daycareId2, defaultPeriod)
+        assertEquals(
+            listOf(
+                OccupancyPeriod(defaultPeriodSplit1, 0.0, 0),
+                OccupancyPeriod(defaultPeriodSplit2, 0.54, 1)
+            ),
+            result2
+        )
+
+        val reportResult1 = fetchAndParsePlannedOccupancyReportForUnitDay(testAreaId, daycareId1, defaultPeriodSplit2.start)
+        assertEquals(1.0, reportResult1?.sum)
+        assertEquals(1, reportResult1?.headcount)
+
+        val reportResult2 = fetchAndParsePlannedOccupancyReportForUnitDay(testAreaId, daycareId2, defaultPeriodSplit2.start)
+        assertEquals(0.54, reportResult2?.sum)
+        assertEquals(1, reportResult2?.headcount)
+    }
+
+    @Test
     fun `occupancy calculation picks latest placement plan when two placement plans are valid during same period`() {
         val childId = UUID.randomUUID()
         jdbi.handle { h ->
@@ -378,8 +418,8 @@ class PlannedOccupancyTest : FullApplicationTest() {
                 applicationId = applicationId,
                 unitId = testDaycare.id,
                 type = PlacementType.DAYCARE_PART_TIME,
-                startDate = period2.start,
-                endDate = period2.end,
+                startDate = defaultPeriodSplit2.start,
+                endDate = defaultPeriodSplit2.end,
                 updated = Instant.now().plusMillis(10000)
             )
         }
@@ -429,76 +469,6 @@ class PlannedOccupancyTest : FullApplicationTest() {
         val reportResult2 = fetchAndParsePlannedOccupancyReportForUnitDay(testAreaId, testDaycare.id, defaultPeriod.end)
         assertEquals(0.0, reportResult2?.sum)
         assertEquals(0, reportResult2?.headcount)
-    }
-
-    @Test
-    fun `when child is planned to transfer to another unit the child is counted into both units`() {
-        val childId = UUID.randomUUID()
-        val daycareId1 = testDaycare.id
-        val daycareId2 = UUID.randomUUID()
-
-        db.transaction { tx ->
-            tx.handle.insertTestPerson(DevPerson(id = childId, dateOfBirth = LocalDate.of(2015, 1, 1)))
-            tx.handle.insertTestChild(DevChild(id = childId))
-            tx.handle.insertTestDaycare(DevDaycare(id = daycareId2, areaId = testDaycare.areaId, name = "foo"))
-
-            tx.handle.insertTestPlacement(DevPlacement(type = PlacementType.DAYCARE, childId = childId, unitId = daycareId1, startDate = defaultPeriod.start, endDate = defaultPeriod.end))
-
-            val applicationId = insertTestApplication(tx.handle, childId = childId)
-            insertTestPlacementPlan(h = tx.handle, applicationId = applicationId, unitId = daycareId2, type = PlacementType.DAYCARE_PART_TIME, startDate = period2.start, endDate = period2.end)
-        }
-
-        val result1 = fetchAndParseOccupancy(daycareId1, defaultPeriod)
-        assertEquals(
-            listOf(OccupancyPeriod(defaultPeriod, 1.0, 1)),
-            result1
-        )
-
-        val result2 = fetchAndParseOccupancy(daycareId2, defaultPeriod)
-        assertEquals(
-            listOf(
-                OccupancyPeriod(period1, 0.0, 0),
-                OccupancyPeriod(period2, 0.54, 1)
-            ),
-            result2
-        )
-
-        val reportResult1 = fetchAndParsePlannedOccupancyReportForUnitDay(testAreaId, daycareId1, period2.start)
-        assertEquals(1.0, reportResult1?.sum)
-        assertEquals(1, reportResult1?.headcount)
-
-        val reportResult2 = fetchAndParsePlannedOccupancyReportForUnitDay(testAreaId, daycareId2, period2.start)
-        assertEquals(0.54, reportResult2?.sum)
-        assertEquals(1, reportResult2?.headcount)
-    }
-
-    @Test
-    fun `when child is planned to transfer to same unit the higher capacity wins`() {
-        val childId = UUID.randomUUID()
-        val daycareId1 = testDaycare.id
-
-        db.transaction { tx ->
-            tx.handle.insertTestPerson(DevPerson(id = childId, dateOfBirth = LocalDate.of(2015, 1, 1)))
-            tx.handle.insertTestChild(DevChild(id = childId))
-
-            tx.handle.insertTestPlacement(DevPlacement(type = PlacementType.DAYCARE, childId = childId, unitId = daycareId1, startDate = defaultPeriod.start, endDate = defaultPeriod.end))
-
-            val applicationId = insertTestApplication(tx.handle, childId = childId)
-            insertTestPlacementPlan(h = tx.handle, applicationId = applicationId, unitId = daycareId1, type = PlacementType.DAYCARE_PART_TIME, startDate = period2.start, endDate = period2.end)
-        }
-
-        val result = fetchAndParseOccupancy(daycareId1, defaultPeriod)
-        assertEquals(
-            listOf(OccupancyPeriod(defaultPeriod, 1.0, 1)),
-            result
-        )
-
-        val reportResult1 = fetchAndParsePlannedOccupancyReportForUnitDay(testAreaId, testDaycare.id, defaultPeriod.start)
-        assertEquals(1.0, reportResult1?.sum)
-        assertEquals(1, reportResult1?.headcount)
-        val reportResult2 = fetchAndParsePlannedOccupancyReportForUnitDay(testAreaId, testDaycare.id, defaultPeriod.end)
-        assertEquals(1.0, reportResult2?.sum)
-        assertEquals(1, reportResult2?.headcount)
     }
 
     private val testUser = AuthenticatedUser(testDecisionMaker_1.id, setOf(Roles.SERVICE_WORKER))
