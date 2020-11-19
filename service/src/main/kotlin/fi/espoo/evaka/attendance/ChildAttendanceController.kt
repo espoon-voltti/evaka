@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.attendance
 
+import fi.espoo.evaka.Audit
 import fi.espoo.evaka.application.utils.exhaust
 import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.daycare.service.CareType
@@ -50,6 +51,7 @@ class ChildAttendanceController(
         user: AuthenticatedUser,
         @PathVariable unitId: UUID
     ): ResponseEntity<AttendanceResponse> {
+        Audit.ChildAttendancesRead.log(targetId = unitId)
         acl.getRolesForUnit(user, unitId).requireOneOfRoles(*authorizedRoles)
 
         return db.read { tx ->
@@ -68,6 +70,7 @@ class ChildAttendanceController(
         @PathVariable childId: UUID,
         @RequestParam @DateTimeFormat(pattern = "HH:mm") time: LocalTime
     ): ResponseEntity<ArrivalInfoResponse> {
+        Audit.ChildAttendancesArrivalRead.log(targetId = childId)
         acl.getRolesForUnit(user, unitId).requireOneOfRoles(*authorizedRoles)
 
         return db.read { tx ->
@@ -94,6 +97,7 @@ class ChildAttendanceController(
         @PathVariable childId: UUID,
         @RequestBody body: ArrivalRequest
     ): ResponseEntity<AttendanceResponse> {
+        Audit.ChildAttendancesArrivalCreate.log(targetId = childId)
         acl.getRolesForUnit(user, unitId).requireOneOfRoles(*authorizedRoles)
 
         return db.transaction { tx ->
@@ -128,6 +132,7 @@ class ChildAttendanceController(
         @PathVariable unitId: UUID,
         @PathVariable childId: UUID
     ): ResponseEntity<AttendanceResponse> {
+        Audit.ChildAttendancesReturnToComing.log(targetId = childId)
         acl.getRolesForUnit(user, unitId).requireOneOfRoles(*authorizedRoles)
 
         return db.transaction { tx ->
@@ -164,6 +169,7 @@ class ChildAttendanceController(
         @PathVariable childId: UUID,
         @RequestParam @DateTimeFormat(pattern = "HH:mm") time: LocalTime
     ): ResponseEntity<DepartureInfoResponse> {
+        Audit.ChildAttendancesDepartureRead.log(targetId = childId)
         acl.getRolesForUnit(user, unitId).requireOneOfRoles(*authorizedRoles)
 
         return db.read { tx ->
@@ -193,6 +199,7 @@ class ChildAttendanceController(
         @PathVariable childId: UUID,
         @RequestBody body: DepartureRequest
     ): ResponseEntity<AttendanceResponse> {
+        Audit.ChildAttendancesDepartureCreate.log(targetId = childId)
         acl.getRolesForUnit(user, unitId).requireOneOfRoles(*authorizedRoles)
 
         return db.transaction { tx ->
@@ -228,6 +235,7 @@ class ChildAttendanceController(
         @PathVariable unitId: UUID,
         @PathVariable childId: UUID
     ): ResponseEntity<AttendanceResponse> {
+        Audit.ChildAttendancesReturnToPresent.log(targetId = childId)
         acl.getRolesForUnit(user, unitId).requireOneOfRoles(*authorizedRoles)
 
         return db.transaction { tx ->
@@ -260,6 +268,7 @@ class ChildAttendanceController(
         @PathVariable childId: UUID,
         @RequestBody body: FullDayAbsenceRequest
     ): ResponseEntity<AttendanceResponse> {
+        Audit.ChildAttendancesFullDayAbsenceCreate.log(targetId = childId)
         acl.getRolesForUnit(user, unitId).requireOneOfRoles(*authorizedRoles)
 
         return db.transaction { tx ->
