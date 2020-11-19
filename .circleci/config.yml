@@ -700,9 +700,6 @@ jobs:
       - *persist_workspace_service
       - run:
           working_directory: *workspace_service
-          command: ./gradlew detekt
-      - run:
-          working_directory: *workspace_service
           command: ./gradlew ktlintCheck
       - run:
           working_directory: *workspace_service
@@ -775,9 +772,6 @@ jobs:
           command: ./gradlew assemble
       - *store_message_service_gradle
       - *persist_workspace_message_service
-      - run:
-          working_directory: *workspace_message_service
-          command: ./gradlew detekt
       - run:
           working_directory: *workspace_message_service
           command: ./gradlew ktlintCheck

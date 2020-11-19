@@ -30,7 +30,6 @@ object Version {
     const val testContainers = "1.14.3"
 
     object GradlePlugin {
-        const val detekt = "1.10.0"
         const val ktlint = "9.3.0"
         const val versions = "0.29.0"
     }

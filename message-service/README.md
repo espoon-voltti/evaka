@@ -58,12 +58,6 @@ If you want to set ktlint formatter rules as your IDEA kotlin formatting rules, 
 ./gradlew ktlintApplyToIdea
 ```
 
-Run static code analysis:
-
-```sh
-./gradlew detekt
-```
-
 ### Local testing against SFI
 
 Use the `SfiApiTest` class to run the test, remember to remove the `@Ignore` from the class.

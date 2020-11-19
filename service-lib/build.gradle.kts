@@ -10,7 +10,6 @@ plugins {
     id("org.jetbrains.kotlin.plugin.spring")
 
     id("com.github.ben-manes.versions")
-    id("io.gitlab.arturbosch.detekt")
     id("org.jlleitschuh.gradle.ktlint")
 }
 
