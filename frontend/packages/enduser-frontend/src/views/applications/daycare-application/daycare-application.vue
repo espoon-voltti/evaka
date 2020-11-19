@@ -147,9 +147,13 @@ SPDX-License-Identifier: LGPL-2.1-or-later
               </div>
               <div class="columns" v-if="!isPreschool">
                 <div class="column">
-                  <c-checkbox v-model="model" name="urgent">{{
-                    $t('form.daycare-application.service.expedited.label')
-                  }}</c-checkbox>
+                  <c-checkbox
+                    v-model="model"
+                    name="urgent"
+                    :label="
+                      $t('form.daycare-application.service.expedited.label')
+                    "
+                  ></c-checkbox>
                   <div v-if="model.urgent">
                     <c-message-box
                       :title="
