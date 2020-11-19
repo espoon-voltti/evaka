@@ -34,7 +34,6 @@ const actions = {
     commit(LOG_IN, loggedIn)
     if (loggedIn) {
       commit(SET_USER, user)
-      dispatch('loadApplicationsAndDecisions', user.id)
     } else {
       commit(SET_USER, EMPTY_USER)
     }
