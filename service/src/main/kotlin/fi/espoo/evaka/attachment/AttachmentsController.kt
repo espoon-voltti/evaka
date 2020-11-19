@@ -123,12 +123,3 @@ fun isOwnApplication(r: Database.Read, applicationId: UUID, user: AuthenticatedU
         .toList()
         .isNotEmpty()
 }
-
-fun isOwnAttachment(r: Database.Read, attachmentId: UUID, user: AuthenticatedUser): Boolean {
-    return r.createQuery("SELECT 1 FROM attachment at JOIN application ap ON at.application_id = ap.id WHERE at.id = :id AND ap.guardian_id = :userId")
-        .bind("id", attachmentId)
-        .bind("userId", user.id)
-        .mapTo<Int>()
-        .toList()
-        .isNotEmpty()
-}
