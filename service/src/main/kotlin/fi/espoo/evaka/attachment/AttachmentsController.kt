@@ -100,14 +100,13 @@ class AttachmentsController(
         user: AuthenticatedUser,
         @PathVariable attachmentId: UUID
     ): ResponseEntity<ByteArray> {
-        val attachment = db.read { it.handle.getAttachment(attachmentId) ?: throw NotFound("Attachment $attachmentId not found") }
-
         if (!user.hasOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN)) {
             if (!db.read { it.handle.isOwnAttachment(attachmentId, user.id) }) throw Forbidden("Permission denied")
         }
 
-        val uri = "$attachmentId"
-        return s3Client.get(filesBucket, uri).let { document ->
+        val attachment = db.read { it.handle.getAttachment(attachmentId) ?: throw NotFound("Attachment $attachmentId not found") }
+
+        return s3Client.get(filesBucket, "$attachmentId").let { document ->
             ResponseEntity.ok()
                 .header("Content-Disposition", "attachment;filename=${document.getName()}")
                 .contentType(MediaType.valueOf(attachment.contentType))
@@ -119,6 +118,15 @@ class AttachmentsController(
 fun isOwnApplication(r: Database.Read, applicationId: UUID, user: AuthenticatedUser): Boolean {
     return r.createQuery("SELECT 1 FROM application WHERE id = :id AND guardian_id = :userId")
         .bind("id", applicationId)
+        .bind("userId", user.id)
+        .mapTo<Int>()
+        .toList()
+        .isNotEmpty()
+}
+
+fun isOwnAttachment(r: Database.Read, attachmentId: UUID, user: AuthenticatedUser): Boolean {
+    return r.createQuery("SELECT 1 FROM attachment at JOIN application ap ON at.application_id = ap.id WHERE at.id = :id AND ap.guardian_id = :userId")
+        .bind("id", attachmentId)
         .bind("userId", user.id)
         .mapTo<Int>()
         .toList()

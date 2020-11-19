@@ -14,6 +14,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
       v-html="$t('form.summary.send-information')"
     ></p>
 
+    <!-- Huomautus liitteistä -->
     <div class="application-attachments-info" v-show="form.urgent && applicationFiles.length === 0">
       <span class="float-left">
         <font-awesome-icon
@@ -27,7 +28,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
           <li>{{ $t('form.daycare-application.service.expedited.label') }}</li>
           <li>{{ $t('form.daycare-application.service.extended.label') }}</li>
         </ul>
-        <a @click="goBack">{{ $t('form.summary.attachments-info.go-back-1') }}</a> <span>{{ $t('form.summary.attachments-info.go-back-2') }}</span>
+        <a @click="closeSummary">{{ $t('form.summary.attachments-info.go-back-1') }}</a> <span>{{ $t('form.summary.attachments-info.go-back-2') }}</span>
       </div>
     </div>
 
@@ -99,8 +100,8 @@ SPDX-License-Identifier: LGPL-2.1-or-later
       summaryCheckedChanged(event) {
         this.$emit('summaryCheckedChanged', event.target.checked)
       },
-      goBack() {
-        return history.go(-1)
+      closeSummary() {
+        this.$emit('closeSummary')
       }
     }
   }

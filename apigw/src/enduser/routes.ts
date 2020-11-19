@@ -32,6 +32,8 @@ router.post(
   proxy
 )
 
+router.get('/attachments/:applicationId/download', proxy) 
+
 const multipartProxy = createProxy({ multipart: true })
 router.post('/attachments/enduser/applications/:applicationId', multipartProxy)
 

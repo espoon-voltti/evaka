@@ -23,6 +23,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
           v-if="!isPreschool"
         />
 
+        <!-- Liitteet -->
         <div class="attachment-list-wrapper" v-show="applicationForm.urgent">
           <p class="strong">{{$t('form.daycare-application.service.attachments-label')}}</p>
           <p v-if="applicationFiles.length === 0">{{$t('form.daycare-application.service.no-attachments')}}</p>
@@ -33,7 +34,10 @@ SPDX-License-Identifier: LGPL-2.1-or-later
                   :icon="['fal', 'file']"
                 ></font-awesome-icon>
               </span>
-              <a :href="`/enduser/applications/attachments/${file.id}`">{{ file.file.name }}</a>
+              <a :href="`/api/application/attachments/${file.id}/download`"
+                target="_blank"
+                rel="noreferrer"
+              >{{ file.file.name }}</a>
             </li>
           </ul>
         </div>

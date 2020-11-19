@@ -995,6 +995,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
           :summaryChecked="summaryChecked"
           :form="model"
           @summaryCheckedChanged="summaryCheckedChanged"
+          @closeSummary="closeSummary"
         />
         <section class="columns is-centered has-text-centered">
           <div class="column is-narrow">
@@ -1002,7 +1003,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
               size="wide"
               :primary="true"
               :outlined="true"
-              @click="showSummary = false"
+              @click="closeSummary"
               >{{ $t('form.back-to-form') | uppercase }}</c-button
             >
           </div>
@@ -1445,6 +1446,9 @@ SPDX-License-Identifier: LGPL-2.1-or-later
       },
       summaryCheckedChanged(value) {
         this.summaryChecked = value
+      },
+      closeSummary() {
+        this.showSummary = false
       },
       withAsterisk
     },
