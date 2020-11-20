@@ -5,6 +5,7 @@
 package fi.espoo.evaka.attachment
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.application.AttachmentType
 import fi.espoo.evaka.s3.DocumentService
 import fi.espoo.evaka.s3.DocumentWrapper
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -22,6 +23,7 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RequestPart
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.multipart.MultipartFile
@@ -51,12 +53,13 @@ class AttachmentsController(
         db: Database,
         user: AuthenticatedUser,
         @PathVariable applicationId: UUID,
+        @RequestParam type: AttachmentType,
         @RequestPart("file") file: MultipartFile
     ): ResponseEntity<UUID> {
         Audit.AttachmentsUpload.log(targetId = applicationId)
         user.requireOneOfRoles(UserRole.ADMIN)
 
-        val id = handleFileUpload(db, user, applicationId, file)
+        val id = handleFileUpload(db, user, applicationId, file, type)
         return ResponseEntity.ok(id)
     }
 
@@ -65,22 +68,18 @@ class AttachmentsController(
         db: Database,
         user: AuthenticatedUser,
         @PathVariable applicationId: UUID,
+        @RequestParam type: AttachmentType,
         @RequestPart("file") file: MultipartFile
     ): ResponseEntity<UUID> {
         Audit.AttachmentsUpload.log(targetId = applicationId)
         user.requireOneOfRoles(UserRole.END_USER)
         if (!db.read { it.isOwnApplication(applicationId, user) }) throw Forbidden("Permission denied")
 
-        val id = handleFileUpload(db, user, applicationId, file)
+        val id = handleFileUpload(db, user, applicationId, file, type)
         return ResponseEntity.ok(id)
     }
 
-    private fun handleFileUpload(
-        db: Database,
-        user: AuthenticatedUser,
-        applicationId: UUID,
-        file: MultipartFile
-    ): UUID {
+    private fun handleFileUpload(db: Database, user: AuthenticatedUser, applicationId: UUID, file: MultipartFile, type: AttachmentType): UUID {
         if (filesBucket == null) error("Files bucket is missing")
 
         val name = file.originalFilename
@@ -99,7 +98,8 @@ class AttachmentsController(
                 contentType,
                 applicationId,
                 uploadedByEnduser = user.id.takeIf { user.isEndUser() },
-                uploadedByEmployee = user.id.takeUnless { user.isEndUser() }
+                uploadedByEmployee = user.id.takeUnless { user.isEndUser() },
+                type = type
             )
             s3Client.upload(
                 filesBucket,

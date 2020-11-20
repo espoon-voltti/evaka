@@ -17,3 +17,4 @@ V16__attachments.sql
 V17__child_attendance_v2.sql
 V18__attachments_uploaded_by.sql
 V19__pairing.sql
+V20__attachment_type.sql
