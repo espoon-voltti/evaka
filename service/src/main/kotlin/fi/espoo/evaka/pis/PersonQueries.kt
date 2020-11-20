@@ -11,6 +11,7 @@ import fi.espoo.evaka.pis.service.ContactInfo
 import fi.espoo.evaka.pis.service.PersonDTO
 import fi.espoo.evaka.pis.service.PersonIdentityRequest
 import fi.espoo.evaka.pis.service.PersonPatch
+import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.freeTextSearchQuery
 import fi.espoo.evaka.shared.db.getUUID
 import org.jdbi.v3.core.Handle
@@ -31,6 +32,10 @@ fun Handle.getPersonById(id: UUID): PersonDTO? {
         .map(toPersonDTO)
         .firstOrNull()
 }
+
+fun Database.Transaction.lockPersonBySSN(ssn: String): PersonDTO? = createQuery(
+    "SELECT * FROM person WHERE social_security_number = :ssn FOR UPDATE"
+).bind("ssn", ssn).map(toPersonDTO).firstOrNull()
 
 fun Handle.getPersonBySSN(ssn: String): PersonDTO? {
     // language=SQL

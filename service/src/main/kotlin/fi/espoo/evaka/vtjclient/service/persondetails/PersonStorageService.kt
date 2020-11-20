@@ -6,7 +6,7 @@ package fi.espoo.evaka.vtjclient.service.persondetails
 
 import fi.espoo.evaka.identity.ExternalIdentifier
 import fi.espoo.evaka.pis.createPersonFromVtj
-import fi.espoo.evaka.pis.getPersonBySSN
+import fi.espoo.evaka.pis.lockPersonBySSN
 import fi.espoo.evaka.pis.service.PersonDTO
 import fi.espoo.evaka.pis.service.deleteChildGuardianRelationships
 import fi.espoo.evaka.pis.service.deleteGuardianChildRelationShips
@@ -40,7 +40,7 @@ class PersonStorageService {
         return when (personResult) {
             is PersonResult.Result -> {
                 val child = createOrUpdateOnePerson(tx, personResult.vtjPersonDTO)
-                child.guardians.addAll(personResult.vtjPersonDTO.guardians.map { createOrUpdateOnePerson(tx, it) })
+                child.guardians.addAll(personResult.vtjPersonDTO.guardians.sortedBy { it.socialSecurityNumber }.map { createOrUpdateOnePerson(tx, it) })
                 createOrReplaceChildRelationships(
                     tx,
                     childId = child.id,
@@ -55,7 +55,7 @@ class PersonStorageService {
 
     private fun upsertVtjGuardianAndChildren(tx: Database.Transaction, vtjPersonDTO: VtjPersonDTO): PersonResult {
         val guardian = createOrUpdateOnePerson(tx, vtjPersonDTO)
-        guardian.children.addAll(vtjPersonDTO.children.map { createOrUpdateOnePerson(tx, it) })
+        guardian.children.addAll(vtjPersonDTO.children.sortedBy { it.socialSecurityNumber }.map { createOrUpdateOnePerson(tx, it) })
         createOrReplaceGuardianRelationships(
             tx,
             guardianId = guardian.id,
@@ -80,7 +80,7 @@ class PersonStorageService {
             return inputPerson
         }
 
-        val existingPerson = tx.handle.getPersonBySSN(inputPerson.socialSecurityNumber)
+        val existingPerson = tx.lockPersonBySSN(inputPerson.socialSecurityNumber)
 
         return if (existingPerson == null) {
             val newPerson = newPersonFromVtjData(inputPerson)
