@@ -36,11 +36,11 @@ class PersonStorageService {
         }
     }
 
-    fun upsertVtjChildAndGuardians(tx: Database.Transaction, personResult: PersonResult): PersonResult {
+    fun upsertVtjChildAndGuardians(tx: Database.Transaction, personResult: PersonResult, updateIfExists: Boolean = true): PersonResult {
         return when (personResult) {
             is PersonResult.Result -> {
-                val child = createOrUpdateOnePerson(tx, personResult.vtjPersonDTO)
-                child.guardians.addAll(personResult.vtjPersonDTO.guardians.map { createOrUpdateOnePerson(tx, it) })
+                val child = createOrUpdateOnePerson(tx, personResult.vtjPersonDTO, updateIfExists)
+                child.guardians.addAll(personResult.vtjPersonDTO.guardians.map { createOrUpdateOnePerson(tx, it, updateIfExists) })
                 createOrReplaceChildRelationships(
                     tx,
                     childId = child.id,
@@ -54,8 +54,8 @@ class PersonStorageService {
     }
 
     private fun upsertVtjGuardianAndChildren(tx: Database.Transaction, vtjPersonDTO: VtjPersonDTO): PersonResult {
-        val guardian = createOrUpdateOnePerson(tx, vtjPersonDTO)
-        guardian.children.addAll(vtjPersonDTO.children.map { createOrUpdateOnePerson(tx, it) })
+        val guardian = createOrUpdateOnePerson(tx, vtjPersonDTO, false)
+        guardian.children.addAll(vtjPersonDTO.children.map { createOrUpdateOnePerson(tx, it, false) })
         createOrReplaceGuardianRelationships(
             tx,
             guardianId = guardian.id,
@@ -75,7 +75,7 @@ class PersonStorageService {
         guardianIds.forEach { guardianId -> insertGuardian(tx.handle, guardianId, childId) }
     }
 
-    private fun createOrUpdateOnePerson(tx: Database.Transaction, inputPerson: VtjPersonDTO): VtjPersonDTO {
+    private fun createOrUpdateOnePerson(tx: Database.Transaction, inputPerson: VtjPersonDTO, updateIfExists: Boolean = true): VtjPersonDTO {
         if (inputPerson.source != PersonDataSource.VTJ) {
             return inputPerson
         }
@@ -85,10 +85,10 @@ class PersonStorageService {
         return if (existingPerson == null) {
             val newPerson = newPersonFromVtjData(inputPerson)
             map(tx.handle.createPersonFromVtj(newPerson), inputPerson.source)
-        } else {
+        } else if (updateIfExists) {
             val updatedPerson = getPersonWithUpdatedProperties(inputPerson, existingPerson)
             map(tx.handle.updatePersonFromVtj(updatedPerson), inputPerson.source)
-        }
+        } else map(existingPerson, PersonDataSource.DATABASE)
     }
 
     private fun newPersonFromVtjData(inputPerson: VtjPersonDTO): PersonDTO = PersonDTO(
