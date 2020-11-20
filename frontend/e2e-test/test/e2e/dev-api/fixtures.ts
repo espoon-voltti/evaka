@@ -208,6 +208,7 @@ const twoGuardiansGuardian1 = {
   streetAddress: 'Kamreerintie 4',
   postalCode: '02100',
   postOffice: 'Espoo',
+  residenceCode: 'twoGuardiansSameAddressResidenceCode',
   nationalities: ['FI'],
   restrictedDetailsEnabled: false,
   restrictedDetailsEndDate: null
@@ -224,6 +225,7 @@ const twoGuardiansGuardian2 = {
   streetAddress: 'Kamreerintie 4',
   postalCode: '02100',
   postOffice: 'Espoo',
+  residenceCode: 'twoGuardiansSameAddressResidenceCode',
   nationalities: ['FI'],
   restrictedDetailsEnabled: false,
   restrictedDetailsEndDate: null
