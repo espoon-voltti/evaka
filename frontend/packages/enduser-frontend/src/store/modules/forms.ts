@@ -248,9 +248,11 @@ const module: Module<any, RootState> = {
         })
       }
     },
-    async deleteUrgentFile({ commit }, { id }) {
-      await applicationApi.deleteAttachment(id)
-      commit(types.DELETE_URGENT_FILE, id)
+    async deleteUrgentFile({ commit }, { id, key, error }) {
+      if (id && !error) {
+        await applicationApi.deleteAttachment(id)
+      }
+      commit(types.DELETE_URGENT_FILE, key)
     }
   },
   mutations: {
@@ -276,11 +278,17 @@ const module: Module<any, RootState> = {
     [types.LOAD_APPLICATION_FORM](state, { application }) {
       state.application = Object.assign(state.application, application)
       state.loadedApplication = _.cloneDeep(state.application)
-      state.files.urgent = [...application.attachments]
+      state.files.urgent = application.attachments.map((attachment) => ({
+        ...attachment,
+        key: attachment.id
+      }))
     },
     [types.LOAD_DAYCARE_APPLICATION_FORM](state, { application }) {
       state.daycare = Object.assign(state.daycare, application)
-      state.files.urgent = [...application.attachments]
+      state.files.urgent = application.attachments.map((attachment) => ({
+        ...attachment,
+        key: attachment.id
+      }))
     },
     [types.REVERT_APPLICATION_FORM](state) {
       state.application = _.cloneDeep(state.loadedApplication)
@@ -336,8 +344,8 @@ const module: Module<any, RootState> = {
         f.key === file.key ? file : f
       )
     },
-    [types.DELETE_URGENT_FILE](state, id) {
-      state.files.urgent = state.files.urgent.filter((f) => f.id !== id)
+    [types.DELETE_URGENT_FILE](state, key) {
+      state.files.urgent = state.files.urgent.filter((f) => f.key !== key)
     }
   }
 }

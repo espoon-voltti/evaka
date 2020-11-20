@@ -27,7 +27,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
               <button
                 class="file-header-icon-button"
                 @click="deleteFile(file)"
-                :disabled="inProgress(file)"
+                :disabled="inProgress(file) && !file.error"
               >
                 <font-awesome-icon
                   :icon="['fal', 'times']"
