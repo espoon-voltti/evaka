@@ -39,7 +39,7 @@ class AwsConfig {
         @Value("\${fi.espoo.voltti.document.bucket.vouchervaluedecision}") voucherValueDecisionBucket: String,
         @Value("\${fi.espoo.voltti.document.bucket.clubdecision}") clubDecisionBucket: String,
         @Value("\${fi.espoo.voltti.document.bucket.daycaredecision}") daycareDecisionBucket: String,
-        @Value("\${fi.espoo.voltti.document.bucket.files}") filesBucket: String
+        @Value("\${fi.espoo.voltti.document.bucket.attachments}") attachmentsBucket: String
     ): AmazonS3 {
         val client = AmazonS3ClientBuilder
             .standard()
@@ -53,7 +53,7 @@ class AwsConfig {
         client.createBucket(daycareDecisionBucket)
         client.createBucket(feeDecisionBucket)
         client.createBucket(voucherValueDecisionBucket)
-        client.createBucket(filesBucket)
+        client.createBucket(attachmentsBucket)
 
         return client
     }
