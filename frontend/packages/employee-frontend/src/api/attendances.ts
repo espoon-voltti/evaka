@@ -5,7 +5,7 @@
 import { JsonOf } from '@evaka/lib-common/src/json'
 import { Failure, Result, Success } from '~api'
 import { UUID } from '~types'
-import { AbsenceType } from '~types/absence'
+import { AbsenceType, CareType } from '~types/absence'
 import { PlacementType } from '~types/placementdraft'
 import { client } from './client'
 
@@ -44,6 +44,9 @@ interface Attendance {
 
 interface Absence {
   absenceType: AbsenceType
+  careType: CareType
+  childId: UUID
+  id: UUID
 }
 
 interface ArrivalInfoResponse {

@@ -24,6 +24,7 @@ import { AttendanceChild, getDaycareAttendances, Group } from '~api/attendances'
 import { AttendanceUIContext } from '~state/attendance-ui'
 import { FixedSpaceRow } from '~components/shared/layout/flex-helpers'
 import { FlexColumn } from './components'
+import AttendanceChildAbsent from './AttendanceChildAbsent'
 
 const FullHeightContentArea = styled(ContentArea)`
   min-height: 100vh;
@@ -169,6 +170,9 @@ export default React.memo(function AttendanceChildPage() {
                     unitId={unitId}
                     groupId={groupIdOrAll}
                   />
+                )}
+                {child.status === 'ABSENT' && (
+                  <AttendanceChildAbsent child={child} />
                 )}
               </FlexColumn>
             </Fragment>
