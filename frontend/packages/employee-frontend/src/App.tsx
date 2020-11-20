@@ -119,7 +119,6 @@ export default function App() {
               component={ensureAuthenticated(AttendancePageWrapper)}
             />
             <Route
-              exact
               path="/units/:unitId/groups/:groupId/childattendance/:childId"
               component={ensureAuthenticated(AttendanceChildPage)}
             />

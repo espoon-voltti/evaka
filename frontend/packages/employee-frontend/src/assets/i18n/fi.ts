@@ -71,7 +71,8 @@ export const fi = {
       PRESCHOOL: 'Esiopetus',
       DAYCARE: 'Varhaiskasvatus',
       PRESCHOOL_DAYCARE: 'Liittyvä varhaiskasvatus',
-      PREPARATORY_EDUCATION: 'Valmistava esiopetus'
+      PREPARATORY_EDUCATION: 'Valmistava esiopetus',
+      PREPARATORY_DAYCARE: 'Liittyvä varhaiskasvatus'
     },
     form: {
       name: 'Nimi',
@@ -1681,11 +1682,15 @@ export const fi = {
       markAbsent: 'Merkitse poissa',
       markPresent: 'Merkitse saapuneeksi',
       markLeaving: 'Merkitse lähteväksi',
-      returnToComing: 'Palauta tulossa oleviin'
+      returnToComing: 'Palauta tulossa oleviin',
+      returnToPresent: 'Palauta läsnäoleviin'
     },
     timeLabel: 'Merkintä',
+    departureTime: 'Lähtöaika',
+    arrivalTime: 'Saapumisaika',
     chooseGroup: 'Valitse ryhmä',
-    searchPlaceholder: 'Etsi lapsen nimellä'
+    searchPlaceholder: 'Etsi lapsen nimellä',
+    noAbsences: 'Ei poissaoloja'
   },
   placementDraft: {
     preschoolDaycare: 'Liittyvä varhaiskasvatus',

@@ -2,6 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { AbsenceType } from '~types/absence'
+
 export const EspooBrandColors = {
   espooBlue: '#0050bb',
   espooTurquoise: '#249fff'
@@ -45,6 +47,42 @@ const Colors = {
   primaryActive: BlueColors.dark,
   greyscale: Greyscale,
   accents: AccentColors
+}
+
+export const absenceBackgroundColours: { [key in AbsenceType]: string } = {
+  UNKNOWN_ABSENCE: Colors.accents.green,
+  OTHER_ABSENCE: Colors.blues.dark,
+  SICKLEAVE: Colors.accents.violet,
+  PLANNED_ABSENCE: Colors.blues.light,
+  PARENTLEAVE: Colors.blues.primary,
+  FORCE_MAJEURE: Colors.accents.red,
+  TEMPORARY_RELOCATION: Colors.accents.orange,
+  TEMPORARY_VISITOR: Colors.accents.yellow,
+  PRESENCE: Colors.greyscale.white
+}
+
+export const absenceBorderColours: { [key in AbsenceType]: string } = {
+  UNKNOWN_ABSENCE: Colors.accents.green,
+  OTHER_ABSENCE: Colors.blues.dark,
+  SICKLEAVE: Colors.accents.violet,
+  PLANNED_ABSENCE: Colors.blues.light,
+  PARENTLEAVE: Colors.blues.primary,
+  FORCE_MAJEURE: Colors.accents.red,
+  TEMPORARY_RELOCATION: Colors.accents.orange,
+  TEMPORARY_VISITOR: Colors.accents.yellow,
+  PRESENCE: Colors.greyscale.white
+}
+
+export const absenceColours: { [key in AbsenceType]: string } = {
+  UNKNOWN_ABSENCE: Colors.greyscale.darkest,
+  OTHER_ABSENCE: Colors.greyscale.white,
+  SICKLEAVE: Colors.greyscale.white,
+  PLANNED_ABSENCE: Colors.greyscale.darkest,
+  PARENTLEAVE: Colors.greyscale.white,
+  FORCE_MAJEURE: Colors.greyscale.white,
+  TEMPORARY_RELOCATION: Colors.greyscale.white,
+  TEMPORARY_VISITOR: Colors.greyscale.white,
+  PRESENCE: Colors.greyscale.white
 }
 
 export default Colors

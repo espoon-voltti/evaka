@@ -5,12 +5,14 @@
 import React from 'react'
 import styled from 'styled-components'
 
-import { AttendanceStatus, ChildInGroup } from '~api/unit'
+import { AttendanceChild, AttendanceStatus } from '~api/attendances'
 import RoundIcon from '~components/shared/atoms/RoundIcon'
 import Colors from '~components/shared/Colors'
 import { DefaultMargins } from '~components/shared/layout/white-space'
+import { DATE_FORMAT_TIME_ONLY } from '~constants'
 import { farUser } from '~icon-set'
 import { useTranslation } from '~state/i18n'
+import { formatDate } from '~utils/date'
 
 const ChildBox = styled.div<{ type: AttendanceStatus }>`
   align-items: center;
@@ -59,13 +61,13 @@ const Time = styled.span`
 `
 
 interface ChildListItemProps {
-  childInGroup: ChildInGroup
+  attendanceChild: AttendanceChild
   onClick?: () => void
   type: AttendanceStatus
 }
 
 export default React.memo(function ChildListItem({
-  childInGroup,
+  attendanceChild,
   onClick,
   type
 }: ChildListItemProps) {
@@ -92,33 +94,21 @@ export default React.memo(function ChildListItem({
       </IconBox>
       <ChildBoxInfo onClick={onClick}>
         <Bold>
-          {childInGroup.firstName} {childInGroup.lastName}
+          {attendanceChild.firstName} {attendanceChild.lastName}
         </Bold>
         <ChildBoxStatus>
-          {i18n.attendances.status[childInGroup.status]}
+          {i18n.attendances.status[attendanceChild.status]}
           <Time>
-            {childInGroup.status === 'PRESENT' &&
-              childInGroup.arrived &&
-              `${
-                childInGroup.arrived?.getHours() < 10
-                  ? `0${childInGroup.arrived?.getHours()}`
-                  : childInGroup.arrived?.getHours()
-              }:${
-                childInGroup.arrived?.getMinutes() < 10
-                  ? `0${childInGroup.arrived?.getMinutes()}`
-                  : childInGroup.arrived?.getMinutes()
-              }`}
-            {childInGroup.status === 'DEPARTED' &&
-              childInGroup.departed &&
-              `${
-                childInGroup.departed?.getHours() < 10
-                  ? `0${childInGroup.departed?.getHours()}`
-                  : childInGroup.departed?.getHours()
-              }:${
-                childInGroup.departed?.getMinutes() < 10
-                  ? `0${childInGroup.departed?.getMinutes()}`
-                  : childInGroup.departed?.getMinutes()
-              }`}
+            {attendanceChild.status === 'PRESENT' &&
+              formatDate(
+                attendanceChild.attendance?.arrived,
+                DATE_FORMAT_TIME_ONLY
+              )}
+            {attendanceChild.status === 'DEPARTED' &&
+              formatDate(
+                attendanceChild.attendance?.departed,
+                DATE_FORMAT_TIME_ONLY
+              )}
           </Time>
         </ChildBoxStatus>
       </ChildBoxInfo>

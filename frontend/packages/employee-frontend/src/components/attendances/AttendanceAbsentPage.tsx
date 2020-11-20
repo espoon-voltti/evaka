@@ -4,27 +4,27 @@
 import React, { Fragment } from 'react'
 
 import { isFailure, isLoading, isSuccess, Result } from '~api'
-import { ChildInGroup } from '~api/unit'
+import { AttendanceResponse } from '~api/attendances'
 import Loader from '~components/shared/atoms/Loader'
 import { useTranslation } from '~state/i18n'
 import AttendanceList from './AttendanceList'
 
 interface Props {
-  groupAttendances: Result<ChildInGroup[]>
+  attendanceResponse: Result<AttendanceResponse>
 }
 
 export default React.memo(function AttendanceAbsentPage({
-  groupAttendances
+  attendanceResponse
 }: Props) {
   const { i18n } = useTranslation()
 
   return (
     <Fragment>
-      {isFailure(groupAttendances) && <div>{i18n.common.loadingFailed}</div>}
-      {isLoading(groupAttendances) && <Loader />}
-      {isSuccess(groupAttendances) && (
+      {isFailure(attendanceResponse) && <div>{i18n.common.loadingFailed}</div>}
+      {isLoading(attendanceResponse) && <Loader />}
+      {isSuccess(attendanceResponse) && (
         <AttendanceList
-          groupAttendances={groupAttendances.data}
+          attendanceChildren={attendanceResponse.data.children}
           type={'ABSENT'}
         />
       )}
