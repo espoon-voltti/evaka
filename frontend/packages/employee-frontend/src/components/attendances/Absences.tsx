@@ -78,7 +78,7 @@ export default React.memo(function Absences({
 
           <span>
             <Label>{i18n.common.types.PRESCHOOL}</Label>
-            <AbsenceTypeLabel>Ei poissaoloja</AbsenceTypeLabel>
+            <AbsenceTypeLabel>{i18n.attendances.noAbsences}</AbsenceTypeLabel>
           </span>
         </AttendanceItem>
       ) : (
@@ -102,7 +102,7 @@ export default React.memo(function Absences({
 
           <span>
             <Label>{i18n.common.types.PRESCHOOL_DAYCARE}</Label>
-            <AbsenceTypeLabel>Ei poissaoloja</AbsenceTypeLabel>
+            <AbsenceTypeLabel>{i18n.attendances.noAbsences}</AbsenceTypeLabel>
           </span>
         </AttendanceItem>
       ) : (
@@ -125,7 +125,7 @@ export default React.memo(function Absences({
 
           <span>
             <Label>{i18n.common.types.PRESCHOOL_DAYCARE}</Label>
-            <AbsenceTypeLabel>Ei poissaoloja</AbsenceTypeLabel>
+            <AbsenceTypeLabel>{i18n.attendances.noAbsences}</AbsenceTypeLabel>
           </span>
         </AttendanceItem>
       ) : (

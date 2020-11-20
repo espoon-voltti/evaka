@@ -1678,7 +1678,8 @@ export const fi = {
     departureTime: 'Lähtöaika',
     arrivalTime: 'Saapumisaika',
     chooseGroup: 'Valitse ryhmä',
-    searchPlaceholder: 'Etsi lapsen nimellä'
+    searchPlaceholder: 'Etsi lapsen nimellä',
+    noAbsences: 'Ei poissaoloja'
   },
   placementDraft: {
     preschoolDaycare: 'Liittyvä varhaiskasvatus',
