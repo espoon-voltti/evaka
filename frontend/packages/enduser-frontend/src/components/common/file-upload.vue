@@ -5,12 +5,20 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 -->
 
 <template>
-  <div class="file-upload-container">
-    <input
-      type="file"
-      accept="image/jpeg, image/png, application/pdf, application/msword, application/vnd.openxmlformats-officedocument.wordprocessingml.document, application/vnd.oasis.opendocument.text"
-      @change="onChange"
-    />
+  <div class="file-upload-container" v-on:drop.prevent v-on:dragover.prevent>
+    <label class="file-input-label" v-on:drop="onDrop">
+      <input
+        type="file"
+        accept="image/jpeg, image/png, application/pdf, application/msword, application/vnd.openxmlformats-officedocument.wordprocessingml.document, application/vnd.oasis.opendocument.text"
+        @change="onChange"
+      />
+      <h4>{{ $t('file-upload.input.title') }}</h4>
+      <span
+        v-for="text in $t('file-upload.input.text')"
+        v-bind:key="text"
+        v-text="text"
+      />
+    </label>
     <div class="spacer" />
     <div class="files">
       <div class="file" v-for="file in files" v-bind:key="file.key">
@@ -40,7 +48,10 @@ SPDX-License-Identifier: LGPL-2.1-or-later
             <div class="file-progress-bar" v-show="inProgress(file)">
               <div class="file-progress-bar-background">
                 <div
-                  :class="['file-progress-bar-progress', { error: !!file.error }]"
+                  :class="[
+                    'file-progress-bar-progress',
+                    { error: !!file.error }
+                  ]"
                   :style="progressBarStyles(file)"
                 />
               </div>
@@ -78,6 +89,11 @@ SPDX-License-Identifier: LGPL-2.1-or-later
       onChange(event) {
         this.onUpload(event.target.files[0])
       },
+      onDrop(event) {
+        if (event.dataTransfer.files && event.dataTransfer.files[0]) {
+          this.onUpload(event.dataTransfer.files[0])
+        }
+      },
       deleteFile(file) {
         this.onDelete(file)
       },
@@ -114,9 +130,31 @@ SPDX-License-Identifier: LGPL-2.1-or-later
     display: flex;
     flex-direction: row;
     flex-wrap: wrap;
+    align-items: flex-start;
 
-    input {
-      width: 300px;
+    .file-input-label {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      background: $white-bis;
+      border: 1px dashed $grey;
+      border-radius: 8px;
+      width: min(500px, 70vw);
+      padding: 24px;
+      text-align: center;
+
+      input {
+        display: none;
+      }
+
+      h4 {
+        font-size: 18px;
+        margin-bottom: 14px;
+      }
+
+      span {
+        font-size: 13px;
+      }
     }
 
     .spacer {

@@ -985,6 +985,15 @@
   "file-upload": {
     "loading": "Ladataan...",
     "loaded": "Ladattu",
-    "error": "Lataus ei onnistunut"
+    "error": "Lataus ei onnistunut",
+    "input": {
+      "title": "Lataa liite",
+      "text": [
+        "Paina tästä tai raahaa liite laatikkoon yksi kerrallaan.",
+        "Tiedoston maksimikoko: 10MB.",
+        "Sallitut tiedostomuodot:",
+        "PDF, JPEG/JPG, PNG ja DOC/DOCX"
+      ]
+    }
   }
 }
