@@ -111,7 +111,7 @@ class SfiClientServiceTest {
             service.sendMessage(metadata)
             fail<Nothing>("Expecting an exception")
         } catch (e: Exception) {
-            assertThat(e).hasMessage(message)
+            assertThat(e).hasCause(RuntimeException(message))
         }
     }
 

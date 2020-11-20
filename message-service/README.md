@@ -60,6 +60,9 @@ If you want to set ktlint formatter rules as your IDEA kotlin formatting rules, 
 
 ### Local testing against SFI
 
+**NOTE:** These instructions are only relevant for Voltti developers as they require
+an existing connection and configuration for Suomi.fi Viestit.
+
 Use the `SfiApiTest` class to run the test, remember to remove the `@Ignore` from the class.
 
 Add the following to your application-test.properties:
@@ -115,7 +118,7 @@ The `LocalForward` target IP is for QAT, if you need to send to prod SFI, check 
 from the VIA excel.
 
 SSH to the instance you just specified above with `ssh sfi-tunnel-test` and run your test. If the test succeeds, you should be
-able to read the message from the SFI test enviroment. The address and passwords are on the  [wiki](https://voltti.atlassian.net/wiki/spaces/EVAKA/pages/852328491/Suomi.fi+Viestit+k+ytt+notto)
+able to read the message from the SFI test environment. The address and passwords are on the  [wiki](https://voltti.atlassian.net/wiki/spaces/EVAKA/pages/852328491/Suomi.fi+Viestit+k+ytt+notto)
 page.
 
 You can see the content of the replies and responses in the log because the trace logging is enabled in `application-test.properties`:
