@@ -24,6 +24,8 @@ export const getLayout = <Components>(
       ? layouts['FINANCE_ADMIN']
       : roles.includes('STAFF')
       ? layouts['STAFF']
+      : roles.includes('SPECIAL_EDUCATION_TEACHER')
+      ? layouts['SPECIAL_EDUCATION_TEACHER']
       : layouts.default) ?? layouts.default
   )
 }

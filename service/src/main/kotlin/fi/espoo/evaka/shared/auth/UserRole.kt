@@ -26,7 +26,9 @@ enum class UserRole {
     @JsonAlias("ROLE_EVAKA_ESPOO_UNITSUPERVISOR")
     UNIT_SUPERVISOR,
 
-    STAFF;
+    STAFF,
+
+    SPECIAL_EDUCATION_TEACHER;
 
     companion object {
         fun parse(value: String): UserRole = when (value) {
@@ -37,10 +39,11 @@ enum class UserRole {
             "ROLE_EVAKA_ESPOO_OFFICEHOLDER" -> SERVICE_WORKER
             "ROLE_EVAKA_ESPOO_STAFF" -> STAFF
             "ROLE_EVAKA_ESPOO_UNITSUPERVISOR" -> UNIT_SUPERVISOR
+            "ROLE_SPECIAL_EDUCATION_TEACHER" -> SPECIAL_EDUCATION_TEACHER
             else -> enumValueOf(value.removePrefix("ROLE_"))
         }
 
-        val ACL_ROLES = setOf(UNIT_SUPERVISOR, STAFF)
+        val ACL_ROLES = setOf(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER)
     }
 }
 

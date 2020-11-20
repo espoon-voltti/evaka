@@ -53,7 +53,18 @@ WHERE employee_id = :userId AND daycare_id = :daycareId
     )
 
     fun getRolesForApplication(user: AuthenticatedUser, applicationId: UUID): AclAppliedRoles = AclAppliedRoles(
-        (user.roles - UserRole.ACL_ROLES) + Database(jdbi).read {
+        (user.roles - UserRole.ACL_ROLES) + Database(jdbi).read { it ->
+            val assistanceNeeded = it.createQuery(
+                // language=SQL
+                """
+SELECT (f.document -> 'careDetails' ->> 'assistanceNeeded')
+FROM application a inner join application_form f on a.id = f.application_id and f.latest = true
+WHERE a.id = :applicationId;
+                """.trimIndent()
+            ).bind("applicationId", applicationId)
+                .mapTo<Boolean>()
+                .contains(true)
+
             it.createQuery(
                 // language=SQL
                 """
@@ -63,7 +74,10 @@ LEFT JOIN placement_plan pp ON pp.application_id = av.id AND pp.deleted = false
 JOIN daycare_acl acl ON acl.daycare_id = ANY(av.preferredunits) OR acl.daycare_id = pp.unit_id
 WHERE employee_id = :userId AND av.id = :applicationId AND av.status = ANY ('{SENT,WAITING_PLACEMENT,WAITING_CONFIRMATION,WAITING_DECISION,WAITING_MAILING,WAITING_UNIT_CONFIRMATION,ACTIVE}'::application_status_type[])
                 """.trimIndent()
-            ).bind("userId", user.id).bind("applicationId", applicationId).mapTo<UserRole>().toSet()
+            ).bind("userId", user.id).bind("applicationId", applicationId)
+                .mapTo<UserRole>()
+                .filter { it != UserRole.SPECIAL_EDUCATION_TEACHER || assistanceNeeded }
+                .toSet()
         }
     )
 

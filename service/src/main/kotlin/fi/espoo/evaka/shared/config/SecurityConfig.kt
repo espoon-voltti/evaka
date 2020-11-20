@@ -33,6 +33,7 @@ object Roles {
     val ADMIN = UserRole.ADMIN
     val DIRECTOR = UserRole.DIRECTOR
     val STAFF = UserRole.STAFF
+    val SPECIAL_EDUCATION_TEACHER = UserRole.SPECIAL_EDUCATION_TEACHER
 }
 
 @Configuration
