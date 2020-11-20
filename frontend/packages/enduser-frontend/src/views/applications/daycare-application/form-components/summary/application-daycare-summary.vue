@@ -23,6 +23,25 @@ SPDX-License-Identifier: LGPL-2.1-or-later
           v-if="!isPreschool"
         />
 
+        <!-- Liitteet -->
+        <div class="attachment-list-wrapper" v-if="attachmentsEnabled" v-show="applicationForm.urgent">
+          <p class="strong">{{$t('form.daycare-application.service.attachments-label')}}</p>
+          <p v-if="applicationFiles.length === 0">{{$t('form.daycare-application.service.no-attachments')}}</p>
+          <ul v-else>
+            <li v-for="file in applicationFiles" v-bind:key="file.id">
+              <span class="attachment-icon">
+                <font-awesome-icon
+                  :icon="['fal', 'file']"
+                ></font-awesome-icon>
+              </span>
+              <a :href="`/api/application/attachments/${file.id}/download`"
+                target="_blank"
+                rel="noreferrer"
+              >{{ file.file.name }}</a>
+            </li>
+          </ul>
+        </div>
+
         <div class="columns is-gapless">
           <div class="column">
             <div class="strong">{{ $t(`form.${type}-application.service.startDate.label`) }}</div>
@@ -461,6 +480,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 
 <script>
 import { mapGetters } from 'vuex'
+import { config } from '@evaka/enduser-frontend/src/config'
 import _ from 'lodash'
 import { formatDate } from '@/utils/date-utils'
 import { APPLICATION_TYPE, LANGUAGES } from '@/constants.ts'
@@ -476,9 +496,12 @@ export default {
     }
   },
   computed: {
-    ...mapGetters(['countries', 'languages']),
+    ...mapGetters(['countries', 'languages', 'applicationFiles']),
     type() {
       return this.applicationForm.type.value
+    },
+    attachmentsEnabled() {
+      return config.feature.attachments
     },
     currentLocaleIsSwedish() {
       return this.$i18n.locale.toLowerCase() === LANGUAGES.SV
@@ -582,6 +605,15 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+
+.attachment-list-wrapper {
+  margin-bottom: 1rem;
+
+  & .attachment-icon {
+    margin-right: 1rem;
+  }
+}
+
 .club-summary-title {
   margin-top: 1.5rem;
 }

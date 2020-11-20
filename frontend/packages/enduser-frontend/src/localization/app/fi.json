@@ -458,11 +458,13 @@
       "service": {
         "title": "Palvelun tarve",
         "section-title": "Varhaiskasvatuksen alkaminen",
+        "attachments-label": "Tarvittavat liitteet",
+        "no-attachments": "Ei liitetty, lähetetään postilla",
         "expedited": {
           "label": "Hakemus on kiireellinen",
           "message": {
             "title": "Hakemus on kiireellinen",
-            "text": "Mikäli varhaiskasvatuspaikan tarve johtuu äkillisestä työllistymisestä tai opiskelusta, tulee paikkaa hakea viimeistään kaksi viikkoa ennen kuin tarve alkaa. Kahden viikon käsittelyaika alkaa siitä, kun työ- tai opiskelutodistukset on toimitettu palveluohjaukseen (varhaiskasvatuksen.palveluohjaus@espoo.fi)."
+            "text": "Mikäli varhaiskasvatuspaikan tarve johtuu äkillisestä työllistymisestä tai opiskelusta, tulee paikkaa hakea viimeistään kaksi viikkoa ennen kuin tarve alkaa. Hakemuksen liitteenä tulee olla työ- tai opiskelutodistus molemmilta samassa taloudessa asuvilta huoltajilta. Suosittelemme toimittamaan liitteen sähköisesti tässä, sillä kahden viikon käsittelyaika alkaa siitä, kun olemme vastaanottaneet hakemuksen tarvittavine liitteineen. Jos et voi lisätä liitteitä hakemukselle sähköisesti, lähetä ne postilla osoitteeseen Varhaiskasvatuksen palveluohjaus, PL 3125, 02070 Espoon kaupunki."
           }
         },
         "startDate": {
@@ -871,6 +873,11 @@
       "daycare-check-title": "Varhaiskasvatushakemuksen tarkistaminen",
       "preschool-check-title": "Esiopetushakemuksen tarkistaminen",
       "send-information": "<strong>Hakemusta ei ole vielä lähetetty.</strong> Tarkista antamasi tiedot ja lähetä sivun lopussa olevalla Lähetä hakemus-painikkeella.",
+      "attachments-info": {
+        "headline": "<strong>Huom!</strong> Jos lisäät liitteet seuraaviin kohtiin sähköisesti, hakemuksesi käsitellään nopeammin, sillä käsittelyaika alkaa liitteiden saapumisesta.",
+        "go-back-1": "Palaa takaisin hakemusnäkymään",
+        "go-back-2": "lisätäksesi liitteet hakemukseen."
+      },
       "general-title": "Hakemuksen yhteenveto",
       "term": "Haku toimintakaudelle",
       "general-info": "Cras erat lacus, facilisis sed orci non, lacinia condimentum libero. Aliquam lectus mi, convallis bibendum vestibulum at, gravida vitae elit. Ut at risus a sapien maximus cursus eget vitae dui. Suspendisse tempor, ligula vitae sollicitudin fringilla, neque ante ultrices erat, ut lacinia nisi velit in tellus.",
