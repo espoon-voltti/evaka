@@ -6,7 +6,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faCheck, faTimes } from 'icon-set'
 import Colors from 'components/shared/Colors'
 import { StyledButton } from './Button'
-import { isFailure, isSuccess, Result } from '~api'
+import { isFailure, Result } from '~api'
 
 type Props = {
   text: string
