@@ -12,8 +12,8 @@ import com.fasterxml.jackson.module.jaxb.JaxbAnnotationModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.fasterxml.jackson.module.paramnames.ParameterNamesModule
-import com.github.kittinunf.fuel.Fuel
 import com.github.kittinunf.fuel.core.FuelError
+import com.github.kittinunf.fuel.core.FuelManager
 import com.github.kittinunf.fuel.core.Headers
 import com.github.kittinunf.fuel.core.Method
 import com.github.kittinunf.fuel.core.extensions.authentication
@@ -30,6 +30,7 @@ private val logger = KotlinLogging.logger { }
 
 @Component
 class KoskiClient(
+    private val fuel: FuelManager,
     private val env: Environment,
     private val baseUrl: String = env.getRequiredProperty("fi.espoo.integration.koski.url"),
     private val sourceSystem: String = env.getRequiredProperty("fi.espoo.integration.koski.source_system"),
@@ -62,7 +63,7 @@ class KoskiClient(
         if (!tx.isPayloadChanged(msg.key, payload)) {
             logger.info { "Koski upload ${msg.key} ${data.operation}: no change in payload -> skipping" }
         } else {
-            val (_, _, result) = Fuel.request(
+            val (_, _, result) = fuel.request(
                 method = if (data.operation == KoskiOperation.CREATE) Method.POST else Method.PUT,
                 path = "$baseUrl/oppija"
             )

@@ -16,8 +16,8 @@ class VardaClientIntegrationMockHttpsServer(httpsPort: Int) : AutoCloseable {
         config.server {
             val server = Server()
             val sslConnector = ServerConnector(server, getSslContextFactory())
-            sslConnector.setPort(httpsPort)
-            server.setConnectors(arrayOf<Connector>(sslConnector))
+            sslConnector.port = httpsPort
+            server.connectors = arrayOf<Connector>(sslConnector)
             server
         }
     }.start()
@@ -39,7 +39,8 @@ class VardaClientIntegrationMockHttpsServer(httpsPort: Int) : AutoCloseable {
     }
 
     fun getSslContextFactory(): SslContextFactory {
-        val sslContextFactory = SslContextFactory(this.javaClass.getResource("/test-certificate/localhost.keystore").toExternalForm())
+        val sslContextFactory = SslContextFactory.Server()
+        sslContextFactory.setKeyStorePath(this.javaClass.getResource("/test-certificate/localhost.keystore").toExternalForm())
         sslContextFactory.setKeyStorePassword("password")
         return sslContextFactory
     }

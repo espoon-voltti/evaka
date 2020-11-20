@@ -5,7 +5,7 @@
 package fi.espoo.evaka.varda.integration
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.github.kittinunf.fuel.Fuel
+import com.github.kittinunf.fuel.core.FuelManager
 import com.github.kittinunf.fuel.core.Headers
 import fi.espoo.evaka.shared.utils.responseStringWithRetries
 import kotlinx.coroutines.runBlocking
@@ -33,6 +33,7 @@ interface VardaTokenProvider {
  */
 @Service
 class VardaTempTokenProvider(
+    private val fuel: FuelManager,
     env: Environment,
     private val objectMapper: ObjectMapper,
     baseUrl: String = env.getRequiredProperty("fi.espoo.integration.varda.url")
@@ -59,7 +60,7 @@ class VardaTempTokenProvider(
             }
         }
 
-    private fun fetchToken(): VardaApiToken = Fuel.get(apiTokenUrl)
+    private fun fetchToken(): VardaApiToken = fuel.get(apiTokenUrl)
         .header(Headers.AUTHORIZATION, basicAuth)
         .header(Headers.ACCEPT, "application/json")
         .header(Headers.CONTENT_TYPE, "application/json")
