@@ -105,7 +105,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
       }
     },
     created() {
-      this.$store.dispatch('loadApplications')
+      this.$store.dispatch('loadApplicationsAndDecisions')
     },
     methods: {
       async newApplication(payload) {

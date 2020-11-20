@@ -47,11 +47,11 @@ export default new Vuex.Store<RootState>({
       commit(types.INIT_FILTERS)
       commit(types.INIT_ADDRESSES)
     },
-    async loadApplicationsAndDecisions({ dispatch }, userId) {
+    async loadApplicationsAndDecisions({ dispatch }) {
       await Promise.all([
         dispatch('loader/add', 'loader.initializing'),
-        dispatch('loadApplications', userId),
-        dispatch('loadDecisions', userId)
+        dispatch('loadApplications'),
+        dispatch('loadDecisions')
       ])
       dispatch('loader/clear')
     }
