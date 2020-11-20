@@ -24,7 +24,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
         />
 
         <!-- Liitteet -->
-        <div class="attachment-list-wrapper" v-show="applicationForm.urgent">
+        <div class="attachment-list-wrapper" v-if="attachmentsEnabled" v-show="applicationForm.urgent">
           <p class="strong">{{$t('form.daycare-application.service.attachments-label')}}</p>
           <p v-if="applicationFiles.length === 0">{{$t('form.daycare-application.service.no-attachments')}}</p>
           <ul v-else>
@@ -480,6 +480,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 
 <script>
 import { mapGetters } from 'vuex'
+import { config } from '@evaka/enduser-frontend/src/config'
 import _ from 'lodash'
 import { formatDate } from '@/utils/date-utils'
 import { APPLICATION_TYPE, LANGUAGES } from '@/constants.ts'
@@ -498,6 +499,9 @@ export default {
     ...mapGetters(['countries', 'languages', 'applicationFiles']),
     type() {
       return this.applicationForm.type.value
+    },
+    attachmentsEnabled() {
+      return config.feature.attachments
     },
     currentLocaleIsSwedish() {
       return this.$i18n.locale.toLowerCase() === LANGUAGES.SV

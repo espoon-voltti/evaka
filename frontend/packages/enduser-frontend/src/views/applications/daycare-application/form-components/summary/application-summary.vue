@@ -14,8 +14,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
       v-html="$t('form.summary.send-information')"
     ></p>
 
-    <!-- Huomautus liitteistä -->
-    <div class="application-attachments-info" v-show="form.urgent && applicationFiles.length === 0">
+    <div class="application-attachments-info" v-if="attachmentsEnabled" v-show="form.urgent && applicationFiles.length === 0">
       <span class="float-left">
         <font-awesome-icon
           :icon="['fas', 'info-circle']"
@@ -76,6 +75,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 
 <script>
   import { mapGetters } from 'vuex'
+  import { config } from '@evaka/enduser-frontend/src/config'
   import DaycareSummary from '@/views/applications/daycare-application/form-components/summary/application-daycare-summary'
 
   export default {
@@ -90,6 +90,9 @@ SPDX-License-Identifier: LGPL-2.1-or-later
       ...mapGetters(['applicationFiles']),
       type() {
         return this.form.type.value
+      },
+      attachmentsEnabled() {
+        return config.feature.attachments
       }
     },
     methods: {
