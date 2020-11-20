@@ -5,6 +5,7 @@
 import {
   faCircle as fasCircle,
   faExclamationCircle as fasExclamationCircle,
+  faExclamationTriangle as fasExclamationTriangle,
   faHome as fasHome,
   faInfoCircle as fasInfoCircle,
   faMapMarkerAlt as fasMapMarkerAlt
@@ -48,6 +49,9 @@ import {
   faExclamation as falExclamation,
   faExclamationTriangle as falExclamationTriangle,
   faFile as falFile,
+  faFileImage as falFileImage,
+  faFilePdf as falFilePdf,
+  faFileWord as falFileWord,
   faGavel as falGavel,
   faHands as falHands,
   faInfo as falInfo,
@@ -68,6 +72,7 @@ import { IconSet } from '../icon-set'
 const icons: IconSet = {
   fasCircle,
   fasExclamationCircle,
+  fasExclamationTriangle,
   fasHome,
   fasInfoCircle,
   fasMapMarkerAlt,
@@ -105,6 +110,9 @@ const icons: IconSet = {
   falExclamation,
   falExclamationTriangle,
   falFile,
+  falFileImage,
+  falFilePdf,
+  falFileWord,
   falGavel,
   falHands,
   falInfo,

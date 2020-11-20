@@ -14,7 +14,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
       v-html="$t('form.summary.send-information')"
     ></p>
 
-    <div class="application-attachments-info" v-if="attachmentsEnabled" v-show="form.urgent && applicationFiles.length === 0">
+    <div class="application-attachments-info" v-if="attachmentsEnabled" v-show="form.urgent && urgentFiles.length === 0">
       <span class="float-left">
         <font-awesome-icon
           :icon="['fas', 'info-circle']"
@@ -87,7 +87,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
       DaycareSummary
     },
     computed: {
-      ...mapGetters(['applicationFiles']),
+      ...mapGetters(['urgentFiles']),
       type() {
         return this.form.type.value
       },

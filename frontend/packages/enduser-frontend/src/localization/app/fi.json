@@ -981,5 +981,10 @@
         "invalid-requested-start-date": "Aloitusta voi siirtää korkeintaan 14 päivää päätöksessä annetusta aloituspäivämäärästä. Aloituspäivämäärä ei voi olla aikaisempi kuin päätöksellä annettu aloituspäivämäärä."
       }
     }
+  },
+  "file-upload": {
+    "loading": "Ladataan...",
+    "loaded": "Ladattu",
+    "error": "Lataus ei onnistunut"
   }
 }

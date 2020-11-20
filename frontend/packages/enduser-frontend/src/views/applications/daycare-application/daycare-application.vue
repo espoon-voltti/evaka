@@ -147,9 +147,13 @@ SPDX-License-Identifier: LGPL-2.1-or-later
               </div>
               <div class="columns" v-if="!isPreschool">
                 <div class="column">
-                  <c-checkbox v-model="model" name="urgent">{{
-                    $t('form.daycare-application.service.expedited.label')
-                  }}</c-checkbox>
+                  <c-checkbox
+                    v-model="model"
+                    name="urgent"
+                    :label="
+                      $t('form.daycare-application.service.expedited.label')
+                    "
+                  ></c-checkbox>
                   <div v-if="model.urgent">
                     <c-message-box
                       :title="
@@ -166,18 +170,12 @@ SPDX-License-Identifier: LGPL-2.1-or-later
                         "
                       ></div>
                     </c-message-box>
-                    <div v-if="attachmentsEnabled">
-                      <input
-                        type="file"
-                        accept="image/jpeg, image/png, application/pdf, application/msword, application/vnd.openxmlformats-officedocument.wordprocessingml.document, application/vnd.oasis.opendocument.text"
-                        @change="onFileChange"
-                      />
-                      <div
-                        v-for="file in applicationFiles"
-                        v-bind:key="file.id"
-                        v-text="file.file.name"
-                      ></div>
-                    </div>
+                    <file-upload
+                      v-if="attachmentsEnabled"
+                      :files="urgentFiles"
+                      :onUpload="onFileUpload"
+                      :onDelete="onFileDelete"
+                    />
                   </div>
                 </div>
               </div>
@@ -1076,7 +1074,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
   import { isValidTimeString } from '@/components/validation/validators'
   import { formatDate } from '@/utils/date-utils'
   import { DATE_FORMAT } from '@/constants'
-  import modal from 'src/components/modal/modal.vue'
+  import FileUpload from '@/components/common/file-upload.vue'
 
   export default Vue.extend({
     props: {
@@ -1118,7 +1116,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
       }
     },
     computed: {
-      ...mapGetters(['daycareForm', 'applicationUnits', 'applicationFiles']),
+      ...mapGetters(['daycareForm', 'applicationUnits', 'urgentFiles']),
       id(): string {
         return this.$route.params.id
       },
@@ -1222,11 +1220,14 @@ SPDX-License-Identifier: LGPL-2.1-or-later
       }
     },
     methods: {
-      onFileChange(event) {
-        this.$store.dispatch('updateUrgentFiles', {
-          file: event.target.files[0],
-          id: this.id
+      onFileUpload(file) {
+        this.$store.dispatch('addUrgentFile', {
+          file,
+          applicationId: this.id
         })
+      },
+      onFileDelete(file) {
+        this.$store.dispatch('deleteUrgentFile', file)
       },
       onAssistanceNeededChanged(): void {
         if (!this.model.careDetails.assistanceNeeded) {

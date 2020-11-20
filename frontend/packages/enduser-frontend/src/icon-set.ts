@@ -11,6 +11,7 @@ import icons from '@/icons/icons'
 export type IconSet = {
   fasCircle: IconDefinition
   fasExclamationCircle: IconDefinition
+  fasExclamationTriangle: IconDefinition
   fasHome: IconDefinition
   fasInfoCircle: IconDefinition
   fasMapMarkerAlt: IconDefinition
@@ -48,6 +49,9 @@ export type IconSet = {
   falExclamation: IconDefinition
   falExclamationTriangle: IconDefinition
   falFile: IconDefinition
+  falFileImage: IconDefinition
+  falFilePdf: IconDefinition
+  falFileWord: IconDefinition
   falGavel: IconDefinition
   falHands: IconDefinition
   falInfo: IconDefinition

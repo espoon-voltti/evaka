@@ -1,11 +1,16 @@
+// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
+
 package fi.espoo.evaka.attachment
 
 import fi.espoo.evaka.application.Attachment
-import org.jdbi.v3.core.Handle
+import fi.espoo.evaka.shared.auth.AuthenticatedUser
+import fi.espoo.evaka.shared.db.Database
 import org.jdbi.v3.core.kotlin.mapTo
 import java.util.UUID
 
-fun Handle.insertAttachment(id: UUID, name: String, contentType: String, applicationId: UUID) {
+fun Database.Transaction.insertAttachment(id: UUID, name: String, contentType: String, applicationId: UUID) {
     // language=sql
     val sql =
         """
@@ -21,12 +26,12 @@ fun Handle.insertAttachment(id: UUID, name: String, contentType: String, applica
         .execute()
 }
 
-fun Handle.getAttachment(id: UUID): Attachment? = this
+fun Database.Read.getAttachment(id: UUID): Attachment? = this
     .createQuery("SELECT * FROM attachment WHERE id = :id")
     .bind("id", id).mapTo<Attachment>()
     .first()
 
-fun Handle.isOwnAttachment(attachmentId: UUID, guardianId: UUID): Boolean {
+fun Database.Read.isOwnAttachment(attachmentId: UUID, user: AuthenticatedUser): Boolean {
     val sql =
         """
         SELECT EXISTS 
@@ -37,7 +42,13 @@ fun Handle.isOwnAttachment(attachmentId: UUID, guardianId: UUID): Boolean {
 
     return this.createQuery(sql)
         .bind("attachmentId", attachmentId)
-        .bind("guardianId", guardianId)
+        .bind("guardianId", user.id)
         .mapTo<Boolean>()
         .first()
+}
+
+fun Database.Transaction.deleteAttachment(id: UUID) {
+    this.createUpdate("UPDATE attachment SET application_id = NULL WHERE id = :id")
+        .bind("id", id)
+        .execute()
 }
