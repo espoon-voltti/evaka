@@ -117,16 +117,13 @@ test('Application main page is visible', async (t) => {
 })
 ```
 
-## TODO
+## Known issues
 
-- [x] Build docker container for tests (docker-compose can be used as an example)
-  - Use `evaka-compose`
-- [x] Trigger test workflow when pushing commits to master branch (frontend and backend?)
-  - Triggered by this repository, will attempt to find matching branch name for backend Docker images
-- [ ] Testrunner to launch test tasks in certain order
-- [ ] Refactoring to replace id selectors by data-qa attribute in frontend repos
-- [ ] Replace for loops by selector's visibilitycheck option
-- [ ] Re-introduce Browserstack for E2E testing
+- Some selectors still use IDs/classes instead of data-qa attributes
+- Should replace for loops by selector's visibilitycheck option
+- Tests aren't run against multiple different browsers
+- Test data isn't cleared from local DB on test failure when running with `--stop-on-first-fail`
+  - Testcafe issue: `Fixture.after` isn't called when using the option (unlike `.afterEach`)
 
 ## More information
 
