@@ -40,11 +40,18 @@ SPDX-License-Identifier: LGPL-2.1-or-later
             <div class="file-progress-bar" v-show="inProgress(file)">
               <div class="file-progress-bar-background">
                 <div
-                  class="file-progress-bar-progress"
+                  :class="['file-progress-bar-progress', { error: !!file.error }]"
                   :style="progressBarStyles(file)"
                 />
               </div>
-              <div class="file-progress-bar-details">
+              <div class="file-progress-bar-error" v-if="file.error">
+                <span>{{ $t('file-upload.error') }}</span>
+                <font-awesome-icon
+                  :icon="['fas', 'exclamation-triangle']"
+                  size="1x"
+                ></font-awesome-icon>
+              </div>
+              <div class="file-progress-bar-details" v-else>
                 <span>{{
                   inProgress(file)
                     ? $t('file-upload.loading')
@@ -176,6 +183,11 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 
           .file-progress-bar {
             margin-top: 16px;
+            font-size: 14px;
+
+            > *:not(:last-child) {
+              margin-bottom: 4px;
+            }
 
             .file-progress-bar-background {
               position: relative;
@@ -191,6 +203,10 @@ SPDX-License-Identifier: LGPL-2.1-or-later
                 height: $progress-bar-height;
                 border-radius: $progress-bar-border-radius;
                 transition: width 0.5s ease-out;
+
+                &.error {
+                  background: $orange;
+                }
               }
             }
 
@@ -198,9 +214,16 @@ SPDX-License-Identifier: LGPL-2.1-or-later
               display: flex;
               flex-direction: row;
               justify-content: space-between;
-              margin-top: 4px;
-              font-size: 14px;
               color: $grey-dark;
+            }
+
+            .file-progress-bar-error {
+              color: darken($orange, 10);
+
+              svg {
+                color: $orange;
+                margin-left: 8px;
+              }
             }
           }
 

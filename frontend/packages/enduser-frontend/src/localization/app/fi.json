@@ -984,6 +984,7 @@
   },
   "file-upload": {
     "loading": "Ladataan...",
-    "loaded": "Ladattu"
+    "loaded": "Ladattu",
+    "error": "Lataus ei onnistunut"
   }
 }

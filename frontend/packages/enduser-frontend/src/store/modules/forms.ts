@@ -230,16 +230,23 @@ const module: Module<any, RootState> = {
         const progress = Math.round((event.loaded / event.total) * 100)
         commit(types.UPDATE_URGENT_FILE, { ...fileObject, progress })
       }
-      const { data } = await applicationApi.saveAttachment(
-        applicationId,
-        file,
-        onUploadProgress
-      )
-      commit(types.UPDATE_URGENT_FILE, {
-        ...fileObject,
-        id: data,
-        progress: 100
-      })
+      try {
+        const { data } = await applicationApi.saveAttachment(
+          applicationId,
+          file,
+          onUploadProgress
+        )
+        commit(types.UPDATE_URGENT_FILE, {
+          ...fileObject,
+          id: data,
+          progress: 100
+        })
+      } catch (e) {
+        commit(types.UPDATE_URGENT_FILE, {
+          ...fileObject,
+          error: e
+        })
+      }
     },
     async deleteUrgentFile({ commit }, { id }) {
       await applicationApi.deleteAttachment(id)

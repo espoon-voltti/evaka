@@ -71,6 +71,7 @@ const convert = (
 const icons: IconSet = {
   fasCircle: convert(faCircle, 'fas'),
   fasExclamationCircle: convert(faExclamationCircle, 'fas'),
+  fasExclamationTriangle: convert(faExclamationTriangle, 'fas'),
   fasHome: convert(faHome, 'fas'),
   fasInfoCircle: convert(faInfoCircle, 'fas'),
   fasMapMarkerAlt: convert(faMapMarkerAlt, 'fas'),

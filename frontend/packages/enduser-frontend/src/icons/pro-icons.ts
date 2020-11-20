@@ -5,6 +5,7 @@
 import {
   faCircle as fasCircle,
   faExclamationCircle as fasExclamationCircle,
+  faExclamationTriangle as fasExclamationTriangle,
   faHome as fasHome,
   faInfoCircle as fasInfoCircle,
   faMapMarkerAlt as fasMapMarkerAlt
@@ -71,6 +72,7 @@ import { IconSet } from '../icon-set'
 const icons: IconSet = {
   fasCircle,
   fasExclamationCircle,
+  fasExclamationTriangle,
   fasHome,
   fasInfoCircle,
   fasMapMarkerAlt,
