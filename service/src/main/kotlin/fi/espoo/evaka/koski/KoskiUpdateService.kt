@@ -39,7 +39,7 @@ class KoskiUpdateService(
                     daycareIds = daycareIds?.split(",")?.map(::parseUUID) ?: listOf()
                 )
                 val requests = tx.getPendingStudyRights(LocalDate.now(), params)
-                logger.info { "Scheduling ${requests.size} upload requests" }
+                logger.info { "Scheduling ${requests.size} Koski upload requests" }
                 asyncJobRunner.plan(tx, requests.map { UploadToKoski(it) }, retryCount = 1)
             }
             asyncJobRunner.scheduleImmediateRun()
