@@ -71,7 +71,8 @@ export const fi = {
       PRESCHOOL: 'Esiopetus',
       DAYCARE: 'Varhaiskasvatus',
       PRESCHOOL_DAYCARE: 'Liittyvä varhaiskasvatus',
-      PREPARATORY_EDUCATION: 'Valmistava esiopetus'
+      PREPARATORY_EDUCATION: 'Valmistava esiopetus',
+      PREPARATORY_DAYCARE: 'Liittyvä varhaiskasvatus'
     },
     form: {
       name: 'Nimi',

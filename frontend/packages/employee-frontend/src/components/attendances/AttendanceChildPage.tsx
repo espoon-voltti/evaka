@@ -172,7 +172,11 @@ export default React.memo(function AttendanceChildPage() {
                   />
                 )}
                 {child.status === 'ABSENT' && (
-                  <AttendanceChildAbsent child={child} />
+                  <AttendanceChildAbsent
+                    child={child}
+                    unitId={unitId}
+                    groupId={groupIdOrAll}
+                  />
                 )}
               </FlexColumn>
             </Fragment>

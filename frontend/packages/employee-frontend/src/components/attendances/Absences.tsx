@@ -47,7 +47,7 @@ export default React.memo(function Absences({
   const { i18n } = useTranslation()
 
   const preschoolAbsences =
-    attendanceChild.placementType === 'PRESCHOOL_DAYCARE'
+    attendanceChild.placementType === 'PRESCHOOL'
       ? attendanceChild.absences.filter(
           (absence) => absence.careType === 'PRESCHOOL'
         )
@@ -56,12 +56,33 @@ export default React.memo(function Absences({
   const preschoolDaycareAbsences =
     attendanceChild.placementType === 'PRESCHOOL_DAYCARE'
       ? attendanceChild.absences.filter(
-          (absence) => absence.careType === 'PRESCHOOL_DAYCARE'
+          (absence) =>
+            absence.careType === 'PRESCHOOL_DAYCARE' ||
+            absence.careType === 'PRESCHOOL'
+        )
+      : undefined
+
+  console.log('preschoolDaycareAbsences: ', preschoolDaycareAbsences)
+
+  const preparatoryAbsences =
+    attendanceChild.placementType === 'PREPARATORY'
+      ? attendanceChild.absences.filter(
+          (absence) => absence.careType === 'PRESCHOOL'
+        )
+      : undefined
+
+  const preparatoryDaycareAbsences =
+    attendanceChild.placementType === 'PREPARATORY_DAYCARE'
+      ? attendanceChild.absences.filter(
+          (absence) =>
+            absence.careType === 'PRESCHOOL_DAYCARE' ||
+            absence.careType === 'PRESCHOOL'
         )
       : undefined
 
   const daycareAbsences =
-    attendanceChild.placementType === 'DAYCARE'
+    attendanceChild.placementType === 'DAYCARE' ||
+    attendanceChild.placementType === 'DAYCARE_PART_TIME'
       ? attendanceChild.absences.filter(
           (absence) => absence.careType === 'DAYCARE'
         )
@@ -72,6 +93,7 @@ export default React.memo(function Absences({
       {attendanceChild.absences.length > 0 && (
         <CustomLabel>{i18n.absences.title}</CustomLabel>
       )}
+
       {preschoolAbsences && preschoolAbsences.length === 0 ? (
         <AttendanceItem>
           <Circle gray />
@@ -88,7 +110,7 @@ export default React.memo(function Absences({
             <Circle />
 
             <span>
-              <Label>{i18n.common.types.PRESCHOOL}</Label>
+              <Label>{i18n.common.types[absence.careType]}</Label>
               <AbsenceTypeLabel>
                 {i18n.absences.absenceTypes[absence.absenceType]}
               </AbsenceTypeLabel>
@@ -96,7 +118,8 @@ export default React.memo(function Absences({
           </AttendanceItem>
         ))
       )}
-      {preschoolDaycareAbsences && preschoolDaycareAbsences.length > 0 ? (
+
+      {preschoolDaycareAbsences && preschoolDaycareAbsences.length === 0 ? (
         <AttendanceItem>
           <Circle gray />
 
@@ -111,7 +134,7 @@ export default React.memo(function Absences({
           <AttendanceItem key={absence.id}>
             <Circle />
             <span>
-              <Label>{i18n.common.types.PRESCHOOL_DAYCARE}</Label>
+              <Label>{i18n.common.types[absence.careType]}</Label>
               <AbsenceTypeLabel>
                 {i18n.absences.absenceTypes[absence.absenceType]}
               </AbsenceTypeLabel>
@@ -119,6 +142,7 @@ export default React.memo(function Absences({
           </AttendanceItem>
         ))
       )}
+
       {daycareAbsences && daycareAbsences.length === 0 ? (
         <AttendanceItem>
           <Circle gray />
@@ -134,7 +158,56 @@ export default React.memo(function Absences({
           <AttendanceItem key={absence.id}>
             <Circle />
             <span>
-              <Label>{i18n.common.types.DAYCARE}</Label>
+              <Label>{i18n.common.types[absence.careType]}</Label>
+              <AbsenceTypeLabel>
+                {i18n.absences.absenceTypes[absence.absenceType]}
+              </AbsenceTypeLabel>
+            </span>
+          </AttendanceItem>
+        ))
+      )}
+
+      {preparatoryAbsences && preparatoryAbsences.length === 0 ? (
+        <AttendanceItem>
+          <Circle gray />
+
+          <span>
+            <Label>{i18n.common.types.PREPARATORY_EDUCATION}</Label>
+            <AbsenceTypeLabel>{i18n.attendances.noAbsences}</AbsenceTypeLabel>
+          </span>
+        </AttendanceItem>
+      ) : (
+        preparatoryAbsences &&
+        preparatoryAbsences.map((absence) => (
+          <AttendanceItem key={absence.id}>
+            <Circle />
+
+            <span>
+              <Label>{i18n.common.types[absence.careType]}</Label>
+              <AbsenceTypeLabel>
+                {i18n.absences.absenceTypes[absence.absenceType]}
+              </AbsenceTypeLabel>
+            </span>
+          </AttendanceItem>
+        ))
+      )}
+
+      {preparatoryDaycareAbsences && preparatoryDaycareAbsences.length === 0 ? (
+        <AttendanceItem>
+          <Circle gray />
+
+          <span>
+            <Label>{i18n.common.types.PREPARATORY_DAYCARE}</Label>
+            <AbsenceTypeLabel>{i18n.attendances.noAbsences}</AbsenceTypeLabel>
+          </span>
+        </AttendanceItem>
+      ) : (
+        preparatoryDaycareAbsences &&
+        preparatoryDaycareAbsences.map((absence) => (
+          <AttendanceItem key={absence.id}>
+            <Circle />
+            <span>
+              <Label>{i18n.common.types[absence.careType]}</Label>
               <AbsenceTypeLabel>
                 {i18n.absences.absenceTypes[absence.absenceType]}
               </AbsenceTypeLabel>
