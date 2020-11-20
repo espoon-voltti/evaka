@@ -4,6 +4,7 @@
 
 import { ErrorRequestHandler } from 'express'
 import { logError } from '../logging'
+import { csrfCookieName } from './csrf'
 interface LogResponse {
   message: string
   errorCode?: string
@@ -14,6 +15,16 @@ export const errorHandler: (v: boolean) => ErrorRequestHandler = (
 ) => (error, req, res, _next): Express.Response => {
   // https://github.com/expressjs/csurf#custom-error-handling
   if (error.code === 'EBADCSRFTOKEN') {
+    logError(
+      'CSRF token error',
+      req,
+      {
+        enduserXsrfCookie: req.cookies[csrfCookieName('enduser')],
+        employeeXsrfCookie: req.cookies[csrfCookieName('employee')],
+        xsrfHeader: req.header('x-xsrf-token')
+      },
+      error
+    )
     return res.status(403).send({ message: 'CSRF token error' } as LogResponse)
   }
   if (error.response) {
