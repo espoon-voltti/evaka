@@ -67,15 +67,15 @@ class PersonService(
     private fun personsHaveSameResidenceCode(person1: PersonDTO?, person2: PersonDTO?): Boolean {
         return person1 != null && person2 != null &&
             !person1.restrictedDetailsEnabled && !person2.restrictedDetailsEnabled &&
-            person1.residenceCode != null && person2.residenceCode != null &&
+            !person1.residenceCode.isNullOrBlank() && !person2.residenceCode.isNullOrBlank() &&
             person1.residenceCode == person2.residenceCode
     }
 
     private fun personsHaveSameAddress(person1: PersonDTO?, person2: PersonDTO?): Boolean {
         return person1 != null && person2 != null &&
             !person1.restrictedDetailsEnabled && !person2.restrictedDetailsEnabled &&
-            person1.streetAddress != null && person2.streetAddress != null &&
-            person1.postalCode != null && person2.postalCode != null &&
+            !person1.streetAddress.isNullOrBlank() && !person2.streetAddress.isNullOrBlank() &&
+            !person1.postalCode.isNullOrBlank() && !person2.postalCode.isNullOrBlank() &&
             person1.streetAddress.toLowerCase().equals(person2.streetAddress.toLowerCase()) &&
             person1.postalCode.equals(person2.postalCode)
     }
