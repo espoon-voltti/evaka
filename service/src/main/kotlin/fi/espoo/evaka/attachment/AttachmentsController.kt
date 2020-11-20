@@ -35,7 +35,7 @@ val validTypes = listOf(
     "application/vnd.oasis.opendocument.text"
 )
 
-const val attachmentsPath = "/attachments"
+const val attachmentsPath = "/"
 
 @RestController
 @RequestMapping("/attachments")
@@ -43,7 +43,7 @@ class AttachmentsController(
     private val s3Client: DocumentService,
     env: Environment
 ) {
-    private val filesBucket = env.getProperty("fi.espoo.voltti.document.bucket.files")
+    private val filesBucket = env.getProperty("fi.espoo.voltti.document.bucket.attachments")
 
     @PostMapping("/applications/{applicationId}", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
     fun uploadApplicationAttachment(
