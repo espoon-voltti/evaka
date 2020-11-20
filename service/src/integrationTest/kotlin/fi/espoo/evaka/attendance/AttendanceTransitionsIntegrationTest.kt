@@ -211,6 +211,15 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `post full day absence - happy case when coming to preschool`() {
+        db.transaction { // previous day attendance should have no effect
+            insertTestChildAttendance(
+                h = it.handle,
+                childId = testChild_1.id,
+                unitId = testDaycare.id,
+                arrived = ZonedDateTime.now(zoneId).minusDays(1).minusHours(1).toInstant(),
+                departed = ZonedDateTime.now(zoneId).minusDays(1).minusMinutes(1).toInstant()
+            )
+        }
         givenChildPlacement(PlacementType.PRESCHOOL)
         givenChildComing()
 

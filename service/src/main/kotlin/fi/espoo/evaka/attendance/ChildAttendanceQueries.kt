@@ -10,6 +10,7 @@ import fi.espoo.evaka.daycare.service.CareType
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.NotFound
+import fi.espoo.evaka.shared.utils.zoneId
 import org.jdbi.v3.core.kotlin.mapTo
 import java.time.Instant
 import java.time.LocalDate
@@ -59,7 +60,7 @@ fun Database.Read.getChildCurrentDayAttendance(childId: UUID, unitId: UUID): Chi
         """
         SELECT id, child_id, unit_id, arrived, departed
         FROM child_attendance
-        WHERE child_id = :childId AND unit_id = :unitId
+        WHERE child_id = :childId AND unit_id = :unitId AND tstzrange(:todayStart, :todayEnd, '[)') @> arrived
         ORDER BY arrived DESC
         LIMIT 1
         """.trimIndent()
@@ -67,6 +68,8 @@ fun Database.Read.getChildCurrentDayAttendance(childId: UUID, unitId: UUID): Chi
     return createQuery(sql)
         .bind("childId", childId)
         .bind("unitId", unitId)
+        .bind("todayStart", LocalDate.now(zoneId).atStartOfDay(zoneId).toInstant())
+        .bind("todayEnd", LocalDate.now(zoneId).plusDays(1).atStartOfDay(zoneId).toInstant())
         .mapTo<ChildAttendance>()
         .list()
         .firstOrNull()
