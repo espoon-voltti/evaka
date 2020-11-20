@@ -40,7 +40,7 @@ class PersonStorageService {
         return when (personResult) {
             is PersonResult.Result -> {
                 val child = createOrUpdateOnePerson(tx, personResult.vtjPersonDTO)
-                child.guardians.addAll(personResult.vtjPersonDTO.guardians.map { createOrUpdateOnePerson(tx, it) })
+                child.guardians.addAll(personResult.vtjPersonDTO.guardians.sortedBy { it.socialSecurityNumber }.map { createOrUpdateOnePerson(tx, it) })
                 createOrReplaceChildRelationships(
                     tx,
                     childId = child.id,
@@ -55,7 +55,7 @@ class PersonStorageService {
 
     private fun upsertVtjGuardianAndChildren(tx: Database.Transaction, vtjPersonDTO: VtjPersonDTO): PersonResult {
         val guardian = createOrUpdateOnePerson(tx, vtjPersonDTO)
-        guardian.children.addAll(vtjPersonDTO.children.map { createOrUpdateOnePerson(tx, it) })
+        guardian.children.addAll(vtjPersonDTO.children.sortedBy { it.socialSecurityNumber }.map { createOrUpdateOnePerson(tx, it) })
         createOrReplaceGuardianRelationships(
             tx,
             guardianId = guardian.id,
