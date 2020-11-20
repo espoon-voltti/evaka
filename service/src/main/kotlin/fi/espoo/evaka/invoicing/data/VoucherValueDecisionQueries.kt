@@ -22,6 +22,7 @@ import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionPartSummary
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionSummary
 import fi.espoo.evaka.invoicing.domain.merge
+import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.bindNullable
 import fi.espoo.evaka.shared.db.freeTextSearchQuery
 import fi.espoo.evaka.shared.db.getEnum
@@ -494,12 +495,12 @@ fun Handle.updateVoucherValueDecisionDocumentKey(id: UUID, documentKey: String) 
         .execute()
 }
 
-fun Handle.updateVoucherValueDecisionStatus(id: UUID, status: VoucherValueDecisionStatus) {
+fun Database.Transaction.updateVoucherValueDecisionStatus(ids: List<UUID>, status: VoucherValueDecisionStatus) {
     // language=sql
-    val sql = "UPDATE voucher_value_decision SET status = :status WHERE id = :id"
+    val sql = "UPDATE voucher_value_decision SET status = :status WHERE id = ANY(:ids)"
 
     createUpdate(sql)
-        .bind("id", id)
+        .bind("ids", ids.toTypedArray())
         .bind("status", status)
         .execute()
 }

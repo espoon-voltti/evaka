@@ -60,7 +60,10 @@ class VoucherValueDecisionService(
         }
 
         if (decision.requiresManualSending()) {
-            tx.handle.updateVoucherValueDecisionStatus(decision.id, VoucherValueDecisionStatus.WAITING_FOR_MANUAL_SENDING)
+            tx.updateVoucherValueDecisionStatus(
+                listOf(decision.id),
+                VoucherValueDecisionStatus.WAITING_FOR_MANUAL_SENDING
+            )
             return
         }
 
@@ -87,7 +90,7 @@ class VoucherValueDecisionService(
             )
         )
 
-        tx.handle.updateVoucherValueDecisionStatus(decision.id, VoucherValueDecisionStatus.SENT)
+        tx.updateVoucherValueDecisionStatus(listOf(decision.id), VoucherValueDecisionStatus.SENT)
     }
 
     private fun getDecision(tx: Database.Read, decisionId: UUID): VoucherValueDecisionDetailed =

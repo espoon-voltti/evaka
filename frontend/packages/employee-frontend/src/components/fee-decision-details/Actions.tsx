@@ -9,7 +9,7 @@ import { useTranslation } from '../../state/i18n'
 import { FeeDecisionDetailed } from '../../types/invoicing'
 import {
   confirmFeeDecisions,
-  markDecisionSent,
+  markFeeDecisionSent,
   setDecisionType
 } from '../../api/invoicing'
 import { ErrorMessage } from '~components/fee-decision-details/FeeDecisionDetailsPage'
@@ -46,7 +46,7 @@ const Actions = React.memo(function Actions({
       .catch(() => void setError(true))
 
   const markSent = () =>
-    markDecisionSent([decision.id])
+    markFeeDecisionSent([decision.id])
       .then(() => void setError(false))
       .catch(() => void setError(true))
 

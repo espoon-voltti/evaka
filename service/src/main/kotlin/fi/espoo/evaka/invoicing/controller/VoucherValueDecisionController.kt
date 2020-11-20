@@ -14,6 +14,7 @@ import fi.espoo.evaka.invoicing.data.getVoucherValueDecision
 import fi.espoo.evaka.invoicing.data.lockValueDecisions
 import fi.espoo.evaka.invoicing.data.lockValueDecisionsForHeadOfFamily
 import fi.espoo.evaka.invoicing.data.searchValueDecisions
+import fi.espoo.evaka.invoicing.data.updateVoucherValueDecisionStatus
 import fi.espoo.evaka.invoicing.data.upsertValueDecisions
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionDetailed
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
@@ -104,6 +105,19 @@ class VoucherValueDecisionController(
         user.requireOneOfRoles(Roles.FINANCE_ADMIN)
         db.transaction { sendVoucherValueDecisions(it, user, decisionIds) }
         asyncJobRunner.scheduleImmediateRun()
+        return ResponseEntity.noContent().build()
+    }
+
+    @PostMapping("/mark-sent")
+    fun markSent(db: Database.Connection, user: AuthenticatedUser, @RequestBody ids: List<UUID>): ResponseEntity<Unit> {
+        Audit.VoucherValueDecisionMarkSent.log(targetId = ids)
+        user.requireOneOfRoles(Roles.FINANCE_ADMIN)
+        db.transaction {
+            val decisions = it.handle.getValueDecisionsByIds(objectMapper, ids)
+            if (decisions.any { it.status != VoucherValueDecisionStatus.WAITING_FOR_MANUAL_SENDING })
+                throw BadRequest("Voucher value decision cannot be marked sent")
+            it.updateVoucherValueDecisionStatus(ids, VoucherValueDecisionStatus.SENT)
+        }
         return ResponseEntity.noContent().build()
     }
 
