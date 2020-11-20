@@ -9,8 +9,10 @@ import { AttendanceChild, AttendanceStatus } from '~api/attendances'
 import RoundIcon from '~components/shared/atoms/RoundIcon'
 import Colors from '~components/shared/Colors'
 import { DefaultMargins } from '~components/shared/layout/white-space'
+import { DATE_FORMAT_TIME_ONLY } from '~constants'
 import { farUser } from '~icon-set'
 import { useTranslation } from '~state/i18n'
+import { formatDate } from '~utils/date'
 
 const ChildBox = styled.div<{ type: AttendanceStatus }>`
   align-items: center;
@@ -98,27 +100,15 @@ export default React.memo(function ChildListItem({
           {i18n.attendances.status[attendanceChild.status]}
           <Time>
             {attendanceChild.status === 'PRESENT' &&
-              attendanceChild.attendance?.arrived &&
-              `${
-                attendanceChild.attendance.arrived.getHours() < 10
-                  ? `0${attendanceChild.attendance.arrived.getHours()}`
-                  : attendanceChild.attendance.arrived?.getHours()
-              }:${
-                attendanceChild.attendance.arrived?.getMinutes() < 10
-                  ? `0${attendanceChild.attendance.arrived?.getMinutes()}`
-                  : attendanceChild.attendance.arrived?.getMinutes()
-              }`}
+              formatDate(
+                attendanceChild.attendance?.arrived,
+                DATE_FORMAT_TIME_ONLY
+              )}
             {attendanceChild.status === 'DEPARTED' &&
-              attendanceChild.attendance?.departed &&
-              `${
-                attendanceChild.attendance.departed.getHours() < 10
-                  ? `0${attendanceChild.attendance.departed.getHours()}`
-                  : attendanceChild.attendance.departed.getHours()
-              }:${
-                attendanceChild.attendance.departed.getMinutes() < 10
-                  ? `0${attendanceChild.attendance.departed.getMinutes()}`
-                  : attendanceChild.attendance.departed.getMinutes()
-              }`}
+              formatDate(
+                attendanceChild.attendance?.departed,
+                DATE_FORMAT_TIME_ONLY
+              )}
           </Time>
         </ChildBoxStatus>
       </ChildBoxInfo>

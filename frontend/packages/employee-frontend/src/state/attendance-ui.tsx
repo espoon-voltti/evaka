@@ -35,6 +35,7 @@ export const AttendanceUIContextProvider = React.memo(
       Result<AttendanceResponse>
     >(Loading())
 
+    // TODO: return just attendanceresponse. Do not set setAttendanceResponse(attendanceResponse)
     function filterAndSetAttendanceResponse(
       attendanceResponse: Result<AttendanceResponse>,
       groupIdOrAll: UUID | 'all'

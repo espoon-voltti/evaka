@@ -147,6 +147,7 @@ export default React.memo(function AttendanceChildPresent({
               await getDaycareAttendances(unitId).then((res) =>
                 filterAndSetAttendanceResponse(res, groupIdOrAll)
               )
+              history.goBack()
             }}
             data-qa="mark-departed"
           />

@@ -6,13 +6,14 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faCheck, faTimes } from 'icon-set'
 import Colors from 'components/shared/Colors'
 import { StyledButton } from './Button'
-import { Result } from '~api'
+import { isFailure, isSuccess, Result } from '~api'
 
 type Props = {
   text: string
   textInProgress?: string
   textDone?: string
-  onClick: () => Promise<void | Result<void>>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  onClick: () => Promise<void | Result<any>>
   onSuccess: () => void
   primary?: boolean
   disabled?: boolean
@@ -37,7 +38,12 @@ export default React.memo(function AsyncButton({
   const callback = () => {
     setInProgress(true)
     onClick()
-      .then(() => setShowSuccess(true))
+      .then((res) => {
+        if (res && isFailure(res)) {
+          return setShowFailure(true)
+        }
+        setShowSuccess(true)
+      })
       .catch(() => setShowFailure(true))
       .finally(() => setInProgress(false))
   }

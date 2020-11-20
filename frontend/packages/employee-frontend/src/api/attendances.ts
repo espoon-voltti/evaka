@@ -39,7 +39,7 @@ export interface AttendanceChild {
 interface Attendance {
   id: UUID
   arrived: Date
-  departed: Date
+  departed: Date | null
 }
 
 interface Absence {
@@ -60,24 +60,7 @@ export async function getDaycareAttendances(
 ): Promise<Result<AttendanceResponse>> {
   return client
     .get<JsonOf<AttendanceResponse>>(`/attendances/units/${unitId}`)
-    .then((res) => res.data)
-    .then((data) => {
-      return {
-        unit: data.unit,
-        children: data.children.map((attendanceChild) => {
-          return {
-            ...attendanceChild,
-            attendance: attendanceChild.attendance
-              ? {
-                  ...attendanceChild.attendance,
-                  arrived: new Date(attendanceChild.attendance.arrived),
-                  departed: new Date(attendanceChild.attendance.departed)
-                }
-              : null
-          }
-        })
-      }
-    })
+    .then((res) => deserializeAttendanceResponse(res.data))
     .then(Success)
     .catch(Failure)
 }
@@ -86,12 +69,17 @@ export async function childArrivesPOST(
   unitId: UUID,
   childId: UUID,
   time: string
-): Promise<void> {
+): Promise<Result<AttendanceResponse>> {
   return client
-    .post<void>(`/attendances/units/${unitId}/children/${childId}/arrival`, {
-      arrived: time
-    })
-    .then((res) => res.data)
+    .post<JsonOf<AttendanceResponse>>(
+      `/attendances/units/${unitId}/children/${childId}/arrival`,
+      {
+        arrived: time
+      }
+    )
+    .then((res) => deserializeAttendanceResponse(res.data))
+    .then(Success)
+    .catch(Failure)
 }
 
 export async function childArrivesGET(
@@ -111,51 +99,87 @@ export async function childArrivesGET(
     .catch(Failure)
 }
 
+// TODO: update context with the response!
 export async function childDeparts(
   unitId: UUID,
   childId: UUID,
   time: string
-): Promise<void> {
+): Promise<Result<AttendanceResponse>> {
   return client
-    .post<void>(`/attendances/units/${unitId}/children/${childId}/departure`, {
-      departed: time
-    })
-    .then((res) => res.data)
+    .post<JsonOf<AttendanceResponse>>(
+      `/attendances/units/${unitId}/children/${childId}/departure`,
+      {
+        departed: time
+      }
+    )
+    .then((res) => deserializeAttendanceResponse(res.data))
+    .then(Success)
+    .catch(Failure)
 }
 
 export async function returnToComing(
   unitId: UUID,
   childId: UUID
-): Promise<void> {
+): Promise<Result<AttendanceResponse>> {
   return client
-    .post<void>(
+    .post<JsonOf<AttendanceResponse>>(
       `/attendances/units/${unitId}/children/${childId}/return-to-coming`
     )
-    .then((res) => res.data)
+    .then((res) => deserializeAttendanceResponse(res.data))
+    .then(Success)
+    .catch(Failure)
 }
 
 export async function returnToPresent(
   unitId: UUID,
   childId: UUID
-): Promise<void> {
+): Promise<Result<AttendanceResponse>> {
   return client
-    .post<void>(
+    .post<JsonOf<AttendanceResponse>>(
       `/attendances/units/${unitId}/children/${childId}/return-to-present`
     )
-    .then((res) => res.data)
+    .then((res) => deserializeAttendanceResponse(res.data))
+    .then(Success)
+    .catch(Failure)
 }
 
 export async function postFullDayAbsence(
   unitId: UUID,
   childId: UUID,
   absenceType: AbsenceType
-): Promise<void> {
+): Promise<Result<AttendanceResponse>> {
   return client
-    .post<void>(
+    .post<JsonOf<AttendanceResponse>>(
       `/attendances/units/${unitId}/children/${childId}/full-day-absence`,
       {
         absenceType
       }
     )
-    .then((res) => res.data)
+    .then((res) => deserializeAttendanceResponse(res.data))
+    .then(Success)
+    .catch(Failure)
+}
+
+function deserializeAttendanceResponse(
+  data: JsonOf<AttendanceResponse>
+): AttendanceResponse {
+  {
+    return {
+      unit: data.unit,
+      children: data.children.map((attendanceChild) => {
+        return {
+          ...attendanceChild,
+          attendance: attendanceChild.attendance
+            ? {
+                ...attendanceChild.attendance,
+                arrived: new Date(attendanceChild.attendance.arrived),
+                departed: attendanceChild.attendance.departed
+                  ? new Date(attendanceChild.attendance.departed)
+                  : null
+              }
+            : null
+        }
+      })
+    }
+  }
 }
