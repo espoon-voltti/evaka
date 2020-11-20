@@ -6,7 +6,7 @@ package fi.espoo.evaka.vtjclient.service.persondetails
 
 import fi.espoo.evaka.identity.ExternalIdentifier
 import fi.espoo.evaka.pis.createPersonFromVtj
-import fi.espoo.evaka.pis.getPersonBySSN
+import fi.espoo.evaka.pis.lockPersonBySSN
 import fi.espoo.evaka.pis.service.PersonDTO
 import fi.espoo.evaka.pis.service.deleteChildGuardianRelationships
 import fi.espoo.evaka.pis.service.deleteGuardianChildRelationShips
@@ -80,7 +80,7 @@ class PersonStorageService {
             return inputPerson
         }
 
-        val existingPerson = tx.handle.getPersonBySSN(inputPerson.socialSecurityNumber)
+        val existingPerson = tx.lockPersonBySSN(inputPerson.socialSecurityNumber)
 
         return if (existingPerson == null) {
             val newPerson = newPersonFromVtjData(inputPerson)
