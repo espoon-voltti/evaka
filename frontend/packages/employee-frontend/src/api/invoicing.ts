@@ -394,11 +394,15 @@ export async function generateFeeDecisions(
   })
 }
 
-export async function markDecisionSent(decisionIds: string[]): Promise<void> {
-  const request = await client.post<void>(
-    '/fee-decisions/mark-sent',
-    decisionIds
-  )
+export async function markFeeDecisionSent(ids: string[]): Promise<void> {
+  const request = await client.post<void>('/fee-decisions/mark-sent', ids)
+  return request.data
+}
+
+export async function markVoucherValueDecisionSent(
+  ids: string[]
+): Promise<void> {
+  const request = await client.post<void>('/value-decisions/mark-sent', ids)
   return request.data
 }
 

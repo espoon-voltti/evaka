@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext, useEffect, useState } from 'react'
+import React, { useCallback, useContext, useEffect, useState } from 'react'
 import { Redirect, useParams } from 'react-router-dom'
 import styled from 'styled-components'
 import ReturnButton from '~components/shared/atoms/buttons/ReturnButton'
@@ -10,6 +10,7 @@ import { Container, ContentArea } from '~components/shared/layout/Container'
 import VoucherValueDecisionHeading from './VoucherValueDecisionHeading'
 import VoucherValueDecisionChildSection from './VoucherValueDecisionChildSection'
 import VoucherValueDecisionSummary from './VoucherValueDecisionSummary'
+import VoucherValueDecisionActionBar from './VoucherValueDecisionActionBar'
 import { isFailure, isSuccess, Loading, Result } from '~api'
 import { getVoucherValueDecision } from '~api/invoicing'
 import { useTranslation } from '~state/i18n'
@@ -30,8 +31,10 @@ export default React.memo(function VoucherValueDecisionPage() {
     Result<VoucherValueDecisionDetailed>
   >(Loading())
 
-  const loadDecision = () =>
-    void getVoucherValueDecision(id).then((dec) => setDecision(dec))
+  const loadDecision = useCallback(
+    () => void getVoucherValueDecision(id).then((dec) => setDecision(dec)),
+    [id, setDecision]
+  )
 
   useEffect(loadDecision, [id])
 
@@ -55,18 +58,24 @@ export default React.memo(function VoucherValueDecisionPage() {
     <Container data-qa="voucher-value-decision-page">
       <ReturnButton dataQa="navigate-back" />
       {isSuccess(decision) && (
-        <ContentArea opaque>
-          <VoucherValueDecisionHeading {...decision.data} />
-          {decision.data.parts.map(({ child, placement, placementUnit }) => (
-            <VoucherValueDecisionChildSection
-              key={child.id}
-              child={child}
-              placement={placement}
-              placementUnit={placementUnit}
-            />
-          ))}
-          <VoucherValueDecisionSummary decision={decision.data} />
-        </ContentArea>
+        <>
+          <ContentArea opaque>
+            <VoucherValueDecisionHeading {...decision.data} />
+            {decision.data.parts.map(({ child, placement, placementUnit }) => (
+              <VoucherValueDecisionChildSection
+                key={child.id}
+                child={child}
+                placement={placement}
+                placementUnit={placementUnit}
+              />
+            ))}
+            <VoucherValueDecisionSummary decision={decision.data} />
+          </ContentArea>
+          <VoucherValueDecisionActionBar
+            decision={decision.data}
+            loadDecision={loadDecision}
+          />
+        </>
       )}
     </Container>
   )

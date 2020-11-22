@@ -26,7 +26,8 @@ const StickyActionBar = styled.div<Props>`
   bottom: 0;
   background: white;
   padding: 16px 0;
-  margin: ${(p) => (p.fullWidth ? '0 -9999rem' : '50px 0 0 0')};
+  margin: ${(p) => (p.fullWidth ? '0 -9999rem' : '0')};
+  margin-top: 50px;
   box-shadow: ${(p) =>
     p.shadow ? `0px -8px 8px -6px ${Colors.greyscale.lightest}` : 'inset'};
 `

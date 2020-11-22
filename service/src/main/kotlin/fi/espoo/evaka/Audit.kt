@@ -166,6 +166,7 @@ enum class Audit(
     UnitUpdate("evaka.unit.update"),
     UnitStatisticsCreate("evaka.unit.statistics.create"),
     UnitView("evaka.unit.view"),
+    VoucherValueDecisionMarkSent("evaka.value-decision.mark-sent"),
     VoucherValueDecisionRead("evaka.value-decision.read"),
     VoucherValueDecisionSearch("evaka.value-decision.search"),
     VoucherValueDecisionSend("evaka.value-decision.send"),
