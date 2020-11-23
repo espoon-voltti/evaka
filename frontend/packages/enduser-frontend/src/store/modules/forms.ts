@@ -224,8 +224,14 @@ const module: Module<any, RootState> = {
     },
     async addUrgentFile({ commit }, { file, applicationId }) {
       const key = getUUID()
-      const fileObject = { key, file, name: file.name, contentType: file.type }
+      const error = file.size > 10000000 ? 'file-too-big' : undefined
+      const fileObject = { key, file, name: file.name, contentType: file.type, error }
       commit(types.ADD_URGENT_FILE, { ...fileObject, progress: 0 })
+
+      if (error) {
+        return
+      }
+
       const onUploadProgress = (event) => {
         const progress = Math.round((event.loaded / event.total) * 100)
         commit(types.UPDATE_URGENT_FILE, { ...fileObject, progress })
@@ -244,7 +250,7 @@ const module: Module<any, RootState> = {
       } catch (e) {
         commit(types.UPDATE_URGENT_FILE, {
           ...fileObject,
-          error: e
+          error: 'server-error'
         })
       }
     },

@@ -56,7 +56,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
                 />
               </div>
               <div class="file-progress-bar-error" v-if="file.error">
-                <span>{{ $t('file-upload.error') }}</span>
+                <span>{{ errorMessage(file) }}</span>
                 <font-awesome-icon
                   :icon="['fas', 'exclamation-triangle']"
                   size="1x"
@@ -117,6 +117,12 @@ SPDX-License-Identifier: LGPL-2.1-or-later
       },
       progressBarStyles(file) {
         return `width: ${file.progress}%;`
+      },
+      errorMessage(file) {
+        return (
+          this.$t('file-upload.error')[file.error] ||
+          this.$t('file-upload.error')['default']
+        )
       }
     }
   }

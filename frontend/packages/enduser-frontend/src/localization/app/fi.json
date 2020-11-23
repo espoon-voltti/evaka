@@ -985,7 +985,10 @@
   "file-upload": {
     "loading": "Ladataan...",
     "loaded": "Ladattu",
-    "error": "Lataus ei onnistunut",
+    "error": {
+      "file-too-big": "Liian suuri tiedosto (max. 10MB)",
+      "default": "Lataus ei onnistunut"
+    },
     "input": {
       "title": "Lataa liite",
       "text": [
