@@ -21,7 +21,7 @@ fun Database.Transaction.insertAttachment(
     // language=sql
     val sql =
         """
-        INSERT INTO attachment (id, name, content_type, application_id, uploaded_by_enduser, uploaded_by_employee)
+        INSERT INTO attachment (id, name, content_type, application_id, uploaded_by_person, uploaded_by_employee)
         VALUES (:id, :name, :contentType, :applicationId, :uploadedByEnduser, :uploadedByEmployee)
         """.trimIndent()
 
