@@ -192,7 +192,8 @@ const module: Module<any, RootState> = {
     getChildAge: (state, getters) =>
       getAge(moment(getters.getChildBirthday, 'DDMMYY')),
     selectedTerm: (state) => state.application.term,
-    urgentFiles: (state) => state.files.urgent
+    urgentFiles: (state) => state.files.urgent,
+    uploadedUrgentFiles: (state) => state.files.urgent.filter((file) => file.id)
   },
   actions: {
     updateForm({ commit }, payload) {
@@ -225,7 +226,13 @@ const module: Module<any, RootState> = {
     async addUrgentFile({ commit }, { file, applicationId }) {
       const key = getUUID()
       const error = file.size > 10000000 ? 'file-too-big' : undefined
-      const fileObject = { key, file, name: file.name, contentType: file.type, error }
+      const fileObject = {
+        key,
+        file,
+        name: file.name,
+        contentType: file.type,
+        error
+      }
       commit(types.ADD_URGENT_FILE, { ...fileObject, progress: 0 })
 
       if (error) {
