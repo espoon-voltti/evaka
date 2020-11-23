@@ -56,7 +56,7 @@ class AttachmentsController(
         Audit.AttachmentsUpload.log(targetId = applicationId)
         user.requireOneOfRoles(UserRole.ADMIN)
 
-        val id = handleFileUpload(db, applicationId, file)
+        val id = handleFileUpload(db, user, applicationId, file)
         return ResponseEntity.ok(id)
     }
 
@@ -71,11 +71,16 @@ class AttachmentsController(
         user.requireOneOfRoles(UserRole.END_USER)
         if (!db.read { it.isOwnApplication(applicationId, user) }) throw Forbidden("Permission denied")
 
-        val id = handleFileUpload(db, applicationId, file)
+        val id = handleFileUpload(db, user, applicationId, file)
         return ResponseEntity.ok(id)
     }
 
-    private fun handleFileUpload(db: Database, applicationId: UUID, file: MultipartFile): UUID {
+    private fun handleFileUpload(
+        db: Database,
+        user: AuthenticatedUser,
+        applicationId: UUID,
+        file: MultipartFile
+    ): UUID {
         if (filesBucket == null) error("Files bucket is missing")
 
         val name = file.originalFilename
@@ -88,7 +93,14 @@ class AttachmentsController(
 
         val id = UUID.randomUUID()
         db.transaction { tx ->
-            tx.insertAttachment(id, name, contentType, applicationId)
+            tx.insertAttachment(
+                id,
+                name,
+                contentType,
+                applicationId,
+                uploadedByEnduser = user.id.takeIf { user.isEndUser() },
+                uploadedByEmployee = user.id.takeUnless { user.isEndUser() }
+            )
             s3Client.upload(
                 filesBucket,
                 DocumentWrapper(
@@ -113,7 +125,8 @@ class AttachmentsController(
             if (!db.read { it.isOwnAttachment(attachmentId, user) }) throw Forbidden("Permission denied")
         }
 
-        val attachment = db.read { it.getAttachment(attachmentId) ?: throw NotFound("Attachment $attachmentId not found") }
+        val attachment =
+            db.read { it.getAttachment(attachmentId) ?: throw NotFound("Attachment $attachmentId not found") }
 
         return s3Client.get(filesBucket, "$attachmentId").let { document ->
             ResponseEntity.ok()
