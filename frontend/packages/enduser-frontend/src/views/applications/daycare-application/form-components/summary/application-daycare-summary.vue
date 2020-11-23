@@ -24,27 +24,37 @@ SPDX-License-Identifier: LGPL-2.1-or-later
         />
 
         <!-- Liitteet -->
-        <div class="attachment-list-wrapper" v-if="attachmentsEnabled" v-show="applicationForm.urgent">
-          <p class="strong">{{$t('form.daycare-application.service.attachments-label')}}</p>
-          <p v-if="uploadedUrgentFiles.length === 0">{{$t('form.daycare-application.service.no-attachments')}}</p>
+        <div
+          class="attachment-list-wrapper"
+          v-if="attachmentsEnabled"
+          v-show="applicationForm.urgent"
+        >
+          <p class="strong">
+            {{ $t('form.daycare-application.service.attachments-label') }}
+          </p>
+          <p v-if="uploadedUrgentFiles.length === 0">
+            {{ $t('form.daycare-application.service.no-attachments') }}
+          </p>
           <ul v-else>
             <li v-for="file in uploadedUrgentFiles" v-bind:key="file.id">
               <span class="attachment-icon">
-                <font-awesome-icon
-                  :icon="['fal', 'file']"
-                ></font-awesome-icon>
+                <font-awesome-icon :icon="['fal', 'file']"></font-awesome-icon>
               </span>
-              <a :href="`/api/application/attachments/${file.id}/download`"
+              <a
+                :href="`/api/application/attachments/${file.id}/download`"
                 target="_blank"
                 rel="noreferrer"
-              >{{ file.name }}</a>
+                >{{ file.name }}</a
+              >
             </li>
           </ul>
         </div>
 
         <div class="columns is-gapless">
           <div class="column">
-            <div class="strong">{{ $t(`form.${type}-application.service.startDate.label`) }}</div>
+            <div class="strong">
+              {{ $t(`form.${type}-application.service.startDate.label`) }}
+            </div>
             <div>{{ preferredStartDate | date }}</div>
           </div>
         </div>
@@ -53,7 +63,9 @@ SPDX-License-Identifier: LGPL-2.1-or-later
       <hr class="divider" />
 
       <!-- Päivittäinen palvelun tarve -->
-      <c-summary-subsection :title="$t(`form.${type}-application.service.dailyTitle`)">
+      <c-summary-subsection
+        :title="$t(`form.${type}-application.service.dailyTitle`)"
+      >
         <div class="columns is-gapless" v-if="isPreschool">
           <div class="column">
             <c-summary-field
@@ -66,7 +78,9 @@ SPDX-License-Identifier: LGPL-2.1-or-later
         </div>
         <div class="columns is-gapless" v-if="showDailyTime">
           <div class="column">
-            <div class="strong">{{ $t('form.daycare-application.service.dailyTime.label') }}:</div>
+            <div class="strong">
+              {{ $t('form.daycare-application.service.dailyTime.label') }}:
+            </div>
             <div>{{ dailyTime }}</div>
           </div>
         </div>
@@ -103,7 +117,10 @@ SPDX-License-Identifier: LGPL-2.1-or-later
           :label="$t('form.daycare-application.service.clubCare.label')"
         />
 
-        <div class="columns" v-if="applicationForm.careDetails.assistanceNeeded">
+        <div
+          class="columns"
+          v-if="applicationForm.careDetails.assistanceNeeded"
+        >
           <c-summary-field
             class="is-4 column"
             :label="''"
@@ -116,7 +133,9 @@ SPDX-License-Identifier: LGPL-2.1-or-later
     <hr class="column-divider" />
 
     <!-- Hakutoive -->
-    <c-summary-section :title="$t('form.daycare-application.preferredUnits.title')">
+    <c-summary-section
+      :title="$t('form.daycare-application.preferredUnits.title')"
+    >
       <c-summary-subsection
         :icon="['fal', 'users']"
         :title="$t(`form.${type}-application.siblingBasis.title`)"
@@ -124,9 +143,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
         <c-summary-field
           :value="applicationForm.apply.siblingBasis"
           :label="
-            $t(
-              `form.${type}-application.preferredUnits.siblings.select.label`
-            )
+            $t(`form.${type}-application.preferredUnits.siblings.select.label`)
           "
         />
         <div class="columns" v-if="applicationForm.apply.siblingBasis">
@@ -156,7 +173,9 @@ SPDX-License-Identifier: LGPL-2.1-or-later
         :icon="['fal', 'map-marker-alt']"
         :title="$t('form.daycare-application.preferredUnits.title')"
       >
-        <p class="strong">{{ $t('form.summary.apply-section.preferred-locations') }}</p>
+        <p class="strong">
+          {{ $t('form.summary.apply-section.preferred-locations') }}
+        </p>
 
         <div class="columns">
           <div class="selected-units-list column is-6">
@@ -175,7 +194,9 @@ SPDX-License-Identifier: LGPL-2.1-or-later
     <hr class="column-divider" />
 
     <!-- Henkilötiedot -->
-    <c-summary-section :title="$t('form.daycare-application.personalInfo.title')">
+    <c-summary-section
+      :title="$t('form.daycare-application.personalInfo.title')"
+    >
       <!-- Lapsen tiedot -->
       <c-summary-subsection
         :icon="['fal', 'child']"
@@ -212,9 +233,14 @@ SPDX-License-Identifier: LGPL-2.1-or-later
             :label="$t('form.persons.new-addr')"
           />
 
-          <div class="columns summary-data-field" v-if="applicationForm.child.hasCorrectingAddress">
+          <div
+            class="columns summary-data-field"
+            v-if="applicationForm.child.hasCorrectingAddress"
+          >
             <div class="is-4 column">
-              <p class="strong">{{ $t('form.summary.child-section.address') }}:</p>
+              <p class="strong">
+                {{ $t('form.summary.child-section.address') }}:
+              </p>
               {{ childCorrectingAddress }}
             </div>
           </div>
@@ -281,7 +307,9 @@ SPDX-License-Identifier: LGPL-2.1-or-later
             v-if="applicationForm.guardian.hasCorrectingAddress"
           >
             <div class="is-4 column">
-              <p class="strong">{{ $t('form.summary.child-section.address') }}:</p>
+              <p class="strong">
+                {{ $t('form.summary.child-section.address') }}:
+              </p>
               {{ guardianCorrectingAddress }}
             </div>
           </div>
@@ -313,13 +341,25 @@ SPDX-License-Identifier: LGPL-2.1-or-later
           :label="$t(`form.persons.guardian2.other-guardian-${type}`)"
         />
         <c-summary-field
-          :value="applicationForm.hasOtherVtjGuardian && !applicationForm.otherVtjGuardianHasSameAddress"
+          :value="
+            applicationForm.hasOtherVtjGuardian &&
+            !applicationForm.otherVtjGuardianHasSameAddress
+          "
           :label="$t(`form.persons.guardian2.separate-address-daycare`)"
         />
 
         <c-summary-field
-          v-if="applicationForm.hasOtherVtjGuardian && !applicationForm.otherVtjGuardianHasSameAddress"
-          :value="$t(`form.persons.guardian2.agreement-status.${applicationForm.otherGuardianAgreementStatus || 'NOT_SET'}`)"
+          v-if="
+            applicationForm.hasOtherVtjGuardian &&
+            !applicationForm.otherVtjGuardianHasSameAddress
+          "
+          :value="
+            $t(
+              `form.persons.guardian2.agreement-status.${
+                applicationForm.otherGuardianAgreementStatus || 'NOT_SET'
+              }`
+            )
+          "
           :label="$t(`form.persons.guardian2.agreement-status.title`)"
         />
 
@@ -352,7 +392,10 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 
           <div
             class="columns"
-            v-if="applicationForm.hasOtherVtjGuardian && !otherVtjGuardianHasSameAddress"
+            v-if="
+              applicationForm.hasOtherVtjGuardian &&
+              !otherVtjGuardianHasSameAddress
+            "
           >
             <c-summary-field
               class="is-4 column"
@@ -383,7 +426,11 @@ SPDX-License-Identifier: LGPL-2.1-or-later
         />
 
         <div v-if="applicationForm.hasOtherAdults">
-          <div v-for="(adult, index) in applicationForm.otherAdults" :key="index" class="columns">
+          <div
+            v-for="(adult, index) in applicationForm.otherAdults"
+            :key="index"
+            class="columns"
+          >
             <c-summary-field
               class="is-4 column"
               :label="$t('form.summary.guardian-section.person-name')"
@@ -412,7 +459,11 @@ SPDX-License-Identifier: LGPL-2.1-or-later
         />
 
         <div v-if="applicationForm.hasOtherChildren">
-          <div v-for="(child, index) in applicationForm.otherChildren" :key="index" class="columns">
+          <div
+            v-for="(child, index) in applicationForm.otherChildren"
+            :key="index"
+            class="columns"
+          >
             <c-summary-field
               class="is-4 column"
               :label="$t('form.summary.other-children.child-name')"
@@ -441,7 +492,9 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 
     <!-- Muut lisätiedot -->
     <c-summary-section :title="$t('form.daycare-application.additional.title')">
-      <c-summary-subsection :title="$t('form.daycare-application.additional.title')">
+      <c-summary-subsection
+        :title="$t('form.daycare-application.additional.title')"
+      >
         <div class="columns">
           <c-summary-field
             class="is-4 column"
@@ -453,7 +506,9 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 
       <hr class="column-divider" />
 
-      <c-summary-subsection :title="$t('form.daycare-application.additional.special-diet')">
+      <c-summary-subsection
+        :title="$t('form.daycare-application.additional.special-diet')"
+      >
         <div class="columns">
           <c-summary-field
             class="is-4 column"
@@ -465,7 +520,9 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 
       <hr class="column-divider" />
 
-      <c-summary-subsection :title="$t('form.daycare-application.additional.allergies')">
+      <c-summary-subsection
+        :title="$t('form.daycare-application.additional.allergies')"
+      >
         <div class="columns">
           <c-summary-field
             class="is-4 column"
@@ -479,201 +536,200 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 </template>
 
 <script>
-import { mapGetters } from 'vuex'
-import { config } from '@evaka/enduser-frontend/src/config'
-import _ from 'lodash'
-import { formatDate } from '@/utils/date-utils'
-import { APPLICATION_TYPE, LANGUAGES } from '@/constants.ts'
+  import { mapGetters } from 'vuex'
+  import { config } from '@evaka/enduser-frontend/src/config'
+  import _ from 'lodash'
+  import { formatDate } from '@/utils/date-utils'
+  import { APPLICATION_TYPE, LANGUAGES } from '@/constants.ts'
 
-export default {
-  props: {
-    applicationForm: Object,
-    summaryChecked: Boolean
-  },
-  methods: {
-    summaryCheckedChanged(value) {
-      this.$emit('summaryCheckedChanged', value)
-    }
-  },
-  computed: {
-    ...mapGetters(['countries', 'languages', 'urgentFiles']),
-    type() {
-      return this.applicationForm.type.value
+  export default {
+    props: {
+      applicationForm: Object,
+      summaryChecked: Boolean
     },
-    attachmentsEnabled() {
-      return config.feature.attachments
+    methods: {
+      summaryCheckedChanged(value) {
+        this.$emit('summaryCheckedChanged', value)
+      }
     },
-    currentLocaleIsSwedish() {
-      return this.$i18n.locale.toLowerCase() === LANGUAGES.SV
-    },
-    showDailyTime() {
-      return (
-        (this.isPreschool && this.applicationForm.connectedDaycare) ||
-        !this.isPreschool
-      )
-    },
-    isPreschool() {
-      return (
-        this.applicationForm.type.value === APPLICATION_TYPE.PRESCHOOL.value
-      )
-    },
-    preferredStartDate() {
-      return formatDate(this.applicationForm.preferredStartDate)
-    },
-    dailyTime() {
-      return `${this.applicationForm.serviceStart} - ${this.applicationForm.serviceEnd}`
-    },
-    applicationType() {
-      return this.applicationForm.type.label
-    },
-    childFullName() {
-      return `${this.applicationForm.child.firstName} ${this.applicationForm.child.lastName}`
-    },
-    childAddress() {
-      if (this.applicationForm.child.address.street) {
+    computed: {
+      ...mapGetters(['countries', 'languages', 'uploadedUrgentFiles']),
+      type() {
+        return this.applicationForm.type.value
+      },
+      attachmentsEnabled() {
+        return config.feature.attachments
+      },
+      currentLocaleIsSwedish() {
+        return this.$i18n.locale.toLowerCase() === LANGUAGES.SV
+      },
+      showDailyTime() {
         return (
-          this.applicationForm.child.address.street +
+          (this.isPreschool && this.applicationForm.connectedDaycare) ||
+          !this.isPreschool
+        )
+      },
+      isPreschool() {
+        return (
+          this.applicationForm.type.value === APPLICATION_TYPE.PRESCHOOL.value
+        )
+      },
+      preferredStartDate() {
+        return formatDate(this.applicationForm.preferredStartDate)
+      },
+      dailyTime() {
+        return `${this.applicationForm.serviceStart} - ${this.applicationForm.serviceEnd}`
+      },
+      applicationType() {
+        return this.applicationForm.type.label
+      },
+      childFullName() {
+        return `${this.applicationForm.child.firstName} ${this.applicationForm.child.lastName}`
+      },
+      childAddress() {
+        if (this.applicationForm.child.address.street) {
+          return (
+            this.applicationForm.child.address.street +
+            ', ' +
+            this.applicationForm.child.address.postalCode +
+            ' ' +
+            this.applicationForm.child.address.city
+          )
+        } else {
+          return ''
+        }
+      },
+      childCorrectingAddress() {
+        return (
+          this.applicationForm.child.correctingAddress.street +
           ', ' +
-          this.applicationForm.child.address.postalCode +
+          this.applicationForm.child.correctingAddress.postalCode +
           ' ' +
-          this.applicationForm.child.address.city
+          this.applicationForm.child.correctingAddress.city
         )
-      } else {
-        return ''
-      }
-    },
-    childCorrectingAddress() {
-      return (
-        this.applicationForm.child.correctingAddress.street +
-        ', ' +
-        this.applicationForm.child.correctingAddress.postalCode +
-        ' ' +
-        this.applicationForm.child.correctingAddress.city
-      )
-    },
-    mapCountry() {
-      if (this.applicationForm.child) {
-        const country = this.countries.filter((c) =>
-          this.applicationForm.child.nationality.includes(c.name)
-        )
-        if (country.length) {
-          return country[0].value
+      },
+      mapCountry() {
+        if (this.applicationForm.child) {
+          const country = this.countries.filter((c) =>
+            this.applicationForm.child.nationality.includes(c.name)
+          )
+          if (country.length) {
+            return country[0].value
+          }
         }
-      }
-    },
-    mapLanguage() {
-      if (this.applicationForm.child) {
-        const language = this.languages.filter((l) =>
-          _.includes(this.applicationForm.child.language, l.name)
-        )
-        if (language.length) {
-          return language[0].value
+      },
+      mapLanguage() {
+        if (this.applicationForm.child) {
+          const language = this.languages.filter((l) =>
+            _.includes(this.applicationForm.child.language, l.name)
+          )
+          if (language.length) {
+            return language[0].value
+          }
         }
+      },
+      guardianFullName() {
+        return `${this.applicationForm.guardian.firstName} ${this.applicationForm.guardian.lastName}`
+      },
+      guardianAddress() {
+        if (this.applicationForm.guardian.address.street) {
+          return `${this.applicationForm.guardian.address.street},  ${this.applicationForm.guardian.address.postalCode}  ${this.applicationForm.guardian.address.city}`
+        } else {
+          return ''
+        }
+      },
+      guardianCorrectingAddress() {
+        return `${this.applicationForm.guardian.correctingAddress.street}, ${this.applicationForm.guardian.correctingAddress.postalCode} ${this.applicationForm.guardian.correctingAddress.city}`
+      },
+      guardian2FullName() {
+        return `${this.applicationForm.guardian2.firstName} ${this.applicationForm.guardian2.lastName}`
+      },
+      guardian2Address() {
+        if (this.applicationForm.guardian2.address.street) {
+          return `${this.applicationForm.guardian2.address.street},  ${this.applicationForm.guardian2.address.postalCode}  ${this.applicationForm.guardian2.address.city}`
+        } else {
+          return ''
+        }
+      },
+      guardian2CorrectingAddress() {
+        return `${this.applicationForm.guardian2.correctingAddress.street}, ${this.applicationForm.guardian2.correctingAddress.postalCode} ${this.applicationForm.guardian2.correctingAddress.city}`
+      },
+      preferredUnits() {
+        return this.applicationForm.apply.preferredUnits
       }
-    },
-    guardianFullName() {
-      return `${this.applicationForm.guardian.firstName} ${this.applicationForm.guardian.lastName}`
-    },
-    guardianAddress() {
-      if (this.applicationForm.guardian.address.street) {
-        return `${this.applicationForm.guardian.address.street},  ${this.applicationForm.guardian.address.postalCode}  ${this.applicationForm.guardian.address.city}`
-      } else {
-        return ''
-      }
-    },
-    guardianCorrectingAddress() {
-      return `${this.applicationForm.guardian.correctingAddress.street}, ${this.applicationForm.guardian.correctingAddress.postalCode} ${this.applicationForm.guardian.correctingAddress.city}`
-    },
-    guardian2FullName() {
-      return `${this.applicationForm.guardian2.firstName} ${this.applicationForm.guardian2.lastName}`
-    },
-    guardian2Address() {
-      if (this.applicationForm.guardian2.address.street) {
-        return `${this.applicationForm.guardian2.address.street},  ${this.applicationForm.guardian2.address.postalCode}  ${this.applicationForm.guardian2.address.city}`
-      } else {
-        return ''
-      }
-    },
-    guardian2CorrectingAddress() {
-      return `${this.applicationForm.guardian2.correctingAddress.street}, ${this.applicationForm.guardian2.correctingAddress.postalCode} ${this.applicationForm.guardian2.correctingAddress.city}`
-    },
-    preferredUnits() {
-      return this.applicationForm.apply.preferredUnits
     }
   }
-}
 </script>
 
 <style lang="scss" scoped>
+  .attachment-list-wrapper {
+    margin-bottom: 1rem;
 
-.attachment-list-wrapper {
-  margin-bottom: 1rem;
-
-  & .attachment-icon {
-    margin-right: 1rem;
-  }
-}
-
-.club-summary-title {
-  margin-top: 1.5rem;
-}
-
-.summary-section {
-  margin-bottom: 1rem;
-  padding: 0.5rem 2rem;
-
-  @include onMobile() {
-    padding: 0 1rem;
+    & .attachment-icon {
+      margin-right: 1rem;
+    }
   }
 
-  .is-2 {
+  .club-summary-title {
+    margin-top: 1.5rem;
+  }
+
+  .summary-section {
+    margin-bottom: 1rem;
+    padding: 0.5rem 2rem;
+
+    @include onMobile() {
+      padding: 0 1rem;
+    }
+
+    .is-2 {
+      margin-bottom: 2rem;
+    }
+
+    .divider {
+      margin: 2rem 0;
+    }
+  }
+
+  .summary-data-field {
+    margin-bottom: 1rem;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+
+    @include onMobile() {
+      align-items: flex-start;
+    }
+  }
+
+  .correcting-address {
+    padding: 1.5rem 2.5rem;
+    background-color: whitesmoke;
     margin-bottom: 2rem;
   }
 
-  .divider {
-    margin: 2rem 0;
+  .is-info {
+    strong {
+      color: white;
+    }
   }
-}
 
-.summary-data-field {
-  margin-bottom: 1rem;
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-
-  @include onMobile() {
-    align-items: flex-start;
-  }
-}
-
-.correcting-address {
-  padding: 1.5rem 2.5rem;
-  background-color: whitesmoke;
-  margin-bottom: 2rem;
-}
-
-.is-info {
-  strong {
-    color: white;
-  }
-}
-
-.is-warning {
-  color: #555;
-  strong {
+  .is-warning {
     color: #555;
+    strong {
+      color: #555;
+    }
   }
-}
 
-.summary-secondary-title {
-  display: inline-block;
-  padding-bottom: 0.25rem;
-  color: #666;
-  border-bottom: 1px solid #ddd;
-}
+  .summary-secondary-title {
+    display: inline-block;
+    padding-bottom: 0.25rem;
+    color: #666;
+    border-bottom: 1px solid #ddd;
+  }
 
-#secondGuardianHasAgreed {
-  font-weight: 600;
-  padding: 0 0 2rem 4rem;
-}
+  #secondGuardianHasAgreed {
+    font-weight: 600;
+    padding: 0 0 2rem 4rem;
+  }
 </style>
