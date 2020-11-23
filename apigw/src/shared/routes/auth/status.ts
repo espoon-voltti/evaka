@@ -4,7 +4,7 @@
 
 import { NextFunction, Request, Response, Router } from 'express'
 import { getEmployeeDetails } from '../../service/pis'
-import { csrfCookie } from '../../middleware/csrf'
+import { csrf, csrfCookie } from '../../middleware/csrf'
 import { SessionType } from '../../session'
 
 export default function authStatus(sessionType: SessionType) {
@@ -12,6 +12,7 @@ export default function authStatus(sessionType: SessionType) {
 
   router.get(
     '/auth/status',
+    csrf,
     csrfCookie(sessionType),
     (req: Request, res: Response, next: NextFunction) => {
       const user = req.user

@@ -44,9 +44,9 @@ setupLoggingMiddleware(app)
 
 app.use('/api/application/', publicRoutes)
 app.use('/api/application/', createAuthEndpoints('enduser'))
-app.use(csrf)
 app.use('/api/application/', userDetails('enduser'))
 app.all('*', authenticate)
+app.use(csrf)
 app.use('/api/application/', routes)
 app.use(errorHandler(false))
 
