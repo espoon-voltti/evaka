@@ -5,13 +5,14 @@
 import { NextFunction, Request, Response, Router } from 'express'
 import { getUserDetails } from '../services/pis'
 import { SessionType } from '../../shared/session'
-import { csrfCookie } from '../../shared/middleware/csrf'
+import { csrf, csrfCookie } from '../../shared/middleware/csrf'
 
 export default function authStatus(sessionType: SessionType) {
   const router = Router()
 
   router.get(
     '/auth/status',
+    csrf,
     csrfCookie(sessionType),
     (req: Request, res: Response, next: NextFunction) => {
       if (req.user) {
