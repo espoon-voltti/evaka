@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.attachment
 
+import fi.espoo.evaka.Audit
 import fi.espoo.evaka.s3.DocumentService
 import fi.espoo.evaka.s3.DocumentWrapper
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -52,6 +53,7 @@ class AttachmentsController(
         @PathVariable applicationId: UUID,
         @RequestPart("file") file: MultipartFile
     ): ResponseEntity<UUID> {
+        Audit.AttachmentsUpload.log(targetId = applicationId)
         user.requireOneOfRoles(UserRole.ADMIN)
 
         val id = handleFileUpload(db, applicationId, file)
@@ -65,6 +67,7 @@ class AttachmentsController(
         @PathVariable applicationId: UUID,
         @RequestPart("file") file: MultipartFile
     ): ResponseEntity<UUID> {
+        Audit.AttachmentsUpload.log(targetId = applicationId)
         user.requireOneOfRoles(UserRole.END_USER)
         if (!db.read { it.isOwnApplication(applicationId, user) }) throw Forbidden("Permission denied")
 
@@ -105,6 +108,7 @@ class AttachmentsController(
         user: AuthenticatedUser,
         @PathVariable attachmentId: UUID
     ): ResponseEntity<ByteArray> {
+        Audit.AttachmentsRead.log(targetId = attachmentId)
         if (!user.hasOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN)) {
             if (!db.read { it.isOwnAttachment(attachmentId, user) }) throw Forbidden("Permission denied")
         }
@@ -121,6 +125,7 @@ class AttachmentsController(
 
     @DeleteMapping("/enduser/{id}")
     fun deleteEnduserAttachment(db: Database, user: AuthenticatedUser, @PathVariable id: UUID): ResponseEntity<Unit> {
+        Audit.AttachmentsDelete.log(targetId = id)
         user.requireOneOfRoles(UserRole.END_USER)
         if (!db.read { it.isOwnAttachment(id, user) }) throw Forbidden("Permission denied")
 
