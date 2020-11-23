@@ -10,12 +10,19 @@ import fi.espoo.evaka.shared.db.Database
 import org.jdbi.v3.core.kotlin.mapTo
 import java.util.UUID
 
-fun Database.Transaction.insertAttachment(id: UUID, name: String, contentType: String, applicationId: UUID) {
+fun Database.Transaction.insertAttachment(
+    id: UUID,
+    name: String,
+    contentType: String,
+    applicationId: UUID,
+    uploadedByEnduser: UUID?,
+    uploadedByEmployee: UUID?
+) {
     // language=sql
     val sql =
         """
-        INSERT INTO attachment (id, name, content_type, application_id)
-        VALUES (:id, :name, :contentType, :applicationId)
+        INSERT INTO attachment (id, name, content_type, application_id, uploaded_by_enduser, uploaded_by_employee)
+        VALUES (:id, :name, :contentType, :applicationId, :uploadedByEnduser, :uploadedByEmployee)
         """.trimIndent()
 
     this.createUpdate(sql)
@@ -23,6 +30,8 @@ fun Database.Transaction.insertAttachment(id: UUID, name: String, contentType: S
         .bind("name", name)
         .bind("contentType", contentType)
         .bind("applicationId", applicationId)
+        .bind("uploadedByEnduser", uploadedByEnduser)
+        .bind("uploadedByEmployee", uploadedByEmployee)
         .execute()
 }
 
