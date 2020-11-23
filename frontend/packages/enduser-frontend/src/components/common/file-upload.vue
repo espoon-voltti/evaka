@@ -119,10 +119,8 @@ SPDX-License-Identifier: LGPL-2.1-or-later
         return `width: ${file.progress}%;`
       },
       errorMessage(file) {
-        return (
-          this.$t('file-upload.error')[file.error] ||
-          this.$t('file-upload.error')['default']
-        )
+        const messages = this.$t('file-upload.error')
+        return messages[file.error] || messages.default
       }
     }
   }
