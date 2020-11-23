@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { Fragment, useContext, useEffect } from 'react'
-import { useParams } from 'react-router-dom'
+import { useParams, Link } from 'react-router-dom'
 import styled from 'styled-components'
 import MetaTags from 'react-meta-tags'
 
@@ -60,13 +60,13 @@ export default React.memo(function AttendanceGroupSelectorPage() {
                 {i18n.attendances.chooseGroup}
               </AllCapsTitle>
               <Flex>
-                <a href={`attendance/all/coming`}>
+                <Link to={`attendance/all/coming`}>
                   <CustomButton primary text={i18n.common.all} />
-                </a>
+                </Link>
                 {attendanceResponse.data.unit.groups.map((group: Group) => (
-                  <a key={group.id} href={`attendance/${group.id}/coming`}>
+                  <Link key={group.id} to={`attendance/${group.id}/coming`}>
                     <CustomButton primary key={group.id} text={group.name} />
-                  </a>
+                  </Link>
                 ))}
               </Flex>
             </ContentArea>

@@ -5,6 +5,7 @@
 import React, { Fragment, useContext, useEffect, useState } from 'react'
 
 import {
+  Link,
   Redirect,
   Route,
   Switch,
@@ -232,7 +233,7 @@ export default React.memo(function AttendancePageWrapper() {
             paddingVertical={'s'}
             paddingHorozontal={'s'}
           >
-            <a href={`/employee/units/${unitId}/groupselector`}>
+            <Link to={`/employee/units/${unitId}/groupselector`}>
               <WideButton
                 primary
                 text={
@@ -243,7 +244,7 @@ export default React.memo(function AttendancePageWrapper() {
                     : i18n.attendances.groupSelectError
                 }
               />
-            </a>
+            </Link>
             <Switch>
               <Route
                 exact

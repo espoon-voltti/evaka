@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
-import { useParams } from 'react-router-dom'
+import { Link, useParams } from 'react-router-dom'
 
 import { FixedSpaceColumn } from '~components/shared/layout/flex-helpers'
 import ChildListItem from './ChildListItem'
@@ -34,15 +34,15 @@ export default React.memo(function AttendanceList({
       <UnorderedList spacing={'xs'}>
         {attendanceChildren.map((ac) => (
           <li key={ac.id}>
-            <a
-              href={`/employee/units/${unitId}/groups/${groupIdOrAll}/childattendance/${ac.id}`}
+            <Link
+              to={`/units/${unitId}/groups/${groupIdOrAll}/childattendance/${ac.id}`}
             >
               <ChildListItem
                 type={ac.status}
                 key={ac.id}
                 attendanceChild={ac}
               />
-            </a>
+            </Link>
           </li>
         ))}
       </UnorderedList>
