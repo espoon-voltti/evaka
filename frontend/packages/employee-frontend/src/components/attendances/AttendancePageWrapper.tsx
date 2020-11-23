@@ -233,7 +233,7 @@ export default React.memo(function AttendancePageWrapper() {
             paddingVertical={'s'}
             paddingHorozontal={'s'}
           >
-            <Link to={`/employee/units/${unitId}/groupselector`}>
+            <Link to={`/units/${unitId}/groupselector`}>
               <WideButton
                 primary
                 text={
