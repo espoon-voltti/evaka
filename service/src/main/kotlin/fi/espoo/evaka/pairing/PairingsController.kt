@@ -50,7 +50,7 @@ class PairingsController(
     data class PostPairingChallengeReq(
         val challengeKey: String
     )
-    @PostMapping("/pairings/challenge")
+    @PostMapping("/public/pairings/challenge")
     fun postPairingChallenge(
         db: Database.Connection,
         @RequestBody body: PostPairingChallengeReq
@@ -71,7 +71,7 @@ class PairingsController(
         val challengeKey: String,
         val responseKey: String
     )
-    @PostMapping("/pairings/:id/response")
+    @PostMapping("/pairings/{id}/response")
     fun postPairingResponse(
         db: Database.Connection,
         user: AuthenticatedUser,
@@ -97,14 +97,12 @@ class PairingsController(
         val challengeKey: String,
         val responseKey: String
     )
-    @PostMapping("/pairings/:id/validation")
+    @PostMapping("/apigw/pairings/{id}/validation")
     fun postPairingValidation(
         db: Database.Connection,
-        user: AuthenticatedUser,
         @PathVariable id: UUID,
         @RequestBody body: PostPairingValidationReq
     ): ResponseEntity<Unit> {
-        acl.getRolesForPairing(user, id).requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR)
         db.transaction { tx -> incrementAttempts(tx, id, body.challengeKey) }
 
         db.transaction { tx ->
@@ -125,7 +123,7 @@ class PairingsController(
     data class PairingStatusRes(
         val status: PairingStatus
     )
-    @GetMapping("/pairings/:id/status")
+    @GetMapping("/public/pairings/{id}/status")
     fun getPairingStatus(
         db: Database.Connection,
         @PathVariable id: UUID

@@ -66,23 +66,22 @@ fun respondPairingChallenge(tx: Database.Transaction, id: UUID, challengeKey: St
         .firstOrNull() ?: throw NotFound("Valid pairing not found")
 }
 
-fun validatePairing(tx: Database.Read, id: UUID, challengeKey: String, responseKey: String) {
+fun validatePairing(tx: Database.Transaction, id: UUID, challengeKey: String, responseKey: String) {
     // language=sql
     val sql =
         """
-            SELECT 1 FROM pairing
+            UPDATE pairing SET status = 'PAIRED'
             WHERE id = :id AND challenge_key = :challenge AND response_key = :response AND status = 'READY' AND expires > :now AND attempts <= :maxAttempts
         """.trimIndent()
 
-    tx.createQuery(sql)
+    tx.createUpdate(sql)
         .bind("id", id)
         .bind("challenge", challengeKey)
         .bind("response", responseKey)
         .bind("now", ZonedDateTime.now(zoneId).toInstant())
         .bind("maxAttempts", maxAttempts)
-        .mapTo<Int>()
-        .list()
-        .firstOrNull() ?: throw NotFound("Valid pairing not found")
+        .execute()
+        .takeIf { it > 0 } ?: throw NotFound("Valid pairing not found")
 }
 
 fun fetchPairingStatus(tx: Database.Read, id: UUID): PairingStatus {
