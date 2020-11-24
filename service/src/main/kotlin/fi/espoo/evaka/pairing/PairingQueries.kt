@@ -4,6 +4,7 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.utils.zoneId
 import org.jdbi.v3.core.kotlin.mapTo
+import java.security.SecureRandom
 import java.time.ZonedDateTime
 import java.util.UUID
 
@@ -116,6 +117,10 @@ fun incrementAttempts(tx: Database.Transaction, id: UUID, challengeKey: String) 
         .execute()
 }
 
-fun generatePairingKey(): String {
-    return "hello" // todo
-}
+const val distinguishableChars = "abcdefghkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789"
+const val keyLength = 10
+val random: SecureRandom = SecureRandom.getInstanceStrong()
+fun generatePairingKey(): String = (1..keyLength)
+    .map { random.nextInt(distinguishableChars.length) }
+    .map { i -> distinguishableChars[i] }
+    .joinToString(separator = "")
