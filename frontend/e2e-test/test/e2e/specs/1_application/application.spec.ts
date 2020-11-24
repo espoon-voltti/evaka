@@ -14,11 +14,13 @@ import {
 } from '../../dev-api/fixtures'
 import { logConsoleMessages } from '../../utils/fixture'
 import { deleteApplication, insertApplications } from '../../dev-api'
-import { enduserRole } from '../../config/users'
+import { enduserRole, seppoAdminRole } from '../../config/users'
 import EnduserPage from '../../pages/enduser/enduser-navigation'
+import ApplicationReadView from '../../pages/employee/applications/application-read-view'
 
 const home = new Home()
 const enduserPage = new EnduserPage()
+const applicationReadView = new ApplicationReadView()
 
 let fixtures: AreaAndPersonFixtures
 let cleanUp: () => Promise<void>
@@ -52,10 +54,16 @@ test('Urgent application attachments can be uploaded by end user', async (t) => 
     id: uuidv4()
   }
 
+  const attachmentFileName = 'test_file.jpg'
   await insertApplications([urgentApplication])
   await t.useRole(enduserRole)
   await enduserPage.navigateToApplicationsTab()
   await enduserPage.editApplication(urgentApplication.id)
-  await enduserPage.uploadUrgentFile('./test_file.jpg')
-  await enduserPage.assertUrgentFileHasBeenUploaded('test_file.jpg')
+  await enduserPage.uploadUrgentFile(`./${attachmentFileName}`)
+  await enduserPage.assertUrgentFileHasBeenUploaded(attachmentFileName)
+
+  await t.useRole(seppoAdminRole)
+  await applicationReadView.openApplicationByLink(urgentApplication.id)
+  await applicationReadView.assertPageTitle('Varhaiskasvatushakemus')
+  await applicationReadView.assertUrgentAttachmentExists(attachmentFileName)
 })
