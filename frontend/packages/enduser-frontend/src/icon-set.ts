@@ -58,6 +58,7 @@ export type IconSet = {
   falLink: IconDefinition
   falMapMarkerAlt: IconDefinition
   falPlay: IconDefinition
+  falRedo: IconDefinition
   falSignIn: IconDefinition
   falSignOut: IconDefinition
   falStar: IconDefinition
