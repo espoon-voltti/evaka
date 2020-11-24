@@ -34,6 +34,16 @@ SPDX-License-Identifier: LGPL-2.1-or-later
             <div>
               <button
                 class="file-header-icon-button"
+                @click="retryFile(file)"
+                v-if="fileUploadFailed(file)"
+              >
+                <font-awesome-icon
+                  :icon="['fal', 'redo']"
+                  size="2x"
+                ></font-awesome-icon>
+              </button>
+              <button
+                class="file-header-icon-button"
                 @click="deleteFile(file)"
                 :disabled="inProgress(file) && !file.error"
               >
@@ -97,6 +107,10 @@ SPDX-License-Identifier: LGPL-2.1-or-later
       deleteFile(file) {
         this.onDelete(file)
       },
+      retryFile(file) {
+        this.onDelete(file)
+        this.onUpload(file.file)
+      },
       fileIcon(file) {
         switch (file.contentType) {
           case 'image/jpeg':
@@ -121,6 +135,9 @@ SPDX-License-Identifier: LGPL-2.1-or-later
       errorMessage(file) {
         const messages = this.$t('file-upload.error')
         return messages[file.error] || messages.default
+      },
+      fileUploadFailed(file) {
+        return file.error === 'server-error'
       }
     }
   }
