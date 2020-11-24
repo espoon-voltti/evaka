@@ -9,12 +9,13 @@ import {
 } from '../../dev-api/data-init'
 import {
   applicationFixture,
-  applicationFixtureId, uuidv4
+  applicationFixtureId,
+  uuidv4
 } from '../../dev-api/fixtures'
 import { logConsoleMessages } from '../../utils/fixture'
 import { deleteApplication, insertApplications } from '../../dev-api'
-import {enduserRole} from '../../config/users'
-import EnduserPage from "../../pages/enduser/enduser-navigation";
+import { enduserRole } from '../../config/users'
+import EnduserPage from '../../pages/enduser/enduser-navigation'
 
 const home = new Home()
 const enduserPage = new EnduserPage()
@@ -43,7 +44,7 @@ test('Urgent application attachments can be uploaded by end user', async (t) => 
   )
 
   const urgentApplication = {
-      ...fixture,
+    ...fixture,
     form: {
       ...fixture.form,
       urgent: true

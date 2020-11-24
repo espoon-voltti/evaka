@@ -133,13 +133,24 @@ export default class EnduserPage {
       )
   }
 
+  readonly urgentAttachmentsUpload = Selector(
+    '[data-qa="file-upload-urgent-attachments"]'
+  )
+
   async uploadUrgentFile(file: string) {
-    await t
-      .setFilesToUpload(Selector('[data-qa="btn-upload-urgent-attachment"]'), [file])
+    await t.setFilesToUpload(
+      this.urgentAttachmentsUpload.find('[data-qa="btn-upload-file"]'),
+      [file]
+    )
   }
 
   async assertUrgentFileHasBeenUploaded(file: string) {
-    await t.expect(Selector('[data-qa="urgent-attachments"]').withText(file).exists).ok()
+    await t
+      .expect(
+        this.urgentAttachmentsUpload.find('[data-qa="files"]').withText(file)
+          .exists
+      )
+      .ok()
   }
 }
 
