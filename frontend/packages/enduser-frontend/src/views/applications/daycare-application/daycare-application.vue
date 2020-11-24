@@ -162,7 +162,14 @@ SPDX-License-Identifier: LGPL-2.1-or-later
                         )
                       "
                     >
-                      <div
+                      <div v-if="attachmentsEnabled"
+                        v-html="
+                          $t(
+                            `form.${type}-application.service.expedited.message.text-attachments-enabled`
+                          )
+                        "
+                      ></div>
+                      <div v-else  
                         v-html="
                           $t(
                             `form.${type}-application.service.expedited.message.text`
