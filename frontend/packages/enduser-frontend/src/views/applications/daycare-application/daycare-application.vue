@@ -180,9 +180,9 @@ SPDX-License-Identifier: LGPL-2.1-or-later
                     <file-upload
                       v-if="attachmentsEnabled"
                       :files="urgentFiles"
-                      :onUpload="onFileUpload"
-                      :onDelete="onFileDelete"
                       data-qa="file-upload-urgent-attachments"
+                      :onUpload="uploadUrgencyAttachment"
+                      :onDelete="deleteUrgencyAttachment"
                     />
                   </div>
                 </div>
@@ -310,20 +310,29 @@ SPDX-License-Identifier: LGPL-2.1-or-later
                         "
                       />
                     </c-checkbox>
-                    <c-message-box
-                      :title="
-                        $t(
-                          `form.${type}-application.service.extended.message.title`
-                        )
-                      "
-                      v-show="model.extendedCare"
-                    >
-                      {{
-                        $t(
-                          `form.${type}-application.service.extended.message.text`
-                        )
-                      }}
-                    </c-message-box>
+                    <div v-if="model.extendedCare">
+                      <c-message-box
+                        :title="
+                          $t(
+                            'form.daycare-application.service.extended.message.title'
+                          )
+                        "
+                      >
+                        <div
+                          v-html="
+                            $t(
+                              `form.${type}-application.service.extended.message.text`
+                            )
+                          "
+                        ></div>
+                      </c-message-box>
+                      <file-upload
+                        v-if="attachmentsEnabled"
+                        :files="extendedCareFiles"
+                        :onUpload="uploadExtendedCareAttachment"
+                        :onDelete="deleteExtendedCareAttachment"
+                      />
+                    </div>
                   </div>
                 </div>
               </div>
@@ -1124,7 +1133,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
       }
     },
     computed: {
-      ...mapGetters(['daycareForm', 'applicationUnits', 'urgentFiles']),
+      ...mapGetters(['daycareForm', 'applicationUnits', 'urgentFiles', 'extendedCareFiles']),
       id(): string {
         return this.$route.params.id
       },
@@ -1228,14 +1237,23 @@ SPDX-License-Identifier: LGPL-2.1-or-later
       }
     },
     methods: {
-      onFileUpload(file) {
-        this.$store.dispatch('addUrgentFile', {
+      uploadUrgencyAttachment(file) {
+        this.$store.dispatch('addUrgencyAttachment', {
           file,
           applicationId: this.id
         })
       },
-      onFileDelete(file) {
-        this.$store.dispatch('deleteUrgentFile', file)
+      uploadExtendedCareAttachment(file) {
+        this.$store.dispatch('addExtendedCareAttachment', {
+          file,
+          applicationId: this.id
+        })
+      },
+      deleteUrgencyAttachment(file) {
+        this.$store.dispatch('deleteUrgencyAttachment', file)
+      },
+      deleteExtendedCareAttachment(file) {
+        this.$store.dispatch('deleteExtendedCareAttachment', file)
       },
       onAssistanceNeededChanged(): void {
         if (!this.model.careDetails.assistanceNeeded) {
