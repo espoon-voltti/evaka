@@ -157,12 +157,14 @@ router.beforeEach((to, from, next) => {
         )}`
         return
       } else {
+        next()
         store.dispatch('loader/clear')
       }
     })
+  } else {
+    next()
+    store.dispatch('loader/clear')
   }
-  store.dispatch('loader/clear')
-  next()
 })
 
 Vue.use(Router)
