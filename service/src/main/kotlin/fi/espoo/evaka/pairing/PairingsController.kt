@@ -141,7 +141,7 @@ class PairingsController(
     ): ResponseEntity<PairingStatusRes> {
         Audit.PairingStatusRead.log(targetId = id)
         return db
-            .transaction { tx -> fetchPairingStatus(tx, id) }
+            .read { tx -> fetchPairingStatus(tx, id) }
             .let { ResponseEntity.ok(PairingStatusRes(status = it)) }
     }
 }
