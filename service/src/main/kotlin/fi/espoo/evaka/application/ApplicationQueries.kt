@@ -181,8 +181,8 @@ fun fetchApplicationSummaries(
             AND ('$DAYCARE_ONLY' = ANY(:preschoolType) OR NOT a.additionalDaycareApplication)
             """.trimIndent()
         else null,
-        if (distinctions.contains(ApplicationDistinctions.SECONDARY)) "f.preferredunits && :units" else if (units.isNotEmpty()) "d.id = ANY(:units)" else null,
-        if (authorizedUnits.ids != null) "f.preferredunits && :authorizedUnits" else null,
+        if (distinctions.contains(ApplicationDistinctions.SECONDARY)) "f.preferredUnits && :units" else if (units.isNotEmpty()) "d.id = ANY(:units)" else null,
+        if (authorizedUnits.ids != null) "f.preferredUnits && :authorizedUnits" else null,
         if (onlyAuthorizedToViewApplicationsWithAssistanceNeed) "(f.document->'careDetails'->>'assistanceNeeded')::boolean = true" else null,
         if ((periodStart != null || periodEnd != null) && dateType.contains(ApplicationDateType.DUE)) "daterange(:periodStart, :periodEnd, '[]') @> a.dueDate" else null,
         if ((periodStart != null || periodEnd != null) && dateType.contains(ApplicationDateType.START)) "daterange(:periodStart, :periodEnd, '[]') @> (f.document ->> 'preferredStartDate')::date" else null,
