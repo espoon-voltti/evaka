@@ -10,7 +10,7 @@ export default {
     return axios.get(config.api.areas).then((response) => response.data)
   },
   getApplicationUnits(date, type) {
-    return axios.get('/api/application/public/units', { params: { date, type }})
+    return axios.get('/api/application/units', { params: { date, type }})
       .then((res) => res.data)
   }
 }

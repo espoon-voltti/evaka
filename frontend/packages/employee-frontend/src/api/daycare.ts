@@ -42,7 +42,7 @@ export function getApplicationUnits(
   date: LocalDate
 ): Promise<Result<PreferredUnit[]>> {
   return client
-    .get<JsonOf<DetailedUnit[]>>('public/units', {
+    .get<JsonOf<DetailedUnit[]>>('units', {
       params: { type: asUnitType(type), date: date.formatIso() }
     })
     .then((res) => res.data)

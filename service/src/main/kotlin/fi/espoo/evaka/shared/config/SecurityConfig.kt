@@ -71,19 +71,10 @@ class SecurityConfig {
 class PublicResourcesConfigurerAdapter : WebSecurityConfigurerAdapter() {
     override fun configure(http: HttpSecurity) {
         http
-            .csrf().ignoringAntMatchers(
-                "/scheduled/varda/update",
-                "/scheduled/varda/units/update-units",
-                "/scheduled/koski/update",
-                "/scheduled/dvv/update",
-                "/mock-integration/varda/api/**",
-                "/mock-integration/koski/api/**",
-                "/mock-integration/dvv/api/**"
-            )
-            .and()
+            .csrf().disable() // csrf handled at API gateway
             .requestMatchers()
             .antMatchers(
-                "public/**",
+                "/public/**",
                 "/enduser/areas",
                 "/location",
                 "/report/offices",

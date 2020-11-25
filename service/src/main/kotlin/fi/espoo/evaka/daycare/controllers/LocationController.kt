@@ -30,7 +30,7 @@ import java.util.UUID
 
 @RestController
 class LocationController {
-    @GetMapping("/public/units")
+    @GetMapping("/units")
     fun getApplicationUnits(
         db: Database.Connection,
         user: AuthenticatedUser,

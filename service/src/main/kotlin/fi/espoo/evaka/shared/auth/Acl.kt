@@ -125,6 +125,20 @@ WHERE employee_id = :userId AND decision.id = :decisionId
             ).bind("userId", user.id).bind("decisionId", decisionId).mapTo<UserRole>().toSet()
         }
     )
+
+    fun getRolesForPairing(user: AuthenticatedUser, pairingId: UUID): AclAppliedRoles = AclAppliedRoles(
+        (user.roles - UserRole.ACL_ROLES) + Database(jdbi).read {
+            it.createQuery(
+                // language=SQL
+                """
+SELECT role
+FROM daycare_acl
+JOIN pairing p ON daycare_id = p.unit_id
+WHERE employee_id = :userId AND p.id = :pairingId
+                """.trimIndent()
+            ).bind("userId", user.id).bind("pairingId", pairingId).mapTo<UserRole>().toSet()
+        }
+    )
 }
 
 private fun Database.Read.selectAuthorizedDaycares(user: AuthenticatedUser): Set<UUID> = createQuery(

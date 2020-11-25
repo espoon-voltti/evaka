@@ -10,7 +10,7 @@ import { getEnduserAreas } from '../shared/service-client'
 const router = Router()
 const proxy = createProxy()
 
-router.get('/public/units', proxy)
+router.get('/units', proxy)
 
 router.get('/areas', (req, res, next) => {
   getEnduserAreas(req)
