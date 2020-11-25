@@ -11,6 +11,7 @@ export type UUID = string
 const NIL_UUID = '00000000-0000-0000-0000-000000000000'
 
 export type UserRole =
+  | 'ENDUSER'
   | 'ADMIN'
   | 'DIRECTOR'
   | 'FINANCE_ADMIN'
