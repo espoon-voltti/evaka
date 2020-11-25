@@ -294,6 +294,9 @@ function validateForm(
   if (!form.areaId) {
     errors.push(i18n.unitEditor.error.area)
   }
+  if (Object.values(form.careTypes).every((v) => !v)) {
+    errors.push(i18n.unitEditor.error.careType)
+  }
   if (form.careTypes.DAYCARE && !form.daycareType) {
     errors.push(i18n.unitEditor.error.daycareType)
   }

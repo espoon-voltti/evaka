@@ -2086,6 +2086,7 @@ export const fi = {
     error: {
       name: 'Nimi puuttuu',
       area: 'Alue puuttuu',
+      careType: 'Toimintamuoto puuttuu',
       daycareType: 'Varhaiskasvatuksen tyyppi puuttuu',
       capacity: 'Kapasiteetti on virheellinen',
       costCenter: 'Kustannuspaikka puuttuu',
