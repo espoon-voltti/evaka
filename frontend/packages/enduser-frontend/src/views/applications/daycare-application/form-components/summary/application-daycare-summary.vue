@@ -96,6 +96,32 @@ SPDX-License-Identifier: LGPL-2.1-or-later
           :label="$t('form.daycare-application.service.extended.label')"
           v-if="showDailyTime"
         />
+
+        <div
+          class="attachment-list-wrapper"
+          v-if="attachmentsEnabled"
+          v-show="applicationForm.extendedCare"
+        >
+          <p class="strong">
+            {{ $t('form.daycare-application.service.attachments-label') }}
+          </p>
+          <p v-if="uploadedExtendedCareFiles.length === 0">
+            {{ $t('form.daycare-application.service.no-attachments') }}
+          </p>
+          <ul v-else>
+            <li v-for="file in uploadedExtendedCareFiles" v-bind:key="file.id">
+              <span class="attachment-icon">
+                <font-awesome-icon :icon="['fal', 'file']"></font-awesome-icon>
+              </span>
+              <a
+                :href="`/api/application/attachments/${file.id}/download`"
+                target="_blank"
+                rel="noreferrer"
+                >{{ file.name }}</a
+              >
+            </li>
+          </ul>
+        </div>
       </c-summary-subsection>
 
       <hr class="divider" />
@@ -553,7 +579,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
       }
     },
     computed: {
-      ...mapGetters(['countries', 'languages', 'uploadedUrgentFiles']),
+      ...mapGetters(['countries', 'languages', 'uploadedUrgentFiles', 'uploadedExtendedCareFiles']),
       type() {
         return this.applicationForm.type.value
       },

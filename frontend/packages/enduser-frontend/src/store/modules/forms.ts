@@ -7,7 +7,8 @@ import _ from 'lodash'
 import {
   APPLICATION_TYPE,
   NORMAL_CARE_END,
-  NORMAL_CARE_START
+  NORMAL_CARE_START,
+  ATTACHMENT_TYPE
 } from '@/constants.ts'
 import moment from 'moment'
 import { Module } from 'vuex'
@@ -151,14 +152,14 @@ const addAttachment = async (commit, file, applicationId, attachmentType) => {
     contentType: file.type,
     error
   }
-  const uploadCommitType = attachmentType === 'URGENCY' ? types.ADD_URGENCY_FILE : types.ADD_EXTENDED_CARE_FILE
+  const uploadCommitType = attachmentType === ATTACHMENT_TYPE.URGENCY ? types.ADD_URGENCY_FILE : types.ADD_EXTENDED_CARE_FILE
   commit(uploadCommitType, { ...fileObject, progress: 0 })
 
   if (error) {
     return
   }
 
-  const updateCommitType = attachmentType === 'URGENCY' ? types.UPDATE_URGENCY_FILE : types.UPDATE_EXTENDED_CARE_FILE
+  const updateCommitType = attachmentType === ATTACHMENT_TYPE.URGENCY ? types.UPDATE_URGENCY_FILE : types.UPDATE_EXTENDED_CARE_FILE
   const onUploadProgress = (event) => {
     const progress = Math.round((event.loaded / event.total) * 100)
     commit(updateCommitType, { ...fileObject, progress })
@@ -269,10 +270,10 @@ const module: Module<any, RootState> = {
       commit(types.REMOVE_CHILDREN, index)
     },
     async addUrgencyAttachment({ commit }, { file, applicationId }) {
-      addAttachment(commit, file, applicationId, 'URGENCY')
+      addAttachment(commit, file, applicationId, ATTACHMENT_TYPE.URGENCY)
     },
     async addExtendedCareAttachment({ commit }, { file, applicationId }) {
-      addAttachment(commit, file, applicationId, 'EXTENDED_CARE')
+      addAttachment(commit, file, applicationId, ATTACHMENT_TYPE.EXTENDED_CARE)
     },
     async deleteUrgencyAttachment({ commit }, { id, key, error }) {
       if (id && !error) {
@@ -314,12 +315,12 @@ const module: Module<any, RootState> = {
         ...attachment,
         key: attachment.id
       }))
-      .filter(({type}) => type === 'URGENCY')
+      .filter(({type}) => type === ATTACHMENT_TYPE.URGENCY)
       state.files.extendedCare = application.attachments.map((attachment) => ({
         ...attachment,
         key: attachment.id
       }))
-      .filter(({type}) => type === 'EXTENDED_CARE')
+      .filter(({type}) => type ===  ATTACHMENT_TYPE.EXTENDED_CARE)
     },
     [types.LOAD_DAYCARE_APPLICATION_FORM](state, { application }) {
       state.daycare = Object.assign(state.daycare, application)
@@ -327,12 +328,12 @@ const module: Module<any, RootState> = {
         ...attachment,
         key: attachment.id
       }))
-      .filter(({type}) => type === 'URGENCY')
+      .filter(({type}) => type === ATTACHMENT_TYPE.URGENCY)
       state.files.extendedCare = application.attachments.map((attachment) => ({
         ...attachment,
         key: attachment.id
       }))
-      .filter(({type}) => type === 'EXTENDED_CARE')
+      .filter(({type}) => type ===  ATTACHMENT_TYPE.EXTENDED_CARE)
     },
     [types.REVERT_APPLICATION_FORM](state) {
       state.application = _.cloneDeep(state.loadedApplication)
