@@ -57,9 +57,9 @@ WHERE employee_id = :userId AND daycare_id = :daycareId
             val assistanceNeeded = it.createQuery(
                 // language=SQL
                 """
-SELECT (f.document -> 'careDetails' ->> 'assistanceNeeded')
-FROM application a inner join application_form f on a.id = f.application_id and f.latest = true
-WHERE a.id = :applicationId;
+SELECT (document -> 'careDetails' ->> 'assistanceNeeded')
+FROM application_form
+WHERE application_id = :applicationId AND latest IS TRUE;
                 """.trimIndent()
             ).bind("applicationId", applicationId)
                 .mapTo<Boolean>()

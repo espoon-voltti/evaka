@@ -189,7 +189,7 @@ class ApplicationControllerV2(
 
         val userHasLimitedPrivileges = !user.hasOneOfRoles(Roles.ADMIN, Roles.FINANCE_ADMIN, Roles.SERVICE_WORKER)
         val authorizedUnitFilterList = when {
-            userHasLimitedPrivileges -> acl.getAuthorizedUnits(user).ids?.toList() ?: listOf()
+            userHasLimitedPrivileges -> acl.getAuthorizedUnits(user)
             else -> null
         }
 

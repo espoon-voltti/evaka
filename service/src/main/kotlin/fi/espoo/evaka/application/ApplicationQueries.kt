@@ -16,6 +16,7 @@ import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
 import fi.espoo.evaka.application.utils.exhaust
 import fi.espoo.evaka.placement.PlacementPlanConfirmationStatus
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.freeTextSearchQuery
 import fi.espoo.evaka.shared.db.getEnum
@@ -130,7 +131,7 @@ fun fetchApplicationSummaries(
     periodEnd: LocalDate?,
     searchTerms: String = "",
     transferApplications: TransferApplicationFilter,
-    authorizedUnitFilterList: List<UUID>?,
+    authorizedUnitFilterList: AclAuthorization?,
     onlyAuthorizedToViewApplicationsWithAssistanceNeed: Boolean
 ): ApplicationSummaries {
 
@@ -139,7 +140,7 @@ fun fetchApplicationSummaries(
         "pageSize" to pageSize,
         "area" to areas.toTypedArray(),
         "units" to units.toTypedArray(),
-        "authorizedUnitFilterList" to authorizedUnitFilterList?.toTypedArray(),
+        "authorizedUnitFilterList" to authorizedUnitFilterList?.ids?.toTypedArray(),
         "documentType" to type.toString().toLowerCase(),
         "preschoolType" to preschoolType.toTypedArray(),
         "status" to statuses.map { it.toStatus() }.toTypedArray(),
