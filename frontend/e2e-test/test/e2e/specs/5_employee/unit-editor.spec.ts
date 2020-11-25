@@ -34,10 +34,28 @@ fixture('Unit - unit details')
     await cleanUp()
   })
 
+test('Admin creates a new unit', async (t) => {
+  await unitDetailsPage.openNewUnitEditor()
+  await unitDetailsPage.fillUnitName('Uusi Kerho')
+  await unitDetailsPage.chooseArea('Matinkylä-Olari')
+  await unitDetailsPage.toggleCareType('CLUB')
+  await unitDetailsPage.toggleApplicationType('CLUB')
+  await unitDetailsPage.fillVisitingAddress('Kamreerintie 1', '02100', 'Espoo')
+  await unitDetailsPage.fillManagerData(
+    'Kerhon Johtaja',
+    '01234567',
+    'manager@example.com'
+  )
+})
+
 test('Admin can edit unit details', async () => {
   await unitDetailsPage.openUnitDetailsPageById(daycare1.id)
   await unitDetailsPage.enableUnitEditor()
-  await unitDetailsPage.fillManagerData()
+  await unitDetailsPage.fillManagerData(
+    'Päiväkodin Johtaja',
+    '01234567',
+    'manager@example.com'
+  )
   await unitDetailsPage.submitForm()
   // todo: verify that the updated manager data is visible somewhere
 })
