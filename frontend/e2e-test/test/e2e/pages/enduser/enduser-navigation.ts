@@ -147,8 +147,10 @@ export default class EnduserPage {
   async assertUrgentFileHasBeenUploaded(file: string) {
     await t
       .expect(
-        this.urgentAttachmentsUpload.find('[data-qa="files"]').withText(file)
-          .exists
+        this.urgentAttachmentsUpload
+          .find('[data-qa="files"]')
+          .find('.uploaded')
+          .withText(file).exists
       )
       .ok()
   }

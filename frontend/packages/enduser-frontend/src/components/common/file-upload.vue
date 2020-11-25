@@ -22,7 +22,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
     </label>
     <div class="spacer" />
     <div class="files" data-qa="files">
-      <div class="file" v-for="file in files" v-bind:key="file.key">
+      <div v-bind:class="{ uploaded: !inProgress(file) && !file.error }" class="file" v-for="file in files" v-bind:key="file.key">
         <div class="file-icon-container">
           <font-awesome-icon
             :icon="['fal', fileIcon(file)]"

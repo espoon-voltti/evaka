@@ -60,6 +60,7 @@ test('Urgent application attachments can be uploaded by end user', async (t) => 
   await enduserPage.navigateToApplicationsTab()
   await enduserPage.editApplication(urgentApplication.id)
   await enduserPage.uploadUrgentFile(`./${attachmentFileName}`)
+
   await enduserPage.assertUrgentFileHasBeenUploaded(attachmentFileName)
 
   await t.useRole(seppoAdminRole)
