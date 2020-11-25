@@ -182,7 +182,7 @@ fun fetchApplicationSummaries(
             """.trimIndent()
         else null,
         if (distinctions.contains(ApplicationDistinctions.SECONDARY)) "f.preferredunits && :units" else if (units.isNotEmpty()) "d.id = ANY(:units)" else null,
-        if (authorizedUnits != null) "d.id = ANY(:authorizedUnits)" else null,
+        if (authorizedUnits != null) "f.preferredunits && :authorizedUnits" else null,
         if (onlyAuthorizedToViewApplicationsWithAssistanceNeed) "(f.document->'careDetails'->>'assistanceNeeded')::boolean = true" else null,
         if ((periodStart != null || periodEnd != null) && dateType.contains(ApplicationDateType.DUE)) "daterange(:periodStart, :periodEnd, '[]') @> a.dueDate" else null,
         if ((periodStart != null || periodEnd != null) && dateType.contains(ApplicationDateType.START)) "daterange(:periodStart, :periodEnd, '[]') @> (f.document ->> 'preferredStartDate')::date" else null,
