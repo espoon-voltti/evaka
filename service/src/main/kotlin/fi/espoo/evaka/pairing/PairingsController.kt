@@ -1,5 +1,6 @@
 package fi.espoo.evaka.pairing
 
+import fi.espoo.evaka.Audit
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
@@ -34,6 +35,7 @@ class PairingsController(
         user: AuthenticatedUser,
         @RequestBody body: PostPairingReq
     ): ResponseEntity<Pairing> {
+        Audit.PairingInit.log(targetId = body.unitId)
         acl.getRolesForUnit(user, body.unitId).requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR)
 
         return db
@@ -57,6 +59,7 @@ class PairingsController(
         db: Database.Connection,
         @RequestBody body: PostPairingChallengeReq
     ): ResponseEntity<Pairing> {
+        Audit.PairingChallenge.log(targetId = body.challengeKey)
         return db
             .transaction { tx -> challengePairing(tx, body.challengeKey) }
             .let { ResponseEntity.ok(it) }
@@ -80,6 +83,7 @@ class PairingsController(
         @PathVariable id: UUID,
         @RequestBody body: PostPairingResponseReq
     ): ResponseEntity<Pairing> {
+        Audit.PairingResponse.log(targetId = id)
         try {
             acl.getRolesForPairing(user, id).requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR)
         } catch (e: Forbidden) {
@@ -109,6 +113,7 @@ class PairingsController(
         @PathVariable id: UUID,
         @RequestBody body: PostPairingValidationReq
     ): ResponseEntity<Unit> {
+        Audit.PairingValidation.log(targetId = id)
         db.transaction { tx -> incrementAttempts(tx, id, body.challengeKey) }
 
         db.transaction { tx ->
@@ -134,6 +139,7 @@ class PairingsController(
         db: Database.Connection,
         @PathVariable id: UUID
     ): ResponseEntity<PairingStatusRes> {
+        Audit.PairingStatusRead.log(targetId = id)
         return db
             .transaction { tx -> fetchPairingStatus(tx, id) }
             .let { ResponseEntity.ok(PairingStatusRes(status = it)) }
