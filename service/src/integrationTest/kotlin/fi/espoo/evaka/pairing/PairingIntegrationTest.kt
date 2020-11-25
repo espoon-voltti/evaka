@@ -13,7 +13,9 @@ import fi.espoo.evaka.shared.utils.zoneId
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDecisionMaker_1
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.ZonedDateTime
@@ -319,6 +321,18 @@ class PairingIntegrationTest : FullApplicationTest() {
         )
         givenPairing(pairing)
         postPairingValidationAssertFail(pairing.id, pairing.challengeKey, pairing.responseKey!!, 404)
+    }
+
+    @Test
+    fun `generatePairingKey - values are unique and chars are easy to distinguish`() {
+        val count = 100
+        val values = (1..count).map { generatePairingKey() }.toSet()
+        assertEquals(count, values.size)
+        assertTrue(values.all { key -> key.length == 10 })
+
+        val concatenated = values.joinToString(separator = "")
+        val badChars = listOf('i', 'l', 'I', '1', 'o', 'O', '0', ' ')
+        badChars.forEach { c -> assertFalse(concatenated.contains(c, ignoreCase = false)) }
     }
 
     private fun givenPairing(pairing: Pairing, attempts: Int = 0) {
