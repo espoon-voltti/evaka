@@ -1,0 +1,51 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: evaka
+Source: https://github.com/espoon-voltti/evaka
+
+Files: apigw/config/certificates/*
+Copyright: 2017-2020 City of Espoo
+License: LGPL-2.1-or-later
+
+Files: apigw/config/test-cert/*
+Copyright: 2017-2020 City of Espoo
+License: LGPL-2.1-or-later
+
+Files: */.sentryclirc
+Copyright: 2017-2020 City of Espoo
+License: LGPL-2.1-or-later
+
+Files: */*.cert
+Copyright: 2017-2020 City of Espoo
+License: LGPL-2.1-or-later
+
+Files: */*.pem
+Copyright: 2017-2020 City of Espoo
+License: LGPL-2.1-or-later
+
+Files: */jwks.json
+Copyright: 2017-2020 City of Espoo
+License: LGPL-2.1-or-later
+
+Files: */package.json
+Copyright: 2017-2020 City of Espoo
+License: LGPL-2.1-or-later
+
+Files: */tsconfig*.json
+Copyright: 2017-2020 City of Espoo
+License: LGPL-2.1-or-later
+
+Files: */tslint.json
+Copyright: 2017-2020 City of Espoo
+License: LGPL-2.1-or-later
+
+Files: */yarn.lock
+Copyright: 2017-2020 City of Espoo
+License: LGPL-2.1-or-later
+
+Files: */gradlew*
+Copyright: 2007-2020 The original author or authors <info@gradle.com>
+License: Apache-2.0
+
+Files: */gradle/wrapper/*
+Copyright: 2007-2020 The original author or authors <info@gradle.com>
+License: Apache-2.0
