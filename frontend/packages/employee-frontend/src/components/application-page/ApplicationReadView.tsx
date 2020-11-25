@@ -106,6 +106,13 @@ function ApplicationReadView({
     attachments
   } = application
 
+  const urgencyAttachments = attachments.filter(
+    ({ type }) => type === 'URGENCY'
+  )
+  const extendedCareAttachments = attachments.filter(
+    ({ type }) => type === 'EXTENDED_CARE'
+  )
+
   const connectedDaycare = type === 'PRESCHOOL' && serviceNeed !== null
   const paid = type === 'DAYCARE' || connectedDaycare
 
@@ -147,14 +154,14 @@ function ApplicationReadView({
                 <span>{i18n.application.serviceNeed.notUrgent}</span>
               ) : (
                 <AttachmentContainer>
-                  {attachments.length ? (
+                  {urgencyAttachments.length ? (
                     <span>
                       {i18n.application.serviceNeed.isUrgentWithAttachments}
                     </span>
                   ) : (
                     <span>{i18n.application.serviceNeed.isUrgent}</span>
                   )}
-                  {attachments.map((attachment) => (
+                  {urgencyAttachments.map((attachment) => (
                     <Attachment
                       key={attachment.id}
                       attachment={attachment}
@@ -195,10 +202,28 @@ function ApplicationReadView({
               </span>
 
               <Label>{i18n.application.serviceNeed.shiftCareLabel}</Label>
-              <BooleanValue
-                value={serviceNeed.shiftCare}
-                selectedLabel={i18n.application.serviceNeed.shiftCareValue}
-              />
+              {!serviceNeed.shiftCare ? (
+                <span>{i18n.common.no}</span>
+              ) : (
+                <AttachmentContainer>
+                  {extendedCareAttachments.length ? (
+                    <span>
+                      {i18n.application.serviceNeed.shiftCareWithAttachments}
+                    </span>
+                  ) : (
+                    <span>
+                      {i18n.application.serviceNeed.shiftCareWithoutAttachments}
+                    </span>
+                  )}
+                  {extendedCareAttachments.map((attachment) => (
+                    <Attachment
+                      key={attachment.id}
+                      attachment={attachment}
+                      dataQa={`extended-care-attachment-${attachment.name}`}
+                    />
+                  ))}
+                </AttachmentContainer>
+              )}
             </>
           )}
 

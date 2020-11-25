@@ -258,9 +258,12 @@ export interface ApplicationNote {
   updatedByName: string | null
 }
 
+export type AttachmentType = 'URGENCY' | 'EXTENDED_CARE'
+
 export interface Attachment {
   id: UUID
   name: string
   contentType: string
   updated: Date
+  type: AttachmentType
 }
