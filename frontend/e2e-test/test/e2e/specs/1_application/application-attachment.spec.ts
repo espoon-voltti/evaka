@@ -25,8 +25,8 @@ const applicationReadView = new ApplicationReadView()
 let fixtures: AreaAndPersonFixtures
 let cleanUp: () => Promise<void>
 
-fixture('Employee reads applications')
-  .meta({ type: 'regression', subType: 'applications2' })
+fixture('Enduser attachments')
+  .meta({ type: 'regression', subType: 'application-attachments' })
   .page(home.homePage('admin'))
   .before(async () => {
     ;[fixtures, cleanUp] = await initializeAreaAndPersonData()
