@@ -4,6 +4,8 @@ import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.Forbidden
+import fi.espoo.evaka.shared.domain.NotFound
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -78,7 +80,11 @@ class PairingsController(
         @PathVariable id: UUID,
         @RequestBody body: PostPairingResponseReq
     ): ResponseEntity<Pairing> {
-        acl.getRolesForPairing(user, id).requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR)
+        try {
+            acl.getRolesForPairing(user, id).requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR)
+        } catch (e: Forbidden) {
+            throw NotFound("Pairing not found or not authorized")
+        }
         db.transaction { tx -> incrementAttempts(tx, id, body.challengeKey) }
 
         return db

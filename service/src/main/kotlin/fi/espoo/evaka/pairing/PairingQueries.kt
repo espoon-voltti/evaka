@@ -51,7 +51,7 @@ fun respondPairingChallenge(tx: Database.Transaction, id: UUID, challengeKey: St
     val sql =
         """
             UPDATE pairing SET status = 'READY'
-            WHERE id = :id AND challenge_key = :challenge AND status = 'WAITING_RESPONSE' AND expires > :now AND attempts <= :maxAttempts
+            WHERE id = :id AND challenge_key = :challenge AND response_key = :response AND status = 'WAITING_RESPONSE' AND expires > :now AND attempts <= :maxAttempts
             RETURNING *
         """.trimIndent()
 
