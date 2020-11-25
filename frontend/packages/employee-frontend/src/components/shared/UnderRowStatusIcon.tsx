@@ -1,3 +1,9 @@
+{/*
+SPDX-FileCopyrightText: 2017-2020 City of Espoo
+
+SPDX-License-Identifier: LGPL-2.1-or-later
+*/}
+
 import React from 'react'
 import { DefaultMargins } from 'components/shared/layout/white-space'
 import styled from 'styled-components'

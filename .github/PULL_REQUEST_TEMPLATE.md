@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2017-2020 City of Espoo
+
+SPDX-License-Identifier: LGPL-2.1-or-later
+-->
+
 #### Summary
 <!-- Describe the change, including rationale and design decisions (not just what but also why) -->
 

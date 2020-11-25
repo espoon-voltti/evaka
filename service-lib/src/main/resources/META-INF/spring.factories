@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2017-2020 City of Espoo
+#
+# SPDX-License-Identifier: LGPL-2.1-or-later
+
 org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
   fi.espoo.voltti.auth.VolttiJwtSecurityAutoConfiguration,\
   fi.espoo.voltti.auth.VolttiJwtSecurityConfigurerAdapter
