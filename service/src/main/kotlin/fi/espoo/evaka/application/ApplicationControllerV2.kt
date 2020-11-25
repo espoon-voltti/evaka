@@ -188,7 +188,7 @@ class ApplicationControllerV2(
             throw BadRequest("Date parameter periodEnd ($periodEnd) cannot be before periodStart ($periodStart)")
 
         val userHasLimitedPrivileges = !user.hasOneOfRoles(Roles.ADMIN, Roles.FINANCE_ADMIN, Roles.SERVICE_WORKER)
-        val authorizedUnitFilterList = when {
+        val authorizedUnits = when {
             userHasLimitedPrivileges -> acl.getAuthorizedUnits(user)
             else -> null
         }
@@ -214,7 +214,7 @@ class ApplicationControllerV2(
                 periodEnd = periodEnd,
                 searchTerms = searchTerms ?: "",
                 transferApplications = transferApplications ?: TransferApplicationFilter.ALL,
-                authorizedUnitFilterList = authorizedUnitFilterList,
+                authorizedUnits = authorizedUnits,
                 onlyAuthorizedToViewApplicationsWithAssistanceNeed = userHasLimitedPrivileges
             )
         }.let { ResponseEntity.ok(it) }
