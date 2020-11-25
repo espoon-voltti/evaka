@@ -167,11 +167,13 @@ const Url = styled.a`
 function AddressEditor({
   editable,
   address,
-  onChange
+  onChange,
+  dataQaPrefix
 }: {
   editable: boolean
   address: Address
   onChange: (address: Address) => void
+  dataQaPrefix: string
 }) {
   const { i18n } = useTranslation()
   const update = (updates: Partial<Address>) =>
@@ -194,17 +196,20 @@ function AddressEditor({
         value={address.streetAddress}
         placeholder={i18n.unitEditor.placeholder.streetAddress}
         onChange={(value) => update({ streetAddress: value })}
+        dataQa={`${dataQaPrefix}-street-input`}
       />
       <AddressSecondRowContainer>
         <InputField
           value={address.postalCode}
           placeholder={i18n.unitEditor.placeholder.postalCode}
           onChange={(value) => update({ postalCode: value })}
+          dataQa={`${dataQaPrefix}-postal-code-input`}
         />
         <InputField
           value={address.postOffice}
           placeholder={i18n.unitEditor.placeholder.postOffice}
           onChange={(value) => update({ postOffice: value })}
+          dataQa={`${dataQaPrefix}-post-office-input`}
         />
       </AddressSecondRowContainer>
     </div>
@@ -293,6 +298,9 @@ function validateForm(
   }
   if (!form.areaId) {
     errors.push(i18n.unitEditor.error.area)
+  }
+  if (Object.values(form.careTypes).every((v) => !v)) {
+    errors.push(i18n.unitEditor.error.careType)
   }
   if (form.careTypes.DAYCARE && !form.daycareType) {
     errors.push(i18n.unitEditor.error.daycareType)
@@ -510,7 +518,7 @@ export default function UnitEditor(props: Props): JSX.Element {
     e.preventDefault()
     const [fields, errors] = validateForm(i18n, form)
     setFormErrors(errors)
-    if (fields) {
+    if (fields && errors.length === 0) {
       props.onSubmit(fields, props.unit?.id)
     }
   }
@@ -553,6 +561,7 @@ export default function UnitEditor(props: Props): JSX.Element {
             placeholder={i18n.unitEditor.placeholder.name}
             value={form.name}
             onChange={(value) => updateForm({ name: value })}
+            dataQa="unit-name-input"
           />
         ) : (
           <div>{form.name}</div>
@@ -617,6 +626,7 @@ export default function UnitEditor(props: Props): JSX.Element {
                   daycareType: checked ? form.daycareType : undefined
                 })
               }
+              dataQa="care-type-checkbox-DAYCARE"
             />
             {form.careTypes.DAYCARE && (
               <Select
@@ -654,6 +664,7 @@ export default function UnitEditor(props: Props): JSX.Element {
             checked={form.careTypes.PRESCHOOL}
             label={i18n.common.types.PRESCHOOL}
             onChange={(checked) => updateCareTypes({ PRESCHOOL: checked })}
+            dataQa="care-type-checkbox-PRESCHOOL"
           />
           <Checkbox
             disabled={!props.editable}
@@ -662,12 +673,14 @@ export default function UnitEditor(props: Props): JSX.Element {
             onChange={(checked) =>
               updateCareTypes({ PREPARATORY_EDUCATION: checked })
             }
+            dataQa="care-type-checkbox-PREPARATORY"
           />
           <Checkbox
             disabled={!props.editable}
             checked={form.careTypes.CLUB}
             label={i18n.common.types.CLUB}
             onChange={(checked) => updateCareTypes({ CLUB: checked })}
+            dataQa="care-type-checkbox-CLUB"
           />
         </FixedSpaceColumn>
       </FormPart>
@@ -679,18 +692,21 @@ export default function UnitEditor(props: Props): JSX.Element {
             label={i18n.unitEditor.field.canApplyDaycare}
             checked={form.canApplyDaycare}
             onChange={(canApplyDaycare) => updateForm({ canApplyDaycare })}
+            dataQa="application-type-checkbox-DAYCARE"
           />
           <Checkbox
             disabled={!props.editable}
             label={i18n.unitEditor.field.canApplyPreschool}
             checked={form.canApplyPreschool}
             onChange={(canApplyPreschool) => updateForm({ canApplyPreschool })}
+            dataQa="application-type-checkbox-PRESCHOOL"
           />
           <Checkbox
             disabled={!props.editable}
             label={i18n.unitEditor.field.canApplyClub}
             checked={form.canApplyClub}
             onChange={(canApplyClub) => updateForm({ canApplyClub })}
+            dataQa="application-type-checkbox-CLUB"
           />
         </FixedSpaceColumn>
       </FormPart>
@@ -941,6 +957,7 @@ export default function UnitEditor(props: Props): JSX.Element {
           editable={props.editable}
           address={form.visitingAddress}
           onChange={(visitingAddress) => updateForm({ visitingAddress })}
+          dataQaPrefix="visiting-address"
         />
       </FormPart>
       <FormPart>
@@ -966,6 +983,7 @@ export default function UnitEditor(props: Props): JSX.Element {
           editable={props.editable}
           address={form.mailingAddress}
           onChange={(mailingAddress) => updateForm({ mailingAddress })}
+          dataQaPrefix="mailing-address"
         />
       </FormPart>
       <H3>{i18n.unitEditor.title.unitManager}</H3>
@@ -979,6 +997,7 @@ export default function UnitEditor(props: Props): JSX.Element {
             placeholder={i18n.unitEditor.placeholder.unitManager.name}
             value={unitManager.name}
             onChange={(value) => updateUnitManager({ name: value })}
+            dataQa="manager-name-input"
           />
         ) : (
           unitManager.name
