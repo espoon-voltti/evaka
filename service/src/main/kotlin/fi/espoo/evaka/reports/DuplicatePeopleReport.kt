@@ -37,7 +37,9 @@ private fun Database.Read.getDuplicatePeople(): List<DuplicatePeopleReportRow> {
                 concat(
                     lower(unaccent(last_name)),
                     ',',
-                    split_part(lower(unaccent(first_name)), ' ', 1)
+                    split_part(lower(unaccent(first_name)), ' ', 1),
+                    ',',
+                    date_of_birth
                 ) AS key
             FROM person p
             WHERE p.first_name IS NOT NULL AND p.last_name IS NOT NULL 
