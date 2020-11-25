@@ -74,6 +74,7 @@ class PublicResourcesConfigurerAdapter : WebSecurityConfigurerAdapter() {
             .csrf().disable() // csrf handled at API gateway
             .requestMatchers()
             .antMatchers(
+                "public/**",
                 "/public/**",
                 "/enduser/areas",
                 "/location",

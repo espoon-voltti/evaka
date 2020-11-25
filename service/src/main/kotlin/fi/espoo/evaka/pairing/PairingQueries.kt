@@ -9,6 +9,7 @@ import java.time.ZonedDateTime
 import java.util.UUID
 
 const val maxAttempts = 10
+const val expiresInMinutes = 15L
 
 fun initPairing(tx: Database.Transaction, unitId: UUID): Pairing {
     // language=sql
@@ -21,7 +22,7 @@ fun initPairing(tx: Database.Transaction, unitId: UUID): Pairing {
 
     return tx.createQuery(sql)
         .bind("unitId", unitId)
-        .bind("expires", ZonedDateTime.now(zoneId).plusMinutes(15).toInstant())
+        .bind("expires", ZonedDateTime.now(zoneId).plusMinutes(expiresInMinutes).toInstant())
         .bind("challenge", generatePairingKey())
         .mapTo<Pairing>()
         .first()
@@ -42,7 +43,6 @@ fun challengePairing(tx: Database.Transaction, challengeKey: String): Pairing {
         .bind("now", ZonedDateTime.now(zoneId).toInstant())
         .bind("maxAttempts", maxAttempts)
         .mapTo<Pairing>()
-        .list()
         .firstOrNull() ?: throw NotFound("Valid pairing not found")
 }
 
@@ -62,7 +62,6 @@ fun respondPairingChallenge(tx: Database.Transaction, id: UUID, challengeKey: St
         .bind("now", ZonedDateTime.now(zoneId).toInstant())
         .bind("maxAttempts", maxAttempts)
         .mapTo<Pairing>()
-        .list()
         .firstOrNull() ?: throw NotFound("Valid pairing not found")
 }
 
