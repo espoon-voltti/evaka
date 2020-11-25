@@ -3,10 +3,11 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import config from '../config'
-import { Selector, t } from 'testcafe'
+import { ClientFunction, Selector, t } from 'testcafe'
 
 export default class ReportsPage {
   readonly url = config.employeeUrl
+  readonly downloadCsvLink = Selector('[data-qa="download-csv"] a')
 
   async selectReportsTab() {
     await t.click(Selector('[data-qa="reports-nav"]'))
@@ -54,5 +55,23 @@ export default class ReportsPage {
     await t
       .expect(unitRowSelector.find('[data-qa="child-sum"]').innerText)
       .eql(expectedMonthlySum)
+  }
+
+  async getCsvReport(): Promise<string> {
+    const path = await this.downloadCsvLink.getAttribute('href')
+    const getCsvFile = ClientFunction((url) => {
+      return new Promise<string>((resolve) => {
+        const xhr = new XMLHttpRequest()
+        xhr.open('GET', url)
+
+        xhr.onload = function () {
+          resolve(xhr.responseText)
+        }
+
+        xhr.send(null)
+      })
+    })
+
+    return await getCsvFile(`${path}`)
   }
 }
