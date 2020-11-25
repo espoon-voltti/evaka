@@ -132,6 +132,28 @@ export default class EnduserPage {
         `attachment;filename=${decisionName}_Jari-Petteri_Mukkelis-Makkelis_Vetelä-Viljami_Eelis-Juhani_Karhula.pdf`
       )
   }
+
+  readonly urgentAttachmentsUpload = Selector(
+    '[data-qa="file-upload-urgent-attachments"]'
+  )
+
+  async uploadUrgentFile(file: string) {
+    await t.setFilesToUpload(
+      this.urgentAttachmentsUpload.find('[data-qa="btn-upload-file"]'),
+      [file]
+    )
+  }
+
+  async assertUrgentFileHasBeenUploaded(file: string) {
+    await t
+      .expect(
+        this.urgentAttachmentsUpload
+          .find('[data-qa="files"]')
+          .find('.uploaded')
+          .withText(file).exists
+      )
+      .ok()
+  }
 }
 
 interface PDFResponse {

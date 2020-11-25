@@ -182,6 +182,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
                       :files="urgentFiles"
                       :onUpload="onFileUpload"
                       :onDelete="onFileDelete"
+                      data-qa="file-upload-urgent-attachments"
                     />
                   </div>
                 </div>

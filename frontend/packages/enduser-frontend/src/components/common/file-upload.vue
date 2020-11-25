@@ -11,6 +11,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
         type="file"
         accept="image/jpeg, image/png, application/pdf, application/msword, application/vnd.openxmlformats-officedocument.wordprocessingml.document, application/vnd.oasis.opendocument.text"
         @change="onChange"
+        data-qa="btn-upload-file"
       />
       <h4>{{ $t('file-upload.input.title') }}</h4>
       <span
@@ -20,8 +21,8 @@ SPDX-License-Identifier: LGPL-2.1-or-later
       />
     </label>
     <div class="spacer" />
-    <div class="files">
-      <div class="file" v-for="file in files" v-bind:key="file.key">
+    <div class="files" data-qa="files">
+      <div v-bind:class="{ uploaded: !inProgress(file) && !file.error }" class="file" v-for="file in files" v-bind:key="file.key">
         <div class="file-icon-container">
           <font-awesome-icon
             :icon="['fal', fileIcon(file)]"

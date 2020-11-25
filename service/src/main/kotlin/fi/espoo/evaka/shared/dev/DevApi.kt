@@ -347,8 +347,9 @@ RETURNING id
         db.transaction {
             it.execute(
                 """
-WITH applications AS (DELETE FROM application WHERE child_id = ? OR guardian_id = ? RETURNING id)
-DELETE FROM application_form USING applications WHERE application_id = applications.id""",
+WITH ApplicationsDeleted AS (DELETE FROM application WHERE child_id = ? OR guardian_id = ? RETURNING id),
+AttachmentsDeleted AS (DELETE FROM application_form USING ApplicationsDeleted WHERE application_id = ApplicationsDeleted.id)
+DELETE FROM attachment USING ApplicationsDeleted WHERE application_id = ApplicationsDeleted.id""",
                 id, id
             )
             it.execute("DELETE FROM fee_decision_part WHERE child = ?", id)
@@ -628,6 +629,7 @@ fun deserializeApplicationForm(jsonString: String): DaycareFormV0 {
 }
 
 fun Handle.clearDatabase() = listOf(
+    "attachment",
     "guardian",
     "decision",
     "placement_plan",
@@ -647,6 +649,7 @@ fun Handle.clearDatabase() = listOf(
 }
 
 fun Handle.deleteApplication(id: UUID) {
+    execute("DELETE FROM attachment WHERE application_id = ?", id)
     execute("DELETE FROM decision WHERE application_id = ?", id)
     execute("DELETE FROM placement_plan WHERE application_id = ?", id)
     execute("DELETE FROM application_form WHERE application_id = ?", id)

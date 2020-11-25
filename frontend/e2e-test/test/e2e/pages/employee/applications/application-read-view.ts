@@ -63,4 +63,10 @@ export default class ApplicationReadView {
     await t.expect(submit.visible).ok()
     await t.click(submit)
   }
+
+  async assertUrgentAttachmentExists(fileName: string) {
+    await t
+      .expect(Selector(`[data-qa="urgent-attachment-${fileName}"]`).exists)
+      .ok()
+  }
 }
