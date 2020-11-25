@@ -513,7 +513,7 @@ export default function UnitEditor(props: Props): JSX.Element {
     e.preventDefault()
     const [fields, errors] = validateForm(i18n, form)
     setFormErrors(errors)
-    if (fields) {
+    if (fields && errors.length === 0) {
       props.onSubmit(fields, props.unit?.id)
     }
   }
