@@ -21,6 +21,7 @@ import {
 import { logConsoleMessages } from '../../utils/fixture'
 import { seppoAdminRole } from '../../config/users'
 import ReportsPage from '../../pages/reports'
+import assert from 'assert'
 
 const page = new InvoicingPage()
 
@@ -71,4 +72,14 @@ test('voucher service providers are reported correctly, respecting the area filt
 
   await reports.assertVoucherServiceProviderRowCount(1)
   await reports.assertVoucherServiceProviderRow(daycareFixture.id, '1', '-289')
+
+  const report = await reports.getCsvReport()
+  assert(
+    report.includes(daycareFixture.name),
+    `Expected csv report to contain ${daycareFixture.name}`
+  )
+  assert(
+    !report.includes(daycare2Fixture.name),
+    `Expected csv report to not contain ${daycare2Fixture.name}`
+  )
 })
