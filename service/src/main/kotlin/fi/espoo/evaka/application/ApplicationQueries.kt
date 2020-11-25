@@ -131,7 +131,7 @@ fun fetchApplicationSummaries(
     periodEnd: LocalDate?,
     searchTerms: String = "",
     transferApplications: TransferApplicationFilter,
-    authorizedUnits: AclAuthorization?,
+    authorizedUnits: AclAuthorization,
     onlyAuthorizedToViewApplicationsWithAssistanceNeed: Boolean
 ): ApplicationSummaries {
 
@@ -140,7 +140,7 @@ fun fetchApplicationSummaries(
         "pageSize" to pageSize,
         "area" to areas.toTypedArray(),
         "units" to units.toTypedArray(),
-        "authorizedUnits" to authorizedUnits?.ids?.toTypedArray(),
+        "authorizedUnits" to authorizedUnits.ids?.toTypedArray(),
         "documentType" to type.toString().toLowerCase(),
         "preschoolType" to preschoolType.toTypedArray(),
         "status" to statuses.map { it.toStatus() }.toTypedArray(),
@@ -182,7 +182,7 @@ fun fetchApplicationSummaries(
             """.trimIndent()
         else null,
         if (distinctions.contains(ApplicationDistinctions.SECONDARY)) "f.preferredunits && :units" else if (units.isNotEmpty()) "d.id = ANY(:units)" else null,
-        if (authorizedUnits != null) "f.preferredunits && :authorizedUnits" else null,
+        if (authorizedUnits.ids != null) "f.preferredunits && :authorizedUnits" else null,
         if (onlyAuthorizedToViewApplicationsWithAssistanceNeed) "(f.document->'careDetails'->>'assistanceNeeded')::boolean = true" else null,
         if ((periodStart != null || periodEnd != null) && dateType.contains(ApplicationDateType.DUE)) "daterange(:periodStart, :periodEnd, '[]') @> a.dueDate" else null,
         if ((periodStart != null || periodEnd != null) && dateType.contains(ApplicationDateType.START)) "daterange(:periodStart, :periodEnd, '[]') @> (f.document ->> 'preferredStartDate')::date" else null,

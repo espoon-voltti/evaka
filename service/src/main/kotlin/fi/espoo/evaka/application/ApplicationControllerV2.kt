@@ -187,12 +187,6 @@ class ApplicationControllerV2(
         if (periodStart != null && periodEnd != null && periodStart > periodEnd)
             throw BadRequest("Date parameter periodEnd ($periodEnd) cannot be before periodStart ($periodStart)")
 
-        val userHasLimitedPrivileges = !user.hasOneOfRoles(Roles.ADMIN, Roles.FINANCE_ADMIN, Roles.SERVICE_WORKER)
-        val authorizedUnits = when {
-            userHasLimitedPrivileges -> acl.getAuthorizedUnits(user)
-            else -> null
-        }
-
         return db.read { tx ->
             fetchApplicationSummaries(
                 h = tx.handle,
@@ -214,8 +208,8 @@ class ApplicationControllerV2(
                 periodEnd = periodEnd,
                 searchTerms = searchTerms ?: "",
                 transferApplications = transferApplications ?: TransferApplicationFilter.ALL,
-                authorizedUnits = authorizedUnits,
-                onlyAuthorizedToViewApplicationsWithAssistanceNeed = userHasLimitedPrivileges
+                authorizedUnits = acl.getAuthorizedUnits(user),
+                onlyAuthorizedToViewApplicationsWithAssistanceNeed = !user.hasOneOfRoles(Roles.ADMIN, Roles.FINANCE_ADMIN, Roles.SERVICE_WORKER)
             )
         }.let { ResponseEntity.ok(it) }
     }
