@@ -10,6 +10,23 @@ Files: apigw/config/test-cert/*
 Copyright: 2017-2020 City of Espoo
 License: LGPL-2.1-or-later
 
+Files: frontend/packages/enduser-frontend/src/localization/*.json
+Copyright: 2017-2020 City of Espoo
+License: LGPL-2.1-or-later
+
+Files: **/src/main/resources/db/migration/*
+Copyright: 2017-2020 City of Espoo
+License: LGPL-2.1-or-later
+License: LGPL-2.1-or-later
+
+Files: .nvmrc
+Copyright: 2017-2020 City of Espoo
+License: LGPL-2.1-or-later
+
+Files: *.gitignore
+Copyright: 2017-2020 City of Espoo
+License: LGPL-2.1-or-later
+
 Files: */.sentryclirc
 Copyright: 2017-2020 City of Espoo
 License: LGPL-2.1-or-later
