@@ -50,7 +50,7 @@ async function verifyProfile(profile: SuomiFiProfile): Promise<SamlUser> {
   })
   return {
     id: person.id,
-    roles: ['ROLE_ENDUSER'],
+    roles: person.roles,
     nameID: profile.nameID,
     nameIDFormat: profile.nameIDFormat,
     nameQualifier: profile.nameQualifier,
