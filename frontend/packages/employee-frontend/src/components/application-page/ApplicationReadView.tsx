@@ -211,9 +211,7 @@ function ApplicationReadView({
                       {i18n.application.serviceNeed.shiftCareWithAttachments}
                     </span>
                   ) : (
-                    <span>
-                      {i18n.application.serviceNeed.shiftCareWithoutAttachments}
-                    </span>
+                    <span>{i18n.application.serviceNeed.shiftCareValue}</span>
                   )}
                   {extendedCareAttachments.map((attachment) => (
                     <Attachment
