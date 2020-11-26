@@ -56,6 +56,8 @@ test('Urgent application attachments can be uploaded by end user', async (t) => 
 
   const attachmentFileName = 'test_file.jpg'
   await insertApplications([urgentApplication])
+
+  // Upload file
   await t.useRole(enduserRole)
   await enduserPage.navigateToApplicationsTab()
   await enduserPage.editApplication(urgentApplication.id)
@@ -67,6 +69,20 @@ test('Urgent application attachments can be uploaded by end user', async (t) => 
   await applicationReadView.openApplicationByLink(urgentApplication.id)
   await applicationReadView.assertPageTitle('Varhaiskasvatushakemus')
   await applicationReadView.assertUrgentAttachmentExists(attachmentFileName)
+
+  // Delete file
+  await t.useRole(enduserRole)
+  await enduserPage.navigateToApplicationsTab()
+  await enduserPage.editApplication(urgentApplication.id)
+  await enduserPage.deleteUrgentAttachment(attachmentFileName)
+  await enduserPage.assertUrgentFileDoesNotExist(attachmentFileName)
+
+  await t.useRole(seppoAdminRole)
+  await applicationReadView.openApplicationByLink(urgentApplication.id)
+  await applicationReadView.assertPageTitle('Varhaiskasvatushakemus')
+  await applicationReadView.assertUrgentAttachmentDoesNotExists(
+    attachmentFileName
+  )
 })
 
 test('Extended care attachments can be uploaded by end user', async (t) => {
