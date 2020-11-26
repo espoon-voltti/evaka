@@ -142,7 +142,10 @@ class AttachmentsController(
         user.requireOneOfRoles(UserRole.END_USER)
         if (!db.read { it.isOwnAttachment(id, user) }) throw Forbidden("Permission denied")
 
-        db.transaction { it.deleteAttachment(id) }
+        db.transaction {
+            it.deleteAttachment(id)
+            s3Client.delete(filesBucket, "$id")
+        }
         return ResponseEntity.noContent().build()
     }
 }

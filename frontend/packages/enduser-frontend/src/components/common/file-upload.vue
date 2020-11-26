@@ -47,6 +47,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
                 class="file-header-icon-button"
                 @click="deleteFile(file)"
                 :disabled="inProgress(file) && !file.error"
+                v-bind:data-qa="deleteButtonDataQa(file)"
               >
                 <font-awesome-icon
                   :icon="['fal', 'times']"
@@ -139,6 +140,9 @@ SPDX-License-Identifier: LGPL-2.1-or-later
       },
       fileUploadFailed(file) {
         return file.error === 'server-error'
+      },
+      deleteButtonDataQa(file) {
+        return `btn-delete-file-${file.name}`
       }
     }
   }

@@ -70,6 +70,12 @@ export default class ApplicationReadView {
       .ok()
   }
 
+  async assertUrgentAttachmentDoesNotExists(fileName: string) {
+    await t
+      .expect(Selector(`[data-qa="urgent-attachment-${fileName}"]`).exists)
+      .notOk()
+  }
+
   async assertExtendedCareAttachmentExists(fileName: string) {
     await t
       .expect(

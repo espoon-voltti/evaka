@@ -155,6 +155,21 @@ export default class EnduserPage {
       .ok()
   }
 
+  async deleteUrgentAttachment(file: string) {
+    await t.click(
+      this.urgentAttachmentsUpload.find(`[data-qa="btn-delete-file-${file}"]`)
+    )
+  }
+
+  async assertUrgentFileDoesNotExist(file: string) {
+    await t
+      .expect(
+        this.urgentAttachmentsUpload.find('[data-qa="files"]').withText(file)
+          .exists
+      )
+      .notOk()
+  }
+
   readonly extendedCareAttachmentsUpload = Selector(
     '[data-qa="file-upload-extended-care-attachments"]'
   )
