@@ -13,7 +13,7 @@ const useProIcons = process.env.ICONS === 'pro'
 module.exports = {
   apps: [{
     name: 'apigw',
-    script: 'yarn && yarn dev',
+    script: 'yarn clean && yarn && yarn dev',
     cwd: path.resolve(__dirname, '../apigw'),
     ...defaults
   }, {
