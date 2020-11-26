@@ -8,9 +8,9 @@ import express from 'express'
 import { Cookie, CookieJar } from 'tough-cookie'
 import nock from 'nock'
 import { evakaServiceUrl } from '../config'
-import { AuthenticatedUser } from '../service/pis'
 import { sessionCookie, SessionType } from '../session'
 import { csrfCookieName } from '../middleware/csrf'
+import { AuthenticatedUser } from '../service-client'
 
 export class GatewayTester {
   public readonly client: AxiosInstance

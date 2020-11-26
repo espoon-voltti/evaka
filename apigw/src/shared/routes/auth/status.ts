@@ -3,9 +3,9 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { NextFunction, Request, Response, Router } from 'express'
-import { getEmployeeDetails } from '../../service/pis'
 import { csrf, csrfCookie } from '../../middleware/csrf'
 import { SessionType } from '../../session'
+import { getEmployeeDetails } from '../../service-client'
 
 export default function authStatus(sessionType: SessionType) {
   const router = Router()

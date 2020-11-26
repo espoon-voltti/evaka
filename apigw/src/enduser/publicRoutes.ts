@@ -4,7 +4,7 @@
 
 import { Router } from 'express'
 import { createProxy } from '../shared/proxy-utils'
-import { autocomplete, geocode } from './services/map'
+import { autocomplete, geocode } from './google-maps'
 import { getEnduserAreas } from '../shared/service-client'
 
 const router = Router()
