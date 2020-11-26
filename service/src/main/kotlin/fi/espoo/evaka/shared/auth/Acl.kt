@@ -140,6 +140,22 @@ WHERE employee_id = :userId AND decision.id = :decisionId
         }
     )
 
+    fun getRolesForAssistanceNeed(user: AuthenticatedUser, assistanceNeedId: UUID): AclAppliedRoles = AclAppliedRoles(
+        (user.roles - UserRole.ACL_ROLES) + Database(jdbi).read {
+            it.createQuery(
+                // language=SQL
+                """
+SELECT child_id
+FROM assistance_need
+WHERE id = :assistanceNeedId
+                """.trimIndent()
+            ).bind("assistanceNeedId", assistanceNeedId)
+                .mapTo<UUID>()
+                .map { childId -> getRolesForChild(user, childId).roles }
+                .fold(setOf<UserRole>()) { acc, rolesSet -> acc.intersect(rolesSet) }
+        }
+    )
+
     fun getRolesForPairing(user: AuthenticatedUser, pairingId: UUID): AclAppliedRoles = AclAppliedRoles(
         (user.roles - UserRole.ACL_ROLES) + Database(jdbi).read {
             it.createQuery(
