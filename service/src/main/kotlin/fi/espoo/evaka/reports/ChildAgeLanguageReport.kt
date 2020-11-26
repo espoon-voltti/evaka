@@ -39,7 +39,7 @@ class ChildAgeLanguageReportController(private val acl: AccessControlList) {
 }
 
 private fun Database.Read.getChildAgeLanguageRows(date: LocalDate, authorizedDaycares: AclAuthorization): List<ChildAgeLanguageReportRow> {
-    val daycareFilter: String = if (authorizedDaycares.ids != null) "WHERE u.id = ANY(:authorizedDaycareIds)" else ""
+    val daycareFilter: String = if (authorizedDaycares != AclAuthorization.All) "WHERE u.id = ANY(:authorizedDaycareIds)" else ""
 
     // language=sql
     val sql =
