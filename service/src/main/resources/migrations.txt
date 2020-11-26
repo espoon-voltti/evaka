@@ -20,3 +20,4 @@ V19__pairing.sql
 V20__attachment_type.sql
 V21__add_special_education_teacher_role.sql
 V22__alter_valid_acl_role_constraint.sql
+V23__mobile_device.sql

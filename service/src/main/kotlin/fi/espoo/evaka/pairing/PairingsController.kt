@@ -96,7 +96,11 @@ class PairingsController(
         db.transaction { tx -> incrementAttempts(tx, id, body.challengeKey) }
 
         return db
-            .transaction { tx -> respondPairingChallenge(tx, id, body.challengeKey, body.responseKey) }
+            .transaction { tx ->
+                val pairing = respondPairingChallenge(tx, id, body.challengeKey, body.responseKey)
+                val deviceId = insertDeviceData(tx, pairing.unitId)
+                pairing.copy(createdDeviceId = deviceId)
+            }
             .let { ResponseEntity.ok(it) }
     }
 
@@ -105,7 +109,7 @@ class PairingsController(
      *
      * Endpoint takes in the previously received id, challengeKey and responseKey.
      *
-     * Pairing status changes from WAITING_RESPONSE to READY.
+     * Pairing status changes from READY to PAIRED.
      */
     data class PostPairingValidationReq(
         val challengeKey: String,
@@ -122,8 +126,6 @@ class PairingsController(
 
         db.transaction { tx ->
             validatePairing(tx, id, body.challengeKey, body.responseKey)
-
-            // todo: insert into mobile_device and employee ?
         }
 
         return ResponseEntity.noContent().build()

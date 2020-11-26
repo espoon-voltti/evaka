@@ -12,8 +12,8 @@ import java.security.SecureRandom
 import java.time.ZonedDateTime
 import java.util.UUID
 
-const val maxAttempts = 10
-const val expiresInMinutes = 15L
+const val maxAttempts = 100 // additional brute-force protection
+const val expiresInMinutes = 60L
 
 fun initPairing(tx: Database.Transaction, unitId: UUID): Pairing {
     // language=sql
