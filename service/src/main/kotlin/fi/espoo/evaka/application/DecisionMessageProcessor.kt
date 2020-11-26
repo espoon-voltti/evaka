@@ -8,6 +8,7 @@ import fi.espoo.evaka.decision.DecisionService
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.NotifyDecisionCreated
 import fi.espoo.evaka.shared.async.SendDecision
+import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.config.Roles
 import fi.espoo.evaka.shared.db.Database
 import mu.KotlinLogging
@@ -18,7 +19,8 @@ private val logger = KotlinLogging.logger {}
 @Component
 class DecisionMessageProcessor(
     private val asyncJobRunner: AsyncJobRunner,
-    private val decisionService: DecisionService
+    private val decisionService: DecisionService,
+    private val acl: AccessControlList
 ) {
     init {
         asyncJobRunner.notifyDecisionCreated = ::runCreateJob
@@ -29,7 +31,7 @@ class DecisionMessageProcessor(
         val user = msg.user
         val decisionId = msg.decisionId
 
-        user.requireOneOfRoles(Roles.ADMIN, Roles.SERVICE_WORKER, Roles.UNIT_SUPERVISOR)
+        acl.getRolesForDecision(user, msg.decisionId).requireOneOfRoles(Roles.ADMIN, Roles.SERVICE_WORKER, Roles.UNIT_SUPERVISOR)
 
         decisionService.createDecisionPdfs(tx, user, decisionId)
 
