@@ -3,8 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import express from 'express'
-import { createAuthHeader, createHeaders } from '../auth'
-import { client } from '../service-client'
+import { client, createServiceRequestHeaders } from '../service-client'
 
 export type UUID = string
 
@@ -55,9 +54,10 @@ export async function getOrCreateEmployee(
 ): Promise<AuthenticatedUser> {
   return client
     .post<AuthenticatedUser>(`/employee/identity`, employee, {
-      headers: {
-        Authorization: createAuthHeader({ id: NIL_UUID, roles: [] })
-      }
+      headers: createServiceRequestHeaders(undefined, {
+        id: NIL_UUID,
+        roles: []
+      })
     })
     .then((response) => response.data)
 }
@@ -68,7 +68,7 @@ export async function getEmployeeDetails(
 ) {
   return client
     .get<EmployeeResponse>(`/employee/${employeeId}`, {
-      headers: createHeaders(req)
+      headers: createServiceRequestHeaders(req)
     })
     .then((res) => {
       return res.data
@@ -80,9 +80,10 @@ export async function getPersonIdentity(
 ): Promise<AuthenticatedUser> {
   return client
     .post<AuthenticatedUser>(`/person/identity`, person, {
-      headers: {
-        Authorization: createAuthHeader({ id: NIL_UUID, roles: [] })
-      }
+      headers: createServiceRequestHeaders(undefined, {
+        id: NIL_UUID,
+        roles: []
+      })
     })
     .then((response) => response.data)
 }

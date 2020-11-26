@@ -5,7 +5,8 @@
 import express from 'express'
 import axios from 'axios'
 import { evakaServiceUrl } from './config'
-import { createHeaders } from './auth'
+import { createAuthHeader } from './auth'
+import { SamlUser } from './routes/auth/saml/types'
 
 export const client = axios.create({
   baseURL: evakaServiceUrl
@@ -79,7 +80,24 @@ export async function getEnduserAreas(
   req: express.Request
 ): Promise<CareAreaResponseJSON[]> {
   const { data } = await client.get<CareAreaResponseJSON[]>(`/enduser/areas`, {
-    headers: createHeaders(req)
+    headers: createServiceRequestHeaders(req)
   })
   return data
+}
+
+export type ServiceRequestHeader = 'Authorization' | 'X-Request-ID'
+export type ServiceRequestHeaders = { [H in ServiceRequestHeader]?: string }
+
+export function createServiceRequestHeaders(
+  req: express.Request | undefined,
+  user: SamlUser | undefined | null = req?.user
+) {
+  const headers: ServiceRequestHeaders = {}
+  if (user) {
+    headers.Authorization = createAuthHeader(user)
+  }
+  if (req?.traceId) {
+    headers['X-Request-ID'] = req.traceId
+  }
+  return headers
 }

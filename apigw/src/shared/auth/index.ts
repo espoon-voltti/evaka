@@ -56,14 +56,3 @@ export function createAuthHeader(user: SamlUser): string {
   })
   return `Bearer ${token}`
 }
-
-export const createHeaders = (req: express.Request) => {
-  const headers: Record<string, string> = {}
-  if (req.user) {
-    headers.Authorization = createAuthHeader(req.user)
-  }
-  if (req.traceId) {
-    headers['X-Request-ID'] = req.traceId
-  }
-  return headers
-}
