@@ -156,6 +156,22 @@ WHERE id = :assistanceNeedId
         }
     )
 
+    fun getRolesForBackupCare(user: AuthenticatedUser, backupCareId: UUID): AclAppliedRoles = AclAppliedRoles(
+        (user.roles - UserRole.ACL_ROLES) + Database(jdbi).read {
+            it.createQuery(
+                // language=SQL
+                """
+SELECT child_id
+FROM backup_care
+WHERE id = :backupCareId
+                """.trimIndent()
+            ).bind("backupCareId", backupCareId)
+                .mapTo<UUID>()
+                .map { childId -> getRolesForChild(user, childId).roles }
+                .fold(setOf<UserRole>()) { acc, rolesSet -> acc.intersect(rolesSet) }
+        }
+    )
+
     fun getRolesForPairing(user: AuthenticatedUser, pairingId: UUID): AclAppliedRoles = AclAppliedRoles(
         (user.roles - UserRole.ACL_ROLES) + Database(jdbi).read {
             it.createQuery(
