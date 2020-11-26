@@ -1,3 +1,11 @@
+{
+  /*
+SPDX-FileCopyrightText: 2017-2020 City of Espoo
+
+SPDX-License-Identifier: LGPL-2.1-or-later
+*/
+}
+
 import React, { Dispatch, SetStateAction, useContext } from 'react'
 import { ContentArea } from '~components/shared/layout/Container'
 import { UnitContext } from '~state/unit'
