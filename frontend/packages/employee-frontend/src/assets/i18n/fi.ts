@@ -288,6 +288,7 @@ export const fi = {
       endTimePlaceholder: '16:00',
       shiftCareLabel: 'Ilta- ja vuorohoito',
       shiftCareValue: 'Tarvitaan ilta- ja vuorohoitoa',
+      shiftCareWithAttachments: 'Tarvitaan ilta- ja vuorohoitoa, liitteet:',
       urgentLabel: 'Kiireellinen hakemus',
       notUrgent: 'Ei',
       isUrgent: 'On',

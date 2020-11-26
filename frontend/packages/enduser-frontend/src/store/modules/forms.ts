@@ -7,7 +7,8 @@ import _ from 'lodash'
 import {
   APPLICATION_TYPE,
   NORMAL_CARE_END,
-  NORMAL_CARE_START
+  NORMAL_CARE_START,
+  ATTACHMENT_TYPE
 } from '@/constants.ts'
 import moment from 'moment'
 import { Module } from 'vuex'
@@ -111,7 +112,8 @@ const currentState = {
   },
   daycare: {},
   files: {
-    urgent: []
+    urgent: [],
+    extendedCare: []
   }
 }
 
@@ -138,6 +140,48 @@ const isAfterHours = (date, hours) => {
 const getAge = (birthday) => {
   const now = moment().startOf('day')
   return now.diff(birthday, 'years')
+}
+
+const addAttachment = async (commit, file, applicationId, attachmentType) => {
+  const key = getUUID()
+  const error = file.size > 10000000 ? 'file-too-big' : undefined
+  const fileObject = {
+    key,
+    file,
+    name: file.name,
+    contentType: file.type,
+    error
+  }
+  const uploadCommitType = attachmentType === ATTACHMENT_TYPE.URGENCY ? types.ADD_URGENCY_FILE : types.ADD_EXTENDED_CARE_FILE
+  commit(uploadCommitType, { ...fileObject, progress: 0 })
+
+  if (error) {
+    return
+  }
+
+  const updateCommitType = attachmentType === ATTACHMENT_TYPE.URGENCY ? types.UPDATE_URGENCY_FILE : types.UPDATE_EXTENDED_CARE_FILE
+  const onUploadProgress = (event) => {
+    const progress = Math.round((event.loaded / event.total) * 100)
+    commit(updateCommitType, { ...fileObject, progress })
+  }
+  try {
+    const { data } = await applicationApi.saveAttachment(
+      applicationId,
+      file,
+      onUploadProgress,
+      attachmentType
+    )
+    commit(updateCommitType, {
+      ...fileObject,
+      id: data,
+      progress: 100
+    })
+  } catch (e) {
+    commit(updateCommitType, {
+      ...fileObject,
+      error: 'server-error'
+    })
+  }
 }
 
 const module: Module<any, RootState> = {
@@ -193,7 +237,9 @@ const module: Module<any, RootState> = {
       getAge(moment(getters.getChildBirthday, 'DDMMYY')),
     selectedTerm: (state) => state.application.term,
     urgentFiles: (state) => state.files.urgent,
-    uploadedUrgentFiles: (state) => state.files.urgent.filter((file) => file.id)
+    uploadedUrgentFiles: (state) => state.files.urgent.filter((file) => file.id),
+    extendedCareFiles: (state) => state.files.extendedCare,
+    uploadedExtendedCareFiles: (state) => state.files.extendedCare.filter((file) => file.id)
   },
   actions: {
     updateForm({ commit }, payload) {
@@ -223,49 +269,23 @@ const module: Module<any, RootState> = {
     removeChildren({ commit }, index) {
       commit(types.REMOVE_CHILDREN, index)
     },
-    async addUrgentFile({ commit }, { file, applicationId }) {
-      const key = getUUID()
-      const error = file.size > 10000000 ? 'file-too-big' : undefined
-      const fileObject = {
-        key,
-        file,
-        name: file.name,
-        contentType: file.type,
-        error
-      }
-      commit(types.ADD_URGENT_FILE, { ...fileObject, progress: 0 })
-
-      if (error) {
-        return
-      }
-
-      const onUploadProgress = (event) => {
-        const progress = Math.round((event.loaded / event.total) * 100)
-        commit(types.UPDATE_URGENT_FILE, { ...fileObject, progress })
-      }
-      try {
-        const { data } = await applicationApi.saveAttachment(
-          applicationId,
-          file,
-          onUploadProgress
-        )
-        commit(types.UPDATE_URGENT_FILE, {
-          ...fileObject,
-          id: data,
-          progress: 100
-        })
-      } catch (e) {
-        commit(types.UPDATE_URGENT_FILE, {
-          ...fileObject,
-          error: 'server-error'
-        })
-      }
+    async addUrgencyAttachment({ commit }, { file, applicationId }) {
+      addAttachment(commit, file, applicationId, ATTACHMENT_TYPE.URGENCY)
     },
-    async deleteUrgentFile({ commit }, { id, key, error }) {
+    async addExtendedCareAttachment({ commit }, { file, applicationId }) {
+      addAttachment(commit, file, applicationId, ATTACHMENT_TYPE.EXTENDED_CARE)
+    },
+    async deleteUrgencyAttachment({ commit }, { id, key, error }) {
       if (id && !error) {
         await applicationApi.deleteAttachment(id)
       }
-      commit(types.DELETE_URGENT_FILE, key)
+      commit(types.DELETE_URGENCY_FILE, key)
+    },
+    async deleteExtendedCareAttachment({ commit }, { id, key, error }) {
+      if (id && !error) {
+        await applicationApi.deleteAttachment(id)
+      }
+      commit(types.DELETE_EXTENDED_CARE_FILE, key)
     }
   },
   mutations: {
@@ -295,6 +315,12 @@ const module: Module<any, RootState> = {
         ...attachment,
         key: attachment.id
       }))
+      .filter(({type}) => type === ATTACHMENT_TYPE.URGENCY)
+      state.files.extendedCare = application.attachments.map((attachment) => ({
+        ...attachment,
+        key: attachment.id
+      }))
+      .filter(({type}) => type ===  ATTACHMENT_TYPE.EXTENDED_CARE)
     },
     [types.LOAD_DAYCARE_APPLICATION_FORM](state, { application }) {
       state.daycare = Object.assign(state.daycare, application)
@@ -302,6 +328,12 @@ const module: Module<any, RootState> = {
         ...attachment,
         key: attachment.id
       }))
+      .filter(({type}) => type === ATTACHMENT_TYPE.URGENCY)
+      state.files.extendedCare = application.attachments.map((attachment) => ({
+        ...attachment,
+        key: attachment.id
+      }))
+      .filter(({type}) => type ===  ATTACHMENT_TYPE.EXTENDED_CARE)
     },
     [types.REVERT_APPLICATION_FORM](state) {
       state.application = _.cloneDeep(state.loadedApplication)
@@ -349,16 +381,27 @@ const module: Module<any, RootState> = {
       state.editing.application.activeSection =
         sectionId === activeSection ? undefined : sectionId
     },
-    [types.ADD_URGENT_FILE](state, file) {
+    [types.ADD_URGENCY_FILE](state, file) {
       state.files.urgent = [...state.files.urgent, file]
     },
-    [types.UPDATE_URGENT_FILE](state, file) {
+    [types.UPDATE_URGENCY_FILE](state, file) {
       state.files.urgent = state.files.urgent.map((f) =>
         f.key === file.key ? file : f
       )
     },
-    [types.DELETE_URGENT_FILE](state, key) {
+    [types.DELETE_URGENCY_FILE](state, key) {
       state.files.urgent = state.files.urgent.filter((f) => f.key !== key)
+    },
+    [types.ADD_EXTENDED_CARE_FILE](state, file) {
+      state.files.extendedCare = [...state.files.extendedCare, file]
+    },
+    [types.UPDATE_EXTENDED_CARE_FILE](state, file) {
+      state.files.extendedCare = state.files.extendedCare.map((f) =>
+        f.key === file.key ? file : f
+      )
+    },
+    [types.DELETE_EXTENDED_CARE_FILE](state, key) {
+      state.files.extendedCare = state.files.extendedCare.filter((f) => f.key !== key)
     }
   }
 }

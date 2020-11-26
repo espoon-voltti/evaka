@@ -5,6 +5,7 @@
 package fi.espoo.evaka.attachment
 
 import fi.espoo.evaka.application.Attachment
+import fi.espoo.evaka.application.AttachmentType
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import org.jdbi.v3.core.kotlin.mapTo
@@ -16,13 +17,14 @@ fun Database.Transaction.insertAttachment(
     contentType: String,
     applicationId: UUID,
     uploadedByEnduser: UUID?,
-    uploadedByEmployee: UUID?
+    uploadedByEmployee: UUID?,
+    type: AttachmentType
 ) {
     // language=sql
     val sql =
         """
-        INSERT INTO attachment (id, name, content_type, application_id, uploaded_by_person, uploaded_by_employee)
-        VALUES (:id, :name, :contentType, :applicationId, :uploadedByEnduser, :uploadedByEmployee)
+        INSERT INTO attachment (id, name, content_type, application_id, uploaded_by_person, uploaded_by_employee, type)
+        VALUES (:id, :name, :contentType, :applicationId, :uploadedByEnduser, :uploadedByEmployee, :type)
         """.trimIndent()
 
     this.createUpdate(sql)
@@ -32,6 +34,7 @@ fun Database.Transaction.insertAttachment(
         .bind("applicationId", applicationId)
         .bind("uploadedByEnduser", uploadedByEnduser)
         .bind("uploadedByEmployee", uploadedByEmployee)
+        .bind("type", type)
         .execute()
 }
 

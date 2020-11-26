@@ -91,11 +91,17 @@ data class ApplicationDetails(
     val attachments: List<Attachment>
 )
 
+enum class AttachmentType {
+    URGENCY,
+    EXTENDED_CARE
+}
+
 data class Attachment(
     val id: UUID,
     val name: String,
     val contentType: String,
-    val updated: OffsetDateTime
+    val updated: OffsetDateTime,
+    val type: AttachmentType
 )
 
 enum class ApplicationType(val type: String) {
