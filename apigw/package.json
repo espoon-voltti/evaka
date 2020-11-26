@@ -48,7 +48,7 @@
     "uuid": "^8.3.1"
   },
   "devDependencies": {
-    "@types/connect-redis": "^0.0.14",
+    "@types/connect-redis": "^0.0.15",
     "@types/cookie-parser": "^1.4.2",
     "@types/csurf": "^1.9.36",
     "@types/express-http-proxy": "^1.5.12",
