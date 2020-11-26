@@ -476,8 +476,8 @@
           "instructions": {
             "text": "Meddela tiden då ditt barn behöver småbarnspedagogisk verksamhet. Du kan meddela den mera exakta tiden när verksamheten börjar. Om ditt behov varierar dagligen eller per vecka (t.ex i skiftesvård) kan du meddela behovet mer exakt i tilläggsuppgifterna."
           },
-          "partTime": "Deltid (max 5h / dag, 25h / vecka)",
-          "fullTime": "Heltid",
+          "partTime": "Deldag (max 5h / dag, 25h / vecka)",
+          "fullTime": "Heldag",
           "starts": {
             "label": "Den dagliga starttiden för småbarnspedagogisk verksamhet",
             "instruction": "Börjar t.ex. kl. 8.00"
