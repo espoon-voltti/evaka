@@ -50,11 +50,11 @@ export default class DevPassportStrategy extends Strategy {
         req.body.email
       )
         .then((samlUser) => this.success(samlUser))
-        .catch(() => this.error('Something went wrong'))
+        .catch((err) => this.error(err))
     } else {
       this.profileGetter(req.body.preset)
         .then((samlUser) => this.success(samlUser))
-        .catch(() => this.error('Something went wrong'))
+        .catch((err) => this.error(err))
     }
   }
 }

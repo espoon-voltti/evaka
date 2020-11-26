@@ -48,7 +48,7 @@
     "uuid": "^8.3.1"
   },
   "devDependencies": {
-    "@types/connect-redis": "^0.0.14",
+    "@types/connect-redis": "^0.0.15",
     "@types/cookie-parser": "^1.4.2",
     "@types/csurf": "^1.9.36",
     "@types/express-http-proxy": "^1.5.12",
@@ -67,8 +67,8 @@
     "@types/redis": "^2.8.28",
     "@types/source-map-support": "^0.5.3",
     "@types/split2": "^2.1.6",
-    "@types/supertest": "^2.0.10",
     "@types/through2": "^2.0.34",
+    "@types/tough-cookie": "^4.0.0",
     "@types/uuid": "^8.3.0",
     "@typescript-eslint/eslint-plugin": "^4.6.0",
     "@typescript-eslint/parser": "^4.6.0",
@@ -82,8 +82,7 @@
     "node-forge": "^0.10.0",
     "nodemon": "^2.0.6",
     "prettier": "^2.1.2",
-    "supertest": "^6.0.0",
-    "supertest-session": "^4.1.0",
+    "tough-cookie": "^4.0.0",
     "ts-jest": "^26.4.3",
     "ts-node": "^9.0.0",
     "typescript": "^4.0.5"

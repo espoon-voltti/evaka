@@ -69,7 +69,7 @@ function logoutCookie(sessionType: SessionType) {
   return `${cookiePrefix(sessionType)}.logout`
 }
 
-function sessionCookie(sessionType: SessionType) {
+export function sessionCookie(sessionType: SessionType) {
   return `${cookiePrefix(sessionType)}.session`
 }
 

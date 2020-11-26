@@ -32,8 +32,14 @@ export function toRequestHandler(
   return (req, res, next) => f(req, res).catch(next)
 }
 
-// TS interface merging is used to add fields to the type of express
-// req.user and req.session
+// Use TS interface merging to add fields to express req.session
+declare module 'express-session' {
+  interface SessionData {
+    logoutToken?: LogoutToken
+  }
+}
+
+// Use TS interface merging to add fields to express req and req.user.
 declare global {
   // eslint-disable-next-line @typescript-eslint/no-namespace
   namespace Express {
@@ -43,8 +49,5 @@ declare global {
     }
     // eslint-disable-next-line @typescript-eslint/no-empty-interface
     interface User extends SamlUser {}
-    interface SessionData {
-      logoutToken?: LogoutToken
-    }
   }
 }
