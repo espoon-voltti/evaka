@@ -36,4 +36,9 @@ interface DocumentService {
      * Upload a document to S3. [DocumentLocation] is returned in response
      */
     fun upload(bucketName: String, document: Document, contentType: String): DocumentLocation
+
+    /**
+     * Delete a document from S3
+     */
+    fun delete(bucketName: String, key: String)
 }

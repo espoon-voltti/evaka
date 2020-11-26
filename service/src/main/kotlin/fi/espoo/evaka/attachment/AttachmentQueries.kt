@@ -60,7 +60,7 @@ fun Database.Read.isOwnAttachment(attachmentId: UUID, user: AuthenticatedUser): 
 }
 
 fun Database.Transaction.deleteAttachment(id: UUID) {
-    this.createUpdate("UPDATE attachment SET application_id = NULL WHERE id = :id")
+    this.createUpdate("DELETE FROM attachment WHERE id = :id")
         .bind("id", id)
         .execute()
 }
