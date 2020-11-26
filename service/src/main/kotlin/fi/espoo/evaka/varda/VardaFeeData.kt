@@ -241,7 +241,7 @@ private val feeDataQueryBase =
 
 private fun baseToFeeData(tx: Database.Transaction, feeDataBase: VardaFeeDataBase, personService: PersonService, client: VardaClient): VardaFeeData? {
     val guardians = personService
-        .getGuardians(tx, AuthenticatedUser.anonymous, feeDataBase.evakaChildId)
+        .getGuardians(tx, AuthenticatedUser.machineUser, feeDataBase.evakaChildId)
         .filter {
             if ((it.firstName + it.lastName).isNotBlank()) {
                 true

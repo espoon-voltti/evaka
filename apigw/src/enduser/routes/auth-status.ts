@@ -16,7 +16,7 @@ export default function authStatus(sessionType: SessionType) {
     csrfCookie(sessionType),
     (req: Request, res: Response, next: NextFunction) => {
       if (req.user) {
-        getUserDetails(req)
+        getUserDetails(req, req.user.id)
           .then((data) => res.status(200).send({ loggedIn: true, user: data }))
           .catch((error) => next(error))
       } else {

@@ -46,8 +46,7 @@ async function verifyProfile(profile: SuomiFiProfile): Promise<SamlUser> {
   const person = await getOrCreatePerson({
     socialSecurityNumber: profile[SUOMI_FI_SSN_KEY],
     firstName: profile[SUOMI_FI_GIVEN_NAME_KEY],
-    lastName: profile[SUOMI_FI_SURNAME_KEY],
-    email: ''
+    lastName: profile[SUOMI_FI_SURNAME_KEY]
   })
   return {
     id: person.id,

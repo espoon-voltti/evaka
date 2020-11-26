@@ -10,12 +10,10 @@ import fi.espoo.evaka.pis.NewEmployee
 import fi.espoo.evaka.pis.createEmployee
 import fi.espoo.evaka.pis.deleteEmployee
 import fi.espoo.evaka.pis.getEmployee
-import fi.espoo.evaka.pis.getEmployeeAuthenticatedUser
 import fi.espoo.evaka.pis.getEmployees
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.config.Roles
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.domain.BadRequest
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -59,20 +57,6 @@ class EmployeeController {
         Audit.EmployeeCreate.log(targetId = employee.aad)
         user.requireOneOfRoles(Roles.ADMIN)
         return ResponseEntity.ok().body(db.transaction { it.handle.createEmployee(employee) })
-    }
-
-    @PostMapping("/identity")
-    fun getOrCreateEmployee(db: Database.Connection, @RequestBody employee: NewEmployee): ResponseEntity<AuthenticatedUser> {
-        Audit.EmployeeGetOrCreate.log(targetId = employee.aad)
-        if (employee.aad == null) {
-            throw BadRequest("Cannot create or fetch employee without aad")
-        }
-        return ResponseEntity.ok(
-            db.transaction {
-                it.handle.getEmployeeAuthenticatedUser(employee.aad)
-                    ?: AuthenticatedUser(it.handle.createEmployee(employee).id, employee.roles)
-            }
-        )
     }
 
     @DeleteMapping("/{id}")

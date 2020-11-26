@@ -70,7 +70,7 @@ export class GatewayTester {
 
   public async login(user: AuthenticatedUser): Promise<void> {
     if (this.sessionType === 'employee') {
-      this.nockScope.post('/employee/identity').reply(200, user)
+      this.nockScope.post('/system/employee-identity').reply(200, user)
       await this.client.post(
         '/api/internal/auth/saml/login/callback',
         { preset: 'dummy' },
@@ -81,7 +81,7 @@ export class GatewayTester {
       )
       this.nockScope.done()
     } else {
-      this.nockScope.post('/person/identity').reply(200, user)
+      this.nockScope.post('/system/person-identity').reply(200, user)
       await this.client.post(
         '/api/application/auth/saml/login/callback',
         { preset: 'dummy' },

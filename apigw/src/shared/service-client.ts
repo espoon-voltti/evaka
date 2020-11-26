@@ -14,7 +14,10 @@ export const client = axios.create({
 
 export type UUID = string
 
-const NIL_UUID = '00000000-0000-0000-0000-000000000000'
+const machineUser: SamlUser = {
+  id: '00000000-0000-0000-0000-000000000000',
+  roles: []
+}
 
 export type UserRole =
   | 'ENDUSER'
@@ -48,7 +51,7 @@ export interface AuthenticatedUser {
 }
 
 export interface EmployeeIdentityRequest {
-  aad?: string
+  aad: string
   firstName: string
   lastName: string
   email: string
@@ -66,58 +69,52 @@ export interface EmployeeResponse {
 
 export interface PersonIdentityRequest {
   socialSecurityNumber: string
-  customerId?: number
   firstName: string
   lastName: string
-  email: string
-  language?: string
 }
 
 export async function getOrCreateEmployee(
   employee: EmployeeIdentityRequest
 ): Promise<AuthenticatedUser> {
-  return client
-    .post<AuthenticatedUser>(`/employee/identity`, employee, {
-      headers: createServiceRequestHeaders(undefined, {
-        id: NIL_UUID,
-        roles: []
-      })
-    })
-    .then((response) => response.data)
+  const { data } = await client.post<AuthenticatedUser>(
+    `/system/employee-identity`,
+    employee,
+    {
+      headers: createServiceRequestHeaders(undefined, machineUser)
+    }
+  )
+  return data
 }
 
 export async function getEmployeeDetails(
   req: express.Request,
   employeeId: string
 ) {
-  return client
-    .get<EmployeeResponse>(`/employee/${employeeId}`, {
+  const { data } = await client.get<EmployeeResponse>(
+    `/employee/${employeeId}`,
+    {
       headers: createServiceRequestHeaders(req)
-    })
-    .then((res) => {
-      return res.data
-    })
+    }
+  )
+  return data
 }
 
 export async function getOrCreatePerson(
   person: PersonIdentityRequest
 ): Promise<AuthenticatedUser> {
-  return client
-    .post<AuthenticatedUser>(`/person/identity`, person, {
-      headers: createServiceRequestHeaders(undefined, {
-        id: NIL_UUID,
-        roles: []
-      })
-    })
-    .then((response) => response.data)
+  const { data } = await client.post<AuthenticatedUser>(
+    `/system/person-identity`,
+    person,
+    {
+      headers: createServiceRequestHeaders(undefined, machineUser)
+    }
+  )
+  return data
 }
 
-export async function getUserDetails(req: express.Request) {
-  return client
-    .get(`/persondetails/uuid/${req.user?.id}`, {
-      headers: createServiceRequestHeaders(req)
-    })
-    .then((res) => {
-      return res.data
-    })
+export async function getUserDetails(req: express.Request, personId: string) {
+  const { data } = await client.get(`/persondetails/uuid/${personId}`, {
+    headers: createServiceRequestHeaders(req)
+  })
+  return data
 }

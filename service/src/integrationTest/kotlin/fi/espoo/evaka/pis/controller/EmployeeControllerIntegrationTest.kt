@@ -58,11 +58,11 @@ class EmployeeControllerIntegrationTest : AbstractIntegrationTest() {
         val user = AuthenticatedUser(UUID.randomUUID(), setOf(Roles.ADMIN))
         assertEquals(0, employeeController.getEmployees(db, user).body?.size)
 
-        val responseCreate = employeeController.getOrCreateEmployee(db, requestFromEmployee(employee1))
+        val responseCreate = employeeController.createEmployee(db, user, requestFromEmployee(employee1))
         assertEquals(HttpStatus.OK, responseCreate.statusCode)
         assertEquals(1, employeeController.getEmployees(db, user).body?.size)
 
-        val responseGet = employeeController.getOrCreateEmployee(db, requestFromEmployee(employee1))
+        val responseGet = employeeController.getEmployee(db, user, responseCreate.body.id)
         assertEquals(HttpStatus.OK, responseGet.statusCode)
         assertEquals(1, employeeController.getEmployees(db, user).body?.size)
         assertEquals(responseCreate.body?.id, responseGet.body?.id)

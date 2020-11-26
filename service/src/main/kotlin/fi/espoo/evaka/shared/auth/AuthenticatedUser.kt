@@ -18,6 +18,6 @@ data class AuthenticatedUser(@JsonInclude val id: UUID, @JsonInclude override va
     fun isAdmin() = roles.contains(Roles.ADMIN)
 
     companion object {
-        val anonymous = AuthenticatedUser(UUID.fromString("00000000-0000-0000-0000-000000000000"), setOf())
+        val machineUser = AuthenticatedUser(UUID.fromString("00000000-0000-0000-0000-000000000000"), setOf())
     }
 }
