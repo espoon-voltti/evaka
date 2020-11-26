@@ -297,9 +297,9 @@ export const fi = {
       assistanceLabel: 'Tuen tarve',
       assistanceValue: 'Lapsella on tuen tarve',
       assistanceDesc: 'Tuen tarpeen kuvaus',
-      partTime: 'Osa-aikainen',
-      fullTime: 'Kokoaikainen',
-      partTimeLabel: 'Osa- tai kokoaikainen'
+      partTime: 'Osapäiväinen',
+      fullTime: 'Kokopäiväinen',
+      partTimeLabel: 'Osa- tai kokopäiväinen'
     },
     clubDetails: {
       wasOnClubCareLabel: 'Kerhossa edellisenä toimintakautena',
@@ -356,7 +356,7 @@ export const fi = {
       type: 'Päätöksen tyyppi',
       types: {
         DAYCARE: 'Varhaiskasvatuspäätös',
-        DAYCARE_PART_TIME: 'Varhaiskasvatuspäätös (osa-aikainen)',
+        DAYCARE_PART_TIME: 'Varhaiskasvatuspäätös (osapäiväinen)',
         PRESCHOOL: 'Esiopetuspäätös',
         PRESCHOOL_DAYCARE: 'Liittyvä varhaiskasvastuspäätös',
         PREPARATORY_EDUCATION: 'Valmistavan opetuksen päätös'
@@ -1735,7 +1735,7 @@ export const fi = {
     types: {
       CLUB: 'Kerho',
       DAYCARE: 'Varhaiskasvatus',
-      DAYCARE_PART_TIME: 'Osa-aikainen varhaiskasvatus',
+      DAYCARE_PART_TIME: 'Osapäiväinen varhaiskasvatus',
       PRESCHOOL_DAYCARE: 'Esiopetus ja liittyvä varhaiskasvatus',
       PRESCHOOL: 'Esiopetus',
       PREPARATORY: 'Valmistava opetus',

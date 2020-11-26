@@ -483,8 +483,8 @@
           "instructions": {
             "text": "Ilmoita lapsen yleisimmin tarvitseva varhaiskasvatusaika, aika tarkennetaan varhaiskasvatuksen alkaessa."
           },
-          "partTime": "Osa-aikainen",
-          "fullTime": "Kokoaikainen",
+          "partTime": "Osapäiväinen",
+          "fullTime": "Kokopäiväinen",
           "starts": {
             "label": "Päivittäisen varhaiskasvatuksen aloitusaika",
             "instruction": "Alkaa esim. 08:00"
