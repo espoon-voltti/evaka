@@ -9,6 +9,7 @@ import fi.espoo.evaka.identity.ExternalIdentifier
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.config.Roles
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.Forbidden
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
@@ -20,9 +21,11 @@ class SystemIdentityController {
     @PostMapping("/system/person-identity")
     fun personIdentity(
         db: Database.Connection,
+        user: AuthenticatedUser,
         @RequestBody person: PersonIdentityRequest
     ): ResponseEntity<AuthenticatedUser> {
         Audit.PersonCreate.log()
+        if (user != AuthenticatedUser.machineUser) throw Forbidden("System endpoints are forbidden")
         return db.transaction { tx ->
             tx.handle.getPersonBySSN(person.socialSecurityNumber) ?: tx.handle.createPerson(
                 fi.espoo.evaka.pis.service.PersonIdentityRequest(
@@ -40,9 +43,11 @@ class SystemIdentityController {
     @PostMapping("/system/employee-identity")
     fun employeeIdentity(
         db: Database.Connection,
+        user: AuthenticatedUser,
         @RequestBody employee: EmployeeIdentityRequest
     ): ResponseEntity<AuthenticatedUser> {
         Audit.EmployeeGetOrCreate.log(targetId = employee.aad)
+        if (user != AuthenticatedUser.machineUser) throw Forbidden("System endpoints are forbidden")
         return ResponseEntity.ok(
             db.transaction {
                 it.handle.getEmployeeAuthenticatedUser(employee.aad)
