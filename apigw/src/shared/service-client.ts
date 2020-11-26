@@ -75,48 +75,10 @@ export interface MailingAddress {
   postOffice: string | null
 }
 
-export interface ClubGroupResponseJSON {
-  id: UUID
-  clubId: UUID
-  minAge: number
-  maxAge: number
-  description: string
-  schedule: string
-}
-
-export interface ClubGroupCapacitiesJSON {
-  capacities: Record<UUID, ClubCapacityInstantJSON[]>
-}
-
-export interface ClubCapacityInstantJSON {
-  headcount: number
-  capacity: number
-  date: string | Date
-  caretakerCount: number
-}
-
 export async function getEnduserAreas(
   req: express.Request
 ): Promise<CareAreaResponseJSON[]> {
   const { data } = await client.get<CareAreaResponseJSON[]>(`/enduser/areas`, {
-    headers: createHeaders(req)
-  })
-  return data
-}
-
-export async function getAreas(
-  req: express.Request
-): Promise<CareAreaResponseJSON[]> {
-  const { data } = await client.get<CareAreaResponseJSON[]>(`/areas`, {
-    headers: createHeaders(req)
-  })
-  return data
-}
-
-export async function getClubGroups(
-  req: express.Request
-): Promise<ClubGroupResponseJSON[]> {
-  const { data } = await client.get<ClubGroupResponseJSON[]>('/clubgroups', {
     headers: createHeaders(req)
   })
   return data

@@ -4,7 +4,6 @@
 
 import certificates from './certificates'
 
-export type GatewayRole = typeof gatewayRoles[number]
 export const gatewayRoles = ['enduser', 'internal'] as const
 export type NodeEnv = typeof nodeEnvs[number]
 export const nodeEnvs = ['local', 'test', 'production'] as const
