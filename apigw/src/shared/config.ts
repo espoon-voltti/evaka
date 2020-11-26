@@ -13,14 +13,6 @@ function ifNodeEnv<T>(envs: NodeEnv[], value: T): T | undefined {
   return envs.some((env) => process.env.NODE_ENV === env) ? value : undefined
 }
 
-function choose<T>(...values: Array<T | undefined>): T | undefined {
-  return values.find((value) => value !== undefined)
-}
-
-function optional<T>(defaultValue: T, overrideValue: T | undefined): T {
-  return overrideValue !== undefined ? overrideValue : defaultValue
-}
-
 function required<T>(value: T | undefined): T {
   if (value === undefined) {
     throw new Error('Configuration parameter was not provided')
@@ -84,95 +76,69 @@ function envArray<T>(
 
 export const gatewayRole = env('GATEWAY_ROLE', parseEnum(gatewayRoles))
 export const nodeEnv = env('NODE_ENV', parseEnum(nodeEnvs))
-export const appBuild = optional('UNDEFINED', process.env.APP_BUILD)
-export const appCommit = optional('UNDEFINED', process.env.APP_COMMIT)
-export const hostIp = optional('UNDEFINED', process.env.HOST_IP)
+export const appBuild = process.env.APP_BUILD ?? 'UNDEFINED'
+export const appCommit = process.env.APP_COMMIT ?? 'UNDEFINED'
+export const hostIp = process.env.HOST_IP ?? 'UNDEFINED'
 
 export const jwtPrivateKey = required(
-  choose(
-    process.env.JWT_PRIVATE_KEY,
+  process.env.JWT_PRIVATE_KEY ??
     ifNodeEnv(['local', 'test'], 'config/test-cert/jwt_private_key.pem')
-  )
 )
-export const jwtKid = optional(
-  `evaka-${gatewayRole || 'dev'}-gw`,
-  process.env.JWT_KID
-)
+export const jwtKid = process.env.JWT_KID ?? `evaka-${gatewayRole || 'dev'}-gw`
 
 export const evakaServiceUrl = required(
-  choose(
-    process.env.EVAKA_SERVICE_URL,
+  process.env.EVAKA_SERVICE_URL ??
     ifNodeEnv(['local', 'test'], 'http://localhost:8888')
-  )
 )
 // Google API requires an API key even in local development and we cannot restrict its usage to local environments
 // so none is provided by default.
 export const googleApiKey = process.env.GOOGLE_API_KEY
 export const cookieSecret = required(
-  choose(
-    process.env.COOKIE_SECRET,
+  process.env.COOKIE_SECRET ??
     ifNodeEnv(['local', 'test'], 'A very hush hush cookie secret.')
-  )
 )
-export const useSecureCookies = optional(
-  true,
-  choose(
-    env('USE_SECURE_COOKIES', parseBoolean),
-    ifNodeEnv(['local', 'test'], false)
-  )
-)
+export const useSecureCookies =
+  env('USE_SECURE_COOKIES', parseBoolean) ??
+  ifNodeEnv(['local', 'test'], false) ??
+  true
 
-export const prettyLogs = optional(
-  false,
-  choose(env('PRETTY_LOGS', parseBoolean), ifNodeEnv(['local'], true)) || false
-)
-export const volttiEnv = choose(
-  process.env.VOLTTI_ENV,
-  ifNodeEnv(['local'], 'local')
-)
-export const redisHost = choose(
-  process.env.REDIS_HOST,
-  ifNodeEnv(['local'], 'localhost')
-)
-export const redisPort = choose(
-  env('REDIS_PORT', parseInteger),
-  ifNodeEnv(['local'], 6379)
-)
+export const prettyLogs =
+  env('PRETTY_LOGS', parseBoolean) ?? ifNodeEnv(['local'], true) ?? false
+
+export const volttiEnv = process.env.VOLTTI_ENV ?? ifNodeEnv(['local'], 'local')
+
+export const redisHost =
+  process.env.REDIS_HOST ?? ifNodeEnv(['local'], 'localhost')
+
+export const redisPort =
+  env('REDIS_PORT', parseInteger) ?? ifNodeEnv(['local'], 6379)
+
 export const redisPassword = process.env.REDIS_PASSWORD
 export const redisTlsServerName = process.env.REDIS_TLS_SERVER_NAME
-export const redisDisableSecurity = optional(
-  false,
-  choose(
-    env('REDIS_DISABLE_SECURITY', parseBoolean),
-    ifNodeEnv(['local'], true)
-  )
-)
+export const redisDisableSecurity =
+  env('REDIS_DISABLE_SECURITY', parseBoolean) ??
+  ifNodeEnv(['local'], true) ??
+  false
 
 export const httpPort = {
-  enduser: optional(3010, env('HTTP_PORT', parseInteger)),
-  internal: optional(3020, env('HTTP_PORT', parseInteger))
+  enduser: env('HTTP_PORT', parseInteger) ?? 3010,
+  internal: env('HTTP_PORT', parseInteger) ?? 3020
 }
-export const sessionTimeoutMinutes = optional(
-  32,
-  env('SESSION_TIMEOUT_MINUTES', parseInteger)
-)
+export const sessionTimeoutMinutes =
+  env('SESSION_TIMEOUT_MINUTES', parseInteger) ?? 32
 
-export const enableDevApi = optional(
-  false,
-  choose(
-    env('ENABLE_DEV_API', parseBoolean),
-    ifNodeEnv(['local', 'test'], true)
-  )
-)
+export const enableDevApi =
+  env('ENABLE_DEV_API', parseBoolean) ??
+  ifNodeEnv(['local', 'test'], true) ??
+  false
 
 const certificateNames = Object.keys(certificates) as ReadonlyArray<
   keyof typeof certificates
 >
 
-export const eadMock = optional(
-  false,
-  choose(env('EAD_MOCK', parseBoolean), ifNodeEnv(['local', 'test'], true))
-)
+export const eadMock =
+  env('EAD_MOCK', parseBoolean) ?? ifNodeEnv(['local', 'test'], true) ?? false
+
 export const eadSamlCallbackUrl = process.env.EAD_SAML_CALLBACK_URL
 export const eadSamlIssuer = process.env.EAD_SAML_ISSUER
 export const eadSamlPublicCert = envArray(
@@ -181,10 +147,8 @@ export const eadSamlPublicCert = envArray(
 )
 export const eadSamlPrivateCert = process.env.EAD_SAML_PRIVATE_CERT
 
-export const sfiMock = optional(
-  false,
-  choose(env('SFI_MOCK', parseBoolean), ifNodeEnv(['local', 'test'], true))
-)
+export const sfiMock =
+  env('SFI_MOCK', parseBoolean) ?? ifNodeEnv(['local', 'test'], true) ?? false
 export const sfiSamlCallbackUrl = process.env.SFI_SAML_CALLBACK_URL
 export const sfiSamlEntryPoint = process.env.SFI_SAML_ENTRY_POINT
 export const sfiSamlLogoutUrl = process.env.SFI_SAML_LOGOUT_URL
