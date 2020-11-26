@@ -14,76 +14,16 @@ export const client = axios.create({
 
 export type UUID = string
 
-export interface CareAreaResponseJSON {
-  id: UUID
-  name: string
-  shortName: string
-  daycares: LocationResponseJSON[]
-}
+const NIL_UUID = '00000000-0000-0000-0000-000000000000'
 
-export type CareTypes =
-  | 'CENTRE'
-  | 'FAMILY'
-  | 'GROUP_FAMILY'
-  | 'CLUB'
-  | 'PRESCHOOL'
-  | 'PREPARATORY_EDUCATION'
-
-export type ProviderType =
-  | 'MUNICIPAL'
-  | 'PURCHASED'
-  | 'PRIVATE'
-  | 'MUNICIPAL_SCHOOL'
-  | 'PRIVATE_SERVICE_VOUCHER'
-
-export type Language = 'fi' | 'sv'
-
-export interface LocationResponseJSON {
-  id: UUID
-  name: string
-  location: LocationJSON | null
-  phone: string | null
-  type: CareTypes[]
-  care_area_id: UUID
-  url: string | null
-  provider_type: ProviderType | null
-  language: Language | null
-  visitingAddress: VisitingAddress
-  mailingAddress: MailingAddress
-  canApplyDaycare: boolean
-  canApplyPreschool: boolean
-
-  address: string
-  postalCode: string | null
-  pobox: string | null
-}
-
-export interface LocationJSON {
-  lat: number
-  lon: number
-}
-
-export interface VisitingAddress {
-  streetAddress: string
-  postalCode: string
-  postOffice: string | null
-}
-
-export interface MailingAddress {
-  streetAddress: string | null
-  poBox: string | null
-  postalCode: string | null
-  postOffice: string | null
-}
-
-export async function getEnduserAreas(
-  req: express.Request
-): Promise<CareAreaResponseJSON[]> {
-  const { data } = await client.get<CareAreaResponseJSON[]>(`/enduser/areas`, {
-    headers: createServiceRequestHeaders(req)
-  })
-  return data
-}
+export type UserRole =
+  | 'ENDUSER'
+  | 'ADMIN'
+  | 'DIRECTOR'
+  | 'FINANCE_ADMIN'
+  | 'SERVICE_WORKER'
+  | 'STAFF'
+  | 'UNIT_SUPERVISOR'
 
 export type ServiceRequestHeader = 'Authorization' | 'X-Request-ID'
 export type ServiceRequestHeaders = { [H in ServiceRequestHeader]?: string }
@@ -101,17 +41,6 @@ export function createServiceRequestHeaders(
   }
   return headers
 }
-
-const NIL_UUID = '00000000-0000-0000-0000-000000000000'
-
-export type UserRole =
-  | 'ENDUSER'
-  | 'ADMIN'
-  | 'DIRECTOR'
-  | 'FINANCE_ADMIN'
-  | 'SERVICE_WORKER'
-  | 'STAFF'
-  | 'UNIT_SUPERVISOR'
 
 export interface AuthenticatedUser {
   id: UUID
