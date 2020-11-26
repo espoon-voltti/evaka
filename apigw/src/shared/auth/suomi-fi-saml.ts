@@ -51,6 +51,7 @@ async function verifyProfile(profile: SuomiFiProfile): Promise<SamlUser> {
   return {
     id: person.id,
     roles: person.roles,
+    userType: 'ENDUSER',
     nameID: profile.nameID,
     nameIDFormat: profile.nameIDFormat,
     nameQualifier: profile.nameQualifier,

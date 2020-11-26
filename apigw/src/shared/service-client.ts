@@ -16,8 +16,11 @@ export type UUID = string
 
 const machineUser: SamlUser = {
   id: '00000000-0000-0000-0000-000000000000',
-  roles: []
+  roles: [],
+  userType: 'SYSTEM'
 }
+
+export type UserType = 'ENDUSER' | 'EMPLOYEE' | 'SYSTEM'
 
 export type UserRole =
   | 'ENDUSER'

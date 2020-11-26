@@ -55,6 +55,7 @@ async function verifyProfile(profile: EspooAdProfile): Promise<SamlUser> {
   return {
     id: person.id,
     roles: person.roles,
+    userType: 'EMPLOYEE',
     nameID: profile.nameID,
     nameIDFormat: profile.nameIDFormat,
     nameQualifier: profile.nameQualifier,
