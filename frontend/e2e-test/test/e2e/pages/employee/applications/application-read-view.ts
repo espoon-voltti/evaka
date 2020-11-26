@@ -69,4 +69,12 @@ export default class ApplicationReadView {
       .expect(Selector(`[data-qa="urgent-attachment-${fileName}"]`).exists)
       .ok()
   }
+
+  async assertExtendedCareAttachmentExists(fileName: string) {
+    await t
+      .expect(
+        Selector(`[data-qa="extended-care-attachment-${fileName}"]`).exists
+      )
+      .ok()
+  }
 }

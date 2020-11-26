@@ -68,3 +68,35 @@ test('Urgent application attachments can be uploaded by end user', async (t) => 
   await applicationReadView.assertPageTitle('Varhaiskasvatushakemus')
   await applicationReadView.assertUrgentAttachmentExists(attachmentFileName)
 })
+
+test('Extended care attachments can be uploaded by end user', async (t) => {
+  const fixture = applicationFixture(
+    fixtures.enduserChildFixtureJari,
+    fixtures.enduserGuardianFixture
+  )
+
+  const extendedCareApplication = {
+    ...fixture,
+    form: {
+      ...fixture.form,
+      extendedCare: true
+    },
+    id: uuidv4()
+  }
+
+  const attachmentFileName = 'test_file.jpg'
+  await insertApplications([extendedCareApplication])
+  await t.useRole(enduserRole)
+  await enduserPage.navigateToApplicationsTab()
+  await enduserPage.editApplication(extendedCareApplication.id)
+  await enduserPage.uploadExtendedCareFile(`./${attachmentFileName}`)
+
+  await enduserPage.asserExtendedCareFileHasBeenUploaded(attachmentFileName)
+
+  await t.useRole(seppoAdminRole)
+  await applicationReadView.openApplicationByLink(extendedCareApplication.id)
+  await applicationReadView.assertPageTitle('Varhaiskasvatushakemus')
+  await applicationReadView.assertExtendedCareAttachmentExists(
+    attachmentFileName
+  )
+})

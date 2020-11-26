@@ -329,6 +329,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
                       <file-upload
                         v-if="attachmentsEnabled"
                         :files="extendedCareFiles"
+                        data-qa="file-upload-extended-care-attachments"
                         :onUpload="uploadExtendedCareAttachment"
                         :onDelete="deleteExtendedCareAttachment"
                       />

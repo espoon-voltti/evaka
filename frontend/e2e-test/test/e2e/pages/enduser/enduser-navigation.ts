@@ -154,6 +154,28 @@ export default class EnduserPage {
       )
       .ok()
   }
+
+  readonly extendedCareAttachmentsUpload = Selector(
+    '[data-qa="file-upload-extended-care-attachments"]'
+  )
+
+  async uploadExtendedCareFile(file: string) {
+    await t.setFilesToUpload(
+      this.extendedCareAttachmentsUpload.find('[data-qa="btn-upload-file"]'),
+      [file]
+    )
+  }
+
+  async asserExtendedCareFileHasBeenUploaded(file: string) {
+    await t
+      .expect(
+        this.extendedCareAttachmentsUpload
+          .find('[data-qa="files"]')
+          .find('.uploaded')
+          .withText(file).exists
+      )
+      .ok()
+  }
 }
 
 interface PDFResponse {
