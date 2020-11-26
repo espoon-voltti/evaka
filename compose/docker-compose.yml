@@ -64,6 +64,20 @@ services:
       timeout: 5s
       retries: 5
 
+  keycloak:
+    image: quay.io/keycloak/keycloak:11.0.3
+    ports:
+    - "8080:8080"    
+    environment: 
+      KEYCLOAK_USER: admin
+      KEYCLOAK_PASSWORD: admin
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080"]
+      interval: 2s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+
 volumes:
   db-data:
     driver: local
