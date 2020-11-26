@@ -6,6 +6,7 @@ package fi.espoo.evaka.reports
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.shared.auth.AccessControlList
+import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole.ADMIN
 import fi.espoo.evaka.shared.auth.UserRole.FINANCE_ADMIN
@@ -25,13 +26,12 @@ class PartnersInDifferentAddressReportController(private val acl: AccessControlL
     fun getPartnersInDifferentAddressReport(db: Database, user: AuthenticatedUser): ResponseEntity<List<PartnersInDifferentAddressReportRow>> {
         Audit.PartnersInDifferentAddressReportRead.log()
         user.requireOneOfRoles(ADMIN, SERVICE_WORKER, FINANCE_ADMIN, UNIT_SUPERVISOR)
-        val authorizedUnits = acl.getAuthorizedUnits(user)
-        return db.read { it.getPartnersInDifferentAddressRows(authorizedUnits.ids) }
+        return db.read { it.getPartnersInDifferentAddressRows(acl.getAuthorizedUnits(user)) }
             .let { ResponseEntity.ok(it) }
     }
 }
 
-private fun Database.Read.getPartnersInDifferentAddressRows(units: Collection<UUID>? = null): List<PartnersInDifferentAddressReportRow> {
+private fun Database.Read.getPartnersInDifferentAddressRows(authorizedUnits: AclAuthorization): List<PartnersInDifferentAddressReportRow> {
     // language=sql
     val sql =
         """
@@ -73,7 +73,7 @@ private fun Database.Read.getPartnersInDifferentAddressRows(units: Collection<UU
         ORDER BY u.name, p1.last_name, p1.first_name, p2.last_name, p2.first_name;
         """.trimIndent()
     return createQuery(sql)
-        .bindNullable("units", units?.toTypedArray())
+        .bindNullable("units", authorizedUnits.ids?.toTypedArray())
         .map { rs, _ ->
             PartnersInDifferentAddressReportRow(
                 careAreaName = rs.getString("care_area_name"),

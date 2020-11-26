@@ -7,6 +7,7 @@ package fi.espoo.evaka.reports
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.daycare.controllers.utils.ok
 import fi.espoo.evaka.shared.auth.AccessControlList
+import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.config.Roles.ADMIN
 import fi.espoo.evaka.shared.config.Roles.DIRECTOR
@@ -33,12 +34,11 @@ class AssistanceNeedsReportController(private val acl: AccessControlList) {
     ): ResponseEntity<List<AssistanceNeedReportRow>> {
         Audit.AssistanceNeedsReportRead.log()
         user.requireOneOfRoles(SERVICE_WORKER, ADMIN, DIRECTOR, UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
-        val units = acl.getAuthorizedUnits(user)
-        return db.read { it.getAssistanceNeedReportRows(date, units.ids).let(::ok) }
+        return db.read { it.getAssistanceNeedReportRows(date, acl.getAuthorizedUnits(user)).let(::ok) }
     }
 }
 
-fun Database.Read.getAssistanceNeedReportRows(date: LocalDate, units: Collection<UUID>? = null): List<AssistanceNeedReportRow> {
+fun Database.Read.getAssistanceNeedReportRows(date: LocalDate, authorizedUnits: AclAuthorization): List<AssistanceNeedReportRow> {
     // language=sql
     val sql =
         """
@@ -69,7 +69,7 @@ fun Database.Read.getAssistanceNeedReportRows(date: LocalDate, units: Collection
         LEFT JOIN daycare_group_placement gpl ON gpl.daycare_group_id = g.id AND daterange(gpl.start_date, gpl.end_date, '[]') @> :target_date
         LEFT JOIN placement pl ON pl.id = gpl.daycare_placement_id
         LEFT JOIN assistance_need an on an.child_id = pl.child_id AND daterange(an.start_date, an.end_date, '[]') @> :target_date
-        ${if (units != null) "WHERE u.id = ANY(:units)" else ""}
+        ${if (authorizedUnits != AclAuthorization.All) "WHERE u.id = ANY(:units)" else ""}
         GROUP BY ca.name, u.id, u.name, g.id, g.name, u.type, u.provider_type
         ORDER BY ca.name, u.name, g.name;
         """.trimIndent()
@@ -77,7 +77,7 @@ fun Database.Read.getAssistanceNeedReportRows(date: LocalDate, units: Collection
     @Suppress("UNCHECKED_CAST")
     return createQuery(sql)
         .bind("target_date", date)
-        .bind("units", units?.toTypedArray())
+        .bind("units", authorizedUnits.ids?.toTypedArray())
         .map { rs, _ ->
             AssistanceNeedReportRow(
                 careAreaName = rs.getString("care_area_name"),
