@@ -11,6 +11,7 @@ import fi.espoo.evaka.shared.auth.UserRole.ADMIN
 import fi.espoo.evaka.shared.auth.UserRole.DIRECTOR
 import fi.espoo.evaka.shared.auth.UserRole.FINANCE_ADMIN
 import fi.espoo.evaka.shared.auth.UserRole.SERVICE_WORKER
+import fi.espoo.evaka.shared.auth.UserRole.SPECIAL_EDUCATION_TEACHER
 import fi.espoo.evaka.shared.auth.UserRole.UNIT_SUPERVISOR
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapColumn
@@ -30,7 +31,7 @@ class FamilyContactReportController(private val acl: AccessControlList) {
         @RequestParam unitId: UUID
     ): ResponseEntity<List<FamilyContactReportRow>> {
         Audit.FamilyContactReportRead.log()
-        acl.getRolesForUnit(user, unitId).requireOneOfRoles(ADMIN, SERVICE_WORKER, FINANCE_ADMIN, DIRECTOR, UNIT_SUPERVISOR)
+        acl.getRolesForUnit(user, unitId).requireOneOfRoles(ADMIN, SERVICE_WORKER, FINANCE_ADMIN, DIRECTOR, UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
         return db.read { it.getFamilyContacts(unitId) }.let { ResponseEntity.ok(it) }
     }
 }

@@ -235,7 +235,14 @@ function Reports() {
               <Description>{i18n.reports.occupancies.description}</Description>
             </ReportItem>
           </RequireRole>
-          <RequireRole oneOf={['ADMIN', 'SERVICE_WORKER', 'DIRECTOR']}>
+          <RequireRole
+            oneOf={[
+              'ADMIN',
+              'SERVICE_WORKER',
+              'DIRECTOR',
+              'SPECIAL_EDUCATION_TEACHER'
+            ]}
+          >
             <ReportItem>
               <TitleRow>
                 <RoundIcon
@@ -270,7 +277,13 @@ function Reports() {
             </ReportItem>
           </RequireRole>
           <RequireRole
-            oneOf={['ADMIN', 'SERVICE_WORKER', 'DIRECTOR', 'UNIT_SUPERVISOR']}
+            oneOf={[
+              'ADMIN',
+              'SERVICE_WORKER',
+              'DIRECTOR',
+              'UNIT_SUPERVISOR',
+              'SPECIAL_EDUCATION_TEACHER'
+            ]}
           >
             <ReportItem>
               <TitleRow>
@@ -289,7 +302,13 @@ function Reports() {
             </ReportItem>
           </RequireRole>
           <RequireRole
-            oneOf={['ADMIN', 'SERVICE_WORKER', 'DIRECTOR', 'UNIT_SUPERVISOR']}
+            oneOf={[
+              'ADMIN',
+              'SERVICE_WORKER',
+              'DIRECTOR',
+              'UNIT_SUPERVISOR',
+              'SPECIAL_EDUCATION_TEACHER'
+            ]}
           >
             <ReportItem>
               <TitleRow>

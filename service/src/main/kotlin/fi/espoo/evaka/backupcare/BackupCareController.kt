@@ -10,6 +10,7 @@ import fi.espoo.evaka.shared.auth.UserRole.ADMIN
 import fi.espoo.evaka.shared.auth.UserRole.STAFF
 import fi.espoo.evaka.shared.config.Roles.FINANCE_ADMIN
 import fi.espoo.evaka.shared.config.Roles.SERVICE_WORKER
+import fi.espoo.evaka.shared.config.Roles.SPECIAL_EDUCATION_TEACHER
 import fi.espoo.evaka.shared.config.Roles.UNIT_SUPERVISOR
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapPSQLException
@@ -35,7 +36,7 @@ class BackupCareController(private val acl: AccessControlList) {
         user: AuthenticatedUser,
         @PathVariable("childId") childId: UUID
     ): ResponseEntity<ChildBackupCaresResponse> {
-        acl.getRolesForChild(user, childId).requireOneOfRoles(SERVICE_WORKER, UNIT_SUPERVISOR, FINANCE_ADMIN, STAFF)
+        acl.getRolesForChild(user, childId).requireOneOfRoles(SERVICE_WORKER, UNIT_SUPERVISOR, FINANCE_ADMIN, STAFF, SPECIAL_EDUCATION_TEACHER)
         val backupCares = db.read { it.handle.getBackupCaresForChild(childId) }
         return ResponseEntity.ok(ChildBackupCaresResponse(backupCares))
     }

@@ -357,7 +357,10 @@ function RedirectToMainPage() {
     return <Redirect to={'/login'} />
   }
 
-  if (hasRole(roles, 'SERVICE_WORKER')) {
+  if (
+    hasRole(roles, 'SERVICE_WORKER') ||
+    hasRole(roles, 'SPECIAL_EDUCATION_TEACHER')
+  ) {
     return <Redirect to={'/applications'} />
   } else if (hasRole(roles, 'UNIT_SUPERVISOR') || hasRole(roles, 'STAFF')) {
     return <Redirect to={'/units'} />

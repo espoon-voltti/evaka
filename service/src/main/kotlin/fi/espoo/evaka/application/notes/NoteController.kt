@@ -11,6 +11,7 @@ import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole.ADMIN
 import fi.espoo.evaka.shared.auth.UserRole.SERVICE_WORKER
+import fi.espoo.evaka.shared.auth.UserRole.SPECIAL_EDUCATION_TEACHER
 import fi.espoo.evaka.shared.auth.UserRole.UNIT_SUPERVISOR
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.Forbidden
@@ -39,7 +40,7 @@ class NoteController(private val acl: AccessControlList) {
     ): ResponseEntity<List<NoteJSON>> {
         Audit.NoteRead.log(targetId = search.applicationIds)
         search.applicationIds.forEach { applicationId ->
-            acl.getRolesForApplication(user, applicationId).requireOneOfRoles(ADMIN, SERVICE_WORKER, UNIT_SUPERVISOR)
+            acl.getRolesForApplication(user, applicationId).requireOneOfRoles(ADMIN, SERVICE_WORKER, UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
         }
 
         val notes = db.read {
@@ -56,7 +57,7 @@ class NoteController(private val acl: AccessControlList) {
         @RequestBody note: NoteRequest
     ): ResponseEntity<NoteJSON> {
         Audit.NoteCreate.log(targetId = applicationId)
-        acl.getRolesForApplication(user, applicationId).requireOneOfRoles(ADMIN, SERVICE_WORKER, UNIT_SUPERVISOR)
+        acl.getRolesForApplication(user, applicationId).requireOneOfRoles(ADMIN, SERVICE_WORKER, UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
 
         val newNote = db.transaction {
             createApplicationNote(it.handle, applicationId, note.text, user.id)
@@ -93,7 +94,7 @@ class NoteController(private val acl: AccessControlList) {
         @RequestBody note: NoteRequest
     ): ResponseEntity<Unit> {
         Audit.NoteUpdate.log(targetId = noteId)
-        user.requireOneOfRoles(ADMIN, SERVICE_WORKER, UNIT_SUPERVISOR)
+        user.requireOneOfRoles(ADMIN, SERVICE_WORKER, UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
 
         db.transaction { tx ->
             if (userIsAllowedToEditNote(tx.handle, user, noteId)) {

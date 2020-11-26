@@ -6,11 +6,14 @@ package fi.espoo.evaka.reports
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.daycare.controllers.utils.ok
+import fi.espoo.evaka.shared.auth.AccessControlList
+import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.config.Roles.ADMIN
 import fi.espoo.evaka.shared.config.Roles.DIRECTOR
 import fi.espoo.evaka.shared.config.Roles.FINANCE_ADMIN
 import fi.espoo.evaka.shared.config.Roles.SERVICE_WORKER
+import fi.espoo.evaka.shared.config.Roles.SPECIAL_EDUCATION_TEACHER
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.getUUID
 import org.springframework.format.annotation.DateTimeFormat
@@ -22,7 +25,7 @@ import java.time.LocalDate
 import java.util.UUID
 
 @RestController
-class ChildAgeLanguageReportController {
+class ChildAgeLanguageReportController(private val acl: AccessControlList) {
     @GetMapping("/reports/child-age-language")
     fun getChildAgeLanguageReport(
         db: Database,
@@ -30,12 +33,14 @@ class ChildAgeLanguageReportController {
         @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) date: LocalDate
     ): ResponseEntity<List<ChildAgeLanguageReportRow>> {
         Audit.ChildAgeLanguageReportRead.log()
-        user.requireOneOfRoles(SERVICE_WORKER, FINANCE_ADMIN, ADMIN, DIRECTOR)
-        return db.read { it.getChildAgeLanguageRows(date) }.let(::ok)
+        user.requireOneOfRoles(SERVICE_WORKER, FINANCE_ADMIN, ADMIN, DIRECTOR, SPECIAL_EDUCATION_TEACHER)
+        return db.read { it.getChildAgeLanguageRows(date, acl.getAuthorizedDaycares(user)) }.let(::ok)
     }
 }
 
-private fun Database.Read.getChildAgeLanguageRows(date: LocalDate): List<ChildAgeLanguageReportRow> {
+private fun Database.Read.getChildAgeLanguageRows(date: LocalDate, authorizedDaycares: AclAuthorization): List<ChildAgeLanguageReportRow> {
+    val daycareFilter: String = if (authorizedDaycares.ids != null) "WHERE u.id = ANY(:authorizedDaycareIds)" else ""
+
     // language=sql
     val sql =
         """
@@ -82,6 +87,7 @@ private fun Database.Read.getChildAgeLanguageRows(date: LocalDate): List<ChildAg
         JOIN care_area ca ON u.care_area_id = ca.id
         LEFT JOIN placement pl ON pl.unit_id = u.id AND daterange(pl.start_date, pl.end_date, '[]') @> :target_date
         LEFT JOIN children ch ON ch.id = pl.child_id
+        $daycareFilter
         GROUP BY ca.name, u.id, u.name, u.type, u.provider_type
         ORDER BY ca.name, u.name;
         """.trimIndent()
@@ -89,6 +95,7 @@ private fun Database.Read.getChildAgeLanguageRows(date: LocalDate): List<ChildAg
     @Suppress("UNCHECKED_CAST")
     return createQuery(sql)
         .bind("target_date", date)
+        .bind("authorizedDaycareIds", (authorizedDaycares.ids ?: setOf()).toTypedArray())
         .map { rs, _ ->
             ChildAgeLanguageReportRow(
                 careAreaName = rs.getString("care_area_name"),

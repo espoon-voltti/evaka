@@ -23,7 +23,8 @@ export const adRoles = [
   'STAFF',
   'FINANCE_ADMIN',
   'ADMIN',
-  'DIRECTOR'
+  'DIRECTOR',
+  'SPECIAL_EDUCATION_TEACHER'
 ] as const
 export type AdRole = typeof adRoles[number]
 

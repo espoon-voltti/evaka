@@ -15,6 +15,7 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole.STAFF
 import fi.espoo.evaka.shared.config.Roles.FINANCE_ADMIN
 import fi.espoo.evaka.shared.config.Roles.SERVICE_WORKER
+import fi.espoo.evaka.shared.config.Roles.SPECIAL_EDUCATION_TEACHER
 import fi.espoo.evaka.shared.config.Roles.UNIT_SUPERVISOR
 import fi.espoo.evaka.shared.db.Database
 import org.jdbi.v3.core.Handle
@@ -32,7 +33,7 @@ class ChildController(private val acl: AccessControlList) {
     @GetMapping("/children/{childId}/additional-information")
     fun getAdditionalInfo(db: Database.Connection, user: AuthenticatedUser, @PathVariable childId: UUID): ResponseEntity<AdditionalInformation> {
         Audit.ChildAdditionalInformationRead.log(targetId = childId)
-        acl.getRolesForChild(user, childId).requireOneOfRoles(SERVICE_WORKER, UNIT_SUPERVISOR, FINANCE_ADMIN, STAFF)
+        acl.getRolesForChild(user, childId).requireOneOfRoles(SERVICE_WORKER, UNIT_SUPERVISOR, FINANCE_ADMIN, STAFF, SPECIAL_EDUCATION_TEACHER)
         return db.read { getAdditionalInformation(it.handle, childId) }.let(::ok)
     }
 

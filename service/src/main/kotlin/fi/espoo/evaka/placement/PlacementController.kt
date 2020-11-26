@@ -18,6 +18,7 @@ import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.config.Roles.FINANCE_ADMIN
 import fi.espoo.evaka.shared.config.Roles.SERVICE_WORKER
+import fi.espoo.evaka.shared.config.Roles.SPECIAL_EDUCATION_TEACHER
 import fi.espoo.evaka.shared.config.Roles.STAFF
 import fi.espoo.evaka.shared.config.Roles.UNIT_SUPERVISOR
 import fi.espoo.evaka.shared.db.Database
@@ -67,7 +68,7 @@ class PlacementController(
             childId != null -> acl.getRolesForChild(user, childId)
             else -> throw BadRequest("daycareId or childId is required")
         }
-        roles.requireOneOfRoles(SERVICE_WORKER, FINANCE_ADMIN, UNIT_SUPERVISOR, STAFF)
+        roles.requireOneOfRoles(SERVICE_WORKER, FINANCE_ADMIN, UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER)
         val auth = acl.getAuthorizedDaycares(user)
         val authorizedDaycares = auth.ids ?: emptySet()
 

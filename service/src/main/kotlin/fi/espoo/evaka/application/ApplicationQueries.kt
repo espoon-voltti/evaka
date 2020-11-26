@@ -16,6 +16,7 @@ import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
 import fi.espoo.evaka.application.utils.exhaust
 import fi.espoo.evaka.placement.PlacementPlanConfirmationStatus
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.freeTextSearchQuery
 import fi.espoo.evaka.shared.db.getEnum
@@ -129,7 +130,9 @@ fun fetchApplicationSummaries(
     periodStart: LocalDate?,
     periodEnd: LocalDate?,
     searchTerms: String = "",
-    transferApplications: TransferApplicationFilter
+    transferApplications: TransferApplicationFilter,
+    authorizedUnits: AclAuthorization,
+    onlyAuthorizedToViewApplicationsWithAssistanceNeed: Boolean
 ): ApplicationSummaries {
 
     val params = mapOf(
@@ -137,6 +140,7 @@ fun fetchApplicationSummaries(
         "pageSize" to pageSize,
         "area" to areas.toTypedArray(),
         "units" to units.toTypedArray(),
+        "authorizedUnits" to authorizedUnits.ids?.toTypedArray(),
         "documentType" to type.toString().toLowerCase(),
         "preschoolType" to preschoolType.toTypedArray(),
         "status" to statuses.map { it.toStatus() }.toTypedArray(),
@@ -177,7 +181,9 @@ fun fetchApplicationSummaries(
             AND ('$DAYCARE_ONLY' = ANY(:preschoolType) OR NOT a.additionalDaycareApplication)
             """.trimIndent()
         else null,
-        if (distinctions.contains(ApplicationDistinctions.SECONDARY)) "f.preferredunits && :units" else if (units.isNotEmpty()) "d.id = ANY(:units)" else null,
+        if (distinctions.contains(ApplicationDistinctions.SECONDARY)) "f.preferredUnits && :units" else if (units.isNotEmpty()) "d.id = ANY(:units)" else null,
+        if (authorizedUnits.ids != null) "f.preferredUnits && :authorizedUnits" else null,
+        if (onlyAuthorizedToViewApplicationsWithAssistanceNeed) "(f.document->'careDetails'->>'assistanceNeeded')::boolean = true" else null,
         if ((periodStart != null || periodEnd != null) && dateType.contains(ApplicationDateType.DUE)) "daterange(:periodStart, :periodEnd, '[]') @> a.dueDate" else null,
         if ((periodStart != null || periodEnd != null) && dateType.contains(ApplicationDateType.START)) "daterange(:periodStart, :periodEnd, '[]') @> (f.document ->> 'preferredStartDate')::date" else null,
         if ((periodStart != null || periodEnd != null) && dateType.contains(ApplicationDateType.ARRIVAL)) "daterange(:periodStart, :periodEnd, '[]') @> a.sentdate" else null,

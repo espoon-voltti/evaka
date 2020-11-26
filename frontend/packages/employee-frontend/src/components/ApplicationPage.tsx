@@ -28,6 +28,8 @@ import ReturnButton from 'components/shared/atoms/buttons/ReturnButton'
 import ApplicationNotes from 'components/application-page/ApplicationNotes'
 import { useDebounce } from 'utils/useDebounce'
 import { isSsnValid, isTimeValid } from 'utils/validation/validations'
+import { UserContext } from '~state/user'
+import { hasRole } from '~utils/roles'
 
 const ApplicationArea = styled(ContentArea)`
   width: 77%;
@@ -46,7 +48,6 @@ function ApplicationPage({ match }: RouteComponentProps<{ id: UUID }>) {
   const [application, setApplication] = useState<Result<ApplicationResponse>>(
     Loading()
   )
-
   const creatingNew = window.location.href.includes('create=true')
   const [editing, setEditing] = useState(creatingNew)
   const [editedApplication, setEditedApplication] = useState<
@@ -56,6 +57,12 @@ function ApplicationPage({ match }: RouteComponentProps<{ id: UUID }>) {
     Record<string, string>
   >({})
   const [units, setUnits] = useState<Result<PreferredUnit[]>>(Loading())
+
+  const { roles } = useContext(UserContext)
+  const enableApplicationActions =
+    hasRole(roles, 'SERVICE_WORKER') ||
+    hasRole(roles, 'FINANCE_ADMIN') ||
+    hasRole(roles, 'ADMIN')
 
   useEffect(() => {
     if (editing && editedApplication) {
@@ -143,7 +150,9 @@ function ApplicationPage({ match }: RouteComponentProps<{ id: UUID }>) {
         </FixedSpaceRow>
       </Container>
 
-      {isSuccess(application) && editedApplication ? (
+      {isSuccess(application) &&
+      enableApplicationActions &&
+      editedApplication ? (
         <ApplicationActionsBar
           applicationStatus={application.data.application.status}
           editing={editing}

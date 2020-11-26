@@ -41,6 +41,8 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import Tooltip from '~components/shared/atoms/Tooltip'
 import { careTypesFromPlacementType } from '~components/common/CareTypeLabel'
 import PlacementCircle from '~components/shared/atoms/PlacementCircle'
+import { UserContext } from '~state/user'
+import { hasRole } from '~utils/roles'
 
 const CircleIcon = styled.div`
   display: flex;
@@ -130,6 +132,12 @@ const ApplicationsList = React.memo(function Applications({
   const { showCheckboxes, checkedIds, setCheckedIds, status } = useContext(
     ApplicationUIContext
   )
+
+  const { roles } = useContext(UserContext)
+  const enableApplicationActions =
+    hasRole(roles, 'SERVICE_WORKER') ||
+    hasRole(roles, 'FINANCE_ADMIN') ||
+    hasRole(roles, 'ADMIN')
 
   const isSorted = (column: SortByApplications) =>
     sortBy === column ? sortDirection : undefined
@@ -360,10 +368,12 @@ const ApplicationsList = React.memo(function Applications({
         </FixedSpaceRow>
       </Td>
       <Td>
-        <ApplicationActions
-          application={application}
-          reloadApplications={reloadApplications}
-        />
+        {enableApplicationActions && (
+          <ApplicationActions
+            application={application}
+            reloadApplications={reloadApplications}
+          />
+        )}
       </Td>
     </Tr>
   ))

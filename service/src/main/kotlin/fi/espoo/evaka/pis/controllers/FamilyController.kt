@@ -42,7 +42,7 @@ class FamilyController(
         @RequestParam(value = "childId", required = true) childId: UUID
     ): ResponseEntity<List<FamilyContact>> {
         Audit.FamilyContactsRead.log(targetId = childId)
-        acl.getRolesForChild(user, childId).requireOneOfRoles(Roles.ADMIN, Roles.STAFF)
+        acl.getRolesForChild(user, childId).requireOneOfRoles(Roles.ADMIN, Roles.STAFF, Roles.SPECIAL_EDUCATION_TEACHER)
         return db
             .read { it.fetchFamilyContacts(childId) }
             .let { ResponseEntity.ok(it) }

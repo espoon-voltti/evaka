@@ -183,8 +183,7 @@ class ApplicationControllerV2(
         @RequestParam(required = false) transferApplications: TransferApplicationFilter?
     ): ResponseEntity<ApplicationSummaries> {
         Audit.ApplicationSearch.log()
-        user.requireOneOfRoles(Roles.ADMIN, Roles.FINANCE_ADMIN, Roles.SERVICE_WORKER)
-
+        user.requireOneOfRoles(Roles.ADMIN, Roles.FINANCE_ADMIN, Roles.SERVICE_WORKER, Roles.SPECIAL_EDUCATION_TEACHER)
         if (periodStart != null && periodEnd != null && periodStart > periodEnd)
             throw BadRequest("Date parameter periodEnd ($periodEnd) cannot be before periodStart ($periodStart)")
 
@@ -208,7 +207,9 @@ class ApplicationControllerV2(
                 periodStart = periodStart,
                 periodEnd = periodEnd,
                 searchTerms = searchTerms ?: "",
-                transferApplications = transferApplications ?: TransferApplicationFilter.ALL
+                transferApplications = transferApplications ?: TransferApplicationFilter.ALL,
+                authorizedUnits = acl.getAuthorizedUnits(user),
+                onlyAuthorizedToViewApplicationsWithAssistanceNeed = !user.hasOneOfRoles(Roles.ADMIN, Roles.FINANCE_ADMIN, Roles.SERVICE_WORKER)
             )
         }.let { ResponseEntity.ok(it) }
     }
@@ -249,7 +250,7 @@ class ApplicationControllerV2(
         Audit.ApplicationRead.log(targetId = applicationId)
         Audit.DecisionRead.log(targetId = applicationId)
         acl.getRolesForApplication(user, applicationId)
-            .requireOneOfRoles(Roles.ADMIN, Roles.FINANCE_ADMIN, Roles.SERVICE_WORKER, Roles.UNIT_SUPERVISOR)
+            .requireOneOfRoles(Roles.ADMIN, Roles.FINANCE_ADMIN, Roles.SERVICE_WORKER, Roles.UNIT_SUPERVISOR, Roles.SPECIAL_EDUCATION_TEACHER)
 
         return db.transaction { tx ->
             val application = fetchApplicationDetails(tx.handle, applicationId)
