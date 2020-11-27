@@ -97,9 +97,7 @@ class PairingsController(
 
         return db
             .transaction { tx ->
-                val pairing = respondPairingChallenge(tx, id, body.challengeKey, body.responseKey)
-                val deviceId = insertDeviceData(tx, pairing.unitId)
-                pairing.copy(createdDeviceId = deviceId)
+                respondPairingChallengeCreateDevice(tx, id, body.challengeKey, body.responseKey)
             }
             .let { ResponseEntity.ok(it) }
     }
@@ -115,20 +113,18 @@ class PairingsController(
         val challengeKey: String,
         val responseKey: String
     )
-    @PostMapping("/apigw/pairings/{id}/validation")
+    @PostMapping("/system/pairings/{id}/validation")
     fun postPairingValidation(
         db: Database.Connection,
         @PathVariable id: UUID,
         @RequestBody body: PostPairingValidationReq
-    ): ResponseEntity<Unit> {
+    ): ResponseEntity<Pairing> {
         Audit.PairingValidation.log(targetId = id)
         db.transaction { tx -> incrementAttempts(tx, id, body.challengeKey) }
 
-        db.transaction { tx ->
+        return db.transaction { tx ->
             validatePairing(tx, id, body.challengeKey, body.responseKey)
-        }
-
-        return ResponseEntity.noContent().build()
+        }.let { ResponseEntity.ok(it) }
     }
 
     /**

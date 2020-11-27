@@ -32,6 +32,19 @@ class MobileDevicesController(
             .let { ResponseEntity.ok(it) }
     }
 
+    @GetMapping("/system/mobile-devices/{id}")
+    fun getMobileDevice(
+        db: Database.Connection,
+        user: AuthenticatedUser,
+        @PathVariable id: UUID
+    ): ResponseEntity<MobileDevice> {
+        Audit.MobileDevicesRead.log(targetId = id)
+
+        return db
+            .read { tx -> getDevice(tx, id) }
+            .let { ResponseEntity.ok(it) }
+    }
+
     data class RenameRequest(
         val name: String
     )
@@ -49,13 +62,14 @@ class MobileDevicesController(
         return ResponseEntity.noContent().build()
     }
 
-    @DeleteMapping("/apigw/mobile-devices/{id}")
+    @DeleteMapping("/mobile-devices/{id}")
     fun deleteMobileDevice(
         db: Database.Connection,
         user: AuthenticatedUser,
         @PathVariable id: UUID
     ): ResponseEntity<Unit> {
         Audit.MobileDevicesDelete.log(targetId = id)
+        acl.getRolesForMobileDevice(user, id).requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR)
 
         db.transaction { tx -> softDeleteDevice(tx, id) }
         return ResponseEntity.noContent().build()

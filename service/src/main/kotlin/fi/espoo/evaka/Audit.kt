@@ -105,6 +105,7 @@ enum class Audit(
     InvoicesUpdate("evaka.invoices.update"),
     MissingHeadOfFamilyReportRead("evaka.missing-head-of-family-report.read"),
     MissingServiceNeedReportRead("evaka.missing-service-need-report.read"),
+    MobileDevicesList("evaka.mobile-devices.list"),
     MobileDevicesRead("evaka.mobile-devices.read"),
     MobileDevicesRename("evaka.mobile-devices.rename"),
     MobileDevicesDelete("evaka.mobile-devices.delete"),

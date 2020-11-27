@@ -52,7 +52,7 @@ class PairingIntegrationTest : FullApplicationTest() {
         assertEquals(testUnitId, res1.unitId)
         assertEquals(10, challengeKey.length)
         assertNull(res1.responseKey)
-        assertNull(res1.createdDeviceId)
+        assertNull(res1.mobileDeviceId)
         assertEquals(PairingStatus.WAITING_CHALLENGE, res1.status)
 
         // status polling
@@ -65,7 +65,7 @@ class PairingIntegrationTest : FullApplicationTest() {
         assertEquals(testUnitId, res2.unitId)
         assertEquals(challengeKey, res2.challengeKey)
         assertEquals(10, responseKey!!.length)
-        assertNull(res1.createdDeviceId)
+        assertNull(res1.mobileDeviceId)
         assertEquals(PairingStatus.WAITING_RESPONSE, res2.status)
 
         // status polling
@@ -78,7 +78,7 @@ class PairingIntegrationTest : FullApplicationTest() {
         assertEquals(testUnitId, res3.unitId)
         assertEquals(challengeKey, res3.challengeKey)
         assertEquals(responseKey, res3.responseKey)
-        val deviceId = res3.createdDeviceId!!
+        val deviceId = res3.mobileDeviceId!!
         assertEquals(PairingStatus.READY, res3.status)
 
         // web: device has been created with default name
@@ -99,15 +99,28 @@ class PairingIntegrationTest : FullApplicationTest() {
         assertEquals(PairingStatus.READY, getPairingStatusAssertOk(id, authenticated = true))
 
         // mobile > apigw: validating pairing to create session
-        postPairingValidationAssertOk(id, challengeKey, responseKey)
+        val res4 = postPairingValidationAssertOk(id, challengeKey, responseKey)
+        assertEquals(id, res4.id)
+        assertEquals(testUnitId, res4.unitId)
+        assertEquals(challengeKey, res4.challengeKey)
+        assertEquals(responseKey, res4.responseKey)
+        assertEquals(deviceId, res4.mobileDeviceId)
+        assertEquals(PairingStatus.PAIRED, res4.status)
 
         // status polling
         assertEquals(PairingStatus.PAIRED, getPairingStatusAssertOk(id, authenticated = false))
 
-        // web > apigw: removing device
+        // mobile > apigw: fetching device to recreate session
+        val res5 = getMobileDeviceAssertOk(deviceId)
+        assertEquals(deviceId, res5.id)
+
+        // web: removing device
         deleteMobileDeviceAssertOk(deviceId)
         val listRes4 = getMobileDevicesAssertOk()
         assertEquals(0, listRes4.size)
+
+        // mobile > apigw: fetching device to recreate session should fail
+        getMobileDeviceAssertFail(deviceId, 404)
     }
 
     @Test
@@ -463,8 +476,8 @@ class PairingIntegrationTest : FullApplicationTest() {
         assertEquals(status, res.statusCode)
     }
 
-    private fun postPairingValidationAssertOk(id: UUID, challengeKey: String, responseKey: String) {
-        val (_, res, _) = http.post("/apigw/pairings/$id/validation")
+    private fun postPairingValidationAssertOk(id: UUID, challengeKey: String, responseKey: String): Pairing {
+        val (_, res, result) = http.post("/system/pairings/$id/validation")
             .jsonBody(
                 objectMapper.writeValueAsString(
                     PairingsController.PostPairingResponseReq(
@@ -474,13 +487,14 @@ class PairingIntegrationTest : FullApplicationTest() {
                 )
             )
             .asUser(apigw)
-            .response()
+            .responseObject<Pairing>(objectMapper)
 
-        assertEquals(204, res.statusCode)
+        assertEquals(200, res.statusCode)
+        return result.get()
     }
 
     private fun postPairingValidationAssertFail(id: UUID, challengeKey: String, responseKey: String, status: Int) {
-        val (_, res, _) = http.post("/apigw/pairings/$id/validation")
+        val (_, res, _) = http.post("/system/pairings/$id/validation")
             .jsonBody(
                 objectMapper.writeValueAsString(
                     PairingsController.PostPairingResponseReq(
@@ -513,6 +527,23 @@ class PairingIntegrationTest : FullApplicationTest() {
         return result.get()
     }
 
+    private fun getMobileDeviceAssertOk(id: UUID): MobileDevice {
+        val (_, res, result) = http.get("/system/mobile-devices/$id")
+            .asUser(apigw)
+            .responseObject<MobileDevice>(objectMapper)
+
+        assertEquals(200, res.statusCode)
+        return result.get()
+    }
+
+    private fun getMobileDeviceAssertFail(id: UUID, status: Int) {
+        val (_, res, _) = http.get("/system/mobile-devices/$id")
+            .asUser(apigw)
+            .response()
+
+        assertEquals(status, res.statusCode)
+    }
+
     private fun putMobileDeviceNameAssertOk(id: UUID, name: String) {
         val (_, res, _) = http.put("/mobile-devices/$id/name")
             .jsonBody(
@@ -529,8 +560,8 @@ class PairingIntegrationTest : FullApplicationTest() {
     }
 
     private fun deleteMobileDeviceAssertOk(id: UUID) {
-        val (_, res, _) = http.delete("/apigw/mobile-devices/$id")
-            .asUser(apigw)
+        val (_, res, _) = http.delete("/mobile-devices/$id")
+            .asUser(user)
             .response()
         assertEquals(204, res.statusCode)
     }

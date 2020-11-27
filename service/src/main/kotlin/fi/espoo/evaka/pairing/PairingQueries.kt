@@ -50,12 +50,52 @@ fun challengePairing(tx: Database.Transaction, challengeKey: String): Pairing {
         .firstOrNull() ?: throw NotFound("Valid pairing not found")
 }
 
-fun respondPairingChallenge(tx: Database.Transaction, id: UUID, challengeKey: String, responseKey: String): Pairing {
+fun respondPairingChallengeCreateDevice(tx: Database.Transaction, id: UUID, challengeKey: String, responseKey: String): Pairing {
+    val defaultDeviceName = "Nimeämätön laite"
+
     // language=sql
     val sql =
         """
-            UPDATE pairing SET status = 'READY'
-            WHERE id = :id AND challenge_key = :challenge AND response_key = :response AND status = 'WAITING_RESPONSE' AND expires > :now AND attempts <= :maxAttempts
+            WITH target_pairing AS (
+                SELECT p.id, unit_id, u.name AS unit_name
+                FROM pairing p
+                JOIN daycare u ON u.id = p.unit_id
+                WHERE p.id = :id AND p.challenge_key = :challenge AND p.response_key = :response 
+                    AND p.status = 'WAITING_RESPONSE' AND p.expires > :now AND p.attempts <= :maxAttempts
+            ), new_employee AS (
+                INSERT INTO employee (first_name, last_name, email, aad_object_id)
+                SELECT :name, unit_name, null, null
+                FROM target_pairing
+                RETURNING employee.id
+            ), new_device AS (
+                INSERT INTO mobile_device (id, unit_id, name) 
+                SELECT new_employee.id, target_pairing.unit_id, :name
+                FROM new_employee, target_pairing
+                RETURNING mobile_device.id
+            )
+            UPDATE pairing SET status = 'READY', mobile_device_id = new_device.id
+            FROM target_pairing, new_device
+            WHERE pairing.id = target_pairing.id
+            RETURNING pairing.*
+        """.trimIndent()
+
+    return tx.createQuery(sql)
+        .bind("id", id)
+        .bind("challenge", challengeKey)
+        .bind("response", responseKey)
+        .bind("name", defaultDeviceName)
+        .bind("now", ZonedDateTime.now(zoneId).toInstant())
+        .bind("maxAttempts", maxAttempts)
+        .mapTo<Pairing>()
+        .firstOrNull() ?: throw NotFound("Valid pairing not found")
+}
+
+fun validatePairing(tx: Database.Transaction, id: UUID, challengeKey: String, responseKey: String): Pairing {
+    // language=sql
+    val sql =
+        """
+            UPDATE pairing SET status = 'PAIRED'
+            WHERE id = :id AND challenge_key = :challenge AND response_key = :response AND status = 'READY' AND expires > :now AND attempts <= :maxAttempts
             RETURNING *
         """.trimIndent()
 
@@ -67,24 +107,6 @@ fun respondPairingChallenge(tx: Database.Transaction, id: UUID, challengeKey: St
         .bind("maxAttempts", maxAttempts)
         .mapTo<Pairing>()
         .firstOrNull() ?: throw NotFound("Valid pairing not found")
-}
-
-fun validatePairing(tx: Database.Transaction, id: UUID, challengeKey: String, responseKey: String) {
-    // language=sql
-    val sql =
-        """
-            UPDATE pairing SET status = 'PAIRED'
-            WHERE id = :id AND challenge_key = :challenge AND response_key = :response AND status = 'READY' AND expires > :now AND attempts <= :maxAttempts
-        """.trimIndent()
-
-    tx.createUpdate(sql)
-        .bind("id", id)
-        .bind("challenge", challengeKey)
-        .bind("response", responseKey)
-        .bind("now", ZonedDateTime.now(zoneId).toInstant())
-        .bind("maxAttempts", maxAttempts)
-        .execute()
-        .takeIf { it > 0 } ?: throw NotFound("Valid pairing not found")
 }
 
 fun fetchPairingStatus(tx: Database.Read, id: UUID): PairingStatus {
