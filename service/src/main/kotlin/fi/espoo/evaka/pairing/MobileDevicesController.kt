@@ -28,7 +28,7 @@ class MobileDevicesController(
         Audit.MobileDevicesRead.log(targetId = unitId)
         acl.getRolesForUnit(user, unitId).requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR)
         return db
-            .read { tx -> listDevices(tx, unitId) }
+            .read { it.listDevices(unitId) }
             .let { ResponseEntity.ok(it) }
     }
 
@@ -41,7 +41,7 @@ class MobileDevicesController(
         Audit.MobileDevicesRead.log(targetId = id)
 
         return db
-            .read { tx -> getDevice(tx, id) }
+            .read { it.getDevice(id) }
             .let { ResponseEntity.ok(it) }
     }
 
@@ -58,7 +58,7 @@ class MobileDevicesController(
         Audit.MobileDevicesRename.log(targetId = id)
         acl.getRolesForMobileDevice(user, id).requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR)
 
-        db.transaction { tx -> renameDevice(tx, id, body.name) }
+        db.transaction { it.renameDevice(id, body.name) }
         return ResponseEntity.noContent().build()
     }
 
@@ -71,7 +71,7 @@ class MobileDevicesController(
         Audit.MobileDevicesDelete.log(targetId = id)
         acl.getRolesForMobileDevice(user, id).requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR)
 
-        db.transaction { tx -> softDeleteDevice(tx, id) }
+        db.transaction { it.softDeleteDevice(id) }
         return ResponseEntity.noContent().build()
     }
 }

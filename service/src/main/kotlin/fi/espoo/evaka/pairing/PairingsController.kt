@@ -43,7 +43,7 @@ class PairingsController(
         acl.getRolesForUnit(user, body.unitId).requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR)
 
         return db
-            .transaction { tx -> initPairing(tx, body.unitId) }
+            .transaction { it.initPairing(body.unitId) }
             .let { ResponseEntity.ok(it) }
     }
 
@@ -65,7 +65,7 @@ class PairingsController(
     ): ResponseEntity<Pairing> {
         Audit.PairingChallenge.log(targetId = body.challengeKey)
         return db
-            .transaction { tx -> challengePairing(tx, body.challengeKey) }
+            .transaction { it.challengePairing(body.challengeKey) }
             .let { ResponseEntity.ok(it) }
     }
 
@@ -93,11 +93,11 @@ class PairingsController(
         } catch (e: Forbidden) {
             throw NotFound("Pairing not found or not authorized")
         }
-        db.transaction { tx -> incrementAttempts(tx, id, body.challengeKey) }
+        db.transaction { it.incrementAttempts(id, body.challengeKey) }
 
         return db
-            .transaction { tx ->
-                respondPairingChallengeCreateDevice(tx, id, body.challengeKey, body.responseKey)
+            .transaction {
+                it.respondPairingChallengeCreateDevice(id, body.challengeKey, body.responseKey)
             }
             .let { ResponseEntity.ok(it) }
     }
@@ -120,10 +120,10 @@ class PairingsController(
         @RequestBody body: PostPairingValidationReq
     ): ResponseEntity<Pairing> {
         Audit.PairingValidation.log(targetId = id)
-        db.transaction { tx -> incrementAttempts(tx, id, body.challengeKey) }
+        db.transaction { it.incrementAttempts(id, body.challengeKey) }
 
-        return db.transaction { tx ->
-            validatePairing(tx, id, body.challengeKey, body.responseKey)
+        return db.transaction {
+            it.validatePairing(id, body.challengeKey, body.responseKey)
         }.let { ResponseEntity.ok(it) }
     }
 
@@ -143,7 +143,7 @@ class PairingsController(
     ): ResponseEntity<PairingStatusRes> {
         Audit.PairingStatusRead.log(targetId = id)
         return db
-            .read { tx -> fetchPairingStatus(tx, id) }
+            .read { it.fetchPairingStatus(id) }
             .let { ResponseEntity.ok(PairingStatusRes(status = it)) }
     }
 }
