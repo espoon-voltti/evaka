@@ -114,7 +114,8 @@ const currentState = {
   files: {
     urgent: [],
     extendedCare: []
-  }
+  },
+  originalPreferredStartDate: ''
 }
 
 const defaultChild = {
@@ -239,7 +240,8 @@ const module: Module<any, RootState> = {
     urgentFiles: (state) => state.files.urgent,
     uploadedUrgentFiles: (state) => state.files.urgent.filter((file) => file.id),
     extendedCareFiles: (state) => state.files.extendedCare,
-    uploadedExtendedCareFiles: (state) => state.files.extendedCare.filter((file) => file.id)
+    uploadedExtendedCareFiles: (state) => state.files.extendedCare.filter((file) => file.id),
+    originalPreferredStartDate: (state) => state.originalPreferredStartDate
   },
   actions: {
     updateForm({ commit }, payload) {
@@ -334,6 +336,7 @@ const module: Module<any, RootState> = {
         key: attachment.id
       }))
       .filter(({type}) => type ===  ATTACHMENT_TYPE.EXTENDED_CARE)
+      state.originalPreferredStartDate = application.preferredStartDate
     },
     [types.REVERT_APPLICATION_FORM](state) {
       state.application = _.cloneDeep(state.loadedApplication)
