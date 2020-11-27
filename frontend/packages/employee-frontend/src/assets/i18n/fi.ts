@@ -1193,6 +1193,7 @@ export const fi = {
   invoices: {
     table: {
       title: 'Laskut',
+      toggleAll: 'Valitse kaikki alueen laskut',
       head: 'Päämies',
       children: 'Lapset',
       period: 'Laskutuskausi',

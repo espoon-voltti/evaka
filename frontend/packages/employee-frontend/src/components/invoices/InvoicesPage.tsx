@@ -2,15 +2,23 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React from 'react'
-import { Gap } from 'components/shared/layout/white-space'
-import { Container, ContentArea } from 'components/shared/layout/Container'
+import React, { useState } from 'react'
+import styled from 'styled-components'
+import { faEnvelope } from '@fortawesome/free-solid-svg-icons'
+import LocalDate from '@evaka/lib-common/src/local-date'
+import { Gap } from '~components/shared/layout/white-space'
+import { Container, ContentArea } from '~components/shared/layout/Container'
+import { Label } from '~components/shared/Typography'
+import FormModal from '~components/common/FormModal'
+import { AlertBox } from '~components/common/MessageBoxes'
+import { DatePicker } from '~components/common/DatePicker'
 import Invoices from './Invoices'
 import InvoiceFilters from './InvoiceFilters'
 import Actions from './Actions'
-import { useInvoicesState } from './invoices-state'
+import { useTranslation } from '~state/i18n'
+import { InvoicesAction, useInvoicesState } from './invoices-state'
 
-const InvoicesPage = React.memo(function InvoicesPage() {
+export default React.memo(function InvoicesPage() {
   const {
     dispatch,
     page,
@@ -21,7 +29,10 @@ const InvoicesPage = React.memo(function InvoicesPage() {
     sortDirection,
     searchFilters,
     refreshInvoices,
-    checked
+    checkedInvoices,
+    allInvoicesToggle,
+    showModal,
+    sendInvoices
   } = useInvoicesState()
 
   return (
@@ -44,22 +55,89 @@ const InvoicesPage = React.memo(function InvoicesPage() {
             searchFilters.status === 'DRAFT' ||
             searchFilters.status === 'WAITING_FOR_SENDING'
           }
-          checked={checked}
+          checked={checkedInvoices}
+          allInvoicesToggle={allInvoicesToggle}
+          allInvoicesToggleDisabled={searchFilters.area.length < 1}
         />
         <Actions
           dispatch={dispatch}
           status={searchFilters.status}
-          checkedInvoices={checked}
+          checkedInvoices={checkedInvoices}
           checkedAreas={searchFilters.area}
-          periodStart={searchFilters.startDate}
-          periodEnd={searchFilters.endDate}
-          useCustomDatesForInvoiceSending={
-            searchFilters.useCustomDatesForInvoiceSending
-          }
+          allInvoicesToggle={allInvoicesToggle}
         />
       </ContentArea>
+      {showModal ? (
+        <Modal
+          dispatch={dispatch}
+          sendInvoices={sendInvoices}
+          allInvoicesToggle={allInvoicesToggle}
+        />
+      ) : null}
     </Container>
   )
 })
 
-export default InvoicesPage
+const Modal = React.memo(function Modal({
+  dispatch,
+  sendInvoices,
+  allInvoicesToggle
+}: {
+  dispatch: React.Dispatch<InvoicesAction>
+  sendInvoices: (args: { invoiceDate: LocalDate; dueDate: LocalDate }) => void
+  allInvoicesToggle: boolean
+}) {
+  const { i18n } = useTranslation()
+  const [invoiceDate, setInvoiceDate] = useState(LocalDate.today())
+  const [dueDate, setDueDate] = useState(LocalDate.today().addBusinessDays(10))
+
+  return (
+    <FormModal
+      iconColour={'blue'}
+      title={i18n.invoices.sendModal.title}
+      resolveLabel={i18n.common.confirm}
+      rejectLabel={i18n.common.cancel}
+      icon={faEnvelope}
+      reject={() => dispatch({ type: 'CLOSE_MODAL' })}
+      resolve={() => sendInvoices({ invoiceDate, dueDate })}
+      data-qa="send-invoices-dialog"
+    >
+      <ModalContent>
+        <Label>{i18n.invoices.sendModal.invoiceDate}</Label>
+        <div>
+          <DatePicker
+            date={invoiceDate}
+            onChange={setInvoiceDate}
+            type="full-width"
+            dataQa="invoice-date-input"
+          />
+        </div>
+        <Gap size="s" />
+        <Label>{i18n.invoices.sendModal.dueDate}</Label>
+        <div>
+          <DatePicker
+            date={dueDate}
+            onChange={setDueDate}
+            type="full-width"
+            dataQa="invoice-due-date-input"
+          />
+        </div>
+        {!allInvoicesToggle ? (
+          <>
+            <Gap size="s" />
+            <AlertBox
+              message={i18n.invoices.buttons.individualSendAlertText}
+              thin
+            />
+          </>
+        ) : null}
+      </ModalContent>
+    </FormModal>
+  )
+})
+
+const ModalContent = styled.div`
+  align-self: flex-start;
+  margin-left: 4rem;
+  margin-right: 4rem;
+`

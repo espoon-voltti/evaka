@@ -1,15 +1,22 @@
+// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
+
 import { useCallback, useContext, useEffect, useReducer } from 'react'
-import { InvoicingUiContext } from '../../state/invoicing-ui'
-import { isSuccess, mapResult, Result } from '../../api'
-import { SearchOrder } from '~types'
-import { useRestApi } from '~utils/useRestApi'
+import LocalDate from '@evaka/lib-common/src/local-date'
+import { isSuccess, mapResult, Result } from '~api'
 import {
   createInvoices,
   getInvoices,
   InvoiceSearchParams,
-  SortByInvoices
+  SortByInvoices,
+  sendInvoices,
+  sendInvoicesByDate
 } from '~api/invoicing'
+import { InvoicingUiContext } from '~state/invoicing-ui'
+import { SearchOrder } from '~types'
 import { InvoiceSearchResult, InvoiceSummary } from '~types/invoicing'
+import { useRestApi } from '~utils/useRestApi'
 
 const pageSize = 200
 
@@ -24,7 +31,9 @@ type State = {
   invoices: PagedInvoices
   invoiceTotals?: { total: number; pages: number }
   needsReload: boolean
-  checked: Record<string, boolean>
+  checkedInvoices: Record<string, true>
+  allInvoicesToggle: boolean
+  showModal: boolean
 }
 
 export type InvoicesAction =
@@ -40,6 +49,9 @@ export type InvoicesAction =
   | { type: 'TOGGLE_CHECKED'; payload: string }
   | { type: 'CLEAR_CHECKED' }
   | { type: 'CHECK_ALL' }
+  | { type: 'ALL_INVOICES_TOGGLE' }
+  | { type: 'OPEN_MODAL' }
+  | { type: 'CLOSE_MODAL' }
 
 function reducer(state: State, action: InvoicesAction): State {
   switch (action.type) {
@@ -66,34 +78,50 @@ function reducer(state: State, action: InvoicesAction): State {
       return { ...state, needsReload: true }
     case 'INVOICE_RELOAD_DONE':
       return { ...state, needsReload: false }
-    case 'TOGGLE_CHECKED':
-      return {
-        ...state,
-        checked: {
-          ...state.checked,
-          [action.payload]: !state.checked[action.payload]
+    case 'TOGGLE_CHECKED': {
+      if (state.checkedInvoices[action.payload]) {
+        const { [action.payload]: _, ...rest } = state.checkedInvoices
+        return {
+          ...state,
+          checkedInvoices: rest
+        }
+      } else {
+        return {
+          ...state,
+          checkedInvoices: {
+            ...state.checkedInvoices,
+            [action.payload]: true
+          }
         }
       }
+    }
     case 'CLEAR_CHECKED':
       return {
         ...state,
-        checked: {}
+        checkedInvoices: {},
+        allInvoicesToggle: false
       }
     case 'CHECK_ALL': {
       const currentPage = state.invoices[state.page]
-      const checkedInvoices = isSuccess(currentPage)
+      const checked: Record<string, true> = isSuccess(currentPage)
         ? Object.fromEntries(
             currentPage.data.map((invoice) => [invoice.id, true])
           )
         : {}
       return {
         ...state,
-        checked: {
-          ...state.checked,
-          ...checkedInvoices
+        checkedInvoices: {
+          ...state.checkedInvoices,
+          ...checked
         }
       }
     }
+    case 'ALL_INVOICES_TOGGLE':
+      return { ...state, allInvoicesToggle: !state.allInvoicesToggle }
+    case 'OPEN_MODAL':
+      return { ...state, showModal: true }
+    case 'CLOSE_MODAL':
+      return { ...state, showModal: false }
   }
   return state
 }
@@ -104,7 +132,9 @@ const initialState: State = {
   sortDirection: 'ASC',
   invoices: {},
   needsReload: false,
-  checked: {}
+  checkedInvoices: {},
+  allInvoicesToggle: false,
+  showModal: false
 }
 
 export function useInvoicesState() {
@@ -161,6 +191,39 @@ export function useInvoicesState() {
     [dispatch]
   )
 
+  const send = useCallback(
+    ({
+      invoiceDate,
+      dueDate
+    }: {
+      invoiceDate: LocalDate
+      dueDate: LocalDate
+    }) => {
+      const promise = state.allInvoicesToggle
+        ? sendInvoicesByDate(
+            invoiceDate,
+            dueDate,
+            searchFilters.area,
+            searchFilters.startDate,
+            searchFilters.endDate,
+            searchFilters.useCustomDatesForInvoiceSending
+          )
+        : sendInvoices(Object.keys(state.checkedInvoices), invoiceDate, dueDate)
+      return promise.then(() => {
+        dispatch({ type: 'CLEAR_CHECKED' })
+        dispatch({ type: 'RELOAD_INVOICES' })
+        dispatch({ type: 'CLOSE_MODAL' })
+      })
+    },
+    [
+      dispatch,
+      searchFilters.area,
+      searchFilters.startDate,
+      searchFilters.endDate,
+      searchFilters.useCustomDatesForInvoiceSending
+    ]
+  )
+
   useEffect(() => {
     loadInvoices()
   }, [loadInvoices])
@@ -180,8 +243,11 @@ export function useInvoicesState() {
     total: state.invoiceTotals?.total,
     sortBy: state.sortBy,
     sortDirection: state.sortDirection,
-    checked: state.checked,
+    checkedInvoices: state.checkedInvoices,
+    allInvoicesToggle: state.allInvoicesToggle,
+    showModal: state.showModal,
     searchFilters,
-    refreshInvoices
+    refreshInvoices,
+    sendInvoices: send
   }
 }
