@@ -38,7 +38,7 @@ export default React.memo(function AttendanceChildAbsent({
       <FixedSpaceColumn>
         <Absences attendanceChild={child} />
         <InlineWideAsyncButton
-          text={i18n.attendances.actions.returnToPresent}
+          text={i18n.attendances.actions.returnToComing}
           onClick={() => returnToComingCall()}
           onSuccess={async () => {
             await getDaycareAttendances(unitId).then((res) =>

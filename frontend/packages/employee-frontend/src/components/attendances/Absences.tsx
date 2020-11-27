@@ -111,9 +111,7 @@ export default React.memo(function Absences({
 
             <span>
               <Label>{i18n.common.types[absence.careType]}</Label>
-              <AbsenceTypeLabel>
-                {i18n.absences.absenceTypes[absence.absenceType]}
-              </AbsenceTypeLabel>
+              <AbsenceTypeLabel>{i18n.absences.absence}</AbsenceTypeLabel>
             </span>
           </AttendanceItem>
         ))
@@ -135,9 +133,7 @@ export default React.memo(function Absences({
             <Circle />
             <span>
               <Label>{i18n.common.types[absence.careType]}</Label>
-              <AbsenceTypeLabel>
-                {i18n.absences.absenceTypes[absence.absenceType]}
-              </AbsenceTypeLabel>
+              <AbsenceTypeLabel>{i18n.absences.absence}</AbsenceTypeLabel>
             </span>
           </AttendanceItem>
         ))
@@ -159,9 +155,7 @@ export default React.memo(function Absences({
             <Circle />
             <span>
               <Label>{i18n.common.types[absence.careType]}</Label>
-              <AbsenceTypeLabel>
-                {i18n.absences.absenceTypes[absence.absenceType]}
-              </AbsenceTypeLabel>
+              <AbsenceTypeLabel>{i18n.absences.absence}</AbsenceTypeLabel>
             </span>
           </AttendanceItem>
         ))
@@ -184,9 +178,7 @@ export default React.memo(function Absences({
 
             <span>
               <Label>{i18n.common.types[absence.careType]}</Label>
-              <AbsenceTypeLabel>
-                {i18n.absences.absenceTypes[absence.absenceType]}
-              </AbsenceTypeLabel>
+              <AbsenceTypeLabel>{i18n.absences.absence}</AbsenceTypeLabel>
             </span>
           </AttendanceItem>
         ))
@@ -208,9 +200,7 @@ export default React.memo(function Absences({
             <Circle />
             <span>
               <Label>{i18n.common.types[absence.careType]}</Label>
-              <AbsenceTypeLabel>
-                {i18n.absences.absenceTypes[absence.absenceType]}
-              </AbsenceTypeLabel>
+              <AbsenceTypeLabel>{i18n.absences.absence}</AbsenceTypeLabel>
             </span>
           </AttendanceItem>
         ))
