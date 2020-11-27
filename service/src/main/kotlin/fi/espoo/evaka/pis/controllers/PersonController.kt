@@ -11,12 +11,10 @@ import fi.espoo.evaka.identity.isValidSSN
 import fi.espoo.evaka.pis.createEmptyPerson
 import fi.espoo.evaka.pis.createPerson
 import fi.espoo.evaka.pis.getDeceasedPeople
-import fi.espoo.evaka.pis.getPersonBySSN
 import fi.espoo.evaka.pis.searchPeople
 import fi.espoo.evaka.pis.service.ContactInfo
 import fi.espoo.evaka.pis.service.MergeService
 import fi.espoo.evaka.pis.service.PersonDTO
-import fi.espoo.evaka.pis.service.PersonIdentityRequest
 import fi.espoo.evaka.pis.service.PersonJSON
 import fi.espoo.evaka.pis.service.PersonPatch
 import fi.espoo.evaka.pis.service.PersonService
@@ -25,7 +23,6 @@ import fi.espoo.evaka.pis.updatePersonContactInfo
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.config.Roles.ADMIN
-import fi.espoo.evaka.shared.config.Roles.END_USER
 import fi.espoo.evaka.shared.config.Roles.FINANCE_ADMIN
 import fi.espoo.evaka.shared.config.Roles.SERVICE_WORKER
 import fi.espoo.evaka.shared.config.Roles.UNIT_SUPERVISOR
@@ -53,23 +50,6 @@ class PersonController(
     private val mergeService: MergeService,
     private val asyncJobRunner: AsyncJobRunner
 ) {
-    @PostMapping("/identity")
-    fun postPersonIdentity(db: Database.Connection, @RequestBody person: PersonIdentityJSON): ResponseEntity<AuthenticatedUser> {
-        Audit.PersonCreate.log()
-        return db.transaction { tx ->
-            tx.handle.getPersonBySSN(person.socialSecurityNumber) ?: tx.handle.createPerson(
-                PersonIdentityRequest(
-                    identity = person.toIdentifier(),
-                    firstName = person.firstName,
-                    lastName = person.lastName,
-                    email = person.email,
-                    language = person.language
-                )
-            )
-        }
-            .let { ResponseEntity.ok().body(AuthenticatedUser(it.id, setOf(END_USER))) }
-    }
-
     @PostMapping
     fun createEmpty(db: Database.Connection, user: AuthenticatedUser): ResponseEntity<PersonIdentityResponseJSON> {
         Audit.PersonCreate.log()
@@ -289,20 +269,6 @@ class PersonController(
     data class AddSsnRequest(
         val ssn: String
     )
-
-    data class PersonIdentityJSON(
-        val socialSecurityNumber: String,
-        val customerId: Long?,
-        val firstName: String,
-        val lastName: String,
-        val email: String?,
-        val language: String?
-    ) {
-        fun toIdentifier(): ExternalIdentifier.SSN = when {
-            this.socialSecurityNumber.isNotBlank() -> ExternalIdentifier.SSN.getInstance(this.socialSecurityNumber)
-            else -> throw IllegalArgumentException("Identifier can not be empty.")
-        }
-    }
 
     data class PersonIdentityResponseJSON(
         val id: UUID,

@@ -43,7 +43,7 @@ type AppConfig = DeepReadonly<
 const configs: Record<string, AppConfig> = {}
 configs._default = {
   api: {
-    areas: '/api/application/areas',
+    areas: '/api/application/public/areas',
     geocoding: '/api/application/geocode',
     autocomplete: '/api/application/autocomplete',
     applications: '/api/application/application'

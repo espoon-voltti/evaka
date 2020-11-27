@@ -5,7 +5,8 @@
 import express from 'express'
 import axios from 'axios'
 import { evakaServiceUrl } from './config'
-import { createHeaders } from './auth'
+import { createAuthHeader } from './auth'
+import { SamlUser } from './routes/auth/saml/types'
 
 export const client = axios.create({
   baseURL: evakaServiceUrl
@@ -13,73 +14,110 @@ export const client = axios.create({
 
 export type UUID = string
 
-export interface CareAreaResponseJSON {
+const machineUser: SamlUser = {
+  id: '00000000-0000-0000-0000-000000000000',
+  roles: [],
+  userType: 'SYSTEM'
+}
+
+export type UserType = 'ENDUSER' | 'EMPLOYEE' | 'SYSTEM'
+
+export type UserRole =
+  | 'ENDUSER'
+  | 'ADMIN'
+  | 'DIRECTOR'
+  | 'FINANCE_ADMIN'
+  | 'SERVICE_WORKER'
+  | 'STAFF'
+  | 'UNIT_SUPERVISOR'
+
+export type ServiceRequestHeader = 'Authorization' | 'X-Request-ID'
+export type ServiceRequestHeaders = { [H in ServiceRequestHeader]?: string }
+
+export function createServiceRequestHeaders(
+  req: express.Request | undefined,
+  user: SamlUser | undefined | null = req?.user
+) {
+  const headers: ServiceRequestHeaders = {}
+  if (user) {
+    headers.Authorization = createAuthHeader(user)
+  }
+  if (req?.traceId) {
+    headers['X-Request-ID'] = req.traceId
+  }
+  return headers
+}
+
+export interface AuthenticatedUser {
   id: UUID
-  name: string
-  shortName: string
-  daycares: LocationResponseJSON[]
+  roles: UserRole[]
 }
 
-export type CareTypes =
-  | 'CENTRE'
-  | 'FAMILY'
-  | 'GROUP_FAMILY'
-  | 'CLUB'
-  | 'PRESCHOOL'
-  | 'PREPARATORY_EDUCATION'
-
-export type ProviderType =
-  | 'MUNICIPAL'
-  | 'PURCHASED'
-  | 'PRIVATE'
-  | 'MUNICIPAL_SCHOOL'
-  | 'PRIVATE_SERVICE_VOUCHER'
-
-export type Language = 'fi' | 'sv'
-
-export interface LocationResponseJSON {
-  id: UUID
-  name: string
-  location: LocationJSON | null
-  phone: string | null
-  type: CareTypes[]
-  care_area_id: UUID
-  url: string | null
-  provider_type: ProviderType | null
-  language: Language | null
-  visitingAddress: VisitingAddress
-  mailingAddress: MailingAddress
-  canApplyDaycare: boolean
-  canApplyPreschool: boolean
-
-  address: string
-  postalCode: string | null
-  pobox: string | null
+export interface EmployeeIdentityRequest {
+  aad: string
+  firstName: string
+  lastName: string
+  email: string
 }
 
-export interface LocationJSON {
-  lat: number
-  lon: number
+export interface EmployeeResponse {
+  id: string
+  aad: string | null
+  firstName: string
+  lastName: string
+  email: string
+  created: string
+  updated: string
 }
 
-export interface VisitingAddress {
-  streetAddress: string
-  postalCode: string
-  postOffice: string | null
+export interface PersonIdentityRequest {
+  socialSecurityNumber: string
+  firstName: string
+  lastName: string
 }
 
-export interface MailingAddress {
-  streetAddress: string | null
-  poBox: string | null
-  postalCode: string | null
-  postOffice: string | null
+export async function getOrCreateEmployee(
+  employee: EmployeeIdentityRequest
+): Promise<AuthenticatedUser> {
+  const { data } = await client.post<AuthenticatedUser>(
+    `/system/employee-identity`,
+    employee,
+    {
+      headers: createServiceRequestHeaders(undefined, machineUser)
+    }
+  )
+  return data
 }
 
-export async function getEnduserAreas(
-  req: express.Request
-): Promise<CareAreaResponseJSON[]> {
-  const { data } = await client.get<CareAreaResponseJSON[]>(`/enduser/areas`, {
-    headers: createHeaders(req)
+export async function getEmployeeDetails(
+  req: express.Request,
+  employeeId: string
+) {
+  const { data } = await client.get<EmployeeResponse>(
+    `/employee/${employeeId}`,
+    {
+      headers: createServiceRequestHeaders(req)
+    }
+  )
+  return data
+}
+
+export async function getOrCreatePerson(
+  person: PersonIdentityRequest
+): Promise<AuthenticatedUser> {
+  const { data } = await client.post<AuthenticatedUser>(
+    `/system/person-identity`,
+    person,
+    {
+      headers: createServiceRequestHeaders(undefined, machineUser)
+    }
+  )
+  return data
+}
+
+export async function getUserDetails(req: express.Request, personId: string) {
+  const { data } = await client.get(`/persondetails/uuid/${personId}`, {
+    headers: createServiceRequestHeaders(req)
   })
   return data
 }

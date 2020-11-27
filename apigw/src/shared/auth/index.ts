@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import express from 'express'
 import { NextFunction, Request, Response } from 'express'
 import { logAuditEvent } from '../logging'
 import { gatewayRole } from '../config'
@@ -55,15 +54,4 @@ export function createAuthHeader(user: SamlUser): string {
       .join(' ')
   })
   return `Bearer ${token}`
-}
-
-export const createHeaders = (req: express.Request) => {
-  const headers: Record<string, string> = {}
-  if (req.user) {
-    headers.Authorization = createAuthHeader(req.user)
-  }
-  if (req.traceId) {
-    headers['X-Request-ID'] = req.traceId
-  }
-  return headers
 }

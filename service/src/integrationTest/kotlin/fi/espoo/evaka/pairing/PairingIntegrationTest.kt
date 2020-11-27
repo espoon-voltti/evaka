@@ -27,7 +27,6 @@ import java.util.UUID
 
 class PairingIntegrationTest : FullApplicationTest() {
     private val user = AuthenticatedUser(testDecisionMaker_1.id, emptySet())
-    private val apigw = AuthenticatedUser(UUID.randomUUID(), emptySet())
     private val testUnitId = testDaycare.id
 
     @BeforeEach
@@ -486,7 +485,7 @@ class PairingIntegrationTest : FullApplicationTest() {
                     )
                 )
             )
-            .asUser(apigw)
+            .asUser(AuthenticatedUser.machineUser)
             .responseObject<Pairing>(objectMapper)
 
         assertEquals(200, res.statusCode)
@@ -503,7 +502,7 @@ class PairingIntegrationTest : FullApplicationTest() {
                     )
                 )
             )
-            .asUser(apigw)
+            .asUser(user)
             .response()
 
         assertEquals(status, res.statusCode)
@@ -529,7 +528,7 @@ class PairingIntegrationTest : FullApplicationTest() {
 
     private fun getMobileDeviceAssertOk(id: UUID): MobileDevice {
         val (_, res, result) = http.get("/system/mobile-devices/$id")
-            .asUser(apigw)
+            .asUser(AuthenticatedUser.machineUser)
             .responseObject<MobileDevice>(objectMapper)
 
         assertEquals(200, res.statusCode)
@@ -538,7 +537,7 @@ class PairingIntegrationTest : FullApplicationTest() {
 
     private fun getMobileDeviceAssertFail(id: UUID, status: Int) {
         val (_, res, _) = http.get("/system/mobile-devices/$id")
-            .asUser(apigw)
+            .asUser(AuthenticatedUser.machineUser)
             .response()
 
         assertEquals(status, res.statusCode)

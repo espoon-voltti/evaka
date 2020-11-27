@@ -76,7 +76,6 @@ class PublicResourcesConfigurerAdapter : WebSecurityConfigurerAdapter() {
             .requestMatchers()
             .antMatchers(
                 "/public/**",
-                "/enduser/areas",
                 "/location",
                 "/report/offices",
                 "/scheduled/varda/update",

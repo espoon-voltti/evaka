@@ -4,19 +4,13 @@
 
 import { Router } from 'express'
 import { createProxy } from '../shared/proxy-utils'
-import { autocomplete, geocode } from './services/map'
-import { getEnduserAreas } from '../shared/service-client'
+import { autocomplete, geocode } from './google-maps'
 
 const router = Router()
 const proxy = createProxy()
 
 router.get('/units', proxy)
-
-router.get('/areas', (req, res, next) => {
-  getEnduserAreas(req)
-    .then((locations) => res.status(200).json(locations))
-    .catch((error) => next(error))
-})
+router.get('/public/areas', proxy)
 
 router.get('/autocomplete', (req, res, next) => {
   const { address } = req.query

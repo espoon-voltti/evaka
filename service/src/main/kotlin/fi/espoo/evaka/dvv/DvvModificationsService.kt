@@ -168,7 +168,7 @@ class DvvModificationsService(
         custodianLimitedDvvInfoGroup: CustodianLimitedDvvInfoGroup
     ) {
         if (custodianLimitedDvvInfoGroup.muutosattribuutti == "LISATTY") {
-            val user = AuthenticatedUser.anonymous
+            val user = AuthenticatedUser.machineUser
             db.transaction { tx ->
                 personService.getOrCreatePerson(tx, user, ExternalIdentifier.SSN.getInstance(ssn))
             }?.let {
@@ -183,7 +183,7 @@ class DvvModificationsService(
         caretakerLimitedDvvInfoGroup: CaretakerLimitedDvvInfoGroup
     ) {
         if (caretakerLimitedDvvInfoGroup.muutosattribuutti == "LISATTY") {
-            val user = AuthenticatedUser.anonymous
+            val user = AuthenticatedUser.machineUser
             db.transaction { tx ->
                 personService.getOrCreatePerson(
                     tx,
@@ -203,7 +203,7 @@ class DvvModificationsService(
         personNameDvvInfoGroup: PersonNameDvvInfoGroup
     ) = db.transaction { tx ->
         tx.handle.getPersonBySSN(ssn)?.let {
-            val user = AuthenticatedUser.anonymous
+            val user = AuthenticatedUser.machineUser
             personService.getOrCreatePerson(tx, user, ExternalIdentifier.SSN.getInstance(ssn))?.let {
                 logger.info("Dvv modification for ${it.id}: name ${personNameDvvInfoGroup.muutosattribuutti}, refreshed all info from DVV")
             }
@@ -216,7 +216,7 @@ class DvvModificationsService(
         personNameChangeDvvInfoGroup: PersonNameChangeDvvInfoGroup
     ) = db.transaction { tx ->
         tx.handle.getPersonBySSN(ssn)?.let {
-            val user = AuthenticatedUser.anonymous
+            val user = AuthenticatedUser.machineUser
             personService.getOrCreatePerson(tx, user, ExternalIdentifier.SSN.getInstance(ssn))?.let {
                 logger.info("Dvv modification for ${it.id}: name has changed: ${personNameChangeDvvInfoGroup.muutosattribuutti} - ${personNameChangeDvvInfoGroup.nimilaji}, refreshed all info from DVV")
             }

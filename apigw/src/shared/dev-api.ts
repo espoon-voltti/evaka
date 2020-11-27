@@ -2,9 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { UUID } from './pis'
-import { client } from '../service-client'
-import { UserRole } from './pis'
+import { client, UserRole, UUID } from './service-client'
 
 interface DevEmployee {
   firstName: string

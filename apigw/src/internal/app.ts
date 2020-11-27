@@ -55,6 +55,7 @@ function scheduledApiRouter() {
 function internalApiRouter() {
   const router = Router()
   router.use('/scheduled', scheduledApiRouter())
+  router.all('/system/*', (req, res) => res.sendStatus(404))
   router.use(createAuthEndpoints('employee'))
 
   if (enableDevApi) {

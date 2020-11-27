@@ -42,7 +42,7 @@ class LocationController {
     }
 
     // Units by areas, only including units that can be applied to
-    @GetMapping("/enduser/areas")
+    @GetMapping("/public/areas")
     fun getEnduserUnitsByArea(db: Database.Connection): ResponseEntity<Collection<CareAreaResponseJSON>> {
         val areas = db.read { it.handle.getAreas() }
             .map { area: CareArea ->

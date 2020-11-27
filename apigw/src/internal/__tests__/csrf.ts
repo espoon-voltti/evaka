@@ -5,7 +5,7 @@
 import { GatewayTester } from '../../shared/test/gateway-tester'
 import app from '../app'
 import { csrfCookieName } from '../../shared/middleware/csrf'
-import { AuthenticatedUser } from '../../shared/service/pis'
+import { AuthenticatedUser } from '../../shared/service-client'
 
 const mockUser: AuthenticatedUser = {
   id: '8fc11215-6d55-4059-bd59-038bfa36f294',
