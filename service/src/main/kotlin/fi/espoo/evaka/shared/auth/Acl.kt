@@ -153,6 +153,20 @@ WHERE employee_id = :userId AND p.id = :pairingId
             ).bind("userId", user.id).bind("pairingId", pairingId).mapTo<UserRole>().toSet()
         }
     )
+
+    fun getRolesForMobileDevice(user: AuthenticatedUser, deviceId: UUID): AclAppliedRoles = AclAppliedRoles(
+        (user.roles - UserRole.ACL_ROLES) + Database(jdbi).read {
+            it.createQuery(
+                // language=SQL
+                """
+SELECT role
+FROM daycare_acl
+JOIN mobile_device d ON daycare_id = d.unit_id
+WHERE employee_id = :userId AND d.id = :deviceId
+                """.trimIndent()
+            ).bind("userId", user.id).bind("deviceId", deviceId).mapTo<UserRole>().toSet()
+        }
+    )
 }
 
 private fun Database.Read.selectAuthorizedDaycares(user: AuthenticatedUser): Set<UUID> = createQuery(
