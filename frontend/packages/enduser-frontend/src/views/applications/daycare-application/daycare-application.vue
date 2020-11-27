@@ -169,7 +169,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
                           )
                         "
                       ></div>
-                      <div v-else  
+                      <div v-else
                         v-html="
                           $t(
                             `form.${type}-application.service.expedited.message.text`
@@ -1134,7 +1134,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
       }
     },
     computed: {
-      ...mapGetters(['daycareForm', 'applicationUnits', 'urgentFiles', 'extendedCareFiles']),
+      ...mapGetters(['daycareForm', 'applicationUnits', 'urgentFiles', 'extendedCareFiles', 'originalPreferredStartDate']),
       id(): string {
         return this.$route.params.id
       },
@@ -1162,7 +1162,10 @@ SPDX-License-Identifier: LGPL-2.1-or-later
           : ''
       },
       minimumStartdate(): null | string {
-        return this.isPreschool
+        // If application is already sent, the preferred start date can only be moved forward
+        return (this.model.status.value !== 'CREATED' && this.originalPreferredStartDate) ?
+          this.originalPreferredStartDate
+        : this.isPreschool
           ? datepickerTodayFormat()
           : minimumDaycareStartdate()
       },

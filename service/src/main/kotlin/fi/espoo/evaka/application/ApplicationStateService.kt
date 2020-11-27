@@ -442,6 +442,15 @@ class ApplicationStateService(
 
         val form = ApplicationForm.fromV0(formV0, original.childRestricted, original.guardianRestricted)
 
+        if (listOf(SENT).contains(original.status)) {
+            original.form.preferences.preferredStartDate?.let { previousStartDate ->
+                form.preferences.preferredStartDate?.let { newStartDate ->
+                    if (previousStartDate.isAfter(newStartDate))
+                        throw BadRequest("Moving start date $previousStartDate earlier to $newStartDate is not allowed")
+                }
+            }
+        }
+
         tx.updateApplicationContents(original, form)
         return getApplication(tx, applicationId)
     }
