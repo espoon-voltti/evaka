@@ -1663,7 +1663,8 @@ export const fi = {
         ? 'Lisää merkintä valitulle...'
         : 'Lisää merkinnät valituille...'
     },
-    notOperationDay: 'Ei toimintapäivä'
+    notOperationDay: 'Ei toimintapäivä',
+    absence: 'Poissaolo'
   },
   attendances: {
     types: {
