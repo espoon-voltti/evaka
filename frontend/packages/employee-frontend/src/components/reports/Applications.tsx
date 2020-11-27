@@ -60,7 +60,6 @@ function Applications() {
 
   useEffect(() => {
     setRows(Loading())
-    setDisplayFilters(emptyDisplayFilters)
     void getApplicationsReport(filters).then(setRows)
   }, [filters])
 
@@ -100,9 +99,9 @@ function Applications() {
             <ReactSelect
               options={[
                 ...(isSuccess(rows)
-                  ? distinct(
-                      rows.data.map((row) => row.careAreaName)
-                    ).map((s) => ({ value: s, label: s }))
+                  ? distinct(rows.data.map((row) => row.careAreaName))
+                      .map((s) => ({ value: s, label: s }))
+                      .concat([{ label: i18n.common.all, value: '' }])
                   : [])
               ]}
               onChange={(option) =>
