@@ -7,6 +7,7 @@ package fi.espoo.evaka.shared.auth
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
 import fi.espoo.evaka.shared.config.Roles
+import fi.espoo.evaka.shared.domain.Forbidden
 import java.util.UUID
 
 @JsonSerialize(using = AuthenticatedUserJsonSerializer::class)
@@ -16,6 +17,10 @@ data class AuthenticatedUser(@JsonInclude val id: UUID, @JsonInclude override va
     fun isUnitSupervisor() = roles.contains(Roles.UNIT_SUPERVISOR)
     fun isFinanceAdmin() = roles.contains(Roles.FINANCE_ADMIN)
     fun isAdmin() = roles.contains(Roles.ADMIN)
+
+    fun assertMachineUser() {
+        if (this != machineUser) throw Forbidden("Only accessible to the machine user")
+    }
 
     companion object {
         val machineUser = AuthenticatedUser(UUID.fromString("00000000-0000-0000-0000-000000000000"), setOf())
