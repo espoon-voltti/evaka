@@ -5,8 +5,11 @@
 import { ErrorRequestHandler } from 'express'
 import { logError } from '../logging'
 import { csrfCookieName } from './csrf'
+import { InvalidRequest } from '../express'
+import { debug } from '../config'
+
 interface LogResponse {
-  message: string
+  message: string | null
   errorCode?: string
 }
 
@@ -26,6 +29,12 @@ export const errorHandler: (v: boolean) => ErrorRequestHandler = (
       error
     )
     return res.status(403).send({ message: 'CSRF token error' } as LogResponse)
+  }
+  if (error instanceof InvalidRequest) {
+    const response: LogResponse = {
+      message: includeErrorMessage || debug ? error.message : null
+    }
+    return res.status(400).json(response)
   }
   if (error.response) {
     const response: LogResponse = {

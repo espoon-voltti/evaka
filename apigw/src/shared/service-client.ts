@@ -20,7 +20,7 @@ const machineUser: SamlUser = {
   userType: 'SYSTEM'
 }
 
-export type UserType = 'ENDUSER' | 'EMPLOYEE' | 'SYSTEM'
+export type UserType = 'ENDUSER' | 'EMPLOYEE' | 'MOBILE' | 'SYSTEM'
 
 export type UserRole =
   | 'ENDUSER'
@@ -113,6 +113,39 @@ export async function getOrCreatePerson(
     }
   )
   return data
+}
+
+export interface ValidatePairingRequest {
+  challengeKey: string
+  responseKey: string
+}
+
+export async function validatePairing(
+  req: express.Request,
+  id: UUID,
+  request: ValidatePairingRequest
+): Promise<UUID> {
+  const { data } = await client.post(
+    `/system/pairings/${encodeURIComponent(id)}/validation`,
+    request,
+    {
+      headers: createServiceRequestHeaders(req, machineUser)
+    }
+  )
+  const mobileDeviceId = data.mobileDeviceId
+  if (!mobileDeviceId || typeof mobileDeviceId !== 'string') {
+    throw new Error(`No mobile device ID in pairing`)
+  }
+  return mobileDeviceId
+}
+
+export async function validateMobileDevice(
+  req: express.Request,
+  id: UUID
+): Promise<void> {
+  await client.get(`/system/mobile-devices/${encodeURIComponent(id)}`, {
+    headers: createServiceRequestHeaders(req, machineUser)
+  })
 }
 
 export async function getUserDetails(req: express.Request, personId: string) {

@@ -78,6 +78,7 @@ export const nodeEnv = env('NODE_ENV', parseEnum(nodeEnvs))
 export const appBuild = process.env.APP_BUILD ?? 'UNDEFINED'
 export const appCommit = process.env.APP_COMMIT ?? 'UNDEFINED'
 export const hostIp = process.env.HOST_IP ?? 'UNDEFINED'
+export const debug = ifNodeEnv(['local', 'test'], true) ?? false
 
 export const jwtPrivateKey = required(
   process.env.JWT_PRIVATE_KEY ??

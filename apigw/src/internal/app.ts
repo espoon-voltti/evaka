@@ -7,7 +7,7 @@ import { Router } from 'express'
 import bodyParser from 'body-parser'
 import cookieParser from 'cookie-parser'
 import setupLoggingMiddleware from '../shared/logging'
-import { enableDevApi } from '../shared/config'
+import { cookieSecret, enableDevApi } from '../shared/config'
 import { errorHandler } from '../shared/middleware/error-handler'
 import csp from '../shared/routes/csp'
 import { authenticate } from '../shared/auth'
@@ -21,6 +21,9 @@ import { createProxy } from '../shared/proxy-utils'
 import nocache from 'nocache'
 import helmet from 'helmet'
 import tracing from '../shared/middleware/tracing'
+import mobileDeviceSession, {
+  refreshMobileSession
+} from './mobile-device-session'
 
 const app = express()
 trustReverseProxy(app)
@@ -35,8 +38,8 @@ app.use(
 app.get('/health', (req, res) => res.status(200).json({ status: 'UP' }))
 app.use(tracing)
 app.use(bodyParser.json({ limit: '8mb' }))
-app.use(cookieParser())
 app.use(session('employee'))
+app.use(cookieParser(cookieSecret))
 app.use(passport.initialize())
 app.use(passport.session())
 passport.serializeUser((user, done) => done(null, user))
@@ -65,6 +68,8 @@ function internalApiRouter() {
     )
   }
 
+  router.post('/auth/mobile', mobileDeviceSession)
+  router.use(refreshMobileSession)
   router.use(userDetails('employee'))
   router.use(authenticate)
   router.use(csrf)
