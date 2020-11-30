@@ -141,28 +141,35 @@ class AbsenceService {
             PlacementType.PREPARATORY -> listOf(CareType.PRESCHOOL)
             PlacementType.PRESCHOOL_DAYCARE,
             PlacementType.PREPARATORY_DAYCARE -> listOf(CareType.PRESCHOOL, CareType.PRESCHOOL_DAYCARE)
-            PlacementType.DAYCARE, PlacementType.DAYCARE_PART_TIME -> {
-                val placementTerm = if (placementDate <= LocalDate.of(placementDate.year, 7, 31)) {
-                    Period(
-                        LocalDate.of(placementDate.year - 1, 8, 1),
-                        LocalDate.of(placementDate.year, 7, 31)
-                    )
-                } else {
-                    Period(
-                        LocalDate.of(placementDate.year, 8, 1),
-                        LocalDate.of(placementDate.year + 1, 7, 31)
-                    )
-                }
-
-                val entitledToFree5yoDaycare = placementTerm.includes(
-                    placement.dob.plusYears(5).withMonth(12).withDayOfMonth(31)
-                )
-
-                if (entitledToFree5yoDaycare)
+            PlacementType.DAYCARE -> {
+                if (entitledToFree5yoDaycare(placement, placementDate))
                     listOf(CareType.DAYCARE_5YO_FREE, CareType.DAYCARE)
-                else listOf(CareType.DAYCARE)
+                else
+                    listOf(CareType.DAYCARE)
+            }
+            PlacementType.DAYCARE_PART_TIME -> {
+                if (entitledToFree5yoDaycare(placement, placementDate))
+                    listOf(CareType.DAYCARE_5YO_FREE)
+                else
+                    listOf(CareType.DAYCARE)
             }
         }
+}
+
+fun entitledToFree5yoDaycare(placement: AbsencePlacement, placementDate: LocalDate): Boolean {
+    val placementTerm = if (placementDate <= LocalDate.of(placementDate.year, 7, 31)) {
+        Period(
+            LocalDate.of(placementDate.year - 1, 8, 1),
+            LocalDate.of(placementDate.year, 7, 31)
+        )
+    } else {
+        Period(
+            LocalDate.of(placementDate.year, 8, 1),
+            LocalDate.of(placementDate.year + 1, 7, 31)
+        )
+    }
+
+    return placementTerm.includes(placement.dob.plusYears(5).withMonth(12).withDayOfMonth(31))
 }
 
 enum class CareType {
