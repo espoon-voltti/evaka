@@ -22,10 +22,7 @@ import fi.espoo.evaka.pis.service.PersonWithChildrenDTO
 import fi.espoo.evaka.pis.updatePersonContactInfo
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.config.Roles.ADMIN
-import fi.espoo.evaka.shared.config.Roles.FINANCE_ADMIN
-import fi.espoo.evaka.shared.config.Roles.SERVICE_WORKER
-import fi.espoo.evaka.shared.config.Roles.UNIT_SUPERVISOR
+import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import org.springframework.format.annotation.DateTimeFormat
@@ -53,7 +50,7 @@ class PersonController(
     @PostMapping
     fun createEmpty(db: Database.Connection, user: AuthenticatedUser): ResponseEntity<PersonIdentityResponseJSON> {
         Audit.PersonCreate.log()
-        user.requireOneOfRoles(SERVICE_WORKER, FINANCE_ADMIN, ADMIN)
+        user.requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN, UserRole.ADMIN)
         return db.transaction { it.handle.createEmptyPerson() }
             .let { ResponseEntity.ok().body(PersonIdentityResponseJSON.from(it)) }
     }
@@ -79,7 +76,7 @@ class PersonController(
         @PathVariable(value = "personId") personId: VolttiIdentifier
     ): ResponseEntity<List<PersonWithChildrenDTO>> {
         Audit.PersonDependantRead.log(targetId = personId)
-        user.requireOneOfRoles(SERVICE_WORKER, UNIT_SUPERVISOR, FINANCE_ADMIN, ADMIN)
+        user.requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR, UserRole.FINANCE_ADMIN, UserRole.ADMIN)
         return db.transaction { personService.getUpToDatePersonWithChildren(it, user, personId) }
             ?.let { ResponseEntity.ok().body(it.children) }
             ?: ResponseEntity.notFound().build()
@@ -92,7 +89,7 @@ class PersonController(
         @PathVariable(value = "personId") personId: VolttiIdentifier
     ): ResponseEntity<List<PersonJSON>> {
         Audit.PersonGuardianRead.log(targetId = personId)
-        user.requireOneOfRoles(SERVICE_WORKER, UNIT_SUPERVISOR, FINANCE_ADMIN, ADMIN)
+        user.requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR, UserRole.FINANCE_ADMIN, UserRole.ADMIN)
         return db.transaction { personService.getGuardians(it, user, personId) }
             .let { ResponseEntity.ok().body(it.map { personDTO -> PersonJSON.from(personDTO) }) }
             ?: ResponseEntity.notFound().build()
@@ -116,7 +113,7 @@ class PersonController(
         ) sortDirection: String
     ): ResponseEntity<List<PersonJSON>>? {
         Audit.PersonDetailsSearch.log()
-        user.requireOneOfRoles(SERVICE_WORKER, UNIT_SUPERVISOR, FINANCE_ADMIN)
+        user.requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR, UserRole.FINANCE_ADMIN)
         return ResponseEntity.ok()
             .body(
                 db.read {
@@ -137,7 +134,7 @@ class PersonController(
         @RequestBody contactInfo: ContactInfo
     ): ResponseEntity<ContactInfo> {
         Audit.PersonContactInfoUpdate.log(targetId = personId)
-        user.requireOneOfRoles(SERVICE_WORKER, UNIT_SUPERVISOR, FINANCE_ADMIN)
+        user.requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR, UserRole.FINANCE_ADMIN)
         return if (db.transaction { it.handle.updatePersonContactInfo(personId, contactInfo) }) {
             ResponseEntity.ok().body(contactInfo)
         } else {
@@ -153,7 +150,7 @@ class PersonController(
         @RequestBody data: PersonPatch
     ): ResponseEntity<PersonJSON> {
         Audit.PersonUpdate.log(targetId = personId)
-        user.requireOneOfRoles(SERVICE_WORKER, UNIT_SUPERVISOR, FINANCE_ADMIN)
+        user.requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR, UserRole.FINANCE_ADMIN)
         return db.transaction { personService.patchUserDetails(it, personId, data) }
             .let { ResponseEntity.ok(PersonJSON.from(it)) }
     }
@@ -165,7 +162,7 @@ class PersonController(
         @PathVariable(value = "personId") personId: VolttiIdentifier
     ): ResponseEntity<Unit> {
         Audit.PersonDelete.log(targetId = personId)
-        user.requireOneOfRoles(ADMIN)
+        user.requireOneOfRoles(UserRole.ADMIN)
         db.transaction { mergeService.deleteEmptyPerson(it, personId) }
         return ResponseEntity.noContent().build()
     }
@@ -178,7 +175,7 @@ class PersonController(
         @RequestBody body: AddSsnRequest
     ): ResponseEntity<PersonJSON> {
         Audit.PersonUpdate.log(targetId = personId)
-        user.requireOneOfRoles(SERVICE_WORKER, ADMIN)
+        user.requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.ADMIN)
 
         if (!isValidSSN(body.ssn)) {
             throw BadRequest("Invalid social security number")
@@ -198,7 +195,7 @@ class PersonController(
         @RequestParam("readonly", required = false) readonly: Boolean = false
     ): ResponseEntity<PersonJSON> {
         Audit.PersonDetailsRead.log()
-        user.requireOneOfRoles(SERVICE_WORKER, UNIT_SUPERVISOR, FINANCE_ADMIN)
+        user.requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR, UserRole.FINANCE_ADMIN)
 
         if (!isValidSSN(ssn)) throw BadRequest("Invalid SSN")
 
@@ -226,7 +223,7 @@ class PersonController(
         @RequestParam("sinceDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) sinceDate: LocalDate
     ): ResponseEntity<List<PersonJSON>> {
         Audit.PersonDetailsRead.log()
-        user.requireOneOfRoles(SERVICE_WORKER, UNIT_SUPERVISOR, FINANCE_ADMIN)
+        user.requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR, UserRole.FINANCE_ADMIN)
 
         return ResponseEntity.ok()
             .body(
@@ -241,7 +238,7 @@ class PersonController(
         @RequestBody body: MergeRequest
     ): ResponseEntity<Unit> {
         Audit.PersonMerge.log(targetId = body.master, objectId = body.duplicate)
-        user.requireOneOfRoles(ADMIN)
+        user.requireOneOfRoles(UserRole.ADMIN)
         db.transaction { tx ->
             mergeService.mergePeople(tx, master = body.master, duplicate = body.duplicate)
         }
@@ -256,7 +253,7 @@ class PersonController(
         @RequestBody body: CreatePersonBody
     ): ResponseEntity<UUID> {
         Audit.PersonCreate.log()
-        user.requireOneOfRoles(ADMIN, SERVICE_WORKER, FINANCE_ADMIN)
+        user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN)
         return db.transaction { it.handle.createPerson(body) }
             .let { ResponseEntity.ok(it) }
     }

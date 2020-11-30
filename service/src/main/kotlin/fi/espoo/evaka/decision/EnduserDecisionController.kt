@@ -7,7 +7,7 @@ package fi.espoo.evaka.decision
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.config.Roles
+import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
@@ -20,7 +20,7 @@ class EnduserDecisionController {
     @GetMapping("/enduser/decisions")
     fun getDecisions(db: Database.Connection, user: AuthenticatedUser): ResponseEntity<EnduserDecisionsResponse> {
         Audit.DecisionRead.log(targetId = user.id)
-        user.requireOneOfRoles(Roles.END_USER)
+        user.requireOneOfRoles(UserRole.END_USER)
         val decisions = db.read { getDecisionsByGuardian(it.handle, user.id, AclAuthorization.All) }
             .map {
                 val unit = when (it.type) {

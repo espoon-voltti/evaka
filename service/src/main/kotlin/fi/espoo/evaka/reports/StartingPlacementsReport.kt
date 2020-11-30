@@ -6,7 +6,7 @@ package fi.espoo.evaka.reports
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.config.Roles
+import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.getUUID
 import fi.espoo.evaka.shared.domain.ClosedPeriod
@@ -29,7 +29,7 @@ class StartingPlacementsReportController {
         @RequestParam("month") month: Int
     ): ResponseEntity<List<StartingPlacementsRow>> {
         Audit.StartingPlacementsReportRead.log()
-        user.requireOneOfRoles(Roles.ADMIN, Roles.SERVICE_WORKER, Roles.FINANCE_ADMIN, Roles.DIRECTOR)
+        user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN, UserRole.DIRECTOR)
         val rows = db.read { it.getStartingPlacementsRows(year, month) }
         return ResponseEntity.ok(rows)
     }

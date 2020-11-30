@@ -27,7 +27,7 @@ import fi.espoo.evaka.identity.ExternalIdentifier
 import fi.espoo.evaka.pis.service.PersonDTO
 import fi.espoo.evaka.pis.service.PersonService
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.config.Roles
+import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -65,7 +65,7 @@ class DaycareApplicationSerializerTest {
 
     @Test
     fun `enduser deserialized daycare json matches expected`() {
-        val user = AuthenticatedUser(requestingUserId, setOf(Roles.END_USER))
+        val user = AuthenticatedUser(requestingUserId, setOf(UserRole.END_USER))
         val daycareForm = serializer.deserialize(user, DAYCARE_JSON)
         assertTrue(daycareForm is DaycareFormV0)
         val expectedForm = DaycareFormV0.fromForm2(
@@ -79,7 +79,7 @@ class DaycareApplicationSerializerTest {
 
     @Test
     fun `enduser serialized daycare json matches expected`() {
-        val user = AuthenticatedUser(requestingUserId, setOf(Roles.END_USER))
+        val user = AuthenticatedUser(requestingUserId, setOf(UserRole.END_USER))
         val json = serializer.serialize(tx, user, expectedEnduserDaycareApplication)
         assertTrue(json.form is EnduserDaycareFormJSON)
         assertEquals(expectedEnduserDaycareFormJSON, json.form)

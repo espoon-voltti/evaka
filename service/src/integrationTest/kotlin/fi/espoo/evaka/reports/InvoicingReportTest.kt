@@ -13,8 +13,8 @@ import fi.espoo.evaka.invoicing.data.upsertInvoices
 import fi.espoo.evaka.invoicing.domain.InvoiceStatus
 import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
+import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
-import fi.espoo.evaka.shared.config.Roles
 import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_2
@@ -71,7 +71,7 @@ class InvoicingReportTest : FullApplicationTest() {
         )
     }
 
-    private val testUser = AuthenticatedUser(UUID.randomUUID(), setOf(Roles.DIRECTOR))
+    private val testUser = AuthenticatedUser(UUID.randomUUID(), setOf(UserRole.DIRECTOR))
 
     private fun getAndAssert(date: LocalDate, expected: InvoiceReport) {
         val (_, response, result) = http.get(

@@ -13,7 +13,7 @@ import fi.espoo.evaka.pis.service.ContactInfo
 import fi.espoo.evaka.pis.service.PersonDTO
 import fi.espoo.evaka.pis.service.PersonIdentityRequest
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.config.Roles
+import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.db.transaction
 import fi.espoo.evaka.shared.domain.Forbidden
@@ -40,22 +40,22 @@ class PersonControllerIntegrationTest : AbstractIntegrationTest() {
 
     @Test
     fun `Finance admin can update end user's contact info`() {
-        updateContactInfo(AuthenticatedUser(UUID.randomUUID(), setOf(Roles.FINANCE_ADMIN)))
+        updateContactInfo(AuthenticatedUser(UUID.randomUUID(), setOf(UserRole.FINANCE_ADMIN)))
     }
 
     @Test
     fun `Service worker can update end user's contact info`() {
-        updateContactInfo(AuthenticatedUser(UUID.randomUUID(), setOf(Roles.SERVICE_WORKER)))
+        updateContactInfo(AuthenticatedUser(UUID.randomUUID(), setOf(UserRole.SERVICE_WORKER)))
     }
 
     @Test
     fun `Unit supervisor can update end user's contact info`() {
-        updateContactInfo(AuthenticatedUser(UUID.randomUUID(), setOf(Roles.UNIT_SUPERVISOR)))
+        updateContactInfo(AuthenticatedUser(UUID.randomUUID(), setOf(UserRole.UNIT_SUPERVISOR)))
     }
 
     @Test
     fun `End user cannot end update end user's contact info`() {
-        val user = AuthenticatedUser(UUID.randomUUID(), setOf(Roles.END_USER))
+        val user = AuthenticatedUser(UUID.randomUUID(), setOf(UserRole.END_USER))
         assertThrows<Forbidden> {
             controller.updateContactInfo(db, user, UUID.randomUUID(), contactInfo)
         }
@@ -63,7 +63,7 @@ class PersonControllerIntegrationTest : AbstractIntegrationTest() {
 
     @Test
     fun `Search finds person by first and last name`() {
-        val user = AuthenticatedUser(UUID.randomUUID(), setOf(Roles.SERVICE_WORKER))
+        val user = AuthenticatedUser(UUID.randomUUID(), setOf(UserRole.SERVICE_WORKER))
         val person = createPerson()
 
         val response = controller.findBySearchTerms(
@@ -83,7 +83,7 @@ class PersonControllerIntegrationTest : AbstractIntegrationTest() {
 
     @Test
     fun `Search treats tabs as spaces in search terms`() {
-        val user = AuthenticatedUser(UUID.randomUUID(), setOf(Roles.SERVICE_WORKER))
+        val user = AuthenticatedUser(UUID.randomUUID(), setOf(UserRole.SERVICE_WORKER))
         val person = createPerson()
 
         val response = controller.findBySearchTerms(
@@ -103,7 +103,7 @@ class PersonControllerIntegrationTest : AbstractIntegrationTest() {
 
     @Test
     fun `Search treats non-breaking spaces as spaces in search terms`() {
-        val user = AuthenticatedUser(UUID.randomUUID(), setOf(Roles.SERVICE_WORKER))
+        val user = AuthenticatedUser(UUID.randomUUID(), setOf(UserRole.SERVICE_WORKER))
         val person = createPerson()
 
         val response = controller.findBySearchTerms(
@@ -123,7 +123,7 @@ class PersonControllerIntegrationTest : AbstractIntegrationTest() {
 
     @Test
     fun `Search treats obscrube unicode spaces as spaces in search terms`() {
-        val user = AuthenticatedUser(UUID.randomUUID(), setOf(Roles.SERVICE_WORKER))
+        val user = AuthenticatedUser(UUID.randomUUID(), setOf(UserRole.SERVICE_WORKER))
         val person = createPerson()
 
         // IDEOGRAPHIC SPACE, not supported by default in regexes

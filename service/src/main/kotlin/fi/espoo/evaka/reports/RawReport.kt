@@ -9,7 +9,7 @@ import fi.espoo.evaka.daycare.controllers.utils.ok
 import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.config.Roles
+import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.getEnum
 import fi.espoo.evaka.shared.db.getNullableUUID
@@ -33,7 +33,7 @@ class RawReportController {
         @RequestParam("to") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate
     ): ResponseEntity<List<RawReportRow>> {
         Audit.RawReportRead.log()
-        user.requireOneOfRoles(Roles.DIRECTOR, Roles.ADMIN)
+        user.requireOneOfRoles(UserRole.DIRECTOR, UserRole.ADMIN)
         if (to.isBefore(from)) throw BadRequest("Inverted time range")
         if (to.isAfter(from.plusDays(7))) throw BadRequest("Time range too long")
 

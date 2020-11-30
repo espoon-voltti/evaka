@@ -26,12 +26,6 @@ import fi.espoo.evaka.daycare.updateDaycareManager
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
-import fi.espoo.evaka.shared.auth.UserRole.ADMIN
-import fi.espoo.evaka.shared.auth.UserRole.FINANCE_ADMIN
-import fi.espoo.evaka.shared.auth.UserRole.SERVICE_WORKER
-import fi.espoo.evaka.shared.auth.UserRole.SPECIAL_EDUCATION_TEACHER
-import fi.espoo.evaka.shared.auth.UserRole.STAFF
-import fi.espoo.evaka.shared.auth.UserRole.UNIT_SUPERVISOR
 import fi.espoo.evaka.shared.db.Database
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.http.ResponseEntity
@@ -58,7 +52,7 @@ class DaycareController(
     @GetMapping
     fun getDaycares(db: Database.Connection, user: AuthenticatedUser): ResponseEntity<List<Daycare>> {
         Audit.UnitSearch.log()
-        user.requireOneOfRoles(ADMIN, SERVICE_WORKER, FINANCE_ADMIN, UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER)
+        user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF, UserRole.SPECIAL_EDUCATION_TEACHER)
         return ResponseEntity.ok(db.read { it.handle.getDaycares(acl.getAuthorizedDaycares(user)) })
     }
 
@@ -70,7 +64,7 @@ class DaycareController(
     ): ResponseEntity<DaycareResponse> {
         Audit.UnitRead.log(targetId = daycareId)
         val currentUserRoles = acl.getRolesForUnit(user, daycareId)
-        currentUserRoles.requireOneOfRoles(ADMIN, SERVICE_WORKER, FINANCE_ADMIN, UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER)
+        currentUserRoles.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF, UserRole.SPECIAL_EDUCATION_TEACHER)
         return db.read { it.handle.getDaycare(daycareId) }
             ?.let { ResponseEntity.ok(DaycareResponse(it, currentUserRoles.roles)) } ?: ResponseEntity.notFound()
             .build()
@@ -92,7 +86,7 @@ class DaycareController(
     ): ResponseEntity<List<DaycareGroup>> {
         Audit.UnitGroupsSearch.log(targetId = daycareId)
         acl.getRolesForUnit(user, daycareId)
-            .requireOneOfRoles(ADMIN, SERVICE_WORKER, FINANCE_ADMIN, UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER)
+            .requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF, UserRole.SPECIAL_EDUCATION_TEACHER)
 
         return db.read { daycareService.getDaycareGroups(it, daycareId, startDate, endDate) }.let(::ok)
     }
@@ -106,7 +100,7 @@ class DaycareController(
     ): ResponseEntity<DaycareGroup> {
         Audit.UnitGroupsCreate.log(targetId = daycareId)
         acl.getRolesForUnit(user, daycareId)
-            .requireOneOfRoles(ADMIN, SERVICE_WORKER, UNIT_SUPERVISOR)
+            .requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR)
 
         return db.transaction { daycareService.createGroup(it, daycareId, body.name, body.startDate, body.initialCaretakers) }
             .let { created(it, URI.create("/$daycareId/groups/${it.id}")) }
@@ -125,7 +119,7 @@ class DaycareController(
     ): ResponseEntity<Unit> {
         Audit.UnitGroupsUpdate.log(targetId = groupId)
         acl.getRolesForUnitGroup(user, groupId)
-            .requireOneOfRoles(ADMIN, SERVICE_WORKER, UNIT_SUPERVISOR)
+            .requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR)
 
         db.transaction { it.handle.renameGroup(groupId, body.name) }
 
@@ -141,7 +135,7 @@ class DaycareController(
     ): ResponseEntity<Unit> {
         Audit.UnitGroupsDelete.log(targetId = groupId)
         acl.getRolesForUnitGroup(user, groupId)
-            .requireOneOfRoles(ADMIN, SERVICE_WORKER, UNIT_SUPERVISOR)
+            .requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR)
 
         db.transaction { daycareService.deleteGroup(it, daycareId, groupId) }
         return noContent()
@@ -156,7 +150,7 @@ class DaycareController(
     ): ResponseEntity<CaretakersResponse> {
         Audit.UnitGroupsCaretakersRead.log(targetId = groupId)
         acl.getRolesForUnitGroup(user, groupId)
-            .requireOneOfRoles(ADMIN, SERVICE_WORKER, FINANCE_ADMIN, UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER)
+            .requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF, UserRole.SPECIAL_EDUCATION_TEACHER)
 
         return db.read {
             val daycareStub = it.handle.getDaycareStub(daycareId)
@@ -180,7 +174,7 @@ class DaycareController(
     ): ResponseEntity<Unit> {
         Audit.UnitGroupsCaretakersCreate.log(targetId = groupId)
         acl.getRolesForUnitGroup(user, groupId)
-            .requireOneOfRoles(ADMIN, SERVICE_WORKER, UNIT_SUPERVISOR)
+            .requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR)
 
         db.transaction {
             caretakerService.insert(
@@ -205,7 +199,7 @@ class DaycareController(
     ): ResponseEntity<Unit> {
         Audit.UnitGroupsCaretakersUpdate.log(targetId = id)
         acl.getRolesForUnitGroup(user, groupId)
-            .requireOneOfRoles(ADMIN, SERVICE_WORKER, UNIT_SUPERVISOR)
+            .requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR)
 
         db.transaction {
             caretakerService.update(
@@ -230,7 +224,7 @@ class DaycareController(
     ): ResponseEntity<Unit> {
         Audit.UnitGroupsCaretakersDelete.log(targetId = id)
         acl.getRolesForUnitGroup(user, groupId)
-            .requireOneOfRoles(ADMIN, SERVICE_WORKER, UNIT_SUPERVISOR)
+            .requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR)
 
         db.transaction {
             caretakerService.delete(
@@ -255,7 +249,7 @@ class DaycareController(
     ): ResponseEntity<DaycareCapacityStats> {
         Audit.UnitStatisticsCreate.log(targetId = daycareId)
         acl.getRolesForUnit(user, daycareId)
-            .requireOneOfRoles(ADMIN, SERVICE_WORKER, FINANCE_ADMIN, UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER)
+            .requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF, UserRole.SPECIAL_EDUCATION_TEACHER)
 
         return db.read { daycareService.getDaycareCapacityStats(it, daycareId, startDate, endDate) }.let(::ok)
     }
@@ -268,7 +262,7 @@ class DaycareController(
         @RequestBody fields: DaycareFields
     ): ResponseEntity<Daycare> {
         Audit.UnitUpdate.log(targetId = daycareId)
-        user.requireOneOfRoles(ADMIN)
+        user.requireOneOfRoles(UserRole.ADMIN)
         fields.validate()
         return ResponseEntity.ok(
             db.transaction {
@@ -286,7 +280,7 @@ class DaycareController(
         @RequestBody fields: DaycareFields
     ): ResponseEntity<CreateDaycareResponse> {
         Audit.UnitCreate.log()
-        user.requireOneOfRoles(ADMIN)
+        user.requireOneOfRoles(UserRole.ADMIN)
         fields.validate()
         return ResponseEntity.ok(
             CreateDaycareResponse(

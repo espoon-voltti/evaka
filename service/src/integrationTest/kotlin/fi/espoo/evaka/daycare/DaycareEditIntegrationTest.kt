@@ -14,8 +14,8 @@ import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
+import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
-import fi.espoo.evaka.shared.config.Roles
 import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevDaycare
@@ -34,7 +34,7 @@ import java.time.LocalDate
 import java.util.UUID
 
 class DaycareEditIntegrationTest : FullApplicationTest() {
-    private val admin = AuthenticatedUser(testDecisionMaker_1.id, setOf(Roles.ADMIN))
+    private val admin = AuthenticatedUser(testDecisionMaker_1.id, setOf(UserRole.ADMIN))
     private val fields = DaycareFields(
         name = "Uusi päiväkoti",
         openingDate = LocalDate.of(2020, 1, 1),

@@ -7,7 +7,7 @@ package fi.espoo.evaka.reports
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.daycare.controllers.utils.ok
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.config.Roles
+import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.getUUID
 import fi.espoo.evaka.shared.domain.BadRequest
@@ -29,7 +29,7 @@ class ApplicationsReportController {
         @RequestParam("to") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate
     ): ResponseEntity<List<ApplicationsReportRow>> {
         Audit.ApplicationsReportRead.log()
-        user.requireOneOfRoles(Roles.SERVICE_WORKER, Roles.DIRECTOR, Roles.ADMIN)
+        user.requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.DIRECTOR, UserRole.ADMIN)
         if (to.isBefore(from)) throw BadRequest("Inverted time range")
 
         return db.read { it.getApplicationsRows(from, to) }.let(::ok)

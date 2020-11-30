@@ -9,10 +9,7 @@ import fi.espoo.evaka.application.ApplicationNote
 import fi.espoo.evaka.application.utils.toHelsinkiLocalDateTime
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.auth.UserRole.ADMIN
-import fi.espoo.evaka.shared.auth.UserRole.SERVICE_WORKER
-import fi.espoo.evaka.shared.auth.UserRole.SPECIAL_EDUCATION_TEACHER
-import fi.espoo.evaka.shared.auth.UserRole.UNIT_SUPERVISOR
+import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.Forbidden
 import org.jdbi.v3.core.Handle
@@ -40,7 +37,7 @@ class NoteController(private val acl: AccessControlList) {
     ): ResponseEntity<List<NoteJSON>> {
         Audit.NoteRead.log(targetId = search.applicationIds)
         search.applicationIds.forEach { applicationId ->
-            acl.getRolesForApplication(user, applicationId).requireOneOfRoles(ADMIN, SERVICE_WORKER, UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
+            acl.getRolesForApplication(user, applicationId).requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR, UserRole.SPECIAL_EDUCATION_TEACHER)
         }
 
         val notes = db.read {
@@ -57,7 +54,7 @@ class NoteController(private val acl: AccessControlList) {
         @RequestBody note: NoteRequest
     ): ResponseEntity<NoteJSON> {
         Audit.NoteCreate.log(targetId = applicationId)
-        acl.getRolesForApplication(user, applicationId).requireOneOfRoles(ADMIN, SERVICE_WORKER, UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
+        acl.getRolesForApplication(user, applicationId).requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR, UserRole.SPECIAL_EDUCATION_TEACHER)
 
         val newNote = db.transaction {
             createApplicationNote(it.handle, applicationId, note.text, user.id)
@@ -73,7 +70,7 @@ class NoteController(private val acl: AccessControlList) {
         @RequestBody notes: List<NoteJSON>
     ): ResponseEntity<NotesWrapperJSON> {
         Audit.NoteUpdate.log(targetId = notes.map { it.id })
-        user.requireOneOfRoles(ADMIN, SERVICE_WORKER, UNIT_SUPERVISOR)
+        user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR)
         // This endpoint is never used with multiple notes in reality
         val note = notes.first()
         val updatedNote = db.transaction { tx ->
@@ -94,7 +91,7 @@ class NoteController(private val acl: AccessControlList) {
         @RequestBody note: NoteRequest
     ): ResponseEntity<Unit> {
         Audit.NoteUpdate.log(targetId = noteId)
-        user.requireOneOfRoles(ADMIN, SERVICE_WORKER, UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
+        user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR, UserRole.SPECIAL_EDUCATION_TEACHER)
 
         db.transaction { tx ->
             if (userIsAllowedToEditNote(tx.handle, user, noteId)) {
@@ -123,11 +120,11 @@ class NoteController(private val acl: AccessControlList) {
 }
 
 private fun userIsAllowedToEditNote(h: Handle, user: AuthenticatedUser, noteId: UUID): Boolean {
-    return if (user.hasOneOfRoles(ADMIN, SERVICE_WORKER)) {
+    return if (user.hasOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER)) {
         true
     } else {
         val createdBy = getApplicationNoteCreatedBy(h, noteId)
-        if (user.hasOneOfRoles(UNIT_SUPERVISOR)) {
+        if (user.hasOneOfRoles(UserRole.UNIT_SUPERVISOR)) {
             createdBy == user.id
         } else {
             false

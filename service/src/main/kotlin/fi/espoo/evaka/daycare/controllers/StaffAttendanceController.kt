@@ -11,10 +11,7 @@ import fi.espoo.evaka.daycare.service.StaffAttendanceGroup
 import fi.espoo.evaka.daycare.service.StaffAttendanceService
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.auth.UserRole.ADMIN
-import fi.espoo.evaka.shared.auth.UserRole.FINANCE_ADMIN
-import fi.espoo.evaka.shared.auth.UserRole.STAFF
-import fi.espoo.evaka.shared.auth.UserRole.UNIT_SUPERVISOR
+import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import org.springframework.http.ResponseEntity
@@ -43,7 +40,7 @@ class StaffAttendanceController(
     ): ResponseEntity<Wrapper<StaffAttendanceGroup>> {
         Audit.StaffAttendanceRead.log(targetId = groupId)
         acl.getRolesForUnitGroup(user, groupId)
-            .requireOneOfRoles(ADMIN, FINANCE_ADMIN, UNIT_SUPERVISOR, STAFF)
+            .requireOneOfRoles(UserRole.ADMIN, UserRole.FINANCE_ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF)
         val result = staffAttendanceService.getAttendancesByMonth(db, year, month, groupId)
         return ResponseEntity.ok(Wrapper(result))
     }
@@ -57,7 +54,7 @@ class StaffAttendanceController(
     ): ResponseEntity<Unit> {
         Audit.StaffAttendanceUpdate.log(targetId = groupId)
         acl.getRolesForUnitGroup(user, groupId)
-            .requireOneOfRoles(ADMIN, UNIT_SUPERVISOR, STAFF)
+            .requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF)
         if (staffAttendance.count == null) {
             throw BadRequest("Count can't be null")
         }

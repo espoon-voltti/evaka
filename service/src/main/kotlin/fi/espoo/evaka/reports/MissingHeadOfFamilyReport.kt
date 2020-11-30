@@ -7,10 +7,7 @@ package fi.espoo.evaka.reports
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.auth.UserRole.ADMIN
-import fi.espoo.evaka.shared.auth.UserRole.FINANCE_ADMIN
-import fi.espoo.evaka.shared.auth.UserRole.SERVICE_WORKER
-import fi.espoo.evaka.shared.auth.UserRole.UNIT_SUPERVISOR
+import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.getUUID
 import org.springframework.format.annotation.DateTimeFormat
@@ -31,7 +28,7 @@ class MissingHeadOfFamilyReportController(private val acl: AccessControlList) {
         @RequestParam("to") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate?
     ): ResponseEntity<List<MissingHeadOfFamilyReportRow>> {
         Audit.MissingHeadOfFamilyReportRead.log()
-        user.requireOneOfRoles(ADMIN, SERVICE_WORKER, FINANCE_ADMIN, UNIT_SUPERVISOR)
+        user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN, UserRole.UNIT_SUPERVISOR)
         val authorizedUnits = acl.getAuthorizedUnits(user)
         return db.read { ResponseEntity.ok(it.getMissingHeadOfFamilyRows(from, to, authorizedUnits.ids)) }
     }

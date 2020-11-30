@@ -13,8 +13,8 @@ import fi.espoo.evaka.invoicing.data.upsertFeeAlteration
 import fi.espoo.evaka.invoicing.domain.FeeAlteration
 import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
+import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
-import fi.espoo.evaka.shared.config.Roles
 import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.testDecisionMaker_1
 import org.junit.jupiter.api.AfterEach
@@ -46,7 +46,7 @@ class FeeAlterationIntegrationTest : FullApplicationTest() {
         jdbi.handle(::resetDatabase)
     }
 
-    private val user = AuthenticatedUser(testDecisionMaker_1.id, setOf(Roles.FINANCE_ADMIN))
+    private val user = AuthenticatedUser(testDecisionMaker_1.id, setOf(UserRole.FINANCE_ADMIN))
     private val personId = UUID.randomUUID()
 
     private val testFeeAlteration = FeeAlteration(

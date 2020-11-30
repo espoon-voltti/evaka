@@ -8,7 +8,7 @@ import fi.espoo.evaka.decision.DecisionService
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.NotifyDecisionCreated
 import fi.espoo.evaka.shared.async.SendDecision
-import fi.espoo.evaka.shared.config.Roles
+import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import mu.KotlinLogging
 import org.springframework.stereotype.Component
@@ -29,7 +29,7 @@ class DecisionMessageProcessor(
         val user = msg.user
         val decisionId = msg.decisionId
 
-        user.requireOneOfRoles(Roles.ADMIN, Roles.SERVICE_WORKER, Roles.UNIT_SUPERVISOR)
+        user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR)
 
         decisionService.createDecisionPdfs(tx, user, decisionId)
 
