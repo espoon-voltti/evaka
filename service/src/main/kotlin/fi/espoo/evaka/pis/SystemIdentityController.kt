@@ -70,7 +70,7 @@ class SystemIdentityController {
         val aad: UUID,
         val firstName: String,
         val lastName: String,
-        val email: String
+        val email: String?
     )
 
     data class PersonIdentityRequest(

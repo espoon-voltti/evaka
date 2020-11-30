@@ -57,7 +57,7 @@ export interface EmployeeIdentityRequest {
   aad: string
   firstName: string
   lastName: string
-  email: string
+  email?: string
 }
 
 export interface EmployeeResponse {
