@@ -12,8 +12,8 @@ import fi.espoo.evaka.pis.createPartnership
 import fi.espoo.evaka.pis.service.FamilyOverview
 import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
+import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
-import fi.espoo.evaka.shared.config.Roles
 import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_2
@@ -109,7 +109,7 @@ class FamilyOverviewTest : FullApplicationTest() {
         )
     }
 
-    private val testUser = AuthenticatedUser(testDecisionMaker_1.id, setOf(Roles.FINANCE_ADMIN))
+    private val testUser = AuthenticatedUser(testDecisionMaker_1.id, setOf(UserRole.FINANCE_ADMIN))
 
     private fun fetchAndParseFamilyDetails(personId: UUID): FamilyOverview {
         val (_, response, result) = http.get("/family/by-adult/$personId")

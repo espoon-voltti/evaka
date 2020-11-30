@@ -18,7 +18,7 @@ import fi.espoo.evaka.invoicing.domain.IncomeType
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.NotifyIncomeUpdated
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.config.Roles
+import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.Period
@@ -44,7 +44,7 @@ class IncomeController(
     @GetMapping
     fun getIncome(db: Database.Connection, user: AuthenticatedUser, @RequestParam personId: String?): ResponseEntity<Wrapper<List<Income>>> {
         Audit.PersonIncomeRead.log(targetId = personId)
-        user.requireOneOfRoles(Roles.FINANCE_ADMIN)
+        user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
         val parsedId = personId?.let { parseUUID(personId) }
             ?: throw BadRequest("Query parameter personId is mandatory")
 
@@ -55,7 +55,7 @@ class IncomeController(
     @PostMapping
     fun createIncome(db: Database.Connection, user: AuthenticatedUser, @RequestBody income: Income): ResponseEntity<UUID> {
         Audit.PersonIncomeCreate.log(targetId = income.personId)
-        user.requireOneOfRoles(Roles.FINANCE_ADMIN)
+        user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
         val period = try {
             Period(income.validFrom, income.validTo)
         } catch (e: Exception) {
@@ -85,7 +85,7 @@ class IncomeController(
         @RequestBody income: Income
     ): ResponseEntity<Unit> {
         Audit.PersonIncomeUpdate.log(targetId = incomeId)
-        user.requireOneOfRoles(Roles.FINANCE_ADMIN)
+        user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
 
         db.transaction { tx ->
             val existing = getIncome(tx.handle, mapper, parseUUID(incomeId))
@@ -109,7 +109,7 @@ class IncomeController(
     @DeleteMapping("/{incomeId}")
     fun deleteIncome(db: Database.Connection, user: AuthenticatedUser, @PathVariable incomeId: String): ResponseEntity<Unit> {
         Audit.PersonIncomeDelete.log(targetId = incomeId)
-        user.requireOneOfRoles(Roles.FINANCE_ADMIN)
+        user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
 
         db.transaction { tx ->
             val existing = getIncome(tx.handle, mapper, parseUUID(incomeId))

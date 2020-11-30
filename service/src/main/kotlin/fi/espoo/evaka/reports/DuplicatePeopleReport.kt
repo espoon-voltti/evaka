@@ -7,7 +7,7 @@ package fi.espoo.evaka.reports
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.daycare.controllers.utils.ok
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.config.Roles
+import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.getUUID
 import org.springframework.http.ResponseEntity
@@ -21,7 +21,7 @@ class DuplicatePeopleReportController {
     @GetMapping("/reports/duplicate-people")
     fun getDuplicatePeopleReport(db: Database, user: AuthenticatedUser): ResponseEntity<List<DuplicatePeopleReportRow>> {
         Audit.DuplicatePeopleReportRead.log()
-        user.requireOneOfRoles(Roles.ADMIN)
+        user.requireOneOfRoles(UserRole.ADMIN)
         return db.read { it.getDuplicatePeople() }.let(::ok)
     }
 }

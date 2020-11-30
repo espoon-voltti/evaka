@@ -7,7 +7,7 @@ package fi.espoo.evaka.reports
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.daycare.controllers.utils.ok
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.config.Roles
+import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.getUUID
 import org.springframework.http.ResponseEntity
@@ -29,7 +29,7 @@ class EndedPlacementsReportController {
         Audit.EndedPlacementsReportRead.log()
         val from = LocalDate.of(year, month, 1)
         val to = from.plusMonths(1).minusDays(1)
-        user.requireOneOfRoles(Roles.DIRECTOR, Roles.ADMIN, Roles.FINANCE_ADMIN)
+        user.requireOneOfRoles(UserRole.DIRECTOR, UserRole.ADMIN, UserRole.FINANCE_ADMIN)
 
         return db.read { it.getEndedPlacementsRows(from, to) }.let(::ok)
     }

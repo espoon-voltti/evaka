@@ -35,7 +35,6 @@ import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
-import fi.espoo.evaka.shared.config.Roles
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insertTestApplication
@@ -81,7 +80,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
     @Autowired
     lateinit var mapper: ObjectMapper
 
-    private val serviceWorker = AuthenticatedUser(testDecisionMaker_1.id, setOf(Roles.SERVICE_WORKER))
+    private val serviceWorker = AuthenticatedUser(testDecisionMaker_1.id, setOf(UserRole.SERVICE_WORKER))
 
     private val applicationId = UUID.randomUUID()
     val address = Address(
@@ -245,7 +244,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
     fun `moveToWaitingPlacement with maxFeeAccepted - existing overlapping indefinite income will be handled`() {
         db.transaction { tx ->
             // given
-            val financeUser = AuthenticatedUser(id = testDecisionMaker_1.id, roles = setOf(Roles.FINANCE_ADMIN))
+            val financeUser = AuthenticatedUser(id = testDecisionMaker_1.id, roles = setOf(UserRole.FINANCE_ADMIN))
             val earlierIndefinite = Income(
                 id = UUID.randomUUID(),
                 data = mapOf(),
@@ -279,7 +278,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
     fun `moveToWaitingPlacement with maxFeeAccepted - existing overlapping income will be handled by not adding a new income for user`() {
         db.transaction { tx ->
             // given
-            val financeUser = AuthenticatedUser(id = testDecisionMaker_1.id, roles = setOf(Roles.FINANCE_ADMIN))
+            val financeUser = AuthenticatedUser(id = testDecisionMaker_1.id, roles = setOf(UserRole.FINANCE_ADMIN))
             val earlierIncome = Income(
                 id = UUID.randomUUID(),
                 data = mapOf(),
@@ -312,7 +311,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
     fun `moveToWaitingPlacement with maxFeeAccepted - later indefinite income will be handled by not adding a new income`() {
         db.transaction { tx ->
             // given
-            val financeUser = AuthenticatedUser(id = testDecisionMaker_1.id, roles = setOf(Roles.FINANCE_ADMIN))
+            val financeUser = AuthenticatedUser(id = testDecisionMaker_1.id, roles = setOf(UserRole.FINANCE_ADMIN))
             val laterIndefiniteIncome = Income(
                 id = UUID.randomUUID(),
                 data = mapOf(),
@@ -345,7 +344,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
     fun `moveToWaitingPlacement with maxFeeAccepted - earlier income does not affect creating a new income`() {
         db.transaction { tx ->
             // given
-            val financeUser = AuthenticatedUser(id = testDecisionMaker_1.id, roles = setOf(Roles.FINANCE_ADMIN))
+            val financeUser = AuthenticatedUser(id = testDecisionMaker_1.id, roles = setOf(UserRole.FINANCE_ADMIN))
             val earlierIncome = Income(
                 id = UUID.randomUUID(),
                 data = mapOf(),
@@ -379,7 +378,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
     fun `moveToWaitingPlacement with maxFeeAccepted - later income will be handled by not adding a new income`() {
         db.transaction { tx ->
             // given
-            val financeUser = AuthenticatedUser(id = testDecisionMaker_1.id, roles = setOf(Roles.FINANCE_ADMIN))
+            val financeUser = AuthenticatedUser(id = testDecisionMaker_1.id, roles = setOf(UserRole.FINANCE_ADMIN))
             val laterIncome = Income(
                 id = UUID.randomUUID(),
                 data = mapOf(),
@@ -412,7 +411,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
     fun `moveToWaitingPlacement with maxFeeAccepted - if application does not have a preferred start date income will not be created`() {
         db.transaction { tx ->
             // given
-            val financeUser = AuthenticatedUser(id = testDecisionMaker_1.id, roles = setOf(Roles.FINANCE_ADMIN))
+            val financeUser = AuthenticatedUser(id = testDecisionMaker_1.id, roles = setOf(UserRole.FINANCE_ADMIN))
             val earlierIndefinite = Income(
                 id = UUID.randomUUID(),
                 data = mapOf(),
@@ -445,7 +444,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
     fun `moveToWaitingPlacement with maxFeeAccepted - no new income will be created if there exists indefinite income for the same day `() {
         db.transaction { tx ->
             // given
-            val financeUser = AuthenticatedUser(id = testDecisionMaker_1.id, roles = setOf(Roles.FINANCE_ADMIN))
+            val financeUser = AuthenticatedUser(id = testDecisionMaker_1.id, roles = setOf(UserRole.FINANCE_ADMIN))
             val sameDayIncomeIndefinite = Income(
                 id = UUID.randomUUID(),
                 data = mapOf(),
@@ -478,7 +477,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
     fun `moveToWaitingPlacement with maxFeeAccepted - no new income will be created if there exists income for the same day `() {
         db.transaction { tx ->
             // given
-            val financeUser = AuthenticatedUser(id = testDecisionMaker_1.id, roles = setOf(Roles.FINANCE_ADMIN))
+            val financeUser = AuthenticatedUser(id = testDecisionMaker_1.id, roles = setOf(UserRole.FINANCE_ADMIN))
             val sameDayIncome = Income(
                 id = UUID.randomUUID(),
                 data = mapOf(),
@@ -511,7 +510,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
     fun `moveToWaitingPlacement with maxFeeAccepted - new income will be created if there exists indefinite income for the same day - 1 `() {
         db.transaction { tx ->
             // given
-            val financeUser = AuthenticatedUser(id = testDecisionMaker_1.id, roles = setOf(Roles.FINANCE_ADMIN))
+            val financeUser = AuthenticatedUser(id = testDecisionMaker_1.id, roles = setOf(UserRole.FINANCE_ADMIN))
             val dayBeforeIncomeIndefinite = Income(
                 id = UUID.randomUUID(),
                 data = mapOf(),
@@ -545,7 +544,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
     fun `moveToWaitingPlacement with maxFeeAccepted - no new income will be created if there exists indefinite income for the same day + 1 `() {
         db.transaction { tx ->
             // given
-            val financeUser = AuthenticatedUser(id = testDecisionMaker_1.id, roles = setOf(Roles.FINANCE_ADMIN))
+            val financeUser = AuthenticatedUser(id = testDecisionMaker_1.id, roles = setOf(UserRole.FINANCE_ADMIN))
             val nextDayIncomeIndefinite = Income(
                 id = UUID.randomUUID(),
                 data = mapOf(),
@@ -578,7 +577,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
     fun `moveToWaitingPlacement with maxFeeAccepted - no new income will be created if there exists income for the same day - 1 `() {
         db.transaction { tx ->
             // given
-            val financeUser = AuthenticatedUser(id = testDecisionMaker_1.id, roles = setOf(Roles.FINANCE_ADMIN))
+            val financeUser = AuthenticatedUser(id = testDecisionMaker_1.id, roles = setOf(UserRole.FINANCE_ADMIN))
             val IncomeDayBefore = Income(
                 id = UUID.randomUUID(),
                 data = mapOf(),
@@ -611,7 +610,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
     fun `moveToWaitingPlacement with maxFeeAccepted - no new income will be created if there exists income that ends on the same day`() {
         db.transaction { tx ->
             // given
-            val financeUser = AuthenticatedUser(id = testDecisionMaker_1.id, roles = setOf(Roles.FINANCE_ADMIN))
+            val financeUser = AuthenticatedUser(id = testDecisionMaker_1.id, roles = setOf(UserRole.FINANCE_ADMIN))
             val earlierIncomeEndingOnSameDay = Income(
                 id = UUID.randomUUID(),
                 data = mapOf(),
@@ -644,7 +643,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
     fun `moveToWaitingPlacement with maxFeeAccepted - no new income will be created if there exists income that ends on the same day + 1`() {
         db.transaction { tx ->
             // given
-            val financeUser = AuthenticatedUser(id = testDecisionMaker_1.id, roles = setOf(Roles.FINANCE_ADMIN))
+            val financeUser = AuthenticatedUser(id = testDecisionMaker_1.id, roles = setOf(UserRole.FINANCE_ADMIN))
             val earlierIncomeEndingOnNextDay = Income(
                 id = UUID.randomUUID(),
                 data = mapOf(),
@@ -677,7 +676,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
     fun `moveToWaitingPlacement with maxFeeAccepted - no new income will be created if there exists income that ends on the same day - 1`() {
         db.transaction { tx ->
             // given
-            val financeUser = AuthenticatedUser(id = testDecisionMaker_1.id, roles = setOf(Roles.FINANCE_ADMIN))
+            val financeUser = AuthenticatedUser(id = testDecisionMaker_1.id, roles = setOf(UserRole.FINANCE_ADMIN))
             val earlierIncomeEndingOnDayBefore = Income(
                 id = UUID.randomUUID(),
                 data = mapOf(),

@@ -25,7 +25,7 @@ import fi.espoo.evaka.placement.PlacementPlanService
 import fi.espoo.evaka.placement.getPlacementPlanUnitName
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.config.Roles
+import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.ClosedPeriod
@@ -113,7 +113,7 @@ class ApplicationControllerV2(
         @RequestBody body: PaperApplicationCreateRequest
     ): ResponseEntity<UUID> {
         Audit.ApplicationCreate.log(targetId = body.guardianId, objectId = body.childId)
-        user.requireOneOfRoles(Roles.SERVICE_WORKER, Roles.ADMIN)
+        user.requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.ADMIN)
 
         val id = db.transaction { tx ->
             val child = personService.getUpToDatePerson(tx, user, body.childId)
@@ -183,7 +183,7 @@ class ApplicationControllerV2(
         @RequestParam(required = false) transferApplications: TransferApplicationFilter?
     ): ResponseEntity<ApplicationSummaries> {
         Audit.ApplicationSearch.log()
-        user.requireOneOfRoles(Roles.ADMIN, Roles.FINANCE_ADMIN, Roles.SERVICE_WORKER, Roles.SPECIAL_EDUCATION_TEACHER)
+        user.requireOneOfRoles(UserRole.ADMIN, UserRole.FINANCE_ADMIN, UserRole.SERVICE_WORKER, UserRole.SPECIAL_EDUCATION_TEACHER)
         if (periodStart != null && periodEnd != null && periodStart > periodEnd)
             throw BadRequest("Date parameter periodEnd ($periodEnd) cannot be before periodStart ($periodStart)")
 
@@ -209,7 +209,7 @@ class ApplicationControllerV2(
                 searchTerms = searchTerms ?: "",
                 transferApplications = transferApplications ?: TransferApplicationFilter.ALL,
                 authorizedUnits = acl.getAuthorizedUnits(user),
-                onlyAuthorizedToViewApplicationsWithAssistanceNeed = !user.hasOneOfRoles(Roles.ADMIN, Roles.FINANCE_ADMIN, Roles.SERVICE_WORKER)
+                onlyAuthorizedToViewApplicationsWithAssistanceNeed = !user.hasOneOfRoles(UserRole.ADMIN, UserRole.FINANCE_ADMIN, UserRole.SERVICE_WORKER)
             )
         }.let { ResponseEntity.ok(it) }
     }
@@ -221,7 +221,7 @@ class ApplicationControllerV2(
         @PathVariable(value = "guardianId") guardianId: UUID
     ): ResponseEntity<List<PersonApplicationSummary>> {
         Audit.ApplicationRead.log(targetId = guardianId)
-        user.requireOneOfRoles(Roles.ADMIN, Roles.SERVICE_WORKER, Roles.FINANCE_ADMIN, Roles.UNIT_SUPERVISOR)
+        user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN, UserRole.UNIT_SUPERVISOR)
 
         return db.read { fetchApplicationSummariesForGuardian(it.handle, guardianId) }
             .let { ResponseEntity.ok().body(it) }
@@ -235,7 +235,7 @@ class ApplicationControllerV2(
     ): ResponseEntity<List<PersonApplicationSummary>> {
         Audit.ApplicationRead.log(targetId = childId)
         acl.getRolesForChild(user, childId)
-            .requireOneOfRoles(Roles.ADMIN, Roles.SERVICE_WORKER, Roles.FINANCE_ADMIN, Roles.UNIT_SUPERVISOR)
+            .requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN, UserRole.UNIT_SUPERVISOR)
 
         return db.read { fetchApplicationSummariesForChild(it.handle, childId) }
             .let { ResponseEntity.ok().body(it) }
@@ -250,7 +250,7 @@ class ApplicationControllerV2(
         Audit.ApplicationRead.log(targetId = applicationId)
         Audit.DecisionRead.log(targetId = applicationId)
         acl.getRolesForApplication(user, applicationId)
-            .requireOneOfRoles(Roles.ADMIN, Roles.FINANCE_ADMIN, Roles.SERVICE_WORKER, Roles.UNIT_SUPERVISOR, Roles.SPECIAL_EDUCATION_TEACHER)
+            .requireOneOfRoles(UserRole.ADMIN, UserRole.FINANCE_ADMIN, UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR, UserRole.SPECIAL_EDUCATION_TEACHER)
 
         return db.transaction { tx ->
             val application = fetchApplicationDetails(tx.handle, applicationId)
@@ -298,7 +298,7 @@ class ApplicationControllerV2(
         @PathVariable(value = "applicationId") applicationId: UUID
     ): ResponseEntity<PlacementPlanDraft> {
         Audit.PlacementPlanDraftRead.log(targetId = applicationId)
-        user.requireOneOfRoles(Roles.SERVICE_WORKER, Roles.ADMIN)
+        user.requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.ADMIN)
         return db.read { placementPlanService.getPlacementPlanDraft(it, applicationId) }
             .let { ResponseEntity.ok(it) }
     }
@@ -310,7 +310,7 @@ class ApplicationControllerV2(
         @PathVariable(value = "applicationId") applicationId: UUID
     ): ResponseEntity<DecisionDraftJSON> {
         Audit.DecisionDraftRead.log(targetId = applicationId)
-        user.requireOneOfRoles(Roles.SERVICE_WORKER, Roles.ADMIN)
+        user.requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.ADMIN)
 
         return db.transaction { tx ->
             val application = fetchApplicationDetails(tx.handle, applicationId)
@@ -368,7 +368,7 @@ class ApplicationControllerV2(
         @RequestBody body: List<DecisionDraftService.DecisionDraftUpdate>
     ): ResponseEntity<Unit> {
         Audit.DecisionDraftUpdate.log(targetId = applicationId)
-        user.requireOneOfRoles(Roles.SERVICE_WORKER, Roles.ADMIN)
+        user.requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.ADMIN)
 
         db.transaction { decisionDraftService.updateDecisionDrafts(it, applicationId, body) }
         return ResponseEntity.noContent().build()
@@ -418,7 +418,7 @@ class ApplicationControllerV2(
         @RequestBody body: DaycarePlacementPlan
     ): ResponseEntity<Unit> {
         Audit.PlacementPlanCreate.log(targetId = applicationId, objectId = body.unitId)
-        user.requireOneOfRoles(Roles.ADMIN, Roles.SERVICE_WORKER)
+        user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER)
 
         db.transaction { applicationStateService.createPlacementPlan(it, user, applicationId, body) }
         return ResponseEntity.noContent().build()

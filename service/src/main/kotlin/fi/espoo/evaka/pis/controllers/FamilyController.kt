@@ -10,7 +10,7 @@ import fi.espoo.evaka.pis.service.FamilyOverview
 import fi.espoo.evaka.pis.service.FamilyOverviewService
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.config.Roles
+import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
@@ -29,7 +29,7 @@ class FamilyController(
     @GetMapping("/by-adult/{id}")
     fun getFamilyByPerson(db: Database.Connection, user: AuthenticatedUser, @PathVariable(value = "id") id: UUID): ResponseEntity<FamilyOverview> {
         Audit.PisFamilyRead.log(targetId = id)
-        user.requireOneOfRoles(Roles.FINANCE_ADMIN)
+        user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
         val result = db.read { familyOverviewService.getFamilyByAdult(it, id) }
             ?: return ResponseEntity.notFound().build()
         return ResponseEntity.ok(result)
@@ -42,7 +42,7 @@ class FamilyController(
         @RequestParam(value = "childId", required = true) childId: UUID
     ): ResponseEntity<List<FamilyContact>> {
         Audit.FamilyContactsRead.log(targetId = childId)
-        acl.getRolesForChild(user, childId).requireOneOfRoles(Roles.ADMIN, Roles.STAFF, Roles.SPECIAL_EDUCATION_TEACHER)
+        acl.getRolesForChild(user, childId).requireOneOfRoles(UserRole.ADMIN, UserRole.STAFF, UserRole.SPECIAL_EDUCATION_TEACHER)
         return db
             .read { it.fetchFamilyContacts(childId) }
             .let { ResponseEntity.ok(it) }

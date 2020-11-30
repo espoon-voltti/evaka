@@ -8,7 +8,7 @@ import fi.espoo.evaka.Audit
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.NotifyFamilyUpdated
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.config.Roles
+import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import org.jdbi.v3.core.kotlin.mapTo
 import org.springframework.http.ResponseEntity
@@ -31,7 +31,7 @@ class FeeDecisionGeneratorController(private val asyncJobRunner: AsyncJobRunner)
     @PostMapping("/generate")
     fun generateDecisions(db: Database.Connection, user: AuthenticatedUser, @RequestBody data: GenerateDecisionsBody): ResponseEntity<Unit> {
         Audit.FeeDecisionGenerate.log(targetId = data.targetHeads)
-        user.requireOneOfRoles(Roles.FINANCE_ADMIN)
+        user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
         generateAllStartingFrom(
             db,
             LocalDate.parse(data.starting, DateTimeFormatter.ISO_DATE),

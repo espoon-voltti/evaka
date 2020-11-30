@@ -14,9 +14,7 @@ import fi.espoo.evaka.pis.service.PartnershipService
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.NotifyFamilyUpdated
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.config.Roles.FINANCE_ADMIN
-import fi.espoo.evaka.shared.config.Roles.SERVICE_WORKER
-import fi.espoo.evaka.shared.config.Roles.UNIT_SUPERVISOR
+import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import org.springframework.http.ResponseEntity
@@ -43,7 +41,7 @@ class PartnershipsController(private val asyncJobRunner: AsyncJobRunner, private
         @RequestBody body: PartnershipRequest
     ): ResponseEntity<Partnership> {
         Audit.PartnerShipsCreate.log(targetId = body.personIds)
-        user.requireOneOfRoles(SERVICE_WORKER, UNIT_SUPERVISOR, FINANCE_ADMIN)
+        user.requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR, UserRole.FINANCE_ADMIN)
 
         with(body) {
             if (personIds.size != 2) throw BadRequest("Must have exactly two partners")
@@ -66,7 +64,7 @@ class PartnershipsController(private val asyncJobRunner: AsyncJobRunner, private
         @RequestParam(name = "personId", required = true) personId: VolttiIdentifier
     ): ResponseEntity<List<Partnership>> {
         Audit.PartnerShipsRead.log(targetId = personId)
-        user.requireOneOfRoles(SERVICE_WORKER, UNIT_SUPERVISOR, FINANCE_ADMIN)
+        user.requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR, UserRole.FINANCE_ADMIN)
 
         return db.read { it.handle.getPartnershipsForPerson(personId, includeConflicts = true) }
             .let { ResponseEntity.ok().body(it) }
@@ -79,7 +77,7 @@ class PartnershipsController(private val asyncJobRunner: AsyncJobRunner, private
         @PathVariable(value = "id") partnershipId: UUID
     ): ResponseEntity<Partnership> {
         Audit.PartnerShipsRead.log(targetId = partnershipId)
-        user.requireOneOfRoles(SERVICE_WORKER, UNIT_SUPERVISOR, FINANCE_ADMIN)
+        user.requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR, UserRole.FINANCE_ADMIN)
 
         return db.read { it.handle.getPartnership(partnershipId) }
             ?.let { ResponseEntity.ok().body(it) }
@@ -94,7 +92,7 @@ class PartnershipsController(private val asyncJobRunner: AsyncJobRunner, private
         @RequestBody body: PartnershipUpdateRequest
     ): ResponseEntity<Partnership> {
         Audit.PartnerShipsUpdate.log(targetId = partnershipId)
-        user.requireOneOfRoles(SERVICE_WORKER, UNIT_SUPERVISOR, FINANCE_ADMIN)
+        user.requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR, UserRole.FINANCE_ADMIN)
 
         return db
             .transaction { tx ->
@@ -116,7 +114,7 @@ class PartnershipsController(private val asyncJobRunner: AsyncJobRunner, private
         @PathVariable(value = "id") partnershipId: UUID
     ): ResponseEntity<Unit> {
         Audit.PartnerShipsRetry.log(targetId = partnershipId)
-        user.requireOneOfRoles(SERVICE_WORKER, UNIT_SUPERVISOR, FINANCE_ADMIN)
+        user.requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR, UserRole.FINANCE_ADMIN)
 
         db.transaction { tx ->
             partnershipService.retryPartnership(tx, partnershipId)?.let {
@@ -134,7 +132,7 @@ class PartnershipsController(private val asyncJobRunner: AsyncJobRunner, private
         @PathVariable(value = "id") partnershipId: UUID
     ): ResponseEntity<Unit> {
         Audit.PartnerShipsDelete.log(targetId = partnershipId)
-        user.requireOneOfRoles(SERVICE_WORKER, UNIT_SUPERVISOR, FINANCE_ADMIN)
+        user.requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR, UserRole.FINANCE_ADMIN)
 
         db.transaction { tx ->
             partnershipService.deletePartnership(tx, partnershipId)?.also { partnership ->

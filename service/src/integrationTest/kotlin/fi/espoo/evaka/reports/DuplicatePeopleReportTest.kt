@@ -8,8 +8,8 @@ import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
+import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
-import fi.espoo.evaka.shared.config.Roles
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.insertTestPerson
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -25,7 +25,7 @@ class DuplicatePeopleReportTest : FullApplicationTest() {
         db.transaction { it.resetDatabase() }
     }
 
-    private val adminUser = AuthenticatedUser(id = UUID.randomUUID(), roles = setOf(Roles.ADMIN))
+    private val adminUser = AuthenticatedUser(id = UUID.randomUUID(), roles = setOf(UserRole.ADMIN))
 
     @Test
     fun `two people with identical names and dates of birth are matched`() {

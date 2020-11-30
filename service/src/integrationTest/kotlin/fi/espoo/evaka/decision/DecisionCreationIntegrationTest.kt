@@ -24,8 +24,8 @@ import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
+import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
-import fi.espoo.evaka.shared.config.Roles
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.dev.insertTestApplication
@@ -54,7 +54,7 @@ import java.time.LocalDate
 import java.util.UUID
 
 class DecisionCreationIntegrationTest : FullApplicationTest() {
-    private val serviceWorker = AuthenticatedUser(testDecisionMaker_1.id, setOf(Roles.SERVICE_WORKER))
+    private val serviceWorker = AuthenticatedUser(testDecisionMaker_1.id, setOf(UserRole.SERVICE_WORKER))
 
     @Autowired
     private lateinit var asyncJobRunner: AsyncJobRunner
@@ -406,9 +406,9 @@ WHERE id = :unitId
             )
         }
         val invalidRoleLists = listOf(
-            setOf(Roles.UNIT_SUPERVISOR),
-            setOf(Roles.FINANCE_ADMIN),
-            setOf(Roles.END_USER),
+            setOf(UserRole.UNIT_SUPERVISOR),
+            setOf(UserRole.FINANCE_ADMIN),
+            setOf(UserRole.END_USER),
             setOf()
         )
         invalidRoleLists.forEach { roles ->

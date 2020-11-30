@@ -12,8 +12,8 @@ import fi.espoo.evaka.reports.OccupancyReportRowGroupedValues
 import fi.espoo.evaka.reports.OccupancyUnitReportResultRow
 import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
+import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
-import fi.espoo.evaka.shared.config.Roles
 import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevPlacement
@@ -471,7 +471,7 @@ class PlannedOccupancyTest : FullApplicationTest() {
         assertEquals(0, reportResult2?.headcount)
     }
 
-    private val testUser = AuthenticatedUser(testDecisionMaker_1.id, setOf(Roles.SERVICE_WORKER))
+    private val testUser = AuthenticatedUser(testDecisionMaker_1.id, setOf(UserRole.SERVICE_WORKER))
 
     private fun fetchAndParseOccupancy(unitId: UUID, period: ClosedPeriod): List<OccupancyPeriod> {
         val (_, response, result) = http.get("/occupancy/by-unit/$unitId?from=${period.start}&to=${period.end}&type=PLANNED")

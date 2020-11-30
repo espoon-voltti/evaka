@@ -12,11 +12,7 @@ import fi.espoo.evaka.daycare.getChild
 import fi.espoo.evaka.daycare.updateChild
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.auth.UserRole.STAFF
-import fi.espoo.evaka.shared.config.Roles.FINANCE_ADMIN
-import fi.espoo.evaka.shared.config.Roles.SERVICE_WORKER
-import fi.espoo.evaka.shared.config.Roles.SPECIAL_EDUCATION_TEACHER
-import fi.espoo.evaka.shared.config.Roles.UNIT_SUPERVISOR
+import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.mapper.Nested
@@ -33,7 +29,7 @@ class ChildController(private val acl: AccessControlList) {
     @GetMapping("/children/{childId}/additional-information")
     fun getAdditionalInfo(db: Database.Connection, user: AuthenticatedUser, @PathVariable childId: UUID): ResponseEntity<AdditionalInformation> {
         Audit.ChildAdditionalInformationRead.log(targetId = childId)
-        acl.getRolesForChild(user, childId).requireOneOfRoles(SERVICE_WORKER, UNIT_SUPERVISOR, FINANCE_ADMIN, STAFF, SPECIAL_EDUCATION_TEACHER)
+        acl.getRolesForChild(user, childId).requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR, UserRole.FINANCE_ADMIN, UserRole.STAFF, UserRole.SPECIAL_EDUCATION_TEACHER)
         return db.read { getAdditionalInformation(it.handle, childId) }.let(::ok)
     }
 
@@ -45,7 +41,7 @@ class ChildController(private val acl: AccessControlList) {
         @RequestBody data: AdditionalInformation
     ): ResponseEntity<Unit> {
         Audit.ChildAdditionalInformationUpdate.log(targetId = childId)
-        acl.getRolesForChild(user, childId).requireOneOfRoles(SERVICE_WORKER, UNIT_SUPERVISOR, FINANCE_ADMIN)
+        acl.getRolesForChild(user, childId).requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR, UserRole.FINANCE_ADMIN)
         db.transaction { upsertAdditionalInformation(it.handle, childId, data) }
         return noContent()
     }

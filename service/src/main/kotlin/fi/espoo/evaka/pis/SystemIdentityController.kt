@@ -7,7 +7,7 @@ package fi.espoo.evaka.pis
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.identity.ExternalIdentifier
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.config.Roles
+import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.PostMapping
@@ -36,7 +36,7 @@ class SystemIdentityController {
                 )
             )
         }
-            .let { ResponseEntity.ok().body(AuthenticatedUser(it.id, setOf(Roles.END_USER))) }
+            .let { ResponseEntity.ok().body(AuthenticatedUser(it.id, setOf(UserRole.END_USER))) }
     }
 
     @PostMapping("/system/employee-identity")

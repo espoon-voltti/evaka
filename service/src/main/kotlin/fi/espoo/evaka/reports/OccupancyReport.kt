@@ -8,7 +8,7 @@ import fi.espoo.evaka.Audit
 import fi.espoo.evaka.occupancy.OccupancyType
 import fi.espoo.evaka.occupancy.getSql
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.config.Roles
+import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.getUUID
 import fi.espoo.evaka.shared.domain.BadRequest
@@ -32,7 +32,7 @@ class OccupancyReportController {
         @RequestParam month: Int
     ): ResponseEntity<List<OccupancyUnitReportResultRow>> {
         Audit.OccupancyReportRead.log(targetId = careAreaId)
-        user.requireOneOfRoles(Roles.SERVICE_WORKER, Roles.ADMIN, Roles.FINANCE_ADMIN, Roles.DIRECTOR)
+        user.requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.ADMIN, UserRole.FINANCE_ADMIN, UserRole.DIRECTOR)
         val from = LocalDate.of(year, month, 1)
         val to = from.plusMonths(1).minusDays(1)
 
@@ -89,7 +89,7 @@ class OccupancyReportController {
         @RequestParam month: Int
     ): ResponseEntity<List<OccupancyGroupReportResultRow>> {
         Audit.OccupancyReportRead.log(targetId = careAreaId)
-        user.requireOneOfRoles(Roles.SERVICE_WORKER, Roles.ADMIN, Roles.FINANCE_ADMIN, Roles.DIRECTOR)
+        user.requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.ADMIN, UserRole.FINANCE_ADMIN, UserRole.DIRECTOR)
         val from = LocalDate.of(year, month, 1)
         val to = from.plusMonths(1).minusDays(1)
 

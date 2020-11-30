@@ -54,7 +54,6 @@ import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
-import fi.espoo.evaka.shared.config.Roles
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.domain.BadRequest
@@ -89,7 +88,7 @@ class ApplicationStateService(
                 throw Forbidden("User does not own this application")
             }
         } else {
-            user.requireOneOfRoles(Roles.ADMIN, Roles.SERVICE_WORKER)
+            user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER)
         }
 
         verifyStatus(application, CREATED)
@@ -126,7 +125,7 @@ class ApplicationStateService(
 
     fun moveToWaitingPlacement(tx: Database.Transaction, user: AuthenticatedUser, applicationId: UUID) {
         Audit.ApplicationVerify.log(targetId = applicationId)
-        user.requireOneOfRoles(Roles.ADMIN, Roles.SERVICE_WORKER)
+        user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER)
 
         val application = getApplication(tx, applicationId)
         verifyStatus(application, SENT)
@@ -155,7 +154,7 @@ class ApplicationStateService(
 
     fun returnToSent(tx: Database.Transaction, user: AuthenticatedUser, applicationId: UUID) {
         Audit.ApplicationReturnToSent.log(targetId = applicationId)
-        user.requireOneOfRoles(Roles.ADMIN, Roles.SERVICE_WORKER)
+        user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER)
 
         val application = getApplication(tx, applicationId)
         verifyStatus(application, WAITING_PLACEMENT)
@@ -164,7 +163,7 @@ class ApplicationStateService(
 
     fun cancelApplication(tx: Database.Transaction, user: AuthenticatedUser, applicationId: UUID) {
         Audit.ApplicationCancel.log(targetId = applicationId)
-        user.requireOneOfRoles(Roles.ADMIN, Roles.SERVICE_WORKER)
+        user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER)
 
         val application = getApplication(tx, applicationId)
         verifyStatus(application, setOf(SENT, WAITING_PLACEMENT))
@@ -173,7 +172,7 @@ class ApplicationStateService(
 
     fun setVerified(tx: Database.Transaction, user: AuthenticatedUser, applicationId: UUID) {
         Audit.ApplicationAdminDetailsUpdate.log(targetId = applicationId)
-        user.requireOneOfRoles(Roles.ADMIN, Roles.SERVICE_WORKER)
+        user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER)
 
         val application = getApplication(tx, applicationId)
         verifyStatus(application, WAITING_PLACEMENT)
@@ -182,7 +181,7 @@ class ApplicationStateService(
 
     fun setUnverified(tx: Database.Transaction, user: AuthenticatedUser, applicationId: UUID) {
         Audit.ApplicationAdminDetailsUpdate.log(targetId = applicationId)
-        user.requireOneOfRoles(Roles.ADMIN, Roles.SERVICE_WORKER)
+        user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER)
 
         val application = getApplication(tx, applicationId)
         verifyStatus(application, WAITING_PLACEMENT)
@@ -210,7 +209,7 @@ class ApplicationStateService(
 
     fun cancelPlacementPlan(tx: Database.Transaction, user: AuthenticatedUser, applicationId: UUID) {
         Audit.ApplicationReturnToWaitingPlacement.log(targetId = applicationId)
-        user.requireOneOfRoles(Roles.ADMIN, Roles.SERVICE_WORKER)
+        user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER)
 
         val application = getApplication(tx, applicationId)
         verifyStatus(application, WAITING_DECISION)
@@ -221,7 +220,7 @@ class ApplicationStateService(
 
     fun confirmPlacementWithoutDecision(tx: Database.Transaction, user: AuthenticatedUser, applicationId: UUID) {
         Audit.PlacementCreate.log(targetId = applicationId)
-        user.requireOneOfRoles(Roles.ADMIN, Roles.SERVICE_WORKER)
+        user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER)
 
         val application = getApplication(tx, applicationId)
         verifyStatus(application, setOf(WAITING_DECISION, WAITING_UNIT_CONFIRMATION))
@@ -241,7 +240,7 @@ class ApplicationStateService(
 
     fun sendDecisionsWithoutProposal(tx: Database.Transaction, user: AuthenticatedUser, applicationId: UUID) {
         Audit.DecisionCreate.log(targetId = applicationId)
-        user.requireOneOfRoles(Roles.ADMIN, Roles.SERVICE_WORKER)
+        user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER)
 
         val application = getApplication(tx, applicationId)
         verifyStatus(application, WAITING_DECISION)
@@ -250,7 +249,7 @@ class ApplicationStateService(
 
     fun sendPlacementProposal(tx: Database.Transaction, user: AuthenticatedUser, applicationId: UUID) {
         Audit.PlacementProposalCreate.log(targetId = applicationId)
-        user.requireOneOfRoles(Roles.ADMIN, Roles.SERVICE_WORKER)
+        user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER)
 
         val application = getApplication(tx, applicationId)
         verifyStatus(application, WAITING_DECISION)
@@ -259,7 +258,7 @@ class ApplicationStateService(
 
     fun withdrawPlacementProposal(tx: Database.Transaction, user: AuthenticatedUser, applicationId: UUID) {
         Audit.ApplicationReturnToWaitingDecision.log(targetId = applicationId)
-        user.requireOneOfRoles(Roles.ADMIN, Roles.SERVICE_WORKER)
+        user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER)
 
         val application = getApplication(tx, applicationId)
         verifyStatus(application, WAITING_UNIT_CONFIRMATION)
@@ -325,7 +324,7 @@ class ApplicationStateService(
 
     fun confirmDecisionMailed(tx: Database.Transaction, user: AuthenticatedUser, applicationId: UUID) {
         Audit.DecisionConfirmMailed.log(targetId = applicationId)
-        user.requireOneOfRoles(Roles.ADMIN, Roles.SERVICE_WORKER)
+        user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER)
 
         val application = getApplication(tx, applicationId)
         verifyStatus(application, WAITING_MAILING)
@@ -340,7 +339,7 @@ class ApplicationStateService(
                 throw Forbidden("User does not own this application")
             }
         } else {
-            acl.getRolesForApplication(user, applicationId).requireOneOfRoles(Roles.ADMIN, Roles.SERVICE_WORKER, Roles.UNIT_SUPERVISOR)
+            acl.getRolesForApplication(user, applicationId).requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR)
         }
 
         verifyStatus(application, setOf(WAITING_CONFIRMATION, ACTIVE))
@@ -396,7 +395,7 @@ class ApplicationStateService(
                 throw Forbidden("User does not own this application")
             }
         } else {
-            acl.getRolesForApplication(user, applicationId).requireOneOfRoles(Roles.ADMIN, Roles.SERVICE_WORKER, Roles.UNIT_SUPERVISOR)
+            acl.getRolesForApplication(user, applicationId).requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR)
         }
 
         verifyStatus(application, setOf(WAITING_CONFIRMATION, ACTIVE, REJECTED))

@@ -15,8 +15,8 @@ import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
+import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
-import fi.espoo.evaka.shared.config.Roles
 import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.insertTestApplication
@@ -46,8 +46,8 @@ class EmailResponseIntegrationTest : FullApplicationTest() {
     private val validDaycareForm = DaycareFormV0.fromApplication2(validDaycareApplication)
     private val validClubForm = ClubFormV0.fromForm2(validClubApplication.form, false, false)
 
-    private val serviceWorker = AuthenticatedUser(testAdult_1.id, setOf(Roles.SERVICE_WORKER))
-    private val endUser = AuthenticatedUser(testAdult_1.id, setOf(Roles.END_USER))
+    private val serviceWorker = AuthenticatedUser(testAdult_1.id, setOf(UserRole.SERVICE_WORKER))
+    private val endUser = AuthenticatedUser(testAdult_1.id, setOf(UserRole.END_USER))
     private val guardian = testAdult_1.copy(email = "john.doe@espootest.com")
     private val guardianAsDaycareAdult = Adult(
         firstName = guardian.firstName,

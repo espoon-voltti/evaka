@@ -7,10 +7,7 @@ package fi.espoo.evaka.occupancy
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.config.Roles
-import fi.espoo.evaka.shared.config.Roles.ADMIN
-import fi.espoo.evaka.shared.config.Roles.FINANCE_ADMIN
-import fi.espoo.evaka.shared.config.Roles.SERVICE_WORKER
+import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.getUUID
 import fi.espoo.evaka.shared.domain.BadRequest
@@ -39,7 +36,7 @@ class OccupancyController(private val acl: AccessControlList) {
     ): ResponseEntity<OccupancyResponse> {
         Audit.OccupancyRead.log(targetId = unitId)
         acl.getRolesForUnit(user, unitId)
-            .requireOneOfRoles(ADMIN, SERVICE_WORKER, FINANCE_ADMIN, Roles.UNIT_SUPERVISOR)
+            .requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN, UserRole.UNIT_SUPERVISOR)
 
         val occupancies = db.read { it.calculateOccupancyPeriods(unitId, ClosedPeriod(from, to), type) }
 
@@ -62,7 +59,7 @@ class OccupancyController(private val acl: AccessControlList) {
     ): ResponseEntity<List<OccupancyResponseGroupLevel>> {
         Audit.OccupancyRead.log(targetId = unitId)
         acl.getRolesForUnit(user, unitId)
-            .requireOneOfRoles(ADMIN, SERVICE_WORKER, FINANCE_ADMIN, Roles.UNIT_SUPERVISOR)
+            .requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN, UserRole.UNIT_SUPERVISOR)
 
         val occupancies = db.read { it.calculateOccupancyPeriodsGroupLevel(unitId, ClosedPeriod(from, to), type) }
 

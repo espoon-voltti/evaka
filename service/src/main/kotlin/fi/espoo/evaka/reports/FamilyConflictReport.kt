@@ -7,12 +7,7 @@ package fi.espoo.evaka.reports
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.auth.UserRole.ADMIN
-import fi.espoo.evaka.shared.auth.UserRole.DIRECTOR
-import fi.espoo.evaka.shared.auth.UserRole.FINANCE_ADMIN
-import fi.espoo.evaka.shared.auth.UserRole.SERVICE_WORKER
-import fi.espoo.evaka.shared.auth.UserRole.SPECIAL_EDUCATION_TEACHER
-import fi.espoo.evaka.shared.auth.UserRole.UNIT_SUPERVISOR
+import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.db.mapNullableColumn
@@ -31,7 +26,7 @@ class FamilyContactReportController(private val acl: AccessControlList) {
         @RequestParam unitId: UUID
     ): ResponseEntity<List<FamilyContactReportRow>> {
         Audit.FamilyContactReportRead.log()
-        acl.getRolesForUnit(user, unitId).requireOneOfRoles(ADMIN, SERVICE_WORKER, FINANCE_ADMIN, DIRECTOR, UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
+        acl.getRolesForUnit(user, unitId).requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN, UserRole.DIRECTOR, UserRole.UNIT_SUPERVISOR, UserRole.SPECIAL_EDUCATION_TEACHER)
         return db.read { it.getFamilyContacts(unitId) }.let { ResponseEntity.ok(it) }
     }
 }

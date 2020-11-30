@@ -12,8 +12,8 @@ import fi.espoo.evaka.daycare.controllers.DaycareController
 import fi.espoo.evaka.daycare.service.DaycareGroup
 import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
+import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
-import fi.espoo.evaka.shared.config.Roles
 import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.dev.DevBackupCare
 import fi.espoo.evaka.shared.dev.DevCareArea
@@ -42,7 +42,7 @@ import java.time.LocalDate
 import java.util.UUID
 
 class DaycareGroupIntegrationTest : FullApplicationTest() {
-    private val admin = AuthenticatedUser(testDecisionMaker_1.id, setOf(Roles.ADMIN))
+    private val admin = AuthenticatedUser(testDecisionMaker_1.id, setOf(UserRole.ADMIN))
 
     @BeforeEach
     protected fun beforeEach() {

@@ -13,7 +13,6 @@ import fi.espoo.evaka.shared.auth.DaycareAclRow
 import fi.espoo.evaka.shared.auth.DaycareAclRowEmployee
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
-import fi.espoo.evaka.shared.config.Roles
 import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevDaycare
@@ -43,7 +42,7 @@ class UnitAclControllerIntegrationTest : FullApplicationTest() {
     protected fun beforeEach() {
         jdbi.handle { h ->
             resetDatabase(h)
-            admin = AuthenticatedUser(h.insertTestEmployee(DevEmployee(roles = setOf(Roles.ADMIN))), roles = setOf(Roles.ADMIN))
+            admin = AuthenticatedUser(h.insertTestEmployee(DevEmployee(roles = setOf(UserRole.ADMIN))), roles = setOf(UserRole.ADMIN))
             h.insertTestCareArea(DevCareArea(id = testAreaId, name = testDaycare.areaName, areaCode = testAreaCode))
             h.insertTestDaycare(DevDaycare(areaId = testAreaId, id = testDaycare.id, name = testDaycare.name))
             employee.also {

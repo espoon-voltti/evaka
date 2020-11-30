@@ -11,7 +11,7 @@ import fi.espoo.evaka.invoicing.domain.InvoiceDetailed
 import fi.espoo.evaka.invoicing.domain.InvoiceStatus
 import fi.espoo.evaka.invoicing.domain.addressUsable
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.config.Roles
+import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.Period
 import org.springframework.format.annotation.DateTimeFormat
@@ -37,7 +37,7 @@ class InvoiceReportController {
         @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) date: LocalDate
     ): ResponseEntity<InvoiceReport> {
         Audit.InvoicesReportRead.log()
-        user.requireOneOfRoles(Roles.FINANCE_ADMIN, Roles.DIRECTOR, Roles.ADMIN)
+        user.requireOneOfRoles(UserRole.FINANCE_ADMIN, UserRole.DIRECTOR, UserRole.ADMIN)
         return db.read {
             it.getInvoiceReportWithRows(
                 getMonthPeriod(date)

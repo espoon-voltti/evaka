@@ -11,8 +11,8 @@ import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
+import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
-import fi.espoo.evaka.shared.config.Roles
 import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
@@ -41,7 +41,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest() {
 
     private val unitSupervisor = AuthenticatedUser(testDecisionMaker_1.id, emptySet())
     private val staff = AuthenticatedUser(testDecisionMaker_2.id, emptySet())
-    private val serviceWorker = AuthenticatedUser(UUID.randomUUID(), setOf(Roles.SERVICE_WORKER))
+    private val serviceWorker = AuthenticatedUser(UUID.randomUUID(), setOf(UserRole.SERVICE_WORKER))
 
     @BeforeEach
     fun setUp() {
@@ -57,7 +57,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest() {
             )
             h.insertTestDaycareGroup(testDaycareGroup)
             testPlacement = h.getDaycarePlacements(daycareId, null, null, null).first()
-            updateDaycareAclWithEmployee(h, daycareId, unitSupervisor.id, Roles.UNIT_SUPERVISOR)
+            updateDaycareAclWithEmployee(h, daycareId, unitSupervisor.id, UserRole.UNIT_SUPERVISOR)
         }
     }
 
@@ -485,7 +485,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest() {
                 startDate = newEnd,
                 endDate = newEnd.plusMonths(2)
             )
-            updateDaycareAclWithEmployee(h, testDaycare2.id, unitSupervisor.id, Roles.UNIT_SUPERVISOR)
+            updateDaycareAclWithEmployee(h, testDaycare2.id, unitSupervisor.id, UserRole.UNIT_SUPERVISOR)
             val body = PlacementUpdateRequestBody(
                 startDate = placementStart,
                 endDate = newEnd
@@ -510,7 +510,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest() {
     @Test
     fun `staff can't modify placements`() {
         jdbi.handle { h ->
-            updateDaycareAclWithEmployee(h, daycareId, staff.id, Roles.STAFF)
+            updateDaycareAclWithEmployee(h, daycareId, staff.id, UserRole.STAFF)
             val newStart = placementStart.plusDays(1)
             val newEnd = placementEnd.minusDays(2)
             val body = PlacementUpdateRequestBody(startDate = newStart, endDate = newEnd)
