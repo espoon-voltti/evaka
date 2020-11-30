@@ -59,14 +59,14 @@ export default React.memo(function InvoicesPage() {
           allInvoicesToggle={allInvoicesToggle}
           allInvoicesToggleDisabled={searchFilters.area.length < 1}
         />
-        <Actions
-          dispatch={dispatch}
-          status={searchFilters.status}
-          checkedInvoices={checkedInvoices}
-          checkedAreas={searchFilters.area}
-          allInvoicesToggle={allInvoicesToggle}
-        />
       </ContentArea>
+      <Actions
+        dispatch={dispatch}
+        status={searchFilters.status}
+        checkedInvoices={checkedInvoices}
+        checkedAreas={searchFilters.area}
+        allInvoicesToggle={allInvoicesToggle}
+      />
       {showModal ? (
         <Modal
           dispatch={dispatch}

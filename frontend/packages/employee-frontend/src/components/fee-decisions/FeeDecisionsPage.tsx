@@ -107,39 +107,37 @@ const FeeDecisionsPage = React.memo(function FeeDecisionsPage() {
   const checkedIds = Object.keys(checked).filter((id) => !!checked[id])
 
   return (
-    <div className="fee-decisions-page" data-qa="fee-decisions-page">
-      <Container>
-        {window['secretButton'] && <GeneratorButton reload={loadDecisions} />}
-        <ContentArea opaque>
-          <FeeDecisionFilters />
-        </ContentArea>
-        <Gap size={'XL'} />
-        <ContentArea opaque>
-          <FeeDecisions
-            decisions={decisions[page]}
-            total={totalDecisions}
-            pages={totalPages}
-            currentPage={page}
-            setPage={setPage}
-            sortBy={sortBy}
-            setSortBy={setSortBy}
-            sortDirection={sortDirection}
-            setSortDirection={setSortDirection}
-            showCheckboxes={searchFilters.status === 'DRAFT'}
-            checked={checked}
-            toggleChecked={toggleChecked}
-            checkAll={checkAll}
-            clearChecked={clearChecked}
-          />
-          <Actions
-            status={searchFilters.status}
-            checkedIds={checkedIds}
-            clearChecked={clearChecked}
-            loadDecisions={loadDecisions}
-          />
-        </ContentArea>
-      </Container>
-    </div>
+    <Container data-qa="fee-decisions-page">
+      {window['secretButton'] && <GeneratorButton reload={loadDecisions} />}
+      <ContentArea opaque>
+        <FeeDecisionFilters />
+      </ContentArea>
+      <Gap size={'XL'} />
+      <ContentArea opaque>
+        <FeeDecisions
+          decisions={decisions[page]}
+          total={totalDecisions}
+          pages={totalPages}
+          currentPage={page}
+          setPage={setPage}
+          sortBy={sortBy}
+          setSortBy={setSortBy}
+          sortDirection={sortDirection}
+          setSortDirection={setSortDirection}
+          showCheckboxes={searchFilters.status === 'DRAFT'}
+          checked={checked}
+          toggleChecked={toggleChecked}
+          checkAll={checkAll}
+          clearChecked={clearChecked}
+        />
+      </ContentArea>
+      <Actions
+        status={searchFilters.status}
+        checkedIds={checkedIds}
+        clearChecked={clearChecked}
+        loadDecisions={loadDecisions}
+      />
+    </Container>
   )
 })
 

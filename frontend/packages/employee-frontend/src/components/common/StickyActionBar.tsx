@@ -2,14 +2,25 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import React from 'react'
 import styled from 'styled-components'
-import Colors from 'components/shared/Colors'
+import Colors from '~components/shared/Colors'
+import { Container } from '~components/shared/layout/Container'
 
 type Props = {
   align: 'center' | 'left' | 'right'
-  fullWidth?: boolean
-  shadow?: boolean
 }
+
+export default React.memo(function StickyActionBar({
+  align,
+  children
+}: Props & { children: React.ReactNode | React.ReactNodeArray }) {
+  return (
+    <Bar>
+      <Content align={align}>{children}</Content>
+    </Bar>
+  )
+})
 
 const alignValues = {
   center: 'center',
@@ -17,19 +28,23 @@ const alignValues = {
   right: 'flex-end'
 } as const
 
-const StickyActionBar = styled.div<Props>`
+const Bar = styled.div`
   display: flex;
   flex-direction: row;
   align-items: center;
-  justify-content: ${(props) => alignValues[props.align]};
+  justify-content: center;
   position: sticky;
   bottom: 0;
   background: white;
   padding: 16px 0;
-  margin: ${(p) => (p.fullWidth ? '0 -9999rem' : '0')};
+  margin: 0 -9999rem;
   margin-top: 50px;
-  box-shadow: ${(p) =>
-    p.shadow ? `0px -8px 8px -6px ${Colors.greyscale.lightest}` : 'inset'};
+  box-shadow: 0px -8px 8px -6px ${Colors.greyscale.lightest};
 `
 
-export default StickyActionBar
+const Content = styled(Container)<Props>`
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: ${({ align }) => alignValues[align]};
+`
