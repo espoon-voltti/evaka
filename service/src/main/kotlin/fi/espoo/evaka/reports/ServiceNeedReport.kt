@@ -27,7 +27,7 @@ class ServiceNeedReport(private val acl: AccessControlList) {
         @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) date: LocalDate
     ): ResponseEntity<List<ServiceNeedReportRow>> {
         Audit.ServiceNeedReportRead.log()
-        user.requireOneOfRoles(SERVICE_WORKER, ADMIN, DIRECTOR, UNIT_SUPERVISOR)
+        user.requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.ADMIN, UserRole.DIRECTOR, UserRole.UNIT_SUPERVISOR)
         return db.read {
             it.getServiceNeedRows(date, acl.getAuthorizedUnits(user))
         }.let(::ok)

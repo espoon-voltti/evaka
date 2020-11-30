@@ -22,7 +22,7 @@ class PartnersInDifferentAddressReportController(private val acl: AccessControlL
     @GetMapping("/reports/partners-in-different-address")
     fun getPartnersInDifferentAddressReport(db: Database, user: AuthenticatedUser): ResponseEntity<List<PartnersInDifferentAddressReportRow>> {
         Audit.PartnersInDifferentAddressReportRead.log()
-        user.requireOneOfRoles(ADMIN, SERVICE_WORKER, FINANCE_ADMIN, UNIT_SUPERVISOR)
+        user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN, UserRole.UNIT_SUPERVISOR)
         return db.read { it.getPartnersInDifferentAddressRows(acl.getAuthorizedUnits(user)) }
             .let { ResponseEntity.ok(it) }
     }

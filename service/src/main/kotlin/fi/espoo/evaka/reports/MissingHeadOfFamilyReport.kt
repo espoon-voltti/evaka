@@ -29,7 +29,7 @@ class MissingHeadOfFamilyReportController(private val acl: AccessControlList) {
         @RequestParam("to") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate?
     ): ResponseEntity<List<MissingHeadOfFamilyReportRow>> {
         Audit.MissingHeadOfFamilyReportRead.log()
-        user.requireOneOfRoles(ADMIN, SERVICE_WORKER, FINANCE_ADMIN, UNIT_SUPERVISOR)
+        user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN, UserRole.UNIT_SUPERVISOR)
         return db.read { ResponseEntity.ok(it.getMissingHeadOfFamilyRows(from, to, acl.getAuthorizedUnits(user))) }
     }
 }

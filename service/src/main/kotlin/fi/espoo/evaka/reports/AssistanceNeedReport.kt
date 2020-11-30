@@ -29,7 +29,7 @@ class AssistanceNeedsReportController(private val acl: AccessControlList) {
         @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) date: LocalDate
     ): ResponseEntity<List<AssistanceNeedReportRow>> {
         Audit.AssistanceNeedsReportRead.log()
-        user.requireOneOfRoles(SERVICE_WORKER, ADMIN, DIRECTOR, UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
+        user.requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.ADMIN, UserRole.DIRECTOR, UserRole.UNIT_SUPERVISOR, UserRole.SPECIAL_EDUCATION_TEACHER)
         return db.read { it.getAssistanceNeedReportRows(date, acl.getAuthorizedUnits(user)).let(::ok) }
     }
 }

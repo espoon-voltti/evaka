@@ -22,7 +22,7 @@ class FamilyConflictReportController(private val acl: AccessControlList) {
     @GetMapping("/reports/family-conflicts")
     fun getFamilyConflictsReport(db: Database, user: AuthenticatedUser): ResponseEntity<List<FamilyConflictReportRow>> {
         Audit.FamilyConflictReportRead.log()
-        user.requireOneOfRoles(ADMIN, SERVICE_WORKER, FINANCE_ADMIN, UNIT_SUPERVISOR)
+        user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN, UserRole.UNIT_SUPERVISOR)
         return db.read { it.getFamilyConflicts(acl.getAuthorizedUnits(user)) }
             .let { ResponseEntity.ok(it) }
     }
