@@ -42,7 +42,8 @@ class ChildAttendanceController(
         UserRole.ADMIN,
         UserRole.SERVICE_WORKER,
         UserRole.UNIT_SUPERVISOR,
-        UserRole.STAFF
+        UserRole.STAFF,
+        UserRole.MOBILE
     )
 
     @GetMapping("/units/{unitId}")
