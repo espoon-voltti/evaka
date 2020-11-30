@@ -11,11 +11,10 @@ import { cookieSecret, enableDevApi } from '../shared/config'
 import { errorHandler } from '../shared/middleware/error-handler'
 import csp from '../shared/routes/csp'
 import { requireAuthentication } from '../shared/auth'
-import userDetails from '../shared/routes/auth/status'
 import { createAuthEndpoints } from '../shared/routes/auth/espoo-ad'
 import session, { refreshLogoutToken } from '../shared/session'
 import passport from 'passport'
-import { csrf } from '../shared/middleware/csrf'
+import { csrf, csrfCookie } from '../shared/middleware/csrf'
 import { trustReverseProxy } from '../shared/reverse-proxy'
 import { createProxy } from '../shared/proxy-utils'
 import nocache from 'nocache'
@@ -24,6 +23,7 @@ import tracing from '../shared/middleware/tracing'
 import mobileDeviceSession, {
   refreshMobileSession
 } from './mobile-device-session'
+import authStatus from './routes/auth-status'
 
 const app = express()
 trustReverseProxy(app)
@@ -70,7 +70,7 @@ function internalApiRouter() {
 
   router.post('/auth/mobile', mobileDeviceSession)
   router.use(refreshMobileSession)
-  router.use(userDetails('employee'))
+  router.get('/auth/status', csrf, csrfCookie('employee'), authStatus)
   router.use(requireAuthentication)
   router.use(csrf)
   router.post('/attachments', createProxy({ multipart: true }))

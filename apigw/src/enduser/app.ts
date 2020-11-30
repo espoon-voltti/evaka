@@ -2,23 +2,23 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import express from 'express'
+import express, { Router } from 'express'
 import bodyParser from 'body-parser'
 import cookieParser from 'cookie-parser'
 import passport from 'passport'
 import publicRoutes from './publicRoutes'
 import routes from './routes'
-import userDetails from './routes/auth-status'
 import { createAuthEndpoints } from '../shared/routes/auth/suomi-fi'
 import { errorHandler } from '../shared/middleware/error-handler'
 import { requireAuthentication } from '../shared/auth'
 import session, { refreshLogoutToken } from '../shared/session'
 import setupLoggingMiddleware from '../shared/logging'
-import { csrf } from '../shared/middleware/csrf'
+import { csrf, csrfCookie } from '../shared/middleware/csrf'
 import { trustReverseProxy } from '../shared/reverse-proxy'
 import nocache from 'nocache'
 import helmet from 'helmet'
 import tracing from '../shared/middleware/tracing'
+import authStatus from './routes/auth-status'
 
 const app = express()
 trustReverseProxy(app)
@@ -42,12 +42,19 @@ passport.deserializeUser((user, done) => done(null, user))
 app.use(refreshLogoutToken('enduser'))
 setupLoggingMiddleware(app)
 
-app.use('/api/application/', publicRoutes)
-app.use('/api/application/', createAuthEndpoints('enduser'))
-app.use('/api/application/', userDetails('enduser'))
-app.all('*', requireAuthentication)
-app.use(csrf)
-app.use('/api/application/', routes)
+function apiRouter() {
+  const router = Router()
+
+  router.use(publicRoutes)
+  router.use(createAuthEndpoints('enduser'))
+  router.get('/auth/status', csrf, csrfCookie('enduser'), authStatus)
+  router.use(requireAuthentication)
+  router.use(csrf)
+  router.use(routes)
+  return router
+}
+
+app.use('/api/application', apiRouter())
 app.use(errorHandler(false))
 
 export default app
