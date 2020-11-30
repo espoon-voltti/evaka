@@ -75,10 +75,10 @@ function internalApiRouter() {
   router.use(csrf)
   router.post('/attachments', createProxy({ multipart: true }))
   router.use(createProxy())
-  router.use(errorHandler(true))
   return router
 }
 
 app.use('/api/internal', internalApiRouter())
+app.use(errorHandler(true))
 
 export default app
