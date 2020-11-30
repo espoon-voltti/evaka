@@ -18,7 +18,7 @@ export function requireAuthentication(
   res: Response,
   next: NextFunction
 ) {
-  if (!req.user) {
+  if (!req.user || !req.user.id) {
     logAuditEvent(
       `evaka.${auditEventGatewayId}.auth.not_found`,
       req,
@@ -27,26 +27,7 @@ export function requireAuthentication(
     res.sendStatus(401)
     return
   }
-  if (!req.user.id) {
-    logAuditEvent(
-      `evaka.${auditEventGatewayId}.auth.not_found`,
-      req,
-      'Could not find id for user'
-    )
-    res.sendStatus(401)
-    return
-  }
-  try {
-    // FIXME do we need to verify session state
-    return next()
-  } catch (err) {
-    logAuditEvent(
-      `evaka.${auditEventGatewayId}.auth.jwt_verification_failed`,
-      req,
-      `JWT authentication error. Error: ${err}`
-    )
-    res.status(401).send(err)
-  }
+  return next()
 }
 
 export function createAuthHeader(user: SamlUser): string {
