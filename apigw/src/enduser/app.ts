@@ -11,7 +11,7 @@ import routes from './routes'
 import userDetails from './routes/auth-status'
 import { createAuthEndpoints } from '../shared/routes/auth/suomi-fi'
 import { errorHandler } from '../shared/middleware/error-handler'
-import { authenticate } from '../shared/auth'
+import { requireAuthentication } from '../shared/auth'
 import session, { refreshLogoutToken } from '../shared/session'
 import setupLoggingMiddleware from '../shared/logging'
 import { csrf } from '../shared/middleware/csrf'
@@ -45,7 +45,7 @@ setupLoggingMiddleware(app)
 app.use('/api/application/', publicRoutes)
 app.use('/api/application/', createAuthEndpoints('enduser'))
 app.use('/api/application/', userDetails('enduser'))
-app.all('*', authenticate)
+app.all('*', requireAuthentication)
 app.use(csrf)
 app.use('/api/application/', routes)
 app.use(errorHandler(false))

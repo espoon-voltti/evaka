@@ -13,7 +13,11 @@ const auditEventGatewayId =
   (gatewayRole === 'internal' && 'ingw') ||
   (gatewayRole === undefined && 'devgw')
 
-export function authenticate(req: Request, res: Response, next: NextFunction) {
+export function requireAuthentication(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
   if (!req.user) {
     logAuditEvent(
       `evaka.${auditEventGatewayId}.auth.not_found`,

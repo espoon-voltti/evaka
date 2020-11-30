@@ -10,7 +10,7 @@ import setupLoggingMiddleware from '../shared/logging'
 import { cookieSecret, enableDevApi } from '../shared/config'
 import { errorHandler } from '../shared/middleware/error-handler'
 import csp from '../shared/routes/csp'
-import { authenticate } from '../shared/auth'
+import { requireAuthentication } from '../shared/auth'
 import userDetails from '../shared/routes/auth/status'
 import { createAuthEndpoints } from '../shared/routes/auth/espoo-ad'
 import session, { refreshLogoutToken } from '../shared/session'
@@ -71,7 +71,7 @@ function internalApiRouter() {
   router.post('/auth/mobile', mobileDeviceSession)
   router.use(refreshMobileSession)
   router.use(userDetails('employee'))
-  router.use(authenticate)
+  router.use(requireAuthentication)
   router.use(csrf)
   router.post('/attachments', createProxy({ multipart: true }))
   router.use(createProxy())
