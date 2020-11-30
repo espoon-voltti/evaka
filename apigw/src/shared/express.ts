@@ -5,6 +5,7 @@
 import type express from 'express'
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import type { SamlUser } from './routes/auth/saml/types'
+import { BaseError } from 'make-error-cause'
 
 export interface LogoutToken {
   // milliseconds value of a Date. Not an actual Date because it will be JSONified
@@ -31,6 +32,21 @@ export function toRequestHandler(
 ): express.RequestHandler {
   return (req, res, next) => f(req, res).catch(next)
 }
+
+export function assertStringProp<T, K extends keyof T>(
+  object: T,
+  property: K
+): string {
+  const value = object[property]
+  if (typeof value !== 'string') {
+    throw new InvalidRequest(
+      `Expected '${property}' to be string, but it is ${value}`
+    )
+  }
+  return value
+}
+
+export class InvalidRequest extends BaseError {}
 
 // Use TS interface merging to add fields to express req.session
 declare module 'express-session' {
