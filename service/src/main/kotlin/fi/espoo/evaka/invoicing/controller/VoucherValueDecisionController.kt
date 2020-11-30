@@ -24,7 +24,7 @@ import fi.espoo.evaka.invoicing.service.VoucherValueDecisionService
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.NotifyVoucherValueDecisionApproved
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.config.Roles
+import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.NotFound
@@ -64,7 +64,7 @@ class VoucherValueDecisionController(
         @RequestParam(required = false) searchTerms: String?
     ): ResponseEntity<VoucherValueDecisionSearchResult> {
         Audit.VoucherValueDecisionSearch.log()
-        user.requireOneOfRoles(Roles.FINANCE_ADMIN)
+        user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
         val maxPageSize = 5000
         if (pageSize > maxPageSize) throw BadRequest("Maximum page size is $maxPageSize")
         val (total, valueDecisions) = db.read { tx ->
@@ -93,7 +93,7 @@ class VoucherValueDecisionController(
         @PathVariable id: UUID
     ): ResponseEntity<Wrapper<VoucherValueDecisionDetailed>> {
         Audit.VoucherValueDecisionRead.log(targetId = id)
-        user.requireOneOfRoles(Roles.FINANCE_ADMIN)
+        user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
         val res = db.read { it.handle.getVoucherValueDecision(objectMapper, id) }
             ?: throw NotFound("No voucher value decision found with given ID ($id)")
         return ResponseEntity.ok(Wrapper(res))
@@ -102,7 +102,7 @@ class VoucherValueDecisionController(
     @PostMapping("/send")
     fun sendDrafts(db: Database.Connection, user: AuthenticatedUser, @RequestBody decisionIds: List<UUID>): ResponseEntity<Unit> {
         Audit.VoucherValueDecisionSend.log(targetId = decisionIds)
-        user.requireOneOfRoles(Roles.FINANCE_ADMIN)
+        user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
         db.transaction { sendVoucherValueDecisions(it, user, decisionIds) }
         asyncJobRunner.scheduleImmediateRun()
         return ResponseEntity.noContent().build()
@@ -111,7 +111,7 @@ class VoucherValueDecisionController(
     @PostMapping("/mark-sent")
     fun markSent(db: Database.Connection, user: AuthenticatedUser, @RequestBody ids: List<UUID>): ResponseEntity<Unit> {
         Audit.VoucherValueDecisionMarkSent.log(targetId = ids)
-        user.requireOneOfRoles(Roles.FINANCE_ADMIN)
+        user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
         db.transaction {
             val decisions = it.handle.getValueDecisionsByIds(objectMapper, ids)
             if (decisions.any { it.status != VoucherValueDecisionStatus.WAITING_FOR_MANUAL_SENDING })
@@ -124,7 +124,7 @@ class VoucherValueDecisionController(
     @GetMapping("/pdf/{id}")
     fun getDecisionPdf(db: Database.Connection, user: AuthenticatedUser, @PathVariable id: UUID): ResponseEntity<ByteArray> {
         Audit.FeeDecisionPdfRead.log(targetId = id)
-        user.requireOneOfRoles(Roles.FINANCE_ADMIN)
+        user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
         val (filename, pdf) = db.read { valueDecisionService.getDecisionPdf(it, id) }
         val headers = HttpHeaders().apply {
             add("Content-Disposition", "attachment; filename=\"$filename\"")

@@ -20,7 +20,7 @@ import fi.espoo.evaka.invoicing.service.createAllDraftInvoices
 import fi.espoo.evaka.invoicing.service.getInvoiceCodes
 import fi.espoo.evaka.invoicing.service.markManuallySent
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.config.Roles
+import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.NotFound
@@ -81,7 +81,7 @@ class InvoiceController(
         @RequestParam(required = false) periodEnd: String?
     ): ResponseEntity<InvoiceSearchResult> {
         Audit.InvoicesSearch.log()
-        user.requireOneOfRoles(Roles.FINANCE_ADMIN)
+        user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
         val maxPageSize = 5000
         if (pageSize > maxPageSize) throw BadRequest("Maximum page size is $maxPageSize")
         val (total, invoices) = db.read { tx ->
@@ -109,7 +109,7 @@ class InvoiceController(
     @PostMapping("/create-drafts")
     fun createDraftInvoices(db: Database.Connection, user: AuthenticatedUser): ResponseEntity<Unit> {
         Audit.InvoicesCreate.log()
-        user.requireOneOfRoles(Roles.FINANCE_ADMIN)
+        user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
         db.transaction { createAllDraftInvoices(it.handle, objectMapper) }
         return ResponseEntity.noContent().build()
     }
@@ -117,7 +117,7 @@ class InvoiceController(
     @PostMapping("/delete-drafts")
     fun deleteDraftInvoices(db: Database.Connection, user: AuthenticatedUser, @RequestBody invoiceIds: List<UUID>): ResponseEntity<Unit> {
         Audit.InvoicesDeleteDrafts.log(targetId = invoiceIds)
-        user.requireOneOfRoles(Roles.FINANCE_ADMIN)
+        user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
         db.transaction { deleteDraftInvoices(it.handle, invoiceIds) }
         return ResponseEntity.noContent().build()
     }
@@ -133,7 +133,7 @@ class InvoiceController(
         @RequestBody invoiceIds: List<UUID>
     ): ResponseEntity<Unit> {
         Audit.InvoicesSend.log(targetId = invoiceIds)
-        user.requireOneOfRoles(Roles.FINANCE_ADMIN)
+        user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
         db.transaction {
             service.sendInvoices(it, user, invoiceIds, invoiceDate, dueDate)
         }
@@ -147,7 +147,7 @@ class InvoiceController(
         @RequestBody payload: InvoicePayload
     ): ResponseEntity<Unit> {
         Audit.InvoicesSendByDate.log()
-        user.requireOneOfRoles(Roles.FINANCE_ADMIN)
+        user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
         db.transaction { tx ->
             val invoiceIds = service.getInvoiceIds(tx, payload.from, payload.to, payload.areas)
             service.sendInvoices(tx, user, invoiceIds, payload.invoiceDate, payload.dueDate)
@@ -158,7 +158,7 @@ class InvoiceController(
     @PostMapping("/mark-sent")
     fun markInvoicesSent(db: Database.Connection, user: AuthenticatedUser, @RequestBody invoiceIds: List<UUID>): ResponseEntity<Unit> {
         Audit.InvoicesMarkSent.log(targetId = invoiceIds)
-        user.requireOneOfRoles(Roles.FINANCE_ADMIN)
+        user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
         db.transaction { it.markManuallySent(user, invoiceIds) }
         return ResponseEntity.noContent().build()
     }
@@ -166,7 +166,7 @@ class InvoiceController(
     @GetMapping("/{uuid}")
     fun getInvoice(db: Database.Connection, user: AuthenticatedUser, @PathVariable uuid: String): ResponseEntity<Wrapper<InvoiceDetailed>> {
         Audit.InvoicesRead.log(targetId = uuid)
-        user.requireOneOfRoles(Roles.FINANCE_ADMIN)
+        user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
         val parsedUuid = parseUUID(uuid)
         val res = db.read { getDetailedInvoice(it.handle, parsedUuid) }
             ?: throw NotFound("No invoice found with given ID ($uuid)")
@@ -180,7 +180,7 @@ class InvoiceController(
         @PathVariable uuid: String
     ): ResponseEntity<Wrapper<List<Invoice>>> {
         Audit.InvoicesRead.log(targetId = uuid)
-        user.requireOneOfRoles(Roles.FINANCE_ADMIN)
+        user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
         val parsedUuid = parseUUID(uuid)
         val res = db.read { getHeadOfFamilyInvoices(it.handle, parsedUuid) }
         return ResponseEntity.ok(Wrapper(res))
@@ -194,7 +194,7 @@ class InvoiceController(
         @RequestBody invoice: Invoice
     ): ResponseEntity<Unit> {
         Audit.InvoicesUpdate.log(targetId = uuid)
-        user.requireOneOfRoles(Roles.FINANCE_ADMIN)
+        user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
         val parsedUuid = parseUUID(uuid)
         db.transaction { service.updateInvoice(it, parsedUuid, invoice) }
         return ResponseEntity.noContent().build()
@@ -202,7 +202,7 @@ class InvoiceController(
 
     @GetMapping("/codes")
     fun getInvoiceCodes(db: Database.Connection, user: AuthenticatedUser): ResponseEntity<Wrapper<InvoiceCodes>> {
-        user.requireOneOfRoles(Roles.FINANCE_ADMIN)
+        user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
         val codes = db.read { it.getInvoiceCodes() }
         return ResponseEntity.ok(Wrapper(codes))
     }

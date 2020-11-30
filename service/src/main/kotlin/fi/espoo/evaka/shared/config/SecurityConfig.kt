@@ -8,7 +8,6 @@ import com.auth0.jwt.algorithms.Algorithm
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUserSpringSupport
 import fi.espoo.evaka.shared.auth.JwtKeys
-import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.loadPrivateKey
 import fi.espoo.evaka.shared.auth.loadPublicKeys
 import org.jdbi.v3.core.Jdbi
@@ -24,17 +23,6 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter
 import java.net.URI
 import java.nio.file.Paths
-
-object Roles {
-    val SERVICE_WORKER = UserRole.SERVICE_WORKER
-    val END_USER = UserRole.END_USER
-    val UNIT_SUPERVISOR = UserRole.UNIT_SUPERVISOR
-    val FINANCE_ADMIN = UserRole.FINANCE_ADMIN
-    val ADMIN = UserRole.ADMIN
-    val DIRECTOR = UserRole.DIRECTOR
-    val STAFF = UserRole.STAFF
-    val SPECIAL_EDUCATION_TEACHER = UserRole.SPECIAL_EDUCATION_TEACHER
-}
 
 @Configuration
 @Import(AuthenticatedUserSpringSupport::class)
@@ -76,7 +64,6 @@ class PublicResourcesConfigurerAdapter : WebSecurityConfigurerAdapter() {
             .requestMatchers()
             .antMatchers(
                 "/public/**",
-                "/enduser/areas",
                 "/location",
                 "/report/offices",
                 "/scheduled/varda/update",

@@ -5,6 +5,7 @@
 import { Strategy } from 'passport-saml'
 import { Strategy as DummyStrategy } from 'passport-dummy'
 import { SessionType } from '../../../session'
+import { UserType } from '../../../service-client'
 
 export interface SamlEndpointConfig {
   strategyName: string
@@ -42,6 +43,7 @@ export interface SamlUser {
   // eVaka id from person table
   id: string
   roles: string[]
+  userType: UserType | undefined
   // fields used by passport-saml during logout flow
   nameID?: string
   nameIDFormat?: string

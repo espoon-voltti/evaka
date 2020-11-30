@@ -10,8 +10,8 @@ import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
+import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
-import fi.espoo.evaka.shared.config.Roles
 import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.dev.insertTestServiceNeed
 import fi.espoo.evaka.testChild_1
@@ -26,7 +26,7 @@ import java.time.LocalDate
 import java.util.UUID
 
 class ServiceNeedIntegrationTest : FullApplicationTest() {
-    private val serviceWorker = AuthenticatedUser(testDecisionMaker_1.id, setOf(Roles.SERVICE_WORKER))
+    private val serviceWorker = AuthenticatedUser(testDecisionMaker_1.id, setOf(UserRole.SERVICE_WORKER))
 
     @BeforeEach
     private fun beforeEach() {

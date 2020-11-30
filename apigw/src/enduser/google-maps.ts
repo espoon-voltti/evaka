@@ -3,12 +3,12 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import axios, { AxiosResponse } from 'axios'
-import { googleApiKey } from '../../shared/config'
+import { googleApiKey } from '../shared/config'
 import {
   AUTOCOMPLETE_DISTANCE,
   ESPOO_COORDINATES,
   GOOGLE_MAPS_API_URL
-} from '../constants'
+} from './constants'
 
 interface AutocompletePrediction {
   place_id: string

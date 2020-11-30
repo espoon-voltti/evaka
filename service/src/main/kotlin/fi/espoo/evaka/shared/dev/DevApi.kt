@@ -50,7 +50,6 @@ import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
-import fi.espoo.evaka.shared.config.Roles
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.ClosedPeriod
@@ -522,7 +521,7 @@ RETURNING id
 
             uuid?.let {
                 // Refresh Pis data by forcing refresh from VTJ
-                val dummyUser = AuthenticatedUser(it, setOf(Roles.SERVICE_WORKER))
+                val dummyUser = AuthenticatedUser(it, setOf(UserRole.SERVICE_WORKER))
                 personService.getUpToDatePerson(tx, dummyUser, it)
             }
         }

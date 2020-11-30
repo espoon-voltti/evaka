@@ -13,7 +13,7 @@ import fi.espoo.evaka.invoicing.domain.FeeAlteration
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.NotifyFeeAlterationUpdated
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.config.Roles
+import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.Period
@@ -36,7 +36,7 @@ class FeeAlterationController(private val asyncJobRunner: AsyncJobRunner) {
     @GetMapping
     fun getFeeAlterations(db: Database.Connection, user: AuthenticatedUser, @RequestParam personId: String?): ResponseEntity<Wrapper<List<FeeAlteration>>> {
         Audit.ChildFeeAlterationsRead.log(targetId = personId)
-        user.requireOneOfRoles(Roles.FINANCE_ADMIN)
+        user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
         val parsedId = personId?.let { parseUUID(personId) }
             ?: throw BadRequest("Query parameter personId is mandatory")
 
@@ -47,7 +47,7 @@ class FeeAlterationController(private val asyncJobRunner: AsyncJobRunner) {
     @PostMapping
     fun createFeeAlteration(db: Database.Connection, user: AuthenticatedUser, @RequestBody feeAlteration: FeeAlteration): ResponseEntity<Unit> {
         Audit.ChildFeeAlterationsCreate.log(targetId = feeAlteration.personId)
-        user.requireOneOfRoles(Roles.FINANCE_ADMIN)
+        user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
         db.transaction { tx ->
             upsertFeeAlteration(tx.handle, feeAlteration.copy(id = UUID.randomUUID(), updatedBy = user.id))
             asyncJobRunner.plan(
@@ -69,7 +69,7 @@ class FeeAlterationController(private val asyncJobRunner: AsyncJobRunner) {
     @PutMapping("/{feeAlterationId}")
     fun updateFeeAlteration(db: Database.Connection, user: AuthenticatedUser, @PathVariable feeAlterationId: String, @RequestBody feeAlteration: FeeAlteration): ResponseEntity<Unit> {
         Audit.ChildFeeAlterationsUpdate.log(targetId = feeAlterationId)
-        user.requireOneOfRoles(Roles.FINANCE_ADMIN)
+        user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
         val parsedId = parseUUID(feeAlterationId)
         db.transaction { tx ->
             val existing = getFeeAlteration(tx.handle, parsedId)
@@ -92,7 +92,7 @@ class FeeAlterationController(private val asyncJobRunner: AsyncJobRunner) {
     @DeleteMapping("/{feeAlterationId}")
     fun deleteFeeAlteration(db: Database.Connection, user: AuthenticatedUser, @PathVariable feeAlterationId: String): ResponseEntity<Unit> {
         Audit.ChildFeeAlterationsDelete.log(targetId = feeAlterationId)
-        user.requireOneOfRoles(Roles.FINANCE_ADMIN)
+        user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
         val parsedId = parseUUID(feeAlterationId)
         db.transaction { tx ->
             val existing = getFeeAlteration(tx.handle, parsedId)

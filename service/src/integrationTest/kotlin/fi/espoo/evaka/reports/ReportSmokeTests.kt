@@ -9,8 +9,8 @@ import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
+import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
-import fi.espoo.evaka.shared.config.Roles
 import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.testAreaId
 import fi.espoo.evaka.testDaycare
@@ -21,7 +21,7 @@ import org.junit.jupiter.api.Test
 import java.util.UUID
 
 class ReportSmokeTests : FullApplicationTest() {
-    private val testUser = AuthenticatedUser(UUID.randomUUID(), setOf(Roles.ADMIN))
+    private val testUser = AuthenticatedUser(UUID.randomUUID(), setOf(UserRole.ADMIN))
 
     @BeforeAll
     fun beforeEach() {

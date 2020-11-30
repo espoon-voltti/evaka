@@ -10,11 +10,7 @@ import fi.espoo.evaka.daycare.controllers.utils.noContent
 import fi.espoo.evaka.daycare.controllers.utils.ok
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.auth.UserRole.STAFF
-import fi.espoo.evaka.shared.config.Roles.FINANCE_ADMIN
-import fi.espoo.evaka.shared.config.Roles.SERVICE_WORKER
-import fi.espoo.evaka.shared.config.Roles.SPECIAL_EDUCATION_TEACHER
-import fi.espoo.evaka.shared.config.Roles.UNIT_SUPERVISOR
+import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -56,7 +52,7 @@ class ServiceNeedController(
         @PathVariable childId: UUID
     ): ResponseEntity<List<ServiceNeed>> {
         Audit.ChildServiceNeedRead.log(targetId = childId)
-        acl.getRolesForChild(user, childId).requireOneOfRoles(SERVICE_WORKER, UNIT_SUPERVISOR, FINANCE_ADMIN, STAFF, SPECIAL_EDUCATION_TEACHER)
+        acl.getRolesForChild(user, childId).requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR, UserRole.FINANCE_ADMIN, UserRole.STAFF, UserRole.SPECIAL_EDUCATION_TEACHER)
         return serviceNeedService.getServiceNeedsByChildId(db, childId).let(::ok)
     }
 

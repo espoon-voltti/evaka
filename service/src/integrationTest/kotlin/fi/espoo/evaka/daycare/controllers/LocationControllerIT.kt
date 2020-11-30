@@ -53,7 +53,7 @@ class LocationControllerIT : FullApplicationTest() {
 
     @Test
     fun `areas endpoint works without login`() {
-        val (_, response, _) = http.get("/enduser/areas").responseString()
+        val (_, response, _) = http.get("/public/areas").responseString()
         assertEquals(200, response.statusCode)
     }
 }

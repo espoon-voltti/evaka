@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { Profile, Strategy, VerifiedCallback } from 'passport-saml'
-import { getPersonIdentity } from '../service/pis'
 import { SamlUser } from '../routes/auth/saml/types'
 import { Strategy as DummyStrategy } from 'passport-dummy'
 import {
@@ -17,6 +16,7 @@ import {
 } from '../config'
 import certificates from '../certificates'
 import fs from 'fs'
+import { getOrCreatePerson } from '../service-client'
 
 // Suomi.fi e-Identification – Attributes transmitted on an identified user:
 //   https://esuomi.fi/suomi-fi-services/suomi-fi-e-identification/14247-2/?lang=en
@@ -43,15 +43,15 @@ const dummySuomiFiProfile: SuomiFiProfile = {
 }
 
 async function verifyProfile(profile: SuomiFiProfile): Promise<SamlUser> {
-  const person = await getPersonIdentity({
+  const person = await getOrCreatePerson({
     socialSecurityNumber: profile[SUOMI_FI_SSN_KEY],
     firstName: profile[SUOMI_FI_GIVEN_NAME_KEY],
-    lastName: profile[SUOMI_FI_SURNAME_KEY],
-    email: ''
+    lastName: profile[SUOMI_FI_SURNAME_KEY]
   })
   return {
     id: person.id,
-    roles: ['ROLE_ENDUSER'],
+    roles: person.roles,
+    userType: 'ENDUSER',
     nameID: profile.nameID,
     nameIDFormat: profile.nameIDFormat,
     nameQualifier: profile.nameQualifier,

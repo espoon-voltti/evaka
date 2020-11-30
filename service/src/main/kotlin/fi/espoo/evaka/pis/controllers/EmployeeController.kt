@@ -10,12 +10,10 @@ import fi.espoo.evaka.pis.NewEmployee
 import fi.espoo.evaka.pis.createEmployee
 import fi.espoo.evaka.pis.deleteEmployee
 import fi.espoo.evaka.pis.getEmployee
-import fi.espoo.evaka.pis.getEmployeeAuthenticatedUser
 import fi.espoo.evaka.pis.getEmployees
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.config.Roles
+import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.domain.BadRequest
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -33,7 +31,7 @@ class EmployeeController {
     @GetMapping()
     fun getEmployees(db: Database.Connection, user: AuthenticatedUser): ResponseEntity<List<Employee>> {
         Audit.EmployeesRead.log()
-        user.requireOneOfRoles(Roles.ADMIN, Roles.SERVICE_WORKER, Roles.UNIT_SUPERVISOR)
+        user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR)
         return ResponseEntity.ok(db.read { it.handle.getEmployees() }.sortedBy { it.email })
     }
 
@@ -42,12 +40,12 @@ class EmployeeController {
         Audit.EmployeeRead.log(targetId = id)
         if (user.id != id) {
             user.requireOneOfRoles(
-                Roles.ADMIN,
-                Roles.SERVICE_WORKER,
-                Roles.FINANCE_ADMIN,
-                Roles.UNIT_SUPERVISOR,
-                Roles.STAFF,
-                Roles.DIRECTOR
+                UserRole.ADMIN,
+                UserRole.SERVICE_WORKER,
+                UserRole.FINANCE_ADMIN,
+                UserRole.UNIT_SUPERVISOR,
+                UserRole.STAFF,
+                UserRole.DIRECTOR
             )
         }
         return db.read { it.handle.getEmployee(id) }?.let { ResponseEntity.ok().body(it) }
@@ -57,28 +55,14 @@ class EmployeeController {
     @PostMapping("")
     fun createEmployee(db: Database.Connection, user: AuthenticatedUser, @RequestBody employee: NewEmployee): ResponseEntity<Employee> {
         Audit.EmployeeCreate.log(targetId = employee.aad)
-        user.requireOneOfRoles(Roles.ADMIN)
+        user.requireOneOfRoles(UserRole.ADMIN)
         return ResponseEntity.ok().body(db.transaction { it.handle.createEmployee(employee) })
-    }
-
-    @PostMapping("/identity")
-    fun getOrCreateEmployee(db: Database.Connection, @RequestBody employee: NewEmployee): ResponseEntity<AuthenticatedUser> {
-        Audit.EmployeeGetOrCreate.log(targetId = employee.aad)
-        if (employee.aad == null) {
-            throw BadRequest("Cannot create or fetch employee without aad")
-        }
-        return ResponseEntity.ok(
-            db.transaction {
-                it.handle.getEmployeeAuthenticatedUser(employee.aad)
-                    ?: AuthenticatedUser(it.handle.createEmployee(employee).id, employee.roles)
-            }
-        )
     }
 
     @DeleteMapping("/{id}")
     fun deleteEmployee(db: Database.Connection, user: AuthenticatedUser, @PathVariable(value = "id") id: UUID): ResponseEntity<Unit> {
         Audit.EmployeeDelete.log(targetId = id)
-        user.requireOneOfRoles(Roles.ADMIN)
+        user.requireOneOfRoles(UserRole.ADMIN)
         db.transaction { it.handle.deleteEmployee(id) }
         return ResponseEntity.ok().build()
     }

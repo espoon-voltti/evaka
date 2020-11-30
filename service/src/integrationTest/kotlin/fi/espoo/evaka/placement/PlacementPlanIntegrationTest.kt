@@ -19,8 +19,8 @@ import fi.espoo.evaka.invoicing.domain.PersonData
 import fi.espoo.evaka.invoicing.domain.UnitData
 import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
+import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
-import fi.espoo.evaka.shared.config.Roles
 import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.dev.insertTestApplication
 import fi.espoo.evaka.shared.dev.insertTestApplicationForm
@@ -43,7 +43,7 @@ import java.time.LocalDate
 import java.util.UUID
 
 class PlacementPlanIntegrationTest : FullApplicationTest() {
-    private val serviceWorker = AuthenticatedUser(testDecisionMaker_1.id, setOf(Roles.SERVICE_WORKER))
+    private val serviceWorker = AuthenticatedUser(testDecisionMaker_1.id, setOf(UserRole.SERVICE_WORKER))
 
     @BeforeEach
     private fun beforeEach() {
@@ -203,9 +203,9 @@ class PlacementPlanIntegrationTest : FullApplicationTest() {
             )
         }
         val invalidRoleLists = listOf(
-            setOf(Roles.UNIT_SUPERVISOR),
-            setOf(Roles.FINANCE_ADMIN),
-            setOf(Roles.END_USER),
+            setOf(UserRole.UNIT_SUPERVISOR),
+            setOf(UserRole.FINANCE_ADMIN),
+            setOf(UserRole.END_USER),
             setOf()
         )
         invalidRoleLists.forEach { roles ->

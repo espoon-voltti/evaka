@@ -14,11 +14,7 @@ import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.daycare.service.CareType
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.auth.UserRole.ADMIN
-import fi.espoo.evaka.shared.auth.UserRole.FINANCE_ADMIN
-import fi.espoo.evaka.shared.auth.UserRole.SERVICE_WORKER
-import fi.espoo.evaka.shared.auth.UserRole.STAFF
-import fi.espoo.evaka.shared.auth.UserRole.UNIT_SUPERVISOR
+import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
@@ -43,7 +39,7 @@ class AbsenceController(private val absenceService: AbsenceService, private val 
     ): ResponseEntity<Wrapper<AbsenceGroup>> {
         Audit.AbsenceRead.log(targetId = groupId)
         acl.getRolesForUnitGroup(user, groupId)
-            .requireOneOfRoles(ADMIN, SERVICE_WORKER, FINANCE_ADMIN, UNIT_SUPERVISOR, STAFF)
+            .requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF)
         val absences = db.read { absenceService.getAbsencesByMonth(it, groupId, year, month) }
         return ResponseEntity.ok(Wrapper(absences))
     }
@@ -57,7 +53,7 @@ class AbsenceController(private val absenceService: AbsenceService, private val 
     ): ResponseEntity<Unit> {
         Audit.AbsenceUpdate.log(targetId = groupId)
         acl.getRolesForUnitGroup(user, groupId)
-            .requireOneOfRoles(ADMIN, UNIT_SUPERVISOR, STAFF)
+            .requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF)
         db.transaction { absenceService.upsertAbsences(it, absences.data, groupId, user.id) }
         return ResponseEntity.noContent().build()
     }
@@ -84,7 +80,7 @@ class AbsenceController(private val absenceService: AbsenceService, private val 
         @PathVariable childId: UUID
     ): ResponseEntity<Unit> {
         Audit.ChildAbsenceUpdate.log(targetId = childId)
-        user.requireOneOfRoles(ADMIN)
+        user.requireOneOfRoles(UserRole.ADMIN)
         db.transaction { absenceService.upsertChildAbsence(it, childId, absenceType.absenceType, absenceType.careType, user.id) }
         return ResponseEntity.noContent().build()
     }

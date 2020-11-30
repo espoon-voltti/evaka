@@ -6,7 +6,7 @@ package fi.espoo.evaka.daycare.controllers
 
 import fi.espoo.evaka.daycare.AbstractIntegrationTest
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.config.Roles
+import fi.espoo.evaka.shared.auth.UserRole
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Test
@@ -26,7 +26,7 @@ class DaycareControllerIntegrationTest : AbstractIntegrationTest() {
 
     @Test
     fun `smoke test for groups`() {
-        val user = AuthenticatedUser(UUID.randomUUID(), setOf(Roles.ADMIN))
+        val user = AuthenticatedUser(UUID.randomUUID(), setOf(UserRole.ADMIN))
         val existingGroups = daycareController.getGroups(db, user, daycareId).body!!
         assertEquals(2, existingGroups.size)
 

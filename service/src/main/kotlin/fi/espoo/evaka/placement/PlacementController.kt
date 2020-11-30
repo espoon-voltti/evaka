@@ -16,11 +16,7 @@ import fi.espoo.evaka.shared.async.NotifyPlacementPlanApplied
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.config.Roles.FINANCE_ADMIN
-import fi.espoo.evaka.shared.config.Roles.SERVICE_WORKER
-import fi.espoo.evaka.shared.config.Roles.SPECIAL_EDUCATION_TEACHER
-import fi.espoo.evaka.shared.config.Roles.STAFF
-import fi.espoo.evaka.shared.config.Roles.UNIT_SUPERVISOR
+import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.NotFound
@@ -68,7 +64,7 @@ class PlacementController(
             childId != null -> acl.getRolesForChild(user, childId)
             else -> throw BadRequest("daycareId or childId is required")
         }
-        roles.requireOneOfRoles(SERVICE_WORKER, FINANCE_ADMIN, UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER)
+        roles.requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF, UserRole.SPECIAL_EDUCATION_TEACHER)
         val auth = acl.getAuthorizedDaycares(user)
         val authorizedDaycares = auth.ids ?: emptySet()
 
@@ -94,7 +90,7 @@ class PlacementController(
     ): ResponseEntity<List<PlacementPlanDetails>> {
         Audit.PlacementPlanSearch.log(targetId = daycareId)
         acl.getRolesForUnit(user, daycareId)
-            .requireOneOfRoles(SERVICE_WORKER, FINANCE_ADMIN, UNIT_SUPERVISOR)
+            .requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN, UserRole.UNIT_SUPERVISOR)
 
         return db.read { getPlacementPlans(it.handle, daycareId, startDate, endDate) }.let(::ok)
     }
@@ -107,7 +103,7 @@ class PlacementController(
     ): ResponseEntity<Placement> {
         Audit.PlacementCreate.log(targetId = body.childId, objectId = body.unitId)
         acl.getRolesForUnit(user, body.unitId)
-            .requireOneOfRoles(SERVICE_WORKER, UNIT_SUPERVISOR)
+            .requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR)
 
         if (body.startDate > body.endDate) throw BadRequest("Placement start date cannot be after the end date")
 
@@ -146,7 +142,7 @@ class PlacementController(
     ): ResponseEntity<Unit> {
         Audit.PlacementUpdate.log(targetId = placementId)
         acl.getRolesForPlacement(user, placementId)
-            .requireOneOfRoles(SERVICE_WORKER, UNIT_SUPERVISOR)
+            .requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR)
 
         val aclAuth = acl.getAuthorizedDaycares(user)
         db.transaction { tx ->
@@ -175,7 +171,7 @@ class PlacementController(
     ): ResponseEntity<Unit> {
         Audit.PlacementCancel.log(targetId = placementId)
         acl.getRolesForPlacement(user, placementId)
-            .requireOneOfRoles(SERVICE_WORKER, UNIT_SUPERVISOR)
+            .requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR)
 
         db.transaction { tx ->
             val (childId, startDate, endDate) = tx.handle.cancelPlacement(placementId)
@@ -195,7 +191,7 @@ class PlacementController(
     ): ResponseEntity<UUID> {
         Audit.DaycareGroupPlacementCreate.log(targetId = placementId, objectId = body.groupId)
         acl.getRolesForPlacement(user, placementId)
-            .requireOneOfRoles(SERVICE_WORKER, UNIT_SUPERVISOR)
+            .requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR)
 
         return db.transaction { tx ->
             tx.createGroupPlacement(
@@ -218,7 +214,7 @@ class PlacementController(
     ): ResponseEntity<Unit> {
         Audit.DaycareGroupPlacementDelete.log(targetId = groupPlacementId)
         acl.getRolesForPlacement(user, daycarePlacementId)
-            .requireOneOfRoles(SERVICE_WORKER, UNIT_SUPERVISOR)
+            .requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR)
 
         val success = db.transaction { it.handle.deleteGroupPlacement(groupPlacementId) }
         if (!success) throw NotFound("Group placement not found")
@@ -235,7 +231,7 @@ class PlacementController(
     ): ResponseEntity<Unit> {
         Audit.DaycareGroupPlacementTransfer.log(targetId = groupPlacementId)
         acl.getRolesForPlacement(user, daycarePlacementId)
-            .requireOneOfRoles(SERVICE_WORKER, UNIT_SUPERVISOR)
+            .requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR)
 
         return db.transaction {
             it.transferGroup(daycarePlacementId, groupPlacementId, body.groupId, body.startDate).let(::noContent)

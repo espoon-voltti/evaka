@@ -29,12 +29,7 @@ import fi.espoo.evaka.placement.getMissingGroupPlacements
 import fi.espoo.evaka.placement.getPlacementPlans
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.auth.UserRole.ADMIN
-import fi.espoo.evaka.shared.auth.UserRole.FINANCE_ADMIN
-import fi.espoo.evaka.shared.auth.UserRole.SERVICE_WORKER
-import fi.espoo.evaka.shared.auth.UserRole.SPECIAL_EDUCATION_TEACHER
-import fi.espoo.evaka.shared.auth.UserRole.STAFF
-import fi.espoo.evaka.shared.auth.UserRole.UNIT_SUPERVISOR
+import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.ClosedPeriod
 import org.springframework.format.annotation.DateTimeFormat
@@ -47,8 +42,8 @@ import org.springframework.web.bind.annotation.RequestParam
 import java.time.LocalDate
 import java.util.UUID
 
-val basicDataRoles = arrayOf(ADMIN, SERVICE_WORKER, FINANCE_ADMIN, UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER)
-val detailedDataRoles = arrayOf(ADMIN, SERVICE_WORKER, FINANCE_ADMIN, UNIT_SUPERVISOR)
+val basicDataRoles = arrayOf(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF, UserRole.SPECIAL_EDUCATION_TEACHER)
+val detailedDataRoles = arrayOf(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN, UserRole.UNIT_SUPERVISOR)
 
 @Controller
 @RequestMapping("/views/units")

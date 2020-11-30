@@ -13,9 +13,15 @@ data class Pairing(
     val challengeKey: String,
     val responseKey: String?,
     val expires: Instant,
-    val status: PairingStatus
+    val status: PairingStatus,
+    val mobileDeviceId: UUID? = null
 )
 
 enum class PairingStatus {
     WAITING_CHALLENGE, WAITING_RESPONSE, READY, PAIRED
 }
+
+data class MobileDevice(
+    val id: UUID,
+    val name: String
+)

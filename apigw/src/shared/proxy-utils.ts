@@ -5,7 +5,7 @@
 import expressHttpProxy from 'express-http-proxy'
 import type express from 'express'
 import { evakaServiceUrl } from './config'
-import { createHeaders } from './auth'
+import { createServiceRequestHeaders } from './service-client'
 
 interface ProxyOptions {
   path?: string | ((req: express.Request) => string)
@@ -17,7 +17,7 @@ export function createProxy({ path, multipart = false }: ProxyOptions = {}) {
     parseReqBody: !multipart,
     proxyReqPathResolver: typeof path === 'string' ? () => path : path,
     proxyReqOptDecorator: (proxyReqOpts, srcReq) => {
-      const headers = createHeaders(srcReq)
+      const headers = createServiceRequestHeaders(srcReq)
       proxyReqOpts.headers = {
         ...proxyReqOpts.headers,
         ...headers

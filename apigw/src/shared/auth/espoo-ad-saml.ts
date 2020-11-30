@@ -8,7 +8,6 @@ import {
   VerifiedCallback
 } from 'passport-saml'
 import DevPassportStrategy from './dev-passport-strategy'
-import { getOrCreateEmployee, UserRole } from '../service/pis'
 import { SamlUser } from '../routes/auth/saml/types'
 import {
   eadMock,
@@ -19,7 +18,8 @@ import {
 } from '../config'
 import certificates from '../certificates'
 import { readFileSync } from 'fs'
-import { upsertEmployee } from '../service/dev-api'
+import { upsertEmployee } from '../dev-api'
+import { getOrCreateEmployee, UserRole } from '../service-client'
 
 const ESPOO_AD_USER_ID_KEY =
   'http://schemas.microsoft.com/identity/claims/objectidentifier'
@@ -55,6 +55,7 @@ async function verifyProfile(profile: EspooAdProfile): Promise<SamlUser> {
   return {
     id: person.id,
     roles: person.roles,
+    userType: 'EMPLOYEE',
     nameID: profile.nameID,
     nameIDFormat: profile.nameIDFormat,
     nameQualifier: profile.nameQualifier,

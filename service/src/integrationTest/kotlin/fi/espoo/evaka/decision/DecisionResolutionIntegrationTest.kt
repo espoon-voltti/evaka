@@ -20,8 +20,8 @@ import fi.espoo.evaka.invoicing.domain.UnitData
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
+import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
-import fi.espoo.evaka.shared.config.Roles
 import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.dev.TestDecision
 import fi.espoo.evaka.shared.dev.insertTestApplication
@@ -58,8 +58,8 @@ import java.util.stream.Stream
 data class DecisionResolutionTestCase(val isServiceWorker: Boolean, val isAccept: Boolean)
 
 class DecisionResolutionIntegrationTest : FullApplicationTest() {
-    private val serviceWorker = AuthenticatedUser(testDecisionMaker_1.id, setOf(Roles.SERVICE_WORKER))
-    private val endUser = AuthenticatedUser(testAdult_1.id, setOf(Roles.END_USER))
+    private val serviceWorker = AuthenticatedUser(testDecisionMaker_1.id, setOf(UserRole.SERVICE_WORKER))
+    private val endUser = AuthenticatedUser(testAdult_1.id, setOf(UserRole.END_USER))
     private val applicationId = UUID.randomUUID()
 
     @BeforeEach
@@ -334,7 +334,7 @@ class DecisionResolutionIntegrationTest : FullApplicationTest() {
     }
 
     private fun acceptDecisionAndAssert(h: Handle, user: AuthenticatedUser, applicationId: UUID, decisionId: UUID, requestedStartDate: LocalDate) {
-        val path = "${if (user.roles.contains(Roles.END_USER)) "/enduser" else ""}/v2/applications/$applicationId/actions/accept-decision"
+        val path = "${if (user.roles.contains(UserRole.END_USER)) "/enduser" else ""}/v2/applications/$applicationId/actions/accept-decision"
 
         val (_, res, _) = http.post(path)
             .jsonBody(objectMapper.writeValueAsString(AcceptDecisionRequest(decisionId, requestedStartDate)))
@@ -351,7 +351,7 @@ class DecisionResolutionIntegrationTest : FullApplicationTest() {
     }
 
     private fun rejectDecisionAndAssert(h: Handle, user: AuthenticatedUser, applicationId: UUID, decisionId: UUID) {
-        val path = "${if (user.roles.contains(Roles.END_USER)) "/enduser" else ""}/v2/applications/$applicationId/actions/reject-decision"
+        val path = "${if (user.roles.contains(UserRole.END_USER)) "/enduser" else ""}/v2/applications/$applicationId/actions/reject-decision"
 
         val (_, res, _) = http.post(path)
             .jsonBody(objectMapper.writeValueAsString(RejectDecisionRequest(decisionId)))

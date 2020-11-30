@@ -26,7 +26,7 @@ import fi.espoo.evaka.identity.ExternalIdentifier
 import fi.espoo.evaka.pis.service.PersonDTO
 import fi.espoo.evaka.pis.service.PersonService
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.config.Roles
+import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
@@ -64,21 +64,21 @@ class ClubApplicationSerializerTest {
 
     @Test
     fun toClubFormFromEnduserJSON() {
-        val user = AuthenticatedUser(requestingUserId, setOf(Roles.END_USER))
+        val user = AuthenticatedUser(requestingUserId, setOf(UserRole.END_USER))
         val clubForm = serializer.deserialize(user, ENDUSER_CLUBFORM_JSON)
         assertTrue(clubForm is ClubFormV0)
     }
 
     @Test
     fun toEnduserJSONFromClubApplication() {
-        val user = AuthenticatedUser(requestingUserId, setOf(Roles.END_USER))
+        val user = AuthenticatedUser(requestingUserId, setOf(UserRole.END_USER))
         val clubJSON = serializer.serialize(tx, user, mockEnduserClubApplication())
         assertTrue(clubJSON.form is EnduserClubFormJSON)
     }
 
     @Test
     fun `enduser deserialized json matches expected`() {
-        val user = AuthenticatedUser(requestingUserId, setOf(Roles.END_USER))
+        val user = AuthenticatedUser(requestingUserId, setOf(UserRole.END_USER))
         val form = (serializer.deserialize(user, ENDUSER_CLUBFORM_JSON) as ClubFormV0)
         val expectedApplication = mockEnduserClubApplication()
         val expectedForm = ClubFormV0.fromForm2(expectedApplication.form, expectedApplication.childRestricted, expectedApplication.guardianRestricted)
@@ -87,7 +87,7 @@ class ClubApplicationSerializerTest {
 
     @Test
     fun `enduser serialized json matches expected`() {
-        val user = AuthenticatedUser(requestingUserId, setOf(Roles.END_USER))
+        val user = AuthenticatedUser(requestingUserId, setOf(UserRole.END_USER))
         val expectedApplication = mockEnduserClubApplication()
         val applicationJson = serializer.serialize(tx, user, expectedApplication)
         assertTrue(ReflectionEquals(mockEnduserClubFormJson(expectedApplication)).matches(applicationJson.form))

@@ -32,8 +32,8 @@ import fi.espoo.evaka.invoicing.integration.fallbackPostalCode
 import fi.espoo.evaka.invoicing.integration.fallbackStreetAddress
 import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
+import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
-import fi.espoo.evaka.shared.config.Roles
 import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevDaycare
@@ -152,7 +152,7 @@ class InvoiceIntegrationTest : FullApplicationTest() {
         )
     )
 
-    private val testUser = AuthenticatedUser(testDecisionMaker_1.id, setOf(Roles.FINANCE_ADMIN))
+    private val testUser = AuthenticatedUser(testDecisionMaker_1.id, setOf(UserRole.FINANCE_ADMIN))
 
     @BeforeEach()
     fun beforeEach() {

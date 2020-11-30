@@ -8,10 +8,7 @@ import fi.espoo.evaka.Audit
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.auth.UserRole.ADMIN
-import fi.espoo.evaka.shared.auth.UserRole.FINANCE_ADMIN
-import fi.espoo.evaka.shared.auth.UserRole.SERVICE_WORKER
-import fi.espoo.evaka.shared.auth.UserRole.UNIT_SUPERVISOR
+import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.bindNullable
 import fi.espoo.evaka.shared.db.getUUID

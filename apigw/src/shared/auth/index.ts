@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import express from 'express'
 import { NextFunction, Request, Response } from 'express'
 import { logAuditEvent } from '../logging'
 import { gatewayRole } from '../config'
@@ -14,8 +13,12 @@ const auditEventGatewayId =
   (gatewayRole === 'internal' && 'ingw') ||
   (gatewayRole === undefined && 'devgw')
 
-export function authenticate(req: Request, res: Response, next: NextFunction) {
-  if (!req.user) {
+export function requireAuthentication(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  if (!req.user || !req.user.id) {
     logAuditEvent(
       `evaka.${auditEventGatewayId}.auth.not_found`,
       req,
@@ -24,26 +27,7 @@ export function authenticate(req: Request, res: Response, next: NextFunction) {
     res.sendStatus(401)
     return
   }
-  if (!req.user.id) {
-    logAuditEvent(
-      `evaka.${auditEventGatewayId}.auth.not_found`,
-      req,
-      'Could not find id for user'
-    )
-    res.sendStatus(401)
-    return
-  }
-  try {
-    // FIXME do we need to verify session state
-    return next()
-  } catch (err) {
-    logAuditEvent(
-      `evaka.${auditEventGatewayId}.auth.jwt_verification_failed`,
-      req,
-      `JWT authentication error. Error: ${err}`
-    )
-    res.status(401).send(err)
-  }
+  return next()
 }
 
 export function createAuthHeader(user: SamlUser): string {
@@ -55,15 +39,4 @@ export function createAuthHeader(user: SamlUser): string {
       .join(' ')
   })
   return `Bearer ${token}`
-}
-
-export const createHeaders = (req: express.Request) => {
-  const headers: Record<string, string> = {}
-  if (req.user) {
-    headers.Authorization = createAuthHeader(req.user)
-  }
-  if (req.traceId) {
-    headers['X-Request-ID'] = req.traceId
-  }
-  return headers
 }

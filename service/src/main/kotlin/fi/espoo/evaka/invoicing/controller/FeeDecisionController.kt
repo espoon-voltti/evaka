@@ -19,7 +19,7 @@ import fi.espoo.evaka.invoicing.service.FeeDecisionService
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.NotifyFeeDecisionApproved
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.config.Roles
+import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.NotFound
@@ -91,7 +91,7 @@ class FeeDecisionController(
         @RequestParam(required = false) searchByStartDate: Boolean = false
     ): ResponseEntity<FeeDecisionSearchResult> {
         Audit.FeeDecisionSearch.log()
-        user.requireOneOfRoles(Roles.FINANCE_ADMIN)
+        user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
         val maxPageSize = 5000
         if (pageSize > maxPageSize) throw BadRequest("Maximum page size is $maxPageSize")
         if (startDate != null && endDate != null && endDate < startDate)
@@ -122,7 +122,7 @@ class FeeDecisionController(
     @PostMapping("/confirm")
     fun confirmDrafts(db: Database.Connection, user: AuthenticatedUser, @RequestBody feeDecisionIds: List<UUID>): ResponseEntity<Unit> {
         Audit.FeeDecisionConfirm.log(targetId = feeDecisionIds)
-        user.requireOneOfRoles(Roles.FINANCE_ADMIN)
+        user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
         db.transaction { tx ->
             val confirmedDecisions = service.confirmDrafts(tx, user, feeDecisionIds)
             asyncJobRunner.plan(tx, confirmedDecisions.map { NotifyFeeDecisionApproved(it) })
@@ -134,7 +134,7 @@ class FeeDecisionController(
     @PostMapping("/mark-sent")
     fun setSent(db: Database.Connection, user: AuthenticatedUser, @RequestBody feeDecisionIds: List<UUID>): ResponseEntity<Unit> {
         Audit.FeeDecisionMarkSent.log(targetId = feeDecisionIds)
-        user.requireOneOfRoles(Roles.FINANCE_ADMIN)
+        user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
         db.transaction { service.setSent(it, feeDecisionIds) }
         return ResponseEntity.noContent().build()
     }
@@ -142,7 +142,7 @@ class FeeDecisionController(
     @GetMapping("/pdf/{uuid}")
     fun getDecisionPdf(db: Database.Connection, user: AuthenticatedUser, @PathVariable uuid: UUID): ResponseEntity<ByteArray> {
         Audit.FeeDecisionPdfRead.log(targetId = uuid)
-        user.requireOneOfRoles(Roles.FINANCE_ADMIN)
+        user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
         val headers = HttpHeaders()
         val (filename, pdf) = db.read { service.getFeeDecisionPdf(it, uuid) }
         headers.add("Content-Disposition", "attachment; filename=\"$filename\"")
@@ -153,7 +153,7 @@ class FeeDecisionController(
     @GetMapping("/{uuid}")
     fun getDecision(db: Database.Connection, user: AuthenticatedUser, @PathVariable uuid: UUID): ResponseEntity<Wrapper<FeeDecisionDetailed>> {
         Audit.FeeDecisionRead.log(targetId = uuid)
-        user.requireOneOfRoles(Roles.FINANCE_ADMIN)
+        user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
         val res = db.read { getFeeDecision(it.handle, objectMapper, uuid) }
             ?: throw NotFound("No fee decision found with given ID ($uuid)")
         return ResponseEntity.ok(Wrapper(res))
@@ -166,7 +166,7 @@ class FeeDecisionController(
         @PathVariable uuid: UUID
     ): ResponseEntity<Wrapper<List<FeeDecision>>> {
         Audit.FeeDecisionHeadOfFamilyRead.log(targetId = uuid)
-        user.requireOneOfRoles(Roles.FINANCE_ADMIN)
+        user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
         val res = db.read {
             findFeeDecisionsForHeadOfFamily(
                 it.handle,
@@ -187,7 +187,7 @@ class FeeDecisionController(
         @RequestBody body: CreateRetroactiveFeeDecisionsBody
     ): ResponseEntity<Unit> {
         Audit.FeeDecisionHeadOfFamilyCreateRetroactive.log(targetId = id)
-        user.requireOneOfRoles(Roles.FINANCE_ADMIN)
+        user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
         db.transaction { generator.createRetroactive(it.handle, id, body.from) }
         return ResponseEntity.noContent().build()
     }
@@ -200,7 +200,7 @@ class FeeDecisionController(
         @RequestBody request: FeeDecisionTypeRequest
     ): ResponseEntity<Unit> {
         Audit.FeeDecisionSetType.log(targetId = uuid)
-        user.requireOneOfRoles(Roles.FINANCE_ADMIN)
+        user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
         db.transaction { service.setType(it, uuid, request.type) }
         return ResponseEntity.noContent().build()
     }

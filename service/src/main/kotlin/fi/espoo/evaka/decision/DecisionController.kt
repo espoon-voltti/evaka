@@ -10,11 +10,7 @@ import fi.espoo.evaka.pis.service.PersonService
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.auth.UserRole.ADMIN
-import fi.espoo.evaka.shared.auth.UserRole.FINANCE_ADMIN
-import fi.espoo.evaka.shared.auth.UserRole.SERVICE_WORKER
-import fi.espoo.evaka.shared.auth.UserRole.UNIT_SUPERVISOR
-import fi.espoo.evaka.shared.config.Roles
+import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.Forbidden
 import org.springframework.http.MediaType
@@ -41,7 +37,7 @@ class DecisionController(
         @RequestParam("id") guardianId: UUID
     ): ResponseEntity<DecisionListResponse> {
         Audit.DecisionRead.log(targetId = guardianId)
-        user.requireOneOfRoles(ADMIN, SERVICE_WORKER, FINANCE_ADMIN, UNIT_SUPERVISOR)
+        user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN, UserRole.UNIT_SUPERVISOR)
         val decisions = db.read { getDecisionsByGuardian(it.handle, guardianId, acl.getAuthorizedUnits(user)) }
 
         return ResponseEntity.ok(DecisionListResponse(withPublicDocumentUri(decisions)))
@@ -54,7 +50,7 @@ class DecisionController(
         @RequestParam("id") childId: UUID
     ): ResponseEntity<DecisionListResponse> {
         Audit.DecisionRead.log(targetId = childId)
-        user.requireOneOfRoles(ADMIN, SERVICE_WORKER, UNIT_SUPERVISOR)
+        user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR)
         val decisions = db.read { getDecisionsByChild(it.handle, childId, acl.getAuthorizedUnits(user)) }
 
         return ResponseEntity.ok(DecisionListResponse(withPublicDocumentUri(decisions)))
@@ -67,7 +63,7 @@ class DecisionController(
         @RequestParam("id") applicationId: UUID
     ): ResponseEntity<DecisionListResponse> {
         Audit.DecisionRead.log(targetId = applicationId)
-        user.requireOneOfRoles(ADMIN, SERVICE_WORKER, UNIT_SUPERVISOR)
+        user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR)
         val decisions = db.read { getDecisionsByApplication(it.handle, applicationId, acl.getAuthorizedUnits(user)) }
 
         return ResponseEntity.ok(DecisionListResponse(withPublicDocumentUri(decisions)))
@@ -76,7 +72,7 @@ class DecisionController(
     @GetMapping("/units")
     fun getDecisionUnits(db: Database.Connection, user: AuthenticatedUser): ResponseEntity<List<DecisionUnit>> {
         Audit.UnitRead.log()
-        user.requireOneOfRoles(Roles.ADMIN, Roles.SERVICE_WORKER, Roles.UNIT_SUPERVISOR, Roles.FINANCE_ADMIN)
+        user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR, UserRole.FINANCE_ADMIN)
         val units = db.read { decisionDraftService.getDecisionUnits(it) }
         return ResponseEntity.ok(units)
     }
@@ -90,10 +86,10 @@ class DecisionController(
         Audit.DecisionDownloadPdf.log(targetId = decisionId)
 
         val roles = acl.getRolesForDecision(user, decisionId)
-        roles.requireOneOfRoles(Roles.SERVICE_WORKER, Roles.ADMIN, Roles.UNIT_SUPERVISOR, Roles.END_USER)
+        roles.requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.END_USER)
 
         return db.transaction { tx ->
-            if (user.hasOneOfRoles(Roles.END_USER)) {
+            if (user.hasOneOfRoles(UserRole.END_USER)) {
                 if (!getDecisionsByGuardian(tx.handle, user.id, AclAuthorization.All).any { it.id == decisionId }) {
                     throw Forbidden("Access denied")
                 }
