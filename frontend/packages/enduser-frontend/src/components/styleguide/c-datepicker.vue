@@ -194,10 +194,22 @@ SPDX-License-Identifier: LGPL-2.1-or-later
         this.$emit('input', this.getUpdateValue(null))
       },
       onManualInput(value) {
+        const dateIsBetweenMinMax = (date, minDate, maxDate) => {
+          const minIsValid = minDate ? (date >= minDate) : true
+          const maxIsValid = maxDate ? (date <= maxDate) : true
+          return minIsValid && maxIsValid
+        }
         // TODO : Improve check
         // It is now checked that the user types in "dd.MM.yyyy" format
         if (value && value.length === 10 && value.match(DATE_FORMAT_REGEX)) {
-          this.datePickerValue = parse(value, DATE_FORMAT, new Date())
+          const selectedDate = parse(value, DATE_FORMAT, new Date())
+          const minDate = this.minDate ? parse(this.minDate, 'yyyy-MM-dd', new Date()) : null
+          const maxDate = this.maxDate ? parse(this.maxDate, 'yyyy-MM-dd', new Date()) : null
+          if (dateIsBetweenMinMax(selectedDate, minDate, maxDate)) {
+            this.datePickerValue = selectedDate
+          } else {
+            this.datePickerValue = ''
+          }
         }
       }
     },
