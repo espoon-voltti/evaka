@@ -199,7 +199,7 @@ export function useInvoicesState() {
       invoiceDate: LocalDate
       dueDate: LocalDate
     }) => {
-      const promise = state.allInvoicesToggle
+      const request = state.allInvoicesToggle
         ? sendInvoicesByDate(
             invoiceDate,
             dueDate,
@@ -209,14 +209,12 @@ export function useInvoicesState() {
             searchFilters.useCustomDatesForInvoiceSending
           )
         : sendInvoices(Object.keys(state.checkedInvoices), invoiceDate, dueDate)
-      return promise.then(() => {
-        dispatch({ type: 'CLEAR_CHECKED' })
-        dispatch({ type: 'RELOAD_INVOICES' })
-        dispatch({ type: 'CLOSE_MODAL' })
-      })
+      return request
     },
     [
       dispatch,
+      state.checkedInvoices,
+      state.allInvoicesToggle,
       searchFilters.area,
       searchFilters.startDate,
       searchFilters.endDate,

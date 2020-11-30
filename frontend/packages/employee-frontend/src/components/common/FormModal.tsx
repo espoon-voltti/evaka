@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { Fragment } from 'react'
+import React from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { IconProp } from '@fortawesome/fontawesome-svg-core'
 import styled from 'styled-components'
@@ -10,6 +10,7 @@ import FocusLock from 'react-focus-lock'
 
 import Title from '~components/shared/atoms/Title'
 import Button from '~components/shared/atoms/buttons/Button'
+import AsyncButton from '~components/shared/atoms/buttons/AsyncButton'
 import Colors from '~components/shared/Colors'
 import { DefaultMargins, Gap } from 'components/shared/layout/white-space'
 import { useTranslation } from '~state/i18n'
@@ -133,9 +134,8 @@ export const ModalTitle = styled.div`
 
 export type ModalSize = 'xs' | 'sm' | 'md' | 'lg' | 'xlg' | 'custom'
 
-interface Props {
+type CommonProps = {
   title?: string
-  resolve: () => void
   reject?: () => void
   resolveDisabled?: boolean
   text?: string
@@ -153,25 +153,18 @@ interface Props {
   }
 }
 
-const handleClick = (click: () => void) => () => click()
-
-function FormModal({
+function ModalBase({
   'data-qa': dataQa,
   title,
   text,
-  resolveLabel,
-  rejectLabel,
   className,
-  reject,
   icon,
-  resolve,
   size = 'md',
   resolveDisabled = false,
   children,
   iconColour = 'blue',
-  resolveInfo
-}: Props) {
-  const { i18n } = useTranslation()
+  onSubmit
+}: CommonProps & { onSubmit?: () => void }) {
   return (
     <FocusLock>
       <DimmedModal>
@@ -183,12 +176,12 @@ function FormModal({
               {title && title.length > 0 ? (
                 <ModalTitle>
                   {icon && (
-                    <Fragment>
+                    <>
                       <ModalIcon colour={iconColour}>
                         <FontAwesomeIcon icon={icon} />
                       </ModalIcon>
                       <Gap size={'m'} />
-                    </Fragment>
+                    </>
                   )}
                   {title && (
                     <Title size={1} data-qa="title" centered>
@@ -196,11 +189,9 @@ function FormModal({
                     </Title>
                   )}
                   {text && (
-                    <Fragment>
-                      <P data-qa="text" centered>
-                        {text}
-                      </P>
-                    </Fragment>
+                    <P data-qa="text" centered>
+                      {text}
+                    </P>
                   )}
                 </ModalTitle>
               ) : (
@@ -209,30 +200,12 @@ function FormModal({
               <form
                 onSubmit={(event) => {
                   event.preventDefault()
-                  if (!resolveDisabled) resolve()
+                  if (onSubmit) {
+                    if (!resolveDisabled) onSubmit()
+                  }
                 }}
               >
                 {children}
-                <ModalButtons>
-                  {reject && (
-                    <>
-                      <Button
-                        onClick={handleClick(reject)}
-                        dataQa="modal-cancelBtn"
-                        text={rejectLabel ?? i18n.common.cancel}
-                      />
-                      <Gap horizontal size={'xs'} />
-                    </>
-                  )}
-                  <Button
-                    primary
-                    info={resolveInfo}
-                    dataQa="modal-okBtn"
-                    onClick={handleClick(resolve)}
-                    disabled={resolveDisabled}
-                    text={resolveLabel ?? i18n.common.confirm}
-                  />
-                </ModalButtons>
               </form>
             </ModalContainer>
           </ModalWrapper>
@@ -242,4 +215,99 @@ function FormModal({
   )
 }
 
-export default FormModal
+type FormModalProps = CommonProps & {
+  resolve: () => void
+  resolveLabel?: string
+  resolveDisabled?: boolean
+  resolveInfo?: {
+    text: string
+    status?: InfoStatus
+  }
+  reject?: () => void
+  rejectLabel?: string
+}
+
+export default React.memo(function FormModal({
+  children,
+  reject,
+  rejectLabel,
+  resolve,
+  resolveLabel,
+  resolveDisabled,
+  resolveInfo,
+  ...props
+}: FormModalProps) {
+  const { i18n } = useTranslation()
+  return (
+    <ModalBase {...props} onSubmit={resolve}>
+      {children}
+      <ModalButtons>
+        {reject && (
+          <>
+            <Button
+              onClick={reject}
+              dataQa="modal-cancelBtn"
+              text={rejectLabel ?? i18n.common.cancel}
+            />
+            <Gap horizontal size={'xs'} />
+          </>
+        )}
+        <Button
+          primary
+          info={resolveInfo}
+          dataQa="modal-okBtn"
+          onClick={resolve}
+          disabled={resolveDisabled}
+          text={resolveLabel ?? i18n.common.confirm}
+        />
+      </ModalButtons>
+    </ModalBase>
+  )
+})
+
+type AsyncModalProps = CommonProps & {
+  resolve: () => Promise<void>
+  onResolveSuccess: () => void
+  resolveLabel?: string
+  resolveDisabled?: boolean
+  reject?: () => void
+  rejectLabel?: string
+}
+
+export const AsyncFormModal = React.memo(function AsyncFormModal({
+  children,
+  reject,
+  rejectLabel,
+  resolve,
+  resolveLabel,
+  resolveDisabled,
+  onResolveSuccess,
+  ...props
+}: AsyncModalProps) {
+  const { i18n } = useTranslation()
+  return (
+    <ModalBase {...props}>
+      {children}
+      <ModalButtons>
+        {reject && (
+          <>
+            <Button
+              onClick={reject}
+              dataQa="modal-cancelBtn"
+              text={rejectLabel ?? i18n.common.cancel}
+            />
+            <Gap horizontal size={'xs'} />
+          </>
+        )}
+        <AsyncButton
+          primary
+          text={resolveLabel ?? i18n.common.confirm}
+          disabled={resolveDisabled}
+          onClick={resolve}
+          onSuccess={onResolveSuccess}
+          data-qa="modal-okBtn"
+        />
+      </ModalButtons>
+    </ModalBase>
+  )
+})

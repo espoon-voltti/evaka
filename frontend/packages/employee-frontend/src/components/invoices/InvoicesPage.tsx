@@ -9,7 +9,7 @@ import LocalDate from '@evaka/lib-common/src/local-date'
 import { Gap } from '~components/shared/layout/white-space'
 import { Container, ContentArea } from '~components/shared/layout/Container'
 import { Label } from '~components/shared/Typography'
-import FormModal from '~components/common/FormModal'
+import { AsyncFormModal } from '~components/common/FormModal'
 import { AlertBox } from '~components/common/MessageBoxes'
 import { DatePicker } from '~components/common/DatePicker'
 import Invoices from './Invoices'
@@ -84,7 +84,10 @@ const Modal = React.memo(function Modal({
   allInvoicesToggle
 }: {
   dispatch: React.Dispatch<InvoicesAction>
-  sendInvoices: (args: { invoiceDate: LocalDate; dueDate: LocalDate }) => void
+  sendInvoices: (args: {
+    invoiceDate: LocalDate
+    dueDate: LocalDate
+  }) => Promise<void>
   allInvoicesToggle: boolean
 }) {
   const { i18n } = useTranslation()
@@ -92,14 +95,19 @@ const Modal = React.memo(function Modal({
   const [dueDate, setDueDate] = useState(LocalDate.today().addBusinessDays(10))
 
   return (
-    <FormModal
+    <AsyncFormModal
       iconColour={'blue'}
       title={i18n.invoices.sendModal.title}
-      resolveLabel={i18n.common.confirm}
-      rejectLabel={i18n.common.cancel}
       icon={faEnvelope}
       reject={() => dispatch({ type: 'CLOSE_MODAL' })}
+      rejectLabel={i18n.common.cancel}
       resolve={() => sendInvoices({ invoiceDate, dueDate })}
+      resolveLabel={i18n.common.confirm}
+      onResolveSuccess={() => {
+        dispatch({ type: 'CLEAR_CHECKED' })
+        dispatch({ type: 'RELOAD_INVOICES' })
+        dispatch({ type: 'CLOSE_MODAL' })
+      }}
       data-qa="send-invoices-dialog"
     >
       <ModalContent>
@@ -132,7 +140,7 @@ const Modal = React.memo(function Modal({
           </>
         ) : null}
       </ModalContent>
-    </FormModal>
+    </AsyncFormModal>
   )
 })
 
