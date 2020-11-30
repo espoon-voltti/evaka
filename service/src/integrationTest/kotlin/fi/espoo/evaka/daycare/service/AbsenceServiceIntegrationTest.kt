@@ -29,6 +29,7 @@ import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.ClosedPeriod
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -163,6 +164,24 @@ class AbsenceServiceIntegrationTest : AbstractIntegrationTest() {
         assertEquals(daysInMonth, placements.size)
         assertEquals(2, careTypes.size)
         assertTrue(careTypes.contains(CareType.DAYCARE))
+        assertTrue(careTypes.contains(CareType.DAYCARE_5YO_FREE))
+    }
+
+    @Test
+    fun `part time daycare placement maps correctly for 5-year-old children in 2019-2020`() {
+        // children born in 2014 are entitled to partially free daycare during the year 2019-2020
+        insertGroupPlacement(childId, LocalDate.of(2014, 1, 1), PlacementType.DAYCARE_PART_TIME)
+
+        val placementDate = LocalDate.of(2019, 8, 1)
+        val result =
+            db.read { absenceService.getAbsencesByMonth(it, groupId, placementDate.year, placementDate.monthValue) }
+        val daysInMonth = placementDate.month.length(false)
+        val placements = result.children[0].placements
+        val careTypes = placements.getValue(placementDate)
+
+        assertEquals(daysInMonth, placements.size)
+        assertEquals(1, careTypes.size)
+        assertFalse(careTypes.contains(CareType.DAYCARE))
         assertTrue(careTypes.contains(CareType.DAYCARE_5YO_FREE))
     }
 
