@@ -476,7 +476,7 @@
           "instructions": {
             "text": "Indicate the most commonly needed early childhood education time, the time will be specified when early childhood education begins."
           },
-          "partTime": "Part-day",
+          "partTime": "Part-day (max 5h/day, 25h/week)",
           "fullTime": "Full-day",
           "starts": {
             "label": "Start time of daily early childhood education hours",
