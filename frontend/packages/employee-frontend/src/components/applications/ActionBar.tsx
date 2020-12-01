@@ -11,7 +11,6 @@ import { UIContext } from '~state/ui'
 import { CheckedRowsInfo } from '~components/common/CheckedRowsInfo'
 import {
   batchCancelPlacementPlan,
-  batchConfirmPlacementWithoutDecision,
   batchMoveToWaitingPlacement,
   batchReturnToSent,
   batchSendDecisionsWithoutProposal,
@@ -112,15 +111,6 @@ export default React.memo(function ActionBar({
       enabled: status === 'WAITING_DECISION',
       disabled,
       onClick: () => handlePromise(batchCancelPlacementPlan(checkedIds))
-    },
-    {
-      id: 'confirmPlacementWithoutDecision',
-      label: i18n.applications.actions.confirmPlacementWithoutDecision,
-      primary: false,
-      enabled: status === 'WAITING_DECISION',
-      disabled,
-      onClick: () =>
-        handlePromise(batchConfirmPlacementWithoutDecision(checkedIds))
     },
     {
       id: 'sendDecisionsWithoutProposal',

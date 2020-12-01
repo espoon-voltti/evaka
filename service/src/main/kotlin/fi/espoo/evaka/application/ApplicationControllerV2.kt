@@ -395,7 +395,6 @@ class ApplicationControllerV2(
             "move-to-waiting-placement" to applicationStateService::moveToWaitingPlacement,
             "return-to-sent" to applicationStateService::returnToSent,
             "cancel-placement-plan" to applicationStateService::cancelPlacementPlan,
-            "confirm-placement-without-decision" to applicationStateService::confirmPlacementWithoutDecision,
             "send-decisions-without-proposal" to applicationStateService::sendDecisionsWithoutProposal,
             "send-placement-proposal" to applicationStateService::sendPlacementProposal,
             "withdraw-placement-proposal" to applicationStateService::withdrawPlacementProposal,

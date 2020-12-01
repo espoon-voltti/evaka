@@ -339,14 +339,6 @@ export async function batchCancelPlacementPlan(
     applicationIds
   })
 }
-export async function batchConfirmPlacementWithoutDecision(
-  applicationIds: UUID[]
-): Promise<void> {
-  return client.post(
-    '/v2/applications/batch/actions/confirm-placement-without-decision',
-    { applicationIds }
-  )
-}
 export async function batchSendDecisionsWithoutProposal(
   applicationIds: UUID[]
 ): Promise<void> {
