@@ -9,7 +9,6 @@ import {
   cancelApplication,
   cancelPlacementPlan,
   confirmDecisionMailed,
-  confirmPlacementWithoutDecision,
   moveToWaitingPlacement,
   returnToSent,
   sendDecisionsWithoutProposal,
@@ -153,16 +152,6 @@ export default React.memo(function ApplicationActions({
           history.push(`/applications/${application.id}/decisions`)
         },
         primaryStatus: 'WAITING_DECISION'
-      },
-      {
-        id: 'confirm-placement-without-decision',
-        label: i18n.applications.actions.confirmPlacementWithoutDecision,
-        enabled: application.status === 'WAITING_DECISION',
-        disabled: actionInFlight,
-        onClick: () => {
-          setActionInFlight(true)
-          handlePromise(confirmPlacementWithoutDecision(application.id))
-        }
       },
       {
         id: 'send-decisions-without-proposal',
