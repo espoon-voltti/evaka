@@ -5,23 +5,28 @@
 package fi.espoo.evaka.pairing
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.shared.async.AsyncJobRunner
+import fi.espoo.evaka.shared.async.GarbageCollectPairing
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.NotFound
+import fi.espoo.evaka.shared.utils.zoneId
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
+import java.time.ZonedDateTime
 import java.util.UUID
 
 @RestController
 class PairingsController(
-    private val acl: AccessControlList
+    private val acl: AccessControlList,
+    private val asyncJobRunner: AsyncJobRunner
 ) {
     /**
      * Unit supervisor calls this endpoint as an authorized desktop user to start a new pairing process.
@@ -42,9 +47,20 @@ class PairingsController(
         Audit.PairingInit.log(targetId = body.unitId)
         acl.getRolesForUnit(user, body.unitId).requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR)
 
-        return db
-            .transaction { it.initPairing(body.unitId) }
-            .let { ResponseEntity.ok(it) }
+        return db.transaction { tx ->
+            val pairing = tx.initPairing(body.unitId)
+
+            asyncJobRunner.plan(
+                tx = tx,
+                payloads = listOf(GarbageCollectPairing(pairingId = pairing.id)),
+                runAt = ZonedDateTime
+                    .ofInstant(pairing.expires, zoneId)
+                    .plusDays(1)
+                    .toInstant()
+            )
+
+            pairing
+        }.let { ResponseEntity.ok(it) }
     }
 
     /**

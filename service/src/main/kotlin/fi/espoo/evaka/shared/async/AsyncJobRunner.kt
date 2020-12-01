@@ -83,6 +83,9 @@ class AsyncJobRunner(
     @Volatile
     var sendApplicationEmail: (db: Database, msg: SendApplicationEmail) -> Unit = noHandler
 
+    @Volatile
+    var garbageCollectPairing: (db: Database, msg: GarbageCollectPairing) -> Unit = noHandler
+
     fun plan(
         tx: Database.Transaction,
         payloads: Iterable<AsyncJobPayload>,
@@ -189,6 +192,7 @@ class AsyncJobRunner(
                     AsyncJobType.DVV_MODIFICATIONS_REFRESH -> it.runJob(job, this.dvvModificationsRefresh)
                     AsyncJobType.UPLOAD_TO_KOSKI -> it.runJob(job, this.uploadToKoski)
                     AsyncJobType.SEND_APPLICATION_EMAIL -> it.runJob(job, this.sendApplicationEmail)
+                    AsyncJobType.GARBAGE_COLLECT_PAIRING -> it.runJob(job, this.garbageCollectPairing)
                 }.exhaust()
             }
             if (completed) {
