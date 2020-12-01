@@ -20,12 +20,12 @@ import {
   ModalContainer,
   ModalTitle,
   ModalSize,
-  IconColour,
-  Text
+  IconColour
 } from './FormModal'
 import Title from '~components/shared/atoms/Title'
 import { Gap } from 'components/shared/layout/white-space'
 import Button from '~components/shared/atoms/buttons/Button'
+import { P } from '~components/shared/Typography'
 
 interface SizeProps {
   size: ModalSize
@@ -96,7 +96,7 @@ interface Props {
   children?: React.ReactNode
   size?: ModalSize
   customSize?: string
-  text?: string
+  text?: string | React.ReactNode
   resolve?: () => void
   resolveLabel?: string
   reject?: () => void
@@ -155,12 +155,14 @@ function InfoModal({
                 <Title size={1} data-qa="title" centered>
                   {title}
                 </Title>
+                {text && (
+                  <Fragment>
+                    <P data-qa="text" centered>
+                      {text}
+                    </P>
+                  </Fragment>
+                )}
               </ModalTitle>
-              {text && (
-                <Fragment>
-                  <Text data-qa="text">{text}</Text>
-                </Fragment>
-              )}
               {children}
               {resolve && (
                 <ModalButtons>
@@ -169,7 +171,7 @@ function InfoModal({
                       <Button
                         onClick={reject}
                         dataQa="modal-cancelBtn"
-                        text={rejectLabel ?? i18n.common.ok}
+                        text={rejectLabel ?? i18n.common.cancel}
                       />
                       <Gap horizontal size={'xs'} />
                     </>

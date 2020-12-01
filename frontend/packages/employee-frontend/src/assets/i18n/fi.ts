@@ -114,7 +114,9 @@ export const fi = {
     noName: 'Nimi puuttuu',
     date: 'Päivämäärä',
     month: 'Kuukausi',
-    year: 'Vuosi'
+    year: 'Vuosi',
+    code: 'Koodi',
+    ready: 'Valmis'
   },
   header: {
     title: 'Varhaiskasvatus',
@@ -998,7 +1000,21 @@ export const fi = {
       removeConfirmation:
         'Haluatko poistaa pääsyoikeuden valitulta henkilöltä?',
       addPerson: 'Lisää henkilö',
-      choosePerson: 'Valitse henkilö'
+      choosePerson: 'Valitse henkilö',
+      mobileDevices: {
+        modalText1: 'Mene mobiililaitteella osoitteeseen',
+        modalText2: 'ja syötä laitteeseen alla oleva koodi.',
+        modalText3:
+          'Syötä mobiililaitteessa näkyvä vahvistuskoodi alla olevaan kenttään.',
+        modalText4:
+          'Anna mobiililaitteelle vielä nimi, jolla erotat sen yksikön muista mobiililaiteista.',
+        mobileDevices: 'Yksikön mobiililaitteet',
+        addMobileDevice: 'Lisää mobiililaite',
+        modalTitle: 'Lisää yksikköön uusi mobiililaite',
+        editName: 'Muokkaa laitteen nimeä',
+        removeConfirmation: 'Haluatko poistaa mobiililaitteen?',
+        editPlaceholder: 'esim. Hippiäisten kännykkä'
+      }
     },
     filters: {
       title: 'Näytä tiedot',
@@ -2104,6 +2120,27 @@ export const fi = {
         email: 'Johtajan sähköposti puuttuu'
       },
       cannotApplyToDifferentType: 'Hakutyyppi ja palvelumuoto eivät vastaa'
+    }
+  },
+  mobile: {
+    landerText1:
+      'Tervetuloa käyttämään Espoon varhaiskasvatuksen mobiilisovellusta!',
+    landerText2:
+      'Ottaaksesi sovelluksen käyttöön valitse alta ‘Lisää laite’ ja rekisteröi mobiililaite eVakassa oman yksikkösi sivulla.',
+    actions: {
+      ADD_DEVICE: 'Lisää laite',
+      START: 'Aloitetaan'
+    },
+    wizard: {
+      text1:
+        'Mene eVakassa yksikkösi sivulle ja syötä sieltä saatava 10-merkkinen koodi kenttään alla.',
+      text2: 'Syötä alla oleva vahvistuskoodi yksikkösi sivulle eVakaan.',
+      title1: 'eVaka-mobiilin käyttöönotto, vaihe 1/3',
+      title2: 'eVaka-mobiilin käyttöönotto, vaihe 2/3',
+      title3: 'Tervetuloa käyttämään eVaka-mobiilia!',
+      text3: 'eVaka-mobiili on nyt käytössä tässä laitteessa.',
+      text4:
+        'Turvataksesi lasten tiedot muistathan asettaa laitteeseen pääsykoodin, jos et ole sitä vielä tehnyt.'
     }
   }
 }

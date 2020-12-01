@@ -456,6 +456,149 @@ export async function removeDaycareAclStaff(
     .catch(Failure)
 }
 
+export async function deleteMobileDevice(
+  mobileId: UUID
+): Promise<Result<void>> {
+  return client
+    .delete(`/mobile-devices/${mobileId}`)
+    .then(() => Success(undefined))
+    .catch(Failure)
+}
+
+type PairingStatus =
+  | 'WAITING_CHALLENGE'
+  | 'WAITING_RESPONSE'
+  | 'READY'
+  | 'PAIRED'
+
+export interface PairingResponse {
+  id: UUID
+  unitId: UUID
+  challengeKey: string
+  responseKey: string | null
+  expires: Date
+  status: PairingStatus
+  mobileDeviceId: UUID | null
+}
+
+export async function postPairing(
+  unitId: UUID
+): Promise<Result<PairingResponse>> {
+  return client
+    .post<JsonOf<PairingResponse>>(`/pairings`, {
+      unitId
+    })
+    .then((res) => res.data)
+    .then((pairingResponse) => {
+      return {
+        ...pairingResponse,
+        expires: new Date(pairingResponse.expires)
+      }
+    })
+    .then(Success)
+    .catch(Failure)
+}
+
+export async function postPairingChallenge(
+  challengeKey: string
+): Promise<Result<PairingResponse>> {
+  return client
+    .post<JsonOf<PairingResponse>>(`/public/pairings/challenge`, {
+      challengeKey
+    })
+    .then((res) => res.data)
+    .then((pairingResponse) => {
+      return {
+        ...pairingResponse,
+        expires: new Date(pairingResponse.expires)
+      }
+    })
+    .then(Success)
+    .catch(Failure)
+}
+
+export async function postPairingResponse(
+  pairingId: UUID,
+  challengeKey: string,
+  responseKey: string
+): Promise<Result<PairingResponse>> {
+  return client
+    .post<JsonOf<PairingResponse>>(`/pairings/${pairingId}/response`, {
+      challengeKey,
+      responseKey
+    })
+    .then((res) => res.data)
+    .then((pairingResponse) => {
+      return {
+        ...pairingResponse,
+        expires: new Date(pairingResponse.expires)
+      }
+    })
+    .then(Success)
+    .catch(Failure)
+}
+
+export async function putMobileDeviceName(
+  id: UUID,
+  name: string
+): Promise<Result<void>> {
+  return client
+    .put<JsonOf<void>>(`/mobile-devices/${id}/name`, {
+      name
+    })
+    .then((res) => res.data)
+    .then(Success)
+    .catch(Failure)
+}
+
+export interface MobileDevice {
+  id: UUID
+  name: string
+}
+
+export async function getMobileDevices(
+  unitId: UUID
+): Promise<Result<MobileDevice[]>> {
+  return client
+    .get<JsonOf<MobileDevice[]>>(`/mobile-devices`, {
+      params: {
+        unitId
+      }
+    })
+    .then((res) => res.data)
+    .then(Success)
+    .catch(Failure)
+}
+
+interface PairingStatusResponse {
+  status: PairingStatus
+}
+
+export async function getPairingStatus(
+  pairingId: UUID
+): Promise<Result<PairingStatusResponse>> {
+  return client
+    .get<JsonOf<PairingStatusResponse>>(`/public/pairings/${pairingId}/status`)
+    .then(({ data }) => Success(data))
+    .catch(Failure)
+}
+
+export async function authMobile(
+  id: UUID,
+  challengeKey: string,
+  responseKey: string
+): Promise<Result<void>> {
+  return client
+    .post<JsonOf<void>>(`/auth/mobile`, {
+      id,
+      challengeKey,
+      responseKey
+    })
+    .then((res) => res.data)
+    .then(Success)
+    .catch(Failure)
+}
+
 export interface DaycareFields {
   name: string
   openingDate: LocalDate | null
