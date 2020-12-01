@@ -475,10 +475,10 @@ export interface PairingResponse {
   id: UUID
   unitId: UUID
   challengeKey: string
-  responseKey?: string
+  responseKey: string | null
   expires: Date
   status: PairingStatus
-  mobileDeviceId?: UUID
+  mobileDeviceId: UUID | null
 }
 
 export async function postPairing(
