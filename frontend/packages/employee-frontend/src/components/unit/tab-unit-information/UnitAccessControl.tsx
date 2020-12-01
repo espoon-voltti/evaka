@@ -57,6 +57,7 @@ import { Gap } from '~components/shared/layout/white-space'
 import MobilePairingModal from '../MobilePairingModal'
 import { FixedSpaceRow } from '~components/shared/layout/flex-helpers'
 import InputField from '~components/shared/atoms/form/InputField'
+import { isNotProduction } from '~constants'
 
 type Props = { unitId: string }
 
@@ -539,28 +540,30 @@ function UnitAccessControl({ unitId }: Props) {
         </ContentArea>
       </RequireRole>
 
-      <RequireRole oneOf={['ADMIN', 'UNIT_SUPERVISOR']}>
-        <ContentArea opaque data-qa="daycare-mobile-devices">
-          <H2>{i18n.unit.accessControl.mobileDevices.mobileDevices}</H2>
-          {loading && <Loader />}
-          {failed && !loading && <div>{i18n.common.loadingFailed}</div>}
-          {!failed && !loading && staff && (
-            <Fragment>
-              <DevicesTable
-                rows={mobileDevices}
-                onEditDevice={(id) => openEditMobileDeviceModal(id)}
-                onDeleteDevice={(id) => openRemoveMobileDeviceModal(id)}
-              />
-              <Gap />
-              <AddButton
-                text={i18n.unit.accessControl.mobileDevices.addMobileDevice}
-                onClick={() => openPairMobileDeviceModal()}
-                data-qa="start-mobile-pairing"
-              />
-            </Fragment>
-          )}
-        </ContentArea>
-      </RequireRole>
+      {isNotProduction && (
+        <RequireRole oneOf={['ADMIN', 'UNIT_SUPERVISOR']}>
+          <ContentArea opaque data-qa="daycare-mobile-devices">
+            <H2>{i18n.unit.accessControl.mobileDevices.mobileDevices}</H2>
+            {loading && <Loader />}
+            {failed && !loading && <div>{i18n.common.loadingFailed}</div>}
+            {!failed && !loading && staff && (
+              <Fragment>
+                <DevicesTable
+                  rows={mobileDevices}
+                  onEditDevice={(id) => openEditMobileDeviceModal(id)}
+                  onDeleteDevice={(id) => openRemoveMobileDeviceModal(id)}
+                />
+                <Gap />
+                <AddButton
+                  text={i18n.unit.accessControl.mobileDevices.addMobileDevice}
+                  onClick={() => openPairMobileDeviceModal()}
+                  data-qa="start-mobile-pairing"
+                />
+              </Fragment>
+            )}
+          </ContentArea>
+        </RequireRole>
+      )}
     </>
   )
 }
