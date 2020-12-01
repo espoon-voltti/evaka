@@ -15,6 +15,7 @@ import { DefaultMargins, Gap } from 'components/shared/layout/white-space'
 import { useTranslation } from '~state/i18n'
 import { modalZIndex } from '~components/shared/layout/z-helpers'
 import { InfoStatus } from 'components/shared/UnderRowStatusIcon'
+import { P } from '~components/shared/Typography'
 
 export const DimmedModal = styled.div``
 
@@ -130,10 +131,6 @@ export const ModalTitle = styled.div`
   margin-top: ${DefaultMargins.XXL};
 `
 
-export const Text = styled.div`
-  text-align: center;
-`
-
 export type ModalSize = 'xs' | 'sm' | 'md' | 'lg' | 'xlg' | 'custom'
 
 interface Props {
@@ -200,7 +197,9 @@ function FormModal({
                   )}
                   {text && (
                     <Fragment>
-                      <Text data-qa="text">{text}</Text>
+                      <P data-qa="text" centered>
+                        {text}
+                      </P>
                     </Fragment>
                   )}
                 </ModalTitle>

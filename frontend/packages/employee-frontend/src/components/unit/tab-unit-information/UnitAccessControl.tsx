@@ -2,7 +2,13 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext, useEffect, useMemo, useState } from 'react'
+import React, {
+  Fragment,
+  useContext,
+  useEffect,
+  useMemo,
+  useState
+} from 'react'
 import { orderBy } from 'lodash'
 import ReactSelect, { components } from 'react-select'
 import styled from 'styled-components'
@@ -25,7 +31,11 @@ import {
   addDaycareAclStaff,
   addDaycareAclSupervisor,
   DaycareAclRow,
+  deleteMobileDevice,
   getDaycareAclRows,
+  getMobileDevices,
+  MobileDevice,
+  putMobileDeviceName,
   removeDaycareAclStaff,
   removeDaycareAclSupervisor
 } from '~api/unit'
@@ -36,12 +46,17 @@ import { useRestApi } from '~utils/useRestApi'
 import { RequireRole } from '~utils/roles'
 import { useTranslation } from '~state/i18n'
 import IconButton from '~components/shared/atoms/buttons/IconButton'
-import { faPlusCircle, faQuestion, faTrash } from '~icon-set'
+import { faPen, faPlusCircle, faQuestion, faTrash } from '~icon-set'
 import { H2 } from '~components/shared/Typography'
 import Button from '~components/shared/atoms/buttons/Button'
 import { UUID } from '~types'
 import { UIContext } from '~state/ui'
 import { formatName } from '~utils'
+import AddButton from '~components/shared/atoms/buttons/AddButton'
+import { Gap } from '~components/shared/layout/white-space'
+import MobilePairingModal from '../MobilePairingModal'
+import { FixedSpaceRow } from '~components/shared/layout/flex-helpers'
+import InputField from '~components/shared/atoms/form/InputField'
 
 type Props = { unitId: string }
 
@@ -50,6 +65,12 @@ interface FormattedRow {
   name: string
   email: string
 }
+
+const Flex = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`
 
 function AclRow({
   row,
@@ -128,6 +149,75 @@ function AclTable({
         ))}
       </Tbody>
     </Table>
+  )
+}
+
+function DevicesTable({
+  rows,
+  onEditDevice,
+  onDeleteDevice
+}: {
+  rows: Result<MobileDevice[]>
+  onEditDevice: (deviceId: UUID) => void
+  onDeleteDevice: (deviceId: UUID) => void
+}) {
+  const { i18n } = useTranslation()
+
+  return (
+    <Table data-qa="mobile-devices-table">
+      <Thead>
+        <Tr>
+          <Th>{i18n.common.form.name}</Th>
+          <Th />
+        </Tr>
+      </Thead>
+      <Tbody>
+        {isSuccess(rows) &&
+          rows.data.map((row) => (
+            <DeviceRow
+              key={row.id}
+              row={row}
+              onClickEdit={() => onEditDevice(row.id)}
+              onClickDelete={() => onDeleteDevice(row.id)}
+            />
+          ))}
+      </Tbody>
+    </Table>
+  )
+}
+
+const FixedSpaceRowAlignRight = styled(FixedSpaceRow)`
+  justify-content: flex-end;
+`
+
+function DeviceRow({
+  row,
+  onClickEdit,
+  onClickDelete
+}: {
+  row: MobileDevice
+  onClickEdit: () => void
+  onClickDelete: () => void
+}) {
+  return (
+    <Tr data-qa="device-row">
+      <Td data-qa="name">{row.name}</Td>
+      {/* <Td data-qa="last-used">{row.lastUsed}</Td> */}
+      <Td>
+        <FixedSpaceRowAlignRight>
+          <IconButton
+            icon={faPen}
+            onClick={onClickEdit}
+            data-qa="edit-mobile-device"
+          />
+          <IconButton
+            icon={faTrash}
+            onClick={onClickDelete}
+            data-qa="delete-mobile-device"
+          />
+        </FixedSpaceRowAlignRight>
+      </Td>
+    </Tr>
   )
 }
 
@@ -223,13 +313,19 @@ function UnitAccessControl({ unitId }: Props) {
   const [daycareAclRows, setDaycareAclRows] = useState<Result<DaycareAclRow[]>>(
     Loading()
   )
+  const [mobileDevices, setMobileDevices] = useState<Result<MobileDevice[]>>(
+    Loading()
+  )
+  const [mobileId, setMobileId] = useState<UUID | undefined>(undefined)
   const loading = isLoading(daycareAclRows) || isLoading(employees)
   const failed = isFailure(daycareAclRows) || isFailure(employees)
 
   const reloadEmployees = useRestApi(getEmployees, setEmployees)
   const reloadDaycareAclRows = useRestApi(getDaycareAclRows, setDaycareAclRows)
+  const reloadMobileDevices = useRestApi(getMobileDevices, setMobileDevices)
   useEffect(() => reloadEmployees(), [])
   useEffect(() => reloadDaycareAclRows(unitId), [unitId])
+  useEffect(() => reloadMobileDevices(unitId), [unitId])
 
   const candidateEmployees = useMemo(
     () =>
@@ -304,6 +400,31 @@ function UnitAccessControl({ unitId }: Props) {
     closeRemoveModal()
     reloadDaycareAclRows(unitId)
   }
+  const confirmRemoveDevice = async () => {
+    if (mobileId) {
+      await deleteMobileDevice(mobileId)
+      reloadMobileDevices(unitId)
+    }
+    closeRemoveModal()
+  }
+
+  const openRemoveMobileDeviceModal = (id: UUID) => {
+    setMobileId(id)
+    toggleUiMode(`remove-daycare-mobile-device-${unitId}`)
+  }
+
+  const openEditMobileDeviceModal = (id: UUID) => {
+    setMobileId(id)
+    toggleUiMode(`edit-daycare-mobile-device-${unitId}`)
+  }
+
+  const openPairMobileDeviceModal = () => {
+    toggleUiMode(`pair-daycare-mobile-device-${unitId}`)
+  }
+  const closePairMobileDeviceModal = () => {
+    reloadMobileDevices(unitId)
+    clearUiMode()
+  }
 
   const DeleteConfirmationModal = () => (
     <InfoModal
@@ -317,9 +438,65 @@ function UnitAccessControl({ unitId }: Props) {
     />
   )
 
+  const DeleteMobileDeviceConfirmationModal = () => (
+    <InfoModal
+      iconColour={'orange'}
+      title={i18n.unit.accessControl.mobileDevices.removeConfirmation}
+      resolveLabel={i18n.common.remove}
+      rejectLabel={i18n.common.cancel}
+      icon={faQuestion}
+      reject={closeRemoveModal}
+      resolve={confirmRemoveDevice}
+    />
+  )
+
+  const EditMobileDeviceModal = () => {
+    const [name, setName] = useState<string>('')
+
+    async function saveDevice() {
+      if (mobileId) {
+        await putMobileDeviceName(mobileId, name)
+        reloadMobileDevices(unitId)
+        clearUiMode()
+      }
+    }
+    return (
+      <InfoModal
+        iconColour={'blue'}
+        title={i18n.unit.accessControl.mobileDevices.editName}
+        resolveLabel={i18n.common.save}
+        rejectLabel={i18n.common.cancel}
+        icon={faQuestion}
+        reject={closeRemoveModal}
+        resolve={() => saveDevice()}
+      >
+        <Flex>
+          <InputField
+            value={name}
+            onChange={setName}
+            placeholder={i18n.unit.accessControl.mobileDevices.editPlaceholder}
+            width={'m'}
+          />
+        </Flex>
+      </InfoModal>
+    )
+  }
+
   return (
     <>
       {uiMode === `remove-daycare-acl-${unitId}` && <DeleteConfirmationModal />}
+      {uiMode === `edit-daycare-mobile-device-${unitId}` && (
+        <EditMobileDeviceModal />
+      )}
+      {uiMode === `remove-daycare-mobile-device-${unitId}` && (
+        <DeleteMobileDeviceConfirmationModal />
+      )}
+      {uiMode === `pair-daycare-mobile-device-${unitId}` && (
+        <MobilePairingModal
+          unitId={unitId}
+          closeModal={closePairMobileDeviceModal}
+        />
+      )}
       <RequireRole oneOf={['ADMIN']}>
         <ContentArea opaque data-qa="daycare-acl-supervisors">
           <H2>{i18n.unit.accessControl.unitSupervisors}</H2>
@@ -359,6 +536,29 @@ function UnitAccessControl({ unitId }: Props) {
             />
           )}
           <AddAcl employees={candidateEmployees} onAddAclRow={addStaff} />
+        </ContentArea>
+      </RequireRole>
+
+      <RequireRole oneOf={['ADMIN', 'UNIT_SUPERVISOR']}>
+        <ContentArea opaque data-qa="daycare-mobile-devices">
+          <H2>{i18n.unit.accessControl.mobileDevices.mobileDevices}</H2>
+          {loading && <Loader />}
+          {failed && !loading && <div>{i18n.common.loadingFailed}</div>}
+          {!failed && !loading && staff && (
+            <Fragment>
+              <DevicesTable
+                rows={mobileDevices}
+                onEditDevice={(id) => openEditMobileDeviceModal(id)}
+                onDeleteDevice={(id) => openRemoveMobileDeviceModal(id)}
+              />
+              <Gap />
+              <AddButton
+                text={i18n.unit.accessControl.mobileDevices.addMobileDevice}
+                onClick={() => openPairMobileDeviceModal()}
+                dataQa="start-mobile-pairing"
+              />
+            </Fragment>
+          )}
         </ContentArea>
       </RequireRole>
     </>
