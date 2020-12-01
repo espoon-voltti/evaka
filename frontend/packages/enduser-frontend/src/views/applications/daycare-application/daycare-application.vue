@@ -115,7 +115,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
                     "
                     :locale="locale"
                     :validationName="
-                      $t(`form.${type}-application.service.startDate.label`)
+                      $t(`form.${type}-application.service.startDate.validationText`)
                     "
                   >
                     <c-instructions

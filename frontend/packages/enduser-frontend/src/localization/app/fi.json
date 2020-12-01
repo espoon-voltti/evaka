@@ -168,7 +168,8 @@
       "invalid-email": "Epäkelpo sähköpostiosoite",
       "invalid-ssn": "Epäkelpo henkilötunnus",
       "invalid-tel": "Virheellinen puhelinnumero",
-      "invalid-timestring": "Virheellinen kellonaika (anna muodossa 13:30)"
+      "invalid-timestring": "Virheellinen kellonaika (anna muodossa 13:30)",
+      "invalid-daterange": "Päivämäärä ei ole sallitulla välillä"
     }
   },
   "care-type": {
@@ -477,7 +478,8 @@
           "instructions": {
             "text": "Toivottua aloituspäivää on mahdollista muuttaa myöhemmäksi niin kauan kuin hakemusta ei ole otettu käsittelyyn. Tämän jälkeen toivotun aloituspäivän muutokset tehdään ottamalla yhteyttä varhaiskasvatuksen palveluohjaukseen (puh. 09 816 31000)."
           },
-          "placeholder": "Valitse aloituspäivä"
+          "placeholder": "Valitse aloituspäivä",
+          "validationText": "Toivottu aloituspäivä: "
         },
         "dailyTitle": "Päivittäinen varhaiskasvatusaika",
         "dailyText": [],
@@ -634,7 +636,8 @@
           "instructions": {
             "text": "Toivottua aloituspäivää on mahdollista muuttaa myöhemmäksi niin kauan kuin hakemusta ei ole otettu käsittelyyn. Tämän jälkeen toivotun aloituspäivän muutokset tehdään ottamalla yhteyttä varhaiskasvatuksen palveluohjaukseen (puh. 09 816 31000)."
           },
-          "placeholder": "Aloituspäivä pp.kk.vvvv"
+          "placeholder": "Aloituspäivä pp.kk.vvvv",
+          "validationText": "Toivottu aloituspäivä: "
         },
         "dailyTitle": "Esiopetukseen liittyvän varhaiskasvatuksen tarve",
         "dailyText": [

@@ -164,7 +164,8 @@
       "invalid-email": "Invalid E-mail address",
       "invalid-ssn": "Invalid personal identity code",
       "invalid-tel": "Invalid phone number",
-      "invalid-timestring": "Invalid time of day (Please use the following form: 13:30)"
+      "invalid-timestring": "Invalid time of day (Please use the following form: 13:30)",
+      "invalid-daterange": "Date is not inside allowed range"
     }
   },
   "care-type": {
@@ -473,7 +474,8 @@
           "instructions": {
             "text": "You can postpone your desired start date until the processing of your application starts. After this, you can make changes to your desired start date by contacting early childhood education service counselling (tel. 09 816 31000)."
           },
-          "placeholder": "Select the start date"
+          "placeholder": "Select the start date",
+          "validationText": "Desired start date: "
         },
         "dailyTitle": "Daily early childhood education time",
         "dailyText": [],
@@ -626,7 +628,8 @@
         "startDate": {
           "description": "Finnish pre-primary education begins on <strong>13 August 2020</strong> and Swedish pre-primary education on <strong>18 August 2020</strong>.<br />If you need early childhood education starting from 1 August 2020 before the start of pre-primary education, you can apply for it with this application by selecting “I also apply for early childhood education related to pre-primary education”. ",
           "label": "Start date in August",
-          "placeholder": "Start date dd.mm.yyyy"
+          "placeholder": "Start date dd.mm.yyyy",
+          "validationText": "Desired start date: "
         },
         "dailyTitle": "Early childhood education need related to pre-primary education",
         "dailyText": [

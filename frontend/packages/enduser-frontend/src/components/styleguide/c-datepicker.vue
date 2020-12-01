@@ -108,6 +108,12 @@ SPDX-License-Identifier: LGPL-2.1-or-later
   } from '@/constants'
   import BaseInput from './base-input'
   import MaskedInput from 'vue-text-mask'
+  import {
+    required as requiredValidator,
+    ValidationError,
+    ValidationSuccess
+  } from "../validation/input-validation"
+  import {DATE_FORMAT_DEFAULT} from "../../constants"
 
   export default {
     extends: BaseInput,
@@ -157,6 +163,32 @@ SPDX-License-Identifier: LGPL-2.1-or-later
       }
     },
     computed: {
+      inputValidators: {
+        get() {
+          const dateIsBetweenMinMax = (value) => {
+            const date = parse(value, DATE_FORMAT_DEFAULT, new Date())
+            const minDate = this.minDate ? parse(this.minDate, 'yyyy-MM-dd', new Date()) : null
+            const maxDate = this.maxDate ? parse(this.maxDate, 'yyyy-MM-dd', new Date()) : null
+            const minIsValid = minDate ? (date >= minDate) : true
+            const maxIsValid = maxDate ? (date <= maxDate) : true
+            return minIsValid && maxIsValid
+          }
+
+          const dateValidator = (name, validationName) => (value) =>
+            dateIsBetweenMinMax(value)
+              ? new ValidationSuccess(name)
+              : new ValidationError(
+              name,
+              'validation.errors.invalid-daterange',
+              validationName
+              )
+          return [
+            ...(this.required ? [requiredValidator] : []),
+            dateValidator,
+            ...this.validators
+          ]
+        }
+      },
       datePickerValue: {
         get() {
           return this._inputValue !== null
@@ -194,22 +226,10 @@ SPDX-License-Identifier: LGPL-2.1-or-later
         this.$emit('input', this.getUpdateValue(null))
       },
       onManualInput(value) {
-        const dateIsBetweenMinMax = (date, minDate, maxDate) => {
-          const minIsValid = minDate ? (date >= minDate) : true
-          const maxIsValid = maxDate ? (date <= maxDate) : true
-          return minIsValid && maxIsValid
-        }
         // TODO : Improve check
         // It is now checked that the user types in "dd.MM.yyyy" format
         if (value && value.length === 10 && value.match(DATE_FORMAT_REGEX)) {
-          const selectedDate = parse(value, DATE_FORMAT, new Date())
-          const minDate = this.minDate ? parse(this.minDate, 'yyyy-MM-dd', new Date()) : null
-          const maxDate = this.maxDate ? parse(this.maxDate, 'yyyy-MM-dd', new Date()) : null
-          if (dateIsBetweenMinMax(selectedDate, minDate, maxDate)) {
-            this.datePickerValue = selectedDate
-          } else {
-            this.datePickerValue = ''
-          }
+          this.datePickerValue = parse(value, DATE_FORMAT, new Date())
         }
       }
     },
