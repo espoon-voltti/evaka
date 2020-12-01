@@ -6,6 +6,7 @@ package fi.espoo.evaka.reports
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.shared.auth.AccessControlList
+import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
@@ -32,15 +33,14 @@ class MissingServiceNeedReportController(private val acl: AccessControlList) {
         user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN, UserRole.UNIT_SUPERVISOR)
         if (to != null && to.isBefore(from)) throw BadRequest("Invalid time range")
 
-        val authorizedUnits = acl.getAuthorizedUnits(user)
-        return db.read { ResponseEntity.ok(it.getMissingServiceNeedRows(from, to, authorizedUnits.ids)) }
+        return db.read { ResponseEntity.ok(it.getMissingServiceNeedRows(from, to, acl.getAuthorizedUnits(user))) }
     }
 }
 
 private fun Database.Read.getMissingServiceNeedRows(
     from: LocalDate,
     to: LocalDate?,
-    units: Collection<UUID>? = null
+    authorizedUnits: AclAuthorization
 ): List<MissingServiceNeedReportRow> {
     // language=sql
     val sql =
@@ -77,12 +77,12 @@ private fun Database.Read.getMissingServiceNeedRows(
         JOIN person ON person.id = child_id
         JOIN daycare ON daycare.id = unit_id AND 'CLUB'::care_types != ANY(daycare.type) AND daycare.invoiced_by_municipality
         JOIN care_area ca ON ca.id = daycare.care_area_id
-        ${if (units != null) "WHERE daycare.id = ANY(:units)" else ""}
+        ${if (authorizedUnits != AclAuthorization.All) "WHERE daycare.id = ANY(:units)" else ""}
         GROUP BY ca.name, daycare.name, unit_id, child_id, first_name, last_name, unit_id
         ORDER BY ca.name, daycare.name, last_name, first_name
         """.trimIndent()
     return createQuery(sql)
-        .bind("units", units?.toTypedArray())
+        .bind("units", authorizedUnits.ids?.toTypedArray())
         .bind("from", from)
         .bind("to", to)
         .map { rs, _ ->

@@ -30,12 +30,12 @@ class ChildAgeLanguageReportController(private val acl: AccessControlList) {
     ): ResponseEntity<List<ChildAgeLanguageReportRow>> {
         Audit.ChildAgeLanguageReportRead.log()
         user.requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN, UserRole.ADMIN, UserRole.DIRECTOR, UserRole.SPECIAL_EDUCATION_TEACHER)
-        return db.read { it.getChildAgeLanguageRows(date, acl.getAuthorizedDaycares(user)) }.let(::ok)
+        return db.read { it.getChildAgeLanguageRows(date, acl.getAuthorizedUnits(user)) }.let(::ok)
     }
 }
 
-private fun Database.Read.getChildAgeLanguageRows(date: LocalDate, authorizedDaycares: AclAuthorization): List<ChildAgeLanguageReportRow> {
-    val daycareFilter: String = if (authorizedDaycares.ids != null) "WHERE u.id = ANY(:authorizedDaycareIds)" else ""
+private fun Database.Read.getChildAgeLanguageRows(date: LocalDate, authorizedUnits: AclAuthorization): List<ChildAgeLanguageReportRow> {
+    val daycareFilter: String = if (authorizedUnits != AclAuthorization.All) "WHERE u.id = ANY(:authorizedUnitIds)" else ""
 
     // language=sql
     val sql =
@@ -91,7 +91,7 @@ private fun Database.Read.getChildAgeLanguageRows(date: LocalDate, authorizedDay
     @Suppress("UNCHECKED_CAST")
     return createQuery(sql)
         .bind("target_date", date)
-        .bind("authorizedDaycareIds", (authorizedDaycares.ids ?: setOf()).toTypedArray())
+        .bind("authorizedUnitIds", authorizedUnits.ids?.toTypedArray())
         .map { rs, _ ->
             ChildAgeLanguageReportRow(
                 careAreaName = rs.getString("care_area_name"),

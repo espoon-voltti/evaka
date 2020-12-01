@@ -23,8 +23,7 @@ class ChildrenInDifferentAddressReportController(private val acl: AccessControlL
     fun getChildrenInDifferentAddressReport(db: Database, user: AuthenticatedUser): ResponseEntity<List<ChildrenInDifferentAddressReportRow>> {
         Audit.ChildrenInDifferentAddressReportRead.log()
         user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN, UserRole.UNIT_SUPERVISOR)
-        val authorizedUnits = acl.getAuthorizedUnits(user)
-        val rows = db.read { it.getChildrenInDifferentAddressRows(authorizedUnits) }
+        val rows = db.read { it.getChildrenInDifferentAddressRows(acl.getAuthorizedUnits(user)) }
         return ResponseEntity.ok(rows)
     }
 }

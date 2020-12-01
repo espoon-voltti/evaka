@@ -6,6 +6,7 @@ package fi.espoo.evaka.reports
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.shared.auth.AccessControlList
+import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
@@ -22,13 +23,12 @@ class FamilyConflictReportController(private val acl: AccessControlList) {
     fun getFamilyConflictsReport(db: Database, user: AuthenticatedUser): ResponseEntity<List<FamilyConflictReportRow>> {
         Audit.FamilyConflictReportRead.log()
         user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN, UserRole.UNIT_SUPERVISOR)
-        val authorizedUnits = acl.getAuthorizedUnits(user)
-        return db.read { it.getFamilyConflicts(authorizedUnits.ids) }
+        return db.read { it.getFamilyConflicts(acl.getAuthorizedUnits(user)) }
             .let { ResponseEntity.ok(it) }
     }
 }
 
-private fun Database.Read.getFamilyConflicts(units: Collection<UUID>? = null): List<FamilyConflictReportRow> {
+private fun Database.Read.getFamilyConflicts(authorizedUnits: AclAuthorization): List<FamilyConflictReportRow> {
     // language=sql
     val sql =
         """
@@ -73,7 +73,7 @@ private fun Database.Read.getFamilyConflicts(units: Collection<UUID>? = null): L
         ORDER BY ca.name, u.name, co.last_name, co.first_name
         """.trimIndent()
     return createQuery(sql)
-        .bindNullable("units", units)
+        .bindNullable("units", if (authorizedUnits != AclAuthorization.All) authorizedUnits.ids else null)
         .map { rs, _ ->
             FamilyConflictReportRow(
                 careAreaName = rs.getString("care_area_name"),

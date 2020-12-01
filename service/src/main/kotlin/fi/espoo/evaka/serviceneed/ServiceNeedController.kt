@@ -36,7 +36,7 @@ class ServiceNeedController(
         @RequestBody body: ServiceNeedRequest
     ): ResponseEntity<ServiceNeed> {
         Audit.ChildServiceNeedCreate.log(targetId = childId)
-        user.requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR)
+        acl.getRolesForChild(user, childId).requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR)
         return serviceNeedService.createServiceNeed(
             db,
             user = user,
@@ -60,15 +60,15 @@ class ServiceNeedController(
     fun updateServiceNeed(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @PathVariable id: UUID,
+        @PathVariable("id") serviceNeedId: UUID,
         @RequestBody body: ServiceNeedRequest
     ): ResponseEntity<ServiceNeed> {
-        Audit.ChildServiceNeedUpdate.log(targetId = id)
-        user.requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR)
+        Audit.ChildServiceNeedUpdate.log(targetId = serviceNeedId)
+        acl.getRolesForServiceNeed(user, serviceNeedId).requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR)
         return serviceNeedService.updateServiceNeed(
             db,
             user = user,
-            id = id,
+            id = serviceNeedId,
             data = body
         ).let(::ok)
     }
@@ -77,11 +77,11 @@ class ServiceNeedController(
     fun deleteServiceNeed(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @PathVariable id: UUID
+        @PathVariable("id") serviceNeedId: UUID
     ): ResponseEntity<Unit> {
-        Audit.ChildServiceNeedDelete.log(targetId = id)
-        user.requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR)
-        serviceNeedService.deleteServiceNeed(db, id)
+        Audit.ChildServiceNeedDelete.log(targetId = serviceNeedId)
+        acl.getRolesForServiceNeed(user, serviceNeedId).requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR)
+        serviceNeedService.deleteServiceNeed(db, serviceNeedId)
         return noContent()
     }
 }

@@ -120,13 +120,9 @@ WHERE employee_id = :userId AND placement.id = :placementId
             it.createQuery(
                 // language=SQL
                 """
-SELECT acl.role
-FROM person ch
-LEFT JOIN placement pl ON pl.child_id = ch.id AND pl.end_date > current_date - INTERVAL '1 month'
-LEFT JOIN application a ON a.child_id = ch.id AND a.status = ANY ('{SENT,WAITING_PLACEMENT,WAITING_CONFIRMATION,WAITING_DECISION,WAITING_MAILING,WAITING_UNIT_CONFIRMATION, ACTIVE}'::application_status_type[])
-LEFT JOIN placement_plan pp ON pp.application_id = a.id
-JOIN daycare_acl acl ON acl.daycare_id = pl.unit_id OR acl.daycare_id = pp.unit_id
-WHERE employee_id = :userId AND ch.id = :childId
+SELECT role
+FROM child_acl_view
+WHERE employee_id = :userId AND child_id = :childId
                 """.trimIndent()
             ).bind("userId", user.id).bind("childId", childId).mapTo<UserRole>().toSet()
         }
@@ -143,6 +139,62 @@ JOIN daycare_acl ON decision.unit_id = daycare_acl.daycare_id
 WHERE employee_id = :userId AND decision.id = :decisionId
                 """.trimIndent()
             ).bind("userId", user.id).bind("decisionId", decisionId).mapTo<UserRole>().toSet()
+        }
+    )
+
+    fun getRolesForAssistanceNeed(user: AuthenticatedUser, assistanceNeedId: UUID): AclAppliedRoles = AclAppliedRoles(
+        (user.roles - UserRole.ACL_ROLES) + Database(jdbi).read {
+            it.createQuery(
+                // language=SQL
+                """
+SELECT role
+FROM child_acl_view acl
+JOIN assistance_need an ON acl.child_id = an.child_id
+WHERE an.id = :assistanceNeedId AND acl.employee_id = :userId
+                """.trimIndent()
+            ).bind("assistanceNeedId", assistanceNeedId).bind("userId", user.id).mapTo<UserRole>().toSet()
+        }
+    )
+
+    fun getRolesForAssistanceAction(user: AuthenticatedUser, assistanceActionId: UUID): AclAppliedRoles = AclAppliedRoles(
+        (user.roles - UserRole.ACL_ROLES) + Database(jdbi).read {
+            it.createQuery(
+                // language=SQL
+                """
+SELECT role
+FROM child_acl_view acl
+JOIN assistance_action ac ON acl.child_id = ac.child_id
+WHERE ac.id = :assistanceActionId AND acl.employee_id = :userId
+                """.trimIndent()
+            ).bind("assistanceActionId", assistanceActionId).bind("userId", user.id).mapTo<UserRole>().toSet()
+        }
+    )
+
+    fun getRolesForBackupCare(user: AuthenticatedUser, backupCareId: UUID): AclAppliedRoles = AclAppliedRoles(
+        (user.roles - UserRole.ACL_ROLES) + Database(jdbi).read {
+            it.createQuery(
+                // language=SQL
+                """
+SELECT role
+FROM child_acl_view acl
+JOIN backup_care bc ON acl.child_id = bc.child_id
+WHERE bc.id = :backupCareId AND acl.employee_id = :userId
+                """.trimIndent()
+            ).bind("backupCareId", backupCareId).bind("userId", user.id).mapTo<UserRole>().toSet()
+        }
+    )
+
+    fun getRolesForServiceNeed(user: AuthenticatedUser, serviceNeedId: UUID): AclAppliedRoles = AclAppliedRoles(
+        (user.roles - UserRole.ACL_ROLES) + Database(jdbi).read {
+            it.createQuery(
+                // language=SQL
+                """
+SELECT role
+FROM child_acl_view acl
+JOIN service_need sn ON acl.child_id = sn.child_id
+WHERE sn.id = :serviceNeedId AND acl.employee_id = :userId
+                """.trimIndent()
+            ).bind("serviceNeedId", serviceNeedId).bind("userId", user.id).mapTo<UserRole>().toSet()
         }
     )
 

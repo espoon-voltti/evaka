@@ -7,6 +7,7 @@ package fi.espoo.evaka.reports
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.daycare.controllers.utils.ok
 import fi.espoo.evaka.shared.auth.AccessControlList
+import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
@@ -16,7 +17,6 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import java.time.LocalDate
-import java.util.UUID
 
 @RestController
 class ServiceNeedReport(private val acl: AccessControlList) {
@@ -28,14 +28,13 @@ class ServiceNeedReport(private val acl: AccessControlList) {
     ): ResponseEntity<List<ServiceNeedReportRow>> {
         Audit.ServiceNeedReportRead.log()
         user.requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.ADMIN, UserRole.DIRECTOR, UserRole.UNIT_SUPERVISOR)
-        val authorizedUnits = acl.getAuthorizedUnits(user)
         return db.read {
-            it.getServiceNeedRows(date, authorizedUnits.ids?.toList())
+            it.getServiceNeedRows(date, acl.getAuthorizedUnits(user))
         }.let(::ok)
     }
 }
 
-private fun Database.Read.getServiceNeedRows(date: LocalDate, units: List<UUID>? = null): List<ServiceNeedReportRow> {
+private fun Database.Read.getServiceNeedRows(date: LocalDate, authorizedUnits: AclAuthorization): List<ServiceNeedReportRow> {
     // language=sql
     val sql =
         """
@@ -60,7 +59,7 @@ private fun Database.Read.getServiceNeedRows(date: LocalDate, units: List<UUID>?
         LEFT JOIN placement pl ON d.id = pl.unit_id AND daterange(pl.start_date, pl.end_date, '[]') @> :target_date AND pl.type != 'CLUB'::placement_type
         LEFT JOIN person p ON pl.child_id = p.id AND date_part('year', age(p.date_of_birth)) = ages.age
         LEFT JOIN service_need sn ON sn.child_id = p.id AND daterange(sn.start_date, sn.end_date, '[]') @> :target_date
-        ${if (units != null) "WHERE d.id = ANY(:units :: uuid[])" else ""}
+        ${if (authorizedUnits != AclAuthorization.All) "WHERE d.id = ANY(:units :: uuid[])" else ""}
         GROUP BY care_area_name, ages.age, unit_name, unit_provider_type, unit_type
         ORDER BY care_area_name, unit_name, ages.age
         """.trimIndent()
@@ -68,7 +67,7 @@ private fun Database.Read.getServiceNeedRows(date: LocalDate, units: List<UUID>?
     @Suppress("UNCHECKED_CAST")
     return createQuery(sql)
         .bind("target_date", date)
-        .bind("units", units?.toTypedArray())
+        .bind("units", authorizedUnits.ids?.toTypedArray())
         .map { rs, _ ->
             ServiceNeedReportRow(
                 careAreaName = rs.getString("care_area_name"),

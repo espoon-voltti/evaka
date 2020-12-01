@@ -8,6 +8,7 @@ import fi.espoo.evaka.Audit
 import fi.espoo.evaka.daycare.controllers.utils.created
 import fi.espoo.evaka.daycare.controllers.utils.noContent
 import fi.espoo.evaka.daycare.controllers.utils.ok
+import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
@@ -24,7 +25,8 @@ import java.util.UUID
 
 @RestController
 class AssistanceNeedController(
-    private val assistanceNeedService: AssistanceNeedService
+    private val assistanceNeedService: AssistanceNeedService,
+    private val acl: AccessControlList
 ) {
     @PostMapping("/children/{childId}/assistance-needs")
     fun createAssistanceNeed(
@@ -34,7 +36,7 @@ class AssistanceNeedController(
         @RequestBody body: AssistanceNeedRequest
     ): ResponseEntity<AssistanceNeed> {
         Audit.ChildAssistanceNeedCreate.log(targetId = childId)
-        user.requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR, UserRole.SPECIAL_EDUCATION_TEACHER)
+        acl.getRolesForChild(user, childId).requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR, UserRole.SPECIAL_EDUCATION_TEACHER)
         return assistanceNeedService.createAssistanceNeed(
             db,
             user = user,
@@ -50,7 +52,7 @@ class AssistanceNeedController(
         @PathVariable childId: UUID
     ): ResponseEntity<List<AssistanceNeed>> {
         Audit.ChildAssistanceNeedRead.log(targetId = childId)
-        user.requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR, UserRole.FINANCE_ADMIN, UserRole.SPECIAL_EDUCATION_TEACHER)
+        acl.getRolesForChild(user, childId).requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR, UserRole.FINANCE_ADMIN, UserRole.SPECIAL_EDUCATION_TEACHER)
         return assistanceNeedService.getAssistanceNeedsByChildId(db, childId).let(::ok)
     }
 
@@ -58,15 +60,15 @@ class AssistanceNeedController(
     fun updateAssistanceNeed(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @PathVariable id: UUID,
+        @PathVariable("id") assistanceNeedId: UUID,
         @RequestBody body: AssistanceNeedRequest
     ): ResponseEntity<AssistanceNeed> {
-        Audit.ChildAssistanceNeedUpdate.log(targetId = id)
-        user.requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR, UserRole.SPECIAL_EDUCATION_TEACHER)
+        Audit.ChildAssistanceNeedUpdate.log(targetId = assistanceNeedId)
+        acl.getRolesForAssistanceNeed(user, assistanceNeedId).requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR, UserRole.SPECIAL_EDUCATION_TEACHER)
         return assistanceNeedService.updateAssistanceNeed(
             db,
             user = user,
-            id = id,
+            id = assistanceNeedId,
             data = body
         ).let(::ok)
     }
@@ -75,11 +77,11 @@ class AssistanceNeedController(
     fun deleteAssistanceNeed(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @PathVariable id: UUID
+        @PathVariable("id") assistanceNeedId: UUID
     ): ResponseEntity<Unit> {
-        Audit.ChildAssistanceNeedDelete.log(targetId = id)
-        user.requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR, UserRole.SPECIAL_EDUCATION_TEACHER)
-        assistanceNeedService.deleteAssistanceNeed(db, id)
+        Audit.ChildAssistanceNeedDelete.log(targetId = assistanceNeedId)
+        acl.getRolesForAssistanceNeed(user, assistanceNeedId).requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR, UserRole.SPECIAL_EDUCATION_TEACHER)
+        assistanceNeedService.deleteAssistanceNeed(db, assistanceNeedId)
         return noContent()
     }
 }

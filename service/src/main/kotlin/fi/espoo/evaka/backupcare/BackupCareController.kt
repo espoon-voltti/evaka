@@ -43,7 +43,7 @@ class BackupCareController(private val acl: AccessControlList) {
         @PathVariable("childId") childId: UUID,
         @RequestBody body: NewBackupCare
     ): ResponseEntity<BackupCareCreateResponse> {
-        user.requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR)
+        acl.getRolesForChild(user, childId).requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR)
         try {
             val id = db.transaction { it.handle.createBackupCare(childId, body) }
             return ResponseEntity.ok(BackupCareCreateResponse(id))
@@ -56,12 +56,12 @@ class BackupCareController(private val acl: AccessControlList) {
     fun update(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @PathVariable("id") id: UUID,
+        @PathVariable("id") backupCareId: UUID,
         @RequestBody body: BackupCareUpdateRequest
     ): ResponseEntity<Unit> {
-        user.requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR)
+        acl.getRolesForBackupCare(user, backupCareId).requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR)
         try {
-            db.transaction { it.handle.updateBackupCare(id, body.period, body.groupId) }
+            db.transaction { it.handle.updateBackupCare(backupCareId, body.period, body.groupId) }
             return ResponseEntity.noContent().build()
         } catch (e: JdbiException) {
             throw mapPSQLException(e)
@@ -69,9 +69,13 @@ class BackupCareController(private val acl: AccessControlList) {
     }
 
     @DeleteMapping("/backup-cares/{id}")
-    fun delete(db: Database.Connection, user: AuthenticatedUser, @PathVariable("id") id: UUID): ResponseEntity<Unit> {
-        user.requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR)
-        db.transaction { it.handle.deleteBackupCare(id) }
+    fun delete(
+        db: Database.Connection,
+        user: AuthenticatedUser,
+        @PathVariable("id") backupCareId: UUID
+    ): ResponseEntity<Unit> {
+        acl.getRolesForBackupCare(user, backupCareId).requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR)
+        db.transaction { it.handle.deleteBackupCare(backupCareId) }
         return ResponseEntity.noContent().build()
     }
 
