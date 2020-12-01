@@ -454,11 +454,17 @@
       "service": {
         "title": "Service need",
         "section-title": "Start of early childhood education",
+        "attachments-label": "Required attachments",
+        "no-attachments": "Not attached – will be sent by post",
         "expedited": {
           "label": "Application is urgent",
           "message": {
             "title": "Application is urgent",
             "text": "If the need for an early childhood education place is due to sudden start of employment or studies, the place must be applied for at least two weeks before the need begins. The two-week processing time begins when proof of employment or studies has been submitted to Service Guidance (<a href=\"mailto:varhaiskasvatuksen.palveluohjaus@espoo.fi\">varhaiskasvatuksen.palveluohjaus@espoo.fi</a>)."
+          },
+          "attachments-message": {
+            "text": "If the need for a place in early childhood education arises from sudden employment or a sudden start of studies, you will need to apply for a place no later than two weeks before your child needs it. In addition to the application, you will need to provide documents as proof of the employment or student status of both guardians living in the same household. If you are unable to add attachments to your online application, please send the documents by post to Early childhood education service counselling, P.O. Box 3125, 02070 City of Espoo. The processing period of two weeks will not begin until we have received the application and the required attachments.",
+            "subtitle": "Add here documents as proof of the employment or student status of both guardians."
           }
         },
         "startDate": {
@@ -495,6 +501,10 @@
           "message": {
             "title": "Evening and round-the-clock care",
             "text": "Evening and round-the-clock care is intended for children whose both parents do shift work or study mainly in the evenings and/or on weekends. The application must be appended with both parents’ proof of shift work from the employer or studies that cause the need for evening and round-the-clock care."
+          },
+          "attachments-message": {
+            "text": "Evening and round-the-clock care is intended for children whose both parents do shift work or mainly study in the evening and/or during the weekends. In addition to the application, both parents will need to provide a document issued by their employer concerning shift work or a document concerning their studies as proof of the child’s need for evening or round-the-clock care. We recommend that you send the additional documents through this online system, as the processing period of two weeks will not begin until we have received the application and the required attachments. If you are unable to add attachments to your online application, please send the documents by post to Early childhood education service counselling, P.O. Box 3125, 02070 City of Espoo.",
+            "subtitle": "Add here, for both parents, either a document issued by their employer concerning shift work or a document concerning their evening/weekend studies."
           }
         },
         "clubCare": {
@@ -609,7 +619,8 @@
           "label": "Hakemus on kiireellinen",
           "message": {
             "title": "Hakemus on kiireellinen",
-            "text": "Mikäli varhaiskasvatuksen tarpeen alkamisajankohtaa ei ole voitu ennakoida ja varhaiskasvatuspaikan tarve johtuu <strong>äkillisestä ja ennalta- arvaamattomasta</strong> työllistymisestä, opiskelusta tai koulutuksesta, tulee paikkaa hakea viimeistään kaksi viikkoa ennen kuin tarve alkaa. Kahden viikon käsittelyaika alkaa siitä, kun työ- tai opiskelutodistukset on toimitettu palveluohjaukseen (varhaiskasvatuksen.palveluohjaus@espoo.fi)."
+            "text": "Mikäli varhaiskasvatuksen tarpeen alkamisajankohtaa ei ole voitu ennakoida ja varhaiskasvatuspaikan tarve johtuu <strong>äkillisestä ja ennalta- arvaamattomasta</strong> työllistymisestä, opiskelusta tai koulutuksesta, tulee paikkaa hakea viimeistään kaksi viikkoa ennen kuin tarve alkaa. Kahden viikon käsittelyaika alkaa siitä, kun työ- tai opiskelutodistukset on toimitettu palveluohjaukseen (varhaiskasvatuksen.palveluohjaus@espoo.fi).",
+            "text-attachments-enabled": "If the need for a place in early childhood education arises from sudden employment or a sudden start of studies, you will need to apply for a place no later than two weeks before your child needs it. In addition to the application, you will need to provide documents as proof of the employment or student status of both guardians living in the same household. If you are unable to add attachments to your online application, please send the documents by post to Early childhood education service counselling, P.O. Box 3125, 02070 City of Espoo. The processing period of two weeks will not begin until we have received the application and the required attachments."
           }
         },
         "startDate": {
@@ -862,6 +873,11 @@
       "daycare-check-title": "Check the application for early childhood education",
       "preschool-check-title": "Check the application of enrolment for pre-primary education",
       "send-information": "<strong>The application has not yet been sent.</strong> Please check the information you provided and send the application by clicking \"Send the application\" button in the end of the form.",
+      "attachments-info": {
+        "headline": "<strong>Please note!</strong> If you add attachments to the following sections online, your application will be processed more quickly as the processing period will begin once we have received the required attachments.",
+        "go-back-1": "Return back to application",
+        "go-back-2": "to add the attachments."
+      },
       "general-title": "Hakemuksen yhteenveto",
       "term": "Haku toimintakaudelle",
       "general-info": "Cras erat lacus, facilisis sed orci non, lacinia condimentum libero. Aliquam lectus mi, convallis bibendum vestibulum at, gravida vitae elit. Ut at risus a sapien maximus cursus eget vitae dui. Suspendisse tempor, ligula vitae sollicitudin fringilla, neque ante ultrices erat, ut lacinia nisi velit in tellus.",
@@ -964,6 +980,23 @@
         "too-late-requested-start-date": "Start date can not be postponed to any date more than 14 days distant from the date on the decision.",
         "invalid-requested-start-date": "Start date can not be postponed to any date more than 14 days distant from the date on the decision. Start date can not be earlier than the date on the decision."
       }
+    }
+  },
+  "file-upload": {
+    "loading": "Uploading...",
+    "loaded": "Uploaded",
+    "error": {
+      "file-too-big": "File too large (max. 10MB)",
+      "default": "Upload failed"
+    },
+    "input": {
+      "title": "Add an attachment",
+      "text": [
+        "Click here or drag the files into the box one at a time.",
+        "Maximum file size: 10 MB",
+        "Accepted file formats:",
+        "PDF, JPEG/JPG, PNG and DOC/DOCX"
+      ]
     }
   }
 }
