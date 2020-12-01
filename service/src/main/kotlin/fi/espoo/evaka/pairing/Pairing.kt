@@ -23,5 +23,6 @@ enum class PairingStatus {
 
 data class MobileDevice(
     val id: UUID,
-    val name: String
+    val name: String,
+    val unitId: UUID
 )

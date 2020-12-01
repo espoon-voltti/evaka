@@ -10,7 +10,6 @@ import { useTranslation } from '~state/i18n'
 import { UserContext } from '~state/user'
 import EspooLogo from '../assets/EspooLogo.png'
 import { logoutUrl } from '~api/auth'
-import { formatName } from '~utils'
 import { RequireRole } from '~utils/roles'
 import '~components/Header.scss'
 import Title from './shared/atoms/Title'
@@ -178,9 +177,7 @@ const Header = React.memo(function Header({ location }: RouteComponentProps) {
           {loggedIn && user && (
             <NavbarItem>
               <NavbarEnd>
-                <span data-qa="username">
-                  {formatName(user.firstName, user.lastName, i18n)}
-                </span>
+                <span data-qa="username">{user.name}</span>
                 <LogoutLink
                   data-qa="logout-btn"
                   style={{ marginLeft: '1rem' }}

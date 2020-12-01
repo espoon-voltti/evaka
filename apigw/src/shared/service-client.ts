@@ -139,13 +139,23 @@ export async function validatePairing(
   return mobileDeviceId
 }
 
-export async function validateMobileDevice(
+export interface MobileDevice {
+  id: UUID
+  name: string
+  unitId: UUID
+}
+
+export async function getMobileDevice(
   req: express.Request,
   id: UUID
-): Promise<void> {
-  await client.get(`/system/mobile-devices/${encodeURIComponent(id)}`, {
-    headers: createServiceRequestHeaders(req, machineUser)
-  })
+): Promise<MobileDevice> {
+  const { data } = await client.get(
+    `/system/mobile-devices/${encodeURIComponent(id)}`,
+    {
+      headers: createServiceRequestHeaders(req, machineUser)
+    }
+  )
+  return data
 }
 
 export async function getUserDetails(req: express.Request, personId: string) {
