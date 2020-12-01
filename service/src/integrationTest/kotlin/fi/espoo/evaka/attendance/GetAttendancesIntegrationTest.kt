@@ -12,18 +12,16 @@ import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
+import fi.espoo.evaka.shared.dev.createMobileDeviceToUnit
 import fi.espoo.evaka.shared.dev.insertTestAbsence
 import fi.espoo.evaka.shared.dev.insertTestChildAttendance
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroupPlacement
 import fi.espoo.evaka.shared.dev.insertTestPlacement
-import fi.espoo.evaka.shared.dev.updateDaycareAclWithEmployee
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
-import fi.espoo.evaka.testDecisionMaker_1
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertNull
@@ -34,7 +32,8 @@ import java.time.OffsetDateTime
 import java.util.UUID
 
 class GetAttendancesIntegrationTest : FullApplicationTest() {
-    private val staffUser = AuthenticatedUser(testDecisionMaker_1.id, emptySet())
+    private val userId = UUID.randomUUID()
+    private val mobileUser = AuthenticatedUser(userId, emptySet())
     private val groupId = UUID.randomUUID()
     private val groupName = "Testaajat"
     private val daycarePlacementId = UUID.randomUUID()
@@ -63,7 +62,7 @@ class GetAttendancesIntegrationTest : FullApplicationTest() {
                 startDate = placementStart,
                 endDate = placementEnd
             )
-            updateDaycareAclWithEmployee(tx.handle, testDaycare.id, staffUser.id, UserRole.STAFF)
+            tx.createMobileDeviceToUnit(userId, testDaycare.id)
         }
     }
 
@@ -164,7 +163,7 @@ class GetAttendancesIntegrationTest : FullApplicationTest() {
 
     private fun fetchAttendances(): AttendanceResponse {
         val (_, res, result) = http.get("/attendances/units/${testDaycare.id}")
-            .asUser(staffUser)
+            .asUser(mobileUser)
             .responseObject<AttendanceResponse>(objectMapper)
 
         assertEquals(200, res.statusCode)

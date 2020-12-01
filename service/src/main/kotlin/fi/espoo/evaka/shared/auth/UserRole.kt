@@ -28,7 +28,9 @@ enum class UserRole {
 
     STAFF,
 
-    SPECIAL_EDUCATION_TEACHER;
+    SPECIAL_EDUCATION_TEACHER,
+
+    MOBILE;
 
     companion object {
         fun parse(value: String): UserRole = when (value) {

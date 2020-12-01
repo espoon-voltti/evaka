@@ -20,6 +20,7 @@ import fi.espoo.evaka.invoicing.domain.IncomeValue
 import fi.espoo.evaka.invoicing.domain.VoucherValue
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.auth.UserRole
+import fi.espoo.evaka.shared.db.Database
 import org.intellij.lang.annotations.Language
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.bindKotlin
@@ -99,6 +100,23 @@ fun updateDaycareAclWithEmployee(h: Handle, daycareId: UUID, employeeId: UUID, r
         .bind("daycare_id", daycareId)
         .bind("employeeId", employeeId)
         .bind("role", role)
+        .execute()
+}
+
+fun Database.Transaction.createMobileDeviceToUnit(id: UUID, unitId: UUID, name: String = "Nimeämätön laite") {
+    // language=sql
+    val sql =
+        """
+        INSERT INTO employee (id, first_name, last_name, email, aad_object_id)
+        VALUES (:id, :name, 'Yksikkö', null, null);
+        
+        INSERT INTO mobile_device (id, unit_id, name) VALUES (:id, :unitId, :name);
+        """.trimIndent()
+
+    createUpdate(sql)
+        .bind("id", id)
+        .bind("unitId", unitId)
+        .bind("name", name)
         .execute()
 }
 

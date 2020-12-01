@@ -47,6 +47,12 @@ class AccessControlList(private val jdbi: Jdbi) {
 SELECT role
 FROM daycare_acl
 WHERE employee_id = :userId AND daycare_id = :daycareId
+
+UNION ALL 
+
+SELECT 'MOBILE'
+FROM mobile_device
+WHERE id = :userId AND unit_id = :daycareId AND deleted = false
                 """.trimIndent()
             ).bind("userId", user.id).bind("daycareId", daycareId).mapTo<UserRole>().toSet()
         }
