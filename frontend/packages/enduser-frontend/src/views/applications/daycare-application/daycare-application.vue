@@ -155,21 +155,37 @@ SPDX-License-Identifier: LGPL-2.1-or-later
                     "
                   ></c-checkbox>
                   <div v-if="model.urgent">
+                    <div v-if="attachmentsEnabled" class="attachments-message">
+                      <p>
+                        {{
+                          $t(
+                            `form.${type}-application.service.expedited.attachments-message.text`
+                          )
+                        }}
+                      </p>
+                      <p class="bold">
+                        {{
+                          $t(
+                            `form.${type}-application.service.expedited.attachments-message.subtitle`
+                          )
+                        }}
+                      </p>
+                      <file-upload
+                        :files="urgentFiles"
+                        data-qa="file-upload-urgent-attachments"
+                        :onUpload="uploadUrgencyAttachment"
+                        :onDelete="deleteUrgencyAttachment"
+                      />
+                    </div>
                     <c-message-box
+                      v-else
                       :title="
                         $t(
                           'form.daycare-application.service.expedited.message.title'
                         )
                       "
                     >
-                      <div v-if="attachmentsEnabled"
-                        v-html="
-                          $t(
-                            `form.${type}-application.service.expedited.message.text-attachments-enabled`
-                          )
-                        "
-                      ></div>
-                      <div v-else
+                      <div
                         v-html="
                           $t(
                             `form.${type}-application.service.expedited.message.text`
@@ -177,13 +193,6 @@ SPDX-License-Identifier: LGPL-2.1-or-later
                         "
                       ></div>
                     </c-message-box>
-                    <file-upload
-                      v-if="attachmentsEnabled"
-                      :files="urgentFiles"
-                      data-qa="file-upload-urgent-attachments"
-                      :onUpload="uploadUrgencyAttachment"
-                      :onDelete="deleteUrgencyAttachment"
-                    />
                   </div>
                 </div>
               </div>
@@ -311,7 +320,30 @@ SPDX-License-Identifier: LGPL-2.1-or-later
                       />
                     </c-checkbox>
                     <div v-if="model.extendedCare">
+                      <div v-if="attachmentsEnabled" class="attachments-message">
+                      <p>
+                        {{
+                          $t(
+                            `form.${type}-application.service.extended.attachments-message.text`
+                          )
+                        }}
+                      </p>
+                      <p class="bold">
+                        {{
+                          $t(
+                            `form.${type}-application.service.extended.attachments-message.subtitle`
+                          )
+                        }}
+                      </p>
+                      <file-upload
+                        :files="extendedCareFiles"
+                        data-qa="file-upload-extended-care-attachments"
+                        :onUpload="uploadExtendedCareAttachment"
+                        :onDelete="deleteExtendedCareAttachment"
+                      />
+                    </div>
                       <c-message-box
+                        v-else
                         :title="
                           $t(
                             'form.daycare-application.service.extended.message.title'
@@ -326,13 +358,6 @@ SPDX-License-Identifier: LGPL-2.1-or-later
                           "
                         ></div>
                       </c-message-box>
-                      <file-upload
-                        v-if="attachmentsEnabled"
-                        :files="extendedCareFiles"
-                        data-qa="file-upload-extended-care-attachments"
-                        :onUpload="uploadExtendedCareAttachment"
-                        :onDelete="deleteExtendedCareAttachment"
-                      />
                     </div>
                   </div>
                 </div>
@@ -1673,6 +1698,18 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 
   .paymentCheckbox {
     margin-bottom: 2rem;
+  }
+
+  .attachments-message {
+    margin: 24px 0;
+
+    p {
+      margin: 16px 0;
+    }
+
+    .bold {
+      font-weight: 600;
+    }
   }
 </style>
 <style lang="scss">

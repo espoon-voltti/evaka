@@ -454,11 +454,17 @@
       "service": {
         "title": "Behov av småbarnspedagogisk verksamhet",
         "section-title": "Inledning av småbarnspedagogisk verksamhet",
+        "attachments-label": "Nödvändiga bilagor",
+        "no-attachments": "Inte bifogats – skickas per post",
         "expedited": {
           "label": "Ansökningen är brådskande",
           "message": {
             "title": "Ansökningen är brådskande",
             "text": "Om behovet av småbarnspedagogisk verksamhet beror på att du har blivit sysselsatt eller att du har fått en studieplats på kort varsel, bör du ansöka om plats senast två veckor före behovet börjar. Behandlingstiden börjar från den dag då du lämnat in ett intyg från arbets- eller studieplatsen till barninvalskoordinatorerna (dagis@esbo.fi)."
+          },
+          "attachments-message": {
+            "text": "Om behovet av en plats inom småbarnspedagogiken beror på att du plötsligt fått sysselsättning eller börjat studera, ska platsen sökas senast två veckor innan behovet börjar. Bifoga till ansökan ett arbets- eller studieintyg av båda vårdnadshavarna som bor i samma hushåll. Om du inte kan lägga till bilagor till ansökan elektroniskt, skicka dem per post till adressen Småbarnspedagogikens servicehänvisning, PB 3125, 02070 Esbo stad. Behandlingstiden på två veckor börjar när vi har tagit emot ansökan och bilagorna som behövs.",
+            "subtitle": "Lägg här till ett arbets- eller studieintyg av båda föräldrarna."
           }
         },
         "startDate": {
@@ -495,6 +501,10 @@
           "message": {
             "title": "Kvälls- och skiftesvård",
             "text": "Kvälls- och skiftesvård är till för barn vars båda föräldrar jobbar i skiften eller studerar huvudsakligen kvällstid och under veckoslut. Som bilaga till ansökan ska ett intyg om skiftesarbete eller studier lämnas in av båda vårdnadshavarna."
+          },
+          "attachments-message": {
+            "text": "Kvälls- och skiftomsorg är avsedd för barn vars båda föräldrar har skiftarbete eller studerar huvudsakligen på kvällar och/eller veckoslut. Som bilaga till ansökan ska av båda föräldrarna lämnas ett intyg av arbetsgivaren över skiftarbete eller studier som orsakar behovet av kvälls- eller skiftomsorg. Vi rekommenderar att bilagan skickas elektroniskt här, eftersom behandlingstiden på två veckor börjar när vi har tagit emot ansökan med de bilagor som behövs. Om du inte kan lägga till bilagor till ansökan elektroniskt, skicka dem per post till adressen Småbarnspedagogikens servicehänvisning, PB 3125, 02070 Esbo stad.",
+            "subtitle": "Lägg här till för båda föräldrarna antingen arbetsgivarens intyg över skiftarbete eller ett intyg över studier på kvällar/veckoslut."
           }
         },
         "clubCare": {
@@ -863,6 +873,11 @@
       "daycare-check-title": "Granskning av ansökan till småbarnspedagogisk verksamhet",
       "preschool-check-title": "Granskning av förskoleansökan",
       "send-information": "<strong>Du har inte ännu skickat ansökan.</strong> Granska informationen du gett, och skicka ansökan med Skicka ansökan-knappen när du är färdig",
+      "attachments-info": {
+        "headline": "<strong>Obs!</strong> Om du lägger till bilagor elektroniskt i följande punkter, behandlas din ansökan snabbare. Behandlingstiden börjar när bilagorna kommer in.",
+        "go-back-1": "Återvänd tillbaka till ansökan",
+        "go-back-2": "för att lägga till bilagor."
+      },
       "general-title": "Hakemuksen yhteenveto",
       "term": "Haku toimintakaudelle",
       "general-info": "Cras erat lacus, facilisis sed orci non, lacinia condimentum libero. Aliquam lectus mi, convallis bibendum vestibulum at, gravida vitae elit. Ut at risus a sapien maximus cursus eget vitae dui. Suspendisse tempor, ligula vitae sollicitudin fringilla, neque ante ultrices erat, ut lacinia nisi velit in tellus.",
@@ -965,6 +980,23 @@
         "too-late-requested-start-date": "Inledningen av verksamheten kan flyttas högst 14 dagar framåt från inledningsdatumet på beslutet.",
         "invalid-requested-start-date": "Inledningen av verksamheten kan flyttas högst 14 dagar framåt från inledningsdatumet på beslutet. Verksamheten kan inte inledas tidigare än inledningsdatumet på beslutet."
       }
+    }
+  },
+  "file-upload": {
+    "loading": "Uppladdas...",
+    "loaded": "Uppladdad",
+    "error": {
+      "file-too-big": "För stor fil (max. 10MB)",
+      "default": "Uppladdningen misslyckades"
+    },
+    "input": {
+      "title": "Lägg till bilaga",
+      "text": [
+        "Tryck här eller dra en bilaga åt gången till lådan.",
+        "Maximal storlek för filen: 10 MB.",
+        "Tillåtna format:",
+        "PDF, JPEG/JPG, PNG och DOC/DOCX"
+      ]
     }
   }
 }
