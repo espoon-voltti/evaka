@@ -121,7 +121,9 @@ export default React.memo(function MobilePairingModal({
           {isLoading(pairingResponse) && <Loader />}
           {isFailure(pairingResponse) && <div>{i18n.common.loadingFailed}</div>}
           {isSuccess(pairingResponse) && (
-            <ResponseKey>{pairingResponse.data.challengeKey}</ResponseKey>
+            <ResponseKey data-qa="challenge-key">
+              {pairingResponse.data.challengeKey}
+            </ResponseKey>
           )}
         </InfoModal>
       )}
@@ -144,6 +146,7 @@ export default React.memo(function MobilePairingModal({
                 onChange={setResponseKey}
                 placeholder={i18n.common.code}
                 width={'m'}
+                data-qa="response-key-input"
               />
             </Flex>
           )}
@@ -172,6 +175,7 @@ export default React.memo(function MobilePairingModal({
                     i18n.unit.accessControl.mobileDevices.editPlaceholder
                   }
                   width={'m'}
+                  data-qa="mobile-device-name-input"
                 />
               ) : (
                 <div>{i18n.common.loadingFailed}</div>

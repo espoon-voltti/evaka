@@ -110,6 +110,7 @@ export default React.memo(function ParingWizard() {
                   value={challengeKey}
                   onChange={setChallengeKey}
                   placeholder={i18n.common.code}
+                  data-qa="challenge-key-input"
                 />
                 <IconButton icon={faArrowRight} onClick={sendRequest} />
               </Flex>
@@ -125,7 +126,9 @@ export default React.memo(function ParingWizard() {
               <section>
                 <P centered>{i18n.mobile.wizard.text2}</P>
               </section>
-              <ResponseKey>{pairingResponse.data.responseKey}</ResponseKey>
+              <ResponseKey data-qa="response-key">
+                {pairingResponse.data.responseKey}
+              </ResponseKey>
             </CenteredColumn>
           </Fragment>
         ) : (
@@ -146,6 +149,7 @@ export default React.memo(function ParingWizard() {
             <Bottom>
               <WideLinkButton
                 to={`/units/${pairingResponse.data.unitId}/groupselector`}
+                data-qa="unit-page-link"
               >
                 {i18n.mobile.actions.START.toUpperCase()}
               </WideLinkButton>

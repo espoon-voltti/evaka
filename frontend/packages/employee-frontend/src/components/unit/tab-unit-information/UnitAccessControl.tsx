@@ -555,7 +555,7 @@ function UnitAccessControl({ unitId }: Props) {
               <AddButton
                 text={i18n.unit.accessControl.mobileDevices.addMobileDevice}
                 onClick={() => openPairMobileDeviceModal()}
-                dataQa="start-mobile-pairing"
+                data-qa="start-mobile-pairing"
               />
             </Fragment>
           )}
