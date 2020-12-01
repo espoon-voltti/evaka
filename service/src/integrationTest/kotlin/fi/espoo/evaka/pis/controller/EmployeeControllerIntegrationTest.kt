@@ -62,7 +62,7 @@ class EmployeeControllerIntegrationTest : AbstractIntegrationTest() {
         assertEquals(HttpStatus.OK, responseCreate.statusCode)
         assertEquals(1, employeeController.getEmployees(db, user).body?.size)
 
-        val responseGet = employeeController.getEmployee(db, user, responseCreate.body.id)
+        val responseGet = employeeController.getEmployee(db, user, responseCreate.body!!.id)
         assertEquals(HttpStatus.OK, responseGet.statusCode)
         assertEquals(1, employeeController.getEmployees(db, user).body?.size)
         assertEquals(responseCreate.body?.id, responseGet.body?.id)
