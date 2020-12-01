@@ -18,7 +18,6 @@ import {
   batchSendPlacementProposal,
   batchWithdrawPlacementProposal
 } from 'api/applications'
-import styled from 'styled-components'
 import { FixedSpaceRow } from 'components/shared/layout/flex-helpers'
 
 type Action = {
@@ -30,41 +29,12 @@ type Action = {
   onClick: () => void
 }
 
-const Centered = styled.div`
-  margin: auto;
-  display: flex;
-  justify-content: flex-end;
-  @media screen and (min-width: 1024px) {
-    max-width: 960px;
-    width: 960px;
-  }
-  @media screen and (max-width: 1215px) {
-    max-width: 1152px;
-    width: auto;
-  }
-  @media screen and (max-width: 1407px) {
-    max-width: 1344px;
-    width: auto;
-  }
-  @media screen and (min-width: 1216px) {
-    max-width: 1152px;
-    width: 1152px;
-  }
-  @media screen and (min-width: 1408px) {
-    max-width: 1344px;
-    width: 1344px;
-  }
-`
-
 type Props = {
   reloadApplications: () => void
   fullWidth?: boolean
 }
 
-export default React.memo(function ActionBar({
-  reloadApplications,
-  fullWidth
-}: Props) {
+export default React.memo(function ActionBar({ reloadApplications }: Props) {
   const { i18n } = useTranslation()
   const { checkedIds, setCheckedIds, status } = useContext(ApplicationUIContext)
   const [actionInFlight, setActionInFlight] = useState(false)
@@ -150,26 +120,24 @@ export default React.memo(function ActionBar({
   ].filter(({ enabled }) => enabled)
 
   return actions.length > 0 ? (
-    <StickyActionBar align={'right'} fullWidth={fullWidth}>
-      <Centered>
-        {checkedIds.length > 0 ? (
-          <CheckedRowsInfo>
-            {i18n.applications.actions.checked(checkedIds.length)}
-          </CheckedRowsInfo>
-        ) : null}
-        <FixedSpaceRow>
-          {actions.map(({ id, label, disabled, onClick, primary }) => (
-            <Button
-              key={id}
-              onClick={onClick}
-              text={label}
-              disabled={disabled}
-              primary={primary}
-              dataQa={`action-bar-${id}`}
-            />
-          ))}
-        </FixedSpaceRow>
-      </Centered>
+    <StickyActionBar align={'right'}>
+      {checkedIds.length > 0 ? (
+        <CheckedRowsInfo>
+          {i18n.applications.actions.checked(checkedIds.length)}
+        </CheckedRowsInfo>
+      ) : null}
+      <FixedSpaceRow>
+        {actions.map(({ id, label, disabled, onClick, primary }) => (
+          <Button
+            key={id}
+            onClick={onClick}
+            text={label}
+            disabled={disabled}
+            primary={primary}
+            dataQa={`action-bar-${id}`}
+          />
+        ))}
+      </FixedSpaceRow>
     </StickyActionBar>
   ) : null
 })

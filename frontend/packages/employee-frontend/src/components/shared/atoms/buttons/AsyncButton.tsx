@@ -26,6 +26,7 @@ type Props = {
   primary?: boolean
   disabled?: boolean
   className?: string
+  'data-qa'?: string
 }
 
 export default React.memo(function AsyncButton({

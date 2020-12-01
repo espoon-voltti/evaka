@@ -7,6 +7,7 @@ import styled from 'styled-components'
 import { useHistory } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faExclamation, faSync } from 'icon-set'
+import { Gap } from '~components/shared/layout/white-space'
 import InlineButton from '~components/shared/atoms/buttons/InlineButton'
 import {
   Table,
@@ -32,6 +33,114 @@ import { EspooColours } from '~utils/colours'
 import { SearchOrder } from '~types'
 import { SortByInvoices } from '~api/invoicing'
 import Pagination from '~components/shared/Pagination'
+import { InvoicesActions } from './invoices-state'
+
+interface Props {
+  actions: InvoicesActions
+  invoices?: Result<InvoiceSummary[]>
+  refreshInvoices: () => Promise<void>
+  total?: number
+  pages?: number
+  currentPage: number
+  sortBy: SortByInvoices
+  sortDirection: SearchOrder
+  showCheckboxes: boolean
+  checked: Record<string, true>
+  allInvoicesToggle: boolean
+  allInvoicesToggleDisabled: boolean
+}
+
+export default React.memo(function Invoices({
+  actions,
+  invoices,
+  refreshInvoices,
+  total,
+  pages,
+  currentPage,
+  sortBy,
+  sortDirection,
+  showCheckboxes,
+  checked,
+  allInvoicesToggle,
+  allInvoicesToggleDisabled
+}: Props) {
+  const { i18n } = useTranslation()
+  const [refreshError, setRefreshError] = useState(false)
+
+  return (
+    <div className="invoices">
+      <RefreshInvoices>
+        {refreshError ? (
+          <RefreshError>{i18n.common.error.unknown}</RefreshError>
+        ) : null}
+        <InlineButton
+          icon={faSync}
+          onClick={() => {
+            setRefreshError(false)
+            refreshInvoices().catch(() => setRefreshError(true))
+          }}
+          text={i18n.invoices.buttons.createInvoices}
+          dataQa="create-invoices"
+        />
+      </RefreshInvoices>
+      <TitleRowContainer>
+        <SectionTitle size={1}>{i18n.invoices.table.title}</SectionTitle>
+        {invoices && isSuccess(invoices) && (
+          <ResultsContainer>
+            <div>{total ? i18n.feeDecisions.table.rowCount(total) : null}</div>
+            <Pagination
+              pages={pages}
+              currentPage={currentPage}
+              setPage={actions.setPage}
+            />
+          </ResultsContainer>
+        )}
+      </TitleRowContainer>
+      {invoices && isLoading(invoices) ? <Loader /> : null}
+      {!invoices || isFailure(invoices) ? (
+        <div>{i18n.common.error.unknown}</div>
+      ) : null}
+      {invoices && isSuccess(invoices) && (
+        <>
+          <ResultsContainer>
+            <Checkbox
+              checked={allInvoicesToggle}
+              label={i18n.invoices.table.toggleAll}
+              onChange={actions.allInvoicesToggle}
+              disabled={allInvoicesToggleDisabled}
+            />
+          </ResultsContainer>
+          <Gap size="m" />
+          <Table data-qa="table-of-invoices">
+            <InvoiceTableHeader
+              actions={actions}
+              invoices={invoices}
+              checked={checked}
+              sortBy={sortBy}
+              sortDirection={sortDirection}
+              showCheckboxes={showCheckboxes}
+              allInvoicesToggle={allInvoicesToggle}
+            />
+            <InvoiceTableBody
+              actions={actions}
+              invoices={invoices.data}
+              showCheckboxes={showCheckboxes}
+              checked={checked}
+              allInvoicesToggle={allInvoicesToggle}
+            />
+          </Table>
+          <ResultsContainer>
+            <Pagination
+              pages={pages}
+              currentPage={currentPage}
+              setPage={actions.setPage}
+            />
+          </ResultsContainer>
+        </>
+      )}
+    </div>
+  )
+})
 
 const RefreshInvoices = styled.div`
   position: absolute;
@@ -61,44 +170,26 @@ const SectionTitle = styled(Title)`
   margin-bottom: 0 !important;
 `
 
-interface Props {
-  invoices?: Result<InvoiceSummary[]>
-  createInvoices: () => Promise<void>
-  total?: number
-  pages?: number
-  currentPage: number
-  setPage: (page: number) => void
-  sortBy: SortByInvoices
-  setSortBy: (v: SortByInvoices) => void
-  sortDirection: SearchOrder
-  setSortDirection: (v: SearchOrder) => void
-  showCheckboxes: boolean
-  checked: { [id: string]: boolean }
-  toggleChecked: (id: string) => void
-  checkAll: () => void
-  clearChecked: () => void
-}
-
-const Invoices = React.memo(function Invoices({
+const InvoiceTableHeader = React.memo(function InvoiceTableHeader({
+  actions,
   invoices,
-  createInvoices,
-  total,
-  pages,
-  currentPage,
-  setPage,
-  sortBy,
-  setSortBy,
-  sortDirection,
-  setSortDirection,
-  showCheckboxes,
   checked,
-  toggleChecked,
-  checkAll,
-  clearChecked
-}: Props) {
+  sortBy,
+  sortDirection,
+  showCheckboxes,
+  allInvoicesToggle
+}: Pick<
+  Props,
+  | 'actions'
+  | 'invoices'
+  | 'checked'
+  | 'sortBy'
+  | 'sortDirection'
+  | 'showCheckboxes'
+  | 'allInvoicesToggle'
+>) {
   const { i18n } = useTranslation()
-  const history = useHistory()
-  const [refreshError, setRefreshError] = useState(false)
+
   const allChecked =
     invoices && isSuccess(invoices)
       ? invoices.data.length > 0 && invoices.data.every((it) => checked[it.id])
@@ -109,150 +200,116 @@ const Invoices = React.memo(function Invoices({
 
   const toggleSort = (column: SortByInvoices) => () => {
     if (sortBy === column) {
-      setSortDirection(sortDirection === 'ASC' ? 'DESC' : 'ASC')
+      actions.setSortDirection(sortDirection === 'ASC' ? 'DESC' : 'ASC')
     } else {
-      setSortBy(column)
-      setSortDirection('ASC')
+      actions.setSortBy(column)
+      actions.setSortDirection('ASC')
     }
   }
 
-  const rows =
-    invoices && isSuccess(invoices)
-      ? invoices.data.map((item: InvoiceSummary) => (
-          <Tr
-            key={item.id}
-            onClick={() => history.push(`/finance/invoices/${item.id}`)}
-            data-qa="table-invoice-row"
-          >
-            <Td>
-              <NameWithSsn {...item.headOfFamily} i18n={i18n} />
-            </Td>
-            <Td>
-              <ChildrenCell people={item.rows.map(({ child }) => child)} />
-            </Td>
-            <Td>{`${item.periodStart.format()} - ${item.periodEnd.format()}`}</Td>
-            <Td>{formatCents(item.totalPrice)}</Td>
-            <Td>
-              {item.headOfFamily.restrictedDetailsEnabled && (
-                <Tooltip
-                  tooltipId={`restricted-details-${item.id}`}
-                  tooltipText={`${i18n.personProfile.restrictedDetails}`}
-                  place={'right'}
-                >
-                  <StatusIconContainer color={EspooColours.red}>
-                    <FontAwesomeIcon icon={faExclamation} inverse />
-                  </StatusIconContainer>
-                </Tooltip>
-              )}
-            </Td>
-            <Td>{i18n.invoice.status[item.status]}</Td>
-            {showCheckboxes ? (
-              <Td onClick={(e) => e.stopPropagation()}>
-                <Checkbox
-                  hiddenLabel
-                  label=""
-                  checked={!!checked[item.id]}
-                  onChange={() => toggleChecked(item.id)}
-                  dataQa="toggle-invoice"
-                />
-              </Td>
-            ) : null}
-          </Tr>
-        ))
-      : null
-
   return (
-    <div className="invoices">
-      <RefreshInvoices>
-        {refreshError ? (
-          <RefreshError>{i18n.common.error.unknown}</RefreshError>
-        ) : null}
-        <InlineButton
-          icon={faSync}
-          onClick={() => {
-            setRefreshError(false)
-            createInvoices().catch(() => setRefreshError(true))
-          }}
-          text={i18n.invoices.buttons.createInvoices}
-          dataQa="create-invoices"
-        />
-      </RefreshInvoices>
-      <TitleRowContainer>
-        <SectionTitle size={1}>{i18n.invoices.table.title}</SectionTitle>
-        {invoices && isSuccess(invoices) && (
-          <ResultsContainer>
-            <div>{total ? i18n.feeDecisions.table.rowCount(total) : null}</div>
-            <Pagination
-              pages={pages}
-              currentPage={currentPage}
-              setPage={setPage}
+    <Thead>
+      <Tr>
+        <SortableTh
+          sorted={isSorted('HEAD_OF_FAMILY')}
+          onClick={toggleSort('HEAD_OF_FAMILY')}
+        >
+          {i18n.invoices.table.head}
+        </SortableTh>
+        <SortableTh
+          sorted={isSorted('CHILDREN')}
+          onClick={toggleSort('CHILDREN')}
+        >
+          {i18n.invoices.table.children}
+        </SortableTh>
+        <SortableTh sorted={isSorted('START')} onClick={toggleSort('START')}>
+          {i18n.invoices.table.period}
+        </SortableTh>
+        <SortableTh sorted={isSorted('SUM')} onClick={toggleSort('SUM')}>
+          {i18n.invoices.table.totalPrice}
+        </SortableTh>
+        <Th>{i18n.invoices.table.nb}</Th>
+        <SortableTh sorted={isSorted('STATUS')} onClick={toggleSort('STATUS')}>
+          {i18n.invoices.table.status}
+        </SortableTh>
+        {showCheckboxes ? (
+          <Th>
+            <Checkbox
+              hiddenLabel
+              label=""
+              checked={allChecked || allInvoicesToggle}
+              disabled={allInvoicesToggle}
+              onChange={() =>
+                allChecked ? actions.clearChecked() : actions.checkAll()
+              }
+              dataQa="toggle-all-invoices"
             />
-          </ResultsContainer>
-        )}
-      </TitleRowContainer>
-      <Table data-qa="table-of-invoices">
-        <Thead>
-          <Tr>
-            <SortableTh
-              sorted={isSorted('HEAD_OF_FAMILY')}
-              onClick={toggleSort('HEAD_OF_FAMILY')}
-            >
-              {i18n.invoices.table.head}
-            </SortableTh>
-            <SortableTh
-              sorted={isSorted('CHILDREN')}
-              onClick={toggleSort('CHILDREN')}
-            >
-              {i18n.invoices.table.children}
-            </SortableTh>
-            <SortableTh
-              sorted={isSorted('START')}
-              onClick={toggleSort('START')}
-            >
-              {i18n.invoices.table.period}
-            </SortableTh>
-            <SortableTh sorted={isSorted('SUM')} onClick={toggleSort('SUM')}>
-              {i18n.invoices.table.totalPrice}
-            </SortableTh>
-            <Th>{i18n.invoices.table.nb}</Th>
-            <SortableTh
-              sorted={isSorted('STATUS')}
-              onClick={toggleSort('STATUS')}
-            >
-              {i18n.invoices.table.status}
-            </SortableTh>
-            {showCheckboxes ? (
-              <Th>
-                <Checkbox
-                  hiddenLabel
-                  label=""
-                  checked={allChecked}
-                  onChange={allChecked ? clearChecked : checkAll}
-                  dataQa="toggle-all-invoices"
-                />
-              </Th>
-            ) : null}
-          </Tr>
-        </Thead>
-        <Tbody>{rows}</Tbody>
-      </Table>
-      {invoices && isSuccess(invoices) && (
-        <ResultsContainer>
-          <Pagination
-            pages={pages}
-            currentPage={currentPage}
-            setPage={setPage}
-          />
-        </ResultsContainer>
-      )}
-      {invoices && isLoading(invoices) && <Loader />}
-      {invoices && isFailure(invoices) && (
-        <div>
-          {i18n.common.error.unknown} ({invoices.error.message})
-        </div>
-      )}
-    </div>
+          </Th>
+        ) : null}
+      </Tr>
+    </Thead>
   )
 })
 
-export default Invoices
+const InvoiceTableBody = React.memo(function InvoiceTableBody({
+  actions,
+  invoices,
+  showCheckboxes,
+  checked,
+  allInvoicesToggle
+}: Pick<
+  Props,
+  'actions' | 'showCheckboxes' | 'checked' | 'allInvoicesToggle'
+> & {
+  invoices: InvoiceSummary[]
+}) {
+  const { i18n } = useTranslation()
+  const history = useHistory()
+
+  return (
+    <Tbody>
+      {invoices.map((item: InvoiceSummary) => (
+        <Tr
+          key={item.id}
+          onClick={() => history.push(`/finance/invoices/${item.id}`)}
+          data-qa="table-invoice-row"
+        >
+          <Td>
+            <NameWithSsn {...item.headOfFamily} i18n={i18n} />
+          </Td>
+          <Td>
+            <ChildrenCell people={item.rows.map(({ child }) => child)} />
+          </Td>
+          <Td>{`${item.periodStart.format()} - ${item.periodEnd.format()}`}</Td>
+          <Td>{formatCents(item.totalPrice)}</Td>
+          <Td>
+            {item.headOfFamily.restrictedDetailsEnabled && (
+              <Tooltip
+                tooltipId={`restricted-details-${item.id}`}
+                tooltipText={`${i18n.personProfile.restrictedDetails}`}
+                place={'right'}
+              >
+                <StatusIconContainer color={EspooColours.red}>
+                  <FontAwesomeIcon icon={faExclamation} inverse />
+                </StatusIconContainer>
+              </Tooltip>
+            )}
+          </Td>
+          <Td>{i18n.invoice.status[item.status]}</Td>
+          {showCheckboxes ? (
+            <Td onClick={(e) => e.stopPropagation()}>
+              <Checkbox
+                hiddenLabel
+                label=""
+                checked={!!checked[item.id] || allInvoicesToggle}
+                disabled={allInvoicesToggle}
+                onChange={() => actions.toggleChecked(item.id)}
+                dataQa="toggle-invoice"
+              />
+            </Td>
+          ) : null}
+        </Tr>
+      ))}
+    </Tbody>
+  )
+})
