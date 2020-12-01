@@ -45,7 +45,7 @@ enum class UserRole {
             else -> enumValueOf(value.removePrefix("ROLE_"))
         }
 
-        val ACL_ROLES = setOf(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER)
+        val SCOPED_ROLES = setOf(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER, MOBILE)
     }
 }
 

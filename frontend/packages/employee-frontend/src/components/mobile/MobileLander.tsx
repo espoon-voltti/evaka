@@ -3,11 +3,14 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { Fragment } from 'react'
+import { useContext } from 'react'
+import { Redirect } from 'react-router-dom'
 import MetaTags from 'react-meta-tags'
 import styled from 'styled-components'
 
 import { P } from '~components/shared/Typography'
 import { useTranslation } from '~state/i18n'
+import { UserContext } from '~state/user'
 import EvakaLogo from '../../assets/EvakaLogo.svg'
 import { FullHeightContainer, WideLinkButton } from './components'
 
@@ -21,6 +24,11 @@ const Img = styled.img`
 
 export default React.memo(function MobileLander() {
   const { i18n } = useTranslation()
+  const { user } = useContext(UserContext)
+
+  if (user?.unitId) {
+    return <Redirect to={`/units/${user.unitId}/groupselector`} />
+  }
 
   return (
     <Fragment>

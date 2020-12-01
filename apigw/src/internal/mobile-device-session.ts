@@ -10,7 +10,7 @@ import {
 } from '../shared/express'
 import {
   UUID,
-  validateMobileDevice,
+  getMobileDevice,
   validatePairing
 } from '../shared/service-client'
 import { useSecureCookies } from '../shared/config'
@@ -31,7 +31,7 @@ async function mobileLogin(
     req.logIn(
       {
         id: deviceId,
-        roles: [],
+        roles: ['MOBILE'],
         userType: 'MOBILE'
       },
       cb
@@ -52,7 +52,7 @@ export const refreshMobileSession = toMiddleware(async (req, res) => {
   if (!req.user) {
     const deviceId = req.signedCookies[mobileLongTermCookieName]
     if (deviceId) {
-      await validateMobileDevice(req, deviceId)
+      await getMobileDevice(req, deviceId)
       await mobileLogin(req, res, deviceId)
     }
   }

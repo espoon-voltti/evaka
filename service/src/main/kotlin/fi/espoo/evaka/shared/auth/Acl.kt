@@ -40,7 +40,7 @@ class AccessControlList(private val jdbi: Jdbi) {
         }
 
     fun getRolesForUnit(user: AuthenticatedUser, daycareId: UUID): AclAppliedRoles = AclAppliedRoles(
-        (user.roles - UserRole.ACL_ROLES) + Database(jdbi).read {
+        (user.roles - UserRole.SCOPED_ROLES) + Database(jdbi).read {
             it.createQuery(
                 // language=SQL
                 """
@@ -59,7 +59,7 @@ WHERE id = :userId AND unit_id = :daycareId AND deleted = false
     )
 
     fun getRolesForApplication(user: AuthenticatedUser, applicationId: UUID): AclAppliedRoles = AclAppliedRoles(
-        (user.roles - UserRole.ACL_ROLES) + Database(jdbi).read { it ->
+        (user.roles - UserRole.SCOPED_ROLES) + Database(jdbi).read { it ->
             val assistanceNeeded = it.createQuery(
                 // language=SQL
                 """
@@ -88,7 +88,7 @@ WHERE employee_id = :userId AND av.id = :applicationId AND av.status = ANY ('{SE
     )
 
     fun getRolesForUnitGroup(user: AuthenticatedUser, groupId: UUID): AclAppliedRoles = AclAppliedRoles(
-        (user.roles - UserRole.ACL_ROLES) + Database(jdbi).read {
+        (user.roles - UserRole.SCOPED_ROLES) + Database(jdbi).read {
             it.createQuery(
                 // language=SQL
                 """
@@ -102,7 +102,7 @@ WHERE employee_id = :userId AND daycare_group.id = :groupId
     )
 
     fun getRolesForPlacement(user: AuthenticatedUser, placementId: UUID): AclAppliedRoles = AclAppliedRoles(
-        (user.roles - UserRole.ACL_ROLES) + Database(jdbi).read {
+        (user.roles - UserRole.SCOPED_ROLES) + Database(jdbi).read {
             it.createQuery(
                 // language=SQL
                 """
@@ -116,7 +116,7 @@ WHERE employee_id = :userId AND placement.id = :placementId
     )
 
     fun getRolesForChild(user: AuthenticatedUser, childId: UUID): AclAppliedRoles = AclAppliedRoles(
-        (user.roles - UserRole.ACL_ROLES) + Database(jdbi).read {
+        (user.roles - UserRole.SCOPED_ROLES) + Database(jdbi).read {
             it.createQuery(
                 // language=SQL
                 """
@@ -129,7 +129,7 @@ WHERE employee_id = :userId AND child_id = :childId
     )
 
     fun getRolesForDecision(user: AuthenticatedUser, decisionId: UUID): AclAppliedRoles = AclAppliedRoles(
-        (user.roles - UserRole.ACL_ROLES) + Database(jdbi).read {
+        (user.roles - UserRole.SCOPED_ROLES) + Database(jdbi).read {
             it.createQuery(
                 // language=SQL
                 """
@@ -143,7 +143,7 @@ WHERE employee_id = :userId AND decision.id = :decisionId
     )
 
     fun getRolesForAssistanceNeed(user: AuthenticatedUser, assistanceNeedId: UUID): AclAppliedRoles = AclAppliedRoles(
-        (user.roles - UserRole.ACL_ROLES) + Database(jdbi).read {
+        (user.roles - UserRole.SCOPED_ROLES) + Database(jdbi).read {
             it.createQuery(
                 // language=SQL
                 """
@@ -157,7 +157,7 @@ WHERE an.id = :assistanceNeedId AND acl.employee_id = :userId
     )
 
     fun getRolesForAssistanceAction(user: AuthenticatedUser, assistanceActionId: UUID): AclAppliedRoles = AclAppliedRoles(
-        (user.roles - UserRole.ACL_ROLES) + Database(jdbi).read {
+        (user.roles - UserRole.SCOPED_ROLES) + Database(jdbi).read {
             it.createQuery(
                 // language=SQL
                 """
@@ -171,7 +171,7 @@ WHERE ac.id = :assistanceActionId AND acl.employee_id = :userId
     )
 
     fun getRolesForBackupCare(user: AuthenticatedUser, backupCareId: UUID): AclAppliedRoles = AclAppliedRoles(
-        (user.roles - UserRole.ACL_ROLES) + Database(jdbi).read {
+        (user.roles - UserRole.SCOPED_ROLES) + Database(jdbi).read {
             it.createQuery(
                 // language=SQL
                 """
@@ -185,7 +185,7 @@ WHERE bc.id = :backupCareId AND acl.employee_id = :userId
     )
 
     fun getRolesForServiceNeed(user: AuthenticatedUser, serviceNeedId: UUID): AclAppliedRoles = AclAppliedRoles(
-        (user.roles - UserRole.ACL_ROLES) + Database(jdbi).read {
+        (user.roles - UserRole.SCOPED_ROLES) + Database(jdbi).read {
             it.createQuery(
                 // language=SQL
                 """
@@ -199,7 +199,7 @@ WHERE sn.id = :serviceNeedId AND acl.employee_id = :userId
     )
 
     fun getRolesForPairing(user: AuthenticatedUser, pairingId: UUID): AclAppliedRoles = AclAppliedRoles(
-        (user.roles - UserRole.ACL_ROLES) + Database(jdbi).read {
+        (user.roles - UserRole.SCOPED_ROLES) + Database(jdbi).read {
             it.createQuery(
                 // language=SQL
                 """
@@ -213,7 +213,7 @@ WHERE employee_id = :userId AND p.id = :pairingId
     )
 
     fun getRolesForMobileDevice(user: AuthenticatedUser, deviceId: UUID): AclAppliedRoles = AclAppliedRoles(
-        (user.roles - UserRole.ACL_ROLES) + Database(jdbi).read {
+        (user.roles - UserRole.SCOPED_ROLES) + Database(jdbi).read {
             it.createQuery(
                 // language=SQL
                 """
