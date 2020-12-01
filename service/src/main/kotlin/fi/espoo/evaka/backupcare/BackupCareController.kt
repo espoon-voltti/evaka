@@ -56,12 +56,12 @@ class BackupCareController(private val acl: AccessControlList) {
     fun update(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @PathVariable("id") bakcupCareId: UUID,
+        @PathVariable("id") backupCareId: UUID,
         @RequestBody body: BackupCareUpdateRequest
     ): ResponseEntity<Unit> {
-        acl.getRolesForBackupCare(user, bakcupCareId).requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR)
+        acl.getRolesForBackupCare(user, backupCareId).requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR)
         try {
-            db.transaction { it.handle.updateBackupCare(bakcupCareId, body.period, body.groupId) }
+            db.transaction { it.handle.updateBackupCare(backupCareId, body.period, body.groupId) }
             return ResponseEntity.noContent().build()
         } catch (e: JdbiException) {
             throw mapPSQLException(e)
@@ -72,10 +72,10 @@ class BackupCareController(private val acl: AccessControlList) {
     fun delete(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @PathVariable("id") bakcupCareId: UUID
+        @PathVariable("id") backupCareId: UUID
     ): ResponseEntity<Unit> {
-        acl.getRolesForBackupCare(user, bakcupCareId).requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR)
-        db.transaction { it.handle.deleteBackupCare(bakcupCareId) }
+        acl.getRolesForBackupCare(user, backupCareId).requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR)
+        db.transaction { it.handle.deleteBackupCare(backupCareId) }
         return ResponseEntity.noContent().build()
     }
 
