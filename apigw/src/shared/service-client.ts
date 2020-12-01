@@ -30,6 +30,7 @@ export type UserRole =
   | 'SERVICE_WORKER'
   | 'STAFF'
   | 'UNIT_SUPERVISOR'
+  | 'MOBILE'
 
 export type ServiceRequestHeader = 'Authorization' | 'X-Request-ID'
 export type ServiceRequestHeaders = { [H in ServiceRequestHeader]?: string }

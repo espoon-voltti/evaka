@@ -31,7 +31,7 @@ async function mobileLogin(
     req.logIn(
       {
         id: deviceId,
-        roles: [],
+        roles: ['MOBILE'],
         userType: 'MOBILE'
       },
       cb
