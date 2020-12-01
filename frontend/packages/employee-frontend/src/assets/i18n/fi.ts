@@ -2141,7 +2141,6 @@ export const fi = {
       text3: 'eVaka-mobiili on nyt käytössä tässä laitteessa.',
       text4:
         'Turvataksesi lasten tiedot muistathan asettaa laitteeseen pääsykoodin, jos et ole sitä vielä tehnyt.'
-    },
-    mobileUrl: 'espoonvarhaiskasvatus.fi/employee/mobile'
+    }
   }
 }

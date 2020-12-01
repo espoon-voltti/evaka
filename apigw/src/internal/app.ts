@@ -71,6 +71,7 @@ function internalApiRouter() {
   router.post('/auth/mobile', mobileDeviceSession)
   router.use(refreshMobileSession)
   router.get('/auth/status', csrf, csrfCookie('employee'), authStatus)
+  router.all('/public/*', createProxy())
   router.use(requireAuthentication)
   router.use(csrf)
   router.post('/attachments', createProxy({ multipart: true }))

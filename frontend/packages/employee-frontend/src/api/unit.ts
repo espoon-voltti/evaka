@@ -583,6 +583,22 @@ export async function getPairingStatus(
     .catch(Failure)
 }
 
+export async function authMobile(
+  id: UUID,
+  challengeKey: string,
+  responseKey: string
+): Promise<Result<void>> {
+  return client
+    .post<JsonOf<void>>(`/auth/mobile`, {
+      id,
+      challengeKey,
+      responseKey
+    })
+    .then((res) => res.data)
+    .then(Success)
+    .catch(Failure)
+}
+
 export interface DaycareFields {
   name: string
   openingDate: LocalDate | null

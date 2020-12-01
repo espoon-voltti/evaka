@@ -9,6 +9,7 @@ import styled from 'styled-components'
 
 import { Result, Loading, isSuccess, isFailure } from '~api'
 import {
+  authMobile,
   getPairingStatus,
   PairingResponse,
   postPairingChallenge
@@ -20,7 +21,26 @@ import { P } from '~components/shared/Typography'
 import { faArrowRight } from '~icon-set'
 import { useTranslation } from '~state/i18n'
 import EvakaLogo from '../../assets/EvakaLogo.svg'
-import { FullHeightContainer, WideLinkButton } from './components'
+import { FullHeightContainer } from './components'
+
+export const WideLinkButton = styled.a`
+  min-height: 45px;
+  outline: none;
+  cursor: pointer;
+  font-family: 'Open Sans', sans-serif;
+  font-size: 14px;
+  line-height: 16px;
+  font-weight: 600;
+  text-transform: uppercase;
+  white-space: nowrap;
+  letter-spacing: 0.2px;
+  width: 100%;
+  color: ${Colors.greyscale.white};
+  background: ${Colors.blues.primary};
+  display: flex;
+  justify-content: center;
+  align-items: center;
+`
 
 const CenteredColumn = styled.div`
   display: flex;
@@ -75,6 +95,14 @@ export default React.memo(function ParingWizard() {
         void getPairingStatus(pairingResponse.data.id).then((status) => {
           if (isSuccess(status)) {
             if (status.data.status === 'READY') {
+              if (pairingResponse.data.responseKey) {
+                void authMobile(
+                  pairingResponse.data.id,
+                  pairingResponse.data.challengeKey,
+                  pairingResponse.data.responseKey
+                )
+              }
+
               clearInterval(polling)
               setPhase(3)
             }
@@ -148,7 +176,7 @@ export default React.memo(function ParingWizard() {
             </CenteredColumn>
             <Bottom>
               <WideLinkButton
-                to={`/units/${pairingResponse.data.unitId}/groupselector`}
+                href={`/employee/units/${pairingResponse.data.unitId}/groupselector`}
                 data-qa="unit-page-link"
               >
                 {i18n.mobile.actions.START.toUpperCase()}
