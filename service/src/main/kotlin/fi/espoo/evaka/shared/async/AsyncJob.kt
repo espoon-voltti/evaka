@@ -28,12 +28,18 @@ enum class AsyncJobType {
     VTJ_REFRESH,
     DVV_MODIFICATIONS_REFRESH,
     UPLOAD_TO_KOSKI,
-    SEND_APPLICATION_EMAIL
+    SEND_APPLICATION_EMAIL,
+    GARBAGE_COLLECT_PAIRING
 }
 
 interface AsyncJobPayload {
     val asyncJobType: AsyncJobType
     val user: AuthenticatedUser?
+}
+
+data class GarbageCollectPairing(val pairingId: UUID) : AsyncJobPayload {
+    override val asyncJobType = AsyncJobType.GARBAGE_COLLECT_PAIRING
+    override val user: AuthenticatedUser? = null
 }
 
 data class SendApplicationEmail(val guardianId: UUID, val language: Language) : AsyncJobPayload {
