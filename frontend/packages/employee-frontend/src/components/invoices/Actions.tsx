@@ -12,7 +12,7 @@ import StickyActionBar from '../common/StickyActionBar'
 import { deleteInvoices } from '../../api/invoicing'
 import { InvoiceStatus } from '../../types/invoicing'
 import { EspooColours } from '../../utils/colours'
-import { InvoicesAction } from './invoices-state'
+import { InvoicesActions } from './invoices-state'
 
 const ErrorMessage = styled.div`
   color: ${EspooColours.red};
@@ -25,7 +25,8 @@ const CheckedRowsInfo = styled.div`
 `
 
 type Props = {
-  dispatch: React.Dispatch<InvoicesAction>
+  actions: InvoicesActions
+  reloadInvoices: () => void
   status: InvoiceStatus
   checkedInvoices: Record<string, true>
   checkedAreas: string[]
@@ -33,7 +34,8 @@ type Props = {
 }
 
 const Actions = React.memo(function Actions({
-  dispatch,
+  actions,
+  reloadInvoices,
   status,
   checkedInvoices,
   checkedAreas,
@@ -68,8 +70,8 @@ const Actions = React.memo(function Actions({
             .catch(() => void setError(true))
         }
         onSuccess={() => {
-          dispatch({ type: 'CLEAR_CHECKED' })
-          dispatch({ type: 'RELOAD_INVOICES' })
+          actions.clearChecked()
+          reloadInvoices()
         }}
         data-qa="delete-invoices"
       />
@@ -81,7 +83,7 @@ const Actions = React.memo(function Actions({
           (allInvoicesToggle && checkedAreas.length === 0)
         }
         text={i18n.invoices.buttons.sendInvoice(checkedIds.length)}
-        onClick={() => dispatch({ type: 'OPEN_MODAL' })}
+        onClick={actions.openModal}
         data-qa="open-send-invoices-dialog"
       />
     </StickyActionBar>

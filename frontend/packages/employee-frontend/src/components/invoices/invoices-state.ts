@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { useCallback, useContext, useEffect, useReducer } from 'react'
+import { useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import LocalDate from '@evaka/lib-common/src/local-date'
 import { isSuccess, mapResult, Result } from '~api'
 import {
@@ -20,110 +20,15 @@ import { useRestApi } from '~utils/useRestApi'
 
 const pageSize = 200
 
-export type PagedInvoices = {
-  [k: number]: Result<InvoiceSummary[]>
-}
-
 type State = {
   page: number
   sortBy: SortByInvoices
   sortDirection: SearchOrder
-  invoices: PagedInvoices
+  invoices: Record<number, Result<InvoiceSummary[]>>
   invoiceTotals?: { total: number; pages: number }
-  needsReload: boolean
   checkedInvoices: Record<string, true>
   allInvoicesToggle: boolean
   showModal: boolean
-}
-
-export type InvoicesAction =
-  | { type: 'SET_PAGE'; payload: number }
-  | { type: 'SET_SORT_BY'; payload: SortByInvoices }
-  | { type: 'SET_SORT_DIRECTION'; payload: SearchOrder }
-  | {
-      type: 'SET_INVOICES'
-      payload: { page: number; result: Result<InvoiceSearchResult> }
-    }
-  | { type: 'RELOAD_INVOICES' }
-  | { type: 'INVOICE_RELOAD_DONE' }
-  | { type: 'TOGGLE_CHECKED'; payload: string }
-  | { type: 'CLEAR_CHECKED' }
-  | { type: 'CHECK_ALL' }
-  | { type: 'ALL_INVOICES_TOGGLE' }
-  | { type: 'OPEN_MODAL' }
-  | { type: 'CLOSE_MODAL' }
-
-function reducer(state: State, action: InvoicesAction): State {
-  switch (action.type) {
-    case 'SET_PAGE':
-      return { ...state, page: action.payload }
-    case 'SET_SORT_BY':
-      return { ...state, sortBy: action.payload }
-    case 'SET_SORT_DIRECTION':
-      return { ...state, sortDirection: action.payload }
-    case 'SET_INVOICES': {
-      const { page, result } = action.payload
-      return {
-        ...state,
-        invoices: {
-          ...state.invoices,
-          [page]: mapResult(result, (r) => r.data)
-        },
-        invoiceTotals: isSuccess(result)
-          ? { total: result.data.total, pages: result.data.pages }
-          : state.invoiceTotals
-      }
-    }
-    case 'RELOAD_INVOICES':
-      return { ...state, needsReload: true }
-    case 'INVOICE_RELOAD_DONE':
-      return { ...state, needsReload: false }
-    case 'TOGGLE_CHECKED': {
-      if (state.checkedInvoices[action.payload]) {
-        const { [action.payload]: _, ...rest } = state.checkedInvoices
-        return {
-          ...state,
-          checkedInvoices: rest
-        }
-      } else {
-        return {
-          ...state,
-          checkedInvoices: {
-            ...state.checkedInvoices,
-            [action.payload]: true
-          }
-        }
-      }
-    }
-    case 'CLEAR_CHECKED':
-      return {
-        ...state,
-        checkedInvoices: {},
-        allInvoicesToggle: false
-      }
-    case 'CHECK_ALL': {
-      const currentPage = state.invoices[state.page]
-      const checked: Record<string, true> = isSuccess(currentPage)
-        ? Object.fromEntries(
-            currentPage.data.map((invoice) => [invoice.id, true])
-          )
-        : {}
-      return {
-        ...state,
-        checkedInvoices: {
-          ...state.checkedInvoices,
-          ...checked
-        }
-      }
-    }
-    case 'ALL_INVOICES_TOGGLE':
-      return { ...state, allInvoicesToggle: !state.allInvoicesToggle }
-    case 'OPEN_MODAL':
-      return { ...state, showModal: true }
-    case 'CLOSE_MODAL':
-      return { ...state, showModal: false }
-  }
-  return state
 }
 
 const initialState: State = {
@@ -131,32 +36,94 @@ const initialState: State = {
   sortBy: 'HEAD_OF_FAMILY',
   sortDirection: 'ASC',
   invoices: {},
-  needsReload: false,
   checkedInvoices: {},
   allInvoicesToggle: false,
   showModal: false
 }
 
-export function useInvoicesState() {
-  const [state, dispatch] = useReducer(reducer, initialState)
-
-  const setInvoicesResult = useCallback(
-    (result: Result<InvoiceSearchResult>) => {
-      dispatch({
-        type: 'SET_INVOICES',
-        payload: { page: state.page, result }
-      })
-    },
-    [dispatch, state.page]
+const useActions = (setState: React.Dispatch<React.SetStateAction<State>>) =>
+  useMemo(
+    () => ({
+      setPage: (page: number) => setState((s) => ({ ...s, page })),
+      setSortBy: (sortBy: SortByInvoices) =>
+        setState((s) => ({ ...s, sortBy })),
+      setSortDirection: (sortDirection: SearchOrder) =>
+        setState((s) => ({ ...s, sortDirection })),
+      openModal: () => setState((s) => ({ ...s, showModal: true })),
+      closeModal: () => setState((s) => ({ ...s, showModal: false })),
+      toggleChecked: (invoice: string) =>
+        setState((s) => {
+          if (s.checkedInvoices[invoice]) {
+            const { [invoice]: _, ...rest } = s.checkedInvoices
+            return {
+              ...s,
+              checkedInvoices: rest
+            }
+          } else {
+            return {
+              ...s,
+              checkedInvoices: {
+                ...s.checkedInvoices,
+                [invoice]: true
+              }
+            }
+          }
+        }),
+      clearChecked: () =>
+        setState((s) => ({
+          ...s,
+          checkedInvoices: {},
+          allInvoicesToggle: false
+        })),
+      checkAll: () =>
+        setState((s) => {
+          const currentPage = s.invoices[s.page]
+          const checked: Record<string, true> = isSuccess(currentPage)
+            ? Object.fromEntries(
+                currentPage.data.map((invoice) => [invoice.id, true])
+              )
+            : {}
+          return {
+            ...s,
+            checkedInvoices: {
+              ...s.checkedInvoices,
+              ...checked
+            }
+          }
+        }),
+      allInvoicesToggle: () =>
+        setState((s) => ({ ...s, allInvoicesToggle: !s.allInvoicesToggle }))
+    }),
+    []
   )
 
+export type InvoicesActions = ReturnType<typeof useActions>
+
+export function useInvoicesState() {
   const {
     invoices: { searchFilters, debouncedSearchTerms }
   } = useContext(InvoicingUiContext)
+  const [state, setState] = useState(initialState)
+  const actions = useActions(setState)
 
-  const reloadInvoices = useRestApi(getInvoices, setInvoicesResult)
+  const setInvoicesResult = useCallback(
+    (result: Result<InvoiceSearchResult>) => {
+      setState((previousState) => ({
+        ...previousState,
+        invoices: {
+          ...state.invoices,
+          [state.page]: mapResult(result, (r) => r.data)
+        },
+        invoiceTotals: isSuccess(result)
+          ? { total: result.data.total, pages: result.data.pages }
+          : previousState.invoiceTotals
+      }))
+    },
+    [setState, state.page]
+  )
 
-  const loadInvoices = useCallback(() => {
+  const loadInvoices = useRestApi(getInvoices, setInvoicesResult)
+  const reloadInvoices = useCallback(() => {
     const area = searchFilters.area.join(',')
     const status = searchFilters.status
     const distinctiveDetails = searchFilters.distinctiveDetails.join(',')
@@ -169,7 +136,7 @@ export function useInvoicesState() {
       periodStart: searchFilters.startDate?.formatIso(),
       periodEnd: searchFilters.endDate?.formatIso()
     }
-    reloadInvoices(
+    loadInvoices(
       state.page,
       pageSize,
       state.sortBy,
@@ -180,16 +147,20 @@ export function useInvoicesState() {
     state.page,
     state.sortBy,
     state.sortDirection,
-    pageSize,
-    searchFilters,
+    searchFilters.area,
+    searchFilters.status,
+    searchFilters.distinctiveDetails,
+    searchFilters.unit,
+    searchFilters.startDate,
+    searchFilters.endDate,
     debouncedSearchTerms,
-    reloadInvoices
+    loadInvoices
   ])
 
-  const refreshInvoices = useCallback(
-    () => createInvoices().then(() => dispatch({ type: 'RELOAD_INVOICES' })),
-    [dispatch]
-  )
+  const refreshInvoices = useCallback(async () => {
+    await createInvoices()
+    reloadInvoices()
+  }, [reloadInvoices])
 
   const send = useCallback(
     ({
@@ -212,7 +183,6 @@ export function useInvoicesState() {
       return request
     },
     [
-      dispatch,
       state.checkedInvoices,
       state.allInvoicesToggle,
       searchFilters.area,
@@ -222,30 +192,22 @@ export function useInvoicesState() {
     ]
   )
 
-  useEffect(() => {
-    loadInvoices()
-  }, [loadInvoices])
+  const onSendSuccess = useCallback(() => {
+    setState((s) => ({ ...s, showModal: false, checkedInvoices: {} }))
+    reloadInvoices()
+  }, [reloadInvoices])
 
   useEffect(() => {
-    if (state.needsReload) {
-      dispatch({ type: 'INVOICE_RELOAD_DONE' })
-      loadInvoices()
-    }
-  }, [state.needsReload, loadInvoices])
+    reloadInvoices()
+  }, [reloadInvoices])
 
   return {
-    dispatch,
-    page: state.page,
-    invoices: state.invoices,
-    pages: state.invoiceTotals?.pages,
-    total: state.invoiceTotals?.total,
-    sortBy: state.sortBy,
-    sortDirection: state.sortDirection,
-    checkedInvoices: state.checkedInvoices,
-    allInvoicesToggle: state.allInvoicesToggle,
-    showModal: state.showModal,
+    actions,
+    state,
     searchFilters,
+    reloadInvoices,
     refreshInvoices,
-    sendInvoices: send
+    sendInvoices: send,
+    onSendSuccess
   }
 }

@@ -16,23 +16,26 @@ import Invoices from './Invoices'
 import InvoiceFilters from './InvoiceFilters'
 import Actions from './Actions'
 import { useTranslation } from '~state/i18n'
-import { InvoicesAction, useInvoicesState } from './invoices-state'
+import { InvoicesActions, useInvoicesState } from './invoices-state'
 
 export default React.memo(function InvoicesPage() {
   const {
-    dispatch,
-    page,
-    invoices,
-    total,
-    pages,
-    sortBy,
-    sortDirection,
+    actions,
+    state: {
+      page,
+      invoices,
+      invoiceTotals,
+      sortBy,
+      sortDirection,
+      checkedInvoices,
+      allInvoicesToggle,
+      showModal
+    },
     searchFilters,
+    reloadInvoices,
     refreshInvoices,
-    checkedInvoices,
-    allInvoicesToggle,
-    showModal,
-    sendInvoices
+    sendInvoices,
+    onSendSuccess
   } = useInvoicesState()
 
   return (
@@ -43,11 +46,11 @@ export default React.memo(function InvoicesPage() {
       <Gap size={'XL'} />
       <ContentArea opaque>
         <Invoices
-          dispatch={dispatch}
+          actions={actions}
           invoices={invoices[page]}
           refreshInvoices={refreshInvoices}
-          total={total}
-          pages={pages}
+          total={invoiceTotals?.total}
+          pages={invoiceTotals?.pages}
           currentPage={page}
           sortBy={sortBy}
           sortDirection={sortDirection}
@@ -61,7 +64,8 @@ export default React.memo(function InvoicesPage() {
         />
       </ContentArea>
       <Actions
-        dispatch={dispatch}
+        actions={actions}
+        reloadInvoices={reloadInvoices}
         status={searchFilters.status}
         checkedInvoices={checkedInvoices}
         checkedAreas={searchFilters.area}
@@ -69,7 +73,8 @@ export default React.memo(function InvoicesPage() {
       />
       {showModal ? (
         <Modal
-          dispatch={dispatch}
+          actions={actions}
+          onSendDone={onSendSuccess}
           sendInvoices={sendInvoices}
           allInvoicesToggle={allInvoicesToggle}
         />
@@ -79,11 +84,13 @@ export default React.memo(function InvoicesPage() {
 })
 
 const Modal = React.memo(function Modal({
-  dispatch,
+  actions,
+  onSendDone,
   sendInvoices,
   allInvoicesToggle
 }: {
-  dispatch: React.Dispatch<InvoicesAction>
+  actions: InvoicesActions
+  onSendDone: () => void
   sendInvoices: (args: {
     invoiceDate: LocalDate
     dueDate: LocalDate
@@ -99,15 +106,11 @@ const Modal = React.memo(function Modal({
       iconColour={'blue'}
       title={i18n.invoices.sendModal.title}
       icon={faEnvelope}
-      reject={() => dispatch({ type: 'CLOSE_MODAL' })}
+      reject={actions.closeModal}
       rejectLabel={i18n.common.cancel}
       resolve={() => sendInvoices({ invoiceDate, dueDate })}
       resolveLabel={i18n.common.confirm}
-      onResolveSuccess={() => {
-        dispatch({ type: 'CLEAR_CHECKED' })
-        dispatch({ type: 'RELOAD_INVOICES' })
-        dispatch({ type: 'CLOSE_MODAL' })
-      }}
+      onResolveSuccess={onSendDone}
       data-qa="send-invoices-dialog"
     >
       <ModalContent>

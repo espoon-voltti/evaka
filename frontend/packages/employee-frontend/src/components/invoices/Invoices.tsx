@@ -33,10 +33,10 @@ import { EspooColours } from '~utils/colours'
 import { SearchOrder } from '~types'
 import { SortByInvoices } from '~api/invoicing'
 import Pagination from '~components/shared/Pagination'
-import { InvoicesAction } from './invoices-state'
+import { InvoicesActions } from './invoices-state'
 
 interface Props {
-  dispatch: React.Dispatch<InvoicesAction>
+  actions: InvoicesActions
   invoices?: Result<InvoiceSummary[]>
   refreshInvoices: () => Promise<void>
   total?: number
@@ -51,7 +51,7 @@ interface Props {
 }
 
 export default React.memo(function Invoices({
-  dispatch,
+  actions,
   invoices,
   refreshInvoices,
   total,
@@ -91,9 +91,7 @@ export default React.memo(function Invoices({
             <Pagination
               pages={pages}
               currentPage={currentPage}
-              setPage={(payload: number) =>
-                dispatch({ type: 'SET_PAGE', payload })
-              }
+              setPage={actions.setPage}
             />
           </ResultsContainer>
         )}
@@ -108,14 +106,14 @@ export default React.memo(function Invoices({
             <Checkbox
               checked={allInvoicesToggle}
               label={i18n.invoices.table.toggleAll}
-              onChange={() => dispatch({ type: 'ALL_INVOICES_TOGGLE' })}
+              onChange={actions.allInvoicesToggle}
               disabled={allInvoicesToggleDisabled}
             />
           </ResultsContainer>
           <Gap size="m" />
           <Table data-qa="table-of-invoices">
             <InvoiceTableHeader
-              dispatch={dispatch}
+              actions={actions}
               invoices={invoices}
               checked={checked}
               sortBy={sortBy}
@@ -124,7 +122,7 @@ export default React.memo(function Invoices({
               allInvoicesToggle={allInvoicesToggle}
             />
             <InvoiceTableBody
-              dispatch={dispatch}
+              actions={actions}
               invoices={invoices.data}
               showCheckboxes={showCheckboxes}
               checked={checked}
@@ -135,9 +133,7 @@ export default React.memo(function Invoices({
             <Pagination
               pages={pages}
               currentPage={currentPage}
-              setPage={(payload: number) =>
-                dispatch({ type: 'SET_PAGE', payload })
-              }
+              setPage={actions.setPage}
             />
           </ResultsContainer>
         </>
@@ -175,7 +171,7 @@ const SectionTitle = styled(Title)`
 `
 
 const InvoiceTableHeader = React.memo(function InvoiceTableHeader({
-  dispatch,
+  actions,
   invoices,
   checked,
   sortBy,
@@ -184,7 +180,7 @@ const InvoiceTableHeader = React.memo(function InvoiceTableHeader({
   allInvoicesToggle
 }: Pick<
   Props,
-  | 'dispatch'
+  | 'actions'
   | 'invoices'
   | 'checked'
   | 'sortBy'
@@ -204,13 +200,10 @@ const InvoiceTableHeader = React.memo(function InvoiceTableHeader({
 
   const toggleSort = (column: SortByInvoices) => () => {
     if (sortBy === column) {
-      dispatch({
-        type: 'SET_SORT_DIRECTION',
-        payload: sortDirection === 'ASC' ? 'DESC' : 'ASC'
-      })
+      actions.setSortDirection(sortDirection === 'ASC' ? 'DESC' : 'ASC')
     } else {
-      dispatch({ type: 'SET_SORT_BY', payload: column })
-      dispatch({ type: 'SET_SORT_DIRECTION', payload: 'ASC' })
+      actions.setSortBy(column)
+      actions.setSortDirection('ASC')
     }
   }
 
@@ -247,9 +240,7 @@ const InvoiceTableHeader = React.memo(function InvoiceTableHeader({
               checked={allChecked || allInvoicesToggle}
               disabled={allInvoicesToggle}
               onChange={() =>
-                allChecked
-                  ? dispatch({ type: 'CLEAR_CHECKED' })
-                  : dispatch({ type: 'CHECK_ALL' })
+                allChecked ? actions.clearChecked() : actions.checkAll()
               }
               dataQa="toggle-all-invoices"
             />
@@ -261,14 +252,14 @@ const InvoiceTableHeader = React.memo(function InvoiceTableHeader({
 })
 
 const InvoiceTableBody = React.memo(function InvoiceTableBody({
-  dispatch,
+  actions,
   invoices,
   showCheckboxes,
   checked,
   allInvoicesToggle
 }: Pick<
   Props,
-  'dispatch' | 'showCheckboxes' | 'checked' | 'allInvoicesToggle'
+  'actions' | 'showCheckboxes' | 'checked' | 'allInvoicesToggle'
 > & {
   invoices: InvoiceSummary[]
 }) {
@@ -312,9 +303,7 @@ const InvoiceTableBody = React.memo(function InvoiceTableBody({
                 label=""
                 checked={!!checked[item.id] || allInvoicesToggle}
                 disabled={allInvoicesToggle}
-                onChange={() =>
-                  dispatch({ type: 'TOGGLE_CHECKED', payload: item.id })
-                }
+                onChange={() => actions.toggleChecked(item.id)}
                 dataQa="toggle-invoice"
               />
             </Td>
