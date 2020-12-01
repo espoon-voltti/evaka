@@ -15,7 +15,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 
         <div class="columns" v-if="isChecked && !isValid">
           <div class="column">
-            <c-warning-box>
+            <c-warning-box data-qa="validation-errors">
               <div>
                 <p>{{ $t('form.validation-instruction') }}:</p>
                 <ul class="validation-error-items">

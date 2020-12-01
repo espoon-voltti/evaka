@@ -34,6 +34,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
         :primary="true"
         v-if="accept"
         @click="$emit('accept')"
+        data-qa="btn-modal-ok"
       >
         {{ $t('general.ok') }}
       </c-button>
