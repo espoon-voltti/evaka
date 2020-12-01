@@ -15,10 +15,8 @@ import { logConsoleMessages } from '../../utils/fixture'
 import { deleteApplication, insertApplications } from '../../dev-api'
 import { seppoAdminRole } from '../../config/users'
 import ApplicationReadView from '../../pages/employee/applications/application-read-view'
-import { ApplicationWorkbenchPage } from '../../pages/admin/application-workbench-page'
 
 const home = new Home()
-const applicationWorkbench = new ApplicationWorkbenchPage()
 const applicationReadView = new ApplicationReadView()
 
 let fixtures: AreaAndPersonFixtures
@@ -99,29 +97,4 @@ test('If there is no other VTJ guardian it is mentioned', async (t) => {
   await applicationReadView.openApplicationByLink(fixture.id)
   await applicationReadView.assertPageTitle('Varhaiskasvatushakemus')
   await applicationReadView.assertOtherVtjGuardianMissing()
-})
-
-test('Move application from review queue to placement, place it, and confirm the placement without creating a decision', async (t) => {
-  const fixture = applicationFixture(
-    fixtures.enduserChildFixtureJari,
-    fixtures.enduserGuardianFixture
-  )
-  const applicationId = fixture.id
-  await insertApplications([fixture])
-  await t.useRole(seppoAdminRole)
-
-  await applicationWorkbench.moveToWaitingPlacement(applicationId)
-
-  await applicationWorkbench.openPlacementQueue()
-  await applicationWorkbench.openDaycarePlaementById(applicationId)
-  await applicationWorkbench.placementPage.placeIn(0)
-  await applicationWorkbench.placementPage.sendPlacement()
-
-  await applicationWorkbench.openDecisionQueue()
-  await applicationWorkbench.confirmPlacementWithoutDecision(applicationId)
-
-  await applicationReadView.openApplicationByLink(applicationId)
-  await t
-    .expect(applicationReadView.applicationStatus.innerText)
-    .contains('Paikka vastaanotettu')
 })
