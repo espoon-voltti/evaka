@@ -46,7 +46,7 @@ export default React.memo(function MobileLander() {
         </Top>
 
         <Bottom>
-          <WideLinkButton to="/mobile/pairing">
+          <WideLinkButton to="/mobile/pairing" data-qa="start-pairing-btn">
             {i18n.mobile.actions.ADD_DEVICE.toUpperCase()}
           </WideLinkButton>
         </Bottom>

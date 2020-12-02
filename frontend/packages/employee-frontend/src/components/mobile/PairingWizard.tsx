@@ -129,7 +129,9 @@ export default React.memo(function ParingWizard() {
           <Fragment>
             <CenteredColumn>
               <Img src={EvakaLogo} />
-              <PhaseTitle>{i18n.mobile.wizard.title1}</PhaseTitle>
+              <PhaseTitle data-qa="mobile-pairing-wizard-title-1">
+                {i18n.mobile.wizard.title1}
+              </PhaseTitle>
               <section>
                 <P centered>{i18n.mobile.wizard.text1}</P>
               </section>
@@ -140,7 +142,11 @@ export default React.memo(function ParingWizard() {
                   placeholder={i18n.common.code}
                   data-qa="challenge-key-input"
                 />
-                <IconButton icon={faArrowRight} onClick={sendRequest} />
+                <IconButton
+                  icon={faArrowRight}
+                  onClick={sendRequest}
+                  data-qa="submit-challenge-key-btn"
+                />
               </Flex>
             </CenteredColumn>
           </Fragment>

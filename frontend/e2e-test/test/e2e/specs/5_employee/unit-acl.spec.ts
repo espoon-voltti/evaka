@@ -17,9 +17,12 @@ import {
 import { UUID } from '../../dev-api/types'
 import UnitPage from '../../pages/employee/units/unit-page'
 import { Role, t } from 'testcafe'
+import { mobileRole, seppoManagerRole } from '../../config/users'
+import PairingFlow from '../../pages/employee/mobile/pairing-flow'
 
 const home = new EmployeeHome()
 const unitPage = new UnitPage()
+const pairingFlow = new PairingFlow()
 
 const employeeAads = [
   'df979243-f081-4241-bc4f-e93a019bddfa',
@@ -121,4 +124,46 @@ test('User can add and delete staff', async (t) => {
   await unitPage.staffAcl.deleteEmployeeAclByIndex(0)
   await unitPage.staffAcl.deleteEmployeeAclByIndex(0)
   await t.expect(await unitPage.staffAcl.getAclRows()).eql([])
+})
+
+// eslint-disable-next-line
+test.only('User can add a mobile device', async (t) => {
+  await t.useRole(seppoManagerRole)
+  await home.navigateToUnits()
+  await unitPage.navigateHere(fixtures.daycareFixture.id)
+  const employeeView = await t.getCurrentWindow()
+
+  await t.expect(unitPage.mobileDevicesTableRows.exists).notOk()
+  await t.click(unitPage.mobileDevicesStartPairingBtn)
+  await t.expect(unitPage.pairingModalTitle.exists).ok()
+  await t.expect(unitPage.mobileDevicesChallengeKey.exists).ok()
+  const challengeKey = await unitPage.mobileDevicesChallengeKey.textContent
+
+  const mobileView = await t.openWindow('http://localhost:9093/employee/mobile')
+  console.log('mobileView:', mobileView)
+
+  await t.useRole(mobileRole)
+  await t.click(pairingFlow.mobileStartPairingBtn)
+  await t.expect(pairingFlow.mobilePairingTitle1.exists).ok()
+  await t.typeText(pairingFlow.challengeKeyInput, challengeKey)
+  await t.click(pairingFlow.submitChallengeKeyBtn)
+  await t.debug()
+
+  await t.useRole(seppoManagerRole)
+  await t.debug()
+  await t.switchToWindow(employeeView)
+  await t.debug()
+  await t.expect(unitPage.mobileDevicesResponseKeyInput.exists).ok()
+
+  // await unitPage.staffAcl.addEmployeeAcl(employeeUuids[0])
+  // await t
+  //   .expect(await unitPage.staffAcl.getAclRows())
+  //   .eql([expectedAclRows.pete])
+  // await unitPage.staffAcl.addEmployeeAcl(employeeUuids[1])
+  // await t
+  //   .expect(await unitPage.staffAcl.getAclRows())
+  //   .eql([expectedAclRows.pete, expectedAclRows.yrjo])
+  // await unitPage.staffAcl.deleteEmployeeAclByIndex(0)
+  // await unitPage.staffAcl.deleteEmployeeAclByIndex(0)
+  // await t.expect(await unitPage.staffAcl.getAclRows()).eql([])
 })

@@ -117,6 +117,7 @@ export default React.memo(function MobilePairingModal({
           }
           resolve={closeModal}
           resolveLabel={i18n.common.cancel}
+          data-qa="mobile-pairing-modal-phase-1"
         >
           {isLoading(pairingResponse) && <Loader />}
           {isFailure(pairingResponse) && <div>{i18n.common.loadingFailed}</div>}
