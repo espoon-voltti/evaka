@@ -6,7 +6,6 @@ import React, { useContext } from 'react'
 import { Redirect, RouteComponentProps } from 'react-router-dom'
 import { UserContext } from '~state/user'
 import Login from './login-page/Login'
-import { getLoginUrl } from '~api/auth'
 
 function LoginPage({ location }: RouteComponentProps) {
   const { loggedIn } = useContext(UserContext)
@@ -19,7 +18,7 @@ function LoginPage({ location }: RouteComponentProps) {
     return <Redirect to={'/'} />
   }
 
-  return <Login loginUrl={getLoginUrl()} error={error || loginError} />
+  return <Login error={error || loginError} />
 }
 
 export default LoginPage

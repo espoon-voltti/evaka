@@ -10,9 +10,9 @@ import Title from 'components/shared/atoms/Title'
 import ErrorMessage from './login/ErrorMessage'
 import { useTranslation } from '~state/i18n'
 import { Gap } from 'components/shared/layout/white-space'
+import { getLoginUrl } from '~api/auth'
 
 interface Props {
-  loginUrl: string
   error?: string
 }
 
@@ -54,7 +54,7 @@ const Center = styled.div`
   margin-bottom: 80px;
 `
 
-function Login({ loginUrl, error }: Props) {
+function Login({ error }: Props) {
   const { i18n } = useTranslation()
 
   return (
@@ -65,11 +65,15 @@ function Login({ loginUrl, error }: Props) {
           {i18n.login.title}
         </Title>
         <Title size={2} centered>
-          {i18n.login.subtitle}
+          {i18n.login.login}
         </Title>
         <Center>
-          <LoginButton data-qa="login-btn" href={loginUrl}>
-            <span>{i18n.login.login}</span>
+          <LoginButton data-qa="login-btn" href={getLoginUrl('saml')}>
+            <span>{i18n.login.loginAD}</span>
+          </LoginButton>
+          <Gap horizontal />
+          <LoginButton data-qa="login-btn" href={getLoginUrl('oidc')}>
+            <span>{i18n.login.loginKeycloak}</span>
           </LoginButton>
         </Center>
         <ErrorMessage error={error} />
