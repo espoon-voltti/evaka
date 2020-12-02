@@ -228,11 +228,21 @@ server {
   location /api/application {
     include     proxy_params;
     proxy_pass  $enduserUrl;
+
+    location /api/application/attachments {
+      client_max_body_size 100m;
+      proxy_pass  $enduserUrl;
+    }
   }
 
   location /api/internal {
     include     proxy_params;
     proxy_pass  $internalUrl;
+
+    location /api/internal/attachments {
+      client_max_body_size 100m;
+      proxy_pass  $internalUrl;
+    }
   }
 
   # Direct all CPS reports to internal endpoint /api/csp/csp-report
