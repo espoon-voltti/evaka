@@ -24,6 +24,7 @@ import mobileDeviceSession, {
   refreshMobileSession
 } from './mobile-device-session'
 import authStatus from './routes/auth-status'
+import { createKeycloakAuthEndpoints } from '../shared/routes/auth/keycloak-poc'
 
 const app = express()
 trustReverseProxy(app)
@@ -59,7 +60,8 @@ function internalApiRouter() {
   const router = Router()
   router.use('/scheduled', scheduledApiRouter())
   router.all('/system/*', (req, res) => res.sendStatus(404))
-  router.use(createAuthEndpoints('employee'))
+  //router.use(createAuthEndpoints('employee'))
+  router.use(createKeycloakAuthEndpoints('employee'))
 
   if (enableDevApi) {
     router.use(

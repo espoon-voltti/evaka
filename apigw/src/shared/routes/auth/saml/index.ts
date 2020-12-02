@@ -66,6 +66,7 @@ function createLoginHandler({
       strategyName,
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (err: any, user: SamlUser | undefined) => {
+        console.log('DDEBUG passport.authenticate login', err, user)
         if (err || !user) {
           const description =
             parseDescriptionFromSamlError(err) || 'Could not parse SAML error.'
@@ -182,6 +183,7 @@ export default function createSamlRouter(config: SamlEndpointConfig): Router {
   // a SAML LoginResponse is included in the request.
   router.post('/auth/saml/login/callback', urlencodedParser, loginHandler)
 
+  /*
   if (eadMock) {
     router.get(
       '/dev-auth/login',
@@ -243,7 +245,7 @@ export default function createSamlRouter(config: SamlEndpointConfig): Router {
       })
     )
   }
-
+*/
   // Our application directs the browser to one of these endpoints to start
   // the logout flow. We generate a LogoutRequest.
   router.get('/auth/saml/logout', logoutHandler)
