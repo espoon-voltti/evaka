@@ -39,7 +39,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
             <a
               v-if="file.id"
               class="file-name"
-              :href="`/api/application/attachments/${file.id}/download`"
+              @click="deliverBlob(file)"
               target="_blank"
               rel="noreferrer"
             >
@@ -105,6 +105,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 </template>
 
 <script>
+  import axios from 'axios'
   export default {
     props: {
       files: Array,
@@ -112,6 +113,21 @@ SPDX-License-Identifier: LGPL-2.1-or-later
       onDelete: Function
     },
     methods: {
+      deliverBlob(file) {
+        axios({
+          url: `/api/application/attachments/${file.id}/download`,
+          method: 'GET',
+          responseType: 'blob',
+        }).then((response) => {
+          const url = window.URL.createObjectURL(new Blob([response.data]))
+          const link = document.createElement('a')
+          link.href = url
+          link.setAttribute('download', `${file.name}`)
+          document.body.appendChild(link)
+          link.click()
+          link.remove()
+        })
+      },
       onChange(event) {
         this.onUpload(event.target.files[0])
       },

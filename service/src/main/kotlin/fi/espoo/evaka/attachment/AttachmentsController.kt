@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.attachment
 
+import com.amazonaws.services.s3.model.AmazonS3Exception
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.application.AttachmentType
 import fi.espoo.evaka.s3.DocumentService
@@ -121,11 +122,15 @@ class AttachmentsController(
         val attachment =
             db.read { it.getAttachment(attachmentId) ?: throw NotFound("Attachment $attachmentId not found") }
 
-        return s3Client.get(filesBucket, "$attachmentId").let { document ->
-            ResponseEntity.ok()
-                .header("Content-Disposition", "attachment;filename=${document.getName()}")
-                .contentType(MediaType.valueOf(attachment.contentType))
-                .body(document.getBytes())
+        return try {
+             s3Client.get(filesBucket, "$attachmentId").let { document ->
+                ResponseEntity.ok()
+                    .header("Content-Disposition", "attachment;filename=${document.getName()}")
+                    .contentType(MediaType.valueOf(attachment.contentType))
+                    .body(document.getBytes())
+            }
+        } catch (e: AmazonS3Exception) {
+            throw Forbidden("Permission denied")
         }
     }
 
