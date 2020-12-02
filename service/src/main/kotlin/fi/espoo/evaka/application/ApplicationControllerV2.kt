@@ -481,7 +481,6 @@ class ApplicationControllerV2(
             "set-verified" to applicationStateService::setVerified,
             "set-unverified" to applicationStateService::setUnverified,
             "cancel-placement-plan" to applicationStateService::cancelPlacementPlan,
-            "confirm-placement-without-decision" to applicationStateService::confirmPlacementWithoutDecision,
             "send-decisions-without-proposal" to applicationStateService::sendDecisionsWithoutProposal,
             "send-placement-proposal" to applicationStateService::sendPlacementProposal,
             "withdraw-placement-proposal" to applicationStateService::withdrawPlacementProposal,

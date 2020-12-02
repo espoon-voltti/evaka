@@ -22,7 +22,6 @@ import fi.espoo.evaka.invoicing.domain.Income
 import fi.espoo.evaka.invoicing.domain.IncomeEffect
 import fi.espoo.evaka.invoicing.domain.PersonData
 import fi.espoo.evaka.pis.getPersonById
-import fi.espoo.evaka.placement.Placement
 import fi.espoo.evaka.placement.PlacementPlan
 import fi.espoo.evaka.placement.PlacementPlanConfirmationStatus
 import fi.espoo.evaka.placement.PlacementPlanRejectReason
@@ -1115,78 +1114,6 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
     }
 
     @Test
-    fun `confirmPlacementWithoutDecision - applies placement plan, removes decision drafts and changes status`() {
-        val child = testChild_6
-        db.transaction { tx ->
-            // given
-            insertDraftApplication(tx.handle, appliedType = PlacementType.PRESCHOOL_DAYCARE, child = child)
-            service.sendApplication(tx, serviceWorker, applicationId)
-            service.moveToWaitingPlacement(tx, serviceWorker, applicationId)
-            service.createPlacementPlan(
-                tx,
-                serviceWorker,
-                applicationId,
-                DaycarePlacementPlan(
-                    unitId = testDaycare.id,
-                    period = mainPeriod,
-                    preschoolDaycarePeriod = connectedPeriod
-                )
-            )
-        }
-        db.transaction { tx ->
-            // when
-            service.confirmPlacementWithoutDecision(tx, serviceWorker, applicationId)
-        }
-        db.read { tx ->
-            // then
-            val application = fetchApplicationDetails(tx.handle, applicationId)!!
-            assertEquals(ApplicationStatus.ACTIVE, application.status)
-
-            val placementPlan = getPlacementPlan(tx.handle, applicationId)
-            assertEquals(null, placementPlan)
-
-            val placements = tx.handle.getPlacementsForChild(child.id)
-            assertEquals(2, placements.size)
-            placements
-                .find { it.type === PlacementType.PRESCHOOL_DAYCARE }!!
-                .let {
-                    assertEquals(
-                        Placement(
-                            id = it.id,
-                            type = PlacementType.PRESCHOOL_DAYCARE,
-                            childId = child.id,
-                            unitId = testDaycare.id,
-                            startDate = connectedPeriod.start,
-                            endDate = mainPeriod.end
-                        ),
-                        it
-                    )
-                }
-            placements
-                .find { it.type === PlacementType.DAYCARE }!!
-                .let {
-                    assertEquals(
-                        Placement(
-                            id = it.id,
-                            type = PlacementType.DAYCARE,
-                            childId = child.id,
-                            unitId = testDaycare.id,
-                            startDate = mainPeriod.end.plusDays(1),
-                            endDate = connectedPeriod.end
-                        ),
-                        it
-                    )
-                }
-
-            val decisionDrafts = fetchDecisionDrafts(tx.handle, applicationId)
-            assertEquals(0, decisionDrafts.size)
-
-            val decisions = getDecisionsByApplication(tx.handle, applicationId, AclAuthorization.All)
-            assertEquals(0, decisions.size)
-        }
-    }
-
-    @Test
     fun `sendDecisionsWithoutProposal - applier is the only guardian`() = sendDecisionsWithoutProposalTest(
         child = testChild_2,
         applier = testAdult_1,
@@ -1416,7 +1343,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
     }
 
     @Test
-    fun `acceptPlacementProposal - if no decisions are marked for sending go straight to active`() {
+    fun `acceptPlacementProposal - if no decisions are marked for sending do nothing`() {
         db.transaction { tx ->
             // given
             insertDraftApplication(
@@ -1462,10 +1389,10 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
         db.read { tx ->
             // then
             val application = fetchApplicationDetails(tx.handle, applicationId)!!
-            assertEquals(ApplicationStatus.ACTIVE, application.status)
+            assertEquals(ApplicationStatus.WAITING_UNIT_CONFIRMATION, application.status)
 
             val decisionDrafts = fetchDecisionDrafts(tx.handle, applicationId)
-            assertEquals(0, decisionDrafts.size)
+            assertEquals(2, decisionDrafts.size)
 
             val decisionsByApplication = getDecisionsByApplication(tx.handle, applicationId, AclAuthorization.All)
             assertEquals(0, decisionsByApplication.size)
@@ -1474,18 +1401,10 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
             assertEquals(0, messages.size)
 
             val placementPlan = getPlacementPlan(tx.handle, applicationId)
-            assertNull(placementPlan)
+            assertNotNull(placementPlan)
 
             val placements = tx.handle.getPlacementsForChild(testChild_2.id)
-            assertEquals(2, placements.size)
-            with(placements.first { it.type == PlacementType.PRESCHOOL_DAYCARE }) {
-                assertEquals(connectedPeriod.start, startDate)
-                assertEquals(mainPeriod.end, endDate)
-            }
-            with(placements.first { it.type == PlacementType.DAYCARE }) {
-                assertEquals(mainPeriod.end.plusDays(1), startDate)
-                assertEquals(connectedPeriod.end, endDate)
-            }
+            assertEquals(0, placements.size)
         }
     }
 

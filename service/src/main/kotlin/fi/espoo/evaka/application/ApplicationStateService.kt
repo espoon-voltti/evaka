@@ -218,26 +218,6 @@ class ApplicationStateService(
         updateApplicationStatus(tx.handle, application.id, WAITING_PLACEMENT)
     }
 
-    fun confirmPlacementWithoutDecision(tx: Database.Transaction, user: AuthenticatedUser, applicationId: UUID) {
-        Audit.PlacementCreate.log(targetId = applicationId)
-        user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER)
-
-        val application = getApplication(tx, applicationId)
-        verifyStatus(application, setOf(WAITING_DECISION, WAITING_UNIT_CONFIRMATION))
-        val plan = getPlacementPlan(tx.handle, applicationId)
-            ?: throw IllegalStateException("Application $applicationId has no placement plan")
-        placementPlanService.applyPlacementPlan(
-            tx,
-            application.childId,
-            plan,
-            allowPreschool = true,
-            allowPreschoolDaycare = true
-        )
-        decisionDraftService.clearDecisionDrafts(tx, application.id)
-        placementPlanService.softDeleteUnusedPlacementPlanByApplication(tx, applicationId)
-        updateApplicationStatus(tx.handle, application.id, ACTIVE)
-    }
-
     fun sendDecisionsWithoutProposal(tx: Database.Transaction, user: AuthenticatedUser, applicationId: UUID) {
         Audit.DecisionCreate.log(targetId = applicationId)
         user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER)
@@ -625,8 +605,6 @@ class ApplicationStateService(
         if (decisionDrafts.any { it.planned }) {
             decisionService.finalizeDecisions(tx, user, application.id, sendBySfi)
             updateApplicationStatus(tx.handle, application.id, if (sendBySfi) WAITING_CONFIRMATION else WAITING_MAILING)
-        } else {
-            confirmPlacementWithoutDecision(tx, user, application.id)
         }
     }
 
