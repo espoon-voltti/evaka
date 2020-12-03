@@ -37,6 +37,7 @@ dependencies {
 
     // Jackson
     implementation(platform("com.fasterxml.jackson:jackson-bom:${Version.jackson}"))
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
 
     // Auth0 Spring Security
     implementation("com.auth0:auth0-spring-security-api:${Version.auth0SpringSecurity}")
@@ -46,7 +47,6 @@ dependencies {
     testImplementation("org.springframework.boot:spring-boot-starter-web")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.springframework.security:spring-security-test")
-    testImplementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     testImplementation("org.skyscreamer:jsonassert:1.5.0")
 }
 

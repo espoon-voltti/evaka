@@ -7,9 +7,9 @@ package fi.espoo.evaka.shared.config
 import com.auth0.jwt.algorithms.Algorithm
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUserSpringSupport
-import fi.espoo.evaka.shared.auth.JwtKeys
-import fi.espoo.evaka.shared.auth.loadPrivateKey
-import fi.espoo.evaka.shared.auth.loadPublicKeys
+import fi.espoo.voltti.auth.JwtKeys
+import fi.espoo.voltti.auth.loadPrivateKey
+import fi.espoo.voltti.auth.loadPublicKeys
 import org.jdbi.v3.core.Jdbi
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration

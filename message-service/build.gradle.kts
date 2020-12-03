@@ -73,7 +73,6 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter")
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("org.springframework.boot:spring-boot-starter-aop")
-    implementation("org.springframework.boot:spring-boot-starter-security")
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-web-services")
     implementation("org.springframework.ws:spring-ws-security")
@@ -106,10 +105,12 @@ dependencies {
     implementation("org.jdbi:jdbi3-postgres")
 
     // Voltti
-    implementation(project(":service-lib"))
+    implementation(project(":service-lib")) {
+        exclude("com.auth0", "auth0-spring-security-api")
+        exclude("org.springframework.boot", "spring-boot-starter-security")
+    }
 
     // Miscellaneous
-    implementation("com.auth0:auth0-spring-security-api:${Version.auth0SpringSecurity}")
     implementation("com.auth0:java-jwt:${Version.auth0Jwt}")
     implementation("javax.annotation:javax.annotation-api:1.3.2")
     implementation("io.springfox:springfox-swagger2:${Version.springFox}")
@@ -127,7 +128,6 @@ dependencies {
     testImplementation("com.nhaarman.mockitokotlin2:mockito-kotlin:${Version.mockitoKotlin}")
     testImplementation("net.bytebuddy:byte-buddy:${Version.byteBuddy}")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
-    testImplementation("org.springframework.security:spring-security-test")
 
     integrationTestImplementation(platform("org.testcontainers:testcontainers-bom:${Version.testContainers}"))
     integrationTestImplementation("org.testcontainers:postgresql")
