@@ -1010,9 +1010,9 @@ export function MultiSelectUnitFilter({
         value={units.filter((unit) => selectedUnits.includes(unit.id))}
         options={units}
         onChange={(selected) => {
-          selected &&
-            'length' in selected &&
-            onChange(selected.map(({ id }) => id))
+          selected && 'length' in selected
+            ? onChange(selected.map(({ id }) => id))
+            : onChange([])
         }}
         getOptionValue={(option) => option.id}
         getOptionLabel={(option) => option.name}
