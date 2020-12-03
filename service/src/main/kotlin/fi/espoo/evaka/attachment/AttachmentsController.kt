@@ -27,16 +27,9 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RequestPart
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.multipart.MultipartFile
+import java.io.InputStream
 import java.util.UUID
-
-val validTypes = listOf(
-    "image/jpeg",
-    "image/png",
-    "application/pdf",
-    "application/msword",
-    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-    "application/vnd.oasis.opendocument.text"
-)
+import javax.xml.bind.DatatypeConverter
 
 const val attachmentsPath = "/"
 
@@ -80,15 +73,12 @@ class AttachmentsController(
     }
 
     private fun handleFileUpload(db: Database, user: AuthenticatedUser, applicationId: UUID, file: MultipartFile, type: AttachmentType): UUID {
-        if (filesBucket == null) error("Files bucket is missing")
-
         val name = file.originalFilename
             ?.takeIf { it.isNotBlank() }
             ?: throw BadRequest("Filename missing")
 
-        val contentType = file.contentType
-            ?.takeIf { it in validTypes }
-            ?: throw BadRequest("Invalid content type")
+        val contentType = file.contentType ?: throw BadRequest("Missing content type")
+        checkFileContentType(file.inputStream, contentType)
 
         val id = UUID.randomUUID()
         db.transaction { tx ->
@@ -157,4 +147,30 @@ fun Database.Read.isOwnApplication(applicationId: UUID, user: AuthenticatedUser)
         .mapTo<Int>()
         .toList()
         .isNotEmpty()
+}
+
+val contentTypesWithMagicNumbers = mapOf(
+    "image/jpeg" to listOf("FF D8 FF DB", "FF D8 FF EE", "FF D8 FF E0 00 10 4A 46 49 46 00 01"),
+    "image/png" to listOf("89 50 4E 47 0D 0A 1A 0A"),
+    "application/pdf" to listOf("25 50 44 46 2D"),
+    "application/msword" to listOf("50 4B 03 04 14 00 06 00", "D0 CF 11 E0 A1 B1 1A E1"),
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document" to listOf("50 4B 03 04"),
+    "application/vnd.oasis.opendocument.text" to listOf("50 4B 03 04")
+).mapValues { (_, magicNumbers) ->
+    magicNumbers.map { hex -> DatatypeConverter.parseHexBinary(hex.replace(" ", "")) }
+}
+
+fun checkFileContentType(file: InputStream, contentType: String) {
+    val magicNumbers = contentTypesWithMagicNumbers[contentType]
+        ?: throw BadRequest("Invalid content type")
+
+    val contentMatchesMagicNumbers = file.use { stream ->
+        val fileBytes = stream.readNBytes(magicNumbers.map { it.size }.max() ?: 0)
+        magicNumbers.any { numbers ->
+            fileBytes?.contentEquals(numbers) ?: false
+        }
+    }
+
+    if (contentMatchesMagicNumbers) return
+    throw BadRequest("Invalid content type")
 }
