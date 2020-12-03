@@ -201,6 +201,7 @@ function ApplicationFilters() {
             units={isSuccess(allUnits) ? allUnits.data : []}
             selectedUnits={units}
             onChange={changeUnits}
+            dataQa={'unit-selector'}
           />
           <Gap size="m" />
           <ApplicationBasisFilter toggled={basis} toggle={toggleBasis} />

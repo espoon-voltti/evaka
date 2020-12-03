@@ -121,3 +121,43 @@ test('Care area filters work', async (t) => {
     await deleteApplication(app3.id)
   }
 })
+
+test('Unit filter works', async (t) => {
+  const careArea1 = await Fixture.careArea().save()
+  const daycare1 = await Fixture.daycare().careArea(careArea1).save()
+  const daycare2 = await Fixture.daycare().careArea(careArea1).save()
+
+  const createApplicationForUnit = (unitId: string) => ({
+    ...applicationFixture(
+      fixtures.enduserChildFixtureJari,
+      fixtures.enduserGuardianFixture,
+      undefined,
+      'daycare',
+      null,
+      [unitId]
+    ),
+    id: uuidv4()
+  })
+
+  const app1 = createApplicationForUnit(daycare1.data.id)
+  const app2 = createApplicationForUnit(daycare2.data.id)
+
+  await insertApplications([app1, app2])
+  await t.eval(() => location.reload())
+
+  try {
+    await t.expect(ApplicationListView.applications.count).eql(2)
+
+    await t.click(ApplicationListView.unitFilter)
+    await t.typeText(ApplicationListView.unitFilter, daycare1.data.name, {
+      replace: true
+    })
+    await t.pressKey('enter')
+    await t.expect(ApplicationListView.application(app1.id).visible).ok()
+    await t.expect(ApplicationListView.application(app2.id).visible).notOk()
+    await t.expect(ApplicationListView.applications.count).eql(1)
+  } finally {
+    await deleteApplication(app1.id)
+    await deleteApplication(app2.id)
+  }
+})

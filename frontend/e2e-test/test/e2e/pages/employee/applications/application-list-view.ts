@@ -36,7 +36,10 @@ const specialFilterItems = {
   duplicate: Selector('[data-for="application-basis-DUPLICATE_APPLICATION"]')
 }
 
-const application = (id: string) => Selector(`[data-application-id="${id}"]`)
+const unitFilter = Selector('[data-qa="unit-selector"] input')
+
+const application = (id: string) =>
+  Selector(`[data-application-id="${id}"]`, { timeout: 3000 })
 
 const applications = Selector('[data-qa="table-of-applications"]').find(
   '[data-qa="table-application-row"]'
@@ -51,5 +54,6 @@ export default {
   specialFilterItems,
   application,
   applications,
-  areaFilterItems
+  areaFilterItems,
+  unitFilter
 }
