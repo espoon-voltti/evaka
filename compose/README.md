@@ -163,7 +163,7 @@ Access the frontends at
 ### Usage
 
 ```bash
-docker-compose -f docker-compose.yml -f docker-compose.keycloak.yaml up
+./compose-keycloak up
 ```
 
 ### Access
@@ -174,8 +174,8 @@ Emails at <http://localhost:8025/>
 
 ### Configure
 
-KeyCloak Evaka realm is imported from `keycloak/evaka.json`. Make 
-modifications in KeyCloak interface, export the realm and replace
+KeyCloak Evaka realm is imported from `keycloak/evaka.json`. To make
+modifications to KeyCloak realm, export the realm and replace
 the content of `keycloak/evaka.json`. To reload the realm just delete
 realm from interface and restart the docker-compose.
 
