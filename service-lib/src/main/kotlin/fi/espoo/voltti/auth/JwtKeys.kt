@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-package fi.espoo.evaka.shared.auth
+package fi.espoo.voltti.auth
 
 import com.auth0.jwt.interfaces.RSAKeyProvider
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
@@ -21,12 +21,12 @@ import java.security.spec.RSAPublicKeySpec
 import java.util.Base64
 
 class JwtKeys(
-    private val privateKeyId: String,
-    private val privateKey: RSAPrivateKey,
+    private val privateKeyId: String?,
+    private val privateKey: RSAPrivateKey?,
     private val publicKeys: Map<String, RSAPublicKey>
 ) : RSAKeyProvider {
-    override fun getPrivateKeyId(): String = privateKeyId
-    override fun getPrivateKey(): RSAPrivateKey = privateKey
+    override fun getPrivateKeyId(): String? = privateKeyId
+    override fun getPrivateKey(): RSAPrivateKey? = privateKey
     override fun getPublicKeyById(keyId: String): RSAPublicKey? = publicKeys[keyId]
 }
 
