@@ -1,0 +1,23 @@
+#!/bin/bash
+
+# SPDX-FileCopyrightText: 2017-2020 City of Espoo
+#
+# SPDX-License-Identifier: LGPL-2.1-or-later
+
+set -e
+
+cd "$( dirname "${BASH_SOURCE[0]}")"
+
+if ! test -d "./keycloak/helsinki-keycloak-theme/" || test -z "$(ls -A ./keycloak/helsinki-keycloak-theme/)"; then
+  pushd .
+  cd ./keycloak
+  git clone https://github.com/City-of-Helsinki/helsinki-keycloak-theme.git
+  cd ./helsinki-keycloak-theme
+  npm install
+  npm run build
+  popd
+fi
+
+pwd
+
+docker-compose -f docker-compose.yml -f docker-compose.keycloak.yml $@
