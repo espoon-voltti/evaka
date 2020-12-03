@@ -34,7 +34,7 @@ fixture('Unit - unit details')
     await cleanUp()
   })
 
-test('Admin creates a new unit', async (t) => {
+test('Admin creates a new unit', async () => {
   await unitDetailsPage.openNewUnitEditor()
   await unitDetailsPage.fillUnitName('Uusi Kerho')
   await unitDetailsPage.chooseArea('Matinkylä-Olari')
