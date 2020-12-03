@@ -4,8 +4,13 @@
 
 package fi.espoo.evaka
 
+import fi.espoo.evaka.shared.auth.AuthenticatedUser
+import fi.espoo.evaka.shared.auth.UserRole
+import fi.espoo.evaka.shared.auth.asUser
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.skyscreamer.jsonassert.JSONAssert
+import java.util.UUID
 
 class ServerSmokeTest : FullApplicationTest() {
     @Test
@@ -20,5 +25,15 @@ class ServerSmokeTest : FullApplicationTest() {
         """,
             res.get(), false
         )
+    }
+
+    @Test
+    fun `a valid JWT token is required in API requests`() {
+        val (_, res, _) = http.get("/daycares").responseString()
+        assertEquals(401, res.statusCode)
+
+        val user = AuthenticatedUser(UUID.randomUUID(), setOf(UserRole.SERVICE_WORKER))
+        val (_, res2, _) = http.get("/daycares").asUser(user).responseString()
+        assertEquals(200, res2.statusCode)
     }
 }
