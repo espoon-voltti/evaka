@@ -9,7 +9,9 @@ const names = [
   'espooad-internal-prod.pem',
   'espooad-internal-staging.pem',
   'idp.test.espoon-voltti.fi.pem',
+  'idp.tunnistaminen.suomi.fi.pem',
   'idp.tunnistus.suomi.fi.pem',
+  'saml-signing.idp.tunnistautuminen.suomi.fi.pem',
   'saml-signing-testi.apro.tunnistus.fi.pem',
   'testi.apro.tunnistus.fi.pem'
 ] as const
