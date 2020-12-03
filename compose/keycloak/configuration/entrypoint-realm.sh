@@ -19,7 +19,7 @@ kcadm.sh config credentials --server "http://${KEYCLOAK_HOST}:${KEYCLOAK_PORT}/a
 admin_id="$(kcadm.sh get users -r master -q username=admin --fields id --format csv --noquotes)"
 kcadm.sh update "users/$admin_id" -r master -s 'email=admin@example.com' -s 'firstName=He' -s 'lastName=Man'
 
-if [ "$(kcadm.sh get realms | grep -c '"realm" : "Evaka"')" != "1" ]; then # not best way to check exitence os realm, but we do not want to install extra tools into containers
+if [ "$(kcadm.sh get realms | grep -c '"realm" : "evaka"')" != "1" ]; then # not best way to check exitence os realm, but we do not want to install extra tools into containers
   kcadm.sh create realms -f /configuration/evaka.json
 fi
 
