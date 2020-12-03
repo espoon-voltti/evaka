@@ -16,6 +16,7 @@ data class AuthenticatedUser(@JsonInclude val id: UUID, @JsonInclude override va
     fun isUnitSupervisor() = roles.contains(UserRole.UNIT_SUPERVISOR)
     fun isFinanceAdmin() = roles.contains(UserRole.FINANCE_ADMIN)
     fun isAdmin() = roles.contains(UserRole.ADMIN)
+    fun isMachineUser() = this == machineUser
 
     fun assertMachineUser() {
         if (this != machineUser) throw Forbidden("Only accessible to the machine user")

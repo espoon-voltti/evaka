@@ -7,7 +7,6 @@ package fi.espoo.evaka.pis
 import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.config.SharedIntegrationTestConfig
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.utils.DisableSecurity
 import fi.espoo.evaka.vtjclient.VtjIntegrationTestConfig
 import org.jdbi.v3.core.Jdbi
 import org.junit.jupiter.api.AfterAll
@@ -24,7 +23,6 @@ import org.springframework.context.annotation.FilterType
 import org.springframework.context.annotation.Import
 import org.springframework.test.context.junit.jupiter.SpringExtension
 
-@DisableSecurity
 @ExtendWith(SpringExtension::class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Import(SharedIntegrationTestConfig::class, VtjIntegrationTestConfig::class)

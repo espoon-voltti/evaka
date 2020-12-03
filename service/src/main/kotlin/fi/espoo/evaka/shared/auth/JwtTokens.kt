@@ -19,7 +19,11 @@ private val tokenExpiration = Duration.ofHours(1)
 
 fun DecodedJWT.toAuthenticatedUser(): AuthenticatedUser? = this.subject?.let { subject ->
     val id = UUID.fromString(subject)
-    val roles = (this.claims["scope"]?.asString() ?: "").split(' ')
+    val roles = (this.claims["scope"]?.asString() ?: "")
+        .let {
+            if (it.isNullOrEmpty()) emptyList()
+            else it.split(' ')
+        }
     return AuthenticatedUser(id, roles.map { UserRole.parse(it) }.toSet())
 }
 

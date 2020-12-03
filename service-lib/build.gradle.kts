@@ -32,21 +32,18 @@ dependencies {
     // Spring
     implementation(platform("org.springframework.boot:spring-boot-dependencies:${Version.springBoot}"))
     implementation("org.springframework.boot:spring-boot-starter")
-    implementation("org.springframework.boot:spring-boot-starter-security")
     implementation("org.springframework.boot:spring-boot-starter-web")
 
     // Jackson
     implementation(platform("com.fasterxml.jackson:jackson-bom:${Version.jackson}"))
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
 
-    // Auth0 Spring Security
-    implementation("com.auth0:auth0-spring-security-api:${Version.auth0SpringSecurity}")
+    // Auth0 JWT
     implementation("com.auth0:java-jwt:${Version.auth0Jwt}")
     implementation("com.auth0:jwks-rsa:0.13.0")
 
     testImplementation("org.springframework.boot:spring-boot-starter-web")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
-    testImplementation("org.springframework.security:spring-security-test")
     testImplementation("org.skyscreamer:jsonassert:1.5.0")
 }
 

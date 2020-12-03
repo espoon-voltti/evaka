@@ -7,9 +7,7 @@ package fi.espoo.evaka.daycare.controllers
 import fi.espoo.evaka.daycare.AbstractIntegrationTest
 import fi.espoo.evaka.daycare.createChild
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.auth.endUser
-import fi.espoo.evaka.shared.auth.financeAdmin
-import fi.espoo.evaka.shared.auth.serviceWorker
+import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.domain.Forbidden
 import org.junit.jupiter.api.AfterEach
@@ -59,17 +57,17 @@ class ChildrenControllerIntegrationTest : AbstractIntegrationTest() {
 
     @Test
     fun `get additional info returns correct reply with service worker`() {
-        getAdditionalInfo(AuthenticatedUser.serviceWorker())
+        getAdditionalInfo(AuthenticatedUser(UUID.randomUUID(), setOf(UserRole.SERVICE_WORKER)))
     }
 
     @Test
     fun `get additional info returns correct reply with finance admin`() {
-        getAdditionalInfo(AuthenticatedUser.financeAdmin())
+        getAdditionalInfo(AuthenticatedUser(UUID.randomUUID(), setOf(UserRole.FINANCE_ADMIN)))
     }
 
     @Test
     fun `get additional info throws forbidden with enduser`() {
-        assertThrows<Forbidden> { getAdditionalInfo(AuthenticatedUser.endUser()) }
+        assertThrows<Forbidden> { getAdditionalInfo(AuthenticatedUser(UUID.randomUUID(), setOf(UserRole.END_USER))) }
     }
 
     fun getAdditionalInfo(user: AuthenticatedUser) {

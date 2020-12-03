@@ -17,6 +17,8 @@ import com.zaxxer.hikari.HikariDataSource
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.db.configureJdbi
 import fi.espoo.evaka.shared.db.handle
+import fi.espoo.voltti.auth.JwtKeys
+import fi.espoo.voltti.auth.loadPublicKeys
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig
 import org.flywaydb.core.Flyway
 import org.jdbi.v3.core.Jdbi
@@ -24,6 +26,7 @@ import org.springframework.boot.test.context.TestConfiguration
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.PropertySource
 import redis.clients.jedis.JedisPool
+import java.nio.file.Paths
 import javax.sql.DataSource
 
 fun isCiEnvironment() = System.getenv("CI") == "true"
@@ -141,5 +144,9 @@ class SharedIntegrationTestConfig {
     }
 
     @Bean
-    fun noneAlgorithm(): Algorithm = Algorithm.none()
+    fun integrationTestJwtAlgorithm(): Algorithm {
+        val publicKeys =
+            loadPublicKeys(Paths.get(SecurityConfig::class.java.getResource("/evaka-integration-test/jwks.json").path))
+        return Algorithm.RSA256(JwtKeys(privateKeyId = null, privateKey = null, publicKeys = publicKeys))
+    }
 }
