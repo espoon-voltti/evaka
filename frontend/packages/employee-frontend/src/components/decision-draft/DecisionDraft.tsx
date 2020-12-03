@@ -258,6 +258,9 @@ const Decision = memo(function Decision({
     (isClubDecision ||
       (!!selectedUnit.decisionHandler && !!selectedUnit.decisionHandlerAddress))
 
+  const noDecisionsPlanned =
+    decisions.filter(({ planned }) => planned).length === 0
+
   return (
     <Container>
       <Gap size={'L'} />
@@ -524,7 +527,9 @@ const Decision = memo(function Decision({
                 <Button
                   primary
                   dataQa="save-decisions-button"
-                  disabled={!unitDataIsComplete || submitting}
+                  disabled={
+                    !unitDataIsComplete || noDecisionsPlanned || submitting
+                  }
                   onClick={() => {
                     setSubmitting(true)
                     const updatedDrafts: DecisionDraftUpdate[] = decisions.map(

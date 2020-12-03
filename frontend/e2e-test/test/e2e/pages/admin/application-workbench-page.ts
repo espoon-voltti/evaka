@@ -285,13 +285,6 @@ export class ApplicationWorkbenchPage {
     await t.click(Selector(`[data-qa="action-bar-moveToWaitingPlacement"]`))
   }
 
-  async confirmPlacementWithoutDecision(applicationId: string) {
-    await this.clickApplicationCheckbox(applicationId)
-    await t.click(
-      Selector(`[data-qa="action-bar-confirmPlacementWithoutDecision"]`)
-    )
-  }
-
   async sendDecisionsWithoutProposal(applicationId: string) {
     await this.clickApplicationCheckbox(applicationId)
     await t.click(

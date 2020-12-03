@@ -199,13 +199,6 @@ export async function cancelPlacementPlan(applicationId: UUID): Promise<void> {
     `/v2/applications/${applicationId}/actions/cancel-placement-plan`
   )
 }
-export async function confirmPlacementWithoutDecision(
-  applicationId: UUID
-): Promise<void> {
-  return client.post(
-    `/v2/applications/${applicationId}/actions/confirm-placement-without-decision`
-  )
-}
 export async function sendDecisionsWithoutProposal(
   applicationId: UUID
 ): Promise<void> {
@@ -338,14 +331,6 @@ export async function batchCancelPlacementPlan(
   return client.post('/v2/applications/batch/actions/cancel-placement-plan', {
     applicationIds
   })
-}
-export async function batchConfirmPlacementWithoutDecision(
-  applicationIds: UUID[]
-): Promise<void> {
-  return client.post(
-    '/v2/applications/batch/actions/confirm-placement-without-decision',
-    { applicationIds }
-  )
 }
 export async function batchSendDecisionsWithoutProposal(
   applicationIds: UUID[]

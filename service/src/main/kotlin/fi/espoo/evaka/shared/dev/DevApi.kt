@@ -562,7 +562,6 @@ RETURNING id
             "cancel-application" to applicationStateService::cancelApplication,
             "set-verified" to applicationStateService::setVerified,
             "set-unverified" to applicationStateService::setUnverified,
-            "confirm-placement-without-decision" to applicationStateService::confirmPlacementWithoutDecision,
             "send-decisions-without-proposal" to applicationStateService::sendDecisionsWithoutProposal,
             "send-placement-proposal" to applicationStateService::sendPlacementProposal,
             "confirm-decision-mailed" to applicationStateService::confirmDecisionMailed
