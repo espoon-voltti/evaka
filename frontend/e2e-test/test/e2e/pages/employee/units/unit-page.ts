@@ -114,6 +114,10 @@ export default class UnitPage {
   readonly mobileDevicesResponseKeyInput = Selector(
     '[data-qa="response-key-input"]'
   )
+  readonly mobileDevicesNameInput = Selector(
+    '[data-qa="mobile-device-name-input"]'
+  )
+  readonly mobileDevicePairingDoneBtn = Selector('[data-qa="modal-okBtn"]')
 }
 
 class AclTable {

@@ -11,24 +11,28 @@ import {
 import { logConsoleMessages } from '../../utils/fixture'
 import {
   deleteEmployeeFixture,
+  deleteMobileDevice,
+  deletePairing,
   insertEmployeeFixture,
+  postPairingChallenge,
   setAclForDaycares
 } from '../../dev-api'
 import { UUID } from '../../dev-api/types'
 import UnitPage from '../../pages/employee/units/unit-page'
 import { Role, t } from 'testcafe'
-import { mobileRole, seppoManagerRole } from '../../config/users'
-import PairingFlow from '../../pages/employee/mobile/pairing-flow'
+import { seppoManagerRole } from '../../config/users'
 
 const home = new EmployeeHome()
 const unitPage = new UnitPage()
-const pairingFlow = new PairingFlow()
 
 const employeeAads = [
   'df979243-f081-4241-bc4f-e93a019bddfa',
   '7e7daa1e-2e92-4c36-9e90-63cea3cd8f3f'
 ] as const
 let employeeUuids: UUID[] = []
+
+let pairingId: UUID | undefined = undefined
+let deviceId: UUID | null = null
 
 const expectedAclRows = {
   seppo: { name: 'Seppo Sorsa', email: 'seppo.sorsa@espoo.fi' },
@@ -75,6 +79,8 @@ fixture('Employee - Unit ACL')
   })
   .afterEach(logConsoleMessages)
   .after(async () => {
+    if (pairingId) await deletePairing(pairingId)
+    if (deviceId) await deleteMobileDevice(deviceId)
     await cleanUp()
     await Promise.all(employeeAads.map(deleteEmployeeFixture))
     await deleteEmployeeFixture(config.supervisorAad)
@@ -126,12 +132,10 @@ test('User can add and delete staff', async (t) => {
   await t.expect(await unitPage.staffAcl.getAclRows()).eql([])
 })
 
-// eslint-disable-next-line
-test.only('User can add a mobile device', async (t) => {
+test('User can add a mobile device unit side', async (t) => {
   await t.useRole(seppoManagerRole)
   await home.navigateToUnits()
   await unitPage.navigateHere(fixtures.daycareFixture.id)
-  const employeeView = await t.getCurrentWindow()
 
   await t.expect(unitPage.mobileDevicesTableRows.exists).notOk()
   await t.click(unitPage.mobileDevicesStartPairingBtn)
@@ -139,31 +143,16 @@ test.only('User can add a mobile device', async (t) => {
   await t.expect(unitPage.mobileDevicesChallengeKey.exists).ok()
   const challengeKey = await unitPage.mobileDevicesChallengeKey.textContent
 
-  const mobileView = await t.openWindow('http://localhost:9093/employee/mobile')
-  console.log('mobileView:', mobileView)
-
-  await t.useRole(mobileRole)
-  await t.click(pairingFlow.mobileStartPairingBtn)
-  await t.expect(pairingFlow.mobilePairingTitle1.exists).ok()
-  await t.typeText(pairingFlow.challengeKeyInput, challengeKey)
-  await t.click(pairingFlow.submitChallengeKeyBtn)
-  await t.debug()
-
-  await t.useRole(seppoManagerRole)
-  await t.debug()
-  await t.switchToWindow(employeeView)
-  await t.debug()
+  const res = await postPairingChallenge(challengeKey)
   await t.expect(unitPage.mobileDevicesResponseKeyInput.exists).ok()
+  if (res.responseKey) {
+    await t.typeText(unitPage.mobileDevicesResponseKeyInput, res.responseKey)
+  }
+  pairingId = res.id
+  deviceId = res.mobileDeviceId
 
-  // await unitPage.staffAcl.addEmployeeAcl(employeeUuids[0])
-  // await t
-  //   .expect(await unitPage.staffAcl.getAclRows())
-  //   .eql([expectedAclRows.pete])
-  // await unitPage.staffAcl.addEmployeeAcl(employeeUuids[1])
-  // await t
-  //   .expect(await unitPage.staffAcl.getAclRows())
-  //   .eql([expectedAclRows.pete, expectedAclRows.yrjo])
-  // await unitPage.staffAcl.deleteEmployeeAclByIndex(0)
-  // await unitPage.staffAcl.deleteEmployeeAclByIndex(0)
-  // await t.expect(await unitPage.staffAcl.getAclRows()).eql([])
+  await t.expect(unitPage.mobileDevicesNameInput.exists).ok()
+  await t.typeText(unitPage.mobileDevicesNameInput, 'testphone')
+  await t.click(unitPage.mobileDevicePairingDoneBtn)
+  await t.expect(unitPage.mobileDevicesTableRows.exists).ok()
 })

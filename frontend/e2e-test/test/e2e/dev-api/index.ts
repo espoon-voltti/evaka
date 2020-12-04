@@ -580,3 +580,91 @@ export async function cleanUpApplicationEmails(): Promise<void> {
     throw new DevApiError(e)
   }
 }
+
+type PairingStatus =
+  | 'WAITING_CHALLENGE'
+  | 'WAITING_RESPONSE'
+  | 'READY'
+  | 'PAIRED'
+
+export interface PairingResponse {
+  id: UUID
+  unitId: UUID
+  challengeKey: string
+  responseKey: string | null
+  expires: Date
+  status: PairingStatus
+  mobileDeviceId: UUID | null
+}
+
+export async function postPairingChallenge(
+  challengeKey: string
+): Promise<PairingResponse> {
+  try {
+    const { data } = await devClient.post<PairingResponse>(
+      `/mobile/pairings/challenge`,
+      {
+        challengeKey
+      }
+    )
+    return data
+  } catch (e) {
+    throw new DevApiError(e)
+  }
+}
+
+export async function postPairingResponse(
+  pairingId: UUID,
+  challengeKey: string,
+  responseKey: string
+): Promise<PairingResponse> {
+  try {
+    const { data } = await devClient.post<PairingResponse>(
+      `/mobile/pairings/${pairingId}/response`,
+      {
+        challengeKey,
+        responseKey
+      }
+    )
+    return data
+  } catch (e) {
+    throw new DevApiError(e)
+  }
+}
+
+export async function postPairing(unitId: UUID): Promise<PairingResponse> {
+  try {
+    const { data } = await devClient.post<PairingResponse>(`/mobile/pairings`, {
+      unitId
+    })
+    return data
+  } catch (e) {
+    throw new DevApiError(e)
+  }
+}
+
+export async function deletePairing(pairingId: string): Promise<void> {
+  try {
+    await devClient.delete(`/mobile/pairings/${pairingId}`)
+  } catch (err) {
+    console.log(
+      `Warning: could not clean up pairing ${pairingId} after test: ${String(
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+        err.stack || err.message
+      )}`
+    )
+  }
+}
+
+export async function deleteMobileDevice(deviceId: string): Promise<void> {
+  try {
+    await devClient.delete(`/mobile/devices/${deviceId}`)
+  } catch (err) {
+    console.log(
+      `Warning: could not clean up mobile device ${deviceId} after test: ${String(
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+        err.stack || err.message
+      )}`
+    )
+  }
+}

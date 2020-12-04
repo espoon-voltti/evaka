@@ -174,7 +174,9 @@ export default React.memo(function ParingWizard() {
           <FullHeightContainer spaced>
             <CenteredColumn>
               <Img src={EvakaLogo} />
-              <PhaseTitle>{i18n.mobile.wizard.title3}</PhaseTitle>
+              <PhaseTitle data-qa="mobile-pairing-wizard-title-3">
+                {i18n.mobile.wizard.title3}
+              </PhaseTitle>
               <section>
                 <P centered>{i18n.mobile.wizard.text3}</P>
                 <P centered>{i18n.mobile.wizard.text4}</P>
