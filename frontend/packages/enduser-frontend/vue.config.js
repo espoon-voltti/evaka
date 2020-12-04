@@ -37,6 +37,10 @@ module.exports = {
       'X-Content-Type-Options': 'nosniff',
       'X-XSS-Protection': '1',
       'Content-Security-Policy': "form-action 'self'; frame-ancestors 'none'; default-src 'self'; script-src 'self' 'unsafe-eval' maps.googleapis.com; font-src 'self' fonts.gstatic.com; style-src 'self' 'unsafe-inline' fonts.googleapis.com; img-src 'self' data: maps.gstatic.com maps.googleapis.com; connect-src *"
+    },
+    watchOptions: {
+      poll: 1000,
+      ignored: /node_modules/
     }
   },
   publicPath: '/',
