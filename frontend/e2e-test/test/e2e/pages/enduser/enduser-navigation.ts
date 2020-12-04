@@ -194,7 +194,7 @@ export default class EnduserPage {
   }
 
   private readonly preferredStartDateDatePicker = Selector(
-    '#daycare-application-form .date-picker'
+    '[data-qa="preferred-startdate-datepicker"] .date-picker'
   )
 
   async selectPreferredDate(date: Date) {
