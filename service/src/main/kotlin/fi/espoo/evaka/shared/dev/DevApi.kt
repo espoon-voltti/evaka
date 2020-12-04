@@ -62,13 +62,8 @@ import fi.espoo.evaka.vtjclient.service.persondetails.MockPersonDetailsService
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.bindKotlin
 import org.jdbi.v3.core.kotlin.mapTo
-import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Profile
-import org.springframework.core.Ordered
-import org.springframework.core.annotation.Order
 import org.springframework.http.ResponseEntity
-import org.springframework.security.config.annotation.web.builders.HttpSecurity
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -82,22 +77,6 @@ import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.time.ZoneId
 import java.util.UUID
-
-@Profile("enable_dev_api")
-@Configuration
-@Order(Ordered.HIGHEST_PRECEDENCE)
-class DevApiSecurityConfig : WebSecurityConfigurerAdapter() {
-    override fun configure(http: HttpSecurity) {
-        http
-            .csrf().disable()
-            .requestMatchers()
-            .antMatchers("/dev-api/**/*")
-            .and()
-            .authorizeRequests()
-            .anyRequest()
-            .permitAll()
-    }
-}
 
 private val fakeAdmin = AuthenticatedUser(
     id = UUID.fromString("00000000-0000-0000-0000-000000000000"),

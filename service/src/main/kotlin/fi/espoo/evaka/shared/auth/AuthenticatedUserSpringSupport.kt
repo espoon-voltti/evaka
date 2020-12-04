@@ -7,14 +7,12 @@ package fi.espoo.evaka.shared.auth
 import fi.espoo.evaka.shared.domain.Unauthorized
 import org.springframework.context.annotation.Configuration
 import org.springframework.core.MethodParameter
-import org.springframework.security.core.Authentication
-import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.web.bind.support.WebDataBinderFactory
 import org.springframework.web.context.request.NativeWebRequest
 import org.springframework.web.method.support.HandlerMethodArgumentResolver
 import org.springframework.web.method.support.ModelAndViewContainer
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
-import java.util.UUID
+import javax.servlet.http.HttpServletRequest
 
 @Configuration
 class AuthenticatedUserSpringSupport : WebMvcConfigurer {
@@ -28,22 +26,15 @@ class AuthenticatedUserSpringSupport : WebMvcConfigurer {
                 mavContainer: ModelAndViewContainer?,
                 webRequest: NativeWebRequest,
                 binderFactory: WebDataBinderFactory?
-            ) = springSecurityThreadLocalUser() ?: if (parameter.isOptional) null else throw Unauthorized(
-                "Unauthorized request (${webRequest.getDescription(
-                    false
-                )})"
-            )
+            ) = webRequest.getNativeRequest(HttpServletRequest::class.java)?.getAuthenticatedUser()
+                ?: if (parameter.isOptional) null else throw Unauthorized(
+                    "Unauthorized request (${
+                    webRequest.getDescription(
+                        false
+                    )
+                    })"
+                )
         })
         super.addArgumentResolvers(resolvers)
     }
-}
-
-fun springSecurityThreadLocalUser(): AuthenticatedUser? =
-    SecurityContextHolder.getContext()?.authentication?.let { it.toAuthenticatedUser() }
-
-fun Authentication.toAuthenticatedUser(): AuthenticatedUser? = (principal as? UUID)?.let { id ->
-    AuthenticatedUser(
-        id,
-        authorities.map { UserRole.parse(it.authority) }.toSet()
-    )
 }

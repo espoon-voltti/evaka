@@ -8,7 +8,6 @@ import fi.espoo.evaka.placement.PlacementService
 import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.config.SharedIntegrationTestConfig
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.utils.DisableSecurity
 import org.jdbi.v3.core.Jdbi
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
@@ -25,7 +24,6 @@ import org.springframework.context.annotation.Import
 import redis.clients.jedis.JedisPool
 import javax.sql.DataSource
 
-@DisableSecurity
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Import(SharedIntegrationTestConfig::class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)

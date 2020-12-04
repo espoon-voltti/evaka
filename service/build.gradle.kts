@@ -66,7 +66,6 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("org.springframework.boot:spring-boot-starter-aop")
     implementation("org.springframework.boot:spring-boot-starter-jdbc")
-    implementation("org.springframework.boot:spring-boot-starter-security")
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-web-services")
     implementation("org.springframework.ws:spring-ws-security")
@@ -115,7 +114,6 @@ dependencies {
     implementation("org.xhtmlrenderer:flying-saucer-pdf-openpdf:${Version.flyingSaucer}")
 
     // Miscellaneous
-    implementation("com.auth0:auth0-spring-security-api:${Version.auth0SpringSecurity}")
     implementation("com.auth0:java-jwt:${Version.auth0Jwt}")
     implementation("javax.annotation:javax.annotation-api:1.3.2")
     implementation("org.apache.commons:commons-pool2:${Version.commonsPool2}")
@@ -134,7 +132,6 @@ dependencies {
     testImplementation("org.mockito:mockito-core:${Version.mockito}")
     testImplementation("org.mockito:mockito-junit-jupiter:${Version.mockito}")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
-    testImplementation("org.springframework.security:spring-security-test")
     testImplementation("org.springframework.ws:spring-ws-test")
 
     integrationTestImplementation("io.javalin:javalin:${Version.javalin}")

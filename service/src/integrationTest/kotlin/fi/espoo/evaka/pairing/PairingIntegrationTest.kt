@@ -502,7 +502,7 @@ class PairingIntegrationTest : FullApplicationTest() {
                     )
                 )
             )
-            .asUser(user)
+            .asUser(AuthenticatedUser.machineUser)
             .response()
 
         assertEquals(status, res.statusCode)
