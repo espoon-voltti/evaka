@@ -60,7 +60,6 @@ function Applications() {
 
   useEffect(() => {
     setRows(Loading())
-    setDisplayFilters(emptyDisplayFilters)
     void getApplicationsReport(filters).then(setRows)
   }, [filters])
 
@@ -84,25 +83,27 @@ function Applications() {
               date={filters.from}
               onChange={(from) => setFilters({ ...filters, from })}
               type="half-width"
+              dataQa="datepicker-from"
             />
             <span>{' - '}</span>
             <DatePicker
               date={filters.to}
               onChange={(to) => setFilters({ ...filters, to })}
               type="half-width"
+              dataQa="datepicker-to"
             />
           </FlexRow>
         </FilterRow>
 
         <FilterRow>
           <FilterLabel>{i18n.reports.common.careAreaName}</FilterLabel>
-          <Wrapper>
+          <Wrapper data-qa="select-area">
             <ReactSelect
               options={[
                 ...(isSuccess(rows)
-                  ? distinct(
-                      rows.data.map((row) => row.careAreaName)
-                    ).map((s) => ({ value: s, label: s }))
+                  ? distinct(rows.data.map((row) => row.careAreaName))
+                      .map((s) => ({ value: s, label: s }))
+                      .concat([{ label: i18n.common.all, value: '' }])
                   : [])
               ]}
               onChange={(option) =>
@@ -173,7 +174,7 @@ function Applications() {
                 i18n.reports.applications.title
               } ${filters.from.formatIso()}-${filters.to.formatIso()}.csv`}
             />
-            <TableScrollable>
+            <TableScrollable data-qa="report-application-table">
               <Thead>
                 <Tr>
                   <Th>{i18n.reports.common.careAreaName}</Th>
