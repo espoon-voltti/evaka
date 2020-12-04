@@ -71,8 +71,14 @@ fixture('Mobile pairing')
   })
   .afterEach(logConsoleMessages)
   .after(async () => {
-    if (pairingId) await deletePairing(pairingId)
-    if (deviceId) await deleteMobileDevice(deviceId)
+    if (pairingId) {
+      await deletePairing(pairingId)
+      pairingId = undefined
+    }
+    if (deviceId) {
+      await deleteMobileDevice(deviceId)
+      deviceId = null
+    }
     await cleanUp()
     await Promise.all(employeeAads.map(deleteEmployeeFixture))
     await deleteEmployeeFixture(config.supervisorAad)
@@ -99,4 +105,6 @@ test('User can add a mobile device mobile side', async (t) => {
   deviceId = pairingResponse.mobileDeviceId
 
   await t.expect(pairingFlow.mobilePairingTitle3.exists).ok()
+  await t.click(pairingFlow.unitPageLink)
+  await t.expect(pairingFlow.unitName.exists).ok()
 })

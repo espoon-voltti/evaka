@@ -79,8 +79,14 @@ fixture('Employee - Unit ACL')
   })
   .afterEach(logConsoleMessages)
   .after(async () => {
-    if (pairingId) await deletePairing(pairingId)
-    if (deviceId) await deleteMobileDevice(deviceId)
+    if (pairingId) {
+      await deletePairing(pairingId)
+      pairingId = undefined
+    }
+    if (deviceId) {
+      await deleteMobileDevice(deviceId)
+      deviceId = null
+    }
     await cleanUp()
     await Promise.all(employeeAads.map(deleteEmployeeFixture))
     await deleteEmployeeFixture(config.supervisorAad)
