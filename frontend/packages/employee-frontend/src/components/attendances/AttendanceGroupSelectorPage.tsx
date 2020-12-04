@@ -51,7 +51,7 @@ export default React.memo(function AttendanceGroupSelectorPage() {
       {isFailure(attendanceResponse) && <div>{i18n.common.loadingFailed}</div>}
       {isSuccess(attendanceResponse) && (
         <Fragment>
-          <Title size={1} centered smaller bold>
+          <Title data-qa="unit-name" size={1} centered smaller bold>
             {attendanceResponse.data.unit.name}
           </Title>
           <Padding>
