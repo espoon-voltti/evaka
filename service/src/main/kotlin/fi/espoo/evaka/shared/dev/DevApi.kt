@@ -763,11 +763,13 @@ WITH deleted_ids AS (
         id
     )
     execute("DELETE FROM daycare_acl WHERE daycare_id IN (SELECT id FROM daycare WHERE care_area_id = ?)", id)
+    execute("DELETE FROM mobile_device WHERE unit_id IN (SELECT id FROM daycare WHERE care_area_id = ?)", id)
     execute("DELETE FROM daycare WHERE care_area_id = ?", id)
     execute("DELETE FROM care_area WHERE id = ?", id)
 }
 
 fun Handle.deleteDaycare(id: UUID) {
+    execute("DELETE FROM mobile_device WHERE unit_id = ?", id)
     execute(
         "DELETE FROM daycare WHERE id = ?",
         id

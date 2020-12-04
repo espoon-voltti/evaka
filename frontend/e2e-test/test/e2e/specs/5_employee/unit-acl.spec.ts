@@ -20,7 +20,6 @@ import {
 import { UUID } from '../../dev-api/types'
 import UnitPage from '../../pages/employee/units/unit-page'
 import { Role, t } from 'testcafe'
-import { seppoManagerRole } from '../../config/users'
 
 const home = new EmployeeHome()
 const unitPage = new UnitPage()
@@ -139,7 +138,10 @@ test('User can add and delete staff', async (t) => {
 })
 
 test('User can add a mobile device unit side', async (t) => {
-  await t.useRole(seppoManagerRole)
+  await home.login({
+    aad: config.supervisorAad,
+    roles: []
+  })
   await home.navigateToUnits()
   await unitPage.navigateHere(fixtures.daycareFixture.id)
 
