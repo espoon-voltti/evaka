@@ -13,4 +13,6 @@ export default class PairingFlow {
     '[data-qa="submit-challenge-key-btn"]'
   )
   readonly responseKey = Selector('[data-qa="response-key"]')
+  readonly unitPageLink = Selector('[data-qa="unit-page-link"]')
+  readonly unitName = Selector('[data-qa="unit-name"]')
 }
