@@ -24,7 +24,7 @@ aliases:
   # SSH key fingerprint for checking out other eVaka repositories
   - &ci_evaka_fingerprint 86:d0:b3:3d:aa:fc:d5:b9:6b:69:1e:c7:f5:56:66:aa
   # Version of remote Docker engine used with setup_remote_docker (not including machine executors)
-  - &remote_docker_version '19.03.13'
+  - &remote_docker_version "19.03.13"
   - &yarn_version '1.22.\*'
   - &nodejs_image cimg/node:14.15
   - &openjdk_image cimg/openjdk:11.0
@@ -658,6 +658,13 @@ jobs:
           suite: e2e-ci-employee-2
       - notify_slack
 
+  e2e-test-mobile:
+    executor: e2e_executor
+    steps:
+      - e2e_test:
+          suite: e2e-ci-mobile
+      - notify_slack
+
   frontend_deploy_dev:
     <<: *deploy_frontend
     environment:
@@ -891,6 +898,13 @@ workflows:
             - frontend_build_and_test
             - apigw_build_image
             - service_build_image
+      - e2e-test-mobile:
+          context:
+            - voltti-dockerhub
+          requires:
+            - frontend_build_and_test
+            - apigw_build_image
+            - service_build_image
 
       - proxy_build_and_push_image:
           context:
@@ -947,6 +961,7 @@ workflows:
             - e2e-test-invoicing
             - e2e-test-employee
             - e2e-test-employee-2
+            - e2e-test-mobile
             - apigw_push_image
             - proxy_build_and_push_image
             - service_push_image

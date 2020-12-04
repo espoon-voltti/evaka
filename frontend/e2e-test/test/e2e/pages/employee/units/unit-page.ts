@@ -100,6 +100,24 @@ export default class UnitPage {
   readonly waitingGuardianConfirmationRow = Selector(
     '[data-qa="placement-plan-row"]'
   )
+
+  readonly mobileDevices = Selector('[data-qa="daycare-mobile-devices"]')
+  readonly mobileDevicesTable = Selector('[data-qa="mobile-devices-table"]')
+  readonly mobileDevicesStartPairingBtn = Selector(
+    '[data-qa="start-mobile-pairing"]'
+  )
+  readonly mobileDevicesTableRows = Selector('[data-qa="device-row"]')
+  readonly pairingModalTitle = Selector(
+    '[data-qa="mobile-pairing-modal-phase-1"]'
+  )
+  readonly mobileDevicesChallengeKey = Selector('[data-qa="challenge-key"]')
+  readonly mobileDevicesResponseKeyInput = Selector(
+    '[data-qa="response-key-input"]'
+  )
+  readonly mobileDevicesNameInput = Selector(
+    '[data-qa="mobile-device-name-input"]'
+  )
+  readonly mobileDevicePairingDoneBtn = Selector('[data-qa="modal-okBtn"]')
 }
 
 class AclTable {

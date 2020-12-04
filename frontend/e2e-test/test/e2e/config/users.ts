@@ -33,3 +33,5 @@ export const enduserRole = Role(
   },
   { preserveUrl: true }
 )
+
+export const mobileRole = Role(config.mobileUrl, () => Promise.resolve())

@@ -11,7 +11,10 @@ import {
 import { logConsoleMessages } from '../../utils/fixture'
 import {
   deleteEmployeeFixture,
+  deleteMobileDevice,
+  deletePairing,
   insertEmployeeFixture,
+  postPairingChallenge,
   setAclForDaycares
 } from '../../dev-api'
 import { UUID } from '../../dev-api/types'
@@ -26,6 +29,9 @@ const employeeAads = [
   '7e7daa1e-2e92-4c36-9e90-63cea3cd8f3f'
 ] as const
 let employeeUuids: UUID[] = []
+
+let pairingId: UUID | undefined = undefined
+let deviceId: UUID | null = null
 
 const expectedAclRows = {
   seppo: { name: 'Seppo Sorsa', email: 'seppo.sorsa@espoo.fi' },
@@ -72,6 +78,14 @@ fixture('Employee - Unit ACL')
   })
   .afterEach(logConsoleMessages)
   .after(async () => {
+    if (pairingId) {
+      await deletePairing(pairingId)
+      pairingId = undefined
+    }
+    if (deviceId) {
+      await deleteMobileDevice(deviceId)
+      deviceId = null
+    }
     await cleanUp()
     await Promise.all(employeeAads.map(deleteEmployeeFixture))
     await deleteEmployeeFixture(config.supervisorAad)
@@ -121,4 +135,32 @@ test('User can add and delete staff', async (t) => {
   await unitPage.staffAcl.deleteEmployeeAclByIndex(0)
   await unitPage.staffAcl.deleteEmployeeAclByIndex(0)
   await t.expect(await unitPage.staffAcl.getAclRows()).eql([])
+})
+
+test('User can add a mobile device unit side', async (t) => {
+  await home.login({
+    aad: config.supervisorAad,
+    roles: []
+  })
+  await home.navigateToUnits()
+  await unitPage.navigateHere(fixtures.daycareFixture.id)
+
+  await t.expect(unitPage.mobileDevicesTableRows.exists).notOk()
+  await t.click(unitPage.mobileDevicesStartPairingBtn)
+  await t.expect(unitPage.pairingModalTitle.exists).ok()
+  await t.expect(unitPage.mobileDevicesChallengeKey.exists).ok()
+  const challengeKey = await unitPage.mobileDevicesChallengeKey.textContent
+
+  const res = await postPairingChallenge(challengeKey)
+  await t.expect(unitPage.mobileDevicesResponseKeyInput.exists).ok()
+  if (res.responseKey) {
+    await t.typeText(unitPage.mobileDevicesResponseKeyInput, res.responseKey)
+  }
+  pairingId = res.id
+  deviceId = res.mobileDeviceId
+
+  await t.expect(unitPage.mobileDevicesNameInput.exists).ok()
+  await t.typeText(unitPage.mobileDevicesNameInput, 'testphone')
+  await t.click(unitPage.mobileDevicePairingDoneBtn)
+  await t.expect(unitPage.mobileDevicesTableRows.exists).ok()
 })

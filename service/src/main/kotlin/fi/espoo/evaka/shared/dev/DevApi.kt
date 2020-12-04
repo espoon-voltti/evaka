@@ -36,6 +36,12 @@ import fi.espoo.evaka.invoicing.data.upsertValueDecisions
 import fi.espoo.evaka.invoicing.domain.FeeDecision
 import fi.espoo.evaka.invoicing.domain.Invoice
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecision
+import fi.espoo.evaka.pairing.Pairing
+import fi.espoo.evaka.pairing.PairingsController
+import fi.espoo.evaka.pairing.challengePairing
+import fi.espoo.evaka.pairing.incrementAttempts
+import fi.espoo.evaka.pairing.initPairing
+import fi.espoo.evaka.pairing.respondPairingChallengeCreateDevice
 import fi.espoo.evaka.pis.Employee
 import fi.espoo.evaka.pis.createPersonFromVtj
 import fi.espoo.evaka.pis.deleteEmployeeByAad
@@ -587,6 +593,53 @@ RETURNING id
 
         return ResponseEntity.noContent().build()
     }
+
+    @PostMapping("/mobile/pairings/challenge")
+    fun postPairingChallenge(
+        db: Database.Connection,
+        @RequestBody body: PairingsController.PostPairingChallengeReq
+    ): ResponseEntity<Pairing> {
+        return db
+            .transaction { it.challengePairing(body.challengeKey) }
+            .let { ResponseEntity.ok(it) }
+    }
+
+    @PostMapping("/mobile/pairings/{id}/response")
+    fun postPairingResponse(
+        db: Database.Connection,
+        @PathVariable id: UUID,
+        @RequestBody body: PairingsController.PostPairingResponseReq
+    ): ResponseEntity<Pairing> {
+        db.transaction { it.incrementAttempts(id, body.challengeKey) }
+
+        return db
+            .transaction {
+                it.respondPairingChallengeCreateDevice(id, body.challengeKey, body.responseKey)
+            }
+            .let { ResponseEntity.ok(it) }
+    }
+
+    @PostMapping("/mobile/pairings")
+    fun postPairing(
+        db: Database.Connection,
+        @RequestBody body: PairingsController.PostPairingReq
+    ): ResponseEntity<Pairing> {
+        return db.transaction {
+            it.initPairing(body.unitId)
+        }.let { ResponseEntity.ok(it) }
+    }
+
+    @DeleteMapping("/mobile/pairings/{id}")
+    fun deletePairing(db: Database, @PathVariable id: UUID): ResponseEntity<Unit> {
+        db.transaction { it.deletePairing(id) }
+        return ResponseEntity.noContent().build()
+    }
+
+    @DeleteMapping("/mobile/devices/{id}")
+    fun deleteMobileDevice(db: Database, @PathVariable id: UUID): ResponseEntity<Unit> {
+        db.transaction { it.deleteMobileDevice(id) }
+        return ResponseEntity.noContent().build()
+    }
 }
 
 fun ensureFakeAdminExists(h: Handle) {
@@ -625,6 +678,14 @@ fun Handle.clearDatabase() = listOf(
     execute("DELETE FROM $it")
 }
 
+fun Database.Transaction.deletePairing(id: UUID) {
+    execute("DELETE FROM pairing WHERE id = ?", id)
+}
+
+fun Database.Transaction.deleteMobileDevice(id: UUID) {
+    execute("DELETE FROM mobile_device WHERE id = ?", id)
+}
+
 fun Handle.deleteApplication(id: UUID) {
     execute("DELETE FROM attachment WHERE application_id = ?", id)
     execute("DELETE FROM decision WHERE application_id = ?", id)
@@ -652,6 +713,7 @@ WITH deleted_ids AS (
     execute("DELETE FROM backup_care WHERE unit_id IN (SELECT id FROM daycare WHERE care_area_id = ?)", id)
     execute("DELETE FROM placement_plan WHERE unit_id IN (SELECT id FROM daycare WHERE care_area_id = ?)", id)
     execute("DELETE FROM placement WHERE unit_id IN (SELECT id FROM daycare WHERE care_area_id = ?)", id)
+    execute("DELETE FROM pairing WHERE unit_id IN (SELECT id FROM daycare WHERE care_area_id = ?)", id)
     execute(
         """
         DELETE
@@ -679,11 +741,13 @@ WITH deleted_ids AS (
         id
     )
     execute("DELETE FROM daycare_acl WHERE daycare_id IN (SELECT id FROM daycare WHERE care_area_id = ?)", id)
+    execute("DELETE FROM mobile_device WHERE unit_id IN (SELECT id FROM daycare WHERE care_area_id = ?)", id)
     execute("DELETE FROM daycare WHERE care_area_id = ?", id)
     execute("DELETE FROM care_area WHERE id = ?", id)
 }
 
 fun Handle.deleteDaycare(id: UUID) {
+    execute("DELETE FROM mobile_device WHERE unit_id = ?", id)
     execute(
         "DELETE FROM daycare WHERE id = ?",
         id
