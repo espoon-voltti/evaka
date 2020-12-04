@@ -213,7 +213,10 @@ function Reports() {
                   color={EspooColours.bluePrimary}
                   content={faFileAlt}
                 />
-                <LinkTitle to="/reports/applications">
+                <LinkTitle
+                  data-qa={'report-applications'}
+                  to="/reports/applications"
+                >
                   {i18n.reports.applications.title}
                 </LinkTitle>
               </TitleRow>

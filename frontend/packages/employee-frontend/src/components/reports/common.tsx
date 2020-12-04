@@ -25,10 +25,18 @@ export const TableScrollableWrapper = styled.div`
   }
 `
 
-export function TableScrollable({ children }: { children: React.ReactNode }) {
+interface TableScrollableProps {
+  children: React.ReactNode
+  'data-qa'?: string
+}
+
+export function TableScrollable({
+  children,
+  'data-qa': dataQa
+}: TableScrollableProps) {
   return (
     <TableScrollableWrapper>
-      <Table>{children}</Table>
+      <Table data-qa={dataQa}>{children}</Table>
     </TableScrollableWrapper>
   )
 }

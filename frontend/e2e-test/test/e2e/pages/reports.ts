@@ -2,8 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import config from '../config'
 import { ClientFunction, Selector, t } from 'testcafe'
+import config from '../config'
+import { format } from 'date-fns'
 
 export default class ReportsPage {
   readonly url = config.employeeUrl
@@ -15,6 +16,10 @@ export default class ReportsPage {
 
   async selectVoucherServiceProvidersReport() {
     await t.click(Selector('[data-qa="report-voucher-service-providers"]'))
+  }
+
+  async selectApplicationsReport() {
+    await t.click(Selector('[data-qa="report-applications"]'))
   }
 
   async selectMonth(month: 'Tammikuu') {
@@ -38,6 +43,15 @@ export default class ReportsPage {
     await t.pressKey('enter')
   }
 
+  async selectDateRangePickerDates(from: Date, to: Date) {
+    const fromInput = Selector('[data-qa="datepicker-from"] input')
+    const toInput = Selector('[data-qa="datepicker-to"] input')
+    await t.selectText(fromInput).pressKey('delete')
+    await t.typeText(fromInput, format(from, 'dd.MM.yyyy'))
+    await t.selectText(toInput).pressKey('delete')
+    await t.typeText(toInput, format(to, 'dd.MM.yyyy'))
+  }
+
   async assertVoucherServiceProviderRowCount(expectedChildCount: number) {
     await t.expect(Selector('.reportRow').count).eql(expectedChildCount)
   }
@@ -55,6 +69,14 @@ export default class ReportsPage {
     await t
       .expect(unitRowSelector.find('[data-qa="child-sum"]').innerText)
       .eql(expectedMonthlySum)
+  }
+
+  async assertApplicationsReportContainsArea(area: string) {
+    const applicationTableSelector = Selector(
+      `[data-qa="report-application-table"]`
+    )
+    await t.expect(applicationTableSelector.exists).ok()
+    await t.expect(applicationTableSelector.find('td').innerText).eql(area)
   }
 
   async getCsvReport(): Promise<string> {
