@@ -649,31 +649,19 @@ RETURNING id
         db: Database.Connection,
         @RequestBody body: PairingsController.PostPairingReq
     ): ResponseEntity<Pairing> {
-        return db.transaction { tx ->
-            val pairing = tx.initPairing(body.unitId)
-
-            asyncJobRunner.plan(
-                tx = tx,
-                payloads = listOf(GarbageCollectPairing(pairingId = pairing.id)),
-                runAt = ZonedDateTime
-                    .ofInstant(pairing.expires, zoneId)
-                    .plusDays(1)
-                    .toInstant()
-            )
-
-            pairing
+        return db.transaction { it.initPairing(body.unitId)
         }.let { ResponseEntity.ok(it) }
     }
 
     @DeleteMapping("/mobile/pairings/{id}")
     fun deletePairing(db: Database, @PathVariable id: UUID): ResponseEntity<Unit> {
-        db.transaction { it.handle.deletePairing(id) }
+        db.transaction { it.deletePairing(id) }
         return ResponseEntity.noContent().build()
     }
 
     @DeleteMapping("/mobile/devices/{id}")
     fun deleteMobileDevice(db: Database, @PathVariable id: UUID): ResponseEntity<Unit> {
-        db.transaction { it.handle.deleteMobileDevice(id) }
+        db.transaction { it.deleteMobileDevice(id) }
         return ResponseEntity.noContent().build()
     }
 }
@@ -714,11 +702,11 @@ fun Handle.clearDatabase() = listOf(
     execute("DELETE FROM $it")
 }
 
-fun Handle.deletePairing(id: UUID) {
+fun Database.Transaction.deletePairing(id: UUID) {
     execute("DELETE FROM pairing WHERE id = ?", id)
 }
 
-fun Handle.deleteMobileDevice(id: UUID) {
+fun Database.Transaction.deleteMobileDevice(id: UUID) {
     execute("DELETE FROM mobile_device WHERE id = ?", id)
 }
 
