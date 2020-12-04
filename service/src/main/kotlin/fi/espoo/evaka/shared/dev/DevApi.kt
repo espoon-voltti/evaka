@@ -54,7 +54,6 @@ import fi.espoo.evaka.pis.updatePersonFromVtj
 import fi.espoo.evaka.placement.PlacementPlanService
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.async.AsyncJobRunner
-import fi.espoo.evaka.shared.async.GarbageCollectPairing
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
@@ -64,7 +63,6 @@ import fi.espoo.evaka.shared.domain.Coordinate
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.message.MockEvakaMessageClient
 import fi.espoo.evaka.shared.message.SuomiFiMessage
-import fi.espoo.evaka.shared.utils.zoneId
 import fi.espoo.evaka.vtjclient.dto.VtjPerson
 import fi.espoo.evaka.vtjclient.service.persondetails.MockPersonDetailsService
 import org.jdbi.v3.core.Handle
@@ -89,7 +87,6 @@ import java.time.Duration
 import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.time.ZoneId
-import java.time.ZonedDateTime
 import java.util.UUID
 
 @Profile("enable_dev_api")
@@ -649,7 +646,8 @@ RETURNING id
         db: Database.Connection,
         @RequestBody body: PairingsController.PostPairingReq
     ): ResponseEntity<Pairing> {
-        return db.transaction { it.initPairing(body.unitId)
+        return db.transaction {
+            it.initPairing(body.unitId)
         }.let { ResponseEntity.ok(it) }
     }
 
