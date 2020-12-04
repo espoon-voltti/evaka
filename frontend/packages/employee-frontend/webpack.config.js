@@ -153,6 +153,10 @@ module.exports = function (env, argv) {
         '/api/internal': {
           target: process.env.API_PROXY_URL || 'http://localhost:3020'
         }
+      },
+      watchOptions: {
+        poll: 1000,
+        ignored: /node_modules/
       }
     }
   }
