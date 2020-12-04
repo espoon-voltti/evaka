@@ -21,7 +21,7 @@ import {
 import { Income, PartialIncome, IncomeId } from '~types/income'
 import { UUID } from '~types'
 import { AddButtonRow } from 'components/shared/atoms/buttons/AddButton'
-import { getMissingIncomePeriodStrings } from './income/missingIncomePeriodUtils'
+import { getMissingIncomePeriodsString } from './income/missingIncomePeriodUtils'
 
 interface Props {
   id: UUID
@@ -34,7 +34,7 @@ const PersonIncome = React.memo(function PersonIncome({ id, open }: Props) {
   const { incomes, setIncomes, reloadFamily } = useContext(PersonContext)
   const [editing, setEditing] = useState<string>()
   const [deleting, setDeleting] = useState<string>()
-  const [incomeDataLoaded, setIncomeDataLoaded] = useState<boolean>(false)
+  const [incomeDataChanged, setIncomeDataChanged] = useState<boolean>(false)
   const [toggledIncome, setToggledIncome] = useState<IncomeId[]>([])
   const toggleIncome = (incomeId: IncomeId) =>
     setToggledIncome((prev) => toggleIncomeItem(incomeId, prev))
@@ -48,7 +48,7 @@ const PersonIncome = React.memo(function PersonIncome({ id, open }: Props) {
     setIncomes(Loading())
     void getIncomes(id)
       .then(setIncomes)
-      .then(() => setIncomeDataLoaded(true))
+      .then(() => setIncomeDataChanged(true))
   }
 
   // FIXME: This component shouldn't know about family's dependency on its data
@@ -59,21 +59,20 @@ const PersonIncome = React.memo(function PersonIncome({ id, open }: Props) {
 
   useEffect(loadData, [id, setIncomes])
   useEffect(() => {
-    if (incomeDataLoaded) {
-      if (!isLoading(incomes) && !isFailure(incomes)) {
-        const missingIncomePeriodStrings = getMissingIncomePeriodStrings(
-          incomes.data
-        )
-        if (missingIncomePeriodStrings.length) {
-          setErrorMessage({
-            type: 'warning',
-            title:
-              i18n.personProfile.income.details.missingIncomeDaysWarningTitle,
-            text: i18n.personProfile.income.details.missingIncomeDaysWarningText(
-              missingIncomePeriodStrings
-            )
-          })
-        }
+    if (incomeDataChanged && isSuccess(incomes)) {
+      const missingIncomePeriodsString = getMissingIncomePeriodsString(
+        incomes.data,
+        i18n.common.and.toLowerCase()
+      )
+      if (missingIncomePeriodsString.length) {
+        setErrorMessage({
+          type: 'warning',
+          title:
+            i18n.personProfile.income.details.missingIncomeDaysWarningTitle,
+          text: i18n.personProfile.income.details.missingIncomeDaysWarningText(
+            missingIncomePeriodsString
+          )
+        })
       }
     }
   }, [incomes])

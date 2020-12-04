@@ -48,9 +48,10 @@ const getTimePeriodBetweenIncomesOrUndefined = (
     : undefined
 }
 
-export const getMissingIncomePeriodStrings = (
-  incomeList: Income[]
-): string[] => {
+export const getMissingIncomePeriodsString = (
+  incomeList: Income[],
+  andString: string
+): string => {
   const sortedIncomePeriods = incomeList.sort((incomeA, incomeB) =>
     Math.sign(
       incomeA.validFrom.toSystemTzDate().getTime() -
@@ -58,7 +59,7 @@ export const getMissingIncomePeriodStrings = (
     )
   )
 
-  return sortedIncomePeriods
+  const missingIncomePeriodStrings = sortedIncomePeriods
     .slice(0, -1)
     .map((_, i) =>
       getTimePeriodBetweenIncomesOrUndefined(
@@ -68,4 +69,9 @@ export const getMissingIncomePeriodStrings = (
     )
     .filter(notEmpty)
     .map(timePeriodToString)
+
+  return (
+    missingIncomePeriodStrings.slice(0, -2).concat(['']).join(', ') +
+    missingIncomePeriodStrings.slice(-2).join(` ${andString} `)
+  )
 }
