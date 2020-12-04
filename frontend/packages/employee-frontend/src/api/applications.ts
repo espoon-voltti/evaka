@@ -108,8 +108,8 @@ export async function getApplication(
         updated: new Date(attachment.updated)
       }))
     }))
-    .then(Success)
-    .catch(Failure)
+    .then((v) => Success.of(v))
+    .catch((e) => Failure.fromError(e))
 }
 
 export const deserializeApplicationSummary = (
@@ -136,8 +136,8 @@ export async function getApplications(
       ...data,
       data: data.data.map(deserializeApplicationSummary)
     }))
-    .then(Success)
-    .catch(Failure)
+    .then((v) => Success.of(v))
+    .catch((e) => Failure.fromError(e))
 }
 
 export async function updateApplication(
@@ -275,8 +275,8 @@ export function getPlacementDraft(id: UUID): Promise<Result<PlacementDraft>> {
         })
       }
     })
-    .then(Success)
-    .catch(Failure)
+    .then((v) => Success.of(v))
+    .catch((e) => Failure.fromError(e))
 }
 
 export async function createPlacementPlan(
@@ -377,8 +377,8 @@ export async function getApplicationNotes(
         updated: new Date(note.updated)
       }))
     )
-    .then(Success)
-    .catch(Failure)
+    .then((v) => Success.of(v))
+    .catch((e) => Failure.fromError(e))
 }
 
 export async function createNote(

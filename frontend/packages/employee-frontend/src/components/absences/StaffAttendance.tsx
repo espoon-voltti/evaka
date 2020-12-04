@@ -15,7 +15,7 @@ import { DisabledCell } from '~components/absences/AbsenceCell'
 import { useTranslation } from '~state/i18n'
 import { AbsencesContext } from '~state/absence'
 import { StaffAttendance, StaffAttendanceGroup } from '~types/absence'
-import { isSuccess, Loading, Result } from '~api'
+import { Loading, Result } from '~api'
 import { getStaffAttendances, postStaffAttendance } from '~api/absences'
 import './Absences.scss'
 import { useDebounce } from '~utils/useDebounce'
@@ -43,7 +43,7 @@ export default memo(function StaffAttendance({
   const { selectedDate } = useContext(AbsencesContext)
 
   const [attendance, setAttendance] = useState<Result<StaffAttendanceGroup>>(
-    Loading()
+    Loading.of()
   )
 
   const refreshAttendances = useCallback(() => {
@@ -78,10 +78,10 @@ export default memo(function StaffAttendance({
   const updateAttendances = (attendance: StaffAttendance) =>
     postStaffAttendance(attendance).then(refreshAttendances)
 
-  return isSuccess(attendance) ? (
+  return attendance.isSuccess ? (
     <StaffAttendanceRow
       emptyCols={emptyCols}
-      attendanceGroup={attendance.data}
+      attendanceGroup={attendance.value}
       updateAttendances={updateAttendances}
       operationDays={operationDays}
     />

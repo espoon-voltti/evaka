@@ -13,7 +13,7 @@ import Title from '~components/shared/atoms/Title'
 import { Th, Tr, Td, Thead, Tbody } from '~components/shared/layout/Table'
 import { reactSelectStyles } from '~components/shared/utils'
 import { useTranslation } from '~state/i18n'
-import { isFailure, isLoading, isSuccess, Loading, Result } from '~api'
+import { Loading, Result } from '~api'
 import { MissingHeadOfFamilyReportRow } from '~types/reports'
 import {
   getMissingHeadOfFamilyReport,
@@ -46,7 +46,7 @@ const Wrapper = styled.div`
 function MissingHeadOfFamily() {
   const { i18n } = useTranslation()
   const [rows, setRows] = useState<Result<MissingHeadOfFamilyReportRow[]>>(
-    Loading()
+    Loading.of()
   )
   const [filters, setFilters] = useState<MissingHeadOfFamilyReportFilters>({
     startDate: LocalDate.today().subMonths(1).withDate(1),
@@ -63,13 +63,13 @@ function MissingHeadOfFamily() {
   }
 
   useEffect(() => {
-    setRows(Loading())
+    setRows(Loading.of())
     setDisplayFilters(emptyDisplayFilters)
     void getMissingHeadOfFamilyReport(filters).then(setRows)
   }, [filters])
 
-  const filteredRows = useMemo(
-    () => (isSuccess(rows) ? rows.data.filter(displayFilter) : []),
+  const filteredRows: MissingHeadOfFamilyReportRow[] = useMemo(
+    () => rows.map((rs) => rs.filter(displayFilter)).getOrElse([]),
     [rows, displayFilters]
   )
 
@@ -101,11 +101,14 @@ function MissingHeadOfFamily() {
             <ReactSelect
               options={[
                 { value: '', label: i18n.common.all },
-                ...(isSuccess(rows)
-                  ? distinct(
-                      rows.data.map((row) => row.careAreaName)
-                    ).map((s) => ({ value: s, label: s }))
-                  : [])
+                ...rows
+                  .map((rs) =>
+                    distinct(rs.map((row) => row.careAreaName)).map((s) => ({
+                      value: s,
+                      label: s
+                    }))
+                  )
+                  .getOrElse([])
               ]}
               onChange={(option) =>
                 option && 'value' in option
@@ -132,9 +135,9 @@ function MissingHeadOfFamily() {
           </Wrapper>
         </FilterRow>
 
-        {isLoading(rows) && <Loader />}
-        {isFailure(rows) && <span>{i18n.common.loadingFailed}</span>}
-        {isSuccess(rows) && (
+        {rows.isLoading && <Loader />}
+        {rows.isFailure && <span>{i18n.common.loadingFailed}</span>}
+        {rows.isSuccess && (
           <>
             <ReportDownload
               data={filteredRows}

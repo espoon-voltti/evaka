@@ -25,7 +25,7 @@ import { useTranslation } from '../../state/i18n'
 import NameWithSsn from '../common/NameWithSsn'
 import ChildrenCell from '../common/ChildrenCell'
 import { InvoiceSummary } from '../../types/invoicing'
-import { isFailure, isLoading, isSuccess, Result } from '../../api'
+import { Result } from '../../api'
 import { formatCents } from '../../utils/money'
 import Tooltip from '~components/common/Tooltip'
 import { StatusIconContainer } from '~components/common/StatusIconContainer'
@@ -85,7 +85,7 @@ export default React.memo(function Invoices({
       </RefreshInvoices>
       <TitleRowContainer>
         <SectionTitle size={1}>{i18n.invoices.table.title}</SectionTitle>
-        {invoices && isSuccess(invoices) && (
+        {invoices?.isSuccess && (
           <ResultsContainer>
             <div>{total ? i18n.feeDecisions.table.rowCount(total) : null}</div>
             <Pagination
@@ -96,11 +96,11 @@ export default React.memo(function Invoices({
           </ResultsContainer>
         )}
       </TitleRowContainer>
-      {invoices && isLoading(invoices) ? <Loader /> : null}
-      {!invoices || isFailure(invoices) ? (
+      {invoices?.isLoading ? <Loader /> : null}
+      {!invoices || invoices.isFailure ? (
         <div>{i18n.common.error.unknown}</div>
       ) : null}
-      {invoices && isSuccess(invoices) && (
+      {invoices?.isSuccess && (
         <>
           <ResultsContainer>
             <Checkbox
@@ -123,7 +123,7 @@ export default React.memo(function Invoices({
             />
             <InvoiceTableBody
               actions={actions}
-              invoices={invoices.data}
+              invoices={invoices.value}
               showCheckboxes={showCheckboxes}
               checked={checked}
               allInvoicesToggle={allInvoicesToggle}
@@ -191,9 +191,9 @@ const InvoiceTableHeader = React.memo(function InvoiceTableHeader({
   const { i18n } = useTranslation()
 
   const allChecked =
-    invoices && isSuccess(invoices)
-      ? invoices.data.length > 0 && invoices.data.every((it) => checked[it.id])
-      : false
+    invoices
+      ?.map((is) => is.length > 0 && is.every((i) => checked[i.id]))
+      .getOrElse(false) ?? false
 
   const isSorted = (column: SortByInvoices) =>
     sortBy === column ? sortDirection : undefined

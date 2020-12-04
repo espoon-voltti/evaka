@@ -101,7 +101,7 @@ interface UiState {
   shared: SharedState
 }
 
-const defaultState = {
+const defaultState: UiState = {
   feeDecisions: {
     searchFilters: {
       distinctiveDetails: [],
@@ -152,9 +152,9 @@ const defaultState = {
     clearSearchFilters: () => undefined
   },
   shared: {
-    units: Loading(),
+    units: Loading.of(),
     setUnits: () => undefined,
-    availableAreas: Loading(),
+    availableAreas: Loading.of(),
     setAvailableAreas: () => undefined
   }
 }

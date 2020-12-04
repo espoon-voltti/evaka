@@ -10,7 +10,6 @@ import { UIContext } from '~state/ui'
 import InfoModal from '~components/common/InfoModal'
 import Loader from '~components/shared/atoms/Loader'
 import Title from '~components/shared/atoms/Title'
-import { isFailure, isSuccess } from '~api'
 import { getDay } from 'date-fns'
 import { formatName } from '~utils'
 import { getAbsencesByChild } from '~api/invoicing'
@@ -77,9 +76,9 @@ export default function AbsencesModal({ child, date }: Props) {
       year: selectedDate.getYear(),
       month: selectedDate.getMonth()
     }).then((res) => {
-      if (isSuccess(res)) {
+      if (res.isSuccess) {
         setAbsences(
-          Object.values(res.data)
+          Object.values(res.value)
             .filter((elem: Absence[]) => elem.length > 0)
             .flat()
         )
@@ -87,7 +86,7 @@ export default function AbsencesModal({ child, date }: Props) {
         setTimeout(() => {
           setLoading(false)
         }, 500)
-      } else if (isFailure(res)) {
+      } else if (res.isFailure) {
         setFailure(true)
         setTimeout(() => {
           setLoading(false)

@@ -12,7 +12,7 @@ export interface DecisionDraftState {
 }
 
 const defaultState: DecisionDraftState = {
-  decisionDraftGroup: Loading(),
+  decisionDraftGroup: Loading.of(),
   setDecisionDraftGroup: () => undefined
 }
 

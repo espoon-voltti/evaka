@@ -11,7 +11,6 @@ import InputField from '~components/shared/atoms/form/InputField'
 import { ServiceNeed } from '~types/child'
 import { UUID } from '~types'
 import { FormErrors, formHasErrors } from '~utils/validation/validations'
-import { isFailure, isSuccess } from '~api'
 import { DatePicker, DatePickerClearable } from '~components/common/DatePicker'
 import { AlertBox, InfoBox } from '~components/common/MessageBoxes'
 import FormActions from '~components/common/FormActions'
@@ -101,11 +100,13 @@ function ServiceNeedForm(props: Props) {
   const [autoCutWarning, setAutoCutWarning] = useState<boolean>(false)
 
   const getExistingServiceNeedRanges = (): DateRangeOpen[] =>
-    isSuccess(serviceNeeds)
-      ? serviceNeeds.data
+    serviceNeeds
+      .map((needs) =>
+        needs
           .filter((sn) => isCreate(props) || sn.id != props.serviceNeed.id)
           .map(({ startDate, endDate }) => ({ startDate, endDate }))
-      : []
+      )
+      .getOrElse([])
 
   const checkSoftConflict = (): boolean => {
     if (form.endDate?.isBefore(form.startDate)) return false
@@ -152,12 +153,12 @@ function ServiceNeedForm(props: Props) {
       : updateServiceNeed(props.serviceNeed.id, form)
 
     void apiCall.then((res) => {
-      if (isSuccess(res)) {
+      if (res.isSuccess) {
         clearUiMode()
         props.onReload()
       }
-      if (isFailure(res)) {
-        if (res.error.statusCode == 409) {
+      if (res.isFailure) {
+        if (res.statusCode == 409) {
           setFormErrors({
             ...formErrors,
             dateRange: {

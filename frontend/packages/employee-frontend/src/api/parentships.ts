@@ -28,8 +28,8 @@ async function getParentships(
         child: deserializePersonDetails(data.child)
       }))
     )
-    .then(Success)
-    .catch(Failure)
+    .then((v) => Success.of(v))
+    .catch((e) => Failure.fromError(e))
 }
 
 export async function getParentshipsByHeadOfChild(
@@ -66,8 +66,8 @@ export async function addParentship(
       headOfChild: deserializePersonDetails(data.headOfChild),
       child: deserializePersonDetails(data.child)
     }))
-    .then(Success)
-    .catch(Failure)
+    .then((v) => Success.of(v))
+    .catch((e) => Failure.fromError(e))
 }
 
 export async function updateParentship(
@@ -89,20 +89,20 @@ export async function updateParentship(
       headOfChild: deserializePersonDetails(data.headOfChild),
       child: deserializePersonDetails(data.child)
     }))
-    .then(Success)
-    .catch(Failure)
+    .then((v) => Success.of(v))
+    .catch((e) => Failure.fromError(e))
 }
 
 export async function retryParentship(id: UUID): Promise<Result<null>> {
   return client
     .put(`/parentships/${id}/retry`)
-    .then(() => Success(null))
-    .catch(Failure)
+    .then(() => Success.of(null))
+    .catch((e) => Failure.fromError(e))
 }
 
 export async function removeParentship(id: UUID): Promise<Result<null>> {
   return client
     .delete(`/parentships/${id}`, {})
-    .then(() => Success(null))
-    .catch(Failure)
+    .then(() => Success.of(null))
+    .catch((e) => Failure.fromError(e))
 }

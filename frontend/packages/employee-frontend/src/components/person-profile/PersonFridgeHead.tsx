@@ -5,7 +5,7 @@
 import React, { useEffect } from 'react'
 import { UUID } from '~types'
 import { useTranslation } from '~state/i18n'
-import { isFailure, isLoading, isSuccess, Loading, Success } from '~api'
+import { Loading, Success } from '~api'
 import { getPersonDetails } from '~api/person'
 import { useContext } from 'react'
 import { PersonContext, PersonState } from '~state/person'
@@ -28,21 +28,24 @@ const PersonFridgeHead = React.memo(function PersonFridgeHead({ id }: Props) {
   const { setTitle, formatTitleName } = useContext<TitleState>(TitleContext)
 
   const loadData = () => {
-    setPerson(Loading())
+    setPerson(Loading.of())
     void getPersonDetails(id).then(setPerson)
   }
 
   // FIXME: This component shouldn't know about family's dependency on its data
   const updateData = (p: PersonDetailsType) => {
-    setPerson(Success(p))
+    setPerson(Success.of(p))
     reloadFamily(id)
   }
 
   useEffect(loadData, [id, setPerson])
 
   useEffect(() => {
-    if (isSuccess(person)) {
-      const name = formatTitleName(person.data.firstName, person.data.lastName)
+    if (person.isSuccess) {
+      const name = formatTitleName(
+        person.value.firstName,
+        person.value.lastName
+      )
       setTitle(`${name} | ${i18n.titles.customers}`)
     }
   }, [formatTitleName, i18n.titles.customers, person, setTitle])
@@ -59,8 +62,8 @@ const PersonFridgeHead = React.memo(function PersonFridgeHead({ id }: Props) {
           onUpdateComplete={(p) => updateData(p)}
         />
       </CollapsibleSection>
-      {isLoading(person) && <Loader />}
-      {isFailure(person) && <div>{i18n.common.loadingFailed}</div>}
+      {person.isLoading && <Loader />}
+      {person.isFailure && <div>{i18n.common.loadingFailed}</div>}
     </div>
   )
 })

@@ -10,7 +10,6 @@ import {
   UnitFilter
 } from '../common/Filters'
 import { InvoicingUiContext } from '../../state/invoicing-ui'
-import { isSuccess } from '../../api'
 import { getAreas, getUnits } from '../../api/daycare'
 import { VoucherValueDecisionStatus } from '../../types/invoicing'
 import { Gap } from '~components/shared/layout/white-space'
@@ -41,9 +40,13 @@ export default React.memo(function VoucherValueDecisionFilters() {
   // remove selected unit filter if the unit is not included in the selected areas
   useEffect(() => {
     if (
-      searchFilters.unit &&
-      isSuccess(units) &&
-      !units.data.map(({ id }) => id).includes(searchFilters.unit)
+      units
+        .map(
+          (xs) =>
+            !!searchFilters.unit &&
+            xs.map(({ id }) => id).includes(searchFilters.unit)
+        )
+        .getOrElse(false)
     ) {
       setSearchFilters((filters) => ({ ...filters, unit: undefined }))
     }
@@ -85,24 +88,23 @@ export default React.memo(function VoucherValueDecisionFilters() {
       column1={
         <>
           <AreaFilter
-            areas={isSuccess(availableAreas) ? availableAreas.data : []}
+            areas={availableAreas.getOrElse([])}
             toggled={searchFilters.area}
             toggle={toggleArea}
           />
           <Gap size="L" />
           <UnitFilter
-            units={
-              isSuccess(units)
-                ? units.data.map(({ id, name }) => ({ id, label: name }))
-                : []
-            }
-            selected={
-              isSuccess(units)
-                ? units.data
+            units={units
+              .map((us) => us.map(({ id, name }) => ({ id, label: name })))
+              .getOrElse([])}
+            selected={units
+              .map(
+                (us) =>
+                  us
                     .map(({ id, name }) => ({ id, label: name }))
                     .filter((unit) => unit.id === searchFilters.unit)[0]
-                : undefined
-            }
+              )
+              .getOrElse(undefined)}
             select={selectUnit}
           />
         </>

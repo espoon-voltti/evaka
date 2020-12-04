@@ -13,7 +13,7 @@ import { Th, Tr, Td, Thead, Tbody } from '~components/shared/layout/Table'
 import { reactSelectStyles } from '~components/shared/utils'
 import { useTranslation } from '~state/i18n'
 import { Link } from 'react-router-dom'
-import { isFailure, isLoading, isSuccess, Loading, Result } from '~api'
+import { Loading, Result } from '~api'
 import { FamilyConflictReportRow } from '~types/reports'
 import { getFamilyConflictsReport } from '~api/reports'
 import ReturnButton from 'components/shared/atoms/buttons/ReturnButton'
@@ -40,7 +40,9 @@ const Wrapper = styled.div`
 
 function FamilyConflicts() {
   const { i18n } = useTranslation()
-  const [rows, setRows] = useState<Result<FamilyConflictReportRow[]>>(Loading())
+  const [rows, setRows] = useState<Result<FamilyConflictReportRow[]>>(
+    Loading.of()
+  )
 
   const [displayFilters, setDisplayFilters] = useState<DisplayFilters>(
     emptyDisplayFilters
@@ -52,13 +54,13 @@ function FamilyConflicts() {
   }
 
   useEffect(() => {
-    setRows(Loading())
+    setRows(Loading.of())
     setDisplayFilters(emptyDisplayFilters)
     void getFamilyConflictsReport().then(setRows)
   }, [])
 
-  const filteredRows = useMemo(
-    () => (isSuccess(rows) ? rows.data.filter(displayFilter) : []),
+  const filteredRows: FamilyConflictReportRow[] = useMemo(
+    () => rows.map((rs) => rs.filter(displayFilter)).getOrElse([]),
     [rows, displayFilters]
   )
 
@@ -74,11 +76,14 @@ function FamilyConflicts() {
             <ReactSelect
               options={[
                 { value: '', label: i18n.common.all },
-                ...(isSuccess(rows)
-                  ? distinct(
-                      rows.data.map((row) => row.careAreaName)
-                    ).map((s) => ({ value: s, label: s }))
-                  : [])
+                ...rows
+                  .map((rs) =>
+                    distinct(rs.map((row) => row.careAreaName)).map((s) => ({
+                      value: s,
+                      label: s
+                    }))
+                  )
+                  .getOrElse([])
               ]}
               onChange={(option) =>
                 option && 'value' in option
@@ -105,9 +110,9 @@ function FamilyConflicts() {
           </Wrapper>
         </FilterRow>
 
-        {isLoading(rows) && <Loader />}
-        {isFailure(rows) && <span>{i18n.common.loadingFailed}</span>}
-        {isSuccess(rows) && (
+        {rows.isLoading && <Loader />}
+        {rows.isFailure && <span>{i18n.common.loadingFailed}</span>}
+        {rows.isSuccess && (
           <>
             <ReportDownload
               data={filteredRows.map((row) => ({

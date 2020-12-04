@@ -10,7 +10,7 @@ import { faFileAlt } from 'icon-set'
 import { UUID } from '~types'
 import { useTranslation } from '~state/i18n'
 import { useEffect } from 'react'
-import { isFailure, isLoading, isSuccess, Loading } from '~api'
+import { Loading } from '~api'
 import { useContext } from 'react'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'components/shared/layout/Table'
 import Loader from '~components/shared/atoms/Loader'
@@ -42,20 +42,20 @@ const ChildApplications = React.memo(function ChildApplications({
   const { uiMode, toggleUiMode } = useContext(UIContext)
 
   const loadData = () => {
-    setApplications(Loading())
+    setApplications(Loading.of())
     void getChildApplicationSummaries(id).then(setApplications)
   }
 
   useEffect(loadData, [id])
 
   function renderApplications() {
-    if (isLoading(applications)) {
+    if (applications.isLoading) {
       return <Loader />
-    } else if (isFailure(applications)) {
+    } else if (applications.isFailure) {
       return <div>{i18n.common.loadingFailed}</div>
     } else
       return _.orderBy(
-        applications.data,
+        applications.value,
         ['startDate', 'preferredUnitName'],
         ['desc', 'desc']
       ).map((application: ApplicationSummary) => {
@@ -120,9 +120,9 @@ const ChildApplications = React.memo(function ChildApplications({
         />
       </RequireRole>
 
-      {isLoading(applications) && <Loader />}
-      {isFailure(applications) && <div>{i18n.common.loadingFailed}</div>}
-      {isSuccess(applications) && (
+      {applications.isLoading && <Loader />}
+      {applications.isFailure && <div>{i18n.common.loadingFailed}</div>}
+      {applications.isSuccess && (
         <Table data-qa="table-of-applications">
           <Thead>
             <Tr>
@@ -140,11 +140,11 @@ const ChildApplications = React.memo(function ChildApplications({
       )}
 
       {uiMode === 'create-new-application' &&
-        isSuccess(person) &&
-        !isLoading(guardians) && (
+        person.isSuccess &&
+        !guardians.isLoading && (
           <CreateApplicationModal
-            child={person.data}
-            guardians={isSuccess(guardians) ? guardians.data : []}
+            child={person.value}
+            guardians={guardians.getOrElse([])}
           />
         )}
     </CollapsibleSection>

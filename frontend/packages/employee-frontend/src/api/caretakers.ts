@@ -25,8 +25,8 @@ export async function getCaretakers(
         endDate: LocalDate.parseNullableIso(c.endDate)
       }))
     }))
-    .then(Success)
-    .catch(Failure)
+    .then((v) => Success.of(v))
+    .catch((e) => Failure.fromError(e))
 }
 
 export async function postCaretakers(
@@ -42,8 +42,8 @@ export async function postCaretakers(
       endDate: endDate,
       amount
     })
-    .then(() => Success(null))
-    .catch(Failure)
+    .then(() => Success.of(null))
+    .catch((e) => Failure.fromError(e))
 }
 
 export async function putCaretakers(
@@ -60,8 +60,8 @@ export async function putCaretakers(
       endDate: endDate,
       amount
     })
-    .then(() => Success(null))
-    .catch(Failure)
+    .then(() => Success.of(null))
+    .catch((e) => Failure.fromError(e))
 }
 
 export async function deleteCaretakers(
@@ -71,6 +71,6 @@ export async function deleteCaretakers(
 ): Promise<Result<null>> {
   return client
     .delete(`/daycares/${unitId}/groups/${groupId}/caretakers/${id}`)
-    .then(() => Success(null))
-    .catch(Failure)
+    .then(() => Success.of(null))
+    .catch((e) => Failure.fromError(e))
 }

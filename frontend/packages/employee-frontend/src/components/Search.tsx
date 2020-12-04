@@ -10,7 +10,6 @@ import styled from 'styled-components'
 import { getAge } from '@evaka/lib-common/src/utils/local-date'
 
 import { formatName } from '~/utils'
-import { isFailure, isLoading, isSuccess } from '~api'
 import { triggerDvvBatch } from '~api/hidden'
 import { Gap } from '~components/shared/layout/white-space'
 import AddButton from '~components/shared/atoms/buttons/AddButton'
@@ -158,9 +157,9 @@ function Search() {
               </Tr>
             </Thead>
             <Tbody>
-              {isSuccess(customers) && (
+              {customers.isSuccess && (
                 <>
-                  {customers.data.map((person) => (
+                  {customers.value.map((person) => (
                     <Tr key={person.id} data-qa="person-row">
                       <Td align="left">
                         <Link
@@ -183,7 +182,7 @@ function Search() {
                       <Td align="left">{person.socialSecurityNumber}</Td>
                     </Tr>
                   ))}
-                  {customers.data.length > 99 && (
+                  {customers.value.length > 99 && (
                     <Tr>
                       <Td>{i18n.personSearch.maxResultsFound}</Td>
                       <Td></Td>
@@ -192,14 +191,14 @@ function Search() {
                   )}
                 </>
               )}
-              {isLoading(customers) && (
+              {customers.isLoading && (
                 <Tr>
                   <Td colSpan={4}>
                     <Loader />
                   </Td>
                 </Tr>
               )}
-              {isFailure(customers) && (
+              {customers.isFailure && (
                 <Tr>
                   <Td colSpan={4}>{i18n.common.loadingFailed}</Td>
                 </Tr>

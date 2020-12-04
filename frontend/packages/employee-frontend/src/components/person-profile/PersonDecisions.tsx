@@ -10,7 +10,7 @@ import { faChild } from 'icon-set'
 import { UUID } from '~types'
 import { useTranslation } from '~state/i18n'
 import { useEffect } from 'react'
-import { isFailure, isLoading, isSuccess, Loading } from '~api'
+import { Loading } from '~api'
 import { useContext } from 'react'
 import { PersonContext } from '~state/person'
 import CollapsibleSection from 'components/shared/molecules/CollapsibleSection'
@@ -33,16 +33,16 @@ const PersonDecisions = React.memo(function PersonDecisions({
   const { decisions, setDecisions } = useContext(PersonContext)
 
   useEffect(() => {
-    setDecisions(Loading())
+    setDecisions(Loading.of())
     void getGuardianDecisions(id).then((response) => {
       setDecisions(response)
     })
   }, [id, setDecisions])
 
   const renderDecisions = () =>
-    isSuccess(decisions)
+    decisions.isSuccess
       ? _.orderBy(
-          decisions.data,
+          decisions.value,
           ['startDate', 'preferredUnitName'],
           ['desc', 'desc']
         ).map((decision: Decision) => {
@@ -96,8 +96,8 @@ const PersonDecisions = React.memo(function PersonDecisions({
           </Thead>
           <Tbody>{renderDecisions()}</Tbody>
         </Table>
-        {isLoading(decisions) && <Loader />}
-        {isFailure(decisions) && <div>{i18n.common.loadingFailed}</div>}
+        {decisions.isLoading && <Loader />}
+        {decisions.isFailure && <div>{i18n.common.loadingFailed}</div>}
       </CollapsibleSection>
     </div>
   )

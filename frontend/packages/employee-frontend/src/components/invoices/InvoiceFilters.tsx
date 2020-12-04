@@ -13,7 +13,6 @@ import {
   InvoiceDateFilter
 } from '../common/Filters'
 import { InvoicingUiContext } from '../../state/invoicing-ui'
-import { isSuccess } from '../../api'
 import { getAreas, getUnits } from '../../api/daycare'
 import { InvoiceStatus, InvoiceDistinctiveDetails } from '../../types/invoicing'
 import { Gap } from '~components/shared/layout/white-space'
@@ -45,8 +44,8 @@ function InvoiceFilters() {
   useEffect(() => {
     if (
       searchFilters.unit &&
-      isSuccess(units) &&
-      !units.data.map(({ id }) => id).includes(searchFilters.unit)
+      units.isSuccess &&
+      !units.value.map(({ id }) => id).includes(searchFilters.unit)
     ) {
       setSearchFilters({ ...searchFilters, unit: undefined })
     }
@@ -119,24 +118,23 @@ function InvoiceFilters() {
         <>
           <Gap size="s" />
           <AreaFilter
-            areas={isSuccess(availableAreas) ? availableAreas.data : []}
+            areas={availableAreas.getOrElse([])}
             toggled={searchFilters.area}
             toggle={toggleArea}
           />
           <Gap size="L" />
           <UnitFilter
-            units={
-              isSuccess(units)
-                ? units.data.map(({ id, name }) => ({ id, label: name }))
-                : []
-            }
-            selected={
-              isSuccess(units)
-                ? units.data
+            units={units
+              .map((us) => us.map(({ id, name }) => ({ id, label: name })))
+              .getOrElse([])}
+            selected={units
+              .map(
+                (us) =>
+                  us
                     .map(({ id, name }) => ({ id, label: name }))
                     .filter((unit) => unit.id === searchFilters.unit)[0]
-                : undefined
-            }
+              )
+              .getOrElse(undefined)}
             select={selectUnit}
           />
         </>

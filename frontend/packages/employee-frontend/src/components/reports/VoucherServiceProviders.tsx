@@ -13,7 +13,7 @@ import Title from '~components/shared/atoms/Title'
 import { Th, Tr, Td, Thead, Tbody } from '~components/shared/layout/Table'
 import { reactSelectStyles } from '~components/shared/utils'
 import { useTranslation } from '~state/i18n'
-import { isFailure, isLoading, isSuccess, Loading, Result, Success } from '~api'
+import { Loading, Result, Success } from '~api'
 import { VoucherServiceProviderRow } from '~types/reports'
 import {
   getVoucherServiceProvidersReport,
@@ -74,7 +74,7 @@ function getFilename(year: number, month: number, areaName: string) {
 function VoucherServiceProviders() {
   const { i18n } = useTranslation()
   const [rows, setRows] = useState<Result<VoucherServiceProviderRow[]>>(
-    Success([])
+    Success.of([])
   )
   const [areas, setAreas] = useState<CareArea[]>([])
   const [filters, setFilters] = useState<VoucherServiceProvidersFilters>({
@@ -84,28 +84,30 @@ function VoucherServiceProviders() {
   })
 
   useEffect(() => {
-    void getAreas().then((res) => isSuccess(res) && setAreas(res.data))
+    void getAreas().then((res) => res.isSuccess && setAreas(res.value))
   }, [])
 
   useEffect(() => {
     if (filters.areaId == '') return
 
-    setRows(Loading())
+    setRows(Loading.of())
     void getVoucherServiceProvidersReport(filters).then(setRows)
   }, [filters])
 
   const months = monthOptions()
   const years = yearOptions()
 
-  const mappedData = isSuccess(rows)
-    ? rows.data.map(({ unit, childCount, monthlyPaymentSum }) => ({
+  const mappedData = rows
+    .map((rs) =>
+      rs.map(({ unit, childCount, monthlyPaymentSum }) => ({
         unitId: unit.id,
         unitName: unit.name,
         areaName: unit.areaName,
         childCount: childCount,
         sum: formatCents(monthlyPaymentSum)
       }))
-    : undefined
+    )
+    .getOrElse(undefined)
 
   return (
     <Container>
@@ -164,8 +166,8 @@ function VoucherServiceProviders() {
             />
           </Wrapper>
         </FilterRow>
-        {isLoading(rows) && <Loader />}
-        {isFailure(rows) && <span>{i18n.common.loadingFailed}</span>}
+        {rows.isLoading && <Loader />}
+        {rows.isFailure && <span>{i18n.common.loadingFailed}</span>}
         {mappedData && filters.areaId && (
           <>
             <ReportDownload

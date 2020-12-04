@@ -43,27 +43,27 @@ export interface ChildState {
 }
 
 const defaultState: ChildState = {
-  person: Loading(),
+  person: Loading.of(),
   setPerson: () => undefined,
-  serviceNeeds: Loading(),
+  serviceNeeds: Loading.of(),
   setServiceNeeds: () => undefined,
-  assistanceNeeds: Loading(),
+  assistanceNeeds: Loading.of(),
   setAssistanceNeeds: () => undefined,
-  assistanceActions: Loading(),
+  assistanceActions: Loading.of(),
   setAssistanceActions: () => undefined,
-  additionalInformation: Loading(),
+  additionalInformation: Loading.of(),
   setAdditionalInformation: () => undefined,
-  feeAlterations: Loading(),
+  feeAlterations: Loading.of(),
   setFeeAlterations: () => undefined,
-  placements: Loading(),
+  placements: Loading.of(),
   setPlacements: () => undefined,
-  parentships: Loading(),
+  parentships: Loading.of(),
   setParentships: () => undefined,
-  backupCares: Loading(),
+  backupCares: Loading.of(),
   setBackupCares: () => undefined,
-  guardians: Loading(),
+  guardians: Loading.of(),
   setGuardians: () => undefined,
-  applications: Loading(),
+  applications: Loading.of(),
   setApplications: () => undefined
 }
 

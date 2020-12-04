@@ -25,8 +25,8 @@ export async function getFeeAlterations(
         updatedAt: new Date(feeAlteration.updatedAt)
       }))
     )
-    .then(Success)
-    .catch(Failure)
+    .then((v) => Success.of(v))
+    .catch((e) => Failure.fromError(e))
 }
 
 export async function createFeeAlteration(
@@ -34,8 +34,8 @@ export async function createFeeAlteration(
 ): Promise<Result<void>> {
   return client
     .post<void>('/fee-alterations', feeAlteration)
-    .then((res) => Success(res.data))
-    .catch(Failure)
+    .then((res) => Success.of(res.data))
+    .catch((e) => Failure.fromError(e))
 }
 
 export async function updateFeeAlteration(
@@ -43,13 +43,13 @@ export async function updateFeeAlteration(
 ): Promise<Result<void>> {
   return client
     .put<void>(`/fee-alterations/${feeAlteration.id}`, feeAlteration)
-    .then((res) => Success(res.data))
-    .catch(Failure)
+    .then((res) => Success.of(res.data))
+    .catch((e) => Failure.fromError(e))
 }
 
 export async function deleteFeeAlteration(id: UUID): Promise<Result<void>> {
   return client
     .delete<void>(`/fee-alterations/${id}`)
-    .then((res) => Success(res.data))
-    .catch(Failure)
+    .then((res) => Success.of(res.data))
+    .catch((e) => Failure.fromError(e))
 }

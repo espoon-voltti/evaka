@@ -25,7 +25,7 @@ function VTJGuardian({
 }: VTJGuardianProps) {
   const { i18n } = useTranslation()
   const [guardianResult, setGuardian] = useState<Result<PersonDetails>>(
-    Loading()
+    Loading.of()
   )
 
   useEffect(() => {

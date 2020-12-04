@@ -8,7 +8,7 @@ import LocalDate from '@evaka/lib-common/src/local-date'
 import { UUID } from '~types'
 import { useTranslation } from '~state/i18n'
 import { getApplicationUnits } from '~api/daycare'
-import { isSuccess, Loading, isLoading, Result } from '~api'
+import { Loading, Result } from '~api'
 import { PlacementType } from '~types/placementdraft'
 import FormModal from '~components/common/FormModal'
 import { faMapMarkerAlt } from 'icon-set'
@@ -46,7 +46,7 @@ const placementTypes: PlacementType[] = [
 function CreatePlacementModal({ childId, reload }: Props) {
   const { i18n } = useTranslation()
   const { clearUiMode } = useContext(UIContext)
-  const [units, setUnits] = useState<Result<PreferredUnit[]>>(Loading())
+  const [units, setUnits] = useState<Result<PreferredUnit[]>>(Loading.of())
   const [form, setForm] = useState<Form>({
     type: 'DAYCARE',
     unitId: undefined,
@@ -60,11 +60,11 @@ function CreatePlacementModal({ childId, reload }: Props) {
   const errors = []
 
   useEffect(() => {
-    setUnits(Loading())
+    setUnits(Loading.of())
     void void getApplicationUnits(form.type, form.startDate).then((units) => {
       setUnits(units)
-      if (isSuccess(units) && !form.unitId) {
-        const defaultUnit = units.data.sort((a, b) =>
+      if (units.isSuccess && !form.unitId) {
+        const defaultUnit = units.value.sort((a, b) =>
           a.name < b.name ? -1 : 1
         )[0]
         setForm({
@@ -87,7 +87,7 @@ function CreatePlacementModal({ childId, reload }: Props) {
     })
       .then((res) => {
         setSubmitting(false)
-        if (isSuccess(res)) {
+        if (res.isSuccess) {
           reload()
           clearUiMode()
         }
@@ -144,17 +144,17 @@ function CreatePlacementModal({ childId, reload }: Props) {
 
           <ReactSelect
             placeholder={i18n.common.select}
-            options={
-              isSuccess(units)
-                ? units.data
-                    .map(({ id, name, ghostUnit }) => ({
-                      label: name,
-                      value: id,
-                      ghostUnit: ghostUnit
-                    }))
-                    .sort((a, b) => (a.label < b.label ? -1 : 1))
-                : []
-            }
+            options={units
+              .map((us) =>
+                us
+                  .map(({ id, name, ghostUnit }) => ({
+                    label: name,
+                    value: id,
+                    ghostUnit: ghostUnit
+                  }))
+                  .sort((a, b) => (a.label < b.label ? -1 : 1))
+              )
+              .getOrElse([])}
             onChange={(option) =>
               option && 'value' in option
                 ? setForm({
@@ -164,7 +164,7 @@ function CreatePlacementModal({ childId, reload }: Props) {
                   })
                 : undefined
             }
-            isLoading={isLoading(units)}
+            isLoading={units.isLoading}
             loadingMessage={() => i18n.common.loading}
             noOptionsMessage={() => i18n.common.loadingFailed}
           />

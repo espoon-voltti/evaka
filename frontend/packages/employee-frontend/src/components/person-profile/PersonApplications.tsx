@@ -10,7 +10,7 @@ import { faFileAlt } from 'icon-set'
 import { UUID } from '~types'
 import { useTranslation } from '~state/i18n'
 import { useEffect } from 'react'
-import { isFailure, isLoading, isSuccess, Loading } from '~api'
+import { Loading } from '~api'
 import { useContext } from 'react'
 import { PersonContext } from '~state/person'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'components/shared/layout/Table'
@@ -34,16 +34,16 @@ const PersonApplications = React.memo(function PersonApplications({
   const { applications, setApplications } = useContext(PersonContext)
 
   useEffect(() => {
-    setApplications(Loading())
+    setApplications(Loading.of())
     void getGuardianApplicationSummaries(id).then((response) => {
       setApplications(response)
     })
   }, [id, setApplications])
 
   const renderApplications = () =>
-    isSuccess(applications)
+    applications.isSuccess
       ? _.orderBy(
-          applications.data,
+          applications.value,
           ['startDate', 'preferredUnitName'],
           ['desc', 'desc']
         ).map((application: ApplicationSummary) => {
@@ -115,8 +115,8 @@ const PersonApplications = React.memo(function PersonApplications({
           </Thead>
           <Tbody>{renderApplications()}</Tbody>
         </Table>
-        {isLoading(applications) && <Loader />}
-        {isFailure(applications) && <div>{i18n.common.loadingFailed}</div>}
+        {applications.isLoading && <Loader />}
+        {applications.isFailure && <div>{i18n.common.loadingFailed}</div>}
       </CollapsibleSection>
     </div>
   )

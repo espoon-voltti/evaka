@@ -75,11 +75,11 @@ interface UIState {
 }
 
 const defaultState: UIState = {
-  applicationsResult: Loading(),
+  applicationsResult: Loading.of(),
   setApplicationsResult: () => undefined,
   area: [],
   setArea: () => undefined,
-  availableAreas: Loading(),
+  availableAreas: Loading.of(),
   setAvailableAreas: () => undefined,
   units: [],
   setUnits: () => undefined,
@@ -93,7 +93,7 @@ const defaultState: UIState = {
   setStartDate: () => undefined,
   endDate: undefined,
   setEndDate: () => undefined,
-  allUnits: Loading(),
+  allUnits: Loading.of(),
   setAllUnits: () => undefined,
   searchTerms: '',
   setSearchTerms: () => undefined,
@@ -124,7 +124,7 @@ export const ApplicationUIContextProvider = React.memo(
   }) {
     const [applicationsResult, setApplicationsResult] = useState<
       Result<ApplicationsSearchResponse>
-    >(Loading())
+    >(Loading.of())
     const [area, setArea] = useState<string[]>(defaultState.area)
     const [availableAreas, setAvailableAreas] = useState<Result<CareArea[]>>(
       defaultState.availableAreas

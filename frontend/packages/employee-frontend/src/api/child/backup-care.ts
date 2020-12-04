@@ -21,7 +21,7 @@ export async function getChildBackupCares(
       `/children/${childId}/backup-cares`
     )
     .then((res) =>
-      Success(
+      Success.of(
         res.data.backupCares.map((x) => ({
           ...x,
           period: {
@@ -31,7 +31,7 @@ export async function getChildBackupCares(
         }))
       )
     )
-    .catch(Failure)
+    .catch((e) => Failure.fromError(e))
 }
 
 interface NewBackupCare {
@@ -56,8 +56,8 @@ export async function createBackupCare(
       `/children/${childId}/backup-cares`,
       payload
     )
-    .then((res) => Success(res.data.id))
-    .catch(Failure)
+    .then((res) => Success.of(res.data.id))
+    .catch((e) => Failure.fromError(e))
 }
 
 interface BackupCareUpdateRequest {
@@ -74,8 +74,8 @@ export async function updateBackupCare(
 ): Promise<Result<void>> {
   return client
     .post(`/backup-cares/${backupCareId}`, payload)
-    .then(() => Success(undefined))
-    .catch(Failure)
+    .then(() => Success.of(undefined))
+    .catch((e) => Failure.fromError(e))
 }
 
 export async function removeBackupCare(
@@ -83,6 +83,6 @@ export async function removeBackupCare(
 ): Promise<Result<void>> {
   return client
     .delete(`/backup-cares/${backupCareId}`)
-    .then(() => Success(undefined))
-    .catch(Failure)
+    .then(() => Success.of(undefined))
+    .catch((e) => Failure.fromError(e))
 }

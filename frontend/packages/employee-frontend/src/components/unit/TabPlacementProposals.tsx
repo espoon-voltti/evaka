@@ -9,7 +9,6 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 import React, { useContext } from 'react'
 import { ContentArea } from '~components/shared/layout/Container'
 import { UnitContext } from '~state/unit'
-import { isFailure, isLoading } from '~api'
 import { SpinnerSegment } from '~components/shared/atoms/state/Spinner'
 import ErrorSegment from '~components/shared/atoms/state/ErrorSegment'
 import { useParams } from 'react-router-dom'
@@ -24,11 +23,11 @@ function TabPlacementProposals({ reloadUnitData }: Props) {
   const { id } = useParams<{ id: UUID }>()
   const { unitData } = useContext(UnitContext)
 
-  if (isFailure(unitData)) {
+  if (unitData.isFailure) {
     return <ErrorSegment />
   }
 
-  if (isLoading(unitData)) {
+  if (unitData.isLoading) {
     return <SpinnerSegment />
   }
 
@@ -36,7 +35,7 @@ function TabPlacementProposals({ reloadUnitData }: Props) {
     <ContentArea opaque>
       <PlacementProposals
         unitId={id}
-        placementPlans={unitData.data.placementProposals ?? []}
+        placementPlans={unitData.value.placementProposals ?? []}
         loadUnitData={reloadUnitData}
       />
     </ContentArea>

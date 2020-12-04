@@ -6,7 +6,7 @@ import React from 'react'
 import { UUID } from '~types'
 import { useTranslation } from '~state/i18n'
 import { useEffect } from 'react'
-import { isFailure, isLoading, isSuccess, Loading } from '~api'
+import { Loading } from '~api'
 import { useContext } from 'react'
 import Loader from '~components/shared/atoms/Loader'
 import {
@@ -38,7 +38,7 @@ const Guardians = React.memo(function Guardians({ id, open }: Props) {
   const { guardians, setGuardians } = useContext(ChildContext)
 
   useEffect(() => {
-    setGuardians(Loading())
+    setGuardians(Loading.of())
     void getPersonGuardians(id).then((response) => {
       setGuardians(response)
     })
@@ -52,8 +52,9 @@ const Guardians = React.memo(function Guardians({ id, open }: Props) {
     ].join(', ')
 
   const renderGuardians = () =>
-    isSuccess(guardians)
-      ? _.orderBy(guardians.data, ['lastName', 'firstName'], ['asc']).map(
+    guardians
+      .map((gs) =>
+        _.orderBy(gs, ['lastName', 'firstName'], ['asc']).map(
           (guardian: PersonDetails) => {
             return (
               <Tr key={`${guardian.id}`} data-qa="table-guardian-row">
@@ -71,7 +72,8 @@ const Guardians = React.memo(function Guardians({ id, open }: Props) {
             )
           }
         )
-      : null
+      )
+      .getOrElse(null)
 
   return (
     <div>
@@ -92,8 +94,8 @@ const Guardians = React.memo(function Guardians({ id, open }: Props) {
           </Thead>
           <Tbody>{renderGuardians()}</Tbody>
         </Table>
-        {isLoading(guardians) && <Loader />}
-        {isFailure(guardians) && <div>{i18n.common.loadingFailed}</div>}
+        {guardians.isLoading && <Loader />}
+        {guardians.isFailure && <div>{i18n.common.loadingFailed}</div>}
       </CollapsibleSection>
     </div>
   )

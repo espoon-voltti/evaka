@@ -32,8 +32,8 @@ export async function createPlacement(
       startDate: body.startDate,
       endDate: body.endDate
     })
-    .then(() => Success(null))
-    .catch(Failure)
+    .then(() => Success.of(null))
+    .catch((e) => Failure.fromError(e))
 }
 
 export async function getPlacements(
@@ -54,8 +54,8 @@ export async function getPlacements(
         endDate: LocalDate.parseIso(p.endDate)
       }))
     )
-    .then(Success)
-    .catch(Failure)
+    .then((v) => Success.of(v))
+    .catch((e) => Failure.fromError(e))
 }
 
 export async function updatePlacement(
@@ -68,8 +68,8 @@ export async function updatePlacement(
       startDate: body.startDate,
       endDate: body.endDate
     })
-    .then(() => Success(null))
-    .catch(Failure)
+    .then(() => Success.of(null))
+    .catch((e) => Failure.fromError(e))
 }
 
 export async function deletePlacement(
@@ -77,6 +77,6 @@ export async function deletePlacement(
 ): Promise<Result<null>> {
   return client
     .delete(`/placements/${placementId}`)
-    .then(() => Success(null))
-    .catch(Failure)
+    .then(() => Success.of(null))
+    .catch((e) => Failure.fromError(e))
 }

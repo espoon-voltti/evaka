@@ -4,7 +4,7 @@
 
 import React, { useContext, useEffect, useState } from 'react'
 import UnitEditor from '~components/unit/unit-details/UnitEditor'
-import { isFailure, isLoading, isSuccess, Loading, Result, Success } from '~api'
+import { Loading, Result } from '~api'
 import { CareArea } from '~types/unit'
 import { getAreas } from '~api/daycare'
 import { Container, ContentArea } from '~components/shared/layout/Container'
@@ -24,15 +24,15 @@ export default function UnitDetailsPage(): JSX.Element {
   const { id } = useParams<{ id: string }>()
   const { i18n } = useTranslation()
   const { setTitle } = useContext<TitleState>(TitleContext)
-  const [unit, setUnit] = useState<Result<UnitResponse>>(Loading)
-  const [areas, setAreas] = useState<Result<CareArea[]>>(Loading)
+  const [unit, setUnit] = useState<Result<UnitResponse>>(Loading.of())
+  const [areas, setAreas] = useState<Result<CareArea[]>>(Loading.of())
   const [editable, setEditable] = useState(false)
   const [submitState, setSubmitState] = useState<Result<void> | undefined>(
     undefined
   )
   useEffect(() => {
-    if (isSuccess(unit)) {
-      setTitle(unit.data.daycare.name)
+    if (unit.isSuccess) {
+      setTitle(unit.value.daycare.name)
     }
   }, [unit])
 
@@ -43,20 +43,18 @@ export default function UnitDetailsPage(): JSX.Element {
 
   const onSubmit = (fields: DaycareFields, currentUnit: UnitResponse) => {
     if (!id) return
-    setSubmitState(Loading)
+    setSubmitState(Loading.of())
     void updateDaycare(id, fields).then((result) => {
-      if (isSuccess(result)) {
-        setUnit(Success({ ...currentUnit, daycare: result.data }))
-        setSubmitState(Success(undefined))
+      if (result.isSuccess) {
+        setUnit(result.map((r) => ({ ...currentUnit, daycare: r })))
         setEditable(false)
-      } else {
-        setSubmitState(result)
       }
+      setSubmitState(result.map((_r) => undefined))
     })
   }
 
-  const loading = isLoading(areas) || isLoading(unit)
-  const failure = isFailure(areas) || isFailure(unit)
+  const loading = areas.isLoading || unit.isLoading
+  const failure = areas.isFailure || unit.isFailure
 
   return (
     <Container>
@@ -64,13 +62,13 @@ export default function UnitDetailsPage(): JSX.Element {
       <ContentArea opaque>
         {loading && <Loader />}
         {!loading && failure && <div>{i18n.common.error.unknown}</div>}
-        {isSuccess(areas) && isSuccess(unit) && (
+        {areas.isSuccess && unit.isSuccess && (
           <UnitEditor
             editable={editable}
-            areas={areas.data}
-            unit={unit.data.daycare}
+            areas={areas.value}
+            unit={unit.value.daycare}
             submit={submitState}
-            onSubmit={(fields) => onSubmit(fields, unit.data)}
+            onSubmit={(fields) => onSubmit(fields, unit.value)}
             onClickCancel={() => setEditable(false)}
             onClickEdit={() => setEditable(true)}
           />

@@ -29,7 +29,7 @@ import {
 import { DecisionDraftState, DecisionDraftContext } from '~state/decision'
 import { useTranslation, Translations } from '~state/i18n'
 import { UUID } from '~types'
-import { Loading, Result, isSuccess, isLoading, isFailure } from '~api'
+import { Loading, Result } from '~api'
 import { DatePicker } from '~components/common/DatePicker'
 import LabelValueList from '~components/common/LabelValueList'
 import Select from '~components/common/Select'
@@ -160,25 +160,25 @@ const Decision = memo(function Decision({
   const { setTitle, formatTitleName } = useContext<TitleState>(TitleContext)
   const [decisions, setDecisions] = useState<DecisionDraft[]>([])
   const [selectedUnit, setSelectedUnit] = useState<DecisionUnit>()
-  const [units, setUnits] = useState<Result<DecisionUnit[]>>(Loading())
+  const [units, setUnits] = useState<Result<DecisionUnit[]>>(Loading.of())
   const [submitting, setSubmitting] = useState(false)
 
   useEffect(() => {
-    setDecisionDraftGroup(Loading())
+    setDecisionDraftGroup(Loading.of())
     void getDecisionDrafts(applicationId).then((result) => {
       setDecisionDraftGroup(result)
-      if (isSuccess(result)) {
-        setDecisions(result.data.decisions)
-        setSelectedUnit(result.data.unit)
+      if (result.isSuccess) {
+        setDecisions(result.value.decisions)
+        setSelectedUnit(result.value.unit)
       }
     })
   }, [applicationId])
 
   useEffect(() => {
-    if (isSuccess(decisionDraftGroup)) {
+    if (decisionDraftGroup.isSuccess) {
       const name = formatTitleName(
-        decisionDraftGroup.data.child.firstName,
-        decisionDraftGroup.data.child.lastName
+        decisionDraftGroup.value.child.firstName,
+        decisionDraftGroup.value.child.lastName
       )
       setTitle(`${name} | ${i18n.titles.decision}`)
     }
@@ -190,20 +190,22 @@ const Decision = memo(function Decision({
 
   const unitOptions = useMemo(
     () =>
-      isSuccess(units)
-        ? units.data.map(({ id, name }) => ({
+      units
+        .map((us) =>
+          us.map(({ id, name }) => ({
             value: id,
             label: name
           }))
-        : [],
+        )
+        .getOrElse([]),
     [units]
   )
 
   const onUnitSelect = useCallback(
     (value) => {
-      if (isSuccess(decisionDraftGroup) && isSuccess(units)) {
-        const selected = units.data.find(({ id }) => id === value)
-        setSelectedUnit(selected ?? decisionDraftGroup.data.unit)
+      if (decisionDraftGroup.isSuccess && units.isSuccess) {
+        const selected = units.value.find(({ id }) => id === value)
+        setSelectedUnit(selected ?? decisionDraftGroup.value.unit)
       }
     },
     [decisionDraftGroup, units, setSelectedUnit]
@@ -270,14 +272,14 @@ const Decision = memo(function Decision({
           <InfoParagraph>{i18n.decisionDraft.info1}</InfoParagraph>
           <InfoParagraph>{i18n.decisionDraft.info2}</InfoParagraph>
         </InfoContainer>
-        {isFailure(decisionDraftGroup) && <p>{i18n.common.loadingFailed}</p>}
-        {isLoading(decisionDraftGroup) && <Loader />}
-        {isSuccess(decisionDraftGroup) && (
+        {decisionDraftGroup.isFailure && <p>{i18n.common.loadingFailed}</p>}
+        {decisionDraftGroup.isLoading && <Loader />}
+        {decisionDraftGroup.isSuccess && (
           <Fragment>
             <Title size={3}>
               {formatName(
-                decisionDraftGroup.data.child.firstName,
-                decisionDraftGroup.data.child.lastName,
+                decisionDraftGroup.value.child.firstName,
+                decisionDraftGroup.value.child.lastName,
                 i18n,
                 true
               )}
@@ -339,13 +341,13 @@ const Decision = memo(function Decision({
                   ? [
                       {
                         label: i18n.decisionDraft.placementUnit,
-                        value: decisionDraftGroup.data.placementUnitName
+                        value: decisionDraftGroup.value.placementUnitName
                       },
                       {
                         label: i18n.decisionDraft.selectedUnit,
                         value: (
                           <UnitSelectContainer>
-                            {isSuccess(units) && (
+                            {units.isSuccess && (
                               <Select
                                 onChange={(value) =>
                                   value && 'value' in value
@@ -353,7 +355,7 @@ const Decision = memo(function Decision({
                                     : undefined
                                 }
                                 options={unitOptions}
-                                value={units.data
+                                value={units.value
                                   .filter((elem) => selectedUnit.id === elem.id)
                                   .map((elem) => ({
                                     label: elem.name,
@@ -363,7 +365,7 @@ const Decision = memo(function Decision({
                             )}
                             <WarningContainer
                               visible={
-                                decisionDraftGroup.data.unit.id !==
+                                decisionDraftGroup.value.unit.id !==
                                 selectedUnit.id
                               }
                             >
@@ -459,8 +461,8 @@ const Decision = memo(function Decision({
                           <MissingValuePlaceholder
                             i18n={i18n}
                             values={[
-                              decisionDraftGroup.data.guardian.firstName,
-                              decisionDraftGroup.data.guardian.lastName
+                              decisionDraftGroup.value.guardian.firstName,
+                              decisionDraftGroup.value.guardian.lastName
                             ]}
                           />
                         ),
@@ -474,12 +476,12 @@ const Decision = memo(function Decision({
                                 <DefaultValuePlaceholder
                                   i18n={i18n}
                                   values={[
-                                    decisionDraftGroup.data.otherGuardian
-                                      ? decisionDraftGroup.data.otherGuardian
+                                    decisionDraftGroup.value.otherGuardian
+                                      ? decisionDraftGroup.value.otherGuardian
                                           .firstName
                                       : '',
-                                    decisionDraftGroup.data.otherGuardian
-                                      ? decisionDraftGroup.data.otherGuardian
+                                    decisionDraftGroup.value.otherGuardian
+                                      ? decisionDraftGroup.value.otherGuardian
                                           .lastName
                                       : ''
                                   ]}
@@ -494,8 +496,8 @@ const Decision = memo(function Decision({
               ]}
             />
             {!(
-              decisionDraftGroup.data.guardian.ssn &&
-              decisionDraftGroup.data.child.ssn
+              decisionDraftGroup.value.guardian.ssn &&
+              decisionDraftGroup.value.child.ssn
             ) && (
               <InfoBox
                 title={i18n.decisionDraft.ssnInfo1}
@@ -511,7 +513,7 @@ const Decision = memo(function Decision({
               />
             )}
 
-            {!decisionDraftGroup.data.guardian.isVtjGuardian && (
+            {!decisionDraftGroup.value.guardian.isVtjGuardian && (
               <AlertBox
                 title={i18n.decisionDraft.notGuardianInfo1}
                 message={i18n.decisionDraft.notGuardianInfo2}

@@ -11,7 +11,6 @@ import { UIContext } from '~state/ui'
 import { UUID } from '~types'
 import { addSsn } from '~api/person'
 import { PersonDetails } from '~types/person'
-import { isFailure, isSuccess } from '~api'
 import { isSsnValid } from '~utils/validation/validations'
 import { EspooColours } from '~utils/colours'
 
@@ -43,14 +42,14 @@ function AddSsnModal({ personId, onUpdateComplete }: Props) {
     setSubmitting(true)
     addSsn(personId, ssn)
       .then((result) => {
-        if (isSuccess(result)) {
-          if (onUpdateComplete) onUpdateComplete(result.data)
+        if (result.isSuccess) {
+          if (onUpdateComplete) onUpdateComplete(result.value)
           clearUiMode()
           isMounted = false
-        } else if (isFailure(result)) {
-          if (result.error.statusCode === 400) {
+        } else if (result.isFailure) {
+          if (result.statusCode === 400) {
             setError('invalid')
-          } else if (result.error.statusCode === 409) {
+          } else if (result.statusCode === 409) {
             setError('conflict')
           } else {
             setError('unknown')

@@ -15,7 +15,6 @@ import InputField from '~components/shared/atoms/form/InputField'
 import FormModal from '~components/common/FormModal'
 import { DatePicker } from '~components/common/DatePicker'
 import { useTranslation } from '~state/i18n'
-import { isSuccess, isFailure } from '~api'
 import { createPerson, CreatePersonBody } from '~api/person'
 import { CHILD_AGE } from '~constants'
 
@@ -35,10 +34,10 @@ export default React.memo(function CreatePersonModal({
       setSaveError(false)
       createPerson(form)
         .then((result) => {
-          if (isSuccess(result)) {
+          if (result.isSuccess) {
             closeModal()
           }
-          if (isFailure(result)) {
+          if (result.isFailure) {
             setSaveError(true)
           }
         })

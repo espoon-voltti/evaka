@@ -9,7 +9,6 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 import React, { useContext } from 'react'
 import { ContentArea } from '~components/shared/layout/Container'
 import { UnitContext } from '~state/unit'
-import { isFailure, isLoading } from '~api'
 import { SpinnerSegment } from '~components/shared/atoms/state/Spinner'
 import ErrorSegment from '~components/shared/atoms/state/ErrorSegment'
 import Title from '~components/shared/atoms/Title'
@@ -43,15 +42,15 @@ function TabWaitingConfirmation() {
 
   const { unitData } = useContext(UnitContext)
 
-  if (isLoading(unitData)) {
+  if (unitData.isLoading) {
     return <SpinnerSegment />
   }
 
-  if (isFailure(unitData) || !unitData.data.placementPlans) {
+  if (unitData.isFailure || !unitData.value.placementPlans) {
     return <ErrorSegment />
   }
 
-  const sortedRows = _.sortBy(unitData.data.placementPlans, [
+  const sortedRows = _.sortBy(unitData.value.placementPlans, [
     (p: DaycarePlacementPlan) => p.child.lastName,
     (p: DaycarePlacementPlan) => p.child.firstName,
     (p: DaycarePlacementPlan) => p.period.start

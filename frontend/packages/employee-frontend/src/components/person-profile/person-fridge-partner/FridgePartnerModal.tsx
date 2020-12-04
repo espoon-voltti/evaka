@@ -16,7 +16,7 @@ import FormModal from '~components/common/FormModal'
 import Section from '~components/shared/layout/Section'
 import { Partnership } from '~types/fridge'
 import { UUID } from '~types'
-import { isFailure, Result } from '~api'
+import { Result } from '~api'
 import { faPen, faUser } from 'icon-set'
 import { formatName } from '~utils'
 import PersonSearch from '~components/common/PersonSearch'
@@ -86,10 +86,10 @@ function FridgePartnerModal({ partnership, onSuccess, headPersonId }: Props) {
         )
 
     void apiCall.then((res: Result<Partnership>) => {
-      if (isFailure(res)) {
-        setErrorStatusCode(res.error.statusCode)
+      if (res.isFailure) {
+        setErrorStatusCode(res.statusCode)
 
-        if (res.error.statusCode !== 409) {
+        if (res.statusCode !== 409) {
           clearUiMode()
           setErrorMessage({
             type: 'error',

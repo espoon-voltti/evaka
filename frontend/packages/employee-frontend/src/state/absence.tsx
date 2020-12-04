@@ -36,7 +36,7 @@ export interface AbsencesState {
 }
 
 const defaultState: AbsencesState = {
-  absences: Loading(),
+  absences: Loading.of(),
   setAbsences: () => undefined,
   tableMode: 'MONTH',
   setTableMode: () => undefined,
@@ -57,7 +57,7 @@ export const AbsencesContext = createContext<AbsencesState>(defaultState)
 
 export const AbsencesContextProvider = React.memo(
   function AbsencesContextProvider({ children }: { children: JSX.Element }) {
-    const [absences, setAbsences] = useState<Result<Group>>(Loading())
+    const [absences, setAbsences] = useState<Result<Group>>(Loading.of())
     const [tableMode, setTableMode] = useState(defaultState.tableMode)
     const [selectedDate, setSelectedDate] = useState<LocalDate>(
       defaultState.selectedDate

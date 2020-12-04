@@ -16,7 +16,7 @@ import FormModal from '~components/common/FormModal'
 import Section from '~components/shared/layout/Section'
 import { Parentship } from '~types/fridge'
 import { UUID } from '~types'
-import { isFailure, Result } from '~api'
+import { Result } from '~api'
 import { faChild } from 'icon-set'
 import { formatName } from '~utils'
 import PersonSearch from '~components/common/PersonSearch'
@@ -79,9 +79,9 @@ function FridgeChildModal({ headPersonId, onSuccess, parentship }: Props) {
       : addParentship(headPersonId, form.child.id, form.startDate, form.endDate)
 
     void apiCall.then((res: Result<Parentship>) => {
-      if (isFailure(res)) {
-        if (res.error.statusCode === 409) {
-          setErrorStatusCode(res.error.statusCode)
+      if (res.isFailure) {
+        if (res.statusCode === 409) {
+          setErrorStatusCode(res.statusCode)
         } else {
           clearUiMode()
           setErrorMessage({

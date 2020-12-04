@@ -13,7 +13,6 @@ import CollapsibleSection from 'components/shared/molecules/CollapsibleSection'
 import LabelValueList from '~components/common/LabelValueList'
 import { Translations, useTranslation } from '~state/i18n'
 import { PersonContext } from '~state/person'
-import { isSuccess, isLoading, isFailure } from '~api'
 import {
   FamilyOverview,
   FamilyOverviewPerson,
@@ -110,7 +109,7 @@ const FamilyOverview = React.memo(function FamilyOverview({ id, open }: Props) {
 
   return (
     <div>
-      {isSuccess(family) && (
+      {family.isSuccess && (
         <CollapsibleSection
           icon={faHomeAlt}
           title={i18n.personProfile.familyOverview.title}
@@ -124,15 +123,15 @@ const FamilyOverview = React.memo(function FamilyOverview({ id, open }: Props) {
                 {
                   label: i18n.personProfile.familyOverview.familySizeLabel,
                   value: i18n.personProfile.familyOverview.familySizeValue(
-                    getAdults(family.data).length,
-                    family.data.children.length
+                    getAdults(family.value).length,
+                    family.value.children.length
                   )
                 },
                 {
                   label: i18n.personProfile.familyOverview.incomeTotalLabel,
                   value: getIncomeString(
-                    family.data.totalIncome,
-                    family.data.totalIncomeEffect
+                    family.value.totalIncome,
+                    family.value.totalIncomeEffect
                   )
                 }
               ]}
@@ -150,7 +149,7 @@ const FamilyOverview = React.memo(function FamilyOverview({ id, open }: Props) {
                 </Tr>
               </Thead>
               <Tbody>
-                {getMembers(family.data, i18n)?.map(
+                {getMembers(family.value, i18n)?.map(
                   ({
                     personId,
                     name,
@@ -193,8 +192,8 @@ const FamilyOverview = React.memo(function FamilyOverview({ id, open }: Props) {
           </div>
         </CollapsibleSection>
       )}
-      {isLoading(family) && <Loader />}
-      {isFailure(family) && <div>{i18n.common.loadingFailed}</div>}
+      {family.isLoading && <Loader />}
+      {family.isFailure && <div>{i18n.common.loadingFailed}</div>}
     </div>
   )
 })

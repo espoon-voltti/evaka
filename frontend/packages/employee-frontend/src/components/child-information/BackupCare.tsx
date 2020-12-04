@@ -9,7 +9,7 @@ import Loader from '~components/shared/atoms/Loader'
 import { useTranslation } from '~state/i18n'
 import { faHiking } from 'icon-set'
 import { ChildContext } from '~state'
-import { isFailure, isLoading, isSuccess, Loading } from '~api'
+import { Loading } from '~api'
 import { getChildBackupCares } from 'api/child/backup-care'
 import { UIContext } from '~state/ui'
 import BackupCareForm from '~components/child-information/backup-care/BackupCareForm'
@@ -33,7 +33,7 @@ export default function BackupCare({ id, open }: Props): JSX.Element {
       setBackupCares(backupCares)
     })
     return () => {
-      setBackupCares(Loading())
+      setBackupCares(Loading.of())
     }
   }, [id, setBackupCares])
 
@@ -44,9 +44,9 @@ export default function BackupCare({ id, open }: Props): JSX.Element {
       title={i18n.childInformation.backupCares.title}
       startCollapsed={!open}
     >
-      {isLoading(backupCares) && <Loader />}
-      {isFailure(backupCares) && <div>{i18n.common.loadingFailed}</div>}
-      {isSuccess(backupCares) && (
+      {backupCares.isLoading && <Loader />}
+      {backupCares.isFailure && <div>{i18n.common.loadingFailed}</div>}
+      {backupCares.isSuccess && (
         <div data-qa="backup-cares">
           <RequireRole
             oneOf={[
@@ -66,7 +66,7 @@ export default function BackupCare({ id, open }: Props): JSX.Element {
           {uiMode === 'create-new-backup-care' && (
             <BackupCareForm childId={id} />
           )}
-          {_.orderBy(backupCares.data, (x) => x.period.start, 'desc').map(
+          {_.orderBy(backupCares.value, (x) => x.period.start, 'desc').map(
             (backupCare) => (
               <BackupCareRow
                 childId={id}

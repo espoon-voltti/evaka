@@ -14,7 +14,7 @@ import { DatePicker, DatePickerClearable } from '~components/common/DatePicker'
 import styled from 'styled-components'
 import { UUID } from '~types'
 import { postCaretakers, putCaretakers } from '~api/caretakers'
-import { isFailure, isSuccess, Result } from '~api'
+import { Result } from '~api'
 import { AlertBox } from '~components/common/MessageBoxes'
 
 const NumberInputContainer = styled.div`
@@ -90,8 +90,8 @@ function GroupCaretakersModal({
         )
     )
       .then((res: Result<null>) => {
-        if (isSuccess(res)) onSuccess()
-        if (isFailure(res) && res.error.statusCode === 409) setConflict(true)
+        if (res.isSuccess) onSuccess()
+        if (res.isFailure && res.statusCode === 409) setConflict(true)
       })
       .finally(() => setSubmitting(false))
   }

@@ -9,7 +9,7 @@ import Loader from '~components/shared/atoms/Loader'
 import Title from '~components/shared/atoms/Title'
 import { Th, Tr, Td, Thead, Tbody } from '~components/shared/layout/Table'
 import { useTranslation } from '~state/i18n'
-import { isFailure, isLoading, isSuccess, Loading, Result } from '~api'
+import { Loading, Result } from '~api'
 import { ServiceNeedReportRow } from '~types/reports'
 import { DateFilters, getServiceNeedReport } from '~api/reports'
 import ReturnButton from 'components/shared/atoms/buttons/ReturnButton'
@@ -32,7 +32,7 @@ const emptyDisplayFilters: DisplayFilters = {
 
 function ServiceNeeds() {
   const { i18n } = useTranslation()
-  const [rows, setRows] = useState<Result<ServiceNeedReportRow[]>>(Loading())
+  const [rows, setRows] = useState<Result<ServiceNeedReportRow[]>>(Loading.of())
   const [filters, setFilters] = useState<DateFilters>({
     date: LocalDate.today()
   })
@@ -47,13 +47,13 @@ function ServiceNeeds() {
   }
 
   useEffect(() => {
-    setRows(Loading())
+    setRows(Loading.of())
     setDisplayFilters(emptyDisplayFilters)
     void getServiceNeedReport(filters).then(setRows)
   }, [filters])
 
-  const filteredRows = useMemo(
-    () => (isSuccess(rows) ? rows.data.filter(displayFilter) : []),
+  const filteredRows: ServiceNeedReportRow[] = useMemo(
+    () => rows.map((rs) => rs.filter(displayFilter)).getOrElse([]),
     [rows, displayFilters]
   )
 
@@ -70,12 +70,12 @@ function ServiceNeeds() {
           />
         </FilterRow>
 
-        {isLoading(rows) && <Loader />}
-        {isFailure(rows) && <span>{i18n.common.loadingFailed}</span>}
-        {isSuccess(rows) && (
+        {rows.isLoading && <Loader />}
+        {rows.isFailure && <span>{i18n.common.loadingFailed}</span>}
+        {rows.isSuccess && (
           <>
             <ReportDownload
-              data={rows.data.map((row) => ({
+              data={rows.value.map((row) => ({
                 ...row
               }))}
               headers={[

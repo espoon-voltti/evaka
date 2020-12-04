@@ -45,8 +45,8 @@ export async function getApplicationsReport(
         to: filters.to.formatIso()
       }
     })
-    .then((res) => Success(res.data))
-    .catch(Failure)
+    .then((res) => Success.of(res.data))
+    .catch((e) => Failure.fromError(e))
 }
 
 export async function getRawReport(
@@ -60,14 +60,15 @@ export async function getRawReport(
       }
     })
     .then((res) =>
-      res.data.map((row) => ({
-        ...row,
-        day: LocalDate.parseIso(row.day),
-        dateOfBirth: LocalDate.parseIso(row.dateOfBirth)
-      }))
+      Success.of(
+        res.data.map((row) => ({
+          ...row,
+          day: LocalDate.parseIso(row.day),
+          dateOfBirth: LocalDate.parseIso(row.dateOfBirth)
+        }))
+      )
     )
-    .then(Success)
-    .catch(Failure)
+    .catch((e) => Failure.fromError(e))
 }
 
 export async function getPresenceReport(
@@ -81,14 +82,14 @@ export async function getPresenceReport(
       }
     })
     .then((res) =>
-      Success(
+      Success.of(
         res.data.map((row) => ({
           ...row,
           date: LocalDate.parseIso(row.date)
         }))
       )
     )
-    .catch(Failure)
+    .catch((e) => Failure.fromError(e))
 }
 
 export interface MissingHeadOfFamilyReportFilters {
@@ -109,8 +110,8 @@ export async function getMissingHeadOfFamilyReport(
         }
       }
     )
-    .then((res) => Success(res.data))
-    .catch(Failure)
+    .then((res) => Success.of(res.data))
+    .catch((e) => Failure.fromError(e))
 }
 
 export interface MissingServiceNeedReportFilters {
@@ -131,8 +132,8 @@ export async function getMissingServiceNeedReport(
         }
       }
     )
-    .then((res) => Success(res.data))
-    .catch(Failure)
+    .then((res) => Success.of(res.data))
+    .catch((e) => Failure.fromError(e))
 }
 
 export async function getFamilyConflictsReport(): Promise<
@@ -140,8 +141,8 @@ export async function getFamilyConflictsReport(): Promise<
 > {
   return client
     .get<JsonOf<FamilyConflictReportRow[]>>('/reports/family-conflicts')
-    .then((res) => Success(res.data))
-    .catch(Failure)
+    .then((res) => Success.of(res.data))
+    .catch((e) => Failure.fromError(e))
 }
 
 export async function getFamilyContactsReport(
@@ -151,8 +152,8 @@ export async function getFamilyContactsReport(
     .get<JsonOf<FamilyContactsReportRow[]>>('/reports/family-contacts', {
       params: { unitId }
     })
-    .then((res) => Success(res.data))
-    .catch(Failure)
+    .then((res) => Success.of(res.data))
+    .catch((e) => Failure.fromError(e))
 }
 
 export async function getPartnersInDifferentAddressReport(): Promise<
@@ -162,8 +163,8 @@ export async function getPartnersInDifferentAddressReport(): Promise<
     .get<JsonOf<PartnersInDifferentAddressReportRow[]>>(
       '/reports/partners-in-different-address'
     )
-    .then((res) => Success(res.data))
-    .catch(Failure)
+    .then((res) => Success.of(res.data))
+    .catch((e) => Failure.fromError(e))
 }
 
 export async function getChildrenInDifferentAddressReport(): Promise<
@@ -173,8 +174,8 @@ export async function getChildrenInDifferentAddressReport(): Promise<
     .get<JsonOf<ChildrenInDifferentAddressReportRow[]>>(
       '/reports/children-in-different-address'
     )
-    .then((res) => Success(res.data))
-    .catch(Failure)
+    .then((res) => Success.of(res.data))
+    .catch((e) => Failure.fromError(e))
 }
 
 export interface DateFilters {
@@ -190,8 +191,8 @@ export async function getChildAgeLanguageReport(
         date: filters.date.formatIso()
       }
     })
-    .then((res) => Success(res.data))
-    .catch(Failure)
+    .then((res) => Success.of(res.data))
+    .catch((e) => Failure.fromError(e))
 }
 
 export async function getServiceNeedReport(
@@ -203,8 +204,8 @@ export async function getServiceNeedReport(
         date: filters.date.formatIso()
       }
     })
-    .then((res) => Success(res.data))
-    .catch(Failure)
+    .then((res) => Success.of(res.data))
+    .catch((e) => Failure.fromError(e))
 }
 
 export interface AssistanceNeedsReportFilters {
@@ -220,8 +221,8 @@ export async function getAssistanceNeedsReport(
         date: filters.date.formatIso()
       }
     })
-    .then((res) => Success(res.data))
-    .catch(Failure)
+    .then((res) => Success.of(res.data))
+    .catch((e) => Failure.fromError(e))
 }
 
 export interface AssistanceActionsReportFilters {
@@ -237,8 +238,8 @@ export async function getAssistanceActionsReport(
         date: filters.date.formatIso()
       }
     })
-    .then((res) => Success(res.data))
-    .catch(Failure)
+    .then((res) => Success.of(res.data))
+    .catch((e) => Failure.fromError(e))
 }
 
 export type OccupancyReportType =
@@ -268,8 +269,8 @@ export async function getOccupanciesReport(
         }
       }
     )
-    .then((res) => Success(res.data))
-    .catch(Failure)
+    .then((res) => Success.of(res.data))
+    .catch((e) => Failure.fromError(e))
 }
 
 export interface InvoiceReportFilters {
@@ -285,8 +286,8 @@ export async function getInvoiceReport({
         date: date.formatIso()
       }
     })
-    .then((res) => Success(res.data))
-    .catch(Failure)
+    .then((res) => Success.of(res.data))
+    .catch((e) => Failure.fromError(e))
 }
 
 export interface PlacementsReportFilters {
@@ -302,7 +303,7 @@ export async function getEndedPlacementsReport(
       params: filters
     })
     .then((res) =>
-      Success(
+      Success.of(
         res.data.map((row) => ({
           ...row,
           placementEnd: LocalDate.parseIso(row.placementEnd),
@@ -312,7 +313,7 @@ export async function getEndedPlacementsReport(
         }))
       )
     )
-    .catch(Failure)
+    .catch((e) => Failure.fromError(e))
 }
 
 export async function getDuplicatePeopleReport(): Promise<
@@ -321,14 +322,14 @@ export async function getDuplicatePeopleReport(): Promise<
   return client
     .get<JsonOf<DuplicatePeopleReportRow[]>>('/reports/duplicate-people')
     .then((res) =>
-      Success(
+      Success.of(
         res.data.map((row) => ({
           ...row,
           dateOfBirth: LocalDate.parseIso(row.dateOfBirth)
         }))
       )
     )
-    .catch(Failure)
+    .catch((e) => Failure.fromError(e))
 }
 
 export function getStartingPlacementsReport(
@@ -339,7 +340,7 @@ export function getStartingPlacementsReport(
       params
     })
     .then((res) =>
-      Success(
+      Success.of(
         res.data.map((row) => ({
           ...row,
           dateOfBirth: LocalDate.parseIso(row.dateOfBirth),
@@ -347,7 +348,7 @@ export function getStartingPlacementsReport(
         }))
       )
     )
-    .catch(Failure)
+    .catch((e) => Failure.fromError(e))
 }
 
 export interface VoucherServiceProvidersFilters {
@@ -368,7 +369,7 @@ export async function getVoucherServiceProvidersReport(
         }
       }
     )
-    .then((res) => Success(res.data))
+    .then((res) => Success.of(res.data))
 }
 
 export function getVoucherServiceProviderUnitReport(
@@ -383,7 +384,7 @@ export function getVoucherServiceProviderUnitReport(
       }
     )
     .then((res) =>
-      Success(
+      Success.of(
         res.data.map((row) => ({
           ...row,
           childDateOfBirth: LocalDate.parseIso(row.childDateOfBirth),
@@ -402,7 +403,7 @@ export function getVoucherServiceProviderUnitReport(
         }))
       )
     )
-    .catch(Failure)
+    .catch((e) => Failure.fromError(e))
 }
 
 export interface VoucherProviderChildrenReportFilters {

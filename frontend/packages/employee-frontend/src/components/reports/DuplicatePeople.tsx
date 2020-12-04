@@ -11,7 +11,7 @@ import { Th, Tr, Td, Thead, Tbody } from '~components/shared/layout/Table'
 import InfoModal from '~components/common/InfoModal'
 import { useTranslation } from '~state/i18n'
 import { Link } from 'react-router-dom'
-import { isFailure, isLoading, isSuccess, Loading, Result } from '~api'
+import { Loading, Result } from '~api'
 import { DuplicatePeopleReportRow } from '~types/reports'
 import { getDuplicatePeopleReport } from '~api/reports'
 import ReturnButton from 'components/shared/atoms/buttons/ReturnButton'
@@ -70,7 +70,7 @@ const isChild = (dateOfBirth: LocalDate) => {
 function DuplicatePeople() {
   const { i18n } = useTranslation()
   const [rows, setRows] = useState<Result<DuplicatePeopleReportRow[]>>(
-    Loading()
+    Loading.of()
   )
   const [duplicate, setDuplicate] = useState<Selection | null>(null)
   const [master, setMaster] = useState<Selection | null>(null)
@@ -78,7 +78,7 @@ function DuplicatePeople() {
   const { setErrorMessage } = useContext(UIContext)
 
   const loadData = () => {
-    setRows(Loading())
+    setRows(Loading.of())
     void getDuplicatePeopleReport().then(setRows)
   }
 
@@ -91,9 +91,9 @@ function DuplicatePeople() {
       <ReturnButton />
       <ContentArea opaque>
         <Title size={1}>{i18n.reports.duplicatePeople.title}</Title>
-        {isLoading(rows) && <Loader />}
-        {isFailure(rows) && <span>{i18n.common.loadingFailed}</span>}
-        {isSuccess(rows) && (
+        {rows.isLoading && <Loader />}
+        {rows.isFailure && <span>{i18n.common.loadingFailed}</span>}
+        {rows.isSuccess && (
           <>
             <TableScrollable>
               <Thead>
@@ -127,7 +127,7 @@ function DuplicatePeople() {
                 </Tr>
               </Thead>
               <Tbody>
-                {rows.data.map((row: DuplicatePeopleReportRow) => (
+                {rows.value.map((row: DuplicatePeopleReportRow) => (
                   <StyledRow key={row.id} odd={row.groupIndex % 2 != 0}>
                     <NoWrapTd>
                       <Link
@@ -222,12 +222,12 @@ function DuplicatePeople() {
                   setDuplicate(null)
                 }}
                 resolve={() => {
-                  const masterId = rows.data.find(
+                  const masterId = rows.value.find(
                     (row) =>
                       row.groupIndex == master.group &&
                       row.duplicateNumber == master.row
                   )?.id
-                  const duplicateId = rows.data.find(
+                  const duplicateId = rows.value.find(
                     (row) =>
                       row.groupIndex == duplicate.group &&
                       row.duplicateNumber == duplicate.row
@@ -238,7 +238,7 @@ function DuplicatePeople() {
 
                   if (masterId && duplicateId) {
                     void mergePeople(masterId, duplicateId).then((res) => {
-                      if (isFailure(res)) {
+                      if (res.isFailure) {
                         setErrorMessage({
                           type: 'error',
                           title: i18n.reports.duplicatePeople.errorTitle,

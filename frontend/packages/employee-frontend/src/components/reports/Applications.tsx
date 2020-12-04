@@ -13,7 +13,7 @@ import Title from '~components/shared/atoms/Title'
 import { Th, Tr, Td, Thead, Tbody } from '~components/shared/layout/Table'
 import { reactSelectStyles } from '~components/shared/utils'
 import { useTranslation } from '~state/i18n'
-import { isFailure, isLoading, isSuccess, Loading, Result } from '~api'
+import { Loading, Result } from '~api'
 import { ApplicationsReportRow } from '~types/reports'
 import { getApplicationsReport, PeriodFilters } from '~api/reports'
 import ReportDownload from '~components/reports/ReportDownload'
@@ -43,7 +43,9 @@ const Wrapper = styled.div`
 
 function Applications() {
   const { i18n } = useTranslation()
-  const [rows, setRows] = useState<Result<ApplicationsReportRow[]>>(Loading())
+  const [rows, setRows] = useState<Result<ApplicationsReportRow[]>>(
+    Loading.of()
+  )
   const [filters, setFilters] = useState<PeriodFilters>({
     from: LocalDate.today(),
     to: LocalDate.today().addMonths(4)
@@ -59,12 +61,12 @@ function Applications() {
   }
 
   useEffect(() => {
-    setRows(Loading())
+    setRows(Loading.of())
     void getApplicationsReport(filters).then(setRows)
   }, [filters])
 
-  const filteredRows = useMemo(
-    () => (isSuccess(rows) ? rows.data.filter(displayFilter) : []),
+  const filteredRows: ApplicationsReportRow[] = useMemo(
+    () => rows.map((rs) => rs.filter(displayFilter)).getOrElse([]),
     [rows, displayFilters]
   )
 
@@ -100,11 +102,15 @@ function Applications() {
           <Wrapper data-qa="select-area">
             <ReactSelect
               options={[
-                ...(isSuccess(rows)
-                  ? distinct(rows.data.map((row) => row.careAreaName))
-                      .map((s) => ({ value: s, label: s }))
-                      .concat([{ label: i18n.common.all, value: '' }])
-                  : [])
+                { label: i18n.common.all, value: '' },
+                ...rows
+                  .map((rs) =>
+                    distinct(rs.map((row) => row.careAreaName)).map((s) => ({
+                      value: s,
+                      label: s
+                    }))
+                  )
+                  .getOrElse([])
               ]}
               onChange={(option) =>
                 option && 'value' in option
@@ -131,9 +137,9 @@ function Applications() {
           </Wrapper>
         </FilterRow>
 
-        {isLoading(rows) && <Loader />}
-        {isFailure(rows) && <span>{i18n.common.loadingFailed}</span>}
-        {isSuccess(rows) && (
+        {rows.isLoading && <Loader />}
+        {rows.isFailure && <span>{i18n.common.loadingFailed}</span>}
+        {rows.isSuccess && (
           <>
             <ReportDownload
               data={filteredRows.map((row) => ({

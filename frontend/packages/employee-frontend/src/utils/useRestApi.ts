@@ -19,7 +19,7 @@ export function useRestApi<F extends ApiFunction>(
   const [api] = useState(() => withStaleCancellation(f))
   return useCallback(
     (...args: Parameters<F>) => {
-      setState(Loading())
+      setState(Loading.of())
       void api(...args).then((result) => {
         if (isCancelled(result)) return
         setState(result)

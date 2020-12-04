@@ -7,7 +7,7 @@ import { UUID } from '~types'
 import { useTranslation } from '~state/i18n'
 import { ChildContext } from '~state'
 import { ChildState } from '~state/child'
-import { isFailure, isLoading, isSuccess, Loading } from '~api'
+import { Loading } from '~api'
 import Loader from '~components/shared/atoms/Loader'
 import { faMapMarkerAlt } from 'icon-set'
 import PlacementRow from '~components/child-information/placements/PlacementRow'
@@ -31,28 +31,31 @@ const Placements = React.memo(function Placements({ id, open }: Props) {
   const { uiMode, toggleUiMode } = useContext(UIContext)
 
   function loadPlacements() {
-    setPlacements(Loading())
+    setPlacements(Loading.of())
     void getPlacements(id).then((placements) => setPlacements(placements))
   }
 
   useEffect(loadPlacements, [id, setPlacements])
 
   const checkOverlaps = (range: DateRange, placement: Placement): boolean =>
-    isSuccess(placements)
-      ? !!placements.data
-          .filter((p) => p.id !== placement.id)
-          .filter((p) => rangesOverlap(range, p)).length
-      : false
+    placements
+      .map(
+        (ps) =>
+          ps
+            .filter((p) => p.id !== placement.id)
+            .filter((p) => rangesOverlap(range, p)).length > 0
+      )
+      .getOrElse(false)
 
   function renderContents() {
-    if (isLoading(placements)) {
+    if (placements.isLoading) {
       return <Loader />
-    } else if (isFailure(placements)) {
+    } else if (placements.isFailure) {
       return <div>{i18n.common.loadingFailed}</div>
     }
     return (
       <div>
-        {placements.data
+        {placements.value
           .sort((p1, p2) =>
             p1.startDate.isEqual(p2.startDate)
               ? 0

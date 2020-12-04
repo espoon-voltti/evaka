@@ -24,7 +24,7 @@ import {
   TransferApplicationsFilter
 } from '../common/Filters'
 import { ApplicationUIContext } from '../../state/application-ui'
-import { isSuccess, Loading } from '../../api'
+import { Loading } from '../../api'
 import { getAreas, getUnits } from '../../api/daycare'
 import { Gap } from '~components/shared/layout/white-space'
 import { useTranslation } from '~state/i18n'
@@ -76,9 +76,9 @@ function ApplicationFilters() {
   }, [])
 
   useEffect(() => {
-    const areas = isSuccess(availableAreas)
-      ? availableAreas.data.map(({ shortName }) => shortName)
-      : []
+    const areas = availableAreas
+      .map((areas) => areas.map(({ shortName }) => shortName))
+      .getOrElse([])
     void getUnits(areas, type).then(setAllUnits)
   }, [type, availableAreas])
 
@@ -91,14 +91,14 @@ function ApplicationFilters() {
   const ALL = 'All'
 
   const toggleArea = (code: string) => () => {
-    if (isSuccess(availableAreas)) {
-      setApplicationsResult(Loading())
+    if (availableAreas.isSuccess) {
+      setApplicationsResult(Loading.of())
 
       const newAreas =
         code === ALL
           ? area.includes(ALL)
             ? []
-            : [...availableAreas.data.map((a) => a.shortName), ALL]
+            : [...availableAreas.value.map((a) => a.shortName), ALL]
           : area.includes(code)
           ? area
               .filter((v) => v !== code)
@@ -110,14 +110,14 @@ function ApplicationFilters() {
   }
 
   const toggleBasis = (toggledBasis: ApplicationBasis) => () => {
-    setApplicationsResult(Loading())
+    setApplicationsResult(Loading.of())
     basis.includes(toggledBasis)
       ? setBasis(basis.filter((v) => v != toggledBasis))
       : setBasis([...basis, toggledBasis])
   }
 
   const toggleStatus = (newStatus: ApplicationSummaryStatusOptions) => () => {
-    setApplicationsResult(Loading())
+    setApplicationsResult(Loading.of())
     if ((newStatus === 'ALL' && status !== 'ALL') || allStatuses.length === 0) {
       setAllStatuses([
         'SENT',
@@ -137,21 +137,21 @@ function ApplicationFilters() {
   }
 
   const toggleApplicationType = (type: ApplicationTypeToggle) => () => {
-    setApplicationsResult(Loading())
+    setApplicationsResult(Loading.of())
     setType(type)
     if (type === 'PRESCHOOL') {
       setPreschoolType([...preschoolTypes])
     }
   }
   const toggleDate = (toggledDateType: ApplicationDateType) => () => {
-    setApplicationsResult(Loading())
+    setApplicationsResult(Loading.of())
     dateType.includes(toggledDateType)
       ? setDateType(dateType.filter((v) => v !== toggledDateType))
       : setDateType([...dateType, toggledDateType])
   }
 
   const toggleApplicationPreschoolType = (type: PreschoolType) => () => {
-    setApplicationsResult(Loading())
+    setApplicationsResult(Loading.of())
     preschoolType.includes(type)
       ? setPreschoolType(preschoolType.filter((v) => v !== type))
       : setPreschoolType([...preschoolType, type])
@@ -160,21 +160,21 @@ function ApplicationFilters() {
   const toggleAllStatuses = (
     status: ApplicationSummaryStatusAllOptions
   ) => () => {
-    setApplicationsResult(Loading())
+    setApplicationsResult(Loading.of())
     allStatuses.includes(status)
       ? setAllStatuses(allStatuses.filter((v) => v !== status))
       : setAllStatuses([...allStatuses, status])
   }
 
   const changeUnits = (selectedUnits: string[]) => {
-    setApplicationsResult(Loading())
+    setApplicationsResult(Loading.of())
     setUnits(selectedUnits.map((selectedUnit) => selectedUnit))
   }
 
   const toggleApplicationDistinctions = (
     distinction: ApplicationDistinctions
   ) => () => {
-    setApplicationsResult(Loading())
+    setApplicationsResult(Loading.of())
     distinctions.includes(distinction)
       ? setDistinctions(distinctions.filter((v) => v !== distinction))
       : setDistinctions([...distinctions, distinction])
@@ -191,14 +191,14 @@ function ApplicationFilters() {
         <>
           <Gap size="s" />
           <AreaFilter
-            areas={isSuccess(availableAreas) ? availableAreas.data : []}
+            areas={availableAreas.getOrElse([])}
             toggled={area}
             toggle={toggleArea}
             showAll
           />
           <Gap size="L" />
           <MultiSelectUnitFilter
-            units={isSuccess(allUnits) ? allUnits.data : []}
+            units={allUnits.getOrElse([])}
             selectedUnits={units}
             onChange={changeUnits}
             dataQa={'unit-selector'}

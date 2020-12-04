@@ -31,8 +31,8 @@ export async function getFamilyOverview(
         dateOfBirth: LocalDate.parseIso(child.dateOfBirth)
       }))
     }))
-    .then(Success)
-    .catch(Failure)
+    .then((v) => Success.of(v))
+    .catch((e) => Failure.fromError(e))
 }
 
 export async function getFamilyContacts(
@@ -42,6 +42,6 @@ export async function getFamilyContacts(
     .get<JsonOf<FamilyContact[]>>('/family/contacts', {
       params: { childId }
     })
-    .then((res) => Success(res.data))
-    .catch(Failure)
+    .then((res) => Success.of(res.data))
+    .catch((e) => Failure.fromError(e))
 }

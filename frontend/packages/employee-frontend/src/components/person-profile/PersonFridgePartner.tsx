@@ -7,7 +7,7 @@ import styled from 'styled-components'
 import { UUID } from '~types'
 import { useTranslation } from '~state/i18n'
 import { useEffect } from 'react'
-import { isFailure, isSuccess, isLoading, Loading, Result } from '~api'
+import { Loading, Result } from '~api'
 import { useContext } from 'react'
 import { PersonContext } from '~state/person'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'components/shared/layout/Table'
@@ -56,7 +56,7 @@ const PersonFridgePartner = React.memo(function PersonFridgePartner({
   const [selectedPartnershipId, setSelectedPartnershipId] = useState('')
 
   const loadData = () => {
-    setPartnerships(Loading())
+    setPartnerships(Loading.of())
     void getPartnerships(id).then(setPartnerships)
   }
 
@@ -69,9 +69,9 @@ const PersonFridgePartner = React.memo(function PersonFridgePartner({
   useEffect(loadData, [id, setPartnerships])
 
   const getPartnershipById = (id: UUID) => {
-    return isSuccess(partnerships)
-      ? partnerships.data.find((partner) => partner.id === id)
-      : undefined
+    return partnerships
+      .map((ps) => ps.find((partner) => partner.id === id))
+      .getOrElse(undefined)
   }
 
   const renderFridgePartnerModal = () => {
@@ -99,7 +99,7 @@ const PersonFridgePartner = React.memo(function PersonFridgePartner({
             removePartnership(selectedPartnershipId).then(
               (res: Result<null>) => {
                 clearUiMode()
-                if (isFailure(res)) {
+                if (res.isFailure) {
                   setErrorMessage({
                     type: 'error',
                     title: i18n.personProfile.fridgePartner.error.remove.title,
@@ -118,9 +118,9 @@ const PersonFridgePartner = React.memo(function PersonFridgePartner({
   }
 
   const renderFridgePartners = () =>
-    isSuccess(partnerships)
+    partnerships.isSuccess
       ? _.orderBy(
-          partnerships.data,
+          partnerships.value,
           ['startDate', 'endDate'],
           ['desc', 'desc']
         ).map((fridgePartner: Partnership, i: number) => {
@@ -204,8 +204,8 @@ const PersonFridgePartner = React.memo(function PersonFridgePartner({
           </Thead>
           <Tbody>{renderFridgePartners()}</Tbody>
         </Table>
-        {isLoading(partnerships) && <Loader />}
-        {isFailure(partnerships) && <div>{i18n.common.loadingFailed}</div>}
+        {partnerships.isLoading && <Loader />}
+        {partnerships.isFailure && <div>{i18n.common.loadingFailed}</div>}
       </CollapsibleSection>
     </div>
   )

@@ -19,7 +19,7 @@ import {
   faUsers
 } from 'icon-set'
 import LocalDate from '@evaka/lib-common/src/local-date'
-import { Result, isSuccess, isLoading } from 'api'
+import { Result } from 'api'
 import { H4, Label } from 'components/shared/Typography'
 import CollapsibleSection from 'components/shared/molecules/CollapsibleSection'
 import { Gap } from 'components/shared/layout/white-space'
@@ -95,11 +95,11 @@ export default React.memo(function ApplicationEditView({
     otherGuardianLivesInSameAddress
   } = application
 
-  const preferencesInUnitsList = isSuccess(units)
-    ? preferredUnits.filter(({ id }) =>
-        units.data.find((unit) => unit.id === id)
-      )
-    : preferredUnits
+  const preferencesInUnitsList = units
+    .map((us) =>
+      preferredUnits.filter(({ id }) => us.find((unit) => unit.id === id))
+    )
+    .getOrElse(preferredUnits)
 
   const connectedDaycare = type === 'PRESCHOOL' && serviceNeed !== null
   const paid = type === 'DAYCARE' || connectedDaycare
@@ -349,21 +349,20 @@ export default React.memo(function ApplicationEditView({
           <VerticalContainer data-qa="preferred-unit">
             <ReactSelect
               placeholder={i18n.common.search}
-              isLoading={isLoading(units)}
+              isLoading={units.isLoading}
               value={null}
-              options={
-                isSuccess(units)
-                  ? units.data
-                      .filter(
-                        ({ id }) =>
-                          !preferredUnits.some((unit) => unit.id === id)
-                      )
-                      .map(({ id, name }) => ({
-                        value: id,
-                        label: name
-                      }))
-                  : []
-              }
+              options={units
+                .map((us) =>
+                  us
+                    .filter(
+                      ({ id }) => !preferredUnits.some((unit) => unit.id === id)
+                    )
+                    .map(({ id, name }) => ({
+                      value: id,
+                      label: name
+                    }))
+                )
+                .getOrElse([])}
               isDisabled={preferredUnits.length >= 3}
               onChange={(option) => {
                 if (option && 'value' in option) {

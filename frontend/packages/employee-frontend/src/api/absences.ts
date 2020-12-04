@@ -33,8 +33,8 @@ export async function getGroupAbsences(
       ...data,
       children: data.children.map(deserializeChild)
     }))
-    .then(Success)
-    .catch((e) => Failure(e))
+    .then((v) => Success.of(v))
+    .catch((e) => Failure.fromError(e))
 }
 
 export async function postGroupAbsences(
@@ -43,8 +43,8 @@ export async function postGroupAbsences(
 ): Promise<Result<void>> {
   return client
     .post<void>(`/absences/${groupId}`, { data: absences })
-    .then((res) => Success(res.data))
-    .catch(Failure)
+    .then((res) => Success.of(res.data))
+    .catch((e) => Failure.fromError(e))
 }
 
 export async function getStaffAttendances(
@@ -74,8 +74,8 @@ export async function getStaffAttendances(
         {}
       )
     }))
-    .then(Success)
-    .catch((e) => Failure(e))
+    .then((v) => Success.of(v))
+    .catch((e) => Failure.fromError(e))
 }
 
 export async function postStaffAttendance(
@@ -83,8 +83,8 @@ export async function postStaffAttendance(
 ): Promise<Result<void>> {
   return client
     .post(`/staff-attendances/${staffAttendance.groupId}`, staffAttendance)
-    .then((res) => Success(res.data))
-    .catch(Failure)
+    .then((res) => Success.of(res.data))
+    .catch((e) => Failure.fromError(e))
 }
 
 export async function postChildAbsence(
@@ -94,6 +94,6 @@ export async function postChildAbsence(
 ): Promise<Result<void>> {
   return client
     .post<void>(`/absences/child/${childId}`, { absenceType, careType })
-    .then((res) => Success(res.data))
-    .catch(Failure)
+    .then((res) => Success.of(res.data))
+    .catch((e) => Failure.fromError(e))
 }

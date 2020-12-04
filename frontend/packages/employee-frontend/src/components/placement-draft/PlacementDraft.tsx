@@ -25,7 +25,7 @@ import {
 } from '~state/placementdraft'
 import { useTranslation } from '~state/i18n'
 import { UUID } from '~types'
-import { Loading, isSuccess, isFailure, isLoading, Result, Success } from '~api'
+import { Loading, Result, Success } from '~api'
 import { getApplicationUnits } from '~api/daycare'
 import { formatName } from '~/utils'
 import {
@@ -122,10 +122,10 @@ function PlacementDraft({ match }: RouteComponentProps<{ id: UUID }>) {
   >(false)
 
   useEffect(() => {
-    isSuccess(units) &&
+    units.isSuccess &&
       placement.unitId &&
       setSelectedUnitIsGhostUnit(
-        units.data
+        units.value
           .filter((unit) => unit.id === placement.unitId)
           .map((unit) => unit.ghostUnit)
           .includes(true)
@@ -138,23 +138,23 @@ function PlacementDraft({ match }: RouteComponentProps<{ id: UUID }>) {
   ) {
     const periodOverlap = periodsOverlap(
       { start: placement.startDate, end: placement.endDate },
-      placementDraft.data.period
+      placementDraft.value.period
     )
 
     let preschoolDaycarePeriod = false
-    if (placementDraft.data.preschoolDaycarePeriod) {
+    if (placementDraft.value.preschoolDaycarePeriod) {
       preschoolDaycarePeriod = periodsOverlap(
         { start: placement.startDate, end: placement.endDate },
-        placementDraft.data.preschoolDaycarePeriod
+        placementDraft.value.preschoolDaycarePeriod
       )
     }
 
     return periodOverlap || preschoolDaycarePeriod
   }
 
-  function calculateOverLaps(placementDraft: Success<PlacementDraft>) {
-    if (isSuccess(placementDraft)) {
-      const placements = placementDraft.data.placements.map(
+  function calculateOverLaps(placementDraft: Result<PlacementDraft>) {
+    if (placementDraft.isSuccess) {
+      const placements = placementDraft.value.placements.map(
         (placement: PlacementDraftPlacement) => {
           return {
             ...placement,
@@ -162,60 +162,54 @@ function PlacementDraft({ match }: RouteComponentProps<{ id: UUID }>) {
           }
         }
       )
-      setPlacementDraft({
-        ...placementDraft,
-        data: {
-          ...placementDraft.data,
-          placements: placements
-        }
-      })
+      setPlacementDraft(
+        placementDraft.map((draft) => ({ ...draft, placements }))
+      )
     }
   }
 
-  function removeOldPlacements(placementDraft: Result<PlacementDraft>) {
-    if (isSuccess(placementDraft)) {
-      placementDraft = {
-        ...placementDraft,
-        data: {
-          ...placementDraft.data,
-          placements: placementDraft.data.placements.filter((p) => {
-            return !p.endDate.isBefore(LocalDate.today())
-          })
-        }
-      }
-    }
+  function removeOldPlacements(
+    placementDraft: Result<PlacementDraft>
+  ): Result<PlacementDraft> {
+    return placementDraft.map((draft) => ({
+      ...draft,
+      placements: draft.placements.filter(
+        (p) => !p.endDate.isBefore(LocalDate.today())
+      )
+    }))
   }
 
   useEffect(() => {
-    setPlacementDraft(Loading())
+    setPlacementDraft(Loading.of())
     void getPlacementDraft(id).then((placementDraft) => {
-      removeOldPlacements(placementDraft)
-      setPlacementDraft(placementDraft)
-      if (isSuccess(placementDraft)) {
+      const withoutOldPlacements = removeOldPlacements(placementDraft)
+      setPlacementDraft(withoutOldPlacements)
+      if (withoutOldPlacements.isSuccess) {
         setPlacement({
           unitId: undefined,
-          period: placementDraft.data.period,
-          preschoolDaycarePeriod: placementDraft.data.preschoolDaycarePeriod
+          period: withoutOldPlacements.value.period,
+          preschoolDaycarePeriod:
+            withoutOldPlacements.value.preschoolDaycarePeriod
         })
-        calculateOverLaps(placementDraft)
+        calculateOverLaps(withoutOldPlacements)
       }
     })
   }, [id])
 
   useEffect(() => {
-    if (isSuccess(placementDraft)) {
+    if (placementDraft.isSuccess) {
       void getApplicationUnits(
-        placementDraft.data.type,
-        placement.period?.start ?? placementDraft.data.period.start
+        placementDraft.value.type,
+        placement.period?.start ?? placementDraft.value.period.start
       ).then(setUnits)
     }
   }, [placementDraft, placement.period?.start])
 
   useEffect(() => {
-    if (isSuccess(placementDraft)) {
+    if (placementDraft.isSuccess) {
       const name = formatTitleName(
-        placementDraft.data.child.firstName,
-        placementDraft.data.child.lastName
+        placementDraft.value.child.firstName,
+        placementDraft.value.child.lastName
       )
       setTitle(`${name} | ${i18n.titles.placementDraft}`)
     }
@@ -226,8 +220,8 @@ function PlacementDraft({ match }: RouteComponentProps<{ id: UUID }>) {
     dateType: 'start' | 'end',
     date: LocalDate
   ) {
-    if (isSuccess(placementDraft)) {
-      const period = placementDraft.data[periodType]
+    if (placementDraft.isSuccess) {
+      const period = placementDraft.value[periodType]
       if (dateType === 'start') {
         if (period?.end && period.end.isBefore(date)) {
           const nextDay = date.addDays(1)
@@ -257,14 +251,11 @@ function PlacementDraft({ match }: RouteComponentProps<{ id: UUID }>) {
       ...placement,
       [periodType]: fixedPeriod
     })
-    if (isSuccess(placementDraft)) {
-      const updatedPlacementDraft = {
-        ...placementDraft,
-        data: {
-          ...placementDraft.data,
-          [periodType]: fixedPeriod
-        }
-      }
+    if (placementDraft.isSuccess) {
+      const updatedPlacementDraft = placementDraft.map((draft) => ({
+        ...draft,
+        [periodType]: fixedPeriod
+      }))
       setPlacementDraft(updatedPlacementDraft)
       calculateOverLaps(updatedPlacementDraft)
     }
@@ -277,18 +268,18 @@ function PlacementDraft({ match }: RouteComponentProps<{ id: UUID }>) {
 
   function addUnit(unitId: UUID) {
     return (
-      isSuccess(units) &&
-      isSuccess(placementDraft) &&
+      units.isSuccess &&
+      placementDraft.isSuccess &&
       setAdditionalUnits((prevUnits) => {
         if (
-          placementDraft.data.preferredUnits
+          placementDraft.value.preferredUnits
             .map((unit) => unit.id)
             .includes(unitId)
         ) {
           return prevUnits
         }
         const withOut = prevUnits.filter((unit) => unit.id !== unitId)
-        const newUnit = units.data.find((unit) => unit.id === unitId)
+        const newUnit = units.value.find((unit) => unit.id === unitId)
         if (!newUnit) throw new Error(`Unit not found ${unitId}`)
         return [...withOut, newUnit]
       })
@@ -299,32 +290,34 @@ function PlacementDraft({ match }: RouteComponentProps<{ id: UUID }>) {
     <ContainerNarrow>
       <Gap size={'L'} />
       <ContentArea opaque>
-        {isFailure(placementDraft) && <p>{i18n.common.loadingFailed}</p>}
-        {isLoading(placementDraft) && <Loader />}
-        {isSuccess(placementDraft) && placement.period && (
+        {placementDraft.isFailure && <p>{i18n.common.loadingFailed}</p>}
+        {placementDraft.isLoading && <Loader />}
+        {placementDraft.isSuccess && placement.period && (
           <Fragment>
             <PlacementDraftInfo>
               <Title size={1}>{i18n.placementDraft.createPlacementDraft}</Title>
               <ChildName>
                 <Title size={3}>
                   {formatName(
-                    placementDraft.data.child.firstName,
-                    placementDraft.data.child.lastName,
+                    placementDraft.value.child.firstName,
+                    placementDraft.value.child.lastName,
                     i18n
                   )}
                 </Title>
-                <Link to={`/child-information/${placementDraft.data.child.id}`}>
+                <Link
+                  to={`/child-information/${placementDraft.value.child.id}`}
+                >
                   {i18n.childInformation.title}
                   <FontAwesomeIcon icon={faLink} />
                 </Link>
               </ChildName>
               <ChildDateOfBirth>
                 <DOBTitle>{i18n.placementDraft.dateOfBirth}</DOBTitle>
-                {placementDraft.data.child.dob.format()}
+                {placementDraft.value.child.dob.format()}
               </ChildDateOfBirth>
             </PlacementDraftInfo>
             <PlacementDraftRow
-              placementDraft={placementDraft.data}
+              placementDraft={placementDraft.value}
               placement={placement}
               updateStart={updatePlacementDate('period', 'start')}
               updateEnd={updatePlacementDate('period', 'end')}
@@ -337,24 +330,24 @@ function PlacementDraft({ match }: RouteComponentProps<{ id: UUID }>) {
                 'end'
               )}
             />
-            {placementDraft.data.placements && <Placements />}
+            {placementDraft.value.placements && <Placements />}
             <SelectContainer>
               <ReactSelect
                 placeholder={i18n.filters.unitPlaceholder}
                 value={null}
-                options={
-                  isSuccess(units)
-                    ? units.data
-                        .map(({ id, name }) => ({ label: name, value: id }))
-                        .sort((a, b) => (a.label < b.label ? -1 : 1))
-                    : []
-                }
+                options={units
+                  .map((us) =>
+                    us
+                      .map(({ id, name }) => ({ label: name, value: id }))
+                      .sort((a, b) => (a.label < b.label ? -1 : 1))
+                  )
+                  .getOrElse([])}
                 onChange={(option) =>
                   option && 'value' in option
                     ? addUnit(option.value)
                     : undefined
                 }
-                isLoading={isLoading(units)}
+                isLoading={units.isLoading}
                 loadingMessage={() => i18n.common.loading}
                 noOptionsMessage={() => i18n.common.loadingFailed}
               />
@@ -364,7 +357,7 @@ function PlacementDraft({ match }: RouteComponentProps<{ id: UUID }>) {
               setAdditionalUnits={setAdditionalUnits}
               placement={placement}
               setPlacement={setPlacement}
-              placementDraft={placementDraft.data}
+              placementDraft={placementDraft.value}
               selectedUnitIsGhostUnit={selectedUnitIsGhostUnit}
             />
             <SendButtonContainer>

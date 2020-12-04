@@ -18,7 +18,6 @@ import { UUID } from '~types'
 import TabUnitInformation from '~components/unit/TabUnitInformation'
 import TabGroups from '~components/unit/TabGroups'
 import { TitleContext, TitleState } from '~state/title'
-import { isSuccess } from '~api'
 import { getDaycare, getUnitData } from '~api/unit'
 import { useRestApi } from '~utils/useRestApi'
 import Container from '~components/shared/layout/Container'
@@ -59,8 +58,8 @@ export default React.memo(function UnitPage() {
 
   useEffect(() => loadUnitInformation(id), [id])
   useEffect(() => {
-    if (isSuccess(unitInformation)) {
-      setTitle(unitInformation.data.daycare.name)
+    if (unitInformation.isSuccess) {
+      setTitle(unitInformation.value.daycare.name)
     }
   }, [unitInformation])
 
@@ -75,7 +74,7 @@ export default React.memo(function UnitPage() {
   }, [filters])
 
   useEffect(() => {
-    if (isSuccess(unitData)) {
+    if (unitData.isSuccess) {
       scrollToPosition()
     }
   }, [unitData])
@@ -93,10 +92,9 @@ export default React.memo(function UnitPage() {
         id: 'groups',
         link: `/units/${id}/groups`,
         label: i18n.unit.tabs.groups,
-        counter:
-          isSuccess(unitData) && unitData.data.missingGroupPlacements.length
-            ? unitData.data.missingGroupPlacements.length
-            : undefined
+        counter: unitData
+          .map((data) => data.missingGroupPlacements.length)
+          .getOrElse(undefined)
       },
       ...(requireRole(
         roles,
@@ -115,10 +113,9 @@ export default React.memo(function UnitPage() {
               id: 'placement-proposals',
               link: `/units/${id}/placement-proposals`,
               label: i18n.unit.tabs.placementProposals,
-              counter:
-                isSuccess(unitData) && unitData.data.placementProposals?.length
-                  ? unitData.data.placementProposals?.length
-                  : undefined
+              counter: unitData
+                .map((data) => data.placementProposals?.length)
+                .getOrElse(undefined)
             },
             {
               id: 'applications',

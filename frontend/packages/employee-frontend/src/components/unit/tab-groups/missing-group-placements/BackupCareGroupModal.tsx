@@ -7,7 +7,6 @@ import { useTranslation } from '~state/i18n'
 import { UIContext } from '~state/ui'
 import FormModal from '~components/common/FormModal'
 import Section from '~components/shared/layout/Section'
-import { isFailure } from '~api'
 import { faChild, faExchange } from 'icon-set'
 import { UUID } from '~types'
 import Select from '~components/common/Select'
@@ -47,7 +46,7 @@ export default React.memo(function BackupCareGroupModal({
       period,
       groupId
     }).then((res) => {
-      if (isFailure(res)) {
+      if (res.isFailure) {
         clearUiMode()
         setErrorMessage({
           type: 'error',

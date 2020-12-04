@@ -13,7 +13,7 @@ import Heading from './Heading'
 import ChildSection from './ChildSection'
 import Summary from './Summary'
 import Actions from './Actions'
-import { isFailure, isSuccess, Loading, Result } from '~api'
+import { Loading, Result } from '~api'
 import { getFeeDecision } from '~api/invoicing'
 import { useTranslation } from '~state/i18n'
 import { TitleContext, TitleState } from '~state/title'
@@ -31,7 +31,7 @@ export default React.memo(function FeeDecisionDetailsPage() {
   const { i18n } = useTranslation()
   const { setTitle, formatTitleName } = useContext<TitleState>(TitleContext)
   const [decision, setDecision] = useState<Result<FeeDecisionDetailed>>(
-    Loading()
+    Loading.of()
   )
   const [modified, setModified] = useState<boolean>(false)
   const [newDecisionType, setNewDecisionType] = useState<string>('')
@@ -41,22 +41,22 @@ export default React.memo(function FeeDecisionDetailsPage() {
   useEffect(() => void loadDecision(), [id])
 
   useEffect(() => {
-    if (isSuccess(decision)) {
+    if (decision.isSuccess) {
       const name = formatTitleName(
-        decision.data.headOfFamily.firstName,
-        decision.data.headOfFamily.lastName
+        decision.value.headOfFamily.firstName,
+        decision.value.headOfFamily.lastName
       )
-      decision.data.status === 'DRAFT'
+      decision.value.status === 'DRAFT'
         ? setTitle(`${name} | ${i18n.titles.feeDecisionDraft}`)
         : setTitle(`${name} | ${i18n.titles.feeDecision}`)
-      setNewDecisionType(decision.data.decisionType)
+      setNewDecisionType(decision.value.decisionType)
     }
   }, [decision])
 
   const changeDecisionType = (type: string) => {
-    if (isSuccess(decision)) {
+    if (decision.isSuccess) {
       setNewDecisionType(type)
-      decision.data.decisionType === type
+      decision.value.decisionType === type
         ? setModified(false)
         : setModified(true)
     }
@@ -66,7 +66,7 @@ export default React.memo(function FeeDecisionDetailsPage() {
 
   const goToDecisions = useCallback(() => goBack(), [history])
 
-  if (isFailure(decision)) {
+  if (decision.isFailure) {
     return <Redirect to="/finance/fee-decisions" />
   }
 
@@ -77,14 +77,14 @@ export default React.memo(function FeeDecisionDetailsPage() {
         data-qa="fee-decision-details-page"
       >
         <ReturnButton dataQa="navigate-back" />
-        {isSuccess(decision) && (
+        {decision.isSuccess && (
           <ContentArea opaque>
             <Heading
-              {...decision.data}
+              {...decision.value}
               changeDecisionType={changeDecisionType}
               newDecisionType={newDecisionType}
             />
-            {decision.data.parts.map(({ child, placement, placementUnit }) => (
+            {decision.value.parts.map(({ child, placement, placementUnit }) => (
               <ChildSection
                 key={child.id}
                 child={child}
@@ -92,9 +92,9 @@ export default React.memo(function FeeDecisionDetailsPage() {
                 placementUnit={placementUnit}
               />
             ))}
-            <Summary decision={decision.data} />
+            <Summary decision={decision.value} />
             <Actions
-              decision={decision.data}
+              decision={decision.value}
               goToDecisions={goToDecisions}
               loadDecision={loadDecision}
               modified={modified}

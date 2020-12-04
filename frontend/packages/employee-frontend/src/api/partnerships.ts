@@ -26,8 +26,8 @@ export async function getPartnerships(
         partners: data.partners.map(deserializePersonDetails)
       }))
     )
-    .then(Success)
-    .catch(Failure)
+    .then((v) => Success.of(v))
+    .catch((e) => Failure.fromError(e))
 }
 
 export async function addPartnership(
@@ -51,8 +51,8 @@ export async function addPartnership(
       endDate: LocalDate.parseNullableIso(data.endDate),
       partners: data.partners.map(deserializePersonDetails)
     }))
-    .then(Success)
-    .catch(Failure)
+    .then((v) => Success.of(v))
+    .catch((e) => Failure.fromError(e))
 }
 
 export async function updatePartnership(
@@ -74,20 +74,20 @@ export async function updatePartnership(
       endDate: LocalDate.parseNullableIso(data.endDate),
       partners: data.partners.map(deserializePersonDetails)
     }))
-    .then(Success)
-    .catch(Failure)
+    .then((v) => Success.of(v))
+    .catch((e) => Failure.fromError(e))
 }
 
 export async function retryPartnership(id: UUID): Promise<Result<null>> {
   return client
     .put(`/partnerships/${id}/retry`)
-    .then(() => Success(null))
-    .catch(Failure)
+    .then(() => Success.of(null))
+    .catch((e) => Failure.fromError(e))
 }
 
 export async function removePartnership(id: UUID): Promise<Result<null>> {
   return client
     .delete(`/partnerships/${id}`, {})
-    .then(() => Success(null))
-    .catch(Failure)
+    .then(() => Success.of(null))
+    .catch((e) => Failure.fromError(e))
 }

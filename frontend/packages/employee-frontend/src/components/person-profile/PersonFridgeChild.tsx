@@ -6,7 +6,7 @@ import React, { useState } from 'react'
 import { UUID } from '~types'
 import { useTranslation } from '~state/i18n'
 import { useEffect } from 'react'
-import { isFailure, isLoading, isSuccess, Loading, Result } from '~api'
+import { Loading, Result } from '~api'
 import { useContext } from 'react'
 import { PersonContext } from '~state/person'
 import { formatName } from '~utils'
@@ -48,7 +48,7 @@ const PersonFridgeChild = React.memo(function PersonFridgeChild({
   const [selectedParentshipId, setSelectedParentshipId] = useState('')
 
   const loadData = () => {
-    setParentships(Loading())
+    setParentships(Loading.of())
     void getParentshipsByHeadOfChild(id).then(setParentships)
   }
 
@@ -61,9 +61,9 @@ const PersonFridgeChild = React.memo(function PersonFridgeChild({
   useEffect(loadData, [id, setParentships])
 
   const getFridgeChildById = (id: UUID) => {
-    return isSuccess(parentships)
-      ? parentships.data.find((child) => child.id === id)
-      : undefined
+    return parentships
+      .map((ps) => ps.find((child) => child.id === id))
+      .getOrElse(undefined)
   }
 
   const renderFridgeChildModal = () => {
@@ -90,7 +90,7 @@ const PersonFridgeChild = React.memo(function PersonFridgeChild({
           resolve={() =>
             removeParentship(selectedParentshipId).then((res: Result<null>) => {
               clearUiMode()
-              if (isFailure(res)) {
+              if (res.isFailure) {
                 setErrorMessage({
                   type: 'error',
                   title: i18n.personProfile.fridgeChild.error.remove.title,
@@ -108,9 +108,9 @@ const PersonFridgeChild = React.memo(function PersonFridgeChild({
   }
 
   const renderFridgeChildren = () =>
-    isSuccess(parentships)
+    parentships.isSuccess
       ? _.orderBy(
-          parentships.data,
+          parentships.value,
           ['startDate', 'endDate'],
           ['desc', 'desc']
         ).map((fridgeChild: Parentship, i: number) => {
@@ -194,8 +194,8 @@ const PersonFridgeChild = React.memo(function PersonFridgeChild({
           </Thead>
           <Tbody>{renderFridgeChildren()}</Tbody>
         </Table>
-        {isLoading(parentships) && <Loader />}
-        {isFailure(parentships) && <div>{i18n.common.loadingFailed}</div>}
+        {parentships.isLoading && <Loader />}
+        {parentships.isFailure && <div>{i18n.common.loadingFailed}</div>}
       </CollapsibleSection>
     </div>
   )

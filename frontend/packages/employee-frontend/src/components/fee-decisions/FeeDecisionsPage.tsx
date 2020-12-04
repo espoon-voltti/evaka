@@ -10,7 +10,7 @@ import FeeDecisions from './FeeDecisions'
 import FeeDecisionFilters from './FeeDecisionFilters'
 import Actions from './Actions'
 import GeneratorButton from './generation/GeneratorButton'
-import { isSuccess, Result, Success } from '../../api'
+import { Result } from '../../api'
 import {
   getFeeDecisions,
   FeeDecisionSearchParams,
@@ -36,15 +36,13 @@ const FeeDecisionsPage = React.memo(function FeeDecisionsPage() {
   const [decisions, setDecisions] = useState<PagedFeeDecisions>({})
   const setDecisionsResult = useCallback(
     (result: Result<FeeDecisionSearchResponse>) => {
-      if (isSuccess(result)) {
-        setTotalDecisions(result.data.total)
-        setTotalPages(result.data.pages)
-        setDecisions((prev) => ({
-          ...prev,
-          [page]: Success(result.data.data)
-        }))
-      } else {
-        setDecisions((prev) => ({ ...prev, [page]: result }))
+      setDecisions((prev) => ({
+        ...prev,
+        [page]: result.map((r) => r.data)
+      }))
+      if (result.isSuccess) {
+        setTotalDecisions(result.value.total)
+        setTotalPages(result.value.pages)
       }
     },
     [page, setTotalDecisions, setTotalPages, setDecisions]
@@ -99,8 +97,8 @@ const FeeDecisionsPage = React.memo(function FeeDecisionsPage() {
 
   const checkAll = useCallback(() => {
     const currentPage = decisions[page]
-    if (isSuccess(currentPage)) {
-      checkIds(currentPage.data.map((decision) => decision.id))
+    if (currentPage.isSuccess) {
+      checkIds(currentPage.value.map((decision) => decision.id))
     }
   }, [decisions, checkIds])
 

@@ -9,7 +9,6 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 import React, { useContext } from 'react'
 import { ContentArea } from '~components/shared/layout/Container'
 import { UnitContext } from '~state/unit'
-import { isFailure, isLoading } from '~api'
 import { SpinnerSegment } from '~components/shared/atoms/state/Spinner'
 import ErrorSegment from '~components/shared/atoms/state/ErrorSegment'
 import { useTranslation } from '~state/i18n'
@@ -30,11 +29,11 @@ function TabApplications() {
   const { i18n } = useTranslation()
   const { unitData } = useContext(UnitContext)
 
-  if (isLoading(unitData)) {
+  if (unitData.isLoading) {
     return <SpinnerSegment />
   }
 
-  if (isFailure(unitData) || !unitData.data.applications) {
+  if (unitData.isFailure || !unitData.value.applications) {
     return <ErrorSegment />
   }
 
@@ -55,7 +54,7 @@ function TabApplications() {
             </Tr>
           </Thead>
           <Tbody>
-            {unitData.data.applications.map((row) => (
+            {unitData.value.applications.map((row) => (
               <Tr key={`${row.applicationId}`} data-qa="application-row">
                 <Td>
                   <div data-qa="child-name">

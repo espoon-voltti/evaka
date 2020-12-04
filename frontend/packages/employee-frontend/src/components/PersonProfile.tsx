@@ -20,7 +20,6 @@ import { getLayout, LayoutsWithDefault } from './layouts'
 import '~components/PersonProfile.scss'
 import { UserContext } from '~state/user'
 import { PersonContext } from '~state/person'
-import { isSuccess } from '~api'
 import PersonFeeDecisions from '~components/person-profile/PersonFeeDecisions'
 import PersonInvoices from '~components/person-profile/PersonInvoices'
 import styled from 'styled-components'
@@ -121,17 +120,17 @@ const PersonProfile = React.memo(function PersonProfile({
           <HeaderRow>
             <Title size={1}> {i18n.personProfile.title}</Title>
             <InfoLabelContainer>
-              {isSuccess(person) && person.data.dateOfDeath && (
+              {person.isSuccess && person.value.dateOfDeath && (
                 <CircularLabel
-                  text={`${
-                    i18n.common.form.dateOfDeath
-                  }: ${person.data.dateOfDeath.format()}`}
+                  text={`${i18n.common.form.dateOfDeath}: ${
+                    person.value.dateOfDeath?.format() ?? ''
+                  }`}
                   background={`black`}
                   color={`white`}
                   dataQa="deceaced-label"
                 />
               )}
-              {isSuccess(person) && person.data.restrictedDetailsEnabled && (
+              {person.isSuccess && person.value.restrictedDetailsEnabled && (
                 <WarningLabel
                   text={i18n.personProfile.restrictedDetails}
                   dataQa="restriction-details-enabled-label"
