@@ -40,8 +40,6 @@ SPDX-License-Identifier: LGPL-2.1-or-later
               v-if="file.id"
               class="file-name"
               @click="deliverBlob(file)"
-              target="_blank"
-              rel="noreferrer"
             >
               {{ file.name }}
             </a>
@@ -101,16 +99,28 @@ SPDX-License-Identifier: LGPL-2.1-or-later
         </div>
       </div>
     </div>
+
+    <confirm-modal
+      :header="$t('file-upload.modal-header')"
+      :message="$t('file-upload.modal-message')"
+      :acceptText="$t('file-upload.modal-confirm')"
+      ref="infoUnavailableFile"
+    >
+    </confirm-modal>
   </div>
 </template>
 
 <script>
   import axios from 'axios'
+  import ConfirmModal from '@/components/modal/confirm.vue'
   export default {
     props: {
       files: Array,
       onUpload: Function,
       onDelete: Function
+    },
+    components: {
+      ConfirmModal
     },
     methods: {
       deliverBlob(file) {
@@ -119,10 +129,14 @@ SPDX-License-Identifier: LGPL-2.1-or-later
           method: 'GET',
           responseType: 'blob',
         }).then((response) => {
+          if (response.status === 204) return this.showFileUnavailableModal()
+          // create actual download link and click it to mimick user action
           const url = window.URL.createObjectURL(new Blob([response.data]))
           const link = document.createElement('a')
           link.href = url
+          link.target = "_blank"
           link.setAttribute('download', `${file.name}`)
+          link.rel = "noreferrer"
           document.body.appendChild(link)
           link.click()
           link.remove()
@@ -135,6 +149,9 @@ SPDX-License-Identifier: LGPL-2.1-or-later
         if (event.dataTransfer.files && event.dataTransfer.files[0]) {
           this.onUpload(event.dataTransfer.files[0])
         }
+      },
+      showFileUnavailableModal() {
+        this.$refs.infoUnavailableFile.open().then(this.removeApplication, null)
       },
       deleteFile(file) {
         this.onDelete(file)

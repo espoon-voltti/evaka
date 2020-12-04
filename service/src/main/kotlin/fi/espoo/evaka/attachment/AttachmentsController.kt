@@ -123,14 +123,15 @@ class AttachmentsController(
             db.read { it.getAttachment(attachmentId) ?: throw NotFound("Attachment $attachmentId not found") }
 
         return try {
-             s3Client.get(filesBucket, "$attachmentId").let { document ->
+            s3Client.get(filesBucket, "$attachmentId").let { document ->
                 ResponseEntity.ok()
                     .header("Content-Disposition", "attachment;filename=${document.getName()}")
                     .contentType(MediaType.valueOf(attachment.contentType))
                     .body(document.getBytes())
             }
         } catch (e: AmazonS3Exception) {
-            throw Forbidden("Permission denied")
+            if (e.statusCode == 403) ResponseEntity.noContent().build()
+            else throw e
         }
     }
 

@@ -1008,6 +1008,9 @@
         "Sallitut tiedostomuodot:",
         "PDF, JPEG/JPG, PNG ja DOC/DOCX"
       ]
-    }
+    },
+    "modal-header": "Käsittely kesken",
+    "modal-message": "Tiedosto ei ole juuri nyt ladattavissa. Kokeile hetken kuluttua uudelleen.",
+    "modal-confirm": "Sulje"
   }
 }
