@@ -36,6 +36,12 @@ import fi.espoo.evaka.invoicing.data.upsertValueDecisions
 import fi.espoo.evaka.invoicing.domain.FeeDecision
 import fi.espoo.evaka.invoicing.domain.Invoice
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecision
+import fi.espoo.evaka.pairing.Pairing
+import fi.espoo.evaka.pairing.PairingsController
+import fi.espoo.evaka.pairing.challengePairing
+import fi.espoo.evaka.pairing.incrementAttempts
+import fi.espoo.evaka.pairing.initPairing
+import fi.espoo.evaka.pairing.respondPairingChallengeCreateDevice
 import fi.espoo.evaka.pis.Employee
 import fi.espoo.evaka.pis.createPersonFromVtj
 import fi.espoo.evaka.pis.deleteEmployeeByAad
@@ -48,6 +54,7 @@ import fi.espoo.evaka.pis.updatePersonFromVtj
 import fi.espoo.evaka.placement.PlacementPlanService
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.async.AsyncJobRunner
+import fi.espoo.evaka.shared.async.GarbageCollectPairing
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
@@ -57,6 +64,7 @@ import fi.espoo.evaka.shared.domain.Coordinate
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.message.MockEvakaMessageClient
 import fi.espoo.evaka.shared.message.SuomiFiMessage
+import fi.espoo.evaka.shared.utils.zoneId
 import fi.espoo.evaka.vtjclient.dto.VtjPerson
 import fi.espoo.evaka.vtjclient.service.persondetails.MockPersonDetailsService
 import org.jdbi.v3.core.Handle
@@ -81,6 +89,7 @@ import java.time.Duration
 import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.time.ZoneId
+import java.time.ZonedDateTime
 import java.util.UUID
 
 @Profile("enable_dev_api")
@@ -609,6 +618,64 @@ RETURNING id
 
         return ResponseEntity.noContent().build()
     }
+
+    @PostMapping("/mobile/pairings/challenge")
+    fun postPairingChallenge(
+        db: Database.Connection,
+        @RequestBody body: PairingsController.PostPairingChallengeReq
+    ): ResponseEntity<Pairing> {
+        return db
+            .transaction { it.challengePairing(body.challengeKey) }
+            .let { ResponseEntity.ok(it) }
+    }
+
+    @PostMapping("/mobile/pairings/{id}/response")
+    fun postPairingResponse(
+        db: Database.Connection,
+        @PathVariable id: UUID,
+        @RequestBody body: PairingsController.PostPairingResponseReq
+    ): ResponseEntity<Pairing> {
+        db.transaction { it.incrementAttempts(id, body.challengeKey) }
+
+        return db
+            .transaction {
+                it.respondPairingChallengeCreateDevice(id, body.challengeKey, body.responseKey)
+            }
+            .let { ResponseEntity.ok(it) }
+    }
+
+    @PostMapping("/mobile/pairings")
+    fun postPairing(
+        db: Database.Connection,
+        @RequestBody body: PairingsController.PostPairingReq
+    ): ResponseEntity<Pairing> {
+        return db.transaction { tx ->
+            val pairing = tx.initPairing(body.unitId)
+
+            asyncJobRunner.plan(
+                tx = tx,
+                payloads = listOf(GarbageCollectPairing(pairingId = pairing.id)),
+                runAt = ZonedDateTime
+                    .ofInstant(pairing.expires, zoneId)
+                    .plusDays(1)
+                    .toInstant()
+            )
+
+            pairing
+        }.let { ResponseEntity.ok(it) }
+    }
+
+    @DeleteMapping("/mobile/pairings/{id}")
+    fun deletePairing(db: Database, @PathVariable id: UUID): ResponseEntity<Unit> {
+        db.transaction { it.handle.deletePairing(id) }
+        return ResponseEntity.noContent().build()
+    }
+
+    @DeleteMapping("/mobile/devices/{id}")
+    fun deleteMobileDevice(db: Database, @PathVariable id: UUID): ResponseEntity<Unit> {
+        db.transaction { it.handle.deleteMobileDevice(id) }
+        return ResponseEntity.noContent().build()
+    }
 }
 
 fun ensureFakeAdminExists(h: Handle) {
@@ -647,6 +714,14 @@ fun Handle.clearDatabase() = listOf(
     execute("DELETE FROM $it")
 }
 
+fun Handle.deletePairing(id: UUID) {
+    execute("DELETE FROM pairing WHERE id = ?", id)
+}
+
+fun Handle.deleteMobileDevice(id: UUID) {
+    execute("DELETE FROM mobile_device WHERE id = ?", id)
+}
+
 fun Handle.deleteApplication(id: UUID) {
     execute("DELETE FROM attachment WHERE application_id = ?", id)
     execute("DELETE FROM decision WHERE application_id = ?", id)
@@ -674,6 +749,7 @@ WITH deleted_ids AS (
     execute("DELETE FROM backup_care WHERE unit_id IN (SELECT id FROM daycare WHERE care_area_id = ?)", id)
     execute("DELETE FROM placement_plan WHERE unit_id IN (SELECT id FROM daycare WHERE care_area_id = ?)", id)
     execute("DELETE FROM placement WHERE unit_id IN (SELECT id FROM daycare WHERE care_area_id = ?)", id)
+    execute("DELETE FROM pairing WHERE unit_id IN (SELECT id FROM daycare WHERE care_area_id = ?)", id)
     execute(
         """
         DELETE
