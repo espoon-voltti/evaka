@@ -164,7 +164,8 @@
       "invalid-email": "Ogiltigt e-postadress",
       "invalid-ssn": "Ogiltig personbeteckning",
       "invalid-tel": "Ogiltigt telefonnummer",
-      "invalid-timestring": "Ogiltig tid (ange t.ex. 13:30)"
+      "invalid-timestring": "Ogiltig tid (ange t.ex. 13:30)",
+      "invalid-daterange": "Datumet är inte inom tillåtet intervall"
     }
   },
   "care-type": {
@@ -473,7 +474,8 @@
           "instructions": {
             "text": "Det är möjligt att senarelägga det önskade startdatumet så länge ansökan inte har tagits upp till behandling. Därefter kan du ändra det önskade startdatumet genom att kontakta småbarnspedagogikens servicehänvisning (tfn 09 816 27600)."
           },
-          "placeholder": "Välj inledningsdatum"
+          "placeholder": "Välj inledningsdatum",
+          "validationText": "Önskat inledningsdatum: "
         },
         "dailyTitle": "Daglig tid för småbarnspedagogisk verksamhet",
         "dailyText": [],
@@ -626,7 +628,8 @@
         "startDate": {
           "description": "Förskolan börjar i de svenska förskolorna <strong>18.8.2020</strong> och i de finska förskolorna <strong>13.8.2020</strong>.<br/>Om ditt barn behöver småbarnspedagogisk verksamhet fr.o.m. 1.8.2020 före förskolan börjar kan du ansöka om sådan med denna blankett. Välj ”Jag ansöker om småbarnspedagogik i samband med förskoleundervisning”.",
           "label": "Inledningsdatum i augusti",
-          "placeholder": "Välj datum"
+          "placeholder": "Välj datum",
+          "validationText": "Önskat inledningsdatum: "
         },
         "dailyTitle": "Behov av småbarnspedagogik i samband med förskoleundervisningen",
         "dailyText": [

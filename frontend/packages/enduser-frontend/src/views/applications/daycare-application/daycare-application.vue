@@ -15,7 +15,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 
         <div class="columns" v-if="isChecked && !isValid">
           <div class="column">
-            <c-warning-box>
+            <c-warning-box data-qa="validation-errors">
               <div>
                 <p>{{ $t('form.validation-instruction') }}:</p>
                 <ul class="validation-error-items">
@@ -99,7 +99,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
                       "
                     />
                 </div>
-                <div class="column column-startdate" v-if="startDateShouldBeEditable">
+                <div class="column column-startdate" v-if="startDateShouldBeEditable" data-qa="preferred-startdate-datepicker">
                   <c-datepicker
                     id="daycare-preschool-datepicker"
                     v-model="model"
@@ -115,7 +115,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
                     "
                     :locale="locale"
                     :validationName="
-                      $t(`form.${type}-application.service.startDate.label`)
+                      $t(`form.${type}-application.service.startDate.validationText`)
                     "
                   >
                     <c-instructions

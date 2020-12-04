@@ -6,6 +6,7 @@ import { ClientFunction, Selector, t } from 'testcafe'
 import Home from '../home'
 import Applications from './applications'
 import config from '../../config'
+import { format } from 'date-fns'
 
 const home = new Home()
 
@@ -190,6 +191,36 @@ export default class EnduserPage {
           .withText(file).exists
       )
       .ok()
+  }
+
+  private readonly preferredStartDateDatePicker = Selector(
+    '[data-qa="preferred-startdate-datepicker"] .date-picker'
+  )
+
+  async selectPreferredDate(date: Date) {
+    await t.typeText(
+      this.preferredStartDateDatePicker.find('input'),
+      format(date, 'dd.MM.yyyy'),
+      {
+        replace: true
+      }
+    )
+  }
+
+  async assertNoValidationErrors() {
+    await t.click(Selector('[data-qa="btn-check-and-send"]'))
+    await t.expect(Selector('.validation-error-items').exists).notOk()
+  }
+
+  async assertValidationErrorsExists(validations: string[]) {
+    await t.click(Selector('[data-qa="btn-check-and-send"]'))
+    await t.click(Selector('[data-qa="btn-modal-ok"]'))
+
+    const validationsSection = Selector('.validation-error-items')
+
+    for (const validation of validations) {
+      await t.expect(validationsSection.withText(validation).exists).ok()
+    }
   }
 }
 
