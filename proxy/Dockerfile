@@ -11,6 +11,7 @@ ENV BASIC_AUTH_ENABLED true
 ENV ENDUSER_GW_URL http://fake.test
 ENV HOST_IP smoketest
 ENV INTERNAL_GW_URL http://fake.test
+ENV KEYCLOAK_URL http://fake.test
 ENV NGINX_ENV smoketest
 ENV RATE_LIMIT_CIDR_WHITELIST '10.0.0.0/8;192.168.0.0/16'
 ENV SECURITYTXT_CONTACTS 'mailto:fake@fake.test;mailto:another@fake.test'

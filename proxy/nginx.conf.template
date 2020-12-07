@@ -123,7 +123,9 @@ server {
   add_header X-XSS-Protection '1; mode=block';
   add_header X-DNS-Prefetch-Control off;
   add_header Report-To '{"group","csp-endpoint","max_age":31536000,"endpoints":[{"url":"https://$host/api/csp"}]}';
-  add_header Content-Security-Policy "block-all-mixed-content; upgrade-insecure-requests; form-action 'self'; frame-ancestors 'none'; default-src 'self'; script-src 'self' https://maps.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: https://maps.gstatic.com https://maps.googleapis.com; connect-src 'self' https://sentry.io; object-src 'none'; report-uri /api/csp; report-to csp-endpoint";
+
+  set $contentSecurityPolicyBase "block-all-mixed-content; upgrade-insecure-requests; form-action 'self'; default-src 'self'; font-src 'self' data: https://fonts.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: https://maps.gstatic.com https://maps.googleapis.com; connect-src 'self' https://sentry.io; object-src 'none'; report-uri /api/csp; report-to csp-endpoint";
+  add_header Content-Security-Policy "${contentSecurityPolicyBase}; script-src 'self' https://maps.googleapis.com; frame-ancestors 'none';";
 
   # Tracing
   # Return the request ID to the client to make tracing of test requests very easy
@@ -250,6 +252,23 @@ server {
     include     proxy_params;
     proxy_pass  $internalUrl/api/csp/csp-report;
   }
+
+  <% if ENV.key?("KEYCLOAK_URL") && ENV["KEYCLOAK_URL"] != "" %>
+
+  set $authUrl "<%= ENV["KEYCLOAK_URL"] %>";
+
+  location /auth {
+    <% if ENV["BASIC_AUTH_ENABLED"] == "true" %>
+    auth_basic "off";
+    <% end %>
+    include    proxy_params;
+    limit_req  zone=req_zone burst=100 nodelay;
+    add_header Content-Security-Policy "${contentSecurityPolicyBase}; script-src 'self' 'unsafe-inline' 'unsafe-eval'; frame-ancestors 'self'";
+
+    proxy_set_header X-Forwarded-Proto "https";
+    proxy_pass $authUrl;
+  }
+  <% end %>
 
   <% if ENV["BASIC_AUTH_ENABLED"] == "true" %>
   auth_basic            "Log in";
