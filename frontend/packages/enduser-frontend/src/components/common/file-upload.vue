@@ -39,7 +39,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
             <a
               v-if="file.id"
               class="file-name"
-              @click="deliverBlob(file)"
+              @click="checkFileAvailability(file)"
             >
               {{ file.name }}
             </a>
@@ -123,14 +123,21 @@ SPDX-License-Identifier: LGPL-2.1-or-later
       ConfirmModal
     },
     methods: {
+      checkFileAvailability(file) {
+        axios({
+          url: `/api/application/attachments/${file.id}/pre-download`,
+          method: 'GET'
+        }).then((response) => {
+          if (response.data.fileAvailable === true) { return this.deliverBlob(file) }
+          this.showFileUnavailableModal()
+        })
+      },
       deliverBlob(file) {
         axios({
           url: `/api/application/attachments/${file.id}/download`,
           method: 'GET',
           responseType: 'blob',
         }).then((response) => {
-          if (response.status === 204) return this.showFileUnavailableModal()
-          // create actual download link and click it to mimick user action
           const url = window.URL.createObjectURL(new Blob([response.data]))
           const link = document.createElement('a')
           link.href = url
@@ -151,7 +158,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
         }
       },
       showFileUnavailableModal() {
-        this.$refs.infoUnavailableFile.open().then(this.removeApplication, null)
+        this.$refs.infoUnavailableFile.open()
       },
       deleteFile(file) {
         this.onDelete(file)

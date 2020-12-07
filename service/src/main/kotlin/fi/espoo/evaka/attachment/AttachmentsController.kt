@@ -108,6 +108,30 @@ class AttachmentsController(
         return id
     }
 
+    data class PreDownloadResponse(
+        val fileAvailable: Boolean
+    )
+
+    @GetMapping("/{attachmentId}/pre-download")
+    fun checkAttachmentAvailability(
+        db: Database,
+        user: AuthenticatedUser,
+        @PathVariable attachmentId: UUID
+    ): ResponseEntity<PreDownloadResponse> {
+        Audit.AttachmentsRead.log(targetId = attachmentId)
+        if (!user.hasOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN)) {
+            if (!db.read { it.isOwnAttachment(attachmentId, user) }) throw Forbidden("Permission denied")
+        }
+
+        return try {
+            s3Client.get(filesBucket, "$attachmentId").let { _ ->
+                ResponseEntity.ok().body(PreDownloadResponse(true))
+            }
+        } catch (e: AmazonS3Exception) {
+            ResponseEntity.ok().body(PreDownloadResponse(false))
+        }
+    }
+
     @GetMapping("/{attachmentId}/download")
     fun getAttachment(
         db: Database,
@@ -122,16 +146,11 @@ class AttachmentsController(
         val attachment =
             db.read { it.getAttachment(attachmentId) ?: throw NotFound("Attachment $attachmentId not found") }
 
-        return try {
-            s3Client.get(filesBucket, "$attachmentId").let { document ->
-                ResponseEntity.ok()
-                    .header("Content-Disposition", "attachment;filename=${document.getName()}")
-                    .contentType(MediaType.valueOf(attachment.contentType))
-                    .body(document.getBytes())
-            }
-        } catch (e: AmazonS3Exception) {
-            if (e.statusCode == 403) ResponseEntity.noContent().build()
-            else throw e
+        return s3Client.get(filesBucket, "$attachmentId").let { document ->
+            ResponseEntity.ok()
+                .header("Content-Disposition", "attachment;filename=${document.getName()}")
+                .contentType(MediaType.valueOf(attachment.contentType))
+                .body(document.getBytes())
         }
     }
 
