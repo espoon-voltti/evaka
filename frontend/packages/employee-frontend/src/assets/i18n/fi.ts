@@ -1131,10 +1131,12 @@ export const fi = {
             'Henkilökunnan määrä ei voi olla negatiivinen'
         }
       },
-      renameModal: {
-        title: 'Muokkaa ryhmän nimeä',
+      updateModal: {
+        title: 'Muokkaa ryhmän tietoja',
         name: 'Nimi',
-        info: 'Tietoa ryhmän aiemmasta nimestä ei säilytetä'
+        startDate: 'Perustettu',
+        endDate: 'Lakkautettu',
+        info: 'Ryhmän aikaisempia tietoja ei säilytetä'
       },
       startDate: 'Perustettu',
       endDate: 'Lakkautettu',
@@ -1160,7 +1162,7 @@ export const fi = {
       transferBtn: 'Siirrä',
       diaryButton: 'Avaa päiväkirja',
       deleteGroup: 'Poista ryhmä',
-      rename: 'Muokkaa nimeä'
+      update: 'Muokkaa tietoja'
     },
     backupCares: {
       title: 'Varasijoituslapset',

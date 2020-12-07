@@ -5,6 +5,7 @@
 package fi.espoo.evaka.daycare
 
 import fi.espoo.evaka.daycare.service.DaycareGroup
+import fi.espoo.evaka.shared.db.PGConstants
 import fi.espoo.evaka.shared.db.PGConstants.maxDate
 import fi.espoo.evaka.shared.db.bindNullable
 import fi.espoo.evaka.shared.domain.ClosedPeriod
@@ -46,12 +47,14 @@ RETURNING id, daycare_id, name, start_date, NULL::date AS end_date, true AS dele
     .asSequence()
     .first()
 
-fun Handle.renameGroup(groupId: UUID, name: String) {
+fun Handle.updateGroup(groupId: UUID, name: String, startDate: LocalDate, endDate: LocalDate?) {
     // language=SQL
-    val sql = "UPDATE daycare_group SET name = :name WHERE id = :id"
+    val sql = "UPDATE daycare_group SET name = :name, start_date = :startDate, end_date = COALESCE(:endDate, 'infinity') WHERE id = :id"
     this.createUpdate(sql)
         .bind("id", groupId)
         .bind("name", name)
+        .bind("startDate", startDate)
+        .bind("endDate", endDate ?: PGConstants.infinity)
         .execute()
         .let { if (it != 1) throw NotFound("Group $groupId not found") }
 }

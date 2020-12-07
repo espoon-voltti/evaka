@@ -15,7 +15,6 @@ import fi.espoo.evaka.daycare.getDaycare
 import fi.espoo.evaka.daycare.getDaycareGroup
 import fi.espoo.evaka.daycare.getDaycareStub
 import fi.espoo.evaka.daycare.getDaycares
-import fi.espoo.evaka.daycare.renameGroup
 import fi.espoo.evaka.daycare.service.CaretakerAmount
 import fi.espoo.evaka.daycare.service.CaretakerService
 import fi.espoo.evaka.daycare.service.DaycareCapacityStats
@@ -23,6 +22,7 @@ import fi.espoo.evaka.daycare.service.DaycareGroup
 import fi.espoo.evaka.daycare.service.DaycareService
 import fi.espoo.evaka.daycare.updateDaycare
 import fi.espoo.evaka.daycare.updateDaycareManager
+import fi.espoo.evaka.daycare.updateGroup
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
@@ -107,7 +107,9 @@ class DaycareController(
     }
 
     data class GroupUpdateRequest(
-        val name: String
+        val name: String,
+        val startDate: LocalDate,
+        val endDate: LocalDate?
     )
     @PutMapping("/{daycareId}/groups/{groupId}")
     fun updateGroup(
@@ -121,7 +123,7 @@ class DaycareController(
         acl.getRolesForUnitGroup(user, groupId)
             .requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR)
 
-        db.transaction { it.handle.renameGroup(groupId, body.name) }
+        db.transaction { it.handle.updateGroup(groupId, body.name, body.startDate, body.endDate) }
 
         return noContent()
     }

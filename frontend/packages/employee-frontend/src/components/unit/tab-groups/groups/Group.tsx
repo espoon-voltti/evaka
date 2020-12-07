@@ -57,7 +57,7 @@ import { FixedSpaceRow } from '~components/shared/layout/flex-helpers'
 import PlacementCircle from '~components/shared/atoms/PlacementCircle'
 import Tooltip from '~components/shared/atoms/Tooltip'
 import { UIContext } from '~state/ui'
-import GroupRenameModal from '~components/unit/tab-groups/groups/group/GroupRenameModal'
+import GroupUpdateModal from '~components/unit/tab-groups/groups/group/GroupUpdateModal'
 
 interface Props {
   unit: Unit
@@ -177,8 +177,8 @@ function Group({
       data-qa="daycare-group-collapsible"
       data-status={open ? 'open' : 'closed'}
     >
-      {uiMode === `rename-group-${group.id}` && (
-        <GroupRenameModal group={group} reload={reload} />
+      {uiMode === `update-group-${group.id}` && (
+        <GroupUpdateModal group={group} reload={reload} />
       )}
       <TitleBar>
         <TitleContainer onClick={toggleOpen}>
@@ -223,9 +223,9 @@ function Group({
             <>
               <InlineButton
                 icon={faPen}
-                text={i18n.unit.groups.rename}
-                onClick={() => toggleUiMode(`rename-group-${group.id}`)}
-                dataQa="btn-rename-group"
+                text={i18n.unit.groups.update}
+                onClick={() => toggleUiMode(`update-group-${group.id}`)}
+                dataQa="btn-update-group"
               />
               <Gap size="s" horizontal />
               <InlineButton
@@ -254,33 +254,28 @@ function Group({
           <DataList labelWidth="150px" marginBottom="20px">
             <div>
               <label>{i18n.unit.groups.startDate}</label>{' '}
-              <span data-qa="group-founded">{group.startDate.format()}</span>
+              <span data-qa="group-start-date">{group.startDate.format()}</span>
             </div>
             {group.endDate && (
               <div>
                 <label>{i18n.unit.groups.endDate}</label>{' '}
-                <span>{group.endDate.format()}</span>
+                <span data-qa="group-end-date">{group.endDate.format()}</span>
               </div>
             )}
             <div>
               <label>{i18n.unit.groups.caretakers}</label>
-              <div>
+              <FixedSpaceRow>
                 {renderCaretakerCount()}
                 {canManageGroups ? (
-                  <>
-                    <Gap size="s" horizontal />
-                    <Link
-                      to={`/units/${unit.id}/groups/${group.id}/caretakers`}
-                    >
-                      <InlineButton
-                        icon={faPen}
-                        text={i18n.common.edit}
-                        onClick={() => undefined}
-                      />
-                    </Link>
-                  </>
+                  <Link to={`/units/${unit.id}/groups/${group.id}/caretakers`}>
+                    <InlineButton
+                      icon={faPen}
+                      text={i18n.common.edit}
+                      onClick={() => undefined}
+                    />
+                  </Link>
                 ) : null}
-              </div>
+              </FixedSpaceRow>
             </div>
             {headcounts && (
               <div>
