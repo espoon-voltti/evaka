@@ -4,11 +4,25 @@
 
 package fi.espoo.evaka
 
+import fi.espoo.evaka.application.Address
+import fi.espoo.evaka.application.ApplicationDetails
+import fi.espoo.evaka.application.ApplicationForm
+import fi.espoo.evaka.application.ApplicationOrigin
+import fi.espoo.evaka.application.ApplicationStatus
+import fi.espoo.evaka.application.ApplicationType
+import fi.espoo.evaka.application.ChildDetails
+import fi.espoo.evaka.application.Guardian
+import fi.espoo.evaka.application.PersonBasics
+import fi.espoo.evaka.application.Preferences
+import fi.espoo.evaka.application.PreferredUnit
+import fi.espoo.evaka.application.ServiceNeed
+import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
 import fi.espoo.evaka.daycare.CareType
 import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.invoicing.domain.PersonData
 import fi.espoo.evaka.invoicing.domain.UnitData
 import fi.espoo.evaka.invoicing.domain.VoucherValue
+import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.transaction
 import fi.espoo.evaka.shared.dev.DevCareArea
@@ -17,6 +31,8 @@ import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPricing
+import fi.espoo.evaka.shared.dev.insertTestApplication
+import fi.espoo.evaka.shared.dev.insertTestApplicationForm
 import fi.espoo.evaka.shared.dev.insertTestCareArea
 import fi.espoo.evaka.shared.dev.insertTestChild
 import fi.espoo.evaka.shared.dev.insertTestDaycare
@@ -27,6 +43,7 @@ import fi.espoo.evaka.shared.dev.insertTestVoucherValue
 import fi.espoo.evaka.shared.domain.Period
 import org.jdbi.v3.core.Handle
 import java.time.LocalDate
+import java.time.OffsetDateTime
 import java.util.UUID
 
 /*
@@ -416,3 +433,111 @@ fun insertTestVardaOrganizer(h: Handle) {
             )
         ).execute()
 }
+
+fun insertDraftApplication(
+    h: Handle,
+    guardian: PersonData.Detailed = testAdult_5,
+    child: PersonData.Detailed = testChild_6,
+    appliedType: PlacementType = PlacementType.PRESCHOOL_DAYCARE,
+    urgent: Boolean = false,
+    hasAdditionalInfo: Boolean = false,
+    maxFeeAccepted: Boolean = false,
+    preferredStartDate: LocalDate? = LocalDate.now().plusMonths(4),
+    applicationId: UUID = UUID.randomUUID(),
+    status: ApplicationStatus = ApplicationStatus.CREATED
+): ApplicationDetails {
+    insertTestApplication(
+        h = h,
+        id = applicationId,
+        sentDate = null,
+        dueDate = null,
+        status = status,
+        guardianId = guardian.id,
+        childId = child.id
+    )
+    val application = ApplicationDetails(
+        id = applicationId,
+        type = when (appliedType) {
+            PlacementType.PRESCHOOL, PlacementType.PRESCHOOL_DAYCARE, PlacementType.PREPARATORY, PlacementType.PREPARATORY_DAYCARE -> ApplicationType.PRESCHOOL
+            PlacementType.DAYCARE, PlacementType.DAYCARE_PART_TIME -> ApplicationType.DAYCARE
+            PlacementType.CLUB -> ApplicationType.CLUB
+        },
+        form = ApplicationForm(
+            child = ChildDetails(
+                person = PersonBasics(
+                    firstName = child.firstName,
+                    lastName = child.lastName,
+                    socialSecurityNumber = child.ssn
+                ),
+                dateOfBirth = child.dateOfBirth,
+                address = addressOf(child),
+                futureAddress = null,
+                nationality = "fi",
+                language = "fi",
+                allergies = if (hasAdditionalInfo) "allergies" else "",
+                diet = if (hasAdditionalInfo) "diet" else "",
+                assistanceNeeded = false,
+                assistanceDescription = ""
+            ),
+            guardian = Guardian(
+                person = PersonBasics(
+                    firstName = guardian.firstName,
+                    lastName = guardian.lastName,
+                    socialSecurityNumber = guardian.ssn
+                ),
+                address = addressOf(guardian),
+                futureAddress = null,
+                phoneNumber = "0501234567",
+                email = "abc@espoo.fi"
+            ),
+            preferences = Preferences(
+                preferredUnits = listOf(PreferredUnit(testDaycare.id, testDaycare.name)),
+                preferredStartDate = preferredStartDate,
+                serviceNeed = if (appliedType in listOf(
+                    PlacementType.PRESCHOOL,
+                    PlacementType.PREPARATORY
+                )
+                ) null else ServiceNeed(
+                    startTime = "09:00",
+                    endTime = "15:00",
+                    shiftCare = false,
+                    partTime = appliedType == PlacementType.DAYCARE_PART_TIME
+                ),
+                siblingBasis = null,
+                preparatory = appliedType in listOf(PlacementType.PREPARATORY, PlacementType.PREPARATORY_DAYCARE),
+                urgent = urgent
+            ),
+            secondGuardian = null,
+            otherPartner = null,
+            otherChildren = emptyList(),
+            otherInfo = if (hasAdditionalInfo) "foobar" else "",
+            maxFeeAccepted = maxFeeAccepted,
+            clubDetails = null
+        ),
+        status = status,
+        origin = ApplicationOrigin.PAPER,
+        childId = child.id,
+        childRestricted = false,
+        guardianId = guardian.id,
+        guardianRestricted = false,
+        createdDate = OffsetDateTime.now(),
+        modifiedDate = OffsetDateTime.now(),
+        sentDate = null,
+        dueDate = null,
+        transferApplication = false,
+        additionalDaycareApplication = false,
+        otherGuardianId = null,
+        checkedByAdmin = false,
+        hideFromGuardian = false,
+        attachments = listOf()
+    )
+    insertTestApplicationForm(
+        h = h,
+        applicationId = applicationId,
+        document = DaycareFormV0.fromApplication2(application)
+    )
+    return application
+}
+
+private fun addressOf(person: PersonData.Detailed): Address =
+    Address(street = person.streetAddress!!, postalCode = person.postalCode!!, postOffice = person.postOffice!!)
