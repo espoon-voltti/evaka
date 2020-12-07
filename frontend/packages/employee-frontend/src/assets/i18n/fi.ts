@@ -27,6 +27,7 @@ export const fi = {
   common: {
     yes: 'Kyllä',
     no: 'Ei',
+    and: 'Ja',
     loadingFailed: 'Tietojen haku epäonnistui',
     edit: 'Muokkaa',
     add: 'Lisää',
@@ -936,6 +937,9 @@ export const fi = {
           YEARLY: 'Vuosi'
         },
         updateError: 'Tulotietojen tallennus epäonnistui',
+        missingIncomeDaysWarningTitle: 'Tulotiedot puuttuvat joiltain päiviltä',
+        missingIncomeDaysWarningText: (missingIncomePeriodsString: string) =>
+          `Tulotiedot puuttuvat seuraavilta päiviltä: ${missingIncomePeriodsString}. Jos tulotietoja ei lisätä, tulot määräytyvät näille päiville korkeimman maksuluokan mukaan. Tarkista päivämäärät ja lisää tarvittaessa tulotiedot puuttuville päiville.`,
         conflictErrorText:
           'Ajanjaksolle on jo tallennettu tulotietoja! Tarkista tulotietojen voimassaoloajat.',
         closeWarning: 'Muista tallentaa!',
