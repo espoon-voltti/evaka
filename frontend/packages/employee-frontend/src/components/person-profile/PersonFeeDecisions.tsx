@@ -12,7 +12,7 @@ import LocalDate from '@evaka/lib-common/src/local-date'
 import { UUID } from '~types'
 import { useTranslation, Translations } from '~state/i18n'
 import { UIContext } from '~state/ui'
-import { isFailure, isLoading, isSuccess, Loading, Result } from '~api'
+import { Loading, Result } from '~api'
 import CollapsibleSection from 'components/shared/molecules/CollapsibleSection'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'components/shared/layout/Table'
 import Loader from '~components/shared/atoms/Loader'
@@ -41,11 +41,11 @@ const PersonFeeDecisions = React.memo(function PersonFeeDecisions({
   const { i18n } = useTranslation()
   const { uiMode, toggleUiMode, clearUiMode } = useContext(UIContext)
   const [feeDecisions, setFeeDecisions] = useState<Result<FeeDecision[]>>(
-    Loading()
+    Loading.of()
   )
 
   const loadDecisions = useCallback(() => {
-    setFeeDecisions(Loading())
+    setFeeDecisions(Loading.of())
     void getPersonFeeDecisions(id).then((response) => {
       setFeeDecisions(response)
     })
@@ -54,8 +54,8 @@ const PersonFeeDecisions = React.memo(function PersonFeeDecisions({
   useEffect(loadDecisions, [id, setFeeDecisions])
 
   const renderFeeDecisions = () =>
-    isSuccess(feeDecisions)
-      ? _.orderBy(feeDecisions.data, ['createdAt'], ['desc']).map(
+    feeDecisions.isSuccess
+      ? _.orderBy(feeDecisions.value, ['createdAt'], ['desc']).map(
           (feeDecision: FeeDecision) => {
             return (
               <Tr key={`${feeDecision.id}`} data-qa="table-fee-decision-row">
@@ -117,8 +117,8 @@ const PersonFeeDecisions = React.memo(function PersonFeeDecisions({
           </Thead>
           <Tbody>{renderFeeDecisions()}</Tbody>
         </Table>
-        {isLoading(feeDecisions) && <Loader />}
-        {isFailure(feeDecisions) && <div>{i18n.common.loadingFailed}</div>}
+        {feeDecisions.isLoading && <Loader />}
+        {feeDecisions.isFailure && <div>{i18n.common.loadingFailed}</div>}
       </CollapsibleSection>
     </div>
   )

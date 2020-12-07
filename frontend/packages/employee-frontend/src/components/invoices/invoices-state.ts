@@ -4,7 +4,7 @@
 
 import { useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import LocalDate from '@evaka/lib-common/src/local-date'
-import { isSuccess, mapResult, Result } from '~api'
+import { Result } from '~api'
 import {
   createInvoices,
   getInvoices,
@@ -78,11 +78,13 @@ const useActions = (setState: React.Dispatch<React.SetStateAction<State>>) =>
       checkAll: () =>
         setState((s) => {
           const currentPage = s.invoices[s.page]
-          const checked: Record<string, true> = isSuccess(currentPage)
-            ? Object.fromEntries(
-                currentPage.data.map((invoice) => [invoice.id, true])
+          const checked: Record<string, true> = currentPage
+            .map((page) =>
+              Object.fromEntries(
+                page.map((invoice) => [invoice.id, true as const])
               )
-            : {}
+            )
+            .getOrElse({})
           return {
             ...s,
             checkedInvoices: {
@@ -112,11 +114,11 @@ export function useInvoicesState() {
         ...previousState,
         invoices: {
           ...state.invoices,
-          [state.page]: mapResult(result, (r) => r.data)
+          [state.page]: result.map((r) => r.data)
         },
-        invoiceTotals: isSuccess(result)
-          ? { total: result.data.total, pages: result.data.pages }
-          : previousState.invoiceTotals
+        invoiceTotals: result
+          .map((r) => ({ total: r.total, pages: r.pages }))
+          .getOrElse(previousState.invoiceTotals)
       }))
     },
     [setState, state.page]

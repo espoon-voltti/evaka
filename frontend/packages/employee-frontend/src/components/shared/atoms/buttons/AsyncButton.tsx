@@ -14,7 +14,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faCheck, faTimes } from 'icon-set'
 import Colors from 'components/shared/Colors'
 import { StyledButton } from './Button'
-import { isFailure, Result } from '~api'
+import { Result } from '~api'
 
 type Props = {
   text: string
@@ -48,7 +48,7 @@ export default React.memo(function AsyncButton({
     setInProgress(true)
     onClick()
       .then((res) => {
-        if (res && isFailure(res)) {
+        if (res && res.isFailure) {
           return setShowFailure(true)
         }
         setShowSuccess(true)

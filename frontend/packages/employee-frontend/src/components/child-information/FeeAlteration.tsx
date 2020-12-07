@@ -14,7 +14,7 @@ import { UIContext } from '~state/ui'
 import { ChildContext } from '~state'
 import { UUID } from '~types'
 import { FeeAlteration, PartialFeeAlteration } from '~types/fee-alteration'
-import { isFailure, isLoading, isSuccess, Loading, Result } from '~api'
+import { Loading, Result } from '~api'
 import {
   createFeeAlteration,
   deleteFeeAlteration,
@@ -43,17 +43,17 @@ const FeeAlteration = React.memo(function FeeAlteration({ id, open }: Props) {
   const refSectionTop = useRef(null)
 
   const loadFeeAlterations = () => {
-    setFeeAlterations(Loading())
+    setFeeAlterations(Loading.of())
     void getFeeAlterations(id).then(setFeeAlterations)
   }
 
   useEffect(() => {
     loadFeeAlterations()
-    return () => setFeeAlterations(Loading())
+    return () => setFeeAlterations(Loading.of())
   }, [id])
 
   const handleChange = (result: Result<void>) => {
-    if (isSuccess(result)) {
+    if (result.isSuccess) {
       clearUiMode()
       loadFeeAlterations()
     } else {
@@ -65,13 +65,13 @@ const FeeAlteration = React.memo(function FeeAlteration({ id, open }: Props) {
   }
 
   const content = () => {
-    if (isLoading(feeAlterations)) return <Loader />
-    if (isFailure(feeAlterations))
+    if (feeAlterations.isLoading) return <Loader />
+    if (feeAlterations.isFailure)
       return <div>{i18n.childInformation.feeAlteration.error}</div>
 
     return (
       <FeeAlterationList
-        feeAlterations={feeAlterations.data}
+        feeAlterations={feeAlterations.value}
         toggleEditing={(id) => toggleUiMode(editFeeAlterationUiMode(id))}
         isEdited={(id) => uiMode === editFeeAlterationUiMode(id)}
         cancel={() => clearUiMode()}
@@ -126,7 +126,7 @@ const FeeAlteration = React.memo(function FeeAlteration({ id, open }: Props) {
             deleted &&
             deleteFeeAlteration(deleted.id).then((res) => {
               setDeleted(undefined)
-              if (isSuccess(res)) {
+              if (res.isSuccess) {
                 loadFeeAlterations()
               } else {
                 setErrorMessage({

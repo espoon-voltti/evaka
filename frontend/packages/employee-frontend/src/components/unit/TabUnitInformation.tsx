@@ -11,7 +11,6 @@ import { ContentArea } from '~components/shared/layout/Container'
 import { FixedSpaceColumn } from '~components/shared/layout/flex-helpers'
 import UnitInformation from '~components/unit/tab-unit-information/UnitInformation'
 import { UnitContext } from '~state/unit'
-import { isFailure, isLoading, isSuccess } from '~api'
 import { SpinnerSegment } from '~components/shared/atoms/state/Spinner'
 import ErrorSegment from '~components/shared/atoms/state/ErrorSegment'
 import { requireRole, RequireRole } from '~utils/roles'
@@ -31,22 +30,22 @@ function TabUnitInformation() {
     UnitContext
   )
 
-  if (isLoading(unitInformation)) {
+  if (unitInformation.isLoading) {
     return <SpinnerSegment />
   }
 
-  if (isFailure(unitInformation)) {
+  if (unitInformation.isFailure) {
     return <ErrorSegment />
   }
 
   const renderCaretakers = () => {
-    if (!isSuccess(unitData)) return null
+    if (!unitData.isSuccess) return null
 
     const formatNumber = (num: number) =>
       parseFloat(num.toFixed(2)).toLocaleString()
 
-    const min = formatNumber(unitData.data.caretakers.unitCaretakers.minimum)
-    const max = formatNumber(unitData.data.caretakers.unitCaretakers.maximum)
+    const min = formatNumber(unitData.value.caretakers.unitCaretakers.minimum)
+    const max = formatNumber(unitData.value.caretakers.unitCaretakers.maximum)
 
     return min === max ? (
       <span>
@@ -60,7 +59,7 @@ function TabUnitInformation() {
   return (
     <FixedSpaceColumn>
       <ContentArea opaque>
-        <H2 data-qa="unit-name">{unitInformation.data.daycare.name}</H2>
+        <H2 data-qa="unit-name">{unitInformation.value.daycare.name}</H2>
         <Gap size="s" />
         <H3>{i18n.unit.occupancies}</H3>
         <Gap size="s" />
@@ -92,22 +91,22 @@ function TabUnitInformation() {
           </div>
         </DataList>
         <Gap />
-        {isLoading(unitData) && <SpinnerSegment />}
-        {isFailure(unitData) && <ErrorSegment />}
-        {isSuccess(unitData) && unitData.data.unitOccupancies && (
+        {unitData.isLoading && <SpinnerSegment />}
+        {unitData.isFailure && <ErrorSegment />}
+        {unitData.isSuccess && unitData.value.unitOccupancies && (
           <Occupancy
             filters={filters}
-            occupancies={unitData.data.unitOccupancies}
+            occupancies={unitData.value.unitOccupancies}
           />
         )}
       </ContentArea>
 
       <ContentArea opaque>
-        <UnitInformation unit={unitInformation.data.daycare} />
+        <UnitInformation unit={unitInformation.value.daycare} />
       </ContentArea>
 
       <RequireRole oneOf={['ADMIN', 'UNIT_SUPERVISOR']}>
-        <UnitAccessControl unitId={unitInformation.data.daycare.id} />
+        <UnitAccessControl unitId={unitInformation.value.daycare.id} />
       </RequireRole>
     </FixedSpaceColumn>
   )

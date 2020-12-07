@@ -10,7 +10,7 @@ import { faChild } from 'icon-set'
 import { UUID } from '~types'
 import { useTranslation } from '~state/i18n'
 import { useEffect } from 'react'
-import { isFailure, isLoading, isSuccess, Loading } from '~api'
+import { Loading } from '~api'
 import { useContext } from 'react'
 import { PersonContext } from '~state/person'
 import CollapsibleSection from 'components/shared/molecules/CollapsibleSection'
@@ -34,7 +34,7 @@ const PersonDependants = React.memo(function PersonDependants({
   const { i18n } = useTranslation()
   const { dependants, setDependants } = useContext(PersonContext)
   useEffect(() => {
-    setDependants(Loading())
+    setDependants(Loading.of())
     void getPersonDependants(id).then((response) => {
       setDependants(response)
     })
@@ -50,8 +50,8 @@ const PersonDependants = React.memo(function PersonDependants({
       : ''
 
   const renderDependants = () =>
-    isSuccess(dependants)
-      ? _.orderBy(dependants.data, ['dateOfBirth'], ['asc']).map(
+    dependants.isSuccess
+      ? _.orderBy(dependants.value, ['dateOfBirth'], ['asc']).map(
           (dependant: PersonWithChildren) => {
             return (
               <Tr key={`${dependant.id}`} data-qa="table-dependant-row">
@@ -92,8 +92,8 @@ const PersonDependants = React.memo(function PersonDependants({
           </Thead>
           <Tbody>{renderDependants()}</Tbody>
         </Table>
-        {isLoading(dependants) && <Loader />}
-        {isFailure(dependants) && <div>{i18n.common.loadingFailed}</div>}
+        {dependants.isLoading && <Loader />}
+        {dependants.isFailure && <div>{i18n.common.loadingFailed}</div>}
       </CollapsibleSection>
     </div>
   )

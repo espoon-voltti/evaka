@@ -9,7 +9,6 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 import React, { Dispatch, SetStateAction, useContext } from 'react'
 import { ContentArea } from '~components/shared/layout/Container'
 import { UnitContext } from '~state/unit'
-import { isFailure, isLoading } from '~api'
 import { SpinnerSegment } from '~components/shared/atoms/state/Spinner'
 import ErrorSegment from '~components/shared/atoms/state/ErrorSegment'
 import { UserContext } from '~state/user'
@@ -41,11 +40,11 @@ function TabGroups({ reloadUnitData, openGroups, setOpenGroups }: Props) {
     'UNIT_SUPERVISOR'
   )
 
-  if (isFailure(unitInformation) || isFailure(unitData)) {
+  if (unitInformation.isFailure || unitData.isFailure) {
     return <ErrorSegment />
   }
 
-  if (isLoading(unitInformation) || isLoading(unitData)) {
+  if (unitInformation.isLoading || unitData.isLoading) {
     return <SpinnerSegment />
   }
 
@@ -54,9 +53,9 @@ function TabGroups({ reloadUnitData, openGroups, setOpenGroups }: Props) {
       <ContentArea opaque>
         <MissingGroupPlacements
           canManageChildren={isManager}
-          groups={unitData.data.groups}
-          missingGroupPlacements={unitData.data.missingGroupPlacements}
-          backupCares={unitData.data.backupCares}
+          groups={unitData.value.groups}
+          missingGroupPlacements={unitData.value.missingGroupPlacements}
+          backupCares={unitData.value.backupCares}
           savePosition={savePosition}
           reloadUnitData={reloadUnitData}
         />
@@ -64,17 +63,17 @@ function TabGroups({ reloadUnitData, openGroups, setOpenGroups }: Props) {
 
       <ContentArea opaque>
         <Groups
-          unit={unitInformation.data.daycare}
+          unit={unitInformation.value.daycare}
           canManageGroups={isManager}
           canManageChildren={isManager}
           filters={filters}
           setFilters={setFilters}
-          groups={unitData.data.groups}
-          placements={unitData.data.placements}
-          backupCares={unitData.data.backupCares}
-          groupCaretakers={unitData.data.caretakers.groupCaretakers}
-          groupConfirmedOccupancies={unitData.data.groupOccupancies?.confirmed}
-          groupRealizedOccupancies={unitData.data.groupOccupancies?.realized}
+          groups={unitData.value.groups}
+          placements={unitData.value.placements}
+          backupCares={unitData.value.backupCares}
+          groupCaretakers={unitData.value.caretakers.groupCaretakers}
+          groupConfirmedOccupancies={unitData.value.groupOccupancies?.confirmed}
+          groupRealizedOccupancies={unitData.value.groupOccupancies?.realized}
           reloadUnitData={reloadUnitData}
           openGroups={openGroups}
           setOpenGroups={setOpenGroups}

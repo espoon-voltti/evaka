@@ -124,7 +124,7 @@ export async function getFeeDecision(
   return client
     .get<JsonOf<Response<FeeDecisionDetailed>>>(`/fee-decisions/${id}`)
     .then(({ data: { data: json } }) =>
-      Success({
+      Success.of({
         ...json,
         validFrom: LocalDate.parseIso(json.validFrom),
         validTo: LocalDate.parseNullableIso(json.validTo),
@@ -145,7 +145,7 @@ export async function getFeeDecision(
         approvedAt: json.approvedAt ? new Date(json.approvedAt) : null
       })
     )
-    .catch(Failure)
+    .catch((e) => Failure.fromError(e))
 }
 
 export async function getVoucherValueDecision(
@@ -156,7 +156,7 @@ export async function getVoucherValueDecision(
       `/value-decisions/${id}`
     )
     .then(({ data: { data: json } }) =>
-      Success({
+      Success.of({
         ...json,
         validFrom: LocalDate.parseIso(json.validFrom),
         validTo: LocalDate.parseNullableIso(json.validTo),
@@ -177,7 +177,7 @@ export async function getVoucherValueDecision(
         approvedAt: json.approvedAt ? new Date(json.approvedAt) : null
       })
     )
-    .catch(Failure)
+    .catch((e) => Failure.fromError(e))
 }
 
 export async function sendVoucherValueDecisions(ids: string[]): Promise<void> {
@@ -246,8 +246,8 @@ export async function getFeeDecisions(
         approvedAt: json.approvedAt ? new Date(json.approvedAt) : null
       }))
     }))
-    .then(Success)
-    .catch(Failure)
+    .then((v) => Success.of(v))
+    .catch((e) => Failure.fromError(e))
 }
 
 export async function getPersonFeeDecisions(
@@ -256,7 +256,7 @@ export async function getPersonFeeDecisions(
   return client
     .get<JsonOf<Response<FeeDecision[]>>>(`/fee-decisions/head-of-family/${id}`)
     .then((res) =>
-      Success(
+      Success.of(
         res.data.data.map((json) => ({
           ...json,
           validFrom: LocalDate.parseIso(json.validFrom),
@@ -266,7 +266,7 @@ export async function getPersonFeeDecisions(
         }))
       )
     )
-    .catch(Failure)
+    .catch((e) => Failure.fromError(e))
 }
 
 export async function getVoucherValueDecisions(
@@ -301,8 +301,8 @@ export async function getVoucherValueDecisions(
         approvedAt: json.approvedAt ? new Date(json.approvedAt) : null
       }))
     }))
-    .then(Success)
-    .catch(Failure)
+    .then((v) => Success.of(v))
+    .catch((e) => Failure.fromError(e))
 }
 
 export async function getPersonInvoices(
@@ -311,7 +311,7 @@ export async function getPersonInvoices(
   return client
     .get<JsonOf<Response<Invoice[]>>>(`/invoices/head-of-family/${id}`)
     .then((res) =>
-      Success(
+      Success.of(
         res.data.data.map((json) => ({
           ...json,
           ...deserializePeriodic(json),
@@ -319,7 +319,7 @@ export async function getPersonInvoices(
         }))
       )
     )
-    .catch(Failure)
+    .catch((e) => Failure.fromError(e))
 }
 
 export async function getInvoice(id: string): Promise<Result<InvoiceDetailed>> {
@@ -338,8 +338,8 @@ export async function getInvoice(id: string): Promise<Result<InvoiceDetailed>> {
       })),
       sentAt: json.sentAt ? new Date(json.sentAt) : null
     }))
-    .then(Success)
-    .catch(Failure)
+    .then((v) => Success.of(v))
+    .catch((e) => Failure.fromError(e))
 }
 
 export async function getInvoices(
@@ -367,8 +367,8 @@ export async function getInvoices(
         }))
       }))
     }))
-    .then(Success)
-    .catch(Failure)
+    .then((v) => Success.of(v))
+    .catch((e) => Failure.fromError(e))
 }
 
 export async function updateInvoice(invoice: InvoiceDetailed): Promise<void> {
@@ -380,8 +380,8 @@ export async function updateInvoice(invoice: InvoiceDetailed): Promise<void> {
 export async function getInvoiceCodes(): Promise<Result<InvoiceCodes>> {
   return client
     .get<JsonOf<Response<InvoiceCodes>>>('/invoices/codes')
-    .then((res) => Success(res.data.data))
-    .catch(Failure)
+    .then((res) => Success.of(res.data.data))
+    .catch((e) => Failure.fromError(e))
 }
 
 export async function generateFeeDecisions(
@@ -439,7 +439,7 @@ export async function getAbsencesByChild(
       }
     )
     .then((res) =>
-      Success(
+      Success.of(
         Object.fromEntries(
           Object.entries(res.data.data.absences).map(([key, absences]) => [
             key,
@@ -448,7 +448,7 @@ export async function getAbsencesByChild(
         )
       )
     )
-    .catch(Failure)
+    .catch((e) => Failure.fromError(e))
 }
 
 export async function createRetroactiveDecisions(

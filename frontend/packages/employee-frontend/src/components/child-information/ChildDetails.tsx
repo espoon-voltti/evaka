@@ -29,7 +29,7 @@ const ChildDetails = React.memo(function ChildDetails({ id }: Props) {
         <PersonDetails
           personResult={person}
           isChild={true}
-          onUpdateComplete={(p) => setPerson(Success(p))}
+          onUpdateComplete={(p) => setPerson(Success.of(p))}
         />
         <div className="additional-information">
           <AdditionalInformation id={id} />

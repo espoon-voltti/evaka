@@ -13,7 +13,7 @@ import Loader from '~components/shared/atoms/Loader'
 import Title from '~components/shared/atoms/Title'
 import { Th, Tr, Td, Thead, Tbody } from '~components/shared/layout/Table'
 import { useTranslation } from '~state/i18n'
-import { isFailure, isLoading, isSuccess, Loading, Result } from '~api'
+import { Loading, Result } from '~api'
 import { VoucherServiceProviderUnitRow } from '~types/reports'
 import {
   getVoucherServiceProviderUnitReport,
@@ -44,7 +44,7 @@ function VoucherServiceProviderUnit() {
   const { i18n } = useTranslation()
   const { unitId } = useParams<{ unitId: UUID }>()
   const [rows, setRows] = useState<Result<VoucherServiceProviderUnitRow[]>>(
-    Loading()
+    Loading.of()
   )
   const [unitName, setUnitName] = useState<string>('')
 
@@ -56,12 +56,12 @@ function VoucherServiceProviderUnit() {
   })
 
   useEffect(() => {
-    setRows(Loading())
+    setRows(Loading.of())
     void getVoucherServiceProviderUnitReport(unitId, filters).then(
       (rowsResult) => {
         setRows(rowsResult)
-        if (isSuccess(rowsResult) && rowsResult.data.length > 0) {
-          setUnitName(rowsResult.data[0].unitName)
+        if (rowsResult.isSuccess && rowsResult.value.length > 0) {
+          setUnitName(rowsResult.value[0].unitName)
         }
       }
     )
@@ -84,7 +84,7 @@ function VoucherServiceProviderUnit() {
     <Container>
       <ReturnButton />
       <ContentArea opaque>
-        {isSuccess(rows) && <Title size={1}>{unitName}</Title>}
+        {rows.isSuccess && <Title size={1}>{unitName}</Title>}
         <Title size={2}>{i18n.reports.voucherServiceProviderUnit.title}</Title>
         <FilterRow>
           <FilterLabel>
@@ -126,12 +126,12 @@ function VoucherServiceProviderUnit() {
           </Wrapper>
         </FilterRow>
 
-        {isLoading(rows) && <Loader />}
-        {isFailure(rows) && <span>{i18n.common.loadingFailed}</span>}
-        {isSuccess(rows) && (
+        {rows.isLoading && <Loader />}
+        {rows.isFailure && <span>{i18n.common.loadingFailed}</span>}
+        {rows.isSuccess && (
           <>
             <ReportDownload
-              data={rows.data}
+              data={rows.value}
               headers={[
                 {
                   label: i18n.reports.voucherServiceProviderUnit.childFirstName,
@@ -204,7 +204,7 @@ function VoucherServiceProviderUnit() {
                 </Tr>
               </Thead>
               <Tbody>
-                {rows.data.map((row: VoucherServiceProviderUnitRow) => (
+                {rows.value.map((row: VoucherServiceProviderUnitRow) => (
                   <Tr key={`${row.childId}`}>
                     <Td>
                       <Link to={`/child-information/${row.childId}`}>

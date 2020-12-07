@@ -6,7 +6,6 @@ import React, { useContext } from 'react'
 import * as _ from 'lodash'
 
 import { useTranslation } from '~/state/i18n'
-import { isFailure, isLoading } from '~/api'
 import { ChildContext, ChildState } from '~/state/child'
 import { faUser } from 'icon-set'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'components/shared/layout/Table'
@@ -26,9 +25,9 @@ const FridgeParents = React.memo(function FridgeParents({ open }: Props) {
   const { parentships } = useContext<ChildState>(ChildContext)
 
   function renderFridgeParents() {
-    if (isLoading(parentships)) {
+    if (parentships.isLoading) {
       return <Loader />
-    } else if (isFailure(parentships)) {
+    } else if (parentships.isFailure) {
       return <div>{i18n.common.loadingFailed}</div>
     }
 
@@ -44,7 +43,7 @@ const FridgeParents = React.memo(function FridgeParents({ open }: Props) {
           </Tr>
         </Thead>
         <Tbody>
-          {_.orderBy(parentships.data, ['startDate'], ['desc']).map(
+          {_.orderBy(parentships.value, ['startDate'], ['desc']).map(
             (parentship: Parentship) => (
               <Tr key={parentship.id}>
                 <Td>

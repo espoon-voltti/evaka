@@ -12,7 +12,7 @@ import {
   getOrCreatePersonBySsn,
   getPersonDetails
 } from '~api/person'
-import { isLoading, isSuccess, Result, Success } from '~api'
+import { Result, Success } from '~api'
 import { formatName } from '~utils'
 import { useDebounce } from '~utils/useDebounce'
 import { isSsnValid } from '~utils/validation/validations'
@@ -47,14 +47,12 @@ const customComponents = (i18n: Translations) => ({
 const search = async (q: string): Promise<Result<PersonDetails[]>> => {
   if (isSsnValid(q.toUpperCase())) {
     return await getOrCreatePersonBySsn(q.toUpperCase(), false).then((res) =>
-      isSuccess(res) ? Success([res.data]) : res
+      res.map((r) => [r])
     )
   }
 
   if (q.length === 36) {
-    return await getPersonDetails(q).then((res) =>
-      isSuccess(res) ? Success([res.data]) : res
-    )
+    return await getPersonDetails(q).then((res) => res.map((r) => [r]))
   }
 
   return await findByNameOrAddress(q, 'last_name,first_name', 'ASC')
@@ -75,7 +73,9 @@ function PersonSearch({
 }: Props) {
   const { i18n } = useTranslation()
   const [query, setQuery] = useState('')
-  const [persons, setPersons] = useState<Result<PersonDetails[]>>(Success([]))
+  const [persons, setPersons] = useState<Result<PersonDetails[]>>(
+    Success.of([])
+  )
   const [selectedPerson, setSelectedPerson] = useState<PersonDetails>()
   const debouncedQuery = useDebounce(query, 500)
 
@@ -100,7 +100,7 @@ function PersonSearch({
     )
 
   const options = useMemo(
-    () => (isSuccess(persons) ? filterPeople(persons.data) : []),
+    () => persons.map((ps) => filterPeople(ps)).getOrElse([]),
     [persons]
   )
 
@@ -120,7 +120,7 @@ function PersonSearch({
         onChange={(option) =>
           void setSelectedPerson(option && 'id' in option ? option : undefined)
         }
-        isLoading={isLoading(persons) || (!!query && query !== debouncedQuery)}
+        isLoading={persons.isLoading || (!!query && query !== debouncedQuery)}
         loadingMessage={() => i18n.common.loading}
         noOptionsMessage={() => i18n.common.noResults}
         components={customComponents(i18n)}

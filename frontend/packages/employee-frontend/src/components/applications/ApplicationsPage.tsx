@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useCallback, useEffect, useState, useContext } from 'react'
-import { isFailure, isLoading, isSuccess, Result } from '~/api'
+import { Result } from '~/api'
 import { getApplications } from '~api/applications'
 import {
   ApplicationsSearchResponse,
@@ -59,8 +59,8 @@ function ApplicationsPage() {
       setApplicationsResult(result)
 
       // ensure current page is within range
-      if (isSuccess(result) && result.data.pages < page) {
-        setPage(result.data.pages)
+      if (result.isSuccess && result.value.pages < page) {
+        setPage(result.value.pages)
       }
     },
     [setApplicationsResult]
@@ -154,7 +154,7 @@ function ApplicationsPage() {
         </ContentArea>
         <Gap size={'XL'} />
         <ContentArea opaque paddingVertical={'zero'} paddingHorozontal={'zero'}>
-          {isFailure(applicationsResult) && (
+          {applicationsResult.isFailure && (
             <PaddedDiv>
               <H1>
                 {status === 'ALL'
@@ -165,7 +165,7 @@ function ApplicationsPage() {
             </PaddedDiv>
           )}
 
-          {isLoading(applicationsResult) && (
+          {applicationsResult.isLoading && (
             <PaddedDiv>
               <H1>
                 {status === 'ALL'
@@ -176,9 +176,9 @@ function ApplicationsPage() {
             </PaddedDiv>
           )}
 
-          {isSuccess(applicationsResult) && (
+          {applicationsResult.isSuccess && (
             <ApplicationsList
-              applicationsResult={applicationsResult.data}
+              applicationsResult={applicationsResult.value}
               reloadApplications={loadApplications}
               currentPage={page}
               setPage={setPage}

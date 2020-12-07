@@ -17,6 +17,6 @@ export async function getEmployees(): Promise<Result<Employee[]>> {
         updated: new Date(data.updated)
       }))
     )
-    .then(Success)
-    .catch(Failure)
+    .then((v) => Success.of(v))
+    .catch((e) => Failure.fromError(e))
 }

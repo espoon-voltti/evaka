@@ -19,7 +19,7 @@ export interface UnitsState {
 }
 
 const defaultState: UnitsState = {
-  units: Loading(),
+  units: Loading.of(),
   setUnits: () => undefined,
   filter: '',
   setFilter: () => undefined,

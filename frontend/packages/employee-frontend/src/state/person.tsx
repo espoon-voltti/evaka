@@ -36,15 +36,15 @@ export interface PersonState {
 }
 
 const defaultState: PersonState = {
-  person: Loading(),
-  parentships: Loading(),
-  partnerships: Loading(),
-  incomes: Loading(),
-  applications: Loading(),
-  dependants: Loading(),
-  decisions: Loading(),
-  family: Loading(),
-  invoices: Loading(),
+  person: Loading.of(),
+  parentships: Loading.of(),
+  partnerships: Loading.of(),
+  incomes: Loading.of(),
+  applications: Loading.of(),
+  dependants: Loading.of(),
+  decisions: Loading.of(),
+  family: Loading.of(),
+  invoices: Loading.of(),
   setPerson: () => undefined,
   setParentships: () => undefined,
   setPartnerships: () => undefined,
@@ -91,7 +91,7 @@ export const PersonContextProvider = React.memo(function PersonContextProvider({
   )
 
   const reloadFamily = (id: string) => {
-    setFamily(Loading())
+    setFamily(Loading.of())
     void getFamilyOverview(id).then(setFamily)
   }
 

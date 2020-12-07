@@ -39,8 +39,8 @@ function convertUnitJson(unit: JsonOf<Unit>): Unit {
 export async function getDaycares(): Promise<Result<Unit[]>> {
   return client
     .get<JsonOf<Unit[]>>('/daycares')
-    .then(({ data }) => Success(data.map(convertUnitJson)))
-    .catch(Failure)
+    .then(({ data }) => Success.of(data.map(convertUnitJson)))
+    .catch((e) => Failure.fromError(e))
 }
 
 export interface UnitResponse {
@@ -52,9 +52,9 @@ export async function getDaycare(id: UUID): Promise<Result<UnitResponse>> {
   return client
     .get<JsonOf<UnitResponse>>(`/daycares/${id}`)
     .then(({ data }) =>
-      Success({ ...data, daycare: convertUnitJson(data.daycare) })
+      Success.of({ ...data, daycare: convertUnitJson(data.daycare) })
     )
-    .catch(Failure)
+    .catch((e) => Failure.fromError(e))
 }
 
 export type UnitOccupancies = {
@@ -135,7 +135,7 @@ export async function getUnitData(
       params: { from: from.formatIso(), to: to.formatIso() }
     })
 
-    return Success({
+    return Success.of({
       ...response.data,
       groups: response.data.groups.map(mapGroupJson),
       placements: response.data.placements.map(mapPlacementJson),
@@ -157,7 +157,7 @@ export async function getUnitData(
     })
   } catch (e) {
     console.error(e)
-    return Failure(e)
+    return Failure.fromError(e)
   }
 }
 
@@ -291,8 +291,8 @@ export async function createPlacement(
   }
   return client
     .post<JsonOf<UUID>>(url, data)
-    .then((res) => Success(res.data || ''))
-    .catch(Failure)
+    .then((res) => Success.of(res.data || ''))
+    .catch((e) => Failure.fromError(e))
 }
 
 export async function transferGroup(
@@ -308,8 +308,8 @@ export async function transferGroup(
   }
   return client
     .post(url, data)
-    .then(() => Success(null))
-    .catch(Failure)
+    .then(() => Success.of(null))
+    .catch((e) => Failure.fromError(e))
 }
 
 export async function createGroup(
@@ -346,8 +346,8 @@ export async function deletePlacement(
   const url = `/placements/${daycarePlacementId}/group-placements/${groupPlacementId}`
   return client
     .delete(url)
-    .then(() => Success(null))
-    .catch(Failure)
+    .then(() => Success.of(null))
+    .catch((e) => Failure.fromError(e))
 }
 
 export type OccupancyResponse = {
@@ -387,8 +387,8 @@ export async function getOccupancyRates(
       }
     })
     .then(({ data }) => mapOccupancyResponse(data))
-    .then(Success)
-    .catch(Failure)
+    .then((v) => Success.of(v))
+    .catch((e) => Failure.fromError(e))
 }
 
 export interface DaycareAclRow {
@@ -412,8 +412,8 @@ export async function getDaycareAclRows(
 ): Promise<Result<DaycareAclRow[]>> {
   return client
     .get<JsonOf<DaycareAclResponse>>(`/daycares/${unitId}/acl`)
-    .then(({ data }) => Success(data.rows))
-    .catch(Failure)
+    .then(({ data }) => Success.of(data.rows))
+    .catch((e) => Failure.fromError(e))
 }
 
 export async function addDaycareAclSupervisor(
@@ -422,8 +422,8 @@ export async function addDaycareAclSupervisor(
 ): Promise<Result<void>> {
   return client
     .put(`/daycares/${unitId}/supervisors/${personId}`)
-    .then(() => Success(undefined))
-    .catch(Failure)
+    .then(() => Success.of(undefined))
+    .catch((e) => Failure.fromError(e))
 }
 
 export async function removeDaycareAclSupervisor(
@@ -432,8 +432,8 @@ export async function removeDaycareAclSupervisor(
 ): Promise<Result<void>> {
   return client
     .delete(`/daycares/${unitId}/supervisors/${personId}`)
-    .then(() => Success(undefined))
-    .catch(Failure)
+    .then(() => Success.of(undefined))
+    .catch((e) => Failure.fromError(e))
 }
 
 export async function addDaycareAclStaff(
@@ -442,8 +442,8 @@ export async function addDaycareAclStaff(
 ): Promise<Result<void>> {
   return client
     .put(`/daycares/${unitId}/staff/${personId}`)
-    .then(() => Success(undefined))
-    .catch(Failure)
+    .then(() => Success.of(undefined))
+    .catch((e) => Failure.fromError(e))
 }
 
 export async function removeDaycareAclStaff(
@@ -452,8 +452,8 @@ export async function removeDaycareAclStaff(
 ): Promise<Result<void>> {
   return client
     .delete(`/daycares/${unitId}/staff/${personId}`)
-    .then(() => Success(undefined))
-    .catch(Failure)
+    .then(() => Success.of(undefined))
+    .catch((e) => Failure.fromError(e))
 }
 
 export async function deleteMobileDevice(
@@ -461,8 +461,8 @@ export async function deleteMobileDevice(
 ): Promise<Result<void>> {
   return client
     .delete(`/mobile-devices/${mobileId}`)
-    .then(() => Success(undefined))
-    .catch(Failure)
+    .then(() => Success.of(undefined))
+    .catch((e) => Failure.fromError(e))
 }
 
 type PairingStatus =
@@ -495,8 +495,8 @@ export async function postPairing(
         expires: new Date(pairingResponse.expires)
       }
     })
-    .then(Success)
-    .catch(Failure)
+    .then((v) => Success.of(v))
+    .catch((e) => Failure.fromError(e))
 }
 
 export async function postPairingChallenge(
@@ -513,8 +513,8 @@ export async function postPairingChallenge(
         expires: new Date(pairingResponse.expires)
       }
     })
-    .then(Success)
-    .catch(Failure)
+    .then((v) => Success.of(v))
+    .catch((e) => Failure.fromError(e))
 }
 
 export async function postPairingResponse(
@@ -534,8 +534,8 @@ export async function postPairingResponse(
         expires: new Date(pairingResponse.expires)
       }
     })
-    .then(Success)
-    .catch(Failure)
+    .then((v) => Success.of(v))
+    .catch((e) => Failure.fromError(e))
 }
 
 export async function putMobileDeviceName(
@@ -547,8 +547,8 @@ export async function putMobileDeviceName(
       name
     })
     .then((res) => res.data)
-    .then(Success)
-    .catch(Failure)
+    .then((v) => Success.of(v))
+    .catch((e) => Failure.fromError(e))
 }
 
 export interface MobileDevice {
@@ -566,8 +566,8 @@ export async function getMobileDevices(
       }
     })
     .then((res) => res.data)
-    .then(Success)
-    .catch(Failure)
+    .then((v) => Success.of(v))
+    .catch((e) => Failure.fromError(e))
 }
 
 interface PairingStatusResponse {
@@ -579,8 +579,8 @@ export async function getPairingStatus(
 ): Promise<Result<PairingStatusResponse>> {
   return client
     .get<JsonOf<PairingStatusResponse>>(`/public/pairings/${pairingId}/status`)
-    .then(({ data }) => Success(data))
-    .catch(Failure)
+    .then(({ data }) => Success.of(data))
+    .catch((e) => Failure.fromError(e))
 }
 
 export async function authMobile(
@@ -595,8 +595,8 @@ export async function authMobile(
       responseKey
     })
     .then((res) => res.data)
-    .then(Success)
-    .catch(Failure)
+    .then((v) => Success.of(v))
+    .catch((e) => Failure.fromError(e))
 }
 
 export interface DaycareFields {
@@ -641,8 +641,8 @@ export async function createDaycare(
 ): Promise<Result<UUID>> {
   return client
     .put<JsonOf<CreateDaycareResponse>>('/daycares', fields)
-    .then(({ data }) => Success(data.id))
-    .catch(Failure)
+    .then(({ data }) => Success.of(data.id))
+    .catch((e) => Failure.fromError(e))
 }
 
 export async function updateDaycare(
@@ -651,6 +651,6 @@ export async function updateDaycare(
 ): Promise<Result<Unit>> {
   return client
     .put<JsonOf<Unit>>(`/daycares/${encodeURIComponent(id)}`, fields)
-    .then(({ data }) => Success(convertUnitJson(data)))
-    .catch(Failure)
+    .then(({ data }) => Success.of(convertUnitJson(data)))
+    .catch((e) => Failure.fromError(e))
 }

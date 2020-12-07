@@ -13,7 +13,7 @@ import Select, { SelectOptionProps } from '../common/Select'
 import DateRangeInput from '../common/DateRangeInput'
 import EuroInput from '../common/EuroInput'
 import { useTranslation } from '../../state/i18n'
-import { isSuccess, Result } from '../../api'
+import { Result } from '../../api'
 import { Product, InvoiceCodes } from '../../types/invoicing'
 import { formatCents, parseCents } from '../../utils/money'
 import IconButton from '~components/shared/atoms/buttons/IconButton'
@@ -57,24 +57,28 @@ function InvoiceRowSectionRow({
 }: Props) {
   const { i18n } = useTranslation()
 
-  const productOpts: SelectOptionProps[] = isSuccess(invoiceCodes)
-    ? invoiceCodes.data.products.map((product) => ({
+  const productOpts: SelectOptionProps[] = invoiceCodes
+    .map((codes) =>
+      codes.products.map((product) => ({
         value: product,
         label: i18n.product[product]
       }))
-    : []
+    )
+    .getOrElse([])
 
-  const subCostCenterOpts: SelectOptionProps[] = isSuccess(invoiceCodes)
-    ? invoiceCodes.data.subCostCenters.map((subCostCenter) => ({
+  const subCostCenterOpts: SelectOptionProps[] = invoiceCodes
+    .map((codes) =>
+      codes.subCostCenters.map((subCostCenter) => ({
         value: subCostCenter,
         label: subCostCenter
       }))
-    : []
+    )
+    .getOrElse([])
 
   const costCenterValueIsValid =
     costCenter === undefined ||
-    !isSuccess(invoiceCodes) ||
-    invoiceCodes.data.costCenters.includes(costCenter)
+    !invoiceCodes.isSuccess ||
+    invoiceCodes.value.costCenters.includes(costCenter)
 
   return (
     <Tr data-qa="invoice-details-invoice-row">

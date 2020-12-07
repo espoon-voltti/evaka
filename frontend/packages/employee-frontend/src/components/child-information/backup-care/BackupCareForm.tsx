@@ -17,7 +17,7 @@ import { UIContext } from '~state/ui'
 import { ChildContext } from '~state'
 import { DateRange } from '~utils/date'
 import Button from '~components/shared/atoms/buttons/Button'
-import { isLoading, isSuccess, Loading, Result } from '~api'
+import { Loading, Result } from '~api'
 import {
   isDateRangeInverted,
   isDateRangeOverlappingWithExisting
@@ -76,7 +76,7 @@ export default function BackupCareForm({
   const { uiMode, clearUiMode } = useContext(UIContext)
   const { backupCares, setBackupCares } = useContext(ChildContext)
 
-  const [units, setUnits] = useState<Result<Unit[]>>(Loading())
+  const [units, setUnits] = useState<Result<Unit[]>>(Loading.of())
 
   useEffect(() => {
     void getUnits([], 'DAYCARE').then(setUnits)
@@ -95,14 +95,16 @@ export default function BackupCareForm({
 
   const evaluateFormErrors = (form: FormState) => {
     const errors: string[] = []
-    const existing: DateRange[] = isSuccess(backupCares)
-      ? backupCares.data
+    const existing: DateRange[] = backupCares
+      .map((bcs) =>
+        bcs
           .filter((it) => backupCare == undefined || it.id !== backupCare.id)
           .map(({ period }) => ({
             startDate: period.start,
             endDate: period.end
           }))
-      : []
+      )
+      .getOrElse([])
 
     if (isDateRangeInverted(form))
       errors.push(i18n.validationError.invertedDateRange)
@@ -157,12 +159,14 @@ export default function BackupCareForm({
 
   const options = useMemo(
     () =>
-      isSuccess(units)
-        ? _.orderBy(units.data, (x) => x.name).map(({ id, name }) => ({
+      units
+        .map((us) =>
+          _.orderBy(us, (x) => x.name).map(({ id, name }) => ({
             label: name,
             value: id
           }))
-        : [],
+        )
+        .getOrElse([]),
     [units]
   )
 
@@ -199,7 +203,7 @@ export default function BackupCareForm({
                   }
                   filterOption={createFilter({ ignoreAccents: false })}
                   options={options}
-                  isLoading={isLoading(units)}
+                  isLoading={units.isLoading}
                   loadingMessage={() => i18n.common.loading}
                   noOptionsMessage={() => i18n.common.loadingFailed}
                 />

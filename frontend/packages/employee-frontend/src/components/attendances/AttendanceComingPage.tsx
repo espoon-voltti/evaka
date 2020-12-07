@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 import React, { Fragment } from 'react'
 
-import { isFailure, isLoading, isSuccess, Result } from '~api'
+import { Result } from '~api'
 import { AttendanceResponse } from '~api/attendances'
 import Loader from '~components/shared/atoms/Loader'
 import { useTranslation } from '~state/i18n'
@@ -20,11 +20,11 @@ export default React.memo(function AttendanceComingPage({
 
   return (
     <Fragment>
-      {isFailure(attendanceResponse) && <div>{i18n.common.loadingFailed}</div>}
-      {isLoading(attendanceResponse) && <Loader />}
-      {isSuccess(attendanceResponse) && (
+      {attendanceResponse.isFailure && <div>{i18n.common.loadingFailed}</div>}
+      {attendanceResponse.isLoading && <Loader />}
+      {attendanceResponse.isSuccess && (
         <AttendanceList
-          attendanceChildren={attendanceResponse.data.children}
+          attendanceChildren={attendanceResponse.value.children}
           type={'COMING'}
         />
       )}

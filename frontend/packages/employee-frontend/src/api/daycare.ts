@@ -21,15 +21,15 @@ export async function getUnits(
         areas.length > 0 ? `&area=${areas.join(',')}` : ''
       }`
     )
-    .then((res) => Success(res.data))
-    .catch((e) => Failure(e))
+    .then((res) => Success.of(res.data))
+    .catch((e) => Failure.fromError(e))
 }
 
 export async function getAreas(): Promise<Result<CareArea[]>> {
   return client
     .get<JsonOf<CareArea[]>>('/areas')
-    .then((res) => Success(res.data))
-    .catch((e) => Failure(e))
+    .then((res) => Success.of(res.data))
+    .catch((e) => Failure.fromError(e))
 }
 
 type DetailedUnit = {
@@ -46,8 +46,8 @@ export function getApplicationUnits(
       params: { type: asUnitType(type), date: date.formatIso() }
     })
     .then((res) => res.data)
-    .then((units) => Success(units))
-    .catch((e) => Failure(e))
+    .then((units) => Success.of(units))
+    .catch((e) => Failure.fromError(e))
 }
 
 const asUnitType = (

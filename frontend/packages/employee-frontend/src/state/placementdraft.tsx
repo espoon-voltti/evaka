@@ -18,7 +18,7 @@ export interface PlacementDraftState {
 }
 
 const defaultPlacementDraftState: PlacementDraftState = {
-  placementDraft: Loading(),
+  placementDraft: Loading.of(),
   setPlacementDraft: () => undefined
 }
 
@@ -58,7 +58,7 @@ export interface UnitsState {
 }
 
 const defaultUnitsState: UnitsState = {
-  units: Loading(),
+  units: Loading.of(),
   setUnits: () => undefined
 }
 

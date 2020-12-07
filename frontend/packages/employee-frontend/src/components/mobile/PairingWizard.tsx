@@ -7,7 +7,7 @@ import { useState } from 'react'
 import MetaTags from 'react-meta-tags'
 import styled from 'styled-components'
 
-import { Result, Loading, isSuccess, isFailure } from '~api'
+import { Result, Loading } from '~api'
 import {
   authMobile,
   getPairingStatus,
@@ -87,19 +87,19 @@ export default React.memo(function ParingWizard() {
   const [challengeKey, setChallengeKey] = useState<string>('')
   const [pairingResponse, setPairingResponse] = useState<
     Result<PairingResponse>
-  >(Loading())
+  >(Loading.of())
 
   useEffect(() => {
     const polling = setInterval(() => {
-      if (isSuccess(pairingResponse)) {
-        void getPairingStatus(pairingResponse.data.id).then((status) => {
-          if (isSuccess(status)) {
-            if (status.data.status === 'READY') {
-              if (pairingResponse.data.responseKey) {
+      if (pairingResponse.isSuccess) {
+        void getPairingStatus(pairingResponse.value.id).then((status) => {
+          if (status.isSuccess) {
+            if (status.value.status === 'READY') {
+              if (pairingResponse.value.responseKey) {
                 void authMobile(
-                  pairingResponse.data.id,
-                  pairingResponse.data.challengeKey,
-                  pairingResponse.data.responseKey
+                  pairingResponse.value.id,
+                  pairingResponse.value.challengeKey,
+                  pairingResponse.value.responseKey
                 )
               }
 
@@ -152,7 +152,7 @@ export default React.memo(function ParingWizard() {
           </Fragment>
         )}
 
-        {phase === 2 && isSuccess(pairingResponse) ? (
+        {phase === 2 && pairingResponse.isSuccess ? (
           <Fragment>
             <CenteredColumn>
               <Img src={EvakaLogo} />
@@ -161,16 +161,16 @@ export default React.memo(function ParingWizard() {
                 <P centered>{i18n.mobile.wizard.text2}</P>
               </section>
               <ResponseKey data-qa="response-key">
-                {pairingResponse.data.responseKey}
+                {pairingResponse.value.responseKey}
               </ResponseKey>
             </CenteredColumn>
           </Fragment>
         ) : (
           phase === 2 &&
-          isFailure(pairingResponse) && <div>{i18n.common.loadingFailed}</div>
+          pairingResponse.isFailure && <div>{i18n.common.loadingFailed}</div>
         )}
 
-        {phase === 3 && isSuccess(pairingResponse) && (
+        {phase === 3 && pairingResponse.isSuccess && (
           <FullHeightContainer spaced>
             <CenteredColumn>
               <Img src={EvakaLogo} />
@@ -184,7 +184,7 @@ export default React.memo(function ParingWizard() {
             </CenteredColumn>
             <Bottom>
               <WideLinkButton
-                href={`/employee/units/${pairingResponse.data.unitId}/groupselector`}
+                href={`/employee/units/${pairingResponse.value.unitId}/groupselector`}
                 data-qa="unit-page-link"
               >
                 {i18n.mobile.actions.START.toUpperCase()}

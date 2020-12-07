@@ -20,7 +20,6 @@ import {
   formHasErrors,
   isDateRangeInverted
 } from '~utils/validation/validations'
-import { isFailure, isSuccess } from '~api'
 import LabelValueList from '~components/common/LabelValueList'
 import { ASSISTANCE_BASIS_LIST } from '~constants'
 import FormActions from '~components/common/FormActions'
@@ -140,11 +139,13 @@ function AssistanceNeedForm(props: Props) {
   const [autoCutWarning, setAutoCutWarning] = useState<boolean>(false)
 
   const getExistingAssistanceNeedRanges = (): DateRange[] =>
-    isSuccess(assistanceNeeds)
-      ? assistanceNeeds.data
+    assistanceNeeds
+      .map((needs) =>
+        needs
           .filter((sn) => isCreate(props) || sn.id != props.assistanceNeed.id)
           .map(({ startDate, endDate }) => ({ startDate, endDate }))
-      : []
+      )
+      .getOrElse([])
 
   const checkSoftConflict = (): boolean => {
     if (isDateRangeInverted(form)) return false
@@ -200,11 +201,11 @@ function AssistanceNeedForm(props: Props) {
       : updateAssistanceNeed(props.assistanceNeed.id, data)
 
     void apiCall.then((res) => {
-      if (isSuccess(res)) {
+      if (res.isSuccess) {
         clearUiMode()
         props.onReload()
-      } else if (isFailure(res)) {
-        if (res.error.statusCode == 409) {
+      } else if (res.isFailure) {
+        if (res.statusCode == 409) {
           setFormErrors({
             ...formErrors,
             dateRange: {

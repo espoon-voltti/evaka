@@ -8,7 +8,7 @@ import { useTranslation } from '~state/i18n'
 import { UIContext } from '~state/ui'
 import FormModal from '~components/common/FormModal'
 import Section from '~components/shared/layout/Section'
-import { isFailure, Result } from '~api'
+import { Result } from '~api'
 import { faExchange } from 'icon-set'
 import { transferGroup } from '~api/unit'
 import { UUID } from '~types'
@@ -94,7 +94,7 @@ export default React.memo(function GroupTransferModal({
       form.groupId,
       form.startDate
     ).then((res: Result<null>) => {
-      if (isFailure(res)) {
+      if (res.isFailure) {
         clearUiMode()
         setErrorMessage({
           type: 'error',

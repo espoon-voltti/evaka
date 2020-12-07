@@ -4,7 +4,7 @@
 
 import React, { useContext, useEffect, useRef } from 'react'
 import { useTranslation } from '~/state/i18n'
-import { isFailure, isLoading, Loading } from '~/api'
+import { Loading } from '~/api'
 import { ChildContext } from '~/state/child'
 import { faClock } from 'icon-set'
 import Loader from '~components/shared/atoms/Loader'
@@ -33,26 +33,26 @@ const ServiceNeed = React.memo(function ServiceNeed({ id, open }: Props) {
   const refSectionTop = useRef(null)
 
   const loadData = () => {
-    setServiceNeeds(Loading())
+    setServiceNeeds(Loading.of())
     void getServiceNeeds(id).then(setServiceNeeds)
   }
 
   // FIXME: ServiceNeed shouldn't know about placements' dependency on it
   const reload = () => {
     loadData()
-    setPlacements(Loading())
+    setPlacements(Loading.of())
     void getPlacements(id).then(setPlacements)
   }
 
   useEffect(loadData, [id, setServiceNeeds])
 
   function renderServiceNeeds() {
-    if (isLoading(serviceNeeds)) {
+    if (serviceNeeds.isLoading) {
       return <Loader />
-    } else if (isFailure(serviceNeeds)) {
+    } else if (serviceNeeds.isFailure) {
       return <div>{i18n.common.loadingFailed}</div>
     } else {
-      return serviceNeeds.data.map((serviceNeed) => (
+      return serviceNeeds.value.map((serviceNeed) => (
         <div key={serviceNeed.id} data-qa="service-need">
           <ServiceNeedRow serviceNeed={serviceNeed} onReload={reload} />
         </div>

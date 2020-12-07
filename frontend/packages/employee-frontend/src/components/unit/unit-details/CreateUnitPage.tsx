@@ -3,8 +3,9 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useEffect, useState } from 'react'
+import { useHistory } from 'react-router-dom'
 import UnitEditor from '~components/unit/unit-details/UnitEditor'
-import { isFailure, isLoading, isSuccess, Loading, Result, Success } from '~api'
+import { Loading, Result } from '~api'
 import { CareArea } from '~types/unit'
 import { getAreas } from '~api/daycare'
 import { Container, ContentArea } from '~components/shared/layout/Container'
@@ -13,8 +14,9 @@ import { createDaycare, DaycareFields } from '~api/unit'
 import { useTranslation } from '~state/i18n'
 
 export default function CreateUnitPage(): JSX.Element {
+  const history = useHistory()
   const { i18n } = useTranslation()
-  const [areas, setAreas] = useState<Result<CareArea[]>>(Loading)
+  const [areas, setAreas] = useState<Result<CareArea[]>>(Loading.of())
   const [submitState, setSubmitState] = useState<Result<void> | undefined>(
     undefined
   )
@@ -24,13 +26,11 @@ export default function CreateUnitPage(): JSX.Element {
   }, [])
 
   const onSubmit = (fields: DaycareFields) => {
-    setSubmitState(Loading)
+    setSubmitState(Loading.of())
     void createDaycare(fields).then((result) => {
-      if (isSuccess(result)) {
-        setSubmitState(Success(undefined))
-        window.location.href = `/employee/units/${result.data}/details`
-      } else {
-        setSubmitState(result)
+      setSubmitState(result.map(() => undefined))
+      if (result.isSuccess) {
+        history.push(`/employee/units/${result.value}/details`)
       }
     })
   }
@@ -38,12 +38,12 @@ export default function CreateUnitPage(): JSX.Element {
   return (
     <Container>
       <ContentArea opaque>
-        {isLoading(areas) && <Loader />}
-        {isFailure(areas) && <div>{i18n.common.error.unknown}</div>}
-        {isSuccess(areas) && (
+        {areas.isLoading && <Loader />}
+        {areas.isFailure && <div>{i18n.common.error.unknown}</div>}
+        {areas.isSuccess && (
           <UnitEditor
             editable={true}
-            areas={areas.data}
+            areas={areas.value}
             unit={undefined}
             submit={submitState}
             onSubmit={onSubmit}

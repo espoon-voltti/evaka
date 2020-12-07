@@ -6,7 +6,7 @@ import React, { useContext, useEffect, useState } from 'react'
 import { RouteComponentProps } from 'react-router-dom'
 import LocalDate from '@evaka/lib-common/src/local-date'
 import { UUID } from 'types'
-import { isSuccess, Loading, Result } from 'api'
+import { Loading, Result } from 'api'
 import {
   ApplicationDetails,
   ApplicationResponse,
@@ -46,7 +46,7 @@ function ApplicationPage({ match }: RouteComponentProps<{ id: UUID }>) {
   const { i18n } = useTranslation()
   const { setTitle, formatTitleName } = useContext<TitleState>(TitleContext)
   const [application, setApplication] = useState<Result<ApplicationResponse>>(
-    Loading()
+    Loading.of()
   )
   const creatingNew = window.location.href.includes('create=true')
   const [editing, setEditing] = useState(creatingNew)
@@ -56,7 +56,7 @@ function ApplicationPage({ match }: RouteComponentProps<{ id: UUID }>) {
   const [validationErrors, setValidationErrors] = useState<
     Record<string, string>
   >({})
-  const [units, setUnits] = useState<Result<PreferredUnit[]>>(Loading())
+  const [units, setUnits] = useState<Result<PreferredUnit[]>>(Loading.of())
 
   const { roles } = useContext(UserContext)
   const enableApplicationActions =
@@ -88,21 +88,21 @@ function ApplicationPage({ match }: RouteComponentProps<{ id: UUID }>) {
   const debouncedEditedApplication = useDebounce(editedApplication, 50)
 
   const reloadApplication = () => {
-    setApplication(Loading())
+    setApplication(Loading.of())
     void getApplication(applicationId).then((result) => {
       setApplication(result)
-      if (isSuccess(result)) {
+      if (result.isSuccess) {
         const {
           firstName,
           lastName
-        } = result.data.application.form.child.person
+        } = result.value.application.form.child.person
         setTitle(
           `${i18n.application.tabTitle} - ${formatTitleName(
             firstName,
             lastName
           )}`
         )
-        setEditedApplication(result.data.application)
+        setEditedApplication(result.value.application)
       }
     })
   }
@@ -110,9 +110,9 @@ function ApplicationPage({ match }: RouteComponentProps<{ id: UUID }>) {
   useEffect(reloadApplication, [applicationId])
 
   useEffect(() => {
-    if (debouncedEditedApplication && isSuccess(units)) {
+    if (debouncedEditedApplication && units.isSuccess) {
       setValidationErrors(
-        validateApplication(debouncedEditedApplication, units.data, i18n)
+        validateApplication(debouncedEditedApplication, units.value, i18n)
       )
     }
   }, [debouncedEditedApplication])
@@ -150,11 +150,11 @@ function ApplicationPage({ match }: RouteComponentProps<{ id: UUID }>) {
         </FixedSpaceRow>
       </Container>
 
-      {isSuccess(application) &&
+      {application.isSuccess &&
       enableApplicationActions &&
       editedApplication ? (
         <ApplicationActionsBar
-          applicationStatus={application.data.application.status}
+          applicationStatus={application.value.application.status}
           editing={editing}
           setEditing={setEditing}
           editedApplication={editedApplication}

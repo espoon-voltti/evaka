@@ -4,7 +4,7 @@
 
 import React, { useEffect, useState } from 'react'
 import { UUID } from 'types'
-import { isFailure, isLoading, isSuccess, Loading, Result } from 'api'
+import { Loading, Result } from 'api'
 import { getFamilyContacts } from 'api/family-overview'
 import { useRestApi } from 'utils/useRestApi'
 import { FamilyContact } from 'types/family-overview'
@@ -24,19 +24,19 @@ interface FamilyContactsProps {
 
 function FamilyContacts({ id, open }: FamilyContactsProps) {
   const { i18n } = useTranslation()
-  const [result, setResult] = useState<Result<FamilyContact[]>>(Loading())
+  const [result, setResult] = useState<Result<FamilyContact[]>>(Loading.of())
 
   const loadContacts = useRestApi(getFamilyContacts, setResult)
   useEffect(() => loadContacts(id), [id, loadContacts])
 
-  const orderedRows = isSuccess(result)
-    ? [
-        ...result.data.filter((row) => row.role === 'LOCAL_GUARDIAN'),
-        ...result.data.filter((row) => row.role === 'LOCAL_ADULT'),
-        ...result.data.filter((row) => row.role === 'LOCAL_SIBLING'),
-        ...result.data.filter((row) => row.role === 'REMOTE_GUARDIAN')
-      ]
-    : []
+  const orderedRows: FamilyContact[] = result
+    .map((r) => [
+      ...r.filter((row) => row.role === 'LOCAL_GUARDIAN'),
+      ...r.filter((row) => row.role === 'LOCAL_ADULT'),
+      ...r.filter((row) => row.role === 'LOCAL_SIBLING'),
+      ...r.filter((row) => row.role === 'REMOTE_GUARDIAN')
+    ])
+    .getOrElse([])
 
   return (
     <CollapsibleSection
@@ -44,9 +44,9 @@ function FamilyContacts({ id, open }: FamilyContactsProps) {
       title={i18n.childInformation.familyContacts.title}
       startCollapsed={!open}
     >
-      {isLoading(result) && <SpinnerSegment />}
-      {isFailure(result) && <ErrorSegment />}
-      {isSuccess(result) && (
+      {result.isLoading && <SpinnerSegment />}
+      {result.isFailure && <ErrorSegment />}
+      {result.isSuccess && (
         <Table>
           <Thead>
             <Tr>

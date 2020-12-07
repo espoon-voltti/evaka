@@ -13,7 +13,7 @@ import Title from '~components/shared/atoms/Title'
 import { Th, Tr, Td, Thead, Tbody } from '~components/shared/layout/Table'
 import { reactSelectStyles } from '~components/shared/utils'
 import { useTranslation } from '~state/i18n'
-import { isFailure, isLoading, isSuccess, Loading, Result } from '~api'
+import { Loading, Result } from '~api'
 import ReturnButton from 'components/shared/atoms/buttons/ReturnButton'
 import ReportDownload from '~components/reports/ReportDownload'
 import { PartnersInDifferentAddressReportRow } from '~types/reports'
@@ -42,7 +42,7 @@ function PartnersInDifferentAddress() {
   const { i18n } = useTranslation()
   const [rows, setRows] = useState<
     Result<PartnersInDifferentAddressReportRow[]>
-  >(Loading())
+  >(Loading.of())
 
   const [displayFilters, setDisplayFilters] = useState<DisplayFilters>(
     emptyDisplayFilters
@@ -54,13 +54,13 @@ function PartnersInDifferentAddress() {
   }
 
   useEffect(() => {
-    setRows(Loading())
+    setRows(Loading.of())
     setDisplayFilters(emptyDisplayFilters)
     void getPartnersInDifferentAddressReport().then(setRows)
   }, [])
 
-  const filteredRows = useMemo(
-    () => (isSuccess(rows) ? rows.data.filter(displayFilter) : []),
+  const filteredRows: PartnersInDifferentAddressReportRow[] = useMemo(
+    () => rows.map((rs) => rs.filter(displayFilter)).getOrElse([]),
     [rows, displayFilters]
   )
 
@@ -76,11 +76,14 @@ function PartnersInDifferentAddress() {
             <ReactSelect
               options={[
                 { value: '', label: i18n.common.all },
-                ...(isSuccess(rows)
-                  ? distinct(
-                      rows.data.map((row) => row.careAreaName)
-                    ).map((s) => ({ value: s, label: s }))
-                  : [])
+                ...rows
+                  .map((rs) =>
+                    distinct(rs.map((row) => row.careAreaName)).map((s) => ({
+                      value: s,
+                      label: s
+                    }))
+                  )
+                  .getOrElse([])
               ]}
               onChange={(option) =>
                 option && 'value' in option
@@ -107,9 +110,9 @@ function PartnersInDifferentAddress() {
           </Wrapper>
         </FilterRow>
 
-        {isLoading(rows) && <Loader />}
-        {isFailure(rows) && <span>{i18n.common.loadingFailed}</span>}
-        {isSuccess(rows) && (
+        {rows.isLoading && <Loader />}
+        {rows.isFailure && <span>{i18n.common.loadingFailed}</span>}
+        {rows.isSuccess && (
           <>
             <ReportDownload
               data={filteredRows}

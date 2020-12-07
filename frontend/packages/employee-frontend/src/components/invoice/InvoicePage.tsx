@@ -10,7 +10,7 @@ import ReturnButton from '~components/shared/atoms/buttons/ReturnButton'
 import Title from '~components/shared/atoms/Title'
 import { useTranslation } from '../../state/i18n'
 import { TitleContext, TitleState } from '../../state/title'
-import { isFailure, isSuccess, Loading, Result, Success } from '../../api'
+import { Loading, Result } from '../../api'
 import { getInvoice, getInvoiceCodes } from '../../api/invoicing'
 import InvoiceRowsSection from './InvoiceRowsSection'
 import InvoiceDetailsSection from './InvoiceDetailsSection'
@@ -30,9 +30,9 @@ import { formatName } from '~utils'
 const InvoiceDetailsPage = React.memo(function InvoiceDetailsPage() {
   const { id } = useParams<{ id: string }>()
   const { i18n } = useTranslation()
-  const [invoice, setInvoice] = useState<Result<InvoiceDetailed>>(Loading())
+  const [invoice, setInvoice] = useState<Result<InvoiceDetailed>>(Loading.of())
   const [invoiceCodes, setInvoiceCodes] = useState<Result<InvoiceCodes>>(
-    Loading()
+    Loading.of()
   )
   const { setTitle } = useContext<TitleState>(TitleContext)
 
@@ -41,69 +41,63 @@ const InvoiceDetailsPage = React.memo(function InvoiceDetailsPage() {
   useEffect(() => void getInvoiceCodes().then(setInvoiceCodes), [])
 
   useEffect(() => {
-    if (isSuccess(invoice)) {
-      const name = `${invoice.data.headOfFamily.firstName} ${invoice.data.headOfFamily.lastName}`
-      invoice.data.status === 'DRAFT'
+    if (invoice.isSuccess) {
+      const name = `${invoice.value.headOfFamily.firstName} ${invoice.value.headOfFamily.lastName}`
+      invoice.value.status === 'DRAFT'
         ? setTitle(`${name} | ${i18n.titles.invoiceDraft}`)
         : setTitle(`${name} | ${i18n.titles.invoice}`)
     }
   }, [invoice])
 
-  const editable = isSuccess(invoice) && invoice.data.status === 'DRAFT'
+  const editable = invoice.map((inv) => inv.status === 'DRAFT').getOrElse(false)
 
-  if (isFailure(invoice)) {
+  if (invoice.isFailure) {
     return <Redirect to="/finance/invoices" />
   }
 
   const updateRows = (rows: InvoiceRowDetailed[]) =>
     setInvoice((previous: Result<InvoiceDetailed>) =>
-      isSuccess(previous) ? Success({ ...previous.data, rows }) : previous
+      previous.map((inv) => ({ ...inv, rows }))
     )
 
   return (
     <div className="invoice-details-page" data-qa="invoice-details-page">
       <Container>
         <ReturnButton dataQa="navigate-back" />
-        {invoice ? (
-          <>
-            {isSuccess(invoice) && (
-              <ContentArea opaque>
-                <Title size={1}>
-                  {i18n.invoice.title[invoice.data.status]}
-                </Title>
-                <InvoiceHeadOfFamilySection
-                  id={invoice.data.headOfFamily.id}
-                  fullName={formatName(
-                    invoice.data.headOfFamily.firstName,
-                    invoice.data.headOfFamily.lastName,
-                    i18n
-                  )}
-                  dateOfBirth={invoice.data.headOfFamily.dateOfBirth}
-                  ssn={invoice.data.headOfFamily.ssn}
-                />
-                <InvoiceDetailsSection invoice={invoice.data} />
-                <InvoiceRowsSection
-                  rows={invoice.data.rows}
-                  updateRows={updateRows}
-                  invoiceCodes={invoiceCodes}
-                  editable={editable}
-                />
-                <Sum
-                  title={'familyTotal'}
-                  sum={
-                    editable
-                      ? totalPrice(invoice.data.rows)
-                      : invoice.data.totalPrice
-                  }
-                />
-                <Actions
-                  invoice={invoice.data}
-                  loadInvoice={loadInvoice}
-                  editable={editable}
-                />
-              </ContentArea>
-            )}
-          </>
+        {invoice?.isSuccess ? (
+          <ContentArea opaque>
+            <Title size={1}>{i18n.invoice.title[invoice.value.status]}</Title>
+            <InvoiceHeadOfFamilySection
+              id={invoice.value.headOfFamily.id}
+              fullName={formatName(
+                invoice.value.headOfFamily.firstName,
+                invoice.value.headOfFamily.lastName,
+                i18n
+              )}
+              dateOfBirth={invoice.value.headOfFamily.dateOfBirth}
+              ssn={invoice.value.headOfFamily.ssn}
+            />
+            <InvoiceDetailsSection invoice={invoice.value} />
+            <InvoiceRowsSection
+              rows={invoice.value.rows}
+              updateRows={updateRows}
+              invoiceCodes={invoiceCodes}
+              editable={editable}
+            />
+            <Sum
+              title={'familyTotal'}
+              sum={
+                editable
+                  ? totalPrice(invoice.value.rows)
+                  : invoice.value.totalPrice
+              }
+            />
+            <Actions
+              invoice={invoice.value}
+              loadInvoice={loadInvoice}
+              editable={editable}
+            />
+          </ContentArea>
         ) : null}
       </Container>
     </div>

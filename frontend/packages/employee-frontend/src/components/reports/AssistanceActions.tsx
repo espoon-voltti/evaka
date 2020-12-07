@@ -13,7 +13,7 @@ import Title from '~components/shared/atoms/Title'
 import { Th, Tr, Td, Thead, Tbody } from '~components/shared/layout/Table'
 import { reactSelectStyles } from '~components/shared/utils'
 import { useTranslation } from '~state/i18n'
-import { isFailure, isLoading, isSuccess, Loading, Result } from '~api'
+import { Loading, Result } from '~api'
 import { AssistanceActionsReportRow } from '~types/reports'
 import {
   AssistanceActionsReportFilters,
@@ -46,7 +46,7 @@ const Wrapper = styled.div`
 function AssistanceActions() {
   const { i18n } = useTranslation()
   const [rows, setRows] = useState<Result<AssistanceActionsReportRow[]>>(
-    Loading()
+    Loading.of()
   )
   const [filters, setFilters] = useState<AssistanceActionsReportFilters>({
     date: LocalDate.today()
@@ -62,15 +62,15 @@ function AssistanceActions() {
   }
 
   useEffect(() => {
-    setRows(Loading())
+    setRows(Loading.of())
     setDisplayFilters(emptyDisplayFilters)
     void getAssistanceActionsReport(filters).then(setRows)
   }, [filters])
 
   const actionTypes = i18n.childInformation.assistanceAction.fields.actionTypes
 
-  const filteredRows = useMemo(
-    () => (isSuccess(rows) ? rows.data.filter(displayFilter) : []),
+  const filteredRows: AssistanceActionsReportRow[] = useMemo(
+    () => rows.map((rs) => rs.filter(displayFilter)).getOrElse([]),
     [rows, displayFilters]
   )
 
@@ -93,11 +93,14 @@ function AssistanceActions() {
             <ReactSelect
               options={[
                 { value: '', label: i18n.common.all },
-                ...(isSuccess(rows)
-                  ? distinct(
-                      rows.data.map((row) => row.careAreaName)
-                    ).map((s) => ({ value: s, label: s }))
-                  : [])
+                ...rows
+                  .map((rs) =>
+                    distinct(rs.map((row) => row.careAreaName)).map((s) => ({
+                      value: s,
+                      label: s
+                    }))
+                  )
+                  .getOrElse([])
               ]}
               onChange={(option) =>
                 option && 'value' in option
@@ -124,9 +127,9 @@ function AssistanceActions() {
           </Wrapper>
         </FilterRow>
 
-        {isLoading(rows) && <Loader />}
-        {isFailure(rows) && <span>{i18n.common.loadingFailed}</span>}
-        {isSuccess(rows) && (
+        {rows.isLoading && <Loader />}
+        {rows.isFailure && <span>{i18n.common.loadingFailed}</span>}
+        {rows.isSuccess && (
           <>
             <ReportDownload
               data={filteredRows.map((row) => ({

@@ -11,7 +11,7 @@ import { UIContext } from '~state/ui'
 import FormModal from '~components/common/FormModal'
 import Section from '~components/shared/layout/Section'
 import { FixedSpaceColumn } from 'components/shared/layout/flex-helpers'
-import { isFailure, Result } from '~api'
+import { Result } from '~api'
 import { faChild } from 'icon-set'
 import { createPlacement, MissingGroupPlacement } from '~api/unit'
 import { updateBackupCare } from 'api/child/backup-care'
@@ -110,7 +110,7 @@ export default React.memo(function GroupPlacementModal({
       form.startDate,
       form.endDate
     ).then((res: Result<string>) => {
-      if (isFailure(res)) {
+      if (res.isFailure) {
         clearUiMode()
         setErrorMessage({
           type: 'error',
@@ -131,7 +131,7 @@ export default React.memo(function GroupPlacementModal({
       period: { start: form.startDate, end: form.endDate },
       groupId: form.groupId
     }).then((res) => {
-      if (isFailure(res)) {
+      if (res.isFailure) {
         clearUiMode()
         setErrorMessage({
           type: 'error',

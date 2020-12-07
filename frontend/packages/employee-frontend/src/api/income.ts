@@ -23,8 +23,8 @@ export async function getIncomes(personId: UUID): Promise<Result<Income[]>> {
         updatedAt: new Date(income.updatedAt)
       }))
     )
-    .then(Success)
-    .catch(Failure)
+    .then((v) => Success.of(v))
+    .catch((e) => Failure.fromError(e))
 }
 
 export async function createIncome(
@@ -33,8 +33,8 @@ export async function createIncome(
 ): Promise<Result<string>> {
   return client
     .post<string>('/incomes', { personId, ...income })
-    .then((res) => Success(res.data))
-    .catch(Failure)
+    .then((res) => Success.of(res.data))
+    .catch((e) => Failure.fromError(e))
 }
 
 export async function updateIncome(
@@ -43,13 +43,13 @@ export async function updateIncome(
 ): Promise<Result<void>> {
   return client
     .put<void>(`/incomes/${incomeId}`, income)
-    .then((res) => Success(res.data))
-    .catch(Failure)
+    .then((res) => Success.of(res.data))
+    .catch((e) => Failure.fromError(e))
 }
 
 export async function deleteIncome(incomeId: string): Promise<Result<void>> {
   return client
     .delete<void>(`/incomes/${incomeId}`)
-    .then((res) => Success(res.data))
-    .catch(Failure)
+    .then((res) => Success.of(res.data))
+    .catch((e) => Failure.fromError(e))
 }

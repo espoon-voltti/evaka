@@ -21,7 +21,6 @@ import Tabs from '~components/shared/molecules/Tabs'
 import AttendanceGroupSelectorPage from './AttendanceGroupSelectorPage'
 import AttendanceComingPage from './AttendanceComingPage'
 import AttendancePresentPage from './AttendancePresentPage'
-import { isSuccess } from '~api'
 import Title from '~components/shared/atoms/Title'
 import AttendanceDepartedPage from './AttendanceDepartedPage'
 import AttendanceAbsentPage from './AttendanceAbsentPage'
@@ -92,8 +91,8 @@ export default React.memo(function AttendancePageWrapper() {
   }, [location])
 
   useEffect(() => {
-    if (isSuccess(attendanceResponse)) {
-      const filteredData = attendanceResponse.data.children.filter(
+    if (attendanceResponse.isSuccess) {
+      const filteredData = attendanceResponse.value.children.filter(
         (ac) =>
           ac.firstName
             .toLowerCase()
@@ -104,29 +103,37 @@ export default React.memo(function AttendancePageWrapper() {
     }
   }, [debouncedSearchTerms])
 
-  const totalAttendances = isSuccess(attendanceResponse)
-    ? attendanceResponse.data.children.length
-    : 0
-  const totalComing = isSuccess(attendanceResponse)
-    ? attendanceResponse.data.children.filter(
-        (attendance) => attendance.status === 'COMING'
-      ).length
-    : 0
-  const totalPresent = isSuccess(attendanceResponse)
-    ? attendanceResponse.data.children.filter(
-        (attendance) => attendance.status === 'PRESENT'
-      ).length
-    : 0
-  const totalDeparted = isSuccess(attendanceResponse)
-    ? attendanceResponse.data.children.filter(
-        (attendance) => attendance.status === 'DEPARTED'
-      ).length
-    : 0
-  const totalAbsent = isSuccess(attendanceResponse)
-    ? attendanceResponse.data.children.filter(
-        (attendance) => attendance.status === 'ABSENT'
-      ).length
-    : 0
+  const totalAttendances = attendanceResponse
+    .map((res) => res.children.length)
+    .getOrElse(0)
+  const totalComing = attendanceResponse
+    .map(
+      (res) =>
+        res.children.filter((attendance) => attendance.status === 'COMING')
+          .length
+    )
+    .getOrElse(0)
+  const totalPresent = attendanceResponse
+    .map(
+      (res) =>
+        res.children.filter((attendance) => attendance.status === 'PRESENT')
+          .length
+    )
+    .getOrElse(0)
+  const totalDeparted = attendanceResponse
+    .map(
+      (res) =>
+        res.children.filter((attendance) => attendance.status === 'DEPARTED')
+          .length
+    )
+    .getOrElse(0)
+  const totalAbsent = attendanceResponse
+    .map(
+      (res) =>
+        res.children.filter((attendance) => attendance.status === 'ABSENT')
+          .length
+    )
+    .getOrElse(0)
 
   const tabs = [
     {
@@ -180,9 +187,9 @@ export default React.memo(function AttendancePageWrapper() {
   }
 
   const selectedGroup =
-    isSuccess(attendanceResponse) &&
+    attendanceResponse.isSuccess &&
     groupIdOrAll !== 'all' &&
-    attendanceResponse.data.unit.groups.find(
+    attendanceResponse.value.unit.groups.find(
       (elem: Group) => elem.id === groupIdOrAll
     )
 
@@ -193,7 +200,7 @@ export default React.memo(function AttendancePageWrapper() {
       <MetaTags>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
       </MetaTags>
-      {isSuccess(attendanceResponse) && (
+      {attendanceResponse.isSuccess && (
         <Fragment>
           <SearchBar
             style={{
@@ -201,7 +208,7 @@ export default React.memo(function AttendancePageWrapper() {
             }}
           >
             <NoMarginTitle size={1} centered smaller bold>
-              {attendanceResponse.data.unit.name}{' '}
+              {attendanceResponse.value.unit.name}{' '}
               <IconButton
                 onClick={() => setShowSearch(!showSearch)}
                 icon={faTimes}
@@ -219,7 +226,7 @@ export default React.memo(function AttendancePageWrapper() {
           </SearchBar>
           <Name>
             <NoMarginTitle size={1} centered smaller bold>
-              {attendanceResponse.data.unit.name}{' '}
+              {attendanceResponse.value.unit.name}{' '}
               <IconButton
                 onClick={() => setShowSearch(!showSearch)}
                 icon={faSearch}

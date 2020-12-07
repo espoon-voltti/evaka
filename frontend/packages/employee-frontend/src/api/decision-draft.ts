@@ -31,8 +31,8 @@ export async function getDecisionDrafts(
         }))
       }
     })
-    .then(Success)
-    .catch(Failure)
+    .then((v) => Success.of(v))
+    .catch((e) => Failure.fromError(e))
 }
 
 export async function updateDecisionDrafts(
@@ -45,6 +45,6 @@ export async function updateDecisionDrafts(
 export function getDecisionUnits(): Promise<Result<DecisionUnit[]>> {
   return client
     .get<JsonOf<DecisionUnit[]>>('/decisions2/units')
-    .then((res) => Success(res.data))
-    .catch(Failure)
+    .then((res) => Success.of(res.data))
+    .catch((e) => Failure.fromError(e))
 }

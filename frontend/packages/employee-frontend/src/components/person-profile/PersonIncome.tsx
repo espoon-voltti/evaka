@@ -11,7 +11,7 @@ import IncomeList from './income/IncomeList'
 import { useTranslation } from '~state/i18n'
 import { UIContext } from '~state/ui'
 import { PersonContext } from '~state/person'
-import { isFailure, isLoading, isSuccess, Loading, Result } from '~api'
+import { Loading, Result } from '~api'
 import {
   getIncomes,
   createIncome,
@@ -45,7 +45,7 @@ const PersonIncome = React.memo(function PersonIncome({ id, open }: Props) {
   }
 
   const loadData = () => {
-    setIncomes(Loading())
+    setIncomes(Loading.of())
     void getIncomes(id)
       .then(setIncomes)
       .then(() => setIncomeDataChanged(true))
@@ -59,9 +59,9 @@ const PersonIncome = React.memo(function PersonIncome({ id, open }: Props) {
 
   useEffect(loadData, [id, setIncomes])
   useEffect(() => {
-    if (incomeDataChanged && isSuccess(incomes)) {
+    if (incomeDataChanged && incomes.isSuccess) {
       const missingIncomePeriodsString = getMissingIncomePeriodsString(
-        incomes.data,
+        incomes.value,
         i18n.common.and.toLowerCase()
       )
       if (missingIncomePeriodsString.length) {
@@ -78,9 +78,9 @@ const PersonIncome = React.memo(function PersonIncome({ id, open }: Props) {
   }, [incomes])
 
   const handleErrors = (res: Result<unknown>) => {
-    if (isFailure(res)) {
+    if (res.isFailure) {
       const text =
-        res.error.statusCode === 409
+        res.statusCode === 409
           ? i18n.personProfile.income.details.conflictErrorText
           : undefined
 
@@ -90,13 +90,13 @@ const PersonIncome = React.memo(function PersonIncome({ id, open }: Props) {
         text
       })
 
-      throw res.error.message
+      throw res.message
     }
   }
 
   const toggleCreated = (res: Result<string>): Result<string> => {
-    if (isSuccess(res)) {
-      toggleIncome(res.data)
+    if (res.isSuccess) {
+      toggleIncome(res.value)
     }
     return res
   }
@@ -107,11 +107,11 @@ const PersonIncome = React.memo(function PersonIncome({ id, open }: Props) {
   }
 
   const content = () => {
-    if (isLoading(incomes)) return <Loader />
-    if (isFailure(incomes)) return <div>{i18n.personProfile.income.error}</div>
+    if (incomes.isLoading) return <Loader />
+    if (incomes.isFailure) return <div>{i18n.personProfile.income.error}</div>
     return (
       <IncomeList
-        incomes={incomes.data}
+        incomes={incomes.value}
         toggled={toggledIncome}
         toggle={toggleIncome}
         editing={editing}

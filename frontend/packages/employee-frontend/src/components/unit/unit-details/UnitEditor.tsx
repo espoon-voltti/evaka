@@ -21,7 +21,7 @@ import Radio from '~components/shared/atoms/form/Radio'
 import Checkbox from '~components/shared/atoms/form/Checkbox'
 import { DaycareFields } from '~api/unit'
 import { DayOfWeek, UUID } from '~types'
-import { isFailure, isLoading, Result } from '~api'
+import { Result } from '~api'
 import { Translations, useTranslation } from '~state/i18n'
 import { EspooColours } from '~utils/colours'
 import InlineButton from 'components/shared/atoms/buttons/InlineButton'
@@ -1132,20 +1132,18 @@ export default function UnitEditor(props: Props): JSX.Element {
               onClick={() =>
                 props.onClickCancel ? props.onClickCancel() : undefined
               }
-              disabled={props.submit && isLoading(props.submit)}
+              disabled={props.submit?.isLoading}
               text={i18n.common.cancel}
             />
             <Button
               primary
               type="submit"
               onClick={(e) => onClickSubmit(e)}
-              disabled={props.submit && isLoading(props.submit)}
+              disabled={props.submit?.isLoading}
               text={isNewUnit ? i18n.unitEditor.submitNew : i18n.common.save}
             />
           </FixedSpaceRow>
-          {props.submit && isFailure(props.submit) && (
-            <div>{i18n.common.error.unknown}</div>
-          )}
+          {props.submit?.isFailure && <div>{i18n.common.error.unknown}</div>}
         </>
       )}
     </form>

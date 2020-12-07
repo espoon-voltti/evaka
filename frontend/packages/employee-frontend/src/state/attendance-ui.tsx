@@ -4,7 +4,7 @@
 
 import React, { useMemo, useState, createContext } from 'react'
 
-import { isSuccess, Loading, Result } from '~api'
+import { Loading, Result } from '~api'
 import { AttendanceResponse } from '~api/attendances'
 import { UUID } from '~types'
 
@@ -18,7 +18,7 @@ interface UIState {
 }
 
 const defaultState: UIState = {
-  attendanceResponse: Loading(),
+  attendanceResponse: Loading.of(),
   setAttendanceResponse: () => undefined,
   filterAndSetAttendanceResponse: () => undefined
 }
@@ -33,16 +33,16 @@ export const AttendanceUIContextProvider = React.memo(
   }) {
     const [attendanceResponse, setAttendanceResponse] = useState<
       Result<AttendanceResponse>
-    >(Loading())
+    >(Loading.of())
 
     // TODO: return just attendanceresponse. Do not set setAttendanceResponse(attendanceResponse)
     function filterAndSetAttendanceResponse(
       attendanceResponse: Result<AttendanceResponse>,
       groupIdOrAll: UUID | 'all'
     ) {
-      if (isSuccess(attendanceResponse)) {
+      if (attendanceResponse.isSuccess) {
         if (groupIdOrAll !== 'all')
-          attendanceResponse.data.children = attendanceResponse.data.children.filter(
+          attendanceResponse.value.children = attendanceResponse.value.children.filter(
             (child) => child.groupId === groupIdOrAll
           )
       }

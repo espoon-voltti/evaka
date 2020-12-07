@@ -22,7 +22,7 @@ import ChildrenCell from '../common/ChildrenCell'
 import { useTranslation } from '../../state/i18n'
 import { VoucherValueDecisionSummary } from '../../types/invoicing'
 import { SearchOrder } from '~types'
-import { isFailure, isLoading, isSuccess, Result } from '../../api'
+import { Result } from '../../api'
 import { formatDate } from '../../utils/date'
 import { formatCents } from '../../utils/money'
 import { SortByVoucherValueDecisions } from '../../api/invoicing'
@@ -78,10 +78,9 @@ export default React.memo(function VoucherValueDecisions({
   const history = useHistory()
 
   const allChecked =
-    decisions && isSuccess(decisions)
-      ? decisions.data.length > 0 &&
-        decisions.data.every((it) => checked[it.id])
-      : false
+    decisions
+      ?.map((ds) => ds.length > 0 && ds.every((d) => checked[d.id]))
+      .getOrElse(false) ?? false
 
   const isSorted = (column: SortByVoucherValueDecisions) =>
     sortBy === column ? sortDirection : undefined
@@ -95,53 +94,50 @@ export default React.memo(function VoucherValueDecisions({
     }
   }
 
-  const rows =
-    decisions && isSuccess(decisions)
-      ? decisions.data.map((item) => {
-          return (
-            <Tr
-              key={item.id}
-              onClick={() =>
-                history.push(`/finance/value-decisions/${item.id}`)
-              }
-              data-qa="table-value-decision-row"
-            >
-              <Td>
-                <NameWithSsn {...item.headOfFamily} i18n={i18n} />
+  const rows = decisions?.isSuccess
+    ? decisions.value.map((item) => {
+        return (
+          <Tr
+            key={item.id}
+            onClick={() => history.push(`/finance/value-decisions/${item.id}`)}
+            data-qa="table-value-decision-row"
+          >
+            <Td>
+              <NameWithSsn {...item.headOfFamily} i18n={i18n} />
+            </Td>
+            <Td>
+              <ChildrenCell people={item.parts.map(({ child }) => child)} />
+            </Td>
+            <Td>{`${item.validFrom.format()} - ${
+              item.validTo?.format() ?? ''
+            }`}</Td>
+            <Td>{formatCents(item.totalValue)}</Td>
+            <Td>{formatCents(item.totalCoPayment)}</Td>
+            <Td>{item.decisionNumber}</Td>
+            <Td>{formatDate(item.createdAt)}</Td>
+            <Td>{formatDate(item.sentAt)}</Td>
+            <Td>{i18n.valueDecision.status[item.status]}</Td>
+            {showCheckboxes ? (
+              <Td onClick={(e) => e.stopPropagation()}>
+                <Checkbox
+                  label={item.id}
+                  hiddenLabel
+                  checked={!!checked[item.id]}
+                  onChange={() => toggleChecked(item.id)}
+                  dataQa="toggle-decision"
+                />
               </Td>
-              <Td>
-                <ChildrenCell people={item.parts.map(({ child }) => child)} />
-              </Td>
-              <Td>{`${item.validFrom.format()} - ${
-                item.validTo?.format() ?? ''
-              }`}</Td>
-              <Td>{formatCents(item.totalValue)}</Td>
-              <Td>{formatCents(item.totalCoPayment)}</Td>
-              <Td>{item.decisionNumber}</Td>
-              <Td>{formatDate(item.createdAt)}</Td>
-              <Td>{formatDate(item.sentAt)}</Td>
-              <Td>{i18n.valueDecision.status[item.status]}</Td>
-              {showCheckboxes ? (
-                <Td onClick={(e) => e.stopPropagation()}>
-                  <Checkbox
-                    label={item.id}
-                    hiddenLabel
-                    checked={!!checked[item.id]}
-                    onChange={() => toggleChecked(item.id)}
-                    dataQa="toggle-decision"
-                  />
-                </Td>
-              ) : null}
-            </Tr>
-          )
-        })
-      : null
+            ) : null}
+          </Tr>
+        )
+      })
+    : null
 
   return (
     <div className="value-decisions">
       <TitleRowContainer>
         <H1 noMargin>{i18n.valueDecisions.table.title}</H1>
-        {decisions && isSuccess(decisions) && (
+        {decisions?.isSuccess && (
           <ResultsContainer>
             <div>
               {total ? i18n.valueDecisions.table.rowCount(total) : null}
@@ -191,7 +187,7 @@ export default React.memo(function VoucherValueDecisions({
         </Thead>
         <Tbody>{rows}</Tbody>
       </Table>
-      {decisions && isSuccess(decisions) && (
+      {decisions?.isSuccess && (
         <ResultsContainer>
           <Pagination
             pages={pages}
@@ -200,10 +196,8 @@ export default React.memo(function VoucherValueDecisions({
           />
         </ResultsContainer>
       )}
-      {decisions && isLoading(decisions) && <Loader />}
-      {decisions && isFailure(decisions) && (
-        <div>{i18n.common.error.unknown}</div>
-      )}
+      {decisions?.isLoading && <Loader />}
+      {decisions?.isFailure && <div>{i18n.common.error.unknown}</div>}
     </div>
   )
 })

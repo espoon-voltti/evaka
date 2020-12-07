@@ -11,7 +11,7 @@ import { Label } from '~components/shared/Typography'
 import InputField from '~components/shared/atoms/form/InputField'
 import FormModal from '~components/common/FormModal'
 import { useTranslation } from '~state/i18n'
-import { isFailure, isLoading, isSuccess, Loading, Result } from '~api'
+import { Loading, Result } from '~api'
 import { getOrCreatePersonBySsn } from '~api/person'
 import { PersonDetails } from '~types/person'
 import { isSsnValid } from '~utils/validation/validations'
@@ -29,7 +29,7 @@ export default React.memo(function VTJModal({
 
   useEffect(() => {
     if (isSsnValid(ssn)) {
-      setPerson(Loading())
+      setPerson(Loading.of())
       void getOrCreatePersonBySsn(ssn, true).then(setPerson)
     }
   }, [ssn])
@@ -44,10 +44,10 @@ export default React.memo(function VTJModal({
     setSaveError(false)
     getOrCreatePersonBySsn(ssn, false)
       .then((result) => {
-        if (isSuccess(result)) {
+        if (result.isSuccess) {
           closeModal()
         }
-        if (isFailure(result)) {
+        if (result.isFailure) {
           setSaveError(true)
         }
       })
@@ -66,7 +66,7 @@ export default React.memo(function VTJModal({
       resolveLabel={i18n.personSearch.addPersonFromVTJ.modalConfirmLabel}
       rejectLabel={i18n.common.cancel}
       size={'md'}
-      resolveDisabled={!(person && isSuccess(person)) || requestInFlight}
+      resolveDisabled={!(person && person.isSuccess) || requestInFlight}
     >
       <ModalContent>
         <Label>
@@ -78,28 +78,28 @@ export default React.memo(function VTJModal({
               width="full"
               dataQa="ssn-input"
             />
-            {person && isLoading(person) ? <InputSpinner /> : null}
+            {person?.isLoading ? <InputSpinner /> : null}
           </InputWrapper>
         </Label>
         <Gap size="s" />
         <SsnResultContainer>
-          {person && isSuccess(person) ? (
+          {person?.isSuccess ? (
             <>
-              <div>{`${person.data.lastName ?? ''} ${
-                person.data.firstName ?? ''
+              <div>{`${person.value.lastName ?? ''} ${
+                person.value.firstName ?? ''
               }`}</div>
               <div>
-                {person.data.restrictedDetailsEnabled
+                {person.value.restrictedDetailsEnabled
                   ? i18n.personSearch.addPersonFromVTJ.restrictedDetails
-                  : person.data.streetAddress}
+                  : person.value.streetAddress}
               </div>
             </>
           ) : null}
-          {person && isFailure(person) ? (
+          {person?.isFailure ? (
             <div>
-              {person.error.statusCode === 400
+              {person.statusCode === 400
                 ? i18n.personSearch.addPersonFromVTJ.badRequest
-                : person.error.statusCode === 404
+                : person.statusCode === 404
                 ? i18n.personSearch.addPersonFromVTJ.notFound
                 : i18n.personSearch.addPersonFromVTJ.unexpectedError}
             </div>

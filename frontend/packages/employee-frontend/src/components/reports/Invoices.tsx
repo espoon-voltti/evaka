@@ -9,7 +9,7 @@ import { Container, ContentArea } from '~components/shared/layout/Container'
 import Loader from '~components/shared/atoms/Loader'
 import Title from '~components/shared/atoms/Title'
 import { Th, Tr, Td, Thead, Tbody } from '~components/shared/layout/Table'
-import { isFailure, isLoading, isSuccess, Loading, Result } from '~api'
+import { Loading, Result } from '~api'
 import { getInvoiceReport, InvoiceReportFilters } from '~api/reports'
 import { InvoiceReport, InvoiceReportRow } from '~types/reports'
 import ReturnButton from 'components/shared/atoms/buttons/ReturnButton'
@@ -26,13 +26,13 @@ import LocalDate from '@evaka/lib-common/src/local-date'
 
 function ReportInvoices() {
   const { i18n } = useTranslation()
-  const [report, setReport] = useState<Result<InvoiceReport>>(Loading())
+  const [report, setReport] = useState<Result<InvoiceReport>>(Loading.of())
   const [filters, setFilters] = useState<InvoiceReportFilters>({
     date: LocalDate.today()
   })
 
   useEffect(() => {
-    setReport(Loading())
+    setReport(Loading.of())
     void getInvoiceReport(filters).then(setReport)
   }, [filters])
 
@@ -48,12 +48,12 @@ function ReportInvoices() {
             onChange={(date) => setFilters({ date })}
           />
         </FilterRow>
-        {isLoading(report) && <Loader />}
-        {isFailure(report) && <span>{i18n.common.loadingFailed}</span>}
-        {isSuccess(report) && (
+        {report.isLoading && <Loader />}
+        {report.isFailure && <span>{i18n.common.loadingFailed}</span>}
+        {report.isSuccess && (
           <>
             <ReportDownload
-              data={report.data.reportRows}
+              data={report.value.reportRows}
               headers={[
                 { label: 'Alue', key: 'areaCode' },
                 { label: 'Laskuja', key: 'amountOfInvoices' },
@@ -76,7 +76,7 @@ function ReportInvoices() {
                 </Tr>
               </Thead>
               <Tbody>
-                {_.orderBy(report.data.reportRows, ['areaCode']).map(
+                {_.orderBy(report.value.reportRows, ['areaCode']).map(
                   (row: InvoiceReportRow) => (
                     <Tr key={row.areaCode}>
                       <Td>{row.areaCode}</Td>
@@ -90,11 +90,11 @@ function ReportInvoices() {
                 )}
                 <Tr>
                   <Td></Td>
-                  <Td>{report.data.totalAmountOfInvoices}</Td>
-                  <Td>{formatCents(report.data.totalSumCents)}</Td>
-                  <Td>{report.data.totalAmountWithoutSSN}</Td>
-                  <Td>{report.data.totalAmountWithoutAddress}</Td>
-                  <Td>{report.data.totalAmountWithZeroPrice}</Td>
+                  <Td>{report.value.totalAmountOfInvoices}</Td>
+                  <Td>{formatCents(report.value.totalSumCents)}</Td>
+                  <Td>{report.value.totalAmountWithoutSSN}</Td>
+                  <Td>{report.value.totalAmountWithoutAddress}</Td>
+                  <Td>{report.value.totalAmountWithZeroPrice}</Td>
                 </Tr>
               </Tbody>
             </TableScrollable>

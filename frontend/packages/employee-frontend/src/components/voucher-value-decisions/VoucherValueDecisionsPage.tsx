@@ -8,7 +8,7 @@ import { Container, ContentArea } from '~components/shared/layout/Container'
 import VoucherValueDecisions from './VoucherValueDecisions'
 import VoucherValueDecisionFilters from './VoucherValueDecisionFilters'
 import VoucherValueDecisionActions from './VoucherValueDecisionActions'
-import { isSuccess, Result, Success } from '~api'
+import { Result } from '~api'
 import {
   getVoucherValueDecisions,
   VoucherValueDecisionSearchParams,
@@ -37,15 +37,13 @@ export default React.memo(function VoucherValueDecisionsPage() {
   const [decisions, setDecisions] = useState<PagedValueDecisions>({})
   const setDecisionsResult = useCallback(
     (result: Result<VoucherValueDecisionSearchResponse>) => {
-      if (isSuccess(result)) {
-        setTotalDecisions(result.data.total)
-        setTotalPages(result.data.pages)
-        setDecisions((prev) => ({
-          ...prev,
-          [page]: Success(result.data.data)
-        }))
-      } else {
-        setDecisions((prev) => ({ ...prev, [page]: result }))
+      setDecisions((prev) => ({
+        ...prev,
+        [page]: result.map((r) => r.data)
+      }))
+      if (result.isSuccess) {
+        setTotalDecisions(result.value.total)
+        setTotalPages(result.value.pages)
       }
     },
     [page, setTotalDecisions, setTotalPages, setDecisions]
@@ -98,8 +96,8 @@ export default React.memo(function VoucherValueDecisionsPage() {
 
   const checkAll = useCallback(() => {
     const currentPage = decisions[page]
-    if (isSuccess(currentPage)) {
-      checkIds(currentPage.data.map((decision) => decision.id))
+    if (currentPage?.isSuccess) {
+      checkIds(currentPage.value.map((decision) => decision.id))
     }
   }, [decisions, checkIds])
 

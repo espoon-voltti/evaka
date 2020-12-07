@@ -8,7 +8,7 @@ import { Container, ContentArea } from '~components/shared/layout/Container'
 import Loader from '~components/shared/atoms/Loader'
 import Title from '~components/shared/atoms/Title'
 import { useTranslation } from '~state/i18n'
-import { isFailure, isLoading, isSuccess, Loading, Result } from '~api'
+import { Loading, Result } from '~api'
 import { PresenceReportRow } from '~types/reports'
 import { getPresenceReport, PeriodFilters } from '~api/reports'
 import ReturnButton from 'components/shared/atoms/buttons/ReturnButton'
@@ -20,14 +20,14 @@ import { FlexRow } from 'components/common/styled/containers'
 
 function Presences() {
   const { i18n } = useTranslation()
-  const [rows, setRows] = useState<Result<PresenceReportRow[]>>(Loading())
+  const [rows, setRows] = useState<Result<PresenceReportRow[]>>(Loading.of())
   const [filters, setFilters] = useState<PeriodFilters>({
     from: LocalDate.today().subWeeks(1),
     to: LocalDate.today()
   })
 
   useEffect(() => {
-    setRows(Loading())
+    setRows(Loading.of())
     void getPresenceReport(filters).then(setRows)
   }, [filters])
 
@@ -53,16 +53,16 @@ function Presences() {
           </FlexRow>
         </FilterRow>
 
-        {isLoading(rows) && <Loader />}
-        {isFailure(rows) && (
+        {rows.isLoading && <Loader />}
+        {rows.isFailure && (
           <span>
             {i18n.common.loadingFailed}. {i18n.reports.presence.info}
           </span>
         )}
-        {isSuccess(rows) && (
+        {rows.isSuccess && (
           <>
             <ReportDownload
-              data={rows.data.map((row) => ({
+              data={rows.value.map((row) => ({
                 ...row,
                 date: row.date.format('dd/MM/yyyy'),
                 present:

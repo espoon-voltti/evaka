@@ -6,8 +6,6 @@ import React, { useContext, useEffect } from 'react'
 import styled from 'styled-components'
 import * as _ from 'lodash'
 import { Link } from 'react-router-dom'
-
-import { isFailure, isLoading, isSuccess } from '~api'
 import { SearchColumn, UnitsContext, UnitsState } from '~state/units'
 import Button from 'components/shared/atoms/buttons/Button'
 import InputField from 'components/shared/atoms/form/InputField'
@@ -66,12 +64,9 @@ function Units() {
   }, [setUnits])
 
   const renderUnits = () =>
-    isSuccess(units)
-      ? _.orderBy(
-          units.data,
-          [sortColumn],
-          [sortDirection === 'ASC' ? 'asc' : 'desc']
-        )
+    units
+      .map((us) =>
+        _.orderBy(us, [sortColumn], [sortDirection === 'ASC' ? 'asc' : 'desc'])
           .filter((unit: Unit) =>
             unit.name.toLowerCase().includes(filter.toLowerCase())
           )
@@ -97,7 +92,8 @@ function Units() {
               </Tr>
             )
           })
-      : null
+      )
+      .getOrElse(null)
 
   return (
     <>
@@ -174,8 +170,8 @@ function Units() {
                 </Table>
               </div>
             </>
-            {isLoading(units) && <Loader />}
-            {isFailure(units) && <div>{i18n.common.loadingFailed}</div>}
+            {units.isLoading && <Loader />}
+            {units.isFailure && <div>{i18n.common.loadingFailed}</div>}
             <Gap size={'XXL'} />
           </ContentArea>
         </Container>

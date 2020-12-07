@@ -39,8 +39,8 @@ export async function createAssistanceAction(
       actions: new Set(data.actions),
       measures: new Set(data.measures)
     }))
-    .then(Success)
-    .catch(Failure)
+    .then((v) => Success.of(v))
+    .catch((e) => Failure.fromError(e))
 }
 
 export async function getAssistanceActions(
@@ -57,8 +57,8 @@ export async function getAssistanceActions(
         measures: new Set(data.measures)
       }))
     )
-    .then(Success)
-    .catch(Failure)
+    .then((v) => Success.of(v))
+    .catch((e) => Failure.fromError(e))
 }
 
 export async function updateAssistanceAction(
@@ -82,8 +82,8 @@ export async function updateAssistanceAction(
       actions: new Set(data.actions),
       measures: new Set(data.measures)
     }))
-    .then(Success)
-    .catch(Failure)
+    .then((v) => Success.of(v))
+    .catch((e) => Failure.fromError(e))
 }
 
 export async function removeAssistanceAction(
@@ -91,6 +91,6 @@ export async function removeAssistanceAction(
 ): Promise<Result<null>> {
   return client
     .delete(`/assistance-actions/${assistanceActionId}`)
-    .then(() => Success(null))
-    .catch(Failure)
+    .then(() => Success.of(null))
+    .catch((e) => Failure.fromError(e))
 }

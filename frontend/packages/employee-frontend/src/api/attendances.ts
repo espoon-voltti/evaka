@@ -61,8 +61,8 @@ export async function getDaycareAttendances(
   return client
     .get<JsonOf<AttendanceResponse>>(`/attendances/units/${unitId}`)
     .then((res) => deserializeAttendanceResponse(res.data))
-    .then(Success)
-    .catch(Failure)
+    .then((v) => Success.of(v))
+    .catch((e) => Failure.fromError(e))
 }
 
 export async function childArrivesPOST(
@@ -78,8 +78,8 @@ export async function childArrivesPOST(
       }
     )
     .then((res) => deserializeAttendanceResponse(res.data))
-    .then(Success)
-    .catch(Failure)
+    .then((v) => Success.of(v))
+    .catch((e) => Failure.fromError(e))
 }
 
 export async function childArrivesGET(
@@ -95,8 +95,8 @@ export async function childArrivesGET(
       }
     )
     .then((res) => res.data)
-    .then(Success)
-    .catch(Failure)
+    .then((v) => Success.of(v))
+    .catch((e) => Failure.fromError(e))
 }
 
 // TODO: update context with the response!
@@ -113,8 +113,8 @@ export async function childDeparts(
       }
     )
     .then((res) => deserializeAttendanceResponse(res.data))
-    .then(Success)
-    .catch(Failure)
+    .then((v) => Success.of(v))
+    .catch((e) => Failure.fromError(e))
 }
 
 export async function returnToComing(
@@ -126,8 +126,8 @@ export async function returnToComing(
       `/attendances/units/${unitId}/children/${childId}/return-to-coming`
     )
     .then((res) => deserializeAttendanceResponse(res.data))
-    .then(Success)
-    .catch(Failure)
+    .then((v) => Success.of(v))
+    .catch((e) => Failure.fromError(e))
 }
 
 export async function returnToPresent(
@@ -139,8 +139,8 @@ export async function returnToPresent(
       `/attendances/units/${unitId}/children/${childId}/return-to-present`
     )
     .then((res) => deserializeAttendanceResponse(res.data))
-    .then(Success)
-    .catch(Failure)
+    .then((v) => Success.of(v))
+    .catch((e) => Failure.fromError(e))
 }
 
 export async function postFullDayAbsence(
@@ -156,8 +156,8 @@ export async function postFullDayAbsence(
       }
     )
     .then((res) => deserializeAttendanceResponse(res.data))
-    .then(Success)
-    .catch(Failure)
+    .then((v) => Success.of(v))
+    .catch((e) => Failure.fromError(e))
 }
 
 function deserializeAttendanceResponse(

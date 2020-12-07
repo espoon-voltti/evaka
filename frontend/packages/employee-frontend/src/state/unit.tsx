@@ -27,11 +27,11 @@ export interface UnitState {
 }
 
 const defaultState: UnitState = {
-  unitInformation: Loading(),
+  unitInformation: Loading.of(),
   setUnitInformation: () => undefined,
   filters: new UnitFilters(LocalDate.today(), '3 months'),
   setFilters: () => undefined,
-  unitData: Loading(),
+  unitData: Loading.of(),
   setUnitData: () => undefined,
   scrollToPosition: () => undefined,
   savePosition: () => undefined
@@ -45,10 +45,10 @@ export const UnitContextProvider = React.memo(function UnitContextProvider({
   children: JSX.Element
 }) {
   const [unitInformation, setUnitInformation] = useState<Result<UnitResponse>>(
-    Loading()
+    Loading.of()
   )
   const [filters, setFilters] = useState(defaultState.filters)
-  const [unitData, setUnitData] = useState<Result<UnitData>>(Loading())
+  const [unitData, setUnitData] = useState<Result<UnitData>>(Loading.of())
   const [position, setPosition] = useState<number>(-1)
   const savePosition = useCallback(() => void setPosition(window.scrollY), [
     setPosition

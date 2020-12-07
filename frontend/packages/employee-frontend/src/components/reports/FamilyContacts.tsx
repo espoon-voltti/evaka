@@ -10,7 +10,7 @@ import Title from '~components/shared/atoms/Title'
 import { Th, Tr, Td, Thead, Tbody } from '~components/shared/layout/Table'
 import { useTranslation } from '~state/i18n'
 import { Link, useParams } from 'react-router-dom'
-import { isFailure, isLoading, isSuccess, Loading, Result } from '~api'
+import { Loading, Result } from '~api'
 import { FamilyContactsReportRow } from '~types/reports'
 import { getFamilyContactsReport } from '~api/reports'
 import ReturnButton from 'components/shared/atoms/buttons/ReturnButton'
@@ -22,12 +22,14 @@ import { getDaycare, UnitResponse } from '~api/unit'
 function FamilyContacts() {
   const { unitId } = useParams<{ unitId: UUID }>()
   const { i18n } = useTranslation()
-  const [rows, setRows] = useState<Result<FamilyContactsReportRow[]>>(Loading())
-  const [unit, setUnit] = useState<Result<UnitResponse>>(Loading())
+  const [rows, setRows] = useState<Result<FamilyContactsReportRow[]>>(
+    Loading.of()
+  )
+  const [unit, setUnit] = useState<Result<UnitResponse>>(Loading.of())
 
   useEffect(() => {
-    setRows(Loading())
-    setUnit(Loading())
+    setRows(Loading.of())
+    setUnit(Loading.of())
     void getFamilyContactsReport(unitId).then(setRows)
     void getDaycare(unitId).then(setUnit)
   }, [])
@@ -36,14 +38,14 @@ function FamilyContacts() {
     <Container>
       <ReturnButton />
       <ContentArea opaque>
-        {isSuccess(unit) && <Title size={1}>{unit.data.daycare.name}</Title>}
+        {unit.isSuccess && <Title size={1}>{unit.value.daycare.name}</Title>}
 
-        {isLoading(rows) && <Loader />}
-        {isFailure(rows) && <span>{i18n.common.loadingFailed}</span>}
-        {isSuccess(rows) && (
+        {rows.isLoading && <Loader />}
+        {rows.isFailure && <span>{i18n.common.loadingFailed}</span>}
+        {rows.isSuccess && (
           <>
             <ReportDownload
-              data={rows.data.map((row) => ({
+              data={rows.value.map((row) => ({
                 name: `${row.lastName} ${row.firstName}`,
                 ssn: row.ssn,
                 group: row.group,
@@ -123,7 +125,7 @@ function FamilyContacts() {
                 </Tr>
               </Thead>
               <Tbody>
-                {rows.data.map((row) => (
+                {rows.value.map((row) => (
                   <Tr key={row.id}>
                     <Td>
                       <Link

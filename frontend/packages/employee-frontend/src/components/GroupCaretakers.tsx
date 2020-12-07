@@ -12,7 +12,7 @@ import Button from '~components/shared/atoms/buttons/Button'
 import IconButton from '~components/shared/atoms/buttons/IconButton'
 import { RouteComponentProps } from 'react-router'
 import { UUID } from '~types'
-import { isFailure, isLoading, isSuccess, Loading, Result } from '~api'
+import { Loading, Result } from '~api'
 import { CaretakerAmount, CaretakersResponse } from '~types/caretakers'
 import { deleteCaretakers, getCaretakers } from '~api/caretakers'
 import { TitleContext, TitleState } from '~state/title'
@@ -66,17 +66,17 @@ function GroupCaretakers({
   const { i18n } = useTranslation()
   const { setTitle } = useContext<TitleState>(TitleContext)
   const [caretakers, setCaretakers] = useState<Result<CaretakersResponse>>(
-    Loading()
+    Loading.of()
   )
   const [modalOpen, setModalOpen] = useState<boolean>(false)
   const [rowToDelete, setRowToDelete] = useState<CaretakerAmount | null>(null)
   const [rowToEdit, setRowToEdit] = useState<CaretakerAmount | null>(null)
 
   const loadData = () => {
-    setCaretakers(Loading())
+    setCaretakers(Loading.of())
     void getCaretakers(unitId, groupId).then((response) => {
       setCaretakers(response)
-      if (isSuccess(response)) setTitle(response.data.groupName)
+      if (response.isSuccess) setTitle(response.value.groupName)
     })
   }
 
@@ -93,14 +93,14 @@ function GroupCaretakers({
     <Container>
       <ReturnButton />
       <ContentArea opaque>
-        {isLoading(caretakers) && <Loader />}
-        {isFailure(caretakers) && <span>{i18n.common.error.unknown}</span>}
-        {isSuccess(caretakers) && (
+        {caretakers.isLoading && <Loader />}
+        {caretakers.isFailure && <span>{i18n.common.error.unknown}</span>}
+        {caretakers.isSuccess && (
           <NarrowContainer>
             <Title size={2}>{i18n.groupCaretakers.title}</Title>
             <Title size={3}>
-              {caretakers.data.unitName} |{' '}
-              {capitalizeFirstLetter(caretakers.data.groupName)}
+              {caretakers.value.unitName} |{' '}
+              {capitalizeFirstLetter(caretakers.value.groupName)}
             </Title>
             <p>{i18n.groupCaretakers.info}</p>
             <FlexRowRightAlign>
@@ -119,7 +119,7 @@ function GroupCaretakers({
                 </Tr>
               </Thead>
               <Tbody>
-                {caretakers.data.caretakers.map((row) => (
+                {caretakers.value.caretakers.map((row) => (
                   <Tr key={row.id}>
                     <StyledTd>{row.startDate.format()}</StyledTd>
                     <StyledTd>

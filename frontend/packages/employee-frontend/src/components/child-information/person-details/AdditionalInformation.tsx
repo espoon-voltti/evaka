@@ -4,7 +4,7 @@
 
 import React, { useContext, useEffect, useState } from 'react'
 import { useTranslation } from '~/state/i18n'
-import { isFailure, isLoading, isSuccess, Loading } from '~api'
+import { Loading } from '~api'
 import {
   getAdditionalInformation,
   updateAdditionalInformation
@@ -67,7 +67,7 @@ const AdditionalInformation = React.memo(function AdditionalInformation({
   const editing = uiMode == 'child-additional-details-editing'
 
   const loadData = () => {
-    setAdditionalInformation(Loading())
+    setAdditionalInformation(Loading.of())
     void getAdditionalInformation(id).then((additionalInformation) => {
       setAdditionalInformation(additionalInformation)
     })
@@ -78,11 +78,11 @@ const AdditionalInformation = React.memo(function AdditionalInformation({
   }, [id])
 
   const startEdit = () => {
-    if (isSuccess(additionalInformation)) {
+    if (additionalInformation.isSuccess) {
       setForm({
-        additionalInfo: additionalInformation.data.additionalInfo,
-        allergies: additionalInformation.data.allergies,
-        diet: additionalInformation.data.diet
+        additionalInfo: additionalInformation.value.additionalInfo,
+        allergies: additionalInformation.value.allergies,
+        diet: additionalInformation.value.diet
       })
       toggleUiMode('child-additional-details-editing')
     }
@@ -90,7 +90,7 @@ const AdditionalInformation = React.memo(function AdditionalInformation({
 
   const onSubmit = () => {
     void updateAdditionalInformation(id, form).then((res) => {
-      if (isSuccess(res)) {
+      if (res.isSuccess) {
         clearUiMode()
         loadData()
       }
@@ -98,9 +98,9 @@ const AdditionalInformation = React.memo(function AdditionalInformation({
   }
 
   function renderListItems() {
-    if (isLoading(additionalInformation)) {
+    if (additionalInformation.isLoading) {
       return <Loader />
-    } else if (isFailure(additionalInformation)) {
+    } else if (additionalInformation.isFailure) {
       return <div>{i18n.common.loadingFailed}</div>
     } else {
       return (
@@ -142,7 +142,7 @@ const AdditionalInformation = React.memo(function AdditionalInformation({
                       rows={textAreaRows(form.additionalInfo)}
                     />
                   ) : (
-                    formatParagraphs(additionalInformation.data.additionalInfo)
+                    formatParagraphs(additionalInformation.value.additionalInfo)
                   ),
                   valueWidth: '400px'
                 },
@@ -163,7 +163,7 @@ const AdditionalInformation = React.memo(function AdditionalInformation({
                       maxLength={40}
                     />
                   ) : (
-                    formatParagraphs(additionalInformation.data.allergies)
+                    formatParagraphs(additionalInformation.value.allergies)
                   ),
                   valueWidth: '400px'
                 },
@@ -183,7 +183,7 @@ const AdditionalInformation = React.memo(function AdditionalInformation({
                       rows={textAreaRows(form.diet)}
                     />
                   ) : (
-                    formatParagraphs(additionalInformation.data.diet)
+                    formatParagraphs(additionalInformation.value.diet)
                   ),
                   valueWidth: '400px'
                 }

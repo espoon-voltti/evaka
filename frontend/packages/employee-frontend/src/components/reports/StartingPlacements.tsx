@@ -22,7 +22,7 @@ import {
   TableScrollable
 } from '~components/reports/common'
 import { useTranslation, Lang, Translations } from '~state/i18n'
-import { isFailure, isLoading, isSuccess, Loading, Result, Success } from '~api'
+import { Loading, Result, Success } from '~api'
 import {
   getStartingPlacementsReport,
   PlacementsReportFilters
@@ -74,7 +74,9 @@ function getFilename(i18n: Translations, year: number, month: number) {
 
 const StartingPlacements = React.memo(function StartingPlacements() {
   const { i18n, lang } = useTranslation()
-  const [rows, setRows] = useState<Result<StartingPlacementsRow[]>>(Success([]))
+  const [rows, setRows] = useState<Result<StartingPlacementsRow[]>>(
+    Success.of([])
+  )
   const today = LocalDate.today()
   const [filters, setFilters] = useState<PlacementsReportFilters>({
     year: today.year,
@@ -82,7 +84,7 @@ const StartingPlacements = React.memo(function StartingPlacements() {
   })
 
   useEffect(() => {
-    setRows(Loading())
+    setRows(Loading.of())
     void getStartingPlacementsReport(filters).then(setRows)
   }, [filters])
 
@@ -123,16 +125,16 @@ const StartingPlacements = React.memo(function StartingPlacements() {
           </FlexRow>
         </FilterRow>
         <ReportDownload
-          data={
-            isSuccess(rows)
-              ? rows.data.map((row) => ({
-                  firstName: row.firstName,
-                  lastName: row.lastName,
-                  ssn: row.ssn ?? row.dateOfBirth.format(),
-                  placementStart: row.placementStart.format()
-                }))
-              : []
-          }
+          data={rows
+            .map((rs) =>
+              rs.map((row) => ({
+                firstName: row.firstName,
+                lastName: row.lastName,
+                ssn: row.ssn ?? row.dateOfBirth.format(),
+                placementStart: row.placementStart.format()
+              }))
+            )
+            .getOrElse([])}
           headers={[
             { label: 'Lapsen sukunimi', key: 'lastName' },
             { label: 'Lapsen etunimi', key: 'firstName' },
@@ -149,9 +151,9 @@ const StartingPlacements = React.memo(function StartingPlacements() {
               <Th>{i18n.reports.startingPlacements.placementStart}</Th>
             </Tr>
           </Thead>
-          {isSuccess(rows) && (
+          {rows.isSuccess && (
             <Tbody>
-              {rows.data.map((row) => (
+              {rows.value.map((row) => (
                 <Tr key={row.childId}>
                   <StyledTd>
                     <Link
@@ -165,9 +167,9 @@ const StartingPlacements = React.memo(function StartingPlacements() {
             </Tbody>
           )}
         </TableScrollable>
-        {isSuccess(rows) && <RowCountInfo rowCount={rows.data.length} />}
-        {isLoading(rows) && <Loader />}
-        {isFailure(rows) && <span>{i18n.common.loadingFailed}</span>}
+        {rows.isSuccess && <RowCountInfo rowCount={rows.value.length} />}
+        {rows.isLoading && <Loader />}
+        {rows.isFailure && <span>{i18n.common.loadingFailed}</span>}
       </ContentArea>
     </Container>
   )

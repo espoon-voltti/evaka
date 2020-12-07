@@ -35,8 +35,8 @@ export async function createAssistanceNeed(
       endDate: LocalDate.parseIso(data.endDate),
       bases: new Set(data.bases)
     }))
-    .then(Success)
-    .catch(Failure)
+    .then((v) => Success.of(v))
+    .catch((e) => Failure.fromError(e))
 }
 
 export async function getAssistanceNeeds(
@@ -52,8 +52,8 @@ export async function getAssistanceNeeds(
         bases: new Set(data.bases)
       }))
     )
-    .then(Success)
-    .catch(Failure)
+    .then((v) => Success.of(v))
+    .catch((e) => Failure.fromError(e))
 }
 
 export async function updateAssistanceNeed(
@@ -73,8 +73,8 @@ export async function updateAssistanceNeed(
       endDate: LocalDate.parseIso(data.endDate),
       bases: new Set(data.bases)
     }))
-    .then(Success)
-    .catch(Failure)
+    .then((v) => Success.of(v))
+    .catch((e) => Failure.fromError(e))
 }
 
 export async function removeAssistanceNeed(
@@ -82,6 +82,6 @@ export async function removeAssistanceNeed(
 ): Promise<Result<null>> {
   return client
     .delete(`/assistance-needs/${assistanceNeedId}`)
-    .then(() => Success(null))
-    .catch(Failure)
+    .then(() => Success.of(null))
+    .catch((e) => Failure.fromError(e))
 }

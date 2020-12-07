@@ -12,7 +12,7 @@ import Title from '~components/shared/atoms/Title'
 import { Th, Tr, Td, Thead, Tbody } from '~components/shared/layout/Table'
 import { reactSelectStyles } from '~components/shared/utils'
 import { Translations, useTranslation } from '~state/i18n'
-import { isFailure, isLoading, isSuccess, Loading, Result, Success } from '~api'
+import { Loading, Result, Success } from '~api'
 import { EndedPlacementsReportRow } from '~types/reports'
 import { getEndedPlacementsReport, PlacementsReportFilters } from '~api/reports'
 import ReturnButton from 'components/shared/atoms/buttons/ReturnButton'
@@ -68,7 +68,7 @@ function getFilename(i18n: Translations, year: number, month: number) {
 function EndedPlacements() {
   const { i18n } = useTranslation()
   const [rows, setRows] = useState<Result<EndedPlacementsReportRow[]>>(
-    Success([])
+    Success.of([])
   )
   const today = LocalDate.today()
   const [filters, setFilters] = useState<PlacementsReportFilters>({
@@ -77,7 +77,7 @@ function EndedPlacements() {
   })
 
   useEffect(() => {
-    setRows(Loading())
+    setRows(Loading.of())
     void getEndedPlacementsReport(filters).then(setRows)
   }, [filters])
 
@@ -117,12 +117,12 @@ function EndedPlacements() {
             </Wrapper>
           </FlexRow>
         </FilterRow>
-        {isLoading(rows) && <Loader />}
-        {isFailure(rows) && <span>{i18n.common.loadingFailed}</span>}
-        {isSuccess(rows) && (
+        {rows.isLoading && <Loader />}
+        {rows.isFailure && <span>{i18n.common.loadingFailed}</span>}
+        {rows.isSuccess && (
           <>
             <ReportDownload
-              data={rows.data.map((row) => ({
+              data={rows.value.map((row) => ({
                 ...row,
                 placementEnd: row.placementEnd.format(),
                 nextPlacementStart: row.nextPlacementStart?.format()
@@ -149,7 +149,7 @@ function EndedPlacements() {
                 </Tr>
               </Thead>
               <Tbody>
-                {rows.data.map((row) => (
+                {rows.value.map((row) => (
                   <Tr key={row.childId}>
                     <StyledTd>
                       <Link to={`/child-information/${row.childId}`}>{`${
@@ -163,7 +163,7 @@ function EndedPlacements() {
                 ))}
               </Tbody>
             </TableScrollable>
-            <RowCountInfo rowCount={rows.data.length} />
+            <RowCountInfo rowCount={rows.value.length} />
           </>
         )}
       </ContentArea>

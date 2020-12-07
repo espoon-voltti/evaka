@@ -5,7 +5,7 @@
 import React, { Fragment, useEffect, useState } from 'react'
 import styled from 'styled-components'
 
-import { Result, Loading, isSuccess, isLoading, isFailure } from '~api'
+import { Result, Loading } from '~api'
 import {
   getPairingStatus,
   PairingResponse,
@@ -47,7 +47,7 @@ export default React.memo(function MobilePairingModal({
   const [deviceName, setDeviceName] = useState<string>('')
   const [pairingResponse, setPairingResponse] = useState<
     Result<PairingResponse>
-  >(Loading())
+  >(Loading.of())
 
   useEffect(() => {
     if (phase === 1) {
@@ -57,15 +57,15 @@ export default React.memo(function MobilePairingModal({
 
   useEffect(() => {
     if (responseKey.length === 10) {
-      if (isSuccess(pairingResponse)) {
+      if (pairingResponse.isSuccess) {
         void postPairingResponse(
-          pairingResponse.data.id,
-          pairingResponse.data.challengeKey,
+          pairingResponse.value.id,
+          pairingResponse.value.challengeKey,
           responseKey
         ).then((res) => {
-          if (isSuccess(res)) {
+          if (res.isSuccess) {
             setPairingResponse(res)
-            if (res.data.status === 'READY') {
+            if (res.value.status === 'READY') {
               setPhase(3)
             }
           }
@@ -76,11 +76,11 @@ export default React.memo(function MobilePairingModal({
 
   useEffect(() => {
     const polling = setInterval(() => {
-      if (isSuccess(pairingResponse)) {
-        if (pairingResponse.data.status === 'WAITING_CHALLENGE') {
-          void getPairingStatus(pairingResponse.data.id).then((status) => {
-            if (isSuccess(status)) {
-              if (status.data.status === 'WAITING_RESPONSE') {
+      if (pairingResponse.isSuccess) {
+        if (pairingResponse.value.status === 'WAITING_CHALLENGE') {
+          void getPairingStatus(pairingResponse.value.id).then((status) => {
+            if (status.isSuccess) {
+              if (status.value.status === 'WAITING_RESPONSE') {
                 clearInterval(polling)
                 setPhase(2)
               }
@@ -93,8 +93,11 @@ export default React.memo(function MobilePairingModal({
   }, [pairingResponse])
 
   async function saveDeviceName() {
-    if (isSuccess(pairingResponse) && pairingResponse.data.mobileDeviceId) {
-      await putMobileDeviceName(pairingResponse.data.mobileDeviceId, deviceName)
+    if (pairingResponse.isSuccess && pairingResponse.value.mobileDeviceId) {
+      await putMobileDeviceName(
+        pairingResponse.value.mobileDeviceId,
+        deviceName
+      )
       closeModal()
     }
   }
@@ -119,11 +122,11 @@ export default React.memo(function MobilePairingModal({
           resolveLabel={i18n.common.cancel}
           data-qa="mobile-pairing-modal-phase-1"
         >
-          {isLoading(pairingResponse) && <Loader />}
-          {isFailure(pairingResponse) && <div>{i18n.common.loadingFailed}</div>}
-          {isSuccess(pairingResponse) && (
+          {pairingResponse.isLoading && <Loader />}
+          {pairingResponse.isFailure && <div>{i18n.common.loadingFailed}</div>}
+          {pairingResponse.isSuccess && (
             <ResponseKey data-qa="challenge-key">
-              {pairingResponse.data.challengeKey}
+              {pairingResponse.value.challengeKey}
             </ResponseKey>
           )}
         </InfoModal>
@@ -138,9 +141,9 @@ export default React.memo(function MobilePairingModal({
           resolve={closeModal}
           resolveLabel={i18n.common.cancel}
         >
-          {isLoading(pairingResponse) && <Loader />}
-          {isFailure(pairingResponse) && <div>{i18n.common.loadingFailed}</div>}
-          {isSuccess(pairingResponse) && (
+          {pairingResponse.isLoading && <Loader />}
+          {pairingResponse.isFailure && <div>{i18n.common.loadingFailed}</div>}
+          {pairingResponse.isSuccess && (
             <Flex>
               <InputField
                 value={responseKey}
@@ -164,11 +167,11 @@ export default React.memo(function MobilePairingModal({
           resolve={saveDeviceName}
           resolveLabel={i18n.common.ready}
         >
-          {isLoading(pairingResponse) && <Loader />}
-          {isFailure(pairingResponse) && <div>{i18n.common.loadingFailed}</div>}
-          {isSuccess(pairingResponse) && (
+          {pairingResponse.isLoading && <Loader />}
+          {pairingResponse.isFailure && <div>{i18n.common.loadingFailed}</div>}
+          {pairingResponse.isSuccess && (
             <Flex>
-              {pairingResponse.data.mobileDeviceId ? (
+              {pairingResponse.value.mobileDeviceId ? (
                 <InputField
                   value={deviceName}
                   onChange={setDeviceName}

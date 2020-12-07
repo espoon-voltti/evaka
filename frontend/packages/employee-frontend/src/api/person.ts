@@ -24,8 +24,8 @@ export async function getPersonDetails(
     .get<JsonOf<PersonDetails>>(`/person/details/${id}`)
     .then((res) => res.data)
     .then(deserializePersonDetails)
-    .then(Success)
-    .catch(Failure)
+    .then((v) => Success.of(v))
+    .catch((e) => Failure.fromError(e))
 }
 
 export async function fridgeHeadPerson(
@@ -37,8 +37,8 @@ export async function fridgeHeadPerson(
       `/person/${id}/contact-info`,
       fridgeHeadPerson
     )
-    .then((res) => Success(res.data))
-    .catch(Failure)
+    .then((res) => Success.of(res.data))
+    .catch((e) => Failure.fromError(e))
 }
 
 export async function patchPersonDetails(
@@ -48,8 +48,8 @@ export async function patchPersonDetails(
   return client
     .patch<JsonOf<PersonDetails>>(`/person/${id}`, data)
     .then(({ data }) => deserializePersonDetails(data))
-    .then(Success)
-    .catch(Failure)
+    .then((v) => Success.of(v))
+    .catch((e) => Failure.fromError(e))
 }
 
 export async function addSsn(
@@ -59,8 +59,8 @@ export async function addSsn(
   return client
     .put<JsonOf<PersonDetails>>(`/person/${id}/ssn`, { ssn })
     .then(({ data }) => deserializePersonDetails(data))
-    .then(Success)
-    .catch(Failure)
+    .then((v) => Success.of(v))
+    .catch((e) => Failure.fromError(e))
 }
 
 export async function getOrCreatePersonBySsn(
@@ -74,8 +74,8 @@ export async function getOrCreatePersonBySsn(
       }
     })
     .then(({ data }) => deserializePersonDetails(data))
-    .then(Success)
-    .catch(Failure)
+    .then((v) => Success.of(v))
+    .catch((e) => Failure.fromError(e))
 }
 
 export async function findByNameOrAddress(
@@ -93,8 +93,8 @@ export async function findByNameOrAddress(
     })
     .then((res) => res.data)
     .then((results) => results.map(deserializePersonDetails))
-    .then(Success)
-    .catch(Failure)
+    .then((v) => Success.of(v))
+    .catch((e) => Failure.fromError(e))
 }
 
 export async function getGuardianApplicationSummaries(
@@ -111,8 +111,8 @@ export async function getGuardianApplicationSummaries(
         sentDate: LocalDate.parseNullableIso(data.sentDate)
       }))
     )
-    .then(Success)
-    .catch(Failure)
+    .then((v) => Success.of(v))
+    .catch((e) => Failure.fromError(e))
 }
 
 export async function getChildApplicationSummaries(
@@ -127,8 +127,8 @@ export async function getChildApplicationSummaries(
         sentDate: LocalDate.parseNullableIso(data.sentDate)
       }))
     )
-    .then(Success)
-    .catch(Failure)
+    .then((v) => Success.of(v))
+    .catch((e) => Failure.fromError(e))
 }
 
 export async function getPersonDependants(
@@ -154,8 +154,8 @@ export async function getPersonDependants(
         }))
       }))
     )
-    .then(Success)
-    .catch(Failure)
+    .then((v) => Success.of(v))
+    .catch((e) => Failure.fromError(e))
 }
 
 export async function getPersonGuardians(
@@ -163,8 +163,8 @@ export async function getPersonGuardians(
 ): Promise<Result<PersonDetails[]>> {
   return client
     .get<JsonOf<PersonDetails[]>>(`/person/guardians/${personId}`)
-    .then((res) => Success(res.data.map(deserializePersonDetails)))
-    .catch(Failure)
+    .then((res) => Success.of(res.data.map(deserializePersonDetails)))
+    .catch((e) => Failure.fromError(e))
 }
 
 interface DecisionsResponse {
@@ -184,8 +184,8 @@ export async function getGuardianDecisions(
         sentDate: LocalDate.parseIso(data.sentDate)
       }))
     )
-    .then(Success)
-    .catch(Failure)
+    .then((v) => Success.of(v))
+    .catch((e) => Failure.fromError(e))
 }
 
 export interface PatchPersonRequest {
@@ -205,15 +205,15 @@ export async function mergePeople(
 ): Promise<Result<null>> {
   return client
     .post('/person/merge', { master, duplicate })
-    .then(() => Success(null))
-    .catch(Failure)
+    .then(() => Success.of(null))
+    .catch((e) => Failure.fromError(e))
 }
 
 export async function deletePerson(id: UUID): Promise<Result<null>> {
   return client
     .delete(`/person/${id}`)
-    .then(() => Success(null))
-    .catch(Failure)
+    .then(() => Success.of(null))
+    .catch((e) => Failure.fromError(e))
 }
 
 export type CreatePersonBody = {
@@ -232,6 +232,6 @@ export async function createPerson(
 ): Promise<Result<string>> {
   return client
     .post('person/create', person)
-    .then((response) => Success(response.data))
-    .catch(Failure)
+    .then((response) => Success.of(response.data))
+    .catch((e) => Failure.fromError(e))
 }

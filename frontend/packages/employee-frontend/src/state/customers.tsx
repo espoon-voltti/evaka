@@ -29,7 +29,7 @@ export interface CustomersState {
 }
 
 const defaultState: CustomersState = {
-  customers: Success([]),
+  customers: Success.of([]),
   setCustomers: () => undefined,
   useCustomerSearch: () => undefined,
   searchTerm: '',

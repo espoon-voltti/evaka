@@ -15,8 +15,8 @@ export async function getAdditionalInformation(
     .get<JsonOf<AdditionalInformation>>(
       `/children/${id}/additional-information`
     )
-    .then((res) => Success(res.data))
-    .catch(Failure)
+    .then((res) => Success.of(res.data))
+    .catch((e) => Failure.fromError(e))
 }
 
 export async function updateAdditionalInformation(
@@ -25,6 +25,6 @@ export async function updateAdditionalInformation(
 ): Promise<Result<null>> {
   return client
     .put(`/children/${id}/additional-information`, data)
-    .then(() => Success(null))
-    .catch(Failure)
+    .then(() => Success.of(null))
+    .catch((e) => Failure.fromError(e))
 }

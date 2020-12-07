@@ -26,7 +26,7 @@ import {
   Tbody
 } from '~components/shared/layout/Table'
 import InfoModal from '~components/common/InfoModal'
-import { isFailure, isLoading, isSuccess, Loading, Result } from '~api'
+import { Loading, Result } from '~api'
 import {
   addDaycareAclStaff,
   addDaycareAclSupervisor,
@@ -173,15 +173,18 @@ function DevicesTable({
         </Tr>
       </Thead>
       <Tbody>
-        {isSuccess(rows) &&
-          rows.data.map((row) => (
-            <DeviceRow
-              key={row.id}
-              row={row}
-              onClickEdit={() => onEditDevice(row.id)}
-              onClickDelete={() => onDeleteDevice(row.id)}
-            />
-          ))}
+        {rows
+          .map((rs) =>
+            rs.map((row) => (
+              <DeviceRow
+                key={row.id}
+                row={row}
+                onClickEdit={() => onEditDevice(row.id)}
+                onClickDelete={() => onDeleteDevice(row.id)}
+              />
+            ))
+          )
+          .getOrElse(null)}
       </Tbody>
     </Table>
   )
@@ -310,16 +313,16 @@ function UnitAccessControl({ unitId }: Props) {
   const { i18n } = useTranslation()
 
   const { user } = useContext(UserContext)
-  const [employees, setEmployees] = useState<Result<Employee[]>>(Loading())
+  const [employees, setEmployees] = useState<Result<Employee[]>>(Loading.of())
   const [daycareAclRows, setDaycareAclRows] = useState<Result<DaycareAclRow[]>>(
-    Loading()
+    Loading.of()
   )
   const [mobileDevices, setMobileDevices] = useState<Result<MobileDevice[]>>(
-    Loading()
+    Loading.of()
   )
   const [mobileId, setMobileId] = useState<UUID | undefined>(undefined)
-  const loading = isLoading(daycareAclRows) || isLoading(employees)
-  const failed = isFailure(daycareAclRows) || isFailure(employees)
+  const loading = daycareAclRows.isLoading || employees.isLoading
+  const failed = daycareAclRows.isFailure || employees.isFailure
 
   const reloadEmployees = useRestApi(getEmployees, setEmployees)
   const reloadDaycareAclRows = useRestApi(getDaycareAclRows, setDaycareAclRows)
@@ -330,12 +333,12 @@ function UnitAccessControl({ unitId }: Props) {
 
   const candidateEmployees = useMemo(
     () =>
-      isSuccess(employees) && isSuccess(daycareAclRows)
+      employees.isSuccess && daycareAclRows.isSuccess
         ? orderBy(
-            employees.data.filter(
+            employees.value.filter(
               (employee) =>
                 employee.id !== user?.id &&
-                !daycareAclRows.data.some(
+                !daycareAclRows.value.some(
                   (row) => row.employee.id === employee.id
                 )
             ),
@@ -358,17 +361,21 @@ function UnitAccessControl({ unitId }: Props) {
 
   const unitSupervisors = useMemo(
     () =>
-      isSuccess(daycareAclRows)
+      daycareAclRows.isSuccess
         ? formatRows(
-            daycareAclRows.data.filter(({ role }) => role === 'UNIT_SUPERVISOR')
+            daycareAclRows.value.filter(
+              ({ role }) => role === 'UNIT_SUPERVISOR'
+            )
           )
         : undefined,
     [daycareAclRows]
   )
   const staff = useMemo(
     () =>
-      isSuccess(daycareAclRows)
-        ? formatRows(daycareAclRows.data.filter(({ role }) => role === 'STAFF'))
+      daycareAclRows.isSuccess
+        ? formatRows(
+            daycareAclRows.value.filter(({ role }) => role === 'STAFF')
+          )
         : undefined,
     [daycareAclRows]
   )

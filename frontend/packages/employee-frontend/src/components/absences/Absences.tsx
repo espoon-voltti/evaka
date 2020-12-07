@@ -14,7 +14,7 @@ import { Container, ContentArea } from '~components/shared/layout/Container'
 import Loader from '~components/shared/atoms/Loader'
 import Title from '~components/shared/atoms/Title'
 import { FixedSpaceColumn } from '~components/shared/layout/flex-helpers'
-import { isSuccess, isLoading, isFailure, Loading } from '~api'
+import { Loading } from '~api'
 import FormModal from '~components/common/FormModal'
 import { getGroupAbsences, postGroupAbsences } from '~api/absences'
 import { AbsencesContext, AbsencesState } from '~state/absence'
@@ -78,7 +78,7 @@ function Absences({ match }: RouteComponentProps<{ groupId: string }>) {
   }
 
   const loadAbsences = useCallback(() => {
-    setAbsences(Loading())
+    setAbsences(Loading.of())
     void getGroupAbsences(groupId, {
       year: selectedDate.getYear(),
       month: selectedDate.getMonth()
@@ -88,13 +88,13 @@ function Absences({ match }: RouteComponentProps<{ groupId: string }>) {
   useEffect(() => {
     loadAbsences()
     return () => {
-      setAbsences(Loading())
+      setAbsences(Loading.of())
     }
   }, [loadAbsences])
 
   useEffect(() => {
-    if (isSuccess(absences)) {
-      setTitle(`${absences.data.groupName} | ${absences.data.daycareName}`)
+    if (absences.isSuccess) {
+      setTitle(`${absences.value.groupName} | ${absences.value.daycareName}`)
     }
   }, [absences])
 
@@ -193,12 +193,12 @@ function Absences({ match }: RouteComponentProps<{ groupId: string }>) {
         <ReturnButton dataQa="absences-page-return-button" />
         <AbsencesContentArea opaque>
           {renderAbsenceModal()}
-          {isSuccess(absences) ? (
+          {absences.isSuccess ? (
             <div>
               <Title size={1} data-qa="absences-title">
-                {absences.data.daycareName}
+                {absences.value.daycareName}
               </Title>
-              <Title size={2}>{absences.data.groupName}</Title>
+              <Title size={2}>{absences.value.groupName}</Title>
               <PeriodPicker
                 mode={PeriodPickerMode.MONTH}
                 onChange={setSelectedDate}
@@ -206,8 +206,8 @@ function Absences({ match }: RouteComponentProps<{ groupId: string }>) {
               />
               <AbsenceTable
                 groupId={groupId}
-                childList={absences.data.children}
-                operationDays={absences.data.operationDays}
+                childList={absences.value.children}
+                operationDays={absences.value.operationDays}
               />
               <AddAbsencesButton
                 data-qa="add-absences-button"
@@ -217,9 +217,9 @@ function Absences({ match }: RouteComponentProps<{ groupId: string }>) {
               />
             </div>
           ) : null}
-          {isLoading(absences) && <Loader />}
-          {isFailure(absences) && (
-            <div>Something went wrong ({absences.error.message})</div>
+          {absences.isLoading && <Loader />}
+          {absences.isFailure && (
+            <div>Something went wrong ({absences.message})</div>
           )}
         </AbsencesContentArea>
         <ColorInfo />

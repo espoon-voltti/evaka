@@ -38,8 +38,8 @@ export async function createServiceNeed(
       endDate: LocalDate.parseNullableIso(data.endDate),
       updated: new Date(data.updated)
     }))
-    .then(Success)
-    .catch(Failure)
+    .then((v) => Success.of(v))
+    .catch((e) => Failure.fromError(e))
 }
 
 export async function getServiceNeeds(
@@ -55,8 +55,8 @@ export async function getServiceNeeds(
         updated: new Date(data.updated)
       }))
     )
-    .then(Success)
-    .catch(Failure)
+    .then((v) => Success.of(v))
+    .catch((e) => Failure.fromError(e))
 }
 
 export async function updateServiceNeed(
@@ -72,13 +72,13 @@ export async function updateServiceNeed(
       endDate: LocalDate.parseNullableIso(data.endDate),
       updated: new Date(data.updated)
     }))
-    .then(Success)
-    .catch(Failure)
+    .then((v) => Success.of(v))
+    .catch((e) => Failure.fromError(e))
 }
 
 export async function removeServiceNeed(id: UUID): Promise<Result<null>> {
   return client
     .delete(`/service-needs/${id}`)
-    .then(() => Success(null))
-    .catch(Failure)
+    .then(() => Success.of(null))
+    .catch((e) => Failure.fromError(e))
 }

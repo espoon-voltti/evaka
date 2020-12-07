@@ -17,7 +17,7 @@ import Title from '~components/shared/atoms/Title'
 import Loader from '~components/shared/atoms/Loader'
 
 import { useTranslation } from '~state/i18n'
-import { Loading, Result, isLoading, isFailure } from '~api'
+import { Loading, Result } from '~api'
 import { getOccupancyRates, OccupancyResponse } from '~api/unit'
 
 import { EspooColours } from '../../utils/colours'
@@ -134,14 +134,14 @@ const MemoizedCard = memo(function UnitCard({
   const { i18n } = useTranslation()
 
   const [occupancies, setOccupancies] = useState<Result<OccupancyResponse>>(
-    Loading()
+    Loading.of()
   )
 
   const isRemovable = additionalUnits.map((item) => item.id).includes(unitId)
 
   useEffect(() => {
     if (unitId) {
-      setOccupancies(Loading())
+      setOccupancies(Loading.of())
       const occupancyStartDate = startDate.isBefore(LocalDate.today())
         ? LocalDate.today()
         : startDate
@@ -156,7 +156,7 @@ const MemoizedCard = memo(function UnitCard({
     }
 
     return () => {
-      setOccupancies(Loading())
+      setOccupancies(Loading.of())
     }
   }, [unitId, startDate, endDate])
 
@@ -195,15 +195,15 @@ const MemoizedCard = memo(function UnitCard({
         </Link>
       </MarginBox>
       <OccupancyContainer>
-        {isLoading(occupancies) ? (
+        {occupancies.isLoading ? (
           <Loader />
-        ) : isFailure(occupancies) ? (
+        ) : occupancies.isFailure ? (
           <FailText>{i18n.unit.occupancy.fail}</FailText>
-        ) : occupancies.data.max ? (
+        ) : occupancies.value.max ? (
           <OccupancyValue
             type="planned"
             heading={i18n.placementDraft.card.title}
-            occupancy={occupancies.data.max}
+            occupancy={occupancies.value.max}
           />
         ) : (
           <span>{i18n.unit.occupancy.noValidValues}</span>

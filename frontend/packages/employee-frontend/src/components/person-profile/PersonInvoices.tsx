@@ -7,7 +7,7 @@ import * as _ from 'lodash'
 import React, { useContext, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 
-import { isFailure, isLoading, isSuccess, Loading } from '~api'
+import { Loading } from '~api'
 import { getPersonInvoices } from '~api/invoicing'
 import { StatusTd } from '~components/PersonProfile'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'components/shared/layout/Table'
@@ -29,15 +29,15 @@ const PersonInvoices = React.memo(function PersonInvoices({ id, open }: Props) {
   const { invoices, setInvoices } = useContext(PersonContext)
 
   useEffect(() => {
-    setInvoices(Loading())
+    setInvoices(Loading.of())
     void getPersonInvoices(id).then((response) => {
       setInvoices(response)
     })
   }, [id, setInvoices])
 
   const renderInvoices = () =>
-    isSuccess(invoices)
-      ? _.orderBy(invoices.data, ['sentAt'], ['desc']).map(
+    invoices.isSuccess
+      ? _.orderBy(invoices.value, ['sentAt'], ['desc']).map(
           (invoice: Invoice) => {
             return (
               <Tr key={`${invoice.id}`} data-qa="table-invoice-row">
@@ -73,8 +73,8 @@ const PersonInvoices = React.memo(function PersonInvoices({ id, open }: Props) {
           </Thead>
           <Tbody>{renderInvoices()}</Tbody>
         </Table>
-        {isLoading(invoices) && <Loader />}
-        {isFailure(invoices) && <div>{i18n.common.loadingFailed}</div>}
+        {invoices.isLoading && <Loader />}
+        {invoices.isFailure && <div>{i18n.common.loadingFailed}</div>}
       </CollapsibleSection>
     </div>
   )

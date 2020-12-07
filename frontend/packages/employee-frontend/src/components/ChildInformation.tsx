@@ -22,7 +22,7 @@ import { UUID } from '~types'
 import { Parentship } from '~types/fridge'
 import Placements from '~components/child-information/Placements'
 import { getPersonDetails } from '~api/person'
-import { isSuccess, Loading } from '~api'
+import { Loading } from '~api'
 import WarningLabel from '~components/common/WarningLabel'
 import { ChildContext, ChildState } from '~state/child'
 import FridgeParents from '~components/child-information/FridgeParents'
@@ -140,8 +140,8 @@ const ChildInformation = React.memo(function ChildInformation({
   const { setTitle, formatTitleName } = useContext<TitleState>(TitleContext)
 
   useEffect(() => {
-    setPerson(Loading())
-    setParentships(Loading())
+    setPerson(Loading.of())
+    setParentships(Loading.of())
     void getPersonDetails(id).then(setPerson)
 
     if (
@@ -152,8 +152,11 @@ const ChildInformation = React.memo(function ChildInformation({
   }, [id])
 
   useEffect(() => {
-    if (isSuccess(person)) {
-      const name = formatTitleName(person.data.firstName, person.data.lastName)
+    if (person.isSuccess) {
+      const name = formatTitleName(
+        person.value.firstName,
+        person.value.lastName
+      )
       setTitle(`${name} | ${i18n.titles.customers}`)
     }
   }, [person])
@@ -170,9 +173,9 @@ const ChildInformation = React.memo(function ChildInformation({
     return currentRelation?.headOfChildId
   }
 
-  const currentHeadOfChildId = isSuccess(parentships)
-    ? getCurrentHeadOfChildId(parentships.data)
-    : undefined
+  const currentHeadOfChildId = parentships
+    .map(getCurrentHeadOfChildId)
+    .getOrElse(undefined)
 
   return (
     <Container>
@@ -182,7 +185,7 @@ const ChildInformation = React.memo(function ChildInformation({
           <HeaderRow>
             <Title size={1}>{i18n.childInformation.title}</Title>
             <div>
-              {isSuccess(person) && person.data.restrictedDetailsEnabled && (
+              {person.isSuccess && person.value.restrictedDetailsEnabled && (
                 <WarningLabel text={i18n.childInformation.restrictedDetails} />
               )}
               {currentHeadOfChildId ? (

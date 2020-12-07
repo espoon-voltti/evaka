@@ -11,7 +11,7 @@ import VoucherValueDecisionHeading from './VoucherValueDecisionHeading'
 import VoucherValueDecisionChildSection from './VoucherValueDecisionChildSection'
 import VoucherValueDecisionSummary from './VoucherValueDecisionSummary'
 import VoucherValueDecisionActionBar from './VoucherValueDecisionActionBar'
-import { isFailure, isSuccess, Loading, Result } from '~api'
+import { Loading, Result } from '~api'
 import { getVoucherValueDecision } from '~api/invoicing'
 import { useTranslation } from '~state/i18n'
 import { TitleContext, TitleState } from '~state/title'
@@ -29,7 +29,7 @@ export default React.memo(function VoucherValueDecisionPage() {
   const { setTitle, formatTitleName } = useContext<TitleState>(TitleContext)
   const [decision, setDecision] = useState<
     Result<VoucherValueDecisionDetailed>
-  >(Loading())
+  >(Loading.of())
 
   const loadDecision = useCallback(
     () => void getVoucherValueDecision(id).then((dec) => setDecision(dec)),
@@ -39,29 +39,29 @@ export default React.memo(function VoucherValueDecisionPage() {
   useEffect(loadDecision, [id])
 
   useEffect(() => {
-    if (isSuccess(decision)) {
+    if (decision.isSuccess) {
       const name = formatTitleName(
-        decision.data.headOfFamily.firstName,
-        decision.data.headOfFamily.lastName
+        decision.value.headOfFamily.firstName,
+        decision.value.headOfFamily.lastName
       )
-      decision.data.status === 'DRAFT'
+      decision.value.status === 'DRAFT'
         ? setTitle(`${name} | ${i18n.titles.valueDecisionDraft}`)
         : setTitle(`${name} | ${i18n.titles.valueDecision}`)
     }
   }, [decision])
 
-  if (isFailure(decision)) {
+  if (decision.isFailure) {
     return <Redirect to="/finance/value-decisions" />
   }
 
   return (
     <Container data-qa="voucher-value-decision-page">
       <ReturnButton dataQa="navigate-back" />
-      {isSuccess(decision) && (
+      {decision.isSuccess && (
         <>
           <ContentArea opaque>
-            <VoucherValueDecisionHeading {...decision.data} />
-            {decision.data.parts.map(({ child, placement, placementUnit }) => (
+            <VoucherValueDecisionHeading {...decision.value} />
+            {decision.value.parts.map(({ child, placement, placementUnit }) => (
               <VoucherValueDecisionChildSection
                 key={child.id}
                 child={child}
@@ -69,10 +69,10 @@ export default React.memo(function VoucherValueDecisionPage() {
                 placementUnit={placementUnit}
               />
             ))}
-            <VoucherValueDecisionSummary decision={decision.data} />
+            <VoucherValueDecisionSummary decision={decision.value} />
           </ContentArea>
           <VoucherValueDecisionActionBar
-            decision={decision.data}
+            decision={decision.value}
             loadDecision={loadDecision}
           />
         </>

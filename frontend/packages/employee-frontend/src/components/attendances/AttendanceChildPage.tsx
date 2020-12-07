@@ -7,7 +7,6 @@ import { useHistory, useParams } from 'react-router-dom'
 import styled from 'styled-components'
 import MetaTags from 'react-meta-tags'
 
-import { isLoading, isSuccess } from '~api'
 import { ContentArea } from '~components/shared/layout/Container'
 import { UUID } from '~types'
 import RoundIcon from '~components/shared/atoms/RoundIcon'
@@ -91,22 +90,20 @@ export default React.memo(function AttendanceChildPage() {
   }, [])
 
   useEffect(() => {
-    if (isSuccess(attendanceResponse)) {
-      const child = attendanceResponse.data.children.find(
+    if (attendanceResponse.isSuccess) {
+      const child = attendanceResponse.value.children.find(
         (child) => child.id === childId
       )
       setChild(child)
       setGroup(
-        attendanceResponse.data.unit.groups.find(
+        attendanceResponse.value.unit.groups.find(
           (group: Group) => group.id === child?.groupId
         )
       )
     }
   }, [attendanceResponse])
 
-  const loading = isLoading(attendanceResponse)
-
-  console.log('loading: ', loading)
+  const loading = attendanceResponse.isLoading
 
   return (
     <Fragment>

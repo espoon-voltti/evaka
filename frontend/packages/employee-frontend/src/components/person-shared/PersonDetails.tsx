@@ -4,7 +4,7 @@
 
 import * as React from 'react'
 import { faPen } from 'icon-set'
-import { isFailure, isLoading, isSuccess, Result } from '~api'
+import { Result } from '~api'
 import { PersonDetails } from '~/types/person'
 import { useTranslation } from '~state/i18n'
 import { useContext, useEffect, useState } from 'react'
@@ -103,22 +103,22 @@ const PersonDetails = React.memo(function PersonDetails({
   })
 
   useEffect(() => {
-    if (editing && isSuccess(personResult)) {
+    if (editing && personResult.isSuccess) {
       setForm({
-        firstName: personResult.data.firstName || '',
-        lastName: personResult.data.lastName || '',
-        dateOfBirth: personResult.data.dateOfBirth,
-        email: personResult.data.email || '',
-        phone: personResult.data.phone || '',
-        streetAddress: personResult.data.streetAddress || '',
-        postalCode: personResult.data.postalCode || '',
-        postOffice: personResult.data.postOffice || '',
-        invoiceRecipientName: personResult.data.invoiceRecipientName ?? '',
-        invoicingStreetAddress: personResult.data.invoicingStreetAddress ?? '',
-        invoicingPostalCode: personResult.data.invoicingPostalCode ?? '',
-        invoicingPostOffice: personResult.data.invoicingPostOffice ?? '',
+        firstName: personResult.value.firstName || '',
+        lastName: personResult.value.lastName || '',
+        dateOfBirth: personResult.value.dateOfBirth,
+        email: personResult.value.email || '',
+        phone: personResult.value.phone || '',
+        streetAddress: personResult.value.streetAddress || '',
+        postalCode: personResult.value.postalCode || '',
+        postOffice: personResult.value.postOffice || '',
+        invoiceRecipientName: personResult.value.invoiceRecipientName ?? '',
+        invoicingStreetAddress: personResult.value.invoicingStreetAddress ?? '',
+        invoicingPostalCode: personResult.value.invoicingPostalCode ?? '',
+        invoicingPostOffice: personResult.value.invoicingPostOffice ?? '',
         forceManualFeeDecisions:
-          personResult.data.forceManualFeeDecisions ?? false
+          personResult.value.forceManualFeeDecisions ?? false
       })
     }
   }, [personResult, editing])
@@ -128,10 +128,14 @@ const PersonDetails = React.memo(function PersonDetails({
     return clearUiMode
   }, [])
 
-  if (isLoading(personResult)) return <Loader />
-  if (isFailure(personResult)) return <div>{i18n.common.loadingFailed}</div>
+  if (personResult.isLoading) {
+    return <Loader />
+  }
+  if (personResult.isFailure) {
+    return <div>{i18n.common.loadingFailed}</div>
+  }
 
-  const person = personResult.data
+  const person = personResult.value
   const powerEditing = editing && person.socialSecurityNumber == null
 
   const updateForm = (values: Partial<Form>) => {
@@ -143,8 +147,8 @@ const PersonDetails = React.memo(function PersonDetails({
 
   const onSubmit = () => {
     void patchPersonDetails(person.id, form).then((res) => {
-      if (isSuccess(res)) {
-        if (onUpdateComplete) onUpdateComplete(res.data)
+      if (res.isSuccess) {
+        if (onUpdateComplete) onUpdateComplete(res.value)
         clearUiMode()
       }
     })

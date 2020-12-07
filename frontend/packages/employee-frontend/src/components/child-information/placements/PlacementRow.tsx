@@ -17,7 +17,6 @@ import { faQuestion } from 'icon-set'
 import styled from 'styled-components'
 import Button from 'components/shared/atoms/buttons/Button'
 import InfoModal from '~components/common/InfoModal'
-import { isFailure, isSuccess } from '~api'
 import { DatePicker } from '~components/common/DatePicker'
 import { UIContext, UiState } from '~state/ui'
 import { Link } from 'react-router-dom'
@@ -104,18 +103,18 @@ function PlacementRow({ placement, onRefreshNeeded, checkOverlaps }: Props) {
 
   function submitUpdate() {
     void updatePlacement(placement.id, form).then((res) => {
-      if (isSuccess(res)) {
+      if (res.isSuccess) {
         setEditing(false)
         onRefreshNeeded()
-      } else if (isFailure(res)) {
+      } else if (res.isFailure) {
         const message =
-          res.error.statusCode === 403
+          res.statusCode === 403
             ? i18n.common.error.forbidden
-            : res.error.statusCode === 409
+            : res.statusCode === 409
             ? i18n.childInformation.placements.error.conflict.title
             : i18n.common.error.unknown
         const text =
-          res.error.statusCode === 409
+          res.statusCode === 409
             ? i18n.childInformation.placements.error.conflict.text
             : ''
         setErrorMessage({
@@ -129,7 +128,7 @@ function PlacementRow({ placement, onRefreshNeeded, checkOverlaps }: Props) {
 
   function submitDelete() {
     void deletePlacement(placement.id).then((res) => {
-      if (isSuccess(res)) {
+      if (res.isSuccess) {
         setConfirmingDelete(false)
         onRefreshNeeded()
       }

@@ -7,7 +7,7 @@ import styled from 'styled-components'
 import ReactSelect, { components, OptionProps } from 'react-select'
 import { Translations, useTranslation } from '~state/i18n'
 import { getOrCreatePersonBySsn } from '~api/person'
-import { isLoading, isSuccess, Result, Success } from '~api'
+import { Result, Success } from '~api'
 import { formatName } from '~utils'
 import { useDebounce } from '~utils/useDebounce'
 import { isSsnValid } from '~utils/validation/validations'
@@ -40,11 +40,11 @@ const customComponents = (i18n: Translations) => ({
 const search = async (q: string): Promise<Result<PersonDetails[]>> => {
   if (isSsnValid(q.toUpperCase())) {
     return await getOrCreatePersonBySsn(q.toUpperCase(), true).then((res) =>
-      isSuccess(res) ? Success([res.data]) : res
+      res.map((r) => [r])
     )
   }
 
-  return Success([])
+  return Success.of([])
 }
 
 interface Props {
@@ -55,7 +55,9 @@ interface Props {
 function VtjPersonSearch({ onResult, onFocus }: Props) {
   const { i18n } = useTranslation()
   const [query, setQuery] = useState('')
-  const [persons, setPersons] = useState<Result<PersonDetails[]>>(Success([]))
+  const [persons, setPersons] = useState<Result<PersonDetails[]>>(
+    Success.of([])
+  )
   const [selectedPerson, setSelectedPerson] = useState<PersonDetails>()
   const debouncedQuery = useDebounce(query, 500)
 
@@ -68,9 +70,7 @@ function VtjPersonSearch({ onResult, onFocus }: Props) {
     searchPeople(debouncedQuery)
   }, [debouncedQuery])
 
-  const options = useMemo(() => (isSuccess(persons) ? persons.data : []), [
-    persons
-  ])
+  const options = useMemo(() => persons.getOrElse([]), [persons])
 
   return (
     <Container data-qa="select-search-from-vtj-guardian">
@@ -90,7 +90,7 @@ function VtjPersonSearch({ onResult, onFocus }: Props) {
             option && 'socialSecurityNumber' in option ? option : undefined
           )
         }
-        isLoading={isLoading(persons) || (!!query && query !== debouncedQuery)}
+        isLoading={persons.isLoading || (!!query && query !== debouncedQuery)}
         loadingMessage={() => i18n.common.loading}
         noOptionsMessage={() => i18n.common.noResults}
         components={customComponents(i18n)}

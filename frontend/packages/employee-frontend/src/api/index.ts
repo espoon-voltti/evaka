@@ -4,79 +4,108 @@
 
 import { AxiosError } from 'axios'
 
+function isAxiosError(e: Error): e is AxiosError {
+  return !!(e as AxiosError).isAxiosError
+}
+
 export interface Response<T> {
   data: T
 }
 
-export interface Loading {
-  done: false
-}
+export type Result<T> = Loading<T> | Failure<T> | Success<T>
 
-export interface Failure {
-  done: true
-  error: {
-    statusCode?: number
-    message?: string
+export class Loading<T> {
+  private static _instance: Loading<unknown>
+
+  readonly isLoading = true
+  readonly isFailure = false
+  readonly isSuccess = false
+
+  private constructor() {
+    if (!Loading._instance) {
+      Loading._instance = this
+    }
+    return Loading._instance as Loading<T>
+  }
+
+  static of<T>(): Loading<T> {
+    return new Loading()
+  }
+
+  map<A>(_f: (v: T) => A): Result<A> {
+    return (this as unknown) as Loading<A>
+  }
+
+  getOrElse<A>(other: A): A | T {
+    return other
   }
 }
 
-export interface Success<T> {
-  done: true
-  data: T
+export class Failure<T> {
+  readonly message: string
+  readonly statusCode?: number
+
+  readonly isLoading = false
+  readonly isFailure = true
+  readonly isSuccess = false
+
+  private constructor(message: string, statusCode?: number) {
+    this.message = message
+    this.statusCode = statusCode
+    return this
+  }
+
+  static of<T>(p: { message: string; statusCode?: number }): Failure<T> {
+    return new Failure(p.message, p.statusCode)
+  }
+
+  static fromError<T>(e: Error): Failure<T> {
+    if (isAxiosError(e)) {
+      return new Failure(e.message, e.response?.status)
+    }
+    return new Failure(e.message)
+  }
+
+  map<A>(_f: (v: T) => A): Result<A> {
+    return (this as unknown) as Result<A>
+  }
+
+  getOrElse<A>(other: A): A | T {
+    return other
+  }
 }
 
-export type Result<T> = Loading | Failure | Success<T>
+export class Success<T> {
+  readonly value: T
+
+  readonly isLoading = false
+  readonly isFailure = false
+  readonly isSuccess = true
+
+  private constructor(value: T) {
+    this.value = value
+    return this
+  }
+
+  static of<T>(v: T): Success<T> {
+    return new Success(v)
+  }
+
+  map<A>(f: (v: T) => A): Result<A> {
+    return new Success(f(this.value))
+  }
+
+  getOrElse<A>(_other: A): A | T {
+    return this.value
+  }
+}
 
 export interface Cancelled {
   cancelled: true
 }
 
-const loading = { done: false } as const
-export function Loading(): Loading {
-  return loading
-}
-
-export function Success<T>(data: T): Success<T> {
-  return { done: true, data }
-}
-
-function isAxiosError(error: Error): error is AxiosError {
-  return !!(error && (error as AxiosError).isAxiosError)
-}
-
-export function Failure<T>(error: Error): Failure {
-  return {
-    done: true,
-    error: {
-      statusCode: isAxiosError(error)
-        ? error.response && error.response.status
-        : undefined,
-      message: error.message
-    }
-  }
-}
-
 export function Cancelled(): Cancelled {
   return { cancelled: true }
-}
-
-export function isLoading<T>(value: Result<T>): value is Loading {
-  return value.done === false
-}
-
-export function isFailure<T>(value: Result<T>): value is Failure {
-  return value.done && 'error' in value
-}
-
-export function isSuccess<T>(value: Result<T>): value is Success<T> {
-  return value.done && 'data' in value
-}
-
-export function mapResult<A, B>(value: Result<A>, f: (v: A) => B): Result<B> {
-  if (isSuccess(value)) {
-    return Success(f(value.data))
-  }
-  return value
 }
 
 export function isCancelled<T>(

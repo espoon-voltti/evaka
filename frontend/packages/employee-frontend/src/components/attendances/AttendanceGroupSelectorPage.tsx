@@ -7,7 +7,6 @@ import { useParams, Link } from 'react-router-dom'
 import styled from 'styled-components'
 import MetaTags from 'react-meta-tags'
 
-import { isFailure, isLoading, isSuccess } from '~api'
 import Loader from '~components/shared/atoms/Loader'
 import Title from '~components/shared/atoms/Title'
 import { ContentArea } from '~components/shared/layout/Container'
@@ -35,8 +34,6 @@ export default React.memo(function AttendanceGroupSelectorPage() {
     AttendanceUIContext
   )
 
-  const loading = isLoading(attendanceResponse)
-
   useEffect(() => {
     void getDaycareAttendances(unitId).then(setAttendanceResponse)
   }, [])
@@ -47,12 +44,12 @@ export default React.memo(function AttendanceGroupSelectorPage() {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
       </MetaTags>
 
-      {loading && <Loader />}
-      {isFailure(attendanceResponse) && <div>{i18n.common.loadingFailed}</div>}
-      {isSuccess(attendanceResponse) && (
+      {attendanceResponse.isLoading && <Loader />}
+      {attendanceResponse.isFailure && <div>{i18n.common.loadingFailed}</div>}
+      {attendanceResponse.isSuccess && (
         <Fragment>
           <Title data-qa="unit-name" size={1} centered smaller bold>
-            {attendanceResponse.data.unit.name}
+            {attendanceResponse.value.unit.name}
           </Title>
           <Padding>
             <ContentArea paddingHorozontal={'s'} opaque>
@@ -63,7 +60,7 @@ export default React.memo(function AttendanceGroupSelectorPage() {
                 <Link to={`attendance/all/coming`}>
                   <CustomButton primary text={i18n.common.all} />
                 </Link>
-                {attendanceResponse.data.unit.groups.map((group: Group) => (
+                {attendanceResponse.value.unit.groups.map((group: Group) => (
                   <Link key={group.id} to={`attendance/${group.id}/coming`}>
                     <CustomButton primary key={group.id} text={group.name} />
                   </Link>

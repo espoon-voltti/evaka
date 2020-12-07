@@ -10,7 +10,6 @@ import { fasExclamationTriangle } from 'icon-set'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 
 import { useTranslation } from '~state/i18n'
-import { isSuccess } from '~api'
 import { PlacementDraftPlacement } from '~types/placementdraft'
 import {
   PlacementDraftState,
@@ -106,8 +105,8 @@ function Placements() {
   )
 
   function hasOverlaps() {
-    if (isSuccess(placementDraft)) {
-      return !!placementDraft.data.placements.find(
+    if (placementDraft.isSuccess) {
+      return !!placementDraft.value.placements.find(
         (placement) => placement.overlap
       )
     }
@@ -116,7 +115,7 @@ function Placements() {
 
   return (
     <Container>
-      {isSuccess(placementDraft) && (
+      {placementDraft.isSuccess && (
         <Fragment>
           <ToggleHeader onClick={() => setOpen(!open)}>
             <Title size={4}>
@@ -129,13 +128,13 @@ function Placements() {
           </ToggleHeader>
         </Fragment>
       )}
-      {isSuccess(placementDraft) && (
+      {placementDraft.isSuccess && (
         <PlacementsContainer
           open={open}
-          placements={placementDraft.data.placements.length}
+          placements={placementDraft.value.placements.length}
           hasOverlap={hasOverlaps}
         >
-          {placementDraft.data.placements.map(
+          {placementDraft.value.placements.map(
             (placement: PlacementDraftPlacement) => (
               <PlacementRow key={placement.id}>
                 <Type>{i18n.common.types[placement.type]}</Type>

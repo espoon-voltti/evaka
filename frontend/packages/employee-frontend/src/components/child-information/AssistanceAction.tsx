@@ -4,7 +4,7 @@
 
 import React, { useContext, useEffect, useRef } from 'react'
 import { useTranslation } from '~/state/i18n'
-import { isFailure, isLoading, isSuccess, Loading } from '~/api'
+import { Loading } from '~/api'
 import { ChildContext } from '~/state/child'
 import Loader from '~components/shared/atoms/Loader'
 import Title from '~components/shared/atoms/Title'
@@ -39,19 +39,19 @@ function AssistanceAction({ id }: Props) {
   const refSectionTop = useRef(null)
 
   const loadData = () => {
-    setAssistanceActions(Loading())
+    setAssistanceActions(Loading.of())
     void getAssistanceActions(id).then(setAssistanceActions)
   }
 
   useEffect(loadData, [id])
 
   function renderAssistanceActions() {
-    if (isLoading(assistanceActions)) {
+    if (assistanceActions.isLoading) {
       return <Loader />
-    } else if (isFailure(assistanceActions)) {
+    } else if (assistanceActions.isFailure) {
       return <div>{i18n.common.loadingFailed}</div>
     } else {
-      return assistanceActions.data.map((assistanceAction) => (
+      return assistanceActions.value.map((assistanceAction) => (
         <AssistanceActionRow
           key={assistanceAction.id}
           assistanceAction={assistanceAction}
@@ -65,9 +65,9 @@ function AssistanceAction({ id }: Props) {
   const duplicate =
     !!uiMode &&
     uiMode.startsWith('duplicate-assistance-action') &&
-    isSuccess(assistanceActions)
-      ? assistanceActions.data.find((an) => an.id == uiMode.split('_').pop())
-      : undefined
+    assistanceActions
+      .map((actions) => actions.find((an) => an.id == uiMode.split('_').pop()))
+      .getOrElse(undefined)
 
   return (
     <div ref={refSectionTop}>

@@ -7,7 +7,7 @@ import { useTranslation } from '~state/i18n'
 import { FixedSpaceColumn } from 'components/shared/layout/flex-helpers'
 import { UUID } from 'types'
 import AddButton from 'components/shared/atoms/buttons/AddButton'
-import { isFailure, isLoading, isSuccess, Loading, Result } from 'api'
+import { Loading, Result } from 'api'
 import { ApplicationNote } from 'types/application'
 import { useRestApi } from 'utils/useRestApi'
 import { getApplicationNotes } from 'api/applications'
@@ -32,7 +32,7 @@ export default React.memo(function ApplicationNotes({ applicationId }: Props) {
   const { i18n } = useTranslation()
   const { roles, user } = useContext(UserContext)
 
-  const [notes, setNotes] = useState<Result<ApplicationNote[]>>(Loading())
+  const [notes, setNotes] = useState<Result<ApplicationNote[]>>(Loading.of())
   const [editing, setEditing] = useState<UUID | null>(null)
   const [creating, setCreating] = useState<boolean>(false)
 
@@ -56,12 +56,12 @@ export default React.memo(function ApplicationNotes({ applicationId }: Props) {
 
   return (
     <>
-      {isLoading(notes) && <SpinnerSegment />}
-      {isFailure(notes) && <ErrorSegment />}
-      {isSuccess(notes) && (
+      {notes.isLoading && <SpinnerSegment />}
+      {notes.isFailure && <ErrorSegment />}
+      {notes.isSuccess && (
         <>
           <FixedSpaceColumn>
-            {notes.data.map((note) =>
+            {notes.value.map((note) =>
               editing === note.id ? (
                 <ApplicationNoteBox
                   key={note.id}
@@ -84,7 +84,7 @@ export default React.memo(function ApplicationNotes({ applicationId }: Props) {
             )}
           </FixedSpaceColumn>
 
-          {notes.data.length > 0 && <Gap size="s" />}
+          {notes.value.length > 0 && <Gap size="s" />}
 
           <Sticky>
             {creating ? (

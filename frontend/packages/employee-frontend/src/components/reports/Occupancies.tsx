@@ -13,7 +13,7 @@ import Title from '~components/shared/atoms/Title'
 import { Th, Tr, Td, Thead, Tbody } from '~components/shared/layout/Table'
 import { reactSelectStyles } from '~components/shared/utils'
 import { Translations, useTranslation } from '~state/i18n'
-import { isFailure, isLoading, isSuccess, Loading, Result, Success } from '~api'
+import { Loading, Result, Success } from '~api'
 import { OccupancyReportRow } from '~types/reports'
 import {
   getOccupanciesReport,
@@ -198,7 +198,7 @@ function getDisplayCells(
 
 function Occupancies() {
   const { i18n } = useTranslation()
-  const [rows, setRows] = useState<Result<OccupancyReportRow[]>>(Success([]))
+  const [rows, setRows] = useState<Result<OccupancyReportRow[]>>(Success.of([]))
   const [areas, setAreas] = useState<CareArea[]>([])
   const [filters, setFilters] = useState<OccupancyReportFilters>({
     year: new Date().getFullYear(),
@@ -209,20 +209,20 @@ function Occupancies() {
   const [usedValues, setUsedValues] = useState<ValueOnReport>('percentage')
 
   useEffect(() => {
-    void getAreas().then((res) => isSuccess(res) && setAreas(res.data))
+    void getAreas().then((res) => res.isSuccess && setAreas(res.value))
   }, [])
 
   useEffect(() => {
     if (filters.careAreaId == '') return
 
-    setRows(Loading())
+    setRows(Loading.of())
     void getOccupanciesReport(filters).then(setRows)
   }, [filters])
 
   const dates = getDisplayDates(filters.year, filters.month, filters.type)
-  const displayCells: string[][] = isSuccess(rows)
-    ? getDisplayCells(rows.data, dates, usedValues)
-    : []
+  const displayCells: string[][] = rows
+    .map((rs) => getDisplayCells(rs, dates, usedValues))
+    .getOrElse([])
   const dateCols = dates.reduce((cols, date) => {
     cols.push(date)
     if (usedValues === 'raw') cols.push(date)
@@ -369,9 +369,9 @@ function Occupancies() {
             />
           </Wrapper>
         </FilterRow>
-        {isLoading(rows) && <Loader />}
-        {isFailure(rows) && <span>{i18n.common.loadingFailed}</span>}
-        {isSuccess(rows) && filters.careAreaId != '' && (
+        {rows.isLoading && <Loader />}
+        {rows.isFailure && <span>{i18n.common.loadingFailed}</span>}
+        {rows.isSuccess && filters.careAreaId != '' && (
           <>
             <ReportDownload
               data={[
@@ -409,7 +409,7 @@ function Occupancies() {
                 </Tr>
               </Thead>
               <Tbody>
-                {rows.data.map((row, rowNum) => (
+                {rows.value.map((row, rowNum) => (
                   <Tr key={row.unitId}>
                     <StyledTd>
                       <Link to={`/units/${row.unitId}`}>{row.unitName}</Link>

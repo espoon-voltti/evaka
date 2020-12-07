@@ -6,7 +6,7 @@ import React, { useState } from 'react'
 import { UUID } from '~types'
 import { useTranslation } from '~state/i18n'
 import { useEffect } from 'react'
-import { isFailure, Result } from '~api'
+import { Result } from '~api'
 import { fridgeHeadPerson, getPersonDetails } from '~api/person'
 import { useContext } from 'react'
 import { PersonContext, PersonState } from '~state/person'
@@ -69,7 +69,7 @@ function PersonFridgeHeadForm({ id, personFridgeHead }: Props) {
     void fridgeHeadPerson(id, headPersonForm).then(
       (res: Result<PersonContactInfo>) => {
         clearUiMode()
-        if (isFailure(res)) {
+        if (res.isFailure) {
           setErrorMessage({
             type: 'error',
             title: i18n.personProfile.fridgeHead.error.edit.title,
