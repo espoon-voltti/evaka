@@ -434,7 +434,7 @@ fun insertTestVardaOrganizer(h: Handle) {
         ).execute()
 }
 
-fun insertDraftApplication(
+fun insertApplication(
     h: Handle,
     guardian: PersonData.Detailed = testAdult_5,
     child: PersonData.Detailed = testChild_6,

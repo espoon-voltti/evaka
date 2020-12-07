@@ -40,7 +40,7 @@ class AttachmentsController(
     env: Environment
 ) {
     private val filesBucket = env.getProperty("fi.espoo.voltti.document.bucket.attachments")
-    private val maxAttachmentsPerUser = env.getRequiredProperty("max_attachments_per_user").toInt()
+    private val maxAttachmentsPerUser = env.getRequiredProperty("fi.espoo.evaka.maxAttachmentsPerUser").toInt()
 
     @PostMapping("/applications/{applicationId}", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
     fun uploadApplicationAttachment(

@@ -1,4 +1,4 @@
-package fi.espoo.evaka
+package fi.espoo.evaka.attachments
 
 import fi.espoo.evaka.attachment.checkFileContentType
 import fi.espoo.evaka.shared.domain.BadRequest
