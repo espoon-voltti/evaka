@@ -30,10 +30,8 @@ import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalTime
-import java.time.OffsetDateTime
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.util.UUID
@@ -58,31 +56,16 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
     }
 
     @Test
-    fun `get child arrival info - happy case`() {
-        givenChildPlacement(PlacementType.PRESCHOOL_DAYCARE)
-        givenChildComing()
-        val info = getArrivalInfoAssertOk(Instant.now())
-        assertEquals(false, info.absentFromPreschool)
-    }
-
-    @Test
-    fun `get child arrival info - already present is error`() {
-        givenChildPlacement(PlacementType.PRESCHOOL_DAYCARE)
-        givenChildPresent()
-        getArrivalInfoAssertFail(Instant.now(), 409)
-    }
-
-    @Test
     fun `post child arrives - happy case`() {
         givenChildPlacement(PlacementType.PRESCHOOL_DAYCARE)
         givenChildComing()
 
-        val arrived = instantMinuteStart()
+        val arrived = roundedTimeNow()
         val child = markArrivedAssertOkOneChild(arrived)
 
         assertEquals(AttendanceStatus.PRESENT, child.status)
         assertNotNull(child.attendance)
-        assertEquals(arrived, child.attendance!!.arrived)
+        assertEquals(arrived, LocalTime.ofInstant(child.attendance!!.arrived, zoneId))
         assertNull(child.attendance!!.departed)
         assertTrue(child.absences.isEmpty())
     }
@@ -92,7 +75,7 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
         givenChildPlacement(PlacementType.PRESCHOOL_DAYCARE)
         givenChildPresent()
 
-        val arrived = instantMinuteStart()
+        val arrived = roundedTimeNow()
         markArrivedAssertFail(arrived, 409)
     }
 
@@ -128,39 +111,170 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
     }
 
     @Test
-    fun `get child departure info - happy case`() {
+    fun `get child departure info - preschool_daycare placement and present from 8 to 14 means no absence`() {
+        val arrived = LocalTime.of(8, 0)
+        val departed = LocalTime.of(14, 0)
         givenChildPlacement(PlacementType.PRESCHOOL_DAYCARE)
-        givenChildPresent()
-        val info = getDepartureInfoAssertOk(instantMinuteStart())
+        givenChildPresent(arrived)
+
+        val info = getDepartureInfoAssertOk(departed)
         assertTrue(info.absentFrom.isEmpty())
+    }
+
+    @Test
+    fun `get child departure info - preschool_daycare placement and present from 9 to 13 means absence from preschool_daycare`() {
+        val arrived = LocalTime.of(9, 0)
+        val departed = LocalTime.of(13, 0)
+        givenChildPlacement(PlacementType.PRESCHOOL_DAYCARE)
+        givenChildPresent(arrived)
+
+        val info = getDepartureInfoAssertOk(departed)
+        assertEquals(setOf(CareType.PRESCHOOL_DAYCARE), info.absentFrom)
+    }
+
+    @Test
+    fun `get child departure info - preschool_daycare placement and present from 1230 to 17 means absence from preschool`() {
+        val arrived = LocalTime.of(12, 30)
+        val departed = LocalTime.of(17, 0)
+        givenChildPlacement(PlacementType.PRESCHOOL_DAYCARE)
+        givenChildPresent(arrived)
+
+        val info = getDepartureInfoAssertOk(departed)
+        assertEquals(setOf(CareType.PRESCHOOL), info.absentFrom)
+    }
+
+    @Test
+    fun `get child departure info - preschool_daycare placement and present from 0850 to 0930 means absence from preschool and preschool_daycare`() {
+        val arrived = LocalTime.of(8, 50)
+        val departed = LocalTime.of(9, 30)
+        givenChildPlacement(PlacementType.PRESCHOOL_DAYCARE)
+        givenChildPresent(arrived)
+
+        val info = getDepartureInfoAssertOk(departed)
+        assertEquals(setOf(CareType.PRESCHOOL, CareType.PRESCHOOL_DAYCARE), info.absentFrom)
+    }
+
+    @Test
+    fun `get child departure info - preparatory_daycare placement and present from 8 to 15 means no absence`() {
+        val arrived = LocalTime.of(8, 0)
+        val departed = LocalTime.of(15, 0)
+        givenChildPlacement(PlacementType.PREPARATORY_DAYCARE)
+        givenChildPresent(arrived)
+
+        val info = getDepartureInfoAssertOk(departed)
+        assertTrue(info.absentFrom.isEmpty())
+    }
+
+    @Test
+    fun `get child departure info - preparatory_daycare placement and present from 9 to 14 means absence from preschool_daycare`() {
+        val arrived = LocalTime.of(9, 0)
+        val departed = LocalTime.of(14, 0)
+        givenChildPlacement(PlacementType.PREPARATORY_DAYCARE)
+        givenChildPresent(arrived)
+
+        val info = getDepartureInfoAssertOk(departed)
+        assertEquals(setOf(CareType.PRESCHOOL_DAYCARE), info.absentFrom)
+    }
+
+    @Test
+    fun `get child departure info - preparatory_daycare placement and present from 1330 to 17 means absence from preschool`() {
+        val arrived = LocalTime.of(13, 30)
+        val departed = LocalTime.of(17, 0)
+        givenChildPlacement(PlacementType.PREPARATORY_DAYCARE)
+        givenChildPresent(arrived)
+
+        val info = getDepartureInfoAssertOk(departed)
+        assertEquals(setOf(CareType.PRESCHOOL), info.absentFrom)
+    }
+
+    @Test
+    fun `get child departure info - preparatory_daycare placement and present from 0850 to 0930 means absence from preschool and preschool_daycare`() {
+        val arrived = LocalTime.of(8, 50)
+        val departed = LocalTime.of(9, 30)
+        givenChildPlacement(PlacementType.PREPARATORY_DAYCARE)
+        givenChildPresent(arrived)
+
+        val info = getDepartureInfoAssertOk(departed)
+        assertEquals(setOf(CareType.PRESCHOOL, CareType.PRESCHOOL_DAYCARE), info.absentFrom)
     }
 
     @Test
     fun `get child departure info - not yet present is error`() {
         givenChildPlacement(PlacementType.PRESCHOOL_DAYCARE)
         givenChildComing()
-        getDepartureInfoAssertFail(instantMinuteStart(), 409)
+        getDepartureInfoAssertFail(roundedTimeNow(), 409)
     }
 
     @Test
     fun `get child departure info - already departed is error`() {
         givenChildPlacement(PlacementType.PRESCHOOL_DAYCARE)
         givenChildDeparted()
-        getDepartureInfoAssertFail(instantMinuteStart(), 409)
+        getDepartureInfoAssertFail(roundedTimeNow(), 409)
     }
 
     @Test
     fun `post child departs - happy case`() {
         givenChildPlacement(PlacementType.PRESCHOOL_DAYCARE)
-        givenChildPresent()
+        givenChildPresent(LocalTime.of(8, 0))
 
-        val departed = instantMinuteStart()
-        val child = markDepartedAssertOkOneChild(departed)
+        val departed = LocalTime.of(16, 0)
+        val child = markDepartedAssertOkOneChild(departed, absenceType = null)
 
         assertEquals(AttendanceStatus.DEPARTED, child.status)
         assertNotNull(child.attendance)
-        assertEquals(departed, child.attendance!!.departed)
+        assertEquals(departed, LocalTime.ofInstant(child.attendance!!.departed, zoneId))
         assertTrue(child.absences.isEmpty())
+    }
+
+    @Test
+    fun `post child departs - absent from preschool_daycare`() {
+        givenChildPlacement(PlacementType.PRESCHOOL_DAYCARE)
+        givenChildPresent(LocalTime.of(9, 0))
+
+        val departed = LocalTime.of(13, 0)
+        val absenceType = AbsenceType.OTHER_ABSENCE
+        val child = markDepartedAssertOkOneChild(departed, absenceType)
+
+        assertEquals(AttendanceStatus.DEPARTED, child.status)
+        assertNotNull(child.attendance)
+        assertEquals(departed, LocalTime.ofInstant(child.attendance!!.departed, zoneId))
+        assertEquals(1, child.absences.size)
+        assertEquals(CareType.PRESCHOOL_DAYCARE, child.absences.first().careType)
+        assertEquals(absenceType, child.absences.first().absenceType)
+    }
+
+    @Test
+    fun `post child departs - absent from preschool`() {
+        givenChildPlacement(PlacementType.PRESCHOOL_DAYCARE)
+        givenChildPresent(LocalTime.of(12, 45))
+
+        val departed = LocalTime.of(18, 0)
+        val absenceType = AbsenceType.UNKNOWN_ABSENCE
+        val child = markDepartedAssertOkOneChild(departed, absenceType)
+
+        assertEquals(AttendanceStatus.DEPARTED, child.status)
+        assertNotNull(child.attendance)
+        assertEquals(departed, LocalTime.ofInstant(child.attendance!!.departed, zoneId))
+        assertEquals(1, child.absences.size)
+        assertEquals(CareType.PRESCHOOL, child.absences.first().careType)
+        assertEquals(absenceType, child.absences.first().absenceType)
+    }
+
+    @Test
+    fun `post child departs - absent from preschool and preschool_daycare`() {
+        givenChildPlacement(PlacementType.PRESCHOOL_DAYCARE)
+        givenChildPresent(LocalTime.of(8, 50))
+
+        val departed = LocalTime.of(9, 30)
+        val absenceType = AbsenceType.SICKLEAVE
+        val child = markDepartedAssertOkOneChild(departed, absenceType)
+
+        assertEquals(AttendanceStatus.DEPARTED, child.status)
+        assertNotNull(child.attendance)
+        assertEquals(departed, LocalTime.ofInstant(child.attendance!!.departed, zoneId))
+        assertEquals(2, child.absences.size)
+        assertTrue(child.absences.any { it.careType == CareType.PRESCHOOL })
+        assertTrue(child.absences.any { it.careType == CareType.PRESCHOOL_DAYCARE })
     }
 
     @Test
@@ -168,8 +282,7 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
         givenChildPlacement(PlacementType.PRESCHOOL_DAYCARE)
         givenChildDeparted()
 
-        val departed = instantMinuteStart()
-        markDepartedAssertFail(departed, 409)
+        markDepartedAssertFail(roundedTimeNow(), null, 409)
     }
 
     @Test
@@ -209,7 +322,8 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `post full day absence - happy case when coming to preschool`() {
-        db.transaction { // previous day attendance should have no effect
+        // previous day attendance should have no effect
+        db.transaction {
             insertTestChildAttendance(
                 h = it.handle,
                 childId = testChild_1.id,
@@ -349,14 +463,13 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
         assertEquals(AttendanceStatus.COMING, child.status)
     }
 
-    private fun givenChildPresent() {
-        val arrived = OffsetDateTime.now(zoneId).minusHours(3).toInstant()
+    private fun givenChildPresent(arrived: LocalTime = roundedTimeNow().minusHours(1)) {
         db.transaction {
             insertTestChildAttendance(
                 h = it.handle,
                 childId = testChild_1.id,
                 unitId = testDaycare.id,
-                arrived = arrived,
+                arrived = ZonedDateTime.of(LocalDate.now(zoneId).atTime(arrived), zoneId).toInstant(),
                 departed = null
             )
         }
@@ -364,16 +477,17 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
         assertEquals(AttendanceStatus.PRESENT, child.status)
     }
 
-    private fun givenChildDeparted() {
-        val arrived = OffsetDateTime.now(zoneId).minusHours(3).toInstant()
-        val departed = OffsetDateTime.now(zoneId).minusHours(1).toInstant()
+    private fun givenChildDeparted(
+        arrived: LocalTime = roundedTimeNow().minusHours(1),
+        departed: LocalTime = roundedTimeNow().minusMinutes(10)
+    ) {
         db.transaction {
             insertTestChildAttendance(
                 h = it.handle,
                 childId = testChild_1.id,
                 unitId = testDaycare.id,
-                arrived = arrived,
-                departed = departed
+                arrived = ZonedDateTime.of(LocalDate.now(zoneId).atTime(arrived), zoneId).toInstant(),
+                departed = ZonedDateTime.of(LocalDate.now(zoneId).atTime(departed), zoneId).toInstant()
             )
         }
         val child = expectOneChild()
@@ -397,27 +511,8 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
         return result.get()
     }
 
-    private fun getArrivalInfoAssertOk(arrived: Instant): ChildAttendanceController.ArrivalInfoResponse {
-        val time = LocalTime.ofInstant(arrived, zoneId).format(DateTimeFormatter.ofPattern("HH:mm"))
-        val (_, res, result) = http.get("/attendances/units/${testDaycare.id}/children/${testChild_1.id}/arrival?time=$time")
-            .asUser(mobileUser)
-            .responseObject<ChildAttendanceController.ArrivalInfoResponse>(objectMapper)
-
-        assertEquals(200, res.statusCode)
-        return result.get()
-    }
-
-    private fun getArrivalInfoAssertFail(arrived: Instant, status: Int) {
-        val time = LocalTime.ofInstant(arrived, zoneId).format(DateTimeFormatter.ofPattern("HH:mm"))
-        val (_, res, _) = http.get("/attendances/units/${testDaycare.id}/children/${testChild_1.id}/arrival?time=$time")
-            .asUser(mobileUser)
-            .responseObject<ChildAttendanceController.ArrivalInfoResponse>(objectMapper)
-
-        assertEquals(status, res.statusCode)
-    }
-
-    private fun markArrivedAssertOkOneChild(arrived: Instant): Child {
-        val time = LocalTime.ofInstant(arrived, zoneId).format(DateTimeFormatter.ofPattern("HH:mm"))
+    private fun markArrivedAssertOkOneChild(arrived: LocalTime): Child {
+        val time = arrived.format(DateTimeFormatter.ofPattern("HH:mm"))
         val (_, res, result) = http.post("/attendances/units/${testDaycare.id}/children/${testChild_1.id}/arrival")
             .jsonBody("{\"arrived\": \"$time\"}") // test HH:mm deserialization
             .asUser(mobileUser)
@@ -429,10 +524,9 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
         return response.children.first()
     }
 
-    private fun markArrivedAssertFail(arrived: Instant, status: Int) {
-        val time = LocalTime.ofInstant(arrived, zoneId)
+    private fun markArrivedAssertFail(arrived: LocalTime, status: Int) {
         val (_, res, _) = http.post("/attendances/units/${testDaycare.id}/children/${testChild_1.id}/arrival")
-            .jsonBody(objectMapper.writeValueAsString(ChildAttendanceController.ArrivalRequest(time)))
+            .jsonBody(objectMapper.writeValueAsString(ChildAttendanceController.ArrivalRequest(arrived)))
             .asUser(mobileUser)
             .responseObject<AttendanceResponse>(objectMapper)
 
@@ -458,8 +552,8 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
         assertEquals(status, res.statusCode)
     }
 
-    private fun getDepartureInfoAssertOk(departed: Instant): ChildAttendanceController.DepartureInfoResponse {
-        val time = LocalTime.ofInstant(departed, zoneId).format(DateTimeFormatter.ofPattern("HH:mm"))
+    private fun getDepartureInfoAssertOk(departed: LocalTime): ChildAttendanceController.DepartureInfoResponse {
+        val time = departed.format(DateTimeFormatter.ofPattern("HH:mm"))
         val (_, res, result) = http.get("/attendances/units/${testDaycare.id}/children/${testChild_1.id}/departure?time=$time")
             .asUser(mobileUser)
             .responseObject<ChildAttendanceController.DepartureInfoResponse>(objectMapper)
@@ -468,8 +562,8 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
         return result.get()
     }
 
-    private fun getDepartureInfoAssertFail(departed: Instant, status: Int) {
-        val time = LocalTime.ofInstant(departed, zoneId).format(DateTimeFormatter.ofPattern("HH:mm"))
+    private fun getDepartureInfoAssertFail(departed: LocalTime, status: Int) {
+        val time = departed.format(DateTimeFormatter.ofPattern("HH:mm"))
         val (_, res, _) = http.get("/attendances/units/${testDaycare.id}/children/${testChild_1.id}/departure?time=$time")
             .asUser(mobileUser)
             .responseObject<ChildAttendanceController.DepartureInfoResponse>(objectMapper)
@@ -477,10 +571,9 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
         assertEquals(status, res.statusCode)
     }
 
-    private fun markDepartedAssertOkOneChild(departed: Instant): Child {
-        val time = LocalTime.ofInstant(departed, zoneId)
+    private fun markDepartedAssertOkOneChild(departed: LocalTime, absenceType: AbsenceType?): Child {
         val (_, res, result) = http.post("/attendances/units/${testDaycare.id}/children/${testChild_1.id}/departure")
-            .jsonBody(objectMapper.writeValueAsString(ChildAttendanceController.DepartureRequest(time)))
+            .jsonBody(objectMapper.writeValueAsString(ChildAttendanceController.DepartureRequest(departed, absenceType)))
             .asUser(mobileUser)
             .responseObject<AttendanceResponse>(objectMapper)
 
@@ -490,10 +583,9 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
         return response.children.first()
     }
 
-    private fun markDepartedAssertFail(departed: Instant, status: Int) {
-        val time = LocalTime.ofInstant(departed, zoneId)
+    private fun markDepartedAssertFail(departed: LocalTime, absenceType: AbsenceType?, status: Int) {
         val (_, res, _) = http.post("/attendances/units/${testDaycare.id}/children/${testChild_1.id}/departure")
-            .jsonBody(objectMapper.writeValueAsString(ChildAttendanceController.DepartureRequest(time)))
+            .jsonBody(objectMapper.writeValueAsString(ChildAttendanceController.DepartureRequest(departed, absenceType)))
             .asUser(mobileUser)
             .responseObject<AttendanceResponse>(objectMapper)
 
@@ -546,8 +638,5 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
         return response.children.first()
     }
 
-    private fun instantMinuteStart(): Instant = ZonedDateTime.now(zoneId)
-        .withSecond(0)
-        .withNano(0)
-        .toInstant()
+    private fun roundedTimeNow() = LocalTime.now(zoneId).withSecond(0).withNano(0)
 }
