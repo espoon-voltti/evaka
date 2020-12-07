@@ -57,7 +57,7 @@ export default React.memo(function GroupPlacementModal({
   // filter out groups which are not active on any day during the maximum placement time range
   const openGroups = groups
     .filter((group) => !group.startDate.isAfter(maxDate))
-    .filter((group) => !group.endDate || group.endDate.isBefore(minDate))
+    .filter((group) => !group.endDate || !group.endDate.isBefore(minDate))
 
   const validate = (form: GroupPlacementForm): string[] => {
     const errors = []
