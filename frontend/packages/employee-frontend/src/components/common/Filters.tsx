@@ -991,16 +991,18 @@ interface MultiUnitsProps {
   units: { id: string; name: string }[]
   selectedUnits: string[]
   onChange: (v: string[]) => void
+  dataQa?: string
 }
 
 export function MultiSelectUnitFilter({
   units,
   selectedUnits,
-  onChange
+  onChange,
+  dataQa
 }: MultiUnitsProps) {
   const { i18n } = useTranslation()
   return (
-    <Fragment>
+    <div data-qa={dataQa}>
       <Label>
         <LabelText>{i18n.filters.unit}</LabelText>
       </Label>
@@ -1010,14 +1012,14 @@ export function MultiSelectUnitFilter({
         value={units.filter((unit) => selectedUnits.includes(unit.id))}
         options={units}
         onChange={(selected) => {
-          selected &&
-            'length' in selected &&
-            onChange(selected.map(({ id }) => id))
+          selected && 'length' in selected
+            ? onChange(selected.map(({ id }) => id))
+            : onChange([])
         }}
         getOptionValue={(option) => option.id}
         getOptionLabel={(option) => option.name}
       />
-    </Fragment>
+    </div>
   )
 }
 
