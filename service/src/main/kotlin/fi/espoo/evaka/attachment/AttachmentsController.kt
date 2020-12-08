@@ -40,7 +40,7 @@ class AttachmentsController(
     private val s3Client: DocumentService,
     env: Environment
 ) {
-    private val filesBucket = env.getProperty("fi.espoo.voltti.document.bucket.attachments")
+    private val filesBucket = env.getProperty("fi.espoo.voltti.document.bucket.attachments")!!
     private val maxAttachmentsPerUser = env.getRequiredProperty("fi.espoo.evaka.maxAttachmentsPerUser").toInt()
 
     @PostMapping("/applications/{applicationId}", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
@@ -128,7 +128,8 @@ class AttachmentsController(
                 ResponseEntity.ok().body(PreDownloadResponse(true))
             }
         } catch (e: AmazonS3Exception) {
-            ResponseEntity.ok().body(PreDownloadResponse(false))
+            if (e.statusCode == 403) ResponseEntity.ok().body(PreDownloadResponse(false))
+            else throw e
         }
     }
 
