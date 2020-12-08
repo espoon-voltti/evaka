@@ -618,7 +618,7 @@ class VardaFeeDataIntegrationTest : FullApplicationTest() {
 
             h.createUpdate("UPDATE varda_fee_data SET should_be_deleted = true").execute()
 
-            removeMarkedFeeDataFromVarda(h, vardaClient)
+            removeMarkedFeeDataFromVarda(db, vardaClient)
             assertEquals(1, getSoftDeletedVardaFeeData(h).size)
         }
     }
@@ -706,9 +706,9 @@ class VardaFeeDataIntegrationTest : FullApplicationTest() {
             h.createUpdate("UPDATE varda_fee_data SET should_be_deleted = true").execute()
             h.createUpdate("UPDATE daycare SET oph_organizer_oid = '1.22.333.4444.1' where id = :id").bind("id", testDaycare.id).execute()
 
-            removeMarkedPlacementsFromVarda(h, vardaClient)
-            removeMarkedDecisionsFromVarda(h, vardaClient)
-            removeMarkedFeeDataFromVarda(h, vardaClient)
+            removeMarkedPlacementsFromVarda(db, vardaClient)
+            removeMarkedDecisionsFromVarda(db, vardaClient)
+            removeMarkedFeeDataFromVarda(db, vardaClient)
             mockEndpoint.feeData.clear()
 
             updateAll(h)
@@ -753,9 +753,9 @@ class VardaFeeDataIntegrationTest : FullApplicationTest() {
             h.createUpdate("UPDATE varda_fee_data SET should_be_deleted = true").execute()
             h.createUpdate("UPDATE daycare SET oph_organizer_oid = '1.22.333.4444.1' where id = :id").bind("id", testDaycare.id).execute()
 
-            removeMarkedPlacementsFromVarda(h, vardaClient)
-            removeMarkedDecisionsFromVarda(h, vardaClient)
-            removeMarkedFeeDataFromVarda(h, vardaClient)
+            removeMarkedPlacementsFromVarda(db, vardaClient)
+            removeMarkedDecisionsFromVarda(db, vardaClient)
+            removeMarkedFeeDataFromVarda(db, vardaClient)
             mockEndpoint.feeData.clear()
 
             updateAll(h)

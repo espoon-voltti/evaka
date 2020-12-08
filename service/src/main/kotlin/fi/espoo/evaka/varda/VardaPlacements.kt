@@ -8,6 +8,7 @@ import com.fasterxml.jackson.annotation.JsonProperty
 import fi.espoo.evaka.placement.PlacementType.DAYCARE
 import fi.espoo.evaka.placement.PlacementType.DAYCARE_PART_TIME
 import fi.espoo.evaka.placement.PlacementType.PRESCHOOL_DAYCARE
+import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.getUUID
 import fi.espoo.evaka.varda.integration.VardaClient
 import org.jdbi.v3.core.Handle
@@ -23,11 +24,11 @@ fun updatePlacements(h: Handle, client: VardaClient) {
     sendUpdatedPlacements(h, client)
 }
 
-fun removeMarkedPlacementsFromVarda(h: Handle, client: VardaClient) {
-    val placementIds: List<Long> = getPlacementsToDelete(h)
+fun removeMarkedPlacementsFromVarda(db: Database.Connection, client: VardaClient) {
+    val placementIds: List<Long> = db.read { getPlacementsToDelete(it) }
     placementIds.forEach { id ->
         if (client.deletePlacement(id)) {
-            softDeletePlacement(h, id)
+            db.transaction { softDeletePlacement(it, id) }
         }
     }
 }
@@ -193,14 +194,14 @@ fun deletePlacement(h: Handle, vardaPlacementId: Long) {
         .execute()
 }
 
-fun softDeletePlacement(h: Handle, vardaPlacementId: Long) {
-    h.createUpdate("UPDATE varda_placement SET deleted_at = NOW() WHERE varda_placement_id = :id")
+fun softDeletePlacement(tx: Database.Transaction, vardaPlacementId: Long) {
+    tx.createUpdate("UPDATE varda_placement SET deleted_at = NOW() WHERE varda_placement_id = :id")
         .bind("id", vardaPlacementId)
         .execute()
 }
 
-fun getPlacementsToDelete(h: Handle): List<Long> {
-    return h.createQuery("SELECT varda_placement_id FROM varda_placement WHERE should_be_deleted = true AND deleted_at IS NULL")
+fun getPlacementsToDelete(tx: Database.Read): List<Long> {
+    return tx.createQuery("SELECT varda_placement_id FROM varda_placement WHERE should_be_deleted = true AND deleted_at IS NULL")
         .mapTo(Long::class.java)
         .toList()
 }

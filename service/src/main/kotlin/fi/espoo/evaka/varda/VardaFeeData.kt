@@ -38,11 +38,11 @@ fun updateFeeData(
     uploadNewFeeData(tx, client, mapper, personService)
 }
 
-fun removeMarkedFeeDataFromVarda(h: Handle, client: VardaClient) {
-    val feeDataIds: List<Int> = getFeeDataToDelete(h)
+fun removeMarkedFeeDataFromVarda(db: Database.Connection, client: VardaClient) {
+    val feeDataIds: List<Int> = db.read { getFeeDataToDelete(it) }
     feeDataIds.forEach { id ->
         if (client.deleteFeeData(id)) {
-            softDeleteFeeData(h, id)
+            db.transaction { softDeleteFeeData(it, id) }
         }
     }
 }
@@ -96,8 +96,8 @@ fun uploadNewFeeData(
     }
 }
 
-fun getFeeDataToDelete(h: Handle): List<Int> {
-    return h.createQuery(
+fun getFeeDataToDelete(tx: Database.Read): List<Int> {
+    return tx.createQuery(
         // language=SQL
         """
 SELECT varda_fee_data_id 
@@ -110,8 +110,8 @@ AND deleted_at IS NULL
         .toList()
 }
 
-fun softDeleteFeeData(h: Handle, vardaFeeDataId: Int) {
-    h.createUpdate("UPDATE varda_fee_data SET deleted_at = NOW() WHERE varda_fee_data_id = :vardaFeeDataId")
+fun softDeleteFeeData(tx: Database.Transaction, vardaFeeDataId: Int) {
+    tx.createUpdate("UPDATE varda_fee_data SET deleted_at = NOW() WHERE varda_fee_data_id = :vardaFeeDataId")
         .bind("vardaFeeDataId", vardaFeeDataId)
         .execute()
 }

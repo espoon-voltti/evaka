@@ -10,6 +10,7 @@ import fi.espoo.evaka.decision.DecisionStatus
 import fi.espoo.evaka.decision.DecisionType.DAYCARE
 import fi.espoo.evaka.decision.DecisionType.DAYCARE_PART_TIME
 import fi.espoo.evaka.decision.DecisionType.PRESCHOOL_DAYCARE
+import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.getEnum
 import fi.espoo.evaka.shared.db.getUUID
 import fi.espoo.evaka.varda.integration.VardaClient
@@ -30,11 +31,11 @@ fun updateDecisions(h: Handle, client: VardaClient) {
     sendUpdatedDecisions(h, client)
 }
 
-fun removeMarkedDecisionsFromVarda(h: Handle, client: VardaClient) {
-    val decisionIds: List<Long> = getDecisionsToDelete(h)
+fun removeMarkedDecisionsFromVarda(db: Database.Connection, client: VardaClient) {
+    val decisionIds: List<Long> = db.read { getDecisionsToDelete(it) }
     decisionIds.forEach { id ->
         if (client.deleteDecision(id)) {
-            softDeleteDecision(h, id)
+            db.transaction { softDeleteDecision(it, id) }
         }
     }
 }
@@ -351,14 +352,14 @@ private fun deleteDecision(h: Handle, vardaDecisionId: Long) {
         .execute()
 }
 
-fun softDeleteDecision(h: Handle, vardaDecisionId: Long) {
-    h.createUpdate("UPDATE varda_decision SET deleted_at = NOW() WHERE varda_decision_id = :vardaDecisionId")
+fun softDeleteDecision(tx: Database.Transaction, vardaDecisionId: Long) {
+    tx.createUpdate("UPDATE varda_decision SET deleted_at = NOW() WHERE varda_decision_id = :vardaDecisionId")
         .bind("vardaDecisionId", vardaDecisionId)
         .execute()
 }
 
-fun getDecisionsToDelete(h: Handle): List<Long> {
-    return h.createQuery(
+fun getDecisionsToDelete(tx: Database.Read): List<Long> {
+    return tx.createQuery(
         // language=SQL
         """
 SELECT varda_decision_id 

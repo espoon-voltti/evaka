@@ -290,7 +290,7 @@ class VardaPlacementsIntegrationTest : FullApplicationTest() {
 
             h.createUpdate("UPDATE varda_placement SET should_be_deleted = true").execute()
 
-            removeMarkedPlacementsFromVarda(h, vardaClient)
+            removeMarkedPlacementsFromVarda(db, vardaClient)
             updatePlacements(h, vardaClient)
 
             assertEquals(1, getSoftDeletedVardaPlacements(h).size)

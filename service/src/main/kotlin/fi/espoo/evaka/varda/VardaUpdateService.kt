@@ -21,7 +21,6 @@ private val logger = KotlinLogging.logger { }
 
 @Service
 class VardaUpdateService(
-    private val jdbi: Jdbi,
     private val tokenProvider: VardaTokenProvider,
     private val fuel: FuelManager,
     private val env: Environment,
@@ -31,14 +30,14 @@ class VardaUpdateService(
     private val forceSync = env.getProperty("fi.espoo.varda.force.sync", Boolean::class.java, false)
     private val organizer = env.getProperty("fi.espoo.varda.organizer", String::class.java, "Espoo")
 
-    fun updateAll() {
+    fun updateAll(db: Database.Connection) {
         val client = VardaClient(tokenProvider, fuel, env, mapper)
         if (forceSync) {
-            updateAll(Database(jdbi), client, mapper, personService, organizer)
+            updateAll(db, client, mapper, personService, organizer)
         } else {
             thread {
                 try {
-                    updateAll(Database(jdbi), client, mapper, personService, organizer)
+                    updateAll(db, client, mapper, personService, organizer)
                 } catch (e: Throwable) {
                     val exception = (e as? UndeclaredThrowableException)?.cause ?: e
                     logger.error(exception) { "Failed to run Varda update" }
@@ -48,19 +47,19 @@ class VardaUpdateService(
     }
 
     // This is left for backwards compatibility, but should be removed later
-    fun updateUnits() = updateAll()
+    fun updateUnits(db: Database.Connection) = updateAll(db)
 }
 
 fun updateAll(
-    db: Database,
+    db: Database.Connection,
     client: VardaClient,
     mapper: ObjectMapper,
     personService: PersonService,
     organizer: String
 ) {
-    db.transaction { removeMarkedFeeDataFromVarda(it.handle, client) }
-    db.transaction { removeMarkedPlacementsFromVarda(it.handle, client) }
-    db.transaction { removeMarkedDecisionsFromVarda(it.handle, client) }
+    removeMarkedFeeDataFromVarda(db, client)
+    removeMarkedPlacementsFromVarda(db, client)
+    removeMarkedDecisionsFromVarda(db, client)
     db.transaction { updateOrganizer(it.handle, client, organizer) }
     db.transaction { updateUnits(it.handle, client, organizer) }
     db.transaction { updateChildren(it.handle, client, organizer) }
