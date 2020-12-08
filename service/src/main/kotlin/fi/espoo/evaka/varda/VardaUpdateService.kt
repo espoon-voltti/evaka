@@ -64,5 +64,5 @@ fun updateAll(
     updateChildren(db, client, organizer)
     updateDecisions(db, client)
     db.transaction { updatePlacements(it.handle, client) }
-    db.transaction { updateFeeData(it, client, mapper, personService) }
+    updateFeeData(db, client, mapper, personService)
 }
