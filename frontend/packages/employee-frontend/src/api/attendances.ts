@@ -9,6 +9,10 @@ import { AbsenceType, CareType } from '~types/absence'
 import { PlacementType } from '~types/placementdraft'
 import { client } from './client'
 
+export interface DepartureInfoResponse {
+  absentFrom: CareType[]
+}
+
 export interface AttendanceResponse {
   unit: Unit
   children: AttendanceChild[]
@@ -158,6 +162,42 @@ export async function postFullDayAbsence(
     .then((res) => deserializeAttendanceResponse(res.data))
     .then((v) => Success.of(v))
     .catch((e) => Failure.fromError(e))
+}
+
+export async function getChildDeparture(
+  unitId: UUID,
+  childId: UUID,
+  time: string
+): Promise<Result<DepartureInfoResponse>> {
+  return client
+    .get<JsonOf<DepartureInfoResponse>>(
+      `/attendances/units/${unitId}/children/${childId}/departure`,
+      {
+        params: { time }
+      }
+    )
+    .then((res) => res.data)
+    .then(Success)
+    .catch(Failure)
+}
+
+export async function postDeparture(
+  unitId: UUID,
+  childId: UUID,
+  absenceType: AbsenceType,
+  departed: string
+): Promise<Result<AttendanceResponse>> {
+  return client
+    .post<JsonOf<AttendanceResponse>>(
+      `/attendances/units/${unitId}/children/${childId}/departure`,
+      {
+        departed,
+        absenceType
+      }
+    )
+    .then((res) => deserializeAttendanceResponse(res.data))
+    .then(Success)
+    .catch(Failure)
 }
 
 function deserializeAttendanceResponse(
