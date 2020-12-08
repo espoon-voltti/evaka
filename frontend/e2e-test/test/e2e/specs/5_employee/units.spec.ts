@@ -83,23 +83,32 @@ test('daycare has an empty group', async (t) => {
   await t.expect(unitPage.groups.count).eql(1)
   const group = daycareGroupElement(unitPage.groups.nth(0))
   await t.expect(group.groupName.textContent).eql(daycareGroupFixture.name)
-  await t.expect(group.groupFounded.textContent).eql('01.01.2000')
+  await t.expect(group.groupStartDate.textContent).eql('01.01.2000')
   await t.expect(group.noChildrenPlaceholder.visible).ok()
 })
 
-test('Unit group can be renamed', async (t) => {
+test('Unit group name, start date and end date can all be updated', async (t) => {
   await unitPage.navigateHere(fixtures.daycareFixture.id)
   await unitPage.openTabGroups()
 
   await t.expect(unitPage.groups.count).eql(1)
   const group = daycareGroupElement(unitPage.groups.nth(0))
 
-  await t.click(group.groupRenameBtn)
-  await t.selectText(unitPage.groupRenameModal.input)
-  await t.typeText(unitPage.groupRenameModal.input, 'Uusi nimi')
-  await t.click(unitPage.groupRenameModal.submit)
+  await t.click(group.groupUpdateBtn)
+  await t.selectText(unitPage.groupUpdateModal.nameInput)
+  await t.typeText(unitPage.groupUpdateModal.nameInput, 'Uusi nimi')
+  await t.selectText(unitPage.groupUpdateModal.startDateInput)
+  await t.typeText(unitPage.groupUpdateModal.startDateInput, '01.01.2020')
+  await t.pressKey('tab esc')
+  await t.selectText(unitPage.groupUpdateModal.endDateInput)
+  await t.typeText(unitPage.groupUpdateModal.endDateInput, '31.12.2022')
+  await t.pressKey('tab esc')
+  await t.click(unitPage.groupUpdateModal.submit)
 
+  await t.click(group.root)
   await t.expect(group.groupName.textContent).eql('Uusi nimi')
+  await t.expect(group.groupStartDate.textContent).eql('01.01.2020')
+  await t.expect(group.groupEndDate.textContent).eql('31.12.2022')
 })
 
 test('daycare has one child missing group', async (t) => {

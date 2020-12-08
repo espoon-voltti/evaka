@@ -160,11 +160,12 @@ export function DatePickerClearable({
   dateFormat = DATE_FORMATS_PARSED,
   type = 'half-width',
   options,
-  className
+  className,
+  dataQa
 }: DatePickerClearableProps) {
   const ref = React.createRef<HTMLInputElement>()
   return (
-    <div className={`${type} ${className ? className : ''}`}>
+    <div className={`${type} ${className ? className : ''}`} data-qa={dataQa}>
       <ReactDatePicker
         {...defaultProps}
         locale={fi}

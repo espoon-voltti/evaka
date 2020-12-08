@@ -327,11 +327,13 @@ export async function createGroup(
   await client.post(url, data)
 }
 
-export async function editGroup(daycareId: UUID, groupId: UUID, name: string) {
+export async function editGroup(
+  daycareId: UUID,
+  groupId: UUID,
+  data: Partial<DaycareGroup>
+) {
   const url = `/daycares/${daycareId}/groups/${groupId}`
-  await client.put(url, {
-    name
-  })
+  await client.put(url, data)
 }
 
 export async function deleteGroup(daycareId: UUID, groupId: UUID) {

@@ -14,9 +14,17 @@ export default class UnitPage {
   readonly missingPlacementRows = Selector('[data-qa="missing-placement-row"]')
   readonly groups = Selector('[data-qa="daycare-group-collapsible"]')
 
-  readonly groupRenameModal = {
-    input: Selector('[data-qa="group-rename-modal"] [data-qa="name-input"]'),
-    submit: Selector('[data-qa="group-rename-modal"] [data-qa="modal-okBtn"]')
+  readonly groupUpdateModal = {
+    nameInput: Selector(
+      '[data-qa="group-update-modal"] [data-qa="name-input"]'
+    ),
+    startDateInput: Selector(
+      '[data-qa="group-update-modal"] [data-qa="start-date-input"] input'
+    ),
+    endDateInput: Selector(
+      '[data-qa="group-update-modal"] [data-qa="end-date-input"] input'
+    ),
+    submit: Selector('[data-qa="group-update-modal"] [data-qa="modal-okBtn"]')
   }
 
   async navigateHere(id: string) {
@@ -185,10 +193,11 @@ export const missingPlacementElement = (root: Selector) => ({
 export const daycareGroupElement = (root: Selector) => ({
   root,
   groupName: root.find('[data-qa="group-name"]'),
-  groupFounded: root.find('[data-qa="group-founded"]'),
+  groupStartDate: root.find('[data-qa="group-start-date"]'),
+  groupEndDate: root.find('[data-qa="group-end-date"]'),
   noChildrenPlaceholder: root.find('[data-qa="no-children-placeholder"]'),
   groupPlacementRows: root.find('[data-qa="group-placement-row"]'),
-  groupRenameBtn: root.find('[data-qa="btn-rename-group"]')
+  groupUpdateBtn: root.find('[data-qa="btn-update-group"]')
 })
 
 export const daycareGroupPlacementElement = (root: Selector) => ({
