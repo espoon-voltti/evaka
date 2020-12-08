@@ -2,13 +2,20 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import React from 'react'
 import styled from 'styled-components'
+import { AttendanceChild } from '~api/attendances'
 
 import AsyncButton from '~components/shared/atoms/buttons/AsyncButton'
 import Button from '~components/shared/atoms/buttons/Button'
 import InlineButton from '~components/shared/atoms/buttons/InlineButton'
+import RoundIcon from '~components/shared/atoms/RoundIcon'
+import Colors from '~components/shared/Colors'
 import { DefaultMargins } from '~components/shared/layout/white-space'
 import { Label } from '~components/shared/Typography'
+import { faExclamation } from '~icon-set'
+import { useTranslation } from '~state/i18n'
+import { CareType } from '~types/absence'
 
 export const CustomAsyncButton = styled(AsyncButton)<CustomButtonProps>`
   @media screen and (max-width: 1023px) {
@@ -116,3 +123,48 @@ export const FlexLabel = styled(Label)`
     margin-right: ${DefaultMargins.m};
   }
 `
+
+const AbsentFromWrapper = styled.div`
+  display: flex;
+`
+
+const InfoText = styled.div`
+  margin-left: ${DefaultMargins.s};
+`
+
+interface AbsentFromProps {
+  child: AttendanceChild
+  absentFrom: CareType[]
+}
+
+export function AbsentFrom({ child, absentFrom }: AbsentFromProps) {
+  const { i18n } = useTranslation()
+
+  const isPreparatory = child.placementType === 'PREPARATORY'
+  const isPreparatoryDaycere = child.placementType === 'PREPARATORY_DAYCARE'
+
+  return (
+    <AbsentFromWrapper>
+      <RoundIcon
+        color={Colors.brandEspoo.espooTurquoise}
+        size={'s'}
+        content={faExclamation}
+      />
+      <InfoText>
+        {absentFrom.length > 1
+          ? i18n.attendances.missingFromPlural
+          : i18n.attendances.missingFrom}
+        :
+        {absentFrom.length === 1 && isPreparatory ? (
+          <div>{i18n.common.types.PREPARATORY_EDUCATION}</div>
+        ) : absentFrom.length === 1 && isPreparatoryDaycere ? (
+          <div>{i18n.common.types.PREPARATORY_DAYCARE}</div>
+        ) : (
+          absentFrom.map((careType) => (
+            <div key={careType}>{i18n.absences.careTypes[careType]}</div>
+          ))
+        )}
+      </InfoText>
+    </AbsentFromWrapper>
+  )
+}

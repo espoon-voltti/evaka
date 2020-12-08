@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React from 'react'
+import React, { Fragment } from 'react'
 import styled from 'styled-components'
 
 import { AttendanceChild } from '~api/attendances'
@@ -116,14 +116,24 @@ export default React.memo(function Absences({
       )}
 
       {preschoolDaycareAbsences && preschoolDaycareAbsences.length === 0 ? (
-        <AttendanceItem>
-          <Circle gray />
+        <Fragment>
+          <AttendanceItem>
+            <Circle gray />
 
-          <span>
-            <Label>{i18n.common.types.PRESCHOOL_DAYCARE}</Label>
-            <AbsenceTypeLabel>{i18n.attendances.noAbsences}</AbsenceTypeLabel>
-          </span>
-        </AttendanceItem>
+            <span>
+              <Label>{i18n.common.types.PRESCHOOL}</Label>
+              <AbsenceTypeLabel>{i18n.attendances.noAbsences}</AbsenceTypeLabel>
+            </span>
+          </AttendanceItem>
+          <AttendanceItem>
+            <Circle gray />
+
+            <span>
+              <Label>{i18n.common.types.PRESCHOOL_DAYCARE}</Label>
+              <AbsenceTypeLabel>{i18n.attendances.noAbsences}</AbsenceTypeLabel>
+            </span>
+          </AttendanceItem>
+        </Fragment>
       ) : (
         preschoolDaycareAbsences &&
         preschoolDaycareAbsences.map((absence) => (

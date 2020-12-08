@@ -1713,7 +1713,9 @@ export const fi = {
     arrivalTime: 'Saapumisaika',
     chooseGroup: 'Valitse ryhmä',
     searchPlaceholder: 'Etsi lapsen nimellä',
-    noAbsences: 'Ei poissaoloja'
+    noAbsences: 'Ei poissaoloja',
+    missingFrom: 'Poissa seuraavasta toimintamuodosta',
+    missingFromPlural: 'Poissa seuraavista toimintamuodoista'
   },
   placementDraft: {
     preschoolDaycare: 'Liittyvä varhaiskasvatus',

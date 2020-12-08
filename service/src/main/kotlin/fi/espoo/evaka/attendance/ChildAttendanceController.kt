@@ -233,6 +233,7 @@ class ChildAttendanceController(
 
         return db.transaction { tx ->
             tx.assertChildPlacement(childId, unitId)
+            tx.deleteCurrentDayAbsences(childId)
 
             val attendance = tx.getChildCurrentDayAttendance(childId, unitId)
 

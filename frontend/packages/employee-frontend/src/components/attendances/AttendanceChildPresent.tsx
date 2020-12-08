@@ -23,6 +23,7 @@ import { AbsenceType } from '~types/absence'
 import AbsenceSelector from './AbsenceSelector'
 import { getCurrentTime, getTimeString } from './AttendanceChildPage'
 import {
+  AbsentFrom,
   BigWideButton,
   FlexLabel,
   InlineWideAsyncButton,
@@ -162,11 +163,17 @@ export default React.memo(function AttendanceChildPresent({
 
           {isSuccess(childDepartureInfo) &&
           childDepartureInfo.data.absentFrom.length > 0 ? (
-            <AbsenceSelector
-              unitId={unitId}
-              groupId={groupIdOrAll}
-              selectAbsenceType={selectAbsenceType}
-            />
+            <Fragment>
+              <AbsentFrom
+                child={child}
+                absentFrom={childDepartureInfo.data.absentFrom}
+              />
+              <AbsenceSelector
+                unitId={unitId}
+                groupId={groupIdOrAll}
+                selectAbsenceType={selectAbsenceType}
+              />
+            </Fragment>
           ) : (
             <WideAsyncButton
               primary
