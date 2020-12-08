@@ -40,6 +40,7 @@ class AttachmentsController(
     env: Environment
 ) {
     private val filesBucket = env.getProperty("fi.espoo.voltti.document.bucket.attachments")
+    private val maxAttachmentsPerUser = env.getRequiredProperty("fi.espoo.evaka.maxAttachmentsPerUser").toInt()
 
     @PostMapping("/applications/{applicationId}", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
     fun uploadApplicationAttachment(
@@ -66,7 +67,9 @@ class AttachmentsController(
     ): ResponseEntity<UUID> {
         Audit.AttachmentsUpload.log(targetId = applicationId)
         user.requireOneOfRoles(UserRole.END_USER)
+
         if (!db.read { it.isOwnApplication(applicationId, user) }) throw Forbidden("Permission denied")
+        if (db.read { it.userAttachmentCount(user.id) } >= maxAttachmentsPerUser) throw Forbidden("Too many uploaded files for ${user.id}: $maxAttachmentsPerUser")
 
         val id = handleFileUpload(db, user, applicationId, file, type)
         return ResponseEntity.ok(id)
@@ -147,6 +150,13 @@ fun Database.Read.isOwnApplication(applicationId: UUID, user: AuthenticatedUser)
         .mapTo<Int>()
         .toList()
         .isNotEmpty()
+}
+
+fun Database.Read.userAttachmentCount(userId: UUID): Int {
+    return this.createQuery("SELECT COUNT(*) FROM attachment WHERE uploaded_by_person = :userId")
+        .bind("userId", userId)
+        .mapTo<Int>()
+        .first()
 }
 
 val contentTypesWithMagicNumbers = mapOf(

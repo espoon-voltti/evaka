@@ -6,7 +6,6 @@ package fi.espoo.evaka.application
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import fi.espoo.evaka.FullApplicationTest
-import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
 import fi.espoo.evaka.daycare.getChild
 import fi.espoo.evaka.decision.Decision
 import fi.espoo.evaka.decision.DecisionDraft
@@ -15,6 +14,7 @@ import fi.espoo.evaka.decision.DecisionStatus
 import fi.espoo.evaka.decision.DecisionType
 import fi.espoo.evaka.decision.fetchDecisionDrafts
 import fi.espoo.evaka.decision.getDecisionsByApplication
+import fi.espoo.evaka.insertApplication
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.invoicing.data.getIncomesForPerson
 import fi.espoo.evaka.invoicing.data.upsertIncome
@@ -36,8 +36,6 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.dev.DevPlacement
-import fi.espoo.evaka.shared.dev.insertTestApplication
-import fi.espoo.evaka.shared.dev.insertTestApplicationForm
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.ClosedPeriod
@@ -63,7 +61,6 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
 import java.time.LocalDate
-import java.time.OffsetDateTime
 import java.util.UUID
 
 class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
@@ -103,7 +100,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
     fun `sendApplication - preschool has due date same as sent date`() {
         db.transaction { tx ->
             // given
-            insertDraftApplication(tx.handle, appliedType = PlacementType.PRESCHOOL)
+            insertApplication(tx.handle, appliedType = PlacementType.PRESCHOOL, applicationId = applicationId)
         }
 
         db.transaction { tx ->
@@ -124,7 +121,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
     fun `sendApplication - daycare has due date after 4 months if not urgent`() {
         db.transaction { tx ->
             // given
-            insertDraftApplication(tx.handle, appliedType = PlacementType.DAYCARE, urgent = false)
+            insertApplication(tx.handle, appliedType = PlacementType.DAYCARE, urgent = false, applicationId = applicationId)
         }
         db.transaction { tx ->
             // when
@@ -141,7 +138,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
     fun `sendApplication - daycare has due date after 2 weeks if urgent`() {
         db.transaction { tx ->
             // given
-            insertDraftApplication(tx.handle, appliedType = PlacementType.DAYCARE, urgent = true)
+            insertApplication(tx.handle, appliedType = PlacementType.DAYCARE, urgent = true, applicationId = applicationId)
         }
         db.transaction { tx ->
             // when
@@ -158,7 +155,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
     fun `sendApplication - daycare has not due date if a transfer application`() {
         db.transaction { tx ->
             // given
-            val draft = insertDraftApplication(tx.handle, appliedType = PlacementType.DAYCARE, urgent = false)
+            val draft = insertApplication(tx.handle, appliedType = PlacementType.DAYCARE, urgent = false, applicationId = applicationId)
             tx.handle.insertTestPlacement(
                 DevPlacement(
                     childId = draft.childId,
@@ -184,7 +181,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
     fun `moveToWaitingPlacement without otherInfo - status is changed and checkedByAdmin defaults true`() {
         db.transaction { tx ->
             // given
-            insertDraftApplication(tx.handle, hasAdditionalInfo = false)
+            insertApplication(tx.handle, hasAdditionalInfo = false, applicationId = applicationId)
             service.sendApplication(tx, serviceWorker, applicationId)
         }
         db.transaction { tx ->
@@ -203,7 +200,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
     fun `moveToWaitingPlacement with otherInfo - status is changed and checkedByAdmin defaults false`() {
         db.transaction { tx ->
             // given
-            insertDraftApplication(tx.handle, hasAdditionalInfo = true)
+            insertApplication(tx.handle, hasAdditionalInfo = true, applicationId = applicationId)
             service.sendApplication(tx, serviceWorker, applicationId)
         }
         db.transaction { tx ->
@@ -221,7 +218,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
     fun `moveToWaitingPlacement with maxFeeAccepted - new income has been created`() {
         db.transaction { tx ->
             // given
-            insertDraftApplication(tx.handle, guardian = testAdult_5, maxFeeAccepted = true)
+            insertApplication(tx.handle, guardian = testAdult_5, maxFeeAccepted = true, applicationId = applicationId)
             service.sendApplication(tx, serviceWorker, applicationId)
         }
         db.transaction { tx ->
@@ -254,7 +251,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 validTo = null
             )
             upsertIncome(tx.handle, mapper, earlierIndefinite, financeUser.id)
-            insertDraftApplication(tx.handle, guardian = testAdult_5, maxFeeAccepted = true)
+            insertApplication(tx.handle, guardian = testAdult_5, maxFeeAccepted = true, applicationId = applicationId)
             service.sendApplication(tx, serviceWorker, applicationId)
         }
         db.transaction { tx ->
@@ -288,7 +285,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 validTo = LocalDate.now().plusMonths(5)
             )
             upsertIncome(tx.handle, mapper, earlierIncome, financeUser.id)
-            insertDraftApplication(tx.handle, guardian = testAdult_5, maxFeeAccepted = true)
+            insertApplication(tx.handle, guardian = testAdult_5, maxFeeAccepted = true, applicationId = applicationId)
             service.sendApplication(tx, serviceWorker, applicationId)
         }
         db.transaction { tx ->
@@ -321,7 +318,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 validTo = null
             )
             upsertIncome(tx.handle, mapper, laterIndefiniteIncome, financeUser.id)
-            insertDraftApplication(tx.handle, guardian = testAdult_5, maxFeeAccepted = true)
+            insertApplication(tx.handle, guardian = testAdult_5, maxFeeAccepted = true, applicationId = applicationId)
             service.sendApplication(tx, serviceWorker, applicationId)
         }
         db.transaction { tx ->
@@ -354,7 +351,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 validTo = LocalDate.now().minusMonths(5)
             )
             upsertIncome(tx.handle, mapper, earlierIncome, financeUser.id)
-            insertDraftApplication(tx.handle, guardian = testAdult_5, maxFeeAccepted = true)
+            insertApplication(tx.handle, guardian = testAdult_5, maxFeeAccepted = true, applicationId = applicationId)
             service.sendApplication(tx, serviceWorker, applicationId)
         }
         db.transaction { tx ->
@@ -388,7 +385,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 validTo = LocalDate.now().plusMonths(6)
             )
             upsertIncome(tx.handle, mapper, laterIncome, financeUser.id)
-            insertDraftApplication(tx.handle, guardian = testAdult_5, maxFeeAccepted = true)
+            insertApplication(tx.handle, guardian = testAdult_5, maxFeeAccepted = true, applicationId = applicationId)
             service.sendApplication(tx, serviceWorker, applicationId)
         }
         db.transaction { tx ->
@@ -421,7 +418,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 validTo = null
             )
             upsertIncome(tx.handle, mapper, earlierIndefinite, financeUser.id)
-            insertDraftApplication(tx.handle, guardian = testAdult_5, maxFeeAccepted = true, preferredStartDate = null)
+            insertApplication(tx.handle, guardian = testAdult_5, maxFeeAccepted = true, preferredStartDate = null, applicationId = applicationId)
             service.sendApplication(tx, serviceWorker, applicationId)
         }
         db.transaction { tx ->
@@ -454,7 +451,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 validTo = null
             )
             upsertIncome(tx.handle, mapper, sameDayIncomeIndefinite, financeUser.id)
-            insertDraftApplication(tx.handle, guardian = testAdult_5, maxFeeAccepted = true)
+            insertApplication(tx.handle, guardian = testAdult_5, maxFeeAccepted = true, applicationId = applicationId)
             service.sendApplication(tx, serviceWorker, applicationId)
         }
         db.transaction { tx ->
@@ -487,7 +484,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 validTo = LocalDate.now().plusMonths(5)
             )
             upsertIncome(tx.handle, mapper, sameDayIncome, financeUser.id)
-            insertDraftApplication(tx.handle, guardian = testAdult_5, maxFeeAccepted = true)
+            insertApplication(tx.handle, guardian = testAdult_5, maxFeeAccepted = true, applicationId = applicationId)
             service.sendApplication(tx, serviceWorker, applicationId)
         }
         db.transaction { tx ->
@@ -520,7 +517,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 validTo = null
             )
             upsertIncome(tx.handle, mapper, dayBeforeIncomeIndefinite, financeUser.id)
-            insertDraftApplication(tx.handle, guardian = testAdult_5, maxFeeAccepted = true)
+            insertApplication(tx.handle, guardian = testAdult_5, maxFeeAccepted = true, applicationId = applicationId)
             service.sendApplication(tx, serviceWorker, applicationId)
         }
         db.transaction { tx ->
@@ -554,7 +551,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 validTo = null
             )
             upsertIncome(tx.handle, mapper, nextDayIncomeIndefinite, financeUser.id)
-            insertDraftApplication(tx.handle, guardian = testAdult_5, maxFeeAccepted = true)
+            insertApplication(tx.handle, guardian = testAdult_5, maxFeeAccepted = true, applicationId = applicationId)
             service.sendApplication(tx, serviceWorker, applicationId)
         }
         db.transaction { tx ->
@@ -587,7 +584,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 validTo = LocalDate.now().plusMonths(5)
             )
             upsertIncome(tx.handle, mapper, IncomeDayBefore, financeUser.id)
-            insertDraftApplication(tx.handle, guardian = testAdult_5, maxFeeAccepted = true)
+            insertApplication(tx.handle, guardian = testAdult_5, maxFeeAccepted = true, applicationId = applicationId)
             service.sendApplication(tx, serviceWorker, applicationId)
         }
         db.transaction { tx ->
@@ -620,7 +617,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 validTo = LocalDate.now().plusMonths(4)
             )
             upsertIncome(tx.handle, mapper, earlierIncomeEndingOnSameDay, financeUser.id)
-            insertDraftApplication(tx.handle, guardian = testAdult_5, maxFeeAccepted = true)
+            insertApplication(tx.handle, guardian = testAdult_5, maxFeeAccepted = true, applicationId = applicationId)
             service.sendApplication(tx, serviceWorker, applicationId)
         }
         db.transaction { tx ->
@@ -653,7 +650,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 validTo = LocalDate.now().plusMonths(4).plusDays(1)
             )
             upsertIncome(tx.handle, mapper, earlierIncomeEndingOnNextDay, financeUser.id)
-            insertDraftApplication(tx.handle, guardian = testAdult_5, maxFeeAccepted = true)
+            insertApplication(tx.handle, guardian = testAdult_5, maxFeeAccepted = true, applicationId = applicationId)
             service.sendApplication(tx, serviceWorker, applicationId)
         }
         db.transaction { tx ->
@@ -686,7 +683,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 validTo = LocalDate.now().plusMonths(4).minusDays(1)
             )
             upsertIncome(tx.handle, mapper, earlierIncomeEndingOnDayBefore, financeUser.id)
-            insertDraftApplication(tx.handle, guardian = testAdult_5, maxFeeAccepted = true)
+            insertApplication(tx.handle, guardian = testAdult_5, maxFeeAccepted = true, applicationId = applicationId)
             service.sendApplication(tx, serviceWorker, applicationId)
         }
         db.transaction { tx ->
@@ -709,7 +706,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
     fun `moveToWaitingPlacement - guardian contact details are updated`() {
         db.transaction { tx ->
             // given
-            insertDraftApplication(tx.handle, appliedType = PlacementType.DAYCARE)
+            insertApplication(tx.handle, appliedType = PlacementType.DAYCARE, applicationId = applicationId)
             service.sendApplication(tx, serviceWorker, applicationId)
         }
         db.transaction { tx ->
@@ -728,7 +725,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
     fun `moveToWaitingPlacement - child is upserted with diet and allergies`() {
         db.transaction { tx ->
             // given
-            insertDraftApplication(tx.handle, appliedType = PlacementType.DAYCARE, hasAdditionalInfo = true)
+            insertApplication(tx.handle, appliedType = PlacementType.DAYCARE, hasAdditionalInfo = true, applicationId = applicationId)
             service.sendApplication(tx, serviceWorker, applicationId)
         }
         db.transaction { tx ->
@@ -747,7 +744,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
     fun `setVerified and setUnverified - changes checkedByAdmin`() {
         db.transaction { tx ->
             // given
-            insertDraftApplication(tx.handle, hasAdditionalInfo = true)
+            insertApplication(tx.handle, hasAdditionalInfo = true, applicationId = applicationId)
             service.sendApplication(tx, serviceWorker, applicationId)
             service.moveToWaitingPlacement(tx, serviceWorker, applicationId)
         }
@@ -777,7 +774,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
     fun `cancelApplication from SENT - status is changed`() {
         db.transaction { tx ->
             // given
-            insertDraftApplication(tx.handle)
+            insertApplication(tx.handle, applicationId = applicationId)
             service.sendApplication(tx, serviceWorker, applicationId)
         }
         db.transaction { tx ->
@@ -795,7 +792,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
     fun `cancelApplication from WAITING_PLACEMENT - status is changed`() {
         db.transaction { tx ->
             // given
-            insertDraftApplication(tx.handle)
+            insertApplication(tx.handle, applicationId = applicationId)
             service.sendApplication(tx, serviceWorker, applicationId)
             service.moveToWaitingPlacement(tx, serviceWorker, applicationId)
         }
@@ -814,7 +811,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
     fun `returnToSent - status is changed`() {
         db.transaction { tx ->
             // given
-            insertDraftApplication(tx.handle)
+            insertApplication(tx.handle, applicationId = applicationId)
             service.sendApplication(tx, serviceWorker, applicationId)
             service.moveToWaitingPlacement(tx, serviceWorker, applicationId)
         }
@@ -833,7 +830,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
     fun `createPlacementPlan - daycare`() {
         db.transaction { tx ->
             // given
-            insertDraftApplication(tx.handle, appliedType = PlacementType.DAYCARE)
+            insertApplication(tx.handle, appliedType = PlacementType.DAYCARE, applicationId = applicationId)
             service.sendApplication(tx, serviceWorker, applicationId)
             service.moveToWaitingPlacement(tx, serviceWorker, applicationId)
         }
@@ -887,7 +884,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
     fun `createPlacementPlan - daycare part-time`() {
         db.transaction { tx ->
             // given
-            insertDraftApplication(tx.handle, appliedType = PlacementType.DAYCARE_PART_TIME)
+            insertApplication(tx.handle, appliedType = PlacementType.DAYCARE_PART_TIME, applicationId = applicationId)
             service.sendApplication(tx, serviceWorker, applicationId)
             service.moveToWaitingPlacement(tx, serviceWorker, applicationId)
         }
@@ -941,7 +938,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
     fun `createPlacementPlan - preschool`() {
         db.transaction { tx ->
             // given
-            insertDraftApplication(tx.handle, appliedType = PlacementType.PRESCHOOL)
+            insertApplication(tx.handle, appliedType = PlacementType.PRESCHOOL, applicationId = applicationId)
             service.sendApplication(tx, serviceWorker, applicationId)
             service.moveToWaitingPlacement(tx, serviceWorker, applicationId)
         }
@@ -1011,7 +1008,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
     fun `createPlacementPlan - preschool with daycare`() {
         db.transaction { tx ->
             // given
-            insertDraftApplication(tx.handle, appliedType = PlacementType.PRESCHOOL_DAYCARE)
+            insertApplication(tx.handle, appliedType = PlacementType.PRESCHOOL_DAYCARE, applicationId = applicationId)
             service.sendApplication(tx, serviceWorker, applicationId)
             service.moveToWaitingPlacement(tx, serviceWorker, applicationId)
         }
@@ -1082,7 +1079,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
     fun `cancelPlacementPlan - removes placement plan and decision drafts and changes status`() {
         db.transaction { tx ->
             // given
-            insertDraftApplication(tx.handle, appliedType = PlacementType.PRESCHOOL_DAYCARE)
+            insertApplication(tx.handle, appliedType = PlacementType.PRESCHOOL_DAYCARE, applicationId = applicationId)
             service.sendApplication(tx, serviceWorker, applicationId)
             service.moveToWaitingPlacement(tx, serviceWorker, applicationId)
             service.createPlacementPlan(
@@ -1172,7 +1169,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
     ) {
         // given
         db.transaction { tx ->
-            insertDraftApplication(tx.handle, appliedType = PlacementType.PRESCHOOL, guardian = applier, child = child)
+            insertApplication(tx.handle, appliedType = PlacementType.PRESCHOOL, guardian = applier, child = child, applicationId = applicationId)
             service.sendApplication(tx, serviceWorker, applicationId)
             service.moveToWaitingPlacement(tx, serviceWorker, applicationId)
             service.createPlacementPlan(
@@ -1230,7 +1227,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
     fun `sendPlacementProposal - updates status`() {
         db.transaction { tx ->
             // given
-            insertDraftApplication(tx.handle, appliedType = PlacementType.PRESCHOOL_DAYCARE)
+            insertApplication(tx.handle, appliedType = PlacementType.PRESCHOOL_DAYCARE, applicationId = applicationId)
             service.sendApplication(tx, serviceWorker, applicationId)
             service.moveToWaitingPlacement(tx, serviceWorker, applicationId)
             service.createPlacementPlan(
@@ -1260,7 +1257,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
     fun `withdrawPlacementProposal - updates status`() {
         db.transaction { tx ->
             // given
-            insertDraftApplication(tx.handle, appliedType = PlacementType.PRESCHOOL_DAYCARE)
+            insertApplication(tx.handle, appliedType = PlacementType.PRESCHOOL_DAYCARE, applicationId = applicationId)
             service.sendApplication(tx, serviceWorker, applicationId)
             service.moveToWaitingPlacement(tx, serviceWorker, applicationId)
             service.createPlacementPlan(
@@ -1293,10 +1290,11 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
     fun `acceptPlacementProposal - sends decisions and updates status`() {
         db.transaction { tx ->
             // given
-            insertDraftApplication(
+            insertApplication(
                 tx.handle, appliedType = PlacementType.PRESCHOOL_DAYCARE,
                 child = testChild_2,
-                guardian = testAdult_1
+                guardian = testAdult_1,
+                applicationId = applicationId
             )
             service.sendApplication(tx, serviceWorker, applicationId)
             service.moveToWaitingPlacement(tx, serviceWorker, applicationId)
@@ -1346,10 +1344,10 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
     fun `acceptPlacementProposal - if no decisions are marked for sending do nothing`() {
         db.transaction { tx ->
             // given
-            insertDraftApplication(
+            insertApplication(
                 tx.handle, appliedType = PlacementType.PRESCHOOL_DAYCARE,
                 child = testChild_2,
-                guardian = testAdult_1
+                guardian = testAdult_1, applicationId = applicationId
             )
             service.sendApplication(tx, serviceWorker, applicationId)
             service.moveToWaitingPlacement(tx, serviceWorker, applicationId)
@@ -1412,11 +1410,11 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
     fun `acceptPlacementProposal - throws if some application is pending response`() {
         db.transaction { tx ->
             // given
-            insertDraftApplication(
+            insertApplication(
                 tx.handle,
                 appliedType = PlacementType.PRESCHOOL,
                 child = testChild_2,
-                guardian = testAdult_1
+                guardian = testAdult_1, applicationId = applicationId
             )
             service.sendApplication(tx, serviceWorker, applicationId)
             service.moveToWaitingPlacement(tx, serviceWorker, applicationId)
@@ -1441,11 +1439,11 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
     fun `acceptPlacementProposal - throws if some application has been rejected`() {
         db.transaction { tx ->
             // given
-            insertDraftApplication(
+            insertApplication(
                 tx.handle,
                 appliedType = PlacementType.PRESCHOOL,
                 child = testChild_2,
-                guardian = testAdult_1
+                guardian = testAdult_1, applicationId = applicationId
             )
             service.sendApplication(tx, serviceWorker, applicationId)
             service.moveToWaitingPlacement(tx, serviceWorker, applicationId)
@@ -1808,7 +1806,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
         getDecisionsByApplication(h, applicationId, AclAuthorization.All).first { it.type == type }
 
     private fun workflowForPreschoolDaycareDecisions(tx: Database.Transaction) {
-        insertDraftApplication(tx.handle, appliedType = PlacementType.PRESCHOOL_DAYCARE)
+        insertApplication(tx.handle, appliedType = PlacementType.PRESCHOOL_DAYCARE, applicationId = applicationId)
         service.sendApplication(tx, serviceWorker, applicationId)
         service.moveToWaitingPlacement(tx, serviceWorker, applicationId)
         service.createPlacementPlan(
@@ -1822,108 +1820,5 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
             )
         )
         service.sendDecisionsWithoutProposal(tx, serviceWorker, applicationId)
-    }
-
-    private fun insertDraftApplication(
-        h: Handle,
-        guardian: PersonData.Detailed = testAdult_5,
-        child: PersonData.Detailed = testChild_6,
-        appliedType: PlacementType = PlacementType.PRESCHOOL_DAYCARE,
-        urgent: Boolean = false,
-        hasAdditionalInfo: Boolean = false,
-        maxFeeAccepted: Boolean = false,
-        preferredStartDate: LocalDate? = LocalDate.now().plusMonths(4)
-    ): ApplicationDetails {
-        insertTestApplication(
-            h = h,
-            id = applicationId,
-            sentDate = null,
-            dueDate = null,
-            status = ApplicationStatus.CREATED,
-            guardianId = guardian.id,
-            childId = child.id
-        )
-        val application = ApplicationDetails(
-            id = applicationId,
-            type = when (appliedType) {
-                PlacementType.PRESCHOOL, PlacementType.PRESCHOOL_DAYCARE, PlacementType.PREPARATORY, PlacementType.PREPARATORY_DAYCARE -> ApplicationType.PRESCHOOL
-                PlacementType.DAYCARE, PlacementType.DAYCARE_PART_TIME -> ApplicationType.DAYCARE
-                PlacementType.CLUB -> ApplicationType.CLUB
-            },
-            form = ApplicationForm(
-                child = ChildDetails(
-                    person = PersonBasics(
-                        firstName = child.firstName,
-                        lastName = child.lastName,
-                        socialSecurityNumber = child.ssn
-                    ),
-                    dateOfBirth = child.dateOfBirth,
-                    address = address,
-                    futureAddress = null,
-                    nationality = "fi",
-                    language = "fi",
-                    allergies = if (hasAdditionalInfo) "allergies" else "",
-                    diet = if (hasAdditionalInfo) "diet" else "",
-                    assistanceNeeded = false,
-                    assistanceDescription = ""
-                ),
-                guardian = Guardian(
-                    person = PersonBasics(
-                        firstName = guardian.firstName,
-                        lastName = guardian.lastName,
-                        socialSecurityNumber = guardian.ssn
-                    ),
-                    address = address,
-                    futureAddress = null,
-                    phoneNumber = "0501234567",
-                    email = "abc@espoo.fi"
-                ),
-                preferences = Preferences(
-                    preferredUnits = listOf(PreferredUnit(testDaycare.id, testDaycare.name)),
-                    preferredStartDate = preferredStartDate,
-                    serviceNeed = if (appliedType in listOf(
-                        PlacementType.PRESCHOOL,
-                        PlacementType.PREPARATORY
-                    )
-                    ) null else ServiceNeed(
-                        startTime = "09:00",
-                        endTime = "15:00",
-                        shiftCare = false,
-                        partTime = appliedType == PlacementType.DAYCARE_PART_TIME
-                    ),
-                    siblingBasis = null,
-                    preparatory = appliedType in listOf(PlacementType.PREPARATORY, PlacementType.PREPARATORY_DAYCARE),
-                    urgent = urgent
-                ),
-                secondGuardian = null,
-                otherPartner = null,
-                otherChildren = emptyList(),
-                otherInfo = if (hasAdditionalInfo) "foobar" else "",
-                maxFeeAccepted = maxFeeAccepted,
-                clubDetails = null
-            ),
-            status = ApplicationStatus.CREATED,
-            origin = ApplicationOrigin.PAPER,
-            childId = child.id,
-            childRestricted = false,
-            guardianId = guardian.id,
-            guardianRestricted = false,
-            createdDate = OffsetDateTime.now(),
-            modifiedDate = OffsetDateTime.now(),
-            sentDate = null,
-            dueDate = null,
-            transferApplication = false,
-            additionalDaycareApplication = false,
-            otherGuardianId = null,
-            checkedByAdmin = false,
-            hideFromGuardian = false,
-            attachments = listOf()
-        )
-        insertTestApplicationForm(
-            h = h,
-            applicationId = applicationId,
-            document = DaycareFormV0.fromApplication2(application)
-        )
-        return application
     }
 }
