@@ -62,8 +62,6 @@ export default React.memo(function Absences({
         )
       : undefined
 
-  console.log('preschoolDaycareAbsences: ', preschoolDaycareAbsences)
-
   const preparatoryAbsences =
     attendanceChild.placementType === 'PREPARATORY'
       ? attendanceChild.absences.filter(
