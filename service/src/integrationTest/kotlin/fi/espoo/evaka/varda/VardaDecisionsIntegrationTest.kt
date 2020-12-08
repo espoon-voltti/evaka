@@ -724,6 +724,32 @@ class VardaDecisionsIntegrationTest : FullApplicationTest() {
     }
 
     @Test
+    fun `a decisions placements are deleted first when it's updated`() {
+        jdbi.handle { h ->
+            val period = ClosedPeriod(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))
+            insertDecisionWithApplication(h, testChild_1, period)
+            insertVardaUnit(h)
+            insertServiceNeed(h, testChild_1.id, period)
+            insertVardaChild(h, testChild_1.id)
+            updateDecisions(h, vardaClient)
+            val decisions = getVardaDecisions(h)
+            assertEquals(1, decisions.size)
+
+            val placementId = insertPlacement(h, testChild_1.id, period)
+            updatePlacements(h, vardaClient)
+            val placements = getVardaPlacements(h)
+            assertEquals(1, placements.size)
+
+            h.updatePlacementStartAndEndDate(placementId, period.start.plusMonths(1), period.end.minusMonths(1))
+            updateDecisions(h, vardaClient)
+            assertEquals(0, getVardaPlacements(h).size)
+
+            updatePlacements(h, vardaClient)
+            assertEquals(1, getVardaPlacements(h).size)
+        }
+    }
+
+    @Test
     fun `decision has correct dates when multiple placements that prolong it are added`() {
         jdbi.handle { h ->
             val period = ClosedPeriod(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))
