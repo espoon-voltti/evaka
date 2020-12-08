@@ -1000,6 +1000,9 @@
         "Tillåtna format:",
         "PDF, JPEG/JPG, PNG och DOC/DOCX"
       ]
-    }
+    },
+    "modal-header": "File behandling pågår",
+    "modal-message": "Filen kan inte öppnas för tillfället. Försök igen efter ett tag.",
+    "modal-confirm": "OK"
   }
 }
