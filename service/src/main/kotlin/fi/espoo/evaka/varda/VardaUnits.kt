@@ -10,16 +10,15 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.annotation.JsonPropertyOrder
-import fi.espoo.evaka.shared.db.transaction
+import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.varda.integration.VardaClient
-import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.mapTo
 import java.util.UUID
 
 val unitTypesToUpload = listOf(VardaUnitProviderType.MUNICIPAL, VardaUnitProviderType.MUNICIPAL_SCHOOL)
 
-fun updateUnits(h: Handle, client: VardaClient, organizerName: String) {
-    val units = getNewOrStaleUnits(h, organizerName)
+fun updateUnits(db: Database.Connection, client: VardaClient, organizerName: String) {
+    val units = db.read { getNewOrStaleUnits(it, organizerName) }
 
     units.forEach { unit ->
         val response =
@@ -27,12 +26,12 @@ fun updateUnits(h: Handle, client: VardaClient, organizerName: String) {
             else client.updateUnit(unit)
 
         response?.let { (vardaUnitId, ophUnitOid) ->
-            setUnitUploaded(unit.copy(vardaUnitId = vardaUnitId, ophUnitOid = ophUnitOid), h)
+            db.transaction { setUnitUploaded(it, unit.copy(vardaUnitId = vardaUnitId, ophUnitOid = ophUnitOid)) }
         }
     }
 }
 
-fun getNewOrStaleUnits(h: Handle, organizerName: String): List<VardaUnit> {
+fun getNewOrStaleUnits(tx: Database.Read, organizerName: String): List<VardaUnit> {
     //language=SQL
     val sql =
         """
@@ -70,36 +69,34 @@ fun getNewOrStaleUnits(h: Handle, organizerName: String): List<VardaUnit> {
             AND daycare.provider_type IN (<providerTypes>)
         """.trimIndent()
 
-    return h.createQuery(sql)
+    return tx.createQuery(sql)
         .bind("organizer", organizerName)
         .bindList("providerTypes", unitTypesToUpload)
         .mapTo<VardaUnit>()
         .toList()
 }
 
-fun setUnitUploaded(vardaUnit: VardaUnit, h: Handle) {
-    h.transaction { t ->
-        //language=SQL
-        val sql =
-            """
-        INSERT INTO varda_unit (evaka_daycare_id, varda_unit_id, uploaded_at)
-        VALUES (:evakaDaycareId, :vardaUnitId, now())
-        ON CONFLICT (evaka_daycare_id)
-        DO UPDATE SET varda_unit_id = :vardaUnitId, uploaded_at = now();
-            """.trimIndent()
+fun setUnitUploaded(tx: Database.Transaction, vardaUnit: VardaUnit) {
+    //language=SQL
+    val sql =
+        """
+    INSERT INTO varda_unit (evaka_daycare_id, varda_unit_id, uploaded_at)
+    VALUES (:evakaDaycareId, :vardaUnitId, now())
+    ON CONFLICT (evaka_daycare_id)
+    DO UPDATE SET varda_unit_id = :vardaUnitId, uploaded_at = now();
+        """.trimIndent()
 
-        t.createUpdate(sql)
-            .bind("evakaDaycareId", vardaUnit.evakaDaycareId)
-            .bind("vardaUnitId", vardaUnit.vardaUnitId)
-            .execute()
+    tx.createUpdate(sql)
+        .bind("evakaDaycareId", vardaUnit.evakaDaycareId)
+        .bind("vardaUnitId", vardaUnit.vardaUnitId)
+        .execute()
 
-        val sql2 = "UPDATE daycare SET oph_unit_oid = :ophUnitOid WHERE daycare.id = :evakaDaycareId;"
+    val sql2 = "UPDATE daycare SET oph_unit_oid = :ophUnitOid WHERE daycare.id = :evakaDaycareId;"
 
-        t.createUpdate(sql2)
-            .bind("evakaDaycareId", vardaUnit.evakaDaycareId)
-            .bind("ophUnitOid", vardaUnit.ophUnitOid)
-            .execute()
-    }
+    tx.createUpdate(sql2)
+        .bind("evakaDaycareId", vardaUnit.evakaDaycareId)
+        .bind("ophUnitOid", vardaUnit.ophUnitOid)
+        .execute()
 }
 
 // https://virkailija.opintopolku.fi/koodisto-service/rest/json/vardajarjestamismuoto/koodi

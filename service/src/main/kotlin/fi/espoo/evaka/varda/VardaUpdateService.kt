@@ -60,7 +60,7 @@ fun updateAll(
     removeMarkedPlacementsFromVarda(db, client)
     removeMarkedDecisionsFromVarda(db, client)
     updateOrganizer(db, client, organizer)
-    db.transaction { updateUnits(it.handle, client, organizer) }
+    updateUnits(db, client, organizer)
     db.transaction { updateChildren(it.handle, client, organizer) }
     db.transaction { updateDecisions(it.handle, client) }
     db.transaction { updatePlacements(it.handle, client) }

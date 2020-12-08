@@ -321,7 +321,7 @@ class VardaFeeDataIntegrationTest : FullApplicationTest() {
 
             val paosDaycareId = testPurchasedDaycare.id
 
-            updateUnits(h, vardaClient, vardaOrganizerName)
+            updateUnits(db, vardaClient, vardaOrganizerName)
 
             createDecisionsAndPlacements(h = h, child = child, period = period1, daycareId = paosDaycareId)
             insertFeeDecision(
