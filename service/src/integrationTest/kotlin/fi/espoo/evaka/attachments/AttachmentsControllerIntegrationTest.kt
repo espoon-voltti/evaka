@@ -11,7 +11,6 @@ import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
-import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.testAdult_5
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions
@@ -28,31 +27,30 @@ class AttachmentsControllerIntegrationTest : FullApplicationTest() {
 
     @BeforeEach
     protected fun beforeEach() {
-        jdbi.handle { h ->
-            resetDatabase(h)
-            insertGeneralTestFixtures(h)
+        db.transaction {
+            resetDatabase(it.handle)
+            insertGeneralTestFixtures(it.handle)
             user = AuthenticatedUser(testAdult_5.id, setOf(UserRole.END_USER))
         }
     }
 
     @AfterEach
     protected fun tearDown() {
-        jdbi.handle { h ->
-            deleteApplication(h, applicationId)
+        db.transaction {
+            deleteApplication(it.handle, applicationId)
         }
     }
 
     @Test
     fun `Enduser can upload attachments up to the limit`() {
-        jdbi.handle { h ->
-            val maxAttachments = env.getProperty("fi.espoo.evaka.maxAttachmentsPerUser")!!.toInt()
-            insertApplication(h, applicationId = applicationId, guardian = testAdult_5, status = ApplicationStatus.CREATED)
-
-            for (i in 1..maxAttachments) {
-                Assertions.assertTrue(uploadAttachment(applicationId))
-            }
-            Assertions.assertFalse(uploadAttachment(applicationId))
+        val maxAttachments = env.getProperty("fi.espoo.evaka.maxAttachmentsPerUser")!!.toInt()
+        db.transaction {
+            insertApplication(it.handle, applicationId = applicationId, guardian = testAdult_5, status = ApplicationStatus.CREATED)
         }
+        for (i in 1..maxAttachments) {
+            Assertions.assertTrue(uploadAttachment(applicationId))
+        }
+        Assertions.assertFalse(uploadAttachment(applicationId))
     }
 
     private fun uploadAttachment(applicationId: UUID): Boolean {
