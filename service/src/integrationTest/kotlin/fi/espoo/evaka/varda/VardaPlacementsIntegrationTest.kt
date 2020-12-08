@@ -10,6 +10,7 @@ import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.PlacementType.DAYCARE
 import fi.espoo.evaka.resetDatabase
+import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.db.transaction
 import fi.espoo.evaka.shared.dev.insertTestPlacement
@@ -44,7 +45,7 @@ class VardaPlacementsIntegrationTest : FullApplicationTest() {
             val period = ClosedPeriod(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))
             insertVardaUnit(h)
             val decisionId = insertDecisionWithApplication(h, testChild_1, period)
-            val vardaDecisionId = insertTestVardaDecision(h, decisionId = decisionId)
+            val vardaDecisionId = insertTestVardaDecision(db, decisionId = decisionId)
             val placementId = insertPlacement(h, testChild_1.id, period)
 
             updatePlacements(h, vardaClient)
@@ -81,10 +82,10 @@ class VardaPlacementsIntegrationTest : FullApplicationTest() {
             val period = ClosedPeriod(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))
             val decisionId = insertDecisionWithApplication(h, testChild_1, period, unitId = daycareId)
 
-            val vardaUnits = getVardaUnits(h)
+            val vardaUnits = getVardaUnits(db)
             assertNull(vardaUnits.find { it.evakaDaycareId == daycareId })
 
-            insertTestVardaDecision(h, decisionId = decisionId)
+            insertTestVardaDecision(db, decisionId = decisionId)
             insertPlacement(h, testChild_1.id, period, unitId = daycareId)
 
             updatePlacements(h, vardaClient)
@@ -100,7 +101,7 @@ class VardaPlacementsIntegrationTest : FullApplicationTest() {
             val period = ClosedPeriod(LocalDate.now().plusMonths(1), LocalDate.now().plusYears(1))
             insertVardaUnit(h)
             val decisionId = insertDecisionWithApplication(h, testChild_1, period)
-            insertTestVardaDecision(h, decisionId = decisionId)
+            insertTestVardaDecision(db, decisionId = decisionId)
             insertPlacement(h, testChild_1.id, period)
 
             updatePlacements(h, vardaClient)
@@ -117,7 +118,7 @@ class VardaPlacementsIntegrationTest : FullApplicationTest() {
             insertVardaUnit(h)
             val decisionId =
                 insertDecisionWithApplication(h, testChild_1, period, decisionType = DecisionType.PRESCHOOL_DAYCARE)
-            insertTestVardaDecision(h, decisionId = decisionId)
+            insertTestVardaDecision(db, decisionId = decisionId)
             insertPlacement(h, testChild_1.id, period, type = PlacementType.PRESCHOOL)
 
             updatePlacements(h, vardaClient)
@@ -134,7 +135,7 @@ class VardaPlacementsIntegrationTest : FullApplicationTest() {
             insertVardaUnit(h)
             val decisionId =
                 insertDecisionWithApplication(h, testChild_1, period, decisionType = DecisionType.PRESCHOOL_DAYCARE)
-            val vardaDecisionId = insertTestVardaDecision(h, decisionId = decisionId)
+            val vardaDecisionId = insertTestVardaDecision(db, decisionId = decisionId)
             val placementId = insertPlacement(h, testChild_1.id, period, type = PlacementType.PRESCHOOL_DAYCARE)
 
             updatePlacements(h, vardaClient)
@@ -152,7 +153,7 @@ class VardaPlacementsIntegrationTest : FullApplicationTest() {
             val period = ClosedPeriod(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))
             insertVardaUnit(h)
             val decisionId = insertDecisionWithApplication(h, testChild_1, period)
-            val vardaDecisionId = insertTestVardaDecision(h, decisionId = decisionId)
+            val vardaDecisionId = insertTestVardaDecision(db, decisionId = decisionId)
             val placementId1 = insertPlacement(h, testChild_1.id, period.copy(end = period.start.plusDays(5)))
             val placementId2 = insertPlacement(
                 h,
@@ -178,7 +179,7 @@ class VardaPlacementsIntegrationTest : FullApplicationTest() {
             val period = ClosedPeriod(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))
             insertVardaUnit(h)
             val decisionId = insertDecisionWithApplication(h, testChild_1, period)
-            insertTestVardaDecision(h, decisionId = decisionId)
+            insertTestVardaDecision(db, decisionId = decisionId)
             insertPlacement(h, testChild_1.id, period)
 
             updatePlacements(h, vardaClient)
@@ -200,7 +201,7 @@ class VardaPlacementsIntegrationTest : FullApplicationTest() {
             val period = ClosedPeriod(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))
             insertVardaUnit(h)
             val decisionId = insertDecisionWithApplication(h, testChild_1, period)
-            insertTestVardaDecision(h, decisionId = decisionId)
+            insertTestVardaDecision(db, decisionId = decisionId)
             val placementId = insertPlacement(h, testChild_1.id, period.copy(end = period.start.plusDays(5)))
             insertPlacement(
                 h,
@@ -229,7 +230,7 @@ class VardaPlacementsIntegrationTest : FullApplicationTest() {
             val period = ClosedPeriod(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))
             insertVardaUnit(h)
             val decisionId = insertDecisionWithApplication(h, testChild_1, period)
-            insertTestVardaDecision(h, decisionId = decisionId)
+            insertTestVardaDecision(db, decisionId = decisionId)
             val placementId = insertPlacement(h, testChild_1.id, period)
 
             updatePlacements(h, vardaClient)
@@ -250,7 +251,7 @@ class VardaPlacementsIntegrationTest : FullApplicationTest() {
             val period = ClosedPeriod(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))
             insertVardaUnit(h)
             val placementId = insertPlacement(h, testChild_1.id, period)
-            insertTestVardaDecision(h, placementId = placementId)
+            insertTestVardaDecision(db, placementId = placementId)
 
             updatePlacements(h, vardaClient)
 
@@ -266,7 +267,7 @@ class VardaPlacementsIntegrationTest : FullApplicationTest() {
             val period = ClosedPeriod(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))
             insertVardaUnit(h = h, unitOid = null)
             val placementId = insertPlacement(h, testChild_1.id, period)
-            insertTestVardaDecision(h, placementId = placementId)
+            insertTestVardaDecision(db, placementId = placementId)
 
             updatePlacements(h, vardaClient)
 
@@ -281,7 +282,7 @@ class VardaPlacementsIntegrationTest : FullApplicationTest() {
             val period = ClosedPeriod(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))
             insertVardaUnit(h)
             val placementId = insertPlacement(h, testChild_1.id, period)
-            insertTestVardaDecision(h, placementId = placementId)
+            insertTestVardaDecision(db, placementId = placementId)
 
             updatePlacements(h, vardaClient)
 
@@ -304,7 +305,7 @@ class VardaPlacementsIntegrationTest : FullApplicationTest() {
             val period = ClosedPeriod(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))
             insertVardaUnit(h, unitId = unitId)
             val placementId = insertPlacement(h, testChild_1.id, unitId = unitId, period = period)
-            insertTestVardaDecision(h, placementId = placementId)
+            insertTestVardaDecision(db, placementId = placementId)
 
             updatePlacements(h, vardaClient)
 
@@ -328,7 +329,7 @@ class VardaPlacementsIntegrationTest : FullApplicationTest() {
             insertPlacementWithDecision(h, child = testChild_1, unitId = testDaycare.id, period = period)
 
             updateChildren(db, vardaClient, vardaOrganizerName)
-            updateDecisions(h, vardaClient)
+            updateDecisions(db, vardaClient)
             updatePlacements(h, vardaClient)
 
             assertEquals(1, getVardaPlacements(h).size)
@@ -341,7 +342,7 @@ class VardaPlacementsIntegrationTest : FullApplicationTest() {
                 .execute()
 
             updateChildren(db, vardaClient, vardaOrganizerName)
-            updateDecisions(h, vardaClient)
+            updateDecisions(db, vardaClient)
             updatePlacements(h, vardaClient)
 
             assertEquals(2, getVardaPlacements(h).size)
@@ -380,19 +381,21 @@ VALUES (:evakaDaycareId, :vardaUnitId,  :createdAt, :uploadedAt)
     }
 }
 
-internal fun insertTestVardaDecision(h: Handle, decisionId: UUID? = null, placementId: UUID? = null): UUID {
+internal fun insertTestVardaDecision(db: Database.Connection, decisionId: UUID? = null, placementId: UUID? = null): UUID {
     val id = UUID.randomUUID()
-    insertVardaDecision(
-        h,
-        VardaDecisionTableRow(
-            id = id,
-            vardaDecisionId = 123L,
-            evakaDecisionId = decisionId,
-            evakaPlacementId = placementId,
-            createdAt = Instant.now(),
-            uploadedAt = Instant.now()
+    db.transaction {
+        insertVardaDecision(
+            it,
+            VardaDecisionTableRow(
+                id = id,
+                vardaDecisionId = 123L,
+                evakaDecisionId = decisionId,
+                evakaPlacementId = placementId,
+                createdAt = Instant.now(),
+                uploadedAt = Instant.now()
+            )
         )
-    )
+    }
     return id
 }
 

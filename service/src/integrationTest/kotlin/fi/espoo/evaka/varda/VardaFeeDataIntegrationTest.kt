@@ -96,7 +96,7 @@ class VardaFeeDataIntegrationTest : FullApplicationTest() {
                 startDate = period.start,
                 endDate = period.end
             )
-            updateDecisions(h, vardaClient)
+            updateDecisions(db, vardaClient)
             updatePlacements(h, vardaClient)
 
             val feeDecision = insertFeeDecision(
@@ -242,7 +242,7 @@ class VardaFeeDataIntegrationTest : FullApplicationTest() {
             val period = ClosedPeriod(LocalDate.now().minusMonths(6), LocalDate.now().minusMonths(5))
             createDecisionsAndPlacements(h = h, child = testChild_1, period = period)
 
-            updateDecisions(h, vardaClient)
+            updateDecisions(db, vardaClient)
             updatePlacements(h, vardaClient)
             insertFeeDecision(
                 h = h,
@@ -275,7 +275,7 @@ class VardaFeeDataIntegrationTest : FullApplicationTest() {
             val child = testChild_1
             createDecisionsAndPlacements(h = h, child = child, period = period1)
 
-            updateDecisions(h, vardaClient)
+            updateDecisions(db, vardaClient)
             updatePlacements(h, vardaClient)
             insertFeeDecision(
                 h = h,
@@ -296,7 +296,7 @@ class VardaFeeDataIntegrationTest : FullApplicationTest() {
                 endDate = period2.end
             )
             insertServiceNeed(h, child.id, period2)
-            updateDecisions(h, vardaClient)
+            updateDecisions(db, vardaClient)
             updatePlacements(h, vardaClient)
             insertFeeDecision(
                 h = h,
@@ -367,7 +367,7 @@ class VardaFeeDataIntegrationTest : FullApplicationTest() {
             insertVardaChild(h, testChild_1.id, Instant.now().minusSeconds(60 * 60 * 24))
             insertTestPlacement(h = h, childId = testChild_1.id, unitId = testDaycare.id, startDate = firstPlacementPeriod.start, endDate = firstPlacementPeriod.end)
             insertTestPlacement(h = h, childId = testChild_1.id, unitId = testDaycare.id, startDate = secondPlacementPeriod.start, endDate = secondPlacementPeriod.end)
-            updateDecisions(h, vardaClient)
+            updateDecisions(db, vardaClient)
             updatePlacements(h, vardaClient)
             insertFeeDecision(
                 h = h,
@@ -406,7 +406,7 @@ class VardaFeeDataIntegrationTest : FullApplicationTest() {
             insertServiceNeed(h, testChild_1.id, decisionPeriod)
             insertVardaChild(h, testChild_1.id)
             insertTestPlacement(h = h, childId = testChild_1.id, unitId = testDaycare.id, startDate = placementPeriod.start, endDate = placementPeriod.end)
-            updateDecisions(h, vardaClient)
+            updateDecisions(db, vardaClient)
             updatePlacements(h, vardaClient)
             insertFeeDecision(
                 h = h,
@@ -481,7 +481,7 @@ class VardaFeeDataIntegrationTest : FullApplicationTest() {
                 objectMapper = objectMapper,
                 period = Period(decisionPeriod.start, decisionPeriod.end)
             )
-            updateDecisions(h, vardaClient)
+            updateDecisions(db, vardaClient)
             updatePlacements(h, vardaClient)
             updateFeeData(h)
 
@@ -798,7 +798,7 @@ class VardaFeeDataIntegrationTest : FullApplicationTest() {
 
     private fun updateAll(h: Handle) {
         updateChildren(db, vardaClient, vardaOrganizerName)
-        updateDecisions(h, vardaClient)
+        updateDecisions(db, vardaClient)
         updatePlacements(h, vardaClient)
         updateFeeData(h)
     }
@@ -825,7 +825,7 @@ class VardaFeeDataIntegrationTest : FullApplicationTest() {
             endDate = period.end
         )
         updateChildren(db, vardaClient, organizerName = vardaOrganizerName)
-        updateDecisions(h, vardaClient)
+        updateDecisions(db, vardaClient)
         updatePlacements(h, vardaClient)
     }
 }
