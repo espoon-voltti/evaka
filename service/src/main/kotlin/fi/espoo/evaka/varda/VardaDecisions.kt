@@ -15,6 +15,7 @@ import fi.espoo.evaka.shared.db.getUUID
 import fi.espoo.evaka.varda.integration.VardaClient
 import mu.KotlinLogging
 import org.jdbi.v3.core.Handle
+import org.jdbi.v3.core.kotlin.mapTo
 import org.jdbi.v3.core.statement.StatementContext
 import java.sql.ResultSet
 import java.time.Instant
@@ -82,6 +83,15 @@ fun sendNewDecisions(h: Handle, client: VardaClient) {
 fun sendUpdatedDecisions(h: Handle, client: VardaClient) {
     val updatedDecisions = getUpdatedDecisions(h, client.getChildUrl)
     val updatedDerivedDecisions = getUpdatedDerivedDecisions(h, client.getChildUrl)
+    val decisionPlacementIds = h.createQuery("SELECT varda_placement_id FROM varda_placement WHERE decision_id = ANY(:decisionIds)")
+        .bind("decisionIds", (updatedDecisions.map { it.first } + updatedDerivedDecisions.map { it.first }).toTypedArray())
+        .mapTo<Long>()
+        .toList()
+    decisionPlacementIds.forEach { id ->
+        if (client.deletePlacement(id)) {
+            deletePlacement(h, id)
+        }
+    }
     (updatedDecisions + updatedDerivedDecisions).forEach { (id, vardaDecisionId, updatedDecision) ->
         if (validateDecision(id, updatedDecision)) {
             client.updateDecision(vardaDecisionId, updatedDecision)?.let {
