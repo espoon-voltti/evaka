@@ -99,7 +99,7 @@ WITH target_pairing AS (
     WHERE id = :id AND challenge_key = :challenge AND response_key = :response AND status = 'READY' AND expires > :now AND attempts <= :maxAttempts
     RETURNING mobile_device_id
 )
-UPDATE mobile_device SET long_term_token = ext.uuid_generate_v1mc()
+UPDATE mobile_device SET long_term_token = :longTermToken
 WHERE id = (SELECT mobile_device_id FROM target_pairing)
 RETURNING id, long_term_token
         """
@@ -110,6 +110,7 @@ RETURNING id, long_term_token
         .bind("response", responseKey)
         .bind("now", ZonedDateTime.now(zoneId).toInstant())
         .bind("maxAttempts", maxAttempts)
+        .bind("longTermToken", UUID.randomUUID())
         .mapTo<MobileDeviceIdentity>()
         .firstOrNull() ?: throw NotFound("Valid pairing not found")
 }
