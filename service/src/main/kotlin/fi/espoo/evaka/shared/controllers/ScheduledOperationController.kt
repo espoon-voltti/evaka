@@ -58,4 +58,19 @@ class ScheduledOperationController(
         db.transaction { removeOldDrafts(it.handle) }
         return ResponseEntity.noContent().build()
     }
+
+    @PostMapping("/attendance-upkeep")
+    fun endOfDayAttendanceUpkeep(db: Database.Connection): ResponseEntity<Unit> {
+        db.transaction {
+            it.createUpdate(
+                // language=SQL
+                """
+                    UPDATE child_attendance ca
+                    SET departed = ((arrived AT TIME ZONE 'Europe/Helsinki')::date + time '23:59') AT TIME ZONE 'Europe/Helsinki'
+                    WHERE departed IS NULL
+                """.trimIndent()
+            ).execute()
+        }
+        return ResponseEntity.noContent().build()
+    }
 }
