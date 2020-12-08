@@ -82,7 +82,7 @@ class VardaDecisionsIntegrationTest : FullApplicationTest() {
     fun `PAOS decision is sent when it has all required data`() {
         jdbi.handle { h ->
             val decisionId = insertPlacementWithDecision(h, testChild_1, testPurchasedDaycare.id, ClosedPeriod(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))).first
-            updateChildren(h)
+            updateChildren()
 
             val children = getUploadedChildren(h)
             assertEquals(1, children.size)
@@ -105,7 +105,7 @@ class VardaDecisionsIntegrationTest : FullApplicationTest() {
             val firstPeriod = ClosedPeriod(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))
             val municipalDecisionId = insertPlacementWithDecision(h, testChild_1, testDaycare.id, firstPeriod).first
             val paosDecisionId = insertPlacementWithDecision(h, testChild_1, testPurchasedDaycare.id, ClosedPeriod(firstPeriod.end.plusDays(1), firstPeriod.end.plusDays(300))).first
-            updateChildren(h)
+            updateChildren()
 
             updateDecisions(h, vardaClient)
 
@@ -835,7 +835,7 @@ class VardaDecisionsIntegrationTest : FullApplicationTest() {
             val period = ClosedPeriod(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))
 
             insertPlacementWithDecision(h, child = testChild_1, unitId = testDaycare.id, period = period)
-            updateChildren(h)
+            updateChildren()
             updateDecisions(h, vardaClient)
 
             assertEquals(1, getVardaDecisions(h).size)
@@ -846,7 +846,7 @@ class VardaDecisionsIntegrationTest : FullApplicationTest() {
                 .bind("id", testDaycare.id)
                 .execute()
 
-            updateChildren(h)
+            updateChildren()
             updateDecisions(h, vardaClient)
             assertEquals(2, getVardaDecisions(h).size)
         }
@@ -858,7 +858,7 @@ class VardaDecisionsIntegrationTest : FullApplicationTest() {
             val period = ClosedPeriod(LocalDate.now().minusMonths(1), LocalDate.now().plusMonths(1))
 
             insertPlacementWithDecision(h, child = testChild_1, unitId = testDaycare.id, period = period)
-            updateChildren(h)
+            updateChildren()
             updateDecisions(h, vardaClient)
 
             assertEquals(1, getVardaDecisions(h).size)
@@ -895,8 +895,8 @@ class VardaDecisionsIntegrationTest : FullApplicationTest() {
             .execute()
     }
 
-    private fun updateChildren(h: Handle) {
-        updateChildren(h, vardaClient, vardaOrganizerName)
+    private fun updateChildren() {
+        updateChildren(db, vardaClient, vardaOrganizerName)
     }
 }
 

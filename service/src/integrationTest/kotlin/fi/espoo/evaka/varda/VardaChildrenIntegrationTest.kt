@@ -9,6 +9,7 @@ import fi.espoo.evaka.defaultMunicipalOrganizerOid
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.invoicing.domain.PersonData
 import fi.espoo.evaka.resetDatabase
+import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.dev.DevChild
 import fi.espoo.evaka.shared.dev.DevPerson
@@ -20,7 +21,6 @@ import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDaycare2
 import fi.espoo.evaka.testPurchasedDaycare
 import fi.espoo.evaka.varda.integration.MockVardaIntegrationEndpoint
-import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.mapTo
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
@@ -41,9 +41,9 @@ class VardaChildrenIntegrationTest : FullApplicationTest() {
         jdbi.handle { h ->
             resetDatabase(h)
             insertGeneralTestFixtures(h)
-            insertTestVardaUnit(h, testDaycare.id)
-            uploadChildren(h)
-            assertEquals(0, getUploadedChildren(h).size)
+            insertTestVardaUnit(db, testDaycare.id)
+            uploadChildren()
+            assertEquals(0, getUploadedChildren(db).size)
             mockEndpoint.children.clear()
         }
     }
@@ -61,9 +61,9 @@ class VardaChildrenIntegrationTest : FullApplicationTest() {
                 endDate = LocalDate.now().plusMonths(1)
             )
 
-            uploadChildren(h)
+            uploadChildren()
 
-            val uploads = getUploadedChildren(h)
+            val uploads = getUploadedChildren(db)
             assertEquals(1, uploads.size)
 
             val childRow = uploads[0]
@@ -96,9 +96,9 @@ class VardaChildrenIntegrationTest : FullApplicationTest() {
                 .bind("oid", testOrganizationOid)
                 .execute()
 
-            uploadChildren(h)
+            uploadChildren()
             val payload = mockEndpoint.children[0]
-            assertEquals(1, getUploadedChildren(h).size)
+            assertEquals(1, getUploadedChildren(db).size)
             assertEquals(defaultMunicipalOrganizerOid, payload.organizerOid)
             assertNull(payload.ownOrganizationOid)
             assertNull(payload.paosOrganizationOid)
@@ -110,7 +110,7 @@ class VardaChildrenIntegrationTest : FullApplicationTest() {
         jdbi.handle { h ->
             val testOrganizationOid = "1.22.333.4444.55555"
             val daycareId = testPurchasedDaycare.id
-            insertTestVardaUnit(h, daycareId)
+            insertTestVardaUnit(db, daycareId)
             insertTestPlacement(
                 h = h,
                 childId = testChild_1.id,
@@ -124,9 +124,9 @@ class VardaChildrenIntegrationTest : FullApplicationTest() {
                 .bind("oid", testOrganizationOid)
                 .execute()
 
-            uploadChildren(h)
+            uploadChildren()
             val payload = mockEndpoint.children[0]
-            assertEquals(1, getUploadedChildren(h).size)
+            assertEquals(1, getUploadedChildren(db).size)
             assertNull(payload.organizerOid)
             assertEquals(defaultMunicipalOrganizerOid, payload.ownOrganizationOid)
             assertEquals(testOrganizationOid, payload.paosOrganizationOid)
@@ -144,8 +144,8 @@ class VardaChildrenIntegrationTest : FullApplicationTest() {
                 endDate = getVardaMinDate().minusDays(1)
             )
 
-            uploadChildren(h)
-            assertEquals(0, getUploadedChildren(h).size)
+            uploadChildren()
+            assertEquals(0, getUploadedChildren(db).size)
         }
     }
 
@@ -159,8 +159,8 @@ class VardaChildrenIntegrationTest : FullApplicationTest() {
                 startDate = LocalDate.now().minusMonths(2),
                 endDate = LocalDate.now().plusMonths(1)
             )
-            uploadChildren(h)
-            assertEquals(1, getUploadedChildren(h).size)
+            uploadChildren()
+            assertEquals(1, getUploadedChildren(db).size)
         }
     }
 
@@ -179,8 +179,8 @@ class VardaChildrenIntegrationTest : FullApplicationTest() {
                 startDate = LocalDate.now().minusMonths(2),
                 endDate = LocalDate.now().plusMonths(1)
             )
-            uploadChildren(h)
-            assertEquals(0, getUploadedChildren(h).size)
+            uploadChildren()
+            assertEquals(0, getUploadedChildren(db).size)
         }
     }
 
@@ -195,11 +195,11 @@ class VardaChildrenIntegrationTest : FullApplicationTest() {
                 endDate = LocalDate.now().plusMonths(1)
             )
 
-            uploadChildren(h)
-            val uploadedAt = getUploadedChildren(h)[0].uploadedAt
+            uploadChildren()
+            val uploadedAt = getUploadedChildren(db)[0].uploadedAt
 
-            uploadChildren(h)
-            assertEquals(uploadedAt, getUploadedChildren(h)[0].uploadedAt)
+            uploadChildren()
+            assertEquals(uploadedAt, getUploadedChildren(db)[0].uploadedAt)
         }
     }
 
@@ -218,8 +218,8 @@ class VardaChildrenIntegrationTest : FullApplicationTest() {
                 endDate = LocalDate.now().plusMonths(1)
             )
 
-            uploadChildren(h)
-            val organizerOid = getUploadedChildren(h)[0].ophOrganizerOid
+            uploadChildren()
+            val organizerOid = getUploadedChildren(db)[0].ophOrganizerOid
 
             assertEquals("1.22.333.4444.1", organizerOid)
         }
@@ -235,17 +235,17 @@ class VardaChildrenIntegrationTest : FullApplicationTest() {
                 startDate = LocalDate.now().minusMonths(2),
                 endDate = LocalDate.now().plusMonths(1)
             )
-            uploadChildren(h)
+            uploadChildren()
 
-            assertEquals(1, getUploadedChildren(h).size)
+            assertEquals(1, getUploadedChildren(db).size)
 
             h.createUpdate("UPDATE daycare SET oph_organizer_oid = '1.22.333.4444.1' where id = :id")
                 .bind("id", testDaycare.id)
                 .execute()
 
-            uploadChildren(h)
+            uploadChildren()
 
-            assertEquals(2, getUploadedChildren(h).size)
+            assertEquals(2, getUploadedChildren(db).size)
         }
     }
 
@@ -276,41 +276,42 @@ class VardaChildrenIntegrationTest : FullApplicationTest() {
                 endDate = LocalDate.now().plusMonths(1)
             )
 
-            uploadChildren(h)
+            uploadChildren()
 
-            val uploads = getUploadedChildren(h)
+            val uploads = getUploadedChildren(db)
             assertEquals(0, uploads.size)
         }
     }
 
-    private fun uploadChildren(h: Handle) {
-        updateChildren(h, vardaClient, vardaOrganizerName)
+    private fun uploadChildren() {
+        updateChildren(db, vardaClient, vardaOrganizerName)
     }
 }
 
-private fun insertTestVardaUnit(h: Handle, id: UUID) {
+private fun insertTestVardaUnit(db: Database.Connection, id: UUID) = db.transaction {
     // language=sql
     val sql =
         """
         INSERT INTO varda_unit (evaka_daycare_id, varda_unit_id, uploaded_at)
         VALUES (:id, 123222, now())
         """.trimIndent()
-    h.createUpdate(sql)
+    it.createUpdate(sql)
         .bind("id", id)
         .execute()
 
     val sql2 = "UPDATE daycare SET oph_unit_oid = :ophUnitOid WHERE daycare.id = :id;"
 
-    h.createUpdate(sql2)
+    it.createUpdate(sql2)
         .bind("id", id)
         .bind("ophUnitOid", "1.2.3332211")
         .execute()
 }
 
-internal fun getUploadedChildren(h: Handle): List<VardaChildRow> =
-    h.createQuery("SELECT * FROM varda_child WHERE uploaded_at IS NOT NULL")
+internal fun getUploadedChildren(db: Database.Connection): List<VardaChildRow> = db.read {
+    it.createQuery("SELECT * FROM varda_child WHERE uploaded_at IS NOT NULL")
         .mapTo<VardaChildRow>()
         .list()
+}
 
 data class VardaChildRow(
     val id: UUID,

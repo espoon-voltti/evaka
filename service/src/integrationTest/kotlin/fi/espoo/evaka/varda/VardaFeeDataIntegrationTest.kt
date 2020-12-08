@@ -797,7 +797,7 @@ class VardaFeeDataIntegrationTest : FullApplicationTest() {
     }
 
     private fun updateAll(h: Handle) {
-        updateChildren(h, vardaClient, vardaOrganizerName)
+        updateChildren(db, vardaClient, vardaOrganizerName)
         updateDecisions(h, vardaClient)
         updatePlacements(h, vardaClient)
         updateFeeData(h)
@@ -824,7 +824,7 @@ class VardaFeeDataIntegrationTest : FullApplicationTest() {
             startDate = period.start,
             endDate = period.end
         )
-        updateChildren(h, vardaClient, organizerName = vardaOrganizerName)
+        updateChildren(db, vardaClient, organizerName = vardaOrganizerName)
         updateDecisions(h, vardaClient)
         updatePlacements(h, vardaClient)
     }

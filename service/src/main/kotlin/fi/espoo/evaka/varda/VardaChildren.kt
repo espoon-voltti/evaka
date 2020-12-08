@@ -7,51 +7,45 @@ package fi.espoo.evaka.varda
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.getUUID
 import fi.espoo.evaka.varda.integration.VardaClient
-import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.statement.StatementContext
 import java.sql.ResultSet
 import java.time.LocalDate
 import java.util.UUID
 
 private val vardaMinDate = LocalDate.of(2019, 1, 1)
-private val vardaPlacementTypes = listOf(PlacementType.DAYCARE, PlacementType.DAYCARE_PART_TIME, PlacementType.PRESCHOOL_DAYCARE)
+private val vardaPlacementTypes =
+    listOf(PlacementType.DAYCARE, PlacementType.DAYCARE_PART_TIME, PlacementType.PRESCHOOL_DAYCARE)
 
 fun getVardaMinDate(): LocalDate = vardaMinDate
 
-fun updateChildren(
-    h: Handle,
-    client: VardaClient,
-    organizerName: String
-) {
-    createPersons(h, client)
-    createChildren(h, client, organizerName)
+fun updateChildren(db: Database.Connection, client: VardaClient, organizerName: String) {
+    createPersons(db, client)
+    createChildren(db, client, organizerName)
 }
 
-private fun createPersons(
-    h: Handle,
-    client: VardaClient
-) {
-    val vardaPersons = getPersonsToUpload(h)
+private fun createPersons(db: Database.Connection, client: VardaClient) {
+    val vardaPersons = db.read { getPersonsToUpload(it) }
     vardaPersons.forEach { (oid, payload) ->
         val response = client.createPerson(payload)
         if (response != null) {
-            initVardaChild(response, oid, payload.id, h)
+            db.transaction { initVardaChild(it, response, oid, payload.id) }
         }
     }
 }
 
-private fun createChildren(h: Handle, client: VardaClient, organizerName: String) {
-    initNewChildRows(h)
-    val vardaChildren = getChildrenToUpload(client.getPersonUrl, h, organizerName)
+private fun createChildren(db: Database.Connection, client: VardaClient, organizerName: String) {
+    db.transaction { initNewChildRows(it) }
+    val vardaChildren = db.read { getChildrenToUpload(it, client.getPersonUrl, organizerName) }
     vardaChildren.forEach { vardaChild ->
         client.createChild(vardaChild)
-            ?.let { vardaChildResponse -> updateChild(vardaChildResponse, vardaChild.id, h) }
+            ?.let { vardaChildResponse -> db.transaction { updateChild(it, vardaChildResponse, vardaChild.id) } }
     }
 }
 
-private fun getPersonsToUpload(h: Handle): List<Pair<String, VardaPersonRequest>> {
+private fun getPersonsToUpload(tx: Database.Read): List<Pair<String, VardaPersonRequest>> {
     fun toVardaPersonRequestWithOrganizerOid(): (ResultSet, StatementContext) -> Pair<String, VardaPersonRequest> =
         { rs, _ ->
             Pair(
@@ -90,14 +84,19 @@ private fun getPersonsToUpload(h: Handle): List<Pair<String, VardaPersonRequest>
             AND varda_child.id IS NULL
         """.trimIndent()
 
-    return h.createQuery(sql)
+    return tx.createQuery(sql)
         .bindList("placementTypes", vardaPlacementTypes)
         .bind("minDate", vardaMinDate)
         .map(toVardaPersonRequestWithOrganizerOid())
         .list()
 }
 
-private fun initVardaChild(vardaPersonResponse: VardaPersonResponse, ophOrganizerOid: String, personId: UUID, h: Handle) {
+private fun initVardaChild(
+    tx: Database.Transaction,
+    vardaPersonResponse: VardaPersonResponse,
+    ophOrganizerOid: String,
+    personId: UUID
+) {
     //language=SQL
     val sql =
         """
@@ -105,7 +104,7 @@ private fun initVardaChild(vardaPersonResponse: VardaPersonResponse, ophOrganize
         VALUES (:personId, :vardaId, :personOid, now(), now(), :ophOrganizerOid)
         """.trimIndent()
 
-    h.createUpdate(sql)
+    tx.createUpdate(sql)
         .bind("personId", personId)
         .bind("ophOrganizerOid", ophOrganizerOid)
         .bind("vardaId", vardaPersonResponse.vardaId)
@@ -113,7 +112,7 @@ private fun initVardaChild(vardaPersonResponse: VardaPersonResponse, ophOrganize
         .execute()
 }
 
-private fun initNewChildRows(h: Handle) {
+private fun initNewChildRows(tx: Database.Transaction) {
     // language=SQL
     val sql =
         """
@@ -128,13 +127,13 @@ private fun initNewChildRows(h: Handle) {
         ON CONFLICT ON CONSTRAINT unique_varda_child_organizer DO NOTHING;
         """.trimIndent()
 
-    h.createUpdate(sql)
+    tx.createUpdate(sql)
         .execute()
 }
 
 private fun getChildrenToUpload(
+    tx: Database.Read,
     getPersonUrl: (Long) -> String,
-    h: Handle,
     organizerName: String
 ): List<VardaChildRequest> {
     //language=SQL
@@ -151,7 +150,7 @@ private fun getChildrenToUpload(
         WHERE varda_child_id IS NULL AND oph_organizer_oid IS NOT NULL
         """.trimIndent()
 
-    return h.createQuery(sql)
+    return tx.createQuery(sql)
         .bind("organizer", organizerName)
         .map(toVardaChildRequest(getPersonUrl))
         .list()
@@ -171,14 +170,14 @@ private fun toVardaChildRequest(
         )
     }
 
-private fun updateChild(vardaChildResponse: VardaChildResponse, id: UUID, h: Handle) {
+private fun updateChild(tx: Database.Transaction, vardaChildResponse: VardaChildResponse, id: UUID) {
     //language=SQL
     val sql =
         """
         UPDATE varda_child SET varda_child_id = :vardaChildId, uploaded_at = now() WHERE id = :id
         """.trimIndent()
 
-    h.createUpdate(sql)
+    tx.createUpdate(sql)
         .bind("vardaChildId", vardaChildResponse.vardaId)
         .bind("id", id)
         .execute()

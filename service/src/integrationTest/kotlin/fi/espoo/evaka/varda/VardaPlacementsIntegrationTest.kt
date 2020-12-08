@@ -327,7 +327,7 @@ class VardaPlacementsIntegrationTest : FullApplicationTest() {
 
             insertPlacementWithDecision(h, child = testChild_1, unitId = testDaycare.id, period = period)
 
-            updateChildren(h, vardaClient, vardaOrganizerName)
+            updateChildren(db, vardaClient, vardaOrganizerName)
             updateDecisions(h, vardaClient)
             updatePlacements(h, vardaClient)
 
@@ -340,7 +340,7 @@ class VardaPlacementsIntegrationTest : FullApplicationTest() {
                 .bind("id", testDaycare.id)
                 .execute()
 
-            updateChildren(h, vardaClient, vardaOrganizerName)
+            updateChildren(db, vardaClient, vardaOrganizerName)
             updateDecisions(h, vardaClient)
             updatePlacements(h, vardaClient)
 
