@@ -10,9 +10,11 @@ import {
 } from '~api/attendances'
 import InputField from '~components/shared/atoms/form/InputField'
 import { FixedSpaceColumn } from '~components/shared/layout/flex-helpers'
+import { Gap } from '~components/shared/layout/white-space'
 import { AttendanceUIContext } from '~state/attendance-ui'
 import { useTranslation } from '~state/i18n'
 import { UUID } from '~types'
+import Absences from './Absences'
 import { getTimeString } from './AttendanceChildPage'
 import { FlexLabel, InlineWideAsyncButton } from './components'
 
@@ -69,18 +71,21 @@ export default React.memo(function AttendanceChildDeparted({
             readonly
           />
         </FlexLabel>
-
-        <InlineWideAsyncButton
-          text={i18n.attendances.actions.returnToPresent}
-          onClick={() => returnToPresentCall()}
-          onSuccess={async () => {
-            await getDaycareAttendances(unitId).then((res) =>
-              filterAndSetAttendanceResponse(res, groupIdOrAll)
-            )
-          }}
-          data-qa="delete-attendance"
-        />
       </FixedSpaceColumn>
+
+      <Gap size={'L'} />
+      <Absences attendanceChild={child} />
+      <Gap size={'m'} />
+      <InlineWideAsyncButton
+        text={i18n.attendances.actions.returnToPresent}
+        onClick={() => returnToPresentCall()}
+        onSuccess={async () => {
+          await getDaycareAttendances(unitId).then((res) =>
+            filterAndSetAttendanceResponse(res, groupIdOrAll)
+          )
+        }}
+        data-qa="delete-attendance"
+      />
     </Fragment>
   )
 })
