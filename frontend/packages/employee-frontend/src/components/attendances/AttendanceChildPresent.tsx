@@ -4,7 +4,7 @@
 import React, { Fragment, useContext, useEffect, useState } from 'react'
 import { useHistory } from 'react-router-dom'
 
-import { Result, Loading, isSuccess } from '~api'
+import { Result, Loading } from '~api'
 import {
   AttendanceChild,
   childDeparts,
@@ -48,7 +48,7 @@ export default React.memo(function AttendanceChildPresent({
   const [markDepart, setMarkDepart] = useState<boolean>(false)
   const [childDepartureInfo, setChildDepartureInfo] = useState<
     Result<DepartureInfoResponse>
-  >(Loading())
+  >(Loading.of())
 
   const { filterAndSetAttendanceResponse } = useContext(AttendanceUIContext)
 
@@ -161,12 +161,12 @@ export default React.memo(function AttendanceChildPresent({
             />
           </FlexLabel>
 
-          {isSuccess(childDepartureInfo) &&
-          childDepartureInfo.data.absentFrom.length > 0 ? (
+          {childDepartureInfo.isSuccess &&
+          childDepartureInfo.value.absentFrom.length > 0 ? (
             <Fragment>
               <AbsentFrom
                 child={child}
-                absentFrom={childDepartureInfo.data.absentFrom}
+                absentFrom={childDepartureInfo.value.absentFrom}
               />
               <AbsenceSelector
                 unitId={unitId}

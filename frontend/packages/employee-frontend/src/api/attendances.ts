@@ -177,8 +177,8 @@ export async function getChildDeparture(
       }
     )
     .then((res) => res.data)
-    .then(Success)
-    .catch(Failure)
+    .then((v) => Success.of(v))
+    .catch((e) => Failure.fromError(e))
 }
 
 export async function postDeparture(
@@ -196,8 +196,8 @@ export async function postDeparture(
       }
     )
     .then((res) => deserializeAttendanceResponse(res.data))
-    .then(Success)
-    .catch(Failure)
+    .then((v) => Success.of(v))
+    .catch((e) => Failure.fromError(e))
 }
 
 function deserializeAttendanceResponse(
