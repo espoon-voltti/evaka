@@ -14,24 +14,18 @@ import {
 } from '~api/attendances'
 import InputField from '~components/shared/atoms/form/InputField'
 import Loader from '~components/shared/atoms/Loader'
-import {
-  absenceBackgroundColours,
-  absenceBorderColours,
-  absenceColours
-} from '~components/shared/Colors'
 import { FixedSpaceColumn } from '~components/shared/layout/flex-helpers'
 import { Gap } from '~components/shared/layout/white-space'
 import { AttendanceUIContext } from '~state/attendance-ui'
 import { useTranslation } from '~state/i18n'
 import { UUID } from '~types'
-import { AbsenceType, AbsenceTypes } from '~types/absence'
+import { AbsenceType } from '~types/absence'
+import AbsenceSelector from './AbsenceSelector'
 import { getCurrentTime } from './AttendanceChildPage'
 import {
-  CustomAsyncButton,
   BigWideButton,
   BigWideInlineButton,
   WideAsyncButton,
-  Flex,
   FlexLabel
 } from './components'
 
@@ -77,7 +71,7 @@ export default React.memo(function AttendanceChildComing({
     })
   }, [])
 
-  function selectAbsenceType(absenceType: AbsenceType) {
+  async function selectAbsenceType(absenceType: AbsenceType) {
     return postFullDayAbsence(unitId, child.id, absenceType)
   }
 
@@ -91,30 +85,12 @@ export default React.memo(function AttendanceChildComing({
         (child && group ? (
           <Fragment>
             <Gap size={'s'} />
-            <Flex>
-              {AbsenceTypes.filter(
-                (absenceType) =>
-                  absenceType !== 'PRESENCE' &&
-                  absenceType !== 'PARENTLEAVE' &&
-                  absenceType !== 'FORCE_MAJEURE'
-              ).map((absenceType) => (
-                <CustomAsyncButton
-                  backgroundColor={absenceBackgroundColours[absenceType]}
-                  borderColor={absenceBorderColours[absenceType]}
-                  color={absenceColours[absenceType]}
-                  key={absenceType}
-                  text={i18n.absences.absenceTypes[absenceType]}
-                  onClick={() => selectAbsenceType(absenceType)}
-                  onSuccess={async () => {
-                    await getDaycareAttendances(unitId).then((res) =>
-                      filterAndSetAttendanceResponse(res, groupIdOrAll)
-                    )
-                    history.goBack()
-                  }}
-                  data-qa={`mark-absent-${absenceType}`}
-                />
-              ))}
-            </Flex>
+
+            <AbsenceSelector
+              unitId={unitId}
+              groupId={groupIdOrAll}
+              selectAbsenceType={selectAbsenceType}
+            />
           </Fragment>
         ) : (
           <Loader />
