@@ -99,12 +99,7 @@ class PairingIntegrationTest : FullApplicationTest() {
 
         // mobile > apigw: validating pairing to create session
         val res4 = postPairingValidationAssertOk(id, challengeKey, responseKey)
-        assertEquals(id, res4.id)
-        assertEquals(testUnitId, res4.unitId)
-        assertEquals(challengeKey, res4.challengeKey)
-        assertEquals(responseKey, res4.responseKey)
-        assertEquals(deviceId, res4.mobileDeviceId)
-        assertEquals(PairingStatus.PAIRED, res4.status)
+        assertEquals(deviceId, res4.id)
 
         // status polling
         assertEquals(PairingStatus.PAIRED, getPairingStatusAssertOk(id, authenticated = false))
@@ -275,7 +270,8 @@ class PairingIntegrationTest : FullApplicationTest() {
             status = PairingStatus.READY,
             challengeKey = "foo",
             responseKey = "bar",
-            expires = ZonedDateTime.now(zoneId).plusMinutes(1).toInstant()
+            expires = ZonedDateTime.now(zoneId).plusMinutes(1).toInstant(),
+            mobileDeviceId = UUID.randomUUID()
         )
         givenPairing(pairing)
         postPairingValidationAssertOk(pairing.id, pairing.challengeKey, pairing.responseKey!!)
@@ -289,7 +285,8 @@ class PairingIntegrationTest : FullApplicationTest() {
             status = PairingStatus.READY,
             challengeKey = "foo",
             responseKey = "bar",
-            expires = ZonedDateTime.now(zoneId).plusMinutes(1).toInstant()
+            expires = ZonedDateTime.now(zoneId).plusMinutes(1).toInstant(),
+            mobileDeviceId = UUID.randomUUID()
         )
         givenPairing(pairing)
         postPairingValidationAssertFail(UUID.randomUUID(), pairing.challengeKey, pairing.responseKey!!, 404)
@@ -303,7 +300,8 @@ class PairingIntegrationTest : FullApplicationTest() {
             status = PairingStatus.READY,
             challengeKey = "foo",
             responseKey = "bar",
-            expires = ZonedDateTime.now(zoneId).plusMinutes(1).toInstant()
+            expires = ZonedDateTime.now(zoneId).plusMinutes(1).toInstant(),
+            mobileDeviceId = UUID.randomUUID()
         )
         givenPairing(pairing)
         postPairingValidationAssertFail(pairing.id, "wrong", pairing.responseKey!!, 404)
@@ -317,7 +315,8 @@ class PairingIntegrationTest : FullApplicationTest() {
             status = PairingStatus.READY,
             challengeKey = "foo",
             responseKey = "bar",
-            expires = ZonedDateTime.now(zoneId).plusMinutes(1).toInstant()
+            expires = ZonedDateTime.now(zoneId).plusMinutes(1).toInstant(),
+            mobileDeviceId = UUID.randomUUID()
         )
         givenPairing(pairing)
         postPairingValidationAssertFail(pairing.id, pairing.challengeKey, "wrong", 404)
@@ -331,7 +330,8 @@ class PairingIntegrationTest : FullApplicationTest() {
             status = PairingStatus.PAIRED,
             challengeKey = "foo",
             responseKey = "bar",
-            expires = ZonedDateTime.now(zoneId).plusMinutes(1).toInstant()
+            expires = ZonedDateTime.now(zoneId).plusMinutes(1).toInstant(),
+            mobileDeviceId = UUID.randomUUID()
         )
         givenPairing(pairing)
         postPairingValidationAssertFail(pairing.id, pairing.challengeKey, pairing.responseKey!!, 404)
@@ -345,7 +345,8 @@ class PairingIntegrationTest : FullApplicationTest() {
             status = PairingStatus.READY,
             challengeKey = "foo",
             responseKey = "bar",
-            expires = ZonedDateTime.now(zoneId).plusMinutes(1).toInstant()
+            expires = ZonedDateTime.now(zoneId).plusMinutes(1).toInstant(),
+            mobileDeviceId = UUID.randomUUID()
         )
         givenPairing(pairing, attempts = 101)
         postPairingValidationAssertFail(pairing.id, pairing.challengeKey, pairing.responseKey!!, 404)
@@ -359,7 +360,8 @@ class PairingIntegrationTest : FullApplicationTest() {
             status = PairingStatus.READY,
             challengeKey = "foo",
             responseKey = "bar",
-            expires = ZonedDateTime.now(zoneId).minusMinutes(1).toInstant()
+            expires = ZonedDateTime.now(zoneId).minusMinutes(1).toInstant(),
+            mobileDeviceId = UUID.randomUUID()
         )
         givenPairing(pairing)
         postPairingValidationAssertFail(pairing.id, pairing.challengeKey, pairing.responseKey!!, 404)
@@ -381,10 +383,19 @@ class PairingIntegrationTest : FullApplicationTest() {
         // language=sql
         val sql =
             """
-            INSERT INTO pairing (id, unit_id, expires, status, challenge_key, response_key, attempts) 
-            VALUES (:id, :unitId, :expires, :status, :challengeKey, :responseKey, :attempts);
+            INSERT INTO pairing (id, unit_id, expires, status, challenge_key, response_key, attempts, mobile_device_id) 
+            VALUES (:id, :unitId, :expires, :status, :challengeKey, :responseKey, :attempts, :mobileDeviceId);
             """.trimIndent()
         db.transaction { tx ->
+            if (pairing.mobileDeviceId != null) {
+                tx.createUpdate("INSERT INTO employee (id, first_name, last_name) VALUES (:id, '', '')")
+                    .bind("id", pairing.mobileDeviceId)
+                    .execute()
+                tx.createUpdate("INSERT INTO mobile_device (id, unit_id, name) VALUES (:id, :unitId, 'Laite')")
+                    .bind("id", pairing.mobileDeviceId)
+                    .bind("unitId", pairing.unitId)
+                    .execute()
+            }
             tx.createUpdate(sql)
                 .bind("id", pairing.id)
                 .bind("unitId", pairing.unitId)
@@ -393,6 +404,7 @@ class PairingIntegrationTest : FullApplicationTest() {
                 .bind("challengeKey", pairing.challengeKey)
                 .bind("responseKey", pairing.responseKey)
                 .bind("attempts", attempts)
+                .bind("mobileDeviceId", pairing.mobileDeviceId)
                 .execute()
         }
     }
@@ -475,7 +487,7 @@ class PairingIntegrationTest : FullApplicationTest() {
         assertEquals(status, res.statusCode)
     }
 
-    private fun postPairingValidationAssertOk(id: UUID, challengeKey: String, responseKey: String): Pairing {
+    private fun postPairingValidationAssertOk(id: UUID, challengeKey: String, responseKey: String): MobileDeviceIdentity {
         val (_, res, result) = http.post("/system/pairings/$id/validation")
             .jsonBody(
                 objectMapper.writeValueAsString(
@@ -486,7 +498,7 @@ class PairingIntegrationTest : FullApplicationTest() {
                 )
             )
             .asUser(AuthenticatedUser.machineUser)
-            .responseObject<Pairing>(objectMapper)
+            .responseObject<MobileDeviceIdentity>(objectMapper)
 
         assertEquals(200, res.statusCode)
         return result.get()

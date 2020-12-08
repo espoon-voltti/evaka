@@ -6,6 +6,8 @@ package fi.espoo.evaka.pis
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.identity.ExternalIdentifier
+import fi.espoo.evaka.pairing.MobileDeviceIdentity
+import fi.espoo.evaka.pairing.getDeviceByToken
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
@@ -64,6 +66,17 @@ class SystemIdentityController {
                     )
             }
         )
+    }
+
+    @PostMapping("/system/mobile-identity/{token}")
+    fun mobileIdentity(
+        db: Database.Connection,
+        user: AuthenticatedUser,
+        token: UUID
+    ): ResponseEntity<MobileDeviceIdentity> {
+        Audit.MobileDevicesRead.log(targetId = token)
+        user.assertMachineUser()
+        return ResponseEntity.ok(db.read { it.getDeviceByToken(token) })
     }
 
     data class EmployeeIdentityRequest(

@@ -6,6 +6,8 @@ import { GatewayTester } from '../../shared/test/gateway-tester'
 import app from '../app'
 import { mobileLongTermCookieName } from '../mobile-device-session'
 import { sessionCookie } from '../../shared/session'
+import { v4 as uuid } from 'uuid'
+import { UUID } from '../../shared/service-client'
 
 const pairingId = '009da566-19ca-432e-ad2d-3041481b5bae'
 const mobileDeviceId = '7f81ec05-657a-4d18-8196-67f4c8a33989'
@@ -18,11 +20,13 @@ describe('Mobile device pairing process', () => {
   afterEach(async () => tester.afterEach())
   afterAll(async () => tester?.stop())
 
-  async function finishPairing() {
+  async function finishPairing(): Promise<UUID> {
+    const token = uuid()
     tester.nockScope
       .post(`/system/pairings/${pairingId}/validation`)
       .reply(200, {
-        mobileDeviceId
+        id: mobileDeviceId,
+        longTermToken: token
       })
     await tester.client.post('/api/internal/auth/mobile', {
       id: pairingId,
@@ -33,6 +37,7 @@ describe('Mobile device pairing process', () => {
 
     expect(await tester.getCookie(mobileLongTermCookieName)).toBeTruthy()
     expect(await tester.getCookie(sessionCookie('employee'))).toBeTruthy()
+    return token
   }
 
   it('creates an active session', async () => {
@@ -44,26 +49,28 @@ describe('Mobile device pairing process', () => {
     expect(res.status).toBe(200)
   })
   it('creates a long-term token that refreshes active session when /auth/status is called', async () => {
-    await finishPairing()
+    const longTermToken = await finishPairing()
 
     await tester.expireSession()
     expect(await tester.getCookie(sessionCookie('employee'))).toBeUndefined()
 
     tester.nockScope
-      .get(`/system/mobile-devices/${mobileDeviceId}`)
-      .times(2)
-      .reply(200)
+      .get(`/system/mobile-identity/${longTermToken}`)
+      .reply(200, { id: mobileDeviceId, longTermToken })
+    tester.nockScope.get(`/system/mobile-devices/${mobileDeviceId}`).reply(200)
     const res = await tester.client.get('/api/internal/auth/status')
     tester.nockScope.done()
     expect(res.status).toBe(200)
   })
   it('creates a long-term token that refreshes active session when any internal API is called', async () => {
-    await finishPairing()
+    const longTermToken = await finishPairing()
 
     await tester.expireSession()
     expect(await tester.getCookie(sessionCookie('employee'))).toBeUndefined()
 
-    tester.nockScope.get(`/system/mobile-devices/${mobileDeviceId}`).reply(200)
+    tester.nockScope
+      .get(`/system/mobile-identity/${longTermToken}`)
+      .reply(200, { id: mobileDeviceId, longTermToken })
     tester.nockScope.get('/some-proxied-api').reply(200)
     const res = await tester.client.get('/api/internal/some-proxied-api')
     tester.nockScope.done()
