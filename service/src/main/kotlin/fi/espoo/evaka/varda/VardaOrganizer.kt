@@ -8,23 +8,23 @@ import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonProperty
+import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.varda.integration.VardaClient
-import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.mapTo
 import java.time.Instant
 import java.util.UUID
 
-fun updateOrganizer(h: Handle, client: VardaClient, organizerName: String) {
-    val organizer = getStaleOrganizer(h, organizerName)
+fun updateOrganizer(db: Database.Connection, client: VardaClient, organizerName: String) {
+    val organizer = db.read { getStaleOrganizer(it, organizerName) }
 
     organizer?.let {
         client.updateOrganizer(organizer.toUpdateObject()).let { success ->
-            if (success) setOrganizerUploaded(organizer, h)
+            if (success) db.transaction { setOrganizerUploaded(it, organizer) }
         }
     }
 }
 
-fun getStaleOrganizer(h: Handle, organizerName: String): VardaOrganizer? {
+fun getStaleOrganizer(tx: Database.Read, organizerName: String): VardaOrganizer? {
     //language=SQL
     val sql =
         """
@@ -34,13 +34,13 @@ fun getStaleOrganizer(h: Handle, organizerName: String): VardaOrganizer? {
         AND (updated_at > uploaded_at OR uploaded_at IS NULL)
         """.trimIndent()
 
-    return h.createQuery(sql)
+    return tx.createQuery(sql)
         .bind("organizer", organizerName)
         .mapTo<VardaOrganizer>()
         .firstOrNull()
 }
 
-fun setOrganizerUploaded(organizer: VardaOrganizer, h: Handle) {
+fun setOrganizerUploaded(tx: Database.Transaction, organizer: VardaOrganizer) {
     //language=SQL
     val sql =
         """
@@ -48,7 +48,7 @@ fun setOrganizerUploaded(organizer: VardaOrganizer, h: Handle) {
         SET uploaded_at = now()
         WHERE id = :id
         """.trimIndent()
-    h.createUpdate(sql)
+    tx.createUpdate(sql)
         .bind("id", organizer.id)
         .execute()
 }

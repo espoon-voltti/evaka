@@ -11,7 +11,6 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.varda.integration.VardaClient
 import fi.espoo.evaka.varda.integration.VardaTokenProvider
 import mu.KotlinLogging
-import org.jdbi.v3.core.Jdbi
 import org.springframework.core.env.Environment
 import org.springframework.stereotype.Service
 import java.lang.reflect.UndeclaredThrowableException
@@ -60,7 +59,7 @@ fun updateAll(
     removeMarkedFeeDataFromVarda(db, client)
     removeMarkedPlacementsFromVarda(db, client)
     removeMarkedDecisionsFromVarda(db, client)
-    db.transaction { updateOrganizer(it.handle, client, organizer) }
+    updateOrganizer(db, client, organizer)
     db.transaction { updateUnits(it.handle, client, organizer) }
     db.transaction { updateChildren(it.handle, client, organizer) }
     db.transaction { updateDecisions(it.handle, client) }
