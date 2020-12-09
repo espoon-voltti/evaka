@@ -42,13 +42,7 @@ class ScheduledOperationController(
 
     @PostMapping("/varda/update")
     fun vardaUpdate(db: Database.Connection): ResponseEntity<Unit> {
-        vardaUpdateService.updateAll(db)
-        return ResponseEntity.noContent().build()
-    }
-
-    @PostMapping("/varda/units/update")
-    fun vardaUpdateUnits(db: Database.Connection): ResponseEntity<Unit> {
-        vardaUpdateService.updateUnits(db)
+        vardaUpdateService.scheduleVardaUpdate(db)
         return ResponseEntity.noContent().build()
     }
 

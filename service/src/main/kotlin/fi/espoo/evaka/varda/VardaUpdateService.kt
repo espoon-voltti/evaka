@@ -7,19 +7,17 @@ package fi.espoo.evaka.varda
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.kittinunf.fuel.core.FuelManager
 import fi.espoo.evaka.pis.service.PersonService
+import fi.espoo.evaka.shared.async.AsyncJobRunner
+import fi.espoo.evaka.shared.async.VardaUpdate
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.varda.integration.VardaClient
 import fi.espoo.evaka.varda.integration.VardaTokenProvider
-import mu.KotlinLogging
 import org.springframework.core.env.Environment
 import org.springframework.stereotype.Service
-import java.lang.reflect.UndeclaredThrowableException
-import kotlin.concurrent.thread
-
-private val logger = KotlinLogging.logger { }
 
 @Service
 class VardaUpdateService(
+    private val asyncJobRunner: AsyncJobRunner,
     private val tokenProvider: VardaTokenProvider,
     private val fuel: FuelManager,
     private val env: Environment,
@@ -29,24 +27,23 @@ class VardaUpdateService(
     private val forceSync = env.getProperty("fi.espoo.varda.force.sync", Boolean::class.java, false)
     private val organizer = env.getProperty("fi.espoo.varda.organizer", String::class.java, "Espoo")
 
-    fun updateAll(db: Database.Connection) {
-        val client = VardaClient(tokenProvider, fuel, env, mapper)
+    init {
+        asyncJobRunner.vardaUpdate = ::updateAll
+    }
+
+    fun scheduleVardaUpdate(db: Database.Connection) {
         if (forceSync) {
+            val client = VardaClient(tokenProvider, fuel, env, mapper)
             updateAll(db, client, mapper, personService, organizer)
         } else {
-            thread {
-                try {
-                    updateAll(db, client, mapper, personService, organizer)
-                } catch (e: Throwable) {
-                    val exception = (e as? UndeclaredThrowableException)?.cause ?: e
-                    logger.error(exception) { "Failed to run Varda update" }
-                }
-            }
+            db.transaction { asyncJobRunner.plan(it, listOf(VardaUpdate()), retryCount = 1) }
         }
     }
 
-    // This is left for backwards compatibility, but should be removed later
-    fun updateUnits(db: Database.Connection) = updateAll(db)
+    fun updateAll(db: Database, msg: VardaUpdate) {
+        val client = VardaClient(tokenProvider, fuel, env, mapper)
+        db.connect { updateAll(it, client, mapper, personService, organizer) }
+    }
 }
 
 fun updateAll(

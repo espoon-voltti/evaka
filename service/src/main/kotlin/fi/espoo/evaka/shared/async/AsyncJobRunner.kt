@@ -86,6 +86,9 @@ class AsyncJobRunner(
     @Volatile
     var garbageCollectPairing: (db: Database, msg: GarbageCollectPairing) -> Unit = noHandler
 
+    @Volatile
+    var vardaUpdate: (db: Database, msg: VardaUpdate) -> Unit = noHandler
+
     fun plan(
         tx: Database.Transaction,
         payloads: Iterable<AsyncJobPayload>,
@@ -193,6 +196,7 @@ class AsyncJobRunner(
                     AsyncJobType.UPLOAD_TO_KOSKI -> it.runJob(job, this.uploadToKoski)
                     AsyncJobType.SEND_APPLICATION_EMAIL -> it.runJob(job, this.sendApplicationEmail)
                     AsyncJobType.GARBAGE_COLLECT_PAIRING -> it.runJob(job, this.garbageCollectPairing)
+                    AsyncJobType.VARDA_UPDATE -> it.runJob(job, this.vardaUpdate)
                 }.exhaust()
             }
             if (completed) {
