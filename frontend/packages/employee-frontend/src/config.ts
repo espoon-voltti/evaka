@@ -20,6 +20,7 @@ type FeatureFlags = {
   voucherValueDecisionsPage: boolean
   voucherServiceProviders: boolean
   attachments: boolean
+  evakaLogin: boolean
 }
 
 type Features = {
@@ -32,17 +33,20 @@ const features: Features = {
   default: {
     voucherValueDecisionsPage: true,
     voucherServiceProviders: true,
-    attachments: true
+    attachments: true,
+    evakaLogin: true
   },
   staging: {
     voucherValueDecisionsPage: true,
     voucherServiceProviders: true,
-    attachments: true
+    attachments: true,
+    evakaLogin: true
   },
   prod: {
     voucherValueDecisionsPage: false,
     voucherServiceProviders: false,
-    attachments: false
+    attachments: false,
+    evakaLogin: false
   }
 }
 

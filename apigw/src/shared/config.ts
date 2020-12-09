@@ -136,8 +136,8 @@ const certificateNames = Object.keys(certificates) as ReadonlyArray<
   keyof typeof certificates
 >
 
-export const eadMock =
-  env('EAD_MOCK', parseBoolean) ?? ifNodeEnv(['local', 'test'], true) ?? false
+export const devLoginEnabled =
+  env('DEV_LOGIN', parseBoolean) ?? ifNodeEnv(['local', 'test'], true) ?? false
 
 export const eadSamlCallbackUrl = process.env.EAD_SAML_CALLBACK_URL
 export const eadSamlIssuer = process.env.EAD_SAML_ISSUER

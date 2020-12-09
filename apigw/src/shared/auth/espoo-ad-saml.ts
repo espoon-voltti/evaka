@@ -10,7 +10,7 @@ import {
 import DevPassportStrategy from './dev-passport-strategy'
 import { SamlUser } from '../routes/auth/saml/types'
 import {
-  eadMock,
+  devLoginEnabled,
   eadSamlCallbackUrl,
   eadSamlIssuer,
   eadSamlPrivateCert,
@@ -69,7 +69,7 @@ async function verifyProfile(profile: EspooAdProfile): Promise<SamlUser> {
 export default function createEspooAdStrategy():
   | SamlStrategy
   | DevPassportStrategy {
-  if (eadMock) {
+  if (devLoginEnabled) {
     const getter = async (userId: string) =>
       verifyProfile({
         [ESPOO_AD_USER_ID_KEY]: userId,

@@ -5,10 +5,15 @@
 import createSamlRouter from './saml'
 import createEspooAdStrategy from '../../auth/espoo-ad-saml'
 import { SessionType } from '../../session'
+import { Strategy } from 'passport'
 
-export function createAuthEndpoints(sessionType: SessionType) {
+export function createAuthEndpoints(
+  strategyName: string,
+  strategy: Strategy,
+  sessionType: SessionType
+) {
   return createSamlRouter({
-    strategyName: 'espoo-ad',
+    strategyName,
     strategy: createEspooAdStrategy(),
     sessionType
   })

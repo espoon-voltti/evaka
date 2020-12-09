@@ -6,16 +6,16 @@ import { client } from './client'
 import { AdRole, User } from '~types'
 import { JsonOf } from '@evaka/lib-common/src/json'
 
-export const logoutUrl = `/api/internal/auth/saml/logout?RelayState=/employee/login`
+export const logoutUrl = `/api/internal/auth/ead/logout?RelayState=/employee/login`
 
 const redirectUri =
   window.location.pathname === '/employee/login'
     ? '/employee'
     : `${window.location.pathname}${window.location.search}${window.location.hash}`
 
-export function getLoginUrl() {
+export function getLoginUrl(type: 'evaka' | 'ead' = 'ead') {
   const relayState = encodeURIComponent(redirectUri)
-  return `/api/internal/auth/saml/login?RelayState=${relayState}`
+  return `/api/internal/auth/${type}/login?RelayState=${relayState}`
 }
 
 export interface AuthStatus {

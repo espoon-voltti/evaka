@@ -25,6 +25,9 @@ import mobileDeviceSession, {
 } from './mobile-device-session'
 import authStatus from './routes/auth-status'
 import { createKeycloakAuthEndpoints } from '../shared/routes/auth/keycloak-poc'
+import createSamlRouter from '../shared/routes/auth/saml'
+import createEspooAdStrategy from '../shared/auth/espoo-ad-saml'
+import { SamlEndpointConfig } from '../shared/routes/auth/saml/types'
 
 const app = express()
 trustReverseProxy(app)
@@ -60,7 +63,15 @@ function internalApiRouter() {
   const router = Router()
   router.use('/scheduled', scheduledApiRouter())
   router.all('/system/*', (req, res) => res.sendStatus(404))
-  //router.use(createAuthEndpoints('employee'))
+
+  router.use(
+    createSamlRouter({
+      strategyName: 'ead',
+      strategy: createEspooAdStrategy(),
+      sessionType: 'employee'
+    })
+  )
+
   router.use(createKeycloakAuthEndpoints('employee'))
 
   if (enableDevApi) {
