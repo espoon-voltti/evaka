@@ -18,7 +18,7 @@ import fi.espoo.evaka.invoicing.domain.PersonData
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.updatePlacementStartAndEndDate
 import fi.espoo.evaka.resetDatabase
-import fi.espoo.evaka.shared.db.handle
+import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.dev.TestDecision
 import fi.espoo.evaka.shared.dev.insertTestApplication
 import fi.espoo.evaka.shared.dev.insertTestApplicationForm
@@ -34,7 +34,6 @@ import fi.espoo.evaka.testPurchasedDaycare
 import fi.espoo.evaka.toDaycareFormAdult
 import fi.espoo.evaka.toDaycareFormChild
 import fi.espoo.evaka.varda.integration.MockVardaIntegrationEndpoint
-import org.jdbi.v3.core.Handle
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotEquals
@@ -53,871 +52,800 @@ class VardaDecisionsIntegrationTest : FullApplicationTest() {
 
     @BeforeEach
     fun beforeEach() {
-        jdbi.handle(::insertGeneralTestFixtures)
+        db.transaction { insertGeneralTestFixtures(it.handle) }
     }
 
     @AfterEach
     fun afterEach() {
-        jdbi.handle(::resetDatabase)
+        db.transaction { it.resetDatabase() }
         mockEndpoint.decisions.clear()
     }
 
     @Test
     fun `municipal daycare decision is sent when it has all required data`() {
-        jdbi.handle { h ->
-            val period = ClosedPeriod(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))
-            val decisionId = insertDecisionWithApplication(h, testChild_1, period)
-            insertServiceNeed(h, testChild_1.id, period)
-            insertVardaChild(h, testChild_1.id)
+        val period = ClosedPeriod(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))
+        val decisionId = insertDecisionWithApplication(db, testChild_1, period)
+        insertServiceNeed(db, testChild_1.id, period)
+        insertVardaChild(db, testChild_1.id)
 
-            updateDecisions(h, vardaClient)
+        updateDecisions(db, vardaClient)
 
-            val result = getVardaDecisions(h)
-            assertEquals(1, result.size)
-            assertEquals(decisionId, result.first().evakaDecisionId)
-        }
+        val result = getVardaDecisions()
+        assertEquals(1, result.size)
+        assertEquals(decisionId, result.first().evakaDecisionId)
     }
 
     @Test
     fun `PAOS decision is sent when it has all required data`() {
-        jdbi.handle { h ->
-            val decisionId = insertPlacementWithDecision(h, testChild_1, testPurchasedDaycare.id, ClosedPeriod(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))).first
-            updateChildren(h)
+        val decisionId = insertPlacementWithDecision(db, testChild_1, testPurchasedDaycare.id, ClosedPeriod(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))).first
+        updateChildren()
 
-            val children = getUploadedChildren(h)
-            assertEquals(1, children.size)
+        val children = getUploadedChildren(db)
+        assertEquals(1, children.size)
 
-            updateDecisions(h, vardaClient)
+        updateDecisions(db, vardaClient)
 
-            val vardaDecisions = mockEndpoint.decisions
-            assertEquals(1, vardaDecisions.size)
-            assertEquals(VardaUnitProviderType.PURCHASED.vardaCode, vardaDecisions[0].providerTypeCode)
+        val vardaDecisions = mockEndpoint.decisions
+        assertEquals(1, vardaDecisions.size)
+        assertEquals(VardaUnitProviderType.PURCHASED.vardaCode, vardaDecisions[0].providerTypeCode)
 
-            val decisionRows = getVardaDecisions(h)
-            assertEquals(1, decisionRows.size)
-            assertEquals(decisionId, decisionRows.first().evakaDecisionId)
-        }
+        val decisionRows = getVardaDecisions()
+        assertEquals(1, decisionRows.size)
+        assertEquals(decisionId, decisionRows.first().evakaDecisionId)
     }
 
     @Test
     fun `child with municipal and PAOS decisions is handled correctly`() {
-        jdbi.handle { h ->
-            val firstPeriod = ClosedPeriod(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))
-            val municipalDecisionId = insertPlacementWithDecision(h, testChild_1, testDaycare.id, firstPeriod).first
-            val paosDecisionId = insertPlacementWithDecision(h, testChild_1, testPurchasedDaycare.id, ClosedPeriod(firstPeriod.end.plusDays(1), firstPeriod.end.plusDays(300))).first
-            updateChildren(h)
+        val firstPeriod = ClosedPeriod(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))
+        val municipalDecisionId = insertPlacementWithDecision(db, testChild_1, testDaycare.id, firstPeriod).first
+        val paosDecisionId = insertPlacementWithDecision(db, testChild_1, testPurchasedDaycare.id, ClosedPeriod(firstPeriod.end.plusDays(1), firstPeriod.end.plusDays(300))).first
+        updateChildren()
 
-            updateDecisions(h, vardaClient)
+        updateDecisions(db, vardaClient)
 
-            val decisionRows = getVardaDecisions(h)
-            assertEquals(2, decisionRows.size)
-            assertNotNull(decisionRows.find { it.evakaDecisionId == municipalDecisionId })
-            assertNotNull(decisionRows.find { it.evakaDecisionId == paosDecisionId })
+        val decisionRows = getVardaDecisions()
+        assertEquals(2, decisionRows.size)
+        assertNotNull(decisionRows.find { it.evakaDecisionId == municipalDecisionId })
+        assertNotNull(decisionRows.find { it.evakaDecisionId == paosDecisionId })
 
-            val children = getUploadedChildren(h)
-            val decisions = mockEndpoint.decisions
-            assertEquals(2, children.size)
-            assertEquals(2, decisions.size)
+        val children = getUploadedChildren(db)
+        val decisions = mockEndpoint.decisions
+        assertEquals(2, children.size)
+        assertEquals(2, decisions.size)
 
-            val paosChild = children.firstOrNull { it.ophOrganizerOid == defaultPurchasedOrganizerOid }
-            assertNotNull(paosChild)
+        val paosChild = children.firstOrNull { it.ophOrganizerOid == defaultPurchasedOrganizerOid }
+        assertNotNull(paosChild)
 
-            val paosDecision = decisions.firstOrNull { it.childUrl.contains(paosChild!!.vardaChildId.toString()) }
-            assertNotNull(paosDecision)
+        val paosDecision = decisions.firstOrNull { it.childUrl.contains(paosChild!!.vardaChildId.toString()) }
+        assertNotNull(paosDecision)
 
-            val municipalChild = children.firstOrNull { it.ophOrganizerOid == defaultMunicipalOrganizerOid }
-            assertNotNull(municipalChild)
+        val municipalChild = children.firstOrNull { it.ophOrganizerOid == defaultMunicipalOrganizerOid }
+        assertNotNull(municipalChild)
 
-            val municipalDecision = decisions.firstOrNull { it.childUrl.contains(municipalChild!!.vardaChildId.toString()) }
-            assertNotNull(municipalDecision)
+        val municipalDecision = decisions.firstOrNull { it.childUrl.contains(municipalChild!!.vardaChildId.toString()) }
+        assertNotNull(municipalDecision)
 
-            assertEquals(VardaUnitProviderType.PURCHASED.vardaCode, paosDecision!!.providerTypeCode)
-            assertEquals(VardaUnitProviderType.MUNICIPAL.vardaCode, municipalDecision!!.providerTypeCode)
-        }
+        assertEquals(VardaUnitProviderType.PURCHASED.vardaCode, paosDecision!!.providerTypeCode)
+        assertEquals(VardaUnitProviderType.MUNICIPAL.vardaCode, municipalDecision!!.providerTypeCode)
     }
 
     @Test
     fun `a daycare decision is not sent when there is no existing service need`() {
-        jdbi.handle { h ->
-            val period = ClosedPeriod(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))
-            insertDecisionWithApplication(h, testChild_1, period)
-            insertVardaChild(h, testChild_1.id)
+        val period = ClosedPeriod(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))
+        insertDecisionWithApplication(db, testChild_1, period)
+        insertVardaChild(db, testChild_1.id)
 
-            updateDecisions(h, vardaClient)
+        updateDecisions(db, vardaClient)
 
-            val result = getVardaDecisions(h)
-            assertEquals(0, result.size)
-        }
+        val result = getVardaDecisions()
+        assertEquals(0, result.size)
     }
 
     @Test
     fun `a daycare decision is not sent when service need does not overlap with decision`() {
-        jdbi.handle { h ->
-            val period = ClosedPeriod(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))
-            insertDecisionWithApplication(h, testChild_1, period)
-            insertServiceNeed(h, testChild_1.id, ClosedPeriod(period.start.minusYears(1), period.end.minusYears(1)))
-            insertVardaChild(h, testChild_1.id)
+        val period = ClosedPeriod(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))
+        insertDecisionWithApplication(db, testChild_1, period)
+        insertServiceNeed(db, testChild_1.id, ClosedPeriod(period.start.minusYears(1), period.end.minusYears(1)))
+        insertVardaChild(db, testChild_1.id)
 
-            updateDecisions(h, vardaClient)
+        updateDecisions(db, vardaClient)
 
-            val result = getVardaDecisions(h)
-            assertEquals(0, result.size)
-        }
+        val result = getVardaDecisions()
+        assertEquals(0, result.size)
     }
 
     @Test
     fun `daycare decision is not sent when hours per week is zero`() {
-        jdbi.handle { h ->
-            val period = ClosedPeriod(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))
-            insertDecisionWithApplication(h, testChild_1, period)
-            insertServiceNeed(h, testChild_1.id, period, 0.0)
-            insertVardaChild(h, testChild_1.id)
+        val period = ClosedPeriod(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))
+        insertDecisionWithApplication(db, testChild_1, period)
+        insertServiceNeed(db, testChild_1.id, period, 0.0)
+        insertVardaChild(db, testChild_1.id)
 
-            updateDecisions(h, vardaClient)
+        updateDecisions(db, vardaClient)
 
-            val result = getVardaDecisions(h)
-            assertEquals(0, result.size)
-        }
+        val result = getVardaDecisions()
+        assertEquals(0, result.size)
     }
 
     @Test
     fun `a daycare decision is not sent when the child has not been imported to varda yet`() {
-        jdbi.handle { h ->
-            val period = ClosedPeriod(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))
-            insertDecisionWithApplication(h, testChild_1, period)
-            insertServiceNeed(h, testChild_1.id, period)
+        val period = ClosedPeriod(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))
+        insertDecisionWithApplication(db, testChild_1, period)
+        insertServiceNeed(db, testChild_1.id, period)
 
-            updateDecisions(h, vardaClient)
+        updateDecisions(db, vardaClient)
 
-            val result = getVardaDecisions(h)
-            assertEquals(0, result.size)
-        }
+        val result = getVardaDecisions()
+        assertEquals(0, result.size)
     }
 
     @Test
     fun `preschool decisions are not sent`() {
-        jdbi.handle { h ->
-            val period = ClosedPeriod(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))
-            insertDecisionWithApplication(h, testChild_1, period, decisionType = DecisionType.PRESCHOOL)
-            insertServiceNeed(h, testChild_1.id, period)
-            insertVardaChild(h, testChild_1.id)
+        val period = ClosedPeriod(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))
+        insertDecisionWithApplication(db, testChild_1, period, decisionType = DecisionType.PRESCHOOL)
+        insertServiceNeed(db, testChild_1.id, period)
+        insertVardaChild(db, testChild_1.id)
 
-            updateDecisions(h, vardaClient)
+        updateDecisions(db, vardaClient)
 
-            val result = getVardaDecisions(h)
-            assertEquals(0, result.size)
-        }
+        val result = getVardaDecisions()
+        assertEquals(0, result.size)
     }
 
     @Test
     fun `a preschool daycare decision is sent`() {
-        jdbi.handle { h ->
-            val period = ClosedPeriod(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))
-            val decisionId =
-                insertDecisionWithApplication(h, testChild_1, period, decisionType = DecisionType.PRESCHOOL_DAYCARE)
-            insertServiceNeed(h, testChild_1.id, period)
-            insertVardaChild(h, testChild_1.id)
+        val period = ClosedPeriod(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))
+        val decisionId =
+            insertDecisionWithApplication(db, testChild_1, period, decisionType = DecisionType.PRESCHOOL_DAYCARE)
+        insertServiceNeed(db, testChild_1.id, period)
+        insertVardaChild(db, testChild_1.id)
 
-            updateDecisions(h, vardaClient)
+        updateDecisions(db, vardaClient)
 
-            val result = getVardaDecisions(h)
-            assertEquals(1, result.size)
-            assertEquals(decisionId, result.first().evakaDecisionId)
-        }
+        val result = getVardaDecisions()
+        assertEquals(1, result.size)
+        assertEquals(decisionId, result.first().evakaDecisionId)
     }
 
     @Test
     fun `a daycare decision is updated when a new service need is created for the period`() {
-        jdbi.handle { h ->
-            val period = ClosedPeriod(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))
-            val serviceNeedEndDate = period.start.plusMonths(1)
-            insertDecisionWithApplication(h, testChild_1, period, decisionType = DecisionType.PRESCHOOL_DAYCARE)
-            insertServiceNeed(h, testChild_1.id, period.copy(end = serviceNeedEndDate))
-            insertVardaChild(h, testChild_1.id)
+        val period = ClosedPeriod(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))
+        val serviceNeedEndDate = period.start.plusMonths(1)
+        insertDecisionWithApplication(db, testChild_1, period, decisionType = DecisionType.PRESCHOOL_DAYCARE)
+        insertServiceNeed(db, testChild_1.id, period.copy(end = serviceNeedEndDate))
+        insertVardaChild(db, testChild_1.id)
 
-            updateDecisions(h, vardaClient)
-            val originalUploadedAt = getVardaDecisions(h).first().uploadedAt
+        updateDecisions(db, vardaClient)
+        val originalUploadedAt = getVardaDecisions().first().uploadedAt
 
-            insertServiceNeed(h, testChild_1.id, period.copy(start = serviceNeedEndDate.plusDays(1)))
-            updateDecisions(h, vardaClient)
+        insertServiceNeed(db, testChild_1.id, period.copy(start = serviceNeedEndDate.plusDays(1)))
+        updateDecisions(db, vardaClient)
 
-            val result = getVardaDecisions(h)
-            assertEquals(1, result.size)
-            assertTrue(originalUploadedAt < result.first().uploadedAt)
-        }
+        val result = getVardaDecisions()
+        assertEquals(1, result.size)
+        assertTrue(originalUploadedAt < result.first().uploadedAt)
     }
 
     @Test
     fun `a daycare decision is updated when service need is updated`() {
-        jdbi.handle { h ->
-            val period = ClosedPeriod(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))
-            insertDecisionWithApplication(h, testChild_1, period, decisionType = DecisionType.PRESCHOOL_DAYCARE)
-            val serviceNeedId = insertServiceNeed(h, testChild_1.id, period)
-            insertVardaChild(h, testChild_1.id)
+        val period = ClosedPeriod(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))
+        insertDecisionWithApplication(db, testChild_1, period, decisionType = DecisionType.PRESCHOOL_DAYCARE)
+        val serviceNeedId = insertServiceNeed(db, testChild_1.id, period)
+        insertVardaChild(db, testChild_1.id)
 
-            updateDecisions(h, vardaClient)
-            val originalUploadedAt = getVardaDecisions(h).first().uploadedAt
+        updateDecisions(db, vardaClient)
+        val originalUploadedAt = getVardaDecisions().first().uploadedAt
 
-            updateServiceNeed(h, serviceNeedId, originalUploadedAt.plusSeconds(1))
-            updateDecisions(h, vardaClient)
+        updateServiceNeed(serviceNeedId, originalUploadedAt.plusSeconds(1))
+        updateDecisions(db, vardaClient)
 
-            val result = getVardaDecisions(h)
-            assertEquals(1, result.size)
-            assertTrue(originalUploadedAt < result.first().uploadedAt)
-        }
+        val result = getVardaDecisions()
+        assertEquals(1, result.size)
+        assertTrue(originalUploadedAt < result.first().uploadedAt)
     }
 
     @Test
     fun `a daycare decision is updated when a new overlapping decision is made`() {
-        jdbi.handle { h ->
-            val period = ClosedPeriod(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))
-            insertDecisionWithApplication(h, testChild_1, period)
-            insertServiceNeed(h, testChild_1.id, period)
-            insertVardaChild(h, testChild_1.id)
+        val period = ClosedPeriod(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))
+        insertDecisionWithApplication(db, testChild_1, period)
+        insertServiceNeed(db, testChild_1.id, period)
+        insertVardaChild(db, testChild_1.id)
 
-            updateDecisions(h, vardaClient)
-            val originalUploadedAt = getVardaDecisions(h).first().uploadedAt
+        updateDecisions(db, vardaClient)
+        val originalUploadedAt = getVardaDecisions().first().uploadedAt
 
-            insertDecisionWithApplication(h, testChild_1, period.copy(start = period.start.plusMonths(1)))
-            updateDecisions(h, vardaClient)
+        insertDecisionWithApplication(db, testChild_1, period.copy(start = period.start.plusMonths(1)))
+        updateDecisions(db, vardaClient)
 
-            val result = getVardaDecisions(h)
-            assertEquals(2, result.size)
-            assertTrue(result.all { originalUploadedAt < it.uploadedAt })
-        }
+        val result = getVardaDecisions()
+        assertEquals(2, result.size)
+        assertTrue(result.all { originalUploadedAt < it.uploadedAt })
     }
 
     @Test
     fun `a daycare decision is deleted when a new decision that completely replaced the old one is made`() {
-        jdbi.handle { h ->
-            val period = ClosedPeriod(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))
-            val firstDecisionId =
-                insertDecisionWithApplication(h, testChild_1, period, decisionType = DecisionType.PRESCHOOL_DAYCARE)
-            insertServiceNeed(h, testChild_1.id, period)
-            insertVardaChild(h, testChild_1.id)
+        val period = ClosedPeriod(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))
+        val firstDecisionId =
+            insertDecisionWithApplication(db, testChild_1, period, decisionType = DecisionType.PRESCHOOL_DAYCARE)
+        insertServiceNeed(db, testChild_1.id, period)
+        insertVardaChild(db, testChild_1.id)
 
-            updateDecisions(h, vardaClient)
-            val originalDecisionId = getVardaDecisions(h).first().evakaDecisionId
-            assertEquals(firstDecisionId, originalDecisionId)
+        updateDecisions(db, vardaClient)
+        val originalDecisionId = getVardaDecisions().first().evakaDecisionId
+        assertEquals(firstDecisionId, originalDecisionId)
 
-            val secondDecisionId = insertDecisionWithApplication(h, testChild_1, period)
-            updateDecisions(h, vardaClient)
+        val secondDecisionId = insertDecisionWithApplication(db, testChild_1, period)
+        updateDecisions(db, vardaClient)
 
-            val result = getVardaDecisions(h)
-            assertEquals(1, result.size)
-            assertNotEquals(originalDecisionId, result.first().evakaDecisionId)
-            assertEquals(secondDecisionId, result.first().evakaDecisionId)
-        }
+        val result = getVardaDecisions()
+        assertEquals(1, result.size)
+        assertNotEquals(originalDecisionId, result.first().evakaDecisionId)
+        assertEquals(secondDecisionId, result.first().evakaDecisionId)
     }
 
     @Test
     fun `a derived daycare decision is sent when there is a placement without a decision`() {
-        jdbi.handle { h ->
-            val period = ClosedPeriod(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))
-            val placementId = insertPlacement(h, testChild_1.id, period)
-            insertServiceNeed(h, testChild_1.id, period)
-            insertVardaChild(h, testChild_1.id)
+        val period = ClosedPeriod(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))
+        val placementId = insertPlacement(db, testChild_1.id, period)
+        insertServiceNeed(db, testChild_1.id, period)
+        insertVardaChild(db, testChild_1.id)
 
-            updateDecisions(h, vardaClient)
+        updateDecisions(db, vardaClient)
 
-            val result = getVardaDecisions(h)
-            assertEquals(1, result.size)
-            assertEquals(placementId, result.first().evakaPlacementId)
-        }
+        val result = getVardaDecisions()
+        assertEquals(1, result.size)
+        assertEquals(placementId, result.first().evakaPlacementId)
     }
 
     @Test
     fun `multiple decisions are created from multiple derived daycare decisions`() {
-        jdbi.handle { h ->
-            insertVardaChild(h, testChild_1.id)
-            val firstSemester = ClosedPeriod(LocalDate.of(2018, 1, 8), LocalDate.of(2019, 5, 31))
-            val firstSummer = ClosedPeriod(LocalDate.of(2019, 6, 1), LocalDate.of(2019, 7, 31))
-            insertPlacement(h, testChild_1.id, firstSemester, PlacementType.PRESCHOOL_DAYCARE)
-            insertPlacement(h, testChild_1.id, firstSummer, PlacementType.DAYCARE)
-            insertServiceNeed(h, testChild_1.id, firstSemester)
-            insertServiceNeed(h, testChild_1.id, firstSummer)
+        insertVardaChild(db, testChild_1.id)
+        val firstSemester = ClosedPeriod(LocalDate.of(2018, 1, 8), LocalDate.of(2019, 5, 31))
+        val firstSummer = ClosedPeriod(LocalDate.of(2019, 6, 1), LocalDate.of(2019, 7, 31))
+        insertPlacement(db, testChild_1.id, firstSemester, PlacementType.PRESCHOOL_DAYCARE)
+        insertPlacement(db, testChild_1.id, firstSummer, PlacementType.DAYCARE)
+        insertServiceNeed(db, testChild_1.id, firstSemester)
+        insertServiceNeed(db, testChild_1.id, firstSummer)
 
-            val secondSemester = ClosedPeriod(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 5, 31))
-            val secondSummer = ClosedPeriod(LocalDate.of(2020, 6, 1), LocalDate.of(2020, 7, 31))
-            insertPlacement(h, testChild_1.id, secondSemester, PlacementType.PRESCHOOL_DAYCARE)
-            insertPlacement(h, testChild_1.id, secondSummer, PlacementType.DAYCARE)
-            insertServiceNeed(h, testChild_1.id, secondSemester)
-            insertServiceNeed(h, testChild_1.id, secondSummer)
+        val secondSemester = ClosedPeriod(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 5, 31))
+        val secondSummer = ClosedPeriod(LocalDate.of(2020, 6, 1), LocalDate.of(2020, 7, 31))
+        insertPlacement(db, testChild_1.id, secondSemester, PlacementType.PRESCHOOL_DAYCARE)
+        insertPlacement(db, testChild_1.id, secondSummer, PlacementType.DAYCARE)
+        insertServiceNeed(db, testChild_1.id, secondSemester)
+        insertServiceNeed(db, testChild_1.id, secondSummer)
 
-            updateDecisions(h, vardaClient)
+        updateDecisions(db, vardaClient)
 
-            val result = getVardaDecisions(h)
-            assertEquals(4, result.size)
-        }
+        val result = getVardaDecisions()
+        assertEquals(4, result.size)
     }
 
     @Test
     fun `a derived daycare decision is updated when the placement is updated`() {
-        jdbi.handle { h ->
-            val period = ClosedPeriod(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))
-            val placementId = insertPlacement(h, testChild_1.id, period)
-            insertServiceNeed(h, testChild_1.id, period)
-            insertVardaChild(h, testChild_1.id)
+        val period = ClosedPeriod(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))
+        val placementId = insertPlacement(db, testChild_1.id, period)
+        insertServiceNeed(db, testChild_1.id, period)
+        insertVardaChild(db, testChild_1.id)
 
-            updateDecisions(h, vardaClient)
-            val originalUploadedAt = getVardaDecisions(h).first().uploadedAt
+        updateDecisions(db, vardaClient)
+        val originalUploadedAt = getVardaDecisions().first().uploadedAt
 
-            updatePlacement(h, placementId, originalUploadedAt.plusSeconds(1))
-            updateDecisions(h, vardaClient)
+        updatePlacement(db, placementId, originalUploadedAt.plusSeconds(1))
+        updateDecisions(db, vardaClient)
 
-            val result = getVardaDecisions(h)
-            assertEquals(1, result.size)
-            assertTrue(originalUploadedAt < result.first().uploadedAt)
-        }
+        val result = getVardaDecisions()
+        assertEquals(1, result.size)
+        assertTrue(originalUploadedAt < result.first().uploadedAt)
     }
 
     @Test
     fun `a derived daycare decision is updated when service need is updated`() {
-        jdbi.handle { h ->
-            val period = ClosedPeriod(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))
-            insertPlacement(h, testChild_1.id, period)
-            val serviceNeedId = insertServiceNeed(h, testChild_1.id, period)
-            insertVardaChild(h, testChild_1.id)
+        val period = ClosedPeriod(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))
+        insertPlacement(db, testChild_1.id, period)
+        val serviceNeedId = insertServiceNeed(db, testChild_1.id, period)
+        insertVardaChild(db, testChild_1.id)
 
-            updateDecisions(h, vardaClient)
-            val originalUploadedAt = getVardaDecisions(h).first().uploadedAt
+        updateDecisions(db, vardaClient)
+        val originalUploadedAt = getVardaDecisions().first().uploadedAt
 
-            updateServiceNeed(h, serviceNeedId, originalUploadedAt.plusSeconds(1))
-            updateDecisions(h, vardaClient)
+        updateServiceNeed(serviceNeedId, originalUploadedAt.plusSeconds(1))
+        updateDecisions(db, vardaClient)
 
-            val result = getVardaDecisions(h)
-            assertEquals(1, result.size)
-            assertTrue(originalUploadedAt < result.first().uploadedAt)
-        }
+        val result = getVardaDecisions()
+        assertEquals(1, result.size)
+        assertTrue(originalUploadedAt < result.first().uploadedAt)
     }
 
     @Test
     fun `a derived daycare decision is deleted when the placement is removed`() {
-        jdbi.handle { h ->
-            val period = ClosedPeriod(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))
-            val placementId = insertPlacement(h, testChild_1.id, period)
-            insertServiceNeed(h, testChild_1.id, period)
-            insertVardaChild(h, testChild_1.id)
+        val period = ClosedPeriod(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))
+        val placementId = insertPlacement(db, testChild_1.id, period)
+        insertServiceNeed(db, testChild_1.id, period)
+        insertVardaChild(db, testChild_1.id)
 
-            updateDecisions(h, vardaClient)
-            val beforeDelete = getVardaDecisions(h)
-            assertEquals(1, beforeDelete.size)
+        updateDecisions(db, vardaClient)
+        val beforeDelete = getVardaDecisions()
+        assertEquals(1, beforeDelete.size)
 
-            deletePlacement(h, placementId)
-            updateDecisions(h, vardaClient)
-            val result = getVardaDecisions(h)
-            assertEquals(0, result.size)
-        }
+        deletePlacement(db, placementId)
+        updateDecisions(db, vardaClient)
+        val result = getVardaDecisions()
+        assertEquals(0, result.size)
     }
 
     @Test
     fun `a derived decision is sent when child has a rejected decision`() {
-        jdbi.handle { h ->
-            val period = ClosedPeriod(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))
-            insertPlacement(h, testChild_1.id, period)
-            insertServiceNeed(h, testChild_1.id, period)
-            insertVardaChild(h, testChild_1.id)
-            insertDecisionWithApplication(
-                h = h,
-                child = testChild_1,
-                period = period,
-                decisionStatus = DecisionStatus.REJECTED
-            )
+        val period = ClosedPeriod(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))
+        insertPlacement(db, testChild_1.id, period)
+        insertServiceNeed(db, testChild_1.id, period)
+        insertVardaChild(db, testChild_1.id)
+        insertDecisionWithApplication(
+            db,
+            child = testChild_1,
+            period = period,
+            decisionStatus = DecisionStatus.REJECTED
+        )
 
-            updateDecisions(h, vardaClient)
-            val result = getVardaDecisions(h)
-            assertEquals(1, result.size)
-        }
+        updateDecisions(db, vardaClient)
+        val result = getVardaDecisions()
+        assertEquals(1, result.size)
     }
 
     @Test
     fun `a derived decision is sent when child has a pending decision`() {
-        jdbi.handle { h ->
-            val period = ClosedPeriod(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))
-            insertPlacement(h, testChild_1.id, period)
-            insertServiceNeed(h, testChild_1.id, period)
-            insertVardaChild(h, testChild_1.id)
-            insertDecisionWithApplication(
-                h = h,
-                child = testChild_1,
-                period = period,
-                decisionStatus = DecisionStatus.PENDING
-            )
+        val period = ClosedPeriod(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))
+        insertPlacement(db, testChild_1.id, period)
+        insertServiceNeed(db, testChild_1.id, period)
+        insertVardaChild(db, testChild_1.id)
+        insertDecisionWithApplication(
+            db,
+            child = testChild_1,
+            period = period,
+            decisionStatus = DecisionStatus.PENDING
+        )
 
-            updateDecisions(h, vardaClient)
-            val result = getVardaDecisions(h)
-            assertEquals(1, result.size)
-        }
+        updateDecisions(db, vardaClient)
+        val result = getVardaDecisions()
+        assertEquals(1, result.size)
     }
 
     @Test
     fun `daycare decision is sent with correct data`() {
-        jdbi.handle { h ->
-            val sentDate = LocalDate.of(2019, 6, 1)
-            val period = ClosedPeriod(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))
-            insertDecisionWithApplication(h, testChild_1, period, sentDate = sentDate)
-            insertServiceNeed(h, testChild_1.id, period)
-            insertVardaChild(h, testChild_1.id)
+        val sentDate = LocalDate.of(2019, 6, 1)
+        val period = ClosedPeriod(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))
+        insertDecisionWithApplication(db, testChild_1, period, sentDate = sentDate)
+        insertServiceNeed(db, testChild_1.id, period)
+        insertVardaChild(db, testChild_1.id)
 
-            updateDecisions(h, vardaClient)
+        updateDecisions(db, vardaClient)
 
-            val decisions = mockEndpoint.decisions
-            assertEquals(1, decisions.size)
+        val decisions = mockEndpoint.decisions
+        assertEquals(1, decisions.size)
 
-            val decision = decisions[0]
-            assertEquals(period.start, decision.startDate)
-            assertEquals(period.end, decision.endDate)
-            assertEquals(40.0, decision.hoursPerWeek)
-            assertEquals(true, decision.daily)
-            assertEquals(true, decision.fullDay)
-            assertEquals(false, decision.shiftCare)
-            assertEquals(VardaUnitProviderType.MUNICIPAL.vardaCode, decision.providerTypeCode)
-            assertEquals(false, decision.urgent)
-            assertEquals(sentDate, decision.applicationDate)
-        }
+        val decision = decisions[0]
+        assertEquals(period.start, decision.startDate)
+        assertEquals(period.end, decision.endDate)
+        assertEquals(40.0, decision.hoursPerWeek)
+        assertEquals(true, decision.daily)
+        assertEquals(true, decision.fullDay)
+        assertEquals(false, decision.shiftCare)
+        assertEquals(VardaUnitProviderType.MUNICIPAL.vardaCode, decision.providerTypeCode)
+        assertEquals(false, decision.urgent)
+        assertEquals(sentDate, decision.applicationDate)
     }
 
     @Test
     fun `application date is never after decision start date`() {
-        jdbi.handle { h ->
-            val sentDate = LocalDate.of(2019, 6, 1)
-            val period = ClosedPeriod(sentDate.minusMonths(1), sentDate.plusMonths(1))
-            insertDecisionWithApplication(h, testChild_1, period, sentDate = sentDate)
-            insertServiceNeed(h, testChild_1.id, period)
-            insertVardaChild(h, testChild_1.id)
+        val sentDate = LocalDate.of(2019, 6, 1)
+        val period = ClosedPeriod(sentDate.minusMonths(1), sentDate.plusMonths(1))
+        insertDecisionWithApplication(db, testChild_1, period, sentDate = sentDate)
+        insertServiceNeed(db, testChild_1.id, period)
+        insertVardaChild(db, testChild_1.id)
 
-            updateDecisions(h, vardaClient)
+        updateDecisions(db, vardaClient)
 
-            val decision = mockEndpoint.decisions[0]
-            assertNotEquals(sentDate, decision.applicationDate)
-            assertEquals(period.start, decision.applicationDate)
-        }
+        val decision = mockEndpoint.decisions[0]
+        assertNotEquals(sentDate, decision.applicationDate)
+        assertEquals(period.start, decision.applicationDate)
     }
 
     @Test
     fun `PAOS daycare decision is sent with correct data`() {
-        jdbi.handle { h ->
-            val sentDate = LocalDate.of(2019, 6, 1)
-            val period = ClosedPeriod(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))
-            insertDecisionWithApplication(h, testChild_1, period, sentDate = sentDate, unitId = testPurchasedDaycare.id)
-            insertServiceNeed(h, testChild_1.id, period)
-            insertVardaChild(h, testChild_1.id, ophOrganizationOid = defaultPurchasedOrganizerOid)
+        val sentDate = LocalDate.of(2019, 6, 1)
+        val period = ClosedPeriod(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))
+        insertDecisionWithApplication(db, testChild_1, period, sentDate = sentDate, unitId = testPurchasedDaycare.id)
+        insertServiceNeed(db, testChild_1.id, period)
+        insertVardaChild(db, testChild_1.id, ophOrganizationOid = defaultPurchasedOrganizerOid)
 
-            updateDecisions(h, vardaClient)
+        updateDecisions(db, vardaClient)
 
-            val decisions = mockEndpoint.decisions
-            assertEquals(1, decisions.size)
+        val decisions = mockEndpoint.decisions
+        assertEquals(1, decisions.size)
 
-            val decision = decisions[0]
-            assertEquals(period.start, decision.startDate)
-            assertEquals(period.end, decision.endDate)
-            assertEquals(40.0, decision.hoursPerWeek)
-            assertEquals(true, decision.daily)
-            assertEquals(true, decision.fullDay)
-            assertEquals(false, decision.shiftCare)
-            assertEquals(VardaUnitProviderType.PURCHASED.vardaCode, decision.providerTypeCode)
-            assertEquals(false, decision.urgent)
-            assertEquals(sentDate, decision.applicationDate)
-        }
+        val decision = decisions[0]
+        assertEquals(period.start, decision.startDate)
+        assertEquals(period.end, decision.endDate)
+        assertEquals(40.0, decision.hoursPerWeek)
+        assertEquals(true, decision.daily)
+        assertEquals(true, decision.fullDay)
+        assertEquals(false, decision.shiftCare)
+        assertEquals(VardaUnitProviderType.PURCHASED.vardaCode, decision.providerTypeCode)
+        assertEquals(false, decision.urgent)
+        assertEquals(sentDate, decision.applicationDate)
     }
 
     @Test
     fun `a preschool daycare decision without preparatory is sent with correct hours per week`() {
-        jdbi.handle { h ->
-            val weeklyHours = 50.0
-            val period = ClosedPeriod(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))
-            insertDecisionWithApplication(h, testChild_1, period, decisionType = DecisionType.PRESCHOOL_DAYCARE)
-            insertServiceNeed(h, testChild_1.id, period, weeklyHours)
-            insertVardaChild(h, testChild_1.id)
-            insertPlacement(h, testChild_1.id, period, type = PlacementType.PRESCHOOL_DAYCARE)
-            updateDecisions(h, vardaClient)
+        val weeklyHours = 50.0
+        val period = ClosedPeriod(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))
+        insertDecisionWithApplication(db, testChild_1, period, decisionType = DecisionType.PRESCHOOL_DAYCARE)
+        insertServiceNeed(db, testChild_1.id, period, weeklyHours)
+        insertVardaChild(db, testChild_1.id)
+        insertPlacement(db, testChild_1.id, period, type = PlacementType.PRESCHOOL_DAYCARE)
+        updateDecisions(db, vardaClient)
 
-            val decisions = mockEndpoint.decisions
-            assertEquals(1, decisions.size)
-            assertEquals(weeklyHours - 20, decisions[0].hoursPerWeek)
-        }
+        val decisions = mockEndpoint.decisions
+        assertEquals(1, decisions.size)
+        assertEquals(weeklyHours - 20, decisions[0].hoursPerWeek)
     }
 
     @Test
     fun `a preschool daycare decision with preparatory is sent with correct hours per week`() {
-        jdbi.handle { h ->
-            val weeklyHours = 50.0
-            val period = ClosedPeriod(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))
-            insertDecisionWithApplication(h, testChild_1, period, decisionType = DecisionType.PRESCHOOL_DAYCARE)
-            insertServiceNeed(h, testChild_1.id, period, weeklyHours)
-            insertVardaChild(h, testChild_1.id)
-            insertPlacement(h, testChild_1.id, period, type = PlacementType.PREPARATORY_DAYCARE)
-            updateDecisions(h, vardaClient)
+        val weeklyHours = 50.0
+        val period = ClosedPeriod(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))
+        insertDecisionWithApplication(db, testChild_1, period, decisionType = DecisionType.PRESCHOOL_DAYCARE)
+        insertServiceNeed(db, testChild_1.id, period, weeklyHours)
+        insertVardaChild(db, testChild_1.id)
+        insertPlacement(db, testChild_1.id, period, type = PlacementType.PREPARATORY_DAYCARE)
+        updateDecisions(db, vardaClient)
 
-            val decisions = mockEndpoint.decisions
-            assertEquals(1, decisions.size)
-            assertEquals(weeklyHours - 25, decisions[0].hoursPerWeek)
-        }
+        val decisions = mockEndpoint.decisions
+        assertEquals(1, decisions.size)
+        assertEquals(weeklyHours - 25, decisions[0].hoursPerWeek)
     }
 
     @Test
     fun `a decision has a correct end date when another decision replaces it midway`() {
-        jdbi.handle { h ->
-            val period = ClosedPeriod(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))
-            insertDecisionWithApplication(h, testChild_1, period)
-            insertDecisionWithApplication(h, testChild_1, period.copy(start = period.start.plusMonths(1)))
-            insertServiceNeed(h, testChild_1.id, period)
-            insertVardaChild(h, testChild_1.id)
+        val period = ClosedPeriod(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))
+        insertDecisionWithApplication(db, testChild_1, period)
+        insertDecisionWithApplication(db, testChild_1, period.copy(start = period.start.plusMonths(1)))
+        insertServiceNeed(db, testChild_1.id, period)
+        insertVardaChild(db, testChild_1.id)
 
-            updateDecisions(h, vardaClient)
-            val result = mockEndpoint.decisions.toList().sortedBy { it.startDate }
-            assertEquals(2, result.size)
-            assertEquals(period.start, result[0].startDate)
-            assertEquals(period.start.plusMonths(1).minusDays(1), result[0].endDate)
-            assertEquals(period.start.plusMonths(1), result[1].startDate)
-            assertEquals(period.end, result[1].endDate)
-        }
+        updateDecisions(db, vardaClient)
+        val result = mockEndpoint.decisions.toList().sortedBy { it.startDate }
+        assertEquals(2, result.size)
+        assertEquals(period.start, result[0].startDate)
+        assertEquals(period.start.plusMonths(1).minusDays(1), result[0].endDate)
+        assertEquals(period.start.plusMonths(1), result[1].startDate)
+        assertEquals(period.end, result[1].endDate)
     }
 
     @Test
     fun `a decision is not affected by a new decision that does not overlap with it`() {
-        jdbi.handle { h ->
-            val period = ClosedPeriod(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))
-            insertDecisionWithApplication(h, testChild_1, period)
-            insertDecisionWithApplication(
-                h,
-                testChild_1,
-                ClosedPeriod(period.end.plusDays(1), period.end.plusMonths(1))
-            )
-            insertServiceNeed(h, testChild_1.id, period)
-            insertVardaChild(h, testChild_1.id)
+        val period = ClosedPeriod(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))
+        insertDecisionWithApplication(db, testChild_1, period)
+        insertDecisionWithApplication(
+            db,
+            testChild_1,
+            ClosedPeriod(period.end.plusDays(1), period.end.plusMonths(1))
+        )
+        insertServiceNeed(db, testChild_1.id, period)
+        insertVardaChild(db, testChild_1.id)
 
-            updateDecisions(h, vardaClient)
-            val result = mockEndpoint.decisions[0]
-            assertEquals(period.start, result.startDate)
-            assertEquals(period.end, result.endDate)
-        }
+        updateDecisions(db, vardaClient)
+        val result = mockEndpoint.decisions[0]
+        assertEquals(period.start, result.startDate)
+        assertEquals(period.end, result.endDate)
     }
 
     @Test
     fun `a decision is not full day with 24 hours`() {
-        jdbi.handle { h ->
-            val period = ClosedPeriod(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))
-            insertDecisionWithApplication(h, testChild_1, period)
-            insertServiceNeed(h, testChild_1.id, period, hours = 24.0)
-            insertVardaChild(h, testChild_1.id)
+        val period = ClosedPeriod(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))
+        insertDecisionWithApplication(db, testChild_1, period)
+        insertServiceNeed(db, testChild_1.id, period, hours = 24.0)
+        insertVardaChild(db, testChild_1.id)
 
-            updateDecisions(h, vardaClient)
-            val result = mockEndpoint.decisions[0]
-            assertEquals(false, result.fullDay)
-        }
+        updateDecisions(db, vardaClient)
+        val result = mockEndpoint.decisions[0]
+        assertEquals(false, result.fullDay)
     }
 
     @Test
     fun `a decision is full day with 25 hours`() {
-        jdbi.handle { h ->
-            val period = ClosedPeriod(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))
-            insertDecisionWithApplication(h, testChild_1, period)
-            insertServiceNeed(h, testChild_1.id, period, hours = 25.0)
-            insertVardaChild(h, testChild_1.id)
+        val period = ClosedPeriod(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))
+        insertDecisionWithApplication(db, testChild_1, period)
+        insertServiceNeed(db, testChild_1.id, period, hours = 25.0)
+        insertVardaChild(db, testChild_1.id)
 
-            updateDecisions(h, vardaClient)
-            val result = mockEndpoint.decisions[0]
-            assertEquals(true, result.fullDay)
-        }
+        updateDecisions(db, vardaClient)
+        val result = mockEndpoint.decisions[0]
+        assertEquals(true, result.fullDay)
     }
 
     @Test
     fun `a decision is full day with more than 25 hours`() {
-        jdbi.handle { h ->
-            val period = ClosedPeriod(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))
-            insertDecisionWithApplication(h, testChild_1, period)
-            insertServiceNeed(h, testChild_1.id, period, hours = 25.5)
-            insertVardaChild(h, testChild_1.id)
+        val period = ClosedPeriod(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))
+        insertDecisionWithApplication(db, testChild_1, period)
+        insertServiceNeed(db, testChild_1.id, period, hours = 25.5)
+        insertVardaChild(db, testChild_1.id)
 
-            updateDecisions(h, vardaClient)
-            val result = mockEndpoint.decisions[0]
-            assertEquals(true, result.fullDay)
-        }
+        updateDecisions(db, vardaClient)
+        val result = mockEndpoint.decisions[0]
+        assertEquals(true, result.fullDay)
     }
 
     @Test
     fun `decision in the future is not sent to Varda`() {
-        jdbi.handle { h ->
-            val period = ClosedPeriod(LocalDate.now().plusDays(1), LocalDate.now().plusMonths(2))
-            insertDecisionWithApplication(h, testChild_1, period)
-            insertServiceNeed(h, testChild_1.id, period)
-            insertVardaChild(h, testChild_1.id)
+        val period = ClosedPeriod(LocalDate.now().plusDays(1), LocalDate.now().plusMonths(2))
+        insertDecisionWithApplication(db, testChild_1, period)
+        insertServiceNeed(db, testChild_1.id, period)
+        insertVardaChild(db, testChild_1.id)
 
-            updateDecisions(h, vardaClient)
+        updateDecisions(db, vardaClient)
 
-            val result = getVardaDecisions(h)
-            assertEquals(0, result.size)
-        }
+        val result = getVardaDecisions()
+        assertEquals(0, result.size)
     }
 
     @Test
     fun `derived decision in the future is not sent to Varda`() {
-        jdbi.handle { h ->
-            val period = ClosedPeriod(LocalDate.now().plusDays(1), LocalDate.now().plusMonths(2))
-            insertPlacement(h, testChild_1.id, period)
-            insertServiceNeed(h, testChild_1.id, period)
-            insertVardaChild(h, testChild_1.id)
+        val period = ClosedPeriod(LocalDate.now().plusDays(1), LocalDate.now().plusMonths(2))
+        insertPlacement(db, testChild_1.id, period)
+        insertServiceNeed(db, testChild_1.id, period)
+        insertVardaChild(db, testChild_1.id)
 
-            updateDecisions(h, vardaClient)
+        updateDecisions(db, vardaClient)
 
-            val result = getVardaDecisions(h)
-            assertEquals(0, result.size)
-        }
+        val result = getVardaDecisions()
+        assertEquals(0, result.size)
     }
 
     @Test
     fun `only one decision is sent to Varda when it has multiple placements inside it`() {
-        jdbi.handle { h ->
-            val period = ClosedPeriod(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))
-            insertDecisionWithApplication(h, testChild_1, period)
-            insertVardaUnit(h)
-            insertServiceNeed(h, testChild_1.id, period)
-            insertVardaChild(h, testChild_1.id)
-            val newMiddleStart = period.start.plusMonths(1)
-            val newMiddleEnd = period.end.minusMonths(1)
-            insertPlacement(h, testChild_1.id, ClosedPeriod(period.start, newMiddleStart.minusDays(1)))
-            insertPlacement(h, testChild_1.id, ClosedPeriod(newMiddleStart, newMiddleEnd))
-            insertPlacement(h, testChild_1.id, ClosedPeriod(newMiddleEnd.plusDays(1), period.end))
+        val period = ClosedPeriod(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))
+        insertDecisionWithApplication(db, testChild_1, period)
+        insertVardaUnit(db)
+        insertServiceNeed(db, testChild_1.id, period)
+        insertVardaChild(db, testChild_1.id)
+        val newMiddleStart = period.start.plusMonths(1)
+        val newMiddleEnd = period.end.minusMonths(1)
+        insertPlacement(db, testChild_1.id, ClosedPeriod(period.start, newMiddleStart.minusDays(1)))
+        insertPlacement(db, testChild_1.id, ClosedPeriod(newMiddleStart, newMiddleEnd))
+        insertPlacement(db, testChild_1.id, ClosedPeriod(newMiddleEnd.plusDays(1), period.end))
 
-            updateDecisions(h, vardaClient)
+        updateDecisions(db, vardaClient)
 
-            assertEquals(1, getVardaDecisions(h).size)
-            val decisions = mockEndpoint.decisions
-            assertEquals(1, decisions.size)
+        assertEquals(1, getVardaDecisions().size)
+        val decisions = mockEndpoint.decisions
+        assertEquals(1, decisions.size)
 
-            val decision = decisions[0]
-            assertEquals(period.start, decision.startDate)
-            assertEquals(period.end, decision.endDate)
-        }
+        val decision = decisions[0]
+        assertEquals(period.start, decision.startDate)
+        assertEquals(period.end, decision.endDate)
     }
 
     @Test
     fun `a decision dates are prolonged when its placement is prolonged`() {
-        jdbi.handle { h ->
-            val period = ClosedPeriod(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))
-            insertDecisionWithApplication(h, testChild_1, period)
-            insertVardaUnit(h)
-            insertServiceNeed(h, testChild_1.id, period)
-            insertVardaChild(h, testChild_1.id)
-            updateDecisions(h, vardaClient)
-            val decisions = getVardaDecisions(h)
-            assertEquals(1, decisions.size)
+        val period = ClosedPeriod(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))
+        insertDecisionWithApplication(db, testChild_1, period)
+        insertVardaUnit(db)
+        insertServiceNeed(db, testChild_1.id, period)
+        insertVardaChild(db, testChild_1.id)
+        updateDecisions(db, vardaClient)
+        val decisions = getVardaDecisions()
+        assertEquals(1, decisions.size)
 
-            val placementId = insertPlacement(h, testChild_1.id, period)
-            updatePlacements(h, vardaClient)
-            val placements = getVardaPlacements(h)
-            assertEquals(1, placements.size)
-            assertEquals(placementId, placements.first().evakaPlacementId)
-            assertEquals(decisions.first().id, placements.first().decisionId)
+        val placementId = insertPlacement(db, testChild_1.id, period)
+        updatePlacements(db, vardaClient)
+        val placements = getVardaPlacements(db)
+        assertEquals(1, placements.size)
+        assertEquals(placementId, placements.first().evakaPlacementId)
+        assertEquals(decisions.first().id, placements.first().decisionId)
 
-            val newStart = period.start.minusMonths(1)
-            val newEnd = period.end.plusMonths(1)
-            h.updatePlacementStartAndEndDate(placementId, newStart, newEnd)
-            updateDecisions(h, vardaClient)
+        val newStart = period.start.minusMonths(1)
+        val newEnd = period.end.plusMonths(1)
+        db.transaction { it.handle.updatePlacementStartAndEndDate(placementId, newStart, newEnd) }
+        updateDecisions(db, vardaClient)
 
-            val vardaDecisions = mockEndpoint.decisions
-            assertEquals(1, vardaDecisions.size)
-            assertEquals(newStart, vardaDecisions.first().startDate)
-            assertEquals(newEnd, vardaDecisions.first().endDate)
-        }
+        val vardaDecisions = mockEndpoint.decisions
+        assertEquals(1, vardaDecisions.size)
+        assertEquals(newStart, vardaDecisions.first().startDate)
+        assertEquals(newEnd, vardaDecisions.first().endDate)
     }
 
     @Test
     fun `a decisions placements are deleted first when it's updated`() {
-        jdbi.handle { h ->
-            val period = ClosedPeriod(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))
-            insertDecisionWithApplication(h, testChild_1, period)
-            insertVardaUnit(h)
-            insertServiceNeed(h, testChild_1.id, period)
-            insertVardaChild(h, testChild_1.id)
-            updateDecisions(h, vardaClient)
-            val decisions = getVardaDecisions(h)
-            assertEquals(1, decisions.size)
+        val period = ClosedPeriod(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))
+        insertDecisionWithApplication(db, testChild_1, period)
+        insertVardaUnit(db)
+        insertServiceNeed(db, testChild_1.id, period)
+        insertVardaChild(db, testChild_1.id)
+        updateDecisions(db, vardaClient)
+        val decisions = getVardaDecisions()
+        assertEquals(1, decisions.size)
 
-            val placementId = insertPlacement(h, testChild_1.id, period)
-            updatePlacements(h, vardaClient)
-            val placements = getVardaPlacements(h)
-            assertEquals(1, placements.size)
+        val placementId = insertPlacement(db, testChild_1.id, period)
+        updatePlacements(db, vardaClient)
+        val placements = getVardaPlacements(db)
+        assertEquals(1, placements.size)
 
-            h.updatePlacementStartAndEndDate(placementId, period.start.plusMonths(1), period.end.minusMonths(1))
-            updateDecisions(h, vardaClient)
-            assertEquals(0, getVardaPlacements(h).size)
-
-            updatePlacements(h, vardaClient)
-            assertEquals(1, getVardaPlacements(h).size)
+        db.transaction {
+            it.handle.updatePlacementStartAndEndDate(placementId, period.start.plusMonths(1), period.end.minusMonths(1))
         }
+        updateDecisions(db, vardaClient)
+        assertEquals(0, getVardaPlacements(db).size)
+
+        updatePlacements(db, vardaClient)
+        assertEquals(1, getVardaPlacements(db).size)
     }
 
     @Test
     fun `decision has correct dates when multiple placements that prolong it are added`() {
-        jdbi.handle { h ->
-            val period = ClosedPeriod(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))
-            insertDecisionWithApplication(h, testChild_1, period)
-            insertVardaUnit(h)
-            insertServiceNeed(h, testChild_1.id, period)
-            insertVardaChild(h, testChild_1.id)
+        val period = ClosedPeriod(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))
+        insertDecisionWithApplication(db, testChild_1, period)
+        insertVardaUnit(db)
+        insertServiceNeed(db, testChild_1.id, period)
+        insertVardaChild(db, testChild_1.id)
 
-            updateDecisions(h, vardaClient)
+        updateDecisions(db, vardaClient)
 
-            assertEquals(1, getVardaDecisions(h).size)
-            assertEquals(1, mockEndpoint.decisions.size)
-            val initialDecision = mockEndpoint.decisions[0]
-            assertEquals(period.start, initialDecision.startDate)
-            assertEquals(period.end, initialDecision.endDate)
+        assertEquals(1, getVardaDecisions().size)
+        assertEquals(1, mockEndpoint.decisions.size)
+        val initialDecision = mockEndpoint.decisions[0]
+        assertEquals(period.start, initialDecision.startDate)
+        assertEquals(period.end, initialDecision.endDate)
 
-            val newStart = period.start.minusMonths(1)
-            val newEnd = period.end.plusMonths(1)
-            val newMiddleStart = period.start.plusMonths(1)
-            val newMiddleEnd = period.end.minusMonths(1)
-            insertPlacement(h, testChild_1.id, ClosedPeriod(newStart, newMiddleStart.minusDays(1)))
-            insertPlacement(h, testChild_1.id, ClosedPeriod(newMiddleStart, newMiddleEnd))
-            insertPlacement(h, testChild_1.id, ClosedPeriod(newMiddleEnd.plusDays(1), newEnd))
+        val newStart = period.start.minusMonths(1)
+        val newEnd = period.end.plusMonths(1)
+        val newMiddleStart = period.start.plusMonths(1)
+        val newMiddleEnd = period.end.minusMonths(1)
+        insertPlacement(db, testChild_1.id, ClosedPeriod(newStart, newMiddleStart.minusDays(1)))
+        insertPlacement(db, testChild_1.id, ClosedPeriod(newMiddleStart, newMiddleEnd))
+        insertPlacement(db, testChild_1.id, ClosedPeriod(newMiddleEnd.plusDays(1), newEnd))
 
-            updateDecisions(h, vardaClient)
+        updateDecisions(db, vardaClient)
 
-            assertEquals(1, getVardaDecisions(h).size)
-            assertEquals(1, mockEndpoint.decisions.size)
-            val finalDecision = mockEndpoint.decisions[0]
-            assertEquals(newStart, finalDecision.startDate)
-            assertEquals(newEnd, finalDecision.endDate)
-        }
+        assertEquals(1, getVardaDecisions().size)
+        assertEquals(1, mockEndpoint.decisions.size)
+        val finalDecision = mockEndpoint.decisions[0]
+        assertEquals(newStart, finalDecision.startDate)
+        assertEquals(newEnd, finalDecision.endDate)
     }
 
     @Test
     fun `decision is soft deleted if it is flagged with should_be_deleted`() {
-        jdbi.handle { h ->
-            val period = ClosedPeriod(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))
-            insertDecisionWithApplication(h, testChild_1, period)
-            insertVardaUnit(h)
-            insertServiceNeed(h, testChild_1.id, period)
-            insertVardaChild(h, testChild_1.id)
+        val period = ClosedPeriod(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))
+        insertDecisionWithApplication(db, testChild_1, period)
+        insertVardaUnit(db)
+        insertServiceNeed(db, testChild_1.id, period)
+        insertVardaChild(db, testChild_1.id)
 
-            updateDecisions(h, vardaClient)
+        updateDecisions(db, vardaClient)
 
-            assertEquals(1, getVardaDecisions(h).size)
-            assertEquals(0, getSoftDeletedVardaDecisions(h).size)
+        assertEquals(1, getVardaDecisions().size)
+        assertEquals(0, getSoftDeletedVardaDecisions().size)
 
-            h.createUpdate("UPDATE varda_decision SET should_be_deleted = true").execute()
+        db.transaction { it.createUpdate("UPDATE varda_decision SET should_be_deleted = true").execute() }
 
-            removeMarkedDecisionsFromVarda(h, vardaClient)
-            updateDecisions(h, vardaClient)
+        removeMarkedDecisionsFromVarda(db, vardaClient)
+        updateDecisions(db, vardaClient)
 
-            assertEquals(1, getSoftDeletedVardaDecisions(h).size)
-        }
+        assertEquals(1, getSoftDeletedVardaDecisions().size)
     }
 
     @Test
     fun `decision is not updated if upload flag is turned off`() {
-        jdbi.handle { h ->
-            val period = ClosedPeriod(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))
-            insertDecisionWithApplication(h, testChild_1, period)
-            insertVardaUnit(h, unitId = testDaycare.id)
-            insertServiceNeed(h, testChild_1.id, period)
-            insertVardaChild(h, testChild_1.id)
+        val period = ClosedPeriod(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))
+        insertDecisionWithApplication(db, testChild_1, period)
+        insertVardaUnit(db, unitId = testDaycare.id)
+        insertServiceNeed(db, testChild_1.id, period)
+        insertVardaChild(db, testChild_1.id)
 
-            updateDecisions(h, vardaClient)
+        updateDecisions(db, vardaClient)
 
-            h.createUpdate("UPDATE daycare SET upload_to_varda = false WHERE id = :id").bind("id", testDaycare.id).execute()
+        db.transaction { it.createUpdate("UPDATE daycare SET upload_to_varda = false WHERE id = :id").bind("id", testDaycare.id).execute() }
 
-            val newStart = period.start.minusMonths(1)
-            insertPlacement(h, testChild_1.id, ClosedPeriod(newStart, period.end))
-            updateDecisions(h, vardaClient)
+        val newStart = period.start.minusMonths(1)
+        insertPlacement(db, testChild_1.id, ClosedPeriod(newStart, period.end))
+        updateDecisions(db, vardaClient)
 
-            val decision = mockEndpoint.decisions[0]
-            assertEquals(period.start, decision.startDate)
-        }
+        val decision = mockEndpoint.decisions[0]
+        assertEquals(period.start, decision.startDate)
     }
 
     @Test
     fun `updating daycare organizer oid yields new varda decision if old is soft deleted`() {
-        jdbi.handle { h ->
-            val period = ClosedPeriod(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))
+        val period = ClosedPeriod(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))
 
-            insertPlacementWithDecision(h, child = testChild_1, unitId = testDaycare.id, period = period)
-            updateChildren(h)
-            updateDecisions(h, vardaClient)
+        insertPlacementWithDecision(db, child = testChild_1, unitId = testDaycare.id, period = period)
+        updateChildren()
+        updateDecisions(db, vardaClient)
 
-            assertEquals(1, getVardaDecisions(h).size)
+        assertEquals(1, getVardaDecisions().size)
 
-            h.createUpdate("update varda_decision set deleted_at = NOW()").execute()
-
-            h.createUpdate("UPDATE daycare SET oph_organizer_oid = '1.22.333.4444.1' where id = :id")
+        db.transaction {
+            it.createUpdate("update varda_decision set deleted_at = NOW()").execute()
+            it.createUpdate("UPDATE daycare SET oph_organizer_oid = '1.22.333.4444.1' where id = :id")
                 .bind("id", testDaycare.id)
                 .execute()
-
-            updateChildren(h)
-            updateDecisions(h, vardaClient)
-            assertEquals(2, getVardaDecisions(h).size)
         }
+
+        updateChildren()
+        updateDecisions(db, vardaClient)
+        assertEquals(2, getVardaDecisions().size)
     }
 
     @Test
     fun `soft deleted decisions are not sent`() {
-        jdbi.handle { h ->
-            val period = ClosedPeriod(LocalDate.now().minusMonths(1), LocalDate.now().plusMonths(1))
+        val period = ClosedPeriod(LocalDate.now().minusMonths(1), LocalDate.now().plusMonths(1))
 
-            insertPlacementWithDecision(h, child = testChild_1, unitId = testDaycare.id, period = period)
-            updateChildren(h)
-            updateDecisions(h, vardaClient)
+        insertPlacementWithDecision(db, child = testChild_1, unitId = testDaycare.id, period = period)
+        updateChildren()
+        updateDecisions(db, vardaClient)
 
-            assertEquals(1, getVardaDecisions(h).size)
-            assertEquals(1, mockEndpoint.decisions.size)
+        assertEquals(1, getVardaDecisions().size)
+        assertEquals(1, mockEndpoint.decisions.size)
 
-            h.createUpdate("update varda_decision set deleted_at = NOW()").execute()
+        db.transaction { it.createUpdate("update varda_decision set deleted_at = NOW()").execute() }
 
-            removeMarkedDecisionsFromVarda(h, vardaClient)
+        removeMarkedDecisionsFromVarda(db, vardaClient)
 
-            mockEndpoint.decisions.clear()
+        mockEndpoint.decisions.clear()
 
-            updateDecisions(h, vardaClient)
-            assertEquals(2, getVardaDecisions(h).size)
-            assertEquals(1, mockEndpoint.decisions.size)
+        updateDecisions(db, vardaClient)
+        assertEquals(2, getVardaDecisions().size)
+        assertEquals(1, mockEndpoint.decisions.size)
 
-            updateDecisions(h, vardaClient)
-            assertEquals(2, getVardaDecisions(h).size)
-            assertEquals(1, mockEndpoint.decisions.size)
-        }
+        updateDecisions(db, vardaClient)
+        assertEquals(2, getVardaDecisions().size)
+        assertEquals(1, mockEndpoint.decisions.size)
     }
 
-    private fun getVardaDecisions(h: Handle) = h.createQuery("SELECT * FROM varda_decision")
-        .map(toVardaDecisionRow)
-        .toList()
+    private fun getVardaDecisions() = db.read {
+        it.createQuery("SELECT * FROM varda_decision")
+            .map(toVardaDecisionRow)
+            .toList()
+    }
 
-    private fun getSoftDeletedVardaDecisions(h: Handle) = h.createQuery("SELECT * FROM varda_decision WHERE deleted_at IS NOT NULL")
-        .map(toVardaDecisionRow)
-        .toList()
+    private fun getSoftDeletedVardaDecisions() = db.read {
+        it.createQuery("SELECT * FROM varda_decision WHERE deleted_at IS NOT NULL")
+            .map(toVardaDecisionRow)
+            .toList()
+    }
 
-    private fun updateServiceNeed(h: Handle, id: UUID, updatedAt: Instant) {
-        h.createUpdate("UPDATE service_need SET updated = :updatedAt WHERE id = :id")
+    private fun updateServiceNeed(id: UUID, updatedAt: Instant) = db.transaction {
+        it.createUpdate("UPDATE service_need SET updated = :updatedAt WHERE id = :id")
             .bind("id", id)
             .bind("updatedAt", updatedAt)
             .execute()
     }
 
-    private fun updateChildren(h: Handle) {
-        updateChildren(h, vardaClient, vardaOrganizerName)
+    private fun updateChildren() {
+        updateChildren(db, vardaClient, vardaOrganizerName)
     }
 }
 
 internal fun insertServiceNeed(
-    h: Handle,
+    db: Database.Connection,
     childId: UUID,
     period: ClosedPeriod,
     hours: Double = 40.0
 ): UUID {
-    return insertTestServiceNeed(
-        h,
-        childId,
-        testDecisionMaker_1.id,
-        startDate = period.start,
-        endDate = period.end,
-        hoursPerWeek = hours
-    )
+    return db.transaction {
+        insertTestServiceNeed(
+            it.handle,
+            childId,
+            testDecisionMaker_1.id,
+            startDate = period.start,
+            endDate = period.end,
+            hoursPerWeek = hours
+        )
+    }
 }
 
-internal fun insertVardaChild(h: Handle, childId: UUID, createdAt: Instant = Instant.now(), ophOrganizationOid: String = defaultMunicipalOrganizerOid) {
-    h.createUpdate(
+internal fun insertVardaChild(db: Database.Connection, childId: UUID, createdAt: Instant = Instant.now(), ophOrganizationOid: String = defaultMunicipalOrganizerOid) = db.transaction {
+    it.createUpdate(
         """
 INSERT INTO varda_child
     (id, person_id, varda_person_id, varda_person_oid, varda_child_id, created_at, modified_at, uploaded_at, oph_organizer_oid)
@@ -938,17 +866,17 @@ VALUES
 }
 
 fun insertDecisionWithApplication(
-    h: Handle,
+    db: Database.Connection,
     child: PersonData.Detailed,
     period: ClosedPeriod,
     unitId: UUID = testDaycare.id,
     decisionType: DecisionType = DecisionType.DAYCARE,
     sentDate: LocalDate = LocalDate.of(2019, 1, 1),
     decisionStatus: DecisionStatus = DecisionStatus.ACCEPTED
-): UUID {
-    val applicationId = insertTestApplication(h, childId = child.id, sentDate = sentDate)
+): UUID = db.transaction {
+    val applicationId = insertTestApplication(it.handle, childId = child.id, sentDate = sentDate)
     insertTestApplicationForm(
-        h, applicationId,
+        it.handle, applicationId,
         DaycareFormV0(
             type = FormType.DAYCARE,
             partTime = false,
@@ -974,24 +902,26 @@ fun insertDecisionWithApplication(
         resolvedBy = testDecisionMaker_1.id,
         resolved = Instant.now()
     )
-    return h.insertTestDecision(acceptedDecision)
+    it.handle.insertTestDecision(acceptedDecision)
 }
 
-fun insertPlacementWithDecision(h: Handle, child: PersonData.Detailed, unitId: UUID, period: ClosedPeriod): Pair<UUID, UUID> {
-    val decisionId = insertDecisionWithApplication(h = h, child = child, period = period, unitId = unitId)
-    insertServiceNeed(h, child.id, period)
-    val placementId = insertTestPlacement(
-        h = h,
-        childId = child.id,
-        unitId = unitId,
-        startDate = period.start,
-        endDate = period.end
-    )
-    return Pair(decisionId, placementId)
+fun insertPlacementWithDecision(db: Database.Connection, child: PersonData.Detailed, unitId: UUID, period: ClosedPeriod): Pair<UUID, UUID> {
+    val decisionId = insertDecisionWithApplication(db, child = child, period = period, unitId = unitId)
+    insertServiceNeed(db, child.id, period)
+    return db.transaction {
+        val placementId = insertTestPlacement(
+            h = it.handle,
+            childId = child.id,
+            unitId = unitId,
+            startDate = period.start,
+            endDate = period.end
+        )
+        Pair(decisionId, placementId)
+    }
 }
 
-private fun deletePlacement(h: Handle, id: UUID) {
-    h.createUpdate("DELETE FROM placement WHERE id = :id")
+private fun deletePlacement(db: Database.Connection, id: UUID) = db.transaction {
+    it.createUpdate("DELETE FROM placement WHERE id = :id")
         .bind("id", id)
         .execute()
 }

@@ -8,8 +8,6 @@ import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.pis.service.PersonService
 import fi.espoo.evaka.resetDatabase
-import fi.espoo.evaka.shared.db.handle
-import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.mapTo
 import org.junit.jupiter.api.Assertions.assertNotEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
@@ -24,52 +22,48 @@ class VardaOrganizerIntegrationTest : FullApplicationTest() {
 
     @BeforeEach
     fun beforeEach() {
-        jdbi.handle { h ->
-            resetDatabase(h)
-            insertGeneralTestFixtures(h)
+        db.transaction { tx ->
+            tx.resetDatabase()
+            insertGeneralTestFixtures(tx.handle)
         }
     }
 
     @Test
     fun `uploading organizer first time works`() {
-        jdbi.handle { h ->
-            val organizer = getVardaOrganizers(h).first()
-            assertNull(organizer.uploadedAt)
+        val organizer = getVardaOrganizers().first()
+        assertNull(organizer.uploadedAt)
 
-            updateOrganizer(h)
+        updateOrganizer()
 
-            val updatedOrganizer = getVardaOrganizers(h).first()
-            assertNotNull(updatedOrganizer.uploadedAt)
-        }
+        val updatedOrganizer = getVardaOrganizers().first()
+        assertNotNull(updatedOrganizer.uploadedAt)
     }
 
     @Test
     fun `updating modified organizer works`() {
-        jdbi.handle { h ->
-            updateOrganizer(h)
+        updateOrganizer()
 
-            val originalUploadTimestamp = getVardaOrganizers(h).first().uploadedAt
-            assertNotNull(originalUploadTimestamp)
+        val originalUploadTimestamp = getVardaOrganizers().first().uploadedAt
+        assertNotNull(originalUploadTimestamp)
 
-            h.execute("UPDATE varda_organizer SET email = 'test@test.test', updated_at = now()")
-            updateOrganizer(h)
+        db.transaction { it.execute("UPDATE varda_organizer SET email = 'test@test.test', updated_at = now()") }
+        updateOrganizer()
 
-            assertNotEquals(originalUploadTimestamp, getVardaOrganizers(h).first().uploadedAt)
-        }
+        assertNotEquals(originalUploadTimestamp, getVardaOrganizers().first().uploadedAt)
     }
 
-    private fun updateOrganizer(h: Handle) {
-        updateOrganizer(h, vardaClient, vardaOrganizerName)
+    private fun updateOrganizer() {
+        updateOrganizer(db, vardaClient, vardaOrganizerName)
     }
-}
 
-private fun getVardaOrganizers(h: Handle): List<VardaOrganizer> {
-    //language=SQL
-    val sql =
-        """
+    private fun getVardaOrganizers(): List<VardaOrganizer> = db.read {
+        //language=SQL
+        val sql =
+            """
             SELECT id, varda_organizer_id, varda_organizer_oid, url, email, phone, iban, municipality_code, created_at, updated_at, uploaded_at
             FROM varda_organizer
-        """.trimIndent()
+            """.trimIndent()
 
-    return h.createQuery(sql).mapTo<VardaOrganizer>().list()
+        it.createQuery(sql).mapTo<VardaOrganizer>().list()
+    }
 }

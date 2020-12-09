@@ -10,11 +10,11 @@ import fi.espoo.evaka.decision.DecisionStatus
 import fi.espoo.evaka.decision.DecisionType.DAYCARE
 import fi.espoo.evaka.decision.DecisionType.DAYCARE_PART_TIME
 import fi.espoo.evaka.decision.DecisionType.PRESCHOOL_DAYCARE
+import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.getEnum
 import fi.espoo.evaka.shared.db.getUUID
 import fi.espoo.evaka.varda.integration.VardaClient
 import mu.KotlinLogging
-import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.mapTo
 import org.jdbi.v3.core.statement.StatementContext
 import java.sql.ResultSet
@@ -24,88 +24,97 @@ import java.util.UUID
 
 private val logger = KotlinLogging.logger { }
 
-fun updateDecisions(h: Handle, client: VardaClient) {
-    removeDeletedDecisions(h, client)
-    sendNewDecisions(h, client)
-    sendUpdatedDecisions(h, client)
+fun updateDecisions(db: Database.Connection, client: VardaClient) {
+    removeDeletedDecisions(db, client)
+    sendNewDecisions(db, client)
+    sendUpdatedDecisions(db, client)
 }
 
-fun removeMarkedDecisionsFromVarda(h: Handle, client: VardaClient) {
-    val decisionIds: List<Long> = getDecisionsToDelete(h)
+fun removeMarkedDecisionsFromVarda(db: Database.Connection, client: VardaClient) {
+    val decisionIds: List<Long> = db.read { getDecisionsToDelete(it) }
     decisionIds.forEach { id ->
         if (client.deleteDecision(id)) {
-            softDeleteDecision(h, id)
+            db.transaction { softDeleteDecision(it, id) }
         }
     }
 }
 
-fun sendNewDecisions(h: Handle, client: VardaClient) {
-    val newDecisions = getNewDecisions(h, client.getChildUrl)
-    val newDerivedDecisions = getNewDerivedDecisions(h, client.getChildUrl)
-
+fun sendNewDecisions(db: Database.Connection, client: VardaClient) {
+    val newDecisions = db.read { getNewDecisions(it, client.getChildUrl) }
     newDecisions.forEach { (decisionId, newDecision) ->
         if (validateDecision(decisionId, newDecision)) {
             client.createDecision(newDecision)?.let { (vardaDecisionId) ->
-                insertVardaDecision(
-                    h,
-                    VardaDecisionTableRow(
-                        id = UUID.randomUUID(),
-                        vardaDecisionId = vardaDecisionId,
-                        evakaDecisionId = decisionId,
-                        evakaPlacementId = null,
-                        createdAt = Instant.now(),
-                        uploadedAt = Instant.now()
+                db.transaction {
+                    insertVardaDecision(
+                        it,
+                        VardaDecisionTableRow(
+                            id = UUID.randomUUID(),
+                            vardaDecisionId = vardaDecisionId,
+                            evakaDecisionId = decisionId,
+                            evakaPlacementId = null,
+                            createdAt = Instant.now(),
+                            uploadedAt = Instant.now()
+                        )
                     )
-                )
+                }
             }
         }
     }
 
+    val newDerivedDecisions = db.read { getNewDerivedDecisions(it, client.getChildUrl) }
     newDerivedDecisions.forEach { (placementId, newDecision) ->
         if (validateDecision(placementId, newDecision)) {
             client.createDecision(newDecision)?.let { (vardaDecisionId) ->
-                insertVardaDecision(
-                    h,
-                    VardaDecisionTableRow(
-                        id = UUID.randomUUID(),
-                        vardaDecisionId = vardaDecisionId,
-                        evakaDecisionId = null,
-                        evakaPlacementId = placementId,
-                        createdAt = Instant.now(),
-                        uploadedAt = Instant.now()
+                db.transaction {
+                    insertVardaDecision(
+                        it,
+                        VardaDecisionTableRow(
+                            id = UUID.randomUUID(),
+                            vardaDecisionId = vardaDecisionId,
+                            evakaDecisionId = null,
+                            evakaPlacementId = placementId,
+                            createdAt = Instant.now(),
+                            uploadedAt = Instant.now()
+                        )
                     )
-                )
+                }
             }
         }
     }
 }
 
-fun sendUpdatedDecisions(h: Handle, client: VardaClient) {
-    val updatedDecisions = getUpdatedDecisions(h, client.getChildUrl)
-    val updatedDerivedDecisions = getUpdatedDerivedDecisions(h, client.getChildUrl)
-    val decisionPlacementIds = h.createQuery("SELECT varda_placement_id FROM varda_placement WHERE decision_id = ANY(:decisionIds)")
-        .bind("decisionIds", (updatedDecisions.map { it.first } + updatedDerivedDecisions.map { it.first }).toTypedArray())
-        .mapTo<Long>()
-        .toList()
-    decisionPlacementIds.forEach { id ->
-        if (client.deletePlacement(id)) {
-            deletePlacement(h, id)
-        }
-    }
+fun sendUpdatedDecisions(db: Database.Connection, client: VardaClient) {
+    val updatedDecisions = db.read { getUpdatedDecisions(it, client.getChildUrl) }
+    val updatedDerivedDecisions = db.read { getUpdatedDerivedDecisions(it, client.getChildUrl) }
+    deleteDecisionPlacements(db, client, updatedDecisions.map { it.first } + updatedDerivedDecisions.map { it.first })
     (updatedDecisions + updatedDerivedDecisions).forEach { (id, vardaDecisionId, updatedDecision) ->
         if (validateDecision(id, updatedDecision)) {
             client.updateDecision(vardaDecisionId, updatedDecision)?.let {
-                updateDecisionUploadTimestamp(h, id)
+                db.transaction { updateDecisionUploadTimestamp(it, id) }
             }
         }
     }
 }
 
-fun removeDeletedDecisions(h: Handle, client: VardaClient) {
-    val removedDecisions = getRemovedDecisions(h)
+fun deleteDecisionPlacements(db: Database.Connection, client: VardaClient, decisionIds: List<UUID>) {
+    val decisionPlacementIds = db.read {
+        it.createQuery("SELECT varda_placement_id FROM varda_placement WHERE decision_id = ANY(:decisionIds)")
+            .bind("decisionIds", decisionIds.toTypedArray())
+            .mapTo<Long>()
+            .toList()
+    }
+    decisionPlacementIds.forEach { id ->
+        if (client.deletePlacement(id)) {
+            db.transaction { deletePlacement(it, id) }
+        }
+    }
+}
+
+fun removeDeletedDecisions(db: Database.Connection, client: VardaClient) {
+    val removedDecisions = db.read { getRemovedDecisions(it) }
     removedDecisions.forEach { vardaDecisionId ->
         client.deleteDecision(vardaDecisionId).let { success ->
-            if (success) deleteDecision(h, vardaDecisionId)
+            if (success) db.transaction { deleteDecision(it, vardaDecisionId) }
         }
     }
 }
@@ -195,19 +204,19 @@ JOIN LATERAL (
 ) latest_sn ON TRUE
     """.trimIndent()
 
-private fun getNewDecisions(h: Handle, getChildUrl: (Long) -> String): List<Pair<UUID, VardaDecision>> {
+private fun getNewDecisions(tx: Database.Read, getChildUrl: (Long) -> String): List<Pair<UUID, VardaDecision>> {
     val sql =
         """
 $decisionQueryBase
 WHERE vd.id IS NULL
         """.trimIndent()
 
-    return h.createQuery(sql)
+    return tx.createQuery(sql)
         .map(toVardaDecisionWithDecisionId(getChildUrl))
         .toList()
 }
 
-fun insertVardaDecision(h: Handle, decision: VardaDecisionTableRow) {
+fun insertVardaDecision(tx: Database.Transaction, decision: VardaDecisionTableRow) {
     val sql =
         """
 INSERT INTO varda_decision (
@@ -227,7 +236,7 @@ INSERT INTO varda_decision (
 )
         """.trimIndent()
 
-    h.createUpdate(sql)
+    tx.createUpdate(sql)
         .bind("id", decision.id)
         .bind("vardaDecisionId", decision.vardaDecisionId)
         .bind("evakaDecisionId", decision.evakaDecisionId)
@@ -237,21 +246,21 @@ INSERT INTO varda_decision (
         .execute()
 }
 
-private fun getUpdatedDecisions(h: Handle, getChildUrl: (Long) -> String): List<Triple<UUID, Long, VardaDecision>> {
+private fun getUpdatedDecisions(tx: Database.Read, getChildUrl: (Long) -> String): List<Triple<UUID, Long, VardaDecision>> {
     val sql =
         """
 $decisionQueryBase
 WHERE vd.uploaded_at < greatest(latest_sn.updated, d.updated, first_placement.updated, last_placement.updated)
         """.trimIndent()
 
-    return h.createQuery(sql)
+    return tx.createQuery(sql)
         .map(toVardaDecisionWithIdAndVardaId(getChildUrl))
         .toList()
 }
 
-private fun updateDecisionUploadTimestamp(h: Handle, id: UUID, uploadedAt: Instant = Instant.now()) {
+private fun updateDecisionUploadTimestamp(tx: Database.Transaction, id: UUID, uploadedAt: Instant = Instant.now()) {
     val sql = "UPDATE varda_decision SET uploaded_at = :uploadedAt WHERE id = :id"
-    h.createUpdate(sql)
+    tx.createUpdate(sql)
         .bind("id", id)
         .bind("uploadedAt", uploadedAt)
         .execute()
@@ -299,21 +308,21 @@ JOIN LATERAL (
 ) latest_sn ON true
     """.trimIndent()
 
-private fun getNewDerivedDecisions(h: Handle, getChildUrl: (Long) -> String): List<Pair<UUID, VardaDecision>> {
+private fun getNewDerivedDecisions(tx: Database.Read, getChildUrl: (Long) -> String): List<Pair<UUID, VardaDecision>> {
     val sql =
         """
 $derivedDecisionQueryBase
 WHERE vd.id IS NULL
         """.trimIndent()
 
-    return h.createQuery(sql)
+    return tx.createQuery(sql)
         .bind("types", daycarePlacementTypes)
         .map(toVardaDecisionWithDecisionId(getChildUrl))
         .toList()
 }
 
 private fun getUpdatedDerivedDecisions(
-    h: Handle,
+    tx: Database.Read,
     getChildUrl: (Long) -> String
 ): List<Triple<UUID, Long, VardaDecision>> {
     val sql =
@@ -322,13 +331,13 @@ $derivedDecisionQueryBase
 WHERE vd.uploaded_at < greatest(latest_sn.updated, p.updated)
         """.trimIndent()
 
-    return h.createQuery(sql)
+    return tx.createQuery(sql)
         .bind("types", daycarePlacementTypes)
         .map(toVardaDecisionWithIdAndVardaId(getChildUrl))
         .toList()
 }
 
-private fun getRemovedDecisions(h: Handle): List<Long> {
+private fun getRemovedDecisions(tx: Database.Read): List<Long> {
     val sql =
         """
 WITH accepted_daycare_decision AS (
@@ -340,25 +349,25 @@ WHERE vd.evaka_placement_id IS NULL
 AND d.id IS NULL
         """.trimIndent()
 
-    return h.createQuery(sql)
+    return tx.createQuery(sql)
         .mapTo(Long::class.java)
         .toList()
 }
 
-private fun deleteDecision(h: Handle, vardaDecisionId: Long) {
-    h.createUpdate("DELETE FROM varda_decision WHERE varda_decision_id = :id")
+private fun deleteDecision(tx: Database.Transaction, vardaDecisionId: Long) {
+    tx.createUpdate("DELETE FROM varda_decision WHERE varda_decision_id = :id")
         .bind("id", vardaDecisionId)
         .execute()
 }
 
-fun softDeleteDecision(h: Handle, vardaDecisionId: Long) {
-    h.createUpdate("UPDATE varda_decision SET deleted_at = NOW() WHERE varda_decision_id = :vardaDecisionId")
+fun softDeleteDecision(tx: Database.Transaction, vardaDecisionId: Long) {
+    tx.createUpdate("UPDATE varda_decision SET deleted_at = NOW() WHERE varda_decision_id = :vardaDecisionId")
         .bind("vardaDecisionId", vardaDecisionId)
         .execute()
 }
 
-fun getDecisionsToDelete(h: Handle): List<Long> {
-    return h.createQuery(
+fun getDecisionsToDelete(tx: Database.Read): List<Long> {
+    return tx.createQuery(
         // language=SQL
         """
 SELECT varda_decision_id 

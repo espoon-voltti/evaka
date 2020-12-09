@@ -17,7 +17,6 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.getUUID
 import fi.espoo.evaka.varda.integration.VardaClient
 import mu.KotlinLogging
-import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.mapTo
 import java.sql.ResultSet
 import java.time.Instant
@@ -27,77 +26,81 @@ import java.util.UUID
 private val logger = KotlinLogging.logger {}
 
 fun updateFeeData(
-    tx: Database.Transaction,
+    db: Database.Connection,
     client: VardaClient,
     mapper: ObjectMapper,
     personService: PersonService
 ) {
-    deleteEntriesFromAnnulledFeeDecision(tx.handle, client)
-    deleteEntriesFromDeletedPlacements(tx.handle, client)
-    updateEntriesFromModifiedPlacements(tx, client, mapper, personService)
-    uploadNewFeeData(tx, client, mapper, personService)
+    deleteEntriesFromAnnulledFeeDecision(db, client)
+    deleteEntriesFromDeletedPlacements(db, client)
+    updateEntriesFromModifiedPlacements(db, client, mapper, personService)
+    uploadNewFeeData(db, client, mapper, personService)
 }
 
-fun removeMarkedFeeDataFromVarda(h: Handle, client: VardaClient) {
-    val feeDataIds: List<Int> = getFeeDataToDelete(h)
+fun removeMarkedFeeDataFromVarda(db: Database.Connection, client: VardaClient) {
+    val feeDataIds: List<Int> = db.read { getFeeDataToDelete(it) }
     feeDataIds.forEach { id ->
         if (client.deleteFeeData(id)) {
-            softDeleteFeeData(h, id)
+            db.transaction { softDeleteFeeData(it, id) }
         }
     }
 }
 
-fun deleteEntriesFromAnnulledFeeDecision(h: Handle, client: VardaClient) {
-    getAnnulledFeeDecisions(h)
+fun deleteEntriesFromAnnulledFeeDecision(db: Database.Connection, client: VardaClient) {
+    getAnnulledFeeDecisions(db)
         .forEach { vardaId ->
             if (client.deleteFeeData(vardaId)) {
-                deleteVardaFeeDecision(vardaId, h)
+                deleteVardaFeeDecision(db, vardaId)
             }
         }
 }
 
-fun deleteEntriesFromDeletedPlacements(h: Handle, client: VardaClient) {
+fun deleteEntriesFromDeletedPlacements(db: Database.Connection, client: VardaClient) {
     // also removes legacy fee data entries since their placementId is null
-    getDeletedPlacements(h)
+    getDeletedPlacements(db)
         .forEach { vardaId ->
             if (client.deleteFeeData(vardaId)) {
-                deleteVardaFeeDecision(vardaId, h)
+                deleteVardaFeeDecision(db, vardaId)
             }
         }
 }
 
-fun updateEntriesFromModifiedPlacements(tx: Database.Transaction, client: VardaClient, mapper: ObjectMapper, personService: PersonService) {
-    getModifiedFeeData(tx.handle, mapper)
+fun updateEntriesFromModifiedPlacements(db: Database.Connection, client: VardaClient, mapper: ObjectMapper, personService: PersonService) {
+    getModifiedFeeData(db, mapper)
         .forEach { (vardaId, feeDataBase) ->
-            val feeData = baseToFeeData(tx, feeDataBase, personService, client)
-            if (feeData != null && client.updateFeeData(vardaId, feeData)) {
-                insertFeeDataUpload(tx.handle, feeDataBase, vardaId)
+            db.transaction {
+                val feeData = baseToFeeData(it, feeDataBase, personService, client)
+                if (feeData != null && client.updateFeeData(vardaId, feeData)) {
+                    insertFeeDataUpload(it, feeDataBase, vardaId)
+                }
             }
         }
 }
 
 fun uploadNewFeeData(
-    tx: Database.Transaction,
+    db: Database.Connection,
     client: VardaClient,
     mapper: ObjectMapper,
     personService: PersonService
 ) {
-    val feeData = getStaleFeeData(tx.handle, mapper)
+    val feeData = getStaleFeeData(db, mapper)
     feeData.forEach { feeDataBase ->
-        val newFeeData = baseToFeeData(tx, feeDataBase, personService, client)
-        if (newFeeData != null) {
-            val response = client.createFeeData(newFeeData)
-            if (response != null) {
-                insertFeeDataUpload(tx.handle, feeDataBase, response.vardaId)
+        db.transaction {
+            val newFeeData = baseToFeeData(it, feeDataBase, personService, client)
+            if (newFeeData != null) {
+                val response = client.createFeeData(newFeeData)
+                if (response != null) {
+                    insertFeeDataUpload(it, feeDataBase, response.vardaId)
+                }
+            } else {
+                logger.info { "Not sending Varda fee data because child has no guardians in VTJ (child: ${feeDataBase.evakaChildId})" }
             }
-        } else {
-            logger.info { "Not sending Varda fee data because child has no guardians in VTJ (child: ${feeDataBase.evakaChildId})" }
         }
     }
 }
 
-fun getFeeDataToDelete(h: Handle): List<Int> {
-    return h.createQuery(
+fun getFeeDataToDelete(tx: Database.Read): List<Int> {
+    return tx.createQuery(
         // language=SQL
         """
 SELECT varda_fee_data_id 
@@ -110,14 +113,14 @@ AND deleted_at IS NULL
         .toList()
 }
 
-fun softDeleteFeeData(h: Handle, vardaFeeDataId: Int) {
-    h.createUpdate("UPDATE varda_fee_data SET deleted_at = NOW() WHERE varda_fee_data_id = :vardaFeeDataId")
+fun softDeleteFeeData(tx: Database.Transaction, vardaFeeDataId: Int) {
+    tx.createUpdate("UPDATE varda_fee_data SET deleted_at = NOW() WHERE varda_fee_data_id = :vardaFeeDataId")
         .bind("vardaFeeDataId", vardaFeeDataId)
         .execute()
 }
 
 private fun getStaleFeeData(
-    h: Handle,
+    db: Database.Connection,
     mapper: ObjectMapper
 ): List<VardaFeeDataBase> {
     val placementTypes = listOf(PlacementType.DAYCARE, PlacementType.FIVE_YEARS_OLD_DAYCARE, PlacementType.PRESCHOOL_WITH_DAYCARE, PlacementType.PREPARATORY_WITH_DAYCARE).toTypedArray()
@@ -129,15 +132,17 @@ private fun getStaleFeeData(
             AND fdp.placement_type = ANY(:placementTypes)
         """.trimIndent()
 
-    return h
-        .createQuery(sql)
-        .bind("sentStatus", FeeDecisionStatus.SENT)
-        .bind("placementTypes", placementTypes)
-        .map { rs, _ -> toVardaFeeDataBase(rs, mapper) }
-        .toList()
+    return db.read {
+        it
+            .createQuery(sql)
+            .bind("sentStatus", FeeDecisionStatus.SENT)
+            .bind("placementTypes", placementTypes)
+            .map { rs, _ -> toVardaFeeDataBase(rs, mapper) }
+            .toList()
+    }
 }
 
-private fun insertFeeDataUpload(h: Handle, feeDataBase: VardaFeeDataBase, vardaId: Long) {
+private fun insertFeeDataUpload(tx: Database.Transaction, feeDataBase: VardaFeeDataBase, vardaId: Long) {
     // language=SQL
     val sql =
         """
@@ -147,7 +152,7 @@ private fun insertFeeDataUpload(h: Handle, feeDataBase: VardaFeeDataBase, vardaI
         DO UPDATE SET uploaded_at = :checkTimestamp
         """.trimIndent()
 
-    h.createUpdate(sql)
+    tx.handle.createUpdate(sql)
         .bind("decisionId", feeDataBase.evakaFeeDecisionId)
         .bind("placementId", feeDataBase.placementId)
         .bind("vardaId", vardaId)
@@ -155,7 +160,7 @@ private fun insertFeeDataUpload(h: Handle, feeDataBase: VardaFeeDataBase, vardaI
         .execute()
 }
 
-private fun getAnnulledFeeDecisions(h: Handle): List<Int> {
+private fun getAnnulledFeeDecisions(db: Database.Connection): List<Int> {
     // language=SQL
     val sql =
         """
@@ -166,13 +171,14 @@ private fun getAnnulledFeeDecisions(h: Handle): List<Int> {
             AND varda_fee_data.id IS NOT NULL;
         """.trimIndent()
 
-    return h
-        .createQuery(sql)
-        .bind("annulledStatus", FeeDecisionStatus.ANNULLED)
-        .mapTo<Int>().list()
+    return db.read {
+        it.createQuery(sql)
+            .bind("annulledStatus", FeeDecisionStatus.ANNULLED)
+            .mapTo<Int>().list()
+    }
 }
 
-private fun deleteVardaFeeDecision(vardaId: Int, h: Handle) {
+private fun deleteVardaFeeDecision(db: Database.Connection, vardaId: Int) {
     // language=SQL
     val sql =
         """
@@ -180,12 +186,14 @@ private fun deleteVardaFeeDecision(vardaId: Int, h: Handle) {
         WHERE varda_fee_data_id = :vardaId
         """.trimIndent()
 
-    h.createUpdate(sql)
-        .bind("vardaId", vardaId)
-        .execute()
+    db.transaction {
+        it.createUpdate(sql)
+            .bind("vardaId", vardaId)
+            .execute()
+    }
 }
 
-private fun getDeletedPlacements(h: Handle): List<Int> {
+private fun getDeletedPlacements(db: Database.Connection): List<Int> {
     // language=SQL
     val sql =
         """
@@ -194,12 +202,14 @@ private fun getDeletedPlacements(h: Handle): List<Int> {
             WHERE evaka_placement_id IS NULL
         """.trimIndent()
 
-    return h.createQuery(sql)
-        .mapTo<Int>()
-        .list()
+    return db.read {
+        it.createQuery(sql)
+            .mapTo<Int>()
+            .list()
+    }
 }
 
-private fun getModifiedFeeData(h: Handle, mapper: ObjectMapper): List<Pair<Long, VardaFeeDataBase>> {
+private fun getModifiedFeeData(db: Database.Connection, mapper: ObjectMapper): List<Pair<Long, VardaFeeDataBase>> {
     // language=SQL
     val sql =
         """
@@ -208,11 +218,12 @@ private fun getModifiedFeeData(h: Handle, mapper: ObjectMapper): List<Pair<Long,
         AND vfd.uploaded_at < p.updated
         """.trimIndent()
 
-    return h
-        .createQuery(sql)
-        .bind("sentStatus", FeeDecisionStatus.SENT)
-        .map { rs, _ -> toVardaFeeDataBaseWithVardaId(rs, mapper) }
-        .toList()
+    return db.read {
+        it.createQuery(sql)
+            .bind("sentStatus", FeeDecisionStatus.SENT)
+            .map { rs, _ -> toVardaFeeDataBaseWithVardaId(rs, mapper) }
+            .toList()
+    }
 }
 
 private val feeDataQueryBase =

@@ -8,7 +8,7 @@ import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.insertTestVardaOrganizer
 import fi.espoo.evaka.resetDatabase
-import fi.espoo.evaka.shared.db.handle
+import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.insertTestCareArea
@@ -18,7 +18,6 @@ import fi.espoo.evaka.testAreaId
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDaycare2
 import fi.espoo.evaka.testPurchasedDaycare
-import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.mapTo
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotEquals
@@ -30,66 +29,71 @@ import java.util.UUID
 class VardaUnitIntegrationTest : FullApplicationTest() {
     @BeforeEach
     fun beforeEach() {
-        jdbi.handle { h ->
-            resetDatabase(h)
-            h.insertTestCareArea(DevCareArea(id = testAreaId, name = testDaycare.areaName, areaCode = testAreaCode))
-            h.insertTestDaycare(DevDaycare(areaId = testAreaId, id = testDaycare.id, name = testDaycare.name))
-            h.insertTestDaycare(DevDaycare(areaId = testAreaId, id = testDaycare2.id, name = testDaycare2.name))
-            insertTestVardaOrganizer(h)
+        db.transaction { tx ->
+            tx.resetDatabase()
+            tx.handle.insertTestCareArea(DevCareArea(id = testAreaId, name = testDaycare.areaName, areaCode = testAreaCode))
+            tx.handle.insertTestDaycare(DevDaycare(areaId = testAreaId, id = testDaycare.id, name = testDaycare.name))
+            tx.handle.insertTestDaycare(DevDaycare(areaId = testAreaId, id = testDaycare2.id, name = testDaycare2.name))
+            insertTestVardaOrganizer(tx.handle)
         }
     }
 
     @Test
     fun `uploading municipal units works`() {
-        jdbi.handle { h ->
-            updateUnits(h)
-            assertEquals(2, getVardaUnits(h).size)
-        }
+        updateUnits()
+        assertEquals(2, getVardaUnits(db).size)
     }
 
     @Test
     fun `not uploading purchased units works`() {
-        jdbi.handle { h ->
-            updateUnits(h)
-            assertEquals(2, getVardaUnits(h).size)
+        updateUnits()
+        assertEquals(2, getVardaUnits(db).size)
 
-            h.insertTestDaycare(DevDaycare(areaId = testAreaId, id = testPurchasedDaycare.id, name = testPurchasedDaycare.name, providerType = ProviderType.PURCHASED))
-            updateUnits(h)
-
-            assertEquals(2, getVardaUnits(h).size)
+        db.transaction {
+            it.handle.insertTestDaycare(
+                DevDaycare(
+                    areaId = testAreaId,
+                    id = testPurchasedDaycare.id,
+                    name = testPurchasedDaycare.name,
+                    providerType = ProviderType.PURCHASED
+                )
+            )
         }
+        updateUnits()
+
+        assertEquals(2, getVardaUnits(db).size)
     }
 
     @Test
     fun `updating stale unit works`() {
-        jdbi.handle { h ->
-            updateUnits(h)
-            val unitToStale = getVardaUnits(h)[0]
-            val daycareId = unitToStale.evakaDaycareId
-            val vardaId = unitToStale.vardaUnitId
-            val uploadedAt = unitToStale.uploadedAt
-            val createdAt = unitToStale.createdAt
+        updateUnits()
+        val unitToStale = getVardaUnits(db)[0]
+        val daycareId = unitToStale.evakaDaycareId
+        val vardaId = unitToStale.vardaUnitId
+        val uploadedAt = unitToStale.uploadedAt
+        val createdAt = unitToStale.createdAt
 
-            h.createUpdate("UPDATE daycare SET street_address = 'new address' WHERE id = :daycareId")
+        db.transaction {
+            it.createUpdate("UPDATE daycare SET street_address = 'new address' WHERE id = :daycareId")
                 .bind("daycareId", daycareId)
                 .execute()
-
-            updateUnits(h)
-
-            val updatedUnit = getVardaUnits(h).toList().find { it.evakaDaycareId == daycareId }!!
-            assertEquals(vardaId, updatedUnit.vardaUnitId)
-            assertEquals(createdAt, updatedUnit.createdAt)
-            assertNotEquals(uploadedAt, updatedUnit.uploadedAt)
         }
+
+        updateUnits()
+
+        val updatedUnit = getVardaUnits(db).toList().find { it.evakaDaycareId == daycareId }!!
+        assertEquals(vardaId, updatedUnit.vardaUnitId)
+        assertEquals(createdAt, updatedUnit.createdAt)
+        assertNotEquals(uploadedAt, updatedUnit.uploadedAt)
     }
 
-    private fun updateUnits(h: Handle) {
-        updateUnits(h, vardaClient, vardaOrganizerName)
+    private fun updateUnits() {
+        updateUnits(db, vardaClient, vardaOrganizerName)
     }
 }
 
-fun getVardaUnits(h: Handle): List<VardaUnitRow> {
-    return h.createQuery("SELECT * FROM varda_unit")
+fun getVardaUnits(db: Database.Connection): List<VardaUnitRow> = db.read {
+    it.createQuery("SELECT * FROM varda_unit")
         .mapTo<VardaUnitRow>()
         .toList()
 }
