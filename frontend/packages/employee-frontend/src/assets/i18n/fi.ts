@@ -73,7 +73,8 @@ export const fi = {
       DAYCARE: 'Varhaiskasvatus',
       PRESCHOOL_DAYCARE: 'Liittyvä varhaiskasvatus',
       PREPARATORY_EDUCATION: 'Valmistava esiopetus',
-      PREPARATORY_DAYCARE: 'Liittyvä varhaiskasvatus'
+      PREPARATORY_DAYCARE: 'Liittyvä varhaiskasvatus',
+      DAYCARE_5YO_FREE: '5v maksuton varhaiskasvatus'
     },
     form: {
       name: 'Nimi',
@@ -1715,7 +1716,8 @@ export const fi = {
     searchPlaceholder: 'Etsi lapsen nimellä',
     noAbsences: 'Ei poissaoloja',
     missingFrom: 'Poissa seuraavasta toimintamuodosta',
-    missingFromPlural: 'Poissa seuraavista toimintamuodoista'
+    missingFromPlural: 'Poissa seuraavista toimintamuodoista',
+    timeError: 'Virheellinen aika'
   },
   placementDraft: {
     preschoolDaycare: 'Liittyvä varhaiskasvatus',
