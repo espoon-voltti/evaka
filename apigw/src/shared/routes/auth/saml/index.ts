@@ -66,7 +66,6 @@ function createLoginHandler({
       strategyName,
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (err: any, user: SamlUser | undefined) => {
-        console.log('DDEBUG passport.authenticate login', err, user)
         if (err || !user) {
           const description =
             parseDescriptionFromSamlError(err) || 'Could not parse SAML error.'

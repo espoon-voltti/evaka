@@ -7,7 +7,7 @@ import { SamlUser } from '../routes/auth/saml/types'
 import { getOrCreateEmployee } from '../service-client'
 
 const host = 'http://localhost:9093'
-const keycloackSamlCallbackUrl = `${host}/api/internal/auth/saml/login/callback`
+const keycloackSamlCallbackUrl = `${host}/api/internal/auth/evaka/login/callback`
 const keycloakSamlIssuer = 'evaka'
 
 // The magic url

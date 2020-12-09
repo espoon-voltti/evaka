@@ -11,7 +11,6 @@ import { cookieSecret, enableDevApi } from '../shared/config'
 import { errorHandler } from '../shared/middleware/error-handler'
 import csp from '../shared/routes/csp'
 import { requireAuthentication } from '../shared/auth'
-import { createAuthEndpoints } from '../shared/routes/auth/espoo-ad'
 import session, { refreshLogoutToken } from '../shared/session'
 import passport from 'passport'
 import { csrf, csrfCookie } from '../shared/middleware/csrf'
@@ -24,10 +23,9 @@ import mobileDeviceSession, {
   refreshMobileSession
 } from './mobile-device-session'
 import authStatus from './routes/auth-status'
-import { createKeycloakAuthEndpoints } from '../shared/routes/auth/keycloak-poc'
 import createSamlRouter from '../shared/routes/auth/saml'
-import createEspooAdStrategy from '../shared/auth/espoo-ad-saml'
-import { SamlEndpointConfig } from '../shared/routes/auth/saml/types'
+import createEspooAdSamlStrategy from '../shared/auth/espoo-ad-saml'
+import createEvakaSamlStrategy from '../shared/auth/keycloak-saml'
 
 const app = express()
 trustReverseProxy(app)
@@ -67,12 +65,18 @@ function internalApiRouter() {
   router.use(
     createSamlRouter({
       strategyName: 'ead',
-      strategy: createEspooAdStrategy(),
+      strategy: createEspooAdSamlStrategy(),
       sessionType: 'employee'
     })
   )
 
-  router.use(createKeycloakAuthEndpoints('employee'))
+  router.use(
+    createSamlRouter({
+      strategyName: 'evaka',
+      strategy: createEvakaSamlStrategy(),
+      sessionType: 'employee'
+    })
+  )
 
   if (enableDevApi) {
     router.use(

@@ -72,7 +72,7 @@ export class GatewayTester {
     if (this.sessionType === 'employee') {
       this.nockScope.post('/system/employee-identity').reply(200, user)
       await this.client.post(
-        '/api/internal/auth/saml/login/callback',
+        '/api/internal/auth/ead/login/callback',
         { preset: 'dummy' },
         {
           maxRedirects: 0,
@@ -83,7 +83,7 @@ export class GatewayTester {
     } else {
       this.nockScope.post('/system/person-identity').reply(200, user)
       await this.client.post(
-        '/api/application/auth/saml/login/callback',
+        '/api/application/ead/saml/login/callback',
         { preset: 'dummy' },
         {
           maxRedirects: 0,
