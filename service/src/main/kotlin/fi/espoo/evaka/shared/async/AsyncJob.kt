@@ -29,7 +29,8 @@ enum class AsyncJobType {
     DVV_MODIFICATIONS_REFRESH,
     UPLOAD_TO_KOSKI,
     SEND_APPLICATION_EMAIL,
-    GARBAGE_COLLECT_PAIRING
+    GARBAGE_COLLECT_PAIRING,
+    VARDA_UPDATE
 }
 
 interface AsyncJobPayload {
@@ -126,6 +127,11 @@ data class InitializeFamilyFromApplication(val applicationId: UUID, override val
 
 data class VTJRefresh(val personId: UUID, val requestingUserId: UUID) : AsyncJobPayload {
     override val asyncJobType = AsyncJobType.VTJ_REFRESH
+    override val user: AuthenticatedUser? = null
+}
+
+class VardaUpdate : AsyncJobPayload {
+    override val asyncJobType = AsyncJobType.VARDA_UPDATE
     override val user: AuthenticatedUser? = null
 }
 
