@@ -73,8 +73,13 @@ export default React.memo(function AttendanceChildDeparted({
         </FlexLabel>
       </FixedSpaceColumn>
 
-      <Gap size={'L'} />
-      <Absences attendanceChild={child} />
+      {child.absences.length > 0 && (
+        <Fragment>
+          <Gap size={'L'} />
+          <Absences attendanceChild={child} />
+        </Fragment>
+      )}
+
       <Gap size={'m'} />
       <InlineWideAsyncButton
         text={i18n.attendances.actions.returnToPresent}

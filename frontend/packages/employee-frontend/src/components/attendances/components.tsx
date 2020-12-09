@@ -15,7 +15,7 @@ import { DefaultMargins } from '~components/shared/layout/white-space'
 import { Label } from '~components/shared/Typography'
 import { faExclamation } from '~icon-set'
 import { useTranslation } from '~state/i18n'
-import { CareType } from '~types/absence'
+import { CareType, formatCareType } from '~types/absence'
 
 export const CustomAsyncButton = styled(AsyncButton)<CustomButtonProps>`
   @media screen and (max-width: 1023px) {
@@ -140,9 +140,6 @@ interface AbsentFromProps {
 export function AbsentFrom({ child, absentFrom }: AbsentFromProps) {
   const { i18n } = useTranslation()
 
-  const isPreparatory = child.placementType === 'PREPARATORY'
-  const isPreparatoryDaycere = child.placementType === 'PREPARATORY_DAYCARE'
-
   return (
     <AbsentFromWrapper>
       <RoundIcon
@@ -154,16 +151,12 @@ export function AbsentFrom({ child, absentFrom }: AbsentFromProps) {
         {absentFrom.length > 1
           ? i18n.attendances.missingFromPlural
           : i18n.attendances.missingFrom}
-        :
-        {absentFrom.length === 1 && isPreparatory ? (
-          <div>{i18n.common.types.PREPARATORY_EDUCATION}</div>
-        ) : absentFrom.length === 1 && isPreparatoryDaycere ? (
-          <div>{i18n.common.types.PREPARATORY_DAYCARE}</div>
-        ) : (
-          absentFrom.map((careType) => (
-            <div key={careType}>{i18n.absences.careTypes[careType]}</div>
-          ))
-        )}
+        :{' '}
+        {absentFrom.map((careType) => (
+          <div key={careType}>
+            {formatCareType(careType, child.placementType, i18n)}
+          </div>
+        ))}
       </InfoText>
     </AbsentFromWrapper>
   )
