@@ -34,6 +34,7 @@ export interface AttendanceChild {
   firstName: string
   lastName: string
   groupId: UUID
+  backup: boolean
   status: AttendanceStatus
   placementType: PlacementType
   attendance: Attendance | null
@@ -47,7 +48,6 @@ interface Attendance {
 }
 
 interface Absence {
-  absenceType: AbsenceType
   careType: CareType
   childId: UUID
   id: UUID

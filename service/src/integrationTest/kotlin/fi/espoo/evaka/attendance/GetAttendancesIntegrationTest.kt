@@ -16,15 +16,20 @@ import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.createMobileDeviceToUnit
 import fi.espoo.evaka.shared.dev.insertTestAbsence
+import fi.espoo.evaka.shared.dev.insertTestBackUpCare
 import fi.espoo.evaka.shared.dev.insertTestChildAttendance
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroupPlacement
 import fi.espoo.evaka.shared.dev.insertTestPlacement
+import fi.espoo.evaka.shared.utils.zoneId
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
+import fi.espoo.evaka.testDaycare2
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
@@ -35,6 +40,7 @@ class GetAttendancesIntegrationTest : FullApplicationTest() {
     private val userId = UUID.randomUUID()
     private val mobileUser = AuthenticatedUser(userId, emptySet())
     private val groupId = UUID.randomUUID()
+    private val groupId2 = UUID.randomUUID()
     private val groupName = "Testaajat"
     private val daycarePlacementId = UUID.randomUUID()
     private val placementStart = LocalDate.now().minusDays(30)
@@ -46,6 +52,7 @@ class GetAttendancesIntegrationTest : FullApplicationTest() {
             tx.resetDatabase()
             insertGeneralTestFixtures(tx.handle)
             tx.handle.insertTestDaycareGroup(DevDaycareGroup(id = groupId, daycareId = testDaycare.id, name = groupName))
+            tx.handle.insertTestDaycareGroup(DevDaycareGroup(id = groupId2, daycareId = testDaycare2.id, name = groupName))
             insertTestPlacement(
                 h = tx.handle,
                 id = daycarePlacementId,
@@ -90,6 +97,42 @@ class GetAttendancesIntegrationTest : FullApplicationTest() {
         assertEquals(AttendanceStatus.COMING, child.status)
         assertNull(child.attendance)
         assertEquals(0, child.absences.size)
+        assertFalse(child.backup)
+    }
+
+    @Test
+    fun `child is in backup care in another unit`() {
+        db.transaction {
+            insertTestBackUpCare(
+                h = it.handle,
+                childId = testChild_1.id,
+                unitId = testDaycare2.id,
+                groupId = groupId2,
+                startDate = LocalDate.now(zoneId),
+                endDate = LocalDate.now(zoneId)
+            )
+        }
+        val response = fetchAttendances()
+        assertEquals(0, response.children.size)
+    }
+
+    @Test
+    fun `child is in backup care in same another unit`() {
+        db.transaction {
+            insertTestBackUpCare(
+                h = it.handle,
+                childId = testChild_1.id,
+                unitId = testDaycare.id,
+                groupId = groupId,
+                startDate = LocalDate.now(zoneId),
+                endDate = LocalDate.now(zoneId)
+            )
+        }
+        val child = expectOneChild()
+        assertEquals(AttendanceStatus.COMING, child.status)
+        assertNull(child.attendance)
+        assertEquals(0, child.absences.size)
+        assertTrue(child.backup)
     }
 
     @Test
@@ -157,8 +200,8 @@ class GetAttendancesIntegrationTest : FullApplicationTest() {
         assertEquals(AttendanceStatus.ABSENT, child.status)
         assertNull(child.attendance)
         assertEquals(2, child.absences.size)
-        assertEquals(1, child.absences.filter { it.careType == CareType.PRESCHOOL && it.absenceType == AbsenceType.SICKLEAVE }.size)
-        assertEquals(1, child.absences.filter { it.careType == CareType.PRESCHOOL_DAYCARE && it.absenceType == AbsenceType.SICKLEAVE }.size)
+        assertTrue(child.absences.any { it.careType == CareType.PRESCHOOL })
+        assertTrue(child.absences.any { it.careType == CareType.PRESCHOOL_DAYCARE })
     }
 
     private fun fetchAttendances(): AttendanceResponse {

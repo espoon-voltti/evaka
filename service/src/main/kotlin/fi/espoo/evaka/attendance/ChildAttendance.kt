@@ -4,7 +4,6 @@
 
 package fi.espoo.evaka.attendance
 
-import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.daycare.service.CareType
 import fi.espoo.evaka.placement.PlacementType
 import java.time.Instant
@@ -31,7 +30,8 @@ open class ChildBasics(
     val firstName: String,
     val lastName: String,
     val placementType: PlacementType,
-    val groupId: UUID
+    val groupId: UUID,
+    val backup: Boolean
 )
 
 class Child(
@@ -40,10 +40,11 @@ class Child(
     lastName: String,
     placementType: PlacementType,
     groupId: UUID,
+    backup: Boolean,
     val status: AttendanceStatus,
     val attendance: ChildAttendance?,
     val absences: List<ChildAbsence>
-) : ChildBasics(id, firstName, lastName, placementType, groupId)
+) : ChildBasics(id, firstName, lastName, placementType, groupId, backup)
 
 enum class AttendanceStatus {
     COMING, PRESENT, DEPARTED, ABSENT
@@ -60,6 +61,5 @@ data class ChildAttendance(
 data class ChildAbsence(
     val id: UUID,
     val childId: UUID,
-    val absenceType: AbsenceType,
     val careType: CareType
 )

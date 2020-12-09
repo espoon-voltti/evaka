@@ -240,7 +240,6 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
         assertEquals(departed, LocalTime.ofInstant(child.attendance!!.departed, zoneId))
         assertEquals(1, child.absences.size)
         assertEquals(CareType.PRESCHOOL_DAYCARE, child.absences.first().careType)
-        assertEquals(absenceType, child.absences.first().absenceType)
     }
 
     @Test
@@ -257,7 +256,6 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
         assertEquals(departed, LocalTime.ofInstant(child.attendance!!.departed, zoneId))
         assertEquals(1, child.absences.size)
         assertEquals(CareType.PRESCHOOL, child.absences.first().careType)
-        assertEquals(absenceType, child.absences.first().absenceType)
     }
 
     @Test
@@ -339,7 +337,7 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
 
         assertEquals(AttendanceStatus.ABSENT, child.status)
         assertEquals(1, child.absences.size)
-        assertEquals(AbsenceType.SICKLEAVE, child.absences.first { it.careType == CareType.PRESCHOOL }.absenceType)
+        assertTrue(child.absences.any { it.careType == CareType.PRESCHOOL })
     }
 
     @Test
@@ -351,8 +349,8 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
 
         assertEquals(AttendanceStatus.ABSENT, child.status)
         assertEquals(2, child.absences.size)
-        assertEquals(AbsenceType.SICKLEAVE, child.absences.first { it.careType == CareType.PRESCHOOL }.absenceType)
-        assertEquals(AbsenceType.SICKLEAVE, child.absences.first { it.careType == CareType.PRESCHOOL_DAYCARE }.absenceType)
+        assertTrue(child.absences.any { it.careType == CareType.PRESCHOOL })
+        assertTrue(child.absences.any { it.careType == CareType.PRESCHOOL_DAYCARE })
     }
 
     @Test
@@ -364,7 +362,7 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
 
         assertEquals(AttendanceStatus.ABSENT, child.status)
         assertEquals(1, child.absences.size)
-        assertEquals(AbsenceType.SICKLEAVE, child.absences.first { it.careType == CareType.PRESCHOOL }.absenceType)
+        assertTrue(child.absences.any { it.careType == CareType.PRESCHOOL })
     }
 
     @Test
@@ -376,8 +374,8 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
 
         assertEquals(AttendanceStatus.ABSENT, child.status)
         assertEquals(2, child.absences.size)
-        assertEquals(AbsenceType.SICKLEAVE, child.absences.first { it.careType == CareType.PRESCHOOL }.absenceType)
-        assertEquals(AbsenceType.SICKLEAVE, child.absences.first { it.careType == CareType.PRESCHOOL_DAYCARE }.absenceType)
+        assertTrue(child.absences.any { it.careType == CareType.PRESCHOOL })
+        assertTrue(child.absences.any { it.careType == CareType.PRESCHOOL_DAYCARE })
     }
 
     @Test
@@ -389,7 +387,7 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
 
         assertEquals(AttendanceStatus.ABSENT, child.status)
         assertEquals(1, child.absences.size)
-        assertEquals(AbsenceType.SICKLEAVE, child.absences.first { it.careType == CareType.DAYCARE }.absenceType)
+        assertTrue(child.absences.any { it.careType == CareType.DAYCARE })
     }
 
     @Test
@@ -401,7 +399,7 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
 
         assertEquals(AttendanceStatus.ABSENT, child.status)
         assertEquals(1, child.absences.size)
-        assertEquals(AbsenceType.SICKLEAVE, child.absences.first { it.careType == CareType.DAYCARE }.absenceType)
+        assertTrue(child.absences.any { it.careType == CareType.DAYCARE })
     }
 
     @Test
@@ -413,7 +411,7 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest() {
 
         assertEquals(AttendanceStatus.ABSENT, child.status)
         assertEquals(1, child.absences.size)
-        assertEquals(AbsenceType.SICKLEAVE, child.absences.first { it.careType == CareType.CLUB }.absenceType)
+        assertTrue(child.absences.any { it.careType == CareType.CLUB })
     }
 
     @Test

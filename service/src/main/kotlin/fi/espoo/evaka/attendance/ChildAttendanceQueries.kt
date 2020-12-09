@@ -124,11 +124,28 @@ fun Database.Read.fetchChildrenBasics(unitId: UUID): List<ChildBasics> {
             ch.first_name,
             ch.last_name,
             gp.daycare_group_id as group_id,
-            p.type as placement_type
+            p.type as placement_type,
+            false AS backup
         FROM daycare_group_placement gp
         JOIN placement p ON p.id = gp.daycare_placement_id
         JOIN person ch ON ch.id = p.child_id
-        WHERE p.unit_id = :unitId AND daterange(gp.start_date, gp.end_date, '[]') @> :today
+        WHERE p.unit_id = :unitId AND daterange(gp.start_date, gp.end_date, '[]') @> :today AND NOT EXISTS (
+            SELECT 1 FROM backup_care bc WHERE bc.child_id = p.child_id AND daterange(bc.start_date, bc.end_date, '[]') @> :today
+        )
+        
+        UNION ALL 
+        
+        SELECT 
+            ch.id,
+            ch.first_name,
+            ch.last_name,
+            bc.group_id,
+            p.type as placement_type,
+            true AS backup
+        FROM backup_care bc
+        JOIN placement p ON p.child_id = bc.child_id AND daterange(p.start_date, p.end_date, '[]') @> :today
+        JOIN person ch ON ch.id = p.child_id
+        WHERE bc.unit_id = :unitId AND bc.group_id IS NOT NULL AND daterange(bc.start_date, bc.end_date, '[]') @> :today
         """.trimIndent()
 
     return createQuery(sql)
@@ -137,6 +154,23 @@ fun Database.Read.fetchChildrenBasics(unitId: UUID): List<ChildBasics> {
         .mapTo<ChildBasics>()
         .list()
 }
+
+// language=sql
+private val placedChildrenSql =
+    """
+    SELECT p.child_id
+    FROM placement p
+    WHERE p.unit_id = :unitId AND daterange(p.start_date, p.end_date, '[]') @> :today AND NOT EXISTS (
+        SELECT 1 FROM backup_care bc WHERE bc.child_id = p.child_id AND daterange(bc.start_date, bc.end_date, '[]') @> :today
+    )
+    
+    UNION ALL
+    
+    SELECT bc.child_id
+    FROM backup_care bc
+    JOIN placement p ON p.child_id = bc.child_id AND daterange(p.start_date, p.end_date, '[]') @> :today
+    WHERE bc.unit_id = :unitId AND daterange(bc.start_date, bc.end_date, '[]') @> :today    
+    """.trimIndent()
 
 fun Database.Read.fetchChildrenAttendances(unitId: UUID): List<ChildAttendance> {
     // language=sql
@@ -149,8 +183,7 @@ fun Database.Read.fetchChildrenAttendances(unitId: UUID): List<ChildAttendance> 
             ca.arrived,
             ca.departed
         FROM child_attendance ca
-        JOIN placement p ON ca.child_id = p.child_id AND daterange(p.start_date, p.end_date, '[]') @> :today
-        WHERE p.unit_id = :unitId AND ca.departed IS NULL OR ca.departed::date = :today
+        WHERE (ca.departed IS NULL OR ca.departed::date = :today) AND ca.child_id IN ($placedChildrenSql)
         """.trimIndent()
 
     return createQuery(sql)
@@ -167,11 +200,9 @@ fun Database.Read.fetchChildrenAbsences(unitId: UUID): List<ChildAbsence> {
         SELECT 
             ab.id,
             ab.child_id,
-            ab.absence_type,
             ab.care_type
         FROM absence ab
-        JOIN placement p ON ab.child_id = p.child_id AND daterange(p.start_date, p.end_date, '[]') @> :today
-        WHERE p.unit_id = :unitId AND ab.date = :today AND ab.absence_type != 'PRESENCE'
+        WHERE ab.date = :today AND ab.absence_type != 'PRESENCE' AND ab.child_id IN ($placedChildrenSql)
         """.trimIndent()
 
     return createQuery(sql)
