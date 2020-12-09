@@ -28,10 +28,21 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
+import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.ZonedDateTime
 import java.util.UUID
+
+val preschoolStart: LocalTime = LocalTime.of(9, 0)
+val preschoolEnd: LocalTime = LocalTime.of(13, 0)
+val preschoolMinimumDuration: Duration = Duration.ofHours(1)
+
+val preparatoryStart: LocalTime = LocalTime.of(9, 0)
+val preparatoryEnd: LocalTime = LocalTime.of(14, 0)
+val preparatoryMinimumDuration: Duration = Duration.ofHours(1)
+
+val connectedDaycareBuffer: Duration = Duration.ofMinutes(15)
 
 @RestController
 @RequestMapping("/attendances")
@@ -60,33 +71,6 @@ class ChildAttendanceController(
         }.let { ResponseEntity.ok(it) }
     }
 
-    data class ArrivalInfoResponse(
-        val absentFromPreschool: Boolean
-    )
-    @GetMapping("/units/{unitId}/children/{childId}/arrival")
-    fun getChildArrival(
-        db: Database.Connection,
-        user: AuthenticatedUser,
-        @PathVariable unitId: UUID,
-        @PathVariable childId: UUID,
-        @RequestParam @DateTimeFormat(pattern = "HH:mm") time: LocalTime
-    ): ResponseEntity<ArrivalInfoResponse> {
-        Audit.ChildAttendancesArrivalRead.log(targetId = childId)
-        acl.getRolesForUnit(user, unitId).requireOneOfRoles(*authorizedRoles)
-
-        return db.read { tx ->
-            tx.assertChildPlacement(childId, unitId)
-
-            val attendance = tx.getChildCurrentDayAttendance(childId, unitId)
-            if (attendance != null)
-                throw Conflict("Cannot arrive, already arrived today")
-
-            ArrivalInfoResponse(
-                absentFromPreschool = false // todo
-            )
-        }.let { ResponseEntity.ok(it) }
-    }
-
     data class ArrivalRequest(
         @DateTimeFormat(pattern = "HH:mm") val arrived: LocalTime
     )
@@ -104,20 +88,17 @@ class ChildAttendanceController(
         return db.transaction { tx ->
             tx.assertChildPlacement(childId, unitId)
 
-            val attendance = tx.getChildCurrentDayAttendance(childId, unitId)
-            if (attendance != null)
+            if (tx.getChildCurrentDayAttendance(childId, unitId) != null)
                 throw Conflict("Cannot arrive, already arrived today")
 
-            val arrived = ZonedDateTime.of(LocalDate.now(zoneId).atTime(body.arrived), zoneId).toInstant()
-
+            tx.deleteCurrentDayAbsences(childId)
             try {
                 tx.insertAttendance(
                     childId = childId,
                     unitId = unitId,
-                    arrived = arrived,
+                    arrived = ZonedDateTime.of(LocalDate.now(zoneId).atTime(body.arrived), zoneId).toInstant(),
                     departed = null
                 )
-                // todo: handle absence clearing? (EVAKA-4004)
             } catch (e: Exception) {
                 throw mapPSQLException(e)
             }
@@ -138,12 +119,10 @@ class ChildAttendanceController(
 
         return db.transaction { tx ->
             tx.assertChildPlacement(childId, unitId)
+            tx.deleteCurrentDayAbsences(childId)
 
             val attendance = tx.getChildCurrentDayAttendance(childId, unitId)
-
-            if (attendance == null) {
-                tx.deleteCurrentDayAbsences(childId)
-            } else {
+            if (attendance != null) {
                 if (attendance.departed == null) {
                     try {
                         tx.deleteAttendance(attendance.id)
@@ -174,7 +153,7 @@ class ChildAttendanceController(
         acl.getRolesForUnit(user, unitId).requireOneOfRoles(*authorizedRoles)
 
         return db.read { tx ->
-            tx.assertChildPlacement(childId, unitId)
+            val placementType = tx.assertChildPlacement(childId, unitId)
 
             val attendance = tx.getChildCurrentDayAttendance(childId, unitId)
             if (attendance == null) {
@@ -183,14 +162,16 @@ class ChildAttendanceController(
                 throw Conflict("Cannot depart, already departed")
             }
 
+            val arrived = LocalTime.ofInstant(attendance.arrived, zoneId)
             DepartureInfoResponse(
-                absentFrom = emptySet() // todo
+                absentFrom = getAbsenceCareTypes(placementType, arrived, time)
             )
         }.let { ResponseEntity.ok(it) }
     }
 
     data class DepartureRequest(
-        @DateTimeFormat(pattern = "HH:mm") val departed: LocalTime
+        @DateTimeFormat(pattern = "HH:mm") val departed: LocalTime,
+        val absenceType: AbsenceType?
     )
     @PostMapping("/units/{unitId}/children/{childId}/departure")
     fun postDeparture(
@@ -204,7 +185,7 @@ class ChildAttendanceController(
         acl.getRolesForUnit(user, unitId).requireOneOfRoles(*authorizedRoles)
 
         return db.transaction { tx ->
-            tx.assertChildPlacement(childId, unitId)
+            val placementType = tx.assertChildPlacement(childId, unitId)
 
             val attendance = tx.getChildCurrentDayAttendance(childId, unitId)
             if (attendance == null) {
@@ -213,14 +194,25 @@ class ChildAttendanceController(
                 throw Conflict("Cannot depart, already departed")
             }
 
-            val departed = ZonedDateTime.of(LocalDate.now(zoneId).atTime(body.departed), zoneId).toInstant()
+            val absentFrom = getAbsenceCareTypes(placementType, LocalTime.ofInstant(attendance.arrived, zoneId), body.departed)
+            tx.deleteCurrentDayAbsences(childId)
+            if (absentFrom.isNotEmpty()) {
+                if (body.absenceType == null) {
+                    throw BadRequest("Request had no absenceType but child was absent from ${absentFrom.joinToString(", ")}.")
+                }
+
+                absentFrom.forEach { careType ->
+                    tx.insertAbsence(user, childId, LocalDate.now(zoneId), careType, body.absenceType)
+                }
+            } else if (body.absenceType != null) {
+                throw BadRequest("Request defines absenceType but child was not absent.")
+            }
 
             try {
                 tx.updateAttendanceEnd(
                     attendanceId = attendance.id,
-                    departed = departed
+                    departed = ZonedDateTime.of(LocalDate.now(zoneId).atTime(body.departed), zoneId).toInstant()
                 )
-                // todo: handle absence clearing? (EVAKA-4004)
             } catch (e: Exception) {
                 throw mapPSQLException(e)
             }
@@ -241,6 +233,7 @@ class ChildAttendanceController(
 
         return db.transaction { tx ->
             tx.assertChildPlacement(childId, unitId)
+            tx.deleteCurrentDayAbsences(childId)
 
             val attendance = tx.getChildCurrentDayAttendance(childId, unitId)
 
@@ -296,30 +289,26 @@ class ChildAttendanceController(
     }
 }
 
-private fun Database.Read.assertChildPlacement(childId: UUID, unitId: UUID) {
+private fun Database.Read.assertChildPlacement(childId: UUID, unitId: UUID): PlacementType {
     // language=sql
     val sql =
         """
-        SELECT id FROM placement
-        WHERE child_id = :childId AND unit_id = :unitId AND daterange(start_date, end_date, '[]') @> :date
-        
-        UNION ALL
-        
-        SELECT id FROM backup_care
-        WHERE child_id = :childId AND unit_id = :unitId AND daterange(start_date, end_date, '[]') @> :date
+        SELECT pl.type
+        FROM placement pl
+        LEFT JOIN backup_care bc
+            ON bc.child_id = :childId AND daterange(bc.start_date, bc.end_date, '[]') @> :date
+        WHERE 
+            pl.child_id = :childId
+            AND daterange(pl.start_date, pl.end_date, '[]') @> :date
+            AND (pl.unit_id = :unitId OR bc.unit_id = :unitId)
         """.trimIndent()
 
-    val placementMissing = createQuery(sql)
+    return createQuery(sql)
         .bind("childId", childId)
         .bind("unitId", unitId)
         .bind("date", dateNow())
-        .mapTo<UUID>()
-        .list()
-        .isEmpty()
-
-    if (placementMissing) {
-        throw BadRequest("Child $childId has no placement in unit $unitId on the given day")
-    }
+        .mapTo<PlacementType>()
+        .firstOrNull() ?: throw BadRequest("Child $childId has no placement in unit $unitId on the given day")
 }
 
 private fun Database.Read.fetchChildPlacementType(childId: UUID, unitId: UUID, date: LocalDate): PlacementType {
@@ -401,4 +390,55 @@ private fun getCareTypes(placementType: PlacementType): List<CareType> {
         PlacementType.CLUB ->
             listOf(CareType.CLUB)
     }.exhaust()
+}
+
+fun getAbsenceCareTypes(placementType: PlacementType, arrived: LocalTime, departed: LocalTime): Set<CareType> {
+    return listOfNotNull(
+        CareType.PRESCHOOL.takeIf {
+            wasAbsentFromPreschool(placementType, arrived, departed)
+        },
+        CareType.PRESCHOOL_DAYCARE.takeIf {
+            wasAbsentFromPreschoolDaycare(placementType, arrived, departed)
+        }
+    ).toSet()
+}
+
+fun wasAbsentFromPreschool(placementType: PlacementType, arrived: LocalTime, departed: LocalTime): Boolean {
+    if (placementType in listOf(PlacementType.PRESCHOOL, PlacementType.PRESCHOOL_DAYCARE)) {
+        val presentAtPreschoolDuration = Duration.between(
+            maxOf(arrived, preschoolStart),
+            minOf(departed, preschoolEnd)
+        )
+
+        return presentAtPreschoolDuration < preschoolMinimumDuration
+    }
+
+    if (placementType in listOf(PlacementType.PREPARATORY, PlacementType.PREPARATORY_DAYCARE)) {
+        val presentAtPreparatoryDuration = Duration.between(
+            maxOf(arrived, preschoolStart),
+            minOf(departed, preparatoryEnd)
+        )
+
+        return presentAtPreparatoryDuration < preparatoryMinimumDuration
+    }
+
+    return false
+}
+
+fun wasAbsentFromPreschoolDaycare(placementType: PlacementType, arrived: LocalTime, departed: LocalTime): Boolean {
+    if (placementType == PlacementType.PRESCHOOL_DAYCARE) {
+        val presentBeforePreschool = Duration.between(arrived, preschoolStart) > connectedDaycareBuffer
+        val presentAfterPreschool = Duration.between(preschoolEnd, departed) > connectedDaycareBuffer
+
+        return !presentBeforePreschool && !presentAfterPreschool
+    }
+
+    if (placementType == PlacementType.PREPARATORY_DAYCARE) {
+        val presentBeforePreparatory = Duration.between(arrived, preparatoryStart) > connectedDaycareBuffer
+        val presentAfterPreparatory = Duration.between(preparatoryEnd, departed) > connectedDaycareBuffer
+
+        return !presentBeforePreparatory && !presentAfterPreparatory
+    }
+
+    return false
 }

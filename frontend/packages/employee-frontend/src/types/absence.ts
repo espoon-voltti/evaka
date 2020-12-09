@@ -5,6 +5,8 @@
 import { DayOfWeek, UUID } from '~types'
 import LocalDate from '@evaka/lib-common/src/local-date'
 import { JsonOf } from '@evaka/lib-common/src/json'
+import { PlacementType } from './placementdraft'
+import { Translations } from '~state/i18n'
 
 export type TableMode = 'MONTH'
 
@@ -47,6 +49,20 @@ export const CareTypeCategories: CareTypeCategory[] = [
 ]
 
 export const billableCareTypes: CareType[] = ['PRESCHOOL_DAYCARE', 'DAYCARE']
+
+export function formatCareType(
+  careType: CareType,
+  placementType: PlacementType,
+  i18n: Translations
+) {
+  const isPreparatory =
+    placementType === 'PREPARATORY' || placementType === 'PREPARATORY_DAYCARE'
+
+  if (isPreparatory && careType === 'PRESCHOOL')
+    return i18n.common.types.PREPARATORY_EDUCATION
+
+  return i18n.absences.careTypes[careType]
+}
 
 export interface Cell {
   id: UUID

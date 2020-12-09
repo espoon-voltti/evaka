@@ -14,7 +14,6 @@ import fi.espoo.evaka.shared.utils.zoneId
 import org.jdbi.v3.core.kotlin.mapTo
 import java.time.Instant
 import java.time.LocalDate
-import java.time.ZoneId
 import java.util.UUID
 
 fun Database.Transaction.insertAttendance(childId: UUID, unitId: UUID, arrived: Instant, departed: Instant? = null): ChildAttendance {
@@ -104,7 +103,7 @@ fun Database.Read.fetchUnitInfo(unitId: UUID): UnitInfo {
 
     return createQuery(groupsSql)
         .bind("unitId", unitId)
-        .bind("today", LocalDate.now(ZoneId.of("Europe/Helsinki")))
+        .bind("today", LocalDate.now(zoneId))
         .mapTo<GroupInfo>()
         .list()
         .let { groups ->
@@ -134,7 +133,7 @@ fun Database.Read.fetchChildrenBasics(unitId: UUID): List<ChildBasics> {
 
     return createQuery(sql)
         .bind("unitId", unitId)
-        .bind("today", LocalDate.now(ZoneId.of("Europe/Helsinki")))
+        .bind("today", LocalDate.now(zoneId))
         .mapTo<ChildBasics>()
         .list()
 }
@@ -156,7 +155,7 @@ fun Database.Read.fetchChildrenAttendances(unitId: UUID): List<ChildAttendance> 
 
     return createQuery(sql)
         .bind("unitId", unitId)
-        .bind("today", LocalDate.now(ZoneId.of("Europe/Helsinki")))
+        .bind("today", LocalDate.now(zoneId))
         .mapTo<ChildAttendance>()
         .list()
 }
@@ -177,7 +176,7 @@ fun Database.Read.fetchChildrenAbsences(unitId: UUID): List<ChildAbsence> {
 
     return createQuery(sql)
         .bind("unitId", unitId)
-        .bind("today", LocalDate.now(ZoneId.of("Europe/Helsinki")))
+        .bind("today", LocalDate.now(zoneId))
         .mapTo<ChildAbsence>()
         .list()
 }
@@ -236,6 +235,6 @@ fun Database.Transaction.deleteCurrentDayAbsences(childId: UUID) {
 
     createUpdate(sql)
         .bind("childId", childId)
-        .bind("today", LocalDate.now(ZoneId.of("Europe/Helsinki")))
+        .bind("today", LocalDate.now(zoneId))
         .execute()
 }
