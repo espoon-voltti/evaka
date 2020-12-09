@@ -547,7 +547,7 @@ function UnitAccessControl({ unitId }: Props) {
         </ContentArea>
       </RequireRole>
 
-      {isNotProduction && (
+      {isNotProduction() && (
         <RequireRole oneOf={['ADMIN', 'UNIT_SUPERVISOR']}>
           <ContentArea opaque data-qa="daycare-mobile-devices">
             <H2>{i18n.unit.accessControl.mobileDevices.mobileDevices}</H2>

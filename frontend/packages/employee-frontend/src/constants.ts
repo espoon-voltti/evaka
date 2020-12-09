@@ -38,6 +38,7 @@ export function getEmployeeUrlPrefix(): string {
 export function isNotProduction(): boolean {
   return (
     window.location.host.includes(':9093') ||
+    window.location.host.includes('localhost') ||
     window.location.host.includes('staging')
   )
 }
