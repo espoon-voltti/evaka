@@ -11,17 +11,16 @@ import fi.espoo.evaka.placement.PlacementType.PRESCHOOL_DAYCARE
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.getUUID
 import fi.espoo.evaka.varda.integration.VardaClient
-import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.statement.StatementContext
 import java.sql.ResultSet
 import java.time.Instant
 import java.time.LocalDate
 import java.util.UUID
 
-fun updatePlacements(h: Handle, client: VardaClient) {
-    removeDeletedPlacements(h, client)
-    sendNewPlacements(h, client)
-    sendUpdatedPlacements(h, client)
+fun updatePlacements(db: Database.Connection, client: VardaClient) {
+    removeDeletedPlacements(db, client)
+    sendNewPlacements(db, client)
+    sendUpdatedPlacements(db, client)
 }
 
 fun removeMarkedPlacementsFromVarda(db: Database.Connection, client: VardaClient) {
@@ -33,39 +32,41 @@ fun removeMarkedPlacementsFromVarda(db: Database.Connection, client: VardaClient
     }
 }
 
-fun sendNewPlacements(h: Handle, client: VardaClient) {
-    val newPlacements = getNewPlacements(h, client.getDecisionUrl)
+fun sendNewPlacements(db: Database.Connection, client: VardaClient) {
+    val newPlacements = db.read { getNewPlacements(it, client.getDecisionUrl) }
     newPlacements.forEach { (decisionId, placementId, newPlacement) ->
         client.createPlacement(newPlacement)?.let { (vardaPlacementId) ->
-            insertVardaPlacement(
-                h,
-                VardaPlacementTableRow(
-                    id = UUID.randomUUID(),
-                    vardaPlacementId = vardaPlacementId,
-                    evakaPlacementId = placementId,
-                    decisionId = decisionId,
-                    createdAt = Instant.now(),
-                    uploadedAt = Instant.now()
+            db.transaction {
+                insertVardaPlacement(
+                    it,
+                    VardaPlacementTableRow(
+                        id = UUID.randomUUID(),
+                        vardaPlacementId = vardaPlacementId,
+                        evakaPlacementId = placementId,
+                        decisionId = decisionId,
+                        createdAt = Instant.now(),
+                        uploadedAt = Instant.now()
+                    )
                 )
-            )
+            }
         }
     }
 }
 
-fun sendUpdatedPlacements(h: Handle, client: VardaClient) {
-    val updatedPlacements = getUpdatedPlacements(h, client.getDecisionUrl)
+fun sendUpdatedPlacements(db: Database.Connection, client: VardaClient) {
+    val updatedPlacements = db.read { getUpdatedPlacements(it, client.getDecisionUrl) }
     updatedPlacements.forEach { (id, vardaPlacementId, updatedPlacement) ->
         client.updatePlacement(vardaPlacementId, updatedPlacement)?.let {
-            updatePlacementUploadTimestamp(h, id)
+            db.transaction { updatePlacementUploadTimestamp(it, id) }
         }
     }
 }
 
-fun removeDeletedPlacements(h: Handle, client: VardaClient) {
-    val removedPlacements = getRemovedPlacements(h)
+fun removeDeletedPlacements(db: Database.Connection, client: VardaClient) {
+    val removedPlacements = db.read { getRemovedPlacements(it) }
     removedPlacements.forEach { vardaPlacementId ->
         client.deletePlacement(vardaPlacementId).let { success ->
-            if (success) deletePlacement(h, vardaPlacementId)
+            if (success) db.transaction { deletePlacement(it, vardaPlacementId) }
         }
     }
 }
@@ -112,23 +113,20 @@ JOIN sent_decision d
     AND daterange(p.start_date, p.end_date, '[]') && daterange(d.start_date, d.end_date, '[]')
     """.trimIndent()
 
-fun getNewPlacements(
-    h: Handle,
-    getDecisionUrl: (Long) -> String
-): List<Triple<UUID, UUID, VardaPlacement>> {
+fun getNewPlacements(tx: Database.Read, getDecisionUrl: (Long) -> String): List<Triple<UUID, UUID, VardaPlacement>> {
     val sql =
         """
 $placementBaseQuery
 WHERE vp.id IS NULL
         """.trimIndent()
 
-    return h.createQuery(sql)
+    return tx.createQuery(sql)
         .bind("types", daycarePlacementTypes)
         .map(toVardaPlacementWithDecisionAndPlacementId(getDecisionUrl))
         .toList()
 }
 
-fun insertVardaPlacement(h: Handle, placement: VardaPlacementTableRow) {
+fun insertVardaPlacement(tx: Database.Transaction, placement: VardaPlacementTableRow) {
     val sql =
         """
 INSERT INTO varda_placement (
@@ -148,7 +146,7 @@ INSERT INTO varda_placement (
 )
         """.trimIndent()
 
-    h.createUpdate(sql)
+    tx.createUpdate(sql)
         .bind("id", placement.id)
         .bind("vardaPlacementId", placement.vardaPlacementId)
         .bind("evakaPlacementId", placement.evakaPlacementId)
@@ -159,7 +157,7 @@ INSERT INTO varda_placement (
 }
 
 private fun getUpdatedPlacements(
-    h: Handle,
+    tx: Database.Read,
     getDecisionUrl: (Long) -> String
 ): List<Triple<UUID, Long, VardaPlacement>> {
     val sql =
@@ -168,28 +166,28 @@ $placementBaseQuery
 WHERE vp.uploaded_at < p.updated
         """.trimIndent()
 
-    return h.createQuery(sql)
+    return tx.createQuery(sql)
         .bind("types", daycarePlacementTypes)
         .map(toVardaPlacementWithIdAndVardaId(getDecisionUrl))
         .toList()
 }
 
-private fun updatePlacementUploadTimestamp(h: Handle, id: UUID, uploadedAt: Instant = Instant.now()) {
+private fun updatePlacementUploadTimestamp(tx: Database.Transaction, id: UUID, uploadedAt: Instant = Instant.now()) {
     val sql = "UPDATE varda_placement SET uploaded_at = :uploadedAt WHERE id = :id"
-    h.createUpdate(sql)
+    tx.createUpdate(sql)
         .bind("id", id)
         .bind("uploadedAt", uploadedAt)
         .execute()
 }
 
-fun getRemovedPlacements(h: Handle): List<Long> {
-    return h.createQuery("SELECT varda_placement_id FROM varda_placement WHERE evaka_placement_id IS NULL")
+fun getRemovedPlacements(tx: Database.Read): List<Long> {
+    return tx.createQuery("SELECT varda_placement_id FROM varda_placement WHERE evaka_placement_id IS NULL")
         .mapTo(Long::class.java)
         .toList()
 }
 
-fun deletePlacement(h: Handle, vardaPlacementId: Long) {
-    h.createUpdate("DELETE FROM varda_placement WHERE varda_placement_id = :id")
+fun deletePlacement(tx: Database.Transaction, vardaPlacementId: Long) {
+    tx.createUpdate("DELETE FROM varda_placement WHERE varda_placement_id = :id")
         .bind("id", vardaPlacementId)
         .execute()
 }

@@ -63,6 +63,6 @@ fun updateAll(
     updateUnits(db, client, organizer)
     updateChildren(db, client, organizer)
     updateDecisions(db, client)
-    db.transaction { updatePlacements(it.handle, client) }
+    updatePlacements(db, client)
     updateFeeData(db, client, mapper, personService)
 }

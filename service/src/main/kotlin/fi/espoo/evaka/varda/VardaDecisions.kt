@@ -105,7 +105,7 @@ fun deleteDecisionPlacements(db: Database.Connection, client: VardaClient, decis
     }
     decisionPlacementIds.forEach { id ->
         if (client.deletePlacement(id)) {
-            db.transaction { deletePlacement(it.handle, id) }
+            db.transaction { deletePlacement(it, id) }
         }
     }
 }
