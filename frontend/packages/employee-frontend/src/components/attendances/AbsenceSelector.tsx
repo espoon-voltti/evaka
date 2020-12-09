@@ -11,7 +11,6 @@ import { AttendanceResponse, getDaycareAttendances } from '~api/attendances'
 import AsyncButton from '~components/shared/atoms/buttons/AsyncButton'
 import Button from '~components/shared/atoms/buttons/Button'
 import Colors from '~components/shared/Colors'
-import { Gap } from '~components/shared/layout/white-space'
 import { AttendanceUIContext } from '~state/attendance-ui'
 import { useTranslation } from '~state/i18n'
 import { UUID } from '~types'
@@ -74,7 +73,6 @@ export default function AbsenceSelector({
       </Flex>
       {selectedAbsenceType && (
         <Fragment>
-          <Gap size={'s'} />
           <Actions>
             <Button
               text={i18n.common.cancel}

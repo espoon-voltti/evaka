@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: 2017-2020 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
+import { isBefore, parse } from 'date-fns'
 import React, { Fragment, useContext, useEffect, useState } from 'react'
 import { useHistory } from 'react-router-dom'
 
@@ -16,6 +17,7 @@ import {
 } from '~api/attendances'
 import InputField from '~components/shared/atoms/form/InputField'
 import { FixedSpaceColumn } from '~components/shared/layout/flex-helpers'
+import { Gap } from '~components/shared/layout/white-space'
 import { AttendanceUIContext } from '~state/attendance-ui'
 import { useTranslation } from '~state/i18n'
 import { UUID } from '~types'
@@ -46,6 +48,7 @@ export default React.memo(function AttendanceChildPresent({
 
   const [time, setTime] = useState<string>(getCurrentTime())
   const [markDepart, setMarkDepart] = useState<boolean>(false)
+  const [timeError, setTimeError] = useState<boolean>(false)
   const [childDepartureInfo, setChildDepartureInfo] = useState<
     Result<DepartureInfoResponse>
   >(Loading.of())
@@ -84,9 +87,19 @@ export default React.memo(function AttendanceChildPresent({
     return postDeparture(unitId, child.id, absenceType, time)
   }
 
-  function updateTime(time: string) {
-    void getChildDeparture(unitId, child.id, time).then(setChildDepartureInfo)
-    setTime(time)
+  function updateTime(newTime: string) {
+    if (child.attendance !== null) {
+      const newDate = parse(newTime, 'HH:mm', new Date())
+      if (isBefore(newDate, child.attendance.arrived)) {
+        setTimeError(true)
+      } else {
+        setTimeError(false)
+        void getChildDeparture(unitId, child.id, newTime).then(
+          setChildDepartureInfo
+        )
+      }
+    }
+    setTime(newTime)
   }
 
   return (
@@ -157,12 +170,18 @@ export default React.memo(function AttendanceChildPresent({
               value={time}
               width="s"
               type="time"
+              info={
+                timeError
+                  ? { text: i18n.attendances.timeError, status: 'warning' }
+                  : undefined
+              }
               data-qa="set-time"
             />
           </FlexLabel>
 
           {childDepartureInfo.isSuccess &&
-          childDepartureInfo.value.absentFrom.length > 0 ? (
+          childDepartureInfo.value.absentFrom.length > 0 &&
+          !timeError ? (
             <Fragment>
               <AbsentFrom
                 child={child}
@@ -175,18 +194,22 @@ export default React.memo(function AttendanceChildPresent({
               />
             </Fragment>
           ) : (
-            <WideAsyncButton
-              primary
-              text={i18n.common.confirm}
-              onClick={markDeparted}
-              onSuccess={async () => {
-                await getDaycareAttendances(unitId).then((res) =>
-                  filterAndSetAttendanceResponse(res, groupIdOrAll)
-                )
-                history.goBack()
-              }}
-              data-qa="mark-departed"
-            />
+            <Fragment>
+              {timeError && <Gap size={'s'} />}
+              <WideAsyncButton
+                primary
+                text={i18n.common.confirm}
+                onClick={markDeparted}
+                onSuccess={async () => {
+                  await getDaycareAttendances(unitId).then((res) =>
+                    filterAndSetAttendanceResponse(res, groupIdOrAll)
+                  )
+                  history.goBack()
+                }}
+                data-qa="mark-departed"
+                disabled={timeError}
+              />
+            </Fragment>
           )}
         </FixedSpaceColumn>
       )}
