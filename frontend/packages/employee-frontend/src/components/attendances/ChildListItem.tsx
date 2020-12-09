@@ -25,6 +25,7 @@ const ChildBox = styled.div<{ type: AttendanceStatus }>`
 
 const ChildBoxInfo = styled.div`
   margin-left: 24px;
+  flex-grow: 1;
 `
 
 const Bold = styled.div`
@@ -34,10 +35,6 @@ const Bold = styled.div`
   h3 {
     font-weight: 500;
   }
-`
-
-const ChildBoxStatus = styled.div`
-  color: ${Colors.greyscale.dark};
 `
 
 const IconBox = styled.div<{ type: AttendanceStatus }>`
@@ -54,6 +51,14 @@ const IconBox = styled.div<{ type: AttendanceStatus }>`
     }
   }};
   border-radius: 4px;
+`
+
+const DetailsRow = styled.div`
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  color: ${Colors.greyscale.dark};
 `
 
 const Time = styled.span`
@@ -96,21 +101,26 @@ export default React.memo(function ChildListItem({
         <Bold>
           {attendanceChild.firstName} {attendanceChild.lastName}
         </Bold>
-        <ChildBoxStatus>
-          {i18n.attendances.status[attendanceChild.status]}
-          <Time>
-            {attendanceChild.status === 'PRESENT' &&
-              formatDate(
-                attendanceChild.attendance?.arrived,
-                DATE_FORMAT_TIME_ONLY
-              )}
-            {attendanceChild.status === 'DEPARTED' &&
-              formatDate(
-                attendanceChild.attendance?.departed,
-                DATE_FORMAT_TIME_ONLY
-              )}
-          </Time>
-        </ChildBoxStatus>
+        <DetailsRow>
+          <div>
+            {i18n.attendances.status[attendanceChild.status]}
+            <Time>
+              {attendanceChild.status === 'PRESENT' &&
+                formatDate(
+                  attendanceChild.attendance?.arrived,
+                  DATE_FORMAT_TIME_ONLY
+                )}
+              {attendanceChild.status === 'DEPARTED' &&
+                formatDate(
+                  attendanceChild.attendance?.departed,
+                  DATE_FORMAT_TIME_ONLY
+                )}
+            </Time>
+          </div>
+          {attendanceChild.backup && (
+            <RoundIcon content="V" size="m" color={Colors.blues.primary} />
+          )}
+        </DetailsRow>
       </ChildBoxInfo>
     </ChildBox>
   )

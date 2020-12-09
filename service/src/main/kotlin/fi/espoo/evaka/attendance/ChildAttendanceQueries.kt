@@ -145,7 +145,7 @@ fun Database.Read.fetchChildrenBasics(unitId: UUID): List<ChildBasics> {
         FROM backup_care bc
         JOIN placement p ON p.child_id = bc.child_id AND daterange(p.start_date, p.end_date, '[]') @> :today
         JOIN person ch ON ch.id = p.child_id
-        WHERE bc.unit_id = :unitId AND daterange(bc.start_date, bc.end_date, '[]') @> :today
+        WHERE bc.unit_id = :unitId AND bc.group_id IS NOT NULL AND daterange(bc.start_date, bc.end_date, '[]') @> :today
         """.trimIndent()
 
     return createQuery(sql)
@@ -183,7 +183,7 @@ fun Database.Read.fetchChildrenAttendances(unitId: UUID): List<ChildAttendance> 
             ca.arrived,
             ca.departed
         FROM child_attendance ca
-        WHERE ca.departed IS NULL OR ca.departed::date = :today AND ca.child_id IN ($placedChildrenSql)
+        WHERE (ca.departed IS NULL OR ca.departed::date = :today) AND ca.child_id IN ($placedChildrenSql)
         """.trimIndent()
 
     return createQuery(sql)
@@ -200,7 +200,6 @@ fun Database.Read.fetchChildrenAbsences(unitId: UUID): List<ChildAbsence> {
         SELECT 
             ab.id,
             ab.child_id,
-            ab.absence_type,
             ab.care_type
         FROM absence ab
         WHERE ab.date = :today AND ab.absence_type != 'PRESENCE' AND ab.child_id IN ($placedChildrenSql)

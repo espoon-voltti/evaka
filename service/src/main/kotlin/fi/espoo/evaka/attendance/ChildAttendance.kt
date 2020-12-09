@@ -4,7 +4,6 @@
 
 package fi.espoo.evaka.attendance
 
-import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.daycare.service.CareType
 import fi.espoo.evaka.placement.PlacementType
 import java.time.Instant
@@ -62,6 +61,5 @@ data class ChildAttendance(
 data class ChildAbsence(
     val id: UUID,
     val childId: UUID,
-    val absenceType: AbsenceType,
     val careType: CareType
 )

@@ -200,8 +200,8 @@ class GetAttendancesIntegrationTest : FullApplicationTest() {
         assertEquals(AttendanceStatus.ABSENT, child.status)
         assertNull(child.attendance)
         assertEquals(2, child.absences.size)
-        assertEquals(1, child.absences.filter { it.careType == CareType.PRESCHOOL && it.absenceType == AbsenceType.SICKLEAVE }.size)
-        assertEquals(1, child.absences.filter { it.careType == CareType.PRESCHOOL_DAYCARE && it.absenceType == AbsenceType.SICKLEAVE }.size)
+        assertTrue(child.absences.any { it.careType == CareType.PRESCHOOL })
+        assertTrue(child.absences.any { it.careType == CareType.PRESCHOOL_DAYCARE })
     }
 
     private fun fetchAttendances(): AttendanceResponse {

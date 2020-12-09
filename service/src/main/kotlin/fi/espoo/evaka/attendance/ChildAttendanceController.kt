@@ -276,7 +276,7 @@ class ChildAttendanceController(
             try {
                 tx.deleteCurrentDayAbsences(childId)
 
-                val placementType = tx.fetchChildPlacementType(childId, unitId, dateNow())
+                val placementType = tx.fetchChildPlacementType(childId, dateNow())
                 getCareTypes(placementType).forEach { careType ->
                     tx.insertAbsence(user, childId, LocalDate.now(), careType, body.absenceType)
                 }
@@ -311,17 +311,17 @@ private fun Database.Read.assertChildPlacement(childId: UUID, unitId: UUID): Pla
         .firstOrNull() ?: throw BadRequest("Child $childId has no placement in unit $unitId on the given day")
 }
 
-private fun Database.Read.fetchChildPlacementType(childId: UUID, unitId: UUID, date: LocalDate): PlacementType {
+private fun Database.Read.fetchChildPlacementType(childId: UUID, date: LocalDate): PlacementType {
     // language=sql
     val sql =
         """
-        SELECT type FROM placement
-        WHERE child_id = :childId AND unit_id = :unitId AND daterange(start_date, end_date, '[]') @> :date
+        SELECT p.type
+        FROM placement p
+        WHERE p.child_id = :childId AND daterange(p.start_date, p.end_date, '[]') @> :date
         """.trimIndent()
 
     return createQuery(sql)
         .bind("childId", childId)
-        .bind("unitId", unitId)
         .bind("date", date)
         .mapTo<PlacementType>()
         .list()
