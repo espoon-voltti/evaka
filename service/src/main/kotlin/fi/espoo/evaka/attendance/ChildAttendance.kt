@@ -31,7 +31,8 @@ open class ChildBasics(
     val firstName: String,
     val lastName: String,
     val placementType: PlacementType,
-    val groupId: UUID
+    val groupId: UUID,
+    val backup: Boolean
 )
 
 class Child(
@@ -40,10 +41,11 @@ class Child(
     lastName: String,
     placementType: PlacementType,
     groupId: UUID,
+    backup: Boolean,
     val status: AttendanceStatus,
     val attendance: ChildAttendance?,
     val absences: List<ChildAbsence>
-) : ChildBasics(id, firstName, lastName, placementType, groupId)
+) : ChildBasics(id, firstName, lastName, placementType, groupId, backup)
 
 enum class AttendanceStatus {
     COMING, PRESENT, DEPARTED, ABSENT

@@ -345,6 +345,7 @@ private fun Database.Read.getAttendancesResponse(unitId: UUID): AttendanceRespon
             lastName = child.lastName,
             placementType = child.placementType,
             groupId = child.groupId,
+            backup = child.backup,
             status = status,
             attendance = attendance,
             absences = absences
