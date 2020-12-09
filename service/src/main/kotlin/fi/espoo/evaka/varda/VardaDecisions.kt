@@ -199,6 +199,7 @@ JOIN LATERAL (
     SELECT * FROM service_need sn
     WHERE sn.child_id = d.child_id
     AND daterange(sn.start_date, sn.end_date, '[]') && daterange(d.start_date, d.end_date, '[]')
+    AND NOT temporary
     ORDER BY sn.start_date DESC
     LIMIT 1
 ) latest_sn ON TRUE
@@ -303,6 +304,7 @@ JOIN LATERAL (
     SELECT * FROM service_need sn
     WHERE sn.child_id = p.child_id
     AND daterange(sn.start_date, sn.end_date, '[]') && daterange(p.start_date, p.end_date, '[]')
+    AND NOT temporary
     ORDER BY sn.start_date DESC
     LIMIT 1
 ) latest_sn ON true

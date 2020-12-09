@@ -428,6 +428,19 @@ class VardaDecisionsIntegrationTest : FullApplicationTest() {
     }
 
     @Test
+    fun `a derived daycare decision is not sent when its service need is temporary`() {
+        val period = ClosedPeriod(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))
+        val placementId = insertPlacement(db, testChild_1.id, period)
+        insertServiceNeed(db, testChild_1.id, period, temporary = true)
+        insertVardaChild(db, testChild_1.id)
+
+        updateDecisions(db, vardaClient)
+
+        val result = getVardaDecisions()
+        assertEquals(0, result.size)
+    }
+
+    @Test
     fun `daycare decision is sent with correct data`() {
         val sentDate = LocalDate.of(2019, 6, 1)
         val period = ClosedPeriod(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))
@@ -848,7 +861,8 @@ internal fun insertServiceNeed(
     db: Database.Connection,
     childId: UUID,
     period: ClosedPeriod,
-    hours: Double = 40.0
+    hours: Double = 40.0,
+    temporary: Boolean = false
 ): UUID {
     return db.transaction {
         insertTestServiceNeed(
@@ -857,7 +871,8 @@ internal fun insertServiceNeed(
             testDecisionMaker_1.id,
             startDate = period.start,
             endDate = period.end,
-            hoursPerWeek = hours
+            hoursPerWeek = hours,
+            temporary = temporary
         )
     }
 }
