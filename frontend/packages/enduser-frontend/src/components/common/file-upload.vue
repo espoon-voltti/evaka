@@ -36,13 +36,13 @@ SPDX-License-Identifier: LGPL-2.1-or-later
         </div>
         <div class="file-details">
           <div class="file-header">
-            <a
+            <button
               v-if="file.id"
-              class="file-name"
+              class="file-name-button"
               @click="checkFileAvailability(file)"
             >
               {{ file.name }}
-            </a>
+            </button>
             <span v-else class="file-name">{{ file.name }}</span>
             <div>
               <button
@@ -104,7 +104,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
       :header="$t('file-upload.modal-header')"
       :message="$t('file-upload.modal-message')"
       :acceptText="$t('file-upload.modal-confirm')"
-      ref="infoUnavailableFile"
+      ref="fileUnavailableModal"
     >
     </confirm-modal>
   </div>
@@ -158,7 +158,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
         }
       },
       showFileUnavailableModal() {
-        this.$refs.infoUnavailableFile.open()
+        this.$refs.fileUnavailableModal.open()
       },
       deleteFile(file) {
         this.onDelete(file)
@@ -258,6 +258,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
         .file-icon-container {
           margin-right: 16px;
           flex: 0;
+          color: $blue-light;
         }
 
         .file-details {
@@ -296,6 +297,13 @@ SPDX-License-Identifier: LGPL-2.1-or-later
               white-space: nowrap;
               overflow: hidden;
               text-overflow: ellipsis;
+            }
+
+            .file-name-button {
+              border: none;
+              background: none;
+              cursor: pointer;
+              color: $blue-light;
             }
           }
 
