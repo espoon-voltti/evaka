@@ -69,7 +69,7 @@ function Login({ error }: Props) {
           {i18n.login.subtitle}
         </Title>
         <Center>
-          <LoginButton data-qa="login-btn" href={getLoginUrl('ead')}>
+          <LoginButton data-qa="login-btn" href={getLoginUrl('saml')}>
             <span>{i18n.login.loginAD}</span>
           </LoginButton>
           <Gap horizontal />

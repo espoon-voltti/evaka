@@ -28,7 +28,7 @@ export default class DevPassportStrategy extends Strategy {
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   authenticate(req: Request, _options?: any): any {
-    const shouldRedirect = !req.url.startsWith('/auth/ead/login/callback')
+    const shouldRedirect = !req.url.startsWith('/auth/saml/login/callback')
 
     if (shouldRedirect) {
       return this.redirect(

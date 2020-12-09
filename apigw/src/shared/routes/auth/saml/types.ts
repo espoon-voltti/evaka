@@ -11,6 +11,7 @@ export interface SamlEndpointConfig {
   strategyName: string
   strategy: Strategy | DummyStrategy
   sessionType: SessionType
+  pathIdentifier: string
 }
 
 export interface PassportSamlError extends Error {

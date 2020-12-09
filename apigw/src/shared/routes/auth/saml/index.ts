@@ -149,7 +149,6 @@ function createLogoutHandler({
     }
   })
 }
-
 // Configures passport to use the given strategy, and returns an Express router
 // for handling SAML-related requests.
 //

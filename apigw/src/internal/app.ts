@@ -66,7 +66,8 @@ function internalApiRouter() {
     createSamlRouter({
       strategyName: 'ead',
       strategy: createEspooAdSamlStrategy(),
-      sessionType: 'employee'
+      sessionType: 'employee',
+      pathIdentifier: 'saml'
     })
   )
 
@@ -74,7 +75,8 @@ function internalApiRouter() {
     createSamlRouter({
       strategyName: 'evaka',
       strategy: createEvakaSamlStrategy(),
-      sessionType: 'employee'
+      sessionType: 'employee',
+      pathIdentifier: 'evaka'
     })
   )
 
