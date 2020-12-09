@@ -17,29 +17,7 @@ import { faExclamation } from '~icon-set'
 import { useTranslation } from '~state/i18n'
 import { CareType, formatCareType } from '~types/absence'
 
-export const CustomAsyncButton = styled(AsyncButton)<CustomButtonProps>`
-  @media screen and (max-width: 1023px) {
-    margin-bottom: ${DefaultMargins.s};
-    width: calc(50vw - 40px);
-    white-space: normal;
-    height: 64px;
-  }
-
-  @media screen and (min-width: 1024px) {
-    margin-right: ${DefaultMargins.s};
-  }
-  ${(p) => (p.color ? `color: ${p.color};` : '')}
-  ${(p) => (p.backgroundColor ? `background-color: ${p.backgroundColor};` : '')}
-  ${(p) => (p.borderColor ? `border-color: ${p.borderColor};` : '')}
-
-  :hover {
-    ${(p) => (p.color ? `color: ${p.color};` : '')}
-    ${(p) =>
-      p.backgroundColor ? `background-color: ${p.backgroundColor};` : ''}
-  ${(p) => (p.borderColor ? `border-color: ${p.borderColor};` : '')}
-  }
-`
-
+// TODO: Refactor all of these to actual components that show up in storybook
 export const WideButton = styled(Button)`
   width: 100%;
 `
