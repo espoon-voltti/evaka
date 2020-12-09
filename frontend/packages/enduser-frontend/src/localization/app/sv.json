@@ -1001,8 +1001,8 @@
         "PDF, JPEG/JPG, PNG och DOC/DOCX"
       ]
     },
-    "modal-header": "File behandling pågår",
-    "modal-message": "Filen kan inte öppnas för tillfället. Försök igen efter ett tag.",
+    "modal-header": "Behandling av filen pågår",
+    "modal-message": "Filen kan inte öppnas just nu. Försök igen om en stund.",
     "modal-confirm": "OK"
   }
 }

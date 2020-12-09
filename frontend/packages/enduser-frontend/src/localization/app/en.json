@@ -1001,8 +1001,8 @@
         "PDF, JPEG/JPG, PNG and DOC/DOCX"
       ]
     },
-    "modal-header": "Tiedoston käsittely on kesken",
-    "modal-message": "Tiedosto ei ole juuri nyt avattavissa. Kokeile hetken kuluttua uudelleen.",
-    "modal-confirm": "Selvä"
+    "modal-header": "File processing is in progress",
+    "modal-message": "The file cannot be opened at the moment. Try again after a while.",
+    "modal-confirm": "OK"
   }
 }
