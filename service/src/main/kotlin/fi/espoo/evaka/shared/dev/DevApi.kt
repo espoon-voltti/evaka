@@ -45,6 +45,7 @@ import fi.espoo.evaka.pairing.initPairing
 import fi.espoo.evaka.pairing.respondPairingChallengeCreateDevice
 import fi.espoo.evaka.pis.Employee
 import fi.espoo.evaka.pis.createPersonFromVtj
+import fi.espoo.evaka.pis.deleteEmployee
 import fi.espoo.evaka.pis.deleteEmployeeByExternalId
 import fi.espoo.evaka.pis.deleteEmployeeRolesByExternalId
 import fi.espoo.evaka.pis.getEmployees
@@ -381,8 +382,14 @@ DELETE FROM attachment USING ApplicationsDeleted WHERE application_id = Applicat
         return ResponseEntity.ok(db.transaction { it.handle.insertTestEmployee(body) })
     }
 
-    @DeleteMapping("/employee/{externalId}")
-    fun deleteEmployee(db: Database, @PathVariable externalId: ExternalId): ResponseEntity<Unit> {
+    @DeleteMapping("/employee/{id}")
+    fun deleteEmployee(db: Database, @PathVariable id: UUID): ResponseEntity<Unit> {
+        db.transaction { it.handle.deleteEmployee(id) }
+        return ResponseEntity.ok().build()
+    }
+
+    @DeleteMapping("/employee/external-id/{externalId}")
+    fun deleteEmployeeByExternalId(db: Database, @PathVariable externalId: ExternalId): ResponseEntity<Unit> {
         db.transaction { it.handle.deleteEmployeeByExternalId(externalId) }
         return ResponseEntity.ok().build()
     }

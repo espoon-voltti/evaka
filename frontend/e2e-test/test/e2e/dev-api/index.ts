@@ -261,7 +261,15 @@ export async function insertBackupCareFixtures(
 
 export async function deleteEmployeeFixture(externalId: string): Promise<void> {
   try {
-    await devClient.delete(`/employee/${externalId}`)
+    await devClient.delete(`/employee/external-id/${externalId}`)
+  } catch (e) {
+    throw new DevApiError(e)
+  }
+}
+
+export async function deleteEmployeeById(id: UUID): Promise<void> {
+  try {
+    await devClient.delete(`/employee/${id}`)
   } catch (e) {
     throw new DevApiError(e)
   }
