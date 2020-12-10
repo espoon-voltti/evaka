@@ -113,7 +113,7 @@ export default React.memo(function MobilePairingModal({
             <Fragment>
               {i18n.unit.accessControl.mobileDevices.modalText1}
               <br />
-              <Bold>{`${window.location.hostname}/employee/mobile`}.</Bold>
+              <Bold>{`${window.location.hostname}/employee/mobile`}</Bold>
               <br />
               {i18n.unit.accessControl.mobileDevices.modalText2}
             </Fragment>
