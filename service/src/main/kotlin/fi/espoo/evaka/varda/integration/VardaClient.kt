@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.varda.integration
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.github.kittinunf.fuel.core.FuelManager
@@ -30,6 +31,7 @@ import fi.espoo.evaka.varda.VardaUnitResponse
 import fi.espoo.evaka.varda.VardaUpdateOrganizer
 import mu.KotlinLogging
 import org.springframework.core.env.Environment
+import java.time.LocalDate
 
 private val logger = KotlinLogging.logger {}
 
@@ -168,20 +170,20 @@ class VardaClient(
     }
 
     fun createFeeData(feeData: VardaFeeData): VardaFeeDataResponse? {
-        logger.info { "Creating fee data for child ${feeData.childUrl} to Varda" }
+        logger.info { "Creating fee data for child ${feeData.lapsi} to Varda" }
         val (_, _, result) = fuel.post(feeDataUrl)
             .jsonBody(objectMapper.writeValueAsString(feeData)).authenticatedResponseStringWithRetries()
 
         return when (result) {
             is Result.Success -> {
-                logger.info { "Creating fee data for child ${feeData.childUrl} to Varda succeeded" }
+                logger.info { "Creating fee data for child ${feeData.lapsi} to Varda succeeded" }
                 objectMapper.readValue<VardaFeeDataResponse>(
                     objectMapper.readTree(result.get()).toString()
                 )
             }
             is Result.Failure -> {
                 logger.error(result.getException()) {
-                    "Creating a fee data for child ${feeData.childUrl} to Varda failed." +
+                    "Creating a fee data for child ${feeData.lapsi} to Varda failed." +
                         " message: ${String(result.error.errorData)}"
                 }
                 null
@@ -210,7 +212,7 @@ class VardaClient(
         }
     }
 
-    fun deleteFeeData(vardaId: Int): Boolean {
+    fun deleteFeeData(vardaId: Long): Boolean {
         logger.info { "Deleting fee data $vardaId from Varda" }
         val (_, _, result) = fuel.delete("$feeDataUrl$vardaId/").authenticatedResponseStringWithRetries()
 
@@ -351,6 +353,50 @@ class VardaClient(
                 false
             }
         }
+    }
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    data class DecisionPeriod(
+        val id: Long,
+        val alkamis_pvm: LocalDate,
+        val paattymis_pvm: LocalDate
+    )
+
+    fun getChildDecisions(vardaChildId: Long): List<DecisionPeriod> {
+        return getAllPages("$childUrl$vardaChildId/varhaiskasvatuspaatokset/") {
+            objectMapper.readValue<PaginatedResponse<DecisionPeriod>>(it)
+        }
+    }
+
+    data class PaginatedResponse<T>(
+        val count: Int,
+        val next: String?,
+        val previous: String?,
+        val results: List<T>
+    )
+
+    private fun <T> getAllPages(
+        initialUrl: String,
+        parseJson: (String) -> PaginatedResponse<T>
+    ): List<T> {
+        fun fetchNext(acc: List<T>, next: String?): List<T> {
+            return if (next == null) acc
+            else {
+                val (_, _, result) = fuel.get(next).authenticatedResponseStringWithRetries()
+                when (result) {
+                    is Result.Success -> {
+                        val response = parseJson(result.value)
+                        fetchNext(acc + response.results, response.next)
+                    }
+                    is Result.Failure -> {
+                        logger.error(result.error) { "Failed fetching page $next" }
+                        acc
+                    }
+                }
+            }
+        }
+
+        return fetchNext(listOf(), initialUrl)
     }
 
     /**

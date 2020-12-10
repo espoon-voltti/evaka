@@ -169,24 +169,6 @@ class MockVardaIntegrationEndpoint(private val mapper: ObjectMapper) {
         ResponseEntity.noContent().build()
     }
 
-    @GetMapping("v1/lapset/{childId}/varhaiskasvatuspaatokset/")
-    fun getDecisions(
-        @PathVariable childId: Long,
-        @RequestHeader(name = "Authorization") auth: String
-    ): ResponseEntity<String> = lock.withLock {
-        val result =
-            """{
-            "results": 
-            ${mapper.writeValueAsString(
-                decisions.filter { (_, decision) ->
-                    decision.childUrl.contains(childId.toString())
-                }
-            )}
-            }
-            """.trimIndent()
-        ResponseEntity.ok(result)
-    }
-
     @PostMapping("/v1/varhaiskasvatussuhteet/")
     fun createPlacement(
         @RequestBody body: VardaPlacement,
@@ -250,6 +232,25 @@ class MockVardaIntegrationEndpoint(private val mapper: ObjectMapper) {
         this.feeData.remove(vardaId)
         ResponseEntity.noContent().build()
     }
+
+    @GetMapping("/v1/lapset/{childId}/varhaiskasvatuspaatokset/")
+    fun getChildDecisions(@PathVariable childId: Long): ResponseEntity<VardaClient.PaginatedResponse<VardaClient.DecisionPeriod>> =
+        lock.withLock {
+            logger.info { "Mock varda integration endpoint GET /lapset/$childId/varhaiskasvatuspaatokset received id: $childId" }
+            val childDecisions = decisions.entries.filter { (_, decision) ->
+                decision.childUrl.contains("/lapset/$childId/")
+            }
+            ResponseEntity.ok(
+                VardaClient.PaginatedResponse(
+                    count = childDecisions.size,
+                    next = null,
+                    previous = null,
+                    results = childDecisions.map { (vardaId, decision) ->
+                        VardaClient.DecisionPeriod(vardaId, decision.startDate, decision.endDate)
+                    }
+                )
+            )
+        }
 
     // Avoid creating a whole spring security setup for just this mock controller but still simulate Varda endpoints
     // requiring authorization to more completely test Varda clients.
@@ -379,13 +380,13 @@ class MockVardaIntegrationEndpoint(private val mapper: ObjectMapper) {
             }
           ],
           "lapsi": "https://backend-qa.varda-db.csc.fi/api/v1/lapset/292149/",
-          "maksun_peruste_koodi": "${feeData.feeCode}",
-          "palveluseteli_arvo": "${feeData.voucherAmount}",
-          "asiakasmaksu": "${feeData.feeAmount}",
-          "perheen_koko": ${feeData.familySize},
-          "alkamis_pvm": "${feeData.startDate}",
-          "paattymis_pvm": "${feeData.endDate}",
-          "tallennetut_huoltajat_count": 1,
+          "maksun_peruste_koodi": "${feeData.maksun_peruste_koodi}",
+          "palveluseteli_arvo": "${feeData.palveluseteli_arvo}",
+          "asiakasmaksu": "${feeData.asiakasmaksu}",
+          "perheen_koko": ${feeData.perheen_koko},
+          "alkamis_pvm": "${feeData.alkamis_pvm}",
+          "paattymis_pvm": "${feeData.paattymis_pvm}",
+          "tallennetut_huoltajat_count": ${feeData.huoltajat.size},
           "ei_tallennetut_huoltajat_count": 0
         }
         """.trimIndent()

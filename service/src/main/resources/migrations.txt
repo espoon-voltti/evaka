@@ -24,3 +24,4 @@ V23__mobile_device.sql
 V24__mobile_user_role.sql
 V25__mobile_device_token.sql
 V26__aad_to_external_id.sql
+V27__varda_fee_data_references.sql
