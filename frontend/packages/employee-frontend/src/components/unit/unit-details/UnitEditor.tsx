@@ -33,6 +33,7 @@ import {
   FixedSpaceRow
 } from '@evaka/lib-components/src/layout/flex-helpers'
 import DateRange from '@evaka/lib-common/src/date-range'
+import { Employee } from '~types/employee'
 
 type CareType = 'DAYCARE' | 'PRESCHOOL' | 'PREPARATORY_EDUCATION' | 'CLUB'
 type DaycareType = 'CENTRE' | 'FAMILY' | 'GROUP_FAMILY'
@@ -56,6 +57,7 @@ interface FormData {
   uploadToKoski: boolean
   invoicedByMunicipality: boolean
   costCenter: string
+  feeDecisionManagerId: string
   additionalInfo: string
   phone: string
   email: string
@@ -243,6 +245,7 @@ function parseLocation(value: string): Coordinate | undefined {
 
 interface Props {
   areas: CareArea[]
+  employees: Employee[]
   unit?: Unit
   editable: boolean
   onClickCancel?: () => void
@@ -344,6 +347,9 @@ function validateForm(
   ) {
     errors.push(i18n.unitEditor.error.cannotApplyToDifferentType)
   }
+  if (!form.feeDecisionManagerId) {
+    errors.push(i18n.unitEditor.error.feeDecisionManager)
+  }
   const {
     openingDate,
     closingDate,
@@ -355,6 +361,7 @@ function validateForm(
     roundTheClock,
     language,
     ghostUnit,
+    feeDecisionManagerId,
     uploadToVarda,
     uploadToKoski,
     invoicedByMunicipality,
@@ -389,6 +396,7 @@ function validateForm(
         uploadToKoski,
         invoicedByMunicipality,
         costCenter,
+        feeDecisionManagerId,
         additionalInfo,
         phone,
         email,
@@ -454,6 +462,7 @@ function toFormData(unit: Unit | undefined): FormData {
     uploadToKoski: unit?.uploadToKoski ?? false,
     invoicedByMunicipality: unit?.invoicedByMunicipality ?? false,
     costCenter: unit?.costCenter ?? '',
+    feeDecisionManagerId: unit?.feeDecisionManager?.employee.id ?? '',
     additionalInfo: unit?.additionalInfo ?? '',
     phone: unit?.phone ?? '',
     email: unit?.email ?? '',
@@ -518,6 +527,13 @@ export default function UnitEditor(props: Props): JSX.Element {
     value: id,
     label: name
   }))
+
+  const employeeOptions = props.employees.map(
+    ({ id, firstName, lastName }) => ({
+      value: id,
+      label: [firstName, lastName].join(' ')
+    })
+  )
 
   const onClickSubmit = (e: React.MouseEvent) => {
     e.preventDefault()
@@ -979,6 +995,27 @@ export default function UnitEditor(props: Props): JSX.Element {
           />
         ) : (
           form.costCenter
+        )}
+      </FormPart>
+      <FormPart>
+        <div>{showRequired(i18n.unitEditor.label.feeDecisionManager)}</div>
+        {props.editable ? (
+          <Select
+            options={employeeOptions}
+            placeholder={i18n.unitEditor.placeholder.feeDecisionManager}
+            onChange={(value) =>
+              value && 'value' in value
+                ? updateForm({ feeDecisionManagerId: value.value })
+                : undefined
+            }
+          />
+        ) : (
+          props.employees
+            .map((employee) => ({
+              id: employee.id,
+              name: [employee.firstName, employee.lastName].join(' ')
+            }))
+            .find((employee) => employee.id === form.feeDecisionManagerId)?.name
         )}
       </FormPart>
       <FormPart>

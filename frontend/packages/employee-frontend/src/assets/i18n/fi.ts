@@ -2072,6 +2072,7 @@ export const fi = {
       ophOrganizerOid: 'Järjestäjän OID',
       ophOrganizationOid: 'Organisaation OID',
       costCenter: 'Kustannuspaikka',
+      feeDecisionManager: 'Maksupäätöksen käsittelijä',
       additionalInfo: 'Lisätietoja yksiköstä',
       phone: 'Yksikön puhelinnumero',
       email: 'Yksikön sähköpostiosoite',
@@ -2116,6 +2117,7 @@ export const fi = {
       openingDate: 'Alkaen pp.kk.vvvv',
       closingDate: 'Päättyen pp.kk.vvvv',
       area: 'Valitse alue',
+      feeDecisionManager: 'Valitse työntekijä',
       daycareType: 'Valitse tyyppi',
       costCenter: '(eVakasta laskutettaessa pakollinen tieto)',
       additionalInfo:
@@ -2153,7 +2155,8 @@ export const fi = {
         phone: 'Johtajan puhelinnumero puuttuu',
         email: 'Johtajan sähköposti puuttuu'
       },
-      cannotApplyToDifferentType: 'Hakutyyppi ja palvelumuoto eivät vastaa'
+      cannotApplyToDifferentType: 'Hakutyyppi ja palvelumuoto eivät vastaa',
+      feeDecisionManager: 'Maksupäätöksen käsittelijä puuttuu'
     }
   },
   mobile: {

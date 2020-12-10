@@ -29,10 +29,14 @@ import { PlacementType } from '~types/placementdraft'
 import { ApplicationStatus } from '~types/application'
 import FiniteDateRange from '@evaka/lib-common/src/finite-date-range'
 import DateRange from '@evaka/lib-common/src/date-range'
+import { Employee } from '~types/employee'
 
 function convertUnitJson(unit: JsonOf<Unit>): Unit {
   return {
     ...unit,
+    feeDecisionManager: unit.feeDecisionManager
+      ? { employee: mapEmployeeJson(unit.feeDecisionManager.employee) }
+      : null,
     openingDate: unit.openingDate ? LocalDate.parseIso(unit.openingDate) : null,
     closingDate: unit.closingDate ? LocalDate.parseIso(unit.closingDate) : null,
     daycareApplyPeriod: unit.daycareApplyPeriod
@@ -177,6 +181,14 @@ function mapGroupJson(data: JsonOf<DaycareGroup>): DaycareGroup {
     ...data,
     startDate: LocalDate.parseIso(data.startDate),
     endDate: LocalDate.parseNullableIso(data.endDate)
+  }
+}
+
+function mapEmployeeJson(data: JsonOf<Employee>): Employee {
+  return {
+    ...data,
+    updated: new Date(data.updated),
+    created: new Date(data.created)
   }
 }
 
@@ -632,6 +644,7 @@ export interface DaycareFields {
   uploadToKoski: boolean
   invoicedByMunicipality: boolean
   costCenter: string | null
+  feeDecisionManagerId: UUID
   additionalInfo: string | null
   phone: string | null
   email: string | null
