@@ -34,6 +34,7 @@ export default function createKeycloakSamlStrategy(): SamlStrategy {
 
 interface KeycloakProfile {
   nameID: string
+  ID: string
   nameIDFormat?: string
   nameQualifier?: string
   spNameQualifier?: string
@@ -44,7 +45,7 @@ async function verifyKeycloakProfile(
   profile: KeycloakProfile
 ): Promise<SamlUser> {
   const person = await getOrCreateEmployee({
-    aad: '00000000-0000-0000-0007-000000000000',
+    externalId: `evaka:${profile.ID}`,
     firstName: profile.nameID.split('.')[0],
     lastName: profile.nameID.split('.')[1].split('@')[0],
     email: profile.nameID
