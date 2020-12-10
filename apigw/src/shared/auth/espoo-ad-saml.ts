@@ -46,8 +46,10 @@ interface EspooAdProfile {
 }
 
 async function verifyProfile(profile: EspooAdProfile): Promise<SamlUser> {
+  const aad = profile[ESPOO_AD_USER_ID_KEY]
+  if (!aad) throw Error('No user ID in SAML data')
   const person = await getOrCreateEmployee({
-    aad: profile[ESPOO_AD_USER_ID_KEY],
+    externalId: `espoo-ad:${aad}`,
     firstName: profile[ESPOO_AD_GIVEN_NAME_KEY],
     lastName: profile[ESPOO_AD_FAMILY_NAME_KEY],
     email: profile[ESPOO_AD_EMAIL_KEY]
@@ -88,7 +90,7 @@ export default function createEspooAdStrategy():
         firstName,
         lastName,
         email,
-        aad: userId,
+        externalId: `espoo-ad:${userId}`,
         roles: roles as UserRole[]
       })
       return verifyProfile({

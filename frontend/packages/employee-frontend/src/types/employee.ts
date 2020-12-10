@@ -6,7 +6,7 @@ import { UUID } from '~/types'
 
 export interface Employee {
   id: UUID
-  aad: UUID | null
+  externalId: string | null
   firstName: string | null
   lastName: string | null
   email: string

@@ -13,6 +13,7 @@ import { daycareGroupFixture } from '../../dev-api/fixtures'
 import { logConsoleMessages } from '../../utils/fixture'
 import { t } from 'testcafe'
 import {
+  deleteEmployeeById,
   deleteEmployeeFixture,
   insertDaycareGroupFixtures,
   insertEmployeeFixture
@@ -47,15 +48,19 @@ fixture('Employee - paper application')
   .afterEach(logConsoleMessages)
   .after(async () => {
     await cleanUp()
-    await deleteEmployeeFixture(config.supervisorAad)
-    await deleteEmployeeFixture(supervisorId)
+    await deleteEmployeeFixture(config.supervisorExternalId)
+    await deleteEmployeeById(supervisorId)
   })
 
 const formatPersonName = (person: ApplicationPersonDetail) =>
   `${person.lastName} ${person.firstName}`
 
-// eslint-disable-next-line
-const formatPersonAddress = (person: ApplicationPersonDetail) => `${person.streetAddress}, ${person.postalCode} ${person.postOffice}`
+const formatPersonAddress = ({
+  streetAddress,
+  postalCode,
+  postOffice
+}: ApplicationPersonDetail) =>
+  `${streetAddress ?? ''}, ${postalCode ?? ''} ${postOffice ?? ''}`
 
 test('Paper application can be created for guardian and child with ssn', async () => {
   await childInforationPage.openCreateApplicationModal()

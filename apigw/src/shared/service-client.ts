@@ -55,7 +55,7 @@ export interface AuthenticatedUser {
 }
 
 export interface EmployeeIdentityRequest {
-  aad: string
+  externalId: string
   firstName: string
   lastName: string
   email?: string
@@ -63,7 +63,7 @@ export interface EmployeeIdentityRequest {
 
 export interface EmployeeResponse {
   id: string
-  aad: string | null
+  externalId: string | null
   firstName: string
   lastName: string
   email: string

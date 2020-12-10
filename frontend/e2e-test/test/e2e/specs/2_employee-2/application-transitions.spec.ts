@@ -32,7 +32,7 @@ const unitPage = new UnitPage()
 
 const supervisor: EmployeeDetail = {
   id: '552e5bde-92fb-4807-a388-40016f85f593',
-  aad: config.supervisorAad,
+  externalId: config.supervisorExternalId,
   firstName: 'Eeva',
   lastName: 'Esimies',
   email: 'eeva.esimies@espoo.fi',
@@ -53,7 +53,10 @@ fixture('Application-transitions')
       email: `${Math.random().toString(36).substring(7)}@espoo.fi`
     }
     await insertEmployeeFixture(uniqueSupervisor)
-    await setAclForDaycare(config.supervisorAad, fixtures.daycareFixture.id)
+    await setAclForDaycare(
+      config.supervisorExternalId,
+      fixtures.daycareFixture.id
+    )
     await cleanUpMessages()
   })
   .afterEach(async (t) => {
@@ -69,9 +72,12 @@ fixture('Application-transitions')
     await cleanUpMessages()
   })
   .after(async () => {
-    await deleteAclForDaycare(config.supervisorAad, fixtures.daycareFixture.id)
+    await deleteAclForDaycare(
+      config.supervisorExternalId,
+      fixtures.daycareFixture.id
+    )
     await cleanUp()
-    await deleteEmployeeFixture(config.supervisorAad)
+    await deleteEmployeeFixture(config.supervisorExternalId)
   })
 
 test('Supervisor accepts decision on behalf of the enduser', async (t) => {

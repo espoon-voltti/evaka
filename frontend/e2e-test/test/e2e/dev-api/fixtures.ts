@@ -41,7 +41,7 @@ import {
 
 export const supervisor: EmployeeDetail = {
   id: '552e5bde-92fb-4807-a388-40016f85f593',
-  aad: config.supervisorAad,
+  externalId: config.supervisorExternalId,
   firstName: 'Eva',
   lastName: 'Esihenkilo',
   email: 'eva.esihenkilo@espoo.fi',

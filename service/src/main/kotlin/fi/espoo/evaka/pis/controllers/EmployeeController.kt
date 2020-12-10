@@ -54,7 +54,7 @@ class EmployeeController {
 
     @PostMapping("")
     fun createEmployee(db: Database.Connection, user: AuthenticatedUser, @RequestBody employee: NewEmployee): ResponseEntity<Employee> {
-        Audit.EmployeeCreate.log(targetId = employee.aad)
+        Audit.EmployeeCreate.log(targetId = employee.externalId)
         user.requireOneOfRoles(UserRole.ADMIN)
         return ResponseEntity.ok().body(db.transaction { it.handle.createEmployee(employee) })
     }

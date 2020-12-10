@@ -36,7 +36,7 @@ const applicationWorkbench = new ApplicationWorkbenchPage()
 const applicationReadView = new ApplicationReadView()
 const supervisor: EmployeeDetail = {
   id: '552e5bde-92fb-4807-a388-40016f85f593',
-  aad: config.supervisorAad,
+  externalId: config.supervisorExternalId,
   firstName: 'Eeva',
   lastName: 'Esimies',
   email: 'eeva.esimies@espoo.fi',
@@ -55,14 +55,17 @@ fixture('New club application')
       email: `${Math.random().toString(36).substring(7)}@espoo.fi`
     }
     await insertEmployeeFixture(uniqueSupervisor)
-    await setAclForDaycare(config.supervisorAad, fixtures.clubFixture.id)
+    await setAclForDaycare(config.supervisorExternalId, fixtures.clubFixture.id)
     await cleanUpMessages()
   })
   .afterEach(logConsoleMessages)
   .after(async () => {
     applicationId ? await deleteApplication(applicationId) : false
-    await deleteAclForDaycare(config.supervisorAad, fixtures.clubFixture.id)
-    await deleteEmployeeFixture(config.supervisorAad)
+    await deleteAclForDaycare(
+      config.supervisorExternalId,
+      fixtures.clubFixture.id
+    )
+    await deleteEmployeeFixture(config.supervisorExternalId)
     await cleanUpMessages()
     await cleanUp()
   })

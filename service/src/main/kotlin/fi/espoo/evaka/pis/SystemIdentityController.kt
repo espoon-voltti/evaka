@@ -5,6 +5,7 @@
 package fi.espoo.evaka.pis
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.identity.ExternalId
 import fi.espoo.evaka.identity.ExternalIdentifier
 import fi.espoo.evaka.pairing.MobileDeviceIdentity
 import fi.espoo.evaka.pairing.getDeviceByToken
@@ -47,15 +48,15 @@ class SystemIdentityController {
         user: AuthenticatedUser,
         @RequestBody employee: EmployeeIdentityRequest
     ): ResponseEntity<AuthenticatedUser> {
-        Audit.EmployeeGetOrCreate.log(targetId = employee.aad)
+        Audit.EmployeeGetOrCreate.log(targetId = employee.externalId)
         user.assertMachineUser()
         return ResponseEntity.ok(
             db.transaction {
-                it.handle.getEmployeeAuthenticatedUser(employee.aad)
+                it.handle.getEmployeeAuthenticatedUser(employee.externalId)
                     ?: AuthenticatedUser(
                         it.handle.createEmployee(
                             NewEmployee(
-                                aad = employee.aad,
+                                externalId = employee.externalId,
                                 firstName = employee.firstName,
                                 lastName = employee.lastName,
                                 email = employee.email,
@@ -80,7 +81,7 @@ class SystemIdentityController {
     }
 
     data class EmployeeIdentityRequest(
-        val aad: UUID,
+        val externalId: ExternalId,
         val firstName: String,
         val lastName: String,
         val email: String?

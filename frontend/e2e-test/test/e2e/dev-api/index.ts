@@ -259,9 +259,17 @@ export async function insertBackupCareFixtures(
   }
 }
 
-export async function deleteEmployeeFixture(aad: UUID): Promise<void> {
+export async function deleteEmployeeFixture(externalId: string): Promise<void> {
   try {
-    await devClient.delete(`/employee/${aad}`)
+    await devClient.delete(`/employee/external-id/${externalId}`)
+  } catch (e) {
+    throw new DevApiError(e)
+  }
+}
+
+export async function deleteEmployeeById(id: UUID): Promise<void> {
+  try {
+    await devClient.delete(`/employee/${id}`)
   } catch (e) {
     throw new DevApiError(e)
   }
@@ -299,22 +307,22 @@ export async function insertParentshipFixtures(
 }
 
 export async function setAclForDaycares(
-  personAad: UUID,
+  externalId: string,
   daycareId: UUID
 ): Promise<void> {
   try {
-    await devClient.put(`/daycares/${daycareId}/acl`, { personAad })
+    await devClient.put(`/daycares/${daycareId}/acl`, { externalId })
   } catch (e) {
     throw new DevApiError(e)
   }
 }
 
 export async function deleteAclForDaycare(
-  supervisorId: UUID,
+  externalId: string,
   daycareId: UUID
 ): Promise<void> {
   try {
-    await devClient.delete(`/daycares/${daycareId}/acl/${supervisorId}`)
+    await devClient.delete(`/daycares/${daycareId}/acl/${externalId}`)
   } catch (e) {
     throw new DevApiError(e)
   }

@@ -13,6 +13,7 @@ import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.daycare.service.CareType
 import fi.espoo.evaka.decision.DecisionStatus
 import fi.espoo.evaka.decision.DecisionType
+import fi.espoo.evaka.identity.ExternalId
 import fi.espoo.evaka.invoicing.domain.FeeAlteration
 import fi.espoo.evaka.invoicing.domain.IncomeEffect
 import fi.espoo.evaka.invoicing.domain.IncomeType
@@ -85,11 +86,11 @@ RETURNING id
 """
 )
 
-fun updateDaycareAcl(h: Handle, daycareId: UUID, personAad: UUID, role: UserRole) {
+fun updateDaycareAcl(h: Handle, daycareId: UUID, externalId: ExternalId, role: UserRole) {
     h
-        .createUpdate("INSERT INTO daycare_acl (employee_id, daycare_id, role) VALUES ((SELECT id from employee where aad_object_id = :aad_object_id), :daycare_id, :role)")
+        .createUpdate("INSERT INTO daycare_acl (employee_id, daycare_id, role) VALUES ((SELECT id from employee where external_id = :external_id), :daycare_id, :role)")
         .bind("daycare_id", daycareId)
-        .bind("aad_object_id", personAad)
+        .bind("external_id", externalId)
         .bind("role", role)
         .execute()
 }
@@ -107,7 +108,7 @@ fun Database.Transaction.createMobileDeviceToUnit(id: UUID, unitId: UUID, name: 
     // language=sql
     val sql =
         """
-        INSERT INTO employee (id, first_name, last_name, email, aad_object_id)
+        INSERT INTO employee (id, first_name, last_name, email, external_id)
         VALUES (:id, :name, 'Yksikkö', null, null);
         
         INSERT INTO mobile_device (id, unit_id, name) VALUES (:id, :unitId, :name);
@@ -120,19 +121,19 @@ fun Database.Transaction.createMobileDeviceToUnit(id: UUID, unitId: UUID, name: 
         .execute()
 }
 
-fun removeDaycareAcl(h: Handle, daycareId: UUID, personAad: UUID) {
+fun removeDaycareAcl(h: Handle, daycareId: UUID, externalId: ExternalId) {
     h
-        .createUpdate("DELETE FROM daycare_acl WHERE daycare_id=:daycare_id AND employee_id=(SELECT id from employee where aad_object_id = :aad_object_id)")
+        .createUpdate("DELETE FROM daycare_acl WHERE daycare_id=:daycare_id AND employee_id=(SELECT id from employee where external_id = :external_id)")
         .bind("daycare_id", daycareId)
-        .bind("aad_object_id", personAad)
+        .bind("external_id", externalId)
         .execute()
 }
 
 fun Handle.insertTestEmployee(employee: DevEmployee) = insertTestDataRow(
     employee,
     """
-INSERT INTO employee (id, first_name, last_name, email, aad_object_id, roles)
-VALUES (:id, :firstName, :lastName, :email, :aad, :roles::user_role[])
+INSERT INTO employee (id, first_name, last_name, email, external_id, roles)
+VALUES (:id, :firstName, :lastName, :email, :externalId, :roles::user_role[])
 RETURNING id
 """
 )
