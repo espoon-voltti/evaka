@@ -170,7 +170,7 @@ class VtjClientServiceTest : AbstractIntegrationTest() {
         firstName = "Integration",
         lastName = "Test",
         email = "integration-test@example.org",
-        aad = null,
+        externalId = null,
         created = Instant.now(),
         updated = null
     )

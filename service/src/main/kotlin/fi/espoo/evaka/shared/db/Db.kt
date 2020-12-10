@@ -9,6 +9,7 @@ import com.fasterxml.jackson.datatype.jdk8.Jdk8Module
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.fasterxml.jackson.module.paramnames.ParameterNamesModule
+import fi.espoo.evaka.identity.ExternalId
 import fi.espoo.evaka.shared.domain.ClosedPeriod
 import fi.espoo.evaka.shared.domain.Coordinate
 import fi.espoo.evaka.shared.domain.Period
@@ -75,9 +76,11 @@ fun configureJdbi(jdbi: Jdbi): Jdbi {
     jdbi.registerArgument(periodArgumentFactory)
     jdbi.registerArgument(coordinateArgumentFactory)
     jdbi.registerArgument(identityArgumentFactory)
+    jdbi.registerArgument(externalIdArgumentFactory)
     jdbi.registerColumnMapper(ClosedPeriod::class.java, closedPeriodColumnMapper)
     jdbi.registerColumnMapper(Period::class.java, periodColumnMapper)
     jdbi.registerColumnMapper(Coordinate::class.java, coordinateColumnMapper)
+    jdbi.registerColumnMapper(ExternalId::class.java, externalIdColumnMapper)
     jdbi.registerArrayType(UUID::class.java, "uuid")
     return jdbi
 }
@@ -92,7 +95,10 @@ fun configureJdbi(jdbi: Jdbi): Jdbi {
 inline fun <reified T : Any, This : SqlStatement<This>> SqlStatement<This>.bindNullable(name: String, value: T?): This =
     this.bindByType(name, value, QualifiedType.of(T::class.java))
 
-inline fun <reified T : Any, This : SqlStatement<This>> SqlStatement<This>.bindNullable(name: String, value: Collection<T>?): This =
+inline fun <reified T : Any, This : SqlStatement<This>> SqlStatement<This>.bindNullable(
+    name: String,
+    value: Collection<T>?
+): This =
     this.bindNullable(name, value?.toTypedArray())
 
 /**

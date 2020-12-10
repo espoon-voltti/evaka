@@ -262,7 +262,7 @@ export interface EmployeeDetail {
   id?: string
   firstName: string
   lastName: string
-  aad?: string
+  externalId?: string
   email?: string
   roles: UserRole[]
 }

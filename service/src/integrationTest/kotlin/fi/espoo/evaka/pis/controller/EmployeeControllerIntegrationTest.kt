@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.pis.controller
 
+import fi.espoo.evaka.identity.ExternalId
 import fi.espoo.evaka.pis.AbstractIntegrationTest
 import fi.espoo.evaka.pis.Employee
 import fi.espoo.evaka.pis.NewEmployee
@@ -38,7 +39,7 @@ class EmployeeControllerIntegrationTest : AbstractIntegrationTest() {
         assertEquals(employee1.firstName, response.body!!.firstName)
         assertEquals(employee1.lastName, response.body!!.lastName)
         assertEquals(employee1.email, response.body!!.email)
-        assertEquals(employee1.aad, response.body!!.aad)
+        assertEquals(employee1.externalId, response.body!!.externalId)
     }
 
     @Test
@@ -82,14 +83,14 @@ class EmployeeControllerIntegrationTest : AbstractIntegrationTest() {
         email = employee.email,
         firstName = employee.firstName,
         lastName = employee.lastName,
-        aad = employee.aad
+        externalId = employee.externalId
     )
 
     val employee1 = Employee(
         email = "employee1@espoo.fi",
         firstName = "etunimi1",
         lastName = "sukunimi1",
-        aad = UUID.randomUUID(),
+        externalId = ExternalId.of(namespace = "espoo-ad", value = UUID.randomUUID().toString()),
         created = Instant.now(),
         updated = Instant.now(),
         id = UUID.randomUUID()
@@ -99,7 +100,7 @@ class EmployeeControllerIntegrationTest : AbstractIntegrationTest() {
         email = "employee2@espoo.fi",
         firstName = "etunimi2",
         lastName = "sukunimi2",
-        aad = UUID.randomUUID(),
+        externalId = ExternalId.of(namespace = "espoo-ad", value = UUID.randomUUID().toString()),
         created = Instant.now(),
         updated = Instant.now(),
         id = UUID.randomUUID()

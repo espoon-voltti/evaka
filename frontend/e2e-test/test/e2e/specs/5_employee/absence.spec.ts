@@ -45,12 +45,15 @@ fixture('Employee - Absences')
     ;[fixtures, cleanUp] = await initializeAreaAndPersonData()
     await insertDaycareGroupFixtures([daycareGroupFixture])
     await insertEmployeeFixture({
-      aad: config.supervisorAad,
+      externalId: config.supervisorExternalId,
       firstName: 'Seppo',
       lastName: 'Sorsa',
       roles: []
     })
-    await setAclForDaycares(config.supervisorAad, fixtures.daycareFixture.id)
+    await setAclForDaycares(
+      config.supervisorExternalId,
+      fixtures.daycareFixture.id
+    )
 
     daycarePlacementFixture = createDaycarePlacementFixture(
       fixtures.enduserChildFixtureJari.id,
@@ -65,7 +68,7 @@ fixture('Employee - Absences')
   .afterEach(logConsoleMessages)
   .after(async () => {
     await cleanUp()
-    await deleteEmployeeFixture(config.supervisorAad)
+    await deleteEmployeeFixture(config.supervisorExternalId)
   })
 
 test('User can place a child into a group and remove the child from the group', async (t) => {

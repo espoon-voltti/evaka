@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.pis
 
+import fi.espoo.evaka.identity.ExternalId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import org.jdbi.v3.core.Handle
@@ -15,16 +16,16 @@ data class NewEmployee(
     val firstName: String,
     val lastName: String,
     val email: String?,
-    val aad: UUID?,
+    val externalId: ExternalId?,
     val roles: Set<UserRole> = setOf()
 )
 
 fun Handle.createEmployee(employee: NewEmployee): Employee = createUpdate(
     // language=SQL
     """
-INSERT INTO employee (first_name, last_name, email, aad_object_id, roles)
-VALUES (:employee.firstName, :employee.lastName, :employee.email, :employee.aad, :employee.roles::user_role[])
-RETURNING id, first_name, last_name, email, aad_object_id AS aad, created, updated, roles
+INSERT INTO employee (first_name, last_name, email, external_id, roles)
+VALUES (:employee.firstName, :employee.lastName, :employee.email, :employee.externalId, :employee.roles::user_role[])
+RETURNING id, first_name, last_name, email, external_id, created, updated, roles
     """.trimIndent()
 ).bindKotlin("employee", employee)
     .executeAndReturnGeneratedKeys()
@@ -34,7 +35,7 @@ RETURNING id, first_name, last_name, email, aad_object_id AS aad, created, updat
 private fun Handle.searchEmployees(id: UUID? = null) = createQuery(
     // language=SQL
     """
-SELECT id, first_name, last_name, email, aad_object_id AS aad, created, updated, roles
+SELECT id, first_name, last_name, email, external_id, created, updated, roles
 FROM employee
 WHERE (:id::uuid IS NULL OR id = :id)
     """.trimIndent()
@@ -44,7 +45,7 @@ WHERE (:id::uuid IS NULL OR id = :id)
 
 fun Handle.getEmployees(): List<Employee> = searchEmployees().toList()
 fun Handle.getEmployee(id: UUID): Employee? = searchEmployees(id = id).firstOrNull()
-fun Handle.getEmployeeAuthenticatedUser(aad: UUID): AuthenticatedUser? = createQuery(
+fun Handle.getEmployeeAuthenticatedUser(externalId: ExternalId): AuthenticatedUser? = createQuery(
     // language=SQL
     """
 SELECT id, employee.roles
@@ -55,9 +56,9 @@ SELECT id, employee.roles
   )
   AS roles
 FROM employee
-WHERE aad_object_id = :aad
+WHERE external_id = :externalId
     """.trimIndent()
-).bind("aad", aad).mapTo<AuthenticatedUser>().singleOrNull()
+).bind("externalId", externalId).mapTo<AuthenticatedUser>().singleOrNull()
 
 fun Handle.deleteEmployee(employeeId: UUID) = createUpdate(
     // language=SQL
@@ -68,21 +69,21 @@ WHERE id = :employeeId
 ).bind("employeeId", employeeId)
     .execute()
 
-fun Handle.deleteEmployeeByAad(aad: UUID) = createUpdate(
+fun Handle.deleteEmployeeByExternalId(externalId: ExternalId) = createUpdate(
     // language=SQL
     """
 DELETE FROM employee
-WHERE aad_object_id = :aad
+WHERE external_id = :externalId
     """.trimIndent()
-).bind("aad", aad)
+).bind("externalId", externalId)
     .execute()
 
-fun Handle.deleteEmployeeRolesByAad(aad: UUID) = createUpdate(
+fun Handle.deleteEmployeeRolesByExternalId(externalId: ExternalId) = createUpdate(
     // language=SQL
     """
 UPDATE employee
 SET roles='{}'
-WHERE aad_object_id = :aad
+WHERE external_id = :externalId
     """.trimIndent()
-).bind("aad", aad)
+).bind("externalId", externalId)
     .execute()

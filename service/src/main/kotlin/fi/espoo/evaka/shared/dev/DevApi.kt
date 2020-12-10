@@ -29,6 +29,7 @@ import fi.espoo.evaka.decision.DecisionType
 import fi.espoo.evaka.decision.insertDecision
 import fi.espoo.evaka.emailclient.MockApplicationEmail
 import fi.espoo.evaka.emailclient.MockEmailClient
+import fi.espoo.evaka.identity.ExternalId
 import fi.espoo.evaka.identity.ExternalIdentifier
 import fi.espoo.evaka.invoicing.data.upsertFeeDecisions
 import fi.espoo.evaka.invoicing.data.upsertInvoices
@@ -44,8 +45,8 @@ import fi.espoo.evaka.pairing.initPairing
 import fi.espoo.evaka.pairing.respondPairingChallengeCreateDevice
 import fi.espoo.evaka.pis.Employee
 import fi.espoo.evaka.pis.createPersonFromVtj
-import fi.espoo.evaka.pis.deleteEmployeeByAad
-import fi.espoo.evaka.pis.deleteEmployeeRolesByAad
+import fi.espoo.evaka.pis.deleteEmployeeByExternalId
+import fi.espoo.evaka.pis.deleteEmployeeRolesByExternalId
 import fi.espoo.evaka.pis.getEmployees
 import fi.espoo.evaka.pis.getPersonBySSN
 import fi.espoo.evaka.pis.service.PersonDTO
@@ -149,15 +150,15 @@ class DevApi(
         @RequestBody body: DaycareAclInsert
     ): ResponseEntity<Unit> {
         db.transaction { tx ->
-            updateDaycareAcl(tx.handle, daycareId, body.personAad, UserRole.UNIT_SUPERVISOR)
+            updateDaycareAcl(tx.handle, daycareId, body.externalId, UserRole.UNIT_SUPERVISOR)
         }
         return ResponseEntity.noContent().build()
     }
 
-    @DeleteMapping("/daycares/{daycareId}/acl/{userAad}")
-    fun removeUserAccessToDaycare(db: Database, @PathVariable daycareId: UUID, @PathVariable userAad: UUID): ResponseEntity<Unit> {
+    @DeleteMapping("/daycares/{daycareId}/acl/{externalId}")
+    fun removeUserAccessToDaycare(db: Database, @PathVariable daycareId: UUID, @PathVariable externalId: ExternalId): ResponseEntity<Unit> {
         db.transaction { tx ->
-            removeDaycareAcl(tx.handle, daycareId, userAad)
+            removeDaycareAcl(tx.handle, daycareId, externalId)
         }
         return ResponseEntity.ok().build()
     }
@@ -380,20 +381,20 @@ DELETE FROM attachment USING ApplicationsDeleted WHERE application_id = Applicat
         return ResponseEntity.ok(db.transaction { it.handle.insertTestEmployee(body) })
     }
 
-    @DeleteMapping("/employee/{aad}")
-    fun deleteEmployee(db: Database, @PathVariable aad: UUID): ResponseEntity<Unit> {
-        db.transaction { it.handle.deleteEmployeeByAad(aad) }
+    @DeleteMapping("/employee/{externalId}")
+    fun deleteEmployee(db: Database, @PathVariable externalId: ExternalId): ResponseEntity<Unit> {
+        db.transaction { it.handle.deleteEmployeeByExternalId(externalId) }
         return ResponseEntity.ok().build()
     }
 
-    @PostMapping("/employee/aad/{aad}")
-    fun upsertEmployeeByAad(db: Database, @PathVariable aad: UUID, @RequestBody employee: DevEmployee): ResponseEntity<UUID> = db.transaction {
+    @PostMapping("/employee/external-id/{externalId}")
+    fun upsertEmployeeByExternalId(db: Database, @PathVariable externalId: ExternalId, @RequestBody employee: DevEmployee): ResponseEntity<UUID> = db.transaction {
         ResponseEntity.ok(
             it.createUpdate(
                 """
-INSERT INTO employee (first_name, last_name, email, aad_object_id, roles)
-VALUES (:firstName, :lastName, :email, :aad, :roles::user_role[])
-ON CONFLICT (aad_object_id) DO UPDATE SET
+INSERT INTO employee (first_name, last_name, email, external_id, roles)
+VALUES (:firstName, :lastName, :email, :externalId, :roles::user_role[])
+ON CONFLICT (external_id) DO UPDATE SET
     first_name = excluded.first_name,
     last_name = excluded.last_name,
     email = excluded.email,
@@ -404,9 +405,9 @@ RETURNING id
         )
     }
 
-    @DeleteMapping("/employee/roles/aad/{aad}")
-    fun deleteEmployeeRolesByAad(db: Database, @PathVariable aad: UUID): ResponseEntity<Unit> {
-        db.transaction { it.handle.deleteEmployeeRolesByAad(aad) }
+    @DeleteMapping("/employee/roles/external-id/{externalId}")
+    fun deleteEmployeeRolesByExternalId(db: Database, @PathVariable externalId: ExternalId): ResponseEntity<Unit> {
+        db.transaction { it.handle.deleteEmployeeRolesByExternalId(externalId) }
         return ResponseEntity.ok().build()
     }
 
@@ -646,8 +647,8 @@ fun ensureFakeAdminExists(h: Handle) {
     // language=sql
     val sql =
         """
-        INSERT INTO employee (id, first_name, last_name, email, aad_object_id, roles)
-        VALUES (:id, 'Dev', 'API', 'dev.api@espoo.fi', :id, '{ADMIN, SERVICE_WORKER}'::user_role[])
+        INSERT INTO employee (id, first_name, last_name, email, external_id, roles)
+        VALUES (:id, 'Dev', 'API', 'dev.api@espoo.fi', 'espoo-ad' || :id, '{ADMIN, SERVICE_WORKER}'::user_role[])
         ON CONFLICT DO NOTHING
         """.trimIndent()
 
@@ -963,12 +964,12 @@ data class DevEmployee(
     val firstName: String = "Test",
     val lastName: String = "Person",
     val email: String? = "test.person@espoo.fi",
-    val aad: UUID? = null,
+    val externalId: ExternalId? = null,
     val roles: Set<UserRole> = setOf()
 )
 
 data class DaycareAclInsert(
-    val personAad: UUID
+    val externalId: ExternalId
 )
 
 data class ClubTerm(

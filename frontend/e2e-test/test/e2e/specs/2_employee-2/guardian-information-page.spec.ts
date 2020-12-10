@@ -83,7 +83,7 @@ fixture('Employee - Guardian Information')
   .after(async () => {
     applicationId && (await deleteApplication(applicationId))
     await cleanUp()
-    await deleteEmployeeFixture(config.supervisorAad)
+    await deleteEmployeeFixture(config.supervisorExternalId)
   })
 
 test('guardian information is shown', async () => {

@@ -47,7 +47,7 @@ fixture('Employee - paper application')
   .afterEach(logConsoleMessages)
   .after(async () => {
     await cleanUp()
-    await deleteEmployeeFixture(config.supervisorAad)
+    await deleteEmployeeFixture(config.supervisorExternalId)
     await deleteEmployeeFixture(supervisorId)
   })
 

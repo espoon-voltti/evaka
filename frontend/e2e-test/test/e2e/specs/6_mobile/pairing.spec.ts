@@ -24,9 +24,9 @@ import { t } from 'testcafe'
 
 const pairingFlow = new PairingFlow()
 
-const employeeAads = [
-  'df979243-f081-4241-bc4f-e93a019bddfa',
-  '7e7daa1e-2e92-4c36-9e90-63cea3cd8f3f'
+const employeeExternalIds = [
+  'espoo-ad:df979243-f081-4241-bc4f-e93a019bddfa',
+  'espoo-ad:7e7daa1e-2e92-4c36-9e90-63cea3cd8f3f'
 ] as const
 
 let pairingId: UUID | undefined = undefined
@@ -40,25 +40,28 @@ fixture('Mobile pairing')
   .page(config.adminUrl)
   .before(async () => {
     ;[fixtures, cleanUp] = await initializeAreaAndPersonData()
-    await deleteEmployeeFixture(config.supervisorAad)
+    await deleteEmployeeFixture(config.supervisorExternalId)
     await insertEmployeeFixture({
-      aad: config.supervisorAad,
+      externalId: config.supervisorExternalId,
       firstName: 'Seppo',
       lastName: 'Sorsa',
       email: 'seppo.sorsa@espoo.fi',
       roles: []
     })
-    await setAclForDaycares(config.supervisorAad, fixtures.daycareFixture.id)
+    await setAclForDaycares(
+      config.supervisorExternalId,
+      fixtures.daycareFixture.id
+    )
     await Promise.all([
       insertEmployeeFixture({
-        aad: employeeAads[0],
+        externalId: employeeExternalIds[0],
         firstName: 'Pete',
         lastName: 'Päiväkoti',
         email: 'pete@example.com',
         roles: []
       }),
       insertEmployeeFixture({
-        aad: employeeAads[1],
+        externalId: employeeExternalIds[1],
         firstName: 'Yrjö',
         lastName: 'Yksikkö',
         email: 'yy@example.com',
@@ -80,8 +83,8 @@ fixture('Mobile pairing')
       deviceId = null
     }
     await cleanUp()
-    await Promise.all(employeeAads.map(deleteEmployeeFixture))
-    await deleteEmployeeFixture(config.supervisorAad)
+    await Promise.all(employeeExternalIds.map(deleteEmployeeFixture))
+    await deleteEmployeeFixture(config.supervisorExternalId)
   })
 
 test('User can add a mobile device mobile side', async (t) => {

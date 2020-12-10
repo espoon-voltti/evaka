@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.pis
 
+import fi.espoo.evaka.identity.ExternalId
 import java.time.Instant
 import java.util.UUID
 
@@ -12,7 +13,7 @@ data class Employee(
     val firstName: String,
     val lastName: String,
     val email: String?,
-    val aad: UUID?,
+    val externalId: ExternalId?,
     val created: Instant,
     val updated: Instant?
 )

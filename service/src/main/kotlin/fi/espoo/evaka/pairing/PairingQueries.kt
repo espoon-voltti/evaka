@@ -63,7 +63,7 @@ fun Database.Transaction.respondPairingChallengeCreateDevice(id: UUID, challenge
                 WHERE p.id = :id AND p.challenge_key = :challenge AND p.response_key = :response 
                     AND p.status = 'WAITING_RESPONSE' AND p.expires > :now AND p.attempts <= :maxAttempts
             ), new_employee AS (
-                INSERT INTO employee (first_name, last_name, email, aad_object_id)
+                INSERT INTO employee (first_name, last_name, email, external_id)
                 SELECT :name, unit_name, null, null
                 FROM target_pairing
                 RETURNING employee.id

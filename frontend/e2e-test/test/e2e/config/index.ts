@@ -2,16 +2,23 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { UUID } from '../dev-api/types'
+
 interface Config {
   env: string | undefined
   adminUrl: string
   employeeUrl: string
   devApiGwUrl: string
   enduserUrl: string
-  supervisorAad: string
-  adminAad: string
+  supervisorAad: UUID
+  supervisorExternalId: string
+  adminAad: UUID
+  adminExternalId: string
   mobileUrl: string
 }
+
+const supervisorAad = '123dc92c-278b-4cea-9e54-2cc7e41555f3'
+const adminAad = 'c50be1c1-304d-4d5a-86a0-1fad225c76cb'
 
 const config: Config = {
   env: process.env.TEST_ENV,
@@ -23,8 +30,10 @@ const config: Config = {
     process.env.BASE_URL || 'http://localhost:3020'
   }/api/internal/dev-api`,
   enduserUrl: process.env.BASE_URL || 'http://localhost:9091',
-  supervisorAad: '123dc92c-278b-4cea-9e54-2cc7e41555f3',
-  adminAad: 'c50be1c1-304d-4d5a-86a0-1fad225c76cb',
+  supervisorAad,
+  supervisorExternalId: `espoo-ad:${supervisorAad}`,
+  adminAad,
+  adminExternalId: `espoo-ad:${adminAad}`,
   mobileUrl: `${
     process.env.BASE_URL || 'http://localhost:9093'
   }/employee/mobile`
