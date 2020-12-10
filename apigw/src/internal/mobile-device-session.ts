@@ -9,9 +9,9 @@ import {
   toRequestHandler
 } from '../shared/express'
 import {
-  UUID,
-  getMobileDevice,
-  validatePairing
+  identifyMobileDevice,
+  validatePairing,
+  MobileDeviceIdentity
 } from '../shared/service-client'
 import { useSecureCookies } from '../shared/config'
 import { fromCallback } from '../shared/promise-utils'
@@ -25,12 +25,12 @@ function daysToMillis(days: number): number {
 async function mobileLogin(
   req: express.Request,
   res: express.Response,
-  deviceId: UUID
+  device: MobileDeviceIdentity
 ) {
   await fromCallback((cb) =>
     req.logIn(
       {
-        id: deviceId,
+        id: device.id,
         roles: ['MOBILE'],
         userType: 'MOBILE'
       },
@@ -39,7 +39,7 @@ async function mobileLogin(
   )
   // Unconditionally refresh long-term cookie on each login to refresh expiry
   // time and make it a "rolling" cookie
-  res.cookie(mobileLongTermCookieName, deviceId, {
+  res.cookie(mobileLongTermCookieName, device.longTermToken, {
     maxAge: daysToMillis(90),
     httpOnly: true,
     secure: useSecureCookies,
@@ -50,10 +50,10 @@ async function mobileLogin(
 
 export const refreshMobileSession = toMiddleware(async (req, res) => {
   if (!req.user) {
-    const deviceId = req.signedCookies[mobileLongTermCookieName]
-    if (deviceId) {
-      await getMobileDevice(req, deviceId)
-      await mobileLogin(req, res, deviceId)
+    const token = req.signedCookies[mobileLongTermCookieName]
+    if (token) {
+      const deviceIdentity = await identifyMobileDevice(req, token)
+      await mobileLogin(req, res, deviceIdentity)
     }
   }
 })
@@ -62,7 +62,10 @@ export default toRequestHandler(async (req, res) => {
   const id = assertStringProp(req.body, 'id')
   const challengeKey = assertStringProp(req.body, 'challengeKey')
   const responseKey = assertStringProp(req.body, 'responseKey')
-  const deviceId = await validatePairing(req, id, { challengeKey, responseKey })
-  await mobileLogin(req, res, deviceId)
+  const deviceIdentity = await validatePairing(req, id, {
+    challengeKey,
+    responseKey
+  })
+  await mobileLogin(req, res, deviceIdentity)
   res.sendStatus(204)
 })

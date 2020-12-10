@@ -134,7 +134,7 @@ class PairingsController(
         db: Database.Connection,
         @PathVariable id: UUID,
         @RequestBody body: PostPairingValidationReq
-    ): ResponseEntity<Pairing> {
+    ): ResponseEntity<MobileDeviceIdentity> {
         Audit.PairingValidation.log(targetId = id)
         db.transaction { it.incrementAttempts(id, body.challengeKey) }
 

@@ -15,6 +15,10 @@ fun Database.Read.getDevice(id: UUID): MobileDevice {
         .firstOrNull() ?: throw NotFound("Device $id not found")
 }
 
+fun Database.Read.getDeviceByToken(token: UUID): MobileDeviceIdentity = createQuery(
+    "SELECT id, long_term_token FROM mobile_device WHERE long_term_token = : token AND deleted = false"
+).mapTo<MobileDeviceIdentity>().singleOrNull() ?: throw NotFound("Device not found with token $token")
+
 fun Database.Read.listDevices(unitId: UUID): List<MobileDevice> {
     // language=sql
     val sql = "SELECT * FROM mobile_device WHERE unit_id = :unitId AND deleted = false"

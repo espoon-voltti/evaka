@@ -26,3 +26,5 @@ data class MobileDevice(
     val name: String,
     val unitId: UUID
 )
+
+data class MobileDeviceIdentity(val id: UUID, val longTermToken: UUID)

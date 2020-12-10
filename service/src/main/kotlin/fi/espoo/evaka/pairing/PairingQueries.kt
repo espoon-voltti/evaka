@@ -68,7 +68,7 @@ fun Database.Transaction.respondPairingChallengeCreateDevice(id: UUID, challenge
                 FROM target_pairing
                 RETURNING employee.id
             ), new_device AS (
-                INSERT INTO mobile_device (id, unit_id, name) 
+                INSERT INTO mobile_device (id, unit_id, name)
                 SELECT new_employee.id, target_pairing.unit_id, :name
                 FROM new_employee, target_pairing
                 RETURNING mobile_device.id
@@ -90,14 +90,19 @@ fun Database.Transaction.respondPairingChallengeCreateDevice(id: UUID, challenge
         .firstOrNull() ?: throw NotFound("Valid pairing not found")
 }
 
-fun Database.Transaction.validatePairing(id: UUID, challengeKey: String, responseKey: String): Pairing {
+fun Database.Transaction.validatePairing(id: UUID, challengeKey: String, responseKey: String): MobileDeviceIdentity {
     // language=sql
     val sql =
         """
-            UPDATE pairing SET status = 'PAIRED'
-            WHERE id = :id AND challenge_key = :challenge AND response_key = :response AND status = 'READY' AND expires > :now AND attempts <= :maxAttempts
-            RETURNING *
-        """.trimIndent()
+WITH target_pairing AS (
+    UPDATE pairing SET status = 'PAIRED'
+    WHERE id = :id AND challenge_key = :challenge AND response_key = :response AND status = 'READY' AND expires > :now AND attempts <= :maxAttempts
+    RETURNING mobile_device_id
+)
+UPDATE mobile_device SET long_term_token = :longTermToken
+WHERE id = (SELECT mobile_device_id FROM target_pairing)
+RETURNING id, long_term_token
+        """
 
     return createQuery(sql)
         .bind("id", id)
@@ -105,7 +110,8 @@ fun Database.Transaction.validatePairing(id: UUID, challengeKey: String, respons
         .bind("response", responseKey)
         .bind("now", ZonedDateTime.now(zoneId).toInstant())
         .bind("maxAttempts", maxAttempts)
-        .mapTo<Pairing>()
+        .bind("longTermToken", UUID.randomUUID())
+        .mapTo<MobileDeviceIdentity>()
         .firstOrNull() ?: throw NotFound("Valid pairing not found")
 }
 

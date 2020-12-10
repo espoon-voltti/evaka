@@ -121,11 +121,16 @@ export interface ValidatePairingRequest {
   responseKey: string
 }
 
+export interface MobileDeviceIdentity {
+  id: UUID
+  longTermToken: UUID
+}
+
 export async function validatePairing(
   req: express.Request,
   id: UUID,
   request: ValidatePairingRequest
-): Promise<UUID> {
+): Promise<MobileDeviceIdentity> {
   const { data } = await client.post(
     `/system/pairings/${encodeURIComponent(id)}/validation`,
     request,
@@ -133,17 +138,26 @@ export async function validatePairing(
       headers: createServiceRequestHeaders(req, machineUser)
     }
   )
-  const mobileDeviceId = data.mobileDeviceId
-  if (!mobileDeviceId || typeof mobileDeviceId !== 'string') {
-    throw new Error(`No mobile device ID in pairing`)
-  }
-  return mobileDeviceId
+  return data
 }
 
 export interface MobileDevice {
   id: UUID
   name: string
   unitId: UUID
+}
+
+export async function identifyMobileDevice(
+  req: express.Request,
+  token: UUID
+): Promise<MobileDeviceIdentity> {
+  const { data } = await client.get(
+    `/system/mobile-identity/${encodeURIComponent(token)}`,
+    {
+      headers: createServiceRequestHeaders(req, machineUser)
+    }
+  )
+  return data
 }
 
 export async function getMobileDevice(
