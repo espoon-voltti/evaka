@@ -2,6 +2,10 @@ Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Upstream-Name: evaka
 Source: https://github.com/espoon-voltti/evaka
 
+Files: .github/*
+Copyright: 2017-2020 City of Espoo
+License: LGPL-2.1-or-later
+
 Files: apigw/config/certificates/*
 Copyright: 2017-2020 City of Espoo
 License: LGPL-2.1-or-later
