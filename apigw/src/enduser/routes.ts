@@ -11,6 +11,7 @@ const proxy = createProxy()
 router.get('/decisions', createProxy({ path: '/enduser/decisions' }))
 router.get('/decisions2/:decisionId/download', proxy)
 router.get('/attachments/:attachmentId/download', proxy)
+router.get('/attachments/:attachmentId/pre-download', proxy)
 
 router.post('/enduser/v2/applications', proxy)
 router.get('/enduser/v2/applications', proxy)

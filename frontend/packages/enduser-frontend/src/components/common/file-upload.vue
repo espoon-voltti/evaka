@@ -36,15 +36,13 @@ SPDX-License-Identifier: LGPL-2.1-or-later
         </div>
         <div class="file-details">
           <div class="file-header">
-            <a
+            <button
               v-if="file.id"
-              class="file-name"
-              :href="`/api/application/attachments/${file.id}/download`"
-              target="_blank"
-              rel="noreferrer"
+              class="file-name-button"
+              @click="checkFileAvailability(file)"
             >
               {{ file.name }}
-            </a>
+            </button>
             <span v-else class="file-name">{{ file.name }}</span>
             <div>
               <button
@@ -101,17 +99,56 @@ SPDX-License-Identifier: LGPL-2.1-or-later
         </div>
       </div>
     </div>
+
+    <confirm-modal
+      :header="$t('file-upload.modal-header')"
+      :message="$t('file-upload.modal-message')"
+      :acceptText="$t('file-upload.modal-confirm')"
+      ref="fileUnavailableModal"
+    >
+    </confirm-modal>
   </div>
 </template>
 
 <script>
+  import axios from 'axios'
+  import ConfirmModal from '@/components/modal/confirm.vue'
   export default {
     props: {
       files: Array,
       onUpload: Function,
       onDelete: Function
     },
+    components: {
+      ConfirmModal
+    },
     methods: {
+      checkFileAvailability(file) {
+        axios({
+          url: `/api/application/attachments/${file.id}/pre-download`,
+          method: 'GET'
+        }).then((response) => {
+          if (response.data.fileAvailable === true) { return this.deliverBlob(file) }
+          this.showFileUnavailableModal()
+        })
+      },
+      deliverBlob(file) {
+        axios({
+          url: `/api/application/attachments/${file.id}/download`,
+          method: 'GET',
+          responseType: 'blob',
+        }).then((response) => {
+          const url = window.URL.createObjectURL(new Blob([response.data]))
+          const link = document.createElement('a')
+          link.href = url
+          link.target = "_blank"
+          link.setAttribute('download', `${file.name}`)
+          link.rel = "noreferrer"
+          document.body.appendChild(link)
+          link.click()
+          link.remove()
+        })
+      },
       onChange(event) {
         this.onUpload(event.target.files[0])
       },
@@ -119,6 +156,9 @@ SPDX-License-Identifier: LGPL-2.1-or-later
         if (event.dataTransfer.files && event.dataTransfer.files[0]) {
           this.onUpload(event.dataTransfer.files[0])
         }
+      },
+      showFileUnavailableModal() {
+        this.$refs.fileUnavailableModal.open()
       },
       deleteFile(file) {
         this.onDelete(file)
@@ -218,6 +258,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
         .file-icon-container {
           margin-right: 16px;
           flex: 0;
+          color: $blue-light;
         }
 
         .file-details {
@@ -256,6 +297,13 @@ SPDX-License-Identifier: LGPL-2.1-or-later
               white-space: nowrap;
               overflow: hidden;
               text-overflow: ellipsis;
+            }
+
+            .file-name-button {
+              border: none;
+              background: none;
+              cursor: pointer;
+              color: $blue-light;
             }
           }
 

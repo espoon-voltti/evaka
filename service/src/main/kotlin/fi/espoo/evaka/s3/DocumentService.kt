@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.s3
 
+import com.amazonaws.services.s3.model.ObjectMetadata
 import java.net.URI
 
 interface Document {
@@ -41,4 +42,9 @@ interface DocumentService {
      * Delete a document from S3
      */
     fun delete(bucketName: String, key: String)
+
+    /**
+     * Check headers
+     */
+    fun headObject(bucketName: String, key: String): ObjectMetadata
 }

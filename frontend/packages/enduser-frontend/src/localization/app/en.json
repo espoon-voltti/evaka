@@ -1000,6 +1000,9 @@
         "Accepted file formats:",
         "PDF, JPEG/JPG, PNG and DOC/DOCX"
       ]
-    }
+    },
+    "modal-header": "File processing is in progress",
+    "modal-message": "The file cannot be opened at the moment. Try again after a while.",
+    "modal-confirm": "OK"
   }
 }

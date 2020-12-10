@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.attachment
 
+import com.amazonaws.services.s3.model.AmazonS3Exception
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.application.AttachmentType
 import fi.espoo.evaka.s3.DocumentService
@@ -39,7 +40,7 @@ class AttachmentsController(
     private val s3Client: DocumentService,
     env: Environment
 ) {
-    private val filesBucket = env.getProperty("fi.espoo.voltti.document.bucket.attachments")
+    private val filesBucket = env.getProperty("fi.espoo.voltti.document.bucket.attachments")!!
     private val maxAttachmentsPerUser = env.getRequiredProperty("fi.espoo.evaka.maxAttachmentsPerUser").toInt()
 
     @PostMapping("/applications/{applicationId}", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
@@ -105,6 +106,31 @@ class AttachmentsController(
             )
         }
         return id
+    }
+
+    data class PreDownloadResponse(
+        val fileAvailable: Boolean
+    )
+
+    @GetMapping("/{attachmentId}/pre-download")
+    fun checkAttachmentAvailability(
+        db: Database,
+        user: AuthenticatedUser,
+        @PathVariable attachmentId: UUID
+    ): ResponseEntity<PreDownloadResponse> {
+        Audit.AttachmentsRead.log(targetId = attachmentId)
+        if (!user.hasOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN)) {
+            if (!db.read { it.isOwnAttachment(attachmentId, user) }) throw Forbidden("Permission denied")
+        }
+
+        return try {
+            s3Client.headObject(filesBucket, "$attachmentId").let { _ ->
+                ResponseEntity.ok().body(PreDownloadResponse(true))
+            }
+        } catch (e: AmazonS3Exception) {
+            if (e.statusCode == 403) ResponseEntity.ok().body(PreDownloadResponse(false))
+            else throw e
+        }
     }
 
     @GetMapping("/{attachmentId}/download")
