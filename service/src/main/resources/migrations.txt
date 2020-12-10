@@ -27,3 +27,4 @@ V26__aad_to_external_id.sql
 V27__varda_fee_data_references.sql
 V28__unit_apply_dateranges.sql
 V29__preschool_term.sql
+V30__create_fee_decision_manager_field.sql

@@ -37,6 +37,7 @@ data class DaycareFields(
     val uploadToKoski: Boolean,
     val invoicedByMunicipality: Boolean,
     val costCenter: String?,
+    val feeDecisionManagerId: UUID?,
     val additionalInfo: String?,
     val phone: String?,
     val email: String?,
@@ -63,10 +64,15 @@ private fun Handle.getDaycaresQuery() = createQuery(
     """
 SELECT
   daycare.*,
+  fee_decision_manager.id AS fee_decision_manager_id,
+  fee_decision_manager.first_name AS fee_decision_manager_first_name,
+  fee_decision_manager.last_name AS fee_decision_manager_last_name,
+  fee_decision_manager.created AS fee_decision_manager_created,
   um.name AS unit_manager_name, um.email AS unit_manager_email, um.phone AS unit_manager_phone,
   ca.name AS care_area_name, ca.short_name AS care_area_short_name
 FROM daycare
 LEFT JOIN unit_manager um ON unit_manager_id = um.id
+LEFT JOIN employee fee_decision_manager ON fee_decision_manager.id = fee_decision_manager
 JOIN care_area ca ON care_area_id = ca.id
 WHERE :idFilter::uuid[] IS NULL OR daycare.id = ANY(:idFilter)
 """
@@ -175,6 +181,7 @@ SET
   upload_to_koski = :uploadToKoski,
   invoiced_by_municipality = :invoicedByMunicipality,
   cost_center = :costCenter,
+  fee_decision_manager = :feeDecisionManagerId,
   additional_info = :additionalInfo,
   phone = :phone,
   email = :email,
