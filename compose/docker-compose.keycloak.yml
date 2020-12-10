@@ -8,10 +8,6 @@ services:
     environment:
       KEYCLOAK_USER: admin
       KEYCLOAK_PASSWORD: admin
-    volumes:
-      - ./keycloak/configuration:/configuration
-      - ./keycloak/helsinki-keycloak-theme/helsinki:/opt/jboss/keycloak/themes/helsinki
-    #entrypoint: /configuration/entrypoint-configuration.sh
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080"]
       interval: 2s
