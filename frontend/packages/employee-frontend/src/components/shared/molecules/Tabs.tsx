@@ -34,7 +34,7 @@ export default React.memo(function Tabs({ tabs, mobile }: Props) {
               $mobile={mobile}
             >
               <TabTitle $mobile={mobile}>{label}</TabTitle>
-              {counter && <TabCounter>{counter}</TabCounter>}
+              {counter ? <TabCounter>{counter}</TabCounter> : null}
             </TabContainer>
           ))}
         </TabsContainer>
