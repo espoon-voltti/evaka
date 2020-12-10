@@ -16,17 +16,22 @@ import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.ClosedPeriod
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
+import fi.espoo.evaka.varda.integration.MockVardaIntegrationEndpoint
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.springframework.beans.factory.annotation.Autowired
 import java.time.Instant
 import java.time.LocalDate
 import java.util.UUID
 
 class VardaPlacementsIntegrationTest : FullApplicationTest() {
+    @Autowired
+    lateinit var mockEndpoint: MockVardaIntegrationEndpoint
+
     @BeforeEach
     fun beforeEach() {
         jdbi.handle(::insertGeneralTestFixtures)
@@ -35,6 +40,7 @@ class VardaPlacementsIntegrationTest : FullApplicationTest() {
     @AfterEach
     fun afterEach() {
         jdbi.handle(::resetDatabase)
+        mockEndpoint.cleanUp()
     }
 
     @Test

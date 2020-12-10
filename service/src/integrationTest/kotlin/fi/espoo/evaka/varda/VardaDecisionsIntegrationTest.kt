@@ -59,7 +59,7 @@ class VardaDecisionsIntegrationTest : FullApplicationTest() {
     @AfterEach
     fun afterEach() {
         db.transaction { it.resetDatabase() }
-        mockEndpoint.decisions.clear()
+        mockEndpoint.cleanUp()
     }
 
     @Test
@@ -88,7 +88,7 @@ class VardaDecisionsIntegrationTest : FullApplicationTest() {
 
         val vardaDecisions = mockEndpoint.decisions
         assertEquals(1, vardaDecisions.size)
-        assertEquals(VardaUnitProviderType.PURCHASED.vardaCode, vardaDecisions[0].providerTypeCode)
+        assertEquals(VardaUnitProviderType.PURCHASED.vardaCode, vardaDecisions.values.first().providerTypeCode)
 
         val decisionRows = getVardaDecisions()
         assertEquals(1, decisionRows.size)
@@ -117,13 +117,13 @@ class VardaDecisionsIntegrationTest : FullApplicationTest() {
         val paosChild = children.firstOrNull { it.ophOrganizerOid == defaultPurchasedOrganizerOid }
         assertNotNull(paosChild)
 
-        val paosDecision = decisions.firstOrNull { it.childUrl.contains(paosChild!!.vardaChildId.toString()) }
+        val paosDecision = decisions.values.firstOrNull { it.childUrl.contains("/lapset/${paosChild!!.vardaChildId}") }
         assertNotNull(paosDecision)
 
         val municipalChild = children.firstOrNull { it.ophOrganizerOid == defaultMunicipalOrganizerOid }
         assertNotNull(municipalChild)
 
-        val municipalDecision = decisions.firstOrNull { it.childUrl.contains(municipalChild!!.vardaChildId.toString()) }
+        val municipalDecision = decisions.values.firstOrNull { it.childUrl.contains("/lapset/${municipalChild!!.vardaChildId}/") }
         assertNotNull(municipalDecision)
 
         assertEquals(VardaUnitProviderType.PURCHASED.vardaCode, paosDecision!!.providerTypeCode)
@@ -430,7 +430,7 @@ class VardaDecisionsIntegrationTest : FullApplicationTest() {
     @Test
     fun `a derived daycare decision is not sent when its service need is temporary`() {
         val period = ClosedPeriod(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))
-        val placementId = insertPlacement(db, testChild_1.id, period)
+        insertPlacement(db, testChild_1.id, period)
         insertServiceNeed(db, testChild_1.id, period, temporary = true)
         insertVardaChild(db, testChild_1.id)
 
@@ -453,7 +453,7 @@ class VardaDecisionsIntegrationTest : FullApplicationTest() {
         val decisions = mockEndpoint.decisions
         assertEquals(1, decisions.size)
 
-        val decision = decisions[0]
+        val decision = decisions.values.first()
         assertEquals(period.start, decision.startDate)
         assertEquals(period.end, decision.endDate)
         assertEquals(40.0, decision.hoursPerWeek)
@@ -475,7 +475,7 @@ class VardaDecisionsIntegrationTest : FullApplicationTest() {
 
         updateDecisions(db, vardaClient)
 
-        val decision = mockEndpoint.decisions[0]
+        val decision = mockEndpoint.decisions.values.first()
         assertNotEquals(sentDate, decision.applicationDate)
         assertEquals(period.start, decision.applicationDate)
     }
@@ -493,7 +493,7 @@ class VardaDecisionsIntegrationTest : FullApplicationTest() {
         val decisions = mockEndpoint.decisions
         assertEquals(1, decisions.size)
 
-        val decision = decisions[0]
+        val decision = decisions.values.first()
         assertEquals(period.start, decision.startDate)
         assertEquals(period.end, decision.endDate)
         assertEquals(40.0, decision.hoursPerWeek)
@@ -517,7 +517,7 @@ class VardaDecisionsIntegrationTest : FullApplicationTest() {
 
         val decisions = mockEndpoint.decisions
         assertEquals(1, decisions.size)
-        assertEquals(weeklyHours - 20, decisions[0].hoursPerWeek)
+        assertEquals(weeklyHours - 20, decisions.values.first().hoursPerWeek)
     }
 
     @Test
@@ -532,7 +532,7 @@ class VardaDecisionsIntegrationTest : FullApplicationTest() {
 
         val decisions = mockEndpoint.decisions
         assertEquals(1, decisions.size)
-        assertEquals(weeklyHours - 25, decisions[0].hoursPerWeek)
+        assertEquals(weeklyHours - 25, decisions.values.first().hoursPerWeek)
     }
 
     @Test
@@ -544,7 +544,7 @@ class VardaDecisionsIntegrationTest : FullApplicationTest() {
         insertVardaChild(db, testChild_1.id)
 
         updateDecisions(db, vardaClient)
-        val result = mockEndpoint.decisions.toList().sortedBy { it.startDate }
+        val result = mockEndpoint.decisions.values.sortedBy { it.startDate }
         assertEquals(2, result.size)
         assertEquals(period.start, result[0].startDate)
         assertEquals(period.start.plusMonths(1).minusDays(1), result[0].endDate)
@@ -565,7 +565,7 @@ class VardaDecisionsIntegrationTest : FullApplicationTest() {
         insertVardaChild(db, testChild_1.id)
 
         updateDecisions(db, vardaClient)
-        val result = mockEndpoint.decisions[0]
+        val result = mockEndpoint.decisions.values.first()
         assertEquals(period.start, result.startDate)
         assertEquals(period.end, result.endDate)
     }
@@ -578,7 +578,7 @@ class VardaDecisionsIntegrationTest : FullApplicationTest() {
         insertVardaChild(db, testChild_1.id)
 
         updateDecisions(db, vardaClient)
-        val result = mockEndpoint.decisions[0]
+        val result = mockEndpoint.decisions.values.first()
         assertEquals(false, result.fullDay)
     }
 
@@ -590,7 +590,7 @@ class VardaDecisionsIntegrationTest : FullApplicationTest() {
         insertVardaChild(db, testChild_1.id)
 
         updateDecisions(db, vardaClient)
-        val result = mockEndpoint.decisions[0]
+        val result = mockEndpoint.decisions.values.first()
         assertEquals(true, result.fullDay)
     }
 
@@ -602,7 +602,7 @@ class VardaDecisionsIntegrationTest : FullApplicationTest() {
         insertVardaChild(db, testChild_1.id)
 
         updateDecisions(db, vardaClient)
-        val result = mockEndpoint.decisions[0]
+        val result = mockEndpoint.decisions.values.first()
         assertEquals(true, result.fullDay)
     }
 
@@ -651,7 +651,7 @@ class VardaDecisionsIntegrationTest : FullApplicationTest() {
         val decisions = mockEndpoint.decisions
         assertEquals(1, decisions.size)
 
-        val decision = decisions[0]
+        val decision = decisions.values.first()
         assertEquals(period.start, decision.startDate)
         assertEquals(period.end, decision.endDate)
     }
@@ -681,8 +681,8 @@ class VardaDecisionsIntegrationTest : FullApplicationTest() {
 
         val vardaDecisions = mockEndpoint.decisions
         assertEquals(1, vardaDecisions.size)
-        assertEquals(newStart, vardaDecisions.first().startDate)
-        assertEquals(newEnd, vardaDecisions.first().endDate)
+        assertEquals(newStart, vardaDecisions.values.first().startDate)
+        assertEquals(newEnd, vardaDecisions.values.first().endDate)
     }
 
     @Test
@@ -723,7 +723,7 @@ class VardaDecisionsIntegrationTest : FullApplicationTest() {
 
         assertEquals(1, getVardaDecisions().size)
         assertEquals(1, mockEndpoint.decisions.size)
-        val initialDecision = mockEndpoint.decisions[0]
+        val initialDecision = mockEndpoint.decisions.values.first()
         assertEquals(period.start, initialDecision.startDate)
         assertEquals(period.end, initialDecision.endDate)
 
@@ -739,7 +739,7 @@ class VardaDecisionsIntegrationTest : FullApplicationTest() {
 
         assertEquals(1, getVardaDecisions().size)
         assertEquals(1, mockEndpoint.decisions.size)
-        val finalDecision = mockEndpoint.decisions[0]
+        val finalDecision = mockEndpoint.decisions.values.first()
         assertEquals(newStart, finalDecision.startDate)
         assertEquals(newEnd, finalDecision.endDate)
     }
@@ -781,7 +781,7 @@ class VardaDecisionsIntegrationTest : FullApplicationTest() {
         insertPlacement(db, testChild_1.id, ClosedPeriod(newStart, period.end))
         updateDecisions(db, vardaClient)
 
-        val decision = mockEndpoint.decisions[0]
+        val decision = mockEndpoint.decisions.values.first()
         assertEquals(period.start, decision.startDate)
     }
 

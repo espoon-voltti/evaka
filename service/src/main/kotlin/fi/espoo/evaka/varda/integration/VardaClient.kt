@@ -55,6 +55,7 @@ class VardaClient(
 
     fun createUnit(unit: VardaUnit): VardaUnitResponse? {
         logger.info { "Creating a new unit ${unit.name} to Varda" }
+        logger.info { objectMapper.writeValueAsString(unit) }
         val (_, _, result) = fuel.post(unitUrl)
             .jsonBody(objectMapper.writeValueAsString(unit))
             .authenticatedResponseStringWithRetries()

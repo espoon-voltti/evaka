@@ -57,7 +57,7 @@ class VardaFeeDataIntegrationTest : FullApplicationTest() {
         db.transaction { insertGeneralTestFixtures(it.handle) }
         insertVardaUnit(db)
         assertEquals(0, getVardaFeeDataRows(db).size)
-        mockEndpoint.feeData.clear()
+        mockEndpoint.cleanUp()
     }
 
     @AfterEach
@@ -124,10 +124,10 @@ class VardaFeeDataIntegrationTest : FullApplicationTest() {
 
         updateFeeData()
 
-        val results = mockEndpoint.feeData
+        val results = mockEndpoint.feeData.values
         assertEquals(1, results.size)
 
-        val result = results[0]
+        val result = results.first()
         assertEquals("MP03", result.feeCode)
         assertEquals(0.0, result.voucherAmount)
         assertEquals(feeDecision.familySize, result.familySize)
@@ -149,10 +149,10 @@ class VardaFeeDataIntegrationTest : FullApplicationTest() {
 
         updateFeeData()
 
-        val results = mockEndpoint.feeData
+        val results = mockEndpoint.feeData.values
         assertEquals(1, results.size)
 
-        assertEquals("MP02", results[0].feeCode)
+        assertEquals("MP02", results.first().feeCode)
     }
 
     @Test
@@ -359,7 +359,7 @@ class VardaFeeDataIntegrationTest : FullApplicationTest() {
         assertEquals(2, getVardaFeeDataRows(db).size)
         assertEquals(2, getVardaPlacements(db).size)
 
-        val uploadedFeeData: List<VardaFeeData> = mockEndpoint.feeData.sortedBy { data -> data.startDate }
+        val uploadedFeeData: List<VardaFeeData> = mockEndpoint.feeData.values.sortedBy { data -> data.startDate }
         assertEquals(firstPlacementPeriod.start, uploadedFeeData[0].startDate)
         assertEquals(firstPlacementPeriod.end, uploadedFeeData[0].endDate)
         assertEquals(secondPlacementPeriod.start, uploadedFeeData[1].startDate)
@@ -405,7 +405,7 @@ class VardaFeeDataIntegrationTest : FullApplicationTest() {
         assertEquals(2, getVardaFeeDataRows(db).size)
         assertEquals(1, getVardaPlacements(db).size)
 
-        val uploadedFeeData: List<VardaFeeData> = mockEndpoint.feeData.sortedBy { data -> data.startDate }
+        val uploadedFeeData: List<VardaFeeData> = mockEndpoint.feeData.values.sortedBy { data -> data.startDate }
         assertEquals(placementPeriod.start, uploadedFeeData[0].startDate)
         assertEquals(feeDecisionsPeriod1.end, uploadedFeeData[0].endDate)
         assertEquals(2, uploadedFeeData[0].familySize)
@@ -508,7 +508,7 @@ class VardaFeeDataIntegrationTest : FullApplicationTest() {
         updateFeeData()
 
         assertEquals(1, getVardaFeeDataRows(db).size)
-        val originalFeeData = mockEndpoint.feeData[0]
+        val originalFeeData = mockEndpoint.feeData.values.first()
         assertEquals(period.start, originalFeeData.startDate)
         assertEquals(period.end, originalFeeData.endDate)
 
@@ -523,7 +523,7 @@ class VardaFeeDataIntegrationTest : FullApplicationTest() {
 
         updateFeeData()
 
-        val newFeeData = mockEndpoint.feeData[0]
+        val newFeeData = mockEndpoint.feeData.values.first()
         assertNotEquals(originalFeeData.startDate, newFeeData.startDate)
         assertNotEquals(originalFeeData.endDate, newFeeData.endDate)
         assertEquals(newStart, newFeeData.startDate)
@@ -610,7 +610,7 @@ class VardaFeeDataIntegrationTest : FullApplicationTest() {
 
         val feeData = mockEndpoint.feeData
         assertEquals(1, feeData.size)
-        assertEquals(period.start, feeData[0].startDate)
+        assertEquals(period.start, feeData.values.first().startDate)
     }
 
     @Test
