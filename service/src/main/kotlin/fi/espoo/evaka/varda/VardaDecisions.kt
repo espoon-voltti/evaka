@@ -111,7 +111,7 @@ fun deleteDecisionPlacements(db: Database.Connection, client: VardaClient, decis
 }
 
 fun removeDeletedDecisions(db: Database.Connection, client: VardaClient) {
-    val removedDecisions = db.read { getRemovedDecisions(it) }
+    val removedDecisions = db.read { getRemovedDecisions(it) + getRemovedDerivedDecisions(it) }
     removedDecisions.forEach { vardaDecisionId ->
         client.deleteDecision(vardaDecisionId).let { success ->
             if (success) db.transaction { deleteDecision(it, vardaDecisionId) }
@@ -162,7 +162,7 @@ WITH accepted_daycare_decision AS (
 SELECT
     vd.id,
     vd.varda_decision_id,
-    d.id AS evaka_decision_id,
+    d.id AS evaka_id,
     vc.varda_child_id,
     least(d.start_date, d.application_date, first_placement.start_date) AS application_date,
     least(d.start_date, first_placement.start_date) AS start_date,
@@ -199,6 +199,7 @@ JOIN LATERAL (
     SELECT * FROM service_need sn
     WHERE sn.child_id = d.child_id
     AND daterange(sn.start_date, sn.end_date, '[]') && daterange(d.start_date, d.end_date, '[]')
+    AND NOT temporary
     ORDER BY sn.start_date DESC
     LIMIT 1
 ) latest_sn ON TRUE
@@ -285,7 +286,7 @@ AND p.start_date < current_date
 SELECT
     vd.id,
     vd.varda_decision_id,
-    p.id AS evaka_decision_id,
+    p.id AS evaka_id,
     vc.varda_child_id,
     p.start_date - interval '4 months' AS application_date,
     p.start_date,
@@ -303,6 +304,7 @@ JOIN LATERAL (
     SELECT * FROM service_need sn
     WHERE sn.child_id = p.child_id
     AND daterange(sn.start_date, sn.end_date, '[]') && daterange(p.start_date, p.end_date, '[]')
+    AND NOT temporary
     ORDER BY sn.start_date DESC
     LIMIT 1
 ) latest_sn ON true
@@ -350,6 +352,24 @@ AND d.id IS NULL
         """.trimIndent()
 
     return tx.createQuery(sql)
+        .mapTo(Long::class.java)
+        .toList()
+}
+
+private fun getRemovedDerivedDecisions(tx: Database.Read): List<Long> {
+    val sql =
+        """
+WITH derived_decision AS (
+    $derivedDecisionQueryBase
+)
+SELECT vd.varda_decision_id FROM varda_decision vd
+LEFT JOIN derived_decision d ON vd.evaka_placement_id = d.evaka_id
+WHERE vd.evaka_decision_id IS NULL
+AND d.evaka_id IS NULL
+        """.trimIndent()
+
+    return tx.createQuery(sql)
+        .bind("types", daycarePlacementTypes)
         .mapTo(Long::class.java)
         .toList()
 }
@@ -428,7 +448,7 @@ data class VardaDecisionTableRow(
 )
 
 private fun toVardaDecisionWithDecisionId(getChildUrl: (Long) -> String): (ResultSet, StatementContext) -> Pair<UUID, VardaDecision> =
-    { rs, _ -> rs.getUUID("evaka_decision_id") to toVardaDecision(rs, getChildUrl) }
+    { rs, _ -> rs.getUUID("evaka_id") to toVardaDecision(rs, getChildUrl) }
 
 private fun toVardaDecisionWithIdAndVardaId(getChildUrl: (Long) -> String): (ResultSet, StatementContext) -> Triple<UUID, Long, VardaDecision> =
     { rs, _ ->

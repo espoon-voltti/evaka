@@ -18,6 +18,7 @@ import fi.espoo.evaka.invoicing.domain.PersonData
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.updatePlacementStartAndEndDate
 import fi.espoo.evaka.resetDatabase
+import fi.espoo.evaka.serviceneed.deleteServiceNeed
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.dev.TestDecision
 import fi.espoo.evaka.shared.dev.insertTestApplication
@@ -374,6 +375,23 @@ class VardaDecisionsIntegrationTest : FullApplicationTest() {
     }
 
     @Test
+    fun `a derived daycare decision is deleted when its service need is removed`() {
+        val period = ClosedPeriod(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))
+        insertPlacement(db, testChild_1.id, period)
+        val serviceNeedId = insertServiceNeed(db, testChild_1.id, period)
+        insertVardaChild(db, testChild_1.id)
+
+        updateDecisions(db, vardaClient)
+        val beforeDelete = getVardaDecisions()
+        assertEquals(1, beforeDelete.size)
+
+        db.transaction { deleteServiceNeed(it.handle, serviceNeedId) }
+        updateDecisions(db, vardaClient)
+        val result = getVardaDecisions()
+        assertEquals(0, result.size)
+    }
+
+    @Test
     fun `a derived decision is sent when child has a rejected decision`() {
         val period = ClosedPeriod(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))
         insertPlacement(db, testChild_1.id, period)
@@ -407,6 +425,19 @@ class VardaDecisionsIntegrationTest : FullApplicationTest() {
         updateDecisions(db, vardaClient)
         val result = getVardaDecisions()
         assertEquals(1, result.size)
+    }
+
+    @Test
+    fun `a derived daycare decision is not sent when its service need is temporary`() {
+        val period = ClosedPeriod(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))
+        val placementId = insertPlacement(db, testChild_1.id, period)
+        insertServiceNeed(db, testChild_1.id, period, temporary = true)
+        insertVardaChild(db, testChild_1.id)
+
+        updateDecisions(db, vardaClient)
+
+        val result = getVardaDecisions()
+        assertEquals(0, result.size)
     }
 
     @Test
@@ -830,7 +861,8 @@ internal fun insertServiceNeed(
     db: Database.Connection,
     childId: UUID,
     period: ClosedPeriod,
-    hours: Double = 40.0
+    hours: Double = 40.0,
+    temporary: Boolean = false
 ): UUID {
     return db.transaction {
         insertTestServiceNeed(
@@ -839,7 +871,8 @@ internal fun insertServiceNeed(
             testDecisionMaker_1.id,
             startDate = period.start,
             endDate = period.end,
-            hoursPerWeek = hours
+            hoursPerWeek = hours,
+            temporary = temporary
         )
     }
 }
