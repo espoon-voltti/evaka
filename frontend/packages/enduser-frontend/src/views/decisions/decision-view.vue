@@ -6,7 +6,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 
 <template>
   <main>
-    <spinner v-if="!this.decision" />
+    <spinner v-if="!decisionsLoaded || !this.decision" />
     <div class="section container" v-else>
       <div class="columns is-centered">
         <c-title :size="2" class="decision-title" textAlign="center">
@@ -43,8 +43,8 @@ SPDX-License-Identifier: LGPL-2.1-or-later
               >
                 {{ $t('decision-view.form.childName') }}
               </div>
-              <div class="is-two-third column form-info-text">
-                {{ childName }}
+              <div class="is-two-third column form-info-text" data-qa="decision-child-name-text">
+                {{ this.decision.childName }}
               </div>
             </div>
             <div class="columns is-centered">
@@ -236,6 +236,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 
 <script lang="ts">
 import Vue from 'vue'
+import { mapGetters } from 'vuex'
 import Modal from '@/components/modal/decision.vue'
 import { addDays } from 'date-fns'
 import { parseTzDate } from '@evaka/lib-common/src/utils/date'
@@ -260,15 +261,13 @@ export default Vue.extend({
     }
   },
   computed: {
+    ...mapGetters(['decisionsLoaded']),
     locale() {
       return this.$i18n.locale
     },
-    childName() {
-      return `${this.decision.firstName} ${this.decision.lastName}`
-    },
     downloadLabel() {
       return this.$t('decision-view.download', {
-        childName: this.childName
+        childName: this.decision.childName
       }).toUpperCase()
     },
     decision(): DecisionDetails | undefined {
@@ -347,6 +346,13 @@ export default Vue.extend({
             text: ''
           }
       }
+    }
+  },
+  created() {
+    // This only matters when user navigates directly to a specific decision's
+    // view instead of going through the list
+    if (!this.decisionsLoaded) {
+      this.$store.dispatch('loadDecisions')
     }
   },
   methods: {

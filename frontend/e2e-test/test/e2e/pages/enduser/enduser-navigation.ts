@@ -23,6 +23,7 @@ export default class EnduserPage {
   readonly applicationList = Selector('.application')
   readonly decisionList = Selector('.decision')
   readonly applicationTypeSelectModal = Selector('.modal-wrapper')
+  readonly sendDecisionBtn = Selector('[data-qa="btn-send-decision"]')
 
   async login() {
     await home.login('enduser')
@@ -52,6 +53,10 @@ export default class EnduserPage {
 
   async navigateDecisions() {
     await t.click(this.decisionsTab)
+  }
+
+  async navigateToDecision(id: string) {
+    await t.navigateTo(`${config.enduserUrl}/decisions/${id}`)
   }
 
   async createApplication(type: ApplicationType, childNumber = 0) {
@@ -109,7 +114,7 @@ export default class EnduserPage {
   async sendDecision(applicationId: string) {
     const application = this.getApplicationById(applicationId)
     await t.click(application.find('[data-qa="btn-decisions"]'))
-    await t.click(Selector('[data-qa="btn-send-decision"]'))
+    await t.click(this.sendDecisionBtn)
     await t.click(Selector('#decision-modal-ok-button'))
     await t.click(Selector('[data-qa="btn-accept"'))
   }
@@ -221,6 +226,13 @@ export default class EnduserPage {
     for (const validation of validations) {
       await t.expect(validationsSection.withText(validation).exists).ok()
     }
+  }
+
+  async assertDecisionDetails(firstName: string, lastName: string) {
+    const childName = Selector('[data-qa="decision-child-name-text"]')
+    await t.expect(childName.textContent).contains(firstName)
+    await t.expect(childName.textContent).contains(lastName)
+    await t.expect(Selector('[data-qa="link-open-decision-pdf"]').exists).ok()
   }
 }
 

@@ -38,8 +38,7 @@ export interface DecisionDetails extends DecisionSummary {
   startDate: Date
   endDate: Date
   requestedStartDate: Date
-  firstName: string
-  lastName: string
+  childName: string
   unit: string
 }
 
@@ -48,45 +47,35 @@ const module: Module<DecisionsState, RootState> = {
   getters: {
     decisionsLoaded: (state) => state.loaded && !state.loading,
     decisions: (state) => state.decisions,
-    decisionSummaries: (state, getters, rootState): DecisionSummary[] =>
+    decisionSummaries: (state): DecisionSummary[] =>
       state.decisions.map((decision) => {
-        const application = rootState.applications.applications.find(
-          ({ id }) => decision.applicationId === id
-        )
         return {
           id: decision.id,
           applicationId: decision.applicationId,
-          childId: application && application.child.id,
+          childId: decision.childId,
           type: decision.type,
           status: decision.status,
           sentDate: decision.sentDate,
           resolved: decision.resolved
         }
       }),
-    decisionDetailsById: (state, getters, rootState) => (
-      decisionId
+    decisionDetailsById: (state) => (
+      decisionId: Decision['id']
     ): DecisionDetails | undefined => {
       const decision = state.decisions.find((d) => d.id === decisionId)
       if (!decision) {
         return undefined
       }
-      const application = rootState.applications.applications.find(
-        ({ id }) => decision.applicationId === id
-      )
-      if (!application) {
-        return undefined
-      }
 
       return {
         id: decision.id,
-        childId: application.child.id,
+        childId: decision.childId,
         type: decision.type,
         status: decision.status,
         sentDate: decision.sentDate,
         applicationId: decision.applicationId,
         unit: decision.unit,
-        firstName: application.child.firstName,
-        lastName: application.child.lastName,
+        childName: decision.childName,
         startDate: decision.startDate,
         endDate: decision.endDate,
         requestedStartDate: decision.requestedStartDate || decision.startDate,
