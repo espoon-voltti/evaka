@@ -62,6 +62,17 @@ function internalApiRouter() {
   router.use('/scheduled', scheduledApiRouter())
   router.all('/system/*', (req, res) => res.sendStatus(404))
 
+  router.all('/auth/*', (req: express.Request, res, next) => {
+    if (
+      req.session &&
+      req.session.logoutToken &&
+      req.session.logoutToken.idpProvider === 'evaka'
+    ) {
+      req.url = req.url.replace('saml', 'evaka')
+    }
+    next()
+  })
+
   router.use(
     createSamlRouter({
       strategyName: 'ead',

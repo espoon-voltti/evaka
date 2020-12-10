@@ -87,7 +87,7 @@ function createLoginHandler({
             req,
             'User logged in successfully'
           )
-          await saveLogoutToken(req, res, sessionType)
+          await saveLogoutToken(req, res, sessionType, strategyName)
           const redirectUrl = getRedirectUrl(req)
           logDebug(`Redirecting to ${redirectUrl}`, req, { redirectUrl })
           return res.redirect(redirectUrl)
