@@ -55,9 +55,12 @@ fixture('Employee - paper application')
 const formatPersonName = (person: ApplicationPersonDetail) =>
   `${person.lastName} ${person.firstName}`
 
-// eslint-disable-next-line
-const formatPersonAddress = (person: ApplicationPersonDetail) =>
-  `${person.streetAddress}, ${person.postalCode} ${person.postOffice}`
+const formatPersonAddress = ({
+  streetAddress,
+  postalCode,
+  postOffice
+}: ApplicationPersonDetail) =>
+  `${streetAddress ?? ''}, ${postalCode ?? ''} ${postOffice ?? ''}`
 
 test('Paper application can be created for guardian and child with ssn', async () => {
   await childInforationPage.openCreateApplicationModal()
