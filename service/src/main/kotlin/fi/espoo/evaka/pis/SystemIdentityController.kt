@@ -13,6 +13,7 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import org.springframework.http.ResponseEntity
+import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
@@ -69,7 +70,7 @@ class SystemIdentityController {
         )
     }
 
-    @PostMapping("/system/mobile-identity/{token}")
+    @GetMapping("/system/mobile-identity/{token}")
     fun mobileIdentity(
         db: Database.Connection,
         user: AuthenticatedUser,
