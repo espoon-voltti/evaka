@@ -18,7 +18,7 @@ import { fromCallback } from '../shared/promise-utils'
 
 export const mobileLongTermCookieName = 'evaka.employee.mobile'
 const mobileLongTermCookieOptions: CookieOptions = {
-  maxAge: daysToMillis(90),
+  path: '/',
   httpOnly: true,
   secure: useSecureCookies,
   sameSite: 'lax',
@@ -46,11 +46,10 @@ async function mobileLogin(
   )
   // Unconditionally refresh long-term cookie on each login to refresh expiry
   // time and make it a "rolling" cookie
-  res.cookie(
-    mobileLongTermCookieName,
-    device.longTermToken,
-    mobileLongTermCookieOptions
-  )
+  res.cookie(mobileLongTermCookieName, device.longTermToken, {
+    ...mobileLongTermCookieOptions,
+    maxAge: daysToMillis(90)
+  })
 }
 
 export const refreshMobileSession = toMiddleware(async (req, res) => {

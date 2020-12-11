@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import express from 'express'
+import express, { CookieOptions } from 'express'
 import session from 'express-session'
 import connectRedis from 'connect-redis'
 import {
@@ -56,7 +56,15 @@ if (redisClient) {
 
 const asyncRedisClient = redisClient && new AsyncRedisClient(redisClient)
 
+const sessionCookieOptions: CookieOptions = {
+  path: '/',
+  httpOnly: true,
+  secure: useSecureCookies,
+  sameSite: 'lax'
+}
+
 const logoutCookieOptions: express.CookieOptions = {
+  path: '/',
   httpOnly: true,
   secure: useSecureCookies,
   sameSite: useSecureCookies ? 'none' : undefined
@@ -149,16 +157,15 @@ export async function logoutExpress(
     const session = req.session
     await fromCallback((cb) => session.destroy(cb))
   }
+  res.clearCookie(sessionCookie(sessionType))
   await consumeLogoutToken(req, res, sessionType)
 }
 
 export default (sessionType: SessionType) =>
   session({
     cookie: {
-      maxAge: sessionTimeoutMinutes * 60000,
-      httpOnly: true,
-      secure: useSecureCookies,
-      sameSite: 'lax'
+      ...sessionCookieOptions,
+      maxAge: sessionTimeoutMinutes * 60000
     },
     resave: false,
     rolling: true,
