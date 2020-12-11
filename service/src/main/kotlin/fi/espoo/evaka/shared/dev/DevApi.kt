@@ -975,6 +975,14 @@ data class DevEmployee(
     val roles: Set<UserRole> = setOf()
 )
 
+data class DevMobileDevice(
+    val id: UUID?,
+    val unitId: UUID,
+    val name: String = "Laite",
+    val deleted: Boolean = false,
+    val longTermToken: UUID? = null
+)
+
 data class DaycareAclInsert(
     val externalId: ExternalId
 )
