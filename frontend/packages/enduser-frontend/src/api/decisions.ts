@@ -24,6 +24,7 @@ export interface Decision {
   unit: string
   applicationId: UUID
   childId: UUID
+  childName: string
   decisionNumber: number
   sentDate: Date
   status: DecisionStatus

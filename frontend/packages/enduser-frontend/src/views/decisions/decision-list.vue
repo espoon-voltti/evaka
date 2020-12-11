@@ -7,7 +7,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 <template>
   <main class="decision-list container section">
     <div class="columns is-centered">
-      <div class="is-three-quarters column">
+      <div class="is-three-quarters column" data-qa="children-wrapper">
         <c-title :size="2" class="has-text-centered decision-title" isGreyDark>
           {{ $t('decision-list.title') }}
         </c-title>
@@ -78,9 +78,6 @@ SPDX-License-Identifier: LGPL-2.1-or-later
         return _.sortBy(this.$store.getters.children, (c) => c.id)
       },
       decisionsByChild(): Record<UUID, DecisionSummary[]> {
-        if (this.$route.params.id) {
-          return {}
-        }
         const decisionSummaries: DecisionSummary[] = this.$store.getters
           .decisionSummaries
         const summaries = _.sortBy(decisionSummaries, (d) => d.sentDate)
