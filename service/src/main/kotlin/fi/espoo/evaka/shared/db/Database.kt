@@ -101,6 +101,8 @@ class Database(private val jdbi: Jdbi) {
             return handle.transaction { f(Transaction(it)) }
         }
 
+        fun isConnected(): Boolean = connected.get()
+
         override fun close() {
             threadId.assertCurrentThread()
             if (!handle.isClosed) {
