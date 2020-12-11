@@ -6,20 +6,17 @@ package fi.espoo.evaka.shared.config
 
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
-import fi.espoo.evaka.shared.db.DatabaseSpringSupport
 import fi.espoo.evaka.shared.db.configureJdbi
 import org.flywaydb.core.Flyway
 import org.jdbi.v3.core.Jdbi
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import org.springframework.context.annotation.Import
 import org.springframework.core.env.Environment
 import org.springframework.core.env.getProperty
 import java.util.concurrent.TimeUnit
 import javax.sql.DataSource
 
 @Configuration
-@Import(DatabaseSpringSupport::class)
 class DatabaseConfig {
     @Bean
     fun jdbi(dataSource: DataSource) = configureJdbi(Jdbi.create(dataSource))
