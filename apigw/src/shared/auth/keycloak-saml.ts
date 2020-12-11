@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
+
 import {
   Profile,
   Strategy as SamlStrategy,
@@ -34,7 +38,7 @@ export default function createKeycloakSamlStrategy(): SamlStrategy {
 
 interface KeycloakProfile {
   nameID: string
-  ID: string
+  ID?: string
   nameIDFormat?: string
   nameQualifier?: string
   spNameQualifier?: string
@@ -44,6 +48,7 @@ interface KeycloakProfile {
 async function verifyKeycloakProfile(
   profile: KeycloakProfile
 ): Promise<SamlUser> {
+  if (!profile.ID) throw Error('No user ID in evaka IDP SAML data')
   const person = await getOrCreateEmployee({
     externalId: `evaka:${profile.ID}`,
     firstName: profile.nameID.split('.')[0],
