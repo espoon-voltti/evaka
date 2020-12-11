@@ -87,7 +87,7 @@ val coordinateColumnMapper = PgObjectColumnMapper {
 }
 
 val externalIdColumnMapper =
-    ColumnMapper<ExternalId> { r, columnNumber, _ -> ExternalId.parse(r.getString(columnNumber)) }
+    ColumnMapper { r, columnNumber, _ -> r.getString(columnNumber)?.let { ExternalId.parse(it) } }
 
 class PgObjectArgumentFactory<T>(
     private val clazz: Class<T>,
