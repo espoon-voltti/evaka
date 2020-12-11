@@ -9,22 +9,15 @@ import {
 } from 'passport-saml'
 import { SamlUser } from '../routes/auth/saml/types'
 import { getOrCreateEmployee } from '../service-client'
-
-const host = 'http://localhost:9093'
-const keycloackSamlCallbackUrl = `${host}/api/internal/auth/evaka/login/callback`
-const keycloakSamlIssuer = 'evaka'
-
-// The magic url
-const keycloakEntrypoint =
-  'http://localhost:8080/auth/realms/evaka/protocol/saml'
+import { evakaSamlCallbackUrl, evakaSamlEntrypoint } from '../config'
 
 export default function createKeycloakSamlStrategy(): SamlStrategy {
   return new SamlStrategy(
     {
-      issuer: keycloakSamlIssuer,
-      callbackUrl: keycloackSamlCallbackUrl,
-      entryPoint: keycloakEntrypoint,
-      logoutUrl: keycloakEntrypoint,
+      issuer: 'evaka',
+      callbackUrl: evakaSamlCallbackUrl,
+      entryPoint: evakaSamlEntrypoint,
+      logoutUrl: evakaSamlEntrypoint,
       acceptedClockSkewMs: -1
     },
     (profile: Profile, done: VerifiedCallback) => {

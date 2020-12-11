@@ -158,3 +158,19 @@ export const sfiSamlPublicCert = envArray(
   parseEnum(certificateNames)
 )
 export const sfiSamlPrivateCert = process.env.SFI_SAML_PRIVATE_CERT
+
+export const evakaSamlCallbackUrl = required(
+  process.env.EVAKA_SAML_CALLBACK_URL ??
+    ifNodeEnv(
+      ['local'],
+      `http://localhost:9093/api/internal/auth/evaka/login/callback`
+    )
+)
+
+export const evakaSamlEntrypoint = required(
+  process.env.EVAKA_SAML_ENTRYPOINT ??
+    ifNodeEnv(
+      ['local'],
+      'http://localhost:8080/auth/realms/evaka/protocol/saml'
+    )
+)
