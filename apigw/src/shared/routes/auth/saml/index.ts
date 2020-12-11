@@ -12,7 +12,8 @@ import { SamlEndpointConfig, SamlUser } from './types'
 import { toMiddleware, toRequestHandler } from '../../../express'
 import { logoutExpress, saveLogoutToken } from '../../../session'
 import { fromCallback } from '../../../promise-utils'
-import { client } from '../../../service-client'
+import { getEmployees } from '../../../dev-api'
+import _ from 'lodash'
 
 const urlencodedParser = urlencoded({ extended: false })
 
@@ -182,54 +183,65 @@ export default function createSamlRouter(config: SamlEndpointConfig): Router {
   router.post('/auth/saml/login/callback', urlencodedParser, loginHandler)
 
   if (eadMock) {
-    router.get('/dev-auth/login', (req, res) => {
-      client.get('/dev-api/employee').then((res2) => {
+    router.get(
+      '/dev-auth/login',
+      toRequestHandler(async (req, res) => {
+        const employees = _.sortBy(await getEmployees(), ({ id }) => id)
+        const employeeInputs = employees
+          .map(({ externalId, firstName, lastName }) => {
+            if (!externalId) return ''
+            const [_, aad] = externalId.split(':')
+            return `<div><input type="radio" id="${aad}" name="preset" value="${aad}" /><label for="${aad}">${firstName} ${lastName}</label></div>`
+          })
+          .filter((line) => !!line)
+
+        const formQuery =
+          typeof req.query.RelayState === 'string'
+            ? `?RelayState=${encodeURIComponent(req.query.RelayState)}`
+            : ''
+        const formUri = `${req.baseUrl}/auth/saml/login/callback${formQuery}`
+
         res.contentType('text/html').send(`
-        <html>
-        <body>
+          <html>
+          <body>
             <h1>Devausympäristön AD-kirjautuminen</h1>
-            <form action="${req.baseUrl}/auth/saml/login/callback?RelayState=${
-          req.query.RelayState
-        }" method="post">
-                ${res2.data.map(
-                  (e: {
-                    externalId: string
-                    firstName: string
-                    lastName: string
-                  }) => {
-                    const [_, aad] = e.externalId.split(':')
-                    return `<input type="radio" id="${aad}" name="preset" value="${aad}" /><label for="${aad}">${e.firstName} ${e.lastName}</label><br/>`
-                  }
-                )}
-                <input type="radio" id="custom" name="preset" value="custom" checked/><label for="custom">Custom (täytä tiedot alle)</label><br/>
-                <br/>
+            <form action="${formUri}" method="post">
+                ${employeeInputs.join('\n')}
+                <div style="margin-top: 20px">
+                  <input type="radio" id="custom" name="preset" value="custom" checked/><label for="custom">Custom (täytä tiedot alle)</label>
+                </div>
                 <h2>Custom</h2>
                 <label for="aad">AAD: </label>
                 <input id="aad-input" name="aad" value="cf5bcd6e-3d0e-4d8e-84a0-5ae2e4e65034" required
                     pattern="[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"/>
-                <br/>
-                <label for="firstName">Etunimi: </label>
-                <input name="firstName" value="Seppo"/>
-                <br/>
-                <label for="lastName">Sukunimi: </label>
-                <input name="lastName" value="Sorsa"/>
-                <br/>
-                <label for="email">Email: </label>
-                <input name="email" value="seppo.sorsa@espoo.fi"/>
-                <br/><br/>
-                <label for="roles">Roolit:</label><br/>
-                <input id="evaka-espoo-officeholder" type="checkbox" name="roles" value="SERVICE_WORKER" checked /><label for="evaka-espoo-officeholder">Palveluohjaaja</label><br/>
-                <input id="evaka-espoo-financeadmin" type="checkbox" name="roles" value="FINANCE_ADMIN" checked /><label for="evaka-espoo-financeadmin">Laskutus</label><br/>
-                <input id="evaka-espoo-director" type="checkbox" name="roles" value="DIRECTOR" /><label for="evaka-espoo-director">Raportointi (director)</label><br/>
-                <input id="evaka-espoo-admin" type="checkbox" name="roles" value="ADMIN" /><label for="evaka-espoo-admin">Pääkäyttäjä</label><br/>
-                <br/>
-                <button type="submit">Kirjaudu</button>
+                <div>
+                  <label for="firstName">Etunimi: </label>
+                  <input name="firstName" value="Seppo"/>
+                </div>
+                <div>
+                  <label for="lastName">Sukunimi: </label>
+                  <input name="lastName" value="Sorsa"/>
+                </div>
+                <div>
+                  <label for="email">Email: </label>
+                  <input name="email" value="seppo.sorsa@espoo.fi"/>
+                </div>
+                <div>
+                  <label for="roles">Roolit:</label><br>
+                  <input id="evaka-espoo-officeholder" type="checkbox" name="roles" value="SERVICE_WORKER" checked /><label for="evaka-espoo-officeholder">Palveluohjaaja</label><br>
+                  <input id="evaka-espoo-financeadmin" type="checkbox" name="roles" value="FINANCE_ADMIN" checked /><label for="evaka-espoo-financeadmin">Laskutus</label><br>
+                  <input id="evaka-espoo-director" type="checkbox" name="roles" value="DIRECTOR" /><label for="evaka-espoo-director">Raportointi (director)</label><br>
+                  <input id="evaka-espoo-admin" type="checkbox" name="roles" value="ADMIN" /><label for="evaka-espoo-admin">Pääkäyttäjä</label><br>
+                </div>
+                <div style="margin-top: 20px">
+                  <button type="submit">Kirjaudu</button>
+                </div>
             </form>
-        </body>
-        </html>
+          </body>
+          </html>
         `)
       })
-    })
+    )
   }
 
   // Our application directs the browser to one of these endpoints to start

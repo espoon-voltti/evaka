@@ -5,6 +5,7 @@
 import { Strategy } from 'passport'
 import { Request } from 'express'
 import { SamlUser } from '../routes/auth/saml/types'
+import { assertStringProp } from '../express'
 
 type ProfileGetter = (userId: string) => Promise<SamlUser>
 
@@ -35,24 +36,26 @@ export default class DevPassportStrategy extends Strategy {
       )
     }
 
-    if (req.body.preset === 'custom') {
+    const preset = assertStringProp(req.body, 'preset')
+
+    if (preset === 'custom') {
       const roles = Array.isArray(req.body.roles)
         ? req.body.roles
         : req.body.roles !== undefined
-        ? [req.body.roles]
+        ? [assertStringProp(req.body, 'roles')]
         : []
 
       this.profileUpserter(
-        req.body.aad,
+        assertStringProp(req.body, 'aad'),
         roles,
-        req.body.firstName,
-        req.body.lastName,
-        req.body.email
+        assertStringProp(req.body, 'firstName'),
+        assertStringProp(req.body, 'lastName'),
+        assertStringProp(req.body, 'email')
       )
         .then((samlUser) => this.success(samlUser))
         .catch((err) => this.error(err))
     } else {
-      this.profileGetter(req.body.preset)
+      this.profileGetter(preset)
         .then((samlUser) => this.success(samlUser))
         .catch((err) => this.error(err))
     }

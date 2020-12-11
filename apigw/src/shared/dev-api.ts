@@ -19,3 +19,16 @@ export async function upsertEmployee(employee: DevEmployee): Promise<UUID> {
   )
   return data
 }
+
+interface Employee {
+  id: UUID
+  firstName: string
+  lastName: string
+  email: string | null
+  externalId: string | null
+}
+
+export async function getEmployees(): Promise<Employee[]> {
+  const { data } = await client.get(`/dev-api/employee`)
+  return data
+}
