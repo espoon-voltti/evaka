@@ -138,6 +138,15 @@ RETURNING id
 """
 )
 
+fun Database.Transaction.insertTestMobileDevice(device: DevMobileDevice) = this.handle.insertTestDataRow(
+    device,
+    """
+INSERT INTO mobile_device (id, unit_id, name, deleted, long_term_token)
+VALUES (:id, :unitId, :name, :deleted, :longTermToken)
+RETURNING id
+    """
+)
+
 fun Handle.insertTestPerson(person: DevPerson) = insertTestDataRow(
     person,
     """

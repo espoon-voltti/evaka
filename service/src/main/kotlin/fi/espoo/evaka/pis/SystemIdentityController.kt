@@ -14,6 +14,7 @@ import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
@@ -74,6 +75,7 @@ class SystemIdentityController {
     fun mobileIdentity(
         db: Database.Connection,
         user: AuthenticatedUser,
+        @PathVariable
         token: UUID
     ): ResponseEntity<MobileDeviceIdentity> {
         Audit.MobileDevicesRead.log(targetId = token)
