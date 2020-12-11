@@ -43,6 +43,7 @@ val preparatoryEnd: LocalTime = LocalTime.of(14, 0)
 val preparatoryMinimumDuration: Duration = Duration.ofHours(1)
 
 val connectedDaycareBuffer: Duration = Duration.ofMinutes(15)
+val fiveYearOldFreeLimit: Duration = Duration.ofMinutes(4 * 60 + 15)
 
 @RestController
 @RequestMapping("/attendances")
@@ -86,7 +87,7 @@ class ChildAttendanceController(
         acl.getRolesForUnit(user, unitId).requireOneOfRoles(*authorizedRoles)
 
         return db.transaction { tx ->
-            tx.assertChildPlacement(childId, unitId)
+            tx.fetchChildPlacementBasics(childId, unitId)
 
             if (tx.getChildCurrentDayAttendance(childId, unitId) != null)
                 throw Conflict("Cannot arrive, already arrived today")
@@ -118,7 +119,7 @@ class ChildAttendanceController(
         acl.getRolesForUnit(user, unitId).requireOneOfRoles(*authorizedRoles)
 
         return db.transaction { tx ->
-            tx.assertChildPlacement(childId, unitId)
+            tx.fetchChildPlacementBasics(childId, unitId)
             tx.deleteCurrentDayAbsences(childId)
 
             val attendance = tx.getChildCurrentDayAttendance(childId, unitId)
@@ -153,7 +154,7 @@ class ChildAttendanceController(
         acl.getRolesForUnit(user, unitId).requireOneOfRoles(*authorizedRoles)
 
         return db.read { tx ->
-            val placementType = tx.assertChildPlacement(childId, unitId)
+            val placementBasics = tx.fetchChildPlacementBasics(childId, unitId)
 
             val attendance = tx.getChildCurrentDayAttendance(childId, unitId)
             if (attendance == null) {
@@ -164,7 +165,7 @@ class ChildAttendanceController(
 
             val arrived = LocalTime.ofInstant(attendance.arrived, zoneId)
             DepartureInfoResponse(
-                absentFrom = getAbsenceCareTypes(placementType, arrived, time)
+                absentFrom = getPartialAbsenceCareTypes(placementBasics, arrived, time)
             )
         }.let { ResponseEntity.ok(it) }
     }
@@ -185,7 +186,7 @@ class ChildAttendanceController(
         acl.getRolesForUnit(user, unitId).requireOneOfRoles(*authorizedRoles)
 
         return db.transaction { tx ->
-            val placementType = tx.assertChildPlacement(childId, unitId)
+            val placementBasics = tx.fetchChildPlacementBasics(childId, unitId)
 
             val attendance = tx.getChildCurrentDayAttendance(childId, unitId)
             if (attendance == null) {
@@ -194,7 +195,7 @@ class ChildAttendanceController(
                 throw Conflict("Cannot depart, already departed")
             }
 
-            val absentFrom = getAbsenceCareTypes(placementType, LocalTime.ofInstant(attendance.arrived, zoneId), body.departed)
+            val absentFrom = getPartialAbsenceCareTypes(placementBasics, LocalTime.ofInstant(attendance.arrived, zoneId), body.departed)
             tx.deleteCurrentDayAbsences(childId)
             if (absentFrom.isNotEmpty()) {
                 if (body.absenceType == null) {
@@ -232,7 +233,7 @@ class ChildAttendanceController(
         acl.getRolesForUnit(user, unitId).requireOneOfRoles(*authorizedRoles)
 
         return db.transaction { tx ->
-            tx.assertChildPlacement(childId, unitId)
+            tx.fetchChildPlacementBasics(childId, unitId)
             tx.deleteCurrentDayAbsences(childId)
 
             val attendance = tx.getChildCurrentDayAttendance(childId, unitId)
@@ -266,7 +267,7 @@ class ChildAttendanceController(
         acl.getRolesForUnit(user, unitId).requireOneOfRoles(*authorizedRoles)
 
         return db.transaction { tx ->
-            tx.assertChildPlacement(childId, unitId)
+            val placementBasics = tx.fetchChildPlacementBasics(childId, unitId)
 
             val attendance = tx.getChildCurrentDayAttendance(childId, unitId)
             if (attendance != null) {
@@ -275,9 +276,7 @@ class ChildAttendanceController(
 
             try {
                 tx.deleteCurrentDayAbsences(childId)
-
-                val placementType = tx.fetchChildPlacementType(childId, dateNow())
-                getCareTypes(placementType).forEach { careType ->
+                getCareTypes(placementBasics).forEach { careType ->
                     tx.insertAbsence(user, childId, LocalDate.now(), careType, body.absenceType)
                 }
             } catch (e: Exception) {
@@ -289,43 +288,30 @@ class ChildAttendanceController(
     }
 }
 
-private fun Database.Read.assertChildPlacement(childId: UUID, unitId: UUID): PlacementType {
+data class ChildPlacementBasics(
+    val placementType: PlacementType,
+    val dateOfBirth: LocalDate
+)
+private fun Database.Read.fetchChildPlacementBasics(childId: UUID, unitId: UUID): ChildPlacementBasics {
     // language=sql
     val sql =
         """
-        SELECT pl.type
-        FROM placement pl
+        SELECT p.type AS placement_type, c.date_of_birth
+        FROM person c 
+        JOIN placement p 
+            ON p.child_id = c.id AND daterange(p.start_date, p.end_date, '[]') @> :date
         LEFT JOIN backup_care bc
-            ON bc.child_id = :childId AND daterange(bc.start_date, bc.end_date, '[]') @> :date
-        WHERE 
-            pl.child_id = :childId
-            AND daterange(pl.start_date, pl.end_date, '[]') @> :date
-            AND (pl.unit_id = :unitId OR bc.unit_id = :unitId)
+            ON bc.child_id = c.id AND daterange(bc.start_date, bc.end_date, '[]') @> :date
+        WHERE c.id = :childId AND (p.unit_id = :unitId OR bc.unit_id = :unitId)
         """.trimIndent()
 
     return createQuery(sql)
         .bind("childId", childId)
         .bind("unitId", unitId)
         .bind("date", dateNow())
-        .mapTo<PlacementType>()
-        .firstOrNull() ?: throw BadRequest("Child $childId has no placement in unit $unitId on the given day")
-}
-
-private fun Database.Read.fetchChildPlacementType(childId: UUID, date: LocalDate): PlacementType {
-    // language=sql
-    val sql =
-        """
-        SELECT p.type
-        FROM placement p
-        WHERE p.child_id = :childId AND daterange(p.start_date, p.end_date, '[]') @> :date
-        """.trimIndent()
-
-    return createQuery(sql)
-        .bind("childId", childId)
-        .bind("date", date)
-        .mapTo<PlacementType>()
+        .mapTo<ChildPlacementBasics>()
         .list()
-        .first()
+        .firstOrNull() ?: throw BadRequest("Child $childId has no placement in unit $unitId on the given day")
 }
 
 private fun Database.Read.getAttendancesResponse(unitId: UUID): AttendanceResponse {
@@ -337,12 +323,14 @@ private fun Database.Read.getAttendancesResponse(unitId: UUID): AttendanceRespon
     val children = childrenBasics.map { child ->
         val attendance = childrenAttendances.firstOrNull { it.childId == child.id }
         val absences = childrenAbsences.filter { it.childId == child.id }
-        val status = getChildStatus(child.placementType, attendance, absences)
+        val placementBasics = ChildPlacementBasics(child.placementType, child.dateOfBirth)
+        val status = getChildAttendanceStatus(placementBasics, attendance, absences)
 
         Child(
             id = child.id,
             firstName = child.firstName,
             lastName = child.lastName,
+            dateOfBirth = child.dateOfBirth,
             placementType = child.placementType,
             groupId = child.groupId,
             backup = child.backup,
@@ -355,32 +343,33 @@ private fun Database.Read.getAttendancesResponse(unitId: UUID): AttendanceRespon
     return AttendanceResponse(unitInfo, children)
 }
 
-private fun getChildStatus(placementType: PlacementType, attendance: ChildAttendance?, absences: List<ChildAbsence>): AttendanceStatus {
+private fun getChildAttendanceStatus(placementBasics: ChildPlacementBasics, attendance: ChildAttendance?, absences: List<ChildAbsence>): AttendanceStatus {
     if (attendance != null) {
         return if (attendance.departed == null) AttendanceStatus.PRESENT else AttendanceStatus.DEPARTED
     }
 
-    if (isAbsent(placementType, absences)) {
+    if (isFullyAbsent(placementBasics, absences)) {
         return AttendanceStatus.ABSENT
     }
 
     return AttendanceStatus.COMING
 }
 
-private fun isAbsent(placementType: PlacementType, absences: List<ChildAbsence>): Boolean {
-    return when (placementType) {
-        PlacementType.PRESCHOOL, PlacementType.PREPARATORY ->
-            absences.any { it.careType == CareType.PRESCHOOL }
-        PlacementType.PRESCHOOL_DAYCARE, PlacementType.PREPARATORY_DAYCARE ->
-            absences.any { it.careType == CareType.PRESCHOOL } && absences.any { it.careType == CareType.PRESCHOOL_DAYCARE }
-        PlacementType.DAYCARE, PlacementType.DAYCARE_PART_TIME ->
-            absences.any { it.careType == CareType.DAYCARE }
-        PlacementType.CLUB ->
-            absences.any { it.careType == CareType.CLUB }
-    }.exhaust()
+private fun isFullyAbsent(placementBasics: ChildPlacementBasics, absences: List<ChildAbsence>): Boolean {
+    return getCareTypes(placementBasics).all { absences.map { it.careType }.contains(it) }
 }
 
-private fun getCareTypes(placementType: PlacementType): List<CareType> {
+private fun getCareTypes(placementBasics: ChildPlacementBasics): List<CareType> {
+    val (placementType, dateOfBirth) = placementBasics
+    if (hasFree5YearsOldDaycare(dateOfBirth)) {
+        if (placementType == PlacementType.DAYCARE) {
+            return listOf(CareType.DAYCARE_5YO_FREE, CareType.DAYCARE)
+        }
+        if (placementType == PlacementType.DAYCARE_PART_TIME) {
+            return listOf(CareType.DAYCARE_5YO_FREE)
+        }
+    }
+
     return when (placementType) {
         PlacementType.PRESCHOOL, PlacementType.PREPARATORY ->
             listOf(CareType.PRESCHOOL)
@@ -393,16 +382,21 @@ private fun getCareTypes(placementType: PlacementType): List<CareType> {
     }.exhaust()
 }
 
-fun getAbsenceCareTypes(placementType: PlacementType, arrived: LocalTime, departed: LocalTime): Set<CareType> {
+private fun getPartialAbsenceCareTypes(placementBasics: ChildPlacementBasics, arrived: LocalTime, departed: LocalTime): Set<CareType> {
     return listOfNotNull(
         CareType.PRESCHOOL.takeIf {
-            wasAbsentFromPreschool(placementType, arrived, departed)
+            wasAbsentFromPreschool(placementBasics.placementType, arrived, departed)
         },
         CareType.PRESCHOOL_DAYCARE.takeIf {
-            wasAbsentFromPreschoolDaycare(placementType, arrived, departed)
+            wasAbsentFromPreschoolDaycare(placementBasics.placementType, arrived, departed)
+        },
+        CareType.DAYCARE.takeIf {
+            wasAbsentFromPaidDaycare(placementBasics, arrived, departed)
         }
     ).toSet()
 }
+
+private fun hasFree5YearsOldDaycare(dateOfBirth: LocalDate) = dateOfBirth.year == LocalDate.now(zoneId).year - 5
 
 fun wasAbsentFromPreschool(placementType: PlacementType, arrived: LocalTime, departed: LocalTime): Boolean {
     if (placementType in listOf(PlacementType.PRESCHOOL, PlacementType.PRESCHOOL_DAYCARE)) {
@@ -439,6 +433,20 @@ fun wasAbsentFromPreschoolDaycare(placementType: PlacementType, arrived: LocalTi
         val presentAfterPreparatory = Duration.between(preparatoryEnd, departed) > connectedDaycareBuffer
 
         return !presentBeforePreparatory && !presentAfterPreparatory
+    }
+
+    return false
+}
+
+fun wasAbsentFromPaidDaycare(placementBasics: ChildPlacementBasics, arrived: LocalTime, departed: LocalTime): Boolean {
+    val (placementType, dateOfBirth) = placementBasics
+
+    if (!hasFree5YearsOldDaycare(dateOfBirth)) {
+        return false
+    }
+
+    if (placementType == PlacementType.DAYCARE) {
+        return Duration.between(arrived, departed) <= fiveYearOldFreeLimit
     }
 
     return false

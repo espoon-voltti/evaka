@@ -8,6 +8,7 @@ import { UUID } from '~types'
 import { AbsenceType, CareType } from '~types/absence'
 import { PlacementType } from '~types/placementdraft'
 import { client } from './client'
+import LocalDate from '@evaka/lib-common/src/local-date'
 
 export interface DepartureInfoResponse {
   absentFrom: CareType[]
@@ -33,6 +34,7 @@ export interface AttendanceChild {
   id: UUID
   firstName: string
   lastName: string
+  dateOfBirth: LocalDate
   groupId: UUID
   backup: boolean
   status: AttendanceStatus
@@ -209,6 +211,7 @@ function deserializeAttendanceResponse(
       children: data.children.map((attendanceChild) => {
         return {
           ...attendanceChild,
+          dateOfBirth: LocalDate.parseIso(attendanceChild.dateOfBirth),
           attendance: attendanceChild.attendance
             ? {
                 ...attendanceChild.attendance,

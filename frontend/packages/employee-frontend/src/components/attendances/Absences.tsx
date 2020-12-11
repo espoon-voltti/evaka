@@ -62,6 +62,7 @@ export default React.memo(function Absences({
               {formatCareType(
                 absence.careType,
                 attendanceChild.placementType,
+                attendanceChild.dateOfBirth,
                 i18n
               )}
             </Label>
