@@ -86,6 +86,7 @@ export default function createEspooAdStrategy():
       lastName: string,
       email: string
     ) => {
+      if (!userId) throw Error('No user ID in SAML data')
       await upsertEmployee({
         firstName,
         lastName,

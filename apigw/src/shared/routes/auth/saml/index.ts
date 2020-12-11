@@ -192,8 +192,14 @@ export default function createSamlRouter(config: SamlEndpointConfig): Router {
           req.query.RelayState
         }" method="post">
                 ${res2.data.map(
-                  (e: { aad: string; firstName: string; lastName: string }) =>
-                    `<input type="radio" id="${e.aad}" name="preset" value="${e.aad}" /><label for="${e.aad}">${e.firstName} ${e.lastName}</label><br/>`
+                  (e: {
+                    externalId: string
+                    firstName: string
+                    lastName: string
+                  }) => {
+                    const [_, aad] = e.externalId.split(':')
+                    return `<input type="radio" id="${aad}" name="preset" value="${aad}" /><label for="${aad}">${e.firstName} ${e.lastName}</label><br/>`
+                  }
                 )}
                 <input type="radio" id="custom" name="preset" value="custom" checked/><label for="custom">Custom (täytä tiedot alle)</label><br/>
                 <br/>
