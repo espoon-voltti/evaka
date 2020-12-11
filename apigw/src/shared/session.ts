@@ -27,6 +27,7 @@ import {
 } from 'date-fns'
 import { toMiddleware } from './express'
 import AsyncRedisClient from './async-redis-client'
+import { fromCallback } from './promise-utils'
 
 export type SessionType = 'enduser' | 'employee'
 
@@ -136,6 +137,19 @@ export async function consumeLogoutToken(
   if (sid) {
     await asyncRedisClient.del(`sess:${sid}`, `logout:${token}`)
   }
+}
+
+export async function logoutExpress(
+  req: express.Request,
+  res: express.Response,
+  sessionType: SessionType
+) {
+  req.logout()
+  if (req.session) {
+    const session = req.session
+    await fromCallback((cb) => session.destroy(cb))
+  }
+  await consumeLogoutToken(req, res, sessionType)
 }
 
 export default (sessionType: SessionType) =>

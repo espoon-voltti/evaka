@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import express from 'express'
+import express, { CookieOptions } from 'express'
 import {
   assertStringProp,
   toMiddleware,
@@ -10,13 +10,20 @@ import {
 } from '../shared/express'
 import {
   identifyMobileDevice,
-  validatePairing,
-  MobileDeviceIdentity
+  MobileDeviceIdentity,
+  validatePairing
 } from '../shared/service-client'
 import { useSecureCookies } from '../shared/config'
 import { fromCallback } from '../shared/promise-utils'
 
 export const mobileLongTermCookieName = 'evaka.employee.mobile'
+const mobileLongTermCookieOptions: CookieOptions = {
+  maxAge: daysToMillis(90),
+  httpOnly: true,
+  secure: useSecureCookies,
+  sameSite: 'lax',
+  signed: true
+}
 
 function daysToMillis(days: number): number {
   return days * 24 * 60 * 60_000
@@ -39,13 +46,11 @@ async function mobileLogin(
   )
   // Unconditionally refresh long-term cookie on each login to refresh expiry
   // time and make it a "rolling" cookie
-  res.cookie(mobileLongTermCookieName, device.longTermToken, {
-    maxAge: daysToMillis(90),
-    httpOnly: true,
-    secure: useSecureCookies,
-    sameSite: 'lax',
-    signed: true
-  })
+  res.cookie(
+    mobileLongTermCookieName,
+    device.longTermToken,
+    mobileLongTermCookieOptions
+  )
 }
 
 export const refreshMobileSession = toMiddleware(async (req, res) => {
@@ -53,7 +58,12 @@ export const refreshMobileSession = toMiddleware(async (req, res) => {
     const token = req.signedCookies[mobileLongTermCookieName]
     if (token) {
       const deviceIdentity = await identifyMobileDevice(req, token)
-      await mobileLogin(req, res, deviceIdentity)
+      if (deviceIdentity) {
+        await mobileLogin(req, res, deviceIdentity)
+      } else {
+        // device has been removed or token has been rotated
+        res.clearCookie(mobileLongTermCookieName, mobileLongTermCookieOptions)
+      }
     }
   }
 })

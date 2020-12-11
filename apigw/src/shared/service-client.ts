@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import express from 'express'
-import axios from 'axios'
+import axios, { AxiosError } from 'axios'
 import { evakaServiceUrl } from './config'
 import { createAuthHeader } from './auth'
 import { SamlUser } from './routes/auth/saml/types'
@@ -75,6 +75,10 @@ export interface PersonIdentityRequest {
   socialSecurityNumber: string
   firstName: string
   lastName: string
+}
+
+export function isAxiosError(e: unknown): e is AxiosError {
+  return !!(e as AxiosError).isAxiosError
 }
 
 export async function getOrCreateEmployee(
@@ -150,27 +154,43 @@ export interface MobileDevice {
 export async function identifyMobileDevice(
   req: express.Request,
   token: UUID
-): Promise<MobileDeviceIdentity> {
-  const { data } = await client.get(
-    `/system/mobile-identity/${encodeURIComponent(token)}`,
-    {
-      headers: createServiceRequestHeaders(req, machineUser)
+): Promise<MobileDeviceIdentity | undefined> {
+  try {
+    const { data } = await client.get(
+      `/system/mobile-identity/${encodeURIComponent(token)}`,
+      {
+        headers: createServiceRequestHeaders(req, machineUser)
+      }
+    )
+    return data
+  } catch (e: unknown) {
+    if (isAxiosError(e) && e.response?.status === 404) {
+      return undefined
+    } else {
+      throw e
     }
-  )
-  return data
+  }
 }
 
 export async function getMobileDevice(
   req: express.Request,
   id: UUID
-): Promise<MobileDevice> {
-  const { data } = await client.get(
-    `/system/mobile-devices/${encodeURIComponent(id)}`,
-    {
-      headers: createServiceRequestHeaders(req, machineUser)
+): Promise<MobileDevice | undefined> {
+  try {
+    const { data } = await client.get(
+      `/system/mobile-devices/${encodeURIComponent(id)}`,
+      {
+        headers: createServiceRequestHeaders(req, machineUser)
+      }
+    )
+    return data
+  } catch (e: unknown) {
+    if (isAxiosError(e) && e.response?.status === 404) {
+      return undefined
+    } else {
+      throw e
     }
-  )
-  return data
+  }
 }
 
 export async function getUserDetails(req: express.Request, personId: string) {

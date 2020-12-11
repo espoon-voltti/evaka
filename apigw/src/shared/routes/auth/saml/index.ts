@@ -2,8 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import express from 'express'
-import { Router } from 'express'
+import express, { Router } from 'express'
 import passport from 'passport'
 import { urlencoded } from 'body-parser'
 import { logAuditEvent, logDebug } from '../../../logging'
@@ -11,11 +10,7 @@ import { eadMock, gatewayRole, nodeEnv } from '../../../config'
 import { parseDescriptionFromSamlError } from './error-utils'
 import { SamlEndpointConfig, SamlUser } from './types'
 import { toMiddleware, toRequestHandler } from '../../../express'
-import {
-  saveLogoutToken,
-  consumeLogoutToken,
-  SessionType
-} from '../../../session'
+import { logoutExpress, saveLogoutToken } from '../../../session'
 import { fromCallback } from '../../../promise-utils'
 import { client } from '../../../service-client'
 
@@ -152,19 +147,6 @@ function createLogoutHandler({
       res.redirect(getRedirectUrl(req))
     }
   })
-}
-
-async function logoutExpress(
-  req: express.Request,
-  res: express.Response,
-  sessionType: SessionType
-) {
-  req.logout()
-  if (req.session) {
-    const session = req.session
-    await fromCallback((cb) => session.destroy(cb))
-  }
-  await consumeLogoutToken(req, res, sessionType)
 }
 
 // Configures passport to use the given strategy, and returns an Express router
