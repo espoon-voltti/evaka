@@ -392,7 +392,7 @@ private fun getPartialAbsenceCareTypes(placementBasics: ChildPlacementBasics, ar
             wasAbsentFromPreschoolDaycare(placementBasics.placementType, arrived, departed)
         },
         CareType.DAYCARE.takeIf {
-            wasAbsentFromPaidDaycare(placementBasics, arrived, departed)
+            wasAbsentFrom5yoPaidDaycare(placementBasics, arrived, departed)
         }
     ).toSet()
 }
@@ -437,7 +437,7 @@ fun wasAbsentFromPreschoolDaycare(placementType: PlacementType, arrived: LocalTi
     return false
 }
 
-fun wasAbsentFromPaidDaycare(placementBasics: ChildPlacementBasics, arrived: LocalTime, departed: LocalTime): Boolean {
+fun wasAbsentFrom5yoPaidDaycare(placementBasics: ChildPlacementBasics, arrived: LocalTime, departed: LocalTime): Boolean {
     val (placementType, dateOfBirth) = placementBasics
 
     if (!isEntitledToFreeFiveYearsOldDaycare(dateOfBirth)) {
