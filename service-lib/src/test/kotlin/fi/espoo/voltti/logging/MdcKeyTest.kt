@@ -4,17 +4,14 @@
 
 package fi.espoo.voltti.logging
 
-import org.junit.After
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNull
-import org.junit.Test
-import org.junit.runner.RunWith
+import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.Test
 import org.slf4j.MDC
-import org.springframework.test.context.junit4.SpringRunner
 
-@RunWith(SpringRunner::class)
 class MdcKeyTest {
-    @After
+    @AfterEach
     fun afterEach() {
         MDC.clear()
     }

@@ -6,9 +6,11 @@ package fi.espoo.voltti.auth
 
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
-import org.junit.Assert
-import org.junit.Before
-import org.junit.Test
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 import org.springframework.mock.web.MockFilterChain
 import org.springframework.mock.web.MockHttpServletRequest
 import org.springframework.mock.web.MockHttpServletResponse
@@ -24,7 +26,7 @@ class JwtTokenDecoderTest {
     private lateinit var res: MockHttpServletResponse
     private lateinit var chain: MockFilterChain
 
-    @Before
+    @BeforeEach
     fun beforeEach() {
         req = MockHttpServletRequest()
         res = MockHttpServletResponse()
@@ -39,8 +41,8 @@ class JwtTokenDecoderTest {
         decoder.doFilter(req, res, chain)
 
         val decoded = req.getDecodedJwt()
-        Assert.assertNotNull(decoded)
-        Assert.assertEquals(issuer, decoded?.issuer)
+        assertNotNull(decoded)
+        assertEquals(issuer, decoded?.issuer)
     }
 
     @Test
@@ -49,7 +51,7 @@ class JwtTokenDecoderTest {
         decoder.doFilter(req, res, chain)
 
         val decoded = req.getDecodedJwt()
-        Assert.assertNull(decoded)
+        assertNull(decoded)
     }
 
     @Test
@@ -60,6 +62,6 @@ class JwtTokenDecoderTest {
         decoder.doFilter(req, res, chain)
 
         val decoded = req.getDecodedJwt()
-        Assert.assertNull(decoded)
+        assertNull(decoded)
     }
 }

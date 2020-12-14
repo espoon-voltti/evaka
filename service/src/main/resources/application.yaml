@@ -1,0 +1,50 @@
+# SPDX-FileCopyrightText: 2017-2020 City of Espoo
+#
+# SPDX-License-Identifier: LGPL-2.1-or-later
+
+spring:
+  profiles:
+    group:
+      "integration-test": "enable_varda_mock_integration_endpoint, enable_mock_dvv_api"
+      "local": "enable_varda_mock_integration_endpoint, enable_mock_dvv_api"
+  main:
+    banner-mode: "off"
+  application:
+    name: "evaka-service"
+  datasource:
+    continue-on-error: false
+    driver-class-name: "org.postgresql.Driver"
+    sqlScriptEncoding: "UTF-8"
+    type: "com.zaxxer.hikari.HikariDataSource"
+    hikari:
+      maximumPoolSize: 20
+  servlet:
+    multipart:
+      max-file-size: "10MB"
+      max-request-size: "10MB"
+server:
+  port: 8888
+management:
+  endpoints:
+    enabled-by-default: false
+    web:
+      base-path: "/"
+      exposure:
+        include: "health"
+  endpoint:
+    health:
+      enabled: true
+
+redis:
+  port: 6379
+
+fi:
+  espoo:
+    evaka:
+      message:
+        enabled: true
+      maxAttachmentsPerUser: 100
+    voltti:
+      s3mock:
+        url: "http://s3.lvh.me:9876"
+fee_decision_min_date: "2020-03-01"

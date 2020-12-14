@@ -9,8 +9,8 @@ import mu.KMarkerFactory
 import mu.KotlinLogging
 import net.logstash.logback.argument.StructuredArguments
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.After
-import org.junit.Test
+import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.Test
 import org.slf4j.MDC
 import java.util.UUID
 
@@ -23,7 +23,7 @@ class AppenderTest {
     private val meta = TestMeta.random()
     private val userIdHash = UUID.randomUUID().toString()
 
-    @After
+    @AfterEach
     fun afterEach() {
         MDC.clear()
     }

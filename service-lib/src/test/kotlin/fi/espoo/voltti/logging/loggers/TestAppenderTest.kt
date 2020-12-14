@@ -11,22 +11,19 @@ import fi.espoo.voltti.logging.utils.setupTestAppender
 import mu.KLogger
 import mu.KotlinLogging
 import net.logstash.logback.argument.StructuredArguments
-import org.junit.After
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertTrue
-import org.junit.Test
-import org.junit.runner.RunWith
+import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Test
 import org.skyscreamer.jsonassert.JSONAssert
-import org.springframework.test.context.junit4.SpringRunner
 
 private val logger = KotlinLogging.logger { }.also(KLogger::setupTestAppender)
 
 /**
  * Test the test appender implementation
  */
-@RunWith(SpringRunner::class)
 class TestAppenderTest {
-    @After
+    @AfterEach
     fun clearTestMessages() {
         logger.clearTestMessages()
     }
