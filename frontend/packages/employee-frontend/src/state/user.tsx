@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext, useMemo, createContext } from 'react'
+import React, { useMemo, createContext } from 'react'
 import { AdRole, User } from '~types'
 
 export interface UserState {
@@ -35,19 +35,4 @@ export const UserContextProvider = React.memo(function UserContextProvider({
     [user, roles]
   )
   return <UserContext.Provider value={value}>{children}</UserContext.Provider>
-})
-
-export const ApplyAclRoles = React.memo(function ApplyAclRoles({
-  children,
-  roles
-}: {
-  children: JSX.Element
-  roles: AdRole[]
-}) {
-  const { user } = useContext(UserContext)
-  return (
-    <UserContextProvider user={user} roles={roles}>
-      {children}
-    </UserContextProvider>
-  )
 })
