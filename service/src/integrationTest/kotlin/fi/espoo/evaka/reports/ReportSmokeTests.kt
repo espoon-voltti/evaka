@@ -240,6 +240,16 @@ class ReportSmokeTests : FullApplicationTest() {
         )
     }
 
+    @Test
+    fun `placement sketching report returns http 200`() {
+        assertOkResponse(
+            http.get(
+                "/reports/placement-sketching",
+                listOf("placementStartDate" to "2021-01-01", "earliestPreferredStartDate" to "2021-08-13")
+            )
+        )
+    }
+
     private fun assertOkResponse(req: Request) {
         val (_, response, _) = req.asUser(testUser).response()
         assertEquals(200, response.statusCode)

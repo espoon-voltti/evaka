@@ -147,6 +147,7 @@ enum class Audit(
     PisFamilyRead("evaka.pis-family.read"),
     PlacementCancel("evaka.placement.cancel"),
     PlacementCreate("evaka.placement.create"),
+    PlacementSketchingReportRead("evaka.placement-sketching-report.read"),
     PlacementPlanCreate("evaka.placement-plan.create"),
     PlacementPlanRespond("evaka.placement-plan.respond"),
     PlacementPlanDraftRead("evaka.placement-plan-draft.read"),
