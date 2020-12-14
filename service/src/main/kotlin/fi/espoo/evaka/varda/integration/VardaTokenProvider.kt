@@ -8,13 +8,12 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.kittinunf.fuel.core.FuelManager
 import com.github.kittinunf.fuel.core.Headers
 import fi.espoo.evaka.shared.utils.responseStringWithRetries
-import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 import org.springframework.core.env.Environment
 import org.springframework.stereotype.Service
 import java.time.Instant
 import java.time.temporal.ChronoUnit
+import java.util.concurrent.locks.ReentrantLock
+import kotlin.concurrent.withLock
 
 interface VardaTokenProvider {
     /**
@@ -42,13 +41,12 @@ class VardaTempTokenProvider(
     private val apiTokenUrl = "$baseUrl/user/apikey/"
 
     // TODO: How to actually enforce that token is mutable only within a single shared mutex?
-    private val tokenMutex = Mutex()
+    private val tokenLock = ReentrantLock()
     private var token: VardaApiToken? = null
 
     // TODO: Could we provide an algebraic effect like method for catching token errors and continuing after a refresh?
-    // TODO: Drop runBlocking if ever called from a context using coroutines
-    override fun <T> withToken(action: (token: String, refreshToken: () -> String) -> T): T = runBlocking {
-        tokenMutex.withLock { action(getValidToken().token) { getValidToken(forceNew = true).token } }
+    override fun <T> withToken(action: (token: String, refreshToken: () -> String) -> T): T = tokenLock.withLock {
+        action(getValidToken().token) { getValidToken(forceNew = true).token }
     }
 
     private fun getValidToken(forceNew: Boolean = false): VardaApiToken =

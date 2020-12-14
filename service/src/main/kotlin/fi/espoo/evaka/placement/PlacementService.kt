@@ -213,8 +213,8 @@ fun Database.Read.getDaycarePlacements(
     endDate: LocalDate?
 ): Set<DaycarePlacementWithGroups> {
     val daycarePlacements = handle.getDaycarePlacements(daycareId, childId, startDate, endDate)
-    val minDate = daycarePlacements.map { it.startDate }.min() ?: return emptySet()
-    val maxDate = daycarePlacements.map { it.endDate }.max() ?: endDate
+    val minDate = daycarePlacements.map { it.startDate }.minOrNull() ?: return emptySet()
+    val maxDate = daycarePlacements.map { it.endDate }.maxOrNull() ?: endDate
 
     val groupPlacements =
         if (daycareId != null) handle.getDaycareGroupPlacements(daycareId, minDate, maxDate, null) else listOf()

@@ -94,7 +94,7 @@ class FeeDecisionService(
         val defaultLanguage = if (decision.headOfFamily.language == "sv") "sv" else "fi"
 
         val youngestChildUnitLanguage =
-            decision.parts.maxBy { it.child.dateOfBirth }?.placementUnit?.language
+            decision.parts.maxByOrNull { it.child.dateOfBirth }?.placementUnit?.language
 
         return if (youngestChildUnitLanguage == "sv") "sv" else defaultLanguage
     }

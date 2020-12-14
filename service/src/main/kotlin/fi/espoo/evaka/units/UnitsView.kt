@@ -143,8 +143,8 @@ private fun getUnitOccupancies(
 private fun getOccupancyResponse(occupancies: List<OccupancyPeriod>): OccupancyResponse {
     return OccupancyResponse(
         occupancies = occupancies,
-        max = occupancies.filter { it.percentage != null }.maxBy { it.percentage!! },
-        min = occupancies.filter { it.percentage != null }.minBy { it.percentage!! }
+        max = occupancies.filter { it.percentage != null }.maxByOrNull { it.percentage!! },
+        min = occupancies.filter { it.percentage != null }.minByOrNull { it.percentage!! }
     )
 }
 
@@ -192,8 +192,8 @@ private fun getGroupOccupancyResponses(occupancies: List<OccupancyPeriodGroupLev
 
             OccupancyResponse(
                 occupancies = occupancyPeriods,
-                max = occupancyPeriods.filter { it.percentage != null }.maxBy { it.percentage!! },
-                min = occupancyPeriods.filter { it.percentage != null }.minBy { it.percentage!! }
+                max = occupancyPeriods.filter { it.percentage != null }.maxByOrNull { it.percentage!! },
+                min = occupancyPeriods.filter { it.percentage != null }.minByOrNull { it.percentage!! }
             )
         }
 }

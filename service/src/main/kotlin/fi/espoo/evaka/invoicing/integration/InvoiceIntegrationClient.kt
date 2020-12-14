@@ -236,8 +236,8 @@ private fun invoiceRow(
         account = acc,
         costCenter = costC.padStart(communityCostCenterLength, '0'),
         subCostCenter1 =
-            if (subCostC.isNullOrBlank()) null
-            else subCostC.padStart(communitySubCostCenterLength, '0')
+        if (subCostC.isNullOrBlank()) null
+        else subCostC.padStart(communitySubCostCenterLength, '0')
     )
 }
 

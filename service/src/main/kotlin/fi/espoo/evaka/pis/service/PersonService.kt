@@ -179,11 +179,11 @@ class PersonService(
                 ContactInfo(
                     email = data.email ?: person.email ?: "",
                     phone = data.phone ?: person.phone ?: "",
-                    invoiceRecipientName = data.invoiceRecipientName ?: person.invoiceRecipientName ?: "",
-                    invoicingStreetAddress = data.invoicingStreetAddress ?: person.invoicingStreetAddress ?: "",
-                    invoicingPostalCode = data.invoicingPostalCode ?: person.invoicingPostalCode ?: "",
-                    invoicingPostOffice = data.invoicingPostOffice ?: person.invoicingPostOffice ?: "",
-                    forceManualFeeDecisions = data.forceManualFeeDecisions ?: person.forceManualFeeDecisions ?: false
+                    invoiceRecipientName = data.invoiceRecipientName ?: person.invoiceRecipientName,
+                    invoicingStreetAddress = data.invoicingStreetAddress ?: person.invoicingStreetAddress,
+                    invoicingPostalCode = data.invoicingPostalCode ?: person.invoicingPostalCode,
+                    invoicingPostOffice = data.invoicingPostOffice ?: person.invoicingPostOffice,
+                    forceManualFeeDecisions = data.forceManualFeeDecisions ?: person.forceManualFeeDecisions
                 )
             )
             is ExternalIdentifier.NoID -> tx.handle.updatePersonDetails(id, data)

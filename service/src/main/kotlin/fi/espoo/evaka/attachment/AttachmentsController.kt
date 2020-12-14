@@ -201,7 +201,7 @@ fun checkFileContentType(file: InputStream, contentType: String) {
         ?: throw BadRequest("Invalid content type")
 
     val contentMatchesMagicNumbers = file.use { stream ->
-        val fileBytes = stream.readNBytes(magicNumbers.map { it.size }.max() ?: 0)
+        val fileBytes = stream.readNBytes(magicNumbers.map { it.size }.maxOrNull() ?: 0)
         magicNumbers.any { numbers ->
             fileBytes?.contentEquals(numbers) ?: false
         }

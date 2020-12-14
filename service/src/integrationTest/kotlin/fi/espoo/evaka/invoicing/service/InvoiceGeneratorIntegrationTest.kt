@@ -1064,7 +1064,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
     }
 
     @Test
-    fun `invoice generation from fee decision with a 95% discount fee alteration`() {
+    fun `invoice generation from fee decision with a 95 percent discount fee alteration`() {
         val period = Period(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
         jdbi.handle(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
         val decision = createFeeDecisionFixture(
