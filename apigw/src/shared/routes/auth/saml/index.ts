@@ -201,7 +201,7 @@ export default function createSamlRouter(config: SamlEndpointConfig): Router {
   //   flow started from the IDP, and a SAML LogoutRequest is included in the
   //   request.
   router.get(
-    `/auth/${pathIdentifier}/logout`,
+    `/auth/${pathIdentifier}/logout/callback`,
     logoutCallback,
     passport.authenticate(strategyName),
     (req, res) => res.redirect(getRedirectUrl(req))
