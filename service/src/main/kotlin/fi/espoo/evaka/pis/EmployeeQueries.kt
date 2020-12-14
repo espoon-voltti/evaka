@@ -37,7 +37,7 @@ private fun Handle.searchEmployees(id: UUID? = null) = createQuery(
     """
 SELECT id, first_name, last_name, email, external_id, created, updated, roles
 FROM employee
-WHERE (:id::uuid IS NULL OR id = :id)
+WHERE (:id::uuid IS NULL OR id = :id) AND external_id IS NOT NULL
     """.trimIndent()
 ).bind("id", id)
     .mapTo<Employee>()
