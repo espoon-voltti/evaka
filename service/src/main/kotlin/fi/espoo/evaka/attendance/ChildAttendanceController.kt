@@ -8,6 +8,7 @@ import fi.espoo.evaka.Audit
 import fi.espoo.evaka.application.utils.exhaust
 import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.daycare.service.CareType
+import fi.espoo.evaka.invoicing.service.isEntitledToFreeFiveYearsOldDaycare
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -330,13 +331,13 @@ private fun Database.Read.getAttendancesResponse(unitId: UUID): AttendanceRespon
             id = child.id,
             firstName = child.firstName,
             lastName = child.lastName,
-            dateOfBirth = child.dateOfBirth,
             placementType = child.placementType,
             groupId = child.groupId,
             backup = child.backup,
             status = status,
             attendance = attendance,
-            absences = absences
+            absences = absences,
+            entitledToFreeFiveYearsOldDaycare = isEntitledToFreeFiveYearsOldDaycare(child.dateOfBirth)
         )
     }
 
@@ -361,7 +362,7 @@ private fun isFullyAbsent(placementBasics: ChildPlacementBasics, absences: List<
 
 private fun getCareTypes(placementBasics: ChildPlacementBasics): List<CareType> {
     val (placementType, dateOfBirth) = placementBasics
-    if (hasFree5YearsOldDaycare(dateOfBirth)) {
+    if (isEntitledToFreeFiveYearsOldDaycare(dateOfBirth)) {
         if (placementType == PlacementType.DAYCARE) {
             return listOf(CareType.DAYCARE_5YO_FREE, CareType.DAYCARE)
         }
@@ -395,8 +396,6 @@ private fun getPartialAbsenceCareTypes(placementBasics: ChildPlacementBasics, ar
         }
     ).toSet()
 }
-
-private fun hasFree5YearsOldDaycare(dateOfBirth: LocalDate) = dateOfBirth.year == LocalDate.now(zoneId).year - 5
 
 fun wasAbsentFromPreschool(placementType: PlacementType, arrived: LocalTime, departed: LocalTime): Boolean {
     if (placementType in listOf(PlacementType.PRESCHOOL, PlacementType.PRESCHOOL_DAYCARE)) {
@@ -441,7 +440,7 @@ fun wasAbsentFromPreschoolDaycare(placementType: PlacementType, arrived: LocalTi
 fun wasAbsentFromPaidDaycare(placementBasics: ChildPlacementBasics, arrived: LocalTime, departed: LocalTime): Boolean {
     val (placementType, dateOfBirth) = placementBasics
 
-    if (!hasFree5YearsOldDaycare(dateOfBirth)) {
+    if (!isEntitledToFreeFiveYearsOldDaycare(dateOfBirth)) {
         return false
     }
 

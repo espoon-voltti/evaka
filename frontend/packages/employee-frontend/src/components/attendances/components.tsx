@@ -135,7 +135,7 @@ export function AbsentFrom({ child, absentFrom }: AbsentFromProps) {
             {formatCareType(
               careType,
               child.placementType,
-              child.dateOfBirth,
+              child.entitledToFreeFiveYearsOldDaycare,
               i18n
             )}
           </div>

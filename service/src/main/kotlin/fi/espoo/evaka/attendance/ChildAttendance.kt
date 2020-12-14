@@ -26,7 +26,7 @@ data class GroupInfo(
     val name: String
 )
 
-open class ChildBasics(
+data class ChildBasics(
     val id: UUID,
     val firstName: String,
     val lastName: String,
@@ -36,18 +36,18 @@ open class ChildBasics(
     val backup: Boolean
 )
 
-class Child(
-    id: UUID,
-    firstName: String,
-    lastName: String,
-    dateOfBirth: LocalDate,
-    placementType: PlacementType,
-    groupId: UUID,
-    backup: Boolean,
+data class Child(
+    val id: UUID,
+    val firstName: String,
+    val lastName: String,
+    val placementType: PlacementType,
+    val groupId: UUID,
+    val backup: Boolean,
     val status: AttendanceStatus,
     val attendance: ChildAttendance?,
-    val absences: List<ChildAbsence>
-) : ChildBasics(id, firstName, lastName, dateOfBirth, placementType, groupId, backup)
+    val absences: List<ChildAbsence>,
+    val entitledToFreeFiveYearsOldDaycare: Boolean
+)
 
 enum class AttendanceStatus {
     COMING, PRESENT, DEPARTED, ABSENT

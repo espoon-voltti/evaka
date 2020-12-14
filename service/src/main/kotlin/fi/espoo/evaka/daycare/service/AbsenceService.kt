@@ -6,6 +6,7 @@ package fi.espoo.evaka.daycare.service
 
 import fi.espoo.evaka.backupcare.GroupBackupCare
 import fi.espoo.evaka.daycare.getDaycare
+import fi.espoo.evaka.invoicing.service.isEntitledToFreeFiveYearsOldDaycare
 import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.db.Database
@@ -142,34 +143,18 @@ class AbsenceService {
             PlacementType.PRESCHOOL_DAYCARE,
             PlacementType.PREPARATORY_DAYCARE -> listOf(CareType.PRESCHOOL, CareType.PRESCHOOL_DAYCARE)
             PlacementType.DAYCARE -> {
-                if (entitledToFree5yoDaycare(placement, placementDate))
+                if (isEntitledToFreeFiveYearsOldDaycare(placement.dob, placementDate))
                     listOf(CareType.DAYCARE_5YO_FREE, CareType.DAYCARE)
                 else
                     listOf(CareType.DAYCARE)
             }
             PlacementType.DAYCARE_PART_TIME -> {
-                if (entitledToFree5yoDaycare(placement, placementDate))
+                if (isEntitledToFreeFiveYearsOldDaycare(placement.dob, placementDate))
                     listOf(CareType.DAYCARE_5YO_FREE)
                 else
                     listOf(CareType.DAYCARE)
             }
         }
-}
-
-fun entitledToFree5yoDaycare(placement: AbsencePlacement, placementDate: LocalDate): Boolean {
-    val placementTerm = if (placementDate <= LocalDate.of(placementDate.year, 7, 31)) {
-        Period(
-            LocalDate.of(placementDate.year - 1, 8, 1),
-            LocalDate.of(placementDate.year, 7, 31)
-        )
-    } else {
-        Period(
-            LocalDate.of(placementDate.year, 8, 1),
-            LocalDate.of(placementDate.year + 1, 7, 31)
-        )
-    }
-
-    return placementTerm.includes(placement.dob.plusYears(5).withMonth(12).withDayOfMonth(31))
 }
 
 enum class CareType {

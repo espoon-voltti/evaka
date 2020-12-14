@@ -56,6 +56,7 @@ import fi.espoo.evaka.shared.domain.asDistinctPeriods
 import fi.espoo.evaka.shared.domain.mergePeriods
 import fi.espoo.evaka.shared.domain.minEndDate
 import fi.espoo.evaka.shared.domain.orMax
+import fi.espoo.evaka.shared.utils.zoneId
 import mu.KotlinLogging
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.mapTo
@@ -575,13 +576,21 @@ private fun getActivePaidPlacements(h: Handle, childId: UUID, from: LocalDate): 
         .toList()
 }
 
+fun isEntitledToFreeFiveYearsOldDaycare(dateOfBirth: LocalDate, date: LocalDate = LocalDate.now(zoneId)): Boolean {
+    return getFiveYearOldTerm(dateOfBirth).includes(date)
+}
+
+private fun getFiveYearOldTerm(dateOfBirth: LocalDate): Period {
+    val yearTheChildTurns5 = dateOfBirth.year + 5
+    return Period(LocalDate.of(yearTheChildTurns5, 8, 1), LocalDate.of(yearTheChildTurns5 + 1, 7, 31))
+}
+
 private fun addServiceNeedsToPlacements(
     dateOfBirth: LocalDate,
     placements: List<Placement>,
     serviceNeeds: List<fi.espoo.evaka.serviceneed.ServiceNeed>
 ): List<Pair<Period, PermanentPlacementWithHours>> {
-    val yearTheChildTurns5 = dateOfBirth.year + 5
-    val fiveYearOldTerm = Period(LocalDate.of(yearTheChildTurns5, 8, 1), LocalDate.of(yearTheChildTurns5 + 1, 7, 31))
+    val fiveYearOldTerm = getFiveYearOldTerm(dateOfBirth)
 
     return placements.flatMap { placement ->
         val placementPeriod = Period(placement.startDate, placement.endDate)
