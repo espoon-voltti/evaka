@@ -59,14 +59,14 @@ class FeeDecisionsTest {
     }
 
     @Test
-    fun `calculateFeeBeforeFeeAlterations with max service need and discount 50 %`() {
+    fun `calculateFeeBeforeFeeAlterations with max service need and discount 50 percent`() {
         val result = calculateFeeBeforeFeeAlterations(28900, placement(PlacementType.DAYCARE, ServiceNeed.GTE_35), 50)
 
         assertEquals(14500, result)
     }
 
     @Test
-    fun `calculateFeeBeforeFeeAlterations with max service need and discount 80 %`() {
+    fun `calculateFeeBeforeFeeAlterations with max service need and discount 80 percent`() {
         val result = calculateFeeBeforeFeeAlterations(28900, placement(PlacementType.DAYCARE, ServiceNeed.GTE_35), 80)
 
         assertEquals(5800, result)
