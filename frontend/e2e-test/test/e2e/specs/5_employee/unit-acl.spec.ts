@@ -151,9 +151,6 @@ test('User can add a mobile device unit side', async (t) => {
   pairingId = pId
   deviceId = dId
 
-  await t.expect(unitPage.mobileDevicesNameInput.exists).ok()
-  await t.typeText(unitPage.mobileDevicesNameInput, 'testphone')
-  await t.click(unitPage.mobileDevicePairingDoneBtn)
   await t.expect(unitPage.mobileDevicesTableRows.exists).ok()
 })
 
