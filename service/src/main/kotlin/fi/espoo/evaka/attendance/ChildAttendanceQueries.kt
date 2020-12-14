@@ -123,6 +123,7 @@ fun Database.Read.fetchChildrenBasics(unitId: UUID): List<ChildBasics> {
             ch.id,
             ch.first_name,
             ch.last_name,
+            ch.date_of_birth,
             gp.daycare_group_id as group_id,
             p.type as placement_type,
             false AS backup
@@ -139,6 +140,7 @@ fun Database.Read.fetchChildrenBasics(unitId: UUID): List<ChildBasics> {
             ch.id,
             ch.first_name,
             ch.last_name,
+            ch.date_of_birth,
             bc.group_id,
             p.type as placement_type,
             true AS backup

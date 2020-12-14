@@ -39,6 +39,7 @@ export interface AttendanceChild {
   placementType: PlacementType
   attendance: Attendance | null
   absences: Absence[]
+  entitledToFreeFiveYearsOldDaycare: boolean
 }
 
 interface Attendance {

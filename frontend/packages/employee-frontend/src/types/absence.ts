@@ -53,10 +53,14 @@ export const billableCareTypes: CareType[] = ['PRESCHOOL_DAYCARE', 'DAYCARE']
 export function formatCareType(
   careType: CareType,
   placementType: PlacementType,
+  entitledToFreeFiveYearsOldDaycare: boolean,
   i18n: Translations
 ) {
   const isPreparatory =
     placementType === 'PREPARATORY' || placementType === 'PREPARATORY_DAYCARE'
+
+  if (careType === 'DAYCARE' && entitledToFreeFiveYearsOldDaycare)
+    return i18n.common.types.DAYCARE_5YO_PAID
 
   if (isPreparatory && careType === 'PRESCHOOL')
     return i18n.common.types.PREPARATORY_EDUCATION

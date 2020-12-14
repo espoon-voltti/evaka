@@ -74,7 +74,8 @@ export const fi = {
       PRESCHOOL_DAYCARE: 'Liittyvä varhaiskasvatus',
       PREPARATORY_EDUCATION: 'Valmistava esiopetus',
       PREPARATORY_DAYCARE: 'Liittyvä varhaiskasvatus',
-      DAYCARE_5YO_FREE: '5v maksuton varhaiskasvatus'
+      DAYCARE_5YO_FREE: '5v maksuton varhaiskasvatus',
+      DAYCARE_5YO_PAID: 'Varhaiskasvatus (maksullinen)'
     },
     form: {
       name: 'Nimi',
