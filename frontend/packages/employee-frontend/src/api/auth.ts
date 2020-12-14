@@ -13,9 +13,9 @@ const redirectUri =
     ? '/employee'
     : `${window.location.pathname}${window.location.search}${window.location.hash}`
 
-export function getLoginUrl() {
+export function getLoginUrl(type: 'evaka' | 'saml' = 'saml') {
   const relayState = encodeURIComponent(redirectUri)
-  return `/api/internal/auth/saml/login?RelayState=${relayState}`
+  return `/api/internal/auth/${type}/login?RelayState=${relayState}`
 }
 
 export interface AuthStatus {

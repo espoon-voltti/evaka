@@ -1,0 +1,30 @@
+version: '3.5'
+
+services:
+  keycloak:
+    image: quay.io/keycloak/keycloak:11.0.3
+    ports:
+      - "8080:8080"
+    environment:
+      KEYCLOAK_USER: admin
+      KEYCLOAK_PASSWORD: admin
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080"]
+      interval: 2s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+
+  smtp:
+    image: mailhog/mailhog
+    ports:
+      - "8025:8025"
+
+  configure-keycloak:
+   image: quay.io/keycloak/keycloak:11.0.3
+   environment:
+     KEYCLOAK_USER: admin
+     KEYCLOAK_PASSWORD: admin
+   volumes:
+     - ./keycloak/configuration:/configuration
+   entrypoint: /configuration/entrypoint-realm.sh

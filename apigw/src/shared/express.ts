@@ -11,6 +11,7 @@ export interface LogoutToken {
   // milliseconds value of a Date. Not an actual Date because it will be JSONified
   expiresAt: number
   value: string
+  idpProvider?: string | null
 }
 
 export type AsyncRequestHandler = (

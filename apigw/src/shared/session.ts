@@ -95,7 +95,12 @@ export function refreshLogoutToken(sessionType: SessionType) {
       differenceInMinutes(logoutExpires, sessionExpires) < 30 ||
       cookieToken !== req.session.logoutToken.value
     ) {
-      await saveLogoutToken(req, res, sessionType)
+      await saveLogoutToken(
+        req,
+        res,
+        sessionType,
+        req.session.logoutToken.idpProvider
+      )
     }
   })
 }
@@ -103,14 +108,17 @@ export function refreshLogoutToken(sessionType: SessionType) {
 export async function saveLogoutToken(
   req: express.Request,
   res: express.Response,
-  sessionType: SessionType
+  sessionType: SessionType,
+  strategyName: string | null | undefined
 ): Promise<void> {
   if (!req.session) return
   const now = new Date()
   const expires = addMinutes(now, sessionTimeoutMinutes + 60)
+  const idpProvider = strategyName
   const logoutToken = {
     expiresAt: expires.valueOf(),
-    value: req.session.logoutToken ? req.session.logoutToken.value : uuidv4()
+    value: req.session.logoutToken ? req.session.logoutToken.value : uuidv4(),
+    idpProvider
   }
   req.session.logoutToken = logoutToken
   res.cookie(logoutCookie(sessionType), logoutToken.value, {

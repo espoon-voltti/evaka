@@ -156,6 +156,8 @@ export const fi = {
     title: 'Varhaiskasvatus',
     subtitle: 'Asiakastiedot ja yksiköt',
     login: 'Kirjaudu sisään',
+    loginAD: 'Espoo AD',
+    loginEvaka: 'Palveluntuottaja',
     error: {
       noRole: 'Sinulla ei ole tarvittavaa roolia',
       default: 'Jokin meni vikaan'

@@ -10,6 +10,7 @@ export function createAuthEndpoints(sessionType: SessionType) {
   return createSamlRouter({
     strategyName: 'suomifi',
     strategy: createSuomiFiStrategy(),
-    sessionType
+    sessionType,
+    pathIdentifier: 'saml'
   })
 }

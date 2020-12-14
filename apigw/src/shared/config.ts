@@ -136,8 +136,8 @@ const certificateNames = Object.keys(certificates) as ReadonlyArray<
   keyof typeof certificates
 >
 
-export const eadMock =
-  env('EAD_MOCK', parseBoolean) ?? ifNodeEnv(['local', 'test'], true) ?? false
+export const devLoginEnabled =
+  env('DEV_LOGIN', parseBoolean) ?? ifNodeEnv(['local', 'test'], true) ?? false
 
 export const eadSamlCallbackUrl = process.env.EAD_SAML_CALLBACK_URL
 export const eadSamlIssuer = process.env.EAD_SAML_ISSUER
@@ -158,3 +158,19 @@ export const sfiSamlPublicCert = envArray(
   parseEnum(certificateNames)
 )
 export const sfiSamlPrivateCert = process.env.SFI_SAML_PRIVATE_CERT
+
+export const evakaSamlCallbackUrl = required(
+  process.env.EVAKA_SAML_CALLBACK_URL ??
+    ifNodeEnv(
+      ['local', 'test'],
+      `http://localhost:9093/api/internal/auth/evaka/login/callback`
+    )
+)
+
+export const evakaSamlEntrypoint = required(
+  process.env.EVAKA_SAML_ENTRYPOINT ??
+    ifNodeEnv(
+      ['local', 'test'],
+      'http://localhost:8080/auth/realms/evaka/protocol/saml'
+    )
+)
