@@ -6,7 +6,7 @@ spring:
   profiles:
     group:
       "integration-test": "enable_varda_mock_integration_endpoint, enable_mock_dvv_api"
-      "local": "enable_varda_mock_integration_endpoint, enable_mock_dvv_api"
+      "local": "enable_dev_api, enable_varda_mock_integration_endpoint"
   main:
     banner-mode: "off"
   application:
