@@ -14,7 +14,6 @@ import {
   deleteMobileDevice,
   deletePairing,
   insertEmployeeFixture,
-  postPairingChallenge,
   setAclForDaycares
 } from '../../dev-api'
 import { UUID } from '../../dev-api/types'
@@ -148,22 +147,36 @@ test('User can add a mobile device unit side', async (t) => {
   await home.navigateToUnits()
   await unitPage.navigateHere(fixtures.daycareFixture.id)
 
-  await t.expect(unitPage.mobileDevicesTableRows.exists).notOk()
-  await t.click(unitPage.mobileDevicesStartPairingBtn)
-  await t.expect(unitPage.pairingModalTitle.exists).ok()
-  await t.expect(unitPage.mobileDevicesChallengeKey.exists).ok()
-  const challengeKey = await unitPage.mobileDevicesChallengeKey.textContent
-
-  const res = await postPairingChallenge(challengeKey)
-  await t.expect(unitPage.mobileDevicesResponseKeyInput.exists).ok()
-  if (res.responseKey) {
-    await t.typeText(unitPage.mobileDevicesResponseKeyInput, res.responseKey)
-  }
-  pairingId = res.id
-  deviceId = res.mobileDeviceId
+  const { pairingId: pId, deviceId: dId } = await unitPage.addMobileDevice()
+  pairingId = pId
+  deviceId = dId
 
   await t.expect(unitPage.mobileDevicesNameInput.exists).ok()
   await t.typeText(unitPage.mobileDevicesNameInput, 'testphone')
   await t.click(unitPage.mobileDevicePairingDoneBtn)
   await t.expect(unitPage.mobileDevicesTableRows.exists).ok()
+})
+
+test('Added mobile devices should not be listed in employee selector', async (t) => {
+  await home.login({
+    aad: config.supervisorAad,
+    roles: []
+  })
+  await home.navigateToUnits()
+  await unitPage.navigateHere(fixtures.daycareFixture.id)
+  await t.expect(unitPage.mobileDevicesTableRows.exists).notOk()
+  await t.expect(unitPage.staffAcl.addInput.exists).ok()
+  await t.click(unitPage.staffAcl.addInput)
+  await t.expect(unitPage.employeeOptions.count).eql(2)
+
+  const { pairingId: pId, deviceId: dId } = await unitPage.addMobileDevice()
+  pairingId = pId
+  deviceId = dId
+
+  await home.navigateToUnits()
+  await unitPage.navigateHere(fixtures.daycareFixture.id)
+
+  await t.expect(unitPage.mobileDevicesTableRows.exists).ok()
+  await t.click(unitPage.staffAcl.addInput)
+  await t.expect(unitPage.employeeOptions.count).eql(2)
 })

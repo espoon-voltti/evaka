@@ -4,6 +4,7 @@
 
 import { ClientFunction, Selector, t } from 'testcafe'
 import config from '../../../config'
+import { postPairingChallenge } from '../../../dev-api'
 import { UUID } from '../../../dev-api/types'
 
 export default class UnitPage {
@@ -126,6 +127,30 @@ export default class UnitPage {
     '[data-qa="mobile-device-name-input"]'
   )
   readonly mobileDevicePairingDoneBtn = Selector('[data-qa="modal-okBtn"]')
+
+  readonly employeeOptions = Selector('[id^="react-select-2-option"]')
+
+  async addMobileDevice(): Promise<{ pairingId: UUID; deviceId: UUID | null }> {
+    await t.expect(this.mobileDevicesTableRows.exists).notOk()
+    await t.click(this.mobileDevicesStartPairingBtn)
+    await t.expect(this.pairingModalTitle.exists).ok()
+    await t.expect(this.mobileDevicesChallengeKey.exists).ok()
+    const challengeKey = await this.mobileDevicesChallengeKey.textContent
+
+    const res = await postPairingChallenge(challengeKey)
+    await t.expect(this.mobileDevicesResponseKeyInput.exists).ok()
+    if (res.responseKey) {
+      await t.typeText(this.mobileDevicesResponseKeyInput, res.responseKey)
+    }
+    const pairingId = res.id
+    const deviceId = res.mobileDeviceId
+
+    await t.expect(this.mobileDevicesNameInput.exists).ok()
+    await t.typeText(this.mobileDevicesNameInput, 'testphone')
+    await t.click(this.mobileDevicePairingDoneBtn)
+
+    return { pairingId, deviceId }
+  }
 }
 
 class AclTable {
