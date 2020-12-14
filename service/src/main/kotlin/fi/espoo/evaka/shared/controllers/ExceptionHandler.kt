@@ -18,14 +18,11 @@ import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.multipart.MaxUploadSizeExceededException
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler
 import java.io.IOException
-import java.lang.reflect.UndeclaredThrowableException
 import java.time.Instant
 import javax.servlet.http.HttpServletRequest
 
 data class ErrorResponse(
     val errorCode: String? = null,
-    val message: String,
-    val exception: String? = null,
     val timestamp: Long = Instant.now().toEpochMilli()
 )
 
@@ -37,8 +34,7 @@ class ExceptionHandler : ResponseEntityExceptionHandler() {
         logger.warn("Bad request (${ex.message})")
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
             ErrorResponse(
-                errorCode = ex.errorCode,
-                message = ex.message
+                errorCode = ex.errorCode
             )
         )
     }
@@ -48,8 +44,7 @@ class ExceptionHandler : ResponseEntityExceptionHandler() {
         logger.warn("Not found (${ex.message})")
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
             ErrorResponse(
-                errorCode = ex.errorCode,
-                message = ex.message
+                errorCode = ex.errorCode
             )
         )
     }
@@ -59,8 +54,7 @@ class ExceptionHandler : ResponseEntityExceptionHandler() {
         logger.warn("Conflict (${ex.message})")
         return ResponseEntity.status(HttpStatus.CONFLICT).body(
             ErrorResponse(
-                errorCode = ex.errorCode,
-                message = ex.message
+                errorCode = ex.errorCode
             )
         )
     }
@@ -70,8 +64,7 @@ class ExceptionHandler : ResponseEntityExceptionHandler() {
         logger.warn("Unauthorized (${ex.message})")
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
             ErrorResponse(
-                errorCode = ex.errorCode,
-                message = ex.message
+                errorCode = ex.errorCode
             )
         )
     }
@@ -81,8 +74,7 @@ class ExceptionHandler : ResponseEntityExceptionHandler() {
         logger.warn("Forbidden (${ex.message})")
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
             ErrorResponse(
-                errorCode = ex.errorCode,
-                message = ex.message
+                errorCode = ex.errorCode
             )
         )
     }
@@ -95,9 +87,7 @@ class ExceptionHandler : ResponseEntityExceptionHandler() {
     fun useCaseDenied(req: HttpServletRequest, ex: RuntimeException): ResponseEntity<ErrorResponse> {
         logger.warn("Forbidden (${ex.message})")
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
-            ErrorResponse(
-                message = ex.message ?: ""
-            )
+            ErrorResponse()
         )
     }
 
@@ -105,7 +95,7 @@ class ExceptionHandler : ResponseEntityExceptionHandler() {
     fun maxUploadSizeExceeded(req: HttpServletRequest, ex: MaxUploadSizeExceededException): ResponseEntity<ErrorResponse> {
         logger.warn("Max upload size exceeded (${ex.message})")
         return ResponseEntity.status(HttpStatus.PAYLOAD_TOO_LARGE).body(
-            ErrorResponse(message = "Max upload size exceeded")
+            ErrorResponse()
         )
     }
 
@@ -116,26 +106,19 @@ class ExceptionHandler : ResponseEntityExceptionHandler() {
             logger.warn("ClientAbortException ($ex)")
             return null
         }
-        val message = "Unexpected error (${ex.message})"
-        logger.error(message, ex)
+        logger.error("IOException", ex)
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
-            ErrorResponse(
-                message = ex.message ?: ""
-            )
+            ErrorResponse()
         )
     }
 
     @ExceptionHandler(value = [Throwable::class])
     fun unexpectedError(req: HttpServletRequest, ex: Throwable): ResponseEntity<ErrorResponse> {
         // Checked exceptions get wrapped in UndeclaredThrowableException in kotlin
-        val cause = if (ex is UndeclaredThrowableException) ex.cause else ex
         val message = "Unexpected error (${ex.message})"
         logger.error(message, ex)
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
-            ErrorResponse(
-                message = message,
-                exception = cause?.message
-            )
+            ErrorResponse()
         )
     }
 }
