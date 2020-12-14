@@ -18,7 +18,7 @@ object Version {
     const val jdbi = "3.14.1"
     const val jedis = "3.3.0"
     const val junit = "5.6.2"
-    const val kotlin = "1.3.72"
+    const val kotlin = "1.4.21"
     const val kotlinLogging = "1.8.3"
     const val logbackSpringBoot = "2.7.1"
     const val logstashEncoder = "6.3"
