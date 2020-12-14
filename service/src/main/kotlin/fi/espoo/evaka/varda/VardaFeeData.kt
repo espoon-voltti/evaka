@@ -29,9 +29,9 @@ fun updateFeeData(
 }
 
 fun removeMarkedFeeDataFromVarda(db: Database.Connection, client: VardaClient) {
-    db.read { getMarkedFeeData(it) }.forEach { id ->
-        if (client.deleteFeeData(id)) {
-            db.transaction { softDeleteFeeData(it, id) }
+    db.read { getMarkedFeeData(it) }.forEach { vardaId ->
+        if (client.deleteFeeData(vardaId)) {
+            db.transaction { deleteVardaFeeData(it, vardaId) }
         }
     }
 }
@@ -92,16 +92,9 @@ fun createAndUpdateFeeData(db: Database.Connection, client: VardaClient, personS
 
 fun getMarkedFeeData(tx: Database.Read): List<Long> {
     return tx
-        .createQuery("SELECT varda_id FROM varda_fee_data WHERE should_be_deleted = true AND deleted_at IS NULL")
+        .createQuery("SELECT varda_id FROM varda_fee_data WHERE should_be_deleted = true")
         .mapTo<Long>()
         .toList()
-}
-
-fun softDeleteFeeData(tx: Database.Transaction, vardaId: Long) {
-    tx.createUpdate("UPDATE varda_fee_data SET deleted_at = :deletedAt WHERE varda_id = :vardaId")
-        .bind("vardaId", vardaId)
-        .bind("deletedAt", Instant.now())
-        .execute()
 }
 
 private fun insertFeeDataUpload(
