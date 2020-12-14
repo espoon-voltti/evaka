@@ -494,9 +494,9 @@ fun insertApplication(
                 preferredUnits = listOf(PreferredUnit(testDaycare.id, testDaycare.name)),
                 preferredStartDate = preferredStartDate,
                 serviceNeed = if (appliedType in listOf(
-                    PlacementType.PRESCHOOL,
-                    PlacementType.PREPARATORY
-                )
+                        PlacementType.PRESCHOOL,
+                        PlacementType.PREPARATORY
+                    )
                 ) null else ServiceNeed(
                     startTime = "09:00",
                     endTime = "15:00",

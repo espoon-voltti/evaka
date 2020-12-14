@@ -152,7 +152,7 @@ tasks.withType<KotlinCompile> {
 }
 
 ktlint {
-    version.set("0.37.2")
+    version.set("0.40.0")
 }
 
 project.wsdl2javaExt {
