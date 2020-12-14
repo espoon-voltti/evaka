@@ -46,6 +46,7 @@ class VardaChildrenIntegrationTest : FullApplicationTest() {
             assertEquals(0, getUploadedChildren(db).size)
             mockEndpoint.children.clear()
         }
+        mockEndpoint.cleanUp()
     }
 
     @Test
@@ -97,7 +98,7 @@ class VardaChildrenIntegrationTest : FullApplicationTest() {
                 .execute()
 
             uploadChildren()
-            val payload = mockEndpoint.children[0]
+            val payload = mockEndpoint.children.values.first()
             assertEquals(1, getUploadedChildren(db).size)
             assertEquals(defaultMunicipalOrganizerOid, payload.organizerOid)
             assertNull(payload.ownOrganizationOid)
@@ -125,7 +126,7 @@ class VardaChildrenIntegrationTest : FullApplicationTest() {
                 .execute()
 
             uploadChildren()
-            val payload = mockEndpoint.children[0]
+            val payload = mockEndpoint.children.values.first()
             assertEquals(1, getUploadedChildren(db).size)
             assertNull(payload.organizerOid)
             assertEquals(defaultMunicipalOrganizerOid, payload.ownOrganizationOid)

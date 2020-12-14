@@ -8,6 +8,7 @@ import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.pis.service.PersonService
 import fi.espoo.evaka.resetDatabase
+import fi.espoo.evaka.varda.integration.MockVardaIntegrationEndpoint
 import org.jdbi.v3.core.kotlin.mapTo
 import org.junit.jupiter.api.Assertions.assertNotEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
@@ -18,6 +19,9 @@ import org.springframework.beans.factory.annotation.Autowired
 
 class VardaOrganizerIntegrationTest : FullApplicationTest() {
     @Autowired
+    lateinit var mockEndpoint: MockVardaIntegrationEndpoint
+
+    @Autowired
     lateinit var personService: PersonService
 
     @BeforeEach
@@ -26,6 +30,7 @@ class VardaOrganizerIntegrationTest : FullApplicationTest() {
             tx.resetDatabase()
             insertGeneralTestFixtures(tx.handle)
         }
+        mockEndpoint.cleanUp()
     }
 
     @Test

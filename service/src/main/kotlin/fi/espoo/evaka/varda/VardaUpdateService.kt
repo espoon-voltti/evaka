@@ -34,7 +34,7 @@ class VardaUpdateService(
     fun scheduleVardaUpdate(db: Database.Connection) {
         if (forceSync) {
             val client = VardaClient(tokenProvider, fuel, env, mapper)
-            updateAll(db, client, mapper, personService, organizer)
+            updateAll(db, client, personService, organizer)
         } else {
             db.transaction { asyncJobRunner.plan(it, listOf(VardaUpdate()), retryCount = 1) }
         }
@@ -42,14 +42,13 @@ class VardaUpdateService(
 
     fun updateAll(db: Database, msg: VardaUpdate) {
         val client = VardaClient(tokenProvider, fuel, env, mapper)
-        db.connect { updateAll(it, client, mapper, personService, organizer) }
+        db.connect { updateAll(it, client, personService, organizer) }
     }
 }
 
 fun updateAll(
     db: Database.Connection,
     client: VardaClient,
-    mapper: ObjectMapper,
     personService: PersonService,
     organizer: String
 ) {
@@ -61,5 +60,5 @@ fun updateAll(
     updateChildren(db, client, organizer)
     updateDecisions(db, client)
     updatePlacements(db, client)
-    updateFeeData(db, client, mapper, personService)
+    updateFeeData(db, client, personService)
 }

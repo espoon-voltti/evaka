@@ -86,7 +86,8 @@ fun sendNewDecisions(db: Database.Connection, client: VardaClient) {
 fun sendUpdatedDecisions(db: Database.Connection, client: VardaClient) {
     val updatedDecisions = db.read { getUpdatedDecisions(it, client.getChildUrl) }
     val updatedDerivedDecisions = db.read { getUpdatedDerivedDecisions(it, client.getChildUrl) }
-    deleteDecisionPlacements(db, client, updatedDecisions.map { it.first } + updatedDerivedDecisions.map { it.first })
+    val decisionIds = updatedDecisions.map { it.first } + updatedDerivedDecisions.map { it.first }
+    cleanUpDecisionRelatedData(db, client, decisionIds)
     (updatedDecisions + updatedDerivedDecisions).forEach { (id, vardaDecisionId, updatedDecision) ->
         if (validateDecision(id, updatedDecision)) {
             client.updateDecision(vardaDecisionId, updatedDecision)?.let {
@@ -94,6 +95,13 @@ fun sendUpdatedDecisions(db: Database.Connection, client: VardaClient) {
             }
         }
     }
+}
+
+fun cleanUpDecisionRelatedData(db: Database.Connection, client: VardaClient, decisionIds: List<UUID>) {
+    // Delete placements and fee data related to these decisions before decision update or delete
+    // since Varda does not clean them up automatically
+    deleteDecisionPlacements(db, client, decisionIds)
+    deleteDecisionFeeData(db, client, decisionIds)
 }
 
 fun deleteDecisionPlacements(db: Database.Connection, client: VardaClient, decisionIds: List<UUID>) {
@@ -110,9 +118,25 @@ fun deleteDecisionPlacements(db: Database.Connection, client: VardaClient, decis
     }
 }
 
+fun deleteDecisionFeeData(db: Database.Connection, client: VardaClient, decisionIds: List<UUID>) {
+    val decisionFeeDataIds = db.read {
+        it.createQuery("SELECT varda_id FROM varda_fee_data WHERE varda_decision_id = ANY(:decisionIds)")
+            .bind("decisionIds", decisionIds.toTypedArray())
+            .mapTo<Long>()
+            .toList()
+    }
+    decisionFeeDataIds.forEach { id ->
+        if (client.deleteFeeData(id)) {
+            db.transaction { deleteVardaFeeData(it, id) }
+        }
+    }
+}
+
 fun removeDeletedDecisions(db: Database.Connection, client: VardaClient) {
     val removedDecisions = db.read { getRemovedDecisions(it) + getRemovedDerivedDecisions(it) }
-    removedDecisions.forEach { vardaDecisionId ->
+    val decisionIds = removedDecisions.map { (id, _) -> id }
+    cleanUpDecisionRelatedData(db, client, decisionIds)
+    removedDecisions.forEach { (_, vardaDecisionId) ->
         client.deleteDecision(vardaDecisionId).let { success ->
             if (success) db.transaction { deleteDecision(it, vardaDecisionId) }
         }
@@ -339,30 +363,30 @@ WHERE vd.uploaded_at < greatest(latest_sn.updated, p.updated)
         .toList()
 }
 
-private fun getRemovedDecisions(tx: Database.Read): List<Long> {
+private fun getRemovedDecisions(tx: Database.Read): List<Pair<UUID, Long>> {
     val sql =
         """
 WITH accepted_daycare_decision AS (
     $acceptedDaycareDecisionsQuery
 )
-SELECT varda_decision_id FROM varda_decision vd
+SELECT vd.id, vd.varda_decision_id FROM varda_decision vd
 LEFT JOIN accepted_daycare_decision d ON vd.evaka_decision_id = d.id
 WHERE vd.evaka_placement_id IS NULL
 AND d.id IS NULL
         """.trimIndent()
 
     return tx.createQuery(sql)
-        .mapTo(Long::class.java)
+        .map { rs, _ -> rs.getUUID("id") to rs.getLong("varda_decision_id") }
         .toList()
 }
 
-private fun getRemovedDerivedDecisions(tx: Database.Read): List<Long> {
+private fun getRemovedDerivedDecisions(tx: Database.Read): List<Pair<UUID, Long>> {
     val sql =
         """
 WITH derived_decision AS (
     $derivedDecisionQueryBase
 )
-SELECT vd.varda_decision_id FROM varda_decision vd
+SELECT vd.id, vd.varda_decision_id FROM varda_decision vd
 LEFT JOIN derived_decision d ON vd.evaka_placement_id = d.evaka_id
 WHERE vd.evaka_decision_id IS NULL
 AND d.evaka_id IS NULL
@@ -370,7 +394,7 @@ AND d.evaka_id IS NULL
 
     return tx.createQuery(sql)
         .bind("types", daycarePlacementTypes)
-        .mapTo(Long::class.java)
+        .map { rs, _ -> rs.getUUID("id") to rs.getLong("varda_decision_id") }
         .toList()
 }
 
