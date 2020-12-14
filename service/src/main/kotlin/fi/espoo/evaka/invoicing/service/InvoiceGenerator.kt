@@ -184,7 +184,7 @@ internal fun generateDraftInvoice(
     if (rows.isEmpty()) return null
 
     val agreementType = rowStubs
-        .maxBy { (_, stub) -> stub.child.dateOfBirth }!!
+        .maxByOrNull { (_, stub) -> stub.child.dateOfBirth }!!
         .let { (_, stub) ->
             daycareCodes[stub.placement.unit]?.areaCode
                 ?: error("Couldn't find areaCode for daycare (${stub.placement.unit})")

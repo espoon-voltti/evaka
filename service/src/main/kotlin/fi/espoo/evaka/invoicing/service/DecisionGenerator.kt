@@ -624,8 +624,8 @@ internal fun <Part : FinanceDecisionPart, Decision : FinanceDecision<Part, Decis
 ): List<Decision> {
     if (drafts.isEmpty()) return drafts
 
-    val minDate = drafts.map { it.validFrom }.min()!! // min always exists when list is non-empty
-    val maxDate = drafts.map { it.validTo }.maxBy { orMax(it) }
+    val minDate = drafts.map { it.validFrom }.minOrNull()!! // min always exists when list is non-empty
+    val maxDate = drafts.map { it.validTo }.maxByOrNull { orMax(it) }
 
     return asDistinctPeriods((drafts + active).map { Period(it.validFrom, it.validTo) }, Period(minDate, maxDate))
         .fold(listOf<Decision>()) { decisions, period ->

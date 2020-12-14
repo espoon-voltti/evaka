@@ -42,8 +42,8 @@ class OccupancyController(private val acl: AccessControlList) {
 
         val response = OccupancyResponse(
             occupancies = occupancies,
-            max = occupancies.filter { it.percentage != null }.maxBy { it.percentage!! },
-            min = occupancies.filter { it.percentage != null }.minBy { it.percentage!! }
+            max = occupancies.filter { it.percentage != null }.maxByOrNull { it.percentage!! },
+            min = occupancies.filter { it.percentage != null }.minByOrNull { it.percentage!! }
         )
         return ResponseEntity.ok(response)
     }
@@ -70,8 +70,8 @@ class OccupancyController(private val acl: AccessControlList) {
                 groupId = key,
                 occupancies = OccupancyResponse(
                     occupancies = value,
-                    max = value.filter { it.percentage != null }.maxBy { it.percentage!! },
-                    min = value.filter { it.percentage != null }.minBy { it.percentage!! }
+                    max = value.filter { it.percentage != null }.maxByOrNull { it.percentage!! },
+                    min = value.filter { it.percentage != null }.minByOrNull { it.percentage!! }
                 )
             )
         }
