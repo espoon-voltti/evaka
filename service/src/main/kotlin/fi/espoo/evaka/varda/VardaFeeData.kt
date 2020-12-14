@@ -258,10 +258,10 @@ private fun baseToFeeData(
         lapsi = childUrl,
         palveluseteli_arvo = 0,
         maksun_peruste_koodi =
-            if (feeDataBase.placementType == PlacementType.FIVE_YEARS_OLD_DAYCARE)
-                FeeBasisCode.FIVE_YEAR_OLDS_DAYCARE.code
-            else
-                FeeBasisCode.DAYCARE.code,
+        if (feeDataBase.placementType == PlacementType.FIVE_YEARS_OLD_DAYCARE)
+            FeeBasisCode.FIVE_YEAR_OLDS_DAYCARE.code
+        else
+            FeeBasisCode.DAYCARE.code,
         asiakasmaksu = feeDataBase.fee,
         perheen_koko = feeDataBase.familySize,
         alkamis_pvm = feeDataBase.startDate,
