@@ -7,14 +7,11 @@ package fi.espoo.evaka.msg.messaging
 import com.fasterxml.jackson.databind.ObjectMapper
 import fi.espoo.evaka.msg.controllers.PdfSendMessage
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.Test
-import org.junit.runner.RunWith
+import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration
 import org.springframework.test.context.ContextConfiguration
-import org.springframework.test.context.junit4.SpringRunner
 
-@RunWith(SpringRunner::class)
 @ContextConfiguration(classes = [JacksonAutoConfiguration::class])
 class PdfSendProcessorTest {
 

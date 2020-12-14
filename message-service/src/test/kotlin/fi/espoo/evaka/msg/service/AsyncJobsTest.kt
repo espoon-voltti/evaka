@@ -14,11 +14,11 @@ import fi.espoo.evaka.msg.service.attachments.DocumentService
 import fi.espoo.evaka.msg.service.sfi.ISfiClientService
 import fi.espoo.evaka.msg.service.sfi.SfiResponse.Mapper.createOkResponse
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.Test
-import org.junit.runner.RunWith
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.InjectMocks
 import org.mockito.Mock
-import org.mockito.junit.MockitoJUnitRunner
+import org.mockito.junit.jupiter.MockitoExtension
 
 private val recipient = ISfiClientService.Recipient(
     ssn = "101010-1010",
@@ -33,7 +33,7 @@ private val recipient = ISfiClientService.Recipient(
     )
 )
 
-@RunWith(MockitoJUnitRunner::class)
+@ExtendWith(MockitoExtension::class)
 class AsyncJobsTest {
     @InjectMocks
     lateinit var asyncJobs: AsyncJobs

@@ -23,21 +23,18 @@ import fi.espoo.evaka.msg.service.sfi.ISfiClientService.Recipient
 import fi.espoo.evaka.msg.service.sfi.ISfiClientService.RecipientAddress
 import fi.espoo.evaka.msg.sficlient.soap.KyselyWS2A
 import fi.espoo.evaka.msg.sficlient.soap.Viranomainen
-import org.junit.Ignore
-import org.junit.Test
-import org.junit.runner.RunWith
+import org.junit.jupiter.api.Disabled
+import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.TestPropertySource
-import org.springframework.test.context.junit4.SpringRunner
 import org.springframework.util.ResourceUtils
 import java.time.LocalDate
 import java.util.UUID
 
-@RunWith(SpringRunner::class)
 @SpringBootTest(
     classes = [
         SfiClientService::class, SfiSoapClientConfig::class, TrustManagerConfig::class,
@@ -48,7 +45,7 @@ import java.util.UUID
 @EnableConfigurationProperties(SfiSoapProperties::class, SfiMessageProperties::class)
 @ActiveProfiles("sfi-dev, test")
 @TestPropertySource(properties = ["fi.espoo.evaka.msg.sfi.ws.address=https://localhost:15267/Asiointitili/ViranomaispalvelutWSInterface"])
-@Ignore
+@Disabled
 class SfiApiTest {
 
     @MockBean
@@ -60,7 +57,9 @@ class SfiApiTest {
     // FIXME: - This test is for directly testing the QA of SFI messages and needs an SSH pipe to an ec2 instance
     //        -  Remove this class or convert it to an actual unit test when prudent
 
-    @Test // Test will fail unless localhost:15267 is piped to SFI MSG QA
+    // Note! Test will fail unless localhost:15267 is piped to SFI MSG QA
+    // This test has not been tested after migrating to spring boot 2.4.x and junit 5
+    @Test //
     fun sendMessage() {
 
         whenever(authService.getAuthorityDetails(any())).thenReturn(createViranomainen())
