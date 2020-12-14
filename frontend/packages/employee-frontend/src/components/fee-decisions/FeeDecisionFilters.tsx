@@ -10,10 +10,12 @@ import {
   FeeDecisionStatusFilter,
   FeeDecisionDistinctionsFilter,
   UnitFilter,
-  FeeDecisionDateFilter
+  FeeDecisionDateFilter,
+  FeeDecisionManagerFilter
 } from '../common/Filters'
 import { InvoicingUiContext } from '../../state/invoicing-ui'
 import { getAreas, getUnits } from '../../api/daycare'
+import { getEmployees } from '../../api/employees'
 import {
   DecisionDistinctiveDetails,
   FeeDecisionStatus
@@ -30,10 +32,18 @@ function FeeDecisionFilters() {
       setSearchTerms,
       clearSearchFilters
     },
-    shared: { units, setUnits, availableAreas, setAvailableAreas }
+    shared: {
+      units,
+      setUnits,
+      employees,
+      setEmployees,
+      availableAreas,
+      setAvailableAreas
+    }
   } = useContext(InvoicingUiContext)
 
   const { i18n } = useTranslation()
+  console.log(employees)
 
   useEffect(() => {
     void getAreas().then(setAvailableAreas)
@@ -41,6 +51,10 @@ function FeeDecisionFilters() {
 
   useEffect(() => {
     void getUnits([], 'DAYCARE').then(setUnits)
+  }, [])
+
+  useEffect(() => {
+    void getEmployees().then(setEmployees)
   }, [])
 
   // remove selected unit filter if the unit is not included in the selected areas
@@ -68,6 +82,9 @@ function FeeDecisionFilters() {
 
   const selectUnit = (id: string) =>
     setSearchFilters((filters) => ({ ...filters, unit: id }))
+
+  const selectFeeDecisionManagerId = (id: string) =>
+    setSearchFilters((filters) => ({ ...filters, feeDecisionManagerId: id }))
 
   const toggleStatus = (id: FeeDecisionStatus) => () => {
     setSearchFilters({
@@ -139,6 +156,26 @@ function FeeDecisionFilters() {
               )
               .getOrElse(undefined)}
             select={selectUnit}
+          />
+          <Gap size="L" />
+          <FeeDecisionManagerFilter
+            employees={employees
+              .map((e) =>
+                e.map(({ id, firstName, lastName }) => ({
+                  id,
+                  label: [firstName, lastName].join(' ')
+                }))
+              )
+              .getOrElse([])}
+            selected={units
+              .map(
+                (us) =>
+                  us
+                    .map(({ id, name }) => ({ id, label: name }))
+                    .filter((unit) => unit.id === searchFilters.unit)[0]
+              )
+              .getOrElse(undefined)}
+            select={selectFeeDecisionManagerId}
           />
         </>
       }

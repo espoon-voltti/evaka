@@ -281,6 +281,38 @@ export const UnitFilter = React.memo(function UnitFilter({
   )
 })
 
+interface FeeDecisionManagerFilterProps {
+  employees: { id: string; label: string }[]
+  selected?: { id: string; label: string }
+  select: (unit: string) => void
+}
+
+export const FeeDecisionManagerFilter = React.memo(
+  function FeeDecisionManagerFilter({
+    employees,
+    selected,
+    select
+  }: FeeDecisionManagerFilterProps) {
+    const { i18n } = useTranslation()
+    const options = employees.map(({ id, label }) => ({ id, label, value: id }))
+    return (
+      <>
+        <Label>
+          <LabelText>{i18n.filters.feeDecisionManager}</LabelText>
+          <ReactSelect
+            placeholder={i18n.filters.feeDecisionManagerPlaceholder}
+            options={options}
+            onChange={(option) =>
+              option && 'id' in option ? select(option.id) : undefined
+            }
+            value={selected}
+          />
+        </Label>
+      </>
+    )
+  }
+)
+
 interface FeeDecisionStatusFilterProps {
   toggled: FeeDecisionStatus
   toggle: (status: FeeDecisionStatus) => () => void
