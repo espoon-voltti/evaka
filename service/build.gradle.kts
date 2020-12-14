@@ -54,7 +54,6 @@ dependencies {
     // Kotlin + core
     implementation(platform(kotlin("bom")))
     implementation(kotlin("stdlib-jdk8"))
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:${Version.kotlinx}")
 
     // Logging
     implementation("io.github.microutils:kotlin-logging:${Version.kotlinLogging}")
