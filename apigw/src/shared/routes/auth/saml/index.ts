@@ -157,7 +157,7 @@ function createLogoutHandler({
 // * HTTP redirect: the browser makes a GET request with query parameters
 // * HTTP POST: the browser makes a POST request with URI-encoded form body
 export default function createSamlRouter(config: SamlEndpointConfig): Router {
-  const { strategyName, strategy } = config
+  const { strategyName, strategy, pathIdentifier } = config
 
   passport.use(strategyName, strategy)
 
@@ -176,11 +176,11 @@ export default function createSamlRouter(config: SamlEndpointConfig): Router {
 
   // Our application directs the browser to this endpoint to start the login
   // flow. We generate a LoginRequest.
-  router.get(`/auth/${strategyName}/login`, loginHandler)
+  router.get(`/auth/${pathIdentifier}/login`, loginHandler)
   // The IDP makes the browser POST to this callback during login flow, and
   // a SAML LoginResponse is included in the request.
   router.post(
-    `/auth/${strategyName}/login/callback`,
+    `/auth/${pathIdentifier}/login/callback`,
     urlencodedParser,
     loginHandler
   )
@@ -191,7 +191,7 @@ export default function createSamlRouter(config: SamlEndpointConfig): Router {
 
   // Our application directs the browser to one of these endpoints to start
   // the logout flow. We generate a LogoutRequest.
-  router.get(`/auth/${strategyName}/logout`, logoutHandler)
+  router.get(`/auth/${pathIdentifier}/logout`, logoutHandler)
   // The IDP makes the browser either GET or POST one of these endpoints in two
   // separate logout flows.
   // 1. SP-initiated logout. In this case the logout flow started from us
@@ -201,13 +201,13 @@ export default function createSamlRouter(config: SamlEndpointConfig): Router {
   //   flow started from the IDP, and a SAML LogoutRequest is included in the
   //   request.
   router.get(
-    `/auth/${strategyName}/logout`,
+    `/auth/${pathIdentifier}/logout`,
     logoutCallback,
     passport.authenticate(strategyName),
     (req, res) => res.redirect(getRedirectUrl(req))
   )
   router.post(
-    `/auth/${strategyName}/logout/callback`,
+    `/auth/${pathIdentifier}/logout/callback`,
     urlencodedParser,
     logoutCallback,
     passport.authenticate(strategyName),
