@@ -11,6 +11,7 @@ import {
 import { logConsoleMessages } from '../../utils/fixture'
 import {
   deleteEmployeeFixture,
+  deleteEmployees,
   deleteMobileDevice,
   deletePairing,
   insertEmployeeFixture,
@@ -45,6 +46,7 @@ fixture('Employee - Unit ACL')
   .meta({ type: 'regression', subType: 'unit-acl' })
   .page(config.adminUrl)
   .before(async () => {
+    await deleteEmployees()
     ;[fixtures, cleanUp] = await initializeAreaAndPersonData()
     await deleteEmployeeFixture(config.supervisorExternalId)
     await insertEmployeeFixture({

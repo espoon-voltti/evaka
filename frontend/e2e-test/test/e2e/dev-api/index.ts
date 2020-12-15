@@ -275,6 +275,14 @@ export async function deleteEmployeeById(id: UUID): Promise<void> {
   }
 }
 
+export async function deleteEmployees(): Promise<void> {
+  try {
+    await devClient.delete(`/employee/all`)
+  } catch (e) {
+    throw new DevApiError(e)
+  }
+}
+
 export async function deletePersonBySsn(ssn: string): Promise<void> {
   try {
     await devClient.delete(`/person/ssn/${ssn}`)
