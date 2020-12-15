@@ -1513,9 +1513,9 @@ export const fi = {
       'Haku nimellä, hetulla, osoitteella tai maksupäätöksen numerolla',
     area: 'Alue',
     unit: 'Toimipaikka',
-    feeDecisionManager: 'Maksupäätöksen käsittelijä',
+    financeDecisionManager: 'Talouspäätösten käsittelijä',
     unitPlaceholder: 'Valitse toimipaikka',
-    feeDecisionManagerPlaceholder: 'Valitse työntekijä',
+    financeDecisionManagerPlaceholder: 'Valitse työntekijä',
     distinctiveDetails: 'Muuta huomioitavaa',
     status: 'Tila',
     clear: 'Tyhjennä valinnat',
@@ -2074,7 +2074,7 @@ export const fi = {
       ophOrganizerOid: 'Järjestäjän OID',
       ophOrganizationOid: 'Organisaation OID',
       costCenter: 'Kustannuspaikka',
-      feeDecisionManager: 'Maksupäätöksen käsittelijä',
+      financeDecisionManager: 'Talouspäätösten käsittelijä',
       additionalInfo: 'Lisätietoja yksiköstä',
       phone: 'Yksikön puhelinnumero',
       email: 'Yksikön sähköpostiosoite',
@@ -2119,7 +2119,7 @@ export const fi = {
       openingDate: 'Alkaen pp.kk.vvvv',
       closingDate: 'Päättyen pp.kk.vvvv',
       area: 'Valitse alue',
-      feeDecisionManager: 'Valitse työntekijä',
+      financeDecisionManager: 'Valitse työntekijä',
       daycareType: 'Valitse tyyppi',
       costCenter: '(eVakasta laskutettaessa pakollinen tieto)',
       additionalInfo:
@@ -2158,7 +2158,7 @@ export const fi = {
         email: 'Johtajan sähköposti puuttuu'
       },
       cannotApplyToDifferentType: 'Hakutyyppi ja palvelumuoto eivät vastaa',
-      feeDecisionManager: 'Maksupäätöksen käsittelijä puuttuu'
+      financeDecisionManager: 'Talouspäätösten käsittelijä puuttuu'
     }
   },
   mobile: {

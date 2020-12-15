@@ -47,8 +47,8 @@ data class Daycare(
     val uploadToKoski: Boolean,
     val invoicedByMunicipality: Boolean,
     val costCenter: String?,
-    @Nested("fee_decision_manager_")
-    val feeDecisionManager: FeeDecisionManager?,
+    @Nested("finance_decision_manager_")
+    val financeDecisionManager: FinanceDecisionManager?,
     val additionalInfo: String?,
     val phone: String?,
     val email: String?,
@@ -68,8 +68,8 @@ data class Daycare(
     val operationDays: Set<Int>
 )
 
-@PropagateNull("fee_decision_manager_id")
-data class FeeDecisionManager(
+@PropagateNull("finance_decision_manager_id")
+data class FinanceDecisionManager(
     @Nested("")
     val employee: Employee
 )

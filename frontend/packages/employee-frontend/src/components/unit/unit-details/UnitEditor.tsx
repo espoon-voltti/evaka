@@ -57,7 +57,7 @@ interface FormData {
   uploadToKoski: boolean
   invoicedByMunicipality: boolean
   costCenter: string
-  feeDecisionManagerId: string
+  financeDecisionManagerId: string
   additionalInfo: string
   phone: string
   email: string
@@ -347,8 +347,8 @@ function validateForm(
   ) {
     errors.push(i18n.unitEditor.error.cannotApplyToDifferentType)
   }
-  if (!form.feeDecisionManagerId) {
-    errors.push(i18n.unitEditor.error.feeDecisionManager)
+  if (!form.financeDecisionManagerId) {
+    errors.push(i18n.unitEditor.error.financeDecisionManager)
   }
   const {
     openingDate,
@@ -361,7 +361,7 @@ function validateForm(
     roundTheClock,
     language,
     ghostUnit,
-    feeDecisionManagerId,
+    financeDecisionManagerId,
     uploadToVarda,
     uploadToKoski,
     invoicedByMunicipality,
@@ -396,7 +396,7 @@ function validateForm(
         uploadToKoski,
         invoicedByMunicipality,
         costCenter,
-        feeDecisionManagerId,
+        financeDecisionManagerId,
         additionalInfo,
         phone,
         email,
@@ -462,7 +462,7 @@ function toFormData(unit: Unit | undefined): FormData {
     uploadToKoski: unit?.uploadToKoski ?? false,
     invoicedByMunicipality: unit?.invoicedByMunicipality ?? false,
     costCenter: unit?.costCenter ?? '',
-    feeDecisionManagerId: unit?.feeDecisionManager?.employee.id ?? '',
+    financeDecisionManagerId: unit?.financeDecisionManager?.employee.id ?? '',
     additionalInfo: unit?.additionalInfo ?? '',
     phone: unit?.phone ?? '',
     email: unit?.email ?? '',
@@ -998,14 +998,14 @@ export default function UnitEditor(props: Props): JSX.Element {
         )}
       </FormPart>
       <FormPart>
-        <div>{showRequired(i18n.unitEditor.label.feeDecisionManager)}</div>
+        <div>{showRequired(i18n.unitEditor.label.financeDecisionManager)}</div>
         {props.editable ? (
           <Select
             options={employeeOptions}
-            placeholder={i18n.unitEditor.placeholder.feeDecisionManager}
+            placeholder={i18n.unitEditor.placeholder.financeDecisionManager}
             onChange={(value) =>
               value && 'value' in value
-                ? updateForm({ feeDecisionManagerId: value.value })
+                ? updateForm({ financeDecisionManagerId: value.value })
                 : undefined
             }
           />
@@ -1015,7 +1015,8 @@ export default function UnitEditor(props: Props): JSX.Element {
               id: employee.id,
               name: [employee.firstName, employee.lastName].join(' ')
             }))
-            .find((employee) => employee.id === form.feeDecisionManagerId)?.name
+            .find((employee) => employee.id === form.financeDecisionManagerId)
+            ?.name
         )}
       </FormPart>
       <FormPart>

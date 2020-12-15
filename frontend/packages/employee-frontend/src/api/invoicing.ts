@@ -36,7 +36,7 @@ export interface FeeDecisionSearchParams extends SearchParams {
   startDate?: string
   endDate?: string
   searchByStartDate: boolean
-  feeDecisionManagerId?: string
+  financeDecisionManagerId?: string
 }
 
 export interface VoucherValueDecisionSearchParams {

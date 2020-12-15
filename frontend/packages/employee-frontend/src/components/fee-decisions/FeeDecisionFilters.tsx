@@ -11,7 +11,7 @@ import {
   FeeDecisionDistinctionsFilter,
   UnitFilter,
   FeeDecisionDateFilter,
-  FeeDecisionManagerFilter
+  FinanceDecisionManagerFilter
 } from '../common/Filters'
 import { InvoicingUiContext } from '../../state/invoicing-ui'
 import { getAreas, getUnits } from '../../api/daycare'
@@ -83,8 +83,11 @@ function FeeDecisionFilters() {
   const selectUnit = (id: string) =>
     setSearchFilters((filters) => ({ ...filters, unit: id }))
 
-  const selectFeeDecisionManagerId = (id: string) =>
-    setSearchFilters((filters) => ({ ...filters, feeDecisionManagerId: id }))
+  const selectFinanceDecisionManagerId = (id: string) =>
+    setSearchFilters((filters) => ({
+      ...filters,
+      financeDecisionManagerId: id
+    }))
 
   const toggleStatus = (id: FeeDecisionStatus) => () => {
     setSearchFilters({
@@ -158,7 +161,7 @@ function FeeDecisionFilters() {
             select={selectUnit}
           />
           <Gap size="L" />
-          <FeeDecisionManagerFilter
+          <FinanceDecisionManagerFilter
             employees={employees
               .map((e) =>
                 e.map(({ id, firstName, lastName }) => ({
@@ -175,7 +178,7 @@ function FeeDecisionFilters() {
                     .filter((unit) => unit.id === searchFilters.unit)[0]
               )
               .getOrElse(undefined)}
-            select={selectFeeDecisionManagerId}
+            select={selectFinanceDecisionManagerId}
           />
         </>
       }

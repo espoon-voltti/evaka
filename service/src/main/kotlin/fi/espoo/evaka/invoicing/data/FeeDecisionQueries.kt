@@ -294,7 +294,7 @@ fun searchFeeDecisions(
     startDate: LocalDate?,
     endDate: LocalDate?,
     searchByStartDate: Boolean = false,
-    feeDecisionManagerId: UUID?
+    financeDecisionManagerId: UUID?
 ): Pair<Int, List<FeeDecisionSummary>> {
     val sortColumn = when (sortBy) {
         FeeDecisionSortParam.HEAD_OF_FAMILY -> "head.last_name"
@@ -316,7 +316,7 @@ fun searchFeeDecisions(
         "espooPostOffice" to "ESPOO",
         "start_date" to startDate,
         "end_date" to endDate,
-        "fee_decision_manager" to feeDecisionManagerId
+        "finance_decision_manager" to financeDecisionManagerId
     )
 
     val numberParamsRaw = splitSearchText(searchTerms).filter(decisionNumberRegex::matches)
@@ -343,7 +343,7 @@ fun searchFeeDecisions(
         if (searchTextWithoutNumbers.isNotBlank()) freeTextQuery else null,
         if ((startDate != null || endDate != null) && !searchByStartDate) "daterange(:start_date, :end_date, '[]') && daterange(valid_from, valid_to, '[]')" else null,
         if ((startDate != null || endDate != null) && searchByStartDate) "daterange(:start_date, :end_date, '[]') @> valid_from" else null,
-        if (feeDecisionManagerId != null) "fee_decision_manager.fee_decision_manager_id = :fee_decision_manager" else null
+        if (financeDecisionManagerId != null) "finance_decision_manager.finance_decision_manager_id = :finance_decision_manager" else null
     )
 
     val youngestChildQuery =
@@ -360,18 +360,18 @@ fun searchFeeDecisions(
         """.trimIndent()
     val youngestChildJoin = "LEFT JOIN youngest_child ON decision.id = youngest_child.decision_id AND rownum = 1"
 
-    val feeDecisionManagerQuery =
+    val financeDecisionManagerQuery =
         """
-        WITH fee_decision_manager AS (SELECT id as daycare_id, fee_decision_manager as fee_decision_manager_id FROM daycare)
+        WITH finance_decision_manager AS (SELECT id as daycare_id, finance_decision_manager as finance_decision_manager_id FROM daycare)
         """.trimIndent()
-    val feeDecisionManagerJoin = "LEFT JOIN fee_decision_manager ON part.placement_unit = fee_decision_manager.daycare_id"
+    val financeDecisionManagerJoin = "LEFT JOIN finance_decision_manager ON part.placement_unit = finance_decision_manager.daycare_id"
 
     // language=sql
     val sql =
         """
         WITH decision_ids AS (
             ${if (areas.isNotEmpty()) youngestChildQuery else ""}
-            ${if (feeDecisionManagerId != null) feeDecisionManagerQuery else ""}
+            ${if (financeDecisionManagerId != null) financeDecisionManagerQuery else ""}
             SELECT decision.id, count(*) OVER (), max(sums.sum) sum
             FROM fee_decision AS decision
             LEFT JOIN fee_decision_part AS part ON decision.id = part.fee_decision_id
@@ -393,7 +393,7 @@ fun searchFeeDecisions(
                 GROUP BY final_prices.id
             ) sums ON decision.id = sums.id
             ${if (areas.isNotEmpty()) youngestChildJoin else ""}
-            ${if (feeDecisionManagerId != null) feeDecisionManagerJoin else ""}
+            ${if (financeDecisionManagerId != null) financeDecisionManagerJoin else ""}
             ${if (conditions.isNotEmpty()) """
             WHERE ${conditions.joinToString("\nAND ")}
         """.trimIndent() else ""}

@@ -43,7 +43,7 @@ interface FeeDecisionSearchFilters {
   startDate: LocalDate | undefined
   endDate: LocalDate | undefined
   searchByStartDate: boolean
-  feeDecisionManagerId: string | undefined
+  financeDecisionManagerId: string | undefined
 }
 
 interface FeeDecisionSearchFilterState {
@@ -114,7 +114,7 @@ const defaultState: UiState = {
       startDate: LocalDate.today().withDate(1),
       endDate: LocalDate.today(),
       searchByStartDate: false,
-      feeDecisionManagerId: undefined
+      financeDecisionManagerId: undefined
     },
     setSearchFilters: () => undefined,
     searchTerms: '',
