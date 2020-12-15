@@ -11,7 +11,6 @@ import {
 import { logConsoleMessages } from '../../utils/fixture'
 import {
   deleteEmployeeFixture,
-  deleteEmployees,
   deleteMobileDevice,
   deletePairing,
   insertEmployeeFixture,
@@ -46,7 +45,6 @@ fixture('Employee - Unit ACL')
   .meta({ type: 'regression', subType: 'unit-acl' })
   .page(config.adminUrl)
   .before(async () => {
-    await deleteEmployees()
     ;[fixtures, cleanUp] = await initializeAreaAndPersonData()
     await deleteEmployeeFixture(config.supervisorExternalId)
     await insertEmployeeFixture({
@@ -168,7 +166,8 @@ test('Added mobile devices should not be listed in employee selector', async (t)
   await t.expect(unitPage.mobileDevicesTableRows.exists).notOk()
   await t.expect(unitPage.staffAcl.addInput.exists).ok()
   await t.click(unitPage.staffAcl.addInput)
-  await t.expect(unitPage.employeeOptions.count).eql(3)
+  const employeeCount = await unitPage.employeeOptions.count
+  await t.pressKey('esc')
 
   const { pairingId: pId, deviceId: dId } = await unitPage.addMobileDevice()
   pairingId = pId
@@ -179,6 +178,5 @@ test('Added mobile devices should not be listed in employee selector', async (t)
 
   await t.expect(unitPage.mobileDevicesTableRows.exists).ok()
   await t.click(unitPage.staffAcl.addInput)
-  await t.debug()
-  await t.expect(unitPage.employeeOptions.count).eql(3)
+  await t.expect(unitPage.employeeOptions.count).eql(employeeCount)
 })
