@@ -285,7 +285,8 @@ fun Handle.searchValueDecisions(
     status: VoucherValueDecisionStatus,
     areas: List<String>,
     unit: UUID?,
-    searchTerms: String = ""
+    searchTerms: String = "",
+    financeDecisionManagerId: UUID?
 ): Pair<Int, List<VoucherValueDecisionSummary>> {
     val sortColumn = when (sortBy) {
         VoucherValueDecisionSortParam.HEAD_OF_FAMILY -> "head.last_name"
@@ -301,10 +302,10 @@ fun Handle.searchValueDecisions(
     )
 
     val (freeTextQuery, freeTextParams) = freeTextSearchQuery(listOf("head", "partner", "child"), searchTerms)
-
-    // language=sql
+    val financeDecisionManagerWhere = "AND finance_decision_manager.finance_decision_manager_id = $financeDecisionManagerId"
 
     val sql =
+        // language=sql
         """
         WITH decision_ids AS (
             WITH youngest_child AS (
@@ -315,7 +316,8 @@ fun Handle.searchValueDecisions(
                 FROM voucher_value_decision_part
                 LEFT JOIN daycare ON voucher_value_decision_part.placement_unit = daycare.id
                 LEFT JOIN care_area ON daycare.care_area_id = care_area.id
-            )
+            ),
+            finance_decision_manager AS (SELECT id as daycare_id, finance_decision_manager as finance_decision_manager_id FROM daycare)
             SELECT decision.id, count(*) OVER (), max(sums.co_payment) total_co_payment, max(sums.voucher_value) total_value
             FROM voucher_value_decision AS decision
             LEFT JOIN voucher_value_decision_part AS part ON decision.id = part.voucher_value_decision_id
@@ -323,6 +325,7 @@ fun Handle.searchValueDecisions(
             LEFT JOIN person AS partner ON decision.head_of_family = partner.id
             LEFT JOIN person AS child ON part.child = child.id
             LEFT JOIN youngest_child ON decision.id = youngest_child.decision_id AND rownum = 1
+            LEFT JOIN finance_decision_manager ON part.placement_unit = finance_decision_manager.daycare_id
             LEFT JOIN (
                 SELECT final_co_payments.id, sum(final_co_payments.final_co_payment) co_payment, sum(final_co_payments.voucher_value) voucher_value
                 FROM (
@@ -342,6 +345,7 @@ fun Handle.searchValueDecisions(
                 AND youngest_child.area = ANY(:areas)
                 AND (:unit::uuid IS NULL OR part.placement_unit = :unit)
                 AND $freeTextQuery
+                ${if (financeDecisionManagerId != null) financeDecisionManagerWhere else ""}
             GROUP BY decision.id
             -- we take a max here because the sort column is not in group by clause but it should be identical for all grouped rows
             ORDER BY max($sortColumn) $sortDirection, decision.id
