@@ -64,7 +64,7 @@ SELECT
     application.childId,
     application.childfirstname,
     application.childlastname,
-    application.childssn,
+    person.date_of_birth,
     application.childstreetaddr,
     active_placements.daycare_name AS current_placement_daycare,
     active_placements.daycare_id AS current_placement_daycare_id,
@@ -82,6 +82,8 @@ LEFT JOIN
     application_view application ON application.preferredunit = daycare.id
 LEFT JOIN
     active_placements ON application.childid = active_placements.child_id
+LEFT JOIN
+    person ON application.childid = person.id
 WHERE
     (application.startDate >= :earliestPreferredStartDate OR application.startDate IS NULL)
     AND application.sentdate >= :earliestPreferredStartDate
@@ -95,17 +97,17 @@ ORDER BY
         .bind("earliestPreferredStartDate", earliestPreferredStartDate)
         .map { rs, _ ->
             PlacementSketchingReportRow(
-                careAreaName = rs.getString("area_name"),
-                unitId = rs.getUUID("requested_daycare_id"),
-                unitName = rs.getString("requested_daycare_name"),
+                areaName = rs.getString("area_name"),
+                requestedUnitId = rs.getUUID("requested_daycare_id"),
+                requestedUnitName = rs.getString("requested_daycare_name"),
                 childId = rs.getUUID("childId"),
                 childFirstName = rs.getString("childfirstname"),
                 childLastName = rs.getString("childlastname"),
-                childSsn = rs.getString("childssn"),
+                childDob = rs.getString("date_of_birth"),
                 childStreetAddr = rs.getString("childstreetaddr"),
                 applicationId = rs.getUUID("application_id"),
-                currentDaycareName = rs.getString("current_placement_daycare_name"),
-                currentDaycareId = rs.getNullableUUID("current_placement_daycare_id"),
+                currentUnitName = rs.getString("current_placement_daycare_name"),
+                currentUnitId = rs.getNullableUUID("current_placement_daycare_id"),
                 assistanceNeeded = rs.getBoolean("daycareassistanceneeded"),
                 preparatoryEducation = rs.getBoolean("preparatoryeducation"),
                 siblingBasis = rs.getBoolean("siblingbasis"),
@@ -117,17 +119,17 @@ ORDER BY
 }
 
 data class PlacementSketchingReportRow(
-    val careAreaName: String,
-    val unitId: UUID,
-    val unitName: String,
+    val areaName: String,
+    val requestedUnitId: UUID,
+    val requestedUnitName: String,
     val childId: UUID,
     val childFirstName: String?,
     val childLastName: String?,
-    val childSsn: String?,
+    val childDob: String?,
     val childStreetAddr: String?,
     val applicationId: UUID?,
-    val currentDaycareName: String?,
-    val currentDaycareId: UUID?,
+    val currentUnitName: String?,
+    val currentUnitId: UUID?,
     val assistanceNeeded: Boolean?,
     val preparatoryEducation: Boolean?,
     val siblingBasis: Boolean?,

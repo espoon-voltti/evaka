@@ -430,6 +430,28 @@ function Reports() {
               <Description>{i18n.reports.raw.description}</Description>
             </ReportItem>
           </RequireRole>
+          <RequireRole
+            oneOf={[
+              'ADMIN',
+              'SERVICE_WORKER'
+            ]}
+          >
+            <ReportItem>
+              <TitleRow>
+                <RoundIcon
+                  size="L"
+                  color={EspooColours.orange}
+                  content={faUsers}
+                />
+                <LinkTitle to="/reports/placement-sketching">
+                  {i18n.reports.placementSketching.title}
+                </LinkTitle>
+              </TitleRow>
+              <Description>
+                {i18n.reports.placementSketching.description}
+              </Description>
+            </ReportItem>
+          </RequireRole>
         </ReportItems>
       </ContentArea>
     </Container>

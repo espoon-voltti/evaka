@@ -64,6 +64,7 @@ import { getAuthStatus, AuthStatus } from '~api/auth'
 import VoucherServiceProviders from '~components/reports/VoucherServiceProviders'
 import VoucherServiceProviderUnit from '~components/reports/VoucherServiceProviderUnit'
 import { featureFlags } from '~config'
+import PlacementSketching from "~components/reports/PlacementSketching";
 
 export default function App() {
   const { i18n } = useTranslation()
@@ -321,6 +322,12 @@ export default function App() {
                 title={i18n.titles.reports}
               />
             )}
+            <RouteWithTitle
+              exact
+              path="/reports/placement-sketching"
+              component={ensureAuthenticated(PlacementSketching)}
+              title={i18n.titles.reports}
+            />
             <RouteWithTitle
               exact
               path="/reports/raw"
