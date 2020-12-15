@@ -114,7 +114,6 @@ class ExceptionHandler : ResponseEntityExceptionHandler() {
 
     @ExceptionHandler(value = [Throwable::class])
     fun unexpectedError(req: HttpServletRequest, ex: Throwable): ResponseEntity<ErrorResponse> {
-        // Checked exceptions get wrapped in UndeclaredThrowableException in kotlin
         val message = "Unexpected error (${ex.message})"
         logger.error(message, ex)
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
