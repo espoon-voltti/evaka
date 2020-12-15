@@ -20,4 +20,6 @@ export class ApplicationDetailsPage {
   readonly noOtherVtjGuardianText = Selector(
     '[data-qa="no-other-vtj-guardian"]'
   )
+
+  readonly applicationStatus = Selector('[data-qa="application-status"]')
 }
