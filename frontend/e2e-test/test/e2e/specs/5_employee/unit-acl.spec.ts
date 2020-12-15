@@ -80,8 +80,7 @@ fixture('Employee - Unit ACL')
   .beforeEach(async () => {
     await t.useRole(Role.anonymous())
   })
-  .afterEach(logConsoleMessages)
-  .after(async () => {
+  .afterEach(async (m) => {
     if (pairingId) {
       await deletePairing(pairingId)
       pairingId = undefined
@@ -90,6 +89,9 @@ fixture('Employee - Unit ACL')
       await deleteMobileDevice(deviceId)
       deviceId = null
     }
+    await logConsoleMessages(m)
+  })
+  .after(async () => {
     await cleanUp()
     await Promise.all(employeeExternalIds.map(deleteEmployeeFixture))
     await deleteEmployeeFixture(config.supervisorExternalId)
@@ -166,7 +168,7 @@ test('Added mobile devices should not be listed in employee selector', async (t)
   await t.expect(unitPage.mobileDevicesTableRows.exists).notOk()
   await t.expect(unitPage.staffAcl.addInput.exists).ok()
   await t.click(unitPage.staffAcl.addInput)
-  await t.expect(unitPage.employeeOptions.count).eql(2)
+  await t.expect(unitPage.employeeOptions.count).eql(3)
 
   const { pairingId: pId, deviceId: dId } = await unitPage.addMobileDevice()
   pairingId = pId
@@ -177,5 +179,6 @@ test('Added mobile devices should not be listed in employee selector', async (t)
 
   await t.expect(unitPage.mobileDevicesTableRows.exists).ok()
   await t.click(unitPage.staffAcl.addInput)
-  await t.expect(unitPage.employeeOptions.count).eql(2)
+  await t.debug()
+  await t.expect(unitPage.employeeOptions.count).eql(3)
 })
