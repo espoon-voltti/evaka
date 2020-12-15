@@ -196,7 +196,7 @@ SELECT
     vfd.varda_id AS varda_id,
     GREATEST(d.valid_from, :decisionStartDate) AS start_date,
     LEAST(d.valid_to, :decisionEndDate) AS end_date,
-    p.fee + COALESCE(alterations.sum, 0) AS fee,
+    (p.fee + COALESCE(alterations.sum, 0)) / 100.0 AS fee,
     d.family_size AS family_size,
     p.placement_type AS placement_type
 FROM varda_child vc
@@ -249,7 +249,7 @@ private fun baseToFeeData(
     return VardaFeeData(
         huoltajat = vardaGuardians,
         lapsi = childUrl,
-        palveluseteli_arvo = 0,
+        palveluseteli_arvo = 0.0,
         maksun_peruste_koodi =
         if (feeDataBase.placementType == PlacementType.FIVE_YEARS_OLD_DAYCARE)
             FeeBasisCode.FIVE_YEAR_OLDS_DAYCARE.code
@@ -279,7 +279,7 @@ data class VardaFeeDataBase(
     val vardaId: Long?,
     val startDate: LocalDate,
     val endDate: LocalDate?,
-    val fee: Int,
+    val fee: Double,
     val familySize: Int,
     val placementType: PlacementType
 )
@@ -288,8 +288,8 @@ data class VardaFeeData(
     val huoltajat: List<VardaGuardian>,
     val lapsi: String,
     val maksun_peruste_koodi: String,
-    val palveluseteli_arvo: Int,
-    val asiakasmaksu: Int,
+    val palveluseteli_arvo: Double,
+    val asiakasmaksu: Double,
     val perheen_koko: Int,
     val alkamis_pvm: LocalDate,
     val paattymis_pvm: LocalDate?
