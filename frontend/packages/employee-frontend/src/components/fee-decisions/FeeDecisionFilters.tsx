@@ -175,7 +175,10 @@ function FeeDecisionFilters() {
                 (us) =>
                   us
                     .map(({ id, name }) => ({ id, label: name }))
-                    .filter((unit) => unit.id === searchFilters.unit)[0]
+                    .filter(
+                      (employee) =>
+                        employee.id === searchFilters.financeDecisionManagerId
+                    )[0]
               )
               .getOrElse(undefined)}
             select={selectFinanceDecisionManagerId}

@@ -284,7 +284,7 @@ export const UnitFilter = React.memo(function UnitFilter({
 interface FinanceDecisionManagerFilterProps {
   employees: { id: string; label: string }[]
   selected?: { id: string; label: string }
-  select: (unit: string) => void
+  select: (employee: string) => void
 }
 
 export const FinanceDecisionManagerFilter = React.memo(
