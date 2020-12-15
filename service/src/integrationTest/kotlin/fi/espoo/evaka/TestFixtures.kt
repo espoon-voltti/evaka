@@ -114,6 +114,17 @@ val testClub = DevDaycare(
     uploadToKoski = false
 )
 
+val testGhostUnitDaycare = DevDaycare(
+    id = UUID.randomUUID(),
+    name = "Test Ghost Unit Daycare",
+    areaId = testAreaId,
+    type = setOf(CareType.CENTRE),
+    canApplyClub = true,
+    uploadToVarda = false,
+    uploadToKoski = false,
+    ghostUnit = true
+)
+
 val testDecisionMaker_1 = PersonData.WithName(
     id = UUID.randomUUID(),
     firstName = "Decision",
@@ -344,6 +355,7 @@ fun insertGeneralTestFixtures(h: Handle) {
         )
     )
     h.insertTestDaycare(testClub)
+    h.insertTestDaycare(testGhostUnitDaycare)
 
     testDecisionMaker_1.let {
         h.insertTestEmployee(
