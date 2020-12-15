@@ -7,7 +7,7 @@ package fi.espoo.evaka.msg.config
 import fi.espoo.evaka.msg.service.sfi.DefaultSfiErrorResponseHandler
 import fi.espoo.evaka.msg.service.sfi.IgnoreSpecificErrorsHandler
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.Test
+import org.junit.jupiter.api.Test
 import org.springframework.boot.autoconfigure.AutoConfigurations
 import org.springframework.boot.test.context.runner.ApplicationContextRunner
 

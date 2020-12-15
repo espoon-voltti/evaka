@@ -14,7 +14,7 @@ import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.Mockito.lenient
 import org.mockito.junit.jupiter.MockitoExtension
 import org.springframework.boot.autoconfigure.AutoConfigurations.of
-import org.springframework.boot.test.context.ConfigFileApplicationContextInitializer
+import org.springframework.boot.test.context.ConfigDataApplicationContextInitializer
 import org.springframework.boot.test.context.assertj.AssertableApplicationContext
 import org.springframework.boot.test.context.runner.ApplicationContextRunner
 import org.springframework.context.annotation.Bean
@@ -31,7 +31,7 @@ class XroadSoapClientConfigTest {
 
     private val contextRunner = ApplicationContextRunner()
         .withConfiguration(of(CommonSoapClientTestConfig::class.java))
-        .withInitializer(ConfigFileApplicationContextInitializer())
+        .withInitializer(ConfigDataApplicationContextInitializer())
         .withPropertyValues("fi.espoo.voltti.vtj.xroad.keyStore.location=file://fake")
 
     @Test

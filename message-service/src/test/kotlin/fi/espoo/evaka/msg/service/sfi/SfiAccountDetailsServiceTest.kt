@@ -8,7 +8,7 @@ import fi.espoo.evaka.msg.properties.SfiMessageProperties
 import fi.espoo.evaka.msg.properties.SfiPrintingProperties
 import fi.espoo.evaka.msg.sficlient.soap.KyselyWS2A
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.Test
+import org.junit.jupiter.api.Test
 
 class SfiAccountDetailsServiceTest {
 

@@ -12,18 +12,15 @@ import fi.espoo.voltti.logging.utils.getTestMessages
 import fi.espoo.voltti.logging.utils.setupTestAppender
 import mu.KLogger
 import mu.KotlinLogging
-import org.junit.After
-import org.junit.Assert.assertEquals
-import org.junit.Test
-import org.junit.runner.RunWith
-import org.springframework.test.context.junit4.SpringRunner
+import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Test
 
 private val logger = KotlinLogging.logger {}.also(KLogger::setupTestAppender)
 private val message = "audit message"
 
-@RunWith(SpringRunner::class)
 class AuditLoggerTest {
-    @After
+    @AfterEach
     fun clear() {
         logger.clearTestMessages()
     }
