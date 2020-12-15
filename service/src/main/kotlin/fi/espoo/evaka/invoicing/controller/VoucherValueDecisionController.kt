@@ -61,7 +61,8 @@ class VoucherValueDecisionController(
         @RequestParam(required = false) status: String?,
         @RequestParam(required = false) area: String?,
         @RequestParam(required = false) unit: String?,
-        @RequestParam(required = false) searchTerms: String?
+        @RequestParam(required = false) searchTerms: String?,
+        @RequestParam(required = false) financeDecisionManagerId: String?
     ): ResponseEntity<VoucherValueDecisionSearchResult> {
         Audit.VoucherValueDecisionSearch.log()
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)

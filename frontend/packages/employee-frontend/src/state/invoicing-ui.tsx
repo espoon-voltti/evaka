@@ -59,6 +59,7 @@ interface ValueDecisionSearchFilters {
   area: string[]
   unit?: string
   status: VoucherValueDecisionStatus
+  financeDecisionManagerId?: string
 }
 
 interface ValueDecisionSearchFilterState {

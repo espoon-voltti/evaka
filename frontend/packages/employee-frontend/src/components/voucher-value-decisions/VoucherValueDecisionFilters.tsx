@@ -7,13 +7,15 @@ import {
   AreaFilter,
   Filters,
   ValueDecisionStatusFilter,
-  UnitFilter
+  UnitFilter,
+  FinanceDecisionManagerFilter
 } from '../common/Filters'
 import { InvoicingUiContext } from '../../state/invoicing-ui'
 import { getAreas, getUnits } from '../../api/daycare'
 import { VoucherValueDecisionStatus } from '../../types/invoicing'
 import { Gap } from '@evaka/lib-components/src/white-space'
 import { useTranslation } from '~state/i18n'
+import { getEmployees } from '~api/employees'
 
 export default React.memo(function VoucherValueDecisionFilters() {
   const {
@@ -24,13 +26,24 @@ export default React.memo(function VoucherValueDecisionFilters() {
       setSearchTerms,
       clearSearchFilters
     },
-    shared: { units, setUnits, availableAreas, setAvailableAreas }
+    shared: {
+      units,
+      setUnits,
+      employees,
+      setEmployees,
+      availableAreas,
+      setAvailableAreas
+    }
   } = useContext(InvoicingUiContext)
 
   const { i18n } = useTranslation()
 
   useEffect(() => {
     void getAreas().then(setAvailableAreas)
+  }, [])
+
+  useEffect(() => {
+    void getEmployees().then(setEmployees)
   }, [])
 
   useEffect(() => {
@@ -66,6 +79,12 @@ export default React.memo(function VoucherValueDecisionFilters() {
 
   const selectUnit = useCallback(
     (unit: string) => setSearchFilters((filters) => ({ ...filters, unit })),
+    [setSearchFilters]
+  )
+
+  const selectFinanceDecisionManager = useCallback(
+    (financeDecisionManagerId: string) =>
+      setSearchFilters((filters) => ({ ...filters, financeDecisionManagerId })),
     [setSearchFilters]
   )
 
@@ -106,6 +125,32 @@ export default React.memo(function VoucherValueDecisionFilters() {
               )
               .getOrElse(undefined)}
             select={selectUnit}
+          />
+          <Gap size="L" />
+          <FinanceDecisionManagerFilter
+            employees={employees
+              .map((e) =>
+                e.map(({ id, firstName, lastName }) => ({
+                  id,
+                  label: [firstName, lastName].join(' ')
+                }))
+              )
+              .getOrElse([])}
+            selected={employees
+              .map(
+                (us) =>
+                  us
+                    .map(({ id, firstName, lastName }) => ({
+                      id,
+                      label: [firstName, lastName].join(' ')
+                    }))
+                    .filter(
+                      (employee) =>
+                        employee.id === searchFilters.financeDecisionManagerId
+                    )[0]
+              )
+              .getOrElse(undefined)}
+            select={selectFinanceDecisionManager}
           />
         </>
       }

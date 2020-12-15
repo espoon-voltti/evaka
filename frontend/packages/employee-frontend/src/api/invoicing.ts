@@ -44,6 +44,7 @@ export interface VoucherValueDecisionSearchParams {
   area?: string
   unit?: string
   searchTerms?: string
+  feeDecisionManagerId?: string
 }
 
 export interface InvoiceSearchParams extends SearchParams {

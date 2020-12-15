@@ -43,7 +43,6 @@ function FeeDecisionFilters() {
   } = useContext(InvoicingUiContext)
 
   const { i18n } = useTranslation()
-  console.log(employees)
 
   useEffect(() => {
     void getAreas().then(setAvailableAreas)
@@ -83,7 +82,7 @@ function FeeDecisionFilters() {
   const selectUnit = (id: string) =>
     setSearchFilters((filters) => ({ ...filters, unit: id }))
 
-  const selectFinanceDecisionManagerId = (id: string) =>
+  const selectFinanceDecisionManager = (id: string) =>
     setSearchFilters((filters) => ({
       ...filters,
       financeDecisionManagerId: id
@@ -170,18 +169,21 @@ function FeeDecisionFilters() {
                 }))
               )
               .getOrElse([])}
-            selected={units
+            selected={employees
               .map(
                 (us) =>
                   us
-                    .map(({ id, name }) => ({ id, label: name }))
+                    .map(({ id, firstName, lastName }) => ({
+                      id,
+                      label: [firstName, lastName].join(' ')
+                    }))
                     .filter(
                       (employee) =>
                         employee.id === searchFilters.financeDecisionManagerId
                     )[0]
               )
               .getOrElse(undefined)}
-            select={selectFinanceDecisionManagerId}
+            select={selectFinanceDecisionManager}
           />
         </>
       }
