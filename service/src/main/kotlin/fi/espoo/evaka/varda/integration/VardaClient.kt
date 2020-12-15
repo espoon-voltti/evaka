@@ -389,7 +389,7 @@ class VardaClient(
                         fetchNext(acc + response.results, response.next)
                     }
                     is Result.Failure -> {
-                        logger.error(result.error) { "Failed fetching page $next" }
+                        logger.error(result.error) { "Failed fetching page from Varda: $next" }
                         acc
                     }
                 }
