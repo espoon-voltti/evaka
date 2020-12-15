@@ -161,7 +161,8 @@ JOIN LATERAL (
     FROM varda_fee_data
     WHERE varda_child_id = varda_child.id
 ) latest_fee_data ON true
-WHERE COALESCE(latest_fee_data.uploaded_at <= COALESCE(latest_fee_decision.sent_at, '-infinity'), true)
+WHERE varda_child.varda_child_id IS NOT NULL
+AND COALESCE(latest_fee_data.uploaded_at <= COALESCE(latest_fee_decision.sent_at, '-infinity'), true)
 """
     )
         .bind("sent", FeeDecisionStatus.SENT)
