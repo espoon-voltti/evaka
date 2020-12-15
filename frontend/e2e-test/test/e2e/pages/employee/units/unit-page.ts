@@ -134,15 +134,16 @@ export default class UnitPage {
     await t.expect(this.mobileDevicesTableRows.exists).notOk()
     await t.click(this.mobileDevicesStartPairingBtn)
     await t.expect(this.pairingModalTitle.exists).ok()
-    await t.expect(this.mobileDevicesChallengeKey.exists).ok()
     const challengeKey = await this.mobileDevicesChallengeKey.textContent
 
     const res = await postPairingChallenge(challengeKey)
-    await t.expect(this.mobileDevicesResponseKeyInput.exists).ok()
     if (res.responseKey) {
       await t.typeText(this.mobileDevicesResponseKeyInput, res.responseKey)
+    } else {
+      throw new Error(
+        `Did not get responseKey when posting pairing challenge with key ${challengeKey}`
+      )
     }
-    await t.expect(this.mobileDevicesNameInput.exists).ok()
 
     const pairingId = res.id
     const deviceId = await this.mobileDevicesNameInput.getAttribute('id')
