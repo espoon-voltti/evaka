@@ -699,6 +699,7 @@ fun Database.Transaction.deletePairing(id: UUID) {
 
 fun Database.Transaction.deleteMobileDevice(id: UUID) {
     execute("DELETE FROM mobile_device WHERE id = ?", id)
+    execute("DELETE FROM employee WHERE id = ?", id)
 }
 
 fun Handle.deleteApplication(id: UUID) {
