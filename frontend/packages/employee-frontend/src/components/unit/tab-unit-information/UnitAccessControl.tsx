@@ -12,7 +12,6 @@ import React, {
 import { orderBy } from 'lodash'
 import ReactSelect, { components } from 'react-select'
 import styled from 'styled-components'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 
 import { ContentArea } from '~components/shared/layout/Container'
 import Loader from '~components/shared/atoms/Loader'
@@ -30,6 +29,7 @@ import { Loading, Result } from '~api'
 import {
   addDaycareAclStaff,
   addDaycareAclSupervisor,
+  addDaycareAclSpecialEducationTeacher,
   DaycareAclRow,
   deleteMobileDevice,
   getDaycareAclRows,
@@ -37,7 +37,8 @@ import {
   MobileDevice,
   putMobileDeviceName,
   removeDaycareAclStaff,
-  removeDaycareAclSupervisor
+  removeDaycareAclSupervisor,
+  removeDaycareAclSpecialEducationTeacher
 } from '~api/unit'
 import { getEmployees } from '~api/employees'
 import { Employee } from '~types/employee'
@@ -46,7 +47,7 @@ import { useRestApi } from '~utils/useRestApi'
 import { RequireRole } from '~utils/roles'
 import { useTranslation } from '~state/i18n'
 import IconButton from '~components/shared/atoms/buttons/IconButton'
-import { faPen, faPlusCircle, faQuestion, faTrash } from '~icon-set'
+import { faPen, faQuestion, faTrash } from '~icon-set'
 import { H2 } from '~components/shared/Typography'
 import Button from '~components/shared/atoms/buttons/Button'
 import { UUID } from '~types'
@@ -98,7 +99,6 @@ function AclRow({
 const AddAclTitleContainer = styled.div`
   display: flex;
   align-items: center;
-  margin-bottom: 20px;
 
   > svg {
     flex: 0 0 auto;
@@ -114,7 +114,7 @@ const AddAclSelectContainer = styled.div`
     width: 400px;
   }
 
-  > button {
+  & button {
     margin-left: 20px;
     flex: 0 0 auto;
   }
@@ -261,7 +261,6 @@ function AddAcl({
   return (
     <>
       <AddAclTitleContainer>
-        <FontAwesomeIcon icon={faPlusCircle} size="lg" />
         <Title size={3}>{i18n.unit.accessControl.addPerson}</Title>
       </AddAclTitleContainer>
       <AddAclSelectContainer>
@@ -370,6 +369,18 @@ function UnitAccessControl({ unitId }: Props) {
         : undefined,
     [daycareAclRows]
   )
+
+  const specialEducationTeachers = useMemo(
+    () =>
+      daycareAclRows.isSuccess
+        ? formatRows(
+            daycareAclRows.value.filter(
+              ({ role }) => role === 'SPECIAL_EDUCATION_TEACHER'
+            )
+          )
+        : undefined,
+    [daycareAclRows]
+  )
   const staff = useMemo(
     () =>
       daycareAclRows.isSuccess
@@ -382,6 +393,11 @@ function UnitAccessControl({ unitId }: Props) {
 
   const addUnitSupervisor = (employeeId: UUID) =>
     addDaycareAclSupervisor(unitId, employeeId).then(() =>
+      reloadDaycareAclRows(unitId)
+    )
+
+  const addSpecialEducationTeacher = (employeeId: UUID) =>
+    addDaycareAclSpecialEducationTeacher(unitId, employeeId).then(() =>
       reloadDaycareAclRows(unitId)
     )
 
@@ -524,6 +540,28 @@ function UnitAccessControl({ unitId }: Props) {
           <AddAcl
             employees={candidateEmployees}
             onAddAclRow={addUnitSupervisor}
+          />
+        </ContentArea>
+      </RequireRole>
+      <RequireRole oneOf={['ADMIN']}>
+        <ContentArea opaque data-qa="daycare-acl-set">
+          <H2>{i18n.unit.accessControl.specialEducationTeachers}</H2>
+          {loading && <Loader />}
+          {failed && !loading && <div>{i18n.common.loadingFailed}</div>}
+          {!failed && !loading && specialEducationTeachers && (
+            <AclTable
+              rows={specialEducationTeachers}
+              onDeleteAclRow={(employeeId) =>
+                openRemoveModal({
+                  employeeId,
+                  removeFn: removeDaycareAclSpecialEducationTeacher
+                })
+              }
+            />
+          )}
+          <AddAcl
+            employees={candidateEmployees}
+            onAddAclRow={addSpecialEducationTeacher}
           />
         </ContentArea>
       </RequireRole>

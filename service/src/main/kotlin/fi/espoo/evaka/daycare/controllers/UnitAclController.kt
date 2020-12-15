@@ -65,6 +65,34 @@ class UnitAclController(private val acl: AccessControlList) {
         return ResponseEntity.noContent().build()
     }
 
+    @PutMapping("/daycares/{daycareId}/specialeducationteacher/{employeeId}")
+    fun insertSpecialEducationTeacher(
+        db: Database.Connection,
+        user: AuthenticatedUser,
+        @PathVariable daycareId: UUID,
+        @PathVariable employeeId: UUID
+    ): ResponseEntity<Unit> {
+        Audit.UnitAclCreate.log(targetId = daycareId, objectId = employeeId)
+        acl.getRolesForUnit(user, daycareId)
+            .requireOneOfRoles(UserRole.ADMIN)
+        db.transaction { it.handle.insertDaycareAclRow(daycareId, employeeId, UserRole.SPECIAL_EDUCATION_TEACHER) }
+        return ResponseEntity.noContent().build()
+    }
+
+    @DeleteMapping("/daycares/{daycareId}/specialeducationteacher/{employeeId}")
+    fun deleteSpecialEducationTeacher(
+        db: Database.Connection,
+        user: AuthenticatedUser,
+        @PathVariable daycareId: UUID,
+        @PathVariable employeeId: UUID
+    ): ResponseEntity<Unit> {
+        Audit.UnitAclDelete.log(targetId = daycareId, objectId = employeeId)
+        acl.getRolesForUnit(user, daycareId)
+            .requireOneOfRoles(UserRole.ADMIN)
+        db.transaction { it.handle.deleteDaycareAclRow(daycareId, employeeId, UserRole.SPECIAL_EDUCATION_TEACHER) }
+        return ResponseEntity.noContent().build()
+    }
+
     @PutMapping("/daycares/{daycareId}/staff/{employeeId}")
     fun insertStaff(
         db: Database.Connection,
