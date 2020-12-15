@@ -180,6 +180,7 @@ export default React.memo(function MobilePairingModal({
                   }
                   width={'m'}
                   data-qa="mobile-device-name-input"
+                  id={pairingResponse.value.mobileDeviceId}
                 />
               ) : (
                 <div>{i18n.common.loadingFailed}</div>
