@@ -48,6 +48,7 @@ import fi.espoo.evaka.pis.createPersonFromVtj
 import fi.espoo.evaka.pis.deleteEmployee
 import fi.espoo.evaka.pis.deleteEmployeeByExternalId
 import fi.espoo.evaka.pis.deleteEmployeeRolesByExternalId
+import fi.espoo.evaka.pis.deleteEmployees
 import fi.espoo.evaka.pis.getEmployees
 import fi.espoo.evaka.pis.getPersonBySSN
 import fi.espoo.evaka.pis.service.PersonDTO
@@ -385,6 +386,12 @@ DELETE FROM attachment USING ApplicationsDeleted WHERE application_id = Applicat
     @DeleteMapping("/employee/{id}")
     fun deleteEmployee(db: Database, @PathVariable id: UUID): ResponseEntity<Unit> {
         db.transaction { it.handle.deleteEmployee(id) }
+        return ResponseEntity.ok().build()
+    }
+
+    @DeleteMapping("/employee/all")
+    fun deleteEmployees(db: Database): ResponseEntity<Unit> {
+        db.transaction { it.handle.deleteEmployees() }
         return ResponseEntity.ok().build()
     }
 

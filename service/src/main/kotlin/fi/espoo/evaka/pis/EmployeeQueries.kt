@@ -69,6 +69,14 @@ WHERE id = :employeeId
 ).bind("employeeId", employeeId)
     .execute()
 
+fun Handle.deleteEmployees() = createUpdate(
+    // language=SQL
+    """
+DELETE FROM employee
+WHERE 1 = 1
+    """.trimIndent()
+).execute()
+
 fun Handle.deleteEmployeeByExternalId(externalId: ExternalId) = createUpdate(
     // language=SQL
     """
