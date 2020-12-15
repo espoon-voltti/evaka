@@ -142,10 +142,11 @@ export default class UnitPage {
     if (res.responseKey) {
       await t.typeText(this.mobileDevicesResponseKeyInput, res.responseKey)
     }
-    const pairingId = res.id
-    const deviceId = res.mobileDeviceId
-
     await t.expect(this.mobileDevicesNameInput.exists).ok()
+
+    const pairingId = res.id
+    const deviceId = await this.mobileDevicesNameInput.getAttribute('id')
+
     await t.typeText(this.mobileDevicesNameInput, 'testphone')
     await t.click(this.mobileDevicePairingDoneBtn)
 
