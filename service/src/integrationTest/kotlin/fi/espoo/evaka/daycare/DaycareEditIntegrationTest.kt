@@ -82,7 +82,8 @@ class DaycareEditIntegrationTest : FullApplicationTest() {
         ophUnitOid = "1.2.3.4.5",
         ophOrganizerOid = "1.22.33.44.55",
         ophOrganizationOid = "1.222.333.444.555",
-        operationDays = setOf(1, 2, 3, 4, 5)
+        operationDays = setOf(1, 2, 3, 4, 5),
+        feeDecisionManagerId = null
     )
 
     @BeforeEach
