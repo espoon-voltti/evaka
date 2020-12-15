@@ -35,9 +35,10 @@ RETURNING id, first_name, last_name, email, external_id, created, updated, roles
 private fun Handle.searchEmployees(id: UUID? = null) = createQuery(
     // language=SQL
     """
-SELECT id, first_name, last_name, email, external_id, created, updated, roles
-FROM employee
-WHERE (:id::uuid IS NULL OR id = :id)
+SELECT e.id, first_name, last_name, email, external_id, e.created, e.updated, roles
+FROM employee e
+LEFT JOIN mobile_device md on e.id = md.id 
+WHERE (:id::uuid IS NULL OR e.id = :id) AND md.id IS NULL
     """.trimIndent()
 ).bind("id", id)
     .mapTo<Employee>()
