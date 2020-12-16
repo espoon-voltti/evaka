@@ -48,7 +48,12 @@ class DecisionService(
     private val evakaMessageClient: IEvakaMessageClient,
     private val asyncJobRunner: AsyncJobRunner
 ) {
-    fun finalizeDecisions(tx: Database.Transaction, user: AuthenticatedUser, applicationId: UUID, sendAsMessage: Boolean): List<UUID> {
+    fun finalizeDecisions(
+        tx: Database.Transaction,
+        user: AuthenticatedUser,
+        applicationId: UUID,
+        sendAsMessage: Boolean
+    ): List<UUID> {
         val decisionIds = finalizeDecisions(tx.handle, applicationId)
         asyncJobRunner.plan(tx, decisionIds.map { NotifyDecisionCreated(it, user, sendAsMessage) })
         return decisionIds
@@ -211,7 +216,7 @@ class DecisionService(
 
         deliverDecisionToGuardian(tx, decision, applicationGuardian, decision.documentUri.toString())
 
-        if (application.otherGuardianId != null && !decision.otherGuardianDocumentUri.isNullOrBlank()) {
+        if (application.otherGuardianId != null && !decision.otherGuardianDocumentUri.isNullOrBlank() && !applicationGuardian.restrictedDetailsEnabled) {
             val otherGuardian = tx.handle.getPersonById(application.otherGuardianId)
                 ?: error("Other guardian not found with id: ${application.otherGuardianId}")
 
