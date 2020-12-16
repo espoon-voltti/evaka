@@ -15,6 +15,7 @@ import fi.espoo.evaka.testClub
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDaycare2
 import fi.espoo.evaka.testDaycareNotInvoiced
+import fi.espoo.evaka.testGhostUnitDaycare
 import fi.espoo.evaka.testPurchasedDaycare
 import fi.espoo.evaka.testVoucherDaycare
 import org.junit.jupiter.api.AfterEach
@@ -150,7 +151,15 @@ class TimeIntegrationTest : PureJdbiTest() {
         .map { it to january2020Weekdays.filter(filterDates) }
         .toMap()
 
-    private val defaultUnitIds: List<UUID> = listOf(testDaycare.id, testDaycare2.id, testDaycareNotInvoiced.id, testPurchasedDaycare.id, testVoucherDaycare.id, testClub.id!!)
+    private val defaultUnitIds: List<UUID> = listOf(
+        testDaycare.id,
+        testDaycare2.id,
+        testDaycareNotInvoiced.id,
+        testPurchasedDaycare.id,
+        testVoucherDaycare.id,
+        testClub.id!!,
+        testGhostUnitDaycare.id!!
+    )
 
     private val january2020Days = listOf(
         LocalDate.of(2020, 1, 1),

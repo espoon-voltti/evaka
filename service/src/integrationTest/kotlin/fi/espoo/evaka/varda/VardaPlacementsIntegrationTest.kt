@@ -16,6 +16,7 @@ import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.ClosedPeriod
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
+import fi.espoo.evaka.testGhostUnitDaycare
 import fi.espoo.evaka.varda.integration.MockVardaIntegrationEndpoint
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -50,6 +51,22 @@ class VardaPlacementsIntegrationTest : FullApplicationTest() {
         val decisionId = insertDecisionWithApplication(db, testChild_1, period)
         val vardaDecisionId = insertTestVardaDecision(db, decisionId = decisionId)
         val placementId = insertPlacement(db, testChild_1.id, period)
+
+        updatePlacements(db, vardaClient)
+
+        val result = getVardaPlacements(db)
+        assertEquals(1, result.size)
+        assertEquals(placementId, result.first().evakaPlacementId)
+        assertEquals(vardaDecisionId, result.first().decisionId)
+    }
+
+    @Test
+    fun `a daycare placement is sent when the corresponding decision has been sent even if the placement is to a different unit and the decision is to a ghost unit`() {
+        val period = ClosedPeriod(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))
+        insertVardaUnit(db)
+        val decisionId = insertDecisionWithApplication(db, testChild_1, period, unitId = testGhostUnitDaycare.id!!)
+        val vardaDecisionId = insertTestVardaDecision(db, decisionId = decisionId)
+        val placementId = insertPlacement(db, testChild_1.id, period, unitId = testDaycare.id)
 
         updatePlacements(db, vardaClient)
 

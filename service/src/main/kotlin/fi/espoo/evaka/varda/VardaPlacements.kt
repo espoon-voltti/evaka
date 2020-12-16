@@ -109,7 +109,7 @@ LEFT JOIN varda_placement vp ON p.id = vp.evaka_placement_id AND vp.deleted_at I
 JOIN daycare u ON p.unit_id = u.id AND u.upload_to_varda = true AND u.oph_unit_oid IS NOT NULL
 JOIN sent_decision d
     ON p.child_id = d.child_id
-    AND p.unit_id = d.unit_id
+    AND (p.unit_id = d.unit_id OR (SELECT ghost_unit FROM daycare WHERE id = d.unit_id))
     AND daterange(p.start_date, p.end_date, '[]') && daterange(d.start_date, d.end_date, '[]')
     """.trimIndent()
 
