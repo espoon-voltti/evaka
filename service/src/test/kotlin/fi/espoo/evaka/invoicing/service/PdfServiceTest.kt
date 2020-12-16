@@ -95,7 +95,8 @@ class PdfServiceTest {
                 siblingDiscount = it.siblingDiscount,
                 fee = it.fee
             )
-        }
+        },
+        financeDecisionManager = null
     )
 
     private val reliefDecision = normalDecision.copy(decisionType = FeeDecisionType.RELIEF_ACCEPTED)

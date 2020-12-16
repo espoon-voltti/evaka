@@ -49,7 +49,8 @@ fun toDetailed(feeDecision: FeeDecision): FeeDecisionDetailed = FeeDecisionDetai
     documentKey = feeDecision.documentKey,
     approvedBy = allWorkers.find { it.id == feeDecision.approvedBy?.id },
     approvedAt = feeDecision.approvedAt,
-    createdAt = feeDecision.createdAt
+    createdAt = feeDecision.createdAt,
+    financeDecisionManager = null
 )
 
 fun toSummary(feeDecision: FeeDecision): FeeDecisionSummary = FeeDecisionSummary(
