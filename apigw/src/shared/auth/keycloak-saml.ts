@@ -35,8 +35,11 @@ export default function createKeycloakSamlStrategy(): SamlStrategy {
 }
 
 interface KeycloakProfile {
-  nameID: string
-  ID?: string
+  id?: string
+  email?: string
+  firstName?: string
+  lastName?: string
+  nameID?: string
   nameIDFormat?: string
   nameQualifier?: string
   spNameQualifier?: string
@@ -46,12 +49,12 @@ interface KeycloakProfile {
 async function verifyKeycloakProfile(
   profile: KeycloakProfile
 ): Promise<SamlUser> {
-  if (!profile.ID) throw Error('No user ID in evaka IDP SAML data')
+  if (!profile.id) throw Error('No user ID in evaka IDP SAML data')
   const person = await getOrCreateEmployee({
-    externalId: `evaka:${profile.ID}`,
-    firstName: profile.nameID.split('.')[0],
-    lastName: profile.nameID.split('.')[1].split('@')[0],
-    email: profile.nameID
+    externalId: `evaka:${profile.id}`,
+    firstName: profile.firstName ?? '',
+    lastName: profile.lastName ?? '',
+    email: profile.email
   })
   return {
     id: person.id,

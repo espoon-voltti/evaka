@@ -287,17 +287,55 @@
       "nodeReRegistrationTimeout": -1,
       "protocolMappers": [
         {
-          "id": "6dfbc026-ab08-49b7-84f8-d077bd7bc5d6",
-          "name": "ID",
+          "id": "a452fcaf-5ef2-4771-a984-53387469fbf3",
+          "name": "lastName",
           "protocol": "saml",
-          "protocolMapper": "saml-javascript-mapper",
+          "protocolMapper": "saml-user-property-mapper",
           "consentRequired": false,
           "config": {
-            "single": "true",
-            "Script": "user.id",
             "attribute.nameformat": "Basic",
-            "friendly.name": "ID",
-            "attribute.name": "ID"
+            "user.attribute": "lastName",
+            "friendly.name": "lastName",
+            "attribute.name": "lastName"
+          }
+        },
+        {
+          "id": "a55312c9-f1ce-4bd7-a29f-45c72b6f442a",
+          "name": "firstName",
+          "protocol": "saml",
+          "protocolMapper": "saml-user-property-mapper",
+          "consentRequired": false,
+          "config": {
+            "attribute.nameformat": "Basic",
+            "user.attribute": "firstName",
+            "friendly.name": "firstName",
+            "attribute.name": "firstName"
+          }
+        },
+        {
+          "id": "591c5233-1803-4ba4-9749-749ba6dd2ee5",
+          "name": "id",
+          "protocol": "saml",
+          "protocolMapper": "saml-user-property-mapper",
+          "consentRequired": false,
+          "config": {
+            "attribute.nameformat": "Basic",
+            "user.attribute": "id",
+            "friendly.name": "id",
+            "attribute.name": "id"
+          }
+        },
+        {
+          "id": "44287c30-aaa8-4bd3-9e81-acb55b0a16d9",
+          "name": "email",
+          "protocol": "saml",
+          "protocolMapper": "saml-user-property-mapper",
+          "consentRequired": false,
+          "config": {
+            "attribute.nameformat": "Basic",
+            "user.attribute": "email",
+            "friendly.name": "email",
+            "attribute.name": "email"
           }
         }
       ],
