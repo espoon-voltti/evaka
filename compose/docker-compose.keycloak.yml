@@ -6,19 +6,26 @@ version: '3.5'
 
 services:
   keycloak:
-    image: quay.io/keycloak/keycloak:11.0.3
+    build: ./keycloak/evaka-keycloak-theme/
     ports:
       - "8080:8080"
     environment:
       KEYCLOAK_USER: admin
       KEYCLOAK_PASSWORD: admin
       DB_VENDOR: h2
+      KEYCLOAK_WELCOME_THEME: evaka
+    volumes:
+      - ./keycloak/configuration:/configuration
+      - ./keycloak/evaka-keycloak-theme/evaka:/opt/jboss/keycloak/themes/evaka
+    entrypoint: /configuration/entrypoint-configuration.sh
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080"]
       interval: 2s
       timeout: 5s
       retries: 5
       start_period: 5s
+    depends_on:
+      - smtp
 
   smtp:
     image: mailhog/mailhog
@@ -26,10 +33,13 @@ services:
       - "8025:8025"
 
   configure-keycloak:
-   image: quay.io/keycloak/keycloak:11.0.3
-   environment:
-     KEYCLOAK_USER: admin
-     KEYCLOAK_PASSWORD: admin
-   volumes:
-     - ./keycloak/configuration:/configuration
-   entrypoint: /configuration/entrypoint-realm.sh
+    image: quay.io/keycloak/keycloak:11.0.3
+    environment:
+      KEYCLOAK_USER: admin
+      KEYCLOAK_PASSWORD: admin
+    volumes:
+      - ./keycloak/configuration:/configuration
+    entrypoint: /configuration/entrypoint-realm.sh
+    depends_on:
+      - keycloak
+
