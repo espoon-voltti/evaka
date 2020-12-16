@@ -438,6 +438,26 @@ export async function removeDaycareAclSupervisor(
     .catch((e) => Failure.fromError(e))
 }
 
+export async function addDaycareAclSpecialEducationTeacher(
+  unitId: UUID,
+  personId: UUID
+): Promise<Result<void>> {
+  return client
+    .put(`/daycares/${unitId}/specialeducationteacher/${personId}`)
+    .then(() => Success.of(undefined))
+    .catch((e) => Failure.fromError(e))
+}
+
+export async function removeDaycareAclSpecialEducationTeacher(
+  unitId: UUID,
+  personId: UUID
+): Promise<Result<void>> {
+  return client
+    .delete(`/daycares/${unitId}/specialeducationteacher/${personId}`)
+    .then(() => Success.of(undefined))
+    .catch((e) => Failure.fromError(e))
+}
+
 export async function addDaycareAclStaff(
   unitId: UUID,
   personId: UUID

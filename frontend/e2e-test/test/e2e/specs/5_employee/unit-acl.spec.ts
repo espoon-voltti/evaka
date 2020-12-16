@@ -120,6 +120,27 @@ test('User can add and delete unit supervisors', async (t) => {
     .eql([expectedAclRows.seppo])
 })
 
+test('User can add and delete special education teachers', async (t) => {
+  await home.login({
+    aad: config.adminAad,
+    roles: ['ADMIN', 'SERVICE_WORKER']
+  })
+  await home.navigateToUnits()
+  await unitPage.navigateHere(fixtures.daycareFixture.id)
+  await t.expect(await unitPage.specialEducationTeacherAcl.getAclRows()).eql([])
+  await unitPage.specialEducationTeacherAcl.addEmployeeAcl(employeeUuids[0])
+  await t
+    .expect(await unitPage.specialEducationTeacherAcl.getAclRows())
+    .eql([expectedAclRows.pete])
+  await unitPage.specialEducationTeacherAcl.addEmployeeAcl(employeeUuids[1])
+  await t
+    .expect(await unitPage.specialEducationTeacherAcl.getAclRows())
+    .eql([expectedAclRows.pete, expectedAclRows.yrjo])
+  await unitPage.specialEducationTeacherAcl.deleteEmployeeAclByIndex(0)
+  await unitPage.specialEducationTeacherAcl.deleteEmployeeAclByIndex(0)
+  await t.expect(await unitPage.specialEducationTeacherAcl.getAclRows()).eql([])
+})
+
 test('User can add and delete staff', async (t) => {
   await home.login({
     aad: config.supervisorAad,

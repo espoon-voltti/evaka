@@ -75,6 +75,11 @@ export default class UnitPage {
   readonly supervisorAcl = new AclTable(
     Selector('[data-qa="daycare-acl-supervisors"]')
   )
+
+  readonly specialEducationTeacherAcl = new AclTable(
+    Selector('[data-qa="daycare-acl-set"]')
+  )
+
   readonly staffAcl = new AclTable(Selector('[data-qa="daycare-acl-staff"]'))
 
   readonly placementProposalsAcceptButton = Selector(
