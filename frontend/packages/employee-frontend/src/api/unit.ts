@@ -184,7 +184,7 @@ function mapGroupJson(data: JsonOf<DaycareGroup>): DaycareGroup {
   }
 }
 
-function mapEmployeeJson(data: JsonOf<Employee>): Employee {
+export function mapEmployeeJson(data: JsonOf<Employee>): Employee {
   return {
     ...data,
     updated: new Date(data.updated),

@@ -22,6 +22,7 @@ import {
 import { EspooColours } from '~utils/colours'
 import { formatDate } from '~utils/date'
 import { formatName } from '~utils'
+import { Employee } from '~types/employee'
 
 interface TypeSelectProps {
   selected: string
@@ -63,7 +64,8 @@ interface Props {
   decisionNumber: number | null
   validFrom: LocalDate
   validTo: LocalDate | null
-  sentAt: Date | null
+  sentAt: Date | null,
+  financeDecisionManager: {employee: Employee} | null,
   documentKey: string | null
   parts: FeeDecisionPartDetailed[]
   decisionType: FeeDecisionType
@@ -83,6 +85,7 @@ export default React.memo(function Heading({
   validFrom,
   validTo,
   sentAt,
+  financeDecisionManager,
   documentKey,
   decisionType,
   changeDecisionType,
@@ -170,6 +173,10 @@ export default React.memo(function Heading({
       {
         label: i18n.feeDecision.sentAt,
         value: formatDate(sentAt)
+      },
+      {
+        label: i18n.feeDecision.sentAt,
+        value: [financeDecisionManager?.employee.firstName, financeDecisionManager?.employee.lastName].join(" ")
       }
     ]
 

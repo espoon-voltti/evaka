@@ -6,6 +6,7 @@ package fi.espoo.evaka.invoicing.data
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
+import fi.espoo.evaka.daycare.FinanceDecisionManager
 import fi.espoo.evaka.invoicing.controller.DistinctiveParams
 import fi.espoo.evaka.invoicing.controller.FeeDecisionSortParam
 import fi.espoo.evaka.invoicing.controller.SortDirection
@@ -24,9 +25,12 @@ import fi.espoo.evaka.invoicing.domain.PlacementType
 import fi.espoo.evaka.invoicing.domain.ServiceNeed
 import fi.espoo.evaka.invoicing.domain.UnitData
 import fi.espoo.evaka.invoicing.domain.merge
+import fi.espoo.evaka.pis.Employee
 import fi.espoo.evaka.shared.db.disjointNumberQuery
 import fi.espoo.evaka.shared.db.freeTextSearchQuery
 import fi.espoo.evaka.shared.db.getEnum
+import fi.espoo.evaka.shared.db.getNullableUUID
+import fi.espoo.evaka.shared.db.getUUID
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.utils.splitSearchText
 import org.jdbi.v3.core.Handle
@@ -97,7 +101,11 @@ val feeDecisionDetailedQueryBase =
         daycare.name as placement_unit_name,
         daycare.language as placement_unit_lang,
         care_area.id as placement_unit_area_id,
-        care_area.name as placement_unit_area_name
+        care_area.name as placement_unit_area_name,
+        finance_decision_manager.id AS finance_decision_manager_id,
+        finance_decision_manager.first_name AS finance_decision_manager_first_name,
+        finance_decision_manager.last_name AS finance_decision_manager_last_name,
+        finance_decision_manager.created AS finance_decision_manager_created
     FROM fee_decision as decision
         LEFT JOIN fee_decision_part as part ON decision.id = part.fee_decision_id
         LEFT JOIN person as head ON decision.head_of_family = head.id
@@ -106,6 +114,7 @@ val feeDecisionDetailedQueryBase =
         LEFT JOIN daycare ON part.placement_unit = daycare.id
         LEFT JOIN care_area ON daycare.care_area_id = care_area.id
         LEFT JOIN employee as approved_by ON decision.approved_by = approved_by.id
+        LEFT JOIN employee as finance_decision_manager ON daycare.finance_decision_manager = finance_decision_manager.id
     """.trimIndent()
 
 private val decisionNumberRegex = "^\\d{7,}$".toRegex()
@@ -745,7 +754,21 @@ fun toFeeDecisionDetailed(mapper: ObjectMapper) = { rs: ResultSet, _: StatementC
         },
         approvedAt = rs.getTimestamp("approved_at")?.toInstant(),
         createdAt = rs.getTimestamp("created_at").toInstant(),
-        sentAt = rs.getTimestamp("sent_at")?.toInstant()
+        sentAt = rs.getTimestamp("sent_at")?.toInstant(),
+        financeDecisionManager = when (rs.getNullableUUID("finance_decision_manager_id")) {
+            is UUID -> FinanceDecisionManager(
+                employee = Employee(
+                    id = rs.getUUID("finance_decision_manager_id"),
+                    firstName = rs.getString("finance_decision_manager_first_name"),
+                    lastName = rs.getString("finance_decision_manager_last_name"),
+                    created = rs.getTimestamp("finance_decision_manager_created").toInstant(),
+                    email = null,
+                    externalId = null,
+                    updated = null
+                )
+            )
+            else -> null
+        }
     )
 }
 

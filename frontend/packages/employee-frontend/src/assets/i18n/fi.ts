@@ -1423,6 +1423,7 @@ export const fi = {
     decisionNUmber: 'Päätöksen numero',
     validPeriod: 'Maksupäätös voimassa',
     sentAt: 'Maksupäätös lähetetty',
+    financeDecisionManager: 'Päätöksen käsittelijä',
     relief: 'Maksupäätöksen huojennus',
     waitingManualSending: 'Lähetetään manuaalisesti',
     pdfLabel: 'Maksupäätös PDF',
