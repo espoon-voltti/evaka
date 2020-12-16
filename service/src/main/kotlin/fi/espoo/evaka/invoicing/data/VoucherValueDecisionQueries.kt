@@ -303,7 +303,7 @@ fun Handle.searchValueDecisions(
     )
 
     val (freeTextQuery, freeTextParams) = freeTextSearchQuery(listOf("head", "partner", "child"), searchTerms)
-    val financeDecisionManagerWhere = "AND finance_decision_manager_daycare.finance_decision_manager = :financeDecisionManagerId"
+    val financeDecisionManagerWhere = "AND placement_unit.finance_decision_manager = :financeDecisionManagerId"
 
     val sql =
         // language=sql
@@ -325,7 +325,7 @@ fun Handle.searchValueDecisions(
             LEFT JOIN person AS partner ON decision.head_of_family = partner.id
             LEFT JOIN person AS child ON part.child = child.id
             LEFT JOIN youngest_child ON decision.id = youngest_child.decision_id AND rownum = 1
-            LEFT JOIN daycare AS finance_decision_manager_daycare ON finance_decision_manager_daycare.id = part.placement_unit
+            LEFT JOIN daycare AS placement_unit ON placement_unit.id = part.placement_unit
             LEFT JOIN (
                 SELECT final_co_payments.id, sum(final_co_payments.final_co_payment) co_payment, sum(final_co_payments.voucher_value) voucher_value
                 FROM (

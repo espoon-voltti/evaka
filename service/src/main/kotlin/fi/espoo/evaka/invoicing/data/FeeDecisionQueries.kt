@@ -343,12 +343,12 @@ fun searchFeeDecisions(
         if (searchTextWithoutNumbers.isNotBlank()) freeTextQuery else null,
         if ((startDate != null || endDate != null) && !searchByStartDate) "daterange(:start_date, :end_date, '[]') && daterange(valid_from, valid_to, '[]')" else null,
         if ((startDate != null || endDate != null) && searchByStartDate) "daterange(:start_date, :end_date, '[]') @> valid_from" else null,
-        if (financeDecisionManagerId != null) "finance_decision_manager.finance_decision_manager_id = :finance_decision_manager" else null
+        if (financeDecisionManagerId != null) "placement_unit.finance_decision_manager = :finance_decision_manager" else null
     )
 
     val youngestChildQuery =
         """
-        youngest_child AS (
+        WITH youngest_child AS (
             SELECT
                 fee_decision_part.fee_decision_id AS decision_id,
                 care_area.short_name AS area,
@@ -360,25 +360,18 @@ fun searchFeeDecisions(
         """.trimIndent()
     val youngestChildJoin = "LEFT JOIN youngest_child ON decision.id = youngest_child.decision_id AND rownum = 1"
 
-    val financeDecisionManagerQuery =
-        """
-        finance_decision_manager AS (SELECT id as daycare_id, finance_decision_manager as finance_decision_manager_id FROM daycare)
-        """.trimIndent()
-    val financeDecisionManagerJoin = "LEFT JOIN finance_decision_manager ON part.placement_unit = finance_decision_manager.daycare_id"
-
-    val withQueries = if (areas.isNotEmpty() || financeDecisionManagerId != null) "WITH " + listOf(youngestChildQuery, financeDecisionManagerQuery).joinToString() else ""
-
     // language=sql
     val sql =
         """
         WITH decision_ids AS (
-            $withQueries
+            ${if (areas.isNotEmpty()) youngestChildQuery else ""}
             SELECT decision.id, count(*) OVER (), max(sums.sum) sum
             FROM fee_decision AS decision
             LEFT JOIN fee_decision_part AS part ON decision.id = part.fee_decision_id
             LEFT JOIN person AS head ON decision.head_of_family = head.id
             LEFT JOIN person AS partner ON decision.head_of_family = partner.id
             LEFT JOIN person AS child ON part.child = child.id
+            LEFT JOIN daycare AS placement_unit ON placement_unit.id = part.placement_unit
             LEFT JOIN (
                 SELECT final_prices.id, sum(final_prices.final_price) sum
                 FROM (
@@ -394,7 +387,6 @@ fun searchFeeDecisions(
                 GROUP BY final_prices.id
             ) sums ON decision.id = sums.id
             ${if (areas.isNotEmpty()) youngestChildJoin else ""}
-            ${if (financeDecisionManagerId != null) financeDecisionManagerJoin else ""}
             ${if (conditions.isNotEmpty()) """
             WHERE ${conditions.joinToString("\nAND ")}
         """.trimIndent() else ""}
