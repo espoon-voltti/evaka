@@ -10,6 +10,7 @@ import {
 import { SamlUser } from '../routes/auth/saml/types'
 import { getOrCreateEmployee } from '../service-client'
 import { evakaSamlConfig } from '../config'
+import certificates from '../certificates'
 
 export default function createKeycloakSamlStrategy(): SamlStrategy {
   return new SamlStrategy(
@@ -18,7 +19,11 @@ export default function createKeycloakSamlStrategy(): SamlStrategy {
       callbackUrl: evakaSamlConfig.callbackUrl,
       entryPoint: evakaSamlConfig.entryPoint,
       logoutUrl: evakaSamlConfig.entryPoint,
-      acceptedClockSkewMs: -1
+      acceptedClockSkewMs: -1,
+      cert: evakaSamlConfig.publicCert.map(
+        (certificateName) => certificates[certificateName]
+      ),
+      signatureAlgorithm: 'sha256'
     },
     (profile: Profile, done: VerifiedCallback) => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any

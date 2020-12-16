@@ -13,7 +13,8 @@ const names = [
   'idp.tunnistus.suomi.fi.pem',
   'saml-signing.idp.tunnistautuminen.suomi.fi.pem',
   'saml-signing-testi.apro.tunnistus.fi.pem',
-  'testi.apro.tunnistus.fi.pem'
+  'testi.apro.tunnistus.fi.pem',
+  'keycloak-local.pem'
 ] as const
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
