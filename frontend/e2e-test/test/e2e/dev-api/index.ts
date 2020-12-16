@@ -96,6 +96,20 @@ export async function execSimpleApplicationAction(
   }
 }
 
+export async function createPlacementPlan(
+  applicationId: string,
+  body: { unitId: string; period: { start: string; end: string } }
+): Promise<void> {
+  try {
+    await devClient.post(
+      `/applications/${applicationId}/actions/create-placement-plan`,
+      body
+    )
+  } catch (e) {
+    throw new DevApiError(e)
+  }
+}
+
 export async function execSimpleApplicationActions(
   applicationId: string,
   actions: ApplicationActionSimple[]
@@ -270,6 +284,16 @@ export async function deleteEmployeeFixture(externalId: string): Promise<void> {
 export async function deleteEmployeeById(id: UUID): Promise<void> {
   try {
     await devClient.delete(`/employee/${id}`)
+  } catch (e) {
+    throw new DevApiError(e)
+  }
+}
+
+export async function deleteEmployeeByExternalId(
+  externalId: UUID
+): Promise<void> {
+  try {
+    await devClient.delete(`/employee/external-id/${externalId}`)
   } catch (e) {
     throw new DevApiError(e)
   }
