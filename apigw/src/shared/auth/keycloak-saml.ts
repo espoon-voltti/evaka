@@ -11,8 +11,12 @@ import { SamlUser } from '../routes/auth/saml/types'
 import { getOrCreateEmployee } from '../service-client'
 import { evakaSamlConfig } from '../config'
 import certificates from '../certificates'
+import fs from 'fs'
 
 export default function createKeycloakSamlStrategy(): SamlStrategy {
+  const privateCert = fs.readFileSync(evakaSamlConfig.privateCert, {
+    encoding: 'utf8'
+  })
   return new SamlStrategy(
     {
       issuer: 'evaka',
@@ -23,6 +27,8 @@ export default function createKeycloakSamlStrategy(): SamlStrategy {
       cert: evakaSamlConfig.publicCert.map(
         (certificateName) => certificates[certificateName]
       ),
+      privateCert: privateCert,
+      decryptionPvk: privateCert,
       identifierFormat: 'urn:oasis:names:tc:SAML:2.0:nameid-format:transient',
       signatureAlgorithm: 'sha256'
     },

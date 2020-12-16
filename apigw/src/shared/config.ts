@@ -184,5 +184,9 @@ export const evakaSamlConfig = {
   publicCert: required<Array<keyof typeof certificates>>(
     envArray('EVAKA_SAML_PUBLIC_CERT', parseEnum(certificateNames)) ??
       ifNodeEnv(['local', 'test'], ['keycloak-local.pem'])
+  ),
+  privateCert: required(
+    process.env.EVAKA_SAML_PRIVATE_CERT ??
+      ifNodeEnv(['local', 'test'], 'config/test-cert/saml-private.pem')
   )
 }
