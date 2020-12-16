@@ -9,13 +9,7 @@ import {
 } from 'passport-saml'
 import DevPassportStrategy from './dev-passport-strategy'
 import { SamlUser } from '../routes/auth/saml/types'
-import {
-  devLoginEnabled,
-  eadSamlCallbackUrl,
-  eadSamlIssuer,
-  eadSamlPrivateCert,
-  eadSamlPublicCert
-} from '../config'
+import { devLoginEnabled, eadConfig } from '../config'
 import certificates from '../certificates'
 import { readFileSync } from 'fs'
 import { upsertEmployee } from '../dev-api'
@@ -105,22 +99,19 @@ export default function createEspooAdStrategy():
 
     return new DevPassportStrategy(getter, upserter)
   } else {
-    if (!eadSamlPublicCert)
-      throw new Error('No Espoo AD SAML public certificate configured')
-    if (!eadSamlPrivateCert)
-      throw new Error('No Espoo AD SAML private certificate configured')
+    if (!eadConfig) throw Error('Missing Espoo AD SAML configuration')
     return new SamlStrategy(
       {
-        callbackUrl: eadSamlCallbackUrl,
+        callbackUrl: eadConfig.callbackUrl,
         entryPoint:
           'https://login.microsoftonline.com/6bb04228-cfa5-4213-9f39-172454d82584/saml2',
         logoutUrl:
           'https://login.microsoftonline.com/6bb04228-cfa5-4213-9f39-172454d82584/saml2',
-        issuer: eadSamlIssuer,
-        cert: eadSamlPublicCert.map(
+        issuer: eadConfig.issuer,
+        cert: eadConfig.publicCert.map(
           (certificateName) => certificates[certificateName]
         ),
-        privateCert: readFileSync(eadSamlPrivateCert, {
+        privateCert: readFileSync(eadConfig.privateCert, {
           encoding: 'utf8'
         }),
         identifierFormat: 'urn:oasis:names:tc:SAML:2.0:nameid-format:transient',

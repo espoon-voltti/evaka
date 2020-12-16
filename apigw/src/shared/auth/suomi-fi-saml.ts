@@ -5,15 +5,7 @@
 import { Profile, Strategy, VerifiedCallback } from 'passport-saml'
 import { SamlUser } from '../routes/auth/saml/types'
 import { Strategy as DummyStrategy } from 'passport-dummy'
-import {
-  sfiMock,
-  sfiSamlCallbackUrl,
-  sfiSamlEntryPoint,
-  sfiSamlIssuer,
-  sfiSamlLogoutUrl,
-  sfiSamlPrivateCert,
-  sfiSamlPublicCert
-} from '../config'
+import { sfiConfig, sfiMock } from '../config'
 import certificates from '../certificates'
 import fs from 'fs'
 import { getOrCreatePerson } from '../service-client'
@@ -67,20 +59,17 @@ export default function createSuomiFiStrategy(): Strategy | DummyStrategy {
         .catch(done)
     })
   } else {
-    if (!sfiSamlPublicCert)
-      throw new Error('No Suomi.fi SAML public certificate configured')
-    if (!sfiSamlPrivateCert)
-      throw new Error('No Suomi.FI SAML private certificate configured')
-    const privateCert = fs.readFileSync(sfiSamlPrivateCert, {
+    if (!sfiConfig) throw new Error('Missing Suomi.fi SAML configuration')
+    const privateCert = fs.readFileSync(sfiConfig.privateCert, {
       encoding: 'utf8'
     })
     return new Strategy(
       {
-        callbackUrl: sfiSamlCallbackUrl,
-        entryPoint: sfiSamlEntryPoint,
-        logoutUrl: sfiSamlLogoutUrl,
-        issuer: sfiSamlIssuer,
-        cert: sfiSamlPublicCert.map(
+        callbackUrl: sfiConfig.callbackUrl,
+        entryPoint: sfiConfig.entryPoint,
+        logoutUrl: sfiConfig.logoutUrl,
+        issuer: sfiConfig.issuer,
+        cert: sfiConfig.publicCert.map(
           (certificateName) => certificates[certificateName]
         ),
         privateCert: privateCert,
