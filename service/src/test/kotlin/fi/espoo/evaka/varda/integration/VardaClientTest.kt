@@ -56,7 +56,7 @@ class VardaClientTest {
                     statusCode = 403,
                     url = URL("https://example.com"),
                     body = DefaultBody.from(
-                        { ByteArrayInputStream("{ \"detail\": \"Invalid token.\" }".toByteArray()) },
+                        { ByteArrayInputStream("""{ "errors": [{ "error_code": "PE007" }] }""".toByteArray()) },
                         null
                     )
                 ) // This should trigger the token refresh
