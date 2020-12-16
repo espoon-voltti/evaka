@@ -23,6 +23,7 @@ export default function createKeycloakSamlStrategy(): SamlStrategy {
       cert: evakaSamlConfig.publicCert.map(
         (certificateName) => certificates[certificateName]
       ),
+      identifierFormat: 'urn:oasis:names:tc:SAML:2.0:nameid-format:transient',
       signatureAlgorithm: 'sha256'
     },
     (profile: Profile, done: VerifiedCallback) => {
