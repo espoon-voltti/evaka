@@ -31,9 +31,9 @@ VALUES
   ('aa94b3ee-4f38-11ea-ba70-ebb1ef181cdb', 'Lagstads daghem och förskola', '{CENTRE,PRESCHOOL}', 'aa65d808-4f38-11ea-ba70-bf78328155c5', NULL, 'fc919fa4-28c1-4dc5-a227-09d11eb6b491', 'Esbogatan 7', '02770', '', '(24.6559279999999994,60.20749)', 'Esbo', NULL, '', ''),
   ('aa831986-4f38-11ea-ba70-b38e70b42848', 'Leppäsillan päiväkoti', '{CENTRE}', '801a6cc7-e8a5-4279-b192-4e8192d82c18', NULL, 'fc919fa4-28c1-4dc5-a227-09d11eb6b491', 'Pääskyskuja 11 A ja 11 B', '02620', 'PL 62307', '(24.7839220000000005,60.227646)', 'Espoo', NULL, '02070', 'Espoon Kaupunki');
 
-INSERT INTO daycare (id, name, care_area_id, type, unit_manager_id, street_address, postal_code, mailing_po_box, location, can_apply_club)
+INSERT INTO daycare (id, name, care_area_id, type, unit_manager_id, street_address, postal_code, mailing_po_box, location, club_apply_period)
 VALUES
-  ('a9fb114e-3ff5-44fb-b0e7-647fd038fc37', '2-vuotiaiden testikerho, Ti ja To klo 14-16, Tessin Testikerho', '7119009f-ec26-45d2-be61-d3f802c1d1e5', '{CLUB}', 'fc919fa4-28c1-4dc5-a227-09d11eb6b491', 'Testitie 1', '02970', 'PL 97306, 02070 Espoon kaupunki', '(24.7378,60.3027999999999977)', TRUE);
+  ('a9fb114e-3ff5-44fb-b0e7-647fd038fc37', '2-vuotiaiden testikerho, Ti ja To klo 14-16, Tessin Testikerho', '7119009f-ec26-45d2-be61-d3f802c1d1e5', '{CLUB}', 'fc919fa4-28c1-4dc5-a227-09d11eb6b491', 'Testitie 1', '02970', 'PL 97306, 02070 Espoon kaupunki', '(24.7378,60.3027999999999977)', '[2020-03-01,)');
 
 INSERT INTO daycare (id, name, care_area_id, phone, url, type, street_address, postal_code, mailing_po_box, location)
 VALUES ('3e5e9b7c-7e1e-11e9-ba34-afc4b10bad6f', 'Tessin Testipäiväkoti', (SELECT id FROM care_area WHERE name = 'Espoon keskus (eteläinen)'), null, null, '{CENTRE}', 'Testitie 1', '02970', 'PL 97306, 02070 Espoon kaupunki', POINT(24.7378000, 60.3028000));

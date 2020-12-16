@@ -2074,9 +2074,10 @@ export const fi = {
       }
     },
     field: {
-      canApplyDaycare: 'Varhaiskasvatushaussa',
-      canApplyPreschool: 'Esiopetushaussa',
-      canApplyClub: 'Kerhohaussa',
+      applyPeriod: 'Kun toivottu alkamispäivä aikavälillä',
+      canApplyDAYCARE: 'Varhaiskasvatushaussa',
+      canApplyPRESCHOOL: 'Esiopetushaussa',
+      canApplyCLUB: 'Kerhohaussa',
       roundTheClock: 'Yksikkö tarjoaa ilta- ja vuorohoitoa',
       capacity: 'henkilöä',
       ghostUnit: 'Yksikkö on haamuyksikkö',

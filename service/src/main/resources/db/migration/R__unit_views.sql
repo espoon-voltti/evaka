@@ -15,9 +15,9 @@ CREATE OR REPLACE VIEW location_view (
                                       url,
                                       provider_type,
                                       language,
-                                      can_apply_daycare,
-                                      can_apply_preschool,
-                                      can_apply_club
+                                      daycare_apply_period,
+                                      preschool_apply_period,
+                                      club_apply_period
     ) AS
     SELECT daycare.id,
            daycare.name,
@@ -35,7 +35,7 @@ CREATE OR REPLACE VIEW location_view (
            daycare.url,
            daycare.provider_type,
            daycare.language,
-           daycare.can_apply_daycare,
-           daycare.can_apply_preschool,
-           daycare.can_apply_club
+           daycare.daycare_apply_period,
+           daycare.preschool_apply_period,
+           daycare.club_apply_period
     FROM daycare;

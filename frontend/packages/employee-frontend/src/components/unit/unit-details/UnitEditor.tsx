@@ -9,6 +9,7 @@ import Select from '~components/common/Select'
 import {
   CareArea,
   Coordinate,
+  OpenEndedPeriod,
   ProviderType,
   Unit,
   UnitLanguage,
@@ -27,7 +28,7 @@ import { EspooColours } from '~utils/colours'
 import InlineButton from 'components/shared/atoms/buttons/InlineButton'
 import { faPen } from 'icon-set'
 import { H1, H3 } from 'components/shared/Typography'
-import { DefaultMargins } from 'components/shared/layout/white-space'
+import { DefaultMargins, Gap } from 'components/shared/layout/white-space'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
@@ -43,9 +44,9 @@ interface FormData {
   areaId: string
   careTypes: Record<CareType, boolean>
   daycareType: DaycareType | undefined
-  canApplyDaycare: boolean
-  canApplyPreschool: boolean
-  canApplyClub: boolean
+  daycareApplyPeriod: OpenEndedPeriod | null
+  preschoolApplyPeriod: OpenEndedPeriod | null
+  clubApplyPeriod: OpenEndedPeriod | null
   providerType: ProviderType
   roundTheClock: boolean
   capacity: string
@@ -158,6 +159,10 @@ const AddressSecondRowContainer = styled.div`
   & input {
     width: 200px;
   }
+`
+
+const IndentChckboxLabel = styled.div`
+  margin-left: 46px;
 `
 
 const Url = styled.a`
@@ -333,9 +338,9 @@ function validateForm(
     errors.push(i18n.unitEditor.error.unitManager.email)
   }
   if (
-    (!form.careTypes.DAYCARE && form.canApplyDaycare) ||
-    (!form.careTypes.PRESCHOOL && form.canApplyPreschool) ||
-    (!form.careTypes.CLUB && form.canApplyClub)
+    (!form.careTypes.DAYCARE && form.daycareApplyPeriod != null) ||
+    (!form.careTypes.PRESCHOOL && form.preschoolApplyPeriod != null) ||
+    (!form.careTypes.CLUB && form.clubApplyPeriod != null)
   ) {
     errors.push(i18n.unitEditor.error.cannotApplyToDifferentType)
   }
@@ -343,9 +348,9 @@ function validateForm(
     openingDate,
     closingDate,
     areaId,
-    canApplyDaycare,
-    canApplyPreschool,
-    canApplyClub,
+    daycareApplyPeriod,
+    preschoolApplyPeriod,
+    clubApplyPeriod,
     providerType,
     roundTheClock,
     language,
@@ -372,9 +377,9 @@ function validateForm(
         closingDate,
         areaId,
         type,
-        canApplyDaycare,
-        canApplyPreschool,
-        canApplyClub,
+        daycareApplyPeriod,
+        preschoolApplyPeriod,
+        clubApplyPeriod,
         providerType,
         roundTheClock,
         capacity,
@@ -437,9 +442,9 @@ function toFormData(unit: Unit | undefined): FormData {
       : type?.includes('CENTRE')
       ? 'CENTRE'
       : undefined,
-    canApplyDaycare: unit?.canApplyDaycare ?? false,
-    canApplyPreschool: unit?.canApplyPreschool ?? false,
-    canApplyClub: unit?.canApplyClub ?? false,
+    daycareApplyPeriod: unit?.daycareApplyPeriod ?? null,
+    preschoolApplyPeriod: unit?.preschoolApplyPeriod ?? null,
+    clubApplyPeriod: unit?.clubApplyPeriod ?? null,
     providerType: unit?.providerType ?? 'MUNICIPAL',
     roundTheClock: unit?.roundTheClock ?? false,
     capacity: (unit?.capacity ?? 0).toString(),
@@ -687,27 +692,94 @@ export default function UnitEditor(props: Props): JSX.Element {
       <FormPart>
         <div>{showRequired(i18n.unitEditor.label.canApply)}</div>
         <FixedSpaceColumn>
-          <Checkbox
-            disabled={!props.editable}
-            label={i18n.unitEditor.field.canApplyDaycare}
-            checked={form.canApplyDaycare}
-            onChange={(canApplyDaycare) => updateForm({ canApplyDaycare })}
-            dataQa="application-type-checkbox-DAYCARE"
-          />
-          <Checkbox
-            disabled={!props.editable}
-            label={i18n.unitEditor.field.canApplyPreschool}
-            checked={form.canApplyPreschool}
-            onChange={(canApplyPreschool) => updateForm({ canApplyPreschool })}
-            dataQa="application-type-checkbox-PRESCHOOL"
-          />
-          <Checkbox
-            disabled={!props.editable}
-            label={i18n.unitEditor.field.canApplyClub}
-            checked={form.canApplyClub}
-            onChange={(canApplyClub) => updateForm({ canApplyClub })}
-            dataQa="application-type-checkbox-CLUB"
-          />
+          {['daycare', 'preschool', 'club'].map((type) => {
+            const key = `${type}ApplyPeriod`
+            const period = form[key] as OpenEndedPeriod | null
+            return (
+              <div key={type}>
+                <Checkbox
+                  disabled={!props.editable}
+                  label={
+                    i18n.unitEditor.field[
+                      `canApply${type.toUpperCase()}`
+                    ] as string
+                  }
+                  checked={period !== null}
+                  onChange={(canApply) => {
+                    updateForm({
+                      [key]: canApply
+                        ? { start: LocalDate.today(), end: null }
+                        : null
+                    })
+                  }}
+                  dataQa={`application-type-checkbox-${type.toUpperCase()}`}
+                />
+                {period != null && (
+                  <>
+                    <Gap size="xs" />
+                    <IndentChckboxLabel>
+                      <FixedSpaceRow alignItems="center">
+                        <div>{i18n.unitEditor.field.applyPeriod}</div>
+                        <div>
+                          {props.editable ? (
+                            <DatePicker
+                              date={period?.start ?? LocalDate.today()}
+                              onChange={(startDate) => {
+                                if (
+                                  !period ||
+                                  (period.end !== null &&
+                                    period.end.isBefore(startDate))
+                                ) {
+                                  return
+                                }
+
+                                updateForm({
+                                  [key]: {
+                                    start: startDate,
+                                    end: period?.end ?? null
+                                  }
+                                })
+                              }}
+                            />
+                          ) : (
+                            period.start.format()
+                          )}
+                          {' - '}
+                          {props.editable ? (
+                            <DatePickerClearable
+                              date={period?.end ?? null}
+                              onChange={(endDate) => {
+                                if (!period || endDate.isBefore(period.start)) {
+                                  return
+                                }
+
+                                updateForm({
+                                  [key]: {
+                                    start: period?.start ?? LocalDate.today(),
+                                    end: endDate
+                                  }
+                                })
+                              }}
+                              onCleared={() => {
+                                updateForm({
+                                  [key]: {
+                                    start: period?.start ?? LocalDate.today(),
+                                    end: null
+                                  }
+                                })
+                              }}
+                            />
+                          ) : (
+                            period.end?.format()
+                          )}
+                        </div>
+                      </FixedSpaceRow>
+                    </IndentChckboxLabel>
+                  </>
+                )}
+              </div>
+            )
+          })}
         </FixedSpaceColumn>
       </FormPart>
       <FormPart>

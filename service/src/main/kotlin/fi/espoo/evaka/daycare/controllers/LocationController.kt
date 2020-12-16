@@ -18,6 +18,8 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.bindNullable
 import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.domain.Coordinate
+import fi.espoo.evaka.shared.domain.Period
+import fi.espoo.evaka.shared.utils.zoneId
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.mapTo
 import org.springframework.format.annotation.DateTimeFormat
@@ -44,6 +46,7 @@ class LocationController {
     // Units by areas, only including units that can be applied to
     @GetMapping("/public/areas")
     fun getEnduserUnitsByArea(db: Database.Connection): ResponseEntity<Collection<CareAreaResponseJSON>> {
+        val future = Period(LocalDate.now(zoneId), null)
         val areas = db.read { it.handle.getAreas() }
             .map { area: CareArea ->
                 CareArea(
@@ -51,7 +54,9 @@ class LocationController {
                     area.name,
                     area.shortName,
                     area.locations.filter {
-                        it.type.contains(CareType.CLUB) || it.canApplyDaycare || it.canApplyPreschool
+                        (it.daycareApplyPeriod != null && it.daycareApplyPeriod.overlaps(future)) ||
+                            (it.preschoolApplyPeriod != null && it.preschoolApplyPeriod.overlaps(future)) ||
+                            (it.clubApplyPeriod != null && it.clubApplyPeriod.overlaps(future))
                     }
                 )
             }
@@ -104,9 +109,9 @@ class LocationController {
                 language = location.language,
                 visitingAddress = location.visitingAddress,
                 mailingAddress = location.mailingAddress,
-                canApplyDaycare = location.canApplyDaycare,
-                canApplyPreschool = location.canApplyPreschool,
-                canApplyClub = location.canApplyClub
+                daycareApplyPeriod = location.daycareApplyPeriod,
+                preschoolApplyPeriod = location.preschoolApplyPeriod,
+                clubApplyPeriod = location.clubApplyPeriod
             )
     }
 }
@@ -160,9 +165,9 @@ data class LocationResponseJSON(
     val language: Language?,
     val visitingAddress: VisitingAddress,
     val mailingAddress: MailingAddress,
-    val canApplyDaycare: Boolean,
-    val canApplyPreschool: Boolean,
-    val canApplyClub: Boolean
+    val daycareApplyPeriod: Period?,
+    val preschoolApplyPeriod: Period?,
+    val clubApplyPeriod: Period?
 )
 
 data class AreaJSON(
@@ -178,10 +183,10 @@ SELECT
   ca.id AS care_area_id, ca.name AS care_area_name, ca.short_name AS care_area_short_name,
   u.id, u.name, u.street_address, u.location, u.phone, u.postal_code, u.post_office,
   u.mailing_street_address, u.mailing_po_box, u.mailing_postal_code, u.mailing_post_office,
-  u.type, u.url, u.provider_type, u.language, u.can_apply_daycare, u.can_apply_preschool, u.can_apply_club
+  u.type, u.url, u.provider_type, u.language, u.daycare_apply_period, u.preschool_apply_period, u.club_apply_period
 FROM care_area ca
 LEFT JOIN daycare u ON ca.id = u.care_area_id
-WHERE (u.can_apply_daycare OR u.can_apply_preschool OR u.can_apply_club)
+WHERE (u.daycare_apply_period IS NOT NULL OR u.preschool_apply_period IS NOT NULL OR u.club_apply_period IS NOT NULL )
 AND (u.closing_date IS NULL OR u.closing_date >= current_date)
     """.trimIndent()
 )

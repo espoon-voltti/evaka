@@ -22,6 +22,7 @@ import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.insertTestCareArea
 import fi.espoo.evaka.shared.dev.insertTestDaycare
 import fi.espoo.evaka.shared.domain.Coordinate
+import fi.espoo.evaka.shared.domain.Period
 import fi.espoo.evaka.testAreaCode
 import fi.espoo.evaka.testAreaId
 import fi.espoo.evaka.testDaycare
@@ -41,9 +42,9 @@ class DaycareEditIntegrationTest : FullApplicationTest() {
         closingDate = LocalDate.of(2120, 1, 1),
         areaId = testAreaId,
         type = setOf(CareType.CENTRE),
-        canApplyDaycare = true,
-        canApplyPreschool = false,
-        canApplyClub = false,
+        daycareApplyPeriod = Period(LocalDate.of(2020, 3, 1), null),
+        preschoolApplyPeriod = null,
+        clubApplyPeriod = null,
         providerType = ProviderType.MUNICIPAL,
         capacity = 1,
         language = Language.fi,
@@ -126,8 +127,9 @@ class DaycareEditIntegrationTest : FullApplicationTest() {
         assertEquals(fields.closingDate, daycare.closingDate)
         assertEquals(fields.areaId, daycare.area.id)
         assertEquals(fields.type, daycare.type)
-        assertEquals(fields.canApplyDaycare, daycare.canApplyDaycare)
-        assertEquals(fields.canApplyPreschool, daycare.canApplyPreschool)
+        assertEquals(fields.daycareApplyPeriod, daycare.daycareApplyPeriod)
+        assertEquals(fields.preschoolApplyPeriod, daycare.preschoolApplyPeriod)
+        assertEquals(fields.clubApplyPeriod, daycare.clubApplyPeriod)
         assertEquals(fields.providerType, daycare.providerType)
         assertEquals(fields.capacity, daycare.capacity)
         assertEquals(fields.language, daycare.language)

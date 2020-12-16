@@ -36,9 +36,9 @@ export interface Unit {
   closingDate: LocalDate | null
   area: CareArea
   type: UnitTypes[]
-  canApplyDaycare: boolean
-  canApplyPreschool: boolean
-  canApplyClub: boolean
+  daycareApplyPeriod: OpenEndedPeriod | null
+  preschoolApplyPeriod: OpenEndedPeriod | null
+  clubApplyPeriod: OpenEndedPeriod | null
   providerType: ProviderType
   roundTheClock: boolean
   capacity: number
@@ -121,7 +121,12 @@ interface ChildBasics {
   dateOfBirth: LocalDate
 }
 
-interface ClosedPeriod {
+export interface OpenEndedPeriod {
+  start: LocalDate
+  end: LocalDate | null
+}
+
+export interface ClosedPeriod {
   start: LocalDate
   end: LocalDate
 }

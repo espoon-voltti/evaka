@@ -21,7 +21,7 @@ import fi.espoo.evaka.daycare.controllers.AdditionalInformation
 import fi.espoo.evaka.daycare.controllers.Child
 import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.daycare.getDaycare
-import fi.espoo.evaka.daycare.getDaycareApplyFlags
+import fi.espoo.evaka.daycare.getUnitApplyPeriods
 import fi.espoo.evaka.daycare.upsertChild
 import fi.espoo.evaka.decision.DecisionDraftService
 import fi.espoo.evaka.decision.DecisionService
@@ -563,16 +563,21 @@ class ApplicationStateService(
         if (unitIds.isEmpty()) {
             result.add(ValidationError("form.preferences.preferredUnits", "Must have at least one preferred unit"))
         } else {
-            val daycares = tx.handle.getDaycareApplyFlags(unitIds.toSet())
+            val daycares = tx.handle.getUnitApplyPeriods(unitIds.toSet())
             if (daycares.size < unitIds.toSet().size) {
                 result.add(ValidationError("form.preferences.preferredUnits", "Some unit was not found"))
             }
             if (application.origin == ApplicationOrigin.ELECTRONIC) {
-                for (daycare in daycares) {
-                    if (application.type == ApplicationType.DAYCARE && !daycare.canApplyDaycare)
-                        result.add(ValidationError("form.preferences.preferredUnits", "Cannot apply for daycare in ${daycare.id}"))
-                    if (application.type == ApplicationType.PRESCHOOL && !daycare.canApplyPreschool)
-                        result.add(ValidationError("form.preferences.preferredUnits", "Cannot apply for preschool in ${daycare.id}"))
+                val preferredStartDate = application.form.preferences.preferredStartDate
+                if (preferredStartDate != null) {
+                    for (daycare in daycares) {
+                        if (application.type == ApplicationType.DAYCARE && (daycare.daycareApplyPeriod == null || !daycare.daycareApplyPeriod.includes(preferredStartDate)))
+                            result.add(ValidationError("form.preferences.preferredUnits", "Cannot apply for daycare in ${daycare.id}"))
+                        if (application.type == ApplicationType.PRESCHOOL && (daycare.preschoolApplyPeriod == null || !daycare.preschoolApplyPeriod.includes(preferredStartDate)))
+                            result.add(ValidationError("form.preferences.preferredUnits", "Cannot apply for preschool in ${daycare.id}"))
+                        if (application.type == ApplicationType.CLUB && (daycare.clubApplyPeriod == null || !daycare.clubApplyPeriod.includes(preferredStartDate)))
+                            result.add(ValidationError("form.preferences.preferredUnits", "Cannot apply for club in ${daycare.id}"))
+                    }
                 }
             }
         }

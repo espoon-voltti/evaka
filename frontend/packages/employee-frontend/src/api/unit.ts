@@ -13,6 +13,7 @@ import {
   MailingAddress,
   Occupancy,
   OccupancyType,
+  OpenEndedPeriod,
   ProviderType,
   Stats,
   Unit,
@@ -32,7 +33,31 @@ function convertUnitJson(unit: JsonOf<Unit>): Unit {
   return {
     ...unit,
     openingDate: unit.openingDate ? LocalDate.parseIso(unit.openingDate) : null,
-    closingDate: unit.closingDate ? LocalDate.parseIso(unit.closingDate) : null
+    closingDate: unit.closingDate ? LocalDate.parseIso(unit.closingDate) : null,
+    daycareApplyPeriod: unit.daycareApplyPeriod
+      ? {
+          start: LocalDate.parseIso(unit.daycareApplyPeriod.start),
+          end: unit.daycareApplyPeriod.end
+            ? LocalDate.parseIso(unit.daycareApplyPeriod.end)
+            : null
+        }
+      : null,
+    preschoolApplyPeriod: unit.preschoolApplyPeriod
+      ? {
+          start: LocalDate.parseIso(unit.preschoolApplyPeriod.start),
+          end: unit.preschoolApplyPeriod.end
+            ? LocalDate.parseIso(unit.preschoolApplyPeriod.end)
+            : null
+        }
+      : null,
+    clubApplyPeriod: unit.clubApplyPeriod
+      ? {
+          start: LocalDate.parseIso(unit.clubApplyPeriod.start),
+          end: unit.clubApplyPeriod.end
+            ? LocalDate.parseIso(unit.clubApplyPeriod.end)
+            : null
+        }
+      : null
   }
 }
 
@@ -627,9 +652,9 @@ export interface DaycareFields {
   closingDate: LocalDate | null
   areaId: UUID
   type: UnitTypes[]
-  canApplyDaycare: boolean
-  canApplyPreschool: boolean
-  canApplyClub: boolean
+  daycareApplyPeriod: OpenEndedPeriod | null
+  preschoolApplyPeriod: OpenEndedPeriod | null
+  clubApplyPeriod: OpenEndedPeriod | null
   providerType: ProviderType
   roundTheClock: boolean
   capacity: number
