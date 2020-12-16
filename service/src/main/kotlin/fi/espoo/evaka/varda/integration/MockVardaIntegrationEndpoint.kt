@@ -14,9 +14,7 @@ import fi.espoo.evaka.varda.VardaUpdateOrganizer
 import mu.KotlinLogging
 import org.springframework.context.annotation.Profile
 import org.springframework.http.ResponseEntity
-import org.springframework.web.bind.ServletRequestBindingException
 import org.springframework.web.bind.annotation.DeleteMapping
-import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -26,7 +24,6 @@ import org.springframework.web.bind.annotation.RequestHeader
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import java.util.concurrent.locks.ReentrantLock
-import javax.servlet.http.HttpServletRequest
 import kotlin.concurrent.withLock
 
 private val logger = KotlinLogging.logger {}
@@ -251,22 +248,6 @@ class MockVardaIntegrationEndpoint(private val mapper: ObjectMapper) {
                 )
             )
         }
-
-    // Avoid creating a whole spring security setup for just this mock controller but still simulate Varda endpoints
-    // requiring authorization to more completely test Varda clients.
-    // Usage: add parameter to a mapping: @RequestHeader(name = "Authorization") auth: String
-    // -> missing this header will throw ServletRequestBindingException and gets handled here.
-    @ExceptionHandler(ServletRequestBindingException::class)
-    fun handleServletRequestBindingException(
-        req: HttpServletRequest,
-        ex: ServletRequestBindingException
-    ): ResponseEntity<String> {
-        return if (req.getHeader("Authorization").isNullOrBlank()) {
-            ResponseEntity.status(403).body("{\"detail\": \"Invalid token.\"}")
-        } else {
-            ResponseEntity.badRequest().body(ex.message)
-        }
-    }
 
     private fun getMockUnitResponse(id: Long): String {
         return """

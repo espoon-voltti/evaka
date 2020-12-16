@@ -413,8 +413,10 @@ class VardaClient(
                 .header(Headers.ACCEPT, "application/json")
                 .responseStringWithRetries(maxTries) { r, remainingTries ->
                     when (r.second.statusCode) {
-                        403 -> when (objectMapper.readTree(r.third.error.errorData).get("detail")?.asText()) {
-                            "Invalid token." -> {
+                        403 -> when {
+                            objectMapper.readTree(r.third.error.errorData).get("errors")
+                                ?.any { it.get("error_code").asText() == "PE007" }
+                                ?: false -> {
                                 logger.info { "Varda API token invalid. Refreshing token and retrying original request." }
                                 val newToken = refreshToken()
                                 // API token refresh should only be attempted once -> don't pass an error handler to let
