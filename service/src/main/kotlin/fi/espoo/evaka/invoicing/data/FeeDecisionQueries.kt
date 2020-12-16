@@ -348,7 +348,7 @@ fun searchFeeDecisions(
 
     val youngestChildQuery =
         """
-        WITH youngest_child AS (
+        youngest_child AS (
             SELECT
                 fee_decision_part.fee_decision_id AS decision_id,
                 care_area.short_name AS area,
@@ -362,16 +362,17 @@ fun searchFeeDecisions(
 
     val financeDecisionManagerQuery =
         """
-        WITH finance_decision_manager AS (SELECT id as daycare_id, finance_decision_manager as finance_decision_manager_id FROM daycare)
+        finance_decision_manager AS (SELECT id as daycare_id, finance_decision_manager as finance_decision_manager_id FROM daycare)
         """.trimIndent()
     val financeDecisionManagerJoin = "LEFT JOIN finance_decision_manager ON part.placement_unit = finance_decision_manager.daycare_id"
+
+    val withQueries = if (areas.isNotEmpty() || financeDecisionManagerId != null) "WITH " + listOf(youngestChildQuery, financeDecisionManagerQuery).joinToString() else ""
 
     // language=sql
     val sql =
         """
         WITH decision_ids AS (
-            ${if (areas.isNotEmpty()) youngestChildQuery else ""}
-            ${if (financeDecisionManagerId != null) financeDecisionManagerQuery else ""}
+            $withQueries
             SELECT decision.id, count(*) OVER (), max(sums.sum) sum
             FROM fee_decision AS decision
             LEFT JOIN fee_decision_part AS part ON decision.id = part.fee_decision_id

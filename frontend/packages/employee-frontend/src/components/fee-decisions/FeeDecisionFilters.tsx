@@ -171,8 +171,8 @@ function FeeDecisionFilters() {
               .getOrElse([])}
             selected={employees
               .map(
-                (us) =>
-                  us
+                (es) =>
+                  es
                     .map(({ id, firstName, lastName }) => ({
                       id,
                       label: [firstName, lastName].join(' ')

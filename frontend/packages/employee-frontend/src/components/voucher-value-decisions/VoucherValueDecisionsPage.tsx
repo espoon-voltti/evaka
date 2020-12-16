@@ -75,7 +75,7 @@ export default React.memo(function VoucherValueDecisionsPage() {
       area: area.length > 0 ? area : undefined,
       unit: searchFilters.unit ? searchFilters.unit : undefined,
       searchTerms: debouncedSearchTerms ? debouncedSearchTerms : undefined,
-      feeDecisionManagerId: searchFilters.financeDecisionManagerId
+      financeDecisionManagerId: searchFilters.financeDecisionManagerId
         ? searchFilters.financeDecisionManagerId
         : undefined
     }
