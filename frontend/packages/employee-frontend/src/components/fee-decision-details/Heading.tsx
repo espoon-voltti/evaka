@@ -64,8 +64,8 @@ interface Props {
   decisionNumber: number | null
   validFrom: LocalDate
   validTo: LocalDate | null
-  sentAt: Date | null,
-  financeDecisionManager: {employee: Employee} | null,
+  sentAt: Date | null
+  financeDecisionManager: { employee: Employee } | null
   documentKey: string | null
   parts: FeeDecisionPartDetailed[]
   decisionType: FeeDecisionType
@@ -173,12 +173,20 @@ export default React.memo(function Heading({
       {
         label: i18n.feeDecision.sentAt,
         value: formatDate(sentAt)
-      },
-      {
-        label: i18n.feeDecision.sentAt,
-        value: [financeDecisionManager?.employee.firstName, financeDecisionManager?.employee.lastName].join(" ")
       }
-    ]
+    ].concat(
+      financeDecisionManager
+        ? [
+            {
+              label: i18n.feeDecision.decisionManager,
+              value: [
+                financeDecisionManager?.employee.firstName,
+                financeDecisionManager?.employee.lastName
+              ].join(' ')
+            }
+          ]
+        : []
+    )
 
     return decisionNUmberExists.concat(notDraft).concat(always)
   }
