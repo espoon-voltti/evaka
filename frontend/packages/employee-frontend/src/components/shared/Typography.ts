@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import styled from 'styled-components'
-import { Greyscale } from 'components/shared/Colors'
+import { greyscale } from '@evaka/lib-components/src/colors'
 import { DefaultMargins } from 'components/shared/layout/white-space'
 import { BaseProps } from './utils'
 
@@ -17,7 +17,7 @@ interface HeadingProps extends BaseProps {
 }
 
 export const H1 = styled.h1<HeadingProps>`
-  color: ${Greyscale.dark};
+  color: ${greyscale.dark};
   font-size: ${(p) => (p.smaller ? '24px' : '36px')};
   font-family: Montserrat, sans-serif;
   font-weight: ${(p) => (p.bold ? 600 : 200)};
@@ -28,7 +28,7 @@ export const H1 = styled.h1<HeadingProps>`
 `
 
 export const H2 = styled.h2<HeadingProps>`
-  color: ${Greyscale.dark};
+  color: ${greyscale.dark};
   font-size: ${(p) => (p.smaller ? '20px' : '24px')};
   font-family: Montserrat, sans-serif;
   font-weight: ${(p) => (p.bold ? 600 : 300)};
@@ -38,7 +38,7 @@ export const H2 = styled.h2<HeadingProps>`
 `
 
 export const H3 = styled.h3<HeadingProps>`
-  color: ${Greyscale.dark};
+  color: ${greyscale.dark};
   font-size: ${(p) => (p.smaller ? '18px' : '20px')};
   font-family: Montserrat, sans-serif;
   font-weight: ${(p) => (p.bold ? 600 : 'normal')};
@@ -48,7 +48,7 @@ export const H3 = styled.h3<HeadingProps>`
 `
 
 export const H4 = styled.h4<HeadingProps>`
-  color: ${Greyscale.dark};
+  color: ${greyscale.dark};
   font-size: ${(p) => (p.smaller ? '16px' : '18px')};
   font-family: Montserrat, sans-serif;
   font-weight: ${(p) => (p.bold ? 600 : 'normal')};
@@ -58,7 +58,7 @@ export const H4 = styled.h4<HeadingProps>`
 `
 
 export const H5 = styled.h4<HeadingProps>`
-  color: ${Greyscale.dark};
+  color: ${greyscale.dark};
   font-size: ${(p) => (p.smaller ? '14px' : '16px')};
   font-family: Montserrat, sans-serif;
   font-weight: ${(p) => (p.bold ? 600 : 'normal')};

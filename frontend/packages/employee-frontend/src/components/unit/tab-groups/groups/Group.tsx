@@ -52,7 +52,7 @@ import InlineButton from '~components/shared/atoms/buttons/InlineButton'
 import { H3 } from '~components/shared/Typography'
 import { UnitFilters } from '~utils/UnitFilters'
 import { rangesOverlap } from '~utils/date'
-import Colors from 'components/shared/Colors'
+import colors from '@evaka/lib-components/src/colors'
 import { FixedSpaceRow } from '~components/shared/layout/flex-helpers'
 import PlacementCircle from '~components/shared/atoms/PlacementCircle'
 import Tooltip from '~components/shared/atoms/Tooltip'
@@ -447,7 +447,7 @@ const Toolbar = styled.div`
 `
 
 const DaycareGroup = styled.div`
-  border: ${Colors.greyscale.medium} solid 1px;
+  border: ${colors.greyscale.medium} solid 1px;
   padding: 16px;
   margin-bottom: 16px;
 `

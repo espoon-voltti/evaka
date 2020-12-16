@@ -6,7 +6,7 @@ import { IconDefinition } from '@fortawesome/fontawesome-svg-core'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React from 'react'
 import styled from 'styled-components'
-import Colors, { Greyscale } from 'components/shared/Colors'
+import colors, { greyscale } from '@evaka/lib-components/src/colors'
 import classNames from 'classnames'
 import { BaseProps } from 'components/shared/utils'
 import { IconSize } from '../RoundIcon'
@@ -62,7 +62,7 @@ const StyledButton = styled.button<ButtonProps>`
         return '20px'
     }
   }};
-  color: ${(props) => (props.gray ? Colors.greyscale.dark : Colors.primary)};
+  color: ${(props) => (props.gray ? colors.greyscale.dark : colors.primary)};
   border: none;
   background: none;
   outline: none;
@@ -72,16 +72,16 @@ const StyledButton = styled.button<ButtonProps>`
 
   &:hover {
     color: ${(props) =>
-      props.gray ? Colors.greyscale.dark : Colors.primaryHover};
+      props.gray ? colors.greyscale.dark : colors.primaryHover};
   }
 
   &:active {
     color: ${(props) =>
-      props.gray ? Colors.greyscale.darkest : Colors.primaryActive};
+      props.gray ? colors.greyscale.darkest : colors.primaryActive};
   }
 
   &.disabled {
-    color: ${Greyscale.medium};
+    color: ${greyscale.medium};
     cursor: not-allowed;
   }
 `

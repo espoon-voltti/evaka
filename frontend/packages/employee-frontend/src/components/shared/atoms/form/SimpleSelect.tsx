@@ -6,7 +6,7 @@ import React from 'react'
 import styled from 'styled-components'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faChevronDown } from 'icon-set'
-import Colors from '~components/shared/Colors'
+import colors from '@evaka/lib-components/src/colors'
 
 type CommonProps = {
   className?: string
@@ -72,7 +72,7 @@ const StyledSelect = styled.select`
   height: 2.25em;
   width: 100%;
   padding: 6px 26px 6px 8px;
-  border: 1px solid ${Colors.greyscale.dark};
+  border: 1px solid ${colors.greyscale.dark};
   border-width: 0 0 1px 0;
   box-shadow: none;
 `

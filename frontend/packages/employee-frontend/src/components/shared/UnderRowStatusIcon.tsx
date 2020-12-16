@@ -12,7 +12,7 @@ import styled from 'styled-components'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { fasCheckCircle, fasExclamationTriangle } from 'icon-set'
 import { BaseProps } from 'components/shared/utils'
-import Colors from 'components/shared/Colors'
+import colors from '@evaka/lib-components/src/colors'
 
 export const StatusIcon = styled.div`
   font-size: 15px;
@@ -31,11 +31,11 @@ function UnderRowStatusIcon({ status }: UnderRowStatusIconProps) {
       {status === 'warning' && (
         <FontAwesomeIcon
           icon={fasExclamationTriangle}
-          color={Colors.accents.orange}
+          color={colors.accents.orange}
         />
       )}
       {status === 'success' && (
-        <FontAwesomeIcon icon={fasCheckCircle} color={Colors.accents.green} />
+        <FontAwesomeIcon icon={fasCheckCircle} color={colors.accents.green} />
       )}
     </StatusIcon>
   )

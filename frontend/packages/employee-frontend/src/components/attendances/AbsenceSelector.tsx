@@ -10,7 +10,7 @@ import { Result } from '~api'
 import { AttendanceResponse, getDaycareAttendances } from '~api/attendances'
 import AsyncButton from '~components/shared/atoms/buttons/AsyncButton'
 import Button from '~components/shared/atoms/buttons/Button'
-import Colors from '~components/shared/Colors'
+import colors from '@evaka/lib-components/src/colors'
 import { AttendanceUIContext } from '~state/attendance-ui'
 import { useTranslation } from '~state/i18n'
 import { UUID } from '~types'
@@ -51,18 +51,18 @@ export default function AbsenceSelector({
           <CustomButton
             backgroundColor={
               absenceType === selectedAbsenceType
-                ? Colors.blues.medium
-                : Colors.blues.light
+                ? colors.blues.medium
+                : colors.blues.light
             }
             borderColor={
               absenceType === selectedAbsenceType
-                ? Colors.blues.medium
-                : Colors.blues.light
+                ? colors.blues.medium
+                : colors.blues.light
             }
             color={
               absenceType === selectedAbsenceType
-                ? Colors.greyscale.white
-                : Colors.blues.dark
+                ? colors.greyscale.white
+                : colors.blues.dark
             }
             key={absenceType}
             text={i18n.absences.absenceTypes[absenceType]}

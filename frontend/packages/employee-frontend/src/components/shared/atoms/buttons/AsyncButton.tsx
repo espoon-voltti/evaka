@@ -12,7 +12,7 @@ import { animated, useSpring } from 'react-spring'
 import classNames from 'classnames'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faCheck, faTimes } from 'icon-set'
-import Colors from 'components/shared/Colors'
+import colors from '@evaka/lib-components/src/colors'
 import { StyledButton } from './Button'
 import { Result } from '~api'
 
@@ -102,7 +102,7 @@ export default React.memo(function AsyncButton({
               )
             }}
           >
-            <FontAwesomeIcon icon={faCheck} color={Colors.primary} />
+            <FontAwesomeIcon icon={faCheck} color={colors.primary} />
           </IconWrapper>
           <IconWrapper
             style={{
@@ -110,7 +110,7 @@ export default React.memo(function AsyncButton({
               transform: cross.opacity.interpolate((x) => `scale(${x ?? 0})`)
             }}
           >
-            <FontAwesomeIcon icon={faTimes} color={Colors.accents.red} />
+            <FontAwesomeIcon icon={faTimes} color={colors.accents.red} />
           </IconWrapper>
         </IconContainer>
         <span>
@@ -153,8 +153,8 @@ const Spinner = animated(styled.div`
   width: 24px;
   height: 24px;
 
-  border: 2px solid ${Colors.greyscale.lighter};
-  border-left-color: ${Colors.primary};
+  border: 2px solid ${colors.greyscale.lighter};
+  border-left-color: ${colors.primary};
   animation: spin 1s infinite linear;
 
   @keyframes spin {

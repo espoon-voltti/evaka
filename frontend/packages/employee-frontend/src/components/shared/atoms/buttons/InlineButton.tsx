@@ -4,7 +4,7 @@
 
 import React from 'react'
 import styled from 'styled-components'
-import Colors, { Greyscale } from 'components/shared/Colors'
+import colors, { greyscale } from '@evaka/lib-components/src/colors'
 import { IconDefinition } from '@fortawesome/fontawesome-svg-core'
 import { DefaultMargins } from 'components/shared/layout/white-space'
 import classNames from 'classnames'
@@ -33,15 +33,15 @@ const StyledButton = styled.button`
   cursor: pointer;
 
   &:hover {
-    color: ${Colors.primaryHover};
+    color: ${colors.primaryHover};
   }
 
   &:active {
-    color: ${Colors.primaryActive};
+    color: ${colors.primaryActive};
   }
 
   &.disabled {
-    color: ${Greyscale.medium};
+    color: ${greyscale.medium};
     cursor: not-allowed;
   }
 
@@ -68,14 +68,14 @@ const InlineButtonUnderRow = styled.div`
   overflow: hidden;
   text-overflow: ellipsis;
 
-  color: ${Colors.greyscale.dark};
+  color: ${colors.greyscale.dark};
 
   &.success {
-    color: ${Colors.accents.greenDark};
+    color: ${colors.accents.greenDark};
   }
 
   &.warning {
-    color: ${Colors.accents.orangeDark};
+    color: ${colors.accents.orangeDark};
   }
 `
 

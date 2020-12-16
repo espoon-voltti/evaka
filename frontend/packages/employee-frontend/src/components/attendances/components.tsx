@@ -10,7 +10,7 @@ import AsyncButton from '~components/shared/atoms/buttons/AsyncButton'
 import Button from '~components/shared/atoms/buttons/Button'
 import InlineButton from '~components/shared/atoms/buttons/InlineButton'
 import RoundIcon from '~components/shared/atoms/RoundIcon'
-import Colors from '~components/shared/Colors'
+import colors from '@evaka/lib-components/src/colors'
 import { DefaultMargins } from '~components/shared/layout/white-space'
 import { Label } from '~components/shared/Typography'
 import { faExclamation } from '~icon-set'
@@ -121,7 +121,7 @@ export function AbsentFrom({ child, absentFrom }: AbsentFromProps) {
   return (
     <AbsentFromWrapper>
       <RoundIcon
-        color={Colors.brandEspoo.espooTurquoise}
+        color={colors.brandEspoo.espooTurquoise}
         size={'s'}
         content={faExclamation}
       />

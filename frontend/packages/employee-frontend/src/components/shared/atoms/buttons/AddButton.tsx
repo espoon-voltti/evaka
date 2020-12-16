@@ -6,7 +6,7 @@ import React from 'react'
 import styled from 'styled-components'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faPlus } from 'icon-set'
-import Colors from 'components/shared/Colors'
+import colors from '@evaka/lib-components/src/colors'
 import classNames from 'classnames'
 import { DefaultMargins } from 'components/shared/layout/white-space'
 import { defaultButtonTextStyle } from 'components/shared/atoms/buttons/button-commons'
@@ -26,10 +26,10 @@ const StyledButton = styled.button`
   cursor: pointer;
 
   &.disabled {
-    color: ${Colors.greyscale.medium};
+    color: ${colors.greyscale.medium};
 
     .icon-wrapper {
-      background: ${Colors.greyscale.medium};
+      background: ${colors.greyscale.medium};
     }
   }
 
@@ -41,9 +41,9 @@ const StyledButton = styled.button`
     align-items: center;
 
     font-size: 18px;
-    color: ${Colors.greyscale.white};
+    color: ${colors.greyscale.white};
     font-weight: normal;
-    background: ${Colors.primary};
+    background: ${colors.primary};
     border-radius: 100%;
     margin: 0 ${DefaultMargins.s} 0 0;
   }

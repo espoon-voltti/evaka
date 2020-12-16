@@ -5,7 +5,7 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React from 'react'
 import styled from 'styled-components'
-import Colors from 'components/shared/Colors'
+import colors from '@evaka/lib-components/src/colors'
 import classNames from 'classnames'
 import { BaseProps } from 'components/shared/utils'
 import { faTimes } from '~icon-set'
@@ -17,7 +17,7 @@ const StyledButton = styled.button`
   width: 34px;
   height: 34px;
   font-size: 24px;
-  color: ${Colors.greyscale.dark};
+  color: ${colors.greyscale.dark};
   border: none;
   background: none;
   outline: none;
@@ -26,8 +26,8 @@ const StyledButton = styled.button`
   cursor: pointer;
 
   &.active {
-    color: ${Colors.greyscale.white};
-    background-color: ${Colors.accents.red};
+    color: ${colors.greyscale.white};
+    background-color: ${colors.accents.red};
     border-radius: 100%;
   }
 `

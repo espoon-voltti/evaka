@@ -11,7 +11,7 @@ import FocusLock from 'react-focus-lock'
 import Title from '~components/shared/atoms/Title'
 import Button from '~components/shared/atoms/buttons/Button'
 import AsyncButton from '~components/shared/atoms/buttons/AsyncButton'
-import Colors from '~components/shared/Colors'
+import colors from '@evaka/lib-components/src/colors'
 import { DefaultMargins, Gap } from 'components/shared/layout/white-space'
 import { useTranslation } from '~state/i18n'
 import { modalZIndex } from '~components/shared/layout/z-helpers'
@@ -94,15 +94,15 @@ export const ModalIcon = styled.div<ModalIconProps>`
   background: ${(props: ModalIconProps) => {
     switch (props.colour) {
       case 'blue':
-        return Colors.blues.medium
+        return colors.blues.medium
       case 'orange':
-        return Colors.accents.orange
+        return colors.accents.orange
       case 'green':
-        return Colors.accents.green
+        return colors.accents.green
       case 'red':
-        return Colors.accents.red
+        return colors.accents.red
       default:
-        return Colors.blues.medium
+        return colors.blues.medium
     }
   }};
   font-size: 36px;

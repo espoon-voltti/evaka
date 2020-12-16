@@ -10,7 +10,7 @@ import classNames from 'classnames'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { H3 } from 'components/shared/Typography'
 import { faAngleDown, faAngleUp } from 'icon-set'
-import Colors from 'components/shared/Colors'
+import colors from '@evaka/lib-components/src/colors'
 import { DefaultMargins } from 'components/shared/layout/white-space'
 
 const Wrapper = styled.div`
@@ -24,8 +24,8 @@ const Wrapper = styled.div`
 const Row = styled.div`
   display: flex;
   align-items: baseline;
-  color: ${Colors.greyscale.medium};
-  border-bottom: 1px solid ${Colors.greyscale.lighter};
+  color: ${colors.greyscale.medium};
+  border-bottom: 1px solid ${colors.greyscale.lighter};
   margin-bottom: ${DefaultMargins.m};
   &.fitted {
     margin-bottom: 0;
@@ -39,13 +39,13 @@ const Row = styled.div`
     cursor: pointer;
 
     h3 {
-      color: ${Colors.greyscale.medium};
+      color: ${colors.greyscale.medium};
     }
   }
 `
 
 const IconWrapper = styled.div`
-  color: ${Colors.greyscale.medium};
+  color: ${colors.greyscale.medium};
   font-size: 28px;
   width: 35px;
   margin-right: ${DefaultMargins.s};
@@ -60,7 +60,7 @@ const ToggleWrapper = styled.div`
   align-items: center;
   height: 30px;
   width: 30px;
-  border: 1px solid ${Colors.greyscale.medium};
+  border: 1px solid ${colors.greyscale.medium};
   border-radius: 100%;
   font-size: 28px;
 `

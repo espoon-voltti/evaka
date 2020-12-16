@@ -5,7 +5,7 @@
 import React from 'react'
 import { BaseProps } from 'components/shared/utils'
 import styled from 'styled-components'
-import Colors from 'components/shared/Colors'
+import colors from '@evaka/lib-components/src/colors'
 import classNames from 'classnames'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faTimes } from 'icon-set'
@@ -38,19 +38,19 @@ const StyledInput = styled.input<StyledInputProps>`
   width: ${(p) => inputWidths[p.width]};
   border-style: none none solid none;
   border-width: 1px;
-  border-color: ${Colors.greyscale.medium};
+  border-color: ${colors.greyscale.medium};
   border-radius: 2px;
   outline: none;
   box-sizing: border-box;
   text-align: ${(p) => p.align ?? 'left'};
-  background-color: ${Colors.greyscale.white};
+  background-color: ${colors.greyscale.white};
 
   font-size: 15px;
-  color: ${Colors.greyscale.darkest};
+  color: ${colors.greyscale.darkest};
   padding: 6px ${(p) => (p.clearable ? '36px' : '12px')} 6px 12px;
 
   &::placeholder {
-    color: ${Colors.greyscale.dark};
+    color: ${colors.greyscale.dark};
     font-style: italic;
     font-size: 15px;
     font-family: 'Open Sans', 'Arial', sans-serif;
@@ -59,7 +59,7 @@ const StyledInput = styled.input<StyledInputProps>`
   &:focus {
     border-width: 2px;
     border-style: solid;
-    border-color: ${Colors.accents.petrol};
+    border-color: ${colors.accents.petrol};
     margin-top: -2px;
     margin-bottom: -1px;
     padding-${(p) => (p.align === 'right' ? 'right' : 'left')}: 10px;
@@ -75,16 +75,16 @@ const StyledInput = styled.input<StyledInputProps>`
   }
 
   &.success {
-    border-color: ${Colors.accents.green};
+    border-color: ${colors.accents.green};
   }
 
   &.warning {
-    border-color: ${Colors.accents.orange};
+    border-color: ${colors.accents.orange};
   }
 
   &:read-only {
     border-bottom-style: dotted;
-    color: ${Colors.greyscale.dark};
+    color: ${colors.greyscale.dark};
     background: none;
   }
 `
@@ -104,10 +104,10 @@ const InputIcon = styled.div`
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  color: ${Colors.greyscale.medium};
+  color: ${colors.greyscale.medium};
 
   &:hover {
-    color: ${Colors.greyscale.dark};
+    color: ${colors.greyscale.dark};
   }
 `
 
@@ -125,14 +125,14 @@ const InputFieldUnderRow = styled.div`
   overflow: hidden;
   text-overflow: ellipsis;
 
-  color: ${Colors.greyscale.dark};
+  color: ${colors.greyscale.dark};
 
   &.success {
-    color: ${Colors.accents.greenDark};
+    color: ${colors.accents.greenDark};
   }
 
   &.warning {
-    color: ${Colors.accents.orangeDark};
+    color: ${colors.accents.orangeDark};
   }
 `
 

@@ -2,10 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import Colors from 'components/shared/Colors'
+import colors from '@evaka/lib-components/src/colors'
 
 export const defaultButtonTextStyle = `
-  color: ${Colors.primary};
+  color: ${colors.primary};
   font-family: 'Open Sans', sans-serif;
   font-size: 14px;
   line-height: 16px;

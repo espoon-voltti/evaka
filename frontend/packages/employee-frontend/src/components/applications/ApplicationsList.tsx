@@ -21,7 +21,7 @@ import {
 } from 'types/application'
 import { SearchOrder } from '~types'
 import Pagination from '~components/shared/Pagination'
-import Colors, { BlueColors } from '~components/shared/Colors'
+import colors, { blueColors } from '@evaka/lib-components/src/colors'
 import { SortByApplications } from '~types/application'
 import { formatName } from '~utils'
 import RoundIcon from 'components/shared/atoms/RoundIcon'
@@ -54,15 +54,15 @@ const CircleIcon = styled.div`
   min-height: 34px;
   font-size: 24px !important;
   border-radius: 100%;
-  color: ${Colors.greyscale.white};
+  color: ${colors.greyscale.white};
 `
 
 const CircleIconGreen = styled(CircleIcon)`
-  background-color: ${Colors.accents.green};
+  background-color: ${colors.accents.green};
 `
 
 const CircleIconRed = styled(CircleIcon)`
-  background-color: ${Colors.accents.red};
+  background-color: ${colors.accents.red};
 `
 
 const TitleRowContainer = styled.div`
@@ -72,7 +72,7 @@ const TitleRowContainer = styled.div`
   position: sticky;
   top: 0;
   z-index: 3;
-  background: ${Colors.greyscale.white};
+  background: ${colors.greyscale.white};
 `
 
 interface PaginationWrapperProps {
@@ -97,7 +97,7 @@ const Bold = styled.span`
 
 const Light = styled.span`
   font-style: italic;
-  color: ${Colors.greyscale.medium};
+  color: ${colors.greyscale.medium};
 `
 
 const StatusColorTd = styled(Td)<{ color: string }>`
@@ -180,19 +180,19 @@ const ApplicationsList = React.memo(function Applications({
       application.status === 'WAITING_PLACEMENT' &&
       !application.checkedByAdmin
     )
-      return Colors.accents.orange
+      return colors.accents.orange
     if (
       application.status === 'WAITING_UNIT_CONFIRMATION' &&
       application.placementProposalStatus?.unitConfirmationStatus === 'ACCEPTED'
     )
-      return Colors.accents.green
+      return colors.accents.green
     if (
       application.status === 'WAITING_UNIT_CONFIRMATION' &&
       application.placementProposalStatus?.unitConfirmationStatus === 'REJECTED'
     )
-      return Colors.accents.red
+      return colors.accents.red
 
-    return Colors.accents.water
+    return colors.accents.water
   }
 
   const dateOfBirthInfo = (application: ApplicationListSummary) => {
@@ -231,8 +231,8 @@ const ApplicationsList = React.memo(function Applications({
               color={
                 startDateOrDueDate.differenceInYears(application.dateOfBirth) <
                 3
-                  ? Colors.accents.green
-                  : Colors.blues.medium
+                  ? colors.accents.green
+                  : colors.blues.medium
               }
               size="s"
             />
@@ -293,25 +293,25 @@ const ApplicationsList = React.memo(function Applications({
       <Td>
         <FixedSpaceRow spacing="xs">
           {application.additionalInfo && (
-            <RoundIcon content="L" color={BlueColors.dark} size="s" />
+            <RoundIcon content="L" color={blueColors.dark} size="s" />
           )}
           {application.siblingBasis && (
-            <RoundIcon content="S" color={Colors.accents.green} size="s" />
+            <RoundIcon content="S" color={colors.accents.green} size="s" />
           )}
           {application.assistanceNeed && (
-            <RoundIcon content="T" color={Colors.accents.water} size="s" />
+            <RoundIcon content="T" color={colors.accents.water} size="s" />
           )}
           {application.wasOnClubCare && (
-            <RoundIcon content="K" color={Colors.accents.red} size="s" />
+            <RoundIcon content="K" color={colors.accents.red} size="s" />
           )}
           {application.wasOnDaycare && (
-            <RoundIcon content="P" color={Colors.accents.orange} size="s" />
+            <RoundIcon content="P" color={colors.accents.orange} size="s" />
           )}
           {application.extendedCare && (
-            <RoundIcon content="V" color={Colors.accents.petrol} size="s" />
+            <RoundIcon content="V" color={colors.accents.petrol} size="s" />
           )}
           {application.duplicateApplication && (
-            <RoundIcon content="2" color={Colors.accents.emerald} size="s" />
+            <RoundIcon content="2" color={colors.accents.emerald} size="s" />
           )}
         </FixedSpaceRow>
       </Td>

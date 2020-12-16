@@ -5,7 +5,7 @@
 import React from 'react'
 import styled from 'styled-components'
 import { NavLink } from 'react-router-dom'
-import Colors from '~components/shared/Colors'
+import colors from '@evaka/lib-components/src/colors'
 import { DefaultMargins } from '~components/shared/layout/white-space'
 import Container from '~components/shared/layout/Container'
 
@@ -44,7 +44,7 @@ export default React.memo(function Tabs({ tabs, mobile }: Props) {
 })
 
 const Background = styled.div`
-  background-color: ${Colors.greyscale.white};
+  background-color: ${colors.greyscale.white};
 `
 
 const TabsContainer = styled.div`
@@ -65,7 +65,7 @@ const TabContainer = styled(NavLink)<TabContainerProps>`
   padding: 12px;
   flex-basis: content;
   flex-grow: 1;
-  background-color: ${Colors.greyscale.white};
+  background-color: ${colors.greyscale.white};
   font-family: ${(p) =>
     p.$mobile ? 'Open Sans, sans-serif' : 'Montserrat, sans-serif'};
   font-size: ${(p) => (p.$mobile ? '14px' : '15px')};
@@ -76,21 +76,21 @@ const TabContainer = styled(NavLink)<TabContainerProps>`
 
   &.active {
     background-color: ${(p) =>
-      p.$mobile ? Colors.greyscale.white : `${Colors.blues.light}33`};
+      p.$mobile ? colors.greyscale.white : `${colors.blues.light}33`};
     border-bottom: ${(p) =>
-      p.$mobile ? `3px solid ${Colors.blues.medium}` : 'none'};
+      p.$mobile ? `3px solid ${colors.blues.medium}` : 'none'};
 
     span {
       div {
         color: ${(p) =>
-          p.$mobile ? Colors.blues.medium : Colors.greyscale.dark};
+          p.$mobile ? colors.blues.medium : colors.greyscale.dark};
       }
     }
   }
 `
 
 const TabTitle = styled.span<TabContainerProps>`
-  color: ${Colors.greyscale.dark};
+  color: ${colors.greyscale.dark};
 
   &.active {
     font-weight: 700;
@@ -101,8 +101,8 @@ const TabCounter = styled.span`
   height: 21px;
   padding: 0 8px;
   border-radius: 10px;
-  background-color: ${Colors.accents.orange};
-  color: ${Colors.greyscale.white};
+  background-color: ${colors.accents.orange};
+  color: ${colors.greyscale.white};
   margin-left: ${DefaultMargins.s};
   font-weight: 700;
 `

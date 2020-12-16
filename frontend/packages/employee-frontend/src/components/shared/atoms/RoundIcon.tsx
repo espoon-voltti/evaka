@@ -8,7 +8,7 @@ import { IconDefinition } from '@fortawesome/fontawesome-svg-core'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { BaseProps } from 'components/shared/utils'
 import classNames from 'classnames'
-import Colors from 'components/shared/Colors'
+import colors from '@evaka/lib-components/src/colors'
 import { shade } from 'polished'
 
 export type IconSize = 's' | 'm' | 'L' | 'XL' | 'XXL'
@@ -35,19 +35,19 @@ const IconContainer = styled.div<IconContainerProps>`
 
   border-radius: 100%;
   border: 1px solid ${(props) => props.color};
-  background: ${Colors.greyscale.white};
+  background: ${colors.greyscale.white};
   color: ${(props) => props.color};
   user-select: none;
 
   &.active {
     background: ${(props) => props.color};
-    color: ${Colors.greyscale.white};
+    color: ${colors.greyscale.white};
   }
 
   &.clickable:hover {
     background: ${(props) => shade(0.2, props.color)};
     border-color: ${(props) => shade(0.2, props.color)};
-    color: ${Colors.greyscale.white};
+    color: ${colors.greyscale.white};
     cursor: pointer;
   }
 

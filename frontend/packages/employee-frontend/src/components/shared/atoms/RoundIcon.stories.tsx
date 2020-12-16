@@ -16,7 +16,7 @@ import {
   fasExclamationTriangle,
   faEuroSign
 } from 'icon-set'
-import Colors from 'components/shared/Colors'
+import colors from '@evaka/lib-components/src/colors'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { action } from '@storybook/addon-actions'
 
@@ -38,27 +38,27 @@ storiesOf('evaka/atoms/RoundIcon', module)
       <FixedSpaceRow spacing="L">
         <ColItem>
           <span>s</span>
-          <RoundIcon content={fasInfo} color={Colors.accents.water} size="s" />
+          <RoundIcon content={fasInfo} color={colors.accents.water} size="s" />
         </ColItem>
         <ColItem>
           <span>m</span>
           <RoundIcon
             content={faExclamation}
-            color={Colors.accents.orange}
+            color={colors.accents.orange}
             size="m"
           />
         </ColItem>
         <ColItem>
           <span>m (text)</span>
-          <RoundIcon content="T" color={Colors.accents.emerald} size="m" />
+          <RoundIcon content="T" color={colors.accents.emerald} size="m" />
         </ColItem>
         <ColItem>
           <span>L</span>
-          <RoundIcon content={faPlus} color={Colors.primary} size="L" />
+          <RoundIcon content={faPlus} color={colors.primary} size="L" />
         </ColItem>
         <ColItem>
           <span>XL</span>
-          <RoundIcon content={faCheck} color={Colors.accents.green} size="XL" />
+          <RoundIcon content={faCheck} color={colors.accents.green} size="XL" />
         </ColItem>
       </FixedSpaceRow>
       <p>Note 1: use solid icons for size s, light otherwise</p>
@@ -67,7 +67,7 @@ storiesOf('evaka/atoms/RoundIcon', module)
         pre-included background, e.g. fasExclamationTriangle{' '}
         <FontAwesomeIcon
           icon={fasExclamationTriangle}
-          color={Colors.accents.orange}
+          color={colors.accents.orange}
           style={{ fontSize: '16px' }}
         />
       </p>
@@ -78,28 +78,28 @@ storiesOf('evaka/atoms/RoundIcon', module)
       <FixedSpaceRow spacing="xs">
         <RoundIcon
           content="T"
-          color={Colors.accents.emerald}
+          color={colors.accents.emerald}
           size="m"
           onClick={onClick}
           active={false}
         />
         <RoundIcon
           content="2"
-          color={Colors.primary}
+          color={colors.primary}
           size="m"
           onClick={onClick}
           active={true}
         />
         <RoundIcon
           content={fasInfo}
-          color={Colors.accents.violet}
+          color={colors.accents.violet}
           size="m"
           onClick={onClick}
           active={false}
         />
         <RoundIcon
           content={faEuroSign}
-          color={Colors.accents.petrol}
+          color={colors.accents.petrol}
           size="m"
           onClick={onClick}
           active={true}

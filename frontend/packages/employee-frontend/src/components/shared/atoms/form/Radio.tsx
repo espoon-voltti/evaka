@@ -4,7 +4,7 @@
 
 import React, { useRef } from 'react'
 import styled from 'styled-components'
-import Colors from 'components/shared/Colors'
+import colors from '@evaka/lib-components/src/colors'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faCheck } from 'icon-set'
 import { DefaultMargins } from 'components/shared/layout/white-space'
@@ -28,13 +28,13 @@ const Wrapper = styled.div`
     cursor: not-allowed;
 
     label {
-      color: ${Colors.greyscale.medium};
+      color: ${colors.greyscale.medium};
       cursor: not-allowed;
     }
   }
 
   &:hover:not(.disabled) input {
-    border-color: ${Colors.greyscale.darkest};
+    border-color: ${colors.greyscale.darkest};
   }
 `
 
@@ -56,25 +56,25 @@ const RadioInput = styled.input<SizeProps>`
   border-radius: 100%;
   border-width: 1px;
   border-style: solid;
-  border-color: ${Colors.greyscale.dark};
+  border-color: ${colors.greyscale.dark};
   margin: 0;
 
   &:focus {
     border-width: 2px;
-    border-color: ${Colors.accents.petrol};
+    border-color: ${colors.accents.petrol};
   }
 
   &:checked {
-    border-color: ${Colors.primary};
-    background-color: ${Colors.primary};
+    border-color: ${colors.primary};
+    background-color: ${colors.primary};
 
     &:disabled {
-      background-color: ${Colors.greyscale.medium};
+      background-color: ${colors.greyscale.medium};
     }
   }
 
   &:disabled {
-    border-color: ${Colors.greyscale.medium};
+    border-color: ${colors.greyscale.medium};
   }
 `
 
@@ -90,7 +90,7 @@ const IconWrapper = styled.div<SizeProps>`
   height: ${(p) => (p.small ? '30px' : diameter)};
 
   font-size: ${(p) => (p.small ? '20px' : '25px')};
-  color: ${Colors.greyscale.white};
+  color: ${colors.greyscale.white};
 `
 
 interface RadioProps extends BaseProps {

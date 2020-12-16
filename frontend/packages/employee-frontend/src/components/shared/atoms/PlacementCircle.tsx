@@ -8,7 +8,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
 import styled from 'styled-components'
-import Colors from '~components/shared/Colors'
+import colors from '@evaka/lib-components/src/colors'
 import { PlacementType } from '~types/placementdraft'
 import Tooltip from '~components/shared/atoms/Tooltip'
 import { useTranslation } from '~state/i18n'
@@ -20,7 +20,7 @@ const Circle = styled.div`
   min-height: 34px;
   max-width: 34px;
   max-height: 34px;
-  background-color: ${Colors.accents.green};
+  background-color: ${colors.accents.green};
   border-radius: 100%;
 `
 const HalfCircle = styled.div`
@@ -30,7 +30,7 @@ const HalfCircle = styled.div`
   min-height: 34px;
   max-width: 17px;
   max-height: 34px;
-  background-color: ${Colors.accents.green};
+  background-color: ${colors.accents.green};
   border-top-left-radius: 17px;
   border-bottom-left-radius: 17px;
 `

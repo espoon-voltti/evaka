@@ -5,7 +5,7 @@
 import React from 'react'
 import styled from 'styled-components'
 import { transparentize } from 'polished'
-import Colors from 'components/shared/Colors'
+import colors from '@evaka/lib-components/src/colors'
 import {
   DefaultMargins,
   SpacingSize
@@ -18,8 +18,8 @@ const Spinner = styled.div`
   width: ${spinnerSize};
   height: ${spinnerSize};
 
-  border: 5px solid ${transparentize(0.8, Colors.primary)};
-  border-left-color: ${Colors.primary};
+  border: 5px solid ${transparentize(0.8, colors.primary)};
+  border-left-color: ${colors.primary};
   animation: spin 1.1s infinite linear;
 
   &:after {

@@ -10,7 +10,7 @@ import { faChevronUp, faChevronDown } from 'icon-set'
 import '~components/common/ToolbarAccordion.scss'
 import Title from '~components/shared/atoms/Title'
 import StatusLabel, { StatusLabelType } from '~components/common/StatusLabel'
-import Colors from '~components/shared/Colors'
+import colors from '@evaka/lib-components/src/colors'
 import { Gap } from '~components/shared/layout/white-space'
 
 // workaround against issue where "is-4" class is used for two different purposes.
@@ -130,7 +130,7 @@ const GaplessColumns = styled.div<GaplessColumnsProps>`
 `
 
 const ServiceNeedSectionTitleTrigger = styled.div`
-  color: ${Colors.greyscale.dark};
+  color: ${colors.greyscale.dark};
   cursor: pointer;
   margin-left: 20px;
 `

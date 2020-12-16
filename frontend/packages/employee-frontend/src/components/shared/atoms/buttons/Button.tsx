@@ -5,7 +5,7 @@
 import React from 'react'
 import styled from 'styled-components'
 import { useTimeoutFn } from 'react-use'
-import Colors, { Greyscale } from 'components/shared/Colors'
+import colors, { greyscale } from '@evaka/lib-components/src/colors'
 import classNames from 'classnames'
 import { defaultButtonTextStyle } from 'components/shared/atoms/buttons/button-commons'
 import { BaseProps } from 'components/shared/utils'
@@ -28,7 +28,7 @@ export const StyledButton = styled.button`
   text-align: center;
   overflow-x: hidden;
 
-  border: 1px solid ${Colors.primary};
+  border: 1px solid ${colors.primary};
   border-radius: 2px;
   background: none;
 
@@ -39,38 +39,38 @@ export const StyledButton = styled.button`
   }
 
   &:focus {
-    box-shadow: 0px 0px 0 1px ${Colors.accents.petrol};
+    box-shadow: 0px 0px 0 1px ${colors.accents.petrol};
   }
 
   &:hover {
-    color: ${Colors.primaryHover};
-    border-color: ${Colors.primaryHover};
+    color: ${colors.primaryHover};
+    border-color: ${colors.primaryHover};
   }
 
   &:active {
-    color: ${Colors.primaryActive};
-    border-color: ${Colors.primaryActive};
+    color: ${colors.primaryActive};
+    border-color: ${colors.primaryActive};
   }
 
   &.disabled {
-    color: ${Greyscale.medium};
-    border-color: ${Greyscale.medium};
+    color: ${greyscale.medium};
+    border-color: ${greyscale.medium};
   }
 
   &.primary {
-    color: ${Greyscale.white};
-    background: ${Colors.primary};
+    color: ${greyscale.white};
+    background: ${colors.primary};
 
     &:hover {
-      background: ${Colors.primaryHover};
+      background: ${colors.primaryHover};
     }
 
     &:active {
-      background: ${Colors.primaryActive};
+      background: ${colors.primaryActive};
     }
 
     &.disabled {
-      background: ${Greyscale.medium};
+      background: ${greyscale.medium};
     }
   }
 
@@ -93,14 +93,14 @@ const ButtonUnderRow = styled.div`
   width: 120px;
   white-space: normal
 
-  color: ${Colors.greyscale.dark};
+  color: ${colors.greyscale.dark};
 
   &.success {
-    color: ${Colors.accents.greenDark};
+    color: ${colors.accents.greenDark};
   }
 
   &.warning {
-    color: ${Colors.accents.orangeDark};
+    color: ${colors.accents.orangeDark};
   }
 `
 

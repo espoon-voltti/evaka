@@ -6,7 +6,7 @@ import React from 'react'
 import styled from 'styled-components'
 
 import { AttendanceChild } from '~api/attendances'
-import Colors from '~components/shared/Colors'
+import colors from '@evaka/lib-components/src/colors'
 import { FixedSpaceColumn } from '~components/shared/layout/flex-helpers'
 import { Label } from '~components/shared/Typography'
 import { useTranslation } from '~state/i18n'
@@ -19,7 +19,7 @@ const AttendanceItem = styled.div`
 
 const Circle = styled.span<{ gray?: boolean }>`
   background-color: ${(p) =>
-    p.gray ? Colors.greyscale.lighter : Colors.accents.orange};
+    p.gray ? colors.greyscale.lighter : colors.accents.orange};
   width: 20px;
   height: 20px;
   border-radius: 50%;
@@ -31,7 +31,7 @@ const AbsenceTypeLabel = styled.div`
   font-weight: normal;
   font-size: 15px;
   line-height: 22px;
-  color: ${Colors.greyscale.dark};
+  color: ${colors.greyscale.dark};
 `
 
 const CustomLabel = styled(Label)`

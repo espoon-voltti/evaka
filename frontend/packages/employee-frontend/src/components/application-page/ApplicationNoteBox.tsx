@@ -5,7 +5,7 @@
 import React, { useContext, useEffect, useState } from 'react'
 import { ApplicationNote } from 'types/application'
 import styled from 'styled-components'
-import { Greyscale } from 'components/shared/Colors'
+import { greyscale } from '@evaka/lib-components/src/colors'
 import { Label } from 'components/shared/Typography'
 import { formatDate } from 'utils/date'
 import { formatParagraphs } from 'utils/html-utils'
@@ -27,7 +27,7 @@ const NoteContainer = styled.div`
   display: flex;
   flex-direction: column;
   padding: ${DefaultMargins.s};
-  background: ${Greyscale.white};
+  background: ${greyscale.white};
 `
 
 const TopBar = styled.div`
@@ -52,7 +52,7 @@ const ButtonsBar = styled.div`
 
 const DetailText = styled.span`
   font-size: 12px;
-  color: ${Greyscale.medium};
+  color: ${greyscale.medium};
   font-style: italic;
 `
 

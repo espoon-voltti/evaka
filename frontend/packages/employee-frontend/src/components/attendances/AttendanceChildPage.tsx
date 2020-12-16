@@ -11,7 +11,7 @@ import { ContentArea } from '~components/shared/layout/Container'
 import { UUID } from '~types'
 import RoundIcon from '~components/shared/atoms/RoundIcon'
 import { faChevronLeft, farUser } from '~icon-set'
-import Colors from '~components/shared/Colors'
+import colors from '@evaka/lib-components/src/colors'
 import { Gap } from '~components/shared/layout/white-space'
 import { useTranslation } from '~state/i18n'
 import Loader from '~components/shared/atoms/Loader'
@@ -34,7 +34,7 @@ const FullHeightContentArea = styled(ContentArea)`
 const Titles = styled.div``
 
 const ChildStatus = styled.div`
-  color: ${Colors.greyscale.medium};
+  color: ${colors.greyscale.medium};
 `
 
 const TallContentArea = styled(ContentArea)`
@@ -45,7 +45,7 @@ const TallContentArea = styled(ContentArea)`
 `
 
 const BackButton = styled(IconButton)`
-  color: ${Colors.greyscale.medium};
+  color: ${colors.greyscale.medium};
 `
 
 const CustomTitle = styled.h1`
@@ -64,7 +64,7 @@ const GroupName = styled.div`
   font-size: 15px;
   line-height: 22px;
   text-transform: uppercase;
-  color: ${Colors.greyscale.dark};
+  color: ${colors.greyscale.dark};
 `
 
 export default React.memo(function AttendanceChildPage() {
@@ -121,14 +121,14 @@ export default React.memo(function AttendanceChildPage() {
                   content={farUser}
                   color={
                     child.status === 'ABSENT'
-                      ? Colors.greyscale.dark
+                      ? colors.greyscale.dark
                       : child.status === 'DEPARTED'
-                      ? Colors.blues.medium
+                      ? colors.blues.medium
                       : child.status === 'PRESENT'
-                      ? Colors.accents.green
+                      ? colors.accents.green
                       : child.status === 'COMING'
-                      ? Colors.accents.water
-                      : Colors.blues.medium
+                      ? colors.accents.water
+                      : colors.blues.medium
                   }
                   size="XXL"
                 />

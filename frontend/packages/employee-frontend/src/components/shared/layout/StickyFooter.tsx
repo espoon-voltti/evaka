@@ -4,7 +4,7 @@
 
 import React from 'react'
 import styled from 'styled-components'
-import Colors from 'components/shared/Colors'
+import colors from '@evaka/lib-components/src/colors'
 import Container from 'components/shared/layout/Container'
 import { DefaultMargins } from 'components/shared/layout/white-space'
 
@@ -23,7 +23,7 @@ export default React.memo(function StickyFooter({ children }: Props) {
 const Footer = styled.footer`
   position: sticky;
   bottom: 0;
-  background-color: ${Colors.greyscale.white};
+  background-color: ${colors.greyscale.white};
   box-shadow: 0 -2px 4px 0 rgba(0, 0, 0, 0.1);
 
   @media print {

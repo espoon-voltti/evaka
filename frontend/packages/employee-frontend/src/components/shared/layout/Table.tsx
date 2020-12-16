@@ -10,11 +10,11 @@ import { faChevronDown as falChevronDown } from 'icon-set'
 import { faChevronUp as fasChevronUp } from 'icon-set'
 import { faChevronDown as fasChevronDown } from 'icon-set'
 import { DefaultMargins, Gap } from 'components/shared/layout/white-space'
-import { Greyscale } from 'components/shared/Colors'
+import { greyscale } from '@evaka/lib-components/src/colors'
 
 export const Table = styled.table`
-  background-color: ${Greyscale.white};
-  color: ${Greyscale.darkest};
+  background-color: ${greyscale.white};
+  color: ${greyscale.darkest};
   width: 100%;
   border-collapse: separate;
 `
@@ -26,25 +26,25 @@ interface ThProps {
 
 export const Th = styled.th<ThProps>`
   font-size: 14px;
-  color: ${Greyscale.dark};
+  color: ${greyscale.dark};
   font-weight: 700;
   line-height: 1.3em;
   text-transform: uppercase;
   vertical-align: middle;
   border-style: solid;
-  border-color: ${Greyscale.lighter};
+  border-color: ${greyscale.lighter};
   border-width: 0 0 1px;
   padding: ${DefaultMargins.s};
   text-align: left;
   position: ${(p) => (p.sticky ? 'sticky' : 'static')};
   top: ${(p) => (p.sticky && p.top ? p.top : 'auto')};
-  background: ${(p) => (p.sticky ? Greyscale.white : 'none')};
+  background: ${(p) => (p.sticky ? greyscale.white : 'none')};
 `
 
 export const Td = styled.td<{ align?: 'right' | 'left' }>`
   line-height: 1.3em;
   border-style: solid;
-  border-color: ${Greyscale.lighter};
+  border-color: ${greyscale.lighter};
   border-width: 0 0 1px;
   padding: ${DefaultMargins.s};
   vertical-align: top;
@@ -88,7 +88,7 @@ interface SortableProps {
 const CustomButton = styled.button`
   display: flex;
   font-size: 14px;
-  color: ${Greyscale.dark};
+  color: ${greyscale.dark};
   border: none;
   background: none;
   outline: none;
@@ -113,12 +113,12 @@ export const SortableTh = ({
       <SortableIconContainer>
         <FontAwesomeIcon
           icon={sorted === 'ASC' ? fasChevronUp : falChevronUp}
-          color={sorted === 'ASC' ? Greyscale.dark : Greyscale.medium}
+          color={sorted === 'ASC' ? greyscale.dark : greyscale.medium}
           size="xs"
         />
         <FontAwesomeIcon
           icon={sorted === 'DESC' ? fasChevronDown : falChevronDown}
-          color={sorted === 'DESC' ? Greyscale.dark : Greyscale.medium}
+          color={sorted === 'DESC' ? greyscale.dark : greyscale.medium}
           size="xs"
         />
       </SortableIconContainer>

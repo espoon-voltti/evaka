@@ -26,7 +26,7 @@ import ApplicationTitle from 'components/application-page/ApplicationTitle'
 import VTJGuardian from 'components/application-page/VTJGuardian'
 import ApplicationStatusSection from 'components/application-page/ApplicationStatusSection'
 import ApplicationDecisionsSection from 'components/application-page/ApplicationDecisionsSection'
-import Colors from 'components/shared/Colors'
+import colors from '@evaka/lib-components/src/colors'
 import Attachment from '~components/common/Attachment'
 
 function YesNoValue({ value }: { value: boolean | null | undefined }) {
@@ -36,7 +36,7 @@ function YesNoValue({ value }: { value: boolean | null | undefined }) {
 }
 
 const Dimmed = styled.span`
-  color: ${Colors.greyscale.medium};
+  color: ${colors.greyscale.medium};
 `
 
 const AttachmentContainer = styled.div`

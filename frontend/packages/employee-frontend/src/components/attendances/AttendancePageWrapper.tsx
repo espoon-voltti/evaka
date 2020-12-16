@@ -26,7 +26,7 @@ import AttendanceDepartedPage from './AttendanceDepartedPage'
 import AttendanceAbsentPage from './AttendanceAbsentPage'
 import { ContentArea } from '~components/shared/layout/Container'
 import IconButton from '~components/shared/atoms/buttons/IconButton'
-import Colors from '~components/shared/Colors'
+import colors from '@evaka/lib-components/src/colors'
 import { faSearch, faTimes } from '~icon-set'
 import { DefaultMargins } from '~components/shared/layout/white-space'
 import { FreeTextSearch } from '~components/common/Filters'
@@ -46,12 +46,12 @@ const NoMarginTitle = styled(Title)`
   display: flex;
   justify-content: center;
   align-items: center;
-  background: ${Colors.blues.primary};
-  color: ${Colors.greyscale.white};
+  background: ${colors.blues.primary};
+  color: ${colors.greyscale.white};
 
   button {
     margin-left: ${DefaultMargins.m};
-    color: ${Colors.greyscale.white};
+    color: ${colors.greyscale.white};
   }
 `
 
@@ -61,7 +61,7 @@ const Bold = styled.div`
 
 const SearchBar = animated(styled.div`
   position: absolute;
-  background: ${Colors.greyscale.lightest};
+  background: ${colors.greyscale.lightest};
   width: 100vw;
   overflow: hidden;
   z-index: 1;
@@ -219,7 +219,7 @@ export default React.memo(function AttendancePageWrapper() {
                 value={freeText}
                 setValue={setFreeText}
                 placeholder={i18n.attendances.searchPlaceholder}
-                background={Colors.greyscale.white}
+                background={colors.greyscale.white}
               />
               <AttendanceList attendanceChildren={searchResults} />
             </ContentArea>

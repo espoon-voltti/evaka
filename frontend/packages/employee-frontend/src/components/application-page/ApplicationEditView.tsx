@@ -31,7 +31,7 @@ import InputField from 'components/shared/atoms/form/InputField'
 import Radio from 'components/shared/atoms/form/Radio'
 import Checkbox from 'components/shared/atoms/form/Checkbox'
 import { TextArea } from 'components/shared/atoms/form/InputField'
-import Colors from 'components/shared/Colors'
+import colors from '@evaka/lib-components/src/colors'
 import { DatePicker } from 'components/common/DatePicker'
 import ApplicationTitle from 'components/application-page/ApplicationTitle'
 import VTJGuardian from 'components/application-page/VTJGuardian'
@@ -410,7 +410,7 @@ export default React.memo(function ApplicationEditView({
                     <FontAwesomeIcon
                       size="sm"
                       icon={faExclamationTriangle}
-                      color={Colors.accents.orange}
+                      color={colors.accents.orange}
                     />
                   </>
                 ) : null}

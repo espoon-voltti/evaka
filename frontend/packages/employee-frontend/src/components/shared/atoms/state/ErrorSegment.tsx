@@ -4,7 +4,7 @@
 
 import React from 'react'
 import styled from 'styled-components'
-import { Greyscale } from 'components/shared/Colors'
+import { greyscale } from '@evaka/lib-components/src/colors'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faMeh } from 'icon-set'
 import { DefaultMargins, Gap } from 'components/shared/layout/white-space'
@@ -15,8 +15,8 @@ const StyledSegment = styled.div`
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  background: ${Greyscale.lightest};
-  color: ${Greyscale.medium};
+  background: ${greyscale.lightest};
+  color: ${greyscale.medium};
 
   div {
     display: flex;

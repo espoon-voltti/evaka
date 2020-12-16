@@ -4,7 +4,7 @@
 
 import React from 'react'
 import styled from 'styled-components'
-import { Greyscale } from '~components/shared/Colors'
+import { greyscale } from '@evaka/lib-components/src/colors'
 import { DefaultMargins } from '~components/shared/layout/white-space'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { fasCaretUp } from '~icon-set'
@@ -31,11 +31,11 @@ const TooltipPositioner = styled.div`
 `
 
 const TooltipDiv = styled.div`
-  color: ${Greyscale.white};
+  color: ${greyscale.white};
   font-size: 15px;
   line-height: 22px;
 
-  background-color: ${Greyscale.dark};
+  background-color: ${greyscale.dark};
   padding: ${DefaultMargins.s};
   border-radius: 2px;
   box-shadow: 0 4px 4px rgba(0, 0, 0, 0.25);
@@ -53,7 +53,7 @@ const Beak = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
-  color: ${Greyscale.dark};
+  color: ${greyscale.dark};
 `
 
 interface TooltipProps {
