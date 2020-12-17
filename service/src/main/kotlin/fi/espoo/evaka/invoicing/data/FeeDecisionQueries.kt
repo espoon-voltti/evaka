@@ -63,10 +63,8 @@ val feeDecisionDetailedQueryBase =
     WITH youngest_child AS (
         SELECT
             fee_decision_part.fee_decision_id AS decision_id,
-            finance_decision_handler.id AS finance_decision_handler_id,
             finance_decision_handler.first_name AS finance_decision_handler_first_name,
             finance_decision_handler.last_name AS finance_decision_handler_last_name,
-            finance_decision_handler.created AS finance_decision_handler_created,
             row_number() OVER (PARTITION BY (fee_decision_id) ORDER BY date_of_birth DESC) AS rownum
         FROM fee_decision_part
         LEFT JOIN daycare ON fee_decision_part.placement_unit = daycare.id
@@ -114,10 +112,11 @@ val feeDecisionDetailedQueryBase =
         daycare.language as placement_unit_lang,
         care_area.id as placement_unit_area_id,
         care_area.name as placement_unit_area_name,
-        youngest_child.finance_decision_handler_id AS finance_decision_handler_id,
-        youngest_child.finance_decision_handler_first_name AS finance_decision_handler_first_name,
-        youngest_child.finance_decision_handler_last_name AS finance_decision_handler_last_name,
-        youngest_child.finance_decision_handler_created AS finance_decision_handler_created
+        CONCAT(
+            youngest_child.finance_decision_handler_first_name,
+            ' ',
+            youngest_child.finance_decision_handler_last_name
+            ) AS finance_decision_handler_name
     FROM fee_decision as decision
         LEFT JOIN fee_decision_part as part ON decision.id = part.fee_decision_id
         LEFT JOIN person as head ON decision.head_of_family = head.id
@@ -782,20 +781,7 @@ fun toFeeDecisionDetailed(mapper: ObjectMapper) = { rs: ResultSet, _: StatementC
         approvedAt = rs.getTimestamp("approved_at")?.toInstant(),
         createdAt = rs.getTimestamp("created_at").toInstant(),
         sentAt = rs.getTimestamp("sent_at")?.toInstant(),
-        financeDecisionHandler = when (rs.getNullableUUID("finance_decision_handler_id")) {
-            is UUID -> financeDecisionHandler(
-                employee = Employee(
-                    id = rs.getUUID("finance_decision_handler_id"),
-                    firstName = rs.getString("finance_decision_handler_first_name"),
-                    lastName = rs.getString("finance_decision_handler_last_name"),
-                    created = rs.getTimestamp("finance_decision_handler_created").toInstant(),
-                    email = null,
-                    externalId = null,
-                    updated = null
-                )
-            )
-            else -> null
-        }
+        financeDecisionHandlerName = rs.getString("finance_decision_handler_name")
     )
 }
 

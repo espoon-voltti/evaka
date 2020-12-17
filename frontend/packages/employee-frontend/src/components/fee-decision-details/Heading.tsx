@@ -22,7 +22,6 @@ import {
 import { EspooColours } from '~utils/colours'
 import { formatDate } from '~utils/date'
 import { formatName } from '~utils'
-import { Employee } from '~types/employee'
 
 interface TypeSelectProps {
   selected: string
@@ -65,7 +64,7 @@ interface Props {
   validFrom: LocalDate
   validTo: LocalDate | null
   sentAt: Date | null
-  financeDecisionHandler: { employee: Employee } | null
+  financeDecisionHandler: string | null
   approvedBy: { firstName: string; lastName: string } | null
   documentKey: string | null
   parts: FeeDecisionPartDetailed[]
@@ -107,11 +106,7 @@ export default React.memo(function Heading({
 
   const decisionHandlerName =
     (approvedBy && [approvedBy?.firstName, approvedBy?.lastName].join(' ')) ||
-    (financeDecisionHandler &&
-      [
-        financeDecisionHandler.employee.firstName,
-        financeDecisionHandler.employee.lastName
-      ].join(' '))
+    financeDecisionHandler
 
   const pdfValue = documentKey ? (
     <a href={getFeeDecisionPdfUrl(id)} download>

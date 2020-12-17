@@ -23,7 +23,6 @@ import {
   InvoiceDetailed,
   InvoiceSearchResult
 } from '~types/invoicing'
-import { mapEmployeeJson } from './unit'
 
 export interface SearchParams {
   status?: string
@@ -146,7 +145,7 @@ export async function getFeeDecision(
         createdAt: new Date(json.createdAt),
         sentAt: json.sentAt ? new Date(json.sentAt) : null,
         financeDecisionHandler: json.financeDecisionHandler
-          ? { employee: mapEmployeeJson(json.financeDecisionHandler?.employee) }
+          ? json.financeDecisionHandler
           : null,
         approvedAt: json.approvedAt ? new Date(json.approvedAt) : null
       })

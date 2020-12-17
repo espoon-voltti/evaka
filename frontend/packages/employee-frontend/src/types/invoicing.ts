@@ -7,7 +7,6 @@ import LocalDate from '@evaka/lib-common/src/local-date'
 import { UUID } from '~types'
 import { FeeAlterationType } from '~types/fee-alteration'
 import { Income, IncomeEffect } from '~types/income'
-import { Employee } from './employee'
 
 // Enums
 
@@ -266,7 +265,7 @@ export interface FeeDecisionDetailed {
   approvedAt: Date | null
   createdAt: Date
   sentAt: Date | null
-  financeDecisionHandler: { employee: Employee } | null
+  financeDecisionHandler: string | null
   approvedBy: { firstName: string; lastName: string } | null
   minThreshold: number
   feePercent: number
