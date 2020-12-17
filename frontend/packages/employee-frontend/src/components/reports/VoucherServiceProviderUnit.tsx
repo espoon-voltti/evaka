@@ -27,7 +27,7 @@ import {
   TableScrollable
 } from '~components/reports/common'
 import { UUID } from '~types'
-import { reactSelectStyles } from '~components/shared/utils'
+import { reactSelectStyles } from '~components/common/Select'
 
 import { defaultMargins } from '@evaka/lib-components/src/white-space'
 

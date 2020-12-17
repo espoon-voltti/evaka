@@ -8,7 +8,7 @@ import React from 'react'
 import styled from 'styled-components'
 import colors, { greyscale } from '@evaka/lib-components/src/colors'
 import classNames from 'classnames'
-import { BaseProps } from 'components/shared/utils'
+import { BaseProps } from '@evaka/lib-components/src/utils'
 import { IconSize } from '../RoundIcon'
 
 interface ButtonProps {

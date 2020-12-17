@@ -9,7 +9,7 @@ import { IconDefinition } from '@fortawesome/fontawesome-svg-core'
 import { defaultMargins } from '@evaka/lib-components/src/white-space'
 import classNames from 'classnames'
 import { defaultButtonTextStyle } from 'components/shared/atoms/buttons/button-commons'
-import { BaseProps } from 'components/shared/utils'
+import { BaseProps } from '@evaka/lib-components/src/utils'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import UnderRowStatusIcon, {
   InfoStatus

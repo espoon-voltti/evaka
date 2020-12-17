@@ -4,7 +4,7 @@
 
 import React from 'react'
 import { H1, H2, H3, H4 } from '@evaka/lib-components/src/typography'
-import { BaseProps } from '../utils'
+import { BaseProps } from '@evaka/lib-components/src/utils'
 
 interface Props extends BaseProps {
   'data-qa'?: string

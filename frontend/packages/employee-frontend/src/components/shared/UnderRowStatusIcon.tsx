@@ -11,7 +11,7 @@ import { defaultMargins } from '@evaka/lib-components/src/white-space'
 import styled from 'styled-components'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { fasCheckCircle, fasExclamationTriangle } from 'icon-set'
-import { BaseProps } from 'components/shared/utils'
+import { BaseProps } from '@evaka/lib-components/src/utils'
 import colors from '@evaka/lib-components/src/colors'
 
 export const StatusIcon = styled.div`

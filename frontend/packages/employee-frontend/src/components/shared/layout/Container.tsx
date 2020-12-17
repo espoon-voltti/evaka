@@ -7,7 +7,7 @@ import {
   defaultMargins,
   SpacingSize
 } from '@evaka/lib-components/src/white-space'
-import { BaseProps } from 'components/shared/utils'
+import { BaseProps } from '@evaka/lib-components/src/utils'
 
 export const Container = styled.div`
   margin: 0 auto;

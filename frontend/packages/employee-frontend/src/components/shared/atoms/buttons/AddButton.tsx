@@ -10,7 +10,7 @@ import colors from '@evaka/lib-components/src/colors'
 import classNames from 'classnames'
 import { defaultMargins } from '@evaka/lib-components/src/white-space'
 import { defaultButtonTextStyle } from 'components/shared/atoms/buttons/button-commons'
-import { BaseProps } from 'components/shared/utils'
+import { BaseProps } from '@evaka/lib-components/src/utils'
 
 const StyledButton = styled.button`
   width: fit-content;

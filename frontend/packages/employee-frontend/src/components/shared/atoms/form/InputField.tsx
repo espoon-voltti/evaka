@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
-import { BaseProps } from 'components/shared/utils'
+import { BaseProps } from '@evaka/lib-components/src/utils'
 import styled from 'styled-components'
 import colors from '@evaka/lib-components/src/colors'
 import classNames from 'classnames'

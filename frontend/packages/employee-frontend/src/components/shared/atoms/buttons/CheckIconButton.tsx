@@ -7,7 +7,7 @@ import React from 'react'
 import styled from 'styled-components'
 import colors from '@evaka/lib-components/src/colors'
 import classNames from 'classnames'
-import { BaseProps } from 'components/shared/utils'
+import { BaseProps } from '@evaka/lib-components/src/utils'
 import { faCheck } from '~icon-set'
 
 const StyledButton = styled.button`

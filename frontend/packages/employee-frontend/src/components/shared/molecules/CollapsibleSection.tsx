@@ -4,7 +4,7 @@
 
 import React, { useState } from 'react'
 import { IconDefinition } from '@fortawesome/fontawesome-svg-core'
-import { BaseProps } from 'components/shared/utils'
+import { BaseProps } from '@evaka/lib-components/src/utils'
 import styled from 'styled-components'
 import classNames from 'classnames'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'

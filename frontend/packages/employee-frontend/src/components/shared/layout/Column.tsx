@@ -8,7 +8,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 
 import styled from 'styled-components'
 import { defaultMargins } from '@evaka/lib-components/src/white-space'
-import { BaseProps } from 'components/shared/utils'
+import { BaseProps } from '@evaka/lib-components/src/utils'
 
 export const Container = styled.div`
   margin: 0 auto;

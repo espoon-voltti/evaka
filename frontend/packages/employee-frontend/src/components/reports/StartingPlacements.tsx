@@ -12,7 +12,7 @@ import { Container, ContentArea } from '~components/shared/layout/Container'
 import Loader from '~components/shared/atoms/Loader'
 import Title from '~components/shared/atoms/Title'
 import { Th, Tr, Td, Thead, Tbody } from '~components/shared/layout/Table'
-import { reactSelectStyles } from '~components/shared/utils'
+import { reactSelectStyles } from '~components/common/Select'
 import ReturnButton from 'components/shared/atoms/buttons/ReturnButton'
 import ReportDownload from '~components/reports/ReportDownload'
 import {

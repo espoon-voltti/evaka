@@ -8,7 +8,7 @@ import colors from '@evaka/lib-components/src/colors'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faCheck } from 'icon-set'
 import { defaultMargins } from '@evaka/lib-components/src/white-space'
-import { BaseProps } from 'components/shared/utils'
+import { BaseProps } from '@evaka/lib-components/src/utils'
 import classNames from 'classnames'
 
 const diameter = '36px'
