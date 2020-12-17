@@ -282,19 +282,23 @@ export const UnitFilter = React.memo(function UnitFilter({
 })
 
 interface FinanceDecisionHandlerFilterProps {
-  employees: { id: string; label: string }[]
+  financeDecisionHandlers: { id: string; label: string }[]
   selected?: { id: string; label: string }
-  select: (employee: string) => void
+  select: (financeDecisionHandler: string) => void
 }
 
 export const FinanceDecisionHandlerFilter = React.memo(
   function FinanceDecisionHandlerFilter({
-    employees,
+    financeDecisionHandlers,
     selected,
     select
   }: FinanceDecisionHandlerFilterProps) {
     const { i18n } = useTranslation()
-    const options = employees.map(({ id, label }) => ({ id, label, value: id }))
+    const options = financeDecisionHandlers.map(({ id, label }) => ({
+      id,
+      label,
+      value: id
+    }))
     return (
       <>
         <Label>

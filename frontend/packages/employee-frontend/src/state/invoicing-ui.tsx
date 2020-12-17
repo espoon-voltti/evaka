@@ -93,8 +93,8 @@ interface InvoiceSearchFilterState {
 interface SharedState {
   units: Result<Unit[]>
   setUnits: Dispatch<SetStateAction<Result<Unit[]>>>
-  employees: Result<Employee[]>
-  setEmployees: Dispatch<SetStateAction<Result<Employee[]>>>
+  financeDecisionHandlers: Result<Employee[]>
+  setFinanceDecisionHandlers: Dispatch<SetStateAction<Result<Employee[]>>>
   availableAreas: Result<CareArea[]>
   setAvailableAreas: Dispatch<SetStateAction<Result<CareArea[]>>>
 }
@@ -160,8 +160,8 @@ const defaultState: UiState = {
   shared: {
     units: Loading.of(),
     setUnits: () => undefined,
-    employees: Loading.of(),
-    setEmployees: () => undefined,
+    financeDecisionHandlers: Loading.of(),
+    setFinanceDecisionHandlers: () => undefined,
     availableAreas: Loading.of(),
     setAvailableAreas: () => undefined
   }
@@ -254,9 +254,9 @@ export const InvoicingUIContextProvider = React.memo(
     const [units, setUnits] = useState<Result<Unit[]>>(
       defaultState.shared.units
     )
-    const [employees, setEmployees] = useState<Result<Employee[]>>(
-      defaultState.shared.employees
-    )
+    const [financeDecisionHandlers, setFinanceDecisionHandlers] = useState<
+      Result<Employee[]>
+    >(defaultState.shared.financeDecisionHandlers)
     const [availableAreas, setAvailableAreas] = useState<Result<CareArea[]>>(
       defaultState.shared.availableAreas
     )
@@ -300,8 +300,8 @@ export const InvoicingUIContextProvider = React.memo(
         shared: {
           units,
           setUnits,
-          employees,
-          setEmployees,
+          financeDecisionHandlers,
+          setFinanceDecisionHandlers,
           availableAreas,
           setAvailableAreas
         }

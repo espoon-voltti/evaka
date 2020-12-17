@@ -35,8 +35,8 @@ function FeeDecisionFilters() {
     shared: {
       units,
       setUnits,
-      employees,
-      setEmployees,
+      financeDecisionHandlers,
+      setFinanceDecisionHandlers,
       availableAreas,
       setAvailableAreas
     }
@@ -53,7 +53,7 @@ function FeeDecisionFilters() {
   }, [])
 
   useEffect(() => {
-    void getEmployees().then(setEmployees)
+    void getEmployees().then(setFinanceDecisionHandlers)
   }, [])
 
   // remove selected unit filter if the unit is not included in the selected areas
@@ -161,7 +161,7 @@ function FeeDecisionFilters() {
           />
           <Gap size="L" />
           <FinanceDecisionHandlerFilter
-            employees={employees
+            financeDecisionHandlers={financeDecisionHandlers
               .map((e) =>
                 e.map(({ id, firstName, lastName }) => ({
                   id,
@@ -169,7 +169,7 @@ function FeeDecisionFilters() {
                 }))
               )
               .getOrElse([])}
-            selected={employees
+            selected={financeDecisionHandlers
               .map(
                 (es) =>
                   es
@@ -178,8 +178,9 @@ function FeeDecisionFilters() {
                       label: [firstName, lastName].join(' ')
                     }))
                     .filter(
-                      (employee) =>
-                        employee.id === searchFilters.financeDecisionHandlerId
+                      (financeDecisionHandler) =>
+                        financeDecisionHandler.id ===
+                        searchFilters.financeDecisionHandlerId
                     )[0]
               )
               .getOrElse(undefined)}

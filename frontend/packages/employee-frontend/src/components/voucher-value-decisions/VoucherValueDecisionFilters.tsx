@@ -29,8 +29,8 @@ export default React.memo(function VoucherValueDecisionFilters() {
     shared: {
       units,
       setUnits,
-      employees,
-      setEmployees,
+      financeDecisionHandlers,
+      setFinanceDecisionHandlers,
       availableAreas,
       setAvailableAreas
     }
@@ -43,7 +43,7 @@ export default React.memo(function VoucherValueDecisionFilters() {
   }, [])
 
   useEffect(() => {
-    void getEmployees().then(setEmployees)
+    void getEmployees().then(setFinanceDecisionHandlers)
   }, [])
 
   useEffect(() => {
@@ -128,7 +128,7 @@ export default React.memo(function VoucherValueDecisionFilters() {
           />
           <Gap size="L" />
           <FinanceDecisionHandlerFilter
-            employees={employees
+            financeDecisionHandlers={financeDecisionHandlers
               .map((e) =>
                 e.map(({ id, firstName, lastName }) => ({
                   id,
@@ -136,7 +136,7 @@ export default React.memo(function VoucherValueDecisionFilters() {
                 }))
               )
               .getOrElse([])}
-            selected={employees
+            selected={financeDecisionHandlers
               .map(
                 (es) =>
                   es
@@ -145,8 +145,9 @@ export default React.memo(function VoucherValueDecisionFilters() {
                       label: [firstName, lastName].join(' ')
                     }))
                     .filter(
-                      (employee) =>
-                        employee.id === searchFilters.financeDecisionHandlerId
+                      (financeDecisionHandler) =>
+                        financeDecisionHandler.id ===
+                        searchFilters.financeDecisionHandlerId
                     )[0]
               )
               .getOrElse(undefined)}
