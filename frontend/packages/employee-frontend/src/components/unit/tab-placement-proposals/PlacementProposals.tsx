@@ -14,7 +14,7 @@ import {
   PlacementPlanConfirmationStatus,
   PlacementPlanRejectReason
 } from '~types/unit'
-import { Gap } from 'components/shared/layout/white-space'
+import { Gap } from '@evaka/lib-components/src/white-space'
 import Button from 'components/shared/atoms/buttons/Button'
 import {
   acceptPlacementProposal,

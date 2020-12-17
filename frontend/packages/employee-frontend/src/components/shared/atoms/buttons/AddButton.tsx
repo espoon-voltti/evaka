@@ -8,7 +8,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faPlus } from 'icon-set'
 import colors from '@evaka/lib-components/src/colors'
 import classNames from 'classnames'
-import { DefaultMargins } from 'components/shared/layout/white-space'
+import { defaultMargins } from '@evaka/lib-components/src/white-space'
 import { defaultButtonTextStyle } from 'components/shared/atoms/buttons/button-commons'
 import { BaseProps } from 'components/shared/utils'
 
@@ -45,14 +45,14 @@ const StyledButton = styled.button`
     font-weight: normal;
     background: ${colors.primary};
     border-radius: 100%;
-    margin: 0 ${DefaultMargins.s} 0 0;
+    margin: 0 ${defaultMargins.s} 0 0;
   }
 
   &.flipped {
     flex-direction: row-reverse;
 
     .icon-wrapper {
-      margin: 0 0 0 ${DefaultMargins.s};
+      margin: 0 0 0 ${defaultMargins.s};
     }
   }
 

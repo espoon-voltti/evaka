@@ -5,7 +5,7 @@
 import React from 'react'
 import { H1, H2, H3, H4, Label } from 'components/shared/Typography'
 import { LoremParagraph } from 'components/shared/story-utils'
-import { Gap } from 'components/shared/layout/white-space'
+import { Gap } from '@evaka/lib-components/src/white-space'
 import styled from 'styled-components'
 import { storiesOf } from '@storybook/react'
 

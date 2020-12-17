@@ -9,7 +9,7 @@ import colors, { greyscale } from '@evaka/lib-components/src/colors'
 import classNames from 'classnames'
 import { defaultButtonTextStyle } from 'components/shared/atoms/buttons/button-commons'
 import { BaseProps } from 'components/shared/utils'
-import { DefaultMargins } from 'components/shared/layout/white-space'
+import { defaultMargins } from '@evaka/lib-components/src/white-space'
 import UnderRowStatusIcon, {
   InfoStatus
 } from 'components/shared/UnderRowStatusIcon'
@@ -79,7 +79,7 @@ export const StyledButton = styled.button`
 
 const ButtonUnderRow = styled.div`
   padding: 0 12px;
-  margin-top: ${DefaultMargins.xxs};
+  margin-top: ${defaultMargins.xxs};
   margin-bottom: -20px;
   display: flex;
   align-items: center;

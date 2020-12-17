@@ -5,7 +5,7 @@
 import React from 'react'
 import styled from 'styled-components'
 import { faEuroSign } from '~icon-set'
-import { Gap } from '~components/shared/layout/white-space'
+import { Gap } from '@evaka/lib-components/src/white-space'
 import CollapsibleSection from '~components/shared/molecules/CollapsibleSection'
 import { H4 } from '~components/shared/Typography'
 import IncomeSection from './IncomeSection'

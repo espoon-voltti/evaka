@@ -5,7 +5,7 @@
 import React from 'react'
 import styled from 'styled-components'
 import { H1, H2 } from '~components/shared/Typography'
-import { DefaultMargins } from '~components/shared/layout/white-space'
+import { defaultMargins } from '@evaka/lib-components/src/white-space'
 import { greyscale } from '@evaka/lib-components/src/colors'
 import { useTranslation } from '~state/i18n'
 import { ApplicationDetails } from '~types/application'
@@ -50,6 +50,6 @@ const TitleRow = styled.div`
 
   .title-labels {
     color: ${greyscale.medium};
-    margin-left: ${DefaultMargins.m};
+    margin-left: ${defaultMargins.m};
   }
 `

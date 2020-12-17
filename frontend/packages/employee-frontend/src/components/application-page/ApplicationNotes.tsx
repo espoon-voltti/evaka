@@ -17,11 +17,11 @@ import ApplicationNoteBox from 'components/application-page/ApplicationNoteBox'
 import { UserContext } from 'state/user'
 import { requireRole } from 'utils/roles'
 import styled from 'styled-components'
-import { DefaultMargins, Gap } from 'components/shared/layout/white-space'
+import { defaultMargins, Gap } from '@evaka/lib-components/src/white-space'
 
 const Sticky = styled.div`
   position: sticky;
-  top: ${DefaultMargins.s};
+  top: ${defaultMargins.s};
 `
 
 type Props = {

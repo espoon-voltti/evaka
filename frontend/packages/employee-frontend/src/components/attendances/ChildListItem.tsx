@@ -8,7 +8,7 @@ import styled from 'styled-components'
 import { AttendanceChild, AttendanceStatus } from '~api/attendances'
 import RoundIcon from '~components/shared/atoms/RoundIcon'
 import colors from '@evaka/lib-components/src/colors'
-import { DefaultMargins } from '~components/shared/layout/white-space'
+import { defaultMargins } from '@evaka/lib-components/src/white-space'
 import { DATE_FORMAT_TIME_ONLY } from '~constants'
 import { farUser } from '~icon-set'
 import { useTranslation } from '~state/i18n'
@@ -62,7 +62,7 @@ const DetailsRow = styled.div`
 `
 
 const Time = styled.span`
-  margin-left: ${DefaultMargins.xs};
+  margin-left: ${defaultMargins.xs};
 `
 
 interface ChildListItemProps {

@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
-import { Gap } from '~components/shared/layout/white-space'
+import { Gap } from '@evaka/lib-components/src/white-space'
 import IncomeItemHeader from './IncomeItemHeader'
 import IncomeItemBody from './IncomeItemBody'
 import IncomeItemEditor from './IncomeItemEditor'

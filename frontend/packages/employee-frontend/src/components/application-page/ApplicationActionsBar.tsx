@@ -4,7 +4,7 @@
 
 import React from 'react'
 import styled from 'styled-components'
-import { Gap } from 'components/shared/layout/white-space'
+import { Gap } from '@evaka/lib-components/src/white-space'
 import StickyFooter from 'components/shared/layout/StickyFooter'
 import AsyncButton from 'components/shared/atoms/buttons/AsyncButton'
 import Button from 'components/shared/atoms/buttons/Button'

@@ -9,7 +9,7 @@ import { faChevronUp as falChevronUp } from 'icon-set'
 import { faChevronDown as falChevronDown } from 'icon-set'
 import { faChevronUp as fasChevronUp } from 'icon-set'
 import { faChevronDown as fasChevronDown } from 'icon-set'
-import { DefaultMargins, Gap } from 'components/shared/layout/white-space'
+import { defaultMargins, Gap } from '@evaka/lib-components/src/white-space'
 import { greyscale } from '@evaka/lib-components/src/colors'
 
 export const Table = styled.table`
@@ -34,7 +34,7 @@ export const Th = styled.th<ThProps>`
   border-style: solid;
   border-color: ${greyscale.lighter};
   border-width: 0 0 1px;
-  padding: ${DefaultMargins.s};
+  padding: ${defaultMargins.s};
   text-align: left;
   position: ${(p) => (p.sticky ? 'sticky' : 'static')};
   top: ${(p) => (p.sticky && p.top ? p.top : 'auto')};
@@ -46,7 +46,7 @@ export const Td = styled.td<{ align?: 'right' | 'left' }>`
   border-style: solid;
   border-color: ${greyscale.lighter};
   border-width: 0 0 1px;
-  padding: ${DefaultMargins.s};
+  padding: ${defaultMargins.s};
   vertical-align: top;
   text-align: ${(p) => p.align ?? 'left'};
 `

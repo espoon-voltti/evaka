@@ -12,7 +12,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import LocalDate from '@evaka/lib-common/src/local-date'
 import { Container, ContentArea } from '~components/shared/layout/Container'
 import Title from '~components/shared/atoms/Title'
-import { Gap } from '~components/shared/layout/white-space'
+import { Gap } from '@evaka/lib-components/src/white-space'
 import Button from '~components/shared/atoms/buttons/Button'
 import Loader from '~components/shared/atoms/Loader'
 

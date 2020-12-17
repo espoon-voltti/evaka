@@ -11,7 +11,7 @@ import '~components/common/ToolbarAccordion.scss'
 import Title from '~components/shared/atoms/Title'
 import StatusLabel, { StatusLabelType } from '~components/common/StatusLabel'
 import colors from '@evaka/lib-components/src/colors'
-import { Gap } from '~components/shared/layout/white-space'
+import { Gap } from '@evaka/lib-components/src/white-space'
 
 // workaround against issue where "is-4" class is used for two different purposes.
 const SubTitle = styled(Title)`

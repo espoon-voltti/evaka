@@ -5,10 +5,10 @@
 import styled from 'styled-components'
 import { SelfPosition } from 'csstype'
 import {
-  DefaultMargins,
+  defaultMargins,
   isSpacingSize,
   SpacingSize
-} from '~components/shared/layout/white-space'
+} from '@evaka/lib-components/src/white-space'
 
 interface FixedSpaceRowProps {
   spacing?: SpacingSize | string
@@ -28,7 +28,7 @@ export const FixedSpaceRow = styled.div<FixedSpaceRowProps>`
     p.marginBottom
       ? `margin-bottom: ${
           isSpacingSize(p.marginBottom)
-            ? DefaultMargins[p.marginBottom]
+            ? defaultMargins[p.marginBottom]
             : p.marginBottom
         };`
       : ''}
@@ -37,9 +37,9 @@ export const FixedSpaceRow = styled.div<FixedSpaceRowProps>`
     margin-right: ${(p) =>
       p.spacing
         ? isSpacingSize(p.spacing)
-          ? DefaultMargins[p.spacing]
+          ? defaultMargins[p.spacing]
           : p.spacing
-        : DefaultMargins.s};
+        : defaultMargins.s};
     &:last-child {
       margin-right: 0;
     }
@@ -49,9 +49,9 @@ export const FixedSpaceRow = styled.div<FixedSpaceRowProps>`
     margin-right: ${(p) =>
       p.spacing
         ? isSpacingSize(p.spacing)
-          ? DefaultMargins[p.spacing]
+          ? defaultMargins[p.spacing]
           : p.spacing
-        : DefaultMargins.s};
+        : defaultMargins.s};
     &:last-child {
       margin-right: 0;
     }
@@ -72,7 +72,7 @@ export const FixedSpaceColumn = styled.div<FixedSpaceColumnProps>`
     p.marginRight
       ? `margin-right: ${
           isSpacingSize(p.marginRight)
-            ? DefaultMargins[p.marginRight]
+            ? defaultMargins[p.marginRight]
             : p.marginRight
         };`
       : ''}
@@ -81,9 +81,9 @@ export const FixedSpaceColumn = styled.div<FixedSpaceColumnProps>`
     margin-bottom: ${(p) =>
       p.spacing
         ? isSpacingSize(p.spacing)
-          ? DefaultMargins[p.spacing]
+          ? defaultMargins[p.spacing]
           : p.spacing
-        : DefaultMargins.s};
+        : defaultMargins.s};
     &:last-child {
       margin-bottom: 0;
     }

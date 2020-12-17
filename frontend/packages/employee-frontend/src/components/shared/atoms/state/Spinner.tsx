@@ -7,9 +7,9 @@ import styled from 'styled-components'
 import { transparentize } from 'polished'
 import colors from '@evaka/lib-components/src/colors'
 import {
-  DefaultMargins,
+  defaultMargins,
   SpacingSize
-} from 'components/shared/layout/white-space'
+} from '@evaka/lib-components/src/white-space'
 
 const spinnerSize = '50px'
 
@@ -54,7 +54,7 @@ interface SpinnerSegmentProps {
 
 export function SpinnerSegment({ size = 'm' }: SpinnerSegmentProps) {
   return (
-    <SpinnerWrapper size={DefaultMargins[size]}>
+    <SpinnerWrapper size={defaultMargins[size]}>
       <Spinner />
     </SpinnerWrapper>
   )

@@ -7,7 +7,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 }
 
 import React from 'react'
-import { DefaultMargins } from 'components/shared/layout/white-space'
+import { defaultMargins } from '@evaka/lib-components/src/white-space'
 import styled from 'styled-components'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { fasCheckCircle, fasExclamationTriangle } from 'icon-set'
@@ -16,7 +16,7 @@ import colors from '@evaka/lib-components/src/colors'
 
 export const StatusIcon = styled.div`
   font-size: 15px;
-  margin-left: ${DefaultMargins.xs};
+  margin-left: ${defaultMargins.xs};
 `
 
 export type InfoStatus = 'warning' | 'success'

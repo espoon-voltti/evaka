@@ -29,7 +29,7 @@ import {
 import { UUID } from '~types'
 import { reactSelectStyles } from '~components/shared/utils'
 
-import { DefaultMargins } from 'components/shared/layout/white-space'
+import { defaultMargins } from '@evaka/lib-components/src/white-space'
 
 import { formatCents } from '~utils/money'
 import { capitalizeFirstLetter, formatName } from '~utils'
@@ -37,7 +37,7 @@ import Tooltip from '~components/shared/atoms/Tooltip'
 
 const Wrapper = styled.div`
   width: 100%;
-  margin: 0 ${DefaultMargins.m};
+  margin: 0 ${defaultMargins.m};
 `
 
 function VoucherServiceProviderUnit() {

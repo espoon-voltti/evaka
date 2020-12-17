@@ -7,7 +7,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 }
 
 import styled from 'styled-components'
-import { DefaultMargins } from 'components/shared/layout/white-space'
+import { defaultMargins } from '@evaka/lib-components/src/white-space'
 import { BaseProps } from 'components/shared/utils'
 
 export const Container = styled.div`
@@ -55,7 +55,7 @@ interface ColumnProps extends BaseProps {
 
 export const Column = styled.div<ColumnProps>`
   display: block;
-  padding: ${DefaultMargins.s};
+  padding: ${defaultMargins.s};
   width: ${(p: ColumnProps) => p.desktopWidth ?? '100%'};
 
   @media screen and (min-width: 769px) {

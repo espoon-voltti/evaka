@@ -10,7 +10,7 @@ import { Label } from 'components/shared/Typography'
 import { formatDate } from 'utils/date'
 import { formatParagraphs } from 'utils/html-utils'
 import { DATE_FORMAT_DATE_TIME } from '~constants'
-import { DefaultMargins, Gap } from 'components/shared/layout/white-space'
+import { defaultMargins, Gap } from '@evaka/lib-components/src/white-space'
 import { TextArea } from 'components/shared/atoms/form/InputField'
 import { addSeconds, isAfter } from 'date-fns'
 import InlineButton from 'components/shared/atoms/buttons/InlineButton'
@@ -26,7 +26,7 @@ import InfoModal from '~components/common/InfoModal'
 const NoteContainer = styled.div`
   display: flex;
   flex-direction: column;
-  padding: ${DefaultMargins.s};
+  padding: ${defaultMargins.s};
   background: ${greyscale.white};
 `
 
@@ -34,7 +34,7 @@ const TopBar = styled.div`
   display: flex;
   flex-direction: row;
   justify-content: space-between;
-  margin-bottom: ${DefaultMargins.s};
+  margin-bottom: ${defaultMargins.s};
 `
 
 const Creator = styled.div`
@@ -47,7 +47,7 @@ const ButtonsBar = styled.div`
   width: 100%;
   display: flex;
   justify-content: flex-end;
-  margin-top: ${DefaultMargins.s};
+  margin-top: ${defaultMargins.s};
 `
 
 const DetailText = styled.span`

@@ -5,7 +5,7 @@
 import React from 'react'
 import styled from 'styled-components'
 import LabelValueList from '~components/common/LabelValueList'
-import { Gap } from '~components/shared/layout/white-space'
+import { Gap } from '@evaka/lib-components/src/white-space'
 import Section from '~components/shared/layout/Section'
 import { H3, H5 } from '~components/shared/Typography'
 import { useTranslation } from '~state/i18n'

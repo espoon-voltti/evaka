@@ -10,7 +10,7 @@ import MetaTags from 'react-meta-tags'
 import Loader from '~components/shared/atoms/Loader'
 import Title from '~components/shared/atoms/Title'
 import { ContentArea } from '~components/shared/layout/Container'
-import { DefaultMargins } from '~components/shared/layout/white-space'
+import { defaultMargins } from '@evaka/lib-components/src/white-space'
 import { useTranslation } from '~state/i18n'
 import { AttendanceUIContext } from '~state/attendance-ui'
 import { getDaycareAttendances, Group } from '~api/attendances'
@@ -23,7 +23,7 @@ const AllCapsTitle = styled(Title)`
 `
 
 const Padding = styled.div`
-  padding: 0 ${DefaultMargins.s};
+  padding: 0 ${defaultMargins.s};
 `
 
 export default React.memo(function AttendanceGroupSelectorPage() {

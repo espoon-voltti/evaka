@@ -27,7 +27,7 @@ import CrossIconButton from '~components/shared/atoms/buttons/CrossIconButton'
 import FormModal from '~components/common/FormModal'
 import Radio from '~components/shared/atoms/form/Radio'
 import InputField from '~components/shared/atoms/form/InputField'
-import { Gap } from '~components/shared/layout/white-space'
+import { Gap } from '@evaka/lib-components/src/white-space'
 import PlacementCircle from '~components/shared/atoms/PlacementCircle'
 
 const CenteredDiv = styled.div`

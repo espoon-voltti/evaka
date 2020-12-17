@@ -4,9 +4,9 @@
 
 import styled from 'styled-components'
 import {
-  DefaultMargins,
+  defaultMargins,
   SpacingSize
-} from 'components/shared/layout/white-space'
+} from '@evaka/lib-components/src/white-space'
 
 interface ListGridProps {
   labelWidth?: string
@@ -16,8 +16,8 @@ interface ListGridProps {
 const ListGrid = styled.div<ListGridProps>`
   display: grid;
   grid-template-columns: ${(p) => p.labelWidth ?? '235px'} auto;
-  row-gap: ${(p) => DefaultMargins[p.rowGap || 'xs']};
-  column-gap: ${(p) => DefaultMargins[p.columnGap || 's']};
+  row-gap: ${(p) => defaultMargins[p.rowGap || 'xs']};
+  column-gap: ${(p) => defaultMargins[p.columnGap || 's']};
 `
 
 export default ListGrid

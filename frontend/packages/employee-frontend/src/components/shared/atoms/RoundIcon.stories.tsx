@@ -5,7 +5,7 @@
 import React from 'react'
 import { storiesOf } from '@storybook/react'
 import styled from 'styled-components'
-import { DefaultMargins } from 'components/shared/layout/white-space'
+import { defaultMargins } from '@evaka/lib-components/src/white-space'
 import { FixedSpaceRow } from 'components/shared/layout/flex-helpers'
 import RoundIcon from 'components/shared/atoms/RoundIcon'
 import {
@@ -26,7 +26,7 @@ const ColItem = styled.div`
   justify-content: flex-start;
   align-items: center;
   > * {
-    margin-bottom: ${DefaultMargins.s};
+    margin-bottom: ${defaultMargins.s};
   }
 `
 

@@ -9,7 +9,7 @@ import { Container, ContentArea } from 'components/shared/layout/Container'
 import Title from 'components/shared/atoms/Title'
 import ErrorMessage from './login/ErrorMessage'
 import { useTranslation } from '~state/i18n'
-import { Gap } from 'components/shared/layout/white-space'
+import { Gap } from '@evaka/lib-components/src/white-space'
 import { getLoginUrl } from '~api/auth'
 import { featureFlags } from '~config'
 

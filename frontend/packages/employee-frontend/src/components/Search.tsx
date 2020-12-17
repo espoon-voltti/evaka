@@ -11,7 +11,7 @@ import { getAge } from '@evaka/lib-common/src/utils/local-date'
 
 import { formatName } from '~/utils'
 import { triggerDvvBatch } from '~api/hidden'
-import { Gap } from '~components/shared/layout/white-space'
+import { Gap } from '@evaka/lib-components/src/white-space'
 import AddButton from '~components/shared/atoms/buttons/AddButton'
 import Button from 'components/shared/atoms/buttons/Button'
 import InputField from 'components/shared/atoms/form/InputField'

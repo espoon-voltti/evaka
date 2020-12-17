@@ -12,7 +12,7 @@ import Title from '~components/shared/atoms/Title'
 import Button from '~components/shared/atoms/buttons/Button'
 import AsyncButton from '~components/shared/atoms/buttons/AsyncButton'
 import colors from '@evaka/lib-components/src/colors'
-import { DefaultMargins, Gap } from 'components/shared/layout/white-space'
+import { defaultMargins, Gap } from '@evaka/lib-components/src/white-space'
 import { useTranslation } from '~state/i18n'
 import { modalZIndex } from '~components/shared/layout/z-helpers'
 import { InfoStatus } from 'components/shared/UnderRowStatusIcon'
@@ -65,8 +65,8 @@ export const ModalContainer = styled.div<ModalContainerProps>`
   overflow-x: visible;
   box-shadow: 0px 15px 75px 0px rgba(0, 0, 0, 0.5);
   border-radius: 2px;
-  padding-left: ${DefaultMargins.XXL};
-  padding-right: ${DefaultMargins.XXL};
+  padding-left: ${defaultMargins.XXL};
+  padding-right: ${defaultMargins.XXL};
   overflow-y: scroll;
 `
 
@@ -123,13 +123,13 @@ export const ModalButtons = styled.div`
   display: flex;
   flex-direction: row;
   justify-content: center;
-  margin-top: ${DefaultMargins.XXL};
-  margin-bottom: ${DefaultMargins.X3L};
+  margin-top: ${defaultMargins.XXL};
+  margin-bottom: ${defaultMargins.X3L};
 `
 
 export const ModalTitle = styled.div`
-  margin-bottom: ${DefaultMargins.XXL};
-  margin-top: ${DefaultMargins.XXL};
+  margin-bottom: ${defaultMargins.XXL};
+  margin-top: ${defaultMargins.XXL};
 `
 
 export type ModalSize = 'xs' | 'sm' | 'md' | 'lg' | 'xlg' | 'custom'

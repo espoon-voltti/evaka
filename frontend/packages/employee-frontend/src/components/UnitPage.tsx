@@ -12,7 +12,7 @@ import React, {
 import { Redirect, Route, Switch, useParams } from 'react-router-dom'
 import { useTranslation } from '~state/i18n'
 import { RouteWithTitle } from '~components/RouteWithTitle'
-import { Gap } from '~components/shared/layout/white-space'
+import { Gap } from '@evaka/lib-components/src/white-space'
 import Tabs from '~components/shared/molecules/Tabs'
 import { UUID } from '~types'
 import TabUnitInformation from '~components/unit/TabUnitInformation'

@@ -26,7 +26,7 @@ import styled from 'styled-components'
 import FamilyOverview from './person-profile/PersonFamilyOverview'
 import { useTranslation } from '~state/i18n'
 import CircularLabel from '~components/common/CircularLabel'
-import { Gap } from './shared/layout/white-space'
+import { Gap } from '@evaka/lib-components/src/white-space'
 
 export const NameTd = styled(Td)`
   width: 30%;

@@ -7,7 +7,7 @@ import styled from 'styled-components'
 import colors from '@evaka/lib-components/src/colors'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faCheck } from 'icon-set'
-import { DefaultMargins } from 'components/shared/layout/white-space'
+import { defaultMargins } from '@evaka/lib-components/src/white-space'
 import { BaseProps } from 'components/shared/utils'
 import classNames from 'classnames'
 
@@ -20,7 +20,7 @@ const Wrapper = styled.div`
 
   label {
     font-size: 15px;
-    margin-left: ${DefaultMargins.s};
+    margin-left: ${defaultMargins.s};
     cursor: pointer;
   }
 

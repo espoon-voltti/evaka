@@ -9,7 +9,7 @@ import { CareArea } from '~types/unit'
 import { getAreas } from '~api/daycare'
 import { Container, ContentArea } from '~components/shared/layout/Container'
 import Loader from '~components/shared/atoms/Loader'
-import { Gap } from '~components/shared/layout/white-space'
+import { Gap } from '@evaka/lib-components/src/white-space'
 import { useParams } from 'react-router-dom'
 import {
   DaycareFields,

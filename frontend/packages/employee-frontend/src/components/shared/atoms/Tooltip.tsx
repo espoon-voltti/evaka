@@ -5,7 +5,7 @@
 import React from 'react'
 import styled from 'styled-components'
 import { greyscale } from '@evaka/lib-components/src/colors'
-import { DefaultMargins } from '~components/shared/layout/white-space'
+import { defaultMargins } from '@evaka/lib-components/src/white-space'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { fasCaretUp } from '~icon-set'
 
@@ -21,7 +21,7 @@ const TooltipWrapper = styled.div`
 `
 const TooltipPositioner = styled.div`
   position: absolute;
-  top: calc(100% + ${DefaultMargins.xs});
+  top: calc(100% + ${defaultMargins.xs});
   left: -70px;
   right: -70px;
   z-index: 99999;
@@ -36,7 +36,7 @@ const TooltipDiv = styled.div`
   line-height: 22px;
 
   background-color: ${greyscale.dark};
-  padding: ${DefaultMargins.s};
+  padding: ${defaultMargins.s};
   border-radius: 2px;
   box-shadow: 0 4px 4px rgba(0, 0, 0, 0.25);
 

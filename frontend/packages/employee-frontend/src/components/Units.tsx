@@ -18,7 +18,7 @@ import {
   Tbody,
   SortableTh
 } from '~components/shared/layout/Table'
-import { Gap } from 'components/shared/layout/white-space'
+import { Gap } from '@evaka/lib-components/src/white-space'
 import { useTranslation } from '~state/i18n'
 import { faSearch } from 'icon-set'
 import { getDaycares } from '~api/unit'

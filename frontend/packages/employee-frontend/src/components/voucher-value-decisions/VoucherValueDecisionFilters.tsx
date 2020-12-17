@@ -12,7 +12,7 @@ import {
 import { InvoicingUiContext } from '../../state/invoicing-ui'
 import { getAreas, getUnits } from '../../api/daycare'
 import { VoucherValueDecisionStatus } from '../../types/invoicing'
-import { Gap } from '~components/shared/layout/white-space'
+import { Gap } from '@evaka/lib-components/src/white-space'
 import { useTranslation } from '~state/i18n'
 
 export default React.memo(function VoucherValueDecisionFilters() {

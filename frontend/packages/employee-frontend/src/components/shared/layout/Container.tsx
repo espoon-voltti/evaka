@@ -4,9 +4,9 @@
 
 import styled from 'styled-components'
 import {
-  DefaultMargins,
+  defaultMargins,
   SpacingSize
-} from 'components/shared/layout/white-space'
+} from '@evaka/lib-components/src/white-space'
 import { BaseProps } from 'components/shared/utils'
 
 export const Container = styled.div`
@@ -44,11 +44,11 @@ interface ContentAreaProps extends BaseProps {
 export const ContentArea = styled.section<ContentAreaProps>`
   padding: ${(p) =>
     `${
-      p.paddingVertical ? DefaultMargins[p.paddingVertical] : DefaultMargins.s
+      p.paddingVertical ? defaultMargins[p.paddingVertical] : defaultMargins.s
     } ${
       p.paddingHorozontal
-        ? DefaultMargins[p.paddingHorozontal]
-        : DefaultMargins.L
+        ? defaultMargins[p.paddingHorozontal]
+        : defaultMargins.L
     }`};
   background-color: ${(props) => (props.opaque ? 'white' : 'transparent')};
   position: relative;

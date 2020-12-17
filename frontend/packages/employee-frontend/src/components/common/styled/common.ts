@@ -5,10 +5,10 @@
 import styled from 'styled-components'
 
 import {
-  DefaultMargins,
+  defaultMargins,
   isSpacingSize,
   SpacingSize
-} from '~components/shared/layout/white-space'
+} from '@evaka/lib-components/src/white-space'
 
 export const LabelText = styled.span`
   font-weight: 600;
@@ -27,9 +27,9 @@ export const UnorderedList = styled.ul<{ spacing?: SpacingSize | string }>`
     margin-bottom: ${(p) =>
       p.spacing
         ? isSpacingSize(p.spacing)
-          ? DefaultMargins[p.spacing]
+          ? defaultMargins[p.spacing]
           : p.spacing
-        : DefaultMargins.s};
+        : defaultMargins.s};
 
     &:last-child {
       margin-bottom: 0;

@@ -28,7 +28,7 @@ import { EspooColours } from '~utils/colours'
 import InlineButton from 'components/shared/atoms/buttons/InlineButton'
 import { faPen } from 'icon-set'
 import { H1, H3 } from 'components/shared/Typography'
-import { DefaultMargins, Gap } from 'components/shared/layout/white-space'
+import { defaultMargins, Gap } from '@evaka/lib-components/src/white-space'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
@@ -94,7 +94,7 @@ const TopBar = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: ${DefaultMargins.m};
+  margin-bottom: ${defaultMargins.m};
 `
 
 const FormPart = styled.div`

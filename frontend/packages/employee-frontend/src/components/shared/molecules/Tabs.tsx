@@ -6,7 +6,7 @@ import React from 'react'
 import styled from 'styled-components'
 import { NavLink } from 'react-router-dom'
 import colors from '@evaka/lib-components/src/colors'
-import { DefaultMargins } from '~components/shared/layout/white-space'
+import { defaultMargins } from '@evaka/lib-components/src/white-space'
 import Container from '~components/shared/layout/Container'
 
 type Props = {
@@ -103,6 +103,6 @@ const TabCounter = styled.span`
   border-radius: 10px;
   background-color: ${colors.accents.orange};
   color: ${colors.greyscale.white};
-  margin-left: ${DefaultMargins.s};
+  margin-left: ${defaultMargins.s};
   font-weight: 700;
 `

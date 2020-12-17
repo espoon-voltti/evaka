@@ -31,7 +31,7 @@ export function isSpacingSize(x: unknown): x is SpacingSize {
   )
 }
 
-export const DefaultMargins: Record<SpacingSize, string> = {
+export const defaultMargins: Record<SpacingSize, string> = {
   zero: '0px',
   xxs: '4px',
   xs: '8px',
@@ -44,7 +44,7 @@ export const DefaultMargins: Record<SpacingSize, string> = {
   X4L: '120px'
 }
 
-interface GapProps {
+type GapProps = {
   horizontal?: boolean
   size?: SpacingSize
 }
@@ -52,5 +52,5 @@ interface GapProps {
 export const Gap = styled.div<GapProps>`
   display: ${(p) => (p.horizontal ? 'inline-block' : 'block')};
   ${(p) => (p.horizontal ? 'width' : 'height')}: ${(p) =>
-    DefaultMargins[p.size || 'm']};
+    defaultMargins[p.size || 'm']};
 `

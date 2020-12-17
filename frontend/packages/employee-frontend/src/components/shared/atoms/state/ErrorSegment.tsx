@@ -7,7 +7,7 @@ import styled from 'styled-components'
 import { greyscale } from '@evaka/lib-components/src/colors'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faMeh } from 'icon-set'
-import { DefaultMargins, Gap } from 'components/shared/layout/white-space'
+import { defaultMargins, Gap } from '@evaka/lib-components/src/white-space'
 import classNames from 'classnames'
 
 const StyledSegment = styled.div`
@@ -26,12 +26,12 @@ const StyledSegment = styled.div`
 
   svg {
     font-size: 1.5em;
-    margin-right: ${DefaultMargins.s};
+    margin-right: ${defaultMargins.s};
   }
 
-  padding: ${DefaultMargins.XL} 0;
+  padding: ${defaultMargins.XL} 0;
   &.compact {
-    padding: ${DefaultMargins.m} 0;
+    padding: ${defaultMargins.m} 0;
   }
 `
 

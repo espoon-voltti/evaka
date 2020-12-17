@@ -5,7 +5,7 @@
 import React, { Fragment } from 'react'
 import styled from 'styled-components'
 import Section from '~components/shared/layout/Section'
-import { Gap } from '~components/shared/layout/white-space'
+import { Gap } from '@evaka/lib-components/src/white-space'
 import { H3, H4 } from '~components/shared/Typography'
 import { useTranslation } from '~state/i18n'
 import { FeeDecisionDetailed } from '~types/invoicing'

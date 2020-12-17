@@ -15,7 +15,7 @@ import {
   faUserFriends,
   faUsers
 } from 'icon-set'
-import { Gap } from 'components/shared/layout/white-space'
+import { Gap } from '@evaka/lib-components/src/white-space'
 import { formatName } from 'utils'
 import { useTranslation } from 'state/i18n'
 import ListGrid from 'components/shared/layout/ListGrid'

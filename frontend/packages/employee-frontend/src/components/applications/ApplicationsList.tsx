@@ -30,7 +30,7 @@ import {
   FixedSpaceRow
 } from 'components/shared/layout/flex-helpers'
 import { H1 } from 'components/shared/Typography'
-import { DefaultMargins } from 'components/shared/layout/white-space'
+import { defaultMargins } from '@evaka/lib-components/src/white-space'
 import { getEmployeeUrlPrefix } from '~constants'
 import { formatDate } from '~utils/date'
 import ApplicationActions from '~components/applications/ApplicationActions'
@@ -68,7 +68,7 @@ const CircleIconRed = styled(CircleIcon)`
 const TitleRowContainer = styled.div`
   display: flex;
   justify-content: space-between;
-  padding: ${DefaultMargins.m} ${DefaultMargins.L};
+  padding: ${defaultMargins.m} ${defaultMargins.L};
   position: sticky;
   top: 0;
   z-index: 3;

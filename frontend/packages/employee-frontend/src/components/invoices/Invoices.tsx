@@ -7,7 +7,7 @@ import styled from 'styled-components'
 import { useHistory } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faExclamation, faSync } from 'icon-set'
-import { Gap } from '~components/shared/layout/white-space'
+import { Gap } from '@evaka/lib-components/src/white-space'
 import InlineButton from '~components/shared/atoms/buttons/InlineButton'
 import {
   Table,

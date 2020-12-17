@@ -11,11 +11,11 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { H3 } from 'components/shared/Typography'
 import { faAngleDown, faAngleUp } from 'icon-set'
 import colors from '@evaka/lib-components/src/colors'
-import { DefaultMargins } from 'components/shared/layout/white-space'
+import { defaultMargins } from '@evaka/lib-components/src/white-space'
 
 const Wrapper = styled.div`
   width: 100%;
-  margin-bottom: ${DefaultMargins.XL};
+  margin-bottom: ${defaultMargins.XL};
   &.fitted {
     margin-bottom: 0;
   }
@@ -26,7 +26,7 @@ const Row = styled.div`
   align-items: baseline;
   color: ${colors.greyscale.medium};
   border-bottom: 1px solid ${colors.greyscale.lighter};
-  margin-bottom: ${DefaultMargins.m};
+  margin-bottom: ${defaultMargins.m};
   &.fitted {
     margin-bottom: 0;
   }
@@ -48,7 +48,7 @@ const IconWrapper = styled.div`
   color: ${colors.greyscale.medium};
   font-size: 28px;
   width: 35px;
-  margin-right: ${DefaultMargins.s};
+  margin-right: ${defaultMargins.s};
   display: flex;
   justify-content: center;
   align-items: flex-end;

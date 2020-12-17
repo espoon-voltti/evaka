@@ -23,7 +23,7 @@ import {
   IconColour
 } from './FormModal'
 import Title from '~components/shared/atoms/Title'
-import { Gap } from 'components/shared/layout/white-space'
+import { Gap } from '@evaka/lib-components/src/white-space'
 import Button from '~components/shared/atoms/buttons/Button'
 import { P } from '~components/shared/Typography'
 

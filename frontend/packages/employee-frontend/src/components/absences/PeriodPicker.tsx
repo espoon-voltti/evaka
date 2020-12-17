@@ -11,7 +11,7 @@ import './PeriodPicker.scss'
 import Title from '~components/shared/atoms/Title'
 import { faChevronLeft, faChevronRight } from 'icon-set'
 import IconButton from '~components/shared/atoms/buttons/IconButton'
-import { Gap } from '~components/shared/layout/white-space'
+import { Gap } from '@evaka/lib-components/src/white-space'
 
 export enum PeriodPickerMode {
   MONTH

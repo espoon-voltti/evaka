@@ -28,7 +28,7 @@ import { ContentArea } from '~components/shared/layout/Container'
 import IconButton from '~components/shared/atoms/buttons/IconButton'
 import colors from '@evaka/lib-components/src/colors'
 import { faSearch, faTimes } from '~icon-set'
-import { DefaultMargins } from '~components/shared/layout/white-space'
+import { defaultMargins } from '@evaka/lib-components/src/white-space'
 import { FreeTextSearch } from '~components/common/Filters'
 import { useDebounce } from '~utils/useDebounce'
 import AttendanceList from './AttendanceList'
@@ -50,7 +50,7 @@ const NoMarginTitle = styled(Title)`
   color: ${colors.greyscale.white};
 
   button {
-    margin-left: ${DefaultMargins.m};
+    margin-left: ${defaultMargins.m};
     color: ${colors.greyscale.white};
   }
 `

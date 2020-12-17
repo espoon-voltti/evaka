@@ -12,7 +12,7 @@ import {
 import { useRestApi } from '~utils/useRestApi'
 import { SortByApplications } from '~/types/application'
 import { SearchOrder } from '~/types'
-import { DefaultMargins, Gap } from 'components/shared/layout/white-space'
+import { defaultMargins, Gap } from '@evaka/lib-components/src/white-space'
 import { Container, ContentArea } from 'components/shared/layout/Container'
 import ApplicationsList from 'components/applications/ApplicationsList'
 import ApplicationFilters from './ApplicationsFilters'
@@ -24,7 +24,7 @@ import styled from 'styled-components'
 import { useTranslation } from '~state/i18n'
 
 const PaddedDiv = styled.div`
-  padding: ${DefaultMargins.m} ${DefaultMargins.L};
+  padding: ${defaultMargins.m} ${defaultMargins.L};
 `
 
 const pageSize = 50

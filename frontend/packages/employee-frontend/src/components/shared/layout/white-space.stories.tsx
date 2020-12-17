@@ -5,7 +5,7 @@
 import React from 'react'
 import styled from 'styled-components'
 import { H3 } from 'components/shared/Typography'
-import { Gap, SpacingSize } from 'components/shared/layout/white-space'
+import { Gap, SpacingSize } from '@evaka/lib-components/src/white-space'
 import { storiesOf } from '@storybook/react'
 
 const ExampleElem = styled.div`

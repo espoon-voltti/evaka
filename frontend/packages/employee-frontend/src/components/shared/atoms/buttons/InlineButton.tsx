@@ -6,7 +6,7 @@ import React from 'react'
 import styled from 'styled-components'
 import colors, { greyscale } from '@evaka/lib-components/src/colors'
 import { IconDefinition } from '@fortawesome/fontawesome-svg-core'
-import { DefaultMargins } from 'components/shared/layout/white-space'
+import { defaultMargins } from '@evaka/lib-components/src/white-space'
 import classNames from 'classnames'
 import { defaultButtonTextStyle } from 'components/shared/atoms/buttons/button-commons'
 import { BaseProps } from 'components/shared/utils'
@@ -46,7 +46,7 @@ const StyledButton = styled.button`
   }
 
   svg {
-    margin-right: ${DefaultMargins.xs};
+    margin-right: ${defaultMargins.xs};
   }
 
   ${defaultButtonTextStyle}
@@ -55,7 +55,7 @@ const StyledButton = styled.button`
 const InlineButtonUnderRow = styled.div`
   height: 16px;
   padding: 0 12px;
-  margin-top: ${DefaultMargins.xxs};
+  margin-top: ${defaultMargins.xxs};
   margin-bottom: -20px;
   display: flex;
   align-items: center;

@@ -15,7 +15,7 @@ import {
 import InputField from '~components/shared/atoms/form/InputField'
 import Loader from '~components/shared/atoms/Loader'
 import { FixedSpaceColumn } from '~components/shared/layout/flex-helpers'
-import { Gap } from '~components/shared/layout/white-space'
+import { Gap } from '@evaka/lib-components/src/white-space'
 import { AttendanceUIContext } from '~state/attendance-ui'
 import { useTranslation } from '~state/i18n'
 import { UUID } from '~types'

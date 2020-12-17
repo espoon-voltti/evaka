@@ -21,7 +21,7 @@ import UnitDataFilters from '~components/unit/UnitDataFilters'
 import { UserContext } from '~state/user'
 import { DataList } from '~components/common/DataList'
 import { useTranslation } from '~state/i18n'
-import { Gap } from '~components/shared/layout/white-space'
+import { Gap } from '@evaka/lib-components/src/white-space'
 
 function TabUnitInformation() {
   const { i18n } = useTranslation()

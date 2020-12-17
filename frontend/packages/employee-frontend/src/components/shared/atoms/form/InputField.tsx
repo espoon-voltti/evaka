@@ -9,7 +9,7 @@ import colors from '@evaka/lib-components/src/colors'
 import classNames from 'classnames'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faTimes } from 'icon-set'
-import { DefaultMargins } from 'components/shared/layout/white-space'
+import { defaultMargins } from '@evaka/lib-components/src/white-space'
 import { IconProp } from '@fortawesome/fontawesome-svg-core'
 import TextareaAutosize from 'react-autosize-textarea'
 import UnderRowStatusIcon, {
@@ -114,7 +114,7 @@ const InputIcon = styled.div`
 const InputFieldUnderRow = styled.div`
   height: 16px;
   padding: 0 12px;
-  margin-top: ${DefaultMargins.xxs};
+  margin-top: ${defaultMargins.xxs};
   margin-bottom: -20px;
   display: flex;
   align-items: center;

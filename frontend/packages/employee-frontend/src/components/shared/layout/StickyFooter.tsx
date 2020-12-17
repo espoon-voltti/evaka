@@ -6,7 +6,7 @@ import React from 'react'
 import styled from 'styled-components'
 import colors from '@evaka/lib-components/src/colors'
 import Container from 'components/shared/layout/Container'
-import { DefaultMargins } from 'components/shared/layout/white-space'
+import { defaultMargins } from '@evaka/lib-components/src/white-space'
 
 type Props = {
   children: React.ReactNode
@@ -32,5 +32,5 @@ const Footer = styled.footer`
 `
 
 const ContentContainer = styled(Container)`
-  padding: ${DefaultMargins.xs} 0;
+  padding: ${defaultMargins.xs} 0;
 `

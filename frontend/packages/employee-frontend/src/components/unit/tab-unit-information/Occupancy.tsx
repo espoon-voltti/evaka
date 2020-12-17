@@ -11,7 +11,7 @@ import OccupancyGraph from '~components/unit/tab-unit-information/occupancy/Occu
 import OccupancySingleDay from '~components/unit/tab-unit-information/occupancy/OccupancySingleDay'
 import { UnitFilters } from 'utils/UnitFilters'
 import { FixedSpaceColumn } from '~components/shared/layout/flex-helpers'
-import { DefaultMargins } from '~components/shared/layout/white-space'
+import { defaultMargins } from '@evaka/lib-components/src/white-space'
 
 const Container = styled.div`
   display: flex;
@@ -34,8 +34,8 @@ const GraphWrapper = styled.div`
 const CardsWrapper = styled.div`
   width: 50%;
   min-width: 400px;
-  padding-right: ${DefaultMargins.X3L};
-  margin-bottom: ${DefaultMargins.X3L};
+  padding-right: ${defaultMargins.X3L};
+  margin-bottom: ${defaultMargins.X3L};
 `
 
 interface SelectionsState {

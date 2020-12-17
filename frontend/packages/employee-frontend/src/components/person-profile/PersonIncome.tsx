@@ -4,7 +4,7 @@
 
 import React, { useContext, useEffect, useState } from 'react'
 import { faEuroSign } from 'icon-set'
-import { Gap } from '~components/shared/layout/white-space'
+import { Gap } from '@evaka/lib-components/src/white-space'
 import Loader from '~components/shared/atoms/Loader'
 import CollapsibleSection from 'components/shared/molecules/CollapsibleSection'
 import IncomeList from './income/IncomeList'

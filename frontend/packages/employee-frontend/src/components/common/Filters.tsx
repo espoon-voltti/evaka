@@ -26,7 +26,7 @@ import {
 } from 'components/shared/layout/flex-helpers'
 import Checkbox from '~components/shared/atoms/form/Checkbox'
 import Radio from '~components/shared/atoms/form/Radio'
-import { Gap, DefaultMargins } from '~components/shared/layout/white-space'
+import { Gap, defaultMargins } from '@evaka/lib-components/src/white-space'
 import { FlexRow } from './styled/containers'
 import RoundIcon from '~components/shared/atoms/RoundIcon'
 import IconButton from '~components/shared/atoms/buttons/IconButton'
@@ -704,7 +704,7 @@ export type ApplicationSummaryStatusOptions =
   | 'ALL'
 
 const CustomDivWithMargin = styled(CustomDiv)`
-  margin-top: ${DefaultMargins.xs};
+  margin-top: ${defaultMargins.xs};
 `
 
 export function ApplicationStatusFilter({

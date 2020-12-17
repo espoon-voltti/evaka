@@ -7,14 +7,14 @@ import styled from 'styled-components'
 
 import colors from '@evaka/lib-components/src/colors'
 import { Container } from '~components/shared/layout/Container'
-import { DefaultMargins } from '~components/shared/layout/white-space'
+import { defaultMargins } from '@evaka/lib-components/src/white-space'
 
 export const FullHeightContainer = styled(Container)<{ spaced?: boolean }>`
   height: 100vh;
   display: flex;
   flex-direction: column;
   background-color: ${colors.greyscale.white};
-  padding: ${DefaultMargins.s};
+  padding: ${defaultMargins.s};
   ${(p) => (p.spaced ? 'justify-content: space-between;' : '')}
 `
 
