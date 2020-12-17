@@ -13,6 +13,7 @@ import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.db.bindNullable
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.Coordinate
+import fi.espoo.evaka.shared.domain.Period
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.bindKotlin
 import org.jdbi.v3.core.kotlin.mapTo
@@ -25,9 +26,9 @@ data class DaycareFields(
     val closingDate: LocalDate?,
     val areaId: UUID,
     val type: Set<CareType>,
-    val canApplyDaycare: Boolean,
-    val canApplyPreschool: Boolean,
-    val canApplyClub: Boolean,
+    val daycareApplyPeriod: Period?,
+    val preschoolApplyPeriod: Period?,
+    val clubApplyPeriod: Period?,
     val providerType: ProviderType,
     val capacity: Int,
     val language: Language,
@@ -76,17 +77,22 @@ fun Handle.getDaycares(authorizedUnits: AclAuthorization): List<Daycare> = getDa
     .mapTo<Daycare>()
     .toList()
 
-data class DaycareApplyFlags(val id: UUID, val canApplyDaycare: Boolean, val canApplyPreschool: Boolean)
+data class UnitApplyPeriods(
+    val id: UUID,
+    val daycareApplyPeriod: Period?,
+    val preschoolApplyPeriod: Period?,
+    val clubApplyPeriod: Period?
+)
 
-fun Handle.getDaycareApplyFlags(ids: Collection<UUID>): List<DaycareApplyFlags> = createQuery(
+fun Handle.getUnitApplyPeriods(ids: Collection<UUID>): List<UnitApplyPeriods> = createQuery(
     // language=SQL
     """
-SELECT id, can_apply_daycare, can_apply_preschool
+SELECT id, daycare_apply_period, preschool_apply_period, club_apply_period
 FROM daycare
 WHERE id = ANY(:ids)
     """.trimIndent()
 ).bind("ids", ids.toTypedArray())
-    .mapTo<DaycareApplyFlags>()
+    .mapTo<UnitApplyPeriods>()
     .toList()
 
 fun Handle.getDaycare(id: UUID): Daycare? = getDaycaresQuery()
@@ -158,9 +164,9 @@ SET
   closing_date = :closingDate,
   care_area_id = :areaId,
   type = :type::care_types[],
-  can_apply_daycare = :canApplyDaycare,
-  can_apply_preschool = :canApplyPreschool,
-  can_apply_club = :canApplyClub,
+  daycare_apply_period = :daycareApplyPeriod,
+  preschool_apply_period = :preschoolApplyPeriod,
+  club_apply_period = :clubApplyPeriod,
   provider_type = :providerType,
   capacity = :capacity,
   language = :language,
@@ -195,9 +201,9 @@ WHERE id = :id
     .bindKotlin(fields)
     .execute()
 
-fun Handle.getApplicationUnits(type: ApplicationUnitType, date: LocalDate, onlyApplicable: Boolean): List<PublicUnit> =
-    createQuery(
-        """
+fun Handle.getApplicationUnits(type: ApplicationUnitType, date: LocalDate, onlyApplicable: Boolean): List<PublicUnit> {
+    // language=sql
+    val sql = """
 SELECT
     id,
     name,
@@ -211,21 +217,19 @@ SELECT
     email,
     url,
     location,
-    can_apply_daycare,
-    can_apply_preschool,
     opening_date,
     closing_date,
     ghost_unit
 FROM daycare
 WHERE daterange(opening_date, closing_date, '[]') @> :date AND (
-    (:club AND type && '{CLUB}'::care_types[] AND (NOT :onlyApplicable OR can_apply_club))
-    OR (:daycare AND type && '{CENTRE, FAMILY, GROUP_FAMILY}'::care_types[] AND (NOT :onlyApplicable OR can_apply_daycare))
-    OR (:preschool AND type && '{PRESCHOOL}'::care_types[] AND (NOT :onlyApplicable OR can_apply_preschool))
-    OR (:preparatory AND type && '{PREPARATORY_EDUCATION}'::care_types[] AND (NOT :onlyApplicable OR can_apply_preschool))
+    (:club AND type && '{CLUB}'::care_types[] AND (NOT :onlyApplicable OR (club_apply_period IS NOT NULL AND club_apply_period @> :date)))
+    OR (:daycare AND type && '{CENTRE, FAMILY, GROUP_FAMILY}'::care_types[] AND (NOT :onlyApplicable OR (daycare_apply_period IS NOT NULL AND daycare_apply_period @> :date)))
+    OR (:preschool AND type && '{PRESCHOOL}'::care_types[] AND (NOT :onlyApplicable OR (preschool_apply_period IS NOT NULL AND preschool_apply_period @> :date)))
+    OR (:preparatory AND type && '{PREPARATORY_EDUCATION}'::care_types[] AND (NOT :onlyApplicable OR (preschool_apply_period IS NOT NULL AND preschool_apply_period @> :date)))
 )
 ORDER BY name ASC
-        """.trimIndent()
-    )
+    """.trimIndent()
+    return createQuery(sql)
         .bind("date", date)
         .bind("onlyApplicable", onlyApplicable)
         .bind("club", type == ApplicationUnitType.CLUB)
@@ -234,6 +238,7 @@ ORDER BY name ASC
         .bind("preparatory", type == ApplicationUnitType.PREPARATORY)
         .mapTo<PublicUnit>()
         .toList()
+}
 
 fun Handle.getUnitManager(unitId: UUID): DaycareManager? = createQuery(
     // language=SQL

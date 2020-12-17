@@ -25,6 +25,7 @@ import fi.espoo.evaka.daycare.domain.ProviderType.PRIVATE
 import fi.espoo.evaka.daycare.updateDaycare
 import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.domain.Coordinate
+import fi.espoo.evaka.shared.domain.Period
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
@@ -109,9 +110,9 @@ class LocationServiceIntegrationTest : PureJdbiTest() {
                 areaId = location.care_area_id,
                 visitingAddress = location.visitingAddress,
                 mailingAddress = location.mailingAddress,
-                canApplyDaycare = location.canApplyDaycare,
-                canApplyPreschool = location.canApplyPreschool,
-                canApplyClub = location.canApplyClub,
+                daycareApplyPeriod = location.daycareApplyPeriod,
+                preschoolApplyPeriod = location.preschoolApplyPeriod,
+                clubApplyPeriod = location.clubApplyPeriod,
                 providerType = location.provider_type ?: ProviderType.MUNICIPAL,
                 language = location.language ?: Language.fi,
                 location = location.location,
@@ -168,8 +169,8 @@ class LocationServiceIntegrationTest : PureJdbiTest() {
         url = "https://espoo.fi",
         phone = "123456",
         provider_type = providerType,
-        canApplyDaycare = type.contains(CENTRE),
-        canApplyPreschool = type.contains(PRESCHOOL),
-        canApplyClub = type.contains(CLUB)
+        daycareApplyPeriod = Period(LocalDate.of(2020, 3, 1), null).takeIf { type.contains(CENTRE) },
+        preschoolApplyPeriod = Period(LocalDate.of(2020, 3, 1), null).takeIf { type.contains(PRESCHOOL) },
+        clubApplyPeriod = Period(LocalDate.of(2020, 3, 1), null).takeIf { type.contains(CLUB) }
     )
 }

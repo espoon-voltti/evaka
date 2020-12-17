@@ -35,7 +35,7 @@ class LocationControllerIT : FullApplicationTest() {
             assertTrue(
                 this.all {
                     it.daycares.all {
-                        it.canApplyClub || it.canApplyDaycare || it.canApplyPreschool
+                        it.daycareApplyPeriod != null || it.preschoolApplyPeriod != null || it.clubApplyPeriod != null
                     }
                 }
             )

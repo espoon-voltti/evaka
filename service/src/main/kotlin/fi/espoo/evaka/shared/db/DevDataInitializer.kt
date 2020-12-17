@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component
 
 @Component
 @Profile("local")
-class DevDataInitializer(private val jdbi: Jdbi) {
+class DevDataInitializer(jdbi: Jdbi) {
     init {
         jdbi.transaction { h ->
             if (h.createQuery("SELECT count(*) FROM care_area").mapTo<Int>().first() == 0) {

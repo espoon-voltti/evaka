@@ -38,6 +38,7 @@ import {
   insertVtjPersonFixture,
   PersonDetailWithDependantsAndGuardians
 } from './index'
+import LocalDate from '@evaka/lib-common/src/local-date'
 
 export const supervisor: EmployeeDetail = {
   id: '552e5bde-92fb-4807-a388-40016f85f593',
@@ -78,9 +79,12 @@ export const clubFixture: Daycare = {
   decisionPreschoolName: '-',
   decisionHandler: 'Käsittelijä',
   decisionHandlerAddress: 'Käsittelijän osoite',
-  canApplyClub: true,
-  canApplyDaycare: true,
-  canApplyPreschool: false
+  daycareApplyPeriod: null,
+  preschoolApplyPeriod: null,
+  clubApplyPeriod: {
+    start: LocalDate.of(2020, 3, 1),
+    end: null
+  }
 }
 
 export const daycareFixture: Daycare = {

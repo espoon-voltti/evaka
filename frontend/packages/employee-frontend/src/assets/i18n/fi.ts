@@ -2074,6 +2074,7 @@ export const fi = {
       }
     },
     field: {
+      applyPeriod: 'Kun toivottu alkamispäivä aikavälillä',
       canApplyDaycare: 'Varhaiskasvatushaussa',
       canApplyPreschool: 'Esiopetushaussa',
       canApplyClub: 'Kerhohaussa',

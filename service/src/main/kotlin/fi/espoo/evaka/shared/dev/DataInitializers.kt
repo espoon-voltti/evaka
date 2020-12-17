@@ -64,7 +64,7 @@ WITH insert_unit_manager AS (
   RETURNING id
 )
 INSERT INTO daycare (
-  id, name, opening_date, closing_date, care_area_id, type, can_apply_club, can_apply_daycare, can_apply_preschool, provider_type,
+  id, name, opening_date, closing_date, care_area_id, type, daycare_apply_period, preschool_apply_period, club_apply_period, provider_type,
   capacity, language, ghost_unit, upload_to_varda, upload_to_koski, invoiced_by_municipality, cost_center,
   additional_info, phone, email, url,
   street_address, postal_code, post_office,
@@ -73,7 +73,7 @@ INSERT INTO daycare (
   decision_daycare_name, decision_preschool_name, decision_handler, decision_handler_address,
   oph_unit_oid, oph_organizer_oid, oph_organization_oid
 ) VALUES (
-  :id, :name, :openingDate, :closingDate, :areaId, :type::care_types[], :canApplyClub, :canApplyDaycare, :canApplyPreschool, :providerType,
+  :id, :name, :openingDate, :closingDate, :areaId, :type::care_types[], :daycareApplyPeriod, :preschoolApplyPeriod, :clubApplyPeriod, :providerType,
   :capacity, :language, :ghostUnit, :uploadToVarda, :uploadToKoski, :invoicedByMunicipality, :costCenter,
   :additionalInfo, :phone, :email, :url,
   :visitingAddress.streetAddress, :visitingAddress.postalCode, :visitingAddress.postOffice,

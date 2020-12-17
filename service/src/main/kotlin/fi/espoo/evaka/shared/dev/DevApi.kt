@@ -63,6 +63,7 @@ import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.ClosedPeriod
 import fi.espoo.evaka.shared.domain.Coordinate
 import fi.espoo.evaka.shared.domain.NotFound
+import fi.espoo.evaka.shared.domain.Period
 import fi.espoo.evaka.shared.message.MockEvakaMessageClient
 import fi.espoo.evaka.shared.message.SuomiFiMessage
 import fi.espoo.evaka.vtjclient.dto.VtjPerson
@@ -804,30 +805,6 @@ data class DevChild(
     val additionalInfo: String = ""
 )
 
-data class DevClubAcl(val employeeId: UUID)
-
-data class DevClubGroup(
-    val id: UUID = UUID.randomUUID(),
-    val name: String,
-    val careAreaId: UUID,
-    val providerType: ProviderType = ProviderType.MUNICIPAL,
-    val language: Language = Language.fi,
-    val ghostUnit: Boolean = false,
-    val description: String = "",
-    val unitManagerId: UUID? = null,
-    val clubId: UUID = UUID.randomUUID(),
-    val minAge: Int,
-    val maxAge: Int,
-    val schedule: String = "",
-    val phone: String? = null,
-    val email: String? = null,
-    val additionalInfo: String? = null,
-    val url: String? = null,
-    val location: Coordinate? = null,
-    val visitingAddress: VisitingAddress = VisitingAddress(),
-    val mailingAddress: MailingAddress = MailingAddress()
-)
-
 data class DevDaycare(
     val id: UUID? = UUID.randomUUID(),
     val name: String = "Test Daycare",
@@ -835,9 +812,9 @@ data class DevDaycare(
     val closingDate: LocalDate? = null,
     val areaId: UUID,
     val type: Set<CareType> = setOf(CareType.CENTRE, CareType.PRESCHOOL, CareType.PREPARATORY_EDUCATION),
-    val canApplyClub: Boolean = false,
-    val canApplyDaycare: Boolean = true,
-    val canApplyPreschool: Boolean = true,
+    val daycareApplyPeriod: Period? = Period(LocalDate.of(2020, 3, 1), null),
+    val preschoolApplyPeriod: Period? = Period(LocalDate.of(2020, 3, 1), null),
+    val clubApplyPeriod: Period? = null,
     val providerType: ProviderType = ProviderType.MUNICIPAL,
     val capacity: Int = 0,
     val language: Language = Language.fi,
