@@ -65,6 +65,7 @@ services:
       REDIS_PORT: ${EVAKA_REDIS_PORT}
       REDIS_DISABLE_SECURITY: "true"
       JWT_PRIVATE_KEY: /home/evaka/test-cert/jwt_private_key.pem
+      EVAKA_SAML_PRIVATE_CERT: /home/evaka/test-cert/saml-private.pem
       ENABLE_DEV_API: "true"
       PRETTY_LOGS: "false"
 
