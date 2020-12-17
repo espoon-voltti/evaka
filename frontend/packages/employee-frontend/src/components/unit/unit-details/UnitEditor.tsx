@@ -749,7 +749,7 @@ export default function UnitEditor(props: Props): JSX.Element {
                                 updateForm({
                                   [field]: {
                                     start: startDate,
-                                    end: period?.end ?? null
+                                    end: period?.end
                                   }
                                 })
                               }}
@@ -760,7 +760,7 @@ export default function UnitEditor(props: Props): JSX.Element {
                           {' - '}
                           {props.editable ? (
                             <DatePickerClearable
-                              date={period?.end ?? null}
+                              date={period?.end}
                               onChange={(endDate) => {
                                 if (!period || endDate.isBefore(period.start)) {
                                   return
