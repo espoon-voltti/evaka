@@ -4,16 +4,14 @@
 
 import React from 'react'
 import styled from 'styled-components'
-import colors, { greyscale } from '@evaka/lib-components/src/colors'
-import { IconDefinition } from '@fortawesome/fontawesome-svg-core'
-import { defaultMargins } from '@evaka/lib-components/src/white-space'
 import classNames from 'classnames'
-import { defaultButtonTextStyle } from 'components/shared/atoms/buttons/button-commons'
-import { BaseProps } from '@evaka/lib-components/src/utils'
+import { IconDefinition } from '@fortawesome/fontawesome-svg-core'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import UnderRowStatusIcon, {
-  InfoStatus
-} from 'components/shared/UnderRowStatusIcon'
+import colors, { greyscale } from '../../colors'
+import { defaultMargins } from '../../white-space'
+import { BaseProps } from '../../utils'
+import UnderRowStatusIcon, { InfoStatus } from '../StatusIcon'
+import { defaultButtonTextStyle } from './button-commons'
 
 const Wrapper = styled.div`
   min-width: 0; // needed for correct overflow behavior

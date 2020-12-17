@@ -4,7 +4,7 @@
 
 import React, { useContext, useEffect, useState } from 'react'
 import styled from 'styled-components'
-import InputField from '~components/shared/atoms/form/InputField'
+import InputField from '@evaka/lib-components/src/atoms/form/InputField'
 import FormModal from '~components/common/FormModal'
 import { useTranslation } from '~state/i18n'
 import { UIContext } from '~state/ui'

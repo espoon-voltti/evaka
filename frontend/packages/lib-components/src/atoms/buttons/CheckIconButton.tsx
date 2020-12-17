@@ -2,13 +2,13 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React from 'react'
 import styled from 'styled-components'
-import colors from '@evaka/lib-components/src/colors'
 import classNames from 'classnames'
-import { BaseProps } from '@evaka/lib-components/src/utils'
-import { faTimes } from '@evaka/lib-icons'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faCheck } from '@evaka/lib-icons'
+import colors from '../../colors'
+import { BaseProps } from '../../utils'
 
 const StyledButton = styled.button`
   display: flex;
@@ -27,31 +27,31 @@ const StyledButton = styled.button`
 
   &.active {
     color: ${colors.greyscale.white};
-    background-color: ${colors.accents.red};
+    background-color: ${colors.accents.green};
     border-radius: 100%;
   }
 `
 
-interface CrossIconButtonProps extends BaseProps {
+interface CheckIconButtonProps extends BaseProps {
   onClick?: () => void
   active: boolean
 }
 
-function CrossIconButton({
+function CheckIconButton({
   className,
   dataQa,
   onClick,
   active
-}: CrossIconButtonProps) {
+}: CheckIconButtonProps) {
   return (
     <StyledButton
       className={classNames(className, { active })}
       data-qa={dataQa}
       onClick={onClick}
     >
-      <FontAwesomeIcon icon={faTimes} />
+      <FontAwesomeIcon icon={faCheck} />
     </StyledButton>
   )
 }
 
-export default CrossIconButton
+export default CheckIconButton

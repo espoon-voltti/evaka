@@ -5,7 +5,7 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
-import Title from '~components/shared/atoms/Title'
+import Title from '@evaka/lib-components/src/atoms/Title'
 import { useTranslation } from '~state/i18n'
 import { Unit } from '~types/unit'
 import { DataList } from 'components/common/DataList'

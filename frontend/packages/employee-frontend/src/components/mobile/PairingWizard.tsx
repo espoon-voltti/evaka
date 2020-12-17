@@ -14,8 +14,8 @@ import {
   PairingResponse,
   postPairingChallenge
 } from '~api/unit'
-import IconButton from '~components/shared/atoms/buttons/IconButton'
-import InputField from '~components/shared/atoms/form/InputField'
+import IconButton from '@evaka/lib-components/src/atoms/buttons/IconButton'
+import InputField from '@evaka/lib-components/src/atoms/form/InputField'
 import colors from '@evaka/lib-components/src/colors'
 import { P } from '@evaka/lib-components/src/typography'
 import { faArrowRight } from '@evaka/lib-icons'

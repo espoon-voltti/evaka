@@ -12,9 +12,9 @@ import React, {
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 import LocalDate from '@evaka/lib-common/src/local-date'
-import InlineButton from '~components/shared/atoms/buttons/InlineButton'
-import Title from '~components/shared/atoms/Title'
-import Loader from '~components/shared/atoms/Loader'
+import InlineButton from '@evaka/lib-components/src/atoms/buttons/InlineButton'
+import Title from '@evaka/lib-components/src/atoms/Title'
+import Loader from '@evaka/lib-components/src/atoms/Loader'
 
 import { useTranslation } from '~state/i18n'
 import { Loading, Result } from '~api'

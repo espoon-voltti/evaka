@@ -8,7 +8,7 @@ import { faExclamationTriangle } from '@evaka/lib-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { areIntervalsOverlapping } from 'date-fns'
 import LocalDate from '@evaka/lib-common/src/local-date'
-import Title from '~components/shared/atoms/Title'
+import Title from '@evaka/lib-components/src/atoms/Title'
 
 import { useTranslation } from '~state/i18n'
 import { DatePicker } from '~components/common/DatePicker'

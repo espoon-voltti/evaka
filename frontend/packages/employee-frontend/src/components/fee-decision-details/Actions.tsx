@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useState } from 'react'
-import AsyncButton from '~components/shared/atoms/buttons/AsyncButton'
-import Button from '~components/shared/atoms/buttons/Button'
+import AsyncButton from '@evaka/lib-components/src/atoms/buttons/AsyncButton'
+import Button from '@evaka/lib-components/src/atoms/buttons/Button'
 import { useTranslation } from '../../state/i18n'
 import { FeeDecisionDetailed } from '../../types/invoicing'
 import {

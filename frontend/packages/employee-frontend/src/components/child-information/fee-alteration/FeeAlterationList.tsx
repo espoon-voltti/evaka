@@ -5,7 +5,7 @@
 import React, { Fragment } from 'react'
 import styled from 'styled-components'
 import { faPen, faTrash } from '@evaka/lib-icons'
-import IconButton from '~components/shared/atoms/buttons/IconButton'
+import IconButton from '@evaka/lib-components/src/atoms/buttons/IconButton'
 import ListGrid from '~components/shared/layout/ListGrid'
 import { FixedSpaceRow } from '~components/shared/layout/flex-helpers'
 import { Label } from '@evaka/lib-components/src/typography'

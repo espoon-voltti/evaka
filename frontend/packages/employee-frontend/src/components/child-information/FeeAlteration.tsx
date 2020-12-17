@@ -4,7 +4,7 @@
 
 import React, { useContext, useEffect, useRef, useState } from 'react'
 import { faMoneyCheckEdit, faQuestion } from '@evaka/lib-icons'
-import Loader from '~components/shared/atoms/Loader'
+import Loader from '@evaka/lib-components/src/atoms/Loader'
 import { Gap } from '@evaka/lib-components/src/white-space'
 import InfoModal from '~components/common/InfoModal'
 import FeeAlterationList from './fee-alteration/FeeAlterationList'
@@ -21,7 +21,7 @@ import {
   getFeeAlterations,
   updateFeeAlteration
 } from 'api/child/fee-alteration'
-import { AddButtonRow } from 'components/shared/atoms/buttons/AddButton'
+import { AddButtonRow } from '@evaka/lib-components/src/atoms/buttons/AddButton'
 import { scrollToRef } from 'utils'
 import CollapsibleSection from 'components/shared/molecules/CollapsibleSection'
 

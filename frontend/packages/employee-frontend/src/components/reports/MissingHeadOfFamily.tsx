@@ -8,8 +8,8 @@ import styled from 'styled-components'
 import { Link } from 'react-router-dom'
 
 import { Container, ContentArea } from '~components/shared/layout/Container'
-import Loader from '~components/shared/atoms/Loader'
-import Title from '~components/shared/atoms/Title'
+import Loader from '@evaka/lib-components/src/atoms/Loader'
+import Title from '@evaka/lib-components/src/atoms/Title'
 import { Th, Tr, Td, Thead, Tbody } from '~components/shared/layout/Table'
 import { reactSelectStyles } from '~components/common/Select'
 import { useTranslation } from '~state/i18n'
@@ -19,7 +19,7 @@ import {
   getMissingHeadOfFamilyReport,
   MissingHeadOfFamilyReportFilters
 } from '~api/reports'
-import ReturnButton from 'components/shared/atoms/buttons/ReturnButton'
+import ReturnButton from '@evaka/lib-components/src/atoms/buttons/ReturnButton'
 import ReportDownload from '~components/reports/ReportDownload'
 import {
   FilterLabel,
@@ -75,7 +75,7 @@ function MissingHeadOfFamily() {
 
   return (
     <Container>
-      <ReturnButton />
+      <ReturnButton label={i18n.common.goBack} />
       <ContentArea opaque>
         <Title size={1}>{i18n.reports.missingHeadOfFamily.title}</Title>
 

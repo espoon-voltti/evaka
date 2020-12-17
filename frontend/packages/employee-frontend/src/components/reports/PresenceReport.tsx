@@ -3,15 +3,14 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useEffect, useState } from 'react'
-
 import { Container, ContentArea } from '~components/shared/layout/Container'
-import Loader from '~components/shared/atoms/Loader'
-import Title from '~components/shared/atoms/Title'
+import Loader from '@evaka/lib-components/src/atoms/Loader'
+import Title from '@evaka/lib-components/src/atoms/Title'
 import { useTranslation } from '~state/i18n'
 import { Loading, Result } from '~api'
 import { PresenceReportRow } from '~types/reports'
 import { getPresenceReport, PeriodFilters } from '~api/reports'
-import ReturnButton from 'components/shared/atoms/buttons/ReturnButton'
+import ReturnButton from '@evaka/lib-components/src/atoms/buttons/ReturnButton'
 import ReportDownload from '~components/reports/ReportDownload'
 import { FilterLabel, FilterRow } from '~components/reports/common'
 import { DatePicker } from '~components/common/DatePicker'
@@ -33,7 +32,7 @@ function Presences() {
 
   return (
     <Container>
-      <ReturnButton />
+      <ReturnButton label={i18n.common.goBack} />
       <ContentArea opaque>
         <Title size={1}>{i18n.reports.presence.title}</Title>
         <FilterRow>

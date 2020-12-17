@@ -5,7 +5,7 @@
 import React, { useState } from 'react'
 import styled from 'styled-components'
 import { faEllipsisVAlt } from '@evaka/lib-icons'
-import IconButton from 'components/shared/atoms/buttons/IconButton'
+import IconButton from '@evaka/lib-components/src/atoms/buttons/IconButton'
 import useCloseOnOutsideClick from '~utils/useCloseOnOutsideClick'
 import { EspooColours } from '~utils/colours'
 import { Action } from '~components/applications/ApplicationActions'

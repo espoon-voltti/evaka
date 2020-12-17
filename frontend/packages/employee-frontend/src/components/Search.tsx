@@ -12,9 +12,9 @@ import { getAge } from '@evaka/lib-common/src/utils/local-date'
 import { formatName } from '~/utils'
 import { triggerDvvBatch } from '~api/hidden'
 import { Gap } from '@evaka/lib-components/src/white-space'
-import AddButton from '~components/shared/atoms/buttons/AddButton'
-import Button from 'components/shared/atoms/buttons/Button'
-import InputField from 'components/shared/atoms/form/InputField'
+import AddButton from '@evaka/lib-components/src/atoms/buttons/AddButton'
+import Button from '@evaka/lib-components/src/atoms/buttons/Button'
+import InputField from '@evaka/lib-components/src/atoms/form/InputField'
 import { Container, ContentArea } from 'components/shared/layout/Container'
 import {
   Table,
@@ -24,7 +24,7 @@ import {
   Tbody,
   SortableTh
 } from '~components/shared/layout/Table'
-import Loader from './shared/atoms/Loader'
+import Loader from '@evaka/lib-components/src/atoms/Loader'
 import AddVTJPersonModal from '~components/person-search/AddVTJPersonModal'
 import CreatePersonModal from '~components/person-search/CreatePersonModal'
 import { CHILD_AGE } from '~constants.ts'

@@ -8,7 +8,7 @@ import styled from 'styled-components'
 
 import { faChevronUp, faChevronDown } from '@evaka/lib-icons'
 import '~components/common/ToolbarAccordion.scss'
-import Title from '~components/shared/atoms/Title'
+import Title from '@evaka/lib-components/src/atoms/Title'
 import StatusLabel, { StatusLabelType } from '~components/common/StatusLabel'
 import colors from '@evaka/lib-components/src/colors'
 import { Gap } from '@evaka/lib-components/src/white-space'

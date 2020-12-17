@@ -7,7 +7,7 @@ import { storiesOf } from '@storybook/react'
 import styled from 'styled-components'
 import { defaultMargins } from '@evaka/lib-components/src/white-space'
 import { FixedSpaceRow } from 'components/shared/layout/flex-helpers'
-import RoundIcon from 'components/shared/atoms/RoundIcon'
+import RoundIcon from '@evaka/lib-components/src/atoms/RoundIcon'
 import {
   faCheck,
   faExclamation,

@@ -4,10 +4,10 @@
 
 import React from 'react'
 import styled from 'styled-components'
-import { greyscale } from '@evaka/lib-components/src/colors'
-import { defaultMargins } from '@evaka/lib-components/src/white-space'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { fasCaretUp } from '@evaka/lib-icons'
+import { greyscale } from '../colors'
+import { defaultMargins } from '../white-space'
 
 const TooltipWrapper = styled.div`
   position: relative;
@@ -56,7 +56,7 @@ const Beak = styled.div`
   color: ${greyscale.dark};
 `
 
-interface TooltipProps {
+type TooltipProps = {
   children: React.ReactNode
   tooltip: JSX.Element
 }

@@ -13,7 +13,7 @@ import EspooLogo from '../assets/EspooLogo.png'
 import { logoutUrl } from '~api/auth'
 import { RequireRole } from '~utils/roles'
 import '~components/Header.scss'
-import Title from './shared/atoms/Title'
+import Title from '@evaka/lib-components/src/atoms/Title'
 
 const Img = styled.img`
   color: #0050bb;

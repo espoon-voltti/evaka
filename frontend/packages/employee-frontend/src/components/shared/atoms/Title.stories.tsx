@@ -5,7 +5,7 @@
 import React from 'react'
 import { storiesOf } from '@storybook/react'
 
-import Title from 'components/shared/atoms/Title'
+import Title from '@evaka/lib-components/src/atoms/Title'
 
 storiesOf('evaka/atoms/Title', module).add('default', () => (
   <div>

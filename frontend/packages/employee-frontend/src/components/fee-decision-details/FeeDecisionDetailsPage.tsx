@@ -7,7 +7,7 @@ import { Redirect, useHistory, useParams } from 'react-router-dom'
 import styled from 'styled-components'
 import { faQuestion } from '@evaka/lib-icons'
 import { Container, ContentArea } from '~components/shared/layout/Container'
-import ReturnButton from '~components/shared/atoms/buttons/ReturnButton'
+import ReturnButton from '@evaka/lib-components/src/atoms/buttons/ReturnButton'
 import InfoModal from '~components/common/InfoModal'
 import Heading from './Heading'
 import ChildSection from './ChildSection'
@@ -76,7 +76,7 @@ export default React.memo(function FeeDecisionDetailsPage() {
         className="fee-decision-details-page"
         data-qa="fee-decision-details-page"
       >
-        <ReturnButton dataQa="navigate-back" />
+        <ReturnButton label={i18n.common.goBack} data-qa="navigate-back" />
         {decision.isSuccess && (
           <ContentArea opaque>
             <Heading

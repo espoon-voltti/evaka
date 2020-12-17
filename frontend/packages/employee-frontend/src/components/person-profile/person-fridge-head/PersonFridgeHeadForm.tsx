@@ -10,9 +10,9 @@ import { Result } from '~api'
 import { fridgeHeadPerson, getPersonDetails } from '~api/person'
 import { useContext } from 'react'
 import { PersonContext, PersonState } from '~state/person'
-import Button from '~components/shared/atoms/buttons/Button'
+import Button from '@evaka/lib-components/src/atoms/buttons/Button'
 import { UIContext, UiState } from '~state/ui'
-import InputField from '~components/shared/atoms/form/InputField'
+import InputField from '@evaka/lib-components/src/atoms/form/InputField'
 import {
   isEmailValid,
   isPhoneValid,

@@ -2,13 +2,13 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { IconDefinition } from '@fortawesome/fontawesome-svg-core'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React from 'react'
 import styled from 'styled-components'
-import colors, { greyscale } from '@evaka/lib-components/src/colors'
 import classNames from 'classnames'
-import { BaseProps } from '@evaka/lib-components/src/utils'
+import { IconDefinition } from '@fortawesome/fontawesome-svg-core'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import colors, { greyscale } from '../../colors'
+import { BaseProps } from '../../utils'
 import { IconSize } from '../RoundIcon'
 
 interface ButtonProps {

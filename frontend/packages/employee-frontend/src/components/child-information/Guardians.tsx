@@ -8,7 +8,7 @@ import { useTranslation } from '~state/i18n'
 import { useEffect } from 'react'
 import { Loading } from '~api'
 import { useContext } from 'react'
-import Loader from '~components/shared/atoms/Loader'
+import Loader from '@evaka/lib-components/src/atoms/Loader'
 import {
   Table,
   Tbody,

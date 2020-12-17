@@ -11,7 +11,7 @@ import { useContext } from 'react'
 import { PersonContext } from '~state/person'
 import { formatName } from '~utils'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'components/shared/layout/Table'
-import Loader from '~components/shared/atoms/Loader'
+import Loader from '@evaka/lib-components/src/atoms/Loader'
 import CollapsibleSection from 'components/shared/molecules/CollapsibleSection'
 import { Parentship } from '~types/fridge'
 import * as _ from 'lodash'
@@ -26,7 +26,7 @@ import {
   retryParentship
 } from '~api/parentships'
 import { ButtonsTd, DateTd, NameTd } from '~components/PersonProfile'
-import { AddButtonRow } from 'components/shared/atoms/buttons/AddButton'
+import { AddButtonRow } from '@evaka/lib-components/src/atoms/buttons/AddButton'
 import Toolbar from 'components/shared/molecules/Toolbar'
 import { getAge } from '@evaka/lib-common/src/utils/local-date'
 

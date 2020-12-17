@@ -4,15 +4,12 @@
 
 import React from 'react'
 import styled from 'styled-components'
-import { useTimeoutFn } from 'react-use'
-import colors, { greyscale } from '@evaka/lib-components/src/colors'
 import classNames from 'classnames'
-import { defaultButtonTextStyle } from 'components/shared/atoms/buttons/button-commons'
-import { BaseProps } from '@evaka/lib-components/src/utils'
-import { defaultMargins } from '@evaka/lib-components/src/white-space'
-import UnderRowStatusIcon, {
-  InfoStatus
-} from 'components/shared/UnderRowStatusIcon'
+import colors, { greyscale } from '../../colors'
+import { defaultMargins } from '../../white-space'
+import { BaseProps } from '../../utils'
+import UnderRowStatusIcon, { InfoStatus } from '../StatusIcon'
+import { defaultButtonTextStyle } from './button-commons'
 
 const Wrapper = styled.div`
   min-width: 0; // needed for correct overflow behavior
@@ -129,16 +126,17 @@ function Button({
   info
 }: ButtonProps) {
   const [ignoreClick, setIgnoreClick] = React.useState(false)
-  const [, , startUnignoreClickTimer] = useTimeoutFn(() => {
+  React.useEffect(() => {
     if (ignoreClick) {
-      setIgnoreClick(false)
+      const id = setTimeout(() => setIgnoreClick(false), 300)
+      return () => clearTimeout(id)
     }
-  }, 300)
+    return undefined
+  }, [ignoreClick])
 
   const handleOnClick = (e: React.MouseEvent) => {
     if (!ignoreClick) {
       setIgnoreClick(true)
-      startUnignoreClickTimer()
       if (onClick) {
         onClick(e)
       }

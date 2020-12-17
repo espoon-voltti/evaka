@@ -16,7 +16,7 @@ import { useTranslation } from '~state/i18n'
 import { UIContext } from '~state/ui'
 import { ChildContext } from '~state'
 import { DateRange } from '~utils/date'
-import Button from '~components/shared/atoms/buttons/Button'
+import Button from '@evaka/lib-components/src/atoms/buttons/Button'
 import { Loading, Result } from '~api'
 import {
   isDateRangeInverted,

@@ -11,10 +11,10 @@ import { faLink } from '@evaka/lib-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import LocalDate from '@evaka/lib-common/src/local-date'
 import { Container, ContentArea } from '~components/shared/layout/Container'
-import Title from '~components/shared/atoms/Title'
+import Title from '@evaka/lib-components/src/atoms/Title'
 import { Gap } from '@evaka/lib-components/src/white-space'
-import Button from '~components/shared/atoms/buttons/Button'
-import Loader from '~components/shared/atoms/Loader'
+import Button from '@evaka/lib-components/src/atoms/buttons/Button'
+import Loader from '@evaka/lib-components/src/atoms/Loader'
 
 import {
   PlacementDraftState,

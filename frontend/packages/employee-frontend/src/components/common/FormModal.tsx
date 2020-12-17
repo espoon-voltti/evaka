@@ -8,14 +8,14 @@ import { IconProp } from '@fortawesome/fontawesome-svg-core'
 import styled from 'styled-components'
 import FocusLock from 'react-focus-lock'
 
-import Title from '~components/shared/atoms/Title'
-import Button from '~components/shared/atoms/buttons/Button'
-import AsyncButton from '~components/shared/atoms/buttons/AsyncButton'
+import Title from '@evaka/lib-components/src/atoms/Title'
+import Button from '@evaka/lib-components/src/atoms/buttons/Button'
+import AsyncButton from '@evaka/lib-components/src/atoms/buttons/AsyncButton'
 import colors from '@evaka/lib-components/src/colors'
 import { defaultMargins, Gap } from '@evaka/lib-components/src/white-space'
 import { useTranslation } from '~state/i18n'
 import { modalZIndex } from '~components/shared/layout/z-helpers'
-import { InfoStatus } from 'components/shared/UnderRowStatusIcon'
+import { InfoStatus } from '@evaka/lib-components/src/atoms/StatusIcon'
 import { P } from '@evaka/lib-components/src/typography'
 
 export const DimmedModal = styled.div``

@@ -14,12 +14,12 @@ import { Loading } from '~api'
 import { useContext } from 'react'
 import { PersonContext } from '~state/person'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'components/shared/layout/Table'
-import Loader from '~components/shared/atoms/Loader'
+import Loader from '@evaka/lib-components/src/atoms/Loader'
 import CollapsibleSection from 'components/shared/molecules/CollapsibleSection'
 import { getGuardianApplicationSummaries } from '~api/person'
 import { ApplicationSummary } from '~types/application'
 import { DateTd, NameTd, StatusTd } from '~components/PersonProfile'
-import IconButton from 'components/shared/atoms/buttons/IconButton'
+import IconButton from '@evaka/lib-components/src/atoms/buttons/IconButton'
 
 interface Props {
   id: UUID

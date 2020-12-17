@@ -4,7 +4,7 @@
 
 import React, { useContext, useState } from 'react'
 import { ApplicationUIContext } from '~state/application-ui'
-import Button from '~components/shared/atoms/buttons/Button'
+import Button from '@evaka/lib-components/src/atoms/buttons/Button'
 import { useTranslation } from '~state/i18n'
 import StickyActionBar from '~components/common/StickyActionBar'
 import { UIContext } from '~state/ui'

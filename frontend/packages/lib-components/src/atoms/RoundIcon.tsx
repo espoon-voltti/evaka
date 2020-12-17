@@ -3,17 +3,17 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
+import classNames from 'classnames'
 import styled from 'styled-components'
+import { shade } from 'polished'
 import { IconDefinition } from '@fortawesome/fontawesome-svg-core'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { BaseProps } from '@evaka/lib-components/src/utils'
-import classNames from 'classnames'
-import colors from '@evaka/lib-components/src/colors'
-import { shade } from 'polished'
+import colors from '../colors'
+import { BaseProps } from '../utils'
 
 export type IconSize = 's' | 'm' | 'L' | 'XL' | 'XXL'
 
-interface IconContainerProps {
+type IconContainerProps = {
   color: string
   size: IconSize
 }
@@ -78,7 +78,7 @@ const IconContainer = styled.div<IconContainerProps>`
   }
 `
 
-interface RoundIconProps extends BaseProps {
+type RoundIconProps = BaseProps & {
   content: IconDefinition | string
   color: string
   size: IconSize

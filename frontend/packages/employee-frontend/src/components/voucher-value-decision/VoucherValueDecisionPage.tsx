@@ -5,7 +5,7 @@
 import React, { useCallback, useContext, useEffect, useState } from 'react'
 import { Redirect, useParams } from 'react-router-dom'
 import styled from 'styled-components'
-import ReturnButton from '~components/shared/atoms/buttons/ReturnButton'
+import ReturnButton from '@evaka/lib-components/src/atoms/buttons/ReturnButton'
 import { Container, ContentArea } from '~components/shared/layout/Container'
 import VoucherValueDecisionHeading from './VoucherValueDecisionHeading'
 import VoucherValueDecisionChildSection from './VoucherValueDecisionChildSection'
@@ -56,7 +56,7 @@ export default React.memo(function VoucherValueDecisionPage() {
 
   return (
     <Container data-qa="voucher-value-decision-page">
-      <ReturnButton dataQa="navigate-back" />
+      <ReturnButton label={i18n.common.goBack} data-qa="navigate-back" />
       {decision.isSuccess && (
         <>
           <ContentArea opaque>

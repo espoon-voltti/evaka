@@ -14,7 +14,7 @@ import { DaycareGroup } from '~types/unit'
 import { FixedSpaceColumn } from '~components/shared/layout/flex-helpers'
 import { InfoBox } from '~components/common/MessageBoxes'
 import { editGroup } from '~api/unit'
-import InputField from '~components/shared/atoms/form/InputField'
+import InputField from '@evaka/lib-components/src/atoms/form/InputField'
 import { DatePicker, DatePickerClearable } from '~components/common/DatePicker'
 
 interface Props {

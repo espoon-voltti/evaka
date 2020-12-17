@@ -5,7 +5,7 @@
 import React, { useContext, useEffect, useState } from 'react'
 import { faEuroSign } from '@evaka/lib-icons'
 import { Gap } from '@evaka/lib-components/src/white-space'
-import Loader from '~components/shared/atoms/Loader'
+import Loader from '@evaka/lib-components/src/atoms/Loader'
 import CollapsibleSection from 'components/shared/molecules/CollapsibleSection'
 import IncomeList from './income/IncomeList'
 import { useTranslation } from '~state/i18n'
@@ -20,7 +20,7 @@ import {
 } from '~api/income'
 import { Income, PartialIncome, IncomeId } from '~types/income'
 import { UUID } from '~types'
-import { AddButtonRow } from 'components/shared/atoms/buttons/AddButton'
+import { AddButtonRow } from '@evaka/lib-components/src/atoms/buttons/AddButton'
 import { getMissingIncomePeriodsString } from './income/missingIncomePeriodUtils'
 
 interface Props {

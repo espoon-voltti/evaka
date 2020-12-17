@@ -6,12 +6,12 @@ import React, { useState } from 'react'
 import styled from 'styled-components'
 
 import LocalDate from '@evaka/lib-common/src/local-date'
-import AsyncButton from '~components/shared/atoms/buttons/AsyncButton'
+import AsyncButton from '@evaka/lib-components/src/atoms/buttons/AsyncButton'
 import ListGrid from '~components/shared/layout/ListGrid'
-import Button from '~components/shared/atoms/buttons/Button'
-import Checkbox from '~components/shared/atoms/form/Checkbox'
-import Radio from '~components/shared/atoms/form/Radio'
-import Title from '~components/shared/atoms/Title'
+import Button from '@evaka/lib-components/src/atoms/buttons/Button'
+import Checkbox from '@evaka/lib-components/src/atoms/form/Checkbox'
+import Radio from '@evaka/lib-components/src/atoms/form/Radio'
+import Title from '@evaka/lib-components/src/atoms/Title'
 import {
   FixedSpaceColumn,
   FixedSpaceRow

@@ -9,8 +9,8 @@ import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'components/shared/layout/flex-helpers'
-import Radio from 'components/shared/atoms/form/Radio'
-import Button from 'components/shared/atoms/buttons/Button'
+import Radio from '@evaka/lib-components/src/atoms/form/Radio'
+import Button from '@evaka/lib-components/src/atoms/buttons/Button'
 import { useTranslation } from 'state/i18n'
 import { DatePicker } from 'components/common/DatePicker'
 import { acceptDecision, rejectDecision } from 'api/applications'

@@ -6,8 +6,8 @@ import React, { useContext, useEffect, useState } from 'react'
 import { Redirect, useParams } from 'react-router-dom'
 
 import { Container, ContentArea } from '~components/shared/layout/Container'
-import ReturnButton from '~components/shared/atoms/buttons/ReturnButton'
-import Title from '~components/shared/atoms/Title'
+import ReturnButton from '@evaka/lib-components/src/atoms/buttons/ReturnButton'
+import Title from '@evaka/lib-components/src/atoms/Title'
 import { useTranslation } from '../../state/i18n'
 import { TitleContext, TitleState } from '../../state/title'
 import { Loading, Result } from '../../api'
@@ -63,7 +63,7 @@ const InvoiceDetailsPage = React.memo(function InvoiceDetailsPage() {
   return (
     <div className="invoice-details-page" data-qa="invoice-details-page">
       <Container>
-        <ReturnButton dataQa="navigate-back" />
+        <ReturnButton label={i18n.common.goBack} data-qa="navigate-back" />
         {invoice?.isSuccess ? (
           <ContentArea opaque>
             <Title size={1}>{i18n.invoice.title[invoice.value.status]}</Title>

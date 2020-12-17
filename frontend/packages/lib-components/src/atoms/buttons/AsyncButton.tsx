@@ -12,21 +12,23 @@ import { animated, useSpring } from 'react-spring'
 import classNames from 'classnames'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faCheck, faTimes } from '@evaka/lib-icons'
-import colors from '@evaka/lib-components/src/colors'
+import colors from '../../colors'
 import { StyledButton } from './Button'
-import { Result } from '~api'
 
 type Props = {
   text: string
   textInProgress?: string
   textDone?: string
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  onClick: () => Promise<void | Result<any>>
+  onClick: () => Promise<void | Result>
   onSuccess: () => void
   primary?: boolean
   disabled?: boolean
   className?: string
   'data-qa'?: string
+}
+
+type Result = {
+  isFailure: boolean
 }
 
 export default React.memo(function AsyncButton({
@@ -47,11 +49,12 @@ export default React.memo(function AsyncButton({
   const callback = () => {
     setInProgress(true)
     onClick()
-      .then((res) => {
-        if (res && res.isFailure) {
-          return setShowFailure(true)
+      .then((result) => {
+        if (result && result.isFailure) {
+          setShowFailure(true)
+        } else {
+          setShowSuccess(true)
         }
-        setShowSuccess(true)
       })
       .catch(() => setShowFailure(true))
       .finally(() => setInProgress(false))
@@ -124,8 +127,7 @@ export default React.memo(function AsyncButton({
 function delay<T>(cb: () => T, ms: number): Promise<T> {
   return new Promise((resolve) => {
     setTimeout(() => {
-      cb()
-      resolve()
+      resolve(cb())
     }, ms)
   })
 }

@@ -15,8 +15,8 @@ import {
   SortableTh
 } from '~components/shared/layout/Table'
 import { H1 } from '@evaka/lib-components/src/typography'
-import Loader from '~components/shared/atoms/Loader'
-import Checkbox from '~components/shared/atoms/form/Checkbox'
+import Loader from '@evaka/lib-components/src/atoms/Loader'
+import Checkbox from '@evaka/lib-components/src/atoms/form/Checkbox'
 import NameWithSsn from '../common/NameWithSsn'
 import ChildrenCell from '../common/ChildrenCell'
 import { useTranslation } from '../../state/i18n'

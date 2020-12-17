@@ -3,23 +3,26 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
-import ReturnButton from 'components/shared/atoms/buttons/ReturnButton'
+import ReturnButton from '@evaka/lib-components/src/atoms/buttons/ReturnButton'
 
 // todo: write new container components
 import { Container, ContentArea } from 'components/shared/layout/Container'
+import { useTranslation } from '~state/i18n'
 
 interface PageWrapperProps {
   children: React.ReactNode
   withReturn?: boolean
 }
 
-function PageWrapper({ children, withReturn }: PageWrapperProps) {
+export default React.memo(function PageWrapper({
+  children,
+  withReturn
+}: PageWrapperProps) {
+  const { i18n } = useTranslation()
   return (
     <Container>
-      {withReturn && <ReturnButton />}
+      {withReturn && <ReturnButton label={i18n.common.goBack} />}
       <ContentArea opaque>{children}</ContentArea>
     </Container>
   )
-}
-
-export default PageWrapper
+})

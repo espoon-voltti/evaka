@@ -14,7 +14,7 @@ import {
   fasExclamationTriangle
 } from '@evaka/lib-icons'
 import LocalDate from '@evaka/lib-common/src/local-date'
-import InlineButton from 'components/shared/atoms/buttons/InlineButton'
+import InlineButton from '@evaka/lib-components/src/atoms/buttons/InlineButton'
 import { DatePickerClearable } from '~components/common/DatePicker'
 import { useTranslation } from '~state/i18n'
 import {
@@ -29,12 +29,12 @@ import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'components/shared/layout/flex-helpers'
-import Checkbox from '~components/shared/atoms/form/Checkbox'
-import Radio from '~components/shared/atoms/form/Radio'
+import Checkbox from '@evaka/lib-components/src/atoms/form/Checkbox'
+import Radio from '@evaka/lib-components/src/atoms/form/Radio'
 import { Gap, defaultMargins } from '@evaka/lib-components/src/white-space'
 import { FlexRow } from './styled/containers'
-import RoundIcon from '~components/shared/atoms/RoundIcon'
-import IconButton from '~components/shared/atoms/buttons/IconButton'
+import RoundIcon from '@evaka/lib-components/src/atoms/RoundIcon'
+import IconButton from '@evaka/lib-components/src/atoms/buttons/IconButton'
 import colors from '@evaka/lib-components/src/colors'
 import { faAngleDown, faAngleUp } from '@evaka/lib-icons'
 import Tooltip from '~components/common/Tooltip'

@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
-import { H1, H2, H3, H4 } from '@evaka/lib-components/src/typography'
-import { BaseProps } from '@evaka/lib-components/src/utils'
+import { H1, H2, H3, H4 } from '../typography'
+import { BaseProps } from '../utils'
 
 interface Props extends BaseProps {
   'data-qa'?: string

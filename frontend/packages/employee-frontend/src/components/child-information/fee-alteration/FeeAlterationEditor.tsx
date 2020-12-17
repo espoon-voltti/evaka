@@ -4,9 +4,9 @@
 
 import React, { useState, FormEvent, useEffect } from 'react'
 import LocalDate from '@evaka/lib-common/src/local-date'
-import Title from '~components/shared/atoms/Title'
-import Button from '~components/shared/atoms/buttons/Button'
-import { TextArea } from '~components/shared/atoms/form/InputField'
+import Title from '@evaka/lib-components/src/atoms/Title'
+import Button from '@evaka/lib-components/src/atoms/buttons/Button'
+import { TextArea } from '@evaka/lib-components/src/atoms/form/InputField'
 import { Gap } from '@evaka/lib-components/src/white-space'
 import { FixedSpaceRow } from '~components/shared/layout/flex-helpers'
 import LabelValueList from '~components/common/LabelValueList'

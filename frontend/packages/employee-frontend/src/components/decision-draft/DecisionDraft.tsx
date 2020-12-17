@@ -15,12 +15,12 @@ import { RouteComponentProps, useHistory } from 'react-router'
 import styled from 'styled-components'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faExclamationTriangle } from '@fortawesome/free-solid-svg-icons'
-import Checkbox from '~components/shared/atoms/form/Checkbox'
+import Checkbox from '@evaka/lib-components/src/atoms/form/Checkbox'
 import { Container, ContentArea } from '~components/shared/layout/Container'
-import Title from '~components/shared/atoms/Title'
+import Title from '@evaka/lib-components/src/atoms/Title'
 import { Gap } from '@evaka/lib-components/src/white-space'
-import Button from '~components/shared/atoms/buttons/Button'
-import Loader from '~components/shared/atoms/Loader'
+import Button from '@evaka/lib-components/src/atoms/buttons/Button'
+import Loader from '@evaka/lib-components/src/atoms/Loader'
 import {
   getDecisionDrafts,
   getDecisionUnits,

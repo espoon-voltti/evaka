@@ -5,11 +5,8 @@
 import React from 'react'
 import styled from 'styled-components'
 import { transparentize } from 'polished'
-import colors from '@evaka/lib-components/src/colors'
-import {
-  defaultMargins,
-  SpacingSize
-} from '@evaka/lib-components/src/white-space'
+import colors from '../../colors'
+import { defaultMargins, SpacingSize } from '../../white-space'
 
 const spinnerSize = '50px'
 

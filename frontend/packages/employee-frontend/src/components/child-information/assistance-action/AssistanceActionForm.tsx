@@ -7,8 +7,8 @@ import styled from 'styled-components'
 import LocalDate from '@evaka/lib-common/src/local-date'
 import { useTranslation } from '~/state/i18n'
 import { UIContext } from '~state/ui'
-import Checkbox from '~components/shared/atoms/form/Checkbox'
-import InputField from '~components/shared/atoms/form/InputField'
+import Checkbox from '@evaka/lib-components/src/atoms/form/Checkbox'
+import InputField from '@evaka/lib-components/src/atoms/form/InputField'
 import InfoBall from '~components/common/InfoBall'
 import {
   AssistanceAction,

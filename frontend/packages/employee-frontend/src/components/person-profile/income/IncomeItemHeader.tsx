@@ -5,8 +5,8 @@
 import React, { createRef, RefObject, useEffect } from 'react'
 import styled from 'styled-components'
 import { faChevronLeft, faChevronDown, faPen, faTrash } from '@evaka/lib-icons'
-import IconButton from '~components/shared/atoms/buttons/IconButton'
-import Title from '~components/shared/atoms/Title'
+import IconButton from '@evaka/lib-components/src/atoms/buttons/IconButton'
+import Title from '@evaka/lib-components/src/atoms/Title'
 import { EspooColours } from '~utils/colours'
 import { FixedSpaceRow } from '~components/shared/layout/flex-helpers'
 

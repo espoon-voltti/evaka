@@ -47,17 +47,18 @@ import { updateBackupCare } from 'api/child/backup-care'
 import { formatPercentage } from 'components/utils'
 import { DataList } from 'components/common/DataList'
 import { Gap } from '@evaka/lib-components/src/white-space'
-import IconButton from '~components/shared/atoms/buttons/IconButton'
-import InlineButton from '~components/shared/atoms/buttons/InlineButton'
+import IconButton from '@evaka/lib-components/src/atoms/buttons/IconButton'
+import InlineButton from '@evaka/lib-components/src/atoms/buttons/InlineButton'
 import { H3 } from '@evaka/lib-components/src/typography'
 import { UnitFilters } from '~utils/UnitFilters'
 import { rangesOverlap } from '~utils/date'
 import colors from '@evaka/lib-components/src/colors'
 import { FixedSpaceRow } from '~components/shared/layout/flex-helpers'
-import PlacementCircle from '~components/shared/atoms/PlacementCircle'
-import Tooltip from '~components/shared/atoms/Tooltip'
+import PlacementCircle from '@evaka/lib-components/src/atoms/PlacementCircle'
+import Tooltip from '@evaka/lib-components/src/atoms/Tooltip'
 import { UIContext } from '~state/ui'
 import GroupUpdateModal from '~components/unit/tab-groups/groups/group/GroupUpdateModal'
+import { isPartDayPlacement } from '~utils/placements'
 
 interface Props {
   unit: Unit
@@ -355,7 +356,14 @@ function Group({
                         </Td>
                         <Td data-qa="placement-subtype">
                           {'type' in placement ? (
-                            <PlacementCircle type={placement.type} />
+                            <PlacementCircle
+                              type={
+                                isPartDayPlacement(placement.type)
+                                  ? 'half'
+                                  : 'full'
+                              }
+                              label={i18n.placement.type[placement.type]}
+                            />
                           ) : null}
                         </Td>
                         {showServiceNeed ? (

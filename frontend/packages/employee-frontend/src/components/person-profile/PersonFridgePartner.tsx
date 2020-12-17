@@ -11,7 +11,7 @@ import { Loading, Result } from '~api'
 import { useContext } from 'react'
 import { PersonContext } from '~state/person'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'components/shared/layout/Table'
-import Loader from '~components/shared/atoms/Loader'
+import Loader from '@evaka/lib-components/src/atoms/Loader'
 import CollapsibleSection from 'components/shared/molecules/CollapsibleSection'
 import InfoModal from '~components/common/InfoModal'
 import { Partnership } from '~types/fridge'
@@ -29,7 +29,7 @@ import {
 } from '~api/partnerships'
 import { ButtonsTd, DateTd, NameTd } from '~components/PersonProfile'
 import Toolbar from 'components/shared/molecules/Toolbar'
-import AddButton from 'components/shared/atoms/buttons/AddButton'
+import AddButton from '@evaka/lib-components/src/atoms/buttons/AddButton'
 
 const TopBar = styled.div`
   display: flex;

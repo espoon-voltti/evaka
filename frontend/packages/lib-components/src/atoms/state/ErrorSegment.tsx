@@ -4,11 +4,11 @@
 
 import React from 'react'
 import styled from 'styled-components'
-import { greyscale } from '@evaka/lib-components/src/colors'
+import classNames from 'classnames'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faMeh } from '@evaka/lib-icons'
-import { defaultMargins, Gap } from '@evaka/lib-components/src/white-space'
-import classNames from 'classnames'
+import { greyscale } from '../../colors'
+import { defaultMargins, Gap } from '../../white-space'
 
 const StyledSegment = styled.div`
   display: flex;

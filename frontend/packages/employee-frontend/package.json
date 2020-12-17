@@ -35,7 +35,6 @@
     "date-fns": "^2.8.1",
     "history": "^4.9.0",
     "lodash": "^4.17.15",
-    "polished": "^3.6.4",
     "react": "^16.12.0",
     "react-autosize-textarea": "^7.0.0",
     "react-chartjs-2": "^2.9.0",
@@ -50,7 +49,6 @@
     "react-select": "^3.0.8",
     "react-spring": "^8.0.27",
     "react-tooltip": "^4.1.0",
-    "react-use": "^13.27.0",
     "styled-components": "5.1.1"
   },
   "devDependencies": {

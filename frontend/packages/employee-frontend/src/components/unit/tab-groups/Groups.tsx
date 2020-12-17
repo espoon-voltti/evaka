@@ -9,8 +9,8 @@ import _ from 'lodash'
 import { useTranslation } from '~state/i18n'
 import { Gap } from '@evaka/lib-components/src/white-space'
 import { H2 } from '@evaka/lib-components/src/typography'
-import IconButton from '~components/shared/atoms/buttons/IconButton'
-import AddButton from '~components/shared/atoms/buttons/AddButton'
+import IconButton from '@evaka/lib-components/src/atoms/buttons/IconButton'
+import AddButton from '@evaka/lib-components/src/atoms/buttons/AddButton'
 import {
   DaycareGroup,
   DaycareGroupPlacementDetailed,
@@ -27,7 +27,7 @@ import GroupTransferModal from '~components/unit/tab-groups/groups/group/GroupTr
 import { UnitBackupCare } from '~types/child'
 import BackupCareGroupModal from '~components/unit/tab-groups/missing-group-placements/BackupCareGroupModal'
 import { UnitFilters } from '~utils/UnitFilters'
-import InlineButton from '~components/shared/atoms/buttons/InlineButton'
+import InlineButton from '@evaka/lib-components/src/atoms/buttons/InlineButton'
 import { Link } from 'react-router-dom'
 import { requireRole } from '~utils/roles'
 import { UserContext } from '~state/user'

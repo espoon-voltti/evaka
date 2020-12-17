@@ -5,7 +5,7 @@
 import React, { useState } from 'react'
 import { storiesOf } from '@storybook/react'
 import ListGrid from 'components/shared/layout/ListGrid'
-import InputField from 'components/shared/atoms/form/InputField'
+import InputField from '@evaka/lib-components/src/atoms/form/InputField'
 import { Label } from '@evaka/lib-components/src/typography'
 
 function StatefulStory() {

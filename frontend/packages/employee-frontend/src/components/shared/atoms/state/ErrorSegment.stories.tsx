@@ -4,7 +4,7 @@
 
 import { storiesOf } from '@storybook/react'
 import React from 'react'
-import ErrorSegment from 'components/shared/atoms/state/ErrorSegment'
+import ErrorSegment from '@evaka/lib-components/src/atoms/state/ErrorSegment'
 
 storiesOf('evaka/atoms/state/ErrorSegment', module)
   .add('default', () => <ErrorSegment />)

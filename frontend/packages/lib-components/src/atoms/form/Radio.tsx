@@ -4,12 +4,12 @@
 
 import React, { useRef } from 'react'
 import styled from 'styled-components'
-import colors from '@evaka/lib-components/src/colors'
+import classNames from 'classnames'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faCheck } from '@evaka/lib-icons'
-import { defaultMargins } from '@evaka/lib-components/src/white-space'
-import { BaseProps } from '@evaka/lib-components/src/utils'
-import classNames from 'classnames'
+import colors from '../../colors'
+import { defaultMargins } from '../../white-space'
+import { BaseProps } from '../../utils'
 
 const diameter = '36px'
 

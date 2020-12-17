@@ -4,13 +4,13 @@
 
 import React from 'react'
 import styled from 'styled-components'
+import classNames from 'classnames'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faPlus } from '@evaka/lib-icons'
-import colors from '@evaka/lib-components/src/colors'
-import classNames from 'classnames'
-import { defaultMargins } from '@evaka/lib-components/src/white-space'
-import { defaultButtonTextStyle } from 'components/shared/atoms/buttons/button-commons'
-import { BaseProps } from '@evaka/lib-components/src/utils'
+import colors from '../../colors'
+import { defaultMargins } from '../../white-space'
+import { BaseProps } from '../../utils'
+import { defaultButtonTextStyle } from './button-commons'
 
 const StyledButton = styled.button`
   width: fit-content;

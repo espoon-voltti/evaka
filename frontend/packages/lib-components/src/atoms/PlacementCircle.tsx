@@ -9,9 +9,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 import React from 'react'
 import styled from 'styled-components'
 import colors from '@evaka/lib-components/src/colors'
-import { PlacementType } from '~types/placementdraft'
-import Tooltip from '~components/shared/atoms/Tooltip'
-import { useTranslation } from '~state/i18n'
+import Tooltip from './Tooltip'
 
 const Circle = styled.div`
   width: 34px;
@@ -23,6 +21,7 @@ const Circle = styled.div`
   background-color: ${colors.accents.green};
   border-radius: 100%;
 `
+
 const HalfCircle = styled.div`
   width: 17px;
   height: 34px;
@@ -34,20 +33,16 @@ const HalfCircle = styled.div`
   border-top-left-radius: 17px;
   border-bottom-left-radius: 17px;
 `
-export interface Props {
-  type: PlacementType
+
+type Props = {
+  type: 'half' | 'full'
+  label: string
 }
 
-export default React.memo(function PlacementCircle({ type }: Props) {
-  const { i18n } = useTranslation()
-
+export default React.memo(function PlacementCircle({ type, label }: Props) {
   return (
-    <Tooltip tooltip={<span>{i18n.placement.type[type]}</span>}>
-      {['DAYCARE_PART_TIME', 'PRESCHOOL', 'PREPARATORY'].includes(type) ? (
-        <HalfCircle />
-      ) : (
-        <Circle />
-      )}
+    <Tooltip tooltip={<span>{label}</span>}>
+      {type === 'half' ? <HalfCircle /> : <Circle />}
     </Tooltip>
   )
 })

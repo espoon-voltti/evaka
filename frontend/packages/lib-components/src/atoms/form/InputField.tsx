@@ -3,18 +3,16 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
-import { BaseProps } from '@evaka/lib-components/src/utils'
 import styled from 'styled-components'
-import colors from '@evaka/lib-components/src/colors'
 import classNames from 'classnames'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faTimes } from '@evaka/lib-icons'
-import { defaultMargins } from '@evaka/lib-components/src/white-space'
-import { IconProp } from '@fortawesome/fontawesome-svg-core'
 import TextareaAutosize from 'react-autosize-textarea'
-import UnderRowStatusIcon, {
-  InfoStatus
-} from 'components/shared/UnderRowStatusIcon'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { IconProp } from '@fortawesome/fontawesome-svg-core'
+import { faTimes } from '@evaka/lib-icons'
+import colors from '../../colors'
+import { defaultMargins } from '../../white-space'
+import { BaseProps } from '../../utils'
+import UnderRowStatusIcon, { InfoStatus } from '../StatusIcon'
 
 const Wrapper = styled.div`
   min-width: 0; // needed for correct overflow behavior

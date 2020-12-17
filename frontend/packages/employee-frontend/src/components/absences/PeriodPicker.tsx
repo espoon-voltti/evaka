@@ -8,9 +8,9 @@ import * as _ from 'lodash'
 import LocalDate from '@evaka/lib-common/src/local-date'
 import { useTranslation } from '~state/i18n'
 import './PeriodPicker.scss'
-import Title from '~components/shared/atoms/Title'
+import Title from '@evaka/lib-components/src/atoms/Title'
 import { faChevronLeft, faChevronRight } from '@evaka/lib-icons'
-import IconButton from '~components/shared/atoms/buttons/IconButton'
+import IconButton from '@evaka/lib-components/src/atoms/buttons/IconButton'
 import { Gap } from '@evaka/lib-components/src/white-space'
 
 export enum PeriodPickerMode {

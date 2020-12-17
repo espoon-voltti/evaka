@@ -14,9 +14,9 @@ import {
   Tbody,
   SortableTh
 } from '~components/shared/layout/Table'
-import Title from '~components/shared/atoms/Title'
-import Loader from '~components/shared/atoms/Loader'
-import Checkbox from '~components/shared/atoms/form/Checkbox'
+import Title from '@evaka/lib-components/src/atoms/Title'
+import Loader from '@evaka/lib-components/src/atoms/Loader'
+import Checkbox from '@evaka/lib-components/src/atoms/form/Checkbox'
 import NameWithSsn from '../common/NameWithSsn'
 import ChildrenCell from '../common/ChildrenCell'
 import { useTranslation } from '../../state/i18n'

@@ -13,8 +13,8 @@ import {
   Thead,
   Tbody
 } from '~components/shared/layout/Table'
-import Title from '~components/shared/atoms/Title'
-import InlineButton from '~components/shared/atoms/buttons/InlineButton'
+import Title from '@evaka/lib-components/src/atoms/Title'
+import InlineButton from '@evaka/lib-components/src/atoms/buttons/InlineButton'
 import { faArrowRight } from '@evaka/lib-icons'
 import { useTranslation } from '~state/i18n'
 import { DaycareGroup } from '~types/unit'
@@ -27,8 +27,9 @@ import CareTypeLabel, {
 } from '~components/common/CareTypeLabel'
 import { UnitBackupCare } from '~types/child'
 import { formatName } from '~utils'
-import PlacementCircle from '~components/shared/atoms/PlacementCircle'
+import PlacementCircle from '@evaka/lib-components/src/atoms/PlacementCircle'
 import { MissingGroupPlacement } from '~api/unit'
+import { isPartDayPlacement } from '~utils/placements'
 
 function renderMissingGroupPlacementRow(
   missingPlacement: MissingGroupPlacement,
@@ -66,7 +67,12 @@ function renderMissingGroupPlacementRow(
         )}
       </Td>
       <Td data-qa="placement-subtype">
-        {placementType && <PlacementCircle type={placementType} />}
+        {placementType && (
+          <PlacementCircle
+            type={isPartDayPlacement(placementType) ? 'half' : 'full'}
+            label={i18n.placement.type[placementType]}
+          />
+        )}
       </Td>
       <Td data-qa="placement-duration">
         {`${placementPeriod.start.format()} - ${placementPeriod.end.format()}`}

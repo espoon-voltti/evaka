@@ -7,8 +7,8 @@ import styled from 'styled-components'
 import * as _ from 'lodash'
 import { Link } from 'react-router-dom'
 import { SearchColumn, UnitsContext, UnitsState } from '~state/units'
-import Button from 'components/shared/atoms/buttons/Button'
-import InputField from 'components/shared/atoms/form/InputField'
+import Button from '@evaka/lib-components/src/atoms/buttons/Button'
+import InputField from '@evaka/lib-components/src/atoms/form/InputField'
 import { Container, ContentArea } from 'components/shared/layout/Container'
 import {
   Table,
@@ -25,7 +25,7 @@ import { getDaycares } from '~api/unit'
 import { Unit } from '~types/unit'
 import { RequireRole } from '~utils/roles'
 import '~components/Units.scss'
-import Loader from './shared/atoms/Loader'
+import Loader from '@evaka/lib-components/src/atoms/Loader'
 
 const TopBar = styled.div`
   display: flex;

@@ -4,7 +4,7 @@
 
 import React from 'react'
 import { Container, ContentArea } from 'components/shared/layout/Container'
-import Title from './shared/atoms/Title'
+import Title from '@evaka/lib-components/src/atoms/Title'
 import { Gap } from '@evaka/lib-components/src/white-space'
 import { useTranslation } from '~state/i18n'
 import { Link } from 'react-router-dom'
@@ -27,7 +27,7 @@ import {
 } from '@evaka/lib-icons'
 import { EspooColours } from '~utils/colours'
 import { RequireRole } from '~utils/roles'
-import RoundIcon from 'components/shared/atoms/RoundIcon'
+import RoundIcon from '@evaka/lib-components/src/atoms/RoundIcon'
 import { defaultMargins } from '@evaka/lib-components/src/white-space'
 import { featureFlags } from '~config'
 

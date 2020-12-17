@@ -19,16 +19,17 @@ import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'components/shared/layout/flex-helpers'
-import IconButton from 'components/shared/atoms/buttons/IconButton'
+import IconButton from '@evaka/lib-components/src/atoms/buttons/IconButton'
 import { faFileAlt } from '@evaka/lib-icons'
 import { getEmployeeUrlPrefix } from '~constants'
-import CheckIconButton from '~components/shared/atoms/buttons/CheckIconButton'
-import CrossIconButton from '~components/shared/atoms/buttons/CrossIconButton'
+import CheckIconButton from '@evaka/lib-components/src/atoms/buttons/CheckIconButton'
+import CrossIconButton from '@evaka/lib-components/src/atoms/buttons/CrossIconButton'
 import FormModal from '~components/common/FormModal'
-import Radio from '~components/shared/atoms/form/Radio'
-import InputField from '~components/shared/atoms/form/InputField'
+import Radio from '@evaka/lib-components/src/atoms/form/Radio'
+import InputField from '@evaka/lib-components/src/atoms/form/InputField'
 import { Gap } from '@evaka/lib-components/src/white-space'
-import PlacementCircle from '~components/shared/atoms/PlacementCircle'
+import PlacementCircle from '@evaka/lib-components/src/atoms/PlacementCircle'
+import { isPartDayPlacement } from '~utils/placements'
 
 const CenteredDiv = styled.div`
   display: flex;
@@ -134,7 +135,10 @@ export default React.memo(function PlacementProposalRow({
           {careTypesFromPlacementType(placementPlan.type)}
         </Td>
         <Td data-qa="placement-subtype">
-          <PlacementCircle type={placementPlan.type} />
+          <PlacementCircle
+            type={isPartDayPlacement(placementPlan.type) ? 'half' : 'full'}
+            label={i18n.placement.type[placementPlan.type]}
+          />
         </Td>
         <Td data-qa="application-link">
           <CenteredDiv>

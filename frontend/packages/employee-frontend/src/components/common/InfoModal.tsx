@@ -22,9 +22,9 @@ import {
   ModalSize,
   IconColour
 } from './FormModal'
-import Title from '~components/shared/atoms/Title'
+import Title from '@evaka/lib-components/src/atoms/Title'
 import { Gap } from '@evaka/lib-components/src/white-space'
-import Button from '~components/shared/atoms/buttons/Button'
+import Button from '@evaka/lib-components/src/atoms/buttons/Button'
 import { P } from '@evaka/lib-components/src/typography'
 
 interface SizeProps {

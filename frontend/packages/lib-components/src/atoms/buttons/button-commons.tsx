@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import colors from '@evaka/lib-components/src/colors'
+import colors from '../../colors'
 
 export const defaultButtonTextStyle = `
   color: ${colors.primary};

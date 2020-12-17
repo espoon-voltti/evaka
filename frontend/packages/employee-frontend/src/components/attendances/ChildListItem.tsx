@@ -6,7 +6,7 @@ import React from 'react'
 import styled from 'styled-components'
 
 import { AttendanceChild, AttendanceStatus } from '~api/attendances'
-import RoundIcon from '~components/shared/atoms/RoundIcon'
+import RoundIcon from '@evaka/lib-components/src/atoms/RoundIcon'
 import colors from '@evaka/lib-components/src/colors'
 import { defaultMargins } from '@evaka/lib-components/src/white-space'
 import { DATE_FORMAT_TIME_ONLY } from '~constants'

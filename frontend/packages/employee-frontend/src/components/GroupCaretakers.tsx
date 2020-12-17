@@ -6,10 +6,10 @@ import React, { useContext, useEffect, useState } from 'react'
 
 import { Container, ContentArea } from '~components/shared/layout/Container'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'components/shared/layout/Table'
-import Loader from '~components/shared/atoms/Loader'
-import Title from '~components/shared/atoms/Title'
-import Button from '~components/shared/atoms/buttons/Button'
-import IconButton from '~components/shared/atoms/buttons/IconButton'
+import Loader from '@evaka/lib-components/src/atoms/Loader'
+import Title from '@evaka/lib-components/src/atoms/Title'
+import Button from '@evaka/lib-components/src/atoms/buttons/Button'
+import IconButton from '@evaka/lib-components/src/atoms/buttons/IconButton'
 import { RouteComponentProps } from 'react-router'
 import { UUID } from '~types'
 import { Loading, Result } from '~api'
@@ -24,7 +24,7 @@ import { faPen, faQuestion, faTrash } from '@evaka/lib-icons'
 import GroupCaretakersModal from '~components/group-caretakers/GroupCaretakersModal'
 import InfoModal from '~components/common/InfoModal'
 import { useTranslation } from '~state/i18n'
-import ReturnButton from 'components/shared/atoms/buttons/ReturnButton'
+import ReturnButton from '@evaka/lib-components/src/atoms/buttons/ReturnButton'
 import { FixedSpaceRow } from './shared/layout/flex-helpers'
 
 const NarrowContainer = styled.div`
@@ -91,7 +91,7 @@ function GroupCaretakers({
 
   return (
     <Container>
-      <ReturnButton />
+      <ReturnButton label={i18n.common.goBack} />
       <ContentArea opaque>
         {caretakers.isLoading && <Loader />}
         {caretakers.isFailure && <span>{i18n.common.error.unknown}</span>}

@@ -4,8 +4,8 @@
 
 import React from 'react'
 import { Result } from 'api'
-import { SpinnerSegment } from 'components/shared/atoms/state/Spinner'
-import ErrorSegment from 'components/shared/atoms/state/ErrorSegment'
+import { SpinnerSegment } from '@evaka/lib-components/src/atoms/state/Spinner'
+import ErrorSegment from '@evaka/lib-components/src/atoms/state/ErrorSegment'
 
 export function renderResult<T>(
   result: Result<T>,

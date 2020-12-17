@@ -24,7 +24,7 @@ import Pagination from '@evaka/lib-components/src/Pagination'
 import colors, { blueColors } from '@evaka/lib-components/src/colors'
 import { SortByApplications } from '~types/application'
 import { formatName } from '~utils'
-import RoundIcon from 'components/shared/atoms/RoundIcon'
+import RoundIcon from '@evaka/lib-components/src/atoms/RoundIcon'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
@@ -34,15 +34,16 @@ import { defaultMargins } from '@evaka/lib-components/src/white-space'
 import { getEmployeeUrlPrefix } from '~constants'
 import { formatDate } from '~utils/date'
 import ApplicationActions from '~components/applications/ApplicationActions'
-import Checkbox from '~components/shared/atoms/form/Checkbox'
+import Checkbox from '@evaka/lib-components/src/atoms/form/Checkbox'
 import { ApplicationUIContext } from '~state/application-ui'
 import ActionBar from '~components/applications/ActionBar'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import Tooltip from '~components/shared/atoms/Tooltip'
+import Tooltip from '@evaka/lib-components/src/atoms/Tooltip'
 import { careTypesFromPlacementType } from '~components/common/CareTypeLabel'
-import PlacementCircle from '~components/shared/atoms/PlacementCircle'
+import PlacementCircle from '@evaka/lib-components/src/atoms/PlacementCircle'
 import { UserContext } from '~state/user'
 import { hasRole } from '~utils/roles'
+import { isPartDayPlacement } from '~utils/placements'
 
 const CircleIcon = styled.div`
   display: flex;
@@ -271,7 +272,10 @@ const ApplicationsList = React.memo(function Applications({
         </FixedSpaceColumn>
       </StatusColorTd>
       <Td>
-        <PlacementCircle type={application.placementType} />
+        <PlacementCircle
+          type={isPartDayPlacement(application.placementType) ? 'half' : 'full'}
+          label={i18n.placement.type[application.placementType]}
+        />
       </Td>
       <Td>
         <FixedSpaceColumn spacing="xs">

@@ -4,7 +4,7 @@
 
 import React, { useState } from 'react'
 import styled from 'styled-components'
-import AsyncButton from '~components/shared/atoms/buttons/AsyncButton'
+import AsyncButton from '@evaka/lib-components/src/atoms/buttons/AsyncButton'
 import { useTranslation } from '../../state/i18n'
 import StickyActionBar from '../common/StickyActionBar'
 import { sendVoucherValueDecisions } from '../../api/invoicing'

@@ -15,7 +15,7 @@ import {
 import { useTranslation } from '~state/i18n'
 import { faQuestion } from '@evaka/lib-icons'
 import styled from 'styled-components'
-import Button from 'components/shared/atoms/buttons/Button'
+import Button from '@evaka/lib-components/src/atoms/buttons/Button'
 import InfoModal from '~components/common/InfoModal'
 import { DatePicker } from '~components/common/DatePicker'
 import { UIContext, UiState } from '~state/ui'
