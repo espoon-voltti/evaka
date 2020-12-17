@@ -2019,7 +2019,8 @@ export const fi = {
     },
     placementSketching: {
       title: 'Sijoitusten hahmotteluraportti',
-      description: 'Raportti saapuneista esiopetushakemuksista sijoittamisen avuksi',
+      description:
+        'Raportti saapuneista esiopetushakemuksista sijoittamisen avuksi',
       placementStartDate: 'Nykyisen sijoituksen tarkistuspäivä',
       earliestPreferredStartDate: 'Aikaisin haettu aloituspäivä',
       preferredUnit: 'Hakutoive',
@@ -2032,7 +2033,7 @@ export const fi = {
       connected: 'Liittyvä',
       preferredStartDate: 'Toivottu aloituspäivä',
       sentDate: 'Lähetyspäivä'
-    },
+    }
   },
   unitEditor: {
     submitNew: 'Luo yksikkö',

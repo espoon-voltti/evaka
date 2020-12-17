@@ -430,12 +430,7 @@ function Reports() {
               <Description>{i18n.reports.raw.description}</Description>
             </ReportItem>
           </RequireRole>
-          <RequireRole
-            oneOf={[
-              'ADMIN',
-              'SERVICE_WORKER'
-            ]}
-          >
+          <RequireRole oneOf={['ADMIN', 'SERVICE_WORKER']}>
             <ReportItem>
               <TitleRow>
                 <RoundIcon
@@ -443,7 +438,10 @@ function Reports() {
                   color={EspooColours.orange}
                   content={faUsers}
                 />
-                <LinkTitle to="/reports/placement-sketching">
+                <LinkTitle
+                  to="/reports/placement-sketching"
+                  data-qa={'report-placement-sketching'}
+                >
                   {i18n.reports.placementSketching.title}
                 </LinkTitle>
               </TitleRow>

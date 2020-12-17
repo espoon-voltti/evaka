@@ -14,7 +14,7 @@ import { Th, Tr, Td, Thead, Tbody } from '~components/shared/layout/Table'
 import { reactSelectStyles } from '~components/shared/utils'
 import { useTranslation } from '~state/i18n'
 import { Loading, Result } from '~api'
-import { PlacementSketchingRow} from '~types/reports'
+import { PlacementSketchingRow } from '~types/reports'
 import {
   getPlacementSketchingReport,
   PlacementSketchingReportFilters
@@ -73,7 +73,7 @@ function PlacementSketching() {
     [rows, displayFilters]
   )
 
-  const yesNo = (b: boolean) => b ? i18n.common.yes : i18n.common.no
+  const yesNo = (b: boolean) => (b ? i18n.common.yes : i18n.common.no)
 
   return (
     <Container>
@@ -82,18 +82,26 @@ function PlacementSketching() {
         <Title size={1}>{i18n.reports.placementSketching.title}</Title>
 
         <FilterRow>
-          <FilterLabel>{i18n.reports.placementSketching.placementStartDate}</FilterLabel>
+          <FilterLabel>
+            {i18n.reports.placementSketching.placementStartDate}
+          </FilterLabel>
           <DatePicker
             date={filters.placementStartDate}
-            onChange={(placementStartDate) => setFilters({ ...filters, placementStartDate })}
+            onChange={(placementStartDate) =>
+              setFilters({ ...filters, placementStartDate })
+            }
           />
         </FilterRow>
 
         <FilterRow>
-          <FilterLabel>{i18n.reports.placementSketching.earliestPreferredStartDate}</FilterLabel>
+          <FilterLabel>
+            {i18n.reports.placementSketching.earliestPreferredStartDate}
+          </FilterLabel>
           <DatePicker
             date={filters.earliestPreferredStartDate}
-            onChange={(earliestPreferredStartDate) => setFilters({ ...filters, earliestPreferredStartDate })}
+            onChange={(earliestPreferredStartDate) =>
+              setFilters({ ...filters, earliestPreferredStartDate })
+            }
           />
         </FilterRow>
 
@@ -115,21 +123,21 @@ function PlacementSketching() {
               onChange={(option) =>
                 option && 'value' in option
                   ? setDisplayFilters({
-                    ...displayFilters,
-                    careArea: option.value
-                  })
+                      ...displayFilters,
+                      careArea: option.value
+                    })
                   : undefined
               }
               value={
                 displayFilters.careArea !== ''
                   ? {
-                    label: displayFilters.careArea,
-                    value: displayFilters.careArea
-                  }
+                      label: displayFilters.careArea,
+                      value: displayFilters.careArea
+                    }
                   : {
-                    label: i18n.common.all,
-                    value: ''
-                  }
+                      label: i18n.common.all,
+                      value: ''
+                    }
               }
               styles={reactSelectStyles}
               placeholder={i18n.reports.occupancies.filters.areaPlaceholder}
@@ -181,28 +189,36 @@ function PlacementSketching() {
               </Thead>
               <Tbody>
                 {filteredRows.map((row: PlacementSketchingRow) => (
-                  <Tr key={`${row.requestedUnitId}:${row.childId}`}>
-                    <Td>{row.areaName}</Td>
-                    <Td>
-                      <Link to={`/units/${row.requestedUnitId}`}>{row.requestedUnitName}</Link>
+                  <Tr
+                    key={`${row.requestedUnitId}:${row.childId}`}
+                    data-qa={`${row.requestedUnitId}:${row.childId}`}
+                  >
+                    <Td data-qa={'area-name'}>{row.areaName}</Td>
+                    <Td data-qa={'requested-unit'}>
+                      <Link to={`/units/${row.requestedUnitId}`}>
+                        {row.requestedUnitName}
+                      </Link>
                     </Td>
-                    <Td>
-                      <Link to={`/units/${row.currentUnitId}`}>{row.currentUnitName}</Link>
+                    <Td data-qa={'current-unit'}>
+                      {row.currentUnitId && (
+                        <Link to={`/units/${row.currentUnitId}`}>
+                          {row.currentUnitName}
+                        </Link>
+                      )}
                     </Td>
-                    <Td>
+                    <Td data-qa={'child-name'}>
                       <Link to={`/child-information/${row.childId}`}>
                         {row.childLastName} {row.childFirstName}
                       </Link>
                     </Td>
                     <Td>{row.childStreetAddr}</Td>
-                    <Td>{row.childDob}</Td>
+                    <Td>{row.childDob.format()}</Td>
                     <Td>{yesNo(row.assistanceNeeded)}</Td>
                     <Td>{yesNo(row.preparatoryEducation)}</Td>
                     <Td>{yesNo(row.siblingBasis)}</Td>
                     <Td>{yesNo(row.connectedDaycare)}</Td>
-                    <Td>{row.preferredStartDate}</Td>
-                    <Td>{row.sentDate}</Td>
-
+                    <Td>{row.preferredStartDate.format()}</Td>
+                    <Td>{row.sentDate.format()}</Td>
                   </Tr>
                 ))}
               </Tbody>

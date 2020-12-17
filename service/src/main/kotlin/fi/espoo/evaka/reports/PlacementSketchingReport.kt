@@ -11,7 +11,6 @@ import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.getNullableUUID
 import fi.espoo.evaka.shared.db.getUUID
-import fi.espoo.evaka.shared.domain.BadRequest
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
@@ -30,8 +29,7 @@ class PlacementSketchingReportController(private val acl: AccessControlList) {
         @RequestParam("earliestPreferredStartDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) earliestPreferredStartDate: LocalDate?
     ): ResponseEntity<List<PlacementSketchingReportRow>> {
         Audit.PlacementSketchingReportRead.log()
-        user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN)
-        if (earliestPreferredStartDate != null && earliestPreferredStartDate.isBefore(placementStartDate)) throw BadRequest("Invalid time range")
+        user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER)
         return db.read { ResponseEntity.ok(it.getPlacementSketchingReportRows(placementStartDate, earliestPreferredStartDate)) }
     }
 }
@@ -66,7 +64,7 @@ SELECT
     application.childlastname,
     person.date_of_birth,
     application.childstreetaddr,
-    active_placements.daycare_name AS current_placement_daycare,
+    active_placements.daycare_name AS current_placement_daycare_name,
     active_placements.daycare_id AS current_placement_daycare_id,
     application.daycareassistanceneeded,
     application.preparatoryeducation,
@@ -86,7 +84,6 @@ LEFT JOIN
     person ON application.childid = person.id
 WHERE
     (application.startDate >= :earliestPreferredStartDate OR application.startDate IS NULL)
-    AND application.sentdate >= :earliestPreferredStartDate
     AND application.status = ANY ('{SENT,WAITING_PLACEMENT,WAITING_CONFIRMATION,WAITING_DECISION,WAITING_MAILING,WAITING_UNIT_CONFIRMATION, ACTIVE}'::application_status_type[])
     AND application.type = 'preschool'
 ORDER BY

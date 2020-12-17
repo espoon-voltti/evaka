@@ -24,7 +24,8 @@ import {
   RawReportRow,
   FamilyContactsReportRow,
   VoucherServiceProviderRow,
-  VoucherServiceProviderUnitRow, PlacementSketchingRow
+  VoucherServiceProviderUnitRow,
+  PlacementSketchingRow
 } from '~types/reports'
 import { UUID } from '~types'
 import { JsonOf } from '@evaka/lib-common/src/json'
@@ -420,19 +421,20 @@ export async function getPlacementSketchingReport(
   filters: PlacementSketchingReportFilters
 ): Promise<Result<PlacementSketchingRow[]>> {
   return client
-    .get<JsonOf<PlacementSketchingRow[]>>(
-      `/reports/placement-sketching`,
-      {
-        params: {
-          earliestPreferredStartDate: filters.earliestPreferredStartDate.formatIso(),
-          placementStartDate: filters.placementStartDate.formatIso()
-        }
+    .get<JsonOf<PlacementSketchingRow[]>>(`/reports/placement-sketching`, {
+      params: {
+        earliestPreferredStartDate: filters.earliestPreferredStartDate.formatIso(),
+        placementStartDate: filters.placementStartDate.formatIso()
       }
+    })
+    .then((res) =>
+      Success.of(
+        res.data.map((row) => ({
+          ...row,
+          childDob: LocalDate.parseIso(row.childDob),
+          preferredStartDate: LocalDate.parseIso(row.preferredStartDate),
+          sentDate: LocalDate.parseIso(row.sentDate)
+        }))
+      )
     )
-    .then((res) => Success.of(res.data.map((row) => ({
-      ...row,
-        childDob: LocalDate.parseIso(row.childDob),
-        preferredStartDate: LocalDate.parseIso(row.preferredStartDate),
-        sentDate: LocalDate.parseIso(row.sentDate)
-    }))))
 }

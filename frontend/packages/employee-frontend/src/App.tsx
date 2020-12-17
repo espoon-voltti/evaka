@@ -64,7 +64,7 @@ import { getAuthStatus, AuthStatus } from '~api/auth'
 import VoucherServiceProviders from '~components/reports/VoucherServiceProviders'
 import VoucherServiceProviderUnit from '~components/reports/VoucherServiceProviderUnit'
 import { featureFlags } from '~config'
-import PlacementSketching from "~components/reports/PlacementSketching";
+import PlacementSketching from '~components/reports/PlacementSketching'
 
 export default function App() {
   const { i18n } = useTranslation()

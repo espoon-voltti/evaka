@@ -364,8 +364,8 @@ export interface PlacementSketchingRow {
   childLastName: string
   childDob: LocalDate
   childStreetAddr: string
-  assistanceNeeded: boolean,
-  preparatoryEducation: boolean,
-  siblingBasis: boolean,
-  connectedDaycare: boolean,
+  assistanceNeeded: boolean
+  preparatoryEducation: boolean
+  siblingBasis: boolean
+  connectedDaycare: boolean
 }

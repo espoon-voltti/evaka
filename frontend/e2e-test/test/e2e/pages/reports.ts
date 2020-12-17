@@ -22,6 +22,10 @@ export default class ReportsPage {
     await t.click(Selector('[data-qa="report-applications"]'))
   }
 
+  async selectPlacementSketchingReport() {
+    await t.click(Selector('[data-qa="report-placement-sketching"]'))
+  }
+
   async selectMonth(month: 'Tammikuu') {
     const monthSelector = Selector('[data-qa="select-month"]')
     await t.click(monthSelector)
@@ -77,6 +81,30 @@ export default class ReportsPage {
     )
     await t.expect(applicationTableSelector.exists).ok()
     await t.expect(applicationTableSelector.find('td').innerText).eql(area)
+  }
+
+  async assertPlacementSketchingRow(
+    requestedUnitId: string,
+    childId: string,
+    requestedUnitName: string,
+    childName: string,
+    currentUnitName: string | null = null
+  ) {
+    const childSelector = Selector(`[data-qa="${requestedUnitId}:${childId}"]`)
+    await t.expect(childSelector.exists).ok()
+
+    await t
+      .expect(childSelector.find('[data-qa="requested-unit"]').innerText)
+      .eql(requestedUnitName)
+
+    if (currentUnitName)
+      await t
+        .expect(childSelector.find('[data-qa="current-unit"]').innerText)
+        .eql(currentUnitName)
+
+    await t
+      .expect(childSelector.find('[data-qa="child-name"]').innerText)
+      .eql(childName)
   }
 
   async getCsvReport(): Promise<string> {
