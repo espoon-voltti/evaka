@@ -11,6 +11,7 @@ import {
 import { applicationFixture } from '../../dev-api/fixtures'
 import { logConsoleMessages } from '../../utils/fixture'
 import {
+  cleanUpMessages,
   cleanUpInvoicingDatabase,
   createPlacementPlan,
   deleteAclForDaycare,
@@ -19,7 +20,9 @@ import {
   execSimpleApplicationAction,
   insertApplications,
   insertEmployeeFixture,
-  setAclForDaycares
+  setAclForDaycares,
+  runPendingAsyncJobs,
+  getMessages
 } from '../../dev-api'
 import { seppoAdminRole } from '../../config/users'
 import AdminHome from '../../pages/home'
@@ -28,6 +31,7 @@ import { ApplicationDetailsPage } from '../../pages/admin/application-details-pa
 import ApplicationReadView from '../../pages/employee/applications/application-read-view'
 import { Application } from '../../dev-api/types'
 import { DevLoginUser } from '../../pages/dev-login-form'
+import assert from 'assert'
 
 const applicationWorkbench = new ApplicationWorkbenchPage()
 const applicationDetailsPage = new ApplicationDetailsPage()
@@ -38,9 +42,10 @@ const employeeHome = new EmployeeHome()
 let fixtures: AreaAndPersonFixtures
 let cleanUp: () => Promise<void>
 
-let application1: Application
-let application2: Application
-let application3: Application
+let singleParentApplication: Application
+let familyWithTwoGuardiansApplication: Application
+let separatedFamilyApplication: Application
+let restrictedDetailsGuardianApplication: Application
 
 const preschoolSupervisor: DevLoginUser = {
   aad: config.supervisorAad,
@@ -52,11 +57,11 @@ fixture('Application - employee application details')
   .page(adminHome.homePage('admin'))
   .before(async () => {
     ;[fixtures, cleanUp] = await initializeAreaAndPersonData()
-    application1 = applicationFixture(
+    singleParentApplication = applicationFixture(
       fixtures.enduserChildFixtureKaarina,
       fixtures.enduserGuardianFixture
     )
-    application2 = {
+    familyWithTwoGuardiansApplication = {
       ...applicationFixture(
         fixtures.familyWithTwoGuardians.children[0],
         fixtures.familyWithTwoGuardians.guardian,
@@ -64,7 +69,7 @@ fixture('Application - employee application details')
       ),
       id: '8634e2b9-200b-4a68-b956-66c5126f86a0'
     }
-    application3 = {
+    separatedFamilyApplication = {
       ...applicationFixture(
         fixtures.familyWithSeparatedGuardians.children[0],
         fixtures.familyWithSeparatedGuardians.guardian,
@@ -73,6 +78,16 @@ fixture('Application - employee application details')
         'NOT_AGREED'
       ),
       id: '0c8b9ad3-d283-460d-a5d4-77bdcbc69374'
+    }
+    restrictedDetailsGuardianApplication = {
+      ...applicationFixture(
+        fixtures.familyWithRestrictedDetailsGuardian.children[0],
+        fixtures.familyWithRestrictedDetailsGuardian.guardian,
+        fixtures.familyWithRestrictedDetailsGuardian.otherGuardian,
+        'daycare',
+        'NOT_AGREED'
+      ),
+      id: '6a9b1b1e-3fdf-11eb-b378-0242ac130002'
     }
     await insertEmployeeFixture({
       externalId: config.supervisorExternalId,
@@ -84,15 +99,22 @@ fixture('Application - employee application details')
       config.supervisorExternalId,
       fixtures.preschoolFixture.id
     )
+    await cleanUpMessages()
   })
-  .beforeEach(async (t) => {
-    await insertApplications([application1, application2, application3])
+  .beforeEach(async () => {
+    await insertApplications([
+      singleParentApplication,
+      familyWithTwoGuardiansApplication,
+      separatedFamilyApplication,
+      restrictedDetailsGuardianApplication
+    ])
   })
   .afterEach(logConsoleMessages)
   .afterEach(async () => {
-    await deleteApplication(application1.id)
-    await deleteApplication(application2.id)
-    await deleteApplication(application3.id)
+    await deleteApplication(singleParentApplication.id)
+    await deleteApplication(familyWithTwoGuardiansApplication.id)
+    await deleteApplication(separatedFamilyApplication.id)
+    await deleteApplication(restrictedDetailsGuardianApplication.id)
   })
 
   .after(async () => {
@@ -102,12 +124,13 @@ fixture('Application - employee application details')
       fixtures.preschoolFixture.id
     )
     await cleanUpInvoicingDatabase()
+    await cleanUpMessages()
     await cleanUp()
   })
 
 test('Admin can view application details', async (t) => {
   await t.useRole(seppoAdminRole)
-  await applicationWorkbench.openApplicationById(application1.id)
+  await applicationWorkbench.openApplicationById(singleParentApplication.id)
   await t
     .expect(applicationDetailsPage.guardianName.innerText)
     .eql(
@@ -117,13 +140,15 @@ test('Admin can view application details', async (t) => {
 
 test('Other VTJ guardian is shown as empty if there is no other guardian', async (t) => {
   await t.useRole(seppoAdminRole)
-  await applicationWorkbench.openApplicationById(application1.id)
+  await applicationWorkbench.openApplicationById(singleParentApplication.id)
   await t.expect(applicationDetailsPage.noOtherVtjGuardianText.visible).ok()
 })
 
 test('Other VTJ guardian in same address is shown', async (t) => {
   await t.useRole(seppoAdminRole)
-  await applicationWorkbench.openApplicationById(application2.id)
+  await applicationWorkbench.openApplicationById(
+    familyWithTwoGuardiansApplication.id
+  )
   await t
     .expect(applicationDetailsPage.vtjGuardianName.innerText)
     .eql(
@@ -136,7 +161,7 @@ test('Other VTJ guardian in same address is shown', async (t) => {
 
 test('Other VTJ guardian in different address is shown', async (t) => {
   await t.useRole(seppoAdminRole)
-  await applicationWorkbench.openApplicationById(application3.id)
+  await applicationWorkbench.openApplicationById(separatedFamilyApplication.id)
   await t
     .expect(applicationDetailsPage.vtjGuardianName.innerText)
     .eql(
@@ -151,25 +176,59 @@ test('Other VTJ guardian in different address is shown', async (t) => {
     .contains('Ei ole sovittu yhdessä')
 })
 
-test('Supervisor can read an accepted application although the supervisors unit is not a preferred unit before and after accepting the decision', async (t) => {
+test('Decision is not sent automatically to the other guardian if the first guardian has restricted details enabled', async (t) => {
   await execSimpleApplicationAction(
-    application1.id,
+    restrictedDetailsGuardianApplication.id,
     'move-to-waiting-placement'
   )
-  await createPlacementPlan(application1.id, {
+  await createPlacementPlan(restrictedDetailsGuardianApplication.id, {
     unitId: fixtures.preschoolFixture.id,
     period: {
-      start: application1.form.preferredStartDate,
-      end: application1.form.preferredStartDate
+      start: restrictedDetailsGuardianApplication.form.preferredStartDate,
+      end: restrictedDetailsGuardianApplication.form.preferredStartDate
     }
   })
   await execSimpleApplicationAction(
-    application1.id,
+    restrictedDetailsGuardianApplication.id,
+    'send-decisions-without-proposal'
+  )
+  await employeeHome.login(preschoolSupervisor)
+  await applicationReadView.openApplicationByLink(
+    restrictedDetailsGuardianApplication.id
+  )
+  await t
+    .expect(applicationDetailsPage.applicationStatus.innerText)
+    .eql('Vahvistettavana huoltajalla')
+  await runPendingAsyncJobs()
+
+  const messages = await getMessages()
+
+  assert(messages.length === 1)
+  assert(
+    messages[0].ssn ===
+      fixtures.familyWithRestrictedDetailsGuardian.guardian.ssn
+  )
+})
+
+test('Supervisor can read an accepted application although the supervisors unit is not a preferred unit before and after accepting the decision', async (t) => {
+  await execSimpleApplicationAction(
+    singleParentApplication.id,
+    'move-to-waiting-placement'
+  )
+  await createPlacementPlan(singleParentApplication.id, {
+    unitId: fixtures.preschoolFixture.id,
+    period: {
+      start: singleParentApplication.form.preferredStartDate,
+      end: singleParentApplication.form.preferredStartDate
+    }
+  })
+  await execSimpleApplicationAction(
+    singleParentApplication.id,
     'send-decisions-without-proposal'
   )
 
   await employeeHome.login(preschoolSupervisor)
-  await applicationReadView.openApplicationByLink(application1.id)
+  await applicationReadView.openApplicationByLink(singleParentApplication.id)
   await t
     .expect(applicationDetailsPage.applicationStatus.innerText)
     .eql('Vahvistettavana huoltajalla')

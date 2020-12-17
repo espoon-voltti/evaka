@@ -527,7 +527,10 @@ const toVtjPerson = (
     `${person.streetAddress ?? ''}${person.postalCode ?? ''}${
       person.postOffice ?? ''
     }`.replace(' ', ''),
-  restrictedDetails: null
+  restrictedDetails: {
+    enabled: person.restrictedDetailsEnabled || false,
+    endDate: person.restrictedDetailsEndDate || null
+  }
 })
 
 export async function insertVtjPersonFixture(
