@@ -13,7 +13,7 @@ import RoundIcon from '~components/shared/atoms/RoundIcon'
 import colors from '@evaka/lib-components/src/colors'
 import { defaultMargins } from '@evaka/lib-components/src/white-space'
 import { Label } from '@evaka/lib-components/src/typography'
-import { faExclamation } from '~icon-set'
+import { faExclamation } from '@evaka/lib-icons'
 import { useTranslation } from '~state/i18n'
 import { CareType, formatCareType } from '~types/absence'
 

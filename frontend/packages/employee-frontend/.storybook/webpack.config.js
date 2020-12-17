@@ -22,8 +22,8 @@ module.exports = ({ config }) => {
   config.resolve.plugins = [new TsconfigPathsPlugin()]
   config.resolve.alias = {
     'Icons': process.env.ICONS === 'pro'
-      ? path.resolve(__dirname, '../src/icons/pro-icons')
-      : path.resolve(__dirname, '../src/icons/free-icons')
+      ? path.resolve(__dirname, '../../lib-icons/pro-icons')
+      : path.resolve(__dirname, '../../lib-icons/free-icons')
   }
   return config
 }

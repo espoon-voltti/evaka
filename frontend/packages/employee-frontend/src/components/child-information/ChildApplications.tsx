@@ -6,7 +6,7 @@ import React from 'react'
 import * as _ from 'lodash'
 import { Link } from 'react-router-dom'
 
-import { faFileAlt } from 'icon-set'
+import { faFileAlt } from '@evaka/lib-icons'
 import { UUID } from '~types'
 import { useTranslation } from '~state/i18n'
 import { useEffect } from 'react'

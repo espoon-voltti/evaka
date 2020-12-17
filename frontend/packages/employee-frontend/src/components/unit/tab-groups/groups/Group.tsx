@@ -32,7 +32,7 @@ import {
   faTimes,
   faTrash,
   faUndo
-} from 'icon-set'
+} from '@evaka/lib-icons'
 import { deleteGroup, deletePlacement, OccupancyResponse } from '~api/unit'
 import { Link } from 'react-router-dom'
 import CareTypeLabel, {

@@ -6,7 +6,7 @@ import React from 'react'
 import { storiesOf } from '@storybook/react'
 import styled from 'styled-components'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import * as icons from 'icon-set'
+import * as icons from '@evaka/lib-icons'
 import { defaultMargins } from '@evaka/lib-components/src/white-space'
 import { IconDefinition } from '@fortawesome/fontawesome-svg-core'
 
@@ -27,7 +27,7 @@ const ColItem = styled.div`
   }
 `
 
-storiesOf('evaka/icon-set', module).add('all', () => (
+storiesOf('@evaka/lib-icons', module).add('all', () => (
   <Grid>
     {Object.keys(icons).map((name) => {
       const icon = icons[name] as IconDefinition

@@ -4,7 +4,7 @@
 
 import React, { useEffect, useState } from 'react'
 import styled from 'styled-components'
-import { faPlus } from 'icon-set'
+import { faPlus } from '@evaka/lib-icons'
 import Spinner from '~components/shared/atoms/state/Spinner'
 import { Gap } from '@evaka/lib-components/src/white-space'
 import { Label } from '@evaka/lib-components/src/typography'

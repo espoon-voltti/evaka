@@ -14,7 +14,7 @@ import {
   faMapMarkerAlt,
   faUserFriends,
   faUsers
-} from 'icon-set'
+} from '@evaka/lib-icons'
 import { Gap } from '@evaka/lib-components/src/white-space'
 import { formatName } from 'utils'
 import { useTranslation } from 'state/i18n'

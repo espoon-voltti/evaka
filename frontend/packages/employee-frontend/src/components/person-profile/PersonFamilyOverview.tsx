@@ -6,7 +6,7 @@ import React, { useContext, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { faHomeAlt } from 'icon-set'
+import { faHomeAlt } from '@evaka/lib-icons'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'components/shared/layout/Table'
 import Loader from '~components/shared/atoms/Loader'
 import CollapsibleSection from 'components/shared/molecules/CollapsibleSection'

@@ -20,7 +20,7 @@ import {
 } from '~components/shared/layout/Table'
 import { Gap } from '@evaka/lib-components/src/white-space'
 import { useTranslation } from '~state/i18n'
-import { faSearch } from 'icon-set'
+import { faSearch } from '@evaka/lib-icons'
 import { getDaycares } from '~api/unit'
 import { Unit } from '~types/unit'
 import { RequireRole } from '~utils/roles'

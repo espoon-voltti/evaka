@@ -7,7 +7,7 @@ import { Link } from 'react-router-dom'
 import { groupBy, get } from 'lodash/fp'
 import styled from 'styled-components'
 
-import { faAbacus, faCoins } from 'icon-set'
+import { faAbacus, faCoins } from '@evaka/lib-icons'
 import LocalDate from '@evaka/lib-common/src/local-date'
 import { Table, Tbody, Th, Thead, Tr } from 'components/shared/layout/Table'
 import Button from '~components/shared/atoms/buttons/Button'

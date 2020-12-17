@@ -4,7 +4,7 @@
 
 import React, { useContext, useState, Dispatch, SetStateAction } from 'react'
 import styled from 'styled-components'
-import { faAngleDown, faAngleUp } from 'icon-set'
+import { faAngleDown, faAngleUp } from '@evaka/lib-icons'
 import _ from 'lodash'
 import { useTranslation } from '~state/i18n'
 import { Gap } from '@evaka/lib-components/src/white-space'

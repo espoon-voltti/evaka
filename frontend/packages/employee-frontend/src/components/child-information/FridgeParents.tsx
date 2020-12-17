@@ -7,7 +7,7 @@ import * as _ from 'lodash'
 
 import { useTranslation } from '~/state/i18n'
 import { ChildContext, ChildState } from '~/state/child'
-import { faUser } from 'icon-set'
+import { faUser } from '@evaka/lib-icons'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'components/shared/layout/Table'
 import Loader from '~components/shared/atoms/Loader'
 import { Parentship } from '~types/fridge'

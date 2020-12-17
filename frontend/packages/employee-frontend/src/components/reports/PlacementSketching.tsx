@@ -30,7 +30,7 @@ import {
 import { DatePicker } from '~components/common/DatePicker'
 import LocalDate from '@evaka/lib-common/src/local-date'
 import { distinct } from 'utils'
-import { faFileAlt } from 'icon-set'
+import { faFileAlt } from '@evaka/lib-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 
 interface DisplayFilters {

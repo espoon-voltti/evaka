@@ -5,7 +5,7 @@
 import React, { useContext, useState } from 'react'
 import FormModal from 'components/common/FormModal'
 import { useTranslation } from 'state/i18n'
-import { faFileAlt } from 'icon-set'
+import { faFileAlt } from '@evaka/lib-icons'
 import { UIContext } from 'state/ui'
 import { PersonDetails } from 'types/person'
 import { Label } from '@evaka/lib-components/src/typography'

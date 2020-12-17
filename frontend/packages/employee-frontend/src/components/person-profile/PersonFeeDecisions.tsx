@@ -7,7 +7,7 @@ import styled from 'styled-components'
 import _ from 'lodash'
 import { Link } from 'react-router-dom'
 
-import { faChild, faPlus } from 'icon-set'
+import { faChild, faPlus } from '@evaka/lib-icons'
 import LocalDate from '@evaka/lib-common/src/local-date'
 import { UUID } from '~types'
 import { useTranslation, Translations } from '~state/i18n'

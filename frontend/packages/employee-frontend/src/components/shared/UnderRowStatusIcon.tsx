@@ -10,7 +10,7 @@ import React from 'react'
 import { defaultMargins } from '@evaka/lib-components/src/white-space'
 import styled from 'styled-components'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { fasCheckCircle, fasExclamationTriangle } from 'icon-set'
+import { fasCheckCircle, fasExclamationTriangle } from '@evaka/lib-icons'
 import { BaseProps } from '@evaka/lib-components/src/utils'
 import colors from '@evaka/lib-components/src/colors'
 

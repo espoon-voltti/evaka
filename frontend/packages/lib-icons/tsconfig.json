@@ -1,0 +1,25 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "outDir": "dist",
+    "target": "es6",
+    "module": "es6",
+    "baseUrl": "./src",
+    "paths": {
+      "~*": ["./*"]
+    },
+    "lib": [
+      "dom",
+      "es6",
+      "es2017.string",
+      "es2019"
+    ],
+    "noEmit": true,
+    "skipLibCheck": true
+  },
+  "include": [
+    "@evaka/lib-icons.ts",
+    "free-icons.ts",
+    "pro-icons.ts"
+  ]
+}

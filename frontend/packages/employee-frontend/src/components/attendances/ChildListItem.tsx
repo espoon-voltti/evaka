@@ -10,7 +10,7 @@ import RoundIcon from '~components/shared/atoms/RoundIcon'
 import colors from '@evaka/lib-components/src/colors'
 import { defaultMargins } from '@evaka/lib-components/src/white-space'
 import { DATE_FORMAT_TIME_ONLY } from '~constants'
-import { farUser } from '~icon-set'
+import { farUser } from '@evaka/lib-icons'
 import { useTranslation } from '~state/i18n'
 import { formatDate } from '~utils/date'
 

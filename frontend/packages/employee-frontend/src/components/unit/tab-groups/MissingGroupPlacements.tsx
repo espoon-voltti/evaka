@@ -15,7 +15,7 @@ import {
 } from '~components/shared/layout/Table'
 import Title from '~components/shared/atoms/Title'
 import InlineButton from '~components/shared/atoms/buttons/InlineButton'
-import { faArrowRight } from 'icon-set'
+import { faArrowRight } from '@evaka/lib-icons'
 import { useTranslation } from '~state/i18n'
 import { DaycareGroup } from '~types/unit'
 import GroupPlacementModal from '~components/unit/tab-groups/missing-group-placements/GroupPlacementModal'

@@ -4,7 +4,7 @@
 
 import styled from 'styled-components'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faInfo } from 'icon-set'
+import { faInfo } from '@evaka/lib-icons'
 import { EspooColours } from '~utils/colours'
 import React from 'react'
 import { IconProp } from '@fortawesome/fontawesome-svg-core'

@@ -5,8 +5,8 @@
 import React, { Fragment, useContext, useState } from 'react'
 import styled from 'styled-components'
 import Title from '~components/shared/atoms/Title'
-import { faChevronUp } from 'icon-set'
-import { fasExclamationTriangle } from 'icon-set'
+import { faChevronUp } from '@evaka/lib-icons'
+import { fasExclamationTriangle } from '@evaka/lib-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 
 import { useTranslation } from '~state/i18n'

@@ -6,7 +6,7 @@ import React, { useState } from 'react'
 import styled from 'styled-components'
 import { useHistory } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faExclamation, faSync } from 'icon-set'
+import { faExclamation, faSync } from '@evaka/lib-icons'
 import { Gap } from '@evaka/lib-components/src/white-space'
 import InlineButton from '~components/shared/atoms/buttons/InlineButton'
 import {

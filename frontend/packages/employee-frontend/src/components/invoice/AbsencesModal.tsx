@@ -25,7 +25,7 @@ import Tooltip from '~components/common/Tooltip'
 import PeriodPicker, {
   PeriodPickerMode
 } from '~components/absences/PeriodPicker'
-import { faAbacus } from 'icon-set'
+import { faAbacus } from '@evaka/lib-icons'
 
 const Section = styled.section``
 

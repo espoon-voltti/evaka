@@ -7,7 +7,12 @@ import styled from 'styled-components'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import ReactSelect from 'react-select'
 
-import { faSearch, faTimes, faTrash, fasExclamationTriangle } from 'icon-set'
+import {
+  faSearch,
+  faTimes,
+  faTrash,
+  fasExclamationTriangle
+} from '@evaka/lib-icons'
 import LocalDate from '@evaka/lib-common/src/local-date'
 import InlineButton from 'components/shared/atoms/buttons/InlineButton'
 import { DatePickerClearable } from '~components/common/DatePicker'
@@ -31,7 +36,7 @@ import { FlexRow } from './styled/containers'
 import RoundIcon from '~components/shared/atoms/RoundIcon'
 import IconButton from '~components/shared/atoms/buttons/IconButton'
 import colors from '@evaka/lib-components/src/colors'
-import { faAngleDown, faAngleUp } from 'icon-set'
+import { faAngleDown, faAngleUp } from '@evaka/lib-icons'
 import Tooltip from '~components/common/Tooltip'
 import { CareArea } from '~types/unit'
 import { Label, LabelText } from '~components/common/styled/common'

@@ -5,7 +5,7 @@
 import React, { useState } from 'react'
 import styled from 'styled-components'
 import { set } from 'lodash/fp'
-import { faPlus } from 'icon-set'
+import { faPlus } from '@evaka/lib-icons'
 import LocalDate from '@evaka/lib-common/src/local-date'
 import { getAge } from '@evaka/lib-common/src/utils/local-date'
 import ListGrid from '~components/shared/layout/ListGrid'

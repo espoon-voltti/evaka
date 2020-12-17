@@ -4,7 +4,7 @@
 
 import React, { createRef, RefObject, useEffect } from 'react'
 import styled from 'styled-components'
-import { faChevronLeft, faChevronDown, faPen, faTrash } from 'icon-set'
+import { faChevronLeft, faChevronDown, faPen, faTrash } from '@evaka/lib-icons'
 import IconButton from '~components/shared/atoms/buttons/IconButton'
 import Title from '~components/shared/atoms/Title'
 import { EspooColours } from '~utils/colours'

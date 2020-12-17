@@ -5,7 +5,7 @@
 import React, { useCallback, useContext, useEffect, useState } from 'react'
 import { Redirect, useHistory, useParams } from 'react-router-dom'
 import styled from 'styled-components'
-import { faQuestion } from '~icon-set'
+import { faQuestion } from '@evaka/lib-icons'
 import { Container, ContentArea } from '~components/shared/layout/Container'
 import ReturnButton from '~components/shared/atoms/buttons/ReturnButton'
 import InfoModal from '~components/common/InfoModal'

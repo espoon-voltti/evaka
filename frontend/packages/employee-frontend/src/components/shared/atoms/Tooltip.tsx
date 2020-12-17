@@ -7,7 +7,7 @@ import styled from 'styled-components'
 import { greyscale } from '@evaka/lib-components/src/colors'
 import { defaultMargins } from '@evaka/lib-components/src/white-space'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { fasCaretUp } from '~icon-set'
+import { fasCaretUp } from '@evaka/lib-icons'
 
 const TooltipWrapper = styled.div`
   position: relative;

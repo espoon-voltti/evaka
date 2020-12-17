@@ -24,7 +24,7 @@ import {
   faFileAlt,
   faDiagnoses,
   faDatabase
-} from 'icon-set'
+} from '@evaka/lib-icons'
 import { EspooColours } from '~utils/colours'
 import { RequireRole } from '~utils/roles'
 import RoundIcon from 'components/shared/atoms/RoundIcon'

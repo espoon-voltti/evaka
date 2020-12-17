@@ -20,7 +20,7 @@ import { UIContext } from '~state/ui'
 import FridgePartnerModal from '~components/person-profile/person-fridge-partner/FridgePartnerModal'
 import { Link } from 'react-router-dom'
 import { formatName } from '~utils'
-import { faQuestion, faUser } from 'icon-set'
+import { faQuestion, faUser } from '@evaka/lib-icons'
 import { PersonDetails } from '~types/person'
 import {
   getPartnerships,

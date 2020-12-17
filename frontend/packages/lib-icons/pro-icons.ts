@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import {
+  faAbacus,
   faAngleDown,
   faAngleLeft,
   faAngleRight,
@@ -12,7 +13,6 @@ import {
   faAngleUp,
   faArrowUp,
   faCalendarAlt,
-  faCaretUp,
   faCheck,
   faCheckCircle,
   faChevronDown,
@@ -27,21 +27,21 @@ import {
   faDiagnoses,
   faEnvelope,
   faEuroSign,
-  faEllipsisV,
+  faEllipsisVAlt,
   faEye,
   faEyeSlash,
-  faExchangeAlt,
+  faExchange,
   faExclamation,
   faExclamationTriangle,
   faFemale,
   faFile,
   faFileAlt,
-  faFileCsv,
   faFilePdf,
+  faFileSpreadsheet,
   faGavel,
   faHandHolding,
   faHiking,
-  faHome,
+  faHomeAlt,
   faHourglassEnd,
   faHourglassStart,
   faInfo,
@@ -50,6 +50,7 @@ import {
   faMapMarkerAlt,
   faMeh,
   faMoneyCheck,
+  faMoneyCheckEdit,
   faPen,
   faPercentage,
   faPlus,
@@ -65,12 +66,24 @@ import {
   faUserAltSlash,
   faUserFriends,
   faUsers
-} from '@fortawesome/free-solid-svg-icons'
-import { faUser as farUser } from '@fortawesome/free-regular-svg-icons'
-import { IconSet } from 'icon-set'
+} from '@fortawesome/pro-light-svg-icons'
 
+import {
+  faCaretUp as fasCaretUp,
+  faCheckCircle as fasCheckCircle,
+  faChevronDown as fasChevronDown,
+  faChevronUp as fasChevronUp,
+  faExclamationTriangle as fasExclamationTriangle,
+  faInfo as fasInfo,
+  faArrowDown as fasArrowDown,
+  faArrowUp as fasArrowUp
+} from '@fortawesome/free-solid-svg-icons'
+
+import { IconSet } from '.'
+
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 const icons: IconSet = {
-  faAbacus: faPercentage,
+  faAbacus,
   faAngleDown,
   faAngleLeft,
   faAngleRight,
@@ -94,21 +107,21 @@ const icons: IconSet = {
   faDiagnoses,
   faEnvelope,
   faEuroSign,
-  faEllipsisVAlt: faEllipsisV,
+  faEllipsisVAlt,
   faEye,
   faEyeSlash,
-  faExchange: faExchangeAlt,
+  faExchange,
   faExclamation,
   faExclamationTriangle,
   faFemale,
   faFile,
   faFileAlt,
   faFilePdf,
-  faFileSpreadsheet: faFileCsv,
+  faFileSpreadsheet,
   faGavel,
   faHandHolding,
   faHiking,
-  faHomeAlt: faHome,
+  faHomeAlt,
   faHourglassEnd,
   faHourglassStart,
   faInfo,
@@ -117,7 +130,7 @@ const icons: IconSet = {
   faMapMarkerAlt,
   faMeh,
   faMoneyCheck,
-  faMoneyCheckEdit: faMoneyCheck,
+  faMoneyCheckEdit,
   faPen,
   faPercentage,
   faPlus,
@@ -133,15 +146,15 @@ const icons: IconSet = {
   faUserAltSlash,
   faUserFriends,
   faUsers,
-  fasCaretUp: faCaretUp,
-  fasCheckCircle: faCheckCircle,
-  fasChevronDown: faChevronDown,
-  fasChevronUp: faChevronUp,
-  fasExclamationTriangle: faExclamationTriangle,
-  fasInfo: faInfo,
-  fasArrowDown: faArrowDown,
-  fasArrowUp: faArrowUp,
-  farUser
+  fasCaretUp,
+  fasCheckCircle,
+  fasChevronDown,
+  fasChevronUp,
+  fasExclamationTriangle,
+  fasInfo,
+  fasArrowDown,
+  fasArrowUp,
+  farUser: faUser
 }
 
 export default icons

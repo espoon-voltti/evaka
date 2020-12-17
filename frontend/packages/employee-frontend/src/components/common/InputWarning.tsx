@@ -5,7 +5,7 @@
 import styled from 'styled-components'
 import colors from '@evaka/lib-components/src/colors'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { fasExclamationTriangle } from '~icon-set'
+import { fasExclamationTriangle } from '@evaka/lib-icons'
 import React from 'react'
 
 interface Props {

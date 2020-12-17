@@ -5,7 +5,7 @@
 import React from 'react'
 import { RouteComponentProps, withRouter } from 'react-router-dom'
 import styled from 'styled-components'
-import { faAngleLeft } from 'icon-set'
+import { faAngleLeft } from '@evaka/lib-icons'
 import { useTranslation } from '~state/i18n'
 import InlineButton from 'components/shared/atoms/buttons/InlineButton'
 

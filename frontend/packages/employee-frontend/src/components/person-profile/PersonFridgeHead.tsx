@@ -13,7 +13,7 @@ import Loader from '~components/shared/atoms/Loader'
 import CollapsibleSection from '~components/shared/molecules/CollapsibleSection'
 import { PersonDetails as PersonDetailsType } from '~types/person'
 import PersonDetails from '~components/person-shared/PersonDetails'
-import { faUser } from 'icon-set'
+import { faUser } from '@evaka/lib-icons'
 import { TitleContext, TitleState } from '~state/title'
 
 interface Props {

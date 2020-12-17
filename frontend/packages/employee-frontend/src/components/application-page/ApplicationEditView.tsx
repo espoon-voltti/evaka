@@ -17,7 +17,7 @@ import {
   faTimes,
   faUserFriends,
   faUsers
-} from 'icon-set'
+} from '@evaka/lib-icons'
 import LocalDate from '@evaka/lib-common/src/local-date'
 import { Result } from 'api'
 import { H4, Label } from '@evaka/lib-components/src/typography'

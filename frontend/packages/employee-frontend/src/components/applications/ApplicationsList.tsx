@@ -4,7 +4,7 @@
 
 import React, { useContext } from 'react'
 import styled from 'styled-components'
-import { faCheck, fasArrowDown, fasArrowUp, faTimes } from 'icon-set'
+import { faCheck, fasArrowDown, fasArrowUp, faTimes } from '@evaka/lib-icons'
 import {
   Table,
   Tr,

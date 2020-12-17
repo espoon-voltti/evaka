@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useContext, useEffect, useState } from 'react'
-import { faEuroSign } from 'icon-set'
+import { faEuroSign } from '@evaka/lib-icons'
 import { Gap } from '@evaka/lib-components/src/white-space'
 import Loader from '~components/shared/atoms/Loader'
 import CollapsibleSection from 'components/shared/molecules/CollapsibleSection'

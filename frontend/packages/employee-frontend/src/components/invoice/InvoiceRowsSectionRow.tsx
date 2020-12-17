@@ -5,7 +5,7 @@
 import React, { useEffect, useState } from 'react'
 import styled from 'styled-components'
 
-import { faTrash } from 'icon-set'
+import { faTrash } from '@evaka/lib-icons'
 import LocalDate from '@evaka/lib-common/src/local-date'
 import { Td, Tr } from 'components/shared/layout/Table'
 import InputField from '~components/shared/atoms/form/InputField'

@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import * as React from 'react'
-import { faPen } from 'icon-set'
+import { faPen } from '@evaka/lib-icons'
 import { Result } from '~api'
 import { PersonDetails } from '~/types/person'
 import { useTranslation } from '~state/i18n'
