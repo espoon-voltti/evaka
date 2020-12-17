@@ -105,6 +105,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
                     v-model="model"
                     :required="true"
                     :minDate="minimumStartdate"
+                    :max-date="maximumStartDate"
                     name="preferredStartDate"
                     :iconRight="true"
                     :border="true"
@@ -1193,6 +1194,13 @@ SPDX-License-Identifier: LGPL-2.1-or-later
         : this.isPreschool
           ? datepickerTodayFormat()
           : minimumDaycareStartdate()
+      },
+      maximumStartDate(): null | string {
+        if(this.isPreschool && new Date() < new Date('2020-01-08')){
+          return '2021-06-04'
+        } else {
+          return null
+        }
       },
       startdateIsUnderFourMonths(): boolean {
         return this.model.preferredStartDate
