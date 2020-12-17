@@ -96,7 +96,7 @@ class PdfServiceTest {
                 fee = it.fee
             )
         },
-        financeDecisionManager = null
+        financeDecisionHandler = null
     )
 
     private val reliefDecision = normalDecision.copy(decisionType = FeeDecisionType.RELIEF_ACCEPTED)

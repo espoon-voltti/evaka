@@ -43,7 +43,7 @@ interface FeeDecisionSearchFilters {
   startDate: LocalDate | undefined
   endDate: LocalDate | undefined
   searchByStartDate: boolean
-  financeDecisionManagerId: string | undefined
+  financeDecisionHandlerId: string | undefined
 }
 
 interface FeeDecisionSearchFilterState {
@@ -59,7 +59,7 @@ interface ValueDecisionSearchFilters {
   area: string[]
   unit?: string
   status: VoucherValueDecisionStatus
-  financeDecisionManagerId?: string
+  financeDecisionHandlerId?: string
 }
 
 interface ValueDecisionSearchFilterState {
@@ -115,7 +115,7 @@ const defaultState: UiState = {
       startDate: LocalDate.today().withDate(1),
       endDate: LocalDate.today(),
       searchByStartDate: false,
-      financeDecisionManagerId: undefined
+      financeDecisionHandlerId: undefined
     },
     setSearchFilters: () => undefined,
     searchTerms: '',

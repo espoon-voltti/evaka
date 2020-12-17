@@ -6,7 +6,7 @@ package fi.espoo.evaka.invoicing.domain
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
-import fi.espoo.evaka.daycare.FinanceDecisionManager
+import fi.espoo.evaka.daycare.financeDecisionHandler
 import fi.espoo.evaka.shared.domain.DateRange
 import java.math.BigDecimal
 import java.math.RoundingMode
@@ -112,7 +112,7 @@ data class FeeDecisionDetailed(
     val approvedAt: Instant? = null,
     val createdAt: Instant = Instant.now(),
     val sentAt: Instant? = null,
-    val financeDecisionManager: FinanceDecisionManager?
+    val financeDecisionHandler: financeDecisionHandler?
 ) : MergeableDecision<FeeDecisionPartDetailed, FeeDecisionDetailed> {
     override fun withParts(parts: List<FeeDecisionPartDetailed>) = this.copy(parts = parts)
 

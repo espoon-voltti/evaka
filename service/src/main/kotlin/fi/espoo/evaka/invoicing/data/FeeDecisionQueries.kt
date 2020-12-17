@@ -6,7 +6,7 @@ package fi.espoo.evaka.invoicing.data
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
-import fi.espoo.evaka.daycare.FinanceDecisionManager
+import fi.espoo.evaka.daycare.financeDecisionHandler
 import fi.espoo.evaka.invoicing.controller.DistinctiveParams
 import fi.espoo.evaka.invoicing.controller.FeeDecisionSortParam
 import fi.espoo.evaka.invoicing.controller.SortDirection
@@ -102,10 +102,10 @@ val feeDecisionDetailedQueryBase =
         daycare.language as placement_unit_lang,
         care_area.id as placement_unit_area_id,
         care_area.name as placement_unit_area_name,
-        finance_decision_manager.id AS finance_decision_manager_id,
-        finance_decision_manager.first_name AS finance_decision_manager_first_name,
-        finance_decision_manager.last_name AS finance_decision_manager_last_name,
-        finance_decision_manager.created AS finance_decision_manager_created
+        finance_decision_handler.id AS finance_decision_handler_id,
+        finance_decision_handler.first_name AS finance_decision_handler_first_name,
+        finance_decision_handler.last_name AS finance_decision_handler_last_name,
+        finance_decision_handler.created AS finance_decision_handler_created
     FROM fee_decision as decision
         LEFT JOIN fee_decision_part as part ON decision.id = part.fee_decision_id
         LEFT JOIN person as head ON decision.head_of_family = head.id
@@ -114,7 +114,7 @@ val feeDecisionDetailedQueryBase =
         LEFT JOIN daycare ON part.placement_unit = daycare.id
         LEFT JOIN care_area ON daycare.care_area_id = care_area.id
         LEFT JOIN employee as approved_by ON decision.approved_by = approved_by.id
-        LEFT JOIN employee as finance_decision_manager ON daycare.finance_decision_manager = finance_decision_manager.id
+        LEFT JOIN employee as finance_decision_handler ON daycare.finance_decision_handler = finance_decision_handler.id
     """.trimIndent()
 
 private val decisionNumberRegex = "^\\d{7,}$".toRegex()
@@ -303,7 +303,7 @@ fun searchFeeDecisions(
     startDate: LocalDate?,
     endDate: LocalDate?,
     searchByStartDate: Boolean = false,
-    financeDecisionManagerId: UUID?
+    financeDecisionHandlerId: UUID?
 ): Pair<Int, List<FeeDecisionSummary>> {
     val sortColumn = when (sortBy) {
         FeeDecisionSortParam.HEAD_OF_FAMILY -> "head.last_name"
@@ -325,7 +325,7 @@ fun searchFeeDecisions(
         "espooPostOffice" to "ESPOO",
         "start_date" to startDate,
         "end_date" to endDate,
-        "finance_decision_manager" to financeDecisionManagerId
+        "finance_decision_handler" to financeDecisionHandlerId
     )
 
     val numberParamsRaw = splitSearchText(searchTerms).filter(decisionNumberRegex::matches)
@@ -352,7 +352,7 @@ fun searchFeeDecisions(
         if (searchTextWithoutNumbers.isNotBlank()) freeTextQuery else null,
         if ((startDate != null || endDate != null) && !searchByStartDate) "daterange(:start_date, :end_date, '[]') && daterange(valid_from, valid_to, '[]')" else null,
         if ((startDate != null || endDate != null) && searchByStartDate) "daterange(:start_date, :end_date, '[]') @> valid_from" else null,
-        if (financeDecisionManagerId != null) "placement_unit.finance_decision_manager = :finance_decision_manager" else null
+        if (financeDecisionHandlerId != null) "placement_unit.finance_decision_handler = :finance_decision_handler" else null
     )
 
     val youngestChildQuery =
@@ -755,13 +755,13 @@ fun toFeeDecisionDetailed(mapper: ObjectMapper) = { rs: ResultSet, _: StatementC
         approvedAt = rs.getTimestamp("approved_at")?.toInstant(),
         createdAt = rs.getTimestamp("created_at").toInstant(),
         sentAt = rs.getTimestamp("sent_at")?.toInstant(),
-        financeDecisionManager = when (rs.getNullableUUID("finance_decision_manager_id")) {
-            is UUID -> FinanceDecisionManager(
+        financeDecisionHandler = when (rs.getNullableUUID("finance_decision_handler_id")) {
+            is UUID -> financeDecisionHandler(
                 employee = Employee(
-                    id = rs.getUUID("finance_decision_manager_id"),
-                    firstName = rs.getString("finance_decision_manager_first_name"),
-                    lastName = rs.getString("finance_decision_manager_last_name"),
-                    created = rs.getTimestamp("finance_decision_manager_created").toInstant(),
+                    id = rs.getUUID("finance_decision_handler_id"),
+                    firstName = rs.getString("finance_decision_handler_first_name"),
+                    lastName = rs.getString("finance_decision_handler_last_name"),
+                    created = rs.getTimestamp("finance_decision_handler_created").toInstant(),
                     email = null,
                     externalId = null,
                     updated = null

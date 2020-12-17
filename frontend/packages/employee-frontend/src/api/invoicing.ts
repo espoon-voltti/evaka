@@ -37,7 +37,7 @@ export interface FeeDecisionSearchParams extends SearchParams {
   startDate?: string
   endDate?: string
   searchByStartDate: boolean
-  financeDecisionManagerId?: string
+  financeDecisionHandlerId?: string
 }
 
 export interface VoucherValueDecisionSearchParams {
@@ -45,7 +45,7 @@ export interface VoucherValueDecisionSearchParams {
   area?: string
   unit?: string
   searchTerms?: string
-  financeDecisionManagerId?: string
+  financeDecisionHandlerId?: string
 }
 
 export interface InvoiceSearchParams extends SearchParams {
@@ -145,8 +145,8 @@ export async function getFeeDecision(
         })),
         createdAt: new Date(json.createdAt),
         sentAt: json.sentAt ? new Date(json.sentAt) : null,
-        financeDecisionManager: json.financeDecisionManager
-          ? { employee: mapEmployeeJson(json.financeDecisionManager?.employee) }
+        financeDecisionHandler: json.financeDecisionHandler
+          ? { employee: mapEmployeeJson(json.financeDecisionHandler?.employee) }
           : null,
         approvedAt: json.approvedAt ? new Date(json.approvedAt) : null
       })

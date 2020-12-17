@@ -1,0 +1,1 @@
+ALTER TABLE daycare ADD COLUMN finance_decision_handler uuid REFERENCES employee(id) ON DELETE SET NULL;

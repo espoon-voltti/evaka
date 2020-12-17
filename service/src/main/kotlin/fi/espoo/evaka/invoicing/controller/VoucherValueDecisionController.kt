@@ -62,7 +62,7 @@ class VoucherValueDecisionController(
         @RequestParam(required = false) area: String?,
         @RequestParam(required = false) unit: String?,
         @RequestParam(required = false) searchTerms: String?,
-        @RequestParam(required = false) financeDecisionManagerId: UUID?
+        @RequestParam(required = false) financeDecisionHandlerId: UUID?
     ): ResponseEntity<VoucherValueDecisionSearchResult> {
         Audit.VoucherValueDecisionSearch.log()
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
@@ -79,7 +79,7 @@ class VoucherValueDecisionController(
                 area?.split(",") ?: listOf(),
                 unit?.let { parseUUID(it) },
                 searchTerms ?: "",
-                financeDecisionManagerId
+                financeDecisionHandlerId
             )
         }
         val pages =

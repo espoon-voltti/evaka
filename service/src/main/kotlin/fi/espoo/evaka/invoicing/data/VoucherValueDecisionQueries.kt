@@ -286,7 +286,7 @@ fun Handle.searchValueDecisions(
     areas: List<String>,
     unit: UUID?,
     searchTerms: String = "",
-    financeDecisionManagerId: UUID?
+    financeDecisionHandlerId: UUID?
 ): Pair<Int, List<VoucherValueDecisionSummary>> {
     val sortColumn = when (sortBy) {
         VoucherValueDecisionSortParam.HEAD_OF_FAMILY -> "head.last_name"
@@ -299,11 +299,11 @@ fun Handle.searchValueDecisions(
         "status" to status.name,
         "areas" to areas.toTypedArray(),
         "unit" to unit,
-        "financeDecisionManagerId" to financeDecisionManagerId
+        "financeDecisionHandlerId" to financeDecisionHandlerId
     )
 
     val (freeTextQuery, freeTextParams) = freeTextSearchQuery(listOf("head", "partner", "child"), searchTerms)
-    val financeDecisionManagerWhere = "AND placement_unit.finance_decision_manager = :financeDecisionManagerId"
+    val financeDecisionHandlerWhere = "AND placement_unit.finance_decision_handler = :financeDecisionHandlerId"
 
     val sql =
         // language=sql
@@ -345,7 +345,7 @@ fun Handle.searchValueDecisions(
                 AND youngest_child.area = ANY(:areas)
                 AND (:unit::uuid IS NULL OR part.placement_unit = :unit)
                 AND $freeTextQuery
-                ${if (financeDecisionManagerId != null) financeDecisionManagerWhere else ""}
+                ${if (financeDecisionHandlerId != null) financeDecisionHandlerWhere else ""}
             GROUP BY decision.id
             -- we take a max here because the sort column is not in group by clause but it should be identical for all grouped rows
             ORDER BY max($sortColumn) $sortDirection, decision.id

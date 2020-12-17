@@ -8,7 +8,7 @@ import {
   Filters,
   ValueDecisionStatusFilter,
   UnitFilter,
-  FinanceDecisionManagerFilter
+  FinanceDecisionHandlerFilter
 } from '../common/Filters'
 import { InvoicingUiContext } from '../../state/invoicing-ui'
 import { getAreas, getUnits } from '../../api/daycare'
@@ -82,9 +82,9 @@ export default React.memo(function VoucherValueDecisionFilters() {
     [setSearchFilters]
   )
 
-  const selectFinanceDecisionManager = useCallback(
-    (financeDecisionManagerId: string) =>
-      setSearchFilters((filters) => ({ ...filters, financeDecisionManagerId })),
+  const selectFinanceDecisionHandler = useCallback(
+    (financeDecisionHandlerId: string) =>
+      setSearchFilters((filters) => ({ ...filters, financeDecisionHandlerId })),
     [setSearchFilters]
   )
 
@@ -127,7 +127,7 @@ export default React.memo(function VoucherValueDecisionFilters() {
             select={selectUnit}
           />
           <Gap size="L" />
-          <FinanceDecisionManagerFilter
+          <FinanceDecisionHandlerFilter
             employees={employees
               .map((e) =>
                 e.map(({ id, firstName, lastName }) => ({
@@ -146,11 +146,11 @@ export default React.memo(function VoucherValueDecisionFilters() {
                     }))
                     .filter(
                       (employee) =>
-                        employee.id === searchFilters.financeDecisionManagerId
+                        employee.id === searchFilters.financeDecisionHandlerId
                     )[0]
               )
               .getOrElse(undefined)}
-            select={selectFinanceDecisionManager}
+            select={selectFinanceDecisionHandler}
           />
         </>
       }

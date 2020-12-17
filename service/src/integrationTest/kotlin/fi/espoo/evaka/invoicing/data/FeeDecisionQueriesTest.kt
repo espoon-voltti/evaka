@@ -430,7 +430,7 @@ class FeeDecisionQueriesTest : PureJdbiTest() {
                 unit = null,
                 startDate = null,
                 endDate = null,
-                financeDecisionManagerId = null
+                financeDecisionHandlerId = null
             )
         }
         assertEquals(1, result.second.size)

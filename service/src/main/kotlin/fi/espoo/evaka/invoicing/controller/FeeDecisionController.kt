@@ -89,7 +89,7 @@ class FeeDecisionController(
         @RequestParam(required = false) startDate: String?,
         @RequestParam(required = false) endDate: String?,
         @RequestParam(required = false) searchByStartDate: Boolean = false,
-        @RequestParam(required = false) financeDecisionManagerId: UUID?
+        @RequestParam(required = false) financeDecisionHandlerId: UUID?
     ): ResponseEntity<FeeDecisionSearchResult> {
         Audit.FeeDecisionSearch.log()
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
@@ -112,7 +112,7 @@ class FeeDecisionController(
                 startDate?.let { LocalDate.parse(startDate, DateTimeFormatter.ISO_DATE) },
                 endDate?.let { LocalDate.parse(endDate, DateTimeFormatter.ISO_DATE) },
                 searchByStartDate,
-                financeDecisionManagerId
+                financeDecisionHandlerId
             )
         }
         val pages =

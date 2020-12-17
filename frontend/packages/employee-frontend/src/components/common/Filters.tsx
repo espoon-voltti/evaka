@@ -281,26 +281,26 @@ export const UnitFilter = React.memo(function UnitFilter({
   )
 })
 
-interface FinanceDecisionManagerFilterProps {
+interface FinanceDecisionHandlerFilterProps {
   employees: { id: string; label: string }[]
   selected?: { id: string; label: string }
   select: (employee: string) => void
 }
 
-export const FinanceDecisionManagerFilter = React.memo(
-  function FinanceDecisionManagerFilter({
+export const FinanceDecisionHandlerFilter = React.memo(
+  function FinanceDecisionHandlerFilter({
     employees,
     selected,
     select
-  }: FinanceDecisionManagerFilterProps) {
+  }: FinanceDecisionHandlerFilterProps) {
     const { i18n } = useTranslation()
     const options = employees.map(({ id, label }) => ({ id, label, value: id }))
     return (
       <>
         <Label>
-          <LabelText>{i18n.filters.financeDecisionManager}</LabelText>
+          <LabelText>{i18n.filters.financeDecisionHandler}</LabelText>
           <ReactSelect
-            placeholder={i18n.filters.financeDecisionManagerPlaceholder}
+            placeholder={i18n.filters.financeDecisionHandlerPlaceholder}
             options={options}
             onChange={(option) =>
               option && 'id' in option ? select(option.id) : undefined

@@ -51,7 +51,7 @@ export interface Unit {
   uploadToKoski: boolean
   invoicedByMunicipality: boolean
   costCenter: string | null
-  financeDecisionManager: { employee: Employee } | null
+  financeDecisionHandler: { employee: Employee } | null
   additionalInfo: string | null
   phone: string | null
   email: string | null

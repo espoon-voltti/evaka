@@ -34,8 +34,8 @@ import { Employee } from '~types/employee'
 function convertUnitJson(unit: JsonOf<Unit>): Unit {
   return {
     ...unit,
-    financeDecisionManager: unit.financeDecisionManager
-      ? { employee: mapEmployeeJson(unit.financeDecisionManager.employee) }
+    financeDecisionHandler: unit.financeDecisionHandler
+      ? { employee: mapEmployeeJson(unit.financeDecisionHandler.employee) }
       : null,
     openingDate: unit.openingDate ? LocalDate.parseIso(unit.openingDate) : null,
     closingDate: unit.closingDate ? LocalDate.parseIso(unit.closingDate) : null,
@@ -644,7 +644,7 @@ export interface DaycareFields {
   uploadToKoski: boolean
   invoicedByMunicipality: boolean
   costCenter: string | null
-  financeDecisionManagerId: UUID
+  financeDecisionHandlerId: UUID
   additionalInfo: string | null
   phone: string | null
   email: string | null
