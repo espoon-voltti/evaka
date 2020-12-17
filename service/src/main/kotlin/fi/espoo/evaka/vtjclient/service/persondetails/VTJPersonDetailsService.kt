@@ -122,7 +122,7 @@ class VTJPersonDetailsService(
         } catch (e: VtjPersonNotFoundException) {
             return PersonDetails.PersonNotFound()
         } catch (e: Exception) {
-            logger.error("Error fetching VTJ data: $e")
+            logger.error(e) { "Error fetching VTJ data: $e" }
             return PersonDetails.QueryError(e.message ?: "")
         }.let(henkiloMapper::mapToVtjPerson)
 

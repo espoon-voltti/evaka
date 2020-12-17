@@ -59,9 +59,9 @@ class EmailClient(private val client: AmazonSimpleEmailService, env: Environment
             } catch (e: Exception) {
                 when (e) {
                     is MailFromDomainNotVerifiedException, is ConfigurationSetDoesNotExistException, is ConfigurationSetSendingPausedException, is AccountSendingPausedException ->
-                        logger.error { "Couldn't send application email (personId: $personId): ${e.message}" }
+                        logger.error(e) { "Couldn't send application email (personId: $personId): ${e.message}" }
                     else -> {
-                        logger.error { "Couldn't send application email (personId: $personId): ${e.message}" }
+                        logger.error(e) { "Couldn't send application email (personId: $personId): ${e.message}" }
                         throw e
                     }
                 }

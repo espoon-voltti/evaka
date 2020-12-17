@@ -73,14 +73,14 @@ class DvvModificationsService(
                             else -> logger.info("Unsupported DVV modification: ${infoGroup.tietoryhma}")
                         }
                     } catch (e: Throwable) {
-                        logger.error(
+                        logger.error(e) {
                             "Could not process dvv modification for ${
                             personModifications.henkilotunnus.substring(
                                 0,
                                 6
                             )
                             }: ${e.message}"
-                        )
+                        }
                     }
                 }
             }
