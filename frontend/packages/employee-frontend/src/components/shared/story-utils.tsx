@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
-import { P } from 'components/shared/Typography'
+import { P } from '@evaka/lib-components/src/typography'
 
 export function LoremParagraph() {
   return (

@@ -20,7 +20,7 @@ import {
 } from 'icon-set'
 import LocalDate from '@evaka/lib-common/src/local-date'
 import { Result } from 'api'
-import { H4, Label } from 'components/shared/Typography'
+import { H4, Label } from '@evaka/lib-components/src/typography'
 import CollapsibleSection from 'components/shared/molecules/CollapsibleSection'
 import { Gap } from '@evaka/lib-components/src/white-space'
 import { FixedSpaceColumn } from 'components/shared/layout/flex-helpers'

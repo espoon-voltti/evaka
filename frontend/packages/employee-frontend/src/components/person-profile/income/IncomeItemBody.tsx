@@ -4,7 +4,7 @@
 
 import React from 'react'
 import ListGrid from '~components/shared/layout/ListGrid'
-import { Label } from '~components/shared/Typography'
+import { Label } from '@evaka/lib-components/src/typography'
 import Title from '~components/shared/atoms/Title'
 import IncomeTable from './IncomeTable'
 import { Income } from '~types/income'

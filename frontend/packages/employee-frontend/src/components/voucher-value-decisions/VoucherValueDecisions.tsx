@@ -14,7 +14,7 @@ import {
   Tbody,
   SortableTh
 } from '~components/shared/layout/Table'
-import { H1 } from '~components/shared/Typography'
+import { H1 } from '@evaka/lib-components/src/typography'
 import Loader from '~components/shared/atoms/Loader'
 import Checkbox from '~components/shared/atoms/form/Checkbox'
 import NameWithSsn from '../common/NameWithSsn'

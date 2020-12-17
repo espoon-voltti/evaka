@@ -16,7 +16,7 @@ import { defaultMargins, Gap } from '@evaka/lib-components/src/white-space'
 import { useTranslation } from '~state/i18n'
 import { modalZIndex } from '~components/shared/layout/z-helpers'
 import { InfoStatus } from 'components/shared/UnderRowStatusIcon'
-import { P } from '~components/shared/Typography'
+import { P } from '@evaka/lib-components/src/typography'
 
 export const DimmedModal = styled.div``
 

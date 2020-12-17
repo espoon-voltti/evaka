@@ -7,7 +7,7 @@ import { greyscale } from '@evaka/lib-components/src/colors'
 import { defaultMargins } from '@evaka/lib-components/src/white-space'
 import { BaseProps } from './utils'
 
-interface HeadingProps extends BaseProps {
+type HeadingProps = BaseProps & {
   fitted?: boolean
   'data-qa'?: string
   centered?: boolean
@@ -67,18 +67,20 @@ export const H5 = styled.h4<HeadingProps>`
   ${(p) => (p.noMargin ? `margin: 0;` : '')}
 `
 
-interface LabelProps {
+type LabelProps = {
   inputRow?: boolean
 }
+
 export const Label = styled.label<LabelProps>`
   font-weight: 600;
   ${(p) => (p.inputRow ? 'margin-top: 6px;' : '')}
 `
 
-interface ParagraphProps {
+type ParagraphProps = {
   fitted?: boolean
   centered?: boolean
 }
+
 export const P = styled.p<ParagraphProps>`
   margin-bottom: ${(p) => (!p.fitted ? `${defaultMargins.s};` : '0')};
   ${(p) => (p.centered ? 'text-align: center;' : '')};

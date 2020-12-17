@@ -4,7 +4,7 @@
 
 import React, { Fragment } from 'react'
 import styled from 'styled-components'
-import { H3, H4 } from '~components/shared/Typography'
+import { H3, H4 } from '@evaka/lib-components/src/typography'
 import Section from '~components/shared/layout/Section'
 import { Gap } from '@evaka/lib-components/src/white-space'
 import { useTranslation } from '~state/i18n'

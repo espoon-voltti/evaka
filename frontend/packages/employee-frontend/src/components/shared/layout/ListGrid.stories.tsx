@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
-import { Label } from 'components/shared/Typography'
+import { Label } from '@evaka/lib-components/src/typography'
 import { storiesOf } from '@storybook/react'
 import ListGrid from 'components/shared/layout/ListGrid'
 

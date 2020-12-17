@@ -4,7 +4,7 @@
 
 import React from 'react'
 import { storiesOf } from '@storybook/react'
-import { H3 } from 'components/shared/Typography'
+import { H3 } from '@evaka/lib-components/src/typography'
 import Button from 'components/shared/atoms/buttons/Button'
 import { action } from '@storybook/addon-actions'
 import { Gap } from '@evaka/lib-components/src/white-space'

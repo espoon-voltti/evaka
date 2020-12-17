@@ -6,7 +6,7 @@ import React, { useState } from 'react'
 import { storiesOf } from '@storybook/react'
 import ListGrid from 'components/shared/layout/ListGrid'
 import InputField from 'components/shared/atoms/form/InputField'
-import { Label } from 'components/shared/Typography'
+import { Label } from '@evaka/lib-components/src/typography'
 
 function StatefulStory() {
   const [text1, setText1] = useState('')

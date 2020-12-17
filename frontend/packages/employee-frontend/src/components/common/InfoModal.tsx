@@ -25,7 +25,7 @@ import {
 import Title from '~components/shared/atoms/Title'
 import { Gap } from '@evaka/lib-components/src/white-space'
 import Button from '~components/shared/atoms/buttons/Button'
-import { P } from '~components/shared/Typography'
+import { P } from '@evaka/lib-components/src/typography'
 
 interface SizeProps {
   size: ModalSize

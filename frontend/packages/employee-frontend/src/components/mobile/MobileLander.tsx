@@ -8,7 +8,7 @@ import { Redirect } from 'react-router-dom'
 import MetaTags from 'react-meta-tags'
 import styled from 'styled-components'
 
-import { P } from '~components/shared/Typography'
+import { P } from '@evaka/lib-components/src/typography'
 import { useTranslation } from '~state/i18n'
 import { UserContext } from '~state/user'
 import EvakaLogo from '../../assets/EvakaLogo.svg'

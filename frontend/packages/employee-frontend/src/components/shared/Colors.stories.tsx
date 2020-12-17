@@ -10,7 +10,7 @@ import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'components/shared/layout/flex-helpers'
-import { H2, H3, Label } from 'components/shared/Typography'
+import { H2, H3, Label } from '@evaka/lib-components/src/typography'
 import { Gap } from '@evaka/lib-components/src/white-space'
 
 interface ColorCircleProps {

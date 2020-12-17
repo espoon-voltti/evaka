@@ -29,7 +29,7 @@ import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'components/shared/layout/flex-helpers'
-import { H1 } from 'components/shared/Typography'
+import { H1 } from '@evaka/lib-components/src/typography'
 import { defaultMargins } from '@evaka/lib-components/src/white-space'
 import { getEmployeeUrlPrefix } from '~constants'
 import { formatDate } from '~utils/date'

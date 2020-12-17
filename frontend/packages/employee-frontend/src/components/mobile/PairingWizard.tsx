@@ -17,7 +17,7 @@ import {
 import IconButton from '~components/shared/atoms/buttons/IconButton'
 import InputField from '~components/shared/atoms/form/InputField'
 import colors from '@evaka/lib-components/src/colors'
-import { P } from '~components/shared/Typography'
+import { P } from '@evaka/lib-components/src/typography'
 import { faArrowRight } from '~icon-set'
 import { useTranslation } from '~state/i18n'
 import EvakaLogo from '../../assets/EvakaLogo.svg'

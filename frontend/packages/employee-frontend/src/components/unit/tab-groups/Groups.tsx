@@ -8,7 +8,7 @@ import { faAngleDown, faAngleUp } from 'icon-set'
 import _ from 'lodash'
 import { useTranslation } from '~state/i18n'
 import { Gap } from '@evaka/lib-components/src/white-space'
-import { H2 } from '~components/shared/Typography'
+import { H2 } from '@evaka/lib-components/src/typography'
 import IconButton from '~components/shared/atoms/buttons/IconButton'
 import AddButton from '~components/shared/atoms/buttons/AddButton'
 import {

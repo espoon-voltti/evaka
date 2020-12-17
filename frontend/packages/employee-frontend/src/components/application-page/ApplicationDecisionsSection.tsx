@@ -7,7 +7,7 @@ import { Link } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 
 import { faFilePdf, faGavel } from 'icon-set'
-import { Label } from '~components/shared/Typography'
+import { Label } from '@evaka/lib-components/src/typography'
 import CollapsibleSection from '~components/shared/molecules/CollapsibleSection'
 import ListGrid from '~components/shared/layout/ListGrid'
 import { useTranslation } from '~state/i18n'

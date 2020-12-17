@@ -4,7 +4,7 @@
 
 import React from 'react'
 import styled from 'styled-components'
-import { H1, H2 } from '~components/shared/Typography'
+import { H1, H2 } from '@evaka/lib-components/src/typography'
 import { defaultMargins } from '@evaka/lib-components/src/white-space'
 import { greyscale } from '@evaka/lib-components/src/colors'
 import { useTranslation } from '~state/i18n'
