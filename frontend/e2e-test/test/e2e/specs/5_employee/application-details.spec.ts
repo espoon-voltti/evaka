@@ -111,6 +111,7 @@ fixture('Application - employee application details')
   })
   .afterEach(logConsoleMessages)
   .afterEach(async () => {
+    await cleanUpMessages()
     await deleteApplication(singleParentApplication.id)
     await deleteApplication(familyWithTwoGuardiansApplication.id)
     await deleteApplication(separatedFamilyApplication.id)
@@ -124,7 +125,6 @@ fixture('Application - employee application details')
       fixtures.preschoolFixture.id
     )
     await cleanUpInvoicingDatabase()
-    await cleanUpMessages()
     await cleanUp()
   })
 
