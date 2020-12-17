@@ -263,7 +263,7 @@ server {
     <% end %>
     include    proxy_params;
     limit_req  zone=req_zone burst=100 nodelay;
-    add_header Content-Security-Policy "${contentSecurityPolicyBase}; script-src 'self' 'unsafe-inline' 'unsafe-eval'; frame-ancestors 'self'";
+    add_header Content-Security-Policy "${contentSecurityPolicyBase}; script-src 'self' 'sha256-A9Cpd1jPKuGtZcFRJYJ1/G9eaBJG/AzD7naF/87Cwqw=' 'unsafe-eval'; frame-ancestors 'self'";
 
     proxy_set_header X-Forwarded-Proto "https";
     proxy_pass $authUrl;
