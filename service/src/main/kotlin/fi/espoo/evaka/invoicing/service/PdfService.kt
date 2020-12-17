@@ -160,8 +160,8 @@ class PDFService(
             "pricingMinThreshold" to formatCents(-1 * decision.minThreshold()),
             "familySize" to decision.familySize,
             "showValidTo" to (decision.validTo?.isBefore(LocalDate.now()) ?: false),
-            "approverFirstName" to (decision.financeDecisionHandler?.employee?.firstName ?: decision.approvedBy?.firstName),
-            "approverLastName" to (decision.financeDecisionHandler?.employee?.lastName ?: decision.approvedBy?.lastName),
+            "approverFirstName" to decision.approvedBy?.firstName,
+            "approverLastName" to decision.approvedBy?.lastName
         ).mapValues {
             it.value ?: ""
         }

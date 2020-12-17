@@ -267,6 +267,7 @@ export interface FeeDecisionDetailed {
   createdAt: Date
   sentAt: Date | null
   financeDecisionHandler: { employee: Employee } | null
+  approvedBy: { firstName: string; lastName: string } | null
   minThreshold: number
   feePercent: number
   totalFee: number

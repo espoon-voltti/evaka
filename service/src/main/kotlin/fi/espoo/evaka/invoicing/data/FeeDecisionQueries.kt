@@ -520,9 +520,15 @@ fun approveFeeDecisionDraftsForSending(h: Handle, ids: List<UUID>, approvedBy: U
         SET
             status = :status,
             decision_number = nextval('fee_decision_number_sequence'),
-            approved_by = :approvedBy,
+            approved_by = CASE
+                WHEN daycare.finance_decision_handler IS NOT NULL THEN daycare.finance_decision_handler
+                ELSE :approvedBy
+                END,
             approved_at = NOW()
-        WHERE id = :id
+        FROM fee_decision AS fd
+        LEFT JOIN fee_decision_part ON fd.id = fee_decision_part.fee_decision_id
+        LEFT JOIN daycare ON daycare.id = fee_decision_part.placement_unit
+        WHERE fd.id = :id AND fee_decision.id = fd.id
     """
 
     val batch = h.prepareBatch(sql)
