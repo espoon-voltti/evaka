@@ -692,22 +692,35 @@ export default function UnitEditor(props: Props): JSX.Element {
       <FormPart>
         <div>{showRequired(i18n.unitEditor.label.canApply)}</div>
         <FixedSpaceColumn>
-          {['daycare', 'preschool', 'club'].map((type) => {
-            const key = `${type}ApplyPeriod`
-            const period = form[key] as OpenEndedPeriod | null
+          {[
+            {
+              type: 'daycare',
+              checkboxI18n: 'canApplyDaycare',
+              field: 'daycareApplyPeriod',
+              period: form.daycareApplyPeriod
+            },
+            {
+              type: 'preschool',
+              checkboxI18n: 'canApplyPreschool',
+              field: 'preschoolApplyPeriod',
+              period: form.preschoolApplyPeriod
+            },
+            {
+              type: 'club',
+              checkboxI18n: 'canApplyClub',
+              field: 'clubApplyPeriod',
+              period: form.clubApplyPeriod
+            }
+          ].map(({ type, checkboxI18n, field, period }) => {
             return (
               <div key={type}>
                 <Checkbox
                   disabled={!props.editable}
-                  label={
-                    i18n.unitEditor.field[
-                      `canApply${type.toUpperCase()}`
-                    ] as string
-                  }
+                  label={i18n.unitEditor.field[checkboxI18n] as string}
                   checked={period !== null}
                   onChange={(canApply) => {
                     updateForm({
-                      [key]: canApply
+                      [field]: canApply
                         ? { start: LocalDate.today(), end: null }
                         : null
                     })
@@ -734,7 +747,7 @@ export default function UnitEditor(props: Props): JSX.Element {
                                 }
 
                                 updateForm({
-                                  [key]: {
+                                  [field]: {
                                     start: startDate,
                                     end: period?.end ?? null
                                   }
@@ -754,7 +767,7 @@ export default function UnitEditor(props: Props): JSX.Element {
                                 }
 
                                 updateForm({
-                                  [key]: {
+                                  [field]: {
                                     start: period?.start ?? LocalDate.today(),
                                     end: endDate
                                   }
@@ -762,7 +775,7 @@ export default function UnitEditor(props: Props): JSX.Element {
                               }}
                               onCleared={() => {
                                 updateForm({
-                                  [key]: {
+                                  [field]: {
                                     start: period?.start ?? LocalDate.today(),
                                     end: null
                                   }
