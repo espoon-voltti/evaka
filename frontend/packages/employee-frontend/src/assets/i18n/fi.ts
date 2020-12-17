@@ -119,7 +119,8 @@ export const fi = {
     month: 'Kuukausi',
     year: 'Vuosi',
     code: 'Koodi',
-    ready: 'Valmis'
+    ready: 'Valmis',
+    page: 'Sivu'
   },
   header: {
     title: 'Varhaiskasvatus',
@@ -1306,8 +1307,7 @@ export const fi = {
       number: 'Numero',
       status: 'Tila',
       createdAt: 'Luotu',
-      sentAt: 'Lähetetty',
-      paging: 'Sivu'
+      sentAt: 'Lähetetty'
     },
     buttons: {
       checked: (count: number) =>
@@ -1334,8 +1334,7 @@ export const fi = {
       number: 'Numero',
       status: 'Tila',
       createdAt: 'Luotu',
-      sentAt: 'Lähetetty',
-      paging: 'Sivu'
+      sentAt: 'Lähetetty'
     },
     buttons: {
       checked: (count: number) =>

@@ -4,7 +4,6 @@
 
 import React from 'react'
 import styled from 'styled-components'
-import { useTranslation } from '~state/i18n'
 
 const NUMBER_OF_PAGES_TO_SHOW = 5
 
@@ -25,11 +24,10 @@ interface Props {
   pages: number | undefined
   currentPage: number
   setPage: (page: number) => void
+  label: string
 }
 
-const Pagination = ({ pages = 0, currentPage, setPage }: Props) => {
-  const { i18n } = useTranslation()
-
+const Pagination = ({ pages = 0, currentPage, setPage, label }: Props) => {
   const firstPage = 1
   const lastPage = pages
 
@@ -45,7 +43,7 @@ const Pagination = ({ pages = 0, currentPage, setPage }: Props) => {
 
   return (
     <div>
-      <span>{i18n.feeDecisions.table.paging}:</span>
+      <span>{label}:</span>
 
       {firstPageToShow > 1 && (
         <PageItem

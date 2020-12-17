@@ -32,7 +32,7 @@ import { StatusIconContainer } from '~components/common/StatusIconContainer'
 import { EspooColours } from '~utils/colours'
 import { SearchOrder } from '~types'
 import { SortByInvoices } from '~api/invoicing'
-import Pagination from '~components/shared/Pagination'
+import Pagination from '@evaka/lib-components/src/Pagination'
 import { InvoicesActions } from './invoices-state'
 
 interface Props {
@@ -92,6 +92,7 @@ export default React.memo(function Invoices({
               pages={pages}
               currentPage={currentPage}
               setPage={actions.setPage}
+              label={i18n.common.page}
             />
           </ResultsContainer>
         )}
@@ -134,6 +135,7 @@ export default React.memo(function Invoices({
               pages={pages}
               currentPage={currentPage}
               setPage={actions.setPage}
+              label={i18n.common.page}
             />
           </ResultsContainer>
         </>

@@ -20,7 +20,7 @@ import {
   ApplicationsSearchResponse
 } from 'types/application'
 import { SearchOrder } from '~types'
-import Pagination from '~components/shared/Pagination'
+import Pagination from '@evaka/lib-components/src/Pagination'
 import colors, { blueColors } from '@evaka/lib-components/src/colors'
 import { SortByApplications } from '~types/application'
 import { formatName } from '~utils'
@@ -396,6 +396,7 @@ const ApplicationsList = React.memo(function Applications({
             pages={pages}
             currentPage={currentPage}
             setPage={setPage}
+            label={i18n.common.page}
           />
         </PaginationWrapper>
       </TitleRowContainer>
