@@ -13,7 +13,10 @@ import {
   FeeDecisionDateFilter,
   FinanceDecisionHandlerFilter
 } from '../common/Filters'
-import { InvoicingUiContext } from '../../state/invoicing-ui'
+import {
+  FinanceDecisionHandler,
+  InvoicingUiContext
+} from '../../state/invoicing-ui'
 import { getAreas, getUnits } from '../../api/daycare'
 import { getFinanceDecisionHandlers } from '../../api/employees'
 import {
@@ -22,6 +25,7 @@ import {
 } from '../../types/invoicing'
 import { Gap } from '@evaka/lib-components/src/white-space'
 import { useTranslation } from '~state/i18n'
+import { useState } from 'react'
 
 function FeeDecisionFilters() {
   const {
@@ -43,6 +47,10 @@ function FeeDecisionFilters() {
   } = useContext(InvoicingUiContext)
 
   const { i18n } = useTranslation()
+  const [
+    selectedFinanceDecisionHandler,
+    setSelectedFinanceDecisionHandler
+  ] = useState<FinanceDecisionHandler | undefined>(undefined)
 
   useEffect(() => {
     void getAreas().then(setAvailableAreas)
@@ -55,6 +63,15 @@ function FeeDecisionFilters() {
   useEffect(() => {
     void getFinanceDecisionHandlers().then(setFinanceDecisionHandlers)
   }, [])
+
+  useEffect(() => {
+    const handler = financeDecisionHandlers
+      .getOrElse([])
+      .filter(
+        (handler) => handler.id === searchFilters.financeDecisionHandlerId
+      )[0]
+    setSelectedFinanceDecisionHandler(handler)
+  }, [searchFilters.financeDecisionHandlerId])
 
   // remove selected unit filter if the unit is not included in the selected areas
   useEffect(() => {
@@ -161,29 +178,8 @@ function FeeDecisionFilters() {
           />
           <Gap size="L" />
           <FinanceDecisionHandlerFilter
-            financeDecisionHandlers={financeDecisionHandlers
-              .map((e) =>
-                e.map(({ id, firstName, lastName }) => ({
-                  id,
-                  label: [firstName, lastName].join(' ')
-                }))
-              )
-              .getOrElse([])}
-            selected={financeDecisionHandlers
-              .map(
-                (es) =>
-                  es
-                    .map(({ id, firstName, lastName }) => ({
-                      id,
-                      label: [firstName, lastName].join(' ')
-                    }))
-                    .filter(
-                      (financeDecisionHandler) =>
-                        financeDecisionHandler.id ===
-                        searchFilters.financeDecisionHandlerId
-                    )[0]
-              )
-              .getOrElse(undefined)}
+            financeDecisionHandlers={financeDecisionHandlers.getOrElse([])}
+            selected={selectedFinanceDecisionHandler}
             select={selectFinanceDecisionHandler}
           />
         </>

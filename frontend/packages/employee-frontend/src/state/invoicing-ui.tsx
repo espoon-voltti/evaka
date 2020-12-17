@@ -22,7 +22,7 @@ import {
 } from '../types/invoicing'
 import { Loading, Result } from '../api'
 import { CareArea } from '~types/unit'
-import { Employee } from '~types/employee'
+import { UUID } from '~types'
 
 interface Checked {
   [id: string]: boolean
@@ -90,11 +90,18 @@ interface InvoiceSearchFilterState {
   clearSearchFilters: () => void
 }
 
+export interface FinanceDecisionHandler {
+  id: UUID
+  label: string
+}
+
 interface SharedState {
   units: Result<Unit[]>
   setUnits: Dispatch<SetStateAction<Result<Unit[]>>>
-  financeDecisionHandlers: Result<Employee[]>
-  setFinanceDecisionHandlers: Dispatch<SetStateAction<Result<Employee[]>>>
+  financeDecisionHandlers: Result<FinanceDecisionHandler[]>
+  setFinanceDecisionHandlers: Dispatch<
+    SetStateAction<Result<FinanceDecisionHandler[]>>
+  >
   availableAreas: Result<CareArea[]>
   setAvailableAreas: Dispatch<SetStateAction<Result<CareArea[]>>>
 }
@@ -255,7 +262,7 @@ export const InvoicingUIContextProvider = React.memo(
       defaultState.shared.units
     )
     const [financeDecisionHandlers, setFinanceDecisionHandlers] = useState<
-      Result<Employee[]>
+      Result<FinanceDecisionHandler[]>
     >(defaultState.shared.financeDecisionHandlers)
     const [availableAreas, setAvailableAreas] = useState<Result<CareArea[]>>(
       defaultState.shared.availableAreas
