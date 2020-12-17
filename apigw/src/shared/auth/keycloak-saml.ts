@@ -14,6 +14,7 @@ import certificates from '../certificates'
 import fs from 'fs'
 
 export default function createKeycloakSamlStrategy(): SamlStrategy {
+  if (!evakaSamlConfig) throw new Error('Missing Keycloak SAML configuration')
   const privateCert = fs.readFileSync(evakaSamlConfig.privateCert, {
     encoding: 'utf8'
   })
