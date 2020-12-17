@@ -2,6 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import LocalDate from '@evaka/lib-common/src/local-date'
+
 export type UUID = string
 type ISODate = string
 type Timestamp = string
@@ -175,6 +177,10 @@ export interface CareArea {
   subCostCenter: string
 }
 
+interface OpenEndedPeriod {
+  start: LocalDate
+  end: LocalDate | null
+}
 export interface Daycare {
   id: UUID
   careAreaId: UUID
@@ -190,9 +196,9 @@ export interface Daycare {
   decisionPreschoolName: string
   decisionHandler: string
   decisionHandlerAddress: string
-  canApplyClub?: boolean
-  canApplyDaycare?: boolean
-  canApplyPreschool?: boolean
+  daycareApplyPeriod?: OpenEndedPeriod | null
+  preschoolApplyPeriod?: OpenEndedPeriod | null
+  clubApplyPeriod?: OpenEndedPeriod | null
 }
 
 export interface DaycareGroup {
