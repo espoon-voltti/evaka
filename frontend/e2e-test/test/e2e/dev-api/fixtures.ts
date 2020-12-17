@@ -314,6 +314,68 @@ export const familyWithSeparatedGuardians = {
   }))
 }
 
+const restrictedDetailsGuardian = {
+  id: '7699f488-3fdc-11eb-b378-0242ac130002',
+  ssn: '080884-999H',
+  firstName: 'Kaj Erik',
+  lastName: 'Pelimerkki',
+  email: 'kaj@example.com',
+  phone: '123456789',
+  language: 'fi',
+  dateOfBirth: '1984-08-08',
+  streetAddress: 'Kamreerintie 4',
+  postalCode: '02100',
+  postOffice: 'Espoo',
+  nationalities: ['FI'],
+  restrictedDetailsEnabled: true,
+  restrictedDetailsEndDate: null
+}
+
+const guardian2WithNoRestrictions = {
+  id: '1fd05a42-3fdd-11eb-b378-0242ac130002',
+  ssn: '130486-9980',
+  firstName: 'Helga Helen',
+  lastName: 'Lehtokurppa',
+  email: 'helga@example.com',
+  phone: '123456789',
+  language: 'fi',
+  dateOfBirth: '1986-04-13',
+  streetAddress: 'Westendinkatu 3',
+  postalCode: '02100',
+  postOffice: 'Espoo',
+  nationalities: ['FI'],
+  restrictedDetailsEnabled: false,
+  restrictedDetailsEndDate: null
+}
+
+const restrictedDetailsGuardiansChildren = [
+  {
+    id: '82a2586e-3fdd-11eb-b378-0242ac130002',
+    firstName: 'Vadelma',
+    lastName: 'Pelimerkki',
+    dateOfBirth: '2017-05-15',
+    ssn: '150517A9989',
+    streetAddress: 'Kamreerintie 4',
+    postalCode: '02100',
+    postOffice: 'Espoo'
+  }
+]
+
+export const familyWithRestrictedDetailsGuardian = {
+  guardian: {
+    ...restrictedDetailsGuardian,
+    dependants: restrictedDetailsGuardiansChildren
+  },
+  otherGuardian: {
+    ...guardian2WithNoRestrictions,
+    dependants: restrictedDetailsGuardiansChildren
+  },
+  children: restrictedDetailsGuardiansChildren.map((child) => ({
+    ...child,
+    guardians: [restrictedDetailsGuardian, guardian2WithNoRestrictions]
+  }))
+}
+
 export const personFixtureChildZeroYearOld: PersonDetail = {
   id: '0909e93d-3aa8-44f8-ac30-ecd77339d849',
   ssn: undefined,

@@ -15,6 +15,7 @@ import {
   familyWithSeparatedGuardians,
   restrictedPersonFixture,
   personFixtureChildZeroYearOld,
+  familyWithRestrictedDetailsGuardian,
   Fixture
 } from './fixtures'
 import * as devApi from '.'
@@ -31,7 +32,8 @@ const areaAndPersonFixtures = {
   familyWithTwoGuardians,
   familyWithSeparatedGuardians,
   restrictedPersonFixture,
-  personFixtureChildZeroYearOld
+  personFixtureChildZeroYearOld,
+  familyWithRestrictedDetailsGuardian
 }
 
 export type AreaAndPersonFixtures = typeof areaAndPersonFixtures
@@ -99,6 +101,24 @@ export const initializeAreaAndPersonData = async (): Promise<
   )
 
   await Fixture.person()
+    .with(areaAndPersonFixtures.familyWithRestrictedDetailsGuardian.guardian)
+    .saveAndUpdateMockVtj()
+
+  await Fixture.person()
+    .with(
+      areaAndPersonFixtures.familyWithRestrictedDetailsGuardian.otherGuardian
+    )
+    .saveAndUpdateMockVtj()
+
+  await Promise.all(
+    areaAndPersonFixtures.familyWithRestrictedDetailsGuardian.children.map(
+      async (child) => {
+        await Fixture.person().with(child).saveAndUpdateMockVtj()
+      }
+    )
+  )
+
+  await Fixture.person()
     .with(areaAndPersonFixtures.restrictedPersonFixture)
     .save()
 
@@ -111,6 +131,7 @@ export const initializeAreaAndPersonData = async (): Promise<
     areaAndPersonFixtures.enduserChildFixtureKaarina,
     ...areaAndPersonFixtures.familyWithTwoGuardians.children,
     ...areaAndPersonFixtures.familyWithSeparatedGuardians.children,
+    ...areaAndPersonFixtures.familyWithRestrictedDetailsGuardian.children,
     personFixtureChildZeroYearOld
   ])
 
