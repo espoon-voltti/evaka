@@ -15,7 +15,7 @@ import { getAreas, getUnits } from '../../api/daycare'
 import { VoucherValueDecisionStatus } from '../../types/invoicing'
 import { Gap } from '@evaka/lib-components/src/white-space'
 import { useTranslation } from '~state/i18n'
-import { getEmployees } from '~api/employees'
+import { getFinanceDecisionHandlers } from '~api/employees'
 
 export default React.memo(function VoucherValueDecisionFilters() {
   const {
@@ -43,7 +43,7 @@ export default React.memo(function VoucherValueDecisionFilters() {
   }, [])
 
   useEffect(() => {
-    void getEmployees().then(setFinanceDecisionHandlers)
+    void getFinanceDecisionHandlers().then(setFinanceDecisionHandlers)
   }, [])
 
   useEffect(() => {

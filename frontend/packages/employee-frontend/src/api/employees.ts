@@ -20,3 +20,18 @@ export async function getEmployees(): Promise<Result<Employee[]>> {
     .then((v) => Success.of(v))
     .catch((e) => Failure.fromError(e))
 }
+
+export async function getFinanceDecisionHandlers(): Promise<Result<Employee[]>> {
+  return client
+    .get<JsonOf<Employee[]>>(`/employee/finance-decision-handler`)
+    .then((res) =>
+      res.data.map((data) => ({
+        ...data,
+        created: new Date(data.created),
+        updated: new Date(data.updated)
+      }))
+    )
+    .then((v) => Success.of(v))
+    .catch((e) => Failure.fromError(e))
+}
+

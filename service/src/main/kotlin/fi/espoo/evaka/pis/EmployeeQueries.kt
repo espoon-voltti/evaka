@@ -44,7 +44,21 @@ WHERE (:id::uuid IS NULL OR e.id = :id) AND md.id IS NULL
     .mapTo<Employee>()
     .asSequence()
 
+private fun Handle.searchFinanceDecisionHandlers(id: UUID? = null) = createQuery(
+    // language=SQL
+    """
+SELECT e.id, e.first_name, e.last_name, e.email, e.external_id, e.created, e.updated, e.roles
+FROM employee e
+JOIN daycare ON daycare.finance_decision_handler = e.id
+LEFT JOIN mobile_device md on e.id = md.id
+WHERE (:id::uuid IS NULL OR e.id = :id) AND md.id IS NULL
+    """.trimIndent()
+).bind("id", id)
+    .mapTo<Employee>()
+    .asSequence()
+
 fun Handle.getEmployees(): List<Employee> = searchEmployees().toList()
+fun Handle.getFinanceDecisionHandlers(): List<Employee> = searchFinanceDecisionHandlers().toList()
 fun Handle.getEmployee(id: UUID): Employee? = searchEmployees(id = id).firstOrNull()
 fun Handle.getEmployeeAuthenticatedUser(externalId: ExternalId): AuthenticatedUser? = createQuery(
     // language=SQL

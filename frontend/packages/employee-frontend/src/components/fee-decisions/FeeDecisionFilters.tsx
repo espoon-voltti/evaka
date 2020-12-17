@@ -15,7 +15,7 @@ import {
 } from '../common/Filters'
 import { InvoicingUiContext } from '../../state/invoicing-ui'
 import { getAreas, getUnits } from '../../api/daycare'
-import { getEmployees } from '../../api/employees'
+import { getFinanceDecisionHandlers } from '../../api/employees'
 import {
   DecisionDistinctiveDetails,
   FeeDecisionStatus
@@ -53,7 +53,7 @@ function FeeDecisionFilters() {
   }, [])
 
   useEffect(() => {
-    void getEmployees().then(setFinanceDecisionHandlers)
+    void getFinanceDecisionHandlers().then(setFinanceDecisionHandlers)
   }, [])
 
   // remove selected unit filter if the unit is not included in the selected areas

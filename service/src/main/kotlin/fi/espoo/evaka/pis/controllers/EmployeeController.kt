@@ -11,6 +11,7 @@ import fi.espoo.evaka.pis.createEmployee
 import fi.espoo.evaka.pis.deleteEmployee
 import fi.espoo.evaka.pis.getEmployee
 import fi.espoo.evaka.pis.getEmployees
+import fi.espoo.evaka.pis.getFinanceDecisionHandlers
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
@@ -31,8 +32,15 @@ class EmployeeController {
     @GetMapping()
     fun getEmployees(db: Database.Connection, user: AuthenticatedUser): ResponseEntity<List<Employee>> {
         Audit.EmployeesRead.log()
-        user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR, UserRole.FINANCE_ADMIN)
+        user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR)
         return ResponseEntity.ok(db.read { it.handle.getEmployees() }.sortedBy { it.email })
+    }
+
+    @GetMapping("/finance-decision-handler")
+    fun getFinanceDecisionHandlers(db: Database.Connection, user: AuthenticatedUser): ResponseEntity<List<Employee>> {
+        Audit.EmployeesRead.log()
+        user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR, UserRole.FINANCE_ADMIN)
+        return ResponseEntity.ok(db.read { it.handle.getFinanceDecisionHandlers() }.sortedBy { it.email })
     }
 
     @GetMapping("/{id}")
