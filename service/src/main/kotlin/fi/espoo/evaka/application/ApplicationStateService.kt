@@ -643,7 +643,7 @@ class ApplicationStateService(
         }
 
         if (hasOverlappingDefiniteIncome || hasLaterIncome || preferredStartDate == null) {
-            logger.error { "Could not add a new max fee accepted income when moving to WAITING_FOR_PLACEMENT state" }
+            logger.debug { "Could not add a new max fee accepted income when moving to WAITING_FOR_PLACEMENT state" }
         } else {
             val period = Period(start = preferredOrNow, end = null)
             val validIncome = Income(
