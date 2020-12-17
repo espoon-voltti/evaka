@@ -30,6 +30,8 @@ import {
 import { DatePicker } from '~components/common/DatePicker'
 import LocalDate from '@evaka/lib-common/src/local-date'
 import { distinct } from 'utils'
+import { faLink } from 'icon-set'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 
 interface DisplayFilters {
   careArea: string
@@ -185,6 +187,7 @@ function PlacementSketching() {
                   <Th>{i18n.reports.placementSketching.connected}</Th>
                   <Th>{i18n.reports.placementSketching.preferredStartDate}</Th>
                   <Th>{i18n.reports.placementSketching.sentDate}</Th>
+                  <Th>{i18n.application.tabTitle}</Th>
                 </Tr>
               </Thead>
               <Tbody>
@@ -219,6 +222,11 @@ function PlacementSketching() {
                     <Td>{yesNo(row.connectedDaycare)}</Td>
                     <Td>{row.preferredStartDate.format()}</Td>
                     <Td>{row.sentDate.format()}</Td>
+                    <Td data-qa={'application'}>
+                      <Link to={`/applications/${row.applicationId}`}>
+                        <FontAwesomeIcon icon={faLink} />
+                      </Link>
+                    </Td>
                   </Tr>
                 ))}
               </Tbody>

@@ -9,8 +9,7 @@ import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.db.getNullableUUID
-import fi.espoo.evaka.shared.db.getUUID
+import org.jdbi.v3.core.kotlin.mapTo
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
@@ -56,21 +55,21 @@ WHERE
 )
 SELECT
     care_area.name AS area_name,
-    daycare.id AS requested_daycare_id,
-    daycare.name AS requested_daycare_name,
+    daycare.id AS requested_unit_id,
+    daycare.name AS requested_unit_name,
     application.id AS application_id,
     application.childId,
     application.childfirstname,
     application.childlastname,
-    person.date_of_birth,
+    person.date_of_birth AS child_dob,
     application.childstreetaddr,
-    active_placements.daycare_name AS current_placement_daycare_name,
-    active_placements.daycare_id AS current_placement_daycare_id,
-    application.daycareassistanceneeded,
+    active_placements.daycare_name AS current_unit_name,
+    active_placements.daycare_id AS current_unit_id,
+    application.daycareassistanceneeded AS assistance_needed,
     application.preparatoryeducation,
     application.siblingbasis,
     application.connecteddaycare,
-    application.startDate,
+    application.startDate AS preferred_start_date,
     application.sentdate
 FROM
     daycare
@@ -87,32 +86,13 @@ WHERE
     AND application.status = ANY ('{SENT,WAITING_PLACEMENT,WAITING_CONFIRMATION,WAITING_DECISION,WAITING_MAILING,WAITING_UNIT_CONFIRMATION, ACTIVE}'::application_status_type[])
     AND application.type = 'preschool'
 ORDER BY
-    area_name, requested_daycare_name
+    area_name, requested_unit_name
         """.trimIndent()
     return createQuery(sql)
         .bind("placementStartDate", placementStartDate)
         .bind("earliestPreferredStartDate", earliestPreferredStartDate)
-        .map { rs, _ ->
-            PlacementSketchingReportRow(
-                areaName = rs.getString("area_name"),
-                requestedUnitId = rs.getUUID("requested_daycare_id"),
-                requestedUnitName = rs.getString("requested_daycare_name"),
-                childId = rs.getUUID("childId"),
-                childFirstName = rs.getString("childfirstname"),
-                childLastName = rs.getString("childlastname"),
-                childDob = rs.getString("date_of_birth"),
-                childStreetAddr = rs.getString("childstreetaddr"),
-                applicationId = rs.getUUID("application_id"),
-                currentUnitName = rs.getString("current_placement_daycare_name"),
-                currentUnitId = rs.getNullableUUID("current_placement_daycare_id"),
-                assistanceNeeded = rs.getBoolean("daycareassistanceneeded"),
-                preparatoryEducation = rs.getBoolean("preparatoryeducation"),
-                siblingBasis = rs.getBoolean("siblingbasis"),
-                connectedDaycare = rs.getBoolean("connecteddaycare"),
-                preferredStartDate = rs.getDate("startDate").toLocalDate(),
-                sentDate = rs.getDate("sentDate").toLocalDate()
-            )
-        }.toList()
+        .mapTo<PlacementSketchingReportRow>()
+        .toList()
 }
 
 data class PlacementSketchingReportRow(

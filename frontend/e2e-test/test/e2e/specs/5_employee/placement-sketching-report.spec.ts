@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
+
 import {
   AreaAndPersonFixtures,
   initializeAreaAndPersonData
@@ -76,7 +80,6 @@ test('Placed child shows on report', async (t) => {
   const preferredUnit = daycareFixture
   const currentUnit = preferredUnit
 
-  // TODO pitää olla oikeasti sijoitettu että näkyy
   const daycarePlacementFixture = createDaycarePlacementFixture(
     createdApplication.childId,
     preferredUnit.id,
