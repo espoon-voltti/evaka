@@ -51,7 +51,7 @@ import fi.espoo.evaka.pis.service.Partner
 import fi.espoo.evaka.placement.Placement
 import fi.espoo.evaka.serviceneed.getServiceNeedsByChildDuringPeriod
 import fi.espoo.evaka.shared.db.getUUID
-import fi.espoo.evaka.shared.domain.Period
+import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.asDistinctPeriods
 import fi.espoo.evaka.shared.domain.mergePeriods
 import fi.espoo.evaka.shared.domain.minEndDate
@@ -72,7 +72,7 @@ class DecisionGenerator(private val objectMapper: ObjectMapper, env: Environment
     private val feeDecisionMinDate: LocalDate = LocalDate.parse(env.getRequiredProperty("fee_decision_min_date"))
 
     fun createRetroactive(h: Handle, headOfFamily: UUID, from: LocalDate) {
-        val period = Period(from, null)
+        val period = DateRange(from, null)
         findFamiliesByHeadOfFamily(h, headOfFamily, period)
             .filter { it.period.overlaps(period) }
             .forEach {
@@ -88,42 +88,42 @@ class DecisionGenerator(private val objectMapper: ObjectMapper, env: Environment
             }
     }
 
-    fun handlePlacement(h: Handle, childId: UUID, period: Period) {
+    fun handlePlacement(h: Handle, childId: UUID, period: DateRange) {
         logger.debug { "Generating fee decisions from new placement (childId: $childId, period: $period)" }
 
         val families = findFamiliesByChild(h, childId, period)
         handleDecisionChangesForFamilies(h, period, families)
     }
 
-    fun handleServiceNeed(h: Handle, childId: UUID, period: Period) {
+    fun handleServiceNeed(h: Handle, childId: UUID, period: DateRange) {
         logger.debug { "Generating fee decisions from changed service need (childId: $childId, period: $period)" }
 
         val families = findFamiliesByChild(h, childId, period)
         handleDecisionChangesForFamilies(h, period, families)
     }
 
-    fun handleFamilyUpdate(h: Handle, adultId: UUID, period: Period) {
+    fun handleFamilyUpdate(h: Handle, adultId: UUID, period: DateRange) {
         logger.debug { "Generating fee decisions from changed family (adultId: $adultId, period: $period)" }
 
         val families = findFamiliesByHeadOfFamily(h, adultId, period) + findFamiliesByPartner(h, adultId, period)
         handleDecisionChangesForFamilies(h, period, families)
     }
 
-    fun handleIncomeChange(h: Handle, personId: UUID, period: Period) {
+    fun handleIncomeChange(h: Handle, personId: UUID, period: DateRange) {
         logger.debug { "Generating fee decisions from changed income (personId: $personId, period: $period)" }
 
         val families = findFamiliesByHeadOfFamily(h, personId, period) + findFamiliesByPartner(h, personId, period)
         handleDecisionChangesForFamilies(h, period, families)
     }
 
-    fun handleFeeAlterationChange(h: Handle, childId: UUID, period: Period) {
+    fun handleFeeAlterationChange(h: Handle, childId: UUID, period: DateRange) {
         logger.debug { "Generating fee decisions from changed fee alteration (childId: $childId, period: $period)" }
 
         val families = findFamiliesByChild(h, childId, period)
         handleDecisionChangesForFamilies(h, period, families)
     }
 
-    private fun handleDecisionChangesForFamilies(h: Handle, period: Period, families: List<FridgeFamily>) {
+    private fun handleDecisionChangesForFamilies(h: Handle, period: DateRange, families: List<FridgeFamily>) {
         families.filter { it.period.overlaps(period) }
             .forEach {
                 handleFeeDecisionChanges(
@@ -254,7 +254,7 @@ private fun addECHAFeeAlterations(
     incomes: List<Income>
 ): List<FeeAlteration> {
     return incomes.filter { it.worksAtECHA }.flatMap { income ->
-        children.map { child -> getECHAIncrease(child.id, Period(income.validFrom, income.validTo)) }
+        children.map { child -> getECHAIncrease(child.id, DateRange(income.validFrom, income.validTo)) }
     }
 }
 
@@ -263,33 +263,33 @@ private fun generateNewFeeDecisions(
     headOfFamily: PersonData.JustId,
     partner: PersonData.JustId?,
     familySize: Int,
-    allPlacements: List<Pair<PersonData.WithDateOfBirth, List<Pair<Period, PermanentPlacementWithHours>>>>,
-    prices: List<Pair<Period, Pricing>>,
+    allPlacements: List<Pair<PersonData.WithDateOfBirth, List<Pair<DateRange, PermanentPlacementWithHours>>>>,
+    prices: List<Pair<DateRange, Pricing>>,
     incomes: List<Income>,
     feeAlterations: List<FeeAlteration>,
     invoicedUnits: List<UUID>
 ): List<FeeDecision> {
-    val periods = incomes.map { Period(it.validFrom, it.validTo) } +
+    val periods = incomes.map { DateRange(it.validFrom, it.validTo) } +
         prices.map { it.first } +
         allPlacements.flatMap { (_, placements) ->
             placements.map { it.first }
         } +
-        feeAlterations.map { Period(it.validFrom, it.validTo) }
+        feeAlterations.map { DateRange(it.validFrom, it.validTo) }
 
-    return asDistinctPeriods(periods, Period(from, null))
+    return asDistinctPeriods(periods, DateRange(from, null))
         .map { period ->
             val price = prices.find { it.first.contains(period) }?.second
                 ?: error("Missing price for period ${period.start} - ${period.end}, cannot generate fee decision")
 
             val income = incomes
-                .find { headOfFamily.id == it.personId && Period(it.validFrom, it.validTo).contains(period) }
+                .find { headOfFamily.id == it.personId && DateRange(it.validFrom, it.validTo).contains(period) }
                 ?.toDecisionIncome()
 
             val partnerIncome =
                 partner?.let {
                     incomes
                         .find {
-                            partner.id == it.personId && Period(
+                            partner.id == it.personId && DateRange(
                                 it.validFrom,
                                 it.validTo
                             ).contains(period)
@@ -322,7 +322,7 @@ private fun generateNewFeeDecisions(
                         val siblingDiscount = getSiblingDiscountPercent(index + 1)
                         val feeBeforeAlterations = calculateFeeBeforeFeeAlterations(baseFee, placement.withoutHours(), siblingDiscount)
                         val relevantFeeAlterations = feeAlterations.filter {
-                            it.personId == child.id && Period(it.validFrom, it.validTo).contains(period)
+                            it.personId == child.id && DateRange(it.validFrom, it.validTo).contains(period)
                         }
 
                         FeeDecisionPart(
@@ -362,24 +362,24 @@ private fun generateNewValueDecisions(
     headOfFamily: PersonData.JustId,
     partner: PersonData.JustId?,
     familySize: Int,
-    allPlacements: List<Pair<PersonData.WithDateOfBirth, List<Pair<Period, PermanentPlacementWithHours>>>>,
-    prices: List<Pair<Period, Pricing>>,
-    voucherValues: List<Pair<Period, Int>>,
+    allPlacements: List<Pair<PersonData.WithDateOfBirth, List<Pair<DateRange, PermanentPlacementWithHours>>>>,
+    prices: List<Pair<DateRange, Pricing>>,
+    voucherValues: List<Pair<DateRange, Int>>,
     incomes: List<Income>,
     feeAlterations: List<FeeAlteration>,
     serviceVoucherUnits: List<UUID>
 ): List<VoucherValueDecision> {
-    val periods = incomes.map { Period(it.validFrom, it.validTo) } +
+    val periods = incomes.map { DateRange(it.validFrom, it.validTo) } +
         prices.map { it.first } +
         allPlacements.flatMap { (child, placements) ->
             placements.map { it.first } + listOf(
-                Period(child.dateOfBirth, child.dateOfBirth.plusYears(3).minusDays(1)),
-                Period(child.dateOfBirth.plusYears(3), null)
+                DateRange(child.dateOfBirth, child.dateOfBirth.plusYears(3).minusDays(1)),
+                DateRange(child.dateOfBirth.plusYears(3), null)
             )
         } +
-        feeAlterations.map { Period(it.validFrom, it.validTo) }
+        feeAlterations.map { DateRange(it.validFrom, it.validTo) }
 
-    return asDistinctPeriods(periods, Period(from, null))
+    return asDistinctPeriods(periods, DateRange(from, null))
         .map { period ->
             val price = prices.find { it.first.contains(period) }?.second
                 ?: error("Missing price for period ${period.start} - ${period.end}, cannot generate voucher value decision")
@@ -388,14 +388,14 @@ private fun generateNewValueDecisions(
                 ?: error("Missing voucher value for period ${period.start} - ${period.end}, cannot generate voucher value decision")
 
             val income = incomes
-                .find { headOfFamily.id == it.personId && Period(it.validFrom, it.validTo).contains(period) }
+                .find { headOfFamily.id == it.personId && DateRange(it.validFrom, it.validTo).contains(period) }
                 ?.toDecisionIncome()
 
             val partnerIncome =
                 partner?.let {
                     incomes
                         .find {
-                            partner.id == it.personId && Period(
+                            partner.id == it.personId && DateRange(
                                 it.validFrom,
                                 it.validTo
                             ).contains(period)
@@ -424,7 +424,7 @@ private fun generateNewValueDecisions(
                         val coPaymentBeforeAlterations =
                             calculateFeeBeforeFeeAlterations(baseCoPayment, placement.withoutHours(), siblingDiscount)
                         val relevantFeeAlterations = feeAlterations.filter {
-                            it.personId == child.id && Period(it.validFrom, it.validTo).contains(period)
+                            it.personId == child.id && DateRange(it.validFrom, it.validTo).contains(period)
                         }
 
                         val ageCoefficient = getAgeCoefficient(period, child.dateOfBirth)
@@ -480,7 +480,7 @@ private fun getServiceVoucherUnits(h: Handle): List<UUID> {
         .toList()
 }
 
-private fun findFamiliesByChild(h: Handle, childId: UUID, period: Period): List<FridgeFamily> {
+private fun findFamiliesByChild(h: Handle, childId: UUID, period: DateRange): List<FridgeFamily> {
     val parentRelations = h.getParentships(null, childId, includeConflicts = false, period = period)
 
     return parentRelations.flatMap {
@@ -490,18 +490,18 @@ private fun findFamiliesByChild(h: Handle, childId: UUID, period: Period): List<
             it.headOfChild.id,
             fridgePartners,
             fridgeChildren,
-            Period(maxOf(period.start, it.startDate), minEndDate(period.end, it.endDate))
+            DateRange(maxOf(period.start, it.startDate), minEndDate(period.end, it.endDate))
         )
     }
 }
 
-private fun findFamiliesByHeadOfFamily(h: Handle, headOfFamilyId: UUID, period: Period): List<FridgeFamily> {
+private fun findFamiliesByHeadOfFamily(h: Handle, headOfFamilyId: UUID, period: DateRange): List<FridgeFamily> {
     val childRelations = h.getParentships(headOfFamilyId, null, includeConflicts = false, period = period)
     val partners = h.getPartnersForPerson(headOfFamilyId, includeConflicts = false, period = period)
     return generateFamilyCompositions(headOfFamilyId, partners, childRelations, period)
 }
 
-private fun findFamiliesByPartner(h: Handle, personId: UUID, period: Period): List<FridgeFamily> {
+private fun findFamiliesByPartner(h: Handle, personId: UUID, period: DateRange): List<FridgeFamily> {
     val possibleHeadsOfFamily = h.getPartnersForPerson(personId, includeConflicts = false, period = period)
     return possibleHeadsOfFamily.flatMap { findFamiliesByHeadOfFamily(h, it.person.id, period) }
 }
@@ -510,21 +510,21 @@ private fun generateFamilyCompositions(
     headOfFamily: UUID,
     partners: Iterable<Partner>,
     parentships: Iterable<Parentship>,
-    wholePeriod: Period
+    wholePeriod: DateRange
 ): List<FridgeFamily> {
     val periodsWhenChildrenAreNotAdults = parentships.map {
         val birthday = it.child.dateOfBirth
-        Period(birthday, birthday.plusYears(18))
+        DateRange(birthday, birthday.plusYears(18))
     }
 
-    val allPeriods = partners.map { Period(it.startDate, it.endDate) } +
-        parentships.map { Period(it.startDate, it.endDate) } + periodsWhenChildrenAreNotAdults
+    val allPeriods = partners.map { DateRange(it.startDate, it.endDate) } +
+        parentships.map { DateRange(it.startDate, it.endDate) } + periodsWhenChildrenAreNotAdults
 
     val familyPeriods = asDistinctPeriods(allPeriods, wholePeriod)
         .map { period ->
-            val partner = partners.find { Period(it.startDate, it.endDate).contains(period) }?.person
+            val partner = partners.find { DateRange(it.startDate, it.endDate).contains(period) }?.person
             val children = parentships
-                .filter { Period(it.startDate, it.endDate).contains(period) }
+                .filter { DateRange(it.startDate, it.endDate).contains(period) }
                 // Do not include children that are over 18 years old during the period
                 .filter { it.child.dateOfBirth.plusYears(18) >= period.start }
                 .map { it.child }
@@ -549,10 +549,10 @@ private fun getPaidPlacements(
     h: Handle,
     from: LocalDate,
     children: List<PersonData.WithDateOfBirth>
-): List<Pair<PersonData.WithDateOfBirth, List<Pair<Period, PermanentPlacementWithHours>>>> {
+): List<Pair<PersonData.WithDateOfBirth, List<Pair<DateRange, PermanentPlacementWithHours>>>> {
     return children.map { child ->
         val placements = getActivePaidPlacements(h, child.id, from)
-        if (placements.isEmpty()) return@map child to listOf<Pair<Period, PermanentPlacementWithHours>>()
+        if (placements.isEmpty()) return@map child to listOf<Pair<DateRange, PermanentPlacementWithHours>>()
 
         val serviceNeeds = getServiceNeedsByChildDuringPeriod(h, child.id, from, null)
         val placementsWithServiceNeeds = addServiceNeedsToPlacements(child.dateOfBirth, placements, serviceNeeds)
@@ -580,23 +580,23 @@ fun isEntitledToFreeFiveYearsOldDaycare(dateOfBirth: LocalDate, date: LocalDate 
     return getFiveYearOldTerm(dateOfBirth).includes(date)
 }
 
-private fun getFiveYearOldTerm(dateOfBirth: LocalDate): Period {
+private fun getFiveYearOldTerm(dateOfBirth: LocalDate): DateRange {
     val yearTheChildTurns5 = dateOfBirth.year + 5
-    return Period(LocalDate.of(yearTheChildTurns5, 8, 1), LocalDate.of(yearTheChildTurns5 + 1, 7, 31))
+    return DateRange(LocalDate.of(yearTheChildTurns5, 8, 1), LocalDate.of(yearTheChildTurns5 + 1, 7, 31))
 }
 
 private fun addServiceNeedsToPlacements(
     dateOfBirth: LocalDate,
     placements: List<Placement>,
     serviceNeeds: List<fi.espoo.evaka.serviceneed.ServiceNeed>
-): List<Pair<Period, PermanentPlacementWithHours>> {
+): List<Pair<DateRange, PermanentPlacementWithHours>> {
     val fiveYearOldTerm = getFiveYearOldTerm(dateOfBirth)
 
     return placements.flatMap { placement ->
-        val placementPeriod = Period(placement.startDate, placement.endDate)
-        asDistinctPeriods(serviceNeeds.map { Period(it.startDate, it.endDate) } + fiveYearOldTerm, placementPeriod)
+        val placementPeriod = DateRange(placement.startDate, placement.endDate)
+        asDistinctPeriods(serviceNeeds.map { DateRange(it.startDate, it.endDate) } + fiveYearOldTerm, placementPeriod)
             .mapNotNull { period ->
-                val serviceNeed = serviceNeeds.find { (Period(it.startDate, it.endDate)).contains(period) }
+                val serviceNeed = serviceNeeds.find { (DateRange(it.startDate, it.endDate)).contains(period) }
                 // Do not include temporary placements as they should be invoiced separately
                 if (serviceNeed?.temporary == true) null
                 else {
@@ -636,14 +636,14 @@ internal fun <Part : FinanceDecisionPart, Decision : FinanceDecision<Part, Decis
     val minDate = drafts.map { it.validFrom }.minOrNull()!! // min always exists when list is non-empty
     val maxDate = drafts.map { it.validTo }.maxByOrNull { orMax(it) }
 
-    return asDistinctPeriods((drafts + active).map { Period(it.validFrom, it.validTo) }, Period(minDate, maxDate))
+    return asDistinctPeriods((drafts + active).map { DateRange(it.validFrom, it.validTo) }, DateRange(minDate, maxDate))
         .fold(listOf<Decision>()) { decisions, period ->
-            val keptDraft = drafts.find { Period(it.validFrom, it.validTo).contains(period) }?.let { draft ->
-                val decision = active.find { Period(it.validFrom, it.validTo).contains(period) }
+            val keptDraft = drafts.find { DateRange(it.validFrom, it.validTo).contains(period) }?.let { draft ->
+                val decision = active.find { DateRange(it.validFrom, it.validTo).contains(period) }
                 if (draftIsUnnecessary(draft, decision, alreadyGeneratedDrafts = decisions.isNotEmpty())) {
                     null
                 } else {
-                    draft.withValidity(Period(period.start, period.end))
+                    draft.withValidity(DateRange(period.start, period.end))
                 }
             }
             if (keptDraft != null) decisions + keptDraft else decisions
@@ -669,7 +669,7 @@ internal fun <Part : FinanceDecisionPart, Decision : FinanceDecision<Part, Decis
     decisions: List<Decision>
 ): List<Decision> {
     return decisions
-        .map { Period(it.validFrom, it.validTo) to it }
+        .map { DateRange(it.validFrom, it.validTo) to it }
         .let { mergePeriods(it, ::decisionContentsAreEqual) }
         .map { (period, decision) -> decision.withValidity(period) }
         .map { it.withRandomId() }
@@ -681,7 +681,7 @@ internal fun <Part : FinanceDecisionPart, Decision : FinanceDecision<Part, Decis
     existingDrafts: List<Decision>,
     activeDecisions: List<Decision>
 ): List<Decision> {
-    val draftsWithUpdatedDates = filterOrUpdateStaleDrafts(existingDrafts, Period(from, null))
+    val draftsWithUpdatedDates = filterOrUpdateStaleDrafts(existingDrafts, DateRange(from, null))
         .map { it.withRandomId() }
 
     val (withUpdatedEndDates, mergedDrafts) = updateDecisionEndDatesAndMergeDrafts(
@@ -694,10 +694,10 @@ internal fun <Part : FinanceDecisionPart, Decision : FinanceDecision<Part, Decis
 
 internal fun <Part : FinanceDecisionPart, Decision : FinanceDecision<Part, Decision>> filterOrUpdateStaleDrafts(
     drafts: List<Decision>,
-    period: Period
+    period: DateRange
 ): List<Decision> {
     val (overlappingDrafts, nonOverlappingDrafts) = drafts.partition {
-        Period(
+        DateRange(
             it.validFrom,
             it.validTo
         ).overlaps(period)
@@ -706,21 +706,21 @@ internal fun <Part : FinanceDecisionPart, Decision : FinanceDecision<Part, Decis
     val updatedOverlappingDrafts = when (period.end) {
         null -> overlappingDrafts.flatMap {
             when {
-                it.validFrom < period.start -> listOf(it.withValidity(Period(it.validFrom, period.start.minusDays(1))))
+                it.validFrom < period.start -> listOf(it.withValidity(DateRange(it.validFrom, period.start.minusDays(1))))
                 else -> emptyList()
             }
         }
         else -> overlappingDrafts.flatMap {
             when {
                 it.validFrom < period.start && orMax(it.validTo) > orMax(period.end) -> listOf(
-                    it.withValidity(Period(it.validFrom, period.start.minusDays(1))),
-                    it.withValidity(Period(period.end.plusDays(1), it.validTo))
+                    it.withValidity(DateRange(it.validFrom, period.start.minusDays(1))),
+                    it.withValidity(DateRange(period.end.plusDays(1), it.validTo))
                 )
                 it.validFrom < period.start && orMax(it.validTo) <= orMax(period.end) -> listOf(
-                    it.withValidity(Period(it.validFrom, period.start.minusDays(1)))
+                    it.withValidity(DateRange(it.validFrom, period.start.minusDays(1)))
                 )
                 it.validFrom >= period.start && orMax(it.validTo) > orMax(period.end) -> listOf(
-                    it.withValidity(Period(period.end.plusDays(1), it.validTo))
+                    it.withValidity(DateRange(period.end.plusDays(1), it.validTo))
                 )
                 else -> emptyList()
             }
@@ -751,7 +751,7 @@ internal fun <Part : FinanceDecisionPart, Decision : FinanceDecision<Part, Decis
             val now = LocalDate.now()
             if (orMax(decision.validTo) >= now && orMax(similarDraft.validTo) >= now) {
                 Pair(
-                    updatedActives + decision.withValidity(Period(decision.validFrom, similarDraft.validTo)),
+                    updatedActives + decision.withValidity(DateRange(decision.validFrom, similarDraft.validTo)),
                     keptDrafts.filterNot { it.id == similarDraft.id }
                 )
             } else null
@@ -764,7 +764,7 @@ internal fun <Part : FinanceDecisionPart, Decision : FinanceDecision<Part, Decis
     return Pair(updatedActives, filteredDrafts)
 }
 
-private fun Handle.getVoucherValues(from: LocalDate): List<Pair<Period, Int>> {
+private fun Handle.getVoucherValues(from: LocalDate): List<Pair<DateRange, Int>> {
     // language=sql
     val sql = "SELECT * FROM voucher_value WHERE validity && daterange(:from, null, '[]')"
 

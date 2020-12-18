@@ -17,7 +17,7 @@ import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
 import fi.espoo.evaka.shared.dev.insertTestServiceNeed
-import fi.espoo.evaka.shared.domain.ClosedPeriod
+import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.test.getBackupCareRowById
 import fi.espoo.evaka.test.getBackupCareRowsByChild
 import fi.espoo.evaka.testChild_1
@@ -45,7 +45,7 @@ class BackupCareIntegrationTest : FullApplicationTest() {
     @Test
     fun testUpdate(): Unit = jdbi.handle { h ->
         val groupId = h.insertTestDaycareGroup(DevDaycareGroup(daycareId = testDaycare.id))
-        val period = ClosedPeriod(LocalDate.of(2020, 7, 1), LocalDate.of(2020, 7, 31))
+        val period = FiniteDateRange(LocalDate.of(2020, 7, 1), LocalDate.of(2020, 7, 31))
         val id = createBackupCareAndAssert(h, period = period)
         val changedPeriod = period.copy(end = LocalDate.of(2020, 7, 7))
         val (_, res, _) = http.post("/backup-cares/$id")
@@ -78,7 +78,7 @@ class BackupCareIntegrationTest : FullApplicationTest() {
                     NewBackupCare(
                         unitId = testDaycare.id,
                         groupId = null,
-                        period = ClosedPeriod(LocalDate.of(2020, 7, 31), LocalDate.of(2020, 8, 1))
+                        period = FiniteDateRange(LocalDate.of(2020, 7, 31), LocalDate.of(2020, 8, 1))
                     )
                 )
             )
@@ -110,7 +110,7 @@ class BackupCareIntegrationTest : FullApplicationTest() {
                         id = groupId,
                         name = groupName
                     ),
-                    period = ClosedPeriod(LocalDate.of(2020, 7, 1), LocalDate.of(2020, 7, 31))
+                    period = FiniteDateRange(LocalDate.of(2020, 7, 1), LocalDate.of(2020, 7, 31))
                 )
             ),
             backupCares
@@ -121,8 +121,8 @@ class BackupCareIntegrationTest : FullApplicationTest() {
     fun testUnitBackupCare(): Unit = jdbi.handle { h ->
         val groupName = "Test Group"
         val groupId = h.insertTestDaycareGroup(DevDaycareGroup(daycareId = testDaycare.id, name = groupName))
-        val period = ClosedPeriod(LocalDate.of(2020, 7, 1), LocalDate.of(2020, 7, 31))
-        val serviceNeedPeriod = ClosedPeriod(LocalDate.of(2020, 7, 3), period.end)
+        val period = FiniteDateRange(LocalDate.of(2020, 7, 1), LocalDate.of(2020, 7, 31))
+        val serviceNeedPeriod = FiniteDateRange(LocalDate.of(2020, 7, 3), period.end)
         insertTestServiceNeed(
             h,
             childId = testChild_1.id,
@@ -170,7 +170,7 @@ class BackupCareIntegrationTest : FullApplicationTest() {
         childId: UUID = testChild_1.id,
         unitId: UUID = testDaycare.id,
         groupId: UUID? = null,
-        period: ClosedPeriod = ClosedPeriod(LocalDate.of(2020, 7, 1), LocalDate.of(2020, 7, 31))
+        period: FiniteDateRange = FiniteDateRange(LocalDate.of(2020, 7, 1), LocalDate.of(2020, 7, 31))
     ): UUID {
         val (_, res, result) = http.post("/children/$childId/backup-cares")
             .jsonBody(

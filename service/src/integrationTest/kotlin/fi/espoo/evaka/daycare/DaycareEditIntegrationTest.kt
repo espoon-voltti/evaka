@@ -22,7 +22,7 @@ import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.insertTestCareArea
 import fi.espoo.evaka.shared.dev.insertTestDaycare
 import fi.espoo.evaka.shared.domain.Coordinate
-import fi.espoo.evaka.shared.domain.Period
+import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.testAreaCode
 import fi.espoo.evaka.testAreaId
 import fi.espoo.evaka.testDaycare
@@ -42,7 +42,7 @@ class DaycareEditIntegrationTest : FullApplicationTest() {
         closingDate = LocalDate.of(2120, 1, 1),
         areaId = testAreaId,
         type = setOf(CareType.CENTRE),
-        daycareApplyPeriod = Period(LocalDate.of(2020, 3, 1), null),
+        daycareApplyPeriod = DateRange(LocalDate.of(2020, 3, 1), null),
         preschoolApplyPeriod = null,
         clubApplyPeriod = null,
         providerType = ProviderType.MUNICIPAL,

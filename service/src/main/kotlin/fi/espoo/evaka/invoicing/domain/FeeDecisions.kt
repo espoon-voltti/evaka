@@ -6,7 +6,7 @@ package fi.espoo.evaka.invoicing.domain
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
-import fi.espoo.evaka.shared.domain.Period
+import fi.espoo.evaka.shared.domain.DateRange
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.time.Instant
@@ -38,7 +38,7 @@ data class FeeDecision(
 ) : FinanceDecision<FeeDecisionPart, FeeDecision>, MergeableDecision<FeeDecisionPart, FeeDecision> {
     override fun withParts(parts: List<FeeDecisionPart>) = this.copy(parts = parts)
     override fun withRandomId() = this.copy(id = UUID.randomUUID())
-    override fun withValidity(period: Period) = this.copy(validFrom = period.start, validTo = period.end)
+    override fun withValidity(period: DateRange) = this.copy(validFrom = period.start, validTo = period.end)
     override fun contentEquals(decision: FeeDecision): Boolean {
         return this.parts.toSet() == decision.parts.toSet() &&
             this.headOfFamily == decision.headOfFamily &&
@@ -350,7 +350,7 @@ fun feeAlterationEffect(fee: Int, feeAlteration: FeeAlteration): Int {
 // Current flat increase for children with a parent working at ECHA
 const val ECHAIncrease = 93
 
-fun getECHAIncrease(childId: UUID, period: Period) = FeeAlteration(
+fun getECHAIncrease(childId: UUID, period: DateRange) = FeeAlteration(
     personId = childId,
     type = FeeAlteration.Type.INCREASE,
     amount = ECHAIncrease,

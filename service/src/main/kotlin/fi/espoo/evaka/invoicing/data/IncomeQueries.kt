@@ -9,7 +9,7 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import fi.espoo.evaka.invoicing.domain.Income
 import fi.espoo.evaka.invoicing.domain.IncomeEffect
 import fi.espoo.evaka.shared.db.bindNullable
-import fi.espoo.evaka.shared.domain.Period
+import fi.espoo.evaka.shared.domain.DateRange
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.statement.StatementContext
 import org.postgresql.util.PGobject
@@ -135,7 +135,7 @@ fun deleteIncome(h: Handle, incomeId: UUID) {
     handlingExceptions { update.execute() }
 }
 
-fun splitEarlierIncome(h: Handle, personId: UUID, period: Period) {
+fun splitEarlierIncome(h: Handle, personId: UUID, period: DateRange) {
     val sql =
         """
         UPDATE income

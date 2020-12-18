@@ -5,7 +5,7 @@
 package fi.espoo.evaka.decision
 
 import fi.espoo.evaka.daycare.domain.ProviderType
-import fi.espoo.evaka.shared.domain.ClosedPeriod
+import fi.espoo.evaka.shared.domain.FiniteDateRange
 import java.time.LocalDate
 import java.util.UUID
 
@@ -27,7 +27,7 @@ data class Decision(
     val requestedStartDate: LocalDate?,
     val resolved: LocalDate?
 ) {
-    fun validRequestedStartDatePeriod() = ClosedPeriod(
+    fun validRequestedStartDatePeriod() = FiniteDateRange(
         startDate,
         minOf(
             endDate,

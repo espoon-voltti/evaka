@@ -20,7 +20,7 @@ import fi.espoo.evaka.invoicing.toDetailed
 import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.config.defaultObjectMapper
 import fi.espoo.evaka.shared.db.handle
-import fi.espoo.evaka.shared.domain.Period
+import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_2
 import fi.espoo.evaka.testAdult_3
@@ -41,7 +41,7 @@ import java.util.UUID
 class FeeDecisionQueriesTest : PureJdbiTest() {
     val objectMapper = defaultObjectMapper()
 
-    private val testPeriod = Period(LocalDate.of(2019, 5, 1), LocalDate.of(2019, 5, 31))
+    private val testPeriod = DateRange(LocalDate.of(2019, 5, 1), LocalDate.of(2019, 5, 31))
     private val testDecisions = listOf(
         createFeeDecisionFixture(
             status = FeeDecisionStatus.DRAFT,
@@ -245,7 +245,7 @@ class FeeDecisionQueriesTest : PureJdbiTest() {
         jdbi.handle { h ->
             upsertFeeDecisions(h, objectMapper, testDecisions)
             val result =
-                findFeeDecisionsForHeadOfFamily(h, objectMapper, testAdult_1.id, Period(testPeriod.start, null), null)
+                findFeeDecisionsForHeadOfFamily(h, objectMapper, testAdult_1.id, DateRange(testPeriod.start, null), null)
             assertEquals(2, result.size)
         }
     }
@@ -258,7 +258,7 @@ class FeeDecisionQueriesTest : PureJdbiTest() {
                 h,
                 objectMapper,
                 UUID.randomUUID(),
-                Period(testPeriod.start, null),
+                DateRange(testPeriod.start, null),
                 null
             )
             assertEquals(0, result.size)
@@ -380,7 +380,7 @@ class FeeDecisionQueriesTest : PureJdbiTest() {
             upsertFeeDecisions(h, objectMapper, testDecisions)
 
             val result =
-                getInvoiceableFeeDecisions(h, objectMapper, Period(LocalDate.of(2019, 5, 1), LocalDate.of(2019, 5, 31)))
+                getInvoiceableFeeDecisions(h, objectMapper, DateRange(LocalDate.of(2019, 5, 1), LocalDate.of(2019, 5, 31)))
             assertEquals(2, result.size)
         }
     }

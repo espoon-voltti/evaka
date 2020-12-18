@@ -7,7 +7,7 @@ package fi.espoo.evaka.daycare
 import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.shared.domain.Coordinate
-import fi.espoo.evaka.shared.domain.Period
+import fi.espoo.evaka.shared.domain.DateRange
 import org.jdbi.v3.core.mapper.Nested
 import java.time.LocalDate
 import java.util.UUID
@@ -34,9 +34,9 @@ data class Daycare(
     @Nested("care_area_")
     val area: DaycareCareArea,
     val type: Set<CareType>,
-    val daycareApplyPeriod: Period?,
-    val preschoolApplyPeriod: Period?,
-    val clubApplyPeriod: Period?,
+    val daycareApplyPeriod: DateRange?,
+    val preschoolApplyPeriod: DateRange?,
+    val clubApplyPeriod: DateRange?,
     val providerType: ProviderType,
     val capacity: Int,
     val language: Language,
@@ -92,9 +92,9 @@ data class Location(
     val visitingAddress: VisitingAddress,
     @Nested("mailing")
     val mailingAddress: MailingAddress,
-    val daycareApplyPeriod: Period?,
-    val preschoolApplyPeriod: Period?,
-    val clubApplyPeriod: Period?,
+    val daycareApplyPeriod: DateRange?,
+    val preschoolApplyPeriod: DateRange?,
+    val clubApplyPeriod: DateRange?,
     val provider_type: ProviderType? = ProviderType.MUNICIPAL,
     val language: Language? = Language.fi,
     val location: Coordinate? = null,

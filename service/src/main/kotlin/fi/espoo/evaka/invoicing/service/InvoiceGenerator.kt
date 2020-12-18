@@ -30,7 +30,7 @@ import fi.espoo.evaka.invoicing.domain.merge
 import fi.espoo.evaka.shared.db.PGConstants
 import fi.espoo.evaka.shared.db.getEnum
 import fi.espoo.evaka.shared.db.getUUID
-import fi.espoo.evaka.shared.domain.Period
+import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.asDistinctPeriods
 import fi.espoo.evaka.shared.domain.mergePeriods
 import fi.espoo.evaka.shared.domain.operationalDays
@@ -44,7 +44,7 @@ import java.time.temporal.ChronoUnit
 import java.time.temporal.TemporalAdjusters
 import java.util.UUID
 
-fun createAllDraftInvoices(h: Handle, objectMapper: ObjectMapper, period: Period = getPreviousMonthRange()) {
+fun createAllDraftInvoices(h: Handle, objectMapper: ObjectMapper, period: DateRange = getPreviousMonthRange()) {
     val sentDecisions = getInvoiceableFeeDecisions(h, objectMapper, period).groupBy { it.headOfFamily.id }
     val placements = getInvoiceablePlacements(h, period).groupBy { it.headOfFamily.id }
     val invoicedHeadsOfFamily = getInvoicedHeadsOfFamily(h, period)
@@ -79,7 +79,7 @@ fun createAllDraftInvoices(h: Handle, objectMapper: ObjectMapper, period: Period
 internal fun generateDraftInvoices(
     decisions: Map<UUID, List<FeeDecision>>,
     placements: Map<UUID, List<Placements>>,
-    period: Period,
+    period: DateRange,
     daycareCodes: Map<UUID, DaycareCodes>,
     operationalDays: Map<UUID, List<LocalDate>>,
     absences: List<AbsenceStub> = listOf(),
@@ -108,7 +108,7 @@ data class InvoiceRowStub(
 internal fun generateDraftInvoice(
     decisions: List<FeeDecision>,
     placements: List<Placements>,
-    invoicePeriod: Period,
+    invoicePeriod: DateRange,
     daycareCodes: Map<UUID, DaycareCodes>,
     operationalDays: Map<UUID, List<LocalDate>>,
     absences: List<AbsenceStub>,
@@ -117,11 +117,11 @@ internal fun generateDraftInvoice(
     val headOfFamily = placements.first().headOfFamily
 
     val rowStubs = placements.flatMap { (placementsPeriod, _, childPlacementPairs) ->
-        val relevantPeriod = Period(
+        val relevantPeriod = DateRange(
             maxOf(invoicePeriod.start, placementsPeriod.start),
             minOf(orMax(invoicePeriod.end), orMax(placementsPeriod.end))
         )
-        val periodDecisions = decisions.filter { placementsPeriod.overlaps(Period(it.validFrom, it.validTo)) }
+        val periodDecisions = decisions.filter { placementsPeriod.overlaps(DateRange(it.validFrom, it.validTo)) }
 
         childPlacementPairs
             .sortedByDescending { (child) -> child.dateOfBirth }
@@ -139,12 +139,12 @@ internal fun generateDraftInvoice(
                         periodDecisions
                             .mapNotNull { decision ->
                                 decision.parts.find { part -> part.child == child }
-                                    ?.let { Period(decision.validFrom, decision.validTo) to it }
+                                    ?.let { DateRange(decision.validFrom, decision.validTo) to it }
                             }
                             .filterNot { (_, part) -> part.finalFee() == 0 }
                             .filterNot { (_, part) -> freeChildren.contains(part.child.id) }
                             .map { (decisionPeriod, part) ->
-                                Period(
+                                DateRange(
                                     maxOf(relevantPeriod.start, decisionPeriod.start),
                                     minOf(orMax(relevantPeriod.end), orMax(decisionPeriod.end))
                                 ) to InvoiceRowStub(
@@ -206,7 +206,7 @@ internal fun calculateDailyPriceForInvoiceRow(price: Int, operationalDays: List<
 }
 
 internal fun toInvoiceRows(
-    period: Period,
+    period: DateRange,
     invoiceRowStub: InvoiceRowStub,
     codes: DaycareCodes,
     operationalDays: List<LocalDate>,
@@ -237,7 +237,7 @@ internal fun toInvoiceRows(
 }
 
 private fun toTemporaryPlacementInvoiceRows(
-    period: Period,
+    period: DateRange,
     child: PersonData.WithDateOfBirth,
     price: Int,
     codes: DaycareCodes,
@@ -266,7 +266,7 @@ private fun toTemporaryPlacementInvoiceRows(
 }
 
 private fun toPermanentPlacementInvoiceRows(
-    period: Period,
+    period: DateRange,
     child: PersonData.WithDateOfBirth,
     placement: PermanentPlacement,
     price: Int,
@@ -390,7 +390,7 @@ internal fun getAbsenceProduct(operationalDays: List<LocalDate>, absences: List<
 }
 
 internal fun getDailyDiscountDates(
-    period: Period,
+    period: DateRange,
     childDob: LocalDate,
     operationalDays: List<LocalDate>,
     absences: List<AbsenceStub>
@@ -413,16 +413,16 @@ internal fun getDailyDiscountDates(
     )
 }
 
-internal fun getDailyDiscount(period: Period, totalSoFar: Int, operationalDays: List<LocalDate>): Int {
+internal fun getDailyDiscount(period: DateRange, totalSoFar: Int, operationalDays: List<LocalDate>): Int {
     val dayAmount = operationalDays.filter { period.includes(it) }.size
     return BigDecimal(totalSoFar).divide(BigDecimal(dayAmount), 0, RoundingMode.HALF_UP).toInt()
 }
 
-internal fun getPreviousMonthRange(): Period {
+internal fun getPreviousMonthRange(): DateRange {
     val lastMonth = LocalDate.now().minusMonths(1)
     val from = lastMonth.with(TemporalAdjusters.firstDayOfMonth())
     val to = lastMonth.with(TemporalAdjusters.lastDayOfMonth())
-    return Period(from, to)
+    return DateRange(from, to)
 }
 
 /*
@@ -433,7 +433,7 @@ internal fun getPreviousMonthRange(): Period {
 
  A difference of 0.2€ is chosen because it's a bit over the maximum rounding error, which is 0.005€ * 31 (max amount of days in a month)
  */
-internal fun applyRoundingRows(invoiceRows: List<InvoiceRow>, feeDecisions: List<FeeDecision>, invoicePeriod: Period): List<InvoiceRow> {
+internal fun applyRoundingRows(invoiceRows: List<InvoiceRow>, feeDecisions: List<FeeDecision>, invoicePeriod: DateRange): List<InvoiceRow> {
     return invoiceRows
         .groupBy { it.child }
         .flatMap { (child, rows) ->
@@ -463,7 +463,7 @@ internal fun applyRoundingRows(invoiceRows: List<InvoiceRow>, feeDecisions: List
         }
 }
 
-fun getInvoiceableFeeDecisions(h: Handle, objectMapper: ObjectMapper, period: Period): List<FeeDecision> {
+fun getInvoiceableFeeDecisions(h: Handle, objectMapper: ObjectMapper, period: DateRange): List<FeeDecision> {
     val sql =
         """
             $feeDecisionQueryBase
@@ -485,7 +485,7 @@ fun getInvoiceableFeeDecisions(h: Handle, objectMapper: ObjectMapper, period: Pe
         .let { it.merge() }
 }
 
-fun getInvoicedHeadsOfFamily(h: Handle, period: Period): List<UUID> {
+fun getInvoicedHeadsOfFamily(h: Handle, period: DateRange): List<UUID> {
     val sql =
         "SELECT DISTINCT head_of_family FROM invoice WHERE period_start = :period_start AND period_end = :period_end AND status IN (<statuses>)"
 
@@ -504,7 +504,7 @@ data class AbsenceStub(
     val absenceType: AbsenceType
 )
 
-fun getAbsenceStubs(h: Handle, spanningPeriod: Period, careTypes: List<CareType>): List<AbsenceStub> {
+fun getAbsenceStubs(h: Handle, spanningPeriod: DateRange, careTypes: List<CareType>): List<AbsenceStub> {
     val sql =
         """
         SELECT child_id, date, care_type, absence_type
@@ -535,14 +535,14 @@ sealed class PlacementStub(open val unit: UUID) {
 }
 
 data class Placements(
-    val period: Period,
+    val period: DateRange,
     val headOfFamily: PersonData.JustId,
     val placements: List<Pair<PersonData.WithDateOfBirth, PlacementStub>>
 )
 
 internal fun getInvoiceablePlacements(
     h: Handle,
-    spanningPeriod: Period
+    spanningPeriod: DateRange
 ): List<Placements> {
     val placements = h
         .createQuery(
@@ -557,7 +557,7 @@ internal fun getInvoiceablePlacements(
         .map { rs, _ ->
             Pair(
                 rs.getUUID("child_id"),
-                Period(
+                DateRange(
                     rs.getObject("start_date", LocalDate::class.java),
                     rs.getObject("end_date", LocalDate::class.java)
                 ) to rs.getUUID("unit_id")
@@ -579,7 +579,7 @@ internal fun getInvoiceablePlacements(
         .map { rs, _ ->
             Pair(
                 rs.getUUID("child_id"),
-                Period(
+                DateRange(
                     rs.getObject("start_date", LocalDate::class.java),
                     rs.getObject("end_date", LocalDate::class.java)
                 ) to rs.getBoolean("part_day")
@@ -653,9 +653,9 @@ internal fun getInvoiceablePlacements(
 }
 
 internal fun toFamilyCompositions(
-    relationships: List<Triple<Period, PersonData.JustId, PersonData.WithDateOfBirth>>,
-    spanningPeriod: Period
-): Map<PersonData.JustId, List<Pair<Period, List<PersonData.WithDateOfBirth>>>> {
+    relationships: List<Triple<DateRange, PersonData.JustId, PersonData.WithDateOfBirth>>,
+    spanningPeriod: DateRange
+): Map<PersonData.JustId, List<Pair<DateRange, List<PersonData.WithDateOfBirth>>>> {
     return relationships
         .groupBy { (_, headOfFamily) -> headOfFamily }
         .mapValues { (_, value) -> value.map { it.first to it.third } }
@@ -672,8 +672,8 @@ internal fun toFamilyCompositions(
 fun getChildrenWithHeadOfFamilies(
     h: Handle,
     childIds: List<UUID>,
-    period: Period
-): List<Triple<Period, PersonData.JustId, PersonData.WithDateOfBirth>> {
+    period: DateRange
+): List<Triple<DateRange, PersonData.JustId, PersonData.WithDateOfBirth>> {
     if (childIds.isEmpty()) return listOf()
 
     val sql =
@@ -697,7 +697,7 @@ fun getChildrenWithHeadOfFamilies(
         .bindList("childIds", childIds)
         .map { rs, _ ->
             Triple(
-                Period(
+                DateRange(
                     rs.getDate("start_date").toLocalDate(),
                     rs.getDate("end_date").toLocalDate().let { if (it < PGConstants.infinity) it else null }
                 ),

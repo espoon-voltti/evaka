@@ -7,7 +7,7 @@ package fi.espoo.evaka.koski
 import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.preschoolTerm2020
 import fi.espoo.evaka.shared.Timeline
-import fi.espoo.evaka.shared.domain.ClosedPeriod
+import fi.espoo.evaka.shared.domain.FiniteDateRange
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
@@ -78,11 +78,11 @@ Absent 22.3 - 29.3, and a Koski absence is generated
             StudyRightTimelines(
                 placement = Timeline.of(preschoolTerm2020),
                 present = Timeline.of(
-                    ClosedPeriod(preschoolTerm2020.start, LocalDate.of(2021, 3, 21)),
-                    ClosedPeriod(LocalDate.of(2021, 3, 30), preschoolTerm2020.end)
+                    FiniteDateRange(preschoolTerm2020.start, LocalDate.of(2021, 3, 21)),
+                    FiniteDateRange(LocalDate.of(2021, 3, 30), preschoolTerm2020.end)
                 ),
                 plannedAbsence = Timeline.of(),
-                unknownAbsence = Timeline.of(ClosedPeriod(LocalDate.of(2021, 3, 22), LocalDate.of(2021, 3, 29)))
+                unknownAbsence = Timeline.of(FiniteDateRange(LocalDate.of(2021, 3, 22), LocalDate.of(2021, 3, 29)))
             ),
             timelines
         )
@@ -148,10 +148,10 @@ Absent 29.3 - 6.4, and a Koski absence is generated
             StudyRightTimelines(
                 placement = Timeline.of(preschoolTerm2020),
                 present = Timeline.of(
-                    ClosedPeriod(preschoolTerm2020.start, LocalDate.of(2021, 3, 28)),
-                    ClosedPeriod(LocalDate.of(2021, 4, 7), preschoolTerm2020.end)
+                    FiniteDateRange(preschoolTerm2020.start, LocalDate.of(2021, 3, 28)),
+                    FiniteDateRange(LocalDate.of(2021, 4, 7), preschoolTerm2020.end)
                 ),
-                plannedAbsence = Timeline.of(ClosedPeriod(LocalDate.of(2021, 3, 29), LocalDate.of(2021, 4, 6))),
+                plannedAbsence = Timeline.of(FiniteDateRange(LocalDate.of(2021, 3, 29), LocalDate.of(2021, 4, 6))),
                 unknownAbsence = Timeline.of()
             ),
             timelines

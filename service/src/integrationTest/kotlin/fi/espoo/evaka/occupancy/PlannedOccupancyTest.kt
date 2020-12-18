@@ -21,7 +21,7 @@ import fi.espoo.evaka.shared.dev.insertTestApplication
 import fi.espoo.evaka.shared.dev.insertTestDaycare
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.dev.insertTestPlacementPlan
-import fi.espoo.evaka.shared.domain.ClosedPeriod
+import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.testAreaId
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDecisionMaker_1
@@ -44,9 +44,9 @@ class PlannedOccupancyTest : FullApplicationTest() {
         jdbi.handle(::resetDatabase)
     }
 
-    private val defaultPeriod = ClosedPeriod(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
-    val defaultPeriodSplit1 = ClosedPeriod(defaultPeriod.start, LocalDate.of(2019, 1, 15))
-    val defaultPeriodSplit2 = ClosedPeriod(LocalDate.of(2019, 1, 16), defaultPeriod.end)
+    private val defaultPeriod = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
+    val defaultPeriodSplit1 = FiniteDateRange(defaultPeriod.start, LocalDate.of(2019, 1, 15))
+    val defaultPeriodSplit2 = FiniteDateRange(LocalDate.of(2019, 1, 16), defaultPeriod.end)
 
     @Test
     fun `planned occupancy calculation does not break when there are no children placed into a unit`() {
@@ -473,7 +473,7 @@ class PlannedOccupancyTest : FullApplicationTest() {
 
     private val testUser = AuthenticatedUser(testDecisionMaker_1.id, setOf(UserRole.SERVICE_WORKER))
 
-    private fun fetchAndParseOccupancy(unitId: UUID, period: ClosedPeriod): List<OccupancyPeriod> {
+    private fun fetchAndParseOccupancy(unitId: UUID, period: FiniteDateRange): List<OccupancyPeriod> {
         val (_, response, result) = http.get("/occupancy/by-unit/$unitId?from=${period.start}&to=${period.end}&type=PLANNED")
             .asUser(testUser)
             .responseString()

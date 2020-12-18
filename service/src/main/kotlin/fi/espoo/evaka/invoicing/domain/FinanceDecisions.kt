@@ -4,7 +4,7 @@
 
 package fi.espoo.evaka.invoicing.domain
 
-import fi.espoo.evaka.shared.domain.Period
+import fi.espoo.evaka.shared.domain.DateRange
 import java.time.LocalDate
 import java.util.UUID
 
@@ -16,7 +16,7 @@ interface FinanceDecision<Part : FinanceDecisionPart, Decision : FinanceDecision
     val headOfFamily: PersonData.JustId
 
     fun withRandomId(): Decision
-    fun withValidity(period: Period): Decision
+    fun withValidity(period: DateRange): Decision
     fun contentEquals(decision: Decision): Boolean
     fun isAnnulled(): Boolean
     fun annul(): Decision
@@ -59,16 +59,16 @@ fun <Part : FinanceDecisionPart, Decision : FinanceDecision<Part, Decision>> upd
         .fold(conflicting) { conflicts, newDecision ->
             val updatedConflicts = conflicts
                 .filter { conflict ->
-                    conflict.headOfFamily.id == newDecision.headOfFamily.id && Period(
+                    conflict.headOfFamily.id == newDecision.headOfFamily.id && DateRange(
                         conflict.validFrom,
                         conflict.validTo
-                    ).overlaps(Period(newDecision.validFrom, newDecision.validTo))
+                    ).overlaps(DateRange(newDecision.validFrom, newDecision.validTo))
                 }
                 .map { conflict ->
                     if (newDecision.validFrom <= conflict.validFrom) {
                         conflict.annul()
                     } else {
-                        conflict.withValidity(Period(conflict.validFrom, newDecision.validFrom.minusDays(1)))
+                        conflict.withValidity(DateRange(conflict.validFrom, newDecision.validFrom.minusDays(1)))
                     }
                 }
 

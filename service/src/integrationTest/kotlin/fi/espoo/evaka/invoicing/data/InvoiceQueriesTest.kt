@@ -12,7 +12,7 @@ import fi.espoo.evaka.invoicing.domain.InvoiceStatus
 import fi.espoo.evaka.invoicing.service.getInvoicedHeadsOfFamily
 import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.db.handle
-import fi.espoo.evaka.shared.domain.Period
+import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_2
 import fi.espoo.evaka.testAreaCode
@@ -44,7 +44,7 @@ class InvoiceQueriesTest : PureJdbiTest() {
             status = InvoiceStatus.DRAFT,
             headOfFamilyId = testAdult_1.id,
             agreementType = testAreaCode,
-            period = Period(LocalDate.of(2018, 1, 1), LocalDate.of(2018, 1, 31)),
+            period = DateRange(LocalDate.of(2018, 1, 1), LocalDate.of(2018, 1, 31)),
             rows = listOf(createInvoiceRowFixture(childId = testChild_2.id))
         )
     )
@@ -172,7 +172,7 @@ class InvoiceQueriesTest : PureJdbiTest() {
         jdbi.handle { h ->
             upsertInvoices(h, testInvoices)
 
-            val result = getInvoicedHeadsOfFamily(h, Period(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31)))
+            val result = getInvoicedHeadsOfFamily(h, DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31)))
             assertEquals(1, result.size)
             assertEquals(listOf(testInvoices[0].headOfFamily.id), result)
         }
@@ -183,7 +183,7 @@ class InvoiceQueriesTest : PureJdbiTest() {
         jdbi.handle { h ->
             upsertInvoices(h, testInvoices)
 
-            val result = getInvoicedHeadsOfFamily(h, Period(LocalDate.of(2019, 6, 1), LocalDate.of(2019, 6, 30)))
+            val result = getInvoicedHeadsOfFamily(h, DateRange(LocalDate.of(2019, 6, 1), LocalDate.of(2019, 6, 30)))
             assertEquals(0, result.size)
         }
     }

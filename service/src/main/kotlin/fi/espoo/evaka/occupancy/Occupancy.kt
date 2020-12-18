@@ -5,7 +5,7 @@
 package fi.espoo.evaka.occupancy
 
 import fi.espoo.evaka.shared.domain.BadRequest
-import fi.espoo.evaka.shared.domain.ClosedPeriod
+import fi.espoo.evaka.shared.domain.FiniteDateRange
 import java.util.UUID
 
 enum class OccupancyType {
@@ -15,7 +15,7 @@ enum class OccupancyType {
 }
 
 data class OccupancyPeriod(
-    val period: ClosedPeriod,
+    val period: FiniteDateRange,
     val sum: Double,
     val headcount: Int,
     val caretakers: Double? = null,
@@ -24,7 +24,7 @@ data class OccupancyPeriod(
 
 data class OccupancyPeriodGroupLevel(
     val groupId: UUID,
-    val period: ClosedPeriod,
+    val period: FiniteDateRange,
     val sum: Double,
     val headcount: Int,
     val caretakers: Double? = null,

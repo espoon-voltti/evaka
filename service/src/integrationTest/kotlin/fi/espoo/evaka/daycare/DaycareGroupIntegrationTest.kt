@@ -27,7 +27,7 @@ import fi.espoo.evaka.shared.dev.insertTestChild
 import fi.espoo.evaka.shared.dev.insertTestDaycare
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
 import fi.espoo.evaka.shared.dev.insertTestPerson
-import fi.espoo.evaka.shared.domain.ClosedPeriod
+import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.testAreaCode
 import fi.espoo.evaka.testAreaId
 import fi.espoo.evaka.testChild_1
@@ -113,7 +113,7 @@ class DaycareGroupIntegrationTest : FullApplicationTest() {
                 DevBackupCare(
                     childId = testChild_1.id,
                     groupId = group.id,
-                    period = ClosedPeriod(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 2, 1)),
+                    period = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 2, 1)),
                     unitId = group.daycareId
                 )
             )

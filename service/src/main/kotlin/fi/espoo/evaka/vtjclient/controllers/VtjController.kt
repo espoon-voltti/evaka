@@ -14,7 +14,7 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.getEnum
 import fi.espoo.evaka.shared.db.getUUID
-import fi.espoo.evaka.shared.domain.ClosedPeriod
+import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.vtjclient.dto.NativeLanguage
 import fi.espoo.evaka.vtjclient.dto.PersonDataSource
 import fi.espoo.evaka.vtjclient.dto.Placement
@@ -99,7 +99,7 @@ class VtjController(
             .bind("children", guardian.children.map { it.id }.toTypedArray())
             .map { rs, _ ->
                 rs.getUUID("child_id") to Placement(
-                    period = ClosedPeriod(
+                    period = FiniteDateRange(
                         rs.getDate("start_date").toLocalDate(),
                         rs.getDate("end_date").toLocalDate()
                     ),

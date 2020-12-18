@@ -4,7 +4,7 @@
 
 package fi.espoo.evaka.placement
 
-import fi.espoo.evaka.shared.domain.ClosedPeriod
+import fi.espoo.evaka.shared.domain.FiniteDateRange
 import java.time.LocalDate
 import java.util.UUID
 
@@ -12,8 +12,8 @@ data class PlacementPlanDraft(
     val type: PlacementType,
     val child: PlacementDraftChild,
     val preferredUnits: List<PlacementDraftUnit>,
-    val period: ClosedPeriod,
-    val preschoolDaycarePeriod: ClosedPeriod?,
+    val period: FiniteDateRange,
+    val preschoolDaycarePeriod: FiniteDateRange?,
     val placements: List<PlacementDraftPlacement>
 )
 

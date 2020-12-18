@@ -13,7 +13,7 @@ import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.db.bindNullable
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.Coordinate
-import fi.espoo.evaka.shared.domain.Period
+import fi.espoo.evaka.shared.domain.DateRange
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.bindKotlin
 import org.jdbi.v3.core.kotlin.mapTo
@@ -26,9 +26,9 @@ data class DaycareFields(
     val closingDate: LocalDate?,
     val areaId: UUID,
     val type: Set<CareType>,
-    val daycareApplyPeriod: Period?,
-    val preschoolApplyPeriod: Period?,
-    val clubApplyPeriod: Period?,
+    val daycareApplyPeriod: DateRange?,
+    val preschoolApplyPeriod: DateRange?,
+    val clubApplyPeriod: DateRange?,
     val providerType: ProviderType,
     val capacity: Int,
     val language: Language,
@@ -79,9 +79,9 @@ fun Handle.getDaycares(authorizedUnits: AclAuthorization): List<Daycare> = getDa
 
 data class UnitApplyPeriods(
     val id: UUID,
-    val daycareApplyPeriod: Period?,
-    val preschoolApplyPeriod: Period?,
-    val clubApplyPeriod: Period?
+    val daycareApplyPeriod: DateRange?,
+    val preschoolApplyPeriod: DateRange?,
+    val clubApplyPeriod: DateRange?
 )
 
 fun Handle.getUnitApplyPeriods(ids: Collection<UUID>): List<UnitApplyPeriods> = createQuery(

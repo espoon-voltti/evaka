@@ -6,7 +6,7 @@ package fi.espoo.evaka.koski
 
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonProperty
-import fi.espoo.evaka.shared.domain.ClosedPeriod
+import fi.espoo.evaka.shared.domain.FiniteDateRange
 import java.time.LocalDate
 import java.util.UUID
 
@@ -289,7 +289,7 @@ data class ErityisenTuenPäätös(
     val erityisryhmässä: Boolean
 ) {
     companion object {
-        fun from(aikajakso: ClosedPeriod, erityisryhmässä: Boolean) = ErityisenTuenPäätös(
+        fun from(aikajakso: FiniteDateRange, erityisryhmässä: Boolean) = ErityisenTuenPäätös(
             alku = aikajakso.start,
             loppu = aikajakso.end,
             opiskeleeToimintaAlueittain = false, // not used in Espoo
@@ -300,7 +300,7 @@ data class ErityisenTuenPäätös(
 
 data class Aikajakso(val alku: LocalDate, val loppu: LocalDate?) {
     companion object {
-        fun from(aikajakso: ClosedPeriod) = Aikajakso(aikajakso.start, aikajakso.end)
+        fun from(aikajakso: FiniteDateRange) = Aikajakso(aikajakso.start, aikajakso.end)
     }
 }
 

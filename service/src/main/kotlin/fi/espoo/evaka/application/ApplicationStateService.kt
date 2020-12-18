@@ -60,7 +60,7 @@ import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.NotFound
-import fi.espoo.evaka.shared.domain.Period
+import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.utils.zoneId
 import mu.KotlinLogging
 import org.springframework.stereotype.Service
@@ -647,7 +647,7 @@ class ApplicationStateService(
 
         val hasOverlappingDefiniteIncome = incomes.any { income ->
             income.validTo != null &&
-                Period(income.validFrom, income.validTo).overlaps(Period(preferredOrNow, null))
+                DateRange(income.validFrom, income.validTo).overlaps(DateRange(preferredOrNow, null))
         }
 
         val hasLaterIncome = incomes.any { income ->
@@ -657,7 +657,7 @@ class ApplicationStateService(
         if (hasOverlappingDefiniteIncome || hasLaterIncome || preferredStartDate == null) {
             logger.debug { "Could not add a new max fee accepted income when moving to WAITING_FOR_PLACEMENT state" }
         } else {
-            val period = Period(start = preferredOrNow, end = null)
+            val period = DateRange(start = preferredOrNow, end = null)
             val validIncome = Income(
                 id = UUID.randomUUID(),
                 data = mapOf(),

@@ -38,7 +38,7 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.BadRequest
-import fi.espoo.evaka.shared.domain.ClosedPeriod
+import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.message.MockEvakaMessageClient
 import fi.espoo.evaka.testAdult_1
@@ -85,7 +85,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
         postOffice = "Espoo"
     )
     val mainPeriod = preschoolTerm2020
-    val connectedPeriod = ClosedPeriod(preschoolTerm2020.start.minusDays(15), preschoolTerm2020.end.plusDays(15))
+    val connectedPeriod = FiniteDateRange(preschoolTerm2020.start.minusDays(15), preschoolTerm2020.end.plusDays(15))
 
     @BeforeEach
     private fun beforeEach() {

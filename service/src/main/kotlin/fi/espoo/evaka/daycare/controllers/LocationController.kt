@@ -18,7 +18,7 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.bindNullable
 import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.domain.Coordinate
-import fi.espoo.evaka.shared.domain.Period
+import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.utils.zoneId
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.mapTo
@@ -46,7 +46,7 @@ class LocationController {
     // Units by areas, only including units that can be applied to
     @GetMapping("/public/areas")
     fun getEnduserUnitsByArea(db: Database.Connection): ResponseEntity<Collection<CareAreaResponseJSON>> {
-        val future = Period(LocalDate.now(zoneId), null)
+        val future = DateRange(LocalDate.now(zoneId), null)
         val areas = db.read { it.handle.getAreas() }
             .map { area: CareArea ->
                 CareArea(
@@ -165,9 +165,9 @@ data class LocationResponseJSON(
     val language: Language?,
     val visitingAddress: VisitingAddress,
     val mailingAddress: MailingAddress,
-    val daycareApplyPeriod: Period?,
-    val preschoolApplyPeriod: Period?,
-    val clubApplyPeriod: Period?
+    val daycareApplyPeriod: DateRange?,
+    val preschoolApplyPeriod: DateRange?,
+    val clubApplyPeriod: DateRange?
 )
 
 data class AreaJSON(

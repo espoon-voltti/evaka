@@ -42,7 +42,7 @@ import fi.espoo.evaka.shared.dev.insertTestCareArea
 import fi.espoo.evaka.shared.dev.insertTestDaycare
 import fi.espoo.evaka.shared.dev.insertTestParentship
 import fi.espoo.evaka.shared.dev.insertTestPlacement
-import fi.espoo.evaka.shared.domain.Period
+import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.svebiTestCode
 import fi.espoo.evaka.svebiTestId
 import fi.espoo.evaka.testAdult_1
@@ -91,14 +91,14 @@ class InvoiceIntegrationTest : FullApplicationTest() {
             headOfFamilyId = testAdult_1.id,
             agreementType = testAreaCode,
             number = 5000000001L,
-            period = Period(LocalDate.of(2020, 1, 1), LocalDate.of(2020, 1, 31)),
+            period = DateRange(LocalDate.of(2020, 1, 1), LocalDate.of(2020, 1, 31)),
             rows = listOf(createInvoiceRowFixture(childId = testChild_1.id))
         ),
         createInvoiceFixture(
             status = InvoiceStatus.DRAFT,
             headOfFamilyId = testAdult_2.id,
             agreementType = testAreaCode,
-            period = Period(LocalDate.of(2018, 1, 1), LocalDate.of(2018, 1, 31)),
+            period = DateRange(LocalDate.of(2018, 1, 1), LocalDate.of(2018, 1, 31)),
             rows = listOf(createInvoiceRowFixture(childId = testChild_2.id))
         )
     )
@@ -108,7 +108,7 @@ class InvoiceIntegrationTest : FullApplicationTest() {
             status = FeeDecisionStatus.DRAFT,
             decisionType = FeeDecisionType.NORMAL,
             headOfFamilyId = testAdult_1.id,
-            period = Period(LocalDate.now().minusMonths(6), LocalDate.now().plusMonths(6)),
+            period = DateRange(LocalDate.now().minusMonths(6), LocalDate.now().plusMonths(6)),
             parts = listOf(
                 createFeeDecisionPartFixture(
                     childId = testChild_1.id,
@@ -128,7 +128,7 @@ class InvoiceIntegrationTest : FullApplicationTest() {
             status = FeeDecisionStatus.SENT,
             decisionType = FeeDecisionType.NORMAL,
             headOfFamilyId = testAdult_1.id,
-            period = Period(LocalDate.now().minusMonths(6), LocalDate.now().plusMonths(6)),
+            period = DateRange(LocalDate.now().minusMonths(6), LocalDate.now().plusMonths(6)),
             parts = listOf(
                 createFeeDecisionPartFixture(
                     childId = testChild_2.id,
@@ -141,7 +141,7 @@ class InvoiceIntegrationTest : FullApplicationTest() {
             status = FeeDecisionStatus.SENT,
             decisionType = FeeDecisionType.NORMAL,
             headOfFamilyId = testAdult_2.id,
-            period = Period(LocalDate.now().minusMonths(6), LocalDate.now().plusMonths(6)),
+            period = DateRange(LocalDate.now().minusMonths(6), LocalDate.now().plusMonths(6)),
             parts = listOf(
                 createFeeDecisionPartFixture(
                     childId = testChild_1.id,

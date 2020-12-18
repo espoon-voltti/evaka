@@ -27,7 +27,7 @@ import fi.espoo.evaka.invoicing.domain.ServiceNeed
 import fi.espoo.evaka.invoicing.service.DaycareCodes
 import fi.espoo.evaka.pis.service.Parentship
 import fi.espoo.evaka.pis.service.PersonJSON
-import fi.espoo.evaka.shared.domain.Period
+import fi.espoo.evaka.shared.domain.DateRange
 import java.math.BigDecimal
 import java.time.Instant
 import java.time.LocalDate
@@ -175,13 +175,13 @@ val testPisFridgeChildId = UUID.randomUUID()
 val testPisFridgeChild = PersonData.WithDateOfBirth(testPisFridgeChildId, LocalDate.of(2017, 1, 1))
 
 val testPeriod = LocalDate.now().let {
-    Period(it, it.plusDays(100))
+    DateRange(it, it.plusDays(100))
 }
 
 fun testParentship(
     child: PersonJSON = testPisPerson(testPisFridgeChild),
     parent: PersonJSON = testPisPerson(testPisFridgeParent),
-    period: Period = testPeriod
+    period: DateRange = testPeriod
 ) = Parentship(
     id = UUID.randomUUID(),
     childId = child.id,
@@ -197,7 +197,7 @@ val testParentship = testParentship()
 fun testFridgeFamily(
     parent: PersonData.JustId = testPisFridgeParent,
     children: List<PersonData.WithDateOfBirth> = listOf(testPisFridgeChild),
-    period: Period = testPeriod
+    period: DateRange = testPeriod
 ) = FridgeFamily(
     headOfFamily = parent,
     partner = null,
@@ -266,7 +266,7 @@ fun createFeeDecisionPartFixture(
 fun createFeeDecisionFixture(
     status: FeeDecisionStatus,
     decisionType: FeeDecisionType,
-    period: Period,
+    period: DateRange,
     headOfFamilyId: UUID,
     parts: List<FeeDecisionPart>,
     pricing: Pricing = testPricing,
@@ -303,7 +303,7 @@ fun createInvoiceFixture(
     headOfFamilyId: UUID,
     agreementType: Int,
     number: Long? = null,
-    period: Period = Period(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31)),
+    period: DateRange = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31)),
     rows: List<InvoiceRow>
 ) = Invoice(
     id = UUID.randomUUID(),

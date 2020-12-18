@@ -12,7 +12,7 @@ import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.getUUID
 import fi.espoo.evaka.shared.domain.BadRequest
-import fi.espoo.evaka.shared.domain.ClosedPeriod
+import fi.espoo.evaka.shared.domain.FiniteDateRange
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestParam
@@ -39,7 +39,7 @@ class OccupancyReportController {
         val occupancies = db.read {
             it.calculateOccupancyUnitReport(
                 careAreaId,
-                ClosedPeriod(from, to),
+                FiniteDateRange(from, to),
                 type
             )
         }
@@ -96,7 +96,7 @@ class OccupancyReportController {
         val occupancies = db.read {
             it.calculateOccupancyGroupReport(
                 careAreaId,
-                ClosedPeriod(from, to),
+                FiniteDateRange(from, to),
                 type
             )
         }
@@ -204,7 +204,7 @@ private data class OccupancyGroupReportRowRaw(
 
 private fun Database.Read.calculateOccupancyUnitReport(
     careAreaId: UUID,
-    period: ClosedPeriod,
+    period: FiniteDateRange,
     type: OccupancyType
 ): List<OccupancyUnitReportRowRaw> {
     if (period.start.plusDays(50) < period.end) {
@@ -239,7 +239,7 @@ private fun Database.Read.calculateOccupancyUnitReport(
 
 private fun Database.Read.calculateOccupancyGroupReport(
     careAreaId: UUID,
-    period: ClosedPeriod,
+    period: FiniteDateRange,
     type: OccupancyType
 ): List<OccupancyGroupReportRowRaw> {
     if (period.start.plusDays(50) < period.end) {

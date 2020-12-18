@@ -4,7 +4,7 @@
 
 package fi.espoo.evaka.backupcare
 
-import fi.espoo.evaka.shared.domain.ClosedPeriod
+import fi.espoo.evaka.shared.domain.FiniteDateRange
 import org.jdbi.v3.core.mapper.Nested
 import org.jdbi.v3.core.mapper.PropagateNull
 import java.time.LocalDate
@@ -15,7 +15,7 @@ data class ChildBackupCare(
     @Nested("unit_") val unit: BackupCareUnit,
     @Nested("group_")
     val group: BackupCareGroup?,
-    val period: ClosedPeriod
+    val period: FiniteDateRange
 )
 
 data class UnitBackupCare(
@@ -23,18 +23,18 @@ data class UnitBackupCare(
     @Nested("child_") val child: BackupCareChild,
     @Nested("group_")
     val group: BackupCareGroup?,
-    val period: ClosedPeriod,
+    val period: FiniteDateRange,
     val missingServiceNeedDays: Int
 )
 
 data class GroupBackupCare(
     val id: UUID,
     val childId: UUID,
-    val period: ClosedPeriod
+    val period: FiniteDateRange
 )
 
 data class BackupCareChild(val id: UUID, val firstName: String, val lastName: String, val birthDate: LocalDate)
 data class BackupCareUnit(val id: UUID, val name: String)
 @PropagateNull("group_id")
 data class BackupCareGroup(val id: UUID, val name: String)
-data class NewBackupCare(val unitId: UUID, val groupId: UUID?, val period: ClosedPeriod)
+data class NewBackupCare(val unitId: UUID, val groupId: UUID?, val period: FiniteDateRange)

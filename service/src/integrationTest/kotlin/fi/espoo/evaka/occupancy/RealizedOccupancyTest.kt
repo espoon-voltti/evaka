@@ -22,7 +22,7 @@ import fi.espoo.evaka.shared.dev.insertTestCaretakers
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroupPlacement
 import fi.espoo.evaka.shared.dev.insertTestStaffAttendance
-import fi.espoo.evaka.shared.domain.ClosedPeriod
+import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDaycare2
 import fi.espoo.evaka.testDecisionMaker_1
@@ -51,7 +51,7 @@ class RealizedOccupancyTest : FullApplicationTest() {
     private val day1 = LocalDate.of(2019, 1, 1)
     private val day2 = LocalDate.of(2019, 1, 2)
 
-    private val defaultPeriod = ClosedPeriod(day1, day2)
+    private val defaultPeriod = FiniteDateRange(day1, day2)
 
     @Test
     fun `realized occupancy calculation does not break when there are no children placed into a unit`() {
@@ -86,8 +86,8 @@ class RealizedOccupancyTest : FullApplicationTest() {
 
         val result = fetchAndParseOccupancyByGroups(testDaycare.id, defaultPeriod)
 
-        val expectedPeriod1 = OccupancyPeriod(ClosedPeriod(day1, day1), sum = 1.75, headcount = 1, caretakers = 1.0, percentage = 25.0)
-        val expectedPeriod2 = OccupancyPeriod(ClosedPeriod(day2, day2), sum = 1.75, headcount = 1, caretakers = 2.0, percentage = 12.5)
+        val expectedPeriod1 = OccupancyPeriod(FiniteDateRange(day1, day1), sum = 1.75, headcount = 1, caretakers = 1.0, percentage = 25.0)
+        val expectedPeriod2 = OccupancyPeriod(FiniteDateRange(day2, day2), sum = 1.75, headcount = 1, caretakers = 2.0, percentage = 12.5)
         assertEquals(
             listOf(
                 OccupancyResponseGroupLevel(
@@ -117,8 +117,8 @@ class RealizedOccupancyTest : FullApplicationTest() {
         val resultOriginalUnit = fetchAndParseOccupancy(testDaycare.id, defaultPeriod)
         assertEquals(
             listOf(
-                OccupancyPeriod(ClosedPeriod(day1, day1), 1.75, 1),
-                OccupancyPeriod(ClosedPeriod(day2, day2), 0.0, 0)
+                OccupancyPeriod(FiniteDateRange(day1, day1), 1.75, 1),
+                OccupancyPeriod(FiniteDateRange(day2, day2), 0.0, 0)
             ),
             resultOriginalUnit
         )
@@ -126,8 +126,8 @@ class RealizedOccupancyTest : FullApplicationTest() {
         val resultBackupUnit = fetchAndParseOccupancy(testDaycare2.id, defaultPeriod)
         assertEquals(
             listOf(
-                OccupancyPeriod(ClosedPeriod(day1, day1), 2 * 1.75, 2),
-                OccupancyPeriod(ClosedPeriod(day2, day2), 3 * 1.75, 3)
+                OccupancyPeriod(FiniteDateRange(day1, day1), 2 * 1.75, 2),
+                OccupancyPeriod(FiniteDateRange(day2, day2), 3 * 1.75, 3)
             ),
             resultBackupUnit
         )
@@ -143,8 +143,8 @@ class RealizedOccupancyTest : FullApplicationTest() {
         val resultBackupUnit = fetchAndParseOccupancy(testDaycare2.id, defaultPeriod)
         assertEquals(
             listOf(
-                OccupancyPeriod(ClosedPeriod(day1, day1), 1.75, 1),
-                OccupancyPeriod(ClosedPeriod(day2, day2), 0.0, 0)
+                OccupancyPeriod(FiniteDateRange(day1, day1), 1.75, 1),
+                OccupancyPeriod(FiniteDateRange(day2, day2), 0.0, 0)
             ),
             resultBackupUnit
         )
@@ -160,8 +160,8 @@ class RealizedOccupancyTest : FullApplicationTest() {
 
         assertEquals(
             listOf(
-                OccupancyPeriod(ClosedPeriod(day1, day1), 1.75, 1),
-                OccupancyPeriod(ClosedPeriod(day2, day2), 0.0, 0)
+                OccupancyPeriod(FiniteDateRange(day1, day1), 1.75, 1),
+                OccupancyPeriod(FiniteDateRange(day2, day2), 0.0, 0)
             ),
             result
         )
@@ -191,14 +191,14 @@ class RealizedOccupancyTest : FullApplicationTest() {
         assertEquals(
             listOf(
                 OccupancyPeriod(
-                    period = ClosedPeriod(day1, day1),
+                    period = FiniteDateRange(day1, day1),
                     sum = 0.0,
                     headcount = 0,
                     caretakers = 2.0,
                     percentage = 0.0
                 ),
                 OccupancyPeriod(
-                    period = ClosedPeriod(day2, day2),
+                    period = FiniteDateRange(day2, day2),
                     sum = 0.0,
                     headcount = 0,
                     caretakers = 1.5,
@@ -211,7 +211,7 @@ class RealizedOccupancyTest : FullApplicationTest() {
 
     @Test
     fun `realized occupancy is not calculated for dates in the future`() {
-        val period = ClosedPeriod(LocalDate.now().minusDays(7), LocalDate.now().plusDays(7))
+        val period = FiniteDateRange(LocalDate.now().minusDays(7), LocalDate.now().plusDays(7))
         jdbi.handle { h ->
             createOccupancyTestFixture(testDaycare.id, period, LocalDate.of(2015, 1, 1), PlacementType.DAYCARE)(h)
             generateSequence(period.start) { date -> date.plusDays(1) }
@@ -229,7 +229,7 @@ class RealizedOccupancyTest : FullApplicationTest() {
 
     private val testUser = AuthenticatedUser(testDecisionMaker_1.id, setOf(UserRole.SERVICE_WORKER))
 
-    private fun fetchAndParseOccupancy(unitId: UUID, period: ClosedPeriod): List<OccupancyPeriod> {
+    private fun fetchAndParseOccupancy(unitId: UUID, period: FiniteDateRange): List<OccupancyPeriod> {
         val (_, response, result) = http
             .get("/occupancy/by-unit/$unitId?from=${period.start}&to=${period.end}&type=REALIZED")
             .asUser(testUser)
@@ -239,7 +239,7 @@ class RealizedOccupancyTest : FullApplicationTest() {
         return objectMapper.readValue<OccupancyResponse>(result.get()).occupancies
     }
 
-    private fun fetchAndParseOccupancyByGroups(unitId: UUID, period: ClosedPeriod): List<OccupancyResponseGroupLevel> {
+    private fun fetchAndParseOccupancyByGroups(unitId: UUID, period: FiniteDateRange): List<OccupancyResponseGroupLevel> {
         val (_, response, result) = http
             .get("/occupancy/by-unit/$unitId/groups?from=${period.start}&to=${period.end}&type=REALIZED")
             .asUser(testUser)

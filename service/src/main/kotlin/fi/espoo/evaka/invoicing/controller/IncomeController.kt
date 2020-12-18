@@ -21,7 +21,7 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
-import fi.espoo.evaka.shared.domain.Period
+import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.maxEndDate
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -57,7 +57,7 @@ class IncomeController(
         Audit.PersonIncomeCreate.log(targetId = income.personId)
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
         val period = try {
-            Period(income.validFrom, income.validTo)
+            DateRange(income.validFrom, income.validTo)
         } catch (e: Exception) {
             with(income) {
                 throw BadRequest("Invalid period from $validFrom to $validTo")
@@ -93,8 +93,8 @@ class IncomeController(
             upsertIncome(tx.handle, mapper, validIncome, user.id)
 
             val expandedPeriod = existing?.let {
-                Period(minOf(it.validFrom, income.validFrom), maxEndDate(it.validTo, income.validTo))
-            } ?: Period(income.validFrom, income.validTo)
+                DateRange(minOf(it.validFrom, income.validFrom), maxEndDate(it.validTo, income.validTo))
+            } ?: DateRange(income.validFrom, income.validTo)
 
             asyncJobRunner.plan(
                 tx,
@@ -114,7 +114,7 @@ class IncomeController(
         db.transaction { tx ->
             val existing = getIncome(tx.handle, mapper, parseUUID(incomeId))
                 ?: throw BadRequest("Income not found")
-            val period = Period(existing.validFrom, existing.validTo)
+            val period = DateRange(existing.validFrom, existing.validTo)
 
             deleteIncome(tx.handle, parseUUID(incomeId))
 

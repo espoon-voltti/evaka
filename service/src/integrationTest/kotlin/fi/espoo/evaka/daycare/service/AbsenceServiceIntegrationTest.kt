@@ -26,7 +26,7 @@ import fi.espoo.evaka.shared.dev.insertTestDaycareGroupPlacement
 import fi.espoo.evaka.shared.dev.insertTestEmployee
 import fi.espoo.evaka.shared.dev.insertTestPerson
 import fi.espoo.evaka.shared.dev.insertTestPlacement
-import fi.espoo.evaka.shared.domain.ClosedPeriod
+import fi.espoo.evaka.shared.domain.FiniteDateRange
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
@@ -192,7 +192,7 @@ class AbsenceServiceIntegrationTest : AbstractIntegrationTest() {
             childId,
             LocalDate.of(2015, 12, 31),
             PlacementType.DAYCARE,
-            ClosedPeriod(LocalDate.of(2020, 8, 1), LocalDate.of(2021, 7, 31))
+            FiniteDateRange(LocalDate.of(2020, 8, 1), LocalDate.of(2021, 7, 31))
         )
 
         val placementDate = LocalDate.of(2020, 8, 1)
@@ -459,7 +459,7 @@ class AbsenceServiceIntegrationTest : AbstractIntegrationTest() {
                     childId = childId,
                     unitId = daycareId,
                     groupId = groupId,
-                    period = ClosedPeriod(placementStart, placementEnd)
+                    period = FiniteDateRange(placementStart, placementEnd)
                 )
             )
         }
@@ -492,7 +492,7 @@ class AbsenceServiceIntegrationTest : AbstractIntegrationTest() {
         childId: UUID,
         dob: LocalDate,
         placementType: PlacementType,
-        placementPeriod: ClosedPeriod = ClosedPeriod(placementStart, placementEnd)
+        placementPeriod: FiniteDateRange = FiniteDateRange(placementStart, placementEnd)
     ) {
         jdbi.transaction {
             it.insertTestPerson(DevPerson(id = childId, dateOfBirth = dob))

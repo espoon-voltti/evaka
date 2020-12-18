@@ -28,7 +28,7 @@ import fi.espoo.evaka.shared.dev.insertTestApplication
 import fi.espoo.evaka.shared.dev.insertTestApplicationForm
 import fi.espoo.evaka.shared.dev.insertTestDecision
 import fi.espoo.evaka.shared.dev.insertTestPlacementPlan
-import fi.espoo.evaka.shared.domain.ClosedPeriod
+import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.test.getApplicationStatus
 import fi.espoo.evaka.test.getDecisionRowById
 import fi.espoo.evaka.test.getDecisionRowsByApplication
@@ -81,7 +81,7 @@ class DecisionResolutionIntegrationTest : FullApplicationTest() {
     @ParameterizedTest(name = "{0}")
     @MethodSource("testCases")
     fun testDaycareFullTime(test: DecisionResolutionTestCase): Unit = jdbi.handle { h ->
-        val period = ClosedPeriod(
+        val period = FiniteDateRange(
             LocalDate.of(2019, 5, 1),
             LocalDate.of(2019, 7, 1)
         )
@@ -111,7 +111,7 @@ class DecisionResolutionIntegrationTest : FullApplicationTest() {
     @ParameterizedTest(name = "{0}")
     @MethodSource("testCases")
     fun testDaycarePartTime(test: DecisionResolutionTestCase): Unit = jdbi.handle { h ->
-        val period = ClosedPeriod(
+        val period = FiniteDateRange(
             LocalDate.of(2019, 5, 18),
             LocalDate.of(2019, 7, 1)
         )
@@ -141,7 +141,7 @@ class DecisionResolutionIntegrationTest : FullApplicationTest() {
     @ParameterizedTest(name = "{0}")
     @MethodSource("testCases")
     fun testPreschoolOnly(test: DecisionResolutionTestCase): Unit = jdbi.handle { h ->
-        val period = ClosedPeriod(
+        val period = FiniteDateRange(
             LocalDate.of(2020, 8, 15),
             LocalDate.of(2021, 5, 31)
         )
@@ -171,11 +171,11 @@ class DecisionResolutionIntegrationTest : FullApplicationTest() {
     @ParameterizedTest(name = "{0}")
     @MethodSource("testCases")
     fun testPreschoolFull(test: DecisionResolutionTestCase): Unit = jdbi.handle { h ->
-        val period = ClosedPeriod(
+        val period = FiniteDateRange(
             LocalDate.of(2020, 8, 15),
             LocalDate.of(2021, 6, 4)
         )
-        val preschoolDaycarePeriod = ClosedPeriod(
+        val preschoolDaycarePeriod = FiniteDateRange(
             LocalDate.of(2020, 8, 1),
             LocalDate.of(2021, 7, 31)
         )
@@ -200,10 +200,10 @@ class DecisionResolutionIntegrationTest : FullApplicationTest() {
                 assertEquals(2, it.size)
                 assertEquals(PlacementType.PRESCHOOL_DAYCARE, it[0].type)
                 assertEquals(testDaycare.id, it[0].unitId)
-                assertEquals(ClosedPeriod(preschoolDaycarePeriod.start, period.end), it[0].period())
+                assertEquals(FiniteDateRange(preschoolDaycarePeriod.start, period.end), it[0].period())
                 assertEquals(PlacementType.DAYCARE, it[1].type)
                 assertEquals(testDaycare.id, it[1].unitId)
-                assertEquals(ClosedPeriod(period.end.plusDays(1), preschoolDaycarePeriod.end), it[1].period())
+                assertEquals(FiniteDateRange(period.end.plusDays(1), preschoolDaycarePeriod.end), it[1].period())
             }
             assertTrue(getPlacementPlanRowByApplication(h, ids.applicationId).one().deleted)
         } else {
@@ -217,11 +217,11 @@ class DecisionResolutionIntegrationTest : FullApplicationTest() {
     @ParameterizedTest(name = "{0}")
     @MethodSource("testCases")
     fun testPreparatoryFull(test: DecisionResolutionTestCase): Unit = jdbi.handle { h ->
-        val period = ClosedPeriod(
+        val period = FiniteDateRange(
             LocalDate.of(2020, 8, 15),
             LocalDate.of(2021, 6, 4)
         )
-        val preschoolDaycarePeriod = ClosedPeriod(
+        val preschoolDaycarePeriod = FiniteDateRange(
             LocalDate.of(2020, 8, 1),
             LocalDate.of(2021, 7, 31)
         )
@@ -246,10 +246,10 @@ class DecisionResolutionIntegrationTest : FullApplicationTest() {
                 assertEquals(2, it.size)
                 assertEquals(PlacementType.PREPARATORY_DAYCARE, it[0].type)
                 assertEquals(testDaycare.id, it[0].unitId)
-                assertEquals(ClosedPeriod(preschoolDaycarePeriod.start, period.end), it[0].period())
+                assertEquals(FiniteDateRange(preschoolDaycarePeriod.start, period.end), it[0].period())
                 assertEquals(PlacementType.DAYCARE, it[1].type)
                 assertEquals(testDaycare.id, it[1].unitId)
-                assertEquals(ClosedPeriod(period.end.plusDays(1), preschoolDaycarePeriod.end), it[1].period())
+                assertEquals(FiniteDateRange(period.end.plusDays(1), preschoolDaycarePeriod.end), it[1].period())
             }
         } else {
             rejectDecisionAndAssert(h, user, applicationId, ids.primaryId!!)
@@ -262,11 +262,11 @@ class DecisionResolutionIntegrationTest : FullApplicationTest() {
     @ParameterizedTest(name = "{0}")
     @MethodSource("testCases")
     fun testPreschoolOnlyDaycare(test: DecisionResolutionTestCase): Unit = jdbi.handle { h ->
-        val period = ClosedPeriod(
+        val period = FiniteDateRange(
             LocalDate.of(2020, 8, 15),
             LocalDate.of(2021, 6, 4)
         )
-        val preschoolDaycarePeriod = ClosedPeriod(
+        val preschoolDaycarePeriod = FiniteDateRange(
             LocalDate.of(2020, 8, 1),
             LocalDate.of(2021, 7, 31)
         )
@@ -300,11 +300,11 @@ class DecisionResolutionIntegrationTest : FullApplicationTest() {
 
     @Test
     fun testRequestedStartDateValidation(): Unit = jdbi.handle { h ->
-        val period = ClosedPeriod(
+        val period = FiniteDateRange(
             LocalDate.of(2020, 8, 15),
             LocalDate.of(2021, 6, 4)
         )
-        val preschoolDaycarePeriod = ClosedPeriod(
+        val preschoolDaycarePeriod = FiniteDateRange(
             LocalDate.of(2020, 8, 1),
             LocalDate.of(2021, 7, 31)
         )
@@ -374,8 +374,8 @@ class DecisionResolutionIntegrationTest : FullApplicationTest() {
         unit: UnitData.Detailed = testDaycare,
         adult: PersonData.Detailed = testAdult_1,
         child: PersonData.Detailed = testChild_1,
-        period: ClosedPeriod,
-        preschoolDaycarePeriod: ClosedPeriod? = null,
+        period: FiniteDateRange,
+        preschoolDaycarePeriod: FiniteDateRange? = null,
         preschoolDaycareWithoutPreschool: Boolean = false
     ): DataIdentifiers {
         insertTestApplication(

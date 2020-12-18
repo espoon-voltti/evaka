@@ -30,7 +30,7 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.shared.domain.NotFound
-import fi.espoo.evaka.shared.domain.Period
+import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.message.IEvakaMessageClient
 import fi.espoo.evaka.shared.message.SuomiFiMessage
 import mu.KotlinLogging
@@ -69,7 +69,7 @@ class FeeDecisionService(
                     tx.handle,
                     objectMapper,
                     it.headOfFamily.id,
-                    Period(it.validFrom, it.validTo),
+                    DateRange(it.validFrom, it.validTo),
                     listOf(FeeDecisionStatus.SENT)
                 )
             }

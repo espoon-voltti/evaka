@@ -6,7 +6,7 @@ package fi.espoo.evaka.placement
 
 import fi.espoo.evaka.application.ApplicationStatus
 import fi.espoo.evaka.application.DaycarePlacementPlan
-import fi.espoo.evaka.shared.domain.ClosedPeriod
+import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.NotFound
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.mapTo
@@ -105,9 +105,9 @@ WHERE application_id = :applicationId AND deleted = false
                 unitId = it.unitId,
                 applicationId = it.applicationId,
                 type = it.type,
-                period = ClosedPeriod(it.startDate, it.endDate),
+                period = FiniteDateRange(it.startDate, it.endDate),
                 preschoolDaycarePeriod = if (it.preschoolDaycareStartDate != null && it.preschoolDaycareEndDate != null) {
-                    ClosedPeriod(it.preschoolDaycareStartDate, it.preschoolDaycareEndDate)
+                    FiniteDateRange(it.preschoolDaycareStartDate, it.preschoolDaycareEndDate)
                 } else null
             )
         }
@@ -173,9 +173,9 @@ WHERE unit_id = :unitId AND a.status = ANY(:statuses::application_status_type[])
                 unitId = it.unitId,
                 applicationId = it.applicationId,
                 type = it.type,
-                period = ClosedPeriod(it.startDate, it.endDate),
+                period = FiniteDateRange(it.startDate, it.endDate),
                 preschoolDaycarePeriod = if (it.preschoolDaycareStartDate != null && it.preschoolDaycareEndDate != null)
-                    ClosedPeriod(it.preschoolDaycareStartDate, it.preschoolDaycareEndDate)
+                    FiniteDateRange(it.preschoolDaycareStartDate, it.preschoolDaycareEndDate)
                 else null,
                 child = PlacementPlanChild(
                     id = it.childId,

@@ -9,7 +9,7 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.getUUID
-import fi.espoo.evaka.shared.domain.ClosedPeriod
+import fi.espoo.evaka.shared.domain.FiniteDateRange
 import org.jdbi.v3.core.statement.StatementContext
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
@@ -49,7 +49,7 @@ data class StartingPlacementsRow(
  */
 private fun Database.Read.getStartingPlacementsRows(year: Int, month: Int): List<StartingPlacementsRow> {
     val beginningOfMonth = LocalDate.of(year, month, 1)
-    val period = ClosedPeriod(
+    val period = FiniteDateRange(
         beginningOfMonth,
         beginningOfMonth.plusMonths(1).minusDays(1)
     )

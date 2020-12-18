@@ -16,7 +16,7 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
-import fi.espoo.evaka.shared.domain.Period
+import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.maxEndDate
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -76,8 +76,8 @@ class FeeAlterationController(private val asyncJobRunner: AsyncJobRunner) {
             upsertFeeAlteration(tx.handle, feeAlteration.copy(id = parsedId, updatedBy = user.id))
 
             val expandedPeriod = existing?.let {
-                Period(minOf(it.validFrom, feeAlteration.validFrom), maxEndDate(it.validTo, feeAlteration.validTo))
-            } ?: Period(feeAlteration.validFrom, feeAlteration.validTo)
+                DateRange(minOf(it.validFrom, feeAlteration.validFrom), maxEndDate(it.validTo, feeAlteration.validTo))
+            } ?: DateRange(feeAlteration.validFrom, feeAlteration.validTo)
 
             asyncJobRunner.plan(
                 tx,

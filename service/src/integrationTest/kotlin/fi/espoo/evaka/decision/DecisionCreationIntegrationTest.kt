@@ -30,7 +30,7 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.dev.insertTestApplication
 import fi.espoo.evaka.shared.dev.insertTestApplicationForm
-import fi.espoo.evaka.shared.domain.ClosedPeriod
+import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.test.DecisionTableRow
 import fi.espoo.evaka.test.getApplicationStatus
 import fi.espoo.evaka.test.getDecisionRowsByApplication
@@ -89,7 +89,7 @@ WHERE id = :unitId
 
     @Test
     fun testDaycareFullTime() {
-        val period = ClosedPeriod(
+        val period = FiniteDateRange(
             LocalDate.of(2020, 3, 17),
             LocalDate.of(2023, 7, 31)
         )
@@ -127,7 +127,7 @@ WHERE id = :unitId
 
     @Test
     fun testDaycarePartTime() {
-        val period = ClosedPeriod(
+        val period = FiniteDateRange(
             LocalDate.of(2020, 3, 18),
             LocalDate.of(2023, 7, 29)
         )
@@ -165,7 +165,7 @@ WHERE id = :unitId
 
     @Test
     fun testPreschoolOnly() {
-        val period = ClosedPeriod(
+        val period = FiniteDateRange(
             LocalDate.of(2020, 8, 15),
             LocalDate.of(2021, 5, 31)
         )
@@ -211,11 +211,11 @@ WHERE id = :unitId
 
     @Test
     fun testPreschoolAll() {
-        val period = ClosedPeriod(
+        val period = FiniteDateRange(
             LocalDate.of(2020, 8, 15),
             LocalDate.of(2021, 5, 31)
         )
-        val preschoolDaycarePeriod = ClosedPeriod(
+        val preschoolDaycarePeriod = FiniteDateRange(
             LocalDate.of(2020, 8, 1),
             LocalDate.of(2021, 7, 31)
         )
@@ -267,11 +267,11 @@ WHERE id = :unitId
 
     @Test
     fun testPreparatoryAll() {
-        val period = ClosedPeriod(
+        val period = FiniteDateRange(
             LocalDate.of(2020, 8, 15),
             LocalDate.of(2021, 5, 31)
         )
-        val preschoolDaycarePeriod = ClosedPeriod(
+        val preschoolDaycarePeriod = FiniteDateRange(
             LocalDate.of(2020, 8, 1),
             LocalDate.of(2021, 7, 31)
         )
@@ -394,7 +394,7 @@ WHERE id = :unitId
 
     @Test
     fun testEndpointSecurity() {
-        val period = ClosedPeriod(
+        val period = FiniteDateRange(
             LocalDate.of(2020, 3, 17),
             LocalDate.of(2023, 7, 31)
         )
@@ -425,8 +425,8 @@ WHERE id = :unitId
         unit: UnitData.Detailed = testDaycare,
         adult: PersonData.Detailed = testAdult_5,
         child: PersonData.Detailed = testChild_6,
-        period: ClosedPeriod,
-        preschoolDaycarePeriod: ClosedPeriod? = null,
+        period: FiniteDateRange,
+        preschoolDaycarePeriod: FiniteDateRange? = null,
         preparatoryEducation: Boolean = false
     ): UUID {
         val applicationId = insertTestApplication(

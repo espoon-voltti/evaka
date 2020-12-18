@@ -29,8 +29,8 @@ import fi.espoo.evaka.shared.dev.insertTestAssistanceAction
 import fi.espoo.evaka.shared.dev.insertTestAssistanceNeed
 import fi.espoo.evaka.shared.dev.insertTestDaycare
 import fi.espoo.evaka.shared.dev.insertTestPlacement
-import fi.espoo.evaka.shared.domain.ClosedPeriod
-import fi.espoo.evaka.shared.domain.toClosedPeriod
+import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.shared.domain.toFiniteDateRange
 import fi.espoo.evaka.testAreaId
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
@@ -141,7 +141,7 @@ class KoskiIntegrationTest : FullApplicationTest() {
     @Test
     fun `preschool ended within 30 days of term end qualifies`() {
         insertPlacement(
-            period = ClosedPeriod(
+            period = FiniteDateRange(
                 LocalDate.of(2018, 8, 1),
                 LocalDate.of(2019, 5, 1)
             )
@@ -160,7 +160,7 @@ class KoskiIntegrationTest : FullApplicationTest() {
     @Test
     fun `preschool ended earlier than 30 days of term end is considered cancelled`() {
         insertPlacement(
-            period = ClosedPeriod(
+            period = FiniteDateRange(
                 LocalDate.of(2018, 8, 1),
                 LocalDate.of(2019, 4, 30)
             )
@@ -179,7 +179,7 @@ class KoskiIntegrationTest : FullApplicationTest() {
     @Test
     fun `preschool started late still qualifies`() {
         insertPlacement(
-            period = ClosedPeriod(
+            period = FiniteDateRange(
                 LocalDate.of(2018, 12, 1),
                 LocalDate.of(2019, 5, 1)
             )
@@ -200,7 +200,7 @@ class KoskiIntegrationTest : FullApplicationTest() {
         val august2019 = LocalDate.of(2019, 8, 1)
         insertPlacement(
             type = PlacementType.PREPARATORY,
-            period = ClosedPeriod(
+            period = FiniteDateRange(
                 august2019,
                 preschoolTerm2019.end
             )
@@ -222,14 +222,14 @@ class KoskiIntegrationTest : FullApplicationTest() {
     fun `simple preschool placement changes to preparatory`() {
         insertPlacement(
             type = PlacementType.PRESCHOOL,
-            period = ClosedPeriod(
+            period = FiniteDateRange(
                 preschoolTerm2019.start,
                 preschoolTerm2019.start.plusMonths(4)
             )
         )
         insertPlacement(
             type = PlacementType.PREPARATORY,
-            period = ClosedPeriod(
+            period = FiniteDateRange(
                 preschoolTerm2019.start.plusMonths(4).plusDays(1),
                 preschoolTerm2019.end
             )
@@ -264,11 +264,11 @@ class KoskiIntegrationTest : FullApplicationTest() {
         val end = preschoolTerm2019.end
 
         val firstPlacementEnd = start.plusMonths(1)
-        insertPlacement(period = ClosedPeriod(start, firstPlacementEnd), type = PlacementType.PREPARATORY)
+        insertPlacement(period = FiniteDateRange(start, firstPlacementEnd), type = PlacementType.PREPARATORY)
 
         val secondPlacementStart = firstPlacementEnd.plusDays(1)
         insertPlacement(
-            period = ClosedPeriod(secondPlacementStart, end),
+            period = FiniteDateRange(secondPlacementStart, end),
             daycareId = testDaycare2.id,
             type = PlacementType.PREPARATORY
         )
@@ -329,7 +329,7 @@ class KoskiIntegrationTest : FullApplicationTest() {
     @Test
     fun `assistance needs are converted to Koski extra information`() {
         data class TestCase(
-            val period: ClosedPeriod,
+            val period: FiniteDateRange,
             val basis: AssistanceBasis
         )
         insertPlacement(testChild_1)
@@ -369,7 +369,7 @@ class KoskiIntegrationTest : FullApplicationTest() {
     @Test
     fun `assistance actions are converted to Koski extra information`() {
         data class TestCase(
-            val period: ClosedPeriod,
+            val period: FiniteDateRange,
             val measure: AssistanceMeasure,
             val action: AssistanceActionType? = null
         )
@@ -530,7 +530,7 @@ class KoskiIntegrationTest : FullApplicationTest() {
     fun `if all placements are outside the term, a study right row is stored but nothing is sent`() {
         insertPlacement(
             testChild_1,
-            period = ClosedPeriod(
+            period = FiniteDateRange(
                 start = preschoolTerm2019.start.minusDays(10),
                 end = preschoolTerm2019.start.minusDays(2)
             )
@@ -553,11 +553,11 @@ class KoskiIntegrationTest : FullApplicationTest() {
     fun `a child can be in preschool for the duration of two terms`() {
         insertPlacement(
             testChild_1,
-            period = ClosedPeriod(preschoolTerm2019.start, preschoolTerm2019.end)
+            period = FiniteDateRange(preschoolTerm2019.start, preschoolTerm2019.end)
         )
         insertPlacement(
             testChild_1,
-            period = ClosedPeriod(preschoolTerm2020.start, preschoolTerm2020.end)
+            period = FiniteDateRange(preschoolTerm2020.start, preschoolTerm2020.end)
         )
 
         val today = preschoolTerm2020.end.plusDays(1)
@@ -627,7 +627,7 @@ class KoskiIntegrationTest : FullApplicationTest() {
         insertAbsences(
             testChild_1.id,
             AbsenceType.UNKNOWN_ABSENCE,
-            ClosedPeriod(preschoolTerm2020.start.plusDays(1), preschoolTerm2020.end.minusDays(1))
+            FiniteDateRange(preschoolTerm2020.start.plusDays(1), preschoolTerm2020.end.minusDays(1))
         )
 
         val opiskeluoikeus = koskiServer.getStudyRights().values.single().opiskeluoikeus
@@ -650,7 +650,7 @@ class KoskiIntegrationTest : FullApplicationTest() {
         insertAbsences(
             testChild_1.id,
             AbsenceType.UNKNOWN_ABSENCE,
-            ClosedPeriod(preschoolTerm2019.start.plusDays(1), preschoolTerm2019.end.minusDays(1))
+            FiniteDateRange(preschoolTerm2019.start.plusDays(1), preschoolTerm2019.end.minusDays(1))
         )
 
         val opiskeluoikeus = koskiServer.getStudyRights().values.single().opiskeluoikeus
@@ -665,7 +665,7 @@ class KoskiIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `holidays longer than 7 days are included in preparatory study rights`() {
-        val holiday = ClosedPeriod(preschoolTerm2020.start.plusDays(1), preschoolTerm2020.start.plusDays(1 + 8))
+        val holiday = FiniteDateRange(preschoolTerm2020.start.plusDays(1), preschoolTerm2020.start.plusDays(1 + 8))
         insertPlacement(period = preschoolTerm2020, type = PlacementType.PREPARATORY)
         insertAbsences(testChild_1.id, AbsenceType.PLANNED_ABSENCE, holiday)
 
@@ -688,8 +688,8 @@ class KoskiIntegrationTest : FullApplicationTest() {
     fun `preparatory is considered resigned if absence periods longer than week make up more than 30 days in total`() {
         insertPlacement(period = preschoolTerm2020, type = PlacementType.PREPARATORY)
         val absences = listOf(
-            ClosedPeriod(preschoolTerm2020.start.plusDays(1), preschoolTerm2020.start.plusDays(20)),
-            ClosedPeriod(preschoolTerm2020.start.plusDays(50), preschoolTerm2020.start.plusDays(80))
+            FiniteDateRange(preschoolTerm2020.start.plusDays(1), preschoolTerm2020.start.plusDays(20)),
+            FiniteDateRange(preschoolTerm2020.start.plusDays(50), preschoolTerm2020.start.plusDays(80))
         )
         insertAbsences(testChild_1.id, AbsenceType.UNKNOWN_ABSENCE, *absences.toTypedArray())
 
@@ -717,7 +717,7 @@ class KoskiIntegrationTest : FullApplicationTest() {
         insertPlacement(period = preschoolTerm2020, type = PlacementType.PREPARATORY)
 
         val absencesEveryOtherDay =
-            (1..90 step 2).map { preschoolTerm2020.start.plusDays(it.toLong()).toClosedPeriod() }
+            (1..90 step 2).map { preschoolTerm2020.start.plusDays(it.toLong()).toFiniteDateRange() }
         assertEquals(45, absencesEveryOtherDay.size)
         insertAbsences(testChild_1.id, AbsenceType.UNKNOWN_ABSENCE, *absencesEveryOtherDay.toTypedArray())
 
@@ -737,7 +737,7 @@ class KoskiIntegrationTest : FullApplicationTest() {
     private fun insertPlacement(
         child: PersonData.Detailed = testChild_1,
         daycareId: UUID = testDaycare.id,
-        period: ClosedPeriod = preschoolTerm2019,
+        period: FiniteDateRange = preschoolTerm2019,
         type: PlacementType = PlacementType.PRESCHOOL
     ): UUID = jdbi.handle {
         it.insertTestPlacement(
@@ -751,7 +751,7 @@ class KoskiIntegrationTest : FullApplicationTest() {
         )
     }
 
-    private fun insertAbsences(childId: UUID, absenceType: AbsenceType, vararg periods: ClosedPeriod) =
+    private fun insertAbsences(childId: UUID, absenceType: AbsenceType, vararg periods: FiniteDateRange) =
         jdbi.transaction { h ->
             for (period in periods) {
                 for (date in period.dates()) {
@@ -769,7 +769,7 @@ class KoskiIntegrationTest : FullApplicationTest() {
 
 private fun Database.Transaction.clearKoskiInputCache() = createUpdate("UPDATE koski_study_right SET input_data = NULL").execute()
 
-private fun testPeriod(offsets: Pair<Long, Long?>) = ClosedPeriod(
+private fun testPeriod(offsets: Pair<Long, Long?>) = FiniteDateRange(
     preschoolTerm2019.start.plusDays(offsets.first),
     offsets.second?.let { preschoolTerm2019.start.plusDays(it) } ?: preschoolTerm2019.end
 )

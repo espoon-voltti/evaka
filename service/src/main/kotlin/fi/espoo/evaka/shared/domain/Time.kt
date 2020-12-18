@@ -30,48 +30,69 @@ fun maxEndDate(first: LocalDate?, second: LocalDate?): LocalDate? {
     }
 }
 
-data class ClosedPeriod(val start: LocalDate, val end: LocalDate) {
+/**
+ * A closed (inclusive) date range with finite start and end
+ */
+data class FiniteDateRange(val start: LocalDate, val end: LocalDate) {
     init {
-        require(start <= orMax(end)) { "Attempting to initialize invalid period with start: $start, end: $end" }
+        require(start <= end) { "Attempting to initialize invalid finite date range with start: $start, end: $end" }
     }
 
-    fun contains(value: ClosedPeriod) = this.start <= value.start && value.end <= this.end
+    fun asDateRange(): DateRange = DateRange(start, end)
+
+    fun contains(other: FiniteDateRange) = this.start <= other.start && other.end <= this.end
+    fun contains(other: DateRange) = this.asDateRange().contains(other)
+
     fun includes(value: LocalDate) = this.start <= value && value <= this.end
-    fun overlaps(value: ClosedPeriod) = this.start <= value.end && value.start <= this.end
 
-    fun adjacentTo(other: ClosedPeriod) = other.end.plusDays(1) == this.start || this.end.plusDays(1) == other.start
+    fun overlaps(other: FiniteDateRange) = this.start <= other.end && other.start <= this.end
+    fun overlaps(other: DateRange) = this.asDateRange().overlaps(other)
 
-    fun intersection(value: ClosedPeriod): ClosedPeriod? {
+    fun adjacentTo(other: FiniteDateRange) = other.end.plusDays(1) == this.start || this.end.plusDays(1) == other.start
+
+    fun intersection(value: FiniteDateRange): FiniteDateRange? {
         val start = maxOf(this.start, value.start)
         val end = minOf(this.end, value.end)
-        return if (start <= end) ClosedPeriod(start, end) else null
+        return if (start <= end) FiniteDateRange(start, end) else null
     }
 
     fun dates(): Sequence<LocalDate> = generateSequence(start) { if (it < end) it.plusDays(1) else null }
     fun durationInDays(): Long = ChronoUnit.DAYS.between(start, end.plusDays(1)) // adjust to exclusive range
 }
 
-data class Period(val start: LocalDate, val end: LocalDate?) {
+/**
+ * A closed (inclusive) date range with finite start and possibly infinite (= null) end
+ */
+data class DateRange(val start: LocalDate, val end: LocalDate?) {
     init {
-        check(start <= orMax(end)) { "Attempting to initialize invalid period with start: $start, end: $end" }
+        check(start <= orMax(end)) { "Attempting to initialize invalid date range with start: $start, end: $end" }
     }
 
-    fun contains(value: Period) = this.start <= value.start && orMax(value.end) <= orMax(this.end)
+    fun asFiniteDateRange(): FiniteDateRange? = end?.let { FiniteDateRange(start, it) }
+
+    fun contains(value: DateRange) = this.start <= value.start && orMax(value.end) <= orMax(this.end)
+    fun contains(other: FiniteDateRange) = contains(other.asDateRange())
+
     fun includes(value: LocalDate) = this.start <= value && value <= orMax(this.end)
-    fun overlaps(value: Period) = this.start <= orMax(value.end) && value.start <= orMax(this.end)
+
+    fun overlaps(value: DateRange) = this.start <= orMax(value.end) && value.start <= orMax(this.end)
+    fun overlaps(other: FiniteDateRange) = overlaps(other.asDateRange())
 }
 
-private fun periodsCanMerge(first: Period, second: Period): Boolean =
+private fun periodsCanMerge(first: DateRange, second: DateRange): Boolean =
     first.overlaps(second) || first.end?.let { first.end.plusDays(1) == second.start } ?: false
 
-private fun minimalCover(first: Period, second: Period): Period = Period(
+private fun minimalCover(first: DateRange, second: DateRange): DateRange = DateRange(
     minOf(first.start, second.start),
     if (first.end == null || second.end == null) null else maxOf(first.end, second.end)
 )
 
 private fun <T> simpleEquals(a: T, b: T): Boolean = a == b
 
-fun <T> mergePeriods(values: List<Pair<Period, T>>, equals: (T, T) -> Boolean = ::simpleEquals): List<Pair<Period, T>> {
+fun <T> mergePeriods(
+    values: List<Pair<DateRange, T>>,
+    equals: (T, T) -> Boolean = ::simpleEquals
+): List<Pair<DateRange, T>> {
     return values.sortedBy { (period, _) -> period.start }
         .fold(listOf()) { periods, (period, value) ->
             when {
@@ -88,7 +109,7 @@ fun <T> mergePeriods(values: List<Pair<Period, T>>, equals: (T, T) -> Boolean = 
         }
 }
 
-fun asDistinctPeriods(periods: List<Period>, spanningPeriod: Period): List<Period> {
+fun asDistinctPeriods(periods: List<DateRange>, spanningPeriod: DateRange): List<DateRange> {
     // Includes the end dates with one day added to fill in gaps in original periods
     val allStartDates = (periods.flatMap { listOf(it.start, it.end?.plusDays(1)) } + spanningPeriod.start)
         .asSequence()
@@ -103,7 +124,7 @@ fun asDistinctPeriods(periods: List<Period>, spanningPeriod: Period): List<Perio
         .distinct()
         .sortedBy { orMax(it) }
 
-    return allStartDates.map { start -> Period(start, allEndDates.find { end -> start <= orMax(end) }) }.toList()
+    return allStartDates.map { start -> DateRange(start, allEndDates.find { end -> start <= orMax(end) }) }.toList()
 }
 
 fun operationalDays(h: Handle, year: Int, month: Month): Map<UUID, List<LocalDate>> {
@@ -134,7 +155,5 @@ fun operationalDays(h: Handle, year: Int, month: Month): Map<UUID, List<LocalDat
         .toMap()
 }
 
-val isWeekday = { date: LocalDate -> date.dayOfWeek != DayOfWeek.SATURDAY && date.dayOfWeek != DayOfWeek.SUNDAY }
-
 fun LocalDate.isWeekend() = this.dayOfWeek == DayOfWeek.SATURDAY || this.dayOfWeek == DayOfWeek.SUNDAY
-fun LocalDate.toClosedPeriod(): ClosedPeriod = ClosedPeriod(this, this)
+fun LocalDate.toFiniteDateRange(): FiniteDateRange = FiniteDateRange(this, this)

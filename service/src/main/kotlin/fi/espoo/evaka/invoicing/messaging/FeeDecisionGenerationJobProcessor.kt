@@ -12,7 +12,7 @@ import fi.espoo.evaka.shared.async.NotifyIncomeUpdated
 import fi.espoo.evaka.shared.async.NotifyPlacementPlanApplied
 import fi.espoo.evaka.shared.async.NotifyServiceNeedUpdated
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.domain.Period
+import fi.espoo.evaka.shared.domain.DateRange
 import mu.KotlinLogging
 import org.springframework.stereotype.Component
 
@@ -33,26 +33,26 @@ class FeeDecisionGenerationJobProcessor(
 
     fun runJob(db: Database, msg: NotifyFamilyUpdated) = db.transaction { tx ->
         logger.info { "Handling family updated event for person (id: ${msg.adultId})" }
-        generator.handleFamilyUpdate(tx.handle, msg.adultId, Period(msg.startDate, msg.endDate))
+        generator.handleFamilyUpdate(tx.handle, msg.adultId, DateRange(msg.startDate, msg.endDate))
     }
 
     fun runJob(db: Database, msg: NotifyFeeAlterationUpdated) = db.transaction { tx ->
         logger.info { "Handling fee alteration updated event ($msg)" }
-        generator.handleFeeAlterationChange(tx.handle, msg.personId, Period(msg.startDate, msg.endDate))
+        generator.handleFeeAlterationChange(tx.handle, msg.personId, DateRange(msg.startDate, msg.endDate))
     }
 
     fun runJob(db: Database, msg: NotifyIncomeUpdated) = db.transaction { tx ->
         logger.info { "Handling income updated event ($msg)" }
-        generator.handleIncomeChange(tx.handle, msg.personId, Period(msg.startDate, msg.endDate))
+        generator.handleIncomeChange(tx.handle, msg.personId, DateRange(msg.startDate, msg.endDate))
     }
 
     fun runJob(db: Database, msg: NotifyPlacementPlanApplied) = db.transaction { tx ->
         logger.info { "Handling placement plan accepted event ($msg)" }
-        generator.handlePlacement(tx.handle, msg.childId, Period(msg.startDate, msg.endDate))
+        generator.handlePlacement(tx.handle, msg.childId, DateRange(msg.startDate, msg.endDate))
     }
 
     fun runJob(db: Database, msg: NotifyServiceNeedUpdated) = db.transaction { tx ->
         logger.info { "Handling service need updated event for child (id: ${msg.childId})" }
-        generator.handleServiceNeed(tx.handle, msg.childId, Period(msg.startDate, msg.endDate))
+        generator.handleServiceNeed(tx.handle, msg.childId, DateRange(msg.startDate, msg.endDate))
     }
 }

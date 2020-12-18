@@ -27,7 +27,7 @@ import fi.espoo.evaka.shared.db.bindNullable
 import fi.espoo.evaka.shared.db.freeTextSearchQuery
 import fi.espoo.evaka.shared.db.getEnum
 import fi.espoo.evaka.shared.db.getUUID
-import fi.espoo.evaka.shared.domain.Period
+import fi.espoo.evaka.shared.domain.DateRange
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.mapTo
 import org.jdbi.v3.core.statement.StatementContext
@@ -249,7 +249,7 @@ fun Handle.getValueDecisionsByIds(mapper: ObjectMapper, ids: List<UUID>): List<V
 fun Handle.findValueDecisionsForHeadOfFamily(
     mapper: ObjectMapper,
     headOfFamily: UUID,
-    period: Period?,
+    period: DateRange?,
     statuses: List<VoucherValueDecisionStatus>?
 ): List<VoucherValueDecision> {
     // language=sql

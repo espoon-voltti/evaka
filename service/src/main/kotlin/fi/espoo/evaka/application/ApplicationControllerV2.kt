@@ -28,7 +28,7 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
-import fi.espoo.evaka.shared.domain.ClosedPeriod
+import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.NotFound
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.http.HttpStatus
@@ -523,8 +523,8 @@ data class PlacementProposalConfirmationUpdate(
 
 data class DaycarePlacementPlan(
     val unitId: UUID,
-    val period: ClosedPeriod,
-    val preschoolDaycarePeriod: ClosedPeriod? = null
+    val period: FiniteDateRange,
+    val preschoolDaycarePeriod: FiniteDateRange? = null
 )
 
 data class AcceptDecisionRequest(
