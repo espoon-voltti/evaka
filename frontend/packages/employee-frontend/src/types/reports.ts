@@ -349,3 +349,23 @@ export interface VoucherServiceProviderUnitRowDerivatives {
   realizedPeriod: Period
   numberOfDays: number
 }
+
+export interface PlacementSketchingRow {
+  applicationId: UUID
+  areaName: string
+  preferredStartDate: LocalDate
+  sentDate: LocalDate
+  requestedUnitId: UUID
+  requestedUnitName: string
+  currentUnitName: string | null
+  currentUnitId: UUID | null
+  childId: UUID
+  childFirstName: string
+  childLastName: string
+  childDob: LocalDate
+  childStreetAddr: string
+  assistanceNeeded: boolean
+  preparatoryEducation: boolean
+  siblingBasis: boolean
+  connectedDaycare: boolean
+}

@@ -2016,6 +2016,23 @@ export const fi = {
       serviceNeed: 'Palveluntarve',
       serviceNeedType: 'h / vk',
       partTime: 'Osa/Koko'
+    },
+    placementSketching: {
+      title: 'Sijoitusten hahmotteluraportti',
+      description:
+        'Raportti saapuneista esiopetushakemuksista sijoittamisen avuksi',
+      placementStartDate: 'Nykyisen sijoituksen tarkistuspäivä',
+      earliestPreferredStartDate: 'Aikaisin haettu aloituspäivä',
+      preferredUnit: 'Hakutoive',
+      currentUnit: 'Nykyinen yksikkö',
+      streetAddress: 'Osoite',
+      dob: 'Syntymäaika',
+      assistanceNeed: 'Tuen tarve',
+      preparatory: 'Valmistava',
+      siblingBasis: 'sisarusperuste',
+      connected: 'Liittyvä',
+      preferredStartDate: 'Toivottu aloituspäivä',
+      sentDate: 'Lähetyspäivä'
     }
   },
   unitEditor: {
