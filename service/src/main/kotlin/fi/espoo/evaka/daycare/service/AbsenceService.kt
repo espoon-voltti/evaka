@@ -66,7 +66,7 @@ class AbsenceService {
             val userName = tx.getEmployeeNameById(userId)
             tx.upsertAbsences(absences, userName)
         } catch (e: Exception) {
-            logger.error { "Error: Updating absences by user $userId failed" }
+            logger.error(e) { "Error: Updating absences by user $userId failed" }
             throw BadRequest("Error: Updating absences failed: ${e.message}")
         }
     }
@@ -75,7 +75,7 @@ class AbsenceService {
         try {
             tx.upsertChildAbsence(childId, absenceType, careType, userId)
         } catch (e: Exception) {
-            logger.error { "Error: Updating absences by user $userId failed" }
+            logger.error(e) { "Error: Updating absences by user $userId failed" }
             throw BadRequest("Error: Updating absences failed: ${e.message}")
         }
     }
