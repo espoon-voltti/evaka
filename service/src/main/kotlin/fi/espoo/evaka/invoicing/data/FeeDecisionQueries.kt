@@ -56,11 +56,11 @@ val feeDecisionQueryBase =
 
 val feeDecisionDetailedQueryBase =
     """
-    WITH youngest_child AS (
+    WITH finance_decision_handler_by_youngest_child AS (
         SELECT
             fee_decision_part.fee_decision_id AS decision_id,
-            finance_decision_handler.first_name AS finance_decision_handler_first_name,
-            finance_decision_handler.last_name AS finance_decision_handler_last_name,
+            finance_decision_handler.first_name AS first_name,
+            finance_decision_handler.last_name AS last_name,
             row_number() OVER (PARTITION BY (fee_decision_id) ORDER BY date_of_birth DESC) AS rownum
         FROM fee_decision_part
         LEFT JOIN daycare ON fee_decision_part.placement_unit = daycare.id
@@ -108,11 +108,8 @@ val feeDecisionDetailedQueryBase =
         daycare.language as placement_unit_lang,
         care_area.id as placement_unit_area_id,
         care_area.name as placement_unit_area_name,
-        CONCAT(
-            youngest_child.finance_decision_handler_first_name,
-            ' ',
-            youngest_child.finance_decision_handler_last_name
-            ) AS finance_decision_handler_name
+        finance_decision_handler_by_youngest_child.first_name AS finance_decision_handler_first_name,
+        finance_decision_handler_by_youngest_child.last_name AS finance_decision_handler_last_name
     FROM fee_decision as decision
         LEFT JOIN fee_decision_part as part ON decision.id = part.fee_decision_id
         LEFT JOIN person as head ON decision.head_of_family = head.id
@@ -121,7 +118,7 @@ val feeDecisionDetailedQueryBase =
         LEFT JOIN daycare ON part.placement_unit = daycare.id
         LEFT JOIN care_area ON daycare.care_area_id = care_area.id
         LEFT JOIN employee as approved_by ON decision.approved_by = approved_by.id
-        LEFT JOIN youngest_child ON decision.id = youngest_child.decision_id AND rownum = 1
+        LEFT JOIN finance_decision_handler_by_youngest_child ON decision.id = finance_decision_handler_by_youngest_child.decision_id AND rownum = 1
     """.trimIndent()
 
 private val decisionNumberRegex = "^\\d{7,}$".toRegex()
@@ -777,7 +774,11 @@ fun toFeeDecisionDetailed(mapper: ObjectMapper) = { rs: ResultSet, _: StatementC
         approvedAt = rs.getTimestamp("approved_at")?.toInstant(),
         createdAt = rs.getTimestamp("created_at").toInstant(),
         sentAt = rs.getTimestamp("sent_at")?.toInstant(),
-        financeDecisionHandlerName = rs.getString("finance_decision_handler_name")
+        financeDecisionHandlerName = rs.getString("finance_decision_handler_first_name")?.let {
+            rs.getString("finance_decision_handler_first_name") +
+                " " +
+                rs.getString("finance_decision_handler_last_name")
+        }
     )
 }
 
