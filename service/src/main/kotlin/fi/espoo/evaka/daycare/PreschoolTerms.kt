@@ -6,14 +6,14 @@ import fi.espoo.evaka.shared.utils.zoneId
 import org.jdbi.v3.core.kotlin.mapTo
 import java.time.LocalDate
 
-data class PreschoolTerm (
+data class PreschoolTerm(
     val finnishPreschool: ClosedPeriod,
     val swedishPreschool: ClosedPeriod,
     val extendedTerm: ClosedPeriod,
     val applicationPeriod: ClosedPeriod
 )
 
-fun Database.Read.getPreschoolTerms(): List<PreschoolTerm>{
+fun Database.Read.getPreschoolTerms(): List<PreschoolTerm> {
     return createQuery("SELECT * FROM preschool_term order by extended_term")
         .mapTo<PreschoolTerm>()
         .list()
