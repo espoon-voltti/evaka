@@ -303,7 +303,6 @@ fun Handle.searchValueDecisions(
     )
 
     val (freeTextQuery, freeTextParams) = freeTextSearchQuery(listOf("head", "partner", "child"), searchTerms)
-    val financeDecisionHandlerWhere = "AND placement_unit.finance_decision_handler = :financeDecisionHandlerId"
 
     val sql =
         // language=sql
@@ -345,7 +344,7 @@ fun Handle.searchValueDecisions(
                 AND youngest_child.area = ANY(:areas)
                 AND (:unit::uuid IS NULL OR part.placement_unit = :unit)
                 AND $freeTextQuery
-                ${if (financeDecisionHandlerId != null) financeDecisionHandlerWhere else ""}
+                AND (:financeDecisionHandlerId::uuid IS NULL OR placement_unit.finance_decision_handler = :financeDecisionHandlerId)
             GROUP BY decision.id
             -- we take a max here because the sort column is not in group by clause but it should be identical for all grouped rows
             ORDER BY max($sortColumn) $sortDirection, decision.id

@@ -6,7 +6,6 @@ package fi.espoo.evaka.invoicing.domain
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
-import fi.espoo.evaka.daycare.financeDecisionHandler
 import fi.espoo.evaka.shared.domain.DateRange
 import java.math.BigDecimal
 import java.math.RoundingMode
