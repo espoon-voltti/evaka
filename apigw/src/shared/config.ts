@@ -189,9 +189,9 @@ export const evakaSamlConfig = evakaCallbackUrl
             'http://localhost:8080/auth/realms/evaka/protocol/saml'
           )
       ),
-      publicCert: required<Array<keyof typeof certificates>>(
-        envArray('EVAKA_SAML_PUBLIC_CERT', parseEnum(certificateNames)) ??
-          ifNodeEnv(['local', 'test'], ['keycloak-local.pem'])
+      publicCert: required(
+        process.env.EVAKA_SAML_PUBLIC_CERT ??
+          ifNodeEnv(['local', 'test'], 'config/test-cert/keycloak-local.pem')
       ),
       privateCert: required(
         process.env.EVAKA_SAML_PRIVATE_CERT ??

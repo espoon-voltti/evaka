@@ -10,11 +10,13 @@ import {
 import { SamlUser } from '../routes/auth/saml/types'
 import { getOrCreateEmployee } from '../service-client'
 import { evakaSamlConfig } from '../config'
-import certificates from '../certificates'
 import fs from 'fs'
 
 export default function createKeycloakSamlStrategy(): SamlStrategy {
   if (!evakaSamlConfig) throw new Error('Missing Keycloak SAML configuration')
+  const publicCert = fs.readFileSync(evakaSamlConfig.publicCert, {
+    encoding: 'utf8'
+  })
   const privateCert = fs.readFileSync(evakaSamlConfig.privateCert, {
     encoding: 'utf8'
   })
@@ -25,9 +27,7 @@ export default function createKeycloakSamlStrategy(): SamlStrategy {
       entryPoint: evakaSamlConfig.entryPoint,
       logoutUrl: evakaSamlConfig.entryPoint,
       acceptedClockSkewMs: -1,
-      cert: evakaSamlConfig.publicCert.map(
-        (certificateName) => certificates[certificateName]
-      ),
+      cert: publicCert,
       privateCert: privateCert,
       decryptionPvk: privateCert,
       identifierFormat: 'urn:oasis:names:tc:SAML:2.0:nameid-format:transient',
