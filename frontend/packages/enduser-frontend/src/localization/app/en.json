@@ -571,6 +571,16 @@
           "lastName": "Guardian’s last name",
           "ssn": "Guardian’s personal identity code"
         },
+        "guardian2": {
+          "agreement-status": {
+            "title": "Agreed with the other guardian",
+            "NOT_SET": "Please select have you agreed with the other guardian",
+            "AGREED": "We have agreed with the other guardian about this application",
+            "NOT_AGREED": "We have not agreed with the other guardian about this application",
+            "RIGHT_TO_GET_NOTIFIED": "The other guardian has only the right to get notified about the placement"
+          },
+          "other-vtj-guardian-exists-different-address-info": "Information about other guardian is automatically fetched from the national Population Information System. According to it, the other guardian lives in a different address. Guardians need to agree on applying to early education."
+        },
         "guardian-required-details": "The name and telephone number of the guardian are required. If possible, you can enter an email address.",
         "ssn": "Personal identity code",
         "street": "Street address",
@@ -605,7 +615,7 @@
       "title": "Enrolment for pre-primary education",
       "title-transfer": "Transfer application (Enrolment for pre-primary education)",
       "text": [
-        "Pre-primary education is attended one year before the start of compulsory education. Pre-primary education is free of charge. Enrolment for pre-primary education in the 2020–2021 school year takes place on 8–20 January 2020. Finnish pre-primary education begins on <strong>13 August 2020</strong> and Swedish pre-primary education on <strong>18 August 2020</strong>. The decisions will be sent to the <a href=\"https://www.suomi.fi/messages\" target=\"_blank\" rel=\"noreferrer\">Suomi.fi Messages</a> service or by post, if the applicant does not use the <a href=\"https://www.suomi.fi/messages\" target=\"_blank\" rel=\"noreferrer\">Suomi.fi Messages</a> service.",
+        "Pre-primary education is attended one year before the start of compulsory education. Pre-primary education is free of charge. Enrolment for pre-primary education in the 2021–2022 school year takes place on 8–20 January 2021. Finnish and swedish pre-primary education begins on <strong>11 August 2021</strong>. The decisions will be sent to the <a href=\"https://www.suomi.fi/messages\" target=\"_blank\" rel=\"noreferrer\">Suomi.fi Messages</a> service or by post, if the applicant does not use the <a href=\"https://www.suomi.fi/messages\" target=\"_blank\" rel=\"noreferrer\">Suomi.fi Messages</a> service.",
         "* Information marked with a star is required"
       ],
       "requestAnotherUnit": {
@@ -626,8 +636,9 @@
           }
         },
         "startDate": {
-          "description": "Finnish pre-primary education begins on <strong>13 August 2020</strong> and Swedish pre-primary education on <strong>18 August 2020</strong>.<br />If you need early childhood education starting from 1 August 2020 before the start of pre-primary education, you can apply for it with this application by selecting “I also apply for early childhood education related to pre-primary education”. ",
-          "label": "Start date in August",
+          "description": "Finnish and Swedish pre-primary education begins on <strong>11 August 2021</strong>. ",
+          "description2": "<br/>If you need early childhood education starting from 1 August 2021 before the start of pre-primary education, you can apply for it with this application by selecting “I also apply for early childhood education related to pre-primary education”.",
+          "label": "Start date",
           "placeholder": "Start date dd.mm.yyyy",
           "validationText": "Desired start date: "
         },
@@ -705,7 +716,17 @@
         "outsourced-service-info": "Private service providers and some outsourced services require a separate application for related early childhood education. Espoo Early Childhood Education is in contact with those affected."
       },
       "personalInfo": {
-        "title": "Personal information"
+        "title": "Personal information",
+        "guardian2": {
+          "agreement-status": {
+            "title": "Agreed with the other guardian",
+            "NOT_SET": "Please select have you agreed with the other guardian",
+            "AGREED": "We have agreed with the other guardian about this application",
+            "NOT_AGREED": "We have not agreed with the other guardian about this application",
+            "RIGHT_TO_GET_NOTIFIED": "The other guardian has only the right to get notified about the placement"
+          },
+          "other-vtj-guardian-exists-different-address-info": "Information about other guardian is automatically fetched from the national Population Information System. According to it, the other guardian lives in a different address. Guardians need to agree on applying to pre-primary education."
+        }
       },
       "siblingBasis": {
         "title": "Application on a sibling basis"

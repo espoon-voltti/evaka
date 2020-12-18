@@ -576,6 +576,16 @@
           "lastName": "Huoltajan sukunimi",
           "ssn": "Huoltajan henkilötunnus"
         },
+        "guardian2": {
+          "agreement-status": {
+            "title": "Sopimus toisen huoltajan kanssa",
+            "NOT_SET": "Määrittele oletteko sopineet hakemuksesta toisen huoltajan kanssa",
+            "AGREED": "Olemme yhdessä sopineet hakemuksen tekemisestä",
+            "NOT_AGREED": "Emme ole voineet sopia hakemuksen tekemisestä yhdessä",
+            "RIGHT_TO_GET_NOTIFIED": "Toisella huoltajalla on vain tiedonsaantioikeus"
+          },
+          "other-vtj-guardian-exists-different-address-info": "Toisen huoltajan tiedot haetaan automaattisesti väestötietojärjestelmästä. Tietojemme mukaan lapsen toinen huoltaja asuu eri osoitteessa. Varhaiskasvatukseen hakemisesta tulee sopia yhdessä toisen huoltajan kanssa."
+        },
         "guardian-required-details": "Huoltajan nimitiedot sekä puhelinnumero ovat pakolliset. Sähköpostiosoitteen voit ilmoittaa, mikäli mahdollista.",
         "ssn": "Henkilötunnus",
         "street": "Katuosoite",
@@ -610,7 +620,7 @@
       "title": "Ilmoittautuminen esiopetukseen",
       "title-transfer": "Siirtohakemus (Esiopetus)",
       "text": [
-        "Esiopetukseen osallistutaan vuosi ennen oppivelvollisuuden alkamista. Esiopetus on maksutonta. Lukuvuoden 2020–2021 esiopetukseen ilmoittaudutaan 8.–20.1.2020. Suomenkielinen esiopetus alkaa <strong>13.8.2020</strong> ja ruotsinkielinen esiopetus <strong>18.8.2020</strong>. Päätökset tulevat <a href=\"https://www.suomi.fi/viestit\" target=\"_blank\" rel=\"noreferrer\">Suomi.fi-viestit</a>  -palveluun tai postitse, mikäli hakija ei ole ottanut <a href=\"https://www.suomi.fi/viestit\" target=\"_blank\" rel=\"noreferrer\">Suomi.fi-viestit</a> -palvelua käyttöön.",
+        "Esiopetukseen osallistutaan vuosi ennen oppivelvollisuuden alkamista. Esiopetus on maksutonta. Lukuvuoden 2021–2022 esiopetukseen ilmoittaudutaan 8.–20.1.2021. Suomen ja ruotsin kielinen esiopetus alkaa <strong>11.8.2021</strong>. Päätökset tulevat <a href=\"https://www.suomi.fi/viestit\" target=\"_blank\" rel=\"noreferrer\">Suomi.fi-viestit</a>  -palveluun tai postitse, mikäli hakija ei ole ottanut <a href=\"https://www.suomi.fi/viestit\" target=\"_blank\" rel=\"noreferrer\">Suomi.fi-viestit</a> -palvelua käyttöön.",
         "* Tähdellä merkityt tiedot ovat pakollisia"
       ],
       "requestAnotherUnit": {
@@ -630,9 +640,9 @@
           }
         },
         "startDate": {
-          "description": "Suomenkielinen esiopetus alkaa <strong>13.8.2020</strong> ja ruotsinkielinen esiopetus <strong>18.8.2020</strong>.",
-          "description2": "<br>Jos tarvitsette varhaiskasvatusta 1.8.2020 lähtien ennen esiopetuksen alkua, voitte hakea sitä tällä hakemuksella valitsemalla ”Haen myös esiopetukseen liittyvää varhaiskasvatusta”.",
-          "label": "Elokuun aloituspäivä",
+          "description": "Suomen ja ruotsinkielinen esiopetus alkaa <strong>11.8.2021</strong>.",
+          "description2": "<br>Jos tarvitsette varhaiskasvatusta 1.8.2021 lähtien ennen esiopetuksen alkua, voitte hakea sitä tällä hakemuksella valitsemalla ”Haen myös esiopetukseen liittyvää varhaiskasvatusta”.",
+          "label": "Aloituspäivä",
           "instructions": {
             "text": "Toivottua aloituspäivää on mahdollista muuttaa myöhemmäksi niin kauan kuin hakemusta ei ole otettu käsittelyyn. Tämän jälkeen toivotun aloituspäivän muutokset tehdään ottamalla yhteyttä varhaiskasvatuksen palveluohjaukseen (puh. 09 816 31000)."
           },
@@ -642,7 +652,7 @@
         "dailyTitle": "Esiopetukseen liittyvän varhaiskasvatuksen tarve",
         "dailyText": [
           "Lapselle voi hakea tarvittaessa esiopetukseen liittyvää varhaiskasvatusta, joka on maksullista ja jota annetaan esiopetuksen (4 h/päivä) lisäksi aamuisin ja/tai iltapäivisin samassa paikassa kuin esiopetus. Jos haluat aloittaa varhaiskasvatuksen myöhemmin kuin esiopetus alkaa, kirjoita haluttu aloituspäivämäärä hakemuksen lisätiedot kohtaan.",
-          "Mikäli haet yksityiseen tai ostopalvelupäiväkotiin, tarkista varhaiskasvatukseen hakeminen Espoon kaupungin nettisivuilta kohdasta <a href=\"https://www.espoo.fi/fi-FI/Kasvatus_ja_opetus/Esiopetus/Esiopetuspaikat_20202021\" target=\"_blank\" rel=\"noreferrer\">Esiopetuspaikat 2020–2021</a>.",
+          "Mikäli haet yksityiseen tai ostopalvelupäiväkotiin, tarkista varhaiskasvatukseen hakeminen Espoon kaupungin nettisivuilta kohdasta <a href=\"https://www.espoo.fi/fi-FI/Kasvatus_ja_opetus/Esiopetus/Esiopetuspaikat_20212022\" target=\"_blank\" rel=\"noreferrer\">Esiopetuspaikat 2021–2022</a>.",
           "Varhaiskasvatuspaikasta saa erillisen kirjallisen päätöksen ja päätös tulee <a href=\"https://www.suomi.fi/viestit\" target=\"_blank\" rel=\"noreferrer\">Suomi.fi-viestit</a> -palveluun tai postitse, mikäli et ole ottanut <a href=\"https://www.suomi.fi/viestit\" target=\"_blank\" rel=\"noreferrer\">Suomi.fi-viestit</a> -palvelua käyttöön."
         ],
         "dailyTime": {
@@ -685,7 +695,17 @@
         }
       },
       "personalInfo": {
-        "title": "Henkilötiedot"
+        "title": "Henkilötiedot",
+        "guardian2": {
+          "agreement-status": {
+            "title": "Sopimus toisen huoltajan kanssa",
+            "NOT_SET": "Määrittele oletteko sopineet hakemuksesta toisen huoltajan kanssa",
+            "AGREED": "Olemme yhdessä sopineet hakemuksen tekemisestä.",
+            "NOT_AGREED": "Emme ole voineet sopia hakemuksen tekemisestä yhdessä",
+            "RIGHT_TO_GET_NOTIFIED": "Toisella huoltajalla on vain tiedonsaantioikeus"
+          },
+          "other-vtj-guardian-exists-different-address-info": "Toisen huoltajan tiedot haetaan automaattisesti väestötietojärjestelmästä. Tietojemme mukaan lapsen toinen huoltaja asuu eri osoitteessa. Esiopetukseen ilmoittautumisesta tulee sopia yhdessä toisen huoltajan kanssa."
+        }
       },
       "siblingBasis": {
         "title": "Haku sisarusperusteella"
@@ -810,7 +830,7 @@
         "agreement-status": {
           "title": "Sopimus toisen huoltajan kanssa",
           "NOT_SET": "Määrittele oletteko sopineet hakemuksesta toisen huoltajan kanssa",
-          "AGREED": "Olemme yhdessä sopineet lapsen varhaiskasvatukseen hakemisesta lomakkeen tietojen mukaisesti",
+          "AGREED": "Olemme yhdessä sopineet hakemisesta lomakkeen tietojen mukaisesti",
           "NOT_AGREED": "Emme ole voineet sopia hakemuksen tekemisestä yhdessä",
           "RIGHT_TO_GET_NOTIFIED": "Toisella huoltajalla on vain tiedonsaantioikeus"
         },

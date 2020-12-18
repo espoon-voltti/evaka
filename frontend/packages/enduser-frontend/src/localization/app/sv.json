@@ -571,6 +571,16 @@
           "lastName": "Efternamn",
           "ssn": "Personbeteckning"
         },
+        "guardian2": {
+          "other-vtj-guardian-exists-different-address-info": "Enligt våra uppgifter bor barnets andra vårdnadshavare på en annan adress. Du ska avtala om ansökan om småbarnspedagogik med en annan vårdnadshavare.",
+          "agreement-status": {
+            "title": "Avtal med en annan vårdnadshavare",
+            "NOT_SET": "Har du kommit överens om ansökan med en annan vårdnadshavare?",
+            "AGREED": "Vi har tillsammans kommit överens att fylla i ansökan",
+            "NOT_AGREED": "Vi har inte kunnat komma överens om ansökan",
+            "RIGHT_TO_GET_NOTIFIED": "Den andra vårdnadshavaren har endast rätt att få uppgifter om barnet"
+          }
+        },
         "guardian-required-details": "Vårdnadshavarens namn och telefonnummer är obligatoriska uppgifter. Ange en e-postadress om det är möjligt.",
         "ssn": "Henkilötunnus",
         "street": "Gatuadress",
@@ -605,7 +615,7 @@
       "title": "Anmälan till förskoleundervisning",
       "title-transfer": "Ansökan om överföring (förskoleundervisning)",
       "text": [
-        "Barn deltar i förskoleundervisning året innan läroplikten börjar. Förskoleundervisningen är avgiftsfri. Anmälningstiden till förskoleundervisningen 2020–2021 är 8–20.1.2020. Förskolan börjar i de svenska förskolorna 18.8.2020 och i de finska förskolorna 13.8.2020. Beslutet delges inom mars i <a href=\"https://www.suomi.fi/meddelanden\" target=\"_blank\" rel=\"noreferrer\">Suomi.fi-meddelandetjänsten</a> eller per post om du inte tagit i bruk <a href=\"https://www.suomi.fi/meddelanden\" target=\"_blank\" rel=\"noreferrer\">meddelandetjänsten i Suomi.fi</a>.",
+        "Barn deltar i förskoleundervisning året innan läroplikten börjar. Förskoleundervisningen är avgiftsfri. Anmälningstiden till förskoleundervisningen 2021–2022 är 8.–20.1.2020. Förskolan börjar i <strong>11.8.2021</strong>. Beslutet delges inom mars i <a href=\"https://www.suomi.fi/meddelanden\" target=\"_blank\" rel=\"noreferrer\">Suomi.fi-meddelandetjänsten</a> eller per post om du inte tagit i bruk <a href=\"https://www.suomi.fi/meddelanden\" target=\"_blank\" rel=\"noreferrer\">meddelandetjänsten i Suomi.fi</a>.",
         "Nämnden Svenska rum fastställer antalet förskoleplatser årligen. Förskoleundervisning ordnas i stadens daghem och förskolor.",
         "* Informationen markerad med en stjärna krävs"
       ],
@@ -626,8 +636,9 @@
           }
         },
         "startDate": {
-          "description": "Förskolan börjar i de svenska förskolorna <strong>18.8.2020</strong> och i de finska förskolorna <strong>13.8.2020</strong>.<br/>Om ditt barn behöver småbarnspedagogisk verksamhet fr.o.m. 1.8.2020 före förskolan börjar kan du ansöka om sådan med denna blankett. Välj ”Jag ansöker om småbarnspedagogik i samband med förskoleundervisning”.",
-          "label": "Inledningsdatum i augusti",
+          "description": "Förskolan börjar i <strong>11.8.2021</strong>.",
+          "description2": "<br>Om ditt barn behöver småbarnspedagogisk verksamhet fr.o.m. 1.8.2021 före förskolan börjar kan du ansöka om sådan med denna blankett. Välj ”Jag ansöker om småbarnspedagogik i samband med förskoleundervisning”.",
+          "label": "Inledningsdatum",
           "placeholder": "Välj datum",
           "validationText": "Önskat inledningsdatum: "
         },
@@ -676,7 +687,17 @@
         }
       },
       "personalInfo": {
-        "title": "Personuppgifter"
+        "title": "Personuppgifter",
+        "guardian2": {
+          "other-vtj-guardian-exists-different-address-info": "Enligt våra uppgifter bor barnets andra vårdnadshavare på en annan adress. Du behöver överenskomma om ansökan om förskola med den andra vårdnadshavaren.",
+          "agreement-status": {
+            "title": "Avtal med en annan vårdnadshavare",
+            "NOT_SET": "Har du kommit överens om ansökan med en annan vårdnadshavare?",
+            "AGREED": "Vi har tillsammans kommit överens att fylla i ansökan",
+            "NOT_AGREED": "Vi har inte kunnat komma överens om ansökan",
+            "RIGHT_TO_GET_NOTIFIED": "Den andra vårdnadshavaren har endast rätt att få uppgifter om barnet"
+          }
+        }
       },
       "siblingBasis": {
         "title": "Ansökan till en annan förskola än närförskolan"
@@ -814,7 +835,7 @@
         "separate-address": "Lapsen toinen huoltaja asuu eri taloudessa ja on tietoinen hakemuksesta.",
         "separate-address-daycare": "Den andra vårdnadshavaren bor på en annan adress.",
         "separate-address-preschool": "Den andra vårdnadshavaren bor på en annan adress.",
-        "daycare-second-guardian-has-agreed-true": "Vi har tillsammans kommit överens om att ansöka om småbarnspedagogisk verksamhet enligt uppgifterna i ansökan.",
+        "daycare-second-guardian-has-agreed-true": "Vi har tillsammans överenskommit om att ansöka om småbarnspedagogik enligt uppgifterna i blanketten.",
         "preschool-second-guardian-has-agreed-true": "Vi har tillsammans kommit överens om att barnet ansöker till förskoleundervisning enligt uppgifterna i blanketten.",
         "second-guardian-has-agreed-false": "Vi har inte kunnat komma överens om att göra ansökan / Den andra vårdnadshavaren har endast rätt att få uppgifter.",
         "optional-second-guardian-information": "Den andra vårdnadshavarens namn är en obligatorisk uppgift. Fyll i de övriga uppgifterna om det är möjligt.",

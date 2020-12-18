@@ -721,7 +721,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
                       >
                         {{
                           $t(
-                            'form.persons.guardian2.other-vtj-guardian-exists-different-address-info'
+                            `form.${type}-application.personalInfo.guardian2.other-vtj-guardian-exists-different-address-info`
                           )
                         }}
                       </c-content>
@@ -731,7 +731,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
                         name="otherGuardianAgreementStatus"
                         inputValue="AGREED"
                         :label="
-                          $t(`form.persons.guardian2.agreement-status.AGREED`)
+                          $t(`form.${type}-application.personalInfo.guardian2.agreement-status.AGREED`)
                         "
                         data-qa="agreement-status-agreed"
                       ></c-radio>
@@ -742,7 +742,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
                         inputValue="NOT_AGREED"
                         :label="
                           $t(
-                            `form.persons.guardian2.agreement-status.NOT_AGREED`
+                            `form.${type}-application.personalInfo.guardian2.agreement-status.NOT_AGREED`
                           )
                         "
                         data-qa="agreement-status-not-agreed"
@@ -754,7 +754,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
                         inputValue="RIGHT_TO_GET_NOTIFIED"
                         :label="
                           $t(
-                            `form.persons.guardian2.agreement-status.RIGHT_TO_GET_NOTIFIED`
+                            `form.${type}-application.personalInfo.guardian2.agreement-status.RIGHT_TO_GET_NOTIFIED`
                           )
                         "
                         data-qa="agreement-status-right-to-get-notified"
