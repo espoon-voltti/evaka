@@ -1196,7 +1196,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
           : minimumDaycareStartdate()
       },
       maximumStartDate(): null | string {
-        if(this.isPreschool && new Date() < new Date('2020-01-08')){
+        if(this.isPreschool && new Date() < new Date('2021-01-08')){
           return '2021-06-04'
         } else {
           return null
