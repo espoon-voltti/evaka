@@ -131,6 +131,17 @@ SPDX-License-Identifier: LGPL-2.1-or-later
                   <c-message-box
                     title
                     :narrow="true"
+                    v-if="hasOutsidePreschoolTermError"
+                  >
+                    <div>
+                      {{
+                        this.$t('validation.errors.outside-preschool-term').toString()
+                      }}
+                    </div>
+                  </c-message-box>
+                  <c-message-box
+                    title
+                    :narrow="true"
                     v-if="startdateIsUnderFourMonths && !isPreschool"
                   >
                     <div>
@@ -1076,509 +1087,522 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 </template>
 
 <script lang="ts">
-  import _ from 'lodash'
-  import Vue from 'vue'
-  import router from '@/router'
-  import { mapGetters } from 'vuex'
-  import { config } from '@evaka/enduser-frontend/src/config'
-  import DaycareSelectList from './daycare-select-list.vue'
-  import SortableUnitList from '@/components/unit-list/sortable-unit-list.vue'
-  import { Unit } from '@/types'
-  import {
-    APPLICATION_STATUS,
-    LANGUAGES,
-    PRESCHOOL_START_DATE_FI,
-    PRESCHOOL_START_DATE_SV
-  } from '@/constants'
-  import ChildInfo from '../shared/child-info.vue'
-  import GuardianInfo from '../shared/guardian-info.vue'
-  import Person from '../shared/person.vue'
-  import {
-    createPerson,
-    createDaycareForm,
-    createPreschoolForm,
-    DAYCARE_SECTION,
-    createDaycareSectionError,
-    PreschoolFormModel
-  } from '../shared/types'
-  import Confirm from '@/components/modal/confirm.vue'
-  import ApplicationSummary from '@/views/applications/daycare-application/form-components/summary/application-summary.vue'
-  import CForm from '@/components/styleguide/c-form'
-  import CTimeInput, {
-    removeSeconds
-  } from '@/components/styleguide/c-time-input'
-  import { scrollToTop } from '@/utils/scroll-to-element'
-  import {
-    minimumDaycareStartdate,
-    isUnderFourMonths,
-    datepickerTodayFormat
-  } from '@/utils/date-utils'
-  import { withAsterisk } from '@/utils/helpers'
-  import { resetGuardian2Info } from '@evaka/lib-common/src/utils/form'
-  import { isValidTimeString } from '@/components/validation/validators'
-  import { formatDate } from '@/utils/date-utils'
-  import { DATE_FORMAT } from '@/constants'
-  import FileUpload from '@/components/common/file-upload.vue'
+import _ from 'lodash'
+import Vue from 'vue'
+import router from '@/router'
+import { mapGetters } from 'vuex'
+import { config } from '@evaka/enduser-frontend/src/config'
+import DaycareSelectList from './daycare-select-list.vue'
+import SortableUnitList from '@/components/unit-list/sortable-unit-list.vue'
+import { Unit } from '@/types'
+import {
+  APPLICATION_STATUS,
+  LANGUAGES,
+  PRESCHOOL_START_DATE_FI,
+  PRESCHOOL_START_DATE_SV
+} from '@/constants'
+import ChildInfo from '../shared/child-info.vue'
+import GuardianInfo from '../shared/guardian-info.vue'
+import Person from '../shared/person.vue'
+import {
+  createPerson,
+  createDaycareForm,
+  createPreschoolForm,
+  DAYCARE_SECTION,
+  createDaycareSectionError,
+  PreschoolFormModel
+} from '../shared/types'
+import Confirm from '@/components/modal/confirm.vue'
+import ApplicationSummary from '@/views/applications/daycare-application/form-components/summary/application-summary.vue'
+import CForm from '@/components/styleguide/c-form'
+import CTimeInput, {
+  removeSeconds
+} from '@/components/styleguide/c-time-input'
+import { scrollToTop } from '@/utils/scroll-to-element'
+import {
+  minimumDaycareStartdate,
+  isUnderFourMonths,
+  datepickerTodayFormat
+} from '@/utils/date-utils'
+import { withAsterisk } from '@/utils/helpers'
+import { resetGuardian2Info } from '@evaka/lib-common/src/utils/form'
+import { isValidTimeString } from '@/components/validation/validators'
+import { formatDate } from '@/utils/date-utils'
+import { DATE_FORMAT } from '@/constants'
+import FileUpload from '@/components/common/file-upload.vue'
 
-  export default Vue.extend({
-    props: {
-      isPreschool: {
-        type: Boolean,
-        default: false
+export default Vue.extend({
+  props: {
+    isPreschool: {
+      type: Boolean,
+      default: false
+    }
+  },
+  components: {
+    DaycareSelectList,
+    SortableUnitList,
+    // MapModal,
+    ChildInfo,
+    GuardianInfo,
+    Person,
+    Confirm,
+    ApplicationSummary,
+    CForm,
+    CTimeInput
+  },
+  data() {
+    return {
+      loading: false,
+      isDirty: false,
+      isChecked: false,
+      applicationLoaded: false,
+      activeSection: DAYCARE_SECTION.service,
+      model: this.isPreschool ? createPreschoolForm() : createDaycareForm(),
+      confirmRouteLeave: true,
+      showSummary: false,
+      validations: {},
+      sections: DAYCARE_SECTION,
+      errors: createDaycareSectionError(),
+      isValid: true,
+      summaryChecked: false,
+      guardianRequired: true,
+      language: [this.$t('constants.language.FI.value')],
+      debouncedValidate: _.debounce(() => false)
+    }
+  },
+  computed: {
+    ...mapGetters(['daycareForm', 'applicationUnits', 'urgentFiles', 'extendedCareFiles', 'originalPreferredStartDate']),
+    id(): string {
+      return this.$route.params.id
+    },
+    locale(): string {
+      return this.$i18n.locale
+    },
+    currentLocaleIsSwedish(): boolean {
+      return this.locale.toLowerCase() === LANGUAGES.SV
+    },
+    languages(): any {
+      return Object.values(
+        this.$t('constants.language', { returnObjects: true })
+      )
+    },
+    showDailyTime(): boolean {
+      return (
+        (this.isPreschool &&
+          (this.model as PreschoolFormModel).connectedDaycare) ||
+        !this.isPreschool
+      )
+    },
+    formattedStartDate(): string | null {
+      return this.model.preferredStartDate
+        ? formatDate(this.model.preferredStartDate, DATE_FORMAT)
+        : ''
+    },
+    minimumStartdate(): null | string {
+      // If application is already sent, the preferred start date can only be moved forward
+      return (this.model.status.value !== 'CREATED' && this.originalPreferredStartDate) ?
+        this.originalPreferredStartDate
+      : this.isPreschool
+        ? datepickerTodayFormat()
+        : minimumDaycareStartdate()
+    },
+    maximumStartDate(): null | string {
+      if(this.isPreschool && new Date() < new Date('2021-01-08')){
+        return '2021-06-04'
+      } else {
+        return null
       }
     },
-    components: {
-      DaycareSelectList,
-      SortableUnitList,
-      // MapModal,
-      ChildInfo,
-      GuardianInfo,
-      Person,
-      Confirm,
-      ApplicationSummary,
-      CForm,
-      CTimeInput
-    },
-    data() {
-      return {
-        loading: false,
-        isDirty: false,
-        isChecked: false,
-        applicationLoaded: false,
-        activeSection: DAYCARE_SECTION.service,
-        model: this.isPreschool ? createPreschoolForm() : createDaycareForm(),
-        confirmRouteLeave: true,
-        showSummary: false,
-        validations: {},
-        sections: DAYCARE_SECTION,
-        errors: createDaycareSectionError(),
-        isValid: true,
-        summaryChecked: false,
-        guardianRequired: true,
-        language: [this.$t('constants.language.FI.value')],
-        debouncedValidate: _.debounce(() => false)
+    hasOutsidePreschoolTermError(): boolean {
+      const date = this.model.preferredStartDate ? new Date(this.model.preferredStartDate) : null
+      if(!this.isPreschool || !date) {
+        return false
       }
-    },
-    computed: {
-      ...mapGetters(['daycareForm', 'applicationUnits', 'urgentFiles', 'extendedCareFiles', 'originalPreferredStartDate']),
-      id(): string {
-        return this.$route.params.id
-      },
-      locale(): string {
-        return this.$i18n.locale
-      },
-      currentLocaleIsSwedish(): boolean {
-        return this.locale.toLowerCase() === LANGUAGES.SV
-      },
-      languages(): any {
-        return Object.values(
-          this.$t('constants.language', { returnObjects: true })
-        )
-      },
-      showDailyTime(): boolean {
-        return (
-          (this.isPreschool &&
-            (this.model as PreschoolFormModel).connectedDaycare) ||
-          !this.isPreschool
-        )
-      },
-      formattedStartDate(): string | null {
-        return this.model.preferredStartDate
-          ? formatDate(this.model.preferredStartDate, DATE_FORMAT)
-          : ''
-      },
-      minimumStartdate(): null | string {
-        // If application is already sent, the preferred start date can only be moved forward
-        return (this.model.status.value !== 'CREATED' && this.originalPreferredStartDate) ?
-          this.originalPreferredStartDate
-        : this.isPreschool
-          ? datepickerTodayFormat()
-          : minimumDaycareStartdate()
-      },
-      maximumStartDate(): null | string {
-        if(this.isPreschool && new Date() < new Date('2021-01-08')){
-          return '2021-06-04'
-        } else {
-          return null
-        }
-      },
-      startdateIsUnderFourMonths(): boolean {
-        return this.model.preferredStartDate
-          ? isUnderFourMonths(this.model.preferredStartDate)
-          : false
-      },
-      isLoading(): boolean {
-        return this.loading
-      },
-      type(): string {
-        return this.model.type.value
-      },
-      maxUnitsSelected(): boolean {
-        return this.preferredUnits.length >= 3
-      },
-      preferredUnits(): string[] {
-        return this.model.apply.preferredUnits
-      },
-      formIsValid(): boolean {
-        const form = this.$refs.form as any
-        return !form.validationErrors.length
-      },
-      isNewApplication(): boolean {
-        return localStorage.getItem('isNew') === 'true'
-      },
-      hasCreatedStatus(): boolean {
-        return (
-          (this as any).model.status.value === APPLICATION_STATUS.CREATED.value
-        )
-      },
-      startDateShouldBeEditable(): boolean {
-        return (
-          [APPLICATION_STATUS.SENT.value, APPLICATION_STATUS.CREATED.value].includes((this as any).model.status.value)
-        )
-      },
-      errorSections() {
-        return Object.keys(this.errors)
-          .filter((key) => this.errors[key].length > 0)
-          .reduce((obj, key) => {
-            obj[key] = this.errors[key]
-            return obj
-          }, {})
-      },
-      isOtherGuardianInfoNeeded(): boolean {
-        return this.model.otherGuardianAgreementStatus === 'NOT_AGREED'
-      },
-      hasOtherVtjGuardianInSameAddress(): boolean {
-        return (
-          this.model.hasOtherVtjGuardian &&
-          this.model.otherVtjGuardianHasSameAddress
-        )
-      },
-      showMaxFeeAccepted(): boolean {
-        return (
-          !this.isPreschool ||
-          (this.model as PreschoolFormModel).connectedDaycare
-        )
-      },
-      attachmentsEnabled() {
-        return config.feature.attachments
-      }
-    },
-    filters: {
-      filterByLanguage(units: any, language: string): any[] {
-        if (!units) {
-          return []
-        }
-        return units.filter((unit) =>
-          language.includes(unit.language.toUpperCase())
-        )
-      }
-    },
-    methods: {
-      uploadUrgencyAttachment(file) {
-        this.$store.dispatch('addUrgencyAttachment', {
-          file,
-          applicationId: this.id
-        })
-      },
-      uploadExtendedCareAttachment(file) {
-        this.$store.dispatch('addExtendedCareAttachment', {
-          file,
-          applicationId: this.id
-        })
-      },
-      deleteUrgencyAttachment(file) {
-        this.$store.dispatch('deleteUrgencyAttachment', file)
-      },
-      deleteExtendedCareAttachment(file) {
-        this.$store.dispatch('deleteExtendedCareAttachment', file)
-      },
-      onAssistanceNeededChanged(): void {
-        if (!this.model.careDetails.assistanceNeeded) {
-          this.model.careDetails.assistanceDescription = ''
-        }
-      },
-      emptyGuardian2Info(resetnameInfo: boolean): void {
-        this.model = resetGuardian2Info(resetnameInfo, this.model)
-      },
-      onOtherAdultsChanged(form: PreschoolFormModel): void {
-        if (form.hasOtherAdults) {
-          this.addOtherAdult()
-        } else {
-          this.model.otherAdults = []
-        }
-      },
-      onPreparatoryChanged() {
-        this.reloadUnits()
-      },
-      preferredUnitsValidationText() {
-        return this.$t(
-          'form.daycare-application.preferredUnits.unit-required-validation'
-        ).toString()
-      },
-      serviceTimeValidationText() {
-        return (
-          this.$t(
-            'form.daycare-application.service.dailyTime.label'
-          ).toString() +
-          this.$t('validation.errors.is-required-field').toString()
-        )
-      },
-      onSiblingBasisClicked() {
-        if (!this.model.apply.siblingBasis) {
-          this.model.apply.siblingName = ''
-          this.model.apply.siblingSsn = ''
-        }
-      },
-      validateForm() {
-        this.debouncedValidate.cancel()
-        this.errors = createDaycareSectionError()
-        const form = this.$refs.form as any
-        const validate = form.validate()
-        const errors = _.filter(
-          validate,
-          (validation) => validation.errors.length > 0
-        )
 
-        let formIsValid = this.formIsValid
+      return date >= new Date('2021-06-05') && date < new Date('2021-08-01')
+    },
+    startdateIsUnderFourMonths(): boolean {
+      return this.model.preferredStartDate
+        ? isUnderFourMonths(this.model.preferredStartDate)
+        : false
+    },
+    isLoading(): boolean {
+      return this.loading
+    },
+    type(): string {
+      return this.model.type.value
+    },
+    maxUnitsSelected(): boolean {
+      return this.preferredUnits.length >= 3
+    },
+    preferredUnits(): string[] {
+      return this.model.apply.preferredUnits
+    },
+    formIsValid(): boolean {
+      const form = this.$refs.form as any
+      return !form.validationErrors.length
+    },
+    isNewApplication(): boolean {
+      return localStorage.getItem('isNew') === 'true'
+    },
+    hasCreatedStatus(): boolean {
+      return (
+        (this as any).model.status.value === APPLICATION_STATUS.CREATED.value
+      )
+    },
+    startDateShouldBeEditable(): boolean {
+      return (
+        [APPLICATION_STATUS.SENT.value, APPLICATION_STATUS.CREATED.value].includes((this as any).model.status.value)
+      )
+    },
+    errorSections() {
+      return Object.keys(this.errors)
+        .filter((key) => this.errors[key].length > 0)
+        .reduce((obj, key) => {
+          obj[key] = this.errors[key]
+          return obj
+        }, {})
+    },
+    isOtherGuardianInfoNeeded(): boolean {
+      return this.model.otherGuardianAgreementStatus === 'NOT_AGREED'
+    },
+    hasOtherVtjGuardianInSameAddress(): boolean {
+      return (
+        this.model.hasOtherVtjGuardian &&
+        this.model.otherVtjGuardianHasSameAddress
+      )
+    },
+    showMaxFeeAccepted(): boolean {
+      return (
+        !this.isPreschool ||
+        (this.model as PreschoolFormModel).connectedDaycare
+      )
+    },
+    attachmentsEnabled() {
+      return config.feature.attachments
+    }
+  },
+  filters: {
+    filterByLanguage(units: any, language: string): any[] {
+      if (!units) {
+        return []
+      }
+      return units.filter((unit) =>
+        language.includes(unit.language.toUpperCase())
+      )
+    }
+  },
+  methods: {
+    uploadUrgencyAttachment(file) {
+      this.$store.dispatch('addUrgencyAttachment', {
+        file,
+        applicationId: this.id
+      })
+    },
+    uploadExtendedCareAttachment(file) {
+      this.$store.dispatch('addExtendedCareAttachment', {
+        file,
+        applicationId: this.id
+      })
+    },
+    deleteUrgencyAttachment(file) {
+      this.$store.dispatch('deleteUrgencyAttachment', file)
+    },
+    deleteExtendedCareAttachment(file) {
+      this.$store.dispatch('deleteExtendedCareAttachment', file)
+    },
+    onAssistanceNeededChanged(): void {
+      if (!this.model.careDetails.assistanceNeeded) {
+        this.model.careDetails.assistanceDescription = ''
+      }
+    },
+    emptyGuardian2Info(resetnameInfo: boolean): void {
+      this.model = resetGuardian2Info(resetnameInfo, this.model)
+    },
+    onOtherAdultsChanged(form: PreschoolFormModel): void {
+      if (form.hasOtherAdults) {
+        this.addOtherAdult()
+      } else {
+        this.model.otherAdults = []
+      }
+    },
+    onPreparatoryChanged() {
+      this.reloadUnits()
+    },
+    preferredUnitsValidationText() {
+      return this.$t(
+        'form.daycare-application.preferredUnits.unit-required-validation'
+      ).toString()
+    },
+    serviceTimeValidationText() {
+      return (
+        this.$t(
+          'form.daycare-application.service.dailyTime.label'
+        ).toString() +
+        this.$t('validation.errors.is-required-field').toString()
+      )
+    },
+    onSiblingBasisClicked() {
+      if (!this.model.apply.siblingBasis) {
+        this.model.apply.siblingName = ''
+        this.model.apply.siblingSsn = ''
+      }
+    },
+    validateForm() {
+      this.debouncedValidate.cancel()
+      this.errors = createDaycareSectionError()
+      const form = this.$refs.form as any
+      const validate = form.validate()
+      const errors = _.filter(
+        validate,
+        (validation) => validation.errors.length > 0
+      )
 
-        _.forEach(errors, (error) => {
-          const key = error.errors[0].key
-          const simpleMessage = error.errors[0].simpleMessage
-          const validationName = error.errors[0].validationName
-          const findKey = _.findKey(this.validations, key) as string
-          if (findKey) {
-            this.errors[findKey].push(
-              validationName + this.$t(simpleMessage).toString()
-            )
-            formIsValid = false
-          }
-        })
-        if (this.preferredUnits.length === 0) {
-          this.errors.preferredUnits.push(this.preferredUnitsValidationText())
+      let formIsValid = this.formIsValid
+
+      _.forEach(errors, (error) => {
+        const key = error.errors[0].key
+        const simpleMessage = error.errors[0].simpleMessage
+        const validationName = error.errors[0].validationName
+        const findKey = _.findKey(this.validations, key) as string
+        if (findKey) {
+          this.errors[findKey].push(
+            validationName + this.$t(simpleMessage).toString()
+          )
           formIsValid = false
         }
+      })
+      if (this.preferredUnits.length === 0) {
+        this.errors.preferredUnits.push(this.preferredUnitsValidationText())
+        formIsValid = false
+      }
 
+      if (
+        this.showDailyTime &&
+        (!this.model.serviceStart || !this.model.serviceEnd)
+      ) {
+        this.errors.service.push(this.serviceTimeValidationText())
+        formIsValid = false
+      }
+
+      if (this.hasOutsidePreschoolTermError) {
+        this.errors.service.push(this.$t('validation.errors.outside-preschool-term').toString())
+        formIsValid = false
+      }
+
+      if (
+        this.model.hasOtherVtjGuardian &&
+        !this.model.otherVtjGuardianHasSameAddress &&
+        this.model.otherGuardianAgreementStatus === null
+      ) {
         if (
-          this.showDailyTime &&
-          (!this.model.serviceStart || !this.model.serviceEnd)
+          !this.errors.personalInfo.includes(
+            this.$t(
+              'form.persons.guardian2.agreement-status.NOT_SET'
+            ).toString()
+          )
         ) {
-          this.errors.service.push(this.serviceTimeValidationText())
-          formIsValid = false
+          this.errors.personalInfo.push(
+            this.$t(
+              'form.persons.guardian2.agreement-status.NOT_SET'
+            ).toString()
+          )
         }
+        formIsValid = false
+      }
 
-        if (
-          this.model.hasOtherVtjGuardian &&
-          !this.model.otherVtjGuardianHasSameAddress &&
-          this.model.otherGuardianAgreementStatus === null
-        ) {
-          if (
-            !this.errors.personalInfo.includes(
-              this.$t(
-                'form.persons.guardian2.agreement-status.NOT_SET'
-              ).toString()
-            )
-          ) {
-            this.errors.personalInfo.push(
-              this.$t(
-                'form.persons.guardian2.agreement-status.NOT_SET'
-              ).toString()
-            )
-          }
-          formIsValid = false
-        }
+      return formIsValid
+    },
+    toSummary() {
+      this.isChecked = true
+      this.isValid = this.validateForm()
+      this.showSummary = this.isValid
+      scrollToTop()
+      if (!this.isValid) {
+        this.showErrorMessage()
+      }
+    },
+    showErrorMessage() {
+      this.$store.dispatch('modals/message', {
+        type: 'warning',
+        title: this.$t('form.error.title'),
+        text: this.$t('form.error.text')
+      })
+    },
+    addUnit(unit: Unit) {
+      this.model.apply.preferredUnits.push(unit.id)
+    },
+    removeUnit(id: string) {
+      this.model.apply.preferredUnits = [
+        ...this.model.apply.preferredUnits.filter((u) => u !== id)
+      ]
+    },
+    addOtherAdult() {
+      this.model.otherAdults.push(createPerson())
+    },
+    addOtherChildren() {
+      this.model.otherChildren.push(createPerson())
+    },
+    removeOtherChildren(index) {
+      this.model.otherChildren.splice(index, 1)
+    },
+    toggleActiveSection(name: string): void {
+      const alreadyOpen = this.activeSection === name
+      this.activeSection = alreadyOpen ? '' : name
+    },
+    confirmLeave(onConfirm) {
+      const action = this.isNewApplication ? this.deleteForm : this.nop
+      const confirmCancel = this.isDirty
+        ? (this.$refs.confirmCancel as any).open()
+        : Promise.resolve()
+      confirmCancel.then(() => {
+        action()
+        return onConfirm()
+      }, this.nop)
+    },
+    reloadUnits() {
+      const date = this.model.preferredStartDate || this.minimumStartdate
+      const type = this.isPreschool
+        ? this.model.careDetails.preparatory
+          ? 'PREPARATORY'
+          : 'PRESCHOOL'
+        : 'DAYCARE'
+      this.$store.dispatch('loadApplicationUnits', { type, date })
+    },
+    nop() {
+      // no op
+    },
+    onSend() {
+      if (this.summaryChecked) {
+        this.hasCreatedStatus ? this.sendAndExit() : this.saveAndExit()
+      }
+    },
+    goBack() {
+      this.confirmRouteLeave = false
+      return history.go(-1)
+    },
+    onCancel() {
+      this.confirmLeave(this.goBack)
+    },
+    async saveAndExit() {
+      this.loading = true
 
-        return formIsValid
-      },
-      toSummary() {
-        this.isChecked = true
-        this.isValid = this.validateForm()
-        this.showSummary = this.isValid
-        scrollToTop()
-        if (!this.isValid) {
-          this.showErrorMessage()
-        }
-      },
-      showErrorMessage() {
-        this.$store.dispatch('modals/message', {
-          type: 'warning',
-          title: this.$t('form.error.title'),
-          text: this.$t('form.error.text')
+      // ensure invalid time value does not cause serialization issues in the backend
+      if (!isValidTimeString(this.model.serviceStart)) {
+        this.model.serviceStart = ''
+      }
+      if (!isValidTimeString(this.model.serviceEnd)) {
+        this.model.serviceEnd = ''
+      }
+
+      const id = await this.$store
+        .dispatch('saveApplication', {
+          type: this.type,
+          applicationId: this.id,
+          form: this.model
         })
-      },
-      addUnit(unit: Unit) {
-        this.model.apply.preferredUnits.push(unit.id)
-      },
-      removeUnit(id: string) {
-        this.model.apply.preferredUnits = [
-          ...this.model.apply.preferredUnits.filter((u) => u !== id)
-        ]
-      },
-      addOtherAdult() {
-        this.model.otherAdults.push(createPerson())
-      },
-      addOtherChildren() {
-        this.model.otherChildren.push(createPerson())
-      },
-      removeOtherChildren(index) {
-        this.model.otherChildren.splice(index, 1)
-      },
-      toggleActiveSection(name: string): void {
-        const alreadyOpen = this.activeSection === name
-        this.activeSection = alreadyOpen ? '' : name
-      },
-      confirmLeave(onConfirm) {
-        const action = this.isNewApplication ? this.deleteForm : this.nop
-        const confirmCancel = this.isDirty
-          ? (this.$refs.confirmCancel as any).open()
-          : Promise.resolve()
-        confirmCancel.then(() => {
-          action()
-          return onConfirm()
-        }, this.nop)
-      },
-      reloadUnits() {
-        const date = this.model.preferredStartDate || this.minimumStartdate
-        const type = this.isPreschool
-          ? this.model.careDetails.preparatory
-            ? 'PREPARATORY'
-            : 'PRESCHOOL'
-          : 'DAYCARE'
-        this.$store.dispatch('loadApplicationUnits', { type, date })
-      },
-      nop() {
-        // no op
-      },
-      onSend() {
-        if (this.summaryChecked) {
-          this.hasCreatedStatus ? this.sendAndExit() : this.saveAndExit()
-        }
-      },
-      goBack() {
+        .finally(() => {
+          this.loading = false
+        })
+
+      if (id !== null) {
         this.confirmRouteLeave = false
-        return history.go(-1)
-      },
-      onCancel() {
-        this.confirmLeave(this.goBack)
-      },
-      async saveAndExit() {
-        this.loading = true
-
-        // ensure invalid time value does not cause serialization issues in the backend
-        if (!isValidTimeString(this.model.serviceStart)) {
-          this.model.serviceStart = ''
-        }
-        if (!isValidTimeString(this.model.serviceEnd)) {
-          this.model.serviceEnd = ''
-        }
-
-        const id = await this.$store
-          .dispatch('saveApplication', {
-            type: this.type,
-            applicationId: this.id,
-            form: this.model
-          })
-          .finally(() => {
-            this.loading = false
-          })
-
-        if (id !== null) {
+        router.push('/applications')
+      }
+    },
+    sendAndExit() {
+      this.loading = true
+      this.$store
+        .dispatch('sendApplication', {
+          type: this.type,
+          applicationId: this.id,
+          form: this.model
+        })
+        .then(() => {
           this.confirmRouteLeave = false
           router.push('/applications')
-        }
-      },
-      sendAndExit() {
-        this.loading = true
-        this.$store
-          .dispatch('sendApplication', {
-            type: this.type,
-            applicationId: this.id,
-            form: this.model
-          })
-          .then(() => {
-            this.confirmRouteLeave = false
-            router.push('/applications')
-          })
-          .finally(() => {
-            this.loading = false
-          })
-      },
-      deleteForm() {
-        this.$store.dispatch('removeApplication', {
-          type: this.type,
-          applicationId: this.id
         })
-      },
-      summaryCheckedChanged(value) {
-        this.summaryChecked = value
-      },
-      closeSummary() {
-        this.showSummary = false
-      },
-      withAsterisk
+        .finally(() => {
+          this.loading = false
+        })
     },
-    beforeRouteLeave(to, from, next) {
-      this.confirmRouteLeave ? this.confirmLeave(next) : next()
-    },
-    async created() {
-      this.loading = true
-      this.debouncedValidate = _.debounce(this.validateForm, 500)
-      await this.$store.dispatch('loadApplication', {
+    deleteForm() {
+      this.$store.dispatch('removeApplication', {
         type: this.type,
         applicationId: this.id
       })
-      this.model = _.cloneDeep((this as any).daycareForm)
-      if (
-        !this.model.preferredStartDate ||
-        this.model.preferredStartDate === ''
-      ) {
-        if (this.isPreschool) {
-          this.model.preferredStartDate = this.currentLocaleIsSwedish
-            ? PRESCHOOL_START_DATE_SV
-            : PRESCHOOL_START_DATE_FI
-        } else {
-          this.model.preferredStartDate = ''
-        }
-      }
+    },
+    summaryCheckedChanged(value) {
+      this.summaryChecked = value
+    },
+    closeSummary() {
+      this.showSummary = false
+    },
+    withAsterisk
+  },
+  beforeRouteLeave(to, from, next) {
+    this.confirmRouteLeave ? this.confirmLeave(next) : next()
+  },
+  async created() {
+    this.loading = true
+    this.debouncedValidate = _.debounce(this.validateForm, 500)
+    await this.$store.dispatch('loadApplication', {
+      type: this.type,
+      applicationId: this.id
+    })
+    this.model = _.cloneDeep((this as any).daycareForm)
+    if (
+      !this.model.preferredStartDate ||
+      this.model.preferredStartDate === ''
+    ) {
       if (this.isPreschool) {
-        this.model.serviceStart = removeSeconds(this.model.serviceStart)
-        this.model.serviceEnd = removeSeconds(this.model.serviceEnd)
+        this.model.preferredStartDate = this.currentLocaleIsSwedish
+          ? PRESCHOOL_START_DATE_SV
+          : PRESCHOOL_START_DATE_FI
+      } else {
+        this.model.preferredStartDate = ''
       }
-      this.reloadUnits()
-      this.loading = false
-      // When this page/component is loaded, Vue modifies "this.model" twice.
-      // This causes a small problem, since "this.model" is also being watched for any changes (to allow isDirty = true);
-      // The timeout waits for initial changes to take place with "this.model" before allowing "this.isDirty" to be set to "true"
-      setTimeout(() => (this.applicationLoaded = true), 1000)
-    },
-    beforeDestroy() {
-      this.debouncedValidate.cancel()
-    },
-    watch: {
-      model: {
-        handler(val, oldVal) {
-          if (this.isChecked) {
-            this.isValid = this.debouncedValidate()
-          }
-          if (this.applicationLoaded) {
-            this.isDirty = true
-          }
-          if (oldVal.preferredStartDate !== val.preferredStartDate) {
-            this.reloadUnits()
-          }
-        },
-        deep: true
+    }
+    if (this.isPreschool) {
+      this.model.serviceStart = removeSeconds(this.model.serviceStart)
+      this.model.serviceEnd = removeSeconds(this.model.serviceEnd)
+    }
+    this.reloadUnits()
+    this.loading = false
+    // When this page/component is loaded, Vue modifies "this.model" twice.
+    // This causes a small problem, since "this.model" is also being watched for any changes (to allow isDirty = true);
+    // The timeout waits for initial changes to take place with "this.model" before allowing "this.isDirty" to be set to "true"
+    setTimeout(() => (this.applicationLoaded = true), 1000)
+  },
+  beforeDestroy() {
+    this.debouncedValidate.cancel()
+  },
+  watch: {
+    model: {
+      handler(val, oldVal) {
+        if (this.isChecked) {
+          this.isValid = this.debouncedValidate()
+        }
+        if (this.applicationLoaded) {
+          this.isDirty = true
+        }
+        if (oldVal.preferredStartDate !== val.preferredStartDate) {
+          this.reloadUnits()
+        }
       },
-      applicationUnits: {
-        handler() {
-          if (!this.applicationUnits.loading) {
-            this.model.apply.preferredUnits = this.model.apply.preferredUnits.filter(
-              (id) => this.applicationUnits.data.some((unit) => unit.id === id)
-            )
-          }
+      deep: true
+    },
+    applicationUnits: {
+      handler() {
+        if (!this.applicationUnits.loading) {
+          this.model.apply.preferredUnits = this.model.apply.preferredUnits.filter(
+            (id) => this.applicationUnits.data.some((unit) => unit.id === id)
+          )
         }
       }
     }
-  })
+  }
+})
 </script>
 
 <style lang="scss" scoped>

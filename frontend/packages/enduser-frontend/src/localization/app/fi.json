@@ -169,7 +169,8 @@
       "invalid-ssn": "Epäkelpo henkilötunnus",
       "invalid-tel": "Virheellinen puhelinnumero",
       "invalid-timestring": "Virheellinen kellonaika (anna muodossa 13:30)",
-      "invalid-daterange": "Päivämäärä ei ole sallitulla välillä"
+      "invalid-daterange": "Päivämäärä ei ole sallitulla välillä",
+      "outside-preschool-term": "Esiopetuskausi ei ole käynnissä tänä päivänä. Tälle ajalle on tehtävä varhaiskasvatushakemus."
     }
   },
   "care-type": {

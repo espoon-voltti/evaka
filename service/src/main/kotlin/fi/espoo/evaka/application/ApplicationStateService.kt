@@ -20,6 +20,7 @@ import fi.espoo.evaka.application.persistence.DatabaseForm
 import fi.espoo.evaka.daycare.controllers.AdditionalInformation
 import fi.espoo.evaka.daycare.controllers.Child
 import fi.espoo.evaka.daycare.domain.ProviderType
+import fi.espoo.evaka.daycare.getActivePreschoolTermAt
 import fi.espoo.evaka.daycare.getDaycare
 import fi.espoo.evaka.daycare.getUnitApplyPeriods
 import fi.espoo.evaka.daycare.upsertChild
@@ -558,54 +559,9 @@ class ApplicationStateService(
             throw BadRequest("Expected status to be one of [${statuses.joinToString(separator = ", ")}] but was ${application.status}")
     }
 
-    data class PreschoolTerm (
-        val finnishPreschool: ClosedPeriod,
-        val swedishPreschool: ClosedPeriod,
-        val extendedCare: ClosedPeriod,
-        val applicationPeriod: ClosedPeriod
-    )
-    val preschoolSeasons = listOf(
-        PreschoolTerm( // 2020-2021
-            finnishPreschool = ClosedPeriod(
-                LocalDate.of(2020, 8, 13),
-                LocalDate.of(2021, 6, 4)
-            ),
-            swedishPreschool = ClosedPeriod(
-                LocalDate.of(2020, 8, 18),
-                LocalDate.of(2021, 6, 4)
-            ),
-            extendedCare = ClosedPeriod(
-                LocalDate.of(2020, 8, 1),
-                LocalDate.of(2021, 6, 4)
-            ),
-            applicationPeriod = ClosedPeriod(
-                LocalDate.of(2020, 1, 8),
-                LocalDate.of(2020, 1, 20)
-            )
-        ),
-        PreschoolTerm( // 2021-2022
-            finnishPreschool = ClosedPeriod(
-                LocalDate.of(2022, 8, 11),
-                LocalDate.of(2022, 6, 4)
-            ),
-            swedishPreschool = ClosedPeriod(
-                LocalDate.of(2021, 8, 11),
-                LocalDate.of(2022, 6, 4)
-            ),
-            extendedCare = ClosedPeriod(
-                LocalDate.of(2021, 8, 1),
-                LocalDate.of(2022, 6, 4)
-            ),
-            applicationPeriod = ClosedPeriod(
-                LocalDate.of(2021, 1, 8),
-                LocalDate.of(2021, 1, 20)
-            )
-        )
-    )
-
-    fun isOnValidPreschoolSeason(preferredStartDate: LocalDate): Boolean{
-        val season = preschoolSeasons.find { it.extendedCare.includes(preferredStartDate) } ?: return false
-        val applicationsAccepted = ClosedPeriod(season.applicationPeriod.start, season.extendedCare.end)
+    fun canApplyOnPreschoolTerm(tx: Database.Read, preferredStartDate: LocalDate): Boolean{
+        val term = tx.getActivePreschoolTermAt(preferredStartDate) ?: return false
+        val applicationsAccepted = ClosedPeriod(term.applicationPeriod.start, term.extendedTerm.end)
         return applicationsAccepted.includes(LocalDate.now(zoneId))
     }
 
@@ -613,7 +569,7 @@ class ApplicationStateService(
         val result = ValidationResult()
 
         if(application.type == ApplicationType.PRESCHOOL){
-            if(!isOnValidPreschoolSeason(application.form.preferences.preferredStartDate!!)){
+            if(!canApplyOnPreschoolTerm(tx, application.form.preferences.preferredStartDate!!)){
                 result.add(ValidationError("form.preferences.preferredStartDate", "Cannot apply to preschool on the preferred time at the moment"))
             }
         }
