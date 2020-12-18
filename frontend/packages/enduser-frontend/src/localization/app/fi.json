@@ -640,7 +640,7 @@
           }
         },
         "startDate": {
-          "description": "Suomen ja ruotsinkielinen esiopetus alkaa <strong>11.8.2021</strong>.",
+          "description": "Suomen ja ruotsinkielinen esiopetus alkaa 11.8.2021.",
           "description2": "<br>Jos tarvitsette varhaiskasvatusta 1.8.2021 lähtien ennen esiopetuksen alkua, voitte hakea sitä tällä hakemuksella valitsemalla ”Haen myös esiopetukseen liittyvää varhaiskasvatusta”.",
           "label": "Aloituspäivä",
           "instructions": {
