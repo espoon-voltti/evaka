@@ -21,7 +21,7 @@ import { Parentship } from '~types/fridge'
 import { Link } from 'react-router-dom'
 import { getStatusLabelByDateRange } from '~utils/date'
 import StatusLabel from '~components/common/StatusLabel'
-import CollapsibleSection from 'components/shared/molecules/CollapsibleSection'
+import CollapsibleSection from '@evaka/lib-components/src/molecules/CollapsibleSection'
 
 type Props = {
   open: boolean

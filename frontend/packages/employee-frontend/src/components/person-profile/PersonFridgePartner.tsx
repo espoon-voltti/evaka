@@ -19,7 +19,7 @@ import {
   Tr
 } from '@evaka/lib-components/src/layout/Table'
 import Loader from '@evaka/lib-components/src/atoms/Loader'
-import CollapsibleSection from 'components/shared/molecules/CollapsibleSection'
+import CollapsibleSection from '@evaka/lib-components/src/molecules/CollapsibleSection'
 import InfoModal from '~components/common/InfoModal'
 import { Partnership } from '~types/fridge'
 import * as _ from 'lodash'
@@ -35,7 +35,7 @@ import {
   retryPartnership
 } from '~api/partnerships'
 import { ButtonsTd, DateTd, NameTd } from '~components/PersonProfile'
-import Toolbar from 'components/shared/molecules/Toolbar'
+import Toolbar from '~components/common/Toolbar'
 import AddButton from '@evaka/lib-components/src/atoms/buttons/AddButton'
 
 const TopBar = styled.div`

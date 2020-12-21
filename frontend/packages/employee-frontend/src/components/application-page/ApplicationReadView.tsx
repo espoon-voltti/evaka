@@ -6,7 +6,7 @@ import React from 'react'
 import styled from 'styled-components'
 import { H4, Label } from '@evaka/lib-components/src/typography'
 import { Address, ApplicationResponse, PersonBasics } from 'types/application'
-import CollapsibleSection from 'components/shared/molecules/CollapsibleSection'
+import CollapsibleSection from '@evaka/lib-components/src/molecules/CollapsibleSection'
 import {
   faChild,
   faFileAlt,

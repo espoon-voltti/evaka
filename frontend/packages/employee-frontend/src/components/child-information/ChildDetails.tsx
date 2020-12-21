@@ -10,7 +10,7 @@ import { UUID } from '~/types'
 import AdditionalInformation from '~components/child-information/person-details/AdditionalInformation'
 import { ChildContext, ChildState } from '~state/child'
 import PersonDetails from '~components/person-shared/PersonDetails'
-import CollapsibleSection from 'components/shared/molecules/CollapsibleSection'
+import CollapsibleSection from '@evaka/lib-components/src/molecules/CollapsibleSection'
 
 interface Props {
   id: UUID

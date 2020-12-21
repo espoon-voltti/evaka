@@ -18,7 +18,7 @@ import {
 } from '@evaka/lib-components/src/layout/Table'
 import Button from '@evaka/lib-components/src/atoms/buttons/Button'
 import Title from '@evaka/lib-components/src/atoms/Title'
-import CollapsibleSection from '~components/shared/molecules/CollapsibleSection'
+import CollapsibleSection from '@evaka/lib-components/src/molecules/CollapsibleSection'
 import InvoiceRowsSectionRow from './InvoiceRowsSectionRow'
 import Sum from './Sum'
 import { useTranslation } from '../../state/i18n'

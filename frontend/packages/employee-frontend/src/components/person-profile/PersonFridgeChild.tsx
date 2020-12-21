@@ -19,7 +19,7 @@ import {
   Tr
 } from '@evaka/lib-components/src/layout/Table'
 import Loader from '@evaka/lib-components/src/atoms/Loader'
-import CollapsibleSection from 'components/shared/molecules/CollapsibleSection'
+import CollapsibleSection from '@evaka/lib-components/src/molecules/CollapsibleSection'
 import { Parentship } from '~types/fridge'
 import * as _ from 'lodash'
 import { faChild, faQuestion } from '@evaka/lib-icons'
@@ -34,7 +34,7 @@ import {
 } from '~api/parentships'
 import { ButtonsTd, DateTd, NameTd } from '~components/PersonProfile'
 import { AddButtonRow } from '@evaka/lib-components/src/atoms/buttons/AddButton'
-import Toolbar from 'components/shared/molecules/Toolbar'
+import Toolbar from '~components/common/Toolbar'
 import { getAge } from '@evaka/lib-common/src/utils/local-date'
 
 interface Props {

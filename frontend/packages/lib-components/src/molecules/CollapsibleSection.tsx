@@ -3,15 +3,15 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useState } from 'react'
-import { IconDefinition } from '@fortawesome/fontawesome-svg-core'
-import { BaseProps } from '@evaka/lib-components/src/utils'
 import styled from 'styled-components'
 import classNames from 'classnames'
+import { IconDefinition } from '@fortawesome/fontawesome-svg-core'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { H3 } from '@evaka/lib-components/src/typography'
 import { faAngleDown, faAngleUp } from '@evaka/lib-icons'
-import colors from '@evaka/lib-components/src/colors'
-import { defaultMargins } from '@evaka/lib-components/src/white-space'
+import colors from '../colors'
+import { H3 } from '../typography'
+import { defaultMargins } from '../white-space'
+import { BaseProps } from '../utils'
 
 const Wrapper = styled.div`
   width: 100%;
@@ -71,7 +71,7 @@ const Content = styled.div`
   }
 `
 
-interface CollapsibleSectionProps extends BaseProps {
+type CollapsibleSectionProps = BaseProps & {
   title: string
   icon: IconDefinition
   children: React.ReactNode

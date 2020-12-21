@@ -14,7 +14,7 @@ import BackupCareForm from '~components/child-information/backup-care/BackupCare
 import { getChildBackupCares, removeBackupCare } from 'api/child/backup-care'
 import styled from 'styled-components'
 import { ChildBackupCare } from '~types/child'
-import Toolbar from 'components/shared/molecules/Toolbar'
+import Toolbar from '~components/common/Toolbar'
 import { ALL_ROLES_BUT_STAFF } from 'utils/roles'
 
 export interface Props {

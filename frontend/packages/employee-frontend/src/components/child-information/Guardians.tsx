@@ -26,7 +26,7 @@ import { ChildContext } from '~state'
 import { faFemale } from '@evaka/lib-icons'
 import { getPersonGuardians } from '~api/person'
 import { getAge } from '@evaka/lib-common/src/utils/local-date'
-import CollapsibleSection from 'components/shared/molecules/CollapsibleSection'
+import CollapsibleSection from '@evaka/lib-components/src/molecules/CollapsibleSection'
 
 interface Props {
   id: UUID

@@ -17,7 +17,7 @@ import styled from 'styled-components'
 import { animated, useSpring } from 'react-spring'
 
 import { useTranslation } from '~state/i18n'
-import Tabs from '~components/shared/molecules/Tabs'
+import Tabs from '@evaka/lib-components/src/molecules/Tabs'
 import AttendanceGroupSelectorPage from './AttendanceGroupSelectorPage'
 import AttendanceComingPage from './AttendanceComingPage'
 import AttendancePresentPage from './AttendancePresentPage'

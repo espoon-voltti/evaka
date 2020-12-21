@@ -15,7 +15,7 @@ import { UIContext } from '~state/ui'
 import BackupCareForm from '~components/child-information/backup-care/BackupCareForm'
 import BackupCareRow from '~components/child-information/backup-care/BackupCareRow'
 import { AddButtonRow } from '@evaka/lib-components/src/atoms/buttons/AddButton'
-import CollapsibleSection from 'components/shared/molecules/CollapsibleSection'
+import CollapsibleSection from '@evaka/lib-components/src/molecules/CollapsibleSection'
 import { RequireRole } from 'utils/roles'
 
 export interface Props {

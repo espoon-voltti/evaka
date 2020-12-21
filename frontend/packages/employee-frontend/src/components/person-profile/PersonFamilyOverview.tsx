@@ -16,7 +16,7 @@ import {
   Tr
 } from '@evaka/lib-components/src/layout/Table'
 import Loader from '@evaka/lib-components/src/atoms/Loader'
-import CollapsibleSection from 'components/shared/molecules/CollapsibleSection'
+import CollapsibleSection from '@evaka/lib-components/src/molecules/CollapsibleSection'
 import LabelValueList from '~components/common/LabelValueList'
 import { Translations, useTranslation } from '~state/i18n'
 import { PersonContext } from '~state/person'

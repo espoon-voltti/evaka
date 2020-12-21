@@ -21,7 +21,7 @@ import { DatePicker } from '~components/common/DatePicker'
 import { UIContext, UiState } from '~state/ui'
 import { Link } from 'react-router-dom'
 import { AlertBox } from '~components/common/MessageBoxes'
-import Toolbar from 'components/shared/molecules/Toolbar'
+import Toolbar from '~components/common/Toolbar'
 import {
   deletePlacement,
   PlacementUpdate,

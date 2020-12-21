@@ -13,7 +13,7 @@ import { useEffect } from 'react'
 import { Loading } from '~api'
 import { useContext } from 'react'
 import { PersonContext } from '~state/person'
-import CollapsibleSection from 'components/shared/molecules/CollapsibleSection'
+import CollapsibleSection from '@evaka/lib-components/src/molecules/CollapsibleSection'
 import {
   Table,
   Tbody,

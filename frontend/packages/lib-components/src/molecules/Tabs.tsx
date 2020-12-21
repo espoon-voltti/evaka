@@ -3,11 +3,11 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
-import styled from 'styled-components'
 import { NavLink } from 'react-router-dom'
-import colors from '@evaka/lib-components/src/colors'
-import { defaultMargins } from '@evaka/lib-components/src/white-space'
-import Container from '@evaka/lib-components/src/layout/Container'
+import styled from 'styled-components'
+import colors from '../colors'
+import { defaultMargins } from '../white-space'
+import Container from '../layout/Container'
 
 type Props = {
   tabs: Array<{

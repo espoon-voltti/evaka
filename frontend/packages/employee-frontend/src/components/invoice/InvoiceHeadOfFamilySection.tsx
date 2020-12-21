@@ -6,7 +6,7 @@ import React from 'react'
 import { Link } from 'react-router-dom'
 
 import LabelValueList from '~components/common/LabelValueList'
-import CollapsibleSection from '~components/shared/molecules/CollapsibleSection'
+import CollapsibleSection from '@evaka/lib-components/src/molecules/CollapsibleSection'
 import { faUserFriends } from '@evaka/lib-icons'
 import { useTranslation } from '../../state/i18n'
 import LocalDate from '@evaka/lib-common/src/local-date'

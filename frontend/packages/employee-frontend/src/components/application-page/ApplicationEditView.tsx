@@ -21,7 +21,7 @@ import {
 import LocalDate from '@evaka/lib-common/src/local-date'
 import { Result } from 'api'
 import { H4, Label } from '@evaka/lib-components/src/typography'
-import CollapsibleSection from 'components/shared/molecules/CollapsibleSection'
+import CollapsibleSection from '@evaka/lib-components/src/molecules/CollapsibleSection'
 import { Gap } from '@evaka/lib-components/src/white-space'
 import { FixedSpaceColumn } from '@evaka/lib-components/src/layout/flex-helpers'
 import ListGrid from '@evaka/lib-components/src/layout/ListGrid'

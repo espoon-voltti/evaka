@@ -17,7 +17,7 @@ import { formatDecimal } from '~components/utils'
 import { formatParagraphs } from '~utils/html-utils'
 import LabelValueList from '~components/common/LabelValueList'
 import { ASSISTANCE_BASIS_LIST } from '~constants'
-import Toolbar from 'components/shared/molecules/Toolbar'
+import Toolbar from '~components/common/Toolbar'
 import { scrollToRef } from 'utils'
 import { removeAssistanceNeed } from 'api/child/assistance-needs'
 

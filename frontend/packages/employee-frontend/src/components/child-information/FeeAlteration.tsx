@@ -23,7 +23,7 @@ import {
 } from 'api/child/fee-alteration'
 import { AddButtonRow } from '@evaka/lib-components/src/atoms/buttons/AddButton'
 import { scrollToRef } from 'utils'
-import CollapsibleSection from 'components/shared/molecules/CollapsibleSection'
+import CollapsibleSection from '@evaka/lib-components/src/molecules/CollapsibleSection'
 
 const newFeeAlterationUiMode = 'create-new-fee-alteration'
 const editFeeAlterationUiMode = (id: UUID) => `edit-fee-alteration-${id}`

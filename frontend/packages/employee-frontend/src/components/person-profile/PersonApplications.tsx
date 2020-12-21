@@ -22,7 +22,7 @@ import {
   Tr
 } from '@evaka/lib-components/src/layout/Table'
 import Loader from '@evaka/lib-components/src/atoms/Loader'
-import CollapsibleSection from 'components/shared/molecules/CollapsibleSection'
+import CollapsibleSection from '@evaka/lib-components/src/molecules/CollapsibleSection'
 import { getGuardianApplicationSummaries } from '~api/person'
 import { ApplicationSummary } from '~types/application'
 import { DateTd, NameTd, StatusTd } from '~components/PersonProfile'

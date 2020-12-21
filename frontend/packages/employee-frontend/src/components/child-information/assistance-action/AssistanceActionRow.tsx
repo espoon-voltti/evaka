@@ -17,7 +17,7 @@ import {
   ASSISTANCE_ACTION_TYPE_LIST,
   ASSISTANCE_MEASURE_LIST
 } from '~constants'
-import Toolbar from 'components/shared/molecules/Toolbar'
+import Toolbar from '~components/common/Toolbar'
 import { scrollToRef } from 'utils'
 import { removeAssistanceAction } from 'api/child/assistance-actions'
 

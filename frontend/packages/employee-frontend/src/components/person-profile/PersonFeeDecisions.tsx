@@ -13,7 +13,7 @@ import { UUID } from '~types'
 import { useTranslation, Translations } from '~state/i18n'
 import { UIContext } from '~state/ui'
 import { Loading, Result } from '~api'
-import CollapsibleSection from 'components/shared/molecules/CollapsibleSection'
+import CollapsibleSection from '@evaka/lib-components/src/molecules/CollapsibleSection'
 import {
   Table,
   Tbody,
