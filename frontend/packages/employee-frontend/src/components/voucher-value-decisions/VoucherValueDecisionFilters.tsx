@@ -61,9 +61,7 @@ export default React.memo(function VoucherValueDecisionFilters() {
   useEffect(() => {
     const handler = financeDecisionHandlers
       .getOrElse([])
-      .filter(
-        (handler) => handler.id === searchFilters.financeDecisionHandlerId
-      )[0]
+      .find((handler) => handler.id === searchFilters.financeDecisionHandlerId)
     setSelectedFinanceDecisionHandler(handler)
   }, [searchFilters.financeDecisionHandlerId])
 

@@ -1010,13 +1010,15 @@ export default function UnitEditor(props: Props): JSX.Element {
             }
           />
         ) : (
-          props.employees
-            .map((employee) => ({
-              id: employee.id,
-              name: [employee.firstName, employee.lastName].join(' ')
-            }))
-            .find((employee) => employee.id === form.financeDecisionHandlerId)
-            ?.name
+          [
+            props.employees.find(
+              (employee) => employee.id === form.financeDecisionHandlerId
+            )
+          ].map((employee) =>
+            employee
+              ? [employee.firstName, employee.lastName].join(' ')
+              : undefined
+          )[0]
         )}
       </FormPart>
       <FormPart>
