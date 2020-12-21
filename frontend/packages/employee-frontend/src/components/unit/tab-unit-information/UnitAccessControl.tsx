@@ -59,6 +59,7 @@ import MobilePairingModal from '../MobilePairingModal'
 import { FixedSpaceRow } from '~components/shared/layout/flex-helpers'
 import InputField from '~components/shared/atoms/form/InputField'
 import { isNotProduction, isPilotUnit } from '~constants'
+import { AdRole } from '~types'
 
 type Props = { unitId: string }
 
@@ -77,19 +78,39 @@ const Flex = styled.div`
 function AclRow({
   row,
   isDeletable,
-  onClickDelete
+  onClickDelete,
+  rolesAllowedToRemoveRows
 }: {
   row: FormattedRow
   isDeletable: boolean
   onClickDelete: () => void
+  rolesAllowedToRemoveRows?: AdRole[]
 }) {
   return (
     <Tr data-qa="acl-row">
       <Td data-qa="name">{row.name}</Td>
       <Td data-qa="email">{row.email}</Td>
       <Td>
-        {isDeletable && (
-          <IconButton icon={faTrash} onClick={onClickDelete} data-qa="delete" />
+        {rolesAllowedToRemoveRows ? (
+          <RequireRole oneOf={rolesAllowedToRemoveRows}>
+            {isDeletable && (
+              <IconButton
+                icon={faTrash}
+                onClick={onClickDelete}
+                data-qa="delete"
+              />
+            )}
+          </RequireRole>
+        ) : (
+          <>
+            {isDeletable && (
+              <IconButton
+                icon={faTrash}
+                onClick={onClickDelete}
+                data-qa="delete"
+              />
+            )}
+          </>
         )}
       </Td>
     </Tr>
@@ -122,10 +143,12 @@ const AddAclSelectContainer = styled.div`
 
 function AclTable({
   rows,
-  onDeleteAclRow
+  onDeleteAclRow,
+  rolesAllowedToRemoveRows
 }: {
   rows: FormattedRow[]
   onDeleteAclRow: (employeeId: UUID) => void
+  rolesAllowedToRemoveRows?: AdRole[]
 }) {
   const { i18n } = useTranslation()
   const { user } = useContext(UserContext)
@@ -146,6 +169,7 @@ function AclTable({
             row={row}
             isDeletable={row.id !== user?.id}
             onClickDelete={() => onDeleteAclRow(row.id)}
+            rolesAllowedToRemoveRows={rolesAllowedToRemoveRows}
           />
         ))}
       </Tbody>
@@ -543,7 +567,7 @@ function UnitAccessControl({ unitId }: Props) {
           />
         </ContentArea>
       </RequireRole>
-      <RequireRole oneOf={['ADMIN']}>
+      <RequireRole oneOf={['ADMIN', 'UNIT_SUPERVISOR']}>
         <ContentArea opaque data-qa="daycare-acl-set">
           <H2>{i18n.unit.accessControl.specialEducationTeachers}</H2>
           {loading && <Loader />}
@@ -557,12 +581,15 @@ function UnitAccessControl({ unitId }: Props) {
                   removeFn: removeDaycareAclSpecialEducationTeacher
                 })
               }
+              rolesAllowedToRemoveRows={['ADMIN']}
             />
           )}
-          <AddAcl
-            employees={candidateEmployees}
-            onAddAclRow={addSpecialEducationTeacher}
-          />
+          <RequireRole oneOf={['ADMIN']}>
+            <AddAcl
+              employees={candidateEmployees}
+              onAddAclRow={addSpecialEducationTeacher}
+            />
+          </RequireRole>
         </ContentArea>
       </RequireRole>
       <RequireRole oneOf={['ADMIN', 'UNIT_SUPERVISOR']}>
