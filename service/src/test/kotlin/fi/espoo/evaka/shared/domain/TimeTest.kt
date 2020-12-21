@@ -5,7 +5,9 @@
 package fi.espoo.evaka.shared.domain
 
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
 
@@ -187,7 +189,7 @@ class TimeTest {
     }
 
     @Test
-    fun `FiniteDateRange intersection returns null if there is no overlap`() {
+    fun `FiniteDateRange intersection and overlaps returns null and false if there is no overlap`() {
         //   1234
         // A --
         // B   --
@@ -195,18 +197,22 @@ class TimeTest {
         val b = FiniteDateRange(LocalDate.of(2019, 1, 3), LocalDate.of(2019, 1, 4))
         assertNull(a.intersection(b))
         assertNull(b.intersection(a))
+        assertFalse(a.overlaps(b))
+        assertFalse(b.overlaps(a))
 
         //   12345
         // C --
         // D    --
         val c = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 2))
         val d = FiniteDateRange(LocalDate.of(2019, 1, 4), LocalDate.of(2019, 1, 5))
-        assertNull(c.intersection(b))
-        assertNull(d.intersection(a))
+        assertNull(c.intersection(d))
+        assertNull(d.intersection(c))
+        assertFalse(c.overlaps(d))
+        assertFalse(d.overlaps(c))
     }
 
     @Test
-    fun `FiniteDateRange intersection works`() {
+    fun `FiniteDateRange intersection and overlaps works`() {
         //   1234
         // A ---
         // B  ---
@@ -216,6 +222,8 @@ class TimeTest {
         val x = FiniteDateRange(LocalDate.of(2019, 1, 2), LocalDate.of(2019, 1, 3))
         assertEquals(x, a.intersection(b))
         assertEquals(x, b.intersection(a))
+        assertTrue(a.overlaps(b))
+        assertTrue(b.overlaps(a))
 
         //   12345
         // C ---
@@ -226,6 +234,8 @@ class TimeTest {
         val y = FiniteDateRange(LocalDate.of(2019, 1, 3), LocalDate.of(2019, 1, 3))
         assertEquals(y, c.intersection(d))
         assertEquals(y, d.intersection(c))
+        assertTrue(c.overlaps(d))
+        assertTrue(d.overlaps(c))
     }
 
     @Test

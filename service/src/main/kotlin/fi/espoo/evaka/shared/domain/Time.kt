@@ -40,23 +40,49 @@ data class FiniteDateRange(val start: LocalDate, val end: LocalDate) {
 
     fun asDateRange(): DateRange = DateRange(start, end)
 
+    /**
+     * Returns true if this date range fully contains the given date range.
+     */
     fun contains(other: FiniteDateRange) = this.start <= other.start && other.end <= this.end
+
+    /**
+     * Returns true if this date range fully contains the given date range.
+     */
     fun contains(other: DateRange) = this.asDateRange().contains(other)
 
-    fun includes(value: LocalDate) = this.start <= value && value <= this.end
+    /**
+     * Returns true if this date range includes the given date.
+     */
+    fun includes(date: LocalDate) = this.start <= date && date <= this.end
 
+    /**
+     * Returns true if this date range overlaps at least partially with the given date range.
+     */
     fun overlaps(other: FiniteDateRange) = this.start <= other.end && other.start <= this.end
+
+    /**
+     * Returns true if this date range overlaps at least partially with the given date range.
+     */
     fun overlaps(other: DateRange) = this.asDateRange().overlaps(other)
 
-    fun adjacentTo(other: FiniteDateRange) = other.end.plusDays(1) == this.start || this.end.plusDays(1) == other.start
+    fun leftAdjacentTo(other: FiniteDateRange): Boolean = this.end.plusDays(1) == other.start
+    fun rightAdjacentTo(other: FiniteDateRange): Boolean = other.end.plusDays(1) == this.start
+    fun adjacentTo(other: FiniteDateRange): Boolean = leftAdjacentTo(other) || rightAdjacentTo(other)
 
-    fun intersection(value: FiniteDateRange): FiniteDateRange? {
-        val start = maxOf(this.start, value.start)
-        val end = minOf(this.end, value.end)
+    fun intersection(other: FiniteDateRange): FiniteDateRange? {
+        val start = maxOf(this.start, other.start)
+        val end = minOf(this.end, other.end)
         return if (start <= end) FiniteDateRange(start, end) else null
     }
 
+    /**
+     * Returns a lazy sequence of all dates included in this date range.
+     */
     fun dates(): Sequence<LocalDate> = generateSequence(start) { if (it < end) it.plusDays(1) else null }
+
+    /**
+     * Returns the total duration of this date range counted in days.
+     */
     fun durationInDays(): Long = ChronoUnit.DAYS.between(start, end.plusDays(1)) // adjust to exclusive range
 }
 
@@ -70,12 +96,12 @@ data class DateRange(val start: LocalDate, val end: LocalDate?) {
 
     fun asFiniteDateRange(): FiniteDateRange? = end?.let { FiniteDateRange(start, it) }
 
-    fun contains(value: DateRange) = this.start <= value.start && orMax(value.end) <= orMax(this.end)
+    fun contains(other: DateRange) = this.start <= other.start && orMax(other.end) <= orMax(this.end)
     fun contains(other: FiniteDateRange) = contains(other.asDateRange())
 
-    fun includes(value: LocalDate) = this.start <= value && value <= orMax(this.end)
+    fun includes(date: LocalDate) = this.start <= date && date <= orMax(this.end)
 
-    fun overlaps(value: DateRange) = this.start <= orMax(value.end) && value.start <= orMax(this.end)
+    fun overlaps(other: DateRange) = this.start <= orMax(other.end) && other.start <= orMax(this.end)
     fun overlaps(other: FiniteDateRange) = overlaps(other.asDateRange())
 }
 
