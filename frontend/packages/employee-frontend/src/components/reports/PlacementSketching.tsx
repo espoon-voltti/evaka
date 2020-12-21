@@ -30,7 +30,7 @@ import {
 import { DatePicker } from '~components/common/DatePicker'
 import LocalDate from '@evaka/lib-common/src/local-date'
 import { distinct } from 'utils'
-import { faLink } from 'icon-set'
+import { faFileAlt } from 'icon-set'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 
 interface DisplayFilters {
@@ -152,21 +152,31 @@ function PlacementSketching() {
         {rows.isSuccess && (
           <>
             <ReportDownload
-              data={filteredRows}
+              data={filteredRows.map((row) => ({
+                ...row,
+                childName: `${row.childLastName} ${row.childFirstName}`,
+                contact: `${
+                  row.guardianPhoneNumber ? row.guardianPhoneNumber : ''
+                } / ${row.guardianEmail ? row.guardianEmail : ''}`,
+                assistanceNeeded: row.assistanceNeeded ? 'k' : 'e',
+                preparatoryEducation: row.preparatoryEducation ? 'k' : 'e',
+                siblingBasis: row.siblingBasis ? 'k' : 'e',
+                connectedDaycare: row.connectedDaycare ? 'k' : 'e'
+              }))}
               headers={[
-                { label: 'Palvelualue', key: 'areaName' },
                 { label: 'Haettu yksikkö', key: 'requestedUnitName' },
                 { label: 'Nykyinen yksikkö', key: 'currentUnitName' },
-                { label: 'Lapsen sukunimi', key: 'childLastName' },
-                { label: 'Lapsen etunimi', key: 'childFirstName' },
-                { label: 'Lapsen osoite', key: 'childStreetAddr' },
+                { label: 'Lapsi', key: 'childName' },
                 { label: 'Lapsen syntymäpäivä', key: 'childDob' },
+                { label: 'Lapsen osoite', key: 'childStreetAddr' },
+                { label: 'Yhteystiedot', key: 'contact' },
                 { label: 'Tuen tarve', key: 'assistanceNeeded' },
                 { label: 'Valmistava', key: 'preparatoryEducation' },
                 { label: 'Sisarusperuste', key: 'siblingBasis' },
                 { label: 'Liittyvä vaka', key: 'connectedDaycare' },
                 { label: 'Toivottu aloituspäivä', key: 'preferredStartDate' },
-                { label: 'Lähetyspäivä', key: 'sentDate' }
+                { label: 'Lähetyspäivä', key: 'sentDate' },
+                { label: 'Palvelualue', key: 'areaName' }
               ]}
               filename={`sijoitushahmottelu_${filters.placementStartDate.formatIso()}-${
                 filters.earliestPreferredStartDate?.formatIso() ?? ''
@@ -175,19 +185,23 @@ function PlacementSketching() {
             <TableScrollable>
               <Thead>
                 <Tr>
-                  <Th>{i18n.reports.common.careAreaName}</Th>
                   <Th>{i18n.reports.placementSketching.preferredUnit}</Th>
                   <Th>{i18n.reports.placementSketching.currentUnit}</Th>
                   <Th>{i18n.reports.common.childName}</Th>
-                  <Th>{i18n.reports.placementSketching.streetAddress}</Th>
                   <Th>{i18n.reports.placementSketching.dob}</Th>
+                  <Th>{i18n.reports.placementSketching.streetAddress}</Th>
+                  <Th>
+                    {i18n.reports.placementSketching.tel} /{' '}
+                    {i18n.reports.placementSketching.email}
+                  </Th>
                   <Th>{i18n.reports.placementSketching.assistanceNeed}</Th>
                   <Th>{i18n.reports.placementSketching.preparatory}</Th>
                   <Th>{i18n.reports.placementSketching.siblingBasis}</Th>
                   <Th>{i18n.reports.placementSketching.connected}</Th>
-                  <Th>{i18n.reports.placementSketching.preferredStartDate}</Th>
                   <Th>{i18n.reports.placementSketching.sentDate}</Th>
                   <Th>{i18n.application.tabTitle}</Th>
+                  <Th>{i18n.reports.placementSketching.preferredStartDate}</Th>
+                  <Th>{i18n.reports.common.careAreaName}</Th>
                 </Tr>
               </Thead>
               <Tbody>
@@ -196,7 +210,6 @@ function PlacementSketching() {
                     key={`${row.requestedUnitId}:${row.childId}`}
                     data-qa={`${row.requestedUnitId}:${row.childId}`}
                   >
-                    <Td data-qa={'area-name'}>{row.areaName}</Td>
                     <Td data-qa={'requested-unit'}>
                       <Link to={`/units/${row.requestedUnitId}`}>
                         {row.requestedUnitName}
@@ -214,19 +227,23 @@ function PlacementSketching() {
                         {row.childLastName} {row.childFirstName}
                       </Link>
                     </Td>
-                    <Td>{row.childStreetAddr}</Td>
                     <Td>{row.childDob.format()}</Td>
+                    <Td>{row.childStreetAddr}</Td>
+                    <Td>
+                      {row.guardianPhoneNumber} / {row.guardianEmail}
+                    </Td>
                     <Td>{yesNo(row.assistanceNeeded)}</Td>
                     <Td>{yesNo(row.preparatoryEducation)}</Td>
                     <Td>{yesNo(row.siblingBasis)}</Td>
                     <Td>{yesNo(row.connectedDaycare)}</Td>
-                    <Td>{row.preferredStartDate.format()}</Td>
                     <Td>{row.sentDate.format()}</Td>
                     <Td data-qa={'application'}>
                       <Link to={`/applications/${row.applicationId}`}>
-                        <FontAwesomeIcon icon={faLink} />
+                        <FontAwesomeIcon icon={faFileAlt} />
                       </Link>
                     </Td>
+                    <Td>{row.preferredStartDate.format()}</Td>
+                    <Td data-qa={'area-name'}>{row.areaName}</Td>
                   </Tr>
                 ))}
               </Tbody>

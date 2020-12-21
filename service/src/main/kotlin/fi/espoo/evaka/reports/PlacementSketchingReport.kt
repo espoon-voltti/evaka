@@ -61,7 +61,7 @@ SELECT
     application.childId,
     application.childfirstname,
     application.childlastname,
-    person.date_of_birth AS child_dob,
+    child.date_of_birth AS child_dob,
     application.childstreetaddr,
     active_placements.daycare_name AS current_unit_name,
     active_placements.daycare_id AS current_unit_id,
@@ -70,7 +70,11 @@ SELECT
     application.siblingbasis,
     application.connecteddaycare,
     application.startDate AS preferred_start_date,
-    application.sentdate
+    application.sentdate,
+    application.guardianphonenumber,
+    form.document->'guardian'->>'email' AS guardian_email,
+    (SELECT array_agg(name) as other_preferred_units
+     FROM daycare JOIN (SELECT unnest(preferredUnits) from application) pu ON daycare.id = pu.unnest) AS other_preferred_units
 FROM
     daycare
 LEFT JOIN
@@ -80,7 +84,9 @@ LEFT JOIN
 LEFT JOIN
     active_placements ON application.childid = active_placements.child_id
 LEFT JOIN
-    person ON application.childid = person.id
+    person AS child ON application.childid = child.id
+LEFT JOIN
+    application_form AS form ON application.id = form.application_id AND form.latest is TRUE 
 WHERE
     (application.startDate >= :earliestPreferredStartDate OR application.startDate IS NULL)
     AND application.status = ANY ('{SENT,WAITING_PLACEMENT,WAITING_CONFIRMATION,WAITING_DECISION,WAITING_MAILING,WAITING_UNIT_CONFIRMATION, ACTIVE}'::application_status_type[])
@@ -112,5 +118,8 @@ data class PlacementSketchingReportRow(
     val siblingBasis: Boolean?,
     val connectedDaycare: Boolean?,
     val preferredStartDate: LocalDate,
-    val sentDate: LocalDate
+    val sentDate: LocalDate,
+    val guardianPhoneNumber: String?,
+    val guardianEmail: String?,
+    val otherPreferredUnits: List<String>
 )

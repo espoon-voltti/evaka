@@ -2026,6 +2026,8 @@ export const fi = {
       preferredUnit: 'Hakutoive',
       currentUnit: 'Nykyinen yksikkö',
       streetAddress: 'Osoite',
+      tel: 'Puhelu',
+      email: 'email',
       dob: 'Syntymäaika',
       assistanceNeed: 'Tuen tarve',
       preparatory: 'Valmistava',
