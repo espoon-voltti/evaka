@@ -368,4 +368,7 @@ export interface PlacementSketchingRow {
   preparatoryEducation: boolean
   siblingBasis: boolean
   connectedDaycare: boolean
+  guardianPhoneNumber: string | null
+  guardianEmail: string | null
+  otherPreferredUnits: string[] | null
 }
