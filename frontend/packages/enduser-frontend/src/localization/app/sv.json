@@ -639,6 +639,9 @@
           "description": "Förskolan börjar i 11.8.2021.",
           "description2": "<br>Om ditt barn behöver småbarnspedagogisk verksamhet fr.o.m. 1.8.2021 före förskolan börjar kan du ansöka om sådan med denna blankett. Välj ”Jag ansöker om småbarnspedagogik i samband med förskoleundervisning”.",
           "label": "Inledningsdatum",
+          "instructions": {
+            "text": "Du kan senarelägga önskad startdatum så länge ansökan har inte tagits till behandling . När ansökan har är under behandling vänligen ta kontakt med servicenummer 09 81627600 när du vill ändra startdatum."
+          },
           "placeholder": "Välj datum",
           "validationText": "Önskat inledningsdatum: "
         },
