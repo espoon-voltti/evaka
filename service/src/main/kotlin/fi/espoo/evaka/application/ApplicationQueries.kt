@@ -738,18 +738,24 @@ fun removeOldDrafts(h: Handle) {
 
     h.transaction { handle ->
         // language=SQL
-        handle.createUpdate("""DELETE FROM application_form WHERE application_id IN (SELECT id FROM application WHERE status = 'CREATED' AND created < current_date - :thresholdDays)""")
+        val applicationIds = handle.createQuery("""SELECT id FROM application WHERE status = 'CREATED' AND created < current_date - :thresholdDays""")
             .bind("thresholdDays", thresholdDays)
+            .mapTo<UUID>()
+            .toList()
+        
+        // language=SQL
+        handle.createUpdate("""DELETE FROM application_form WHERE application_id IN :applicationIds""")
+            .bind("applicationIds", applicationIds)
             .execute()
 
         // language=SQL
-        handle.createUpdate("""DELETE FROM application_note WHERE application_id IN (SELECT id FROM application WHERE status = 'CREATED' AND created < current_date - :thresholdDays)""")
-            .bind("thresholdDays", thresholdDays)
+        handle.createUpdate("""DELETE FROM application_note WHERE application_id IN :applicationIds""")
+            .bind("applicationIds", applicationIds)
             .execute()
 
         // language=SQL
-        handle.createUpdate("""DELETE FROM application WHERE status = 'CREATED' AND created < current_date - :thresholdDays""")
-            .bind("thresholdDays", thresholdDays)
+        handle.createUpdate("""DELETE FROM application WHERE id IN :applicationIds""")
+            .bind("applicationIds", applicationIds)
             .execute()
     }
 }
