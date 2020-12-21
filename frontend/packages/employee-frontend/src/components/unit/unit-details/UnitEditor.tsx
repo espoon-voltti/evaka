@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import LocalDate from '@evaka/lib-common/src/local-date'
 import styled from 'styled-components'
 import Select from '~components/common/Select'
@@ -523,6 +523,16 @@ export default function UnitEditor(props: Props): JSX.Element {
   const updateUnitManager = (updates: Partial<UnitManager>) =>
     updateForm({ unitManager: { ...form.unitManager, ...updates } })
 
+  const [
+    selectedFinanceDecisionManager,
+    setSelectedFinanceDecisionManager
+  ] = useState<{ value: string; label: string } | undefined>()
+  useEffect(() => {
+    setSelectedFinanceDecisionManager(
+      employeeOptions.find((e) => e.value === form.financeDecisionHandlerId)
+    )
+  }, [form.financeDecisionHandlerId])
+
   const areaOptions = props.areas.map(({ id, name }) => ({
     value: id,
     label: name
@@ -1003,6 +1013,7 @@ export default function UnitEditor(props: Props): JSX.Element {
           <Select
             options={employeeOptions}
             placeholder={i18n.unitEditor.placeholder.financeDecisionHandler}
+            value={selectedFinanceDecisionManager}
             onChange={(value) =>
               value && 'value' in value
                 ? updateForm({ financeDecisionHandlerId: value.value })
@@ -1010,15 +1021,7 @@ export default function UnitEditor(props: Props): JSX.Element {
             }
           />
         ) : (
-          [
-            props.employees.find(
-              (employee) => employee.id === form.financeDecisionHandlerId
-            )
-          ].map((employee) =>
-            employee
-              ? [employee.firstName, employee.lastName].join(' ')
-              : undefined
-          )[0]
+          selectedFinanceDecisionManager?.label
         )}
       </FormPart>
       <FormPart>

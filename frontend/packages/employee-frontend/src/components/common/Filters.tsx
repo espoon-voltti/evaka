@@ -308,10 +308,10 @@ export const FinanceDecisionHandlerFilter = React.memo(
           <ReactSelect
             placeholder={i18n.filters.financeDecisionHandlerPlaceholder}
             options={options}
+            value={selected}
             onChange={(option) =>
               option && 'id' in option ? select(option.id) : undefined
             }
-            value={selected}
           />
         </Label>
       </>
