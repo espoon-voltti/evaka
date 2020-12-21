@@ -6,6 +6,7 @@ package fi.espoo.evaka.shared.controllers
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.application.removeOldDrafts
+import fi.espoo.evaka.attachment.AttachmentsController
 import fi.espoo.evaka.dvv.DvvModificationsBatchRefreshService
 import fi.espoo.evaka.koski.KoskiUpdateService
 import fi.espoo.evaka.shared.db.Database
@@ -21,7 +22,8 @@ import org.springframework.web.bind.annotation.RestController
 class ScheduledOperationController(
     private val vardaUpdateService: VardaUpdateService,
     private val koskiUpdateService: KoskiUpdateService,
-    private val dvvModificationsBatchRefreshService: DvvModificationsBatchRefreshService
+    private val dvvModificationsBatchRefreshService: DvvModificationsBatchRefreshService,
+    private val attachmentsController: AttachmentsController
 ) {
 
     @PostMapping("/dvv/update")
@@ -49,7 +51,7 @@ class ScheduledOperationController(
     @PostMapping("/application/clear-old-drafts")
     fun removeOldDraftApplications(db: Database.Connection): ResponseEntity<Unit> {
         Audit.ApplicationsDeleteDrafts.log()
-        db.transaction { removeOldDrafts(it.handle) }
+        db.transaction { removeOldDrafts(it, attachmentsController::deleteAttachment) }
         return ResponseEntity.noContent().build()
     }
 
