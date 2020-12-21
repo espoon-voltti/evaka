@@ -12,7 +12,14 @@ import { useTranslation } from '~state/i18n'
 import { useEffect } from 'react'
 import { Loading } from '~api'
 import { useContext } from 'react'
-import { Table, Tbody, Td, Th, Thead, Tr } from 'components/shared/layout/Table'
+import {
+  Table,
+  Tbody,
+  Td,
+  Th,
+  Thead,
+  Tr
+} from '@evaka/lib-components/src/layout/Table'
 import Loader from '@evaka/lib-components/src/atoms/Loader'
 import { getChildApplicationSummaries } from '~api/person'
 import { ApplicationSummary } from '~types/application'

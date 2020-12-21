@@ -32,7 +32,7 @@ import { defaultMargins, Gap } from '@evaka/lib-components/src/white-space'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
-} from '~components/shared/layout/flex-helpers'
+} from '@evaka/lib-components/src/layout/flex-helpers'
 
 type CareType = 'DAYCARE' | 'PRESCHOOL' | 'PREPARATORY_EDUCATION' | 'CLUB'
 type DaycareType = 'CENTRE' | 'FAMILY' | 'GROUP_FAMILY'

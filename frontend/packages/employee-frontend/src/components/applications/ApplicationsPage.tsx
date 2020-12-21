@@ -13,7 +13,10 @@ import { useRestApi } from '~utils/useRestApi'
 import { SortByApplications } from '~/types/application'
 import { SearchOrder } from '~/types'
 import { defaultMargins, Gap } from '@evaka/lib-components/src/white-space'
-import { Container, ContentArea } from 'components/shared/layout/Container'
+import {
+  Container,
+  ContentArea
+} from '@evaka/lib-components/src/layout/Container'
 import ApplicationsList from 'components/applications/ApplicationsList'
 import ApplicationFilters from './ApplicationsFilters'
 import { ApplicationUIContext } from '~state/application-ui'

@@ -4,7 +4,7 @@
 
 import React, { useContext, useEffect, useState } from 'react'
 import { useTranslation } from '~state/i18n'
-import { FixedSpaceColumn } from 'components/shared/layout/flex-helpers'
+import { FixedSpaceColumn } from '@evaka/lib-components/src/layout/flex-helpers'
 import { UUID } from 'types'
 import AddButton from '@evaka/lib-components/src/atoms/buttons/AddButton'
 import { Loading, Result } from 'api'

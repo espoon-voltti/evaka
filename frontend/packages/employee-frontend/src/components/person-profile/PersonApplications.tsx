@@ -13,7 +13,14 @@ import { useEffect } from 'react'
 import { Loading } from '~api'
 import { useContext } from 'react'
 import { PersonContext } from '~state/person'
-import { Table, Tbody, Td, Th, Thead, Tr } from 'components/shared/layout/Table'
+import {
+  Table,
+  Tbody,
+  Td,
+  Th,
+  Thead,
+  Tr
+} from '@evaka/lib-components/src/layout/Table'
 import Loader from '@evaka/lib-components/src/atoms/Loader'
 import CollapsibleSection from 'components/shared/molecules/CollapsibleSection'
 import { getGuardianApplicationSummaries } from '~api/person'

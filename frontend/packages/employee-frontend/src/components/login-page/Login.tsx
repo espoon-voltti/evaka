@@ -5,7 +5,10 @@
 import React from 'react'
 import styled from 'styled-components'
 
-import { Container, ContentArea } from 'components/shared/layout/Container'
+import {
+  Container,
+  ContentArea
+} from '@evaka/lib-components/src/layout/Container'
 import Title from '@evaka/lib-components/src/atoms/Title'
 import ErrorMessage from './login/ErrorMessage'
 import { useTranslation } from '~state/i18n'

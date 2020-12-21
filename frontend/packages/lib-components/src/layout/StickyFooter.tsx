@@ -4,9 +4,9 @@
 
 import React from 'react'
 import styled from 'styled-components'
-import colors from '@evaka/lib-components/src/colors'
-import Container from 'components/shared/layout/Container'
-import { defaultMargins } from '@evaka/lib-components/src/white-space'
+import colors from '../colors'
+import { defaultMargins } from '../white-space'
+import Container from './Container'
 
 type Props = {
   children: React.ReactNode

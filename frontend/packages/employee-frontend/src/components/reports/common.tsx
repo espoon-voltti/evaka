@@ -4,7 +4,7 @@
 
 import React from 'react'
 import styled from 'styled-components'
-import { Table } from '~components/shared/layout/Table'
+import { Table } from '@evaka/lib-components/src/layout/Table'
 import { customColours } from 'utils/colours'
 import { useTranslation } from 'state/i18n'
 import { FlexRow } from 'components/common/styled/containers'

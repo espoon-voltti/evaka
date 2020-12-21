@@ -13,7 +13,7 @@ import {
 
 import { Attachment } from '~types/application'
 import styled from 'styled-components'
-import { FixedSpaceRow } from '~components/shared/layout/flex-helpers'
+import { FixedSpaceRow } from '@evaka/lib-components/src/layout/flex-helpers'
 
 const AttachmentContainer = styled.div`
   display: flex;

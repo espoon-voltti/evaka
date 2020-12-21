@@ -4,8 +4,18 @@
 
 import React, { useContext, useEffect, useState } from 'react'
 
-import { Container, ContentArea } from '~components/shared/layout/Container'
-import { Table, Tbody, Td, Th, Thead, Tr } from 'components/shared/layout/Table'
+import {
+  Container,
+  ContentArea
+} from '@evaka/lib-components/src/layout/Container'
+import {
+  Table,
+  Tbody,
+  Td,
+  Th,
+  Thead,
+  Tr
+} from '@evaka/lib-components/src/layout/Table'
 import Loader from '@evaka/lib-components/src/atoms/Loader'
 import Title from '@evaka/lib-components/src/atoms/Title'
 import Button from '@evaka/lib-components/src/atoms/buttons/Button'
@@ -25,7 +35,7 @@ import GroupCaretakersModal from '~components/group-caretakers/GroupCaretakersMo
 import InfoModal from '~components/common/InfoModal'
 import { useTranslation } from '~state/i18n'
 import ReturnButton from '@evaka/lib-components/src/atoms/buttons/ReturnButton'
-import { FixedSpaceRow } from './shared/layout/flex-helpers'
+import { FixedSpaceRow } from '@evaka/lib-components/src/layout/flex-helpers'
 
 const NarrowContainer = styled.div`
   max-width: 900px;

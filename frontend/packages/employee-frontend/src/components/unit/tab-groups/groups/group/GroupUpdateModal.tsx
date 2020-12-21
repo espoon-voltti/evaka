@@ -7,11 +7,10 @@ import LocalDate from '@evaka/lib-common/src/local-date'
 import { useTranslation } from '~state/i18n'
 import { UIContext } from '~state/ui'
 import FormModal from '~components/common/FormModal'
-import Section from '~components/shared/layout/Section'
 import { Gap } from '@evaka/lib-components/src/white-space'
 import { faPen } from '@evaka/lib-icons'
 import { DaycareGroup } from '~types/unit'
-import { FixedSpaceColumn } from '~components/shared/layout/flex-helpers'
+import { FixedSpaceColumn } from '@evaka/lib-components/src/layout/flex-helpers'
 import { InfoBox } from '~components/common/MessageBoxes'
 import { editGroup } from '~api/unit'
 import InputField from '@evaka/lib-components/src/atoms/form/InputField'
@@ -55,7 +54,7 @@ export default React.memo(function GroupUpdateModal({ group, reload }: Props) {
       resolve={() => submitForm()}
     >
       <FixedSpaceColumn>
-        <Section>
+        <section>
           <div className="bold">{i18n.unit.groups.updateModal.name}</div>
           <InputField
             value={data.name}
@@ -81,7 +80,7 @@ export default React.memo(function GroupUpdateModal({ group, reload }: Props) {
             type="full-width"
             dataQa="end-date-input"
           />
-        </Section>
+        </section>
         <InfoBox message={i18n.unit.groups.updateModal.info} thin />
       </FixedSpaceColumn>
     </FormModal>

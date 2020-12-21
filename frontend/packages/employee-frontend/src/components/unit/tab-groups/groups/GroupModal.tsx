@@ -6,7 +6,6 @@ import React, { useContext, useEffect, useState } from 'react'
 import FormModal from '~components/common/FormModal'
 import { useTranslation } from '~state/i18n'
 import { UIContext } from '~state/ui'
-import Section from '~components/shared/layout/Section'
 import { DatePicker } from '~components/common/DatePicker'
 import InputField from '@evaka/lib-components/src/atoms/form/InputField'
 import { allPropertiesTrue } from '~utils/validation/validations'
@@ -14,7 +13,7 @@ import '~components/unit/tab-groups/groups/GroupModal.scss'
 import { createGroup } from '~api/unit'
 import { EVAKA_START } from '~constants'
 import LocalDate from '@evaka/lib-common/src/local-date'
-import { FixedSpaceColumn } from '~components/shared/layout/flex-helpers'
+import { FixedSpaceColumn } from '@evaka/lib-components/src/layout/flex-helpers'
 
 interface Props {
   unitId: string
@@ -89,7 +88,7 @@ function GroupModal({ unitId, reload }: Props) {
       rejectLabel={i18n.unit.groups.createModal.cancelButton}
     >
       <FixedSpaceColumn spacing={'m'}>
-        <Section>
+        <section>
           <div className="bold">{i18n.unit.groups.createModal.name}</div>
           <InputField
             value={form.name}
@@ -104,16 +103,16 @@ function GroupModal({ unitId, reload }: Props) {
                 : undefined
             }
           />
-        </Section>
-        <Section>
+        </section>
+        <section>
           <div className="bold">{i18n.common.form.startDate}</div>
           <DatePicker
             date={form.startDate}
             onChange={(startDate) => assignForm({ startDate })}
             type="full-width"
           />
-        </Section>
-        <Section>
+        </section>
+        <section>
           <div className="bold">
             {i18n.unit.groups.createModal.initialCaretakers}
           </div>
@@ -127,7 +126,7 @@ function GroupModal({ unitId, reload }: Props) {
             }
             dataQa={'new-group-name-input'}
           />
-        </Section>
+        </section>
       </FixedSpaceColumn>
     </FormModal>
   )

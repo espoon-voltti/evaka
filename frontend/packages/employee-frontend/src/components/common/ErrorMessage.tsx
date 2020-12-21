@@ -8,7 +8,7 @@ import React, { useContext } from 'react'
 import { UIContext } from '~state/ui'
 
 import '~components/common/ErrorMessage.scss'
-import { errorModalZIndex } from '~components/shared/layout/z-helpers'
+import { errorModalZIndex } from '@evaka/lib-components/src/layout/z-helpers'
 
 function ErrorMessage() {
   const { errorMessage, clearErrorMessage } = useContext(UIContext)

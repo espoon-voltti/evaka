@@ -3,11 +3,8 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import styled from 'styled-components'
-import {
-  defaultMargins,
-  SpacingSize
-} from '@evaka/lib-components/src/white-space'
-import { BaseProps } from '@evaka/lib-components/src/utils'
+import { defaultMargins, SpacingSize } from '../white-space'
+import { BaseProps } from '../utils'
 
 export const Container = styled.div`
   margin: 0 auto;
@@ -35,7 +32,7 @@ export const Container = styled.div`
   }
 `
 
-interface ContentAreaProps extends BaseProps {
+type ContentAreaProps = BaseProps & {
   opaque: boolean
   paddingVertical?: SpacingSize
   paddingHorozontal?: SpacingSize

@@ -16,7 +16,10 @@ import styled from 'styled-components'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faExclamationTriangle } from '@fortawesome/free-solid-svg-icons'
 import Checkbox from '@evaka/lib-components/src/atoms/form/Checkbox'
-import { Container, ContentArea } from '~components/shared/layout/Container'
+import {
+  Container,
+  ContentArea
+} from '@evaka/lib-components/src/layout/Container'
 import Title from '@evaka/lib-components/src/atoms/Title'
 import { Gap } from '@evaka/lib-components/src/white-space'
 import Button from '@evaka/lib-components/src/atoms/buttons/Button'
@@ -44,7 +47,7 @@ import { AlertBox, InfoBox } from '~components/common/MessageBoxes'
 import { TitleContext, TitleState } from '~state/title'
 import { EspooColours } from '~utils/colours'
 import { formatName } from '~utils'
-import { FixedSpaceRow } from '~components/shared/layout/flex-helpers'
+import { FixedSpaceRow } from '@evaka/lib-components/src/layout/flex-helpers'
 
 const ColumnTitle = styled.div`
   font-weight: 600;

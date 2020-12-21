@@ -21,7 +21,7 @@ import {
   Tr,
   Thead,
   Tbody
-} from '~components/shared/layout/Table'
+} from '@evaka/lib-components/src/layout/Table'
 import {
   faAngleDown,
   faAngleUp,
@@ -53,7 +53,7 @@ import { H3 } from '@evaka/lib-components/src/typography'
 import { UnitFilters } from '~utils/UnitFilters'
 import { rangesOverlap } from '~utils/date'
 import colors from '@evaka/lib-components/src/colors'
-import { FixedSpaceRow } from '~components/shared/layout/flex-helpers'
+import { FixedSpaceRow } from '@evaka/lib-components/src/layout/flex-helpers'
 import PlacementCircle from '@evaka/lib-components/src/atoms/PlacementCircle'
 import Tooltip from '@evaka/lib-components/src/atoms/Tooltip'
 import { UIContext } from '~state/ui'

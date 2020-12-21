@@ -5,7 +5,7 @@
 import React from 'react'
 import { Label } from '@evaka/lib-components/src/typography'
 import { storiesOf } from '@storybook/react'
-import ListGrid from 'components/shared/layout/ListGrid'
+import ListGrid from '@evaka/lib-components/src/layout/ListGrid'
 
 storiesOf('evaka/layout/ListGrid', module).add('default', () => (
   <ListGrid>

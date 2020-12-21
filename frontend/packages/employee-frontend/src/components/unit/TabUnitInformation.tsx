@@ -7,8 +7,8 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 }
 
 import React, { useContext } from 'react'
-import { ContentArea } from '~components/shared/layout/Container'
-import { FixedSpaceColumn } from '~components/shared/layout/flex-helpers'
+import { ContentArea } from '@evaka/lib-components/src/layout/Container'
+import { FixedSpaceColumn } from '@evaka/lib-components/src/layout/flex-helpers'
 import UnitInformation from '~components/unit/tab-unit-information/UnitInformation'
 import { UnitContext } from '~state/unit'
 import { SpinnerSegment } from '@evaka/lib-components/src/atoms/state/Spinner'

@@ -10,10 +10,13 @@ import { Label, LabelText } from '~components/common/styled/common'
 import Button from '@evaka/lib-components/src/atoms/buttons/Button'
 import Radio from '@evaka/lib-components/src/atoms/form/Radio'
 import Checkbox from '@evaka/lib-components/src/atoms/form/Checkbox'
-import { Container, ContentArea } from '~components/shared/layout/Container'
+import {
+  Container,
+  ContentArea
+} from '@evaka/lib-components/src/layout/Container'
 import Loader from '@evaka/lib-components/src/atoms/Loader'
 import Title from '@evaka/lib-components/src/atoms/Title'
-import { FixedSpaceColumn } from '~components/shared/layout/flex-helpers'
+import { FixedSpaceColumn } from '@evaka/lib-components/src/layout/flex-helpers'
 import { Loading } from '~api'
 import FormModal from '~components/common/FormModal'
 import { getGroupAbsences, postGroupAbsences } from '~api/absences'

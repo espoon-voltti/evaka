@@ -7,13 +7,13 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 }
 
 import React, { Dispatch, SetStateAction, useContext } from 'react'
-import { ContentArea } from '~components/shared/layout/Container'
+import { ContentArea } from '@evaka/lib-components/src/layout/Container'
 import { UnitContext } from '~state/unit'
 import { SpinnerSegment } from '@evaka/lib-components/src/atoms/state/Spinner'
 import ErrorSegment from '@evaka/lib-components/src/atoms/state/ErrorSegment'
 import { UserContext } from '~state/user'
 import { requireRole } from '~utils/roles'
-import { FixedSpaceColumn } from '~components/shared/layout/flex-helpers'
+import { FixedSpaceColumn } from '@evaka/lib-components/src/layout/flex-helpers'
 import Groups from '~components/unit/tab-groups/Groups'
 import MissingGroupPlacements from '~components/unit/tab-groups/MissingGroupPlacements'
 

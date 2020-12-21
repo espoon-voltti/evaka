@@ -10,7 +10,7 @@ import React, {
   useRef,
   useState
 } from 'react'
-import { Td, Tr } from '~components/shared/layout/Table'
+import { Td, Tr } from '@evaka/lib-components/src/layout/Table'
 import { DisabledCell } from '~components/absences/AbsenceCell'
 import { useTranslation } from '~state/i18n'
 import { AbsencesContext } from '~state/absence'

@@ -4,7 +4,7 @@
 
 import React, { useState } from 'react'
 import { storiesOf } from '@storybook/react'
-import { FixedSpaceColumn } from 'components/shared/layout/flex-helpers'
+import { FixedSpaceColumn } from '@evaka/lib-components/src/layout/flex-helpers'
 import Checkbox from '@evaka/lib-components/src/atoms/form/Checkbox'
 
 function StatefulStory() {

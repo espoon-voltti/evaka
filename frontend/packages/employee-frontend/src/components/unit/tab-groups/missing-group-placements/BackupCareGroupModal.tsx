@@ -6,7 +6,6 @@ import React, { useContext, useState } from 'react'
 import { useTranslation } from '~state/i18n'
 import { UIContext } from '~state/ui'
 import FormModal from '~components/common/FormModal'
-import Section from '~components/shared/layout/Section'
 import { faChild, faExchange } from '@evaka/lib-icons'
 import { UUID } from '~types'
 import Select from '~components/common/Select'
@@ -77,11 +76,11 @@ export default React.memo(function BackupCareGroupModal({
       resolveDisabled={!groupId}
       resolve={() => submitForm()}
     >
-      <Section>
+      <section>
         <div className="bold">{i18n.unit.placements.modal.child}</div>
         <span>{formatName(child.firstName, child.lastName, i18n)}</span>
-      </Section>
-      <Section>
+      </section>
+      <section>
         <div className="bold">{i18n.unit.placements.modal.group}</div>
         <Select
           options={openGroups.map((group) => ({
@@ -92,21 +91,21 @@ export default React.memo(function BackupCareGroupModal({
             value && 'value' in value ? setGroupId(value.value) : undefined
           }
         />
-      </Section>
-      <Section>
+      </section>
+      <section>
         <div className="bold">{i18n.common.form.startDate}</div>
         <div>{period.start.format()}</div>
-      </Section>
-      <Section>
+      </section>
+      <section>
         <div className="bold">{i18n.common.form.endDate}</div>
         <div>{period.end.format()}</div>
-      </Section>
+      </section>
       {!groupId && (
-        <Section>
+        <section>
           <div className="error">
             {i18n.unit.placements.modal.errors.noGroup}
           </div>
-        </Section>
+        </section>
       )}
     </FormModal>
   )

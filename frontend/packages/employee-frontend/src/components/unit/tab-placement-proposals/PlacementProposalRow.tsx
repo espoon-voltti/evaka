@@ -5,7 +5,7 @@
 import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
 
-import { Td, Tr } from '~components/shared/layout/Table'
+import { Td, Tr } from '@evaka/lib-components/src/layout/Table'
 import { useTranslation } from '~state/i18n'
 import {
   DaycarePlacementPlan,
@@ -18,7 +18,7 @@ import styled from 'styled-components'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
-} from 'components/shared/layout/flex-helpers'
+} from '@evaka/lib-components/src/layout/flex-helpers'
 import IconButton from '@evaka/lib-components/src/atoms/buttons/IconButton'
 import { faFileAlt } from '@evaka/lib-icons'
 import { getEmployeeUrlPrefix } from '~constants'

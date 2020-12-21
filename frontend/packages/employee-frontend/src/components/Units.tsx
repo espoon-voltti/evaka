@@ -9,7 +9,10 @@ import { Link } from 'react-router-dom'
 import { SearchColumn, UnitsContext, UnitsState } from '~state/units'
 import Button from '@evaka/lib-components/src/atoms/buttons/Button'
 import InputField from '@evaka/lib-components/src/atoms/form/InputField'
-import { Container, ContentArea } from 'components/shared/layout/Container'
+import {
+  Container,
+  ContentArea
+} from '@evaka/lib-components/src/layout/Container'
 import {
   Table,
   Tr,
@@ -17,7 +20,7 @@ import {
   Thead,
   Tbody,
   SortableTh
-} from '~components/shared/layout/Table'
+} from '@evaka/lib-components/src/layout/Table'
 import { Gap } from '@evaka/lib-components/src/white-space'
 import { useTranslation } from '~state/i18n'
 import { faSearch } from '@evaka/lib-icons'

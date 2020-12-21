@@ -9,13 +9,13 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faFilePdf, faGavel } from '@evaka/lib-icons'
 import { Label } from '@evaka/lib-components/src/typography'
 import CollapsibleSection from '~components/shared/molecules/CollapsibleSection'
-import ListGrid from '~components/shared/layout/ListGrid'
+import ListGrid from '@evaka/lib-components/src/layout/ListGrid'
 import { useTranslation } from '~state/i18n'
 import { Decision } from 'types/decision'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
-} from 'components/shared/layout/flex-helpers'
+} from '@evaka/lib-components/src/layout/flex-helpers'
 import DecisionResponse from 'components/application-page/DecisionResponse'
 import { UUID } from 'types'
 import LocalDate from '@evaka/lib-common/src/local-date'

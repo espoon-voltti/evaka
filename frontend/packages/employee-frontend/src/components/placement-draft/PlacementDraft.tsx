@@ -10,7 +10,10 @@ import ReactSelect from 'react-select'
 import { faLink } from '@evaka/lib-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import LocalDate from '@evaka/lib-common/src/local-date'
-import { Container, ContentArea } from '~components/shared/layout/Container'
+import {
+  Container,
+  ContentArea
+} from '@evaka/lib-components/src/layout/Container'
 import Title from '@evaka/lib-components/src/atoms/Title'
 import { Gap } from '@evaka/lib-components/src/white-space'
 import Button from '@evaka/lib-components/src/atoms/buttons/Button'

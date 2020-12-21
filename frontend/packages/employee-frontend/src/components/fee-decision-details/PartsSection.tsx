@@ -4,7 +4,6 @@
 
 import React, { Fragment } from 'react'
 import styled from 'styled-components'
-import Section from '~components/shared/layout/Section'
 import { Gap } from '@evaka/lib-components/src/white-space'
 import { H3, H4 } from '@evaka/lib-components/src/typography'
 import { useTranslation } from '~state/i18n'
@@ -20,7 +19,7 @@ export default React.memo(function PartsSection({ decision }: Props) {
   const { i18n } = useTranslation()
 
   return (
-    <Section>
+    <section>
       <H3>{i18n.feeDecision.form.summary.parts.title}</H3>
       {decision.parts.map(
         ({
@@ -72,7 +71,7 @@ export default React.memo(function PartsSection({ decision }: Props) {
           )
         }
       )}
-    </Section>
+    </section>
   )
 })
 

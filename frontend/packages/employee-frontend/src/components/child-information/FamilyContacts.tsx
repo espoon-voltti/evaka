@@ -13,9 +13,16 @@ import CollapsibleSection from 'components/shared/molecules/CollapsibleSection'
 import { faUsers } from '@evaka/lib-icons'
 import { useTranslation } from 'state/i18n'
 import ErrorSegment from '@evaka/lib-components/src/atoms/state/ErrorSegment'
-import { Table, Tbody, Td, Th, Thead, Tr } from 'components/shared/layout/Table'
+import {
+  Table,
+  Tbody,
+  Td,
+  Th,
+  Thead,
+  Tr
+} from '@evaka/lib-components/src/layout/Table'
 import { formatName } from 'utils'
-import { FixedSpaceColumn } from 'components/shared/layout/flex-helpers'
+import { FixedSpaceColumn } from '@evaka/lib-components/src/layout/flex-helpers'
 
 interface FamilyContactsProps {
   id: UUID

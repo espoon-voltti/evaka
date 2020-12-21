@@ -11,7 +11,7 @@ import {
   Th,
   Td,
   SortableTh
-} from 'components/shared/layout/Table'
+} from '@evaka/lib-components/src/layout/Table'
 import { action } from '@storybook/addon-actions'
 
 const onClick = action('clicked')

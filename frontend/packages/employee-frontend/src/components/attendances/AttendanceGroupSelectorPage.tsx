@@ -9,7 +9,7 @@ import MetaTags from 'react-meta-tags'
 
 import Loader from '@evaka/lib-components/src/atoms/Loader'
 import Title from '@evaka/lib-components/src/atoms/Title'
-import { ContentArea } from '~components/shared/layout/Container'
+import { ContentArea } from '@evaka/lib-components/src/layout/Container'
 import { defaultMargins } from '@evaka/lib-components/src/white-space'
 import { useTranslation } from '~state/i18n'
 import { AttendanceUIContext } from '~state/attendance-ui'

@@ -7,7 +7,6 @@ import LocalDate from '@evaka/lib-common/src/local-date'
 import { useTranslation } from '~state/i18n'
 import { UIContext } from '~state/ui'
 import FormModal from '~components/common/FormModal'
-import Section from '~components/shared/layout/Section'
 import { Result } from '~api'
 import { faExchange } from '@evaka/lib-icons'
 import { transferGroup } from '~api/unit'
@@ -16,7 +15,7 @@ import { DatePicker } from '~components/common/DatePicker'
 import { formatName } from '~utils'
 import { DaycareGroupPlacementDetailed, DaycareGroup } from '~types/unit'
 import Select from '~components/common/Select'
-import { FixedSpaceColumn } from '~components/shared/layout/flex-helpers'
+import { FixedSpaceColumn } from '@evaka/lib-components/src/layout/flex-helpers'
 
 interface Props {
   placement: DaycareGroupPlacementDetailed
@@ -121,11 +120,11 @@ export default React.memo(function GroupTransferModal({
       resolve={() => submitForm()}
     >
       <FixedSpaceColumn>
-        <Section>
+        <section>
           <div className="bold">{i18n.unit.placements.modal.child}</div>
           <span>{formatName(child.firstName, child.lastName, i18n)}</span>
-        </Section>
-        <Section>
+        </section>
+        <section>
           <div className="bold">{i18n.unit.placements.modal.group}</div>
           <Select
             options={openGroups.map((group) => ({
@@ -140,8 +139,8 @@ export default React.memo(function GroupTransferModal({
                 : undefined
             }
           />
-        </Section>
-        <Section>
+        </section>
+        <section>
           <div className="bold">{i18n.common.form.startDate}</div>
           <DatePicker
             date={form.startDate}
@@ -150,15 +149,15 @@ export default React.memo(function GroupTransferModal({
             minDate={minDate}
             maxDate={maxDate}
           />
-        </Section>
+        </section>
         {form.errors.length > 0 && (
-          <Section>
+          <section>
             {form.errors.map((error, index) => (
               <div className="error" key={index}>
                 {error}
               </div>
             ))}
-          </Section>
+          </section>
         )}
       </FixedSpaceColumn>
     </FormModal>

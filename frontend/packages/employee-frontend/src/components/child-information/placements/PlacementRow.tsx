@@ -29,7 +29,7 @@ import {
 } from 'api/child/placements'
 import { InputWarning } from '~components/common/InputWarning'
 import LocalDate from '@evaka/lib-common/src/local-date'
-import { FixedSpaceRow } from '~components/shared/layout/flex-helpers'
+import { FixedSpaceRow } from '@evaka/lib-components/src/layout/flex-helpers'
 
 interface Props {
   placement: Placement

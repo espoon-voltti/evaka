@@ -6,7 +6,7 @@ import React from 'react'
 import { storiesOf } from '@storybook/react'
 import Tooltip from '@evaka/lib-components/src/atoms/Tooltip'
 import styled from 'styled-components'
-import { FixedSpaceColumn } from '~components/shared/layout/flex-helpers'
+import { FixedSpaceColumn } from '@evaka/lib-components/src/layout/flex-helpers'
 
 const Elem = styled.div`
   height: 200px;

@@ -24,7 +24,7 @@ import { AdditionalInformation } from '~types/child'
 import { formatParagraphs } from '~utils/html-utils'
 import { textAreaRows } from '~components/utils'
 import { RequireRole } from 'utils/roles'
-import { FixedSpaceRow } from '~components/shared/layout/flex-helpers'
+import { FixedSpaceRow } from '@evaka/lib-components/src/layout/flex-helpers'
 
 const FlexContainer = styled.div`
   display: flex;

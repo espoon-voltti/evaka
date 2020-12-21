@@ -15,7 +15,10 @@ import { Gap } from '@evaka/lib-components/src/white-space'
 import AddButton from '@evaka/lib-components/src/atoms/buttons/AddButton'
 import Button from '@evaka/lib-components/src/atoms/buttons/Button'
 import InputField from '@evaka/lib-components/src/atoms/form/InputField'
-import { Container, ContentArea } from 'components/shared/layout/Container'
+import {
+  Container,
+  ContentArea
+} from '@evaka/lib-components/src/layout/Container'
 import {
   Table,
   Tr,
@@ -23,7 +26,7 @@ import {
   Thead,
   Tbody,
   SortableTh
-} from '~components/shared/layout/Table'
+} from '@evaka/lib-components/src/layout/Table'
 import Loader from '@evaka/lib-components/src/atoms/Loader'
 import AddVTJPersonModal from '~components/person-search/AddVTJPersonModal'
 import CreatePersonModal from '~components/person-search/CreatePersonModal'

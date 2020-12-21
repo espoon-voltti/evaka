@@ -3,10 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import styled from 'styled-components'
-import {
-  defaultMargins,
-  SpacingSize
-} from '@evaka/lib-components/src/white-space'
+import { defaultMargins, SpacingSize } from '../white-space'
 
 interface ListGridProps {
   labelWidth?: string

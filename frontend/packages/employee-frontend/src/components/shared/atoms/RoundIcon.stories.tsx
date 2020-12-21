@@ -6,7 +6,7 @@ import React from 'react'
 import { storiesOf } from '@storybook/react'
 import styled from 'styled-components'
 import { defaultMargins } from '@evaka/lib-components/src/white-space'
-import { FixedSpaceRow } from 'components/shared/layout/flex-helpers'
+import { FixedSpaceRow } from '@evaka/lib-components/src/layout/flex-helpers'
 import RoundIcon from '@evaka/lib-components/src/atoms/RoundIcon'
 import {
   faCheck,

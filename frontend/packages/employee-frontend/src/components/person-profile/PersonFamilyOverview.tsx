@@ -7,7 +7,14 @@ import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { faHomeAlt } from '@evaka/lib-icons'
-import { Table, Tbody, Td, Th, Thead, Tr } from 'components/shared/layout/Table'
+import {
+  Table,
+  Tbody,
+  Td,
+  Th,
+  Thead,
+  Tr
+} from '@evaka/lib-components/src/layout/Table'
 import Loader from '@evaka/lib-components/src/atoms/Loader'
 import CollapsibleSection from 'components/shared/molecules/CollapsibleSection'
 import LabelValueList from '~components/common/LabelValueList'

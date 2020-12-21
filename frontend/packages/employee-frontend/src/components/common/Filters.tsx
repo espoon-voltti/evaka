@@ -28,7 +28,7 @@ import { ApplicationType, ApplicationSummaryStatus } from '~types/application'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
-} from 'components/shared/layout/flex-helpers'
+} from '@evaka/lib-components/src/layout/flex-helpers'
 import Checkbox from '@evaka/lib-components/src/atoms/form/Checkbox'
 import Radio from '@evaka/lib-components/src/atoms/form/Radio'
 import { Gap, defaultMargins } from '@evaka/lib-components/src/white-space'

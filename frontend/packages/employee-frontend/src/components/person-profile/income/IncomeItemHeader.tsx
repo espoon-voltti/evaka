@@ -8,7 +8,7 @@ import { faChevronLeft, faChevronDown, faPen, faTrash } from '@evaka/lib-icons'
 import IconButton from '@evaka/lib-components/src/atoms/buttons/IconButton'
 import Title from '@evaka/lib-components/src/atoms/Title'
 import { EspooColours } from '~utils/colours'
-import { FixedSpaceRow } from '~components/shared/layout/flex-helpers'
+import { FixedSpaceRow } from '@evaka/lib-components/src/layout/flex-helpers'
 
 const Container = styled.div`
   display: flex;

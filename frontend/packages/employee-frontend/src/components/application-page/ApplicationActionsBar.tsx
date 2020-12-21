@@ -5,7 +5,7 @@
 import React from 'react'
 import styled from 'styled-components'
 import { Gap } from '@evaka/lib-components/src/white-space'
-import StickyFooter from 'components/shared/layout/StickyFooter'
+import StickyFooter from '@evaka/lib-components/src/layout/StickyFooter'
 import AsyncButton from '@evaka/lib-components/src/atoms/buttons/AsyncButton'
 import Button from '@evaka/lib-components/src/atoms/buttons/Button'
 import { useTranslation } from 'state/i18n'

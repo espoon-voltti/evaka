@@ -24,7 +24,7 @@ import {
   ServiceNeedRequest,
   updateServiceNeed
 } from 'api/child/service-needs'
-import { FixedSpaceColumn } from '~components/shared/layout/flex-helpers'
+import { FixedSpaceColumn } from '@evaka/lib-components/src/layout/flex-helpers'
 
 const NumberInputWrapper = styled.div`
   display: flex;

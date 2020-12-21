@@ -4,11 +4,7 @@
 
 import styled from 'styled-components'
 import { SelfPosition } from 'csstype'
-import {
-  defaultMargins,
-  isSpacingSize,
-  SpacingSize
-} from '@evaka/lib-components/src/white-space'
+import { defaultMargins, isSpacingSize, SpacingSize } from '../white-space'
 
 interface FixedSpaceRowProps {
   spacing?: SpacingSize | string

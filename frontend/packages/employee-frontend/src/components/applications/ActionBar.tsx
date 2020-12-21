@@ -17,7 +17,7 @@ import {
   batchSendPlacementProposal,
   batchWithdrawPlacementProposal
 } from 'api/applications'
-import { FixedSpaceRow } from 'components/shared/layout/flex-helpers'
+import { FixedSpaceRow } from '@evaka/lib-components/src/layout/flex-helpers'
 
 type Action = {
   id: string

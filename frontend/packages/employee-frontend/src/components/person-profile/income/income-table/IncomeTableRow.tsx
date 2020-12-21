@@ -5,7 +5,7 @@
 import React, { Dispatch, SetStateAction } from 'react'
 import styled from 'styled-components'
 
-import { Td, Tr } from 'components/shared/layout/Table'
+import { Td, Tr } from '@evaka/lib-components/src/layout/Table'
 import SimpleSelect from '@evaka/lib-components/src/atoms/form/SimpleSelect'
 import EuroInput from '~components/common/EuroInput'
 import { TableIncomeState } from '../IncomeTable'

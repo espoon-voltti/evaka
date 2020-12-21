@@ -33,7 +33,7 @@ import {
 import ReactSelect, { createFilter, components } from 'react-select'
 import styled from 'styled-components'
 import { ChildBackupCare } from '~types/child'
-import { FixedSpaceRow } from '~components/shared/layout/flex-helpers'
+import { FixedSpaceRow } from '@evaka/lib-components/src/layout/flex-helpers'
 
 export interface Props {
   childId: UUID

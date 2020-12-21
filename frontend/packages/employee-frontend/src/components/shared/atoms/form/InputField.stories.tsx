@@ -4,7 +4,7 @@
 
 import React, { useState } from 'react'
 import { storiesOf } from '@storybook/react'
-import ListGrid from 'components/shared/layout/ListGrid'
+import ListGrid from '@evaka/lib-components/src/layout/ListGrid'
 import InputField from '@evaka/lib-components/src/atoms/form/InputField'
 import { Label } from '@evaka/lib-components/src/typography'
 

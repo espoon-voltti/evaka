@@ -6,7 +6,6 @@ import React from 'react'
 import styled from 'styled-components'
 import LabelValueList from '~components/common/LabelValueList'
 import { Gap } from '@evaka/lib-components/src/white-space'
-import Section from '~components/shared/layout/Section'
 import { H3, H5 } from '@evaka/lib-components/src/typography'
 import { useTranslation } from '~state/i18n'
 import { Income, IncomeType, incomeTypes } from '~types/income'
@@ -62,7 +61,7 @@ export default React.memo(function VoucherValueDecisionIncomeSection({
   }
 
   return (
-    <Section>
+    <section>
       <H3 noMargin>{i18n.valueDecision.summary.income.familyComposition}</H3>
       <Gap size="s" />
       <LabelValueList
@@ -128,7 +127,7 @@ export default React.memo(function VoucherValueDecisionIncomeSection({
           </IncomeTotal>
         </>
       ) : null}
-    </Section>
+    </section>
   )
 })
 

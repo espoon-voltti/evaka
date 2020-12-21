@@ -5,7 +5,10 @@
 import React, { useContext, useEffect, useState } from 'react'
 import { Redirect, useParams } from 'react-router-dom'
 
-import { Container, ContentArea } from '~components/shared/layout/Container'
+import {
+  Container,
+  ContentArea
+} from '@evaka/lib-components/src/layout/Container'
 import ReturnButton from '@evaka/lib-components/src/atoms/buttons/ReturnButton'
 import Title from '@evaka/lib-components/src/atoms/Title'
 import { useTranslation } from '../../state/i18n'

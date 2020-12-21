@@ -14,11 +14,10 @@ import FormModal from '~components/common/FormModal'
 import { faMapMarkerAlt } from '@evaka/lib-icons'
 import { UIContext } from '~state/ui'
 import { DatePicker } from '~components/common/DatePicker'
-import Section from '~components/shared/layout/Section'
 import { createPlacement } from 'api/child/placements'
 import Select from '~components/common/Select'
 import { PreferredUnit } from '~types/application'
-import { FixedSpaceColumn } from '~components/shared/layout/flex-helpers'
+import { FixedSpaceColumn } from '@evaka/lib-components/src/layout/flex-helpers'
 
 export interface Props {
   childId: UUID
@@ -117,7 +116,7 @@ function CreatePlacementModal({ childId, reload }: Props) {
       }
     >
       <FixedSpaceColumn>
-        <Section>
+        <section>
           <div className="bold">{i18n.childInformation.placements.type}</div>
 
           <Select
@@ -135,9 +134,9 @@ function CreatePlacementModal({ childId, reload }: Props) {
                 : undefined
             }
           />
-        </Section>
+        </section>
 
-        <Section>
+        <section>
           <div className="bold">
             {i18n.childInformation.placements.daycareUnit}
           </div>
@@ -168,9 +167,9 @@ function CreatePlacementModal({ childId, reload }: Props) {
             loadingMessage={() => i18n.common.loading}
             noOptionsMessage={() => i18n.common.loadingFailed}
           />
-        </Section>
+        </section>
 
-        <Section>
+        <section>
           <div className="bold">{i18n.common.form.startDate}</div>
 
           <DatePicker
@@ -179,9 +178,9 @@ function CreatePlacementModal({ childId, reload }: Props) {
             dataQa="create-placement-start-date"
             type="full-width"
           />
-        </Section>
+        </section>
 
-        <Section>
+        <section>
           <div className="bold">{i18n.common.form.endDate}</div>
 
           <DatePicker
@@ -190,7 +189,7 @@ function CreatePlacementModal({ childId, reload }: Props) {
             dataQa="create-placement-end-date"
             type="full-width"
           />
-        </Section>
+        </section>
       </FixedSpaceColumn>
     </FormModal>
   )

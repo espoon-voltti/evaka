@@ -16,7 +16,7 @@ import {
   Th,
   Thead,
   Tr
-} from '~components/shared/layout/Table'
+} from '@evaka/lib-components/src/layout/Table'
 import _ from 'lodash'
 import { Link } from 'react-router-dom'
 import { PersonDetails } from '~/types/person'

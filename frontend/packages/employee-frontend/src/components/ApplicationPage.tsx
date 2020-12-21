@@ -20,10 +20,13 @@ import { getApplicationUnits } from 'api/daycare'
 import { renderResult } from '~components/async-rendering'
 import { TitleContext, TitleState } from 'state/title'
 import { useTranslation, Translations } from 'state/i18n'
-import { Container, ContentArea } from '~components/shared/layout/Container'
+import {
+  Container,
+  ContentArea
+} from '@evaka/lib-components/src/layout/Container'
 import { Gap } from '@evaka/lib-components/src/white-space'
 import styled from 'styled-components'
-import { FixedSpaceRow } from 'components/shared/layout/flex-helpers'
+import { FixedSpaceRow } from '@evaka/lib-components/src/layout/flex-helpers'
 import ReturnButton from '@evaka/lib-components/src/atoms/buttons/ReturnButton'
 import ApplicationNotes from 'components/application-page/ApplicationNotes'
 import { useDebounce } from 'utils/useDebounce'

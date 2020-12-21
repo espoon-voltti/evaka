@@ -4,7 +4,7 @@
 
 import React, { useState } from 'react'
 import { storiesOf } from '@storybook/react'
-import { FixedSpaceColumn } from '~components/shared/layout/flex-helpers'
+import { FixedSpaceColumn } from '@evaka/lib-components/src/layout/flex-helpers'
 import SimpleSelect from '@evaka/lib-components/src/atoms/form/SimpleSelect'
 
 storiesOf('evaka/atoms/form/SimpleSelect', module).add('default', () => {

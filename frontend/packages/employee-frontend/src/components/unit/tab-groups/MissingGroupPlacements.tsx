@@ -12,7 +12,7 @@ import {
   Tr,
   Thead,
   Tbody
-} from '~components/shared/layout/Table'
+} from '@evaka/lib-components/src/layout/Table'
 import Title from '@evaka/lib-components/src/atoms/Title'
 import InlineButton from '@evaka/lib-components/src/atoms/buttons/InlineButton'
 import { faArrowRight } from '@evaka/lib-icons'

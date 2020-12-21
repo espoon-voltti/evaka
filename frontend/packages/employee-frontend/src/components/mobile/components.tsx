@@ -6,7 +6,7 @@ import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
 import colors from '@evaka/lib-components/src/colors'
-import { Container } from '~components/shared/layout/Container'
+import { Container } from '@evaka/lib-components/src/layout/Container'
 import { defaultMargins } from '@evaka/lib-components/src/white-space'
 
 export const FullHeightContainer = styled(Container)<{ spaced?: boolean }>`

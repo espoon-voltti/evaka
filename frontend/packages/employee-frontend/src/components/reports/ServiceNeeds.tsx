@@ -3,10 +3,19 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useEffect, useMemo, useState } from 'react'
-import { Container, ContentArea } from '~components/shared/layout/Container'
+import {
+  Container,
+  ContentArea
+} from '@evaka/lib-components/src/layout/Container'
 import Loader from '@evaka/lib-components/src/atoms/Loader'
 import Title from '@evaka/lib-components/src/atoms/Title'
-import { Th, Tr, Td, Thead, Tbody } from '~components/shared/layout/Table'
+import {
+  Th,
+  Tr,
+  Td,
+  Thead,
+  Tbody
+} from '@evaka/lib-components/src/layout/Table'
 import { useTranslation } from '~state/i18n'
 import { Loading, Result } from '~api'
 import { ServiceNeedReportRow } from '~types/reports'

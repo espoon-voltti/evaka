@@ -14,7 +14,14 @@ import { useTranslation, Translations } from '~state/i18n'
 import { UIContext } from '~state/ui'
 import { Loading, Result } from '~api'
 import CollapsibleSection from 'components/shared/molecules/CollapsibleSection'
-import { Table, Tbody, Td, Th, Thead, Tr } from 'components/shared/layout/Table'
+import {
+  Table,
+  Tbody,
+  Td,
+  Th,
+  Thead,
+  Tr
+} from '@evaka/lib-components/src/layout/Table'
 import Loader from '@evaka/lib-components/src/atoms/Loader'
 import { AddButtonRow } from '@evaka/lib-components/src/atoms/buttons/AddButton'
 import FormModal from '~components/common/FormModal'

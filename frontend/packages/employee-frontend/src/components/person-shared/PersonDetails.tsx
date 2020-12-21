@@ -25,7 +25,7 @@ import LocalDate from '@evaka/lib-common/src/local-date'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
-} from '~components/shared/layout/flex-helpers'
+} from '@evaka/lib-components/src/layout/flex-helpers'
 
 const FlexContainer = styled.div`
   display: flex;

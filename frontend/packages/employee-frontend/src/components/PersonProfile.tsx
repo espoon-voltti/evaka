@@ -5,9 +5,12 @@
 import React, { Fragment, useContext, useMemo } from 'react'
 import { RouteComponentProps } from 'react-router'
 import { UUID } from '~types'
-import { Container, ContentArea } from '~components/shared/layout/Container'
+import {
+  Container,
+  ContentArea
+} from '@evaka/lib-components/src/layout/Container'
 import Title from '@evaka/lib-components/src/atoms/Title'
-import { Td } from 'components/shared/layout/Table'
+import { Td } from '@evaka/lib-components/src/layout/Table'
 import PersonFridgePartner from '~components/person-profile/PersonFridgePartner'
 import PersonFridgeChild from '~components/person-profile/PersonFridgeChild'
 import PersonFridgeHead from '~components/person-profile/PersonFridgeHead'

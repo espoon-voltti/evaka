@@ -13,7 +13,7 @@ import {
   Thead,
   Tbody,
   SortableTh
-} from '~components/shared/layout/Table'
+} from '@evaka/lib-components/src/layout/Table'
 import Title from '@evaka/lib-components/src/atoms/Title'
 import Loader from '@evaka/lib-components/src/atoms/Loader'
 import Checkbox from '@evaka/lib-components/src/atoms/form/Checkbox'

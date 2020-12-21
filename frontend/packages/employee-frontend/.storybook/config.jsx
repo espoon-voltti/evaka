@@ -7,7 +7,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 import * as React from 'react'
 import { withOptions } from '@storybook/addon-options'
 import { configure, addDecorator } from '@storybook/react'
-import { Container, ContentArea } from '~components/shared/layout/Container'
+import { Container, ContentArea } from '@evaka/lib-components/src/layout/Container'
 // automatically import all files ending in *.stories.tsx
 const req = require.context('../src', true, /.stories.tsx$/)
 

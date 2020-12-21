@@ -7,7 +7,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 }
 
 import React, { useContext } from 'react'
-import { ContentArea } from '~components/shared/layout/Container'
+import { ContentArea } from '@evaka/lib-components/src/layout/Container'
 import { UnitContext } from '~state/unit'
 import { SpinnerSegment } from '@evaka/lib-components/src/atoms/state/Spinner'
 import ErrorSegment from '@evaka/lib-components/src/atoms/state/ErrorSegment'

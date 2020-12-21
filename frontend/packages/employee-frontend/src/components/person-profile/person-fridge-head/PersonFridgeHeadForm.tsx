@@ -19,7 +19,7 @@ import {
   allPropertiesTrue
 } from '~utils/validation/validations'
 import { PersonContactInfo } from '~types/person'
-import { FixedSpaceRow } from '~components/shared/layout/flex-helpers'
+import { FixedSpaceRow } from '@evaka/lib-components/src/layout/flex-helpers'
 
 interface Props {
   id: UUID

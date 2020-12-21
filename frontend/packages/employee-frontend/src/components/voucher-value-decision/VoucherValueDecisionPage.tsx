@@ -6,7 +6,10 @@ import React, { useCallback, useContext, useEffect, useState } from 'react'
 import { Redirect, useParams } from 'react-router-dom'
 import styled from 'styled-components'
 import ReturnButton from '@evaka/lib-components/src/atoms/buttons/ReturnButton'
-import { Container, ContentArea } from '~components/shared/layout/Container'
+import {
+  Container,
+  ContentArea
+} from '@evaka/lib-components/src/layout/Container'
 import VoucherValueDecisionHeading from './VoucherValueDecisionHeading'
 import VoucherValueDecisionChildSection from './VoucherValueDecisionChildSection'
 import VoucherValueDecisionSummary from './VoucherValueDecisionSummary'

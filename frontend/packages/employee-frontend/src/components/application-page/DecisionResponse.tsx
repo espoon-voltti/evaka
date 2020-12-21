@@ -8,7 +8,7 @@ import { Decision } from 'types/decision'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
-} from 'components/shared/layout/flex-helpers'
+} from '@evaka/lib-components/src/layout/flex-helpers'
 import Radio from '@evaka/lib-components/src/atoms/form/Radio'
 import Button from '@evaka/lib-components/src/atoms/buttons/Button'
 import { useTranslation } from 'state/i18n'

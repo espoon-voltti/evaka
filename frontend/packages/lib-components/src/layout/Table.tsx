@@ -5,12 +5,14 @@
 import React from 'react'
 import styled from 'styled-components'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faChevronUp as falChevronUp } from '@evaka/lib-icons'
-import { faChevronDown as falChevronDown } from '@evaka/lib-icons'
-import { faChevronUp as fasChevronUp } from '@evaka/lib-icons'
-import { faChevronDown as fasChevronDown } from '@evaka/lib-icons'
-import { defaultMargins, Gap } from '@evaka/lib-components/src/white-space'
-import { greyscale } from '@evaka/lib-components/src/colors'
+import {
+  faChevronUp,
+  faChevronDown,
+  fasChevronUp,
+  fasChevronDown
+} from '@evaka/lib-icons'
+import { defaultMargins, Gap } from '../white-space'
+import { greyscale } from '../colors'
 
 export const Table = styled.table`
   background-color: ${greyscale.white};
@@ -112,12 +114,12 @@ export const SortableTh = ({
       <Gap horizontal size="xs" />
       <SortableIconContainer>
         <FontAwesomeIcon
-          icon={sorted === 'ASC' ? fasChevronUp : falChevronUp}
+          icon={sorted === 'ASC' ? fasChevronUp : faChevronUp}
           color={sorted === 'ASC' ? greyscale.dark : greyscale.medium}
           size="xs"
         />
         <FontAwesomeIcon
-          icon={sorted === 'DESC' ? fasChevronDown : falChevronDown}
+          icon={sorted === 'DESC' ? fasChevronDown : faChevronDown}
           color={sorted === 'DESC' ? greyscale.dark : greyscale.medium}
           size="xs"
         />

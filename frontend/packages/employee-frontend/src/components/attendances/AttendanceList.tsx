@@ -5,7 +5,7 @@
 import React from 'react'
 import { Link, useParams } from 'react-router-dom'
 
-import { FixedSpaceColumn } from '~components/shared/layout/flex-helpers'
+import { FixedSpaceColumn } from '@evaka/lib-components/src/layout/flex-helpers'
 import ChildListItem from './ChildListItem'
 import { UnorderedList } from '~components/common/styled/common'
 import { UUID } from '~types'

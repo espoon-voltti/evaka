@@ -4,7 +4,7 @@
 
 import React from 'react'
 import styled from 'styled-components'
-import { Th, Thead, Tr } from 'components/shared/layout/Table'
+import { Th, Thead, Tr } from '@evaka/lib-components/src/layout/Table'
 import { Translations } from '~state/i18n'
 
 const TypeHeader = styled(Th)`

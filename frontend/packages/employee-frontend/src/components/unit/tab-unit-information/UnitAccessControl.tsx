@@ -13,7 +13,7 @@ import { orderBy } from 'lodash'
 import ReactSelect, { components } from 'react-select'
 import styled from 'styled-components'
 
-import { ContentArea } from '~components/shared/layout/Container'
+import { ContentArea } from '@evaka/lib-components/src/layout/Container'
 import Loader from '@evaka/lib-components/src/atoms/Loader'
 import Title from '@evaka/lib-components/src/atoms/Title'
 import {
@@ -23,7 +23,7 @@ import {
   Td,
   Thead,
   Tbody
-} from '~components/shared/layout/Table'
+} from '@evaka/lib-components/src/layout/Table'
 import InfoModal from '~components/common/InfoModal'
 import { Loading, Result } from '~api'
 import {
@@ -56,7 +56,7 @@ import { formatName } from '~utils'
 import AddButton from '@evaka/lib-components/src/atoms/buttons/AddButton'
 import { Gap } from '@evaka/lib-components/src/white-space'
 import MobilePairingModal from '../MobilePairingModal'
-import { FixedSpaceRow } from '~components/shared/layout/flex-helpers'
+import { FixedSpaceRow } from '@evaka/lib-components/src/layout/flex-helpers'
 import InputField from '@evaka/lib-components/src/atoms/form/InputField'
 import { isNotProduction, isPilotUnit } from '~constants'
 import { AdRole } from '~types'

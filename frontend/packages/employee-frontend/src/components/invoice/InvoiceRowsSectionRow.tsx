@@ -7,7 +7,7 @@ import styled from 'styled-components'
 
 import { faTrash } from '@evaka/lib-icons'
 import LocalDate from '@evaka/lib-common/src/local-date'
-import { Td, Tr } from 'components/shared/layout/Table'
+import { Td, Tr } from '@evaka/lib-components/src/layout/Table'
 import InputField from '@evaka/lib-components/src/atoms/form/InputField'
 import Select, { SelectOptionProps } from '../common/Select'
 import DateRangeInput from '../common/DateRangeInput'

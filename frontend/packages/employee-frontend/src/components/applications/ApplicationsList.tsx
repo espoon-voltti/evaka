@@ -13,7 +13,7 @@ import {
   Thead,
   Tbody,
   SortableTh
-} from '~components/shared/layout/Table'
+} from '@evaka/lib-components/src/layout/Table'
 import { useTranslation } from 'state/i18n'
 import {
   ApplicationListSummary,
@@ -28,7 +28,7 @@ import RoundIcon from '@evaka/lib-components/src/atoms/RoundIcon'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
-} from 'components/shared/layout/flex-helpers'
+} from '@evaka/lib-components/src/layout/flex-helpers'
 import { H1 } from '@evaka/lib-components/src/typography'
 import { defaultMargins } from '@evaka/lib-components/src/white-space'
 import { getEmployeeUrlPrefix } from '~constants'

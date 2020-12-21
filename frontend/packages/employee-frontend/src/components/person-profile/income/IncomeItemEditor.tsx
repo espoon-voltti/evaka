@@ -7,7 +7,7 @@ import styled from 'styled-components'
 
 import LocalDate from '@evaka/lib-common/src/local-date'
 import AsyncButton from '@evaka/lib-components/src/atoms/buttons/AsyncButton'
-import ListGrid from '~components/shared/layout/ListGrid'
+import ListGrid from '@evaka/lib-components/src/layout/ListGrid'
 import Button from '@evaka/lib-components/src/atoms/buttons/Button'
 import Checkbox from '@evaka/lib-components/src/atoms/form/Checkbox'
 import Radio from '@evaka/lib-components/src/atoms/form/Radio'
@@ -15,7 +15,7 @@ import Title from '@evaka/lib-components/src/atoms/Title'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
-} from '~components/shared/layout/flex-helpers'
+} from '@evaka/lib-components/src/layout/flex-helpers'
 import { Label, LabelText } from '~components/common/styled/common'
 import DateRangeInput from '../../common/DateRangeInput'
 import IncomeTable from './IncomeTable'

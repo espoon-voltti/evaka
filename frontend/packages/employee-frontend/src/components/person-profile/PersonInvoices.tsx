@@ -10,7 +10,14 @@ import { Link } from 'react-router-dom'
 import { Loading } from '~api'
 import { getPersonInvoices } from '~api/invoicing'
 import { StatusTd } from '~components/PersonProfile'
-import { Table, Tbody, Td, Th, Thead, Tr } from 'components/shared/layout/Table'
+import {
+  Table,
+  Tbody,
+  Td,
+  Th,
+  Thead,
+  Tr
+} from '@evaka/lib-components/src/layout/Table'
 import Loader from '@evaka/lib-components/src/atoms/Loader'
 import CollapsibleSection from 'components/shared/molecules/CollapsibleSection'
 import { useTranslation } from '~state/i18n'

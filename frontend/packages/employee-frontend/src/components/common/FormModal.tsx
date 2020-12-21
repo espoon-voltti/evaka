@@ -14,7 +14,7 @@ import AsyncButton from '@evaka/lib-components/src/atoms/buttons/AsyncButton'
 import colors from '@evaka/lib-components/src/colors'
 import { defaultMargins, Gap } from '@evaka/lib-components/src/white-space'
 import { useTranslation } from '~state/i18n'
-import { modalZIndex } from '~components/shared/layout/z-helpers'
+import { modalZIndex } from '@evaka/lib-components/src/layout/z-helpers'
 import { InfoStatus } from '@evaka/lib-components/src/atoms/StatusIcon'
 import { P } from '@evaka/lib-components/src/typography'
 

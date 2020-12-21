@@ -7,7 +7,7 @@ import styled from 'styled-components'
 import { NavLink } from 'react-router-dom'
 import colors from '@evaka/lib-components/src/colors'
 import { defaultMargins } from '@evaka/lib-components/src/white-space'
-import Container from '~components/shared/layout/Container'
+import Container from '@evaka/lib-components/src/layout/Container'
 
 type Props = {
   tabs: Array<{
