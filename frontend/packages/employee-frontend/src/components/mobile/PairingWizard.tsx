@@ -14,11 +14,11 @@ import {
   PairingResponse,
   postPairingChallenge
 } from '~api/unit'
-import IconButton from '~components/shared/atoms/buttons/IconButton'
-import InputField from '~components/shared/atoms/form/InputField'
-import Colors from '~components/shared/Colors'
-import { P } from '~components/shared/Typography'
-import { faArrowRight } from '~icon-set'
+import IconButton from '@evaka/lib-components/src/atoms/buttons/IconButton'
+import InputField from '@evaka/lib-components/src/atoms/form/InputField'
+import colors from '@evaka/lib-components/src/colors'
+import { P } from '@evaka/lib-components/src/typography'
+import { faArrowRight } from '@evaka/lib-icons'
 import { useTranslation } from '~state/i18n'
 import EvakaLogo from '../../assets/EvakaLogo.svg'
 import { FullHeightContainer } from './components'
@@ -35,8 +35,8 @@ export const WideLinkButton = styled.a`
   white-space: nowrap;
   letter-spacing: 0.2px;
   width: 100%;
-  color: ${Colors.greyscale.white};
-  background: ${Colors.blues.primary};
+  color: ${colors.greyscale.white};
+  background: ${colors.blues.primary};
   display: flex;
   justify-content: center;
   align-items: center;
@@ -64,7 +64,7 @@ const PhaseTitle = styled.h1`
   font-size: 20px;
   line-height: 30px;
   text-align: center;
-  color: ${Colors.blues.dark};
+  color: ${colors.blues.dark};
 `
 
 export const ResponseKey = styled.div`
@@ -75,7 +75,7 @@ export const ResponseKey = styled.div`
   line-height: 30px;
   text-align: center;
   letter-spacing: 0.08em;
-  color: ${Colors.greyscale.dark};
+  color: ${colors.greyscale.dark};
 `
 
 const Bottom = styled.div``

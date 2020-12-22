@@ -3,16 +3,16 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import * as React from 'react'
-import { faPen } from 'icon-set'
+import { faPen } from '@evaka/lib-icons'
 import { Result } from '~api'
 import { PersonDetails } from '~/types/person'
 import { useTranslation } from '~state/i18n'
 import { useContext, useEffect, useState } from 'react'
-import Loader from '~components/shared/atoms/Loader'
-import Button from '~components/shared/atoms/buttons/Button'
-import InlineButton from '~components/shared/atoms/buttons/InlineButton'
-import InputField from '~components/shared/atoms/form/InputField'
-import Radio from '~components/shared/atoms/form/Radio'
+import Loader from '@evaka/lib-components/src/atoms/Loader'
+import Button from '@evaka/lib-components/src/atoms/buttons/Button'
+import InlineButton from '@evaka/lib-components/src/atoms/buttons/InlineButton'
+import InputField from '@evaka/lib-components/src/atoms/form/InputField'
+import Radio from '@evaka/lib-components/src/atoms/form/Radio'
 import LabelValueList from '~components/common/LabelValueList'
 import { DatePicker } from '~components/common/DatePicker'
 import { patchPersonDetails } from '~api/person'
@@ -25,7 +25,7 @@ import LocalDate from '@evaka/lib-common/src/local-date'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
-} from '~components/shared/layout/flex-helpers'
+} from '@evaka/lib-components/src/layout/flex-helpers'
 
 const FlexContainer = styled.div`
   display: flex;

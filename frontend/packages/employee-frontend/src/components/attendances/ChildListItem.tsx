@@ -6,21 +6,21 @@ import React from 'react'
 import styled from 'styled-components'
 
 import { AttendanceChild, AttendanceStatus } from '~api/attendances'
-import RoundIcon from '~components/shared/atoms/RoundIcon'
-import Colors from '~components/shared/Colors'
-import { DefaultMargins } from '~components/shared/layout/white-space'
+import RoundIcon from '@evaka/lib-components/src/atoms/RoundIcon'
+import colors from '@evaka/lib-components/src/colors'
+import { defaultMargins } from '@evaka/lib-components/src/white-space'
 import { DATE_FORMAT_TIME_ONLY } from '~constants'
-import { farUser } from '~icon-set'
+import { farUser } from '@evaka/lib-icons'
 import { useTranslation } from '~state/i18n'
 import { formatDate } from '~utils/date'
 
 const ChildBox = styled.div<{ type: AttendanceStatus }>`
   align-items: center;
-  color: ${Colors.greyscale.darkest};
+  color: ${colors.greyscale.darkest};
   display: flex;
   padding: 10px;
   border-radius: 2px;
-  background-color: ${Colors.greyscale.white};
+  background-color: ${colors.greyscale.white};
 `
 
 const ChildBoxInfo = styled.div`
@@ -41,13 +41,13 @@ const IconBox = styled.div<{ type: AttendanceStatus }>`
   background-color: ${(props) => {
     switch (props.type) {
       case 'ABSENT':
-        return Colors.greyscale.dark
+        return colors.greyscale.dark
       case 'DEPARTED':
-        return Colors.blues.primary
+        return colors.blues.primary
       case 'PRESENT':
-        return Colors.accents.green
+        return colors.accents.green
       case 'COMING':
-        return Colors.accents.water
+        return colors.accents.water
     }
   }};
   border-radius: 4px;
@@ -58,11 +58,11 @@ const DetailsRow = styled.div`
   flex-direction: row;
   justify-content: space-between;
   align-items: center;
-  color: ${Colors.greyscale.dark};
+  color: ${colors.greyscale.dark};
 `
 
 const Time = styled.span`
-  margin-left: ${DefaultMargins.xs};
+  margin-left: ${defaultMargins.xs};
 `
 
 interface ChildListItemProps {
@@ -85,14 +85,14 @@ export default React.memo(function ChildListItem({
           content={farUser}
           color={
             type === 'ABSENT'
-              ? Colors.greyscale.dark
+              ? colors.greyscale.dark
               : type === 'DEPARTED'
-              ? Colors.blues.primary
+              ? colors.blues.primary
               : type === 'PRESENT'
-              ? Colors.accents.green
+              ? colors.accents.green
               : type === 'COMING'
-              ? Colors.accents.water
-              : Colors.blues.medium
+              ? colors.accents.water
+              : colors.blues.medium
           }
           size="XL"
         />
@@ -118,7 +118,7 @@ export default React.memo(function ChildListItem({
             </Time>
           </div>
           {attendanceChild.backup && (
-            <RoundIcon content="V" size="m" color={Colors.blues.primary} />
+            <RoundIcon content="V" size="m" color={colors.blues.primary} />
           )}
         </DetailsRow>
       </ChildBoxInfo>

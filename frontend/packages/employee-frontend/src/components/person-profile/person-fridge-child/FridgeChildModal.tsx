@@ -11,13 +11,12 @@ import {
   isDateRangeValid
 } from '~utils/validation/validations'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faQuestionCircle } from 'icon-set'
+import { faQuestionCircle } from '@evaka/lib-icons'
 import FormModal from '~components/common/FormModal'
-import Section from '~components/shared/layout/Section'
 import { Parentship } from '~types/fridge'
 import { UUID } from '~types'
 import { Result } from '~api'
-import { faChild } from 'icon-set'
+import { faChild } from '@evaka/lib-icons'
 import { formatName } from '~utils'
 import PersonSearch from '~components/common/PersonSearch'
 import { DatePicker, DatePickerClearable } from '~components/common/DatePicker'
@@ -122,11 +121,11 @@ function FridgeChildModal({ headPersonId, onSuccess, parentship }: Props) {
           resolve={() => childFormActions()}
         >
           {errorStatusCode === 409 && (
-            <Section className="error">
+            <section className="error">
               {i18n.personProfile.fridgeChild.error.conflict}
-            </Section>
+            </section>
           )}
-          <Section>
+          <section>
             {parentship ? (
               <div>
                 {formatName(
@@ -152,16 +151,16 @@ function FridgeChildModal({ headPersonId, onSuccess, parentship }: Props) {
                 />
               </>
             )}
-          </Section>
-          <Section>
+          </section>
+          <section>
             <div className="bold">{i18n.common.form.startDate}</div>
             <DatePicker
               date={form.startDate}
               onChange={(startDate) => assignFridgeChildForm({ startDate })}
               type="full-width"
             />
-          </Section>
-          <Section>
+          </section>
+          <section>
             <div className="bold">{i18n.common.form.endDate}</div>
             <DatePickerClearable
               date={form.endDate}
@@ -169,7 +168,7 @@ function FridgeChildModal({ headPersonId, onSuccess, parentship }: Props) {
               onCleared={() => assignFridgeChildForm({ endDate: null })}
               type="full-width"
             />
-          </Section>
+          </section>
           {!validationResult.fields.dateRange && (
             <div className="error">
               {i18n.validationError.dateRange}{' '}

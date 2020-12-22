@@ -6,15 +6,15 @@ import React from 'react'
 import { storiesOf } from '@storybook/react'
 import styled from 'styled-components'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import * as icons from 'icon-set'
-import { DefaultMargins } from 'components/shared/layout/white-space'
+import * as icons from '@evaka/lib-icons'
+import { defaultMargins } from '@evaka/lib-components/src/white-space'
 import { IconDefinition } from '@fortawesome/fontawesome-svg-core'
 
 const Grid = styled.div`
   display: grid;
   grid-template-columns: repeat(8, 1fr);
-  row-gap: ${DefaultMargins.m};
-  column-gap: ${DefaultMargins.m};
+  row-gap: ${defaultMargins.m};
+  column-gap: ${defaultMargins.m};
 `
 
 const ColItem = styled.div`
@@ -23,11 +23,11 @@ const ColItem = styled.div`
   justify-content: center;
   align-items: center;
   > * {
-    margin-bottom: ${DefaultMargins.s};
+    margin-bottom: ${defaultMargins.s};
   }
 `
 
-storiesOf('evaka/icon-set', module).add('all', () => (
+storiesOf('@evaka/lib-icons', module).add('all', () => (
   <Grid>
     {Object.keys(icons).map((name) => {
       const icon = icons[name] as IconDefinition

@@ -3,9 +3,12 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
-import { Container, ContentArea } from 'components/shared/layout/Container'
-import Title from './shared/atoms/Title'
-import { Gap } from 'components/shared/layout/white-space'
+import {
+  Container,
+  ContentArea
+} from '@evaka/lib-components/src/layout/Container'
+import Title from '@evaka/lib-components/src/atoms/Title'
+import { Gap } from '@evaka/lib-components/src/white-space'
 import { useTranslation } from '~state/i18n'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
@@ -24,11 +27,11 @@ import {
   faFileAlt,
   faDiagnoses,
   faDatabase
-} from 'icon-set'
+} from '@evaka/lib-icons'
 import { EspooColours } from '~utils/colours'
 import { RequireRole } from '~utils/roles'
-import RoundIcon from 'components/shared/atoms/RoundIcon'
-import { DefaultMargins } from 'components/shared/layout/white-space'
+import RoundIcon from '@evaka/lib-components/src/atoms/RoundIcon'
+import { defaultMargins } from '@evaka/lib-components/src/white-space'
 import { featureFlags } from '~config'
 
 const ReportItems = styled.div`
@@ -44,7 +47,7 @@ const TitleRow = styled.div`
   justify-content: flex-start;
   align-items: center;
   > * {
-    margin-right: ${DefaultMargins.s};
+    margin-right: ${defaultMargins.s};
   }
 `
 
@@ -55,7 +58,7 @@ const LinkTitle = styled(Link)`
   font-weight: 600;
 `
 const Description = styled.p`
-  margin-left: calc(34px + ${DefaultMargins.s});
+  margin-left: calc(34px + ${defaultMargins.s});
   width: 70%;
 `
 

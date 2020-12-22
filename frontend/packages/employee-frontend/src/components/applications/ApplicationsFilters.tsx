@@ -26,7 +26,7 @@ import {
 import { ApplicationUIContext } from '../../state/application-ui'
 import { Loading } from '../../api'
 import { getAreas, getUnits } from '../../api/daycare'
-import { Gap } from '~components/shared/layout/white-space'
+import { Gap } from '@evaka/lib-components/src/white-space'
 import { useTranslation } from '~state/i18n'
 
 const CustomGap = styled.div`

@@ -4,7 +4,7 @@
 
 import React, { Fragment } from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faTimes } from 'icon-set'
+import { faTimes } from '@evaka/lib-icons'
 import { IconProp } from '@fortawesome/fontawesome-svg-core'
 import styled from 'styled-components'
 import FocusLock from 'react-focus-lock'
@@ -22,10 +22,10 @@ import {
   ModalSize,
   IconColour
 } from './FormModal'
-import Title from '~components/shared/atoms/Title'
-import { Gap } from 'components/shared/layout/white-space'
-import Button from '~components/shared/atoms/buttons/Button'
-import { P } from '~components/shared/Typography'
+import Title from '@evaka/lib-components/src/atoms/Title'
+import { Gap } from '@evaka/lib-components/src/white-space'
+import Button from '@evaka/lib-components/src/atoms/buttons/Button'
+import { P } from '@evaka/lib-components/src/typography'
 
 interface SizeProps {
   size: ModalSize

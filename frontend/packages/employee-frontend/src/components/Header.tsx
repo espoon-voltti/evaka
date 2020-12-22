@@ -5,16 +5,15 @@
 import React, { useContext, useState } from 'react'
 import styled from 'styled-components'
 import { NavLink, RouteComponentProps, withRouter } from 'react-router-dom'
-
+import classNames from 'classnames'
+import colors from '@evaka/lib-components/src/colors'
 import { useTranslation } from '~state/i18n'
 import { UserContext } from '~state/user'
 import EspooLogo from '../assets/EspooLogo.png'
 import { logoutUrl } from '~api/auth'
 import { RequireRole } from '~utils/roles'
 import '~components/Header.scss'
-import Title from './shared/atoms/Title'
-import classNames from 'classnames'
-import Colors from './shared/Colors'
+import Title from '@evaka/lib-components/src/atoms/Title'
 
 const Img = styled.img`
   color: #0050bb;
@@ -59,7 +58,7 @@ const LogoutLink = styled.a`
   cursor: pointer;
   text-decoration: none;
   margin-left: 1rem;
-  color: ${Colors.blues.medium};
+  color: ${colors.blues.medium};
 `
 
 const Header = React.memo(function Header({ location }: RouteComponentProps) {
@@ -202,7 +201,7 @@ const StyledHeader = styled(Header2)`
 
 const HeaderWrapper = styled.header`
   padding-top: 1rem;
-  background: ${Colors.greyscale.white};
+  background: ${colors.greyscale.white};
   box-shadow: 0 0 4px 6px hsla(0, 0%, 60.8%, 0.2);
 `
 
@@ -230,7 +229,7 @@ const NavbarContainer = styled.nav`
     max-width: 1344px;
     width: 1344px;
   }
-  color: ${Colors.greyscale.darkest};
+  color: ${colors.greyscale.darkest};
   font-weight: 400;
   line-height: 1.5;
   box-sizing: inherit;
@@ -290,7 +289,7 @@ const NavbarLink = styled(NavLink)<NavbarLinkProps>`
   margin-left: ${(p) => (p.$noMargin ? '0' : '1rem')};
 
   &.active {
-    border-bottom: 4px solid ${Colors.blues.primary};
+    border-bottom: 4px solid ${colors.blues.primary};
     font-weight: 700;
     padding-bottom: 1rem;
   }

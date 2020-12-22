@@ -3,8 +3,11 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useCallback, useContext, useEffect, useState } from 'react'
-import { Gap } from 'components/shared/layout/white-space'
-import { Container, ContentArea } from 'components/shared/layout/Container'
+import { Gap } from '@evaka/lib-components/src/white-space'
+import {
+  Container,
+  ContentArea
+} from '@evaka/lib-components/src/layout/Container'
 import { InvoicingUiContext } from '../../state/invoicing-ui'
 import FeeDecisions from './FeeDecisions'
 import FeeDecisionFilters from './FeeDecisionFilters'

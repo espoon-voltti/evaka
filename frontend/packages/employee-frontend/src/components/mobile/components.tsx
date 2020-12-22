@@ -5,16 +5,16 @@
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
-import Colors from '~components/shared/Colors'
-import { Container } from '~components/shared/layout/Container'
-import { DefaultMargins } from '~components/shared/layout/white-space'
+import colors from '@evaka/lib-components/src/colors'
+import { Container } from '@evaka/lib-components/src/layout/Container'
+import { defaultMargins } from '@evaka/lib-components/src/white-space'
 
 export const FullHeightContainer = styled(Container)<{ spaced?: boolean }>`
   height: 100vh;
   display: flex;
   flex-direction: column;
-  background-color: ${Colors.greyscale.white};
-  padding: ${DefaultMargins.s};
+  background-color: ${colors.greyscale.white};
+  padding: ${defaultMargins.s};
   ${(p) => (p.spaced ? 'justify-content: space-between;' : '')}
 `
 
@@ -30,8 +30,8 @@ export const WideLinkButton = styled(Link)`
   white-space: nowrap;
   letter-spacing: 0.2px;
   width: 100%;
-  color: ${Colors.greyscale.white};
-  background: ${Colors.blues.primary};
+  color: ${colors.greyscale.white};
+  background: ${colors.blues.primary};
   display: flex;
   justify-content: center;
   align-items: center;

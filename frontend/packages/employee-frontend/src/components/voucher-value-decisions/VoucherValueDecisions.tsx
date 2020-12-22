@@ -13,10 +13,10 @@ import {
   Thead,
   Tbody,
   SortableTh
-} from '~components/shared/layout/Table'
-import { H1 } from '~components/shared/Typography'
-import Loader from '~components/shared/atoms/Loader'
-import Checkbox from '~components/shared/atoms/form/Checkbox'
+} from '@evaka/lib-components/src/layout/Table'
+import { H1 } from '@evaka/lib-components/src/typography'
+import Loader from '@evaka/lib-components/src/atoms/Loader'
+import Checkbox from '@evaka/lib-components/src/atoms/form/Checkbox'
 import NameWithSsn from '../common/NameWithSsn'
 import ChildrenCell from '../common/ChildrenCell'
 import { useTranslation } from '../../state/i18n'
@@ -26,7 +26,7 @@ import { Result } from '../../api'
 import { formatDate } from '../../utils/date'
 import { formatCents } from '../../utils/money'
 import { SortByVoucherValueDecisions } from '../../api/invoicing'
-import Pagination from '~components/shared/Pagination'
+import Pagination from '@evaka/lib-components/src/Pagination'
 
 const TitleRowContainer = styled.div`
   display: flex;
@@ -146,6 +146,7 @@ export default React.memo(function VoucherValueDecisions({
               pages={pages}
               currentPage={currentPage}
               setPage={setPage}
+              label={i18n.common.page}
             />
           </ResultsContainer>
         )}
@@ -193,6 +194,7 @@ export default React.memo(function VoucherValueDecisions({
             pages={pages}
             currentPage={currentPage}
             setPage={setPage}
+            label={i18n.common.page}
           />
         </ResultsContainer>
       )}

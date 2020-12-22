@@ -3,20 +3,29 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useContext, useEffect, useState } from 'react'
-import { Container, ContentArea } from '~components/shared/layout/Container'
-import Button from '~components/shared/atoms/buttons/Button'
-import Loader from '~components/shared/atoms/Loader'
-import Title from '~components/shared/atoms/Title'
-import { Th, Tr, Td, Thead, Tbody } from '~components/shared/layout/Table'
+import {
+  Container,
+  ContentArea
+} from '@evaka/lib-components/src/layout/Container'
+import Button from '@evaka/lib-components/src/atoms/buttons/Button'
+import Loader from '@evaka/lib-components/src/atoms/Loader'
+import Title from '@evaka/lib-components/src/atoms/Title'
+import {
+  Th,
+  Tr,
+  Td,
+  Thead,
+  Tbody
+} from '@evaka/lib-components/src/layout/Table'
 import InfoModal from '~components/common/InfoModal'
 import { useTranslation } from '~state/i18n'
 import { Link } from 'react-router-dom'
 import { Loading, Result } from '~api'
 import { DuplicatePeopleReportRow } from '~types/reports'
 import { getDuplicatePeopleReport } from '~api/reports'
-import ReturnButton from 'components/shared/atoms/buttons/ReturnButton'
+import ReturnButton from '@evaka/lib-components/src/atoms/buttons/ReturnButton'
 import styled from 'styled-components'
-import { faQuestion } from 'icon-set'
+import { faQuestion } from '@evaka/lib-icons'
 import { deletePerson, mergePeople } from '~api/person'
 import { UIContext } from '~state/ui'
 import { UUID } from '~types'
@@ -88,7 +97,7 @@ function DuplicatePeople() {
 
   return (
     <Container>
-      <ReturnButton />
+      <ReturnButton label={i18n.common.goBack} />
       <ContentArea opaque>
         <Title size={1}>{i18n.reports.duplicatePeople.title}</Title>
         {rows.isLoading && <Loader />}

@@ -8,7 +8,7 @@ import styled from 'styled-components'
 import { useTranslation } from '~state/i18n'
 import { CareTypeLabel } from '~types'
 import { PlacementType } from '~types/placementdraft'
-import Colors from 'components/shared/Colors'
+import colors from '@evaka/lib-components/src/colors'
 
 export interface Props {
   type?: CareTypeLabel
@@ -40,31 +40,31 @@ const CareTypeLabelContainer = styled.div<CareTypeLabelContainerProps>`
   background: ${(props: CareTypeLabelContainerProps) => {
     switch (props.type) {
       case 'daycare':
-        return Colors.accents.green
+        return colors.accents.green
       case 'preschool':
-        return Colors.blues.dark
+        return colors.blues.dark
       case 'preparatory':
-        return Colors.accents.water
+        return colors.accents.water
       case 'backup-care':
-        return Colors.accents.yellow
+        return colors.accents.yellow
       case 'club':
-        return Colors.greyscale.lighter
+        return colors.greyscale.lighter
       default:
-        return Colors.greyscale.white
+        return colors.greyscale.white
     }
   }};
   color: ${(props: CareTypeLabelContainerProps) => {
     switch (props.type) {
       case 'daycare':
-        return Colors.greyscale.dark
+        return colors.greyscale.dark
       case 'preschool':
-        return Colors.greyscale.white
+        return colors.greyscale.white
       case 'preparatory':
-        return Colors.greyscale.dark
+        return colors.greyscale.dark
       case 'backup-care':
-        return Colors.greyscale.dark
+        return colors.greyscale.dark
       case 'club':
-        return Colors.greyscale.dark
+        return colors.greyscale.dark
       default:
         return 'initial'
     }

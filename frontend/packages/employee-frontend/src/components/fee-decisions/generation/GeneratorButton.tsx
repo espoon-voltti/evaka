@@ -4,8 +4,8 @@
 
 import React, { useState } from 'react'
 import { format, startOfMonth, subMonths } from 'date-fns'
-import { ContentArea } from '~components/shared/layout/Container'
-import Title from '~components/shared/atoms/Title'
+import { ContentArea } from '@evaka/lib-components/src/layout/Container'
+import Title from '@evaka/lib-components/src/atoms/Title'
 import { generateFeeDecisions } from '../../../api/invoicing'
 import styled from 'styled-components'
 

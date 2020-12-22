@@ -4,9 +4,9 @@
 
 import React, { Dispatch, SetStateAction } from 'react'
 import styled from 'styled-components'
-import InputField from '~components/shared/atoms/form/InputField'
-import SimpleSelect from '~components/shared/atoms/form/SimpleSelect'
-import Colors from '~components/shared/Colors'
+import InputField from '@evaka/lib-components/src/atoms/form/InputField'
+import SimpleSelect from '@evaka/lib-components/src/atoms/form/SimpleSelect'
+import colors from '@evaka/lib-components/src/colors'
 import { FeeAlterationType, PartialFeeAlteration } from '~types/fee-alteration'
 
 interface Props {
@@ -97,11 +97,11 @@ const RadioInput = styled.input`
 
 const RadioLabel = styled.label<{ selected: boolean }>`
   padding: 6px 22px;
-  border: 1px solid ${Colors.primary};
-  color: ${Colors.primary};
+  border: 1px solid ${colors.primary};
+  color: ${colors.primary};
 
-  ${({ selected }) => (selected ? `color: ${Colors.greyscale.white};` : '')}
-  ${({ selected }) => (selected ? `background-color: ${Colors.primary};` : '')}
+  ${({ selected }) => (selected ? `color: ${colors.greyscale.white};` : '')}
+  ${({ selected }) => (selected ? `background-color: ${colors.primary};` : '')}
 `
 
 const RadioLabelLeft = styled(RadioLabel)`

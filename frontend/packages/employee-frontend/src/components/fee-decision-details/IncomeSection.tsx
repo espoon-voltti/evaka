@@ -5,9 +5,8 @@
 import React from 'react'
 import styled from 'styled-components'
 import LabelValueList from '~components/common/LabelValueList'
-import { Gap } from '~components/shared/layout/white-space'
-import Section from '~components/shared/layout/Section'
-import { H3, H5 } from '~components/shared/Typography'
+import { Gap } from '@evaka/lib-components/src/white-space'
+import { H3, H5 } from '@evaka/lib-components/src/typography'
 import { useTranslation } from '~state/i18n'
 import { Income, IncomeType, incomeTypes } from '~types/income'
 import { FeeDecisionDetailed } from '~types/invoicing'
@@ -18,7 +17,7 @@ interface Props {
   decision: FeeDecisionDetailed
 }
 
-export default React.memo(function IncomeSection({ decision }: Props) {
+export default React.memo(function Incomesection({ decision }: Props) {
   const { i18n } = useTranslation()
 
   const personIncome = (income: Income | null) => {
@@ -62,7 +61,7 @@ export default React.memo(function IncomeSection({ decision }: Props) {
   }
 
   return (
-    <Section>
+    <section>
       <H3>{i18n.feeDecision.form.summary.income.familyComposition}</H3>
       <LabelValueList
         spacing="small"
@@ -126,7 +125,7 @@ export default React.memo(function IncomeSection({ decision }: Props) {
           </IncomeTotal>
         </>
       ) : null}
-    </Section>
+    </section>
   )
 })
 

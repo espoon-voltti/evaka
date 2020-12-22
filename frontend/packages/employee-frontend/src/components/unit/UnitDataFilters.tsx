@@ -9,7 +9,7 @@ import { DatePicker } from '~components/common/DatePicker'
 import styled from 'styled-components'
 import Chip, { Chips } from 'components/common/Chip'
 import { UnitFilters } from 'utils/UnitFilters'
-import { FixedSpaceRow } from '~components/shared/layout/flex-helpers'
+import { FixedSpaceRow } from '@evaka/lib-components/src/layout/flex-helpers'
 
 const DatePickersContainer = styled.div`
   display: flex;

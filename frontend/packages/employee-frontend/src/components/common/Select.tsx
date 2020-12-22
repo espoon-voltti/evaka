@@ -4,7 +4,7 @@
 
 import React, { memo } from 'react'
 import styled from 'styled-components'
-import ReactSelect, { ValueType } from 'react-select'
+import ReactSelect, { StylesConfig, ValueType } from 'react-select'
 
 export interface SelectOptionProps {
   value: string
@@ -64,9 +64,19 @@ const Select = memo(function Select({
         onChange={onChange}
         onFocus={onFocus}
         value={value}
+        styles={reactSelectStyles}
       />
     </Container>
   )
 })
+
+export const reactSelectStyles: StylesConfig = {
+  menu: (styles) => {
+    return {
+      ...styles,
+      zIndex: 4
+    }
+  }
+}
 
 export default Select

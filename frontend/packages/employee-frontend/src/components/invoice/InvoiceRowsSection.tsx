@@ -7,12 +7,18 @@ import { Link } from 'react-router-dom'
 import { groupBy, get } from 'lodash/fp'
 import styled from 'styled-components'
 
-import { faAbacus, faCoins } from 'icon-set'
+import { faAbacus, faCoins } from '@evaka/lib-icons'
 import LocalDate from '@evaka/lib-common/src/local-date'
-import { Table, Tbody, Th, Thead, Tr } from 'components/shared/layout/Table'
-import Button from '~components/shared/atoms/buttons/Button'
-import Title from '~components/shared/atoms/Title'
-import CollapsibleSection from '~components/shared/molecules/CollapsibleSection'
+import {
+  Table,
+  Tbody,
+  Th,
+  Thead,
+  Tr
+} from '@evaka/lib-components/src/layout/Table'
+import Button from '@evaka/lib-components/src/atoms/buttons/Button'
+import Title from '@evaka/lib-components/src/atoms/Title'
+import CollapsibleSection from '@evaka/lib-components/src/molecules/CollapsibleSection'
 import InvoiceRowsSectionRow from './InvoiceRowsSectionRow'
 import Sum from './Sum'
 import { useTranslation } from '../../state/i18n'
@@ -26,7 +32,7 @@ import { Result } from '../../api'
 import { totalPrice } from '../../utils/pricing'
 import AbsencesModal from './AbsencesModal'
 import { formatName } from '~utils'
-import InlineButton from '~components/shared/atoms/buttons/InlineButton'
+import InlineButton from '@evaka/lib-components/src/atoms/buttons/InlineButton'
 
 const TitleContainer = styled.div`
   display: flex;

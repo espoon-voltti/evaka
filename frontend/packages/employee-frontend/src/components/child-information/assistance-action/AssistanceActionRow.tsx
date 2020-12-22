@@ -7,7 +7,7 @@ import { useTranslation } from '~/state/i18n'
 import { AssistanceAction } from '~types/child'
 import { UIContext } from '~state/ui'
 import AssistanceActionForm from '~components/child-information/assistance-action/AssistanceActionForm'
-import { faQuestion } from 'icon-set'
+import { faQuestion } from '@evaka/lib-icons'
 import ToolbarAccordion from '~components/common/ToolbarAccordion'
 import { isActiveDateRange } from '~/utils/date'
 import InfoModal from '~components/common/InfoModal'
@@ -17,7 +17,7 @@ import {
   ASSISTANCE_ACTION_TYPE_LIST,
   ASSISTANCE_MEASURE_LIST
 } from '~constants'
-import Toolbar from 'components/shared/molecules/Toolbar'
+import Toolbar from '~components/common/Toolbar'
 import { scrollToRef } from 'utils'
 import { removeAssistanceAction } from 'api/child/assistance-actions'
 

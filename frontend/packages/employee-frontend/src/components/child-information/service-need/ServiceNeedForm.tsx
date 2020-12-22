@@ -6,8 +6,8 @@ import React, { FormEvent, useContext, useEffect, useState } from 'react'
 import LocalDate from '@evaka/lib-common/src/local-date'
 import { useTranslation } from '~/state/i18n'
 import { UIContext } from '~state/ui'
-import Checkbox from '~components/shared/atoms/form/Checkbox'
-import InputField from '~components/shared/atoms/form/InputField'
+import Checkbox from '@evaka/lib-components/src/atoms/form/Checkbox'
+import InputField from '@evaka/lib-components/src/atoms/form/InputField'
 import { ServiceNeed } from '~types/child'
 import { UUID } from '~types'
 import { FormErrors, formHasErrors } from '~utils/validation/validations'
@@ -24,7 +24,7 @@ import {
   ServiceNeedRequest,
   updateServiceNeed
 } from 'api/child/service-needs'
-import { FixedSpaceColumn } from '~components/shared/layout/flex-helpers'
+import { FixedSpaceColumn } from '@evaka/lib-components/src/layout/flex-helpers'
 
 const NumberInputWrapper = styled.div`
   display: flex;

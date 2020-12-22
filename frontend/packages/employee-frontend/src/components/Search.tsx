@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { faSearch } from 'icon-set'
+import { faSearch } from '@evaka/lib-icons'
 import React, { useContext, useState } from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
@@ -11,11 +11,14 @@ import { getAge } from '@evaka/lib-common/src/utils/local-date'
 
 import { formatName } from '~/utils'
 import { triggerDvvBatch } from '~api/hidden'
-import { Gap } from '~components/shared/layout/white-space'
-import AddButton from '~components/shared/atoms/buttons/AddButton'
-import Button from 'components/shared/atoms/buttons/Button'
-import InputField from 'components/shared/atoms/form/InputField'
-import { Container, ContentArea } from 'components/shared/layout/Container'
+import { Gap } from '@evaka/lib-components/src/white-space'
+import AddButton from '@evaka/lib-components/src/atoms/buttons/AddButton'
+import Button from '@evaka/lib-components/src/atoms/buttons/Button'
+import InputField from '@evaka/lib-components/src/atoms/form/InputField'
+import {
+  Container,
+  ContentArea
+} from '@evaka/lib-components/src/layout/Container'
 import {
   Table,
   Tr,
@@ -23,8 +26,8 @@ import {
   Thead,
   Tbody,
   SortableTh
-} from '~components/shared/layout/Table'
-import Loader from './shared/atoms/Loader'
+} from '@evaka/lib-components/src/layout/Table'
+import Loader from '@evaka/lib-components/src/atoms/Loader'
 import AddVTJPersonModal from '~components/person-search/AddVTJPersonModal'
 import CreatePersonModal from '~components/person-search/CreatePersonModal'
 import { CHILD_AGE } from '~constants.ts'

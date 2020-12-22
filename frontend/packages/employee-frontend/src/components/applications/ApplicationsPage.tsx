@@ -12,19 +12,22 @@ import {
 import { useRestApi } from '~utils/useRestApi'
 import { SortByApplications } from '~/types/application'
 import { SearchOrder } from '~/types'
-import { DefaultMargins, Gap } from 'components/shared/layout/white-space'
-import { Container, ContentArea } from 'components/shared/layout/Container'
+import { defaultMargins, Gap } from '@evaka/lib-components/src/white-space'
+import {
+  Container,
+  ContentArea
+} from '@evaka/lib-components/src/layout/Container'
 import ApplicationsList from 'components/applications/ApplicationsList'
 import ApplicationFilters from './ApplicationsFilters'
 import { ApplicationUIContext } from '~state/application-ui'
-import { H1 } from '~components/shared/Typography'
-import ErrorSegment from '~components/shared/atoms/state/ErrorSegment'
-import { SpinnerSegment } from '~components/shared/atoms/state/Spinner'
+import { H1 } from '@evaka/lib-components/src/typography'
+import ErrorSegment from '@evaka/lib-components/src/atoms/state/ErrorSegment'
+import { SpinnerSegment } from '@evaka/lib-components/src/atoms/state/Spinner'
 import styled from 'styled-components'
 import { useTranslation } from '~state/i18n'
 
 const PaddedDiv = styled.div`
-  padding: ${DefaultMargins.m} ${DefaultMargins.L};
+  padding: ${defaultMargins.m} ${defaultMargins.L};
 `
 
 const pageSize = 50

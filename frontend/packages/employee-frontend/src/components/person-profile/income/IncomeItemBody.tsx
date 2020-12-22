@@ -3,9 +3,9 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
-import ListGrid from '~components/shared/layout/ListGrid'
-import { Label } from '~components/shared/Typography'
-import Title from '~components/shared/atoms/Title'
+import ListGrid from '@evaka/lib-components/src/layout/ListGrid'
+import { Label } from '@evaka/lib-components/src/typography'
+import Title from '@evaka/lib-components/src/atoms/Title'
 import IncomeTable from './IncomeTable'
 import { Income } from '~types/income'
 import { useTranslation } from '~state/i18n'

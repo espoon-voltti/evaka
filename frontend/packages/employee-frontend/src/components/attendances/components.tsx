@@ -6,14 +6,14 @@ import React from 'react'
 import styled from 'styled-components'
 import { AttendanceChild } from '~api/attendances'
 
-import AsyncButton from '~components/shared/atoms/buttons/AsyncButton'
-import Button from '~components/shared/atoms/buttons/Button'
-import InlineButton from '~components/shared/atoms/buttons/InlineButton'
-import RoundIcon from '~components/shared/atoms/RoundIcon'
-import Colors from '~components/shared/Colors'
-import { DefaultMargins } from '~components/shared/layout/white-space'
-import { Label } from '~components/shared/Typography'
-import { faExclamation } from '~icon-set'
+import AsyncButton from '@evaka/lib-components/src/atoms/buttons/AsyncButton'
+import Button from '@evaka/lib-components/src/atoms/buttons/Button'
+import InlineButton from '@evaka/lib-components/src/atoms/buttons/InlineButton'
+import RoundIcon from '@evaka/lib-components/src/atoms/RoundIcon'
+import colors from '@evaka/lib-components/src/colors'
+import { defaultMargins } from '@evaka/lib-components/src/white-space'
+import { Label } from '@evaka/lib-components/src/typography'
+import { faExclamation } from '@evaka/lib-icons'
 import { useTranslation } from '~state/i18n'
 import { CareType, formatCareType } from '~types/absence'
 
@@ -35,7 +35,7 @@ export const BigWideInlineButton = styled(InlineButton)`
 
 export const WideAsyncButton = styled(AsyncButton)`
   @media screen and (max-width: 1023px) {
-    margin-bottom: ${DefaultMargins.s};
+    margin-bottom: ${defaultMargins.s};
     width: 100%;
     white-space: normal;
     height: 64px;
@@ -54,14 +54,14 @@ export interface CustomButtonProps {
 
 export const CustomButton = styled(Button)<CustomButtonProps>`
   @media screen and (max-width: 1023px) {
-    margin-bottom: ${DefaultMargins.s};
+    margin-bottom: ${defaultMargins.s};
     width: calc(50vw - 40px);
     white-space: normal;
     height: 64px;
   }
 
   @media screen and (min-width: 1024px) {
-    margin-right: ${DefaultMargins.s};
+    margin-right: ${defaultMargins.s};
   }
   ${(p) => (p.color ? `color: ${p.color};` : '')}
   ${(p) => (p.backgroundColor ? `background-color: ${p.backgroundColor};` : '')}
@@ -98,7 +98,7 @@ export const FlexLabel = styled(Label)`
   align-items: center;
 
   span {
-    margin-right: ${DefaultMargins.m};
+    margin-right: ${defaultMargins.m};
   }
 `
 
@@ -107,7 +107,7 @@ const AbsentFromWrapper = styled.div`
 `
 
 const InfoText = styled.div`
-  margin-left: ${DefaultMargins.s};
+  margin-left: ${defaultMargins.s};
 `
 
 interface AbsentFromProps {
@@ -121,7 +121,7 @@ export function AbsentFrom({ child, absentFrom }: AbsentFromProps) {
   return (
     <AbsentFromWrapper>
       <RoundIcon
-        color={Colors.brandEspoo.espooTurquoise}
+        color={colors.brandEspoo.espooTurquoise}
         size={'s'}
         content={faExclamation}
       />

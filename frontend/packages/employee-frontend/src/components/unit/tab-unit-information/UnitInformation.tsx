@@ -5,12 +5,12 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
-import Title from '~components/shared/atoms/Title'
+import Title from '@evaka/lib-components/src/atoms/Title'
 import { useTranslation } from '~state/i18n'
 import { Unit } from '~types/unit'
 import { DataList } from 'components/common/DataList'
 import { RequireRole } from '~utils/roles'
-import { Gap } from '~components/shared/layout/white-space'
+import { Gap } from '@evaka/lib-components/src/white-space'
 import { isNotProduction } from '~constants'
 
 const DetailsLink = styled(Link)`

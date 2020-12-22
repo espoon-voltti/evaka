@@ -11,13 +11,12 @@ import {
   isDateRangeValid
 } from '~utils/validation/validations'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faQuestionCircle } from 'icon-set'
+import { faQuestionCircle } from '@evaka/lib-icons'
 import FormModal from '~components/common/FormModal'
-import Section from '~components/shared/layout/Section'
 import { Partnership } from '~types/fridge'
 import { UUID } from '~types'
 import { Result } from '~api'
-import { faPen, faUser } from 'icon-set'
+import { faPen, faUser } from '@evaka/lib-icons'
 import { formatName } from '~utils'
 import PersonSearch from '~components/common/PersonSearch'
 import { DatePicker, DatePickerClearable } from '~components/common/DatePicker'
@@ -129,11 +128,11 @@ function FridgePartnerModal({ partnership, onSuccess, headPersonId }: Props) {
           resolve={() => onSubmit()}
         >
           {errorStatusCode === 409 && (
-            <Section className="error">
+            <section className="error">
               {i18n.personProfile.fridgePartner.error.conflict}
-            </Section>
+            </section>
           )}
-          <Section>
+          <section>
             {partnership ? (
               <div>
                 {form.partner
@@ -157,16 +156,16 @@ function FridgePartnerModal({ partnership, onSuccess, headPersonId }: Props) {
                 />
               </>
             )}
-          </Section>
-          <Section>
+          </section>
+          <section>
             <div className="bold">{i18n.common.form.startDate}</div>
             <DatePicker
               date={form.startDate}
               onChange={(startDate) => assignFridgePartnerForm({ startDate })}
               type="full-width"
             />
-          </Section>
-          <Section>
+          </section>
+          <section>
             <div className="bold">{i18n.common.form.endDate}</div>
             <DatePickerClearable
               date={form.endDate}
@@ -184,7 +183,7 @@ function FridgePartnerModal({ partnership, onSuccess, headPersonId }: Props) {
                 />
               </div>
             )}
-          </Section>
+          </section>
         </FormModal>
       )}
     </>

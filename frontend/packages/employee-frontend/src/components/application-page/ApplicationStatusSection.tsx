@@ -3,10 +3,10 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
-import { faFile } from 'icon-set'
-import { Label } from '~components/shared/Typography'
-import CollapsibleSection from '~components/shared/molecules/CollapsibleSection'
-import ListGrid from '~components/shared/layout/ListGrid'
+import { faFile } from '@evaka/lib-icons'
+import { Label } from '@evaka/lib-components/src/typography'
+import CollapsibleSection from '@evaka/lib-components/src/molecules/CollapsibleSection'
+import ListGrid from '@evaka/lib-components/src/layout/ListGrid'
 import { useTranslation } from '~state/i18n'
 import { ApplicationDetails } from '~types/application'
 import { formatDate } from '~utils/date'

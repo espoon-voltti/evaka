@@ -17,18 +17,18 @@ import styled from 'styled-components'
 import { animated, useSpring } from 'react-spring'
 
 import { useTranslation } from '~state/i18n'
-import Tabs from '~components/shared/molecules/Tabs'
+import Tabs from '@evaka/lib-components/src/molecules/Tabs'
 import AttendanceGroupSelectorPage from './AttendanceGroupSelectorPage'
 import AttendanceComingPage from './AttendanceComingPage'
 import AttendancePresentPage from './AttendancePresentPage'
-import Title from '~components/shared/atoms/Title'
+import Title from '@evaka/lib-components/src/atoms/Title'
 import AttendanceDepartedPage from './AttendanceDepartedPage'
 import AttendanceAbsentPage from './AttendanceAbsentPage'
-import { ContentArea } from '~components/shared/layout/Container'
-import IconButton from '~components/shared/atoms/buttons/IconButton'
-import Colors from '~components/shared/Colors'
-import { faSearch, faTimes } from '~icon-set'
-import { DefaultMargins } from '~components/shared/layout/white-space'
+import { ContentArea } from '@evaka/lib-components/src/layout/Container'
+import IconButton from '@evaka/lib-components/src/atoms/buttons/IconButton'
+import colors from '@evaka/lib-components/src/colors'
+import { faSearch, faTimes } from '@evaka/lib-icons'
+import { defaultMargins } from '@evaka/lib-components/src/white-space'
 import { FreeTextSearch } from '~components/common/Filters'
 import { useDebounce } from '~utils/useDebounce'
 import AttendanceList from './AttendanceList'
@@ -46,12 +46,12 @@ const NoMarginTitle = styled(Title)`
   display: flex;
   justify-content: center;
   align-items: center;
-  background: ${Colors.blues.primary};
-  color: ${Colors.greyscale.white};
+  background: ${colors.blues.primary};
+  color: ${colors.greyscale.white};
 
   button {
-    margin-left: ${DefaultMargins.m};
-    color: ${Colors.greyscale.white};
+    margin-left: ${defaultMargins.m};
+    color: ${colors.greyscale.white};
   }
 `
 
@@ -61,7 +61,7 @@ const Bold = styled.div`
 
 const SearchBar = animated(styled.div`
   position: absolute;
-  background: ${Colors.greyscale.lightest};
+  background: ${colors.greyscale.lightest};
   width: 100vw;
   overflow: hidden;
   z-index: 1;
@@ -219,7 +219,7 @@ export default React.memo(function AttendancePageWrapper() {
                 value={freeText}
                 setValue={setFreeText}
                 placeholder={i18n.attendances.searchPlaceholder}
-                background={Colors.greyscale.white}
+                background={colors.greyscale.white}
               />
               <AttendanceList attendanceChildren={searchResults} />
             </ContentArea>

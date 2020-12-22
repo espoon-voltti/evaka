@@ -15,12 +15,15 @@ import { RouteComponentProps, useHistory } from 'react-router'
 import styled from 'styled-components'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faExclamationTriangle } from '@fortawesome/free-solid-svg-icons'
-import Checkbox from '~components/shared/atoms/form/Checkbox'
-import { Container, ContentArea } from '~components/shared/layout/Container'
-import Title from '~components/shared/atoms/Title'
-import { Gap } from '~components/shared/layout/white-space'
-import Button from '~components/shared/atoms/buttons/Button'
-import Loader from '~components/shared/atoms/Loader'
+import Checkbox from '@evaka/lib-components/src/atoms/form/Checkbox'
+import {
+  Container,
+  ContentArea
+} from '@evaka/lib-components/src/layout/Container'
+import Title from '@evaka/lib-components/src/atoms/Title'
+import { Gap } from '@evaka/lib-components/src/white-space'
+import Button from '@evaka/lib-components/src/atoms/buttons/Button'
+import Loader from '@evaka/lib-components/src/atoms/Loader'
 import {
   getDecisionDrafts,
   getDecisionUnits,
@@ -39,12 +42,12 @@ import {
   DecisionType,
   DecisionUnit
 } from '~types/decision'
-import { faEnvelope } from 'icon-set'
+import { faEnvelope } from '@evaka/lib-icons'
 import { AlertBox, InfoBox } from '~components/common/MessageBoxes'
 import { TitleContext, TitleState } from '~state/title'
 import { EspooColours } from '~utils/colours'
 import { formatName } from '~utils'
-import { FixedSpaceRow } from '~components/shared/layout/flex-helpers'
+import { FixedSpaceRow } from '@evaka/lib-components/src/layout/flex-helpers'
 
 const ColumnTitle = styled.div`
   font-weight: 600;

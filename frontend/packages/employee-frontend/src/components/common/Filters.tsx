@@ -7,9 +7,14 @@ import styled from 'styled-components'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import ReactSelect from 'react-select'
 
-import { faSearch, faTimes, faTrash, fasExclamationTriangle } from 'icon-set'
+import {
+  faSearch,
+  faTimes,
+  faTrash,
+  fasExclamationTriangle
+} from '@evaka/lib-icons'
 import LocalDate from '@evaka/lib-common/src/local-date'
-import InlineButton from 'components/shared/atoms/buttons/InlineButton'
+import InlineButton from '@evaka/lib-components/src/atoms/buttons/InlineButton'
 import { DatePickerClearable } from '~components/common/DatePicker'
 import { useTranslation } from '~state/i18n'
 import {
@@ -23,15 +28,15 @@ import { ApplicationType, ApplicationSummaryStatus } from '~types/application'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
-} from 'components/shared/layout/flex-helpers'
-import Checkbox from '~components/shared/atoms/form/Checkbox'
-import Radio from '~components/shared/atoms/form/Radio'
-import { Gap, DefaultMargins } from '~components/shared/layout/white-space'
+} from '@evaka/lib-components/src/layout/flex-helpers'
+import Checkbox from '@evaka/lib-components/src/atoms/form/Checkbox'
+import Radio from '@evaka/lib-components/src/atoms/form/Radio'
+import { Gap, defaultMargins } from '@evaka/lib-components/src/white-space'
 import { FlexRow } from './styled/containers'
-import RoundIcon from '~components/shared/atoms/RoundIcon'
-import IconButton from '~components/shared/atoms/buttons/IconButton'
-import Colors from '~components/shared/Colors'
-import { faAngleDown, faAngleUp } from 'icon-set'
+import RoundIcon from '@evaka/lib-components/src/atoms/RoundIcon'
+import IconButton from '@evaka/lib-components/src/atoms/buttons/IconButton'
+import colors from '@evaka/lib-components/src/colors'
+import { faAngleDown, faAngleUp } from '@evaka/lib-icons'
 import Tooltip from '~components/common/Tooltip'
 import { CareArea } from '~types/unit'
 import { Label, LabelText } from '~components/common/styled/common'
@@ -126,7 +131,7 @@ const SearchInput = styled.input<{ background?: string }>`
   width: 100%;
   border: none;
   font-size: 1rem;
-  background: ${(p) => p.background ?? Colors.greyscale.lightest};
+  background: ${(p) => p.background ?? colors.greyscale.lightest};
   width: 100%;
   display: flex;
   flex-direction: row;
@@ -137,19 +142,19 @@ const SearchInput = styled.input<{ background?: string }>`
   outline: none;
   margin-left: -38px;
   margin-right: -25px;
-  color: ${Colors.greyscale.darkest};
+  color: ${colors.greyscale.darkest};
 
   &::placeholder {
     font-style: italic;
     font-size: 17px;
-    color: ${Colors.greyscale.dark};
+    color: ${colors.greyscale.dark};
   }
 
   &:focus {
     border-width: 2px;
     border-radius: 2px;
     border-style: solid;
-    border-color: ${Colors.accents.petrol};
+    border-color: ${colors.accents.petrol};
     margin-top: -2px;
     padding-left: 53px;
     margin-bottom: -2px;
@@ -157,7 +162,7 @@ const SearchInput = styled.input<{ background?: string }>`
 `
 
 const CustomIcon = styled(FontAwesomeIcon)`
-  color: ${Colors.greyscale.dark};
+  color: ${colors.greyscale.dark};
   margin: 0 0.5rem;
   position: relative;
   left: 10px;
@@ -167,7 +172,7 @@ const CustomIcon = styled(FontAwesomeIcon)`
 const CustomIconButton = styled(IconButton)`
   float: right;
   position: relative;
-  color: ${Colors.greyscale.medium};
+  color: ${colors.greyscale.medium};
   right: 20px;
 `
 
@@ -401,7 +406,7 @@ export function FeeDecisionDateFilter({
             <Gap size="xs" horizontal />
             <FontAwesomeIcon
               icon={fasExclamationTriangle}
-              color={Colors.accents.orange}
+              color={colors.accents.orange}
             />
           </span>
         </>
@@ -543,7 +548,7 @@ export function InvoiceDateFilter({
             <Gap size="xs" horizontal />
             <FontAwesomeIcon
               icon={fasExclamationTriangle}
-              color={Colors.accents.orange}
+              color={colors.accents.orange}
             />
           </span>
         </>
@@ -614,7 +619,7 @@ interface ApplicationTypeFilterProps {
 const CustomDiv = styled(FixedSpaceColumn)`
   margin-left: 18px;
   padding-left: 32px;
-  border-left: 1px solid ${Colors.greyscale.dark};
+  border-left: 1px solid ${colors.greyscale.dark};
 `
 
 const ApplicationOpenIcon = styled(FontAwesomeIcon)`
@@ -656,7 +661,7 @@ export function ApplicationTypeFilter({
                   <ApplicationOpenIcon
                     icon={toggled === id ? faAngleUp : faAngleDown}
                     size={'lg'}
-                    color={Colors.greyscale.dark}
+                    color={colors.greyscale.dark}
                   />
                 }
                 checked={toggled === id}
@@ -704,7 +709,7 @@ export type ApplicationSummaryStatusOptions =
   | 'ALL'
 
 const CustomDivWithMargin = styled(CustomDiv)`
-  margin-top: ${DefaultMargins.xs};
+  margin-top: ${defaultMargins.xs};
 `
 
 export function ApplicationStatusFilter({
@@ -750,7 +755,7 @@ export function ApplicationStatusFilter({
                 <ApplicationOpenIcon
                   icon={toggled === id ? faAngleUp : faAngleDown}
                   size={'lg'}
-                  color={Colors.greyscale.dark}
+                  color={colors.greyscale.dark}
                 />
               ) : undefined
             }
@@ -842,7 +847,7 @@ export function ApplicationDateFilter({
             <Gap size="xs" horizontal />
             <FontAwesomeIcon
               icon={fasExclamationTriangle}
-              color={Colors.accents.orange}
+              color={colors.accents.orange}
             />
           </span>
         </>
@@ -886,7 +891,7 @@ export function ApplicationBasisFilter({
         >
           <RoundIcon
             content="L"
-            color={Colors.blues.dark}
+            color={colors.blues.dark}
             size="m"
             onClick={toggle('ADDITIONAL_INFO')}
             active={toggled.includes('ADDITIONAL_INFO')}
@@ -901,7 +906,7 @@ export function ApplicationBasisFilter({
         >
           <RoundIcon
             content="S"
-            color={Colors.accents.green}
+            color={colors.accents.green}
             size="m"
             onClick={toggle('SIBLING_BASIS')}
             active={toggled.includes('SIBLING_BASIS')}
@@ -916,7 +921,7 @@ export function ApplicationBasisFilter({
         >
           <RoundIcon
             content="T"
-            color={Colors.accents.water}
+            color={colors.accents.water}
             size="m"
             onClick={toggle('ASSISTANCE_NEED')}
             active={toggled.includes('ASSISTANCE_NEED')}
@@ -931,7 +936,7 @@ export function ApplicationBasisFilter({
         >
           <RoundIcon
             content="K"
-            color={Colors.accents.red}
+            color={colors.accents.red}
             size="m"
             onClick={toggle('CLUB_CARE')}
             active={toggled.includes('CLUB_CARE')}
@@ -946,7 +951,7 @@ export function ApplicationBasisFilter({
         >
           <RoundIcon
             content="P"
-            color={Colors.accents.orange}
+            color={colors.accents.orange}
             size="m"
             onClick={toggle('DAYCARE')}
             active={toggled.includes('DAYCARE')}
@@ -961,7 +966,7 @@ export function ApplicationBasisFilter({
         >
           <RoundIcon
             content="V"
-            color={Colors.accents.petrol}
+            color={colors.accents.petrol}
             size="m"
             onClick={toggle('EXTENDED_CARE')}
             active={toggled.includes('EXTENDED_CARE')}
@@ -976,7 +981,7 @@ export function ApplicationBasisFilter({
         >
           <RoundIcon
             content="2"
-            color={Colors.accents.emerald}
+            color={colors.accents.emerald}
             size="m"
             onClick={toggle('DUPLICATE_APPLICATION')}
             active={toggled.includes('DUPLICATE_APPLICATION')}

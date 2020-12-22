@@ -9,10 +9,9 @@ import LocalDate from '@evaka/lib-common/src/local-date'
 import { useTranslation } from '~state/i18n'
 import { UIContext } from '~state/ui'
 import FormModal from '~components/common/FormModal'
-import Section from '~components/shared/layout/Section'
-import { FixedSpaceColumn } from 'components/shared/layout/flex-helpers'
+import { FixedSpaceColumn } from '@evaka/lib-components/src/layout/flex-helpers'
 import { Result } from '~api'
-import { faChild } from 'icon-set'
+import { faChild } from '@evaka/lib-icons'
 import { createPlacement, MissingGroupPlacement } from '~api/unit'
 import { updateBackupCare } from 'api/child/backup-care'
 import { UUID } from '~types'
@@ -170,11 +169,11 @@ export default React.memo(function GroupPlacementModal({
       resolve={() => submitForm()}
     >
       <FixedSpaceColumn>
-        <Section>
+        <section>
           <Bold>{i18n.unit.placements.modal.child}</Bold>
           <span>{formatName(firstName, lastName, i18n)}</span>
-        </Section>
-        <Section>
+        </section>
+        <section>
           <Bold>{i18n.unit.placements.modal.group}</Bold>
           <Select
             options={openGroups.map((group) => ({
@@ -189,8 +188,8 @@ export default React.memo(function GroupPlacementModal({
                 : undefined
             }
           />
-        </Section>
-        <Section>
+        </section>
+        <section>
           <Bold>{i18n.common.form.startDate}</Bold>
           <DatePicker
             {...disableDateEditIfBackupPlacement}
@@ -200,8 +199,8 @@ export default React.memo(function GroupPlacementModal({
             minDate={minDate}
             maxDate={maxDate}
           />
-        </Section>
-        <Section>
+        </section>
+        <section>
           <Bold>{i18n.common.form.endDate}</Bold>
           <DatePicker
             {...disableDateEditIfBackupPlacement}
@@ -211,15 +210,15 @@ export default React.memo(function GroupPlacementModal({
             minDate={minDate}
             maxDate={maxDate}
           />
-        </Section>
+        </section>
         {form.errors.length > 0 && (
-          <Section>
+          <section>
             {form.errors.map((error, index) => (
               <div className="error" key={index}>
                 {error}
               </div>
             ))}
-          </Section>
+          </section>
         )}
       </FixedSpaceColumn>
     </FormModal>

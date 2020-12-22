@@ -4,24 +4,24 @@
 
 import React, { useContext, useEffect, useState } from 'react'
 import { useTranslation } from '~state/i18n'
-import { FixedSpaceColumn } from 'components/shared/layout/flex-helpers'
+import { FixedSpaceColumn } from '@evaka/lib-components/src/layout/flex-helpers'
 import { UUID } from 'types'
-import AddButton from 'components/shared/atoms/buttons/AddButton'
+import AddButton from '@evaka/lib-components/src/atoms/buttons/AddButton'
 import { Loading, Result } from 'api'
 import { ApplicationNote } from 'types/application'
 import { useRestApi } from 'utils/useRestApi'
 import { getApplicationNotes } from 'api/applications'
-import { SpinnerSegment } from 'components/shared/atoms/state/Spinner'
-import ErrorSegment from 'components/shared/atoms/state/ErrorSegment'
+import { SpinnerSegment } from '@evaka/lib-components/src/atoms/state/Spinner'
+import ErrorSegment from '@evaka/lib-components/src/atoms/state/ErrorSegment'
 import ApplicationNoteBox from 'components/application-page/ApplicationNoteBox'
 import { UserContext } from 'state/user'
 import { requireRole } from 'utils/roles'
 import styled from 'styled-components'
-import { DefaultMargins, Gap } from 'components/shared/layout/white-space'
+import { defaultMargins, Gap } from '@evaka/lib-components/src/white-space'
 
 const Sticky = styled.div`
   position: sticky;
-  top: ${DefaultMargins.s};
+  top: ${defaultMargins.s};
 `
 
 type Props = {

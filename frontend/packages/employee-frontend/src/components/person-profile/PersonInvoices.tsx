@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { faChild } from 'icon-set'
+import { faChild } from '@evaka/lib-icons'
 import * as _ from 'lodash'
 import React, { useContext, useEffect } from 'react'
 import { Link } from 'react-router-dom'
@@ -10,9 +10,16 @@ import { Link } from 'react-router-dom'
 import { Loading } from '~api'
 import { getPersonInvoices } from '~api/invoicing'
 import { StatusTd } from '~components/PersonProfile'
-import { Table, Tbody, Td, Th, Thead, Tr } from 'components/shared/layout/Table'
-import Loader from '~components/shared/atoms/Loader'
-import CollapsibleSection from 'components/shared/molecules/CollapsibleSection'
+import {
+  Table,
+  Tbody,
+  Td,
+  Th,
+  Thead,
+  Tr
+} from '@evaka/lib-components/src/layout/Table'
+import Loader from '@evaka/lib-components/src/atoms/Loader'
+import CollapsibleSection from '@evaka/lib-components/src/molecules/CollapsibleSection'
 import { useTranslation } from '~state/i18n'
 import { PersonContext } from '~state/person'
 import { UUID } from '~types'

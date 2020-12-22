@@ -7,12 +7,12 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 }
 
 import React, { useContext } from 'react'
-import { ContentArea } from '~components/shared/layout/Container'
+import { ContentArea } from '@evaka/lib-components/src/layout/Container'
 import { UnitContext } from '~state/unit'
-import { SpinnerSegment } from '~components/shared/atoms/state/Spinner'
-import ErrorSegment from '~components/shared/atoms/state/ErrorSegment'
+import { SpinnerSegment } from '@evaka/lib-components/src/atoms/state/Spinner'
+import ErrorSegment from '@evaka/lib-components/src/atoms/state/ErrorSegment'
 import { useTranslation } from '~state/i18n'
-import Title from '~components/shared/atoms/Title'
+import Title from '@evaka/lib-components/src/atoms/Title'
 import {
   Table,
   Tbody,
@@ -20,10 +20,11 @@ import {
   Th,
   Thead,
   Tr
-} from '~components/shared/layout/Table'
+} from '@evaka/lib-components/src/layout/Table'
 import { formatName } from '~utils'
-import PlacementCircle from '~components/shared/atoms/PlacementCircle'
+import PlacementCircle from '@evaka/lib-components/src/atoms/PlacementCircle'
 import { careTypesFromPlacementType } from '~components/common/CareTypeLabel'
+import { isPartDayPlacement } from '~utils/placements'
 
 function TabApplications() {
   const { i18n } = useTranslation()
@@ -78,7 +79,14 @@ function TabApplications() {
                   {careTypesFromPlacementType(row.requestedPlacementType)}
                 </Td>
                 <Td data-qa="placement-subtype">
-                  <PlacementCircle type={row.requestedPlacementType} />
+                  <PlacementCircle
+                    type={
+                      isPartDayPlacement(row.requestedPlacementType)
+                        ? 'half'
+                        : 'full'
+                    }
+                    label={i18n.placement.type[row.requestedPlacementType]}
+                  />
                 </Td>
                 <Td data-qa="preference-order">{`${row.preferenceOrder}.`}</Td>
                 <Td data-qa="preferred-start">

@@ -4,7 +4,7 @@
 
 import React, { useContext } from 'react'
 import styled from 'styled-components'
-import { faCheck, fasArrowDown, fasArrowUp, faTimes } from 'icon-set'
+import { faCheck, fasArrowDown, fasArrowUp, faTimes } from '@evaka/lib-icons'
 import {
   Table,
   Tr,
@@ -13,36 +13,37 @@ import {
   Thead,
   Tbody,
   SortableTh
-} from '~components/shared/layout/Table'
+} from '@evaka/lib-components/src/layout/Table'
 import { useTranslation } from 'state/i18n'
 import {
   ApplicationListSummary,
   ApplicationsSearchResponse
 } from 'types/application'
 import { SearchOrder } from '~types'
-import Pagination from '~components/shared/Pagination'
-import Colors, { BlueColors } from '~components/shared/Colors'
+import Pagination from '@evaka/lib-components/src/Pagination'
+import colors, { blueColors } from '@evaka/lib-components/src/colors'
 import { SortByApplications } from '~types/application'
 import { formatName } from '~utils'
-import RoundIcon from 'components/shared/atoms/RoundIcon'
+import RoundIcon from '@evaka/lib-components/src/atoms/RoundIcon'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
-} from 'components/shared/layout/flex-helpers'
-import { H1 } from 'components/shared/Typography'
-import { DefaultMargins } from 'components/shared/layout/white-space'
+} from '@evaka/lib-components/src/layout/flex-helpers'
+import { H1 } from '@evaka/lib-components/src/typography'
+import { defaultMargins } from '@evaka/lib-components/src/white-space'
 import { getEmployeeUrlPrefix } from '~constants'
 import { formatDate } from '~utils/date'
 import ApplicationActions from '~components/applications/ApplicationActions'
-import Checkbox from '~components/shared/atoms/form/Checkbox'
+import Checkbox from '@evaka/lib-components/src/atoms/form/Checkbox'
 import { ApplicationUIContext } from '~state/application-ui'
 import ActionBar from '~components/applications/ActionBar'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import Tooltip from '~components/shared/atoms/Tooltip'
+import Tooltip from '@evaka/lib-components/src/atoms/Tooltip'
 import { careTypesFromPlacementType } from '~components/common/CareTypeLabel'
-import PlacementCircle from '~components/shared/atoms/PlacementCircle'
+import PlacementCircle from '@evaka/lib-components/src/atoms/PlacementCircle'
 import { UserContext } from '~state/user'
 import { hasRole } from '~utils/roles'
+import { isPartDayPlacement } from '~utils/placements'
 
 const CircleIcon = styled.div`
   display: flex;
@@ -54,25 +55,25 @@ const CircleIcon = styled.div`
   min-height: 34px;
   font-size: 24px !important;
   border-radius: 100%;
-  color: ${Colors.greyscale.white};
+  color: ${colors.greyscale.white};
 `
 
 const CircleIconGreen = styled(CircleIcon)`
-  background-color: ${Colors.accents.green};
+  background-color: ${colors.accents.green};
 `
 
 const CircleIconRed = styled(CircleIcon)`
-  background-color: ${Colors.accents.red};
+  background-color: ${colors.accents.red};
 `
 
 const TitleRowContainer = styled.div`
   display: flex;
   justify-content: space-between;
-  padding: ${DefaultMargins.m} ${DefaultMargins.L};
+  padding: ${defaultMargins.m} ${defaultMargins.L};
   position: sticky;
   top: 0;
   z-index: 3;
-  background: ${Colors.greyscale.white};
+  background: ${colors.greyscale.white};
 `
 
 interface PaginationWrapperProps {
@@ -97,7 +98,7 @@ const Bold = styled.span`
 
 const Light = styled.span`
   font-style: italic;
-  color: ${Colors.greyscale.medium};
+  color: ${colors.greyscale.medium};
 `
 
 const StatusColorTd = styled(Td)<{ color: string }>`
@@ -180,19 +181,19 @@ const ApplicationsList = React.memo(function Applications({
       application.status === 'WAITING_PLACEMENT' &&
       !application.checkedByAdmin
     )
-      return Colors.accents.orange
+      return colors.accents.orange
     if (
       application.status === 'WAITING_UNIT_CONFIRMATION' &&
       application.placementProposalStatus?.unitConfirmationStatus === 'ACCEPTED'
     )
-      return Colors.accents.green
+      return colors.accents.green
     if (
       application.status === 'WAITING_UNIT_CONFIRMATION' &&
       application.placementProposalStatus?.unitConfirmationStatus === 'REJECTED'
     )
-      return Colors.accents.red
+      return colors.accents.red
 
-    return Colors.accents.water
+    return colors.accents.water
   }
 
   const dateOfBirthInfo = (application: ApplicationListSummary) => {
@@ -231,8 +232,8 @@ const ApplicationsList = React.memo(function Applications({
               color={
                 startDateOrDueDate.differenceInYears(application.dateOfBirth) <
                 3
-                  ? Colors.accents.green
-                  : Colors.blues.medium
+                  ? colors.accents.green
+                  : colors.blues.medium
               }
               size="s"
             />
@@ -271,7 +272,10 @@ const ApplicationsList = React.memo(function Applications({
         </FixedSpaceColumn>
       </StatusColorTd>
       <Td>
-        <PlacementCircle type={application.placementType} />
+        <PlacementCircle
+          type={isPartDayPlacement(application.placementType) ? 'half' : 'full'}
+          label={i18n.placement.type[application.placementType]}
+        />
       </Td>
       <Td>
         <FixedSpaceColumn spacing="xs">
@@ -293,25 +297,25 @@ const ApplicationsList = React.memo(function Applications({
       <Td>
         <FixedSpaceRow spacing="xs">
           {application.additionalInfo && (
-            <RoundIcon content="L" color={BlueColors.dark} size="s" />
+            <RoundIcon content="L" color={blueColors.dark} size="s" />
           )}
           {application.siblingBasis && (
-            <RoundIcon content="S" color={Colors.accents.green} size="s" />
+            <RoundIcon content="S" color={colors.accents.green} size="s" />
           )}
           {application.assistanceNeed && (
-            <RoundIcon content="T" color={Colors.accents.water} size="s" />
+            <RoundIcon content="T" color={colors.accents.water} size="s" />
           )}
           {application.wasOnClubCare && (
-            <RoundIcon content="K" color={Colors.accents.red} size="s" />
+            <RoundIcon content="K" color={colors.accents.red} size="s" />
           )}
           {application.wasOnDaycare && (
-            <RoundIcon content="P" color={Colors.accents.orange} size="s" />
+            <RoundIcon content="P" color={colors.accents.orange} size="s" />
           )}
           {application.extendedCare && (
-            <RoundIcon content="V" color={Colors.accents.petrol} size="s" />
+            <RoundIcon content="V" color={colors.accents.petrol} size="s" />
           )}
           {application.duplicateApplication && (
-            <RoundIcon content="2" color={Colors.accents.emerald} size="s" />
+            <RoundIcon content="2" color={colors.accents.emerald} size="s" />
           )}
         </FixedSpaceRow>
       </Td>
@@ -396,6 +400,7 @@ const ApplicationsList = React.memo(function Applications({
             pages={pages}
             currentPage={currentPage}
             setPage={setPage}
+            label={i18n.common.page}
           />
         </PaginationWrapper>
       </TitleRowContainer>

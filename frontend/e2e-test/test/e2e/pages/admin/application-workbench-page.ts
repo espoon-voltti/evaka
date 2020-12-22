@@ -306,11 +306,11 @@ export class ApplicationWorkbenchPage {
   }
 
   async closeApplication() {
-    if (await this.btnCloseApplication.exists) {
-      await t.click(this.btnCloseApplication)
-    } else {
+    if (await this.btnCloseApplication.hasAttribute('disabled')) {
       // Application was opened in new window/tab
       await t.closeWindow()
+    } else {
+      await t.click(this.btnCloseApplication)
     }
   }
 

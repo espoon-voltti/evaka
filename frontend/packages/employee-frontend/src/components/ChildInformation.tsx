@@ -9,11 +9,14 @@ import { useTranslation } from '~/state/i18n'
 import { Link, RouteComponentProps } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faCircle } from '@fortawesome/free-solid-svg-icons'
-import { faUsers } from 'icon-set'
+import { faUsers } from '@evaka/lib-icons'
 import LocalDate from '@evaka/lib-common/src/local-date'
-import { Container, ContentArea } from '~components/shared/layout/Container'
-import Title from '~components/shared/atoms/Title'
-import { Gap } from '~components/shared/layout/white-space'
+import {
+  Container,
+  ContentArea
+} from '@evaka/lib-components/src/layout/Container'
+import Title from '@evaka/lib-components/src/atoms/Title'
+import { Gap } from '@evaka/lib-components/src/white-space'
 import ChildDetails from '~components/child-information/ChildDetails'
 import ServiceNeed from '~/components/child-information/ServiceNeed'
 import Assistance from 'components/child-information/Assistance'

@@ -3,10 +3,10 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useContext, useEffect, useState } from 'react'
-import { faEuroSign } from 'icon-set'
-import { Gap } from '~components/shared/layout/white-space'
-import Loader from '~components/shared/atoms/Loader'
-import CollapsibleSection from 'components/shared/molecules/CollapsibleSection'
+import { faEuroSign } from '@evaka/lib-icons'
+import { Gap } from '@evaka/lib-components/src/white-space'
+import Loader from '@evaka/lib-components/src/atoms/Loader'
+import CollapsibleSection from '@evaka/lib-components/src/molecules/CollapsibleSection'
 import IncomeList from './income/IncomeList'
 import { useTranslation } from '~state/i18n'
 import { UIContext } from '~state/ui'
@@ -20,7 +20,7 @@ import {
 } from '~api/income'
 import { Income, PartialIncome, IncomeId } from '~types/income'
 import { UUID } from '~types'
-import { AddButtonRow } from 'components/shared/atoms/buttons/AddButton'
+import { AddButtonRow } from '@evaka/lib-components/src/atoms/buttons/AddButton'
 import { getMissingIncomePeriodsString } from './income/missingIncomePeriodUtils'
 
 interface Props {

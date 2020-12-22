@@ -8,14 +8,21 @@ import { Loading, Result } from 'api'
 import { getFamilyContacts } from 'api/family-overview'
 import { useRestApi } from 'utils/useRestApi'
 import { FamilyContact } from 'types/family-overview'
-import { SpinnerSegment } from 'components/shared/atoms/state/Spinner'
-import CollapsibleSection from 'components/shared/molecules/CollapsibleSection'
-import { faUsers } from 'icon-set'
+import { SpinnerSegment } from '@evaka/lib-components/src/atoms/state/Spinner'
+import CollapsibleSection from '@evaka/lib-components/src/molecules/CollapsibleSection'
+import { faUsers } from '@evaka/lib-icons'
 import { useTranslation } from 'state/i18n'
-import ErrorSegment from 'components/shared/atoms/state/ErrorSegment'
-import { Table, Tbody, Td, Th, Thead, Tr } from 'components/shared/layout/Table'
+import ErrorSegment from '@evaka/lib-components/src/atoms/state/ErrorSegment'
+import {
+  Table,
+  Tbody,
+  Td,
+  Th,
+  Thead,
+  Tr
+} from '@evaka/lib-components/src/layout/Table'
 import { formatName } from 'utils'
-import { FixedSpaceColumn } from 'components/shared/layout/flex-helpers'
+import { FixedSpaceColumn } from '@evaka/lib-components/src/layout/flex-helpers'
 
 interface FamilyContactsProps {
   id: UUID

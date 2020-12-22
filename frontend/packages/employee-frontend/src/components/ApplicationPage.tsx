@@ -17,14 +17,17 @@ import ApplicationReadView from 'components/application-page/ApplicationReadView
 import ApplicationActionsBar from 'components/application-page/ApplicationActionsBar'
 import { getApplication } from 'api/applications'
 import { getApplicationUnits } from 'api/daycare'
-import { renderResult } from 'components/shared/atoms/state/async-rendering'
+import { renderResult } from '~components/async-rendering'
 import { TitleContext, TitleState } from 'state/title'
 import { useTranslation, Translations } from 'state/i18n'
-import { Container, ContentArea } from '~components/shared/layout/Container'
-import { Gap } from 'components/shared/layout/white-space'
+import {
+  Container,
+  ContentArea
+} from '@evaka/lib-components/src/layout/Container'
+import { Gap } from '@evaka/lib-components/src/white-space'
 import styled from 'styled-components'
-import { FixedSpaceRow } from 'components/shared/layout/flex-helpers'
-import ReturnButton from 'components/shared/atoms/buttons/ReturnButton'
+import { FixedSpaceRow } from '@evaka/lib-components/src/layout/flex-helpers'
+import ReturnButton from '@evaka/lib-components/src/atoms/buttons/ReturnButton'
 import ApplicationNotes from 'components/application-page/ApplicationNotes'
 import { useDebounce } from 'utils/useDebounce'
 import { isSsnValid, isTimeValid } from 'utils/validation/validations'
@@ -139,7 +142,7 @@ function ApplicationPage({ match }: RouteComponentProps<{ id: UUID }>) {
     <>
       <Gap size={'L'} />
       <Container>
-        <ReturnButton dataQa="close-application" />
+        <ReturnButton label={i18n.common.goBack} data-qa="close-application" />
         <FixedSpaceRow>
           <ApplicationArea opaque>
             {renderResult(application, renderApplication)}

@@ -10,21 +10,21 @@ import {
   updateAdditionalInformation
 } from '~api/child/additional-information'
 import { ChildContext } from '~/state/child'
-import { TextArea } from 'components/shared/atoms/form/InputField'
-import Button from 'components/shared/atoms/buttons/Button'
-import InlineButton from 'components/shared/atoms/buttons/InlineButton'
-import Loader from 'components/shared/atoms/Loader'
+import { TextArea } from '@evaka/lib-components/src/atoms/form/InputField'
+import Button from '@evaka/lib-components/src/atoms/buttons/Button'
+import InlineButton from '@evaka/lib-components/src/atoms/buttons/InlineButton'
+import Loader from '@evaka/lib-components/src/atoms/Loader'
 import { UUID } from '~/types'
 import LabelValueList from '~components/common/LabelValueList'
 import ToolbarAccordion from '~components/common/ToolbarAccordion'
 import styled from 'styled-components'
-import { faPen } from 'icon-set'
+import { faPen } from '@evaka/lib-icons'
 import { UIContext, UiState } from '~state/ui'
 import { AdditionalInformation } from '~types/child'
 import { formatParagraphs } from '~utils/html-utils'
 import { textAreaRows } from '~components/utils'
 import { RequireRole } from 'utils/roles'
-import { FixedSpaceRow } from '~components/shared/layout/flex-helpers'
+import { FixedSpaceRow } from '@evaka/lib-components/src/layout/flex-helpers'
 
 const FlexContainer = styled.div`
   display: flex;

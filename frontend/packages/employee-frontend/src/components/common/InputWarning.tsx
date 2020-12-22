@@ -3,9 +3,9 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import styled from 'styled-components'
-import Colors from '~components/shared/Colors'
+import colors from '@evaka/lib-components/src/colors'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { fasExclamationTriangle } from '~icon-set'
+import { fasExclamationTriangle } from '@evaka/lib-icons'
 import React from 'react'
 
 interface Props {
@@ -31,7 +31,7 @@ const WarningText = styled.span<{
   smaller?: boolean
   margin?: 'left' | 'right'
 }>`
-  color: ${Colors.greyscale.dark};
+  color: ${colors.greyscale.dark};
   font-style: italic;
   ${(props) =>
     props.margin === 'right' ? 'margin-right: 12px' : 'margin-left: 12px'};
@@ -42,6 +42,6 @@ const WarningIcon = () => (
   <FontAwesomeIcon
     icon={fasExclamationTriangle}
     size={'1x'}
-    color={Colors.accents.orange}
+    color={colors.accents.orange}
   />
 )

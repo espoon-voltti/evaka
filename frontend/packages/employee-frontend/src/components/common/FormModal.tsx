@@ -8,15 +8,15 @@ import { IconProp } from '@fortawesome/fontawesome-svg-core'
 import styled from 'styled-components'
 import FocusLock from 'react-focus-lock'
 
-import Title from '~components/shared/atoms/Title'
-import Button from '~components/shared/atoms/buttons/Button'
-import AsyncButton from '~components/shared/atoms/buttons/AsyncButton'
-import Colors from '~components/shared/Colors'
-import { DefaultMargins, Gap } from 'components/shared/layout/white-space'
+import Title from '@evaka/lib-components/src/atoms/Title'
+import Button from '@evaka/lib-components/src/atoms/buttons/Button'
+import AsyncButton from '@evaka/lib-components/src/atoms/buttons/AsyncButton'
+import colors from '@evaka/lib-components/src/colors'
+import { defaultMargins, Gap } from '@evaka/lib-components/src/white-space'
 import { useTranslation } from '~state/i18n'
-import { modalZIndex } from '~components/shared/layout/z-helpers'
-import { InfoStatus } from 'components/shared/UnderRowStatusIcon'
-import { P } from '~components/shared/Typography'
+import { modalZIndex } from '@evaka/lib-components/src/layout/z-helpers'
+import { InfoStatus } from '@evaka/lib-components/src/atoms/StatusIcon'
+import { P } from '@evaka/lib-components/src/typography'
 
 export const DimmedModal = styled.div``
 
@@ -65,8 +65,8 @@ export const ModalContainer = styled.div<ModalContainerProps>`
   overflow-x: visible;
   box-shadow: 0px 15px 75px 0px rgba(0, 0, 0, 0.5);
   border-radius: 2px;
-  padding-left: ${DefaultMargins.XXL};
-  padding-right: ${DefaultMargins.XXL};
+  padding-left: ${defaultMargins.XXL};
+  padding-right: ${defaultMargins.XXL};
   overflow-y: scroll;
 `
 
@@ -94,15 +94,15 @@ export const ModalIcon = styled.div<ModalIconProps>`
   background: ${(props: ModalIconProps) => {
     switch (props.colour) {
       case 'blue':
-        return Colors.blues.medium
+        return colors.blues.medium
       case 'orange':
-        return Colors.accents.orange
+        return colors.accents.orange
       case 'green':
-        return Colors.accents.green
+        return colors.accents.green
       case 'red':
-        return Colors.accents.red
+        return colors.accents.red
       default:
-        return Colors.blues.medium
+        return colors.blues.medium
     }
   }};
   font-size: 36px;
@@ -123,13 +123,13 @@ export const ModalButtons = styled.div`
   display: flex;
   flex-direction: row;
   justify-content: center;
-  margin-top: ${DefaultMargins.XXL};
-  margin-bottom: ${DefaultMargins.X3L};
+  margin-top: ${defaultMargins.XXL};
+  margin-bottom: ${defaultMargins.X3L};
 `
 
 export const ModalTitle = styled.div`
-  margin-bottom: ${DefaultMargins.XXL};
-  margin-top: ${DefaultMargins.XXL};
+  margin-bottom: ${defaultMargins.XXL};
+  margin-top: ${defaultMargins.XXL};
 `
 
 export type ModalSize = 'xs' | 'sm' | 'md' | 'lg' | 'xlg' | 'custom'

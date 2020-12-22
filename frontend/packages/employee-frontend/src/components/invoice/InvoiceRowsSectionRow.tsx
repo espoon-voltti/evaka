@@ -5,10 +5,10 @@
 import React, { useEffect, useState } from 'react'
 import styled from 'styled-components'
 
-import { faTrash } from 'icon-set'
+import { faTrash } from '@evaka/lib-icons'
 import LocalDate from '@evaka/lib-common/src/local-date'
-import { Td, Tr } from 'components/shared/layout/Table'
-import InputField from '~components/shared/atoms/form/InputField'
+import { Td, Tr } from '@evaka/lib-components/src/layout/Table'
+import InputField from '@evaka/lib-components/src/atoms/form/InputField'
 import Select, { SelectOptionProps } from '../common/Select'
 import DateRangeInput from '../common/DateRangeInput'
 import EuroInput from '../common/EuroInput'
@@ -16,7 +16,7 @@ import { useTranslation } from '../../state/i18n'
 import { Result } from '../../api'
 import { Product, InvoiceCodes } from '../../types/invoicing'
 import { formatCents, parseCents } from '../../utils/money'
-import IconButton from '~components/shared/atoms/buttons/IconButton'
+import IconButton from '@evaka/lib-components/src/atoms/buttons/IconButton'
 
 interface InvoiceRowStub {
   product: Product

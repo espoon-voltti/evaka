@@ -7,16 +7,23 @@ import styled from 'styled-components'
 import _ from 'lodash'
 import { Link } from 'react-router-dom'
 
-import { faChild, faPlus } from 'icon-set'
+import { faChild, faPlus } from '@evaka/lib-icons'
 import LocalDate from '@evaka/lib-common/src/local-date'
 import { UUID } from '~types'
 import { useTranslation, Translations } from '~state/i18n'
 import { UIContext } from '~state/ui'
 import { Loading, Result } from '~api'
-import CollapsibleSection from 'components/shared/molecules/CollapsibleSection'
-import { Table, Tbody, Td, Th, Thead, Tr } from 'components/shared/layout/Table'
-import Loader from '~components/shared/atoms/Loader'
-import { AddButtonRow } from 'components/shared/atoms/buttons/AddButton'
+import CollapsibleSection from '@evaka/lib-components/src/molecules/CollapsibleSection'
+import {
+  Table,
+  Tbody,
+  Td,
+  Th,
+  Thead,
+  Tr
+} from '@evaka/lib-components/src/layout/Table'
+import Loader from '@evaka/lib-components/src/atoms/Loader'
+import { AddButtonRow } from '@evaka/lib-components/src/atoms/buttons/AddButton'
 import FormModal from '~components/common/FormModal'
 import { formatDate } from '~utils/date'
 import {

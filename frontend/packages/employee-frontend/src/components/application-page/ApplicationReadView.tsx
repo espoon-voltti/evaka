@@ -4,9 +4,9 @@
 
 import React from 'react'
 import styled from 'styled-components'
-import { H4, Label } from 'components/shared/Typography'
+import { H4, Label } from '@evaka/lib-components/src/typography'
 import { Address, ApplicationResponse, PersonBasics } from 'types/application'
-import CollapsibleSection from 'components/shared/molecules/CollapsibleSection'
+import CollapsibleSection from '@evaka/lib-components/src/molecules/CollapsibleSection'
 import {
   faChild,
   faFileAlt,
@@ -14,19 +14,19 @@ import {
   faMapMarkerAlt,
   faUserFriends,
   faUsers
-} from 'icon-set'
-import { Gap } from 'components/shared/layout/white-space'
+} from '@evaka/lib-icons'
+import { Gap } from '@evaka/lib-components/src/white-space'
 import { formatName } from 'utils'
 import { useTranslation } from 'state/i18n'
-import ListGrid from 'components/shared/layout/ListGrid'
+import ListGrid from '@evaka/lib-components/src/layout/ListGrid'
 import { Link } from 'react-router-dom'
 import { formatParagraphs } from 'utils/html-utils'
-import { FixedSpaceColumn } from 'components/shared/layout/flex-helpers'
+import { FixedSpaceColumn } from '@evaka/lib-components/src/layout/flex-helpers'
 import ApplicationTitle from 'components/application-page/ApplicationTitle'
 import VTJGuardian from 'components/application-page/VTJGuardian'
 import ApplicationStatusSection from 'components/application-page/ApplicationStatusSection'
 import ApplicationDecisionsSection from 'components/application-page/ApplicationDecisionsSection'
-import Colors from 'components/shared/Colors'
+import colors from '@evaka/lib-components/src/colors'
 import Attachment from '~components/common/Attachment'
 
 function YesNoValue({ value }: { value: boolean | null | undefined }) {
@@ -36,7 +36,7 @@ function YesNoValue({ value }: { value: boolean | null | undefined }) {
 }
 
 const Dimmed = styled.span`
-  color: ${Colors.greyscale.medium};
+  color: ${colors.greyscale.medium};
 `
 
 const AttachmentContainer = styled.div`

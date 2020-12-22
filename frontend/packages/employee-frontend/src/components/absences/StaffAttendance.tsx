@@ -10,7 +10,7 @@ import React, {
   useRef,
   useState
 } from 'react'
-import { Td, Tr } from '~components/shared/layout/Table'
+import { Td, Tr } from '@evaka/lib-components/src/layout/Table'
 import { DisabledCell } from '~components/absences/AbsenceCell'
 import { useTranslation } from '~state/i18n'
 import { AbsencesContext } from '~state/absence'
@@ -20,7 +20,7 @@ import { getStaffAttendances, postStaffAttendance } from '~api/absences'
 import './Absences.scss'
 import { useDebounce } from '~utils/useDebounce'
 import { formatDecimal } from '~components/utils'
-import { faTimes } from 'icon-set'
+import { faTimes } from '@evaka/lib-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import styled from 'styled-components'
 import Tooltip from '~components/common/Tooltip'

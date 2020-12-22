@@ -10,9 +10,16 @@ import { useEffect } from 'react'
 import { Loading, Result } from '~api'
 import { useContext } from 'react'
 import { PersonContext } from '~state/person'
-import { Table, Tbody, Td, Th, Thead, Tr } from 'components/shared/layout/Table'
-import Loader from '~components/shared/atoms/Loader'
-import CollapsibleSection from 'components/shared/molecules/CollapsibleSection'
+import {
+  Table,
+  Tbody,
+  Td,
+  Th,
+  Thead,
+  Tr
+} from '@evaka/lib-components/src/layout/Table'
+import Loader from '@evaka/lib-components/src/atoms/Loader'
+import CollapsibleSection from '@evaka/lib-components/src/molecules/CollapsibleSection'
 import InfoModal from '~components/common/InfoModal'
 import { Partnership } from '~types/fridge'
 import * as _ from 'lodash'
@@ -20,7 +27,7 @@ import { UIContext } from '~state/ui'
 import FridgePartnerModal from '~components/person-profile/person-fridge-partner/FridgePartnerModal'
 import { Link } from 'react-router-dom'
 import { formatName } from '~utils'
-import { faQuestion, faUser } from 'icon-set'
+import { faQuestion, faUser } from '@evaka/lib-icons'
 import { PersonDetails } from '~types/person'
 import {
   getPartnerships,
@@ -28,8 +35,8 @@ import {
   retryPartnership
 } from '~api/partnerships'
 import { ButtonsTd, DateTd, NameTd } from '~components/PersonProfile'
-import Toolbar from 'components/shared/molecules/Toolbar'
-import AddButton from 'components/shared/atoms/buttons/AddButton'
+import Toolbar from '~components/common/Toolbar'
+import AddButton from '@evaka/lib-components/src/atoms/buttons/AddButton'
 
 const TopBar = styled.div`
   display: flex;

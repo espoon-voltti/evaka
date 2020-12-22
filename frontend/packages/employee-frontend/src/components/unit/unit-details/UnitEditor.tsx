@@ -16,23 +16,23 @@ import {
   UnitTypes
 } from '~types/unit'
 import { DatePicker, DatePickerClearable } from '~components/common/DatePicker'
-import InputField from 'components/shared/atoms/form/InputField'
-import Button from '~components/shared/atoms/buttons/Button'
-import Radio from '~components/shared/atoms/form/Radio'
-import Checkbox from '~components/shared/atoms/form/Checkbox'
+import InputField from '@evaka/lib-components/src/atoms/form/InputField'
+import Button from '@evaka/lib-components/src/atoms/buttons/Button'
+import Radio from '@evaka/lib-components/src/atoms/form/Radio'
+import Checkbox from '@evaka/lib-components/src/atoms/form/Checkbox'
 import { DaycareFields } from '~api/unit'
 import { DayOfWeek, UUID } from '~types'
 import { Result } from '~api'
 import { Translations, useTranslation } from '~state/i18n'
 import { EspooColours } from '~utils/colours'
-import InlineButton from 'components/shared/atoms/buttons/InlineButton'
-import { faPen } from 'icon-set'
-import { H1, H3 } from 'components/shared/Typography'
-import { DefaultMargins, Gap } from 'components/shared/layout/white-space'
+import InlineButton from '@evaka/lib-components/src/atoms/buttons/InlineButton'
+import { faPen } from '@evaka/lib-icons'
+import { H1, H3 } from '@evaka/lib-components/src/typography'
+import { defaultMargins, Gap } from '@evaka/lib-components/src/white-space'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
-} from '~components/shared/layout/flex-helpers'
+} from '@evaka/lib-components/src/layout/flex-helpers'
 
 type CareType = 'DAYCARE' | 'PRESCHOOL' | 'PREPARATORY_EDUCATION' | 'CLUB'
 type DaycareType = 'CENTRE' | 'FAMILY' | 'GROUP_FAMILY'
@@ -94,7 +94,7 @@ const TopBar = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: ${DefaultMargins.m};
+  margin-bottom: ${defaultMargins.m};
 `
 
 const FormPart = styled.div`

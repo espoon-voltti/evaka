@@ -16,7 +16,7 @@ import { useTranslation } from '~state/i18n'
 import { UIContext } from '~state/ui'
 import { ChildContext } from '~state'
 import { DateRange } from '~utils/date'
-import Button from '~components/shared/atoms/buttons/Button'
+import Button from '@evaka/lib-components/src/atoms/buttons/Button'
 import { Loading, Result } from '~api'
 import {
   isDateRangeInverted,
@@ -33,7 +33,7 @@ import {
 import ReactSelect, { createFilter, components } from 'react-select'
 import styled from 'styled-components'
 import { ChildBackupCare } from '~types/child'
-import { FixedSpaceRow } from '~components/shared/layout/flex-helpers'
+import { FixedSpaceRow } from '@evaka/lib-components/src/layout/flex-helpers'
 
 export interface Props {
   childId: UUID

@@ -17,21 +17,21 @@ import {
   faTimes,
   faUserFriends,
   faUsers
-} from 'icon-set'
+} from '@evaka/lib-icons'
 import LocalDate from '@evaka/lib-common/src/local-date'
 import { Result } from 'api'
-import { H4, Label } from 'components/shared/Typography'
-import CollapsibleSection from 'components/shared/molecules/CollapsibleSection'
-import { Gap } from 'components/shared/layout/white-space'
-import { FixedSpaceColumn } from 'components/shared/layout/flex-helpers'
-import ListGrid from 'components/shared/layout/ListGrid'
-import InlineButton from 'components/shared/atoms/buttons/InlineButton'
-import AddButton from 'components/shared/atoms/buttons/AddButton'
-import InputField from 'components/shared/atoms/form/InputField'
-import Radio from 'components/shared/atoms/form/Radio'
-import Checkbox from 'components/shared/atoms/form/Checkbox'
-import { TextArea } from 'components/shared/atoms/form/InputField'
-import Colors from 'components/shared/Colors'
+import { H4, Label } from '@evaka/lib-components/src/typography'
+import CollapsibleSection from '@evaka/lib-components/src/molecules/CollapsibleSection'
+import { Gap } from '@evaka/lib-components/src/white-space'
+import { FixedSpaceColumn } from '@evaka/lib-components/src/layout/flex-helpers'
+import ListGrid from '@evaka/lib-components/src/layout/ListGrid'
+import InlineButton from '@evaka/lib-components/src/atoms/buttons/InlineButton'
+import AddButton from '@evaka/lib-components/src/atoms/buttons/AddButton'
+import InputField from '@evaka/lib-components/src/atoms/form/InputField'
+import Radio from '@evaka/lib-components/src/atoms/form/Radio'
+import Checkbox from '@evaka/lib-components/src/atoms/form/Checkbox'
+import { TextArea } from '@evaka/lib-components/src/atoms/form/InputField'
+import colors from '@evaka/lib-components/src/colors'
 import { DatePicker } from 'components/common/DatePicker'
 import ApplicationTitle from 'components/application-page/ApplicationTitle'
 import VTJGuardian from 'components/application-page/VTJGuardian'
@@ -410,7 +410,7 @@ export default React.memo(function ApplicationEditView({
                     <FontAwesomeIcon
                       size="sm"
                       icon={faExclamationTriangle}
-                      color={Colors.accents.orange}
+                      color={colors.accents.orange}
                     />
                   </>
                 ) : null}

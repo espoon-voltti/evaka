@@ -8,10 +8,19 @@ import ReactSelect from 'react-select'
 import styled from 'styled-components'
 import { range } from 'lodash'
 
-import { Container, ContentArea } from '~components/shared/layout/Container'
-import Loader from '~components/shared/atoms/Loader'
-import Title from '~components/shared/atoms/Title'
-import { Th, Tr, Td, Thead, Tbody } from '~components/shared/layout/Table'
+import {
+  Container,
+  ContentArea
+} from '@evaka/lib-components/src/layout/Container'
+import Loader from '@evaka/lib-components/src/atoms/Loader'
+import Title from '@evaka/lib-components/src/atoms/Title'
+import {
+  Th,
+  Tr,
+  Td,
+  Thead,
+  Tbody
+} from '@evaka/lib-components/src/layout/Table'
 import { useTranslation } from '~state/i18n'
 import { Loading, Result } from '~api'
 import { VoucherServiceProviderUnitRow } from '~types/reports'
@@ -19,7 +28,7 @@ import {
   getVoucherServiceProviderUnitReport,
   VoucherProviderChildrenReportFilters as VoucherServiceProviderUnitFilters
 } from '~api/reports'
-import ReturnButton from 'components/shared/atoms/buttons/ReturnButton'
+import ReturnButton from '@evaka/lib-components/src/atoms/buttons/ReturnButton'
 import ReportDownload from '~components/reports/ReportDownload'
 import {
   FilterLabel,
@@ -27,17 +36,17 @@ import {
   TableScrollable
 } from '~components/reports/common'
 import { UUID } from '~types'
-import { reactSelectStyles } from '~components/shared/utils'
+import { reactSelectStyles } from '~components/common/Select'
 
-import { DefaultMargins } from 'components/shared/layout/white-space'
+import { defaultMargins } from '@evaka/lib-components/src/white-space'
 
 import { formatCents } from '~utils/money'
 import { capitalizeFirstLetter, formatName } from '~utils'
-import Tooltip from '~components/shared/atoms/Tooltip'
+import Tooltip from '@evaka/lib-components/src/atoms/Tooltip'
 
 const Wrapper = styled.div`
   width: 100%;
-  margin: 0 ${DefaultMargins.m};
+  margin: 0 ${defaultMargins.m};
 `
 
 function VoucherServiceProviderUnit() {
@@ -82,7 +91,7 @@ function VoucherServiceProviderUnit() {
 
   return (
     <Container>
-      <ReturnButton />
+      <ReturnButton label={i18n.common.goBack} />
       <ContentArea opaque>
         {rows.isSuccess && <Title size={1}>{unitName}</Title>}
         <Title size={2}>{i18n.reports.voucherServiceProviderUnit.title}</Title>

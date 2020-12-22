@@ -13,15 +13,15 @@ import {
   isActiveDateRange
 } from '~utils/date'
 import { useTranslation } from '~state/i18n'
-import { faQuestion } from 'icon-set'
+import { faQuestion } from '@evaka/lib-icons'
 import styled from 'styled-components'
-import Button from 'components/shared/atoms/buttons/Button'
+import Button from '@evaka/lib-components/src/atoms/buttons/Button'
 import InfoModal from '~components/common/InfoModal'
 import { DatePicker } from '~components/common/DatePicker'
 import { UIContext, UiState } from '~state/ui'
 import { Link } from 'react-router-dom'
 import { AlertBox } from '~components/common/MessageBoxes'
-import Toolbar from 'components/shared/molecules/Toolbar'
+import Toolbar from '~components/common/Toolbar'
 import {
   deletePlacement,
   PlacementUpdate,
@@ -29,7 +29,7 @@ import {
 } from 'api/child/placements'
 import { InputWarning } from '~components/common/InputWarning'
 import LocalDate from '@evaka/lib-common/src/local-date'
-import { FixedSpaceRow } from '~components/shared/layout/flex-helpers'
+import { FixedSpaceRow } from '@evaka/lib-components/src/layout/flex-helpers'
 
 interface Props {
   placement: Placement

@@ -7,13 +7,16 @@ import { RouteComponentProps } from 'react-router'
 import { flatMap, partition } from 'lodash'
 
 import { Label, LabelText } from '~components/common/styled/common'
-import Button from '~components/shared/atoms/buttons/Button'
-import Radio from '~components/shared/atoms/form/Radio'
-import Checkbox from '~components/shared/atoms/form/Checkbox'
-import { Container, ContentArea } from '~components/shared/layout/Container'
-import Loader from '~components/shared/atoms/Loader'
-import Title from '~components/shared/atoms/Title'
-import { FixedSpaceColumn } from '~components/shared/layout/flex-helpers'
+import Button from '@evaka/lib-components/src/atoms/buttons/Button'
+import Radio from '@evaka/lib-components/src/atoms/form/Radio'
+import Checkbox from '@evaka/lib-components/src/atoms/form/Checkbox'
+import {
+  Container,
+  ContentArea
+} from '@evaka/lib-components/src/layout/Container'
+import Loader from '@evaka/lib-components/src/atoms/Loader'
+import Title from '@evaka/lib-components/src/atoms/Title'
+import { FixedSpaceColumn } from '@evaka/lib-components/src/layout/flex-helpers'
 import { Loading } from '~api'
 import FormModal from '~components/common/FormModal'
 import { getGroupAbsences, postGroupAbsences } from '~api/absences'
@@ -38,7 +41,7 @@ import PeriodPicker, {
 } from '~components/absences/PeriodPicker'
 import { TitleContext, TitleState } from '~state/title'
 import ColorInfo from '~components/absences/ColorInfo'
-import ReturnButton from 'components/shared/atoms/buttons/ReturnButton'
+import ReturnButton from '@evaka/lib-components/src/atoms/buttons/ReturnButton'
 import styled from 'styled-components'
 
 const AbsencesContentArea = styled(ContentArea)`
@@ -190,7 +193,10 @@ function Absences({ match }: RouteComponentProps<{ groupId: string }>) {
   return (
     <div className="absences-page" data-qa="absences-page">
       <Container>
-        <ReturnButton dataQa="absences-page-return-button" />
+        <ReturnButton
+          label={i18n.common.goBack}
+          data-qa="absences-page-return-button"
+        />
         <AbsencesContentArea opaque>
           {renderAbsenceModal()}
           {absences.isSuccess ? (

@@ -4,8 +4,8 @@
 
 import React from 'react'
 import styled from 'styled-components'
-import Colors from '~components/shared/Colors'
-import { Container } from '~components/shared/layout/Container'
+import colors from '@evaka/lib-components/src/colors'
+import { Container } from '@evaka/lib-components/src/layout/Container'
 
 type Props = {
   align: 'center' | 'left' | 'right'
@@ -39,7 +39,7 @@ const Bar = styled.div`
   padding: 16px 0;
   margin: 0 -9999rem;
   margin-top: 50px;
-  box-shadow: 0px -8px 8px -6px ${Colors.greyscale.lightest};
+  box-shadow: 0px -8px 8px -6px ${colors.greyscale.lightest};
 `
 
 const Content = styled(Container)<Props>`

@@ -6,22 +6,29 @@ import React from 'react'
 import * as _ from 'lodash'
 import { Link } from 'react-router-dom'
 
-import { faFileAlt } from 'icon-set'
+import { faFileAlt } from '@evaka/lib-icons'
 import { UUID } from '~types'
 import { useTranslation } from '~state/i18n'
 import { useEffect } from 'react'
 import { Loading } from '~api'
 import { useContext } from 'react'
-import { Table, Tbody, Td, Th, Thead, Tr } from 'components/shared/layout/Table'
-import Loader from '~components/shared/atoms/Loader'
+import {
+  Table,
+  Tbody,
+  Td,
+  Th,
+  Thead,
+  Tr
+} from '@evaka/lib-components/src/layout/Table'
+import Loader from '@evaka/lib-components/src/atoms/Loader'
 import { getChildApplicationSummaries } from '~api/person'
 import { ApplicationSummary } from '~types/application'
 import { DateTd, NameTd, StatusTd } from '~components/PersonProfile'
-import IconButton from 'components/shared/atoms/buttons/IconButton'
+import IconButton from '@evaka/lib-components/src/atoms/buttons/IconButton'
 import { ChildContext } from 'state'
-import CollapsibleSection from 'components/shared/molecules/CollapsibleSection'
+import CollapsibleSection from '@evaka/lib-components/src/molecules/CollapsibleSection'
 import { RequireRole } from 'utils/roles'
-import { AddButtonRow } from 'components/shared/atoms/buttons/AddButton'
+import { AddButtonRow } from '@evaka/lib-components/src/atoms/buttons/AddButton'
 import { UIContext } from 'state/ui'
 import CreateApplicationModal from 'components/child-information/CreateApplicationModal'
 import { inferApplicationType } from 'components/person-profile/PersonApplications'

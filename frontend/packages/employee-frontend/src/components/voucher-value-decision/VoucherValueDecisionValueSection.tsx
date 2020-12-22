@@ -4,9 +4,8 @@
 
 import React from 'react'
 import styled from 'styled-components'
-import { H3, H4 } from '~components/shared/Typography'
-import Section from '~components/shared/layout/Section'
-import { Gap } from '~components/shared/layout/white-space'
+import { H3, H4 } from '@evaka/lib-components/src/typography'
+import { Gap } from '@evaka/lib-components/src/white-space'
 import { useTranslation } from '~state/i18n'
 import { VoucherValueDecisionDetailed } from '~types/invoicing'
 import { formatCents } from '~utils/money'
@@ -22,7 +21,7 @@ export default React.memo(function VoucherValueDecisionValueSection({
   const { i18n } = useTranslation()
 
   return (
-    <Section>
+    <section>
       <H3 noMargin>{i18n.valueDecision.summary.values}</H3>
       <Gap size="s" />
       {decision.parts.map(
@@ -60,7 +59,7 @@ export default React.memo(function VoucherValueDecisionValueSection({
           )
         }
       )}
-    </Section>
+    </section>
   )
 })
 

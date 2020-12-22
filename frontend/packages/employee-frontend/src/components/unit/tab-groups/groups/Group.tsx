@@ -21,7 +21,7 @@ import {
   Tr,
   Thead,
   Tbody
-} from '~components/shared/layout/Table'
+} from '@evaka/lib-components/src/layout/Table'
 import {
   faAngleDown,
   faAngleUp,
@@ -32,7 +32,7 @@ import {
   faTimes,
   faTrash,
   faUndo
-} from 'icon-set'
+} from '@evaka/lib-icons'
 import { deleteGroup, deletePlacement, OccupancyResponse } from '~api/unit'
 import { Link } from 'react-router-dom'
 import CareTypeLabel, {
@@ -46,18 +46,19 @@ import { UnitBackupCare } from '~types/child'
 import { updateBackupCare } from 'api/child/backup-care'
 import { formatPercentage } from 'components/utils'
 import { DataList } from 'components/common/DataList'
-import { Gap } from '~components/shared/layout/white-space'
-import IconButton from '~components/shared/atoms/buttons/IconButton'
-import InlineButton from '~components/shared/atoms/buttons/InlineButton'
-import { H3 } from '~components/shared/Typography'
+import { Gap } from '@evaka/lib-components/src/white-space'
+import IconButton from '@evaka/lib-components/src/atoms/buttons/IconButton'
+import InlineButton from '@evaka/lib-components/src/atoms/buttons/InlineButton'
+import { H3 } from '@evaka/lib-components/src/typography'
 import { UnitFilters } from '~utils/UnitFilters'
 import { rangesOverlap } from '~utils/date'
-import Colors from 'components/shared/Colors'
-import { FixedSpaceRow } from '~components/shared/layout/flex-helpers'
-import PlacementCircle from '~components/shared/atoms/PlacementCircle'
-import Tooltip from '~components/shared/atoms/Tooltip'
+import colors from '@evaka/lib-components/src/colors'
+import { FixedSpaceRow } from '@evaka/lib-components/src/layout/flex-helpers'
+import PlacementCircle from '@evaka/lib-components/src/atoms/PlacementCircle'
+import Tooltip from '@evaka/lib-components/src/atoms/Tooltip'
 import { UIContext } from '~state/ui'
 import GroupUpdateModal from '~components/unit/tab-groups/groups/group/GroupUpdateModal'
+import { isPartDayPlacement } from '~utils/placements'
 
 interface Props {
   unit: Unit
@@ -355,7 +356,14 @@ function Group({
                         </Td>
                         <Td data-qa="placement-subtype">
                           {'type' in placement ? (
-                            <PlacementCircle type={placement.type} />
+                            <PlacementCircle
+                              type={
+                                isPartDayPlacement(placement.type)
+                                  ? 'half'
+                                  : 'full'
+                              }
+                              label={i18n.placement.type[placement.type]}
+                            />
                           ) : null}
                         </Td>
                         {showServiceNeed ? (
@@ -447,7 +455,7 @@ const Toolbar = styled.div`
 `
 
 const DaycareGroup = styled.div`
-  border: ${Colors.greyscale.medium} solid 1px;
+  border: ${colors.greyscale.medium} solid 1px;
   padding: 16px;
   margin-bottom: 16px;
 `

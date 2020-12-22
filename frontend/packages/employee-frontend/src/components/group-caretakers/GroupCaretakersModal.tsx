@@ -6,10 +6,9 @@ import React, { useState } from 'react'
 import LocalDate from '@evaka/lib-common/src/local-date'
 import { CaretakerAmount } from '~types/caretakers'
 import FormModal from '~components/common/FormModal'
-import { faPen, faPlus } from 'icon-set'
+import { faPen, faPlus } from '@evaka/lib-icons'
 import { useTranslation } from '~state/i18n'
-import InputField from '~components/shared/atoms/form/InputField'
-import Section from '~components/shared/layout/Section'
+import InputField from '@evaka/lib-components/src/atoms/form/InputField'
 import { DatePicker, DatePickerClearable } from '~components/common/DatePicker'
 import styled from 'styled-components'
 import { UUID } from '~types'
@@ -120,15 +119,15 @@ function GroupCaretakersModal({
       rejectLabel={i18n.common.cancel}
       reject={onReject}
     >
-      <Section>
+      <section>
         <div className="bold">{i18n.common.form.startDate}</div>
         <DatePicker
           date={form.startDate}
           onChange={(startDate) => assignForm({ startDate })}
           type="full-width"
         />
-      </Section>
-      <Section>
+      </section>
+      <section>
         <div className="bold">{i18n.common.form.endDate}</div>
         <DatePickerClearable
           date={form.endDate}
@@ -136,8 +135,8 @@ function GroupCaretakersModal({
           onCleared={() => assignForm({ endDate: null })}
           type="full-width"
         />
-      </Section>
-      <Section>
+      </section>
+      <section>
         <div className="bold">{i18n.groupCaretakers.amount}</div>
         <NumberInputContainer>
           <InputField
@@ -155,7 +154,7 @@ function GroupCaretakersModal({
             dataQa="input-assistance-need-multiplier"
           />
         </NumberInputContainer>
-      </Section>
+      </section>
       {conflict && <AlertBox message={i18n.groupCaretakers.conflict} />}
       {editingHistory && (
         <AlertBox message={i18n.groupCaretakers.editHistoryWarning} />

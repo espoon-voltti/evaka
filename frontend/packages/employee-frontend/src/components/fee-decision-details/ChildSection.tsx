@@ -2,10 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { faUserFriends } from 'icon-set'
+import { faUserFriends } from '@evaka/lib-icons'
 import React from 'react'
 import { Link } from 'react-router-dom'
-import CollapsibleSection from '~components/shared/molecules/CollapsibleSection'
+import CollapsibleSection from '@evaka/lib-components/src/molecules/CollapsibleSection'
 import LabelValueList from '~components/common/LabelValueList'
 import { useTranslation } from '~state/i18n'
 import { PersonDetailed, Placement, UnitDetailed } from '~types/invoicing'

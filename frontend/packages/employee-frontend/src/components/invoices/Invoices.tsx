@@ -6,9 +6,9 @@ import React, { useState } from 'react'
 import styled from 'styled-components'
 import { useHistory } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faExclamation, faSync } from 'icon-set'
-import { Gap } from '~components/shared/layout/white-space'
-import InlineButton from '~components/shared/atoms/buttons/InlineButton'
+import { faExclamation, faSync } from '@evaka/lib-icons'
+import { Gap } from '@evaka/lib-components/src/white-space'
+import InlineButton from '@evaka/lib-components/src/atoms/buttons/InlineButton'
 import {
   Table,
   Tr,
@@ -17,10 +17,10 @@ import {
   Thead,
   Tbody,
   SortableTh
-} from '~components/shared/layout/Table'
-import Title from '~components/shared/atoms/Title'
-import Loader from '~components/shared/atoms/Loader'
-import Checkbox from '~components/shared/atoms/form/Checkbox'
+} from '@evaka/lib-components/src/layout/Table'
+import Title from '@evaka/lib-components/src/atoms/Title'
+import Loader from '@evaka/lib-components/src/atoms/Loader'
+import Checkbox from '@evaka/lib-components/src/atoms/form/Checkbox'
 import { useTranslation } from '../../state/i18n'
 import NameWithSsn from '../common/NameWithSsn'
 import ChildrenCell from '../common/ChildrenCell'
@@ -32,7 +32,7 @@ import { StatusIconContainer } from '~components/common/StatusIconContainer'
 import { EspooColours } from '~utils/colours'
 import { SearchOrder } from '~types'
 import { SortByInvoices } from '~api/invoicing'
-import Pagination from '~components/shared/Pagination'
+import Pagination from '@evaka/lib-components/src/Pagination'
 import { InvoicesActions } from './invoices-state'
 
 interface Props {
@@ -92,6 +92,7 @@ export default React.memo(function Invoices({
               pages={pages}
               currentPage={currentPage}
               setPage={actions.setPage}
+              label={i18n.common.page}
             />
           </ResultsContainer>
         )}
@@ -134,6 +135,7 @@ export default React.memo(function Invoices({
               pages={pages}
               currentPage={currentPage}
               setPage={actions.setPage}
+              label={i18n.common.page}
             />
           </ResultsContainer>
         </>

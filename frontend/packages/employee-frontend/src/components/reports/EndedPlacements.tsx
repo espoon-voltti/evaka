@@ -6,16 +6,25 @@ import React, { useEffect, useState } from 'react'
 import ReactSelect from 'react-select'
 import styled from 'styled-components'
 
-import { Container, ContentArea } from '~components/shared/layout/Container'
-import Loader from '~components/shared/atoms/Loader'
-import Title from '~components/shared/atoms/Title'
-import { Th, Tr, Td, Thead, Tbody } from '~components/shared/layout/Table'
-import { reactSelectStyles } from '~components/shared/utils'
+import {
+  Container,
+  ContentArea
+} from '@evaka/lib-components/src/layout/Container'
+import Loader from '@evaka/lib-components/src/atoms/Loader'
+import Title from '@evaka/lib-components/src/atoms/Title'
+import {
+  Th,
+  Tr,
+  Td,
+  Thead,
+  Tbody
+} from '@evaka/lib-components/src/layout/Table'
+import { reactSelectStyles } from '~components/common/Select'
 import { Translations, useTranslation } from '~state/i18n'
 import { Loading, Result, Success } from '~api'
 import { EndedPlacementsReportRow } from '~types/reports'
 import { getEndedPlacementsReport, PlacementsReportFilters } from '~api/reports'
-import ReturnButton from 'components/shared/atoms/buttons/ReturnButton'
+import ReturnButton from '@evaka/lib-components/src/atoms/buttons/ReturnButton'
 import ReportDownload from '~components/reports/ReportDownload'
 import { SelectOptionProps } from '~components/common/Select'
 import { fi } from 'date-fns/locale'
@@ -83,7 +92,7 @@ function EndedPlacements() {
 
   return (
     <Container>
-      <ReturnButton />
+      <ReturnButton label={i18n.common.goBack} />
       <ContentArea opaque>
         <Title size={1}>{i18n.reports.endedPlacements.title}</Title>
         <FilterRow>

@@ -15,9 +15,9 @@ import {
   postDeparture,
   returnToComing
 } from '~api/attendances'
-import InputField from '~components/shared/atoms/form/InputField'
-import { FixedSpaceColumn } from '~components/shared/layout/flex-helpers'
-import { Gap } from '~components/shared/layout/white-space'
+import InputField from '@evaka/lib-components/src/atoms/form/InputField'
+import { FixedSpaceColumn } from '@evaka/lib-components/src/layout/flex-helpers'
+import { Gap } from '@evaka/lib-components/src/white-space'
 import { AttendanceUIContext } from '~state/attendance-ui'
 import { useTranslation } from '~state/i18n'
 import { UUID } from '~types'

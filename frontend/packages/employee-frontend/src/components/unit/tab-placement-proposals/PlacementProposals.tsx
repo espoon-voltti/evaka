@@ -6,16 +6,22 @@ import React, { useContext, useEffect, useState } from 'react'
 import _ from 'lodash'
 import styled from 'styled-components'
 
-import { Table, Th, Tr, Thead, Tbody } from '~components/shared/layout/Table'
-import Title from '~components/shared/atoms/Title'
+import {
+  Table,
+  Th,
+  Tr,
+  Thead,
+  Tbody
+} from '@evaka/lib-components/src/layout/Table'
+import Title from '@evaka/lib-components/src/atoms/Title'
 import { useTranslation } from '~state/i18n'
 import {
   DaycarePlacementPlan,
   PlacementPlanConfirmationStatus,
   PlacementPlanRejectReason
 } from '~types/unit'
-import { Gap } from 'components/shared/layout/white-space'
-import Button from 'components/shared/atoms/buttons/Button'
+import { Gap } from '@evaka/lib-components/src/white-space'
+import Button from '@evaka/lib-components/src/atoms/buttons/Button'
 import {
   acceptPlacementProposal,
   respondToPlacementProposal

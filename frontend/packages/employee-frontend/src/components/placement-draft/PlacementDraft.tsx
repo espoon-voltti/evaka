@@ -7,14 +7,17 @@ import { RouteComponentProps, useHistory } from 'react-router'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 import ReactSelect from 'react-select'
-import { faLink } from 'icon-set'
+import { faLink } from '@evaka/lib-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import LocalDate from '@evaka/lib-common/src/local-date'
-import { Container, ContentArea } from '~components/shared/layout/Container'
-import Title from '~components/shared/atoms/Title'
-import { Gap } from '~components/shared/layout/white-space'
-import Button from '~components/shared/atoms/buttons/Button'
-import Loader from '~components/shared/atoms/Loader'
+import {
+  Container,
+  ContentArea
+} from '@evaka/lib-components/src/layout/Container'
+import Title from '@evaka/lib-components/src/atoms/Title'
+import { Gap } from '@evaka/lib-components/src/white-space'
+import Button from '@evaka/lib-components/src/atoms/buttons/Button'
+import Loader from '@evaka/lib-components/src/atoms/Loader'
 
 import {
   PlacementDraftState,

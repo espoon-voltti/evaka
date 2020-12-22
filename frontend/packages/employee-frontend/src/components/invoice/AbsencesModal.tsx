@@ -8,8 +8,8 @@ import LocalDate from '@evaka/lib-common/src/local-date'
 import { useTranslation } from '~state/i18n'
 import { UIContext } from '~state/ui'
 import InfoModal from '~components/common/InfoModal'
-import Loader from '~components/shared/atoms/Loader'
-import Title from '~components/shared/atoms/Title'
+import Loader from '@evaka/lib-components/src/atoms/Loader'
+import Title from '@evaka/lib-components/src/atoms/Title'
 import { getDay } from 'date-fns'
 import { formatName } from '~utils'
 import { getAbsencesByChild } from '~api/invoicing'
@@ -25,7 +25,7 @@ import Tooltip from '~components/common/Tooltip'
 import PeriodPicker, {
   PeriodPickerMode
 } from '~components/absences/PeriodPicker'
-import { faAbacus } from 'icon-set'
+import { faAbacus } from '@evaka/lib-icons'
 
 const Section = styled.section``
 

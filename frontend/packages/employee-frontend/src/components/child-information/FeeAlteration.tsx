@@ -3,9 +3,9 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useContext, useEffect, useRef, useState } from 'react'
-import { faMoneyCheckEdit, faQuestion } from 'icon-set'
-import Loader from '~components/shared/atoms/Loader'
-import { Gap } from '~components/shared/layout/white-space'
+import { faMoneyCheckEdit, faQuestion } from '@evaka/lib-icons'
+import Loader from '@evaka/lib-components/src/atoms/Loader'
+import { Gap } from '@evaka/lib-components/src/white-space'
 import InfoModal from '~components/common/InfoModal'
 import FeeAlterationList from './fee-alteration/FeeAlterationList'
 import FeeAlterationEditor from './fee-alteration/FeeAlterationEditor'
@@ -21,9 +21,9 @@ import {
   getFeeAlterations,
   updateFeeAlteration
 } from 'api/child/fee-alteration'
-import { AddButtonRow } from 'components/shared/atoms/buttons/AddButton'
+import { AddButtonRow } from '@evaka/lib-components/src/atoms/buttons/AddButton'
 import { scrollToRef } from 'utils'
-import CollapsibleSection from 'components/shared/molecules/CollapsibleSection'
+import CollapsibleSection from '@evaka/lib-components/src/molecules/CollapsibleSection'
 
 const newFeeAlterationUiMode = 'create-new-fee-alteration'
 const editFeeAlterationUiMode = (id: UUID) => `edit-fee-alteration-${id}`

@@ -4,7 +4,7 @@
 
 import React, { useContext } from 'react'
 import { ApplicationUIContext } from '~state/application-ui'
-import Checkbox from '~components/shared/atoms/form/Checkbox'
+import Checkbox from '@evaka/lib-components/src/atoms/form/Checkbox'
 import styled from 'styled-components'
 
 type Props = {

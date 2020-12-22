@@ -6,9 +6,12 @@ import React, { useState } from 'react'
 import styled from 'styled-components'
 import { faEnvelope } from '@fortawesome/free-solid-svg-icons'
 import LocalDate from '@evaka/lib-common/src/local-date'
-import { Gap } from '~components/shared/layout/white-space'
-import { Container, ContentArea } from '~components/shared/layout/Container'
-import { Label } from '~components/shared/Typography'
+import { Gap } from '@evaka/lib-components/src/white-space'
+import {
+  Container,
+  ContentArea
+} from '@evaka/lib-components/src/layout/Container'
+import { Label } from '@evaka/lib-components/src/typography'
 import { AsyncFormModal } from '~components/common/FormModal'
 import { AlertBox } from '~components/common/MessageBoxes'
 import { DatePicker } from '~components/common/DatePicker'

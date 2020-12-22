@@ -8,7 +8,7 @@ import { useTranslation } from '~state/i18n'
 import { useEffect } from 'react'
 import { Loading } from '~api'
 import { useContext } from 'react'
-import Loader from '~components/shared/atoms/Loader'
+import Loader from '@evaka/lib-components/src/atoms/Loader'
 import {
   Table,
   Tbody,
@@ -16,17 +16,17 @@ import {
   Th,
   Thead,
   Tr
-} from '~components/shared/layout/Table'
+} from '@evaka/lib-components/src/layout/Table'
 import _ from 'lodash'
 import { Link } from 'react-router-dom'
 import { PersonDetails } from '~/types/person'
 import { formatName } from '~utils'
 import { NameTd } from '~components/PersonProfile'
 import { ChildContext } from '~state'
-import { faFemale } from 'icon-set'
+import { faFemale } from '@evaka/lib-icons'
 import { getPersonGuardians } from '~api/person'
 import { getAge } from '@evaka/lib-common/src/utils/local-date'
-import CollapsibleSection from 'components/shared/molecules/CollapsibleSection'
+import CollapsibleSection from '@evaka/lib-components/src/molecules/CollapsibleSection'
 
 interface Props {
   id: UUID

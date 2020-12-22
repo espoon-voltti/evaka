@@ -5,8 +5,8 @@
 import React, { useContext } from 'react'
 import { useTranslation } from '~/state/i18n'
 import { UIContext } from '~state/ui'
-import { faQuestion } from 'icon-set'
-import Title from '~components/shared/atoms/Title'
+import { faQuestion } from '@evaka/lib-icons'
+import Title from '@evaka/lib-components/src/atoms/Title'
 import InfoModal from '~components/common/InfoModal'
 import { ChildContext } from '~state'
 import { UUID } from '~types'
@@ -14,7 +14,7 @@ import BackupCareForm from '~components/child-information/backup-care/BackupCare
 import { getChildBackupCares, removeBackupCare } from 'api/child/backup-care'
 import styled from 'styled-components'
 import { ChildBackupCare } from '~types/child'
-import Toolbar from 'components/shared/molecules/Toolbar'
+import Toolbar from '~components/common/Toolbar'
 import { ALL_ROLES_BUT_STAFF } from 'utils/roles'
 
 export interface Props {

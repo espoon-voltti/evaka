@@ -13,9 +13,9 @@ import { orderBy } from 'lodash'
 import ReactSelect, { components } from 'react-select'
 import styled from 'styled-components'
 
-import { ContentArea } from '~components/shared/layout/Container'
-import Loader from '~components/shared/atoms/Loader'
-import Title from '~components/shared/atoms/Title'
+import { ContentArea } from '@evaka/lib-components/src/layout/Container'
+import Loader from '@evaka/lib-components/src/atoms/Loader'
+import Title from '@evaka/lib-components/src/atoms/Title'
 import {
   Table,
   Th,
@@ -23,7 +23,7 @@ import {
   Td,
   Thead,
   Tbody
-} from '~components/shared/layout/Table'
+} from '@evaka/lib-components/src/layout/Table'
 import InfoModal from '~components/common/InfoModal'
 import { Loading, Result } from '~api'
 import {
@@ -46,18 +46,18 @@ import { UserContext } from '~state/user'
 import { useRestApi } from '~utils/useRestApi'
 import { RequireRole } from '~utils/roles'
 import { useTranslation } from '~state/i18n'
-import IconButton from '~components/shared/atoms/buttons/IconButton'
-import { faPen, faQuestion, faTrash } from '~icon-set'
-import { H2 } from '~components/shared/Typography'
-import Button from '~components/shared/atoms/buttons/Button'
+import IconButton from '@evaka/lib-components/src/atoms/buttons/IconButton'
+import { faPen, faQuestion, faTrash } from '@evaka/lib-icons'
+import { H2 } from '@evaka/lib-components/src/typography'
+import Button from '@evaka/lib-components/src/atoms/buttons/Button'
 import { UUID } from '~types'
 import { UIContext } from '~state/ui'
 import { formatName } from '~utils'
-import AddButton from '~components/shared/atoms/buttons/AddButton'
-import { Gap } from '~components/shared/layout/white-space'
+import AddButton from '@evaka/lib-components/src/atoms/buttons/AddButton'
+import { Gap } from '@evaka/lib-components/src/white-space'
 import MobilePairingModal from '../MobilePairingModal'
-import { FixedSpaceRow } from '~components/shared/layout/flex-helpers'
-import InputField from '~components/shared/atoms/form/InputField'
+import { FixedSpaceRow } from '@evaka/lib-components/src/layout/flex-helpers'
+import InputField from '@evaka/lib-components/src/atoms/form/InputField'
 import { isNotProduction, isPilotUnit } from '~constants'
 import { AdRole } from '~types'
 

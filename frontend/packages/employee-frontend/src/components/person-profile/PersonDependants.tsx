@@ -6,16 +6,23 @@ import React from 'react'
 import _ from 'lodash'
 import { Link } from 'react-router-dom'
 
-import { faChild } from 'icon-set'
+import { faChild } from '@evaka/lib-icons'
 import { UUID } from '~types'
 import { useTranslation } from '~state/i18n'
 import { useEffect } from 'react'
 import { Loading } from '~api'
 import { useContext } from 'react'
 import { PersonContext } from '~state/person'
-import CollapsibleSection from 'components/shared/molecules/CollapsibleSection'
-import { Table, Tbody, Td, Th, Thead, Tr } from 'components/shared/layout/Table'
-import Loader from '~components/shared/atoms/Loader'
+import CollapsibleSection from '@evaka/lib-components/src/molecules/CollapsibleSection'
+import {
+  Table,
+  Tbody,
+  Td,
+  Th,
+  Thead,
+  Tr
+} from '@evaka/lib-components/src/layout/Table'
+import Loader from '@evaka/lib-components/src/atoms/Loader'
 import { getPersonDependants } from '~api/person'
 import { DependantAddress, PersonWithChildren } from '~/types/person'
 import { formatName } from '~utils'
