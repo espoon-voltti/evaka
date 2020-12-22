@@ -40,7 +40,7 @@ import { faAngleDown, faAngleUp } from '@evaka/lib-icons'
 import Tooltip from '~components/common/Tooltip'
 import { CareArea } from '~types/unit'
 import { Label, LabelText } from '~components/common/styled/common'
-import { FinanceDecisionHandler } from '~state/invoicing-ui'
+import { FinanceDecisionHandlerOption } from '~state/invoicing-ui'
 
 interface Props {
   freeText: string
@@ -283,8 +283,8 @@ export const UnitFilter = React.memo(function UnitFilter({
 })
 
 interface FinanceDecisionHandlerFilterProps {
-  financeDecisionHandlers: FinanceDecisionHandler[]
-  selected?: FinanceDecisionHandler
+  financeDecisionHandlers: FinanceDecisionHandlerOption[]
+  selected?: FinanceDecisionHandlerOption
   select: (decisionHandler: string) => void
 }
 

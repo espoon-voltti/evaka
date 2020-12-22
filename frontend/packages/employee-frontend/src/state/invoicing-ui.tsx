@@ -90,7 +90,7 @@ interface InvoiceSearchFilterState {
   clearSearchFilters: () => void
 }
 
-export interface FinanceDecisionHandler {
+export interface FinanceDecisionHandlerOption {
   id: UUID
   label: string
 }
@@ -98,9 +98,9 @@ export interface FinanceDecisionHandler {
 interface SharedState {
   units: Result<Unit[]>
   setUnits: Dispatch<SetStateAction<Result<Unit[]>>>
-  financeDecisionHandlers: Result<FinanceDecisionHandler[]>
+  financeDecisionHandlers: Result<FinanceDecisionHandlerOption[]>
   setFinanceDecisionHandlers: Dispatch<
-    SetStateAction<Result<FinanceDecisionHandler[]>>
+    SetStateAction<Result<FinanceDecisionHandlerOption[]>>
   >
   availableAreas: Result<CareArea[]>
   setAvailableAreas: Dispatch<SetStateAction<Result<CareArea[]>>>
@@ -262,7 +262,7 @@ export const InvoicingUIContextProvider = React.memo(
       defaultState.shared.units
     )
     const [financeDecisionHandlers, setFinanceDecisionHandlers] = useState<
-      Result<FinanceDecisionHandler[]>
+      Result<FinanceDecisionHandlerOption[]>
     >(defaultState.shared.financeDecisionHandlers)
     const [availableAreas, setAvailableAreas] = useState<Result<CareArea[]>>(
       defaultState.shared.availableAreas

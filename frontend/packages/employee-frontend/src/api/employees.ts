@@ -6,7 +6,7 @@ import { Failure, Result, Success } from '~api/index'
 import { client } from '~api/client'
 import { Employee } from '~types/employee'
 import { JsonOf } from '@evaka/lib-common/src/json'
-import { FinanceDecisionHandler } from '~state/invoicing-ui'
+import { FinanceDecisionHandlerOption } from '~state/invoicing-ui'
 
 export async function getEmployees(): Promise<Result<Employee[]>> {
   return client
@@ -23,7 +23,7 @@ export async function getEmployees(): Promise<Result<Employee[]>> {
 }
 
 export async function getFinanceDecisionHandlers(): Promise<
-  Result<FinanceDecisionHandler[]>
+  Result<FinanceDecisionHandlerOption[]>
 > {
   return client
     .get<JsonOf<Employee[]>>(`/employee/finance-decision-handler`)

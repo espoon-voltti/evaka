@@ -29,13 +29,16 @@ import { PlacementType } from '~types/placementdraft'
 import { ApplicationStatus } from '~types/application'
 import FiniteDateRange from '@evaka/lib-common/src/finite-date-range'
 import DateRange from '@evaka/lib-common/src/date-range'
-import { Employee } from '~types/employee'
 
 function convertUnitJson(unit: JsonOf<Unit>): Unit {
   return {
     ...unit,
     financeDecisionHandler: unit.financeDecisionHandler
-      ? { employee: mapEmployeeJson(unit.financeDecisionHandler.employee) }
+      ? {
+          id: unit.financeDecisionHandler.id,
+          firstName: unit.financeDecisionHandler.firstName,
+          lastName: unit.financeDecisionHandler.lastName
+        }
       : null,
     openingDate: unit.openingDate ? LocalDate.parseIso(unit.openingDate) : null,
     closingDate: unit.closingDate ? LocalDate.parseIso(unit.closingDate) : null,
@@ -181,14 +184,6 @@ function mapGroupJson(data: JsonOf<DaycareGroup>): DaycareGroup {
     ...data,
     startDate: LocalDate.parseIso(data.startDate),
     endDate: LocalDate.parseNullableIso(data.endDate)
-  }
-}
-
-export function mapEmployeeJson(data: JsonOf<Employee>): Employee {
-  return {
-    ...data,
-    updated: new Date(data.updated),
-    created: new Date(data.created)
   }
 }
 

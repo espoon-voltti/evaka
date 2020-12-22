@@ -7,7 +7,6 @@ import { PlacementType } from '~types/placementdraft'
 import LocalDate from '@evaka/lib-common/src/local-date'
 import FiniteDateRange from '@evaka/lib-common/src/finite-date-range'
 import DateRange from '@evaka/lib-common/src/date-range'
-import { Employee } from './employee'
 
 export interface CareArea {
   id: UUID
@@ -32,6 +31,11 @@ export type ProviderType =
 
 export type UnitLanguage = 'fi' | 'sv'
 
+interface FinanceDecisionHandler {
+  id: UUID
+  firstName: string
+  lastName: string
+}
 export interface Unit {
   id: UUID
   name: string
@@ -51,7 +55,7 @@ export interface Unit {
   uploadToKoski: boolean
   invoicedByMunicipality: boolean
   costCenter: string | null
-  financeDecisionHandler: { employee: Employee } | null
+  financeDecisionHandler: FinanceDecisionHandler | null
   additionalInfo: string | null
   phone: string | null
   email: string | null

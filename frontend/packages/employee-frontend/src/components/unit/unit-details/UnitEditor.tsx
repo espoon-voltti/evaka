@@ -462,7 +462,7 @@ function toFormData(unit: Unit | undefined): FormData {
     uploadToKoski: unit?.uploadToKoski ?? false,
     invoicedByMunicipality: unit?.invoicedByMunicipality ?? false,
     costCenter: unit?.costCenter ?? '',
-    financeDecisionHandlerId: unit?.financeDecisionHandler?.employee.id ?? '',
+    financeDecisionHandlerId: unit?.financeDecisionHandler?.id ?? '',
     additionalInfo: unit?.additionalInfo ?? '',
     phone: unit?.phone ?? '',
     email: unit?.email ?? '',
