@@ -304,26 +304,35 @@ fun Handle.searchValueDecisions(
 
     val (freeTextQuery, freeTextParams) = freeTextSearchQuery(listOf("head", "partner", "child"), searchTerms)
 
+    val youngestChildQuery =
+        """
+        WITH youngest_child AS (
+            SELECT
+                voucher_value_decision_part.voucher_value_decision_id AS decision_id,
+                care_area.short_name AS area,
+                row_number() OVER (PARTITION BY (voucher_value_decision_id) ORDER BY date_of_birth DESC) AS rownum
+            FROM voucher_value_decision_part
+            LEFT JOIN daycare ON voucher_value_decision_part.placement_unit = daycare.id
+            LEFT JOIN care_area ON daycare.care_area_id = care_area.id
+        )
+        """.trimIndent()
+    val youngestChildJoin = "LEFT JOIN youngest_child ON decision.id = youngest_child.decision_id AND rownum = 1"
+    val youngestChildAnd =  "AND youngest_child.area = ANY(:areas)"
+
+    // language=sql
+
     val sql =
         // language=sql
         """
         WITH decision_ids AS (
-            WITH youngest_child AS (
-                SELECT
-                    voucher_value_decision_part.voucher_value_decision_id AS decision_id,
-                    care_area.short_name AS area,
-                    row_number() OVER (PARTITION BY (voucher_value_decision_id) ORDER BY date_of_birth DESC) AS rownum
-                FROM voucher_value_decision_part
-                LEFT JOIN daycare ON voucher_value_decision_part.placement_unit = daycare.id
-                LEFT JOIN care_area ON daycare.care_area_id = care_area.id
-            )
+            ${if (areas.isNotEmpty()) youngestChildQuery else ""}
             SELECT decision.id, count(*) OVER (), max(sums.co_payment) total_co_payment, max(sums.voucher_value) total_value
             FROM voucher_value_decision AS decision
             LEFT JOIN voucher_value_decision_part AS part ON decision.id = part.voucher_value_decision_id
             LEFT JOIN person AS head ON decision.head_of_family = head.id
             LEFT JOIN person AS partner ON decision.head_of_family = partner.id
             LEFT JOIN person AS child ON part.child = child.id
-            LEFT JOIN youngest_child ON decision.id = youngest_child.decision_id AND rownum = 1
+            ${if (areas.isNotEmpty()) youngestChildJoin else ""}
             LEFT JOIN daycare AS placement_unit ON placement_unit.id = part.placement_unit
             LEFT JOIN (
                 SELECT final_co_payments.id, sum(final_co_payments.final_co_payment) co_payment, sum(final_co_payments.voucher_value) voucher_value
@@ -341,7 +350,7 @@ fun Handle.searchValueDecisions(
             ) sums ON decision.id = sums.id
             WHERE
                 status = :status
-                AND youngest_child.area = ANY(:areas)
+                ${if (areas.isNotEmpty()) youngestChildAnd else ""}
                 AND (:unit::uuid IS NULL OR part.placement_unit = :unit)
                 AND $freeTextQuery
                 AND (:financeDecisionHandlerId::uuid IS NULL OR placement_unit.finance_decision_handler = :financeDecisionHandlerId)
