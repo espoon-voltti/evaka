@@ -14,7 +14,6 @@ import {
   FinanceDecisionHandlerFilter
 } from '../common/Filters'
 import {
-  FinanceDecisionHandler,
   InvoicingUiContext
 } from '../../state/invoicing-ui'
 import { getAreas, getUnits } from '../../api/daycare'
@@ -25,7 +24,7 @@ import {
 } from '../../types/invoicing'
 import { Gap } from '@evaka/lib-components/src/white-space'
 import { useTranslation } from '~state/i18n'
-import { useState } from 'react'
+import { useMemo } from 'react'
 
 function FeeDecisionFilters() {
   const {
@@ -47,10 +46,6 @@ function FeeDecisionFilters() {
   } = useContext(InvoicingUiContext)
 
   const { i18n } = useTranslation()
-  const [
-    selectedFinanceDecisionHandler,
-    setSelectedFinanceDecisionHandler
-  ] = useState<FinanceDecisionHandler | undefined>(undefined)
 
   useEffect(() => {
     void getAreas().then(setAvailableAreas)
@@ -64,12 +59,15 @@ function FeeDecisionFilters() {
     void getFinanceDecisionHandlers().then(setFinanceDecisionHandlers)
   }, [])
 
-  useEffect(() => {
-    const handler = financeDecisionHandlers
-      .getOrElse([])
-      .find((handler) => handler.id === searchFilters.financeDecisionHandlerId)
-    setSelectedFinanceDecisionHandler(handler)
-  }, [searchFilters.financeDecisionHandlerId])
+  const selectedFinanceDecisionHandler = useMemo(
+    () =>
+      financeDecisionHandlers
+        .getOrElse([])
+        .find(
+          (handler) => handler.id === searchFilters.financeDecisionHandlerId
+        ),
+    [searchFilters.financeDecisionHandlerId]
+  )
 
   // remove selected unit filter if the unit is not included in the selected areas
   useEffect(() => {
