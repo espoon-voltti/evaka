@@ -50,8 +50,7 @@ private fun Handle.searchFinanceDecisionHandlers(id: UUID? = null) = createQuery
 SELECT e.id, e.first_name, e.last_name, e.email, e.external_id, e.created, e.updated, e.roles
 FROM employee e
 JOIN daycare ON daycare.finance_decision_handler = e.id
-LEFT JOIN mobile_device md on e.id = md.id
-WHERE (:id::uuid IS NULL OR e.id = :id) AND md.id IS NULL
+WHERE (:id::uuid IS NULL OR e.id = :id)
     """.trimIndent()
 ).bind("id", id)
     .mapTo<Employee>()
