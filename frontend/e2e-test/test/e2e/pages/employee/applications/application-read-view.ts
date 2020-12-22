@@ -20,6 +20,9 @@ export default class ApplicationReadView {
     '[data-qa="second-guardian-email"]'
   )
   readonly applicationStatus = Selector('[data-qa="application-status"]')
+  readonly decisionAcceptedStartDate = Selector(
+    '[data-qa="application-status"]'
+  )
 
   async openApplicationByLink(id: UUID) {
     await t.navigateTo(`${this.url}/applications/${id}`)
@@ -49,6 +52,20 @@ export default class ApplicationReadView {
   ) {
     await t.expect(this.givenOtherGuardianPhone.innerText).eql(expectedPhone)
     await t.expect(this.giveOtherGuardianEmail.innerText).eql(expectedEmail)
+  }
+
+  async setDecisionStartDate(type: DecisionType, startDate: string) {
+    const decision = Selector(`[data-qa="application-decision-${type}"]`)
+    await t.expect(decision.exists).ok()
+
+    const datePicker = decision.find('[data-qa="decision-start-date-picker"]')
+    const input = datePicker
+      .find('.react-datepicker__input-container')
+      .nth(0)
+      .find('input')
+    await t.typeText(input, startDate, { replace: true })
+    await t.click(datePicker.find('.react-datepicker__day--selected'))
+    await t.expect(input.value).eql(startDate)
   }
 
   async acceptDecision(type: DecisionType) {
