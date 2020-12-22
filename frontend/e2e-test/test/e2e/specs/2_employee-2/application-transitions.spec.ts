@@ -25,6 +25,7 @@ import { seppoAdminRole, seppoManagerRole } from '../../config/users'
 import ApplicationReadView from '../../pages/employee/applications/application-read-view'
 import { ApplicationWorkbenchPage } from '../../pages/admin/application-workbench-page'
 import UnitPage from '../../pages/employee/units/unit-page'
+import { addWeeks, format } from 'date-fns'
 
 const applicationWorkbench = new ApplicationWorkbenchPage()
 const applicationReadView = new ApplicationReadView()
@@ -101,6 +102,36 @@ test('Supervisor accepts decision on behalf of the enduser', async (t) => {
   await applicationReadView.openApplicationByLink(applicationId)
   await applicationReadView.acceptDecision('DAYCARE')
 
+  await t
+    .expect(applicationReadView.applicationStatus.innerText)
+    .contains('Paikka vastaanotettu')
+})
+
+test('Supervisor accepts decision on behalf of the enduser and forwards start date 2 weeks', async (t) => {
+  const fixture = {
+    ...applicationFixture(
+      fixtures.enduserChildFixtureJari,
+      fixtures.enduserGuardianFixture
+    ),
+    status: 'SENT' as const
+  }
+  applicationId = fixture.id
+
+  await insertApplications([fixture])
+  await execSimpleApplicationActions(applicationId, [
+    'move-to-waiting-placement',
+    'create-default-placement-plan',
+    'send-decisions-without-proposal'
+  ])
+
+  await t.useRole(seppoManagerRole)
+  await applicationReadView.openApplicationByLink(applicationId)
+  await applicationReadView.setDecisionStartDate(
+    'DAYCARE',
+    format(addWeeks(new Date(), 2), 'dd.MM.yyyy')
+  )
+
+  await applicationReadView.acceptDecision('DAYCARE')
   await t
     .expect(applicationReadView.applicationStatus.innerText)
     .contains('Paikka vastaanotettu')

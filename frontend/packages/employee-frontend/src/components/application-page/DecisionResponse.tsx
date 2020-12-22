@@ -70,15 +70,12 @@ export default React.memo(function DecisionResponse({
           onChange={() => setAccept(true)}
         />
         <DatePicker
+          dataQa="decision-start-date-picker"
           type="short"
           date={acceptDate}
           onChange={setAcceptDate}
           minDate={decision.startDate.subMonths(1)}
-          maxDate={
-            preferredStartDate
-              ? preferredStartDate.addWeeks(2)
-              : decision.endDate
-          }
+          maxDate={decision.startDate.addWeeks(2)}
         />
       </FixedSpaceRow>
       <Radio
