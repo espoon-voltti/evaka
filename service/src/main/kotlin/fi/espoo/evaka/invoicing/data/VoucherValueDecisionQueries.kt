@@ -459,10 +459,22 @@ fun Handle.approveValueDecisionDraftsForSending(ids: List<UUID>, approvedBy: UUI
     // language=sql
     val sql =
         """
+        WITH youngest_child AS (
+            SELECT
+                voucher_value_decision_part.fee_decision_id AS decision_id,
+                daycare.finance_decision_handler AS finance_decision_handler_id,
+                row_number() OVER (PARTITION BY (fee_decision_id) ORDER BY date_of_birth DESC) AS rownum
+            FROM voucher_value_decision_part
+            LEFT JOIN daycare ON voucher_value_decision_part.placement_unit = daycare.id
+        )
         UPDATE voucher_value_decision SET
             status = :status,
             decision_number = nextval('voucher_value_decision_number_sequence'),
             approved_by = :approvedBy,
+            decision_handler = CASE
+                WHEN youngest_child.finance_decision_handler_id IS NOT NULL THEN youngest_child.finance_decision_handler_id
+                ELSE :approvedBy
+                END,
             approved_at = NOW()
         WHERE id = :id
         """.trimIndent()

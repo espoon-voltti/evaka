@@ -524,17 +524,17 @@ fun approveFeeDecisionDraftsForSending(h: Handle, ids: List<UUID>, approvedBy: U
         WITH youngest_child AS (
             SELECT
                 fee_decision_part.fee_decision_id AS decision_id,
-                finance_decision_handler.id AS finance_decision_handler_id,
+                daycare.finance_decision_handler AS finance_decision_handler_id,
                 row_number() OVER (PARTITION BY (fee_decision_id) ORDER BY date_of_birth DESC) AS rownum
             FROM fee_decision_part
             LEFT JOIN daycare ON fee_decision_part.placement_unit = daycare.id
-            LEFT JOIN employee AS finance_decision_handler ON finance_decision_handler.id = daycare.finance_decision_handler
         )
         UPDATE fee_decision
         SET
             status = :status,
             decision_number = nextval('fee_decision_number_sequence'),
-            approved_by = CASE
+            approved_by = :approvedBy,
+            decision_handler = CASE
                 WHEN youngest_child.finance_decision_handler_id IS NOT NULL THEN youngest_child.finance_decision_handler_id
                 ELSE :approvedBy
                 END,
@@ -542,7 +542,7 @@ fun approveFeeDecisionDraftsForSending(h: Handle, ids: List<UUID>, approvedBy: U
         FROM fee_decision AS fd
         LEFT JOIN youngest_child ON youngest_child.decision_id = :id AND rownum = 1
         WHERE fd.id = :id AND fee_decision.id = fd.id
-    """
+        """.trimIndent()
 
     val batch = h.prepareBatch(sql)
     ids.map { id ->
