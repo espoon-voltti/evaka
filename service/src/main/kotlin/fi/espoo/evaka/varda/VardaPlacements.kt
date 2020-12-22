@@ -103,7 +103,7 @@ SELECT
     d.varda_decision_id,
     u.oph_unit_oid oph_unit_oid,
     p.start_date,
-    p.end_date
+    LEAST(p.end_date, COALESCE(u.closing_date, 'infinity')) end_date
 FROM daycare_placement p
 LEFT JOIN varda_placement vp ON p.id = vp.evaka_placement_id AND vp.deleted_at IS NULL
 JOIN daycare u ON p.unit_id = u.id AND u.upload_to_varda = true AND u.oph_unit_oid IS NOT NULL
@@ -163,7 +163,7 @@ private fun getUpdatedPlacements(
     val sql =
         """
 $placementBaseQuery
-WHERE vp.uploaded_at < p.updated
+WHERE vp.uploaded_at < GREATEST(p.updated, u.updated)
         """.trimIndent()
 
     return tx.createQuery(sql)

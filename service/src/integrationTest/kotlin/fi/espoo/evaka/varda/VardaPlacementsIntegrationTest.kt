@@ -342,6 +342,57 @@ class VardaPlacementsIntegrationTest : FullApplicationTest() {
 
         assertEquals(2, getVardaPlacements(db).size)
     }
+
+    @Test
+    fun `a daycare placement's end date is at most unit's closing date`() {
+        val period = ClosedPeriod(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))
+        insertVardaUnit(db)
+        val placementId = insertPlacement(db, testChild_1.id, period, unitId = testDaycare.id)
+        insertTestVardaDecision(db, placementId = placementId)
+        val closingDate = period.end.minusWeeks(1)
+        db.transaction {
+            it.execute(
+                "UPDATE daycare SET closing_date = ? WHERE id = ?",
+                closingDate,
+                testDaycare.id
+            )
+        }
+
+        updatePlacements(db, vardaClient)
+
+        val result = mockEndpoint.placements
+        assertEquals(1, result.size)
+        assertEquals(closingDate, result.values.first().endDate)
+    }
+
+    @Test
+    fun `a daycare placement is updated when placement unit's closing date is updated`() {
+        val period = ClosedPeriod(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))
+        insertVardaUnit(db)
+        val placementId = insertPlacement(db, testChild_1.id, period, unitId = testDaycare.id)
+        insertTestVardaDecision(db, placementId = placementId)
+
+        updatePlacements(db, vardaClient)
+
+        val sentPlacement = mockEndpoint.placements
+        assertEquals(1, sentPlacement.size)
+        assertEquals(period.end, sentPlacement.values.first().endDate)
+
+        val closingDate = period.end.minusWeeks(1)
+        db.transaction {
+            it.execute(
+                "UPDATE daycare SET closing_date = ? WHERE id = ?",
+                closingDate,
+                testDaycare.id
+            )
+        }
+
+        updatePlacements(db, vardaClient)
+
+        val updatedPlacement = mockEndpoint.placements
+        assertEquals(1, updatedPlacement.size)
+        assertEquals(closingDate, updatedPlacement.values.first().endDate)
+    }
 }
 
 private fun getSoftDeletedVardaPlacements(db: Database.Connection) = db.read {
