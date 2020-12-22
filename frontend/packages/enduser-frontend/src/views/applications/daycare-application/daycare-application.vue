@@ -1219,6 +1219,7 @@ export default Vue.extend({
         return false
       }
 
+      // todo: use preschool term data from backend
       return date >= new Date('2021-06-05') && date < new Date('2021-08-01')
     },
     startdateIsUnderFourMonths(): boolean {
