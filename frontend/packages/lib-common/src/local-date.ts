@@ -21,7 +21,8 @@ import {
   subDays,
   subMonths,
   subWeeks,
-  subYears
+  subYears,
+  differenceInDays
 } from 'date-fns'
 
 const isoPattern = /^([0-9]+)-([0-9]+)-([0-9]+)$/
@@ -106,6 +107,9 @@ export default class LocalDate {
   }
   differenceInYears(other: LocalDate): number {
     return differenceInYears(this.toSystemTzDate(), other.toSystemTzDate())
+  }
+  differenceInDays(other: LocalDate): number {
+    return differenceInDays(this.toSystemTzDate(), other.toSystemTzDate())
   }
   /**
    * <a href="https://date-fns.org/docs/format">date-fns format()</a>

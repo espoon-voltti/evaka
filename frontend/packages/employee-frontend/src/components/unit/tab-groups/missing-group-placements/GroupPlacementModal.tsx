@@ -20,6 +20,7 @@ import { DatePicker } from '~components/common/DatePicker'
 import { formatName } from '~utils'
 import { DaycareGroup } from '~types/unit'
 import { EVAKA_START } from '~constants'
+import FiniteDateRange from '@evaka/lib-common/src/finite-date-range'
 
 const Bold = styled.div`
   font-weight: 600;
@@ -127,7 +128,7 @@ export default React.memo(function GroupPlacementModal({
     if (form.groupId == null) return
 
     void updateBackupCare(placementId, {
-      period: { start: form.startDate, end: form.endDate },
+      period: new FiniteDateRange(form.startDate, form.endDate),
       groupId: form.groupId
     }).then((res) => {
       if (res.isFailure) {

@@ -30,6 +30,7 @@ import {
 import { UUID } from '~types'
 import { JsonOf } from '@evaka/lib-common/src/json'
 import LocalDate from '@evaka/lib-common/src/local-date'
+import FiniteDateRange from '@evaka/lib-common/src/finite-date-range'
 
 export interface PeriodFilters {
   from: LocalDate
@@ -389,16 +390,14 @@ export function getVoucherServiceProviderUnitReport(
         res.data.map((row) => ({
           ...row,
           childDateOfBirth: LocalDate.parseIso(row.childDateOfBirth),
-          serviceVoucherPeriod: {
-            start: LocalDate.parseIso(row.serviceVoucherPeriod.start),
-            end: LocalDate.parseIso(row.serviceVoucherPeriod.end)
-          },
+          serviceVoucherPeriod: FiniteDateRange.parseJson(
+            row.serviceVoucherPeriod
+          ),
           derivatives: {
             realizedAmount: row.derivatives.realizedAmount,
-            realizedPeriod: {
-              start: LocalDate.parseIso(row.derivatives.realizedPeriod.start),
-              end: LocalDate.parseIso(row.derivatives.realizedPeriod.end)
-            },
+            realizedPeriod: FiniteDateRange.parseJson(
+              row.derivatives.realizedPeriod
+            ),
             numberOfDays: row.derivatives.numberOfDays
           }
         }))

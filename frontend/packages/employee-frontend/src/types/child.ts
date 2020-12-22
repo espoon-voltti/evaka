@@ -4,6 +4,7 @@
 
 import { UUID } from '~types/index'
 import LocalDate from '@evaka/lib-common/src/local-date'
+import FiniteDateRange from '@evaka/lib-common/src/finite-date-range'
 
 type PlacementType =
   | 'CLUB'
@@ -113,18 +114,12 @@ export interface ChildBackupCare {
     id: UUID
     name: string
   }
-  period: {
-    start: LocalDate
-    end: LocalDate
-  }
+  period: FiniteDateRange
 }
 
 export interface UnitBackupCare {
   id: UUID
-  period: {
-    start: LocalDate
-    end: LocalDate
-  }
+  period: FiniteDateRange
   missingServiceNeedDays: number
   group?: {
     id: UUID

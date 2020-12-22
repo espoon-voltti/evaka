@@ -23,6 +23,7 @@ import {
   PlacementPlanConfirmationStatus,
   PlacementPlanRejectReason
 } from '~types/unit'
+import FiniteDateRange from '@evaka/lib-common/src/finite-date-range'
 
 export async function getApplication(
   id: UUID
@@ -256,15 +257,9 @@ export function getPlacementDraft(id: UUID): Promise<Result<PlacementDraft>> {
           ...data.child,
           dob: LocalDate.parseIso(data.child.dob)
         },
-        period: {
-          start: LocalDate.parseIso(data.period.start),
-          end: LocalDate.parseIso(data.period.end)
-        },
+        period: FiniteDateRange.parseJson(data.period),
         preschoolDaycarePeriod: data.preschoolDaycarePeriod
-          ? {
-              start: LocalDate.parseIso(data.preschoolDaycarePeriod.start),
-              end: LocalDate.parseIso(data.preschoolDaycarePeriod.end)
-            }
+          ? FiniteDateRange.parseJson(data.preschoolDaycarePeriod)
           : undefined,
         placements: data.placements.map((placement) => {
           return {

@@ -5,7 +5,7 @@
 import { UUID } from '~types/index'
 import LocalDate from '@evaka/lib-common/src/local-date'
 import { AbsenceType } from 'types/absence'
-import { Period } from './placementdraft'
+import FiniteDateRange from '@evaka/lib-common/src/finite-date-range'
 
 export interface InvoiceReportRow {
   areaCode: number
@@ -332,7 +332,7 @@ export interface VoucherServiceProviderUnitRow {
   childLastName: string
   childDateOfBirth: LocalDate
   childGroupName: string
-  serviceVoucherPeriod: Period
+  serviceVoucherPeriod: FiniteDateRange
   serviceVoucherValue: number
   serviceVoucherCoPayment: number
   serviceVoucherServiceCoefficient: number
@@ -346,7 +346,7 @@ export interface VoucherServiceProviderUnitRow {
 
 export interface VoucherServiceProviderUnitRowDerivatives {
   realizedAmount: number
-  realizedPeriod: Period
+  realizedPeriod: FiniteDateRange
   numberOfDays: number
 }
 
