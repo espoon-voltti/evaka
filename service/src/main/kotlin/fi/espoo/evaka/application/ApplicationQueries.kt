@@ -755,32 +755,35 @@ fun removeOldDrafts(db: Database.Transaction, deleteAttachment: (db: Database.Tr
             .mapTo<UUID>()
             .toList()
 
-    logger.info("Cleaning up ${applicationIds.size} draft applications older than $thresholdDays days")
+    if (applicationIds.isNotEmpty()) {
+        logger.info("Cleaning up ${applicationIds.size} draft applications older than $thresholdDays days")
 
-    // language=SQL
-    db.handle.createUpdate("""DELETE FROM application_form WHERE application_id IN :applicationIds""")
-        .bind("applicationIds", applicationIds)
-        .execute()
+        // language=SQL
+        db.handle.createUpdate("""DELETE FROM application_form WHERE application_id = ANY(:applicationIds::uuid[])""")
+            .bind("applicationIds", applicationIds.toTypedArray())
+            .execute()
 
-    // language=SQL
-    db.handle.createUpdate("""DELETE FROM application_note WHERE application_id IN :applicationIds""")
-        .bind("applicationIds", applicationIds)
-        .execute()
+        // language=SQL
+        db.handle.createUpdate("""DELETE FROM application_note WHERE application_id = ANY(:applicationIds::uuid[])""")
+            .bind("applicationIds", applicationIds.toTypedArray())
+            .execute()
 
-    applicationIds.forEach {
-        val attachmentIds = db.handle.createUpdate("""DELETE FROM attachment WHERE application_id = :id RETURNING id""")
-            .bind("id", it)
-            .executeAndReturnGeneratedKeys()
-            .mapTo<UUID>()
-            .toList()
+        applicationIds.forEach {
+            val attachmentIds =
+                db.handle.createUpdate("""DELETE FROM attachment WHERE application_id = :id RETURNING id""")
+                    .bind("id", it)
+                    .executeAndReturnGeneratedKeys()
+                    .mapTo<UUID>()
+                    .toList()
 
-        attachmentIds.forEach {
-            deleteAttachment(db, it)
+            attachmentIds.forEach {
+                deleteAttachment(db, it)
+            }
         }
-    }
 
-    // language=SQL
-    db.handle.createUpdate("""DELETE FROM application WHERE id IN :applicationIds""")
-        .bind("applicationIds", applicationIds)
-        .execute()
+        // language=SQL
+        db.handle.createUpdate("""DELETE FROM application WHERE id = ANY(:applicationIds::uuid[])""")
+            .bind("applicationIds", applicationIds.toTypedArray())
+            .execute()
+    }
 }
