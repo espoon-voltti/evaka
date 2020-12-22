@@ -64,7 +64,7 @@ interface Props {
   validFrom: LocalDate
   validTo: LocalDate | null
   sentAt: Date | null
-  financeDecisionHandler: string | null
+  financeDecisionHandlerName: string | null
   approvedBy: { firstName: string; lastName: string } | null
   documentKey: string | null
   parts: FeeDecisionPartDetailed[]
@@ -85,8 +85,7 @@ export default React.memo(function Heading({
   validFrom,
   validTo,
   sentAt,
-  financeDecisionHandler,
-  approvedBy,
+  financeDecisionHandlerName,
   documentKey,
   decisionType,
   changeDecisionType,
@@ -103,10 +102,6 @@ export default React.memo(function Heading({
     ) : (
       i18n.feeDecision.type[decisionType]
     )
-
-  const decisionHandlerName =
-    (approvedBy && [approvedBy?.firstName, approvedBy?.lastName].join(' ')) ||
-    financeDecisionHandler
 
   const pdfValue = documentKey ? (
     <a href={getFeeDecisionPdfUrl(id)} download>
@@ -180,11 +175,11 @@ export default React.memo(function Heading({
         value: formatDate(sentAt)
       }
     ].concat(
-      decisionHandlerName
+      financeDecisionHandlerName
         ? [
             {
               label: i18n.feeDecision.decisionHandler,
-              value: decisionHandlerName
+              value: financeDecisionHandlerName
             }
           ]
         : []

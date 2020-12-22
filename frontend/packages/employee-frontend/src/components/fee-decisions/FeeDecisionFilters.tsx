@@ -13,9 +13,7 @@ import {
   FeeDecisionDateFilter,
   FinanceDecisionHandlerFilter
 } from '../common/Filters'
-import {
-  InvoicingUiContext
-} from '../../state/invoicing-ui'
+import { InvoicingUiContext } from '../../state/invoicing-ui'
 import { getAreas, getUnits } from '../../api/daycare'
 import { getFinanceDecisionHandlers } from '../../api/employees'
 import {

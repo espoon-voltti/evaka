@@ -265,7 +265,7 @@ export interface FeeDecisionDetailed {
   approvedAt: Date | null
   createdAt: Date
   sentAt: Date | null
-  financeDecisionHandler: string | null
+  financeDecisionHandlerName: string | null
   approvedBy: { firstName: string; lastName: string } | null
   minThreshold: number
   feePercent: number
