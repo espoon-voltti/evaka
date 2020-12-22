@@ -108,7 +108,7 @@ val feeDecisionDetailedQueryBase =
         LEFT JOIN daycare ON part.placement_unit = daycare.id
         LEFT JOIN care_area ON daycare.care_area_id = care_area.id
         LEFT JOIN employee as approved_by ON decision.approved_by = approved_by.id
-        LEFT JOIN employee as finance_decision_handler ON finance_decision_handler.id = 
+        LEFT JOIN employee as finance_decision_handler ON finance_decision_handler.id = decision.decision_handler
     """.trimIndent()
 
 private val decisionNumberRegex = "^\\d{7,}$".toRegex()

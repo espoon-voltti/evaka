@@ -470,9 +470,9 @@ fun Handle.approveValueDecisionDraftsForSending(ids: List<UUID>, approvedBy: UUI
         """
         WITH youngest_child AS (
             SELECT
-                voucher_value_decision_part.fee_decision_id AS decision_id,
+                voucher_value_decision_part.voucher_value_decision_id AS decision_id,
                 daycare.finance_decision_handler AS finance_decision_handler_id,
-                row_number() OVER (PARTITION BY (fee_decision_id) ORDER BY date_of_birth DESC) AS rownum
+                row_number() OVER (PARTITION BY (voucher_value_decision_id) ORDER BY date_of_birth DESC) AS rownum
             FROM voucher_value_decision_part
             LEFT JOIN daycare ON voucher_value_decision_part.placement_unit = daycare.id
         )
@@ -485,7 +485,9 @@ fun Handle.approveValueDecisionDraftsForSending(ids: List<UUID>, approvedBy: UUI
                 ELSE :approvedBy
                 END,
             approved_at = NOW()
-        WHERE id = :id
+        FROM voucher_value_decision AS vd
+        LEFT JOIN youngest_child ON youngest_child.decision_id = :id AND rownum = 1
+        WHERE vd.id = :id AND voucher_value_decision.id = vd.id
         """.trimIndent()
 
     val batch = prepareBatch(sql)
