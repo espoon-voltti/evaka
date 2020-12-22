@@ -4,7 +4,7 @@
 
 import React, { useState } from 'react'
 import { storiesOf } from '@storybook/react'
-import Pagination from '@evaka/lib-components/src/Pagination'
+import Pagination from './Pagination'
 
 storiesOf('evaka/atoms/pagination', module)
   .add('Basic', () => {

@@ -2,9 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { storiesOf } from '@storybook/react'
 import React from 'react'
-import ErrorSegment from '@evaka/lib-components/src/atoms/state/ErrorSegment'
+import { storiesOf } from '@storybook/react'
+import ErrorSegment from './ErrorSegment'
 
 storiesOf('evaka/atoms/state/ErrorSegment', module)
   .add('default', () => <ErrorSegment />)

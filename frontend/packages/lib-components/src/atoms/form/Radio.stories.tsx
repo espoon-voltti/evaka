@@ -4,8 +4,8 @@
 
 import React, { useState } from 'react'
 import { storiesOf } from '@storybook/react'
-import { FixedSpaceColumn } from '@evaka/lib-components/src/layout/flex-helpers'
-import Radio from '@evaka/lib-components/src/atoms/form/Radio'
+import { FixedSpaceColumn } from '../../layout/flex-helpers'
+import Radio from './Radio'
 
 function StatefulStory({ disabled = false }: { disabled?: boolean }) {
   const [selection, setSelection] = useState(1)

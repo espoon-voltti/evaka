@@ -133,7 +133,7 @@ aliases:
         - frontend/packages/enduser-frontend/dist
         - frontend/packages/employee-frontend/dist
         - frontend/packages/maintenance-page/dist
-        - frontend/packages/employee-frontend/storybook-build
+        - frontend/packages/lib-components/storybook-build
         - frontend/e2e-test/dist
         - frontend/e2e-test/scripts
         - *yarn_cache
@@ -262,8 +262,8 @@ commands:
   build_storybook:
     steps:
       - run:
-          name: yarn build-storybook /home/circleci/repo/frontend/packages/employee-frontend
-          working_directory: /home/circleci/repo/frontend/packages/employee-frontend
+          name: yarn build-storybook /home/circleci/repo/frontend/packages/lib-components
+          working_directory: /home/circleci/repo/frontend/packages/lib-components
           environment:
             SENTRY_NO_PROGRESS_BAR: "1"
           command: |
@@ -377,7 +377,7 @@ commands:
     steps:
       - run:
           name: Deploy Storybook
-          working_directory: /home/circleci/repo/frontend/packages/employee-frontend
+          working_directory: /home/circleci/repo/frontend/packages/lib-components
           command: |
             if [ "$TARGET_ENV" = "dev" ]; then
               aws --profile voltti-dev s3 cp storybook-build/ s3://evaka-static-dev/master/storybook/ --recursive --acl public-read

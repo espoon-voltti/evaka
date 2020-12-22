@@ -4,9 +4,9 @@
 
 import React, { useState } from 'react'
 import { storiesOf } from '@storybook/react'
-import ListGrid from '@evaka/lib-components/src/layout/ListGrid'
-import InputField from '@evaka/lib-components/src/atoms/form/InputField'
-import { Label } from '@evaka/lib-components/src/typography'
+import ListGrid from '../../layout/ListGrid'
+import { Label } from '../../typography'
+import InputField from './InputField'
 
 function StatefulStory() {
   const [text1, setText1] = useState('')

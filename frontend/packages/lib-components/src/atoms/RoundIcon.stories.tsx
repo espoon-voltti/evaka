@@ -3,11 +3,10 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
-import { storiesOf } from '@storybook/react'
 import styled from 'styled-components'
-import { defaultMargins } from '@evaka/lib-components/src/white-space'
-import { FixedSpaceRow } from '@evaka/lib-components/src/layout/flex-helpers'
-import RoundIcon from '@evaka/lib-components/src/atoms/RoundIcon'
+import { storiesOf } from '@storybook/react'
+import { action } from '@storybook/addon-actions'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
   faCheck,
   faExclamation,
@@ -16,9 +15,10 @@ import {
   fasExclamationTriangle,
   faEuroSign
 } from '@evaka/lib-icons'
-import colors from '@evaka/lib-components/src/colors'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { action } from '@storybook/addon-actions'
+import colors from '../colors'
+import { defaultMargins } from '../white-space'
+import { FixedSpaceRow } from '../layout/flex-helpers'
+import RoundIcon from './RoundIcon'
 
 const ColItem = styled.div`
   display: flex;

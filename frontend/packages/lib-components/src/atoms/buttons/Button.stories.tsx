@@ -4,15 +4,15 @@
 
 import React from 'react'
 import { storiesOf } from '@storybook/react'
-import { H3 } from '@evaka/lib-components/src/typography'
-import Button from '@evaka/lib-components/src/atoms/buttons/Button'
 import { action } from '@storybook/addon-actions'
-import { Gap } from '@evaka/lib-components/src/white-space'
-import InlineButton from '@evaka/lib-components/src/atoms/buttons/InlineButton'
 import { faPen, faTrash } from '@evaka/lib-icons'
-import IconButton from '@evaka/lib-components/src/atoms/buttons/IconButton'
-import AddButton from '@evaka/lib-components/src/atoms/buttons/AddButton'
-import AsyncButton from '@evaka/lib-components/src/atoms/buttons/AsyncButton'
+import { H3 } from '../../typography'
+import { Gap } from '../../white-space'
+import AddButton from './AddButton'
+import AsyncButton from './AsyncButton'
+import Button from './Button'
+import IconButton from './IconButton'
+import InlineButton from './InlineButton'
 
 const onClick = action('clicked')
 

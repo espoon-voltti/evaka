@@ -4,9 +4,9 @@
 
 import React from 'react'
 import styled from 'styled-components'
-import { H3 } from '@evaka/lib-components/src/typography'
-import { Gap, SpacingSize } from '@evaka/lib-components/src/white-space'
 import { storiesOf } from '@storybook/react'
+import { H3 } from './typography'
+import { Gap, SpacingSize } from './white-space'
 
 const ExampleElem = styled.div`
   width: 200px;

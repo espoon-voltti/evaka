@@ -4,15 +4,8 @@
 
 import React from 'react'
 import { storiesOf } from '@storybook/react'
-import {
-  Table,
-  Thead,
-  Tr,
-  Th,
-  Td,
-  SortableTh
-} from '@evaka/lib-components/src/layout/Table'
 import { action } from '@storybook/addon-actions'
+import { Table, Thead, Tr, Th, Td, SortableTh } from './Table'
 
 const onClick = action('clicked')
 

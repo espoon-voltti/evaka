@@ -3,15 +3,12 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
-import { storiesOf } from '@storybook/react'
 import styled from 'styled-components'
-import colors from '@evaka/lib-components/src/colors'
-import {
-  FixedSpaceColumn,
-  FixedSpaceRow
-} from '@evaka/lib-components/src/layout/flex-helpers'
-import { H2, H3, Label } from '@evaka/lib-components/src/typography'
-import { Gap } from '@evaka/lib-components/src/white-space'
+import { storiesOf } from '@storybook/react'
+import colors from './colors'
+import { H2, H3, Label } from './typography'
+import { Gap } from './white-space'
+import { FixedSpaceColumn, FixedSpaceRow } from './layout/flex-helpers'
 
 interface ColorCircleProps {
   color: string

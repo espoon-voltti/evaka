@@ -3,9 +3,9 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
-import { Label } from '@evaka/lib-components/src/typography'
 import { storiesOf } from '@storybook/react'
-import ListGrid from '@evaka/lib-components/src/layout/ListGrid'
+import { Label } from '../typography'
+import ListGrid from './ListGrid'
 
 storiesOf('evaka/layout/ListGrid', module).add('default', () => (
   <ListGrid>

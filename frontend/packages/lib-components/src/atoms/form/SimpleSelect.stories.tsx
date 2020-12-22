@@ -4,8 +4,8 @@
 
 import React, { useState } from 'react'
 import { storiesOf } from '@storybook/react'
-import { FixedSpaceColumn } from '@evaka/lib-components/src/layout/flex-helpers'
-import SimpleSelect from '@evaka/lib-components/src/atoms/form/SimpleSelect'
+import { FixedSpaceColumn } from '../../layout/flex-helpers'
+import SimpleSelect from './SimpleSelect'
 
 storiesOf('evaka/atoms/form/SimpleSelect', module).add('default', () => {
   const options = [
@@ -27,16 +27,22 @@ storiesOf('evaka/atoms/form/SimpleSelect', module).add('default', () => {
     }
   ]
 
-  const [value, setValue] = useState<string>()
+  function StatefulStory() {
+    const [value, setValue] = useState<string>()
 
-  return (
-    <FixedSpaceColumn>
-      <SimpleSelect
-        value={value}
-        options={options}
-        onChange={(e) => setValue(e.target.value ? e.target.value : undefined)}
-        placeholder={' '}
-      />
-    </FixedSpaceColumn>
-  )
+    return (
+      <FixedSpaceColumn>
+        <SimpleSelect
+          value={value}
+          options={options}
+          onChange={(e) =>
+            setValue(e.target.value ? e.target.value : undefined)
+          }
+          placeholder={' '}
+        />
+      </FixedSpaceColumn>
+    )
+  }
+
+  return <StatefulStory />
 })

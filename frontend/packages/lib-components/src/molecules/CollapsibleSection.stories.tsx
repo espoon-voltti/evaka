@@ -5,8 +5,8 @@
 import React from 'react'
 import { storiesOf } from '@storybook/react'
 import { faChild, faInfo, faUsers } from '@evaka/lib-icons'
-import CollapsibleSection from '@evaka/lib-components/src/molecules/CollapsibleSection'
-import { LoremParagraph } from 'components/shared/story-utils'
+import { LoremParagraph } from '../story-utils'
+import CollapsibleSection from './CollapsibleSection'
 
 storiesOf('evaka/molecules/CollapsibleSection', module).add('default', () => (
   <div>

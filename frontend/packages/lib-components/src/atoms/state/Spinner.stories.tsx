@@ -4,9 +4,7 @@
 
 import React from 'react'
 import { storiesOf } from '@storybook/react'
-import Spinner, {
-  SpinnerSegment
-} from '@evaka/lib-components/src/atoms/state/Spinner'
+import Spinner, { SpinnerSegment } from './Spinner'
 
 storiesOf('evaka/atoms/state/spinner', module)
   .add('default', () => <Spinner />)

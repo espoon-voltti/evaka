@@ -3,10 +3,10 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
-import { storiesOf } from '@storybook/react'
-import Tooltip from '@evaka/lib-components/src/atoms/Tooltip'
 import styled from 'styled-components'
-import { FixedSpaceColumn } from '@evaka/lib-components/src/layout/flex-helpers'
+import { storiesOf } from '@storybook/react'
+import { FixedSpaceColumn } from '../layout/flex-helpers'
+import Tooltip from './Tooltip'
 
 const Elem = styled.div`
   height: 200px;

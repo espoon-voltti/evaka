@@ -3,11 +3,11 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
-import { H1, H2, H3, H4, Label } from '@evaka/lib-components/src/typography'
-import { LoremParagraph } from 'components/shared/story-utils'
-import { Gap } from '@evaka/lib-components/src/white-space'
 import styled from 'styled-components'
 import { storiesOf } from '@storybook/react'
+import { LoremParagraph } from './story-utils'
+import { H1, H2, H3, H4, Label } from './typography'
+import { Gap } from './white-space'
 
 const LabelDiv = styled.div`
   display: flex;
