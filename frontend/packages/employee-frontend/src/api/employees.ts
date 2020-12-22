@@ -29,7 +29,7 @@ export async function getFinanceDecisionHandlers(): Promise<
     .get<JsonOf<Employee[]>>(`/employee/finance-decision-handler`)
     .then((res) =>
       res.data.map((data) => ({
-        id: data.id,
+        value: data.id,
         label: [data.firstName, data.lastName].join(' ')
       }))
     )

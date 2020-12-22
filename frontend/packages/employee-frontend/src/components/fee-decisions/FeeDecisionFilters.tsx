@@ -62,7 +62,7 @@ function FeeDecisionFilters() {
       financeDecisionHandlers
         .getOrElse([])
         .find(
-          (handler) => handler.id === searchFilters.financeDecisionHandlerId
+          (handler) => handler.value === searchFilters.financeDecisionHandlerId
         ),
     [searchFilters.financeDecisionHandlerId]
   )

@@ -91,7 +91,7 @@ interface InvoiceSearchFilterState {
 }
 
 export interface FinanceDecisionHandlerOption {
-  id: UUID
+  value: UUID
   label: string
 }
 

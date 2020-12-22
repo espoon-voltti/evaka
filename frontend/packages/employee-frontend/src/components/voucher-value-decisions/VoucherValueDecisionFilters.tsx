@@ -55,7 +55,7 @@ export default React.memo(function VoucherValueDecisionFilters() {
       financeDecisionHandlers
         .getOrElse([])
         .find(
-          (handler) => handler.id === searchFilters.financeDecisionHandlerId
+          (handler) => handler.value === searchFilters.financeDecisionHandlerId
         ),
     [searchFilters.financeDecisionHandlerId]
   )

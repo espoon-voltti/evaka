@@ -295,12 +295,14 @@ export const FinanceDecisionHandlerFilter = React.memo(
     select
   }: FinanceDecisionHandlerFilterProps) {
     const { i18n } = useTranslation()
-    const options = financeDecisionHandlers.map(({ id, label: name }) => ({
-      id: id,
-      name: name,
-      value: id,
-      label: name
-    }))
+    const options = financeDecisionHandlers.map(
+      ({ value: id, label: name }) => ({
+        id: id,
+        name: name,
+        value: id,
+        label: name
+      })
+    )
     return (
       <>
         <Label>
@@ -310,7 +312,7 @@ export const FinanceDecisionHandlerFilter = React.memo(
             options={options}
             value={selected}
             onChange={(option) =>
-              option && 'id' in option ? select(option.id) : undefined
+              option && 'value' in option ? select(option.value) : undefined
             }
           />
         </Label>

@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import LocalDate from '@evaka/lib-common/src/local-date'
 import styled from 'styled-components'
 import Select from '~components/common/Select'
@@ -33,7 +33,7 @@ import {
   FixedSpaceRow
 } from '@evaka/lib-components/src/layout/flex-helpers'
 import DateRange from '@evaka/lib-common/src/date-range'
-import { Employee } from '~types/employee'
+import { FinanceDecisionHandlerOption } from '~state/invoicing-ui'
 
 type CareType = 'DAYCARE' | 'PRESCHOOL' | 'PREPARATORY_EDUCATION' | 'CLUB'
 type DaycareType = 'CENTRE' | 'FAMILY' | 'GROUP_FAMILY'
@@ -245,7 +245,7 @@ function parseLocation(value: string): Coordinate | undefined {
 
 interface Props {
   areas: CareArea[]
-  employees: Employee[]
+  financeDecisionHandlerOptions: FinanceDecisionHandlerOption[]
   unit?: Unit
   editable: boolean
   onClickCancel?: () => void
@@ -523,27 +523,18 @@ export default function UnitEditor(props: Props): JSX.Element {
   const updateUnitManager = (updates: Partial<UnitManager>) =>
     updateForm({ unitManager: { ...form.unitManager, ...updates } })
 
-  const [
-    selectedFinanceDecisionManager,
-    setSelectedFinanceDecisionManager
-  ] = useState<{ value: string; label: string } | undefined>()
-  useEffect(() => {
-    setSelectedFinanceDecisionManager(
-      employeeOptions.find((e) => e.value === form.financeDecisionHandlerId)
-    )
-  }, [form.financeDecisionHandlerId])
+  const selectedFinanceDecisionManager = useMemo(
+    () =>
+      props.financeDecisionHandlerOptions.find(
+        (e) => e.value === form.financeDecisionHandlerId
+      ),
+    [form.financeDecisionHandlerId]
+  )
 
   const areaOptions = props.areas.map(({ id, name }) => ({
     value: id,
     label: name
   }))
-
-  const employeeOptions = props.employees.map(
-    ({ id, firstName, lastName }) => ({
-      value: id,
-      label: [firstName, lastName].join(' ')
-    })
-  )
 
   const onClickSubmit = (e: React.MouseEvent) => {
     e.preventDefault()
@@ -1011,7 +1002,7 @@ export default function UnitEditor(props: Props): JSX.Element {
         <div>{showRequired(i18n.unitEditor.label.financeDecisionHandler)}</div>
         {props.editable ? (
           <Select
-            options={employeeOptions}
+            options={props.financeDecisionHandlerOptions}
             placeholder={i18n.unitEditor.placeholder.financeDecisionHandler}
             value={selectedFinanceDecisionManager}
             onChange={(value) =>
