@@ -9,16 +9,29 @@ import {
 } from 'passport-saml'
 import { SamlUser } from '../routes/auth/saml/types'
 import { getOrCreateEmployee } from '../service-client'
-import { evakaSamlCallbackUrl, evakaSamlEntrypoint } from '../config'
+import { evakaSamlConfig } from '../config'
+import fs from 'fs'
 
 export default function createKeycloakSamlStrategy(): SamlStrategy {
+  if (!evakaSamlConfig) throw new Error('Missing Keycloak SAML configuration')
+  const publicCert = fs.readFileSync(evakaSamlConfig.publicCert, {
+    encoding: 'utf8'
+  })
+  const privateCert = fs.readFileSync(evakaSamlConfig.privateCert, {
+    encoding: 'utf8'
+  })
   return new SamlStrategy(
     {
       issuer: 'evaka',
-      callbackUrl: evakaSamlCallbackUrl,
-      entryPoint: evakaSamlEntrypoint,
-      logoutUrl: evakaSamlEntrypoint,
-      acceptedClockSkewMs: -1
+      callbackUrl: evakaSamlConfig.callbackUrl,
+      entryPoint: evakaSamlConfig.entryPoint,
+      logoutUrl: evakaSamlConfig.entryPoint,
+      acceptedClockSkewMs: -1,
+      cert: publicCert,
+      privateCert: privateCert,
+      decryptionPvk: privateCert,
+      identifierFormat: 'urn:oasis:names:tc:SAML:2.0:nameid-format:transient',
+      signatureAlgorithm: 'sha256'
     },
     (profile: Profile, done: VerifiedCallback) => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -30,8 +43,11 @@ export default function createKeycloakSamlStrategy(): SamlStrategy {
 }
 
 interface KeycloakProfile {
-  nameID: string
-  ID?: string
+  id?: string
+  email?: string
+  firstName?: string
+  lastName?: string
+  nameID?: string
   nameIDFormat?: string
   nameQualifier?: string
   spNameQualifier?: string
@@ -41,12 +57,12 @@ interface KeycloakProfile {
 async function verifyKeycloakProfile(
   profile: KeycloakProfile
 ): Promise<SamlUser> {
-  if (!profile.ID) throw Error('No user ID in evaka IDP SAML data')
+  if (!profile.id) throw Error('No user ID in evaka IDP SAML data')
   const person = await getOrCreateEmployee({
-    externalId: `evaka:${profile.ID}`,
-    firstName: profile.nameID.split('.')[0],
-    lastName: profile.nameID.split('.')[1].split('@')[0],
-    email: profile.nameID
+    externalId: `evaka:${profile.id}`,
+    firstName: profile.firstName ?? '',
+    lastName: profile.lastName ?? '',
+    email: profile.email
   })
   return {
     id: person.id,
