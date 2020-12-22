@@ -429,11 +429,39 @@ fun insertGeneralTestFixtures(h: Handle) {
     h.insertTestVoucherValue(
         VoucherValue(id = UUID.randomUUID(), validity = Period(LocalDate.of(2000, 1, 1), null), voucherValue = 87000)
     )
+
+    h.insertPreschoolTerms()
 }
 
 fun Database.Transaction.resetDatabase() = execute("SELECT reset_database()")
 fun resetDatabase(h: Handle) {
     h.transaction { it.execute("SELECT reset_database()") }
+}
+
+fun Handle.insertPreschoolTerms() {
+    //language=SQL
+    val sql =
+        """
+-- 2020-2021
+INSERT INTO preschool_term (finnish_preschool, swedish_preschool, extended_term, application_period)
+VALUES (
+    '[2020-08-13,2021-06-04]',
+    '[2020-08-18,2021-06-04]',
+    '[2020-08-01,2021-06-04]',
+    '[2020-01-08,2020-01-20]'
+);
+
+-- 2021-2022
+INSERT INTO preschool_term (finnish_preschool, swedish_preschool, extended_term, application_period)
+VALUES (
+    '[2021-08-11,2022-06-03]',
+    '[2021-08-11,2022-06-03]',
+    '[2021-08-01,2022-06-03]',
+    '[2021-01-08,2021-01-20]'
+);
+        """.trimIndent()
+
+    createUpdate(sql).execute()
 }
 
 fun insertTestVardaOrganizer(h: Handle) {

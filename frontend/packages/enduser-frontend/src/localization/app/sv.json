@@ -165,7 +165,8 @@
       "invalid-ssn": "Ogiltig personbeteckning",
       "invalid-tel": "Ogiltigt telefonnummer",
       "invalid-timestring": "Ogiltig tid (ange t.ex. 13:30)",
-      "invalid-daterange": "Datumet är inte inom tillåtet intervall"
+      "invalid-daterange": "Datumet är inte inom tillåtet intervall",
+      "outside-preschool-term": "Den här dagen är utanför förskolornas verksamhetsperiod. För den här dagen måste du göra en ansökan om plats inom småbarnspedagogiken."
     }
   },
   "care-type": {

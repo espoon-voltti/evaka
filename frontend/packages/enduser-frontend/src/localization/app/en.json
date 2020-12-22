@@ -165,7 +165,8 @@
       "invalid-ssn": "Invalid personal identity code",
       "invalid-tel": "Invalid phone number",
       "invalid-timestring": "Invalid time of day (Please use the following form: 13:30)",
-      "invalid-daterange": "Date is not inside allowed range"
+      "invalid-daterange": "Date is not inside allowed range",
+      "outside-preschool-term": "The day you selected is not within the pre-primary education period. Please fill the early childhood education application instead.”"
     }
   },
   "care-type": {

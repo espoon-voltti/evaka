@@ -20,6 +20,7 @@ import fi.espoo.evaka.application.persistence.DatabaseForm
 import fi.espoo.evaka.daycare.controllers.AdditionalInformation
 import fi.espoo.evaka.daycare.controllers.Child
 import fi.espoo.evaka.daycare.domain.ProviderType
+import fi.espoo.evaka.daycare.getActivePreschoolTermAt
 import fi.espoo.evaka.daycare.getDaycare
 import fi.espoo.evaka.daycare.getUnitApplyPeriods
 import fi.espoo.evaka.daycare.upsertChild
@@ -560,15 +561,17 @@ class ApplicationStateService(
     private fun validateApplication(tx: Database.Read, application: ApplicationDetails) {
         val result = ValidationResult()
 
-        val unitIds = application.form.preferences.preferredUnits.map { it.id }
-
-        if (application.type == ApplicationType.PRESCHOOL && application.form.preferences.preferredStartDate != null) {
-            val currentTermEnd = LocalDate.of(2021, 6, 4)
-            val nextApplyPeriodStart = LocalDate.of(2021, 1, 8)
-            if (LocalDate.now(zoneId).isBefore(nextApplyPeriodStart) && application.form.preferences.preferredStartDate.isAfter(currentTermEnd)) {
-                result.add(ValidationError("form.preferences.preferredStartDate", "Application period for preschool term 2021-2022 has not started yet"))
+        val preferredStartDate = application.form.preferences.preferredStartDate
+        if (application.type == ApplicationType.PRESCHOOL && preferredStartDate != null) {
+            val canApplyForPreferredDate = tx.getActivePreschoolTermAt(preferredStartDate)
+                ?.isApplicationAccepted(LocalDate.now(zoneId))
+                ?: false
+            if (!canApplyForPreferredDate) {
+                result.add(ValidationError("form.preferences.preferredStartDate", "Cannot apply to preschool on the preferred time at the moment"))
             }
         }
+
+        val unitIds = application.form.preferences.preferredUnits.map { it.id }
 
         if (unitIds.isEmpty()) {
             result.add(ValidationError("form.preferences.preferredUnits", "Must have at least one preferred unit"))
@@ -578,7 +581,6 @@ class ApplicationStateService(
                 result.add(ValidationError("form.preferences.preferredUnits", "Some unit was not found"))
             }
             if (application.origin == ApplicationOrigin.ELECTRONIC) {
-                val preferredStartDate = application.form.preferences.preferredStartDate
                 if (preferredStartDate != null) {
                     for (daycare in daycares) {
                         if (application.type == ApplicationType.DAYCARE && (daycare.daycareApplyPeriod == null || !daycare.daycareApplyPeriod.includes(preferredStartDate)))

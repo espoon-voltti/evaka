@@ -22,6 +22,9 @@ class DevDataInitializer(jdbi: Jdbi) {
                 ClassPathResource("dev-data/employees.sql").file.readText().let {
                     h.createUpdate(it).execute()
                 }
+                ClassPathResource("dev-data/preschool-terms.sql").file.readText().let {
+                    h.createUpdate(it).execute()
+                }
             }
         }
     }
