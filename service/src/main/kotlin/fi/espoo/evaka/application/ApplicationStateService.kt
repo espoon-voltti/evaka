@@ -58,7 +58,6 @@ import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.domain.BadRequest
-import fi.espoo.evaka.shared.domain.ClosedPeriod
 import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.domain.Period
@@ -559,17 +558,15 @@ class ApplicationStateService(
             throw BadRequest("Expected status to be one of [${statuses.joinToString(separator = ", ")}] but was ${application.status}")
     }
 
-    fun canApplyOnPreschoolTerm(tx: Database.Read, preferredStartDate: LocalDate): Boolean {
-        val term = tx.getActivePreschoolTermAt(preferredStartDate) ?: return false
-        val applicationsAccepted = ClosedPeriod(term.applicationPeriod.start, term.extendedTerm.end)
-        return applicationsAccepted.includes(LocalDate.now(zoneId))
-    }
-
     private fun validateApplication(tx: Database.Read, application: ApplicationDetails) {
         val result = ValidationResult()
 
-        if (application.type == ApplicationType.PRESCHOOL && application.form.preferences.preferredStartDate != null) {
-            if (!canApplyOnPreschoolTerm(tx, application.form.preferences.preferredStartDate)) {
+        val preferredStartDate = application.form.preferences.preferredStartDate
+        if (application.type == ApplicationType.PRESCHOOL && preferredStartDate != null) {
+            val canApplyForPreferredDate = tx.getActivePreschoolTermAt(preferredStartDate)
+                ?.isApplicationAccepted(LocalDate.now(zoneId))
+                ?: false
+            if (!canApplyForPreferredDate) {
                 result.add(ValidationError("form.preferences.preferredStartDate", "Cannot apply to preschool on the preferred time at the moment"))
             }
         }
@@ -584,7 +581,6 @@ class ApplicationStateService(
                 result.add(ValidationError("form.preferences.preferredUnits", "Some unit was not found"))
             }
             if (application.origin == ApplicationOrigin.ELECTRONIC) {
-                val preferredStartDate = application.form.preferences.preferredStartDate
                 if (preferredStartDate != null) {
                     for (daycare in daycares) {
                         if (application.type == ApplicationType.DAYCARE && (daycare.daycareApplyPeriod == null || !daycare.daycareApplyPeriod.includes(preferredStartDate)))

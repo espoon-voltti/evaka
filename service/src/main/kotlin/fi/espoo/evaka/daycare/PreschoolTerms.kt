@@ -18,7 +18,9 @@ data class PreschoolTerm(
     /*The official application period. The end date is not enforced though, but applications are accepted
     until end of term.*/
     val applicationPeriod: ClosedPeriod
-)
+) {
+    fun isApplicationAccepted(date: LocalDate) = ClosedPeriod(applicationPeriod.start, extendedTerm.end).includes(date)
+}
 
 fun Database.Read.getPreschoolTerms(): List<PreschoolTerm> {
     return createQuery("SELECT * FROM preschool_term order by extended_term")
