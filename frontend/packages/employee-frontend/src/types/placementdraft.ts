@@ -34,6 +34,7 @@ export interface PlacementDraft {
   period: FiniteDateRange
   preschoolDaycarePeriod?: FiniteDateRange
   placements: PlacementDraftPlacement[]
+  guardianHasRestrictedDetails: boolean
 }
 
 export interface DaycarePlacementPlan {

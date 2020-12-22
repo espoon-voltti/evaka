@@ -226,3 +226,18 @@ fun getPlacementDraftChild(h: Handle, childId: UUID): PlacementDraftChild? {
         .list()
         .singleOrNull()
 }
+
+fun getGuardiansRestrictedStatus(h: Handle, guardianId: UUID): Boolean? {
+    return h.createQuery(
+        // language=SQL
+        """
+            SELECT restricted_details_enabled
+            FROM person
+            WHERE id = :id
+        """
+    )
+        .bind("id", guardianId)
+        .mapTo<Boolean>()
+        .toList()
+        .singleOrNull()
+}

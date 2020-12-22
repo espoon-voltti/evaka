@@ -212,6 +212,18 @@ val testAdult_6 = PersonData.Detailed(
     restrictedDetailsEnabled = false
 )
 
+val testAdult_7 = PersonData.Detailed(
+    id = UUID.randomUUID(),
+    dateOfBirth = LocalDate.of(1980, 1, 1),
+    ssn = "010180-969B",
+    firstName = "Tepi",
+    lastName = "Turvakiellollinen",
+    streetAddress = "Suojatie 112",
+    postalCode = "02230",
+    postOffice = "Espoo",
+    restrictedDetailsEnabled = true
+)
+
 val testChild_1 = PersonData.Detailed(
     id = UUID.randomUUID(),
     dateOfBirth = LocalDate.of(2017, 6, 1),
@@ -310,7 +322,7 @@ val testChildWithNamelessGuardian = PersonData.Detailed(
 )
 
 val allWorkers = setOf(testDecisionMaker_1)
-val allAdults = setOf(testAdult_1, testAdult_2, testAdult_3, testAdult_4, testAdult_5, testAdult_6)
+val allAdults = setOf(testAdult_1, testAdult_2, testAdult_3, testAdult_4, testAdult_5, testAdult_6, testAdult_7)
 val allChildren = setOf(testChild_1, testChild_2, testChild_3, testChild_4, testChild_5, testChild_6, testChild_7, testChildWithNamelessGuardian)
 val allBasicChildren = allChildren.map { PersonData.Basic(it.id, it.dateOfBirth, it.firstName, it.lastName, it.ssn) }
 val allDaycares = setOf(testDaycare, testDaycare2)
@@ -389,7 +401,8 @@ fun insertGeneralTestFixtures(h: Handle) {
                 streetAddress = it.streetAddress ?: "",
                 postalCode = it.postalCode ?: "",
                 postOffice = it.postOffice ?: "",
-                email = it.email
+                email = it.email,
+                restrictedDetailsEnabled = it.restrictedDetailsEnabled
             )
         )
     }

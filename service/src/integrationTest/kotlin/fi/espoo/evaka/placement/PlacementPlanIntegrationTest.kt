@@ -28,6 +28,7 @@ import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.test.getApplicationStatus
 import fi.espoo.evaka.test.getPlacementPlanRowByApplication
 import fi.espoo.evaka.testAdult_1
+import fi.espoo.evaka.testAdult_7
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDaycare2
@@ -67,6 +68,34 @@ class PlacementPlanIntegrationTest : FullApplicationTest() {
             applicationId,
             type = PlacementType.DAYCARE,
             period = FiniteDateRange(preferredStartDate, defaultEndDate)
+        )
+        createPlacementPlanAndAssert(
+            h,
+            applicationId,
+            PlacementType.DAYCARE,
+            DaycarePlacementPlan(
+                unitId = testDaycare.id,
+                period = FiniteDateRange(preferredStartDate.plusDays(1), defaultEndDate.minusDays(1))
+            )
+        )
+    }
+
+    @Test
+    fun testDaycareFullTimeWithRestrictedDetails(): Unit = jdbi.handle { h ->
+        val preferredStartDate = LocalDate.of(2020, 3, 17)
+        val applicationId = insertInitialData(
+            h,
+            status = ApplicationStatus.WAITING_PLACEMENT,
+            type = FormType.DAYCARE,
+            preferredStartDate = preferredStartDate,
+            adult = testAdult_7
+        )
+        val defaultEndDate = LocalDate.of(2023, 7, 31)
+        checkPlacementPlanDraft(
+            applicationId,
+            type = PlacementType.DAYCARE,
+            period = FiniteDateRange(preferredStartDate, defaultEndDate),
+            guardianHasRestrictedDetails = true
         )
         createPlacementPlanAndAssert(
             h,
@@ -234,7 +263,8 @@ class PlacementPlanIntegrationTest : FullApplicationTest() {
         preferredUnits: List<UnitData.Detailed> = listOf(testDaycare, testDaycare2),
         period: FiniteDateRange,
         preschoolDaycarePeriod: FiniteDateRange? = null,
-        placements: List<PlacementDraftPlacement> = emptyList()
+        placements: List<PlacementDraftPlacement> = emptyList(),
+        guardianHasRestrictedDetails: Boolean = false
     ) {
         val (_, _, body) = http.get("/v2/applications/$applicationId/placement-draft")
             .asUser(serviceWorker)
@@ -256,7 +286,8 @@ class PlacementPlanIntegrationTest : FullApplicationTest() {
                 },
                 period = period,
                 preschoolDaycarePeriod = preschoolDaycarePeriod,
-                placements = placements
+                placements = placements,
+                guardianHasRestrictedDetails = guardianHasRestrictedDetails
             ),
             body.get()
         )
@@ -313,7 +344,7 @@ private fun insertInitialData(
             serviceStart = "08:00".takeIf { preschoolDaycare },
             serviceEnd = "16:00".takeIf { preschoolDaycare },
             child = child.toDaycareFormChild(),
-            guardian = adult.toDaycareFormAdult(),
+            guardian = adult.toDaycareFormAdult(adult.restrictedDetailsEnabled),
             apply = Apply(preferredUnits = preferredUnits.map { it.id }),
             preferredStartDate = preferredStartDate,
             careDetails = careDetails

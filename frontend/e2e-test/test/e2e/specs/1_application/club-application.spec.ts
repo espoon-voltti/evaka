@@ -123,7 +123,7 @@ test('Admin places application into a unit', async (t) => {
 
   // Place the submitted application
   await applicationWorkbench.openPlacementQueue()
-  await applicationWorkbench.openDaycarePlaementById(applicationId)
+  await applicationWorkbench.openDaycarePlacementDialogById(applicationId)
   await applicationWorkbench.placementPage.placeIn(0)
   await applicationWorkbench.placementPage.sendPlacement()
 

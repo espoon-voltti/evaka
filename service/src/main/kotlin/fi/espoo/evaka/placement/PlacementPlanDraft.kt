@@ -14,7 +14,8 @@ data class PlacementPlanDraft(
     val preferredUnits: List<PlacementDraftUnit>,
     val period: FiniteDateRange,
     val preschoolDaycarePeriod: FiniteDateRange?,
-    val placements: List<PlacementDraftPlacement>
+    val placements: List<PlacementDraftPlacement>,
+    val guardianHasRestrictedDetails: Boolean
 )
 
 data class PlacementDraftChild(val id: UUID, val firstName: String, val lastName: String, val dob: LocalDate)

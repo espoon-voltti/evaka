@@ -33,6 +33,8 @@ class PlacementPlanService(
         val form = application.form
         val child = getPlacementDraftChild(tx.handle, application.childId)
             ?: throw NotFound("Cannot find child with id ${application.childId} to application ${application.id}")
+        val guardianHasRestrictedDetails = getGuardiansRestrictedStatus(tx.handle, application.guardianId)
+            ?: throw NotFound("Cannot find guardian with id ${application.guardianId} to application ${application.id}")
         val preferredUnits = form.preferences.preferredUnits.map {
             PlacementDraftUnit(
                 id = it.id,
@@ -57,7 +59,8 @@ class PlacementPlanService(
                     preferredUnits = preferredUnits,
                     period = period,
                     preschoolDaycarePeriod = preschoolDaycarePeriod,
-                    placements = placements
+                    placements = placements,
+                    guardianHasRestrictedDetails = guardianHasRestrictedDetails
                 )
             }
             ApplicationType.DAYCARE -> {
@@ -74,7 +77,8 @@ class PlacementPlanService(
                     preferredUnits = preferredUnits,
                     period = period,
                     preschoolDaycarePeriod = null,
-                    placements = placements
+                    placements = placements,
+                    guardianHasRestrictedDetails = guardianHasRestrictedDetails
                 )
             }
             ApplicationType.CLUB -> {
@@ -86,7 +90,8 @@ class PlacementPlanService(
                     preferredUnits = preferredUnits,
                     period = period,
                     preschoolDaycarePeriod = null,
-                    placements = placements
+                    placements = placements,
+                    guardianHasRestrictedDetails = guardianHasRestrictedDetails
                 )
             }
             else -> throw IllegalArgumentException("Unsupported application form type ${application.type}")

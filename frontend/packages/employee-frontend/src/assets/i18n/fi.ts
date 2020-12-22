@@ -1743,7 +1743,10 @@ export const fi = {
     dateError: 'Päällekkäinen sijoitus ajanjaksolle.',
     preparatoryPeriod: 'Valmistava opetus',
     dateOfBirth: 'Syntymäaika',
-    selectedUnit: 'Valittu yksikkö'
+    selectedUnit: 'Valittu yksikkö',
+    restrictedDetails: 'Huoltajalla on turvakielto',
+    restrictedDetailsTooltip:
+      'Päätös pitää lähettää käsin toiselle huoltajalle, kun hakijalla on turvakielto.'
   },
   decisionDraft: {
     title: 'Päätöksen teko ja lähetys',
