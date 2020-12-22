@@ -306,6 +306,7 @@ export interface VoucherValueDecisionDetailed {
   approvedAt: Date | null
   createdAt: Date
   sentAt: Date | null
+  financeDecisionHandlerName: string | null
   minThreshold: number
   feePercent: number
   totalCoPayment: number

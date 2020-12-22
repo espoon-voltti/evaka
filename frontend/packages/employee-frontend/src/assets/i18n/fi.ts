@@ -1538,6 +1538,7 @@ export const fi = {
     validPeriod: 'Arvopäätös voimassa',
     sentAt: 'Arvopäätös lähetetty',
     pdfLabel: 'Arvopäätös PDF',
+    decisionHandlerName: 'Päätöksen käsittelijä',
     downloadPdf: 'Lataa PDF',
     pdfInProgress:
       '(PDF:ää muodostetaan. Lataa sivu hetken kuluttua uudelleen niin voit ladata sen oheisesta linkistä.)',

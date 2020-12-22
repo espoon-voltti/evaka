@@ -444,7 +444,9 @@ fun Handle.getVoucherValueDecision(mapper: ObjectMapper, id: UUID): VoucherValue
             daycare.name as placement_unit_name,
             daycare.language as placement_unit_lang,
             care_area.id as placement_unit_area_id,
-            care_area.name as placement_unit_area_name
+            care_area.name as placement_unit_area_name,
+            finance_decision_handler.first_name AS finance_decision_handler_first_name,
+            finance_decision_handler.last_name AS finance_decision_handler_last_name
         FROM voucher_value_decision as decision
             LEFT JOIN voucher_value_decision_part as part ON decision.id = part.voucher_value_decision_id
             LEFT JOIN person as head ON decision.head_of_family = head.id
@@ -453,6 +455,7 @@ fun Handle.getVoucherValueDecision(mapper: ObjectMapper, id: UUID): VoucherValue
             LEFT JOIN daycare ON part.placement_unit = daycare.id
             LEFT JOIN care_area ON daycare.care_area_id = care_area.id
             LEFT JOIN employee as approved_by ON decision.approved_by = approved_by.id
+            LEFT JOIN employee as finance_decision_handler ON finance_decision_handler.id = decision.decision_handler
         WHERE decision.id = :id
         ORDER BY part.date_of_birth DESC
     """
@@ -710,6 +713,11 @@ fun toVoucherValueDecisionDetailed(mapper: ObjectMapper) = { rs: ResultSet, _: S
         },
         approvedAt = rs.getTimestamp("approved_at")?.toInstant(),
         createdAt = rs.getTimestamp("created_at").toInstant(),
-        sentAt = rs.getTimestamp("sent_at")?.toInstant()
+        sentAt = rs.getTimestamp("sent_at")?.toInstant(),
+        financeDecisionHandlerName = rs.getString("finance_decision_handler_first_name")?.let {
+            rs.getString("finance_decision_handler_first_name") +
+                " " +
+                rs.getString("finance_decision_handler_last_name")
+        }
     )
 }
