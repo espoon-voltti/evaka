@@ -317,7 +317,7 @@ fun Handle.searchValueDecisions(
         )
         """.trimIndent()
     val youngestChildJoin = "LEFT JOIN youngest_child ON decision.id = youngest_child.decision_id AND rownum = 1"
-    val youngestChildAnd =  "AND youngest_child.area = ANY(:areas)"
+    val youngestChildAnd = "AND youngest_child.area = ANY(:areas)"
 
     // language=sql
 
