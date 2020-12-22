@@ -576,14 +576,6 @@ class ApplicationStateService(
 
         val unitIds = application.form.preferences.preferredUnits.map { it.id }
 
-        if (application.type == ApplicationType.PRESCHOOL && application.form.preferences.preferredStartDate != null) {
-            val currentTermEnd = LocalDate.of(2021, 6, 4)
-            val nextApplyPeriodStart = LocalDate.of(2021, 1, 8)
-            if (LocalDate.now(zoneId).isBefore(nextApplyPeriodStart) && application.form.preferences.preferredStartDate.isAfter(currentTermEnd)) {
-                result.add(ValidationError("form.preferences.preferredStartDate", "Application period for preschool term 2021-2022 has not started yet"))
-            }
-        }
-
         if (unitIds.isEmpty()) {
             result.add(ValidationError("form.preferences.preferredUnits", "Must have at least one preferred unit"))
         } else {
