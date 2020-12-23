@@ -6,9 +6,9 @@ package fi.espoo.evaka.shared.db
 
 import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.identity.ExternalId
-import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.Coordinate
 import fi.espoo.evaka.shared.domain.DateRange
+import fi.espoo.evaka.shared.domain.FiniteDateRange
 import org.intellij.lang.annotations.Language
 import org.jdbi.v3.core.kotlin.mapTo
 import org.junit.jupiter.api.Assertions.assertEquals
