@@ -64,3 +64,9 @@ fun Database.Transaction.deleteAttachment(id: UUID) {
         .bind("id", id)
         .execute()
 }
+
+fun Database.Read.getApplicationAttachments(applicationId: UUID): List<UUID> = this
+    .createQuery("SELECT id FROM attachment WHERE application_id = :id")
+    .bind("id", applicationId)
+    .mapTo<UUID>()
+    .toList()

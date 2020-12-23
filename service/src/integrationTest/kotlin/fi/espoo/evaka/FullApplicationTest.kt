@@ -5,7 +5,11 @@
 package fi.espoo.evaka
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.github.kittinunf.fuel.core.FileDataPart
 import com.github.kittinunf.fuel.core.FuelManager
+import com.github.kittinunf.fuel.core.isSuccessful
+import fi.espoo.evaka.shared.auth.AuthenticatedUser
+import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.config.SharedIntegrationTestConfig
 import fi.espoo.evaka.shared.config.defaultObjectMapper
 import fi.espoo.evaka.shared.config.getTestDataSource
@@ -23,7 +27,9 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.web.server.LocalServerPort
 import org.springframework.core.env.Environment
+import java.io.File
 import java.time.LocalDate
+import java.util.UUID
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @SpringBootTest(
@@ -56,6 +62,8 @@ abstract class FullApplicationTest {
 
     protected fun dbInstance(): Database = Database(jdbi)
 
+    private val pngFile = this::class.java.getResource("/attachments-fixtures/espoo-logo.png")
+
     @BeforeAll
     protected fun beforeAll() {
         assert(httpPort > 0)
@@ -73,5 +81,14 @@ abstract class FullApplicationTest {
     @AfterAll
     protected fun afterAll() {
         db.close()
+    }
+
+    fun uploadAttachment(applicationId: UUID, user: AuthenticatedUser): Boolean {
+        val (_, res, _) = http.upload("/attachments/enduser/applications/$applicationId", parameters = listOf("type" to "URGENCY"))
+            .add(FileDataPart(File(pngFile.toURI()), name = "file"))
+            .asUser(user)
+            .response()
+
+        return res.isSuccessful
     }
 }

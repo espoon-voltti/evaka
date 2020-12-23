@@ -18,12 +18,13 @@ import fi.espoo.evaka.placement.PlacementPlanConfirmationStatus
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
+import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.freeTextSearchQuery
 import fi.espoo.evaka.shared.db.getEnum
 import fi.espoo.evaka.shared.db.getUUID
 import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.db.mapJsonColumn
-import fi.espoo.evaka.shared.db.transaction
+import mu.KotlinLogging
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.mapTo
 import org.jdbi.v3.core.result.RowView
@@ -34,6 +35,8 @@ import java.time.LocalDate
 import java.util.UUID
 import kotlin.math.ceil
 import kotlin.math.max
+
+private val logger = KotlinLogging.logger {}
 
 enum class ApplicationSortColumn {
     APPLICATION_TYPE,
@@ -596,36 +599,44 @@ fun Handle.getApplicationUnitSummaries(unitId: UUID): List<ApplicationUnitSummar
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class FormWithType(val type: String)
 
-fun mapRequestedPlacementType(row: RowView, colName: String): PlacementType = when (row.mapJsonColumn<FormWithType>(colName).type) {
-    "club" -> PlacementType.CLUB
-    "daycare" -> {
-        if (row.mapJsonColumn<DaycareFormV0>(colName).partTime) {
-            PlacementType.DAYCARE_PART_TIME
-        } else {
-            PlacementType.DAYCARE
-        }
-    }
-    "preschool" -> {
-        row.mapJsonColumn<DaycareFormV0>(colName).let {
-            if (it.careDetails.preparatory == true) {
-                if (it.connectedDaycare == true) {
-                    PlacementType.PREPARATORY_DAYCARE
-                } else {
-                    PlacementType.PREPARATORY
-                }
+fun mapRequestedPlacementType(row: RowView, colName: String): PlacementType =
+    when (row.mapJsonColumn<FormWithType>(colName).type) {
+        "club" -> PlacementType.CLUB
+        "daycare" -> {
+            if (row.mapJsonColumn<DaycareFormV0>(colName).partTime) {
+                PlacementType.DAYCARE_PART_TIME
             } else {
-                if (it.connectedDaycare == true) {
-                    PlacementType.PRESCHOOL_DAYCARE
+                PlacementType.DAYCARE
+            }
+        }
+        "preschool" -> {
+            row.mapJsonColumn<DaycareFormV0>(colName).let {
+                if (it.careDetails.preparatory == true) {
+                    if (it.connectedDaycare == true) {
+                        PlacementType.PREPARATORY_DAYCARE
+                    } else {
+                        PlacementType.PREPARATORY
+                    }
                 } else {
-                    PlacementType.PRESCHOOL
+                    if (it.connectedDaycare == true) {
+                        PlacementType.PRESCHOOL_DAYCARE
+                    } else {
+                        PlacementType.PRESCHOOL
+                    }
                 }
             }
         }
+        else -> throw Error("unknown form type")
     }
-    else -> throw Error("unknown form type")
-}
 
-fun updateForm(h: Handle, id: UUID, form: ApplicationForm, formType: ApplicationType, childRestricted: Boolean, guardianRestricted: Boolean) {
+fun updateForm(
+    h: Handle,
+    id: UUID,
+    form: ApplicationForm,
+    formType: ApplicationType,
+    childRestricted: Boolean,
+    guardianRestricted: Boolean
+) {
     val transformedForm =
         if (formType == ApplicationType.CLUB) ClubFormV0.fromForm2(form, childRestricted, guardianRestricted)
         else DaycareFormV0.fromForm2(form, formType, childRestricted, guardianRestricted)
@@ -692,7 +703,8 @@ fun updateApplicationDates(h: Handle, id: UUID, sentDate: LocalDate, dueDate: Lo
 
 fun updateApplicationFlags(h: Handle, id: UUID, applicationFlags: ApplicationFlags) {
     // language=SQL
-    val sql = "UPDATE application SET transferapplication = :transferApplication, additionaldaycareapplication = :additionalDaycareApplication WHERE id = :id"
+    val sql =
+        "UPDATE application SET transferapplication = :transferApplication, additionaldaycareapplication = :additionalDaycareApplication WHERE id = :id"
 
     h.createUpdate(sql)
         .bind("id", id)
@@ -733,23 +745,45 @@ fun deleteApplication(h: Handle, id: UUID) {
     h.createUpdate(sql).bind("id", id).execute()
 }
 
-fun removeOldDrafts(h: Handle) {
+fun removeOldDrafts(db: Database.Transaction, deleteAttachment: (db: Database.Transaction, id: UUID) -> Unit) {
     val thresholdDays = 31
 
-    h.transaction { handle ->
-        // language=SQL
-        handle.createUpdate("""DELETE FROM application_form WHERE application_id IN (SELECT id FROM application WHERE status = 'CREATED' AND created < current_date - :thresholdDays)""")
+    // language=SQL
+    val applicationIds =
+        db.handle.createQuery("""SELECT id FROM application WHERE status = 'CREATED' AND created < current_date - :thresholdDays""")
             .bind("thresholdDays", thresholdDays)
+            .mapTo<UUID>()
+            .toList()
+
+    if (applicationIds.isNotEmpty()) {
+        logger.info("Cleaning up ${applicationIds.size} draft applications older than $thresholdDays days")
+
+        // language=SQL
+        db.handle.createUpdate("""DELETE FROM application_form WHERE application_id = ANY(:applicationIds::uuid[])""")
+            .bind("applicationIds", applicationIds.toTypedArray())
             .execute()
 
         // language=SQL
-        handle.createUpdate("""DELETE FROM application_note WHERE application_id IN (SELECT id FROM application WHERE status = 'CREATED' AND created < current_date - :thresholdDays)""")
-            .bind("thresholdDays", thresholdDays)
+        db.handle.createUpdate("""DELETE FROM application_note WHERE application_id = ANY(:applicationIds::uuid[])""")
+            .bind("applicationIds", applicationIds.toTypedArray())
             .execute()
 
+        applicationIds.forEach {
+            val attachmentIds =
+                db.handle.createUpdate("""DELETE FROM attachment WHERE application_id = :id RETURNING id""")
+                    .bind("id", it)
+                    .executeAndReturnGeneratedKeys()
+                    .mapTo<UUID>()
+                    .toList()
+
+            attachmentIds.forEach {
+                deleteAttachment(db, it)
+            }
+        }
+
         // language=SQL
-        handle.createUpdate("""DELETE FROM application WHERE status = 'CREATED' AND created < current_date - :thresholdDays""")
-            .bind("thresholdDays", thresholdDays)
+        db.handle.createUpdate("""DELETE FROM application WHERE id = ANY(:applicationIds::uuid[])""")
+            .bind("applicationIds", applicationIds.toTypedArray())
             .execute()
     }
 }
