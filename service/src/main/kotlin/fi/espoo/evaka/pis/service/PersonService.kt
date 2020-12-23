@@ -136,6 +136,8 @@ class PersonService(
         }
     }
 
+    val SECONDS_IN_30_DAYS: Long = 60 * 60 * 24 * 30
+
     // If 1 or more evaka guardians is found, return those, otherwise get from VTJ
     fun getEvakaOrVtjGuardians(tx: Database.Transaction, user: AuthenticatedUser, id: VolttiIdentifier): List<PersonDTO> {
         val child = tx.handle.getPersonById(id) ?: return emptyList()
@@ -145,7 +147,10 @@ class PersonService(
             is ExternalIdentifier.SSN -> {
                 val evakaGuardians = getChildGuardians(tx.handle, id).mapNotNull { guardianId -> tx.handle.getPersonById(guardianId) }
 
-                if (!evakaGuardians.isEmpty())
+                if (evakaGuardians.size > 1 && evakaGuardians.all { guardian ->
+                    if (guardian.updatedFromVtj != null) guardian.updatedFromVtj.isAfter(Instant.now().minusSeconds(SECONDS_IN_30_DAYS)) else false
+                }
+                )
                     evakaGuardians
                 else
                     getPersonWithGuardians(user, child.identity)
