@@ -31,7 +31,7 @@ import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.domain.ClosedPeriod
+import fi.espoo.evaka.shared.domain.FiniteDateRange
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller
@@ -63,7 +63,7 @@ class UnitsView(private val acl: AccessControlList) {
         val currentUserRoles = acl.getRolesForUnit(user, unitId)
         currentUserRoles.requireOneOfRoles(*basicDataRoles)
 
-        val period = ClosedPeriod(from, to)
+        val period = FiniteDateRange(from, to)
         val unitData = db.read {
             val groups = it.handle.getDaycareGroups(unitId, from, to)
             val placements = it.getDaycarePlacements(unitId, null, from, to).toList()
@@ -131,7 +131,7 @@ data class UnitOccupancies(
 private fun getUnitOccupancies(
     tx: Database.Read,
     unitId: UUID,
-    period: ClosedPeriod
+    period: FiniteDateRange
 ): UnitOccupancies {
     return UnitOccupancies(
         planned = getOccupancyResponse(tx.calculateOccupancyPeriods(unitId, period, OccupancyType.PLANNED)),
@@ -156,7 +156,7 @@ data class GroupOccupancies(
 private fun getGroupOccupancies(
     tx: Database.Read,
     unitId: UUID,
-    period: ClosedPeriod
+    period: FiniteDateRange
 ): GroupOccupancies {
     return GroupOccupancies(
         confirmed = getGroupOccupancyResponses(

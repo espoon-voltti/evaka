@@ -60,10 +60,10 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
-import fi.espoo.evaka.shared.domain.ClosedPeriod
 import fi.espoo.evaka.shared.domain.Coordinate
+import fi.espoo.evaka.shared.domain.DateRange
+import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.NotFound
-import fi.espoo.evaka.shared.domain.Period
 import fi.espoo.evaka.shared.message.MockEvakaMessageClient
 import fi.espoo.evaka.shared.message.SuomiFiMessage
 import fi.espoo.evaka.vtjclient.dto.VtjPerson
@@ -475,7 +475,7 @@ RETURNING id
         db.transaction { tx ->
             val application = fetchApplicationDetails(tx.handle, applicationId)
                 ?: throw NotFound("application $applicationId not found")
-            val preschoolDaycarePeriod = if (placementPlan.preschoolDaycarePeriodStart != null) ClosedPeriod(
+            val preschoolDaycarePeriod = if (placementPlan.preschoolDaycarePeriodStart != null) FiniteDateRange(
                 placementPlan.preschoolDaycarePeriodStart, placementPlan.preschoolDaycarePeriodEnd!!
             ) else null
 
@@ -484,7 +484,7 @@ RETURNING id
                 application,
                 DaycarePlacementPlan(
                     placementPlan.unitId,
-                    ClosedPeriod(placementPlan.periodStart, placementPlan.periodEnd),
+                    FiniteDateRange(placementPlan.periodStart, placementPlan.periodEnd),
                     preschoolDaycarePeriod
                 )
             )
@@ -795,7 +795,7 @@ data class DevBackupCare(
     val childId: UUID,
     val unitId: UUID,
     val groupId: UUID?,
-    val period: ClosedPeriod
+    val period: FiniteDateRange
 )
 
 data class DevChild(
@@ -812,9 +812,9 @@ data class DevDaycare(
     val closingDate: LocalDate? = null,
     val areaId: UUID,
     val type: Set<CareType> = setOf(CareType.CENTRE, CareType.PRESCHOOL, CareType.PREPARATORY_EDUCATION),
-    val daycareApplyPeriod: Period? = Period(LocalDate.of(2020, 3, 1), null),
-    val preschoolApplyPeriod: Period? = Period(LocalDate.of(2020, 3, 1), null),
-    val clubApplyPeriod: Period? = null,
+    val daycareApplyPeriod: DateRange? = DateRange(LocalDate.of(2020, 3, 1), null),
+    val preschoolApplyPeriod: DateRange? = DateRange(LocalDate.of(2020, 3, 1), null),
+    val clubApplyPeriod: DateRange? = null,
     val providerType: ProviderType = ProviderType.MUNICIPAL,
     val capacity: Int = 0,
     val language: Language = Language.fi,

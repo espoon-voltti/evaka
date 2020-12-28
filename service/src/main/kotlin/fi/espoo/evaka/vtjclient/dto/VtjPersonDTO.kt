@@ -5,7 +5,7 @@
 package fi.espoo.evaka.vtjclient.dto
 
 import fi.espoo.evaka.placement.PlacementType
-import fi.espoo.evaka.shared.domain.ClosedPeriod
+import fi.espoo.evaka.shared.domain.FiniteDateRange
 import java.time.LocalDate
 import java.util.UUID
 
@@ -49,6 +49,6 @@ enum class PersonDataSource {
 }
 
 data class Placement(
-    val period: ClosedPeriod,
+    val period: FiniteDateRange,
     val type: PlacementType
 )

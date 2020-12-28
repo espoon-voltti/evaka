@@ -5,6 +5,8 @@
 import { DayOfWeek, UUID } from '~types'
 import { PlacementType } from '~types/placementdraft'
 import LocalDate from '@evaka/lib-common/src/local-date'
+import FiniteDateRange from '@evaka/lib-common/src/finite-date-range'
+import DateRange from '@evaka/lib-common/src/date-range'
 
 export interface CareArea {
   id: UUID
@@ -36,9 +38,9 @@ export interface Unit {
   closingDate: LocalDate | null
   area: CareArea
   type: UnitTypes[]
-  daycareApplyPeriod: OpenEndedPeriod | null
-  preschoolApplyPeriod: OpenEndedPeriod | null
-  clubApplyPeriod: OpenEndedPeriod | null
+  daycareApplyPeriod: DateRange | null
+  preschoolApplyPeriod: DateRange | null
+  clubApplyPeriod: DateRange | null
   providerType: ProviderType
   roundTheClock: boolean
   capacity: number
@@ -121,16 +123,6 @@ interface ChildBasics {
   dateOfBirth: LocalDate
 }
 
-export interface OpenEndedPeriod {
-  start: LocalDate
-  end: LocalDate | null
-}
-
-export interface ClosedPeriod {
-  start: LocalDate
-  end: LocalDate
-}
-
 export type PlacementPlanConfirmationStatus =
   | 'PENDING'
   | 'ACCEPTED'
@@ -143,8 +135,8 @@ export interface DaycarePlacementPlan {
   unitId: UUID
   applicationId: UUID
   type: PlacementType
-  period: ClosedPeriod
-  preschoolDaycarePeriod: ClosedPeriod | null
+  period: FiniteDateRange
+  preschoolDaycarePeriod: FiniteDateRange | null
   child: ChildBasics
   unitConfirmationStatus: PlacementPlanConfirmationStatus
   unitRejectReason: PlacementPlanRejectReason | null
@@ -214,10 +206,7 @@ export interface DaycareCapacityStats {
 export type OccupancyType = 'CONFIRMED' | 'PLANNED' | 'REALIZED'
 
 export interface Occupancy {
-  period: {
-    start: LocalDate
-    end: LocalDate
-  }
+  period: FiniteDateRange
   sum: number
   headcount: number
   caretakers?: number

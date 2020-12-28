@@ -10,9 +10,9 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.fasterxml.jackson.module.paramnames.ParameterNamesModule
 import fi.espoo.evaka.identity.ExternalId
-import fi.espoo.evaka.shared.domain.ClosedPeriod
 import fi.espoo.evaka.shared.domain.Coordinate
-import fi.espoo.evaka.shared.domain.Period
+import fi.espoo.evaka.shared.domain.DateRange
+import fi.espoo.evaka.shared.domain.FiniteDateRange
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.Jdbi
 import org.jdbi.v3.core.generic.GenericType
@@ -72,13 +72,13 @@ fun configureJdbi(jdbi: Jdbi): Jdbi {
         .registerModule(Jdk8Module())
         .registerModule(ParameterNamesModule())
         .registerModule(KotlinModule())
-    jdbi.registerArgument(closedPeriodArgumentFactory)
-    jdbi.registerArgument(periodArgumentFactory)
+    jdbi.registerArgument(finiteDateRangeArgumentFactory)
+    jdbi.registerArgument(dateRangeArgumentFactory)
     jdbi.registerArgument(coordinateArgumentFactory)
     jdbi.registerArgument(identityArgumentFactory)
     jdbi.registerArgument(externalIdArgumentFactory)
-    jdbi.registerColumnMapper(ClosedPeriod::class.java, closedPeriodColumnMapper)
-    jdbi.registerColumnMapper(Period::class.java, periodColumnMapper)
+    jdbi.registerColumnMapper(FiniteDateRange::class.java, finiteDateRangeColumnMapper)
+    jdbi.registerColumnMapper(DateRange::class.java, dateRangeColumnMapper)
     jdbi.registerColumnMapper(Coordinate::class.java, coordinateColumnMapper)
     jdbi.registerColumnMapper(ExternalId::class.java, externalIdColumnMapper)
     jdbi.registerArrayType(UUID::class.java, "uuid")

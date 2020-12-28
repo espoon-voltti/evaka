@@ -8,14 +8,14 @@ import fi.espoo.evaka.daycare.service.DaycareGroup
 import fi.espoo.evaka.shared.db.PGConstants
 import fi.espoo.evaka.shared.db.PGConstants.maxDate
 import fi.espoo.evaka.shared.db.bindNullable
-import fi.espoo.evaka.shared.domain.ClosedPeriod
+import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.NotFound
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.mapTo
 import java.time.LocalDate
 import java.util.UUID
 
-private fun Handle.createDaycareGroupQuery(groupId: UUID?, daycareId: UUID?, period: ClosedPeriod?) = createQuery(
+private fun Handle.createDaycareGroupQuery(groupId: UUID?, daycareId: UUID?, period: FiniteDateRange?) = createQuery(
     // language=SQL
     """
 SELECT
@@ -69,7 +69,7 @@ fun Handle.getDaycareGroups(daycareId: UUID, startDate: LocalDate?, endDate: Loc
     createDaycareGroupQuery(
         groupId = null,
         daycareId = daycareId,
-        period = ClosedPeriod(startDate ?: LocalDate.of(2000, 1, 1), endDate ?: maxDate)
+        period = FiniteDateRange(startDate ?: LocalDate.of(2000, 1, 1), endDate ?: maxDate)
     )
         .mapTo<DaycareGroup>()
         .asSequence()

@@ -34,6 +34,7 @@ import ReactSelect, { createFilter, components } from 'react-select'
 import styled from 'styled-components'
 import { ChildBackupCare } from '~types/child'
 import { FixedSpaceRow } from '@evaka/lib-components/src/layout/flex-helpers'
+import FiniteDateRange from '@evaka/lib-common/src/finite-date-range'
 
 export interface Props {
   childId: UUID
@@ -136,16 +137,10 @@ export default function BackupCareForm({
       backupCare == undefined
         ? createBackupCare(childId, {
             unitId: formState.unit.value,
-            period: {
-              start: formState.startDate,
-              end: formState.endDate
-            }
+            period: new FiniteDateRange(formState.startDate, formState.endDate)
           })
         : updateBackupCare(backupCare.id, {
-            period: {
-              start: formState.startDate,
-              end: formState.endDate
-            }
+            period: new FiniteDateRange(formState.startDate, formState.endDate)
           })
 
     void apiCall

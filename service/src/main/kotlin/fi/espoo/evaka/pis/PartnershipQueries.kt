@@ -9,7 +9,7 @@ import fi.espoo.evaka.pis.service.Partnership
 import fi.espoo.evaka.shared.db.PGConstants
 import fi.espoo.evaka.shared.db.bindNullable
 import fi.espoo.evaka.shared.db.getUUID
-import fi.espoo.evaka.shared.domain.Period
+import fi.espoo.evaka.shared.domain.DateRange
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.mapTo
 import org.jdbi.v3.core.statement.StatementContext
@@ -67,7 +67,7 @@ fun Handle.getPartnershipsForPerson(personId: UUID, includeConflicts: Boolean = 
         .toList()
 }
 
-fun Handle.getPartnersForPerson(personId: UUID, includeConflicts: Boolean, period: Period? = null): List<Partner> {
+fun Handle.getPartnersForPerson(personId: UUID, includeConflicts: Boolean, period: DateRange? = null): List<Partner> {
     // language=SQL
     val sql =
         """

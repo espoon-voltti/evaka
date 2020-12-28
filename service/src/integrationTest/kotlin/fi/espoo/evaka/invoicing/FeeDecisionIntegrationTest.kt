@@ -25,7 +25,7 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.db.handle
-import fi.espoo.evaka.shared.domain.Period
+import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_2
 import fi.espoo.evaka.testAdult_3
@@ -56,7 +56,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
             status = FeeDecisionStatus.DRAFT,
             decisionType = FeeDecisionType.NORMAL,
             headOfFamilyId = testAdult_1.id,
-            period = Period(LocalDate.of(2018, 5, 1), LocalDate.of(2018, 5, 31)),
+            period = DateRange(LocalDate.of(2018, 5, 1), LocalDate.of(2018, 5, 31)),
             parts = listOf(
                 createFeeDecisionPartFixture(
                     childId = testChild_1.id,
@@ -78,7 +78,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
             status = FeeDecisionStatus.SENT,
             decisionType = FeeDecisionType.NORMAL,
             headOfFamilyId = testAdult_1.id,
-            period = Period(LocalDate.of(2019, 5, 1), LocalDate.of(2019, 5, 31)),
+            period = DateRange(LocalDate.of(2019, 5, 1), LocalDate.of(2019, 5, 31)),
             parts = listOf(
                 createFeeDecisionPartFixture(
                     childId = testChild_2.id,
@@ -91,7 +91,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
             status = FeeDecisionStatus.SENT,
             decisionType = FeeDecisionType.NORMAL,
             headOfFamilyId = testAdult_2.id,
-            period = Period(LocalDate.of(2019, 5, 1), LocalDate.of(2019, 5, 31)),
+            period = DateRange(LocalDate.of(2019, 5, 1), LocalDate.of(2019, 5, 31)),
             parts = listOf(
                 createFeeDecisionPartFixture(
                     childId = testChild_1.id,
@@ -104,7 +104,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
             status = FeeDecisionStatus.DRAFT,
             decisionType = FeeDecisionType.NORMAL,
             headOfFamilyId = testAdult_3.id,
-            period = Period(LocalDate.of(2015, 5, 1), LocalDate.of(2015, 5, 31)),
+            period = DateRange(LocalDate.of(2015, 5, 1), LocalDate.of(2015, 5, 31)),
             parts = listOf(
                 createFeeDecisionPartFixture(
                     childId = testChild_3.id,
@@ -117,7 +117,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
             status = FeeDecisionStatus.DRAFT,
             decisionType = FeeDecisionType.NORMAL,
             headOfFamilyId = testAdult_3.id,
-            period = Period(LocalDate.of(2016, 5, 1), LocalDate.of(2016, 5, 31)),
+            period = DateRange(LocalDate.of(2016, 5, 1), LocalDate.of(2016, 5, 31)),
             parts = listOf(
                 createFeeDecisionPartFixture(
                     childId = testChild_4.id,
@@ -130,7 +130,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
             status = FeeDecisionStatus.DRAFT,
             decisionType = FeeDecisionType.RELIEF_ACCEPTED,
             headOfFamilyId = testAdult_3.id,
-            period = Period(LocalDate.of(2017, 5, 1), LocalDate.of(2017, 5, 31)),
+            period = DateRange(LocalDate.of(2017, 5, 1), LocalDate.of(2017, 5, 31)),
             parts = listOf(
                 createFeeDecisionPartFixture(
                     childId = testChild_4.id,
@@ -143,7 +143,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
             status = FeeDecisionStatus.DRAFT,
             decisionType = FeeDecisionType.RELIEF_PARTLY_ACCEPTED,
             headOfFamilyId = testAdult_3.id,
-            period = Period(LocalDate.of(2018, 5, 1), LocalDate.of(2018, 5, 31)),
+            period = DateRange(LocalDate.of(2018, 5, 1), LocalDate.of(2018, 5, 31)),
             parts = listOf(
                 createFeeDecisionPartFixture(
                     childId = testChild_4.id,
@@ -156,7 +156,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
             status = FeeDecisionStatus.DRAFT,
             decisionType = FeeDecisionType.RELIEF_REJECTED,
             headOfFamilyId = testAdult_3.id,
-            period = Period(LocalDate.of(2019, 5, 1), LocalDate.of(2019, 5, 31)),
+            period = DateRange(LocalDate.of(2019, 5, 1), LocalDate.of(2019, 5, 31)),
             parts = listOf(
                 createFeeDecisionPartFixture(
                     childId = testChild_4.id,

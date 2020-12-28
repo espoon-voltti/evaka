@@ -7,7 +7,7 @@ import { Failure, Result, Success } from '~api/index'
 import { ChildBackupCare, UnitBackupCare } from '~types/child'
 import { client } from '~api/client'
 import { JsonOf } from '@evaka/lib-common/src/json'
-import LocalDate from '@evaka/lib-common/src/local-date'
+import FiniteDateRange from '@evaka/lib-common/src/finite-date-range'
 
 interface BackupCaresResponse<T extends ChildBackupCare | UnitBackupCare> {
   backupCares: T[]
@@ -24,10 +24,7 @@ export async function getChildBackupCares(
       Success.of(
         res.data.backupCares.map((x) => ({
           ...x,
-          period: {
-            start: LocalDate.parseIso(x.period.start),
-            end: LocalDate.parseIso(x.period.end)
-          }
+          period: FiniteDateRange.parseJson(x.period)
         }))
       )
     )
@@ -37,10 +34,7 @@ export async function getChildBackupCares(
 interface NewBackupCare {
   unitId: UUID
   groupId?: UUID
-  period: {
-    start: LocalDate
-    end: LocalDate
-  }
+  period: FiniteDateRange
 }
 
 interface BackupCareCreateResponse {
@@ -61,10 +55,7 @@ export async function createBackupCare(
 }
 
 interface BackupCareUpdateRequest {
-  period: {
-    start: LocalDate
-    end: LocalDate
-  }
+  period: FiniteDateRange
   groupId?: UUID
 }
 

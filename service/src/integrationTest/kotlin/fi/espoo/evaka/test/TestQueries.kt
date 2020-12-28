@@ -8,7 +8,7 @@ import fi.espoo.evaka.application.ApplicationStatus
 import fi.espoo.evaka.decision.DecisionStatus
 import fi.espoo.evaka.decision.DecisionType
 import fi.espoo.evaka.placement.PlacementType
-import fi.espoo.evaka.shared.domain.ClosedPeriod
+import fi.espoo.evaka.shared.domain.FiniteDateRange
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.mapTo
 import java.time.Instant
@@ -42,7 +42,7 @@ data class DecisionTableRow(
     val resolved: Instant?,
     val resolvedBy: UUID?
 ) {
-    fun period() = ClosedPeriod(startDate, endDate)
+    fun period() = FiniteDateRange(startDate, endDate)
 }
 
 fun getDecisionRowsByApplication(h: Handle, applicationId: UUID) = h.createQuery(
@@ -63,7 +63,7 @@ data class PlacementTableRow(
     val startDate: LocalDate,
     val endDate: LocalDate
 ) {
-    fun period() = ClosedPeriod(startDate, endDate)
+    fun period() = FiniteDateRange(startDate, endDate)
 }
 
 fun getPlacementRowsByChild(h: Handle, childId: UUID) = h.createQuery(
@@ -84,9 +84,9 @@ data class PlacementPlanTableRow(
     val preparatoryEndDate: LocalDate?,
     val deleted: Boolean
 ) {
-    fun period() = ClosedPeriod(startDate, endDate)
+    fun period() = FiniteDateRange(startDate, endDate)
     fun preschoolDaycarePeriod() =
-        if (preschoolDaycareStartDate != null && preschoolDaycareEndDate != null) ClosedPeriod(
+        if (preschoolDaycareStartDate != null && preschoolDaycareEndDate != null) FiniteDateRange(
             preschoolDaycareStartDate,
             preschoolDaycareEndDate
         ) else null
@@ -105,7 +105,7 @@ data class BackupCareTableRow(
     val startDate: LocalDate,
     val endDate: LocalDate
 ) {
-    fun period() = ClosedPeriod(startDate, endDate)
+    fun period() = FiniteDateRange(startDate, endDate)
 }
 
 fun getBackupCareRowById(h: Handle, id: UUID) = h.createQuery(

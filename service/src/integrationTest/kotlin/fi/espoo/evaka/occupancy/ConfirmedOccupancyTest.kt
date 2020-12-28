@@ -23,7 +23,7 @@ import fi.espoo.evaka.shared.dev.insertTestCaretakers
 import fi.espoo.evaka.shared.dev.insertTestDaycare
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroupPlacement
-import fi.espoo.evaka.shared.domain.ClosedPeriod
+import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.testAreaId
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDaycare2
@@ -47,7 +47,7 @@ class ConfirmedOccupancyTest : FullApplicationTest() {
         jdbi.handle(::resetDatabase)
     }
 
-    private val defaultPeriod = ClosedPeriod(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
+    private val defaultPeriod = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
 
     @Test
     fun `confirmed occupancy calculation does not break when there are no children placed into a unit`() {
@@ -448,11 +448,11 @@ class ConfirmedOccupancyTest : FullApplicationTest() {
     @Test
     fun `occupancy calculation splits partially overlapping coefficients`() {
         val periods = listOf(
-            ClosedPeriod(defaultPeriod.start, LocalDate.of(2019, 6, 30)),
-            ClosedPeriod(LocalDate.of(2019, 2, 1), LocalDate.of(2019, 2, 28)),
-            ClosedPeriod(LocalDate.of(2019, 2, 15), LocalDate.of(2019, 5, 31)),
-            ClosedPeriod(LocalDate.of(2019, 5, 31), LocalDate.of(2019, 9, 1)),
-            ClosedPeriod(LocalDate.of(2019, 9, 1), defaultPeriod.end)
+            FiniteDateRange(defaultPeriod.start, LocalDate.of(2019, 6, 30)),
+            FiniteDateRange(LocalDate.of(2019, 2, 1), LocalDate.of(2019, 2, 28)),
+            FiniteDateRange(LocalDate.of(2019, 2, 15), LocalDate.of(2019, 5, 31)),
+            FiniteDateRange(LocalDate.of(2019, 5, 31), LocalDate.of(2019, 9, 1)),
+            FiniteDateRange(LocalDate.of(2019, 9, 1), defaultPeriod.end)
         )
 
         periods
@@ -466,15 +466,15 @@ class ConfirmedOccupancyTest : FullApplicationTest() {
 
         assertEquals(
             listOf(
-                OccupancyPeriod(ClosedPeriod(defaultPeriod.start, LocalDate.of(2019, 1, 31)), 1.0, 1),
-                OccupancyPeriod(ClosedPeriod(LocalDate.of(2019, 2, 1), LocalDate.of(2019, 2, 14)), 2.0, 2),
-                OccupancyPeriod(ClosedPeriod(LocalDate.of(2019, 2, 15), LocalDate.of(2019, 2, 28)), 3.0, 3),
-                OccupancyPeriod(ClosedPeriod(LocalDate.of(2019, 3, 1), LocalDate.of(2019, 5, 30)), 2.0, 2),
-                OccupancyPeriod(ClosedPeriod(LocalDate.of(2019, 5, 31), LocalDate.of(2019, 5, 31)), 3.0, 3),
-                OccupancyPeriod(ClosedPeriod(LocalDate.of(2019, 6, 1), LocalDate.of(2019, 6, 30)), 2.0, 2),
-                OccupancyPeriod(ClosedPeriod(LocalDate.of(2019, 7, 1), LocalDate.of(2019, 8, 31)), 1.0, 1),
-                OccupancyPeriod(ClosedPeriod(LocalDate.of(2019, 9, 1), LocalDate.of(2019, 9, 1)), 2.0, 2),
-                OccupancyPeriod(ClosedPeriod(LocalDate.of(2019, 9, 2), defaultPeriod.end), 1.0, 1)
+                OccupancyPeriod(FiniteDateRange(defaultPeriod.start, LocalDate.of(2019, 1, 31)), 1.0, 1),
+                OccupancyPeriod(FiniteDateRange(LocalDate.of(2019, 2, 1), LocalDate.of(2019, 2, 14)), 2.0, 2),
+                OccupancyPeriod(FiniteDateRange(LocalDate.of(2019, 2, 15), LocalDate.of(2019, 2, 28)), 3.0, 3),
+                OccupancyPeriod(FiniteDateRange(LocalDate.of(2019, 3, 1), LocalDate.of(2019, 5, 30)), 2.0, 2),
+                OccupancyPeriod(FiniteDateRange(LocalDate.of(2019, 5, 31), LocalDate.of(2019, 5, 31)), 3.0, 3),
+                OccupancyPeriod(FiniteDateRange(LocalDate.of(2019, 6, 1), LocalDate.of(2019, 6, 30)), 2.0, 2),
+                OccupancyPeriod(FiniteDateRange(LocalDate.of(2019, 7, 1), LocalDate.of(2019, 8, 31)), 1.0, 1),
+                OccupancyPeriod(FiniteDateRange(LocalDate.of(2019, 9, 1), LocalDate.of(2019, 9, 1)), 2.0, 2),
+                OccupancyPeriod(FiniteDateRange(LocalDate.of(2019, 9, 2), defaultPeriod.end), 1.0, 1)
             ),
             result
         )
@@ -588,7 +588,7 @@ class ConfirmedOccupancyTest : FullApplicationTest() {
 
     private val testUser = AuthenticatedUser(testDecisionMaker_1.id, setOf(UserRole.SERVICE_WORKER))
 
-    private fun fetchAndParseOccupancy(unitId: UUID, period: ClosedPeriod): List<OccupancyPeriod> {
+    private fun fetchAndParseOccupancy(unitId: UUID, period: FiniteDateRange): List<OccupancyPeriod> {
         val (_, response, result) = http
             .get("/occupancy/by-unit/$unitId?from=${period.start}&to=${period.end}&type=CONFIRMED")
             .asUser(testUser)
@@ -598,7 +598,7 @@ class ConfirmedOccupancyTest : FullApplicationTest() {
         return objectMapper.readValue<OccupancyResponse>(result.get()).occupancies
     }
 
-    private fun fetchAndParseOccupancyByGroups(unitId: UUID, period: ClosedPeriod): List<OccupancyResponseGroupLevel> {
+    private fun fetchAndParseOccupancyByGroups(unitId: UUID, period: FiniteDateRange): List<OccupancyResponseGroupLevel> {
         val (_, response, result) = http
             .get("/occupancy/by-unit/$unitId/groups?from=${period.start}&to=${period.end}&type=CONFIRMED")
             .asUser(testUser)

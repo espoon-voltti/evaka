@@ -24,7 +24,7 @@ import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.dev.insertTestApplication
 import fi.espoo.evaka.shared.dev.insertTestApplicationForm
-import fi.espoo.evaka.shared.domain.ClosedPeriod
+import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.test.getApplicationStatus
 import fi.espoo.evaka.test.getPlacementPlanRowByApplication
 import fi.espoo.evaka.testAdult_1
@@ -66,7 +66,7 @@ class PlacementPlanIntegrationTest : FullApplicationTest() {
         checkPlacementPlanDraft(
             applicationId,
             type = PlacementType.DAYCARE,
-            period = ClosedPeriod(preferredStartDate, defaultEndDate)
+            period = FiniteDateRange(preferredStartDate, defaultEndDate)
         )
         createPlacementPlanAndAssert(
             h,
@@ -74,7 +74,7 @@ class PlacementPlanIntegrationTest : FullApplicationTest() {
             PlacementType.DAYCARE,
             DaycarePlacementPlan(
                 unitId = testDaycare.id,
-                period = ClosedPeriod(preferredStartDate.plusDays(1), defaultEndDate.minusDays(1))
+                period = FiniteDateRange(preferredStartDate.plusDays(1), defaultEndDate.minusDays(1))
             )
         )
     }
@@ -93,7 +93,7 @@ class PlacementPlanIntegrationTest : FullApplicationTest() {
         checkPlacementPlanDraft(
             applicationId,
             type = PlacementType.DAYCARE_PART_TIME,
-            period = ClosedPeriod(preferredStartDate, defaultEndDate)
+            period = FiniteDateRange(preferredStartDate, defaultEndDate)
         )
         createPlacementPlanAndAssert(
             h,
@@ -101,7 +101,7 @@ class PlacementPlanIntegrationTest : FullApplicationTest() {
             PlacementType.DAYCARE_PART_TIME,
             DaycarePlacementPlan(
                 unitId = testDaycare.id,
-                period = ClosedPeriod(preferredStartDate.plusDays(1), defaultEndDate.minusDays(1))
+                period = FiniteDateRange(preferredStartDate.plusDays(1), defaultEndDate.minusDays(1))
             )
         )
     }
@@ -119,7 +119,7 @@ class PlacementPlanIntegrationTest : FullApplicationTest() {
         checkPlacementPlanDraft(
             applicationId,
             type = PlacementType.PRESCHOOL,
-            period = ClosedPeriod(preferredStartDate, defaultEndDate)
+            period = FiniteDateRange(preferredStartDate, defaultEndDate)
         )
         createPlacementPlanAndAssert(
             h,
@@ -127,7 +127,7 @@ class PlacementPlanIntegrationTest : FullApplicationTest() {
             PlacementType.PRESCHOOL,
             DaycarePlacementPlan(
                 unitId = testDaycare.id,
-                period = ClosedPeriod(preferredStartDate.plusDays(1), defaultEndDate.minusDays(1))
+                period = FiniteDateRange(preferredStartDate.plusDays(1), defaultEndDate.minusDays(1))
             )
         )
     }
@@ -147,8 +147,8 @@ class PlacementPlanIntegrationTest : FullApplicationTest() {
         checkPlacementPlanDraft(
             applicationId,
             type = PlacementType.PRESCHOOL_DAYCARE,
-            period = ClosedPeriod(preferredStartDate, defaultEndDate),
-            preschoolDaycarePeriod = ClosedPeriod(preferredStartDate, defaultDaycareEndDate)
+            period = FiniteDateRange(preferredStartDate, defaultEndDate),
+            preschoolDaycarePeriod = FiniteDateRange(preferredStartDate, defaultDaycareEndDate)
         )
         createPlacementPlanAndAssert(
             h,
@@ -156,8 +156,8 @@ class PlacementPlanIntegrationTest : FullApplicationTest() {
             PlacementType.PRESCHOOL_DAYCARE,
             DaycarePlacementPlan(
                 unitId = testDaycare.id,
-                period = ClosedPeriod(preferredStartDate.plusDays(1), defaultEndDate.minusDays(1)),
-                preschoolDaycarePeriod = ClosedPeriod(
+                period = FiniteDateRange(preferredStartDate.plusDays(1), defaultEndDate.minusDays(1)),
+                preschoolDaycarePeriod = FiniteDateRange(
                     preferredStartDate.minusDays(1),
                     defaultDaycareEndDate.plusDays(1)
                 )
@@ -179,7 +179,7 @@ class PlacementPlanIntegrationTest : FullApplicationTest() {
         checkPlacementPlanDraft(
             applicationId,
             type = PlacementType.PREPARATORY,
-            period = ClosedPeriod(preferredStartDate, defaultEndDate)
+            period = FiniteDateRange(preferredStartDate, defaultEndDate)
         )
         createPlacementPlanAndAssert(
             h,
@@ -187,7 +187,7 @@ class PlacementPlanIntegrationTest : FullApplicationTest() {
             PlacementType.PREPARATORY,
             DaycarePlacementPlan(
                 unitId = testDaycare.id,
-                period = ClosedPeriod(preferredStartDate.plusDays(1), defaultEndDate.minusDays(1))
+                period = FiniteDateRange(preferredStartDate.plusDays(1), defaultEndDate.minusDays(1))
             )
         )
     }
@@ -216,7 +216,7 @@ class PlacementPlanIntegrationTest : FullApplicationTest() {
         }
         val proposal = DaycarePlacementPlan(
             unitId = testDaycare.id,
-            period = ClosedPeriod(LocalDate.of(2020, 3, 17), LocalDate.of(2020, 6, 1))
+            period = FiniteDateRange(LocalDate.of(2020, 3, 17), LocalDate.of(2020, 6, 1))
         )
         invalidRoleLists.forEach { roles ->
             val (_, res, _) = http.post("/v2/applications/$applicationId/actions/create-placement-plan")
@@ -232,8 +232,8 @@ class PlacementPlanIntegrationTest : FullApplicationTest() {
         type: PlacementType,
         child: PersonData.Detailed = testChild_1,
         preferredUnits: List<UnitData.Detailed> = listOf(testDaycare, testDaycare2),
-        period: ClosedPeriod,
-        preschoolDaycarePeriod: ClosedPeriod? = null,
+        period: FiniteDateRange,
+        preschoolDaycarePeriod: FiniteDateRange? = null,
         placements: List<PlacementDraftPlacement> = emptyList()
     ) {
         val (_, _, body) = http.get("/v2/applications/$applicationId/placement-draft")

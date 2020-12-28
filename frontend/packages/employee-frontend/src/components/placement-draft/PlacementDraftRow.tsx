@@ -6,20 +6,19 @@ import React from 'react'
 import styled from 'styled-components'
 import { faExclamationTriangle } from '@evaka/lib-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { areIntervalsOverlapping } from 'date-fns'
 import LocalDate from '@evaka/lib-common/src/local-date'
 import Title from '@evaka/lib-components/src/atoms/Title'
 
 import { useTranslation } from '~state/i18n'
 import { DatePicker } from '~components/common/DatePicker'
 import {
-  Period,
   DaycarePlacementPlan,
   PlacementType,
   PlacementDraft,
   PlacementDraftPlacement
 } from '~types/placementdraft'
 import { EspooColours } from '~utils/colours'
+import FiniteDateRange from '@evaka/lib-common/src/finite-date-range'
 
 const DateRow = styled.div`
   display: flex;
@@ -96,21 +95,14 @@ function PlacementDraftSection({
   const { i18n } = useTranslation()
 
   function hasOverlap(
-    period: Period,
+    dateRange: FiniteDateRange,
     oldPlacements: PlacementDraftPlacement[]
   ) {
-    return !!oldPlacements.find((placement: PlacementDraftPlacement) => {
-      return areIntervalsOverlapping(
-        {
-          start: placement.startDate.toSystemTzDate(),
-          end: placement.endDate.toSystemTzDate()
-        },
-        {
-          start: period.start.toSystemTzDate(),
-          end: period.end.toSystemTzDate()
-        }
+    return !!oldPlacements.find((placement: PlacementDraftPlacement) =>
+      dateRange.overlaps(
+        new FiniteDateRange(placement.startDate, placement.endDate)
       )
-    })
+    )
   }
 
   function dateRowLabel(type: PlacementType) {

@@ -5,7 +5,7 @@
 package fi.espoo.evaka.invoicing.domain
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
-import fi.espoo.evaka.shared.domain.Period
+import fi.espoo.evaka.shared.domain.DateRange
 import java.time.LocalDate
 import java.util.UUID
 
@@ -93,5 +93,5 @@ data class FridgeFamily(
     val headOfFamily: PersonData.JustId,
     val partner: PersonData.JustId?,
     val children: List<PersonData.WithDateOfBirth>,
-    val period: Period
+    val period: DateRange
 )

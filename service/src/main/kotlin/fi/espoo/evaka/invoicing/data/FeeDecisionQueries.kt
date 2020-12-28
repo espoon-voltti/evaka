@@ -27,7 +27,7 @@ import fi.espoo.evaka.invoicing.domain.merge
 import fi.espoo.evaka.shared.db.disjointNumberQuery
 import fi.espoo.evaka.shared.db.freeTextSearchQuery
 import fi.espoo.evaka.shared.db.getEnum
-import fi.espoo.evaka.shared.domain.Period
+import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.utils.splitSearchText
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.statement.StatementContext
@@ -477,7 +477,7 @@ fun findFeeDecisionsForHeadOfFamily(
     h: Handle,
     mapper: ObjectMapper,
     headOfFamilyId: UUID,
-    period: Period?,
+    period: DateRange?,
     status: List<FeeDecisionStatus>?
 ): List<FeeDecision> {
     val sql =

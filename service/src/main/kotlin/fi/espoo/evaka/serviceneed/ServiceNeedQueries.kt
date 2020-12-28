@@ -5,8 +5,8 @@
 package fi.espoo.evaka.serviceneed
 
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
+import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.NotFound
-import fi.espoo.evaka.shared.domain.Period
 import org.jdbi.v3.core.Handle
 import java.time.LocalDate
 import java.util.UUID
@@ -85,7 +85,7 @@ fun getServiceNeedsByChildDuringPeriod(h: Handle, childId: UUID, startDate: Loca
         """.trimIndent()
     return h.createQuery(sql)
         .bind("childId", childId)
-        .bind("period", Period(startDate, endDate))
+        .bind("period", DateRange(startDate, endDate))
         .mapTo(ServiceNeed::class.java)
         .list()
 }

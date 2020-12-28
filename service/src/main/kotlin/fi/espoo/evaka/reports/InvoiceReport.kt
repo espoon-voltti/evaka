@@ -13,7 +13,7 @@ import fi.espoo.evaka.invoicing.domain.addressUsable
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.domain.Period
+import fi.espoo.evaka.shared.domain.DateRange
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
@@ -22,10 +22,10 @@ import org.springframework.web.bind.annotation.RestController
 import java.time.LocalDate
 import java.time.temporal.TemporalAdjusters
 
-internal fun getMonthPeriod(date: LocalDate): Period {
+internal fun getMonthPeriod(date: LocalDate): DateRange {
     val from = date.with(TemporalAdjusters.firstDayOfMonth())
     val to = date.with(TemporalAdjusters.lastDayOfMonth())
-    return Period(from, to)
+    return DateRange(from, to)
 }
 
 @RestController
@@ -46,7 +46,7 @@ class InvoiceReportController {
     }
 }
 
-private fun Database.Read.getInvoiceReportWithRows(period: Period): InvoiceReport {
+private fun Database.Read.getInvoiceReportWithRows(period: DateRange): InvoiceReport {
     val invoices = searchInvoices(
         handle,
         statuses = listOf(InvoiceStatus.SENT),

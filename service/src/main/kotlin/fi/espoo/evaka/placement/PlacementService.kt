@@ -10,8 +10,8 @@ import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapPSQLException
 import fi.espoo.evaka.shared.domain.BadRequest
-import fi.espoo.evaka.shared.domain.ClosedPeriod
 import fi.espoo.evaka.shared.domain.Conflict
+import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.NotFound
 import org.springframework.stereotype.Service
 import java.time.LocalDate
@@ -307,12 +307,12 @@ data class MissingGroupPlacement(
     val placementId: UUID,
     val placementType: PlacementType?, // null for backup care
     val backup: Boolean,
-    val placementPeriod: ClosedPeriod,
+    val placementPeriod: FiniteDateRange,
     val childId: UUID,
     val firstName: String?,
     val lastName: String?,
     val dateOfBirth: LocalDate,
-    val gap: ClosedPeriod
+    val gap: FiniteDateRange
 )
 
 data class ChildBasics(

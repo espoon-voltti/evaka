@@ -32,7 +32,6 @@ import { Loading, Result, Success } from '~api'
 import { getApplicationUnits } from '~api/daycare'
 import { formatName } from '~/utils'
 import {
-  Period,
   PlacementDraft,
   PlacementDraftPlacement,
   DaycarePlacementPlan
@@ -40,9 +39,9 @@ import {
 import UnitCards from './UnitCards'
 import PlacementDraftRow from './PlacementDraftRow'
 import Placements from './Placements'
-import { areIntervalsOverlapping } from 'date-fns'
 import { TitleContext, TitleState } from '~state/title'
 import { getPlacementDraft, createPlacementPlan } from 'api/applications'
+import FiniteDateRange from '@evaka/lib-common/src/finite-date-range'
 
 const ContainerNarrow = styled(Container)`
   max-width: 990px;
@@ -93,15 +92,6 @@ const SelectContainer = styled.div`
   max-width: 400px;
 `
 
-const periodsOverlap = (period1: Period, period2: Period) =>
-  areIntervalsOverlapping(
-    {
-      start: period1.start.toSystemTzDate(),
-      end: period1.end.toSystemTzDate()
-    },
-    { start: period2.start.toSystemTzDate(), end: period2.end.toSystemTzDate() }
-  )
-
 function PlacementDraft({ match }: RouteComponentProps<{ id: UUID }>) {
   const { id } = match.params
   const { i18n } = useTranslation()
@@ -137,22 +127,16 @@ function PlacementDraft({ match }: RouteComponentProps<{ id: UUID }>) {
 
   function hasOverlap(
     placement: PlacementDraftPlacement,
-    placementDraft: Success<PlacementDraft>
+    { value: { period, preschoolDaycarePeriod } }: Success<PlacementDraft>
   ) {
-    const periodOverlap = periodsOverlap(
-      { start: placement.startDate, end: placement.endDate },
-      placementDraft.value.period
+    const placementDateRange = new FiniteDateRange(
+      placement.startDate,
+      placement.endDate
     )
-
-    let preschoolDaycarePeriod = false
-    if (placementDraft.value.preschoolDaycarePeriod) {
-      preschoolDaycarePeriod = periodsOverlap(
-        { start: placement.startDate, end: placement.endDate },
-        placementDraft.value.preschoolDaycarePeriod
-      )
-    }
-
-    return periodOverlap || preschoolDaycarePeriod
+    return (
+      period.overlaps(placementDateRange) ||
+      (preschoolDaycarePeriod?.overlaps(placementDateRange) ?? false)
+    )
   }
 
   function calculateOverLaps(placementDraft: Result<PlacementDraft>) {
@@ -225,22 +209,20 @@ function PlacementDraft({ match }: RouteComponentProps<{ id: UUID }>) {
   ) {
     if (placementDraft.isSuccess) {
       const period = placementDraft.value[periodType]
+      if (!period) return period
       if (dateType === 'start') {
-        if (period?.end && period.end.isBefore(date)) {
+        if (period.end && period.end.isBefore(date)) {
           const nextDay = date.addDays(1)
-          period.start = date
-          period.end = nextDay
+          return new FiniteDateRange(date, nextDay)
         } else {
-          if (period?.start) period.start = date
+          return new FiniteDateRange(date, period.end)
         }
-      } else if (period?.start && date.isBefore(period.start)) {
+      } else if (period.start && date.isBefore(period.start)) {
         const previousDay = date.subDays(1)
-        period.end = date
-        period.start = previousDay
+        return new FiniteDateRange(previousDay, date)
       } else {
-        if (period?.end) period.end = date
+        return new FiniteDateRange(period.start, date)
       }
-      return period
     }
     return null
   }

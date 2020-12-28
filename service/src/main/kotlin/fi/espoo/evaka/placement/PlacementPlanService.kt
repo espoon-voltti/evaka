@@ -13,7 +13,7 @@ import fi.espoo.evaka.derivePreschoolTerm
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.NotifyPlacementPlanApplied
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.domain.ClosedPeriod
+import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.NotFound
 import org.springframework.stereotype.Service
 import java.time.LocalDate
@@ -46,9 +46,9 @@ class PlacementPlanService(
         when (application.type) {
             ApplicationType.PRESCHOOL -> {
                 val term = derivePreschoolTerm(startDate)
-                val period = ClosedPeriod(startDate, term.end)
+                val period = FiniteDateRange(startDate, term.end)
                 val preschoolDaycarePeriod = if (type == PlacementType.PRESCHOOL_DAYCARE || type == PlacementType.PREPARATORY_DAYCARE) {
-                    ClosedPeriod(startDate, LocalDate.of(term.end.year, 7, 31))
+                    FiniteDateRange(startDate, LocalDate.of(term.end.year, 7, 31))
                 } else null
 
                 return PlacementPlanDraft(
@@ -67,7 +67,7 @@ class PlacementPlanService(
                 else
                     LocalDate.of(startDate.year, 7, 31)
                 val period =
-                    ClosedPeriod(startDate, if (endFromBirthDate < startDate) endFromStartDate else endFromBirthDate)
+                    FiniteDateRange(startDate, if (endFromBirthDate < startDate) endFromStartDate else endFromBirthDate)
                 return PlacementPlanDraft(
                     child = child,
                     type = type,
@@ -79,7 +79,7 @@ class PlacementPlanService(
             }
             ApplicationType.CLUB -> {
                 val term = deriveClubTerm(startDate)
-                val period = ClosedPeriod(startDate, term.end)
+                val period = FiniteDateRange(startDate, term.end)
                 return PlacementPlanDraft(
                     child = child,
                     type = type,
@@ -107,7 +107,7 @@ class PlacementPlanService(
         allowPreschoolDaycare: Boolean = false,
         requestedStartDate: LocalDate? = null
     ) {
-        var effectivePeriod: ClosedPeriod? = null
+        var effectivePeriod: FiniteDateRange? = null
         if (plan.type in listOf(PlacementType.PRESCHOOL_DAYCARE, PlacementType.PREPARATORY_DAYCARE)) {
             if (allowPreschool) {
                 val period = requestedStartDate?.let { plan.period.copy(start = it) } ?: plan.period
@@ -158,7 +158,7 @@ class PlacementPlanService(
                     )
                 }
                 effectivePeriod = effectivePeriod?.let {
-                    ClosedPeriod(
+                    FiniteDateRange(
                         start = minOf(it.start, period.start),
                         end = maxOf(it.end, period.end)
                     )

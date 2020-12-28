@@ -8,9 +8,9 @@ import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.derivePreschoolTerm
 import fi.espoo.evaka.shared.Timeline
-import fi.espoo.evaka.shared.domain.ClosedPeriod
+import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.isWeekend
-import fi.espoo.evaka.shared.domain.toClosedPeriod
+import fi.espoo.evaka.shared.domain.toFiniteDateRange
 import org.jdbi.v3.core.mapper.Nested
 import org.jdbi.v3.json.Json
 import java.time.LocalDate
@@ -112,16 +112,16 @@ data class KoskiActiveDataRaw(
     val type: OpiskeluoikeudenTyyppiKoodi,
     val approverName: String,
     val personOid: String?,
-    val placementRanges: List<ClosedPeriod> = emptyList(),
+    val placementRanges: List<FiniteDateRange> = emptyList(),
     val holidays: List<LocalDate> = emptyList(),
     @Json
     val preparatoryAbsences: List<KoskiPreparatoryAbsence> = emptyList(),
-    val developmentalDisability1: List<ClosedPeriod> = emptyList(),
-    val developmentalDisability2: List<ClosedPeriod> = emptyList(),
-    val extendedCompulsoryEducation: ClosedPeriod? = null,
-    val transportBenefit: ClosedPeriod? = null,
-    val specialAssistanceDecisionWithGroup: List<ClosedPeriod> = emptyList(),
-    val specialAssistanceDecisionWithoutGroup: List<ClosedPeriod> = emptyList(),
+    val developmentalDisability1: List<FiniteDateRange> = emptyList(),
+    val developmentalDisability2: List<FiniteDateRange> = emptyList(),
+    val extendedCompulsoryEducation: FiniteDateRange? = null,
+    val transportBenefit: FiniteDateRange? = null,
+    val specialAssistanceDecisionWithGroup: List<FiniteDateRange> = emptyList(),
+    val specialAssistanceDecisionWithoutGroup: List<FiniteDateRange> = emptyList(),
     val studyRightId: UUID,
     val studyRightOid: String?
 ) {
@@ -129,7 +129,7 @@ data class KoskiActiveDataRaw(
     private val startTerm = derivePreschoolTerm(placementRanges.first().start)
     private val endTerm = derivePreschoolTerm(placementRanges.last().start)
 
-    private val studyRightTimelines = ClosedPeriod(startTerm.start, endTerm.end).let { clampRange ->
+    private val studyRightTimelines = FiniteDateRange(startTerm.start, endTerm.end).let { clampRange ->
         calculateStudyRightTimelines(
             placementRanges = placementRanges.asSequence().mapNotNull { it.intersection(clampRange) },
             holidays = holidays.asSequence().filter { clampRange.includes(it) }.toSet(),
@@ -283,7 +283,7 @@ internal data class StudyRightTimelines(
 )
 
 internal fun calculateStudyRightTimelines(
-    placementRanges: Sequence<ClosedPeriod>,
+    placementRanges: Sequence<FiniteDateRange>,
     holidays: Set<LocalDate>,
     absences: Sequence<KoskiPreparatoryAbsence>
 ): StudyRightTimelines {
@@ -292,7 +292,7 @@ internal fun calculateStudyRightTimelines(
         Timeline()
             .addAll(
                 absences.filter { it.type == AbsenceType.PLANNED_ABSENCE || it.type == AbsenceType.OTHER_ABSENCE }
-                    .map { it.date.toClosedPeriod() }
+                    .map { it.date.toFiniteDateRange() }
             )
             .fillWeekendAndHolidayGaps(holidays)
             .intersection(placement)
@@ -300,7 +300,7 @@ internal fun calculateStudyRightTimelines(
     )
     val unknownAbsence = Timeline().addAll(
         Timeline()
-            .addAll(absences.filter { it.type == AbsenceType.UNKNOWN_ABSENCE }.map { it.date.toClosedPeriod() })
+            .addAll(absences.filter { it.type == AbsenceType.UNKNOWN_ABSENCE }.map { it.date.toFiniteDateRange() })
             .fillWeekendAndHolidayGaps(holidays)
             .intersection(placement)
             .periods().filter { it.durationInDays() > 7 }

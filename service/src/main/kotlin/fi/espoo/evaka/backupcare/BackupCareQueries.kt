@@ -5,7 +5,7 @@
 package fi.espoo.evaka.backupcare
 
 import fi.espoo.evaka.shared.db.bindNullable
-import fi.espoo.evaka.shared.domain.ClosedPeriod
+import fi.espoo.evaka.shared.domain.FiniteDateRange
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.mapTo
 import java.util.UUID
@@ -32,7 +32,7 @@ WHERE child_id = :childId
     .mapTo<ChildBackupCare>()
     .list()
 
-fun Handle.getBackupCaresForDaycare(daycareId: UUID, period: ClosedPeriod): List<UnitBackupCare> = createQuery(
+fun Handle.getBackupCaresForDaycare(daycareId: UUID, period: FiniteDateRange): List<UnitBackupCare> = createQuery(
     // language=SQL
     """
 SELECT
@@ -90,7 +90,7 @@ RETURNING id
     .mapTo<UUID>()
     .one()
 
-fun Handle.updateBackupCare(id: UUID, period: ClosedPeriod, groupId: UUID?) = createUpdate(
+fun Handle.updateBackupCare(id: UUID, period: FiniteDateRange, groupId: UUID?) = createUpdate(
     // language=SQL
     """
 UPDATE backup_care

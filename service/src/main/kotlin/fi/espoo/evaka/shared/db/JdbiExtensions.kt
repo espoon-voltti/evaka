@@ -6,9 +6,9 @@ package fi.espoo.evaka.shared.db
 
 import fi.espoo.evaka.identity.ExternalId
 import fi.espoo.evaka.identity.ExternalIdentifier
-import fi.espoo.evaka.shared.domain.ClosedPeriod
 import fi.espoo.evaka.shared.domain.Coordinate
-import fi.espoo.evaka.shared.domain.Period
+import fi.espoo.evaka.shared.domain.DateRange
+import fi.espoo.evaka.shared.domain.FiniteDateRange
 import org.jdbi.v3.core.argument.Argument
 import org.jdbi.v3.core.argument.ArgumentFactory
 import org.jdbi.v3.core.argument.NullArgument
@@ -25,13 +25,13 @@ import java.time.LocalDate
 import java.util.Optional
 import java.util.function.Function
 
-val closedPeriodArgumentFactory = PgObjectArgumentFactory.of<ClosedPeriod> {
+val finiteDateRangeArgumentFactory = PgObjectArgumentFactory.of<FiniteDateRange> {
     PGobject().apply {
         type = "daterange"
         value = "[${it.start},${it.end}]"
     }
 }
-val periodArgumentFactory = PgObjectArgumentFactory.of<Period> {
+val dateRangeArgumentFactory = PgObjectArgumentFactory.of<DateRange> {
     PGobject().apply {
         type = "daterange"
         value = "[${it.start},${it.end ?: ""}]"
@@ -57,17 +57,17 @@ val identityArgumentFactory = PgObjectArgumentFactory.of<ExternalIdentifier> {
 
 val externalIdArgumentFactory = ToStringArgumentFactory.of<ExternalId>()
 
-val closedPeriodColumnMapper = PgObjectColumnMapper {
+val finiteDateRangeColumnMapper = PgObjectColumnMapper {
     assert(it.type == "daterange")
     it.value?.let { value ->
         val parts = value.trim('[', ')').split(',')
         val start = LocalDate.parse(parts[0])
         val end = LocalDate.parse(parts[1]).minusDays(1)
-        ClosedPeriod(start, end)
+        FiniteDateRange(start, end)
     }
 }
 
-val periodColumnMapper = PgObjectColumnMapper {
+val dateRangeColumnMapper = PgObjectColumnMapper {
     assert(it.type == "daterange")
     it.value?.let { value ->
         val parts = value.trim('[', ')').split(',')
@@ -77,7 +77,7 @@ val periodColumnMapper = PgObjectColumnMapper {
         } else {
             null
         }
-        Period(start, end)
+        DateRange(start, end)
     }
 }
 

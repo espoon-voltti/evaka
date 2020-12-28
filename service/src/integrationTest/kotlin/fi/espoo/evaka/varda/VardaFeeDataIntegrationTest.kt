@@ -24,8 +24,8 @@ import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.dev.insertTestPlacement
-import fi.espoo.evaka.shared.domain.ClosedPeriod
-import fi.espoo.evaka.shared.domain.Period
+import fi.espoo.evaka.shared.domain.DateRange
+import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_2
 import fi.espoo.evaka.testChildWithNamelessGuardian
@@ -70,7 +70,7 @@ class VardaFeeDataIntegrationTest : FullApplicationTest() {
         mockEndpoint.cleanUp()
     }
 
-    private val testPeriod = ClosedPeriod(start = LocalDate.now().minusMonths(1), end = LocalDate.now())
+    private val testPeriod = FiniteDateRange(start = LocalDate.now().minusMonths(1), end = LocalDate.now())
 
     private val guardiansTestChild1 = listOf(testAdult_1, testAdult_2)
         .map { VardaGuardian(it.ssn!!, it.firstName, it.lastName) }
@@ -536,7 +536,7 @@ class VardaFeeDataIntegrationTest : FullApplicationTest() {
     }
 
     private fun createDecisionsAndPlacements(
-        period: ClosedPeriod,
+        period: FiniteDateRange,
         child: PersonData.Detailed = testChild_1,
         daycareId: UUID = testDaycare.id
     ) {
@@ -572,7 +572,7 @@ class VardaFeeDataIntegrationTest : FullApplicationTest() {
     private fun insertFeeDecision(
         db: Database.Connection,
         children: List<PersonData.Detailed>,
-        period: ClosedPeriod,
+        period: FiniteDateRange,
         placementType: PlacementType = PlacementType.DAYCARE,
         daycareId: UUID = testDaycare.id,
         guardian: UUID = testAdult_1.id
@@ -581,7 +581,7 @@ class VardaFeeDataIntegrationTest : FullApplicationTest() {
             status = FeeDecisionStatus.DRAFT,
             decisionType = FeeDecisionType.NORMAL,
             headOfFamilyId = guardian,
-            period = Period(period.start, period.end),
+            period = DateRange(period.start, period.end),
             parts = children.map { child ->
                 createFeeDecisionPartFixture(
                     childId = child.id,

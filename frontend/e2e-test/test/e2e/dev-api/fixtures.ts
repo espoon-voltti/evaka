@@ -39,6 +39,7 @@ import {
   PersonDetailWithDependantsAndGuardians
 } from './index'
 import LocalDate from '@evaka/lib-common/src/local-date'
+import DateRange from '@evaka/lib-common/src/date-range'
 
 export const supervisor: EmployeeDetail = {
   id: '552e5bde-92fb-4807-a388-40016f85f593',
@@ -81,10 +82,7 @@ export const clubFixture: Daycare = {
   decisionHandlerAddress: 'Käsittelijän osoite',
   daycareApplyPeriod: null,
   preschoolApplyPeriod: null,
-  clubApplyPeriod: {
-    start: LocalDate.of(2020, 3, 1),
-    end: null
-  }
+  clubApplyPeriod: new DateRange(LocalDate.of(2020, 3, 1), null)
 }
 
 export const daycareFixture: Daycare = {

@@ -15,7 +15,7 @@ import fi.espoo.evaka.shared.dev.insertTestPerson
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.dev.insertTestPlacementPlan
 import fi.espoo.evaka.shared.dev.insertTestServiceNeed
-import fi.espoo.evaka.shared.domain.ClosedPeriod
+import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.testDecisionMaker_1
 import org.jdbi.v3.core.Handle
 import java.time.LocalDate
@@ -23,7 +23,7 @@ import java.util.UUID
 
 fun createOccupancyTestFixture(
     unitId: UUID,
-    period: ClosedPeriod,
+    period: FiniteDateRange,
     dateOfBirth: LocalDate,
     placementType: PlacementType,
     hours: Double? = null,
@@ -41,7 +41,7 @@ fun createOccupancyTestFixture(
 fun createOccupancyTestFixture(
     childId: UUID,
     unitId: UUID,
-    period: ClosedPeriod,
+    period: FiniteDateRange,
     dateOfBirth: LocalDate,
     placementType: PlacementType,
     hours: Double? = null,
@@ -84,11 +84,11 @@ fun createOccupancyTestFixture(
 
 fun createPlanOccupancyTestFixture(
     unitId: UUID,
-    period: ClosedPeriod,
+    period: FiniteDateRange,
     dateOfBirth: LocalDate,
     placementType: PlacementType,
     assistanceExtra: Double? = null,
-    preschoolDaycarePeriod: ClosedPeriod = period,
+    preschoolDaycarePeriod: FiniteDateRange = period,
     deletedPlacementPlan: Boolean? = false
 ) = createPlanOccupancyTestFixture(
     UUID.randomUUID(),
@@ -104,11 +104,11 @@ fun createPlanOccupancyTestFixture(
 fun createPlanOccupancyTestFixture(
     childId: UUID,
     unitId: UUID,
-    period: ClosedPeriod,
+    period: FiniteDateRange,
     dateOfBirth: LocalDate,
     placementType: PlacementType,
     assistanceExtra: Double? = null,
-    preschoolDaycarePeriod: ClosedPeriod = period,
+    preschoolDaycarePeriod: FiniteDateRange = period,
     deletedPlacementPlan: Boolean? = false
 ) = { h: Handle ->
     h.insertTestPerson(DevPerson(id = childId, dateOfBirth = dateOfBirth))
@@ -140,7 +140,7 @@ fun createPlanOccupancyTestFixture(
 
 fun createPreschoolPlanWithDistinctDaycareOccupancyTestFixture(
     unitId: UUID,
-    period: ClosedPeriod,
+    period: FiniteDateRange,
     dateOfBirth: LocalDate,
-    daycarePeriod: ClosedPeriod
+    daycarePeriod: FiniteDateRange
 ) = createPlanOccupancyTestFixture(unitId, period, dateOfBirth, PlacementType.PRESCHOOL_DAYCARE, null, daycarePeriod)

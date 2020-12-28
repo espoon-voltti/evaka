@@ -11,7 +11,7 @@ import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.getUUID
 import fi.espoo.evaka.shared.domain.BadRequest
-import fi.espoo.evaka.shared.domain.ClosedPeriod
+import fi.espoo.evaka.shared.domain.FiniteDateRange
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
@@ -38,7 +38,7 @@ class OccupancyController(private val acl: AccessControlList) {
         acl.getRolesForUnit(user, unitId)
             .requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN, UserRole.UNIT_SUPERVISOR)
 
-        val occupancies = db.read { it.calculateOccupancyPeriods(unitId, ClosedPeriod(from, to), type) }
+        val occupancies = db.read { it.calculateOccupancyPeriods(unitId, FiniteDateRange(from, to), type) }
 
         val response = OccupancyResponse(
             occupancies = occupancies,
@@ -61,7 +61,7 @@ class OccupancyController(private val acl: AccessControlList) {
         acl.getRolesForUnit(user, unitId)
             .requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN, UserRole.UNIT_SUPERVISOR)
 
-        val occupancies = db.read { it.calculateOccupancyPeriodsGroupLevel(unitId, ClosedPeriod(from, to), type) }
+        val occupancies = db.read { it.calculateOccupancyPeriodsGroupLevel(unitId, FiniteDateRange(from, to), type) }
 
         val response = occupancies.groupBy({ it.groupId }) {
             OccupancyPeriod(it.period, it.sum, it.headcount, it.caretakers, it.percentage)
@@ -101,7 +101,7 @@ data class OccupancyResponse(
  */
 fun Database.Read.calculateOccupancyPeriods(
     unitId: UUID,
-    period: ClosedPeriod,
+    period: FiniteDateRange,
     type: OccupancyType
 ): List<OccupancyPeriod> {
     if (period.start.plusYears(2) < period.end) {
@@ -120,7 +120,7 @@ fun Database.Read.calculateOccupancyPeriods(
         .bind("endDate", period.end)
         .map { rs, _ ->
             OccupancyPeriod(
-                period = ClosedPeriod(
+                period = FiniteDateRange(
                     rs.getDate("period_start").toLocalDate(),
                     rs.getDate("period_end").toLocalDate()
                 ),
@@ -135,7 +135,7 @@ fun Database.Read.calculateOccupancyPeriods(
 
 fun Database.Read.calculateOccupancyPeriodsGroupLevel(
     unitId: UUID,
-    period: ClosedPeriod,
+    period: FiniteDateRange,
     type: OccupancyType
 ): List<OccupancyPeriodGroupLevel> {
     if (period.start.plusYears(2) < period.end) {
@@ -155,7 +155,7 @@ fun Database.Read.calculateOccupancyPeriodsGroupLevel(
         .map { rs, _ ->
             OccupancyPeriodGroupLevel(
                 groupId = rs.getUUID("group_id"),
-                period = ClosedPeriod(
+                period = FiniteDateRange(
                     rs.getDate("period_start").toLocalDate(),
                     rs.getDate("period_end").toLocalDate()
                 ),

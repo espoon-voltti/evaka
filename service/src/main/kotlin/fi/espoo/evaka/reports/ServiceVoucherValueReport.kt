@@ -9,8 +9,8 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.bindNullable
-import fi.espoo.evaka.shared.domain.ClosedPeriod
-import fi.espoo.evaka.shared.domain.Period
+import fi.espoo.evaka.shared.domain.DateRange
+import fi.espoo.evaka.shared.domain.FiniteDateRange
 import org.jdbi.v3.core.kotlin.mapTo
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
@@ -39,7 +39,7 @@ class ServiceVoucherValueReportController {
         user.requireOneOfRoles(UserRole.ADMIN, UserRole.FINANCE_ADMIN)
 
         return db.read { tx ->
-            val period = ClosedPeriod(
+            val period = FiniteDateRange(
                 LocalDate.of(year, month, 1),
                 LocalDate.of(year, month, Month.of(month).length(Year.isLeap(year.toLong())))
             )
@@ -76,7 +76,7 @@ class ServiceVoucherValueReportController {
         user.requireOneOfRoles(UserRole.ADMIN, UserRole.FINANCE_ADMIN)
 
         return db.read { tx ->
-            val period = ClosedPeriod(
+            val period = FiniteDateRange(
                 LocalDate.of(year, month, 1),
                 LocalDate.of(year, month, Month.of(month).length(Year.isLeap(year.toLong())))
             )
@@ -119,7 +119,7 @@ data class ServiceVoucherValueRow(
     val unitName: String,
     val areaId: UUID,
     val areaName: String,
-    val serviceVoucherPeriod: Period,
+    val serviceVoucherPeriod: DateRange,
     val serviceVoucherValue: Int,
     val serviceVoucherCoPayment: Int,
     val serviceVoucherServiceCoefficient: Int,
@@ -129,12 +129,12 @@ data class ServiceVoucherValueRow(
 
 data class ValueRowDerivatives(
     val realizedAmount: Int,
-    val realizedPeriod: ClosedPeriod,
+    val realizedPeriod: FiniteDateRange,
     val numberOfDays: Long
 )
 
-private fun realizedMonthlyAmount(value: Int, decisionPeriod: Period, monthPeriod: ClosedPeriod): ValueRowDerivatives {
-    val realizedPeriod = ClosedPeriod(
+private fun realizedMonthlyAmount(value: Int, decisionPeriod: DateRange, monthPeriod: FiniteDateRange): ValueRowDerivatives {
+    val realizedPeriod = FiniteDateRange(
         maxOf(decisionPeriod.start, monthPeriod.start),
         minOf(decisionPeriod.end ?: monthPeriod.end, monthPeriod.end)
     )
@@ -147,7 +147,7 @@ private fun realizedMonthlyAmount(value: Int, decisionPeriod: Period, monthPerio
 }
 
 private fun Database.Read.getServiceVoucherValues(
-    period: ClosedPeriod,
+    period: FiniteDateRange,
     areaId: UUID? = null,
     unitId: UUID? = null
 ): List<ServiceVoucherValueRow> {

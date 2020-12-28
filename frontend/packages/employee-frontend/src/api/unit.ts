@@ -13,7 +13,6 @@ import {
   MailingAddress,
   Occupancy,
   OccupancyType,
-  OpenEndedPeriod,
   ProviderType,
   Stats,
   Unit,
@@ -26,8 +25,10 @@ import { UnitBackupCare } from '~types/child'
 import { AdRole, DayOfWeek, UUID } from '~types'
 import { JsonOf } from '@evaka/lib-common/src/json'
 import LocalDate from '@evaka/lib-common/src/local-date'
-import { Period, PlacementType } from '~types/placementdraft'
+import { PlacementType } from '~types/placementdraft'
 import { ApplicationStatus } from '~types/application'
+import FiniteDateRange from '@evaka/lib-common/src/finite-date-range'
+import DateRange from '@evaka/lib-common/src/date-range'
 
 function convertUnitJson(unit: JsonOf<Unit>): Unit {
   return {
@@ -35,28 +36,13 @@ function convertUnitJson(unit: JsonOf<Unit>): Unit {
     openingDate: unit.openingDate ? LocalDate.parseIso(unit.openingDate) : null,
     closingDate: unit.closingDate ? LocalDate.parseIso(unit.closingDate) : null,
     daycareApplyPeriod: unit.daycareApplyPeriod
-      ? {
-          start: LocalDate.parseIso(unit.daycareApplyPeriod.start),
-          end: unit.daycareApplyPeriod.end
-            ? LocalDate.parseIso(unit.daycareApplyPeriod.end)
-            : null
-        }
+      ? DateRange.parseJson(unit.daycareApplyPeriod)
       : null,
     preschoolApplyPeriod: unit.preschoolApplyPeriod
-      ? {
-          start: LocalDate.parseIso(unit.preschoolApplyPeriod.start),
-          end: unit.preschoolApplyPeriod.end
-            ? LocalDate.parseIso(unit.preschoolApplyPeriod.end)
-            : null
-        }
+      ? DateRange.parseJson(unit.preschoolApplyPeriod)
       : null,
     clubApplyPeriod: unit.clubApplyPeriod
-      ? {
-          start: LocalDate.parseIso(unit.clubApplyPeriod.start),
-          end: unit.clubApplyPeriod.end
-            ? LocalDate.parseIso(unit.clubApplyPeriod.end)
-            : null
-        }
+      ? DateRange.parseJson(unit.clubApplyPeriod)
       : null
   }
 }
@@ -100,12 +86,12 @@ export type Caretakers = {
 
 interface MissingGroupPlacementCommon {
   placementId: UUID
-  placementPeriod: Period
+  placementPeriod: FiniteDateRange
   childId: UUID
   firstName: string | null
   lastName: string | null
   dateOfBirth: LocalDate
-  gap: Period
+  gap: FiniteDateRange
 }
 
 interface MissingGroupPlacementStandard extends MissingGroupPlacementCommon {
@@ -219,10 +205,7 @@ function mapBackupCareJson(data: JsonOf<UnitBackupCare>): UnitBackupCare {
       ...data.child,
       birthDate: LocalDate.parseIso(data.child.birthDate)
     },
-    period: {
-      start: LocalDate.parseIso(data.period.start),
-      end: LocalDate.parseIso(data.period.end)
-    }
+    period: FiniteDateRange.parseJson(data.period)
   }
 }
 
@@ -232,14 +215,8 @@ function mapMissingGroupPlacementJson(
   return {
     ...data,
     dateOfBirth: LocalDate.parseIso(data.dateOfBirth),
-    placementPeriod: {
-      start: LocalDate.parseIso(data.placementPeriod.start),
-      end: LocalDate.parseIso(data.placementPeriod.end)
-    },
-    gap: {
-      start: LocalDate.parseIso(data.gap.start),
-      end: LocalDate.parseIso(data.gap.end)
-    }
+    placementPeriod: FiniteDateRange.parseJson(data.placementPeriod),
+    gap: FiniteDateRange.parseJson(data.gap)
   }
 }
 
@@ -275,15 +252,9 @@ function mapPlacementPlanJson(
 ): DaycarePlacementPlan {
   return {
     ...data,
-    period: {
-      start: LocalDate.parseIso(data.period.start),
-      end: LocalDate.parseIso(data.period.end)
-    },
+    period: FiniteDateRange.parseJson(data.period),
     preschoolDaycarePeriod: data.preschoolDaycarePeriod
-      ? {
-          start: LocalDate.parseIso(data.preschoolDaycarePeriod.start),
-          end: LocalDate.parseIso(data.preschoolDaycarePeriod.end)
-        }
+      ? FiniteDateRange.parseJson(data.preschoolDaycarePeriod)
       : null,
     child: {
       ...data.child,
@@ -385,10 +356,7 @@ export type OccupancyResponse = {
 
 const mapOccupancyPeriod = (p: JsonOf<Occupancy>): Occupancy => ({
   ...p,
-  period: {
-    start: LocalDate.parseIso(p.period.start),
-    end: LocalDate.parseIso(p.period.end)
-  }
+  period: FiniteDateRange.parseJson(p.period)
 })
 
 const mapOccupancyResponse = (
@@ -652,9 +620,9 @@ export interface DaycareFields {
   closingDate: LocalDate | null
   areaId: UUID
   type: UnitTypes[]
-  daycareApplyPeriod: OpenEndedPeriod | null
-  preschoolApplyPeriod: OpenEndedPeriod | null
-  clubApplyPeriod: OpenEndedPeriod | null
+  daycareApplyPeriod: DateRange | null
+  preschoolApplyPeriod: DateRange | null
+  clubApplyPeriod: DateRange | null
   providerType: ProviderType
   roundTheClock: boolean
   capacity: number

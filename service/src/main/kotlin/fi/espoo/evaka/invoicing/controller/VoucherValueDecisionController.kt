@@ -27,8 +27,8 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
+import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.NotFound
-import fi.espoo.evaka.shared.domain.Period
 import fi.espoo.evaka.shared.utils.parseEnum
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
@@ -152,7 +152,7 @@ class VoucherValueDecisionController(
                 tx.handle.findValueDecisionsForHeadOfFamily(
                     objectMapper,
                     it.headOfFamily.id,
-                    Period(it.validFrom, it.validTo),
+                    DateRange(it.validFrom, it.validTo),
                     listOf(VoucherValueDecisionStatus.SENT)
                 )
             }

@@ -25,7 +25,7 @@ import fi.espoo.evaka.daycare.domain.ProviderType.PRIVATE
 import fi.espoo.evaka.daycare.updateDaycare
 import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.domain.Coordinate
-import fi.espoo.evaka.shared.domain.Period
+import fi.espoo.evaka.shared.domain.DateRange
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
@@ -169,8 +169,8 @@ class LocationServiceIntegrationTest : PureJdbiTest() {
         url = "https://espoo.fi",
         phone = "123456",
         provider_type = providerType,
-        daycareApplyPeriod = Period(LocalDate.of(2020, 3, 1), null).takeIf { type.contains(CENTRE) },
-        preschoolApplyPeriod = Period(LocalDate.of(2020, 3, 1), null).takeIf { type.contains(PRESCHOOL) },
-        clubApplyPeriod = Period(LocalDate.of(2020, 3, 1), null).takeIf { type.contains(CLUB) }
+        daycareApplyPeriod = DateRange(LocalDate.of(2020, 3, 1), null).takeIf { type.contains(CENTRE) },
+        preschoolApplyPeriod = DateRange(LocalDate.of(2020, 3, 1), null).takeIf { type.contains(PRESCHOOL) },
+        clubApplyPeriod = DateRange(LocalDate.of(2020, 3, 1), null).takeIf { type.contains(CLUB) }
     )
 }

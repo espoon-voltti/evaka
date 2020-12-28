@@ -40,7 +40,7 @@ import fi.espoo.evaka.shared.dev.insertTestEmployee
 import fi.espoo.evaka.shared.dev.insertTestPerson
 import fi.espoo.evaka.shared.dev.insertTestPricing
 import fi.espoo.evaka.shared.dev.insertTestVoucherValue
-import fi.espoo.evaka.shared.domain.Period
+import fi.espoo.evaka.shared.domain.DateRange
 import org.jdbi.v3.core.Handle
 import java.time.LocalDate
 import java.time.OffsetDateTime
@@ -109,7 +109,7 @@ val testClub = DevDaycare(
     name = "Test Club",
     areaId = testAreaId,
     type = setOf(CareType.CLUB),
-    clubApplyPeriod = Period(LocalDate.of(2020, 3, 1), null),
+    clubApplyPeriod = DateRange(LocalDate.of(2020, 3, 1), null),
     daycareApplyPeriod = null,
     preschoolApplyPeriod = null,
     uploadToVarda = false,
@@ -427,7 +427,7 @@ fun insertGeneralTestFixtures(h: Handle) {
     )
 
     h.insertTestVoucherValue(
-        VoucherValue(id = UUID.randomUUID(), validity = Period(LocalDate.of(2000, 1, 1), null), voucherValue = 87000)
+        VoucherValue(id = UUID.randomUUID(), validity = DateRange(LocalDate.of(2000, 1, 1), null), voucherValue = 87000)
     )
 
     h.insertPreschoolTerms()

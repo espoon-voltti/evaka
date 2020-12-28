@@ -10,7 +10,7 @@ import fi.espoo.evaka.shared.db.PGConstants
 import fi.espoo.evaka.shared.db.bindNullable
 import fi.espoo.evaka.shared.db.getUUID
 import fi.espoo.evaka.shared.domain.BadRequest
-import fi.espoo.evaka.shared.domain.Period
+import fi.espoo.evaka.shared.domain.DateRange
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.mapTo
 import org.jdbi.v3.core.statement.StatementContext
@@ -42,7 +42,7 @@ fun Handle.getParentships(
     headOfChildId: UUID?,
     childId: UUID?,
     includeConflicts: Boolean = false,
-    period: Period? = null
+    period: DateRange? = null
 ): List<Parentship> {
     if (headOfChildId == null && childId == null) throw BadRequest("Must give either headOfChildId or childId")
 

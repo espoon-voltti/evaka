@@ -5,13 +5,13 @@
 package fi.espoo.evaka.invoicing.data
 
 import fi.espoo.evaka.invoicing.domain.Pricing
-import fi.espoo.evaka.shared.domain.Period
+import fi.espoo.evaka.shared.domain.DateRange
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.statement.StatementContext
 import java.sql.ResultSet
 import java.time.LocalDate
 
-fun getPricing(h: Handle, from: LocalDate): List<Pair<Period, Pricing>> {
+fun getPricing(h: Handle, from: LocalDate): List<Pair<DateRange, Pricing>> {
     return h.createQuery("SELECT * FROM pricing WHERE valid_to IS NULL OR valid_to >= :from")
         .bind("from", from)
         .map(toPricing)
@@ -19,7 +19,7 @@ fun getPricing(h: Handle, from: LocalDate): List<Pair<Period, Pricing>> {
 }
 
 val toPricing = { rs: ResultSet, _: StatementContext ->
-    Period(
+    DateRange(
         start = rs.getDate("valid_from").toLocalDate(),
         end = rs.getDate("valid_to")?.toLocalDate()
     ) to Pricing(

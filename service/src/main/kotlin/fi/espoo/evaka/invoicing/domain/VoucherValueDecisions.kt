@@ -10,7 +10,7 @@ import fi.espoo.evaka.invoicing.domain.PlacementType.PREPARATORY
 import fi.espoo.evaka.invoicing.domain.PlacementType.PREPARATORY_WITH_DAYCARE
 import fi.espoo.evaka.invoicing.domain.PlacementType.PRESCHOOL
 import fi.espoo.evaka.invoicing.domain.PlacementType.PRESCHOOL_WITH_DAYCARE
-import fi.espoo.evaka.shared.domain.Period
+import fi.espoo.evaka.shared.domain.DateRange
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.time.Instant
@@ -39,7 +39,7 @@ data class VoucherValueDecision(
 ) : FinanceDecision<VoucherValueDecisionPart, VoucherValueDecision>, MergeableDecision<VoucherValueDecisionPart, VoucherValueDecision> {
     override fun withParts(parts: List<VoucherValueDecisionPart>) = this.copy(parts = parts)
     override fun withRandomId() = this.copy(id = UUID.randomUUID())
-    override fun withValidity(period: Period) = this.copy(validFrom = period.start, validTo = period.end)
+    override fun withValidity(period: DateRange) = this.copy(validFrom = period.start, validTo = period.end)
     override fun contentEquals(decision: VoucherValueDecision): Boolean {
         return this.parts.toSet() == decision.parts.toSet() &&
             this.headOfFamily == decision.headOfFamily &&
@@ -187,7 +187,7 @@ data class VoucherValueDecisionPartSummary(
     val child: PersonData.Basic
 ) : FinanceDecisionPart
 
-fun getAgeCoefficient(period: Period, dateOfBirth: LocalDate): Int {
+fun getAgeCoefficient(period: DateRange, dateOfBirth: LocalDate): Int {
     val thirdBirthday = dateOfBirth.plusYears(3)
     val birthdayInMiddleOfPeriod = period.includes(thirdBirthday) && thirdBirthday != period.start && thirdBirthday != period.end
 

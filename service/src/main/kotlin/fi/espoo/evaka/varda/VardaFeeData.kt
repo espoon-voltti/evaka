@@ -12,7 +12,7 @@ import fi.espoo.evaka.pis.service.PersonService
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.getUUID
-import fi.espoo.evaka.shared.domain.ClosedPeriod
+import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.varda.integration.VardaClient
 import org.jdbi.v3.core.kotlin.mapTo
 import java.time.Instant
@@ -182,7 +182,7 @@ WHERE vd.varda_decision_id = :decisionId
 """
         )
         .bind("decisionId", decisionPeriod.id)
-        .bind("decisionPeriod", ClosedPeriod(decisionPeriod.alkamis_pvm, decisionPeriod.paattymis_pvm))
+        .bind("decisionPeriod", FiniteDateRange(decisionPeriod.alkamis_pvm, decisionPeriod.paattymis_pvm))
         .mapTo<Long>()
         .toList()
 }
@@ -221,7 +221,7 @@ WHERE vc.varda_child_id = :childVardaId
         .bind("decisionId", decisionPeriod.id)
         .bind("decisionStartDate", decisionPeriod.alkamis_pvm)
         .bind("decisionEndDate", decisionPeriod.paattymis_pvm)
-        .bind("decisionPeriod", ClosedPeriod(decisionPeriod.alkamis_pvm, decisionPeriod.paattymis_pvm))
+        .bind("decisionPeriod", FiniteDateRange(decisionPeriod.alkamis_pvm, decisionPeriod.paattymis_pvm))
         .bind("sent", FeeDecisionStatus.SENT)
         .mapTo<VardaFeeDataBase>()
         .toList()

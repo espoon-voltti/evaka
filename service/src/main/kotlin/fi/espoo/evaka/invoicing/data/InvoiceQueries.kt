@@ -19,7 +19,7 @@ import fi.espoo.evaka.invoicing.domain.Product
 import fi.espoo.evaka.shared.db.freeTextSearchQuery
 import fi.espoo.evaka.shared.db.getEnum
 import fi.espoo.evaka.shared.db.getUUID
-import fi.espoo.evaka.shared.domain.Period
+import fi.espoo.evaka.shared.domain.DateRange
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.mapTo
 import org.jdbi.v3.core.statement.StatementContext
@@ -275,7 +275,7 @@ fun searchInvoices(
     areas: List<String> = listOf(),
     unit: UUID? = null,
     distinctiveParams: List<InvoiceDistinctiveParams> = listOf(),
-    sentAt: Period? = null
+    sentAt: DateRange? = null
 ): List<InvoiceDetailed> {
     val params = mapOf<String, Any>()
         .let { ps -> if (areas.isNotEmpty()) ps + ("area" to areas.toTypedArray()) else ps }
@@ -378,7 +378,7 @@ fun updateInvoiceDates(h: Handle, invoiceIds: List<UUID>, invoiceDate: LocalDate
         .execute()
 }
 
-fun deleteDraftInvoicesByPeriod(h: Handle, period: Period) {
+fun deleteDraftInvoicesByPeriod(h: Handle, period: DateRange) {
     val sql =
         """
             DELETE FROM invoice

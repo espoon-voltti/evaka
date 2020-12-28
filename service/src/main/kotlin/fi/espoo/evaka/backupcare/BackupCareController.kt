@@ -9,7 +9,7 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapPSQLException
-import fi.espoo.evaka.shared.domain.ClosedPeriod
+import fi.espoo.evaka.shared.domain.FiniteDateRange
 import org.jdbi.v3.core.JdbiException
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.http.ResponseEntity
@@ -89,12 +89,12 @@ class BackupCareController(private val acl: AccessControlList) {
     ): ResponseEntity<UnitBackupCaresResponse> {
         acl.getRolesForUnit(user, daycareId)
             .requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF)
-        val backupCares = db.read { it.handle.getBackupCaresForDaycare(daycareId, ClosedPeriod(startDate, endDate)) }
+        val backupCares = db.read { it.handle.getBackupCaresForDaycare(daycareId, FiniteDateRange(startDate, endDate)) }
         return ResponseEntity.ok(UnitBackupCaresResponse(backupCares))
     }
 }
 
 data class ChildBackupCaresResponse(val backupCares: List<ChildBackupCare>)
 data class UnitBackupCaresResponse(val backupCares: List<UnitBackupCare>)
-data class BackupCareUpdateRequest(val period: ClosedPeriod, val groupId: UUID?)
+data class BackupCareUpdateRequest(val period: FiniteDateRange, val groupId: UUID?)
 data class BackupCareCreateResponse(val id: UUID)

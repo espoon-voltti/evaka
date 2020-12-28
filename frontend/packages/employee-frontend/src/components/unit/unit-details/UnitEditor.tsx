@@ -9,7 +9,6 @@ import Select from '~components/common/Select'
 import {
   CareArea,
   Coordinate,
-  OpenEndedPeriod,
   ProviderType,
   Unit,
   UnitLanguage,
@@ -33,6 +32,7 @@ import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from '@evaka/lib-components/src/layout/flex-helpers'
+import DateRange from '@evaka/lib-common/src/date-range'
 
 type CareType = 'DAYCARE' | 'PRESCHOOL' | 'PREPARATORY_EDUCATION' | 'CLUB'
 type DaycareType = 'CENTRE' | 'FAMILY' | 'GROUP_FAMILY'
@@ -44,9 +44,9 @@ interface FormData {
   areaId: string
   careTypes: Record<CareType, boolean>
   daycareType: DaycareType | undefined
-  daycareApplyPeriod: OpenEndedPeriod | null
-  preschoolApplyPeriod: OpenEndedPeriod | null
-  clubApplyPeriod: OpenEndedPeriod | null
+  daycareApplyPeriod: DateRange | null
+  preschoolApplyPeriod: DateRange | null
+  clubApplyPeriod: DateRange | null
   providerType: ProviderType
   roundTheClock: boolean
   capacity: string

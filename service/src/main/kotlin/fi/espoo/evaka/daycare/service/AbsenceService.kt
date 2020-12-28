@@ -11,8 +11,8 @@ import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
-import fi.espoo.evaka.shared.domain.ClosedPeriod
-import fi.espoo.evaka.shared.domain.Period
+import fi.espoo.evaka.shared.domain.DateRange
+import fi.espoo.evaka.shared.domain.FiniteDateRange
 import mu.KotlinLogging
 import org.jdbi.v3.core.kotlin.mapTo
 import org.springframework.stereotype.Service
@@ -27,7 +27,7 @@ class AbsenceService {
     fun getAbsencesByMonth(tx: Database.Read, groupId: UUID, year: Int, month: Int): AbsenceGroup {
         val startDate = LocalDate.of(year, month, 1)
         val endDate = startDate.with(lastDayOfMonth())
-        val period = ClosedPeriod(startDate, endDate)
+        val period = FiniteDateRange(startDate, endDate)
 
         val daycare = tx.handle.getDaycare(tx.getDaycareIdByGroup(groupId)) ?: throw BadRequest("Couldn't find daycare with group with id $groupId")
         val groupName = tx.getGroupName(groupId) ?: throw BadRequest("Couldn't find group with id $groupId")
@@ -83,7 +83,7 @@ class AbsenceService {
     fun getAbscencesByChild(tx: Database.Read, childId: UUID, year: Int, month: Int): AbsenceChildMinimal {
         val startDate = LocalDate.of(year, month, 1)
         val endDate = startDate.with(lastDayOfMonth())
-        val period = ClosedPeriod(startDate, endDate)
+        val period = FiniteDateRange(startDate, endDate)
 
         val absenceList = tx.getAbsencesByChildByRange(childId, period)
         val backupCareList = tx.getBackupCaresAffectingChild(childId, period)
@@ -105,7 +105,7 @@ class AbsenceService {
     }
 
     private fun composeAbsenceMap(
-        period: ClosedPeriod,
+        period: FiniteDateRange,
         absenceListByChild: List<Absence>
     ): Map<LocalDate, List<Absence>> =
         absenceListByChild.groupBy { it.date }.let { absences ->
@@ -115,18 +115,18 @@ class AbsenceService {
         }
 
     private fun composePlacementMap(
-        period: ClosedPeriod,
+        period: FiniteDateRange,
         placementListByChild: List<AbsencePlacement>
     ): Map<LocalDate, List<CareType>> = period.dates()
         .map {
             it to placementListByChild
-                .filter { placement -> Period(placement.startDate, placement.endDate).includes(it) }
+                .filter { placement -> DateRange(placement.startDate, placement.endDate).includes(it) }
                 .flatMap { placement -> getCareType(placement, it) }
         }
         .toMap()
 
     private fun composeBackupCareMap(
-        period: ClosedPeriod,
+        period: FiniteDateRange,
         backupCares: List<GroupBackupCare>
     ): Map<LocalDate, AbsenceBackupCare?> = period.dates()
         .map {
@@ -353,7 +353,7 @@ fun Database.Read.getDaycareIdByGroup(groupId: UUID): UUID {
         .first()
 }
 
-fun Database.Read.getPlacementsByRange(groupId: UUID, period: ClosedPeriod): List<AbsencePlacement> {
+fun Database.Read.getPlacementsByRange(groupId: UUID, period: FiniteDateRange): List<AbsencePlacement> {
     //language=SQL
     val sql =
         """
@@ -390,7 +390,7 @@ fun Database.Read.getPlacementsByRange(groupId: UUID, period: ClosedPeriod): Lis
         .list()
 }
 
-fun Database.Read.getAbsencesByRange(groupId: UUID, period: ClosedPeriod): List<Absence> {
+fun Database.Read.getAbsencesByRange(groupId: UUID, period: FiniteDateRange): List<Absence> {
     //language=SQL
     val sql =
         """
@@ -420,7 +420,7 @@ fun Database.Read.getAbsencesByRange(groupId: UUID, period: ClosedPeriod): List<
         .list()
 }
 
-fun Database.Read.getAbsencesByChildByRange(childId: UUID, period: ClosedPeriod): List<Absence> {
+fun Database.Read.getAbsencesByChildByRange(childId: UUID, period: FiniteDateRange): List<Absence> {
     //language=SQL
     val sql =
         """
@@ -437,7 +437,7 @@ fun Database.Read.getAbsencesByChildByRange(childId: UUID, period: ClosedPeriod)
         .list()
 }
 
-private fun Database.Read.getBackupCaresAffectingGroup(groupId: UUID, period: ClosedPeriod): List<GroupBackupCare> =
+private fun Database.Read.getBackupCaresAffectingGroup(groupId: UUID, period: FiniteDateRange): List<GroupBackupCare> =
     createQuery(
         // language=SQL
         """
@@ -457,7 +457,7 @@ AND daterange(gp.start_date, gp.end_date, '[]') && :period
         .mapTo<GroupBackupCare>()
         .list()
 
-private fun Database.Read.getBackupCaresAffectingChild(childId: UUID, period: ClosedPeriod): List<GroupBackupCare> =
+private fun Database.Read.getBackupCaresAffectingChild(childId: UUID, period: FiniteDateRange): List<GroupBackupCare> =
     createQuery(
         // language=SQL
         """

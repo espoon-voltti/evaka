@@ -4,11 +4,11 @@
 
 package fi.espoo.evaka.invoicing.domain
 
-import fi.espoo.evaka.shared.domain.Period
+import fi.espoo.evaka.shared.domain.DateRange
 import java.util.UUID
 
 data class VoucherValue(
     val id: UUID,
-    val validity: Period,
+    val validity: DateRange,
     val voucherValue: Int
 )
