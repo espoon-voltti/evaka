@@ -528,6 +528,7 @@
       },
       "preferredUnits": {
         "title": "Hakutoive",
+        "selectPreferredStartDateFirst": "Päästäksesi valitsemaan hakutoiveet valitse ensin haluttu aloituspäivä \"Palvelun tarve\" -osiosta",
         "siblings": {
           "text": [
             "Lapsella on sisarusperuste samaan varhaiskasvatuspaikkaan, jossa hänen sisaruksensa on päätöksentekohetkellä. Sisarukseksi katsotaan kaikki samassa osoitteessa asuvat lapset. Tavoitteena on sijoittaa sisarukset samaan varhaiskasvatuspaikkaan perheen niin toivoessa. Jos haet paikkaa sisaruksille, jotka eivät vielä ole varhaiskasvatuksessa, kirjoita tieto lisätietokenttään.",

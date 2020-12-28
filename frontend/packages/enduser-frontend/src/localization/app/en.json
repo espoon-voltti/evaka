@@ -524,6 +524,7 @@
       },
       "preferredUnits": {
         "title": "Application preference",
+        "selectPreferredStartDateFirst": "To get to select preferred units, select first preferred start date from \"Service need\" -section",
         "siblings": {
           "text": [
             "The child has a sibling basis to the same early childhood education place attended by their sibling at the time of making the decision. All children living at the same address are considered to be siblings. The aim is to place siblings at the same early childhood education place, if the family so wishes. If you are applying for places for siblings who do not yet attend early childhood education, enter this piece of information in the additional information field.",
