@@ -9,6 +9,7 @@ import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.shared.domain.Coordinate
 import fi.espoo.evaka.shared.domain.DateRange
 import org.jdbi.v3.core.mapper.Nested
+import org.jdbi.v3.core.mapper.PropagateNull
 import java.time.LocalDate
 import java.util.UUID
 
@@ -45,6 +46,8 @@ data class Daycare(
     val uploadToKoski: Boolean,
     val invoicedByMunicipality: Boolean,
     val costCenter: String?,
+    @Nested("finance_decision_handler_")
+    val financeDecisionHandler: FinanceDecisionHandler?,
     val additionalInfo: String?,
     val phone: String?,
     val email: String?,
@@ -62,6 +65,13 @@ data class Daycare(
     val ophOrganizerOid: String?,
     val ophOrganizationOid: String?,
     val operationDays: Set<Int>
+)
+
+@PropagateNull("finance_decision_handler_id")
+data class FinanceDecisionHandler(
+    val id: UUID,
+    val firstName: String,
+    val LastName: String
 )
 
 data class UnitManager(

@@ -29,6 +29,7 @@ type Props = {
   validTo: LocalDate | null
   sentAt: Date | null
   documentKey: string | null
+  financeDecisionHandlerName: string | null
 }
 
 export default React.memo(function VoucherValueDecisionHeading({
@@ -39,6 +40,7 @@ export default React.memo(function VoucherValueDecisionHeading({
   validFrom,
   validTo,
   sentAt,
+  financeDecisionHandlerName,
   documentKey
 }: Props) {
   const { i18n } = useTranslation()
@@ -102,6 +104,14 @@ export default React.memo(function VoucherValueDecisionHeading({
                 {
                   label: i18n.valueDecision.pdfLabel,
                   value: pdfLink
+                }
+              ]
+            : []),
+          ...(financeDecisionHandlerName
+            ? [
+                {
+                  label: i18n.valueDecision.decisionHandlerName,
+                  value: financeDecisionHandlerName
                 }
               ]
             : [])

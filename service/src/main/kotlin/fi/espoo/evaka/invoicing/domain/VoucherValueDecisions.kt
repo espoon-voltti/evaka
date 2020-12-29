@@ -98,7 +98,8 @@ data class VoucherValueDecisionDetailed(
     val approvedBy: PersonData.WithName? = null,
     val approvedAt: Instant? = null,
     val createdAt: Instant = Instant.now(),
-    val sentAt: Instant? = null
+    val sentAt: Instant? = null,
+    val financeDecisionHandlerName: String?
 ) : MergeableDecision<VoucherValueDecisionPartDetailed, VoucherValueDecisionDetailed> {
     override fun withParts(parts: List<VoucherValueDecisionPartDetailed>) = this.copy(parts = parts)
 

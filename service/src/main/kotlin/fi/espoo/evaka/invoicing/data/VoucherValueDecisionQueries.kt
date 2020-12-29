@@ -285,7 +285,8 @@ fun Handle.searchValueDecisions(
     status: VoucherValueDecisionStatus,
     areas: List<String>,
     unit: UUID?,
-    searchTerms: String = ""
+    searchTerms: String = "",
+    financeDecisionHandlerId: UUID?
 ): Pair<Int, List<VoucherValueDecisionSummary>> {
     val sortColumn = when (sortBy) {
         VoucherValueDecisionSortParam.HEAD_OF_FAMILY -> "head.last_name"
@@ -297,32 +298,42 @@ fun Handle.searchValueDecisions(
         "pageSize" to pageSize,
         "status" to status.name,
         "areas" to areas.toTypedArray(),
-        "unit" to unit
+        "unit" to unit,
+        "financeDecisionHandlerId" to financeDecisionHandlerId
     )
 
     val (freeTextQuery, freeTextParams) = freeTextSearchQuery(listOf("head", "partner", "child"), searchTerms)
 
+    val youngestChildQuery =
+        """
+        WITH youngest_child AS (
+            SELECT
+                voucher_value_decision_part.voucher_value_decision_id AS decision_id,
+                care_area.short_name AS area,
+                row_number() OVER (PARTITION BY (voucher_value_decision_id) ORDER BY date_of_birth DESC) AS rownum
+            FROM voucher_value_decision_part
+            LEFT JOIN daycare ON voucher_value_decision_part.placement_unit = daycare.id
+            LEFT JOIN care_area ON daycare.care_area_id = care_area.id
+        )
+        """.trimIndent()
+    val youngestChildJoin = "LEFT JOIN youngest_child ON decision.id = youngest_child.decision_id AND rownum = 1"
+    val youngestChildAnd = "AND youngest_child.area = ANY(:areas)"
+
     // language=sql
 
     val sql =
+        // language=sql
         """
         WITH decision_ids AS (
-            WITH youngest_child AS (
-                SELECT
-                    voucher_value_decision_part.voucher_value_decision_id AS decision_id,
-                    care_area.short_name AS area,
-                    row_number() OVER (PARTITION BY (voucher_value_decision_id) ORDER BY date_of_birth DESC) AS rownum
-                FROM voucher_value_decision_part
-                LEFT JOIN daycare ON voucher_value_decision_part.placement_unit = daycare.id
-                LEFT JOIN care_area ON daycare.care_area_id = care_area.id
-            )
+            ${if (areas.isNotEmpty()) youngestChildQuery else ""}
             SELECT decision.id, count(*) OVER (), max(sums.co_payment) total_co_payment, max(sums.voucher_value) total_value
             FROM voucher_value_decision AS decision
             LEFT JOIN voucher_value_decision_part AS part ON decision.id = part.voucher_value_decision_id
             LEFT JOIN person AS head ON decision.head_of_family = head.id
             LEFT JOIN person AS partner ON decision.head_of_family = partner.id
             LEFT JOIN person AS child ON part.child = child.id
-            LEFT JOIN youngest_child ON decision.id = youngest_child.decision_id AND rownum = 1
+            ${if (areas.isNotEmpty()) youngestChildJoin else ""}
+            LEFT JOIN daycare AS placement_unit ON placement_unit.id = part.placement_unit
             LEFT JOIN (
                 SELECT final_co_payments.id, sum(final_co_payments.final_co_payment) co_payment, sum(final_co_payments.voucher_value) voucher_value
                 FROM (
@@ -339,9 +350,10 @@ fun Handle.searchValueDecisions(
             ) sums ON decision.id = sums.id
             WHERE
                 status = :status
-                AND youngest_child.area = ANY(:areas)
+                ${if (areas.isNotEmpty()) youngestChildAnd else ""}
                 AND (:unit::uuid IS NULL OR part.placement_unit = :unit)
                 AND $freeTextQuery
+                AND (:financeDecisionHandlerId::uuid IS NULL OR placement_unit.finance_decision_handler = :financeDecisionHandlerId)
             GROUP BY decision.id
             -- we take a max here because the sort column is not in group by clause but it should be identical for all grouped rows
             ORDER BY max($sortColumn) $sortDirection, decision.id
@@ -432,7 +444,9 @@ fun Handle.getVoucherValueDecision(mapper: ObjectMapper, id: UUID): VoucherValue
             daycare.name as placement_unit_name,
             daycare.language as placement_unit_lang,
             care_area.id as placement_unit_area_id,
-            care_area.name as placement_unit_area_name
+            care_area.name as placement_unit_area_name,
+            finance_decision_handler.first_name AS finance_decision_handler_first_name,
+            finance_decision_handler.last_name AS finance_decision_handler_last_name
         FROM voucher_value_decision as decision
             LEFT JOIN voucher_value_decision_part as part ON decision.id = part.voucher_value_decision_id
             LEFT JOIN person as head ON decision.head_of_family = head.id
@@ -441,6 +455,7 @@ fun Handle.getVoucherValueDecision(mapper: ObjectMapper, id: UUID): VoucherValue
             LEFT JOIN daycare ON part.placement_unit = daycare.id
             LEFT JOIN care_area ON daycare.care_area_id = care_area.id
             LEFT JOIN employee as approved_by ON decision.approved_by = approved_by.id
+            LEFT JOIN employee as finance_decision_handler ON finance_decision_handler.id = decision.decision_handler
         WHERE decision.id = :id
         ORDER BY part.date_of_birth DESC
     """
@@ -456,12 +471,26 @@ fun Handle.approveValueDecisionDraftsForSending(ids: List<UUID>, approvedBy: UUI
     // language=sql
     val sql =
         """
+        WITH youngest_child AS (
+            SELECT
+                voucher_value_decision_part.voucher_value_decision_id AS decision_id,
+                daycare.finance_decision_handler AS finance_decision_handler_id,
+                row_number() OVER (PARTITION BY (voucher_value_decision_id) ORDER BY date_of_birth DESC) AS rownum
+            FROM voucher_value_decision_part
+            LEFT JOIN daycare ON voucher_value_decision_part.placement_unit = daycare.id
+        )
         UPDATE voucher_value_decision SET
             status = :status,
             decision_number = nextval('voucher_value_decision_number_sequence'),
             approved_by = :approvedBy,
+            decision_handler = CASE
+                WHEN youngest_child.finance_decision_handler_id IS NOT NULL THEN youngest_child.finance_decision_handler_id
+                ELSE :approvedBy
+                END,
             approved_at = NOW()
-        WHERE id = :id
+        FROM voucher_value_decision AS vd
+        LEFT JOIN youngest_child ON youngest_child.decision_id = :id AND rownum = 1
+        WHERE vd.id = :id AND voucher_value_decision.id = vd.id
         """.trimIndent()
 
     val batch = prepareBatch(sql)
@@ -684,6 +713,11 @@ fun toVoucherValueDecisionDetailed(mapper: ObjectMapper) = { rs: ResultSet, _: S
         },
         approvedAt = rs.getTimestamp("approved_at")?.toInstant(),
         createdAt = rs.getTimestamp("created_at").toInstant(),
-        sentAt = rs.getTimestamp("sent_at")?.toInstant()
+        sentAt = rs.getTimestamp("sent_at")?.toInstant(),
+        financeDecisionHandlerName = rs.getString("finance_decision_handler_first_name")?.let {
+            rs.getString("finance_decision_handler_first_name") +
+                " " +
+                rs.getString("finance_decision_handler_last_name")
+        }
     )
 }

@@ -7,6 +7,7 @@ import UnitEditor from '~components/unit/unit-details/UnitEditor'
 import { Loading, Result } from '~api'
 import { CareArea } from '~types/unit'
 import { getAreas } from '~api/daycare'
+import { getEmployees } from '~api/employees'
 import {
   Container,
   ContentArea
@@ -22,6 +23,7 @@ import {
 } from '~api/unit'
 import { TitleContext, TitleState } from '~state/title'
 import { useTranslation } from '~state/i18n'
+import { FinanceDecisionHandlerOption } from '~state/invoicing-ui'
 
 export default function UnitDetailsPage(): JSX.Element {
   const { id } = useParams<{ id: string }>()
@@ -29,6 +31,10 @@ export default function UnitDetailsPage(): JSX.Element {
   const { setTitle } = useContext<TitleState>(TitleContext)
   const [unit, setUnit] = useState<Result<UnitResponse>>(Loading.of())
   const [areas, setAreas] = useState<Result<CareArea[]>>(Loading.of())
+  const [
+    financeDecisionHandlerOptions,
+    setFinanceDecisionHandlerOptions
+  ] = useState<Result<FinanceDecisionHandlerOption[]>>(Loading.of())
   const [editable, setEditable] = useState(false)
   const [submitState, setSubmitState] = useState<Result<void> | undefined>(
     undefined
@@ -41,6 +47,16 @@ export default function UnitDetailsPage(): JSX.Element {
 
   useEffect(() => {
     void getAreas().then(setAreas)
+    void getEmployees().then((employeesResponse) => {
+      setFinanceDecisionHandlerOptions(
+        employeesResponse.map((employees) =>
+          employees.map((employee) => ({
+            value: employee.id,
+            label: [employee.firstName, employee.lastName].join(' ')
+          }))
+        )
+      )
+    })
     void getDaycare(id).then(setUnit)
   }, [])
 
@@ -56,8 +72,10 @@ export default function UnitDetailsPage(): JSX.Element {
     })
   }
 
-  const loading = areas.isLoading || unit.isLoading
-  const failure = areas.isFailure || unit.isFailure
+  const loading =
+    areas.isLoading || unit.isLoading || financeDecisionHandlerOptions.isLoading
+  const failure =
+    areas.isFailure || unit.isFailure || financeDecisionHandlerOptions.isFailure
 
   return (
     <Container>
@@ -65,17 +83,22 @@ export default function UnitDetailsPage(): JSX.Element {
       <ContentArea opaque>
         {loading && <Loader />}
         {!loading && failure && <div>{i18n.common.error.unknown}</div>}
-        {areas.isSuccess && unit.isSuccess && (
-          <UnitEditor
-            editable={editable}
-            areas={areas.value}
-            unit={unit.value.daycare}
-            submit={submitState}
-            onSubmit={(fields) => onSubmit(fields, unit.value)}
-            onClickCancel={() => setEditable(false)}
-            onClickEdit={() => setEditable(true)}
-          />
-        )}
+        {areas.isSuccess &&
+          unit.isSuccess &&
+          financeDecisionHandlerOptions.isSuccess && (
+            <UnitEditor
+              editable={editable}
+              areas={areas.value}
+              financeDecisionHandlerOptions={
+                financeDecisionHandlerOptions.value
+              }
+              unit={unit.value.daycare}
+              submit={submitState}
+              onSubmit={(fields) => onSubmit(fields, unit.value)}
+              onClickCancel={() => setEditable(false)}
+              onClickEdit={() => setEditable(true)}
+            />
+          )}
       </ContentArea>
     </Container>
   )

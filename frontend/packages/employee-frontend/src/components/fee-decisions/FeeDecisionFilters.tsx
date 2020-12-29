@@ -10,16 +10,19 @@ import {
   FeeDecisionStatusFilter,
   FeeDecisionDistinctionsFilter,
   UnitFilter,
-  FeeDecisionDateFilter
+  FeeDecisionDateFilter,
+  FinanceDecisionHandlerFilter
 } from '../common/Filters'
 import { InvoicingUiContext } from '../../state/invoicing-ui'
 import { getAreas, getUnits } from '../../api/daycare'
+import { getFinanceDecisionHandlers } from '../../api/employees'
 import {
   DecisionDistinctiveDetails,
   FeeDecisionStatus
 } from '../../types/invoicing'
 import { Gap } from '@evaka/lib-components/src/white-space'
 import { useTranslation } from '~state/i18n'
+import { useMemo } from 'react'
 
 function FeeDecisionFilters() {
   const {
@@ -30,7 +33,14 @@ function FeeDecisionFilters() {
       setSearchTerms,
       clearSearchFilters
     },
-    shared: { units, setUnits, availableAreas, setAvailableAreas }
+    shared: {
+      units,
+      setUnits,
+      financeDecisionHandlers,
+      setFinanceDecisionHandlers,
+      availableAreas,
+      setAvailableAreas
+    }
   } = useContext(InvoicingUiContext)
 
   const { i18n } = useTranslation()
@@ -42,6 +52,20 @@ function FeeDecisionFilters() {
   useEffect(() => {
     void getUnits([], 'DAYCARE').then(setUnits)
   }, [])
+
+  useEffect(() => {
+    void getFinanceDecisionHandlers().then(setFinanceDecisionHandlers)
+  }, [])
+
+  const selectedFinanceDecisionHandler = useMemo(
+    () =>
+      financeDecisionHandlers
+        .getOrElse([])
+        .find(
+          (handler) => handler.value === searchFilters.financeDecisionHandlerId
+        ),
+    [searchFilters.financeDecisionHandlerId]
+  )
 
   // remove selected unit filter if the unit is not included in the selected areas
   useEffect(() => {
@@ -68,6 +92,12 @@ function FeeDecisionFilters() {
 
   const selectUnit = (id: string) =>
     setSearchFilters((filters) => ({ ...filters, unit: id }))
+
+  const selectFinanceDecisionHandler = (id: string) =>
+    setSearchFilters((filters) => ({
+      ...filters,
+      financeDecisionHandlerId: id
+    }))
 
   const toggleStatus = (id: FeeDecisionStatus) => () => {
     setSearchFilters({
@@ -139,6 +169,12 @@ function FeeDecisionFilters() {
               )
               .getOrElse(undefined)}
             select={selectUnit}
+          />
+          <Gap size="L" />
+          <FinanceDecisionHandlerFilter
+            financeDecisionHandlers={financeDecisionHandlers.getOrElse([])}
+            selected={selectedFinanceDecisionHandler}
+            select={selectFinanceDecisionHandler}
           />
         </>
       }

@@ -31,6 +31,11 @@ export type ProviderType =
 
 export type UnitLanguage = 'fi' | 'sv'
 
+interface FinanceDecisionHandler {
+  id: UUID
+  firstName: string
+  lastName: string
+}
 export interface Unit {
   id: UUID
   name: string
@@ -50,6 +55,7 @@ export interface Unit {
   uploadToKoski: boolean
   invoicedByMunicipality: boolean
   costCenter: string | null
+  financeDecisionHandler: FinanceDecisionHandler | null
   additionalInfo: string | null
   phone: string | null
   email: string | null

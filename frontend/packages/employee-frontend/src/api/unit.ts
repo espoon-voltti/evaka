@@ -33,6 +33,13 @@ import DateRange from '@evaka/lib-common/src/date-range'
 function convertUnitJson(unit: JsonOf<Unit>): Unit {
   return {
     ...unit,
+    financeDecisionHandler: unit.financeDecisionHandler
+      ? {
+          id: unit.financeDecisionHandler.id,
+          firstName: unit.financeDecisionHandler.firstName,
+          lastName: unit.financeDecisionHandler.lastName
+        }
+      : null,
     openingDate: unit.openingDate ? LocalDate.parseIso(unit.openingDate) : null,
     closingDate: unit.closingDate ? LocalDate.parseIso(unit.closingDate) : null,
     daycareApplyPeriod: unit.daycareApplyPeriod
@@ -632,6 +639,7 @@ export interface DaycareFields {
   uploadToKoski: boolean
   invoicedByMunicipality: boolean
   costCenter: string | null
+  financeDecisionHandlerId: UUID
   additionalInfo: string | null
   phone: string | null
   email: string | null

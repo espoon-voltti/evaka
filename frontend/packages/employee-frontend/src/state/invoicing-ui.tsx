@@ -22,6 +22,7 @@ import {
 } from '../types/invoicing'
 import { Loading, Result } from '../api'
 import { CareArea } from '~types/unit'
+import { UUID } from '~types'
 
 interface Checked {
   [id: string]: boolean
@@ -42,6 +43,7 @@ interface FeeDecisionSearchFilters {
   startDate: LocalDate | undefined
   endDate: LocalDate | undefined
   searchByStartDate: boolean
+  financeDecisionHandlerId: string | undefined
 }
 
 interface FeeDecisionSearchFilterState {
@@ -57,6 +59,7 @@ interface ValueDecisionSearchFilters {
   area: string[]
   unit?: string
   status: VoucherValueDecisionStatus
+  financeDecisionHandlerId?: string
 }
 
 interface ValueDecisionSearchFilterState {
@@ -87,9 +90,18 @@ interface InvoiceSearchFilterState {
   clearSearchFilters: () => void
 }
 
+export interface FinanceDecisionHandlerOption {
+  value: UUID
+  label: string
+}
+
 interface SharedState {
   units: Result<Unit[]>
   setUnits: Dispatch<SetStateAction<Result<Unit[]>>>
+  financeDecisionHandlers: Result<FinanceDecisionHandlerOption[]>
+  setFinanceDecisionHandlers: Dispatch<
+    SetStateAction<Result<FinanceDecisionHandlerOption[]>>
+  >
   availableAreas: Result<CareArea[]>
   setAvailableAreas: Dispatch<SetStateAction<Result<CareArea[]>>>
 }
@@ -109,7 +121,8 @@ const defaultState: UiState = {
       area: [],
       startDate: LocalDate.today().withDate(1),
       endDate: LocalDate.today(),
-      searchByStartDate: false
+      searchByStartDate: false,
+      financeDecisionHandlerId: undefined
     },
     setSearchFilters: () => undefined,
     searchTerms: '',
@@ -154,6 +167,8 @@ const defaultState: UiState = {
   shared: {
     units: Loading.of(),
     setUnits: () => undefined,
+    financeDecisionHandlers: Loading.of(),
+    setFinanceDecisionHandlers: () => undefined,
     availableAreas: Loading.of(),
     setAvailableAreas: () => undefined
   }
@@ -246,6 +261,9 @@ export const InvoicingUIContextProvider = React.memo(
     const [units, setUnits] = useState<Result<Unit[]>>(
       defaultState.shared.units
     )
+    const [financeDecisionHandlers, setFinanceDecisionHandlers] = useState<
+      Result<FinanceDecisionHandlerOption[]>
+    >(defaultState.shared.financeDecisionHandlers)
     const [availableAreas, setAvailableAreas] = useState<Result<CareArea[]>>(
       defaultState.shared.availableAreas
     )
@@ -289,6 +307,8 @@ export const InvoicingUIContextProvider = React.memo(
         shared: {
           units,
           setUnits,
+          financeDecisionHandlers,
+          setFinanceDecisionHandlers,
           availableAreas,
           setAvailableAreas
         }

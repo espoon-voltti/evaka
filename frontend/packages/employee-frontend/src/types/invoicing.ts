@@ -265,6 +265,8 @@ export interface FeeDecisionDetailed {
   approvedAt: Date | null
   createdAt: Date
   sentAt: Date | null
+  financeDecisionHandlerName: string | null
+  approvedBy: { firstName: string; lastName: string } | null
   minThreshold: number
   feePercent: number
   totalFee: number
@@ -304,6 +306,7 @@ export interface VoucherValueDecisionDetailed {
   approvedAt: Date | null
   createdAt: Date
   sentAt: Date | null
+  financeDecisionHandlerName: string | null
   minThreshold: number
   feePercent: number
   totalCoPayment: number

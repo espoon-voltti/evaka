@@ -1423,6 +1423,7 @@ export const fi = {
     decisionNUmber: 'Päätöksen numero',
     validPeriod: 'Maksupäätös voimassa',
     sentAt: 'Maksupäätös lähetetty',
+    decisionHandler: 'Päätöksen käsittelijä',
     relief: 'Maksupäätöksen huojennus',
     waitingManualSending: 'Lähetetään manuaalisesti',
     pdfLabel: 'Maksupäätös PDF',
@@ -1513,7 +1514,9 @@ export const fi = {
       'Haku nimellä, hetulla, osoitteella tai maksupäätöksen numerolla',
     area: 'Alue',
     unit: 'Toimipaikka',
+    financeDecisionHandler: 'Talouspäätösten käsittelijä',
     unitPlaceholder: 'Valitse toimipaikka',
+    financeDecisionHandlerPlaceholder: 'Valitse työntekijä',
     distinctiveDetails: 'Muuta huomioitavaa',
     status: 'Tila',
     clear: 'Tyhjennä valinnat',
@@ -1535,6 +1538,7 @@ export const fi = {
     validPeriod: 'Arvopäätös voimassa',
     sentAt: 'Arvopäätös lähetetty',
     pdfLabel: 'Arvopäätös PDF',
+    decisionHandlerName: 'Päätöksen käsittelijä',
     downloadPdf: 'Lataa PDF',
     pdfInProgress:
       '(PDF:ää muodostetaan. Lataa sivu hetken kuluttua uudelleen niin voit ladata sen oheisesta linkistä.)',
@@ -2072,6 +2076,7 @@ export const fi = {
       ophOrganizerOid: 'Järjestäjän OID',
       ophOrganizationOid: 'Organisaation OID',
       costCenter: 'Kustannuspaikka',
+      financeDecisionHandler: 'Talouspäätösten käsittelijä',
       additionalInfo: 'Lisätietoja yksiköstä',
       phone: 'Yksikön puhelinnumero',
       email: 'Yksikön sähköpostiosoite',
@@ -2116,6 +2121,7 @@ export const fi = {
       openingDate: 'Alkaen pp.kk.vvvv',
       closingDate: 'Päättyen pp.kk.vvvv',
       area: 'Valitse alue',
+      financeDecisionHandler: 'Valitse työntekijä',
       daycareType: 'Valitse tyyppi',
       costCenter: '(eVakasta laskutettaessa pakollinen tieto)',
       additionalInfo:
@@ -2153,7 +2159,8 @@ export const fi = {
         phone: 'Johtajan puhelinnumero puuttuu',
         email: 'Johtajan sähköposti puuttuu'
       },
-      cannotApplyToDifferentType: 'Hakutyyppi ja palvelumuoto eivät vastaa'
+      cannotApplyToDifferentType: 'Hakutyyppi ja palvelumuoto eivät vastaa',
+      financeDecisionHandler: 'Talouspäätösten käsittelijä puuttuu'
     }
   },
   mobile: {

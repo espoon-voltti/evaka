@@ -7,13 +7,16 @@ import {
   AreaFilter,
   Filters,
   ValueDecisionStatusFilter,
-  UnitFilter
+  UnitFilter,
+  FinanceDecisionHandlerFilter
 } from '../common/Filters'
 import { InvoicingUiContext } from '../../state/invoicing-ui'
 import { getAreas, getUnits } from '../../api/daycare'
 import { VoucherValueDecisionStatus } from '../../types/invoicing'
 import { Gap } from '@evaka/lib-components/src/white-space'
 import { useTranslation } from '~state/i18n'
+import { getFinanceDecisionHandlers } from '~api/employees'
+import { useMemo } from 'react'
 
 export default React.memo(function VoucherValueDecisionFilters() {
   const {
@@ -24,18 +27,38 @@ export default React.memo(function VoucherValueDecisionFilters() {
       setSearchTerms,
       clearSearchFilters
     },
-    shared: { units, setUnits, availableAreas, setAvailableAreas }
+    shared: {
+      units,
+      setUnits,
+      financeDecisionHandlers,
+      setFinanceDecisionHandlers,
+      availableAreas,
+      setAvailableAreas
+    }
   } = useContext(InvoicingUiContext)
 
   const { i18n } = useTranslation()
-
   useEffect(() => {
     void getAreas().then(setAvailableAreas)
   }, [])
 
   useEffect(() => {
+    void getFinanceDecisionHandlers().then(setFinanceDecisionHandlers)
+  }, [])
+
+  useEffect(() => {
     void getUnits([], 'DAYCARE').then(setUnits)
   }, [])
+
+  const selectedFinanceDecisionHandler = useMemo(
+    () =>
+      financeDecisionHandlers
+        .getOrElse([])
+        .find(
+          (handler) => handler.value === searchFilters.financeDecisionHandlerId
+        ),
+    [searchFilters.financeDecisionHandlerId]
+  )
 
   // remove selected unit filter if the unit is not included in the selected areas
   useEffect(() => {
@@ -66,6 +89,12 @@ export default React.memo(function VoucherValueDecisionFilters() {
 
   const selectUnit = useCallback(
     (unit: string) => setSearchFilters((filters) => ({ ...filters, unit })),
+    [setSearchFilters]
+  )
+
+  const selectFinanceDecisionHandler = useCallback(
+    (financeDecisionHandlerId: string) =>
+      setSearchFilters((filters) => ({ ...filters, financeDecisionHandlerId })),
     [setSearchFilters]
   )
 
@@ -106,6 +135,12 @@ export default React.memo(function VoucherValueDecisionFilters() {
               )
               .getOrElse(undefined)}
             select={selectUnit}
+          />
+          <Gap size="L" />
+          <FinanceDecisionHandlerFilter
+            financeDecisionHandlers={financeDecisionHandlers.getOrElse([])}
+            selected={selectedFinanceDecisionHandler}
+            select={selectFinanceDecisionHandler}
           />
         </>
       }

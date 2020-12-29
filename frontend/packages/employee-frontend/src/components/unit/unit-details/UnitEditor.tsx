@@ -33,6 +33,7 @@ import {
   FixedSpaceRow
 } from '@evaka/lib-components/src/layout/flex-helpers'
 import DateRange from '@evaka/lib-common/src/date-range'
+import { FinanceDecisionHandlerOption } from '~state/invoicing-ui'
 
 type CareType = 'DAYCARE' | 'PRESCHOOL' | 'PREPARATORY_EDUCATION' | 'CLUB'
 type DaycareType = 'CENTRE' | 'FAMILY' | 'GROUP_FAMILY'
@@ -56,6 +57,7 @@ interface FormData {
   uploadToKoski: boolean
   invoicedByMunicipality: boolean
   costCenter: string
+  financeDecisionHandlerId: string
   additionalInfo: string
   phone: string
   email: string
@@ -243,6 +245,7 @@ function parseLocation(value: string): Coordinate | undefined {
 
 interface Props {
   areas: CareArea[]
+  financeDecisionHandlerOptions: FinanceDecisionHandlerOption[]
   unit?: Unit
   editable: boolean
   onClickCancel?: () => void
@@ -344,6 +347,9 @@ function validateForm(
   ) {
     errors.push(i18n.unitEditor.error.cannotApplyToDifferentType)
   }
+  if (!form.financeDecisionHandlerId) {
+    errors.push(i18n.unitEditor.error.financeDecisionHandler)
+  }
   const {
     openingDate,
     closingDate,
@@ -355,6 +361,7 @@ function validateForm(
     roundTheClock,
     language,
     ghostUnit,
+    financeDecisionHandlerId,
     uploadToVarda,
     uploadToKoski,
     invoicedByMunicipality,
@@ -389,6 +396,7 @@ function validateForm(
         uploadToKoski,
         invoicedByMunicipality,
         costCenter,
+        financeDecisionHandlerId,
         additionalInfo,
         phone,
         email,
@@ -454,6 +462,7 @@ function toFormData(unit: Unit | undefined): FormData {
     uploadToKoski: unit?.uploadToKoski ?? false,
     invoicedByMunicipality: unit?.invoicedByMunicipality ?? false,
     costCenter: unit?.costCenter ?? '',
+    financeDecisionHandlerId: unit?.financeDecisionHandler?.id ?? '',
     additionalInfo: unit?.additionalInfo ?? '',
     phone: unit?.phone ?? '',
     email: unit?.email ?? '',
@@ -513,6 +522,14 @@ export default function UnitEditor(props: Props): JSX.Element {
     })
   const updateUnitManager = (updates: Partial<UnitManager>) =>
     updateForm({ unitManager: { ...form.unitManager, ...updates } })
+
+  const selectedFinanceDecisionManager = useMemo(
+    () =>
+      props.financeDecisionHandlerOptions.find(
+        (e) => e.value === form.financeDecisionHandlerId
+      ),
+    [form.financeDecisionHandlerId]
+  )
 
   const areaOptions = props.areas.map(({ id, name }) => ({
     value: id,
@@ -979,6 +996,23 @@ export default function UnitEditor(props: Props): JSX.Element {
           />
         ) : (
           form.costCenter
+        )}
+      </FormPart>
+      <FormPart>
+        <div>{showRequired(i18n.unitEditor.label.financeDecisionHandler)}</div>
+        {props.editable ? (
+          <Select
+            options={props.financeDecisionHandlerOptions}
+            placeholder={i18n.unitEditor.placeholder.financeDecisionHandler}
+            value={selectedFinanceDecisionManager}
+            onChange={(value) =>
+              value && 'value' in value
+                ? updateForm({ financeDecisionHandlerId: value.value })
+                : undefined
+            }
+          />
+        ) : (
+          selectedFinanceDecisionManager?.label
         )}
       </FormPart>
       <FormPart>

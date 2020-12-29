@@ -6,6 +6,7 @@ import { Failure, Result, Success } from '~api/index'
 import { client } from '~api/client'
 import { Employee } from '~types/employee'
 import { JsonOf } from '@evaka/lib-common/src/json'
+import { FinanceDecisionHandlerOption } from '~state/invoicing-ui'
 
 export async function getEmployees(): Promise<Result<Employee[]>> {
   return client
@@ -15,6 +16,21 @@ export async function getEmployees(): Promise<Result<Employee[]>> {
         ...data,
         created: new Date(data.created),
         updated: new Date(data.updated)
+      }))
+    )
+    .then((v) => Success.of(v))
+    .catch((e) => Failure.fromError(e))
+}
+
+export async function getFinanceDecisionHandlers(): Promise<
+  Result<FinanceDecisionHandlerOption[]>
+> {
+  return client
+    .get<JsonOf<Employee[]>>(`/employee/finance-decision-handler`)
+    .then((res) =>
+      res.data.map((data) => ({
+        value: data.id,
+        label: [data.firstName, data.lastName].join(' ')
       }))
     )
     .then((v) => Success.of(v))

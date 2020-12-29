@@ -97,7 +97,9 @@ val feeDecisionDetailedQueryBase =
         daycare.name as placement_unit_name,
         daycare.language as placement_unit_lang,
         care_area.id as placement_unit_area_id,
-        care_area.name as placement_unit_area_name
+        care_area.name as placement_unit_area_name,
+        finance_decision_handler.first_name AS finance_decision_handler_first_name,
+        finance_decision_handler.last_name AS finance_decision_handler_last_name
     FROM fee_decision as decision
         LEFT JOIN fee_decision_part as part ON decision.id = part.fee_decision_id
         LEFT JOIN person as head ON decision.head_of_family = head.id
@@ -106,6 +108,7 @@ val feeDecisionDetailedQueryBase =
         LEFT JOIN daycare ON part.placement_unit = daycare.id
         LEFT JOIN care_area ON daycare.care_area_id = care_area.id
         LEFT JOIN employee as approved_by ON decision.approved_by = approved_by.id
+        LEFT JOIN employee as finance_decision_handler ON finance_decision_handler.id = decision.decision_handler
     """.trimIndent()
 
 private val decisionNumberRegex = "^\\d{7,}$".toRegex()
@@ -293,7 +296,8 @@ fun searchFeeDecisions(
     searchTerms: String = "",
     startDate: LocalDate?,
     endDate: LocalDate?,
-    searchByStartDate: Boolean = false
+    searchByStartDate: Boolean = false,
+    financeDecisionHandlerId: UUID?
 ): Pair<Int, List<FeeDecisionSummary>> {
     val sortColumn = when (sortBy) {
         FeeDecisionSortParam.HEAD_OF_FAMILY -> "head.last_name"
@@ -314,7 +318,8 @@ fun searchFeeDecisions(
         "missingServiceNeed" to ServiceNeed.MISSING.toString(),
         "espooPostOffice" to "ESPOO",
         "start_date" to startDate,
-        "end_date" to endDate
+        "end_date" to endDate,
+        "finance_decision_handler" to financeDecisionHandlerId
     )
 
     val numberParamsRaw = splitSearchText(searchTerms).filter(decisionNumberRegex::matches)
@@ -340,7 +345,8 @@ fun searchFeeDecisions(
         if (numberParamsRaw.isNotEmpty()) numberQuery else null,
         if (searchTextWithoutNumbers.isNotBlank()) freeTextQuery else null,
         if ((startDate != null || endDate != null) && !searchByStartDate) "daterange(:start_date, :end_date, '[]') && daterange(valid_from, valid_to, '[]')" else null,
-        if ((startDate != null || endDate != null) && searchByStartDate) "daterange(:start_date, :end_date, '[]') @> valid_from" else null
+        if ((startDate != null || endDate != null) && searchByStartDate) "daterange(:start_date, :end_date, '[]') @> valid_from" else null,
+        if (financeDecisionHandlerId != null) "youngest_child.finance_decision_handler = :finance_decision_handler" else null
     )
 
     val youngestChildQuery =
@@ -349,6 +355,7 @@ fun searchFeeDecisions(
             SELECT
                 fee_decision_part.fee_decision_id AS decision_id,
                 care_area.short_name AS area,
+                daycare.finance_decision_handler AS finance_decision_handler,
                 row_number() OVER (PARTITION BY (fee_decision_id) ORDER BY date_of_birth DESC) AS rownum
             FROM fee_decision_part
             LEFT JOIN daycare ON fee_decision_part.placement_unit = daycare.id
@@ -361,13 +368,14 @@ fun searchFeeDecisions(
     val sql =
         """
         WITH decision_ids AS (
-            ${if (areas.isNotEmpty()) youngestChildQuery else ""}
+            ${if (areas.isNotEmpty() || financeDecisionHandlerId != null) youngestChildQuery else ""}
             SELECT decision.id, count(*) OVER (), max(sums.sum) sum
             FROM fee_decision AS decision
             LEFT JOIN fee_decision_part AS part ON decision.id = part.fee_decision_id
             LEFT JOIN person AS head ON decision.head_of_family = head.id
             LEFT JOIN person AS partner ON decision.head_of_family = partner.id
             LEFT JOIN person AS child ON part.child = child.id
+            LEFT JOIN daycare AS placement_unit ON placement_unit.id = part.placement_unit
             LEFT JOIN (
                 SELECT final_prices.id, sum(final_prices.final_price) sum
                 FROM (
@@ -382,7 +390,7 @@ fun searchFeeDecisions(
                 ) final_prices
                 GROUP BY final_prices.id
             ) sums ON decision.id = sums.id
-            ${if (areas.isNotEmpty()) youngestChildJoin else ""}
+            ${if (areas.isNotEmpty() || financeDecisionHandlerId != null) youngestChildJoin else ""}
             ${if (conditions.isNotEmpty()) """
             WHERE ${conditions.joinToString("\nAND ")}
         """.trimIndent() else ""}
@@ -503,14 +511,28 @@ fun findFeeDecisionsForHeadOfFamily(
 fun approveFeeDecisionDraftsForSending(h: Handle, ids: List<UUID>, approvedBy: UUID) {
     val sql =
         """
+        WITH youngest_child AS (
+            SELECT
+                fee_decision_part.fee_decision_id AS decision_id,
+                daycare.finance_decision_handler AS finance_decision_handler_id,
+                row_number() OVER (PARTITION BY (fee_decision_id) ORDER BY date_of_birth DESC) AS rownum
+            FROM fee_decision_part
+            LEFT JOIN daycare ON fee_decision_part.placement_unit = daycare.id
+        )
         UPDATE fee_decision
         SET
             status = :status,
             decision_number = nextval('fee_decision_number_sequence'),
             approved_by = :approvedBy,
+            decision_handler = CASE
+                WHEN youngest_child.finance_decision_handler_id IS NOT NULL THEN youngest_child.finance_decision_handler_id
+                ELSE :approvedBy
+                END,
             approved_at = NOW()
-        WHERE id = :id
-    """
+        FROM fee_decision AS fd
+        LEFT JOIN youngest_child ON youngest_child.decision_id = :id AND rownum = 1
+        WHERE fd.id = :id AND fee_decision.id = fd.id
+        """.trimIndent()
 
     val batch = h.prepareBatch(sql)
     ids.map { id ->
@@ -741,7 +763,12 @@ fun toFeeDecisionDetailed(mapper: ObjectMapper) = { rs: ResultSet, _: StatementC
         },
         approvedAt = rs.getTimestamp("approved_at")?.toInstant(),
         createdAt = rs.getTimestamp("created_at").toInstant(),
-        sentAt = rs.getTimestamp("sent_at")?.toInstant()
+        sentAt = rs.getTimestamp("sent_at")?.toInstant(),
+        financeDecisionHandlerName = rs.getString("finance_decision_handler_first_name")?.let {
+            rs.getString("finance_decision_handler_first_name") +
+                " " +
+                rs.getString("finance_decision_handler_last_name")
+        }
     )
 }
 

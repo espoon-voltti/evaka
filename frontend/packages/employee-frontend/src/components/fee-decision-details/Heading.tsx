@@ -64,6 +64,8 @@ interface Props {
   validFrom: LocalDate
   validTo: LocalDate | null
   sentAt: Date | null
+  financeDecisionHandlerName: string | null
+  approvedBy: { firstName: string; lastName: string } | null
   documentKey: string | null
   parts: FeeDecisionPartDetailed[]
   decisionType: FeeDecisionType
@@ -83,6 +85,7 @@ export default React.memo(function Heading({
   validFrom,
   validTo,
   sentAt,
+  financeDecisionHandlerName,
   documentKey,
   decisionType,
   changeDecisionType,
@@ -171,7 +174,16 @@ export default React.memo(function Heading({
         label: i18n.feeDecision.sentAt,
         value: formatDate(sentAt)
       }
-    ]
+    ].concat(
+      financeDecisionHandlerName
+        ? [
+            {
+              label: i18n.feeDecision.decisionHandler,
+              value: financeDecisionHandlerName
+            }
+          ]
+        : []
+    )
 
     return decisionNUmberExists.concat(notDraft).concat(always)
   }

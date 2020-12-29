@@ -61,7 +61,8 @@ class VoucherValueDecisionController(
         @RequestParam(required = false) status: String?,
         @RequestParam(required = false) area: String?,
         @RequestParam(required = false) unit: String?,
-        @RequestParam(required = false) searchTerms: String?
+        @RequestParam(required = false) searchTerms: String?,
+        @RequestParam(required = false) financeDecisionHandlerId: UUID?
     ): ResponseEntity<VoucherValueDecisionSearchResult> {
         Audit.VoucherValueDecisionSearch.log()
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
@@ -77,7 +78,8 @@ class VoucherValueDecisionController(
                     ?: throw BadRequest("Status is a mandatory parameter"),
                 area?.split(",") ?: listOf(),
                 unit?.let { parseUUID(it) },
-                searchTerms ?: ""
+                searchTerms ?: "",
+                financeDecisionHandlerId
             )
         }
         val pages =

@@ -75,7 +75,8 @@ const FeeDecisionsPage = React.memo(function FeeDecisionsPage() {
       searchTerms: debouncedSearchTerms ? debouncedSearchTerms : undefined,
       startDate: searchFilters.startDate?.formatIso(),
       endDate: searchFilters.endDate?.formatIso(),
-      searchByStartDate: searchFilters.searchByStartDate
+      searchByStartDate: searchFilters.searchByStartDate,
+      financeDecisionHandlerId: searchFilters.financeDecisionHandlerId
     }
     reloadDecisions(page, pageSize, sortBy, sortDirection, params)
   }, [
