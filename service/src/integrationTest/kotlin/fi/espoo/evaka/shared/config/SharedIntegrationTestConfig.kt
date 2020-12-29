@@ -81,7 +81,6 @@ fun getTestDataSource(): TestDataSource = synchronized(globalLock) {
 val mockS3Bucket = "test-bucket"
 
 @TestConfiguration
-@PropertySource("classpath:integration-test-common.properties")
 class SharedIntegrationTestConfig {
     @Bean
     fun jdbi(dataSource: DataSource) = configureJdbi(Jdbi.create(dataSource))

@@ -13,7 +13,6 @@ import org.springframework.context.annotation.PropertySource
 import org.springframework.stereotype.Component
 
 @TestConfiguration
-@PropertySource("classpath:integration-test-common.properties")
 @Import(SfiIntegrationTestConfig::class, TestDataSourceProperties::class)
 class IntegrationTestConfig {
     @Bean
