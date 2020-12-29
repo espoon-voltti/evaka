@@ -7,6 +7,13 @@ spring:
     name: evaka-message-service
   main:
     banner-mode: "off"
+  datasource:
+    continue-on-error: false
+    driver-class-name: "org.postgresql.Driver"
+    sqlScriptEncoding: "UTF-8"
+    type: "com.zaxxer.hikari.HikariDataSource"
+    hikari:
+      maximumPoolSize: 10
 server:
   port: 8083
 management:

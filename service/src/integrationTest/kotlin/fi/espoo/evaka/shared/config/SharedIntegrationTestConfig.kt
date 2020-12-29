@@ -24,7 +24,6 @@ import org.flywaydb.core.Flyway
 import org.jdbi.v3.core.Jdbi
 import org.springframework.boot.test.context.TestConfiguration
 import org.springframework.context.annotation.Bean
-import org.springframework.context.annotation.PropertySource
 import redis.clients.jedis.JedisPool
 import java.nio.file.Paths
 import javax.sql.DataSource

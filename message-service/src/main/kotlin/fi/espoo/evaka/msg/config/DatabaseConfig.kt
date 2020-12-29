@@ -60,6 +60,7 @@ class DatabaseConfig {
                 jdbcUrl = env["voltti.datasource.url"]
                 username = dataSourceUsername
                 password = env["voltti.datasource.password"]
+                maximumPoolSize = env.getProperty<Int>("spring.datasource.hikari.maximumPoolSize") ?: 10
                 leakDetectionThreshold = env.getProperty<Long>("spring.datasource.hikari.leak-detection-threshold") ?: 0
                 addDataSourceProperty("socketTimeout", TimeUnit.SECONDS.convert(15, TimeUnit.MINUTES).toInt())
             }
