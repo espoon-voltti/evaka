@@ -26,6 +26,7 @@ import ApplicationReadView from '../../pages/employee/applications/application-r
 import { ApplicationWorkbenchPage } from '../../pages/admin/application-workbench-page'
 import UnitPage from '../../pages/employee/units/unit-page'
 import { addWeeks, format } from 'date-fns'
+import { Selector } from 'testcafe'
 
 const applicationWorkbench = new ApplicationWorkbenchPage()
 const applicationReadView = new ApplicationReadView()
@@ -189,6 +190,34 @@ test('Accepting decision for non vtj guardiam sets application to waiting mailin
   await t
     .expect(applicationReadView.applicationStatus.innerText)
     .contains('Odottaa postitusta')
+})
+
+test('Placement dialog shows warning if guardian has restricted details', async (t) => {
+  const restrictedDetailsGuardianApplication = {
+    ...applicationFixture(
+      fixtures.familyWithRestrictedDetailsGuardian.children[0],
+      fixtures.familyWithRestrictedDetailsGuardian.guardian,
+      fixtures.familyWithRestrictedDetailsGuardian.otherGuardian,
+      'daycare',
+      'NOT_AGREED'
+    ),
+    id: '6a9b1b1e-3fdf-11eb-b378-0242ac130002'
+  }
+  const applicationId = restrictedDetailsGuardianApplication.id
+
+  await insertApplications([restrictedDetailsGuardianApplication])
+
+  await execSimpleApplicationAction(applicationId, 'move-to-waiting-placement')
+
+  await t.useRole(seppoAdminRole)
+
+  await applicationWorkbench.openPlacementQueue()
+
+  await applicationWorkbench.openDaycarePlacementDialogById(applicationId)
+
+  await t
+    .expect(Selector('[data-qa="restricted-details-warning"]').visible)
+    .ok()
 })
 
 test('Placement proposal flow', async (t) => {

@@ -43,7 +43,7 @@ class ScheduledOperationControllerIntegrationTest : FullApplicationTest() {
             setApplicationCreatedDate(tx, id_not_to_be_deleted, LocalDate.now().minusDays(31))
         }
 
-        db.transaction { tx ->
+        db.transaction { _ ->
             uploadAttachment(id_to_be_deleted, user)
             uploadAttachment(id_not_to_be_deleted, user)
         }

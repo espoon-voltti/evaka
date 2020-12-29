@@ -247,7 +247,7 @@ export class ApplicationWorkbenchPage {
     await t.click(button)
   }
 
-  async openDaycarePlaementById(id: string) {
+  async openDaycarePlacementDialogById(id: string) {
     const link = this.getApplicationById(id).find(
       '[data-qa="primary-action-create-placement-plan"]'
     )

@@ -42,6 +42,8 @@ import Placements from './Placements'
 import { TitleContext, TitleState } from '~state/title'
 import { getPlacementDraft, createPlacementPlan } from 'api/applications'
 import FiniteDateRange from '@evaka/lib-common/src/finite-date-range'
+import WarningLabel from '~components/common/WarningLabel'
+import Tooltip from '~components/common/Tooltip'
 
 const ContainerNarrow = styled(Container)`
   max-width: 990px;
@@ -90,6 +92,10 @@ const DOBTitle = styled.span`
 
 const SelectContainer = styled.div`
   max-width: 400px;
+`
+
+const FloatRight = styled.div`
+  float: right;
 `
 
 function PlacementDraft({ match }: RouteComponentProps<{ id: UUID }>) {
@@ -280,6 +286,21 @@ function PlacementDraft({ match }: RouteComponentProps<{ id: UUID }>) {
         {placementDraft.isSuccess && placement.period && (
           <Fragment>
             <PlacementDraftInfo>
+              {placementDraft.value.guardianHasRestrictedDetails && (
+                <FloatRight>
+                  <Tooltip
+                    tooltipId={`tooltip_warning`}
+                    tooltipText={i18n.placementDraft.restrictedDetailsTooltip}
+                    place={'top'}
+                    delayShow={750}
+                  >
+                    <WarningLabel
+                      text={i18n.placementDraft.restrictedDetails}
+                      dataQa={`restricted-details-warning`}
+                    />
+                  </Tooltip>
+                </FloatRight>
+              )}
               <Title size={1}>{i18n.placementDraft.createPlacementDraft}</Title>
               <ChildName>
                 <Title size={3}>
