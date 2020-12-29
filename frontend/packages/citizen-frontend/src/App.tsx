@@ -13,8 +13,11 @@ const Title = styled.h1`
 
 export default function App() {
   return (
-    <Title>
-      hello word <FontAwesomeIcon icon={faClock} />
-    </Title>
+    <>
+      <Title>
+        hello word <FontAwesomeIcon icon={faClock} />
+      </Title>
+      <a href="http://localhost:9091">Vanha</a>
+    </>
   )
 }

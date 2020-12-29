@@ -23,6 +23,14 @@ SPDX-License-Identifier: LGPL-2.1-or-later
         <font-awesome-icon :icon="item.icon"></font-awesome-icon>
         {{ item.label | uppercase }}
       </router-link>
+      <a
+        v-if="showCitizenFrontendLink"
+        class="menu-item"
+        :href="citizenFrontendUrl"
+      >
+        <font-awesome-icon :icon="['fal', 'gavel']"></font-awesome-icon>
+        {{ 'Uusi' | uppercase }}
+      </a>
 
       <div class="spacer" />
       <div class="nav-menuRight">
@@ -110,6 +118,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 
 <script>
   import { mapGetters } from 'vuex'
+  import { config } from '@evaka/enduser-frontend/src/config'
 
   export default {
     data() {
@@ -138,6 +147,12 @@ SPDX-License-Identifier: LGPL-2.1-or-later
       },
       languages() {
         return Object.values(this.$t('menu.language', { returnObjects: true }))
+      },
+      showCitizenFrontendLink() {
+        return this.isLoggedIn && config.feature.citizenFrontend
+      },
+      citizenFrontendUrl() {
+        return config.citizenFrontendUrl
       }
     },
     methods: {
