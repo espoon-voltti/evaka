@@ -4,6 +4,7 @@
 
 import React, { useCallback, useState } from 'react'
 import styled from 'styled-components'
+import { NavLink } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import colors from '@evaka/lib-components/src/colors'
 import {
@@ -14,6 +15,7 @@ import {
   farGavel,
   farMap
 } from '@evaka/lib-icons'
+import { config } from './configs'
 import EspooLogo from './espoo-logo.svg'
 
 export default React.memo(function Header() {
@@ -23,34 +25,31 @@ export default React.memo(function Header() {
         <Logo src={EspooLogo} alt="Espoo logo" />
       </LogoContainer>
       <Nav>
-        <NavItem>
+        <NavItem href={config.enduserBaseUrl}>
           <Icon icon={farMap} />
           Kartta
         </NavItem>
-        <NavItem>
+        <NavItem href={`${config.enduserBaseUrl}/applications`}>
           <Icon icon={farFileAlt} />
           Hakemukset
         </NavItem>
-        <NavItem>
+        <NavItem href={`${config.enduserBaseUrl}/decisions`}>
           <Icon icon={farGavel} />
           Päätökset
         </NavItem>
-        <NavItem>
+        <StyledNavLink to="/decisions">
           <Icon icon={farGavel} />
           Uusi Päätökset
-        </NavItem>
+        </StyledNavLink>
       </Nav>
       <Spacer />
       <LanguageMenu />
-      <LogoutButton
-        href="/api/application/auth/saml/logout"
-        data-qa="logout-btn"
-      >
+      <NavItem href="/api/application/auth/saml/logout" data-qa="logout-btn">
         <RoundIconBackground>
           <RoundIcon icon={faSignOut} />
         </RoundIconBackground>
-        KIRJAUDU ULOS
-      </LogoutButton>
+        Kirjaudu ulos
+      </NavItem>
     </HeaderContainer>
   )
 })
@@ -94,7 +93,10 @@ const Nav = styled.nav`
   flex-direction: row;
 `
 
-const NavItem = styled.a`
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const StyledNavItem = (component: any) => styled(component)`
+  color: inherit;
+  text-decoration: none;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -107,7 +109,15 @@ const NavItem = styled.a`
   &:hover {
     border-color: ${colors.blues.primary};
   }
+
+  &.active {
+    border-color: ${colors.brandEspoo.espooTurquoise};
+  }
 `
+
+const NavItem = StyledNavItem('a')
+
+const StyledNavLink = StyledNavItem(NavLink)
 
 const Spacer = styled.div`
   margin: 0 auto;
@@ -132,11 +142,6 @@ const RoundIconBackground = styled.div`
 
 const RoundIcon = styled(Icon)`
   margin: 0;
-`
-
-const LogoutButton = styled(NavItem)`
-  color: inherit;
-  text-decoration: none;
 `
 
 const LanguageButton = styled.button`

@@ -26,10 +26,10 @@ SPDX-License-Identifier: LGPL-2.1-or-later
       <a
         v-if="showCitizenFrontendLink"
         class="menu-item"
-        :href="citizenFrontendUrl"
+        :href="newDecisionsUrl"
       >
         <font-awesome-icon :icon="['fal', 'gavel']"></font-awesome-icon>
-        {{ 'Uusi' | uppercase }}
+        {{ 'Uusi Päätökset' | uppercase }}
       </a>
 
       <div class="spacer" />
@@ -151,8 +151,8 @@ SPDX-License-Identifier: LGPL-2.1-or-later
       showCitizenFrontendLink() {
         return this.isLoggedIn && config.feature.citizenFrontend
       },
-      citizenFrontendUrl() {
-        return config.citizenFrontendUrl
+      newDecisionsUrl() {
+        return `${config.citizenFrontendUrl}/decisions`
       }
     },
     methods: {

@@ -3,22 +3,24 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
-import styled from 'styled-components'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faClock } from '@evaka/lib-icons'
+import { BrowserRouter, Route, Switch } from 'react-router-dom'
+import { config } from './configs'
 import Header from './Header'
-
-const Title = styled.h1`
-  color: pink;
-`
+import Decisions from './decisions/Decisions'
 
 export default function App() {
   return (
-    <>
+    <BrowserRouter basename="/citizen">
       <Header />
-      <Title>
-        hello word <FontAwesomeIcon icon={faClock} />
-      </Title>
-    </>
+      <Switch>
+        <Route exact path="/decisions" component={Decisions} />
+        <Route path="/" component={RedirectToEnduser} />
+      </Switch>
+    </BrowserRouter>
   )
+}
+
+function RedirectToEnduser() {
+  window.location.href = config.enduserBaseUrl
+  return null
 }
