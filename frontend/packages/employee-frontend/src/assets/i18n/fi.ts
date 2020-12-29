@@ -832,7 +832,8 @@ export const fi = {
       newChild: 'Uusi lapsi',
       editChild: 'Lapsen muokkaus',
       removeChild: 'Lapsen poisto',
-      confirmText: 'Haluatko varmasti poistaa lapsen?',
+      confirmText:
+        'Haluatko varmasti poistaa lapsen? Päämiehen vaihtuessa merkitse edelliselle suhteelle loppumisaika ja lisää sen jälkeen uusi',
       error: {
         add: {
           title: 'Lapsen lisäys epäonnistui!'
