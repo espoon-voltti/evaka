@@ -5,17 +5,20 @@
 import React from 'react'
 import { BrowserRouter, Route, Switch } from 'react-router-dom'
 import { config } from './configs'
+import { Authentication } from './auth'
 import Header from './Header'
 import Decisions from './decisions/Decisions'
 
 export default function App() {
   return (
     <BrowserRouter basename="/citizen">
-      <Header />
-      <Switch>
-        <Route exact path="/decisions" component={Decisions} />
-        <Route path="/" component={RedirectToEnduser} />
-      </Switch>
+      <Authentication>
+        <Header />
+        <Switch>
+          <Route exact path="/decisions" component={Decisions} />
+          <Route path="/" component={RedirectToEnduser} />
+        </Switch>
+      </Authentication>
     </BrowserRouter>
   )
 }

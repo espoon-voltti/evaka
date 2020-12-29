@@ -16,9 +16,12 @@ import {
   farMap
 } from '@evaka/lib-icons'
 import { config } from './configs'
+import { useUser } from './auth'
 import EspooLogo from './espoo-logo.svg'
 
 export default React.memo(function Header() {
+  const user = useUser()
+
   return (
     <HeaderContainer>
       <LogoContainer>
@@ -48,7 +51,14 @@ export default React.memo(function Header() {
         <RoundIconBackground>
           <RoundIcon icon={faSignOut} />
         </RoundIconBackground>
-        Kirjaudu ulos
+        <LogoutText>
+          {user ? (
+            <UserName>
+              {user.firstName} {user.lastName}
+            </UserName>
+          ) : null}
+          <span>Kirjaudu ulos</span>
+        </LogoutText>
       </NavItem>
     </HeaderContainer>
   )
@@ -77,7 +87,9 @@ const HeaderContainer = styled.header`
 
 const LogoContainer = styled.div`
   flex-grow: 0;
+  flex-shrink: 1;
   flex-basis: 20%;
+  min-width: 180px;
 `
 
 const Logo = styled.img`
@@ -136,12 +148,26 @@ const RoundIconBackground = styled.div`
   background: ${colors.brandEspoo.espooTurquoise};
   width: 2.5rem;
   height: 2.5rem;
+  min-width: 2.5rem;
+  min-height: 2.5rem;
   border-radius: 100%;
   margin-right: 10px;
 `
 
 const RoundIcon = styled(Icon)`
   margin: 0;
+`
+
+const LogoutText = styled.div`
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+`
+
+const UserName = styled.span`
+  text-transform: none;
+  white-space: nowrap;
 `
 
 const LanguageButton = styled.button`
@@ -152,6 +178,7 @@ const LanguageButton = styled.button`
   border: none;
   border-bottom: 4px solid transparent;
   cursor: pointer;
+  white-space: nowrap;
 `
 
 const LanguageIcon = styled(FontAwesomeIcon)`
