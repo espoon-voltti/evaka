@@ -42,6 +42,17 @@ fixture('Enduser application validations')
     await cleanUp()
   })
 
+test('Preferred units can only be selected after preferred start date is selected', async (t) => {
+  await t.useRole(enduserRole)
+  await enduserPage.navigateToApplicationsTab()
+  await enduserPage.createApplication('daycare')
+
+  await enduserPage.assertSelectPreferredStartDateFirstWarningIsShown()
+  await enduserPage.openServiceNeedSection()
+  await enduserPage.selectPreferredDate(add(new Date(), { months: 1, days: 3 }))
+  await enduserPage.assertSelectPreferredStartDateFirstWarningIsNotShown()
+})
+
 test('Created application preferred start date can be moved earlier', async (t) => {
   const fixture = applicationFixture(
     fixtures.enduserChildFixtureJari,

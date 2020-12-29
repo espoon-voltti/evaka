@@ -202,6 +202,10 @@ export default class EnduserPage {
     '[data-qa="preferred-startdate-datepicker"] .date-picker'
   )
 
+  async openServiceNeedSection() {
+    await t.click(Selector('[data-qa="service-section"]'))
+  }
+
   async selectPreferredDate(date: Date) {
     await t.typeText(
       this.preferredStartDateDatePicker.find('input'),
@@ -233,6 +237,27 @@ export default class EnduserPage {
     await t.expect(childName.textContent).contains(firstName)
     await t.expect(childName.textContent).contains(lastName)
     await t.expect(Selector('[data-qa="link-open-decision-pdf"]').exists).ok()
+  }
+
+  async assertSelectPreferredStartDateFirstWarningIsShown() {
+    await t.click(Selector('[data-qa="preferred-units-section"]'))
+    await t
+      .expect(
+        Selector('[data-qa="message-select-preferred-start-date-first"]')
+          .visible
+      )
+      .ok()
+  }
+
+  async assertSelectPreferredStartDateFirstWarningIsNotShown() {
+    await t.click(Selector('[data-qa="preferred-units-section"]'))
+    await t
+      .expect(
+        Selector('[data-qa="message-select-preferred-start-date-first"]', {
+          timeout: 3000
+        }).visible
+      )
+      .notOk()
   }
 }
 
