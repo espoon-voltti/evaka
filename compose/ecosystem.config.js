@@ -17,6 +17,11 @@ module.exports = {
     cwd: path.resolve(__dirname, '../apigw'),
     ...defaults
   }, {
+    name: 'citizen',
+    script: useProIcons ? 'yarn install --mutex network && ICONS=pro yarn dev' : 'yarn install --ignore-optional --mutex network && yarn dev',
+    cwd: path.resolve(__dirname, '../frontend/packages/citizen-frontend'),
+    ...defaults
+  }, {
     name: 'enduser',
     script: useProIcons ? 'yarn install --mutex network && ICONS=pro yarn dev' : 'yarn install --ignore-optional --mutex network && yarn dev',
     cwd: path.resolve(__dirname, '../frontend/packages/enduser-frontend'),
