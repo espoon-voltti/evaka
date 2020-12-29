@@ -102,6 +102,11 @@ module.exports = function (env, argv) {
       historyApiFallback: {
         index: '/citizen/index.html'
       },
+      proxy: {
+        '/api/application': {
+          target: process.env.API_PROXY_URL || 'http://localhost:3010'
+        }
+      },
       watchOptions: {
         poll: 1000,
         ignored: /node_modules/

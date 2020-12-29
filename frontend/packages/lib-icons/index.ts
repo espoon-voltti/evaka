@@ -63,6 +63,7 @@ export interface IconSet {
   faQuestion: IconDefinition
   faQuestionCircle: IconDefinition
   faSearch: IconDefinition
+  faSignOut: IconDefinition
   faSync: IconDefinition
   faTimes: IconDefinition
   faTrash: IconDefinition
@@ -71,6 +72,9 @@ export interface IconSet {
   faUserAltSlash: IconDefinition
   faUserFriends: IconDefinition
   faUsers: IconDefinition
+  farFileAlt: IconDefinition
+  farGavel: IconDefinition
+  farMap: IconDefinition
   fasCaretUp: IconDefinition
   fasCheckCircle: IconDefinition
   fasChevronDown: IconDefinition
@@ -142,6 +146,7 @@ export const faPlusCircle = iconSet.faPlusCircle
 export const faQuestion = iconSet.faQuestion
 export const faQuestionCircle = iconSet.faQuestionCircle
 export const faSearch = iconSet.faSearch
+export const faSignOut = iconSet.faSignOut
 export const faSync = iconSet.faSync
 export const faTimes = iconSet.faTimes
 export const faTrash = iconSet.faTrash
@@ -150,6 +155,9 @@ export const faUser = iconSet.faUser
 export const faUserAltSlash = iconSet.faUserAltSlash
 export const faUserFriends = iconSet.faUserFriends
 export const faUsers = iconSet.faUsers
+export const farFileAlt = iconSet.farFileAlt
+export const farGavel = iconSet.farGavel
+export const farMap = iconSet.farMap
 export const fasCheckCircle = iconSet.fasCheckCircle
 export const fasChevronDown = iconSet.fasChevronDown
 export const fasChevronUp = iconSet.fasChevronUp

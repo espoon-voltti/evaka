@@ -57,6 +57,7 @@ import {
   faQuestion,
   faQuestionCircle,
   faSearch,
+  faSignOutAlt,
   faSync,
   faTimes,
   faTrash,
@@ -66,7 +67,11 @@ import {
   faUserFriends,
   faUsers
 } from '@fortawesome/free-solid-svg-icons'
-import { faUser as farUser } from '@fortawesome/free-regular-svg-icons'
+import {
+  faFileAlt as farFileAlt,
+  faMap as farMap,
+  faUser as farUser
+} from '@fortawesome/free-regular-svg-icons'
 import { IconSet } from '.'
 
 const icons: IconSet = {
@@ -125,6 +130,7 @@ const icons: IconSet = {
   faQuestion,
   faQuestionCircle,
   faSearch,
+  faSignOut: faSignOutAlt,
   faSync,
   faTimes,
   faTrash,
@@ -133,6 +139,9 @@ const icons: IconSet = {
   faUserAltSlash,
   faUserFriends,
   faUsers,
+  farFileAlt,
+  farGavel: faGavel,
+  farMap,
   fasCaretUp: faCaretUp,
   fasCheckCircle: faCheckCircle,
   fasChevronDown: faChevronDown,

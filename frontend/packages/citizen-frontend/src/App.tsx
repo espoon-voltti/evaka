@@ -6,6 +6,7 @@ import React from 'react'
 import styled from 'styled-components'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faClock } from '@evaka/lib-icons'
+import Header from './Header'
 
 const Title = styled.h1`
   color: pink;
@@ -14,10 +15,10 @@ const Title = styled.h1`
 export default function App() {
   return (
     <>
+      <Header />
       <Title>
         hello word <FontAwesomeIcon icon={faClock} />
       </Title>
-      <a href="http://localhost:9091">Vanha</a>
     </>
   )
 }
