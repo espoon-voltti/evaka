@@ -1,0 +1,36 @@
+# SPDX-FileCopyrightText: 2017-2020 City of Espoo
+#
+# SPDX-License-Identifier: LGPL-2.1-or-later
+
+---
+debug: true
+
+management:
+  endpoints:
+    enabled-by-default: true
+    web:
+      exposure:
+        include: "*"
+logging:
+  level:
+    fi:
+      espoo:
+        evaka: DEBUG
+
+aws:
+  region: eu-west-1
+
+springfox:
+  documentation:
+    swagger:
+      v2:
+        path: /api-docs
+
+voltti:
+  datasource:
+    password: message-app
+    url: jdbc:postgresql://localhost:5432/evaka_message_local
+    username: evaka_message_application_local
+  flyway:
+    password: message-flyway
+    username: evaka_message_migration_local

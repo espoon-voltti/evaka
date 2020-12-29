@@ -1,0 +1,26 @@
+# SPDX-FileCopyrightText: 2017-2020 City of Espoo
+#
+# SPDX-License-Identifier: LGPL-2.1-or-later
+---
+debug: true
+
+spring:
+  profiles:
+    active: integration-test
+
+aws:
+  region: eu-west-1
+
+fi:
+  espoo:
+    voltti:
+      s3mock:
+        url: http://s3.lvh.me:9876
+
+voltti:
+  datasource:
+    password: evaka_message_it
+    username: evaka_message_it
+  flyway:
+    password: evaka_message_it
+    username: evaka_message_it
