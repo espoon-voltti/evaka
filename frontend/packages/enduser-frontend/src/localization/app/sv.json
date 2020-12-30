@@ -524,6 +524,7 @@
       },
       "preferredUnits": {
         "title": "Ansökningsönskemål",
+        "selectPreferredStartDateFirst": "För att välja önskade enheter, välj det första önskade startdatumet i avsnittet om \"Servicebehov\"",
         "siblings": {
           "text": [
             "Målet är att placera syskon i samma enhet om inte familjen önskar annat. Som syskon betraktas barn som är folkbokförda på samma adress. Om du ansöker om en plats för syskon, som inte ännu har plats inom småbarnspedagogik, skriv uppgiften i tilläggsuppgifter.",

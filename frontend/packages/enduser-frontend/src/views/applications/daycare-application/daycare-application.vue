@@ -544,15 +544,17 @@ SPDX-License-Identifier: LGPL-2.1-or-later
                     )
                   }}
                 </c-section-title>
-                <c-text-content
-                  :text="
-                    $t(`form.${type}-application.preferredUnits.units.text`)
-                  "
-                  class="preferredunits-text-content"
-                  :asHtml="true"
-                />
 
-                <div class="columns is-multiline">
+                <div v-if="model.preferredStartDate">
+                  <c-text-content
+                    :text="
+                      $t(`form.${type}-application.preferredUnits.units.text`)
+                    "
+                    class="preferredunits-text-content"
+                    :asHtml="true"
+                  />
+
+                  <div class="columns is-multiline">
                   <div
                     class="column is-half-desktop is-full form-preferred-units-section"
                   >
@@ -653,6 +655,14 @@ SPDX-License-Identifier: LGPL-2.1-or-later
                       }}
                     </c-info-box>
                   </div>
+                </div>
+                </div>
+                <div v-else>
+                  <c-warning-box data-qa="message-select-preferred-start-date-first">
+                    <div>
+                      <p>{{ $t('form.daycare-application.preferredUnits.selectPreferredStartDateFirst') }}</p>
+                    </div>
+                  </c-warning-box>
                 </div>
               </div>
             </c-form-section>
