@@ -8,11 +8,11 @@ import CitizenHomePage from '../../pages/citizen/citizen-homepage'
 
 const citizenHomePage = new CitizenHomePage()
 
-fixture('Enduser attachments')
+fixture('Citizen attachments')
   .meta({ type: 'regression', subType: 'citizen-homepage' })
   .afterEach(logConsoleMessages)
 
-test('Enduser can change the UI language', async (t) => {
+test('Citizen can change the UI language', async (t) => {
   await t.useRole(enduserRole)
   await t.click(citizenHomePage.nav.decisions)
   await citizenHomePage.selectLanguage('fi')
