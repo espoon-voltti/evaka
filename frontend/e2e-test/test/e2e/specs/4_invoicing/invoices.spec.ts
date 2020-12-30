@@ -121,9 +121,12 @@ test('Add a new invoice row, modify its amount and price and persist the changes
   await t.expect(page.invoicesPage.exists).ok()
   await page.openFirstInvoice(t)
   await t.expect(page.invoiceRow.count).eql(2)
-  await t.expect(page.costCenterInput.nth(1).value).eql('12345')
-  await t.expect(page.amountInput.nth(1).value).eql('10')
-  await t.expect(page.priceInput.nth(1).value).eql('100')
+
+  const rowNum: number =
+    (await page.costCenterInput.nth(1).value) === '12345' ? 1 : 0
+  await t.expect(page.costCenterInput.nth(rowNum).value).eql('12345')
+  await t.expect(page.amountInput.nth(rowNum).value).eql('10')
+  await t.expect(page.priceInput.nth(rowNum).value).eql('100')
 })
 
 test('Add a new invoice row, delete it, and delete the parent row', async (t) => {
