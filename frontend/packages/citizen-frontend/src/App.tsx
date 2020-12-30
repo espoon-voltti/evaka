@@ -4,7 +4,6 @@
 
 import React from 'react'
 import { BrowserRouter, Route, Switch } from 'react-router-dom'
-import { config } from './configs'
 import { Authentication } from './auth'
 import { Localization } from './localization'
 import Header from './Header'
@@ -27,6 +26,7 @@ export default function App() {
 }
 
 function RedirectToEnduser() {
-  window.location.href = config.enduserBaseUrl
+  window.location.href =
+    window.location.host === 'localhost:9094' ? 'http://localhost:9091' : '/'
   return null
 }

@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { ReactNode, useContext, useEffect, useState } from 'react'
-import { config } from '../configs'
 import { client } from '../api-client'
 import { AuthContext } from './state'
 
@@ -31,7 +30,8 @@ export default React.memo(function Authenticated(props: {
 })
 
 const redirectToEnduser = () => {
-  window.location.href = config.enduserBaseUrl
+  window.location.href =
+    window.location.host === 'localhost:9094' ? 'http://localhost:9091' : '/'
 }
 
 const getAuthStatus = () => client.get<AuthStatus>('/auth/status')

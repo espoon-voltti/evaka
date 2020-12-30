@@ -17,10 +17,12 @@ import {
   farGavel,
   farMap
 } from '@evaka/lib-icons'
-import { config } from './configs'
 import { useUser } from './auth'
 import { Lang, useLang, useTranslation } from './localization'
 import EspooLogo from './espoo-logo.svg'
+
+const enduserBaseUrl =
+  window.location.host === 'localhost:9094' ? 'http://localhost:9091' : ''
 
 export default React.memo(function Header() {
   const user = useUser()
@@ -32,19 +34,19 @@ export default React.memo(function Header() {
         <Logo src={EspooLogo} alt="Espoo logo" />
       </LogoContainer>
       <Nav>
-        <NavItem href={config.enduserBaseUrl} data-qa={'nav-old-map'}>
+        <NavItem href={enduserBaseUrl} data-qa={'nav-old-map'}>
           <Icon icon={farMap} />
           {t.header.nav.map}
         </NavItem>
         <NavItem
-          href={`${config.enduserBaseUrl}/applications`}
+          href={`${enduserBaseUrl}/applications`}
           data-qa={'nav-old-applications'}
         >
           <Icon icon={farFileAlt} />
           {t.header.nav.applications}
         </NavItem>
         <NavItem
-          href={`${config.enduserBaseUrl}/decisions`}
+          href={`${enduserBaseUrl}/decisions`}
           data-qa={'nav-old-decisions'}
         >
           <Icon icon={farGavel} />

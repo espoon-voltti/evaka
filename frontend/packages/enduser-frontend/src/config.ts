@@ -31,7 +31,6 @@ type AppConfig = DeepReadonly<
       }
       styles: object[]
     }
-    citizenFrontendUrl: string
     feature: {
       daycareApplication: boolean
       preschoolApplication: boolean
@@ -176,8 +175,6 @@ configs._default = {
     enabled: false
   },
 
-  citizenFrontendUrl: 'http://localhost:9094/citizen',
-
   feature: {
     daycareApplication: true,
     preschoolApplication: true,
@@ -190,8 +187,7 @@ configs.dev = defaultsDeep(
   {
     maps: {
       googleApiKey: 'AIzaSyCo8b3pEGS4IvVOBHExYePR7ru1SoHtKOs'
-    },
-    citizenFrontendUrl: '/citizen'
+    }
   },
   configs._default
 )
@@ -199,8 +195,7 @@ configs.test = defaultsDeep(
   {
     maps: {
       googleApiKey: 'AIzaSyAhPTjH3-vK8U6RJblEabS7JJYNgZmjzV8'
-    },
-    citizenFrontendUrl: '/citizen'
+    }
   },
   configs._default
 )
@@ -211,8 +206,7 @@ configs.staging = defaultsDeep(
     },
     sentry: {
       enabled: true
-    },
-    citizenFrontendUrl: '/citizen'
+    }
   },
   configs._default
 )
@@ -224,7 +218,6 @@ configs.prod = defaultsDeep(
     sentry: {
       enabled: true
     },
-    citizenFrontendUrl: '/citizen',
     feature: {
       daycareApplication: true,
       preschoolApplication: true,

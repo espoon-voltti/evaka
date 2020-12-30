@@ -10,6 +10,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
       :model="menu"
       :loginAddress="loginAddress"
       :logoutAddress="logoutAddress"
+      :citizenFrontendUrl="citizenFrontendUrl"
     />
 
     <mobile-menu
@@ -76,7 +77,12 @@ SPDX-License-Identifier: LGPL-2.1-or-later
         return this.menuItems.filter((item) =>
           item.requiresAuth ? this.isLoggedIn : true
         )
-      }
+      },
+      citizenFrontendUrl() {
+        return window.location.host === 'localhost:9091'
+          ? 'http://localhost:9094/citizen'
+          : '/citizen'
+      },
     }
   }
 </script>

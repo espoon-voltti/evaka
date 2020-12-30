@@ -139,6 +139,10 @@ SPDX-License-Identifier: LGPL-2.1-or-later
       model: {
         type: Array,
         required: true
+      },
+      citizenFrontendUrl: {
+        type: String,
+        required: true
       }
     },
     computed: {
@@ -153,7 +157,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
         return this.isLoggedIn && config.feature.citizenFrontend
       },
       newDecisionsUrl() {
-        return `${config.citizenFrontendUrl}/decisions`
+        return `${this.citizenFrontendUrl}/decisions`
       }
     },
     methods: {
