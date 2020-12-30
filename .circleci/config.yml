@@ -644,6 +644,13 @@ jobs:
           suite: e2e-ci-application
       - notify_slack
 
+  e2e-test-citizen:
+    executor: e2e_executor
+    steps:
+      - e2e_test:
+          suite: e2e-ci-citizen
+      - notify_slack
+
   e2e-test-invoicing:
     executor: e2e_executor
     steps:
@@ -884,6 +891,13 @@ workflows:
             - frontend_build_and_test
             - apigw_build_image
             - service_build_image
+      - e2e-test-citizen:
+          context:
+            - voltti-dockerhub
+          requires:
+            - frontend_build_and_test
+            - apigw_build_image
+            - service_build_image
       - e2e-test-invoicing:
           context:
             - voltti-dockerhub
@@ -965,6 +979,7 @@ workflows:
             - org-global
           requires:
             - e2e-test-application
+            - e2e-test-citizen
             - e2e-test-invoicing
             - e2e-test-employee
             - e2e-test-employee-2

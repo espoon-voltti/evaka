@@ -8,7 +8,7 @@ import CitizenHomePage from '../../pages/citizen/citizen-homepage'
 
 const citizenHomePage = new CitizenHomePage()
 
-fixture('Citizen attachments')
+fixture('Citizen page')
   .meta({ type: 'regression', subType: 'citizen-homepage' })
   .afterEach(logConsoleMessages)
 
