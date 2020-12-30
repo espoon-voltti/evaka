@@ -7,7 +7,9 @@ import styled from 'styled-components'
 import { NavLink } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import colors from '@evaka/lib-components/src/colors'
+import useCloseOnOutsideClick from '@evaka/lib-components/src/utils/useCloseOnOutsideClick'
 import {
+  faCheck,
   faChevronDown,
   faChevronUp,
   faSignOut,
@@ -17,10 +19,12 @@ import {
 } from '@evaka/lib-icons'
 import { config } from './configs'
 import { useUser } from './auth'
+import { Lang, useLang, useTranslation } from './localization'
 import EspooLogo from './espoo-logo.svg'
 
 export default React.memo(function Header() {
   const user = useUser()
+  const t = useTranslation()
 
   return (
     <HeaderContainer>
@@ -30,19 +34,19 @@ export default React.memo(function Header() {
       <Nav>
         <NavItem href={config.enduserBaseUrl}>
           <Icon icon={farMap} />
-          Kartta
+          {t.header.nav.map}
         </NavItem>
         <NavItem href={`${config.enduserBaseUrl}/applications`}>
           <Icon icon={farFileAlt} />
-          Hakemukset
+          {t.header.nav.applications}
         </NavItem>
         <NavItem href={`${config.enduserBaseUrl}/decisions`}>
           <Icon icon={farGavel} />
-          Päätökset
+          {t.header.nav.decisions}
         </NavItem>
         <StyledNavLink to="/decisions">
           <Icon icon={farGavel} />
-          Uusi Päätökset
+          {t.header.nav.newDecisions}
         </StyledNavLink>
       </Nav>
       <Spacer />
@@ -57,22 +61,50 @@ export default React.memo(function Header() {
               {user.firstName} {user.lastName}
             </UserName>
           ) : null}
-          <span>Kirjaudu ulos</span>
+          <span>{t.header.logout}</span>
         </LogoutText>
       </NavItem>
     </HeaderContainer>
   )
 })
 
+const langs: Lang[] = ['fi', 'sv', 'en']
+
 const LanguageMenu = React.memo(function LanguageMenu() {
+  const t = useTranslation()
+  const [lang, setLang] = useLang()
   const [open, setOpen] = useState(false)
   const toggleOpen = useCallback(() => setOpen((state) => !state), [setOpen])
+  const dropDownRef = useCloseOnOutsideClick<HTMLDivElement>(() =>
+    setOpen(false)
+  )
 
   return (
-    <LanguageButton onClick={toggleOpen}>
-      FI
-      <LanguageIcon icon={open ? faChevronUp : faChevronDown} />
-    </LanguageButton>
+    <div ref={dropDownRef}>
+      <LanguageButton onClick={toggleOpen}>
+        {lang}
+        <LanguageIcon icon={open ? faChevronUp : faChevronDown} />
+      </LanguageButton>
+      {open ? (
+        <LanguageDropDown>
+          {langs.map((l: Lang) => (
+            <LanguageListElement key={l}>
+              <LanguageDropDownButton
+                selected={lang === l}
+                onClick={() => {
+                  setLang(l)
+                  setOpen(false)
+                }}
+              >
+                <LanguageShort>{l}</LanguageShort>
+                <span>{t.header.lang[l]}</span>
+                {lang === l ? <LanguageCheck icon={faCheck} /> : null}
+              </LanguageDropDownButton>
+            </LanguageListElement>
+          ))}
+        </LanguageDropDown>
+      ) : null}
+    </div>
   )
 })
 
@@ -172,8 +204,10 @@ const UserName = styled.span`
 
 const LanguageButton = styled.button`
   color: inherit;
+  text-transform: uppercase;
   font-size: 1rem;
   background: transparent;
+  height: 100%;
   padding: 1rem 1.2rem;
   border: none;
   border-bottom: 4px solid transparent;
@@ -184,5 +218,46 @@ const LanguageButton = styled.button`
 const LanguageIcon = styled(FontAwesomeIcon)`
   height: 1em !important;
   width: 0.625em !important;
+  margin-left: 0.5rem;
+`
+
+const LanguageDropDown = styled.ul`
+  position: absolute;
+  top: 64px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  background: ${colors.greyscale.white};
+  box-shadow: 0 2px 6px 0 ${colors.greyscale.lighter};
+`
+
+const LanguageListElement = styled.li`
+  display: block;
+  width: 10.5rem;
+`
+
+const LanguageDropDownButton = styled.button<{ selected: boolean }>`
+  display: flex;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: ${colors.greyscale.dark};
+  font-size: 1em;
+  font-weight: ${({ selected }) => (selected ? 600 : 400)};
+  padding: 10px;
+  width: 100%;
+
+  &:hover {
+    background: ${colors.blues.light};
+  }
+`
+
+const LanguageShort = styled.span`
+  width: 1.8rem;
+  text-transform: uppercase;
+  text-align: left;
+`
+
+const LanguageCheck = styled(FontAwesomeIcon)`
   margin-left: 0.5rem;
 `
