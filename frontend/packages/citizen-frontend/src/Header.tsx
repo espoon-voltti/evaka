@@ -32,19 +32,25 @@ export default React.memo(function Header() {
         <Logo src={EspooLogo} alt="Espoo logo" />
       </LogoContainer>
       <Nav>
-        <NavItem href={config.enduserBaseUrl}>
+        <NavItem href={config.enduserBaseUrl} data-qa={'nav-old-map'}>
           <Icon icon={farMap} />
           {t.header.nav.map}
         </NavItem>
-        <NavItem href={`${config.enduserBaseUrl}/applications`}>
+        <NavItem
+          href={`${config.enduserBaseUrl}/applications`}
+          data-qa={'nav-old-applications'}
+        >
           <Icon icon={farFileAlt} />
           {t.header.nav.applications}
         </NavItem>
-        <NavItem href={`${config.enduserBaseUrl}/decisions`}>
+        <NavItem
+          href={`${config.enduserBaseUrl}/decisions`}
+          data-qa={'nav-old-decisions'}
+        >
           <Icon icon={farGavel} />
           {t.header.nav.decisions}
         </NavItem>
-        <StyledNavLink to="/decisions">
+        <StyledNavLink to="/decisions" data-qa={'nav-decisions'}>
           <Icon icon={farGavel} />
           {t.header.nav.newDecisions}
         </StyledNavLink>
@@ -81,12 +87,12 @@ const LanguageMenu = React.memo(function LanguageMenu() {
 
   return (
     <div ref={dropDownRef}>
-      <LanguageButton onClick={toggleOpen}>
+      <LanguageButton onClick={toggleOpen} data-qa={'button-select-language'}>
         {lang}
         <LanguageIcon icon={open ? faChevronUp : faChevronDown} />
       </LanguageButton>
       {open ? (
-        <LanguageDropDown>
+        <LanguageDropDown data-qa={'select-lang'}>
           {langs.map((l: Lang) => (
             <LanguageListElement key={l}>
               <LanguageDropDownButton
@@ -95,6 +101,7 @@ const LanguageMenu = React.memo(function LanguageMenu() {
                   setLang(l)
                   setOpen(false)
                 }}
+                data-qa={`lang-${l}`}
               >
                 <LanguageShort>{l}</LanguageShort>
                 <span>{t.header.lang[l]}</span>

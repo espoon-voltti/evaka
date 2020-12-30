@@ -27,6 +27,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
         v-if="showCitizenFrontendLink"
         class="menu-item"
         :href="newDecisionsUrl"
+        data-qa="nav-decisions"
       >
         <font-awesome-icon :icon="['fal', 'gavel']"></font-awesome-icon>
         {{ 'Uusi Päätökset' | uppercase }}
