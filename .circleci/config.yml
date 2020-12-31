@@ -29,7 +29,7 @@ aliases:
   - &nodejs_image cimg/node:14.15
   - &openjdk_image cimg/openjdk:11.0
   - &ubuntu_machine_image ubuntu-2004:202010-01
-  - &builder_aws_image 307238562370.dkr.ecr.eu-west-1.amazonaws.com/voltti/builder-aws:1a7e0dec664ec27fa49d3eb76992be870c3f5b99
+  - &builder_aws_image 307238562370.dkr.ecr.eu-west-1.amazonaws.com/voltti/builder-aws:18.04-d7214c52ce3670639a5b6868607198bde918cbcb
 
   - &default_config
     working_directory: *workspace_root
