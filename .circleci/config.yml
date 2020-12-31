@@ -536,7 +536,6 @@ jobs:
     executor: apigw_executor
     steps:
       - *restore_repo
-      - attach_root_workspace
       - setup_authenticated_remote_docker
       - run:
           name: Build base image
