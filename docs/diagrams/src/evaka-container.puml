@@ -3,7 +3,7 @@
 ' SPDX-License-Identifier: LGPL-2.1-or-later
 
 @startuml evaka-container
-!includeurl https://raw.githubusercontent.com/RicardoNiepel/C4-PlantUML/master/C4_Container.puml
+!includeurl https://github.com/plantuml-stdlib/C4-PlantUML/raw/v2.0.0/C4_Container.puml
 
 title eVakan container-kaavio
 
