@@ -6,23 +6,29 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 
 # eVaka Architecture Documentation
 
-This repository contains the architecture documentation for Espoo early childhood education system (eVaka).
-
-## How to develop
+This directory contains the architecture documentation for Espoo early childhood education system (eVaka).
 
 - Architecture diagrams are based on the [C4 model for visualising software architecture](https://c4model.com/) and implemented using [Plant UML](https://plantuml.com/)
 - Documentation language is Finnish
 
-### How to generate SVG images from `.puml` files
+## Generate SVG images from `.puml` files
 
-You can generate PNG, SVG or even AsciiArt files from PlantUML source files
-using the command line tool provided by https://plantuml.com
+You can generate PNG, SVG or even AsciiArt files from [PlantUML](https://plantuml.com) source files:
 
-#### Prerequisites
-- Java installed on your development box
+1. [using Docker](#using-docker) (recommended, only requires Docker)
+1. [using the command line tool](#using-the-command-line-tool) (more customizable, requires Java etc.)
 
-#### Instructions
+### Using Docker
 
-1. Download [PlantUML jar](https://search.maven.org/remotecontent?filepath=net/sourceforge/plantuml/plantuml/1.2019.12/plantuml-1.2019.12.jar) from e.g. central Maven repository
-2. Generate SVG image from e.g. `source.puml` file by executing following command: `$ java -jar plantuml.jar -tsvg source.puml -o svg/`
-3. Check out the generated image from `svg/` directory
+1. Install [Docker](https://docs.docker.com/engine/install/)
+1. `./convert.sh`
+1. Check out the generated images in `./diagrams/svg/` directory
+
+### Using the command line tool
+
+1. Install Java (e.g. [OpenJDK](https://openjdk.java.net/install/))
+1. Download [PlantUML jar](https://search.maven.org/remotecontent?filepath=net/sourceforge/plantuml/plantuml/1.2020.11/plantuml-1.2020.11.jar) (version `1.2020.11`) from e.g. central Maven repository
+1. Generate SVG image from e.g. `source.puml` file by executing following command: `$ java -jar plantuml.jar -tsvg source.puml -o diagrams/svg/`
+1. Check out the generated image from `diagrams/svg/` directory
+
+See also: [official documentation for the command line tool](https://plantuml.com/command-line)
