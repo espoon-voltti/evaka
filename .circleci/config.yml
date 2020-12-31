@@ -496,7 +496,6 @@ jobs:
   checkout_repo:
     executor: apigw_executor
     steps:
-      - *restore_repo
       - checkout
       - *store_repo
       - notify_slack
