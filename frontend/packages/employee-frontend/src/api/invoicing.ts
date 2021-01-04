@@ -4,7 +4,7 @@
 
 import { JsonOf } from '@evaka/lib-common/src/json'
 import LocalDate from '@evaka/lib-common/src/local-date'
-import { Failure, Response, Result, Success } from '~api'
+import { Failure, Response, Result, Success } from '@evaka/lib-common/src/api'
 import { API_URL, client } from '~api/client'
 import { SearchOrder, UUID } from '~types'
 import { Absence, deserializeAbsence } from '~types/absence'

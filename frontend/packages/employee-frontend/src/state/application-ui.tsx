@@ -12,7 +12,7 @@ import React, {
 } from 'react'
 import LocalDate from '@evaka/lib-common/src/local-date'
 import { Unit } from '~types/invoicing'
-import { Result, Loading } from '~api'
+import { Result, Loading } from '@evaka/lib-common/src/api'
 import {
   ApplicationDateType,
   ApplicationTypeToggle,

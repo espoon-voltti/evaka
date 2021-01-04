@@ -28,7 +28,7 @@ import {
   InvoiceCodes,
   PersonDetailed
 } from '../../types/invoicing'
-import { Result } from '../../api'
+import { Result } from '@evaka/lib-common/src/api'
 import { totalPrice } from '../../utils/pricing'
 import AbsencesModal from './AbsencesModal'
 import { formatName } from '~utils'

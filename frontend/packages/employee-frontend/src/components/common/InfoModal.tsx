@@ -21,7 +21,7 @@ import {
   ModalTitle,
   ModalSize,
   IconColour
-} from './FormModal'
+} from '@evaka/lib-components/src/molecules/modals/FormModal'
 import Title from '@evaka/lib-components/src/atoms/Title'
 import { Gap } from '@evaka/lib-components/src/white-space'
 import Button from '@evaka/lib-components/src/atoms/buttons/Button'

@@ -9,18 +9,29 @@ import { Localization } from './localization'
 import Header from './header/Header'
 import Decisions from './decisions/Decisions'
 import Footer from '~Footer'
+import DecisionResponseList from '~decisions/decision-response-page/DecisionResponseList'
+import GlobalErrorDialog from '~overlay/Error'
+import { OverlayContextProvider } from '~overlay/state'
 
 export default function App() {
   return (
     <BrowserRouter basename="/citizen">
       <Authentication>
         <Localization>
-          <Header />
-          <Switch>
-            <Route exact path="/decisions" component={Decisions} />
-            <Route path="/" component={RedirectToEnduser} />
-          </Switch>
-          <Footer />
+          <OverlayContextProvider>
+            <Header />
+            <Switch>
+              <Route exact path="/decisions" component={Decisions} />
+              <Route
+                exact
+                path="/decisions/by-application/:applicationId"
+                component={DecisionResponseList}
+              />
+              <Route path="/" component={RedirectToEnduser} />
+            </Switch>
+            <Footer />
+            <GlobalErrorDialog />
+          </OverlayContextProvider>
         </Localization>
       </Authentication>
     </BrowserRouter>

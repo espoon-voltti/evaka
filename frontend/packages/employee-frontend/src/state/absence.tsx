@@ -4,7 +4,7 @@
 
 import React, { createContext, useMemo, useState } from 'react'
 import LocalDate from '@evaka/lib-common/src/local-date'
-import { Loading, Result } from '~/api'
+import { Loading, Result } from '@evaka/lib-common/src/api'
 import {
   TableMode,
   Group,

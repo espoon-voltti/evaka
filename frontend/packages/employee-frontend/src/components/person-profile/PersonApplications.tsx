@@ -10,7 +10,7 @@ import { faFileAlt } from '@evaka/lib-icons'
 import { UUID } from '~types'
 import { useTranslation } from '~state/i18n'
 import { useEffect } from 'react'
-import { Loading } from '~api'
+import { Loading } from '@evaka/lib-common/src/api'
 import { useContext } from 'react'
 import { PersonContext } from '~state/person'
 import {

@@ -3,10 +3,10 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useContext, useEffect, useState } from 'react'
-import FormModal from '~components/common/FormModal'
+import FormModal from '@evaka/lib-components/src/molecules/modals/FormModal'
 import { useTranslation } from '~state/i18n'
 import { UIContext } from '~state/ui'
-import { DatePicker } from '~components/common/DatePicker'
+import { DatePicker } from '@evaka/lib-components/src/molecules/DatePicker'
 import InputField from '@evaka/lib-components/src/atoms/form/InputField'
 import { allPropertiesTrue } from '~utils/validation/validations'
 import '~components/unit/tab-groups/groups/GroupModal.scss'
@@ -82,10 +82,14 @@ function GroupModal({ unitId, reload }: Props) {
   return (
     <FormModal
       title={i18n.unit.groups.createModal.title}
-      resolveLabel={i18n.unit.groups.createModal.confirmButton}
-      resolve={submit}
-      reject={() => clearUiMode()}
-      rejectLabel={i18n.unit.groups.createModal.cancelButton}
+      resolve={{
+        action: submit,
+        label: i18n.unit.groups.createModal.confirmButton
+      }}
+      reject={{
+        action: clearUiMode,
+        label: i18n.unit.groups.createModal.cancelButton
+      }}
     >
       <FixedSpaceColumn spacing={'m'}>
         <section>

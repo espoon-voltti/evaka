@@ -4,7 +4,7 @@
 
 import React, { useState, useEffect } from 'react'
 import LocalDate from '@evaka/lib-common/src/local-date'
-import { DatePicker } from '~components/common/DatePicker'
+import { DatePicker } from '@evaka/lib-components/src/molecules/DatePicker'
 import { useTranslation } from '../../state/i18n'
 import './DateRangeInput.scss'
 

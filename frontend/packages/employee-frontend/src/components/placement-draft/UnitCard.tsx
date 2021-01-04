@@ -17,7 +17,7 @@ import Title from '@evaka/lib-components/src/atoms/Title'
 import Loader from '@evaka/lib-components/src/atoms/Loader'
 
 import { useTranslation } from '~state/i18n'
-import { Loading, Result } from '~api'
+import { Loading, Result } from '@evaka/lib-common/src/api'
 import { getOccupancyRates, OccupancyResponse } from '~api/unit'
 
 import { EspooColours } from '../../utils/colours'

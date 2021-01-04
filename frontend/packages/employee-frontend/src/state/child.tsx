@@ -12,7 +12,7 @@ import {
   Placement,
   ServiceNeed
 } from '~/types/child'
-import { Loading, Result } from '~/api'
+import { Loading, Result } from '@evaka/lib-common/src/api'
 import { PersonDetails } from '~types/person'
 import { Parentship } from '~types/fridge'
 import { ApplicationSummary } from 'types/application'

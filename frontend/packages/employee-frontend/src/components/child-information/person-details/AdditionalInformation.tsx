@@ -4,7 +4,7 @@
 
 import React, { useContext, useEffect, useState } from 'react'
 import { useTranslation } from '~/state/i18n'
-import { Loading } from '~api'
+import { Loading } from '@evaka/lib-common/src/api'
 import {
   getAdditionalInformation,
   updateAdditionalInformation

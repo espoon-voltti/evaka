@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useContext, useState } from 'react'
-import FormModal from 'components/common/FormModal'
+import FormModal from '@evaka/lib-components/src/molecules/modals/FormModal'
 import { useTranslation } from 'state/i18n'
 import { faFileAlt } from '@evaka/lib-icons'
 import { UIContext } from 'state/ui'
@@ -14,7 +14,7 @@ import { FixedSpaceColumn } from '@evaka/lib-components/src/layout/flex-helpers'
 import Radio from '@evaka/lib-components/src/atoms/form/Radio'
 import PersonSearch from 'components/common/PersonSearch'
 import { UUID } from 'types'
-import { DatePicker } from 'components/common/DatePicker'
+import { DatePicker } from '@evaka/lib-components/src/molecules/DatePicker'
 import LocalDate from '@evaka/lib-common/src/local-date'
 import Select from 'components/common/Select'
 import { ApplicationType } from 'types/application'
@@ -148,11 +148,15 @@ function CreateApplicationModal({
       title={i18nView.modalTitle}
       icon={faFileAlt}
       iconColour={'blue'}
-      resolveLabel={i18nView.createButton}
-      rejectLabel={i18n.common.cancel}
-      reject={() => clearUiMode()}
-      resolve={() => submit()}
-      resolveDisabled={!canSubmit()}
+      resolve={{
+        action: submit,
+        label: i18nView.createButton,
+        disabled: !canSubmit()
+      }}
+      reject={{
+        action: clearUiMode,
+        label: i18n.common.cancel
+      }}
     >
       <FixedSpaceColumn spacing="L">
         <div>

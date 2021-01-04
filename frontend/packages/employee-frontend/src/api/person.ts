@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Failure, Result, Success } from '~/api'
+import { Failure, Result, Success } from '@evaka/lib-common/src/api'
 import {
   deserializePersonDetails,
   PersonContactInfo,

@@ -4,7 +4,7 @@
 
 import React, { useContext, useEffect, useRef } from 'react'
 import { useTranslation } from '~/state/i18n'
-import { Loading } from '~/api'
+import { Loading } from '@evaka/lib-common/src/api'
 import { ChildContext } from '~/state/child'
 import { faClock } from '@evaka/lib-icons'
 import Loader from '@evaka/lib-components/src/atoms/Loader'

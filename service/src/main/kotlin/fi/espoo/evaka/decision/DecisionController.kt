@@ -86,16 +86,9 @@ class DecisionController(
         Audit.DecisionDownloadPdf.log(targetId = decisionId)
 
         val roles = acl.getRolesForDecision(user, decisionId)
-        roles.requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.END_USER)
+        roles.requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.ADMIN, UserRole.UNIT_SUPERVISOR)
 
         return db.transaction { tx ->
-            if (user.hasOneOfRoles(UserRole.END_USER)) {
-                if (!getDecisionsByGuardian(tx.handle, user.id, AclAuthorization.All).any { it.id == decisionId }) {
-                    throw Forbidden("Access denied")
-                }
-                return@transaction getDecisionPdf(tx, decisionId)
-            }
-
             val decision = getDecision(tx.handle, decisionId) ?: error("Cannot find decision for decision id '$decisionId'")
             val application = fetchApplicationDetails(tx.handle, decision.applicationId)
                 ?: error("Cannot find application for decision id '$decisionId'")
@@ -115,17 +108,12 @@ class DecisionController(
             if ((child.restrictedDetailsEnabled || guardian.restrictedDetailsEnabled) && !user.isAdmin())
                 throw Forbidden("Päätöksen alaisella henkilöllä on voimassa turvakielto. Osoitetietojen suojaamiseksi vain pääkäyttäjä voi ladata tämän päätöksen.")
 
-            getDecisionPdf(tx, decisionId)
+            decisionService.getDecisionPdf(tx, decisionId)
+        }.let { document ->
+            ResponseEntity.ok()
+                .header("Content-Disposition", "attachment;filename=${document.getName()}")
+                .body(document.getBytes())
         }
-    }
-
-    private fun getDecisionPdf(tx: Database.Read, decisionId: UUID): ResponseEntity<ByteArray> {
-        return decisionService.getDecisionPdf(tx, decisionId)
-            .let { document ->
-                ResponseEntity.ok()
-                    .header("Content-Disposition", "attachment;filename=${document.getName()}")
-                    .body(document.getBytes())
-            }
     }
 }
 

@@ -13,14 +13,14 @@ import FeeDecisions from './FeeDecisions'
 import FeeDecisionFilters from './FeeDecisionFilters'
 import Actions from './Actions'
 import GeneratorButton from './generation/GeneratorButton'
-import { Result } from '../../api'
+import { Result } from '@evaka/lib-common/src/api'
 import {
   getFeeDecisions,
   FeeDecisionSearchParams,
   SortByFeeDecisions,
   FeeDecisionSearchResponse
 } from '../../api/invoicing'
-import { useRestApi } from '~utils/useRestApi'
+import { useRestApi } from '@evaka/lib-common/src/utils/useRestApi'
 import { FeeDecisionSummary } from '../../types/invoicing'
 import { SearchOrder } from '../../types'
 

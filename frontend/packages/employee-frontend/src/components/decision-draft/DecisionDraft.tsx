@@ -32,8 +32,8 @@ import {
 import { DecisionDraftState, DecisionDraftContext } from '~state/decision'
 import { useTranslation, Translations } from '~state/i18n'
 import { UUID } from '~types'
-import { Loading, Result } from '~api'
-import { DatePicker } from '~components/common/DatePicker'
+import { Loading, Result } from '@evaka/lib-common/src/api'
+import { DatePicker } from '@evaka/lib-components/src/molecules/DatePicker'
 import LabelValueList from '~components/common/LabelValueList'
 import Select from '~components/common/Select'
 import {

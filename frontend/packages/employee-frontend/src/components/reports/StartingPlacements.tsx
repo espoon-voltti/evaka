@@ -31,7 +31,7 @@ import {
   TableScrollable
 } from '~components/reports/common'
 import { useTranslation, Lang, Translations } from '~state/i18n'
-import { Loading, Result, Success } from '~api'
+import { Loading, Result, Success } from '@evaka/lib-common/src/api'
 import {
   getStartingPlacementsReport,
   PlacementsReportFilters

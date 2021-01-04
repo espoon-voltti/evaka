@@ -4,7 +4,7 @@
 
 import React, { useContext, useEffect, useState } from 'react'
 import UnitEditor from '~components/unit/unit-details/UnitEditor'
-import { Loading, Result } from '~api'
+import { Loading, Result } from '@evaka/lib-common/src/api'
 import { CareArea } from '~types/unit'
 import { getAreas } from '~api/daycare'
 import { getEmployees } from '~api/employees'

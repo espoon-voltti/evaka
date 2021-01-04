@@ -4,7 +4,7 @@
 
 import React, { useContext } from 'react'
 import { useTranslation } from '~/state/i18n'
-import { Success } from '~api'
+import { Success } from '@evaka/lib-common/src/api'
 import { faChild } from '@evaka/lib-icons'
 import { UUID } from '~/types'
 import AdditionalInformation from '~components/child-information/person-details/AdditionalInformation'

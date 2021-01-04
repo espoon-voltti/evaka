@@ -44,9 +44,14 @@ const sv: Translations = {
           'småbarnspedagogik i samband med förskoleundervisningen',
         PREPARATORY_EDUCATION: 'förberedande undervisning'
       },
+      childName: 'Barnets namn',
+      unit: 'Toimipaikka',
+      period: 'Ajalle',
       sentDate: 'Beslutsdatum',
       resolved: 'Bekräftat',
       statusLabel: 'Status',
+      summary:
+        'Päätöksessä ilmoitettu paikka / ilmoitetut paikat tulee joko hyväksyä tai hylätä välittömästi, viimeistään kahden viikon kuluessa päätöksen saapumisesta.',
       status: {
         PENDING: 'Bekräftas av vårdnadshavaren',
         ACCEPTED: 'Bekräftad',
@@ -61,7 +66,38 @@ const sv: Translations = {
       },
       goToConfirmation:
         'Gå till beslutet för att läsa det och svara om du tar emot eller annullerar platsen.',
-      confirmationLink: 'Granska och bekräfta beslutet'
+      confirmationLink: 'Granska och bekräfta beslutet',
+      response: {
+        title: 'Paikan hyväksyminen tai hylkääminen',
+        accept1: 'Otamme paikan vastaan',
+        accept2: 'alkaen',
+        reject: 'Emme ota paikkaa vastaan',
+        cancel: 'Palaa takaisin vastaamatta',
+        submit: 'Lähetä vastaus päätökseen',
+        disabledInfo:
+          'HUOM! Pääset hyväksymään/hylkäämään liittyvää varhaiskasvatusta koskevan päätöksen mikäli hyväksyt ensin esiopetusta / valmistavaa opetusta koskevan päätöksen.'
+      },
+      warnings: {
+        decisionWithNoResponseWarning: {
+          title: 'Toinen päätös odottaa vastaustasi',
+          text:
+            'Toinen päätös odottaa edelleen vastaustasi. Haluatko  palata listalle vastaamatta?',
+          resolveLabel: 'Palaa vastaamatta',
+          rejectLabel: 'Jatka vastaamista'
+        },
+        doubleRejectWarning: {
+          title: 'Haluatko hylätä paikan?',
+          text:
+            'Olet hylkäämässä tarjotun esiopetus / valmistavan paikan. Liittyvän varhaiskasvatuksen paikka merkitään samalla hylätyksi.',
+          resolveLabel: 'Hylkää molemmat',
+          rejectLabel: 'Palaa takaisin'
+        }
+      },
+      errors: {
+        pageLoadError: 'Tietojen hakeminen ei onnistunut',
+        submitFailure: 'Päätökseen vastaaminen ei onnistunut'
+      },
+      returnToPreviousPage: 'Palaa'
     }
   }
 }

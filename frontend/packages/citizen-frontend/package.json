@@ -54,6 +54,11 @@
   "browserslist": [
     "Firefox ESR"
   ],
+  "postcss": {
+    "plugins": {
+      "postcss-preset-env": true
+    }
+  },
   "eslintConfig": {
     "extends": [
       "eslint:recommended",

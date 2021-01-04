@@ -5,7 +5,7 @@
 import React, { useContext, useState } from 'react'
 import { useTranslation } from '~state/i18n'
 import { UIContext } from '~state/ui'
-import FormModal from '~components/common/FormModal'
+import FormModal from '@evaka/lib-components/src/molecules/modals/FormModal'
 import { faChild, faExchange } from '@evaka/lib-icons'
 import { UUID } from '~types'
 import Select from '~components/common/Select'
@@ -70,11 +70,15 @@ export default React.memo(function BackupCareGroupModal({
       }
       icon={isTransfer ? faExchange : faChild}
       iconColour={'blue'}
-      resolveLabel={i18n.common.confirm}
-      rejectLabel={i18n.common.cancel}
-      reject={() => clearUiMode()}
-      resolveDisabled={!groupId}
-      resolve={() => submitForm()}
+      resolve={{
+        action: submitForm,
+        label: i18n.common.confirm,
+        disabled: !groupId
+      }}
+      reject={{
+        action: clearUiMode,
+        label: i18n.common.cancel
+      }}
     >
       <section>
         <div className="bold">{i18n.unit.placements.modal.child}</div>

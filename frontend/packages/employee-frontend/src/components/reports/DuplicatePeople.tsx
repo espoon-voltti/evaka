@@ -20,7 +20,7 @@ import {
 import InfoModal from '~components/common/InfoModal'
 import { useTranslation } from '~state/i18n'
 import { Link } from 'react-router-dom'
-import { Loading, Result } from '~api'
+import { Loading, Result } from '@evaka/lib-common/src/api'
 import { DuplicatePeopleReportRow } from '~types/reports'
 import { getDuplicatePeopleReport } from '~api/reports'
 import ReturnButton from '@evaka/lib-components/src/atoms/buttons/ReturnButton'

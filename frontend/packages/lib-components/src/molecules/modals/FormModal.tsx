@@ -7,16 +7,14 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { IconProp } from '@fortawesome/fontawesome-svg-core'
 import styled from 'styled-components'
 import FocusLock from 'react-focus-lock'
-
-import Title from '@evaka/lib-components/src/atoms/Title'
-import Button from '@evaka/lib-components/src/atoms/buttons/Button'
-import AsyncButton from '@evaka/lib-components/src/atoms/buttons/AsyncButton'
-import colors from '@evaka/lib-components/src/colors'
-import { defaultMargins, Gap } from '@evaka/lib-components/src/white-space'
-import { useTranslation } from '~state/i18n'
-import { modalZIndex } from '@evaka/lib-components/src/layout/z-helpers'
-import { InfoStatus } from '@evaka/lib-components/src/atoms/StatusIcon'
-import { P } from '@evaka/lib-components/src/typography'
+import Button from '../../atoms/buttons/Button'
+import AsyncButton from '../../atoms/buttons/AsyncButton'
+import { InfoStatus } from '../../atoms/StatusIcon'
+import Title from '../../atoms/Title'
+import colors from '../../colors'
+import { P } from '../../typography'
+import { defaultMargins, Gap } from '../../white-space'
+import { modalZIndex } from '../../layout/z-helpers'
 
 export const DimmedModal = styled.div``
 
@@ -63,7 +61,7 @@ export const ModalContainer = styled.div<ModalContainerProps>`
   max-width: 100vw;
   background: white;
   overflow-x: visible;
-  box-shadow: 0px 15px 75px 0px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 15px 75px 0 rgba(0, 0, 0, 0.5);
   border-radius: 2px;
   padding-left: ${defaultMargins.XXL};
   padding-right: ${defaultMargins.XXL};
@@ -136,21 +134,26 @@ export type ModalSize = 'xs' | 'sm' | 'md' | 'lg' | 'xlg' | 'custom'
 
 type CommonProps = {
   title?: string
-  reject?: () => void
-  resolveDisabled?: boolean
   text?: string
   size?: ModalSize
-  resolveLabel?: string
-  rejectLabel?: string
+  resolve: {
+    action: () => void
+    label: string
+    disabled?: boolean
+    info?: {
+      text: string
+      status?: InfoStatus
+    }
+  }
+  reject?: {
+    action: () => void
+    label: string
+  }
   className?: string
   icon?: IconProp
   'data-qa'?: string
-  children: React.ReactNode
+  children?: React.ReactNode
   iconColour?: IconColour
-  resolveInfo?: {
-    text: string
-    status?: InfoStatus
-  }
 }
 
 function ModalBase({
@@ -160,9 +163,9 @@ function ModalBase({
   className,
   icon,
   size = 'md',
-  resolveDisabled = false,
   children,
   iconColour = 'blue',
+  resolve,
   onSubmit
 }: CommonProps & { onSubmit?: () => void }) {
   return (
@@ -201,7 +204,7 @@ function ModalBase({
                 onSubmit={(event) => {
                   event.preventDefault()
                   if (onSubmit) {
-                    if (!resolveDisabled) onSubmit()
+                    if (!resolve.disabled) onSubmit()
                   }
                 }}
               >
@@ -215,50 +218,33 @@ function ModalBase({
   )
 }
 
-type FormModalProps = CommonProps & {
-  resolve: () => void
-  resolveLabel?: string
-  resolveDisabled?: boolean
-  resolveInfo?: {
-    text: string
-    status?: InfoStatus
-  }
-  reject?: () => void
-  rejectLabel?: string
-}
-
 export default React.memo(function FormModal({
   children,
   reject,
-  rejectLabel,
   resolve,
-  resolveLabel,
-  resolveDisabled,
-  resolveInfo,
   ...props
-}: FormModalProps) {
-  const { i18n } = useTranslation()
+}: CommonProps) {
   return (
-    <ModalBase {...props} onSubmit={resolve}>
+    <ModalBase {...props} resolve={resolve} onSubmit={resolve.action}>
       {children}
       <ModalButtons>
         {reject && (
           <>
             <Button
-              onClick={reject}
+              onClick={reject.action}
               dataQa="modal-cancelBtn"
-              text={rejectLabel ?? i18n.common.cancel}
+              text={reject.label}
             />
             <Gap horizontal size={'xs'} />
           </>
         )}
         <Button
           primary
-          info={resolveInfo}
           dataQa="modal-okBtn"
-          onClick={resolve}
-          disabled={resolveDisabled}
-          text={resolveLabel ?? i18n.common.confirm}
+          onClick={resolve.action}
+          disabled={resolve.disabled}
+          text={resolve.label}
+          info={resolve.info}
         />
       </ModalButtons>
     </ModalBase>
@@ -266,45 +252,44 @@ export default React.memo(function FormModal({
 })
 
 type AsyncModalProps = CommonProps & {
-  resolve: () => Promise<void>
-  onResolveSuccess: () => void
-  resolveLabel?: string
-  resolveDisabled?: boolean
-  reject?: () => void
-  rejectLabel?: string
+  resolve: {
+    action: () => Promise<any>
+    label: string
+    disabled?: boolean
+    onSuccess: () => void
+  }
+  reject: {
+    action: () => void
+    label: string
+  }
 }
 
 export const AsyncFormModal = React.memo(function AsyncFormModal({
   children,
-  reject,
-  rejectLabel,
   resolve,
-  resolveLabel,
-  resolveDisabled,
-  onResolveSuccess,
+  reject,
   ...props
 }: AsyncModalProps) {
-  const { i18n } = useTranslation()
   return (
-    <ModalBase {...props}>
+    <ModalBase {...props} resolve={resolve}>
       {children}
       <ModalButtons>
         {reject && (
           <>
             <Button
-              onClick={reject}
+              onClick={reject.action}
               dataQa="modal-cancelBtn"
-              text={rejectLabel ?? i18n.common.cancel}
+              text={reject.label}
             />
             <Gap horizontal size={'xs'} />
           </>
         )}
         <AsyncButton
           primary
-          text={resolveLabel ?? i18n.common.confirm}
-          disabled={resolveDisabled}
-          onClick={resolve}
-          onSuccess={onResolveSuccess}
+          text={resolve.label}
+          disabled={resolve.disabled}
+          onClick={resolve.action}
+          onSuccess={resolve.onSuccess}
           data-qa="modal-okBtn"
         />
       </ModalButtons>

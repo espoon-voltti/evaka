@@ -12,7 +12,10 @@ import InputField from '@evaka/lib-components/src/atoms/form/InputField'
 import { ServiceNeed } from '~types/child'
 import { UUID } from '~types'
 import { FormErrors, formHasErrors } from '~utils/validation/validations'
-import { DatePicker, DatePickerClearable } from '~components/common/DatePicker'
+import {
+  DatePicker,
+  DatePickerClearable
+} from '@evaka/lib-components/src/molecules/DatePicker'
 import {
   AlertBox,
   InfoBox

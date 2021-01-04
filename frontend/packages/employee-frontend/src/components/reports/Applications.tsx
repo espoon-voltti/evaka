@@ -22,7 +22,7 @@ import {
 } from '@evaka/lib-components/src/layout/Table'
 import { reactSelectStyles } from '~components/common/Select'
 import { useTranslation } from '~state/i18n'
-import { Loading, Result } from '~api'
+import { Loading, Result } from '@evaka/lib-common/src/api'
 import { ApplicationsReportRow } from '~types/reports'
 import { getApplicationsReport, PeriodFilters } from '~api/reports'
 import ReportDownload from '~components/reports/ReportDownload'
@@ -32,7 +32,7 @@ import {
   TableFooter,
   TableScrollable
 } from '~components/reports/common'
-import { DatePicker } from '~components/common/DatePicker'
+import { DatePicker } from '@evaka/lib-components/src/molecules/DatePicker'
 import { distinct, reducePropertySum } from 'utils'
 import LocalDate from '@evaka/lib-common/src/local-date'
 import { FlexRow } from 'components/common/styled/containers'

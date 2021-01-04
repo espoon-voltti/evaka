@@ -12,14 +12,17 @@ import {
 } from '~utils/validation/validations'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faQuestionCircle } from '@evaka/lib-icons'
-import FormModal from '~components/common/FormModal'
+import FormModal from '@evaka/lib-components/src/molecules/modals/FormModal'
 import { Parentship } from '~types/fridge'
 import { UUID } from '~types'
-import { Result } from '~api'
+import { Result } from '@evaka/lib-common/src/api'
 import { faChild } from '@evaka/lib-icons'
 import { formatName } from '~utils'
 import PersonSearch from '~components/common/PersonSearch'
-import { DatePicker, DatePickerClearable } from '~components/common/DatePicker'
+import {
+  DatePicker,
+  DatePickerClearable
+} from '@evaka/lib-components/src/molecules/DatePicker'
 import { addParentship, updateParentship } from '~api/parentships'
 import { PersonDetails } from '~types/person'
 
@@ -114,11 +117,15 @@ function FridgeChildModal({ headPersonId, onSuccess, parentship }: Props) {
           }
           icon={faChild}
           iconColour={'blue'}
-          resolveLabel={i18n.common.confirm}
-          rejectLabel={i18n.common.cancel}
-          reject={() => clearUiMode()}
-          resolveDisabled={!validationResult.valid}
-          resolve={() => childFormActions()}
+          resolve={{
+            action: childFormActions,
+            label: i18n.common.confirm,
+            disabled: !validationResult.valid
+          }}
+          reject={{
+            action: clearUiMode,
+            label: i18n.common.cancel
+          }}
         >
           {errorStatusCode === 409 && (
             <section className="error">

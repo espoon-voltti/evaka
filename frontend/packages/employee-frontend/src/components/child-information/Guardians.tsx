@@ -6,7 +6,7 @@ import React from 'react'
 import { UUID } from '~types'
 import { useTranslation } from '~state/i18n'
 import { useEffect } from 'react'
-import { Loading } from '~api'
+import { Loading } from '@evaka/lib-common/src/api'
 import { useContext } from 'react'
 import Loader from '@evaka/lib-components/src/atoms/Loader'
 import {

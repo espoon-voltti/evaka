@@ -5,7 +5,7 @@ import { isBefore, parse } from 'date-fns'
 import React, { Fragment, useContext, useEffect, useState } from 'react'
 import { useHistory } from 'react-router-dom'
 
-import { Result, Loading } from '~api'
+import { Result, Loading } from '@evaka/lib-common/src/api'
 import {
   AttendanceChild,
   childDeparts,

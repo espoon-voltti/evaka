@@ -7,11 +7,11 @@ import styled from 'styled-components'
 import ReactSelect, { components, OptionProps } from 'react-select'
 import { Translations, useTranslation } from '~state/i18n'
 import { getOrCreatePersonBySsn } from '~api/person'
-import { Result, Success } from '~api'
+import { Result, Success } from '@evaka/lib-common/src/api'
 import { formatName } from '~utils'
 import { useDebounce } from '~utils/useDebounce'
 import { isSsnValid } from '~utils/validation/validations'
-import { useRestApi } from '~utils/useRestApi'
+import { useRestApi } from '@evaka/lib-common/src/utils/useRestApi'
 import { PersonDetails } from '~types/person'
 
 const Container = styled.div`

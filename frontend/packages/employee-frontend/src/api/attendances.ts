@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { JsonOf } from '@evaka/lib-common/src/json'
-import { Failure, Result, Success } from '~api'
+import { Failure, Result, Success } from '@evaka/lib-common/src/api'
 import { UUID } from '~types'
 import { AbsenceType, CareType } from '~types/absence'
 import { PlacementType } from '~types/placementdraft'

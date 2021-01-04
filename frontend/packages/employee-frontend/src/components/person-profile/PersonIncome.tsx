@@ -11,7 +11,7 @@ import IncomeList from './income/IncomeList'
 import { useTranslation } from '~state/i18n'
 import { UIContext } from '~state/ui'
 import { PersonContext } from '~state/person'
-import { Loading, Result } from '~api'
+import { Loading, Result } from '@evaka/lib-common/src/api'
 import {
   getIncomes,
   createIncome,

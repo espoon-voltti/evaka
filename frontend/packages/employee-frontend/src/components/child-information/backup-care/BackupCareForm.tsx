@@ -17,12 +17,12 @@ import { UIContext } from '~state/ui'
 import { ChildContext } from '~state'
 import { DateRange } from '~utils/date'
 import Button from '@evaka/lib-components/src/atoms/buttons/Button'
-import { Loading, Result } from '~api'
+import { Loading, Result } from '@evaka/lib-common/src/api'
 import {
   isDateRangeInverted,
   isDateRangeOverlappingWithExisting
 } from '~utils/validation/validations'
-import { DatePicker } from '~components/common/DatePicker'
+import { DatePicker } from '@evaka/lib-components/src/molecules/DatePicker'
 import { getUnits } from '~api/daycare'
 import { Unit } from '~types/invoicing'
 import {

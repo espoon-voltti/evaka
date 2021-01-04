@@ -309,7 +309,7 @@ export default Vue.extend({
       return this.decision && this.decision.status === 'REJECTED'
     },
     downloadLink() {
-      return `/api/application/decisions2/${this.decision.id}/download`
+      return `/api/application/citizen/decisions/${this.decision.id}/download`
     },
     texts() {
       const type: DecisionDetails['type'] = this.decision.type

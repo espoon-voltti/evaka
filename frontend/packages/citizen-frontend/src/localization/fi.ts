@@ -31,7 +31,7 @@ export default {
     summary:
       'Tälle sivulle saapuvat lapsen varhaiskasvatus-, esiopetus- ja kerhohakemuksiin liittyvät päätökset. Uuden päätöksen saapuessa <strong>sinun tulee kahden viikon sisällä vastata</strong>, hyväksytkö vai hylkäätkö lapselle tarjotun paikan.',
     unconfimedDecisions: (n: number) =>
-      `${n} ${n === 1 ? 'päätös' : 'päätöstä'} odottaa vahvistusta`,
+      `${n} ${n === 1 ? 'päätös' : 'päätöstä'} odottaa vahvistustasi`,
     applicationDecisions: {
       decision: 'Päätös',
       type: {
@@ -42,15 +42,19 @@ export default {
         PRESCHOOL_DAYCARE: 'liittyvästä varhaiskasvatuksesta',
         PREPARATORY_EDUCATION: 'valmistavasta opetuksesta'
       },
+      childName: 'Lapsen nimi',
+      unit: 'Toimipaikka',
+      period: 'Ajalle',
       sentDate: 'Päätös saapunut',
       resolved: 'Vahvistettu',
       statusLabel: 'Tila',
+      summary:
+        'Päätöksessä ilmoitettu paikka / ilmoitetut paikat tulee joko hyväksyä tai hylätä välittömästi, viimeistään kahden viikon kuluessa päätöksen saapumisesta.',
       status: {
         PENDING: 'Vahvistettavana huoltajalla',
         ACCEPTED: 'Hyväksytty',
         REJECTED: 'Hylätty'
       },
-      openPdf: 'Näytä päätös',
       confirmationInfo: {
         preschool:
           'Esiopetuksen, valmistavan opetuksen ja/tai liittyvän varhaiskasvatuksen hyväksymis- tai hylkäämisilmoitus on toimitettava välittömästi, viimeistään kahden viikon kuluessa tämän ilmoituksen saamisesta. Jos olet hakenut useampaa palvelua, saat jokaisesta oman päätöksen erikseen vahvistettavaksi',
@@ -59,7 +63,39 @@ export default {
       },
       goToConfirmation:
         'Siirry lukemaan päätös ja vastaamaan hyväksytkö vai hylkäätkö paikan.',
-      confirmationLink: 'Siirry vastaamaan'
+      confirmationLink: 'Siirry vastaamaan',
+      response: {
+        title: 'Paikan hyväksyminen tai hylkääminen',
+        accept1: 'Otamme paikan vastaan',
+        accept2: 'alkaen',
+        reject: 'Emme ota paikkaa vastaan',
+        cancel: 'Palaa takaisin vastaamatta',
+        submit: 'Lähetä vastaus päätökseen',
+        disabledInfo:
+          'HUOM! Pääset hyväksymään/hylkäämään liittyvää varhaiskasvatusta koskevan päätöksen mikäli hyväksyt ensin esiopetusta / valmistavaa opetusta koskevan päätöksen.'
+      },
+      openPdf: 'Näytä päätös',
+      warnings: {
+        decisionWithNoResponseWarning: {
+          title: 'Toinen päätös odottaa vastaustasi',
+          text:
+            'Toinen päätös odottaa edelleen vastaustasi. Haluatko  palata listalle vastaamatta?',
+          resolveLabel: 'Palaa vastaamatta',
+          rejectLabel: 'Jatka vastaamista'
+        },
+        doubleRejectWarning: {
+          title: 'Haluatko hylätä paikan?',
+          text:
+            'Olet hylkäämässä tarjotun esiopetus / valmistavan paikan. Liittyvän varhaiskasvatuksen paikka merkitään samalla hylätyksi.',
+          resolveLabel: 'Hylkää molemmat',
+          rejectLabel: 'Palaa takaisin'
+        }
+      },
+      errors: {
+        pageLoadError: 'Tietojen hakeminen ei onnistunut',
+        submitFailure: 'Päätökseen vastaaminen ei onnistunut'
+      },
+      returnToPreviousPage: 'Palaa'
     }
   }
 }

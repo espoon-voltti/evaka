@@ -7,15 +7,23 @@ import ReactDatePicker, { ReactDatePickerProps } from 'react-datepicker'
 import styled from 'styled-components'
 import fi from 'date-fns/locale/fi'
 import LocalDate from '@evaka/lib-common/src/local-date'
-import { DATE_FORMATS_PARSED } from '~constants.ts'
-import { EspooColours } from '~utils/colours'
+import colors from '../colors'
 
-import './DatePicker.scss'
+import 'react-datepicker/dist/react-datepicker.css'
+
+const DATE_FORMATS_PARSED = [
+  'dd.MM.yyyy',
+  'dd.MM.yy',
+  'd.M.yyyy',
+  'd.M.yy',
+  'ddMMyyyy',
+  'ddMMyy'
+]
 
 const StyledInput = styled.input`
   -webkit-font-smoothing: antialiased;
   text-size-adjust: 100%;
-  box-sizing: inherit;
+  box-sizing: border-box;
   margin: 0;
   font-family: 'Open Sans', 'Arial', sans-serif;
   -webkit-appearance: none;
@@ -29,8 +37,8 @@ const StyledInput = styled.input`
   padding-top: calc(0.5em - 1px);
   position: relative;
   height: 2.5em;
-  border-color: #9e9e9e;
-  color: #0f0f0f;
+  border-color: ${colors.greyscale.medium};
+  color: ${colors.greyscale.darkest};
   display: block;
   box-shadow: none;
   max-width: 100%;
@@ -44,7 +52,7 @@ const StyledInput = styled.input`
   :focus {
     padding-bottom: calc(calc(0.5em - 1px) - 1px);
     border-bottom-width: 2px;
-    border-color: ${EspooColours.espooTurqoise};
+    border-color: ${colors.primary};
     outline: none;
   }
 `
@@ -74,6 +82,42 @@ function CustomInput(
 }
 
 const CustomInputRef = React.forwardRef(CustomInput)
+
+const DatePickerContainer = styled.div`
+  &.full-width {
+    width: 100%;
+  }
+
+  &.half-width {
+    // Daterange separator '-' is 22px width
+    width: calc(50% - 12px);
+    display: inline-flex;
+  }
+
+  &.short {
+    width: 120px;
+  }
+
+  .react-datepicker-wrapper,
+  .react-datepicker__input-container {
+    width: 100%;
+  }
+
+  .react-datepicker__close-icon {
+    right: 0;
+    &::after {
+      background-color: transparent;
+      color: ${colors.greyscale.lighter};
+      font-size: 25px;
+    }
+  }
+
+  .react-datepicker__header {
+    .react-datepicker__current-month.react-datepicker__current-month--hasYearDropdown.react-datepicker__current-month--hasMonthDropdown {
+      display: none;
+    }
+  }
+`
 
 interface CommonProps {
   date: LocalDate | null | undefined
@@ -124,7 +168,10 @@ export function DatePicker({
 }: DatePickerProps) {
   const ref = React.createRef<HTMLInputElement>()
   return (
-    <div className={`${type} ${className ? className : ''}`} data-qa={dataQa}>
+    <DatePickerContainer
+      className={`${type} ${className ? className : ''}`}
+      data-qa={dataQa}
+    >
       <ReactDatePicker
         {...defaultProps}
         locale={fi}
@@ -146,7 +193,7 @@ export function DatePicker({
         strictParsing
         {...options}
       />
-    </div>
+    </DatePickerContainer>
   )
 }
 

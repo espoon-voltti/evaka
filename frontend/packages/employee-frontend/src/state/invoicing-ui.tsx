@@ -20,7 +20,7 @@ import {
   Unit,
   InvoiceDistinctiveDetails
 } from '../types/invoicing'
-import { Loading, Result } from '../api'
+import { Loading, Result } from '@evaka/lib-common/src/api'
 import { CareArea } from '~types/unit'
 import { UUID } from '~types'
 

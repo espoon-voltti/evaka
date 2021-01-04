@@ -11,7 +11,7 @@ import {
 import VoucherValueDecisions from './VoucherValueDecisions'
 import VoucherValueDecisionFilters from './VoucherValueDecisionFilters'
 import VoucherValueDecisionActions from './VoucherValueDecisionActions'
-import { Result } from '~api'
+import { Result } from '@evaka/lib-common/src/api'
 import {
   getVoucherValueDecisions,
   VoucherValueDecisionSearchParams,
@@ -21,7 +21,7 @@ import {
 import { InvoicingUiContext } from '~state/invoicing-ui'
 import { VoucherValueDecisionSummary } from '~types/invoicing'
 import { SearchOrder } from '~types'
-import { useRestApi } from '~utils/useRestApi'
+import { useRestApi } from '@evaka/lib-common/src/utils/useRestApi'
 
 const pageSize = 200
 

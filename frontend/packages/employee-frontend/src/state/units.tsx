@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { createContext, useMemo, useState } from 'react'
-import { Loading, Result } from '~/api'
+import { Loading, Result } from '@evaka/lib-common/src/api'
 import { Unit } from '~types/unit'
 import { SearchOrder } from '~types'
 
