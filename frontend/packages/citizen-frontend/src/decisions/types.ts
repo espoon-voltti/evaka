@@ -1,4 +1,3 @@
-export type DecisionType =
-  | 'CLUB'
-  | 'DAYCARE'
-  | 'PRESCHOOL'
+export interface Decision {
+  id: string
+}
