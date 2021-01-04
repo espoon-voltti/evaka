@@ -17,7 +17,6 @@ import com.nhaarman.mockito_kotlin.verify
 import com.nhaarman.mockito_kotlin.whenever
 import fi.espoo.evaka.identity.ExternalIdentifier
 import fi.espoo.evaka.identity.ExternalIdentifier.SSN
-import fi.espoo.evaka.identity.VolttiIdentifier
 import fi.espoo.evaka.pis.service.PersonDTO
 import fi.espoo.evaka.vtjclient.config.SoapRequestAdapter
 import fi.espoo.evaka.vtjclient.mapper.IVTJResponseMapper
@@ -277,7 +276,7 @@ class VtjClientServiceTest {
     }
 
     private fun createPerson(
-        id: VolttiIdentifier = UUID.randomUUID(),
+        id: UUID = UUID.randomUUID(),
         customerId: Long = 100123,
         externalId: ExternalIdentifier = SSN.getInstance(DEFAULT_PERSON_SSN),
         firstName: String = "Tomi",

@@ -4,13 +4,6 @@
 
 package fi.espoo.evaka.identity
 
-import java.util.UUID
-
-/**
- * Voltti wide natural person identifier
- */
-typealias VolttiIdentifier = UUID
-
 /**
  * Persons identifier in external system. e.g. the system used
  * to log in with

@@ -6,7 +6,6 @@ package fi.espoo.evaka.pis.controllers
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.identity.ExternalIdentifier
-import fi.espoo.evaka.identity.VolttiIdentifier
 import fi.espoo.evaka.identity.isValidSSN
 import fi.espoo.evaka.pis.createEmptyPerson
 import fi.espoo.evaka.pis.createPerson
@@ -59,7 +58,7 @@ class PersonController(
     fun getPerson(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @PathVariable(value = "personId") personId: VolttiIdentifier
+        @PathVariable(value = "personId") personId: UUID
     ): ResponseEntity<PersonJSON> {
         Audit.PersonDetailsRead.log(targetId = personId)
         return db.transaction {
@@ -73,7 +72,7 @@ class PersonController(
     fun getPersonDependants(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @PathVariable(value = "personId") personId: VolttiIdentifier
+        @PathVariable(value = "personId") personId: UUID
     ): ResponseEntity<List<PersonWithChildrenDTO>> {
         Audit.PersonDependantRead.log(targetId = personId)
         user.requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR, UserRole.FINANCE_ADMIN, UserRole.ADMIN)
@@ -86,7 +85,7 @@ class PersonController(
     fun getPersonGuardians(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @PathVariable(value = "personId") personId: VolttiIdentifier
+        @PathVariable(value = "personId") personId: UUID
     ): ResponseEntity<List<PersonJSON>> {
         Audit.PersonGuardianRead.log(targetId = personId)
         user.requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR, UserRole.FINANCE_ADMIN, UserRole.ADMIN)
@@ -130,7 +129,7 @@ class PersonController(
     fun updateContactInfo(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @PathVariable(value = "personId") personId: VolttiIdentifier,
+        @PathVariable(value = "personId") personId: UUID,
         @RequestBody contactInfo: ContactInfo
     ): ResponseEntity<ContactInfo> {
         Audit.PersonContactInfoUpdate.log(targetId = personId)
@@ -146,7 +145,7 @@ class PersonController(
     fun updatePersonDetails(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @PathVariable(value = "personId") personId: VolttiIdentifier,
+        @PathVariable(value = "personId") personId: UUID,
         @RequestBody data: PersonPatch
     ): ResponseEntity<PersonJSON> {
         Audit.PersonUpdate.log(targetId = personId)
@@ -159,7 +158,7 @@ class PersonController(
     fun safeDeletePerson(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @PathVariable(value = "personId") personId: VolttiIdentifier
+        @PathVariable(value = "personId") personId: UUID
     ): ResponseEntity<Unit> {
         Audit.PersonDelete.log(targetId = personId)
         user.requireOneOfRoles(UserRole.ADMIN)
@@ -171,7 +170,7 @@ class PersonController(
     fun addSsn(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @PathVariable(value = "personId") personId: VolttiIdentifier,
+        @PathVariable(value = "personId") personId: UUID,
         @RequestBody body: AddSsnRequest
     ): ResponseEntity<PersonJSON> {
         Audit.PersonUpdate.log(targetId = personId)

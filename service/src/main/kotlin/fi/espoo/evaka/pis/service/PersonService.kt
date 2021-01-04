@@ -6,7 +6,6 @@ package fi.espoo.evaka.pis.service
 
 import fi.espoo.evaka.application.utils.exhaust
 import fi.espoo.evaka.identity.ExternalIdentifier
-import fi.espoo.evaka.identity.VolttiIdentifier
 import fi.espoo.evaka.pis.addSSNToPerson
 import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.pis.getPersonBySSN
@@ -38,7 +37,7 @@ class PersonService(
     private val forceRefreshIntervalSeconds = 1 * 24 * 60 * 60 // 1 day
 
     // Does a request to VTJ if data is stale
-    fun getUpToDatePerson(tx: Database.Transaction, user: AuthenticatedUser, id: VolttiIdentifier): PersonDTO? {
+    fun getUpToDatePerson(tx: Database.Transaction, user: AuthenticatedUser, id: UUID): PersonDTO? {
         val person = tx.handle.getPersonById(id) ?: return null
         return if (person.identity is ExternalIdentifier.SSN && vtjDataIsStale(person)) {
             val personDetails =
@@ -84,7 +83,7 @@ class PersonService(
     fun getUpToDatePersonWithChildren(
         tx: Database.Transaction,
         user: AuthenticatedUser,
-        id: VolttiIdentifier
+        id: UUID
     ): PersonWithChildrenDTO? {
         val guardian = tx.handle.getPersonById(id) ?: return null
 
@@ -113,12 +112,12 @@ class PersonService(
     fun getOtherGuardian(
         tx: Database.Transaction,
         user: AuthenticatedUser,
-        otherGuardianId: VolttiIdentifier,
-        childId: VolttiIdentifier
+        otherGuardianId: UUID,
+        childId: UUID
     ): PersonDTO? = getGuardians(tx, user, childId).firstOrNull { guardian -> guardian.id != otherGuardianId }
 
     // Does a request to VTJ if SSN is present
-    fun getGuardians(tx: Database.Transaction, user: AuthenticatedUser, id: VolttiIdentifier): List<PersonDTO> {
+    fun getGuardians(tx: Database.Transaction, user: AuthenticatedUser, id: UUID): List<PersonDTO> {
         val child = tx.handle.getPersonById(id) ?: return emptyList()
 
         return when (child.identity) {
@@ -139,7 +138,7 @@ class PersonService(
     val SECONDS_IN_30_DAYS: Long = 60 * 60 * 24 * 30
 
     // If 1 or more evaka guardians is found, return those, otherwise get from VTJ
-    fun getEvakaOrVtjGuardians(tx: Database.Transaction, user: AuthenticatedUser, id: VolttiIdentifier): List<PersonDTO> {
+    fun getEvakaOrVtjGuardians(tx: Database.Transaction, user: AuthenticatedUser, id: UUID): List<PersonDTO> {
         val child = tx.handle.getPersonById(id) ?: return emptyList()
 
         return when (child.identity) {
@@ -200,7 +199,7 @@ class PersonService(
         } else null
     }
 
-    fun patchUserDetails(tx: Database.Transaction, id: VolttiIdentifier, data: PersonPatch): PersonDTO {
+    fun patchUserDetails(tx: Database.Transaction, id: UUID, data: PersonPatch): PersonDTO {
         val person = tx.handle.getPersonById(id) ?: throw NotFound("Person $id not found")
 
         when (person.identity) {
@@ -222,7 +221,7 @@ class PersonService(
         return tx.handle.getPersonById(id)!!
     }
 
-    fun addSsn(tx: Database.Transaction, user: AuthenticatedUser, id: VolttiIdentifier, ssn: ExternalIdentifier.SSN) {
+    fun addSsn(tx: Database.Transaction, user: AuthenticatedUser, id: UUID, ssn: ExternalIdentifier.SSN) {
         val person = tx.handle.getPersonById(id) ?: throw NotFound("Person $id not found")
 
         when (person.identity) {
@@ -353,7 +352,7 @@ class PersonService(
 }
 
 data class PersonDTO(
-    val id: VolttiIdentifier,
+    val id: UUID,
     val identity: ExternalIdentifier,
     val customerId: Long?,
     val firstName: String?,
@@ -379,7 +378,7 @@ data class PersonDTO(
 )
 
 data class PersonJSON(
-    val id: VolttiIdentifier,
+    val id: UUID,
     val customerId: Long? = null,
     val socialSecurityNumber: String? = null,
     val firstName: String? = null,
