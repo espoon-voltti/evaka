@@ -15,9 +15,9 @@ import com.amazonaws.services.simpleemail.model.MailFromDomainNotVerifiedExcepti
 import com.amazonaws.services.simpleemail.model.Message
 import com.amazonaws.services.simpleemail.model.SendEmailRequest
 import fi.espoo.evaka.daycare.domain.Language
-import fi.espoo.evaka.identity.VolttiIdentifier
 import mu.KotlinLogging
 import org.springframework.core.env.Environment
+import java.util.UUID
 
 private val logger = KotlinLogging.logger {}
 
@@ -27,7 +27,7 @@ class EmailClient(private val client: AmazonSimpleEmailService, env: Environment
     private val senderAddressSv = env.getProperty("application.email.address.sv", "")
     private val senderNameSv = env.getProperty("application.email.name.sv", "")
 
-    override fun sendApplicationEmail(personId: VolttiIdentifier, toAddress: String?, language: Language) {
+    override fun sendApplicationEmail(personId: UUID, toAddress: String?, language: Language) {
         val charset = "UTF-8"
         val subject = getSubject(language)
         val htmlBody = getHtml(language)

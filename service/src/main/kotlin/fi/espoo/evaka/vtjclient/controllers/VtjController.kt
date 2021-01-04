@@ -6,7 +6,6 @@ package fi.espoo.evaka.vtjclient.controllers
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.identity.ExternalIdentifier
-import fi.espoo.evaka.identity.VolttiIdentifier
 import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.pis.service.PersonDTO
 import fi.espoo.evaka.pis.service.PersonService
@@ -61,7 +60,7 @@ class VtjController(
     private fun getPersonDataWithChildren(
         db: Database.Connection,
         user: AuthenticatedUser,
-        personId: VolttiIdentifier
+        personId: UUID
     ): PersonResult {
         Audit.VtjRequest.log(targetId = personId)
         return when {
@@ -77,7 +76,7 @@ class VtjController(
         }
     }
 
-    private fun personResult(db: Database.Connection, user: AuthenticatedUser, personId: VolttiIdentifier): PersonResult {
+    private fun personResult(db: Database.Connection, user: AuthenticatedUser, personId: UUID): PersonResult {
         val guardianResult = db.read { it.handle.getPersonById(personId) }
             ?.let { person ->
                 when (person.identity) {

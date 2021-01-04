@@ -5,16 +5,16 @@
 package fi.espoo.evaka.emailclient
 
 import fi.espoo.evaka.daycare.domain.Language
-import fi.espoo.evaka.identity.VolttiIdentifier
 import mu.KotlinLogging
+import java.util.UUID
 
 private val logger = KotlinLogging.logger {}
 private val EMAIL_PATTERN = "^([\\w.%+-]+)@([\\w-]+\\.)+([\\w]{2,})\$".toRegex()
 
 interface IEmailClient {
-    fun sendApplicationEmail(personId: VolttiIdentifier, toAddress: String?, language: Language)
+    fun sendApplicationEmail(personId: UUID, toAddress: String?, language: Language)
 
-    fun validateEmail(personId: VolttiIdentifier, toAddress: String?): Boolean {
+    fun validateEmail(personId: UUID, toAddress: String?): Boolean {
         if (toAddress != null && toAddress.matches(EMAIL_PATTERN)) {
             return true
         }

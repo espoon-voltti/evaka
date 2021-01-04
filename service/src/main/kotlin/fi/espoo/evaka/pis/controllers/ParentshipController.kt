@@ -6,7 +6,6 @@ package fi.espoo.evaka.pis.controllers
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.application.utils.noContent
-import fi.espoo.evaka.identity.VolttiIdentifier
 import fi.espoo.evaka.pis.getParentship
 import fi.espoo.evaka.pis.getParentships
 import fi.espoo.evaka.pis.service.Parentship
@@ -57,8 +56,8 @@ class ParentshipController(
     fun getParentships(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @RequestParam(value = "headOfChildId", required = false) headOfChildId: VolttiIdentifier? = null,
-        @RequestParam(value = "childId", required = false) childId: VolttiIdentifier? = null
+        @RequestParam(value = "headOfChildId", required = false) headOfChildId: UUID? = null,
+        @RequestParam(value = "childId", required = false) childId: UUID? = null
     ): ResponseEntity<List<Parentship>> {
         Audit.ParentShipsRead.log(targetId = listOf(headOfChildId, childId))
         user.requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR, UserRole.FINANCE_ADMIN)

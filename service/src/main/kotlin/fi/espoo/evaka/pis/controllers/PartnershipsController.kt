@@ -6,7 +6,6 @@ package fi.espoo.evaka.pis.controllers
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.application.utils.noContent
-import fi.espoo.evaka.identity.VolttiIdentifier
 import fi.espoo.evaka.pis.getPartnership
 import fi.espoo.evaka.pis.getPartnershipsForPerson
 import fi.espoo.evaka.pis.service.Partnership
@@ -61,7 +60,7 @@ class PartnershipsController(private val asyncJobRunner: AsyncJobRunner, private
     fun getPartnerships(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @RequestParam(name = "personId", required = true) personId: VolttiIdentifier
+        @RequestParam(name = "personId", required = true) personId: UUID
     ): ResponseEntity<List<Partnership>> {
         Audit.PartnerShipsRead.log(targetId = personId)
         user.requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR, UserRole.FINANCE_ADMIN)
