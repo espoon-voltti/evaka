@@ -20,8 +20,10 @@ if [ "$1" = "up" ]; then
 
     rm -rf "$S3_DIR/enduser"
     rm -rf "$S3_DIR/employee"
+    rm -rf "$S3_DIR/citizen"
     cp -r "$LOCAL_DIR/enduser-frontend/dist" "$S3_DIR/enduser"
     cp -r "$LOCAL_DIR/employee-frontend/dist" "$S3_DIR/employee"
+    cp -r "$LOCAL_DIR/citizen-frontend/dist" "$S3_DIR/citizen"
 fi
 
 if [ "${E2E_KEYCLOAK:-false}" = "true" ]; then

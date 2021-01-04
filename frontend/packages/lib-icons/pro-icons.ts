@@ -58,6 +58,7 @@ import {
   faQuestion,
   faQuestionCircle,
   faSearch,
+  faSignOut,
   faSync,
   faTimes,
   faTrash,
@@ -67,6 +68,12 @@ import {
   faUserFriends,
   faUsers
 } from '@fortawesome/pro-light-svg-icons'
+
+import {
+  faFileAlt as farFileAlt,
+  faGavel as farGavel,
+  faMap as farMap
+} from '@fortawesome/pro-regular-svg-icons'
 
 import {
   faCaretUp as fasCaretUp,
@@ -138,6 +145,7 @@ const icons: IconSet = {
   faQuestion,
   faQuestionCircle,
   faSearch,
+  faSignOut,
   faSync,
   faTimes,
   faTrash,
@@ -146,6 +154,9 @@ const icons: IconSet = {
   faUserAltSlash,
   faUserFriends,
   faUsers,
+  farFileAlt,
+  farGavel,
+  farMap,
   fasCaretUp,
   fasCheckCircle,
   fasChevronDown,

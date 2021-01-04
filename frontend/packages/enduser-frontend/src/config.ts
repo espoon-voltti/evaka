@@ -31,12 +31,12 @@ type AppConfig = DeepReadonly<
       }
       styles: object[]
     }
-
     feature: {
       daycareApplication: boolean
       preschoolApplication: boolean
       selectApplicationType: boolean
       attachments: boolean
+      citizenFrontend: boolean
     }
   }
 >
@@ -179,7 +179,8 @@ configs._default = {
     daycareApplication: true,
     preschoolApplication: true,
     selectApplicationType: true,
-    attachments: true
+    attachments: true,
+    citizenFrontend: true
   }
 }
 configs.dev = defaultsDeep(
@@ -221,7 +222,8 @@ configs.prod = defaultsDeep(
       daycareApplication: true,
       preschoolApplication: true,
       selectApplicationType: true,
-      attachments: true
+      attachments: true,
+      citizenFrontend: false
     }
   },
   configs._default
