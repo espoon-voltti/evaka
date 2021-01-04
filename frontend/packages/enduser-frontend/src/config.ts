@@ -171,7 +171,8 @@ configs._default = {
   },
 
   sentry: {
-    dsn: 'https://dbab5ba9b7d94c87bc4d91bee8756e74@sentry.io/1820307',
+    dsn:
+      'https://dbab5ba9b7d94c87bc4d91bee8756e74@o318158.ingest.sentry.io/1820307',
     enabled: false
   },
 
