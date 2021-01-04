@@ -2,8 +2,8 @@
 '
 ' SPDX-License-Identifier: LGPL-2.1-or-later
 
-@startuml 
-!includeurl https://raw.githubusercontent.com/RicardoNiepel/C4-PlantUML/release/1-0/C4_Context.puml
+@startuml evaka-context
+!includeurl https://github.com/plantuml-stdlib/C4-PlantUML/raw/v2.0.0/C4_Context.puml
 
 title eVakan kontekstikaavio
 
