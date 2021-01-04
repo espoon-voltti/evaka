@@ -13,7 +13,7 @@ import {
 } from '@evaka/lib-components/src/layout/Container'
 import { Label } from '@evaka/lib-components/src/typography'
 import { AsyncFormModal } from '~components/common/FormModal'
-import { AlertBox } from '~components/common/MessageBoxes'
+import { AlertBox } from '@evaka/lib-components/src/molecules/MessageBoxes'
 import { DatePicker } from '~components/common/DatePicker'
 import Invoices from './Invoices'
 import InvoiceFilters from './InvoiceFilters'

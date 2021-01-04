@@ -5,7 +5,7 @@
 import styled from 'styled-components'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faInfo } from '@evaka/lib-icons'
-import { EspooColours } from '~utils/colours'
+import { accentColors } from '../colors'
 import React from 'react'
 import { IconProp } from '@fortawesome/fontawesome-svg-core'
 import { faExclamationTriangle } from '@fortawesome/free-solid-svg-icons'
@@ -27,6 +27,7 @@ const MessageBoxContainer = styled.div<MessageBoxContainerProps>`
 
   .message-container {
     display: flex;
+    align-items: center;
   }
 
   .icon-wrapper {
@@ -113,7 +114,7 @@ export function InfoBox({ title, message, icon, wide, thin }: InfoBoxProps) {
       message={message}
       icon={notNullIcon}
       circleIcon={true}
-      color={EspooColours.water}
+      color={accentColors.water}
       width={wide ? '100%' : 'fit-content'}
       thin={thin}
     />
@@ -134,7 +135,7 @@ export function AlertBox({ title, message, wide, thin }: AlertBoxProps) {
       message={message}
       icon={faExclamationTriangle}
       circleIcon={false}
-      color={EspooColours.orange}
+      color={accentColors.orange}
       width={wide ? '100%' : 'fit-content'}
       thin={thin}
     />

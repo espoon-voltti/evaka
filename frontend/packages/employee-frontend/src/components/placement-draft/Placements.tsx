@@ -17,7 +17,7 @@ import {
 import { EspooColours } from '~utils/colours'
 import { getStatusLabelByDateRange } from '~utils/date'
 import StatusLabel from '~components/common/StatusLabel'
-import { AlertBox } from '~components/common/MessageBoxes'
+import { AlertBox } from '@evaka/lib-components/src/molecules/MessageBoxes'
 
 interface PlacementsContainerProps {
   open: boolean

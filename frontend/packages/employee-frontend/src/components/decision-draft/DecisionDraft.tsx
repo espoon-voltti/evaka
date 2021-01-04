@@ -43,7 +43,10 @@ import {
   DecisionUnit
 } from '~types/decision'
 import { faEnvelope } from '@evaka/lib-icons'
-import { AlertBox, InfoBox } from '~components/common/MessageBoxes'
+import {
+  AlertBox,
+  InfoBox
+} from '@evaka/lib-components/src/molecules/MessageBoxes'
 import { TitleContext, TitleState } from '~state/title'
 import { EspooColours } from '~utils/colours'
 import { formatName } from '~utils'

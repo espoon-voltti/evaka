@@ -31,7 +31,7 @@ import {
 import FormActions from '~components/common/FormActions'
 import { ChildContext } from '~state'
 import { DateRange, rangeContainsDate } from '~utils/date'
-import { AlertBox } from '~components/common/MessageBoxes'
+import { AlertBox } from '@evaka/lib-components/src/molecules/MessageBoxes'
 import { DivFitContent } from 'components/common/styled/containers'
 import {
   AssistanceActionRequest,
