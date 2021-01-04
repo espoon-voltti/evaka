@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# SPDX-FileCopyrightText: 2017-2020 City of Espoo
+#
+# SPDX-License-Identifier: LGPL-2.1-or-later
+
 set -e
 
 # Note this will not re-configure the realm. If you want to reconfigure realm then just delete the realm and run docker-compose down and then up.

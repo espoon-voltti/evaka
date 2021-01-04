@@ -7,7 +7,7 @@
 set -euo pipefail
 
 # Configuration
-REUSE_VERSION=0.11.1
+REUSE_VERSION=0.12.1
 
 if [ "${1:-X}" = '--help' ]; then
   echo 'Usage: ./bin/add-license-headers.sh [OPTIONS]'
@@ -21,14 +21,18 @@ if [ "${1:-X}" = '--help' ]; then
   exit 0
 fi
 
+function run_reuse() {
+    docker run --rm --volume "$(pwd):/data" "fsfe/reuse:${REUSE_VERSION}" "$@"
+}
+
 function addheader() {
     local file="$1"
     shift
-    reuse addheader --license "LGPL-2.1-or-later" --copyright "City of Espoo" --year "2017-2020" "$@" "$file"
+    run_reuse addheader --license "LGPL-2.1-or-later" --copyright "City of Espoo" --year "2017-2020" "$@" "$file"
 }
 
 set +e
-REUSE_OUTPUT=$(docker run --rm --volume "$(pwd):/data" "fsfe/reuse:${REUSE_VERSION}" lint)
+REUSE_OUTPUT=$(run_reuse lint)
 REUSE_EXIT_CODE="$?"
 set -e
 

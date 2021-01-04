@@ -1,3 +1,7 @@
+-- SPDX-FileCopyrightText: 2017-2020 City of Espoo
+--
+-- SPDX-License-Identifier: LGPL-2.1-or-later
+
 -- 2020-2021
 INSERT INTO preschool_term (finnish_preschool, swedish_preschool, extended_term, application_period)
 VALUES (
