@@ -517,7 +517,7 @@ jobs:
       - notify_slack
 
   clone_infra_repo:
-    executor: service_executor
+    executor: aws_executor
     steps:
       - add_ssh_keys:
           fingerprints:
@@ -985,7 +985,7 @@ workflows:
             - message_service_test
 
       - clone_infra_repo:
-          <<: *default_contexts
+          <<: *aws_contexts
           requires:
             - e2e-test-application
             - e2e-test-citizen
