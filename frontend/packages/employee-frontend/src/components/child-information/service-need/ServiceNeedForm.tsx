@@ -6,6 +6,7 @@ import React, { FormEvent, useContext, useEffect, useState } from 'react'
 import LocalDate from '@evaka/lib-common/src/local-date'
 import { useTranslation } from '~/state/i18n'
 import { UIContext } from '~state/ui'
+import { Gap } from '@evaka/lib-components/src/white-space'
 import Checkbox from '@evaka/lib-components/src/atoms/form/Checkbox'
 import InputField from '@evaka/lib-components/src/atoms/form/InputField'
 import { ServiceNeed } from '~types/child'
@@ -241,12 +242,13 @@ function ServiceNeedForm(props: Props) {
         ]}
       />
 
+      <Gap size="s" />
       <InfoBox
         message={i18n.childInformation.serviceNeed.hoursPerWeekInfo}
         thin
         wide
       />
-      <div className="separator-gap-small" />
+      <Gap size="s" />
 
       <LabelValueList
         spacing="large"
@@ -294,13 +296,17 @@ function ServiceNeedForm(props: Props) {
       />
 
       {autoCutWarning && (
-        <AlertBox
-          message={i18n.childInformation.serviceNeed.errors.autoCutWarning}
-          thin
-          wide
-        />
+        <>
+          <Gap size="xs" />
+          <AlertBox
+            message={i18n.childInformation.serviceNeed.errors.autoCutWarning}
+            thin
+            wide
+          />
+        </>
       )}
 
+      <Gap size="s" />
       <FormActions
         onCancel={() => clearUiMode()}
         disabled={formHasErrors(formErrors)}

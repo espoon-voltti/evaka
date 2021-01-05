@@ -63,13 +63,16 @@ export default React.memo(function Decisions() {
             dangerouslySetInnerHTML={{ __html: t.decisions.summary }}
           />
           {unconfirmedDecisionsCount > 0 ? (
-            <AlertBox
-              message={t.decisions.unconfimedDecisions(
-                applicationDecisions.length
-              )}
-              thin
-              data-qa="alert-box-unconfirmed-decisions-count"
-            />
+            <>
+              <Gap size="s" />
+              <AlertBox
+                message={t.decisions.unconfimedDecisions(
+                  applicationDecisions.length
+                )}
+                thin
+                data-qa="alert-box-unconfirmed-decisions-count"
+              />
+            </>
           ) : null}
         </ContentArea>
 

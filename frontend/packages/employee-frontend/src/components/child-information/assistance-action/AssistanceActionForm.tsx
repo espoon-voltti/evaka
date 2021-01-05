@@ -7,6 +7,7 @@ import styled from 'styled-components'
 import LocalDate from '@evaka/lib-common/src/local-date'
 import { useTranslation } from '~/state/i18n'
 import { UIContext } from '~state/ui'
+import { Gap } from '@evaka/lib-components/src/white-space'
 import Checkbox from '@evaka/lib-components/src/atoms/form/Checkbox'
 import InputField from '@evaka/lib-components/src/atoms/form/InputField'
 import InfoBall from '~components/common/InfoBall'
@@ -323,13 +324,19 @@ function AssistanceActionForm(props: Props) {
       />
 
       {autoCutWarning && (
-        <AlertBox
-          message={i18n.childInformation.assistanceAction.errors.autoCutWarning}
-          thin
-          wide
-        />
+        <>
+          <Gap size="xs" />
+          <AlertBox
+            message={
+              i18n.childInformation.assistanceAction.errors.autoCutWarning
+            }
+            thin
+            wide
+          />
+        </>
       )}
 
+      <Gap size="s" />
       <FormActions
         onCancel={() => clearUiMode()}
         disabled={formHasErrors(formErrors)}
