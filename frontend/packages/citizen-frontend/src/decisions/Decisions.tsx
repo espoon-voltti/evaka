@@ -16,7 +16,7 @@ import Container, {
 import { H1, H2, H3, Label, P } from '@evaka/lib-components/src/typography'
 import ListGrid from '@evaka/lib-components/src/layout/ListGrid'
 import { AlertBox } from '@evaka/lib-components/src/molecules/MessageBoxes'
-import { Gap } from '@evaka/lib-components/src/white-space'
+import { Gap, defaultMargins } from '@evaka/lib-components/src/white-space'
 import Link from '@evaka/lib-components/src/atoms/Link'
 import Button from '@evaka/lib-components/src/atoms/buttons/Button'
 import InlineButton from '@evaka/lib-components/src/atoms/buttons/InlineButton'
@@ -106,7 +106,11 @@ const ApplicationDecisions = React.memo(function ApplicationDecisions({
             {`${t.decisions.applicationDecisions.decision} ${t.decisions.applicationDecisions.type[type]}`}
           </H3>
           <Gap size="m" />
-          <ListGrid labelWidth="max-content" rowGap="s" columnGap="L">
+          <MobileFriendlyListGrid
+            labelWidth="max-content"
+            rowGap="s"
+            columnGap="L"
+          >
             <Label>{t.decisions.applicationDecisions.sentDate}</Label>
             <span data-qa="decision-sent-date">{sentDate.format()}</span>
             {resolved ? (
@@ -125,7 +129,7 @@ const ApplicationDecisions = React.memo(function ApplicationDecisions({
               <Gap size="xs" horizontal />
               {t.decisions.applicationDecisions.status[status]}
             </Status>
-          </ListGrid>
+          </MobileFriendlyListGrid>
           <Gap size="m" />
           {status === 'PENDING' ? (
             <ConfirmationDialog applicationId={applicationId} type={type} />
@@ -137,6 +141,17 @@ const ApplicationDecisions = React.memo(function ApplicationDecisions({
     </ContentArea>
   )
 })
+
+const MobileFriendlyListGrid = styled(ListGrid)`
+  @media (max-width: 600px) {
+    grid-template-columns: auto;
+    row-gap: ${defaultMargins.xxs};
+
+    *:nth-child(2n) {
+      margin-bottom: ${defaultMargins.s};
+    }
+  }
+`
 
 const Status = styled.span`
   text-transform: uppercase;

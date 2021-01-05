@@ -85,7 +85,7 @@ type ParagraphProps = {
 export const P = styled.p<ParagraphProps>`
   margin-bottom: ${(p) => (!p.fitted ? `${defaultMargins.s};` : '0')};
   ${(p) => (p.centered ? 'text-align: center;' : '')};
-  width: ${(p) => p.width || 'auto'};
+  max-width: ${(p) => p.width || 'auto'};
 
   strong {
     font-weight: 600;
