@@ -29,7 +29,7 @@ const diameter = (px: number) => `
 `
 
 const IconContainer = styled.div<IconContainerProps>`
-  display: flex;
+  display: inline-flex;
   justify-content: center;
   align-items: center;
 

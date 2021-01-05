@@ -3,11 +3,13 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useEffect, useState } from 'react'
+import styled from 'styled-components'
 import { ApplicationDecisions } from '~decisions/types'
 import { client } from '~api-client'
-import { faFileAlt } from '@evaka/lib-icons'
+import { faCheck, faFileAlt, faGavel, faTimes } from '@evaka/lib-icons'
 import { JsonOf } from '@evaka/lib-common/src/json'
 import LocalDate from '@evaka/lib-common/src/local-date'
+import { accentColors, greyscale } from '@evaka/lib-components/src/colors'
 import Container, {
   ContentArea
 } from '@evaka/lib-components/src/layout/Container'
@@ -18,6 +20,7 @@ import { Gap } from '@evaka/lib-components/src/white-space'
 import Link from '@evaka/lib-components/src/atoms/Link'
 import Button from '@evaka/lib-components/src/atoms/buttons/Button'
 import InlineButton from '@evaka/lib-components/src/atoms/buttons/InlineButton'
+import RoundIcon from '@evaka/lib-components/src/atoms/RoundIcon'
 import { useTranslation } from '../localization'
 
 const getDecisions = async (): Promise<ApplicationDecisions[]> => {
@@ -113,9 +116,15 @@ const ApplicationDecisions = React.memo(function ApplicationDecisions({
               </>
             ) : null}
             <Label>{t.decisions.applicationDecisions.statusLabel}</Label>
-            <span data-qa="decision-status">
+            <Status data-qa="decision-status">
+              <RoundIcon
+                content={statusIcon[status].icon}
+                color={statusIcon[status].color}
+                size="s"
+              />
+              <Gap size="xs" horizontal />
               {t.decisions.applicationDecisions.status[status]}
-            </span>
+            </Status>
           </ListGrid>
           <Gap size="m" />
           {status === 'PENDING' ? (
@@ -128,6 +137,25 @@ const ApplicationDecisions = React.memo(function ApplicationDecisions({
     </ContentArea>
   )
 })
+
+const Status = styled.span`
+  text-transform: uppercase;
+`
+
+const statusIcon = {
+  PENDING: {
+    icon: faGavel,
+    color: accentColors.orange
+  },
+  ACCEPTED: {
+    icon: faCheck,
+    color: accentColors.green
+  },
+  REJECTED: {
+    icon: faTimes,
+    color: greyscale.lighter
+  }
+}
 
 const noop = () => undefined
 
