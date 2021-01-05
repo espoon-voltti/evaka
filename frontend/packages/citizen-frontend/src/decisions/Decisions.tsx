@@ -3,22 +3,24 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useEffect, useState } from 'react'
-import { ApplicationDecisions } from '~decisions/types'
+import styled from 'styled-components'
+import { ApplicationDecisions, DecisionType } from '~decisions/types'
 import { client } from '~api-client'
-import { faFileAlt } from '@evaka/lib-icons'
+import { faCheck, faFileAlt, faGavel, faTimes } from '@evaka/lib-icons'
 import { JsonOf } from '@evaka/lib-common/src/json'
 import LocalDate from '@evaka/lib-common/src/local-date'
+import { accentColors, greyscale } from '@evaka/lib-components/src/colors'
 import Container, {
   ContentArea
 } from '@evaka/lib-components/src/layout/Container'
-import { H1, H2, H4, Label, P } from '@evaka/lib-components/src/typography'
-import { FixedSpaceColumn } from '@evaka/lib-components/src/layout/flex-helpers'
+import { H1, H2, H3, Label, P } from '@evaka/lib-components/src/typography'
 import ListGrid from '@evaka/lib-components/src/layout/ListGrid'
 import { AlertBox } from '@evaka/lib-components/src/molecules/MessageBoxes'
-import { Gap } from '@evaka/lib-components/src/white-space'
+import { Gap, defaultMargins } from '@evaka/lib-components/src/white-space'
 import Link from '@evaka/lib-components/src/atoms/Link'
 import Button from '@evaka/lib-components/src/atoms/buttons/Button'
 import InlineButton from '@evaka/lib-components/src/atoms/buttons/InlineButton'
+import RoundIcon from '@evaka/lib-components/src/atoms/RoundIcon'
 import { useTranslation } from '../localization'
 
 const getDecisions = async (): Promise<ApplicationDecisions[]> => {
@@ -55,14 +57,15 @@ export default React.memo(function Decisions() {
   return (
     <Container>
       <Gap size="s" />
-      <FixedSpaceColumn>
-        <ContentArea opaque>
-          <H1>{t.decisions.title}</H1>
-          <P
-            width="800px"
-            dangerouslySetInnerHTML={{ __html: t.decisions.summary }}
-          />
-          {unconfirmedDecisionsCount > 0 ? (
+      <ContentArea opaque paddingVertical="L">
+        <H1 noMargin>{t.decisions.title}</H1>
+        <P
+          width="800px"
+          dangerouslySetInnerHTML={{ __html: t.decisions.summary }}
+        />
+        {unconfirmedDecisionsCount > 0 ? (
+          <>
+            <Gap size="s" />
             <AlertBox
               message={t.decisions.unconfimedDecisions(
                 applicationDecisions.length
@@ -70,16 +73,16 @@ export default React.memo(function Decisions() {
               thin
               data-qa="alert-box-unconfirmed-decisions-count"
             />
-          ) : null}
-        </ContentArea>
-
-        {applicationDecisions.map((applicationDecision) => (
-          <ApplicationDecisions
-            key={applicationDecision.applicationId}
-            {...applicationDecision}
-          />
-        ))}
-      </FixedSpaceColumn>
+          </>
+        ) : null}
+      </ContentArea>
+      <Gap size="s" />
+      {applicationDecisions.map((applicationDecision) => (
+        <React.Fragment key={applicationDecision.applicationId}>
+          <ApplicationDecisions {...applicationDecision} />
+          <Gap size="s" />
+        </React.Fragment>
+      ))}
     </Container>
   )
 })
@@ -92,14 +95,22 @@ const ApplicationDecisions = React.memo(function ApplicationDecisions({
   const t = useTranslation()
 
   return (
-    <ContentArea opaque>
-      <H2 data-qa="title-decision-child-name">{childName}</H2>
+    <ContentArea opaque paddingVertical="L">
+      <H2 noMargin data-qa="title-decision-child-name">
+        {childName}
+      </H2>
       {decisions.map(({ decisionId, type, status, sentDate, resolved }) => (
         <React.Fragment key={decisionId}>
-          <H4 data-qa="title-decision-type">
+          <Gap size="L" />
+          <H3 noMargin data-qa="title-decision-type">
             {`${t.decisions.applicationDecisions.decision} ${t.decisions.applicationDecisions.type[type]}`}
-          </H4>
-          <ListGrid labelWidth="max-content" rowGap="s" columnGap="L">
+          </H3>
+          <Gap size="m" />
+          <MobileFriendlyListGrid
+            labelWidth="max-content"
+            rowGap="s"
+            columnGap="L"
+          >
             <Label>{t.decisions.applicationDecisions.sentDate}</Label>
             <span data-qa="decision-sent-date">{sentDate.format()}</span>
             {resolved ? (
@@ -109,13 +120,19 @@ const ApplicationDecisions = React.memo(function ApplicationDecisions({
               </>
             ) : null}
             <Label>{t.decisions.applicationDecisions.statusLabel}</Label>
-            <span data-qa="decision-status">
+            <Status data-qa="decision-status">
+              <RoundIcon
+                content={statusIcon[status].icon}
+                color={statusIcon[status].color}
+                size="s"
+              />
+              <Gap size="xs" horizontal />
               {t.decisions.applicationDecisions.status[status]}
-            </span>
-          </ListGrid>
+            </Status>
+          </MobileFriendlyListGrid>
           <Gap size="m" />
           {status === 'PENDING' ? (
-            <ConfirmationDialog applicationId={applicationId} />
+            <ConfirmationDialog applicationId={applicationId} type={type} />
           ) : (
             <PdfLink decisionId={decisionId} />
           )}
@@ -125,30 +142,70 @@ const ApplicationDecisions = React.memo(function ApplicationDecisions({
   )
 })
 
+const MobileFriendlyListGrid = styled(ListGrid)`
+  @media (max-width: 600px) {
+    grid-template-columns: auto;
+    row-gap: ${defaultMargins.xxs};
+
+    *:nth-child(2n) {
+      margin-bottom: ${defaultMargins.s};
+    }
+  }
+`
+
+const Status = styled.span`
+  text-transform: uppercase;
+`
+
+const statusIcon = {
+  PENDING: {
+    icon: faGavel,
+    color: accentColors.orange
+  },
+  ACCEPTED: {
+    icon: faCheck,
+    color: accentColors.green
+  },
+  REJECTED: {
+    icon: faTimes,
+    color: greyscale.lighter
+  }
+}
+
 const noop = () => undefined
 
+const preschoolInfoTypes: DecisionType[] = [
+  'PRESCHOOL',
+  'PRESCHOOL_DAYCARE',
+  'PREPARATORY_EDUCATION'
+]
+
 const ConfirmationDialog = React.memo(function ConfirmationDialog({
-  applicationId
+  applicationId,
+  type
 }: {
   applicationId: string
+  type: DecisionType
 }) {
+  const t = useTranslation()
+
   return (
     <>
       <P width="800px">
-        Päätöksessä ilmoitetun paikan hyväksymis- tai hylkäämisilmoitus on
-        toimitettava välittömästi, viimeistään kahden viikon kuluessa tämän
-        ilmoituksen saamisesta.
+        {
+          t.decisions.applicationDecisions.confirmationInfo[
+            preschoolInfoTypes.includes(type) ? 'preschool' : 'default'
+          ]
+        }
       </P>
       <P width="800px">
-        <strong>
-          Siirry lukemaan päätös ja vastaamaan hyväksytkö vai hylkäätkö paikan.
-        </strong>
+        <strong>{t.decisions.applicationDecisions.goToConfirmation}</strong>
       </P>
       <Gap size="s" />
       <Link to={`/decisions/by-application/${applicationId}`}>
         <Button
           primary
-          text="Siirry vastaamaan"
+          text={t.decisions.applicationDecisions.confirmationLink}
           onClick={noop}
           dataQa="button-confirm-decisions"
         />

@@ -15,6 +15,7 @@ import {
 import { useTranslation } from '~state/i18n'
 import { faQuestion } from '@evaka/lib-icons'
 import styled from 'styled-components'
+import { Gap } from '@evaka/lib-components/src/white-space'
 import Button from '@evaka/lib-components/src/atoms/buttons/Button'
 import InfoModal from '~components/common/InfoModal'
 import { DatePicker } from '~components/common/DatePicker'
@@ -264,6 +265,7 @@ function PlacementRow({ placement, onRefreshNeeded, checkOverlaps }: Props) {
             {i18n.decisionDraft.types[placement.type]}
           </DataValue>
         </DataRow>
+        <Gap size="s" />
         {showServiceNeedWarning && (
           <AlertBox
             message={`${i18n.childInformation.placements.serviceNeedMissing1} ${placement.missingServiceNeedDays} ${i18n.childInformation.placements.serviceNeedMissing2}`}

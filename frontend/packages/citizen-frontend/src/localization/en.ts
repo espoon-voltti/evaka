@@ -20,30 +20,42 @@ const en: Translations = {
     logout: 'Log out'
   },
   decisions: {
-    title: 'Päätökset',
+    title: 'Decisions',
     summary:
       'Tälle sivulle saapuvat lapsen varhaiskasvatus-, esiopetus- ja kerhohakemuksiin liittyvät päätökset. Uuden päätöksen saapuessa sinun tulee kahden viikon sisällä vastata, hyväksytkö vai hylkäätkö lapselle tarjotun paikan.',
     unconfimedDecisions: (n: number) =>
-      `${n} ${n === 1 ? 'päätös' : 'päätöstä'} odottaa vahvistusta`,
+      `${n} ${
+        n === 1 ? 'decision is' : 'decisions are'
+      } waiting for confirmation`,
     applicationDecisions: {
-      decision: 'Päätös',
+      decision: 'Decision of',
       type: {
-        CLUB: 'kerhosta',
-        DAYCARE: 'varhaiskasvatuksesta',
-        DAYCARE_PART_TIME: 'osa-aikaisesta varhaiskasvatuksesta',
-        PRESCHOOL: 'esiopetuksesta',
-        PRESCHOOL_DAYCARE: 'liittyvästä varhaiskasvatuksesta',
-        PREPARATORY_EDUCATION: 'valmistavasta opetuksesta'
+        CLUB: 'club',
+        DAYCARE: 'early childhood education',
+        DAYCARE_PART_TIME: 'part-day early childhood education',
+        PRESCHOOL: 'pre-primary education',
+        PRESCHOOL_DAYCARE:
+          'early childhood education related to pre-primary education',
+        PREPARATORY_EDUCATION: 'preparatory education'
       },
-      sentDate: 'Päätös saapunut',
-      resolved: 'Vahvistettu',
-      statusLabel: 'Tila',
+      sentDate: 'Decision sent',
+      resolved: 'Decision confirmed',
+      statusLabel: 'Status',
       status: {
-        PENDING: 'Vahvistettavana huoltajalla',
-        ACCEPTED: 'Hyväksytty',
-        REJECTED: 'Hylätty'
+        PENDING: 'Waiting for confirmation from the guardian',
+        ACCEPTED: 'Confirmed',
+        REJECTED: 'Rejected'
       },
-      openPdf: 'Näytä päätös'
+      openPdf: 'Show the decision',
+      confirmationInfo: {
+        preschool:
+          'You must either accept or reject the place proposed in the decision of pre-primary education, preparatory education and/or early childhood education related to pre-primary education within two weeks of receiving this notification. If you have applied for several services, you will receive separate decisions for each of them that require your action.',
+        default:
+          'You must either accept or reject the place proposed in the decision within two weeks of receiving this notification.'
+      },
+      goToConfirmation:
+        'Please open the decision and respond whether you will accept or reject the place.',
+      confirmationLink: 'Review and confirm the decision'
     }
   }
 }

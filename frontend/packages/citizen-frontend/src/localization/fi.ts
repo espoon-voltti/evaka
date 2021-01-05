@@ -41,7 +41,16 @@ export default {
         ACCEPTED: 'Hyväksytty',
         REJECTED: 'Hylätty'
       },
-      openPdf: 'Näytä päätös'
+      openPdf: 'Näytä päätös',
+      confirmationInfo: {
+        preschool:
+          'Esiopetuksen, valmistavan opetuksen ja/tai liittyvän varhaiskasvatuksen hyväksymis- tai hylkäämisilmoitus on toimitettava välittömästi, viimeistään kahden viikon kuluessa tämän ilmoituksen saamisesta. Jos olet hakenut useampaa palvelua, saat jokaisesta oman päätöksen erikseen vahvistettavaksi',
+        default:
+          'Päätöksessä ilmoitetun paikan hyväksymis- tai hylkäämisilmoitus on toimitettava välittömästi, viimeistään kahden viikon kuluessa tämän ilmoituksen saamisesta.'
+      },
+      goToConfirmation:
+        'Siirry lukemaan päätös ja vastaamaan hyväksytkö vai hylkäätkö paikan.',
+      confirmationLink: 'Siirry vastaamaan'
     }
   }
 }
