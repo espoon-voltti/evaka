@@ -11,7 +11,7 @@ import LocalDate from '@evaka/lib-common/src/local-date'
 import Container, {
   ContentArea
 } from '@evaka/lib-components/src/layout/Container'
-import { H1, H2, H4, Label, P } from '@evaka/lib-components/src/typography'
+import { H1, H2, H3, Label, P } from '@evaka/lib-components/src/typography'
 import { FixedSpaceColumn } from '@evaka/lib-components/src/layout/flex-helpers'
 import ListGrid from '@evaka/lib-components/src/layout/ListGrid'
 import { AlertBox } from '@evaka/lib-components/src/molecules/MessageBoxes'
@@ -99,9 +99,9 @@ const ApplicationDecisions = React.memo(function ApplicationDecisions({
       <H2 data-qa="title-decision-child-name">{childName}</H2>
       {decisions.map(({ decisionId, type, status, sentDate, resolved }) => (
         <React.Fragment key={decisionId}>
-          <H4 data-qa="title-decision-type">
+          <H3 data-qa="title-decision-type">
             {`${t.decisions.applicationDecisions.decision} ${t.decisions.applicationDecisions.type[type]}`}
-          </H4>
+          </H3>
           <ListGrid labelWidth="max-content" rowGap="s" columnGap="L">
             <Label>{t.decisions.applicationDecisions.sentDate}</Label>
             <span data-qa="decision-sent-date">{sentDate.format()}</span>
