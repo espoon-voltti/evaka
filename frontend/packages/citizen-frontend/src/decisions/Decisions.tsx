@@ -4,7 +4,7 @@
 
 import React, { useEffect, useState } from 'react'
 import styled from 'styled-components'
-import { ApplicationDecisions } from '~decisions/types'
+import { ApplicationDecisions, DecisionType } from '~decisions/types'
 import { client } from '~api-client'
 import { faCheck, faFileAlt, faGavel, faTimes } from '@evaka/lib-icons'
 import { JsonOf } from '@evaka/lib-common/src/json'
@@ -128,7 +128,7 @@ const ApplicationDecisions = React.memo(function ApplicationDecisions({
           </ListGrid>
           <Gap size="m" />
           {status === 'PENDING' ? (
-            <ConfirmationDialog applicationId={applicationId} />
+            <ConfirmationDialog applicationId={applicationId} type={type} />
           ) : (
             <PdfLink decisionId={decisionId} />
           )}
@@ -159,28 +159,38 @@ const statusIcon = {
 
 const noop = () => undefined
 
+const preschoolInfoTypes: DecisionType[] = [
+  'PRESCHOOL',
+  'PRESCHOOL_DAYCARE',
+  'PREPARATORY_EDUCATION'
+]
+
 const ConfirmationDialog = React.memo(function ConfirmationDialog({
-  applicationId
+  applicationId,
+  type
 }: {
   applicationId: string
+  type: DecisionType
 }) {
+  const t = useTranslation()
+
   return (
     <>
       <P width="800px">
-        Päätöksessä ilmoitetun paikan hyväksymis- tai hylkäämisilmoitus on
-        toimitettava välittömästi, viimeistään kahden viikon kuluessa tämän
-        ilmoituksen saamisesta.
+        {
+          t.decisions.applicationDecisions.confirmationInfo[
+            preschoolInfoTypes.includes(type) ? 'preschool' : 'default'
+          ]
+        }
       </P>
       <P width="800px">
-        <strong>
-          Siirry lukemaan päätös ja vastaamaan hyväksytkö vai hylkäätkö paikan.
-        </strong>
+        <strong>{t.decisions.applicationDecisions.goToConfirmation}</strong>
       </P>
       <Gap size="s" />
       <Link to={`/decisions/by-application/${applicationId}`}>
         <Button
           primary
-          text="Siirry vastaamaan"
+          text={t.decisions.applicationDecisions.confirmationLink}
           onClick={noop}
           dataQa="button-confirm-decisions"
         />
