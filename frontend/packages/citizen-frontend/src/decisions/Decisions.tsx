@@ -3,57 +3,179 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useEffect, useState } from 'react'
-import { Decision } from '~decisions/types'
+import { ApplicationDecisions } from '~decisions/types'
 import { client } from '~api-client'
+import { faFileAlt } from '@evaka/lib-icons'
+import { JsonOf } from '@evaka/lib-common/src/json'
+import LocalDate from '@evaka/lib-common/src/local-date'
 import Container, {
   ContentArea
 } from '@evaka/lib-components/src/layout/Container'
-import { H1 } from '@evaka/lib-components/src/typography'
+import { H1, H2, H4, Label, P } from '@evaka/lib-components/src/typography'
 import { FixedSpaceColumn } from '@evaka/lib-components/src/layout/flex-helpers'
-import styled from 'styled-components'
+import ListGrid from '@evaka/lib-components/src/layout/ListGrid'
 import { AlertBox } from '@evaka/lib-components/src/molecules/MessageBoxes'
+import { Gap } from '@evaka/lib-components/src/white-space'
+import Link from '@evaka/lib-components/src/atoms/Link'
+import Button from '@evaka/lib-components/src/atoms/buttons/Button'
+import InlineButton from '@evaka/lib-components/src/atoms/buttons/InlineButton'
+import { useTranslation } from '../localization'
 
-const getDecisions = async (): Promise<Decision[]> => {
-  const { data } = await client.get<Decision[]>('/citizen/decisions')
-  return data
+const getDecisions = async (): Promise<ApplicationDecisions[]> => {
+  const { data } = await client.get<JsonOf<ApplicationDecisions[]>>(
+    '/citizen/decisions'
+  )
+  return data.map(({ applicationId, childName, decisions }) => ({
+    applicationId,
+    childName,
+    decisions: decisions.map((json) => ({
+      ...json,
+      sentDate: LocalDate.parseIso(json.sentDate),
+      resolved: LocalDate.parseNullableIso(json.resolved)
+    }))
+  }))
 }
 
 export default React.memo(function Decisions() {
-  const [decisions, setDecisions] = useState<Decision[]>([])
+  const t = useTranslation()
+  const [applicationDecisions, setApplicationDecisions] = useState<
+    ApplicationDecisions[]
+  >([])
 
   useEffect(() => {
-    void getDecisions().then(setDecisions)
+    void getDecisions().then(setApplicationDecisions)
   }, [])
+
+  const unconfirmedDecisionsCount = applicationDecisions.reduce(
+    (sum, { decisions }) =>
+      sum + decisions.filter(({ status }) => status === 'PENDING').length,
+    0
+  )
 
   return (
     <Container>
+      <Gap size="s" />
       <FixedSpaceColumn>
         <ContentArea opaque>
-          <H1>Päätökset</H1>
-          <Paragraph>
-            Tälle sivulle saapuvat lapsen varhaiskasvatus-, esiopetus- ja
-            kerhohakemuksiin liittyvät päätökset. Uuden päätöksen saapuessa
-            sinun tulee kahden viikon sisällä vastata, hyväksytkö vai hylkäätkö
-            lapselle tarjotun paikan.
-          </Paragraph>
-          {decisions.length > 0 ? (
+          <H1>{t.decisions.title}</H1>
+          <P
+            width="800px"
+            dangerouslySetInnerHTML={{ __html: t.decisions.summary }}
+          />
+          {unconfirmedDecisionsCount > 0 ? (
             <AlertBox
-              message={`${decisions.length} päätöstä odottaa vahvistusta`}
+              message={t.decisions.unconfimedDecisions(
+                applicationDecisions.length
+              )}
               thin
+              data-qa="alert-box-unconfirmed-decisions-count"
             />
           ) : null}
         </ContentArea>
 
-        {decisions.map((decision) => (
-          <ContentArea opaque key={decision.id}>
-            {decision.id}
-          </ContentArea>
+        {applicationDecisions.map((applicationDecision) => (
+          <ApplicationDecisions
+            key={applicationDecision.applicationId}
+            {...applicationDecision}
+          />
         ))}
       </FixedSpaceColumn>
     </Container>
   )
 })
 
-const Paragraph = styled.p`
-  width: 800px;
-`
+const ApplicationDecisions = React.memo(function ApplicationDecisions({
+  applicationId,
+  childName,
+  decisions
+}: ApplicationDecisions) {
+  const t = useTranslation()
+
+  return (
+    <ContentArea opaque>
+      <H2 data-qa="title-decision-child-name">{childName}</H2>
+      {decisions.map(({ decisionId, type, status, sentDate, resolved }) => (
+        <React.Fragment key={decisionId}>
+          <H4 data-qa="title-decision-type">
+            {`${t.decisions.applicationDecisions.decision} ${t.decisions.applicationDecisions.type[type]}`}
+          </H4>
+          <ListGrid labelWidth="max-content" rowGap="s" columnGap="L">
+            <Label>{t.decisions.applicationDecisions.sentDate}</Label>
+            <span data-qa="decision-sent-date">{sentDate.format()}</span>
+            {resolved ? (
+              <>
+                <Label>{t.decisions.applicationDecisions.resolved}</Label>
+                <span data-qa="decision-resolved">{resolved.format()}</span>
+              </>
+            ) : null}
+            <Label>{t.decisions.applicationDecisions.statusLabel}</Label>
+            <span data-qa="decision-status">
+              {t.decisions.applicationDecisions.status[status]}
+            </span>
+          </ListGrid>
+          <Gap size="m" />
+          {status === 'PENDING' ? (
+            <ConfirmationDialog applicationId={applicationId} />
+          ) : (
+            <PdfLink decisionId={decisionId} />
+          )}
+        </React.Fragment>
+      ))}
+    </ContentArea>
+  )
+})
+
+const noop = () => undefined
+
+const ConfirmationDialog = React.memo(function ConfirmationDialog({
+  applicationId
+}: {
+  applicationId: string
+}) {
+  return (
+    <>
+      <P width="800px">
+        Päätöksessä ilmoitetun paikan hyväksymis- tai hylkäämisilmoitus on
+        toimitettava välittömästi, viimeistään kahden viikon kuluessa tämän
+        ilmoituksen saamisesta.
+      </P>
+      <P width="800px">
+        <strong>
+          Siirry lukemaan päätös ja vastaamaan hyväksytkö vai hylkäätkö paikan.
+        </strong>
+      </P>
+      <Gap size="s" />
+      <Link to={`/decisions/by-application/${applicationId}`}>
+        <Button
+          primary
+          text="Siirry vastaamaan"
+          onClick={noop}
+          dataQa="button-confirm-decisions"
+        />
+      </Link>
+    </>
+  )
+})
+
+const PdfLink = React.memo(function PdfLink({
+  decisionId
+}: {
+  decisionId: string
+}) {
+  const t = useTranslation()
+
+  return (
+    <a
+      href={`/api/application/citizen/decisions/${decisionId}/download`}
+      target="_blank"
+      rel="noreferrer"
+    >
+      <InlineButton
+        icon={faFileAlt}
+        text={t.decisions.applicationDecisions.openPdf}
+        onClick={noop}
+        dataQa="button-open-pdf"
+      />
+    </a>
+  )
+})

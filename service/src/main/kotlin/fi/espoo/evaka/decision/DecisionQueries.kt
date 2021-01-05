@@ -4,8 +4,11 @@
 
 package fi.espoo.evaka.decision
 
+import fi.espoo.evaka.application.ApplicationDecisions
+import fi.espoo.evaka.application.DecisionSummary
 import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
+import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.getEnum
 import fi.espoo.evaka.shared.domain.BadRequest
 import org.jdbi.v3.core.Handle
@@ -97,6 +100,42 @@ fun getDecisionsByGuardian(h: Handle, guardianId: UUID, authorizedUnits: AclAuth
     units?.let { query.bindList("units", units) }
 
     return query.map { rs: ResultSet, _: StatementContext -> decisionFromResultSet(rs) }.list()
+}
+
+data class ApplicationDecisionRow(
+    val applicationId: UUID,
+    val childName: String,
+    val id: UUID,
+    val type: DecisionType,
+    val status: DecisionStatus,
+    val sentDate: LocalDate,
+    val resolved: LocalDate?
+)
+
+fun getOwnDecisions(h: Database.Read, guardianId: UUID): List<ApplicationDecisions> {
+    // language=sql
+    val sql =
+        """
+        SELECT d.application_id, p.first_name || ' ' || p.last_name child_name,  d.id, d.type, d.status, d.sent_date, d.resolved::date
+        FROM decision d
+        JOIN application a ON d.application_id = a.id
+        JOIN person p ON a.child_id = p.id
+        WHERE a.guardian_id = :guardianId
+        """.trimIndent()
+
+    val rows = h.createQuery(sql)
+        .bind("guardianId", guardianId)
+        .mapTo<ApplicationDecisionRow>()
+
+    return rows
+        .groupBy { it.applicationId }
+        .map { (applicationId, decisions) ->
+            ApplicationDecisions(
+                applicationId,
+                decisions.first().childName,
+                decisions.map { DecisionSummary(it.id, it.type, it.status, it.sentDate, it.resolved) }
+            )
+        }
 }
 
 fun fetchDecisionDrafts(h: Handle, applicationId: UUID): List<DecisionDraft> {
