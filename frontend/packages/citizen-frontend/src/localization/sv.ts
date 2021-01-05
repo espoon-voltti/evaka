@@ -20,39 +20,39 @@ const sv: Translations = {
     logout: 'Logga ut'
   },
   decisions: {
-    title: 'Päätökset',
+    title: 'Beslut',
     summary:
       'Tälle sivulle saapuvat lapsen varhaiskasvatus-, esiopetus- ja kerhohakemuksiin liittyvät päätökset. Uuden päätöksen saapuessa sinun tulee kahden viikon sisällä vastata, hyväksytkö vai hylkäätkö lapselle tarjotun paikan.',
-    unconfimedDecisions: (n: number) =>
-      `${n} ${n === 1 ? 'päätös' : 'päätöstä'} odottaa vahvistusta`,
+    unconfimedDecisions: (n: number) => `${n} beslut inväntar bekräftelse`,
     applicationDecisions: {
-      decision: 'Päätös',
+      decision: 'Beslut om',
       type: {
-        CLUB: 'kerhosta',
-        DAYCARE: 'varhaiskasvatuksesta',
-        DAYCARE_PART_TIME: 'osa-aikaisesta varhaiskasvatuksesta',
-        PRESCHOOL: 'esiopetuksesta',
-        PRESCHOOL_DAYCARE: 'liittyvästä varhaiskasvatuksesta',
-        PREPARATORY_EDUCATION: 'valmistavasta opetuksesta'
+        CLUB: 'klubbverksamhet',
+        DAYCARE: 'småbarnspedagogik',
+        DAYCARE_PART_TIME: 'deldag småbarnspedagogik',
+        PRESCHOOL: 'förskola',
+        PRESCHOOL_DAYCARE:
+          'småbarnspedagogik i samband med förskoleundervisningen',
+        PREPARATORY_EDUCATION: 'förberedande undervisning'
       },
-      sentDate: 'Päätös saapunut',
-      resolved: 'Vahvistettu',
-      statusLabel: 'Tila',
+      sentDate: 'Beslutsdatum',
+      resolved: 'Bekräftat',
+      statusLabel: 'Status',
       status: {
-        PENDING: 'Vahvistettavana huoltajalla',
-        ACCEPTED: 'Hyväksytty',
-        REJECTED: 'Hylätty'
+        PENDING: 'Bekräftas av vårdnadshavaren',
+        ACCEPTED: 'Bekräftad',
+        REJECTED: 'Avvisade'
       },
-      openPdf: 'Näytä päätös',
+      openPdf: 'Visa beslut',
       confirmationInfo: {
         preschool:
-          'Esiopetuksen, valmistavan opetuksen ja/tai liittyvän varhaiskasvatuksen hyväksymis- tai hylkäämisilmoitus on toimitettava välittömästi, viimeistään kahden viikon kuluessa tämän ilmoituksen saamisesta. Jos olet hakenut useampaa palvelua, saat jokaisesta oman päätöksen erikseen vahvistettavaksi',
+          'Du ska omedelbart eller senast två veckor från mottagandet av detta beslut, ta emot eller annullera platsen. Du kan ta emot eller annullera platsen elektroniskt på adressen espoonvarhaiskasvatus.fi (kräver identifiering) eller per post.',
         default:
-          'Päätöksessä ilmoitetun paikan hyväksymis- tai hylkäämisilmoitus on toimitettava välittömästi, viimeistään kahden viikon kuluessa tämän ilmoituksen saamisesta.'
+          'Du ska omedelbart eller senast två veckor från mottagandet av ett beslut ta emot eller annullera platsen.'
       },
       goToConfirmation:
-        'Siirry lukemaan päätös ja vastaamaan hyväksytkö vai hylkäätkö paikan.',
-      confirmationLink: 'Siirry vastaamaan'
+        'Gå till beslutet för att läsa det och svara om du tar emot eller annullerar platsen.',
+      confirmationLink: 'Granska och bekräfta beslutet'
     }
   }
 }
