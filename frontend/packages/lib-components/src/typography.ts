@@ -79,9 +79,15 @@ export const Label = styled.label<LabelProps>`
 type ParagraphProps = {
   fitted?: boolean
   centered?: boolean
+  width?: string
 }
 
 export const P = styled.p<ParagraphProps>`
   margin-bottom: ${(p) => (!p.fitted ? `${defaultMargins.s};` : '0')};
   ${(p) => (p.centered ? 'text-align: center;' : '')};
+  width: ${(p) => p.width || 'auto'};
+
+  strong {
+    font-weight: 600;
+  }
 `

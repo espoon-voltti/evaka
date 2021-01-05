@@ -29,7 +29,7 @@ import {
 import { UIContext } from 'state/ui'
 import PlacementProposalRow from '~components/unit/tab-placement-proposals/PlacementProposalRow'
 import { UUID } from '~types'
-import { InfoBox } from '~components/common/MessageBoxes'
+import { InfoBox } from '@evaka/lib-components/src/molecules/MessageBoxes'
 
 const ButtonRow = styled.div`
   display: flex;

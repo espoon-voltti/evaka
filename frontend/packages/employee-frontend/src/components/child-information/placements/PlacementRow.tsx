@@ -20,7 +20,7 @@ import InfoModal from '~components/common/InfoModal'
 import { DatePicker } from '~components/common/DatePicker'
 import { UIContext, UiState } from '~state/ui'
 import { Link } from 'react-router-dom'
-import { AlertBox } from '~components/common/MessageBoxes'
+import { AlertBox } from '@evaka/lib-components/src/molecules/MessageBoxes'
 import Toolbar from '~components/common/Toolbar'
 import {
   deletePlacement,

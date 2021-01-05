@@ -14,7 +14,7 @@ import styled from 'styled-components'
 import { UUID } from '~types'
 import { postCaretakers, putCaretakers } from '~api/caretakers'
 import { Result } from '~api'
-import { AlertBox } from '~components/common/MessageBoxes'
+import { AlertBox } from '@evaka/lib-components/src/molecules/MessageBoxes'
 
 const NumberInputContainer = styled.div`
   width: 150px;

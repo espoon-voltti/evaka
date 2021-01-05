@@ -12,7 +12,10 @@ import { ServiceNeed } from '~types/child'
 import { UUID } from '~types'
 import { FormErrors, formHasErrors } from '~utils/validation/validations'
 import { DatePicker, DatePickerClearable } from '~components/common/DatePicker'
-import { AlertBox, InfoBox } from '~components/common/MessageBoxes'
+import {
+  AlertBox,
+  InfoBox
+} from '@evaka/lib-components/src/molecules/MessageBoxes'
 import FormActions from '~components/common/FormActions'
 import LabelValueList from '~components/common/LabelValueList'
 import styled from 'styled-components'

@@ -8,6 +8,8 @@ import { createProxy } from '../shared/proxy-utils'
 const router = Router()
 const proxy = createProxy()
 
+router.all('/citizen/*', createProxy())
+
 router.get('/decisions', createProxy({ path: '/enduser/decisions' }))
 router.get('/decisions2/:decisionId/download', proxy)
 router.get('/attachments/:attachmentId/download', proxy)
