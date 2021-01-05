@@ -71,7 +71,7 @@ export default React.memo(function Decisions() {
                 applicationDecisions.length
               )}
               thin
-              data-qa="alert-box-unconfirmed-decisions-count"
+              dataQa="alert-box-unconfirmed-decisions-count"
             />
           </>
         ) : null}
@@ -95,7 +95,11 @@ const ApplicationDecisions = React.memo(function ApplicationDecisions({
   const t = useTranslation()
 
   return (
-    <ContentArea opaque paddingVertical="L" data-qa={`application-${applicationId}`}>
+    <ContentArea
+      opaque
+      paddingVertical="L"
+      data-qa={`application-${applicationId}`}
+    >
       <H2 noMargin data-qa={`title-decision-child-name-${applicationId}`}>
         {childName}
       </H2>
@@ -112,11 +116,15 @@ const ApplicationDecisions = React.memo(function ApplicationDecisions({
             columnGap="L"
           >
             <Label>{t.decisions.applicationDecisions.sentDate}</Label>
-            <span data-qa={`decision-sent-date-${decisionId}`}>{sentDate.format()}</span>
+            <span data-qa={`decision-sent-date-${decisionId}`}>
+              {sentDate.format()}
+            </span>
             {resolved ? (
               <>
                 <Label>{t.decisions.applicationDecisions.resolved}</Label>
-                <span data-qa={`decision-resolved-date-${decisionId}`}>{resolved.format()}</span>
+                <span data-qa={`decision-resolved-date-${decisionId}`}>
+                  {resolved.format()}
+                </span>
               </>
             ) : null}
             <Label>{t.decisions.applicationDecisions.statusLabel}</Label>
