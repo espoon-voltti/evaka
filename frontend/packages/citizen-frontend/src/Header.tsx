@@ -232,6 +232,7 @@ const LanguageIcon = styled(FontAwesomeIcon)`
 
 const LanguageDropDown = styled.ul`
   position: absolute;
+  z-index: 99;
   top: 64px;
   list-style: none;
   margin: 0;
