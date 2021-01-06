@@ -29,11 +29,13 @@ import {
   deleteCareAreaFixture,
   deleteDaycare,
   deleteDaycareGroup,
+  deleteDecisionFixture,
   deletePersonFixture,
   deleteVtjPerson,
   insertCareAreaFixtures,
   insertDaycareFixtures,
   insertDaycareGroupFixtures,
+  insertDecisionFixtures,
   insertPersonFixture,
   insertVtjPersonFixture,
   PersonDetailWithDependantsAndGuardians
@@ -702,6 +704,8 @@ export function createBackupCareFixture(
   }
 }
 
+export const nullUUID = ''
+
 export const uuidv4 = (): string => {
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
     const r = (Math.random() * 16) | 0,
@@ -788,6 +792,19 @@ export class Fixture {
       restrictedDetailsEnabled: false,
       restrictedDetailsEndDate: undefined,
       streetAddress: `streetAddress_${id}`
+    })
+  }
+
+  static decision(): DecisionBuilder {
+    return new DecisionBuilder({
+      id: uuidv4(),
+      applicationId: nullUUID,
+      //eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      employeeId: supervisor.externalId!,
+      unitId: nullUUID,
+      type: 'DAYCARE',
+      startDate: '2020-01-01',
+      endDate: '2021-01-01'
     })
   }
 }
@@ -964,5 +981,39 @@ class PersonBuilder {
   // Note: shallow copy
   copy(): PersonBuilder {
     return new PersonBuilder({ ...this.data })
+  }
+}
+
+class DecisionBuilder {
+  data: Decision
+
+  constructor(data: Decision) {
+    this.data = data
+  }
+
+  with(value: Partial<Decision>): DecisionBuilder {
+    this.data = {
+      ...this.data,
+      ...value
+    }
+    return this
+  }
+
+  async save(): Promise<DecisionBuilder> {
+    await insertDecisionFixtures([this.data])
+    Fixture.cleanupOperations.push(async () => {
+      await deleteDecisionFixture(this.data.id)
+    })
+    return this
+  }
+
+  async delete(): Promise<DecisionBuilder> {
+    await deleteCareAreaFixture(this.data.id)
+    return this
+  }
+
+  // Note: shallow copy
+  copy(): DecisionBuilder {
+    return new DecisionBuilder({ ...this.data })
   }
 }

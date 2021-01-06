@@ -253,6 +253,12 @@ class DevApi(
         return ResponseEntity.noContent().build()
     }
 
+    @DeleteMapping("/decisions/{id}")
+    fun deleteDecisions(db: Database, @PathVariable id: UUID): ResponseEntity<Unit> {
+        db.transaction { it.handle.deleteDecision(id) }
+        return ResponseEntity.noContent().build()
+    }
+
     @PostMapping("/fee-decisions")
     fun createFeeDecisions(db: Database, @RequestBody decisions: List<FeeDecision>): ResponseEntity<Unit> {
         db.transaction { tx -> upsertFeeDecisions(tx.handle, objectMapper, decisions) }
@@ -781,6 +787,8 @@ fun insertInvoices(invoices: List<Invoice>) = { h: Handle ->
 
 fun Handle.deleteIncome(id: UUID) = execute("DELETE FROM income WHERE person_id = ?", id)
 fun Handle.deletePricing(id: UUID) = execute("DELETE FROM pricing WHERE id = ?", id)
+
+fun Handle.deleteDecision(id: UUID) = execute("DELETE FROM decision WHERE id = ?", id)
 
 data class DevCareArea(
     val id: UUID = UUID.randomUUID(),

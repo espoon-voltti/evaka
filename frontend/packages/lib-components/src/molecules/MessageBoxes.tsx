@@ -4,10 +4,11 @@
 
 import styled from 'styled-components'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faInfo, faExclamation } from '@evaka/lib-icons'
+import { faInfo } from '@evaka/lib-icons'
 import { accentColors } from '../colors'
 import React from 'react'
 import { IconProp } from '@fortawesome/fontawesome-svg-core'
+import { faExclamationTriangle } from '@fortawesome/free-solid-svg-icons'
 
 interface MessageBoxContainerProps {
   color: string
@@ -17,12 +18,12 @@ interface MessageBoxContainerProps {
 
 const MessageBoxContainer = styled.div<MessageBoxContainerProps>`
   width: ${(props) => props.width};
-  margin: ${(props) => (props.thin ? '0' : '24px 0')};
-  padding: ${(props) => (props.thin ? '4px 18px' : '20px')};
+  margin: ${(props) => (props.thin ? '8px 0' : '24px 0')};
+  padding: ${(props) => (props.thin ? '8px 20px' : '20px')};
   border-style: solid;
   border-width: 1px;
   border-color: ${(props) => props.color};
-  border-radius: ${(props) => (props.thin ? '0' : '4px')};
+  border-radius: 4px;
 
   .message-container {
     display: flex;
@@ -30,15 +31,21 @@ const MessageBoxContainer = styled.div<MessageBoxContainerProps>`
   }
 
   .icon-wrapper {
-    margin-right: 8px;
+    margin-top: 4px;
+    margin-bottom: 4px;
+    margin-right: 20px;
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 24px;
-    min-width: 24px;
-    height: 24px;
-    background: ${(props) => props.color};
-    border-radius: 100%;
+    height: fit-content;
+
+    &.circle {
+      width: 30px;
+      min-width: 30px;
+      height: 30px;
+      background: ${(props) => props.color};
+      border-radius: 100%;
+    }
   }
 
   .message-title {
@@ -53,28 +60,34 @@ interface MessageBoxProps {
   color: string
   width?: string
   thin?: boolean
-  'data-qa'?: string
+  circleIcon: boolean
+  dataQa?: string
 }
 
-function MessageBox({
+export function MessageBox({
   title,
   message,
   icon,
   color,
   width,
   thin,
-  ...props
+  circleIcon,
+  dataQa
 }: MessageBoxProps) {
   return (
     <MessageBoxContainer
       color={color}
       width={width ?? 'fit-content'}
       thin={thin}
-      data-qa={props['data-qa']}
     >
-      <div className="message-container">
-        <div className="icon-wrapper">
-          <FontAwesomeIcon icon={icon} size="1x" color={color} inverse />
+      <div className="message-container" data-qa={dataQa}>
+        <div className={`icon-wrapper ${circleIcon ? 'circle' : ''}`}>
+          <FontAwesomeIcon
+            icon={icon}
+            size={circleIcon || thin ? 'lg' : '2x'}
+            color={color}
+            inverse={circleIcon}
+          />
         </div>
         <div>
           {title && <p className="message-title">{title}</p>}
@@ -91,17 +104,9 @@ interface InfoBoxProps {
   icon?: IconProp
   wide?: boolean
   thin?: boolean
-  'data-qa'?: string
 }
 
-export function InfoBox({
-  title,
-  message,
-  icon,
-  wide,
-  thin,
-  ...props
-}: InfoBoxProps) {
+export function InfoBox({ title, message, icon, wide, thin }: InfoBoxProps) {
   // without this hacking compiler gives an error because IconProp type is already super complex
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-explicit-any
   const notNullIcon: IconProp = (icon as any) ?? faInfo
@@ -110,10 +115,10 @@ export function InfoBox({
       title={title}
       message={message}
       icon={notNullIcon}
+      circleIcon={true}
       color={accentColors.water}
       width={wide ? '100%' : 'fit-content'}
       thin={thin}
-      data-qa={props['data-qa']}
     />
   )
 }
@@ -123,7 +128,7 @@ interface AlertBoxProps {
   message?: string
   wide?: boolean
   thin?: boolean
-  'data-qa'?: string
+  dataQa?: string
 }
 
 export function AlertBox({
@@ -131,17 +136,18 @@ export function AlertBox({
   message,
   wide,
   thin,
-  ...props
+  dataQa
 }: AlertBoxProps) {
   return (
     <MessageBox
       title={title}
       message={message}
-      icon={faExclamation}
+      icon={faExclamationTriangle}
+      circleIcon={false}
       color={accentColors.orange}
       width={wide ? '100%' : 'fit-content'}
       thin={thin}
-      data-qa={props['data-qa']}
+      dataQa={dataQa}
     />
   )
 }

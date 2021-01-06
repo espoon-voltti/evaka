@@ -370,6 +370,14 @@ export async function insertDecisionFixtures(
   }
 }
 
+export async function deleteDecisionFixture(id: string): Promise<void> {
+  try {
+    await devClient.delete(`/decisions/${id}`)
+  } catch (e) {
+    throw new DevApiError(e)
+  }
+}
+
 export async function insertFeeDecisionFixtures(
   fixture: FeeDecision[]
 ): Promise<void> {
