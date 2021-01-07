@@ -149,7 +149,7 @@ val validPreschoolApplication = ApplicationDetails(
             allergies = "allergies",
             diet = "diet",
             assistanceNeeded = true,
-            assistanceDescription = "hjelppiväh!"
+            assistanceDescription = "Description for assistance"
         ),
         guardian = Guardian(
             person = PersonBasics(

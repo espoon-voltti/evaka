@@ -70,8 +70,8 @@ private val guardian = PersonDTO(
     testAdult_1.id,
     ExternalIdentifier.SSN.getInstance(testAdult_1.ssn!!),
     null,
-    null,
-    null,
+    "John Jonathan",
+    "Doe",
     null,
     null,
     null,
@@ -83,7 +83,7 @@ private val guardian = PersonDTO(
     null
 )
 private val manager = DaycareManager("Maija Manageri", "maija.manageri@test.com", "0401231234")
-private val sendAddress = DecisionSendAddress("Katu", "Kaupunki", "00100", "", "", "")
+private val sendAddress = DecisionSendAddress("Kamreerintie 2", "02770", "Espoo", "Kamreerintie 2", "02770 Espoo", "")
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE, classes = [PDFConfig::class, PDFService::class])
 class PDFServiceTest {
