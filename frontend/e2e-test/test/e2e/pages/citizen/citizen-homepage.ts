@@ -20,4 +20,8 @@ export default class CitizenHomepage {
     await t.click(this.language.button)
     await t.click(this.language.select(lang))
   }
+
+  readonly unresolvedDecisionsInfoBox = Selector(
+    '[data-qa="alert-box-unconfirmed-decisions-count"]'
+  )
 }

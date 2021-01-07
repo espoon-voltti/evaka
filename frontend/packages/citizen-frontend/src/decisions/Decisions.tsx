@@ -95,14 +95,18 @@ const ApplicationDecisions = React.memo(function ApplicationDecisions({
   const t = useTranslation()
 
   return (
-    <ContentArea opaque paddingVertical="L">
-      <H2 noMargin data-qa="title-decision-child-name">
+    <ContentArea
+      opaque
+      paddingVertical="L"
+      data-qa={`application-${applicationId}`}
+    >
+      <H2 noMargin data-qa={`title-decision-child-name-${applicationId}`}>
         {childName}
       </H2>
       {decisions.map(({ decisionId, type, status, sentDate, resolved }) => (
         <React.Fragment key={decisionId}>
           <Gap size="L" />
-          <H3 noMargin data-qa="title-decision-type">
+          <H3 noMargin data-qa={`title-decision-type-${decisionId}`}>
             {`${t.decisions.applicationDecisions.decision} ${t.decisions.applicationDecisions.type[type]}`}
           </H3>
           <Gap size="m" />
@@ -112,15 +116,19 @@ const ApplicationDecisions = React.memo(function ApplicationDecisions({
             columnGap="L"
           >
             <Label>{t.decisions.applicationDecisions.sentDate}</Label>
-            <span data-qa="decision-sent-date">{sentDate.format()}</span>
+            <span data-qa={`decision-sent-date-${decisionId}`}>
+              {sentDate.format()}
+            </span>
             {resolved ? (
               <>
                 <Label>{t.decisions.applicationDecisions.resolved}</Label>
-                <span data-qa="decision-resolved">{resolved.format()}</span>
+                <span data-qa={`decision-resolved-date-${decisionId}`}>
+                  {resolved.format()}
+                </span>
               </>
             ) : null}
             <Label>{t.decisions.applicationDecisions.statusLabel}</Label>
-            <Status data-qa="decision-status">
+            <Status data-qa={`decision-status-${decisionId}`}>
               <RoundIcon
                 content={statusIcon[status].icon}
                 color={statusIcon[status].color}
