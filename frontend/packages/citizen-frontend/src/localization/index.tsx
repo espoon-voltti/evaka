@@ -5,7 +5,7 @@
 import { LocalizationContextProvider } from './state'
 import fi from './fi'
 
-export { Lang, useLang, useTranslation } from './state'
+export { Lang, langs, useLang, useTranslation } from './state'
 
 export type Translations = typeof fi
 

@@ -13,26 +13,23 @@ import {
   faChevronDown,
   faChevronUp,
   faSignOut,
+  farMap,
   farFileAlt,
-  farGavel,
-  farMap
+  farGavel
 } from '@evaka/lib-icons'
-import { useUser } from './auth'
-import { Lang, useLang, useTranslation } from './localization'
-import EspooLogo from './espoo-logo.svg'
+import { useUser } from '../auth'
+import { Lang, langs, useLang, useTranslation } from '../localization'
 
-const enduserBaseUrl =
-  window.location.host === 'localhost:9094' ? 'http://localhost:9091' : ''
+type Props = {
+  enduserBaseUrl: string
+}
 
-export default React.memo(function Header() {
+export default React.memo(function DesktopNav({ enduserBaseUrl }: Props) {
   const user = useUser()
   const t = useTranslation()
 
   return (
-    <HeaderContainer>
-      <LogoContainer>
-        <Logo src={EspooLogo} alt="Espoo logo" />
-      </LogoContainer>
+    <>
       <Nav>
         <NavItem href={enduserBaseUrl} data-qa={'nav-old-map'}>
           <Icon icon={farMap} />
@@ -72,75 +69,9 @@ export default React.memo(function Header() {
           <span>{t.header.logout}</span>
         </LogoutText>
       </NavItem>
-    </HeaderContainer>
+    </>
   )
 })
-
-const langs: Lang[] = ['fi', 'sv', 'en']
-
-const LanguageMenu = React.memo(function LanguageMenu() {
-  const t = useTranslation()
-  const [lang, setLang] = useLang()
-  const [open, setOpen] = useState(false)
-  const toggleOpen = useCallback(() => setOpen((state) => !state), [setOpen])
-  const dropDownRef = useCloseOnOutsideClick<HTMLDivElement>(() =>
-    setOpen(false)
-  )
-
-  return (
-    <div ref={dropDownRef}>
-      <LanguageButton onClick={toggleOpen} data-qa={'button-select-language'}>
-        {lang}
-        <LanguageIcon icon={open ? faChevronUp : faChevronDown} />
-      </LanguageButton>
-      {open ? (
-        <LanguageDropDown data-qa={'select-lang'}>
-          {langs.map((l: Lang) => (
-            <LanguageListElement key={l}>
-              <LanguageDropDownButton
-                selected={lang === l}
-                onClick={() => {
-                  setLang(l)
-                  setOpen(false)
-                }}
-                data-qa={`lang-${l}`}
-              >
-                <LanguageShort>{l}</LanguageShort>
-                <span>{t.header.lang[l]}</span>
-                {lang === l ? <LanguageCheck icon={faCheck} /> : null}
-              </LanguageDropDownButton>
-            </LanguageListElement>
-          ))}
-        </LanguageDropDown>
-      ) : null}
-    </div>
-  )
-})
-
-const HeaderContainer = styled.header`
-  z-index: 10;
-  color: ${colors.greyscale.white};
-  background-color: ${colors.brandEspoo.espooBlue};
-  position: relative;
-  display: flex;
-  flex-direction: row;
-  height: 64px;
-`
-
-const LogoContainer = styled.div`
-  flex-grow: 0;
-  flex-shrink: 1;
-  flex-basis: 20%;
-  min-width: 180px;
-`
-
-const Logo = styled.img`
-  padding: 0 1.5rem;
-  margin-left: 1rem;
-  max-width: 150px;
-  width: auto;
-  height: 100%;
-`
 
 const Nav = styled.nav`
   display: flex;
@@ -211,6 +142,45 @@ const UserName = styled.span`
   text-transform: none;
   white-space: nowrap;
 `
+
+const LanguageMenu = React.memo(function LanguageMenu() {
+  const t = useTranslation()
+  const [lang, setLang] = useLang()
+  const [open, setOpen] = useState(false)
+  const toggleOpen = useCallback(() => setOpen((state) => !state), [setOpen])
+  const dropDownRef = useCloseOnOutsideClick<HTMLDivElement>(() =>
+    setOpen(false)
+  )
+
+  return (
+    <div ref={dropDownRef}>
+      <LanguageButton onClick={toggleOpen} data-qa={'button-select-language'}>
+        {lang}
+        <LanguageIcon icon={open ? faChevronUp : faChevronDown} />
+      </LanguageButton>
+      {open ? (
+        <LanguageDropDown data-qa={'select-lang'}>
+          {langs.map((l: Lang) => (
+            <LanguageListElement key={l}>
+              <LanguageDropDownButton
+                selected={lang === l}
+                onClick={() => {
+                  setLang(l)
+                  setOpen(false)
+                }}
+                data-qa={`lang-${l}`}
+              >
+                <LanguageShort>{l}</LanguageShort>
+                <span>{t.header.lang[l]}</span>
+                {lang === l ? <LanguageCheck icon={faCheck} /> : null}
+              </LanguageDropDownButton>
+            </LanguageListElement>
+          ))}
+        </LanguageDropDown>
+      ) : null}
+    </div>
+  )
+})
 
 const LanguageButton = styled.button`
   color: inherit;

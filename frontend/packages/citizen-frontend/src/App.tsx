@@ -6,7 +6,7 @@ import React from 'react'
 import { BrowserRouter, Route, Switch } from 'react-router-dom'
 import { Authentication } from './auth'
 import { Localization } from './localization'
-import Header from './Header'
+import Header from './header/Header'
 import Decisions from './decisions/Decisions'
 
 export default function App() {

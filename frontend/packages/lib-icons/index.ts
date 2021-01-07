@@ -17,6 +17,7 @@ export interface IconSet {
   faArrowRight: IconDefinition
   faAngleUp: IconDefinition
   faArrowUp: IconDefinition
+  faBars: IconDefinition
   faCalendarAlt: IconDefinition
   faCheck: IconDefinition
   faCheckCircle: IconDefinition
@@ -100,6 +101,7 @@ export const faArrowLeft = iconSet.faArrowLeft
 export const faArrowRight = iconSet.faArrowRight
 export const faAngleUp = iconSet.faAngleUp
 export const faArrowUp = iconSet.faArrowUp
+export const faBars = iconSet.faBars
 export const faCalendarAlt = iconSet.faCalendarAlt
 export const faCheck = iconSet.faCheck
 export const faCheckCircle = iconSet.faCheckCircle

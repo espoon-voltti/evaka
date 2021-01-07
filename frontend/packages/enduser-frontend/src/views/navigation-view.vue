@@ -18,6 +18,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
       :open="menuOpen"
       :loginAddress="loginAddress"
       :logoutAddress="logoutAddress"
+      :citizenFrontendUrl="citizenFrontendUrl"
     />
   </nav>
 </template>
