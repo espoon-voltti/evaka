@@ -5,11 +5,15 @@
 import { logConsoleMessages } from '../../utils/fixture'
 import { enduserRole } from '../../config/users'
 import CitizenHomePage from '../../pages/citizen/citizen-homepage'
+import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 
 const citizenHomePage = new CitizenHomePage()
 
 fixture('Citizen page')
   .meta({ type: 'regression', subType: 'citizen-homepage' })
+  .before(async () => {
+    await initializeAreaAndPersonData()
+  })
   .afterEach(logConsoleMessages)
 
 test('Citizen can change the UI language', async (t) => {
