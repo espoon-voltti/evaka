@@ -974,7 +974,7 @@ class PersonBuilder {
   }
 
   async delete(): Promise<PersonBuilder> {
-    await deleteCareAreaFixture(this.data.id)
+    if (this.data.ssn) await deleteVtjPerson(this.data.ssn)
     return this
   }
 
@@ -1008,7 +1008,7 @@ class DecisionBuilder {
   }
 
   async delete(): Promise<DecisionBuilder> {
-    await deleteCareAreaFixture(this.data.id)
+    await deleteDecisionFixture(this.data.id)
     return this
   }
 
