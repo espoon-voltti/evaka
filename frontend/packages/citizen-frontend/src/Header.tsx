@@ -118,6 +118,7 @@ const LanguageMenu = React.memo(function LanguageMenu() {
 })
 
 const HeaderContainer = styled.header`
+  z-index: 10;
   color: ${colors.greyscale.white};
   background-color: ${colors.brandEspoo.espooBlue};
   position: relative;
@@ -232,7 +233,6 @@ const LanguageIcon = styled(FontAwesomeIcon)`
 
 const LanguageDropDown = styled.ul`
   position: absolute;
-  z-index: 99;
   top: 64px;
   list-style: none;
   margin: 0;
