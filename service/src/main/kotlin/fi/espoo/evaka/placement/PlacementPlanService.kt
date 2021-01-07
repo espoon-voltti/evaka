@@ -8,8 +8,8 @@ import fi.espoo.evaka.application.ApplicationDetails
 import fi.espoo.evaka.application.ApplicationType
 import fi.espoo.evaka.application.DaycarePlacementPlan
 import fi.espoo.evaka.application.fetchApplicationDetails
+import fi.espoo.evaka.daycare.getActivePreschoolTermAt
 import fi.espoo.evaka.deriveClubTerm
-import fi.espoo.evaka.derivePreschoolTerm
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.NotifyPlacementPlanApplied
 import fi.espoo.evaka.shared.db.Database
@@ -47,7 +47,8 @@ class PlacementPlanService(
 
         when (application.type) {
             ApplicationType.PRESCHOOL -> {
-                val term = derivePreschoolTerm(startDate)
+                val term = tx.getActivePreschoolTermAt(startDate)?.extendedTerm
+                    ?: throw Exception("No suitable preschool term found for start date $startDate")
                 val period = FiniteDateRange(startDate, term.end)
                 val preschoolDaycarePeriod = if (type == PlacementType.PRESCHOOL_DAYCARE || type == PlacementType.PREPARATORY_DAYCARE) {
                     FiniteDateRange(startDate, LocalDate.of(term.end.year, 7, 31))
@@ -131,8 +132,10 @@ class PlacementPlanService(
                     requestedStartDate?.let { plan.preschoolDaycarePeriod?.copy(start = it) }
                         ?: plan.preschoolDaycarePeriod
                     )!!
-                // TODO: this should not be hard-coded
-                val term = derivePreschoolTerm(period.start)
+
+                val term = tx.getActivePreschoolTermAt(period.start)?.extendedTerm
+                    ?: throw Exception("No suitable preschool term found for start date ${period.start}")
+
                 // if the preschool daycare extends beyond the end of the preschool term, a normal daycare
                 // placement is used because invoices are handled differently
                 if (period.end.isAfter(term.end)) {

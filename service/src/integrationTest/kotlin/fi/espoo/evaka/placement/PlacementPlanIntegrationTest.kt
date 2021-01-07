@@ -144,7 +144,7 @@ class PlacementPlanIntegrationTest : FullApplicationTest() {
             type = FormType.PRESCHOOL,
             preferredStartDate = preferredStartDate
         )
-        val defaultEndDate = LocalDate.of(2024, 5, 31)
+        val defaultEndDate = LocalDate.of(2024, 6, 3)
         checkPlacementPlanDraft(
             applicationId,
             type = PlacementType.PRESCHOOL,
@@ -171,7 +171,7 @@ class PlacementPlanIntegrationTest : FullApplicationTest() {
             preschoolDaycare = true,
             preferredStartDate = preferredStartDate
         )
-        val defaultEndDate = LocalDate.of(2024, 5, 31)
+        val defaultEndDate = LocalDate.of(2024, 6, 3)
         val defaultDaycareEndDate = LocalDate.of(2024, 7, 31)
         checkPlacementPlanDraft(
             applicationId,
@@ -204,7 +204,7 @@ class PlacementPlanIntegrationTest : FullApplicationTest() {
             preferredStartDate = preferredStartDate,
             preparatory = true
         )
-        val defaultEndDate = LocalDate.of(2024, 5, 31)
+        val defaultEndDate = LocalDate.of(2024, 6, 3)
         checkPlacementPlanDraft(
             applicationId,
             type = PlacementType.PREPARATORY,

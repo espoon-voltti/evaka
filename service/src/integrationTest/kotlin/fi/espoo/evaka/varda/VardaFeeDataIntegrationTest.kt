@@ -299,7 +299,7 @@ class VardaFeeDataIntegrationTest : FullApplicationTest() {
         val sortedSentData = mockEndpoint.feeData.values.sortedBy { it.alkamis_pvm }
         assertEquals(2, mockEndpoint.feeData.size)
         sortedSentData.first().let {
-            assertEquals(guardiansTestChild1, it.huoltajat)
+            assertEquals(guardiansTestChild1.toSet(), it.huoltajat.toSet())
             assertEquals(FeeBasisCode.DAYCARE.code, it.maksun_peruste_koodi)
             assertEquals(0.0, it.palveluseteli_arvo)
             assertEquals(firstFeeDecision.parts.first().finalFee() / 100.0, it.asiakasmaksu)
@@ -308,7 +308,7 @@ class VardaFeeDataIntegrationTest : FullApplicationTest() {
             assertEquals(periodFirstHalf.end, it.paattymis_pvm)
         }
         sortedSentData.last().let {
-            assertEquals(guardiansTestChild1, it.huoltajat)
+            assertEquals(guardiansTestChild1.toSet(), it.huoltajat.toSet())
             assertEquals(FeeBasisCode.DAYCARE.code, it.maksun_peruste_koodi)
             assertEquals(0.0, it.palveluseteli_arvo)
             assertEquals(secondFeeDecision.parts.first().finalFee() / 100.0, it.asiakasmaksu)

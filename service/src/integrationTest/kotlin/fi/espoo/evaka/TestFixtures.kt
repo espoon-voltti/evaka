@@ -472,6 +472,24 @@ VALUES (
     '[2021-08-01,2022-06-03]',
     '[2021-01-08,2021-01-20]'
 );
+
+-- 2022-2023
+INSERT INTO preschool_term (finnish_preschool, swedish_preschool, extended_term, application_period)
+VALUES (
+    '[2022-08-11,2023-06-03]',
+    '[2022-08-11,2023-06-03]',
+    '[2022-08-01,2023-06-03]',
+    '[2022-01-08,2023-01-20]'
+);
+
+-- 2023-2024
+INSERT INTO preschool_term (finnish_preschool, swedish_preschool, extended_term, application_period)
+VALUES (
+    '[2023-08-11,2024-06-03]',
+    '[2023-08-11,2024-06-03]',
+    '[2023-08-01,2024-06-03]',
+    '[2023-01-08,2024-01-20]'
+);
         """.trimIndent()
 
     createUpdate(sql).execute()
