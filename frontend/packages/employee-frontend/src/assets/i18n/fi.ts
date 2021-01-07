@@ -812,7 +812,8 @@ export const fi = {
       newPartner: 'Uusi puoliso',
       editPartner: 'Puolison muokkaus',
       removePartner: 'Puolison poisto',
-      confirmText: 'Haluatko varmasti poistaa puolison? Puolison vaihtuessa merkitse edelliselle suhteelle loppumisaika ja lisää sen jälkeen uusi puoliso',
+      confirmText:
+        'Haluatko varmasti poistaa puolison? Puolison vaihtuessa merkitse edelliselle suhteelle loppumisaika ja lisää sen jälkeen uusi puoliso',
       error: {
         remove: {
           title: 'Puolison poisto epäonnistui!'
