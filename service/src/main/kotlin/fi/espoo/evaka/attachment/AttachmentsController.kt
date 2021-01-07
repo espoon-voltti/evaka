@@ -147,9 +147,11 @@ class AttachmentsController(
         val attachment =
             db.read { it.getAttachment(attachmentId) ?: throw NotFound("Attachment $attachmentId not found") }
 
+        val extension = parseExtension(attachment.name) ?: throw Forbidden("Couldn't parse valid file extension for attachment $attachmentId")
+
         return s3Client.get(filesBucket, "$attachmentId").let { document ->
             ResponseEntity.ok()
-                .header("Content-Disposition", "attachment;filename=${document.getName()}")
+                .header("Content-Disposition", "attachment;filename=${document.getName()}.$extension")
                 .contentType(MediaType.valueOf(attachment.contentType))
                 .body(document.getBytes())
         }
@@ -186,6 +188,12 @@ fun Database.Read.userAttachmentCount(userId: UUID): Int {
         .bind("userId", userId)
         .mapTo<Int>()
         .first()
+}
+
+fun parseExtension(fileName: String): String? {
+    val extension = fileName.split(".").last()
+    val validExtensions = listOf("jpg", "jpeg", "png", "pdf", "doc", "docx", "xls", "xlsx")
+    return extension.takeIf { validExtensions.contains(extension) }
 }
 
 val contentTypesWithMagicNumbers = mapOf(
