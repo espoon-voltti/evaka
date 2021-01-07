@@ -30,12 +30,14 @@ import {
   deleteDaycare,
   deleteDaycareGroup,
   deleteDecisionFixture,
+  deleteEmployeeById,
   deletePersonFixture,
   deleteVtjPerson,
   insertCareAreaFixtures,
   insertDaycareFixtures,
   insertDaycareGroupFixtures,
   insertDecisionFixtures,
+  insertEmployeeFixture,
   insertPersonFixture,
   insertVtjPersonFixture,
   PersonDetailWithDependantsAndGuardians
@@ -795,6 +797,18 @@ export class Fixture {
     })
   }
 
+  static employee(): EmployeeBuilder {
+    const id = uniqueLabel()
+    return new EmployeeBuilder({
+      id: uuidv4(),
+      email: `email_${id}@espoo.fi`,
+      externalId: `e2etest:${uuidv4()}`,
+      firstName: `first_name_${id}`,
+      lastName: `last_name_${id}`,
+      roles: ['ADMIN']
+    })
+  }
+
   static decision(): DecisionBuilder {
     return new DecisionBuilder({
       id: uuidv4(),
@@ -809,7 +823,7 @@ export class Fixture {
   }
 }
 
-class DaycareBuilder {
+export class DaycareBuilder {
   data: Daycare
 
   constructor(data: Daycare) {
@@ -858,7 +872,7 @@ class DaycareBuilder {
   }
 }
 
-class DaycareGroupBuilder {
+export class DaycareGroupBuilder {
   data: DaycareGroup
 
   constructor(data: DaycareGroup) {
@@ -897,7 +911,7 @@ class DaycareGroupBuilder {
   }
 }
 
-class CareAreaBuilder {
+export class CareAreaBuilder {
   data: CareArea
 
   constructor(data: CareArea) {
@@ -936,7 +950,7 @@ class CareAreaBuilder {
   }
 }
 
-class PersonBuilder {
+export class PersonBuilder {
   data: PersonDetailWithDependantsAndGuardians
 
   constructor(data: PersonDetailWithDependantsAndGuardians) {
@@ -984,7 +998,42 @@ class PersonBuilder {
   }
 }
 
-class DecisionBuilder {
+export class EmployeeBuilder {
+  data: EmployeeDetail
+
+  constructor(data: EmployeeDetail) {
+    this.data = data
+  }
+
+  with(value: Partial<EmployeeDetail>): EmployeeBuilder {
+    this.data = {
+      ...this.data,
+      ...value
+    }
+    return this
+  }
+
+  async save(): Promise<EmployeeBuilder> {
+    await insertEmployeeFixture(this.data)
+    Fixture.cleanupOperations.push(async () => {
+      await this.delete()
+    })
+    return this
+  }
+
+  async delete(): Promise<EmployeeBuilder> {
+    //eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    await deleteEmployeeById(this.data.id!)
+    return this
+  }
+
+  // Note: shallow copy
+  copy(): EmployeeBuilder {
+    return new EmployeeBuilder({ ...this.data })
+  }
+}
+
+export class DecisionBuilder {
   data: Decision
 
   constructor(data: Decision) {

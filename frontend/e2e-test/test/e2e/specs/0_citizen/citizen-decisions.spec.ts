@@ -5,19 +5,16 @@
 import { logConsoleMessages } from '../../utils/fixture'
 import { enduserRole } from '../../config/users'
 import CitizenHomePage from '../../pages/citizen/citizen-homepage'
-import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
-  deleteApplication,
-  deleteEmployeeById,
-  insertApplications,
-  insertEmployeeFixture
-} from '../../dev-api'
+  AreaAndPersonFixtures,
+  initializeAreaAndPersonData
+} from '../../dev-api/data-init'
+import { deleteApplication, insertApplications } from '../../dev-api'
 import {
   applicationFixture,
   enduserChildFixtureJari,
-  enduserGuardianFixture,
   Fixture,
-  supervisor
+  EmployeeBuilder
 } from '../../dev-api/fixtures'
 import CitizenDecisionsPage from '../../pages/citizen/citizen-decisions'
 import { format } from 'date-fns'
@@ -26,17 +23,18 @@ const citizenHomePage = new CitizenHomePage()
 const citizenDecisionsPage = new CitizenDecisionsPage()
 
 let applicationId: string
+let employee: EmployeeBuilder
+let fixtures: AreaAndPersonFixtures
+let cleanUp: () => Promise<void>
 
 fixture('Citizen decisions')
   .meta({ type: 'regression', subType: 'citizen-decisions' })
   .before(async () => {
-    await initializeAreaAndPersonData()
+    ;[fixtures, cleanUp] = await initializeAreaAndPersonData()
 
-    const uniqueSupervisor = {
-      ...supervisor,
-      email: `${Math.random().toString(36).substring(7)}@espoo.fi`
-    }
-    await insertEmployeeFixture(uniqueSupervisor)
+    employee = await Fixture.employee()
+      .with({ roles: ['SERVICE_WORKER'] })
+      .save()
   })
   .afterEach(logConsoleMessages)
   .afterEach(async () => {
@@ -44,14 +42,13 @@ fixture('Citizen decisions')
   })
   .after(async () => {
     await Fixture.cleanup()
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    await deleteEmployeeById(supervisor.id!)
+    await cleanUp()
   })
 
 test('Citizen sees her decisions', async (t) => {
   const application = applicationFixture(
-    enduserChildFixtureJari,
-    enduserGuardianFixture
+    fixtures.enduserChildFixtureJari,
+    fixtures.enduserGuardianFixture
   )
   applicationId = application.id
   await insertApplications([application])
@@ -59,7 +56,7 @@ test('Citizen sees her decisions', async (t) => {
   const decision = await Fixture.decision()
     .with({
       applicationId: application.id,
-      employeeId: supervisor.id,
+      employeeId: employee.data.id,
       unitId: application.form.apply.preferredUnits[0],
       startDate: application.form.preferredStartDate
     })
