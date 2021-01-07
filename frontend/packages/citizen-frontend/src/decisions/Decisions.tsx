@@ -71,7 +71,7 @@ export default React.memo(function Decisions() {
                 applicationDecisions.length
               )}
               thin
-              dataQa="alert-box-unconfirmed-decisions-count"
+              data-qa="alert-box-unconfirmed-decisions-count"
             />
           </>
         ) : null}
