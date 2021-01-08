@@ -635,6 +635,10 @@
           "message": {
             "title": "Hakemus on kiireellinen",
             "text": "Mikäli varhaiskasvatuksen tarpeen alkamisajankohtaa ei ole voitu ennakoida ja varhaiskasvatuspaikan tarve johtuu <strong>äkillisestä ja ennalta- arvaamattomasta</strong> työllistymisestä, opiskelusta tai koulutuksesta, tulee paikkaa hakea viimeistään kaksi viikkoa ennen kuin tarve alkaa. Kahden viikon käsittelyaika alkaa siitä, kun työ- tai opiskelutodistukset on toimitettu palveluohjaukseen (varhaiskasvatuksen.palveluohjaus@espoo.fi)."
+          },
+          "attachments-message": {
+            "text": "Om behovet av en plats inom småbarnspedagogiken beror på att du plötsligt fått sysselsättning eller börjat studera, ska platsen sökas senast två veckor innan behovet börjar. Bifoga till ansökan ett arbets- eller studieintyg av båda vårdnadshavarna som bor i samma hushåll. Om du inte kan lägga till bilagor till ansökan elektroniskt, skicka dem per post till adressen Småbarnspedagogikens servicehänvisning, PB 3125, 02070 Esbo stad. Behandlingstiden på två veckor börjar när vi har tagit emot ansökan och bilagorna som behövs.",
+            "subtitle": "Lägg här till ett arbets- eller studieintyg av båda föräldrarna."
           }
         },
         "startDate": {
@@ -672,6 +676,10 @@
           "message": {
             "title": "Kvälls- och skiftesvård ",
             "text": "Kvälls- och skiftesvård (småbarnspedagogik, som ordnas under veckoslut och dygnet runt) är avsedd för barn vars vårdnadshavare har skiftesarbete eller studerar på kvällar och veckoslut. Som bilaga ska av båda vårdnadshavarna bifogas ett intyg över arbete eller studier som orsakar behovet av kvälls- eller skiftesvård (dagis@esbo.fi)."
+          },
+          "attachments-message": {
+            "text": "Kvälls- och skiftomsorg är avsedd för barn vars båda föräldrar har skiftarbete eller studerar huvudsakligen på kvällar och/eller veckoslut. Som bilaga till ansökan ska av båda föräldrarna lämnas ett intyg av arbetsgivaren över skiftarbete eller studier som orsakar behovet av kvälls- eller skiftomsorg. Vi rekommenderar att bilagan skickas elektroniskt här, eftersom behandlingstiden på två veckor börjar när vi har tagit emot ansökan med de bilagor som behövs. Om du inte kan lägga till bilagor till ansökan elektroniskt, skicka dem per post till adressen Småbarnspedagogikens servicehänvisning, PB 3125, 02070 Esbo stad.",
+            "subtitle": "Lägg här till för båda föräldrarna antingen arbetsgivarens intyg över skiftarbete eller ett intyg över studier på kvällar/veckoslut."
           }
         },
         "clubCare": {

@@ -149,7 +149,7 @@ class AttachmentsController(
 
         return s3Client.get(filesBucket, "$attachmentId").let { document ->
             ResponseEntity.ok()
-                .header("Content-Disposition", "attachment;filename=${document.getName()}")
+                .header("Content-Disposition", "attachment;filename=${attachment.name}")
                 .contentType(MediaType.valueOf(attachment.contentType))
                 .body(document.getBytes())
         }
