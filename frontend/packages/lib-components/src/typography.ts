@@ -91,3 +91,6 @@ export const P = styled.p<ParagraphProps>`
     font-weight: 600;
   }
 `
+export const Dimmed = styled.span`
+  color: ${greyscale.medium};
+`

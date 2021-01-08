@@ -4,7 +4,7 @@
 
 import React from 'react'
 import styled from 'styled-components'
-import { H4, Label } from '@evaka/lib-components/src/typography'
+import { H4, Label, Dimmed } from '@evaka/lib-components/src/typography'
 import { Address, ApplicationResponse, PersonBasics } from 'types/application'
 import CollapsibleSection from '@evaka/lib-components/src/molecules/CollapsibleSection'
 import {
@@ -26,18 +26,16 @@ import ApplicationTitle from 'components/application-page/ApplicationTitle'
 import VTJGuardian from 'components/application-page/VTJGuardian'
 import ApplicationStatusSection from 'components/application-page/ApplicationStatusSection'
 import ApplicationDecisionsSection from 'components/application-page/ApplicationDecisionsSection'
-import colors from '@evaka/lib-components/src/colors'
 import Attachment from '~components/common/Attachment'
 
 function YesNoValue({ value }: { value: boolean | null | undefined }) {
   const { i18n } = useTranslation()
-
-  return <span>{value ? i18n.common.yes : i18n.common.no}</span>
+  return value ? (
+    <span>${i18n.common.yes}</span>
+  ) : (
+    <Dimmed>{i18n.common.no}</Dimmed>
+  )
 }
-
-const Dimmed = styled.span`
-  color: ${colors.greyscale.medium};
-`
 
 const AttachmentContainer = styled.div`
   display: flex;
@@ -151,7 +149,7 @@ function ApplicationReadView({
             <>
               <Label>{i18n.application.serviceNeed.urgentLabel}</Label>
               {!urgent ? (
-                <span>{i18n.application.serviceNeed.notUrgent}</span>
+                <Dimmed>{i18n.application.serviceNeed.notUrgent}</Dimmed>
               ) : (
                 <AttachmentContainer>
                   {urgencyAttachments.length ? (
@@ -203,7 +201,7 @@ function ApplicationReadView({
 
               <Label>{i18n.application.serviceNeed.shiftCareLabel}</Label>
               {!serviceNeed.shiftCare ? (
-                <span>{i18n.common.no}</span>
+                <Dimmed>{i18n.common.no}</Dimmed>
               ) : (
                 <AttachmentContainer>
                   {extendedCareAttachments.length ? (
@@ -436,7 +434,10 @@ function ApplicationReadView({
                   <H4>{i18n.application.otherPeople.adult}</H4>
                   <ListGrid>
                     <Label>{i18n.application.otherPeople.spouse}</Label>
-                    <YesNoValue value={otherPartner !== null} />
+                    <BooleanValue
+                      value={otherPartner !== null}
+                      selectedLabel={i18n.common.yes}
+                    />
 
                     {otherPartner && (
                       <>
@@ -491,7 +492,7 @@ function ApplicationReadView({
               <span>{child.diet}</span>
 
               <Label>{i18n.application.additionalInfo.maxFeeAccepted}</Label>
-              <span>{maxFeeAccepted ? i18n.common.yes : i18n.common.no}</span>
+              <YesNoValue value={maxFeeAccepted} />
             </>
           )}
         </ListGrid>
