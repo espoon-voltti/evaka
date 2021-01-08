@@ -17,6 +17,15 @@ export default {
     },
     logout: 'Kirjaudu ulos'
   },
+  footer: {
+    espooLabel: '© Espoon kaupunki',
+    privacyPolicy: 'Tietosuojaselosteet',
+    privacyPolicyLink:
+      'https://www.espoo.fi/fi-FI/Asioi_verkossa/Tietosuoja/Tietosuojaselosteet',
+    sendFeedback: 'Lähetä palautetta',
+    sendFeedbackLink:
+      'https://easiointi.espoo.fi/eFeedback/fi/Feedback/20-S%C3%A4hk%C3%B6iset%20asiointipalvelut'
+  },
   decisions: {
     title: 'Päätökset',
     summary:
