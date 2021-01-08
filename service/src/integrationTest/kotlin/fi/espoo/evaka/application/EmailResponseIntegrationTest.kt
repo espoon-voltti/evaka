@@ -9,7 +9,6 @@ import fi.espoo.evaka.application.persistence.club.ClubFormV0
 import fi.espoo.evaka.application.persistence.daycare.Address
 import fi.espoo.evaka.application.persistence.daycare.Adult
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
-import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.emailclient.MockEmailClient
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.resetDatabase
@@ -18,15 +17,12 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.db.handle
-import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.insertTestApplication
 import fi.espoo.evaka.shared.dev.insertTestApplicationForm
 import fi.espoo.evaka.shared.dev.insertTestClubApplicationForm
-import fi.espoo.evaka.shared.dev.insertTestDaycare
 import fi.espoo.evaka.test.validClubApplication
 import fi.espoo.evaka.test.validDaycareApplication
 import fi.espoo.evaka.testAdult_1
-import fi.espoo.evaka.testAreaId
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testSvebiDaycare
@@ -68,7 +64,6 @@ class EmailResponseIntegrationTest : FullApplicationTest() {
         jdbi.handle { h ->
             resetDatabase(h)
             insertGeneralTestFixtures(h)
-            h.insertTestDaycare(DevDaycare(areaId = testAreaId, id = testSvebiDaycare.id, name = testSvebiDaycare.name, language = Language.sv))
         }
         MockEmailClient.applicationEmails.clear()
     }

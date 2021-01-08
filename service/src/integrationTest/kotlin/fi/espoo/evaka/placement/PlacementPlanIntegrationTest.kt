@@ -33,6 +33,7 @@ import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDaycare2
 import fi.espoo.evaka.testDecisionMaker_1
+import fi.espoo.evaka.testSvebiDaycare
 import fi.espoo.evaka.toDaycareFormAdult
 import fi.espoo.evaka.toDaycareFormChild
 import org.jdbi.v3.core.Handle
@@ -186,6 +187,41 @@ class PlacementPlanIntegrationTest : FullApplicationTest() {
             DaycarePlacementPlan(
                 unitId = testDaycare.id,
                 period = FiniteDateRange(preferredStartDate.plusDays(1), defaultEndDate.minusDays(1)),
+                preschoolDaycarePeriod = FiniteDateRange(
+                    preferredStartDate.minusDays(1),
+                    defaultDaycareEndDate.plusDays(1)
+                )
+            )
+        )
+    }
+
+    @Test
+    fun testPreschoolWithSvebiDaycare(): Unit = jdbi.handle { h ->
+        val preferredStartDate = LocalDate.of(2023, 8, 1)
+        val applicationId = insertInitialData(
+            h,
+            status = ApplicationStatus.WAITING_PLACEMENT,
+            type = FormType.PRESCHOOL,
+            preschoolDaycare = true,
+            preferredStartDate = preferredStartDate,
+            preferredUnits = listOf(testSvebiDaycare)
+        )
+        val svebiEndDate = LocalDate.of(2024, 6, 6)
+        val defaultDaycareEndDate = LocalDate.of(2024, 7, 31)
+        checkPlacementPlanDraft(
+            applicationId,
+            type = PlacementType.PRESCHOOL_DAYCARE,
+            period = FiniteDateRange(preferredStartDate, svebiEndDate),
+            preschoolDaycarePeriod = FiniteDateRange(preferredStartDate, defaultDaycareEndDate),
+            preferredUnits = listOf(testSvebiDaycare)
+        )
+        createPlacementPlanAndAssert(
+            h,
+            applicationId,
+            PlacementType.PRESCHOOL_DAYCARE,
+            DaycarePlacementPlan(
+                unitId = testSvebiDaycare.id,
+                period = FiniteDateRange(preferredStartDate.plusDays(1), svebiEndDate.minusDays(1)),
                 preschoolDaycarePeriod = FiniteDateRange(
                     preferredStartDate.minusDays(1),
                     defaultDaycareEndDate.plusDays(1)

@@ -47,11 +47,12 @@ class PlacementPlanService(
 
         when (application.type) {
             ApplicationType.PRESCHOOL -> {
-                val term = tx.getActivePreschoolTermAt(startDate)?.extendedTerm
+                val preschoolTerms = tx.getActivePreschoolTermAt(startDate)
                     ?: throw Exception("No suitable preschool term found for start date $startDate")
-                val period = FiniteDateRange(startDate, term.end)
+                val exactTerm = if (isSvebiUnit(tx, preferredUnits[0].id)) preschoolTerms.swedishPreschool else preschoolTerms.finnishPreschool
+                val period = FiniteDateRange(startDate, exactTerm.end)
                 val preschoolDaycarePeriod = if (type == PlacementType.PRESCHOOL_DAYCARE || type == PlacementType.PREPARATORY_DAYCARE) {
-                    FiniteDateRange(startDate, LocalDate.of(term.end.year, 7, 31))
+                    FiniteDateRange(startDate, LocalDate.of(preschoolTerms.extendedTerm.end.year, 7, 31))
                 } else null
 
                 return PlacementPlanDraft(
@@ -133,26 +134,28 @@ class PlacementPlanService(
                         ?: plan.preschoolDaycarePeriod
                     )!!
 
-                val term = tx.getActivePreschoolTermAt(period.start)?.extendedTerm
+                val preschoolTerms = tx.getActivePreschoolTermAt(period.start)
                     ?: throw Exception("No suitable preschool term found for start date ${period.start}")
+
+                val exactTerm = if (isSvebiUnit(tx, plan.unitId)) preschoolTerms.swedishPreschool else preschoolTerms.finnishPreschool
 
                 // if the preschool daycare extends beyond the end of the preschool term, a normal daycare
                 // placement is used because invoices are handled differently
-                if (period.end.isAfter(term.end)) {
+                if (period.end.isAfter(exactTerm.end)) {
                     placementService.createPlacement(
                         tx,
                         type = plan.type,
                         childId = childId,
                         unitId = plan.unitId,
                         startDate = period.start,
-                        endDate = term.end
+                        endDate = exactTerm.end
                     )
                     placementService.createPlacement(
                         tx,
                         type = PlacementType.DAYCARE,
                         childId = childId,
                         unitId = plan.unitId,
-                        startDate = term.end.plusDays(1),
+                        startDate = exactTerm.end.plusDays(1),
                         endDate = period.end
                     )
                 } else {
@@ -187,6 +190,19 @@ class PlacementPlanService(
         effectivePeriod?.also {
             asyncJobRunner.plan(tx, listOf(NotifyPlacementPlanApplied(childId, it.start, it.end)))
         }
+    }
+
+    fun isSvebiUnit(tx: Database.Read, unitId: UUID): Boolean {
+        return tx.createQuery(
+            """
+            SELECT ca.short_name = 'svenska-bildningstjanster' AS is_svebi
+            FROM daycare d LEFT JOIN care_area ca ON d.care_area_id = ca.id
+            WHERE d.id = :unitId
+            """.trimIndent()
+        )
+            .bind("unitId", unitId)
+            .map { rs, _ -> rs.getBoolean("is_svebi") }
+            .first()
     }
 
     private fun derivePlacementType(application: ApplicationDetails): PlacementType =

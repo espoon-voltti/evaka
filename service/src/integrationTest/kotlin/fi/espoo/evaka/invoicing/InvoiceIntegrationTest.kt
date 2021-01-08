@@ -35,16 +35,10 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.db.handle
-import fi.espoo.evaka.shared.dev.DevCareArea
-import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevPlacement
-import fi.espoo.evaka.shared.dev.insertTestCareArea
-import fi.espoo.evaka.shared.dev.insertTestDaycare
 import fi.espoo.evaka.shared.dev.insertTestParentship
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.DateRange
-import fi.espoo.evaka.svebiTestCode
-import fi.espoo.evaka.svebiTestId
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_2
 import fi.espoo.evaka.testAreaCode
@@ -52,7 +46,6 @@ import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDecisionMaker_1
-import fi.espoo.evaka.testSvebiDaycare
 import org.assertj.core.api.Assertions.assertThat
 import org.jdbi.v3.core.Handle
 import org.junit.jupiter.api.AfterEach
@@ -157,23 +150,6 @@ class InvoiceIntegrationTest : FullApplicationTest() {
     @BeforeEach()
     fun beforeEach() {
         jdbi.handle(::insertGeneralTestFixtures)
-        jdbi.handle { h ->
-            h.insertTestCareArea(
-                DevCareArea(
-                    id = svebiTestId,
-                    name = testSvebiDaycare.areaName,
-                    shortName = "svenska-bildningstjanster",
-                    areaCode = svebiTestCode
-                )
-            )
-            h.insertTestDaycare(
-                DevDaycare(
-                    areaId = svebiTestId,
-                    id = testSvebiDaycare.id,
-                    name = testSvebiDaycare.name
-                )
-            )
-        }
     }
 
     @AfterEach
