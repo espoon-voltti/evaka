@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import styled from 'styled-components'
-import { greyscale } from '@evaka/lib-components/src/colors'
+import { blueColors, greyscale } from '@evaka/lib-components/src/colors'
 import { defaultMargins } from '@evaka/lib-components/src/white-space'
 import { BaseProps } from './utils'
 
@@ -17,7 +17,7 @@ type HeadingProps = BaseProps & {
 }
 
 export const H1 = styled.h1<HeadingProps>`
-  color: ${greyscale.dark};
+  color: ${blueColors.dark};
   font-size: ${(p) => (p.smaller ? '24px' : '36px')};
   font-family: Montserrat, sans-serif;
   font-weight: ${(p) => (p.bold ? 600 : 200)};

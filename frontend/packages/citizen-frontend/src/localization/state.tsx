@@ -7,7 +7,9 @@ import fi from './fi'
 import sv from './sv'
 import en from './en'
 
-export type Lang = 'fi' | 'sv' | 'en'
+export const langs = ['fi', 'sv', 'en'] as const
+
+export type Lang = typeof langs[number]
 
 type LocalizationState = {
   lang: Lang
@@ -41,7 +43,7 @@ export const LocalizationContextProvider = React.memo(
   }
 )
 
-const langs = {
+const localizations = {
   fi,
   sv,
   en
@@ -50,7 +52,7 @@ const langs = {
 export const useTranslation = () => {
   const { lang } = useContext(LocalizationContext)
 
-  return langs[lang]
+  return localizations[lang]
 }
 
 export const useLang = () => {

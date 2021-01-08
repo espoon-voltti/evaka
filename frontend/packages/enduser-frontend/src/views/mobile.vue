@@ -91,6 +91,15 @@ SPDX-License-Identifier: LGPL-2.1-or-later
             <font-awesome-icon :icon="item.icon"></font-awesome-icon>
             {{ item.label | uppercase }}
           </router-link>
+          <a
+            v-if="showCitizenFrontendLink"
+            class="menu-item"
+            :href="newDecisionsUrl"
+            data-qa="nav-decisions"
+          >
+            <font-awesome-icon :icon="['fal', 'gavel']"></font-awesome-icon>
+            {{ $t('menu.routes.newDecisions') | uppercase }}
+          </a>
         </div>
       </div>
     </div>
@@ -99,6 +108,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 
 <script>
   import { mapGetters } from 'vuex'
+  import { config } from '@evaka/enduser-frontend/src/config'
 
   export default {
     props: {
@@ -112,6 +122,10 @@ SPDX-License-Identifier: LGPL-2.1-or-later
       },
       model: {
         type: Array,
+        required: true
+      },
+      citizenFrontendUrl: {
+        type: String,
         required: true
       }
     },
@@ -128,6 +142,12 @@ SPDX-License-Identifier: LGPL-2.1-or-later
       },
       languages() {
         return Object.values(this.$t('menu.language', { returnObjects: true }))
+      },
+      showCitizenFrontendLink() {
+        return this.isLoggedIn && config.feature.citizenFrontend
+      },
+      newDecisionsUrl() {
+        return `${this.citizenFrontendUrl}/decisions`
       }
     },
     methods: {

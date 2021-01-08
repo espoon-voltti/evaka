@@ -30,7 +30,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
         data-qa="nav-decisions"
       >
         <font-awesome-icon :icon="['fal', 'gavel']"></font-awesome-icon>
-        {{ 'Uusi Päätökset' | uppercase }}
+        {{ $t('menu.routes.newDecisions') | uppercase }}
       </a>
 
       <div class="spacer" />

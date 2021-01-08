@@ -189,7 +189,8 @@
     "routes": {
       "map": "Kartta",
       "application": "Hakemukset",
-      "decisions": "Päätökset"
+      "decisions": "Päätökset",
+      "newDecisions": "Uusi Päätökset"
     },
     "language": {
       "fi": {
