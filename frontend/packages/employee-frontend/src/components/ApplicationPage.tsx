@@ -6,7 +6,7 @@ import React, { useContext, useEffect, useState } from 'react'
 import { RouteComponentProps } from 'react-router-dom'
 import LocalDate from '@evaka/lib-common/src/local-date'
 import { UUID } from 'types'
-import { Loading, Result } from 'api'
+import { Loading, Result } from '@evaka/lib-common/src/api'
 import {
   ApplicationDetails,
   ApplicationResponse,

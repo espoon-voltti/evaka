@@ -6,12 +6,12 @@ import React, { useState, useContext } from 'react'
 import LocalDate from '@evaka/lib-common/src/local-date'
 import { useTranslation } from '~state/i18n'
 import { UIContext } from '~state/ui'
-import FormModal from '~components/common/FormModal'
-import { Result } from '~api'
+import FormModal from '@evaka/lib-components/src/molecules/modals/FormModal'
+import { Result } from '@evaka/lib-common/src/api'
 import { faExchange } from '@evaka/lib-icons'
 import { transferGroup } from '~api/unit'
 import { UUID } from '~types'
-import { DatePicker } from '~components/common/DatePicker'
+import { DatePicker } from '@evaka/lib-components/src/molecules/DatePicker'
 import { formatName } from '~utils'
 import { DaycareGroupPlacementDetailed, DaycareGroup } from '~types/unit'
 import Select from '~components/common/Select'
@@ -113,11 +113,15 @@ export default React.memo(function GroupTransferModal({
       title={i18n.unit.placements.modal.transferTitle}
       icon={faExchange}
       iconColour={'blue'}
-      resolveLabel={i18n.common.confirm}
-      rejectLabel={i18n.common.cancel}
-      reject={() => clearUiMode()}
-      resolveDisabled={form.errors.length > 0}
-      resolve={() => submitForm()}
+      resolve={{
+        action: submitForm,
+        label: i18n.common.confirm,
+        disabled: form.errors.length > 0
+      }}
+      reject={{
+        action: clearUiMode,
+        label: i18n.common.cancel
+      }}
     >
       <FixedSpaceColumn>
         <section>

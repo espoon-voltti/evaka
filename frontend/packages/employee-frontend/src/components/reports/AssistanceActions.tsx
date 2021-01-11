@@ -22,7 +22,7 @@ import {
 } from '@evaka/lib-components/src/layout/Table'
 import { reactSelectStyles } from '~components/common/Select'
 import { useTranslation } from '~state/i18n'
-import { Loading, Result } from '~api'
+import { Loading, Result } from '@evaka/lib-common/src/api'
 import { AssistanceActionsReportRow } from '~types/reports'
 import {
   AssistanceActionsReportFilters,
@@ -30,7 +30,7 @@ import {
 } from '~api/reports'
 import ReturnButton from '@evaka/lib-components/src/atoms/buttons/ReturnButton'
 import ReportDownload from '~components/reports/ReportDownload'
-import { DatePicker } from '~components/common/DatePicker'
+import { DatePicker } from '@evaka/lib-components/src/molecules/DatePicker'
 import {
   FilterLabel,
   FilterRow,

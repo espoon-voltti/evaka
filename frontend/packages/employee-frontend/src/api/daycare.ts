@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { client } from './client'
-import { Failure, Result, Success } from '.'
+import { Failure, Result, Success } from '@evaka/lib-common/src/api'
 import { Unit } from '../types/invoicing'
 import { CareArea } from '~types/unit'
 import { PreferredUnit } from '~types/application'

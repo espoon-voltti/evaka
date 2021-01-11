@@ -12,7 +12,7 @@ import LocalDate from '@evaka/lib-common/src/local-date'
 import { UUID } from '~types'
 import { useTranslation, Translations } from '~state/i18n'
 import { UIContext } from '~state/ui'
-import { Loading, Result } from '~api'
+import { Loading, Result } from '@evaka/lib-common/src/api'
 import CollapsibleSection from '@evaka/lib-components/src/molecules/CollapsibleSection'
 import {
   Table,
@@ -24,7 +24,7 @@ import {
 } from '@evaka/lib-components/src/layout/Table'
 import Loader from '@evaka/lib-components/src/atoms/Loader'
 import { AddButtonRow } from '@evaka/lib-components/src/atoms/buttons/AddButton'
-import FormModal from '~components/common/FormModal'
+import FormModal from '@evaka/lib-components/src/molecules/modals/FormModal'
 import { formatDate } from '~utils/date'
 import {
   getPersonFeeDecisions,
@@ -34,7 +34,7 @@ import { FeeDecision } from '~types/invoicing'
 import { DateTd, StatusTd } from '~components/PersonProfile'
 import { formatCents } from '~utils/money'
 import { EspooColours } from '~utils/colours'
-import { DatePicker } from '~components/common/DatePicker'
+import { DatePicker } from '@evaka/lib-components/src/molecules/DatePicker'
 
 interface Props {
   id: UUID
@@ -185,11 +185,15 @@ const Modal = React.memo(function Modal({
       icon={faPlus}
       iconColour={'blue'}
       title={i18n.personProfile.feeDecisions.modalTitle}
-      reject={clear}
-      rejectLabel={i18n.common.cancel}
-      resolve={resolve}
-      resolveLabel={i18n.common.create}
-      resolveDisabled={date === undefined}
+      resolve={{
+        action: resolve,
+        label: i18n.common.create,
+        disabled: date === undefined
+      }}
+      reject={{
+        action: clear,
+        label: i18n.common.cancel
+      }}
     >
       <ModalContent>
         <InputContainer>

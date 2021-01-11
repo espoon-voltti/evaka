@@ -17,7 +17,7 @@ import {
   Thead,
   Tbody
 } from '@evaka/lib-components/src/layout/Table'
-import { Loading, Result } from '~api'
+import { Loading, Result } from '@evaka/lib-common/src/api'
 import { getInvoiceReport, InvoiceReportFilters } from '~api/reports'
 import { InvoiceReport, InvoiceReportRow } from '~types/reports'
 import ReturnButton from '@evaka/lib-components/src/atoms/buttons/ReturnButton'
@@ -27,7 +27,7 @@ import {
   FilterRow,
   TableScrollable
 } from '~components/reports/common'
-import { DatePicker } from '~components/common/DatePicker'
+import { DatePicker } from '@evaka/lib-components/src/molecules/DatePicker'
 import { useTranslation } from '~state/i18n'
 import { formatCents } from '../../utils/money'
 import LocalDate from '@evaka/lib-common/src/local-date'

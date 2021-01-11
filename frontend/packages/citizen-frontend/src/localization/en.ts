@@ -47,9 +47,14 @@ const en: Translations = {
           'early childhood education related to pre-primary education',
         PREPARATORY_EDUCATION: 'preparatory education'
       },
+      childName: "Child's name",
+      unit: 'Unit',
+      period: 'Ajalle',
       sentDate: 'Decision sent',
       resolved: 'Decision confirmed',
       statusLabel: 'Status',
+      summary:
+        'Päätöksessä ilmoitettu paikka / ilmoitetut paikat tulee joko hyväksyä tai hylätä välittömästi, viimeistään kahden viikon kuluessa päätöksen saapumisesta.',
       status: {
         PENDING: 'Waiting for confirmation from the guardian',
         ACCEPTED: 'Confirmed',
@@ -64,7 +69,38 @@ const en: Translations = {
       },
       goToConfirmation:
         'Please open the decision and respond whether you will accept or reject the place.',
-      confirmationLink: 'Review and confirm the decision'
+      confirmationLink: 'Review and confirm the decision',
+      response: {
+        title: 'Paikan hyväksyminen tai hylkääminen',
+        accept1: 'Otamme paikan vastaan',
+        accept2: 'alkaen',
+        reject: 'Emme ota paikkaa vastaan',
+        cancel: 'Palaa takaisin vastaamatta',
+        submit: 'Lähetä vastaus päätökseen',
+        disabledInfo:
+          'HUOM! Pääset hyväksymään/hylkäämään liittyvää varhaiskasvatusta koskevan päätöksen mikäli hyväksyt ensin esiopetusta / valmistavaa opetusta koskevan päätöksen.'
+      },
+      warnings: {
+        decisionWithNoResponseWarning: {
+          title: 'Toinen päätös odottaa vastaustasi',
+          text:
+            'Toinen päätös odottaa edelleen vastaustasi. Haluatko  palata listalle vastaamatta?',
+          resolveLabel: 'Palaa vastaamatta',
+          rejectLabel: 'Jatka vastaamista'
+        },
+        doubleRejectWarning: {
+          title: 'Haluatko hylätä paikan?',
+          text:
+            'Olet hylkäämässä tarjotun esiopetus / valmistavan paikan. Liittyvän varhaiskasvatuksen paikka merkitään samalla hylätyksi.',
+          resolveLabel: 'Hylkää molemmat',
+          rejectLabel: 'Palaa takaisin'
+        }
+      },
+      errors: {
+        pageLoadError: 'Tietojen hakeminen ei onnistunut',
+        submitFailure: 'Päätökseen vastaaminen ei onnistunut'
+      },
+      returnToPreviousPage: 'Palaa'
     }
   }
 }

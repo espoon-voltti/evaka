@@ -10,7 +10,7 @@ import ListGrid from '@evaka/lib-components/src/layout/ListGrid'
 import { Gap } from '@evaka/lib-components/src/white-space'
 import { Label } from '@evaka/lib-components/src/typography'
 import InputField from '@evaka/lib-components/src/atoms/form/InputField'
-import { DatePicker } from '~components/common/DatePicker'
+import { DatePicker } from '@evaka/lib-components/src/molecules/DatePicker'
 import { useTranslation } from '~state/i18n'
 import { CreatePersonBody } from '~api/person'
 

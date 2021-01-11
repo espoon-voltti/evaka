@@ -12,11 +12,11 @@ import {
   getOrCreatePersonBySsn,
   getPersonDetails
 } from '~api/person'
-import { Result, Success } from '~api'
+import { Result, Success } from '@evaka/lib-common/src/api'
 import { formatName } from '~utils'
 import { useDebounce } from '~utils/useDebounce'
 import { isSsnValid } from '~utils/validation/validations'
-import { useRestApi } from '~utils/useRestApi'
+import { useRestApi } from '@evaka/lib-common/src/utils/useRestApi'
 import { CHILD_AGE } from '~constants.ts'
 import { PersonDetails } from '~types/person'
 import { getAge } from '@evaka/lib-common/src/utils/local-date'

@@ -4,9 +4,9 @@
 
 import React, { useEffect, useState } from 'react'
 import { UUID } from 'types'
-import { Loading, Result } from 'api'
+import { Loading, Result } from '@evaka/lib-common/src/api'
 import { getFamilyContacts } from 'api/family-overview'
-import { useRestApi } from 'utils/useRestApi'
+import { useRestApi } from '@evaka/lib-common/src/utils/useRestApi'
 import { FamilyContact } from 'types/family-overview'
 import { SpinnerSegment } from '@evaka/lib-components/src/atoms/state/Spinner'
 import CollapsibleSection from '@evaka/lib-components/src/molecules/CollapsibleSection'

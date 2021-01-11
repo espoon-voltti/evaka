@@ -4,7 +4,7 @@
 
 import { useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import LocalDate from '@evaka/lib-common/src/local-date'
-import { Result } from '~api'
+import { Result } from '@evaka/lib-common/src/api'
 import {
   createInvoices,
   getInvoices,
@@ -16,7 +16,7 @@ import {
 import { InvoicingUiContext } from '~state/invoicing-ui'
 import { SearchOrder } from '~types'
 import { InvoiceSearchResult, InvoiceSummary } from '~types/invoicing'
-import { useRestApi } from '~utils/useRestApi'
+import { useRestApi } from '@evaka/lib-common/src/utils/useRestApi'
 
 const pageSize = 200
 

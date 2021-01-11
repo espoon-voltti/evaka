@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { useCallback, useState } from 'react'
 import {
   ApiFunction,
   ApiResultOf,
@@ -9,8 +10,7 @@ import {
   Loading,
   Result,
   withStaleCancellation
-} from '~api'
-import { useCallback, useState } from 'react'
+} from '../api'
 
 export function useRestApi<F extends ApiFunction>(
   f: F,

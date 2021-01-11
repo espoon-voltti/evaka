@@ -24,7 +24,7 @@ import {
   TransferApplicationsFilter
 } from '../common/Filters'
 import { ApplicationUIContext } from '../../state/application-ui'
-import { Loading } from '../../api'
+import { Loading } from '@evaka/lib-common/src/api'
 import { getAreas, getUnits } from '../../api/daycare'
 import { Gap } from '@evaka/lib-components/src/white-space'
 import { useTranslation } from '~state/i18n'

@@ -6,7 +6,7 @@ import React, { Fragment, useContext, useState } from 'react'
 import { useHistory } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { Result } from '~api'
+import { Result } from '@evaka/lib-common/src/api'
 import { AttendanceResponse, getDaycareAttendances } from '~api/attendances'
 import AsyncButton from '@evaka/lib-components/src/atoms/buttons/AsyncButton'
 import Button from '@evaka/lib-components/src/atoms/buttons/Button'

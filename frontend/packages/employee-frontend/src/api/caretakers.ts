@@ -4,7 +4,7 @@
 
 import { UUID } from '~types'
 import { CaretakersResponse } from '~types/caretakers'
-import { Failure, Result, Success } from '~api/index'
+import { Failure, Result, Success } from '@evaka/lib-common/src/api'
 import { client } from '~api/client'
 import { JsonOf } from '@evaka/lib-common/src/json'
 import LocalDate from '@evaka/lib-common/src/local-date'

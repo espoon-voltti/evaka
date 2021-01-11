@@ -12,8 +12,8 @@ import ListGrid from '@evaka/lib-components/src/layout/ListGrid'
 import { Gap } from '@evaka/lib-components/src/white-space'
 import { Label } from '@evaka/lib-components/src/typography'
 import InputField from '@evaka/lib-components/src/atoms/form/InputField'
-import FormModal from '~components/common/FormModal'
-import { DatePicker } from '~components/common/DatePicker'
+import FormModal from '@evaka/lib-components/src/molecules/modals/FormModal'
+import { DatePicker } from '@evaka/lib-components/src/molecules/DatePicker'
 import { useTranslation } from '~state/i18n'
 import { createPerson, CreatePersonBody } from '~api/person'
 import { CHILD_AGE } from '~constants'
@@ -52,11 +52,15 @@ export default React.memo(function CreatePersonModal({
       iconColour={'blue'}
       icon={faPlus}
       title={i18n.personSearch.createNewPerson.title}
-      resolve={onConfirm}
-      reject={closeModal}
-      resolveLabel={i18n.personSearch.createNewPerson.modalConfirmLabel}
-      rejectLabel={i18n.common.cancel}
-      resolveDisabled={requestInFlight || !formIsValid(form)}
+      resolve={{
+        action: onConfirm,
+        label: i18n.personSearch.createNewPerson.modalConfirmLabel,
+        disabled: requestInFlight || !formIsValid(form)
+      }}
+      reject={{
+        action: closeModal,
+        label: i18n.common.cancel
+      }}
     >
       <ModalContent>
         <ListGrid labelWidth="min-content">
@@ -153,9 +157,8 @@ export default React.memo(function CreatePersonModal({
 })
 
 const ModalContent = styled.div`
-  width: 100%;
   align-items: center;
-  padding: 0em 2em;
+  padding: 0 2em;
   width: auto;
 `
 

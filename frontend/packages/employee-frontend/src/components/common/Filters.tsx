@@ -15,7 +15,7 @@ import {
 } from '@evaka/lib-icons'
 import LocalDate from '@evaka/lib-common/src/local-date'
 import InlineButton from '@evaka/lib-components/src/atoms/buttons/InlineButton'
-import { DatePickerClearable } from '~components/common/DatePicker'
+import { DatePickerClearable } from '@evaka/lib-components/src/molecules/DatePicker'
 import { useTranslation } from '~state/i18n'
 import {
   DecisionDistinctiveDetails,

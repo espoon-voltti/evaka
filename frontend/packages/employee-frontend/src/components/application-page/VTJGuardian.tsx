@@ -5,7 +5,7 @@
 import React, { useEffect, useState } from 'react'
 import { UUID } from 'types'
 import { getPersonDetails } from 'api/person'
-import { Loading, Result } from 'api'
+import { Loading, Result } from '@evaka/lib-common/src/api'
 import { PersonDetails } from 'types/person'
 import { H4, Label } from '@evaka/lib-components/src/typography'
 import { renderResult } from '~components/async-rendering'

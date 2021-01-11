@@ -19,7 +19,7 @@ import {
 } from '@evaka/lib-components/src/layout/Table'
 import { useTranslation } from '~state/i18n'
 import { Link, useParams } from 'react-router-dom'
-import { Loading, Result } from '~api'
+import { Loading, Result } from '@evaka/lib-common/src/api'
 import { FamilyContactsReportRow } from '~types/reports'
 import { getFamilyContactsReport } from '~api/reports'
 import ReturnButton from '@evaka/lib-components/src/atoms/buttons/ReturnButton'

@@ -3,13 +3,13 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useCallback, useEffect, useState, useContext } from 'react'
-import { Result } from '~/api'
+import { Result } from '@evaka/lib-common/src/api'
 import { getApplications } from '~api/applications'
 import {
   ApplicationsSearchResponse,
   ApplicationSearchParams
 } from '~types/application'
-import { useRestApi } from '~utils/useRestApi'
+import { useRestApi } from '@evaka/lib-common/src/utils/useRestApi'
 import { SortByApplications } from '~/types/application'
 import { SearchOrder } from '~/types'
 import { defaultMargins, Gap } from '@evaka/lib-components/src/white-space'

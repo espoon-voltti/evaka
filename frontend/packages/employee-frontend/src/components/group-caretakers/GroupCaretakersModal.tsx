@@ -5,15 +5,18 @@
 import React, { useState } from 'react'
 import LocalDate from '@evaka/lib-common/src/local-date'
 import { CaretakerAmount } from '~types/caretakers'
-import FormModal from '~components/common/FormModal'
+import FormModal from '@evaka/lib-components/src/molecules/modals/FormModal'
 import { faPen, faPlus } from '@evaka/lib-icons'
 import { useTranslation } from '~state/i18n'
 import InputField from '@evaka/lib-components/src/atoms/form/InputField'
-import { DatePicker, DatePickerClearable } from '~components/common/DatePicker'
+import {
+  DatePicker,
+  DatePickerClearable
+} from '@evaka/lib-components/src/molecules/DatePicker'
 import styled from 'styled-components'
 import { UUID } from '~types'
 import { postCaretakers, putCaretakers } from '~api/caretakers'
-import { Result } from '~api'
+import { Result } from '@evaka/lib-common/src/api'
 import { AlertBox } from '@evaka/lib-components/src/molecules/MessageBoxes'
 
 const NumberInputContainer = styled.div`
@@ -113,11 +116,15 @@ function GroupCaretakersModal({
       title={existing ? i18n.groupCaretakers.edit : i18n.groupCaretakers.create}
       icon={existing ? faPen : faPlus}
       iconColour={'blue'}
-      resolveLabel={i18n.common.confirm}
-      resolve={submit}
-      resolveDisabled={hasErrors || submitting}
-      rejectLabel={i18n.common.cancel}
-      reject={onReject}
+      resolve={{
+        action: submit,
+        label: i18n.common.confirm,
+        disabled: hasErrors || submitting
+      }}
+      reject={{
+        action: onReject,
+        label: i18n.common.cancel
+      }}
     >
       <section>
         <div className="bold">{i18n.common.form.startDate}</div>

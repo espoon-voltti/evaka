@@ -6,10 +6,8 @@ import React, { useEffect, useState } from 'react'
 import styled from 'styled-components'
 import { ApplicationDecisions, DecisionType } from '~decisions/types'
 import { client } from '~api-client'
-import { faCheck, faFileAlt, faGavel, faTimes } from '@evaka/lib-icons'
 import { JsonOf } from '@evaka/lib-common/src/json'
 import LocalDate from '@evaka/lib-common/src/local-date'
-import { accentColors, greyscale } from '@evaka/lib-components/src/colors'
 import Container, {
   ContentArea
 } from '@evaka/lib-components/src/layout/Container'
@@ -19,9 +17,10 @@ import { AlertBox } from '@evaka/lib-components/src/molecules/MessageBoxes'
 import { Gap, defaultMargins } from '@evaka/lib-components/src/white-space'
 import Link from '@evaka/lib-components/src/atoms/Link'
 import Button from '@evaka/lib-components/src/atoms/buttons/Button'
-import InlineButton from '@evaka/lib-components/src/atoms/buttons/InlineButton'
 import RoundIcon from '@evaka/lib-components/src/atoms/RoundIcon'
 import { useTranslation } from '../localization'
+import { PdfLink } from './PdfLink'
+import { Status, statusIcon } from './shared'
 
 const getDecisions = async (): Promise<ApplicationDecisions[]> => {
   const { data } = await client.get<JsonOf<ApplicationDecisions[]>>(
@@ -46,7 +45,7 @@ export default React.memo(function Decisions() {
 
   useEffect(() => {
     void getDecisions().then(setApplicationDecisions)
-  }, [])
+  }, [setApplicationDecisions])
 
   const unconfirmedDecisionsCount = applicationDecisions.reduce(
     (sum, { decisions }) =>
@@ -68,7 +67,7 @@ export default React.memo(function Decisions() {
             <Gap size="s" />
             <AlertBox
               message={t.decisions.unconfimedDecisions(
-                applicationDecisions.length
+                unconfirmedDecisionsCount
               )}
               thin
               data-qa="alert-box-unconfirmed-decisions-count"
@@ -79,7 +78,7 @@ export default React.memo(function Decisions() {
       <Gap size="s" />
       {applicationDecisions.map((applicationDecision) => (
         <React.Fragment key={applicationDecision.applicationId}>
-          <ApplicationDecisions {...applicationDecision} />
+          <ApplicationDecisionsBlock {...applicationDecision} />
           <Gap size="s" />
         </React.Fragment>
       ))}
@@ -87,68 +86,70 @@ export default React.memo(function Decisions() {
   )
 })
 
-const ApplicationDecisions = React.memo(function ApplicationDecisions({
-  applicationId,
-  childName,
-  decisions
-}: ApplicationDecisions) {
-  const t = useTranslation()
+const ApplicationDecisionsBlock = React.memo(
+  function ApplicationDecisionsBlock({
+    applicationId,
+    childName,
+    decisions
+  }: ApplicationDecisions) {
+    const t = useTranslation()
 
-  return (
-    <ContentArea
-      opaque
-      paddingVertical="L"
-      data-qa={`application-${applicationId}`}
-    >
-      <H2 noMargin data-qa={`title-decision-child-name-${applicationId}`}>
-        {childName}
-      </H2>
-      {decisions.map(({ decisionId, type, status, sentDate, resolved }) => (
-        <React.Fragment key={decisionId}>
-          <Gap size="L" />
-          <H3 noMargin data-qa={`title-decision-type-${decisionId}`}>
-            {`${t.decisions.applicationDecisions.decision} ${t.decisions.applicationDecisions.type[type]}`}
-          </H3>
-          <Gap size="m" />
-          <MobileFriendlyListGrid
-            labelWidth="max-content"
-            rowGap="s"
-            columnGap="L"
-          >
-            <Label>{t.decisions.applicationDecisions.sentDate}</Label>
-            <span data-qa={`decision-sent-date-${decisionId}`}>
-              {sentDate.format()}
-            </span>
-            {resolved ? (
-              <>
-                <Label>{t.decisions.applicationDecisions.resolved}</Label>
-                <span data-qa={`decision-resolved-date-${decisionId}`}>
-                  {resolved.format()}
-                </span>
-              </>
-            ) : null}
-            <Label>{t.decisions.applicationDecisions.statusLabel}</Label>
-            <Status data-qa={`decision-status-${decisionId}`}>
-              <RoundIcon
-                content={statusIcon[status].icon}
-                color={statusIcon[status].color}
-                size="s"
-              />
-              <Gap size="xs" horizontal />
-              {t.decisions.applicationDecisions.status[status]}
-            </Status>
-          </MobileFriendlyListGrid>
-          <Gap size="m" />
-          {status === 'PENDING' ? (
-            <ConfirmationDialog applicationId={applicationId} type={type} />
-          ) : (
-            <PdfLink decisionId={decisionId} />
-          )}
-        </React.Fragment>
-      ))}
-    </ContentArea>
-  )
-})
+    return (
+      <ContentArea
+        opaque
+        paddingVertical="L"
+        data-qa={`application-${applicationId}`}
+      >
+        <H2 noMargin data-qa={`title-decision-child-name-${applicationId}`}>
+          {childName}
+        </H2>
+        {decisions.map(({ decisionId, type, status, sentDate, resolved }) => (
+          <React.Fragment key={decisionId}>
+            <Gap size="L" />
+            <H3 noMargin data-qa={`title-decision-type-${decisionId}`}>
+              {`${t.decisions.applicationDecisions.decision} ${t.decisions.applicationDecisions.type[type]}`}
+            </H3>
+            <Gap size="m" />
+            <MobileFriendlyListGrid
+              labelWidth="max-content"
+              rowGap="s"
+              columnGap="L"
+            >
+              <Label>{t.decisions.applicationDecisions.sentDate}</Label>
+              <span data-qa={`decision-sent-date-${decisionId}`}>
+                {sentDate.format()}
+              </span>
+              {resolved ? (
+                <>
+                  <Label>{t.decisions.applicationDecisions.resolved}</Label>
+                  <span data-qa={`decision-resolved-date-${decisionId}`}>
+                    {resolved.format()}
+                  </span>
+                </>
+              ) : null}
+              <Label>{t.decisions.applicationDecisions.statusLabel}</Label>
+              <Status data-qa={`decision-status-${decisionId}`}>
+                <RoundIcon
+                  content={statusIcon[status].icon}
+                  color={statusIcon[status].color}
+                  size="s"
+                />
+                <Gap size="xs" horizontal />
+                {t.decisions.applicationDecisions.status[status]}
+              </Status>
+            </MobileFriendlyListGrid>
+            <Gap size="m" />
+            {status === 'PENDING' ? (
+              <ConfirmationDialog applicationId={applicationId} type={type} />
+            ) : (
+              <PdfLink decisionId={decisionId} />
+            )}
+          </React.Fragment>
+        ))}
+      </ContentArea>
+    )
+  }
+)
 
 const MobileFriendlyListGrid = styled(ListGrid)`
   @media (max-width: 600px) {
@@ -160,25 +161,6 @@ const MobileFriendlyListGrid = styled(ListGrid)`
     }
   }
 `
-
-const Status = styled.span`
-  text-transform: uppercase;
-`
-
-const statusIcon = {
-  PENDING: {
-    icon: faGavel,
-    color: accentColors.orange
-  },
-  ACCEPTED: {
-    icon: faCheck,
-    color: accentColors.green
-  },
-  REJECTED: {
-    icon: faTimes,
-    color: greyscale.lighter
-  }
-}
 
 const noop = () => undefined
 
@@ -219,28 +201,5 @@ const ConfirmationDialog = React.memo(function ConfirmationDialog({
         />
       </Link>
     </>
-  )
-})
-
-const PdfLink = React.memo(function PdfLink({
-  decisionId
-}: {
-  decisionId: string
-}) {
-  const t = useTranslation()
-
-  return (
-    <a
-      href={`/api/application/citizen/decisions/${decisionId}/download`}
-      target="_blank"
-      rel="noreferrer"
-    >
-      <InlineButton
-        icon={faFileAlt}
-        text={t.decisions.applicationDecisions.openPdf}
-        onClick={noop}
-        dataQa="button-open-pdf"
-      />
-    </a>
   )
 })

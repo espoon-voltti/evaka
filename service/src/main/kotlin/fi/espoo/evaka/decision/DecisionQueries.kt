@@ -120,7 +120,7 @@ fun getOwnDecisions(h: Database.Read, guardianId: UUID): List<ApplicationDecisio
         FROM decision d
         JOIN application a ON d.application_id = a.id
         JOIN person p ON a.child_id = p.id
-        WHERE a.guardian_id = :guardianId
+        WHERE a.guardian_id = :guardianId AND d.sent_date IS NOT NULL
         """.trimIndent()
 
     val rows = h.createQuery(sql)

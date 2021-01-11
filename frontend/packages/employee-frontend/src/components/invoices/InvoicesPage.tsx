@@ -12,9 +12,9 @@ import {
   ContentArea
 } from '@evaka/lib-components/src/layout/Container'
 import { Label } from '@evaka/lib-components/src/typography'
-import { AsyncFormModal } from '~components/common/FormModal'
+import { AsyncFormModal } from '@evaka/lib-components/src/molecules/modals/FormModal'
 import { AlertBox } from '@evaka/lib-components/src/molecules/MessageBoxes'
-import { DatePicker } from '~components/common/DatePicker'
+import { DatePicker } from '@evaka/lib-components/src/molecules/DatePicker'
 import Invoices from './Invoices'
 import InvoiceFilters from './InvoiceFilters'
 import Actions from './Actions'
@@ -109,11 +109,15 @@ const Modal = React.memo(function Modal({
       iconColour={'blue'}
       title={i18n.invoices.sendModal.title}
       icon={faEnvelope}
-      reject={actions.closeModal}
-      rejectLabel={i18n.common.cancel}
-      resolve={() => sendInvoices({ invoiceDate, dueDate })}
-      resolveLabel={i18n.common.confirm}
-      onResolveSuccess={onSendDone}
+      resolve={{
+        action: () => sendInvoices({ invoiceDate, dueDate }),
+        label: i18n.common.confirm,
+        onSuccess: onSendDone
+      }}
+      reject={{
+        action: actions.closeModal,
+        label: i18n.common.cancel
+      }}
       data-qa="send-invoices-dialog"
     >
       <ModalContent>

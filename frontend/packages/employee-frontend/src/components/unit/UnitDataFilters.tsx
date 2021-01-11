@@ -5,7 +5,7 @@
 import React, { Dispatch, SetStateAction } from 'react'
 import LocalDate from '@evaka/lib-common/src/local-date'
 import { useTranslation } from '~state/i18n'
-import { DatePicker } from '~components/common/DatePicker'
+import { DatePicker } from '@evaka/lib-components/src/molecules/DatePicker'
 import styled from 'styled-components'
 import Chip, { Chips } from 'components/common/Chip'
 import { UnitFilters } from 'utils/UnitFilters'

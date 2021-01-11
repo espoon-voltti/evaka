@@ -10,7 +10,7 @@ import {
   Result,
   Success,
   withStaleCancellation
-} from './index'
+} from './api'
 
 describe('utils/async', () => {
   describe('withCancellation', () => {

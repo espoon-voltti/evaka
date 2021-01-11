@@ -22,6 +22,7 @@ export interface BaseAppConfig {
   }
 }
 
+export type UUID = string
 export type Language = string
 export type Nationality = string
 export type ApplicationType = string

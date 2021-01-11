@@ -8,15 +8,15 @@ import styled from 'styled-components'
 import LocalDate from '@evaka/lib-common/src/local-date'
 import { useTranslation } from '~state/i18n'
 import { UIContext } from '~state/ui'
-import FormModal from '~components/common/FormModal'
+import FormModal from '@evaka/lib-components/src/molecules/modals/FormModal'
 import { FixedSpaceColumn } from '@evaka/lib-components/src/layout/flex-helpers'
-import { Result } from '~api'
+import { Result } from '@evaka/lib-common/src/api'
 import { faChild } from '@evaka/lib-icons'
 import { createPlacement, MissingGroupPlacement } from '~api/unit'
 import { updateBackupCare } from 'api/child/backup-care'
 import { UUID } from '~types'
 import Select from '~components/common/Select'
-import { DatePicker } from '~components/common/DatePicker'
+import { DatePicker } from '@evaka/lib-components/src/molecules/DatePicker'
 import { formatName } from '~utils'
 import { DaycareGroup } from '~types/unit'
 import { EVAKA_START } from '~constants'
@@ -163,11 +163,15 @@ export default React.memo(function GroupPlacementModal({
       title={i18n.unit.placements.modal.createTitle}
       icon={faChild}
       iconColour={'blue'}
-      resolveLabel={i18n.common.confirm}
-      rejectLabel={i18n.common.cancel}
-      reject={() => clearUiMode()}
-      resolveDisabled={form.errors.length > 0}
-      resolve={() => submitForm()}
+      resolve={{
+        action: submitForm,
+        label: i18n.common.confirm,
+        disabled: form.errors.length > 0
+      }}
+      reject={{
+        action: clearUiMode,
+        label: i18n.common.cancel
+      }}
     >
       <FixedSpaceColumn>
         <section>

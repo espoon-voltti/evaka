@@ -24,7 +24,7 @@ import { faFileAlt } from '@evaka/lib-icons'
 import { getEmployeeUrlPrefix } from '~constants'
 import CheckIconButton from '@evaka/lib-components/src/atoms/buttons/CheckIconButton'
 import CrossIconButton from '@evaka/lib-components/src/atoms/buttons/CrossIconButton'
-import FormModal from '~components/common/FormModal'
+import FormModal from '@evaka/lib-components/src/molecules/modals/FormModal'
 import Radio from '@evaka/lib-components/src/atoms/form/Radio'
 import InputField from '@evaka/lib-components/src/atoms/form/InputField'
 import { Gap } from '@evaka/lib-components/src/white-space'
@@ -73,16 +73,20 @@ export default React.memo(function PlacementProposalRow({
       {modalOpen && (
         <FormModal
           title={i18n.unit.placementProposals.rejectTitle}
-          resolve={() => {
-            if (reason != null) {
-              onChange('REJECTED', reason, otherReason)
-              setModalOpen(false)
-            }
+          resolve={{
+            action: () => {
+              if (reason != null) {
+                onChange('REJECTED', reason, otherReason)
+                setModalOpen(false)
+              }
+            },
+            label: i18n.common.confirm,
+            disabled: !reason || (reason === 'OTHER' && !otherReason)
           }}
-          reject={() => setModalOpen(false)}
-          resolveLabel={i18n.common.confirm}
-          rejectLabel={i18n.common.cancel}
-          resolveDisabled={!reason || (reason === 'OTHER' && !otherReason)}
+          reject={{
+            action: () => setModalOpen(false),
+            label: i18n.common.cancel
+          }}
         >
           <FixedSpaceColumn>
             <Radio

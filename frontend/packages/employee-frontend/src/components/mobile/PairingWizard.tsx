@@ -7,7 +7,7 @@ import { useState } from 'react'
 import MetaTags from 'react-meta-tags'
 import styled from 'styled-components'
 
-import { Result, Loading } from '~api'
+import { Result, Loading } from '@evaka/lib-common/src/api'
 import {
   authMobile,
   getPairingStatus,

@@ -25,7 +25,7 @@ import {
   Tbody
 } from '@evaka/lib-components/src/layout/Table'
 import InfoModal from '~components/common/InfoModal'
-import { Loading, Result } from '~api'
+import { Loading, Result } from '@evaka/lib-common/src/api'
 import {
   addDaycareAclStaff,
   addDaycareAclSupervisor,
@@ -43,7 +43,7 @@ import {
 import { getEmployees } from '~api/employees'
 import { Employee } from '~types/employee'
 import { UserContext } from '~state/user'
-import { useRestApi } from '~utils/useRestApi'
+import { useRestApi } from '@evaka/lib-common/src/utils/useRestApi'
 import { RequireRole } from '~utils/roles'
 import { useTranslation } from '~state/i18n'
 import IconButton from '@evaka/lib-components/src/atoms/buttons/IconButton'

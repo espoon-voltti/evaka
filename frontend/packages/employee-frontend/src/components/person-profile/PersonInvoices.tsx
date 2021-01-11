@@ -7,7 +7,7 @@ import * as _ from 'lodash'
 import React, { useContext, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 
-import { Loading } from '~api'
+import { Loading } from '@evaka/lib-common/src/api'
 import { getPersonInvoices } from '~api/invoicing'
 import { StatusTd } from '~components/PersonProfile'
 import {

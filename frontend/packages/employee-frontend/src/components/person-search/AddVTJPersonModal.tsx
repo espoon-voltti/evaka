@@ -9,9 +9,9 @@ import Spinner from '@evaka/lib-components/src/atoms/state/Spinner'
 import { Gap } from '@evaka/lib-components/src/white-space'
 import { Label } from '@evaka/lib-components/src/typography'
 import InputField from '@evaka/lib-components/src/atoms/form/InputField'
-import FormModal from '~components/common/FormModal'
+import FormModal from '@evaka/lib-components/src/molecules/modals/FormModal'
 import { useTranslation } from '~state/i18n'
-import { Loading, Result } from '~api'
+import { Loading, Result } from '@evaka/lib-common/src/api'
 import { getOrCreatePersonBySsn } from '~api/person'
 import { PersonDetails } from '~types/person'
 import { isSsnValid } from '~utils/validation/validations'
@@ -61,12 +61,16 @@ export default React.memo(function VTJModal({
       iconColour={'blue'}
       icon={faPlus}
       title={i18n.personSearch.addPersonFromVTJ.title}
-      resolve={onConfirm}
-      reject={closeModal}
-      resolveLabel={i18n.personSearch.addPersonFromVTJ.modalConfirmLabel}
-      rejectLabel={i18n.common.cancel}
+      resolve={{
+        action: onConfirm,
+        label: i18n.personSearch.addPersonFromVTJ.modalConfirmLabel,
+        disabled: !(person && person.isSuccess) || requestInFlight
+      }}
+      reject={{
+        action: closeModal,
+        label: i18n.common.cancel
+      }}
       size={'md'}
-      resolveDisabled={!(person && person.isSuccess) || requestInFlight}
     >
       <ModalContent>
         <Label>
@@ -117,9 +121,8 @@ export default React.memo(function VTJModal({
 })
 
 const ModalContent = styled.div`
-  width: 80%;
   align-items: center;
-  padding: 0em 2em;
+  padding: 0 2em;
   width: auto;
 `
 

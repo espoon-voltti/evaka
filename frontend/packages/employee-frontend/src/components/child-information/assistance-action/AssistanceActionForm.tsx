@@ -18,7 +18,7 @@ import {
 } from '~types/child'
 import { UUID } from '~types'
 
-import { DatePicker } from '~components/common/DatePicker'
+import { DatePicker } from '@evaka/lib-components/src/molecules/DatePicker'
 import {
   FormErrors,
   formHasErrors,

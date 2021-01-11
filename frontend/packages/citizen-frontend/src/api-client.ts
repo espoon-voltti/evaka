@@ -7,8 +7,7 @@ import axios, { AxiosError } from 'axios'
 export const API_URL = '/api/application'
 
 export const client = axios.create({
-  baseURL: API_URL,
-  xsrfCookieName: 'evaka.enduser.xsrf'
+  baseURL: API_URL
 })
 
 client.interceptors.response.use(undefined, async (err: AxiosError) => {

@@ -12,7 +12,7 @@ import {
 import Radio from '@evaka/lib-components/src/atoms/form/Radio'
 import Button from '@evaka/lib-components/src/atoms/buttons/Button'
 import { useTranslation } from 'state/i18n'
-import { DatePicker } from 'components/common/DatePicker'
+import { DatePicker } from '@evaka/lib-components/src/molecules/DatePicker'
 import { acceptDecision, rejectDecision } from 'api/applications'
 import { UIContext } from 'state/ui'
 import { UUID } from 'types'

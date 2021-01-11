@@ -22,7 +22,7 @@ import {
 } from '@evaka/lib-components/src/layout/Table'
 import { reactSelectStyles } from '~components/common/Select'
 import { useTranslation } from '~state/i18n'
-import { Loading, Result } from '~api'
+import { Loading, Result } from '@evaka/lib-common/src/api'
 import ReturnButton from '@evaka/lib-components/src/atoms/buttons/ReturnButton'
 import ReportDownload from '~components/reports/ReportDownload'
 import { PartnersInDifferentAddressReportRow } from '~types/reports'

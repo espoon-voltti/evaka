@@ -22,7 +22,7 @@ import {
   Tbody
 } from '@evaka/lib-components/src/layout/Table'
 import { useTranslation } from '~state/i18n'
-import { Loading, Result } from '~api'
+import { Loading, Result } from '@evaka/lib-common/src/api'
 import { VoucherServiceProviderUnitRow } from '~types/reports'
 import {
   getVoucherServiceProviderUnitReport,

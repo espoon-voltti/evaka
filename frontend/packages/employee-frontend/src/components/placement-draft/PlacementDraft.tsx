@@ -28,7 +28,7 @@ import {
 } from '~state/placementdraft'
 import { useTranslation } from '~state/i18n'
 import { UUID } from '~types'
-import { Loading, Result, Success } from '~api'
+import { Loading, Result, Success } from '@evaka/lib-common/src/api'
 import { getApplicationUnits } from '~api/daycare'
 import { formatName } from '~/utils'
 import {

@@ -5,7 +5,7 @@
 import React, { useContext, useEffect, useState } from 'react'
 import styled from 'styled-components'
 import InputField from '@evaka/lib-components/src/atoms/form/InputField'
-import FormModal from '~components/common/FormModal'
+import FormModal from '@evaka/lib-components/src/molecules/modals/FormModal'
 import { useTranslation } from '~state/i18n'
 import { UIContext } from '~state/ui'
 import { UUID } from '~types'
@@ -63,11 +63,15 @@ function AddSsnModal({ personId, onUpdateComplete }: Props) {
   return (
     <FormModal
       title={i18n.personProfile.addSsn}
-      resolve={() => submit()}
-      resolveLabel={i18n.common.confirm}
-      reject={() => clearUiMode()}
-      rejectLabel={i18n.common.cancel}
-      resolveDisabled={submitting || !isSsnValid(ssn.toUpperCase())}
+      resolve={{
+        action: submit,
+        label: i18n.common.confirm,
+        disabled: submitting || !isSsnValid(ssn.toUpperCase())
+      }}
+      reject={{
+        action: clearUiMode,
+        label: i18n.common.cancel
+      }}
     >
       <InputField value={ssn} onChange={(value) => setSsn(value)} />
       <Error>

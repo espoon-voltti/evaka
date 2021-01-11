@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { client } from './client'
-import { Failure, Result, Success, Response } from '.'
+import { Failure, Result, Success, Response } from '@evaka/lib-common/src/api'
 import {
   Group,
   AbsencePayload,

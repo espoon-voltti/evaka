@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Failure, Response, Result, Success } from '~/api'
+import { Failure, Response, Result, Success } from '@evaka/lib-common/src/api'
 import { client } from '~/api/client'
 import { UUID } from '~types'
 import { FeeAlteration, PartialFeeAlteration } from '~types/fee-alteration'

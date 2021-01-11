@@ -8,12 +8,12 @@ import LocalDate from '@evaka/lib-common/src/local-date'
 import { UUID } from '~types'
 import { useTranslation } from '~state/i18n'
 import { getApplicationUnits } from '~api/daycare'
-import { Loading, Result } from '~api'
+import { Loading, Result } from '@evaka/lib-common/src/api'
 import { PlacementType } from '~types/placementdraft'
-import FormModal from '~components/common/FormModal'
+import FormModal from '@evaka/lib-components/src/molecules/modals/FormModal'
 import { faMapMarkerAlt } from '@evaka/lib-icons'
 import { UIContext } from '~state/ui'
-import { DatePicker } from '~components/common/DatePicker'
+import { DatePicker } from '@evaka/lib-components/src/molecules/DatePicker'
 import { createPlacement } from 'api/child/placements'
 import Select from '~components/common/Select'
 import { PreferredUnit } from '~types/application'
@@ -101,19 +101,21 @@ function CreatePlacementModal({ childId, reload }: Props) {
       text={i18n.childInformation.placements.createPlacement.text}
       icon={faMapMarkerAlt}
       iconColour={'blue'}
-      resolveLabel={i18n.common.confirm}
-      rejectLabel={i18n.common.cancel}
-      reject={() => clearUiMode()}
-      resolveDisabled={errors.length > 0 || submitting || form.ghostUnit}
-      resolve={() => submitForm()}
-      resolveInfo={
-        form.ghostUnit
+      resolve={{
+        action: submitForm,
+        label: i18n.common.confirm,
+        disabled: errors.length > 0 || submitting || form.ghostUnit,
+        info: form.ghostUnit
           ? {
               text: i18n.childInformation.placements.warning.ghostUnit,
               status: 'warning'
             }
           : undefined
-      }
+      }}
+      reject={{
+        action: clearUiMode,
+        label: i18n.common.cancel
+      }}
     >
       <FixedSpaceColumn>
         <section>

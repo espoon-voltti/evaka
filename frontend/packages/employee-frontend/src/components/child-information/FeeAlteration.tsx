@@ -14,7 +14,7 @@ import { UIContext } from '~state/ui'
 import { ChildContext } from '~state'
 import { UUID } from '~types'
 import { FeeAlteration, PartialFeeAlteration } from '~types/fee-alteration'
-import { Loading, Result } from '~api'
+import { Loading, Result } from '@evaka/lib-common/src/api'
 import {
   createFeeAlteration,
   deleteFeeAlteration,

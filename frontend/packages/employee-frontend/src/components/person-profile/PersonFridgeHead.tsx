@@ -5,7 +5,7 @@
 import React, { useEffect } from 'react'
 import { UUID } from '~types'
 import { useTranslation } from '~state/i18n'
-import { Loading, Success } from '~api'
+import { Loading, Success } from '@evaka/lib-common/src/api'
 import { getPersonDetails } from '~api/person'
 import { useContext } from 'react'
 import { PersonContext, PersonState } from '~state/person'

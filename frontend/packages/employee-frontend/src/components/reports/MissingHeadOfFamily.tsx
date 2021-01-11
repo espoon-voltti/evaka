@@ -22,7 +22,7 @@ import {
 } from '@evaka/lib-components/src/layout/Table'
 import { reactSelectStyles } from '~components/common/Select'
 import { useTranslation } from '~state/i18n'
-import { Loading, Result } from '~api'
+import { Loading, Result } from '@evaka/lib-common/src/api'
 import { MissingHeadOfFamilyReportRow } from '~types/reports'
 import {
   getMissingHeadOfFamilyReport,
@@ -36,7 +36,10 @@ import {
   RowCountInfo,
   TableScrollable
 } from '~components/reports/common'
-import { DatePicker, DatePickerClearable } from '~components/common/DatePicker'
+import {
+  DatePicker,
+  DatePickerClearable
+} from '@evaka/lib-components/src/molecules/DatePicker'
 import LocalDate from '@evaka/lib-common/src/local-date'
 import { distinct } from 'utils'
 

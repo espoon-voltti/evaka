@@ -17,7 +17,7 @@ import { AssistanceBasis, AssistanceNeed } from '~types/child'
 import { UUID } from '~types'
 import { formatDecimal, textAreaRows } from '~components/utils'
 
-import { DatePicker } from '~components/common/DatePicker'
+import { DatePicker } from '@evaka/lib-components/src/molecules/DatePicker'
 import {
   FormErrors,
   formHasErrors,
