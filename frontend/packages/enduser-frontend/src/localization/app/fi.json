@@ -87,6 +87,7 @@
     },
     "provider-type": {
       "municipal": "Kunnallinen",
+      "municipal_school": "Kunnallinen",
       "purchased": "Ostopalvelu",
       "private": "Yksityinen",
       "private_service_voucher": "Palveluseteli"

@@ -57,7 +57,7 @@ export const currentLanguage = () => {
 export const providerIsMunicipal = (provider: string) =>
   provider &&
   provider.length > 0 &&
-  provider.toUpperCase() === PROVIDER_TYPE.MUNICIPAL
+  (provider.toUpperCase() === PROVIDER_TYPE.MUNICIPAL || provider.toUpperCase() === PROVIDER_TYPE.MUNICIPAL_SCHOOL)
 
 export const providerIsPrivate = (provider: string) =>
   provider &&

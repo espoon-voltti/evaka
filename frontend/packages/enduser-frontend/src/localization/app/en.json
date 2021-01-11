@@ -83,6 +83,7 @@
     },
     "provider-type": {
       "municipal": "Municipal",
+      "municipal_school": "Municipal",
       "purchased": "Purchased service",
       "private": "Private service",
       "private_service_voucher": "Private service (service voucher)"
