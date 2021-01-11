@@ -1,0 +1,115 @@
+# SPDX-FileCopyrightText: 2017-2020 City of Espoo
+#
+# SPDX-License-Identifier: LGPL-2.1-or-later
+---
+debug: true
+
+spring:
+  datasource:
+    password: app
+    url: jdbc:postgresql://localhost:5432/evaka_local
+    username: evaka_application_local
+  devtools:
+    livereload:
+      enabled: false
+  main:
+    logStartupInfo: false
+management:
+  endpoints:
+    enabled-by-default: true
+    web:
+      # base-path: /
+      # cors:
+      #     allowed-origins: http://example.com
+      #     allowed-methods: GET,POS
+      exposure:
+        include: "*"
+logging:
+  level:
+    fi:
+      espoo:
+        evaka: DEBUG
+        evaka.invoicing.integration.IntegrationClient: DEBUG
+    org:
+      springframework:
+        boot:
+          autoconfigure: INFO
+
+application:
+  email:
+    enabled: false
+
+aws:
+  region: eu-west-1
+
+fi:
+  espoo:
+    evaka:
+      message:
+        enabled: false
+    integration:
+      dvv-modifications-service:
+        password: ""
+        productCode: ""
+        url: ""
+        userId: ""
+        xRoadClientId: ""
+      invoice:
+        enabled: false
+      koski:
+        enabled: true
+        secret: ""
+        source_system: EspooVarda
+        url: http://localhost:8888/mock-integration/koski/api
+        user: ""
+      varda:
+        basic_auth: ""
+        url: http://localhost:8888/mock-integration/varda/api
+    varda:
+      force:
+        sync: true
+      organizer: Espoo
+    voltti:
+      auth:
+        jwks:
+          default:
+            url: classpath:local-development/jwks.json
+      document:
+        bucket:
+          attachments: evaka-attachments-dev
+          clubdecision: evaka-clubdecisions-dev
+          daycaredecision: evaka-daycaredecisions-dev
+          paymentdecision: evaka-paymentdecisions-dev
+          vouchervaluedecision: evaka-vouchervaluedecisions-dev
+      vtj:
+        client:
+          # these are used if you run pis-service in "vtj-dev" profile (against Test VTJ).
+          # get-deployment-local.sh should fill the trustStore location, but you need to fill vtj user/pass with details from AWS Parameter Store
+          password: ""
+          username: ""
+        xroad:
+          address: https://fake.test
+          client:
+            instance: FI-TEST
+            memberClass: MUN
+            memberCode: 0101263-6
+            subSystemCode: evaka-test
+          service:
+            instance: FI-TEST
+            memberClass: GOV
+            memberCode: 0245437-2
+            serviceCode: HenkilonTunnusKysely
+            serviceVersion: v1
+            subSystemCode: VTJkysely
+          trustStore:
+            password: password
+            type: JKS
+
+flyway:
+  password: flyway
+  username: evaka_migration_local
+
+redis:
+  password: ""
+  ssl: false
+  url: localhost

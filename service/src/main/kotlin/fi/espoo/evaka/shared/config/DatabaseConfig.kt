@@ -43,7 +43,7 @@ class DatabaseConfig {
                 jdbcUrl = dataSourceUrl
                 username = dataSourceUsername
                 password = env.getRequiredProperty("spring.datasource.password")
-                maximumPoolSize = 20
+                maximumPoolSize = env.getProperty<Int>("spring.datasource.hikari.maximumPoolSize") ?: 10
                 leakDetectionThreshold = env.getProperty<Long>("spring.datasource.hikari.leak-detection-threshold") ?: 0
                 addDataSourceProperty("socketTimeout", TimeUnit.SECONDS.convert(15, TimeUnit.MINUTES).toInt())
             }

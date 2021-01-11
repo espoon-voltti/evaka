@@ -1,0 +1,39 @@
+# SPDX-FileCopyrightText: 2017-2020 City of Espoo
+#
+# SPDX-License-Identifier: LGPL-2.1-or-later
+---
+spring:
+  application:
+    name: evaka-message-service
+  main:
+    banner-mode: "off"
+  datasource:
+    continue-on-error: false
+    driver-class-name: "org.postgresql.Driver"
+    sqlScriptEncoding: "UTF-8"
+    type: "com.zaxxer.hikari.HikariDataSource"
+    hikari:
+      maximumPoolSize: 10
+server:
+  port: 8083
+management:
+  endpoint:
+    health:
+      enabled: true
+  endpoints:
+    enabled-by-default: false
+    web:
+      exposure:
+        include: health
+logging:
+  level:
+    org:
+      springframework:
+        boot:
+          autoconfigure: INFO
+
+fi:
+  espoo:
+    voltti:
+      s3mock:
+        url: http://s3.lvh.me:9876

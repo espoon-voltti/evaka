@@ -1,12 +1,16 @@
 # SPDX-FileCopyrightText: 2017-2020 City of Espoo
 #
 # SPDX-License-Identifier: LGPL-2.1-or-later
-
+---
 spring:
   profiles:
     group:
-      "integration-test": "enable_varda_mock_integration_endpoint, enable_mock_dvv_api"
-      "local": "enable_dev_api, enable_varda_mock_integration_endpoint"
+      integration-test:
+        - enable_varda_mock_integration_endpoint
+        - enable_mock_dvv_api
+      local:
+        - enable_dev_api
+        - enable_varda_mock_integration_endpoint
   main:
     banner-mode: "off"
   application:
