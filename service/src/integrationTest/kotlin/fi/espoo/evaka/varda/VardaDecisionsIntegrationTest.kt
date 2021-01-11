@@ -428,8 +428,8 @@ class VardaDecisionsIntegrationTest : FullApplicationTest() {
     }
 
     @Test
-    fun `a derived daycare decision is not sent when its service need is temporary`() {
-        val period = FiniteDateRange(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))
+    fun `a derived daycare decision is sent as temporary when the service need is temporary`() {
+        val period = FiniteDateRange(LocalDate.of(2019, 7, 1), LocalDate.of(2020, 7, 3))
         insertPlacement(db, testChild_1.id, period)
         insertServiceNeed(db, testChild_1.id, period, temporary = true)
         insertVardaChild(db, testChild_1.id)
@@ -437,7 +437,12 @@ class VardaDecisionsIntegrationTest : FullApplicationTest() {
         updateDecisions(db, vardaClient)
 
         val result = getVardaDecisions()
-        assertEquals(0, result.size)
+        assertEquals(1, result.size)
+        val decisions = mockEndpoint.decisions
+        assertEquals(1, decisions.size)
+        decisions.values.first().let { decision ->
+            assertTrue(decision.temporary)
+        }
     }
 
     @Test
@@ -457,6 +462,7 @@ class VardaDecisionsIntegrationTest : FullApplicationTest() {
         assertEquals(period.start, decision.startDate)
         assertEquals(period.end, decision.endDate)
         assertEquals(40.0, decision.hoursPerWeek)
+        assertEquals(false, decision.temporary)
         assertEquals(true, decision.daily)
         assertEquals(true, decision.fullDay)
         assertEquals(false, decision.shiftCare)
@@ -497,6 +503,7 @@ class VardaDecisionsIntegrationTest : FullApplicationTest() {
         assertEquals(period.start, decision.startDate)
         assertEquals(period.end, decision.endDate)
         assertEquals(40.0, decision.hoursPerWeek)
+        assertEquals(false, decision.temporary)
         assertEquals(true, decision.daily)
         assertEquals(true, decision.fullDay)
         assertEquals(false, decision.shiftCare)

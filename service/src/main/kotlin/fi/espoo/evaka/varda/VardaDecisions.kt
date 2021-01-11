@@ -81,20 +81,43 @@ fun sendNewDecisions(db: Database.Connection, client: VardaClient) {
             }
         }
     }
+
+    val newTemporaryDecisions = db.read { getNewTemporaryDecisions(it, client.getChildUrl) }
+    newTemporaryDecisions.forEach { (placementId, newDecision) ->
+        if (validateDecision(placementId, newDecision)) {
+            client.createDecision(newDecision)?.let { (vardaDecisionId) ->
+                db.transaction {
+                    insertVardaDecision(
+                        it,
+                        VardaDecisionTableRow(
+                            id = UUID.randomUUID(),
+                            vardaDecisionId = vardaDecisionId,
+                            evakaDecisionId = null,
+                            evakaPlacementId = placementId,
+                            createdAt = Instant.now(),
+                            uploadedAt = Instant.now()
+                        )
+                    )
+                }
+            }
+        }
+    }
 }
 
 fun sendUpdatedDecisions(db: Database.Connection, client: VardaClient) {
     val updatedDecisions = db.read { getUpdatedDecisions(it, client.getChildUrl) }
     val updatedDerivedDecisions = db.read { getUpdatedDerivedDecisions(it, client.getChildUrl) }
-    val decisionIds = updatedDecisions.map { it.first } + updatedDerivedDecisions.map { it.first }
+    val updatedTemporaryDecisions = db.read { getUpdatedTemporaryDecisions(it, client.getChildUrl) }
+    val decisionIds = updatedDecisions.map { it.first } + updatedDerivedDecisions.map { it.first } + updatedTemporaryDecisions.map { it.first }
     cleanUpDecisionRelatedData(db, client, decisionIds)
-    (updatedDecisions + updatedDerivedDecisions).forEach { (id, vardaDecisionId, updatedDecision) ->
-        if (validateDecision(id, updatedDecision)) {
-            client.updateDecision(vardaDecisionId, updatedDecision)?.let {
-                db.transaction { updateDecisionUploadTimestamp(it, id) }
+    (updatedDecisions + updatedDerivedDecisions + updatedTemporaryDecisions)
+        .forEach { (id, vardaDecisionId, updatedDecision) ->
+            if (validateDecision(id, updatedDecision)) {
+                client.updateDecision(vardaDecisionId, updatedDecision)?.let {
+                    db.transaction { updateDecisionUploadTimestamp(it, id) }
+                }
             }
         }
-    }
 }
 
 fun cleanUpDecisionRelatedData(db: Database.Connection, client: VardaClient, decisionIds: List<UUID>) {
@@ -133,7 +156,9 @@ fun deleteDecisionFeeData(db: Database.Connection, client: VardaClient, decision
 }
 
 fun removeDeletedDecisions(db: Database.Connection, client: VardaClient) {
-    val removedDecisions = db.read { getRemovedDecisions(it) + getRemovedDerivedDecisions(it) }
+    val removedDecisions = db.read {
+        getRemovedDecisions(it) + getRemovedDerivedDecisions(it) + getRemovedTemporaryDecisions(it)
+    }
     val decisionIds = removedDecisions.map { (id, _) -> id }
     cleanUpDecisionRelatedData(db, client, decisionIds)
     removedDecisions.forEach { (_, vardaDecisionId) ->
@@ -198,6 +223,7 @@ SELECT
     THEN latest_sn.hours_per_week - 20
     ELSE latest_sn.hours_per_week END) 
     AS hours_per_week,
+    false AS temporary, -- temporary placements are handled separately
     NOT latest_sn.part_week AS daily,
     latest_sn.shift_care AS shift_care,
     u.provider_type AS provider_type
@@ -317,6 +343,7 @@ SELECT
     p.end_date,
     false AS urgent,
     latest_sn.hours_per_week,
+    false AS temporary, -- temporary placements are handled separately
     NOT latest_sn.part_week AS daily,
     latest_sn.shift_care AS shift_care,
     u.provider_type AS provider_type
@@ -332,6 +359,33 @@ JOIN LATERAL (
     ORDER BY sn.start_date DESC
     LIMIT 1
 ) latest_sn ON true
+    """.trimIndent()
+
+private val temporaryDecisionQueryBase =
+    // language=sql
+    """
+SELECT
+    vd.id,
+    vd.varda_decision_id,
+    p.id AS evaka_id,
+    vc.varda_child_id,
+    greatest(p.start_date, sn.start_date) - interval '4 months' AS application_date,
+    greatest(p.start_date, sn.start_date) AS start_date,
+    least(p.end_date, sn.end_date) AS end_date,
+    false AS urgent,
+    sn.hours_per_week,
+    true AS temporary,
+    NOT sn.part_week AS daily,
+    sn.shift_care AS shift_care,
+    u.provider_type AS provider_type
+FROM placement p
+LEFT JOIN varda_decision vd ON p.id = vd.evaka_placement_id AND vd.deleted_at IS NULL
+JOIN daycare u ON p.unit_id = u.id
+JOIN varda_child vc ON p.child_id = vc.person_id AND u.oph_organizer_oid = vc.oph_organizer_oid
+JOIN service_need sn 
+    ON sn.child_id = p.child_id 
+    AND daterange(sn.start_date, sn.end_date, '[]') && daterange(p.start_date, p.end_date, '[]')
+    AND sn.temporary
     """.trimIndent()
 
 private fun getNewDerivedDecisions(tx: Database.Read, getChildUrl: (Long) -> String): List<Pair<UUID, VardaDecision>> {
@@ -398,6 +452,50 @@ AND d.evaka_id IS NULL
         .toList()
 }
 
+private fun getNewTemporaryDecisions(tx: Database.Read, getChildUrl: (Long) -> String): List<Pair<UUID, VardaDecision>> {
+    val sql =
+        """
+$temporaryDecisionQueryBase
+WHERE vd.id IS NULL
+        """.trimIndent()
+
+    return tx.createQuery(sql)
+        .map(toVardaDecisionWithDecisionId(getChildUrl))
+        .toList()
+}
+
+private fun getUpdatedTemporaryDecisions(
+    tx: Database.Read,
+    getChildUrl: (Long) -> String
+): List<Triple<UUID, Long, VardaDecision>> {
+    val sql =
+        """
+$temporaryDecisionQueryBase
+WHERE vd.uploaded_at < greatest(sn.updated, p.updated)
+        """.trimIndent()
+
+    return tx.createQuery(sql)
+        .map(toVardaDecisionWithIdAndVardaId(getChildUrl))
+        .toList()
+}
+
+private fun getRemovedTemporaryDecisions(tx: Database.Read): List<Pair<UUID, Long>> {
+    val sql =
+        """
+WITH temporary_decision AS (
+    $temporaryDecisionQueryBase
+)
+SELECT vd.id, vd.varda_decision_id FROM varda_decision vd
+LEFT JOIN temporary_decision d ON vd.evaka_placement_id = d.evaka_id
+WHERE vd.evaka_decision_id IS NULL
+AND d.evaka_id IS NULL
+        """.trimIndent()
+
+    return tx.createQuery(sql)
+        .map { rs, _ -> rs.getUUID("id") to rs.getLong("varda_decision_id") }
+        .toList()
+}
+
 private fun deleteDecision(tx: Database.Transaction, vardaDecisionId: Long) {
     tx.createUpdate("DELETE FROM varda_decision WHERE varda_decision_id = :id")
         .bind("id", vardaDecisionId)
@@ -446,6 +544,8 @@ data class VardaDecision(
     val urgent: Boolean,
     @JsonProperty("tuntimaara_viikossa")
     val hoursPerWeek: Double,
+    @JsonProperty("tilapainen_vaka_kytkin")
+    val temporary: Boolean,
     @JsonProperty("paivittainen_vaka_kytkin")
     val daily: Boolean,
     @JsonProperty("vuorohoito_kytkin")
@@ -490,6 +590,7 @@ private fun toVardaDecision(rs: ResultSet, getChildUrl: (Long) -> String) = Vard
     endDate = rs.getDate("end_date").toLocalDate(),
     urgent = rs.getBoolean("urgent"),
     hoursPerWeek = rs.getDouble("hours_per_week"),
+    temporary = rs.getBoolean("temporary"),
     daily = rs.getBoolean("daily"),
     shiftCare = rs.getBoolean("shift_care"),
     providerTypeCode = rs.getEnum<VardaUnitProviderType>("provider_type").vardaCode
