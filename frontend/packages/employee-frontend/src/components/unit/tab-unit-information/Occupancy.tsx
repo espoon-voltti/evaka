@@ -67,7 +67,7 @@ export default React.memo(function OccupancyContainer({
         <OccupancySingleDay
           occupancies={occupancies.confirmed}
           plannedOccupancies={occupancies.planned}
-          realizedOccupancies={occupancies.confirmed}
+          realizedOccupancies={occupancies.realized}
         />
       ) : (
         <WrapBox>
