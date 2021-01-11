@@ -3,3 +3,7 @@
 # SPDX-License-Identifier: LGPL-2.1-or-later
 
 * text=auto
+*.sh text eol=lf
+gradlew eol=lf
+compose-e2e eol=lf
+compose-keycloak eol=lf
