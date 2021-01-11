@@ -8,7 +8,6 @@ import fi.espoo.evaka.Audit
 import fi.espoo.evaka.application.fetchApplicationDetails
 import fi.espoo.evaka.pis.service.PersonService
 import fi.espoo.evaka.shared.auth.AccessControlList
-import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
