@@ -32,10 +32,11 @@ const en: Translations = {
     title: 'Decisions',
     summary:
       'Tälle sivulle saapuvat lapsen varhaiskasvatus-, esiopetus- ja kerhohakemuksiin liittyvät päätökset. Uuden päätöksen saapuessa sinun tulee kahden viikon sisällä vastata, hyväksytkö vai hylkäätkö lapselle tarjotun paikan.',
-    unconfimedDecisions: (n: number) =>
+    unconfirmedDecisions: (n: number) =>
       `${n} ${
         n === 1 ? 'decision is' : 'decisions are'
       } waiting for confirmation`,
+    pageLoadError: 'Tietojen hakeminen ei onnistunut',
     applicationDecisions: {
       decision: 'Decision of',
       type: {

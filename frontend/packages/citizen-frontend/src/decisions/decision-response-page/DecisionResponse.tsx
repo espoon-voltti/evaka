@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
+
 import { Decision } from '~decisions/types'
 import React, { useContext, useState } from 'react'
 import { useTranslation } from '~localization'
