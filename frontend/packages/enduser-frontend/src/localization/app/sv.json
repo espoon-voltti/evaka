@@ -83,6 +83,7 @@
     },
     "provider-type": {
       "municipal": "Kommunal tjänst",
+      "municipal_school": "Kommunal tjänst",
       "purchased": "Köptjänst",
       "private": "Privat tjänst",
       "private_service_voucher": "Privat tjänst (servicesedel)"
