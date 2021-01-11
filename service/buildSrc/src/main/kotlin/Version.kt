@@ -32,6 +32,7 @@ object Version {
 
     object GradlePlugin {
         const val kotlinter = "3.3.0"
+        const val owasp = "6.0.5"
         const val versions = "0.29.0"
     }
 }

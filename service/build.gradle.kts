@@ -24,6 +24,7 @@ plugins {
 
     id("com.github.ben-manes.versions") version Version.GradlePlugin.versions
     id("org.jmailen.kotlinter") version Version.GradlePlugin.kotlinter
+    id("org.owasp.dependencycheck") version Version.GradlePlugin.owasp
 
     idea
 }
@@ -202,5 +203,15 @@ tasks {
         main = "com.pinterest.ktlint.Main"
         classpath = ktlint
         args = listOf("applyToIDEAProject", "-y")
+    }
+
+    dependencyCheck {
+        failBuildOnCVSS = 0.0f
+        analyzers.apply {
+            assemblyEnabled = false
+            nodeAuditEnabled = false
+            nodeEnabled = false
+            nuspecEnabled = false
+        }
     }
 }
