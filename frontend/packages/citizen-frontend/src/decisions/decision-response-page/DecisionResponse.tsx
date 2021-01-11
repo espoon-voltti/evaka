@@ -56,9 +56,9 @@ export default React.memo(function DecisionResponse({
   )
   const { setErrorMessage } = useContext(OverlayContext)
   const getUnitName = () => {
-    switch(decision.type){
+    switch (decision.type) {
       case 'DAYCARE':
-      case 'DAYCARE_PART_TIME':
+      case 'DAYCARE_PART_TIME':
         return decision.unit.daycareDecisionName
       case 'PRESCHOOL':
       case 'PREPARATORY_EDUCATION':
