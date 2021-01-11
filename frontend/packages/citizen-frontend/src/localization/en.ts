@@ -19,6 +19,15 @@ const en: Translations = {
     },
     logout: 'Log out'
   },
+  footer: {
+    espooLabel: '© City of Espoo',
+    privacyPolicy: 'Privacy Notices',
+    privacyPolicyLink:
+      'https://www.espoo.fi/en-US/Eservices/Data_protection/Privacy_Notices',
+    sendFeedback: 'Give feedback',
+    sendFeedbackLink:
+      'https://easiointi.espoo.fi/eFeedback/en/Feedback/20-S%C3%A4hk%C3%B6iset%20asiointipalvelut'
+  },
   decisions: {
     title: 'Decisions',
     summary:

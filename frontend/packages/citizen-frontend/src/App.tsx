@@ -8,6 +8,7 @@ import { Authentication } from './auth'
 import { Localization } from './localization'
 import Header from './header/Header'
 import Decisions from './decisions/Decisions'
+import Footer from '~Footer'
 
 export default function App() {
   return (
@@ -19,6 +20,7 @@ export default function App() {
             <Route exact path="/decisions" component={Decisions} />
             <Route path="/" component={RedirectToEnduser} />
           </Switch>
+          <Footer />
         </Localization>
       </Authentication>
     </BrowserRouter>

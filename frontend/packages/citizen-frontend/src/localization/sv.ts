@@ -19,6 +19,15 @@ const sv: Translations = {
     },
     logout: 'Logga ut'
   },
+  footer: {
+    espooLabel: '© Esbo stad',
+    privacyPolicy: 'Dataskyddsbeskrivningar',
+    privacyPolicyLink:
+      'https://www.esbo.fi/sv-FI/Etjanster/Dataskydd/Dataskyddsbeskrivningar',
+    sendFeedback: 'Ge feedback',
+    sendFeedbackLink:
+      'https://easiointi.espoo.fi/eFeedback/sv/Feedback/20-S%C3%A4hk%C3%B6iset%20asiointipalvelut'
+  },
   decisions: {
     title: 'Beslut',
     summary:
