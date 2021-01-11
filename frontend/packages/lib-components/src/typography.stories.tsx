@@ -6,7 +6,7 @@ import React from 'react'
 import styled from 'styled-components'
 import { storiesOf } from '@storybook/react'
 import { LoremParagraph } from './story-utils'
-import { H1, H2, H3, H4, Label } from './typography'
+import { H1, H2, H3, H4, Label, Dimmed } from './typography'
 import { Gap } from './white-space'
 
 const LabelDiv = styled.div`
@@ -47,5 +47,7 @@ storiesOf('evaka/Typography', module).add('default', () => (
       <Label>Another label</Label>
       <span>Lorem ipsum dolor sit amet</span>
     </LabelDiv>
+    <Gap />
+    <Dimmed>This text is dimmed.</Dimmed>
   </div>
 ))

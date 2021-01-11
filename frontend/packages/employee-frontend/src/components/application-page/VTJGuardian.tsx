@@ -13,6 +13,7 @@ import ListGrid from '@evaka/lib-components/src/layout/ListGrid'
 import { Link } from 'react-router-dom'
 import { formatName } from 'utils'
 import { useTranslation } from 'state/i18n'
+import { Dimmed } from '@evaka/lib-components/src/typography'
 
 interface VTJGuardianProps {
   guardianId: UUID | undefined | null
@@ -64,9 +65,16 @@ function VTJGuardian({
       <Label>{i18n.application.person.email}</Label>
       <span data-qa="vtj-guardian-email">{guardian.email}</span>
       <Label>{i18n.application.guardians.secondGuardian.sameAddress}</Label>
-      <span data-qa="other-vtj-guardian-lives-in-same-address">
-        {otherGuardianLivesInSameAddress ? i18n.common.yes : i18n.common.no}
-      </span>
+
+      {otherGuardianLivesInSameAddress ? (
+        <span data-qa="other-vtj-guardian-lives-in-same-address">
+          ${i18n.common.yes}
+        </span>
+      ) : (
+        <Dimmed data-qa="other-vtj-guardian-lives-in-same-address">
+          {i18n.common.no}
+        </Dimmed>
+      )}
     </ListGrid>
   )
 
