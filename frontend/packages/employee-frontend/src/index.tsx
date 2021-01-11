@@ -10,6 +10,7 @@ import App from '~App'
 import './index.scss'
 import { getEnvironment } from '@evaka/lib-common/src/utils/helpers'
 import { config } from '@evaka/employee-frontend/src/configs'
+import { polyfill as smoothScrollPolyfill } from 'seamless-scroll-polyfill'
 
 // Load Sentry before React to make Sentry's integrations work automatically
 Sentry.init({
@@ -17,5 +18,10 @@ Sentry.init({
   dsn: config.sentry.dsn,
   environment: getEnvironment()
 })
+
+// Smooth-scrolling requires polyfilling in Safari, IE and older browsers:
+// https://developer.mozilla.org/en-US/docs/Web/API/Window/scrollTo#browser_compatibility
+// https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollIntoView#browser_compatibility
+smoothScrollPolyfill()
 
 ReactDOM.render(<App />, document.getElementById('app'))

@@ -31,6 +31,7 @@ import * as Sentry from '@sentry/browser'
 import * as Integrations from '@sentry/integrations'
 import { getEnvironment } from '@evaka/lib-common/src/utils/helpers'
 import { config } from '@evaka/enduser-frontend/src/config'
+import { polyfill as smoothScrollPolyfill } from 'seamless-scroll-polyfill'
 
 // Load Sentry as early as possible to catch all issues
 Sentry.init({
@@ -42,6 +43,11 @@ Sentry.init({
     new Integrations.Vue({ Vue, attachProps: true, logErrors: true })
   ]
 })
+
+// Smooth-scrolling requires polyfilling in Safari, IE and older browsers:
+// https://developer.mozilla.org/en-US/docs/Web/API/Window/scrollTo#browser_compatibility
+// https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollIntoView#browser_compatibility
+smoothScrollPolyfill()
 
 const runApp = (): void => {
   // FIXME localization variable
@@ -83,19 +89,15 @@ const runApp = (): void => {
     store,
     render: (h) => h(App)
   }).$mount('#app')
-
 }
 
 // Wrap app startup to make sure polyfills are loaded before they are needed (e.g. load Intl before VCalendar is setup)
 if (!global.Intl) {
-  require.ensure([
-      'intl',
-      'intl/locale-data/jsonp/fi.js'
-  ], function (require) {
-      require('intl')
-      require('intl/locale-data/jsonp/fi.js')
-      runApp()
-  });
+  require.ensure(['intl', 'intl/locale-data/jsonp/fi.js'], function (require) {
+    require('intl')
+    require('intl/locale-data/jsonp/fi.js')
+    runApp()
+  })
 } else {
   runApp()
 }

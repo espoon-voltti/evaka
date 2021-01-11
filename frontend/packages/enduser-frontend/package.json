@@ -37,6 +37,7 @@
     "intl": "^1.2.5",
     "lodash": "^4.17.15",
     "moment": "2.24.0",
+    "seamless-scroll-polyfill": "1.2.3",
     "v-calendar": "^0.9.7",
     "vue": "^2.6.11",
     "vue-bulma": "0.0.35",
