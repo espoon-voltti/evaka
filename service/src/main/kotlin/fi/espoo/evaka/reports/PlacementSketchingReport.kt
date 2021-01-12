@@ -74,7 +74,7 @@ SELECT
     application.guardianphonenumber,
     form.document->'guardian'->>'email' AS guardian_email,
     (SELECT array_agg(name) as other_preferred_units
-     FROM daycare JOIN (SELECT unnest(preferredUnits) from application) pu ON daycare.id = pu.unnest) AS other_preferred_units
+     FROM daycare JOIN (SELECT unnest(preferredUnits) FROM application WHERE application.id = application_id) pu ON daycare.id = pu.unnest) AS other_preferred_units
 FROM
     daycare
 LEFT JOIN
