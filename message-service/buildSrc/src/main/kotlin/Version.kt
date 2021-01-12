@@ -7,7 +7,7 @@ object Version {
     const val apacheWss4j = "2.3.0"
     const val auth0Jwt = "3.10.3"
     const val awsSdk = "1.11.832"
-    const val bouncyCastle = "1.66"
+    const val bouncyCastle = "1.68"
     const val byteBuddy = "1.10.14"
     const val flyway = "6.5.5"
     const val hikariCp = "3.4.5"
@@ -26,11 +26,12 @@ object Version {
     const val mockitoKotlin = "2.2.0"
     const val postgresDriver = "42.2.16"
     const val springBoot = "2.4.1"
-    const val springFox = "2.9.2"
+    const val springFox = "3.0.0"
     const val testContainers = "1.14.3"
 
     object GradlePlugin {
         const val kotlinter = "3.3.0"
+        const val owasp = "6.0.5"
         const val versions = "0.29.0"
     }
 }

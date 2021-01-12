@@ -29,6 +29,7 @@ plugins {
     id("com.github.ben-manes.versions") version Version.GradlePlugin.versions
     id("org.jmailen.kotlinter") version Version.GradlePlugin.kotlinter
     id("no.nils.wsdl2java") version "0.10"
+    id("org.owasp.dependencycheck") version Version.GradlePlugin.owasp
 
     idea
 }
@@ -158,7 +159,7 @@ tasks.withType<KotlinCompile> {
 }
 
 project.wsdl2javaExt {
-    cxfVersion = "3.3.7"
+    cxfVersion = "3.4.2"
 }
 
 tasks {
@@ -201,5 +202,16 @@ tasks {
         main = "com.pinterest.ktlint.Main"
         classpath = ktlint
         args = listOf("applyToIDEAProject", "-y")
+    }
+
+    dependencyCheck {
+        failBuildOnCVSS = 0.0f
+        analyzers.apply {
+            assemblyEnabled = false
+            nodeAuditEnabled = false
+            nodeEnabled = false
+            nuspecEnabled = false
+        }
+        suppressionFile = "$projectDir/owasp-suppressions.xml"
     }
 }

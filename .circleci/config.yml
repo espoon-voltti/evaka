@@ -849,6 +849,28 @@ jobs:
           command: ./gradlew lintKotlin
       - notify_slack
 
+  message_service_dependency_check:
+    executor: message_service_executor
+    steps:
+      - *restore_repo
+      - *restore_message_service_gradle
+      - owasp/generate_cache_keys:
+          cache_key: gradle-v1-cache-key
+      - owasp/restore_owasp_cache:
+          cache_key: gradle-v1-cache-key
+      - run:
+          name: Update OWASP Dependency-Check Database
+          working_directory: *workspace_message_service
+          command: ./gradlew dependencyCheckUpdate
+      - owasp/store_owasp_cache:
+          cve_data_directory: ~/repo/.gradle-user-home/dependency-check-data
+          cache_key: gradle-v1-cache-key
+      - run:
+          name: Run OWASP Dependency-Check Analyzer
+          working_directory: *workspace_message_service
+          command: ./gradlew dependencyCheckAnalyze
+      - notify_slack
+
   message_service_test:
     executor: message_service_test_executor
     steps:
@@ -1002,6 +1024,10 @@ workflows:
           <<: *default_contexts
           requires:
             - checkout_repo
+      - message_service_dependency_check:
+          <<: *default_contexts
+          requires:
+            - checkout_repo
       - message_service_test:
           <<: *default_contexts
           requires:
@@ -1011,6 +1037,7 @@ workflows:
           requires:
             - build_base_image
             - message_service_test
+            - message_service_dependency_check
 
       - clone_infra_repo:
           <<: *aws_contexts
