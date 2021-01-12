@@ -6,7 +6,7 @@ import React from 'react'
 import styled from 'styled-components'
 import colors from '@evaka/lib-components/src/colors'
 import { desktopMin } from '@evaka/lib-components/src/breakpoints'
-import EspooLogo from '../espoo-logo.svg'
+import CityLogo from 'Theme/assets/city-logo.svg'
 import DesktopNav from './DesktopNav'
 import MobileNav from './MobileNav'
 
@@ -17,7 +17,7 @@ export default React.memo(function Header() {
   return (
     <HeaderContainer>
       <LogoContainer>
-        <Logo src={EspooLogo} alt="Espoo logo" />
+        <Logo src={CityLogo} alt="City logo" />
       </LogoContainer>
       <DesktopNavContainer>
         <DesktopNav enduserBaseUrl={enduserBaseUrl} />

@@ -2,7 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-export default {
+import { CitizenLocalization } from '@evaka/frontend-interface/src'
+
+const fi: CitizenLocalization = {
   header: {
     nav: {
       map: 'Kartta',
@@ -100,3 +102,5 @@ export default {
     }
   }
 }
+
+export default fi

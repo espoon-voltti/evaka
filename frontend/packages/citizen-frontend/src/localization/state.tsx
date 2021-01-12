@@ -3,9 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { createContext, useContext, useMemo, useState } from 'react'
-import fi from './fi'
-import sv from './sv'
-import en from './en'
+import customizations from 'Theme/src'
 
 export const langs = ['fi', 'sv', 'en'] as const
 
@@ -43,11 +41,7 @@ export const LocalizationContextProvider = React.memo(
   }
 )
 
-const localizations = {
-  fi,
-  sv,
-  en
-}
+const localizations = customizations.localization.citizen
 
 export const useTranslation = () => {
   const { lang } = useContext(LocalizationContext)

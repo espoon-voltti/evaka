@@ -10,6 +10,8 @@ const HtmlWebpackPlugin = require('html-webpack-plugin')
 const TsconfigPathsPlugin = require('tsconfig-paths-webpack-plugin')
 const SentryWebpackPlugin = require('@sentry/webpack-plugin')
 
+const customizationsPath = process.env.THEME || '../espoo-theme'
+
 module.exports = function (env, argv) {
   const isDevelopment = argv && argv['mode'] !== 'production'
 
@@ -56,7 +58,8 @@ module.exports = function (env, argv) {
       alias: {
         'Icons': process.env.ICONS === 'pro'
           ? path.resolve(__dirname, '../lib-icons/pro-icons')
-          : path.resolve(__dirname, '../lib-icons/free-icons')
+          : path.resolve(__dirname, '../lib-icons/free-icons'),
+        Theme: path.resolve(__dirname, customizationsPath)
       }
     },
     plugins,

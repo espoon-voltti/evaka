@@ -2,9 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Translations } from '.'
+import { CitizenLocalization } from '@evaka/frontend-interface/src'
 
-const sv: Translations = {
+const sv: CitizenLocalization = {
   header: {
     nav: {
       map: 'Karta',

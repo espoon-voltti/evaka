@@ -2,17 +2,14 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import customizations from 'Theme/src/index'
+
 export const espooBrandColors = {
   espooBlue: '#0050bb',
   espooTurquoise: '#249fff'
 }
 
-export const blueColors = {
-  dark: '#013c8c',
-  medium: '#0050bb',
-  primary: '#3273c9',
-  light: '#99b9e4'
-}
+export const blueColors = customizations.colors.primaryColors
 
 export const greyscale = {
   darkest: '#0f0f0f',
