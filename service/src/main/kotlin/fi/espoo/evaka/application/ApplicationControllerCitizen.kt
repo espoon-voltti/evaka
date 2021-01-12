@@ -1,6 +1,8 @@
 package fi.espoo.evaka.application
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.application.enduser.ApplicationJson
+import fi.espoo.evaka.application.enduser.ApplicationSerializer
 import fi.espoo.evaka.decision.Decision
 import fi.espoo.evaka.decision.DecisionService
 import fi.espoo.evaka.decision.DecisionStatus
@@ -32,8 +34,33 @@ private val logger = KotlinLogging.logger {}
 @RequestMapping("/citizen")
 class ApplicationControllerCitizen(
     private val applicationStateService: ApplicationStateService,
-    private val decisionService: DecisionService
+    private val decisionService: DecisionService,
+    private val serializer: ApplicationSerializer
 ) {
+
+    // TODO: Redo ApplicationJson?
+    @GetMapping("/applications/by-guardian")
+    fun getGuardianApplications(
+        db: Database.Connection,
+        user: AuthenticatedUser
+    ): ResponseEntity<List<GuardianApplications>> {
+        Audit.ApplicationRead.log(targetId = user.id)
+        user.requireOneOfRoles(UserRole.END_USER)
+
+        // TODO: get rid of serializer?
+        val applications = db.transaction { tx ->
+            fetchOwnApplicationIds(tx.handle, user.id)
+                .mapNotNull { fetchApplicationDetails(tx.handle, it) }
+                .map { serializer.serialize(tx, user, it) }
+        }
+
+        val custodianApplications = applications
+            .groupBy { it.childId }
+            .map { it -> GuardianApplications(it.key, "Lapsi TODO", it.value) }
+
+        return ResponseEntity.ok(custodianApplications)
+    }
+
     @GetMapping("/decisions")
     fun getDecisions(db: Database.Connection, user: AuthenticatedUser): ResponseEntity<List<ApplicationDecisions>> {
         Audit.DecisionRead.log(targetId = user.id)
@@ -118,6 +145,12 @@ class ApplicationControllerCitizen(
         }
     }
 }
+
+data class GuardianApplications(
+    val childId: UUID,
+    val childName: String,
+    val applicationSummaries: List<ApplicationJson>
+)
 
 data class ApplicationDecisions(
     val applicationId: UUID,

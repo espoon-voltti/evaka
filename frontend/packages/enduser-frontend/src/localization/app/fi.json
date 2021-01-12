@@ -191,7 +191,8 @@
       "map": "Kartta",
       "application": "Hakemukset",
       "decisions": "Päätökset",
-      "newDecisions": "Uusi Päätökset"
+      "newDecisions": "Uusi Päätökset",
+      "newApplications": "Uusi Hakemukset"
     },
     "language": {
       "fi": {

@@ -186,7 +186,9 @@
     "routes": {
       "map": "Karta",
       "application": "Ansökningar",
-      "decisions": "Beslut"
+      "decisions": "Beslut",
+      "newDecisions": "Ny Beslut",
+      "newApplications": "Ny Ansökningar"
     },
     "language": {
       "fi": {

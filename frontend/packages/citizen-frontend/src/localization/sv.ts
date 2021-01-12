@@ -10,7 +10,8 @@ const sv: Translations = {
       map: 'Karta',
       applications: 'Ansökningar',
       decisions: 'Beslut',
-      newDecisions: 'Ny Beslut'
+      newDecisions: 'Ny Beslut',
+      newApplications: 'Ny Ansökningar'
     },
     lang: {
       fi: 'Suomeksi',
@@ -100,6 +101,9 @@ const sv: Translations = {
       },
       returnToPreviousPage: 'Palaa'
     }
+  },
+  applications: {
+    title: 'Hakemukset'
   }
 }
 

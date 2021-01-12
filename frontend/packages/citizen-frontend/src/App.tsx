@@ -12,6 +12,7 @@ import Footer from '~Footer'
 import DecisionResponseList from '~decisions/decision-response-page/DecisionResponseList'
 import GlobalErrorDialog from '~overlay/Error'
 import { OverlayContextProvider } from '~overlay/state'
+import Applications from '~applications/Applications'
 
 export default function App() {
   return (
@@ -21,6 +22,7 @@ export default function App() {
           <OverlayContextProvider>
             <Header />
             <Switch>
+              <Route exact path="/applications" component={Applications} />
               <Route exact path="/decisions" component={Decisions} />
               <Route
                 exact
