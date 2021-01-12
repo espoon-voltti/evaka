@@ -31,12 +31,12 @@ const en: Translations = {
   decisions: {
     title: 'Decisions',
     summary:
-      'Tälle sivulle saapuvat lapsen varhaiskasvatus-, esiopetus- ja kerhohakemuksiin liittyvät päätökset. Uuden päätöksen saapuessa sinun tulee kahden viikon sisällä vastata, hyväksytkö vai hylkäätkö lapselle tarjotun paikan.',
+      "This page displays the received decisions regarding child's early childhood education, preschool and club applications. Upon receiving a new decision, you are required to respond in two weeks, whether you accept or reject it.",
     unconfirmedDecisions: (n: number) =>
       `${n} ${
         n === 1 ? 'decision is' : 'decisions are'
       } waiting for confirmation`,
-    pageLoadError: 'Tietojen hakeminen ei onnistunut',
+    pageLoadError: 'Error in fetching the requested information',
     applicationDecisions: {
       decision: 'Decision of',
       type: {
@@ -50,12 +50,12 @@ const en: Translations = {
       },
       childName: "Child's name",
       unit: 'Unit',
-      period: 'Ajalle',
+      period: 'Time period',
       sentDate: 'Decision sent',
       resolved: 'Decision confirmed',
       statusLabel: 'Status',
       summary:
-        'Päätöksessä ilmoitettu paikka / ilmoitetut paikat tulee joko hyväksyä tai hylätä välittömästi, viimeistään kahden viikon kuluessa päätöksen saapumisesta.',
+        'The placement / placements indicated in the decision should be either accepted or rejected immediately and no later than two weeks after receiving the decision.',
       status: {
         PENDING: 'Waiting for confirmation from the guardian',
         ACCEPTED: 'Confirmed',
@@ -72,36 +72,36 @@ const en: Translations = {
         'Please open the decision and respond whether you will accept or reject the place.',
       confirmationLink: 'Review and confirm the decision',
       response: {
-        title: 'Paikan hyväksyminen tai hylkääminen',
-        accept1: 'Otamme paikan vastaan',
-        accept2: 'alkaen',
-        reject: 'Emme ota paikkaa vastaan',
-        cancel: 'Palaa takaisin vastaamatta',
-        submit: 'Lähetä vastaus päätökseen',
+        title: 'Accepting or rejecting the placement',
+        accept1: 'We accept the placement',
+        accept2: 'from',
+        reject: 'We reject the placement',
+        cancel: 'Cancel',
+        submit: 'Submit response to the decision',
         disabledInfo:
-          'HUOM! Pääset hyväksymään/hylkäämään liittyvää varhaiskasvatusta koskevan päätöksen mikäli hyväksyt ensin esiopetusta / valmistavaa opetusta koskevan päätöksen.'
+          'NOTE! You are able to accept/reject the related early childhood education decision if you accept the preschool / preparatory education decision first.'
       },
       warnings: {
         decisionWithNoResponseWarning: {
-          title: 'Toinen päätös odottaa vastaustasi',
+          title: 'There is a decision without a response',
           text:
-            'Toinen päätös odottaa edelleen vastaustasi. Haluatko  palata listalle vastaamatta?',
-          resolveLabel: 'Palaa vastaamatta',
-          rejectLabel: 'Jatka vastaamista'
+            'There is a decision without a response. Are you sure you want to return to the list without responding?',
+          resolveLabel: 'Return without responding',
+          rejectLabel: 'Continue responding'
         },
         doubleRejectWarning: {
-          title: 'Haluatko hylätä paikan?',
+          title: 'Are you sure you want to reject the placement?',
           text:
-            'Olet hylkäämässä tarjotun esiopetus / valmistavan paikan. Liittyvän varhaiskasvatuksen paikka merkitään samalla hylätyksi.',
-          resolveLabel: 'Hylkää molemmat',
-          rejectLabel: 'Palaa takaisin'
+            'You are rejecting an offer on preschool / preparatory education placement. The related early childhood education placement will also be rejected.',
+          resolveLabel: 'Reject both',
+          rejectLabel: 'Cancel'
         }
       },
       errors: {
-        pageLoadError: 'Tietojen hakeminen ei onnistunut',
-        submitFailure: 'Päätökseen vastaaminen ei onnistunut'
+        pageLoadError: 'Error in fetching the requested information',
+        submitFailure: 'Error in submitting the response'
       },
-      returnToPreviousPage: 'Palaa'
+      returnToPreviousPage: 'Return'
     }
   }
 }
