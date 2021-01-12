@@ -9,6 +9,10 @@ buildscript {
     repositories {
         jcenter()
     }
+    dependencies {
+        classpath(files("custom-ktlint-rules/custom-ktlint-rules.jar"))
+        classpath("com.pinterest:ktlint:${Version.ktlint}")
+    }
 }
 
 plugins {
@@ -19,7 +23,7 @@ plugins {
     id("org.flywaydb.flyway") version Version.flyway
 
     id("com.github.ben-manes.versions") version Version.GradlePlugin.versions
-    id("org.jlleitschuh.gradle.ktlint") version Version.GradlePlugin.ktlint
+    id("org.jmailen.kotlinter") version Version.GradlePlugin.kotlinter
 
     idea
 }
@@ -49,6 +53,8 @@ idea {
         testResourceDirs = testResourceDirs + sourceSets["integrationTest"].resources.srcDirs
     }
 }
+
+val ktlint by configurations.creating
 
 dependencies {
     // Kotlin + core
@@ -139,7 +145,7 @@ dependencies {
 
     implementation(project(":vtjclient"))
 
-    add("ktlint", files("custom-ktlint-rules/custom-ktlint-rules.jar"))
+    ktlint("com.pinterest:ktlint:${Version.ktlint}")
 }
 
 allOpen {
@@ -158,10 +164,6 @@ tasks.withType<KotlinCompile> {
         jvmTarget = Version.java
         allWarningsAsErrors = name != "compileIntegrationTestKotlin"
     }
-}
-
-ktlint {
-    version.set("0.40.0")
 }
 
 tasks {
@@ -194,5 +196,11 @@ tasks {
         systemProperty("spring.datasource.password", "evaka_it")
         systemProperty("flyway.username", "evaka_it")
         systemProperty("flyway.password", "evaka_it")
+    }
+
+    create("ktlintApplyToIdea", JavaExec::class) {
+        main = "com.pinterest.ktlint.Main"
+        classpath = ktlint
+        args = listOf("applyToIDEAProject", "-y")
     }
 }

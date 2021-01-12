@@ -14,6 +14,8 @@ buildscript {
         // needed by wsdl2java
         classpath("javax.jws:javax.jws-api:1.1")
         classpath("javax.xml.ws:jaxws-api:2.3.1")
+
+        classpath("com.pinterest:ktlint:${Version.ktlint}")
     }
 }
 
@@ -25,7 +27,7 @@ plugins {
     id("org.springframework.boot") version Version.springBoot
 
     id("com.github.ben-manes.versions") version Version.GradlePlugin.versions
-    id("org.jlleitschuh.gradle.ktlint") version Version.GradlePlugin.ktlint
+    id("org.jmailen.kotlinter") version Version.GradlePlugin.kotlinter
     id("no.nils.wsdl2java") version "0.10"
 
     idea
@@ -58,6 +60,8 @@ idea {
         testResourceDirs = testResourceDirs + sourceSets["integrationTest"].resources.srcDirs
     }
 }
+
+val ktlint by configurations.creating
 
 dependencies {
     // Kotlin + core
@@ -131,6 +135,8 @@ dependencies {
 
     integrationTestImplementation(platform("org.testcontainers:testcontainers-bom:${Version.testContainers}"))
     integrationTestImplementation("org.testcontainers:postgresql")
+
+    ktlint("com.pinterest:ktlint:${Version.ktlint}")
 }
 
 allOpen {
@@ -149,10 +155,6 @@ tasks.withType<KotlinCompile> {
         jvmTarget = Version.java
         allWarningsAsErrors = true
     }
-}
-
-ktlint {
-    version.set("0.40.0")
 }
 
 project.wsdl2javaExt {
@@ -193,5 +195,11 @@ tasks {
 
     bootRun {
         systemProperty("spring.profiles.active", "dev,local")
+    }
+
+    create("ktlintApplyToIdea", JavaExec::class) {
+        main = "com.pinterest.ktlint.Main"
+        classpath = ktlint
+        args = listOf("applyToIDEAProject", "-y")
     }
 }

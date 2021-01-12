@@ -21,6 +21,7 @@ object Version {
     const val junit = "5.6.2"
     const val kotlin = "1.4.21"
     const val kotlinLogging = "1.8.3"
+    const val ktlint = "0.40.0"
     const val logbackSpringBoot = "2.7.1"
     const val logstashEncoder = "6.3"
     const val mockito = "3.4.6"
@@ -30,7 +31,7 @@ object Version {
     const val testContainers = "1.14.3"
 
     object GradlePlugin {
-        const val ktlint = "9.4.1"
+        const val kotlinter = "3.3.0"
         const val versions = "0.29.0"
     }
 }
