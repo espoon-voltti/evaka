@@ -213,5 +213,6 @@ tasks {
             nodeEnabled = false
             nuspecEnabled = false
         }
+        suppressionFile = "$projectDir/owasp-suppressions.xml"
     }
 }
