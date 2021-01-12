@@ -121,7 +121,7 @@ export function AbsentFrom({ child, absentFrom }: AbsentFromProps) {
   return (
     <AbsentFromWrapper>
       <RoundIcon
-        color={colors.brandEspoo.espooTurquoise}
+        color={colors.cityBrandColors.secondary}
         size={'s'}
         content={faExclamation}
       />

@@ -77,7 +77,7 @@ const MenuContainer = styled.div`
   position: absolute;
   top: 0;
   right: 0;
-  background: ${colors.blues.medium};
+  background: ${colors.primaryColors.medium};
   box-sizing: border-box;
   width: 100vw;
   height: 100vh;
@@ -219,7 +219,7 @@ const UserContainer = styled.div`
 `
 
 const LogoutButton = styled.button`
-  background: ${colors.blues.dark};
+  background: ${colors.primaryColors.dark};
   color: ${colors.greyscale.white};
   border: none;
   font-family: Open Sans;

@@ -6,7 +6,7 @@ import React from 'react'
 import styled from 'styled-components'
 import colors from '@evaka/lib-components/src/colors'
 import { desktopMin } from '@evaka/lib-components/src/breakpoints'
-import CityLogo from 'Theme/assets/city-logo.svg'
+import CityLogo from '@evaka/evaka-customization/assets/city-logo.svg'
 import DesktopNav from './DesktopNav'
 import MobileNav from './MobileNav'
 
@@ -32,7 +32,7 @@ export default React.memo(function Header() {
 const HeaderContainer = styled.header`
   z-index: 99;
   color: ${colors.greyscale.white};
-  background-color: ${colors.brandEspoo.espooBlue};
+  background-color: ${colors.cityBrandColors.primary};
   position: relative;
   display: flex;
   flex-direction: row;

@@ -931,7 +931,7 @@ export function ApplicationBasisFilter({
         >
           <RoundIcon
             content="L"
-            color={colors.blues.dark}
+            color={colors.primaryColors.dark}
             size="m"
             onClick={toggle('ADDITIONAL_INFO')}
             active={toggled.includes('ADDITIONAL_INFO')}

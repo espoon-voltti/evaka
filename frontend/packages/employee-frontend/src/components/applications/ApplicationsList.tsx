@@ -21,7 +21,7 @@ import {
 } from 'types/application'
 import { SearchOrder } from '~types'
 import Pagination from '@evaka/lib-components/src/Pagination'
-import colors, { blueColors } from '@evaka/lib-components/src/colors'
+import colors, { primaryColors } from '@evaka/lib-components/src/colors'
 import { SortByApplications } from '~types/application'
 import { formatName } from '~utils'
 import RoundIcon from '@evaka/lib-components/src/atoms/RoundIcon'
@@ -233,7 +233,7 @@ const ApplicationsList = React.memo(function Applications({
                 startDateOrDueDate.differenceInYears(application.dateOfBirth) <
                 3
                   ? colors.accents.green
-                  : colors.blues.medium
+                  : colors.primaryColors.medium
               }
               size="s"
             />
@@ -297,7 +297,7 @@ const ApplicationsList = React.memo(function Applications({
       <Td>
         <FixedSpaceRow spacing="xs">
           {application.additionalInfo && (
-            <RoundIcon content="L" color={blueColors.dark} size="s" />
+            <RoundIcon content="L" color={primaryColors.dark} size="s" />
           )}
           {application.siblingBasis && (
             <RoundIcon content="S" color={colors.accents.green} size="s" />

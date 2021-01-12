@@ -40,11 +40,11 @@ storiesOf('evaka/Colors', module).add('default', () => (
     <H3>Espoo</H3>
     <Row>
       <Col>
-        <ColorCircle color={colors.brandEspoo.espooBlue} />
+        <ColorCircle color={colors.cityBrandColors.primary} />
         <Label>blue</Label>
       </Col>
       <Col>
-        <ColorCircle color={colors.brandEspoo.espooTurquoise} />
+        <ColorCircle color={colors.cityBrandColors.secondary} />
         <Label>turquoise</Label>
       </Col>
     </Row>
@@ -56,19 +56,19 @@ storiesOf('evaka/Colors', module).add('default', () => (
     <H3>Blues</H3>
     <Row>
       <Col>
-        <ColorCircle color={colors.blues.dark} />
+        <ColorCircle color={colors.primaryColors.dark} />
         <Label>dark</Label>
       </Col>
       <Col>
-        <ColorCircle color={colors.blues.medium} />
+        <ColorCircle color={colors.primaryColors.medium} />
         <Label>medium</Label>
       </Col>
       <Col>
-        <ColorCircle color={colors.blues.primary} />
+        <ColorCircle color={colors.primaryColors.primary} />
         <Label>primary</Label>
       </Col>
       <Col>
-        <ColorCircle color={colors.blues.light} />
+        <ColorCircle color={colors.primaryColors.light} />
         <Label>light</Label>
       </Col>
     </Row>

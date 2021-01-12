@@ -14,6 +14,7 @@
     "build:dev": "webpack"
   },
   "dependencies": {
+    "@evaka/evaka-customization": "1.0.0",
     "@evaka/lib-common": "1.0.0",
     "@evaka/lib-components": "1.0.0",
     "@evaka/lib-icons": "1.0.0",

@@ -31,7 +31,7 @@ export const WideLinkButton = styled(Link)`
   letter-spacing: 0.2px;
   width: 100%;
   color: ${colors.greyscale.white};
-  background: ${colors.blues.primary};
+  background: ${colors.primaryColors.primary};
   display: flex;
   justify-content: center;
   align-items: center;

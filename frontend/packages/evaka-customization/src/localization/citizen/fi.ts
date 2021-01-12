@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { CitizenLocalization } from '@evaka/frontend-interface/src'
+import { CitizenLocalization } from '@evaka/frontend-customization-interfaces'
 
 const fi: CitizenLocalization = {
   header: {

@@ -58,7 +58,7 @@ const LogoutLink = styled.a`
   cursor: pointer;
   text-decoration: none;
   margin-left: 1rem;
-  color: ${colors.blues.medium};
+  color: ${colors.primaryColors.medium};
 `
 
 const Header = React.memo(function Header({ location }: RouteComponentProps) {
@@ -289,7 +289,7 @@ const NavbarLink = styled(NavLink)<NavbarLinkProps>`
   margin-left: ${(p) => (p.$noMargin ? '0' : '1rem')};
 
   &.active {
-    border-bottom: 4px solid ${colors.blues.primary};
+    border-bottom: 4px solid ${colors.primaryColors.primary};
     font-weight: 700;
     padding-bottom: 1rem;
   }

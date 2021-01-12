@@ -1,13 +1,4 @@
-export interface Colors {
-  primaryColors: {
-    dark: string
-    medium: string
-    primary: string
-    light: string
-  }
-}
-
-export interface CitizenLocalization {
+export default interface CitizenLocalization {
   header: {
     nav: {
       map: string
@@ -91,17 +82,6 @@ export interface CitizenLocalization {
         submitFailure: string
       }
       returnToPreviousPage: string
-    }
-  }
-}
-
-export default interface Customizations {
-  colors: Colors
-  localization: {
-    citizen: {
-      fi: CitizenLocalization
-      sv: CitizenLocalization
-      en: CitizenLocalization
     }
   }
 }

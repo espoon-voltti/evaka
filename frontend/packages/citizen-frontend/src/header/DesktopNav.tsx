@@ -92,11 +92,11 @@ const StyledNavItem = (component: any) => styled(component)`
   border-bottom: 4px solid transparent;
 
   &:hover {
-    border-color: ${colors.blues.primary};
+    border-color: ${colors.primaryColors.primary};
   }
 
   &.active {
-    border-color: ${colors.brandEspoo.espooTurquoise};
+    border-color: ${colors.cityBrandColors.secondary};
   }
 `
 
@@ -118,7 +118,7 @@ const RoundIconBackground = styled.div`
   display: inline-flex;
   justify-content: center;
   align-items: center;
-  background: ${colors.brandEspoo.espooTurquoise};
+  background: ${colors.cityBrandColors.secondary};
   width: 2.5rem;
   height: 2.5rem;
   min-width: 2.5rem;
@@ -228,7 +228,7 @@ const LanguageDropDownButton = styled.button<{ selected: boolean }>`
   width: 100%;
 
   &:hover {
-    background: ${colors.blues.light};
+    background: ${colors.primaryColors.light};
   }
 `
 

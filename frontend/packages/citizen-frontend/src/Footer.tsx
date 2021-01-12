@@ -38,6 +38,6 @@ const FooterItem = styled.div`
 `
 
 const FooterLink = styled.a`
-  color: ${colors.brandEspoo.espooBlue};
+  color: ${colors.cityBrandColors.primary};
   text-decoration: none;
 `

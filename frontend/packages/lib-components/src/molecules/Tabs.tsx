@@ -76,14 +76,14 @@ const TabContainer = styled(NavLink)<TabContainerProps>`
 
   &.active {
     background-color: ${(p) =>
-      p.$mobile ? colors.greyscale.white : `${colors.blues.light}33`};
+      p.$mobile ? colors.greyscale.white : `${colors.primaryColors.light}33`};
     border-bottom: ${(p) =>
-      p.$mobile ? `3px solid ${colors.blues.medium}` : 'none'};
+      p.$mobile ? `3px solid ${colors.primaryColors.medium}` : 'none'};
 
     span {
       div {
         color: ${(p) =>
-          p.$mobile ? colors.blues.medium : colors.greyscale.dark};
+          p.$mobile ? colors.primaryColors.medium : colors.greyscale.dark};
       }
     }
   }

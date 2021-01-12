@@ -1,6 +1,6 @@
 {
-  "name": "trevaka-example",
-  "description": "Tampere implementation of interfaces for customizing eVaka frontend",
+  "name": "@evaka/evaka-customization",
+  "description": "Espoo implementation of interfaces for customizing eVaka frontend",
   "version": "1.0.0",
   "private": true,
   "scripts": {
@@ -9,7 +9,7 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
-    "@evaka/frontend-interface": "1.0.0"
+    "@evaka/frontend-customization-interfaces": "1.0.0"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^3.1.0",

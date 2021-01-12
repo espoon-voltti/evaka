@@ -51,18 +51,18 @@ export default function AbsenceSelector({
           <CustomButton
             backgroundColor={
               absenceType === selectedAbsenceType
-                ? colors.blues.medium
-                : colors.blues.light
+                ? colors.primaryColors.medium
+                : colors.primaryColors.light
             }
             borderColor={
               absenceType === selectedAbsenceType
-                ? colors.blues.medium
-                : colors.blues.light
+                ? colors.primaryColors.medium
+                : colors.primaryColors.light
             }
             color={
               absenceType === selectedAbsenceType
                 ? colors.greyscale.white
-                : colors.blues.dark
+                : colors.primaryColors.dark
             }
             key={absenceType}
             text={i18n.absences.absenceTypes[absenceType]}

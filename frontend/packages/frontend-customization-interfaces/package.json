@@ -1,5 +1,5 @@
 {
-  "name": "@evaka/frontend-interface",
+  "name": "@evaka/frontend-customization-interfaces",
   "description": "Interfaces for customizing eVaka frontend",
   "version": "1.0.0",
   "private": true,

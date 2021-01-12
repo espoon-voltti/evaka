@@ -36,7 +36,7 @@ export const WideLinkButton = styled.a`
   letter-spacing: 0.2px;
   width: 100%;
   color: ${colors.greyscale.white};
-  background: ${colors.blues.primary};
+  background: ${colors.primaryColors.primary};
   display: flex;
   justify-content: center;
   align-items: center;
@@ -64,7 +64,7 @@ const PhaseTitle = styled.h1`
   font-size: 20px;
   line-height: 30px;
   text-align: center;
-  color: ${colors.blues.dark};
+  color: ${colors.primaryColors.dark};
 `
 
 export const ResponseKey = styled.div`

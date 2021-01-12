@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { createContext, useContext, useMemo, useState } from 'react'
-import customizations from 'Theme/src'
+import customizations from '@evaka/evaka-customization'
 
 export const langs = ['fi', 'sv', 'en'] as const
 

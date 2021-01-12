@@ -46,7 +46,7 @@ const NoMarginTitle = styled(Title)`
   display: flex;
   justify-content: center;
   align-items: center;
-  background: ${colors.blues.primary};
+  background: ${colors.primaryColors.primary};
   color: ${colors.greyscale.white};
 
   button {

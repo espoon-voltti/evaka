@@ -43,7 +43,7 @@ const IconBox = styled.div<{ type: AttendanceStatus }>`
       case 'ABSENT':
         return colors.greyscale.dark
       case 'DEPARTED':
-        return colors.blues.primary
+        return colors.primaryColors.primary
       case 'PRESENT':
         return colors.accents.green
       case 'COMING':
@@ -87,12 +87,12 @@ export default React.memo(function ChildListItem({
             type === 'ABSENT'
               ? colors.greyscale.dark
               : type === 'DEPARTED'
-              ? colors.blues.primary
+              ? colors.primaryColors.primary
               : type === 'PRESENT'
               ? colors.accents.green
               : type === 'COMING'
               ? colors.accents.water
-              : colors.blues.medium
+              : colors.primaryColors.medium
           }
           size="XL"
         />
@@ -118,7 +118,11 @@ export default React.memo(function ChildListItem({
             </Time>
           </div>
           {attendanceChild.backup && (
-            <RoundIcon content="V" size="m" color={colors.blues.primary} />
+            <RoundIcon
+              content="V"
+              size="m"
+              color={colors.primaryColors.primary}
+            />
           )}
         </DetailsRow>
       </ChildBoxInfo>

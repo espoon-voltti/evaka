@@ -2,72 +2,75 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { CitizenLocalization } from '@evaka/frontend-interface/src'
+import { CitizenLocalization } from '@evaka/frontend-customization-interfaces'
 
-const sv: CitizenLocalization = {
+const en: CitizenLocalization = {
   header: {
     nav: {
-      map: 'Karta',
-      applications: 'Ansökningar',
-      decisions: 'Beslut',
-      newDecisions: 'Ny Beslut'
+      map: 'Map',
+      applications: 'Applications',
+      decisions: 'Decisions',
+      newDecisions: 'New Decisions'
     },
     lang: {
       fi: 'Suomeksi',
       sv: 'På svenska',
       en: 'In English'
     },
-    logout: 'Logga ut'
+    logout: 'Log out'
   },
   footer: {
-    espooLabel: '© Esbo stad',
-    privacyPolicy: 'Dataskyddsbeskrivningar',
+    espooLabel: '© City of Espoo',
+    privacyPolicy: 'Privacy Notices',
     privacyPolicyLink:
-      'https://www.esbo.fi/sv-FI/Etjanster/Dataskydd/Dataskyddsbeskrivningar',
-    sendFeedback: 'Ge feedback',
+      'https://www.espoo.fi/en-US/Eservices/Data_protection/Privacy_Notices',
+    sendFeedback: 'Give feedback',
     sendFeedbackLink:
-      'https://easiointi.espoo.fi/eFeedback/sv/Feedback/20-S%C3%A4hk%C3%B6iset%20asiointipalvelut'
+      'https://easiointi.espoo.fi/eFeedback/en/Feedback/20-S%C3%A4hk%C3%B6iset%20asiointipalvelut'
   },
   decisions: {
-    title: 'Beslut',
+    title: 'Decisions',
     summary:
       'Tälle sivulle saapuvat lapsen varhaiskasvatus-, esiopetus- ja kerhohakemuksiin liittyvät päätökset. Uuden päätöksen saapuessa sinun tulee kahden viikon sisällä vastata, hyväksytkö vai hylkäätkö lapselle tarjotun paikan.',
-    unconfirmedDecisions: (n: number) => `${n} beslut inväntar bekräftelse`,
+    unconfirmedDecisions: (n: number) =>
+      `${n} ${
+        n === 1 ? 'decision is' : 'decisions are'
+      } waiting for confirmation`,
     pageLoadError: 'Tietojen hakeminen ei onnistunut',
     applicationDecisions: {
-      decision: 'Beslut om',
+      decision: 'Decision of',
       type: {
-        CLUB: 'klubbverksamhet',
-        DAYCARE: 'småbarnspedagogik',
-        DAYCARE_PART_TIME: 'deldag småbarnspedagogik',
-        PRESCHOOL: 'förskola',
+        CLUB: 'club',
+        DAYCARE: 'early childhood education',
+        DAYCARE_PART_TIME: 'part-day early childhood education',
+        PRESCHOOL: 'pre-primary education',
         PRESCHOOL_DAYCARE:
-          'småbarnspedagogik i samband med förskoleundervisningen',
-        PREPARATORY_EDUCATION: 'förberedande undervisning'
+          'early childhood education related to pre-primary education',
+        PREPARATORY_EDUCATION: 'preparatory education'
       },
-      childName: 'Barnets namn',
-      unit: 'Toimipaikka',
+      childName: "Child's name",
+      unit: 'Unit',
       period: 'Ajalle',
-      sentDate: 'Beslutsdatum',
-      resolved: 'Bekräftat',
+      sentDate: 'Decision sent',
+      resolved: 'Decision confirmed',
       statusLabel: 'Status',
       summary:
         'Päätöksessä ilmoitettu paikka / ilmoitetut paikat tulee joko hyväksyä tai hylätä välittömästi, viimeistään kahden viikon kuluessa päätöksen saapumisesta.',
       status: {
-        PENDING: 'Bekräftas av vårdnadshavaren',
-        ACCEPTED: 'Bekräftad',
-        REJECTED: 'Avvisade'
+        PENDING: 'Waiting for confirmation from the guardian',
+        ACCEPTED: 'Confirmed',
+        REJECTED: 'Rejected'
       },
-      openPdf: 'Visa beslut',
+      openPdf: 'Show the decision',
       confirmationInfo: {
         preschool:
-          'Du ska omedelbart eller senast två veckor från mottagandet av detta beslut, ta emot eller annullera platsen. Du kan ta emot eller annullera platsen elektroniskt på adressen espoonvarhaiskasvatus.fi (kräver identifiering) eller per post.',
+          'You must either accept or reject the place proposed in the decision of pre-primary education, preparatory education and/or early childhood education related to pre-primary education within two weeks of receiving this notification. If you have applied for several services, you will receive separate decisions for each of them that require your action.',
         default:
-          'Du ska omedelbart eller senast två veckor från mottagandet av ett beslut ta emot eller annullera platsen.'
+          'You must either accept or reject the place proposed in the decision within two weeks of receiving this notification.'
       },
       goToConfirmation:
-        'Gå till beslutet för att läsa det och svara om du tar emot eller annullerar platsen.',
-      confirmationLink: 'Granska och bekräfta beslutet',
+        'Please open the decision and respond whether you will accept or reject the place.',
+      confirmationLink: 'Review and confirm the decision',
       response: {
         title: 'Paikan hyväksyminen tai hylkääminen',
         accept1: 'Otamme paikan vastaan',
@@ -103,4 +106,4 @@ const sv: CitizenLocalization = {
   }
 }
 
-export default sv
+export default en

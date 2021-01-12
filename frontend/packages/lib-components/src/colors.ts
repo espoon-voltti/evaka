@@ -2,47 +2,18 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import customizations from 'Theme/src/index'
+import customizations from '@evaka/evaka-customization'
 
-export const espooBrandColors = {
-  espooBlue: '#0050bb',
-  espooTurquoise: '#249fff'
-}
+export const cityBrandColors = customizations.colors.cityBrandColors
+export const primaryColors = customizations.colors.primaryColors
+export const greyscale = customizations.colors.greyscale
+export const accentColors = customizations.colors.accents
 
-export const blueColors = customizations.colors.primaryColors
+const colors = customizations.colors
 
-export const greyscale = {
-  darkest: '#0f0f0f',
-  dark: '#6e6e6e',
-  medium: '#b1b1b1',
+export default colors
 
-  lighter: '#d8d8d8',
-  lightest: '#f5f5f5',
-  white: '#ffffff'
-}
-
-export const accentColors = {
-  orange: '#ff7300',
-  orangeDark: '#b85300',
-  green: '#c6db00',
-  greenDark: '#6e7a00',
-  water: '#9fc1d3',
-  yellow: '#ffce00',
-  red: '#db0c41',
-  petrol: '#1f6390',
-  emerald: '#038572',
-  violet: '#9d55c3'
-}
-
-const colors = {
-  brandEspoo: espooBrandColors,
-  blues: blueColors,
-  primary: blueColors.primary,
-  primaryHover: blueColors.medium,
-  primaryActive: blueColors.dark,
-  greyscale: greyscale,
-  accents: accentColors
-}
+// todo: the below colors could be thought out again
 
 export const absenceColours = {
   UNKNOWN_ABSENCE: colors.greyscale.darkest,
@@ -60,10 +31,10 @@ type AbsenceType = keyof typeof absenceColours
 
 export const absenceBackgroundColours: { [k in AbsenceType]: string } = {
   UNKNOWN_ABSENCE: colors.accents.green,
-  OTHER_ABSENCE: colors.blues.dark,
+  OTHER_ABSENCE: colors.primaryColors.dark,
   SICKLEAVE: colors.accents.violet,
-  PLANNED_ABSENCE: colors.blues.light,
-  PARENTLEAVE: colors.blues.primary,
+  PLANNED_ABSENCE: colors.primaryColors.light,
+  PARENTLEAVE: colors.primaryColors.primary,
   FORCE_MAJEURE: colors.accents.red,
   TEMPORARY_RELOCATION: colors.accents.orange,
   TEMPORARY_VISITOR: colors.accents.yellow,
@@ -72,14 +43,12 @@ export const absenceBackgroundColours: { [k in AbsenceType]: string } = {
 
 export const absenceBorderColours: { [k in AbsenceType]: string } = {
   UNKNOWN_ABSENCE: colors.accents.green,
-  OTHER_ABSENCE: colors.blues.dark,
+  OTHER_ABSENCE: colors.primaryColors.dark,
   SICKLEAVE: colors.accents.violet,
-  PLANNED_ABSENCE: colors.blues.light,
-  PARENTLEAVE: colors.blues.primary,
+  PLANNED_ABSENCE: colors.primaryColors.light,
+  PARENTLEAVE: colors.primaryColors.primary,
   FORCE_MAJEURE: colors.accents.red,
   TEMPORARY_RELOCATION: colors.accents.orange,
   TEMPORARY_VISITOR: colors.accents.yellow,
   PRESENCE: colors.greyscale.white
 }
-
-export default colors

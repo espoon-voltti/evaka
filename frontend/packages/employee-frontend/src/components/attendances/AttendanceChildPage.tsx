@@ -123,12 +123,12 @@ export default React.memo(function AttendanceChildPage() {
                     child.status === 'ABSENT'
                       ? colors.greyscale.dark
                       : child.status === 'DEPARTED'
-                      ? colors.blues.medium
+                      ? colors.primaryColors.medium
                       : child.status === 'PRESENT'
                       ? colors.accents.green
                       : child.status === 'COMING'
                       ? colors.accents.water
-                      : colors.blues.medium
+                      : colors.primaryColors.medium
                   }
                   size="XXL"
                 />
