@@ -18,7 +18,7 @@ ENV SECURITYTXT_CONTACTS 'mailto:fake@fake.test;mailto:another@fake.test'
 ENV SECURITYTXT_LANGUAGES fi,se,en
 ENV STATIC_FILES_ENDPOINT_URL http://fake.test
 
-RUN apk add --no-cache ruby=2.7.1-r3
+RUN apk add --no-cache 'ruby=~2.7'
 
 COPY proxy_params /etc/nginx/proxy_params
 COPY nginx.conf.template /etc/nginx/conf.d/evaka-nginx.conf.template
@@ -34,7 +34,7 @@ LABEL maintainer="https://github.com/espoon-voltti/evaka"
 ENV NGINX_ENV local
 ENV TZ UTC
 
-RUN apk add --no-cache ruby=2.7.1-r3
+RUN apk add --no-cache 'ruby=~2.7'
 
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
