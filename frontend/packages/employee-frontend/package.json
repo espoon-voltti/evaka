@@ -24,7 +24,7 @@
     "@types/react-datepicker": "2.11.0",
     "@types/react-tooltip": "^3.11.0",
     "@types/styled-components": "^5.1.0",
-    "axios": "^0.19.2",
+    "axios": "^0.21.1",
     "chart.js": "^2.9.3",
     "chartjs-adapter-date-fns": "^1.0.0",
     "classnames": "^2.2.6",

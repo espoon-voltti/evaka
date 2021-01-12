@@ -26,7 +26,7 @@
     "@fortawesome/vue-fontawesome": "2.0.0",
     "@sentry/browser": "^5.11.1",
     "@sentry/integrations": "^5.11.1",
-    "axios": "^0.19.2",
+    "axios": "^0.21.1",
     "buefy": "0.7.10",
     "bulma": "0.7.5",
     "classnames": "^2.2.6",

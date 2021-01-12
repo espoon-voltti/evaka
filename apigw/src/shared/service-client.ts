@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import express from 'express'
-import axios, { AxiosError } from 'axios'
+import axios from 'axios'
 import { evakaServiceUrl } from './config'
 import { createAuthHeader } from './auth'
 import { SamlUser } from './routes/auth/saml/types'
@@ -75,10 +75,6 @@ export interface PersonIdentityRequest {
   socialSecurityNumber: string
   firstName: string
   lastName: string
-}
-
-export function isAxiosError(e: unknown): e is AxiosError {
-  return !!(e as AxiosError).isAxiosError
 }
 
 export async function getOrCreateEmployee(
@@ -164,7 +160,7 @@ export async function identifyMobileDevice(
     )
     return data
   } catch (e: unknown) {
-    if (isAxiosError(e) && e.response?.status === 404) {
+    if (axios.isAxiosError(e) && e.response?.status === 404) {
       return undefined
     } else {
       throw e
@@ -185,7 +181,7 @@ export async function getMobileDevice(
     )
     return data
   } catch (e: unknown) {
-    if (isAxiosError(e) && e.response?.status === 404) {
+    if (axios.isAxiosError(e) && e.response?.status === 404) {
       return undefined
     } else {
       throw e
