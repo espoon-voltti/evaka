@@ -68,7 +68,7 @@ function createLoginHandler({
       (err: any, user: SamlUser | undefined) => {
         if (err || !user) {
           const description =
-            parseDescriptionFromSamlError(err) || 'Could not parse SAML error.'
+            parseDescriptionFromSamlError(err) || 'Could not parse SAML error'
           logAuditEvent(
             `evaka.saml.${strategyName}.sign_in_failed`,
             req,
