@@ -29,9 +29,9 @@ import '@/api/error-interceptor'
 import { i18n } from '@/localization/lang'
 import * as Sentry from '@sentry/browser'
 import * as Integrations from '@sentry/integrations'
+import { polyfill as smoothScrollPolyfill } from 'seamless-scroll-polyfill'
 import { getEnvironment } from '@evaka/lib-common/src/utils/helpers'
 import { config } from '@evaka/enduser-frontend/src/config'
-import { polyfill as smoothScrollPolyfill } from 'seamless-scroll-polyfill'
 
 // Load Sentry as early as possible to catch all issues
 Sentry.init({
