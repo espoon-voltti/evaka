@@ -1,5 +1,33 @@
+// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
+
 import LocalDate from '@evaka/lib-common/src/local-date'
 import { UUID } from '@evaka/lib-common/src/types'
+import { JsonOf } from '@evaka/lib-common/src/json'
+
+export type DecisionType =
+  | 'CLUB'
+  | 'DAYCARE'
+  | 'DAYCARE_PART_TIME'
+  | 'PRESCHOOL'
+  | 'PRESCHOOL_DAYCARE'
+  | 'PREPARATORY_EDUCATION'
+
+export type DecisionStatus = 'PENDING' | 'ACCEPTED' | 'REJECTED'
+
+export function deserializeApplicationDecisions(
+  json: JsonOf<ApplicationDecisions>
+): ApplicationDecisions {
+  return {
+    ...json,
+    decisions: json.decisions.map((decision) => ({
+      ...decision,
+      sentDate: LocalDate.parseIso(decision.sentDate),
+      resolved: LocalDate.parseNullableIso(decision.resolved)
+    }))
+  }
+}
 
 export interface ApplicationDecisions {
   applicationId: UUID
@@ -15,13 +43,14 @@ export interface DecisionSummary {
   resolved: LocalDate | null
 }
 
-export type DecisionType =
-  | 'CLUB'
-  | 'DAYCARE'
-  | 'DAYCARE_PART_TIME'
-  | 'PRESCHOOL'
-  | 'PRESCHOOL_DAYCARE'
-  | 'PREPARATORY_EDUCATION'
+export function deserializeDecision(json: JsonOf<Decision>): Decision {
+  return {
+    ...json,
+    startDate: LocalDate.parseIso(json.startDate),
+    endDate: LocalDate.parseIso(json.endDate),
+    sentDate: LocalDate.parseIso(json.sentDate)
+  }
+}
 
 export interface Decision {
   id: UUID
@@ -37,8 +66,6 @@ export interface Decision {
   sentDate: LocalDate
   status: DecisionStatus
 }
-
-export type DecisionStatus = 'PENDING' | 'ACCEPTED' | 'REJECTED'
 
 export interface DecisionUnit {
   id: UUID

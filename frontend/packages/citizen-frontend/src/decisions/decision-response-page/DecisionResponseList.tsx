@@ -25,67 +25,46 @@ import InlineButton from '@evaka/lib-components/src/atoms/buttons/InlineButton'
 import { faChevronLeft, faExclamation } from '@evaka/lib-icons'
 import FormModal from '@evaka/lib-components/src/molecules/modals/FormModal'
 import DecisionResponse from './DecisionResponse'
+import { decisionOrderComparator } from '~decisions/shared'
+
+const HorizontalLine = styled.hr`
+  margin-block-start: ${defaultMargins.XL};
+  margin-block-end: ${defaultMargins.XL};
+  border: 1px solid ${colors.greyscale.lighter};
+`
 
 export default React.memo(function DecisionResponseList() {
   const { applicationId } = useParams<{ applicationId: UUID }>()
+  const t = useTranslation()
+  const router = useHistory()
+
   const [decisionsRequest, setDecisionsRequest] = useState<Result<Decision[]>>(
     Loading.of()
   )
-  const t = useTranslation()
-  const unconfirmedDecisionsCount = decisionsRequest.isSuccess
-    ? decisionsRequest.value.filter(({ status }) => status === 'PENDING').length
-    : 0
-
-  const loadDecisions = useRestApi(getApplicationDecisions, setDecisionsRequest)
-  const isDecisionBlocked = (decision: Decision, allDecisions: Decision[]) =>
-    decision.type === 'PRESCHOOL_DAYCARE' &&
-    !allDecisions.find(
-      (decision) =>
-        ['PRESCHOOL', 'PREPARATORY_EDUCATION'].includes(decision.type) &&
-        decision.status === 'ACCEPTED'
-    )
-  const isRejectCascaded = (decision: Decision, allDecisions: Decision[]) =>
-    ['PRESCHOOL', 'PREPARATORY_EDUCATION'].includes(decision.type) &&
-    allDecisions.find(
-      (d) => d.type === 'PRESCHOOL_DAYCARE' && d.status === 'PENDING'
-    ) !== undefined
-
   const [
     displayDecisionWithNoResponseWarning,
     setDisplayDecisionWithNoResponseWarning
   ] = useState<boolean>(false)
+
+  const loadDecisions = useRestApi(getApplicationDecisions, setDecisionsRequest)
+  useEffect(() => loadDecisions(applicationId), [applicationId])
+
+  const unconfirmedDecisionsCount = decisionsRequest.isSuccess
+    ? decisionsRequest.value.filter(({ status }) => status === 'PENDING').length
+    : 0
+
   const handleReturnToPreviousPage = () => {
-    const warnAboutMissingResponse = decisionsRequest.isSuccess
-      ? decisionsRequest.value.length > 1 &&
-        !!decisionsRequest.value.find(
-          (decision) => decision.status === 'PENDING'
-        ) &&
-        !!decisionsRequest.value.find(
-          (decision) => decision.status !== 'PENDING'
-        )
-      : false
+    const warnAboutMissingResponse =
+      decisionsRequest.isSuccess &&
+      decisionsRequest.value.length > 1 &&
+      !!decisionsRequest.value.find((d) => d.status === 'PENDING')
+
     if (warnAboutMissingResponse) {
       setDisplayDecisionWithNoResponseWarning(true)
     } else {
       router.push('/decisions')
     }
   }
-
-  const decisionOrderComparator = (
-    decisionA: Decision,
-    decisionB: Decision
-  ) => {
-    if (decisionA.type === 'PRESCHOOL_DAYCARE') {
-      return 1
-    } else if (decisionB.type === 'PRESCHOOL_DAYCARE') {
-      return -1
-    } else {
-      return 0
-    }
-  }
-
-  useEffect(() => loadDecisions(applicationId), [applicationId])
-  const router = useHistory()
 
   return (
     <Container>
@@ -98,18 +77,18 @@ export default React.memo(function DecisionResponseList() {
       <Gap size="s" />
       <ContentArea opaque>
         <H1>{t.decisions.title}</H1>
-        {decisionsRequest?.isLoading && <SpinnerSegment />}
-        {decisionsRequest?.isFailure && (
+        {decisionsRequest.isLoading && <SpinnerSegment />}
+        {decisionsRequest.isFailure && (
           <ErrorSegment
             title={t.decisions.applicationDecisions.errors.pageLoadError}
           />
         )}
-        {decisionsRequest?.isSuccess && (
+        {decisionsRequest.isSuccess && (
           <div>
             <P width="800px">{t.decisions.applicationDecisions.summary}</P>
             {unconfirmedDecisionsCount > 0 ? (
               <AlertBox
-                message={t.decisions.unconfimedDecisions(
+                message={t.decisions.unconfirmedDecisions(
                   unconfirmedDecisionsCount
                 )}
                 thin
@@ -180,8 +159,16 @@ export default React.memo(function DecisionResponseList() {
   )
 })
 
-const HorizontalLine = styled.hr`
-  margin-block-start: ${defaultMargins.XL};
-  margin-block-end: ${defaultMargins.XL};
-  border: 1px solid ${colors.greyscale.lighter};
-`
+const isDecisionBlocked = (decision: Decision, allDecisions: Decision[]) =>
+  decision.type === 'PRESCHOOL_DAYCARE' &&
+  !allDecisions.find(
+    (decision) =>
+      ['PRESCHOOL', 'PREPARATORY_EDUCATION'].includes(decision.type) &&
+      decision.status === 'ACCEPTED'
+  )
+
+const isRejectCascaded = (decision: Decision, allDecisions: Decision[]) =>
+  ['PRESCHOOL', 'PREPARATORY_EDUCATION'].includes(decision.type) &&
+  allDecisions.find(
+    (d) => d.type === 'PRESCHOOL_DAYCARE' && d.status === 'PENDING'
+  ) !== undefined

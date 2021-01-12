@@ -32,7 +32,8 @@ const sv: Translations = {
     title: 'Beslut',
     summary:
       'Tälle sivulle saapuvat lapsen varhaiskasvatus-, esiopetus- ja kerhohakemuksiin liittyvät päätökset. Uuden päätöksen saapuessa sinun tulee kahden viikon sisällä vastata, hyväksytkö vai hylkäätkö lapselle tarjotun paikan.',
-    unconfimedDecisions: (n: number) => `${n} beslut inväntar bekräftelse`,
+    unconfirmedDecisions: (n: number) => `${n} beslut inväntar bekräftelse`,
+    pageLoadError: 'Tietojen hakeminen ei onnistunut',
     applicationDecisions: {
       decision: 'Beslut om',
       type: {
