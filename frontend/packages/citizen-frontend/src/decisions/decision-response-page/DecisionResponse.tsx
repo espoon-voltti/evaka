@@ -8,7 +8,7 @@ import { useTranslation } from '~localization'
 import LocalDate from '@evaka/lib-common/src/local-date'
 import { OverlayContext } from '~overlay/state'
 import { H2, H3, Label, P } from '@evaka/lib-components/src/typography'
-import { Gap } from '@evaka/lib-components/src/white-space'
+import { defaultMargins, Gap } from '@evaka/lib-components/src/white-space'
 import ListGrid from '@evaka/lib-components/src/layout/ListGrid'
 import RoundIcon from '@evaka/lib-components/src/atoms/RoundIcon'
 import {
@@ -23,6 +23,7 @@ import { PdfLink } from '~decisions/PdfLink'
 import { Status, statusIcon } from '~decisions/shared'
 import { AsyncFormModal } from '@evaka/lib-components/src/molecules/modals/FormModal'
 import { faExclamation } from '@evaka/lib-icons'
+import styled from 'styled-components'
 
 interface SingleDecisionProps {
   decision: Decision
@@ -165,31 +166,38 @@ export default React.memo(function DecisionResponse({
             <Gap size="L" />
           )}
           <FixedSpaceRow>
-            <Button
-              text={t.decisions.applicationDecisions.response.cancel}
-              onClick={handleReturnToPreviousPage}
-              disabled={blocked || submitting}
-            />
-            <Button
-              text={t.decisions.applicationDecisions.response.submit}
-              primary
-              onClick={() => {
-                if (!acceptChecked && rejectCascade) {
-                  setDisplayCascadeWarning(true)
-                } else {
-                  void onSubmit().then((res) => {
-                    if (res.isFailure) {
-                      setErrorMessage({
-                        type: 'error',
-                        title:
-                          t.decisions.applicationDecisions.errors.submitFailure
+            <ButtonContainer>
+              <SingleButtonContainer>
+                <Button
+                  text={t.decisions.applicationDecisions.response.cancel}
+                  onClick={handleReturnToPreviousPage}
+                  disabled={blocked || submitting}
+                />
+              </SingleButtonContainer>
+              <SingleButtonContainer>
+                <Button
+                  text={t.decisions.applicationDecisions.response.submit}
+                  primary
+                  onClick={() => {
+                    if (!acceptChecked && rejectCascade) {
+                      setDisplayCascadeWarning(true)
+                    } else {
+                      void onSubmit().then((res) => {
+                        if (res.isFailure) {
+                          setErrorMessage({
+                            type: 'error',
+                            title:
+                              t.decisions.applicationDecisions.errors
+                                .submitFailure
+                          })
+                        }
                       })
                     }
-                  })
-                }
-              }}
-              disabled={blocked || submitting}
-            />
+                  }}
+                  disabled={blocked || submitting}
+                />
+              </SingleButtonContainer>
+            </ButtonContainer>
           </FixedSpaceRow>
         </>
       )}
@@ -223,3 +231,14 @@ export default React.memo(function DecisionResponse({
     </React.Fragment>
   )
 })
+
+const ButtonContainer = styled.div`
+  display: flex;
+  width: 100%;
+  flex-wrap: wrap-reverse;
+  margin: -${defaultMargins['s']} 0 0 0;
+`
+
+const SingleButtonContainer = styled.div`
+  margin: ${defaultMargins['s']} 0 0 0;
+`
