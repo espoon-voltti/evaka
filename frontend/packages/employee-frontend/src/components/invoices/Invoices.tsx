@@ -29,11 +29,11 @@ import { Result } from '@evaka/lib-common/src/api'
 import { formatCents } from '../../utils/money'
 import Tooltip from '~components/common/Tooltip'
 import { StatusIconContainer } from '~components/common/StatusIconContainer'
-import { EspooColours } from '~utils/colours'
 import { SearchOrder } from '~types'
 import { SortByInvoices } from '~api/invoicing'
 import Pagination from '@evaka/lib-components/src/Pagination'
 import { InvoicesActions } from './invoices-state'
+import colors from '@evaka/lib-components/src/colors'
 
 interface Props {
   actions: InvoicesActions
@@ -291,7 +291,7 @@ const InvoiceTableBody = React.memo(function InvoiceTableBody({
                 tooltipText={`${i18n.personProfile.restrictedDetails}`}
                 place={'right'}
               >
-                <StatusIconContainer color={EspooColours.red}>
+                <StatusIconContainer color={colors.accents.red}>
                   <FontAwesomeIcon icon={faExclamation} inverse />
                 </StatusIconContainer>
               </Tooltip>

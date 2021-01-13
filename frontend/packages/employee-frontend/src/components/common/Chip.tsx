@@ -4,9 +4,9 @@
 
 import React from 'react'
 import styled from 'styled-components'
-import { customColours, EspooColours } from 'utils/colours'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faCheck } from '@evaka/lib-icons'
+import colors from '@evaka/lib-components/src/colors'
 
 export const Chips = styled.div`
   > button {
@@ -20,11 +20,10 @@ export const Chips = styled.div`
 
 const ChipContainer = styled.button<{ active: boolean }>`
   background: ${({ active }) =>
-    active ? customColours.bluePrimary : EspooColours.white};
-  color: ${({ active }) =>
-    active ? EspooColours.white : customColours.bluePrimary};
+    active ? colors.primary : colors.greyscale.white};
+  color: ${({ active }) => (active ? colors.greyscale.white : colors.primary)};
   height: 30px;
-  border: ${customColours.bluePrimary} solid 1px;
+  border: ${colors.primary} solid 1px;
   border-radius: 15px;
   padding: 0 10px;
   cursor: pointer;
@@ -49,7 +48,11 @@ function Chip({ text, active, onClick, dataQa }: Props) {
   return (
     <ChipContainer active={active} onClick={onClick} data-qa={dataQa}>
       {active && (
-        <FontAwesomeIcon icon={faCheck} color={EspooColours.white} size="lg" />
+        <FontAwesomeIcon
+          icon={faCheck}
+          color={colors.greyscale.white}
+          size="lg"
+        />
       )}
       <span>{text}</span>
     </ChipContainer>

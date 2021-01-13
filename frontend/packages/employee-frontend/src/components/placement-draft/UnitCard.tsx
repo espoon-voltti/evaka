@@ -20,8 +20,6 @@ import { useTranslation } from '~state/i18n'
 import { Loading, Result } from '@evaka/lib-common/src/api'
 import { getOccupancyRates, OccupancyResponse } from '~api/unit'
 
-import { EspooColours } from '../../utils/colours'
-
 import { faCheck } from '@evaka/lib-icons'
 
 import { formatPercentage } from '../utils'
@@ -29,6 +27,7 @@ import { Occupancy } from '~types/unit'
 import { DaycarePlacementPlan } from '~types/placementdraft'
 import { Unit } from '~state/placementdraft'
 import { UUID } from '~types'
+import colors from '@evaka/lib-components/src/colors'
 
 const MarginBox = styled.div`
   margin: 1rem;
@@ -49,7 +48,7 @@ const Card = styled.div<{ active: boolean }>`
     active &&
     `
     box-shadow: 0px 0px 6px 4px lightgray;
-    border-top: 5px solid ${EspooColours.espooBlue};
+    border-top: 5px solid ${colors.primary};
     border-width: 5px 0 0 0;
   `}
 `
@@ -65,7 +64,7 @@ const RemoveBtn = styled.a`
 `
 
 const FailText = styled.div`
-  color: ${EspooColours.red};
+  color: ${colors.accents.red};
 `
 
 const Values = styled.div`
@@ -80,7 +79,7 @@ const ValueHeading = styled.span`
 `
 
 const ValuePercentage = styled.span`
-  color: ${EspooColours.greyDark};
+  color: ${colors.greyscale.dark};
   font-size: 3rem;
 `
 

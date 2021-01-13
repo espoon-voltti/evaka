@@ -5,9 +5,9 @@
 import React from 'react'
 import styled from 'styled-components'
 import '../absences/ColorInfo.scss'
-import { AbsenceColours } from '~utils/colours'
 import { AbsenceType } from '~types/absence'
 import { useTranslation } from '~state/i18n'
+import { absenceColours } from '@evaka/lib-components/src/colors'
 
 interface InfoBallProps {
   type: AbsenceType
@@ -24,23 +24,23 @@ const InfoBall = styled.div<InfoBallProps>`
   background: ${(props: InfoBallProps) => {
     switch (props.type) {
       case 'OTHER_ABSENCE':
-        return AbsenceColours.Other
+        return absenceColours.OTHER_ABSENCE
       case 'SICKLEAVE':
-        return AbsenceColours.Sick
+        return absenceColours.SICKLEAVE
       case 'UNKNOWN_ABSENCE':
-        return AbsenceColours.Unknown
+        return absenceColours.UNKNOWN_ABSENCE
       case 'PLANNED_ABSENCE':
-        return AbsenceColours.Planned
+        return absenceColours.PLANNED_ABSENCE
       case 'TEMPORARY_RELOCATION':
-        return AbsenceColours.Relocated
+        return absenceColours.TEMPORARY_RELOCATION
       case 'TEMPORARY_VISITOR':
-        return AbsenceColours.Visitor
+        return absenceColours.TEMPORARY_VISITOR
       case 'PARENTLEAVE':
-        return AbsenceColours.Parentleave
+        return absenceColours.PARENTLEAVE
       case 'FORCE_MAJEURE':
-        return AbsenceColours.Uncharged
+        return absenceColours.FORCE_MAJEURE
       case 'PRESENCE':
-        return AbsenceColours.Presence
+        return absenceColours.PRESENCE
       default:
         return 'none'
     }

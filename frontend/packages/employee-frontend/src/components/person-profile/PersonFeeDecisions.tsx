@@ -33,8 +33,8 @@ import {
 import { FeeDecision } from '~types/invoicing'
 import { DateTd, StatusTd } from '~components/PersonProfile'
 import { formatCents } from '~utils/money'
-import { EspooColours } from '~utils/colours'
 import { DatePicker } from '@evaka/lib-components/src/molecules/DatePicker'
+import colors from '@evaka/lib-components/src/colors'
 
 interface Props {
   id: UUID
@@ -152,7 +152,7 @@ const Label = styled.label`
 `
 
 const ErrorMessage = styled.div`
-  color: ${EspooColours.red};
+  color: ${colors.accents.red};
 `
 
 const Modal = React.memo(function Modal({

@@ -39,7 +39,6 @@ import CareTypeLabel, {
   careTypesFromPlacementType
 } from '~components/common/CareTypeLabel'
 import styled from 'styled-components'
-import { EspooColours } from '~utils/colours'
 import { capitalizeFirstLetter, formatName } from '~utils'
 import { StatusIconContainer } from '~components/common/StatusIconContainer'
 import { UnitBackupCare } from '~types/child'
@@ -375,7 +374,7 @@ function Group({
                                 }
                               >
                                 <StatusIconContainer
-                                  color={EspooColours.orange}
+                                  color={colors.accents.orange}
                                 >
                                   <FontAwesomeIcon icon={faTimes} inverse />
                                 </StatusIconContainer>
@@ -388,7 +387,9 @@ function Group({
                                   </span>
                                 }
                               >
-                                <StatusIconContainer color={EspooColours.green}>
+                                <StatusIconContainer
+                                  color={colors.accents.green}
+                                >
                                   <FontAwesomeIcon icon={faCheck} inverse />
                                 </StatusIconContainer>
                               </Tooltip>

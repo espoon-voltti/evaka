@@ -6,7 +6,7 @@ import React from 'react'
 import styled from 'styled-components'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faInfo } from '@fortawesome/free-solid-svg-icons'
-import { EspooColours } from '~utils/colours'
+import colors from '@evaka/lib-components/src/colors'
 
 interface ContainerProps {
   inline: boolean
@@ -21,7 +21,7 @@ const Background = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
-  background: ${EspooColours.espooTurqoise};
+  background: ${colors.accents.water};
   height: 20px;
   width: 20px;
   border-radius: 100%;
@@ -36,7 +36,11 @@ const InfoBall = React.memo(function InfoBall({ text, inline = false }: Props) {
   return (
     <Container title={text} inline={inline}>
       <Background>
-        <FontAwesomeIcon size="xs" icon={faInfo} color={EspooColours.white} />
+        <FontAwesomeIcon
+          size="xs"
+          icon={faInfo}
+          color={colors.greyscale.white}
+        />
       </Background>
     </Container>
   )

@@ -28,11 +28,11 @@ import {
   faDiagnoses,
   faDatabase
 } from '@evaka/lib-icons'
-import { EspooColours } from '~utils/colours'
 import { RequireRole } from '~utils/roles'
 import RoundIcon from '@evaka/lib-components/src/atoms/RoundIcon'
 import { defaultMargins } from '@evaka/lib-components/src/white-space'
 import { featureFlags } from '~config'
+import colors from '@evaka/lib-components/src/colors'
 
 const ReportItems = styled.div`
   margin: 20px 0;
@@ -76,7 +76,7 @@ function Reports() {
               <TitleRow>
                 <RoundIcon
                   size="L"
-                  color={EspooColours.orange}
+                  color={colors.accents.orange}
                   content={faCopy}
                 />
                 <LinkTitle to="/reports/duplicate-people">
@@ -100,7 +100,7 @@ function Reports() {
               <TitleRow>
                 <RoundIcon
                   size="L"
-                  color={EspooColours.orange}
+                  color={colors.accents.orange}
                   content={faUsers}
                 />
                 <LinkTitle to="/reports/family-conflicts">
@@ -124,7 +124,7 @@ function Reports() {
               <TitleRow>
                 <RoundIcon
                   size="L"
-                  color={EspooColours.orange}
+                  color={colors.accents.orange}
                   content={faUserAltSlash}
                 />
                 <LinkTitle to="/reports/missing-head-of-family">
@@ -148,7 +148,7 @@ function Reports() {
               <TitleRow>
                 <RoundIcon
                   size="L"
-                  color={EspooColours.orange}
+                  color={colors.accents.orange}
                   content={faClock}
                 />
                 <LinkTitle to="/reports/missing-service-need">
@@ -172,7 +172,7 @@ function Reports() {
               <TitleRow>
                 <RoundIcon
                   size="L"
-                  color={EspooColours.orange}
+                  color={colors.accents.orange}
                   content={faHomeAlt}
                 />
                 <LinkTitle to="/reports/partners-in-different-address">
@@ -196,7 +196,7 @@ function Reports() {
               <TitleRow>
                 <RoundIcon
                   size="L"
-                  color={EspooColours.yellow}
+                  color={colors.accents.yellow}
                   content={faHomeAlt}
                 />
                 <LinkTitle to="/reports/children-in-different-address">
@@ -213,7 +213,7 @@ function Reports() {
               <TitleRow>
                 <RoundIcon
                   size="L"
-                  color={EspooColours.bluePrimary}
+                  color={colors.primary}
                   content={faFileAlt}
                 />
                 <LinkTitle
@@ -231,7 +231,7 @@ function Reports() {
               <TitleRow>
                 <RoundIcon
                   size="L"
-                  color={EspooColours.bluePrimary}
+                  color={colors.primary}
                   content={faPercentage}
                 />
                 <LinkTitle to="/reports/occupancies">
@@ -251,11 +251,7 @@ function Reports() {
           >
             <ReportItem>
               <TitleRow>
-                <RoundIcon
-                  size="L"
-                  color={EspooColours.bluePrimary}
-                  content={faChild}
-                />
+                <RoundIcon size="L" color={colors.primary} content={faChild} />
                 <LinkTitle to="/reports/child-age-language">
                   {i18n.reports.childAgeLanguage.title}
                 </LinkTitle>
@@ -270,11 +266,7 @@ function Reports() {
           >
             <ReportItem>
               <TitleRow>
-                <RoundIcon
-                  size="L"
-                  color={EspooColours.bluePrimary}
-                  content={faChild}
-                />
+                <RoundIcon size="L" color={colors.primary} content={faChild} />
                 <LinkTitle to="/reports/service-needs">
                   {i18n.reports.serviceNeeds.title}
                 </LinkTitle>
@@ -295,7 +287,7 @@ function Reports() {
               <TitleRow>
                 <RoundIcon
                   size="L"
-                  color={EspooColours.bluePrimary}
+                  color={colors.primary}
                   content={faHandHolding}
                 />
                 <LinkTitle to="/reports/assistance-needs">
@@ -320,7 +312,7 @@ function Reports() {
               <TitleRow>
                 <RoundIcon
                   size="L"
-                  color={EspooColours.bluePrimary}
+                  color={colors.primary}
                   content={faHandHolding}
                 />
                 <LinkTitle to="/reports/assistance-actions">
@@ -337,7 +329,7 @@ function Reports() {
               <TitleRow>
                 <RoundIcon
                   size="L"
-                  color={EspooColours.bluePrimary}
+                  color={colors.primary}
                   content={faEuroSign}
                 />
                 <LinkTitle to="/reports/invoices">
@@ -352,7 +344,7 @@ function Reports() {
               <TitleRow>
                 <RoundIcon
                   size="L"
-                  color={EspooColours.bluePrimary}
+                  color={colors.primary}
                   content={faHourglassStart}
                 />
                 <LinkTitle to="/reports/starting-placements">
@@ -369,7 +361,7 @@ function Reports() {
               <TitleRow>
                 <RoundIcon
                   size="L"
-                  color={EspooColours.bluePrimary}
+                  color={colors.primary}
                   content={faHourglassEnd}
                 />
                 <LinkTitle to="/reports/ended-placements">
@@ -386,7 +378,7 @@ function Reports() {
               <TitleRow>
                 <RoundIcon
                   size="L"
-                  color={EspooColours.bluePrimary}
+                  color={colors.primary}
                   content={faDiagnoses}
                 />
                 <LinkTitle to="/reports/presences">
@@ -402,7 +394,7 @@ function Reports() {
                 <TitleRow>
                   <RoundIcon
                     size="L"
-                    color={EspooColours.bluePrimary}
+                    color={colors.primary}
                     content={faDiagnoses}
                   />
                   <LinkTitle
@@ -423,7 +415,7 @@ function Reports() {
               <TitleRow>
                 <RoundIcon
                   size="L"
-                  color={EspooColours.bluePrimary}
+                  color={colors.primary}
                   content={faDatabase}
                 />
                 <LinkTitle to="/reports/raw">
@@ -438,7 +430,7 @@ function Reports() {
               <TitleRow>
                 <RoundIcon
                   size="L"
-                  color={EspooColours.orange}
+                  color={colors.accents.orange}
                   content={faUsers}
                 />
                 <LinkTitle

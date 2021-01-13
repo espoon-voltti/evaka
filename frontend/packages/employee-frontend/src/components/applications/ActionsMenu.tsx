@@ -7,8 +7,8 @@ import styled from 'styled-components'
 import { faEllipsisVAlt } from '@evaka/lib-icons'
 import IconButton from '@evaka/lib-components/src/atoms/buttons/IconButton'
 import useCloseOnOutsideClick from '@evaka/lib-components/src/utils/useCloseOnOutsideClick'
-import { EspooColours } from '~utils/colours'
 import { Action } from '~components/applications/ApplicationActions'
+import colors from '@evaka/lib-components/src/colors'
 
 type Props = {
   actions: Action[]
@@ -86,6 +86,6 @@ const MenuItem = styled.span`
   cursor: pointer;
 
   &:hover {
-    color: ${EspooColours.grey};
+    color: ${colors.greyscale.medium};
   }
 `

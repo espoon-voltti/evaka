@@ -17,8 +17,8 @@ import {
 } from '../../types/invoicing'
 import { getVoucherValueDecisionPdfUrl } from '../../api/invoicing'
 import WarningLabel from '~components/common/WarningLabel'
-import { EspooColours } from '~utils/colours'
 import { formatName } from '~utils'
+import colors from '@evaka/lib-components/src/colors'
 
 type Props = {
   id: string
@@ -130,7 +130,7 @@ const TitleRow = styled.div`
 `
 
 const DisabledLink = styled.span`
-  color: ${EspooColours.grey};
+  color: ${colors.greyscale.medium};
 `
 
 const Cursive = styled.span`

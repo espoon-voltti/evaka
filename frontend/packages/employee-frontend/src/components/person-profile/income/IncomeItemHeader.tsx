@@ -7,8 +7,8 @@ import styled from 'styled-components'
 import { faChevronLeft, faChevronDown, faPen, faTrash } from '@evaka/lib-icons'
 import IconButton from '@evaka/lib-components/src/atoms/buttons/IconButton'
 import Title from '@evaka/lib-components/src/atoms/Title'
-import { EspooColours } from '~utils/colours'
 import { FixedSpaceRow } from '@evaka/lib-components/src/layout/flex-helpers'
+import colors from '@evaka/lib-components/src/colors'
 
 const Container = styled.div`
   display: flex;
@@ -27,7 +27,7 @@ const Button = styled(IconButton)`
 `
 
 const ToggleButton = styled(Button)`
-  color: ${EspooColours.greyDark};
+  color: ${colors.greyscale.dark};
 `
 
 const Row = styled(FixedSpaceRow)`

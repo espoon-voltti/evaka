@@ -17,8 +17,8 @@ import {
   PlacementDraft,
   PlacementDraftPlacement
 } from '~types/placementdraft'
-import { EspooColours } from '~utils/colours'
 import FiniteDateRange from '@evaka/lib-common/src/finite-date-range'
+import colors from '@evaka/lib-components/src/colors'
 
 const DateRow = styled.div`
   display: flex;
@@ -59,13 +59,13 @@ const OverlapError = styled.span`
   font-size: 12px;
   font-style: italic;
   font-weight: normal;
-  color: ${EspooColours.greyDark};
+  color: ${colors.greyscale.dark};
   margin-bottom: auto;
   margin-top: auto;
 
   svg {
     font-size: 1rem;
-    color: ${EspooColours.orange};
+    color: ${colors.accents.orange};
     margin-left: 10px;
     margin-right: 10px;
   }

@@ -5,7 +5,7 @@
 import React from 'react'
 import ReactTooltip from 'react-tooltip'
 import styled from 'styled-components'
-import { EspooColours } from '~utils/colours'
+import colors from '@evaka/lib-components/src/colors'
 
 interface Props {
   children: React.ReactNode
@@ -20,29 +20,29 @@ const ContentWrapper = styled.div`
   width: fit-content;
 
   .type-dark {
-    background: ${EspooColours.greyDark};
-    color: ${EspooColours.white};
+    background: ${colors.greyscale.dark};
+    color: ${colors.greyscale.white};
     font-family: 'Open Sans', 'Arial', sans-serif;
     padding: 8px 12px;
 
     &.place-right {
       &:after {
-        border-right-color: ${EspooColours.greyDark};
+        border-right-color: ${colors.greyscale.dark};
       }
     }
     &.place-left {
       &:after {
-        border-left-color: ${EspooColours.greyDark};
+        border-left-color: ${colors.greyscale.dark};
       }
     }
     &.place-top {
       &:after {
-        border-top-color: ${EspooColours.greyDark};
+        border-top-color: ${colors.greyscale.dark};
       }
     }
     &.place-bottom {
       &:after {
-        border-bottom-color: ${EspooColours.greyDark};
+        border-bottom-color: ${colors.greyscale.dark};
       }
     }
   }

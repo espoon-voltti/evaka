@@ -4,7 +4,6 @@
 
 import React from 'react'
 import styled from 'styled-components'
-import { EspooColours } from '~utils/colours'
 import { useTranslation } from '~state/i18n'
 import Title from '@evaka/lib-components/src/atoms/Title'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -12,6 +11,7 @@ import { faArrowDown, faArrowUp, faEye, faEyeSlash } from '@evaka/lib-icons'
 import Tooltip from '~components/common/Tooltip'
 import { formatPercentage } from '~components/utils'
 import { OccupancyResponse } from '~api/unit'
+import colors from '@evaka/lib-components/src/colors'
 
 interface CardProps {
   color: string
@@ -22,12 +22,12 @@ const Card = styled.div<CardProps>`
   cursor: pointer;
   border-left-style: solid;
   border-left-color: ${(props) =>
-    props.active ? props.color : EspooColours.greyLight};
+    props.active ? props.color : colors.greyscale.lighter};
   border-left-width: 10px;
   width: 100%;
   margin: 10px;
   padding: 10px 10px 10px 25px;
-  box-shadow: 0px 2px 4px 1px ${EspooColours.greyLight};
+  box-shadow: 0px 2px 4px 1px ${colors.greyscale.lighter};
 `
 
 const HeaderContainer = styled.div`
@@ -78,12 +78,12 @@ export default React.memo(function OccupancyCard({
 
   const color =
     type == 'confirmed'
-      ? EspooColours.espooBlue
+      ? colors.primary
       : type == 'planned'
-      ? EspooColours.water
+      ? colors.accents.water
       : type == 'realized'
-      ? EspooColours.green
-      : EspooColours.greyLight
+      ? colors.accents.green
+      : colors.greyscale.lighter
 
   return (
     <Card color={color} active={active} onClick={() => onClick()}>
@@ -93,7 +93,7 @@ export default React.memo(function OccupancyCard({
         </Title>
         <FontAwesomeIcon
           icon={active ? faEye : faEyeSlash}
-          color={active ? EspooColours.espooBlue : EspooColours.greyLight}
+          color={active ? colors.primary : colors.greyscale.lighter}
           size="lg"
         />
       </HeaderContainer>
@@ -108,7 +108,7 @@ export default React.memo(function OccupancyCard({
               <IconContainer>
                 <FontAwesomeIcon
                   icon={faArrowDown}
-                  color={active ? color : EspooColours.greyLight}
+                  color={active ? color : colors.greyscale.lighter}
                 />
               </IconContainer>
               <Value data-qa={`occupancies-minimum-${type}`}>
@@ -125,7 +125,7 @@ export default React.memo(function OccupancyCard({
               <IconContainer>
                 <FontAwesomeIcon
                   icon={faArrowUp}
-                  color={active ? color : EspooColours.greyLight}
+                  color={active ? color : colors.greyscale.lighter}
                 />
               </IconContainer>
               <Value data-qa={`occupancies-maximum-${type}`}>

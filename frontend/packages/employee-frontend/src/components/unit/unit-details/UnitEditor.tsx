@@ -26,7 +26,6 @@ import { DaycareFields } from '~api/unit'
 import { DayOfWeek, UUID } from '~types'
 import { Result } from '@evaka/lib-common/src/api'
 import { Translations, useTranslation } from '~state/i18n'
-import { EspooColours } from '~utils/colours'
 import InlineButton from '@evaka/lib-components/src/atoms/buttons/InlineButton'
 import { faPen } from '@evaka/lib-icons'
 import { H1, H3 } from '@evaka/lib-components/src/typography'
@@ -37,6 +36,7 @@ import {
 } from '@evaka/lib-components/src/layout/flex-helpers'
 import DateRange from '@evaka/lib-common/src/date-range'
 import { FinanceDecisionHandlerOption } from '~state/invoicing-ui'
+import colors from '@evaka/lib-components/src/colors'
 
 type CareType = 'DAYCARE' | 'PRESCHOOL' | 'PREPARATORY_EDUCATION' | 'CLUB'
 type DaycareType = 'CENTRE' | 'FAMILY' | 'GROUP_FAMILY'
@@ -123,7 +123,7 @@ const FormPart = styled.div`
 `
 
 const FormError = styled.div`
-  color: ${EspooColours.red};
+  color: ${colors.accents.red};
   margin-bottom: 20px;
 `
 
