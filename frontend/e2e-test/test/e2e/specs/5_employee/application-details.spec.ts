@@ -109,8 +109,8 @@ fixture('Application - employee application details')
       restrictedDetailsGuardianApplication
     ])
   })
-  .afterEach(logConsoleMessages)
-  .afterEach(async () => {
+  .afterEach(async (t) => {
+    await logConsoleMessages(t)
     await cleanUpMessages()
     await deleteApplication(singleParentApplication.id)
     await deleteApplication(familyWithTwoGuardiansApplication.id)

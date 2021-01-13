@@ -41,8 +41,8 @@ fixture('Placement sketching report')
   .before(async () => {
     ;[fixtures, cleanUp] = await initializeAreaAndPersonData()
   })
-  .afterEach(logConsoleMessages)
-  .afterEach(async () => {
+  .afterEach(async (t) => {
+    await logConsoleMessages(t)
     if (applicationId) await deleteApplication(applicationId)
     applicationId = null
   })

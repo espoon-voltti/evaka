@@ -32,8 +32,8 @@ fixture('Employee searches applications')
   .beforeEach(async (t) => {
     await t.useRole(seppoAdminRole)
   })
-  .afterEach(logConsoleMessages)
-  .afterEach(async () => {
+  .afterEach(async (t) => {
+    await logConsoleMessages(t)
     await deleteApplication(applicationFixtureId)
   })
   .after(async () => {

@@ -34,8 +34,8 @@ fixture('Enduser application validations')
   .before(async () => {
     ;[fixtures, cleanUp] = await initializeAreaAndPersonData()
   })
-  .afterEach(logConsoleMessages)
-  .afterEach(async () => {
+  .afterEach(async (t) => {
+    await logConsoleMessages(t)
     await deleteApplication(applicationFixtureId)
   })
   .after(async () => {
