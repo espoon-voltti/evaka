@@ -18,6 +18,7 @@ import fi.espoo.evaka.application.PreferredUnit
 import fi.espoo.evaka.application.ServiceNeed
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
 import fi.espoo.evaka.daycare.CareType
+import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.invoicing.domain.PersonData
 import fi.espoo.evaka.invoicing.domain.UnitData
@@ -338,6 +339,22 @@ fun insertGeneralTestFixtures(h: Handle) {
             areaCode = testArea2Code
         )
     )
+    h.insertTestCareArea(
+        DevCareArea(
+            id = svebiTestId,
+            name = testSvebiDaycare.areaName,
+            shortName = "svenska-bildningstjanster",
+            areaCode = svebiTestCode
+        )
+    )
+    h.insertTestDaycare(
+        DevDaycare(
+            areaId = svebiTestId,
+            id = testSvebiDaycare.id,
+            name = testSvebiDaycare.name,
+            language = Language.sv
+        )
+    )
     h.insertTestDaycare(DevDaycare(areaId = testAreaId, id = testDaycare.id, name = testDaycare.name, ophOrganizerOid = defaultMunicipalOrganizerOid))
     h.insertTestDaycare(DevDaycare(areaId = testArea2Id, id = testDaycare2.id, name = testDaycare2.name))
     h.insertTestDaycare(
@@ -468,9 +485,27 @@ VALUES (
 INSERT INTO preschool_term (finnish_preschool, swedish_preschool, extended_term, application_period)
 VALUES (
     '[2021-08-11,2022-06-03]',
-    '[2021-08-11,2022-06-03]',
+    '[2021-08-13,2022-06-03]',
     '[2021-08-01,2022-06-03]',
     '[2021-01-08,2021-01-20]'
+);
+
+-- 2022-2023
+INSERT INTO preschool_term (finnish_preschool, swedish_preschool, extended_term, application_period)
+VALUES (
+    '[2022-08-11,2023-06-03]',
+    '[2022-08-13,2023-06-03]',
+    '[2022-08-01,2023-06-03]',
+    '[2022-01-08,2023-01-20]'
+);
+
+-- 2023-2024
+INSERT INTO preschool_term (finnish_preschool, swedish_preschool, extended_term, application_period)
+VALUES (
+    '[2023-08-11,2024-06-03]',
+    '[2023-08-13,2024-06-06]',
+    '[2023-08-01,2024-06-06]',
+    '[2023-01-08,2024-01-20]'
 );
         """.trimIndent()
 

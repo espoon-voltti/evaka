@@ -17,6 +17,7 @@ import fi.espoo.evaka.testDaycare2
 import fi.espoo.evaka.testDaycareNotInvoiced
 import fi.espoo.evaka.testGhostUnitDaycare
 import fi.espoo.evaka.testPurchasedDaycare
+import fi.espoo.evaka.testSvebiDaycare
 import fi.espoo.evaka.testVoucherDaycare
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -157,6 +158,7 @@ class TimeIntegrationTest : PureJdbiTest() {
         testDaycareNotInvoiced.id,
         testPurchasedDaycare.id,
         testVoucherDaycare.id,
+        testSvebiDaycare.id,
         testClub.id!!,
         testGhostUnitDaycare.id!!
     )

@@ -85,7 +85,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
         postOffice = "Espoo"
     )
     val mainPeriod = preschoolTerm2020
-    val connectedPeriod = FiniteDateRange(preschoolTerm2020.start.minusDays(15), preschoolTerm2020.end.plusDays(15))
+    val connectedPeriod = FiniteDateRange(preschoolTerm2020.start.minusDays(12), preschoolTerm2020.end.plusDays(15))
 
     @BeforeEach
     private fun beforeEach() {
