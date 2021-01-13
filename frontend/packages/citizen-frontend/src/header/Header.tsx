@@ -6,7 +6,7 @@ import React from 'react'
 import styled from 'styled-components'
 import colors from '@evaka/lib-components/src/colors'
 import { desktopMin } from '@evaka/lib-components/src/breakpoints'
-import CityLogo from '@evaka/evaka-customization/assets/city-logo.svg'
+import CityLogo from '@evaka/frontend-customization/assets/city-logo.svg'
 import DesktopNav from './DesktopNav'
 import MobileNav from './MobileNav'
 

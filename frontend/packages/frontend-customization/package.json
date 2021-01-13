@@ -1,5 +1,5 @@
 {
-  "name": "@evaka/evaka-customization",
+  "name": "@evaka/frontend-customization",
   "description": "Espoo implementation of interfaces for customizing eVaka frontend",
   "version": "1.0.0",
   "private": true,

@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import customizations from '@evaka/evaka-customization'
+import customizations from '@evaka/frontend-customization'
 
 export const cityBrandColors = customizations.colors.cityBrandColors
 export const primaryColors = customizations.colors.primaryColors

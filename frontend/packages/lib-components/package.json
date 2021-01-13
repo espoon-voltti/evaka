@@ -11,7 +11,7 @@
     "build-storybook": "build-storybook -c .storybook -o storybook-build"
   },
   "dependencies": {
-    "@evaka/evaka-customization": "1.0.0",
+    "@evaka/frontend-customization": "1.0.0",
     "@fortawesome/fontawesome-svg-core": "1.2.30",
     "@fortawesome/free-regular-svg-icons": "5.14.0",
     "@fortawesome/free-solid-svg-icons": "5.14.0",
