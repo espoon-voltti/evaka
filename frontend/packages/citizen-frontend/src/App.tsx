@@ -10,6 +10,7 @@ import Header from '~header/Header'
 import Decisions from '~decisions/decisions-page/Decisions'
 import Footer from '~Footer'
 import DecisionResponseList from '~decisions/decision-response-page/DecisionResponseList'
+import ApplicationEditor from '~applications/editor/ApplicationEditor'
 import GlobalErrorDialog from '~overlay/Error'
 import { OverlayContextProvider } from '~overlay/state'
 import Applications from '~applications/Applications'
@@ -28,6 +29,11 @@ export default function App() {
                 exact
                 path="/decisions/by-application/:applicationId"
                 component={DecisionResponseList}
+              />
+              <Route
+                exact
+                path="/applications/:applicationId/edit"
+                component={ApplicationEditor}
               />
               <Route path="/" component={RedirectToEnduser} />
             </Switch>

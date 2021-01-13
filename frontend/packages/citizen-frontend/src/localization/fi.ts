@@ -3,6 +3,9 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 export default {
+  common: {
+    return: 'Palaa'
+  },
   header: {
     nav: {
       map: 'Kartta',
@@ -26,6 +29,23 @@ export default {
     sendFeedback: 'Lähetä palautetta',
     sendFeedbackLink:
       'https://easiointi.espoo.fi/eFeedback/fi/Feedback/20-S%C3%A4hk%C3%B6iset%20asiointipalvelut'
+  },
+  applications: {
+    title: 'Hakemukset',
+    editor: {
+      heading: {
+        title: {
+          daycare: 'Varhaiskasvatushakemus'
+        },
+        info: {
+          daycare: [
+            'Varhaiskasvatusta voi hakea ympäri vuoden. Hakemus on jätettävä viimeistään neljä kuukautta ennen kuin tarvitsette paikan. Mikäli tarvitsette varhaiskasvatusta kiireellisesti työn tai opiskelujen vuoksi, tulee paikkaa hakea viimeistään kaksi viikkoa ennen.',
+            'Saatte kirjallisen päätöksen varhaiskasvatuspaikasta <a href="https://www.suomi.fi/viestit" target="_blank" rel="noreferrer">Suomi.fi-viestit</a> -palveluun tai postitse, mikäli et ole ottanut Suomi.fi -palvelua käyttöön.',
+            '* Tähdellä merkityt tiedot ovat pakollisia'
+          ]
+        }
+      }
+    }
   },
   decisions: {
     title: 'Päätökset',
@@ -99,8 +119,5 @@ export default {
       },
       returnToPreviousPage: 'Palaa'
     }
-  },
-  applications: {
-    title: 'Hakemukset'
   }
 }

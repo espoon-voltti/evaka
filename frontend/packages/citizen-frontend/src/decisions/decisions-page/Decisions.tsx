@@ -43,6 +43,7 @@ export default React.memo(function Decisions() {
       <Gap size="s" />
       <ContentArea opaque paddingVertical="L">
         <H1 noMargin>{t.decisions.title}</H1>
+        <Gap size="xs" />
         <P
           width="800px"
           dangerouslySetInnerHTML={{ __html: t.decisions.summary }}
