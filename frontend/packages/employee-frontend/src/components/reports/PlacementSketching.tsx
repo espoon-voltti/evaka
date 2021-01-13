@@ -86,6 +86,16 @@ function PlacementSketching() {
 
   const yesNo = (b: boolean) => (b ? i18n.common.yes : i18n.common.no)
 
+  const formatOtherPreferredUnits = ({
+    otherPreferredUnits,
+    requestedUnitName
+  }: PlacementSketchingRow) =>
+    otherPreferredUnits
+      ? otherPreferredUnits
+          .filter((unit) => unit !== requestedUnitName)
+          .join(',')
+      : ''
+
   return (
     <Container>
       <ReturnButton label={i18n.common.goBack} />
@@ -170,7 +180,8 @@ function PlacementSketching() {
                 assistanceNeeded: row.assistanceNeeded ? 'k' : 'e',
                 preparatoryEducation: row.preparatoryEducation ? 'k' : 'e',
                 siblingBasis: row.siblingBasis ? 'k' : 'e',
-                connectedDaycare: row.connectedDaycare ? 'k' : 'e'
+                connectedDaycare: row.connectedDaycare ? 'k' : 'e',
+                otherPreferredUnits: formatOtherPreferredUnits(row)
               }))}
               headers={[
                 { label: 'Haettu yksikkö', key: 'requestedUnitName' },
@@ -185,7 +196,8 @@ function PlacementSketching() {
                 { label: 'Liittyvä vaka', key: 'connectedDaycare' },
                 { label: 'Toivottu aloituspäivä', key: 'preferredStartDate' },
                 { label: 'Lähetyspäivä', key: 'sentDate' },
-                { label: 'Palvelualue', key: 'areaName' }
+                { label: 'Palvelualue', key: 'areaName' },
+                { label: 'Muut toiveet', key: 'otherPreferredUnits' }
               ]}
               filename={`sijoitushahmottelu_${filters.placementStartDate.formatIso()}-${
                 filters.earliestPreferredStartDate?.formatIso() ?? ''
@@ -211,6 +223,7 @@ function PlacementSketching() {
                   <Th>{i18n.application.tabTitle}</Th>
                   <Th>{i18n.reports.placementSketching.preferredStartDate}</Th>
                   <Th>{i18n.reports.common.careAreaName}</Th>
+                  <Th>{i18n.reports.placementSketching.otherPreferredUnits}</Th>
                 </Tr>
               </Thead>
               <Tbody>
@@ -253,6 +266,9 @@ function PlacementSketching() {
                     </Td>
                     <Td>{row.preferredStartDate.format()}</Td>
                     <Td data-qa={'area-name'}>{row.areaName}</Td>
+                    <Td data-qa={'other-preferred-units'}>
+                      {formatOtherPreferredUnits(row)}
+                    </Td>
                   </Tr>
                 ))}
               </Tbody>

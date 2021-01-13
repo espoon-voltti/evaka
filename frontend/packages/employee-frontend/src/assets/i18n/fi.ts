@@ -2042,7 +2042,8 @@ export const fi = {
       siblingBasis: 'sisarusperuste',
       connected: 'Liittyvä',
       preferredStartDate: 'Toivottu aloituspäivä',
-      sentDate: 'Lähetyspäivä'
+      sentDate: 'Lähetyspäivä',
+      otherPreferredUnits: 'Muut hakutoiveet'
     }
   },
   unitEditor: {
