@@ -49,7 +49,7 @@ Run integration tests:
 Run linter autofix:
 
 ```sh
-./gradlew ktlintFormat
+./gradlew formatKotlin
 ```
 
 If you want to set ktlint formatter rules as your IDEA kotlin formatting rules, run:

@@ -743,7 +743,7 @@ jobs:
             - service/build
       - run:
           working_directory: *workspace_service
-          command: ./gradlew ktlintCheck
+          command: ./gradlew lintKotlin
       - run:
           working_directory: *workspace_service
           command: ./circle-check-migrations.sh
@@ -823,7 +823,7 @@ jobs:
             - message-service/build
       - run:
           working_directory: *workspace_message_service
-          command: ./gradlew ktlintCheck
+          command: ./gradlew lintKotlin
       - notify_slack
 
   message_service_test:
