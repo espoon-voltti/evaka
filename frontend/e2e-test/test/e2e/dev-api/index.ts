@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { BaseError } from 'make-error-cause'
-import axios, { AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios'
+import axios, { AxiosRequestConfig, AxiosResponse } from 'axios'
 import config from '../config'
 import {
   Application,
@@ -31,11 +31,10 @@ import {
 export class DevApiError extends BaseError {
   constructor(cause: Error) {
     let message: string
-    if ('isAxiosError' in cause) {
-      const axiosError = cause as AxiosError
-      message = `${axiosError.message}: ${formatRequest(
-        axiosError.config
-      )}\n${formatResponse(axiosError.response)}`
+    if (axios.isAxiosError(cause)) {
+      message = `${cause.message}: ${formatRequest(
+        cause.config
+      )}\n${formatResponse(cause.response)}`
     } else {
       message = 'Dev API error'
     }

@@ -2,11 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { AxiosError } from 'axios'
-
-function isAxiosError(e: Error): e is AxiosError {
-  return !!(e as AxiosError).isAxiosError
-}
+import axios from 'axios'
 
 export interface Response<T> {
   data: T
@@ -60,7 +56,7 @@ export class Failure<T> {
   }
 
   static fromError<T>(e: Error): Failure<T> {
-    if (isAxiosError(e)) {
+    if (axios.isAxiosError(e)) {
       return new Failure(e.message, e.response?.status)
     }
     return new Failure(e.message)
