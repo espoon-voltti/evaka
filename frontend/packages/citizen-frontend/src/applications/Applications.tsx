@@ -11,9 +11,7 @@ export default React.memo(function Applications() {
     GuardianApplications[]
   >()
 
-  const getCustodianApplications = async (): Promise<
-    GuardianApplications[]
-  > => {
+  const getGuardianApplications = async (): Promise<GuardianApplications[]> => {
     const { data } = await client.get<JsonOf<GuardianApplications[]>>(
       '/citizen/applications/by-guardian'
     )
@@ -27,7 +25,7 @@ export default React.memo(function Applications() {
   }
 
   useEffect(() => {
-    void getCustodianApplications()
+    void getGuardianApplications()
       .then((applications) => {
         return applications
       })
@@ -36,12 +34,27 @@ export default React.memo(function Applications() {
 
   return (
     <div>
-      <div>HELLO {t.applications.title}</div>
-      {guardianApplications?.map((applicationSummary: GuardianApplications) => (
-        <div key={applicationSummary.childId}>
-          Application {applicationSummary.childId}
-        </div>
-      ))}
+      <div>{t.applications.title}</div>
+      <br />
+      {guardianApplications?.map(
+        (guardianApplications: GuardianApplications) => (
+          <div key={guardianApplications.childName}>
+            <span>
+              Applications for {guardianApplications.childName}:
+              {guardianApplications.applicationSummaries?.map(
+                (applicationSummary) => (
+                  <a
+                    key={applicationSummary.applicationId}
+                    href={`/citizen/applications/${applicationSummary.applicationId}`}
+                  >
+                    {applicationSummary.applicationId}{' '}
+                  </a>
+                )
+              )}
+            </span>
+          </div>
+        )
+      )}
     </div>
   )
 })

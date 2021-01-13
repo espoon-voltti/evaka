@@ -7,6 +7,6 @@ export interface GuardianApplications {
 }
 
 export interface ApplicationSummary {
-  id: string
+  applicationId: string
   sentDate: LocalDate | null
 }
