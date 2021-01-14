@@ -163,3 +163,17 @@ data class ApplicationUnitSummary(
     val preferenceOrder: Int,
     val status: ApplicationStatus
 )
+
+data class CitizenApplicationSummary(
+    val applicationId: UUID,
+    val type: String,
+    val childId: UUID,
+    val childName: String?,
+    val preferredUnitName: String?,
+    val allPreferredUnitNames: List<String>,
+    val startDate: LocalDate?,
+    val sentDate: LocalDate?,
+    val applicationStatus: ApplicationStatus,
+    val createdDate: OffsetDateTime,
+    val modifiedDate: OffsetDateTime
+)

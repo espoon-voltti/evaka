@@ -8,7 +8,8 @@ export default {
       map: 'Kartta',
       applications: 'Hakemukset',
       decisions: 'Päätökset',
-      newDecisions: 'Uusi Päätökset'
+      newDecisions: 'Uusi Päätökset',
+      newApplications: 'Uusi Hakemukset'
     },
     lang: {
       fi: 'Suomeksi',
@@ -98,5 +99,8 @@ export default {
       },
       returnToPreviousPage: 'Palaa'
     }
+  },
+  applications: {
+    title: 'Hakemukset'
   }
 }

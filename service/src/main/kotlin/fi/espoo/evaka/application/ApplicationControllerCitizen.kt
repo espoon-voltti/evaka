@@ -34,6 +34,23 @@ class ApplicationControllerCitizen(
     private val applicationStateService: ApplicationStateService,
     private val decisionService: DecisionService
 ) {
+
+    @GetMapping("/applications/by-guardian")
+    fun getGuardianApplications(
+        db: Database.Connection,
+        user: AuthenticatedUser
+    ): ResponseEntity<List<GuardianApplications>> {
+        Audit.ApplicationRead.log(targetId = user.id)
+        user.requireOneOfRoles(UserRole.END_USER)
+        return ResponseEntity.ok(
+            db.read { tx ->
+                fetchApplicationSummariesForCitizen(tx.handle, user.id)
+                    .groupBy { it.childId }
+                    .map { it -> GuardianApplications(it.key, it.value.first().childName ?: "", it.value) }
+            }
+        )
+    }
+
     @GetMapping("/decisions")
     fun getDecisions(db: Database.Connection, user: AuthenticatedUser): ResponseEntity<List<ApplicationDecisions>> {
         Audit.DecisionRead.log(targetId = user.id)
@@ -118,6 +135,12 @@ class ApplicationControllerCitizen(
         }
     }
 }
+
+data class GuardianApplications(
+    val childId: UUID,
+    val childName: String,
+    val applicationSummaries: List<CitizenApplicationSummary>
+)
 
 data class ApplicationDecisions(
     val applicationId: UUID,

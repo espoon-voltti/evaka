@@ -49,6 +49,10 @@ export default React.memo(function DesktopNav({ enduserBaseUrl }: Props) {
           <Icon icon={farGavel} />
           {t.header.nav.decisions}
         </NavItem>
+        <StyledNavLink to="/applications" data-qa={'nav-applications'}>
+          <Icon icon={farFileAlt} />
+          {t.header.nav.newApplications}
+        </StyledNavLink>
         <StyledNavLink to="/decisions" data-qa={'nav-decisions'}>
           <Icon icon={farGavel} />
           {t.header.nav.newDecisions}

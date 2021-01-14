@@ -23,6 +23,17 @@ SPDX-License-Identifier: LGPL-2.1-or-later
         <font-awesome-icon :icon="item.icon"></font-awesome-icon>
         {{ item.label | uppercase }}
       </router-link>
+
+      <a
+        v-if="showCitizenFrontendLink"
+        class="menu-item"
+        :href="newApplicationsUrl"
+        data-qa="nav-applications"
+      >
+        <font-awesome-icon :icon="['fal', 'gavel']"></font-awesome-icon>
+        {{ $t('menu.routes.newApplications') | uppercase }}
+      </a>
+
       <a
         v-if="showCitizenFrontendLink"
         class="menu-item"
@@ -158,6 +169,9 @@ SPDX-License-Identifier: LGPL-2.1-or-later
       },
       newDecisionsUrl() {
         return `${this.citizenFrontendUrl}/decisions`
+      },
+      newApplicationsUrl() {
+        return `${this.citizenFrontendUrl}/applications`
       }
     },
     methods: {

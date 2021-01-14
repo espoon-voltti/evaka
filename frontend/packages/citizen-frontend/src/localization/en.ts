@@ -10,7 +10,8 @@ const en: Translations = {
       map: 'Map',
       applications: 'Applications',
       decisions: 'Decisions',
-      newDecisions: 'New Decisions'
+      newDecisions: 'New Decisions',
+      newApplications: 'New Applications'
     },
     lang: {
       fi: 'Suomeksi',
@@ -103,6 +104,9 @@ const en: Translations = {
       },
       returnToPreviousPage: 'Palaa'
     }
+  },
+  applications: {
+    title: 'Applications'
   }
 }
 

@@ -422,6 +422,34 @@ fun fetchApplicationSummariesForChild(h: Handle, childId: UUID): List<PersonAppl
         .toList()
 }
 
+fun fetchApplicationSummariesForCitizen(h: Handle, citizenId: UUID): List<CitizenApplicationSummary> {
+    // language=SQL
+    val sql =
+        """
+        SELECT
+            a.id AS application_id, 
+            a.document->>'type' AS type,
+            a.childId, a.childName, 
+            d.name AS preferred_unit_name,
+            COALESCE((SELECT array_agg(name) as other_preferred_units
+             FROM daycare JOIN (SELECT unnest(preferredUnits) 
+                                FROM application WHERE application.id = a.id) pu ON daycare.id = pu.unnest), '{}'::text[]) AS all_preferred_unit_names,
+            a.startDate, a.sentDate, 
+            a.status AS application_status,
+            a.created AS created_date,
+            a.formmodified AS modified_date
+        FROM application_view a
+        LEFT JOIN daycare d ON a.preferredUnit = d.id
+        WHERE guardianId = :guardianId
+        ORDER BY sentDate DESC
+        """.trimIndent()
+
+    return h.createQuery(sql)
+        .bind("guardianId", citizenId)
+        .mapTo<CitizenApplicationSummary>()
+        .toList()
+}
+
 private val toPersonApplicationSummary: (ResultSet, StatementContext) -> PersonApplicationSummary = { rs, _ ->
     PersonApplicationSummary(
         applicationId = rs.getUUID("id"),
