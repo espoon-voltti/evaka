@@ -55,6 +55,7 @@ aliases:
     <<: *default_config
     environment:
       GRADLE_OPTS: '-Dorg.gradle.daemon=false -Dorg.gradle.jvmargs="-Xmx2048m"'
+      GRADLE_USER_HOME: /home/circleci/repo/.gradle-user-home
       _JAVA_OPTIONS: "-Xmx2048m"
 
   - &restore_repo
@@ -155,8 +156,6 @@ executors:
       resource_class: large
   service_executor:
     <<: *jvm_config
-    environment:
-      GRADLE_USER_HOME: /home/circleci/repo/.gradle-user-home
     docker:
       - image: *openjdk_image
         auth:
@@ -164,26 +163,9 @@ executors:
           password: $DOCKERHUB_PASSWORD
   service_test_executor:
     <<: *jvm_config
-    environment:
-      GRADLE_USER_HOME: /home/circleci/repo/.gradle-user-home
     machine:
       image: *ubuntu_machine_image
       resource_class: large
-  message_service_executor:
-    <<: *jvm_config
-    environment:
-      GRADLE_USER_HOME: /home/circleci/repo/.gradle-user-home
-    docker:
-      - image: *openjdk_image
-        auth:
-          username: $DOCKERHUB_USERNAME
-          password: $DOCKERHUB_PASSWORD
-  message_service_test_executor:
-    <<: *jvm_config
-    environment:
-      GRADLE_USER_HOME: /home/circleci/repo/.gradle-user-home
-    machine:
-      image: *ubuntu_machine_image
 
 commands:
   attach_root_workspace:
@@ -832,7 +814,7 @@ jobs:
       - notify_slack
 
   message_service_build:
-    executor: message_service_executor
+    executor: service_executor
     steps:
       - *restore_repo
       - *restore_message_service_gradle
@@ -850,7 +832,7 @@ jobs:
       - notify_slack
 
   message_service_dependency_check:
-    executor: message_service_executor
+    executor: service_executor
     steps:
       - *restore_repo
       - *restore_message_service_gradle
@@ -872,7 +854,7 @@ jobs:
       - notify_slack
 
   message_service_test:
-    executor: message_service_test_executor
+    executor: service_test_executor
     steps:
       - *restore_repo
       - attach_root_workspace
