@@ -191,13 +191,42 @@ yarn workspace @evaka/lib-common run test
 
 ### Linting
 
-All frontends are currently in the process of being migrated to ESLint from TSLint. Please refer to each package's own configuration for more details about the linting rules.
+All frontends are currently in the process of being migrated to ESLint from TSLint. Please refer to each package's own
+configuration (in `package.json` files) for more details about the linting rules. We also have some
+[custom ESLint rules](#custom-eslint-rules)
 
 ```bash
 # Lint all files
 # Add --fix to fix lint errors automatically
 yarn lint
 ```
+
+#### Custom ESLint rules
+
+For rules not covered by existing ESLint rulesets, we can create our own in [`./eslint-plugin/`](./eslint-plugin/).
+The rules are a Yarn workspace, so they can be used in a project by:
+
+1. Adding a dependency to `@evaka/eslint-plugin`, example:
+
+    ```json
+    "devDependencies": {
+      "@evaka/eslint-plugin": "0.0.1",
+    ```
+
+1. And including the plugin ruleset in ESLint configs (`package.json`), example:
+
+    ```json
+    "eslintConfig": {
+      "extends": [
+        // ...
+        "plugin:@evaka/recommended"
+      ],
+    ```
+
+Some official documentation:
+
+- [Working with Rules](https://eslint.org/docs/developer-guide/working-with-rules)
+- [Selectors](https://eslint.org/docs/developer-guide/selectors)
 
 ### Unit tests
 
