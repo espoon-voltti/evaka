@@ -29,6 +29,8 @@ import fi.espoo.evaka.shared.dev.insertTestServiceNeed
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testChild_1
+import fi.espoo.evaka.testChild_2
+import fi.espoo.evaka.testChild_3
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDecisionMaker_1
 import fi.espoo.evaka.testPurchasedDaycare
@@ -838,6 +840,47 @@ class VardaDecisionsIntegrationTest : FullApplicationTest() {
         updateDecisions(db, vardaClient)
         assertEquals(2, getVardaDecisions().size)
         assertEquals(1, mockEndpoint.decisions.size)
+    }
+
+    @Test
+    fun `decisions are sent just once when data does not change`() {
+        val period = FiniteDateRange(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 7, 31))
+
+        val decisionId = insertDecisionWithApplication(db, testChild_1, period)
+        insertServiceNeed(db, testChild_1.id, period)
+        insertVardaChild(db, testChild_1.id)
+
+        val placementId = insertPlacement(db, testChild_2.id, period)
+        insertServiceNeed(db, testChild_2.id, period)
+        insertVardaChild(db, testChild_2.id)
+
+        val temporaryPlacementId = insertPlacement(db, testChild_3.id, period)
+        insertServiceNeed(db, testChild_3.id, period, temporary = true)
+        insertVardaChild(db, testChild_3.id)
+
+        updateDecisions(db, vardaClient)
+
+        val decisionVardaId = getVardaDecisions().find { it.evakaDecisionId == decisionId }!!.vardaDecisionId
+        val placementVardaId = getVardaDecisions().find { it.evakaPlacementId == placementId }!!.vardaDecisionId
+        val temporaryPlacementVardaId =
+            getVardaDecisions().find { it.evakaPlacementId == temporaryPlacementId }!!.vardaDecisionId
+
+        updateDecisions(db, vardaClient)
+
+        val sentDecisions = mockEndpoint.decisions
+        assertNotNull(sentDecisions[decisionVardaId])
+        assertNotNull(sentDecisions[placementVardaId])
+        assertNotNull(sentDecisions[temporaryPlacementVardaId])
+
+        assertEquals(decisionVardaId, getVardaDecisions().find { it.evakaDecisionId == decisionId }!!.vardaDecisionId)
+        assertEquals(
+            placementVardaId,
+            getVardaDecisions().find { it.evakaPlacementId == placementId }!!.vardaDecisionId
+        )
+        assertEquals(
+            temporaryPlacementVardaId,
+            getVardaDecisions().find { it.evakaPlacementId == temporaryPlacementId }!!.vardaDecisionId
+        )
     }
 
     private fun getVardaDecisions() = db.read {
