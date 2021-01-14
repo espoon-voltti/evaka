@@ -602,6 +602,7 @@ export default function UnitEditor(props: Props): JSX.Element {
                 placeholderText: i18n.unitEditor.placeholder.openingDate
               }}
               onChange={(openingDate) => updateForm({ openingDate })}
+              className="inline-block"
             />
           ) : (
             form.openingDate?.format()
@@ -615,6 +616,7 @@ export default function UnitEditor(props: Props): JSX.Element {
               }}
               onCleared={() => updateForm({ closingDate: null })}
               onChange={(closingDate) => updateForm({ closingDate })}
+              className="inline-block"
             />
           ) : (
             form.closingDate?.format()

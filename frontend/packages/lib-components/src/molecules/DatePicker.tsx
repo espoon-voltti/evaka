@@ -98,6 +98,10 @@ const DatePickerContainer = styled.div`
     width: 120px;
   }
 
+  &.inline-block {
+    display: inline-block;
+  }
+
   .react-datepicker-wrapper,
   .react-datepicker__input-container {
     width: 100%;
@@ -212,7 +216,10 @@ export function DatePickerClearable({
 }: DatePickerClearableProps) {
   const ref = React.createRef<HTMLInputElement>()
   return (
-    <div className={`${type} ${className ? className : ''}`} data-qa={dataQa}>
+    <DatePickerContainer
+      className={`${type} ${className ? className : ''}`}
+      data-qa={dataQa}
+    >
       <ReactDatePicker
         {...defaultProps}
         locale={fi}
@@ -233,6 +240,6 @@ export function DatePickerClearable({
         onFocus={onFocus}
         {...options}
       />
-    </div>
+    </DatePickerContainer>
   )
 }
