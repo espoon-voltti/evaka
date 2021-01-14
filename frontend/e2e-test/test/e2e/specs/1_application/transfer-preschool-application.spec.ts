@@ -39,8 +39,8 @@ fixture('New transfer preschool application')
       }
     ])
   })
-  .afterEach(logConsoleMessages)
-  .afterEach(async () => {
+  .afterEach(async (t) => {
+    await logConsoleMessages(t)
     applicationId ? await deleteApplication(applicationId) : false
   })
   .after(async () => {

@@ -4,13 +4,15 @@
 
 module.exports = {
   rules: {
-    'no-testonly': require('./rules/no-testonly')
+    'no-testonly': require('./rules/no-testonly'),
+    'no-duplicate-testcafe-hooks': require('./rules/no-duplicate-testcafe-hooks'),
   },
   configs: {
     recommended: {
       plugins: ['@evaka'],
       rules: {
-        '@evaka/no-testonly': 'error'
+        '@evaka/no-testonly': 'error',
+        '@evaka/no-duplicate-testcafe-hooks': 'error',
       }
     }
   }

@@ -36,8 +36,8 @@ fixture('Citizen decisions')
       .with({ roles: ['SERVICE_WORKER'] })
       .save()
   })
-  .afterEach(logConsoleMessages)
-  .afterEach(async () => {
+  .afterEach(async (t) => {
+    await logConsoleMessages(t)
     await deleteApplication(applicationId)
   })
   .after(async () => {
