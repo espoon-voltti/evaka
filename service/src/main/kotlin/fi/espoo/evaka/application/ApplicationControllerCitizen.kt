@@ -51,6 +51,21 @@ class ApplicationControllerCitizen(
         )
     }
 
+    @GetMapping("/applications/{applicationId}")
+    fun getApplication(
+        db: Database.Connection,
+        user: AuthenticatedUser,
+        @PathVariable applicationId: UUID
+    ): ResponseEntity<ApplicationDetails> {
+        Audit.ApplicationRead.log(targetId = user.id, objectId = applicationId)
+        user.requireOneOfRoles(UserRole.END_USER)
+        val application = db.read { fetchApplicationDetails(it.handle, applicationId) }
+        return if (application?.guardianId == user.id && !application.hideFromGuardian)
+            ResponseEntity.ok(application)
+        else
+            throw NotFound("Application not found")
+    }
+
     @GetMapping("/decisions")
     fun getDecisions(db: Database.Connection, user: AuthenticatedUser): ResponseEntity<List<ApplicationDecisions>> {
         Audit.DecisionRead.log(targetId = user.id)
