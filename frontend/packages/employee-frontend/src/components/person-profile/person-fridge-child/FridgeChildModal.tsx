@@ -57,9 +57,10 @@ function FridgeChildModal({ headPersonId, onSuccess, parentship }: Props) {
   const [form, setForm] = useState<FridgeChildForm>(initialForm)
 
   const [errorStatusCode, setErrorStatusCode] = useState<number>()
-  const [validationResult, setValidationResult] = useState<
-    FormValidationResult
-  >()
+  const [
+    validationResult,
+    setValidationResult
+  ] = useState<FormValidationResult>()
 
   useEffect(() => {
     const fieldsValid = {

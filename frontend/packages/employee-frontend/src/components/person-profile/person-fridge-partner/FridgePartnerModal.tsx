@@ -59,9 +59,10 @@ function FridgePartnerModal({ partnership, onSuccess, headPersonId }: Props) {
   }
   const [form, setForm] = useState(initialForm)
 
-  const [validationResult, setValidationResult] = useState<
-    FormValidationResult
-  >()
+  const [
+    validationResult,
+    setValidationResult
+  ] = useState<FormValidationResult>()
   const [errorStatusCode, setErrorStatusCode] = useState<number>()
 
   useEffect(() => {

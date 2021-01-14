@@ -116,9 +116,10 @@ function PlacementDraft({ match }: RouteComponentProps<{ id: UUID }>) {
   const { setTitle, formatTitleName } = useContext<TitleState>(TitleContext)
 
   const [additionalUnits, setAdditionalUnits] = useState<Unit[]>([])
-  const [selectedUnitIsGhostUnit, setSelectedUnitIsGhostUnit] = useState<
-    boolean
-  >(false)
+  const [
+    selectedUnitIsGhostUnit,
+    setSelectedUnitIsGhostUnit
+  ] = useState<boolean>(false)
 
   useEffect(() => {
     units.isSuccess &&

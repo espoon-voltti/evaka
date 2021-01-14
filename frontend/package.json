@@ -11,7 +11,7 @@
   },
   "dependencies": {},
   "devDependencies": {
-    "prettier": "^2.0.5",
+    "prettier": "^2.2.1",
     "wsrun": "^5.2.0"
   },
   "optionalDependencies": {

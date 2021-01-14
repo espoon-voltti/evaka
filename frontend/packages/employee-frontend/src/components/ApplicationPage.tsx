@@ -53,9 +53,10 @@ function ApplicationPage({ match }: RouteComponentProps<{ id: UUID }>) {
   )
   const creatingNew = window.location.href.includes('create=true')
   const [editing, setEditing] = useState(creatingNew)
-  const [editedApplication, setEditedApplication] = useState<
-    ApplicationDetails
-  >()
+  const [
+    editedApplication,
+    setEditedApplication
+  ] = useState<ApplicationDetails>()
   const [validationErrors, setValidationErrors] = useState<
     Record<string, string>
   >({})

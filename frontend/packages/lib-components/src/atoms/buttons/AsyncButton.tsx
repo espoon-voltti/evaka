@@ -74,10 +74,14 @@ export default React.memo(function AsyncButton({
 
   const showIcon = inProgress || showSuccess || showFailure
 
-  const container = useSpring({ x: showIcon ? 1 : 0 })
-  const spinner = useSpring({ opacity: inProgress ? 1 : 0 })
-  const checkmark = useSpring({ opacity: showSuccess ? 1 : 0 })
-  const cross = useSpring({ opacity: showFailure ? 1 : 0 })
+  const container = useSpring<{ x: number }>({ x: showIcon ? 1 : 0 })
+  const spinner = useSpring<{ opacity: number }>({
+    opacity: inProgress ? 1 : 0
+  })
+  const checkmark = useSpring<{ opacity: number }>({
+    opacity: showSuccess ? 1 : 0
+  })
+  const cross = useSpring<{ opacity: number }>({ opacity: showFailure ? 1 : 0 })
 
   return (
     <StyledButton
