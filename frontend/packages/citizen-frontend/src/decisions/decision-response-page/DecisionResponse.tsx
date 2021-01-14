@@ -240,5 +240,5 @@ const ButtonContainer = styled.div`
 `
 
 const SingleButtonContainer = styled.div`
-  margin: ${defaultMargins['s']} 0 0 0;
+  margin: ${defaultMargins['s']} 0 0 ${defaultMargins['s']};
 `
