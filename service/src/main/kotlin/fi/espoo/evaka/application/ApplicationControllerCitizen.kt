@@ -46,7 +46,7 @@ class ApplicationControllerCitizen(
             db.read { tx ->
                 fetchApplicationSummariesForCitizen(tx.handle, user.id)
                     .groupBy { it.childId }
-                    .map { it -> GuardianApplications(it.key, it.value.first().childName ?: "", it.value) }
+                    .map { GuardianApplications(it.key, it.value.first().childName ?: "", it.value) }
             }
         )
     }

@@ -440,7 +440,7 @@ fun fetchApplicationSummariesForCitizen(h: Handle, citizenId: UUID): List<Citize
             a.formmodified AS modified_date
         FROM application_view a
         LEFT JOIN daycare d ON a.preferredUnit = d.id
-        WHERE guardianId = :guardianId
+        WHERE guardianId = :guardianId AND NOT a.hidefromguardian
         ORDER BY sentDate DESC
         """.trimIndent()
 
