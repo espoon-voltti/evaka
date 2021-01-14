@@ -14,7 +14,7 @@ import {
   Daycare,
   DaycareGroup,
   DaycarePlacement,
-  Decision,
+  DecisionFixture,
   EmployeeDetail,
   FeeDecision,
   FeeDecisionStatus,
@@ -429,7 +429,8 @@ const applicationForm = (
   guardian2Phone = '',
   guardian2Email = '',
   otherGuardianAgreementStatus: OtherGuardianAgreementStatus = null,
-  preferredUnits: string[] = [daycareFixture.id]
+  preferredUnits: string[] = [daycareFixture.id],
+  connectedDaycare = false
 ): ApplicationForm => ({
   type,
   additionalDetails: {
@@ -458,7 +459,7 @@ const applicationForm = (
     language: 'fi',
     restricted: false
   },
-  connectedDaycare: false,
+  connectedDaycare: type === 'preschool' && connectedDaycare,
   docVersion: 0,
   extendedCare: false,
   guardian: {
@@ -508,7 +509,8 @@ export const applicationFixture = (
   otherGuardian: ApplicationPersonDetail | undefined = undefined,
   type: 'daycare' | 'preschool' | 'club' = 'daycare',
   otherGuardianAgreementStatus: OtherGuardianAgreementStatus = null,
-  preferredUnits: string[] = [daycareFixture.id]
+  preferredUnits: string[] = [daycareFixture.id],
+  connectedDaycare = false
 ): Application => ({
   id: applicationFixtureId,
   childId: child.id,
@@ -521,7 +523,8 @@ export const applicationFixture = (
     otherGuardian?.phone,
     otherGuardian?.email,
     otherGuardianAgreementStatus,
-    preferredUnits
+    preferredUnits,
+    connectedDaycare
   ),
   checkedByAdmin: false,
   hideFromGuardian: false,
@@ -544,7 +547,7 @@ export const decisionFixture = (
   applicationId: string,
   startDate: string,
   endDate: string
-): Decision => ({
+): DecisionFixture => ({
   id: '9dd0e1ba-9b3b-11ea-bb37-0242ac130987',
   employeeId: 'SET_THIS',
   applicationId: applicationId,
@@ -1034,13 +1037,13 @@ export class EmployeeBuilder {
 }
 
 export class DecisionBuilder {
-  data: Decision
+  data: DecisionFixture
 
-  constructor(data: Decision) {
+  constructor(data: DecisionFixture) {
     this.data = data
   }
 
-  with(value: Partial<Decision>): DecisionBuilder {
+  with(value: Partial<DecisionFixture>): DecisionBuilder {
     this.data = {
       ...this.data,
       ...value

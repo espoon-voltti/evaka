@@ -6,7 +6,7 @@ import React from 'react'
 import styled from 'styled-components'
 import Button from '@evaka/lib-components/src/atoms/buttons/Button'
 import { ContentArea } from '@evaka/lib-components/src/layout/Container'
-import Link from '@evaka/lib-components/src/atoms/Link'
+import LinkWrapperInlineBlock from '@evaka/lib-components/src/atoms/LinkWrapperInlineBlock'
 import ListGrid from '@evaka/lib-components/src/layout/ListGrid'
 import RoundIcon from '@evaka/lib-components/src/atoms/RoundIcon'
 import { H2, H3, Label, P } from '@evaka/lib-components/src/typography'
@@ -122,14 +122,17 @@ const ConfirmationDialog = React.memo(function ConfirmationDialog({
         <strong>{t.decisions.applicationDecisions.goToConfirmation}</strong>
       </P>
       <Gap size="s" />
-      <Link to={`/decisions/by-application/${applicationId}`}>
+      <LinkWrapperInlineBlock
+        to={`/decisions/by-application/${applicationId}`}
+        data-qa={`response-link-${applicationId}`}
+      >
         <Button
           primary
           text={t.decisions.applicationDecisions.confirmationLink}
           onClick={noop}
           dataQa="button-confirm-decisions"
         />
-      </Link>
+      </LinkWrapperInlineBlock>
     </>
   )
 })

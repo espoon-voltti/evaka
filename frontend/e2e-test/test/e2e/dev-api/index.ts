@@ -16,6 +16,8 @@ import {
   DaycareGroup,
   DaycarePlacement,
   Decision,
+  DecisionFixture,
+  deserializeDecision,
   DevPricing,
   EmployeeDetail,
   FeeDecision,
@@ -27,6 +29,7 @@ import {
   VoucherValueDecision,
   VtjPerson
 } from './types'
+import { JsonOf } from '@evaka/lib-common/src/json'
 
 export class DevApiError extends BaseError {
   constructor(cause: Error) {
@@ -360,7 +363,7 @@ export async function cleanUpInvoicingDatabase(): Promise<void> {
 }
 
 export async function insertDecisionFixtures(
-  fixture: Decision[]
+  fixture: DecisionFixture[]
 ): Promise<void> {
   try {
     await devClient.post(`/decisions`, fixture)
@@ -708,5 +711,18 @@ export async function deleteMobileDevice(deviceId: string): Promise<void> {
         err.stack || err.message
       )}`
     )
+  }
+}
+
+export async function getDecisionsByApplication(
+  applicationId: string
+): Promise<Decision[]> {
+  try {
+    const { data } = await devClient.get<JsonOf<Decision[]>>(
+      `/applications/${applicationId}/decisions`
+    )
+    return data.map(deserializeDecision)
+  } catch (e) {
+    throw new DevApiError(e)
   }
 }

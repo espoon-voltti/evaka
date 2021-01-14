@@ -86,7 +86,7 @@ export default React.memo(function DecisionResponse({
   }
 
   return (
-    <React.Fragment>
+    <div data-qa={`decision-${decision.id}`}>
       <H2 data-qa="title-decision-type">
         {`${t.decisions.applicationDecisions.decision} ${
           t.decisions.applicationDecisions.type[decision.type]
@@ -97,17 +97,17 @@ export default React.memo(function DecisionResponse({
       <Gap size="m" />
       <ListGrid labelWidth="max-content" rowGap="s" columnGap="L">
         <Label>{t.decisions.applicationDecisions.childName}</Label>
-        <span data-qa="decision-sent-date">{childName}</span>
+        <span data-qa="decision-child-name">{childName}</span>
         <Label>{t.decisions.applicationDecisions.unit}</Label>
-        <span data-qa="decision-sent-date">{getUnitName()}</span>
+        <span data-qa="decision-unit">{getUnitName()}</span>
         <Label>{t.decisions.applicationDecisions.period}</Label>
-        <span data-qa="decision-sent-date">
+        <span data-qa="decision-period">
           {startDate.format()} - {endDate.format()}
         </span>
         <Label>{t.decisions.applicationDecisions.sentDate}</Label>
         <span data-qa="decision-sent-date">{sentDate.format()}</span>
         <Label>{t.decisions.applicationDecisions.statusLabel}</Label>
-        <Status data-qa={`decision-status-${decisionId}`}>
+        <Status data-qa={'decision-status'}>
           <RoundIcon
             content={statusIcon[status].icon}
             color={statusIcon[status].color}
@@ -132,6 +132,7 @@ export default React.memo(function DecisionResponse({
                 name={`${decision.id}-accept`}
                 label={t.decisions.applicationDecisions.response.accept1}
                 disabled={blocked || submitting}
+                dataQa={'radio-accept'}
               />
               <DatePicker
                 date={requestedStartDate}
@@ -152,6 +153,7 @@ export default React.memo(function DecisionResponse({
               name={`${decision.id}-reject`}
               label={t.decisions.applicationDecisions.response.reject}
               disabled={blocked || submitting}
+              dataQa={'radio-reject'}
             />
           </FixedSpaceColumn>
           {blocked ? (
@@ -195,6 +197,7 @@ export default React.memo(function DecisionResponse({
                     }
                   }}
                   disabled={blocked || submitting}
+                  dataQa={'submit-response'}
                 />
               </SingleButtonContainer>
             </ButtonContainer>
@@ -226,9 +229,10 @@ export default React.memo(function DecisionResponse({
             action: () => setDisplayCascadeWarning(false)
           }}
           size={'md'}
+          data-qa={'cascade-warning-modal'}
         />
       )}
-    </React.Fragment>
+    </div>
   )
 })
 
