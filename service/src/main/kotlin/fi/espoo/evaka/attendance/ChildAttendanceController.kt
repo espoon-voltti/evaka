@@ -341,7 +341,7 @@ private fun Database.Read.getAttendancesResponse(unitId: UUID): AttendanceRespon
         )
     }
 
-    return AttendanceResponse(unitInfo, children)
+    return AttendanceResponse(unitInfo, children.sortedBy { it.firstName })
 }
 
 private fun getChildAttendanceStatus(placementBasics: ChildPlacementBasics, attendance: ChildAttendance?, absences: List<ChildAbsence>): AttendanceStatus {
