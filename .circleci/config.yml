@@ -746,7 +746,7 @@ jobs:
           working_directory: *workspace_service
           command: ./gradlew dependencyCheckUpdate
       - owasp/store_owasp_cache:
-          cve_data_directory: ~/repo/.gradle-user-home/dependency-check-data
+          cve_data_directory: /home/circleci/repo/.gradle-user-home/dependency-check-data
           cache_key: gradle-v1-cache-key
       - run:
           name: Run OWASP Dependency-Check Analyzer
@@ -845,7 +845,7 @@ jobs:
           working_directory: *workspace_message_service
           command: ./gradlew dependencyCheckUpdate
       - owasp/store_owasp_cache:
-          cve_data_directory: ~/repo/.gradle-user-home/dependency-check-data
+          cve_data_directory: /home/circleci/repo/.gradle-user-home/dependency-check-data
           cache_key: gradle-v1-cache-key
       - run:
           name: Run OWASP Dependency-Check Analyzer
