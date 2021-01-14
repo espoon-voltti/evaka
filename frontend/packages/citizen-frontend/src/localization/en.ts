@@ -5,6 +5,9 @@
 import { Translations } from '.'
 
 const en: Translations = {
+  common: {
+    return: 'Return'
+  },
   header: {
     nav: {
       map: 'Map',
@@ -28,6 +31,23 @@ const en: Translations = {
     sendFeedback: 'Give feedback',
     sendFeedbackLink:
       'https://easiointi.espoo.fi/eFeedback/en/Feedback/20-S%C3%A4hk%C3%B6iset%20asiointipalvelut'
+  },
+  applications: {
+    title: 'Applications',
+    editor: {
+      heading: {
+        title: {
+          daycare: 'Varhaiskasvatushakemus'
+        },
+        info: {
+          daycare: [
+            'You can apply for early childhood education all year round. The application must be submitted at the latest four months before the need for early childhood education begins. If you urgently need early childhood education, you must apply for a place at the latest two weeks before the need begins.',
+            'The applicant will receive a written decision on the early childhood education place via the <a href="https://www.suomi.fi/messages" target="_blank" rel="noreferrer">Messages service of Suomi.fi</a> or by post if the applicant has not taken in use the Messages service of Suomi.fi.',
+            '* Information marked with a star is required'
+          ]
+        }
+      }
+    }
   },
   decisions: {
     title: 'Decisions',
@@ -104,9 +124,6 @@ const en: Translations = {
       },
       returnToPreviousPage: 'Return'
     }
-  },
-  applications: {
-    title: 'Applications'
   }
 }
 

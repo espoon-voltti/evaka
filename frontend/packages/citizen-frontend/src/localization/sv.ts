@@ -5,6 +5,9 @@
 import { Translations } from '.'
 
 const sv: Translations = {
+  common: {
+    return: 'Tillbaka'
+  },
   header: {
     nav: {
       map: 'Karta',
@@ -28,6 +31,23 @@ const sv: Translations = {
     sendFeedback: 'Ge feedback',
     sendFeedbackLink:
       'https://easiointi.espoo.fi/eFeedback/sv/Feedback/20-S%C3%A4hk%C3%B6iset%20asiointipalvelut'
+  },
+  applications: {
+    title: 'Hakemukset',
+    editor: {
+      heading: {
+        title: {
+          daycare: 'Ansökan till småbarnspedagogik'
+        },
+        info: {
+          daycare: [
+            'Du kan ansöka om plats i småbarnspedagogisk verksamhet året om. Ansökningen bör lämnas in senast fyra månader före behovet av verksamheten börjar. Om behovet börjar med kortare varsel bör du ansöka om plats senast två veckor före.',
+            'Du får ett skriftligt beslut om platsen. Beslutet delges i tjänsten <a href="https://www.suomi.fi/meddelanden" target="_blank" rel="noreferrer">Suomi.fi</a>-meddelanden, eller per post om du inte tagit i bruk meddelandetjänsten i Suomi.fi.',
+            '* Informationen markerad med en stjärna krävs'
+          ]
+        }
+      }
+    }
   },
   decisions: {
     title: 'Beslut',
@@ -101,9 +121,6 @@ const sv: Translations = {
       },
       returnToPreviousPage: 'Tillbacka'
     }
-  },
-  applications: {
-    title: 'Hakemukset'
   }
 }
 
