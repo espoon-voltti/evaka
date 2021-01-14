@@ -32,9 +32,9 @@ const sv: Translations = {
   decisions: {
     title: 'Beslut',
     summary:
-      'Tälle sivulle saapuvat lapsen varhaiskasvatus-, esiopetus- ja kerhohakemuksiin liittyvät päätökset. Uuden päätöksen saapuessa sinun tulee kahden viikon sisällä vastata, hyväksytkö vai hylkäätkö lapselle tarjotun paikan.',
+      'Denna sida visar de beslutar om barns ansökan till småbarnspedagogik, förskola och klubbverksamhet. Du ska omedelbart eller senast två veckor från mottagandet av ett beslut ta emot eller annullera platsen / platserna.',
     unconfirmedDecisions: (n: number) => `${n} beslut inväntar bekräftelse`,
-    pageLoadError: 'Tietojen hakeminen ei onnistunut',
+    pageLoadError: 'Hämtar information misslyckades',
     applicationDecisions: {
       decision: 'Beslut om',
       type: {
@@ -47,13 +47,13 @@ const sv: Translations = {
         PREPARATORY_EDUCATION: 'förberedande undervisning'
       },
       childName: 'Barnets namn',
-      unit: 'Toimipaikka',
-      period: 'Ajalle',
+      unit: 'Enhet',
+      period: 'Period',
       sentDate: 'Beslutsdatum',
       resolved: 'Bekräftat',
       statusLabel: 'Status',
       summary:
-        'Päätöksessä ilmoitettu paikka / ilmoitetut paikat tulee joko hyväksyä tai hylätä välittömästi, viimeistään kahden viikon kuluessa päätöksen saapumisesta.',
+        'Du ska omedelbart eller senast två veckor från mottagandet av ett beslut ta emot eller annullera platsen / platserna.',
       status: {
         PENDING: 'Bekräftas av vårdnadshavaren',
         ACCEPTED: 'Bekräftad',
@@ -70,36 +70,36 @@ const sv: Translations = {
         'Gå till beslutet för att läsa det och svara om du tar emot eller annullerar platsen.',
       confirmationLink: 'Granska och bekräfta beslutet',
       response: {
-        title: 'Paikan hyväksyminen tai hylkääminen',
-        accept1: 'Otamme paikan vastaan',
-        accept2: 'alkaen',
-        reject: 'Emme ota paikkaa vastaan',
-        cancel: 'Palaa takaisin vastaamatta',
-        submit: 'Lähetä vastaus päätökseen',
+        title: 'Bekräftelse',
+        accept1: 'Vi tar emot platsen från',
+        accept2: '',
+        reject: 'Vi tar inte emot platsen',
+        cancel: 'Gå tillbacka utan att besluta',
+        submit: 'Skicka svar på beslutet',
         disabledInfo:
-          'HUOM! Pääset hyväksymään/hylkäämään liittyvää varhaiskasvatusta koskevan päätöksen mikäli hyväksyt ensin esiopetusta / valmistavaa opetusta koskevan päätöksen.'
+          'OBS! Du kommer att kunna svara på den relaterade beslutet, om du först accepterar den beslutet om förskola / förberedande undervisning.'
       },
       warnings: {
         decisionWithNoResponseWarning: {
-          title: 'Toinen päätös odottaa vastaustasi',
+          title: 'Ett annat beslut väntar på ditt godkännande',
           text:
-            'Toinen päätös odottaa edelleen vastaustasi. Haluatko  palata listalle vastaamatta?',
-          resolveLabel: 'Palaa vastaamatta',
-          rejectLabel: 'Jatka vastaamista'
+            'Ett annat beslut väntar på ditt godkännande. Vill du gå tillbaka till listan utan att svara?',
+          resolveLabel: 'Gå tillbaka utan att svara',
+          rejectLabel: 'Förtsätt att svara'
         },
         doubleRejectWarning: {
-          title: 'Haluatko hylätä paikan?',
+          title: 'Vill du annulera platsen?',
           text:
-            'Olet hylkäämässä tarjotun esiopetus / valmistavan paikan. Liittyvän varhaiskasvatuksen paikka merkitään samalla hylätyksi.',
-          resolveLabel: 'Hylkää molemmat',
-          rejectLabel: 'Palaa takaisin'
+            'Du ska annullera platsen. Den relaterade småbarnspedagogik plats ska också markeras annulerat.',
+          resolveLabel: 'Annulera båda',
+          rejectLabel: 'Gå tillbaka'
         }
       },
       errors: {
-        pageLoadError: 'Tietojen hakeminen ei onnistunut',
-        submitFailure: 'Päätökseen vastaaminen ei onnistunut'
+        pageLoadError: 'Misslyckades att hämta information',
+        submitFailure: 'Misslyckades att skicka svar'
       },
-      returnToPreviousPage: 'Palaa'
+      returnToPreviousPage: 'Tillbacka'
     }
   },
   applications: {
