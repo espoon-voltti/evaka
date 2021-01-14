@@ -4,7 +4,6 @@
 
 package fi.espoo.evaka.msg.config
 
-import com.google.common.base.Predicates
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import springfox.documentation.builders.ApiInfoBuilder
@@ -32,7 +31,7 @@ class SwaggerConfig {
     fun customImplementation(): Docket =
         Docket(DocumentationType.SWAGGER_2)
             .select()
-            .apis(Predicates.not(RequestHandlerSelectors.basePackage("org.springframework.boot")))
+            .apis(RequestHandlerSelectors.basePackage("org.springframework.boot").negate())
             .build()
             .apiInfo(apiInfo())
 }

@@ -199,3 +199,12 @@ Repeat for all environments:
     ```
 
     - **NOTE:** Cluster and service name are deployment specific
+
+## OWASP dependency check
+
+Service dependencies are checked for security vulnerabilities with
+the [OWASP dependecy-check-gradle](https://jeremylong.github.io/DependencyCheck/dependency-check-gradle/index.html)
+plugin. Dependencies are checked on every build with the command `./gradlew dependencyCheckAnalyze`. By default even
+minor vulnerabilities break the build, but they can
+be [suppressed](https://jeremylong.github.io/DependencyCheck/general/suppression.html) when needed. The suppression
+rules are configured [here](./owasp-suppressions.xml).

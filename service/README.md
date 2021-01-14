@@ -113,3 +113,12 @@ OR if you don't have a pre-commit hook, you can create a symbolic link to the sc
 ```sh
 ln -s ../../list-migrations.sh .git/hooks/pre-commit
 ```
+
+## OWASP dependency check
+
+Service dependencies are checked for security vulnerabilities with
+the [OWASP dependecy-check-gradle](https://jeremylong.github.io/DependencyCheck/dependency-check-gradle/index.html)
+plugin. Dependencies are checked on every build with the command `./gradlew dependencyCheckAnalyze`. By default even
+minor vulnerabilities break the build, but they can
+be [suppressed](https://jeremylong.github.io/DependencyCheck/general/suppression.html) when needed. The suppression
+rules are configured [here](./owasp-suppressions.xml).

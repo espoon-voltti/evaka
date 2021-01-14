@@ -40,7 +40,7 @@ dependencies {
 
     // Auth0 JWT
     implementation("com.auth0:java-jwt:${Version.auth0Jwt}")
-    implementation("com.auth0:jwks-rsa:0.13.0")
+    implementation("com.auth0:jwks-rsa:0.15.0")
 
     testImplementation("org.springframework.boot:spring-boot-starter-web")
     testImplementation("org.springframework.boot:spring-boot-starter-test")

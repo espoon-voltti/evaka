@@ -45,7 +45,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
         <notes><![CDATA[
         Dependency of spring-ws-security, which is already at latest version (3.0.10.RELEASE).
         ]]></notes>
-        <filePath regex="true">.*/guava-29\.0-jre\.jar</filePath>
+        <filePath regex="true">.*/guava-19\.0\.jar</filePath>
         <cve>CVE-2020-8908</cve>
     </suppress>
 </suppressions>

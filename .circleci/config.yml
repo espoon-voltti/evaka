@@ -9,6 +9,7 @@ version: 2.1
 
 orbs:
   slack: circleci/slack@4.1.3
+  owasp: entur/owasp@0.0.14
 
 aliases:
   - &workspace_root /home/circleci/repo
@@ -54,6 +55,7 @@ aliases:
     <<: *default_config
     environment:
       GRADLE_OPTS: '-Dorg.gradle.daemon=false -Dorg.gradle.jvmargs="-Xmx2048m"'
+      GRADLE_USER_HOME: /home/circleci/repo/.gradle-user-home
       _JAVA_OPTIONS: "-Xmx2048m"
 
   - &restore_repo
@@ -111,7 +113,7 @@ aliases:
       key: gradle-home-service-v3-{{ checksum "service/build.gradle.kts" }}-{{ checksum "service/gradle.properties" }}-{{ checksum "service/settings.gradle.kts" }}-{{ checksum "service/buildSrc/build.gradle.kts" }}-{{ checksum "service/buildSrc/src/main/kotlin/Version.kt" }}
       paths:
         - service/.gradle
-        - service/.gradle-user-home
+        - .gradle-user-home
 
   - &restore_message_service_gradle
     restore_cache:
@@ -125,7 +127,7 @@ aliases:
       key: gradle-home-message-service-v3-{{ checksum "message-service/build.gradle.kts" }}-{{ checksum "message-service/gradle.properties" }}-{{ checksum "message-service/settings.gradle.kts" }}
       paths:
         - message-service/.gradle
-        - message-service/.gradle-user-home
+        - .gradle-user-home
 
 executors:
   aws_executor:
@@ -154,8 +156,6 @@ executors:
       resource_class: large
   service_executor:
     <<: *jvm_config
-    environment:
-      GRADLE_USER_HOME: /home/circleci/repo/service/.gradle-user-home
     docker:
       - image: *openjdk_image
         auth:
@@ -163,26 +163,9 @@ executors:
           password: $DOCKERHUB_PASSWORD
   service_test_executor:
     <<: *jvm_config
-    environment:
-      GRADLE_USER_HOME: /home/circleci/repo/service/.gradle-user-home
     machine:
       image: *ubuntu_machine_image
       resource_class: large
-  message_service_executor:
-    <<: *jvm_config
-    environment:
-      GRADLE_USER_HOME: /home/circleci/repo/message-service/.gradle-user-home
-    docker:
-      - image: *openjdk_image
-        auth:
-          username: $DOCKERHUB_USERNAME
-          password: $DOCKERHUB_PASSWORD
-  message_service_test_executor:
-    <<: *jvm_config
-    environment:
-      GRADLE_USER_HOME: /home/circleci/repo/message-service/.gradle-user-home
-    machine:
-      image: *ubuntu_machine_image
 
 commands:
   attach_root_workspace:
@@ -747,6 +730,23 @@ jobs:
       - run:
           working_directory: *workspace_service
           command: ./circle-check-migrations.sh
+      - owasp/generate_cache_keys:
+          cache_key: gradle-v1-cache-key
+      - owasp/restore_owasp_cache:
+          cache_key: gradle-v1-cache-key
+      - run:
+          name: Update OWASP Dependency-Check Database
+          working_directory: *workspace_service
+          command: ./gradlew dependencyCheckUpdate
+      - owasp/store_owasp_cache:
+          cve_data_directory: /home/circleci/repo/.gradle-user-home/dependency-check-data
+          cache_key: gradle-v1-cache-key
+      - run:
+          name: Run OWASP Dependency-Check Analyzer
+          working_directory: *workspace_service
+          command: ./gradlew dependencyCheckAnalyze
+      - store_artifacts:
+          path: /home/circleci/repo/service/build/reports/
       - notify_slack
 
   service_build_image:
@@ -809,7 +809,7 @@ jobs:
       - notify_slack
 
   message_service_build:
-    executor: message_service_executor
+    executor: service_executor
     steps:
       - *restore_repo
       - *restore_message_service_gradle
@@ -824,10 +824,27 @@ jobs:
       - run:
           working_directory: *workspace_message_service
           command: ./gradlew lintKotlin
+      - owasp/generate_cache_keys:
+          cache_key: gradle-v1-cache-key
+      - owasp/restore_owasp_cache:
+          cache_key: gradle-v1-cache-key
+      - run:
+          name: Update OWASP Dependency-Check Database
+          working_directory: *workspace_message_service
+          command: ./gradlew dependencyCheckUpdate
+      - owasp/store_owasp_cache:
+          cve_data_directory: /home/circleci/repo/.gradle-user-home/dependency-check-data
+          cache_key: gradle-v1-cache-key
+      - run:
+          name: Run OWASP Dependency-Check Analyzer
+          working_directory: *workspace_message_service
+          command: ./gradlew dependencyCheckAnalyze
+      - store_artifacts:
+          path: /home/circleci/repo/message-service/build/reports/
       - notify_slack
 
   message_service_test:
-    executor: message_service_test_executor
+    executor: service_test_executor
     steps:
       - *restore_repo
       - attach_root_workspace
