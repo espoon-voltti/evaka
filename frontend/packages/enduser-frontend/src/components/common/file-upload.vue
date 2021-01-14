@@ -150,7 +150,11 @@ SPDX-License-Identifier: LGPL-2.1-or-later
         })
       },
       onChange(event) {
-        this.onUpload(event.target.files[0])
+        // FileList is empty when one file is uploaded and then selecting another one is cancelled,
+        // clearing the input's value
+        if (event.target.files.length > 0) {
+          this.onUpload(event.target.files[0])
+        }
       },
       onDrop(event) {
         if (event.dataTransfer.files && event.dataTransfer.files[0]) {
