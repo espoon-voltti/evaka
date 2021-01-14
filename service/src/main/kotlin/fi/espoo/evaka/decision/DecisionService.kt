@@ -81,7 +81,6 @@ class DecisionService(
             application.otherGuardianId != null &&
             !personService.personsLiveInTheSameAddress(
                 tx,
-                user,
                 application.guardianId,
                 application.otherGuardianId
             )

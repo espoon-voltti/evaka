@@ -115,7 +115,7 @@ class FamilyInitializerService(
         val otherGuardianId = application.otherGuardianId
         val fridgePartnerSSN = if (
             otherGuardianId != null &&
-            personService.personsLiveInTheSameAddress(tx, user, headOfFamilyId, otherGuardianId)
+            personService.personsLiveInTheSameAddress(tx, headOfFamilyId, otherGuardianId)
         ) {
             (tx.handle.getPersonById(otherGuardianId)?.identity as? SSN)?.ssn
         } else {

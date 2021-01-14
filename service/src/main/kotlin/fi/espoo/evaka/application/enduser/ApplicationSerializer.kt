@@ -41,7 +41,6 @@ class ApplicationSerializer(private val personService: PersonService) {
         val otherGuardian = if (requireFreshPersonData) personService.getOtherGuardian(tx, user, application.guardianId, application.childId) else null
         val guardiansLiveInSameAddress = if (otherGuardian != null && requireFreshPersonData) personService.personsLiveInTheSameAddress(
             tx,
-            user,
             application.guardianId,
             otherGuardian.id
         ) else false
