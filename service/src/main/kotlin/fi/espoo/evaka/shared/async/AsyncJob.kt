@@ -96,7 +96,11 @@ data class NotifyDecisionCreated(val decisionId: UUID, override val user: Authen
     override val asyncJobType = AsyncJobType.DECISION_CREATED
 }
 
-data class SendDecision(val decisionId: UUID, override val user: AuthenticatedUser) : AsyncJobPayload {
+data class SendDecision(
+    val decisionId: UUID,
+    @Deprecated(message = "only for backwards compatibility")
+    override val user: AuthenticatedUser? = null
+) : AsyncJobPayload {
     override val asyncJobType = AsyncJobType.SEND_DECISION
 }
 

@@ -56,7 +56,7 @@ class PersonService(
         }
     }
 
-    fun personsLiveInTheSameAddress(db: Database.Read, user: AuthenticatedUser, person1Id: UUID, person2Id: UUID): Boolean {
+    fun personsLiveInTheSameAddress(db: Database.Read, person1Id: UUID, person2Id: UUID): Boolean {
         val person1 = db.handle.getPersonById(person1Id)
         val person2 = db.handle.getPersonById(person2Id)
 
