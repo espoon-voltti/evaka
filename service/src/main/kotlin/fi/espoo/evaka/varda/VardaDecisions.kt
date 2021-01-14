@@ -156,9 +156,7 @@ fun deleteDecisionFeeData(db: Database.Connection, client: VardaClient, decision
 }
 
 fun removeDeletedDecisions(db: Database.Connection, client: VardaClient) {
-    val removedDecisions = db.read {
-        getRemovedDecisions(it) + getRemovedDerivedDecisions(it) + getRemovedTemporaryDecisions(it)
-    }
+    val removedDecisions = db.read { getRemovedDecisions(it) + getRemovedDerivedDecisions(it) }
     val decisionIds = removedDecisions.map { (id, _) -> id }
     cleanUpDecisionRelatedData(db, client, decisionIds)
     removedDecisions.forEach { (_, vardaDecisionId) ->
@@ -439,6 +437,8 @@ private fun getRemovedDerivedDecisions(tx: Database.Read): List<Pair<UUID, Long>
         """
 WITH derived_decision AS (
     $derivedDecisionQueryBase
+    UNION
+    $temporaryDecisionQueryBase
 )
 SELECT vd.id, vd.varda_decision_id FROM varda_decision vd
 LEFT JOIN derived_decision d ON vd.evaka_placement_id = d.evaka_id
@@ -476,23 +476,6 @@ WHERE vd.uploaded_at < greatest(sn.updated, p.updated)
 
     return tx.createQuery(sql)
         .map(toVardaDecisionWithIdAndVardaId(getChildUrl))
-        .toList()
-}
-
-private fun getRemovedTemporaryDecisions(tx: Database.Read): List<Pair<UUID, Long>> {
-    val sql =
-        """
-WITH temporary_decision AS (
-    $temporaryDecisionQueryBase
-)
-SELECT vd.id, vd.varda_decision_id FROM varda_decision vd
-LEFT JOIN temporary_decision d ON vd.evaka_placement_id = d.evaka_id
-WHERE vd.evaka_decision_id IS NULL
-AND d.evaka_id IS NULL
-        """.trimIndent()
-
-    return tx.createQuery(sql)
-        .map { rs, _ -> rs.getUUID("id") to rs.getLong("varda_decision_id") }
         .toList()
 }
 
