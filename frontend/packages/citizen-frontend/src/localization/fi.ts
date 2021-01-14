@@ -119,5 +119,34 @@ export default {
       },
       returnToPreviousPage: 'Palaa'
     }
+  },
+  applicationsList: {
+    title: 'Hakeminen varhaiskasvatukseen ja ilmoittautuminen esiopetukseen',
+    summary:
+      'Lapsen huoltaja voi tehdä lapselle hakemuksen varhaiskasvatukseen ja kerhoon tai ilmoittaa lapsen esiopetukseen. Huoltajan lasten tiedot haetaan tähän näkymään automaattisesti Väestötietojärjestelmästä.',
+    pageLoadError: 'Tietojen hakeminen ei onnistunut',
+    type: {
+      daycare: 'Varhaiskasvatushakemus',
+      preschool: 'Esiopetushakemus',
+      club: 'Kerhohakemus'
+    },
+    unit: 'Yksikkö',
+    period: 'Ajalle',
+    created: 'Luotu',
+    modified: 'Muokattu',
+    status: {
+      title: 'Tila',
+      CREATED: 'Luonnos',
+      SENT: 'Lähetetty',
+      WAITING_PLACEMENT: 'Käsiteltävänä',
+      WAITING_DECISION: 'Käsiteltävänä',
+      WAITING_UNIT_CONFIRMATION: 'Käsiteltävänä',
+      WAITING_MAILING: 'Käsiteltävänä',
+      WAITING_CONFIRMATION: 'Vahvistettavana huoltajalla',
+      REJECTED: 'Paikka hylätty',
+      ACTIVE: 'Paikka vastaanotettu',
+      CANCELLED: 'Poistettu käsittelystä'
+    },
+    openApplicationLink: 'Näytä hakemus'
   }
 }

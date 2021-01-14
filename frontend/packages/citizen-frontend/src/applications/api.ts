@@ -1,8 +1,13 @@
+// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
+
 import { Failure, Result, Success } from '@evaka/lib-common/src/api'
 import { JsonOf } from '@evaka/lib-common/src/json'
 import LocalDate from '@evaka/lib-common/src/local-date'
 import { client } from '~api-client'
 import { Application } from '~applications/types'
+import { GuardianApplications } from '~applications/types'
 
 export async function getApplication(
   applicationId: string
@@ -60,3 +65,24 @@ const deserializeApplication = (json: JsonOf<Application>): Application => ({
     updated: new Date(updated)
   }))
 })
+
+export const getGuardianApplications = async (): Promise<
+  Result<GuardianApplications[]>
+> => {
+  return client
+    .get<JsonOf<GuardianApplications[]>>('/citizen/applications/by-guardian')
+    .then((res) =>
+      res.data.map(({ applicationSummaries, ...rest }) => ({
+        ...rest,
+        applicationSummaries: applicationSummaries.map((json) => ({
+          ...json,
+          sentDate: LocalDate.parseNullableIso(json.sentDate),
+          startDate: LocalDate.parseNullableIso(json.startDate),
+          createdDate: new Date(json.createdDate),
+          modifiedDate: new Date(json.modifiedDate)
+        }))
+      }))
+    )
+    .then((data) => Success.of(data))
+    .catch((e) => Failure.fromError(e))
+}
