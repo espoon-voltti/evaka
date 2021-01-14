@@ -752,6 +752,8 @@ jobs:
           name: Run OWASP Dependency-Check Analyzer
           working_directory: *workspace_service
           command: ./gradlew dependencyCheckAnalyze
+      - store_artifacts:
+          path: /home/circleci/repo/service/build/reports/
       - notify_slack
 
   service_build_image:
@@ -851,6 +853,8 @@ jobs:
           name: Run OWASP Dependency-Check Analyzer
           working_directory: *workspace_message_service
           command: ./gradlew dependencyCheckAnalyze
+      - store_artifacts:
+          path: /home/circleci/repo/message-service/build/reports/
       - notify_slack
 
   message_service_test:
