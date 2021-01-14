@@ -33,7 +33,7 @@ class DecisionMessageProcessor(
         logger.info { "Successfully created decision pdf(s) for decision (id: $decisionId)." }
         if (msg.sendAsMessage) {
             logger.info { "Sending decision pdf(s) for decision (id: $decisionId)." }
-            asyncJobRunner.plan(tx, listOf(SendDecision(decisionId, msg.user)))
+            asyncJobRunner.plan(tx, listOf(SendDecision(decisionId)))
         }
     }
 
