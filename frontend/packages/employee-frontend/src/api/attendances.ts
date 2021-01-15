@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { JsonOf } from '@evaka/lib-common/src/json'
+import { JsonOf, JsonOfObject } from '@evaka/lib-common/src/json'
 import { Failure, Result, Success } from '@evaka/lib-common/src/api'
 import { UUID } from '~types'
 import { AbsenceType, CareType } from '~types/absence'
@@ -201,26 +201,43 @@ export async function postDeparture(
     .catch((e) => Failure.fromError(e))
 }
 
+function compareByProperty(
+  a: JsonOfObject<AttendanceChild>,
+  b: JsonOfObject<AttendanceChild>,
+  property: string
+) {
+  if (a[property] < b[property]) {
+    return -1
+  }
+  if (a[property] > b[property]) {
+    return 1
+  }
+  return 0
+}
+
 function deserializeAttendanceResponse(
   data: JsonOf<AttendanceResponse>
 ): AttendanceResponse {
   {
     return {
       unit: data.unit,
-      children: data.children.map((attendanceChild) => {
-        return {
-          ...attendanceChild,
-          attendance: attendanceChild.attendance
-            ? {
-                ...attendanceChild.attendance,
-                arrived: new Date(attendanceChild.attendance.arrived),
-                departed: attendanceChild.attendance.departed
-                  ? new Date(attendanceChild.attendance.departed)
-                  : null
-              }
-            : null
-        }
-      })
+      children: data.children
+        .sort((a, b) => compareByProperty(a, b, 'lastName'))
+        .sort((a, b) => compareByProperty(a, b, 'firstName'))
+        .map((attendanceChild) => {
+          return {
+            ...attendanceChild,
+            attendance: attendanceChild.attendance
+              ? {
+                  ...attendanceChild.attendance,
+                  arrived: new Date(attendanceChild.attendance.arrived),
+                  departed: attendanceChild.attendance.departed
+                    ? new Date(attendanceChild.attendance.departed)
+                    : null
+                }
+              : null
+          }
+        })
     }
   }
 }

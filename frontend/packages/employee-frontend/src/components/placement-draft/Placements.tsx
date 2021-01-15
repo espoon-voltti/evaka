@@ -30,7 +30,7 @@ const PlacementsContainer = styled.div`
     props.open
       ? '0px'
       : `calc(${props.placements} * 30px + ${
-          props.hasOverlap() ? '111px' : '0px'
+          props.hasOverlap() ? '120px' : '0px'
         })`};
   transform-origin: top;
   overflow: hidden;
