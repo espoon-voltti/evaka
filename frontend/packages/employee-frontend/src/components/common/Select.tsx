@@ -22,6 +22,7 @@ export interface SelectProps {
   placeholder?: string
   'data-qa'?: string
   value?: ValueType<SelectOptionProps>
+  clearable?: boolean
 }
 
 interface ContainerProps {
@@ -51,7 +52,8 @@ const Select = memo(function Select({
   options,
   placeholder,
   'data-qa': dataQa,
-  value
+  value,
+  clearable
 }: SelectComponentProps) {
   return (
     <Container fullWidth={fullWidth} data-qa={dataQa} className={className}>
@@ -65,6 +67,7 @@ const Select = memo(function Select({
         onFocus={onFocus}
         value={value}
         styles={reactSelectStyles}
+        isClearable={clearable ?? false}
       />
     </Container>
   )
