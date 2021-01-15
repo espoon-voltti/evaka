@@ -350,6 +350,17 @@ function validateForm(
   ) {
     errors.push(i18n.unitEditor.error.cannotApplyToDifferentType)
   }
+  if (form.uploadToVarda || form.uploadToKoski) {
+    if (!form.ophUnitOid) {
+      errors.push(i18n.unitEditor.error.ophUnitOid)
+    }
+    if (!form.ophOrganizerOid) {
+      errors.push(i18n.unitEditor.error.ophOrganizerOid)
+    }
+    if (!form.ophOrganizationOid) {
+      errors.push(i18n.unitEditor.error.ophOrganizationOid)
+    }
+  }
   if (form.invoicedByMunicipality && !form.financeDecisionHandlerId) {
     errors.push(i18n.unitEditor.error.financeDecisionHandler)
   }
