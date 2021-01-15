@@ -59,20 +59,6 @@ export default React.memo(function AttendanceChildPresent({
     void getDaycareAttendances(unitId).then((res) =>
       filterAndSetAttendanceResponse(res, groupIdOrAll)
     )
-    return history.listen((location) => {
-      if (location.pathname.includes('/depart')) {
-        void getChildDeparture(unitId, child.id, getCurrentTime()).then(
-          setChildDepartureInfo
-        )
-        setTime(getCurrentTime())
-        setMarkDepart(true)
-      } else {
-        setMarkDepart(false)
-        void getDaycareAttendances(unitId).then((res) =>
-          filterAndSetAttendanceResponse(res, groupIdOrAll)
-        )
-      }
-    })
   }, [])
 
   function markDeparted() {
@@ -125,11 +111,13 @@ export default React.memo(function AttendanceChildPresent({
           <BigWideButton
             primary
             text={i18n.attendances.actions.markLeaving}
-            onClick={() =>
-              history.push(
-                `/units/${unitId}/groups/${groupIdOrAll}/childattendance/${child.id}/depart`
+            onClick={() => {
+              void getChildDeparture(unitId, child.id, getCurrentTime()).then(
+                setChildDepartureInfo
               )
-            }
+              setTime(getCurrentTime())
+              setMarkDepart(true)
+            }}
           />
           <InlineWideAsyncButton
             text={i18n.attendances.actions.returnToComing}
@@ -187,11 +175,7 @@ export default React.memo(function AttendanceChildPresent({
                 child={child}
                 absentFrom={childDepartureInfo.value.absentFrom}
               />
-              <AbsenceSelector
-                unitId={unitId}
-                groupId={groupIdOrAll}
-                selectAbsenceType={selectAbsenceType}
-              />
+              <AbsenceSelector selectAbsenceType={selectAbsenceType} />
             </Fragment>
           ) : (
             <Fragment>
@@ -200,12 +184,7 @@ export default React.memo(function AttendanceChildPresent({
                 primary
                 text={i18n.common.confirm}
                 onClick={markDeparted}
-                onSuccess={async () => {
-                  await getDaycareAttendances(unitId).then((res) =>
-                    filterAndSetAttendanceResponse(res, groupIdOrAll)
-                  )
-                  history.goBack()
-                }}
+                onSuccess={() => history.goBack()}
                 data-qa="mark-departed"
                 disabled={timeError}
               />
