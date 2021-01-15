@@ -10,6 +10,7 @@ export type UnitPreferenceFormData = {
   siblingBasis: boolean
   siblingName: string
   siblingSsn: string
+  preferredUnits: Array<{ id: string; name: string }>
 }
 
 export type ContactInfoFormData = {
@@ -43,7 +44,8 @@ export function apiDataToFormData(
     unitPreference: {
       siblingBasis: application.form.preferences.siblingBasis !== null,
       siblingName: application.form.preferences.siblingBasis?.siblingName ?? '',
-      siblingSsn: application.form.preferences.siblingBasis?.siblingSsn ?? ''
+      siblingSsn: application.form.preferences.siblingBasis?.siblingSsn ?? '',
+      preferredUnits: application.form.preferences.preferredUnits
     },
     contactInfo: {},
     fee: {},
@@ -84,7 +86,7 @@ export function formDataToApiData(form: ApplicationFormData): ApplicationForm {
     otherPartner: null,
     otherChildren: [],
     preferences: {
-      preferredUnits: [],
+      preferredUnits: form.unitPreference.preferredUnits,
       preferredStartDate: form.serviceNeed.preferredStartDate,
       serviceNeed: null,
       siblingBasis: form.unitPreference.siblingBasis

@@ -123,12 +123,17 @@ export type ApplicationGuardianAgreementStatus =
   | 'RIGHT_TO_GET_NOTIFIED'
 
 export interface ApplicationPreferences {
-  preferredUnits: Array<{ id: string; name: string }>
+  preferredUnits: PreferredUnit[]
   preferredStartDate: LocalDate | null
   serviceNeed: ApplicationServiceNeed | null
   siblingBasis: { siblingName: string; siblingSsn: string } | null
   preparatory: boolean
   urgent: boolean
+}
+
+export interface PreferredUnit {
+  id: string
+  name: string
 }
 
 export interface ApplicationServiceNeed {

@@ -95,6 +95,9 @@ export default React.memo(function DaycareApplicationEditor() {
                   : old
               )
             }
+            applicationType={apiData.value.type}
+            preparatory={false} // todo: get from formValues?
+            preferredStartDate={formData.serviceNeed.preferredStartDate}
           />
           <Gap size="s" />
           <ContactInfoSection />
