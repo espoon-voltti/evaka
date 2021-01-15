@@ -1,5 +1,9 @@
 import LocalDate from '@evaka/lib-common/src/local-date'
-import { Application, ApplicationForm } from '~applications/types'
+import {
+  Application,
+  ApplicationForm,
+  ApplicationPersonBasics
+} from '~applications/types'
 
 export type ServiceNeedFormData = {
   preferredStartDate: LocalDate | null
@@ -20,7 +24,33 @@ export type UnitPreferenceFormData = {
 }
 
 export type ContactInfoFormData = {
-  // todo
+  childFirstName: string
+  childLastName: string
+  childSSN: string
+  childStreet: string
+  childHasFutureAddress: boolean
+  childMoveDate?: LocalDate
+  childFutureAddress?: string
+  childFuturePostalCode?: string
+  childFutureMunicipality?: string
+  guardianFirstName: string
+  guardianLastName: string
+  guardianSSN: string
+  guardianHomeAddress: string
+  guardianPhone: string
+  guardianEmail: string
+  guardianHasFutureAddress: boolean
+  guardianMoveDate?: LocalDate
+  guardianFutureStreet?: string
+  guardianFuturePostalCode?: string
+  guardianFutureMunicipality?: string
+  nonCaretakerPartnerInSameAddress: boolean
+  nonCaretakerFirstName?: string
+  nonCaretakerLastName?: string
+  nonCaretakerSSN?: string
+  knownSiblings: ApplicationPersonBasics[]
+  hasOtherSiblings: boolean
+  otherChildren: ApplicationPersonBasics[]
 }
 
 export type FeeFormData = {
@@ -61,7 +91,35 @@ export function apiDataToFormData(
       siblingSsn: application.form.preferences.siblingBasis?.siblingSsn ?? '',
       preferredUnits: application.form.preferences.preferredUnits
     },
-    contactInfo: {},
+    contactInfo: {
+      childFirstName: application.form.child.person.firstName,
+      childLastName: application.form.child.person.lastName,
+      childSSN: application.form.child.person.socialSecurityNumber || '',
+      childStreet: application.form.child.address?.street || '',
+      childHasFutureAddress: false,
+      childMoveDate: undefined,
+      childFutureAddress: undefined,
+      childFuturePostalCode: undefined,
+      childFutureMunicipality: undefined,
+      guardianFirstName: application.form.guardian.person.firstName,
+      guardianLastName: application.form.guardian.person.lastName,
+      guardianSSN: application.form.guardian.person.socialSecurityNumber || '',
+      guardianHomeAddress: application.form.guardian.address?.street || '',
+      guardianPhone: application.form.guardian.phoneNumber || '',
+      guardianEmail: application.form.guardian.email || '',
+      guardianHasFutureAddress: false,
+      guardianMoveDate: undefined,
+      guardianFutureStreet: undefined,
+      guardianFuturePostalCode: undefined,
+      guardianFutureMunicipality: undefined,
+      nonCaretakerPartnerInSameAddress: false,
+      nonCaretakerFirstName: undefined,
+      nonCaretakerLastName: undefined,
+      nonCaretakerSSN: undefined,
+      knownSiblings: application.form.otherChildren,
+      hasOtherSiblings: false,
+      otherChildren: []
+    },
     fee: { maxFeeAccepted: application.form.maxFeeAccepted },
     additionalDetails: {
       otherInfo: application.form.otherInfo,

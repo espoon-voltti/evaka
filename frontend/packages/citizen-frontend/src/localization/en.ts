@@ -138,7 +138,50 @@ const en: Translations = {
         allergiesPlaceholder:
           'If you wish, you can indicate your child’s allergies in this field',
         allergiesInfo:
-          'Information on allergies is mainly needed when applying for family day care.'
+          'Information on allergies is mainly needed when applying for family day care.'},
+      contactInfo: {
+        title: 'Henkilötiedot',
+        info:
+          'Henkilötiedot on haettu väestötiedoista, eikä niitä voi muuttaa tällä hakemuksella. Jos henkilötiedoissa on virheitä, päivitäthän tiedot Digi- ja Väestötietoviraston sivuilla. Mikäli osoitteenne on muuttumassa, voit lisätä tulevan osoitteen erilliseen kohtaan hakemuksella; lisää tuleva osoite sekä lapselle että huoltajalle. Virallisena osoitetietoa pidetään vasta, kun se on päivittynyt väestötietojärjestelmään. Päätökset esiopetus- ja varhaiskasvatuspaikoista toimitetaan automaattisesti myös eri osoitteessa asuvalle väestötiedoista löytyvälle huoltajalle.',
+        childInfoTitle: 'Lapsen tiedot',
+        childFirstName: 'Lapsen etunimet',
+        childLastName: 'Lapsen sukunimi',
+        childSSN: 'Lapsen henkilötunnus',
+        homeAddress: 'Kotiosoite',
+        moveDate: 'Muuttopäivämäärä',
+        street: 'Katuosoite',
+        postalCode: 'Postinumero',
+        municipality: 'Postitoimipaikka',
+        guardianInfoTitle: 'Huoltajan tiedot',
+        guardianFirstName: 'Huoltajan etunimet',
+        guardianLastName: 'Huoltajan sukunimi',
+        guardianSSN: 'Huoltajan henkilötunnus',
+        phone: 'Puhelinnumero',
+        email: 'Sähköposti',
+        secondGuardianInfoTitle: 'Toisen huoltajan tiedot',
+        secondGuardianInfo:
+          'Toisen huoltajan tiedot haetaan automaattisesti väestötietojärjestelmästä.',
+        nonCaretakerPartnerTitle:
+          'Samassa taloudessa asuva avio- tai avopuoliso (ei huoltaja)',
+        nonCaretakerPartnerCheckboxLabel:
+          'Samassa taloudessa asuu hakijan kanssa avio- tai avoliitossa oleva henkilö, joka ei ole lapsen huoltaja.',
+        personFirstName: 'Henkilön etunimet',
+        personLastName: 'Henkilön sukunimi',
+        personSSN: 'Henkilön henkilötunnus',
+        otherChildrenTitle: 'Samassa taloudessa asuvat alle 18-vuotiaat lapset',
+        otherChildrenInfo:
+          'Samassa taloudessa asuvat alle 18-vuotiaat lapset vaikuttavat varhaiskasvatusmaksuihin.',
+        otherChildrenChoiceInfo:
+          'Valitse lapset, jotka asuvat samassa taloudessa.',
+        hasFutureAddress:
+          'Väestörekisterissä oleva osoite on muuttunut tai muuttumassa',
+        firstNamePlaceholder: 'Etunimet',
+        lastNamePlaceholder: 'Sukunimi',
+        ssnPlaceholder: 'Henkilötunnus',
+        streetPlaceholder: 'Osoite',
+        postalCodePlaceholder: 'Postinumero',
+        municipalityPlaceholder: 'Postitoimipaikka',
+        choosePlaceholder: 'Valitse'
       }
     }
   },

@@ -100,7 +100,22 @@ export default React.memo(function DaycareApplicationEditor({
         preferredStartDate={formData.serviceNeed.preferredStartDate}
       />
       <Gap size="s" />
-      <ContactInfoSection />
+      <ContactInfoSection
+        formData={formData.contactInfo}
+        updateFormData={(data) =>
+          setFormData((old) =>
+            old
+              ? {
+                  ...old,
+                  contactInfo: {
+                    ...old?.contactInfo,
+                    ...data
+                  }
+                }
+              : old
+          )
+        }
+      />
       <Gap size="s" />
       <FeeSection formData={formData.fee} updateFormData={updateFeeFormData} />
       <Gap size="s" />
