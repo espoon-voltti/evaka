@@ -125,7 +125,7 @@ test('Citizen sees her decisions, accepts preschool and rejects preschool daycar
     )
     .ok()
 
-  // accept preschool decision
+  // accepting preschool decision
   await t
     .expect(
       citizenDecisionResponsePage.decisionTitle(preschoolDecisionId).textContent
@@ -142,10 +142,8 @@ test('Citizen sees her decisions, accepts preschool and rejects preschool daycar
         .textContent
     )
     .eql('Vahvistettavana huoltajalla')
-  await t.click(citizenDecisionResponsePage.acceptRadioBtn(preschoolDecisionId))
-  await t.click(
-    citizenDecisionResponsePage.submitResponseBtn(preschoolDecisionId)
-  )
+  await citizenDecisionResponsePage.acceptDecision(preschoolDecisionId)
+
   await t
     .expect(
       citizenDecisionResponsePage.decisionStatus(preschoolDecisionId)
@@ -157,7 +155,7 @@ test('Citizen sees her decisions, accepts preschool and rejects preschool daycar
     .expect(citizenDecisionResponsePage.unresolvedDecisionsInfoBox.textContent)
     .contains('1 päätös odottaa vahvistusta')
 
-  // reject preschool_daycare decision
+  // rejecting preschool_daycare decision
   await t
     .expect(
       citizenDecisionResponsePage.decisionTitle(preschoolDaycareDecisionId)
@@ -176,12 +174,7 @@ test('Citizen sees her decisions, accepts preschool and rejects preschool daycar
         .textContent
     )
     .eql('Vahvistettavana huoltajalla')
-  await t.click(
-    citizenDecisionResponsePage.rejectRadioBtn(preschoolDaycareDecisionId)
-  )
-  await t.click(
-    citizenDecisionResponsePage.submitResponseBtn(preschoolDaycareDecisionId)
-  )
+  await citizenDecisionResponsePage.rejectDecision(preschoolDaycareDecisionId)
   await t
     .expect(
       citizenDecisionResponsePage.decisionStatus(preschoolDaycareDecisionId)
@@ -231,11 +224,8 @@ test('Rejecting preschool decision also rejects connected daycare after confirma
 
   // === Response page for decisions of a single application ===
 
-  // reject preschool decision
-  await t.click(citizenDecisionResponsePage.rejectRadioBtn(preschoolDecisionId))
-  await t.click(
-    citizenDecisionResponsePage.submitResponseBtn(preschoolDecisionId)
-  )
+  // rejecting preschool decision
+  await citizenDecisionResponsePage.rejectDecision(preschoolDecisionId)
   await citizenDecisionResponsePage.confirmRejectCascade()
 
   await t

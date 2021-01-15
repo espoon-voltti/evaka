@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2021 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -28,5 +28,15 @@ export default class CitizenDecisionResponsePage {
     await t.click(
       Selector('[data-qa="cascade-warning-modal"] [data-qa="modal-okBtn"]')
     )
+  }
+
+  async acceptDecision(decisionId: string) {
+    await t.click(this.acceptRadioBtn(decisionId))
+    await t.click(this.submitResponseBtn(decisionId))
+  }
+
+  async rejectDecision(decisionId: string) {
+    await t.click(this.rejectRadioBtn(decisionId))
+    await t.click(this.submitResponseBtn(decisionId))
   }
 }
