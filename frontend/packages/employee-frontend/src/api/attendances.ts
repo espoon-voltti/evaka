@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { JsonOf } from '@evaka/lib-common/src/json'
+import { JsonOf, JsonOfObject } from '@evaka/lib-common/src/json'
 import { Failure, Result, Success } from '@evaka/lib-common/src/api'
 import { UUID } from '~types'
 import { AbsenceType, CareType } from '~types/absence'
@@ -201,13 +201,26 @@ export async function postDeparture(
     .catch((e) => Failure.fromError(e))
 }
 
+function compareFirstNames(
+  a: JsonOfObject<AttendanceChild>,
+  b: JsonOfObject<AttendanceChild>
+) {
+  if (a.firstName < b.firstName) {
+    return -1
+  }
+  if (a.firstName > b.firstName) {
+    return 1
+  }
+  return 0
+}
+
 function deserializeAttendanceResponse(
   data: JsonOf<AttendanceResponse>
 ): AttendanceResponse {
   {
     return {
       unit: data.unit,
-      children: data.children.map((attendanceChild) => {
+      children: data.children.sort(compareFirstNames).map((attendanceChild) => {
         return {
           ...attendanceChild,
           attendance: attendanceChild.attendance
