@@ -10,10 +10,13 @@ import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.getUUID
 import fi.espoo.evaka.varda.integration.VardaClient
+import mu.KotlinLogging
 import org.jdbi.v3.core.statement.StatementContext
 import java.sql.ResultSet
 import java.time.LocalDate
 import java.util.UUID
+
+private val logger = KotlinLogging.logger {}
 
 private val vardaMinDate = LocalDate.of(2019, 1, 1)
 private val vardaPlacementTypes =
@@ -28,6 +31,7 @@ fun updateChildren(db: Database.Connection, client: VardaClient, organizerName: 
 
 private fun createPersons(db: Database.Connection, client: VardaClient) {
     val vardaPersons = db.read { getPersonsToUpload(it) }
+    logger.info { "Varda: Creating ${vardaPersons.size} new people" }
     vardaPersons.forEach { (oid, payload) ->
         val response = client.createPerson(payload)
         if (response != null) {
@@ -39,6 +43,7 @@ private fun createPersons(db: Database.Connection, client: VardaClient) {
 private fun createChildren(db: Database.Connection, client: VardaClient, organizerName: String) {
     db.transaction { initNewChildRows(it) }
     val vardaChildren = db.read { getChildrenToUpload(it, client.getPersonUrl, organizerName) }
+    logger.info { "Varda: Creating ${vardaChildren.size} new children" }
     vardaChildren.forEach { vardaChild ->
         client.createChild(vardaChild)
             ?.let { vardaChildResponse -> db.transaction { updateChild(it, vardaChildResponse, vardaChild.id) } }
