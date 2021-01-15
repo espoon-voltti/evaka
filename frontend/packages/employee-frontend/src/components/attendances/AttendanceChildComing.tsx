@@ -117,7 +117,7 @@ export default React.memo(function AttendanceChildComing({
               primary
               text={i18n.common.confirm}
               onClick={() => childArrives()}
-              onSuccess={async () => history.goBack()}
+              onSuccess={() => history.goBack()}
               data-qa="mark-present"
             />
           </FixedSpaceColumn>
