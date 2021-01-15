@@ -201,14 +201,15 @@ export async function postDeparture(
     .catch((e) => Failure.fromError(e))
 }
 
-function compareFirstNames(
+function compareByProperty(
   a: JsonOfObject<AttendanceChild>,
-  b: JsonOfObject<AttendanceChild>
+  b: JsonOfObject<AttendanceChild>,
+  property: string
 ) {
-  if (a.firstName < b.firstName) {
+  if (a[property] < b[property]) {
     return -1
   }
-  if (a.firstName > b.firstName) {
+  if (a[property] > b[property]) {
     return 1
   }
   return 0
@@ -220,20 +221,23 @@ function deserializeAttendanceResponse(
   {
     return {
       unit: data.unit,
-      children: data.children.sort(compareFirstNames).map((attendanceChild) => {
-        return {
-          ...attendanceChild,
-          attendance: attendanceChild.attendance
-            ? {
-                ...attendanceChild.attendance,
-                arrived: new Date(attendanceChild.attendance.arrived),
-                departed: attendanceChild.attendance.departed
-                  ? new Date(attendanceChild.attendance.departed)
-                  : null
-              }
-            : null
-        }
-      })
+      children: data.children
+        .sort((a, b) => compareByProperty(a, b, 'lastName'))
+        .sort((a, b) => compareByProperty(a, b, 'firstName'))
+        .map((attendanceChild) => {
+          return {
+            ...attendanceChild,
+            attendance: attendanceChild.attendance
+              ? {
+                  ...attendanceChild.attendance,
+                  arrived: new Date(attendanceChild.attendance.arrived),
+                  departed: attendanceChild.attendance.departed
+                    ? new Date(attendanceChild.attendance.departed)
+                    : null
+                }
+              : null
+          }
+        })
     }
   }
 }
