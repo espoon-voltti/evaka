@@ -4,11 +4,41 @@
 
 import React from 'react'
 import { ContentArea } from '@evaka/lib-components/src/layout/Container'
+import { ServiceNeedFormData } from '~applications/editor/ApplicationFormData'
+import { DatePicker } from '@evaka/lib-components/src/molecules/DatePicker'
+import Checkbox from '@evaka/lib-components/src/atoms/form/Checkbox'
+import { FixedSpaceColumn } from '@evaka/lib-components/src/layout/flex-helpers'
 
-export default React.memo(function ServiceNeedSection() {
+export type ServiceNeedSectionProps = {
+  formData: ServiceNeedFormData
+  updateFormData: (update: Partial<ServiceNeedFormData>) => void
+}
+
+export default React.memo(function ServiceNeedSection({
+  formData,
+  updateFormData
+}: ServiceNeedSectionProps) {
   return (
     <ContentArea opaque paddingVertical="L">
-      Palvelun tarve
+      <FixedSpaceColumn>
+        <DatePicker
+          date={formData.preferredStartDate || undefined}
+          onChange={(date) =>
+            updateFormData({
+              preferredStartDate: date
+            })
+          }
+        />
+        <Checkbox
+          checked={formData.urgent}
+          label={'kiireellinen'}
+          onChange={(checked) =>
+            updateFormData({
+              urgent: checked
+            })
+          }
+        />
+      </FixedSpaceColumn>
     </ContentArea>
   )
 })

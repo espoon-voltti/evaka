@@ -114,10 +114,10 @@ export interface ApplicationGuardian {
 export interface ApplicationSecondGuardian {
   phoneNumber: string
   email: string
-  agreementStatus: ApplicationGurdianAgreementStatus
+  agreementStatus: ApplicationGuardianAgreementStatus
 }
 
-export type ApplicationGurdianAgreementStatus =
+export type ApplicationGuardianAgreementStatus =
   | 'AGREED'
   | 'NOT_AGREED'
   | 'RIGHT_TO_GET_NOTIFIED'
