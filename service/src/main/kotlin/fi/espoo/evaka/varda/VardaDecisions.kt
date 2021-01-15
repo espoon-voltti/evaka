@@ -32,6 +32,7 @@ fun updateDecisions(db: Database.Connection, client: VardaClient) {
 
 fun removeMarkedDecisionsFromVarda(db: Database.Connection, client: VardaClient) {
     val decisionIds: List<Long> = db.read { getDecisionsToDelete(it) }
+    logger.info { "Varda: Deleting ${decisionIds.size} marked decisions" }
     decisionIds.forEach { id ->
         if (client.deleteDecision(id)) {
             db.transaction { softDeleteDecision(it, id) }
@@ -41,6 +42,7 @@ fun removeMarkedDecisionsFromVarda(db: Database.Connection, client: VardaClient)
 
 fun sendNewDecisions(db: Database.Connection, client: VardaClient) {
     val newDecisions = db.read { getNewDecisions(it, client.getChildUrl) }
+    logger.info { "Varda: Creating ${newDecisions.size} new decisions" }
     newDecisions.forEach { (decisionId, newDecision) ->
         if (validateDecision(decisionId, newDecision)) {
             client.createDecision(newDecision)?.let { (vardaDecisionId) ->
@@ -62,6 +64,7 @@ fun sendNewDecisions(db: Database.Connection, client: VardaClient) {
     }
 
     val newDerivedDecisions = db.read { getNewDerivedDecisions(it, client.getChildUrl) }
+    logger.info { "Varda: Creating ${newDerivedDecisions.size} new derived decisions" }
     newDerivedDecisions.forEach { (placementId, newDecision) ->
         if (validateDecision(placementId, newDecision)) {
             client.createDecision(newDecision)?.let { (vardaDecisionId) ->
@@ -83,6 +86,7 @@ fun sendNewDecisions(db: Database.Connection, client: VardaClient) {
     }
 
     val newTemporaryDecisions = db.read { getNewTemporaryDecisions(it, client.getChildUrl) }
+    logger.info { "Varda: Creating ${newTemporaryDecisions.size} new temporary decisions" }
     newTemporaryDecisions.forEach { (placementId, newDecision) ->
         if (validateDecision(placementId, newDecision)) {
             client.createDecision(newDecision)?.let { (vardaDecisionId) ->
@@ -110,6 +114,7 @@ fun sendUpdatedDecisions(db: Database.Connection, client: VardaClient) {
     val updatedTemporaryDecisions = db.read { getUpdatedTemporaryDecisions(it, client.getChildUrl) }
     val decisionIds = updatedDecisions.map { it.first } + updatedDerivedDecisions.map { it.first } + updatedTemporaryDecisions.map { it.first }
     cleanUpDecisionRelatedData(db, client, decisionIds)
+    logger.info { "Varda: Updating ${decisionIds.size} updated decisions" }
     (updatedDecisions + updatedDerivedDecisions + updatedTemporaryDecisions)
         .forEach { (id, vardaDecisionId, updatedDecision) ->
             if (validateDecision(id, updatedDecision)) {
@@ -134,6 +139,7 @@ fun deleteDecisionPlacements(db: Database.Connection, client: VardaClient, decis
             .mapTo<Long>()
             .toList()
     }
+    logger.info { "Varda: Deleting ${decisionPlacementIds.size} placements related to updated or deleted decisions" }
     decisionPlacementIds.forEach { id ->
         if (client.deletePlacement(id)) {
             db.transaction { deletePlacement(it, id) }
@@ -148,6 +154,7 @@ fun deleteDecisionFeeData(db: Database.Connection, client: VardaClient, decision
             .mapTo<Long>()
             .toList()
     }
+    logger.info { "Varda: Deleting ${decisionFeeDataIds.size} fee data related to updated or deleted decisions" }
     decisionFeeDataIds.forEach { id ->
         if (client.deleteFeeData(id)) {
             db.transaction { deleteVardaFeeData(it, id) }
@@ -159,6 +166,7 @@ fun removeDeletedDecisions(db: Database.Connection, client: VardaClient) {
     val removedDecisions = db.read { getRemovedDecisions(it) + getRemovedDerivedDecisions(it) }
     val decisionIds = removedDecisions.map { (id, _) -> id }
     cleanUpDecisionRelatedData(db, client, decisionIds)
+    logger.info { "Varda: Deleting ${decisionIds.size} removed decisions" }
     removedDecisions.forEach { (_, vardaDecisionId) ->
         client.deleteDecision(vardaDecisionId).let { success ->
             if (success) db.transaction { deleteDecision(it, vardaDecisionId) }

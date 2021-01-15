@@ -14,10 +14,13 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.getUUID
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.varda.integration.VardaClient
+import mu.KotlinLogging
 import org.jdbi.v3.core.kotlin.mapTo
 import java.time.Instant
 import java.time.LocalDate
 import java.util.UUID
+
+private val logger = KotlinLogging.logger {}
 
 fun updateFeeData(
     db: Database.Connection,
@@ -29,7 +32,9 @@ fun updateFeeData(
 }
 
 fun removeMarkedFeeDataFromVarda(db: Database.Connection, client: VardaClient) {
-    db.read { getMarkedFeeData(it) }.forEach { vardaId ->
+    val markedFeeData = db.read { getMarkedFeeData(it) }
+    logger.info { "Varda: Deleting ${markedFeeData.size} marked fee data" }
+    markedFeeData.forEach { vardaId ->
         if (client.deleteFeeData(vardaId)) {
             db.transaction { deleteVardaFeeData(it, vardaId) }
         }
@@ -38,6 +43,7 @@ fun removeMarkedFeeDataFromVarda(db: Database.Connection, client: VardaClient) {
 
 fun deleteAnnulledFeeData(db: Database.Connection, client: VardaClient) {
     val vardaIds = db.read { getAnnulledFeeDecisions(it) }
+    logger.info { "Varda: Deleting ${vardaIds.size} annulled fee data" }
     deleteFeeData(db, client, vardaIds)
 }
 
@@ -57,6 +63,7 @@ fun createAndUpdateFeeData(db: Database.Connection, client: VardaClient, personS
         val outdatedFeeData = vardaDecisionPeriods.flatMap { decisionPeriod ->
             db.read { getOutdatedFeeData(it, decisionPeriod) }
         }
+        logger.info { "Varda: Deleting ${outdatedFeeData.size} outdated fee data" }
         deleteFeeData(db, client, outdatedFeeData)
 
         val guardians = db.transaction { personService.getEvakaOrVtjGuardians(it, AuthenticatedUser.machineUser, childId) }
@@ -70,6 +77,7 @@ fun createAndUpdateFeeData(db: Database.Connection, client: VardaClient, personS
             }
         }
 
+        logger.info { "Varda: Sending ${feeData.size} new and updated fee data" }
         feeData.forEach { (vardaDecisionId, data) ->
             val richData = baseToFeeData(data, guardians, client.getChildUrl(data.vardaChildId))
             when (data.vardaId) {

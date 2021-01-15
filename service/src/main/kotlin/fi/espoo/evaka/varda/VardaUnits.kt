@@ -12,14 +12,17 @@ import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.annotation.JsonPropertyOrder
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.varda.integration.VardaClient
+import mu.KotlinLogging
 import org.jdbi.v3.core.kotlin.mapTo
 import java.util.UUID
+
+private val logger = KotlinLogging.logger {}
 
 val unitTypesToUpload = listOf(VardaUnitProviderType.MUNICIPAL, VardaUnitProviderType.MUNICIPAL_SCHOOL)
 
 fun updateUnits(db: Database.Connection, client: VardaClient, organizerName: String) {
     val units = db.read { getNewOrStaleUnits(it, organizerName) }
-
+    logger.info { "Varda: Sending ${units.size} new or updated units" }
     units.forEach { unit ->
         val response =
             if (unit.vardaUnitId == null) client.createUnit(unit)

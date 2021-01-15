@@ -11,11 +11,14 @@ import fi.espoo.evaka.placement.PlacementType.PRESCHOOL_DAYCARE
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.getUUID
 import fi.espoo.evaka.varda.integration.VardaClient
+import mu.KotlinLogging
 import org.jdbi.v3.core.statement.StatementContext
 import java.sql.ResultSet
 import java.time.Instant
 import java.time.LocalDate
 import java.util.UUID
+
+private val logger = KotlinLogging.logger {}
 
 fun updatePlacements(db: Database.Connection, client: VardaClient) {
     removeDeletedPlacements(db, client)
@@ -25,6 +28,7 @@ fun updatePlacements(db: Database.Connection, client: VardaClient) {
 
 fun removeMarkedPlacementsFromVarda(db: Database.Connection, client: VardaClient) {
     val placementIds: List<Long> = db.read { getPlacementsToDelete(it) }
+    logger.info { "Varda: Deleting ${placementIds.size} marked placements" }
     placementIds.forEach { id ->
         if (client.deletePlacement(id)) {
             db.transaction { softDeletePlacement(it, id) }
@@ -34,6 +38,7 @@ fun removeMarkedPlacementsFromVarda(db: Database.Connection, client: VardaClient
 
 fun sendNewPlacements(db: Database.Connection, client: VardaClient) {
     val newPlacements = db.read { getNewPlacements(it, client.getDecisionUrl) }
+    logger.info { "Varda: Creating ${newPlacements.size} new placements" }
     newPlacements.forEach { (decisionId, placementId, newPlacement) ->
         client.createPlacement(newPlacement)?.let { (vardaPlacementId) ->
             db.transaction {
@@ -55,6 +60,7 @@ fun sendNewPlacements(db: Database.Connection, client: VardaClient) {
 
 fun sendUpdatedPlacements(db: Database.Connection, client: VardaClient) {
     val updatedPlacements = db.read { getUpdatedPlacements(it, client.getDecisionUrl) }
+    logger.info { "Varda: Updating ${updatedPlacements.size} updated placements" }
     updatedPlacements.forEach { (id, vardaPlacementId, updatedPlacement) ->
         client.updatePlacement(vardaPlacementId, updatedPlacement)?.let {
             db.transaction { updatePlacementUploadTimestamp(it, id) }
@@ -64,6 +70,7 @@ fun sendUpdatedPlacements(db: Database.Connection, client: VardaClient) {
 
 fun removeDeletedPlacements(db: Database.Connection, client: VardaClient) {
     val removedPlacements = db.read { getRemovedPlacements(it) }
+    logger.info { "Varda: Deleting ${removedPlacements.size} removed placements" }
     removedPlacements.forEach { vardaPlacementId ->
         client.deletePlacement(vardaPlacementId).let { success ->
             if (success) db.transaction { deletePlacement(it, vardaPlacementId) }
