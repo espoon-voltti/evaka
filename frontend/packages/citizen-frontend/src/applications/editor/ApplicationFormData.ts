@@ -4,6 +4,12 @@ import { Application, ApplicationForm } from '~applications/types'
 export type ServiceNeedFormData = {
   preferredStartDate: LocalDate | null
   urgent: boolean
+  startTime: string
+  endTime: string
+  shiftCare: boolean
+  partTime: boolean
+  assistanceNeeded: boolean
+  assistanceDescription: string
 }
 
 export type UnitPreferenceFormData = {
@@ -39,7 +45,13 @@ export function apiDataToFormData(
   return {
     serviceNeed: {
       preferredStartDate: application.form.preferences.preferredStartDate,
-      urgent: application.form.preferences.urgent
+      urgent: application.form.preferences.urgent,
+      startTime: application.form.preferences.serviceNeed?.startTime ?? '',
+      endTime: application.form.preferences.serviceNeed?.endTime ?? '',
+      shiftCare: application.form.preferences.serviceNeed?.shiftCare ?? false,
+      partTime: application.form.preferences.serviceNeed?.partTime ?? false,
+      assistanceNeeded: application.form.child.assistanceNeeded,
+      assistanceDescription: application.form.child.assistanceDescription
     },
     unitPreference: {
       siblingBasis: application.form.preferences.siblingBasis !== null,
@@ -68,8 +80,8 @@ export function formDataToApiData(form: ApplicationFormData): ApplicationForm {
       language: 'string',
       allergies: 'string',
       diet: 'string',
-      assistanceNeeded: false,
-      assistanceDescription: 'string'
+      assistanceNeeded: form.serviceNeed.assistanceNeeded,
+      assistanceDescription: form.serviceNeed.assistanceDescription
     },
     guardian: {
       person: {
@@ -88,7 +100,12 @@ export function formDataToApiData(form: ApplicationFormData): ApplicationForm {
     preferences: {
       preferredUnits: form.unitPreference.preferredUnits,
       preferredStartDate: form.serviceNeed.preferredStartDate,
-      serviceNeed: null,
+      serviceNeed: {
+        startTime: form.serviceNeed.startTime,
+        endTime: form.serviceNeed.endTime,
+        shiftCare: form.serviceNeed.shiftCare,
+        partTime: form.serviceNeed.partTime
+      },
       siblingBasis: form.unitPreference.siblingBasis
         ? {
             siblingName: form.unitPreference.siblingName,
