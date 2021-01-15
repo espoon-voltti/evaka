@@ -112,9 +112,7 @@ test('Citizen sees her decisions, accepts preschool and rejects preschool daycar
     .expect(citizenDecisionResponsePage.pageTitle.textContent)
     .contains('Päätökset')
 
-  await t
-    .expect(citizenDecisionResponsePage.unresolvedDecisionsInfoBox.textContent)
-    .contains('2 päätöstä odottaa vahvistusta')
+  await citizenDecisionResponsePage.assertUnresolvedDecisionsNotification(2)
 
   // preschool_daycare decision cannot be accepted before accepting preschool
   await t
@@ -125,23 +123,13 @@ test('Citizen sees her decisions, accepts preschool and rejects preschool daycar
     )
     .ok()
 
-  // accepting preschool decision
-  await t
-    .expect(
-      citizenDecisionResponsePage.decisionTitle(preschoolDecisionId).textContent
-    )
-    .eql('Päätös esiopetuksesta')
-  await t
-    .expect(
-      citizenDecisionResponsePage.decisionUnit(preschoolDecisionId).textContent
-    )
-    .eql(daycareFixture.decisionPreschoolName)
-  await t
-    .expect(
-      citizenDecisionResponsePage.decisionStatus(preschoolDecisionId)
-        .textContent
-    )
-    .eql('Vahvistettavana huoltajalla')
+  await citizenDecisionResponsePage.assertDecisionData(
+    preschoolDecisionId,
+    'Päätös esiopetuksesta',
+    daycareFixture.decisionPreschoolName,
+    'Vahvistettavana huoltajalla'
+  )
+
   await citizenDecisionResponsePage.acceptDecision(preschoolDecisionId)
 
   await t
@@ -151,29 +139,15 @@ test('Citizen sees her decisions, accepts preschool and rejects preschool daycar
     )
     .eql('Hyväksytty')
 
-  await t
-    .expect(citizenDecisionResponsePage.unresolvedDecisionsInfoBox.textContent)
-    .contains('1 päätös odottaa vahvistusta')
+  await citizenDecisionResponsePage.assertUnresolvedDecisionsNotification(1)
 
-  // rejecting preschool_daycare decision
-  await t
-    .expect(
-      citizenDecisionResponsePage.decisionTitle(preschoolDaycareDecisionId)
-        .textContent
-    )
-    .eql('Päätös liittyvästä varhaiskasvatuksesta')
-  await t
-    .expect(
-      citizenDecisionResponsePage.decisionUnit(preschoolDaycareDecisionId)
-        .textContent
-    )
-    .eql(daycareFixture.decisionDaycareName)
-  await t
-    .expect(
-      citizenDecisionResponsePage.decisionStatus(preschoolDaycareDecisionId)
-        .textContent
-    )
-    .eql('Vahvistettavana huoltajalla')
+  await citizenDecisionResponsePage.assertDecisionData(
+    preschoolDaycareDecisionId,
+    'Päätös liittyvästä varhaiskasvatuksesta',
+    daycareFixture.decisionDaycareName,
+    'Vahvistettavana huoltajalla'
+  )
+
   await citizenDecisionResponsePage.rejectDecision(preschoolDaycareDecisionId)
   await t
     .expect(
@@ -182,9 +156,7 @@ test('Citizen sees her decisions, accepts preschool and rejects preschool daycar
     )
     .eql('Hylätty')
 
-  await t
-    .expect(citizenDecisionResponsePage.unresolvedDecisionsInfoBox.exists)
-    .notOk()
+  await citizenDecisionResponsePage.assertUnresolvedDecisionsNotification(0)
 })
 
 test('Rejecting preschool decision also rejects connected daycare after confirmation', async (t) => {
@@ -221,10 +193,6 @@ test('Rejecting preschool decision also rejects connected daycare after confirma
   await t.useRole(enduserRole)
   await t.click(citizenHomePage.nav.decisions)
   await t.click(citizenDecisionsPage.goRespondToDecisionBtn(applicationId))
-
-  // === Response page for decisions of a single application ===
-
-  // rejecting preschool decision
   await citizenDecisionResponsePage.rejectDecision(preschoolDecisionId)
   await citizenDecisionResponsePage.confirmRejectCascade()
 
@@ -240,7 +208,6 @@ test('Rejecting preschool decision also rejects connected daycare after confirma
         .textContent
     )
     .eql('Hylätty')
-  await t
-    .expect(citizenDecisionResponsePage.unresolvedDecisionsInfoBox.exists)
-    .notOk()
+
+  await citizenDecisionResponsePage.assertUnresolvedDecisionsNotification(0)
 })

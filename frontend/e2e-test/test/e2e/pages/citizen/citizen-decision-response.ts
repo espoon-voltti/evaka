@@ -39,4 +39,37 @@ export default class CitizenDecisionResponsePage {
     await t.click(this.rejectRadioBtn(decisionId))
     await t.click(this.submitResponseBtn(decisionId))
   }
+
+  async assertDecisionData(
+    decisionId: string,
+    decisionTypeText: string,
+    decisionUnitText: string,
+    decisionStatusText: string
+  ) {
+    await t
+      .expect(this.decisionTitle(decisionId).textContent)
+      .eql(decisionTypeText)
+
+    await t
+      .expect(this.decisionUnit(decisionId).textContent)
+      .eql(decisionUnitText)
+
+    await t
+      .expect(this.decisionStatus(decisionId).textContent)
+      .eql(decisionStatusText)
+  }
+
+  async assertUnresolvedDecisionsNotification(count: number) {
+    if (count === 0) {
+      await t.expect(this.unresolvedDecisionsInfoBox.exists).notOk()
+    } else if (count === 1) {
+      await t
+        .expect(this.unresolvedDecisionsInfoBox.textContent)
+        .contains('1 päätös odottaa vahvistusta')
+    } else {
+      await t
+        .expect(this.unresolvedDecisionsInfoBox.textContent)
+        .contains(`${count} päätöstä odottaa vahvistusta`)
+    }
+  }
 }
