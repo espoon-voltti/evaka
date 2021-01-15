@@ -80,7 +80,22 @@ export default React.memo(function DaycareApplicationEditor() {
             }
           />
           <Gap size="s" />
-          <UnitPreferenceSection />
+          <UnitPreferenceSection
+            formData={formData.unitPreference}
+            updateFormData={(data) =>
+              setFormData((old) =>
+                old
+                  ? {
+                      ...old,
+                      unitPreference: {
+                        ...old?.unitPreference,
+                        ...data
+                      }
+                    }
+                  : old
+              )
+            }
+          />
           <Gap size="s" />
           <ContactInfoSection />
           <Gap size="s" />

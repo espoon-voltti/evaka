@@ -1,5 +1,5 @@
-import { Application, ApplicationForm } from '~applications/types'
 import LocalDate from '@evaka/lib-common/src/local-date'
+import { Application, ApplicationForm } from '~applications/types'
 
 export type ServiceNeedFormData = {
   preferredStartDate: LocalDate | null
@@ -7,7 +7,9 @@ export type ServiceNeedFormData = {
 }
 
 export type UnitPreferenceFormData = {
-  // todo
+  siblingBasis: boolean
+  siblingName: string
+  siblingSsn: string
 }
 
 export type ContactInfoFormData = {
@@ -38,7 +40,11 @@ export function apiDataToFormData(
       preferredStartDate: application.form.preferences.preferredStartDate,
       urgent: application.form.preferences.urgent
     },
-    unitPreference: {},
+    unitPreference: {
+      siblingBasis: application.form.preferences.siblingBasis !== null,
+      siblingName: application.form.preferences.siblingBasis?.siblingName ?? '',
+      siblingSsn: application.form.preferences.siblingBasis?.siblingSsn ?? ''
+    },
     contactInfo: {},
     fee: {},
     additionalDetails: {}
@@ -81,7 +87,12 @@ export function formDataToApiData(form: ApplicationFormData): ApplicationForm {
       preferredUnits: [],
       preferredStartDate: form.serviceNeed.preferredStartDate,
       serviceNeed: null,
-      siblingBasis: null,
+      siblingBasis: form.unitPreference.siblingBasis
+        ? {
+            siblingName: form.unitPreference.siblingName,
+            siblingSsn: form.unitPreference.siblingSsn
+          }
+        : null,
       preparatory: false,
       urgent: form.serviceNeed.urgent
     },
