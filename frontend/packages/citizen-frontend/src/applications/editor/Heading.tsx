@@ -16,7 +16,12 @@ export default React.memo(function Heading({ type }: { type: 'daycare' }) {
 
   return (
     <ContentArea opaque paddingVertical="L">
-      <H1 noMargin>{t.applications.editor.heading.title[type]}</H1>
+      <H1
+        noMargin
+        dangerouslySetInnerHTML={{
+          __html: t.applications.editor.heading.title[type]
+        }}
+      />
       <Gap size="xs" />
       {infoParagraphs.map((paragraph, index) => (
         <Paragraph

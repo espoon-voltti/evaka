@@ -4,13 +4,14 @@ import styled from 'styled-components'
 import colors from '@evaka/lib-components/src/colors'
 import {
   FixedSpaceColumn,
-  FixedSpaceRow
+  FixedSpaceFlexWrap
 } from '@evaka/lib-components/src/layout/flex-helpers'
 import { H4 } from '@evaka/lib-components/src/typography'
 import IconButton from '@evaka/lib-components/src/atoms/buttons/IconButton'
 import { faArrowDown, faArrowUp, faTimes } from '@evaka/lib-icons'
-import { defaultMargins } from '@evaka/lib-components/src/white-space'
+import { defaultMargins, Gap } from '@evaka/lib-components/src/white-space'
 import InlineButton from '@evaka/lib-components/src/atoms/buttons/InlineButton'
+import { StaticChip } from '@evaka/lib-components/src/atoms/Chip'
 
 export type PreferredUnitBoxProps = {
   unit: PublicUnit
@@ -36,11 +37,12 @@ export default React.memo(function PreferredUnitBox({
             <H4 noMargin>{unit.name}</H4>
             <span>{unit.streetAddress}</span>
           </FixedSpaceColumn>
-          <FixedSpaceRow spacing={'xs'}>
-            <div>kieli-chippi</div>
-            <div>järjestämismuoto-chippi</div>
-          </FixedSpaceRow>
-          <FixedSpaceRow>
+          <FixedSpaceFlexWrap horizontalSpacing={'xs'} verticalSpacing={'xs'}>
+            <StaticChip color={colors.primary}>Suomenkielinen</StaticChip>
+            <StaticChip color={colors.accents.water}>Kunnallinen</StaticChip>
+          </FixedSpaceFlexWrap>
+          <Gap size={'xs'} />
+          <FixedSpaceFlexWrap verticalSpacing={'xs'}>
             <InlineButton
               text={'Siirrä ylöspäin'}
               icon={faArrowUp}
@@ -53,7 +55,7 @@ export default React.memo(function PreferredUnitBox({
               onClick={moveDown || noOp}
               disabled={!moveDown}
             />
-          </FixedSpaceRow>
+          </FixedSpaceFlexWrap>
         </FixedSpaceColumn>
       </MainColCenter>
       <MainColRight>
@@ -79,12 +81,20 @@ const MainColLeft = styled.div`
   font-family: Montserrat, sans-serif;
   font-style: normal;
   font-weight: 300;
+  color: ${colors.primary};
+  text-align: center;
+
   font-size: 70px;
   line-height: 56px;
-  color: ${colors.primary};
-  padding: ${defaultMargins.s};
   width: 60px;
-  text-align: center;
+  padding: ${defaultMargins.s};
+
+  @media screen and (max-width: 769px) {
+    font-size: 48px;
+    line-height: 52px;
+    width: 48px;
+    padding: ${defaultMargins.xs};
+  }
 `
 
 const MainColCenter = styled.div`

@@ -35,7 +35,7 @@ export default {
     editor: {
       heading: {
         title: {
-          daycare: 'Varhaiskasvatushakemus'
+          daycare: 'Varhaiskasvatus&shy;hakemus'
         },
         info: {
           daycare: [

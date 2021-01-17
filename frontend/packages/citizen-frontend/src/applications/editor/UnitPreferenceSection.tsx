@@ -11,10 +11,11 @@ import Checkbox from '@evaka/lib-components/src/atoms/form/Checkbox'
 import { UnitPreferenceFormData } from '~applications/editor/ApplicationFormData'
 import {
   FixedSpaceColumn,
-  FixedSpaceRow
+  FixedSpaceRow,
+  FixedSpaceFlexWrap
 } from '@evaka/lib-components/src/layout/flex-helpers'
 import InputField from '@evaka/lib-components/src/atoms/form/InputField'
-import { defaultMargins, Gap } from '@evaka/lib-components/src/white-space'
+import { Gap } from '@evaka/lib-components/src/white-space'
 import HorizontalLine from '@evaka/lib-components/src/atoms/HorizontalLine'
 import { Loading, Result, Success } from '@evaka/lib-common/src/api'
 import { PublicUnit } from '@evaka/lib-common/src/api-types/units'
@@ -26,6 +27,7 @@ import { AlertBox } from '@evaka/lib-components/src/molecules/MessageBoxes'
 import { SpinnerSegment } from '@evaka/lib-components/src/atoms/state/Spinner'
 import ErrorSegment from '@evaka/lib-components/src/atoms/state/ErrorSegment'
 import PreferredUnitBox from '~applications/editor/PreferredUnitBox'
+import { SelectionChip } from '@evaka/lib-components/src/atoms/Chip'
 
 export type UnitPreferenceSectionProps = {
   formData: UnitPreferenceFormData
@@ -133,9 +135,10 @@ export default React.memo(function UnitPreferenceSection({
           </p>
 
           <Label>Yksikön kieli</Label>
+          <Gap size={'xs'} />
           <FixedSpaceRow>
-            <div>suomi-chip</div>
-            <div>ruotsi-chip</div>
+            <SelectionChip text={'Suomi'} selected={true} />
+            <SelectionChip text={'Ruotsi'} selected={false} />
           </FixedSpaceRow>
 
           <Gap size={'s'} />
@@ -143,44 +146,40 @@ export default React.memo(function UnitPreferenceSection({
           {units.isLoading && <SpinnerSegment />}
           {units.isFailure && <ErrorSegment />}
           {units.isSuccess && (
-            <FlexContainer>
-              <FlexChild>
-                <FixedSpaceColumn spacing={'xs'}>
-                  <Label>Valitse hakutoiveet *</Label>
-                  <ReactSelect
-                    isMulti
-                    placeholder={'placeholder'}
-                    value={units.value
-                      .filter(
-                        (u) =>
-                          !!formData.preferredUnits.find((u2) => u2.id === u.id)
-                      )
-                      .map(({ id, name }) => ({ id, name }))}
-                    options={units.value.map(({ id, name }) => ({ id, name }))}
-                    onChange={(selected) => {
-                      if (
-                        selected &&
-                        'length' in selected &&
-                        selected.length > 3
-                      )
-                        return
+            <FixedSpaceFlexWrap horizontalSpacing={'L'} verticalSpacing={'s'}>
+              <FixedWidthDiv>
+                <Label>Valitse hakutoiveet *</Label>
+                <Gap size={'xs'} />
+                <ReactSelect
+                  isMulti
+                  placeholder={'placeholder'}
+                  value={units.value
+                    .filter(
+                      (u) =>
+                        !!formData.preferredUnits.find((u2) => u2.id === u.id)
+                    )
+                    .map(({ id, name }) => ({ id, name }))}
+                  options={units.value.map(({ id, name }) => ({ id, name }))}
+                  onChange={(selected) => {
+                    if (selected && 'length' in selected && selected.length > 3)
+                      return
 
-                      updateFormData({
-                        preferredUnits:
-                          selected && 'length' in selected
-                            ? selected.map(({ id, name }) => ({ id, name }))
-                            : []
-                      })
-                    }}
-                    getOptionValue={(unit: PreferredUnit) => unit.id}
-                    getOptionLabel={(unit: PreferredUnit) => unit.name}
-                    isClearable={false}
-                  />
-                </FixedSpaceColumn>
-              </FlexChild>
-              <FlexChild>
+                    updateFormData({
+                      preferredUnits:
+                        selected && 'length' in selected
+                          ? selected.map(({ id, name }) => ({ id, name }))
+                          : []
+                    })
+                  }}
+                  getOptionValue={(unit: PreferredUnit) => unit.id}
+                  getOptionLabel={(unit: PreferredUnit) => unit.name}
+                  isClearable={false}
+                />
+              </FixedWidthDiv>
+              <FixedWidthDiv>
+                <Label>Valitsemasi hakutoiveet</Label>
+                <Gap size={'xs'} />
                 <FixedSpaceColumn spacing={'s'}>
-                  <Label>Valitsemasi hakutoiveet</Label>
                   {formData.preferredUnits
                     .map((u) => units.value.find((u2) => u.id === u2.id))
                     .map((unit, i) =>
@@ -230,8 +229,8 @@ export default React.memo(function UnitPreferenceSection({
                       ) : null
                     )}
                 </FixedSpaceColumn>
-              </FlexChild>
-            </FlexContainer>
+              </FixedWidthDiv>
+            </FixedSpaceFlexWrap>
           )}
         </>
       )}
@@ -239,13 +238,7 @@ export default React.memo(function UnitPreferenceSection({
   )
 })
 
-const FlexContainer = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-`
-
-const FlexChild = styled.div`
-  width: 480px;
-  margin-right: ${defaultMargins.m};
-  margin-bottom: ${defaultMargins.m};
+const FixedWidthDiv = styled.div`
+  width: 100%;
+  max-width: 480px;
 `
