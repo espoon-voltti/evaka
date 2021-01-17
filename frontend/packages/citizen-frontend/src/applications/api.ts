@@ -7,7 +7,7 @@ import { JsonOf } from '@evaka/lib-common/src/json'
 import LocalDate from '@evaka/lib-common/src/local-date'
 import { PublicUnit } from '@evaka/lib-common/src/api-types/units'
 import { client } from '~api-client'
-import { Application, GuardianApplications } from '~applications/types'
+import { Application, ApplicationType, GuardianApplications } from '~applications/types'
 
 export type ApplicationUnitType =
   | 'CLUB'
@@ -47,6 +47,7 @@ export async function getApplication(
 
 const deserializeApplication = (json: JsonOf<Application>): Application => ({
   ...json,
+  type: json.type.toLowerCase() as ApplicationType, // todo: temporary hotfix
   form: {
     ...json.form,
     child: {
