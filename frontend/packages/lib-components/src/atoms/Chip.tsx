@@ -10,15 +10,21 @@ import { defaultMargins } from '../white-space'
 type SelectionChipProps = {
   text: string
   selected: boolean
+  onClick: (selected: boolean) => void
 }
 
 export const SelectionChip = React.memo(function SelectionChip({
   text,
-  selected
+  selected,
+  onClick
 }: SelectionChipProps) {
   return (
-    <SelectionChipWrapper selected={selected} color={colors.primary}>
-      <FixedSpaceRow alignItems="center">
+    <SelectionChipWrapper
+      selected={selected}
+      color={colors.primary}
+      onClick={() => onClick(!selected)}
+    >
+      <FixedSpaceRow alignItems="center" spacing="xs">
         {selected && <FontAwesomeIcon icon={faCheck} />}
         <span>{text}</span>
       </FixedSpaceRow>
@@ -27,6 +33,7 @@ export const SelectionChip = React.memo(function SelectionChip({
 })
 
 export const StaticChip = styled.div<{ color: string }>`
+  user-select: none;
   border: 1px solid ${(p) => p.color};
   border-radius: 1000px;
   background-color: ${(p) => p.color};
@@ -36,6 +43,8 @@ export const StaticChip = styled.div<{ color: string }>`
 `
 
 const SelectionChipWrapper = styled(StaticChip)<{ selected: boolean }>`
+  cursor: pointer;
+
   ${(p) =>
     p.selected
       ? ''

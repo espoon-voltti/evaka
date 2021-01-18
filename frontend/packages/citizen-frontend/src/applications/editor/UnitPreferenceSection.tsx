@@ -46,6 +46,8 @@ export default React.memo(function UnitPreferenceSection({
 }: UnitPreferenceSectionProps) {
   const [units, setUnits] = useState<Result<PublicUnit[]>>(Loading.of())
   const loadUnits = useRestApi(getApplicationUnits, setUnits)
+  const [displayFinnish, setDisplayFinnish] = useState(true)
+  const [displaySwedish, setDisplaySwedish] = useState(false)
 
   useEffect(() => {
     if (!preferredStartDate) {
@@ -137,8 +139,16 @@ export default React.memo(function UnitPreferenceSection({
           <Label>Yksikön kieli</Label>
           <Gap size={'xs'} />
           <FixedSpaceRow>
-            <SelectionChip text={'Suomi'} selected={true} />
-            <SelectionChip text={'Ruotsi'} selected={false} />
+            <SelectionChip
+              text={'Suomi'}
+              selected={displayFinnish}
+              onClick={setDisplayFinnish}
+            />
+            <SelectionChip
+              text={'Ruotsi'}
+              selected={displaySwedish}
+              onClick={setDisplaySwedish}
+            />
           </FixedSpaceRow>
 
           <Gap size={'s'} />
@@ -159,7 +169,13 @@ export default React.memo(function UnitPreferenceSection({
                         !!formData.preferredUnits.find((u2) => u2.id === u.id)
                     )
                     .map(({ id, name }) => ({ id, name }))}
-                  options={units.value.map(({ id, name }) => ({ id, name }))}
+                  options={units.value
+                    .filter(
+                      (u) =>
+                        (displayFinnish && u.language === 'fi') ||
+                        (displaySwedish && u.language === 'sv')
+                    )
+                    .map(({ id, name }) => ({ id, name }))}
                   onChange={(selected) => {
                     if (selected && 'length' in selected && selected.length > 3)
                       return
