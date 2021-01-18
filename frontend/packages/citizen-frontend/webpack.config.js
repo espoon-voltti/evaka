@@ -4,7 +4,6 @@
 
 const path = require('path')
 
-const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const TsconfigPathsPlugin = require('tsconfig-paths-webpack-plugin')
 const SentryWebpackPlugin = require('@sentry/webpack-plugin')
@@ -13,9 +12,6 @@ module.exports = function (env, argv) {
   const isDevelopment = argv && argv['mode'] !== 'production'
 
   const plugins = [
-    new MiniCssExtractPlugin({
-      filename: isDevelopment ? '[name].css' : '[name].[contenthash].css'
-    }),
     new HtmlWebpackPlugin({
       template: 'src/index.html'
     })
@@ -74,7 +70,7 @@ module.exports = function (env, argv) {
         {
           test: /\.css$/,
           use: [
-            MiniCssExtractPlugin.loader,
+            'style-loader',
             {
               loader: 'css-loader',
               options: { importLoaders: 1 }
