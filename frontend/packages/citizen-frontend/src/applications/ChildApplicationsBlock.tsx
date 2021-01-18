@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
-import { GuardianApplications } from '~applications/types'
+import { ApplicationStatus, GuardianApplications } from '~applications/types'
 import { useTranslation } from '~localization'
 import { H2, H3, Label } from '@evaka/lib-components/src/typography'
 import { ContentArea } from '@evaka/lib-components/src/layout/Container'
@@ -12,6 +12,8 @@ import styled from 'styled-components'
 import ListGrid from '@evaka/lib-components/src/layout/ListGrid'
 import { DATE_FORMAT_DATE_TIME, formatDate } from '~util'
 import { ApplicationLink } from '~decisions/ApplicationLink'
+import { Status, statusIcon } from '~decisions/shared'
+import RoundIcon from '@evaka/lib-components/src/atoms/RoundIcon'
 
 const MobileFriendlyListGrid = styled(ListGrid)`
   @media (max-width: 600px) {
@@ -30,12 +32,34 @@ const LineBreak = styled.div`
   margin: 40px 0 20px 0;
 `
 
+const StatusContainer = styled.div``
+
 export default React.memo(function ChildApplicationsBlock({
   childId,
   childName,
   applicationSummaries
 }: GuardianApplications) {
   const t = useTranslation()
+
+  const applicationStatusToIcon = (
+    applicationStatus: ApplicationStatus
+  ): string => {
+    switch (applicationStatus) {
+      case 'ACTIVE':
+        return 'ACCEPTED'
+      case 'WAITING_PLACEMENT':
+      case 'WAITING_DECISION':
+      case 'WAITING_UNIT_CONFIRMATION':
+      case 'WAITING_MAILING':
+        return 'PROCESSING'
+      case 'WAITING_CONFIRMATION':
+        return 'PENDING'
+      case 'CANCELLED':
+        return 'REJECTED'
+      default:
+        return applicationStatus
+    }
+  }
 
   return (
     <ContentArea opaque paddingVertical="L" data-qa={`child-${childId}`}>
@@ -87,9 +111,22 @@ export default React.memo(function ChildApplicationsBlock({
               </span>
 
               <Label>{t.applicationsList.status.title}</Label>
-              <span data-qa={`application-status-${applicationId}`}>
-                {t.applicationsList.status[applicationStatus]}
-              </span>
+              <StatusContainer data-qa={`application-status-${applicationId}`}>
+                <RoundIcon
+                  content={
+                    statusIcon[applicationStatusToIcon(applicationStatus)].icon
+                  }
+                  color={
+                    statusIcon[applicationStatusToIcon(applicationStatus)].color
+                  }
+                  size="s"
+                />
+                <Status data-qa={`application-status-${applicationId}`}>
+                  {t.applicationsList.status[applicationStatus]}
+                </Status>
+              </StatusContainer>
+
+              <Gap size="xs" horizontal />
             </MobileFriendlyListGrid>
             <Gap size="m" />
             <ApplicationLink applicationId={applicationId} />

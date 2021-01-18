@@ -59,6 +59,7 @@ export interface IconSet {
   faMoneyCheckEdit: IconDefinition
   faPen: IconDefinition
   faPercentage: IconDefinition
+  faPlay: IconDefinition
   faPlus: IconDefinition
   faPlusCircle: IconDefinition
   faQuestion: IconDefinition
@@ -143,6 +144,7 @@ export const faMoneyCheck = iconSet.faMoneyCheck
 export const faMoneyCheckEdit = iconSet.faMoneyCheckEdit
 export const faPen = iconSet.faPen
 export const faPercentage = iconSet.faPercentage
+export const faPlay = iconSet.faPlay
 export const faPlus = iconSet.faPlus
 export const faPlusCircle = iconSet.faPlusCircle
 export const faQuestion = iconSet.faQuestion
