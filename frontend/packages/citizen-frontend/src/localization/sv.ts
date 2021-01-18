@@ -150,7 +150,10 @@ const sv: Translations = {
       ACTIVE: 'Paikka vastaanotettu',
       CANCELLED: 'Poistettu käsittelystä'
     },
-    openApplicationLink: 'Näytä hakemus'
+    openApplicationLink: 'Näytä hakemus',
+    confirmationLinkInstructions:
+      'Päätökset-välilehdellä voit lukea päätöksen ja hyväksyä/hylätä tarjotun paikan',
+    confirmationLink: 'Siirry vahvistamaan'
   }
 }
 

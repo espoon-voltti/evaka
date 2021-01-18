@@ -14,6 +14,9 @@ import { DATE_FORMAT_DATE_TIME, formatDate } from '~util'
 import { ApplicationLink } from '~decisions/ApplicationLink'
 import { Status, statusIcon } from '~decisions/shared'
 import RoundIcon from '@evaka/lib-components/src/atoms/RoundIcon'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faArrowRight } from '@evaka/lib-icons'
+import colors from '@evaka/lib-components/src/colors'
 
 const MobileFriendlyListGrid = styled(ListGrid)`
   @media (max-width: 600px) {
@@ -33,6 +36,28 @@ const LineBreak = styled.div`
 `
 
 const StatusContainer = styled.div``
+
+const ConfirmationContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+
+  & div {
+    margin-top: 7px;
+  }
+`
+
+const ConfirmationLink = styled.div`
+  & a {
+    color: ${colors.blues.primary};
+    text-decoration: none;
+  }
+`
+
+const Icon = styled(FontAwesomeIcon)`
+  height: 1rem !important;
+  width: 1rem !important;
+  margin-right: 10px;
+`
 
 export default React.memo(function ChildApplicationsBlock({
   childId,
@@ -124,6 +149,16 @@ export default React.memo(function ChildApplicationsBlock({
                 <Status data-qa={`application-status-${applicationId}`}>
                   {t.applicationsList.status[applicationStatus]}
                 </Status>
+
+                {applicationStatus === 'WAITING_CONFIRMATION' && (
+                  <ConfirmationContainer>
+                    <div>{t.applicationsList.confirmationLinkInstructions}</div>
+                    <ConfirmationLink>
+                      <a href={`/decisions/by-application/${applicationId}`}>{t.applicationsList.confirmationLink}</a>
+                      <Icon icon={faArrowRight} color={colors.blues.primary} />
+                    </ConfirmationLink>
+                  </ConfirmationContainer>
+                )}
               </StatusContainer>
 
               <Gap size="xs" horizontal />

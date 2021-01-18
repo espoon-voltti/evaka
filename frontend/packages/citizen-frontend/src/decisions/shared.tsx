@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import {
+import colors, {
   accentColors,
   blueColors,
   greyscale
@@ -14,7 +14,7 @@ import { IconDefinition } from '@fortawesome/fontawesome-svg-core'
 
 export const Status = styled.span`
   text-transform: uppercase;
-  color: #0f0f0f;
+  color: ${colors.greyscale.darkest}
   font-size: 16px;
   font-weight: 400;
   padding-left: 0.5rem;
