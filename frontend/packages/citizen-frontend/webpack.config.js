@@ -39,7 +39,10 @@ module.exports = function (env, argv) {
     output: {
       filename: isDevelopment ? '[name].js' : '[name].[contenthash].js',
       path: path.resolve(__dirname, 'dist'),
-      publicPath: '/citizen/'
+      publicPath: '/citizen/',
+      assetModuleFilename: isDevelopment
+        ? '[name][ext][query][fragment]'
+        : '[name].[contenthash][ext][query][fragment]'
     },
     resolve: {
       extensions: ['.js', '.jsx', '.ts', '.tsx', '.json'],
@@ -88,10 +91,7 @@ module.exports = function (env, argv) {
         // Static files
         {
           test: /\.(woff|woff2|otf|ttf|eot|svg|png|gif|jpg)$/,
-          loader: 'file-loader',
-          options: {
-            name: isDevelopment ? '[name].[ext]' : '[name].[contenthash].[ext]'
-          }
+          type: 'asset/resource'
         }
       ]
     },

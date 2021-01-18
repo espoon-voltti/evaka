@@ -39,15 +39,19 @@ module.exports = function (env, argv) {
     output: {
       filename: isDevelopment ? '[name].js' : '[name].[contenthash].js',
       path: path.resolve(__dirname, 'dist'),
-      publicPath: '/employee/'
+      publicPath: '/employee/',
+      assetModuleFilename: isDevelopment
+        ? '[name][ext][query][fragment]'
+        : '[name].[contenthash][ext][query][fragment]'
     },
     resolve: {
       extensions: ['.js', '.jsx', '.ts', '.tsx', '.json'],
       plugins: [new TsconfigPathsPlugin()],
       alias: {
-        'Icons': process.env.ICONS === 'pro'
-          ? path.resolve(__dirname, '../lib-icons/pro-icons')
-          : path.resolve(__dirname, '../lib-icons/free-icons')
+        Icons:
+          process.env.ICONS === 'pro'
+            ? path.resolve(__dirname, '../lib-icons/pro-icons')
+            : path.resolve(__dirname, '../lib-icons/free-icons')
       }
     },
     plugins,
@@ -107,11 +111,8 @@ module.exports = function (env, argv) {
         // Static files
         {
           test: /\.(woff|woff2|otf|ttf|eot|svg|png|gif|jpg)$/,
-          loader: 'file-loader',
-          options: {
-            name: isDevelopment ? '[name].[ext]' : '[name].[contenthash].[ext]'
-          }
-        },
+          type: 'asset/resource'
+        }
       ]
     },
     optimization: {
