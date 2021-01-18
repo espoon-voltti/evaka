@@ -96,13 +96,14 @@ module.exports = function (env, argv) {
       ]
     },
     optimization: {
-      usedExports: true,
       splitChunks: {
+        chunks: 'all',
         cacheGroups: {
-          deps: {
+          defaultVendors: false,
+          vendor: {
             test: /[\\/]node_modules[\\/]/,
             name: 'vendor',
-            chunks: 'initial'
+            chunks: 'all'
           }
         }
       }
