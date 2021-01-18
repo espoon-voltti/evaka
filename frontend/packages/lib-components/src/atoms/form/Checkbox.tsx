@@ -89,8 +89,22 @@ const IconWrapper = styled.div`
   color: ${colors.greyscale.white};
 `
 
-interface CheckboxProps extends BaseProps {
+interface CommonProps extends BaseProps {
   checked: boolean
+}
+
+export const StaticCheckBox = React.memo(function StaticCheckBox({
+  checked
+}: CommonProps) {
+  return (
+    <Box>
+      <CheckboxInput type="checkbox" checked={checked} readOnly={true} />
+      <IconWrapper>{checked && <FontAwesomeIcon icon={faCheck} />}</IconWrapper>
+    </Box>
+  )
+})
+
+interface CheckboxProps extends CommonProps {
   label: string
   hiddenLabel?: boolean
   onChange?: (checked: boolean) => void

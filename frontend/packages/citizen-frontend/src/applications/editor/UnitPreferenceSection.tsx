@@ -7,7 +7,9 @@ import styled from 'styled-components'
 import ReactSelect from 'react-select'
 import { ContentArea } from '@evaka/lib-components/src/layout/Container'
 import { H2, H3, Label } from '@evaka/lib-components/src/typography'
-import Checkbox from '@evaka/lib-components/src/atoms/form/Checkbox'
+import Checkbox, {
+  StaticCheckBox
+} from '@evaka/lib-components/src/atoms/form/Checkbox'
 import { UnitPreferenceFormData } from '~applications/editor/ApplicationFormData'
 import {
   FixedSpaceColumn,
@@ -15,7 +17,7 @@ import {
   FixedSpaceFlexWrap
 } from '@evaka/lib-components/src/layout/flex-helpers'
 import InputField from '@evaka/lib-components/src/atoms/form/InputField'
-import { Gap } from '@evaka/lib-components/src/white-space'
+import { defaultMargins, Gap } from '@evaka/lib-components/src/white-space'
 import HorizontalLine from '@evaka/lib-components/src/atoms/HorizontalLine'
 import { Loading, Result, Success } from '@evaka/lib-common/src/api'
 import { PublicUnit } from '@evaka/lib-common/src/api-types/units'
@@ -28,6 +30,9 @@ import { SpinnerSegment } from '@evaka/lib-components/src/atoms/state/Spinner'
 import ErrorSegment from '@evaka/lib-components/src/atoms/state/ErrorSegment'
 import PreferredUnitBox from '~applications/editor/PreferredUnitBox'
 import { SelectionChip } from '@evaka/lib-components/src/atoms/Chip'
+import colors from '@evaka/lib-components/src/colors'
+
+const maxUnits = 3
 
 export type UnitPreferenceSectionProps = {
   formData: UnitPreferenceFormData
@@ -121,7 +126,12 @@ export default React.memo(function UnitPreferenceSection({
 
       {!preferredStartDate ? (
         <div>
-          <AlertBox title={'Valitse ensin toivottu aloituspäivä'} />
+          <AlertBox
+            thin
+            message={
+              'Päästäksesi valitsemaan hakutoiveet valitse ensin toivottu aloituspäivä "Palvelun tarve" -osiosta'
+            }
+          />
         </div>
       ) : (
         <>
@@ -160,37 +170,70 @@ export default React.memo(function UnitPreferenceSection({
               <FixedWidthDiv>
                 <Label>Valitse hakutoiveet *</Label>
                 <Gap size={'xs'} />
-                <ReactSelect
-                  isMulti
-                  placeholder={'placeholder'}
-                  value={units.value
-                    .filter(
+                <SelectWrapper>
+                  <ReactSelect
+                    isMulti
+                    isSearchable
+                    options={units.value}
+                    filterOption={(
+                      { data }: { data: PublicUnit },
+                      searchString
+                    ) =>
+                      (!searchString ||
+                        data.name
+                          .toLowerCase()
+                          .includes(searchString.toLowerCase())) &&
+                      ((displayFinnish && data.language === 'fi') ||
+                        (displaySwedish && data.language === 'sv'))
+                    }
+                    value={units.value.filter(
                       (u) =>
                         !!formData.preferredUnits.find((u2) => u2.id === u.id)
-                    )
-                    .map(({ id, name }) => ({ id, name }))}
-                  options={units.value
-                    .filter(
-                      (u) =>
-                        (displayFinnish && u.language === 'fi') ||
-                        (displaySwedish && u.language === 'sv')
-                    )
-                    .map(({ id, name }) => ({ id, name }))}
-                  onChange={(selected) => {
-                    if (selected && 'length' in selected && selected.length > 3)
-                      return
+                    )}
+                    onChange={(selected) => {
+                      if (
+                        selected &&
+                        'length' in selected &&
+                        selected.length > maxUnits
+                      )
+                        return
 
-                    updateFormData({
-                      preferredUnits:
-                        selected && 'length' in selected
-                          ? selected.map(({ id, name }) => ({ id, name }))
-                          : []
-                    })
-                  }}
-                  getOptionValue={(unit: PreferredUnit) => unit.id}
-                  getOptionLabel={(unit: PreferredUnit) => unit.name}
-                  isClearable={false}
-                />
+                      updateFormData({
+                        preferredUnits:
+                          selected && 'length' in selected
+                            ? selected.map(({ id, name }) => ({ id, name }))
+                            : []
+                      })
+                    }}
+                    getOptionValue={(unit: PreferredUnit) => unit.id}
+                    getOptionLabel={(unit: PreferredUnit) => unit.name}
+                    isClearable={false}
+                    placeholder={'Hae yksiköitä'}
+                    noOptionsMessage={() => 'Ei hakuehtoja vastaavia yksiköitä'}
+                    hideSelectedOptions={false}
+                    closeMenuOnSelect={false}
+                    backspaceRemovesValue={false}
+                    components={{
+                      MultiValueContainer: () => null,
+                      Option: function Option({
+                        innerRef,
+                        innerProps,
+                        ...props
+                      }) {
+                        const data = props.data as PublicUnit
+                        return (
+                          <OptionWrapper ref={innerRef} {...innerProps}>
+                            <OptionContents
+                              name={data.name}
+                              address={data.streetAddress}
+                              selected={props.isSelected}
+                            />
+                          </OptionWrapper>
+                        )
+                      }
+                    }}
+                  />
+                </SelectWrapper>
               </FixedWidthDiv>
               <FixedWidthDiv>
                 <Label>Valitsemasi hakutoiveet</Label>
@@ -257,4 +300,48 @@ export default React.memo(function UnitPreferenceSection({
 const FixedWidthDiv = styled.div`
   width: 100%;
   max-width: 480px;
+`
+
+const SelectWrapper = styled.div`
+  .multi-value {
+    display: none;
+    &:first-child {
+      display: unset;
+    }
+  }
+`
+
+const OptionWrapper = styled.div`
+  cursor: pointer;
+  &:hover {
+    background-color: ${colors.blues.light};
+  }
+  padding: ${defaultMargins.xxs} ${defaultMargins.s};
+`
+
+const OptionContents = React.memo(function Option({
+  name,
+  address,
+  selected
+}: {
+  name: string
+  address: string
+  selected: boolean
+}) {
+  return (
+    <FixedSpaceRow alignItems={'center'}>
+      <StaticCheckBox checked={selected} />
+      <FixedSpaceColumn spacing="zero">
+        <span>{name}</span>
+        <AddressInfo>{address}</AddressInfo>
+      </FixedSpaceColumn>
+    </FixedSpaceRow>
+  )
+})
+
+const AddressInfo = styled.span`
+  font-size: 14px;
+  line-height: 21px;
+  font-weight: 600;
+  color: ${colors.greyscale.dark};
 `
