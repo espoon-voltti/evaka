@@ -4,7 +4,6 @@
 
 const path = require('path')
 const TsconfigPathsPlugin = require('tsconfig-paths-webpack-plugin')
-const DefinePlugin = require('webpack').DefinePlugin
 
 module.exports = ({ config }) => {
   config.module.rules.push({
