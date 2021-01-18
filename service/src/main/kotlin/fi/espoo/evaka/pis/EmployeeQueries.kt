@@ -47,7 +47,7 @@ WHERE (:id::uuid IS NULL OR e.id = :id) AND md.id IS NULL
 private fun Handle.searchFinanceDecisionHandlers(id: UUID? = null) = createQuery(
     // language=SQL
     """
-SELECT e.id, e.first_name, e.last_name, e.email, e.external_id, e.created, e.updated, e.roles
+SELECT DISTINCT e.id, e.first_name, e.last_name, e.email, e.external_id, e.created, e.updated, e.roles
 FROM employee e
 JOIN daycare ON daycare.finance_decision_handler = e.id
 WHERE (:id::uuid IS NULL OR e.id = :id)
