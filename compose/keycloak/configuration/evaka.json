@@ -952,9 +952,9 @@
     "from": "evaka@example.com",
     "ssl": ""
   },
-  "loginTheme": "base",
-  "accountTheme": "base",
-  "emailTheme": "base",
+  "loginTheme": "evaka",
+  "accountTheme": "evaka",
+  "emailTheme": "evaka",
   "eventsEnabled": false,
   "eventsListeners": [
     "jboss-logging"
