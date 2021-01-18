@@ -86,8 +86,8 @@ module.exports = function (env, argv) {
             {
               loader: 'postcss-loader',
               options: {
-                config: {
-                  path: path.resolve(__dirname, 'package.json')
+                postcssOptions: {
+                  config: path.resolve(__dirname, 'package.json')
                 }
               }
             }
@@ -105,8 +105,8 @@ module.exports = function (env, argv) {
             {
               loader: 'postcss-loader',
               options: {
-                config: {
-                  path: path.resolve(__dirname, 'package.json')
+                postcssOptions: {
+                  config: path.resolve(__dirname, 'package.json')
                 }
               }
             },
