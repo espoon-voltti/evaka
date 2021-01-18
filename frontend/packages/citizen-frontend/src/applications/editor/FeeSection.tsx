@@ -4,11 +4,48 @@
 
 import React from 'react'
 import { ContentArea } from '@evaka/lib-components/src/layout/Container'
+import { H2, P } from '@evaka/lib-components/src/typography'
+import Checkbox from '@evaka/lib-components/src/atoms/form/Checkbox'
+import { useTranslation } from '~localization'
+import { FeeFormData } from '~applications/editor/ApplicationFormData'
 
-export default React.memo(function FeeSection() {
+type Props = {
+  formData: FeeFormData
+  updateFormData: (v: FeeFormData) => void
+}
+
+export default React.memo(function FeeSection({
+  formData,
+  updateFormData
+}: Props) {
+  const t = useTranslation()
+
   return (
     <ContentArea opaque paddingVertical="L">
-      Varhaiskasvatusmaksu
+      <H2>{t.applications.editor.fee.title}</H2>
+      <P
+        width="960px"
+        dangerouslySetInnerHTML={{
+          __html: t.applications.editor.fee.info
+        }}
+      ></P>
+      <P
+        width="960px"
+        dangerouslySetInnerHTML={{
+          __html: t.applications.editor.fee.emphasis
+        }}
+      ></P>
+      <Checkbox
+        checked={formData.maxFeeAccepted}
+        label={t.applications.editor.fee.checkbox}
+        onChange={(maxFeeAccepted) => updateFormData({ maxFeeAccepted })}
+      />
+      <P
+        width="960px"
+        dangerouslySetInnerHTML={{
+          __html: t.applications.editor.fee.links
+        }}
+      ></P>
     </ContentArea>
   )
 })

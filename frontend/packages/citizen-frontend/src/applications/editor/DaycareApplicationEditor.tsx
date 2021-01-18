@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useState } from 'react'
+import React, { useCallback, useState } from 'react'
 import { Gap } from '@evaka/lib-components/src/white-space'
 import Container from '@evaka/lib-components/src/layout/Container'
 import Heading from '~applications/editor/Heading'
@@ -14,6 +14,7 @@ import AdditionalDetailsSection from '~applications/editor/AdditionalDetailsSect
 import {
   apiDataToFormData,
   ApplicationFormData,
+  FeeFormData,
   formDataToApiData
 } from '~applications/editor/ApplicationFormData'
 import { Application } from '~applications/types'
@@ -30,6 +31,15 @@ export default React.memo(function DaycareApplicationEditor({
 }: DaycareApplicationEditorProps) {
   const [formData, setFormData] = useState<ApplicationFormData>(
     apiDataToFormData(apiData)
+  )
+
+  const updateFeeFormData = useCallback(
+    (feeData: FeeFormData) =>
+      setFormData((previousState) => ({
+        ...previousState,
+        fee: feeData
+      })),
+    [setFormData]
   )
 
   const onSubmit = () => {
@@ -82,7 +92,7 @@ export default React.memo(function DaycareApplicationEditor({
       <Gap size="s" />
       <ContactInfoSection />
       <Gap size="s" />
-      <FeeSection />
+      <FeeSection formData={formData.fee} updateFormData={updateFeeFormData} />
       <Gap size="s" />
       <AdditionalDetailsSection />
       <Gap size="s" />

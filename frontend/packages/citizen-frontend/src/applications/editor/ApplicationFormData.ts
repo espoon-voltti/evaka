@@ -24,7 +24,7 @@ export type ContactInfoFormData = {
 }
 
 export type FeeFormData = {
-  // todo
+  maxFeeAccepted: boolean
 }
 
 export type AdditionalDetailsFormData = {
@@ -60,7 +60,7 @@ export function apiDataToFormData(
       preferredUnits: application.form.preferences.preferredUnits
     },
     contactInfo: {},
-    fee: {},
+    fee: { maxFeeAccepted: application.form.maxFeeAccepted },
     additionalDetails: {}
   }
 }
@@ -115,7 +115,7 @@ export function formDataToApiData(form: ApplicationFormData): ApplicationForm {
       preparatory: false,
       urgent: form.serviceNeed.urgent
     },
-    maxFeeAccepted: false,
+    maxFeeAccepted: form.fee.maxFeeAccepted,
     otherInfo: 'string',
     clubDetails: null
   }

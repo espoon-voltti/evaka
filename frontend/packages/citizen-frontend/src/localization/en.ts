@@ -47,7 +47,6 @@ const en: Translations = {
           ]
         }
       },
-
       serviceNeed: {
         serviceNeed: 'Palveluntarve',
         startDate: {
@@ -104,6 +103,17 @@ const en: Translations = {
         assistanceNeedPlaceholder: 'Kerro lapsen tuen tarpeesta.',
         assistanceNeedInstructions:
           'Tehostetun ja tuen tarpeella tarkoitetaan sellaisten tukitoimien tarvetta, jotka on osoitettu asiantuntijalausunnoin. Tuen tarpeissa Espoon varhaiskasvatuksesta otetaan erikseen yhteyttä hakemuksen jättämisen jälkeen. Kehityksen ja oppimisen tuki varhaiskasvatuksessa toteutuu pääsääntöisesti lapsen kotia lähellä olevassa päiväkodissa tai perhepäivähoidossa. Tukitoimet toteutuvat lapsen arjessa osana varhaiskasvatuksen muuta toimintaa. Osa hoitopaikoista on varattu tukea tarvitseville lapsille.'
+      },
+      fee: {
+        title: 'Early childhood education fee',
+        info:
+          'The client fees for municipal early childhood education are calculated as a percentage of the family’s gross income. Depending on the family’s size and income and the hours of early childhood education, the fees vary from free early childhood education to a maximum monthly fee of EUR 288 per child. Each family must provide information about their gross income using the income statement form, no later than two weeks after their child’s early childhood education has started.',
+        emphasis:
+          '<strong>The income statement is not needed if the family agrees to pay the highest fee.</strong>',
+        checkbox:
+          'I give consent to the highest fee. This consent will remain valid until I state otherwise.',
+        links:
+          'You can find further information about early childhood education fees and the income statement form here: <br/>Espoo.fi > Childcare and education > Early childhood education > <a href="https://www.espoo.fi/en-US/Childcare_and_education/Early_childhood_education/Early_childhood_education_fees" target="_blank" rel="noopener noreferrer">Early childhood education fees</a>'
       }
     }
   },
