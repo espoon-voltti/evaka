@@ -60,7 +60,7 @@ module.exports = function (env, argv) {
         // JS/TS/JSON
         {
           test: /\.(js|jsx|ts|tsx|json)$/,
-          exclude: /node_modules/,
+          exclude: /[\\/]node_modules[\\/]/,
           use: {
             loader: 'ts-loader',
             options: {
@@ -120,7 +120,7 @@ module.exports = function (env, argv) {
       splitChunks: {
         cacheGroups: {
           deps: {
-            test: /\/node_modules\//,
+            test: /[\\/]node_modules[\\/]/,
             name: 'vendor',
             chunks: 'initial'
           }
