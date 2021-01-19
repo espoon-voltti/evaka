@@ -4,12 +4,9 @@
 
 import React, { useEffect, useState } from 'react'
 import styled from 'styled-components'
-import ReactSelect from 'react-select'
 import { ContentArea } from '@evaka/lib-components/src/layout/Container'
 import { H2, H3, Label } from '@evaka/lib-components/src/typography'
-import Checkbox, {
-  StaticCheckBox
-} from '@evaka/lib-components/src/atoms/form/Checkbox'
+import Checkbox from '@evaka/lib-components/src/atoms/form/Checkbox'
 import { UnitPreferenceFormData } from '~applications/editor/ApplicationFormData'
 import {
   FixedSpaceColumn,
@@ -17,20 +14,23 @@ import {
   FixedSpaceFlexWrap
 } from '@evaka/lib-components/src/layout/flex-helpers'
 import InputField from '@evaka/lib-components/src/atoms/form/InputField'
-import { defaultMargins, Gap } from '@evaka/lib-components/src/white-space'
+import { Gap } from '@evaka/lib-components/src/white-space'
 import HorizontalLine from '@evaka/lib-components/src/atoms/HorizontalLine'
 import { Loading, Result, Success } from '@evaka/lib-common/src/api'
 import { PublicUnit } from '@evaka/lib-common/src/api-types/units'
 import { useRestApi } from '@evaka/lib-common/src/utils/useRestApi'
 import { ApplicationUnitType, getApplicationUnits } from '~applications/api'
-import { ApplicationType, PreferredUnit } from '~applications/types'
+import { ApplicationType } from '~applications/types'
 import LocalDate from '@evaka/lib-common/src/local-date'
 import { AlertBox } from '@evaka/lib-components/src/molecules/MessageBoxes'
 import { SpinnerSegment } from '@evaka/lib-components/src/atoms/state/Spinner'
 import ErrorSegment from '@evaka/lib-components/src/atoms/state/ErrorSegment'
 import PreferredUnitBox from '~applications/editor/PreferredUnitBox'
 import { SelectionChip } from '@evaka/lib-components/src/atoms/Chip'
-import colors from '@evaka/lib-components/src/colors'
+import MultiSelect from '@evaka/lib-components/src/atoms/form/MultiSelect'
+import InlineButton from '@evaka/lib-components/src/atoms/buttons/InlineButton'
+import { faExternalLink } from '@evaka/lib-icons'
+import colors from "@evaka/lib-components/src/colors";
 
 const maxUnits = 3
 
@@ -146,16 +146,25 @@ export default React.memo(function UnitPreferenceSection({
             kartalla’.
           </p>
 
+          <a href={'/'} target="_blank" rel="noreferrer">
+            <InlineButton
+              onClick={() => undefined}
+              text={'Yksiköt kartalla'}
+              icon={faExternalLink}
+            />
+          </a>
+          <Gap size={'s'} />
+
           <Label>Yksikön kieli</Label>
           <Gap size={'xs'} />
           <FixedSpaceRow>
             <SelectionChip
-              text={'Suomi'}
+              text={'suomi'}
               selected={displayFinnish}
               onClick={setDisplayFinnish}
             />
             <SelectionChip
-              text={'Ruotsi'}
+              text={'ruotsi'}
               selected={displaySwedish}
               onClick={setDisplaySwedish}
             />
@@ -170,70 +179,30 @@ export default React.memo(function UnitPreferenceSection({
               <FixedWidthDiv>
                 <Label>Valitse hakutoiveet *</Label>
                 <Gap size={'xs'} />
-                <SelectWrapper>
-                  <ReactSelect
-                    isMulti
-                    isSearchable
-                    options={units.value}
-                    filterOption={(
-                      { data }: { data: PublicUnit },
-                      searchString
-                    ) =>
-                      (!searchString ||
-                        data.name
-                          .toLowerCase()
-                          .includes(searchString.toLowerCase())) &&
-                      ((displayFinnish && data.language === 'fi') ||
-                        (displaySwedish && data.language === 'sv'))
-                    }
-                    value={units.value.filter(
-                      (u) =>
-                        !!formData.preferredUnits.find((u2) => u2.id === u.id)
-                    )}
-                    onChange={(selected) => {
-                      if (
-                        selected &&
-                        'length' in selected &&
-                        selected.length > maxUnits
-                      )
-                        return
-
+                <MultiSelect
+                  value={units.value.filter(
+                    (u) =>
+                      !!formData.preferredUnits.find((u2) => u2.id === u.id)
+                  )}
+                  options={units.value.filter(
+                    (u) =>
+                      (displayFinnish && u.language === 'fi') ||
+                      (displaySwedish && u.language === 'sv')
+                  )}
+                  getOptionId={(unit) => unit.id}
+                  getOptionLabel={(unit) => unit.name}
+                  getOptionSecondaryText={(unit) => unit.streetAddress}
+                  onChange={(selected) => {
+                    if (selected.length <= maxUnits) {
                       updateFormData({
-                        preferredUnits:
-                          selected && 'length' in selected
-                            ? selected.map(({ id, name }) => ({ id, name }))
-                            : []
+                        preferredUnits: selected
                       })
-                    }}
-                    getOptionValue={(unit: PreferredUnit) => unit.id}
-                    getOptionLabel={(unit: PreferredUnit) => unit.name}
-                    isClearable={false}
-                    placeholder={'Hae yksiköitä'}
-                    noOptionsMessage={() => 'Ei hakuehtoja vastaavia yksiköitä'}
-                    hideSelectedOptions={false}
-                    closeMenuOnSelect={false}
-                    backspaceRemovesValue={false}
-                    components={{
-                      MultiValueContainer: () => null,
-                      Option: function Option({
-                        innerRef,
-                        innerProps,
-                        ...props
-                      }) {
-                        const data = props.data as PublicUnit
-                        return (
-                          <OptionWrapper ref={innerRef} {...innerProps}>
-                            <OptionContents
-                              name={data.name}
-                              address={data.streetAddress}
-                              selected={props.isSelected}
-                            />
-                          </OptionWrapper>
-                        )
-                      }
-                    }}
-                  />
-                </SelectWrapper>
+                    }
+                  }}
+                  isClearable={false}
+                  placeholder={'Hae yksiköitä'}
+                  noOptionsMessage={'Ei hakuehtoja vastaavia yksiköitä'}
+                />
               </FixedWidthDiv>
               <FixedWidthDiv>
                 <Label>Valitsemasi hakutoiveet</Label>
@@ -287,6 +256,7 @@ export default React.memo(function UnitPreferenceSection({
                         />
                       ) : null
                     )}
+                  <Info>Valitse 1-3 varhaiskasvatusyksikköä ja järjestä ne toivomaasi järjestykseen. Voit muuttaa järjestystä nuolien avulla.</Info>
                 </FixedSpaceColumn>
               </FixedWidthDiv>
             </FixedSpaceFlexWrap>
@@ -302,46 +272,7 @@ const FixedWidthDiv = styled.div`
   max-width: 480px;
 `
 
-const SelectWrapper = styled.div`
-  .multi-value {
-    display: none;
-    &:first-child {
-      display: unset;
-    }
-  }
-`
-
-const OptionWrapper = styled.div`
-  cursor: pointer;
-  &:hover {
-    background-color: ${colors.blues.light};
-  }
-  padding: ${defaultMargins.xxs} ${defaultMargins.s};
-`
-
-const OptionContents = React.memo(function Option({
-  name,
-  address,
-  selected
-}: {
-  name: string
-  address: string
-  selected: boolean
-}) {
-  return (
-    <FixedSpaceRow alignItems={'center'}>
-      <StaticCheckBox checked={selected} />
-      <FixedSpaceColumn spacing="zero">
-        <span>{name}</span>
-        <AddressInfo>{address}</AddressInfo>
-      </FixedSpaceColumn>
-    </FixedSpaceRow>
-  )
-})
-
-const AddressInfo = styled.span`
-  font-size: 14px;
-  line-height: 21px;
-  font-weight: 600;
+const Info = styled.p`
   color: ${colors.greyscale.dark};
+  margin: 0;
 `

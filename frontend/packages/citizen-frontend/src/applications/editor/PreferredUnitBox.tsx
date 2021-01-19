@@ -38,8 +38,8 @@ export default React.memo(function PreferredUnitBox({
             <span>{unit.streetAddress}</span>
           </FixedSpaceColumn>
           <FixedSpaceFlexWrap horizontalSpacing={'xs'} verticalSpacing={'xs'}>
-            <StaticChip color={colors.primary}>Suomenkielinen</StaticChip>
-            <StaticChip color={colors.accents.water}>Kunnallinen</StaticChip>
+            <StaticChip color={colors.primary}>suomenkielinen</StaticChip>
+            <StaticChip color={colors.accents.water}>kunnallinen</StaticChip>
           </FixedSpaceFlexWrap>
           <Gap size={'xs'} />
           <FixedSpaceFlexWrap verticalSpacing={'xs'}>
