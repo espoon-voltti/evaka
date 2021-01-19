@@ -23,6 +23,7 @@ export const SelectionChip = React.memo(function SelectionChip({
       selected={selected}
       color={colors.primary}
       onClick={() => onClick(!selected)}
+      tabIndex={0}
     >
       <FixedSpaceRow alignItems="center" spacing="xs">
         {selected && <FontAwesomeIcon icon={faCheck} />}
@@ -46,6 +47,12 @@ export const StaticChip = styled.div<{ color: string; textColor?: string }>`
     readableColor(p.color, colors.greyscale.darkest, colors.greyscale.white)};
   padding: ${defaultMargins.xxs}
     calc(${defaultMargins.xs} + ${defaultMargins.xxs});
+
+  outline: none;
+  &:focus {
+    outline: 2px solid ${colors.blues.light};
+    outline-offset: 2px;
+  }
 `
 
 const SelectionChipWrapper = styled(StaticChip)<{ selected: boolean }>`

@@ -38,6 +38,11 @@ const StyledButton = styled.button`
     color: ${colors.primaryActive};
   }
 
+  &:focus {
+    outline: 2px solid ${colors.blues.light};
+    outline-offset: 2px;
+  }
+
   &.disabled {
     color: ${greyscale.medium};
     cursor: not-allowed;

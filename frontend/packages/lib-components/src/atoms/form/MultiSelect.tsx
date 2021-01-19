@@ -5,6 +5,7 @@ import colors from '../../colors'
 import { defaultMargins } from '../../white-space'
 import { FixedSpaceColumn, FixedSpaceRow } from '../../layout/flex-helpers'
 import ReactSelect, { Props } from 'react-select'
+import classNames from 'classnames'
 
 // eslint-disable-next-line @typescript-eslint/ban-types
 interface MultiSelectProps<T extends object> {
@@ -33,75 +34,67 @@ export default function MultiSelect<T extends object>({
   ...props
 }: MultiSelectProps<T>) {
   return (
-    <SelectWrapper>
-      <ReactSelect
-        isMulti
-        isSearchable
-        hideSelectedOptions={false}
-        backspaceRemovesValue={false}
-        closeMenuOnSelect={closeMenuOnSelect ?? false}
-        noOptionsMessage={() => noOptionsMessage ?? 'Ei tuloksia'}
-        getOptionLabel={getOptionLabel}
-        getOptionValue={getOptionId}
-        value={value}
-        options={[
-          {
-            options: value
-          },
-          {
-            options: options.filter(
-              (o) =>
-                !value.map((o2) => getOptionId(o2)).includes(getOptionId(o))
-            )
-          }
-        ]}
-        onChange={(selected) => {
-          const selectionsArray =
-            selected && 'length' in selected ? (selected as T[]) : []
-          onChange(selectionsArray)
-        }}
-        filterOption={({ data }, q) =>
-          getOptionLabel(data).toLowerCase().includes(q.toLowerCase())
+    <ReactSelect
+      isMulti
+      isSearchable={true}
+      hideSelectedOptions={false}
+      backspaceRemovesValue={false}
+      closeMenuOnSelect={closeMenuOnSelect ?? false}
+      noOptionsMessage={() => noOptionsMessage ?? 'Ei tuloksia'}
+      getOptionLabel={getOptionLabel}
+      getOptionValue={getOptionId}
+      value={value}
+      tabSelectsValue={false}
+      options={[
+        {
+          options: value
+        },
+        {
+          options: options.filter(
+            (o) => !value.map((o2) => getOptionId(o2)).includes(getOptionId(o))
+          )
         }
-        components={{
-          MultiValueContainer: () => null,
-          Option: function Option({ innerRef, innerProps, ...props }) {
-            const data = props.data as T
-            return (
-              <OptionWrapper
-                ref={innerRef}
-                {...innerProps}
-                key={getOptionId(data)}
-              >
-                <OptionContents
-                  label={getOptionLabel(data)}
-                  secondaryText={
-                    getOptionSecondaryText && getOptionSecondaryText(data)
-                  }
-                  selected={props.isSelected}
-                />
-              </OptionWrapper>
-            )
-          }
-        }}
-        {...props}
-      />
-    </SelectWrapper>
+      ]}
+      onChange={(selected) => {
+        const selectionsArray =
+          selected && 'length' in selected ? (selected as T[]) : []
+        onChange(selectionsArray)
+      }}
+      filterOption={({ data }, q) =>
+        getOptionLabel(data).toLowerCase().includes(q.toLowerCase())
+      }
+      controlShouldRenderValue={false}
+      components={{
+        Option: function Option({ innerRef, innerProps, ...props }) {
+          const data = props.data as T
+          // console.log(props, innerProps)
+          return (
+            <OptionWrapper
+              ref={innerRef}
+              {...innerProps}
+              key={getOptionId(data)}
+              className={classNames({ focused: props.isFocused })}
+            >
+              <OptionContents
+                label={getOptionLabel(data)}
+                secondaryText={
+                  getOptionSecondaryText && getOptionSecondaryText(data)
+                }
+                selected={props.isSelected}
+              />
+            </OptionWrapper>
+          )
+        }
+      }}
+      {...props}
+    />
   )
 }
 
-const SelectWrapper = styled.div`
-  .multi-value {
-    display: none;
-    &:first-child {
-      display: unset;
-    }
-  }
-`
-
 const OptionWrapper = styled.div`
   cursor: pointer;
-  &:hover {
+  &:hover,
+  &.focused {
     background-color: ${colors.blues.light};
   }
   padding: ${defaultMargins.xxs} ${defaultMargins.s};
