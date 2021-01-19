@@ -153,7 +153,8 @@ const sv: Translations = {
     openApplicationLink: 'Näytä hakemus',
     confirmationLinkInstructions:
       'Päätökset-välilehdellä voit lukea päätöksen ja hyväksyä/hylätä tarjotun paikan',
-    confirmationLink: 'Siirry vahvistamaan'
+    confirmationLink: 'Siirry vahvistamaan',
+    newApplicationLink: 'Uusi hakemus'
   }
 }
 

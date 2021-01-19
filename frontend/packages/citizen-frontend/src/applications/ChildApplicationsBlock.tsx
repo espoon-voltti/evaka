@@ -154,8 +154,8 @@ export default React.memo(function ChildApplicationsBlock({
                   <ConfirmationContainer>
                     <div>{t.applicationsList.confirmationLinkInstructions}</div>
                     <ConfirmationLink>
-                      <a href={`/decisions/by-application/${applicationId}`}>{t.applicationsList.confirmationLink}</a>
-                      <Icon icon={faArrowRight} color={colors.blues.primary} />
+                      <a href={`/decisions/by-application/${applicationId}`}>
+                        {t.applicationsList.confirmationLink}<Icon icon={faArrowRight} color={colors.blues.primary} /></a>
                     </ConfirmationLink>
                   </ConfirmationContainer>
                 )}
