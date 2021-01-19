@@ -24,6 +24,20 @@ export default class ApplicationReadView {
     '[data-qa="application-status"]'
   )
 
+  async assertDecisionAvailableForDownload(type: DecisionType) {
+    const downloadLink = Selector(
+      `[data-qa="application-decision-${type}"]`
+    ).find('[data-qa="application-decision-download-available"]')
+    await t.expect(downloadLink.exists).ok()
+  }
+
+  async assertDecisionDownloadPending(type: DecisionType) {
+    const downloadLink = Selector(
+      `[data-qa="application-decision-${type}"]`
+    ).find('[data-qa="application-decision-download-pending"]')
+    await t.expect(downloadLink.exists).ok()
+  }
+
   async openApplicationByLink(id: UUID) {
     await t.navigateTo(`${this.url}/applications/${id}`)
   }

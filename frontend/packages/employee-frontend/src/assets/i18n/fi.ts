@@ -380,6 +380,8 @@ export const fi = {
       },
       unit: 'Päätösyksikkö',
       download: 'Lataa päätös PDF-tiedostona',
+      downloadPending:
+        'Päätöksen PDF-tiedosto ei ole vielä ladattavissa. Yritä myöhemmin uudelleen.',
       response: {
         label: 'Vahvistus kuntalaisen puolesta',
         accept: 'Huoltaja on vastaanottanut paikan',

@@ -58,7 +58,7 @@ export interface Decision {
   applicationId: UUID
   childId: UUID
   childName: string
-  documentUri: string
+  documentUri: string | null
   decisionNumber: number
   sentDate: LocalDate
   status: DecisionStatus

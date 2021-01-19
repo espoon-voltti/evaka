@@ -19,6 +19,7 @@ import {
   execSimpleApplicationActions,
   insertApplications,
   insertEmployeeFixture,
+  runPendingAsyncJobs,
   setAclForDaycares as setAclForDaycare
 } from '../../dev-api'
 import { seppoAdminRole, seppoManagerRole } from '../../config/users'
@@ -294,4 +295,33 @@ test('Placement proposal flow', async (t) => {
   await unitPage.navigateHere(fixtures.daycareFixture.id)
   await unitPage.openTabWaitingConfirmation()
   await t.expect(unitPage.waitingGuardianConfirmationRow.count).eql(1)
+})
+
+test('Supervisor cannot download decision PDF while it is being generated', async (t) => {
+  const fixture = {
+    ...applicationFixture(
+      fixtures.enduserChildFixtureJari,
+      fixtures.enduserGuardianFixture
+    ),
+    status: 'SENT' as const
+  }
+  applicationId = fixture.id
+
+  await insertApplications([fixture])
+
+  await t.useRole(seppoManagerRole)
+
+  // NOTE: NOT running pending async jobs yet -> PDF won't have been generated from sent decision
+  await execSimpleApplicationActions(applicationId, [
+    'move-to-waiting-placement',
+    'create-default-placement-plan',
+    'send-decisions-without-proposal'
+  ])
+
+  await applicationReadView.openApplicationByLink(applicationId)
+  await applicationReadView.assertDecisionDownloadPending('DAYCARE')
+
+  await runPendingAsyncJobs()
+  await t.eval(() => location.reload())
+  await applicationReadView.assertDecisionAvailableForDownload('DAYCARE')
 })
