@@ -83,8 +83,7 @@ test('Not placed child shows on report', async (t) => {
   await reports.selectReportsTab()
   await reports.selectPlacementSketchingReport()
   await reports.assertPlacementSketchingRow(
-    preferredUnit.id,
-    createdApplication.childId,
+    createdApplication.id,
     preferredUnit.name,
     `${fixtures.enduserChildFixtureJari.lastName} ${fixtures.enduserChildFixtureJari.firstName}`
   )
@@ -132,8 +131,7 @@ test('Placed child shows on report', async (t) => {
   await reports.selectReportsTab()
   await reports.selectPlacementSketchingReport()
   await reports.assertPlacementSketchingRow(
-    preferredUnit.id,
-    createdApplication.childId,
+    createdApplication.id,
     preferredUnit.name,
     `${fixtures.enduserChildFixtureJari.lastName} ${fixtures.enduserChildFixtureJari.firstName}`,
     currentUnit.name

@@ -84,13 +84,12 @@ export default class ReportsPage {
   }
 
   async assertPlacementSketchingRow(
-    requestedUnitId: string,
-    childId: string,
+    applicationId: string,
     requestedUnitName: string,
     childName: string,
     currentUnitName: string | null = null
   ) {
-    const childSelector = Selector(`[data-qa="${requestedUnitId}:${childId}"]`)
+    const childSelector = Selector(`[data-qa="${applicationId}"]`)
     await t.expect(childSelector.exists).ok()
 
     await t

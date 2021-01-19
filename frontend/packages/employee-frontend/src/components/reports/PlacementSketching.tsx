@@ -229,8 +229,8 @@ function PlacementSketching() {
               <Tbody>
                 {filteredRows.map((row: PlacementSketchingRow) => (
                   <Tr
-                    key={`${row.requestedUnitId}:${row.childId}`}
-                    data-qa={`${row.requestedUnitId}:${row.childId}`}
+                    key={`${row.applicationId}`}
+                    data-qa={`${row.applicationId}`}
                   >
                     <Td data-qa={'requested-unit'}>
                       <Link to={`/units/${row.requestedUnitId}`}>
