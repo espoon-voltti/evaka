@@ -2166,7 +2166,10 @@ export const fi = {
         email: 'Johtajan sähköposti puuttuu'
       },
       cannotApplyToDifferentType: 'Hakutyyppi ja palvelumuoto eivät vastaa',
-      financeDecisionHandler: 'Talouspäätösten käsittelijä puuttuu'
+      financeDecisionHandler: 'Talouspäätösten käsittelijä puuttuu',
+      ophUnitOid: 'Yksikön OID puuttuu',
+      ophOrganizerOid: 'Järjestäjän OID puuttuu',
+      ophOrganizationOid: 'Organisaation OID puuttuu'
     }
   },
   mobile: {

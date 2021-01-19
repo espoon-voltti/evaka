@@ -350,7 +350,18 @@ function validateForm(
   ) {
     errors.push(i18n.unitEditor.error.cannotApplyToDifferentType)
   }
-  if (!form.financeDecisionHandlerId) {
+  if (form.uploadToVarda || form.uploadToKoski) {
+    if (!form.ophUnitOid) {
+      errors.push(i18n.unitEditor.error.ophUnitOid)
+    }
+    if (!form.ophOrganizerOid) {
+      errors.push(i18n.unitEditor.error.ophOrganizerOid)
+    }
+    if (!form.ophOrganizationOid) {
+      errors.push(i18n.unitEditor.error.ophOrganizationOid)
+    }
+  }
+  if (form.invoicedByMunicipality && !form.financeDecisionHandlerId) {
     errors.push(i18n.unitEditor.error.financeDecisionHandler)
   }
   const {
@@ -1004,7 +1015,7 @@ export default function UnitEditor(props: Props): JSX.Element {
         )}
       </FormPart>
       <FormPart>
-        <div>{showRequired(i18n.unitEditor.label.financeDecisionHandler)}</div>
+        <div>{i18n.unitEditor.label.financeDecisionHandler}</div>
         {props.editable ? (
           <Select
             options={props.financeDecisionHandlerOptions}
@@ -1013,8 +1024,9 @@ export default function UnitEditor(props: Props): JSX.Element {
             onChange={(value) =>
               value && 'value' in value
                 ? updateForm({ financeDecisionHandlerId: value.value })
-                : undefined
+                : updateForm({ financeDecisionHandlerId: undefined })
             }
+            clearable
           />
         ) : (
           selectedFinanceDecisionManager?.label
