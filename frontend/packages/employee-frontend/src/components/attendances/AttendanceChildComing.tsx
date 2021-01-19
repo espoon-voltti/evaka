@@ -55,20 +55,6 @@ export default React.memo(function AttendanceChildComing({
     void getDaycareAttendances(unitId).then((res) =>
       filterAndSetAttendanceResponse(res, groupIdOrAll)
     )
-    return history.listen((location) => {
-      if (location.pathname.includes('/present')) {
-        setTime(getCurrentTime())
-        setMarkPresent(true)
-      } else if (location.pathname.includes('/absent')) {
-        setMarkAbsence(true)
-      } else {
-        setMarkPresent(false)
-        setMarkAbsence(false)
-        void getDaycareAttendances(unitId).then((res) =>
-          filterAndSetAttendanceResponse(res, groupIdOrAll)
-        )
-      }
-    })
   }, [])
 
   async function selectAbsenceType(absenceType: AbsenceType) {
@@ -86,11 +72,7 @@ export default React.memo(function AttendanceChildComing({
           <Fragment>
             <Gap size={'s'} />
 
-            <AbsenceSelector
-              unitId={unitId}
-              groupId={groupIdOrAll}
-              selectAbsenceType={selectAbsenceType}
-            />
+            <AbsenceSelector selectAbsenceType={selectAbsenceType} />
           </Fragment>
         ) : (
           <Loader />
@@ -102,21 +84,16 @@ export default React.memo(function AttendanceChildComing({
             <BigWideButton
               primary
               text={i18n.attendances.actions.markPresent}
-              onClick={() =>
-                history.push(
-                  `/units/${unitId}/groups/${groupIdOrAll}/childattendance/${child.id}/present`
-                )
-              }
+              onClick={() => {
+                setTime(getCurrentTime())
+                setMarkPresent(true)
+              }}
               data-qa="mark-present"
             />
 
             <BigWideInlineButton
               text={i18n.attendances.actions.markAbsent}
-              onClick={() =>
-                history.push(
-                  `/units/${unitId}/groups/${groupIdOrAll}/childattendance/${child.id}/absent`
-                )
-              }
+              onClick={() => setMarkAbsence(true)}
             />
           </FixedSpaceColumn>
         </Fragment>
@@ -140,12 +117,7 @@ export default React.memo(function AttendanceChildComing({
               primary
               text={i18n.common.confirm}
               onClick={() => childArrives()}
-              onSuccess={async () => {
-                await getDaycareAttendances(unitId).then((res) =>
-                  filterAndSetAttendanceResponse(res, groupIdOrAll)
-                )
-                history.goBack()
-              }}
+              onSuccess={() => history.goBack()}
               data-qa="mark-present"
             />
           </FixedSpaceColumn>

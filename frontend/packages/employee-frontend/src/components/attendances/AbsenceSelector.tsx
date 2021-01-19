@@ -2,18 +2,16 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { Fragment, useContext, useState } from 'react'
+import React, { Fragment, useState } from 'react'
 import { useHistory } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { Result } from '@evaka/lib-common/src/api'
-import { AttendanceResponse, getDaycareAttendances } from '~api/attendances'
+import { AttendanceResponse } from '~api/attendances'
 import AsyncButton from '@evaka/lib-components/src/atoms/buttons/AsyncButton'
 import Button from '@evaka/lib-components/src/atoms/buttons/Button'
 import colors from '@evaka/lib-components/src/colors'
-import { AttendanceUIContext } from '~state/attendance-ui'
 import { useTranslation } from '~state/i18n'
-import { UUID } from '~types'
 import { AbsenceType, AbsenceTypes } from '~types/absence'
 import { CustomButton, Flex } from './components'
 
@@ -22,19 +20,12 @@ const Actions = styled(Flex)`
 `
 
 interface Props {
-  unitId: UUID
-  groupId: UUID | 'all'
   selectAbsenceType: (type: AbsenceType) => Promise<Result<AttendanceResponse>>
 }
 
-export default function AbsenceSelector({
-  unitId,
-  groupId: groupIdOrAll,
-  selectAbsenceType
-}: Props) {
+export default function AbsenceSelector({ selectAbsenceType }: Props) {
   const history = useHistory()
   const { i18n } = useTranslation()
-  const { filterAndSetAttendanceResponse } = useContext(AttendanceUIContext)
   const [selectedAbsenceType, setSelectedAbsenceType] = useState<
     AbsenceType | undefined
   >(undefined)
@@ -87,12 +78,7 @@ export default function AbsenceSelector({
                   return undefined
                 })
               }
-              onSuccess={async () => {
-                await getDaycareAttendances(unitId).then((res) =>
-                  filterAndSetAttendanceResponse(res, groupIdOrAll)
-                )
-                history.goBack()
-              }}
+              onSuccess={() => history.goBack()}
               data-qa="mark-present"
             />
           </Actions>
