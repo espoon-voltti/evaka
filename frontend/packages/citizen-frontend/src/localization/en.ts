@@ -123,9 +123,13 @@ const en: Translations = {
         dietLabel: 'Special diet',
         dietPlaceholder:
           'If you wish, you can indicate your child’s special diet in this field',
+        dietInfo:
+          'Some special diets require a separate medical certificate to be delivered to the early childhood education location. Exceptions are a low-lactose or lactose-free diet, a diet based on religious beliefs and vegetarian diet (lacto-ovo).',
         allergiesLabel: 'Allergies',
         allergiesPlaceholder:
-          'If you wish, you can indicate your child’s allergies in this field'
+          'If you wish, you can indicate your child’s allergies in this field',
+        allergiesInfo:
+          'Information on allergies is mainly needed when applying for family day care.'
       }
     }
   },

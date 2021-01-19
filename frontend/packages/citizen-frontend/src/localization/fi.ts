@@ -120,8 +120,12 @@ export default {
           'Voit halutessasi antaa hakuun liittyvää tarkempaa lisätietoa',
         dietLabel: 'Erityisruokavalio',
         dietPlaceholder: 'Voit halutessasi ilmoittaa lapsen erityisruokavalion',
+        dietInfo:
+          'Osaan erityisruokavalioista tarvitaan erikseen lääkärintodistus, joka toimitetaan varhaiskasvatuspaikkaan. Poikkeuksena vähälaktoosinen tai laktoositon ruokavalio, uskonnollisiin syihin perustuva ruokavalio tai kasvisruokavalio (lakto-ovo).',
         allergiesLabel: 'Allergiat',
-        allergiesPlaceholder: 'Voit halutessasi ilmoittaa lapsen allergiat'
+        allergiesPlaceholder: 'Voit halutessasi ilmoittaa lapsen allergiat',
+        allergiesInfo:
+          'Allergiatieto tarvitaan lähinnä perhepäivähoitoa haettaessa.'
       }
     }
   },

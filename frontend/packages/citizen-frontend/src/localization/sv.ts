@@ -122,9 +122,13 @@ const sv: Translations = {
           'Du kan ge noggrannare uppgifter för din ansökan i det här fältet',
         dietLabel: 'Specialdiet',
         dietPlaceholder: 'Du kan meddela barnets specialdiet i det här fältet',
+        dietInfo:
+          'För en del specialdieter behövs även ett skilt läkarintyg som lämnas in till enheten. Undantag är laktosfri eller laktosfattig diet, diet som grundar sig på religiösa orsaker och vegetarisk kost (lakto-ovo).',
         allergiesLabel: 'Allergier',
         allergiesPlaceholder:
-          'Du kan meddela barnets allergier i det här fältet'
+          'Du kan meddela barnets allergier i det här fältet',
+        allergiesInfo:
+          'Information om allergier behövs när du ansöker till familjedagvård.'
       }
     }
   },

@@ -10,6 +10,7 @@ import { TextArea } from '@evaka/lib-components/src/atoms/form/InputField'
 import { useTranslation } from '~localization'
 import { ApplicationType } from '~applications/types'
 import { AdditionalDetailsFormData } from '~applications/editor/ApplicationFormData'
+import InfoBallWrapper from '~applications/editor/InfoBallWrapper'
 
 type Props = {
   formData: AdditionalDetailsFormData
@@ -43,7 +44,11 @@ export default React.memo(function AdditionalDetailsSection({
         <>
           <Gap size="L" />
           <Label>
-            {t.applications.editor.additionalDetails.dietLabel}
+            <InfoBallWrapper
+              infoText={t.applications.editor.additionalDetails.dietInfo}
+            >
+              {t.applications.editor.additionalDetails.dietLabel}
+            </InfoBallWrapper>
             <TextArea
               value={formData.diet}
               onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
@@ -56,7 +61,11 @@ export default React.memo(function AdditionalDetailsSection({
           </Label>
           <Gap size="L" />
           <Label>
-            {t.applications.editor.additionalDetails.allergiesLabel}
+            <InfoBallWrapper
+              infoText={t.applications.editor.additionalDetails.allergiesInfo}
+            >
+              {t.applications.editor.additionalDetails.allergiesLabel}
+            </InfoBallWrapper>
             <TextArea
               value={formData.allergies}
               onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
