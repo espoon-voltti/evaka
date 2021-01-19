@@ -15,7 +15,7 @@ import { ApplicationLink } from '~decisions/ApplicationLink'
 import { Status, statusIcon } from '~decisions/shared'
 import RoundIcon from '@evaka/lib-components/src/atoms/RoundIcon'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faArrowRight } from '@evaka/lib-icons'
+import { faArrowRight, faPlusCircle } from '@evaka/lib-icons'
 import colors from '@evaka/lib-components/src/colors'
 
 const MobileFriendlyListGrid = styled(ListGrid)`
@@ -35,6 +35,12 @@ const LineBreak = styled.div`
   margin: 40px 0 20px 0;
 `
 
+const TitleContainer = styled.div`
+  display: flex;
+  justify-content: space-between;
+  flex-flow: column;
+`
+
 const StatusContainer = styled.div``
 
 const ConfirmationContainer = styled.div`
@@ -46,7 +52,7 @@ const ConfirmationContainer = styled.div`
   }
 `
 
-const ConfirmationLink = styled.div`
+const Link = styled.div`
   & a {
     color: ${colors.blues.primary};
     text-decoration: none;
@@ -88,9 +94,23 @@ export default React.memo(function ChildApplicationsBlock({
 
   return (
     <ContentArea opaque paddingVertical="L" data-qa={`child-${childId}`}>
-      <H2 noMargin data-qa={`title-applications-child-name-${childId}`}>
-        {childName}
-      </H2>
+      <TitleContainer>
+        <H2 noMargin data-qa={`title-applications-child-name-${childId}`}>
+          {childName}
+        </H2>
+        <Link>
+          <a href={`/citizen/applications/new`}>
+            <FontAwesomeIcon
+              icon={faPlusCircle}
+              color={colors.blues.primary}
+              size={'2x'}
+              transform={{ x: -3, y: 3 }}
+            />{' '}
+            {t.applicationsList.newApplicationLink}
+          </a>
+        </Link>
+      </TitleContainer>
+
       {applicationSummaries.map(
         (
           {
@@ -153,17 +173,22 @@ export default React.memo(function ChildApplicationsBlock({
                 {applicationStatus === 'WAITING_CONFIRMATION' && (
                   <ConfirmationContainer>
                     <div>{t.applicationsList.confirmationLinkInstructions}</div>
-                    <ConfirmationLink>
+                    <Link>
                       <a href={`/decisions/by-application/${applicationId}`}>
-                        {t.applicationsList.confirmationLink}<Icon icon={faArrowRight} color={colors.blues.primary} /></a>
-                    </ConfirmationLink>
+                        {t.applicationsList.confirmationLink}{' '}
+                        <Icon
+                          icon={faArrowRight}
+                          color={colors.blues.primary}
+                        />
+                      </a>
+                    </Link>
                   </ConfirmationContainer>
                 )}
               </StatusContainer>
 
               <Gap size="xs" horizontal />
             </MobileFriendlyListGrid>
-            <Gap size="m" />
+            <Gap size="s" />
             <ApplicationLink applicationId={applicationId} />
 
             {index != applicationSummaries.length - 1 && <LineBreak />}

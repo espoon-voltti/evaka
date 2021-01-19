@@ -18,23 +18,13 @@ import ErrorSegment from '../../../lib-components/src/atoms/state/ErrorSegment'
 import _ from 'lodash'
 import ChildApplicationsBlock from '~applications/ChildApplicationsBlock'
 import styled from 'styled-components'
-import { faPlusCircle } from '@evaka/lib-icons'
-import colors from '@evaka/lib-components/src/colors'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 
-const TitleContainer = styled.div``
-
-const NewApplicationLink = styled.div`
-  & a {
-    color: ${colors.blues.primary};
-    text-decoration: none;
+const MobileFriendlyH1 = styled(H1)`
+  @media (max-width: 600px) {
+    font-size: 24px;
+    font-weight: 600;
+    line-height: 36px;
   }
-`
-
-const Icon = styled(FontAwesomeIcon)`
-  height: 1rem !important;
-  width: 1rem !important;
-  margin-right: 10px;
 `
 
 export default React.memo(function Applications() {
@@ -56,15 +46,7 @@ export default React.memo(function Applications() {
     <Container>
       <Gap size="s" />
       <ContentArea opaque paddingVertical="L">
-        <TitleContainer>
-          <H1 noMargin>{t.decisions.title}</H1>
-          <NewApplicationLink>
-            <a href={`/citizen/applications/new`}>
-              <Icon icon={faPlusCircle} color={colors.blues.primary} />{' '}
-              {t.applicationsList.confirmationLink}
-            </a>
-          </NewApplicationLink>
-        </TitleContainer>
+        <MobileFriendlyH1 noMargin>{t.applicationsList.title}</MobileFriendlyH1>
         <P
           width="800px"
           dangerouslySetInnerHTML={{ __html: t.applicationsList.summary }}
