@@ -43,9 +43,10 @@ function GroupModal({ unitId, reload }: Props) {
     initialCaretakers: 3
   }
   const [form, setForm] = useState<CreateGroupForm>(initialForm)
-  const [validationResult, setValidationResult] = useState<
-    FormValidationResult
-  >({
+  const [
+    validationResult,
+    setValidationResult
+  ] = useState<FormValidationResult>({
     valid: true,
     fields: {
       name: true

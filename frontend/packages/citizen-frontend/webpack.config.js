@@ -4,7 +4,6 @@
 
 const path = require('path')
 
-const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const TsconfigPathsPlugin = require('tsconfig-paths-webpack-plugin')
 const SentryWebpackPlugin = require('@sentry/webpack-plugin')
@@ -13,9 +12,6 @@ module.exports = function (env, argv) {
   const isDevelopment = argv && argv['mode'] !== 'production'
 
   const plugins = [
-    new MiniCssExtractPlugin({
-      filename: isDevelopment ? '[name].css' : '[name].[contenthash].css'
-    }),
     new HtmlWebpackPlugin({
       template: 'src/index.html'
     })
@@ -43,7 +39,10 @@ module.exports = function (env, argv) {
     output: {
       filename: isDevelopment ? '[name].js' : '[name].[contenthash].js',
       path: path.resolve(__dirname, 'dist'),
-      publicPath: '/citizen/'
+      publicPath: '/citizen/',
+      assetModuleFilename: isDevelopment
+        ? '[name][ext][query][fragment]'
+        : '[name].[contenthash][ext][query][fragment]'
     },
     resolve: {
       extensions: ['.js', '.jsx', '.ts', '.tsx', '.json'],
@@ -61,7 +60,7 @@ module.exports = function (env, argv) {
         // JS/TS/JSON
         {
           test: /\.(js|jsx|ts|tsx|json)$/,
-          exclude: /node_modules/,
+          exclude: /[\\/]node_modules[\\/]/,
           use: {
             loader: 'ts-loader',
             options: {
@@ -74,7 +73,7 @@ module.exports = function (env, argv) {
         {
           test: /\.css$/,
           use: [
-            MiniCssExtractPlugin.loader,
+            'style-loader',
             {
               loader: 'css-loader',
               options: { importLoaders: 1 }
@@ -82,8 +81,8 @@ module.exports = function (env, argv) {
             {
               loader: 'postcss-loader',
               options: {
-                config: {
-                  path: path.resolve(__dirname, 'package.json')
+                postcssOptions: {
+                  config: path.resolve(__dirname, 'package.json')
                 }
               }
             }
@@ -92,21 +91,19 @@ module.exports = function (env, argv) {
         // Static files
         {
           test: /\.(woff|woff2|otf|ttf|eot|svg|png|gif|jpg)$/,
-          loader: 'file-loader',
-          options: {
-            name: isDevelopment ? '[name].[ext]' : '[name].[contenthash].[ext]'
-          }
+          type: 'asset/resource'
         }
       ]
     },
     optimization: {
-      usedExports: true,
       splitChunks: {
+        chunks: 'all',
         cacheGroups: {
-          deps: {
-            test: /\/node_modules\//,
+          defaultVendors: false,
+          vendor: {
+            test: /[\\/]node_modules[\\/]/,
             name: 'vendor',
-            chunks: 'initial'
+            chunks: 'all'
           }
         }
       }

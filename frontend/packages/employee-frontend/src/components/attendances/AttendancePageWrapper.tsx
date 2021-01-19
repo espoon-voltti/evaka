@@ -193,7 +193,7 @@ export default React.memo(function AttendancePageWrapper() {
       (elem: Group) => elem.id === groupIdOrAll
     )
 
-  const container = useSpring({ x: showSearch ? 1 : 0 })
+  const container = useSpring<{ x: number }>({ x: showSearch ? 1 : 0 })
 
   return (
     <Fragment>
