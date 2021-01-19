@@ -119,11 +119,13 @@ const en: Translations = {
         title: 'Other additional information',
         otherInfoLabel: 'Additional information',
         otherInfoPlaceholder:
-          'Voit halutessasi antaa hakuun liittyvää tarkempaa lisätietoa',
+          'If you wish, you can provide more detailed information related to the application in this field',
         dietLabel: 'Special diet',
-        dietPlaceholder: 'If you wish, you can indicate your child’s special diet in this field',
+        dietPlaceholder:
+          'If you wish, you can indicate your child’s special diet in this field',
         allergiesLabel: 'Allergies',
-        allergiesPlaceholder: 'If you wish, you can indicate your child’s allergies in this field'
+        allergiesPlaceholder:
+          'If you wish, you can indicate your child’s allergies in this field'
       }
     }
   },

@@ -119,11 +119,12 @@ const sv: Translations = {
         title: 'Övriga tilläggsuppgifter',
         otherInfoLabel: 'Övriga tilläggsuppgifter',
         otherInfoPlaceholder:
-          'Voit halutessasi antaa hakuun liittyvää tarkempaa lisätietoa',
+          'Du kan ge noggrannare uppgifter för din ansökan i det här fältet',
         dietLabel: 'Specialdiet',
         dietPlaceholder: 'Du kan meddela barnets specialdiet i det här fältet',
         allergiesLabel: 'Allergier',
-        allergiesPlaceholder: 'Du kan meddela barnets allergier i det här fältet'
+        allergiesPlaceholder:
+          'Du kan meddela barnets allergier i det här fältet'
       }
     }
   },
