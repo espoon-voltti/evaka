@@ -65,6 +65,8 @@ import VoucherServiceProviders from '~components/reports/VoucherServiceProviders
 import VoucherServiceProviderUnit from '~components/reports/VoucherServiceProviderUnit'
 import { featureFlags } from '~config'
 import PlacementSketching from '~components/reports/PlacementSketching'
+import { idleTracker } from '@evaka/lib-common/src/utils/idleTracker'
+import { client } from '~api/client'
 
 export default function App() {
   const { i18n } = useTranslation()
@@ -72,6 +74,16 @@ export default function App() {
 
   useEffect(() => {
     void getAuthStatus().then(setAuthStatus)
+  }, [])
+
+  useEffect(() => {
+    return idleTracker(
+      client,
+      () => {
+        void getAuthStatus().then(setAuthStatus)
+      },
+      { thresholdInMinutes: 20 }
+    )
   }, [])
 
   if (authStatus === undefined) {
