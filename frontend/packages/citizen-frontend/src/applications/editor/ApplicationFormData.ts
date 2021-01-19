@@ -28,7 +28,9 @@ export type FeeFormData = {
 }
 
 export type AdditionalDetailsFormData = {
-  // todo
+  otherInfo: string
+  diet: string
+  allergies: string
 }
 
 export type ApplicationFormData = {
@@ -61,7 +63,11 @@ export function apiDataToFormData(
     },
     contactInfo: {},
     fee: { maxFeeAccepted: application.form.maxFeeAccepted },
-    additionalDetails: {}
+    additionalDetails: {
+      otherInfo: application.form.otherInfo,
+      diet: application.form.child.diet,
+      allergies: application.form.child.allergies
+    }
   }
 }
 
@@ -78,8 +84,8 @@ export function formDataToApiData(form: ApplicationFormData): ApplicationForm {
       futureAddress: null,
       nationality: 'string',
       language: 'string',
-      allergies: 'string',
-      diet: 'string',
+      allergies: form.additionalDetails.allergies,
+      diet: form.additionalDetails.diet,
       assistanceNeeded: form.serviceNeed.assistanceNeeded,
       assistanceDescription: form.serviceNeed.assistanceDescription
     },
@@ -116,7 +122,7 @@ export function formDataToApiData(form: ApplicationFormData): ApplicationForm {
       urgent: form.serviceNeed.urgent
     },
     maxFeeAccepted: form.fee.maxFeeAccepted,
-    otherInfo: 'string',
+    otherInfo: form.additionalDetails.otherInfo,
     clubDetails: null
   }
 }

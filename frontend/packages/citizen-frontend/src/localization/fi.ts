@@ -112,6 +112,16 @@ export default {
           'Annan suostumuksen korkeimpaan maksuun. Suostumus on voimassa toistaiseksi, kunnes toisin ilmoitan.',
         links:
           'Lisätietoa varhaiskasvatuksen maksuista ja tuloselvityslomakeen löydät Espoon kaupungin sivuilta: <a href="https://www.espoo.fi/fi-FI/Kasvatus_ja_opetus/Varhaiskasvatus/Maksut_varhaiskasvatuksessa" target="_blank" rel="noopener noreferrer">Maksut varhaiskasvatuksessa</a>'
+      },
+      additionalDetails: {
+        title: 'Muut lisätiedot',
+        otherInfoLabel: 'Hakuun liittyvät lisätiedot',
+        otherInfoPlaceholder:
+          'Voit halutessasi antaa hakuun liittyvää tarkempaa lisätietoa',
+        dietLabel: 'Erityisruokavalio',
+        dietPlaceholder: 'Voit halutessasi ilmoittaa lapsen erityisruokavalion',
+        allergiesLabel: 'Allergiat',
+        allergiesPlaceholder: 'Voit halutessasi ilmoittaa lapsen allergiat'
       }
     }
   },

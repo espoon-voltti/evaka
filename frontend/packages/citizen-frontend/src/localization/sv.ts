@@ -114,6 +114,16 @@ const sv: Translations = {
           'Jag ger mitt samtycke till att betala den högsta avgiften. Samtycket gäller tills vidare, tills jag meddelar något annat.',
         links:
           'Mer information om småbarnspedagogikens avgifter och blanketten för inkomstutredning finns här: esbo.fi > Utbildning och fostran > Småbarnspedagogik > <a href="https://www.esbo.fi/sv-FI/Utbildning_och_fostran/Smabarnspedagogik/Avgifter_for_smabarnspedagogik" target="_blank" rel="noopener noreferrer">Avgifter för småbarnspedagogik</a>'
+      },
+      additionalDetails: {
+        title: 'Övriga tilläggsuppgifter',
+        otherInfoLabel: 'Övriga tilläggsuppgifter',
+        otherInfoPlaceholder:
+          'Voit halutessasi antaa hakuun liittyvää tarkempaa lisätietoa',
+        dietLabel: 'Specialdiet',
+        dietPlaceholder: 'Du kan meddela barnets specialdiet i det här fältet',
+        allergiesLabel: 'Allergier',
+        allergiesPlaceholder: 'Du kan meddela barnets allergier i det här fältet'
       }
     }
   },

@@ -12,6 +12,7 @@ import UnitPreferenceSection from '~applications/editor/UnitPreferenceSection'
 import FeeSection from '~applications/editor/FeeSection'
 import AdditionalDetailsSection from '~applications/editor/AdditionalDetailsSection'
 import {
+  AdditionalDetailsFormData,
   apiDataToFormData,
   ApplicationFormData,
   FeeFormData,
@@ -38,6 +39,15 @@ export default React.memo(function DaycareApplicationEditor({
       setFormData((previousState) => ({
         ...previousState,
         fee: feeData
+      })),
+    [setFormData]
+  )
+
+  const updateAdditionalDetailsFormData = useCallback(
+    (additionalDetails: AdditionalDetailsFormData) =>
+      setFormData((previousState) => ({
+        ...previousState,
+        additionalDetails: additionalDetails
       })),
     [setFormData]
   )
@@ -94,7 +104,11 @@ export default React.memo(function DaycareApplicationEditor({
       <Gap size="s" />
       <FeeSection formData={formData.fee} updateFormData={updateFeeFormData} />
       <Gap size="s" />
-      <AdditionalDetailsSection />
+      <AdditionalDetailsSection
+        formData={formData.additionalDetails}
+        updateFormData={updateAdditionalDetailsFormData}
+        applicationType={applicationType}
+      />
       <Gap size="s" />
       <Button text={'Submitti'} onClick={onSubmit} />
     </Container>
