@@ -67,7 +67,7 @@ export default function MultiSelect<T extends object>({
       components={{
         Option: function Option({ innerRef, innerProps, ...props }) {
           const data = props.data as T
-          // console.log(props, innerProps)
+
           return (
             <OptionWrapper
               ref={innerRef}

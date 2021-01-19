@@ -43,7 +43,7 @@ export default React.memo(function PreferredUnitBox({
       case 'MUNICIPAL_SCHOOL':
         return {
           color: colors.accents.water,
-          textColor: colors.greyscale.white
+          textColor: colors.greyscale.darkest
         }
       case 'PRIVATE':
       case 'PRIVATE_SERVICE_VOUCHER':
@@ -78,25 +78,31 @@ export default React.memo(function PreferredUnitBox({
           <FixedSpaceFlexWrap horizontalSpacing={'xs'} verticalSpacing={'xs'}>
             {unit.language === 'sv' ? (
               <StaticChip color={colors.accents.yellow}>
-                ruotsinkielinen
+                {t.applications.editor.unitPreference.units.preferences.sv}
               </StaticChip>
             ) : (
-              <StaticChip color={colors.primary}>suomenkielinen</StaticChip>
+              <StaticChip color={colors.primary}>
+                {t.applications.editor.unitPreference.units.preferences.fi}
+              </StaticChip>
             )}
             <StaticChip {...getProviderTypeColors()}>
-              {providerTypeText}
+              {providerTypeText.toLowerCase()}
             </StaticChip>
           </FixedSpaceFlexWrap>
           <Gap size={'xs'} />
           <FixedSpaceFlexWrap verticalSpacing={'xs'}>
             <InlineButton
-              text={'Siirrä ylöspäin'}
+              text={
+                t.applications.editor.unitPreference.units.preferences.moveUp
+              }
               icon={faArrowUp}
               onClick={moveUp || noOp}
               disabled={!moveUp}
             />
             <InlineButton
-              text={'Siirrä alaspäin'}
+              text={
+                t.applications.editor.unitPreference.units.preferences.moveDown
+              }
               icon={faArrowDown}
               onClick={moveDown || noOp}
               disabled={!moveDown}
@@ -105,7 +111,14 @@ export default React.memo(function PreferredUnitBox({
         </FixedSpaceColumn>
       </MainColCenter>
       <MainColRight>
-        <IconButton icon={faTimes} gray onClick={remove} />
+        <IconButton
+          icon={faTimes}
+          gray
+          onClick={remove}
+          altText={
+            t.applications.editor.unitPreference.units.preferences.remove
+          }
+        />
       </MainColRight>
     </Wrapper>
   )

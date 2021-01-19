@@ -113,6 +113,50 @@ const en: Translations = {
         assistanceNeedInstructions:
           'Tehostetun ja tuen tarpeella tarkoitetaan sellaisten tukitoimien tarvetta, jotka on osoitettu asiantuntijalausunnoin. Tuen tarpeissa Espoon varhaiskasvatuksesta otetaan erikseen yhteyttä hakemuksen jättämisen jälkeen. Kehityksen ja oppimisen tuki varhaiskasvatuksessa toteutuu pääsääntöisesti lapsen kotia lähellä olevassa päiväkodissa tai perhepäivähoidossa. Tukitoimet toteutuvat lapsen arjessa osana varhaiskasvatuksen muuta toimintaa. Osa hoitopaikoista on varattu tukea tarvitseville lapsille.'
       },
+      unitPreference: {
+        title: 'Hakutoive',
+        siblingBasis: {
+          title: 'Haku sisarperusteella',
+          p1:
+            'Lapsella on sisarusperuste samaan varhaiskasvatuspaikkaan, jossa hänen sisaruksensa on päätöksentekohetkellä. Sisarukseksi katsotaan kaikki samassa osoitteessa asuvat lapset. Tavoitteena on sijoittaa sisarukset samaan varhaiskasvatuspaikkaan perheen niin toivoessa. Jos haet paikkaa sisaruksille, jotka eivät vielä ole varhaiskasvatuksessa, kirjoita tieto lisätietokenttään.',
+          p2:
+            'Täytä nämä tiedot vain, jos käytät sisarusperustetta, sekä valitse alla olevissa hakutoiveissa ensisijaiseksi toiveeksi sama varhaiskasvatusyksikkö, jossa lapsen sisarus on.',
+          checkbox:
+            'Haen ensisijaisesti samaan paikkaan, jossa lapsen sisarus on jo varhaiskasvatuksessa.',
+          names: 'Sisaruksen etunimet ja sukunimi *',
+          ssn: 'Sisaruksen henkilötunnus *'
+        },
+        units: {
+          title: 'Hakutoiveet',
+          startDateMissing:
+            'Päästäksesi valitsemaan hakutoiveet valitse ensin toivottu aloituspäivä "Palvelun tarve" -osiosta',
+          p1:
+            'Voit hakea paikkaa 1-3 varhaiskasvatusyksiköstä toivomassasi järjestyksessä. Hakutoiveet eivät takaa paikkaa toivotussa yksikössä, mutta mahdollisuus toivotun paikan saamiseen kasvaa antamalla useamman vaihtoehdon.',
+          p2:
+            'Näet eri varhaiskasvatusyksiköiden sijainnin valitsemalla ‘Yksiköt kartalla’.',
+          mapLink: 'Yksiköt kartalla',
+          languageFilter: {
+            label: 'Yksikön kieli',
+            fi: 'suomi',
+            sv: 'ruotsi'
+          },
+          select: {
+            label: 'Valitse hakutoiveet *',
+            placeholder: 'Hae yksiköitä',
+            noOptions: 'Ei hakuehtoja vastaavia yksiköitä'
+          },
+          preferences: {
+            label: 'Valitsemasi hakutoiveet',
+            info:
+              'Valitse 1-3 varhaiskasvatusyksikköä ja järjestä ne toivomaasi järjestykseen. Voit muuttaa järjestystä nuolien avulla.',
+            fi: 'suomenkielinen',
+            sv: 'ruotsinkielinen',
+            moveUp: 'Siirrä ylöspäin',
+            moveDown: 'Siirrä alaspäin',
+            remove: 'Poista hakutoive'
+          }
+        }
+      },
       fee: {
         title: 'Early childhood education fee',
         info:
@@ -138,7 +182,8 @@ const en: Translations = {
         allergiesPlaceholder:
           'If you wish, you can indicate your child’s allergies in this field',
         allergiesInfo:
-          'Information on allergies is mainly needed when applying for family day care.'},
+          'Information on allergies is mainly needed when applying for family day care.'
+      },
       contactInfo: {
         title: 'Henkilötiedot',
         info:

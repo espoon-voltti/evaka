@@ -30,6 +30,7 @@ import { SelectionChip } from '@evaka/lib-components/src/atoms/Chip'
 import MultiSelect from '@evaka/lib-components/src/atoms/form/MultiSelect'
 import colors from '@evaka/lib-components/src/colors'
 import ExternalLink from '@evaka/lib-components/src/atoms/ExternalLink'
+import { useTranslation } from '~localization'
 
 const maxUnits = 3
 
@@ -48,6 +49,7 @@ export default React.memo(function UnitPreferenceSection({
   preparatory,
   preferredStartDate
 }: UnitPreferenceSectionProps) {
+  const t = useTranslation()
   const [units, setUnits] = useState<Result<PublicUnit[]>>(Loading.of())
   const loadUnits = useRestApi(getApplicationUnits, setUnits)
   const [displayFinnish, setDisplayFinnish] = useState(true)
@@ -72,28 +74,15 @@ export default React.memo(function UnitPreferenceSection({
 
   return (
     <ContentArea opaque paddingVertical="L">
-      <H2>Hakutoive</H2>
+      <H2>{t.applications.editor.unitPreference.title}</H2>
 
-      <H3>Haku sisarperusteella</H3>
-      <p>
-        Lapsella on sisarusperuste samaan varhaiskasvatuspaikkaan, jossa hänen
-        sisaruksensa on päätöksentekohetkellä. Sisarukseksi katsotaan kaikki
-        samassa osoitteessa asuvat lapset. Tavoitteena on sijoittaa sisarukset
-        samaan varhaiskasvatuspaikkaan perheen niin toivoessa. Jos haet paikkaa
-        sisaruksille, jotka eivät vielä ole varhaiskasvatuksessa, kirjoita tieto
-        lisätietokenttään.
-      </p>
-      <p>
-        Täytä nämä tiedot vain, jos käytät sisarusperustetta, sekä valitse alla
-        olevissa hakutoiveissa ensisijaiseksi toiveeksi sama
-        varhaiskasvatusyksikkö, jossa lapsen sisarus on.
-      </p>
+      <H3>{t.applications.editor.unitPreference.siblingBasis.title}</H3>
+      <p>{t.applications.editor.unitPreference.siblingBasis.p1}</p>
+      <p>{t.applications.editor.unitPreference.siblingBasis.p2}</p>
 
       <Checkbox
         checked={formData.siblingBasis}
-        label={
-          'Haen ensisijaisesti samaan paikkaan, jossa lapsen sisarus on jo varhaiskasvatuksessa.'
-        }
+        label={t.applications.editor.unitPreference.siblingBasis.checkbox}
         onChange={(checked) => updateFormData({ siblingBasis: checked })}
       />
       {formData.siblingBasis && (
@@ -101,7 +90,9 @@ export default React.memo(function UnitPreferenceSection({
           <Gap size={'s'} />
           <FixedSpaceRow spacing={'m'}>
             <FixedSpaceColumn spacing={'xs'}>
-              <Label>Sisaruksen etunimet ja sukunimi *</Label>
+              <Label>
+                {t.applications.editor.unitPreference.siblingBasis.names}
+              </Label>
               <InputField
                 value={formData.siblingName}
                 onChange={(value) => updateFormData({ siblingName: value })}
@@ -109,7 +100,9 @@ export default React.memo(function UnitPreferenceSection({
               />
             </FixedSpaceColumn>
             <FixedSpaceColumn spacing={'xs'}>
-              <Label>Sisaruksen henkilötunnus *</Label>
+              <Label>
+                {t.applications.editor.unitPreference.siblingBasis.ssn}
+              </Label>
               <InputField
                 value={formData.siblingSsn}
                 onChange={(value) => updateFormData({ siblingSsn: value })}
@@ -121,44 +114,46 @@ export default React.memo(function UnitPreferenceSection({
 
       <HorizontalLine />
 
-      <H3>Hakutoiveet</H3>
+      <H3>{t.applications.editor.unitPreference.units.title}</H3>
 
       {!preferredStartDate ? (
         <div>
           <AlertBox
             thin
             message={
-              'Päästäksesi valitsemaan hakutoiveet valitse ensin toivottu aloituspäivä "Palvelun tarve" -osiosta'
+              t.applications.editor.unitPreference.units.startDateMissing
             }
           />
         </div>
       ) : (
         <>
-          <p>
-            Voit hakea paikkaa 1-3 varhaiskasvatusyksiköstä toivomassasi
-            järjestyksessä. Hakutoiveet eivät takaa paikkaa toivotussa
-            yksikössä, mutta mahdollisuus toivotun paikan saamiseen kasvaa
-            antamalla useamman vaihtoehdon.
-          </p>
-          <p>
-            Näet eri varhaiskasvatusyksiköiden sijainnin valitsemalla ‘Yksiköt
-            kartalla’.
-          </p>
+          <p>{t.applications.editor.unitPreference.units.p1}</p>
+          <p>{t.applications.editor.unitPreference.units.p2}</p>
 
-          <ExternalLink href="/" text={'Yksiköt kartalla'} newTab />
+          <ExternalLink
+            href="/"
+            text={t.applications.editor.unitPreference.units.mapLink}
+            newTab
+          />
 
           <Gap size={'s'} />
 
-          <Label>Yksikön kieli</Label>
+          <Label>
+            {t.applications.editor.unitPreference.units.languageFilter.label}
+          </Label>
           <Gap size={'xs'} />
           <FixedSpaceRow>
             <SelectionChip
-              text={'suomi'}
+              text={
+                t.applications.editor.unitPreference.units.languageFilter.fi
+              }
               selected={displayFinnish}
               onClick={setDisplayFinnish}
             />
             <SelectionChip
-              text={'ruotsi'}
+              text={
+                t.applications.editor.unitPreference.units.languageFilter.sv
+              }
               selected={displaySwedish}
               onClick={setDisplaySwedish}
             />
@@ -171,7 +166,9 @@ export default React.memo(function UnitPreferenceSection({
           {units.isSuccess && (
             <FixedSpaceFlexWrap horizontalSpacing={'L'} verticalSpacing={'s'}>
               <FixedWidthDiv>
-                <Label>Valitse hakutoiveet *</Label>
+                <Label>
+                  {t.applications.editor.unitPreference.units.select.label}
+                </Label>
                 <Gap size={'xs'} />
                 <MultiSelect
                   value={units.value.filter(
@@ -194,12 +191,19 @@ export default React.memo(function UnitPreferenceSection({
                     }
                   }}
                   isClearable={false}
-                  placeholder={'Hae yksiköitä'}
-                  noOptionsMessage={'Ei hakuehtoja vastaavia yksiköitä'}
+                  placeholder={
+                    t.applications.editor.unitPreference.units.select
+                      .placeholder
+                  }
+                  noOptionsMessage={
+                    t.applications.editor.unitPreference.units.select.noOptions
+                  }
                 />
               </FixedWidthDiv>
               <FixedWidthDiv>
-                <Label>Valitsemasi hakutoiveet</Label>
+                <Label>
+                  {t.applications.editor.unitPreference.units.preferences.label}
+                </Label>
                 <Gap size={'xs'} />
                 <FixedSpaceColumn spacing={'s'}>
                   {formData.preferredUnits
@@ -251,9 +255,10 @@ export default React.memo(function UnitPreferenceSection({
                       ) : null
                     )}
                   <Info>
-                    Valitse 1-3 varhaiskasvatusyksikköä ja järjestä ne
-                    toivomaasi järjestykseen. Voit muuttaa järjestystä nuolien
-                    avulla.
+                    {
+                      t.applications.editor.unitPreference.units.preferences
+                        .info
+                    }
                   </Info>
                 </FixedSpaceColumn>
               </FixedWidthDiv>
