@@ -24,28 +24,25 @@ export default React.memo(function FeeSection({
     <ContentArea opaque paddingVertical="L">
       <H2>{t.applications.editor.fee.title}</H2>
       <P
-        width="960px"
         dangerouslySetInnerHTML={{
           __html: t.applications.editor.fee.info
         }}
-      ></P>
+      />
       <P
-        width="960px"
         dangerouslySetInnerHTML={{
           __html: t.applications.editor.fee.emphasis
         }}
-      ></P>
+      />
       <Checkbox
         checked={formData.maxFeeAccepted}
         label={t.applications.editor.fee.checkbox}
         onChange={(maxFeeAccepted) => updateFormData({ maxFeeAccepted })}
       />
       <P
-        width="960px"
         dangerouslySetInnerHTML={{
           __html: t.applications.editor.fee.links
         }}
-      ></P>
+      />
     </ContentArea>
   )
 })

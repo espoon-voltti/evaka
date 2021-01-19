@@ -3,8 +3,6 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
-import styled from 'styled-components'
-import colors from '@evaka/lib-components/src/colors'
 import { Gap } from '@evaka/lib-components/src/white-space'
 import { ContentArea } from '@evaka/lib-components/src/layout/Container'
 import { H1, P } from '@evaka/lib-components/src/typography'
@@ -24,8 +22,7 @@ export default React.memo(function Heading({ type }: { type: 'daycare' }) {
       />
       <Gap size="xs" />
       {infoParagraphs.map((paragraph, index) => (
-        <Paragraph
-          width="960px"
+        <P
           dangerouslySetInnerHTML={{ __html: paragraph }}
           key={index}
           fitted={index === infoParagraphs.length - 1}
@@ -34,14 +31,3 @@ export default React.memo(function Heading({ type }: { type: 'daycare' }) {
     </ContentArea>
   )
 })
-
-const Paragraph = styled(P)`
-  a {
-    color: ${colors.blues.primary};
-    text-decoration: none;
-  }
-
-  a:hover {
-    text-decoration: underline;
-  }
-`
