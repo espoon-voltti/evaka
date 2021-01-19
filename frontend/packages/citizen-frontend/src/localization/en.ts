@@ -6,7 +6,16 @@ import { Translations } from '.'
 
 const en: Translations = {
   common: {
-    return: 'Return'
+    return: 'Return',
+    unit: {
+      providerTypes: {
+        MUNICIPAL: 'Kunnallinen',
+        PURCHASED: 'Ostopalvelu',
+        PRIVATE: 'Yksityinen',
+        MUNICIPAL_SCHOOL: 'Kunnallinen',
+        PRIVATE_SERVICE_VOUCHER: 'Palveluseteli'
+      }
+    }
   },
   header: {
     nav: {

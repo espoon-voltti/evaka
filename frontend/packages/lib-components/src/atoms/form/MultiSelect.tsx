@@ -60,6 +60,9 @@ export default function MultiSelect<T extends object>({
             selected && 'length' in selected ? (selected as T[]) : []
           onChange(selectionsArray)
         }}
+        filterOption={({ data }, q) =>
+          getOptionLabel(data).toLowerCase().includes(q.toLowerCase())
+        }
         components={{
           MultiValueContainer: () => null,
           Option: function Option({ innerRef, innerProps, ...props }) {

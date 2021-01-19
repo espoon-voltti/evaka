@@ -1,6 +1,6 @@
 import React from 'react'
-import { PublicUnit } from '@evaka/lib-common/src/api-types/units'
 import styled from 'styled-components'
+import { PublicUnit } from '@evaka/lib-common/src/api-types/units'
 import colors from '@evaka/lib-components/src/colors'
 import {
   FixedSpaceColumn,
@@ -12,6 +12,8 @@ import { faArrowDown, faArrowUp, faTimes } from '@evaka/lib-icons'
 import { defaultMargins, Gap } from '@evaka/lib-components/src/white-space'
 import InlineButton from '@evaka/lib-components/src/atoms/buttons/InlineButton'
 import { StaticChip } from '@evaka/lib-components/src/atoms/Chip'
+import { useTranslation } from '~localization'
+import ExternalLink from '@evaka/lib-components/src/atoms/ExternalLink'
 
 export type PreferredUnitBoxProps = {
   unit: PublicUnit
@@ -28,6 +30,35 @@ export default React.memo(function PreferredUnitBox({
   moveUp,
   moveDown
 }: PreferredUnitBoxProps) {
+  const t = useTranslation()
+
+  const providerTypeText =
+    unit.providerType === 'PRIVATE_SERVICE_VOUCHER'
+      ? t.common.unit.providerTypes.PRIVATE
+      : t.common.unit.providerTypes[unit.providerType]
+
+  const getProviderTypeColors = (): { color: string; textColor: string } => {
+    switch (unit.providerType) {
+      case 'MUNICIPAL':
+      case 'MUNICIPAL_SCHOOL':
+        return {
+          color: colors.accents.water,
+          textColor: colors.greyscale.white
+        }
+      case 'PRIVATE':
+      case 'PRIVATE_SERVICE_VOUCHER':
+        return {
+          color: colors.accents.emerald,
+          textColor: colors.greyscale.white
+        }
+      case 'PURCHASED':
+        return {
+          color: colors.accents.green,
+          textColor: colors.greyscale.darkest
+        }
+    }
+  }
+
   return (
     <Wrapper>
       <MainColLeft>{n}</MainColLeft>
@@ -36,10 +67,25 @@ export default React.memo(function PreferredUnitBox({
           <FixedSpaceColumn spacing={'xxs'}>
             <H4 noMargin>{unit.name}</H4>
             <span>{unit.streetAddress}</span>
+            {unit.providerType === 'PRIVATE_SERVICE_VOUCHER' && (
+              <ExternalLink
+                href={'https://fi.wikipedia.org/wiki/Palveluseteli'}
+                text={t.common.unit.providerTypes.PRIVATE_SERVICE_VOUCHER}
+                newTab
+              />
+            )}
           </FixedSpaceColumn>
           <FixedSpaceFlexWrap horizontalSpacing={'xs'} verticalSpacing={'xs'}>
-            <StaticChip color={colors.primary}>suomenkielinen</StaticChip>
-            <StaticChip color={colors.accents.water}>kunnallinen</StaticChip>
+            {unit.language === 'sv' ? (
+              <StaticChip color={colors.accents.yellow}>
+                ruotsinkielinen
+              </StaticChip>
+            ) : (
+              <StaticChip color={colors.primary}>suomenkielinen</StaticChip>
+            )}
+            <StaticChip {...getProviderTypeColors()}>
+              {providerTypeText}
+            </StaticChip>
           </FixedSpaceFlexWrap>
           <Gap size={'xs'} />
           <FixedSpaceFlexWrap verticalSpacing={'xs'}>

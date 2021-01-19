@@ -32,18 +32,26 @@ export const SelectionChip = React.memo(function SelectionChip({
   )
 })
 
-export const StaticChip = styled.div<{ color: string }>`
+export const StaticChip = styled.div<{ color: string; textColor?: string }>`
+  font-family: 'Open Sans', sans-serif;
+  font-weight: 600;
+  font-size: 16px;
+  line-height: 20px;
   user-select: none;
   border: 1px solid ${(p) => p.color};
   border-radius: 1000px;
   background-color: ${(p) => p.color};
-  color: ${(p) => readableColor(p.color, '#000', colors.greyscale.white)};
+  color: ${(p) =>
+    p.textColor ??
+    readableColor(p.color, colors.greyscale.darkest, colors.greyscale.white)};
   padding: ${defaultMargins.xxs}
     calc(${defaultMargins.xs} + ${defaultMargins.xxs});
 `
 
 const SelectionChipWrapper = styled(StaticChip)<{ selected: boolean }>`
   cursor: pointer;
+  font-size: 14px;
+  line-height: 18px;
 
   ${(p) =>
     p.selected

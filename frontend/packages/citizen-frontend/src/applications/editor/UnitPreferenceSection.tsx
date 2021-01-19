@@ -28,9 +28,8 @@ import ErrorSegment from '@evaka/lib-components/src/atoms/state/ErrorSegment'
 import PreferredUnitBox from '~applications/editor/PreferredUnitBox'
 import { SelectionChip } from '@evaka/lib-components/src/atoms/Chip'
 import MultiSelect from '@evaka/lib-components/src/atoms/form/MultiSelect'
-import InlineButton from '@evaka/lib-components/src/atoms/buttons/InlineButton'
-import { faExternalLink } from '@evaka/lib-icons'
-import colors from "@evaka/lib-components/src/colors";
+import colors from '@evaka/lib-components/src/colors'
+import ExternalLink from '@evaka/lib-components/src/atoms/ExternalLink'
 
 const maxUnits = 3
 
@@ -146,13 +145,8 @@ export default React.memo(function UnitPreferenceSection({
             kartalla’.
           </p>
 
-          <a href={'/'} target="_blank" rel="noreferrer">
-            <InlineButton
-              onClick={() => undefined}
-              text={'Yksiköt kartalla'}
-              icon={faExternalLink}
-            />
-          </a>
+          <ExternalLink href="/" text={'Yksiköt kartalla'} newTab />
+
           <Gap size={'s'} />
 
           <Label>Yksikön kieli</Label>
@@ -256,7 +250,11 @@ export default React.memo(function UnitPreferenceSection({
                         />
                       ) : null
                     )}
-                  <Info>Valitse 1-3 varhaiskasvatusyksikköä ja järjestä ne toivomaasi järjestykseen. Voit muuttaa järjestystä nuolien avulla.</Info>
+                  <Info>
+                    Valitse 1-3 varhaiskasvatusyksikköä ja järjestä ne
+                    toivomaasi järjestykseen. Voit muuttaa järjestystä nuolien
+                    avulla.
+                  </Info>
                 </FixedSpaceColumn>
               </FixedWidthDiv>
             </FixedSpaceFlexWrap>
