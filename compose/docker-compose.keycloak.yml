@@ -14,10 +14,11 @@ services:
       KEYCLOAK_PASSWORD: admin
       DB_VENDOR: h2
       KEYCLOAK_WELCOME_THEME: evaka
+      KEYCLOAK_IMPORT: /configuration/evaka.json
     volumes:
       - ./keycloak/configuration:/configuration
       - ./keycloak/evaka-keycloak-theme/evaka:/opt/jboss/keycloak/themes/evaka
-    entrypoint: /configuration/entrypoint-configuration.sh
+    entrypoint: /configuration/entrypoint-no-cache.sh
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080"]
       interval: 2s
@@ -33,13 +34,16 @@ services:
       - "8025:8025"
 
   configure-keycloak:
-    image: quay.io/keycloak/keycloak:11.0.3
+    build: ./keycloak/evaka-keycloak-theme/
     environment:
       KEYCLOAK_USER: admin
       KEYCLOAK_PASSWORD: admin
+      KEYCLOAK_FRONTEND_URL: "http://keycloak:8080/auth"
+      ADMIN_FIRST_NAME: "He"
+      ADMIN_LAST_NAME: "Man"
+      ADMIN_EMAIL: "he-man@example.com"
     volumes:
       - ./keycloak/configuration:/configuration
-    entrypoint: /configuration/entrypoint-realm.sh
+    entrypoint: /bin/entrypoint-configure.sh
     depends_on:
       - keycloak
-
