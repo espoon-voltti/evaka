@@ -39,6 +39,7 @@ services:
       KEYCLOAK_USER: admin
       KEYCLOAK_PASSWORD: admin
       KEYCLOAK_FRONTEND_URL: "http://keycloak:8080/auth"
+      REALM: evaka
       ADMIN_FIRST_NAME: "He"
       ADMIN_LAST_NAME: "Man"
       ADMIN_EMAIL: "he-man@example.com"
