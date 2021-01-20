@@ -15,6 +15,15 @@ const ListGrid = styled.div<ListGridProps>`
   grid-template-columns: ${(p) => p.labelWidth ?? '235px'} auto;
   row-gap: ${(p) => defaultMargins[p.rowGap || 'xs']};
   column-gap: ${(p) => defaultMargins[p.columnGap || 's']};
+
+  @media (max-width: 600px) {
+    grid-template-columns: auto;
+    row-gap: ${defaultMargins.xxs};
+
+    *:nth-child(2n) {
+      margin-bottom: ${(p) => defaultMargins[p.rowGap || 'xs']};
+    }
+  }
 `
 
 export default ListGrid

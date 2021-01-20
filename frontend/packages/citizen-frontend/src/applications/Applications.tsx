@@ -17,15 +17,6 @@ import { SpinnerSegment } from '../../../lib-components/src/atoms/state/Spinner'
 import ErrorSegment from '../../../lib-components/src/atoms/state/ErrorSegment'
 import _ from 'lodash'
 import ChildApplicationsBlock from '~applications/ChildApplicationsBlock'
-import styled from 'styled-components'
-
-const MobileFriendlyH1 = styled(H1)`
-  @media (max-width: 600px) {
-    font-size: 24px;
-    font-weight: 600;
-    line-height: 36px;
-  }
-`
 
 export default React.memo(function Applications() {
   const t = useTranslation()
@@ -46,7 +37,7 @@ export default React.memo(function Applications() {
     <Container>
       <Gap size="s" />
       <ContentArea opaque paddingVertical="L">
-        <MobileFriendlyH1 noMargin>{t.applicationsList.title}</MobileFriendlyH1>
+        <H1 noMargin>{t.applicationsList.title}</H1>
         <P
           width="800px"
           dangerouslySetInnerHTML={{ __html: t.applicationsList.summary }}
@@ -58,18 +49,15 @@ export default React.memo(function Applications() {
       {guardianApplications.isFailure && (
         <ErrorSegment title={t.applicationsList.pageLoadError} />
       )}
-      {guardianApplications.isSuccess && (
-        <>
-          {_.sortBy(guardianApplications.value, (a) => a.childName).map(
-            (childApplications) => (
-              <React.Fragment key={childApplications.childId}>
-                <ChildApplicationsBlock {...childApplications} />
-                <Gap size="s" />
-              </React.Fragment>
-            )
-          )}
-        </>
-      )}
+      {guardianApplications.isSuccess &&
+        _.sortBy(guardianApplications.value, (a) => a.childName).map(
+          (childApplications) => (
+            <React.Fragment key={childApplications.childId}>
+              <ChildApplicationsBlock {...childApplications} />
+              <Gap size="s" />
+            </React.Fragment>
+          )
+        )}
     </Container>
   )
 })

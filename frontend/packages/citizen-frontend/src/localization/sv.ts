@@ -128,33 +128,34 @@ const sv: Translations = {
     summary:
       'Barnets vårdnadshavare kan anmäla barnet till förskolan eller ansöka om plats i småbarnspedagogisk verksamhet. Uppgifter om vårdnadshavarens barn kommer automatiskt från befolkningsdatabasen till denna sida.',
     pageLoadError: 'Tietojen hakeminen ei onnistunut',
+    noApplications: 'Inga ansökningar',
     type: {
-      daycare: 'Varhaiskasvatushakemus',
-      preschool: 'Esiopetushakemus',
-      club: 'Kerhohakemus'
+      daycare: 'Ansökan till småbarnspedagogik',
+      preschool: 'Anmälan till förskolan',
+      club: 'Ansökan till klubbverksamhet'
     },
-    unit: 'Yksikkö',
-    period: 'Ajalle',
-    created: 'Luotu',
-    modified: 'Muokattu',
+    unit: 'Enhet',
+    period: 'Period',
+    created: 'Skapad',
+    modified: 'Ändrad',
     status: {
-      title: 'Tila',
-      CREATED: 'Luonnos',
-      SENT: 'Lähetetty',
-      WAITING_PLACEMENT: 'Käsiteltävänä',
-      WAITING_DECISION: 'Käsiteltävänä',
-      WAITING_UNIT_CONFIRMATION: 'Käsiteltävänä',
-      WAITING_MAILING: 'Käsiteltävänä',
-      WAITING_CONFIRMATION: 'Vahvistettavana huoltajalla',
-      REJECTED: 'Paikka hylätty',
-      ACTIVE: 'Paikka vastaanotettu',
-      CANCELLED: 'Poistettu käsittelystä'
+      title: 'Status',
+      CREATED: 'Förslag',
+      SENT: 'Skickas',
+      WAITING_PLACEMENT: 'Bearbetas',
+      WAITING_DECISION: 'Bearbetas',
+      WAITING_UNIT_CONFIRMATION: 'Bearbetas',
+      WAITING_MAILING: 'Bearbetas',
+      WAITING_CONFIRMATION: 'Bekräftas av vårdnadshavaren',
+      REJECTED: 'Platsen annullerad',
+      ACTIVE: 'Godkänd',
+      CANCELLED: 'Platsen annullerad'
     },
-    openApplicationLink: 'Näytä hakemus',
+    openApplicationLink: 'Visa ansökan',
     confirmationLinkInstructions:
-      'Päätökset-välilehdellä voit lukea päätöksen ja hyväksyä/hylätä tarjotun paikan',
-    confirmationLink: 'Siirry vahvistamaan',
-    newApplicationLink: 'Uusi hakemus'
+      'Under Beslut-fliken kan du läsa besluten till dina ansökningar och ta emot/annullera platsen',
+    confirmationLink: 'Granska och bekräfta beslutet',
+    newApplicationLink: 'Ny ansökan'
   }
 }
 

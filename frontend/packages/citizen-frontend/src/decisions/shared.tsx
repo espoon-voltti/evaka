@@ -7,7 +7,14 @@ import colors, {
   blueColors,
   greyscale
 } from '@evaka/lib-components/src/colors'
-import { faGavel, faCheck, faTimes, faEnvelope, faPlay } from '@evaka/lib-icons'
+import {
+  faGavel,
+  faCheck,
+  faTimes,
+  faEnvelope,
+  faPlay,
+  faFile
+} from '@evaka/lib-icons'
 import styled from 'styled-components'
 import { Decision, DecisionSummary } from '~decisions/types'
 import { IconDefinition } from '@fortawesome/fontawesome-svg-core'
@@ -20,7 +27,22 @@ export const Status = styled.span`
   padding-left: 0.5rem;
 `
 
-export const statusIcon: {
+export const decisionStatusIcon = {
+  PENDING: {
+    icon: faGavel,
+    color: accentColors.orange
+  },
+  ACCEPTED: {
+    icon: faCheck,
+    color: accentColors.green
+  },
+  REJECTED: {
+    icon: faTimes,
+    color: greyscale.lighter
+  }
+}
+
+export const applicationStatusIcon: {
   [key: string]: { icon: IconDefinition; color: string }
 } = {
   PROCESSING: {
@@ -40,7 +62,7 @@ export const statusIcon: {
     color: greyscale.lighter
   },
   CREATED: {
-    icon: faGavel,
+    icon: faFile,
     color: greyscale.lighter
   },
   SENT: {

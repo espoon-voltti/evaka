@@ -463,7 +463,7 @@ fun getCitizenChildren(h: Handle, citizenId: UUID): List<CitizenChildren> {
 
     return h.createQuery(sql)
         .bind("guardianId", citizenId)
-        .mapTo(CitizenChildren::class.java)
+        .mapTo<CitizenChildren>()
         .list()
 }
 

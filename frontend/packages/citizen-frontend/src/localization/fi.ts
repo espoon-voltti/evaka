@@ -125,6 +125,7 @@ export default {
     summary:
       'Lapsen huoltaja voi tehdä lapselle hakemuksen varhaiskasvatukseen ja kerhoon tai ilmoittaa lapsen esiopetukseen. Huoltajan lasten tiedot haetaan tähän näkymään automaattisesti Väestötietojärjestelmästä.',
     pageLoadError: 'Tietojen hakeminen ei onnistunut',
+    noApplications: 'Ei hakemuksia',
     type: {
       daycare: 'Varhaiskasvatushakemus',
       preschool: 'Esiopetushakemus',

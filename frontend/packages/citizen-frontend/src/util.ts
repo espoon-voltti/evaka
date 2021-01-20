@@ -4,12 +4,12 @@
 
 import { format } from 'date-fns'
 
-export const DATE_FORMAT_DEFAULT = 'dd.MM.yyyy'
-export const DATE_FORMAT_DATE_TIME = 'dd.MM.yyyy HH:mm'
+export const DATE_FORMAT_DATE_DEFAULT = 'dd.MM.yyyy'
+export const DATE_FORMAT_DATE_TIME_DEFAULT = 'dd.MM.yyyy HH:mm'
 
 export function formatDate(
   date: Date | null | undefined,
-  dateFormat = DATE_FORMAT_DEFAULT
+  dateFormat = DATE_FORMAT_DATE_TIME_DEFAULT
 ): string {
   return date ? format(date, dateFormat) : ''
 }

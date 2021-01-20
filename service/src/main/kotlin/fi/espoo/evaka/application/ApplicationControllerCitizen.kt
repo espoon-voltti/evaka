@@ -49,15 +49,14 @@ class ApplicationControllerCitizen(
                     .map { GuardianApplications(it.key, it.value.first().childName ?: "", it.value) }
 
                 // Some children might not have applications, so add 0 application children
-                getCitizenChildren(tx.handle, user.id).let {
-                    it.map { citizenChild ->
-                        val childApplications = existingApplicationsByChild.findLast { it.childId == citizenChild.childId }?.let { it.applicationSummaries } ?: emptyList()
-                        GuardianApplications(
-                            childId = citizenChild.childId,
-                            childName = citizenChild.childName,
-                            applicationSummaries = childApplications
-                        )
-                    }
+                getCitizenChildren(tx.handle, user.id).map { citizenChild ->
+                    val childApplications = existingApplicationsByChild.findLast { it.childId == citizenChild.childId }
+                        ?.let { it.applicationSummaries } ?: emptyList()
+                    GuardianApplications(
+                        childId = citizenChild.childId,
+                        childName = citizenChild.childName,
+                        applicationSummaries = childApplications
+                    )
                 }
             }
         )
