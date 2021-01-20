@@ -62,7 +62,7 @@ data class EnduserDaycareFormJSON(
         guardian2 = guardian2.toAdult(),
         hasOtherAdults = hasOtherAdults,
         otherAdults = otherAdults.map(OtherPersonJSON::toOtherPerson),
-        hasOtherChildren = hasOtherAdults,
+        hasOtherChildren = hasOtherChildren,
         otherChildren = otherChildren.map(OtherPersonJSON::toOtherPerson),
         maxFeeAccepted = maxFeeAccepted,
         additionalDetails = additionalDetails.toAdditionalDetails()
