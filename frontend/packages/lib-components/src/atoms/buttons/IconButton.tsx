@@ -20,34 +20,41 @@ const StyledButton = styled.button<ButtonProps>`
   display: flex;
   justify-content: center;
   align-items: center;
-  width: ${(props: ButtonProps) => {
-    switch (props.size) {
-      case 's':
-        return '20px'
-      case 'm':
-        return '24px'
-      case 'L':
-        return '34px'
-      case 'XL':
-        return '64px'
-      default:
-        return '20px'
-    }
-  }};
-  height: ${(props: ButtonProps) => {
-    switch (props.size) {
-      case 's':
-        return '20px'
-      case 'm':
-        return '24px'
-      case 'L':
-        return '34px'
-      case 'XL':
-        return '64px'
-      default:
-        return '20px'
-    }
-  }};
+  box-sizing: border-box;
+  width: calc(
+    12px +
+      ${(props: ButtonProps) => {
+        switch (props.size) {
+          case 's':
+            return '20px'
+          case 'm':
+            return '24px'
+          case 'L':
+            return '34px'
+          case 'XL':
+            return '64px'
+          default:
+            return '20px'
+        }
+      }}
+  );
+  height: calc(
+    12px +
+      ${(props: ButtonProps) => {
+        switch (props.size) {
+          case 's':
+            return '20px'
+          case 'm':
+            return '24px'
+          case 'L':
+            return '34px'
+          case 'XL':
+            return '64px'
+          default:
+            return '20px'
+        }
+      }}
+  );
   font-size: ${(props: ButtonProps) => {
     switch (props.size) {
       case 's':
@@ -64,25 +71,39 @@ const StyledButton = styled.button<ButtonProps>`
   }};
   color: ${(props) => (props.gray ? colors.greyscale.dark : colors.primary)};
   border: none;
+  border-radius: 100%;
   background: none;
   outline: none;
-  padding: 0;
-  margin: 0;
   cursor: pointer;
+  padding: 0;
+  margin: -6px;
 
-  &:hover {
+  &:focus {
+    border: 2px solid ${colors.accents.petrol};
+  }
+
+  .icon-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 2px;
+  }
+
+  &:hover .icon-wrapper {
     color: ${(props) =>
       props.gray ? colors.greyscale.dark : colors.primaryHover};
   }
 
-  &:active {
+  &:active .icon-wrapper {
     color: ${(props) =>
       props.gray ? colors.greyscale.darkest : colors.primaryActive};
   }
 
   &.disabled {
-    color: ${greyscale.medium};
     cursor: not-allowed;
+    .icon-wrapper {
+      color: ${greyscale.medium};
+    }
   }
 `
 
@@ -117,7 +138,9 @@ function IconButton({
       size={size}
       gray={gray}
     >
-      <FontAwesomeIcon icon={icon} />
+      <div className="icon-wrapper">
+        <FontAwesomeIcon icon={icon} />
+      </div>
     </StyledButton>
   )
 }

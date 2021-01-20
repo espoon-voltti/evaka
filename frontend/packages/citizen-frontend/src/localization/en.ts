@@ -6,7 +6,16 @@ import { Translations } from '.'
 
 const en: Translations = {
   common: {
-    return: 'Return'
+    return: 'Return',
+    unit: {
+      providerTypes: {
+        MUNICIPAL: 'Kunnallinen',
+        PURCHASED: 'Ostopalvelu',
+        PRIVATE: 'Yksityinen',
+        MUNICIPAL_SCHOOL: 'Kunnallinen',
+        PRIVATE_SERVICE_VOUCHER: 'Palveluseteli'
+      }
+    }
   },
   header: {
     nav: {
@@ -46,6 +55,181 @@ const en: Translations = {
             '* Information marked with a star is required'
           ]
         }
+      },
+      serviceNeed: {
+        serviceNeed: 'Palveluntarve',
+        startDate: {
+          label: 'Toivottu aloituspäivä',
+          noteOnDelay: 'Hakemuksen käsittelyaika on 4 kuukautta.',
+          instructions:
+            'Toivottua aloituspäivää on mahdollista muuttaa myöhemmäksi niin kauan kuin hakemusta ei ole otettu käsittelyyn. Tämän jälkeen toivotun aloituspäivän muutokset tehdään ottamalla yhteyttä varhaiskasvatuksen palveluohjaukseen (puh. 09 816 31000).',
+          placeholder: 'Valitse aloituspäivä',
+          validationText: 'Toivottu aloituspäivä: '
+        },
+        urgent: {
+          label: 'Hakemus on kiireellinen',
+          message: {
+            title: 'Hakemus on kiireellinen',
+            text:
+              'Mikäli varhaiskasvatuspaikan tarve johtuu äkillisestä työllistymisestä tai opiskelusta, tulee paikkaa hakea viimeistään kaksi viikkoa ennen kuin tarve alkaa. Kahden viikon käsittelyaika alkaa siitä, kun työ- tai opiskelutodistukset on toimitettu palveluohjaukseen (varhaiskasvatuksen.palveluohjaus@espoo.fi).'
+          },
+          attachmentsMessage: {
+            text:
+              'Mikäli varhaiskasvatuspaikan tarve johtuu äkillisestä työllistymisestä tai opiskelusta, tulee paikkaa hakea viimeistään kaksi viikkoa ennen kuin tarve alkaa. Hakemuksen liitteenä tulee olla työ- tai opiskelutodistus molemmilta samassa taloudessa asuvilta huoltajilta. Suosittelemme toimittamaan liitteen sähköisesti tässä, sillä kahden viikon käsittelyaika alkaa siitä, kun olemme vastaanottaneet hakemuksen tarvittavine liitteineen. Jos et voi lisätä liitteitä hakemukselle sähköisesti, lähetä ne postilla osoitteeseen Varhaiskasvatuksen palveluohjaus, PL 3125, 02070 Espoon kaupunki.',
+            subtitle:
+              'Lisää tähän työ- tai opiskelutodistus molemmilta vanhemmilta.'
+          }
+        },
+        partTime: {
+          true: 'Osapäiväinen (max 5h/pv, 25h/vko)',
+          false: 'Kokopäiväinen'
+        },
+        dailyTime: {
+          label: 'Päivittäinen varhaiskasvatusaika',
+          instructions:
+            'Ilmoita lapsen yleisimmin tarvitseva varhaiskasvatusaika, aika tarkennetaan varhaiskasvatuksen alkaessa.',
+          usualArrivalAndDeparture:
+            'Varhaiskasvatuksen alkamis- ja päättymisaika'
+        },
+        shiftCare: {
+          label: 'Ilta- ja vuorohoito',
+          instructions:
+            'Vuorohoidolla tarkoitetaan viikonloppuna tai ympärivuorokautisesti tarvittavaa varhaiskasvatusta. Iltahoito on pääasiassa klo 6.30-18.00 ulkopuolella ja viikonloppuisin tapahtuvaa varhaiskasvatusta. Mikäli tarvitset ilta- tai vuorohoitoa, täsmennä tarvetta lisätietokentässä.',
+          message: {
+            title: 'Ilta- ja vuorohoito',
+            text:
+              'Ilta- ja vuorohoito on tarkoitettu lapsille, joiden molemmat vanhemmat ovat vuorotyössä tai opiskelevat pääsääntöisesti iltaisin ja/ viikonloppuisin. Hakemuksen liitteeksi toimitetaan molempien vanhempien osalta työnantajan todistus vuorotyöstä tai opiskelusta johtuvasta ilta- tai vuorohoidon tarpeesta.'
+          },
+          attachmentsMessage: {
+            text:
+              'Ilta-  ja vuorohoito on tarkoitettu lapsille, joiden molemmat vanhemmat ovat vuorotyössä tai opiskelevat pääsääntöisesti iltaisin ja/tai viikonloppuisin. Hakemuksen liitteeksi toimitetaan molempien vanhempien osalta työnantajan todistus vuorotyöstä tai opiskelusta johtuvasta ilta- tai vuorohoidon tarpeesta. Suosittelemme toimittamaan liitteen sähköisesti tässä, sillä kahden viikon käsittelyaika alkaa siitä, kun olemme vastaanottaneet hakemuksen tarvittavine liitteineen. Jos et voi lisätä liitteitä hakemukselle sähköisesti, lähetä ne postilla osoitteeseen Varhaiskasvatuksen palveluohjaus, PL 3125, 02070 Espoon kaupunki.',
+            subtitle:
+              'Lisää tähän molemmilta vanhemmilta joko työnantajan todistus vuorotyöstä tai todistus opiskelusta iltaisin/viikonloppuisin.'
+          }
+        },
+        assistanceNeed: 'Tuen tarve',
+        assistanceNeeded: 'Lapsella on tuen tarve',
+        assistanceNeedPlaceholder: 'Kerro lapsen tuen tarpeesta.',
+        assistanceNeedInstructions:
+          'Tehostetun ja tuen tarpeella tarkoitetaan sellaisten tukitoimien tarvetta, jotka on osoitettu asiantuntijalausunnoin. Tuen tarpeissa Espoon varhaiskasvatuksesta otetaan erikseen yhteyttä hakemuksen jättämisen jälkeen. Kehityksen ja oppimisen tuki varhaiskasvatuksessa toteutuu pääsääntöisesti lapsen kotia lähellä olevassa päiväkodissa tai perhepäivähoidossa. Tukitoimet toteutuvat lapsen arjessa osana varhaiskasvatuksen muuta toimintaa. Osa hoitopaikoista on varattu tukea tarvitseville lapsille.'
+      },
+      unitPreference: {
+        title: 'Hakutoive',
+        siblingBasis: {
+          title: 'Haku sisarperusteella',
+          p1:
+            'Lapsella on sisarusperuste samaan varhaiskasvatuspaikkaan, jossa hänen sisaruksensa on päätöksentekohetkellä. Sisarukseksi katsotaan kaikki samassa osoitteessa asuvat lapset. Tavoitteena on sijoittaa sisarukset samaan varhaiskasvatuspaikkaan perheen niin toivoessa. Jos haet paikkaa sisaruksille, jotka eivät vielä ole varhaiskasvatuksessa, kirjoita tieto lisätietokenttään.',
+          p2:
+            'Täytä nämä tiedot vain, jos käytät sisarusperustetta, sekä valitse alla olevissa hakutoiveissa ensisijaiseksi toiveeksi sama varhaiskasvatusyksikkö, jossa lapsen sisarus on.',
+          checkbox:
+            'Haen ensisijaisesti samaan paikkaan, jossa lapsen sisarus on jo varhaiskasvatuksessa.',
+          names: 'Sisaruksen etunimet ja sukunimi *',
+          namesPlaceholder: 'Etunimet ja sukunimi',
+          ssn: 'Sisaruksen henkilötunnus *',
+          ssnPlaceholder: 'Henkilötunnus'
+        },
+        units: {
+          title: 'Hakutoiveet',
+          startDateMissing:
+            'Päästäksesi valitsemaan hakutoiveet valitse ensin toivottu aloituspäivä "Palvelun tarve" -osiosta',
+          p1:
+            'Voit hakea paikkaa 1-3 varhaiskasvatusyksiköstä toivomassasi järjestyksessä. Hakutoiveet eivät takaa paikkaa toivotussa yksikössä, mutta mahdollisuus toivotun paikan saamiseen kasvaa antamalla useamman vaihtoehdon.',
+          p2:
+            'Näet eri varhaiskasvatusyksiköiden sijainnin valitsemalla ‘Yksiköt kartalla’.',
+          mapLink: 'Yksiköt kartalla',
+          languageFilter: {
+            label: 'Yksikön kieli',
+            fi: 'suomi',
+            sv: 'ruotsi'
+          },
+          select: {
+            label: 'Valitse hakutoiveet *',
+            placeholder: 'Hae yksiköitä',
+            maxSelected: 'Maksimimäärä yksiköitä valittu',
+            noOptions: 'Ei hakuehtoja vastaavia yksiköitä'
+          },
+          preferences: {
+            label: 'Valitsemasi hakutoiveet',
+            info:
+              'Valitse 1-3 varhaiskasvatusyksikköä ja järjestä ne toivomaasi järjestykseen. Voit muuttaa järjestystä nuolien avulla.',
+            fi: 'suomenkielinen',
+            sv: 'ruotsinkielinen',
+            moveUp: 'Siirrä ylöspäin',
+            moveDown: 'Siirrä alaspäin',
+            remove: 'Poista hakutoive'
+          }
+        }
+      },
+      fee: {
+        title: 'Early childhood education fee',
+        info:
+          'The client fees for municipal early childhood education are calculated as a percentage of the family’s gross income. Depending on the family’s size and income and the hours of early childhood education, the fees vary from free early childhood education to a maximum monthly fee of EUR 288 per child. Each family must provide information about their gross income using the income statement form, no later than two weeks after their child’s early childhood education has started.',
+        emphasis:
+          '<strong>The income statement is not needed if the family agrees to pay the highest fee.</strong>',
+        checkbox:
+          'I give consent to the highest fee. This consent will remain valid until I state otherwise.',
+        links:
+          'You can find further information about early childhood education fees and the income statement form here:<br/><a href="https://www.espoo.fi/en-US/Childcare_and_education/Early_childhood_education/Early_childhood_education_fees" target="_blank" rel="noopener noreferrer">Early childhood education fees</a>'
+      },
+      additionalDetails: {
+        title: 'Other additional information',
+        otherInfoLabel: 'Additional information',
+        otherInfoPlaceholder:
+          'If you wish, you can provide more detailed information related to the application in this field',
+        dietLabel: 'Special diet',
+        dietPlaceholder:
+          'If you wish, you can indicate your child’s special diet in this field',
+        dietInfo:
+          'Some special diets require a separate medical certificate to be delivered to the early childhood education location. Exceptions are a low-lactose or lactose-free diet, a diet based on religious beliefs and vegetarian diet (lacto-ovo).',
+        allergiesLabel: 'Allergies',
+        allergiesPlaceholder:
+          'If you wish, you can indicate your child’s allergies in this field',
+        allergiesInfo:
+          'Information on allergies is mainly needed when applying for family day care.'
+      },
+      contactInfo: {
+        title: 'Henkilötiedot',
+        info:
+          'Henkilötiedot on haettu väestötiedoista, eikä niitä voi muuttaa tällä hakemuksella. Jos henkilötiedoissa on virheitä, päivitäthän tiedot Digi- ja Väestötietoviraston sivuilla. Mikäli osoitteenne on muuttumassa, voit lisätä tulevan osoitteen erilliseen kohtaan hakemuksella; lisää tuleva osoite sekä lapselle että huoltajalle. Virallisena osoitetietoa pidetään vasta, kun se on päivittynyt väestötietojärjestelmään. Päätökset esiopetus- ja varhaiskasvatuspaikoista toimitetaan automaattisesti myös eri osoitteessa asuvalle väestötiedoista löytyvälle huoltajalle.',
+        childInfoTitle: 'Lapsen tiedot',
+        childFirstName: 'Lapsen etunimet',
+        childLastName: 'Lapsen sukunimi',
+        childSSN: 'Lapsen henkilötunnus',
+        homeAddress: 'Kotiosoite',
+        moveDate: 'Muuttopäivämäärä',
+        street: 'Katuosoite',
+        postalCode: 'Postinumero',
+        municipality: 'Postitoimipaikka',
+        guardianInfoTitle: 'Huoltajan tiedot',
+        guardianFirstName: 'Huoltajan etunimet',
+        guardianLastName: 'Huoltajan sukunimi',
+        guardianSSN: 'Huoltajan henkilötunnus',
+        phone: 'Puhelinnumero',
+        email: 'Sähköposti',
+        secondGuardianInfoTitle: 'Toisen huoltajan tiedot',
+        secondGuardianInfo:
+          'Toisen huoltajan tiedot haetaan automaattisesti väestötietojärjestelmästä.',
+        nonCaretakerPartnerTitle:
+          'Samassa taloudessa asuva avio- tai avopuoliso (ei huoltaja)',
+        nonCaretakerPartnerCheckboxLabel:
+          'Samassa taloudessa asuu hakijan kanssa avio- tai avoliitossa oleva henkilö, joka ei ole lapsen huoltaja.',
+        personFirstName: 'Henkilön etunimet',
+        personLastName: 'Henkilön sukunimi',
+        personSSN: 'Henkilön henkilötunnus',
+        otherChildrenTitle: 'Samassa taloudessa asuvat alle 18-vuotiaat lapset',
+        otherChildrenInfo:
+          'Samassa taloudessa asuvat alle 18-vuotiaat lapset vaikuttavat varhaiskasvatusmaksuihin.',
+        otherChildrenChoiceInfo:
+          'Valitse lapset, jotka asuvat samassa taloudessa.',
+        hasFutureAddress:
+          'Väestörekisterissä oleva osoite on muuttunut tai muuttumassa',
+        firstNamePlaceholder: 'Etunimet',
+        lastNamePlaceholder: 'Sukunimi',
+        ssnPlaceholder: 'Henkilötunnus',
+        streetPlaceholder: 'Osoite',
+        postalCodePlaceholder: 'Postinumero',
+        municipalityPlaceholder: 'Postitoimipaikka',
+        choosePlaceholder: 'Valitse'
       }
     }
   },

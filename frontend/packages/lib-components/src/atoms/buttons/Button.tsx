@@ -36,7 +36,8 @@ export const StyledButton = styled.button`
   }
 
   &:focus {
-    box-shadow: 0px 0px 0 1px ${colors.accents.petrol};
+    outline: 2px solid ${colors.accents.petrol};
+    outline-offset: 2px;
   }
 
   &:hover {

@@ -13,11 +13,9 @@ import {
   Container,
   ContentArea
 } from '@evaka/lib-components/src/layout/Container'
-import { defaultMargins, Gap } from '@evaka/lib-components/src/white-space'
+import { Gap } from '@evaka/lib-components/src/white-space'
 import { H1, P } from '@evaka/lib-components/src/typography'
 import { useTranslation } from '~localization'
-import styled from 'styled-components'
-import colors from '@evaka/lib-components/src/colors'
 import { AlertBox } from '@evaka/lib-components/src/molecules/MessageBoxes'
 import { SpinnerSegment } from '@evaka/lib-components/src/atoms/state/Spinner'
 import ErrorSegment from '@evaka/lib-components/src/atoms/state/ErrorSegment'
@@ -26,12 +24,7 @@ import { faChevronLeft, faExclamation } from '@evaka/lib-icons'
 import FormModal from '@evaka/lib-components/src/molecules/modals/FormModal'
 import DecisionResponse from './DecisionResponse'
 import { decisionOrderComparator } from '~decisions/shared'
-
-const HorizontalLine = styled.hr`
-  margin-block-start: ${defaultMargins.XL};
-  margin-block-end: ${defaultMargins.XL};
-  border: 1px solid ${colors.greyscale.lighter};
-`
+import HorizontalLine from '@evaka/lib-components/src/atoms/HorizontalLine'
 
 export default React.memo(function DecisionResponseList() {
   const { applicationId } = useParams<{ applicationId: UUID }>()

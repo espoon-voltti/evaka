@@ -6,7 +6,16 @@ import { Translations } from '.'
 
 const sv: Translations = {
   common: {
-    return: 'Tillbaka'
+    return: 'Tillbaka',
+    unit: {
+      providerTypes: {
+        MUNICIPAL: 'Kunnallinen',
+        PURCHASED: 'Ostopalvelu',
+        PRIVATE: 'Yksityinen',
+        MUNICIPAL_SCHOOL: 'Kunnallinen',
+        PRIVATE_SERVICE_VOUCHER: 'Palveluseteli'
+      }
+    }
   },
   header: {
     nav: {
@@ -46,6 +55,180 @@ const sv: Translations = {
             '* Informationen markerad med en stjärna krävs'
           ]
         }
+      },
+      serviceNeed: {
+        serviceNeed: 'Palveluntarve',
+        startDate: {
+          label: 'Toivottu aloituspäivä',
+          noteOnDelay: 'Hakemuksen käsittelyaika on 4 kuukautta.',
+          instructions:
+            'Toivottua aloituspäivää on mahdollista muuttaa myöhemmäksi niin kauan kuin hakemusta ei ole otettu käsittelyyn. Tämän jälkeen toivotun aloituspäivän muutokset tehdään ottamalla yhteyttä varhaiskasvatuksen palveluohjaukseen (puh. 09 816 31000).',
+          placeholder: 'Valitse aloituspäivä',
+          validationText: 'Toivottu aloituspäivä: '
+        },
+        urgent: {
+          label: 'Hakemus on kiireellinen',
+          message: {
+            title: 'Hakemus on kiireellinen',
+            text:
+              'Mikäli varhaiskasvatuspaikan tarve johtuu äkillisestä työllistymisestä tai opiskelusta, tulee paikkaa hakea viimeistään kaksi viikkoa ennen kuin tarve alkaa. Kahden viikon käsittelyaika alkaa siitä, kun työ- tai opiskelutodistukset on toimitettu palveluohjaukseen (varhaiskasvatuksen.palveluohjaus@espoo.fi).'
+          },
+          attachmentsMessage: {
+            text:
+              'Mikäli varhaiskasvatuspaikan tarve johtuu äkillisestä työllistymisestä tai opiskelusta, tulee paikkaa hakea viimeistään kaksi viikkoa ennen kuin tarve alkaa. Hakemuksen liitteenä tulee olla työ- tai opiskelutodistus molemmilta samassa taloudessa asuvilta huoltajilta. Suosittelemme toimittamaan liitteen sähköisesti tässä, sillä kahden viikon käsittelyaika alkaa siitä, kun olemme vastaanottaneet hakemuksen tarvittavine liitteineen. Jos et voi lisätä liitteitä hakemukselle sähköisesti, lähetä ne postilla osoitteeseen Varhaiskasvatuksen palveluohjaus, PL 3125, 02070 Espoon kaupunki.',
+            subtitle:
+              'Lisää tähän työ- tai opiskelutodistus molemmilta vanhemmilta.'
+          }
+        },
+        partTime: {
+          true: 'Osapäiväinen (max 5h/pv, 25h/vko)',
+          false: 'Kokopäiväinen'
+        },
+        dailyTime: {
+          label: 'Päivittäinen varhaiskasvatusaika',
+          instructions:
+            'Ilmoita lapsen yleisimmin tarvitseva varhaiskasvatusaika, aika tarkennetaan varhaiskasvatuksen alkaessa.',
+          usualArrivalAndDeparture:
+            'Varhaiskasvatuksen alkamis- ja päättymisaika'
+        },
+        shiftCare: {
+          label: 'Ilta- ja vuorohoito',
+          instructions:
+            'Vuorohoidolla tarkoitetaan viikonloppuna tai ympärivuorokautisesti tarvittavaa varhaiskasvatusta. Iltahoito on pääasiassa klo 6.30-18.00 ulkopuolella ja viikonloppuisin tapahtuvaa varhaiskasvatusta. Mikäli tarvitset ilta- tai vuorohoitoa, täsmennä tarvetta lisätietokentässä.',
+          message: {
+            title: 'Ilta- ja vuorohoito',
+            text:
+              'Ilta- ja vuorohoito on tarkoitettu lapsille, joiden molemmat vanhemmat ovat vuorotyössä tai opiskelevat pääsääntöisesti iltaisin ja/ viikonloppuisin. Hakemuksen liitteeksi toimitetaan molempien vanhempien osalta työnantajan todistus vuorotyöstä tai opiskelusta johtuvasta ilta- tai vuorohoidon tarpeesta.'
+          },
+          attachmentsMessage: {
+            text:
+              'Ilta-  ja vuorohoito on tarkoitettu lapsille, joiden molemmat vanhemmat ovat vuorotyössä tai opiskelevat pääsääntöisesti iltaisin ja/tai viikonloppuisin. Hakemuksen liitteeksi toimitetaan molempien vanhempien osalta työnantajan todistus vuorotyöstä tai opiskelusta johtuvasta ilta- tai vuorohoidon tarpeesta. Suosittelemme toimittamaan liitteen sähköisesti tässä, sillä kahden viikon käsittelyaika alkaa siitä, kun olemme vastaanottaneet hakemuksen tarvittavine liitteineen. Jos et voi lisätä liitteitä hakemukselle sähköisesti, lähetä ne postilla osoitteeseen Varhaiskasvatuksen palveluohjaus, PL 3125, 02070 Espoon kaupunki.',
+            subtitle:
+              'Lisää tähän molemmilta vanhemmilta joko työnantajan todistus vuorotyöstä tai todistus opiskelusta iltaisin/viikonloppuisin.'
+          }
+        },
+        assistanceNeed: 'Tuen tarve',
+        assistanceNeeded: 'Lapsella on tuen tarve',
+        assistanceNeedPlaceholder: 'Kerro lapsen tuen tarpeesta.',
+        assistanceNeedInstructions:
+          'Tehostetun ja tuen tarpeella tarkoitetaan sellaisten tukitoimien tarvetta, jotka on osoitettu asiantuntijalausunnoin. Tuen tarpeissa Espoon varhaiskasvatuksesta otetaan erikseen yhteyttä hakemuksen jättämisen jälkeen. Kehityksen ja oppimisen tuki varhaiskasvatuksessa toteutuu pääsääntöisesti lapsen kotia lähellä olevassa päiväkodissa tai perhepäivähoidossa. Tukitoimet toteutuvat lapsen arjessa osana varhaiskasvatuksen muuta toimintaa. Osa hoitopaikoista on varattu tukea tarvitseville lapsille.'
+      },
+      unitPreference: {
+        title: 'Hakutoive',
+        siblingBasis: {
+          title: 'Haku sisarperusteella',
+          p1:
+            'Lapsella on sisarusperuste samaan varhaiskasvatuspaikkaan, jossa hänen sisaruksensa on päätöksentekohetkellä. Sisarukseksi katsotaan kaikki samassa osoitteessa asuvat lapset. Tavoitteena on sijoittaa sisarukset samaan varhaiskasvatuspaikkaan perheen niin toivoessa. Jos haet paikkaa sisaruksille, jotka eivät vielä ole varhaiskasvatuksessa, kirjoita tieto lisätietokenttään.',
+          p2:
+            'Täytä nämä tiedot vain, jos käytät sisarusperustetta, sekä valitse alla olevissa hakutoiveissa ensisijaiseksi toiveeksi sama varhaiskasvatusyksikkö, jossa lapsen sisarus on.',
+          checkbox:
+            'Haen ensisijaisesti samaan paikkaan, jossa lapsen sisarus on jo varhaiskasvatuksessa.',
+          names: 'Sisaruksen etunimet ja sukunimi *',
+          namesPlaceholder: 'Etunimet ja sukunimi',
+          ssn: 'Sisaruksen henkilötunnus *',
+          ssnPlaceholder: 'Henkilötunnus'
+        },
+        units: {
+          title: 'Hakutoiveet',
+          startDateMissing:
+            'Päästäksesi valitsemaan hakutoiveet valitse ensin toivottu aloituspäivä "Palvelun tarve" -osiosta',
+          p1:
+            'Voit hakea paikkaa 1-3 varhaiskasvatusyksiköstä toivomassasi järjestyksessä. Hakutoiveet eivät takaa paikkaa toivotussa yksikössä, mutta mahdollisuus toivotun paikan saamiseen kasvaa antamalla useamman vaihtoehdon.',
+          p2:
+            'Näet eri varhaiskasvatusyksiköiden sijainnin valitsemalla ‘Yksiköt kartalla’.',
+          mapLink: 'Yksiköt kartalla',
+          languageFilter: {
+            label: 'Yksikön kieli',
+            fi: 'suomi',
+            sv: 'ruotsi'
+          },
+          select: {
+            label: 'Valitse hakutoiveet *',
+            placeholder: 'Hae yksiköitä',
+            maxSelected: 'Maksimimäärä yksiköitä valittu',
+            noOptions: 'Ei hakuehtoja vastaavia yksiköitä'
+          },
+          preferences: {
+            label: 'Valitsemasi hakutoiveet',
+            info:
+              'Valitse 1-3 varhaiskasvatusyksikköä ja järjestä ne toivomaasi järjestykseen. Voit muuttaa järjestystä nuolien avulla.',
+            fi: 'suomenkielinen',
+            sv: 'ruotsinkielinen',
+            moveUp: 'Siirrä ylöspäin',
+            moveDown: 'Siirrä alaspäin',
+            remove: 'Poista hakutoive'
+          }
+        }
+      },
+      fee: {
+        title: 'Avgiften för småbarnspedagogik',
+        info:
+          'Klientavgiften inom den kommunala småbarnspedagogiken är en procentandel av familjens bruttoinkomster. Avgiften beror på familjens storlek och inkomster samt småbarnspedagogikens dagliga längd, från ingen avgift till en månadsavgift på högst 288 euro per barn. Familjen ska lämna in en utredning över sina bruttoinkomster på en särskild blankett, senast inom två veckor från det att barnet har inlett småbarnspedagogiken.',
+        emphasis:
+          '<strong>Om familjen samtycker till den högsta avgiften behövs ingen inkomstutredning.</strong>',
+        checkbox:
+          'Jag ger mitt samtycke till att betala den högsta avgiften. Samtycket gäller tills vidare, tills jag meddelar något annat.',
+        links:
+          'Mer information om småbarnspedagogikens avgifter och blanketten för inkomstutredning finns här:<br/><a href="https://www.esbo.fi/sv-FI/Utbildning_och_fostran/Smabarnspedagogik/Avgifter_for_smabarnspedagogik" target="_blank" rel="noopener noreferrer">Avgifter för småbarnspedagogik</a>'
+      },
+      additionalDetails: {
+        title: 'Övriga tilläggsuppgifter',
+        otherInfoLabel: 'Övriga tilläggsuppgifter',
+        otherInfoPlaceholder:
+          'Du kan ge noggrannare uppgifter för din ansökan i det här fältet',
+        dietLabel: 'Specialdiet',
+        dietPlaceholder: 'Du kan meddela barnets specialdiet i det här fältet',
+        dietInfo:
+          'För en del specialdieter behövs även ett skilt läkarintyg som lämnas in till enheten. Undantag är laktosfri eller laktosfattig diet, diet som grundar sig på religiösa orsaker och vegetarisk kost (lakto-ovo).',
+        allergiesLabel: 'Allergier',
+        allergiesPlaceholder:
+          'Du kan meddela barnets allergier i det här fältet',
+        allergiesInfo:
+          'Information om allergier behövs när du ansöker till familjedagvård.'
+      },
+      contactInfo: {
+        title: 'Henkilötiedot',
+        info:
+          'Henkilötiedot on haettu väestötiedoista, eikä niitä voi muuttaa tällä hakemuksella. Jos henkilötiedoissa on virheitä, päivitäthän tiedot Digi- ja Väestötietoviraston sivuilla. Mikäli osoitteenne on muuttumassa, voit lisätä tulevan osoitteen erilliseen kohtaan hakemuksella; lisää tuleva osoite sekä lapselle että huoltajalle. Virallisena osoitetietoa pidetään vasta, kun se on päivittynyt väestötietojärjestelmään. Päätökset esiopetus- ja varhaiskasvatuspaikoista toimitetaan automaattisesti myös eri osoitteessa asuvalle väestötiedoista löytyvälle huoltajalle.',
+        childInfoTitle: 'Lapsen tiedot',
+        childFirstName: 'Lapsen etunimet',
+        childLastName: 'Lapsen sukunimi',
+        childSSN: 'Lapsen henkilötunnus',
+        homeAddress: 'Kotiosoite',
+        moveDate: 'Muuttopäivämäärä',
+        street: 'Katuosoite',
+        postalCode: 'Postinumero',
+        municipality: 'Postitoimipaikka',
+        guardianInfoTitle: 'Huoltajan tiedot',
+        guardianFirstName: 'Huoltajan etunimet',
+        guardianLastName: 'Huoltajan sukunimi',
+        guardianSSN: 'Huoltajan henkilötunnus',
+        phone: 'Puhelinnumero',
+        email: 'Sähköposti',
+        secondGuardianInfoTitle: 'Toisen huoltajan tiedot',
+        secondGuardianInfo:
+          'Toisen huoltajan tiedot haetaan automaattisesti väestötietojärjestelmästä.',
+        nonCaretakerPartnerTitle:
+          'Samassa taloudessa asuva avio- tai avopuoliso (ei huoltaja)',
+        nonCaretakerPartnerCheckboxLabel:
+          'Samassa taloudessa asuu hakijan kanssa avio- tai avoliitossa oleva henkilö, joka ei ole lapsen huoltaja.',
+        personFirstName: 'Henkilön etunimet',
+        personLastName: 'Henkilön sukunimi',
+        personSSN: 'Henkilön henkilötunnus',
+        otherChildrenTitle: 'Samassa taloudessa asuvat alle 18-vuotiaat lapset',
+        otherChildrenInfo:
+          'Samassa taloudessa asuvat alle 18-vuotiaat lapset vaikuttavat varhaiskasvatusmaksuihin.',
+        otherChildrenChoiceInfo:
+          'Valitse lapset, jotka asuvat samassa taloudessa.',
+        hasFutureAddress:
+          'Väestörekisterissä oleva osoite on muuttunut tai muuttumassa',
+        firstNamePlaceholder: 'Etunimet',
+        lastNamePlaceholder: 'Sukunimi',
+        ssnPlaceholder: 'Henkilötunnus',
+        streetPlaceholder: 'Osoite',
+        postalCodePlaceholder: 'Postinumero',
+        municipalityPlaceholder: 'Postitoimipaikka',
+        choosePlaceholder: 'Valitse'
       }
     }
   },

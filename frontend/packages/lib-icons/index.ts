@@ -39,6 +39,7 @@ export interface IconSet {
   faExchange: IconDefinition
   faExclamation: IconDefinition
   faExclamationTriangle: IconDefinition
+  faExternalLink: IconDefinition
   faFemale: IconDefinition
   faFile: IconDefinition
   faFileAlt: IconDefinition
@@ -124,6 +125,7 @@ export const faEyeSlash = iconSet.faEyeSlash
 export const faExchange = iconSet.faExchange
 export const faExclamation = iconSet.faExclamation
 export const faExclamationTriangle = iconSet.faExclamationTriangle
+export const faExternalLink = iconSet.faExternalLink
 export const faFemale = iconSet.faFemale
 export const faFile = iconSet.faFile
 export const faFileAlt = iconSet.faFileAlt

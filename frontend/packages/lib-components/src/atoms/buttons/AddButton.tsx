@@ -33,7 +33,22 @@ const StyledButton = styled.button`
     }
   }
 
-  .icon-wrapper {
+  .icon-wrapper-outer {
+    height: 43px !important;
+    width: 43px !important;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-sizing: border-box;
+    margin: -4px ${defaultMargins.s} -4px -4px;
+  }
+
+  &:focus .icon-wrapper-outer {
+    border: 2px solid ${colors.accents.petrol};
+    border-radius: 100%;
+  }
+
+  .icon-wrapper-inner {
     height: 35px !important;
     width: 35px !important;
     display: flex;
@@ -45,7 +60,6 @@ const StyledButton = styled.button`
     font-weight: normal;
     background: ${colors.primary};
     border-radius: 100%;
-    margin: 0 ${defaultMargins.s} 0 0;
   }
 
   &.flipped {
@@ -83,8 +97,10 @@ function AddButton({
       onClick={onClick}
       disabled={disabled}
     >
-      <div className="icon-wrapper">
-        <FontAwesomeIcon icon={faPlus} />
+      <div className="icon-wrapper-outer">
+        <div className="icon-wrapper-inner">
+          <FontAwesomeIcon icon={faPlus} />
+        </div>
       </div>
       {text && <span>{text}</span>}
     </StyledButton>

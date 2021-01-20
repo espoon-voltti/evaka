@@ -5,9 +5,36 @@
 import { Failure, Result, Success } from '@evaka/lib-common/src/api'
 import { JsonOf } from '@evaka/lib-common/src/json'
 import LocalDate from '@evaka/lib-common/src/local-date'
+import { PublicUnit } from '@evaka/lib-common/src/api-types/units'
 import { client } from '~api-client'
-import { Application } from '~applications/types'
-import { GuardianApplications } from '~applications/types'
+import {
+  Application,
+  ApplicationType,
+  GuardianApplications
+} from '~applications/types'
+
+export type ApplicationUnitType =
+  | 'CLUB'
+  | 'DAYCARE'
+  | 'PRESCHOOL'
+  | 'PREPARATORY'
+
+export async function getApplicationUnits(
+  type: ApplicationUnitType,
+  date: LocalDate
+): Promise<Result<PublicUnit[]>> {
+  try {
+    const { data } = await client.get<JsonOf<PublicUnit[]>>('/units', {
+      params: {
+        type,
+        date: date.formatIso()
+      }
+    })
+    return Success.of(data)
+  } catch (e) {
+    return Failure.fromError(e)
+  }
+}
 
 export async function getApplication(
   applicationId: string
@@ -24,6 +51,7 @@ export async function getApplication(
 
 const deserializeApplication = (json: JsonOf<Application>): Application => ({
   ...json,
+  type: json.type.toLowerCase() as ApplicationType, // todo: temporary hotfix
   form: {
     ...json.form,
     child: {

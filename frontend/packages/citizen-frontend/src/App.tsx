@@ -24,16 +24,16 @@ export default function App() {
             <Header />
             <Switch>
               <Route exact path="/applications" component={Applications} />
+              <Route
+                exact
+                path="/applications/:applicationId/edit"
+                component={ApplicationEditor}
+              />
               <Route exact path="/decisions" component={Decisions} />
               <Route
                 exact
                 path="/decisions/by-application/:applicationId"
                 component={DecisionResponseList}
-              />
-              <Route
-                exact
-                path="/applications/:applicationId/edit"
-                component={ApplicationEditor}
               />
               <Route path="/" component={RedirectToEnduser} />
             </Switch>

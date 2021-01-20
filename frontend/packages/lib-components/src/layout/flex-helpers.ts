@@ -85,3 +85,27 @@ export const FixedSpaceColumn = styled.div<FixedSpaceColumnProps>`
     }
   }
 `
+
+interface FixedSpaceFlexWrapProps {
+  horizontalSpacing?: SpacingSize
+  verticalSpacing?: SpacingSize
+  reverse?: boolean
+}
+export const FixedSpaceFlexWrap = styled.div<FixedSpaceFlexWrapProps>`
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  flex-wrap: ${(p) => (p.reverse ? 'wrap-reverse' : 'wrap')};
+
+  margin-bottom: -${(p) => (p.verticalSpacing ? defaultMargins[p.verticalSpacing] : defaultMargins.s)};
+  margin-right: -${(p) => (p.horizontalSpacing ? defaultMargins[p.horizontalSpacing] : defaultMargins.s)};
+
+  > * {
+    margin-bottom: ${(p) =>
+      p.verticalSpacing ? defaultMargins[p.verticalSpacing] : defaultMargins.s};
+    margin-right: ${(p) =>
+      p.horizontalSpacing
+        ? defaultMargins[p.horizontalSpacing]
+        : defaultMargins.s};
+  }
+`
