@@ -2,10 +2,11 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import React from 'react'
+import {Link} from "react-router-dom";
+import { noop } from 'lodash'
 import InlineButton from '@evaka/lib-components/src/atoms/buttons/InlineButton'
 import { faFileAlt } from '@evaka/lib-icons'
-import { noop } from 'lodash'
-import React from 'react'
 import { useTranslation } from '~localization'
 
 export const ApplicationLink = React.memo(function ApplicationLink({
@@ -16,17 +17,13 @@ export const ApplicationLink = React.memo(function ApplicationLink({
   const t = useTranslation()
 
   return (
-    <a
-      href={`/citizen/applications/${applicationId}`}
-      target="_blank"
-      rel="noreferrer"
-    >
+    <Link to={`/applications/${applicationId}/edit`}>
       <InlineButton
         icon={faFileAlt}
         text={t.applicationsList.openApplicationLink}
         onClick={noop}
         dataQa={`button-open-application-${applicationId}`}
       />
-    </a>
+    </Link>
   )
 })
