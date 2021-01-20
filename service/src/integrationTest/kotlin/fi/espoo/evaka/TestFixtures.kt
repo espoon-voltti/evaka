@@ -136,7 +136,7 @@ val testDecisionMaker_1 = PersonData.WithName(
 val testDecisionMaker_2 = PersonData.WithName(
     id = UUID.randomUUID(),
     firstName = "Decision",
-    lastName = "Maker"
+    lastName = "Maker 2"
 )
 
 val testAdult_1 = PersonData.Detailed(
@@ -322,7 +322,7 @@ val testChildWithNamelessGuardian = PersonData.Detailed(
     restrictedDetailsEnabled = false
 )
 
-val allWorkers = setOf(testDecisionMaker_1)
+val allWorkers = setOf(testDecisionMaker_1, testDecisionMaker_2)
 val allAdults = setOf(testAdult_1, testAdult_2, testAdult_3, testAdult_4, testAdult_5, testAdult_6, testAdult_7)
 val allChildren = setOf(testChild_1, testChild_2, testChild_3, testChild_4, testChild_5, testChild_6, testChild_7, testChildWithNamelessGuardian)
 val allBasicChildren = allChildren.map { PersonData.Basic(it.id, it.dateOfBirth, it.firstName, it.lastName, it.ssn) }

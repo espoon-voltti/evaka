@@ -525,9 +525,10 @@ fun approveFeeDecisionDraftsForSending(h: Handle, ids: List<UUID>, approvedBy: U
             decision_number = nextval('fee_decision_number_sequence'),
             approved_by = :approvedBy,
             decision_handler = CASE
-                WHEN youngest_child.finance_decision_handler_id IS NOT NULL THEN youngest_child.finance_decision_handler_id
+                WHEN youngest_child.finance_decision_handler_id IS NOT NULL AND fd.decision_type = 'NORMAL'
+                    THEN youngest_child.finance_decision_handler_id
                 ELSE :approvedBy
-                END,
+            END,
             approved_at = NOW()
         FROM fee_decision AS fd
         LEFT JOIN youngest_child ON youngest_child.decision_id = :id AND rownum = 1
@@ -676,6 +677,7 @@ fun toFeeDecision(mapper: ObjectMapper) = { rs: ResultSet, _: StatementContext -
         documentKey = rs.getString("document_key"),
         approvedBy = rs.getString("approved_by")?.let { PersonData.JustId(UUID.fromString(it)) },
         approvedAt = rs.getTimestamp("approved_at")?.toInstant(),
+        decisionHandler = rs.getString("decision_handler")?.let { PersonData.JustId(UUID.fromString(it)) },
         createdAt = rs.getTimestamp("created_at").toInstant(),
         sentAt = rs.getTimestamp("sent_at")?.toInstant()
     )

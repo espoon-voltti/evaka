@@ -36,6 +36,7 @@ import fi.espoo.evaka.testChild_4
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDaycare2
 import fi.espoo.evaka.testDecisionMaker_1
+import fi.espoo.evaka.testDecisionMaker_2
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
@@ -176,8 +177,8 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
 
     private fun assertEqualEnough(expected: FeeDecisionDetailed, actual: FeeDecisionDetailed) {
         assertEquals(
-            expected.copy(approvedAt = null, sentAt = null, financeDecisionHandlerName = null),
-            actual.copy(approvedAt = null, sentAt = null, financeDecisionHandlerName = null)
+            expected.copy(approvedAt = null, sentAt = null),
+            actual.copy(approvedAt = null, sentAt = null)
         )
     }
 
@@ -583,6 +584,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
             decisionNumber = 1,
             status = FeeDecisionStatus.SENT,
             approvedBy = PersonData.JustId(testDecisionMaker_1.id),
+            decisionHandler = PersonData.JustId(testDecisionMaker_1.id),
             documentKey = "feedecision_${draft.id}_fi.pdf"
         )
 
@@ -612,6 +614,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
             decisionNumber = 1,
             status = FeeDecisionStatus.WAITING_FOR_MANUAL_SENDING,
             approvedBy = PersonData.JustId(testDecisionMaker_1.id),
+            decisionHandler = PersonData.JustId(testDecisionMaker_1.id),
             documentKey = "feedecision_${draft.id}_fi.pdf"
         )
 
@@ -641,6 +644,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
             decisionNumber = 1,
             status = FeeDecisionStatus.WAITING_FOR_MANUAL_SENDING,
             approvedBy = PersonData.JustId(testDecisionMaker_1.id),
+            decisionHandler = PersonData.JustId(testDecisionMaker_1.id),
             documentKey = "feedecision_${draft.id}_fi.pdf"
         )
 
@@ -670,6 +674,81 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
             decisionNumber = 1,
             status = FeeDecisionStatus.WAITING_FOR_MANUAL_SENDING,
             approvedBy = PersonData.JustId(testDecisionMaker_1.id),
+            decisionHandler = PersonData.JustId(testDecisionMaker_1.id),
+            documentKey = "feedecision_${draft.id}_fi.pdf"
+        )
+
+        val (_, _, result) = http.get("/decisions/${draft.id}")
+            .asUser(user)
+            .responseString()
+
+        assertEqualEnough(
+            activated.let(::toDetailed),
+            deserializeResult(result.get()).data
+        )
+    }
+
+    @Test
+    fun `confirmDrafts picks decision handler from unit when decision is not a relief decision`() {
+        jdbi.handle { h -> upsertFeeDecisions(h, objectMapper, testDecisions) }
+        val draft = testDecisions.find { it.status === FeeDecisionStatus.DRAFT }!!
+        jdbi.handle {
+            it.execute(
+                "UPDATE daycare SET finance_decision_handler = ? WHERE id = ?",
+                testDecisionMaker_2.id,
+                draft.parts.maxByOrNull { p -> p.child.dateOfBirth }!!.placement.unit
+            )
+        }
+
+        http.post("/decisions/confirm")
+            .asUser(user)
+            .jsonBody(objectMapper.writeValueAsString(listOf(draft.id)))
+            .responseString()
+
+        asyncJobRunner.runPendingJobsSync(2)
+
+        val activated = draft.copy(
+            decisionNumber = 1,
+            status = FeeDecisionStatus.SENT,
+            approvedBy = PersonData.JustId(testDecisionMaker_1.id),
+            decisionHandler = PersonData.JustId(testDecisionMaker_2.id),
+            documentKey = "feedecision_${draft.id}_fi.pdf"
+        )
+
+        val (_, _, result) = http.get("/decisions/${draft.id}")
+            .asUser(user)
+            .responseString()
+
+        assertEqualEnough(
+            activated.let(::toDetailed),
+            deserializeResult(result.get()).data
+        )
+    }
+
+    @Test
+    fun `confirmDrafts uses approver as decision handler when decision is a relief decision`() {
+        jdbi.handle { h -> upsertFeeDecisions(h, objectMapper, testDecisions) }
+        val draft = testDecisions.find { it.decisionType === FeeDecisionType.RELIEF_ACCEPTED }!!
+        jdbi.handle {
+            it.execute(
+                "UPDATE daycare SET finance_decision_handler = ? WHERE id = ?",
+                testDecisionMaker_2.id,
+                draft.parts.maxByOrNull { p -> p.child.dateOfBirth }!!.placement.unit
+            )
+        }
+
+        http.post("/decisions/confirm")
+            .asUser(user)
+            .jsonBody(objectMapper.writeValueAsString(listOf(draft.id)))
+            .responseString()
+
+        asyncJobRunner.runPendingJobsSync(2)
+
+        val activated = draft.copy(
+            decisionNumber = 1,
+            status = FeeDecisionStatus.WAITING_FOR_MANUAL_SENDING,
+            approvedBy = PersonData.JustId(testDecisionMaker_1.id),
+            decisionHandler = PersonData.JustId(testDecisionMaker_1.id),
             documentKey = "feedecision_${draft.id}_fi.pdf"
         )
 
@@ -705,6 +784,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest() {
             decisionNumber = 1,
             status = FeeDecisionStatus.WAITING_FOR_MANUAL_SENDING,
             approvedBy = PersonData.JustId(testDecisionMaker_1.id),
+            decisionHandler = PersonData.JustId(testDecisionMaker_1.id),
             documentKey = "feedecision_${draft.id}_fi.pdf"
         )
 

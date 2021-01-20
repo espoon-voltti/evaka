@@ -33,6 +33,7 @@ data class FeeDecision(
     val documentKey: String? = null,
     val approvedBy: PersonData.JustId? = null,
     val approvedAt: Instant? = null,
+    val decisionHandler: PersonData.JustId? = null,
     val createdAt: Instant = Instant.now(),
     val sentAt: Instant? = null
 ) : FinanceDecision<FeeDecisionPart, FeeDecision>, MergeableDecision<FeeDecisionPart, FeeDecision> {
