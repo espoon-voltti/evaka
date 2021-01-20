@@ -3,6 +3,8 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import DateRange from '@evaka/lib-common/src/date-range'
+import LocalDate from '@evaka/lib-common/src/local-date'
+import { JsonOf } from '@evaka/lib-common/src/json'
 
 export type UUID = string
 type ISODate = string
@@ -461,7 +463,9 @@ export type DecisionType =
   | 'PRESCHOOL_DAYCARE'
   | 'PREPARATORY_EDUCATION'
 
-export interface Decision {
+export type DecisionStatus = 'PENDING' | 'ACCEPTED' | 'REJECTED'
+
+export interface DecisionFixture {
   id: string
   employeeId: string
   applicationId: string
@@ -469,6 +473,44 @@ export interface Decision {
   type: DecisionType
   startDate: ISODate
   endDate: ISODate
+}
+
+export interface Decision {
+  id: UUID
+  type: DecisionType
+  startDate: LocalDate
+  endDate: LocalDate
+  unit: DecisionUnit
+  applicationId: UUID
+  childId: UUID
+  childName: string
+  documentUri: string
+  decisionNumber: number
+  sentDate: LocalDate
+  status: DecisionStatus
+}
+
+export interface DecisionUnit {
+  id: UUID
+  name: string
+  daycareDecisionName: string
+  preschoolDecisionName: string
+  manager: string | null
+  streetAddress: string
+  postalCode: string
+  postOffice: string
+  approverName: string
+  decisionHandler: string
+  decisionHandlerAddress: string
+}
+
+export function deserializeDecision(json: JsonOf<Decision>): Decision {
+  return {
+    ...json,
+    startDate: LocalDate.parseIso(json.startDate),
+    endDate: LocalDate.parseIso(json.endDate),
+    sentDate: LocalDate.parseIso(json.sentDate)
+  }
 }
 
 export interface ApplicationEmail {

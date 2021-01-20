@@ -25,7 +25,9 @@ import fi.espoo.evaka.daycare.VisitingAddress
 import fi.espoo.evaka.daycare.deleteDaycareGroup
 import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.daycare.domain.ProviderType
+import fi.espoo.evaka.decision.Decision
 import fi.espoo.evaka.decision.DecisionType
+import fi.espoo.evaka.decision.getDecisionsByApplication
 import fi.espoo.evaka.decision.insertDecision
 import fi.espoo.evaka.emailclient.MockApplicationEmail
 import fi.espoo.evaka.emailclient.MockEmailClient
@@ -56,6 +58,7 @@ import fi.espoo.evaka.pis.updatePersonFromVtj
 import fi.espoo.evaka.placement.PlacementPlanService
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.async.AsyncJobRunner
+import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
@@ -257,6 +260,16 @@ class DevApi(
     fun deleteDecisions(db: Database, @PathVariable id: UUID): ResponseEntity<Unit> {
         db.transaction { it.handle.deleteDecision(id) }
         return ResponseEntity.noContent().build()
+    }
+
+    @GetMapping("/applications/{applicationId}/decisions")
+    fun getApplicationDecisions(
+        db: Database.Connection,
+        @PathVariable applicationId: UUID
+    ): ResponseEntity<List<Decision>> {
+        return db.read { tx ->
+            getDecisionsByApplication(tx.handle, applicationId, AclAuthorization.All)
+        }.let { ResponseEntity.ok(it) }
     }
 
     @PostMapping("/fee-decisions")
