@@ -6,7 +6,7 @@ package fi.espoo.evaka.vtjclient.service
 
 import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.insertGeneralTestFixtures
-import fi.espoo.evaka.pis.service.getGuardianChildren
+import fi.espoo.evaka.pis.service.getGuardianChildIds
 import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.vtjclient.dto.NativeLanguage
@@ -69,7 +69,7 @@ class PersonStorageServiceIntegrationTest : PureJdbiTest() {
         assertEquals(1, createdPerson.children.size)
         assertEquals(testChild.socialSecurityNumber, createdPerson.children.first().socialSecurityNumber)
 
-        val guardianChildren = db.read { getGuardianChildren(it.handle, createdPerson.id) }
+        val guardianChildren = db.read { getGuardianChildIds(it.handle, createdPerson.id) }
         assertEquals(1, guardianChildren.size)
         assertEquals(createdPerson.children.first().id, guardianChildren.first())
     }
@@ -94,7 +94,7 @@ class PersonStorageServiceIntegrationTest : PureJdbiTest() {
         assertEquals(1, createdPerson.children.size)
         assertEquals(testChild2.socialSecurityNumber, createdPerson.children.first().socialSecurityNumber)
 
-        val guardianChildren = db.read { getGuardianChildren(it.handle, createdPerson.id) }
+        val guardianChildren = db.read { getGuardianChildIds(it.handle, createdPerson.id) }
         assertEquals(1, guardianChildren.size)
         assertEquals(createdPerson.children.first().id, guardianChildren.first())
     }
