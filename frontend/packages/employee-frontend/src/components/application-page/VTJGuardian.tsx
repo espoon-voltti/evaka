@@ -68,7 +68,7 @@ function VTJGuardian({
 
       {otherGuardianLivesInSameAddress ? (
         <span data-qa="other-vtj-guardian-lives-in-same-address">
-          ${i18n.common.yes}
+          {i18n.common.yes}
         </span>
       ) : (
         <Dimmed data-qa="other-vtj-guardian-lives-in-same-address">
