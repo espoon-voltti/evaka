@@ -124,6 +124,41 @@ const en: Translations = {
       },
       returnToPreviousPage: 'Return'
     }
+  },
+  applicationsList: {
+    title:
+      'Applying for early childhood education or a club and enrolling for pre-primary education',
+    summary:
+      'A child’s guardian can submit an application for early childhood education or a club and enrol the child to pre-primary education. Information on the guardian’s children is automatically retrieved from the Digital and Population Data Services Agency and displayed in this view.',
+    pageLoadError: 'Failed to load guardian applications',
+    noApplications: 'No applications',
+    type: {
+      daycare: 'Daycare application',
+      preschool: 'Early education application',
+      club: 'Club application'
+    },
+    unit: 'Unit',
+    period: 'Period',
+    created: 'Created',
+    modified: 'Modified',
+    status: {
+      title: 'Status',
+      CREATED: 'Draft',
+      SENT: 'Sent',
+      WAITING_PLACEMENT: 'Being processed',
+      WAITING_DECISION: 'Being processed',
+      WAITING_UNIT_CONFIRMATION: 'Being processed',
+      WAITING_MAILING: 'Being processed',
+      WAITING_CONFIRMATION: 'Waiting for confirmation from the guardian',
+      REJECTED: 'Place rejected',
+      ACTIVE: 'Accepted',
+      CANCELLED: 'Place rejected'
+    },
+    openApplicationLink: 'Open application',
+    confirmationLinkInstructions:
+      'In the Decisions page you can read the decision and either accept or reject the proposed place',
+    confirmationLink: 'Review and confirm the decision',
+    newApplicationLink: 'New application'
   }
 }
 

@@ -29,7 +29,7 @@ class GuardianQueriesIntegrationTest : FullApplicationTest() {
     @Test
     fun addAndGetGuardianRelationships(): Unit = jdbi.handle { h ->
         insertGuardianTestFixtures(h)
-        val guardian1Children = getGuardianChildren(h, testAdult_1.id)
+        val guardian1Children = getGuardianChildIds(h, testAdult_1.id)
         Assertions.assertEquals(2, guardian1Children.size)
         Assertions.assertTrue(guardian1Children.contains(testChild_1.id))
         Assertions.assertTrue(guardian1Children.contains(testChild_2.id))
@@ -44,8 +44,8 @@ class GuardianQueriesIntegrationTest : FullApplicationTest() {
     fun deleteGuardianChildren(): Unit = jdbi.handle { h ->
         insertGuardianTestFixtures(h)
         deleteGuardianChildRelationShips(h, testAdult_1.id)
-        Assertions.assertEquals(0, getGuardianChildren(h, testAdult_1.id).size)
-        Assertions.assertEquals(1, getGuardianChildren(h, testAdult_2.id).size)
+        Assertions.assertEquals(0, getGuardianChildIds(h, testAdult_1.id).size)
+        Assertions.assertEquals(1, getGuardianChildIds(h, testAdult_2.id).size)
     }
 
     private fun insertGuardianTestFixtures(h: Handle) {

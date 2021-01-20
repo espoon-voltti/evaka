@@ -2,16 +2,32 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { accentColors, greyscale } from '@evaka/lib-components/src/colors'
-import { faGavel, faCheck, faTimes } from '@evaka/lib-icons'
+import colors, {
+  accentColors,
+  blueColors,
+  greyscale
+} from '@evaka/lib-components/src/colors'
+import {
+  faGavel,
+  faCheck,
+  faTimes,
+  faEnvelope,
+  faPlay,
+  faFile
+} from '@evaka/lib-icons'
 import styled from 'styled-components'
 import { Decision, DecisionSummary } from '~decisions/types'
+import { IconDefinition } from '@fortawesome/fontawesome-svg-core'
 
 export const Status = styled.span`
   text-transform: uppercase;
+  color: ${colors.greyscale.darkest}
+  font-size: 16px;
+  font-weight: 400;
+  padding-left: 0.5rem;
 `
 
-export const statusIcon = {
+export const decisionStatusIcon = {
   PENDING: {
     icon: faGavel,
     color: accentColors.orange
@@ -23,6 +39,35 @@ export const statusIcon = {
   REJECTED: {
     icon: faTimes,
     color: greyscale.lighter
+  }
+}
+
+export const applicationStatusIcon: {
+  [key: string]: { icon: IconDefinition; color: string }
+} = {
+  PROCESSING: {
+    icon: faPlay,
+    color: blueColors.dark
+  },
+  PENDING: {
+    icon: faGavel,
+    color: accentColors.orange
+  },
+  ACCEPTED: {
+    icon: faCheck,
+    color: accentColors.green
+  },
+  REJECTED: {
+    icon: faTimes,
+    color: greyscale.lighter
+  },
+  CREATED: {
+    icon: faFile,
+    color: greyscale.lighter
+  },
+  SENT: {
+    icon: faEnvelope,
+    color: blueColors.dark
   }
 }
 

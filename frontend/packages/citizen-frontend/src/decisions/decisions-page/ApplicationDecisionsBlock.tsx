@@ -3,29 +3,21 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
-import styled from 'styled-components'
 import Button from '@evaka/lib-components/src/atoms/buttons/Button'
 import { ContentArea } from '@evaka/lib-components/src/layout/Container'
 import LinkWrapperInlineBlock from '@evaka/lib-components/src/atoms/LinkWrapperInlineBlock'
 import ListGrid from '@evaka/lib-components/src/layout/ListGrid'
 import RoundIcon from '@evaka/lib-components/src/atoms/RoundIcon'
 import { H2, H3, Label, P } from '@evaka/lib-components/src/typography'
-import { defaultMargins, Gap } from '@evaka/lib-components/src/white-space'
+import { Gap } from '@evaka/lib-components/src/white-space'
 import { ApplicationDecisions, DecisionType } from '~decisions/types'
 import { useTranslation } from '~localization'
-import { decisionOrderComparator, Status, statusIcon } from '~decisions/shared'
+import {
+  decisionOrderComparator,
+  Status,
+  decisionStatusIcon
+} from '~decisions/shared'
 import { PdfLink } from '~decisions/PdfLink'
-
-const MobileFriendlyListGrid = styled(ListGrid)`
-  @media (max-width: 600px) {
-    grid-template-columns: auto;
-    row-gap: ${defaultMargins.xxs};
-
-    *:nth-child(2n) {
-      margin-bottom: ${defaultMargins.s};
-    }
-  }
-`
 
 const noop = () => undefined
 
@@ -60,11 +52,7 @@ export default React.memo(function ApplicationDecisionsBlock({
               {`${t.decisions.applicationDecisions.decision} ${t.decisions.applicationDecisions.type[type]}`}
             </H3>
             <Gap size="m" />
-            <MobileFriendlyListGrid
-              labelWidth="max-content"
-              rowGap="s"
-              columnGap="L"
-            >
+            <ListGrid labelWidth="max-content" rowGap="s" columnGap="L">
               <Label>{t.decisions.applicationDecisions.sentDate}</Label>
               <span data-qa={`decision-sent-date-${decisionId}`}>
                 {sentDate.format()}
@@ -80,14 +68,14 @@ export default React.memo(function ApplicationDecisionsBlock({
               <Label>{t.decisions.applicationDecisions.statusLabel}</Label>
               <Status data-qa={`decision-status-${decisionId}`}>
                 <RoundIcon
-                  content={statusIcon[status].icon}
-                  color={statusIcon[status].color}
+                  content={decisionStatusIcon[status].icon}
+                  color={decisionStatusIcon[status].color}
                   size="s"
                 />
                 <Gap size="xs" horizontal />
                 {t.decisions.applicationDecisions.status[status]}
               </Status>
-            </MobileFriendlyListGrid>
+            </ListGrid>
             <Gap size="m" />
             {status === 'PENDING' ? (
               <ConfirmationDialog applicationId={applicationId} type={type} />

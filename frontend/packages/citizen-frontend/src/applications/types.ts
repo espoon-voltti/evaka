@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
+
 import LocalDate from '@evaka/lib-common/src/local-date'
 
 export interface GuardianApplications {
@@ -8,7 +12,16 @@ export interface GuardianApplications {
 
 export interface ApplicationSummary {
   applicationId: string
+  type: string
+  childId: string
+  childName: string | null
+  preferredUnitName: string | null
+  allPreferredUnitNames: string[]
+  applicationStatus: ApplicationStatus
+  startDate: LocalDate | null
   sentDate: LocalDate | null
+  createdDate: Date
+  modifiedDate: Date
 }
 
 export type ApplicationType = 'club' | 'daycare' | 'preschool'

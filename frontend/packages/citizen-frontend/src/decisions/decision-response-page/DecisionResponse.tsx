@@ -20,7 +20,7 @@ import { DatePicker } from '@evaka/lib-components/src/molecules/DatePicker'
 import Button from '@evaka/lib-components/src/atoms/buttons/Button'
 import { acceptDecision, rejectDecision } from '~decisions/api'
 import { PdfLink } from '~decisions/PdfLink'
-import { Status, statusIcon } from '~decisions/shared'
+import { Status, decisionStatusIcon } from '~decisions/shared'
 import { AsyncFormModal } from '@evaka/lib-components/src/molecules/modals/FormModal'
 import { faExclamation } from '@evaka/lib-icons'
 import styled from 'styled-components'
@@ -109,8 +109,8 @@ export default React.memo(function DecisionResponse({
         <Label>{t.decisions.applicationDecisions.statusLabel}</Label>
         <Status data-qa={'decision-status'}>
           <RoundIcon
-            content={statusIcon[status].icon}
-            color={statusIcon[status].color}
+            content={decisionStatusIcon[status].icon}
+            color={decisionStatusIcon[status].color}
             size="s"
           />
           <Gap size="xs" horizontal />

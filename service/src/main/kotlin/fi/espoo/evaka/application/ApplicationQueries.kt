@@ -450,6 +450,23 @@ fun fetchApplicationSummariesForCitizen(h: Handle, citizenId: UUID): List<Citize
         .toList()
 }
 
+data class CitizenChildren(val childId: UUID, val childName: String)
+
+fun getCitizenChildren(h: Handle, citizenId: UUID): List<CitizenChildren> {
+    //language=sql
+    val sql =
+        """
+        SELECT child_id, first_name || ' ' || last_name AS childName
+        FROM guardian LEFT JOIN person child ON guardian.child_id = child.id
+        WHERE guardian_id = :guardianId
+        """.trimIndent()
+
+    return h.createQuery(sql)
+        .bind("guardianId", citizenId)
+        .mapTo<CitizenChildren>()
+        .list()
+}
+
 private val toPersonApplicationSummary: (ResultSet, StatementContext) -> PersonApplicationSummary = { rs, _ ->
     PersonApplicationSummary(
         applicationId = rs.getUUID("id"),

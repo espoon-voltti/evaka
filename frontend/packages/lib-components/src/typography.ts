@@ -25,6 +25,12 @@ export const H1 = styled.h1<HeadingProps>`
   ${(p) => (!p.fitted ? `margin-bottom: ${defaultMargins.m};` : '')}
   ${(p) => (p.centered ? `text-align: center;` : '')}
   ${(p) => (p.noMargin ? `margin: 0;` : '')}
+
+  @media (max-width: 600px) {
+    font-size: 24px;
+    font-weight: 600;
+    line-height: 36px;
+  }
 `
 
 export const H2 = styled.h2<HeadingProps>`

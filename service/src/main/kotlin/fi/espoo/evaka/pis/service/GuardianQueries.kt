@@ -43,7 +43,7 @@ fun getChildGuardians(h: Handle, childId: UUID): List<UUID> {
         .list()
 }
 
-fun getGuardianChildren(h: Handle, guardianId: UUID): List<UUID> {
+fun getGuardianChildIds(h: Handle, guardianId: UUID): List<UUID> {
     //language=sql
     val sql =
         """
