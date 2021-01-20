@@ -7,7 +7,11 @@ import { JsonOf } from '@evaka/lib-common/src/json'
 import LocalDate from '@evaka/lib-common/src/local-date'
 import { PublicUnit } from '@evaka/lib-common/src/api-types/units'
 import { client } from '~api-client'
-import { Application, ApplicationType, GuardianApplications } from '~applications/types'
+import {
+  Application,
+  ApplicationType,
+  GuardianApplications
+} from '~applications/types'
 
 export type ApplicationUnitType =
   | 'CLUB'

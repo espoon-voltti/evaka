@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
-import {Link} from "react-router-dom";
+import { Link } from 'react-router-dom'
 import { noop } from 'lodash'
 import InlineButton from '@evaka/lib-components/src/atoms/buttons/InlineButton'
 import { faFileAlt } from '@evaka/lib-icons'
