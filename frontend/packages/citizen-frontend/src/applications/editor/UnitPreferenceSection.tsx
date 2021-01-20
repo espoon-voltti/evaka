@@ -5,7 +5,7 @@
 import React, { useEffect, useState } from 'react'
 import styled from 'styled-components'
 import { ContentArea } from '@evaka/lib-components/src/layout/Container'
-import { H2, H3, Label } from '@evaka/lib-components/src/typography'
+import { H2, H3, Label, P } from '@evaka/lib-components/src/typography'
 import Checkbox from '@evaka/lib-components/src/atoms/form/Checkbox'
 import { UnitPreferenceFormData } from '~applications/editor/ApplicationFormData'
 import {
@@ -77,8 +77,8 @@ export default React.memo(function UnitPreferenceSection({
       <H2>{t.applications.editor.unitPreference.title}</H2>
 
       <H3>{t.applications.editor.unitPreference.siblingBasis.title}</H3>
-      <p>{t.applications.editor.unitPreference.siblingBasis.p1}</p>
-      <p>{t.applications.editor.unitPreference.siblingBasis.p2}</p>
+      <P>{t.applications.editor.unitPreference.siblingBasis.p1}</P>
+      <P>{t.applications.editor.unitPreference.siblingBasis.p2}</P>
 
       <Checkbox
         checked={formData.siblingBasis}
@@ -90,22 +90,32 @@ export default React.memo(function UnitPreferenceSection({
           <Gap size={'s'} />
           <FixedSpaceRow spacing={'m'}>
             <FixedSpaceColumn spacing={'xs'}>
-              <Label>
+              <Label htmlFor={'sibling-names'}>
                 {t.applications.editor.unitPreference.siblingBasis.names}
               </Label>
               <InputField
                 value={formData.siblingName}
                 onChange={(value) => updateFormData({ siblingName: value })}
                 width={'L'}
+                placeholder={
+                  t.applications.editor.unitPreference.siblingBasis
+                    .namesPlaceholder
+                }
+                id={'sibling-names'}
               />
             </FixedSpaceColumn>
             <FixedSpaceColumn spacing={'xs'}>
-              <Label>
+              <Label htmlFor={'sibling-ssn'}>
                 {t.applications.editor.unitPreference.siblingBasis.ssn}
               </Label>
               <InputField
                 value={formData.siblingSsn}
                 onChange={(value) => updateFormData({ siblingSsn: value })}
+                placeholder={
+                  t.applications.editor.unitPreference.siblingBasis
+                    .ssnPlaceholder
+                }
+                id={'sibling-ssn'}
               />
             </FixedSpaceColumn>
           </FixedSpaceRow>
@@ -127,8 +137,8 @@ export default React.memo(function UnitPreferenceSection({
         </div>
       ) : (
         <>
-          <p>{t.applications.editor.unitPreference.units.p1}</p>
-          <p>{t.applications.editor.unitPreference.units.p2}</p>
+          <P>{t.applications.editor.unitPreference.units.p1}</P>
+          <P>{t.applications.editor.unitPreference.units.p2}</P>
 
           <ExternalLink
             href="/"
@@ -148,29 +158,30 @@ export default React.memo(function UnitPreferenceSection({
                 t.applications.editor.unitPreference.units.languageFilter.fi
               }
               selected={displayFinnish}
-              onClick={setDisplayFinnish}
+              onChange={setDisplayFinnish}
             />
             <SelectionChip
               text={
                 t.applications.editor.unitPreference.units.languageFilter.sv
               }
               selected={displaySwedish}
-              onClick={setDisplaySwedish}
+              onChange={setDisplaySwedish}
             />
           </FixedSpaceRow>
 
-          <Gap size={'s'} />
+          <Gap size={'m'} />
 
           {units.isLoading && <SpinnerSegment />}
           {units.isFailure && <ErrorSegment />}
           {units.isSuccess && (
             <FixedSpaceFlexWrap horizontalSpacing={'L'} verticalSpacing={'s'}>
               <FixedWidthDiv>
-                <Label>
+                <Label htmlFor="unit-selector">
                   {t.applications.editor.unitPreference.units.select.label}
                 </Label>
                 <Gap size={'xs'} />
                 <MultiSelect
+                  inputId="unit-selector"
                   value={units.value.filter(
                     (u) =>
                       !!formData.preferredUnits.find((u2) => u2.id === u.id)
@@ -190,15 +201,23 @@ export default React.memo(function UnitPreferenceSection({
                       })
                     }
                   }}
+                  maxSelected={maxUnits}
                   isClearable={false}
                   placeholder={
-                    t.applications.editor.unitPreference.units.select
-                      .placeholder
+                    formData.preferredUnits.length < maxUnits
+                      ? t.applications.editor.unitPreference.units.select
+                          .placeholder
+                      : t.applications.editor.unitPreference.units.select
+                          .maxSelected
                   }
                   noOptionsMessage={
                     t.applications.editor.unitPreference.units.select.noOptions
                   }
                 />
+
+                <Info>
+                  {t.applications.editor.unitPreference.units.preferences.info}
+                </Info>
               </FixedWidthDiv>
               <FixedWidthDiv>
                 <Label>
@@ -254,12 +273,6 @@ export default React.memo(function UnitPreferenceSection({
                         />
                       ) : null
                     )}
-                  <Info>
-                    {
-                      t.applications.editor.unitPreference.units.preferences
-                        .info
-                    }
-                  </Info>
                 </FixedSpaceColumn>
               </FixedWidthDiv>
             </FixedSpaceFlexWrap>
@@ -275,7 +288,6 @@ const FixedWidthDiv = styled.div`
   max-width: 480px;
 `
 
-const Info = styled.p`
+const Info = styled(P)`
   color: ${colors.greyscale.dark};
-  margin: 0;
 `

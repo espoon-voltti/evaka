@@ -122,7 +122,9 @@ export default {
           checkbox:
             'Haen ensisijaisesti samaan paikkaan, jossa lapsen sisarus on jo varhaiskasvatuksessa.',
           names: 'Sisaruksen etunimet ja sukunimi *',
-          ssn: 'Sisaruksen henkilötunnus *'
+          namesPlaceholder: 'Etunimet ja sukunimi',
+          ssn: 'Sisaruksen henkilötunnus *',
+          ssnPlaceholder: 'Henkilötunnus'
         },
         units: {
           title: 'Hakutoiveet',
@@ -141,6 +143,7 @@ export default {
           select: {
             label: 'Valitse hakutoiveet *',
             placeholder: 'Hae yksiköitä',
+            maxSelected: 'Maksimimäärä yksiköitä valittu',
             noOptions: 'Ei hakuehtoja vastaavia yksiköitä'
           },
           preferences: {

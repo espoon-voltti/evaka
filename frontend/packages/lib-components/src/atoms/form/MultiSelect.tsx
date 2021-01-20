@@ -15,10 +15,12 @@ interface MultiSelectProps<T extends object> {
   getOptionLabel: (value: T) => string
   getOptionSecondaryText?: (value: T) => string
   onChange: (selected: T[]) => void
+  maxSelected?: number
   placeholder: string
   noOptionsMessage?: string
   closeMenuOnSelect?: Props<T>['closeMenuOnSelect']
   isClearable?: Props<T>['isClearable']
+  inputId?: Props<T>['inputId']
 }
 
 // eslint-disable-next-line @typescript-eslint/ban-types
@@ -31,6 +33,7 @@ export default function MultiSelect<T extends object>({
   onChange,
   closeMenuOnSelect,
   noOptionsMessage,
+  maxSelected,
   ...props
 }: MultiSelectProps<T>) {
   return (
@@ -50,9 +53,13 @@ export default function MultiSelect<T extends object>({
           options: value
         },
         {
-          options: options.filter(
-            (o) => !value.map((o2) => getOptionId(o2)).includes(getOptionId(o))
-          )
+          options:
+            maxSelected === undefined || value.length < maxSelected
+              ? options.filter(
+                  (o) =>
+                    !value.map((o2) => getOptionId(o2)).includes(getOptionId(o))
+                )
+              : []
         }
       ]}
       onChange={(selected) => {

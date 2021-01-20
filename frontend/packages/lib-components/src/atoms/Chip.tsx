@@ -4,34 +4,8 @@ import { readableColor } from 'polished'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faCheck } from '@evaka/lib-icons'
 import colors from '../colors'
-import { FixedSpaceRow } from '../layout/flex-helpers'
 import { defaultMargins } from '../white-space'
-
-type SelectionChipProps = {
-  text: string
-  selected: boolean
-  onClick: (selected: boolean) => void
-}
-
-export const SelectionChip = React.memo(function SelectionChip({
-  text,
-  selected,
-  onClick
-}: SelectionChipProps) {
-  return (
-    <SelectionChipWrapper
-      selected={selected}
-      color={colors.primary}
-      onClick={() => onClick(!selected)}
-      tabIndex={0}
-    >
-      <FixedSpaceRow alignItems="center" spacing="xs">
-        {selected && <FontAwesomeIcon icon={faCheck} />}
-        <span>{text}</span>
-      </FixedSpaceRow>
-    </SelectionChipWrapper>
-  )
-})
+import classNames from 'classnames'
 
 export const StaticChip = styled.div<{ color: string; textColor?: string }>`
   font-family: 'Open Sans', sans-serif;
@@ -55,16 +29,102 @@ export const StaticChip = styled.div<{ color: string; textColor?: string }>`
   }
 `
 
-const SelectionChipWrapper = styled(StaticChip)<{ selected: boolean }>`
-  cursor: pointer;
+type SelectionChipProps = {
+  text: string
+  selected: boolean
+  onChange: (selected: boolean) => void
+}
+
+export const SelectionChip = React.memo(function SelectionChip({
+  text,
+  selected,
+  onChange
+}: SelectionChipProps) {
+  return (
+    <div>
+      <SelectionChipWrapper onClick={() => onChange(!selected)}>
+        <SelectionChipInnerWrapper
+          className={classNames({ checked: selected })}
+        >
+          <HiddenInput
+            type="checkbox"
+            onChange={(e) => {
+              e.stopPropagation()
+              onChange(!selected)
+            }}
+            checked={selected}
+          />
+          {selected && (
+            <IconWrapper>
+              <FontAwesomeIcon icon={faCheck} />
+            </IconWrapper>
+          )}
+          <span>{text}</span>
+        </SelectionChipInnerWrapper>
+      </SelectionChipWrapper>
+    </div>
+  )
+})
+
+const SelectionChipWrapper = styled.div`
+  font-family: 'Open Sans', sans-serif;
+  font-weight: 600;
   font-size: 14px;
   line-height: 18px;
+  user-select: none;
+  border-radius: 1000px;
+  cursor: pointer;
+  outline: none;
 
-  ${(p) =>
-    p.selected
-      ? ''
-      : `
-      background-color: ${colors.greyscale.white};
-      color: ${p.color}
-  `}
+  &:focus,
+  &:focus-within {
+    border: 2px solid ${colors.accents.petrol};
+    border-radius: 1000px;
+    margin: -2px;
+  }
+  padding: 2px;
+`
+
+const SelectionChipInnerWrapper = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  border-radius: 1000px;
+  padding: 0 calc(${defaultMargins.xs} + ${defaultMargins.xxs});
+  background-color: ${colors.greyscale.white};
+  color: ${colors.primary};
+  border: 1px solid ${colors.primary};
+  &.checked {
+    background-color: ${colors.primary};
+    color: ${colors.greyscale.white};
+  }
+`
+
+const HiddenInput = styled.input`
+  outline: none;
+  appearance: none;
+  border: none;
+  background: none;
+  margin: 0;
+  height: 32px;
+  width: 0;
+  &:checked {
+    width: 32px;
+  }
+`
+
+const IconWrapper = styled.div`
+  position: absolute;
+  left: calc(${defaultMargins.xs} + ${defaultMargins.xxs});
+  top: 0;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 24px;
+  height: 32px;
+
+  font-size: 24px;
+  color: ${colors.greyscale.white};
 `

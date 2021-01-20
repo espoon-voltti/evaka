@@ -156,6 +156,7 @@ interface TextInputProps extends BaseProps {
   step?: number
   id?: string
   'data-qa'?: string
+  name?: string
 }
 
 function InputField({

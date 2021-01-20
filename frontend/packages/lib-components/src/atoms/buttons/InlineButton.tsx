@@ -39,7 +39,7 @@ const StyledButton = styled.button`
   }
 
   &:focus {
-    outline: 2px solid ${colors.blues.light};
+    outline: 2px solid ${colors.accents.petrol};
     outline-offset: 2px;
   }
 
@@ -90,6 +90,7 @@ const UnderRowWrapper = styled.div`
 interface InlineButtonProps extends BaseProps {
   onClick: () => unknown
   text: string
+  altText?: string
 
   icon?: IconDefinition
   disabled?: boolean
@@ -104,6 +105,7 @@ function InlineButton({
   dataQa,
   onClick,
   text,
+  altText,
   icon,
   disabled = false,
   info = undefined
@@ -115,6 +117,7 @@ function InlineButton({
         data-qa={dataQa}
         onClick={onClick}
         disabled={disabled}
+        aria-label={altText}
       >
         {icon && <FontAwesomeIcon icon={icon} />}
         <span>{text}</span>

@@ -95,6 +95,7 @@ export default React.memo(function PreferredUnitBox({
               text={
                 t.applications.editor.unitPreference.units.preferences.moveUp
               }
+              altText={`${unit.name}: ${t.applications.editor.unitPreference.units.preferences.moveUp}`}
               icon={faArrowUp}
               onClick={moveUp || noOp}
               disabled={!moveUp}
@@ -103,6 +104,7 @@ export default React.memo(function PreferredUnitBox({
               text={
                 t.applications.editor.unitPreference.units.preferences.moveDown
               }
+              altText={`${unit.name}: ${t.applications.editor.unitPreference.units.preferences.moveDown}`}
               icon={faArrowDown}
               onClick={moveDown || noOp}
               disabled={!moveDown}
@@ -115,9 +117,7 @@ export default React.memo(function PreferredUnitBox({
           icon={faTimes}
           gray
           onClick={remove}
-          altText={
-            t.applications.editor.unitPreference.units.preferences.remove
-          }
+          altText={`${unit.name}: ${t.applications.editor.unitPreference.units.preferences.remove}`}
         />
       </MainColRight>
     </Wrapper>
