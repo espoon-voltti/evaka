@@ -21,6 +21,11 @@ import RoundIcon from '@evaka/lib-components/src/atoms/RoundIcon'
 import { faInfo } from '@evaka/lib-icons'
 import { Gap } from '@evaka/lib-components/src/white-space'
 import EditorSection from '~applications/editor/EditorSection'
+import FileUpload from './FileUpload'
+import { deleteAttachment, saveAttachment } from '~applications/api'
+import { Result } from '~../../lib-common/src/api'
+import { UUID } from '~../../lib-common/src/types'
+import { useParams } from 'react-router-dom'
 
 export type ServiceNeedSectionProps = {
   formData: ServiceNeedFormData
@@ -43,6 +48,27 @@ export default React.memo(function ServiceNeedSection({
   updateFormData
 }: ServiceNeedSectionProps) {
   const t = useTranslation()
+  const { applicationId } = useParams<{ applicationId: string }>()
+
+  const uploadExtendedCareAttachment = (
+    file: File,
+    onUploadProgress: (progressEvent: any) => void
+  ): Promise<Result<UUID>> =>
+    saveAttachment(
+      applicationId,
+      file,
+      'EXTENDED_CARE',
+      onUploadProgress
+    )
+
+  const uploadUrgencyAttachment = (
+    file: File,
+    onUploadProgress: (progressEvent: any) => void
+  ): Promise<Result<UUID>> =>
+    saveAttachment(applicationId, file, 'URGENCY', onUploadProgress)
+
+  const deleteExtendedCareAttachment = deleteAttachment
+  const deleteUrgencyAttachment = deleteAttachment
 
   return (
     <EditorSection
@@ -83,9 +109,16 @@ export default React.memo(function ServiceNeedSection({
           }
         />
         {formData.urgent && (
-          <p>
-            {t.applications.editor.serviceNeed.urgent.attachmentsMessage.text}
-          </p>
+          <>
+            <p>
+              {t.applications.editor.serviceNeed.urgent.attachmentsMessage.text}
+            </p>
+            <FileUpload
+              files={formData.urgencyAttachments}
+              onUpload={uploadUrgencyAttachment}
+              onDelete={deleteUrgencyAttachment}
+            />
+          </>
         )}
       </FixedSpaceColumn>
 
@@ -171,12 +204,19 @@ export default React.memo(function ServiceNeedSection({
         />
 
         {formData.shiftCare && (
-          <p>
-            {
-              t.applications.editor.serviceNeed.shiftCare.attachmentsMessage
-                .text
-            }
-          </p>
+          <>
+            <p>
+              {
+                t.applications.editor.serviceNeed.shiftCare.attachmentsMessage
+                  .text
+              }
+            </p>
+            <FileUpload
+              files={formData.shiftCareAttachments}
+              onUpload={uploadExtendedCareAttachment}
+              onDelete={deleteExtendedCareAttachment}
+            />
+          </>
         )}
       </FixedSpaceColumn>
 

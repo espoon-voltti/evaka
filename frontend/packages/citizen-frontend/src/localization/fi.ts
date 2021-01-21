@@ -401,5 +401,26 @@ export default {
       'Päätökset-välilehdellä voit lukea päätöksen ja hyväksyä/hylätä tarjotun paikan',
     confirmationLink: 'Siirry vahvistamaan',
     newApplicationLink: 'Uusi hakemus'
+  },
+  fileUpload: {
+    loading: 'Ladataan...',
+    loaded: 'Ladattu',
+    error: {
+      fileTooBig: 'Liian suuri tiedosto (max. 10MB)',
+      default: 'Lataus ei onnistunut'
+    },
+    input: {
+      title: 'Lisää liite',
+      text: [
+        'Paina tästä tai raahaa liite laatikkoon yksi kerrallaan.',
+        'Tiedoston maksimikoko: 10MB.',
+        'Sallitut tiedostomuodot:',
+        'PDF, JPEG/JPG, PNG ja DOC/DOCX'
+      ]
+    },
+    modalHeader: 'Tiedoston käsittely on kesken',
+    modalMessage:
+      'Tiedosto ei ole juuri nyt avattavissa. Kokeile hetken kuluttua uudelleen.',
+    modalConfirm: 'Selvä'
   }
 }

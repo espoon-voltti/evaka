@@ -14,9 +14,10 @@ import {
   ApplicationsOfChild,
   deserializeApplicationsOfChild
 } from '@evaka/lib-common/src/api-types/application/ApplicationsOfChild'
-import { ApplicationType } from '@evaka/lib-common/src/api-types/application/enums'
+import { ApplicationType, AttachmentType } from '@evaka/lib-common/src/api-types/application/enums'
 import { client } from '~api-client'
 import { PublicUnit } from '@evaka/lib-common/src/api-types/units/PublicUnit'
+import { UUID } from '~../../lib-common/src/types'
 
 export type ApplicationUnitType =
   | 'CLUB'
@@ -111,4 +112,42 @@ export async function getDuplicateApplications(
   return Object.fromEntries(
     Object.entries(data).map(([type, value]) => [type.toLowerCase(), value])
   ) as Record<ApplicationType, boolean> // FIXME
+}
+
+export async function saveAttachment(
+  applicationId: UUID,
+  file: File,
+  attachmentType: AttachmentType,
+  onUploadProgress: (progressEvent: any) => void
+): Promise<Result<UUID>> {
+  const formData = new FormData()
+  formData.append('file', file)
+
+  try {
+    interface AttachmentResult {
+      data: string
+    }
+    const { data }: AttachmentResult = await client.post(
+      `/attachments/enduser/applications/${applicationId}?type=${attachmentType}`,
+      formData,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        },
+        onUploadProgress
+      }
+    )
+    return Success.of(data)
+  } catch (e) {
+    return Failure.fromError(e)
+  }
+}
+
+export async function deleteAttachment(id: UUID): Promise<Result<void>> {
+  try {
+    await client.delete(`/attachments/enduser/${id}`)
+    return Success.of(void 0)
+  } catch (e) {
+    return Failure.fromError(e)
+  }
 }

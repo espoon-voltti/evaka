@@ -410,6 +410,27 @@ const en: Translations = {
       'In the Decisions page you can read the decision and either accept or reject the proposed place',
     confirmationLink: 'Review and confirm the decision',
     newApplicationLink: 'New application'
+  },
+  fileUpload: {
+    loading: 'Ladataan...',
+    loaded: 'Ladattu',
+    error: {
+      fileTooBig: 'Liian suuri tiedosto (max. 10MB)',
+      default: 'Lataus ei onnistunut'
+    },
+    input: {
+      title: 'Lisää liite',
+      text: [
+        'Paina tästä tai raahaa liite laatikkoon yksi kerrallaan.',
+        'Tiedoston maksimikoko: 10MB.',
+        'Sallitut tiedostomuodot:',
+        'PDF, JPEG/JPG, PNG ja DOC/DOCX'
+      ]
+    },
+    modalHeader: 'Tiedoston käsittely on kesken',
+    modalMessage:
+      'Tiedosto ei ole juuri nyt avattavissa. Kokeile hetken kuluttua uudelleen.',
+    modalConfirm: 'Selvä'
   }
 }
 
