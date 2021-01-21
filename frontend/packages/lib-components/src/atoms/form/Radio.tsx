@@ -14,12 +14,11 @@ import { BaseProps } from '../../utils'
 const diameter = '36px'
 
 const Wrapper = styled.div`
-  display: flex;
+  display: inline-flex;
   align-items: center;
   cursor: pointer;
 
   label {
-    font-size: 15px;
     margin-left: ${defaultMargins.s};
     cursor: pointer;
   }

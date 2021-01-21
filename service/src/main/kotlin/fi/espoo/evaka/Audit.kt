@@ -19,6 +19,7 @@ enum class Audit(
     ApplicationCreate("evaka.application.create"),
     ApplicationDelete("evaka.application.delete"),
     ApplicationRead("evaka.application.read"),
+    ApplicationReadDuplicates("evaka.application.read-duplicates"),
     ApplicationReturnToSent("evaka.application.return-to-sent"),
     ApplicationReturnToWaitingPlacement("evaka.application.return-to-waiting-placement"),
     ApplicationReturnToWaitingDecision("evaka.application.return-to-waiting-decision"),

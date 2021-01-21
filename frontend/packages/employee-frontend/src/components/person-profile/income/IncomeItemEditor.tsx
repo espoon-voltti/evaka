@@ -91,7 +91,7 @@ const IncomeItemEditor = React.memo(function IncomeItemEditor({
         <LabelText>{i18n.personProfile.income.details.effect}</LabelText>
       </Label>
       <Gap size={'m'} />
-      <FixedSpaceColumn data-qa="income-effect">
+      <FixedSpaceColumn alignItems="flex-start" data-qa="income-effect">
         {incomeEffects.map((effect) => (
           <Radio
             key={effect}

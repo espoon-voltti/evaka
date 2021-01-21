@@ -35,4 +35,5 @@ const Container = styled.div`
   display: flex;
   flex-direction: row;
   flex-wrap: none;
+  align-items: center;
 `

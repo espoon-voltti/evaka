@@ -114,3 +114,28 @@ export const getGuardianApplications = async (): Promise<
     .then((data) => Success.of(data))
     .catch((e) => Failure.fromError(e))
 }
+
+export async function createApplication(
+  childId: string,
+  type: ApplicationType
+): Promise<string> {
+  const { data: applicationId } = await client.post<string>(
+    '/citizen/applications',
+    {
+      childId,
+      type: type.toUpperCase() // FIXME
+    }
+  )
+  return applicationId
+}
+
+export async function getDuplicateApplications(
+  childId: string
+): Promise<Record<ApplicationType, boolean>> {
+  const { data } = await client.get<Record<ApplicationType, boolean>>(
+    `/citizen/applications/duplicates/${childId}`
+  )
+  return Object.fromEntries(
+    Object.entries(data).map(([type, value]) => [type.toLowerCase(), value])
+  ) as Record<ApplicationType, boolean> // FIXME
+}

@@ -18,7 +18,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faArrowRight } from '@evaka/lib-icons'
 import colors from '@evaka/lib-components/src/colors'
 import AddButton from '@evaka/lib-components/src/atoms/buttons/AddButton'
-import { Link } from 'react-router-dom'
+import { Link, useHistory } from 'react-router-dom'
 
 const StyledLink = styled(Link)`
   color: ${colors.blues.primary};
@@ -63,6 +63,7 @@ export default React.memo(function ChildApplicationsBlock({
   childName,
   applicationSummaries
 }: GuardianApplications) {
+  const history = useHistory()
   const t = useTranslation()
 
   const applicationStatusToIcon = (
@@ -93,9 +94,7 @@ export default React.memo(function ChildApplicationsBlock({
         </H2>
         <AddButton
           text={t.applicationsList.newApplicationLink}
-          onClick={() =>
-            (window.location.href = `/citizen/applications/${childId}/create`)
-          }
+          onClick={() => history.push(`/applications/new/${childId}`)}
         />
       </TitleContainer>
 

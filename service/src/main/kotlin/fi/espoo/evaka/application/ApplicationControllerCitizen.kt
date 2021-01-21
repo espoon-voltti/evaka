@@ -8,10 +8,13 @@ import fi.espoo.evaka.decision.DecisionType
 import fi.espoo.evaka.decision.getDecisionsByApplication
 import fi.espoo.evaka.decision.getDecisionsByGuardian
 import fi.espoo.evaka.decision.getOwnDecisions
+import fi.espoo.evaka.pis.service.PersonService
+import fi.espoo.evaka.pis.service.getGuardianChildIds
 import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.NotFound
 import mu.KotlinLogging
@@ -32,7 +35,8 @@ private val logger = KotlinLogging.logger {}
 @RequestMapping("/citizen")
 class ApplicationControllerCitizen(
     private val applicationStateService: ApplicationStateService,
-    private val decisionService: DecisionService
+    private val decisionService: DecisionService,
+    private val personService: PersonService
 ) {
 
     @GetMapping("/applications/by-guardian")
@@ -75,6 +79,73 @@ class ApplicationControllerCitizen(
             ResponseEntity.ok(application)
         else
             throw NotFound("Application not found")
+    }
+
+    @PostMapping("/applications")
+    fun createApplication(
+        db: Database.Connection,
+        user: AuthenticatedUser,
+        @RequestBody body: CreateApplicationBody
+    ): ResponseEntity<UUID> {
+        Audit.ApplicationCreate.log(targetId = user.id, objectId = body)
+        user.requireOneOfRoles(UserRole.END_USER)
+
+        return db.transaction { tx ->
+            if (duplicateApplicationExists(tx.handle, guardianId = user.id, childId = body.childId, type = body.type)) {
+                throw BadRequest("Duplicate application")
+            }
+
+            val guardian = personService.getUpToDatePerson(tx, user, user.id)
+                ?: throw IllegalStateException("Guardian not found")
+
+            if (getGuardianChildIds(tx.handle, user.id).none { it == body.childId }) {
+                throw IllegalStateException("User is not child's guardian")
+            }
+
+            val child = personService.getUpToDatePerson(tx, user, body.childId)
+                ?: throw IllegalStateException("Child not found")
+
+            val applicationId = insertApplication(
+                h = tx.handle,
+                guardianId = user.id,
+                childId = body.childId,
+                origin = ApplicationOrigin.ELECTRONIC
+            )
+            val form = ApplicationForm.initForm(
+                type = body.type,
+                guardian = guardian,
+                child = child
+            )
+            updateForm(
+                tx.handle,
+                applicationId,
+                form,
+                body.type,
+                child.restrictedDetailsEnabled,
+                guardian.restrictedDetailsEnabled
+            )
+
+            ResponseEntity.ok(applicationId)
+        }
+    }
+
+    @GetMapping("/applications/duplicates/{childId}")
+    fun getChildDuplicateApplications(
+        db: Database.Connection,
+        user: AuthenticatedUser,
+        @PathVariable childId: UUID
+    ): ResponseEntity<Map<ApplicationType, Boolean>> {
+        Audit.ApplicationReadDuplicates.log(targetId = user.id, objectId = childId)
+        user.requireOneOfRoles(UserRole.END_USER)
+
+        return db.read { tx ->
+            ApplicationType.values()
+                .map { type ->
+                    type to duplicateApplicationExists(tx.handle, guardianId = user.id, childId = childId, type = type)
+                }
+                .toMap()
+                .let { ResponseEntity.ok(it) }
+        }
     }
 
     @GetMapping("/decisions")
@@ -166,6 +237,11 @@ data class GuardianApplications(
     val childId: UUID,
     val childName: String,
     val applicationSummaries: List<CitizenApplicationSummary>
+)
+
+data class CreateApplicationBody(
+    val childId: UUID,
+    val type: ApplicationType
 )
 
 data class ApplicationDecisions(
