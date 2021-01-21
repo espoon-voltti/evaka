@@ -6,6 +6,7 @@ import { Translations } from '.'
 
 const en: Translations = {
   common: {
+    cancel: 'Cancel',
     return: 'Return',
     unit: {
       providerTypes: {
@@ -43,6 +44,24 @@ const en: Translations = {
   },
   applications: {
     title: 'Applications',
+    creation: {
+      title: 'Selection of application type',
+      daycareLabel: 'Application for early childhood education',
+      daycareInfo:
+        'The application for early childhood education is used to apply for a municipal early childhood education place at a day-care centre, family day-care provider and group family day-care provider.',
+      preschoolLabel:
+        'Enrolment to pre-primary education and/or preparatory education',
+      preschoolInfo:
+        'Free-of-charge pre-primary education is available for four hours per day. In addition, you can apply for connected early childhood education (subject to a fee) for your child. It is available in pre-primary education units in the morning before pre-primary education and in the afternoon after pre-primary education. You can submit an application for connected early childhood education at the same time as you enrol your child in pre-primary education or through a separate application after pre-primary education has started. You can also use the same application to apply for free-of-charge preparatory education and early childhood education connected to preparatory education.',
+      preschoolDaycareInfo:
+        'Application for connected early childhood education for a child who will be / has been enrolled in pre-primary education or preparatory education',
+      clubLabel: 'Club application',
+      clubInfo:
+        'The club application is used for applying for municipal clubs.',
+      applicationInfo:
+        'You can make changes to your application until its processing starts. After this, you can make changes to your application by contacting early childhood education service counselling (tel. 09 816 31000). If you wish to cancel an application you have submitted, please send an email to early childhood education service counselling (<a href="varhaiskasvatuksen.palveluohjaus@espoo.fi">varhaiskasvatuksen.palveluohjaus@espoo.fi</a>).',
+      create: 'Apply'
+    },
     editor: {
       heading: {
         title: {

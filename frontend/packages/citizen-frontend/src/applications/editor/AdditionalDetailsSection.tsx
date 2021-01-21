@@ -10,7 +10,7 @@ import { TextArea } from '@evaka/lib-components/src/atoms/form/InputField'
 import { useTranslation } from '~localization'
 import { ApplicationType } from '~applications/types'
 import { AdditionalDetailsFormData } from '~applications/editor/ApplicationFormData'
-import InfoBallWrapper from '~applications/editor/InfoBallWrapper'
+import InfoBallWrapper from '~applications/InfoBallWrapper'
 
 type Props = {
   formData: AdditionalDetailsFormData

@@ -4,6 +4,7 @@
 
 export default {
   common: {
+    cancel: 'Peruuta',
     return: 'Palaa',
     unit: {
       providerTypes: {
@@ -41,6 +42,23 @@ export default {
   },
   applications: {
     title: 'Hakemukset',
+    creation: {
+      title: 'Valitse hakemustyyppi',
+      daycareLabel: 'Varhaiskasvatushakemus',
+      daycareInfo:
+        'Varhaiskasvatushakemuksella haetaan kunnallista varhaiskasvatuspaikkaa päiväkotiin, perhepäivähoitoon tai ryhmäperhepäiväkotiin.',
+      preschoolLabel:
+        'Ilmoittautuminen esiopetukseen ja / tai valmistavaan opetukseen',
+      preschoolInfo:
+        'Maksutonta esiopetusta on neljä tuntia päivässä. Tämän lisäksi lapselle voidaan hakea maksullista liittyvää varhaiskasvatusta, jota tarjotaan esiopetuspaikoissa aamulla ennen esiopetuksen alkua ja iltapäivisin esiopetuksen jälkeen. Hakemuksen liittyvään varhaiskasvatukseen voi tehdä esiopetukseen ilmoittautumisen yhteydessä tai erillisenä hakemuksena opetuksen jo alettua. Samalla hakemuksella voit hakea myös maksuttomaan valmistavaan opetukseen sekä valmistavaan opetukseen liittyvään varhaiskasvatukseen.',
+      preschoolDaycareInfo:
+        'Liittyvän varhaiskasvatuksen hakeminen lapsille, jotka ilmoitetaan / on ilmoitettu esiopetukseen tai valmistavaan opetukseen',
+      clubLabel: 'Kerhohakemus',
+      clubInfo: 'Kerhohakemuksella haetaan kunnallisiin kerhoihin.',
+      applicationInfo:
+        'Hakemukseen voi tehdä muutoksia niin kauan kuin hakemusta ei ole otettu käsittelyyn. Tämän jälkeen muutokset hakemukseen tehdään ottamalla yhteyttä varhaiskasvatuksen palveluohjaukseen (puh. 09 816 31000). Voit perua jo tehdyn hakemuksen ilmoittamalla siitä sähköpostilla varhaiskasvatuksen palveluohjaukseen <a href="mailto:varhaiskasvatuksen.palveluohjaus@espoo.fi">varhaiskasvatuksen.palveluohjaus@espoo.fi</a>.',
+      create: 'Tee hakemus'
+    },
     editor: {
       heading: {
         title: {

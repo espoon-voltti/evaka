@@ -2,22 +2,20 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { ReactNode, useContext, useEffect, useState } from 'react'
+import React, { ReactNode, useContext, useEffect } from 'react'
 import { client } from '../api-client'
-import { AuthContext } from './state'
+import { AuthContext, User } from './state'
 
 export default React.memo(function Authenticated(props: {
   children: ReactNode
 }) {
   const authContext = useContext(AuthContext)
-  const [loggedIn, setLoggedIn] = useState(false)
 
   useEffect(() => {
     void getAuthStatus()
       .then((response) => {
         const status = response.data
         if (status.loggedIn && status.user) {
-          setLoggedIn(true)
           authContext.setUser(status.user)
         } else {
           redirectToEnduser()
@@ -26,7 +24,7 @@ export default React.memo(function Authenticated(props: {
       .catch(redirectToEnduser)
   }, [])
 
-  return loggedIn ? <>{props.children}</> : null
+  return authContext.user !== undefined ? <>{props.children}</> : null
 })
 
 const redirectToEnduser = () => {
@@ -36,6 +34,4 @@ const redirectToEnduser = () => {
 
 const getAuthStatus = () => client.get<AuthStatus>('/auth/status')
 
-type AuthStatus =
-  | { loggedIn: false }
-  | { loggedIn: true; user: { firstName: string; lastName: string } }
+type AuthStatus = { loggedIn: false } | { loggedIn: true; user: User }

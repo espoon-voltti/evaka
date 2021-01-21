@@ -114,3 +114,17 @@ export const getGuardianApplications = async (): Promise<
     .then((data) => Success.of(data))
     .catch((e) => Failure.fromError(e))
 }
+
+export async function createApplication(
+  childId: string,
+  type: ApplicationType
+): Promise<string> {
+  const { data: applicationId } = await client.post<string>(
+    '/citizen/applications',
+    {
+      childId,
+      type: type.toUpperCase() // FIXME
+    }
+  )
+  return applicationId
+}

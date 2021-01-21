@@ -14,6 +14,7 @@ import ApplicationEditor from '~applications/editor/ApplicationEditor'
 import GlobalErrorDialog from '~overlay/Error'
 import { OverlayContextProvider } from '~overlay/state'
 import Applications from '~applications/Applications'
+import ApplicationCreation from '~applications/ApplicationCreation'
 
 export default function App() {
   return (
@@ -24,6 +25,11 @@ export default function App() {
             <Header />
             <Switch>
               <Route exact path="/applications" component={Applications} />
+              <Route
+                exact
+                path="/applications/new/:childId"
+                component={ApplicationCreation}
+              />
               <Route
                 exact
                 path="/applications/:applicationId/edit"

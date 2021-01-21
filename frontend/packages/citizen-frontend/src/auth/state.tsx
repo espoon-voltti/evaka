@@ -10,9 +10,14 @@ import React, {
   useState
 } from 'react'
 
-type User = {
+type Person = {
+  id: string
   firstName: string
   lastName: string
+}
+
+export type User = Person & {
+  children: Person[]
 }
 
 type AuthState = {
