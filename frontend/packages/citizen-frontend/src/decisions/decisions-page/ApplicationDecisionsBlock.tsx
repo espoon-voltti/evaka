@@ -3,10 +3,11 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
+import { useHistory } from 'react-router-dom'
 import Button from '@evaka/lib-components/src/atoms/buttons/Button'
 import { ContentArea } from '@evaka/lib-components/src/layout/Container'
-import LinkWrapperInlineBlock from '@evaka/lib-components/src/atoms/LinkWrapperInlineBlock'
 import ListGrid from '@evaka/lib-components/src/layout/ListGrid'
+import ButtonContainer from '@evaka/lib-components/src/layout/ButtonContainer'
 import RoundIcon from '@evaka/lib-components/src/atoms/RoundIcon'
 import { H2, H3, Label, P } from '@evaka/lib-components/src/typography'
 import { Gap } from '@evaka/lib-components/src/white-space'
@@ -18,8 +19,6 @@ import {
   decisionStatusIcon
 } from '~decisions/shared'
 import { PdfLink } from '~decisions/PdfLink'
-
-const noop = () => undefined
 
 const preschoolInfoTypes: DecisionType[] = [
   'PRESCHOOL',
@@ -96,6 +95,7 @@ const ConfirmationDialog = React.memo(function ConfirmationDialog({
   type: DecisionType
 }) {
   const t = useTranslation()
+  const history = useHistory()
 
   return (
     <>
@@ -110,17 +110,16 @@ const ConfirmationDialog = React.memo(function ConfirmationDialog({
         <strong>{t.decisions.applicationDecisions.goToConfirmation}</strong>
       </P>
       <Gap size="s" />
-      <LinkWrapperInlineBlock
-        to={`/decisions/by-application/${applicationId}`}
-        data-qa={`response-link-${applicationId}`}
-      >
+      <ButtonContainer>
         <Button
           primary
           text={t.decisions.applicationDecisions.confirmationLink}
-          onClick={noop}
-          dataQa="button-confirm-decisions"
+          onClick={() =>
+            history.push(`/decisions/by-application/${applicationId}`)
+          }
+          dataQa={`button-confirm-decisions-${applicationId}`}
         />
-      </LinkWrapperInlineBlock>
+      </ButtonContainer>
     </>
   )
 })

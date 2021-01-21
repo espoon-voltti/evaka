@@ -20,8 +20,8 @@ import { useTranslation } from '~state/i18n'
 import { Loading, Result } from '@evaka/lib-common/src/api'
 import { getOccupancyRates, OccupancyResponse } from '~api/unit'
 
-import { EspooColours } from '../../utils/colours'
-
+import colors from '@evaka/lib-components/src/colors'
+import UnderRowStatusIcon from '@evaka/lib-components/src/atoms/StatusIcon'
 import { faCheck } from '@evaka/lib-icons'
 
 import { formatPercentage } from '../utils'
@@ -49,7 +49,7 @@ const Card = styled.div<{ active: boolean }>`
     active &&
     `
     box-shadow: 0px 0px 6px 4px lightgray;
-    border-top: 5px solid ${EspooColours.espooBlue};
+    border-top: 5px solid ${colors.brandEspoo.espooBlue};
     border-width: 5px 0 0 0;
   `}
 `
@@ -65,7 +65,7 @@ const RemoveBtn = styled.a`
 `
 
 const FailText = styled.div`
-  color: ${EspooColours.red};
+  color: ${colors.accents.red};
 `
 
 const Values = styled.div`
@@ -80,7 +80,7 @@ const ValueHeading = styled.span`
 `
 
 const ValuePercentage = styled.span`
-  color: ${EspooColours.greyDark};
+  color: ${colors.greyscale.dark};
   font-size: 3rem;
 `
 
@@ -89,6 +89,16 @@ const OccupancyContainer = styled.div`
   display: flex;
   flex-direction: column;
   justify-content: center;
+`
+
+const Warning = styled.div`
+  color: ${colors.accents.orangeDark};
+  font-size: 0.75em;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  justify-content: center;
+  align-items: center;
 `
 
 interface OccupancyValueProps {
@@ -209,6 +219,12 @@ const MemoizedCard = memo(function UnitCard({
           <span>{i18n.unit.occupancy.noValidValues}</span>
         )}
       </OccupancyContainer>
+      {displayGhostUnitWarning ? (
+        <Warning>
+          {i18n.childInformation.placements.warning.ghostUnit}
+          <UnderRowStatusIcon status="warning" />
+        </Warning>
+      ) : null}
       <MarginBox>
         <InlineButton
           disabled={false}
@@ -219,14 +235,6 @@ const MemoizedCard = memo(function UnitCard({
             isSelectedUnit
               ? i18n.placementDraft.selectedUnit
               : i18n.common.select
-          }
-          info={
-            displayGhostUnitWarning
-              ? {
-                  text: i18n.childInformation.placements.warning.ghostUnit,
-                  status: 'warning'
-                }
-              : undefined
           }
         />
       </MarginBox>

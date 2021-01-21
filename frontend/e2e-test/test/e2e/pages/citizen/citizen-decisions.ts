@@ -31,7 +31,7 @@ export default class CitizenDecisionsPage {
     Selector(`[data-qa="decision-status-${decisionId}"]`)
 
   readonly goRespondToDecisionBtn = (applicationId: string) =>
-    Selector(`[data-qa="response-link-${applicationId}"]`)
+    Selector(`[data-qa="button-confirm-decisions-${applicationId}"]`)
 
   async assertApplicationDecision(
     applicationId: string,
