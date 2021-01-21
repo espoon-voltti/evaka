@@ -167,14 +167,12 @@ class DvvModificationsService(
         ssn: String,
         custodianLimitedDvvInfoGroup: CustodianLimitedDvvInfoGroup
     ) {
-        if (custodianLimitedDvvInfoGroup.muutosattribuutti == "LISATTY") {
-            val user = AuthenticatedUser.machineUser
-            db.transaction { tx ->
-                personService.getOrCreatePerson(tx, user, ExternalIdentifier.SSN.getInstance(ssn))
-            }?.let {
-                logger.info("Dvv modification for ${it.id}: has a new custodian, refreshing all info from DVV")
-                fridgeFamilyService.doVTJRefresh(db, VTJRefresh(it.id, user.id))
-            }
+        val user = AuthenticatedUser.machineUser
+        db.transaction { tx ->
+            personService.getOrCreatePerson(tx, user, ExternalIdentifier.SSN.getInstance(ssn))
+        }?.let {
+            logger.info("Dvv modification ${custodianLimitedDvvInfoGroup.muutosattribuutti} for ${it.id}: refreshing all custodian/caretaker info from DVV")
+            fridgeFamilyService.doVTJRefresh(db, VTJRefresh(it.id, user.id))
         }
     }
 
@@ -182,18 +180,16 @@ class DvvModificationsService(
         db: Database,
         caretakerLimitedDvvInfoGroup: CaretakerLimitedDvvInfoGroup
     ) {
-        if (caretakerLimitedDvvInfoGroup.muutosattribuutti == "LISATTY") {
-            val user = AuthenticatedUser.machineUser
-            db.transaction { tx ->
-                personService.getOrCreatePerson(
-                    tx,
-                    user,
-                    ExternalIdentifier.SSN.getInstance(caretakerLimitedDvvInfoGroup.huoltaja.henkilotunnus)
-                )
-            }?.let {
-                logger.info("Dvv modification for ${it.id}: a new caretaker added, refreshing all info from DVV")
-                fridgeFamilyService.doVTJRefresh(db, VTJRefresh(it.id, user.id))
-            }
+        val user = AuthenticatedUser.machineUser
+        db.transaction { tx ->
+            personService.getOrCreatePerson(
+                tx,
+                user,
+                ExternalIdentifier.SSN.getInstance(caretakerLimitedDvvInfoGroup.huoltaja.henkilotunnus)
+            )
+        }?.let {
+            logger.info("Dvv modification ${caretakerLimitedDvvInfoGroup.muutosattribuutti} for ${it.id}: refreshing all caretaker/custodian info from DVV")
+            fridgeFamilyService.doVTJRefresh(db, VTJRefresh(it.id, user.id))
         }
     }
 
