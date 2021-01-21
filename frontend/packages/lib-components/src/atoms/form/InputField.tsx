@@ -49,7 +49,6 @@ const StyledInput = styled.input<StyledInputProps>`
 
   &::placeholder {
     color: ${colors.greyscale.dark};
-    font-style: italic;
     font-size: 15px;
     font-family: 'Open Sans', 'Arial', sans-serif;
   }

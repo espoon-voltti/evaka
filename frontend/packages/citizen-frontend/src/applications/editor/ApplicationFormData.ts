@@ -28,28 +28,26 @@ export type ContactInfoFormData = {
   childLastName: string
   childSSN: string
   childStreet: string
-  childHasFutureAddress: boolean
-  childMoveDate?: LocalDate
-  childFutureAddress?: string
-  childFuturePostalCode?: string
-  childFutureMunicipality?: string
+  childFutureAddressExists: boolean
+  childMoveDate: LocalDate | null
+  childFutureStreet: string
+  childFuturePostalCode: string
+  childFuturePostOffice: string
   guardianFirstName: string
   guardianLastName: string
   guardianSSN: string
   guardianHomeAddress: string
   guardianPhone: string
   guardianEmail: string
-  guardianHasFutureAddress: boolean
-  guardianMoveDate?: LocalDate
-  guardianFutureStreet?: string
-  guardianFuturePostalCode?: string
-  guardianFutureMunicipality?: string
-  nonCaretakerPartnerInSameAddress: boolean
-  nonCaretakerFirstName?: string
-  nonCaretakerLastName?: string
-  nonCaretakerSSN?: string
-  knownSiblings: ApplicationPersonBasics[]
-  hasOtherSiblings: boolean
+  guardianFutureAddressExists: boolean
+  guardianMoveDate: LocalDate | null
+  guardianFutureStreet: string
+  guardianFuturePostalCode: string
+  guardianFuturePostOffice: string
+  otherPartnerInSameAddress: boolean
+  otherPartnerFirstName: string
+  otherPartnerLastName: string
+  otherPartnerSSN: string
   otherChildren: ApplicationPersonBasics[]
 }
 
@@ -96,29 +94,27 @@ export function apiDataToFormData(
       childLastName: application.form.child.person.lastName,
       childSSN: application.form.child.person.socialSecurityNumber || '',
       childStreet: application.form.child.address?.street || '',
-      childHasFutureAddress: false,
-      childMoveDate: undefined,
-      childFutureAddress: undefined,
-      childFuturePostalCode: undefined,
-      childFutureMunicipality: undefined,
+      childFutureAddressExists: false,
+      childMoveDate: null,
+      childFutureStreet: '',
+      childFuturePostalCode: '',
+      childFuturePostOffice: '',
       guardianFirstName: application.form.guardian.person.firstName,
       guardianLastName: application.form.guardian.person.lastName,
       guardianSSN: application.form.guardian.person.socialSecurityNumber || '',
       guardianHomeAddress: application.form.guardian.address?.street || '',
       guardianPhone: application.form.guardian.phoneNumber || '',
       guardianEmail: application.form.guardian.email || '',
-      guardianHasFutureAddress: false,
-      guardianMoveDate: undefined,
-      guardianFutureStreet: undefined,
-      guardianFuturePostalCode: undefined,
-      guardianFutureMunicipality: undefined,
-      nonCaretakerPartnerInSameAddress: false,
-      nonCaretakerFirstName: undefined,
-      nonCaretakerLastName: undefined,
-      nonCaretakerSSN: undefined,
-      knownSiblings: application.form.otherChildren,
-      hasOtherSiblings: false,
-      otherChildren: []
+      guardianFutureAddressExists: false,
+      guardianMoveDate: null,
+      guardianFutureStreet: '',
+      guardianFuturePostalCode: '',
+      guardianFuturePostOffice: '',
+      otherPartnerInSameAddress: false,
+      otherPartnerFirstName: '',
+      otherPartnerLastName: '',
+      otherPartnerSSN: '',
+      otherChildren: application.form.otherChildren
     },
     fee: { maxFeeAccepted: application.form.maxFeeAccepted },
     additionalDetails: {
@@ -134,20 +130,40 @@ export function formDataToApiData(
 ): ApplicationFormUpdate {
   return {
     child: {
-      futureAddress: null,
+      futureAddress: form.contactInfo.childFutureAddressExists
+        ? {
+            street: form.contactInfo.childFutureStreet,
+            postalCode: form.contactInfo.childFuturePostalCode,
+            postOffice: form.contactInfo.childFuturePostOffice,
+            movingDate: form.contactInfo.childMoveDate
+          }
+        : null,
       allergies: form.additionalDetails.allergies,
       diet: form.additionalDetails.diet,
       assistanceNeeded: form.serviceNeed.assistanceNeeded,
       assistanceDescription: form.serviceNeed.assistanceDescription
     },
     guardian: {
-      futureAddress: null,
-      phoneNumber: 'string',
-      email: 'string'
+      futureAddress: form.contactInfo.guardianFutureAddressExists
+        ? {
+            street: form.contactInfo.guardianFutureStreet,
+            postalCode: form.contactInfo.guardianFuturePostalCode,
+            postOffice: form.contactInfo.guardianFuturePostOffice,
+            movingDate: form.contactInfo.guardianMoveDate
+          }
+        : null,
+      phoneNumber: form.contactInfo.guardianPhone,
+      email: form.contactInfo.guardianEmail
     },
     secondGuardian: null,
-    otherPartner: null,
-    otherChildren: [],
+    otherPartner: form.contactInfo.otherPartnerInSameAddress
+      ? {
+          firstName: form.contactInfo.otherPartnerFirstName,
+          lastName: form.contactInfo.otherPartnerLastName,
+          socialSecurityNumber: form.contactInfo.otherPartnerSSN
+        }
+      : null,
+    otherChildren: form.contactInfo.otherChildren,
     preferences: {
       preferredUnits: form.unitPreference.preferredUnits,
       preferredStartDate: form.serviceNeed.preferredStartDate,

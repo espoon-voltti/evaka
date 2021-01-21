@@ -249,7 +249,7 @@ const en: Translations = {
       contactInfo: {
         title: 'Henkilötiedot',
         info:
-          'Henkilötiedot on haettu väestötiedoista, eikä niitä voi muuttaa tällä hakemuksella. Jos henkilötiedoissa on virheitä, päivitäthän tiedot Digi- ja Väestötietoviraston sivuilla. Mikäli osoitteenne on muuttumassa, voit lisätä tulevan osoitteen erilliseen kohtaan hakemuksella; lisää tuleva osoite sekä lapselle että huoltajalle. Virallisena osoitetietoa pidetään vasta, kun se on päivittynyt väestötietojärjestelmään. Päätökset esiopetus- ja varhaiskasvatuspaikoista toimitetaan automaattisesti myös eri osoitteessa asuvalle väestötiedoista löytyvälle huoltajalle.',
+          'Henkilötiedot on haettu väestötiedoista, eikä niitä voi muuttaa tällä hakemuksella. Jos henkilötiedoissa on virheitä, päivitäthän tiedot <a href="https://dvv.fi/henkiloasiakkaat" target="_blank" rel="noreferrer">Digi- ja Väestötietoviraston sivuilla</a>. Mikäli osoitteenne on muuttumassa, voit lisätä tulevan osoitteen erilliseen kohtaan hakemuksella; lisää tuleva osoite sekä lapselle että huoltajalle. Virallisena osoitetietoa pidetään vasta, kun se on päivittynyt väestötietojärjestelmään. Päätökset esiopetus- ja varhaiskasvatuspaikoista toimitetaan automaattisesti myös eri osoitteessa asuvalle väestötiedoista löytyvälle huoltajalle.',
         childInfoTitle: 'Lapsen tiedot',
         childFirstName: 'Lapsen etunimet',
         childLastName: 'Lapsen sukunimi',
@@ -258,12 +258,13 @@ const en: Translations = {
         moveDate: 'Muuttopäivämäärä',
         street: 'Katuosoite',
         postalCode: 'Postinumero',
-        municipality: 'Postitoimipaikka',
+        postOffice: 'Postitoimipaikka',
         guardianInfoTitle: 'Huoltajan tiedot',
         guardianFirstName: 'Huoltajan etunimet',
         guardianLastName: 'Huoltajan sukunimi',
         guardianSSN: 'Huoltajan henkilötunnus',
         phone: 'Puhelinnumero',
+        emailAddress: 'Sähköpostiosoite',
         email: 'Sähköposti',
         secondGuardianInfoTitle: 'Toisen huoltajan tiedot',
         secondGuardianInfo:
@@ -282,12 +283,18 @@ const en: Translations = {
           'Valitse lapset, jotka asuvat samassa taloudessa.',
         hasFutureAddress:
           'Väestörekisterissä oleva osoite on muuttunut tai muuttumassa',
+        guardianFutureAddressEqualsChildFutureAddress:
+          'Muutan samaan osoitteeseen kuin lapsi',
         firstNamePlaceholder: 'Etunimet',
         lastNamePlaceholder: 'Sukunimi',
         ssnPlaceholder: 'Henkilötunnus',
         streetPlaceholder: 'Osoite',
         postalCodePlaceholder: 'Postinumero',
         municipalityPlaceholder: 'Postitoimipaikka',
+        addChild: 'Lisää lapsi',
+        remove: 'Poista',
+        areExtraChildren:
+          'Samassa taloudessa asuu muita alle 18-vuotiaita lapsia (esim. avopuolison lapset)',
         choosePlaceholder: 'Valitse'
       },
       draftPolicyInfo: {

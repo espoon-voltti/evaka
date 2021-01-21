@@ -212,7 +212,8 @@ export function DatePickerClearable({
   type = 'half-width',
   options,
   className,
-  dataQa
+  dataQa,
+  placeholder
 }: DatePickerClearableProps) {
   const ref = React.createRef<HTMLInputElement>()
   return (
@@ -238,6 +239,7 @@ export function DatePickerClearable({
           }
         }}
         onFocus={onFocus}
+        placeholderText={placeholder}
         {...options}
       />
     </DatePickerContainer>
