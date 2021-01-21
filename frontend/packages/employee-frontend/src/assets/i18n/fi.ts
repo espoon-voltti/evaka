@@ -1916,9 +1916,9 @@ export const fi = {
       info: 'Ajanjakson maksimipituus on kaksi viikkoa.'
     },
     serviceNeeds: {
-      title: 'Lapsien palvelutarpeet ja iät yksiköissä',
+      title: 'Lasten palvelutarpeet ja iät yksiköissä',
       description:
-        'Raportti listaa lapsien määriä yksiköissä palveluntarpeen ja iän mukaan.',
+        'Raportti listaa lasten määriä yksiköissä palveluntarpeen ja iän mukaan.',
       age: 'Ikä',
       fullDay: 'kokopäiväinen',
       partDay: 'osapäiväinen',
@@ -1938,20 +1938,20 @@ export const fi = {
       address2: 'Lapsen osoite'
     },
     childAgeLanguage: {
-      title: 'Lapsien kielet ja iät yksiköissä',
+      title: 'Lasten kielet ja iät yksiköissä',
       description:
-        'Raportti listaa lapsien määriä yksiköissä kielen ja iän mukaan. Vain vastaanotetut paikat otetaan huomioon.'
+        'Raportti listaa lasten määriä yksiköissä kielen ja iän mukaan. Vain vastaanotetut paikat otetaan huomioon.'
     },
     assistanceNeeds: {
-      title: 'Lapsien tuen tarpeet',
+      title: 'Lasten tuen tarpeet',
       description:
-        'Raportti listaa lapsien määriä yksiköissä ja ryhmissä tuen tarpeen perusteiden mukaan. Vain vastaanotetut paikat otetaan huomioon.',
+        'Raportti listaa lasten määriä yksiköissä ja ryhmissä tuen tarpeen perusteiden mukaan. Vain vastaanotetut paikat otetaan huomioon.',
       basisMissing: 'Peruste puuttuu'
     },
     assistanceActions: {
-      title: 'Lapsien tukitoimet',
+      title: 'Lasten tukitoimet',
       description:
-        'Raportti listaa lapsien määriä yksiköissä ja ryhmissä tukitoimien mukaan. Vain vastaanotetut paikat otetaan huomioon.',
+        'Raportti listaa lasten määriä yksiköissä ja ryhmissä tukitoimien mukaan. Vain vastaanotetut paikat otetaan huomioon.',
       actionMissing: 'Tukitoimi puuttuu'
     },
     occupancies: {

@@ -29,7 +29,7 @@ class ChildAgeLanguageReportController(private val acl: AccessControlList) {
         @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) date: LocalDate
     ): ResponseEntity<List<ChildAgeLanguageReportRow>> {
         Audit.ChildAgeLanguageReportRead.log()
-        user.requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN, UserRole.ADMIN, UserRole.DIRECTOR, UserRole.SPECIAL_EDUCATION_TEACHER)
+        user.requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.ADMIN, UserRole.DIRECTOR, UserRole.SPECIAL_EDUCATION_TEACHER)
         return db.read { it.getChildAgeLanguageRows(date, acl.getAuthorizedUnits(user)) }.let(::ok)
     }
 }
