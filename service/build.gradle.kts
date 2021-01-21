@@ -4,6 +4,7 @@
 
 import org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import org.springframework.boot.gradle.tasks.bundling.BootJar
 
 buildscript {
     repositories {
@@ -165,6 +166,14 @@ tasks.withType<KotlinCompile> {
         jvmTarget = Version.java
         allWarningsAsErrors = name != "compileIntegrationTestKotlin"
     }
+}
+
+tasks.getByName<Jar>("jar") {
+    enabled = true
+}
+
+tasks.getByName<BootJar>("bootJar") {
+    archiveClassifier.set("boot")
 }
 
 tasks {
