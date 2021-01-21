@@ -128,3 +128,14 @@ export async function createApplication(
   )
   return applicationId
 }
+
+export async function getDuplicateApplications(
+  childId: string
+): Promise<Record<ApplicationType, boolean>> {
+  const { data } = await client.get<Record<ApplicationType, boolean>>(
+    `/citizen/applications/duplicates/${childId}`
+  )
+  return Object.fromEntries(
+    Object.entries(data).map(([type, value]) => [type.toLowerCase(), value])
+  ) as Record<ApplicationType, boolean> // FIXME
+}

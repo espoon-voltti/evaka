@@ -58,6 +58,8 @@ const sv: Translations = {
       clubLabel: 'Ansökan till en klubb',
       clubInfo:
         'Med ansökan till klubbverksamhet kan du ansöka till kommunala klubbar.',
+      duplicateWarning:
+        'Ditt barn har en motsvarande oavslutad ansökan. Gå tillbaka till vyn Ansökningar och bearbeta den befintliga ansökan eller ta kontakt med barninvalskoordinatorn.',
       applicationInfo:
         'Du kan ändra i ansökan så länge den inte har tagits till behandling. Därefter kan du göra ändringar i ansökan genom att kontakta småbarnspedagogikens servicehänvisning (tfn 09 8163 27600). Du kan återta en ansökan som du redan lämnat in genom att meddela detta per e-post till småbarnspedagogikens servicehänvisning <a href="mailto:dagis@esbo.fi">dagis@esbo.fi</a>.',
       create: 'Ny ansökan'

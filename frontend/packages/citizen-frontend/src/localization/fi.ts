@@ -55,6 +55,8 @@ export default {
         'Liittyvän varhaiskasvatuksen hakeminen lapsille, jotka ilmoitetaan / on ilmoitettu esiopetukseen tai valmistavaan opetukseen',
       clubLabel: 'Kerhohakemus',
       clubInfo: 'Kerhohakemuksella haetaan kunnallisiin kerhoihin.',
+      duplicateWarning:
+        'Lapsella on jo samantyyppinen, keskeneräinen hakemus. Palaa Hakemukset-näkymään ja muokkaa olemassa olevaa hakemusta tai ota yhteyttä palveluohjaukseen.',
       applicationInfo:
         'Hakemukseen voi tehdä muutoksia niin kauan kuin hakemusta ei ole otettu käsittelyyn. Tämän jälkeen muutokset hakemukseen tehdään ottamalla yhteyttä varhaiskasvatuksen palveluohjaukseen (puh. 09 816 31000). Voit perua jo tehdyn hakemuksen ilmoittamalla siitä sähköpostilla varhaiskasvatuksen palveluohjaukseen <a href="mailto:varhaiskasvatuksen.palveluohjaus@espoo.fi">varhaiskasvatuksen.palveluohjaus@espoo.fi</a>.',
       create: 'Tee hakemus'

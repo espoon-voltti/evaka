@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { Redirect, useHistory, useParams } from 'react-router-dom'
 import styled from 'styled-components'
 import {
@@ -11,10 +11,11 @@ import AsyncButton from '@evaka/lib-components/src/atoms/buttons/AsyncButton'
 import Button from '@evaka/lib-components/src/atoms/buttons/Button'
 import ReturnButton from '@evaka/lib-components/src/atoms/buttons/ReturnButton'
 import Radio from '@evaka/lib-components/src/atoms/form/Radio'
+import { AlertBox } from '@evaka/lib-components/src/molecules/MessageBoxes'
 import { useUser } from '~auth'
 import { useTranslation } from '~localization'
 import { ApplicationType } from '~applications/types'
-import { createApplication } from '~applications/api'
+import { createApplication, getDuplicateApplications } from '~applications/api'
 import InfoBallWrapper from '~applications/InfoBallWrapper'
 
 export default React.memo(function ApplicationCreation() {
@@ -27,6 +28,16 @@ export default React.memo(function ApplicationCreation() {
     user
   ])
   const [selectedType, setSelectedType] = useState<ApplicationType>()
+
+  const [duplicates, setDuplicates] = useState<
+    Record<ApplicationType, boolean>
+  >(duplicatesDefault)
+  useEffect(() => {
+    void getDuplicateApplications(childId).then(setDuplicates)
+  }, [])
+
+  const duplicateExists =
+    selectedType !== undefined && duplicates[selectedType] === true
 
   if (child === undefined) {
     return <Redirect to="/applications" />
@@ -68,7 +79,13 @@ export default React.memo(function ApplicationCreation() {
             label={t.applications.creation.clubLabel}
           />
         </InfoBallWrapper>
-        <Gap size="m" />
+        {duplicateExists ? (
+          <>
+            <Gap size="L" />
+            <AlertBox thin message={t.applications.creation.duplicateWarning} />
+          </>
+        ) : null}
+        <Gap size="s" />
         <P
           dangerouslySetInnerHTML={{
             __html: t.applications.creation.applicationInfo
@@ -80,7 +97,7 @@ export default React.memo(function ApplicationCreation() {
         <AsyncButton
           primary
           text={t.applications.creation.create}
-          disabled={selectedType === undefined}
+          disabled={selectedType === undefined || duplicateExists}
           onClick={() =>
             selectedType !== undefined
               ? createApplication(childId, selectedType).then((applicationId) =>
@@ -101,6 +118,12 @@ export default React.memo(function ApplicationCreation() {
     </Container>
   )
 })
+
+const duplicatesDefault: Record<ApplicationType, boolean> = {
+  club: false,
+  daycare: false,
+  preschool: false
+}
 
 const PreschoolDaycareInfo = styled.p`
   margin: 0;

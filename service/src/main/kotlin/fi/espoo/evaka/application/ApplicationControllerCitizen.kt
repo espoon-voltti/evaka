@@ -129,6 +129,25 @@ class ApplicationControllerCitizen(
         }
     }
 
+    @GetMapping("/applications/duplicates/{childId}")
+    fun getChildDuplicateApplications(
+        db: Database.Connection,
+        user: AuthenticatedUser,
+        @PathVariable childId: UUID
+    ): ResponseEntity<Map<ApplicationType, Boolean>> {
+        Audit.ApplicationReadDuplicates.log(targetId = user.id, objectId = childId)
+        user.requireOneOfRoles(UserRole.END_USER)
+
+        return db.read { tx ->
+            ApplicationType.values()
+                .map { type ->
+                    type to duplicateApplicationExists(tx.handle, guardianId = user.id, childId = childId, type = type)
+                }
+                .toMap()
+                .let { ResponseEntity.ok(it) }
+        }
+    }
+
     @GetMapping("/decisions")
     fun getDecisions(db: Database.Connection, user: AuthenticatedUser): ResponseEntity<List<ApplicationDecisions>> {
         Audit.DecisionRead.log(targetId = user.id)

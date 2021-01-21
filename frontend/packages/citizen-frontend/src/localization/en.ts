@@ -58,6 +58,8 @@ const en: Translations = {
       clubLabel: 'Club application',
       clubInfo:
         'The club application is used for applying for municipal clubs.',
+      duplicateWarning:
+        'The child already has a similar unfinished application. Please return to the Applications view and complete the existing application or contact the Early Childhood Education Service Guidance.',
       applicationInfo:
         'You can make changes to your application until its processing starts. After this, you can make changes to your application by contacting early childhood education service counselling (tel. 09 816 31000). If you wish to cancel an application you have submitted, please send an email to early childhood education service counselling (<a href="varhaiskasvatuksen.palveluohjaus@espoo.fi">varhaiskasvatuksen.palveluohjaus@espoo.fi</a>).',
       create: 'Apply'
