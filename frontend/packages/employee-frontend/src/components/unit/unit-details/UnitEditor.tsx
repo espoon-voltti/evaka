@@ -644,6 +644,7 @@ export default function UnitEditor(props: Props): JSX.Element {
                 ? updateForm({ areaId: value.value })
                 : undefined
             }
+            fullWidth
           />
         ) : (
           props.areas.find((area) => area.id === form.areaId)?.name
@@ -1027,6 +1028,7 @@ export default function UnitEditor(props: Props): JSX.Element {
                 : updateForm({ financeDecisionHandlerId: undefined })
             }
             clearable
+            fullWidth
           />
         ) : (
           selectedFinanceDecisionManager?.label
