@@ -163,6 +163,30 @@ class ApplicationControllerCitizen(
         return ResponseEntity.noContent().build()
     }
 
+    @PutMapping("/applications/{applicationId}/draft")
+    fun saveApplicationAsDraft(
+        db: Database,
+        user: AuthenticatedUser,
+        @PathVariable applicationId: UUID,
+        @RequestBody applicationForm: ApplicationFormUpdate
+    ): ResponseEntity<Unit> {
+        Audit.ApplicationUpdate.log(targetId = applicationId)
+        user.requireOneOfRoles(UserRole.END_USER)
+
+        db.transaction { applicationStateService.updateOwnApplicationContentsCitizen(it, user, applicationId, applicationForm, asDraft = true) }
+        return ResponseEntity.noContent().build()
+    }
+
+    @PostMapping("/{applicationId}/actions/send-application")
+    fun sendApplication(
+        db: Database,
+        user: AuthenticatedUser,
+        @PathVariable applicationId: UUID
+    ): ResponseEntity<Unit> {
+        db.transaction { applicationStateService.sendApplication(it, user, applicationId, isEnduser = true) }
+        return ResponseEntity.noContent().build()
+    }
+
     @GetMapping("/decisions")
     fun getDecisions(db: Database.Connection, user: AuthenticatedUser): ResponseEntity<List<ApplicationDecisions>> {
         Audit.DecisionRead.log(targetId = user.id)

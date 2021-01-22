@@ -413,36 +413,44 @@ class ApplicationStateService(
 
         val updatedForm = ApplicationForm.fromV0(formV0, original.childRestricted, original.guardianRestricted)
 
-        if (listOf(SENT).contains(original.status)) {
-            original.form.preferences.preferredStartDate?.let { previousStartDate ->
-                updatedForm.preferences.preferredStartDate?.let { newStartDate ->
-                    if (previousStartDate.isAfter(newStartDate))
-                        throw BadRequest("Moving start date $previousStartDate earlier to $newStartDate is not allowed")
+        if (original.status != CREATED) {
+            validateApplication(tx, original.type, updatedForm, strict = true)
+
+            if (listOf(SENT).contains(original.status)) {
+                original.form.preferences.preferredStartDate?.let { previousStartDate ->
+                    updatedForm.preferences.preferredStartDate?.let { newStartDate ->
+                        if (previousStartDate.isAfter(newStartDate))
+                            throw BadRequest("Moving start date $previousStartDate earlier to $newStartDate is not allowed")
+                    }
                 }
             }
         }
-        validateApplication(tx, original.type, updatedForm, strict = true)
 
         tx.updateApplicationContents(original, updatedForm)
         return getApplication(tx, applicationId)
     }
 
-    fun updateOwnApplicationContentsCitizen(tx: Database.Transaction, user: AuthenticatedUser, applicationId: UUID, update: ApplicationFormUpdate): ApplicationDetails {
+    fun updateOwnApplicationContentsCitizen(tx: Database.Transaction, user: AuthenticatedUser, applicationId: UUID, update: ApplicationFormUpdate, asDraft: Boolean = false): ApplicationDetails {
         val original = fetchApplicationDetails(tx.handle, applicationId)
             ?.takeIf { it.guardianId == user.id }
             ?: throw NotFound("Application $applicationId of guardian ${user.id} not found")
 
         val updatedForm = original.form.update(update)
 
-        if (listOf(SENT).contains(original.status)) {
-            original.form.preferences.preferredStartDate?.let { previousStartDate ->
-                updatedForm.preferences.preferredStartDate?.let { newStartDate ->
-                    if (previousStartDate.isAfter(newStartDate))
-                        throw BadRequest("Moving start date $previousStartDate earlier to $newStartDate is not allowed")
+        if (asDraft) {
+            if (original.status !== CREATED) throw BadRequest("Cannot save as draft, application already sent")
+        } else {
+            validateApplication(tx, original.type, updatedForm, strict = true)
+
+            if (listOf(SENT).contains(original.status)) {
+                original.form.preferences.preferredStartDate?.let { previousStartDate ->
+                    updatedForm.preferences.preferredStartDate?.let { newStartDate ->
+                        if (previousStartDate.isAfter(newStartDate))
+                            throw BadRequest("Moving start date $previousStartDate earlier to $newStartDate is not allowed")
+                    }
                 }
             }
         }
-        validateApplication(tx, original.type, updatedForm, strict = true)
 
         tx.updateApplicationContents(original, updatedForm)
         return getApplication(tx, applicationId)
