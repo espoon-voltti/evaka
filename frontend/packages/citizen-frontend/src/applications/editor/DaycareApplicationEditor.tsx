@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useCallback, useState } from 'react'
+import React, { useCallback, useContext, useState } from 'react'
 import { Gap } from '@evaka/lib-components/src/white-space'
 import Container from '@evaka/lib-components/src/layout/Container'
 import Heading from '~applications/editor/Heading'
@@ -20,6 +20,10 @@ import {
 } from '~applications/editor/ApplicationFormData'
 import { Application } from '~applications/types'
 import Button from '@evaka/lib-components/src/atoms/buttons/Button'
+import { updateApplication } from '~applications/api'
+import { OverlayContext } from '~overlay/state'
+import { useTranslation } from '~localization'
+import { useHistory } from 'react-router-dom'
 
 type DaycareApplicationEditorProps = {
   apiData: Application
@@ -30,9 +34,13 @@ const applicationType = 'daycare'
 export default React.memo(function DaycareApplicationEditor({
   apiData
 }: DaycareApplicationEditorProps) {
+  const t = useTranslation()
   const [formData, setFormData] = useState<ApplicationFormData>(
     apiDataToFormData(apiData)
   )
+  const [submitting, setSubmitting] = useState<boolean>(false)
+  const history = useHistory()
+  const { setErrorMessage } = useContext(OverlayContext)
 
   const updateFeeFormData = useCallback(
     (feeData: FeeFormData) =>
@@ -57,6 +65,19 @@ export default React.memo(function DaycareApplicationEditor({
 
     const reqBody = formDataToApiData(formData)
     console.log('updating application', apiData.id, reqBody)
+    setSubmitting(true)
+    void updateApplication(apiData.id, reqBody).then((res) => {
+      setSubmitting(false)
+      if (res.isFailure) {
+        setErrorMessage({
+          title: t.applications.editor.actions.sendError,
+          type: 'error'
+        })
+      } else if (res.isSuccess) {
+        // todo: some success dialog?
+        history.push('/applications')
+      }
+    })
   }
 
   return (
@@ -125,7 +146,11 @@ export default React.memo(function DaycareApplicationEditor({
         applicationType={applicationType}
       />
       <Gap size="s" />
-      <Button text={'Submitti'} onClick={onSubmit} />
+      <Button
+        text={t.applications.editor.actions.send}
+        onClick={onSubmit}
+        disabled={submitting}
+      />
     </Container>
   )
 })

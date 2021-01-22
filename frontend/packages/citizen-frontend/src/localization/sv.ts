@@ -77,6 +77,10 @@ const sv: Translations = {
           ]
         }
       },
+      actions: {
+        send: 'Lähetä hakemus',
+        sendError: 'Hakemuksen lähettäminen epäonnistui'
+      },
       serviceNeed: {
         serviceNeed: 'Palveluntarve',
         startDate: {

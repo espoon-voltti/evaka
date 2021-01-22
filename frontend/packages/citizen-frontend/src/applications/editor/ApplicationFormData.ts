@@ -1,7 +1,7 @@
 import LocalDate from '@evaka/lib-common/src/local-date'
 import {
   Application,
-  ApplicationForm,
+  ApplicationFormUpdate,
   ApplicationPersonBasics
 } from '~applications/types'
 
@@ -129,31 +129,18 @@ export function apiDataToFormData(
   }
 }
 
-export function formDataToApiData(form: ApplicationFormData): ApplicationForm {
+export function formDataToApiData(
+  form: ApplicationFormData
+): ApplicationFormUpdate {
   return {
     child: {
-      person: {
-        firstName: 'string',
-        lastName: 'string',
-        socialSecurityNumber: null
-      },
-      dateOfBirth: null,
-      address: null,
       futureAddress: null,
-      nationality: 'string',
-      language: 'string',
       allergies: form.additionalDetails.allergies,
       diet: form.additionalDetails.diet,
       assistanceNeeded: form.serviceNeed.assistanceNeeded,
       assistanceDescription: form.serviceNeed.assistanceDescription
     },
     guardian: {
-      person: {
-        firstName: 'string',
-        lastName: 'string',
-        socialSecurityNumber: null
-      },
-      address: null,
       futureAddress: null,
       phoneNumber: 'string',
       email: 'string'
