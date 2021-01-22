@@ -55,6 +55,7 @@ const CheckboxInput = styled.input`
   border-color: ${colors.greyscale.dark};
   margin: 0;
 
+  background-color: ${colors.greyscale.white};
   &:checked {
     border-color: ${colors.primary};
     background-color: ${colors.primary};

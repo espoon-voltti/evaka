@@ -4,9 +4,7 @@
 
 import React, { useCallback, useContext, useState } from 'react'
 import { Gap } from '@evaka/lib-components/src/white-space'
-import Container, {
-  ContentArea
-} from '@evaka/lib-components/src/layout/Container'
+import Container from '@evaka/lib-components/src/layout/Container'
 import Heading from '~applications/editor/Heading'
 import ServiceNeedSection from '~applications/editor/ServiceNeedSection'
 import ContactInfoSection from '~applications/editor/ContactInfoSection'
@@ -27,6 +25,13 @@ import { OverlayContext } from '~overlay/state'
 import { useTranslation } from '~localization'
 import { useHistory } from 'react-router-dom'
 import { FixedSpaceRow } from '@evaka/lib-components/src/layout/flex-helpers'
+import ReturnButton, {
+  ReturnButtonWrapper
+} from '@evaka/lib-components/src/atoms/buttons/ReturnButton'
+import DaycareApplicationVerificationView from '~applications/editor/verification/DaycareApplicationVerificationView'
+import InlineButton from '@evaka/lib-components/src/atoms/buttons/InlineButton'
+import { faAngleLeft } from '@evaka/lib-icons'
+import Checkbox from '@evaka/lib-components/src/atoms/form/Checkbox'
 
 type DaycareApplicationEditorProps = {
   apiData: Application
@@ -42,6 +47,9 @@ export default React.memo(function DaycareApplicationEditor({
     apiDataToFormData(apiData)
   )
   const [submitting, setSubmitting] = useState<boolean>(false)
+  const [verifying, setVerifying] = useState<boolean>(false)
+  const [verified, setVerified] = useState<boolean>(false)
+
   const history = useHistory()
   const { setErrorMessage } = useContext(OverlayContext)
 
@@ -63,9 +71,30 @@ export default React.memo(function DaycareApplicationEditor({
     [setFormData]
   )
 
-  const onSend = () => {
-    if (!formData) return
+  const onVerify = () => {
+    console.log('validation should happen here')
+    setVerified(false)
+    setVerifying(true)
+  }
 
+  const onSaveDraft = () => {
+    const reqBody = formDataToApiData(formData)
+    setSubmitting(true)
+    void saveApplicationDraft(apiData.id, reqBody).then((res) => {
+      setSubmitting(false)
+      if (res.isFailure) {
+        setErrorMessage({
+          title: t.applications.editor.actions.saveDraftError,
+          type: 'error'
+        })
+      } else if (res.isSuccess) {
+        // todo: some success dialog?
+        history.push('/applications')
+      }
+    })
+  }
+
+  const onSend = () => {
     const reqBody = formDataToApiData(formData)
     console.log('updating application', apiData.id, reqBody)
     setSubmitting(true)
@@ -83,27 +112,8 @@ export default React.memo(function DaycareApplicationEditor({
     })
   }
 
-  const onSaveDraft = () => {
-    if (!formData) return
-
-    const reqBody = formDataToApiData(formData)
-    setSubmitting(true)
-    void saveApplicationDraft(apiData.id, reqBody).then((res) => {
-      setSubmitting(false)
-      if (res.isFailure) {
-        setErrorMessage({
-          title: t.applications.editor.actions.saveDraftError,
-          type: 'error'
-        })
-      } else if (res.isSuccess) {
-        // todo: some success dialog?
-        history.push('/applications')
-      }
-    })
-  }
-
-  return (
-    <Container>
+  const renderEditor = () => (
+    <>
       <Heading type={applicationType} />
       <Gap size="s" />
       <ServiceNeedSection
@@ -167,24 +177,91 @@ export default React.memo(function DaycareApplicationEditor({
         updateFormData={updateAdditionalDetailsFormData}
         applicationType={applicationType}
       />
-      <Gap size="s" />
-      <ContentArea opaque>
+    </>
+  )
+
+  const renderActionBar = () => (
+    <Container>
+      {verifying && (
+        <>
+          <Checkbox
+            label={t.applications.editor.actions.hasVerified}
+            checked={verified}
+            onChange={setVerified}
+          />
+          <Gap size="s" />
+        </>
+      )}
+      <FixedSpaceRow justifyContent="space-between">
+        {verifying ? (
+          <div />
+        ) : (
+          <Button
+            text={t.applications.editor.actions.cancel}
+            onClick={() => history.goBack()}
+            disabled={submitting}
+          />
+        )}
+
         <FixedSpaceRow>
-          {apiData.status === 'CREATED' && (
+          {apiData.status === 'CREATED' && !verifying && (
             <Button
               text={t.applications.editor.actions.saveDraft}
               onClick={onSaveDraft}
               disabled={submitting}
             />
           )}
-          <Button
-            text={t.applications.editor.actions.send}
-            onClick={onSend}
-            disabled={submitting}
-            primary
-          />
+          {verifying ? (
+            <>
+              <Button
+                text={t.applications.editor.actions.returnToEditBtn}
+                onClick={() => setVerifying(false)}
+                disabled={submitting}
+              />
+              <Button
+                text={t.applications.editor.actions.send}
+                onClick={onSend}
+                disabled={submitting || !verified}
+                primary
+              />
+            </>
+          ) : (
+            <Button
+              text={t.applications.editor.actions.verify}
+              onClick={onVerify}
+              disabled={submitting}
+              primary
+            />
+          )}
         </FixedSpaceRow>
-      </ContentArea>
+      </FixedSpaceRow>
+    </Container>
+  )
+
+  return (
+    <Container>
+      {verifying ? (
+        <ReturnButtonWrapper>
+          <InlineButton
+            icon={faAngleLeft}
+            text={t.applications.editor.actions.returnToEdit}
+            onClick={() => setVerifying(false)}
+          />
+        </ReturnButtonWrapper>
+      ) : (
+        <ReturnButton label={t.common.return} />
+      )}
+
+      {verifying ? (
+        <DaycareApplicationVerificationView
+          application={apiData}
+          formData={formData}
+        />
+      ) : (
+        renderEditor()
+      )}
+      <Gap size="m" />
+      {renderActionBar()}
     </Container>
   )
 })

@@ -78,10 +78,42 @@ const sv: Translations = {
         }
       },
       actions: {
+        verify: 'Tarkista hakemus',
+        hasVerified: 'Olen tarkistanut hakemuksen tiedot oikeiksi',
+        returnToEdit: 'Palaa muokkaamaan hakemusta',
+        returnToEditBtn: 'Takaisin hakemusnäkymään',
+        cancel: 'Palaa',
         send: 'Lähetä hakemus',
         sendError: 'Hakemuksen lähettäminen epäonnistui',
         saveDraft: 'Tallenna keskeneräisenä',
         saveDraftError: 'Muutosten tallentaminen epäonnistui'
+      },
+      verification: {
+        title: {
+          daycare: 'Varhaiskasvatushakemuksen tarkistaminen'
+        },
+        notYetSent:
+          '<strong>Hakemusta ei ole vielä lähetetty.</strong> Tarkista antamasi tiedot ja lähetä sivun lopussa olevalla Lähetä hakemus-painikkeella.',
+        no: 'ei',
+        basics: {
+          created: 'Hakemus luotu',
+          modified: 'Hakemusta muokattu viimeksi'
+        },
+        unitPreference: {
+          title: 'Hakutoive',
+          siblingBasis: {
+            title: 'Haku sisarperusteella',
+            siblingBasisLabel: 'Sisarusperuste',
+            siblingBasisYes:
+              'Haen ensisijaisesti samaan paikkaan, jossa lapsen sisarus on jo varhaiskasvatuksessa',
+            name: 'Sisaruksen nimi',
+            ssn: 'Sisaruksen henkilötunnus'
+          },
+          units: {
+            title: 'Hakutoiveet',
+            label: 'Valitsemasi hakutoiveet'
+          }
+        }
       },
       serviceNeed: {
         serviceNeed: 'Palveluntarve',
