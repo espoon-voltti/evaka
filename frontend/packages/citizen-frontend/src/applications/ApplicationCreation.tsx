@@ -7,6 +7,7 @@ import {
 } from '@evaka/lib-components/src/layout/Container'
 import { H1, H2, P } from '@evaka/lib-components/src/typography'
 import { Gap, defaultMargins } from '@evaka/lib-components/src/white-space'
+import ButtonContainer from '@evaka/lib-components/src/layout/ButtonContainer'
 import AsyncButton from '@evaka/lib-components/src/atoms/buttons/AsyncButton'
 import Button from '@evaka/lib-components/src/atoms/buttons/Button'
 import ReturnButton from '@evaka/lib-components/src/atoms/buttons/ReturnButton'
@@ -92,29 +93,30 @@ export default React.memo(function ApplicationCreation() {
           }}
         />
       </ContentArea>
-      <Gap size="m" />
-      <ButtonContainer>
-        <AsyncButton
-          primary
-          text={t.applications.creation.create}
-          disabled={selectedType === undefined || duplicateExists}
-          onClick={() =>
-            selectedType !== undefined
-              ? createApplication(childId, selectedType).then((applicationId) =>
-                  history.push(`/applications/${applicationId}/edit`)
-                )
-              : Promise.resolve()
-          }
-          onSuccess={() => undefined}
-        />
-        <Gap size="s" />
-        <Gap size="s" horizontal />
-        <Button
-          text={t.common.cancel}
-          onClick={() => history.push('/applications')}
-        />
-      </ButtonContainer>
-      <Gap size="m" />
+      <ContentArea opaque={false} paddingVertical="L">
+        <ButtonContainer justify="center">
+          <AsyncButton
+            primary
+            text={t.applications.creation.create}
+            disabled={selectedType === undefined || duplicateExists}
+            onClick={() =>
+              selectedType !== undefined
+                ? createApplication(
+                    childId,
+                    selectedType
+                  ).then((applicationId) =>
+                    history.push(`/applications/${applicationId}/edit`)
+                  )
+                : Promise.resolve()
+            }
+            onSuccess={() => undefined}
+          />
+          <Button
+            text={t.common.cancel}
+            onClick={() => history.push('/applications')}
+          />
+        </ButtonContainer>
+      </ContentArea>
     </Container>
   )
 })
@@ -132,15 +134,4 @@ const PreschoolDaycareInfo = styled.p`
   ); // width of the radio input's icon + the margin on label
   font-weight: 600;
   font-size: 0.875em;
-`
-
-const ButtonContainer = styled.div`
-  display: flex;
-  flex-direction: row-reverse;
-  justify-content: center;
-  align-items: center;
-
-  @media (max-width: 600px) {
-    flex-direction: column;
-  }
 `

@@ -5,20 +5,14 @@
 import React from 'react'
 import styled from 'styled-components'
 import classNames from 'classnames'
+import { tabletMin } from '../../breakpoints'
 import colors, { greyscale } from '../../colors'
-import { defaultMargins } from '../../white-space'
 import { BaseProps } from '../../utils'
-import UnderRowStatusIcon, { InfoStatus } from '../StatusIcon'
 import { defaultButtonTextStyle } from './button-commons'
-
-const Wrapper = styled.div`
-  min-width: 0; // needed for correct overflow behavior
-`
 
 export const StyledButton = styled.button`
   min-height: 45px;
   padding: 0 27px;
-  width: fit-content;
   min-width: 100px;
 
   display: block;
@@ -27,7 +21,7 @@ export const StyledButton = styled.button`
 
   border: 1px solid ${colors.primary};
   border-radius: 2px;
-  background: none;
+  background: ${colors.greyscale.white};
 
   outline: none;
   cursor: pointer;
@@ -72,34 +66,11 @@ export const StyledButton = styled.button`
     }
   }
 
+  @media (min-width: ${tabletMin}) {
+    width: fit-content;
+  }
+
   ${defaultButtonTextStyle}
-`
-
-const ButtonUnderRow = styled.div`
-  padding: 0 12px;
-  margin-top: ${defaultMargins.xxs};
-  margin-bottom: -20px;
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  position: absolute;
-
-  font-size: 12px;
-  text-overflow: ellipsis;
-
-  word-wrap:break-word;
-  width: 120px;
-  white-space: normal
-
-  color: ${colors.greyscale.dark};
-
-  &.success {
-    color: ${colors.accents.greenDark};
-  }
-
-  &.warning {
-    color: ${colors.accents.orangeDark};
-  }
 `
 
 interface ButtonProps extends BaseProps {
@@ -109,10 +80,6 @@ interface ButtonProps extends BaseProps {
   disabled?: boolean
   type?: 'submit' | 'button'
   'data-qa'?: string
-  info?: {
-    text: string
-    status?: InfoStatus
-  }
 }
 
 function Button({
@@ -123,8 +90,7 @@ function Button({
   text,
   primary = false,
   disabled = false,
-  type = 'button',
-  info
+  type = 'button'
 }: ButtonProps) {
   const [ignoreClick, setIgnoreClick] = React.useState(false)
   React.useEffect(() => {
@@ -144,21 +110,15 @@ function Button({
     }
   }
   return (
-    <Wrapper>
-      <StyledButton
-        className={classNames(className, { primary, disabled })}
-        data-qa={dataQa2 ?? dataQa}
-        onClick={handleOnClick}
-        disabled={disabled}
-        type={type}
-      >
-        {text}
-      </StyledButton>
-      <ButtonUnderRow className={classNames(info?.status)}>
-        <span>{info?.text}</span>
-        <UnderRowStatusIcon status={info?.status} />
-      </ButtonUnderRow>
-    </Wrapper>
+    <StyledButton
+      className={classNames(className, { primary, disabled })}
+      data-qa={dataQa2 ?? dataQa}
+      onClick={handleOnClick}
+      disabled={disabled}
+      type={type}
+    >
+      {text}
+    </StyledButton>
   )
 }
 

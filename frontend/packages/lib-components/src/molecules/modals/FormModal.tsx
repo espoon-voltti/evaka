@@ -9,7 +9,7 @@ import styled from 'styled-components'
 import FocusLock from 'react-focus-lock'
 import Button from '../../atoms/buttons/Button'
 import AsyncButton from '../../atoms/buttons/AsyncButton'
-import { InfoStatus } from '../../atoms/StatusIcon'
+import UnderRowStatusIcon, { InfoStatus } from '../../atoms/StatusIcon'
 import Title from '../../atoms/Title'
 import colors from '../../colors'
 import { P } from '../../typography'
@@ -244,9 +244,14 @@ export default React.memo(function FormModal({
           onClick={resolve.action}
           disabled={resolve.disabled}
           text={resolve.label}
-          info={resolve.info}
         />
       </ModalButtons>
+      {resolve.info ? (
+        <ButtonUnderRow className={resolve.info?.status}>
+          <span>{resolve.info?.text}</span>
+          <UnderRowStatusIcon status={resolve.info?.status} />
+        </ButtonUnderRow>
+      ) : null}
     </ModalBase>
   )
 })
@@ -296,3 +301,29 @@ export const AsyncFormModal = React.memo(function AsyncFormModal({
     </ModalBase>
   )
 })
+
+const ButtonUnderRow = styled.div`
+  margin-top: calc(-${defaultMargins.X3L} + ${defaultMargins.xs});
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  left: 0;
+  right: 0;
+
+  font-size: 12px;
+  text-overflow: ellipsis;
+
+  word-wrap: break-word;
+  white-space: normal;
+
+  color: ${colors.greyscale.dark};
+
+  &.success {
+    color: ${colors.accents.greenDark};
+  }
+
+  &.warning {
+    color: ${colors.accents.orangeDark};
+  }
+`

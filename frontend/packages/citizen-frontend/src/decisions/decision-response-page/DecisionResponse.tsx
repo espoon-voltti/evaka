@@ -10,10 +10,10 @@ import { OverlayContext } from '~overlay/state'
 import { H2, H3, Label, P } from '@evaka/lib-components/src/typography'
 import { Gap } from '@evaka/lib-components/src/white-space'
 import ListGrid from '@evaka/lib-components/src/layout/ListGrid'
+import ButtonContainer from '@evaka/lib-components/src/layout/ButtonContainer'
 import RoundIcon from '@evaka/lib-components/src/atoms/RoundIcon'
 import {
   FixedSpaceColumn,
-  FixedSpaceFlexWrap,
   FixedSpaceRow
 } from '@evaka/lib-components/src/layout/flex-helpers'
 import Radio from '@evaka/lib-components/src/atoms/form/Radio'
@@ -167,37 +167,34 @@ export default React.memo(function DecisionResponse({
           ) : (
             <Gap size="L" />
           )}
-          <FixedSpaceRow>
-            <FixedSpaceFlexWrap reverse>
-              <Button
-                text={t.decisions.applicationDecisions.response.cancel}
-                onClick={handleReturnToPreviousPage}
-                disabled={blocked || submitting}
-              />
-              <Button
-                text={t.decisions.applicationDecisions.response.submit}
-                primary
-                onClick={() => {
-                  if (!acceptChecked && rejectCascade) {
-                    setDisplayCascadeWarning(true)
-                  } else {
-                    void onSubmit().then((res) => {
-                      if (res.isFailure) {
-                        setErrorMessage({
-                          type: 'error',
-                          title:
-                            t.decisions.applicationDecisions.errors
-                              .submitFailure
-                        })
-                      }
-                    })
-                  }
-                }}
-                disabled={blocked || submitting}
-                dataQa={'submit-response'}
-              />
-            </FixedSpaceFlexWrap>
-          </FixedSpaceRow>
+          <ButtonContainer>
+            <Button
+              text={t.decisions.applicationDecisions.response.submit}
+              primary
+              onClick={() => {
+                if (!acceptChecked && rejectCascade) {
+                  setDisplayCascadeWarning(true)
+                } else {
+                  void onSubmit().then((res) => {
+                    if (res.isFailure) {
+                      setErrorMessage({
+                        type: 'error',
+                        title:
+                          t.decisions.applicationDecisions.errors.submitFailure
+                      })
+                    }
+                  })
+                }
+              }}
+              disabled={blocked || submitting}
+              dataQa={'submit-response'}
+            />
+            <Button
+              text={t.decisions.applicationDecisions.response.cancel}
+              onClick={handleReturnToPreviousPage}
+              disabled={blocked || submitting}
+            />
+          </ButtonContainer>
         </>
       )}
 

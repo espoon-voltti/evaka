@@ -2,11 +2,11 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React from 'react'
+import React, { useState } from 'react'
 import styled from 'styled-components'
 import colors from '@evaka/lib-components/src/colors'
 import { desktopMin } from '@evaka/lib-components/src/breakpoints'
-import EspooLogo from '../espoo-logo.svg'
+import Logo from './Logo'
 import DesktopNav from './DesktopNav'
 import MobileNav from './MobileNav'
 
@@ -14,53 +14,39 @@ const enduserBaseUrl =
   window.location.host === 'localhost:9094' ? 'http://localhost:9091' : ''
 
 export default React.memo(function Header() {
+  const [showMenu, setShowMenu] = useState(false)
+
   return (
-    <HeaderContainer>
-      <LogoContainer>
-        <Logo src={EspooLogo} alt="Espoo logo" />
-      </LogoContainer>
+    <HeaderContainer fixed={showMenu}>
+      <Logo />
       <DesktopNavContainer>
         <DesktopNav enduserBaseUrl={enduserBaseUrl} />
       </DesktopNavContainer>
       <MobileNavContainer>
-        <MobileNav enduserBaseUrl={enduserBaseUrl} />
+        <MobileNav
+          enduserBaseUrl={enduserBaseUrl}
+          showMenu={showMenu}
+          setShowMenu={setShowMenu}
+        />
       </MobileNavContainer>
     </HeaderContainer>
   )
 })
 
-const HeaderContainer = styled.header`
+const HeaderContainer = styled.header<{ fixed: boolean }>`
   z-index: 99;
   color: ${colors.greyscale.white};
   background-color: ${colors.brandEspoo.espooBlue};
-  position: relative;
+  position: ${({ fixed }) => (fixed ? 'fixed' : 'relative')};
   display: flex;
   flex-direction: row;
   justify-content: space-between;
   height: 52px;
+  width: 100%;
 
   @media (min-width: ${desktopMin}) {
     height: 64px;
     justify-content: flex-start;
-  }
-`
-
-const LogoContainer = styled.div`
-  flex-grow: 0;
-  flex-shrink: 1;
-  flex-basis: 20%;
-  min-width: 180px;
-`
-
-const Logo = styled.img`
-  padding: 0;
-  margin-left: 1rem;
-  max-width: 150px;
-  width: auto;
-  height: 100%;
-
-  @media (min-width: ${desktopMin}) {
-    padding: 0 1.5rem;
   }
 `
 

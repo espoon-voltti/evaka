@@ -10,12 +10,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import colors, { greyscale } from '../../colors'
 import { defaultMargins } from '../../white-space'
 import { BaseProps } from '../../utils'
-import UnderRowStatusIcon, { InfoStatus } from '../StatusIcon'
 import { defaultButtonTextStyle } from './button-commons'
-
-const Wrapper = styled.div`
-  min-width: 0; // needed for correct overflow behavior
-`
 
 const StyledButton = styled.button`
   width: fit-content;
@@ -55,38 +50,6 @@ const StyledButton = styled.button`
   ${defaultButtonTextStyle}
 `
 
-const InlineButtonUnderRow = styled.div`
-  height: 16px;
-  padding: 0 12px;
-  margin-top: ${defaultMargins.xxs};
-  margin-bottom: -20px;
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  position: relative;
-  left: -50%;
-
-  font-size: 12px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-
-  color: ${colors.greyscale.dark};
-
-  &.success {
-    color: ${colors.accents.greenDark};
-  }
-
-  &.warning {
-    color: ${colors.accents.orangeDark};
-  }
-`
-
-const UnderRowWrapper = styled.div`
-  position: absolute;
-  left: 50%;
-`
-
 interface InlineButtonProps extends BaseProps {
   onClick: () => unknown
   text: string
@@ -94,10 +57,6 @@ interface InlineButtonProps extends BaseProps {
 
   icon?: IconDefinition
   disabled?: boolean
-  info?: {
-    text: string
-    status?: InfoStatus
-  }
 }
 
 function InlineButton({
@@ -107,30 +66,19 @@ function InlineButton({
   text,
   altText,
   icon,
-  disabled = false,
-  info = undefined
+  disabled = false
 }: InlineButtonProps) {
   return (
-    <Wrapper>
-      <StyledButton
-        className={classNames(className, { disabled })}
-        data-qa={dataQa}
-        onClick={onClick}
-        disabled={disabled}
-        aria-label={altText}
-      >
-        {icon && <FontAwesomeIcon icon={icon} />}
-        <span>{text}</span>
-      </StyledButton>
-      {info && (
-        <UnderRowWrapper>
-          <InlineButtonUnderRow className={classNames(info.status)}>
-            <span>{info.text}</span>
-            <UnderRowStatusIcon status={info?.status} />
-          </InlineButtonUnderRow>
-        </UnderRowWrapper>
-      )}
-    </Wrapper>
+    <StyledButton
+      className={classNames(className, { disabled })}
+      data-qa={dataQa}
+      onClick={onClick}
+      disabled={disabled}
+      aria-label={altText}
+    >
+      {icon && <FontAwesomeIcon icon={icon} />}
+      <span>{text}</span>
+    </StyledButton>
   )
 }
 
