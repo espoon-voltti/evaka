@@ -4,11 +4,19 @@ import { useTranslation } from '~localization'
 import { Gap } from '@evaka/lib-components/src/white-space'
 import colors from '@evaka/lib-components/src/colors'
 import IconButton from '@evaka/lib-components/src/atoms/buttons/IconButton'
-import { faExclamationTriangle, faTimes } from '@evaka/lib-icons'
+import {
+  faExclamationTriangle,
+  faFile,
+  faFileImage,
+  faFilePdf,
+  faFileWord,
+  faTimes
+} from '@evaka/lib-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { UUID } from '@evaka/lib-common/src/types'
 import { Result } from '@evaka/lib-common/src/api'
 import { Attachment, FileObject } from '@evaka/lib-common/src/api-types/application/ApplicationDetails'
+import { IconDefinition } from '@fortawesome/fontawesome-svg-core'
 
 export type FileUploadProps = {
   files: Attachment[]
@@ -31,7 +39,7 @@ const FileInputLabel = styled.label`
   flex-direction: column;
   justify-content: center;
   background: ${colors.greyscale.lightest};
-  border: 1px dashed $grey;
+  border: 1px dashed ${colors.greyscale.medium};
   border-radius: 8px;
   width: min(500px, 70vw);
   padding: 24px;
@@ -54,8 +62,18 @@ const Icon = styled(FontAwesomeIcon)`
 `
 
 const UploadedFiles = styled.div``
-const FileProgress = styled.div``
-const FileIcon = styled.div``
+const File = styled.div`
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  color: ${colors.greyscale.dark};
+`
+
+const FileIcon = styled(FontAwesomeIcon)`
+  margin-right: 16px;
+  flex: 0;
+  color: ${colors.blues.primary};
+`
 
 const FileDetails = styled.div`
   flex: 1;
@@ -82,6 +100,7 @@ const ProgressBarContainer = styled.div`
 interface ProgressBarProps {
   progress: number
 }
+
 const ProgressBar = styled.div<ProgressBarProps>`
   width: ${(props) => props.progress}%;
   position: absolute;
@@ -96,7 +115,25 @@ const FileDownloadButton = styled.button`
   border: none;
   background: none;
   cursor: pointer;
-  color: ${colors.blues.light};
+  color: ${colors.blues.primary};
+`
+
+const FileDeleteButton = styled(IconButton)`
+  border: none;
+  background: none;
+  padding: 4px;
+  margin-left: 12px;
+  color: ${colors.greyscale.medium};
+  cursor: pointer;
+
+  &:hover {
+    color: ${colors.blues.medium};
+  }
+
+  &:disabled {
+    color: ${colors.greyscale.lighter};
+    cursor: not-allowed;
+  }
 `
 
 const ProgressBarDetails = styled.div`
@@ -122,6 +159,22 @@ const attachmentToFile = (attachment: Attachment): FileObject => {
     contentType: attachment.contentType,
     progress: 100,
     error: undefined
+  }
+}
+
+const fileIcon = (file: FileObject): IconDefinition => {
+  switch (file.contentType) {
+    case 'image/jpeg':
+    case 'image/png':
+      return faFileImage
+    case 'application/pdf':
+      return faFilePdf
+    case 'application/msword':
+    case 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
+    case 'application/vnd.oasis.opendocument.text':
+      return faFileWord
+    default:
+      return faFile
   }
 }
 
@@ -232,8 +285,8 @@ export default React.memo(function FileUpload({
       <Gap horizontal size={'s'} />
       <UploadedFiles>
         {uploadedFiles.map((file) => (
-          <FileProgress key={file.key}>
-            <FileIcon></FileIcon>
+          <File key={file.key}>
+            <FileIcon icon={fileIcon(file)}></FileIcon>
             <FileDetails>
               <FileHeader>
                 {file.id ? (
@@ -241,7 +294,7 @@ export default React.memo(function FileUpload({
                 ) : (
                   <span>{file.name}</span>
                 )}
-                <IconButton
+                <FileDeleteButton
                   icon={faTimes}
                   onClick={() => deleteFile(file.id)}
                 />
@@ -262,7 +315,7 @@ export default React.memo(function FileUpload({
                 </ProgressBarContainer>
               )}
             </FileDetails>
-          </FileProgress>
+          </File>
         ))}
       </UploadedFiles>
     </FileUploadContainer>

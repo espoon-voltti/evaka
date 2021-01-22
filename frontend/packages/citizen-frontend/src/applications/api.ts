@@ -17,7 +17,7 @@ import {
 import { ApplicationType, AttachmentType } from '@evaka/lib-common/src/api-types/application/enums'
 import { client } from '~api-client'
 import { PublicUnit } from '@evaka/lib-common/src/api-types/units/PublicUnit'
-import { UUID } from '~../../lib-common/src/types'
+import { UUID } from '@evaka/lib-common/src/types'
 
 export type ApplicationUnitType =
   | 'CLUB'
