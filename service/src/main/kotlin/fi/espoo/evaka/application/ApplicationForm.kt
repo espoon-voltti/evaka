@@ -14,6 +14,18 @@ import fi.espoo.evaka.pis.service.PersonDTO
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
+data class ApplicationFormUpdate(
+    val child: ChildDetailsUpdate,
+    val guardian: GuardianUpdate,
+    val secondGuardian: SecondGuardian?,
+    val otherPartner: PersonBasics?,
+    val otherChildren: List<PersonBasics>,
+    val preferences: Preferences,
+    val maxFeeAccepted: Boolean,
+    val otherInfo: String,
+    val clubDetails: ClubDetails?
+)
+
 data class ApplicationForm(
     val child: ChildDetails,
     val guardian: Guardian,
@@ -273,6 +285,28 @@ data class ApplicationForm(
             )
         }
     }
+
+    fun update(updated: ApplicationFormUpdate): ApplicationForm = this.copy(
+        child = this.child.copy(
+            futureAddress = updated.child.futureAddress,
+            allergies = updated.child.allergies,
+            diet = updated.child.diet,
+            assistanceNeeded = updated.child.assistanceNeeded,
+            assistanceDescription = updated.child.assistanceDescription
+        ),
+        guardian = this.guardian.copy(
+            futureAddress = updated.guardian.futureAddress,
+            phoneNumber = updated.guardian.phoneNumber,
+            email = updated.guardian.email
+        ),
+        secondGuardian = updated.secondGuardian,
+        otherPartner = updated.otherPartner,
+        otherChildren = updated.otherChildren,
+        preferences = updated.preferences,
+        maxFeeAccepted = updated.maxFeeAccepted,
+        otherInfo = updated.otherInfo,
+        clubDetails = updated.clubDetails
+    )
 }
 
 data class ChildDetails(
@@ -288,9 +322,23 @@ data class ChildDetails(
     val assistanceDescription: String
 )
 
+data class ChildDetailsUpdate(
+    val futureAddress: FutureAddress?,
+    val allergies: String,
+    val diet: String,
+    val assistanceNeeded: Boolean,
+    val assistanceDescription: String
+)
+
 data class Guardian(
     val person: PersonBasics,
     val address: Address?,
+    val futureAddress: FutureAddress?,
+    val phoneNumber: String,
+    val email: String
+)
+
+data class GuardianUpdate(
     val futureAddress: FutureAddress?,
     val phoneNumber: String,
     val email: String
