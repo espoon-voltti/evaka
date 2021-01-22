@@ -21,7 +21,7 @@ import RoundIcon from '@evaka/lib-components/src/atoms/RoundIcon'
 import { faInfo } from '@evaka/lib-icons'
 import { Gap } from '@evaka/lib-components/src/white-space'
 import EditorSection from '~applications/editor/EditorSection'
-import FileUpload from './FileUpload'
+import FileUpload, { ProgressEvent } from './FileUpload'
 import { deleteAttachment, saveAttachment } from '~applications/api'
 import { Result } from '~../../lib-common/src/api'
 import { UUID } from '~../../lib-common/src/types'
@@ -52,7 +52,7 @@ export default React.memo(function ServiceNeedSection({
 
   const uploadExtendedCareAttachment = (
     file: File,
-    onUploadProgress: (progressEvent: any) => void
+    onUploadProgress: (progressEvent: ProgressEvent) => void
   ): Promise<Result<UUID>> =>
     saveAttachment(
       applicationId,
@@ -63,7 +63,7 @@ export default React.memo(function ServiceNeedSection({
 
   const uploadUrgencyAttachment = (
     file: File,
-    onUploadProgress: (progressEvent: any) => void
+    onUploadProgress: (progressEvent: ProgressEvent) => void
   ): Promise<Result<UUID>> =>
     saveAttachment(applicationId, file, 'URGENCY', onUploadProgress)
 

@@ -22,9 +22,14 @@ export type FileUploadProps = {
   files: Attachment[]
   onUpload: (
     file: File,
-    onUploadProgress: (progressEvent: any) => void
+    onUploadProgress: (progressEvent: ProgressEvent) => void
   ) => Promise<Result<UUID>>
   onDelete: (id: UUID) => Promise<Result<void>>
+}
+
+export type ProgressEvent = {
+  loaded: number
+  total: number
 }
 
 const FileUploadContainer = styled.div`
@@ -61,7 +66,15 @@ const Icon = styled(FontAwesomeIcon)`
   margin-right: 10px;
 `
 
-const UploadedFiles = styled.div``
+const UploadedFiles = styled.div`
+  display: flex;
+  flex-direction: column;
+
+  > *:not(:last-child) {
+    margin-bottom: 20px;
+  }
+`
+
 const File = styled.div`
   display: flex;
   flex-direction: row;
@@ -178,7 +191,8 @@ const fileIcon = (file: FileObject): IconDefinition => {
   }
 }
 
-const inProgress = (file: FileObject): boolean => !file.id
+const inProgress = (file: FileObject): boolean =>
+  !file.error && file.progress !== 100
 
 export default React.memo(function FileUpload({
   files,
@@ -205,18 +219,23 @@ export default React.memo(function FileUpload({
     }
   }
 
-  const deleteFile = (id: UUID) =>
-    onDelete(id).then(() =>
-      setUploadedFiles((old: FileObject[]) => {
-        return old.filter((item) => item.id !== id)
-      })
-    )
+  const deleteFile = async (id: UUID) => {
+    try {
+      const result = await onDelete(id)
+      result.isSuccess &&
+        setUploadedFiles((old: FileObject[]) => {
+          return old.filter((item) => item.id !== id)
+        })
+    } catch (e) {
+      console.error(e)
+    }
+  }
 
   const addAttachment = async (
     file: File,
     onUpload: (
       file: File,
-      onUploadProgress: (progressEvent: any) => void
+      onUploadProgress: (progressEvent: ProgressEvent) => void
     ) => Promise<Result<UUID>>
   ) => {
     const error = file.size > 10000000 ? 'file-too-big' : undefined
@@ -232,11 +251,6 @@ export default React.memo(function FileUpload({
 
     if (error) {
       return
-    }
-
-    interface ProgressEvent {
-      loaded: number
-      total: number
     }
 
     const updateProgress = ({ loaded, total }: ProgressEvent) => {
@@ -309,6 +323,11 @@ export default React.memo(function FileUpload({
                   )}
                   {!file.error && (
                     <ProgressBarDetails>
+                      <span>
+                        {inProgress(file)
+                          ? t.fileUpload.loading
+                          : t.fileUpload.loaded}
+                      </span>
                       <span>{file.progress} %</span>
                     </ProgressBarDetails>
                   )}
