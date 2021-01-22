@@ -26,7 +26,7 @@ class FamilyContactReportController(private val acl: AccessControlList) {
         @RequestParam unitId: UUID
     ): ResponseEntity<List<FamilyContactReportRow>> {
         Audit.FamilyContactReportRead.log()
-        acl.getRolesForUnit(user, unitId).requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN, UserRole.DIRECTOR, UserRole.UNIT_SUPERVISOR, UserRole.SPECIAL_EDUCATION_TEACHER)
+        acl.getRolesForUnit(user, unitId).requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.DIRECTOR, UserRole.UNIT_SUPERVISOR, UserRole.SPECIAL_EDUCATION_TEACHER)
         return db.read { it.getFamilyContacts(unitId) }.let { ResponseEntity.ok(it) }
     }
 }
