@@ -12,7 +12,7 @@ import AsyncButton from '@evaka/lib-components/src/atoms/buttons/AsyncButton'
 import Button from '@evaka/lib-components/src/atoms/buttons/Button'
 import colors from '@evaka/lib-components/src/colors'
 import { useTranslation } from '~state/i18n'
-import { AbsenceType, AbsenceTypes } from '~types/absence'
+import { AbsenceType, AbsenceTypes } from '~types'
 import { CustomButton, Flex } from './components'
 
 const Actions = styled(Flex)`

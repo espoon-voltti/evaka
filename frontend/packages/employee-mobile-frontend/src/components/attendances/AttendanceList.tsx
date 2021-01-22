@@ -4,11 +4,14 @@
 
 import React from 'react'
 import { Link, useParams } from 'react-router-dom'
-
+import styled from 'styled-components'
+import {
+  defaultMargins,
+  isSpacingSize,
+  SpacingSize
+} from '@evaka/lib-components/src/white-space'
 import { FixedSpaceColumn } from '@evaka/lib-components/src/layout/flex-helpers'
 import ChildListItem from './ChildListItem'
-import { UnorderedList } from '~components/common/styled/common'
-import { UUID } from '~types'
 import { AttendanceChild, AttendanceStatus } from '~api/attendances'
 
 interface Props {
@@ -21,8 +24,8 @@ export default React.memo(function AttendanceList({
   type
 }: Props) {
   const { unitId, groupId: groupIdOrAll } = useParams<{
-    unitId: UUID
-    groupId: UUID | 'all'
+    unitId: string
+    groupId: string | 'all'
   }>()
 
   if (type) {
@@ -49,3 +52,21 @@ export default React.memo(function AttendanceList({
     </FixedSpaceColumn>
   )
 })
+
+const UnorderedList = styled.ul<{ spacing?: SpacingSize | string }>`
+  list-style: none;
+  padding: 0;
+
+  li {
+    margin-bottom: ${(p) =>
+      p.spacing
+        ? isSpacingSize(p.spacing)
+          ? defaultMargins[p.spacing]
+          : p.spacing
+        : defaultMargins.s};
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+`

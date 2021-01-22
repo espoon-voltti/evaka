@@ -5,7 +5,6 @@
 import React, { Fragment } from 'react'
 import { useContext } from 'react'
 import { Redirect } from 'react-router-dom'
-import MetaTags from 'react-meta-tags'
 import styled from 'styled-components'
 
 import { P } from '@evaka/lib-components/src/typography'
@@ -32,10 +31,6 @@ export default React.memo(function MobileLander() {
 
   return (
     <Fragment>
-      <MetaTags>
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-      </MetaTags>
-
       <FullHeightContainer spaced>
         <Top>
           <Img src={EvakaLogo} />
@@ -46,7 +41,7 @@ export default React.memo(function MobileLander() {
         </Top>
 
         <Bottom>
-          <WideLinkButton to="/mobile/pairing" data-qa="start-pairing-btn">
+          <WideLinkButton to="/pairing" data-qa="start-pairing-btn">
             {i18n.mobile.actions.ADD_DEVICE.toUpperCase()}
           </WideLinkButton>
         </Bottom>

@@ -1699,37 +1699,6 @@ export const fi = {
     notOperationDay: 'Ei toimintapäivä',
     absence: 'Poissaolo'
   },
-  attendances: {
-    types: {
-      COMING: 'Tulossa',
-      PRESENT: 'Läsnä',
-      DEPARTED: 'Lähtenyt',
-      ABSENT: 'Poissa'
-    },
-    status: {
-      COMING: 'Tulossa',
-      PRESENT: 'Saapunut',
-      DEPARTED: 'Lähtenyt',
-      ABSENT: 'Poissa'
-    },
-    groupSelectError: 'Valitun ryhmän nimeä ei löytynyt',
-    actions: {
-      markAbsent: 'Merkitse poissa',
-      markPresent: 'Merkitse saapuneeksi',
-      markLeaving: 'Merkitse lähteväksi',
-      returnToComing: 'Palauta tulossa oleviin',
-      returnToPresent: 'Palauta läsnäoleviin'
-    },
-    timeLabel: 'Merkintä',
-    departureTime: 'Lähtöaika',
-    arrivalTime: 'Saapumisaika',
-    chooseGroup: 'Valitse ryhmä',
-    searchPlaceholder: 'Etsi lapsen nimellä',
-    noAbsences: 'Ei poissaoloja',
-    missingFrom: 'Poissa seuraavasta toimintamuodosta',
-    missingFromPlural: 'Poissa seuraavista toimintamuodoista',
-    timeError: 'Virheellinen aika'
-  },
   placementDraft: {
     preschoolDaycare: 'Liittyvä varhaiskasvatus',
     card: {
@@ -2170,27 +2139,6 @@ export const fi = {
       ophUnitOid: 'Yksikön OID puuttuu',
       ophOrganizerOid: 'Järjestäjän OID puuttuu',
       ophOrganizationOid: 'Organisaation OID puuttuu'
-    }
-  },
-  mobile: {
-    landerText1:
-      'Tervetuloa käyttämään Espoon varhaiskasvatuksen mobiilisovellusta!',
-    landerText2:
-      'Ottaaksesi sovelluksen käyttöön valitse alta ‘Lisää laite’ ja rekisteröi mobiililaite eVakassa oman yksikkösi sivulla.',
-    actions: {
-      ADD_DEVICE: 'Lisää laite',
-      START: 'Aloitetaan'
-    },
-    wizard: {
-      text1:
-        'Mene eVakassa yksikkösi sivulle ja syötä sieltä saatava 10-merkkinen koodi kenttään alla.',
-      text2: 'Syötä alla oleva vahvistuskoodi yksikkösi sivulle eVakaan.',
-      title1: 'eVaka-mobiilin käyttöönotto, vaihe 1/3',
-      title2: 'eVaka-mobiilin käyttöönotto, vaihe 2/3',
-      title3: 'Tervetuloa käyttämään eVaka-mobiilia!',
-      text3: 'eVaka-mobiili on nyt käytössä tässä laitteessa.',
-      text4:
-        'Turvataksesi lasten tiedot muistathan asettaa laitteeseen pääsykoodin, jos et ole sitä vielä tehnyt.'
     }
   }
 }

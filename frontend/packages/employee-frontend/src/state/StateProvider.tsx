@@ -19,7 +19,6 @@ import {
 } from '~state/placementdraft'
 import { DecisionDraftContextProvider } from '~state/decision'
 import { TitleContextProvider } from '~state/title'
-import { AttendanceUIContextProvider } from '~/state/attendance-ui'
 
 const StateProvider = React.memo(function StateProvider({
   children
@@ -41,9 +40,7 @@ const StateProvider = React.memo(function StateProvider({
                           <PDUnitsContextProvider>
                             <TitleContextProvider>
                               <ApplicationUIContextProvider>
-                                <AttendanceUIContextProvider>
-                                  {children}
-                                </AttendanceUIContextProvider>
+                                {children}
                               </ApplicationUIContextProvider>
                             </TitleContextProvider>
                           </PDUnitsContextProvider>

@@ -10,7 +10,7 @@ import colors from '@evaka/lib-components/src/colors'
 import { FixedSpaceColumn } from '@evaka/lib-components/src/layout/flex-helpers'
 import { Label } from '@evaka/lib-components/src/typography'
 import { useTranslation } from '~state/i18n'
-import { formatCareType } from '~types/absence'
+import { formatCareType } from '~types'
 
 const AttendanceItem = styled.div`
   display: flex;

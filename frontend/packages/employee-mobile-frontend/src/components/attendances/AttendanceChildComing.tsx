@@ -18,8 +18,7 @@ import { FixedSpaceColumn } from '@evaka/lib-components/src/layout/flex-helpers'
 import { Gap } from '@evaka/lib-components/src/white-space'
 import { AttendanceUIContext } from '~state/attendance-ui'
 import { useTranslation } from '~state/i18n'
-import { UUID } from '~types'
-import { AbsenceType } from '~types/absence'
+import { AbsenceType } from '~types'
 import AbsenceSelector from './AbsenceSelector'
 import { getCurrentTime } from './AttendanceChildPage'
 import {
@@ -30,10 +29,10 @@ import {
 } from './components'
 
 interface Props {
-  unitId: UUID
+  unitId: string
   child: AttendanceChild
   group: Group
-  groupId: UUID | 'all'
+  groupId: string | 'all'
 }
 
 export default React.memo(function AttendanceChildComing({

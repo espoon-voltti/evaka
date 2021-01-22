@@ -35,7 +35,7 @@ const config: Config = {
   adminAad,
   adminExternalId: `espoo-ad:${adminAad}`,
   mobileUrl: `${
-    process.env.BASE_URL || 'http://localhost:9093'
+    process.env.BASE_URL || 'http://localhost:9095'
   }/employee/mobile`
 }
 

@@ -32,6 +32,11 @@ module.exports = {
     cwd: path.resolve(__dirname, '../frontend/packages/employee-frontend'),
     ...defaults
   }, {
+    name: 'employee-mobile',
+    script: useProIcons ? 'yarn install --mutex network && ICONS=pro yarn dev' : 'yarn install --ignore-optional --mutex network && yarn dev',
+    cwd: path.resolve(__dirname, '../frontend/packages/employee-mobile-frontend'),
+    ...defaults
+  }, {
     name: 'service',
     script: `${__dirname}/run-after-db.sh`,
     args: './gradlew --no-daemon bootRun',

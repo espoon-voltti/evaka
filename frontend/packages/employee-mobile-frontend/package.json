@@ -1,7 +1,7 @@
 {
-  "name": "@evaka/citizen-frontend",
+  "name": "@evaka/employee-mobile-frontend",
   "version": "1.0.0",
-  "description": "Citizen frontend for eVaka",
+  "description": "Employee mobile frontend for eVaka",
   "license": "LGPL-2.1-or-later",
   "private": true,
   "scripts": {
@@ -19,21 +19,48 @@
     "@evaka/lib-icons": "1.0.0",
     "@fortawesome/react-fontawesome": "0.1.11",
     "@sentry/browser": "^5.11.1",
+    "@types/react-csv": "^1.1.1",
+    "@types/react-datepicker": "2.11.0",
+    "@types/react-tooltip": "^3.11.0",
+    "@types/styled-components": "^5.1.0",
     "axios": "^0.21.1",
+    "chart.js": "^2.9.3",
+    "chartjs-adapter-date-fns": "^1.0.0",
+    "classnames": "^2.2.6",
+    "core-js": "^3.2.1",
+    "csstype": "^2.6.10",
+    "date-fns": "^2.8.1",
+    "history": "^4.9.0",
     "lodash": "^4.17.15",
     "react": "^16.12.0",
+    "react-autosize-textarea": "^7.0.0",
+    "react-chartjs-2": "^2.9.0",
+    "react-csv": "^2.0.1",
+    "react-datalist-input": "^1.2.12",
+    "react-datepicker": "^2.10.1",
+    "react-day-picker": "^7.4.0",
     "react-dom": "^16.12.0",
+    "react-focus-lock": "2.4.1",
     "react-router-dom": "^5.1.2",
+    "react-select": "^3.0.8",
+    "react-spring": "^8.0.27",
+    "react-tooltip": "^4.1.0",
     "seamless-scroll-polyfill": "1.2.3",
     "styled-components": "5.1.1"
   },
   "devDependencies": {
+    "@types/classnames": "^2.2.8",
+    "@types/jest": "^24.0.23",
+    "@types/lodash": "^4.14.155",
     "@types/react": "^16.9.16",
+    "@types/react-datepicker": "2.11.0",
     "@types/react-dom": "^16.9.4",
     "@types/react-router-dom": "^5.1.3",
+    "@types/react-select": "^3.0.10",
     "@typescript-eslint/eslint-plugin": "^4.13.0",
     "@typescript-eslint/parser": "^4.13.0",
     "babel-loader": "8.2.2",
+    "css-loader": "^5.0.1",
     "eslint": "^7.18.0",
     "eslint-config-prettier": "^7.1.0",
     "eslint-plugin-prettier": "^3.3.1",
@@ -46,6 +73,12 @@
     "ts-loader": "^8.0.14",
     "tsconfig-paths-webpack-plugin": "^3.2.0",
     "typescript": "^4.1.3"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "yarn lint",
+      "pre-push": "yarn type-check && yarn test"
+    }
   },
   "engines": {
     "node": ">= 14.15.0"
@@ -106,5 +139,11 @@
       "react/prop-types": 0,
       "react-hooks/rules-of-hooks": "error"
     }
+  },
+  "workspaces": {
+    "nohoist": [
+      "@types/react-datepicker",
+      "@types/react-datepicker/**"
+    ]
   }
 }

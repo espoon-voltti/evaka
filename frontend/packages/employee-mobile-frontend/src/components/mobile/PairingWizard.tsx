@@ -2,9 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { Fragment, useEffect } from 'react'
+import React, { Fragment, useContext, useEffect } from 'react'
 import { useState } from 'react'
-import MetaTags from 'react-meta-tags'
 import styled from 'styled-components'
 
 import { Result, Loading } from '@evaka/lib-common/src/api'
@@ -20,27 +19,9 @@ import colors from '@evaka/lib-components/src/colors'
 import { P } from '@evaka/lib-components/src/typography'
 import { faArrowRight } from '@evaka/lib-icons'
 import { useTranslation } from '~state/i18n'
+import { UserContext } from '~state/user'
 import EvakaLogo from '../../assets/EvakaLogo.svg'
-import { FullHeightContainer } from './components'
-
-export const WideLinkButton = styled.a`
-  min-height: 45px;
-  outline: none;
-  cursor: pointer;
-  font-family: 'Open Sans', sans-serif;
-  font-size: 14px;
-  line-height: 16px;
-  font-weight: 600;
-  text-transform: uppercase;
-  white-space: nowrap;
-  letter-spacing: 0.2px;
-  width: 100%;
-  color: ${colors.greyscale.white};
-  background: ${colors.blues.primary};
-  display: flex;
-  justify-content: center;
-  align-items: center;
-`
+import { FullHeightContainer, WideLinkButton } from './components'
 
 const CenteredColumn = styled.div`
   display: flex;
@@ -82,6 +63,7 @@ const Bottom = styled.div``
 
 export default React.memo(function ParingWizard() {
   const { i18n } = useTranslation()
+  const { refreshAuthStatus } = useContext(UserContext)
 
   const [phase, setPhase] = useState<1 | 2 | 3>(1)
   const [challengeKey, setChallengeKey] = useState<string>('')
@@ -101,10 +83,11 @@ export default React.memo(function ParingWizard() {
                   pairingResponse.value.challengeKey,
                   pairingResponse.value.responseKey
                 )
+                  .then(refreshAuthStatus)
+                  .then(() => setPhase(3))
               }
 
               clearInterval(polling)
-              setPhase(3)
             }
           }
         })
@@ -120,10 +103,6 @@ export default React.memo(function ParingWizard() {
 
   return (
     <Fragment>
-      <MetaTags>
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-      </MetaTags>
-
       <FullHeightContainer>
         {phase === 1 && (
           <Fragment>
@@ -184,7 +163,7 @@ export default React.memo(function ParingWizard() {
             </CenteredColumn>
             <Bottom>
               <WideLinkButton
-                href={`/employee/units/${pairingResponse.value.unitId}/groupselector`}
+                to={`/units/${pairingResponse.value.unitId}/groupselector`}
                 data-qa="unit-page-link"
               >
                 {i18n.mobile.actions.START.toUpperCase()}

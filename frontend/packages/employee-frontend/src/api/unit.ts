@@ -521,24 +521,6 @@ export async function postPairing(
     .catch((e) => Failure.fromError(e))
 }
 
-export async function postPairingChallenge(
-  challengeKey: string
-): Promise<Result<PairingResponse>> {
-  return client
-    .post<JsonOf<PairingResponse>>(`/public/pairings/challenge`, {
-      challengeKey
-    })
-    .then((res) => res.data)
-    .then((pairingResponse) => {
-      return {
-        ...pairingResponse,
-        expires: new Date(pairingResponse.expires)
-      }
-    })
-    .then((v) => Success.of(v))
-    .catch((e) => Failure.fromError(e))
-}
-
 export async function postPairingResponse(
   pairingId: UUID,
   challengeKey: string,
@@ -602,22 +584,6 @@ export async function getPairingStatus(
   return client
     .get<JsonOf<PairingStatusResponse>>(`/public/pairings/${pairingId}/status`)
     .then(({ data }) => Success.of(data))
-    .catch((e) => Failure.fromError(e))
-}
-
-export async function authMobile(
-  id: UUID,
-  challengeKey: string,
-  responseKey: string
-): Promise<Result<void>> {
-  return client
-    .post<JsonOf<void>>(`/auth/mobile`, {
-      id,
-      challengeKey,
-      responseKey
-    })
-    .then((res) => res.data)
-    .then((v) => Success.of(v))
     .catch((e) => Failure.fromError(e))
 }
 

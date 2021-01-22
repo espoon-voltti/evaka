@@ -9,10 +9,9 @@ import { AttendanceChild, AttendanceStatus } from '~api/attendances'
 import RoundIcon from '@evaka/lib-components/src/atoms/RoundIcon'
 import colors from '@evaka/lib-components/src/colors'
 import { defaultMargins } from '@evaka/lib-components/src/white-space'
-import { DATE_FORMAT_TIME_ONLY } from '~constants'
 import { farUser } from '@evaka/lib-icons'
 import { useTranslation } from '~state/i18n'
-import { formatDate } from '~utils/date'
+import { formatDateTimeOnly } from '~utils/date'
 
 const ChildBox = styled.div<{ type: AttendanceStatus }>`
   align-items: center;
@@ -106,15 +105,9 @@ export default React.memo(function ChildListItem({
             {i18n.attendances.status[attendanceChild.status]}
             <Time>
               {attendanceChild.status === 'PRESENT' &&
-                formatDate(
-                  attendanceChild.attendance?.arrived,
-                  DATE_FORMAT_TIME_ONLY
-                )}
+                formatDateTimeOnly(attendanceChild.attendance?.arrived)}
               {attendanceChild.status === 'DEPARTED' &&
-                formatDate(
-                  attendanceChild.attendance?.departed,
-                  DATE_FORMAT_TIME_ONLY
-                )}
+                formatDateTimeOnly(attendanceChild.attendance?.departed)}
             </Time>
           </div>
           {attendanceChild.backup && (

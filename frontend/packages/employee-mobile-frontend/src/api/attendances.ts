@@ -4,9 +4,8 @@
 
 import { JsonOf, JsonOfObject } from '@evaka/lib-common/src/json'
 import { Failure, Result, Success } from '@evaka/lib-common/src/api'
-import { UUID } from '~types'
-import { AbsenceType, CareType } from '~types/absence'
-import { PlacementType } from '~types/placementdraft'
+import { AbsenceType, CareType } from '~types'
+import { PlacementType } from '~types'
 import { client } from './client'
 
 export interface DepartureInfoResponse {
@@ -19,21 +18,21 @@ export interface AttendanceResponse {
 }
 
 export interface Unit {
-  id: UUID
+  id: string
   name: string
   groups: Group[]
 }
 
 export interface Group {
-  id: UUID
+  id: string
   name: string
 }
 
 export interface AttendanceChild {
-  id: UUID
+  id: string
   firstName: string
   lastName: string
-  groupId: UUID
+  groupId: string
   backup: boolean
   status: AttendanceStatus
   placementType: PlacementType
@@ -43,15 +42,15 @@ export interface AttendanceChild {
 }
 
 interface Attendance {
-  id: UUID
+  id: string
   arrived: Date
   departed: Date | null
 }
 
 interface Absence {
   careType: CareType
-  childId: UUID
-  id: UUID
+  childId: string
+  id: string
 }
 
 interface ArrivalInfoResponse {
@@ -61,7 +60,7 @@ interface ArrivalInfoResponse {
 export type AttendanceStatus = 'COMING' | 'PRESENT' | 'DEPARTED' | 'ABSENT'
 
 export async function getDaycareAttendances(
-  unitId: UUID
+  unitId: string
 ): Promise<Result<AttendanceResponse>> {
   return client
     .get<JsonOf<AttendanceResponse>>(`/attendances/units/${unitId}`)
@@ -71,8 +70,8 @@ export async function getDaycareAttendances(
 }
 
 export async function childArrivesPOST(
-  unitId: UUID,
-  childId: UUID,
+  unitId: string,
+  childId: string,
   time: string
 ): Promise<Result<AttendanceResponse>> {
   return client
@@ -88,8 +87,8 @@ export async function childArrivesPOST(
 }
 
 export async function childArrivesGET(
-  unitId: UUID,
-  childId: UUID,
+  unitId: string,
+  childId: string,
   time: string
 ): Promise<Result<ArrivalInfoResponse>> {
   return client
@@ -106,8 +105,8 @@ export async function childArrivesGET(
 
 // TODO: update context with the response!
 export async function childDeparts(
-  unitId: UUID,
-  childId: UUID,
+  unitId: string,
+  childId: string,
   time: string
 ): Promise<Result<AttendanceResponse>> {
   return client
@@ -123,8 +122,8 @@ export async function childDeparts(
 }
 
 export async function returnToComing(
-  unitId: UUID,
-  childId: UUID
+  unitId: string,
+  childId: string
 ): Promise<Result<AttendanceResponse>> {
   return client
     .post<JsonOf<AttendanceResponse>>(
@@ -136,8 +135,8 @@ export async function returnToComing(
 }
 
 export async function returnToPresent(
-  unitId: UUID,
-  childId: UUID
+  unitId: string,
+  childId: string
 ): Promise<Result<AttendanceResponse>> {
   return client
     .post<JsonOf<AttendanceResponse>>(
@@ -149,8 +148,8 @@ export async function returnToPresent(
 }
 
 export async function postFullDayAbsence(
-  unitId: UUID,
-  childId: UUID,
+  unitId: string,
+  childId: string,
   absenceType: AbsenceType
 ): Promise<Result<AttendanceResponse>> {
   return client
@@ -166,8 +165,8 @@ export async function postFullDayAbsence(
 }
 
 export async function getChildDeparture(
-  unitId: UUID,
-  childId: UUID,
+  unitId: string,
+  childId: string,
   time: string
 ): Promise<Result<DepartureInfoResponse>> {
   return client
@@ -183,8 +182,8 @@ export async function getChildDeparture(
 }
 
 export async function postDeparture(
-  unitId: UUID,
-  childId: UUID,
+  unitId: string,
+  childId: string,
   absenceType: AbsenceType,
   departed: string
 ): Promise<Result<AttendanceResponse>> {

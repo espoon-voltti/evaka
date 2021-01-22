@@ -12,7 +12,6 @@ import {
   useLocation,
   useParams
 } from 'react-router-dom'
-import MetaTags from 'react-meta-tags'
 import styled from 'styled-components'
 import { animated, useSpring } from 'react-spring'
 
@@ -29,8 +28,7 @@ import IconButton from '@evaka/lib-components/src/atoms/buttons/IconButton'
 import colors from '@evaka/lib-components/src/colors'
 import { faSearch, faTimes } from '@evaka/lib-icons'
 import { defaultMargins } from '@evaka/lib-components/src/white-space'
-import { FreeTextSearch } from '~components/common/Filters'
-import { useDebounce } from '~utils/useDebounce'
+import FreeTextSearch from '~components/common/FreeTextSearch'
 import AttendanceList from './AttendanceList'
 import { AttendanceChild, getDaycareAttendances, Group } from '~api/attendances'
 import { AttendanceUIContext } from '~state/attendance-ui'
@@ -82,7 +80,6 @@ export default React.memo(function AttendancePageWrapper() {
   const [showSearch, setShowSearch] = useState<boolean>(false)
   const [freeText, setFreeText] = useState<string>('')
   const [searchResults, setSearchResults] = useState<AttendanceChild[]>([])
-  const debouncedSearchTerms = useDebounce(freeText, 500)
 
   useEffect(() => {
     void getDaycareAttendances(unitId).then((res) =>
@@ -94,14 +91,12 @@ export default React.memo(function AttendancePageWrapper() {
     if (attendanceResponse.isSuccess) {
       const filteredData = attendanceResponse.value.children.filter(
         (ac) =>
-          ac.firstName
-            .toLowerCase()
-            .includes(debouncedSearchTerms.toLowerCase()) ||
-          ac.lastName.toLowerCase().includes(debouncedSearchTerms.toLowerCase())
+          ac.firstName.toLowerCase().includes(freeText.toLowerCase()) ||
+          ac.lastName.toLowerCase().includes(freeText.toLowerCase())
       )
       setSearchResults(filteredData)
     }
-  }, [debouncedSearchTerms])
+  }, [freeText])
 
   const totalAttendances = attendanceResponse
     .map((res) => res.children.length)
@@ -197,9 +192,6 @@ export default React.memo(function AttendancePageWrapper() {
 
   return (
     <Fragment>
-      <MetaTags>
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-      </MetaTags>
       {attendanceResponse.isSuccess && (
         <Fragment>
           <SearchBar

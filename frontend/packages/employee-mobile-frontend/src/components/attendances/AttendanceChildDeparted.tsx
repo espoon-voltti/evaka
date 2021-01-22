@@ -13,15 +13,14 @@ import { FixedSpaceColumn } from '@evaka/lib-components/src/layout/flex-helpers'
 import { Gap } from '@evaka/lib-components/src/white-space'
 import { AttendanceUIContext } from '~state/attendance-ui'
 import { useTranslation } from '~state/i18n'
-import { UUID } from '~types'
 import Absences from './Absences'
 import { getTimeString } from './AttendanceChildPage'
 import { FlexLabel, InlineWideAsyncButton } from './components'
 
 interface Props {
   child: AttendanceChild
-  unitId: UUID
-  groupId: UUID | 'all'
+  unitId: string
+  groupId: string | 'all'
 }
 
 export default React.memo(function AttendanceChildDeparted({

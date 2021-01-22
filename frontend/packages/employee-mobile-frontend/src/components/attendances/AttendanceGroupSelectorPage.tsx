@@ -5,8 +5,6 @@
 import React, { Fragment, useContext, useEffect } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import styled from 'styled-components'
-import MetaTags from 'react-meta-tags'
-
 import Loader from '@evaka/lib-components/src/atoms/Loader'
 import Title from '@evaka/lib-components/src/atoms/Title'
 import { ContentArea } from '@evaka/lib-components/src/layout/Container'
@@ -40,10 +38,6 @@ export default React.memo(function AttendanceGroupSelectorPage() {
 
   return (
     <Fragment>
-      <MetaTags>
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-      </MetaTags>
-
       {attendanceResponse.isLoading && <Loader />}
       {attendanceResponse.isFailure && <div>{i18n.common.loadingFailed}</div>}
       {attendanceResponse.isSuccess && (

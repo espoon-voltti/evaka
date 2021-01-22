@@ -5,10 +5,7 @@
 import React, { Fragment, useContext, useEffect, useState } from 'react'
 import { useHistory, useParams } from 'react-router-dom'
 import styled from 'styled-components'
-import MetaTags from 'react-meta-tags'
-
 import { ContentArea } from '@evaka/lib-components/src/layout/Container'
-import { UUID } from '~types'
 import RoundIcon from '@evaka/lib-components/src/atoms/RoundIcon'
 import { faChevronLeft, farUser } from '@evaka/lib-icons'
 import colors from '@evaka/lib-components/src/colors'
@@ -72,9 +69,9 @@ export default React.memo(function AttendanceChildPage() {
   const history = useHistory()
 
   const { unitId, groupId: groupIdOrAll, childId } = useParams<{
-    unitId: UUID
-    groupId: UUID | 'all'
-    childId: UUID
+    unitId: string
+    groupId: string | 'all'
+    childId: string
   }>()
 
   const [child, setChild] = useState<AttendanceChild | undefined>(undefined)
@@ -107,10 +104,6 @@ export default React.memo(function AttendanceChildPage() {
 
   return (
     <Fragment>
-      <MetaTags>
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-      </MetaTags>
-
       <FullHeightContentArea opaque={false} paddingHorozontal={'s'}>
         <TallContentArea opaque paddingHorozontal={'s'}>
           <BackButton onClick={() => history.goBack()} icon={faChevronLeft} />

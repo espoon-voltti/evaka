@@ -6,14 +6,13 @@ import React, { useMemo, useState, createContext } from 'react'
 
 import { Loading, Result } from '@evaka/lib-common/src/api'
 import { AttendanceResponse } from '~api/attendances'
-import { UUID } from '~types'
 
 interface UIState {
   attendanceResponse: Result<AttendanceResponse>
   setAttendanceResponse: (result: Result<AttendanceResponse>) => void
   filterAndSetAttendanceResponse: (
     result: Result<AttendanceResponse>,
-    groupIdOrAll: UUID | 'all'
+    groupIdOrAll: string | 'all'
   ) => void
 }
 
@@ -38,7 +37,7 @@ export const AttendanceUIContextProvider = React.memo(
     // TODO: return just attendanceresponse. Do not set setAttendanceResponse(attendanceResponse)
     function filterAndSetAttendanceResponse(
       attendanceResponse: Result<AttendanceResponse>,
-      groupIdOrAll: UUID | 'all'
+      groupIdOrAll: string | 'all'
     ) {
       if (attendanceResponse.isSuccess) {
         if (groupIdOrAll !== 'all')
