@@ -113,8 +113,8 @@ const Spacer = styled.div`
 `
 
 const Icon = styled(FontAwesomeIcon)`
-  height: 1rem !important;
-  width: 1rem !important;
+  height: 16px !important;
+  width: 16px !important;
   margin-right: 10px;
 `
 
@@ -123,10 +123,10 @@ const RoundIconBackground = styled.div`
   justify-content: center;
   align-items: center;
   background: ${colors.brandEspoo.espooTurquoise};
-  width: 2.5rem;
-  height: 2.5rem;
-  min-width: 2.5rem;
-  min-height: 2.5rem;
+  width: 40px;
+  height: 40px;
+  min-width: 40px;
+  min-height: 40px;
   border-radius: 100%;
   margin-right: 10px;
 `
@@ -192,7 +192,7 @@ const LanguageButton = styled.button`
   font-size: 1rem;
   background: transparent;
   height: 100%;
-  padding: 1rem 1.2rem;
+  padding: 16px 18px;
   border: none;
   border-bottom: 4px solid transparent;
   cursor: pointer;
@@ -202,7 +202,7 @@ const LanguageButton = styled.button`
 const LanguageIcon = styled(FontAwesomeIcon)`
   height: 1em !important;
   width: 0.625em !important;
-  margin-left: 0.5rem;
+  margin-left: 8px;
 `
 
 const LanguageDropDown = styled.ul`
@@ -217,7 +217,7 @@ const LanguageDropDown = styled.ul`
 
 const LanguageListElement = styled.li`
   display: block;
-  width: 10.5rem;
+  width: 10.5em;
 `
 
 const LanguageDropDownButton = styled.button<{ selected: boolean }>`
@@ -243,5 +243,5 @@ const LanguageShort = styled.span`
 `
 
 const LanguageCheck = styled(FontAwesomeIcon)`
-  margin-left: 0.5rem;
+  margin-left: 8px;
 `

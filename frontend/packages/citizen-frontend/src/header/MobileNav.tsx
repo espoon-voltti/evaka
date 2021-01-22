@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useCallback, useState } from 'react'
+import React, { Dispatch, SetStateAction, useCallback } from 'react'
 import styled from 'styled-components'
 import { NavLink } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -16,12 +16,17 @@ import { langs, useLang, useTranslation } from '../localization'
 
 type Props = {
   enduserBaseUrl: string
+  showMenu: boolean
+  setShowMenu: Dispatch<SetStateAction<boolean>>
 }
 
-export default React.memo(function DesktopNav({ enduserBaseUrl }: Props) {
+export default React.memo(function DesktopNav({
+  enduserBaseUrl,
+  showMenu,
+  setShowMenu
+}: Props) {
   const user = useUser()
   const t = useTranslation()
-  const [showMenu, setShowMenu] = useState(false)
   const ref = useCloseOnOutsideClick<HTMLDivElement>(() => setShowMenu(false))
   const toggleMenu = useCallback(() => setShowMenu((show) => !show), [
     setShowMenu
@@ -30,11 +35,8 @@ export default React.memo(function DesktopNav({ enduserBaseUrl }: Props) {
 
   return (
     <div ref={ref}>
-      <MenuButton>
-        <FontAwesomeIcon
-          icon={showMenu ? faTimes : faBars}
-          onClick={toggleMenu}
-        />
+      <MenuButton onClick={toggleMenu}>
+        <FontAwesomeIcon icon={showMenu ? faTimes : faBars} />
       </MenuButton>
       {showMenu ? (
         <MenuContainer>
@@ -63,7 +65,7 @@ const MenuButton = styled.button`
   background: transparent;
   color: ${colors.greyscale.white};
   border: none;
-  padding: 1rem 1.2rem;
+  padding: 16px 18px;
   height: 100%;
   cursor: pointer;
 
@@ -74,7 +76,8 @@ const MenuButton = styled.button`
 `
 
 const MenuContainer = styled.div`
-  position: absolute;
+  position: fixed;
+  overflow-y: scroll;
   top: 0;
   right: 0;
   background: ${colors.blues.medium};
