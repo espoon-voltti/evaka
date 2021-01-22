@@ -65,6 +65,21 @@ export async function updateApplication(
   }
 }
 
+export async function saveApplicationDraft(
+  applicationId: string,
+  data: ApplicationFormUpdate
+): Promise<Result<void>> {
+  try {
+    await client.put<JsonOf<Application>>(
+      `/citizen/applications/${applicationId}/draft`,
+      data
+    )
+    return Success.of(undefined)
+  } catch (e) {
+    return Failure.fromError(e)
+  }
+}
+
 const deserializeApplication = (json: JsonOf<Application>): Application => ({
   ...json,
   type: json.type.toLowerCase() as ApplicationType, // todo: temporary hotfix

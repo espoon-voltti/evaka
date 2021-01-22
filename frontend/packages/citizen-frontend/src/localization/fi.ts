@@ -76,7 +76,9 @@ export default {
       },
       actions: {
         send: 'Lähetä hakemus',
-        sendError: 'Hakemuksen lähettäminen epäonnistui'
+        sendError: 'Hakemuksen lähettäminen epäonnistui',
+        saveDraft: 'Tallenna keskeneräisenä',
+        saveDraftError: 'Muutosten tallentaminen epäonnistui'
       },
       serviceNeed: {
         serviceNeed: 'Palveluntarve',
