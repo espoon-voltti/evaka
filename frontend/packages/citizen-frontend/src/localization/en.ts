@@ -412,25 +412,25 @@ const en: Translations = {
     newApplicationLink: 'New application'
   },
   fileUpload: {
-    loading: 'Ladataan...',
-    loaded: 'Ladattu',
+    loading: 'Uppladdas...',
+    loaded: 'Uppladdad',
     error: {
-      fileTooBig: 'Liian suuri tiedosto (max. 10MB)',
-      default: 'Lataus ei onnistunut'
+      fileTooBig: 'För stor fil (max. 10MB)',
+      default: 'Uppladdningen misslyckades'
     },
     input: {
-      title: 'Lisää liite',
+      title: 'Lägg till bilaga',
       text: [
-        'Paina tästä tai raahaa liite laatikkoon yksi kerrallaan.',
-        'Tiedoston maksimikoko: 10MB.',
-        'Sallitut tiedostomuodot:',
-        'PDF, JPEG/JPG, PNG ja DOC/DOCX'
+        'Tryck här eller dra en bilaga åt gången till lådan.',
+        'Maximal storlek för filen: 10 MB.',
+        'Tillåtna format:',
+        'PDF, JPEG/JPG, PNG och DOC/DOCX'
       ]
     },
-    modalHeader: 'Tiedoston käsittely on kesken',
+    modalHeader: 'Behandling av filen pågår',
     modalMessage:
-      'Tiedosto ei ole juuri nyt avattavissa. Kokeile hetken kuluttua uudelleen.',
-    modalConfirm: 'Selvä'
+      'Filen kan inte öppnas just nu. Försök igen om en stund.',
+    modalConfirm: 'OK'
   }
 }
 
