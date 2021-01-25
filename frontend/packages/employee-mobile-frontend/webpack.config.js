@@ -88,6 +88,14 @@ module.exports = function (env, argv) {
             }
           ]
         },
+        // Web manifest
+        {
+          test: /\.(webmanifest)$/,
+          type: 'asset/resource',
+          generator: {
+            filename: '[name][ext]' // use a constant name without hashing
+          }
+        },
         // Static files
         {
           test: /\.(woff|woff2|otf|ttf|eot|svg|png|gif|jpg)$/,
