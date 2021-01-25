@@ -125,6 +125,7 @@ the frontends at following URLs:
 
 - <http://localhost:9091> – Frontend for the citizen
 - <http://localhost:9093/employee> – Frontend for the employee roles
+- <http://localhost:9095/employee/mobile> – Frontend for the employee mobile frontend
 
 ## Running the full stack for E2E tests
 
@@ -157,6 +158,7 @@ Access the frontends at
 
 - <http://localhost:9999/> – Frontend for the citizen
 - <http://localhost:9999/employee> – Frontend for the employee
+- <http://localhost:9999/employee/mobile> – Frontend for the employee mobile
 
 ## KeyCloak
 
