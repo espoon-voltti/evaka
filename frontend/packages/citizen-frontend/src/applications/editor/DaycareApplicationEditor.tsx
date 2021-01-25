@@ -32,6 +32,8 @@ import DaycareApplicationVerificationView from '~applications/editor/verificatio
 import InlineButton from '@evaka/lib-components/src/atoms/buttons/InlineButton'
 import { faAngleLeft } from '@evaka/lib-icons'
 import Checkbox from '@evaka/lib-components/src/atoms/form/Checkbox'
+import InfoModal from '../../../../lib-components/src/molecules/modals/InfoModal'
+import { faExclamation } from '@evaka/lib-icons'
 
 type DaycareApplicationEditorProps = {
   apiData: Application
@@ -40,8 +42,8 @@ type DaycareApplicationEditorProps = {
 const applicationType = 'daycare'
 
 export default React.memo(function DaycareApplicationEditor({
-  apiData
-}: DaycareApplicationEditorProps) {
+                                                              apiData
+                                                            }: DaycareApplicationEditorProps) {
   const t = useTranslation()
   const [formData, setFormData] = useState<ApplicationFormData>(
     apiDataToFormData(apiData)
@@ -49,6 +51,8 @@ export default React.memo(function DaycareApplicationEditor({
   const [submitting, setSubmitting] = useState<boolean>(false)
   const [verifying, setVerifying] = useState<boolean>(false)
   const [verified, setVerified] = useState<boolean>(false)
+
+  const [showDraftPolicyInfo, setShowDraftPolicyInfo] = useState<boolean>(false)
 
   const history = useHistory()
   const { setErrorMessage } = useContext(OverlayContext)
@@ -79,6 +83,7 @@ export default React.memo(function DaycareApplicationEditor({
 
   const onSaveDraft = () => {
     const reqBody = formDataToApiData(formData)
+    console.log('updating application', apiData.id, reqBody)
     setSubmitting(true)
     void saveApplicationDraft(apiData.id, reqBody).then((res) => {
       setSubmitting(false)
@@ -88,8 +93,7 @@ export default React.memo(function DaycareApplicationEditor({
           type: 'error'
         })
       } else if (res.isSuccess) {
-        // todo: some success dialog?
-        history.push('/applications')
+        setShowDraftPolicyInfo(true)
       }
     })
   }
@@ -121,12 +125,12 @@ export default React.memo(function DaycareApplicationEditor({
           setFormData((old) =>
             old
               ? {
-                  ...old,
-                  serviceNeed: {
-                    ...old?.serviceNeed,
-                    ...data
-                  }
+                ...old,
+                serviceNeed: {
+                  ...old?.serviceNeed,
+                  ...data
                 }
+              }
               : old
           )
         }
@@ -138,12 +142,12 @@ export default React.memo(function DaycareApplicationEditor({
           setFormData((old) =>
             old
               ? {
-                  ...old,
-                  unitPreference: {
-                    ...old?.unitPreference,
-                    ...data
-                  }
+                ...old,
+                unitPreference: {
+                  ...old?.unitPreference,
+                  ...data
                 }
+              }
               : old
           )
         }
@@ -158,12 +162,12 @@ export default React.memo(function DaycareApplicationEditor({
           setFormData((old) =>
             old
               ? {
-                  ...old,
-                  contactInfo: {
-                    ...old?.contactInfo,
-                    ...data
-                  }
+                ...old,
+                contactInfo: {
+                  ...old?.contactInfo,
+                  ...data
                 }
+              }
               : old
           )
         }
@@ -261,6 +265,20 @@ export default React.memo(function DaycareApplicationEditor({
       )}
       <Gap size="m" />
       {renderActionBar()}
+
+      {showDraftPolicyInfo && (
+        <InfoModal
+          iconColour={'green'}
+          icon={faExclamation}
+          title={t.applications.editor.draftPolicyInfo.title}
+          text={t.applications.editor.draftPolicyInfo.text}
+          resolveLabel={t.applications.editor.draftPolicyInfo.ok}
+          resolve={() => {
+            history.push('/applications')
+            setShowDraftPolicyInfo(false)
+          }}
+        ></InfoModal>
+      )}
     </Container>
   )
 })

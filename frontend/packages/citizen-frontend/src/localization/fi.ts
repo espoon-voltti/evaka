@@ -284,6 +284,12 @@ export default {
         postalCodePlaceholder: 'Postinumero',
         municipalityPlaceholder: 'Postitoimipaikka',
         choosePlaceholder: 'Valitse'
+      },
+      draftPolicyInfo: {
+        title: 'Hakemusluonnos on tallennettu',
+        text:
+          'Hakemus on tallennettu keskeneräisenä. Huom! Keskeneräistä hakemusta säilytetään palvelussa yhden kuukauden ajan viimeisimmästä tallennuksesta.',
+        ok: 'Selvä'
       }
     }
   },
