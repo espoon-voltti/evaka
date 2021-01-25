@@ -4,11 +4,9 @@
 
 import { isBefore, isValid, toDate, parseISO } from 'date-fns'
 import { formatToTimeZone } from 'date-fns-timezone'
-import { FormModel } from '@evaka/lib-common/src/types'
-import {
-  DATE_FORMAT_TZ,
-  TIMEZONE_HELSINKI
-} from '@evaka/lib-common/src/constants'
+
+export const TIMEZONE_HELSINKI = 'Europe/Helsinki'
+export const DATE_FORMAT_TZ = 'YYYY-MM-DD'
 
 /**
  * Converts a string object into Date object.
@@ -17,29 +15,6 @@ import {
  */
 export const isValidDate = (date: string | null | undefined): boolean => {
   return date ? isValid(new Date(date)) : false
-}
-
-const parseChildBirthdayFromSSN = (form: FormModel): Date => {
-  if (!form.child.socialSecurityNumber) {
-    throw new Error('Missing social security number for child in application!')
-  }
-
-  const ssn = form.child.socialSecurityNumber
-  const d = ssn.slice(0, 2)
-  const m = ssn.slice(2, 4)
-  const y = ssn.slice(4, 6)
-  const decades: Record<string, string> = {
-    '+': '18',
-    '-': '19',
-    A: '20'
-  }
-  const c = decades[ssn.slice(6, 7)]
-  return new Date(`${c}${y}-${m}-${d}`)
-}
-
-export const parseChildBirthday = (form: FormModel): Date => {
-  const birthday: Date = new Date(form.child.dateOfBirth || NaN)
-  return isValid(birthday) ? birthday : parseChildBirthdayFromSSN(form)
 }
 
 export const parseDate = (input: string): Date => {

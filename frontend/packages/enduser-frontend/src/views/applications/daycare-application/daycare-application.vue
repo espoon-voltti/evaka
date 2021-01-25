@@ -1135,11 +1135,9 @@ import {
   datepickerTodayFormat
 } from '@/utils/date-utils'
 import { withAsterisk } from '@/utils/helpers'
-import { resetGuardian2Info } from '@evaka/lib-common/src/utils/form'
 import { isValidTimeString } from '@/components/validation/validators'
 import { formatDate } from '@/utils/date-utils'
 import { DATE_FORMAT } from '@/constants'
-import FileUpload from '@/components/common/file-upload.vue'
 
 export default Vue.extend({
   props: {
@@ -1326,9 +1324,6 @@ export default Vue.extend({
       if (!this.model.careDetails.assistanceNeeded) {
         this.model.careDetails.assistanceDescription = ''
       }
-    },
-    emptyGuardian2Info(resetnameInfo: boolean): void {
-      this.model = resetGuardian2Info(resetnameInfo, this.model)
     },
     onOtherAdultsChanged(form: PreschoolFormModel): void {
       if (form.hasOtherAdults) {

@@ -28,6 +28,7 @@ export class Loading<T> {
     return new Loading()
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   map<A>(_f: (v: T) => A): Result<A> {
     return (this as unknown) as Loading<A>
   }
@@ -62,6 +63,7 @@ export class Failure<T> {
     return new Failure(e.message)
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   map<A>(_f: (v: T) => A): Result<A> {
     return (this as unknown) as Result<A>
   }
@@ -91,6 +93,7 @@ export class Success<T> {
     return new Success(f(this.value))
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   getOrElse<A>(_other: A): A | T {
     return this.value
   }
