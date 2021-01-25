@@ -6,7 +6,6 @@ package fi.espoo.evaka.application
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.application.enduser.ApplicationJson
-import fi.espoo.evaka.application.enduser.ApplicationJsonType
 import fi.espoo.evaka.application.enduser.ApplicationSerializer
 import fi.espoo.evaka.pis.service.PersonService
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -49,11 +48,7 @@ class ApplicationControllerEnduser(
                 ?: throw NotFound("Guardian not found")
             val child = personService.getUpToDatePerson(tx, user, body.childId)
                 ?: throw NotFound("Child not found")
-            val type = when (body.type) {
-                ApplicationJsonType.CLUB -> ApplicationType.CLUB
-                ApplicationJsonType.DAYCARE -> ApplicationType.DAYCARE
-                ApplicationJsonType.PRESCHOOL -> ApplicationType.PRESCHOOL
-            }
+            val type = body.type
 
             if (duplicateApplicationExists(tx.handle, body.childId, user.id, type)) {
                 throw BadRequest("Duplicate application exsts")
@@ -198,5 +193,5 @@ class ApplicationControllerEnduser(
 
 data class CreateApplicationEnduserRequest(
     val childId: UUID,
-    val type: ApplicationJsonType
+    val type: ApplicationType
 )

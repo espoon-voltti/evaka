@@ -60,15 +60,15 @@
     },
     "application-type": {
       "club": {
-        "value": "club",
+        "value": "CLUB",
         "label": "Klubbverksamhet"
       },
       "daycare": {
-        "value": "daycare",
+        "value": "DAYCARE",
         "label": "Småbarnspedagogik"
       },
       "preschool": {
-        "value": "preschool",
+        "value": "PRESCHOOL",
         "label": "Förskola"
       }
     },

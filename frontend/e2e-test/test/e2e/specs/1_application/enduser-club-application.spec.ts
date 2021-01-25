@@ -5,7 +5,6 @@
 import ClubApplication from '../../pages/enduser/club-application-form'
 import Home from '../../pages/home'
 import Applications from '../../pages/enduser/applications'
-import { APPLICATION_STATUS, APPLICATION_TYPE } from '../../const'
 import { logConsoleMessages } from '../../utils/fixture'
 import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import { deleteApplication } from '../../dev-api'
@@ -42,8 +41,8 @@ test('Edit & send Club application (with status == CREATED)', async () => {
   const clubApplication = new ClubApplication()
   await clubApplication.navigateToApplications()
   applicationId = await applications.getFirstEditableApplication(
-    APPLICATION_TYPE.CLUB,
-    APPLICATION_STATUS.CREATED
+    'CLUB',
+    'LUONNOS'
   )
   // await this.navigateToApplications()
 
@@ -58,9 +57,7 @@ test('Edit & send Club application (with status == CREATED)', async () => {
 test('Edit & send Club Application (with status == SENT)', async () => {
   const clubApplication = new ClubApplication()
   await clubApplication.navigateToApplications()
-  const applicationId = await applications.getFirstEditableApplication(
-    APPLICATION_TYPE.CLUB
-  )
+  const applicationId = await applications.getFirstEditableApplication('CLUB')
   // await this.navigateToApplications()
 
   await applications.verifySent(applicationId)

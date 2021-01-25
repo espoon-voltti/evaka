@@ -44,20 +44,20 @@ class ApplicationControllerCitizen(
     fun getGuardianApplications(
         db: Database.Connection,
         user: AuthenticatedUser
-    ): ResponseEntity<List<GuardianApplications>> {
+    ): ResponseEntity<List<ApplicationsOfChild>> {
         Audit.ApplicationRead.log(targetId = user.id)
         user.requireOneOfRoles(UserRole.END_USER)
         return ResponseEntity.ok(
             db.read { tx ->
                 val existingApplicationsByChild = fetchApplicationSummariesForCitizen(tx.handle, user.id)
                     .groupBy { it.childId }
-                    .map { GuardianApplications(it.key, it.value.first().childName ?: "", it.value) }
+                    .map { ApplicationsOfChild(it.key, it.value.first().childName ?: "", it.value) }
 
                 // Some children might not have applications, so add 0 application children
                 getCitizenChildren(tx.handle, user.id).map { citizenChild ->
                     val childApplications = existingApplicationsByChild.findLast { it.childId == citizenChild.childId }
                         ?.let { it.applicationSummaries } ?: emptyList()
-                    GuardianApplications(
+                    ApplicationsOfChild(
                         childId = citizenChild.childId,
                         childName = citizenChild.childName,
                         applicationSummaries = childApplications
@@ -272,7 +272,7 @@ class ApplicationControllerCitizen(
     }
 }
 
-data class GuardianApplications(
+data class ApplicationsOfChild(
     val childId: UUID,
     val childName: String,
     val applicationSummaries: List<CitizenApplicationSummary>

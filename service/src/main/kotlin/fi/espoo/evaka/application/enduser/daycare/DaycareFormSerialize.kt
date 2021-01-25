@@ -4,11 +4,6 @@
 
 package fi.espoo.evaka.application.enduser.daycare
 
-import fi.espoo.evaka.application.enduser.ApplicationJsonType
-import fi.espoo.evaka.application.persistence.FormType
-import fi.espoo.evaka.application.persistence.FormType.CLUB
-import fi.espoo.evaka.application.persistence.FormType.DAYCARE
-import fi.espoo.evaka.application.persistence.FormType.PRESCHOOL
 import fi.espoo.evaka.application.persistence.daycare.Address
 import fi.espoo.evaka.application.persistence.daycare.Adult
 import fi.espoo.evaka.application.persistence.daycare.Apply
@@ -19,7 +14,7 @@ import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
 import fi.espoo.evaka.application.persistence.daycare.OtherPerson
 
 fun DaycareFormV0.toEnduserDaycareJson() = EnduserDaycareFormJSON(
-    type = type.toJsonType(),
+    type = type,
     connectedDaycare = connectedDaycare,
     preferredStartDate = preferredStartDate,
     additionalDetails = additionalDetails.toJson(),
@@ -41,12 +36,6 @@ fun DaycareFormV0.toEnduserDaycareJson() = EnduserDaycareFormJSON(
     maxFeeAccepted = maxFeeAccepted,
     docVersion = docVersion
 )
-
-private fun FormType.toJsonType() = when (this) {
-    DAYCARE -> ApplicationJsonType.DAYCARE
-    PRESCHOOL -> ApplicationJsonType.PRESCHOOL
-    CLUB -> ApplicationJsonType.CLUB
-}
 
 private fun Apply.toJson() = ApplyJSON(
     preferredUnits = preferredUnits,

@@ -7,7 +7,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 <template>
   <div class="application-summary-wrapper">
     <c-title :size="2" :isGreyDark="true">{{
-      $t(`form.summary.${type}-check-title`)
+      $t(`form.summary.${type.toString().toLowerCase()}-check-title`)
     }}</c-title>
     <p
       class="check-application-information"

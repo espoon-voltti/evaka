@@ -93,7 +93,7 @@ test('Care area filters work', async (t) => {
       fixtures.enduserChildFixtureJari,
       fixtures.enduserGuardianFixture,
       undefined,
-      'daycare',
+      'DAYCARE',
       null,
       [unitId]
     ),
@@ -132,7 +132,7 @@ test('Unit filter works', async (t) => {
       fixtures.enduserChildFixtureJari,
       fixtures.enduserGuardianFixture,
       undefined,
-      'daycare',
+      'DAYCARE',
       null,
       [unitId]
     ),

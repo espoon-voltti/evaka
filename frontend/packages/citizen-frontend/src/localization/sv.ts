@@ -67,10 +67,10 @@ const sv: Translations = {
     editor: {
       heading: {
         title: {
-          daycare: 'Ansökan till småbarnspedagogik'
+          DAYCARE: 'Ansökan till småbarnspedagogik'
         },
         info: {
-          daycare: [
+          DAYCARE: [
             'Du kan ansöka om plats i småbarnspedagogisk verksamhet året om. Ansökningen bör lämnas in senast fyra månader före behovet av verksamheten börjar. Om behovet börjar med kortare varsel bör du ansöka om plats senast två veckor före.',
             'Du får ett skriftligt beslut om platsen. Beslutet delges i tjänsten <a href="https://www.suomi.fi/meddelanden" target="_blank" rel="noreferrer">Suomi.fi</a>-meddelanden, eller per post om du inte tagit i bruk meddelandetjänsten i Suomi.fi.',
             '* Informationen markerad med en stjärna krävs'
@@ -90,7 +90,7 @@ const sv: Translations = {
       },
       verification: {
         title: {
-          daycare: 'Varhaiskasvatushakemuksen tarkistaminen'
+          DAYCARE: 'Varhaiskasvatushakemuksen tarkistaminen'
         },
         notYetSent:
           '<strong>Hakemusta ei ole vielä lähetetty.</strong> Tarkista antamasi tiedot ja lähetä sivun lopussa olevalla Lähetä hakemus-painikkeella.',
@@ -378,9 +378,9 @@ const sv: Translations = {
     pageLoadError: 'Tietojen hakeminen ei onnistunut',
     noApplications: 'Inga ansökningar',
     type: {
-      daycare: 'Ansökan till småbarnspedagogik',
-      preschool: 'Anmälan till förskolan',
-      club: 'Ansökan till klubbverksamhet'
+      DAYCARE: 'Ansökan till småbarnspedagogik',
+      PRESCHOOL: 'Anmälan till förskolan',
+      CLUB: 'Ansökan till klubbverksamhet'
     },
     unit: 'Enhet',
     period: 'Period',

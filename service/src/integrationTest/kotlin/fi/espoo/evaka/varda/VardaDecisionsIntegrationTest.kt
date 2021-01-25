@@ -5,7 +5,7 @@
 package fi.espoo.evaka.varda
 
 import fi.espoo.evaka.FullApplicationTest
-import fi.espoo.evaka.application.persistence.FormType
+import fi.espoo.evaka.application.ApplicationType
 import fi.espoo.evaka.application.persistence.daycare.Apply
 import fi.espoo.evaka.application.persistence.daycare.CareDetails
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
@@ -961,7 +961,7 @@ fun insertDecisionWithApplication(
     insertTestApplicationForm(
         it.handle, applicationId,
         DaycareFormV0(
-            type = FormType.DAYCARE,
+            type = ApplicationType.DAYCARE,
             partTime = false,
             connectedDaycare = false,
             serviceStart = "08:00",

@@ -6,10 +6,10 @@ import { client } from './client'
 import { Failure, Result, Success } from '@evaka/lib-common/src/api'
 import { Unit } from '../types/invoicing'
 import { CareArea } from '~types/unit'
-import { PreferredUnit } from '~types/application'
 import { PlacementType } from '~types/placementdraft'
 import { JsonOf } from '@evaka/lib-common/src/json'
 import LocalDate from '@evaka/lib-common/src/local-date'
+import { PublicUnit } from '@evaka/lib-common/src/api-types/units/PublicUnit'
 
 export async function getUnits(
   areas: string[],
@@ -32,17 +32,12 @@ export async function getAreas(): Promise<Result<CareArea[]>> {
     .catch((e) => Failure.fromError(e))
 }
 
-type DetailedUnit = {
-  id: string
-  name: string
-}
-
 export function getApplicationUnits(
   type: PlacementType,
   date: LocalDate
-): Promise<Result<PreferredUnit[]>> {
+): Promise<Result<PublicUnit[]>> {
   return client
-    .get<JsonOf<DetailedUnit[]>>('units', {
+    .get<JsonOf<PublicUnit[]>>('units', {
       params: { type: asUnitType(type), date: date.formatIso() }
     })
     .then((res) => res.data)

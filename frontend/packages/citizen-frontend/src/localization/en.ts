@@ -67,10 +67,10 @@ const en: Translations = {
     editor: {
       heading: {
         title: {
-          daycare: 'Varhaiskasvatushakemus'
+          DAYCARE: 'Varhaiskasvatushakemus'
         },
         info: {
-          daycare: [
+          DAYCARE: [
             'You can apply for early childhood education all year round. The application must be submitted at the latest four months before the need for early childhood education begins. If you urgently need early childhood education, you must apply for a place at the latest two weeks before the need begins.',
             'The applicant will receive a written decision on the early childhood education place via the <a href="https://www.suomi.fi/messages" target="_blank" rel="noreferrer">Messages service of Suomi.fi</a> or by post if the applicant has not taken in use the Messages service of Suomi.fi.',
             '* Information marked with a star is required'
@@ -90,7 +90,7 @@ const en: Translations = {
       },
       verification: {
         title: {
-          daycare: 'Varhaiskasvatushakemuksen tarkistaminen'
+          DAYCARE: 'Varhaiskasvatushakemuksen tarkistaminen'
         },
         notYetSent:
           '<strong>Hakemusta ei ole vielä lähetetty.</strong> Tarkista antamasi tiedot ja lähetä sivun lopussa olevalla Lähetä hakemus-painikkeella.',
@@ -382,9 +382,9 @@ const en: Translations = {
     pageLoadError: 'Failed to load guardian applications',
     noApplications: 'No applications',
     type: {
-      daycare: 'Daycare application',
-      preschool: 'Early education application',
-      club: 'Club application'
+      DAYCARE: 'Daycare application',
+      PRESCHOOL: 'Early education application',
+      CLUB: 'Club application'
     },
     unit: 'Unit',
     period: 'Period',

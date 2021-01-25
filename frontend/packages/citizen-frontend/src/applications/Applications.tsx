@@ -4,7 +4,6 @@
 
 import { useTranslation } from '~localization'
 import React, { useEffect, useState } from 'react'
-import { GuardianApplications } from '~applications/types'
 import { Loading, Result } from '@evaka/lib-common/src/api'
 import { useRestApi } from '@evaka/lib-common/src/utils/useRestApi'
 import Container, {
@@ -17,11 +16,12 @@ import { SpinnerSegment } from '../../../lib-components/src/atoms/state/Spinner'
 import ErrorSegment from '../../../lib-components/src/atoms/state/ErrorSegment'
 import _ from 'lodash'
 import ChildApplicationsBlock from '~applications/ChildApplicationsBlock'
+import { ApplicationsOfChild } from '@evaka/lib-common/src/api-types/application/ApplicationsOfChild'
 
 export default React.memo(function Applications() {
   const t = useTranslation()
   const [guardianApplications, setGuardianApplications] = useState<
-    Result<GuardianApplications[]>
+    Result<ApplicationsOfChild[]>
   >(Loading.of())
 
   const loadGuardianApplications = useRestApi(

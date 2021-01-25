@@ -76,7 +76,7 @@ test('Enduser sends club application', async () => {
   await t.useRole(enduserRole)
 
   await enduserPage.navigateToApplicationsTab()
-  await enduserPage.createApplication('club')
+  await enduserPage.createApplication('CLUB')
   const clubApplication = new ClubApplication()
 
   applicationId = await clubApplication.getApplicationId()

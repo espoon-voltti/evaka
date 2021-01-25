@@ -314,7 +314,7 @@ export default Vue.extend({
     texts() {
       const type: DecisionDetails['type'] = this.decision.type
       switch (type) {
-        case 'CLUB_DECISION':
+        case 'CLUB':
           return {
             label: this.$t('decision-view.title_club'),
             text: this.$t('decision-view.text_club')

@@ -16,10 +16,8 @@ import InputField from '@evaka/lib-components/src/atoms/form/InputField'
 import { Gap } from '@evaka/lib-components/src/white-space'
 import HorizontalLine from '@evaka/lib-components/src/atoms/HorizontalLine'
 import { Loading, Result, Success } from '@evaka/lib-common/src/api'
-import { PublicUnit } from '@evaka/lib-common/src/api-types/units'
 import { useRestApi } from '@evaka/lib-common/src/utils/useRestApi'
 import { ApplicationUnitType, getApplicationUnits } from '~applications/api'
-import { ApplicationType } from '~applications/types'
 import LocalDate from '@evaka/lib-common/src/local-date'
 import { AlertBox } from '@evaka/lib-components/src/molecules/MessageBoxes'
 import { SpinnerSegment } from '@evaka/lib-components/src/atoms/state/Spinner'
@@ -31,6 +29,8 @@ import colors from '@evaka/lib-components/src/colors'
 import ExternalLink from '@evaka/lib-components/src/atoms/ExternalLink'
 import { useTranslation } from '~localization'
 import EditorSection from '~applications/editor/EditorSection'
+import { PublicUnit } from '@evaka/lib-common/src/api-types/units/PublicUnit'
+import { ApplicationType } from '@evaka/lib-common/src/api-types/application/enums'
 
 const maxUnits = 3
 
@@ -60,9 +60,9 @@ export default React.memo(function UnitPreferenceSection({
       setUnits(Success.of([]))
     } else {
       const unitType: ApplicationUnitType =
-        applicationType === 'club'
+        applicationType === 'CLUB'
           ? 'CLUB'
-          : applicationType === 'daycare'
+          : applicationType === 'DAYCARE'
           ? 'DAYCARE'
           : preparatory
           ? 'PREPARATORY'

@@ -26,9 +26,9 @@ import { AdRole, DayOfWeek, UUID } from '~types'
 import { JsonOf } from '@evaka/lib-common/src/json'
 import LocalDate from '@evaka/lib-common/src/local-date'
 import { PlacementType } from '~types/placementdraft'
-import { ApplicationStatus } from '~types/application'
 import FiniteDateRange from '@evaka/lib-common/src/finite-date-range'
 import DateRange from '@evaka/lib-common/src/date-range'
+import { ApplicationStatus } from '@evaka/lib-common/src/api-types/application/enums'
 
 function convertUnitJson(unit: JsonOf<Unit>): Unit {
   return {

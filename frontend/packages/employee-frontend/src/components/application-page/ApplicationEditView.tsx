@@ -37,16 +37,16 @@ import ApplicationTitle from 'components/application-page/ApplicationTitle'
 import VTJGuardian from 'components/application-page/VTJGuardian'
 import ApplicationStatusSection from 'components/application-page/ApplicationStatusSection'
 import { useTranslation, Translations } from 'state/i18n'
-import {
-  Address,
-  ApplicationDetails,
-  FutureAddress,
-  PersonBasics,
-  PreferredUnit
-} from 'types/application'
 import { formatName } from 'utils'
 import { InputWarning } from '~components/common/InputWarning'
 import { PersonDetails } from '~types/person'
+import {
+  ApplicationAddress,
+  ApplicationDetails,
+  ApplicationFutureAddress,
+  ApplicationPersonBasics
+} from '@evaka/lib-common/src/api-types/application/ApplicationDetails'
+import { PublicUnit } from '@evaka/lib-common/src/api-types/units/PublicUnit'
 
 interface PreschoolApplicationProps {
   application: ApplicationDetails
@@ -54,7 +54,7 @@ interface PreschoolApplicationProps {
     React.SetStateAction<ApplicationDetails | undefined>
   >
   errors: Record<string, string>
-  units: Result<PreferredUnit[]>
+  units: Result<PublicUnit[]>
   guardians: PersonDetails[]
 }
 
@@ -89,10 +89,8 @@ export default React.memo(function ApplicationEditView({
     },
     childId,
     guardianId,
-    otherGuardianId,
     childRestricted,
-    guardianRestricted,
-    otherGuardianLivesInSameAddress
+    guardianRestricted
   } = application
 
   const preferencesInUnitsList = units
@@ -106,9 +104,9 @@ export default React.memo(function ApplicationEditView({
 
   const otherGuardian = guardians.find((guardian) => guardian.id !== guardianId)
 
-  const formatPersonName = (person: PersonBasics) =>
+  const formatPersonName = (person: ApplicationPersonBasics) =>
     formatName(person.firstName, person.lastName, i18n, true)
-  const formatAddress = (a: Address) =>
+  const formatAddress = (a: ApplicationAddress) =>
     `${a.street}, ${a.postalCode} ${a.postOffice}`
 
   return (
@@ -734,10 +732,7 @@ export default React.memo(function ApplicationEditView({
             </div>
           )}
 
-          <VTJGuardian
-            guardianId={otherGuardian?.id}
-            otherGuardianLivesInSameAddress={otherGuardianLivesInSameAddress}
-          />
+          <VTJGuardian guardianId={otherGuardian?.id} />
         </FixedSpaceColumn>
       </CollapsibleSection>
 
@@ -748,84 +743,82 @@ export default React.memo(function ApplicationEditView({
             icon={faUsers}
           >
             <FixedSpaceColumn spacing="L">
-              {(!otherGuardianId || !otherGuardianLivesInSameAddress) && (
-                <div>
-                  <H4>{i18n.application.otherPeople.adult}</H4>
-                  <Checkbox
-                    label={i18n.application.otherPeople.spouse}
-                    checked={otherPartner !== null}
-                    onChange={(value) => {
-                      if (value) {
-                        setApplication(
-                          set('form.otherPartner', {
-                            firstName: '',
-                            lastName: '',
-                            socialSecurityNumber: ''
-                          })
-                        )
-                      } else {
-                        setApplication(set('form.otherPartner', null))
-                      }
-                    }}
-                  />
-                  {otherPartner && (
-                    <>
-                      <Gap size="s" />
-                      <HorizontalContainer>
-                        <WithLabel label={i18n.common.form.firstName}>
-                          <InputField
-                            width="m"
-                            value={otherPartner.firstName}
-                            onChange={(value) => {
-                              setApplication(
-                                set('form.otherPartner.firstName', value)
+              <div>
+                <H4>{i18n.application.otherPeople.adult}</H4>
+                <Checkbox
+                  label={i18n.application.otherPeople.spouse}
+                  checked={otherPartner !== null}
+                  onChange={(value) => {
+                    if (value) {
+                      setApplication(
+                        set('form.otherPartner', {
+                          firstName: '',
+                          lastName: '',
+                          socialSecurityNumber: ''
+                        })
+                      )
+                    } else {
+                      setApplication(set('form.otherPartner', null))
+                    }
+                  }}
+                />
+                {otherPartner && (
+                  <>
+                    <Gap size="s" />
+                    <HorizontalContainer>
+                      <WithLabel label={i18n.common.form.firstName}>
+                        <InputField
+                          width="m"
+                          value={otherPartner.firstName}
+                          onChange={(value) => {
+                            setApplication(
+                              set('form.otherPartner.firstName', value)
+                            )
+                          }}
+                        />
+                      </WithLabel>
+                      <Gap size="s" horizontal />
+                      <WithLabel label={i18n.common.form.lastName}>
+                        <InputField
+                          width="m"
+                          value={otherPartner.lastName}
+                          onChange={(value) => {
+                            setApplication(
+                              set('form.otherPartner.lastName', value)
+                            )
+                          }}
+                        />
+                      </WithLabel>
+                      <Gap size="s" horizontal />
+                      <WithLabel label={i18n.application.person.ssn}>
+                        <InputField
+                          width="m"
+                          value={otherPartner.socialSecurityNumber ?? ''}
+                          onChange={(value) => {
+                            setApplication(
+                              set(
+                                'form.otherPartner.socialSecurityNumber',
+                                value
                               )
-                            }}
-                          />
-                        </WithLabel>
-                        <Gap size="s" horizontal />
-                        <WithLabel label={i18n.common.form.lastName}>
-                          <InputField
-                            width="m"
-                            value={otherPartner.lastName}
-                            onChange={(value) => {
-                              setApplication(
-                                set('form.otherPartner.lastName', value)
-                              )
-                            }}
-                          />
-                        </WithLabel>
-                        <Gap size="s" horizontal />
-                        <WithLabel label={i18n.application.person.ssn}>
-                          <InputField
-                            width="m"
-                            value={otherPartner.socialSecurityNumber}
-                            onChange={(value) => {
-                              setApplication(
-                                set(
-                                  'form.otherPartner.socialSecurityNumber',
-                                  value
-                                )
-                              )
-                            }}
-                            info={
-                              errors['form.otherPartner.socialSecurityNumber']
-                                ? {
-                                    text:
-                                      errors[
-                                        'form.otherPartner.socialSecurityNumber'
-                                      ],
-                                    status: 'warning'
-                                  }
-                                : undefined
-                            }
-                          />
-                        </WithLabel>
-                      </HorizontalContainer>
-                    </>
-                  )}
-                </div>
-              )}
+                            )
+                          }}
+                          info={
+                            errors['form.otherPartner.socialSecurityNumber']
+                              ? {
+                                  text:
+                                    errors[
+                                      'form.otherPartner.socialSecurityNumber'
+                                    ],
+                                  status: 'warning'
+                                }
+                              : undefined
+                          }
+                        />
+                      </WithLabel>
+                    </HorizontalContainer>
+                  </>
+                )}
+              </div>
 
               <div>
                 <H4>{i18n.application.otherPeople.children}</H4>
@@ -882,7 +875,7 @@ export default React.memo(function ApplicationEditView({
                         <WithLabel label={i18n.application.person.ssn}>
                           <InputField
                             width="m"
-                            value={socialSecurityNumber}
+                            value={socialSecurityNumber ?? ''}
                             onChange={(value) => {
                               setApplication(
                                 set(
@@ -1010,7 +1003,7 @@ function FutureAddressInputs({
   i18n,
   path
 }: {
-  futureAddress: FutureAddress
+  futureAddress: ApplicationFutureAddress
   setApplication: React.Dispatch<
     React.SetStateAction<ApplicationDetails | undefined>
   >

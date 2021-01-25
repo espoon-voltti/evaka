@@ -20,12 +20,10 @@ import {
 } from '../../dev-api/fixtures'
 import Home from '../../pages/home'
 import { format, sub } from 'date-fns'
-import {
-  ApplicationStatus,
-  OtherGuardianAgreementStatus
-} from '../../dev-api/types'
+import { OtherGuardianAgreementStatus } from '../../dev-api/types'
 import ReportsPage from '../../pages/reports'
 import { seppoAdminRole } from '../../config/users'
+import { ApplicationStatus } from '@evaka/lib-common/src/api-types/application/enums'
 
 let fixtures: AreaAndPersonFixtures
 let cleanUp: () => Promise<void>
@@ -57,7 +55,7 @@ test('Not placed child shows on report', async (t) => {
     fixtures.enduserChildFixtureJari,
     fixtures.enduserGuardianFixture,
     undefined,
-    'preschool'
+    'PRESCHOOL'
   )
 
   const preferredStartDate = new Date(now.getFullYear(), 7, 13)
@@ -96,7 +94,7 @@ test('Placed child shows on report', async (t) => {
     fixtures.enduserChildFixtureJari,
     fixtures.enduserGuardianFixture,
     undefined,
-    'preschool'
+    'PRESCHOOL'
   )
 
   const preferredStartDate = new Date(now.getFullYear(), 7, 13)

@@ -4,7 +4,6 @@
 
 package fi.espoo.evaka.application
 
-import fi.espoo.evaka.application.persistence.FormType
 import fi.espoo.evaka.placement.Placement
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.getPlacementsForChildDuring
@@ -15,11 +14,7 @@ import java.util.UUID
 fun Database.Read.applicationFlags(application: ApplicationDetails): ApplicationFlags {
     return applicationFlags(
         childId = application.childId,
-        formType = when (application.type) {
-            ApplicationType.CLUB -> FormType.CLUB
-            ApplicationType.DAYCARE -> FormType.DAYCARE
-            ApplicationType.PRESCHOOL -> FormType.PRESCHOOL
-        },
+        formType = application.type,
         startDate = application.form.preferences.preferredStartDate ?: LocalDate.now(),
         preferredUnits = application.form.preferences.preferredUnits.map { it.id },
         connectedDaycare = application.form.preferences.serviceNeed != null
@@ -28,21 +23,21 @@ fun Database.Read.applicationFlags(application: ApplicationDetails): Application
 
 fun Database.Read.applicationFlags(
     childId: UUID,
-    formType: FormType,
+    formType: ApplicationType,
     startDate: LocalDate,
     preferredUnits: List<UUID>,
     connectedDaycare: Boolean
 ): ApplicationFlags {
     return when (formType) {
-        FormType.CLUB -> ApplicationFlags(
+        ApplicationType.CLUB -> ApplicationFlags(
             isTransferApplication = handle.getPlacementsForChildDuring(childId, startDate, null)
                 .any { it.type == PlacementType.CLUB }
         )
-        FormType.DAYCARE -> ApplicationFlags(
+        ApplicationType.DAYCARE -> ApplicationFlags(
             isTransferApplication = handle.getPlacementsForChildDuring(childId, startDate, null)
                 .any { listOf(PlacementType.DAYCARE, PlacementType.DAYCARE_PART_TIME).contains(it.type) }
         )
-        FormType.PRESCHOOL -> {
+        ApplicationType.PRESCHOOL -> {
             val existingPlacements = handle.getPlacementsForChildDuring(childId, startDate, null)
                 .filter {
                     listOf(

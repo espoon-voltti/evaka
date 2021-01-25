@@ -1,6 +1,5 @@
 import React from 'react'
 import styled from 'styled-components'
-import { PublicUnit } from '@evaka/lib-common/src/api-types/units'
 import colors from '@evaka/lib-components/src/colors'
 import {
   FixedSpaceColumn,
@@ -14,6 +13,7 @@ import InlineButton from '@evaka/lib-components/src/atoms/buttons/InlineButton'
 import { StaticChip } from '@evaka/lib-components/src/atoms/Chip'
 import { useTranslation } from '~localization'
 import ExternalLink from '@evaka/lib-components/src/atoms/ExternalLink'
+import { PublicUnit } from '@evaka/lib-common/src/api-types/units/PublicUnit'
 
 export type PreferredUnitBoxProps = {
   unit: PublicUnit

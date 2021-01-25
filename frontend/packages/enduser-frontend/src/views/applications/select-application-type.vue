@@ -116,14 +116,14 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 
     <c-info-box v-else-if="childHasMatchingPlacement">
       <p
-        v-if="this.model.applicationType === 'daycare'"
+        v-if="this.model.applicationType === 'DAYCARE'"
         v-html="
           $t('form.select-application-type.matching-placement.daycare-transfer')
         "
       ></p>
       <p
         v-if="
-          this.model.applicationType === 'preschool' &&
+          this.model.applicationType === 'PRESCHOOL' &&
           !this.childHasNoPreschoolDaycare
         "
         v-html="
@@ -134,7 +134,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
       ></p>
       <p
         v-if="
-          this.model.applicationType === 'preschool' &&
+          this.model.applicationType === 'PRESCHOOL' &&
           this.childHasNoPreschoolDaycare
         "
         v-html="
@@ -229,10 +229,10 @@ SPDX-License-Identifier: LGPL-2.1-or-later
       childHasMatchingPlacement() {
         return this.child
           ? this.child.existingPlacements.some(({ type }) => {
-              if (this.model.applicationType === 'daycare') {
+              if (this.model.applicationType === 'DAYCARE') {
                 return ['DAYCARE', 'DAYCARE_PART_TIME'].includes(type)
               }
-              if (this.model.applicationType === 'preschool') {
+              if (this.model.applicationType === 'PRESCHOOL') {
                 return ['PRESCHOOL', 'PRESCHOOL_DAYCARE'].includes(type)
               }
               return false

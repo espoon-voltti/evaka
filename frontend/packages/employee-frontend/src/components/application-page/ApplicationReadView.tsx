@@ -5,7 +5,7 @@
 import React from 'react'
 import styled from 'styled-components'
 import { H4, Label, Dimmed } from '@evaka/lib-components/src/typography'
-import { Address, ApplicationResponse, PersonBasics } from 'types/application'
+import { ApplicationResponse } from 'types/application'
 import CollapsibleSection from '@evaka/lib-components/src/molecules/CollapsibleSection'
 import {
   faChild,
@@ -27,11 +27,15 @@ import VTJGuardian from 'components/application-page/VTJGuardian'
 import ApplicationStatusSection from 'components/application-page/ApplicationStatusSection'
 import ApplicationDecisionsSection from 'components/application-page/ApplicationDecisionsSection'
 import Attachment from '~components/common/Attachment'
+import {
+  ApplicationAddress,
+  ApplicationPersonBasics
+} from '@evaka/lib-common/src/api-types/application/ApplicationDetails'
 
 function YesNoValue({ value }: { value: boolean | null | undefined }) {
   const { i18n } = useTranslation()
   return value ? (
-    <span>${i18n.common.yes}</span>
+    <span>{i18n.common.yes}</span>
   ) : (
     <Dimmed>{i18n.common.no}</Dimmed>
   )
@@ -114,9 +118,9 @@ function ApplicationReadView({
   const connectedDaycare = type === 'PRESCHOOL' && serviceNeed !== null
   const paid = type === 'DAYCARE' || connectedDaycare
 
-  const formatPersonName = (person: PersonBasics) =>
+  const formatPersonName = (person: ApplicationPersonBasics) =>
     formatName(person.firstName, person.lastName, i18n, true)
-  const formatAddress = (a: Address) =>
+  const formatAddress = (a: ApplicationAddress) =>
     `${a.street}, ${a.postalCode} ${a.postOffice}`
 
   const applicationGuardian = guardians.find(
@@ -457,7 +461,9 @@ function ApplicationReadView({
                   <FixedSpaceColumn>
                     {otherChildren.map((otherChild, i) => (
                       <ListGrid
-                        key={`${i}:${otherChild.firstName}:${otherChild.socialSecurityNumber}`}
+                        key={`${i}:${otherChild.firstName}:${
+                          otherChild.socialSecurityNumber ?? ''
+                        }`}
                       >
                         <Label>{i18n.application.person.name}</Label>
                         <span>{formatPersonName(otherChild)}</span>

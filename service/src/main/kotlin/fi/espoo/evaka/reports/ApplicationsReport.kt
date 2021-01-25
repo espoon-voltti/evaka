@@ -63,10 +63,10 @@ private fun Database.Read.getApplicationsRows(from: LocalDate, to: LocalDate): L
             unit_id,
             unit_name,
             provider_type,
-            count(DISTINCT child_id) FILTER ( WHERE age < 3 AND application_type = 'daycare' ) AS under_3_years_count,
-            count(DISTINCT child_id) FILTER ( WHERE age >= 3 AND application_type = 'daycare' ) AS over_3_years_count,
-            count(DISTINCT child_id) FILTER ( WHERE application_type = 'preschool' ) AS preschool_count,
-            count(DISTINCT child_id) FILTER ( WHERE application_type = 'club' ) AS club_count,
+            count(DISTINCT child_id) FILTER ( WHERE age < 3 AND application_type = 'DAYCARE' ) AS under_3_years_count,
+            count(DISTINCT child_id) FILTER ( WHERE age >= 3 AND application_type = 'DAYCARE' ) AS over_3_years_count,
+            count(DISTINCT child_id) FILTER ( WHERE application_type = 'PRESCHOOL' ) AS preschool_count,
+            count(DISTINCT child_id) FILTER ( WHERE application_type = 'CLUB' ) AS club_count,
             count(DISTINCT child_id) AS total_count
         FROM data
         GROUP BY care_area_name, unit_id, unit_name, provider_type

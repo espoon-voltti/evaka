@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { Selector, t } from 'testcafe'
-import { GROUNDS, APPLICATION_TYPE, Status } from '../../const'
 import { format } from 'date-fns'
+import { ApplicationStatus } from '@evaka/lib-common/src/api-types/application/enums'
 
 const selectDateRangePickerDates = async (
   startDate: Date,
@@ -72,26 +72,12 @@ export default class SearchFilter {
     await t.click(this.radioBtnArea)
   }
 
-  async chooseApplicationType(applicationType: APPLICATION_TYPE) {
-    await t.click(Selector(`[data-qa="filter-option-${applicationType}"]`))
-  }
-
   async chooseAreaByIndex(i: number) {
     await t.click(this.areas.find('.label').nth(i))
   }
 
   async chooseAreaByName(areaName: string) {
     await t.click(Selector(`[data-qa="filter-option-${areaName}"]`))
-  }
-
-  async filterByGround(ground: GROUNDS) {
-    await t.click(Selector(`[data-qa="${ground}"]`))
-  }
-
-  async filterByApplicationType(applicationType: APPLICATION_TYPE) {
-    await t.click(
-      Selector(`[data-qa="filter-option-${applicationType.toUpperCase()}"]`)
-    )
   }
 
   async filterByTransferOnly() {
@@ -131,7 +117,7 @@ export default class SearchFilter {
     await this.selectDateRangeFilterStartAndEndDate(arrivalDate, arrivalDate)
   }
 
-  async filterByApplicationStatus(status: Status) {
+  async filterByApplicationStatus(status: ApplicationStatus) {
     await t.click(this.statusRadioAll)
     await t.click(this.statusRadioAll)
     await t.click(
@@ -143,8 +129,8 @@ export default class SearchFilter {
 
   async checkOrUncheckStatus(
     checkbox: Selector,
-    statuses: Status[],
-    status: Status
+    statuses: ApplicationStatus[],
+    status: ApplicationStatus
   ) {
     if (statuses.includes(status) && !(await checkbox.checked)) {
       await t.click(checkbox)

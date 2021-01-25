@@ -16,8 +16,8 @@ import { UIContext } from '~state/ui'
 import { DatePicker } from '@evaka/lib-components/src/molecules/DatePicker'
 import { createPlacement } from 'api/child/placements'
 import Select from '~components/common/Select'
-import { PreferredUnit } from '~types/application'
 import { FixedSpaceColumn } from '@evaka/lib-components/src/layout/flex-helpers'
+import { PublicUnit } from '@evaka/lib-common/src/api-types/units/PublicUnit'
 
 export interface Props {
   childId: UUID
@@ -45,7 +45,7 @@ const placementTypes: PlacementType[] = [
 function CreatePlacementModal({ childId, reload }: Props) {
   const { i18n } = useTranslation()
   const { clearUiMode } = useContext(UIContext)
-  const [units, setUnits] = useState<Result<PreferredUnit[]>>(Loading.of())
+  const [units, setUnits] = useState<Result<PublicUnit[]>>(Loading.of())
   const [form, setForm] = useState<Form>({
     type: 'DAYCARE',
     unitId: undefined,

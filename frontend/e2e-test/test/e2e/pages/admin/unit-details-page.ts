@@ -4,9 +4,9 @@
 
 import { t, Selector } from 'testcafe'
 import config from '../../config'
+import { ApplicationType } from '@evaka/lib-common/src/api-types/application/enums'
 
 type CareType = 'DAYCARE' | 'PRESCHOOL' | 'PREPARATORY' | 'CLUB'
-type ApplicationType = Exclude<CareType, 'PREPARATORY'>
 
 export class UnitDetailsPage {
   private readonly baseUrl = config.employeeUrl

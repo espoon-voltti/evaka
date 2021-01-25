@@ -7,10 +7,9 @@ import Home from '../home'
 import Applications from './applications'
 import config from '../../config'
 import { format } from 'date-fns'
+import { ApplicationType } from '@evaka/lib-common/src/api-types/application/enums'
 
 const home = new Home()
-
-type ApplicationType = 'daycare' | 'club' | 'preschool'
 
 export default class EnduserPage {
   readonly applications = new Applications()
@@ -298,11 +297,11 @@ export class ApplicationTypeSelection {
 
   async selectApplicationType(type: string) {
     switch (type) {
-      case 'daycare':
+      case 'DAYCARE':
         return t.click(this.daycare)
-      case 'club':
+      case 'CLUB':
         return t.click(this.club)
-      case 'preschool':
+      case 'PRESCHOOL':
         return t.click(this.preschool)
     }
   }

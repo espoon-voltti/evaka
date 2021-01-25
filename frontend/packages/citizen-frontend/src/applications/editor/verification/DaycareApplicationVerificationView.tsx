@@ -10,19 +10,19 @@ import { ApplicationFormData } from '~applications/editor/ApplicationFormData'
 import { H1, P } from '~../../lib-components/src/typography'
 import { useTranslation } from '~localization'
 import BasicsSection from '~applications/editor/verification/BasicsSection'
-import { Application } from '~applications/types'
 import { Gap } from '@evaka/lib-components/src/white-space'
 import HorizontalLine from '@evaka/lib-components/src/atoms/HorizontalLine'
 import UnitPreferenceSection from '~applications/editor/verification/UnitPreferenceSection'
+import { ApplicationDetails } from '@evaka/lib-common/src/api-types/application/ApplicationDetails'
 
 type DaycareApplicationVerificationViewProps = {
-  application: Application
+  application: ApplicationDetails
   formData: ApplicationFormData
 }
 
 export const DaycareApplicationVerificationLabelWidth = '240px'
 
-const applicationType = 'daycare'
+const applicationType = 'DAYCARE'
 
 export default React.memo(function DaycareApplicationVerificationView({
   application,

@@ -20,7 +20,6 @@ import fi.espoo.evaka.application.PreferredUnit
 import fi.espoo.evaka.application.SecondGuardian
 import fi.espoo.evaka.application.ServiceNeed
 import fi.espoo.evaka.application.SiblingBasis
-import fi.espoo.evaka.application.enduser.ApplicationJsonType
 import fi.espoo.evaka.application.enduser.ApplicationSerializer
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
 import fi.espoo.evaka.identity.ExternalIdentifier
@@ -218,7 +217,7 @@ private val expectedEnduserDaycareApplication = ApplicationDetails(
 
 private val expectedEnduserDaycareFormJSON = with(expectedEnduserDaycareApplication.form) {
     EnduserDaycareFormJSON(
-        type = ApplicationJsonType.DAYCARE,
+        type = ApplicationType.DAYCARE,
         urgent = preferences.urgent,
         preferredStartDate = preferences.preferredStartDate,
         serviceStart = preferences.serviceNeed!!.startTime,
@@ -322,7 +321,7 @@ private val DAYCARE_JSON =
   "status": "CREATED",
   "origin": "ELECTRONIC",
   "form": {
-    "type": "daycare",
+    "type": "DAYCARE",
     "daycare": false,
     "preschool": true,
     "preferredStartDate": "2019-03-06",

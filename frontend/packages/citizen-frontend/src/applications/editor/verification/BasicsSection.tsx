@@ -2,13 +2,13 @@ import { ApplicationFormData } from '~applications/editor/ApplicationFormData'
 import React from 'react'
 import { useTranslation } from '~localization'
 import { H2, Label } from '@evaka/lib-components/src/typography'
-import { Application } from '~applications/types'
 import ListGrid from '@evaka/lib-components/src/layout/ListGrid'
 import { DATE_FORMAT_DATE_DEFAULT, formatDate } from '~util'
 import { DaycareApplicationVerificationLabelWidth } from '~applications/editor/verification/DaycareApplicationVerificationView'
+import { ApplicationDetails } from '@evaka/lib-common/src/api-types/application/ApplicationDetails'
 
 type BasicsSectionProps = {
-  application: Application
+  application: ApplicationDetails
   formData: ApplicationFormData
 }
 

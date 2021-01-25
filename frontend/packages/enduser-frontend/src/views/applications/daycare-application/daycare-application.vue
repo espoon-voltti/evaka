@@ -8,8 +8,8 @@ SPDX-License-Identifier: LGPL-2.1-or-later
   <div id="daycare-preschool-application">
     <div v-if="!showSummary" id="daycare-preschool-form">
       <c-view
-        :title="$t(`form.${type}-application.title`)"
-        :text="$t(`form.${type}-application.text`)"
+        :title="$t(`form.${type.toString().toLowerCase()}-application.title`)"
+        :text="$t(`form.${type.toString().toLowerCase()}-application.text`)"
       >
         <spinner v-show="isLoading" />
 
@@ -23,7 +23,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
                     v-for="(item, name, index) in errorSections"
                     v-bind:key="index"
                   >
-                    {{ $t(`form.${type}-application.${name}.title`) }}
+                    {{ $t(`form.${type.toString().toLowerCase()}-application.${name}.title`) }}
                     <ul>
                       <li
                         v-for="(value, index) in item"
@@ -62,7 +62,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
           <!--</div>-->
           <CForm :data="model" v-model="validations" :name="sections.service">
             <c-form-section
-              :title="$t(`form.${type}-application.service.title`)"
+              :title="$t(`form.${type.toString().toLowerCase()}-application.service.title`)"
               data-qa="service-section"
               :isOpen="this.activeSection === sections.service"
               :data-open="this.activeSection === sections.service"
@@ -70,7 +70,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
               :errors="errors.service"
             >
               <c-section-title :icon="['fal', 'calendar']">{{
-                $t(`form.${type}-application.service.section-title`)
+                $t(`form.${type.toString().toLowerCase()}-application.service.section-title`)
               }}</c-section-title>
               <div class="columns is-multiline">
                 <c-text-content
@@ -88,13 +88,13 @@ SPDX-License-Identifier: LGPL-2.1-or-later
                 <div class="text-content column is-12">
                   {{
                     withAsterisk(
-                      $t(`form.${type}-application.service.startDate.label`)
+                      $t(`form.${type.toString().toLowerCase()}-application.service.startDate.label`)
                     )
                   }}
                   <c-instructions
                       :instruction="
                         $t(
-                          `form.${type}-application.service.startDate.instructions.text`
+                          `form.${type.toString().toLowerCase()}-application.service.startDate.instructions.text`
                         )
                       "
                     />
@@ -111,19 +111,19 @@ SPDX-License-Identifier: LGPL-2.1-or-later
                     :border="true"
                     :placeholder="
                       $t(
-                        `form.${type}-application.service.startDate.placeholder`
+                        `form.${type.toString().toLowerCase()}-application.service.startDate.placeholder`
                       )
                     "
                     :locale="locale"
                     :validationName="
-                      $t(`form.${type}-application.service.startDate.validationText`)
+                      $t(`form.${type.toString().toLowerCase()}-application.service.startDate.validationText`)
                     "
                   >
                     <c-instructions
                       v-if="!isPreschool"
                       :instruction="
                         $t(
-                          `form.${type}-application.service.startDate.instructions.text`
+                          `form.${type.toString().toLowerCase()}-application.service.startDate.instructions.text`
                         )
                       "
                     />
@@ -147,7 +147,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
                     <div>
                       {{
                         $t(
-                          `form.${type}-application.service.startDate.noteOnDelay`
+                          `form.${type.toString().toLowerCase()}-application.service.startDate.noteOnDelay`
                         )
                       }}
                     </div>
@@ -171,14 +171,14 @@ SPDX-License-Identifier: LGPL-2.1-or-later
                       <p>
                         {{
                           $t(
-                            `form.${type}-application.service.expedited.attachments-message.text`
+                            `form.${type.toString().toLowerCase()}-application.service.expedited.attachments-message.text`
                           )
                         }}
                       </p>
                       <p class="bold">
                         {{
                           $t(
-                            `form.${type}-application.service.expedited.attachments-message.subtitle`
+                            `form.${type.toString().toLowerCase()}-application.service.expedited.attachments-message.subtitle`
                           )
                         }}
                       </p>
@@ -200,7 +200,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
                       <div
                         v-html="
                           $t(
-                            `form.${type}-application.service.expedited.message.text`
+                            `form.${type.toString().toLowerCase()}-application.service.expedited.message.text`
                           )
                         "
                       ></div>
@@ -212,11 +212,11 @@ SPDX-License-Identifier: LGPL-2.1-or-later
               <hr />
 
               <c-section-title :icon="['fal', 'clock']">{{
-                $t(`form.${type}-application.service.dailyTitle`)
+                $t(`form.${type.toString().toLowerCase()}-application.service.dailyTitle`)
               }}</c-section-title>
               <c-text-content
                 :asHtml="true"
-                :text="$t(`form.${type}-application.service.dailyText`)"
+                :text="$t(`form.${type.toString().toLowerCase()}-application.service.dailyText`)"
               />
 
               <div class="columns" v-if="isPreschool">
@@ -264,11 +264,11 @@ SPDX-License-Identifier: LGPL-2.1-or-later
               <div v-if="showDailyTime">
                 <div class="columns">
                   <div class="column">
-                    {{ $t(`form.${type}-application.service.dailyTime.label`) }}
+                    {{ $t(`form.${type.toString().toLowerCase()}-application.service.dailyTime.label`) }}
                     <c-instructions
                       :instruction="
                         $t(
-                          `form.${type}-application.service.dailyTime.instructions.text`
+                          `form.${type.toString().toLowerCase()}-application.service.dailyTime.instructions.text`
                         )
                       "
                     />
@@ -320,13 +320,13 @@ SPDX-License-Identifier: LGPL-2.1-or-later
                       v-model="model"
                       name="extendedCare"
                       :label="
-                        $t(`form.${type}-application.service.extended.label`)
+                        $t(`form.${type.toString().toLowerCase()}-application.service.extended.label`)
                       "
                     >
                       <c-instructions
                         :instruction="
                           $t(
-                            `form.${type}-application.service.extended.instructions.text`
+                            `form.${type.toString().toLowerCase()}-application.service.extended.instructions.text`
                           )
                         "
                       />
@@ -336,14 +336,14 @@ SPDX-License-Identifier: LGPL-2.1-or-later
                       <p>
                         {{
                           $t(
-                            `form.${type}-application.service.extended.attachments-message.text`
+                            `form.${type.toString().toLowerCase()}-application.service.extended.attachments-message.text`
                           )
                         }}
                       </p>
                       <p class="bold">
                         {{
                           $t(
-                            `form.${type}-application.service.extended.attachments-message.subtitle`
+                            `form.${type.toString().toLowerCase()}-application.service.extended.attachments-message.subtitle`
                           )
                         }}
                       </p>
@@ -365,7 +365,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
                         <div
                           v-html="
                             $t(
-                              `form.${type}-application.service.extended.message.text`
+                              `form.${type.toString().toLowerCase()}-application.service.extended.message.text`
                             )
                           "
                         ></div>
@@ -379,7 +379,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 
               <c-section-title :icon="['fal', 'hands']">
                 {{
-                  $t(`form.${type}-application.service.clubCare.section-title`)
+                  $t(`form.${type.toString().toLowerCase()}-application.service.clubCare.section-title`)
                 }}
               </c-section-title>
 
@@ -416,13 +416,13 @@ SPDX-License-Identifier: LGPL-2.1-or-later
                     :name="['careDetails', 'assistanceNeeded']"
                     @input="onAssistanceNeededChanged"
                     :label="
-                      $t(`form.${type}-application.service.clubCare.label`)
+                      $t(`form.${type.toString().toLowerCase()}-application.service.clubCare.label`)
                     "
                   >
                     <c-instructions
                       :instruction="
                         $t(
-                          `form.${type}-application.service.clubCare.instructions.text`
+                          `form.${type.toString().toLowerCase()}-application.service.clubCare.instructions.text`
                         )
                       "
                     />
@@ -433,7 +433,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
                       :name="['careDetails', 'assistanceDescription']"
                       :placeholder="
                         $t(
-                          `form.${type}-application.service.clubCare.placeholder`
+                          `form.${type.toString().toLowerCase()}-application.service.clubCare.placeholder`
                         )
                       "
                     ></c-text-area>
@@ -456,7 +456,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
               :errors="errors.preferredUnits"
             >
               <c-section-title :icon="['fal', 'users']">{{
-                $t(`form.${type}-application.siblingBasis.title`)
+                $t(`form.${type.toString().toLowerCase()}-application.siblingBasis.title`)
               }}</c-section-title>
 
               <c-text-content
@@ -486,7 +486,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
                     :name="['apply', 'siblingBasis']"
                     @input="onSiblingBasisClicked()"
                     :label="`${$t(
-                      `form.${type}-application.preferredUnits.siblings.select.label`
+                      `form.${type.toString().toLowerCase()}-application.preferredUnits.siblings.select.label`
                     )}`"
                   ></c-checkbox>
                 </div>
@@ -548,7 +548,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
                 <div v-if="model.preferredStartDate">
                   <c-text-content
                     :text="
-                      $t(`form.${type}-application.preferredUnits.units.text`)
+                      $t(`form.${type.toString().toLowerCase()}-application.preferredUnits.units.text`)
                     "
                     class="preferredunits-text-content"
                     :asHtml="true"
@@ -743,7 +743,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
                       >
                         {{
                           $t(
-                            `form.${type}-application.personalInfo.guardian2.other-vtj-guardian-exists-different-address-info`
+                            `form.${type.toString().toLowerCase()}-application.personalInfo.guardian2.other-vtj-guardian-exists-different-address-info`
                           )
                         }}
                       </c-content>
@@ -753,7 +753,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
                         name="otherGuardianAgreementStatus"
                         inputValue="AGREED"
                         :label="
-                          $t(`form.${type}-application.personalInfo.guardian2.agreement-status.AGREED`)
+                          $t(`form.${type.toString().toLowerCase()}-application.personalInfo.guardian2.agreement-status.AGREED`)
                         "
                         data-qa="agreement-status-agreed"
                       ></c-radio>
@@ -764,7 +764,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
                         inputValue="NOT_AGREED"
                         :label="
                           $t(
-                            `form.${type}-application.personalInfo.guardian2.agreement-status.NOT_AGREED`
+                            `form.${type.toString().toLowerCase()}-application.personalInfo.guardian2.agreement-status.NOT_AGREED`
                           )
                         "
                         data-qa="agreement-status-not-agreed"
@@ -776,7 +776,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
                         inputValue="RIGHT_TO_GET_NOTIFIED"
                         :label="
                           $t(
-                            `form.${type}-application.personalInfo.guardian2.agreement-status.RIGHT_TO_GET_NOTIFIED`
+                            `form.${type.toString().toLowerCase()}-application.personalInfo.guardian2.agreement-status.RIGHT_TO_GET_NOTIFIED`
                           )
                         "
                         data-qa="agreement-status-right-to-get-notified"
@@ -980,7 +980,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
                 :rows="10"
                 v-model="model"
                 :placeholder="
-                  $t(`form.${type}-application.additional.text-area`)
+                  $t(`form.${type.toString().toLowerCase()}-application.additional.text-area`)
                 "
               />
 
@@ -996,7 +996,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
               >
                 <c-instructions
                   :instruction="
-                    $t(`form.${type}-application.additional.special-diet-info`)
+                    $t(`form.${type.toString().toLowerCase()}-application.additional.special-diet-info`)
                   "
                 />
               </c-text-area>

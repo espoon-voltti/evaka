@@ -53,7 +53,7 @@ test('Citizen sees her decisions, accepts preschool and rejects preschool daycar
     fixtures.enduserChildFixtureJari,
     fixtures.enduserGuardianFixture,
     undefined,
-    'preschool',
+    'PRESCHOOL',
     null,
     [daycareFixture.id],
     true
@@ -164,7 +164,7 @@ test('Rejecting preschool decision also rejects connected daycare after confirma
     fixtures.enduserChildFixtureJari,
     fixtures.enduserGuardianFixture,
     undefined,
-    'preschool',
+    'PRESCHOOL',
     null,
     [daycareFixture.id],
     true

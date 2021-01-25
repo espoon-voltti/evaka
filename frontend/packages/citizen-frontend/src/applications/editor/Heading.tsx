@@ -8,7 +8,7 @@ import { ContentArea } from '@evaka/lib-components/src/layout/Container'
 import { H1, P } from '@evaka/lib-components/src/typography'
 import { useTranslation } from '~localization'
 
-export default React.memo(function Heading({ type }: { type: 'daycare' }) {
+export default React.memo(function Heading({ type }: { type: 'DAYCARE' }) {
   const t = useTranslation()
   const infoParagraphs = t.applications.editor.heading.info[type]
 
@@ -17,7 +17,7 @@ export default React.memo(function Heading({ type }: { type: 'daycare' }) {
       <H1
         noMargin
         dangerouslySetInnerHTML={{
-          __html: t.applications.editor.heading.title[type]
+          __html: t.applications.editor.heading.title[type] ?? ''
         }}
       />
       <Gap size="xs" />

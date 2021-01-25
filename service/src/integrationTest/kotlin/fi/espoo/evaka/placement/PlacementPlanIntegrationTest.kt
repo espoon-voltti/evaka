@@ -9,8 +9,8 @@ import com.github.kittinunf.fuel.core.isSuccessful
 import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.application.ApplicationStatus
+import fi.espoo.evaka.application.ApplicationType
 import fi.espoo.evaka.application.DaycarePlacementPlan
-import fi.espoo.evaka.application.persistence.FormType
 import fi.espoo.evaka.application.persistence.daycare.Apply
 import fi.espoo.evaka.application.persistence.daycare.CareDetails
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
@@ -61,7 +61,7 @@ class PlacementPlanIntegrationTest : FullApplicationTest() {
         val applicationId = insertInitialData(
             h,
             status = ApplicationStatus.WAITING_PLACEMENT,
-            type = FormType.DAYCARE,
+            type = ApplicationType.DAYCARE,
             preferredStartDate = preferredStartDate
         )
         val defaultEndDate = LocalDate.of(2023, 7, 31)
@@ -87,7 +87,7 @@ class PlacementPlanIntegrationTest : FullApplicationTest() {
         val applicationId = insertInitialData(
             h,
             status = ApplicationStatus.WAITING_PLACEMENT,
-            type = FormType.DAYCARE,
+            type = ApplicationType.DAYCARE,
             preferredStartDate = preferredStartDate,
             adult = testAdult_7
         )
@@ -115,7 +115,7 @@ class PlacementPlanIntegrationTest : FullApplicationTest() {
         val applicationId = insertInitialData(
             h,
             status = ApplicationStatus.WAITING_PLACEMENT,
-            type = FormType.DAYCARE,
+            type = ApplicationType.DAYCARE,
             partTime = true,
             preferredStartDate = preferredStartDate
         )
@@ -142,7 +142,7 @@ class PlacementPlanIntegrationTest : FullApplicationTest() {
         val applicationId = insertInitialData(
             h,
             status = ApplicationStatus.WAITING_PLACEMENT,
-            type = FormType.PRESCHOOL,
+            type = ApplicationType.PRESCHOOL,
             preferredStartDate = preferredStartDate
         )
         val defaultEndDate = LocalDate.of(2024, 6, 3)
@@ -168,7 +168,7 @@ class PlacementPlanIntegrationTest : FullApplicationTest() {
         val applicationId = insertInitialData(
             h,
             status = ApplicationStatus.WAITING_PLACEMENT,
-            type = FormType.PRESCHOOL,
+            type = ApplicationType.PRESCHOOL,
             preschoolDaycare = true,
             preferredStartDate = preferredStartDate
         )
@@ -201,7 +201,7 @@ class PlacementPlanIntegrationTest : FullApplicationTest() {
         val applicationId = insertInitialData(
             h,
             status = ApplicationStatus.WAITING_PLACEMENT,
-            type = FormType.PRESCHOOL,
+            type = ApplicationType.PRESCHOOL,
             preschoolDaycare = true,
             preferredStartDate = preferredStartDate,
             preferredUnits = listOf(testSvebiDaycare)
@@ -236,7 +236,7 @@ class PlacementPlanIntegrationTest : FullApplicationTest() {
         val applicationId = insertInitialData(
             h,
             status = ApplicationStatus.WAITING_PLACEMENT,
-            type = FormType.PRESCHOOL,
+            type = ApplicationType.PRESCHOOL,
             preferredStartDate = preferredStartDate,
             preparatory = true
         )
@@ -263,7 +263,7 @@ class PlacementPlanIntegrationTest : FullApplicationTest() {
             insertInitialData(
                 h,
                 status = ApplicationStatus.WAITING_PLACEMENT,
-                type = FormType.DAYCARE,
+                type = ApplicationType.DAYCARE,
                 preferredStartDate = LocalDate.of(2020, 3, 17)
             )
         }
@@ -355,7 +355,7 @@ class PlacementPlanIntegrationTest : FullApplicationTest() {
 private fun insertInitialData(
     h: Handle,
     status: ApplicationStatus,
-    type: FormType,
+    type: ApplicationType,
     preferredStartDate: LocalDate,
     adult: PersonData.Detailed = testAdult_1,
     child: PersonData.Detailed = testChild_1,
