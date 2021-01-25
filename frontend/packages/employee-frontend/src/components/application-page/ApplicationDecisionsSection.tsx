@@ -18,14 +18,6 @@ import {
 } from '@evaka/lib-components/src/layout/flex-helpers'
 import DecisionResponse from 'components/application-page/DecisionResponse'
 import { UUID } from 'types'
-import LocalDate from '@evaka/lib-common/src/local-date'
-
-type Props = {
-  applicationId: UUID
-  decisions: Decision[]
-  reloadApplication: () => void
-  preferredStartDate: LocalDate | null
-}
 
 const isPending = (decision: Decision) => decision.status === 'PENDING'
 
@@ -38,11 +30,16 @@ const isBlocked = (decisions: Decision[], decision: Decision) =>
       (d.status === 'ACCEPTED' || d.status === 'REJECTED')
   )
 
+type Props = {
+  applicationId: UUID
+  decisions: Decision[]
+  reloadApplication: () => void
+}
+
 export default React.memo(function ApplicationDecisionsSection({
   applicationId,
   decisions,
-  reloadApplication,
-  preferredStartDate
+  reloadApplication
 }: Props) {
   const { i18n } = useTranslation()
 
@@ -96,7 +93,6 @@ export default React.memo(function ApplicationDecisionsSection({
                       applicationId={applicationId}
                       decision={decision}
                       reloadApplication={reloadApplication}
-                      preferredStartDate={preferredStartDate}
                     />
                   )}
                 </>

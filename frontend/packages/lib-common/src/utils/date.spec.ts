@@ -4,66 +4,12 @@
 
 import {
   isValidRange,
-  parseChildBirthday,
   parseDate,
   parseTzDate,
   stringToDate
 } from '@evaka/lib-common/src/utils/date'
-import {
-  FormModel,
-  ClubFormModel,
-  PreschoolFormModel
-} from '@evaka/lib-common/src/types'
-import {
-  createValidChildBirthDate,
-  createValidClubForm,
-  createValidDaycareForm,
-  createValidPreschoolForm
-} from '@evaka/lib-common/src/fixtures/applications'
 
 describe('dateUtils', () => {
-  describe('parseChildBirthday', () => {
-    it("parses child's date of birth from application form", () => {
-      const application: ClubFormModel = createValidClubForm()
-
-      const ret: Date = parseChildBirthday(application)
-      expect(ret).toEqual(new Date(createValidChildBirthDate()))
-    })
-
-    it('prioritizes date of birth over SSN', () => {
-      const daycareForm: FormModel = createValidDaycareForm()
-
-      const DATE_OF_BIRTH = '2019-01-01'
-      daycareForm.child.dateOfBirth = DATE_OF_BIRTH
-      daycareForm.child.socialSecurityNumber = '290800A822N' // 2000-08-29, i.e. != DATE_OF_BIRTH
-
-      const ret: Date = parseChildBirthday(daycareForm)
-      expect(ret).toEqual(new Date(DATE_OF_BIRTH))
-    })
-
-    describe('from a paper preschool application form', () => {
-      it("returns child's birthday date", () => {
-        const application: PreschoolFormModel = createValidPreschoolForm()
-
-        application.child.socialSecurityNumber = null
-
-        const ret: Date = parseChildBirthday(application)
-        expect(ret).toEqual(new Date(createValidChildBirthDate()))
-      })
-    })
-
-    describe('without a date of birth', () => {
-      it("returns child's birthday date based on SSN", () => {
-        const daycareForm: FormModel = createValidDaycareForm()
-
-        daycareForm.child.dateOfBirth = null
-
-        const ret: Date = parseChildBirthday(daycareForm)
-        expect(ret).toEqual(new Date(createValidChildBirthDate()))
-      })
-    })
-  })
-
   describe('parseDate', () => {
     it('parses YYYY-MM-DD formatted datestring correctly', () => {
       expect(parseDate('2008-02-13')).toEqual(new Date(2008, 2 - 1, 13)) // months are 0-based

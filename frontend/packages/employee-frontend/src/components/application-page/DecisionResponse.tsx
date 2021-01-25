@@ -16,20 +16,17 @@ import { DatePicker } from '@evaka/lib-components/src/molecules/DatePicker'
 import { acceptDecision, rejectDecision } from 'api/applications'
 import { UIContext } from 'state/ui'
 import { UUID } from 'types'
-import LocalDate from '@evaka/lib-common/src/local-date'
 
 interface Props {
   applicationId: UUID
   decision: Decision
   reloadApplication: () => void
-  preferredStartDate: LocalDate | null
 }
 
 export default React.memo(function DecisionResponse({
   applicationId,
   decision,
-  reloadApplication,
-  preferredStartDate
+  reloadApplication
 }: Props) {
   const { i18n } = useTranslation()
   const { setErrorMessage } = useContext(UIContext)
