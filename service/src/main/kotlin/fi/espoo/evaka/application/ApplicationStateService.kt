@@ -94,7 +94,7 @@ class ApplicationStateService(
         }
 
         verifyStatus(application, CREATED)
-        validateApplication(tx, application)
+        validateApplication(tx, application.type, application.form, strict = isEnduser)
 
         val applicationFlags = tx.applicationFlags(application)
         updateApplicationFlags(tx.handle, application.id, applicationFlags)
@@ -406,125 +406,73 @@ class ApplicationStateService(
 
     // CONTENT UPDATE
 
-    fun updateApplicationContents(tx: Database.Transaction, user: AuthenticatedUser, applicationId: UUID, form: ApplicationForm) {
-        Audit.ApplicationUpdate.log(targetId = applicationId)
-        user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER)
-
-        val original = fetchApplicationDetails(tx.handle, applicationId)
-            ?: throw NotFound("Application $applicationId was not found")
-
-        tx.updateApplicationContents(original, form)
-    }
-
-    fun updateOwnApplicationContents(tx: Database.Transaction, user: AuthenticatedUser, applicationId: UUID, formV0: DatabaseForm): ApplicationDetails {
+    fun updateOwnApplicationContentsEnduser(tx: Database.Transaction, user: AuthenticatedUser, applicationId: UUID, formV0: DatabaseForm): ApplicationDetails {
         val original = fetchApplicationDetails(tx.handle, applicationId)
             ?.takeIf { it.guardianId == user.id }
             ?: throw NotFound("Application $applicationId of guardian ${user.id} not found")
 
-        val form = ApplicationForm.fromV0(formV0, original.childRestricted, original.guardianRestricted)
+        val updatedForm = ApplicationForm.fromV0(formV0, original.childRestricted, original.guardianRestricted)
 
-        if (listOf(SENT).contains(original.status)) {
-            original.form.preferences.preferredStartDate?.let { previousStartDate ->
-                form.preferences.preferredStartDate?.let { newStartDate ->
-                    if (previousStartDate.isAfter(newStartDate))
-                        throw BadRequest("Moving start date $previousStartDate earlier to $newStartDate is not allowed")
+        if (original.status != CREATED) {
+            validateApplication(tx, original.type, updatedForm, strict = true)
+
+            if (listOf(SENT).contains(original.status)) {
+                original.form.preferences.preferredStartDate?.let { previousStartDate ->
+                    updatedForm.preferences.preferredStartDate?.let { newStartDate ->
+                        if (previousStartDate.isAfter(newStartDate))
+                            throw BadRequest("Moving start date $previousStartDate earlier to $newStartDate is not allowed")
+                    }
                 }
             }
         }
 
-        tx.updateApplicationContents(original, form)
+        tx.updateApplicationContents(original, updatedForm)
         return getApplication(tx, applicationId)
     }
 
-    private fun Database.Transaction.updateApplicationContents(original: ApplicationDetails, form: ApplicationForm) {
+    fun updateOwnApplicationContentsCitizen(tx: Database.Transaction, user: AuthenticatedUser, applicationId: UUID, update: ApplicationFormUpdate, asDraft: Boolean = false): ApplicationDetails {
+        val original = fetchApplicationDetails(tx.handle, applicationId)
+            ?.takeIf { it.guardianId == user.id }
+            ?: throw NotFound("Application $applicationId of guardian ${user.id} not found")
+
+        val updatedForm = original.form.update(update)
+
+        if (asDraft) {
+            if (original.status !== CREATED) throw BadRequest("Cannot save as draft, application already sent")
+        } else {
+            validateApplication(tx, original.type, updatedForm, strict = true)
+
+            if (listOf(SENT).contains(original.status)) {
+                original.form.preferences.preferredStartDate?.let { previousStartDate ->
+                    updatedForm.preferences.preferredStartDate?.let { newStartDate ->
+                        if (previousStartDate.isAfter(newStartDate))
+                            throw BadRequest("Moving start date $previousStartDate earlier to $newStartDate is not allowed")
+                    }
+                }
+            }
+        }
+
+        tx.updateApplicationContents(original, updatedForm)
+        return getApplication(tx, applicationId)
+    }
+
+    fun updateApplicationContentsServiceWorker(tx: Database.Transaction, user: AuthenticatedUser, applicationId: UUID, update: ApplicationFormUpdate) {
+        val original = fetchApplicationDetails(tx.handle, applicationId)
+            ?: throw NotFound("Application $applicationId was not found")
+
+        val updatedForm = original.form.update(update)
+        validateApplication(tx, original.type, updatedForm, strict = false)
+
+        tx.updateApplicationContents(original, updatedForm)
+    }
+
+    private fun Database.Transaction.updateApplicationContents(original: ApplicationDetails, updatedForm: ApplicationForm) {
         if (!listOf(CREATED, SENT).contains(original.status))
             throw BadRequest("Cannot update application with status ${original.status}")
 
-        val updated = original.form
-            .let { updateApplicationPreferences(it, form, original.type) }
-            .let { updateApplicationAssistanceNeed(it, form) }
-            .let { updateApplicationContactInfo(it, form) }
-            .let { updateApplicationAdditionalInfo(it, form) }
-            .let { updateApplicationMaxFeeAccepted(it, form) }
-            .let { updateApplicationClubDetails(it, form) }
-
-        updateForm(handle, original.id, form, original.type, original.childRestricted, original.guardianRestricted)
-        setCheckedByAdminToDefault(handle, original.id, updated)
-        updateDueDate(original, updated)
-    }
-
-    private fun updateApplicationPreferences(
-        original: ApplicationForm,
-        updated: ApplicationForm,
-        type: ApplicationType
-    ): ApplicationForm {
-        return original.copy(
-            preferences = original.preferences.copy(
-                preferredStartDate = updated.preferences.preferredStartDate,
-                urgent = if (type === ApplicationType.DAYCARE) updated.preferences.urgent else false,
-                preferredUnits = updated.preferences.preferredUnits,
-                serviceNeed = updated.preferences.serviceNeed,
-                siblingBasis = updated.preferences.siblingBasis,
-                preparatory = if (type === ApplicationType.PRESCHOOL) updated.preferences.preparatory else false
-            )
-        )
-    }
-
-    private fun updateApplicationAssistanceNeed(
-        original: ApplicationForm,
-        updated: ApplicationForm
-    ): ApplicationForm {
-        return original.copy(
-            child = original.child.copy(
-                assistanceNeeded = updated.child.assistanceNeeded,
-                assistanceDescription = updated.child.assistanceDescription
-            )
-        )
-    }
-
-    private fun updateApplicationContactInfo(
-        original: ApplicationForm,
-        updated: ApplicationForm
-    ): ApplicationForm {
-        return original.copy(
-            child = original.child.copy(futureAddress = updated.child.futureAddress),
-            guardian = original.guardian.copy(
-                phoneNumber = updated.guardian.phoneNumber,
-                email = updated.guardian.email,
-                futureAddress = updated.guardian.futureAddress
-            ),
-            secondGuardian = updated.secondGuardian,
-            otherPartner = updated.otherPartner,
-            otherChildren = updated.otherChildren
-        )
-    }
-
-    private fun updateApplicationAdditionalInfo(
-        original: ApplicationForm,
-        updated: ApplicationForm
-    ): ApplicationForm {
-        return original.copy(
-            otherInfo = updated.otherInfo,
-            child = original.child.copy(allergies = updated.child.allergies, diet = updated.child.diet)
-        )
-    }
-
-    private fun updateApplicationMaxFeeAccepted(
-        original: ApplicationForm,
-        updated: ApplicationForm
-    ): ApplicationForm {
-        return original.copy(
-            maxFeeAccepted = updated.maxFeeAccepted
-        )
-    }
-
-    private fun updateApplicationClubDetails(
-        original: ApplicationForm,
-        updated: ApplicationForm
-    ): ApplicationForm {
-        return original.copy(
-            clubDetails = updated.clubDetails
-        )
+        updateForm(handle, original.id, updatedForm, original.type, original.childRestricted, original.guardianRestricted)
+        setCheckedByAdminToDefault(handle, original.id, updatedForm)
+        updateDueDate(original, updatedForm)
     }
 
     private fun Database.Transaction.updateDueDate(original: ApplicationDetails, updated: ApplicationForm) {
@@ -558,20 +506,20 @@ class ApplicationStateService(
             throw BadRequest("Expected status to be one of [${statuses.joinToString(separator = ", ")}] but was ${application.status}")
     }
 
-    private fun validateApplication(tx: Database.Read, application: ApplicationDetails) {
+    private fun validateApplication(tx: Database.Read, type: ApplicationType, application: ApplicationForm, strict: Boolean) {
         val result = ValidationResult()
 
-        val preferredStartDate = application.form.preferences.preferredStartDate
-        if (application.type == ApplicationType.PRESCHOOL && preferredStartDate != null) {
+        val preferredStartDate = application.preferences.preferredStartDate
+        if (type == ApplicationType.PRESCHOOL && preferredStartDate != null) {
             val canApplyForPreferredDate = tx.getActivePreschoolTermAt(preferredStartDate)
                 ?.isApplicationAccepted(LocalDate.now(zoneId))
                 ?: false
             if (!canApplyForPreferredDate) {
-                result.add(ValidationError("form.preferences.preferredStartDate", "Cannot apply to preschool on the preferred time at the moment"))
+                result.add(ValidationError("form.preferences.preferredStartDate", "Cannot apply to preschool on $preferredStartDate at the moment"))
             }
         }
 
-        val unitIds = application.form.preferences.preferredUnits.map { it.id }
+        val unitIds = application.preferences.preferredUnits.map { it.id }
 
         if (unitIds.isEmpty()) {
             result.add(ValidationError("form.preferences.preferredUnits", "Must have at least one preferred unit"))
@@ -580,14 +528,14 @@ class ApplicationStateService(
             if (daycares.size < unitIds.toSet().size) {
                 result.add(ValidationError("form.preferences.preferredUnits", "Some unit was not found"))
             }
-            if (application.origin == ApplicationOrigin.ELECTRONIC) {
+            if (strict) {
                 if (preferredStartDate != null) {
                     for (daycare in daycares) {
-                        if (application.type == ApplicationType.DAYCARE && (daycare.daycareApplyPeriod == null || !daycare.daycareApplyPeriod.includes(preferredStartDate)))
+                        if (type == ApplicationType.DAYCARE && (daycare.daycareApplyPeriod == null || !daycare.daycareApplyPeriod.includes(preferredStartDate)))
                             result.add(ValidationError("form.preferences.preferredUnits", "Cannot apply for daycare in ${daycare.id}"))
-                        if (application.type == ApplicationType.PRESCHOOL && (daycare.preschoolApplyPeriod == null || !daycare.preschoolApplyPeriod.includes(preferredStartDate)))
+                        if (type == ApplicationType.PRESCHOOL && (daycare.preschoolApplyPeriod == null || !daycare.preschoolApplyPeriod.includes(preferredStartDate)))
                             result.add(ValidationError("form.preferences.preferredUnits", "Cannot apply for preschool in ${daycare.id}"))
-                        if (application.type == ApplicationType.CLUB && (daycare.clubApplyPeriod == null || !daycare.clubApplyPeriod.includes(preferredStartDate)))
+                        if (type == ApplicationType.CLUB && (daycare.clubApplyPeriod == null || !daycare.clubApplyPeriod.includes(preferredStartDate)))
                             result.add(ValidationError("form.preferences.preferredUnits", "Cannot apply for club in ${daycare.id}"))
                     }
                 }

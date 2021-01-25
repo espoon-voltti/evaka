@@ -9,6 +9,7 @@ import { PublicUnit } from '@evaka/lib-common/src/api-types/units'
 import { client } from '~api-client'
 import {
   Application,
+  ApplicationFormUpdate,
   ApplicationType,
   GuardianApplications
 } from '~applications/types'
@@ -44,6 +45,36 @@ export async function getApplication(
       `/citizen/applications/${applicationId}`
     )
     return Success.of(deserializeApplication(data))
+  } catch (e) {
+    return Failure.fromError(e)
+  }
+}
+
+export async function updateApplication(
+  applicationId: string,
+  data: ApplicationFormUpdate
+): Promise<Result<void>> {
+  try {
+    await client.put<JsonOf<Application>>(
+      `/citizen/applications/${applicationId}`,
+      data
+    )
+    return Success.of(undefined)
+  } catch (e) {
+    return Failure.fromError(e)
+  }
+}
+
+export async function saveApplicationDraft(
+  applicationId: string,
+  data: ApplicationFormUpdate
+): Promise<Result<void>> {
+  try {
+    await client.put<JsonOf<Application>>(
+      `/citizen/applications/${applicationId}/draft`,
+      data
+    )
+    return Success.of(undefined)
   } catch (e) {
     return Failure.fromError(e)
   }

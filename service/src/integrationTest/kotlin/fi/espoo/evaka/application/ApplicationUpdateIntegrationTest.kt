@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2021 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -7,6 +7,8 @@ package fi.espoo.evaka.application
 import com.github.kittinunf.fuel.core.extensions.jsonBody
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
+import fi.espoo.evaka.insertGeneralTestFixtures
+import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
@@ -16,17 +18,26 @@ import fi.espoo.evaka.shared.dev.insertTestApplicationForm
 import fi.espoo.evaka.test.validDaycareApplication
 import fi.espoo.evaka.testDecisionMaker_1
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
 
 class ApplicationUpdateIntegrationTest : FullApplicationTest() {
     private val serviceWorker = AuthenticatedUser(testDecisionMaker_1.id, setOf(UserRole.SERVICE_WORKER))
 
+    @BeforeEach
+    private fun beforeEach() {
+        db.transaction { tx ->
+            tx.resetDatabase()
+            insertGeneralTestFixtures(tx.handle)
+        }
+    }
+
     @Test
     fun `when application update sets urgent to false, the new due date is calculated from sent date`() {
         // given
-        val sentDate = LocalDate.of(2020, 1, 1)
-        val originalDueDate = LocalDate.of(2020, 1, 15)
+        val sentDate = LocalDate.of(2021, 1, 1)
+        val originalDueDate = LocalDate.of(2021, 1, 15)
         val application = insertSentApplication(sentDate, originalDueDate, true)
 
         // when
@@ -46,8 +57,8 @@ class ApplicationUpdateIntegrationTest : FullApplicationTest() {
     @Test
     fun `when application update sets urgent to true, the new due date is calculated from current date`() {
         // given
-        val sentDate = LocalDate.of(2020, 1, 1)
-        val originalDueDate = LocalDate.of(2020, 5, 1)
+        val sentDate = LocalDate.of(2021, 1, 1)
+        val originalDueDate = LocalDate.of(2021, 5, 1)
         val application = insertSentApplication(sentDate, originalDueDate, false)
 
         // when
@@ -67,8 +78,8 @@ class ApplicationUpdateIntegrationTest : FullApplicationTest() {
     @Test
     fun `when application update does not update urgent, the due date is not changed`() {
         // given
-        val sentDate = LocalDate.of(2020, 1, 1)
-        val originalDueDate = LocalDate.of(2020, 1, 15)
+        val sentDate = LocalDate.of(2021, 1, 1)
+        val originalDueDate = LocalDate.of(2021, 1, 15)
         val application = insertSentApplication(sentDate, originalDueDate, true)
 
         // when

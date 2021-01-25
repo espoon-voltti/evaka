@@ -74,6 +74,18 @@ export interface ApplicationForm {
   clubDetails: ApplicationClubDetails | null
 }
 
+export interface ApplicationFormUpdate {
+  child: ApplicationChildDetailsUpdate
+  guardian: ApplicationGuardianUpdate
+  secondGuardian: ApplicationSecondGuardian | null
+  otherPartner: ApplicationPersonBasics | null
+  otherChildren: ApplicationPersonBasics[]
+  preferences: ApplicationPreferences
+  maxFeeAccepted: boolean
+  otherInfo: string
+  clubDetails: ApplicationClubDetails | null
+}
+
 export interface ApplicationPersonBasics {
   firstName: string
   lastName: string
@@ -103,9 +115,23 @@ export interface ApplicationChildDetails {
   assistanceDescription: string
 }
 
+export interface ApplicationChildDetailsUpdate {
+  futureAddress: ApplicationFutureAddress | null
+  allergies: string
+  diet: string
+  assistanceNeeded: boolean
+  assistanceDescription: string
+}
+
 export interface ApplicationGuardian {
   person: ApplicationPersonBasics
   address: ApplicationAddress | null
+  futureAddress: ApplicationFutureAddress | null
+  phoneNumber: string
+  email: string
+}
+
+export interface ApplicationGuardianUpdate {
   futureAddress: ApplicationFutureAddress | null
   phoneNumber: string
   email: string
