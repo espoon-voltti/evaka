@@ -24,7 +24,7 @@ import {
   Thead,
   Tbody
 } from '@evaka/lib-components/src/layout/Table'
-import InfoModal from '~components/common/InfoModal'
+import InfoModal from '@evaka/lib-components/src/molecules/modals/InfoModal'
 import { Loading, Result } from '@evaka/lib-common/src/api'
 import {
   addDaycareAclStaff,

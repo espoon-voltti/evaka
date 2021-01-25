@@ -10,7 +10,7 @@ import AssistanceActionForm from '~components/child-information/assistance-actio
 import { faQuestion } from '@evaka/lib-icons'
 import ToolbarAccordion from '~components/common/ToolbarAccordion'
 import { isActiveDateRange } from '~/utils/date'
-import InfoModal from '~components/common/InfoModal'
+import InfoModal from '@evaka/lib-components/src/molecules/modals/InfoModal'
 
 import LabelValueList from '~components/common/LabelValueList'
 import {

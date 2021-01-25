@@ -21,7 +21,7 @@ import { useTranslation } from 'state/i18n'
 import { FixedSpaceRow } from '@evaka/lib-components/src/layout/flex-helpers'
 import { faPen, faQuestion, faTrash } from '@evaka/lib-icons'
 import IconButton from '@evaka/lib-components/src/atoms/buttons/IconButton'
-import InfoModal from '~components/common/InfoModal'
+import InfoModal from '@evaka/lib-components/src/molecules/modals/InfoModal'
 
 const NoteContainer = styled.div`
   display: flex;

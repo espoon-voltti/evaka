@@ -13,7 +13,8 @@ import {
   postPairingResponse,
   putMobileDeviceName
 } from '~api/unit'
-import InfoModal from '~components/common/InfoModal'
+import InfoModal from '@evaka/lib-components/src/molecules/modals/InfoModal'
+import { ResponseKey } from '~components/mobile/PairingWizard'
 import InputField from '@evaka/lib-components/src/atoms/form/InputField'
 import Loader from '@evaka/lib-components/src/atoms/Loader'
 import { faPlus } from '@evaka/lib-icons'

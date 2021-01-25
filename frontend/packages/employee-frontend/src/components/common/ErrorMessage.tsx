@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import InfoModal from '~components/common/InfoModal'
+import InfoModal from '@evaka/lib-components/src/molecules/modals/InfoModal'
 import { faExclamation } from '@evaka/lib-icons'
 import React, { useContext } from 'react'
 import { UIContext } from '~state/ui'

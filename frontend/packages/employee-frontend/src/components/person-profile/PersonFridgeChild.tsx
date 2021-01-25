@@ -25,7 +25,7 @@ import * as _ from 'lodash'
 import { faChild, faQuestion } from '@evaka/lib-icons'
 import { UIContext } from '~state/ui'
 import FridgeChildModal from '~components/person-profile/person-fridge-child/FridgeChildModal'
-import InfoModal from '~components/common/InfoModal'
+import InfoModal from '@evaka/lib-components/src/molecules/modals/InfoModal'
 import { Link } from 'react-router-dom'
 import {
   getParentshipsByHeadOfChild,

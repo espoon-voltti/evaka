@@ -10,7 +10,7 @@ import IncomeItemEditor from './IncomeItemEditor'
 import { useTranslation } from '~state/i18n'
 import { Income, PartialIncome, IncomeId } from '~types/income'
 import { UUID } from '~types'
-import InfoModal from '~components/common/InfoModal'
+import InfoModal from '@evaka/lib-components/src/molecules/modals/InfoModal'
 import { faQuestion } from '@evaka/lib-icons'
 
 interface Props {

@@ -9,7 +9,6 @@ import { IconProp } from '@fortawesome/fontawesome-svg-core'
 import styled from 'styled-components'
 import FocusLock from 'react-focus-lock'
 
-import { useTranslation } from '~state/i18n'
 import {
   DimmedModal,
   BackgroundOverlay,
@@ -122,7 +121,6 @@ function InfoModal({
   resolveDisabled,
   zIndex
 }: Props) {
-  const { i18n } = useTranslation()
   return (
     <FocusLock>
       <DimmedModal>
@@ -171,7 +169,7 @@ function InfoModal({
                       <Button
                         onClick={reject}
                         dataQa="modal-cancelBtn"
-                        text={rejectLabel ?? i18n.common.cancel}
+                        text={rejectLabel ?? 'Peruuta'}
                       />
                       <Gap horizontal size={'xs'} />
                     </>
@@ -181,7 +179,7 @@ function InfoModal({
                     dataQa="modal-okBtn"
                     onClick={resolve}
                     disabled={resolveDisabled}
-                    text={resolveLabel ?? i18n.common.ok}
+                    text={resolveLabel ?? 'ok'}
                   />
                 </ModalButtons>
               )}

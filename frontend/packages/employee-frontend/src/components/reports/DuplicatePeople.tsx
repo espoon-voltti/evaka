@@ -17,7 +17,7 @@ import {
   Thead,
   Tbody
 } from '@evaka/lib-components/src/layout/Table'
-import InfoModal from '~components/common/InfoModal'
+import InfoModal from '@evaka/lib-components/src/molecules/modals/InfoModal'
 import { useTranslation } from '~state/i18n'
 import { Link } from 'react-router-dom'
 import { Loading, Result } from '@evaka/lib-common/src/api'

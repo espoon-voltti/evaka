@@ -10,7 +10,7 @@ import ServiceNeedForm from '~components/child-information/service-need/ServiceN
 import { faQuestion } from '@evaka/lib-icons'
 import ToolbarAccordion from '~components/common/ToolbarAccordion'
 import { formatDate, isActiveDateRange } from '~/utils/date'
-import InfoModal from '~components/common/InfoModal'
+import InfoModal from '@evaka/lib-components/src/molecules/modals/InfoModal'
 import Toolbar from '~components/common/Toolbar'
 import LabelValueList from '~components/common/LabelValueList'
 import { capitalizeFirstLetter, scrollToRef } from 'utils'

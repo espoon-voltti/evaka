@@ -11,7 +11,7 @@ import {
   ContentArea
 } from '@evaka/lib-components/src/layout/Container'
 import ReturnButton from '@evaka/lib-components/src/atoms/buttons/ReturnButton'
-import InfoModal from '~components/common/InfoModal'
+import InfoModal from '@evaka/lib-components/src/molecules/modals/InfoModal'
 import Heading from './Heading'
 import ChildSection from './ChildSection'
 import Summary from './Summary'

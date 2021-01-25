@@ -20,7 +20,7 @@ import {
 } from '@evaka/lib-components/src/layout/Table'
 import Loader from '@evaka/lib-components/src/atoms/Loader'
 import CollapsibleSection from '@evaka/lib-components/src/molecules/CollapsibleSection'
-import InfoModal from '~components/common/InfoModal'
+import InfoModal from '@evaka/lib-components/src/molecules/modals/InfoModal'
 import { Partnership } from '~types/fridge'
 import * as _ from 'lodash'
 import { UIContext } from '~state/ui'
