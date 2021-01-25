@@ -96,6 +96,7 @@ aliases:
         - frontend/packages/enduser-frontend/node_modules
         - frontend/packages/citizen-frontend/node_modules
         - frontend/packages/employee-frontend/node_modules
+        - frontend/packages/employee-mobile-frontend/node_modules
         - frontend/packages/lib-common/node_modules
         - frontend/packages/maintenance-page/node_modules
         - frontend/e2e-test/node_modules
@@ -310,6 +311,10 @@ commands:
           target_env: << parameters.target_env >>
           from: frontend/packages/employee-frontend
           to: employee
+      - deploy_to_s3:
+          target_env: << parameters.target_env >>
+          from: frontend/packages/employee-mobile-frontend
+          to: employee/mobile
       - deploy_to_s3:
           target_env: << parameters.target_env >>
           from: frontend/packages/maintenance-page
@@ -603,6 +608,8 @@ jobs:
       - build_frontend:
           dir: /home/circleci/repo/frontend/packages/employee-frontend
       - build_frontend:
+          dir: /home/circleci/repo/frontend/packages/employee-mobile-frontend
+      - build_frontend:
           dir: /home/circleci/repo/frontend/packages/enduser-frontend
       - build_frontend:
           dir: /home/circleci/repo/frontend/packages/citizen-frontend
@@ -615,6 +622,7 @@ jobs:
             - frontend/packages/enduser-frontend/dist
             - frontend/packages/citizen-frontend/dist
             - frontend/packages/employee-frontend/dist
+            - frontend/packages/employee-mobile-frontend/dist
             - frontend/packages/maintenance-page/dist
             - frontend/packages/lib-components/storybook-build
             - frontend/e2e-test/dist
