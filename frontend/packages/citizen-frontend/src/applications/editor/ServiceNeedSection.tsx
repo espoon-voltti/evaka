@@ -108,6 +108,12 @@ export default React.memo(function ServiceNeedSection({
             <p>
               {t.applications.editor.serviceNeed.urgent.attachmentsMessage.text}
             </p>
+            <strong>
+              {
+                t.applications.editor.serviceNeed.urgent.attachmentsMessage
+                  .subtitle
+              }
+            </strong>
             <FileUpload
               files={formData.urgencyAttachments}
               onUpload={uploadUrgencyAttachment}
@@ -206,6 +212,12 @@ export default React.memo(function ServiceNeedSection({
                   .text
               }
             </p>
+            <strong>
+              {
+                t.applications.editor.serviceNeed.shiftCare.attachmentsMessage
+                  .subtitle
+              }
+            </strong>
             <FileUpload
               files={formData.shiftCareAttachments}
               onUpload={uploadExtendedCareAttachment}
