@@ -79,6 +79,7 @@ const File = styled.div`
   display: flex;
   flex-direction: row;
   flex-wrap: nowrap;
+  align-items: center;
   color: ${colors.greyscale.dark};
 `
 
@@ -93,6 +94,7 @@ const FileDetails = styled.div`
   display: flex;
   flex-direction: column;
   flex-wrap: nowrap;
+  align-items: center;
 `
 
 const FileHeader = styled.div`
@@ -127,8 +129,8 @@ const ProgressBar = styled.div<ProgressBarProps>`
 const FileDownloadButton = styled.button`
   border: none;
   background: none;
-  cursor: pointer;
   color: ${colors.blues.primary};
+  cursor: pointer;
 `
 
 const FileDeleteButton = styled(IconButton)`
@@ -137,7 +139,6 @@ const FileDeleteButton = styled(IconButton)`
   padding: 4px;
   margin-left: 12px;
   color: ${colors.greyscale.medium};
-  cursor: pointer;
 
   &:hover {
     color: ${colors.blues.medium};
@@ -206,10 +207,9 @@ export default React.memo(function FileUpload({
   )
 
   const onChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    // FileList is empty when one file is uploaded and then selecting another one is cancelled,
-    // clearing the input's value
     if (event.target.files && event.target.files.length > 0) {
       void addAttachment(event.target.files[0], onUpload)
+      if (event.target.value) event.target.value = ''
     }
   }
 
@@ -239,9 +239,10 @@ export default React.memo(function FileUpload({
     ) => Promise<Result<UUID>>
   ) => {
     const error = file.size > 10000000 ? 'file-too-big' : undefined
+    const pseudoId = Math.random()
     const fileObject: FileObject = {
-      id: Math.random().toString(),
-      key: 1,
+      id: pseudoId.toString(),
+      key: pseudoId,
       file,
       name: file.name,
       contentType: file.type,
