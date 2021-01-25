@@ -54,12 +54,7 @@ export default React.memo(function ServiceNeedSection({
     file: File,
     onUploadProgress: (progressEvent: ProgressEvent) => void
   ): Promise<Result<UUID>> =>
-    saveAttachment(
-      applicationId,
-      file,
-      'EXTENDED_CARE',
-      onUploadProgress
-    )
+    saveAttachment(applicationId, file, 'EXTENDED_CARE', onUploadProgress)
 
   const uploadUrgencyAttachment = (
     file: File,
