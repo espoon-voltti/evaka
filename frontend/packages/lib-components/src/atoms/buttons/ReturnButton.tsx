@@ -8,7 +8,7 @@ import { useHistory } from 'react-router-dom'
 import { faAngleLeft } from '@evaka/lib-icons'
 import InlineButton from './InlineButton'
 
-const ReturnButtonWrapper = styled.div`
+export const ReturnButtonWrapper = styled.div`
   margin-top: 32px;
   margin-bottom: 8px;
   display: inline-block;

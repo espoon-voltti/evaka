@@ -7,17 +7,14 @@ import { useParams } from 'react-router-dom'
 import { Loading, Result } from '@evaka/lib-common/src/api'
 import { useRestApi } from '@evaka/lib-common/src/utils/useRestApi'
 import Container from '@evaka/lib-components/src/layout/Container'
-import ReturnButton from '@evaka/lib-components/src/atoms/buttons/ReturnButton'
 import { SpinnerSegment } from '@evaka/lib-components/src/atoms/state/Spinner'
 import ErrorSegment from '@evaka/lib-components/src/atoms/state/ErrorSegment'
-import { useTranslation } from '~localization'
 import DaycareApplicationEditor from '~applications/editor/DaycareApplicationEditor'
 import { getApplication } from '~applications/api'
 import { Application } from '~applications/types'
 
 export default React.memo(function ApplicationEditor() {
   const { applicationId } = useParams<{ applicationId: string }>()
-  const t = useTranslation()
   const [apiData, setApiData] = useState<Result<Application>>(Loading.of())
 
   const loadApplication = useRestApi(getApplication, setApiData)
@@ -27,7 +24,6 @@ export default React.memo(function ApplicationEditor() {
 
   return (
     <Container>
-      <ReturnButton label={t.common.return} />
       {apiData.isLoading && <SpinnerSegment />}
       {apiData.isFailure && <ErrorSegment />}
       {apiData.isSuccess && (
