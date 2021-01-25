@@ -72,7 +72,7 @@ export default React.memo(function DaycareApplicationEditor({
   )
 
   const onVerify = () => {
-    console.log('validation should happen here')
+    // todo: validation should happen here
     setVerified(false)
     setVerifying(true)
   }
@@ -96,7 +96,6 @@ export default React.memo(function DaycareApplicationEditor({
 
   const onSend = () => {
     const reqBody = formDataToApiData(formData)
-    console.log('updating application', apiData.id, reqBody)
     setSubmitting(true)
     void updateApplication(apiData.id, reqBody).then((res) => {
       setSubmitting(false)
