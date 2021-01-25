@@ -14,7 +14,6 @@ export type CareTypeLabel =
 export interface User {
   id: UUID
   name: string
-  unitId?: UUID // only mobile devices have this
 }
 
 export const adRoles = [

@@ -1,0 +1,43 @@
+/*
+ * SPDX-FileCopyrightText: 2017-2020 City of Espoo
+ *
+ * SPDX-License-Identifier: LGPL-2.1-or-later
+ */
+
+body {
+  font-family: 'Open Sans', 'Arial', sans-serif;
+  background-color: #f5f5f5;
+  margin: 0;
+}
+
+input,
+button,
+textarea,
+select {
+  font: inherit;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: inherit;
+}
+
+html {
+  box-sizing: border-box;
+  background-color: #f5f5f5;
+  font-size: 100%;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-font-smoothing: antialiased;
+  min-width: 300px;
+  overflow-x: hidden;
+  overflow-y: scroll;
+  text-rendering: optimizeLegibility;
+  text-size-adjust: 100%;
+}
+
+a {
+  color: #0050bb;
+  cursor: pointer;
+  text-decoration: none;
+}

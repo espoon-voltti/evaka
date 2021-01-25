@@ -54,11 +54,6 @@ import { UserContext, UserContextProvider } from '~state/user'
 import CreateUnitPage from '~components/unit/unit-details/CreateUnitPage'
 import UnitDetailsPage from '~components/unit/unit-details/UnitDetailsPage'
 import ApplicationPage from 'components/ApplicationPage'
-import AttendancePageWrapper from '~components/attendances/AttendancePageWrapper'
-import AttendanceGroupSelectorPage from '~components/attendances/AttendanceGroupSelectorPage'
-import AttendanceChildPage from '~components/attendances/AttendanceChildPage'
-import MobileLander from '~components/mobile/MobileLander'
-import PairingWizard from '~components/mobile/PairingWizard'
 import { hasRole } from '~utils/roles'
 import { getAuthStatus, AuthStatus } from '~api/auth'
 import VoucherServiceProviders from '~components/reports/VoucherServiceProviders'
@@ -123,25 +118,6 @@ export default function App() {
               exact
               path="/units/:unitId/family-contacts"
               component={ensureAuthenticated(ReportFamilyContacts)}
-            />
-            <Route
-              exact
-              path="/units/:unitId/groupselector"
-              component={ensureAuthenticated(AttendanceGroupSelectorPage)}
-            />
-            <Route exact path="/mobile" component={MobileLander} />
-            <Route exact path="/mobile/pairing" component={PairingWizard} />
-            <Route
-              path="/units/:unitId/attendance/:groupId"
-              component={ensureAuthenticated(AttendancePageWrapper)}
-            />
-            <Route
-              path="/units/:unitId/groups/:groupId/childattendance/:childId"
-              component={ensureAuthenticated(AttendanceChildPage)}
-            />
-            <Route
-              path="/units/:unitId/attendance"
-              component={ensureAuthenticated(AttendancePageWrapper)}
             />
             <RouteWithTitle
               exact

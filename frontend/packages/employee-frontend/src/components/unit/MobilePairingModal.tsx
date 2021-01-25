@@ -4,7 +4,7 @@
 
 import React, { Fragment, useEffect, useState } from 'react'
 import styled from 'styled-components'
-
+import colors from '@evaka/lib-components/src/colors'
 import { Result, Loading } from '@evaka/lib-common/src/api'
 import {
   getPairingStatus,
@@ -14,7 +14,6 @@ import {
   putMobileDeviceName
 } from '~api/unit'
 import InfoModal from '~components/common/InfoModal'
-import { ResponseKey } from '~components/mobile/PairingWizard'
 import InputField from '@evaka/lib-components/src/atoms/form/InputField'
 import Loader from '@evaka/lib-components/src/atoms/Loader'
 import { faPlus } from '@evaka/lib-icons'
@@ -34,6 +33,17 @@ const Flex = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
+`
+
+const ResponseKey = styled.div`
+  font-family: Montserrat, sans-serif;
+  font-style: normal;
+  font-weight: 600;
+  font-size: 30px;
+  line-height: 30px;
+  text-align: center;
+  letter-spacing: 0.08em;
+  color: ${colors.greyscale.dark};
 `
 
 export default React.memo(function MobilePairingModal({
