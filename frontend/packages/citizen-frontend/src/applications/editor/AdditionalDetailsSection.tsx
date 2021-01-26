@@ -3,13 +3,13 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
-import { ContentArea } from '@evaka/lib-components/src/layout/Container'
-import { H2, Label } from '@evaka/lib-components/src/typography'
+import { Label } from '@evaka/lib-components/src/typography'
 import { Gap } from '@evaka/lib-components/src/white-space'
 import { TextArea } from '@evaka/lib-components/src/atoms/form/InputField'
 import { useTranslation } from '~localization'
 import { ApplicationType } from '~applications/types'
 import { AdditionalDetailsFormData } from '~applications/editor/ApplicationFormData'
+import EditorSection from '~applications/editor/EditorSection'
 import InfoBallWrapper from '~applications/InfoBallWrapper'
 
 type Props = {
@@ -26,8 +26,10 @@ export default React.memo(function AdditionalDetailsSection({
   const t = useTranslation()
 
   return (
-    <ContentArea opaque paddingVertical="L">
-      <H2>{t.applications.editor.additionalDetails.title}</H2>
+    <EditorSection
+      title={t.applications.editor.additionalDetails.title}
+      validationErrors={0}
+    >
       <Label>
         {t.applications.editor.additionalDetails.otherInfoLabel}
         <TextArea
@@ -78,6 +80,6 @@ export default React.memo(function AdditionalDetailsSection({
           </Label>
         </>
       ) : null}
-    </ContentArea>
+    </EditorSection>
   )
 })

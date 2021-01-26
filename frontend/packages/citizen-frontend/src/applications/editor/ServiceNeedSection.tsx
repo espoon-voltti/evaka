@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
-import { ContentArea } from '@evaka/lib-components/src/layout/Container'
 import { ServiceNeedFormData } from '~applications/editor/ApplicationFormData'
 import { DatePicker } from '@evaka/lib-components/src/molecules/DatePicker'
 import Checkbox from '@evaka/lib-components/src/atoms/form/Checkbox'
@@ -21,6 +20,7 @@ import colors from '@evaka/lib-components/src/colors'
 import RoundIcon from '@evaka/lib-components/src/atoms/RoundIcon'
 import { faInfo } from '@evaka/lib-icons'
 import { Gap } from '@evaka/lib-components/src/white-space'
+import EditorSection from '~applications/editor/EditorSection'
 
 export type ServiceNeedSectionProps = {
   formData: ServiceNeedFormData
@@ -43,10 +43,14 @@ export default React.memo(function ServiceNeedSection({
   updateFormData
 }: ServiceNeedSectionProps) {
   const t = useTranslation()
+
   return (
-    <ContentArea opaque paddingVertical="L">
+    <EditorSection
+      title={t.applications.editor.serviceNeed.serviceNeed}
+      validationErrors={0}
+      openInitially
+    >
       <FixedSpaceColumn>
-        <H3>{t.applications.editor.serviceNeed.serviceNeed}</H3>
         <H4>
           {t.applications.editor.serviceNeed.startDate.label}
           <Tooltip
@@ -212,6 +216,6 @@ export default React.memo(function ServiceNeedSection({
           />
         )}
       </FixedSpaceColumn>
-    </ContentArea>
+    </EditorSection>
   )
 })

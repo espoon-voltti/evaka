@@ -3,16 +3,16 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useState } from 'react'
-import { ContentArea } from '@evaka/lib-components/src/layout/Container'
 import { useTranslation } from '~localization'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from '@evaka/lib-components/src/layout/flex-helpers'
 import Checkbox from '@evaka/lib-components/src/atoms/form/Checkbox'
-import { H2, H3, Label, P } from '@evaka/lib-components/src/typography'
+import { H3, Label, P } from '@evaka/lib-components/src/typography'
 import InputField from '@evaka/lib-components/src/atoms/form/InputField'
 import { ContactInfoFormData } from './ApplicationFormData'
+import EditorSection from '~applications/editor/EditorSection'
 import { DatePickerClearable } from '@evaka/lib-components/src/molecules/DatePicker'
 
 export type ContactInfoProps = {
@@ -39,9 +39,11 @@ export default React.memo(function ContactInfoSection({
   ] = useState<boolean>(false)
 
   return (
-    <ContentArea opaque paddingVertical="L">
-      <H2>{t.applications.editor.contactInfo.title}</H2>
-      <p>{t.applications.editor.contactInfo.info}</p>
+    <EditorSection
+      title={t.applications.editor.contactInfo.title}
+      validationErrors={0}
+    >
+      <P>{t.applications.editor.contactInfo.info}</P>
       <H3>{t.applications.editor.contactInfo.childInfoTitle}</H3>
       <FixedSpaceRow>
         <FixedSpaceColumn>
@@ -326,6 +328,6 @@ export default React.memo(function ContactInfoSection({
           label={`${child.firstName}`}
         />
       ))}
-    </ContentArea>
+    </EditorSection>
   )
 })

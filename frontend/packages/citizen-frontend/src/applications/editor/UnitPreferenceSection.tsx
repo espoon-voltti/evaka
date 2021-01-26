@@ -4,8 +4,7 @@
 
 import React, { useEffect, useState } from 'react'
 import styled from 'styled-components'
-import { ContentArea } from '@evaka/lib-components/src/layout/Container'
-import { H2, H3, Label, P } from '@evaka/lib-components/src/typography'
+import { H3, Label, P } from '@evaka/lib-components/src/typography'
 import Checkbox from '@evaka/lib-components/src/atoms/form/Checkbox'
 import { UnitPreferenceFormData } from '~applications/editor/ApplicationFormData'
 import {
@@ -31,6 +30,7 @@ import MultiSelect from '@evaka/lib-components/src/atoms/form/MultiSelect'
 import colors from '@evaka/lib-components/src/colors'
 import ExternalLink from '@evaka/lib-components/src/atoms/ExternalLink'
 import { useTranslation } from '~localization'
+import EditorSection from '~applications/editor/EditorSection'
 
 const maxUnits = 3
 
@@ -73,9 +73,10 @@ export default React.memo(function UnitPreferenceSection({
   }, [applicationType, preparatory, preferredStartDate])
 
   return (
-    <ContentArea opaque paddingVertical="L">
-      <H2>{t.applications.editor.unitPreference.title}</H2>
-
+    <EditorSection
+      title={t.applications.editor.unitPreference.title}
+      validationErrors={0}
+    >
       <H3>{t.applications.editor.unitPreference.siblingBasis.title}</H3>
       <P>{t.applications.editor.unitPreference.siblingBasis.p1}</P>
       <P>{t.applications.editor.unitPreference.siblingBasis.p2}</P>
@@ -279,7 +280,7 @@ export default React.memo(function UnitPreferenceSection({
           )}
         </>
       )}
-    </ContentArea>
+    </EditorSection>
   )
 })
 
