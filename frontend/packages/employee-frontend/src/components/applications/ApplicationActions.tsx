@@ -55,7 +55,8 @@ export default React.memo(function ApplicationActions({
         () =>
           void setErrorMessage({
             type: 'error',
-            title: i18n.common.error.unknown
+            title: i18n.common.error.unknown,
+            resolveLabel: i18n.common.ok
           })
       )
       .finally(() => void setActionInFlight(false))

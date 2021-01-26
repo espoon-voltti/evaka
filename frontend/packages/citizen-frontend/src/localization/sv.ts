@@ -288,6 +288,12 @@ const sv: Translations = {
         postalCodePlaceholder: 'Postinumero',
         municipalityPlaceholder: 'Postitoimipaikka',
         choosePlaceholder: 'Valitse'
+      },
+      draftPolicyInfo: {
+        title: 'Utkastet till ansökan har sparats',
+        text:
+          'Ansökan har sparats som halvfärdig. Obs! En halvfärdig ansökan förvaras i tjänsten i en månad efter att den senast sparats',
+        ok: 'Klart'
       }
     }
   },

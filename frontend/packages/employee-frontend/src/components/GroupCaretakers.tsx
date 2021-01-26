@@ -32,7 +32,7 @@ import StatusLabel from '~components/common/StatusLabel'
 import styled from 'styled-components'
 import { faPen, faQuestion, faTrash } from '@evaka/lib-icons'
 import GroupCaretakersModal from '~components/group-caretakers/GroupCaretakersModal'
-import InfoModal from '~components/common/InfoModal'
+import InfoModal from '@evaka/lib-components/src/molecules/modals/InfoModal'
 import { useTranslation } from '~state/i18n'
 import ReturnButton from '@evaka/lib-components/src/atoms/buttons/ReturnButton'
 import { FixedSpaceRow } from '@evaka/lib-components/src/layout/flex-helpers'
@@ -183,11 +183,15 @@ function GroupCaretakers({
               <InfoModal
                 iconColour={'orange'}
                 title={i18n.groupCaretakers.confirmDelete}
-                resolveLabel={i18n.common.remove}
-                rejectLabel={i18n.common.cancel}
                 icon={faQuestion}
-                resolve={() => deleteRow(rowToDelete?.id)}
-                reject={() => setRowToDelete(null)}
+                reject={{
+                  action: () => setRowToDelete(null),
+                  label: i18n.common.cancel
+                }}
+                resolve={{
+                  action: () => deleteRow(rowToDelete?.id),
+                  label: i18n.common.remove
+                }}
               />
             )}
           </NarrowContainer>

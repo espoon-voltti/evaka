@@ -13,7 +13,7 @@ import {
   postPairingResponse,
   putMobileDeviceName
 } from '~api/unit'
-import InfoModal from '~components/common/InfoModal'
+import InfoModal from '@evaka/lib-components/src/molecules/modals/InfoModal'
 import InputField from '@evaka/lib-components/src/atoms/form/InputField'
 import Loader from '@evaka/lib-components/src/atoms/Loader'
 import { faPlus } from '@evaka/lib-icons'
@@ -128,8 +128,7 @@ export default React.memo(function MobilePairingModal({
               {i18n.unit.accessControl.mobileDevices.modalText2}
             </Fragment>
           }
-          resolve={closeModal}
-          resolveLabel={i18n.common.cancel}
+          resolve={{ action: closeModal, label: i18n.common.cancel }}
           data-qa="mobile-pairing-modal-phase-1"
         >
           {pairingResponse.isLoading && <Loader />}
@@ -148,8 +147,7 @@ export default React.memo(function MobilePairingModal({
           title={i18n.unit.accessControl.mobileDevices.modalTitle}
           icon={faPlus}
           text={i18n.unit.accessControl.mobileDevices.modalText3}
-          resolve={closeModal}
-          resolveLabel={i18n.common.cancel}
+          resolve={{ action: closeModal, label: i18n.common.cancel }}
         >
           {pairingResponse.isLoading && <Loader />}
           {pairingResponse.isFailure && <div>{i18n.common.loadingFailed}</div>}
@@ -173,9 +171,8 @@ export default React.memo(function MobilePairingModal({
           title={i18n.unit.accessControl.mobileDevices.modalTitle}
           icon={faPlus}
           text={i18n.unit.accessControl.mobileDevices.modalText4}
-          reject={closeModal}
-          resolve={saveDeviceName}
-          resolveLabel={i18n.common.ready}
+          reject={{ action: closeModal, label: i18n.common.cancel }}
+          resolve={{ action: saveDeviceName, label: i18n.common.ready }}
         >
           {pairingResponse.isLoading && <Loader />}
           {pairingResponse.isFailure && <div>{i18n.common.loadingFailed}</div>}

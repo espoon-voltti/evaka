@@ -25,7 +25,7 @@ import * as _ from 'lodash'
 import { faChild, faQuestion } from '@evaka/lib-icons'
 import { UIContext } from '~state/ui'
 import FridgeChildModal from '~components/person-profile/person-fridge-child/FridgeChildModal'
-import InfoModal from '~components/common/InfoModal'
+import InfoModal from '@evaka/lib-components/src/molecules/modals/InfoModal'
 import { Link } from 'react-router-dom'
 import {
   getParentshipsByHeadOfChild,
@@ -90,24 +90,27 @@ const PersonFridgeChild = React.memo(function PersonFridgeChild({
           iconColour={'orange'}
           title={i18n.personProfile.fridgeChild.removeChild}
           text={i18n.personProfile.fridgeChild.confirmText}
-          resolveLabel={i18n.common.remove}
-          rejectLabel={i18n.common.cancel}
           icon={faQuestion}
-          reject={() => clearUiMode()}
-          resolve={() =>
-            removeParentship(selectedParentshipId).then((res: Result<null>) => {
-              clearUiMode()
-              if (res.isFailure) {
-                setErrorMessage({
-                  type: 'error',
-                  title: i18n.personProfile.fridgeChild.error.remove.title,
-                  text: i18n.common.tryAgain
-                })
-              } else {
-                reload()
-              }
-            })
-          }
+          reject={{ action: () => clearUiMode(), label: i18n.common.cancel }}
+          resolve={{
+            action: () =>
+              removeParentship(selectedParentshipId).then(
+                (res: Result<null>) => {
+                  clearUiMode()
+                  if (res.isFailure) {
+                    setErrorMessage({
+                      type: 'error',
+                      title: i18n.personProfile.fridgeChild.error.remove.title,
+                      text: i18n.common.tryAgain,
+                      resolveLabel: i18n.common.ok
+                    })
+                  } else {
+                    reload()
+                  }
+                }
+              ),
+            label: i18n.common.remove
+          }}
         />
       )
     }

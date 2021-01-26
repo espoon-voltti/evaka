@@ -11,7 +11,7 @@ import AssistanceNeedForm from '~components/child-information/assistance-need/As
 import { faQuestion } from '@evaka/lib-icons'
 import ToolbarAccordion from '~components/common/ToolbarAccordion'
 import { isActiveDateRange } from '~/utils/date'
-import InfoModal from '~components/common/InfoModal'
+import InfoModal from '@evaka/lib-components/src/molecules/modals/InfoModal'
 import { formatDecimal } from '~components/utils'
 
 import { formatParagraphs } from '~utils/html-utils'
@@ -44,16 +44,16 @@ function AssistanceNeedRow({ assistanceNeed, onReload, refSectionTop }: Props) {
       text={`${
         i18n.common.period
       } ${assistanceNeed.startDate.format()} - ${assistanceNeed.endDate.format()}`}
-      resolveLabel={i18n.common.remove}
-      rejectLabel={i18n.common.cancel}
       icon={faQuestion}
-      reject={() => clearUiMode()}
-      resolve={() =>
-        removeAssistanceNeed(assistanceNeed.id).then(() => {
-          clearUiMode()
-          onReload()
-        })
-      }
+      reject={{ action: () => clearUiMode(), label: i18n.common.cancel }}
+      resolve={{
+        action: () =>
+          removeAssistanceNeed(assistanceNeed.id).then(() => {
+            clearUiMode()
+            onReload()
+          }),
+        label: i18n.common.remove
+      }}
     />
   )
 

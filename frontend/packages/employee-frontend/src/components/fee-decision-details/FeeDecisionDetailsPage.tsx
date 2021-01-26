@@ -11,7 +11,7 @@ import {
   ContentArea
 } from '@evaka/lib-components/src/layout/Container'
 import ReturnButton from '@evaka/lib-components/src/atoms/buttons/ReturnButton'
-import InfoModal from '~components/common/InfoModal'
+import InfoModal from '@evaka/lib-components/src/molecules/modals/InfoModal'
 import Heading from './Heading'
 import ChildSection from './ChildSection'
 import Summary from './Summary'
@@ -112,11 +112,12 @@ export default React.memo(function FeeDecisionDetailsPage() {
           title={i18n.feeDecision.modal.title}
           iconColour={'orange'}
           icon={faQuestion}
-          resolveLabel={i18n.feeDecision.modal.confirm}
-          reject={goBack}
-          rejectLabel={i18n.feeDecision.modal.cancel}
-          resolve={() => {
-            setConfirmingBack(false)
+          reject={{ action: goBack, label: i18n.feeDecision.modal.cancel }}
+          resolve={{
+            action: () => {
+              setConfirmingBack(false)
+            },
+            label: i18n.feeDecision.modal.confirm
           }}
         />
       )}

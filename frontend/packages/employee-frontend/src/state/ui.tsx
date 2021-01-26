@@ -10,7 +10,7 @@ export interface ErrorMessage {
   type: ErrorMessageType
   title: string
   text?: string
-  resolveLabel?: string
+  resolveLabel: string
   rejectLabel?: string
 }
 

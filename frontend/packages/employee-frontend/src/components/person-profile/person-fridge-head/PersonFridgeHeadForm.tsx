@@ -73,7 +73,8 @@ function PersonFridgeHeadForm({ id, personFridgeHead }: Props) {
           setErrorMessage({
             type: 'error',
             title: i18n.personProfile.fridgeHead.error.edit.title,
-            text: i18n.common.tryAgain
+            text: i18n.common.tryAgain,
+            resolveLabel: i18n.common.ok
           })
         } else {
           void getPersonDetails(id).then((adult) => {

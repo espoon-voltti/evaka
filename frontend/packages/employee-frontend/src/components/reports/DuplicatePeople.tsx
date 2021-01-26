@@ -17,7 +17,7 @@ import {
   Thead,
   Tbody
 } from '@evaka/lib-components/src/layout/Table'
-import InfoModal from '~components/common/InfoModal'
+import InfoModal from '@evaka/lib-components/src/molecules/modals/InfoModal'
 import { useTranslation } from '~state/i18n'
 import { Link } from 'react-router-dom'
 import { Loading, Result } from '@evaka/lib-common/src/api'
@@ -223,40 +223,45 @@ function DuplicatePeople() {
               <InfoModal
                 iconColour={'orange'}
                 title={i18n.reports.duplicatePeople.confirmMoveTitle}
-                resolveLabel={i18n.common.confirm}
-                rejectLabel={i18n.common.cancel}
                 icon={faQuestion}
-                reject={() => {
-                  setMaster(null)
-                  setDuplicate(null)
+                reject={{
+                  action: () => {
+                    setMaster(null)
+                    setDuplicate(null)
+                  },
+                  label: i18n.common.cancel
                 }}
-                resolve={() => {
-                  const masterId = rows.value.find(
-                    (row) =>
-                      row.groupIndex == master.group &&
-                      row.duplicateNumber == master.row
-                  )?.id
-                  const duplicateId = rows.value.find(
-                    (row) =>
-                      row.groupIndex == duplicate.group &&
-                      row.duplicateNumber == duplicate.row
-                  )?.id
+                resolve={{
+                  action: () => {
+                    const masterId = rows.value.find(
+                      (row) =>
+                        row.groupIndex == master.group &&
+                        row.duplicateNumber == master.row
+                    )?.id
+                    const duplicateId = rows.value.find(
+                      (row) =>
+                        row.groupIndex == duplicate.group &&
+                        row.duplicateNumber == duplicate.row
+                    )?.id
 
-                  setMaster(null)
-                  setDuplicate(null)
+                    setMaster(null)
+                    setDuplicate(null)
 
-                  if (masterId && duplicateId) {
-                    void mergePeople(masterId, duplicateId).then((res) => {
-                      if (res.isFailure) {
-                        setErrorMessage({
-                          type: 'error',
-                          title: i18n.reports.duplicatePeople.errorTitle,
-                          text: i18n.reports.duplicatePeople.errorText
-                        })
-                      }
-                      loadData()
-                    })
-                  }
+                    if (masterId && duplicateId) {
+                      void mergePeople(masterId, duplicateId).then((res) => {
+                        if (res.isFailure) {
+                          setErrorMessage({
+                            type: 'error',
+                            title: i18n.reports.duplicatePeople.errorTitle,
+                            text: i18n.reports.duplicatePeople.errorText,
+                            resolveLabel: i18n.common.ok
+                          })
+                        }
+                        loadData()
+                      })
+                    }
+                  },
+                  label: i18n.common.confirm
                 }}
               />
             )}
@@ -264,15 +269,19 @@ function DuplicatePeople() {
               <InfoModal
                 iconColour={'orange'}
                 title={i18n.reports.duplicatePeople.confirmDeleteTitle}
-                resolveLabel={i18n.common.remove}
-                rejectLabel={i18n.common.cancel}
                 icon={faQuestion}
-                reject={() => {
-                  setDeleteId(null)
+                reject={{
+                  action: () => {
+                    setDeleteId(null)
+                  },
+                  label: i18n.common.cancel
                 }}
-                resolve={() => {
-                  void deletePerson(deleteId).then(loadData)
-                  setDeleteId(null)
+                resolve={{
+                  action: () => {
+                    void deletePerson(deleteId).then(loadData)
+                    setDeleteId(null)
+                  },
+                  label: i18n.common.remove
                 }}
               />
             )}

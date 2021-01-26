@@ -6,7 +6,7 @@ import React, { useContext, useEffect, useRef, useState } from 'react'
 import { faMoneyCheckEdit, faQuestion } from '@evaka/lib-icons'
 import Loader from '@evaka/lib-components/src/atoms/Loader'
 import { Gap } from '@evaka/lib-components/src/white-space'
-import InfoModal from '~components/common/InfoModal'
+import InfoModal from '@evaka/lib-components/src/molecules/modals/InfoModal'
 import FeeAlterationList from './fee-alteration/FeeAlterationList'
 import FeeAlterationEditor from './fee-alteration/FeeAlterationEditor'
 import { useTranslation } from '~state/i18n'
@@ -59,7 +59,8 @@ const FeeAlteration = React.memo(function FeeAlteration({ id, open }: Props) {
     } else {
       setErrorMessage({
         type: 'error',
-        title: i18n.childInformation.feeAlteration.updateError
+        title: i18n.childInformation.feeAlteration.updateError,
+        resolveLabel: i18n.common.ok
       })
     }
   }
@@ -121,23 +122,27 @@ const FeeAlteration = React.memo(function FeeAlteration({ id, open }: Props) {
             deleted.validTo?.format() ?? ''
           }`}
           icon={faQuestion}
-          reject={() => setDeleted(undefined)}
-          resolve={() =>
-            deleted &&
-            deleteFeeAlteration(deleted.id).then((res) => {
-              setDeleted(undefined)
-              if (res.isSuccess) {
-                loadFeeAlterations()
-              } else {
-                setErrorMessage({
-                  type: 'error',
-                  title: i18n.childInformation.feeAlteration.deleteError
-                })
-              }
-            })
-          }
-          rejectLabel={i18n.common.cancel}
-          resolveLabel={i18n.common.remove}
+          reject={{
+            action: () => setDeleted(undefined),
+            label: i18n.common.cancel
+          }}
+          resolve={{
+            action: () =>
+              deleted &&
+              deleteFeeAlteration(deleted.id).then((res) => {
+                setDeleted(undefined)
+                if (res.isSuccess) {
+                  loadFeeAlterations()
+                } else {
+                  setErrorMessage({
+                    type: 'error',
+                    title: i18n.childInformation.feeAlteration.deleteError,
+                    resolveLabel: i18n.common.ok
+                  })
+                }
+              }),
+            label: i18n.common.remove
+          }}
         />
       ) : null}
     </div>

@@ -21,7 +21,7 @@ import { useTranslation } from 'state/i18n'
 import { FixedSpaceRow } from '@evaka/lib-components/src/layout/flex-helpers'
 import { faPen, faQuestion, faTrash } from '@evaka/lib-icons'
 import IconButton from '@evaka/lib-components/src/atoms/buttons/IconButton'
-import InfoModal from '~components/common/InfoModal'
+import InfoModal from '@evaka/lib-components/src/molecules/modals/InfoModal'
 
 const NoteContainer = styled.div`
   display: flex;
@@ -121,7 +121,8 @@ export default React.memo(function ApplicationNoteBox(props: Props) {
         setErrorMessage({
           type: 'error',
           title: i18n.common.error.unknown,
-          text: i18n.application.notes.error.save
+          text: i18n.application.notes.error.save,
+          resolveLabel: i18n.common.ok
         })
       )
   }
@@ -137,7 +138,8 @@ export default React.memo(function ApplicationNoteBox(props: Props) {
         setErrorMessage({
           type: 'error',
           title: i18n.common.error.unknown,
-          text: i18n.application.notes.error.remove
+          text: i18n.application.notes.error.remove,
+          resolveLabel: i18n.common.ok
         })
       )
   }
@@ -146,11 +148,15 @@ export default React.memo(function ApplicationNoteBox(props: Props) {
     <InfoModal
       iconColour={'orange'}
       title={i18n.application.notes.confirmDelete}
-      resolveLabel={i18n.common.remove}
-      rejectLabel={i18n.common.cancel}
       icon={faQuestion}
-      reject={() => setConfirmingDelete(false)}
-      resolve={() => doDelete()}
+      reject={{
+        action: () => setConfirmingDelete(false),
+        label: i18n.common.cancel
+      }}
+      resolve={{
+        action: () => doDelete(),
+        label: i18n.common.remove
+      }}
     />
   )
 

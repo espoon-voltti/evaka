@@ -219,7 +219,8 @@ function AssistanceNeedForm(props: Props) {
         } else {
           setErrorMessage({
             type: 'error',
-            title: i18n.common.error.unknown
+            title: i18n.common.error.unknown,
+            resolveLabel: i18n.common.ok
           })
         }
       }

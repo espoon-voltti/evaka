@@ -10,7 +10,7 @@ import AssistanceActionForm from '~components/child-information/assistance-actio
 import { faQuestion } from '@evaka/lib-icons'
 import ToolbarAccordion from '~components/common/ToolbarAccordion'
 import { isActiveDateRange } from '~/utils/date'
-import InfoModal from '~components/common/InfoModal'
+import InfoModal from '@evaka/lib-components/src/molecules/modals/InfoModal'
 
 import LabelValueList from '~components/common/LabelValueList'
 import {
@@ -48,16 +48,16 @@ function AssistanceActionRow({
       text={`${
         i18n.common.period
       } ${assistanceAction.startDate.format()} - ${assistanceAction.endDate.format()}`}
-      resolveLabel={i18n.common.remove}
-      rejectLabel={i18n.common.cancel}
       icon={faQuestion}
-      reject={() => clearUiMode()}
-      resolve={() =>
-        removeAssistanceAction(assistanceAction.id).then(() => {
-          clearUiMode()
-          onReload()
-        })
-      }
+      reject={{ action: () => clearUiMode(), label: i18n.common.cancel }}
+      resolve={{
+        action: () =>
+          removeAssistanceAction(assistanceAction.id).then(() => {
+            clearUiMode()
+            onReload()
+          }),
+        label: i18n.common.remove
+      }}
     />
   )
 

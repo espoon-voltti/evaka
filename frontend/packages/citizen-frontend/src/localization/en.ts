@@ -289,6 +289,12 @@ const en: Translations = {
         postalCodePlaceholder: 'Postinumero',
         municipalityPlaceholder: 'Postitoimipaikka',
         choosePlaceholder: 'Valitse'
+      },
+      draftPolicyInfo: {
+        title: 'Your draft application was saved',
+        text:
+          'Your unfinished application was saved. Please note! An unfinished application is stored in the system for one month after it was last saved.',
+        ok: 'OK'
       }
     }
   },

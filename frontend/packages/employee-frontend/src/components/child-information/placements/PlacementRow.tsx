@@ -17,7 +17,7 @@ import { faQuestion } from '@evaka/lib-icons'
 import styled from 'styled-components'
 import { Gap } from '@evaka/lib-components/src/white-space'
 import Button from '@evaka/lib-components/src/atoms/buttons/Button'
-import InfoModal from '~components/common/InfoModal'
+import InfoModal from '@evaka/lib-components/src/molecules/modals/InfoModal'
 import { DatePicker } from '@evaka/lib-components/src/molecules/DatePicker'
 import { UIContext, UiState } from '~state/ui'
 import { Link } from 'react-router-dom'
@@ -121,7 +121,8 @@ function PlacementRow({ placement, onRefreshNeeded, checkOverlaps }: Props) {
         setErrorMessage({
           type: 'error',
           title: message,
-          text: text
+          text: text,
+          resolveLabel: i18n.common.ok
         })
       }
     })
@@ -294,10 +295,14 @@ function PlacementRow({ placement, onRefreshNeeded, checkOverlaps }: Props) {
           title={i18n.childInformation.placements.deletePlacement.confirmTitle}
           iconColour={'orange'}
           icon={faQuestion}
-          resolveLabel={i18n.childInformation.placements.deletePlacement.btn}
-          resolve={submitDelete}
-          rejectLabel={i18n.common.cancel}
-          reject={() => setConfirmingDelete(false)}
+          resolve={{
+            action: submitDelete,
+            label: i18n.childInformation.placements.deletePlacement.btn
+          }}
+          reject={{
+            action: () => setConfirmingDelete(false),
+            label: i18n.common.cancel
+          }}
         />
       )}
     </>
