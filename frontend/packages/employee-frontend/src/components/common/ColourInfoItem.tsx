@@ -5,9 +5,9 @@
 import React from 'react'
 import styled from 'styled-components'
 import '../absences/ColorInfo.scss'
-import { AbsenceColours } from '~utils/colours'
 import { AbsenceType } from '~types/absence'
 import { useTranslation } from '~state/i18n'
+import { absenceColours } from '@evaka/lib-components/src/colors'
 
 interface InfoBallProps {
   type: AbsenceType
@@ -21,30 +21,7 @@ const InfoBall = styled.div<InfoBallProps>`
   margin-right: 12px;
   margin-top: 2px;
   flex-shrink: 0;
-  background: ${(props: InfoBallProps) => {
-    switch (props.type) {
-      case 'OTHER_ABSENCE':
-        return AbsenceColours.Other
-      case 'SICKLEAVE':
-        return AbsenceColours.Sick
-      case 'UNKNOWN_ABSENCE':
-        return AbsenceColours.Unknown
-      case 'PLANNED_ABSENCE':
-        return AbsenceColours.Planned
-      case 'TEMPORARY_RELOCATION':
-        return AbsenceColours.Relocated
-      case 'TEMPORARY_VISITOR':
-        return AbsenceColours.Visitor
-      case 'PARENTLEAVE':
-        return AbsenceColours.Parentleave
-      case 'FORCE_MAJEURE':
-        return AbsenceColours.Uncharged
-      case 'PRESENCE':
-        return AbsenceColours.Presence
-      default:
-        return 'none'
-    }
-  }};
+  background: ${(p: InfoBallProps) => absenceColours[p.type] ?? 'none'}};
 
   @media print {
     -webkit-print-color-adjust: exact;

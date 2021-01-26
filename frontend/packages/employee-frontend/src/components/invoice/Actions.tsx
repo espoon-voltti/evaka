@@ -8,11 +8,11 @@ import AsyncButton from '@evaka/lib-components/src/atoms/buttons/AsyncButton'
 import { useTranslation } from '../../state/i18n'
 import { updateInvoice, markInvoiceSent } from '../../api/invoicing'
 import { InvoiceDetailed } from '../../types/invoicing'
-import { EspooColours } from '../../utils/colours'
 import { FixedSpaceRow } from '@evaka/lib-components/src/layout/flex-helpers'
+import colors from '@evaka/lib-components/src/colors'
 
 const ErrorMessage = styled.div`
-  color: ${EspooColours.red};
+  color: ${colors.accents.red};
   margin-right: 20px;
 `
 

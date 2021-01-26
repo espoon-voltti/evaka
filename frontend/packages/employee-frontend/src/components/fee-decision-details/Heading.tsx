@@ -19,7 +19,7 @@ import {
   FeeDecisionType,
   PersonDetailed
 } from '~types/invoicing'
-import { EspooColours } from '~utils/colours'
+import colors from '@evaka/lib-components/src/colors'
 import { formatDate } from '~utils/date'
 import { formatName } from '~utils'
 
@@ -213,7 +213,7 @@ export const TitleRow = styled.div`
 export const InfoMarkers = styled.span``
 
 const DisabledLink = styled.span`
-  color: ${EspooColours.grey};
+  color: ${colors.greyscale.medium};
 `
 
 const Cursive = styled.span`

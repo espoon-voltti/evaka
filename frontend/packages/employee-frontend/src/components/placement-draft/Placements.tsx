@@ -14,7 +14,7 @@ import {
   PlacementDraftState,
   PlacementDraftContext
 } from '~state/placementdraft'
-import { EspooColours } from '~utils/colours'
+import colors from '@evaka/lib-components/src/colors'
 import { getStatusLabelByDateRange } from '~utils/date'
 import StatusLabel from '~components/common/StatusLabel'
 import { AlertBox } from '@evaka/lib-components/src/molecules/MessageBoxes'
@@ -54,7 +54,7 @@ const Dates = styled.span`
   width: 220px;
 
   svg {
-    color: ${EspooColours.orange};
+    color: ${colors.accents.orange};
     margin-left: 5px;
   }
 `

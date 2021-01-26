@@ -11,15 +11,15 @@ import { useTranslation } from '../../state/i18n'
 import StickyActionBar from '../common/StickyActionBar'
 import { deleteInvoices } from '../../api/invoicing'
 import { InvoiceStatus } from '../../types/invoicing'
-import { EspooColours } from '../../utils/colours'
 import { InvoicesActions } from './invoices-state'
+import colors from '@evaka/lib-components/src/colors'
 
 const ErrorMessage = styled.div`
-  color: ${EspooColours.red};
+  color: ${colors.accents.red};
 `
 
 const CheckedRowsInfo = styled.div`
-  color: ${EspooColours.grey};
+  color: ${colors.greyscale.medium};
   font-style: italic;
   font-weight: bold;
 `

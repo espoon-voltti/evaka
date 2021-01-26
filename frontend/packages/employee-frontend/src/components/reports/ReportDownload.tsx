@@ -9,7 +9,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faFileSpreadsheet } from '@evaka/lib-icons'
 import { LabelKeyObject } from 'react-csv/components/CommonPropTypes'
 import { useTranslation } from '~state/i18n'
-import { EspooColours } from '~utils/colours'
+import colors from '@evaka/lib-components/src/colors'
 
 const RowRightAligned = styled.div`
   display: flex;
@@ -18,7 +18,7 @@ const RowRightAligned = styled.div`
 `
 
 const DisabledLink = styled.span`
-  color: ${EspooColours.grey};
+  color: ${colors.greyscale.medium};
 `
 
 const LinkText = styled.span`

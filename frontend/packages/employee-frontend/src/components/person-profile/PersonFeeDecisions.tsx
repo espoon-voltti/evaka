@@ -33,7 +33,7 @@ import {
 import { FeeDecision } from '~types/invoicing'
 import { DateTd, StatusTd } from '~components/PersonProfile'
 import { formatCents } from '~utils/money'
-import { EspooColours } from '~utils/colours'
+import colors from '@evaka/lib-components/src/colors'
 import { DatePicker } from '@evaka/lib-components/src/molecules/DatePicker'
 
 interface Props {
@@ -152,7 +152,7 @@ const Label = styled.label`
 `
 
 const ErrorMessage = styled.div`
-  color: ${EspooColours.red};
+  color: ${colors.accents.red};
 `
 
 const Modal = React.memo(function Modal({

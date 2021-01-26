@@ -9,7 +9,7 @@ import { faCopy, faPen, faSync, faTrash } from '@evaka/lib-icons'
 import { faExclamationTriangle } from '@fortawesome/free-solid-svg-icons'
 import Tooltip from 'components/common/Tooltip'
 import StatusLabel from 'components/common/StatusLabel'
-import { EspooColours } from 'utils/colours'
+import colors from '@evaka/lib-components/src/colors'
 import { DateRangeOpen, getStatusLabelByDateRange } from 'utils/date'
 import { AdRole } from 'types'
 import { UserContext } from 'state/user'
@@ -90,7 +90,7 @@ function Toolbar({
           <FontAwesomeIcon
             icon={faExclamationTriangle}
             size="1x"
-            color={EspooColours.orange}
+            color={colors.accents.orange}
           />
         </Tooltip>
       )}
@@ -103,7 +103,7 @@ function Toolbar({
         >
           <FontAwesomeIcon
             icon={faSync}
-            color={disableAll ? EspooColours.grey : EspooColours.bluePrimary}
+            color={disableAll ? colors.greyscale.medium : colors.primary}
             size="lg"
           />
         </ToolbarButton>
@@ -117,7 +117,7 @@ function Toolbar({
         >
           <FontAwesomeIcon
             icon={faCopy}
-            color={disableAll ? EspooColours.grey : EspooColours.bluePrimary}
+            color={disableAll ? colors.greyscale.medium : colors.primary}
             size="lg"
           />
         </ToolbarButton>
@@ -131,7 +131,7 @@ function Toolbar({
         >
           <FontAwesomeIcon
             icon={faPen}
-            color={disableAll ? EspooColours.grey : EspooColours.bluePrimary}
+            color={disableAll ? colors.greyscale.medium : colors.primary}
             size="lg"
           />
         </ToolbarButton>
@@ -145,7 +145,7 @@ function Toolbar({
         >
           <FontAwesomeIcon
             icon={faTrash}
-            color={disableAll ? EspooColours.grey : EspooColours.bluePrimary}
+            color={disableAll ? colors.greyscale.medium : colors.primary}
             size="lg"
           />
         </ToolbarButton>

@@ -5,10 +5,10 @@
 import React from 'react'
 import styled from 'styled-components'
 import { Table } from '@evaka/lib-components/src/layout/Table'
-import { customColours } from 'utils/colours'
 import { useTranslation } from 'state/i18n'
 import { FlexRow } from 'components/common/styled/containers'
 import { GapVerticalSmall } from 'components/common/styled/separators'
+import colors from '@evaka/lib-components/src/colors'
 
 export const TableScrollableWrapper = styled.div`
   display: block;
@@ -45,7 +45,7 @@ export const TableFooter = styled.tfoot`
   td {
     position: sticky;
     bottom: 0;
-    background: ${customColours.greyVeryLight};
+    background: ${colors.greyscale.lightest};
     z-index: 2;
   }
 `
