@@ -79,7 +79,7 @@ test('Enduser sends daycare application', async () => {
   await t.useRole(enduserRole)
 
   await enduserPage.navigateToApplicationsTab()
-  await enduserPage.createApplication('daycare')
+  await enduserPage.createApplication('DAYCARE')
   const daycareApplication = new DaycareApplication()
 
   applicationId = await daycareApplication.getApplicationId()

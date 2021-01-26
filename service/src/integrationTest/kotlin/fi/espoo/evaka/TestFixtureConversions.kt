@@ -4,7 +4,7 @@
 
 package fi.espoo.evaka
 
-import fi.espoo.evaka.application.persistence.FormType
+import fi.espoo.evaka.application.ApplicationType
 import fi.espoo.evaka.invoicing.domain.PersonData
 import fi.espoo.evaka.placement.PlacementType
 import java.time.LocalDate
@@ -12,11 +12,11 @@ import fi.espoo.evaka.application.persistence.daycare.Address as DaycareFormAddr
 import fi.espoo.evaka.application.persistence.daycare.Adult as DaycareFormAdult
 import fi.espoo.evaka.application.persistence.daycare.Child as DaycareFormChild
 
-fun PlacementType.toFormType(): FormType = when (this) {
-    PlacementType.CLUB -> FormType.CLUB
-    PlacementType.DAYCARE, PlacementType.DAYCARE_PART_TIME -> FormType.DAYCARE
+fun PlacementType.toApplicationType(): ApplicationType = when (this) {
+    PlacementType.CLUB -> ApplicationType.CLUB
+    PlacementType.DAYCARE, PlacementType.DAYCARE_PART_TIME -> ApplicationType.DAYCARE
     PlacementType.PRESCHOOL, PlacementType.PRESCHOOL_DAYCARE,
-    PlacementType.PREPARATORY, PlacementType.PREPARATORY_DAYCARE -> FormType.PRESCHOOL
+    PlacementType.PREPARATORY, PlacementType.PREPARATORY_DAYCARE -> ApplicationType.PRESCHOOL
 }
 
 fun PersonData.Detailed.toDaycareFormChild(

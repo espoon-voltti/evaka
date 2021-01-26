@@ -423,7 +423,7 @@ export const adultFixtureWihtoutSSN = {
 }
 
 const applicationForm = (
-  type: 'daycare' | 'preschool' | 'club',
+  type: 'DAYCARE' | 'PRESCHOOL' | 'CLUB',
   child: PersonDetail,
   guardian: PersonDetail,
   guardian2Phone = '',
@@ -459,7 +459,7 @@ const applicationForm = (
     language: 'fi',
     restricted: false
   },
-  connectedDaycare: type === 'preschool' && connectedDaycare,
+  connectedDaycare: type === 'PRESCHOOL' && connectedDaycare,
   docVersion: 0,
   extendedCare: false,
   guardian: {
@@ -507,7 +507,7 @@ export const applicationFixture = (
   child: ApplicationPersonDetail,
   guardian: ApplicationPersonDetail,
   otherGuardian: ApplicationPersonDetail | undefined = undefined,
-  type: 'daycare' | 'preschool' | 'club' = 'daycare',
+  type: 'DAYCARE' | 'PRESCHOOL' | 'CLUB' = 'DAYCARE',
   otherGuardianAgreementStatus: OtherGuardianAgreementStatus = null,
   preferredUnits: string[] = [daycareFixture.id],
   connectedDaycare = false

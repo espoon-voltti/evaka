@@ -1,46 +1,14 @@
-// SPDX-FileCopyrightText: 2017-2021 City of Espoo
-//
-// SPDX-License-Identifier: LGPL-2.1-or-later
+import {
+  AttachmentType,
+  ApplicationGuardianAgreementStatus,
+  ApplicationOrigin,
+  ApplicationStatus,
+  ApplicationType
+} from './enums'
+import LocalDate from '../../local-date'
+import { JsonOf } from '../../json'
 
-import LocalDate from '@evaka/lib-common/src/local-date'
-
-export interface GuardianApplications {
-  childId: string
-  childName: string
-  applicationSummaries: ApplicationSummary[]
-}
-
-export interface ApplicationSummary {
-  applicationId: string
-  type: string
-  childId: string
-  childName: string | null
-  preferredUnitName: string | null
-  allPreferredUnitNames: string[]
-  applicationStatus: ApplicationStatus
-  startDate: LocalDate | null
-  sentDate: LocalDate | null
-  createdDate: Date
-  modifiedDate: Date
-}
-
-export type ApplicationType = 'club' | 'daycare' | 'preschool'
-
-export type ApplicationStatus =
-  | 'CREATED'
-  | 'SENT'
-  | 'WAITING_PLACEMENT'
-  | 'WAITING_UNIT_CONFIRMATION'
-  | 'WAITING_DECISION'
-  | 'WAITING_MAILING'
-  | 'WAITING_CONFIRMATION'
-  | 'REJECTED'
-  | 'ACTIVE'
-  | 'CANCELLED'
-
-export type ApplicationOrigin = 'ELECTRONIC' | 'PAPER'
-
-export interface Application {
+export interface ApplicationDetails {
   id: string
   type: ApplicationType
   form: ApplicationForm
@@ -61,6 +29,52 @@ export interface Application {
   hideFromGuardian: boolean
   attachments: ApplicationAttachment[]
 }
+
+export const deserializeApplicationDetails = (
+  json: JsonOf<ApplicationDetails>
+): ApplicationDetails => ({
+  ...json,
+  form: {
+    ...json.form,
+    child: {
+      ...json.form.child,
+      dateOfBirth: LocalDate.parseNullableIso(json.form.child.dateOfBirth),
+      futureAddress: json.form.child.futureAddress
+        ? {
+            ...json.form.child.futureAddress,
+            movingDate: LocalDate.parseNullableIso(
+              json.form.child.futureAddress.movingDate
+            )
+          }
+        : null
+    },
+    guardian: {
+      ...json.form.guardian,
+      futureAddress: json.form.guardian.futureAddress
+        ? {
+            ...json.form.guardian.futureAddress,
+            movingDate: LocalDate.parseNullableIso(
+              json.form.guardian.futureAddress.movingDate
+            )
+          }
+        : null
+    },
+    preferences: {
+      ...json.form.preferences,
+      preferredStartDate: LocalDate.parseNullableIso(
+        json.form.preferences.preferredStartDate
+      )
+    }
+  },
+  createdDate: json.createdDate ? new Date(json.createdDate) : null,
+  modifiedDate: json.modifiedDate ? new Date(json.modifiedDate) : null,
+  sentDate: LocalDate.parseNullableIso(json.sentDate),
+  dueDate: LocalDate.parseNullableIso(json.dueDate),
+  attachments: json.attachments.map(({ updated, ...rest }) => ({
+    ...rest,
+    updated: new Date(updated)
+  }))
+})
 
 export interface ApplicationForm {
   child: ApplicationChildDetails
@@ -99,7 +113,7 @@ export interface ApplicationAddress {
 }
 
 export type ApplicationFutureAddress = ApplicationAddress & {
-  movingDate: Date | null
+  movingDate: LocalDate | null
 }
 
 export interface ApplicationChildDetails {
@@ -143,11 +157,6 @@ export interface ApplicationSecondGuardian {
   agreementStatus: ApplicationGuardianAgreementStatus
 }
 
-export type ApplicationGuardianAgreementStatus =
-  | 'AGREED'
-  | 'NOT_AGREED'
-  | 'RIGHT_TO_GET_NOTIFIED'
-
 export interface ApplicationPreferences {
   preferredUnits: PreferredUnit[]
   preferredStartDate: LocalDate | null
@@ -179,5 +188,5 @@ export interface ApplicationAttachment {
   name: string
   contentType: string
   updated: Date
-  type: 'URGENCY' | 'EXTENDED_CARE'
+  type: AttachmentType
 }

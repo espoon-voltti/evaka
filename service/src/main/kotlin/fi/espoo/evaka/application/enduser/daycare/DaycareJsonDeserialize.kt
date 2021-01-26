@@ -5,9 +5,8 @@
 package fi.espoo.evaka.application.enduser.daycare
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
-import fi.espoo.evaka.application.enduser.ApplicationJsonType
+import fi.espoo.evaka.application.ApplicationType
 import fi.espoo.evaka.application.enduser.FormJson
-import fi.espoo.evaka.application.persistence.FormType
 import fi.espoo.evaka.application.persistence.daycare.Address
 import fi.espoo.evaka.application.persistence.daycare.Adult
 import fi.espoo.evaka.application.persistence.daycare.Apply
@@ -23,7 +22,7 @@ import java.util.UUID
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class EnduserDaycareFormJSON(
-    override val type: ApplicationJsonType,
+    override val type: ApplicationType,
     val urgent: Boolean = false,
     val partTime: Boolean = false,
     val connectedDaycare: Boolean? = null,
@@ -46,7 +45,7 @@ data class EnduserDaycareFormJSON(
     val docVersion: Long
 ) : FormJson.DaycareFormJSON() {
     override fun deserialize() = DaycareFormV0(
-        type = type.toFormType(),
+        type = type,
         connectedDaycare = connectedDaycare,
         urgent = urgent,
         partTime = partTime,
@@ -73,12 +72,6 @@ enum class OtherGuardianAgreementStatus {
     AGREED,
     NOT_AGREED,
     RIGHT_TO_GET_NOTIFIED
-}
-
-private fun ApplicationJsonType.toFormType() = when (this) {
-    ApplicationJsonType.DAYCARE -> FormType.DAYCARE
-    ApplicationJsonType.PRESCHOOL -> FormType.PRESCHOOL
-    ApplicationJsonType.CLUB -> FormType.CLUB
 }
 
 data class AddressJSON(

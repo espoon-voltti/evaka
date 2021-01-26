@@ -104,14 +104,10 @@ data class Attachment(
     val type: AttachmentType
 )
 
-enum class ApplicationType(val type: String) {
-    CLUB("club"),
-    DAYCARE("daycare"),
-    PRESCHOOL("preschool");
-
-    override fun toString(): String {
-        return type
-    }
+enum class ApplicationType {
+    CLUB,
+    DAYCARE,
+    PRESCHOOL
 }
 
 enum class ApplicationStatus {

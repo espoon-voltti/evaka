@@ -60,15 +60,15 @@
     },
     "application-type": {
       "club": {
-        "value": "club",
+        "value": "CLUB",
         "label": "Club"
       },
       "daycare": {
-        "value": "daycare",
+        "value": "DAYCARE",
         "label": "Early childhood education"
       },
       "preschool": {
-        "value": "preschool",
+        "value": "PRESCHOOL",
         "label": "Pre-primary education"
       }
     },

@@ -4,14 +4,14 @@
 
 package fi.espoo.evaka.application.persistence
 
-import com.fasterxml.jackson.annotation.JsonProperty
+import fi.espoo.evaka.application.ApplicationType
 import java.time.LocalDate
 
 sealed class DatabaseForm {
-    abstract val type: FormType
+    abstract val type: ApplicationType
 
     abstract class ClubForm : DatabaseForm() {
-        final override val type = FormType.CLUB
+        final override val type = ApplicationType.CLUB
         abstract val preferredStartDate: LocalDate?
     }
 
@@ -19,17 +19,4 @@ sealed class DatabaseForm {
 
     abstract fun hideGuardianAddress(): DatabaseForm
     abstract fun hideChildAddress(): DatabaseForm
-}
-
-const val FORM_TYPE_DAYCARE = "daycare"
-const val FORM_TYPE_PRESCHOOL = "preschool"
-const val FORM_TYPE_CLUB = "club"
-
-enum class FormType(val id: Long) {
-    @JsonProperty(FORM_TYPE_DAYCARE)
-    DAYCARE(1L),
-    @JsonProperty(FORM_TYPE_PRESCHOOL)
-    PRESCHOOL(2L),
-    @JsonProperty(FORM_TYPE_CLUB)
-    CLUB(3L)
 }

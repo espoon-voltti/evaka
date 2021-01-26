@@ -1,9 +1,9 @@
 import LocalDate from '@evaka/lib-common/src/local-date'
 import {
-  Application,
+  ApplicationDetails,
   ApplicationFormUpdate,
   ApplicationPersonBasics
-} from '~applications/types'
+} from '@evaka/lib-common/src/api-types/application/ApplicationDetails'
 
 export type ServiceNeedFormData = {
   preferredStartDate: LocalDate | null
@@ -72,7 +72,7 @@ export type ApplicationFormData = {
 }
 
 export function apiDataToFormData(
-  application: Application
+  application: ApplicationDetails
 ): ApplicationFormData {
   return {
     serviceNeed: {

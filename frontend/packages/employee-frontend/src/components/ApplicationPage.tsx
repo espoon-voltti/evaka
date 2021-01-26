@@ -7,11 +7,7 @@ import { RouteComponentProps } from 'react-router-dom'
 import LocalDate from '@evaka/lib-common/src/local-date'
 import { UUID } from 'types'
 import { Loading, Result } from '@evaka/lib-common/src/api'
-import {
-  ApplicationDetails,
-  ApplicationResponse,
-  PreferredUnit
-} from 'types/application'
+import { ApplicationResponse } from 'types/application'
 import ApplicationEditView from 'components/application-page/ApplicationEditView'
 import ApplicationReadView from 'components/application-page/ApplicationReadView'
 import ApplicationActionsBar from 'components/application-page/ApplicationActionsBar'
@@ -33,6 +29,8 @@ import { useDebounce } from 'utils/useDebounce'
 import { isSsnValid, isTimeValid } from 'utils/validation/validations'
 import { UserContext } from '~state/user'
 import { hasRole } from '~utils/roles'
+import { ApplicationDetails } from '@evaka/lib-common/src/api-types/application/ApplicationDetails'
+import { PublicUnit } from '@evaka/lib-common/src/api-types/units/PublicUnit'
 
 const ApplicationArea = styled(ContentArea)`
   width: 77%;
@@ -60,7 +58,7 @@ function ApplicationPage({ match }: RouteComponentProps<{ id: UUID }>) {
   const [validationErrors, setValidationErrors] = useState<
     Record<string, string>
   >({})
-  const [units, setUnits] = useState<Result<PreferredUnit[]>>(Loading.of())
+  const [units, setUnits] = useState<Result<PublicUnit[]>>(Loading.of())
 
   const { roles } = useContext(UserContext)
   const enableApplicationActions =
@@ -172,7 +170,7 @@ function ApplicationPage({ match }: RouteComponentProps<{ id: UUID }>) {
 
 function validateApplication(
   application: ApplicationDetails,
-  units: PreferredUnit[],
+  units: PublicUnit[],
   i18n: Translations
 ): Record<string, string> {
   const errors = {}

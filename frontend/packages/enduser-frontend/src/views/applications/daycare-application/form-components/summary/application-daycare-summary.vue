@@ -7,11 +7,11 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 <template>
   <div class="club-summary">
     <!-- Palvelun tarve -->
-    <c-summary-section :title="$t(`form.${type}-application.service.title`)">
+    <c-summary-section :title="$t(`form.${type.toString().toLowerCase()}-application.service.title`)">
       <!-- Palvelun tarpeen alkaminen -->
       <c-summary-subsection
         :icon="['far', 'calendar-alt']"
-        :title="$t(`form.${type}-application.service.section-title`)"
+        :title="$t(`form.${type.toString().toLowerCase()}-application.service.section-title`)"
       >
         <!-- DISABLE FOR NOW
           <c-summary-field :value="applicationForm.moveToAnotherUnit" :label="$t('form.daycare-application.requestAnotherUnit.label')"/>
@@ -53,7 +53,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
         <div class="columns is-gapless">
           <div class="column">
             <div class="strong">
-              {{ $t(`form.${type}-application.service.startDate.label`) }}
+              {{ $t(`form.${type.toString().toLowerCase()}-application.service.startDate.label`) }}
             </div>
             <div>{{ preferredStartDate | date }}</div>
           </div>
@@ -64,7 +64,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 
       <!-- Päivittäinen palvelun tarve -->
       <c-summary-subsection
-        :title="$t(`form.${type}-application.service.dailyTitle`)"
+        :title="$t(`form.${type.toString().toLowerCase()}-application.service.dailyTitle`)"
       >
         <div class="columns is-gapless" v-if="isPreschool">
           <div class="column">
@@ -129,7 +129,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
       <!-- Tuen tarve -->
       <c-summary-subsection
         :icon="['far', 'hands']"
-        :title="$t(`form.${type}-application.service.clubCare.section-title`)"
+        :title="$t(`form.${type.toString().toLowerCase()}-application.service.clubCare.section-title`)"
       >
         <c-summary-field
           v-if="isPreschool && !currentLocaleIsSwedish"
@@ -164,12 +164,12 @@ SPDX-License-Identifier: LGPL-2.1-or-later
     >
       <c-summary-subsection
         :icon="['fal', 'users']"
-        :title="$t(`form.${type}-application.siblingBasis.title`)"
+        :title="$t(`form.${type.toString().toLowerCase()}-application.siblingBasis.title`)"
       >
         <c-summary-field
           :value="applicationForm.apply.siblingBasis"
           :label="
-            $t(`form.${type}-application.preferredUnits.siblings.select.label`)
+            $t(`form.${type.toString().toLowerCase()}-application.preferredUnits.siblings.select.label`)
           "
         />
         <div class="columns" v-if="applicationForm.apply.siblingBasis">
@@ -364,7 +364,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
       >
         <c-summary-field
           :value="applicationForm.hasOtherVtjGuardian"
-          :label="$t(`form.persons.guardian2.other-guardian-${type}`)"
+          :label="$t(`form.persons.guardian2.other-guardian-${type.toString().toLowerCase()}`)"
         />
         <c-summary-field
           :value="

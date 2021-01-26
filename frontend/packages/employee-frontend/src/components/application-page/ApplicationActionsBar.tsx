@@ -9,8 +9,9 @@ import StickyFooter from '@evaka/lib-components/src/layout/StickyFooter'
 import AsyncButton from '@evaka/lib-components/src/atoms/buttons/AsyncButton'
 import Button from '@evaka/lib-components/src/atoms/buttons/Button'
 import { useTranslation } from 'state/i18n'
-import { ApplicationDetails, ApplicationStatus } from 'types/application'
 import { sendApplication, updateApplication } from 'api/applications'
+import { ApplicationStatus } from '@evaka/lib-common/src/api-types/application/enums'
+import { ApplicationDetails } from '@evaka/lib-common/src/api-types/application/ApplicationDetails'
 
 type Props = {
   applicationStatus: ApplicationStatus

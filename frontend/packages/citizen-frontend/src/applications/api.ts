@@ -5,14 +5,18 @@
 import { Failure, Result, Success } from '@evaka/lib-common/src/api'
 import { JsonOf } from '@evaka/lib-common/src/json'
 import LocalDate from '@evaka/lib-common/src/local-date'
-import { PublicUnit } from '@evaka/lib-common/src/api-types/units'
-import { client } from '~api-client'
 import {
-  Application,
+  ApplicationDetails,
   ApplicationFormUpdate,
-  ApplicationType,
-  GuardianApplications
-} from '~applications/types'
+  deserializeApplicationDetails
+} from '@evaka/lib-common/src/api-types/application/ApplicationDetails'
+import {
+  ApplicationsOfChild,
+  deserializeApplicationsOfChild
+} from '@evaka/lib-common/src/api-types/application/ApplicationsOfChild'
+import { ApplicationType } from '@evaka/lib-common/src/api-types/application/enums'
+import { client } from '~api-client'
+import { PublicUnit } from '@evaka/lib-common/src/api-types/units/PublicUnit'
 
 export type ApplicationUnitType =
   | 'CLUB'
@@ -39,12 +43,12 @@ export async function getApplicationUnits(
 
 export async function getApplication(
   applicationId: string
-): Promise<Result<Application>> {
+): Promise<Result<ApplicationDetails>> {
   try {
-    const { data } = await client.get<JsonOf<Application>>(
+    const { data } = await client.get<JsonOf<ApplicationDetails>>(
       `/citizen/applications/${applicationId}`
     )
-    return Success.of(deserializeApplication(data))
+    return Success.of(deserializeApplicationDetails(data))
   } catch (e) {
     return Failure.fromError(e)
   }
@@ -55,10 +59,7 @@ export async function updateApplication(
   data: ApplicationFormUpdate
 ): Promise<Result<void>> {
   try {
-    await client.put<JsonOf<Application>>(
-      `/citizen/applications/${applicationId}`,
-      data
-    )
+    await client.put(`/citizen/applications/${applicationId}`, data)
     return Success.of(undefined)
   } catch (e) {
     return Failure.fromError(e)
@@ -70,78 +71,19 @@ export async function saveApplicationDraft(
   data: ApplicationFormUpdate
 ): Promise<Result<void>> {
   try {
-    await client.put<JsonOf<Application>>(
-      `/citizen/applications/${applicationId}/draft`,
-      data
-    )
+    await client.put(`/citizen/applications/${applicationId}/draft`, data)
     return Success.of(undefined)
   } catch (e) {
     return Failure.fromError(e)
   }
 }
 
-const deserializeApplication = (json: JsonOf<Application>): Application => ({
-  ...json,
-  type: json.type.toLowerCase() as ApplicationType, // todo: temporary hotfix
-  form: {
-    ...json.form,
-    child: {
-      ...json.form.child,
-      dateOfBirth: LocalDate.parseNullableIso(json.form.child.dateOfBirth),
-      futureAddress: json.form.child.futureAddress
-        ? {
-            ...json.form.child.futureAddress,
-            movingDate: json.form.child.futureAddress.movingDate
-              ? new Date(json.form.child.futureAddress.movingDate)
-              : null
-          }
-        : null
-    },
-    guardian: {
-      ...json.form.guardian,
-      futureAddress: json.form.guardian.futureAddress
-        ? {
-            ...json.form.guardian.futureAddress,
-            movingDate: json.form.guardian.futureAddress.movingDate
-              ? new Date(json.form.guardian.futureAddress.movingDate)
-              : null
-          }
-        : null
-    },
-    preferences: {
-      ...json.form.preferences,
-      preferredStartDate: LocalDate.parseNullableIso(
-        json.form.preferences.preferredStartDate
-      )
-    }
-  },
-  createdDate: json.createdDate ? new Date(json.createdDate) : null,
-  modifiedDate: json.modifiedDate ? new Date(json.modifiedDate) : null,
-  sentDate: LocalDate.parseNullableIso(json.sentDate),
-  dueDate: LocalDate.parseNullableIso(json.dueDate),
-  attachments: json.attachments.map(({ updated, ...rest }) => ({
-    ...rest,
-    updated: new Date(updated)
-  }))
-})
-
 export const getGuardianApplications = async (): Promise<
-  Result<GuardianApplications[]>
+  Result<ApplicationsOfChild[]>
 > => {
   return client
-    .get<JsonOf<GuardianApplications[]>>('/citizen/applications/by-guardian')
-    .then((res) =>
-      res.data.map(({ applicationSummaries, ...rest }) => ({
-        ...rest,
-        applicationSummaries: applicationSummaries.map((json) => ({
-          ...json,
-          sentDate: LocalDate.parseNullableIso(json.sentDate),
-          startDate: LocalDate.parseNullableIso(json.startDate),
-          createdDate: new Date(json.createdDate),
-          modifiedDate: new Date(json.modifiedDate)
-        }))
-      }))
-    )
+    .get<JsonOf<ApplicationsOfChild[]>>('/citizen/applications/by-guardian')
+    .then((res) => res.data.map(deserializeApplicationsOfChild))
     .then((data) => Success.of(data))
     .catch((e) => Failure.fromError(e))
 }

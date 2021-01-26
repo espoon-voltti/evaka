@@ -7,10 +7,10 @@ import { Label } from '@evaka/lib-components/src/typography'
 import { Gap } from '@evaka/lib-components/src/white-space'
 import { TextArea } from '@evaka/lib-components/src/atoms/form/InputField'
 import { useTranslation } from '~localization'
-import { ApplicationType } from '~applications/types'
 import { AdditionalDetailsFormData } from '~applications/editor/ApplicationFormData'
 import EditorSection from '~applications/editor/EditorSection'
 import InfoBallWrapper from '~applications/InfoBallWrapper'
+import { ApplicationType } from '@evaka/lib-common/src/api-types/application/enums'
 
 type Props = {
   formData: AdditionalDetailsFormData
@@ -42,7 +42,7 @@ export default React.memo(function AdditionalDetailsSection({
           }
         />
       </Label>
-      {applicationType !== 'club' ? (
+      {applicationType !== 'CLUB' ? (
         <>
           <Gap size="L" />
           <Label>

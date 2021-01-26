@@ -90,7 +90,7 @@ LEFT JOIN
 WHERE
     (application.startDate >= :earliestPreferredStartDate OR application.startDate IS NULL)
     AND application.status = ANY ('{SENT,WAITING_PLACEMENT,WAITING_CONFIRMATION,WAITING_DECISION,WAITING_MAILING,WAITING_UNIT_CONFIRMATION, ACTIVE}'::application_status_type[])
-    AND application.type = 'preschool'
+    AND application.type = 'PRESCHOOL'
 ORDER BY
     area_name, requested_unit_name
         """.trimIndent()

@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
+import styled from 'styled-components'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
   faFileImage,
@@ -10,10 +11,8 @@ import {
   faFileWord,
   faFile
 } from '@fortawesome/free-solid-svg-icons'
-
-import { Attachment } from '~types/application'
-import styled from 'styled-components'
 import { FixedSpaceRow } from '@evaka/lib-components/src/layout/flex-helpers'
+import { ApplicationAttachment } from '@evaka/lib-common/src/api-types/application/ApplicationDetails'
 
 const AttachmentContainer = styled.div`
   display: flex;
@@ -21,7 +20,7 @@ const AttachmentContainer = styled.div`
 `
 
 interface Props {
-  attachment: Attachment
+  attachment: ApplicationAttachment
   dataQa: string
 }
 

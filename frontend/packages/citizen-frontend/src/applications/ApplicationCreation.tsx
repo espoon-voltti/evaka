@@ -15,9 +15,9 @@ import Radio from '@evaka/lib-components/src/atoms/form/Radio'
 import { AlertBox } from '@evaka/lib-components/src/molecules/MessageBoxes'
 import { useUser } from '~auth'
 import { useTranslation } from '~localization'
-import { ApplicationType } from '~applications/types'
 import { createApplication, getDuplicateApplications } from '~applications/api'
 import InfoBallWrapper from '~applications/InfoBallWrapper'
+import { ApplicationType } from '@evaka/lib-common/src/api-types/application/enums'
 
 export default React.memo(function ApplicationCreation() {
   const history = useHistory()
@@ -56,16 +56,16 @@ export default React.memo(function ApplicationCreation() {
         <Gap size="XL" />
         <InfoBallWrapper infoText={t.applications.creation.daycareInfo}>
           <Radio
-            checked={selectedType === 'daycare'}
-            onChange={() => setSelectedType('daycare')}
+            checked={selectedType === 'DAYCARE'}
+            onChange={() => setSelectedType('DAYCARE')}
             label={t.applications.creation.daycareLabel}
           />
         </InfoBallWrapper>
         <Gap size="s" />
         <InfoBallWrapper infoText={t.applications.creation.preschoolInfo}>
           <Radio
-            checked={selectedType === 'preschool'}
-            onChange={() => setSelectedType('preschool')}
+            checked={selectedType === 'PRESCHOOL'}
+            onChange={() => setSelectedType('PRESCHOOL')}
             label={t.applications.creation.preschoolLabel}
           />
         </InfoBallWrapper>
@@ -75,8 +75,8 @@ export default React.memo(function ApplicationCreation() {
         <Gap size="s" />
         <InfoBallWrapper infoText={t.applications.creation.clubInfo}>
           <Radio
-            checked={selectedType === 'club'}
-            onChange={() => setSelectedType('club')}
+            checked={selectedType === 'CLUB'}
+            onChange={() => setSelectedType('CLUB')}
             label={t.applications.creation.clubLabel}
           />
         </InfoBallWrapper>
@@ -122,9 +122,9 @@ export default React.memo(function ApplicationCreation() {
 })
 
 const duplicatesDefault: Record<ApplicationType, boolean> = {
-  club: false,
-  daycare: false,
-  preschool: false
+  CLUB: false,
+  DAYCARE: false,
+  PRESCHOOL: false
 }
 
 const PreschoolDaycareInfo = styled.p`

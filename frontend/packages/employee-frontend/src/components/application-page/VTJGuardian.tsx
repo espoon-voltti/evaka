@@ -7,17 +7,16 @@ import { UUID } from 'types'
 import { getPersonDetails } from 'api/person'
 import { Loading, Result } from '@evaka/lib-common/src/api'
 import { PersonDetails } from 'types/person'
-import { H4, Label } from '@evaka/lib-components/src/typography'
+import { Dimmed, H4, Label } from '@evaka/lib-components/src/typography'
 import { renderResult } from '~components/async-rendering'
 import ListGrid from '@evaka/lib-components/src/layout/ListGrid'
 import { Link } from 'react-router-dom'
 import { formatName } from 'utils'
 import { useTranslation } from 'state/i18n'
-import { Dimmed } from '@evaka/lib-components/src/typography'
 
 interface VTJGuardianProps {
   guardianId: UUID | undefined | null
-  otherGuardianLivesInSameAddress: boolean
+  otherGuardianLivesInSameAddress?: boolean
 }
 
 function VTJGuardian({
@@ -64,16 +63,20 @@ function VTJGuardian({
       <span data-qa="vtj-guardian-phone">{guardian.phone}</span>
       <Label>{i18n.application.person.email}</Label>
       <span data-qa="vtj-guardian-email">{guardian.email}</span>
-      <Label>{i18n.application.guardians.secondGuardian.sameAddress}</Label>
 
-      {otherGuardianLivesInSameAddress ? (
-        <span data-qa="other-vtj-guardian-lives-in-same-address">
-          {i18n.common.yes}
-        </span>
-      ) : (
-        <Dimmed data-qa="other-vtj-guardian-lives-in-same-address">
-          {i18n.common.no}
-        </Dimmed>
+      {otherGuardianLivesInSameAddress !== undefined && (
+        <>
+          <Label>{i18n.application.guardians.secondGuardian.sameAddress}</Label>
+          {otherGuardianLivesInSameAddress ? (
+            <span data-qa="other-vtj-guardian-lives-in-same-address">
+              {i18n.common.yes}
+            </span>
+          ) : (
+            <Dimmed data-qa="other-vtj-guardian-lives-in-same-address">
+              {i18n.common.no}
+            </Dimmed>
+          )}
+        </>
       )}
     </ListGrid>
   )

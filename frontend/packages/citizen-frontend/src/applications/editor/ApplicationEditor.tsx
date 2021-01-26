@@ -11,11 +11,13 @@ import { SpinnerSegment } from '@evaka/lib-components/src/atoms/state/Spinner'
 import ErrorSegment from '@evaka/lib-components/src/atoms/state/ErrorSegment'
 import DaycareApplicationEditor from '~applications/editor/DaycareApplicationEditor'
 import { getApplication } from '~applications/api'
-import { Application } from '~applications/types'
+import { ApplicationDetails } from '@evaka/lib-common/src/api-types/application/ApplicationDetails'
 
 export default React.memo(function ApplicationEditor() {
   const { applicationId } = useParams<{ applicationId: string }>()
-  const [apiData, setApiData] = useState<Result<Application>>(Loading.of())
+  const [apiData, setApiData] = useState<Result<ApplicationDetails>>(
+    Loading.of()
+  )
 
   const loadApplication = useRestApi(getApplication, setApiData)
   useEffect(() => {
@@ -28,11 +30,11 @@ export default React.memo(function ApplicationEditor() {
       {apiData.isFailure && <ErrorSegment />}
       {apiData.isSuccess && (
         <>
-          {apiData.value.type === 'daycare' ? (
+          {apiData.value.type === 'DAYCARE' ? (
             <DaycareApplicationEditor apiData={apiData.value} />
-          ) : apiData.value.type === 'preschool' ? (
+          ) : apiData.value.type === 'PRESCHOOL' ? (
             <ErrorSegment title={'Hakemustyyppiä ei ole vielä toteutettu'} />
-          ) : apiData.value.type === 'club' ? (
+          ) : apiData.value.type === 'CLUB' ? (
             <ErrorSegment title={'Hakemustyyppiä ei ole vielä toteutettu'} />
           ) : (
             <ErrorSegment title={'Tuntematon hakemustyyppi'} />

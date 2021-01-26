@@ -38,9 +38,9 @@ import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDecisionMaker_1
+import fi.espoo.evaka.toApplicationType
 import fi.espoo.evaka.toDaycareFormAdult
 import fi.espoo.evaka.toDaycareFormChild
-import fi.espoo.evaka.toFormType
 import org.jdbi.v3.core.Handle
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
@@ -389,7 +389,7 @@ class DecisionResolutionIntegrationTest : FullApplicationTest() {
         insertTestApplicationForm(
             h, applicationId,
             DaycareFormV0(
-                type = type.toFormType(),
+                type = type.toApplicationType(),
                 partTime = type == PlacementType.DAYCARE_PART_TIME,
                 connectedDaycare = preschoolDaycare,
                 serviceStart = "08:00".takeIf { preschoolDaycare },

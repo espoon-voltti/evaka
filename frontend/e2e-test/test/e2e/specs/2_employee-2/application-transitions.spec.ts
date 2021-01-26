@@ -198,7 +198,7 @@ test('Placement dialog shows warning if guardian has restricted details', async 
       fixtures.familyWithRestrictedDetailsGuardian.children[0],
       fixtures.familyWithRestrictedDetailsGuardian.guardian,
       fixtures.familyWithRestrictedDetailsGuardian.otherGuardian,
-      'daycare',
+      'DAYCARE',
       'NOT_AGREED'
     ),
     id: '6a9b1b1e-3fdf-11eb-b378-0242ac130002'

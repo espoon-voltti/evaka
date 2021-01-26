@@ -17,10 +17,8 @@ import { deleteApplication, insertApplications } from '../../dev-api'
 import { enduserRole } from '../../config/users'
 import EnduserPage from '../../pages/enduser/enduser-navigation'
 import { add, sub } from 'date-fns'
-import {
-  ApplicationStatus,
-  OtherGuardianAgreementStatus
-} from '../../dev-api/types'
+import { OtherGuardianAgreementStatus } from '../../dev-api/types'
+import { ApplicationStatus } from '@evaka/lib-common/src/api-types/application/enums'
 
 const home = new Home()
 const enduserPage = new EnduserPage()
@@ -45,7 +43,7 @@ fixture('Enduser application validations')
 test('Preferred units can only be selected after preferred start date is selected', async (t) => {
   await t.useRole(enduserRole)
   await enduserPage.navigateToApplicationsTab()
-  await enduserPage.createApplication('daycare')
+  await enduserPage.createApplication('DAYCARE')
 
   await enduserPage.assertSelectPreferredStartDateFirstWarningIsShown()
   await enduserPage.openServiceNeedSection()

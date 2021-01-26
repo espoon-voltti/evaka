@@ -49,7 +49,7 @@ test('Citizen sees her children and applications', async (t) => {
     fixtures.enduserChildFixtureJari,
     fixtures.enduserGuardianFixture,
     undefined,
-    'preschool',
+    'PRESCHOOL',
     null,
     [daycareFixture.id],
     true
@@ -83,7 +83,7 @@ test('Citizen sees a link to accept a decision', async (t) => {
     fixtures.enduserChildFixtureJari,
     fixtures.enduserGuardianFixture,
     undefined,
-    'daycare',
+    'DAYCARE',
     null,
     [daycareFixture.id],
     true

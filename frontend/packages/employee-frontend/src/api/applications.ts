@@ -4,13 +4,11 @@
 
 import { UUID, SearchOrder } from 'types'
 import {
-  ApplicationDetails,
   ApplicationListSummary,
   ApplicationsSearchResponse,
   SortByApplications,
   ApplicationSearchParams,
   ApplicationResponse,
-  ApplicationType,
   ApplicationNote
 } from 'types/application'
 import { Failure, Result, Success } from '@evaka/lib-common/src/api'
@@ -24,6 +22,11 @@ import {
   PlacementPlanRejectReason
 } from '~types/unit'
 import FiniteDateRange from '@evaka/lib-common/src/finite-date-range'
+import {
+  ApplicationDetails,
+  deserializeApplicationDetails
+} from '@evaka/lib-common/src/api-types/application/ApplicationDetails'
+import { ApplicationType } from '@evaka/lib-common/src/api-types/application/enums'
 
 export async function getApplication(
   id: UUID
@@ -33,66 +36,7 @@ export async function getApplication(
     .then((res) => res.data)
     .then((data) => ({
       ...data,
-      application: {
-        ...data.application,
-        form: {
-          ...data.application.form,
-          child: {
-            ...data.application.form.child,
-            dateOfBirth: LocalDate.parseNullableIso(
-              data.application.form.child.dateOfBirth
-            ),
-            futureAddress: data.application.form.child.futureAddress
-              ? {
-                  ...data.application.form.child.futureAddress,
-                  movingDate: LocalDate.parseNullableIso(
-                    data.application.form.child.futureAddress.movingDate
-                  )
-                }
-              : null
-          },
-          guardian: {
-            ...data.application.form.guardian,
-            futureAddress: data.application.form.guardian.futureAddress
-              ? {
-                  ...data.application.form.guardian.futureAddress,
-                  movingDate: LocalDate.parseNullableIso(
-                    data.application.form.guardian.futureAddress.movingDate
-                  )
-                }
-              : null
-          },
-          secondGuardian: data.application.form.secondGuardian
-            ? {
-                ...data.application.form.secondGuardian,
-                futureAddress: data.application.form.secondGuardian
-                  .futureAddress
-                  ? {
-                      ...data.application.form.secondGuardian.futureAddress,
-                      movingDate: LocalDate.parseNullableIso(
-                        data.application.form.secondGuardian.futureAddress
-                          .movingDate
-                      )
-                    }
-                  : null
-              }
-            : null,
-          preferences: {
-            ...data.application.form.preferences,
-            preferredStartDate: LocalDate.parseNullableIso(
-              data.application.form.preferences.preferredStartDate
-            )
-          }
-        },
-        createdDate: data.application.createdDate
-          ? new Date(data.application.createdDate)
-          : null,
-        modifiedDate: data.application.modifiedDate
-          ? new Date(data.application.modifiedDate)
-          : null,
-        sentDate: LocalDate.parseNullableIso(data.application.sentDate),
-        dueDate: LocalDate.parseNullableIso(data.application.dueDate)
-      },
+      application: deserializeApplicationDetails(data.application),
       decisions: data.decisions.map((decision) => ({
         ...decision,
         startDate: LocalDate.parseIso(decision.startDate),

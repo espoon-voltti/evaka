@@ -6,7 +6,6 @@ package fi.espoo.evaka.application
 
 import fi.espoo.evaka.application.enduser.daycare.OtherGuardianAgreementStatus
 import fi.espoo.evaka.application.persistence.DatabaseForm
-import fi.espoo.evaka.application.persistence.FormType
 import fi.espoo.evaka.application.persistence.club.ClubFormV0
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
 import fi.espoo.evaka.identity.ExternalIdentifier
@@ -130,7 +129,7 @@ data class ApplicationForm(
                             ?: "",
                         shiftCare = v0.extendedCare,
                         partTime = v0.partTime
-                    ).takeIf { v0.type == FormType.DAYCARE || v0.connectedDaycare == true },
+                    ).takeIf { v0.type == ApplicationType.DAYCARE || v0.connectedDaycare == true },
                     siblingBasis = SiblingBasis(
                         siblingName = v0.apply.siblingName,
                         siblingSsn = v0.apply.siblingSsn

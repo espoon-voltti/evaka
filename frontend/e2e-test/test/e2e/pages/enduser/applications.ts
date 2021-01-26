@@ -3,9 +3,9 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { ClientFunction, Selector, t } from 'testcafe'
-import { APPLICATION_STATUS, APPLICATION_TYPE } from '../../const'
 import { ApplicationTypeSelection } from './enduser-navigation'
 import ClubApplication from './club-application-form'
+import { ApplicationType } from '@evaka/lib-common/src/api-types/application/enums'
 
 interface Child {
   childName: string
@@ -14,7 +14,7 @@ interface Child {
 
 interface ChildApplication {
   applicationId: string
-  type: 'daycare' | 'club' | 'preschool'
+  type: 'DAYCARE' | 'CLUB' | 'PRESCHOOL'
   isEditable: boolean
   status: string
 }
@@ -68,8 +68,8 @@ export default class Applications {
   }
 
   async getFirstEditableApplication(
-    applicationType: APPLICATION_TYPE,
-    applicationStatus: APPLICATION_STATUS = APPLICATION_STATUS.SENT
+    applicationType: ApplicationType,
+    applicationStatus: 'LÄHETETTY' | 'LUONNOS' = 'LÄHETETTY'
   ): Promise<string> {
     const children = await this.getChildren()
     for (const child of children) {
@@ -109,15 +109,11 @@ export default class Applications {
   }
 
   async verifyCreated(applicationId: string) {
-    await t
-      .expect(await this.checkAndGetStatus(applicationId))
-      .eql(APPLICATION_STATUS.CREATED)
+    await t.expect(await this.checkAndGetStatus(applicationId)).eql('LUONNOS')
   }
 
   async verifySent(applicationId: string) {
-    await t
-      .expect(await this.checkAndGetStatus(applicationId))
-      .eql(APPLICATION_STATUS.SENT)
+    await t.expect(await this.checkAndGetStatus(applicationId)).eql('LÄHETETTY')
   }
 
   async createClubApplication() {
@@ -126,7 +122,7 @@ export default class Applications {
 
     // Select club as application type
     const applicationType = new ApplicationTypeSelection()
-    await applicationType.selectApplicationType('club')
+    await applicationType.selectApplicationType('CLUB')
     await applicationType.createApplication()
     const clubApplication = new ClubApplication()
     await t.expect(clubApplication.checkAndSendBtn.visible).ok()

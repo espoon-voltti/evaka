@@ -5,7 +5,6 @@
 package fi.espoo.evaka.application.persistence.club
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
-import com.fasterxml.jackson.annotation.JsonProperty
 import fi.espoo.evaka.application.persistence.DatabaseForm
 import java.time.LocalDate
 import java.util.UUID
@@ -179,37 +178,3 @@ data class ClubCare(
     val assistanceDescription: String = "",
     val assistanceAdditionalDetails: String = ""
 )
-
-enum class ClubHours(val id: Long) {
-    @JsonProperty("2")
-    TWO_HOURS(1L),
-    @JsonProperty("3")
-    THREE_HOURS(2L),
-}
-
-enum class ClubDays(val id: Long) {
-    @JsonProperty("2")
-    TWO_DAYS(1L),
-    @JsonProperty("3")
-    THREE_DAYS(2L),
-}
-
-enum class CareType(val id: Long) {
-    @JsonProperty("centre")
-    CENTRE(1L),
-    @JsonProperty("family")
-    FAMILY(2L),
-    @JsonProperty("group_family")
-    GROUP_FAMILY(3L),
-    @JsonProperty("club")
-    CLUB(4L)
-}
-
-enum class WeeklyHours(val id: Long) {
-    @JsonProperty("over_35")
-    OVER_35(1L),
-    @JsonProperty("between_25_and_35")
-    BETWEEN_25_AND_35(2L),
-    @JsonProperty("under_25")
-    UNDER_25(3L)
-}

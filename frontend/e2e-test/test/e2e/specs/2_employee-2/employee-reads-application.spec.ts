@@ -53,7 +53,7 @@ test('Preschool application opens by link', async (t) => {
     fixtures.enduserChildFixtureJari,
     fixtures.enduserGuardianFixture,
     undefined,
-    'preschool'
+    'PRESCHOOL'
   )
   await insertApplications([fixture])
   await t.useRole(seppoAdminRole)

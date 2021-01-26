@@ -10,7 +10,6 @@ import fi.espoo.evaka.application.ApplicationDetails
 import fi.espoo.evaka.application.ApplicationType
 import fi.espoo.evaka.application.enduser.daycare.OtherGuardianAgreementStatus
 import fi.espoo.evaka.application.persistence.DatabaseForm
-import fi.espoo.evaka.application.persistence.FormType
 import java.time.LocalDate
 import java.util.UUID
 
@@ -25,12 +24,12 @@ data class DaycareFormV0(
     val apply: Apply = Apply(),
     val urgent: Boolean = false,
     val partTime: Boolean = false,
-    val connectedDaycare: Boolean? = false.takeIf { type == FormType.PRESCHOOL },
+    val connectedDaycare: Boolean? = false.takeIf { type == ApplicationType.PRESCHOOL },
     val preferredStartDate: LocalDate? = null,
     val serviceStart: String? = null,
     val serviceEnd: String? = null,
     val extendedCare: Boolean = false,
-    val careDetails: CareDetails = CareDetails(preparatory = false.takeIf { type == FormType.PRESCHOOL }),
+    val careDetails: CareDetails = CareDetails(preparatory = false.takeIf { type == ApplicationType.PRESCHOOL }),
     val guardian2: Adult? = null,
     val hasOtherAdults: Boolean = false,
     val otherAdults: List<OtherPerson> = emptyList(),
@@ -39,7 +38,7 @@ data class DaycareFormV0(
     val docVersion: Long = 0L,
     val additionalDetails: DaycareAdditionalDetails = DaycareAdditionalDetails(),
     val maxFeeAccepted: Boolean = false,
-    override val type: FormType
+    override val type: ApplicationType
 ) : DatabaseForm.DaycareForm() {
     override fun hideGuardianAddress(): DaycareFormV0 {
         return this.copy(
@@ -173,11 +172,7 @@ data class DaycareFormV0(
                 dietType = form.child.diet,
                 otherInfo = form.otherInfo
             ),
-            type = when (type) {
-                ApplicationType.CLUB -> FormType.CLUB
-                ApplicationType.DAYCARE -> FormType.DAYCARE
-                ApplicationType.PRESCHOOL -> FormType.PRESCHOOL
-            },
+            type = type,
             maxFeeAccepted = form.maxFeeAccepted
         )
     }

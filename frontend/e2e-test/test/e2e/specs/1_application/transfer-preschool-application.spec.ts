@@ -54,7 +54,7 @@ test('Enduser sends a preschool application for a child with a preschool placeme
   await t.useRole(enduserRole)
 
   await enduserPage.navigateToApplicationsTab()
-  await enduserPage.createApplication('preschool')
+  await enduserPage.createApplication('PRESCHOOL')
   const daycareApplication = new DaycareApplication()
 
   applicationId = await daycareApplication.getApplicationId()
@@ -82,7 +82,7 @@ test('Enduser sends a preschool daycare application for a child with a preschool
   await t.useRole(enduserRole)
 
   await enduserPage.navigateToApplicationsTab()
-  await enduserPage.createApplication('preschool')
+  await enduserPage.createApplication('PRESCHOOL')
   const daycareApplication = new DaycareApplication()
 
   applicationId = await daycareApplication.getApplicationId()

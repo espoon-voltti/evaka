@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
-import { ApplicationStatus, GuardianApplications } from '~applications/types'
 import { useTranslation } from '~localization'
 import { H2, H3, Label } from '@evaka/lib-components/src/typography'
 import { ContentArea } from '@evaka/lib-components/src/layout/Container'
@@ -19,6 +18,8 @@ import { faArrowRight } from '@evaka/lib-icons'
 import colors from '@evaka/lib-components/src/colors'
 import AddButton from '@evaka/lib-components/src/atoms/buttons/AddButton'
 import { Link, useHistory } from 'react-router-dom'
+import { ApplicationsOfChild } from '@evaka/lib-common/src/api-types/application/ApplicationsOfChild'
+import { ApplicationStatus } from '@evaka/lib-common/src/api-types/application/enums'
 
 const StyledLink = styled(Link)`
   color: ${colors.blues.primary};
@@ -62,7 +63,7 @@ export default React.memo(function ChildApplicationsBlock({
   childId,
   childName,
   applicationSummaries
-}: GuardianApplications) {
+}: ApplicationsOfChild) {
   const history = useHistory()
   const t = useTranslation()
 

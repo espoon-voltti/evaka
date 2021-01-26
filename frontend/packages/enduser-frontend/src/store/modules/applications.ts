@@ -42,7 +42,7 @@ const module: Module<ApplicationsState, RootState> = {
       commit(types.CLEAR_FORM, 'application')
       commit(types.CLEAR_DAYCARE_FORM)
       const application = await applicationApi.getApplication(applicationId)
-      commit(type === 'club' ? types.LOAD_APPLICATION_FORM : types.LOAD_DAYCARE_APPLICATION_FORM, { application })
+      commit(type === 'CLUB' ? types.LOAD_APPLICATION_FORM : types.LOAD_DAYCARE_APPLICATION_FORM, { application })
     },
     async removeApplication({ commit }, { applicationId }) {
       await applicationApi.removeApplication(applicationId)
@@ -95,7 +95,7 @@ const module: Module<ApplicationsState, RootState> = {
 
       await applicationApi
         .createApplication(type, childId)
-        .then((res) => getRouterPush(`${type}-application`, res.data))
+        .then((res) => getRouterPush(`${type.toString().toLowerCase()}-application`, res.data))
     },
     editApplication({ commit }, { id, type }) {
       commit(types.CLEAR_FORM, 'application')
@@ -103,7 +103,7 @@ const module: Module<ApplicationsState, RootState> = {
       commit(types.NEW_APPLICATION, false)
 
       return router.push({
-        name: `${type}-application`,
+        name: `${type.toString().toLowerCase()}-application`,
         params: {
           id
         }
@@ -113,7 +113,7 @@ const module: Module<ApplicationsState, RootState> = {
       commit(types.CLEAR_FORM, 'application')
       commit(types.CLEAR_DAYCARE_FORM)
       commit(types.NEW_APPLICATION, false)
-      return router.push(`/applications/preview/${type}/${id}`)
+      return router.push(`/applications/preview/${type.toString().toLowerCase()}/${id}`)
     }
   },
   mutations: {

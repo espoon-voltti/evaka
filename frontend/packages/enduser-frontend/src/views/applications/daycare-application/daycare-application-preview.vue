@@ -11,7 +11,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
       v-if="isLoaded"
     >
       <c-title :size="2" :isGreyDark="true">{{
-        $t(`form.summary.${type}-title`)
+        $t(`form.summary.${type.toString().toLowerCase()}-title`)
       }}</c-title>
 
       <div class="application-date-details">
@@ -70,7 +70,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
       async loadUnits() {
         // the value is in "UI format"
         const date = this.daycareForm.preferredStartDate
-        const type = this.daycareForm.type.value === 'preschool'
+        const type = this.daycareForm.type.value === 'PRESCHOOL'
           ? this.daycareForm.careDetails.preparatory
             ? 'PREPARATORY'
             : 'PRESCHOOL'
@@ -83,7 +83,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
     },
     async created() {
       await this.$store.dispatch('loadApplication', {
-        type: 'daycare',
+        type: 'DAYCARE',
         applicationId: this.id
       })
       this.isLoaded = true

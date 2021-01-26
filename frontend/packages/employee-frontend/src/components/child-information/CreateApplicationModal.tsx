@@ -17,7 +17,6 @@ import { UUID } from 'types'
 import { DatePicker } from '@evaka/lib-components/src/molecules/DatePicker'
 import LocalDate from '@evaka/lib-common/src/local-date'
 import Select from 'components/common/Select'
-import { ApplicationType } from 'types/application'
 import {
   createPaperApplication,
   PaperApplicationRequest
@@ -27,6 +26,7 @@ import Checkbox from '@evaka/lib-components/src/atoms/form/Checkbox'
 import VtjPersonSearch from '~components/common/VtjPersonSearch'
 import CreatePersonInput from '~components/common/CreatePersonInput'
 import { CreatePersonBody } from '~api/person'
+import { ApplicationType } from '@evaka/lib-common/src/api-types/application/enums'
 
 interface CreateApplicationModalProps {
   child: PersonDetails

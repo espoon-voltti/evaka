@@ -59,9 +59,9 @@ export const CLUB_DAYS = {
 }
 
 export const APPLICATION_TYPE = {
-  DAYCARE: { value: 'daycare', label: 'Varhaiskasvatus' },
-  PRESCHOOL: { value: 'preschool', label: 'Esiopetus' },
-  CLUB: { value: 'club', label: 'Kerho' }
+  DAYCARE: { value: 'DAYCARE', label: 'Varhaiskasvatus' },
+  PRESCHOOL: { value: 'PRESCHOOL', label: 'Esiopetus' },
+  CLUB: { value: 'CLUB', label: 'Kerho' }
 }
 
 export const WORK_STATUS = {

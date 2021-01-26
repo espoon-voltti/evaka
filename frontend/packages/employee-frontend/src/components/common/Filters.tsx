@@ -24,7 +24,7 @@ import {
   InvoiceStatus,
   InvoiceDistinctiveDetails
 } from '~types/invoicing'
-import { ApplicationType, ApplicationSummaryStatus } from '~types/application'
+import { ApplicationSummaryStatus } from '~types/application'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
@@ -41,6 +41,7 @@ import Tooltip from '~components/common/Tooltip'
 import { CareArea } from '~types/unit'
 import { Label, LabelText } from '~components/common/styled/common'
 import { FinanceDecisionHandlerOption } from '~state/invoicing-ui'
+import { ApplicationType } from '@evaka/lib-common/src/api-types/application/enums'
 
 interface Props {
   freeText: string

@@ -281,7 +281,7 @@ private val ENDUSER_CLUBFORM_JSON =
   "status": "CREATED",
   "origin": "ELECTRONIC",
   "form": {
-    "type": "club",
+    "type": "CLUB",
     "preferredStartDate": "2019-03-06",
     "term": "b727d450-9368-45a8-ad17-24e7f63f99fc",
     "wasOnDaycare": true,

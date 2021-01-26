@@ -5,6 +5,10 @@
 import DateRange from '@evaka/lib-common/src/date-range'
 import LocalDate from '@evaka/lib-common/src/local-date'
 import { JsonOf } from '@evaka/lib-common/src/json'
+import {
+  ApplicationOrigin,
+  ApplicationStatus
+} from '@evaka/lib-common/src/api-types/application/enums'
 
 export type UUID = string
 type ISODate = string
@@ -279,20 +283,6 @@ export type UserRole =
   | 'STAFF'
   | 'END_USER'
   | 'DIRECTOR'
-
-export type ApplicationStatus =
-  | 'CREATED'
-  | 'SENT'
-  | 'WAITING_PLACEMENT'
-  | 'WAITING_DECISION'
-  | 'WAITING_UNIT_CONFIRMATION'
-  | 'WAITING_MAILING'
-  | 'WAITING_CONFIRMATION'
-  | 'REJECTED'
-  | 'ACTIVE'
-  | 'CANCELLED'
-
-export type ApplicationOrigin = 'ELECTRONIC' | 'PAPER'
 
 export interface Application {
   id: UUID

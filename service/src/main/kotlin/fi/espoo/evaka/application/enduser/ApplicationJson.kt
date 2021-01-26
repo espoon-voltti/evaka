@@ -4,9 +4,9 @@
 
 package fi.espoo.evaka.application.enduser
 
-import com.fasterxml.jackson.annotation.JsonProperty
 import fi.espoo.evaka.application.ApplicationOrigin
 import fi.espoo.evaka.application.ApplicationStatus
+import fi.espoo.evaka.application.ApplicationType
 import fi.espoo.evaka.application.Attachment
 import fi.espoo.evaka.application.enduser.daycare.OtherGuardianAgreementStatus
 import fi.espoo.evaka.application.persistence.DatabaseForm
@@ -34,27 +34,12 @@ data class ApplicationJson(
 )
 
 sealed class FormJson {
-    abstract val type: ApplicationJsonType
+    abstract val type: ApplicationType
     abstract fun deserialize(): DatabaseForm
 
     abstract class ClubFormJSON : FormJson() {
-        final override val type = ApplicationJsonType.CLUB
+        final override val type = ApplicationType.CLUB
     }
 
     abstract class DaycareFormJSON : FormJson()
-}
-
-enum class ApplicationJsonType(val type: String) {
-    @JsonProperty("club")
-    CLUB("club"),
-
-    @JsonProperty("daycare")
-    DAYCARE("daycare"),
-
-    @JsonProperty("preschool")
-    PRESCHOOL("preschool");
-
-    override fun toString(): String {
-        return type
-    }
 }

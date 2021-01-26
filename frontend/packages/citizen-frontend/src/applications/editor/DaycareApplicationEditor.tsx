@@ -18,7 +18,6 @@ import {
   FeeFormData,
   formDataToApiData
 } from '~applications/editor/ApplicationFormData'
-import { Application } from '~applications/types'
 import Button from '@evaka/lib-components/src/atoms/buttons/Button'
 import { saveApplicationDraft, updateApplication } from '~applications/api'
 import { OverlayContext } from '~overlay/state'
@@ -34,12 +33,13 @@ import { faAngleLeft } from '@evaka/lib-icons'
 import Checkbox from '@evaka/lib-components/src/atoms/form/Checkbox'
 import InfoModal from '../../../../lib-components/src/molecules/modals/InfoModal'
 import { faExclamation } from '@evaka/lib-icons'
+import { ApplicationDetails } from '@evaka/lib-common/src/api-types/application/ApplicationDetails'
 
 type DaycareApplicationEditorProps = {
-  apiData: Application
+  apiData: ApplicationDetails
 }
 
-const applicationType = 'daycare'
+const applicationType = 'DAYCARE'
 
 export default React.memo(function DaycareApplicationEditor({
   apiData
@@ -278,7 +278,7 @@ export default React.memo(function DaycareApplicationEditor({
             },
             label: t.applications.editor.draftPolicyInfo.ok
           }}
-        ></InfoModal>
+        />
       )}
     </Container>
   )

@@ -64,10 +64,10 @@ export default {
     editor: {
       heading: {
         title: {
-          daycare: 'Varhaiskasvatus&shy;hakemus'
+          DAYCARE: 'Varhaiskasvatushakemus'
         },
         info: {
-          daycare: [
+          DAYCARE: [
             'Varhaiskasvatusta voi hakea ympäri vuoden. Hakemus on jätettävä viimeistään neljä kuukautta ennen kuin tarvitsette paikan. Mikäli tarvitsette varhaiskasvatusta kiireellisesti työn tai opiskelujen vuoksi, tulee paikkaa hakea viimeistään kaksi viikkoa ennen.',
             'Saatte kirjallisen päätöksen varhaiskasvatuspaikasta <a href="https://www.suomi.fi/viestit" target="_blank" rel="noreferrer">Suomi.fi-viestit</a> -palveluun tai postitse, mikäli et ole ottanut Suomi.fi -palvelua käyttöön.',
             '* Tähdellä merkityt tiedot ovat pakollisia'
@@ -87,7 +87,7 @@ export default {
       },
       verification: {
         title: {
-          daycare: 'Varhaiskasvatushakemuksen tarkistaminen'
+          DAYCARE: 'Varhaiskasvatushakemuksen tarkistaminen'
         },
         notYetSent:
           '<strong>Hakemusta ei ole vielä lähetetty.</strong> Tarkista antamasi tiedot ja lähetä sivun lopussa olevalla Lähetä hakemus-painikkeella.',
@@ -373,9 +373,9 @@ export default {
     pageLoadError: 'Tietojen hakeminen ei onnistunut',
     noApplications: 'Ei hakemuksia',
     type: {
-      daycare: 'Varhaiskasvatushakemus',
-      preschool: 'Esiopetushakemus',
-      club: 'Kerhohakemus'
+      DAYCARE: 'Varhaiskasvatushakemus',
+      PRESCHOOL: 'Esiopetushakemus',
+      CLUB: 'Kerhohakemus'
     },
     unit: 'Yksikkö',
     period: 'Ajalle',

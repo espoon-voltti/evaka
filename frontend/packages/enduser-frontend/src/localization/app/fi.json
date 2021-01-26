@@ -64,15 +64,15 @@
     },
     "application-type": {
       "club": {
-        "value": "club",
+        "value": "CLUB",
         "label": "Kerho"
       },
       "daycare": {
-        "value": "daycare",
+        "value": "DAYCARE",
         "label": "Varhaiskasvatus"
       },
       "preschool": {
-        "value": "preschool",
+        "value": "PRESCHOOL",
         "label": "Esiopetus"
       }
     },

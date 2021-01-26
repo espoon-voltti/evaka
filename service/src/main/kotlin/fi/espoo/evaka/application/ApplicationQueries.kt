@@ -144,7 +144,7 @@ fun fetchApplicationSummaries(
         "area" to areas.toTypedArray(),
         "units" to units.toTypedArray(),
         "authorizedUnits" to authorizedUnits.ids?.toTypedArray(),
-        "documentType" to type.toString().toLowerCase(),
+        "documentType" to type.toString(),
         "preschoolType" to preschoolType.toTypedArray(),
         "status" to statuses.map { it.toStatus() }.toTypedArray(),
         "distinctions" to distinctions.map { it.toString() }.toTypedArray(),
@@ -528,7 +528,7 @@ fun fetchApplicationDetails(h: Handle, applicationId: UUID): ApplicationDetails?
         .map { row ->
             val childRestricted = row.mapColumn("child_restricted") ?: false
             val guardianRestricted = row.mapColumn("guardian_restricted") ?: false
-            val deserializedForm = if (row.mapJsonColumn<FormWithType>("document").type == "club") {
+            val deserializedForm = if (row.mapJsonColumn<FormWithType>("document").type == "CLUB") {
                 row.mapJsonColumn<ClubFormV0>("document")
             } else {
                 row.mapJsonColumn<DaycareFormV0>("document")
@@ -646,15 +646,15 @@ data class FormWithType(val type: String)
 
 fun mapRequestedPlacementType(row: RowView, colName: String): PlacementType =
     when (row.mapJsonColumn<FormWithType>(colName).type) {
-        "club" -> PlacementType.CLUB
-        "daycare" -> {
+        "CLUB" -> PlacementType.CLUB
+        "DAYCARE" -> {
             if (row.mapJsonColumn<DaycareFormV0>(colName).partTime) {
                 PlacementType.DAYCARE_PART_TIME
             } else {
                 PlacementType.DAYCARE
             }
         }
-        "preschool" -> {
+        "PRESCHOOL" -> {
             row.mapJsonColumn<DaycareFormV0>(colName).let {
                 if (it.careDetails.preparatory == true) {
                     if (it.connectedDaycare == true) {

@@ -74,7 +74,7 @@ fixture('Application - employee application details')
         fixtures.familyWithSeparatedGuardians.children[0],
         fixtures.familyWithSeparatedGuardians.guardian,
         fixtures.familyWithSeparatedGuardians.otherGuardian,
-        'daycare',
+        'DAYCARE',
         'NOT_AGREED'
       ),
       id: '0c8b9ad3-d283-460d-a5d4-77bdcbc69374'
@@ -84,7 +84,7 @@ fixture('Application - employee application details')
         fixtures.familyWithRestrictedDetailsGuardian.children[0],
         fixtures.familyWithRestrictedDetailsGuardian.guardian,
         fixtures.familyWithRestrictedDetailsGuardian.otherGuardian,
-        'daycare',
+        'DAYCARE',
         'NOT_AGREED'
       ),
       id: '6a9b1b1e-3fdf-11eb-b378-0242ac130002'
