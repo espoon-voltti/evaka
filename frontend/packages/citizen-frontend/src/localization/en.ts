@@ -306,6 +306,12 @@ const en: Translations = {
         text:
           'Your unfinished application was saved. Please note! An unfinished application is stored in the system for one month after it was last saved.',
         ok: 'OK'
+      },
+      sentInfo: {
+        title: 'Your application has been sent',
+        text:
+          'You can continue editing the application until processing starts',
+        ok: 'Ok!'
       }
     }
   },

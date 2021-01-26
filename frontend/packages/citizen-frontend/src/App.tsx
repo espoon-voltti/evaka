@@ -16,6 +16,7 @@ import { OverlayContextProvider } from '~overlay/state'
 import Applications from '~applications/Applications'
 import ApplicationCreation from '~applications/ApplicationCreation'
 import ApplicationReadView from '~applications/read-view/ApplicationReadView'
+import GlobalInfoDialog from '~overlay/Info'
 
 export default function App() {
   return (
@@ -50,6 +51,7 @@ export default function App() {
               <Route path="/" component={RedirectToEnduser} />
             </Switch>
             <Footer />
+            <GlobalInfoDialog />
             <GlobalErrorDialog />
           </OverlayContextProvider>
         </Localization>

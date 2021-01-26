@@ -300,7 +300,13 @@ export default {
         title: 'Hakemusluonnos on tallennettu',
         text:
           'Hakemus on tallennettu keskeneräisenä. Huom! Keskeneräistä hakemusta säilytetään palvelussa yhden kuukauden ajan viimeisimmästä tallennuksesta.',
-        ok: 'Selvä'
+        ok: 'Selvä!'
+      },
+      sentInfo: {
+        title: 'Hakemus on lähetetty',
+        text:
+          'Halutessasi voit tehdä hakemukseen muutoksia niin kauan kuin hakemusta ei olla otettu käsittelyyn.',
+        ok: 'Selvä!'
       }
     }
   },

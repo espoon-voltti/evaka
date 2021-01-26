@@ -3,6 +3,24 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useMemo, useState, createContext } from 'react'
+import { IconProp } from '@fortawesome/fontawesome-svg-core'
+import { IconColour } from '@evaka/lib-components/src/molecules/modals/FormModal'
+
+export interface InfoMessage {
+  title: string
+  text?: string
+  'data-qa'?: string
+  icon: IconProp
+  iconColour: IconColour
+  resolve: {
+    action: () => void
+    label: string
+  }
+  reject?: {
+    action: () => void
+    label: string
+  }
+}
 
 export type ErrorMessageType = 'warning' | 'error'
 
@@ -17,12 +35,20 @@ export interface OverlayState {
   errorMessage: ErrorMessage | null
   setErrorMessage: (message: ErrorMessage | null) => void
   clearErrorMessage: () => void
+
+  infoMessage: InfoMessage | null
+  setInfoMessage: (message: InfoMessage | null) => void
+  clearInfoMessage: () => void
 }
 
 const defaultState = {
   errorMessage: null,
   setErrorMessage: () => undefined,
-  clearErrorMessage: () => undefined
+  clearErrorMessage: () => undefined,
+
+  infoMessage: null,
+  setInfoMessage: () => undefined,
+  clearInfoMessage: () => undefined
 }
 
 export const OverlayContext = createContext<OverlayState>(defaultState)
@@ -32,13 +58,19 @@ export const OverlayContextProvider = React.memo(
     const [errorMessage, setErrorMessage] = useState<ErrorMessage | null>(null)
     const clearErrorMessage = () => setErrorMessage(null)
 
+    const [infoMessage, setInfoMessage] = useState<InfoMessage | null>(null)
+    const clearInfoMessage = () => setInfoMessage(null)
+
     const value = useMemo(
       () => ({
         errorMessage,
         setErrorMessage,
-        clearErrorMessage
+        clearErrorMessage,
+        infoMessage,
+        setInfoMessage,
+        clearInfoMessage
       }),
-      [errorMessage, setErrorMessage]
+      [errorMessage, setErrorMessage, infoMessage, setInfoMessage]
     )
 
     return (

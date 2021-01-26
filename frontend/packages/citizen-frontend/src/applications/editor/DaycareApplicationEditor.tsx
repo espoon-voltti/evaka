@@ -33,7 +33,7 @@ import ReturnButton, {
 } from '@evaka/lib-components/src/atoms/buttons/ReturnButton'
 import DaycareApplicationVerificationView from '~applications/editor/verification/DaycareApplicationVerificationView'
 import InlineButton from '@evaka/lib-components/src/atoms/buttons/InlineButton'
-import { faAngleLeft } from '@evaka/lib-icons'
+import { faAngleLeft, faCheck } from '@evaka/lib-icons'
 import Checkbox from '@evaka/lib-components/src/atoms/form/Checkbox'
 import InfoModal from '../../../../lib-components/src/molecules/modals/InfoModal'
 import { faExclamation } from '@evaka/lib-icons'
@@ -59,7 +59,9 @@ export default React.memo(function DaycareApplicationEditor({
   const [showDraftPolicyInfo, setShowDraftPolicyInfo] = useState<boolean>(false)
 
   const history = useHistory()
-  const { setErrorMessage } = useContext(OverlayContext)
+  const { setErrorMessage, setInfoMessage, clearInfoMessage } = useContext(
+    OverlayContext
+  )
 
   const updateFeeFormData = useCallback(
     (feeData: FeeFormData) =>
@@ -122,7 +124,21 @@ export default React.memo(function DaycareApplicationEditor({
               type: 'error'
             })
           } else {
-            // todo: some success dialog?
+            setInfoMessage({
+              title: t.applications.editor.sentInfo.title,
+              text: t.applications.editor.sentInfo.text,
+              iconColour: 'green',
+              icon: faCheck,
+              resolve: {
+                action: () => {
+                  history.push('/applications')
+                  clearInfoMessage()
+                },
+                label: t.applications.editor.sentInfo.ok
+              },
+              'data-qa': 'info-message-application-sent'
+            })
+
             history.push('/applications')
           }
         })

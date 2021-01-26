@@ -306,6 +306,12 @@ const sv: Translations = {
         text:
           'Ansökan har sparats som halvfärdig. Obs! En halvfärdig ansökan förvaras i tjänsten i en månad efter att den senast sparats',
         ok: 'Klart'
+      },
+      sentInfo: {
+        title: 'Hakemus on lähetetty',
+        text:
+          'Halutessasi voit tehdä hakemukseen muutoksia niin kauan kuin hakemusta ei olla otettu käsittelyyn.',
+        ok: 'Selvä!'
       }
     }
   },

@@ -83,6 +83,17 @@ export async function saveApplicationDraft(
   }
 }
 
+export async function removeApplicationDraft(
+  applicationId: string
+): Promise<Result<void>> {
+  try {
+    await client.delete(`/citizen/applications/${applicationId}`)
+    return Success.of(undefined)
+  } catch (e) {
+    return Failure.fromError(e)
+  }
+}
+
 export async function sendApplication(
   applicationId: string
 ): Promise<Result<void>> {
