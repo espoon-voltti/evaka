@@ -7,40 +7,32 @@ import Container, {
   ContentArea
 } from '@evaka/lib-components/src/layout/Container'
 import { ApplicationFormData } from '~applications/editor/ApplicationFormData'
-import { H1, P } from '~../../lib-components/src/typography'
+import { H1 } from '~../../lib-components/src/typography'
 import { useTranslation } from '~localization'
 import BasicsSection from '~applications/editor/verification/BasicsSection'
-import { Gap } from '@evaka/lib-components/src/white-space'
 import HorizontalLine from '@evaka/lib-components/src/atoms/HorizontalLine'
 import UnitPreferenceSection from '~applications/editor/verification/UnitPreferenceSection'
 import { ApplicationDetails } from '@evaka/lib-common/src/api-types/application/ApplicationDetails'
+import ReturnButton from '@evaka/lib-components/src/atoms/buttons/ReturnButton'
 
-type DaycareApplicationVerificationViewProps = {
+type DaycareApplicationReadViewProps = {
   application: ApplicationDetails
   formData: ApplicationFormData
 }
 
 const applicationType = 'DAYCARE'
 
-export default React.memo(function DaycareApplicationVerificationView({
+export default React.memo(function DaycareApplicationReadView({
   application,
   formData
-}: DaycareApplicationVerificationViewProps) {
+}: DaycareApplicationReadViewProps) {
   const t = useTranslation()
+
   return (
     <Container>
+      <ReturnButton label={t.common.return} />
       <ContentArea opaque>
-        <H1>{t.applications.editor.verification.title[applicationType]}</H1>
-        <P
-          dangerouslySetInnerHTML={{
-            __html: t.applications.editor.verification.notYetSent
-          }}
-        />
-      </ContentArea>
-
-      <Gap size="m" />
-
-      <ContentArea opaque>
+        <H1>{t.applications.editor.heading.title[applicationType]}</H1>
         <BasicsSection application={application} formData={formData} />
         <HorizontalLine />
         <UnitPreferenceSection formData={formData.unitPreference} />

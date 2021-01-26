@@ -15,6 +15,7 @@ import GlobalErrorDialog from '~overlay/Error'
 import { OverlayContextProvider } from '~overlay/state'
 import Applications from '~applications/Applications'
 import ApplicationCreation from '~applications/ApplicationCreation'
+import ApplicationReadView from '~applications/read-view/ApplicationReadView'
 
 export default function App() {
   return (
@@ -29,6 +30,11 @@ export default function App() {
                 exact
                 path="/applications/new/:childId"
                 component={ApplicationCreation}
+              />
+              <Route
+                exact
+                path="/applications/:applicationId"
+                component={ApplicationReadView}
               />
               <Route
                 exact

@@ -10,16 +10,18 @@ import { Gap } from '@evaka/lib-components/src/white-space'
 import styled from 'styled-components'
 import ListGrid from '@evaka/lib-components/src/layout/ListGrid'
 import { formatDate } from '~util'
-import { ApplicationLink } from '~decisions/ApplicationLink'
 import { Status, applicationStatusIcon } from '~decisions/shared'
 import RoundIcon from '@evaka/lib-components/src/atoms/RoundIcon'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faArrowRight } from '@evaka/lib-icons'
+import { faArrowRight, faFileAlt, faPen, faTrash } from '@evaka/lib-icons'
 import colors from '@evaka/lib-components/src/colors'
 import AddButton from '@evaka/lib-components/src/atoms/buttons/AddButton'
 import { Link, useHistory } from 'react-router-dom'
 import { ApplicationsOfChild } from '@evaka/lib-common/src/api-types/application/ApplicationsOfChild'
 import { ApplicationStatus } from '@evaka/lib-common/src/api-types/application/enums'
+import { FixedSpaceRow } from '@evaka/lib-components/src/layout/flex-helpers'
+import InlineButton from '@evaka/lib-components/src/atoms/buttons/InlineButton'
+import { noop } from 'lodash'
 
 const StyledLink = styled(Link)`
   color: ${colors.blues.primary};
@@ -182,7 +184,36 @@ export default React.memo(function ChildApplicationsBlock({
                 <Gap size="xs" horizontal />
               </ListGrid>
               <Gap size="s" />
-              <ApplicationLink applicationId={applicationId} />
+              <FixedSpaceRow>
+                {applicationStatus === 'CREATED' ||
+                applicationStatus === 'SENT' ? (
+                  <Link to={`/applications/${applicationId}/edit`}>
+                    <InlineButton
+                      icon={faPen}
+                      text={t.applicationsList.editApplicationLink}
+                      onClick={noop}
+                      dataQa={`button-open-application-${applicationId}`}
+                    />
+                  </Link>
+                ) : (
+                  <Link to={`/applications/${applicationId}`}>
+                    <InlineButton
+                      icon={faFileAlt}
+                      text={t.applicationsList.openApplicationLink}
+                      onClick={noop}
+                      dataQa={`button-open-application-${applicationId}`}
+                    />
+                  </Link>
+                )}
+                {applicationStatus === 'CREATED' && (
+                  <InlineButton
+                    icon={faTrash}
+                    text={t.applicationsList.removeApplicationBtn}
+                    onClick={noop}
+                    dataQa={`button-remove-application-${applicationId}`}
+                  />
+                )}
+              </FixedSpaceRow>
 
               {index != applicationSummaries.length - 1 && <LineBreak />}
             </React.Fragment>
