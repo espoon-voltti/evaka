@@ -4,7 +4,7 @@ import { useTranslation } from '~localization'
 import { H2, Label } from '@evaka/lib-components/src/typography'
 import ListGrid from '@evaka/lib-components/src/layout/ListGrid'
 import { DATE_FORMAT_DATE_DEFAULT, formatDate } from '~util'
-import { DaycareApplicationVerificationLabelWidth } from '~applications/editor/verification/DaycareApplicationVerificationView'
+import { ApplicationDataGridLabelWidth } from '~applications/editor/verification/const'
 import { ApplicationDetails } from '@evaka/lib-common/src/api-types/application/ApplicationDetails'
 
 type BasicsSectionProps = {
@@ -25,7 +25,7 @@ export default React.memo(function BasicsSection({
       </H2>
 
       <ListGrid
-        labelWidth={DaycareApplicationVerificationLabelWidth}
+        labelWidth={ApplicationDataGridLabelWidth}
         rowGap="s"
         columnGap="L"
       >

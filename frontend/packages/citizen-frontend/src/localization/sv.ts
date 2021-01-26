@@ -400,6 +400,8 @@ const sv: Translations = {
       CANCELLED: 'Platsen annullerad'
     },
     openApplicationLink: 'Visa ansökan',
+    editApplicationLink: 'Muokkaa hakemusta',
+    removeApplicationBtn: 'Poista hakemus',
     confirmationLinkInstructions:
       'Under Beslut-fliken kan du läsa besluten till dina ansökningar och ta emot/annullera platsen',
     confirmationLink: 'Granska och bekräfta beslutet',

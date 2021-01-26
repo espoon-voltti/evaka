@@ -404,6 +404,8 @@ const en: Translations = {
       CANCELLED: 'Place rejected'
     },
     openApplicationLink: 'Open application',
+    editApplicationLink: 'Muokkaa hakemusta',
+    removeApplicationBtn: 'Poista hakemus',
     confirmationLinkInstructions:
       'In the Decisions page you can read the decision and either accept or reject the proposed place',
     confirmationLink: 'Review and confirm the decision',

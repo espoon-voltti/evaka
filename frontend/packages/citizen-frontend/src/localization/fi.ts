@@ -395,6 +395,8 @@ export default {
       CANCELLED: 'Poistettu käsittelystä'
     },
     openApplicationLink: 'Näytä hakemus',
+    editApplicationLink: 'Muokkaa hakemusta',
+    removeApplicationBtn: 'Poista hakemus',
     confirmationLinkInstructions:
       'Päätökset-välilehdellä voit lukea päätöksen ja hyväksyä/hylätä tarjotun paikan',
     confirmationLink: 'Siirry vahvistamaan',

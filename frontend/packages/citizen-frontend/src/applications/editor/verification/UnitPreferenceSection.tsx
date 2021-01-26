@@ -5,7 +5,7 @@ import { H2, H3, Label } from '@evaka/lib-components/src/typography'
 import ListGrid from '@evaka/lib-components/src/layout/ListGrid'
 import { Gap } from '@evaka/lib-components/src/white-space'
 import styled from 'styled-components'
-import { DaycareApplicationVerificationLabelWidth } from '~applications/editor/verification/DaycareApplicationVerificationView'
+import { ApplicationDataGridLabelWidth } from '~applications/editor/verification/const'
 
 const NumberedList = styled.ol`
   margin: 0;
@@ -30,7 +30,7 @@ export default React.memo(function UnitPreferenceSection({
 
       <H3>{tLocal.siblingBasis.title}</H3>
       <ListGrid
-        labelWidth={DaycareApplicationVerificationLabelWidth}
+        labelWidth={ApplicationDataGridLabelWidth}
         rowGap="s"
         columnGap="L"
       >
@@ -54,7 +54,7 @@ export default React.memo(function UnitPreferenceSection({
 
       <H3>{tLocal.units.title}</H3>
       <ListGrid
-        labelWidth={DaycareApplicationVerificationLabelWidth}
+        labelWidth={ApplicationDataGridLabelWidth}
         rowGap="s"
         columnGap="L"
       >
