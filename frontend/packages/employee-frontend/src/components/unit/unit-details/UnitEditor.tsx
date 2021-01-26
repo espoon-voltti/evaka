@@ -652,7 +652,7 @@ export default function UnitEditor(props: Props): JSX.Element {
       </FormPart>
       <FormPart>
         <div>{showRequired(i18n.unitEditor.label.careTypes)}</div>
-        <FixedSpaceColumn>
+        <FixedSpaceColumn fullWidth={true}>
           <DaycareTypeSelectContainer>
             <Checkbox
               disabled={!props.editable}
@@ -669,6 +669,7 @@ export default function UnitEditor(props: Props): JSX.Element {
             {form.careTypes.DAYCARE && (
               <Select
                 disabled={!props.editable}
+                fullWidth
                 options={[
                   { value: 'CENTRE', label: i18n.common.types.CENTRE },
                   { value: 'FAMILY', label: i18n.common.types.FAMILY },

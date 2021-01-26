@@ -58,11 +58,14 @@ interface FixedSpaceColumnProps {
   spacing?: SpacingSize | string
   alignItems?: SelfPosition
   marginRight?: SpacingSize | string
+  fullWidth?: boolean
 }
+
 export const FixedSpaceColumn = styled.div<FixedSpaceColumnProps>`
   display: flex;
   flex-direction: column;
   ${(p) => (p.alignItems ? `align-items: ${p.alignItems};` : '')}
+  ${(p) => (p.fullWidth ? `width: 100%;` : '')}
 
   ${(p) =>
     p.marginRight
