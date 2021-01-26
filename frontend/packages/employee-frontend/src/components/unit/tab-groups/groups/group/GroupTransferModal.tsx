@@ -98,7 +98,8 @@ export default React.memo(function GroupTransferModal({
         setErrorMessage({
           type: 'error',
           title: i18n.unit.error.placement.transfer,
-          text: i18n.common.tryAgain
+          text: i18n.common.tryAgain,
+          resolveLabel: i18n.common.ok
         })
       } else {
         clearUiMode()

@@ -21,9 +21,10 @@ function ErrorMessage() {
           icon={faExclamation}
           iconColour={errorMessage.type === 'error' ? 'red' : 'orange'}
           text={errorMessage.text}
-          resolveLabel={errorMessage.resolveLabel}
-          rejectLabel={errorMessage.resolveLabel}
-          resolve={() => clearErrorMessage()}
+          resolve={{
+            action: () => clearErrorMessage(),
+            label: errorMessage.resolveLabel
+          }}
           size={'md'}
           zIndex={errorModalZIndex}
         />

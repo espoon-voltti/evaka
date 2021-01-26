@@ -478,11 +478,9 @@ function UnitAccessControl({ unitId }: Props) {
     <InfoModal
       iconColour={'orange'}
       title={i18n.unit.accessControl.removeConfirmation}
-      resolveLabel={i18n.common.remove}
-      rejectLabel={i18n.common.cancel}
       icon={faQuestion}
-      reject={closeRemoveModal}
-      resolve={confirmRemoveModal}
+      reject={{ action: closeRemoveModal, label: i18n.common.cancel }}
+      resolve={{ action: confirmRemoveModal, label: i18n.common.remove }}
     />
   )
 
@@ -490,11 +488,9 @@ function UnitAccessControl({ unitId }: Props) {
     <InfoModal
       iconColour={'orange'}
       title={i18n.unit.accessControl.mobileDevices.removeConfirmation}
-      resolveLabel={i18n.common.remove}
-      rejectLabel={i18n.common.cancel}
       icon={faQuestion}
-      reject={closeRemoveModal}
-      resolve={confirmRemoveDevice}
+      reject={{ action: closeRemoveModal, label: i18n.common.cancel }}
+      resolve={{ action: confirmRemoveDevice, label: i18n.common.remove }}
     />
   )
 
@@ -512,11 +508,9 @@ function UnitAccessControl({ unitId }: Props) {
       <InfoModal
         iconColour={'blue'}
         title={i18n.unit.accessControl.mobileDevices.editName}
-        resolveLabel={i18n.common.save}
-        rejectLabel={i18n.common.cancel}
         icon={faQuestion}
-        reject={closeRemoveModal}
-        resolve={() => saveDevice()}
+        reject={{ action: closeRemoveModal, label: i18n.common.cancel }}
+        resolve={{ action: () => saveDevice(), label: i18n.common.save }}
       >
         <Flex>
           <InputField

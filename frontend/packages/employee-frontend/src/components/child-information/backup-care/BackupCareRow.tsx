@@ -59,17 +59,17 @@ export default function BackupCareRow({ childId, backupCare }: Props) {
           text={`${
             i18n.common.period
           } ${backupCare.period.start.format()} - ${backupCare.period.end.format()}`}
-          resolveLabel={i18n.common.remove}
-          rejectLabel={i18n.common.cancel}
           icon={faQuestion}
-          reject={() => clearUiMode()}
-          resolve={() =>
-            removeBackupCare(backupCare.id)
-              .then(() => clearUiMode())
-              .then(() =>
-                getChildBackupCares(childId).then((sn) => setBackupCares(sn))
-              )
-          }
+          reject={{ action: () => clearUiMode(), label: i18n.common.cancel }}
+          resolve={{
+            action: () =>
+              removeBackupCare(backupCare.id)
+                .then(() => clearUiMode())
+                .then(() =>
+                  getChildBackupCares(childId).then((sn) => setBackupCares(sn))
+                ),
+            label: i18n.common.remove
+          }}
         />
       )}
       {uiMode === `edit-backup-care-${backupCare.id}` ? (

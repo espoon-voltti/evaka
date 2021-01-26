@@ -99,7 +99,8 @@ function FridgePartnerModal({ partnership, onSuccess, headPersonId }: Props) {
             title: partnership
               ? i18n.personProfile.fridgePartner.error.edit.title
               : i18n.personProfile.fridgePartner.error.add.title,
-            text: i18n.common.tryAgain
+            text: i18n.common.tryAgain,
+            resolveLabel: i18n.common.ok
           })
         }
       } else {

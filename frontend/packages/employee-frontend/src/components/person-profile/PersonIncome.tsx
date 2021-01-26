@@ -71,7 +71,8 @@ const PersonIncome = React.memo(function PersonIncome({ id, open }: Props) {
             i18n.personProfile.income.details.missingIncomeDaysWarningTitle,
           text: i18n.personProfile.income.details.missingIncomeDaysWarningText(
             missingIncomePeriodsString
-          )
+          ),
+          resolveLabel: i18n.common.ok
         })
       }
     }
@@ -87,7 +88,8 @@ const PersonIncome = React.memo(function PersonIncome({ id, open }: Props) {
       setErrorMessage({
         type: 'error',
         title: i18n.personProfile.income.details.updateError,
-        text
+        text,
+        resolveLabel: i18n.common.ok
       })
 
       throw res.message

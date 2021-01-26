@@ -98,26 +98,28 @@ const PersonFridgePartner = React.memo(function PersonFridgePartner({
           iconColour={'orange'}
           title={i18n.personProfile.fridgePartner.removePartner}
           text={i18n.personProfile.fridgePartner.confirmText}
-          resolveLabel={i18n.common.remove}
-          rejectLabel={i18n.common.cancel}
           icon={faQuestion}
-          reject={() => clearUiMode()}
-          resolve={() =>
-            removePartnership(selectedPartnershipId).then(
-              (res: Result<null>) => {
-                clearUiMode()
-                if (res.isFailure) {
-                  setErrorMessage({
-                    type: 'error',
-                    title: i18n.personProfile.fridgePartner.error.remove.title,
-                    text: i18n.common.tryAgain
-                  })
-                } else {
-                  reload()
+          reject={{ action: () => clearUiMode(), label: i18n.common.cancel }}
+          resolve={{
+            action: () =>
+              removePartnership(selectedPartnershipId).then(
+                (res: Result<null>) => {
+                  clearUiMode()
+                  if (res.isFailure) {
+                    setErrorMessage({
+                      type: 'error',
+                      title:
+                        i18n.personProfile.fridgePartner.error.remove.title,
+                      text: i18n.common.tryAgain,
+                      resolveLabel: i18n.common.ok
+                    })
+                  } else {
+                    reload()
+                  }
                 }
-              }
-            )
-          }
+              ),
+            label: i18n.common.remove
+          }}
         />
       )
     }

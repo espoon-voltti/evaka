@@ -137,7 +137,8 @@ export default React.memo(function ApplicationNoteBox(props: Props) {
         setErrorMessage({
           type: 'error',
           title: i18n.common.error.unknown,
-          text: i18n.application.notes.error.remove
+          text: i18n.application.notes.error.remove,
+          resolveLabel: i18n.common.ok
         })
       )
   }
@@ -146,11 +147,15 @@ export default React.memo(function ApplicationNoteBox(props: Props) {
     <InfoModal
       iconColour={'orange'}
       title={i18n.application.notes.confirmDelete}
-      resolveLabel={i18n.common.remove}
-      rejectLabel={i18n.common.cancel}
       icon={faQuestion}
-      reject={() => setConfirmingDelete(false)}
-      resolve={() => doDelete()}
+      reject={{
+        action: () => setConfirmingDelete(false),
+        label: i18n.common.cancel
+      }}
+      resolve={{
+        action: () => doDelete(),
+        label: i18n.common.remove
+      }}
     />
   )
 

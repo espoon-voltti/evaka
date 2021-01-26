@@ -115,7 +115,8 @@ export default React.memo(function GroupPlacementModal({
         setErrorMessage({
           type: 'error',
           title: i18n.unit.error.placement.create,
-          text: i18n.common.tryAgain
+          text: i18n.common.tryAgain,
+          resolveLabel: i18n.common.ok
         })
       } else {
         clearUiMode()
@@ -136,7 +137,8 @@ export default React.memo(function GroupPlacementModal({
         setErrorMessage({
           type: 'error',
           title: i18n.unit.error.placement.create,
-          text: i18n.common.tryAgain
+          text: i18n.common.tryAgain,
+          resolveLabel: i18n.common.ok
         })
       } else {
         clearUiMode()

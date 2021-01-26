@@ -272,10 +272,12 @@ export default React.memo(function DaycareApplicationEditor({
           icon={faExclamation}
           title={t.applications.editor.draftPolicyInfo.title}
           text={t.applications.editor.draftPolicyInfo.text}
-          resolveLabel={t.applications.editor.draftPolicyInfo.ok}
-          resolve={() => {
-            history.push('/applications')
-            setShowDraftPolicyInfo(false)
+          resolve={{
+            action: () => {
+              history.push('/applications')
+              setShowDraftPolicyInfo(false)
+            },
+            label: t.applications.editor.draftPolicyInfo.ok
           }}
         ></InfoModal>
       )}

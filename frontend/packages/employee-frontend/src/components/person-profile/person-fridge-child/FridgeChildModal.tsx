@@ -92,7 +92,8 @@ function FridgeChildModal({ headPersonId, onSuccess, parentship }: Props) {
             title: parentship
               ? i18n.personProfile.fridgeChild.error.edit.title
               : i18n.personProfile.fridgeChild.error.add.title,
-            text: i18n.common.tryAgain
+            text: i18n.common.tryAgain,
+            resolveLabel: i18n.common.ok
           })
         }
       } else {

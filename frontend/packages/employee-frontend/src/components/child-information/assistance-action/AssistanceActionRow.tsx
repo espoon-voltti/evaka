@@ -48,16 +48,16 @@ function AssistanceActionRow({
       text={`${
         i18n.common.period
       } ${assistanceAction.startDate.format()} - ${assistanceAction.endDate.format()}`}
-      resolveLabel={i18n.common.remove}
-      rejectLabel={i18n.common.cancel}
       icon={faQuestion}
-      reject={() => clearUiMode()}
-      resolve={() =>
-        removeAssistanceAction(assistanceAction.id).then(() => {
-          clearUiMode()
-          onReload()
-        })
-      }
+      reject={{ action: () => clearUiMode(), label: i18n.common.cancel }}
+      resolve={{
+        action: () =>
+          removeAssistanceAction(assistanceAction.id).then(() => {
+            clearUiMode()
+            onReload()
+          }),
+        label: i18n.common.remove
+      }}
     />
   )
 

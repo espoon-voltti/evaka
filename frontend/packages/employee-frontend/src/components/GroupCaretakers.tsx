@@ -183,11 +183,15 @@ function GroupCaretakers({
               <InfoModal
                 iconColour={'orange'}
                 title={i18n.groupCaretakers.confirmDelete}
-                resolveLabel={i18n.common.remove}
-                rejectLabel={i18n.common.cancel}
                 icon={faQuestion}
-                resolve={() => deleteRow(rowToDelete?.id)}
-                reject={() => setRowToDelete(null)}
+                reject={{
+                  action: () => setRowToDelete(null),
+                  label: i18n.common.cancel
+                }}
+                resolve={{
+                  action: () => deleteRow(rowToDelete?.id),
+                  label: i18n.common.remove
+                }}
               />
             )}
           </NarrowContainer>

@@ -121,7 +121,8 @@ function PlacementRow({ placement, onRefreshNeeded, checkOverlaps }: Props) {
         setErrorMessage({
           type: 'error',
           title: message,
-          text: text
+          text: text,
+          resolveLabel: i18n.common.ok
         })
       }
     })
@@ -294,10 +295,14 @@ function PlacementRow({ placement, onRefreshNeeded, checkOverlaps }: Props) {
           title={i18n.childInformation.placements.deletePlacement.confirmTitle}
           iconColour={'orange'}
           icon={faQuestion}
-          resolveLabel={i18n.childInformation.placements.deletePlacement.btn}
-          resolve={submitDelete}
-          rejectLabel={i18n.common.cancel}
-          reject={() => setConfirmingDelete(false)}
+          resolve={{
+            action: submitDelete,
+            label: i18n.childInformation.placements.deletePlacement.btn
+          }}
+          reject={{
+            action: () => setConfirmingDelete(false),
+            label: i18n.common.cancel
+          }}
         />
       )}
     </>

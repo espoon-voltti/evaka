@@ -44,16 +44,16 @@ function AssistanceNeedRow({ assistanceNeed, onReload, refSectionTop }: Props) {
       text={`${
         i18n.common.period
       } ${assistanceNeed.startDate.format()} - ${assistanceNeed.endDate.format()}`}
-      resolveLabel={i18n.common.remove}
-      rejectLabel={i18n.common.cancel}
       icon={faQuestion}
-      reject={() => clearUiMode()}
-      resolve={() =>
-        removeAssistanceNeed(assistanceNeed.id).then(() => {
-          clearUiMode()
-          onReload()
-        })
-      }
+      reject={{ action: () => clearUiMode(), label: i18n.common.cancel }}
+      resolve={{
+        action: () =>
+          removeAssistanceNeed(assistanceNeed.id).then(() => {
+            clearUiMode()
+            onReload()
+          }),
+        label: i18n.common.remove
+      }}
     />
   )
 

@@ -56,16 +56,16 @@ function ServiceNeedRow({ serviceNeed, onReload }: Props) {
           text={`${i18n.common.period} ${serviceNeed.startDate.format()} - ${
             serviceNeed.endDate ? serviceNeed.endDate.format() : ''
           }`}
-          resolveLabel={i18n.common.remove}
-          rejectLabel={i18n.common.cancel}
           icon={faQuestion}
-          reject={() => clearUiMode()}
-          resolve={() =>
-            removeServiceNeed(serviceNeed.id).then(() => {
-              clearUiMode()
-              onReload()
-            })
-          }
+          reject={{ action: () => clearUiMode(), label: i18n.common.cancel }}
+          resolve={{
+            action: () =>
+              removeServiceNeed(serviceNeed.id).then(() => {
+                clearUiMode()
+                onReload()
+              }),
+            label: i18n.common.remove
+          }}
         />
       )}
 

@@ -59,7 +59,8 @@ const FeeAlteration = React.memo(function FeeAlteration({ id, open }: Props) {
     } else {
       setErrorMessage({
         type: 'error',
-        title: i18n.childInformation.feeAlteration.updateError
+        title: i18n.childInformation.feeAlteration.updateError,
+        resolveLabel: i18n.common.ok
       })
     }
   }
@@ -121,23 +122,27 @@ const FeeAlteration = React.memo(function FeeAlteration({ id, open }: Props) {
             deleted.validTo?.format() ?? ''
           }`}
           icon={faQuestion}
-          reject={() => setDeleted(undefined)}
-          resolve={() =>
-            deleted &&
-            deleteFeeAlteration(deleted.id).then((res) => {
-              setDeleted(undefined)
-              if (res.isSuccess) {
-                loadFeeAlterations()
-              } else {
-                setErrorMessage({
-                  type: 'error',
-                  title: i18n.childInformation.feeAlteration.deleteError
-                })
-              }
-            })
-          }
-          rejectLabel={i18n.common.cancel}
-          resolveLabel={i18n.common.remove}
+          reject={{
+            action: () => setDeleted(undefined),
+            label: i18n.common.cancel
+          }}
+          resolve={{
+            action: () =>
+              deleted &&
+              deleteFeeAlteration(deleted.id).then((res) => {
+                setDeleted(undefined)
+                if (res.isSuccess) {
+                  loadFeeAlterations()
+                } else {
+                  setErrorMessage({
+                    type: 'error',
+                    title: i18n.childInformation.feeAlteration.deleteError,
+                    resolveLabel: i18n.common.ok
+                  })
+                }
+              }),
+            label: i18n.common.remove
+          }}
         />
       ) : null}
     </div>

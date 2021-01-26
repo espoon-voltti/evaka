@@ -41,7 +41,8 @@ export default React.memo(function DecisionResponse({
           setErrorMessage({
             title: i18n.common.error.unknown,
             text: i18n.application.decisions.response.acceptError,
-            type: 'error'
+            type: 'error',
+            resolveLabel: i18n.common.ok
           })
         )
     } else {
@@ -51,7 +52,8 @@ export default React.memo(function DecisionResponse({
           setErrorMessage({
             title: i18n.common.error.unknown,
             text: i18n.application.decisions.response.rejectError,
-            type: 'error'
+            type: 'error',
+            resolveLabel: i18n.common.ok
           })
         )
     }

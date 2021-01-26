@@ -112,11 +112,12 @@ export default React.memo(function FeeDecisionDetailsPage() {
           title={i18n.feeDecision.modal.title}
           iconColour={'orange'}
           icon={faQuestion}
-          resolveLabel={i18n.feeDecision.modal.confirm}
-          reject={goBack}
-          rejectLabel={i18n.feeDecision.modal.cancel}
-          resolve={() => {
-            setConfirmingBack(false)
+          reject={{ action: goBack, label: i18n.feeDecision.modal.cancel }}
+          resolve={{
+            action: () => {
+              setConfirmingBack(false)
+            },
+            label: i18n.feeDecision.modal.confirm
           }}
         />
       )}

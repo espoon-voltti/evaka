@@ -96,10 +96,14 @@ interface Props {
   size?: ModalSize
   customSize?: string
   text?: string | React.ReactNode
-  resolve?: () => void
-  resolveLabel?: string
-  reject?: () => void
-  rejectLabel?: string
+  resolve?: {
+    action: () => void
+    label: string
+  }
+  reject?: {
+    action: () => void
+    label: string
+  }
   resolveDisabled?: boolean
   zIndex?: number
 }
@@ -115,9 +119,7 @@ function InfoModal({
   customSize,
   text,
   resolve,
-  resolveLabel,
   reject,
-  rejectLabel,
   resolveDisabled,
   zIndex
 }: Props) {
@@ -167,9 +169,9 @@ function InfoModal({
                   {reject && (
                     <>
                       <Button
-                        onClick={reject}
+                        onClick={reject.action}
                         dataQa="modal-cancelBtn"
-                        text={rejectLabel ?? 'Peruuta'}
+                        text={reject.label}
                       />
                       <Gap horizontal size={'xs'} />
                     </>
@@ -177,9 +179,9 @@ function InfoModal({
                   <Button
                     primary
                     dataQa="modal-okBtn"
-                    onClick={resolve}
+                    onClick={resolve.action}
                     disabled={resolveDisabled}
-                    text={resolveLabel ?? 'ok'}
+                    text={resolve.label}
                   />
                 </ModalButtons>
               )}

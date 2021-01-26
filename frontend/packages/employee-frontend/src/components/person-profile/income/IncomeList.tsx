@@ -51,15 +51,18 @@ const IncomeList = React.memo(function IncomeList({
         iconColour={'orange'}
         title={i18n.personProfile.income.deleteModal.title}
         text={confirmText}
-        resolveLabel={i18n.common.remove}
-        rejectLabel={i18n.common.cancel}
         icon={faQuestion}
-        reject={() => setDeleting(undefined)}
-        resolve={() =>
-          deleteIncome(income.id)
-            .then(() => setDeleting(undefined))
-            .then(onSuccessfulUpdate)
-        }
+        reject={{
+          action: () => setDeleting(undefined),
+          label: i18n.common.cancel
+        }}
+        resolve={{
+          action: () =>
+            deleteIncome(income.id)
+              .then(() => setDeleting(undefined))
+              .then(onSuccessfulUpdate),
+          label: i18n.common.remove
+        }}
       />
     )
   }
