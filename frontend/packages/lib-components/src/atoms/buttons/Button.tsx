@@ -71,6 +71,7 @@ export const StyledButton = styled.button`
   }
 
   ${defaultButtonTextStyle}
+  letter-spacing: 0.2px;
 `
 
 interface ButtonProps extends BaseProps {
