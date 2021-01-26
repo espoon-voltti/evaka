@@ -17,6 +17,7 @@ import { UUID } from '@evaka/lib-common/src/types'
 import { Result } from '@evaka/lib-common/src/api'
 import { Attachment, FileObject } from '@evaka/lib-common/src/api-types/application/ApplicationDetails'
 import { IconDefinition } from '@fortawesome/fontawesome-svg-core'
+import { client } from '~api-client'
 
 export type FileUploadProps = {
   files: Attachment[]
@@ -231,6 +232,41 @@ export default React.memo(function FileUpload({
     }
   }
 
+  const showFileUnavailableModal = () => {
+    console.warn('File unavailable')
+  }
+
+  const getFileIfAvailable = (file: FileObject) => {
+    void client({
+      url: `/attachments/${file.id}/pre-download`,
+      method: 'GET'
+    }).then((response) => {
+      if (response.data.fileAvailable === true) {
+        deliverBlob(file)
+      } else {
+        showFileUnavailableModal()
+      }
+    })
+  }
+
+  const deliverBlob = (file: FileObject) => {
+    void client({
+      url: `/attachments/${file.id}/download`,
+      method: 'GET',
+      responseType: 'blob'
+    }).then((response) => {
+      const url = URL.createObjectURL(new Blob([response.data]))
+      const link = document.createElement('a')
+      link.href = url
+      link.target = '_blank'
+      link.setAttribute('download', `${file.name}`)
+      link.rel = 'noreferrer'
+      document.body.appendChild(link)
+      link.click()
+      link.remove()
+    })
+  }
+
   const addAttachment = async (
     file: File,
     onUpload: (
@@ -305,7 +341,9 @@ export default React.memo(function FileUpload({
             <FileDetails>
               <FileHeader>
                 {file.id ? (
-                  <FileDownloadButton>{file.name}</FileDownloadButton>
+                  <FileDownloadButton onClick={() => getFileIfAvailable(file)}>
+                    {file.name}
+                  </FileDownloadButton>
                 ) : (
                   <span>{file.name}</span>
                 )}
