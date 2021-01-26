@@ -161,9 +161,6 @@ const AddressSecondRowContainer = styled.div`
   & > :first-child {
     margin-right: 20px;
   }
-  & input {
-    width: 200px;
-  }
 `
 
 const IndentChckboxLabel = styled.div`
@@ -213,6 +210,7 @@ function AddressEditor({
           value={address.postalCode}
           placeholder={i18n.unitEditor.placeholder.postalCode}
           onChange={(value) => update({ postalCode: value })}
+          width={'s'}
           dataQa={`${dataQaPrefix}-postal-code-input`}
         />
         <InputField
@@ -597,6 +595,7 @@ export default function UnitEditor(props: Props): JSX.Element {
             placeholder={i18n.unitEditor.placeholder.name}
             value={form.name}
             onChange={(value) => updateForm({ name: value })}
+            width={'L'}
             dataQa="unit-name-input"
           />
         ) : (
@@ -645,6 +644,7 @@ export default function UnitEditor(props: Props): JSX.Element {
                 ? updateForm({ areaId: value.value })
                 : undefined
             }
+            fullWidth
           />
         ) : (
           props.areas.find((area) => area.id === form.areaId)?.name
@@ -652,7 +652,7 @@ export default function UnitEditor(props: Props): JSX.Element {
       </FormPart>
       <FormPart>
         <div>{showRequired(i18n.unitEditor.label.careTypes)}</div>
-        <FixedSpaceColumn>
+        <FixedSpaceColumn fullWidth={true}>
           <DaycareTypeSelectContainer>
             <Checkbox
               disabled={!props.editable}
@@ -669,6 +669,7 @@ export default function UnitEditor(props: Props): JSX.Element {
             {form.careTypes.DAYCARE && (
               <Select
                 disabled={!props.editable}
+                fullWidth
                 options={[
                   { value: 'CENTRE', label: i18n.common.types.CENTRE },
                   { value: 'FAMILY', label: i18n.common.types.FAMILY },
@@ -897,6 +898,7 @@ export default function UnitEditor(props: Props): JSX.Element {
             <InputField
               id="unit-capacity"
               value={form.capacity}
+              width={'xs'}
               onChange={(value) =>
                 updateForm({
                   capacity: value
@@ -1027,6 +1029,7 @@ export default function UnitEditor(props: Props): JSX.Element {
                 : updateForm({ financeDecisionHandlerId: undefined })
             }
             clearable
+            fullWidth
           />
         ) : (
           selectedFinanceDecisionManager?.label
@@ -1042,6 +1045,7 @@ export default function UnitEditor(props: Props): JSX.Element {
             placeholder={i18n.unitEditor.placeholder.additionalInfo}
             value={form.additionalInfo}
             onChange={(value) => updateForm({ additionalInfo: value })}
+            width={'L'}
           />
         ) : (
           form.additionalInfo
@@ -1069,6 +1073,7 @@ export default function UnitEditor(props: Props): JSX.Element {
             placeholder={i18n.unitEditor.placeholder.email}
             value={form.email}
             onChange={(value) => updateForm({ email: value })}
+            width={'L'}
           />
         ) : (
           form.email
@@ -1081,6 +1086,7 @@ export default function UnitEditor(props: Props): JSX.Element {
             id="unit-url"
             placeholder={i18n.unitEditor.placeholder.url}
             value={form.url}
+            width={'L'}
             onChange={(value) => updateForm({ url: value })}
           />
         ) : (
@@ -1133,6 +1139,7 @@ export default function UnitEditor(props: Props): JSX.Element {
             placeholder={i18n.unitEditor.placeholder.unitManager.name}
             value={unitManager.name}
             onChange={(value) => updateUnitManager({ name: value })}
+            width={'L'}
             dataQa="manager-name-input"
           />
         ) : (
@@ -1165,6 +1172,7 @@ export default function UnitEditor(props: Props): JSX.Element {
             placeholder={i18n.unitEditor.placeholder.email}
             value={unitManager.email}
             onChange={(value) => updateUnitManager({ email: value })}
+            width={'L'}
             dataQa={'qa-unit-manager-email-input-field'}
           />
         ) : (
@@ -1181,6 +1189,7 @@ export default function UnitEditor(props: Props): JSX.Element {
             id="unit-daycare-name"
             placeholder={i18n.unitEditor.placeholder.decisionCustomization.name}
             value={decisionCustomization.daycareName}
+            width={'L'}
             onChange={(value) =>
               updateDecisionCustomization({
                 daycareName: value
@@ -1200,6 +1209,7 @@ export default function UnitEditor(props: Props): JSX.Element {
             id="unit-preschool-name"
             placeholder={i18n.unitEditor.placeholder.decisionCustomization.name}
             value={decisionCustomization.preschoolName}
+            width={'L'}
             onChange={(value) =>
               updateDecisionCustomization({
                 preschoolName: value
@@ -1246,6 +1256,7 @@ export default function UnitEditor(props: Props): JSX.Element {
             id="unit-handler-address"
             placeholder={i18n.unitEditor.placeholder.streetAddress}
             value={decisionCustomization.handlerAddress}
+            width={'L'}
             onChange={(value) =>
               updateDecisionCustomization({
                 handlerAddress: value

@@ -18,9 +18,10 @@ const Wrapper = styled.div`
   min-width: 0; // needed for correct overflow behavior
 `
 
-type InputWidth = 's' | 'm' | 'L' | 'full'
+type InputWidth = 'xs' | 's' | 'm' | 'L' | 'full'
 
 const inputWidths: Record<InputWidth, string> = {
+  xs: '60px',
   s: '120px',
   m: '240px',
   L: '480px',
