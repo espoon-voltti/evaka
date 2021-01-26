@@ -7,7 +7,7 @@ import colors from '../../colors'
 export const defaultButtonTextStyle = `
   color: ${colors.primary};
   font-family: 'Open Sans', sans-serif;
-  font-size: 16px;
+  font-size: 1em;
   line-height: normal;
   font-weight: 600;
   white-space: nowrap;
