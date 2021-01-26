@@ -29,7 +29,7 @@ import ReturnButton, {
 } from '@evaka/lib-components/src/atoms/buttons/ReturnButton'
 import DaycareApplicationVerificationView from '~applications/editor/verification/DaycareApplicationVerificationView'
 import InlineButton from '@evaka/lib-components/src/atoms/buttons/InlineButton'
-import { faAngleLeft } from '@evaka/lib-icons'
+import { faAngleLeft, faCheck } from '@evaka/lib-icons'
 import Checkbox from '@evaka/lib-components/src/atoms/form/Checkbox'
 import InfoModal from '../../../../lib-components/src/molecules/modals/InfoModal'
 import { faExclamation } from '@evaka/lib-icons'
@@ -53,6 +53,7 @@ export default React.memo(function DaycareApplicationEditor({
   const [verified, setVerified] = useState<boolean>(false)
 
   const [showDraftPolicyInfo, setShowDraftPolicyInfo] = useState<boolean>(false)
+  const [showSentInfo, setShowSentInfo] = useState<boolean>(false)
 
   const history = useHistory()
   const { setErrorMessage } = useContext(OverlayContext)
@@ -110,7 +111,8 @@ export default React.memo(function DaycareApplicationEditor({
           resolveLabel: t.common.ok
         })
       } else if (res.isSuccess) {
-        // todo: some success dialog?
+        setShowSentInfo(true)
+        // TODO move this
         history.push('/applications')
       }
     })
@@ -279,6 +281,22 @@ export default React.memo(function DaycareApplicationEditor({
               setShowDraftPolicyInfo(false)
             },
             label: t.applications.editor.draftPolicyInfo.ok
+          }}
+        />
+      )}
+
+      {showSentInfo && (
+        <InfoModal
+          iconColour={'green'}
+          icon={faCheck}
+          title={t.applications.editor.sentInfo.title}
+          text={t.applications.editor.sentInfo.text}
+          resolve={{
+            action: () => {
+              history.push('/applications')
+              setShowSentInfo(false)
+            },
+            label: t.applications.editor.sentInfo.ok
           }}
         />
       )}
