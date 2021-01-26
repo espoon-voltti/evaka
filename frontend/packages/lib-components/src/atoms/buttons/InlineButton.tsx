@@ -45,6 +45,7 @@ const StyledButton = styled.button`
 
   svg {
     margin-right: ${defaultMargins.xs};
+    font-size: 20px;
   }
 
   ${defaultButtonTextStyle}
