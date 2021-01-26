@@ -24,7 +24,7 @@ import { faTimes } from '@evaka/lib-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import styled from 'styled-components'
 import Tooltip from '~components/common/Tooltip'
-import { EspooColours } from '~utils/colours'
+import colors from '@evaka/lib-components/src/colors'
 import { isOperationDay } from '~components/absences/utils'
 import { DayOfWeek } from '~types'
 
@@ -149,7 +149,7 @@ interface StaffAttendanceCellProps {
 
 const DisabledStaffIcon = styled(FontAwesomeIcon)`
   font-size: 15px;
-  color: ${EspooColours.greyDark};
+  color: ${colors.greyscale.dark};
 `
 
 const StaffAttendanceCell = memo(function StaffAttendanceCell({

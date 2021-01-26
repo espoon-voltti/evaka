@@ -48,7 +48,7 @@ import {
   InfoBox
 } from '@evaka/lib-components/src/molecules/MessageBoxes'
 import { TitleContext, TitleState } from '~state/title'
-import { EspooColours } from '~utils/colours'
+import colors from '@evaka/lib-components/src/colors'
 import { formatName } from '~utils'
 import { FixedSpaceRow } from '@evaka/lib-components/src/layout/flex-helpers'
 
@@ -82,7 +82,7 @@ const WarningContainer = styled.div<{ visible: boolean }>`
 `
 
 const WarningText = styled.span<{ smaller?: boolean }>`
-  color: ${EspooColours.greyDark};
+  color: ${colors.greyscale.dark};
   font-style: italic;
   margin-left: 12px;
   font-size: ${(props) => (props.smaller === true ? '0.8em' : '1em')};
@@ -92,7 +92,7 @@ const WarningIcon = () => (
   <FontAwesomeIcon
     icon={faExclamationTriangle}
     size={'1x'}
-    color={EspooColours.orange}
+    color={colors.accents.orange}
   />
 )
 

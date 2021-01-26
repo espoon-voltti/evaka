@@ -6,7 +6,7 @@ import React from 'react'
 import { fi } from 'date-fns/locale'
 import { defaults, Line } from 'react-chartjs-2'
 import { OccupancyResponse } from '~api/unit'
-import { EspooColours } from '~utils/colours'
+import colors from '@evaka/lib-components/src/colors'
 import { formatDate } from '~utils/date'
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
@@ -14,7 +14,7 @@ defaults.global.animation = false
 // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
 defaults.global.defaultFontFamily = '"Open Sans", "Arial", sans-serif'
 // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-defaults.global.defaultFontColor = EspooColours.greyDarker
+defaults.global.defaultFontColor = colors.greyscale.darkest
 
 type DatePoint = { x: Date; y: number | null | undefined }
 
@@ -132,8 +132,8 @@ export default React.memo(function OccupancyGraph({
       data: getGraphData(occupancies),
       steppedLine: true,
       fill: false,
-      pointBackgroundColor: EspooColours.espooBlue,
-      borderColor: EspooColours.espooBlue
+      pointBackgroundColor: colors.brandEspoo.espooBlue,
+      borderColor: colors.brandEspoo.espooBlue
     })
   if (planned)
     datasets.push({
@@ -141,8 +141,8 @@ export default React.memo(function OccupancyGraph({
       data: getGraphData(plannedOccupancies),
       steppedLine: true,
       fill: false,
-      pointBackgroundColor: EspooColours.water,
-      borderColor: EspooColours.water
+      pointBackgroundColor: colors.accents.water,
+      borderColor: colors.accents.water
     })
   if (realized)
     datasets.push({
@@ -150,8 +150,8 @@ export default React.memo(function OccupancyGraph({
       data: getGraphData(realizedOccupancies),
       steppedLine: true,
       fill: false,
-      pointBackgroundColor: EspooColours.green,
-      borderColor: EspooColours.green
+      pointBackgroundColor: colors.accents.green,
+      borderColor: colors.accents.green
     })
 
   return (

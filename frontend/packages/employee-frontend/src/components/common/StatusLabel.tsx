@@ -6,7 +6,7 @@ import React from 'react'
 import { useTranslation } from '~state/i18n'
 
 import styled from 'styled-components'
-import { customColours, EspooColours } from '~utils/colours'
+import colors from '@evaka/lib-components/src/colors'
 
 export type StatusLabelType = 'coming' | 'active' | 'completed' | 'conflict'
 
@@ -23,32 +23,32 @@ const Container = styled.div<{ status: StatusLabelType }>`
   ${(p) =>
     p.status == 'coming'
       ? `
-   color: ${customColours.darkGreen};
-   border: 1px solid ${customColours.darkGreen};
+   color: ${colors.accents.greenDark};
+   border: 1px solid ${colors.accents.greenDark};
   `
       : ''}
 
   ${(p) =>
     p.status == 'active'
       ? `
-   color: ${EspooColours.white};
-   background: ${customColours.darkGreen};
+   color: ${colors.greyscale.white};
+   background: ${colors.accents.greenDark};
   `
       : ''}
 
   ${(p) =>
     p.status == 'completed'
       ? `
-   color: ${EspooColours.greyDark};
-   border: 1px solid ${EspooColours.grey};
+   color: ${colors.greyscale.dark};
+   border: 1px solid ${colors.greyscale.medium};
   `
       : ''}
 
   ${(p) =>
     p.status == 'conflict'
       ? `
-   color: ${EspooColours.white};
-   background: ${EspooColours.red};
+   color: ${colors.greyscale.white};
+   background: ${colors.accents.red};
   `
       : ''}
 `

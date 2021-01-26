@@ -39,7 +39,7 @@ import CareTypeLabel, {
   careTypesFromPlacementType
 } from '~components/common/CareTypeLabel'
 import styled from 'styled-components'
-import { EspooColours } from '~utils/colours'
+import colors from '@evaka/lib-components/src/colors'
 import { capitalizeFirstLetter, formatName } from '~utils'
 import { StatusIconContainer } from '~components/common/StatusIconContainer'
 import { UnitBackupCare } from '~types/child'
@@ -52,7 +52,6 @@ import InlineButton from '@evaka/lib-components/src/atoms/buttons/InlineButton'
 import { H3 } from '@evaka/lib-components/src/typography'
 import { UnitFilters } from '~utils/UnitFilters'
 import { rangesOverlap } from '~utils/date'
-import colors from '@evaka/lib-components/src/colors'
 import { FixedSpaceRow } from '@evaka/lib-components/src/layout/flex-helpers'
 import PlacementCircle from '@evaka/lib-components/src/atoms/PlacementCircle'
 import Tooltip from '@evaka/lib-components/src/atoms/Tooltip'
@@ -375,7 +374,7 @@ function Group({
                                 }
                               >
                                 <StatusIconContainer
-                                  color={EspooColours.orange}
+                                  color={colors.accents.orange}
                                 >
                                   <FontAwesomeIcon icon={faTimes} inverse />
                                 </StatusIconContainer>
@@ -388,7 +387,9 @@ function Group({
                                   </span>
                                 }
                               >
-                                <StatusIconContainer color={EspooColours.green}>
+                                <StatusIconContainer
+                                  color={colors.accents.green}
+                                >
                                   <FontAwesomeIcon icon={faCheck} inverse />
                                 </StatusIconContainer>
                               </Tooltip>

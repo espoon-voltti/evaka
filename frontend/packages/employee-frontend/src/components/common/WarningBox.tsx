@@ -3,11 +3,11 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import styled from 'styled-components'
-import { EspooColours } from '~utils/colours'
+import colors from '@evaka/lib-components/src/colors'
 
 export const WarningBox = styled.div`
   border-radius: 2px;
-  border: 1px solid ${EspooColours.orange};
+  border: 1px solid ${colors.accents.orange};
   width: 818px;
   padding-top: 15px;
   padding-bottom: 15px;
@@ -16,7 +16,7 @@ export const WarningBox = styled.div`
   align-items: center;
 
   svg {
-    color: ${EspooColours.orange};
+    color: ${colors.accents.orange};
     margin-left: 15px;
   }
 `

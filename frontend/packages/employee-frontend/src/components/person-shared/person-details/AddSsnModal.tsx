@@ -12,12 +12,12 @@ import { UUID } from '~types'
 import { addSsn } from '~api/person'
 import { PersonDetails } from '~types/person'
 import { isSsnValid } from '~utils/validation/validations'
-import { EspooColours } from '~utils/colours'
+import colors from '@evaka/lib-components/src/colors'
 
 const Error = styled.div`
   display: flex;
   justify-content: center;
-  color: ${EspooColours.red};
+  color: ${colors.accents.red};
   margin: 20px;
 `
 

@@ -26,7 +26,7 @@ import { DaycareFields } from '~api/unit'
 import { DayOfWeek, UUID } from '~types'
 import { Result } from '@evaka/lib-common/src/api'
 import { Translations, useTranslation } from '~state/i18n'
-import { EspooColours } from '~utils/colours'
+import colors from '@evaka/lib-components/src/colors'
 import InlineButton from '@evaka/lib-components/src/atoms/buttons/InlineButton'
 import { faPen } from '@evaka/lib-icons'
 import { H1, H3 } from '@evaka/lib-components/src/typography'
@@ -123,7 +123,7 @@ const FormPart = styled.div`
 `
 
 const FormError = styled.div`
-  color: ${EspooColours.red};
+  color: ${colors.accents.red};
   margin-bottom: 20px;
 `
 
