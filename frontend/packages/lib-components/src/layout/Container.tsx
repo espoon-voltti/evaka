@@ -2,7 +2,11 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import React, { KeyboardEvent, ReactNode } from 'react'
 import styled from 'styled-components'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faChevronDown, faChevronUp } from '@evaka/lib-icons'
+import colors from '../colors'
 import { defaultMargins, SpacingSize } from '../white-space'
 import { BaseProps } from '../utils'
 
@@ -49,6 +53,60 @@ export const ContentArea = styled.section<ContentAreaProps>`
     }`};
   background-color: ${(props) => (props.opaque ? 'white' : 'transparent')};
   position: relative;
+`
+
+type CollapsibleContentAreaProps = ContentAreaProps & {
+  open: boolean
+  toggleOpen: () => void
+  title: ReactNode
+  children: ReactNode
+}
+
+export const CollapsibleContentArea = React.memo(
+  function CollapsibleContentArea({
+    open,
+    toggleOpen,
+    title,
+    children,
+    ...props
+  }: CollapsibleContentAreaProps) {
+    const toggleOnEnter = (event: KeyboardEvent<HTMLDivElement>) => {
+      if (event.key === 'Enter') {
+        toggleOpen()
+      }
+    }
+
+    return (
+      <ContentArea {...props}>
+        <TitleContainer
+          tabIndex={0}
+          onClick={toggleOpen}
+          onKeyUp={toggleOnEnter}
+        >
+          <TitleWrapper>{title}</TitleWrapper>
+          <TitleIcon icon={open ? faChevronUp : faChevronDown} />
+        </TitleContainer>
+        {open ? children : null}
+      </ContentArea>
+    )
+  }
+)
+
+const TitleContainer = styled.div`
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: center;
+`
+
+const TitleWrapper = styled.div`
+  flex-grow: 1;
+`
+
+const TitleIcon = styled(FontAwesomeIcon)`
+  color: ${colors.blues.primary};
+  height: 24px !important;
+  width: 24px !important;
 `
 
 export default Container
