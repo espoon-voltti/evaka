@@ -205,6 +205,18 @@ server {
     return 301 https://$host/employee;
   }
 
+  location ~ /employee/mobile/manifest\.([a-z0-9]+)\.json$ {
+    proxy_set_header        Authorization '';
+    proxy_hide_header       x-amz-id-2;
+    proxy_hide_header       x-amz-request-id;
+    proxy_hide_header       Set-Cookie;
+    proxy_ignore_headers    Set-Cookie;
+
+    proxy_pass              $staticEndpoint;
+
+    auth_basic off;
+  }
+
   location @static {
     proxy_set_header        Authorization '';
     proxy_hide_header       x-amz-id-2;
