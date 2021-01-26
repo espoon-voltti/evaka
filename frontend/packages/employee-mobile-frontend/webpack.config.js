@@ -7,6 +7,7 @@ const path = require('path')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const TsconfigPathsPlugin = require('tsconfig-paths-webpack-plugin')
 const SentryWebpackPlugin = require('@sentry/webpack-plugin')
+const WebpackPwaManifest = require('webpack-pwa-manifest')
 
 module.exports = function (env, argv) {
   const isDevelopment = argv && argv['mode'] !== 'production'
@@ -14,6 +15,21 @@ module.exports = function (env, argv) {
   const plugins = [
     new HtmlWebpackPlugin({
       template: 'src/index.html'
+    }),
+    new WebpackPwaManifest({
+      fingerprints: !isDevelopment,
+
+      name: 'eVaka',
+      display: 'fullscreen',
+      start_url: '/employee/mobile',
+      background_color: '#ffffff',
+      theme_color: '#3273c9',
+      icons: [{
+        src: path.resolve('./src/evaka.png'),
+        sizes: '160x160',
+        type: 'image/png',
+        purpose: 'maskable'
+      }]
     })
   ]
 
