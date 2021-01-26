@@ -8,6 +8,7 @@ const en: Translations = {
   common: {
     cancel: 'Cancel',
     return: 'Return',
+    ok: 'Ok',
     unit: {
       providerTypes: {
         MUNICIPAL: 'Kunnallinen',

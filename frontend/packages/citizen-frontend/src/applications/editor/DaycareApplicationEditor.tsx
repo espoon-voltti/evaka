@@ -89,7 +89,8 @@ export default React.memo(function DaycareApplicationEditor({
       if (res.isFailure) {
         setErrorMessage({
           title: t.applications.editor.actions.saveDraftError,
-          type: 'error'
+          type: 'error',
+          resolveLabel: t.common.ok
         })
       } else if (res.isSuccess) {
         setShowDraftPolicyInfo(true)
@@ -105,7 +106,8 @@ export default React.memo(function DaycareApplicationEditor({
       if (res.isFailure) {
         setErrorMessage({
           title: t.applications.editor.actions.sendError,
-          type: 'error'
+          type: 'error',
+          resolveLabel: t.common.ok
         })
       } else if (res.isSuccess) {
         // todo: some success dialog?

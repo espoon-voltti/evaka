@@ -6,6 +6,7 @@ export default {
   common: {
     cancel: 'Peruuta',
     return: 'Palaa',
+    ok: 'Ok',
     unit: {
       providerTypes: {
         MUNICIPAL: 'Kunnallinen',
