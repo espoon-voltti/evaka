@@ -121,7 +121,8 @@ export default React.memo(function ApplicationNoteBox(props: Props) {
         setErrorMessage({
           type: 'error',
           title: i18n.common.error.unknown,
-          text: i18n.application.notes.error.save
+          text: i18n.application.notes.error.save,
+          resolveLabel: i18n.common.ok
         })
       )
   }

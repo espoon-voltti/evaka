@@ -42,8 +42,8 @@ type DaycareApplicationEditorProps = {
 const applicationType = 'daycare'
 
 export default React.memo(function DaycareApplicationEditor({
-                                                              apiData
-                                                            }: DaycareApplicationEditorProps) {
+  apiData
+}: DaycareApplicationEditorProps) {
   const t = useTranslation()
   const [formData, setFormData] = useState<ApplicationFormData>(
     apiDataToFormData(apiData)
@@ -83,7 +83,6 @@ export default React.memo(function DaycareApplicationEditor({
 
   const onSaveDraft = () => {
     const reqBody = formDataToApiData(formData)
-    console.log('updating application', apiData.id, reqBody)
     setSubmitting(true)
     void saveApplicationDraft(apiData.id, reqBody).then((res) => {
       setSubmitting(false)
@@ -125,12 +124,12 @@ export default React.memo(function DaycareApplicationEditor({
           setFormData((old) =>
             old
               ? {
-                ...old,
-                serviceNeed: {
-                  ...old?.serviceNeed,
-                  ...data
+                  ...old,
+                  serviceNeed: {
+                    ...old?.serviceNeed,
+                    ...data
+                  }
                 }
-              }
               : old
           )
         }
@@ -142,12 +141,12 @@ export default React.memo(function DaycareApplicationEditor({
           setFormData((old) =>
             old
               ? {
-                ...old,
-                unitPreference: {
-                  ...old?.unitPreference,
-                  ...data
+                  ...old,
+                  unitPreference: {
+                    ...old?.unitPreference,
+                    ...data
+                  }
                 }
-              }
               : old
           )
         }
@@ -162,12 +161,12 @@ export default React.memo(function DaycareApplicationEditor({
           setFormData((old) =>
             old
               ? {
-                ...old,
-                contactInfo: {
-                  ...old?.contactInfo,
-                  ...data
+                  ...old,
+                  contactInfo: {
+                    ...old?.contactInfo,
+                    ...data
+                  }
                 }
-              }
               : old
           )
         }
