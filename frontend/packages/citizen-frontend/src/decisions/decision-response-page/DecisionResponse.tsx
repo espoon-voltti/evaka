@@ -180,7 +180,8 @@ export default React.memo(function DecisionResponse({
                       setErrorMessage({
                         type: 'error',
                         title:
-                          t.decisions.applicationDecisions.errors.submitFailure
+                          t.decisions.applicationDecisions.errors.submitFailure,
+                        resolveLabel: t.common.ok
                       })
                     }
                   })
