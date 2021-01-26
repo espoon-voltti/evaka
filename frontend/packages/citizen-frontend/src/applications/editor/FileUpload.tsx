@@ -16,13 +16,16 @@ import {
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { UUID } from '@evaka/lib-common/src/types'
 import { Result } from '@evaka/lib-common/src/api'
-import { Attachment, FileObject } from '@evaka/lib-common/src/api-types/application/ApplicationDetails'
+import {
+  ApplicationAttachment,
+  FileObject
+} from '@evaka/lib-common/src/api-types/application/ApplicationDetails'
 import { IconDefinition } from '@fortawesome/fontawesome-svg-core'
 import InfoModal from '@evaka/lib-components/src/molecules/modals/InfoModal'
 import { getFileAvailability, getFileBlob } from '~applications/api'
 
 export type FileUploadProps = {
-  files: Attachment[]
+  files: ApplicationAttachment[]
   onUpload: (
     file: File,
     onUploadProgress: (progressEvent: ProgressEvent) => void
@@ -166,7 +169,7 @@ const ProgressBarError = styled.div`
   }
 `
 
-const attachmentToFile = (attachment: Attachment): FileObject => {
+const attachmentToFile = (attachment: ApplicationAttachment): FileObject => {
   return {
     id: attachment.id,
     file: undefined,

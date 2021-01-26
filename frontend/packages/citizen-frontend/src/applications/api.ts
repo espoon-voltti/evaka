@@ -15,7 +15,10 @@ import {
   ApplicationsOfChild,
   deserializeApplicationsOfChild
 } from '@evaka/lib-common/src/api-types/application/ApplicationsOfChild'
-import { ApplicationType, AttachmentType } from '@evaka/lib-common/src/api-types/application/enums'
+import {
+  ApplicationType,
+  AttachmentType
+} from '@evaka/lib-common/src/api-types/application/enums'
 import { client } from '~api-client'
 import { PublicUnit } from '@evaka/lib-common/src/api-types/units/PublicUnit'
 import { UUID } from '@evaka/lib-common/src/types'

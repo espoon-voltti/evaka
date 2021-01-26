@@ -52,7 +52,7 @@ export interface ApplicationDetails {
   transferApplication: boolean
   additionalDaycareApplication: boolean
   hideFromGuardian: boolean
-  attachments: Attachment[]
+  attachments: ApplicationAttachment[]
 }
 
 export const deserializeApplicationDetails = (
@@ -208,7 +208,7 @@ export interface ApplicationClubDetails {
   wasOnClubCare: boolean
 }
 
-export interface Attachment {
+export interface ApplicationAttachment {
   id: string
   name: string
   contentType: string
