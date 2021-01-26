@@ -415,8 +415,8 @@ const en: Translations = {
     loading: 'Uppladdas...',
     loaded: 'Uppladdad',
     error: {
-      fileTooBig: 'För stor fil (max. 10MB)',
-      default: 'Uppladdningen misslyckades'
+      FILE_TOO_LARGE: 'För stor fil (max. 10MB)',
+      SERVER_ERROR: 'Uppladdningen misslyckades'
     },
     input: {
       title: 'Lägg till bilaga',

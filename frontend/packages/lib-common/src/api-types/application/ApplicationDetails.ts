@@ -222,6 +222,6 @@ export interface FileObject {
   file: File | undefined
   name: string
   contentType: string
-  error: string | undefined
+  error: 'FILE_TOO_LARGE' | 'SERVER_ERROR' | undefined
   progress: number
 }

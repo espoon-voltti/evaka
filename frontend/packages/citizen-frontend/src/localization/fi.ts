@@ -406,8 +406,8 @@ export default {
     loading: 'Ladataan...',
     loaded: 'Ladattu',
     error: {
-      fileTooBig: 'Liian suuri tiedosto (max. 10MB)',
-      default: 'Lataus ei onnistunut'
+      FILE_TOO_LARGE: 'Liian suuri tiedosto (max. 10MB)',
+      SERVER_ERROR: 'Lataus ei onnistunut'
     },
     input: {
       title: 'Lisää liite',

@@ -10,6 +10,7 @@ import {
   faFileImage,
   faFilePdf,
   faFileWord,
+  faInfo,
   faTimes
 } from '@evaka/lib-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -17,7 +18,8 @@ import { UUID } from '@evaka/lib-common/src/types'
 import { Result } from '@evaka/lib-common/src/api'
 import { Attachment, FileObject } from '@evaka/lib-common/src/api-types/application/ApplicationDetails'
 import { IconDefinition } from '@fortawesome/fontawesome-svg-core'
-import { client } from '~api-client'
+import InfoModal from '@evaka/lib-components/src/molecules/modals/InfoModal'
+import { getFileAvailability, getFileBlob } from '~applications/api'
 
 export type FileUploadProps = {
   files: Attachment[]
@@ -80,7 +82,6 @@ const File = styled.div`
   display: flex;
   flex-direction: row;
   flex-wrap: nowrap;
-  align-items: center;
   color: ${colors.greyscale.dark};
 `
 
@@ -95,7 +96,6 @@ const FileDetails = styled.div`
   display: flex;
   flex-direction: column;
   flex-wrap: nowrap;
-  align-items: center;
 `
 
 const FileHeader = styled.div`
@@ -159,7 +159,8 @@ const ProgressBarDetails = styled.div`
 `
 
 const ProgressBarError = styled.div`
-  color: ${colors.accents.orangeDark} svg {
+  color: ${colors.accents.orangeDark};
+  svg {
     color: ${colors.accents.orange};
     margin-left: 8px;
   }
@@ -193,8 +194,7 @@ const fileIcon = (file: FileObject): IconDefinition => {
   }
 }
 
-const inProgress = (file: FileObject): boolean =>
-  !file.error && file.progress !== 100
+const inProgress = (file: FileObject): boolean => file.progress !== 100
 
 export default React.memo(function FileUpload({
   files,
@@ -202,6 +202,8 @@ export default React.memo(function FileUpload({
   onDelete
 }: FileUploadProps) {
   const t = useTranslation()
+
+  const [modalVisible, setModalVisible] = useState<boolean>(false)
 
   const [uploadedFiles, setUploadedFiles] = useState<FileObject[]>(
     files.map(attachmentToFile)
@@ -220,42 +222,35 @@ export default React.memo(function FileUpload({
     }
   }
 
-  const deleteFile = async (id: UUID) => {
+  const errorMessage = ({ error }: FileObject) => {
+    const messages = t.fileUpload.error
+    return error && messages[error]
+  }
+
+  const deleteFile = async (file: FileObject) => {
     try {
-      const result = await onDelete(id)
-      result.isSuccess &&
-        setUploadedFiles((old: FileObject[]) => {
-          return old.filter((item) => item.id !== id)
-        })
+      if (!file.error) await onDelete(file.id)
+      setUploadedFiles((old: FileObject[]) => {
+        return old.filter((item) => item.id !== file.id)
+      })
     } catch (e) {
       console.error(e)
     }
   }
 
-  const showFileUnavailableModal = () => {
-    console.warn('File unavailable')
+  const getFileIfAvailable = async (file: FileObject) => {
+    const result = await getFileAvailability(file)
+    if (result.isSuccess) {
+      result.value.fileAvailable
+        ? void deliverBlob(file)
+        : setModalVisible(true)
+    }
   }
 
-  const getFileIfAvailable = (file: FileObject) => {
-    void client({
-      url: `/attachments/${file.id}/pre-download`,
-      method: 'GET'
-    }).then((response) => {
-      if (response.data.fileAvailable === true) {
-        deliverBlob(file)
-      } else {
-        showFileUnavailableModal()
-      }
-    })
-  }
-
-  const deliverBlob = (file: FileObject) => {
-    void client({
-      url: `/attachments/${file.id}/download`,
-      method: 'GET',
-      responseType: 'blob'
-    }).then((response) => {
-      const url = URL.createObjectURL(new Blob([response.data]))
+  const deliverBlob = async (file: FileObject) => {
+    const result = await getFileBlob(file)
+    if (result.isSuccess) {
+      const url = URL.createObjectURL(new Blob([result.value]))
       const link = document.createElement('a')
       link.href = url
       link.target = '_blank'
@@ -264,8 +259,17 @@ export default React.memo(function FileUpload({
       document.body.appendChild(link)
       link.click()
       link.remove()
-    })
+    }
   }
+
+  const updateUploadedFile = (
+    file: FileObject,
+    id: UUID | undefined = undefined
+  ) =>
+    setUploadedFiles((old) => {
+      const others = old.filter((item) => item.id !== (id ?? file.id))
+      return [...others, file]
+    })
 
   const addAttachment = async (
     file: File,
@@ -274,7 +278,7 @@ export default React.memo(function FileUpload({
       onUploadProgress: (progressEvent: ProgressEvent) => void
     ) => Promise<Result<UUID>>
   ) => {
-    const error = file.size > 10000000 ? 'file-too-big' : undefined
+    const error = file.size > 10000000 ? 'FILE_TOO_LARGE' : undefined
     const pseudoId = Math.random()
     const fileObject: FileObject = {
       id: pseudoId.toString(),
@@ -286,43 +290,44 @@ export default React.memo(function FileUpload({
       error
     }
 
+    updateUploadedFile(fileObject)
+
     if (error) {
       return
     }
 
     const updateProgress = ({ loaded, total }: ProgressEvent) => {
       const progress = Math.round((loaded / total) * 100)
-      setUploadedFiles((old: FileObject[]) => {
-        const others = old.filter((item) => item.id !== fileObject.id)
-        const progressedFile = { ...fileObject, progress }
-        return [...others, progressedFile]
-      })
+      updateUploadedFile({ ...fileObject, progress })
     }
 
     try {
       const result = await onUpload(file, updateProgress)
       result.isSuccess &&
-        setUploadedFiles((old: FileObject[]) => {
-          const others = old.filter((item) => item.id !== fileObject.id)
-          const progressedFile = {
+        updateUploadedFile(
+          {
             ...fileObject,
             progress: 100,
             id: result.value
-          }
-          return [...others, progressedFile]
-        })
+          },
+          fileObject.id
+        )
     } catch (e) {
       console.error(e)
-      setUploadedFiles((old: FileObject[]) => {
-        const others = old.filter((item) => item.id !== fileObject.id)
-        const progressedFile = { ...fileObject, error: 'server-error' }
-        return [...others, progressedFile]
-      })
+      updateUploadedFile({ ...fileObject, error: 'SERVER_ERROR' })
     }
   }
 
   return (
     <FileUploadContainer>
+      {modalVisible && (
+        <InfoModal
+          title={t.fileUpload.modalHeader}
+          text={t.fileUpload.modalMessage}
+          close={() => setModalVisible(false)}
+          icon={faInfo}
+        />
+      )}
       <FileInputLabel className="file-input-label" onDrop={onDrop}>
         <input
           type="file"
@@ -349,7 +354,7 @@ export default React.memo(function FileUpload({
                 )}
                 <FileDeleteButton
                   icon={faTimes}
-                  onClick={() => deleteFile(file.id)}
+                  onClick={() => deleteFile(file)}
                 />
               </FileHeader>
               {inProgress(file) && (
@@ -357,6 +362,7 @@ export default React.memo(function FileUpload({
                   <ProgressBar progress={file.progress}></ProgressBar>
                   {file.error && (
                     <ProgressBarError>
+                      <span>{errorMessage(file)}</span>
                       <Icon icon={faExclamationTriangle} />
                     </ProgressBarError>
                   )}
