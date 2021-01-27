@@ -118,7 +118,8 @@ const sv: Translations = {
       serviceNeed: {
         serviceNeed: 'Behov av småbarnspedagogisk verksamhet',
         startDate: {
-          label: 'Önskat inledningsdatum',
+          header: 'Inledningsdatum',
+          label: 'Önskat inledningsdatum *',
           noteOnDelay: 'Behandlingstiden för ansökningen är 4 månader.',
           instructions:
             'Det är möjligt att senarelägga det önskade startdatumet så länge ansökan inte har tagits upp till behandling. Därefter kan du ändra det önskade startdatumet genom att kontakta småbarnspedagogikens servicehänvisning (tfn 09 816 27600).',
@@ -145,10 +146,12 @@ const sv: Translations = {
         },
         dailyTime: {
           label: 'Tiden för småbarnspedagogik per dag',
+          starts: 'Starttiden',
+          ends: 'Sluttiden',
           instructions:
             'Meddela tiden då ditt barn behöver småbarnspedagogisk verksamhet. Du kan meddela den mera exakta tiden när verksamheten börjar. Om ditt behov varierar dagligen eller per vecka (t.ex i skiftesvård) kan du meddela behovet mer exakt i tilläggsuppgifterna.',
           usualArrivalAndDeparture:
-            'Den dagliga sluttiden för småbarnspedagogisk verksamhet'
+            'Den dagliga sluttiden för småbarnspedagogisk verksamhet *'
         },
         shiftCare: {
           label: 'Kvälls- och skiftesvård',

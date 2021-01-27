@@ -118,7 +118,8 @@ const en: Translations = {
       serviceNeed: {
         serviceNeed: 'Service need',
         startDate: {
-          label: 'Desired start date',
+          header: 'Start date',
+          label: 'Desired start date *',
           noteOnDelay: 'The application processing time is 4 months.',
           instructions:
             'You can postpone your desired start date until the processing of your application starts. After this, you can make changes to your desired start date by contacting early childhood education service counselling (tel. 09 816 31000).',
@@ -145,9 +146,11 @@ const en: Translations = {
         },
         dailyTime: {
           label: 'Daily early childhood education time',
+          starts: 'Start time',
+          ends: 'End time',
           instructions:
             'Indicate the most commonly needed early childhood education time, the time will be specified when early childhood education begins.',
-          usualArrivalAndDeparture: 'Daily early childhood education time'
+          usualArrivalAndDeparture: 'Daily early childhood education time *'
         },
         shiftCare: {
           label: 'Evening and round-the-clock care',

@@ -115,7 +115,8 @@ export default {
       serviceNeed: {
         serviceNeed: 'Palveluntarve',
         startDate: {
-          label: 'Toivottu aloituspäivä',
+          header: 'Varhaiskasvatuksen aloitus',
+          label: 'Toivottu aloituspäivä *',
           noteOnDelay: 'Hakemuksen käsittelyaika on 4 kuukautta.',
           instructions:
             'Toivottua aloituspäivää on mahdollista muuttaa myöhemmäksi niin kauan kuin hakemusta ei ole otettu käsittelyyn. Tämän jälkeen toivotun aloituspäivän muutokset tehdään ottamalla yhteyttä varhaiskasvatuksen palveluohjaukseen (puh. 09 816 31000).',
@@ -142,10 +143,12 @@ export default {
         },
         dailyTime: {
           label: 'Päivittäinen varhaiskasvatusaika',
+          starts: 'Alkaa',
+          ends: 'Päättyy',
           instructions:
             'Ilmoita lapsen yleisimmin tarvitseva varhaiskasvatusaika, aika tarkennetaan varhaiskasvatuksen alkaessa.',
           usualArrivalAndDeparture:
-            'Varhaiskasvatuksen alkamis- ja päättymisaika'
+            'Varhaiskasvatuksen alkamis- ja päättymisaika *'
         },
         shiftCare: {
           label: 'Ilta- ja vuorohoito',

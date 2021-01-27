@@ -13,7 +13,7 @@ import {
 import Radio from '@evaka/lib-components/src/atoms/form/Radio'
 import { useTranslation } from '~localization'
 import HorizontalLine from '@evaka/lib-components/src/atoms/HorizontalLine'
-import { H3, H4 } from '@evaka/lib-components/src/typography'
+import { H3, Label, P } from '@evaka/lib-components/src/typography'
 import InputField from '@evaka/lib-components/src/atoms/form/InputField'
 import Tooltip from '@evaka/lib-components/src/atoms/Tooltip'
 import colors from '@evaka/lib-components/src/colors'
@@ -26,6 +26,7 @@ import { deleteAttachment, saveAttachment } from '~applications/api'
 import { Result } from '~../../lib-common/src/api'
 import { UUID } from '~../../lib-common/src/types'
 import { useParams } from 'react-router-dom'
+import styled from 'styled-components'
 
 export type ServiceNeedSectionProps = {
   formData: ServiceNeedFormData
@@ -42,6 +43,17 @@ const RoundInfoIcon = () => (
     />
   </>
 )
+
+const CheckboxWithTooltip = styled.div`
+  display: flex;
+  align-items: center;
+`
+
+const Hyphenbox = styled.div`
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+`
 
 export default React.memo(function ServiceNeedSection({
   formData,
@@ -72,7 +84,8 @@ export default React.memo(function ServiceNeedSection({
       openInitially
     >
       <FixedSpaceColumn>
-        <H4>
+        <H3>{t.applications.editor.serviceNeed.startDate.header}</H3>
+        <Label>
           {t.applications.editor.serviceNeed.startDate.label}
           <Tooltip
             tooltip={
@@ -83,7 +96,7 @@ export default React.memo(function ServiceNeedSection({
           >
             <RoundInfoIcon />
           </Tooltip>
-        </H4>
+        </Label>
 
         <DatePicker
           date={formData.preferredStartDate || undefined}
@@ -105,9 +118,9 @@ export default React.memo(function ServiceNeedSection({
         />
         {formData.urgent && (
           <>
-            <p>
+            <P>
               {t.applications.editor.serviceNeed.urgent.attachmentsMessage.text}
-            </p>
+            </P>
             <strong>
               {
                 t.applications.editor.serviceNeed.urgent.attachmentsMessage
@@ -149,8 +162,10 @@ export default React.memo(function ServiceNeedSection({
         />
       </FixedSpaceColumn>
 
+      <Gap size={'s'} />
+
       <FixedSpaceColumn>
-        <H4>
+        <Label>
           {t.applications.editor.serviceNeed.dailyTime.usualArrivalAndDeparture}
           <Tooltip
             tooltip={
@@ -161,20 +176,31 @@ export default React.memo(function ServiceNeedSection({
           >
             <RoundInfoIcon />
           </Tooltip>
-        </H4>
+        </Label>
+
         <FixedSpaceRow spacing={'m'}>
           <FixedSpaceColumn spacing={'xs'}>
+            <Label htmlFor={'daily-time-starts'}>
+              {t.applications.editor.serviceNeed.dailyTime.starts}
+            </Label>
             <InputField
+              id={'daily-time-starts'}
+              type={'time'}
               value={formData.startTime}
               onChange={(value) => updateFormData({ startTime: value })}
               width={'s'}
             />
           </FixedSpaceColumn>
 
-          <FixedSpaceColumn spacing={'xs'}>-</FixedSpaceColumn>
+          <Hyphenbox>-</Hyphenbox>
 
           <FixedSpaceColumn spacing={'xs'}>
+            <Label htmlFor={'daily-time-ends'}>
+              {t.applications.editor.serviceNeed.dailyTime.ends}
+            </Label>
             <InputField
+              id={'daily-time-ends'}
+              type={'time'}
               value={formData.endTime}
               onChange={(value) => updateFormData({ endTime: value })}
               width={'s'}
@@ -182,8 +208,17 @@ export default React.memo(function ServiceNeedSection({
           </FixedSpaceColumn>
         </FixedSpaceRow>
 
-        <H3>
-          {t.applications.editor.serviceNeed.shiftCare.label}
+        <Gap size={'s'} />
+        <CheckboxWithTooltip>
+          <Checkbox
+            checked={formData.shiftCare}
+            label={t.applications.editor.serviceNeed.shiftCare.label}
+            onChange={(checked) =>
+              updateFormData({
+                shiftCare: checked
+              })
+            }
+          />
           <Tooltip
             tooltip={
               <span>
@@ -193,16 +228,7 @@ export default React.memo(function ServiceNeedSection({
           >
             <RoundInfoIcon />
           </Tooltip>
-        </H3>
-        <Checkbox
-          checked={formData.shiftCare}
-          label={t.applications.editor.serviceNeed.shiftCare.label}
-          onChange={(checked) =>
-            updateFormData({
-              shiftCare: checked
-            })
-          }
-        />
+        </CheckboxWithTooltip>
 
         {formData.shiftCare && (
           <>
@@ -230,8 +256,17 @@ export default React.memo(function ServiceNeedSection({
       <HorizontalLine />
 
       <FixedSpaceColumn>
-        <H3>
-          {t.applications.editor.serviceNeed.assistanceNeed}
+        <H3>{t.applications.editor.serviceNeed.assistanceNeed}</H3>
+        <CheckboxWithTooltip>
+          <Checkbox
+            checked={formData.assistanceNeeded}
+            label={t.applications.editor.serviceNeed.assistanceNeeded}
+            onChange={(checked) =>
+              updateFormData({
+                assistanceNeeded: checked
+              })
+            }
+          />
           <Tooltip
             tooltip={
               <span>
@@ -241,16 +276,7 @@ export default React.memo(function ServiceNeedSection({
           >
             <RoundInfoIcon />
           </Tooltip>
-        </H3>
-        <Checkbox
-          checked={formData.assistanceNeeded}
-          label={t.applications.editor.serviceNeed.assistanceNeeded}
-          onChange={(checked) =>
-            updateFormData({
-              assistanceNeeded: checked
-            })
-          }
-        />
+        </CheckboxWithTooltip>
         {formData.assistanceNeeded && (
           <InputField
             value={formData.assistanceDescription}
