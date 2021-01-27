@@ -14,6 +14,7 @@ type Person = {
   id: string
   firstName: string
   lastName: string
+  socialSecurityNumber: string
 }
 
 export type User = Person & {
