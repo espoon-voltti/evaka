@@ -75,6 +75,8 @@ const Icon = styled(FontAwesomeIcon)`
 const UploadedFiles = styled.div`
   display: flex;
   flex-direction: column;
+  font-size: 15px;
+  margin-top: 5px;
 
   > *:not(:last-child) {
     margin-bottom: 20px;
@@ -90,6 +92,7 @@ const File = styled.div`
 
 const FileIcon = styled(FontAwesomeIcon)`
   margin-right: 16px;
+  font-size: 20px;
   flex: 0;
   color: ${colors.blues.primary};
 `
@@ -106,7 +109,7 @@ const FileHeader = styled.div`
   flex-direction: row;
   flex-wrap: nowrap;
   justify-content: space-between;
-  font-size: 15px;
+  text-align: left;
 `
 
 const ProgressBarContainer = styled.div`
@@ -129,12 +132,14 @@ const ProgressBar = styled.div<ProgressBarProps>`
   height: 3px;
   border-radius: 1px;
   transition: width 0.5s ease-out;
+  margin-bottom: 3px;
 `
 const FileDownloadButton = styled.button`
   border: none;
   background: none;
   color: ${colors.blues.primary};
   cursor: pointer;
+  font-size: 15px;
 `
 
 const FileDeleteButton = styled(IconButton)`
@@ -163,6 +168,7 @@ const ProgressBarDetails = styled.div`
 
 const ProgressBarError = styled.div`
   color: ${colors.accents.orangeDark};
+  margin-top: 3px;
   svg {
     color: ${colors.accents.orange};
     margin-left: 8px;
@@ -306,7 +312,8 @@ export default React.memo(function FileUpload({
 
     try {
       const result = await onUpload(file, updateProgress)
-      result.isSuccess &&
+      if (result.isFailure) throw new Error(result.message)
+      if (result.isSuccess)
         updateUploadedFile(
           {
             ...fileObject,
@@ -316,7 +323,6 @@ export default React.memo(function FileUpload({
           fileObject.id
         )
     } catch (e) {
-      console.error(e)
       updateUploadedFile({ ...fileObject, error: 'SERVER_ERROR' })
     }
   }
@@ -348,7 +354,7 @@ export default React.memo(function FileUpload({
             <FileIcon icon={fileIcon(file)}></FileIcon>
             <FileDetails>
               <FileHeader>
-                {file.id ? (
+                {!file.error ? (
                   <FileDownloadButton onClick={() => getFileIfAvailable(file)}>
                     {file.name}
                   </FileDownloadButton>
