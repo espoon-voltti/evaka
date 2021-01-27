@@ -206,7 +206,7 @@ export default React.memo(function AttendancePageWrapper() {
                 icon={faTimes}
               />
             </NoMarginTitle>
-            <ContentArea opaque={false} paddingHorozontal={'s'}>
+            <ContentArea opaque={false} paddingHorizontal={'s'}>
               <FreeTextSearch
                 value={freeText}
                 setValue={setFreeText}
@@ -230,7 +230,7 @@ export default React.memo(function AttendancePageWrapper() {
           <ContentArea
             opaque={false}
             paddingVertical={'s'}
-            paddingHorozontal={'s'}
+            paddingHorizontal={'s'}
           >
             <Link to={`/units/${unitId}/groupselector`}>
               <WideButton

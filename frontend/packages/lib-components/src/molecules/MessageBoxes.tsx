@@ -8,6 +8,7 @@ import { faInfo, faExclamation } from '@evaka/lib-icons'
 import { accentColors } from '../colors'
 import React from 'react'
 import { IconProp } from '@fortawesome/fontawesome-svg-core'
+import { defaultMargins, Gap } from '../white-space'
 
 interface MessageBoxContainerProps {
   color: string
@@ -18,7 +19,10 @@ interface MessageBoxContainerProps {
 const MessageBoxContainer = styled.div<MessageBoxContainerProps>`
   width: ${(props) => props.width};
   margin: ${(props) => (props.thin ? '0' : '24px 0')};
-  padding: ${(props) => (props.thin ? '4px 18px' : '20px')};
+  padding: ${(props) =>
+    props.thin
+      ? `${defaultMargins.xxs} ${defaultMargins.s}`
+      : defaultMargins.s};
   border-style: solid;
   border-width: 1px;
   border-color: ${(props) => props.color};
@@ -26,11 +30,11 @@ const MessageBoxContainer = styled.div<MessageBoxContainerProps>`
 
   .message-container {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
   }
 
   .icon-wrapper {
-    margin-right: 8px;
+    margin-right: ${defaultMargins.s};
     display: flex;
     align-items: center;
     justify-content: center;
@@ -46,9 +50,9 @@ const MessageBoxContainer = styled.div<MessageBoxContainerProps>`
   }
 `
 
-interface MessageBoxProps {
+export interface MessageBoxProps {
   title?: string
-  message?: string
+  message?: string | React.ReactNode
   icon: IconProp
   color: string
   width?: string
@@ -56,7 +60,7 @@ interface MessageBoxProps {
   'data-qa'?: string
 }
 
-function MessageBox({
+export function MessageBox({
   title,
   message,
   icon,
@@ -77,8 +81,10 @@ function MessageBox({
           <FontAwesomeIcon icon={icon} size="1x" color={color} inverse />
         </div>
         <div>
-          {title && <p className="message-title">{title}</p>}
-          {message && <p>{message}</p>}
+          {title && <span className="message-title">{title}</span>}
+          {title && message && <Gap size="s" />}
+          {message &&
+            (typeof message === 'string' ? <span>{message}</span> : message)}
         </div>
       </div>
     </MessageBoxContainer>
@@ -120,7 +126,7 @@ export function InfoBox({
 
 interface AlertBoxProps {
   title?: string
-  message?: string
+  message?: string | React.ReactNode
   wide?: boolean
   thin?: boolean
   'data-qa'?: string

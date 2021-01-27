@@ -8,7 +8,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faChevronDown, faChevronUp } from '@evaka/lib-icons'
 import colors from '../colors'
 import { defaultMargins, SpacingSize } from '../white-space'
-import { BaseProps } from '../utils'
+import classNames from 'classnames'
 
 export const Container = styled.div`
   margin: 0 auto;
@@ -36,10 +36,12 @@ export const Container = styled.div`
   }
 `
 
-type ContentAreaProps = BaseProps & {
+type ContentAreaProps = {
+  classname?: string
+  'data-qa'?: string
   opaque: boolean
   paddingVertical?: SpacingSize
-  paddingHorozontal?: SpacingSize
+  paddingHorizontal?: SpacingSize
 }
 
 export const ContentArea = styled.section<ContentAreaProps>`
@@ -47,8 +49,8 @@ export const ContentArea = styled.section<ContentAreaProps>`
     `${
       p.paddingVertical ? defaultMargins[p.paddingVertical] : defaultMargins.s
     } ${
-      p.paddingHorozontal
-        ? defaultMargins[p.paddingHorozontal]
+      p.paddingHorizontal
+        ? defaultMargins[p.paddingHorizontal]
         : defaultMargins.L
     }`};
   background-color: ${(props) => (props.opaque ? 'white' : 'transparent')};
@@ -81,7 +83,10 @@ export const CollapsibleContentArea = React.memo(
         <TitleContainer
           tabIndex={0}
           onClick={toggleOpen}
+          data-qa={props['data-qa'] ? `${props['data-qa']}-header` : undefined}
           onKeyUp={toggleOnEnter}
+          className={classNames({ open })}
+          open={open}
         >
           <TitleWrapper>{title}</TitleWrapper>
           <TitleIcon icon={open ? faChevronUp : faChevronDown} />
@@ -92,11 +97,16 @@ export const CollapsibleContentArea = React.memo(
   }
 )
 
-const TitleContainer = styled.div`
+const TitleContainer = styled.div<{ open: boolean }>`
   display: flex;
   flex-direction: row;
   flex-wrap: nowrap;
   align-items: center;
+
+  cursor: pointer;
+  padding: 16px 8px;
+  margin: -16px -8px;
+  ${(p) => (p.open ? 'margin-bottom: 0' : '')}
 `
 
 const TitleWrapper = styled.div`

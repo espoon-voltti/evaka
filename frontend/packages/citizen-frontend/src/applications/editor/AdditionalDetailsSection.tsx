@@ -9,18 +9,26 @@ import { TextArea } from '@evaka/lib-components/src/atoms/form/InputField'
 import { useTranslation } from '~localization'
 import { AdditionalDetailsFormData } from '~applications/editor/ApplicationFormData'
 import EditorSection from '~applications/editor/EditorSection'
-import InfoBallWrapper from '~applications/InfoBallWrapper'
 import { ApplicationType } from '@evaka/lib-common/src/api-types/application/enums'
+import { ApplicationFormDataErrors } from '~applications/editor/validations'
+import { getErrorCount } from '~form-validation'
+import { FixedSpaceColumn } from '@evaka/lib-components/src/layout/flex-helpers'
+import styled from 'styled-components'
+import ExpandingInfo from '@evaka/lib-components/src/molecules/ExpandingInfo'
 
 type Props = {
   formData: AdditionalDetailsFormData
-  updateFormData: (v: AdditionalDetailsFormData) => void
+  updateFormData: (v: Partial<AdditionalDetailsFormData>) => void
+  errors: ApplicationFormDataErrors['additionalDetails']
+  verificationRequested: boolean
   applicationType: ApplicationType
 }
 
 export default React.memo(function AdditionalDetailsSection({
   formData,
   updateFormData,
+  verificationRequested,
+  errors,
   applicationType
 }: Props) {
   const t = useTranslation()
@@ -28,58 +36,73 @@ export default React.memo(function AdditionalDetailsSection({
   return (
     <EditorSection
       title={t.applications.editor.additionalDetails.title}
-      validationErrors={0}
+      validationErrors={verificationRequested ? getErrorCount(errors) : 0}
+      data-qa="additionalDetails-section"
     >
-      <Label>
-        {t.applications.editor.additionalDetails.otherInfoLabel}
-        <TextArea
+      <Gap size="s" />
+      <FixedSpaceColumn spacing="xs">
+        <Label>{t.applications.editor.additionalDetails.otherInfoLabel}</Label>
+        <NarrowTextArea
           value={formData.otherInfo}
+          data-qa={'otherInfo-input'}
           onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
-            updateFormData({ ...formData, otherInfo: e.target.value })
+            updateFormData({ otherInfo: e.target.value })
           }
           placeholder={
             t.applications.editor.additionalDetails.otherInfoPlaceholder
           }
         />
-      </Label>
+      </FixedSpaceColumn>
+
       {applicationType !== 'CLUB' ? (
         <>
           <Gap size="L" />
-          <Label>
-            <InfoBallWrapper
-              infoText={t.applications.editor.additionalDetails.dietInfo}
+
+          <FixedSpaceColumn spacing="xs">
+            <ExpandingInfo
+              info={t.applications.editor.additionalDetails.dietInfo}
             >
-              {t.applications.editor.additionalDetails.dietLabel}
-            </InfoBallWrapper>
-            <TextArea
+              <Label>{t.applications.editor.additionalDetails.dietLabel}</Label>
+            </ExpandingInfo>
+            <NarrowTextArea
               value={formData.diet}
+              data-qa={'diet-input'}
               onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
-                updateFormData({ ...formData, diet: e.target.value })
+                updateFormData({ diet: e.target.value })
               }
               placeholder={
                 t.applications.editor.additionalDetails.dietPlaceholder
               }
             />
-          </Label>
+          </FixedSpaceColumn>
+
           <Gap size="L" />
-          <Label>
-            <InfoBallWrapper
-              infoText={t.applications.editor.additionalDetails.allergiesInfo}
+
+          <FixedSpaceColumn spacing="xs">
+            <ExpandingInfo
+              info={t.applications.editor.additionalDetails.allergiesInfo}
             >
-              {t.applications.editor.additionalDetails.allergiesLabel}
-            </InfoBallWrapper>
-            <TextArea
+              <Label>
+                {t.applications.editor.additionalDetails.allergiesLabel}
+              </Label>
+            </ExpandingInfo>
+            <NarrowTextArea
               value={formData.allergies}
+              data-qa={'allergies-input'}
               onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
-                updateFormData({ ...formData, allergies: e.target.value })
+                updateFormData({ allergies: e.target.value })
               }
               placeholder={
                 t.applications.editor.additionalDetails.allergiesPlaceholder
               }
             />
-          </Label>
+          </FixedSpaceColumn>
         </>
       ) : null}
     </EditorSection>
   )
 })
+
+const NarrowTextArea = styled(TextArea)`
+  max-width: 720px;
+`

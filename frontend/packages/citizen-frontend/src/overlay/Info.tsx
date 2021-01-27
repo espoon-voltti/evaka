@@ -19,6 +19,7 @@ function GlobalInfoDialog() {
           resolve={infoMessage.resolve}
           reject={infoMessage.reject}
           size={'md'}
+          data-qa={infoMessage['data-qa']}
         />
       )}
     </div>

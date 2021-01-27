@@ -156,7 +156,7 @@ function ApplicationsPage() {
           <ApplicationFilters />
         </ContentArea>
         <Gap size={'XL'} />
-        <ContentArea opaque paddingVertical={'zero'} paddingHorozontal={'zero'}>
+        <ContentArea opaque paddingVertical={'zero'} paddingHorizontal={'zero'}>
           {applicationsResult.isFailure && (
             <PaddedDiv>
               <H1>

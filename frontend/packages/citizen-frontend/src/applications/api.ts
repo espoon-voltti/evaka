@@ -125,7 +125,7 @@ export async function createApplication(
     '/citizen/applications',
     {
       childId,
-      type: type.toUpperCase() // FIXME
+      type: type.toUpperCase()
     }
   )
   return applicationId

@@ -7,11 +7,14 @@ import { getApplication } from '~applications/api'
 import Container from '@evaka/lib-components/src/layout/Container'
 import { SpinnerSegment } from '@evaka/lib-components/src/atoms/state/Spinner'
 import ErrorSegment from '@evaka/lib-components/src/atoms/state/ErrorSegment'
-import DaycareApplicationReadView from '~applications/read-view/DaycareApplicationReadView'
 import { apiDataToFormData } from '~applications/editor/ApplicationFormData'
+import { useUser } from '~auth'
+import ApplicationReadViewDaycare from '~applications/read-view/ApplicationReadViewDaycare'
 
 export default React.memo(function ApplicationReadView() {
   const { applicationId } = useParams<{ applicationId: string }>()
+  const user = useUser()
+
   const [apiData, setApiData] = useState<Result<ApplicationDetails>>(
     Loading.of()
   )
@@ -28,9 +31,9 @@ export default React.memo(function ApplicationReadView() {
       {apiData.isSuccess && (
         <>
           {apiData.value.type === 'DAYCARE' ? (
-            <DaycareApplicationReadView
+            <ApplicationReadViewDaycare
               application={apiData.value}
-              formData={apiDataToFormData(apiData.value)}
+              formData={apiDataToFormData(apiData.value, user)}
             />
           ) : apiData.value.type === 'PRESCHOOL' ? (
             <ErrorSegment title={'Hakemustyyppiä ei ole vielä toteutettu'} />

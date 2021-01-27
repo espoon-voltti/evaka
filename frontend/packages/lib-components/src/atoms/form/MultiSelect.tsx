@@ -21,6 +21,7 @@ interface MultiSelectProps<T extends object> {
   closeMenuOnSelect?: Props<T>['closeMenuOnSelect']
   isClearable?: Props<T>['isClearable']
   inputId?: Props<T>['inputId']
+  'data-qa'?: string
 }
 
 // eslint-disable-next-line @typescript-eslint/ban-types
@@ -37,64 +38,68 @@ export default function MultiSelect<T extends object>({
   ...props
 }: MultiSelectProps<T>) {
   return (
-    <ReactSelect
-      isMulti
-      isSearchable={true}
-      hideSelectedOptions={false}
-      backspaceRemovesValue={false}
-      closeMenuOnSelect={closeMenuOnSelect ?? false}
-      noOptionsMessage={() => noOptionsMessage ?? 'Ei tuloksia'}
-      getOptionLabel={getOptionLabel}
-      getOptionValue={getOptionId}
-      value={value}
-      tabSelectsValue={false}
-      options={[
-        {
-          options: value
-        },
-        {
-          options:
-            maxSelected === undefined || value.length < maxSelected
-              ? options.filter(
-                  (o) =>
-                    !value.map((o2) => getOptionId(o2)).includes(getOptionId(o))
-                )
-              : []
+    <div data-qa={props['data-qa']}>
+      <ReactSelect
+        isMulti
+        isSearchable={true}
+        hideSelectedOptions={false}
+        backspaceRemovesValue={false}
+        closeMenuOnSelect={closeMenuOnSelect ?? false}
+        noOptionsMessage={() => noOptionsMessage ?? 'Ei tuloksia'}
+        getOptionLabel={getOptionLabel}
+        getOptionValue={getOptionId}
+        value={value}
+        tabSelectsValue={false}
+        options={[
+          {
+            options: value
+          },
+          {
+            options:
+              maxSelected === undefined || value.length < maxSelected
+                ? options.filter(
+                    (o) =>
+                      !value
+                        .map((o2) => getOptionId(o2))
+                        .includes(getOptionId(o))
+                  )
+                : []
+          }
+        ]}
+        onChange={(selected) => {
+          const selectionsArray =
+            selected && 'length' in selected ? (selected as T[]) : []
+          onChange(selectionsArray)
+        }}
+        filterOption={({ data }, q) =>
+          getOptionLabel(data).toLowerCase().includes(q.toLowerCase())
         }
-      ]}
-      onChange={(selected) => {
-        const selectionsArray =
-          selected && 'length' in selected ? (selected as T[]) : []
-        onChange(selectionsArray)
-      }}
-      filterOption={({ data }, q) =>
-        getOptionLabel(data).toLowerCase().includes(q.toLowerCase())
-      }
-      controlShouldRenderValue={false}
-      components={{
-        Option: function Option({ innerRef, innerProps, ...props }) {
-          const data = props.data as T
+        controlShouldRenderValue={false}
+        components={{
+          Option: function Option({ innerRef, innerProps, ...props }) {
+            const data = props.data as T
 
-          return (
-            <OptionWrapper
-              ref={innerRef}
-              {...innerProps}
-              key={getOptionId(data)}
-              className={classNames({ focused: props.isFocused })}
-            >
-              <OptionContents
-                label={getOptionLabel(data)}
-                secondaryText={
-                  getOptionSecondaryText && getOptionSecondaryText(data)
-                }
-                selected={props.isSelected}
-              />
-            </OptionWrapper>
-          )
-        }
-      }}
-      {...props}
-    />
+            return (
+              <OptionWrapper
+                ref={innerRef}
+                {...innerProps}
+                key={getOptionId(data)}
+                className={classNames({ focused: props.isFocused })}
+              >
+                <OptionContents
+                  label={getOptionLabel(data)}
+                  secondaryText={
+                    getOptionSecondaryText && getOptionSecondaryText(data)
+                  }
+                  selected={props.isSelected}
+                />
+              </OptionWrapper>
+            )
+          }
+        }}
+        {...props}
+      />
+    </div>
   )
 }
 

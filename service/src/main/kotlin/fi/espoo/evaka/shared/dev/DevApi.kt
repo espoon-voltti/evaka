@@ -6,6 +6,7 @@ package fi.espoo.evaka.shared.dev
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.treeToValue
+import fi.espoo.evaka.application.ApplicationDetails
 import fi.espoo.evaka.application.ApplicationOrigin
 import fi.espoo.evaka.application.ApplicationStateService
 import fi.espoo.evaka.application.ApplicationStatus
@@ -260,6 +261,16 @@ class DevApi(
     fun deleteDecisions(db: Database, @PathVariable id: UUID): ResponseEntity<Unit> {
         db.transaction { it.handle.deleteDecision(id) }
         return ResponseEntity.noContent().build()
+    }
+
+    @GetMapping("/applications/{applicationId}")
+    fun getApplication(
+        db: Database.Connection,
+        @PathVariable applicationId: UUID
+    ): ResponseEntity<ApplicationDetails> {
+        return db.read { tx ->
+            fetchApplicationDetails(tx.handle, applicationId)
+        }?.let { ResponseEntity.ok(it) } ?: throw NotFound("application not found")
     }
 
     @GetMapping("/applications/{applicationId}/decisions")

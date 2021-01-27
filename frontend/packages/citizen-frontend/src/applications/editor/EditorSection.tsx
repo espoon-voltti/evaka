@@ -11,6 +11,7 @@ type Props = {
   validationErrors: number
   openInitially?: boolean
   children: ReactNode
+  'data-qa'?: string
 }
 
 export default React.memo(function EditorSection(props: Props) {
@@ -19,6 +20,7 @@ export default React.memo(function EditorSection(props: Props) {
 
   return (
     <CollapsibleContentArea
+      data-qa={props['data-qa']}
       open={open}
       toggleOpen={toggleOpen}
       title={

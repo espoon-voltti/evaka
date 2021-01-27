@@ -61,4 +61,8 @@ export default class CitizenApplicationsPage {
       )
       .notOk()
   }
+
+  async createApplication(childId: string) {
+    await t.click(Selector(`[data-qa="new-application-${childId}"]`))
+  }
 }
