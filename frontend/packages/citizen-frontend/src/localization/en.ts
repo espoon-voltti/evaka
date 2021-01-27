@@ -269,9 +269,9 @@ const en: Translations = {
         secondGuardianInfoTitle: 'Toisen huoltajan tiedot',
         secondGuardianInfo:
           'Toisen huoltajan tiedot haetaan automaattisesti väestötietojärjestelmästä.',
-        nonCaretakerPartnerTitle:
+        otherPartnerTitle:
           'Samassa taloudessa asuva avio- tai avopuoliso (ei huoltaja)',
-        nonCaretakerPartnerCheckboxLabel:
+        otherPartnerCheckboxLabel:
           'Samassa taloudessa asuu hakijan kanssa avio- tai avoliitossa oleva henkilö, joka ei ole lapsen huoltaja.',
         personFirstName: 'Henkilön etunimet',
         personLastName: 'Henkilön sukunimi',

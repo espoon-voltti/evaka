@@ -6,6 +6,7 @@ import React, { useEffect, useState } from 'react'
 import { useTranslation } from '~localization'
 import {
   FixedSpaceColumn,
+  FixedSpaceFlexWrap,
   FixedSpaceRow
 } from '@evaka/lib-components/src/layout/flex-helpers'
 import Checkbox from '@evaka/lib-components/src/atoms/form/Checkbox'
@@ -20,6 +21,7 @@ import { faTimes } from '@evaka/lib-icons'
 import { useUser } from '~auth/state'
 import { ApplicationPersonBasics } from '@evaka/lib-common/src/api-types/application/ApplicationDetails'
 import { Gap } from '@evaka/lib-components/src/white-space'
+import HorizontalLine from '@evaka/lib-components/src/atoms/HorizontalLine'
 
 export type ContactInfoProps = {
   formData: ContactInfoFormData
@@ -88,35 +90,36 @@ export default React.memo(function ContactInfoSection({
       title={t.applications.editor.contactInfo.title}
       validationErrors={0}
     >
+      <Gap size={'m'} />
       <P
         dangerouslySetInnerHTML={{
           __html: t.applications.editor.contactInfo.info
         }}
       />
-      <Gap size={'s'} />
       <H3>{t.applications.editor.contactInfo.childInfoTitle}</H3>
+      <Gap size={'xs'} />
       <FixedSpaceRow spacing={'XL'}>
-        <FixedSpaceColumn spacing={'xs'}>
-          <Label>{t.applications.editor.contactInfo.childFirstName}</Label>
-          <span>{formData.childFirstName}</span>
-        </FixedSpaceColumn>
-        <FixedSpaceColumn spacing={'xs'}>
-          <Label>{t.applications.editor.contactInfo.childLastName}</Label>
-          <span>{formData.childLastName}</span>
-        </FixedSpaceColumn>
-        <FixedSpaceColumn spacing={'xs'}>
-          <Label>{t.applications.editor.contactInfo.childSSN}</Label>
-          <span>{formData.childSSN}</span>
-        </FixedSpaceColumn>
+        <FixedSpaceFlexWrap>
+          <FixedSpaceColumn spacing={'xs'}>
+            <Label>{t.applications.editor.contactInfo.childFirstName}</Label>
+            <span>{formData.childFirstName}</span>
+          </FixedSpaceColumn>
+          <FixedSpaceColumn spacing={'xs'}>
+            <Label>{t.applications.editor.contactInfo.childLastName}</Label>
+            <span>{formData.childLastName}</span>
+          </FixedSpaceColumn>
+          <FixedSpaceColumn spacing={'xs'}>
+            <Label>{t.applications.editor.contactInfo.childSSN}</Label>
+            <span>{formData.childSSN}</span>
+          </FixedSpaceColumn>
+        </FixedSpaceFlexWrap>
       </FixedSpaceRow>
       <Gap size={'s'} />
-      <FixedSpaceRow spacing={'XL'}>
-        <FixedSpaceColumn spacing={'xs'}>
-          <Label>{t.applications.editor.contactInfo.homeAddress}</Label>
-          <span>{formData.childStreet}</span>
-        </FixedSpaceColumn>
-      </FixedSpaceRow>
-      <Gap size={'s'} />
+      <FixedSpaceColumn spacing={'xs'}>
+        <Label>{t.applications.editor.contactInfo.homeAddress}</Label>
+        <span>{formData.childStreet}</span>
+      </FixedSpaceColumn>
+      <Gap size={'m'} />
       <Checkbox
         label={t.applications.editor.contactInfo.hasFutureAddress}
         checked={childFutureAddressExistsChecked}
@@ -132,7 +135,7 @@ export default React.memo(function ContactInfoSection({
       />
       {childFutureAddressExistsChecked && (
         <>
-          <Gap size={'s'} />
+          <Gap size={'m'} />
           <FixedSpaceColumn spacing={'xs'}>
             <Label>{t.applications.editor.contactInfo.moveDate + '*'}</Label>
             <DatePickerClearable
@@ -157,99 +160,102 @@ export default React.memo(function ContactInfoSection({
           </FixedSpaceColumn>
           <Gap size={'s'} />
           <FixedSpaceRow spacing={'XL'}>
-            <FixedSpaceColumn spacing={'xs'}>
-              <Label htmlFor={'child-future-street'}>
-                {t.applications.editor.contactInfo.street + '*'}
-              </Label>
-              <InputField
-                id={'child-future-street'}
-                value={formData.childFutureStreet || ''}
-                onChange={(value) =>
-                  updateFormData(
-                    guardianFutureAddressEqualsChildFutureAddressChecked
-                      ? {
-                          childFutureStreet: value,
-                          guardianFutureStreet: value
-                        }
-                      : {
-                          childFutureStreet: value
-                        }
-                  )
-                }
-                placeholder={
-                  t.applications.editor.contactInfo.streetPlaceholder
-                }
-                width={'L'}
-              />
-            </FixedSpaceColumn>
-            <FixedSpaceColumn spacing={'xs'}>
-              <Label htmlFor={'child-future-postal-code'}>
-                {t.applications.editor.contactInfo.postalCode + '*'}
-              </Label>
-              <InputField
-                id={'child-future-postal-code'}
-                value={formData.childFuturePostalCode || ''}
-                onChange={(value) =>
-                  updateFormData(
-                    guardianFutureAddressEqualsChildFutureAddressChecked
-                      ? {
-                          guardianFuturePostalCode: value,
-                          childFuturePostalCode: value
-                        }
-                      : {
-                          childFuturePostalCode: value
-                        }
-                  )
-                }
-                placeholder={
-                  t.applications.editor.contactInfo.postalCodePlaceholder
-                }
-              />
-            </FixedSpaceColumn>
-            <FixedSpaceColumn spacing={'xs'}>
-              <Label htmlFor={'child-future-post-office'}>
-                {t.applications.editor.contactInfo.postOffice + '*'}
-              </Label>
-              <InputField
-                id={'child-future-post-office'}
-                value={formData.childFuturePostOffice || ''}
-                onChange={(value) =>
-                  updateFormData(
-                    guardianFutureAddressEqualsChildFutureAddressChecked
-                      ? {
-                          guardianFuturePostOffice: value,
-                          childFuturePostOffice: value
-                        }
-                      : {
-                          childFuturePostOffice: value
-                        }
-                  )
-                }
-                placeholder={
-                  t.applications.editor.contactInfo.municipalityPlaceholder
-                }
-              />
-            </FixedSpaceColumn>
+            <FixedSpaceFlexWrap>
+              <FixedSpaceColumn spacing={'xs'}>
+                <Label htmlFor={'child-future-street'}>
+                  {t.applications.editor.contactInfo.street + '*'}
+                </Label>
+                <InputField
+                  id={'child-future-street'}
+                  value={formData.childFutureStreet || ''}
+                  onChange={(value) =>
+                    updateFormData(
+                      guardianFutureAddressEqualsChildFutureAddressChecked
+                        ? {
+                            childFutureStreet: value,
+                            guardianFutureStreet: value
+                          }
+                        : {
+                            childFutureStreet: value
+                          }
+                    )
+                  }
+                  placeholder={
+                    t.applications.editor.contactInfo.streetPlaceholder
+                  }
+                  width={'L'}
+                />
+              </FixedSpaceColumn>
+              <FixedSpaceColumn spacing={'xs'}>
+                <Label htmlFor={'child-future-postal-code'}>
+                  {t.applications.editor.contactInfo.postalCode + '*'}
+                </Label>
+                <InputField
+                  id={'child-future-postal-code'}
+                  value={formData.childFuturePostalCode || ''}
+                  onChange={(value) =>
+                    updateFormData(
+                      guardianFutureAddressEqualsChildFutureAddressChecked
+                        ? {
+                            guardianFuturePostalCode: value,
+                            childFuturePostalCode: value
+                          }
+                        : {
+                            childFuturePostalCode: value
+                          }
+                    )
+                  }
+                  placeholder={
+                    t.applications.editor.contactInfo.postalCodePlaceholder
+                  }
+                />
+              </FixedSpaceColumn>
+              <FixedSpaceColumn spacing={'xs'}>
+                <Label htmlFor={'child-future-post-office'}>
+                  {t.applications.editor.contactInfo.postOffice + '*'}
+                </Label>
+                <InputField
+                  id={'child-future-post-office'}
+                  value={formData.childFuturePostOffice || ''}
+                  onChange={(value) =>
+                    updateFormData(
+                      guardianFutureAddressEqualsChildFutureAddressChecked
+                        ? {
+                            guardianFuturePostOffice: value,
+                            childFuturePostOffice: value
+                          }
+                        : {
+                            childFuturePostOffice: value
+                          }
+                    )
+                  }
+                  placeholder={
+                    t.applications.editor.contactInfo.municipalityPlaceholder
+                  }
+                />
+              </FixedSpaceColumn>
+            </FixedSpaceFlexWrap>
           </FixedSpaceRow>
         </>
       )}
       <Gap size={'s'} />
-      <hr />
-      <Gap size={'s'} />
+      <HorizontalLine />
       <H3>{t.applications.editor.contactInfo.guardianInfoTitle}</H3>
       <FixedSpaceRow spacing={'XL'}>
-        <FixedSpaceColumn spacing={'xs'}>
-          <Label>{t.applications.editor.contactInfo.guardianFirstName}</Label>
-          <span>{formData.guardianFirstName}</span>
-        </FixedSpaceColumn>
-        <FixedSpaceColumn spacing={'xs'}>
-          <Label>{t.applications.editor.contactInfo.guardianLastName}</Label>
-          <span>{formData.guardianLastName}</span>
-        </FixedSpaceColumn>
-        <FixedSpaceColumn spacing={'xs'}>
-          <Label>{t.applications.editor.contactInfo.guardianSSN}</Label>
-          <span>{formData.guardianSSN}</span>
-        </FixedSpaceColumn>
+        <FixedSpaceFlexWrap>
+          <FixedSpaceColumn spacing={'xs'}>
+            <Label>{t.applications.editor.contactInfo.guardianFirstName}</Label>
+            <span>{formData.guardianFirstName}</span>
+          </FixedSpaceColumn>
+          <FixedSpaceColumn spacing={'xs'}>
+            <Label>{t.applications.editor.contactInfo.guardianLastName}</Label>
+            <span>{formData.guardianLastName}</span>
+          </FixedSpaceColumn>
+          <FixedSpaceColumn spacing={'xs'}>
+            <Label>{t.applications.editor.contactInfo.guardianSSN}</Label>
+            <span>{formData.guardianSSN}</span>
+          </FixedSpaceColumn>
+        </FixedSpaceFlexWrap>
       </FixedSpaceRow>
       <Gap size={'s'} />
       <FixedSpaceColumn spacing={'xs'}>
@@ -258,31 +264,33 @@ export default React.memo(function ContactInfoSection({
       </FixedSpaceColumn>
       <Gap size={'s'} />
       <FixedSpaceRow spacing={'XL'}>
-        <FixedSpaceColumn spacing={'xs'}>
-          <Label htmlFor={'guardian-phone'}>
-            {t.applications.editor.contactInfo.phone + '*'}
-          </Label>
-          <InputField
-            id={'guardian-phone'}
-            value={formData.guardianPhone}
-            onChange={(value) => updateFormData({ guardianPhone: value })}
-            placeholder={t.applications.editor.contactInfo.phone}
-          />
-        </FixedSpaceColumn>
-        <FixedSpaceColumn spacing={'xs'}>
-          <Label htmlFor={'guardian-email'}>
-            {t.applications.editor.contactInfo.emailAddress}
-          </Label>
-          <InputField
-            id={'guardian-email'}
-            value={formData.guardianEmail}
-            onChange={(value) => updateFormData({ guardianEmail: value })}
-            placeholder={t.applications.editor.contactInfo.email}
-            width={'L'}
-          />
-        </FixedSpaceColumn>
+        <FixedSpaceFlexWrap>
+          <FixedSpaceColumn spacing={'xs'}>
+            <Label htmlFor={'guardian-phone'}>
+              {t.applications.editor.contactInfo.phone + '*'}
+            </Label>
+            <InputField
+              id={'guardian-phone'}
+              value={formData.guardianPhone}
+              onChange={(value) => updateFormData({ guardianPhone: value })}
+              placeholder={t.applications.editor.contactInfo.phone}
+            />
+          </FixedSpaceColumn>
+          <FixedSpaceColumn spacing={'xs'}>
+            <Label htmlFor={'guardian-email'}>
+              {t.applications.editor.contactInfo.emailAddress}
+            </Label>
+            <InputField
+              id={'guardian-email'}
+              value={formData.guardianEmail}
+              onChange={(value) => updateFormData({ guardianEmail: value })}
+              placeholder={t.applications.editor.contactInfo.email}
+              width={'L'}
+            />
+          </FixedSpaceColumn>
+        </FixedSpaceFlexWrap>
       </FixedSpaceRow>
-      <Gap size={'s'} />
+      <Gap size={'m'} />
       <Checkbox
         label={t.applications.editor.contactInfo.hasFutureAddress}
         checked={guardianFutureAddressExistsChecked}
@@ -295,26 +303,30 @@ export default React.memo(function ContactInfoSection({
       />
       {guardianFutureAddressExistsChecked && (
         <>
-          <Gap size={'s'} />
+          <Gap size={'m'} />
           {childFutureAddressExistsChecked && (
-            <Checkbox
-              label={
-                t.applications.editor.contactInfo
-                  .guardianFutureAddressEqualsChildFutureAddress
-              }
-              checked={guardianFutureAddressEqualsChildFutureAddressChecked}
-              onChange={(checked) => {
-                setGuardianFutureAddressEqualsChildFutureAddressChecked(checked)
-                updateFormData({
-                  guardianMoveDate: formData.childMoveDate,
-                  guardianFutureStreet: formData.childFutureStreet,
-                  guardianFuturePostalCode: formData.childFuturePostalCode,
-                  guardianFuturePostOffice: formData.childFuturePostOffice
-                })
-              }}
-            />
+            <>
+              <Checkbox
+                label={
+                  t.applications.editor.contactInfo
+                    .guardianFutureAddressEqualsChildFutureAddress
+                }
+                checked={guardianFutureAddressEqualsChildFutureAddressChecked}
+                onChange={(checked) => {
+                  setGuardianFutureAddressEqualsChildFutureAddressChecked(
+                    checked
+                  )
+                  updateFormData({
+                    guardianMoveDate: formData.childMoveDate,
+                    guardianFutureStreet: formData.childFutureStreet,
+                    guardianFuturePostalCode: formData.childFuturePostalCode,
+                    guardianFuturePostOffice: formData.childFuturePostOffice
+                  })
+                }}
+              />
+              <Gap size={'m'} />
+            </>
           )}
-          <Gap size={'s'} />
           <FixedSpaceColumn spacing={'xs'}>
             <Label>{t.applications.editor.contactInfo.moveDate + '*'}</Label>
             <DatePickerClearable
@@ -328,80 +340,82 @@ export default React.memo(function ContactInfoSection({
           </FixedSpaceColumn>
           <Gap size={'s'} />
           <FixedSpaceRow spacing={'XL'}>
-            <FixedSpaceColumn spacing={'xs'}>
-              <Label htmlFor={'guardian-future-street'}>
-                {t.applications.editor.contactInfo.street + '*'}
-              </Label>
-              <InputField
-                id={'guardian-future-street'}
-                value={formData.guardianFutureStreet || ''}
-                onChange={(value) =>
-                  updateFormData({
-                    guardianFutureStreet: value
-                  })
-                }
-                placeholder={
-                  t.applications.editor.contactInfo.streetPlaceholder
-                }
-                readonly={guardianFutureAddressEqualsChildFutureAddressChecked}
-                width={'L'}
-              />
-            </FixedSpaceColumn>
-            <FixedSpaceColumn spacing={'xs'}>
-              <Label htmlFor={'guardian-future-postal-code'}>
-                {t.applications.editor.contactInfo.postalCode + '*'}
-              </Label>
-              <InputField
-                id={'guardian-future-postal-code'}
-                value={formData.guardianFuturePostalCode || ''}
-                onChange={(value) =>
-                  updateFormData({
-                    guardianFuturePostalCode: value
-                  })
-                }
-                placeholder={
-                  t.applications.editor.contactInfo.postalCodePlaceholder
-                }
-                readonly={guardianFutureAddressEqualsChildFutureAddressChecked}
-              />
-            </FixedSpaceColumn>
-            <FixedSpaceColumn spacing={'xs'}>
-              <Label htmlFor={'guardian-future-post-office'}>
-                {t.applications.editor.contactInfo.postOffice + '*'}
-              </Label>
-              <InputField
-                id={'guardian-future-post-office'}
-                value={formData.guardianFuturePostOffice || ''}
-                onChange={(value) =>
-                  updateFormData({
-                    guardianFuturePostOffice: value
-                  })
-                }
-                placeholder={
-                  t.applications.editor.contactInfo.municipalityPlaceholder
-                }
-                readonly={guardianFutureAddressEqualsChildFutureAddressChecked}
-              />
-            </FixedSpaceColumn>
+            <FixedSpaceFlexWrap>
+              <FixedSpaceColumn spacing={'xs'}>
+                <Label htmlFor={'guardian-future-street'}>
+                  {t.applications.editor.contactInfo.street + '*'}
+                </Label>
+                <InputField
+                  id={'guardian-future-street'}
+                  value={formData.guardianFutureStreet || ''}
+                  onChange={(value) =>
+                    updateFormData({
+                      guardianFutureStreet: value
+                    })
+                  }
+                  placeholder={
+                    t.applications.editor.contactInfo.streetPlaceholder
+                  }
+                  readonly={
+                    guardianFutureAddressEqualsChildFutureAddressChecked
+                  }
+                  width={'L'}
+                />
+              </FixedSpaceColumn>
+              <FixedSpaceColumn spacing={'xs'}>
+                <Label htmlFor={'guardian-future-postal-code'}>
+                  {t.applications.editor.contactInfo.postalCode + '*'}
+                </Label>
+                <InputField
+                  id={'guardian-future-postal-code'}
+                  value={formData.guardianFuturePostalCode || ''}
+                  onChange={(value) =>
+                    updateFormData({
+                      guardianFuturePostalCode: value
+                    })
+                  }
+                  placeholder={
+                    t.applications.editor.contactInfo.postalCodePlaceholder
+                  }
+                  readonly={
+                    guardianFutureAddressEqualsChildFutureAddressChecked
+                  }
+                />
+              </FixedSpaceColumn>
+              <FixedSpaceColumn spacing={'xs'}>
+                <Label htmlFor={'guardian-future-post-office'}>
+                  {t.applications.editor.contactInfo.postOffice + '*'}
+                </Label>
+                <InputField
+                  id={'guardian-future-post-office'}
+                  value={formData.guardianFuturePostOffice || ''}
+                  onChange={(value) =>
+                    updateFormData({
+                      guardianFuturePostOffice: value
+                    })
+                  }
+                  placeholder={
+                    t.applications.editor.contactInfo.municipalityPlaceholder
+                  }
+                  readonly={
+                    guardianFutureAddressEqualsChildFutureAddressChecked
+                  }
+                />
+              </FixedSpaceColumn>
+            </FixedSpaceFlexWrap>
           </FixedSpaceRow>
         </>
       )}
-      <Gap size={'s'} />
-      <hr />
-      <Gap size={'s'} />
+      <HorizontalLine />
       <H3>{t.applications.editor.contactInfo.secondGuardianInfoTitle}</H3>
       <FixedSpaceColumn spacing={'xs'}>
         <p>{t.applications.editor.contactInfo.secondGuardianInfo}</p>
       </FixedSpaceColumn>
-      <Gap size={'s'} />
-      <hr />
-      <Gap size={'s'} />
-      <H3>{t.applications.editor.contactInfo.nonCaretakerPartnerTitle}</H3>
+      <HorizontalLine />
+      <H3>{t.applications.editor.contactInfo.otherPartnerTitle}</H3>
       <Gap size={'s'} />
       <Checkbox
-        label={
-          t.applications.editor.contactInfo.nonCaretakerPartnerCheckboxLabel
-        }
+        label={t.applications.editor.contactInfo.otherPartnerCheckboxLabel}
         checked={otherPartnerCheckboxChecked}
         onChange={(checked) => {
           setOtherPartnerCheckboxChecked(checked)
@@ -412,65 +426,65 @@ export default React.memo(function ContactInfoSection({
       />
       {otherPartnerCheckboxChecked && (
         <>
-          <Gap size={'s'} />
+          <Gap size={'m'} />
           <FixedSpaceRow spacing={'XL'}>
-            <FixedSpaceColumn spacing={'xs'}>
-              <Label htmlFor={'other-partner-first-name'}>
-                {t.applications.editor.contactInfo.personFirstName + '*'}
-              </Label>
-              <InputField
-                id={'other-partner-first-name'}
-                value={formData.otherPartnerFirstName || ''}
-                onChange={(value) =>
-                  updateFormData({
-                    otherPartnerFirstName: value
-                  })
-                }
-                placeholder={
-                  t.applications.editor.contactInfo.firstNamePlaceholder
-                }
-                width={'L'}
-              />
-            </FixedSpaceColumn>
-            <FixedSpaceColumn spacing={'xs'}>
-              <Label htmlFor={'other-partner-last-name'}>
-                {t.applications.editor.contactInfo.personLastName + '*'}
-              </Label>
-              <InputField
-                id={'other-partner-last-name'}
-                value={formData.otherPartnerLastName || ''}
-                onChange={(value) =>
-                  updateFormData({
-                    otherPartnerLastName: value
-                  })
-                }
-                placeholder={
-                  t.applications.editor.contactInfo.lastNamePlaceholder
-                }
-                width={'m'}
-              />
-            </FixedSpaceColumn>
-            <FixedSpaceColumn spacing={'xs'}>
-              <Label htmlFor={'other-partner-ssn'}>
-                {t.applications.editor.contactInfo.personSSN + '*'}
-              </Label>
-              <InputField
-                id={'other-partner-ssn'}
-                value={formData.otherPartnerSSN || ''}
-                onChange={(value) =>
-                  updateFormData({
-                    otherPartnerSSN: value
-                  })
-                }
-                placeholder={t.applications.editor.contactInfo.ssnPlaceholder}
-              />
-            </FixedSpaceColumn>
+            <FixedSpaceFlexWrap>
+              <FixedSpaceColumn spacing={'xs'}>
+                <Label htmlFor={'other-partner-first-name'}>
+                  {t.applications.editor.contactInfo.personFirstName + '*'}
+                </Label>
+                <InputField
+                  id={'other-partner-first-name'}
+                  value={formData.otherPartnerFirstName || ''}
+                  onChange={(value) =>
+                    updateFormData({
+                      otherPartnerFirstName: value
+                    })
+                  }
+                  placeholder={
+                    t.applications.editor.contactInfo.firstNamePlaceholder
+                  }
+                  width={'L'}
+                />
+              </FixedSpaceColumn>
+              <FixedSpaceColumn spacing={'xs'}>
+                <Label htmlFor={'other-partner-last-name'}>
+                  {t.applications.editor.contactInfo.personLastName + '*'}
+                </Label>
+                <InputField
+                  id={'other-partner-last-name'}
+                  value={formData.otherPartnerLastName || ''}
+                  onChange={(value) =>
+                    updateFormData({
+                      otherPartnerLastName: value
+                    })
+                  }
+                  placeholder={
+                    t.applications.editor.contactInfo.lastNamePlaceholder
+                  }
+                  width={'m'}
+                />
+              </FixedSpaceColumn>
+              <FixedSpaceColumn spacing={'xs'}>
+                <Label htmlFor={'other-partner-ssn'}>
+                  {t.applications.editor.contactInfo.personSSN + '*'}
+                </Label>
+                <InputField
+                  id={'other-partner-ssn'}
+                  value={formData.otherPartnerSSN || ''}
+                  onChange={(value) =>
+                    updateFormData({
+                      otherPartnerSSN: value
+                    })
+                  }
+                  placeholder={t.applications.editor.contactInfo.ssnPlaceholder}
+                />
+              </FixedSpaceColumn>
+            </FixedSpaceFlexWrap>
           </FixedSpaceRow>
         </>
       )}
-      <Gap size={'s'} />
-      <hr />
-      <Gap size={'s'} />
+      <HorizontalLine />
       <H3>{t.applications.editor.contactInfo.otherChildrenTitle}</H3>
       <P>{t.applications.editor.contactInfo.otherChildrenInfo}</P>
       <P>{t.applications.editor.contactInfo.otherChildrenChoiceInfo}</P>
@@ -513,82 +527,86 @@ export default React.memo(function ContactInfoSection({
       />
       {extraChildrenCheckboxChecked && (
         <>
+          <Gap size={'m'} />
           {extraChildren.map((child, index) => (
             <React.Fragment key={`extra-child-${index}`}>
               <Gap size={'s'} />
               <FixedSpaceRow spacing={'XL'}>
-                <FixedSpaceColumn spacing={'xs'}>
-                  <Label htmlFor={`extra-child-first-name-${index}`}>
-                    {t.applications.editor.contactInfo.childFirstName + '*'}
-                  </Label>
-                  <InputField
-                    id={`extra-child-first-name-${index}`}
-                    value={child.firstName}
-                    onChange={(value) => {
-                      setExtraChildren(
-                        extraChildren.map((c, i) =>
-                          i === index ? { ...c, firstName: value } : c
+                <FixedSpaceFlexWrap>
+                  <FixedSpaceColumn spacing={'xs'}>
+                    <Label htmlFor={`extra-child-first-name-${index}`}>
+                      {t.applications.editor.contactInfo.childFirstName + '*'}
+                    </Label>
+                    <InputField
+                      id={`extra-child-first-name-${index}`}
+                      value={child.firstName}
+                      onChange={(value) => {
+                        setExtraChildren(
+                          extraChildren.map((c, i) =>
+                            i === index ? { ...c, firstName: value } : c
+                          )
                         )
-                      )
-                    }}
-                    placeholder={
-                      t.applications.editor.contactInfo.firstNamePlaceholder
-                    }
-                  />
-                </FixedSpaceColumn>
-                <FixedSpaceColumn spacing={'xs'}>
-                  <Label htmlFor={`extra-child-last-name-${index}`}>
-                    {t.applications.editor.contactInfo.childLastName + '*'}
-                  </Label>
-                  <InputField
-                    id={`extra-child-last-name-${index}`}
-                    value={child.lastName}
-                    onChange={(value) => {
-                      setExtraChildren(
-                        extraChildren.map((c, i) =>
-                          i === index ? { ...c, lastName: value } : c
+                      }}
+                      placeholder={
+                        t.applications.editor.contactInfo.firstNamePlaceholder
+                      }
+                      width={'L'}
+                    />
+                  </FixedSpaceColumn>
+                  <FixedSpaceColumn spacing={'xs'}>
+                    <Label htmlFor={`extra-child-last-name-${index}`}>
+                      {t.applications.editor.contactInfo.childLastName + '*'}
+                    </Label>
+                    <InputField
+                      id={`extra-child-last-name-${index}`}
+                      value={child.lastName}
+                      onChange={(value) => {
+                        setExtraChildren(
+                          extraChildren.map((c, i) =>
+                            i === index ? { ...c, lastName: value } : c
+                          )
                         )
-                      )
-                    }}
-                    placeholder={
-                      t.applications.editor.contactInfo.lastNamePlaceholder
-                    }
-                  />
-                </FixedSpaceColumn>
-                <FixedSpaceColumn spacing={'xs'}>
-                  <Label htmlFor={`extra-child-ssn-${index}`}>
-                    {t.applications.editor.contactInfo.childSSN + '*'}
-                  </Label>
-                  <InputField
-                    id={`extra-child-ssn-${index}`}
-                    value={child.socialSecurityNumber || ''}
-                    onChange={(value) => {
-                      setExtraChildren(
-                        extraChildren.map((c, i) =>
-                          i === index
-                            ? { ...c, socialSecurityNumber: value }
-                            : c
+                      }}
+                      placeholder={
+                        t.applications.editor.contactInfo.lastNamePlaceholder
+                      }
+                    />
+                  </FixedSpaceColumn>
+                  <FixedSpaceColumn spacing={'xs'}>
+                    <Label htmlFor={`extra-child-ssn-${index}`}>
+                      {t.applications.editor.contactInfo.childSSN + '*'}
+                    </Label>
+                    <InputField
+                      id={`extra-child-ssn-${index}`}
+                      value={child.socialSecurityNumber || ''}
+                      onChange={(value) => {
+                        setExtraChildren(
+                          extraChildren.map((c, i) =>
+                            i === index
+                              ? { ...c, socialSecurityNumber: value }
+                              : c
+                          )
                         )
-                      )
-                    }}
-                    placeholder={
-                      t.applications.editor.contactInfo.ssnPlaceholder
-                    }
-                  />
-                </FixedSpaceColumn>
-                <FixedSpaceColumn>
-                  <span />
-                  <span />
-                  <InlineButton
-                    icon={faTimes}
-                    text={t.applications.editor.contactInfo.remove}
-                    onClick={() => {
-                      setExtraChildren(
-                        extraChildren.filter((c, i) => i !== index)
-                      )
-                    }}
-                  />
-                </FixedSpaceColumn>
+                      }}
+                      placeholder={
+                        t.applications.editor.contactInfo.ssnPlaceholder
+                      }
+                    />
+                  </FixedSpaceColumn>
+                  <FixedSpaceColumn>
+                    <span />
+                    <span />
+                    <InlineButton
+                      icon={faTimes}
+                      text={t.applications.editor.contactInfo.remove}
+                      onClick={() => {
+                        setExtraChildren(
+                          extraChildren.filter((c, i) => i !== index)
+                        )
+                      }}
+                    />
+                  </FixedSpaceColumn>
+                </FixedSpaceFlexWrap>
               </FixedSpaceRow>
             </React.Fragment>
           ))}

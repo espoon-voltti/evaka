@@ -93,7 +93,10 @@ export function apiDataToFormData(
       childFirstName: application.form.child.person.firstName,
       childLastName: application.form.child.person.lastName,
       childSSN: application.form.child.person.socialSecurityNumber || '',
-      childStreet: application.form.child.address?.street || '',
+      childStreet:
+        `${application.form.child.address?.street || ''}, ${
+          application.form.child.address?.postalCode || ''
+        } ${application.form.child.address?.postOffice || ''}` || '',
       childFutureAddressExists: false,
       childMoveDate: null,
       childFutureStreet: '',
