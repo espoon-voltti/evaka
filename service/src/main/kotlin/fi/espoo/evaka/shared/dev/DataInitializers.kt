@@ -384,14 +384,13 @@ fun insertTestServiceNeed(
     hoursPerWeek: Double = 40.0,
     partDay: Boolean = false,
     partWeek: Boolean = false,
-    shiftCare: Boolean = false,
-    temporary: Boolean = false
+    shiftCare: Boolean = false
 ): UUID {
     h
         .createUpdate(
             """
-            INSERT INTO service_need (id, child_id, start_date, end_date, hours_per_week, part_day, part_week, shift_care, temporary, updated_by)
-            VALUES (:id, :childId, :startDate, :endDate, :hoursPerWeek, :partDay, :partWeek, :shiftCare, :temporary, :updatedBy)
+            INSERT INTO service_need (id, child_id, start_date, end_date, hours_per_week, part_day, part_week, shift_care, updated_by)
+            VALUES (:id, :childId, :startDate, :endDate, :hoursPerWeek, :partDay, :partWeek, :shiftCare, :updatedBy)
             """
         )
         .bindMap(
@@ -404,7 +403,6 @@ fun insertTestServiceNeed(
                 "partDay" to partDay,
                 "partWeek" to partWeek,
                 "shiftCare" to shiftCare,
-                "temporary" to temporary,
                 "updatedBy" to updatedBy
             )
         )

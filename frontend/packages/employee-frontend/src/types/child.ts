@@ -24,7 +24,6 @@ export interface ServiceNeed {
   partDay: boolean
   partWeek: boolean
   shiftCare: boolean
-  temporary: boolean
   notes: string
   updated: Date
   updatedByName: string

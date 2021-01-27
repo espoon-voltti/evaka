@@ -6,6 +6,7 @@ import { PlacementType } from '~types/placementdraft'
 
 const partDayPlacementTypes: readonly PlacementType[] = [
   'DAYCARE_PART_TIME',
+  'TEMPORARY_DAYCARE_PART_DAY',
   'PRESCHOOL',
   'PREPARATORY'
 ] as const

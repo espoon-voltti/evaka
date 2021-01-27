@@ -27,6 +27,7 @@ import fi.espoo.evaka.invoicing.domain.getFeeAlterationProduct
 import fi.espoo.evaka.invoicing.domain.getProductFromActivity
 import fi.espoo.evaka.invoicing.domain.invoiceRowTotal
 import fi.espoo.evaka.invoicing.domain.merge
+import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.db.PGConstants
 import fi.espoo.evaka.shared.db.getEnum
 import fi.espoo.evaka.shared.db.getUUID
@@ -548,7 +549,7 @@ internal fun getInvoiceablePlacements(
         .createQuery(
             // language=sql
             """
-            SELECT p.child_id, p.start_date, p.end_date, p.unit_id FROM placement p
+            SELECT p.child_id, p.start_date, p.end_date, p.unit_id, p.type FROM placement p
             JOIN daycare u ON p.unit_id = u.id AND u.invoiced_by_municipality
             WHERE daterange(start_date, end_date, '[]') && :period
             """.trimIndent()
@@ -557,36 +558,18 @@ internal fun getInvoiceablePlacements(
         .map { rs, _ ->
             Pair(
                 rs.getUUID("child_id"),
-                DateRange(
-                    rs.getObject("start_date", LocalDate::class.java),
-                    rs.getObject("end_date", LocalDate::class.java)
-                ) to rs.getUUID("unit_id")
+                Triple(
+                    DateRange(
+                        rs.getObject("start_date", LocalDate::class.java),
+                        rs.getObject("end_date", LocalDate::class.java)
+                    ),
+                    rs.getUUID("unit_id"),
+                    rs.getEnum<PlacementType>("type")
+                )
             )
         }
         .groupBy { (childId) -> childId }
-        .mapValues { it.value.map { (_, pair) -> pair } }
-
-    val temporaryServiceNeeds = h
-        .createQuery(
-            // language=sql
-            """
-            SELECT child_id, start_date, end_date, part_day
-            FROM service_need
-            WHERE temporary AND daterange(start_date, end_date, '[]') && :period
-            """.trimIndent()
-        )
-        .bind("period", spanningPeriod)
-        .map { rs, _ ->
-            Pair(
-                rs.getUUID("child_id"),
-                DateRange(
-                    rs.getObject("start_date", LocalDate::class.java),
-                    rs.getObject("end_date", LocalDate::class.java)
-                ) to rs.getBoolean("part_day")
-            )
-        }
-        .groupBy { (childId) -> childId }
-        .mapValues { it.value.map { (_, pair) -> pair } }
+        .mapValues { it.value.map { (_, triple) -> triple } }
 
     val familyCompositions = toFamilyCompositions(
         getChildrenWithHeadOfFamilies(h, placements.keys.toList(), spanningPeriod),
@@ -599,21 +582,21 @@ internal fun getInvoiceablePlacements(
                 children.flatMap { child ->
                     (placements[child.id] ?: listOf())
                         .filter { it.first.overlaps(period) }
-                        .map { (placementPeriod, placement) -> Triple(placementPeriod, child, placement) }
-                }
-            }
-
-            val relevantServiceNeeds = families.flatMap { (period, children) ->
-                children.flatMap { child ->
-                    (temporaryServiceNeeds[child.id] ?: listOf())
-                        .filter { it.first.overlaps(period) }
-                        .map { (serviceNeedPeriod, partDay) -> Triple(serviceNeedPeriod, child, partDay) }
+                        .map { (placementPeriod, placementUnit, placementType) ->
+                            val placement = when (placementType) {
+                                PlacementType.TEMPORARY_DAYCARE ->
+                                    PlacementStub.Temporary(placementUnit, partDay = false)
+                                PlacementType.TEMPORARY_DAYCARE_PART_DAY ->
+                                    PlacementStub.Temporary(placementUnit, partDay = true)
+                                else -> PlacementStub.Permanent(placementUnit)
+                            }
+                            Triple(placementPeriod, child, placement)
+                        }
                 }
             }
 
             val allPeriods = families.map { (period, _) -> period } +
-                relevantPlacements.map { (period) -> period } +
-                relevantServiceNeeds.map { (period) -> period }
+                relevantPlacements.map { (period) -> period }
 
             val familyPlacementsSeries = asDistinctPeriods(allPeriods, spanningPeriod).mapNotNull { period ->
                 val family = families.find { it.first.contains(period) }
@@ -622,19 +605,8 @@ internal fun getInvoiceablePlacements(
                     period to children
                         .sortedByDescending { it.dateOfBirth }
                         .mapNotNull { child ->
-                            val placement = relevantPlacements.filter { it.first.contains(period) }.find { child.id == it.second.id }
+                            relevantPlacements.filter { it.first.contains(period) }.find { child.id == it.second.id }
                                 ?.let { it.second to it.third }
-
-                            val temporaryServiceNeed = relevantServiceNeeds.filter { it.first.contains(period) }.find { child.id == it.second.id }
-                                ?.let { it.second to it.third }
-
-                            placement?.let { (child, unit) ->
-                                Pair(
-                                    child,
-                                    temporaryServiceNeed?.let { (_, partDay) -> PlacementStub.Temporary(unit, partDay) }
-                                        ?: PlacementStub.Permanent(unit)
-                                )
-                            }
                         }
                 }
             }

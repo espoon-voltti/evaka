@@ -10,6 +10,7 @@ export type CareTypeLabel =
   | 'preschool'
   | 'preparatory'
   | 'backup-care'
+  | 'temporary'
 
 export interface User {
   id: UUID

@@ -39,7 +39,9 @@ const placementTypes: PlacementType[] = [
   'DAYCARE_PART_TIME',
   'PREPARATORY',
   'PREPARATORY_DAYCARE',
-  'CLUB'
+  'CLUB',
+  'TEMPORARY_DAYCARE',
+  'TEMPORARY_DAYCARE_PART_DAY'
 ]
 
 function CreatePlacementModal({ childId, reload }: Props) {

@@ -33,7 +33,6 @@ import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroupPlacement
 import fi.espoo.evaka.shared.dev.insertTestParentship
 import fi.espoo.evaka.shared.dev.insertTestPlacement
-import fi.espoo.evaka.shared.dev.insertTestServiceNeed
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_2
@@ -81,8 +80,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
         val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
         jdbi.handle(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
         val placementPeriod = DateRange(LocalDate.of(2019, 1, 2), LocalDate.of(2019, 1, 2))
-        jdbi.handle(insertPlacement(testChild_1.id, placementPeriod))
-        jdbi.handle(insertTemporaryServiceNeed(testChild_1.id, period))
+        jdbi.handle(insertPlacement(testChild_1.id, placementPeriod, PlacementType.TEMPORARY_DAYCARE))
 
         jdbi.transaction { createAllDraftInvoices(it, objectMapper, period) }
 
@@ -111,8 +109,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
         val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
         jdbi.handle(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
         val placementPeriod = DateRange(LocalDate.of(2019, 1, 2), LocalDate.of(2019, 1, 2))
-        jdbi.handle(insertPlacement(testChild_1.id, placementPeriod))
-        jdbi.handle(insertTemporaryServiceNeed(testChild_1.id, period, partDay = true))
+        jdbi.handle(insertPlacement(testChild_1.id, placementPeriod, PlacementType.TEMPORARY_DAYCARE_PART_DAY))
 
         jdbi.transaction { createAllDraftInvoices(it, objectMapper, period) }
 
@@ -138,8 +135,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
         val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
         jdbi.handle(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
         val placementPeriod = DateRange(LocalDate.of(2019, 1, 2), LocalDate.of(2019, 1, 4))
-        jdbi.handle(insertPlacement(testChild_1.id, placementPeriod))
-        jdbi.handle(insertTemporaryServiceNeed(testChild_1.id, period))
+        jdbi.handle(insertPlacement(testChild_1.id, placementPeriod, PlacementType.TEMPORARY_DAYCARE))
 
         jdbi.transaction { createAllDraftInvoices(it, objectMapper, period) }
 
@@ -165,18 +161,18 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
         val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
         jdbi.handle(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
         val placementPeriod = DateRange(LocalDate.of(2019, 1, 2), LocalDate.of(2019, 1, 4))
-        jdbi.handle(insertPlacement(testChild_1.id, placementPeriod))
         jdbi.handle(
-            insertTemporaryServiceNeed(
+            insertPlacement(
                 testChild_1.id,
-                placementPeriod.copy(end = placementPeriod.end!!.minusDays(1))
+                placementPeriod.copy(end = placementPeriod.end!!.minusDays(1)),
+                PlacementType.TEMPORARY_DAYCARE
             )
         )
         jdbi.handle(
-            insertTemporaryServiceNeed(
+            insertPlacement(
                 testChild_1.id,
                 placementPeriod.copy(start = placementPeriod.end!!),
-                partDay = true
+                PlacementType.TEMPORARY_DAYCARE_PART_DAY
             )
         )
 
@@ -211,12 +207,10 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
         val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
         jdbi.handle(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
         val placementPeriod = DateRange(LocalDate.of(2019, 1, 2), LocalDate.of(2019, 1, 2))
-        jdbi.handle(insertPlacement(testChild_1.id, placementPeriod))
-        jdbi.handle(insertTemporaryServiceNeed(testChild_1.id, period))
+        jdbi.handle(insertPlacement(testChild_1.id, placementPeriod, PlacementType.TEMPORARY_DAYCARE))
 
         jdbi.handle(insertChildParentRelation(testAdult_1.id, testChild_2.id, period))
-        jdbi.handle(insertPlacement(testChild_2.id, placementPeriod))
-        jdbi.handle(insertTemporaryServiceNeed(testChild_2.id, period))
+        jdbi.handle(insertPlacement(testChild_2.id, placementPeriod, PlacementType.TEMPORARY_DAYCARE))
 
         jdbi.transaction { createAllDraftInvoices(it, objectMapper, period) }
 
@@ -249,12 +243,10 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
         val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
         jdbi.handle(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
         val placementPeriod = DateRange(LocalDate.of(2019, 1, 2), LocalDate.of(2019, 1, 2))
-        jdbi.handle(insertPlacement(testChild_1.id, placementPeriod))
-        jdbi.handle(insertTemporaryServiceNeed(testChild_1.id, period, partDay = true))
+        jdbi.handle(insertPlacement(testChild_1.id, placementPeriod, PlacementType.TEMPORARY_DAYCARE_PART_DAY))
 
         jdbi.handle(insertChildParentRelation(testAdult_1.id, testChild_2.id, period))
-        jdbi.handle(insertPlacement(testChild_2.id, placementPeriod))
-        jdbi.handle(insertTemporaryServiceNeed(testChild_2.id, period, partDay = true))
+        jdbi.handle(insertPlacement(testChild_2.id, placementPeriod, PlacementType.TEMPORARY_DAYCARE_PART_DAY))
 
         jdbi.transaction { createAllDraftInvoices(it, objectMapper, period) }
 
@@ -286,8 +278,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
     fun `invoice generation for child with a two day long temporary placement that changes head of family during placement`() {
         val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
         val placementPeriod = DateRange(LocalDate.of(2019, 1, 2), LocalDate.of(2019, 1, 3))
-        jdbi.handle(insertPlacement(testChild_1.id, placementPeriod))
-        jdbi.handle(insertTemporaryServiceNeed(testChild_1.id, period))
+        jdbi.handle(insertPlacement(testChild_1.id, placementPeriod, PlacementType.TEMPORARY_DAYCARE))
 
         jdbi.handle(
             insertChildParentRelation(
@@ -339,8 +330,7 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
     fun `invoice generation for child with a day long temporary placement that has no family configured`() {
         val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
         val placementPeriod = DateRange(LocalDate.of(2019, 1, 2), LocalDate.of(2019, 1, 2))
-        jdbi.handle(insertPlacement(testChild_1.id, placementPeriod))
-        jdbi.handle(insertTemporaryServiceNeed(testChild_1.id, period))
+        jdbi.handle(insertPlacement(testChild_1.id, placementPeriod, PlacementType.TEMPORARY_DAYCARE))
 
         jdbi.transaction { createAllDraftInvoices(it, objectMapper, period) }
 
@@ -354,20 +344,9 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
         val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
         jdbi.handle(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
         val temporaryPeriod = DateRange(LocalDate.of(2019, 1, 2), LocalDate.of(2019, 1, 3))
-        jdbi.handle(insertPlacement(testChild_1.id, temporaryPeriod))
-        jdbi.handle(insertTemporaryServiceNeed(testChild_1.id, temporaryPeriod))
+        jdbi.handle(insertPlacement(testChild_1.id, temporaryPeriod, PlacementType.TEMPORARY_DAYCARE))
         val nonTemporaryPeriod = DateRange(LocalDate.of(2019, 1, 4), LocalDate.of(2019, 1, 5))
         jdbi.handle(insertPlacement(testChild_1.id, nonTemporaryPeriod))
-        jdbi.handle { h ->
-            insertTestServiceNeed(
-                h,
-                testChild_1.id,
-                startDate = nonTemporaryPeriod.start,
-                endDate = nonTemporaryPeriod.end!!,
-                temporary = false,
-                updatedBy = testDecisionMaker_1.id
-            )
-        }
 
         jdbi.transaction { createAllDraftInvoices(it, objectMapper, period) }
 
@@ -386,92 +365,6 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
                 assertEquals(5800, invoiceRow.price())
                 assertEquals(temporaryPeriod.start, invoiceRow.periodStart)
                 assertEquals(temporaryPeriod.end, invoiceRow.periodEnd)
-            }
-        }
-    }
-
-    @Test
-    fun `invoice generation for temporary placements where service needs and placements cross each other`() {
-        val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
-        jdbi.handle(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
-        val placementStart = LocalDate.of(2019, 1, 2)
-        jdbi.handle(insertPlacement(testChild_1.id, DateRange(placementStart, placementStart.plusDays(1))))
-        jdbi.handle(insertTemporaryServiceNeed(testChild_1.id, DateRange(placementStart, placementStart)))
-        jdbi.handle(insertPlacement(testChild_1.id, DateRange(placementStart.plusDays(2), placementStart.plusDays(2))))
-        jdbi.handle(
-            insertTemporaryServiceNeed(
-                testChild_1.id,
-                DateRange(placementStart.plusDays(1), placementStart.plusDays(2)),
-                true
-            )
-        )
-
-        jdbi.transaction { createAllDraftInvoices(it, objectMapper, period) }
-
-        val result = jdbi.handle(getAllInvoices)
-
-        assertEquals(1, result.size)
-        result.first().let { invoice ->
-            assertEquals(testAdult_1.id, invoice.headOfFamily.id)
-            assertEquals(5900, invoice.totalPrice())
-            assertEquals(2, invoice.rows.size)
-            invoice.rows.first().let { invoiceRow ->
-                assertEquals(testChild_1.id, invoiceRow.child.id)
-                assertEquals(Product.TEMPORARY_CARE, invoiceRow.product)
-                assertEquals(1, invoiceRow.amount)
-                assertEquals(2900, invoiceRow.unitPrice)
-                assertEquals(2900, invoiceRow.price())
-                assertEquals(placementStart, invoiceRow.periodStart)
-                assertEquals(placementStart, invoiceRow.periodEnd)
-            }
-            invoice.rows.last().let { invoiceRow ->
-                assertEquals(testChild_1.id, invoiceRow.child.id)
-                assertEquals(Product.TEMPORARY_CARE, invoiceRow.product)
-                assertEquals(2, invoiceRow.amount)
-                assertEquals(1500, invoiceRow.unitPrice)
-                assertEquals(3000, invoiceRow.price())
-                assertEquals(placementStart.plusDays(1), invoiceRow.periodStart)
-                assertEquals(placementStart.plusDays(2), invoiceRow.periodEnd)
-            }
-        }
-    }
-
-    @Test
-    fun `invoice generation for temporary placements where service needs are separate and over a placement`() {
-        val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
-        jdbi.handle(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
-        jdbi.handle(insertPlacement(testChild_1.id, period))
-        val serviceNeedDate_1 = LocalDate.of(2019, 1, 7)
-        val serviceNeedDate_2 = serviceNeedDate_1.plusWeeks(1)
-        jdbi.handle(insertTemporaryServiceNeed(testChild_1.id, DateRange(serviceNeedDate_1, serviceNeedDate_1)))
-        jdbi.handle(insertTemporaryServiceNeed(testChild_1.id, DateRange(serviceNeedDate_2, serviceNeedDate_2)))
-
-        jdbi.transaction { createAllDraftInvoices(it, objectMapper, period) }
-
-        val result = jdbi.handle(getAllInvoices)
-
-        assertEquals(1, result.size)
-        result.first().let { invoice ->
-            assertEquals(testAdult_1.id, invoice.headOfFamily.id)
-            assertEquals(5800, invoice.totalPrice())
-            assertEquals(2, invoice.rows.size)
-            invoice.rows.first().let { invoiceRow ->
-                assertEquals(testChild_1.id, invoiceRow.child.id)
-                assertEquals(Product.TEMPORARY_CARE, invoiceRow.product)
-                assertEquals(1, invoiceRow.amount)
-                assertEquals(2900, invoiceRow.unitPrice)
-                assertEquals(2900, invoiceRow.price())
-                assertEquals(serviceNeedDate_1, invoiceRow.periodStart)
-                assertEquals(serviceNeedDate_1, invoiceRow.periodEnd)
-            }
-            invoice.rows.last().let { invoiceRow ->
-                assertEquals(testChild_1.id, invoiceRow.child.id)
-                assertEquals(Product.TEMPORARY_CARE, invoiceRow.product)
-                assertEquals(1, invoiceRow.amount)
-                assertEquals(2900, invoiceRow.unitPrice)
-                assertEquals(2900, invoiceRow.price())
-                assertEquals(serviceNeedDate_2, invoiceRow.periodStart)
-                assertEquals(serviceNeedDate_2, invoiceRow.periodEnd)
             }
         }
     }
@@ -1915,7 +1808,6 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
                     startDate = decision.validFrom,
                     endDate = decision.validTo!!,
                     type = when (part.placement.type) {
-                        fi.espoo.evaka.invoicing.domain.PlacementType.CLUB -> PlacementType.CLUB
                         fi.espoo.evaka.invoicing.domain.PlacementType.DAYCARE,
                         fi.espoo.evaka.invoicing.domain.PlacementType.FIVE_YEARS_OLD_DAYCARE -> PlacementType.DAYCARE
                         fi.espoo.evaka.invoicing.domain.PlacementType.PRESCHOOL,
@@ -1936,18 +1828,6 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
             startDate = period.start,
             endDate = period.end!!,
             type = type
-        )
-    }
-
-    private fun insertTemporaryServiceNeed(childId: UUID, period: DateRange, partDay: Boolean = false) = { h: Handle ->
-        insertTestServiceNeed(
-            h,
-            childId,
-            startDate = period.start,
-            endDate = period.end!!,
-            temporary = true,
-            partDay = partDay,
-            updatedBy = testDecisionMaker_1.id
         )
     }
 

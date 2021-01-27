@@ -45,8 +45,7 @@ class ServiceNeedIntegrationTest : FullApplicationTest() {
                 hoursPerWeek = 37.5,
                 partDay = true,
                 partWeek = false,
-                shiftCare = true,
-                temporary = true
+                shiftCare = true
             )
         )
 
@@ -60,7 +59,6 @@ class ServiceNeedIntegrationTest : FullApplicationTest() {
                 partDay = true,
                 partWeek = false,
                 shiftCare = true,
-                temporary = true,
                 updated = serviceNeed.updated,
                 updatedByName = "${testDecisionMaker_1.firstName} ${testDecisionMaker_1.lastName}"
             ),
@@ -77,8 +75,7 @@ class ServiceNeedIntegrationTest : FullApplicationTest() {
                 hoursPerWeek = 37.5,
                 partDay = true,
                 partWeek = false,
-                shiftCare = true,
-                temporary = true
+                shiftCare = true
             )
         )
 
@@ -92,7 +89,6 @@ class ServiceNeedIntegrationTest : FullApplicationTest() {
                 partDay = true,
                 partWeek = false,
                 shiftCare = true,
-                temporary = true,
                 updated = serviceNeed.updated,
                 updatedByName = "${testDecisionMaker_1.firstName} ${testDecisionMaker_1.lastName}"
             ),

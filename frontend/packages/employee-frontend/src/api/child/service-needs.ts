@@ -16,7 +16,6 @@ export interface ServiceNeedRequest {
   partDay: boolean
   partWeek: boolean
   shiftCare: boolean
-  temporary: boolean
   notes: string
 }
 

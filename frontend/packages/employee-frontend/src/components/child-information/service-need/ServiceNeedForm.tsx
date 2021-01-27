@@ -94,7 +94,6 @@ function ServiceNeedForm(props: Props) {
         partDay: false,
         partWeek: false,
         shiftCare: false,
-        temporary: false,
         notes: ''
       }
     : {
@@ -276,14 +275,6 @@ function ServiceNeedForm(props: Props) {
                     updateFormState({ partWeek: value })
                   }
                   dataQa="toggle-service-need-part-week"
-                />
-                <Checkbox
-                  label={i18n.childInformation.serviceNeed.services.temporary}
-                  checked={form.temporary}
-                  onChange={(value: boolean) =>
-                    updateFormState({ temporary: value })
-                  }
-                  dataQa="toggle-service-need-temporary"
                 />
                 <Checkbox
                   label={i18n.childInformation.serviceNeed.services.shiftCare}

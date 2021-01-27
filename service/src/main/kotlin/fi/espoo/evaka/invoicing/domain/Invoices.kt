@@ -172,8 +172,8 @@ fun getProductFromActivity(placementType: PlacementType): Product {
         PlacementType.PRESCHOOL_WITH_DAYCARE -> Product.PRESCHOOL_WITH_DAYCARE
         PlacementType.PREPARATORY_WITH_DAYCARE -> Product.PRESCHOOL_WITH_DAYCARE
         PlacementType.FIVE_YEARS_OLD_DAYCARE -> Product.DAYCARE
-        PlacementType.CLUB, PlacementType.PRESCHOOL, PlacementType.PREPARATORY ->
-            error("Club or preschool and preparatory without daycare shouldn't be invoiced.")
+        PlacementType.PRESCHOOL, PlacementType.PREPARATORY ->
+            error("Preschool and preparatory without daycare shouldn't be invoiced.")
     }
 }
 

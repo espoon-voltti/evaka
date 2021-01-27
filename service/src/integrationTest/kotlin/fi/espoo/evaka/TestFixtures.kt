@@ -562,6 +562,8 @@ fun insertApplication(
             PlacementType.PRESCHOOL, PlacementType.PRESCHOOL_DAYCARE, PlacementType.PREPARATORY, PlacementType.PREPARATORY_DAYCARE -> ApplicationType.PRESCHOOL
             PlacementType.DAYCARE, PlacementType.DAYCARE_PART_TIME -> ApplicationType.DAYCARE
             PlacementType.CLUB -> ApplicationType.CLUB
+            PlacementType.TEMPORARY_DAYCARE, PlacementType.TEMPORARY_DAYCARE_PART_DAY ->
+                error("Unsupported placement type ($appliedType)")
         },
         form = ApplicationForm(
             child = ChildDetails(

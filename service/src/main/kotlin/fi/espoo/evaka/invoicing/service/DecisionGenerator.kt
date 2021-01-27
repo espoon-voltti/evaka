@@ -561,17 +561,23 @@ private fun getPaidPlacements(
     }
 }
 
+private val excludedPlacementTypes = arrayOf(
+    fi.espoo.evaka.placement.PlacementType.CLUB,
+    fi.espoo.evaka.placement.PlacementType.TEMPORARY_DAYCARE,
+    fi.espoo.evaka.placement.PlacementType.TEMPORARY_DAYCARE_PART_DAY
+)
 /**
- * Leaves out club placements since they shouldn't have an effect on fee or value decisions
+ * Leaves out club and temporary placements since they shouldn't have an effect on fee or value decisions
  */
 private fun getActivePaidPlacements(h: Handle, childId: UUID, from: LocalDate): List<Placement> {
     // language=sql
     val sql =
-        "SELECT * FROM placement WHERE child_id = :childId AND end_date >= :from AND NOT type = 'CLUB'::placement_type"
+        "SELECT * FROM placement WHERE child_id = :childId AND end_date >= :from AND NOT type = ANY(:excludedTypes::placement_type[])"
 
     return h.createQuery(sql)
         .bind("childId", childId)
         .bind("from", from)
+        .bind("excludedTypes", excludedPlacementTypes)
         .mapTo<Placement>()
         .toList()
 }
@@ -595,20 +601,16 @@ private fun addServiceNeedsToPlacements(
     return placements.flatMap { placement ->
         val placementPeriod = DateRange(placement.startDate, placement.endDate)
         asDistinctPeriods(serviceNeeds.map { DateRange(it.startDate, it.endDate) } + fiveYearOldTerm, placementPeriod)
-            .mapNotNull { period ->
+            .map { period ->
                 val serviceNeed = serviceNeeds.find { (DateRange(it.startDate, it.endDate)).contains(period) }
-                // Do not include temporary placements as they should be invoiced separately
-                if (serviceNeed?.temporary == true) null
-                else {
-                    val isFiveYearOld = fiveYearOldTerm.contains(period)
-                    val placementType = getPlacementType(placement, isFiveYearOld)
-                    period to PermanentPlacementWithHours(
-                        unit = placement.unitId,
-                        type = placementType,
-                        serviceNeed = calculateServiceNeed(placementType, serviceNeed?.hoursPerWeek),
-                        hours = serviceNeed?.hoursPerWeek
-                    )
-                }
+                val isFiveYearOld = fiveYearOldTerm.contains(period)
+                val placementType = getPlacementType(placement, isFiveYearOld)
+                period to PermanentPlacementWithHours(
+                    unit = placement.unitId,
+                    type = placementType,
+                    serviceNeed = calculateServiceNeed(placementType, serviceNeed?.hoursPerWeek),
+                    hours = serviceNeed?.hoursPerWeek
+                )
             }
             .let { mergePeriods(it) }
     }
@@ -616,7 +618,6 @@ private fun addServiceNeedsToPlacements(
 
 private fun getPlacementType(placement: Placement, isFiveYearOld: Boolean): PlacementType =
     when (placement.type) {
-        fi.espoo.evaka.placement.PlacementType.CLUB -> PlacementType.CLUB
         fi.espoo.evaka.placement.PlacementType.DAYCARE,
         fi.espoo.evaka.placement.PlacementType.DAYCARE_PART_TIME ->
             if (isFiveYearOld) PlacementType.FIVE_YEARS_OLD_DAYCARE
@@ -625,6 +626,10 @@ private fun getPlacementType(placement: Placement, isFiveYearOld: Boolean): Plac
         fi.espoo.evaka.placement.PlacementType.PRESCHOOL_DAYCARE -> PlacementType.PRESCHOOL_WITH_DAYCARE
         fi.espoo.evaka.placement.PlacementType.PREPARATORY -> PlacementType.PREPARATORY
         fi.espoo.evaka.placement.PlacementType.PREPARATORY_DAYCARE -> PlacementType.PREPARATORY_WITH_DAYCARE
+        fi.espoo.evaka.placement.PlacementType.CLUB,
+        fi.espoo.evaka.placement.PlacementType.TEMPORARY_DAYCARE,
+        fi.espoo.evaka.placement.PlacementType.TEMPORARY_DAYCARE_PART_DAY ->
+            error("Placements of type '${placement.type}' should not be included in finance decisions")
     }
 
 internal fun <Part : FinanceDecisionPart, Decision : FinanceDecision<Part, Decision>> mergeAndFilterUnnecessaryDrafts(

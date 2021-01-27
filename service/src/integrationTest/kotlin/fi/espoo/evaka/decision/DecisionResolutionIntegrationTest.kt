@@ -424,6 +424,8 @@ class DecisionResolutionIntegrationTest : FullApplicationTest() {
                         PlacementType.DAYCARE_PART_TIME -> DecisionType.DAYCARE_PART_TIME
                         PlacementType.PRESCHOOL, PlacementType.PRESCHOOL_DAYCARE -> DecisionType.PRESCHOOL
                         PlacementType.PREPARATORY, PlacementType.PREPARATORY_DAYCARE -> DecisionType.PREPARATORY_EDUCATION
+                        PlacementType.TEMPORARY_DAYCARE, PlacementType.TEMPORARY_DAYCARE_PART_DAY ->
+                            error("Unsupported placement type ($type)")
                     },
                     startDate = period.start,
                     endDate = period.end

@@ -23,8 +23,7 @@ fun insertServiceNeed(h: Handle, user: AuthenticatedUser, childId: UUID, data: S
             hours_per_week,
             part_day,
             part_week,
-            shift_care,
-            temporary
+            shift_care
         )
         VALUES (
             :childId, 
@@ -34,8 +33,7 @@ fun insertServiceNeed(h: Handle, user: AuthenticatedUser, childId: UUID, data: S
             :hoursPerWeek,
             :partDay,
             :partWeek,
-            :shiftCare,
-            :temporary
+            :shiftCare
         )
         RETURNING 
             *, 
@@ -52,7 +50,6 @@ fun insertServiceNeed(h: Handle, user: AuthenticatedUser, childId: UUID, data: S
         .bind("partDay", data.partDay)
         .bind("partWeek", data.partWeek)
         .bind("shiftCare", data.shiftCare)
-        .bind("temporary", data.temporary)
         .mapTo(ServiceNeed::class.java)
         .first()
 }
@@ -101,8 +98,7 @@ fun updateServiceNeed(h: Handle, user: AuthenticatedUser, id: UUID, data: Servic
             hours_per_week = :hoursPerWeek,
             part_day = :partDay,
             part_week = :partWeek,
-            shift_care = :shiftCare,
-            temporary = :temporary
+            shift_care = :shiftCare
         WHERE id = :id
         RETURNING 
             *, 
@@ -118,7 +114,6 @@ fun updateServiceNeed(h: Handle, user: AuthenticatedUser, id: UUID, data: Servic
         .bind("partDay", data.partDay)
         .bind("partWeek", data.partWeek)
         .bind("shiftCare", data.shiftCare)
-        .bind("temporary", data.temporary)
         .mapTo(ServiceNeed::class.java)
         .firstOrNull() ?: throw NotFound("Service need $id not found")
 }

@@ -53,6 +53,8 @@ const asUnitType = (
       return 'CLUB'
     case 'DAYCARE':
     case 'DAYCARE_PART_TIME':
+    case 'TEMPORARY_DAYCARE':
+    case 'TEMPORARY_DAYCARE_PART_DAY':
       return 'DAYCARE'
     case 'PRESCHOOL':
     case 'PRESCHOOL_DAYCARE':

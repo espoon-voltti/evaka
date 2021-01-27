@@ -18,8 +18,7 @@ data class ServiceNeed(
     val hoursPerWeek: Double,
     val partDay: Boolean,
     val partWeek: Boolean,
-    val shiftCare: Boolean,
-    val temporary: Boolean
+    val shiftCare: Boolean
 )
 
 data class ServiceNeedRequest(
@@ -28,6 +27,5 @@ data class ServiceNeedRequest(
     val hoursPerWeek: Double,
     val partDay: Boolean = false,
     val partWeek: Boolean = false,
-    val shiftCare: Boolean = false,
-    val temporary: Boolean = false
+    val shiftCare: Boolean = false
 )
