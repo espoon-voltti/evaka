@@ -116,61 +116,65 @@ const sv: Translations = {
         }
       },
       serviceNeed: {
-        serviceNeed: 'Palveluntarve',
+        serviceNeed: 'Behov av småbarnspedagogisk verksamhet',
         startDate: {
-          label: 'Toivottu aloituspäivä',
-          noteOnDelay: 'Hakemuksen käsittelyaika on 4 kuukautta.',
+          header: 'Inledningsdatum',
+          label: 'Önskat inledningsdatum *',
+          noteOnDelay: 'Behandlingstiden för ansökningen är 4 månader.',
           instructions:
-            'Toivottua aloituspäivää on mahdollista muuttaa myöhemmäksi niin kauan kuin hakemusta ei ole otettu käsittelyyn. Tämän jälkeen toivotun aloituspäivän muutokset tehdään ottamalla yhteyttä varhaiskasvatuksen palveluohjaukseen (puh. 09 816 31000).',
-          placeholder: 'Valitse aloituspäivä',
-          validationText: 'Toivottu aloituspäivä: '
+            'Det är möjligt att senarelägga det önskade startdatumet så länge ansökan inte har tagits upp till behandling. Därefter kan du ändra det önskade startdatumet genom att kontakta småbarnspedagogikens servicehänvisning (tfn 09 816 27600).',
+          placeholder: 'Välj inledningsdatum',
+          validationText: 'Önskat inledningsdatum: '
         },
         urgent: {
-          label: 'Hakemus on kiireellinen',
+          label: 'Ansökningen är brådskande',
           message: {
-            title: 'Hakemus on kiireellinen',
+            title: 'Ansökningen är brådskande',
             text:
-              'Mikäli varhaiskasvatuspaikan tarve johtuu äkillisestä työllistymisestä tai opiskelusta, tulee paikkaa hakea viimeistään kaksi viikkoa ennen kuin tarve alkaa. Kahden viikon käsittelyaika alkaa siitä, kun työ- tai opiskelutodistukset on toimitettu palveluohjaukseen (varhaiskasvatuksen.palveluohjaus@espoo.fi).'
+              'Om behovet av småbarnspedagogisk verksamhet beror på att du har blivit sysselsatt eller att du har fått en studieplats på kort varsel, bör du ansöka om plats senast två veckor före behovet börjar. Behandlingstiden börjar från den dag då du lämnat in ett intyg från arbets- eller studieplatsen till barninvalskoordinatorerna (dagis@esbo.fi).'
           },
           attachmentsMessage: {
             text:
-              'Mikäli varhaiskasvatuspaikan tarve johtuu äkillisestä työllistymisestä tai opiskelusta, tulee paikkaa hakea viimeistään kaksi viikkoa ennen kuin tarve alkaa. Hakemuksen liitteenä tulee olla työ- tai opiskelutodistus molemmilta samassa taloudessa asuvilta huoltajilta. Suosittelemme toimittamaan liitteen sähköisesti tässä, sillä kahden viikon käsittelyaika alkaa siitä, kun olemme vastaanottaneet hakemuksen tarvittavine liitteineen. Jos et voi lisätä liitteitä hakemukselle sähköisesti, lähetä ne postilla osoitteeseen Varhaiskasvatuksen palveluohjaus, PL 3125, 02070 Espoon kaupunki.',
+              'Om behovet av en plats inom småbarnspedagogiken beror på att du plötsligt fått sysselsättning eller börjat studera, ska platsen sökas senast två veckor innan behovet börjar. Bifoga till ansökan ett arbets- eller studieintyg av båda vårdnadshavarna som bor i samma hushåll. Om du inte kan lägga till bilagor till ansökan elektroniskt, skicka dem per post till adressen Småbarnspedagogikens servicehänvisning, PB 3125, 02070 Esbo stad. Behandlingstiden på två veckor börjar när vi har tagit emot ansökan och bilagorna som behövs.',
             subtitle:
-              'Lisää tähän työ- tai opiskelutodistus molemmilta vanhemmilta.'
+              'Lägg här till ett arbets- eller studieintyg av båda föräldrarna.'
           }
         },
         partTime: {
-          true: 'Osapäiväinen (max 5h/pv, 25h/vko)',
-          false: 'Kokopäiväinen'
+          true: 'Deldag (max 5h/dag, 25h/vecka)',
+          false: 'Heldag'
         },
         dailyTime: {
-          label: 'Päivittäinen varhaiskasvatusaika',
+          label: 'Tiden för småbarnspedagogik per dag',
+          starts: 'Starttiden',
+          ends: 'Sluttiden',
           instructions:
-            'Ilmoita lapsen yleisimmin tarvitseva varhaiskasvatusaika, aika tarkennetaan varhaiskasvatuksen alkaessa.',
+            'Meddela tiden då ditt barn behöver småbarnspedagogisk verksamhet. Du kan meddela den mera exakta tiden när verksamheten börjar. Om ditt behov varierar dagligen eller per vecka (t.ex i skiftesvård) kan du meddela behovet mer exakt i tilläggsuppgifterna.',
           usualArrivalAndDeparture:
-            'Varhaiskasvatuksen alkamis- ja päättymisaika'
+            'Den dagliga sluttiden för småbarnspedagogisk verksamhet *'
         },
         shiftCare: {
-          label: 'Ilta- ja vuorohoito',
+          label: 'Kvälls- och skiftesvård',
           instructions:
-            'Vuorohoidolla tarkoitetaan viikonloppuna tai ympärivuorokautisesti tarvittavaa varhaiskasvatusta. Iltahoito on pääasiassa klo 6.30-18.00 ulkopuolella ja viikonloppuisin tapahtuvaa varhaiskasvatusta. Mikäli tarvitset ilta- tai vuorohoitoa, täsmennä tarvetta lisätietokentässä.',
+            'Med skiftesvård avses verksamhet under veckosluten eller dygnet runt. Kvälls- och skiftesvård är vård som huvudsakligen sker under annan tid än vardagar klockan 6.30-18.00. Om ditt barn behöver skiftesvård, beskriv behovet i fältet för tilläggsuppgifter.',
           message: {
-            title: 'Ilta- ja vuorohoito',
+            title: 'Kvälls- och skiftesvård',
             text:
-              'Ilta- ja vuorohoito on tarkoitettu lapsille, joiden molemmat vanhemmat ovat vuorotyössä tai opiskelevat pääsääntöisesti iltaisin ja/ viikonloppuisin. Hakemuksen liitteeksi toimitetaan molempien vanhempien osalta työnantajan todistus vuorotyöstä tai opiskelusta johtuvasta ilta- tai vuorohoidon tarpeesta.'
+              'Kvälls- och skiftesvård är till för barn vars båda föräldrar jobbar i skiften eller studerar huvudsakligen kvällstid och under veckoslut. Som bilaga till ansökan ska ett intyg om skiftesarbete eller studier lämnas in av båda vårdnadshavarna.'
           },
           attachmentsMessage: {
             text:
-              'Ilta-  ja vuorohoito on tarkoitettu lapsille, joiden molemmat vanhemmat ovat vuorotyössä tai opiskelevat pääsääntöisesti iltaisin ja/tai viikonloppuisin. Hakemuksen liitteeksi toimitetaan molempien vanhempien osalta työnantajan todistus vuorotyöstä tai opiskelusta johtuvasta ilta- tai vuorohoidon tarpeesta. Suosittelemme toimittamaan liitteen sähköisesti tässä, sillä kahden viikon käsittelyaika alkaa siitä, kun olemme vastaanottaneet hakemuksen tarvittavine liitteineen. Jos et voi lisätä liitteitä hakemukselle sähköisesti, lähetä ne postilla osoitteeseen Varhaiskasvatuksen palveluohjaus, PL 3125, 02070 Espoon kaupunki.',
+              'Kvälls- och skiftomsorg är avsedd för barn vars båda föräldrar har skiftarbete eller studerar huvudsakligen på kvällar och/eller veckoslut. Som bilaga till ansökan ska av båda föräldrarna lämnas ett intyg av arbetsgivaren över skiftarbete eller studier som orsakar behovet av kvälls- eller skiftomsorg. Vi rekommenderar att bilagan skickas elektroniskt här, eftersom behandlingstiden på två veckor börjar när vi har tagit emot ansökan med de bilagor som behövs. Om du inte kan lägga till bilagor till ansökan elektroniskt, skicka dem per post till adressen Småbarnspedagogikens servicehänvisning, PB 3125, 02070 Esbo stad.',
             subtitle:
-              'Lisää tähän molemmilta vanhemmilta joko työnantajan todistus vuorotyöstä tai todistus opiskelusta iltaisin/viikonloppuisin.'
+              'Lägg här till för båda föräldrarna antingen arbetsgivarens intyg över skiftarbete eller ett intyg över studier på kvällar/veckoslut.'
           }
         },
-        assistanceNeed: 'Tuen tarve',
-        assistanceNeeded: 'Lapsella on tuen tarve',
-        assistanceNeedPlaceholder: 'Kerro lapsen tuen tarpeesta.',
+        assistanceNeed: 'Behov av stöd för utveckling och lärande',
+        assistanceNeeded: 'Barnet har behov av stöd för utveckling och lärande',
+        assistanceNeedPlaceholder:
+          'Berätta om barnets behov av stöd för utveckling och lärande',
         assistanceNeedInstructions:
-          'Tehostetun ja tuen tarpeella tarkoitetaan sellaisten tukitoimien tarvetta, jotka on osoitettu asiantuntijalausunnoin. Tuen tarpeissa Espoon varhaiskasvatuksesta otetaan erikseen yhteyttä hakemuksen jättämisen jälkeen. Kehityksen ja oppimisen tuki varhaiskasvatuksessa toteutuu pääsääntöisesti lapsen kotia lähellä olevassa päiväkodissa tai perhepäivähoidossa. Tukitoimet toteutuvat lapsen arjessa osana varhaiskasvatuksen muuta toimintaa. Osa hoitopaikoista on varattu tukea tarvitseville lapsille.'
+          'Med behov av stöd för utveckling och lärande avses behov av sådana stödåtgärder som har konstaterats i ett sakkunnigutlåtande. Om ditt barn inte tidigare har deltagit i småbarnspedagogisk verksamhet i Esbo och hen har behov av stöd, kontaktar en konsultativ speciallärare inom småbarnspedagogik dig vid behov då du har meddelat om behovet i ansökan.'
       },
       unitPreference: {
         title: 'Hakutoive',
@@ -413,6 +417,26 @@ const sv: Translations = {
       'Under Beslut-fliken kan du läsa besluten till dina ansökningar och ta emot/annullera platsen',
     confirmationLink: 'Granska och bekräfta beslutet',
     newApplicationLink: 'Ny ansökan'
+  },
+  fileUpload: {
+    loading: 'Uppladdas...',
+    loaded: 'Uppladdad',
+    error: {
+      FILE_TOO_LARGE: 'För stor fil (max. 10MB)',
+      SERVER_ERROR: 'Uppladdningen misslyckades'
+    },
+    input: {
+      title: 'Lägg till bilaga',
+      text: [
+        'Tryck här eller dra en bilaga åt gången till lådan.',
+        'Maximal storlek för filen: 10 MB.',
+        'Tillåtna format:',
+        'PDF, JPEG/JPG, PNG och DOC/DOCX'
+      ]
+    },
+    modalHeader: 'Behandling av filen pågår',
+    modalMessage: 'Filen kan inte öppnas just nu. Försök igen om en stund.',
+    modalConfirm: 'OK'
   }
 }
 

@@ -1,5 +1,6 @@
 import LocalDate from '@evaka/lib-common/src/local-date'
 import {
+  ApplicationAttachment,
   ApplicationDetails,
   ApplicationFormUpdate,
   ApplicationPersonBasics
@@ -14,6 +15,8 @@ export type ServiceNeedFormData = {
   partTime: boolean
   assistanceNeeded: boolean
   assistanceDescription: string
+  shiftCareAttachments: ApplicationAttachment[]
+  urgencyAttachments: ApplicationAttachment[]
 }
 
 export type UnitPreferenceFormData = {
@@ -81,7 +84,13 @@ export function apiDataToFormData(
       shiftCare: application.form.preferences.serviceNeed?.shiftCare ?? false,
       partTime: application.form.preferences.serviceNeed?.partTime ?? false,
       assistanceNeeded: application.form.child.assistanceNeeded,
-      assistanceDescription: application.form.child.assistanceDescription
+      assistanceDescription: application.form.child.assistanceDescription,
+      shiftCareAttachments: application.attachments.filter(
+        ({ type }: ApplicationAttachment) => type === 'EXTENDED_CARE'
+      ),
+      urgencyAttachments: application.attachments.filter(
+        ({ type }: ApplicationAttachment) => type === 'URGENCY'
+      )
     },
     unitPreference: {
       siblingBasis: application.form.preferences.siblingBasis !== null,

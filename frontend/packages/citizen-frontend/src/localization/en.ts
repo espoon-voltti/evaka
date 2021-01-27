@@ -116,61 +116,64 @@ const en: Translations = {
         }
       },
       serviceNeed: {
-        serviceNeed: 'Palveluntarve',
+        serviceNeed: 'Service need',
         startDate: {
-          label: 'Toivottu aloituspäivä',
-          noteOnDelay: 'Hakemuksen käsittelyaika on 4 kuukautta.',
+          header: 'Start date',
+          label: 'Desired start date *',
+          noteOnDelay: 'The application processing time is 4 months.',
           instructions:
-            'Toivottua aloituspäivää on mahdollista muuttaa myöhemmäksi niin kauan kuin hakemusta ei ole otettu käsittelyyn. Tämän jälkeen toivotun aloituspäivän muutokset tehdään ottamalla yhteyttä varhaiskasvatuksen palveluohjaukseen (puh. 09 816 31000).',
-          placeholder: 'Valitse aloituspäivä',
-          validationText: 'Toivottu aloituspäivä: '
+            'You can postpone your desired start date until the processing of your application starts. After this, you can make changes to your desired start date by contacting early childhood education service counselling (tel. 09 816 31000).',
+          placeholder: 'Select the start date',
+          validationText: 'Desired start date: '
         },
         urgent: {
-          label: 'Hakemus on kiireellinen',
+          label: 'Application is urgent',
           message: {
-            title: 'Hakemus on kiireellinen',
+            title: 'Application is urgent',
             text:
-              'Mikäli varhaiskasvatuspaikan tarve johtuu äkillisestä työllistymisestä tai opiskelusta, tulee paikkaa hakea viimeistään kaksi viikkoa ennen kuin tarve alkaa. Kahden viikon käsittelyaika alkaa siitä, kun työ- tai opiskelutodistukset on toimitettu palveluohjaukseen (varhaiskasvatuksen.palveluohjaus@espoo.fi).'
+              'If the need for an early childhood education place is due to sudden start of employment or studies, the place must be applied for at least two weeks before the need begins. The two-week processing time begins when proof of employment or studies has been submitted to Service Guidance (<a href="mailto:varhaiskasvatuksen.palveluohjaus@espoo.fi">varhaiskasvatuksen.palveluohjaus@espoo.fi</a>).'
           },
           attachmentsMessage: {
             text:
-              'Mikäli varhaiskasvatuspaikan tarve johtuu äkillisestä työllistymisestä tai opiskelusta, tulee paikkaa hakea viimeistään kaksi viikkoa ennen kuin tarve alkaa. Hakemuksen liitteenä tulee olla työ- tai opiskelutodistus molemmilta samassa taloudessa asuvilta huoltajilta. Suosittelemme toimittamaan liitteen sähköisesti tässä, sillä kahden viikon käsittelyaika alkaa siitä, kun olemme vastaanottaneet hakemuksen tarvittavine liitteineen. Jos et voi lisätä liitteitä hakemukselle sähköisesti, lähetä ne postilla osoitteeseen Varhaiskasvatuksen palveluohjaus, PL 3125, 02070 Espoon kaupunki.',
+              'If the need for a place in early childhood education arises from sudden employment or a sudden start of studies, you will need to apply for a place no later than two weeks before your child needs it. In addition to the application, you will need to provide documents as proof of the employment or student status of both guardians living in the same household. If you are unable to add attachments to your online application, please send the documents by post to Early childhood education service counselling, P.O. Box 3125, 02070 City of Espoo. The processing period of two weeks will not begin until we have received the application and the required attachments.',
             subtitle:
-              'Lisää tähän työ- tai opiskelutodistus molemmilta vanhemmilta.'
+              'Add here documents as proof of the employment or student status of both guardians.'
           }
         },
         partTime: {
-          true: 'Osapäiväinen (max 5h/pv, 25h/vko)',
-          false: 'Kokopäiväinen'
+          true: 'Part-day (max 5h/day, 25h/week)',
+          false: 'Full-day'
         },
         dailyTime: {
-          label: 'Päivittäinen varhaiskasvatusaika',
+          label: 'Daily early childhood education time',
+          starts: 'Start time',
+          ends: 'End time',
           instructions:
-            'Ilmoita lapsen yleisimmin tarvitseva varhaiskasvatusaika, aika tarkennetaan varhaiskasvatuksen alkaessa.',
-          usualArrivalAndDeparture:
-            'Varhaiskasvatuksen alkamis- ja päättymisaika'
+            'Indicate the most commonly needed early childhood education time, the time will be specified when early childhood education begins.',
+          usualArrivalAndDeparture: 'Daily early childhood education time *'
         },
         shiftCare: {
-          label: 'Ilta- ja vuorohoito',
+          label: 'Evening and round-the-clock care',
           instructions:
             'Vuorohoidolla tarkoitetaan viikonloppuna tai ympärivuorokautisesti tarvittavaa varhaiskasvatusta. Iltahoito on pääasiassa klo 6.30-18.00 ulkopuolella ja viikonloppuisin tapahtuvaa varhaiskasvatusta. Mikäli tarvitset ilta- tai vuorohoitoa, täsmennä tarvetta lisätietokentässä.',
           message: {
-            title: 'Ilta- ja vuorohoito',
+            title: 'Evening and round-the-clock care',
             text:
-              'Ilta- ja vuorohoito on tarkoitettu lapsille, joiden molemmat vanhemmat ovat vuorotyössä tai opiskelevat pääsääntöisesti iltaisin ja/ viikonloppuisin. Hakemuksen liitteeksi toimitetaan molempien vanhempien osalta työnantajan todistus vuorotyöstä tai opiskelusta johtuvasta ilta- tai vuorohoidon tarpeesta.'
+              'Evening and round-the-clock care is intended for children whose both parents do shift work or study mainly in the evenings and/or on weekends. The application must be appended with both parents’ proof of shift work from the employer or studies that cause the need for evening and round-the-clock care.'
           },
           attachmentsMessage: {
             text:
-              'Ilta-  ja vuorohoito on tarkoitettu lapsille, joiden molemmat vanhemmat ovat vuorotyössä tai opiskelevat pääsääntöisesti iltaisin ja/tai viikonloppuisin. Hakemuksen liitteeksi toimitetaan molempien vanhempien osalta työnantajan todistus vuorotyöstä tai opiskelusta johtuvasta ilta- tai vuorohoidon tarpeesta. Suosittelemme toimittamaan liitteen sähköisesti tässä, sillä kahden viikon käsittelyaika alkaa siitä, kun olemme vastaanottaneet hakemuksen tarvittavine liitteineen. Jos et voi lisätä liitteitä hakemukselle sähköisesti, lähetä ne postilla osoitteeseen Varhaiskasvatuksen palveluohjaus, PL 3125, 02070 Espoon kaupunki.',
+              'Evening and round-the-clock care is intended for children whose both parents do shift work or mainly study in the evening and/or during the weekends. In addition to the application, both parents will need to provide a document issued by their employer concerning shift work or a document concerning their studies as proof of the child’s need for evening or round-the-clock care. We recommend that you send the additional documents through this online system, as the processing period of two weeks will not begin until we have received the application and the required attachments. If you are unable to add attachments to your online application, please send the documents by post to Early childhood education service counselling, P.O. Box 3125, 02070 City of Espoo.',
             subtitle:
-              'Lisää tähän molemmilta vanhemmilta joko työnantajan todistus vuorotyöstä tai todistus opiskelusta iltaisin/viikonloppuisin.'
+              'Add here, for both parents, either a document issued by their employer concerning shift work or a document concerning their evening/weekend studies.'
           }
         },
-        assistanceNeed: 'Tuen tarve',
-        assistanceNeeded: 'Lapsella on tuen tarve',
-        assistanceNeedPlaceholder: 'Kerro lapsen tuen tarpeesta.',
+        assistanceNeed: 'Support need',
+        assistanceNeeded: 'The child needs support',
+        assistanceNeedPlaceholder:
+          'Describe the need for support for the child.',
         assistanceNeedInstructions:
-          'Tehostetun ja tuen tarpeella tarkoitetaan sellaisten tukitoimien tarvetta, jotka on osoitettu asiantuntijalausunnoin. Tuen tarpeissa Espoon varhaiskasvatuksesta otetaan erikseen yhteyttä hakemuksen jättämisen jälkeen. Kehityksen ja oppimisen tuki varhaiskasvatuksessa toteutuu pääsääntöisesti lapsen kotia lähellä olevassa päiväkodissa tai perhepäivähoidossa. Tukitoimet toteutuvat lapsen arjessa osana varhaiskasvatuksen muuta toimintaa. Osa hoitopaikoista on varattu tukea tarvitseville lapsille.'
+          'The support need refers to such a need for support measures that has been indicated by an expert opinion. If the child has not previously attended the Espoo early childhood education services and their support need has been established, the Special Early Education Coordinator will contact you, if necessary, once you have indicated the support need on this application.'
       },
       unitPreference: {
         title: 'Hakutoive',
@@ -417,6 +420,26 @@ const en: Translations = {
       'In the Decisions page you can read the decision and either accept or reject the proposed place',
     confirmationLink: 'Review and confirm the decision',
     newApplicationLink: 'New application'
+  },
+  fileUpload: {
+    loading: 'Uppladdas...',
+    loaded: 'Uppladdad',
+    error: {
+      FILE_TOO_LARGE: 'För stor fil (max. 10MB)',
+      SERVER_ERROR: 'Uppladdningen misslyckades'
+    },
+    input: {
+      title: 'Lägg till bilaga',
+      text: [
+        'Tryck här eller dra en bilaga åt gången till lådan.',
+        'Maximal storlek för filen: 10 MB.',
+        'Tillåtna format:',
+        'PDF, JPEG/JPG, PNG och DOC/DOCX'
+      ]
+    },
+    modalHeader: 'Behandling av filen pågår',
+    modalMessage: 'Filen kan inte öppnas just nu. Försök igen om en stund.',
+    modalConfirm: 'OK'
   }
 }
 

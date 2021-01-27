@@ -43,8 +43,10 @@ export interface IconSet {
   faFemale: IconDefinition
   faFile: IconDefinition
   faFileAlt: IconDefinition
+  faFileImage: IconDefinition
   faFilePdf: IconDefinition
   faFileSpreadsheet: IconDefinition
+  faFileWord: IconDefinition
   faGavel: IconDefinition
   faHandHolding: IconDefinition
   faHiking: IconDefinition
@@ -129,8 +131,10 @@ export const faExternalLink = iconSet.faExternalLink
 export const faFemale = iconSet.faFemale
 export const faFile = iconSet.faFile
 export const faFileAlt = iconSet.faFileAlt
+export const faFileImage = iconSet.faFileImage
 export const faFilePdf = iconSet.faFilePdf
 export const faFileSpreadsheet = iconSet.faFileSpreadsheet
+export const faFileWord = iconSet.faFileWord
 export const faGavel = iconSet.faGavel
 export const faHandHolding = iconSet.faHandHolding
 export const faHiking = iconSet.faHiking

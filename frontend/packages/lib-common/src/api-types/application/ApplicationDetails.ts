@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
+
 import {
   AttachmentType,
   ApplicationGuardianAgreementStatus,
@@ -5,8 +9,29 @@ import {
   ApplicationStatus,
   ApplicationType
 } from './enums'
-import LocalDate from '../../local-date'
 import { JsonOf } from '../../json'
+import LocalDate from '@evaka/lib-common/src/local-date'
+import { UUID } from '@evaka/lib-common/src/types'
+
+export interface GuardianApplications {
+  childId: string
+  childName: string
+  applicationSummaries: ApplicationSummary[]
+}
+
+export interface ApplicationSummary {
+  applicationId: string
+  type: string
+  childId: string
+  childName: string | null
+  preferredUnitName: string | null
+  allPreferredUnitNames: string[]
+  applicationStatus: ApplicationStatus
+  startDate: LocalDate | null
+  sentDate: LocalDate | null
+  createdDate: Date
+  modifiedDate: Date
+}
 
 export interface ApplicationDetails {
   id: string
@@ -189,4 +214,14 @@ export interface ApplicationAttachment {
   contentType: string
   updated: Date
   type: AttachmentType
+}
+
+export interface FileObject {
+  id: UUID
+  key: number
+  file: File | undefined
+  name: string
+  contentType: string
+  error: 'FILE_TOO_LARGE' | 'SERVER_ERROR' | undefined
+  progress: number
 }
