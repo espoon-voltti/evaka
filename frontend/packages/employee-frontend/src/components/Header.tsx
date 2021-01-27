@@ -12,7 +12,6 @@ import { UserContext } from '~state/user'
 import EspooLogo from '../assets/EspooLogo.png'
 import { logoutUrl } from '~api/auth'
 import { RequireRole } from '~utils/roles'
-import '~components/Header.scss'
 import Title from '@evaka/lib-components/src/atoms/Title'
 
 const Img = styled.img`
@@ -22,7 +21,7 @@ const Img = styled.img`
   box-sizing: inherit;
   height: auto;
   max-width: 100%;
-  width: 10rem;
+  width: 150px;
 `
 
 const NavbarEnd = styled.div`
