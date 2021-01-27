@@ -49,6 +49,7 @@ const TitleWrapper = styled.div`
   flex-wrap: nowrap;
   justify-content: space-between;
   align-items: center;
+  cursor: pointer;
 `
 
 const ErrorsIcon = styled(RoundIcon)`
