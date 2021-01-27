@@ -132,7 +132,7 @@ export async function saveAttachment(
       data: string
     }
     const { data }: AttachmentResult = await client.post(
-      `/attachments/enduser/applications/${applicationId}?type=${attachmentType}`,
+      `/attachments/citizen/applications/${applicationId}?type=${attachmentType}`,
       formData,
       {
         headers: {
@@ -149,7 +149,7 @@ export async function saveAttachment(
 
 export async function deleteAttachment(id: UUID): Promise<Result<void>> {
   try {
-    await client.delete(`/attachments/enduser/${id}`)
+    await client.delete(`/attachments/citizen/${id}`)
     return Success.of(void 0)
   } catch (e) {
     return Failure.fromError(e)

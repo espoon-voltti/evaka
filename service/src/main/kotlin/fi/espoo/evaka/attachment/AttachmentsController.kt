@@ -58,7 +58,7 @@ class AttachmentsController(
         return ResponseEntity.ok(id)
     }
 
-    @PostMapping("/enduser/applications/{applicationId}", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
+    @PostMapping(value = ["/enduser/applications/{applicationId}", "/citizen/applications/{applicationId}"], consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
     fun uploadEnduserApplicationAttachment(
         db: Database,
         user: AuthenticatedUser,
@@ -155,7 +155,7 @@ class AttachmentsController(
         }
     }
 
-    @DeleteMapping("/enduser/{id}")
+    @DeleteMapping(value = ["/enduser/{id}", "/citizen/{id}"])
     fun deleteEnduserAttachment(db: Database, user: AuthenticatedUser, @PathVariable id: UUID): ResponseEntity<Unit> {
         Audit.AttachmentsDelete.log(targetId = id)
         user.requireOneOfRoles(UserRole.END_USER)
