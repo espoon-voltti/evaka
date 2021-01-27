@@ -20,6 +20,7 @@ import fi.espoo.evaka.shared.domain.NotFound
 import mu.KotlinLogging
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
+import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -174,6 +175,28 @@ class ApplicationControllerCitizen(
         user.requireOneOfRoles(UserRole.END_USER)
 
         db.transaction { applicationStateService.updateOwnApplicationContentsCitizen(it, user, applicationId, applicationForm, asDraft = true) }
+        return ResponseEntity.noContent().build()
+    }
+
+    @DeleteMapping("/applications/{applicationId}")
+    fun deleteUnprocessedApplication(
+        db: Database,
+        user: AuthenticatedUser,
+        @PathVariable applicationId: UUID
+    ): ResponseEntity<Unit> {
+        Audit.ApplicationDelete.log(targetId = applicationId)
+        user.requireOneOfRoles(UserRole.END_USER)
+
+        db.transaction { tx ->
+            val application = fetchApplicationDetails(tx.handle, applicationId)
+                ?.takeIf { it.guardianId == user.id }
+                ?: throw NotFound("Application $applicationId of guardian ${user.id} not found")
+
+            if (application.status != ApplicationStatus.CREATED && application.status != ApplicationStatus.SENT)
+                throw BadRequest("Only applications which are not yet being processed can be deleted")
+
+            deleteApplication(tx.handle, applicationId)
+        }
         return ResponseEntity.noContent().build()
     }
 

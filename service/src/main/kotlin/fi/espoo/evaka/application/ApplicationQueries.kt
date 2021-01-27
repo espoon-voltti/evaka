@@ -782,7 +782,7 @@ fun deleteApplication(h: Handle, id: UUID) {
     // language=SQL
     val sql =
         """
-        UPDATE attachment SET application_id = NULL WHERE application_id = :id;
+        DELETE FROM attachment WHERE application_id = :id
         DELETE FROM application_form WHERE application_id = :id;
         DELETE FROM application WHERE id = :id;
         """.trimIndent()
