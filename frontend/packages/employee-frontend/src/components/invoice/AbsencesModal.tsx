@@ -22,9 +22,7 @@ import {
 import { UUID } from '~types'
 import ColourInfoItem from '~components/common/ColourInfoItem'
 import Tooltip from '~components/common/Tooltip'
-import PeriodPicker, {
-  PeriodPickerMode
-} from '~components/absences/PeriodPicker'
+import PeriodPicker from '~components/absences/PeriodPicker'
 import { faAbacus } from '@evaka/lib-icons'
 
 const Section = styled.section``
@@ -150,11 +148,7 @@ export default function AbsencesModal({ child, date }: Props) {
             {formatName(child.firstName, child.lastName, i18n)}
           </CustomTitle>
 
-          <PeriodPicker
-            mode={PeriodPickerMode.MONTH}
-            onChange={setSelectedDate}
-            date={selectedDate}
-          />
+          <PeriodPicker onChange={setSelectedDate} date={selectedDate} />
 
           <Table>
             <thead>

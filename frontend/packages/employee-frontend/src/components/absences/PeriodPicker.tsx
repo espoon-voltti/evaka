@@ -3,58 +3,41 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
-import * as _ from 'lodash'
-
+import styled from 'styled-components'
 import LocalDate from '@evaka/lib-common/src/local-date'
 import { useTranslation } from '~state/i18n'
-import './PeriodPicker.scss'
-import Title from '@evaka/lib-components/src/atoms/Title'
+import { H3 } from '@evaka/lib-components/src/typography'
 import { faChevronLeft, faChevronRight } from '@evaka/lib-icons'
 import IconButton from '@evaka/lib-components/src/atoms/buttons/IconButton'
 import { Gap } from '@evaka/lib-components/src/white-space'
 
-export enum PeriodPickerMode {
-  MONTH
-}
-
 interface Props {
-  mode: PeriodPickerMode
   onChange: (date: LocalDate) => void
   date: LocalDate
 }
 
-function PeriodPicker({ mode, onChange, date }: Props) {
+export default React.memo(function PeriodPicker({ onChange, date }: Props) {
   const { i18n } = useTranslation()
   const increase = () => {
-    switch (mode) {
-      case PeriodPickerMode.MONTH: {
-        onChange(date.addMonths(1).withDate(1))
-      }
-    }
+    onChange(date.addMonths(1).withDate(1))
   }
 
   const decrease = () => {
-    switch (mode) {
-      case PeriodPickerMode.MONTH: {
-        onChange(date.subMonths(1).withDate(1))
-      }
-    }
+    onChange(date.subMonths(1).withDate(1))
   }
 
   return (
-    <div className={'period-picker'}>
+    <Container>
       <IconButton
         onClick={decrease}
-        className={'is-plain'}
         data-qa="period-picker-previous-month"
         icon={faChevronLeft}
         gray
       />
       <Gap horizontal size={'L'} />
-      <Title size={3} data-qa="period-picker-month" noMargin>
-        {_.startCase(i18n.datePicker.months[date.getMonth() - 1])}{' '}
-        {date.getYear()}
-      </Title>
+      <PeriodTitle data-qa="period-picker-month" noMargin>
+        {i18n.datePicker.months[date.getMonth() - 1]} {date.getYear()}
+      </PeriodTitle>
       <Gap horizontal size={'L'} />
       <IconButton
         onClick={increase}
@@ -62,8 +45,25 @@ function PeriodPicker({ mode, onChange, date }: Props) {
         icon={faChevronRight}
         gray
       />
-    </div>
+    </Container>
   )
-}
+})
 
-export default PeriodPicker
+const Container = styled.div`
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1rem;
+  align-items: center;
+
+  button {
+    @media print {
+      display: none;
+    }
+  }
+`
+
+const PeriodTitle = styled(H3)`
+  text-transform: capitalize;
+  min-width: 12ch;
+  text-align: center;
+`
