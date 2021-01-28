@@ -18,7 +18,7 @@ import {
 } from '~types/child'
 import { UUID } from '~types'
 
-import { DatePicker } from '@evaka/lib-components/src/molecules/DatePicker'
+import { DatePickerDeprecated } from '@evaka/lib-components/src/molecules/DatePickerDeprecated'
 import {
   FormErrors,
   formHasErrors,
@@ -213,12 +213,12 @@ function AssistanceActionForm(props: Props) {
             value: (
               <>
                 <DivFitContent>
-                  <DatePicker
+                  <DatePickerDeprecated
                     date={form.startDate}
                     onChange={(startDate) => updateFormState({ startDate })}
                   />
                   {' - '}
-                  <DatePicker
+                  <DatePickerDeprecated
                     date={form.endDate}
                     onChange={(endDate) => updateFormState({ endDate })}
                   />

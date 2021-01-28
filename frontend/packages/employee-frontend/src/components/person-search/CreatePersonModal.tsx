@@ -13,7 +13,7 @@ import { Gap } from '@evaka/lib-components/src/white-space'
 import { Label } from '@evaka/lib-components/src/typography'
 import InputField from '@evaka/lib-components/src/atoms/form/InputField'
 import FormModal from '@evaka/lib-components/src/molecules/modals/FormModal'
-import { DatePicker } from '@evaka/lib-components/src/molecules/DatePicker'
+import { DatePickerDeprecated } from '@evaka/lib-components/src/molecules/DatePickerDeprecated'
 import { useTranslation } from '~state/i18n'
 import { createPerson, CreatePersonBody } from '~api/person'
 import { CHILD_AGE } from '~constants'
@@ -79,7 +79,7 @@ export default React.memo(function CreatePersonModal({
             dataQa="last-name-input"
           />
           <Label>{i18n.personSearch.createNewPerson.form.dateOfBirth}*</Label>
-          <DatePicker
+          <DatePickerDeprecated
             type="full-width"
             date={form.dateOfBirth}
             onChange={(value) => {

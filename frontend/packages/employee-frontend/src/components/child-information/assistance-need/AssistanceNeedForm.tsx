@@ -17,7 +17,7 @@ import { AssistanceBasis, AssistanceNeed } from '~types/child'
 import { UUID } from '~types'
 import { formatDecimal, textAreaRows } from '~components/utils'
 
-import { DatePicker } from '@evaka/lib-components/src/molecules/DatePicker'
+import { DatePickerDeprecated } from '@evaka/lib-components/src/molecules/DatePickerDeprecated'
 import {
   FormErrors,
   formHasErrors,
@@ -237,12 +237,12 @@ function AssistanceNeedForm(props: Props) {
             value: (
               <>
                 <DivFitContent>
-                  <DatePicker
+                  <DatePickerDeprecated
                     date={form.startDate}
                     onChange={(startDate) => updateFormState({ startDate })}
                   />
                   {' - '}
-                  <DatePicker
+                  <DatePickerDeprecated
                     date={form.endDate}
                     onChange={(endDate) => updateFormState({ endDate })}
                   />

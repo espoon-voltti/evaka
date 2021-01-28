@@ -20,9 +20,9 @@ import { faChild } from '@evaka/lib-icons'
 import { formatName } from '~utils'
 import PersonSearch from '~components/common/PersonSearch'
 import {
-  DatePicker,
-  DatePickerClearable
-} from '@evaka/lib-components/src/molecules/DatePicker'
+  DatePickerDeprecated,
+  DatePickerClearableDeprecated
+} from '@evaka/lib-components/src/molecules/DatePickerDeprecated'
 import { addParentship, updateParentship } from '~api/parentships'
 import { PersonDetails } from '~types/person'
 
@@ -163,7 +163,7 @@ function FridgeChildModal({ headPersonId, onSuccess, parentship }: Props) {
           </section>
           <section>
             <div className="bold">{i18n.common.form.startDate}</div>
-            <DatePicker
+            <DatePickerDeprecated
               date={form.startDate}
               onChange={(startDate) => assignFridgeChildForm({ startDate })}
               type="full-width"
@@ -171,7 +171,7 @@ function FridgeChildModal({ headPersonId, onSuccess, parentship }: Props) {
           </section>
           <section>
             <div className="bold">{i18n.common.form.endDate}</div>
-            <DatePickerClearable
+            <DatePickerClearableDeprecated
               date={form.endDate}
               onChange={(endDate) => assignFridgeChildForm({ endDate })}
               onCleared={() => assignFridgeChildForm({ endDate: null })}

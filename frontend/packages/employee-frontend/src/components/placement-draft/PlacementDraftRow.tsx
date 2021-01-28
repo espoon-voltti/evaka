@@ -10,7 +10,7 @@ import LocalDate from '@evaka/lib-common/src/local-date'
 import Title from '@evaka/lib-components/src/atoms/Title'
 
 import { useTranslation } from '~state/i18n'
-import { DatePicker } from '@evaka/lib-components/src/molecules/DatePicker'
+import { DatePickerDeprecated } from '@evaka/lib-components/src/molecules/DatePickerDeprecated'
 import {
   DaycarePlacementPlan,
   PlacementDraft,
@@ -141,13 +141,13 @@ function PlacementDraftSection({
           {dateRowLabel(placementDraft.type)}
         </DateRowItem>
         <DateRowItem>
-          <DatePicker
+          <DatePickerDeprecated
             date={placement.period.start}
             type="full-width"
             onChange={updateStart}
           />
           <DateRowSpacer>-</DateRowSpacer>
-          <DatePicker
+          <DatePickerDeprecated
             date={placement.period.end}
             type="full-width"
             onChange={updateEnd}
@@ -168,13 +168,13 @@ function PlacementDraftSection({
             {i18n.placementDraft.preschoolDaycare}
           </DateRowItem>
           <DateRowItem>
-            <DatePicker
+            <DatePickerDeprecated
               date={placement.preschoolDaycarePeriod.start}
               type="full-width"
               onChange={updatePreschoolStart}
             />
             <DateRowSpacer>-</DateRowSpacer>
-            <DatePicker
+            <DatePickerDeprecated
               date={placement.preschoolDaycarePeriod.end}
               type="full-width"
               onChange={updatePreschoolEnd}

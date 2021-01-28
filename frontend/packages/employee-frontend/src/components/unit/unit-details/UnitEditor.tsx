@@ -15,9 +15,9 @@ import {
   UnitTypes
 } from '~types/unit'
 import {
-  DatePicker,
-  DatePickerClearable
-} from '@evaka/lib-components/src/molecules/DatePicker'
+  DatePickerDeprecated,
+  DatePickerClearableDeprecated
+} from '@evaka/lib-components/src/molecules/DatePickerDeprecated'
 import InputField from '@evaka/lib-components/src/atoms/form/InputField'
 import Button from '@evaka/lib-components/src/atoms/buttons/Button'
 import Radio from '@evaka/lib-components/src/atoms/form/Radio'
@@ -606,7 +606,7 @@ export default function UnitEditor(props: Props): JSX.Element {
         <div>{`${i18n.unitEditor.label.openingDate} / ${i18n.unitEditor.label.closingDate}`}</div>
         <div>
           {props.editable ? (
-            <DatePicker
+            <DatePickerDeprecated
               date={form.openingDate ?? undefined}
               options={{
                 placeholderText: i18n.unitEditor.placeholder.openingDate
@@ -619,7 +619,7 @@ export default function UnitEditor(props: Props): JSX.Element {
           )}
           {' - '}
           {props.editable ? (
-            <DatePickerClearable
+            <DatePickerClearableDeprecated
               date={form.closingDate}
               options={{
                 placeholderText: i18n.unitEditor.placeholder.closingDate
@@ -769,7 +769,7 @@ export default function UnitEditor(props: Props): JSX.Element {
                         <div>{i18n.unitEditor.field.applyPeriod}</div>
                         <div>
                           {props.editable ? (
-                            <DatePicker
+                            <DatePickerDeprecated
                               date={period?.start ?? LocalDate.today()}
                               onChange={(startDate) => {
                                 if (
@@ -793,7 +793,7 @@ export default function UnitEditor(props: Props): JSX.Element {
                           )}
                           {' - '}
                           {props.editable ? (
-                            <DatePickerClearable
+                            <DatePickerClearableDeprecated
                               date={period?.end}
                               onChange={(endDate) => {
                                 if (!period || endDate.isBefore(period.start)) {

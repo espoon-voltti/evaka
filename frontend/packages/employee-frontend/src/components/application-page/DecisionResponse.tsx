@@ -12,7 +12,7 @@ import {
 import Radio from '@evaka/lib-components/src/atoms/form/Radio'
 import Button from '@evaka/lib-components/src/atoms/buttons/Button'
 import { useTranslation } from 'state/i18n'
-import { DatePicker } from '@evaka/lib-components/src/molecules/DatePicker'
+import { DatePickerDeprecated } from '@evaka/lib-components/src/molecules/DatePickerDeprecated'
 import { acceptDecision, rejectDecision } from 'api/applications'
 import { UIContext } from 'state/ui'
 import { UUID } from 'types'
@@ -68,7 +68,7 @@ export default React.memo(function DecisionResponse({
           label={i18n.application.decisions.response.accept}
           onChange={() => setAccept(true)}
         />
-        <DatePicker
+        <DatePickerDeprecated
           dataQa="decision-start-date-picker"
           type="short"
           date={acceptDate}

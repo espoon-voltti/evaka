@@ -22,7 +22,7 @@ import {
   isDateRangeInverted,
   isDateRangeOverlappingWithExisting
 } from '~utils/validation/validations'
-import { DatePicker } from '@evaka/lib-components/src/molecules/DatePicker'
+import { DatePickerDeprecated } from '@evaka/lib-components/src/molecules/DatePickerDeprecated'
 import { getUnits } from '~api/daycare'
 import { Unit } from '~types/invoicing'
 import {
@@ -209,12 +209,12 @@ export default function BackupCareForm({
         <FormField>
           <FormLabel>{i18n.childInformation.backupCares.dateRange}</FormLabel>
           <div data-qa="dates">
-            <DatePicker
+            <DatePickerDeprecated
               date={formState.startDate}
               onChange={(startDate) => updateFormState({ startDate })}
             />
             {' - '}
-            <DatePicker
+            <DatePickerDeprecated
               date={formState.endDate}
               onChange={(endDate) => updateFormState({ endDate })}
             />

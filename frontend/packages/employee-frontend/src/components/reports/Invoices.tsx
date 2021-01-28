@@ -27,7 +27,7 @@ import {
   FilterRow,
   TableScrollable
 } from '~components/reports/common'
-import { DatePicker } from '@evaka/lib-components/src/molecules/DatePicker'
+import { DatePickerDeprecated } from '@evaka/lib-components/src/molecules/DatePickerDeprecated'
 import { useTranslation } from '~state/i18n'
 import { formatCents } from '../../utils/money'
 import LocalDate from '@evaka/lib-common/src/local-date'
@@ -51,7 +51,7 @@ function ReportInvoices() {
         <Title size={1}>{i18n.reports.invoices.title}</Title>
         <FilterRow>
           <FilterLabel>{i18n.reports.common.date}</FilterLabel>
-          <DatePicker
+          <DatePickerDeprecated
             date={filters.date}
             onChange={(date) => setFilters({ date })}
           />

@@ -37,9 +37,9 @@ import {
   TableScrollable
 } from '~components/reports/common'
 import {
-  DatePicker,
-  DatePickerClearable
-} from '@evaka/lib-components/src/molecules/DatePicker'
+  DatePickerDeprecated,
+  DatePickerClearableDeprecated
+} from '@evaka/lib-components/src/molecules/DatePickerDeprecated'
 import LocalDate from '@evaka/lib-common/src/local-date'
 import { distinct } from 'utils'
 
@@ -93,14 +93,14 @@ function MissingHeadOfFamily() {
 
         <FilterRow>
           <FilterLabel>{i18n.reports.common.startDate}</FilterLabel>
-          <DatePicker
+          <DatePickerDeprecated
             date={filters.startDate}
             onChange={(startDate) => setFilters({ ...filters, startDate })}
           />
         </FilterRow>
         <FilterRow>
           <FilterLabel>{i18n.reports.common.endDate}</FilterLabel>
-          <DatePickerClearable
+          <DatePickerClearableDeprecated
             date={filters.endDate}
             onChange={(endDate) => setFilters({ ...filters, endDate })}
             onCleared={() => setFilters({ ...filters, endDate: null })}

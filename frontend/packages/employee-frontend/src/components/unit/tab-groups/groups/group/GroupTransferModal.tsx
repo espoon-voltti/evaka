@@ -11,7 +11,7 @@ import { Result } from '@evaka/lib-common/src/api'
 import { faExchange } from '@evaka/lib-icons'
 import { transferGroup } from '~api/unit'
 import { UUID } from '~types'
-import { DatePicker } from '@evaka/lib-components/src/molecules/DatePicker'
+import { DatePickerDeprecated } from '@evaka/lib-components/src/molecules/DatePickerDeprecated'
 import { formatName } from '~utils'
 import { DaycareGroupPlacementDetailed, DaycareGroup } from '~types/unit'
 import Select from '~components/common/Select'
@@ -147,7 +147,7 @@ export default React.memo(function GroupTransferModal({
         </section>
         <section>
           <div className="bold">{i18n.common.form.startDate}</div>
-          <DatePicker
+          <DatePickerDeprecated
             date={form.startDate}
             onChange={(startDate) => assignFormValues({ startDate })}
             type="full-width"

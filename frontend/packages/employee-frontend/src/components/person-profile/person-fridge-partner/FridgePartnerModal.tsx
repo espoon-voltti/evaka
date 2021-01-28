@@ -20,9 +20,9 @@ import { faPen, faUser } from '@evaka/lib-icons'
 import { formatName } from '~utils'
 import PersonSearch from '~components/common/PersonSearch'
 import {
-  DatePicker,
-  DatePickerClearable
-} from '@evaka/lib-components/src/molecules/DatePicker'
+  DatePickerDeprecated,
+  DatePickerClearableDeprecated
+} from '@evaka/lib-components/src/molecules/DatePickerDeprecated'
 import { addPartnership, updatePartnership } from '~api/partnerships'
 import { PersonDetails } from '~types/person'
 
@@ -168,7 +168,7 @@ function FridgePartnerModal({ partnership, onSuccess, headPersonId }: Props) {
           </section>
           <section>
             <div className="bold">{i18n.common.form.startDate}</div>
-            <DatePicker
+            <DatePickerDeprecated
               date={form.startDate}
               onChange={(startDate) => assignFridgePartnerForm({ startDate })}
               type="full-width"
@@ -176,7 +176,7 @@ function FridgePartnerModal({ partnership, onSuccess, headPersonId }: Props) {
           </section>
           <section>
             <div className="bold">{i18n.common.form.endDate}</div>
-            <DatePickerClearable
+            <DatePickerClearableDeprecated
               date={form.endDate}
               onChange={(endDate) => assignFridgePartnerForm({ endDate })}
               onCleared={() => assignFridgePartnerForm({ endDate: null })}

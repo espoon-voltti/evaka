@@ -2,246 +2,88 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React from 'react'
-import ReactDatePicker, { ReactDatePickerProps } from 'react-datepicker'
+import React, { useEffect, useRef, useState } from 'react'
 import styled from 'styled-components'
-import fi from 'date-fns/locale/fi'
-import LocalDate from '@evaka/lib-common/src/local-date'
-import colors from '../colors'
 
-import 'react-datepicker/dist/react-datepicker.css'
+import { greyscale } from '../colors'
+import { defaultMargins } from '../white-space'
+import DatePickerInput from './DatePickerInput'
+import DatePickerDay from './DatePickerDay'
+import LocalDate from '~../../lib-common/src/local-date'
 
-const DATE_FORMATS_PARSED = [
-  'dd.MM.yyyy',
-  'dd.MM.yy',
-  'd.M.yyyy',
-  'd.M.yy',
-  'ddMMyyyy',
-  'ddMMyy'
-]
-
-const StyledInput = styled.input`
-  -webkit-font-smoothing: antialiased;
-  text-size-adjust: 100%;
-  box-sizing: border-box;
-  margin: 0;
-  font-family: 'Open Sans', 'Arial', sans-serif;
-  -webkit-appearance: none;
-  align-items: center;
-  border: 1px solid transparent;
-  font-size: 1rem;
-  justify-content: flex-start;
-  line-height: 1.5;
-  padding-left: calc(0.625em - 1px);
-  padding-right: calc(0.625em - 1px);
-  padding-top: calc(0.5em - 1px);
+const DatePickerWrapper = styled.div`
   position: relative;
-  height: 2.5em;
-  border-color: ${colors.greyscale.medium};
-  color: ${colors.greyscale.darkest};
-  display: block;
-  box-shadow: none;
-  max-width: 100%;
-  width: 100%;
-  min-height: 2.5em;
-  border-radius: 0;
-  border-width: 0 0 1px 0;
-  background-color: transparent;
-  padding-bottom: calc(0.5em - 1px);
+  display: inline-block;
+`
+const DayPickerPositioner = styled.div<{ show: boolean }>`
+  position: absolute;
+  top: calc(100% + 15px);
+  left: -70px;
+  right: -70px;
+  z-index: 99999;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  display: ${(p) => (p.show ? 'inline-block' : 'none')};
+`
 
-  :focus {
-    padding-bottom: calc(calc(0.5em - 1px) - 1px);
-    border-bottom-width: 2px;
-    border-color: ${colors.primary};
-    outline: none;
+const DayPickerDiv = styled.div`
+  background-color: ${greyscale.white};
+  padding: ${defaultMargins.s} 0;
+  border-radius: 2px;
+  box-shadow: 0px 0px 4px rgba(0, 0, 0, 0.25);
+  display: flex;
+  justify-content: center;
+
+  p:not(:last-child) {
+    margin-bottom: 8px;
   }
 `
 
-interface CustomProps extends ReactDatePickerProps {
-  onClick: (e: React.MouseEvent<HTMLInputElement, MouseEvent>) => void
-  placeholder?: string
+type TooltipProps = {
+  date: string
+  onChange: (date: string) => void
 }
 
-// onChange is typed as any because there is conflict between ReactDatePickers types and the type that input wants
-function CustomInput(
-  { value, onChange, onFocus, placeholder }: Partial<CustomProps>,
-  ref: React.Ref<HTMLInputElement>
-) {
+function DatePicker({ date, onChange }: TooltipProps) {
+  const [show, setShow] = useState<boolean>(false)
+  const ref = useRef<HTMLDivElement>(null)
+
+  function handleUserKeyPress(e: React.KeyboardEvent) {
+    if (e.key === 'Esc' || e.key === 'Escape') setShow(false)
+  }
+
+  function handleDayClick(day: Date) {
+    setShow(false)
+    onChange(LocalDate.fromSystemTzDate(day).format())
+  }
+
+  function onInputBlur(e: React.FocusEvent<HTMLInputElement>) {
+    if (e.relatedTarget instanceof Element) {
+      if (ref.current === null || !ref.current?.contains(e.relatedTarget))
+        setShow(false)
+    }
+
+    if (e.relatedTarget === null) {
+      setShow(false)
+    }
+  }
+
   return (
-    <StyledInput
-      ref={ref}
-      value={value}
-      onChange={
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-explicit-any
-        onChange as any
-      }
-      onFocus={onFocus}
-      placeholder={placeholder}
-    />
-  )
-}
-
-const CustomInputRef = React.forwardRef(CustomInput)
-
-const DatePickerContainer = styled.div`
-  &.full-width {
-    width: 100%;
-  }
-
-  &.half-width {
-    // Daterange separator '-' is 22px width
-    width: calc(50% - 12px);
-    display: inline-flex;
-  }
-
-  &.short {
-    width: 120px;
-  }
-
-  &.inline-block {
-    display: inline-block;
-  }
-
-  .react-datepicker-wrapper,
-  .react-datepicker__input-container {
-    width: 100%;
-  }
-
-  .react-datepicker__close-icon {
-    right: 0;
-    &::after {
-      background-color: transparent;
-      color: ${colors.greyscale.lighter};
-      font-size: 25px;
-    }
-  }
-
-  .react-datepicker__header {
-    .react-datepicker__current-month.react-datepicker__current-month--hasYearDropdown.react-datepicker__current-month--hasMonthDropdown {
-      display: none;
-    }
-  }
-`
-
-interface CommonProps {
-  date: LocalDate | null | undefined
-  onChange: (date: LocalDate) => void
-  onFocus?: (e: React.FocusEvent<HTMLInputElement>) => void
-  minDate?: LocalDate
-  maxDate?: LocalDate
-  type?: 'full-width' | 'half-width' | 'short'
-  dateFormat?: string[]
-  dataQa?: string
-  options?: Partial<ReactDatePickerProps>
-  disabled?: boolean
-  className?: string
-  placeholder?: string
-}
-
-interface DatePickerProps extends CommonProps {
-  date: LocalDate | undefined
-}
-
-interface DatePickerClearableProps extends CommonProps {
-  onCleared: () => void
-}
-
-const defaultProps: Partial<ReactDatePickerProps> = {
-  popperPlacement: 'bottom',
-  popperModifiers: {
-    preventOverflow: {
-      enabled: true
-    }
-  },
-  showMonthDropdown: true,
-  showYearDropdown: true
-}
-
-export function DatePicker({
-  date,
-  onChange,
-  onFocus,
-  minDate,
-  maxDate,
-  type = 'half-width',
-  dateFormat = DATE_FORMATS_PARSED,
-  options,
-  disabled,
-  className,
-  dataQa
-}: DatePickerProps) {
-  const ref = React.createRef<HTMLInputElement>()
-  return (
-    <DatePickerContainer
-      className={`${type} ${className ? className : ''}`}
-      data-qa={dataQa}
-    >
-      <ReactDatePicker
-        {...defaultProps}
-        locale={fi}
-        customInput={<CustomInputRef ref={ref} />}
-        selected={date?.toSystemTzDate()}
-        isClearable={false}
-        dateFormat={dateFormat}
-        minDate={minDate?.toSystemTzDate()}
-        maxDate={maxDate?.toSystemTzDate()}
-        onChange={(newDate) => {
-          const date = newDate
-            ? LocalDate.fromSystemTzDate(newDate)
-            : LocalDate.today()
-          onChange(date)
-        }}
-        onFocus={onFocus}
-        disabled={disabled}
-        data-qa={dataQa}
-        strictParsing
-        {...options}
+    <DatePickerWrapper ref={ref} onKeyDown={handleUserKeyPress}>
+      <DatePickerInput
+        date={date}
+        setDate={onChange}
+        onFocus={() => setShow(true)}
+        onBlur={onInputBlur}
       />
-    </DatePickerContainer>
+      <DayPickerPositioner show={show}>
+        <DayPickerDiv>
+          <DatePickerDay inputValue={date} handleDayClick={handleDayClick} />
+        </DayPickerDiv>
+      </DayPickerPositioner>
+    </DatePickerWrapper>
   )
 }
 
-export function DatePickerClearable({
-  date = null,
-  onChange,
-  onFocus,
-  onCleared,
-  minDate,
-  maxDate,
-  dateFormat = DATE_FORMATS_PARSED,
-  type = 'half-width',
-  options,
-  className,
-  dataQa,
-  placeholder
-}: DatePickerClearableProps) {
-  const ref = React.createRef<HTMLInputElement>()
-  return (
-    <DatePickerContainer
-      className={`${type} ${className ? className : ''}`}
-      data-qa={dataQa}
-    >
-      <ReactDatePicker
-        {...defaultProps}
-        locale={fi}
-        customInput={<CustomInputRef ref={ref} />}
-        selected={date?.toSystemTzDate()}
-        isClearable={true}
-        dateFormat={dateFormat}
-        minDate={minDate?.toSystemTzDate()}
-        maxDate={maxDate?.toSystemTzDate()}
-        strictParsing
-        onChange={(newDate) => {
-          if (!newDate) {
-            onCleared()
-          } else {
-            onChange(LocalDate.fromSystemTzDate(newDate))
-          }
-        }}
-        onFocus={onFocus}
-        placeholderText={placeholder}
-        {...options}
-      />
-    </DatePickerContainer>
-  )
-}
+export default DatePicker

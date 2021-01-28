@@ -14,9 +14,9 @@ import { FixedSpaceColumn } from '@evaka/lib-components/src/layout/flex-helpers'
 import { editGroup } from '~api/unit'
 import InputField from '@evaka/lib-components/src/atoms/form/InputField'
 import {
-  DatePicker,
-  DatePickerClearable
-} from '@evaka/lib-components/src/molecules/DatePicker'
+  DatePickerDeprecated,
+  DatePickerClearableDeprecated
+} from '@evaka/lib-components/src/molecules/DatePickerDeprecated'
 import { InfoBox } from '@evaka/lib-components/src/molecules/MessageBoxes'
 
 interface Props {
@@ -70,7 +70,7 @@ export default React.memo(function GroupUpdateModal({ group, reload }: Props) {
           />
           <Gap size="s" />
           <div className="bold">{i18n.unit.groups.updateModal.startDate}</div>
-          <DatePicker
+          <DatePickerDeprecated
             date={data.startDate}
             onChange={(startDate) =>
               setData((state) => ({ ...state, startDate }))
@@ -80,7 +80,7 @@ export default React.memo(function GroupUpdateModal({ group, reload }: Props) {
           />
           <Gap size="s" />
           <div className="bold">{i18n.unit.groups.updateModal.endDate}</div>
-          <DatePickerClearable
+          <DatePickerClearableDeprecated
             date={data.endDate}
             onChange={(endDate) => setData((state) => ({ ...state, endDate }))}
             onCleared={() => setData((state) => ({ ...state, endDate: null }))}

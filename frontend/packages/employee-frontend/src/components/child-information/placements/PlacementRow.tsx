@@ -18,7 +18,7 @@ import styled from 'styled-components'
 import { Gap } from '@evaka/lib-components/src/white-space'
 import Button from '@evaka/lib-components/src/atoms/buttons/Button'
 import InfoModal from '@evaka/lib-components/src/molecules/modals/InfoModal'
-import { DatePicker } from '@evaka/lib-components/src/molecules/DatePicker'
+import { DatePickerDeprecated } from '@evaka/lib-components/src/molecules/DatePickerDeprecated'
 import { UIContext, UiState } from '~state/ui'
 import { Link } from 'react-router-dom'
 import { AlertBox } from '@evaka/lib-components/src/molecules/MessageBoxes'
@@ -65,7 +65,7 @@ const ActionRow = styled.div`
   }
 `
 
-const CompactDatePicker = styled(DatePicker)`
+const CompactDatePicker = styled(DatePickerDeprecated)`
   .input {
     font-size: 1rem;
     padding: 0;

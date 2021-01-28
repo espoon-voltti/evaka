@@ -34,7 +34,7 @@ import { FeeDecision } from '~types/invoicing'
 import { DateTd, StatusTd } from '~components/PersonProfile'
 import { formatCents } from '~utils/money'
 import colors from '@evaka/lib-components/src/colors'
-import { DatePicker } from '@evaka/lib-components/src/molecules/DatePicker'
+import { DatePickerDeprecated } from '@evaka/lib-components/src/molecules/DatePickerDeprecated'
 
 interface Props {
   id: UUID
@@ -198,7 +198,7 @@ const Modal = React.memo(function Modal({
       <ModalContent>
         <InputContainer>
           <Label>Alkaen</Label>
-          <DatePicker
+          <DatePickerDeprecated
             type={'full-width'}
             date={date ?? undefined}
             onChange={(value) => setDate(value)}

@@ -14,7 +14,7 @@ import InlineButton from '@evaka/lib-components/src/atoms/buttons/InlineButton'
 import InputField from '@evaka/lib-components/src/atoms/form/InputField'
 import Radio from '@evaka/lib-components/src/atoms/form/Radio'
 import LabelValueList from '~components/common/LabelValueList'
-import { DatePicker } from '@evaka/lib-components/src/molecules/DatePicker'
+import { DatePickerDeprecated } from '@evaka/lib-components/src/molecules/DatePickerDeprecated'
 import { patchPersonDetails } from '~api/person'
 import { UIContext, UiState } from '~state/ui'
 import AddSsnModal from '~components/person-shared/person-details/AddSsnModal'
@@ -211,7 +211,7 @@ const PersonDetails = React.memo(function PersonDetails({
               label: i18n.common.form.birthday,
               dataQa: 'person-birthday',
               value: powerEditing ? (
-                <DatePicker
+                <DatePickerDeprecated
                   type="full-width"
                   date={form.dateOfBirth}
                   onChange={(dateOfBirth) => updateForm({ dateOfBirth })}

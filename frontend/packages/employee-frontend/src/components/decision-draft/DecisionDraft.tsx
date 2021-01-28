@@ -33,7 +33,7 @@ import { DecisionDraftState, DecisionDraftContext } from '~state/decision'
 import { useTranslation, Translations } from '~state/i18n'
 import { UUID } from '~types'
 import { Loading, Result } from '@evaka/lib-common/src/api'
-import { DatePicker } from '@evaka/lib-components/src/molecules/DatePicker'
+import { DatePickerDeprecated } from '@evaka/lib-components/src/molecules/DatePickerDeprecated'
 import LabelValueList from '~components/common/LabelValueList'
 import Select from '~components/common/Select'
 import {
@@ -319,7 +319,7 @@ const Decision = memo(function Decision({
                   ),
                   value: (
                     <DateRangeContainer>
-                      <DatePicker
+                      <DatePickerDeprecated
                         date={decision.startDate}
                         type="full-width"
                         disabled={decision.type !== 'PREPARATORY_EDUCATION'}
@@ -330,7 +330,7 @@ const Decision = memo(function Decision({
                         maxDate={maxDate(decision.type)}
                       />
                       <DateRangeSpacer>-</DateRangeSpacer>
-                      <DatePicker
+                      <DatePickerDeprecated
                         date={decision.endDate}
                         disabled={decision.type !== 'PREPARATORY_EDUCATION'}
                         type="full-width"

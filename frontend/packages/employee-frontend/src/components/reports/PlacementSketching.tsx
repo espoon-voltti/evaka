@@ -36,7 +36,7 @@ import {
   RowCountInfo,
   TableScrollable
 } from '~components/reports/common'
-import { DatePicker } from '@evaka/lib-components/src/molecules/DatePicker'
+import { DatePickerDeprecated } from '@evaka/lib-components/src/molecules/DatePickerDeprecated'
 import LocalDate from '@evaka/lib-common/src/local-date'
 import { distinct } from 'utils'
 import { faFileAlt } from '@evaka/lib-icons'
@@ -106,7 +106,7 @@ function PlacementSketching() {
           <FilterLabel>
             {i18n.reports.placementSketching.placementStartDate}
           </FilterLabel>
-          <DatePicker
+          <DatePickerDeprecated
             date={filters.placementStartDate}
             onChange={(placementStartDate) =>
               setFilters({ ...filters, placementStartDate })
@@ -118,7 +118,7 @@ function PlacementSketching() {
           <FilterLabel>
             {i18n.reports.placementSketching.earliestPreferredStartDate}
           </FilterLabel>
-          <DatePicker
+          <DatePickerDeprecated
             date={filters.earliestPreferredStartDate}
             onChange={(earliestPreferredStartDate) =>
               setFilters({ ...filters, earliestPreferredStartDate })

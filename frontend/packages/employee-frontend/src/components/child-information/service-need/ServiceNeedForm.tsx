@@ -14,9 +14,9 @@ import { Placement, ServiceNeed } from '~types/child'
 import { UUID } from '~types'
 import { FormErrors, formHasErrors } from '~utils/validation/validations'
 import {
-  DatePicker,
-  DatePickerClearable
-} from '@evaka/lib-components/src/molecules/DatePicker'
+  DatePickerDeprecated,
+  DatePickerClearableDeprecated
+} from '@evaka/lib-components/src/molecules/DatePickerDeprecated'
 import {
   AlertBox,
   InfoBox
@@ -244,7 +244,7 @@ function ServiceNeedForm(props: Props) {
             value: (
               <>
                 <DivFitContent>
-                  <DatePicker
+                  <DatePickerDeprecated
                     date={form.startDate}
                     onChange={(startDate) => {
                       updateFormState({ startDate })
@@ -252,7 +252,7 @@ function ServiceNeedForm(props: Props) {
                     }}
                   />
                   {' - '}
-                  <DatePickerClearable
+                  <DatePickerClearableDeprecated
                     date={form.endDate}
                     onChange={(endDate) => {
                       updateFormState({ endDate })

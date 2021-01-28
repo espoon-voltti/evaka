@@ -10,7 +10,7 @@ import ListGrid from '@evaka/lib-components/src/layout/ListGrid'
 import { Gap } from '@evaka/lib-components/src/white-space'
 import { Label } from '@evaka/lib-components/src/typography'
 import InputField from '@evaka/lib-components/src/atoms/form/InputField'
-import { DatePicker } from '@evaka/lib-components/src/molecules/DatePicker'
+import { DatePickerDeprecated } from '@evaka/lib-components/src/molecules/DatePickerDeprecated'
 import { useTranslation } from '~state/i18n'
 import { CreatePersonBody } from '~api/person'
 
@@ -50,7 +50,7 @@ export default React.memo(function CreatePersonInput({
             dataQa="input-last-name"
           />
           <Label>{i18n.personSearch.createNewPerson.form.dateOfBirth}*</Label>
-          <DatePicker
+          <DatePickerDeprecated
             type="full-width"
             date={createPersonInfo.dateOfBirth}
             onChange={(value) => {

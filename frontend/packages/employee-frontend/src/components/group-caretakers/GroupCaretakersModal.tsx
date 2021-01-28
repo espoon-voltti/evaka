@@ -10,9 +10,9 @@ import { faPen, faPlus } from '@evaka/lib-icons'
 import { useTranslation } from '~state/i18n'
 import InputField from '@evaka/lib-components/src/atoms/form/InputField'
 import {
-  DatePicker,
-  DatePickerClearable
-} from '@evaka/lib-components/src/molecules/DatePicker'
+  DatePickerDeprecated,
+  DatePickerClearableDeprecated
+} from '@evaka/lib-components/src/molecules/DatePickerDeprecated'
 import styled from 'styled-components'
 import { UUID } from '~types'
 import { postCaretakers, putCaretakers } from '~api/caretakers'
@@ -128,7 +128,7 @@ function GroupCaretakersModal({
     >
       <section>
         <div className="bold">{i18n.common.form.startDate}</div>
-        <DatePicker
+        <DatePickerDeprecated
           date={form.startDate}
           onChange={(startDate) => assignForm({ startDate })}
           type="full-width"
@@ -136,7 +136,7 @@ function GroupCaretakersModal({
       </section>
       <section>
         <div className="bold">{i18n.common.form.endDate}</div>
-        <DatePickerClearable
+        <DatePickerClearableDeprecated
           date={form.endDate}
           onChange={(endDate) => assignForm({ endDate })}
           onCleared={() => assignForm({ endDate: null })}

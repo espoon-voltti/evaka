@@ -16,7 +16,7 @@ import { createPlacement, MissingGroupPlacement } from '~api/unit'
 import { updateBackupCare } from 'api/child/backup-care'
 import { UUID } from '~types'
 import Select from '~components/common/Select'
-import { DatePicker } from '@evaka/lib-components/src/molecules/DatePicker'
+import { DatePickerDeprecated } from '@evaka/lib-components/src/molecules/DatePickerDeprecated'
 import { formatName } from '~utils'
 import { DaycareGroup } from '~types/unit'
 import { EVAKA_START } from '~constants'
@@ -198,7 +198,7 @@ export default React.memo(function GroupPlacementModal({
         </section>
         <section>
           <Bold>{i18n.common.form.startDate}</Bold>
-          <DatePicker
+          <DatePickerDeprecated
             {...disableDateEditIfBackupPlacement}
             date={form.startDate}
             onChange={(startDate) => assignFormValues({ startDate })}
@@ -209,7 +209,7 @@ export default React.memo(function GroupPlacementModal({
         </section>
         <section>
           <Bold>{i18n.common.form.endDate}</Bold>
-          <DatePicker
+          <DatePickerDeprecated
             {...disableDateEditIfBackupPlacement}
             date={form.endDate}
             onChange={(endDate) => assignFormValues({ endDate })}
