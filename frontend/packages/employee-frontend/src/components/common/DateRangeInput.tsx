@@ -3,10 +3,11 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useState, useEffect } from 'react'
+import styled from 'styled-components'
 import LocalDate from '@evaka/lib-common/src/local-date'
+import { Gap } from '@evaka/lib-components/src/white-space'
 import { DatePicker } from '@evaka/lib-components/src/molecules/DatePicker'
 import { useTranslation } from '../../state/i18n'
-import './DateRangeInput.scss'
 
 type NullableEnd = {
   end?: LocalDate
@@ -138,20 +139,28 @@ function BaseDateRangeInput({
   }, [validationErrors])
 
   return (
-    <div className="date-range-input-container">
+    <Container>
       <DatePicker
         date={start}
         onChange={setStartValue}
         dataQa="date-range-input-start-date"
         type={'short'}
       />
-      {' - '}
+      <Gap size="xs" horizontal />
+      -
+      <Gap size="xs" horizontal />
       <DatePicker
         date={end}
         onChange={setEndValue}
         dataQa="date-range-input-end-date"
         type={'short'}
       />
-    </div>
+    </Container>
   )
 }
+
+const Container = styled.div`
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+`

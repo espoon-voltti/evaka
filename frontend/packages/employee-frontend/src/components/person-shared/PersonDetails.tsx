@@ -240,7 +240,7 @@ const PersonDetails = React.memo(function PersonDetails({
                 (editing || !requireRole(roles, 'SERVICE_WORKER') ? (
                   i18n.personProfile.noSsn
                 ) : (
-                  <Button
+                  <InlineButton
                     onClick={() => toggleUiMode('add-ssn-modal')}
                     text={i18n.personProfile.addSsn}
                   />

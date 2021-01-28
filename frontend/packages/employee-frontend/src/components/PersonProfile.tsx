@@ -20,7 +20,6 @@ import PersonDependants from '~components/person-profile/PersonDependants'
 import PersonDecisions from '~components/person-profile/PersonDecisions'
 import WarningLabel from '~components/common/WarningLabel'
 import { getLayout, LayoutsWithDefault } from './layouts'
-import '~components/PersonProfile.scss'
 import { UserContext } from '~state/user'
 import { PersonContext } from '~state/person'
 import PersonFeeDecisions from '~components/person-profile/PersonFeeDecisions'
@@ -29,7 +28,7 @@ import styled from 'styled-components'
 import FamilyOverview from './person-profile/PersonFamilyOverview'
 import { useTranslation } from '~state/i18n'
 import CircularLabel from '~components/common/CircularLabel'
-import { Gap } from '@evaka/lib-components/src/white-space'
+import { Gap, defaultMargins } from '@evaka/lib-components/src/white-space'
 
 export const NameTd = styled(Td)`
   width: 30%;
@@ -55,8 +54,8 @@ export const HeaderRow = styled.div`
 
 export const InfoLabelContainer = styled.div`
   display: flex;
-  div {
-    margin: 5px;
+  > div:not(:last-child) {
+    margin-right: ${defaultMargins.xs};
   }
 `
 

@@ -3,28 +3,34 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
+import styled from 'styled-components'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faExclamationTriangle } from '@fortawesome/free-solid-svg-icons'
-
-import '~components/common/WarningLabel.scss'
+import colors from '@evaka/lib-components/src/colors'
+import { Gap } from '@evaka/lib-components/src/white-space'
 
 interface Props {
   text: string
   dataQa?: string
 }
 
-function WarningLabel({ text, dataQa }: Props) {
+export default React.memo(function WarningLabel({ text, dataQa }: Props) {
   return (
-    <div className={`warning-label`} data-qa={dataQa}>
-      <FontAwesomeIcon
-        icon={faExclamationTriangle}
-        color={'red'}
-        inverse
-        className={'warning-icon'}
-      />
+    <Wrapper data-qa={dataQa}>
+      <FontAwesomeIcon icon={faExclamationTriangle} inverse />
+      <Gap size="xs" horizontal />
       {text}
-    </div>
+    </Wrapper>
   )
-}
+})
 
-export default WarningLabel
+const Wrapper = styled.div`
+  border-radius: 15px;
+  height: 30px;
+  padding: 0 10px;
+  text-align: center;
+  line-height: 30px;
+  font-weight: 600;
+  background: ${colors.accents.red};
+  color: ${colors.greyscale.white};
+`

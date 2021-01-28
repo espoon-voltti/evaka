@@ -3,26 +3,18 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { ReactElement } from 'react'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import styled from 'styled-components'
-
 import { faChevronUp, faChevronDown } from '@evaka/lib-icons'
-import '~components/common/ToolbarAccordion.scss'
-import Title from '@evaka/lib-components/src/atoms/Title'
-import StatusLabel, { StatusLabelType } from '~components/common/StatusLabel'
-import colors from '@evaka/lib-components/src/colors'
+import { H4 } from '@evaka/lib-components/src/typography'
 import { Gap } from '@evaka/lib-components/src/white-space'
-
-// workaround against issue where "is-4" class is used for two different purposes.
-const SubTitle = styled(Title)`
-  flex: auto !important;
-`
+import IconButton from '@evaka/lib-components/src/atoms/buttons/IconButton'
+import StatusLabel, { StatusLabelType } from '~components/common/StatusLabel'
 
 interface Props {
   title?: string
   subtitle?: string
   children: React.ReactNode
-  onToggle: (e: React.MouseEvent<HTMLDivElement>) => void
+  onToggle: () => void
   toolbar?: ReactElement
   showBorder?: boolean
   columnSize?: number
@@ -41,33 +33,36 @@ function ToolbarAccordion({
   open = false
 }: Props) {
   return (
-    <section
-      className={`collapsible ${open ? 'is-open' : ''}`}
-      data-qa={dataQa}
-      data-status={open ? 'open' : 'closed'}
-    >
+    <section data-qa={dataQa} data-status={open ? 'open' : 'closed'}>
       <AccordionCollapseWrapper>
-        <GaplessColumns showBorder={showBorder}>
-          <Title className={`column ${subtitle ? 'is-5' : 'is-8'}`} size={4}>
-            {title}
+        <TitleRow showBorder={showBorder}>
+          <Title>
+            <H4 noMargin>{title}</H4>
+            <Gap size="s" horizontal />
+            <H4 noMargin>{subtitle}</H4>
           </Title>
-          <Gap horizontal size={'s'} />
-          <SubTitle className="column" size={4}>
-            {subtitle}
-          </SubTitle>
-          {toolbar && <div className="toolbar">{toolbar}</div>}
-          <ServiceNeedSectionTitleTrigger
-            onClick={onToggle}
-            data-qa="collapsible-trigger"
-          >
-            <FontAwesomeIcon
+          <Gap size="m" horizontal />
+          <Toolbar>
+            {toolbar ? (
+              <>
+                {toolbar}
+                <Gap size="s" horizontal />
+              </>
+            ) : null}
+            <IconButton
               icon={open ? faChevronUp : faChevronDown}
-              size="lg"
+              onClick={onToggle}
+              dataQa="collapsible-trigger"
             />
-          </ServiceNeedSectionTitleTrigger>
-        </GaplessColumns>
-        <div data-qa="content" className="accordion-content">
-          {open ? children : null}
+          </Toolbar>
+        </TitleRow>
+        <div data-qa="content">
+          {open ? (
+            <>
+              <Gap size="m" />
+              {children}
+            </>
+          ) : null}
         </div>
       </AccordionCollapseWrapper>
     </section>
@@ -88,26 +83,21 @@ export function RestrictedToolbar({
   statusLabel
 }: RestrictedProps) {
   return (
-    <GaplessColumns>
-      <RestrictedTitle className={'column is-5'} size={4}>
-        {title}
-      </RestrictedTitle>
-      <RestrictedDate className={'column'} size={4}>
-        {subtitle}
-      </RestrictedDate>
+    <TitleRow>
+      <Title>
+        <RestrictedTitle noMargin>{title}</RestrictedTitle>
+        <Gap size="s" horizontal />
+        <H4 noMargin>{subtitle}</H4>
+      </Title>
       <StatusContainer>
         <StatusLabel status={statusLabel} />
       </StatusContainer>
-    </GaplessColumns>
+    </TitleRow>
   )
 }
 
-const RestrictedTitle = styled(Title)`
+const RestrictedTitle = styled(H4)`
   font-style: italic;
-`
-
-const RestrictedDate = styled(Title)`
-  flex: auto !important;
 `
 
 const StatusContainer = styled.div`
@@ -122,15 +112,27 @@ interface GaplessColumnsProps {
   showBorder?: boolean
 }
 
-const GaplessColumns = styled.div<GaplessColumnsProps>`
+const TitleRow = styled.div<GaplessColumnsProps>`
   display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  justify-content: space-between;
+  align-items: center;
   border: ${(p) =>
     p.showBorder ? 'border-bottom: 1px solid $grey-light' : 'none'};
   padding-bottom: ${(p) => (p.showBorder ? '11px' : '0')};
 `
 
-const ServiceNeedSectionTitleTrigger = styled.div`
-  color: ${colors.greyscale.dark};
-  cursor: pointer;
-  margin-left: 20px;
+const Title = styled.div`
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: center;
+`
+
+const Toolbar = styled.div`
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: center;
 `

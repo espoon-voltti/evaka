@@ -35,9 +35,7 @@ import {
 import AbsenceTable from './AbsenceTable'
 
 import './Absences.scss'
-import PeriodPicker, {
-  PeriodPickerMode
-} from '~components/absences/PeriodPicker'
+import PeriodPicker from '~components/absences/PeriodPicker'
 import { TitleContext, TitleState } from '~state/title'
 import ColorInfo from '~components/absences/ColorInfo'
 import ReturnButton from '@evaka/lib-components/src/atoms/buttons/ReturnButton'
@@ -205,11 +203,7 @@ function Absences({ match }: RouteComponentProps<{ groupId: string }>) {
                 {absences.value.daycareName}
               </Title>
               <Title size={2}>{absences.value.groupName}</Title>
-              <PeriodPicker
-                mode={PeriodPickerMode.MONTH}
-                onChange={setSelectedDate}
-                date={selectedDate}
-              />
+              <PeriodPicker onChange={setSelectedDate} date={selectedDate} />
               <AbsenceTable
                 groupId={groupId}
                 childList={absences.value.children}
