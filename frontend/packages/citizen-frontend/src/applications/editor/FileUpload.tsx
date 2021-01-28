@@ -33,11 +33,6 @@ export type FileUploadProps = {
   onDelete: (id: UUID) => Promise<Result<void>>
 }
 
-export type ProgressEvent = {
-  loaded: number
-  total: number
-}
-
 const FileUploadContainer = styled.div`
   display: flex;
   flex-direction: row;
@@ -351,7 +346,7 @@ export default React.memo(function FileUpload({
       <UploadedFiles>
         {uploadedFiles.map((file) => (
           <File key={file.key}>
-            <FileIcon icon={fileIcon(file)}></FileIcon>
+            <FileIcon icon={fileIcon(file)} />
             <FileDetails>
               <FileHeader>
                 {!file.error ? (
@@ -368,7 +363,7 @@ export default React.memo(function FileUpload({
               </FileHeader>
               {inProgress(file) && (
                 <ProgressBarContainer>
-                  <ProgressBar progress={file.progress}></ProgressBar>
+                  <ProgressBar progress={file.progress} />
                   {file.error && (
                     <ProgressBarError>
                       <span>{errorMessage(file)}</span>

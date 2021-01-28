@@ -83,6 +83,19 @@ export async function saveApplicationDraft(
   }
 }
 
+export async function sendApplication(
+  applicationId: string
+): Promise<Result<void>> {
+  try {
+    await client.post(
+      `/citizen/applications/${applicationId}/actions/send-application`
+    )
+    return Success.of(undefined)
+  } catch (e) {
+    return Failure.fromError(e)
+  }
+}
+
 export const getGuardianApplications = async (): Promise<
   Result<ApplicationsOfChild[]>
 > => {
@@ -122,7 +135,7 @@ export async function saveAttachment(
   applicationId: UUID,
   file: File,
   attachmentType: AttachmentType,
-  onUploadProgress: (progressEvent: any) => void
+  onUploadProgress: (progressEvent: ProgressEvent) => void
 ): Promise<Result<UUID>> {
   const formData = new FormData()
   formData.append('file', file)

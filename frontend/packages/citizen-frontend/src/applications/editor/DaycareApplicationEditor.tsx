@@ -19,7 +19,11 @@ import {
   formDataToApiData
 } from '~applications/editor/ApplicationFormData'
 import Button from '@evaka/lib-components/src/atoms/buttons/Button'
-import { saveApplicationDraft, updateApplication } from '~applications/api'
+import {
+  saveApplicationDraft,
+  sendApplication,
+  updateApplication
+} from '~applications/api'
 import { OverlayContext } from '~overlay/state'
 import { useTranslation } from '~localization'
 import { useHistory } from 'react-router-dom'
@@ -101,15 +105,25 @@ export default React.memo(function DaycareApplicationEditor({
     const reqBody = formDataToApiData(formData)
     setSubmitting(true)
     void updateApplication(apiData.id, reqBody).then((res) => {
-      setSubmitting(false)
       if (res.isFailure) {
+        setSubmitting(false)
         setErrorMessage({
           title: t.applications.editor.actions.sendError,
           type: 'error'
         })
       } else if (res.isSuccess) {
-        // todo: some success dialog?
-        history.push('/applications')
+        void sendApplication(apiData.id).then((res2) => {
+          setSubmitting(false)
+          if (res2.isFailure) {
+            setErrorMessage({
+              title: t.applications.editor.actions.sendError,
+              type: 'error'
+            })
+          } else {
+            // todo: some success dialog?
+            history.push('/applications')
+          }
+        })
       }
     })
   }
