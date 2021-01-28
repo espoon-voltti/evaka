@@ -263,7 +263,7 @@ function PlacementRow({ placement, onRefreshNeeded, checkOverlaps }: Props) {
         <DataRow>
           <DataLabel>{i18n.childInformation.placements.type}</DataLabel>
           <DataValue data-qa="placement-details-type">
-            {i18n.decisionDraft.types[placement.type]}
+            {i18n.placement.type[placement.type]}
           </DataValue>
         </DataRow>
         <Gap size="s" />

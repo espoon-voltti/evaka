@@ -49,6 +49,8 @@ const CareTypeLabelContainer = styled.div<CareTypeLabelContainerProps>`
         return colors.accents.yellow
       case 'club':
         return colors.greyscale.lighter
+      case 'temporary':
+        return colors.accents.violet
       default:
         return colors.greyscale.white
     }
@@ -65,6 +67,8 @@ const CareTypeLabelContainer = styled.div<CareTypeLabelContainerProps>`
         return colors.greyscale.dark
       case 'club':
         return colors.greyscale.dark
+      case 'temporary':
+        return colors.greyscale.white
       default:
         return 'initial'
     }
@@ -93,6 +97,10 @@ export function careTypesFromPlacementType(type: PlacementType) {
       )}
       {(type === 'PREPARATORY' || type === 'PREPARATORY_DAYCARE') && (
         <CareTypeLabel type="preparatory" />
+      )}
+      {(type === 'TEMPORARY_DAYCARE' ||
+        type === 'TEMPORARY_DAYCARE_PART_DAY') && (
+        <CareTypeLabel type="temporary" />
       )}
     </CareTypeLabelsContainer>
   )

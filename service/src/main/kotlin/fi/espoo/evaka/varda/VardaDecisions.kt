@@ -255,7 +255,6 @@ JOIN LATERAL (
     SELECT * FROM service_need sn
     WHERE sn.child_id = d.child_id
     AND daterange(sn.start_date, sn.end_date, '[]') && daterange(d.start_date, d.end_date, '[]')
-    AND NOT temporary
     ORDER BY sn.start_date DESC
     LIMIT 1
 ) latest_sn ON TRUE
@@ -361,7 +360,6 @@ JOIN LATERAL (
     SELECT * FROM service_need sn
     WHERE sn.child_id = p.child_id
     AND daterange(sn.start_date, sn.end_date, '[]') && daterange(p.start_date, p.end_date, '[]')
-    AND NOT temporary
     ORDER BY sn.start_date DESC
     LIMIT 1
 ) latest_sn ON true
@@ -375,23 +373,29 @@ SELECT
     vd.varda_decision_id,
     p.id AS evaka_id,
     vc.varda_child_id,
-    greatest(p.start_date, sn.start_date) - interval '4 months' AS application_date,
-    greatest(p.start_date, sn.start_date) AS start_date,
-    least(p.end_date, sn.end_date) AS end_date,
+    p.start_date AS application_date,
+    p.start_date,
+    p.end_date,
     false AS urgent,
-    sn.hours_per_week,
+    (CASE
+        WHEN p.type = 'TEMPORARY_DAYCARE' THEN 40
+        ELSE 20 -- these values are slightly arbitrary
+    END) AS hours_per_week,
     true AS temporary,
     NOT sn.part_week AS daily,
     sn.shift_care AS shift_care,
     u.provider_type AS provider_type
 FROM placement p
 LEFT JOIN varda_decision vd ON p.id = vd.evaka_placement_id AND vd.deleted_at IS NULL
-JOIN daycare u ON p.unit_id = u.id
+JOIN daycare u ON p.unit_id = u.id AND p.type = ANY(:temporaryPlacementTypes::placement_type[])
 JOIN varda_child vc ON p.child_id = vc.person_id AND u.oph_organizer_oid = vc.oph_organizer_oid
-JOIN service_need sn 
-    ON sn.child_id = p.child_id 
+JOIN LATERAL (
+    SELECT * FROM service_need sn
+    WHERE sn.child_id = p.child_id
     AND daterange(sn.start_date, sn.end_date, '[]') && daterange(p.start_date, p.end_date, '[]')
-    AND sn.temporary
+    ORDER BY sn.start_date DESC
+    LIMIT 1
+) sn ON true
     """.trimIndent()
 
 private fun getNewDerivedDecisions(tx: Database.Read, getChildUrl: (Long) -> String): List<Pair<UUID, VardaDecision>> {
@@ -456,6 +460,7 @@ AND d.evaka_id IS NULL
 
     return tx.createQuery(sql)
         .bind("types", daycarePlacementTypes)
+        .bind("temporaryPlacementTypes", temporaryPlacementTypes)
         .map { rs, _ -> rs.getUUID("id") to rs.getLong("varda_decision_id") }
         .toList()
 }
@@ -468,6 +473,7 @@ WHERE vd.id IS NULL
         """.trimIndent()
 
     return tx.createQuery(sql)
+        .bind("temporaryPlacementTypes", temporaryPlacementTypes)
         .map(toVardaDecisionWithDecisionId(getChildUrl))
         .toList()
 }
@@ -483,6 +489,7 @@ WHERE vd.uploaded_at < greatest(sn.updated, p.updated)
         """.trimIndent()
 
     return tx.createQuery(sql)
+        .bind("temporaryPlacementTypes", temporaryPlacementTypes)
         .map(toVardaDecisionWithIdAndVardaId(getChildUrl))
         .toList()
 }

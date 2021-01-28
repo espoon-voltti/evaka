@@ -26,6 +26,8 @@ export type PlacementType =
   | 'PRESCHOOL_DAYCARE'
   | 'PREPARATORY'
   | 'PREPARATORY_DAYCARE'
+  | 'TEMPORARY_DAYCARE'
+  | 'TEMPORARY_DAYCARE_PART_DAY'
 
 export interface PlacementDraft {
   child: Child

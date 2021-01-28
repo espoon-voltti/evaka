@@ -17,6 +17,8 @@ fun PlacementType.toApplicationType(): ApplicationType = when (this) {
     PlacementType.DAYCARE, PlacementType.DAYCARE_PART_TIME -> ApplicationType.DAYCARE
     PlacementType.PRESCHOOL, PlacementType.PRESCHOOL_DAYCARE,
     PlacementType.PREPARATORY, PlacementType.PREPARATORY_DAYCARE -> ApplicationType.PRESCHOOL
+    PlacementType.TEMPORARY_DAYCARE, PlacementType.TEMPORARY_DAYCARE_PART_DAY ->
+        error("Unsupported placement type ($this)")
 }
 
 fun PersonData.Detailed.toDaycareFormChild(

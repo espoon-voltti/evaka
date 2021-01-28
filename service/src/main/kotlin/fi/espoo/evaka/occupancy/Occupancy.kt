@@ -155,6 +155,7 @@ private fun coefficients(excludeAbsent: Boolean, includeGroups: Boolean) =
             WHEN is_family_unit THEN 1.75
             WHEN age < 3 THEN 1.75
             WHEN placement_type = 'DAYCARE_PART_TIME' THEN 0.54
+            WHEN placement_type = 'TEMPORARY_DAYCARE_PART_DAY' THEN 0.54
             WHEN placement_type = 'PRESCHOOL' THEN 0.5
             WHEN placement_type = 'PREPARATORY' THEN 0.5
             -- "5-year-olds" are handled as if they were in preschool

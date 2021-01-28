@@ -39,6 +39,7 @@ import fi.espoo.evaka.toDaycareFormChild
 import fi.espoo.evaka.varda.integration.MockVardaIntegrationEndpoint
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNotEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -430,10 +431,10 @@ class VardaDecisionsIntegrationTest : FullApplicationTest() {
     }
 
     @Test
-    fun `a derived daycare decision is sent as temporary when the service need is temporary`() {
+    fun `a derived daycare decision is sent as temporary when the placement type is temporary`() {
         val period = FiniteDateRange(LocalDate.of(2019, 7, 1), LocalDate.of(2020, 7, 3))
-        insertPlacement(db, testChild_1.id, period)
-        insertServiceNeed(db, testChild_1.id, period, temporary = true)
+        insertPlacement(db, testChild_1.id, period, type = PlacementType.TEMPORARY_DAYCARE)
+        insertServiceNeed(db, testChild_1.id, period)
         insertVardaChild(db, testChild_1.id)
 
         updateDecisions(db, vardaClient)
@@ -444,6 +445,26 @@ class VardaDecisionsIntegrationTest : FullApplicationTest() {
         assertEquals(1, decisions.size)
         decisions.values.first().let { decision ->
             assertTrue(decision.temporary)
+            assertTrue(decision.fullDay)
+        }
+    }
+
+    @Test
+    fun `a derived daycare decision is sent as temporary when the placement type is temporary part day`() {
+        val period = FiniteDateRange(LocalDate.of(2019, 7, 1), LocalDate.of(2020, 7, 3))
+        insertPlacement(db, testChild_1.id, period, type = PlacementType.TEMPORARY_DAYCARE_PART_DAY)
+        insertServiceNeed(db, testChild_1.id, period)
+        insertVardaChild(db, testChild_1.id)
+
+        updateDecisions(db, vardaClient)
+
+        val result = getVardaDecisions()
+        assertEquals(1, result.size)
+        val decisions = mockEndpoint.decisions
+        assertEquals(1, decisions.size)
+        decisions.values.first().let { decision ->
+            assertTrue(decision.temporary)
+            assertFalse(decision.fullDay)
         }
     }
 
@@ -854,8 +875,8 @@ class VardaDecisionsIntegrationTest : FullApplicationTest() {
         insertServiceNeed(db, testChild_2.id, period)
         insertVardaChild(db, testChild_2.id)
 
-        val temporaryPlacementId = insertPlacement(db, testChild_3.id, period)
-        insertServiceNeed(db, testChild_3.id, period, temporary = true)
+        val temporaryPlacementId = insertPlacement(db, testChild_3.id, period, type = PlacementType.TEMPORARY_DAYCARE)
+        insertServiceNeed(db, testChild_3.id, period)
         insertVardaChild(db, testChild_3.id)
 
         updateDecisions(db, vardaClient)
@@ -911,8 +932,7 @@ internal fun insertServiceNeed(
     db: Database.Connection,
     childId: UUID,
     period: FiniteDateRange,
-    hours: Double = 40.0,
-    temporary: Boolean = false
+    hours: Double = 40.0
 ): UUID {
     return db.transaction {
         insertTestServiceNeed(
@@ -921,8 +941,7 @@ internal fun insertServiceNeed(
             testDecisionMaker_1.id,
             startDate = period.start,
             endDate = period.end,
-            hoursPerWeek = hours,
-            temporary = temporary
+            hoursPerWeek = hours
         )
     }
 }

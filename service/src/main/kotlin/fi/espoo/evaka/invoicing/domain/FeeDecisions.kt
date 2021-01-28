@@ -308,7 +308,7 @@ fun getServiceNeedPercentage(placement: PermanentPlacement): Int {
             ServiceNeed.LTE_0 -> 0
             else -> unexpectedCombination()
         }
-        PlacementType.CLUB, PlacementType.PRESCHOOL, PlacementType.PREPARATORY -> 0
+        PlacementType.PRESCHOOL, PlacementType.PREPARATORY -> 0
     }
 }
 

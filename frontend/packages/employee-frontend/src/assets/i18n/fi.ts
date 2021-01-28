@@ -55,7 +55,8 @@ export const fi = {
       preschool: 'Esiopetus',
       daycare: 'Varhaiskasvatus',
       preparatory: 'Valmistava',
-      'backup-care': 'Varasijoitus'
+      'backup-care': 'Varasijoitus',
+      temporary: 'Tilapäinen'
     },
     providerType: {
       MUNICIPAL: 'Kunnallinen',
@@ -480,7 +481,6 @@ export const fi = {
         shiftCare:
           'Ilta- ja vuorohoito (kello 18-06 arkisin ja / tai viikonloppuisin)',
         shiftCareShort: 'Ilta- ja vuorohoito',
-        temporary: 'Tilapäinen varhaiskasvatus',
         preparatoryEducation: 'Valmistava opetus'
       }
     },
@@ -680,7 +680,8 @@ export const fi = {
         btn: 'Luo uusi sijoitus',
         title: 'Uusi sijoitus',
         text:
-          'Tästä sijoituksesta ei voi lähettää päätöstä. Jos sijoitus menee päällekäin lapsen aiemmin luotujen sijoituksien kanssa, näitä sijoituksia lyhennetään tai ne poistetaan automaattisesti.'
+          'Tästä sijoituksesta ei voi lähettää päätöstä. Jos sijoitus menee päällekäin lapsen aiemmin luotujen sijoituksien kanssa, näitä sijoituksia lyhennetään tai ne poistetaan automaattisesti.',
+        temporaryDaycareWarning: 'HUOM! Älä käytä varasijoitusta tehdessäsi!'
       },
       error: {
         conflict: {
@@ -1361,7 +1362,9 @@ export const fi = {
       PRESCHOOL: 'Esiopetus',
       PREPARATORY: 'Valmistava opetus',
       PREPARATORY_DAYCARE: 'Valmistava opetus ja liittyvä varhaiskasvatus',
-      PRESCHOOL_DAYCARE: 'Esiopetus ja liittyvä varhaiskasvatus'
+      PRESCHOOL_DAYCARE: 'Esiopetus ja liittyvä varhaiskasvatus',
+      TEMPORARY_DAYCARE: 'Tilapäinen kokopäiväinen varhaiskasvatus',
+      TEMPORARY_DAYCARE_PART_DAY: 'Tilapäinen osapäiväinen varhaiskasvatus'
     },
     serviceNeed: {
       MISSING: 'Vahvistamaton palveluntarve',

@@ -37,8 +37,6 @@ function ServiceNeedRow({ serviceNeed, onReload }: Props) {
       i18n.childInformation.serviceNeed.services.partDayShort,
     serviceNeed.partWeek &&
       i18n.childInformation.serviceNeed.services.partWeekShort,
-    serviceNeed.temporary &&
-      i18n.childInformation.serviceNeed.services.temporary,
     serviceNeed.shiftCare &&
       i18n.childInformation.serviceNeed.services.shiftCareShort
   ].filter(Boolean)

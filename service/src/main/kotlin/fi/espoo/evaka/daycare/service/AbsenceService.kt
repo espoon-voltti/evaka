@@ -168,6 +168,8 @@ class AbsenceService {
                 else
                     listOf(CareType.DAYCARE)
             }
+            PlacementType.TEMPORARY_DAYCARE, PlacementType.TEMPORARY_DAYCARE_PART_DAY ->
+                listOf(CareType.DAYCARE)
         }
 }
 

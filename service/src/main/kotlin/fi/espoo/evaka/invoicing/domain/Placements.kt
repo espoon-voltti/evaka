@@ -38,7 +38,6 @@ sealed class UnitData {
 }
 
 enum class PlacementType(val freeHours: Double) {
-    CLUB(0.0),
     DAYCARE(0.0),
     PRESCHOOL(20.0),
     PREPARATORY(25.0),
@@ -76,6 +75,6 @@ fun calculateServiceNeed(type: PlacementType, hours: Double?): ServiceNeed {
             hours > 25 -> ServiceNeed.GT_25_LT_35
             else -> ServiceNeed.LTE_25
         }
-        PlacementType.CLUB, PlacementType.PRESCHOOL, PlacementType.PREPARATORY -> ServiceNeed.LTE_0
+        PlacementType.PRESCHOOL, PlacementType.PREPARATORY -> ServiceNeed.LTE_0
     }
 }

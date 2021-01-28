@@ -18,6 +18,7 @@ import { createPlacement } from 'api/child/placements'
 import Select from '~components/common/Select'
 import { FixedSpaceColumn } from '@evaka/lib-components/src/layout/flex-helpers'
 import { PublicUnit } from '@evaka/lib-common/src/api-types/units/PublicUnit'
+import { AlertBox } from '@evaka/lib-components/src/molecules/MessageBoxes'
 
 export interface Props {
   childId: UUID
@@ -39,7 +40,9 @@ const placementTypes: PlacementType[] = [
   'DAYCARE_PART_TIME',
   'PREPARATORY',
   'PREPARATORY_DAYCARE',
-  'CLUB'
+  'CLUB',
+  'TEMPORARY_DAYCARE',
+  'TEMPORARY_DAYCARE_PART_DAY'
 ]
 
 function CreatePlacementModal({ childId, reload }: Props) {
@@ -192,6 +195,17 @@ function CreatePlacementModal({ childId, reload }: Props) {
             type="full-width"
           />
         </section>
+
+        {form.type === 'TEMPORARY_DAYCARE' ||
+        form.type === 'TEMPORARY_DAYCARE_PART_DAY' ? (
+          <AlertBox
+            thin
+            message={
+              i18n.childInformation.placements.createPlacement
+                .temporaryDaycareWarning
+            }
+          />
+        ) : null}
       </FixedSpaceColumn>
     </FormModal>
   )
