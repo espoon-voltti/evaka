@@ -319,7 +319,7 @@ private fun finalSelectorReport(includeGroups: Boolean) =
         g.name AS group_name,
         """ else ""}
         day,
-        date_part('isodow', day) = ANY(dc.operation_days) is_operation_day,
+        date_part('isodow', day) = ANY(dc.operation_days) AND h.date IS NULL is_operation_day,
         sum,
         headcount,
         round(CASE
@@ -332,6 +332,7 @@ private fun finalSelectorReport(includeGroups: Boolean) =
         END) AS caretakers
     FROM final_values
     JOIN daycare dc ON dc.id = unit_id
+    LEFT JOIN holiday h ON day = h.date AND NOT dc.operation_days @> ARRAY[1, 2, 3, 4, 5, 6, 7]
     ${if (includeGroups) "JOIN daycare_group g ON g.id = group_id" else ""}
     ORDER BY unit_name, ${if (includeGroups) "group_name," else ""} day
     """.trimIndent()
