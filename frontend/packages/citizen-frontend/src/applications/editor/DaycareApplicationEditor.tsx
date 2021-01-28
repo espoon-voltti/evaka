@@ -35,7 +35,6 @@ import DaycareApplicationVerificationView from '~applications/editor/verificatio
 import InlineButton from '@evaka/lib-components/src/atoms/buttons/InlineButton'
 import { faAngleLeft, faCheck } from '@evaka/lib-icons'
 import Checkbox from '@evaka/lib-components/src/atoms/form/Checkbox'
-import InfoModal from '../../../../lib-components/src/molecules/modals/InfoModal'
 import { faExclamation } from '@evaka/lib-icons'
 import { ApplicationDetails } from '@evaka/lib-common/src/api-types/application/ApplicationDetails'
 
@@ -55,8 +54,6 @@ export default React.memo(function DaycareApplicationEditor({
   const [submitting, setSubmitting] = useState<boolean>(false)
   const [verifying, setVerifying] = useState<boolean>(false)
   const [verified, setVerified] = useState<boolean>(false)
-
-  const [showDraftPolicyInfo, setShowDraftPolicyInfo] = useState<boolean>(false)
 
   const history = useHistory()
   const { setErrorMessage, setInfoMessage, clearInfoMessage } = useContext(
@@ -99,7 +96,20 @@ export default React.memo(function DaycareApplicationEditor({
           resolveLabel: t.common.ok
         })
       } else if (res.isSuccess) {
-        setShowDraftPolicyInfo(true)
+        setInfoMessage({
+          title: t.applications.editor.draftPolicyInfo.title,
+          text: t.applications.editor.draftPolicyInfo.text,
+          iconColour: 'green',
+          icon: faExclamation,
+          resolve: {
+            action: () => {
+              history.push('/applications')
+              clearInfoMessage()
+            },
+            label: t.applications.editor.draftPolicyInfo.ok
+          },
+          'data-qa': 'info-message-draft-saved'
+        })
       }
     })
   }
@@ -296,22 +306,6 @@ export default React.memo(function DaycareApplicationEditor({
       )}
       <Gap size="m" />
       {renderActionBar()}
-
-      {showDraftPolicyInfo && (
-        <InfoModal
-          iconColour={'green'}
-          icon={faExclamation}
-          title={t.applications.editor.draftPolicyInfo.title}
-          text={t.applications.editor.draftPolicyInfo.text}
-          resolve={{
-            action: () => {
-              history.push('/applications')
-              setShowDraftPolicyInfo(false)
-            },
-            label: t.applications.editor.draftPolicyInfo.ok
-          }}
-        />
-      )}
     </Container>
   )
 })
