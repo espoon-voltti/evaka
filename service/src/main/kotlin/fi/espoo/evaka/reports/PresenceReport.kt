@@ -61,7 +61,7 @@ private fun Database.Read.getPresenceRows(from: LocalDate, to: LocalDate): List<
         LEFT JOIN person p ON pl.child_id = p.id
         LEFT JOIN holiday h ON t = h.date
         WHERE dw = ANY(daycare.operation_days) AND
-          h.date IS NULL AND
+          (h.date IS NULL OR daycare.operation_days @> ARRAY[1, 2, 3, 4, 5, 6, 7]) AND
           (daycare.provider_type = 'MUNICIPAL' OR daycare.id IS NULL);
         """.trimIndent()
     return createQuery(sql)
