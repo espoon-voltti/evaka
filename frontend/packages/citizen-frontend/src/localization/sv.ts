@@ -45,6 +45,17 @@ const sv: Translations = {
   },
   applications: {
     title: 'Hakemukset',
+    deleteDraftTitle: 'Haluatko poistaa hakemuksen?',
+    deleteDraftText:
+      'Haluatko varmasti poistaa hakemusluonnoksen? Kaikki poistettavan hakemuksen tiedot menetetään.',
+    deleteDraftOk: 'Poista hakemus',
+    deleteDraftCancel: 'Palaa takaisin',
+    deleteSentTitle: 'Haluatko peruuttaa hakemuksen?',
+    deleteSentText:
+      'Haluatko varmasti peruuttaa hakemuksen? Jos peruutat hakemuksen, kaikki tiedot menetetään.',
+    deleteSentOk: 'Peruuta hakemus',
+    deleteSentCancel: 'Palaa takaisin',
+    deleteUnprocessedApplicationError: 'Hakemuksen poisto epäonnistui',
     creation: {
       title: 'Val av ansökningsblankett',
       daycareLabel: 'Ansökan till småbarnspedagogik',
@@ -420,6 +431,7 @@ const sv: Translations = {
     openApplicationLink: 'Visa ansökan',
     editApplicationLink: 'Muokkaa hakemusta',
     removeApplicationBtn: 'Poista hakemus',
+    cancelApplicationBtn: 'Peruuta hakemus',
     confirmationLinkInstructions:
       'Under Beslut-fliken kan du läsa besluten till dina ansökningar och ta emot/annullera platsen',
     confirmationLink: 'Granska och bekräfta beslutet',

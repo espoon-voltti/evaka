@@ -83,7 +83,7 @@ export async function saveApplicationDraft(
   }
 }
 
-export async function removeApplicationDraft(
+export async function removeUnprocessedApplication(
   applicationId: string
 ): Promise<Result<void>> {
   try {

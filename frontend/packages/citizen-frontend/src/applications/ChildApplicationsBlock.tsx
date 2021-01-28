@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React from 'react'
+import React, { useContext } from 'react'
 import { useTranslation } from '~localization'
 import { H2, H3, Label } from '@evaka/lib-components/src/typography'
 import { ContentArea } from '@evaka/lib-components/src/layout/Container'
@@ -13,15 +13,24 @@ import { formatDate } from '~util'
 import { Status, applicationStatusIcon } from '~decisions/shared'
 import RoundIcon from '@evaka/lib-components/src/atoms/RoundIcon'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faArrowRight, faFileAlt, faPen, faTrash } from '@evaka/lib-icons'
+import {
+  faArrowRight,
+  faExclamation,
+  faFileAlt,
+  faPen,
+  faTimes,
+  faTrash
+} from '@evaka/lib-icons'
 import colors from '@evaka/lib-components/src/colors'
 import AddButton from '@evaka/lib-components/src/atoms/buttons/AddButton'
 import { Link, useHistory } from 'react-router-dom'
-import { ApplicationsOfChild } from '@evaka/lib-common/src/api-types/application/ApplicationsOfChild'
+import { CitizenApplicationSummary } from '@evaka/lib-common/src/api-types/application/ApplicationsOfChild'
 import { ApplicationStatus } from '@evaka/lib-common/src/api-types/application/enums'
 import { FixedSpaceRow } from '@evaka/lib-components/src/layout/flex-helpers'
 import InlineButton from '@evaka/lib-components/src/atoms/buttons/InlineButton'
 import { noop } from 'lodash'
+import { removeUnprocessedApplication } from '~applications/api'
+import { OverlayContext } from '~overlay/state'
 
 const StyledLink = styled(Link)`
   color: ${colors.blues.primary};
@@ -61,13 +70,70 @@ const NoApplications = styled.p`
   color: ${colors.greyscale.dark};
 `
 
+interface ChildApplicationsBlockProps {
+  childId: string
+  childName: string
+  applicationSummaries: CitizenApplicationSummary[]
+  reload: () => void
+}
+
 export default React.memo(function ChildApplicationsBlock({
   childId,
   childName,
-  applicationSummaries
-}: ApplicationsOfChild) {
+  applicationSummaries,
+  reload
+}: ChildApplicationsBlockProps) {
   const history = useHistory()
   const t = useTranslation()
+  const { setErrorMessage, setInfoMessage, clearInfoMessage } = useContext(
+    OverlayContext
+  )
+
+  const onDeleteApplication = (
+    applicationId: string,
+    applicationStatus: ApplicationStatus
+  ) => {
+    setInfoMessage({
+      title:
+        applicationStatus === 'CREATED'
+          ? t.applications.deleteDraftTitle
+          : t.applications.deleteSentTitle,
+      text:
+        applicationStatus === 'CREATED'
+          ? t.applications.deleteDraftText
+          : t.applications.deleteSentText,
+      iconColour: applicationStatus === 'CREATED' ? 'orange' : 'red',
+      icon: applicationStatus === 'CREATED' ? faExclamation : faTimes,
+      resolve: {
+        action: () => {
+          void removeUnprocessedApplication(applicationId).then((res) => {
+            if (res.isFailure) {
+              setErrorMessage({
+                title: t.applications.deleteUnprocessedApplicationError,
+                type: 'error',
+                resolveLabel: t.common.ok
+              })
+            }
+
+            clearInfoMessage()
+            reload()
+          })
+        },
+        label:
+          applicationStatus === 'CREATED'
+            ? t.applications.deleteDraftOk
+            : t.applications.deleteSentOk
+      },
+      reject: {
+        action: () => clearInfoMessage(),
+        label:
+          applicationStatus === 'CREATED'
+            ? t.applications.deleteDraftCancel
+            : t.applications.deleteSentCancel
+      },
+      'data-qa': 'info-message-draft-saved'
+    })
+  }
 
   const applicationStatusToIcon = (
     applicationStatus: ApplicationStatus
@@ -205,11 +271,18 @@ export default React.memo(function ChildApplicationsBlock({
                     />
                   </Link>
                 )}
-                {applicationStatus === 'CREATED' && (
+                {(applicationStatus === 'CREATED' ||
+                  applicationStatus === 'SENT') && (
                   <InlineButton
                     icon={faTrash}
-                    text={t.applicationsList.removeApplicationBtn}
-                    onClick={noop}
+                    text={
+                      applicationStatus === 'CREATED'
+                        ? t.applicationsList.removeApplicationBtn
+                        : t.applicationsList.cancelApplicationBtn
+                    }
+                    onClick={() =>
+                      onDeleteApplication(applicationId, applicationStatus)
+                    }
                     dataQa={`button-remove-application-${applicationId}`}
                   />
                 )}

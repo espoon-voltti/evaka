@@ -45,6 +45,17 @@ const en: Translations = {
   },
   applications: {
     title: 'Applications',
+    deleteDraftTitle: 'Haluatko poistaa hakemuksen?',
+    deleteDraftText:
+      'Haluatko varmasti poistaa hakemusluonnoksen? Kaikki poistettavan hakemuksen tiedot menetetään.',
+    deleteDraftOk: 'Poista hakemus',
+    deleteDraftCancel: 'Palaa takaisin',
+    deleteSentTitle: 'Haluatko peruuttaa hakemuksen?',
+    deleteSentText:
+      'Haluatko varmasti peruuttaa hakemuksen? Jos peruutat hakemuksen, kaikki tiedot menetetään.',
+    deleteSentOk: 'Peruuta hakemus',
+    deleteSentCancel: 'Palaa takaisin',
+    deleteUnprocessedApplicationError: 'Hakemuksen poisto epäonnistui',
     creation: {
       title: 'Selection of application type',
       daycareLabel: 'Application for early childhood education',
@@ -423,6 +434,7 @@ const en: Translations = {
     openApplicationLink: 'Open application',
     editApplicationLink: 'Muokkaa hakemusta',
     removeApplicationBtn: 'Poista hakemus',
+    cancelApplicationBtn: 'Peruuta hakemus',
     confirmationLinkInstructions:
       'In the Decisions page you can read the decision and either accept or reject the proposed place',
     confirmationLink: 'Review and confirm the decision',

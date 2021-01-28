@@ -53,7 +53,12 @@ export default React.memo(function Applications() {
         _.sortBy(guardianApplications.value, (a) => a.childName).map(
           (childApplications) => (
             <React.Fragment key={childApplications.childId}>
-              <ChildApplicationsBlock {...childApplications} />
+              <ChildApplicationsBlock
+                childId={childApplications.childId}
+                childName={childApplications.childName}
+                applicationSummaries={childApplications.applicationSummaries}
+                reload={loadGuardianApplications}
+              />
               <Gap size="s" />
             </React.Fragment>
           )
