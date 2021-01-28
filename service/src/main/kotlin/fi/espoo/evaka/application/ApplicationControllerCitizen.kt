@@ -177,7 +177,7 @@ class ApplicationControllerCitizen(
         return ResponseEntity.noContent().build()
     }
 
-    @PostMapping("/{applicationId}/actions/send-application")
+    @PostMapping("/applications/{applicationId}/actions/send-application")
     fun sendApplication(
         db: Database,
         user: AuthenticatedUser,
