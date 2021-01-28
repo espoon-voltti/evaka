@@ -44,6 +44,7 @@ import {
 } from './index'
 import LocalDate from '@evaka/lib-common/src/local-date'
 import DateRange from '@evaka/lib-common/src/date-range'
+import { ApplicationStatus } from '@evaka/lib-common/src/api-types/application/enums'
 
 export const supervisor: EmployeeDetail = {
   id: '552e5bde-92fb-4807-a388-40016f85f593',
@@ -510,7 +511,8 @@ export const applicationFixture = (
   type: 'DAYCARE' | 'PRESCHOOL' | 'CLUB' = 'DAYCARE',
   otherGuardianAgreementStatus: OtherGuardianAgreementStatus = null,
   preferredUnits: string[] = [daycareFixture.id],
-  connectedDaycare = false
+  connectedDaycare = false,
+  status: ApplicationStatus = 'SENT'
 ): Application => ({
   id: applicationFixtureId,
   childId: child.id,
@@ -529,7 +531,7 @@ export const applicationFixture = (
   checkedByAdmin: false,
   hideFromGuardian: false,
   origin: 'ELECTRONIC',
-  status: 'SENT',
+  status,
   transferApplication: false
 })
 
