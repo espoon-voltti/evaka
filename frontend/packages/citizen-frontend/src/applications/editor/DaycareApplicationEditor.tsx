@@ -33,9 +33,8 @@ import ReturnButton, {
 } from '@evaka/lib-components/src/atoms/buttons/ReturnButton'
 import DaycareApplicationVerificationView from '~applications/editor/verification/DaycareApplicationVerificationView'
 import InlineButton from '@evaka/lib-components/src/atoms/buttons/InlineButton'
-import { faAngleLeft } from '@evaka/lib-icons'
+import { faAngleLeft, faCheck } from '@evaka/lib-icons'
 import Checkbox from '@evaka/lib-components/src/atoms/form/Checkbox'
-import InfoModal from '../../../../lib-components/src/molecules/modals/InfoModal'
 import { faExclamation } from '@evaka/lib-icons'
 import { ApplicationDetails } from '@evaka/lib-common/src/api-types/application/ApplicationDetails'
 
@@ -56,10 +55,10 @@ export default React.memo(function DaycareApplicationEditor({
   const [verifying, setVerifying] = useState<boolean>(false)
   const [verified, setVerified] = useState<boolean>(false)
 
-  const [showDraftPolicyInfo, setShowDraftPolicyInfo] = useState<boolean>(false)
-
   const history = useHistory()
-  const { setErrorMessage } = useContext(OverlayContext)
+  const { setErrorMessage, setInfoMessage, clearInfoMessage } = useContext(
+    OverlayContext
+  )
 
   const updateFeeFormData = useCallback(
     (feeData: FeeFormData) =>
@@ -93,10 +92,24 @@ export default React.memo(function DaycareApplicationEditor({
       if (res.isFailure) {
         setErrorMessage({
           title: t.applications.editor.actions.saveDraftError,
-          type: 'error'
+          type: 'error',
+          resolveLabel: t.common.ok
         })
       } else if (res.isSuccess) {
-        setShowDraftPolicyInfo(true)
+        setInfoMessage({
+          title: t.applications.editor.draftPolicyInfo.title,
+          text: t.applications.editor.draftPolicyInfo.text,
+          iconColour: 'green',
+          icon: faExclamation,
+          resolve: {
+            action: () => {
+              history.push('/applications')
+              clearInfoMessage()
+            },
+            label: t.applications.editor.draftPolicyInfo.ok
+          },
+          'data-qa': 'info-message-draft-saved'
+        })
       }
     })
   }
@@ -109,7 +122,8 @@ export default React.memo(function DaycareApplicationEditor({
         setSubmitting(false)
         setErrorMessage({
           title: t.applications.editor.actions.sendError,
-          type: 'error'
+          type: 'error',
+          resolveLabel: t.common.ok
         })
       } else if (res.isSuccess) {
         void sendApplication(apiData.id).then((res2) => {
@@ -120,7 +134,21 @@ export default React.memo(function DaycareApplicationEditor({
               type: 'error'
             })
           } else {
-            // todo: some success dialog?
+            setInfoMessage({
+              title: t.applications.editor.sentInfo.title,
+              text: t.applications.editor.sentInfo.text,
+              iconColour: 'green',
+              icon: faCheck,
+              resolve: {
+                action: () => {
+                  history.push('/applications')
+                  clearInfoMessage()
+                },
+                label: t.applications.editor.sentInfo.ok
+              },
+              'data-qa': 'info-message-application-sent'
+            })
+
             history.push('/applications')
           }
         })
@@ -278,22 +306,6 @@ export default React.memo(function DaycareApplicationEditor({
       )}
       <Gap size="m" />
       {renderActionBar()}
-
-      {showDraftPolicyInfo && (
-        <InfoModal
-          iconColour={'green'}
-          icon={faExclamation}
-          title={t.applications.editor.draftPolicyInfo.title}
-          text={t.applications.editor.draftPolicyInfo.text}
-          resolve={{
-            action: () => {
-              history.push('/applications')
-              setShowDraftPolicyInfo(false)
-            },
-            label: t.applications.editor.draftPolicyInfo.ok
-          }}
-        />
-      )}
     </Container>
   )
 })

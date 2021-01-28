@@ -6,6 +6,7 @@ export default {
   common: {
     cancel: 'Peruuta',
     return: 'Palaa',
+    ok: 'Ok',
     unit: {
       providerTypes: {
         MUNICIPAL: 'Kunnallinen',
@@ -42,6 +43,17 @@ export default {
   },
   applications: {
     title: 'Hakemukset',
+    deleteDraftTitle: 'Haluatko poistaa hakemuksen?',
+    deleteDraftText:
+      'Haluatko varmasti poistaa hakemusluonnoksen? Kaikki poistettavan hakemuksen tiedot menetetään.',
+    deleteDraftOk: 'Poista hakemus',
+    deleteDraftCancel: 'Palaa takaisin',
+    deleteSentTitle: 'Haluatko peruuttaa hakemuksen?',
+    deleteSentText:
+      'Haluatko varmasti peruuttaa hakemuksen? Jos peruutat hakemuksen, kaikki tiedot menetetään.',
+    deleteSentOk: 'Peruuta hakemus',
+    deleteSentCancel: 'Palaa takaisin',
+    deleteUnprocessedApplicationError: 'Hakemuksen poisto epäonnistui',
     creation: {
       title: 'Valitse hakemustyyppi',
       daycareLabel: 'Varhaiskasvatushakemus',
@@ -299,7 +311,13 @@ export default {
         title: 'Hakemusluonnos on tallennettu',
         text:
           'Hakemus on tallennettu keskeneräisenä. Huom! Keskeneräistä hakemusta säilytetään palvelussa yhden kuukauden ajan viimeisimmästä tallennuksesta.',
-        ok: 'Selvä'
+        ok: 'Selvä!'
+      },
+      sentInfo: {
+        title: 'Hakemus on lähetetty',
+        text:
+          'Halutessasi voit tehdä hakemukseen muutoksia niin kauan kuin hakemusta ei olla otettu käsittelyyn.',
+        ok: 'Selvä!'
       }
     }
   },
@@ -407,6 +425,7 @@ export default {
     openApplicationLink: 'Näytä hakemus',
     editApplicationLink: 'Muokkaa hakemusta',
     removeApplicationBtn: 'Poista hakemus',
+    cancelApplicationBtn: 'Peruuta hakemus',
     confirmationLinkInstructions:
       'Päätökset-välilehdellä voit lukea päätöksen ja hyväksyä/hylätä tarjotun paikan',
     confirmationLink: 'Siirry vahvistamaan',
