@@ -16,7 +16,6 @@ import org.springframework.context.annotation.Profile
 import org.springframework.core.env.Environment
 import org.springframework.core.env.get
 import java.net.URI
-import java.nio.file.Paths
 
 @Configuration
 class JwtConfig {
@@ -37,10 +36,8 @@ class JwtConfig {
     @Profile("local")
     @Bean
     fun devRsaJwtAlgorithm(): Algorithm {
-        val privateKey =
-            loadPrivateKey(Paths.get(SecurityConfig::class.java.getResource("/local-development/jwk_private_key.pem").path))
-        val publicKeys =
-            loadPublicKeys(Paths.get(SecurityConfig::class.java.getResource("/local-development/jwks.json").path))
+        val privateKey = this.javaClass.getResourceAsStream("/local-development/jwk_private_key.pem").use { loadPrivateKey(it) }
+        val publicKeys = this.javaClass.getResourceAsStream("/local-development/jwks.json").use { loadPublicKeys(it) }
         return Algorithm.RSA256(JwtKeys("evaka-service", privateKey, publicKeys))
     }
 

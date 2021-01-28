@@ -14,7 +14,6 @@ import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Profile
 import org.springframework.core.env.Environment
 import java.net.URI
-import java.nio.file.Paths
 
 @Configuration
 class JwtConfig {
@@ -29,8 +28,7 @@ class JwtConfig {
     @Profile("local")
     @Bean
     fun devRsaJwtAlgorithm(): Algorithm {
-        val publicKeys =
-            loadPublicKeys(Paths.get(this.javaClass.getResource("/local-development/jwks.json").path))
+        val publicKeys = this.javaClass.getResourceAsStream("/local-development/jwks.json").use { loadPublicKeys(it) }
         return Algorithm.RSA256(JwtKeys(privateKeyId = null, privateKey = null, publicKeys = publicKeys))
     }
 
