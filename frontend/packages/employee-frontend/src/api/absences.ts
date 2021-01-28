@@ -31,7 +31,8 @@ export async function getGroupAbsences(
     .then((res) => res.data.data)
     .then((data) => ({
       ...data,
-      children: data.children.map(deserializeChild)
+      children: data.children.map(deserializeChild),
+      operationDays: data.operationDays.map((date) => LocalDate.parseIso(date))
     }))
     .then((v) => Success.of(v))
     .catch((e) => Failure.fromError(e))

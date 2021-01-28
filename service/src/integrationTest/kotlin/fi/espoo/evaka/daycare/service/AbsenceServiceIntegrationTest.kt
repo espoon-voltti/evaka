@@ -4,29 +4,27 @@
 
 package fi.espoo.evaka.daycare.service
 
-import fi.espoo.evaka.daycare.AbstractIntegrationTest
+import fi.espoo.evaka.FullApplicationTest
+import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.db.handle
 import fi.espoo.evaka.shared.db.transaction
 import fi.espoo.evaka.shared.dev.DevBackupCare
-import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevChild
-import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insertTestBackupCare
-import fi.espoo.evaka.shared.dev.insertTestCareArea
 import fi.espoo.evaka.shared.dev.insertTestChild
-import fi.espoo.evaka.shared.dev.insertTestDaycare
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroupPlacement
 import fi.espoo.evaka.shared.dev.insertTestEmployee
 import fi.espoo.evaka.shared.dev.insertTestPerson
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.testDaycare
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
@@ -37,15 +35,14 @@ import org.springframework.beans.factory.annotation.Autowired
 import java.time.LocalDate
 import java.util.UUID
 
-class AbsenceServiceIntegrationTest : AbstractIntegrationTest() {
+class AbsenceServiceIntegrationTest : FullApplicationTest() {
     @Autowired
     lateinit var absenceService: AbsenceService
 
-    val testAreaId = UUID.randomUUID()
     val childId = UUID.randomUUID()
     val testUserId = UUID.randomUUID()
-    val daycareId = UUID.randomUUID()
-    val daycareName = "Testikoti"
+    val daycareId = testDaycare.id
+    val daycareName = testDaycare.name
     val groupId = UUID.randomUUID()
     val groupName = "Testiryhmä"
     val placementStart = LocalDate.of(2019, 8, 1)
@@ -53,16 +50,17 @@ class AbsenceServiceIntegrationTest : AbstractIntegrationTest() {
 
     @BeforeEach
     private fun prepare() {
-        insertDaycareGroup()
         jdbi.handle {
+            insertGeneralTestFixtures(it)
             it.insertTestPerson(DevPerson(id = testUserId))
             it.insertTestEmployee(DevEmployee(id = testUserId))
         }
+        insertDaycareGroup()
     }
 
     @AfterEach
     private fun afterEach() {
-        cleanTestData()
+        jdbi.handle(::resetDatabase)
     }
 
     @Test
@@ -478,10 +476,35 @@ class AbsenceServiceIntegrationTest : AbstractIntegrationTest() {
         )
     }
 
+    @Test
+    fun `group operational days do not include holidays`() {
+        val firstOfJanuary2020 = LocalDate.of(2020, 1, 1)
+        val epiphany2020 = LocalDate.of(2020, 1, 6)
+        db.transaction { it.execute("INSERT INTO holiday (date) VALUES (?)", epiphany2020) }
+        val result = db.read {
+            absenceService.getAbsencesByMonth(it, groupId, firstOfJanuary2020.year, firstOfJanuary2020.monthValue)
+        }
+
+        assertFalse(result.operationDays.contains(epiphany2020))
+    }
+
+    @Test
+    fun `group operational days include holidays if the unit is operational on every weekday`() {
+        val firstOfJanuary2020 = LocalDate.of(2020, 1, 1)
+        val epiphany2020 = LocalDate.of(2020, 1, 6)
+        db.transaction {
+            it.execute("INSERT INTO holiday (date) VALUES (?)", epiphany2020)
+            it.execute("UPDATE daycare SET operation_days = ? WHERE id = ?", arrayOf(1, 2, 3, 4, 5, 6, 7), daycareId)
+        }
+        val result = db.read {
+            absenceService.getAbsencesByMonth(it, groupId, firstOfJanuary2020.year, firstOfJanuary2020.monthValue)
+        }
+
+        assertTrue(result.operationDays.contains(epiphany2020))
+    }
+
     private fun insertDaycareGroup() {
         jdbi.transaction {
-            it.insertTestCareArea(DevCareArea(id = testAreaId))
-            it.insertTestDaycare(DevDaycare(areaId = testAreaId, id = daycareId, name = daycareName))
             it.insertTestDaycareGroup(
                 DevDaycareGroup(daycareId = daycareId, id = groupId, name = groupName, startDate = placementStart)
             )
@@ -559,9 +582,5 @@ class AbsenceServiceIntegrationTest : AbstractIntegrationTest() {
             modifiedAt = null,
             modifiedBy = null
         )
-    }
-
-    private fun cleanTestData() {
-        jdbi.handle(::resetDatabase)
     }
 }

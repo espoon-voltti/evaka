@@ -10,6 +10,7 @@ import React, {
   useRef,
   useState
 } from 'react'
+import LocalDate from '@evaka/lib-common/src/local-date'
 import { Td, Tr } from '@evaka/lib-components/src/layout/Table'
 import { DisabledCell } from '~components/absences/AbsenceCell'
 import { useTranslation } from '~state/i18n'
@@ -25,13 +26,11 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import styled from 'styled-components'
 import Tooltip from '~components/common/Tooltip'
 import colors from '@evaka/lib-components/src/colors'
-import { isOperationDay } from '~components/absences/utils'
-import { DayOfWeek } from '~types'
 
 type Props = {
   groupId: string
   emptyCols: number[]
-  operationDays: DayOfWeek[]
+  operationDays: LocalDate[]
 }
 
 export default memo(function StaffAttendance({
@@ -92,7 +91,7 @@ interface StaffAttendanceRowProps {
   attendanceGroup: StaffAttendanceGroup
   emptyCols: number[]
   updateAttendances: (staffAttendance: StaffAttendance) => Promise<() => void>
-  operationDays: DayOfWeek[]
+  operationDays: LocalDate[]
 }
 
 const StaffAttendanceRow = memo(function StaffAttendanceRow({
@@ -118,7 +117,9 @@ const StaffAttendanceRow = memo(function StaffAttendanceRow({
       {Object.keys(attendanceMap)
         .sort()
         .map((key) => {
-          return isOperationDay(attendanceMap[key].date, operationDays) ? (
+          return operationDays.some((operationDay) =>
+            operationDay.isEqual(attendanceMap[key].date)
+          ) ? (
             <Td key={key}>
               <StaffAttendanceCell
                 updateAttendances={updateAttendances}

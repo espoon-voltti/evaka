@@ -7,19 +7,18 @@ import { Link } from 'react-router-dom'
 import classNames from 'classnames'
 import LocalDate from '@evaka/lib-common/src/local-date'
 import { Child, TableMode } from '~types/absence'
-import { getRange, getWeekDay, getMonthDays, isOperationDay } from './utils'
+import { getRange, getWeekDay, getMonthDays } from './utils'
 import AbsenceCellWrapper, { DisabledCell } from './AbsenceCell'
 import StaffAttendance from './StaffAttendance'
 import { AbsencesState, AbsencesContext } from '~state/absence'
 import { Translations, useTranslation } from '~state/i18n'
 import Tooltip from '~components/common/Tooltip'
-import { DayOfWeek } from '~types'
 
 interface AbsenceRowProps {
   child: Child
   dateCols: LocalDate[]
   emptyCols: number[]
-  operationDays: DayOfWeek[]
+  operationDays: LocalDate[]
   i18n: Translations
 }
 
@@ -70,7 +69,9 @@ function AbsenceTableRow({
       </td>
       <td className={'hover-highlight'}>{child.dob.format()}</td>
       {dateCols.map((date) => {
-        return isOperationDay(date, operationDays) ? (
+        return operationDays.some((operationDay) =>
+          operationDay.isEqual(date)
+        ) ? (
           <td
             key={`${id}${date.formatIso()}`}
             className={`${
@@ -104,7 +105,7 @@ function AbsenceTableRow({
 interface AbsenceHeadProps {
   dateCols: LocalDate[]
   emptyCols: number[]
-  operationDays: DayOfWeek[]
+  operationDays: LocalDate[]
 }
 
 function AbsenceTableHead({
@@ -119,7 +120,7 @@ function AbsenceTableHead({
         <th>{i18n.absences.table.nameCol}</th>
         <th>{i18n.absences.table.dobCol}</th>
         {dateCols.map((item) =>
-          isOperationDay(item, operationDays) ? (
+          operationDays.some((operationDay) => operationDay.isEqual(item)) ? (
             <th
               key={item.getDate()}
               className={classNames({
@@ -146,7 +147,7 @@ function AbsenceTableHead({
 interface AbsenceTableProps {
   groupId: string
   childList: Child[]
-  operationDays: DayOfWeek[]
+  operationDays: LocalDate[]
 }
 
 function AbsenceTable({

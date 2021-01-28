@@ -13,6 +13,7 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.shared.domain.operationalDays
 import mu.KotlinLogging
 import org.jdbi.v3.core.kotlin.mapTo
 import org.springframework.stereotype.Service
@@ -58,7 +59,20 @@ class AbsenceService {
             }
             .distinct()
 
-        return AbsenceGroup(groupId, daycare.name, groupName, children, daycare.operationDays)
+        val operationalDays = run {
+            val fullMonth = generateSequence(startDate) { it.plusDays(1) }.takeWhile { it <= endDate }
+            // Units that are operational every day of the week are operational during holidays as well
+            if (daycare.operationDays == setOf(1, 2, 3, 4, 5, 6, 7)) fullMonth.toList()
+            else {
+                val holidays = tx.getHolidays(DateRange(startDate, endDate))
+                fullMonth
+                    .filter { daycare.operationDays.contains(it.dayOfWeek.value) }
+                    .filterNot { holidays.contains(it) }
+                    .toList()
+            }
+        }
+
+        return AbsenceGroup(groupId, daycare.name, groupName, children, operationalDays)
     }
 
     fun upsertAbsences(tx: Database.Transaction, absences: List<Absence>, groupId: UUID, userId: UUID) {
@@ -170,7 +184,7 @@ data class AbsenceGroup(
     val daycareName: String,
     var groupName: String,
     var children: List<AbsenceChild>,
-    val operationDays: Set<Int>
+    val operationDays: List<LocalDate>
 )
 
 data class AbsenceChild(
@@ -476,3 +490,10 @@ AND daterange(gp.start_date, gp.end_date, '[]') && :period
         .bind("period", period)
         .mapTo<GroupBackupCare>()
         .list()
+
+private fun Database.Read.getHolidays(dateRange: DateRange): List<LocalDate> = createQuery(
+    "SELECT date FROM holiday WHERE :dateRange @> date"
+)
+    .bind("dateRange", dateRange)
+    .mapTo<LocalDate>()
+    .list()
