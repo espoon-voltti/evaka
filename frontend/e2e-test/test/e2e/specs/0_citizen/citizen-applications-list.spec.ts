@@ -118,3 +118,81 @@ test('Citizen sees a link to accept a decision', async (t) => {
     'Vahvistettavana huoltajalla'
   )
 })
+
+test('Citizen can delete a draft application', async (t) => {
+  const application = applicationFixture(
+    fixtures.enduserChildFixtureJari,
+    fixtures.enduserGuardianFixture,
+    undefined,
+    'DAYCARE',
+    null,
+    [daycareFixture.id],
+    true,
+    'CREATED'
+  )
+  applicationId = application.id
+  await insertApplications([application])
+
+  await t.useRole(enduserRole)
+  await t.click(citizenHomePage.nav.applications)
+
+  await t
+    .expect(
+      citizenApplicationsPage.removeApplicationButton(applicationId).textContent
+    )
+    .contains('Poista hakemus')
+
+  // Check that cancel does nothing
+  await t.click(citizenApplicationsPage.removeApplicationButton(applicationId))
+  await t.click(citizenApplicationsPage.modalCancelBtn)
+  await t
+    .expect(
+      citizenApplicationsPage.removeApplicationButton(applicationId).textContent
+    )
+    .contains('Poista hakemus')
+
+  // Delete application
+  await t.click(citizenApplicationsPage.removeApplicationButton(applicationId))
+  await t.click(citizenApplicationsPage.modalOkBtn)
+
+  await citizenApplicationsPage.assertApplicationDoesNotExist(applicationId)
+})
+
+test('Citizen can cancel a sent application', async (t) => {
+  const application = applicationFixture(
+    fixtures.enduserChildFixtureJari,
+    fixtures.enduserGuardianFixture,
+    undefined,
+    'DAYCARE',
+    null,
+    [daycareFixture.id],
+    true,
+    'SENT'
+  )
+  applicationId = application.id
+  await insertApplications([application])
+
+  await t.useRole(enduserRole)
+  await t.click(citizenHomePage.nav.applications)
+
+  await t
+    .expect(
+      citizenApplicationsPage.removeApplicationButton(applicationId).textContent
+    )
+    .contains('Peruuta hakemus')
+
+  // Check that cancel does nothing
+  await t.click(citizenApplicationsPage.removeApplicationButton(applicationId))
+  await t.click(citizenApplicationsPage.modalCancelBtn)
+  await t
+    .expect(
+      citizenApplicationsPage.removeApplicationButton(applicationId).textContent
+    )
+    .contains('Peruuta hakemus')
+
+  // Cance application
+  await t.click(citizenApplicationsPage.removeApplicationButton(applicationId))
+  await t.click(citizenApplicationsPage.modalOkBtn)
+
+  await citizenApplicationsPage.assertApplicationDoesNotExist(applicationId)
+})

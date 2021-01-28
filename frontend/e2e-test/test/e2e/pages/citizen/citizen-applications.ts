@@ -22,6 +22,12 @@ export default class CitizenApplicationsPage {
   readonly applicationStatus = (applicationId: string) =>
     Selector(`[data-qa="application-status-${applicationId}"]`)
 
+  readonly removeApplicationButton = (applicationId: string) =>
+    Selector(`[data-qa="button-remove-application-${applicationId}"]`)
+
+  readonly modalOkBtn = Selector(`[data-qa="modal-okBtn"]`)
+  readonly modalCancelBtn = Selector(`[data-qa="modal-cancelBtn"]`)
+
   async assertApplication(
     applicationId: string,
     expectedApplicationType: string,
@@ -44,5 +50,15 @@ export default class CitizenApplicationsPage {
     await t
       .expect(this.applicationStatus(applicationId).textContent)
       .contains(expectedStatus)
+  }
+
+  async assertApplicationDoesNotExist(applicationId: string) {
+    await t
+      .expect(
+        Selector(`[data-qa="title-application-type-${applicationId}"]`, {
+          timeout: 2000
+        }).visible
+      )
+      .notOk()
   }
 }
