@@ -13,10 +13,10 @@ import { useTranslation } from '~state/i18n'
 import { DatePicker } from '@evaka/lib-components/src/molecules/DatePicker'
 import {
   DaycarePlacementPlan,
-  PlacementType,
   PlacementDraft,
   PlacementDraftPlacement
 } from '~types/placementdraft'
+import { PlacementType } from '~types/child'
 import colors from '@evaka/lib-components/src/colors'
 import FiniteDateRange from '@evaka/lib-common/src/finite-date-range'
 

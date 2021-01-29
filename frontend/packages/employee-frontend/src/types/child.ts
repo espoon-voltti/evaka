@@ -6,7 +6,7 @@ import { UUID } from '~types/index'
 import LocalDate from '@evaka/lib-common/src/local-date'
 import FiniteDateRange from '@evaka/lib-common/src/finite-date-range'
 
-type PlacementType =
+export type PlacementType =
   | 'CLUB'
   | 'DAYCARE'
   | 'DAYCARE_PART_TIME'
@@ -14,6 +14,8 @@ type PlacementType =
   | 'PRESCHOOL_DAYCARE'
   | 'PREPARATORY'
   | 'PREPARATORY_DAYCARE'
+  | 'TEMPORARY_DAYCARE'
+  | 'TEMPORARY_DAYCARE_PART_DAY'
 
 export interface ServiceNeed {
   id: UUID

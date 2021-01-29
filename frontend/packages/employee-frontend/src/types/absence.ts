@@ -5,7 +5,7 @@
 import { UUID } from '~types'
 import LocalDate from '@evaka/lib-common/src/local-date'
 import { JsonOf } from '@evaka/lib-common/src/json'
-import { PlacementType } from './placementdraft'
+import { PlacementType } from './child'
 import { Translations } from '~state/i18n'
 
 export type TableMode = 'MONTH'

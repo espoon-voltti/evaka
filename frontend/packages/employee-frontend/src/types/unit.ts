@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { DayOfWeek, UUID } from '~types'
-import { PlacementType } from '~types/placementdraft'
+import { PlacementType } from '~types/child'
 import LocalDate from '@evaka/lib-common/src/local-date'
 import FiniteDateRange from '@evaka/lib-common/src/finite-date-range'
 import DateRange from '@evaka/lib-common/src/date-range'

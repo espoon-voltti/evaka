@@ -10,7 +10,7 @@ import {
   PlacementPlanConfirmationStatus,
   PlacementPlanRejectReason
 } from '~types/unit'
-import { PlacementType } from '~types/placementdraft'
+import { PlacementType } from '~types/child'
 import {
   ApplicationAttachment,
   ApplicationDetails

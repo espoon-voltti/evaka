@@ -5,6 +5,7 @@
 import LocalDate from '@evaka/lib-common/src/local-date'
 import { UUID } from '~types/index'
 import FiniteDateRange from '@evaka/lib-common/src/finite-date-range'
+import { PlacementType } from '~types/child'
 
 interface Unit {
   id: UUID
@@ -17,17 +18,6 @@ interface Child {
   lastName: string
   dob: LocalDate
 }
-
-export type PlacementType =
-  | 'CLUB'
-  | 'DAYCARE'
-  | 'DAYCARE_PART_TIME'
-  | 'PRESCHOOL'
-  | 'PRESCHOOL_DAYCARE'
-  | 'PREPARATORY'
-  | 'PREPARATORY_DAYCARE'
-  | 'TEMPORARY_DAYCARE'
-  | 'TEMPORARY_DAYCARE_PART_DAY'
 
 export interface PlacementDraft {
   child: Child
