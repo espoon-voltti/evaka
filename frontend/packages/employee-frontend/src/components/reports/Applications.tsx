@@ -32,7 +32,7 @@ import {
   TableFooter,
   TableScrollable
 } from '~components/reports/common'
-import { DatePicker } from '@evaka/lib-components/src/molecules/DatePicker'
+import { DatePickerDeprecated } from '@evaka/lib-components/src/molecules/DatePickerDeprecated'
 import { distinct, reducePropertySum } from 'utils'
 import LocalDate from '@evaka/lib-common/src/local-date'
 import { FlexRow } from 'components/common/styled/containers'
@@ -90,14 +90,14 @@ function Applications() {
             {i18n.reports.applications.preferredStartingDate}
           </FilterLabel>
           <FlexRow>
-            <DatePicker
+            <DatePickerDeprecated
               date={filters.from}
               onChange={(from) => setFilters({ ...filters, from })}
               type="half-width"
               dataQa="datepicker-from"
             />
             <span>{' - '}</span>
-            <DatePicker
+            <DatePickerDeprecated
               date={filters.to}
               onChange={(to) => setFilters({ ...filters, to })}
               type="half-width"

@@ -13,7 +13,7 @@ import { PlacementType } from '~types/child'
 import FormModal from '@evaka/lib-components/src/molecules/modals/FormModal'
 import { faMapMarkerAlt } from '@evaka/lib-icons'
 import { UIContext } from '~state/ui'
-import { DatePicker } from '@evaka/lib-components/src/molecules/DatePicker'
+import { DatePickerDeprecated } from '@evaka/lib-components/src/molecules/DatePickerDeprecated'
 import { createPlacement } from 'api/child/placements'
 import Select from '~components/common/Select'
 import { FixedSpaceColumn } from '@evaka/lib-components/src/layout/flex-helpers'
@@ -177,7 +177,7 @@ function CreatePlacementModal({ childId, reload }: Props) {
         <section>
           <div className="bold">{i18n.common.form.startDate}</div>
 
-          <DatePicker
+          <DatePickerDeprecated
             date={form.startDate}
             onChange={(startDate) => setForm({ ...form, startDate })}
             dataQa="create-placement-start-date"
@@ -188,7 +188,7 @@ function CreatePlacementModal({ childId, reload }: Props) {
         <section>
           <div className="bold">{i18n.common.form.endDate}</div>
 
-          <DatePicker
+          <DatePickerDeprecated
             date={form.endDate}
             onChange={(endDate) => setForm({ ...form, endDate })}
             dataQa="create-placement-end-date"

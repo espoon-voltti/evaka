@@ -14,7 +14,7 @@ import {
 import { Label } from '@evaka/lib-components/src/typography'
 import { AsyncFormModal } from '@evaka/lib-components/src/molecules/modals/FormModal'
 import { AlertBox } from '@evaka/lib-components/src/molecules/MessageBoxes'
-import { DatePicker } from '@evaka/lib-components/src/molecules/DatePicker'
+import { DatePickerDeprecated } from '@evaka/lib-components/src/molecules/DatePickerDeprecated'
 import Invoices from './Invoices'
 import InvoiceFilters from './InvoiceFilters'
 import Actions from './Actions'
@@ -123,7 +123,7 @@ const Modal = React.memo(function Modal({
       <ModalContent>
         <Label>{i18n.invoices.sendModal.invoiceDate}</Label>
         <div>
-          <DatePicker
+          <DatePickerDeprecated
             date={invoiceDate}
             onChange={setInvoiceDate}
             type="full-width"
@@ -133,7 +133,7 @@ const Modal = React.memo(function Modal({
         <Gap size="s" />
         <Label>{i18n.invoices.sendModal.dueDate}</Label>
         <div>
-          <DatePicker
+          <DatePickerDeprecated
             date={dueDate}
             onChange={setDueDate}
             type="full-width"

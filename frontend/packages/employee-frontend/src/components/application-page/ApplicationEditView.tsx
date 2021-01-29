@@ -32,7 +32,7 @@ import Radio from '@evaka/lib-components/src/atoms/form/Radio'
 import Checkbox from '@evaka/lib-components/src/atoms/form/Checkbox'
 import { TextArea } from '@evaka/lib-components/src/atoms/form/InputField'
 import colors from '@evaka/lib-components/src/colors'
-import { DatePicker } from '@evaka/lib-components/src/molecules/DatePicker'
+import { DatePickerDeprecated } from '@evaka/lib-components/src/molecules/DatePickerDeprecated'
 import ApplicationTitle from 'components/application-page/ApplicationTitle'
 import VTJGuardian from 'components/application-page/VTJGuardian'
 import ApplicationStatusSection from 'components/application-page/ApplicationStatusSection'
@@ -122,7 +122,7 @@ export default React.memo(function ApplicationEditView({
           <Label>{i18n.application.serviceNeed.startDate}</Label>
           <div data-qa="datepicker-start-date">
             <HorizontalContainer>
-              <DatePicker
+              <DatePickerDeprecated
                 type="short"
                 date={preferredStartDate ?? undefined}
                 onChange={(value) => {
@@ -526,7 +526,7 @@ export default React.memo(function ApplicationEditView({
                     path={'child'}
                   />
                   <Label>{i18n.application.person.movingDate}</Label>
-                  <DatePicker
+                  <DatePickerDeprecated
                     type="short"
                     date={child.futureAddress.movingDate ?? undefined}
                     onChange={(value) => {
@@ -612,7 +612,7 @@ export default React.memo(function ApplicationEditView({
                         path={'guardian'}
                       />
                       <Label>{i18n.application.person.movingDate}</Label>
-                      <DatePicker
+                      <DatePickerDeprecated
                         type="short"
                         date={guardian.futureAddress.movingDate ?? undefined}
                         onChange={(value) => {

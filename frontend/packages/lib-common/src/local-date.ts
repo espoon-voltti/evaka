@@ -26,6 +26,7 @@ import {
 } from 'date-fns'
 
 const isoPattern = /^([0-9]+)-([0-9]+)-([0-9]+)$/
+const fiPattern = /^(\d{2})\.(\d{2})\.(\d{4})$/
 
 export default class LocalDate {
   private constructor(
@@ -140,6 +141,21 @@ export default class LocalDate {
       throw new RangeError('Invalid date')
     }
     return result
+  }
+  static parseFi(value: string): LocalDate {
+    const parts = fiPattern.exec(value)
+    if (!parts) {
+      throw new RangeError(`Invalid FI date ${value}`)
+    }
+    const date = LocalDate.tryCreate(
+      Number(parts[3]),
+      Number(parts[2]),
+      Number(parts[1])
+    )
+    if (!date) {
+      throw new RangeError(`Invalid date ${value}`)
+    }
+    return date
   }
   static parseIso(value: string): LocalDate {
     const result = LocalDate.tryParseIso(value)

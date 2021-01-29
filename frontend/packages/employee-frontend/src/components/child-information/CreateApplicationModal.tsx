@@ -14,7 +14,7 @@ import { FixedSpaceColumn } from '@evaka/lib-components/src/layout/flex-helpers'
 import Radio from '@evaka/lib-components/src/atoms/form/Radio'
 import PersonSearch from 'components/common/PersonSearch'
 import { UUID } from 'types'
-import { DatePicker } from '@evaka/lib-components/src/molecules/DatePicker'
+import { DatePickerDeprecated } from '@evaka/lib-components/src/molecules/DatePickerDeprecated'
 import LocalDate from '@evaka/lib-common/src/local-date'
 import Select from 'components/common/Select'
 import {
@@ -281,7 +281,7 @@ function CreateApplicationModal({
         <div>
           <Label>{i18nView.sentDate}</Label>
           <div>
-            <DatePicker
+            <DatePickerDeprecated
               date={sentDate}
               onChange={setSentDate}
               type="full-width"

@@ -6,7 +6,7 @@ import React, { useContext, useEffect, useState } from 'react'
 import FormModal from '@evaka/lib-components/src/molecules/modals/FormModal'
 import { useTranslation } from '~state/i18n'
 import { UIContext } from '~state/ui'
-import { DatePicker } from '@evaka/lib-components/src/molecules/DatePicker'
+import { DatePickerDeprecated } from '@evaka/lib-components/src/molecules/DatePickerDeprecated'
 import InputField from '@evaka/lib-components/src/atoms/form/InputField'
 import { allPropertiesTrue } from '~utils/validation/validations'
 import '~components/unit/tab-groups/groups/GroupModal.scss'
@@ -111,7 +111,7 @@ function GroupModal({ unitId, reload }: Props) {
         </section>
         <section>
           <div className="bold">{i18n.common.form.startDate}</div>
-          <DatePicker
+          <DatePickerDeprecated
             date={form.startDate}
             onChange={(startDate) => assignForm({ startDate })}
             type="full-width"

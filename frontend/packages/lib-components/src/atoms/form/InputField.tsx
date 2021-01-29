@@ -139,6 +139,7 @@ interface TextInputProps extends BaseProps {
   onChange?: (value: string) => void
   onFocus?: (e: React.FocusEvent<HTMLInputElement>) => void
   onBlur?: (e: React.FocusEvent<HTMLInputElement>) => void
+  onKeyPress?: (e: React.KeyboardEvent) => void
   readonly?: boolean
   width?: InputWidth
 
@@ -157,6 +158,7 @@ interface TextInputProps extends BaseProps {
   id?: string
   'data-qa'?: string
   name?: string
+  'aria-describedby'?: string
 }
 
 function InputField({
@@ -164,6 +166,7 @@ function InputField({
   onChange,
   onFocus,
   onBlur,
+  onKeyPress,
   readonly,
   width = 'full',
   placeholder,
@@ -178,7 +181,8 @@ function InputField({
   max,
   step,
   id,
-  'data-qa': dataQa2
+  'data-qa': dataQa2,
+  'aria-describedby': ariaId
 }: TextInputProps) {
   return (
     <Wrapper>
@@ -191,6 +195,7 @@ function InputField({
           }}
           onFocus={onFocus}
           onBlur={onBlur}
+          onKeyPress={onKeyPress}
           placeholder={placeholder}
           readOnly={readonly}
           disabled={readonly}
@@ -204,6 +209,7 @@ function InputField({
           max={max}
           step={step}
           id={id}
+          aria-describedby={ariaId}
         />
         {clearable && !icon && (
           <InputIcon onClick={() => onChange && onChange('')}>

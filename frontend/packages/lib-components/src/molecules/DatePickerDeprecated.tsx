@@ -11,7 +11,7 @@ import colors from '../colors'
 
 import 'react-datepicker/dist/react-datepicker.css'
 
-const DATE_FORMATS_PARSED = [
+export const DATE_FORMATS_PARSED = [
   'dd.MM.yyyy',
   'dd.MM.yy',
   'd.M.yyyy',
@@ -156,8 +156,10 @@ const defaultProps: Partial<ReactDatePickerProps> = {
   showMonthDropdown: true,
   showYearDropdown: true
 }
-
-export function DatePicker({
+/**
+ * @deprecated
+ */
+export function DatePickerDeprecated({
   date,
   onChange,
   onFocus,
@@ -201,7 +203,10 @@ export function DatePicker({
   )
 }
 
-export function DatePickerClearable({
+/**
+ * @deprecated
+ */
+export function DatePickerClearableDeprecated({
   date = null,
   onChange,
   onFocus,
@@ -212,8 +217,7 @@ export function DatePickerClearable({
   type = 'half-width',
   options,
   className,
-  dataQa,
-  placeholder
+  dataQa
 }: DatePickerClearableProps) {
   const ref = React.createRef<HTMLInputElement>()
   return (
@@ -239,7 +243,6 @@ export function DatePickerClearable({
           }
         }}
         onFocus={onFocus}
-        placeholderText={placeholder}
         {...options}
       />
     </DatePickerContainer>

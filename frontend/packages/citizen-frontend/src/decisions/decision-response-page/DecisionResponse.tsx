@@ -17,13 +17,13 @@ import {
   FixedSpaceRow
 } from '@evaka/lib-components/src/layout/flex-helpers'
 import Radio from '@evaka/lib-components/src/atoms/form/Radio'
-import { DatePicker } from '@evaka/lib-components/src/molecules/DatePicker'
 import Button from '@evaka/lib-components/src/atoms/buttons/Button'
 import { acceptDecision, rejectDecision } from '~decisions/api'
 import { PdfLink } from '~decisions/PdfLink'
 import { Status, decisionStatusIcon } from '~decisions/shared'
 import { AsyncFormModal } from '@evaka/lib-components/src/molecules/modals/FormModal'
 import { faExclamation } from '@evaka/lib-icons'
+import { DatePickerDeprecated } from '@evaka/lib-components/src/molecules/DatePickerDeprecated'
 
 interface SingleDecisionProps {
   decision: Decision
@@ -134,7 +134,7 @@ export default React.memo(function DecisionResponse({
                 disabled={blocked || submitting}
                 dataQa={'radio-accept'}
               />
-              <DatePicker
+              <DatePickerDeprecated
                 date={requestedStartDate}
                 onChange={setRequestedStartDate}
                 type="short"

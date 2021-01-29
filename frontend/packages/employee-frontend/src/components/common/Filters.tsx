@@ -15,7 +15,7 @@ import {
 } from '@evaka/lib-icons'
 import LocalDate from '@evaka/lib-common/src/local-date'
 import InlineButton from '@evaka/lib-components/src/atoms/buttons/InlineButton'
-import { DatePickerClearable } from '@evaka/lib-components/src/molecules/DatePicker'
+import { DatePickerClearableDeprecated } from '@evaka/lib-components/src/molecules/DatePickerDeprecated'
 import { useTranslation } from '~state/i18n'
 import {
   DecisionDistinctiveDetails,
@@ -425,14 +425,14 @@ export function FeeDecisionDateFilter({
       </Label>
 
       <FlexRow>
-        <DatePickerClearable
+        <DatePickerClearableDeprecated
           date={startDate}
           onChange={setStartDate}
           dataQa="fee-decisions-start-date"
           onCleared={() => setStartDate(undefined)}
         />
         <Gap horizontal size="xs" />
-        <DatePickerClearable
+        <DatePickerClearableDeprecated
           date={endDate}
           onChange={setEndDate}
           dataQa="fee-decisions-start-date"
@@ -567,14 +567,14 @@ export function InvoiceDateFilter({
       </Label>
 
       <FlexRow>
-        <DatePickerClearable
+        <DatePickerClearableDeprecated
           date={startDate}
           onChange={setStartDate}
           dataQa="invoices-start-date"
           onCleared={() => setStartDate(undefined)}
         />
         <Gap horizontal size="xs" />
-        <DatePickerClearable
+        <DatePickerClearableDeprecated
           date={endDate}
           onChange={setEndDate}
           dataQa="invoices-end-date"
@@ -866,14 +866,14 @@ export function ApplicationDateFilter({
       </FixedSpaceColumn>
       <Gap size="s" />
       <FlexRow>
-        <DatePickerClearable
+        <DatePickerClearableDeprecated
           date={startDate}
           onChange={setStartDate}
           dataQa="applications-start-date"
           onCleared={() => setStartDate(undefined)}
         />
         <span>-</span>
-        <DatePickerClearable
+        <DatePickerClearableDeprecated
           date={endDate}
           onChange={setEndDate}
           dataQa="applications-end-date"

@@ -16,7 +16,7 @@ import { getPresenceReport, PeriodFilters } from '~api/reports'
 import ReturnButton from '@evaka/lib-components/src/atoms/buttons/ReturnButton'
 import ReportDownload from '~components/reports/ReportDownload'
 import { FilterLabel, FilterRow } from '~components/reports/common'
-import { DatePicker } from '@evaka/lib-components/src/molecules/DatePicker'
+import { DatePickerDeprecated } from '@evaka/lib-components/src/molecules/DatePickerDeprecated'
 import LocalDate from '@evaka/lib-common/src/local-date'
 import { FlexRow } from 'components/common/styled/containers'
 
@@ -41,13 +41,13 @@ function Presences() {
         <FilterRow>
           <FilterLabel>{i18n.reports.common.period}</FilterLabel>
           <FlexRow>
-            <DatePicker
+            <DatePickerDeprecated
               date={filters.from}
               onChange={(from) => setFilters({ ...filters, from })}
               type="half-width"
             />
             <span>{' - '}</span>
-            <DatePicker
+            <DatePickerDeprecated
               date={filters.to}
               onChange={(to) => setFilters({ ...filters, to })}
               type="half-width"

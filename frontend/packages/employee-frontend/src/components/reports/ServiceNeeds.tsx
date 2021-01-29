@@ -22,7 +22,7 @@ import { ServiceNeedReportRow } from '~types/reports'
 import { DateFilters, getServiceNeedReport } from '~api/reports'
 import ReturnButton from '@evaka/lib-components/src/atoms/buttons/ReturnButton'
 import ReportDownload from '~components/reports/ReportDownload'
-import { DatePicker } from '@evaka/lib-components/src/molecules/DatePicker'
+import { DatePickerDeprecated } from '@evaka/lib-components/src/molecules/DatePickerDeprecated'
 import {
   FilterLabel,
   FilterRow,
@@ -72,7 +72,7 @@ function ServiceNeeds() {
         <Title size={1}>{i18n.reports.serviceNeeds.title}</Title>
         <FilterRow>
           <FilterLabel>{i18n.reports.common.date}</FilterLabel>
-          <DatePicker
+          <DatePickerDeprecated
             date={filters.date}
             onChange={(date) => setFilters({ date })}
           />

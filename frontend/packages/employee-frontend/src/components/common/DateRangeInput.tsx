@@ -6,7 +6,7 @@ import React, { useState, useEffect } from 'react'
 import styled from 'styled-components'
 import LocalDate from '@evaka/lib-common/src/local-date'
 import { Gap } from '@evaka/lib-components/src/white-space'
-import { DatePicker } from '@evaka/lib-components/src/molecules/DatePicker'
+import { DatePickerDeprecated } from '@evaka/lib-components/src/molecules/DatePickerDeprecated'
 import { useTranslation } from '../../state/i18n'
 
 type NullableEnd = {
@@ -140,7 +140,7 @@ function BaseDateRangeInput({
 
   return (
     <Container>
-      <DatePicker
+      <DatePickerDeprecated
         date={start}
         onChange={setStartValue}
         dataQa="date-range-input-start-date"
@@ -149,7 +149,7 @@ function BaseDateRangeInput({
       <Gap size="xs" horizontal />
       -
       <Gap size="xs" horizontal />
-      <DatePicker
+      <DatePickerDeprecated
         date={end}
         onChange={setEndValue}
         dataQa="date-range-input-end-date"
