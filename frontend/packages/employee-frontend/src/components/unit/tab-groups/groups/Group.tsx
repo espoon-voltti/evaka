@@ -13,7 +13,6 @@ import {
   Stats,
   Unit
 } from '~types/unit'
-import '~components/unit/tab-groups/groups/Group.scss'
 import {
   Table,
   Td,
@@ -402,21 +401,20 @@ function Group({
                             : `${placement.period.start.format()} - ${placement.period.end.format()}`}
                         </Td>
                         {canManageChildren ? (
-                          <Td className="row-buttons">
-                            <FixedSpaceRow>
-                              <InlineButton
-                                onClick={() => onTransferRequested(placement)}
-                                dataQa="transfer-btn"
-                                icon={faExchange}
-                                text={i18n.unit.groups.transferBtn}
-                              />
-                              <InlineButton
-                                onClick={() => onDeletePlacement(placement)}
-                                dataQa="remove-btn"
-                                icon={faUndo}
-                                text={i18n.unit.groups.returnBtn}
-                              />
-                            </FixedSpaceRow>
+                          <Td align="right">
+                            <InlineButton
+                              onClick={() => onTransferRequested(placement)}
+                              dataQa="transfer-btn"
+                              icon={faExchange}
+                              text={i18n.unit.groups.transferBtn}
+                            />
+                            <Gap size="s" horizontal />
+                            <InlineButton
+                              onClick={() => onDeletePlacement(placement)}
+                              dataQa="remove-btn"
+                              icon={faUndo}
+                              text={i18n.unit.groups.returnBtn}
+                            />
                           </Td>
                         ) : null}
                       </Tr>
