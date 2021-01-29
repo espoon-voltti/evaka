@@ -130,6 +130,37 @@ const en: Translations = {
           created: 'Created',
           modified: 'Last modified'
         },
+        serviceNeed: {
+          title: 'Palveluntarve',
+          attachments: {
+            label: 'Tarvittavat liitteet',
+            withoutAttachments: 'Ei liitetty, lähetetään postilla'
+          },
+          startDate: {
+            title: 'Varhaiskasvatuksen aloitus',
+            preferredStartDate: 'Toivottu aloituspäivä',
+            urgency: 'Hakemus on kiireellinen',
+            withUrgency: 'Kyllä',
+            withoutUrgency: 'Ei'
+          },
+          dailyTime: {
+            title: 'Päivittäinen varhaiskasvatusaika',
+            partTime: 'Osa- tai kokopäiväinen',
+            withPartTime: 'Osa-aikainen',
+            withoutPartTime: 'Kokoaikainen',
+            dailyTime: 'Varhaiskasvatuksen alkamis- ja päättymisaika',
+            shiftCare: 'Ilta- ja vuorohoito',
+            withShiftCare: 'Tarvitaan ilta- tai vuorohoitoa',
+            withoutShiftCare: 'Ei tarvita ilta- tai vuorohoitoa'
+          },
+          assistanceNeed: {
+            title: 'Tuen tarve',
+            assistanceNeed: 'Lapsella on tuen tarve',
+            withAssistanceNeed: 'Lapsella on tuen tarve',
+            withoutAssistanceNeed: 'Lapsella ei ole tuen tarvetta',
+            description: 'Tuen tarpeen kuvaus'
+          }
+        },
         unitPreference: {
           title: 'Preferred units',
           siblingBasis: {
