@@ -88,26 +88,6 @@ module.exports = function (env, argv) {
             }
           ]
         },
-        // All SASS
-        {
-          test: /\.scss$/,
-          use: [
-            'style-loader',
-            {
-              loader: 'css-loader',
-              options: { importLoaders: 2 }
-            },
-            {
-              loader: 'postcss-loader',
-              options: {
-                postcssOptions: {
-                  config: path.resolve(__dirname, 'package.json')
-                }
-              }
-            },
-            'sass-loader'
-          ]
-        },
         // Static files
         {
           test: /\.(woff|woff2|otf|ttf|eot|svg|png|gif|jpg)$/,
