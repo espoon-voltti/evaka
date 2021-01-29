@@ -158,7 +158,7 @@ class ConfirmedOccupancyTest : FullApplicationTest() {
         val result = fetchAndParseOccupancy(testDaycare.id, defaultPeriod)
 
         assertEquals(
-            listOf(OccupancyPeriod(defaultPeriod, 1.0, 1)),
+            listOf(OccupancyPeriod(defaultPeriod, 0.54, 1)),
             result
         )
     }
@@ -376,7 +376,7 @@ class ConfirmedOccupancyTest : FullApplicationTest() {
 
         assertEquals(
             listOf(
-                OccupancyPeriod(defaultPeriod.copy(end = LocalDate.of(2019, 7, 31)), 1.0, 1),
+                OccupancyPeriod(defaultPeriod.copy(end = LocalDate.of(2019, 7, 31)), 0.54, 1),
                 OccupancyPeriod(defaultPeriod.copy(start = LocalDate.of(2019, 8, 1)), 0.5, 1)
             ),
             result
