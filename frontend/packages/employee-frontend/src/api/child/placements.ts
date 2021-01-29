@@ -4,9 +4,8 @@
 
 import { Failure, Result, Success } from '@evaka/lib-common/src/api'
 import { client } from 'api/client'
-import { Placement } from 'types/child'
+import { Placement, PlacementType } from 'types/child'
 import { UUID } from 'types'
-import { PlacementType } from 'types/placementdraft'
 import { JsonOf } from '@evaka/lib-common/src/json'
 import LocalDate from '@evaka/lib-common/src/local-date'
 

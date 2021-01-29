@@ -4,12 +4,13 @@
 
 import React, { FormEvent, useContext, useEffect, useState } from 'react'
 import LocalDate from '@evaka/lib-common/src/local-date'
+import DateRange from '@evaka/lib-common/src/date-range'
 import { useTranslation } from '~/state/i18n'
 import { UIContext } from '~state/ui'
 import { Gap } from '@evaka/lib-components/src/white-space'
 import Checkbox from '@evaka/lib-components/src/atoms/form/Checkbox'
 import InputField from '@evaka/lib-components/src/atoms/form/InputField'
-import { ServiceNeed } from '~types/child'
+import { Placement, ServiceNeed } from '~types/child'
 import { UUID } from '~types'
 import { FormErrors, formHasErrors } from '~utils/validation/validations'
 import {
@@ -66,7 +67,7 @@ interface ServiceNeedFormErrors extends FormErrors {
     inverted: boolean
     conflict: boolean
   }
-  coefficient: boolean
+  hours: boolean
 }
 
 const noErrors: ServiceNeedFormErrors = {
@@ -74,17 +75,39 @@ const noErrors: ServiceNeedFormErrors = {
     inverted: false,
     conflict: false
   },
-  coefficient: false
+  hours: false
 }
 
 function isCreate(props: Props): props is CreateProps {
   return (props as CreateProps).childId !== undefined
 }
 
+function placementTypeAndHoursMismatch(
+  placement: Placement,
+  hours: number
+): boolean {
+  switch (placement.type) {
+    case 'CLUB':
+      return false
+    case 'PRESCHOOL':
+      return hours > 20
+    case 'PRESCHOOL_DAYCARE':
+      return hours <= 20
+    case 'PREPARATORY':
+    case 'DAYCARE_PART_TIME':
+    case 'TEMPORARY_DAYCARE_PART_DAY':
+      return hours > 25
+    case 'PREPARATORY_DAYCARE':
+    case 'DAYCARE':
+    case 'TEMPORARY_DAYCARE':
+      return hours <= 25
+  }
+}
+
 function ServiceNeedForm(props: Props) {
   const { i18n } = useTranslation()
   const { clearUiMode, setErrorMessage } = useContext(UIContext)
-  const { serviceNeeds } = useContext(ChildContext)
+  const { serviceNeeds, placements } = useContext(ChildContext)
 
   const initialFormState: FormState = isCreate(props)
     ? {
@@ -102,8 +125,6 @@ function ServiceNeedForm(props: Props) {
   const [form, setForm] = useState<FormState>(initialFormState)
 
   const [formErrors, setFormErrors] = useState<ServiceNeedFormErrors>(noErrors)
-
-  const [autoCutWarning, setAutoCutWarning] = useState<boolean>(false)
 
   const getExistingServiceNeedRanges = (): DateRangeOpen[] =>
     serviceNeeds
@@ -135,24 +156,54 @@ function ServiceNeedForm(props: Props) {
     setForm(newState)
   }
 
-  useEffect(() => {
-    setFormErrors({
+  const placementMismatch = (form: FormState) =>
+    placements
+      .map((ps) => {
+        if (form.endDate && !form.startDate.isBefore(form.endDate)) {
+          return false
+        }
+
+        const snDateRange = new DateRange(form.startDate, form.endDate)
+        return ps
+          .filter((p) =>
+            new DateRange(p.startDate, p.endDate).overlapsWith(snDateRange)
+          )
+          .some((p) => placementTypeAndHoursMismatch(p, form.hoursPerWeek))
+      })
+      .getOrElse(false)
+
+  const checkFormErrors = (updatedForm?: Partial<FormState>) => {
+    const mergedForm = { ...form, ...updatedForm }
+    return {
       dateRange: {
-        inverted: form.endDate ? form.endDate.isBefore(form.startDate) : false,
+        inverted: mergedForm.endDate
+          ? mergedForm.endDate.isBefore(mergedForm.startDate)
+          : false,
         conflict: isCreate(props) ? checkHardConflict() : checkAnyConflict()
       },
-      coefficient: false
-    })
+      hours: placementMismatch(mergedForm)
+    }
+  }
 
-    setAutoCutWarning(
-      isCreate(props) && checkSoftConflict() && !checkHardConflict()
-    )
+  useEffect(() => {
+    if (!formHasErrors(formErrors)) {
+      return
+    }
+
+    setFormErrors(checkFormErrors())
   }, [form, serviceNeeds])
+
+  const autoCutWarning =
+    isCreate(props) && checkSoftConflict() && !checkHardConflict()
 
   const submitForm = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
 
-    if (formHasErrors(formErrors)) return
+    const errors = checkFormErrors()
+    if (formHasErrors(errors)) {
+      setFormErrors(errors)
+      return
+    }
 
     const apiCall = isCreate(props)
       ? createServiceNeed(props.childId, form)
@@ -195,13 +246,22 @@ function ServiceNeedForm(props: Props) {
                 <DivFitContent>
                   <DatePicker
                     date={form.startDate}
-                    onChange={(startDate) => updateFormState({ startDate })}
+                    onChange={(startDate) => {
+                      updateFormState({ startDate })
+                      setFormErrors(checkFormErrors({ startDate }))
+                    }}
                   />
                   {' - '}
                   <DatePickerClearable
                     date={form.endDate}
-                    onChange={(endDate) => updateFormState({ endDate })}
-                    onCleared={() => updateFormState({ endDate: null })}
+                    onChange={(endDate) => {
+                      updateFormState({ endDate })
+                      setFormErrors(checkFormErrors({ endDate }))
+                    }}
+                    onCleared={() => {
+                      updateFormState({ endDate: null })
+                      setFormErrors(checkFormErrors({ endDate: null }))
+                    }}
                   />
                 </DivFitContent>
 
@@ -236,6 +296,17 @@ function ServiceNeedForm(props: Props) {
                         hoursPerWeek: Number(value)
                       })
                     }
+                    onBlur={() => setFormErrors(checkFormErrors())}
+                    info={
+                      formErrors.hours
+                        ? {
+                            text:
+                              i18n.childInformation.serviceNeed.errors
+                                .checkHours,
+                            status: 'warning'
+                          }
+                        : undefined
+                    }
                   />
                   <span>{i18n.childInformation.serviceNeed.hoursInWeek}</span>
                 </NumberInputWrapper>
@@ -244,7 +315,18 @@ function ServiceNeedForm(props: Props) {
           }
         ]}
       />
-
+      {formErrors.hours && (
+        <>
+          <Gap size="xs" />
+          <AlertBox
+            message={
+              i18n.childInformation.serviceNeed.errors.placementMismatchWarning
+            }
+            thin
+            wide
+          />
+        </>
+      )}
       <Gap size="s" />
       <InfoBox
         message={i18n.childInformation.serviceNeed.hoursPerWeekInfo}
