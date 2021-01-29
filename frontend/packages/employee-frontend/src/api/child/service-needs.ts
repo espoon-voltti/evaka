@@ -24,12 +24,10 @@ export async function createServiceNeed(
   serviceNeedData: ServiceNeedRequest
 ): Promise<Result<ServiceNeed>> {
   return client
-    .post<JsonOf<ServiceNeed>>(`/children/${childId}/service-needs`, {
-      ...serviceNeedData,
-      // TODO: remove once backend no longer requires them
-      preschool: false,
-      freeForFiveYearOlds: false
-    })
+    .post<JsonOf<ServiceNeed>>(
+      `/children/${childId}/service-needs`,
+      serviceNeedData
+    )
     .then((res) => res.data)
     .then((data) => ({
       ...data,
