@@ -8,7 +8,10 @@ import fi.espoo.evaka.Audit
 import fi.espoo.evaka.application.removeOldDrafts
 import fi.espoo.evaka.attachment.AttachmentsController
 import fi.espoo.evaka.dvv.DvvModificationsBatchRefreshService
-import fi.espoo.evaka.koski.KoskiUpdateService
+import fi.espoo.evaka.invoicing.controller.parseUUID
+import fi.espoo.evaka.koski.KoskiSearchParams
+import fi.espoo.evaka.shared.async.AsyncJobRunner
+import fi.espoo.evaka.shared.async.ScheduleKoskiUploads
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.varda.VardaUpdateService
 import org.springframework.http.ResponseEntity
@@ -21,9 +24,9 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/scheduled")
 class ScheduledOperationController(
     private val vardaUpdateService: VardaUpdateService,
-    private val koskiUpdateService: KoskiUpdateService,
     private val dvvModificationsBatchRefreshService: DvvModificationsBatchRefreshService,
-    private val attachmentsController: AttachmentsController
+    private val attachmentsController: AttachmentsController,
+    private val asyncJobRunner: AsyncJobRunner
 ) {
 
     @PostMapping("/dvv/update")
@@ -38,7 +41,12 @@ class ScheduledOperationController(
         @RequestParam(required = false) personIds: String?,
         @RequestParam(required = false) daycareIds: String?
     ): ResponseEntity<Unit> {
-        koskiUpdateService.update(db, personIds, daycareIds)
+        val params = KoskiSearchParams(
+            personIds = personIds?.split(",")?.map(::parseUUID) ?: listOf(),
+            daycareIds = daycareIds?.split(",")?.map(::parseUUID) ?: listOf()
+        )
+        db.transaction { asyncJobRunner.plan(it, listOf(ScheduleKoskiUploads(params))) }
+        asyncJobRunner.scheduleImmediateRun()
         return ResponseEntity.noContent().build()
     }
 

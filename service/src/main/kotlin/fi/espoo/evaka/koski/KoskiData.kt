@@ -141,20 +141,20 @@ data class KoskiActiveDataRaw(
 
     fun toKoskiData(sourceSystem: String, today: LocalDate): KoskiData? {
         // It's possible clamping to preschool term has removed all placements -> no study right can be created
-        val placementRange = studyRightTimelines.placement.spanningPeriod() ?: return null
+        val placementSpan = studyRightTimelines.placement.spanningRange() ?: return null
 
-        val isQualifiedByDate = placementRange.end.let {
+        val isQualifiedByDate = placementSpan.end.let {
             it.isAfter(LocalDate.of(endTerm.end.year, 4, 30)) && it.isBefore(today)
         }
-        val qualifiedDate = placementRange.end.takeIf {
+        val qualifiedDate = placementSpan.end.takeIf {
             when (type) {
                 OpiskeluoikeudenTyyppiKoodi.PRESCHOOL -> isQualifiedByDate
                 OpiskeluoikeudenTyyppiKoodi.PREPARATORY -> {
-                    // We intentionally only include here absence periods longer than one week
+                    // We intentionally only include here absence ranges longer than one week
                     // So, it doesn't matter even if the child is randomly absent for 31 or more individual days
-                    // if they don't form long enough continuous absence periods
+                    // if they don't form long enough continuous absence ranges
                     val totalAbsences = studyRightTimelines.plannedAbsence.addAll(studyRightTimelines.unknownAbsence)
-                        .periods().map { it.durationInDays() }.sum()
+                        .ranges().map { it.durationInDays() }.sum()
                     isQualifiedByDate && totalAbsences <= 30
                 }
             }
@@ -171,28 +171,28 @@ data class KoskiActiveDataRaw(
     }
 
     private fun haeOpiskeluoikeusjaksot(today: LocalDate, qualifiedDate: LocalDate?): List<Opiskeluoikeusjakso> {
-        val placementRange = studyRightTimelines.placement.spanningPeriod() ?: return emptyList()
+        val placementSpan = studyRightTimelines.placement.spanningRange() ?: return emptyList()
 
-        val present = studyRightTimelines.present.periods()
+        val present = studyRightTimelines.present.ranges()
             .map { Opiskeluoikeusjakso.läsnä(it.start) }
         val gaps = studyRightTimelines.placement
             .gaps()
             .map { Opiskeluoikeusjakso.väliaikaisestiKeskeytynyt(it.start) }
-        val holidays = studyRightTimelines.plannedAbsence.periods()
+        val holidays = studyRightTimelines.plannedAbsence.ranges()
             .map { Opiskeluoikeusjakso.loma(it.start) }
-        val absent = studyRightTimelines.unknownAbsence.periods()
+        val absent = studyRightTimelines.unknownAbsence.ranges()
             .map { Opiskeluoikeusjakso.väliaikaisestiKeskeytynyt(it.start) }
 
         val result = mutableListOf<Opiskeluoikeusjakso>()
         result.addAll((present + gaps + holidays + absent))
 
         when {
-            placementRange.end.isAfter(today) -> {
+            placementSpan.end.isAfter(today) -> {
                 // still ongoing
             }
             else -> result.add(
                 if (qualifiedDate != null) Opiskeluoikeusjakso.valmistunut(qualifiedDate)
-                else Opiskeluoikeusjakso.eronnut(placementRange.end)
+                else Opiskeluoikeusjakso.eronnut(placementSpan.end)
             )
         }
         result.sortBy { it.alku }
@@ -296,14 +296,14 @@ internal fun calculateStudyRightTimelines(
             )
             .fillWeekendAndHolidayGaps(holidays)
             .intersection(placement)
-            .periods().filter { it.durationInDays() > 7 }
+            .ranges().filter { it.durationInDays() > 7 }
     )
     val unknownAbsence = Timeline().addAll(
         Timeline()
             .addAll(absences.filter { it.type == AbsenceType.UNKNOWN_ABSENCE }.map { it.date.toFiniteDateRange() })
             .fillWeekendAndHolidayGaps(holidays)
             .intersection(placement)
-            .periods().filter { it.durationInDays() > 7 }
+            .ranges().filter { it.durationInDays() > 7 }
     )
 
     return StudyRightTimelines(

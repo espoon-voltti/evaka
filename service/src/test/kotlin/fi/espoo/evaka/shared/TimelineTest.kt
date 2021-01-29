@@ -16,7 +16,7 @@ class TimelineTest {
     fun `an empty timeline contains nothing`() {
         val timeline = Timeline.of()
         assertFalse(timeline.contains(FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2020, 1, 1))))
-        assertEquals(emptyList<FiniteDateRange>(), timeline.periods().toList())
+        assertEquals(emptyList<FiniteDateRange>(), timeline.ranges().toList())
     }
 
     @Test
@@ -24,66 +24,66 @@ class TimelineTest {
         val period = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2020, 1, 1))
         val timeline = Timeline.of(period)
         assertTrue(timeline.contains(period))
-        assertEquals(listOf(period), timeline.periods().toList())
+        assertEquals(listOf(period), timeline.ranges().toList())
     }
 
     @Test
-    fun `multiple periods can be added to a timeline`() {
-        val periods = listOf(
+    fun `multiple ranges can be added to a timeline`() {
+        val ranges = listOf(
             FiniteDateRange(LocalDate.of(2018, 1, 1), LocalDate.of(2018, 6, 1)),
             FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 3, 1))
         )
-        val timeline = Timeline.of(periods)
-        assertTrue(periods.all { timeline.contains(it) })
-        assertEquals(periods, timeline.periods().toList())
+        val timeline = Timeline.of(ranges)
+        assertTrue(ranges.all { timeline.contains(it) })
+        assertEquals(ranges, timeline.ranges().toList())
     }
 
     @Test
-    fun `overlapping periods are merged when added to a timeline`() {
-        val periods = listOf(
+    fun `overlapping ranges are merged when added to a timeline`() {
+        val ranges = listOf(
             FiniteDateRange(LocalDate.of(2018, 1, 1), LocalDate.of(2019, 6, 1)),
             FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2020, 1, 1))
         )
-        val timeline = Timeline.of(periods)
-        assertTrue(periods.all { timeline.contains(it) })
-        assertEquals(listOf(FiniteDateRange(start = periods[0].start, end = periods[1].end)), timeline.periods().toList())
+        val timeline = Timeline.of(ranges)
+        assertTrue(ranges.all { timeline.contains(it) })
+        assertEquals(listOf(FiniteDateRange(start = ranges[0].start, end = ranges[1].end)), timeline.ranges().toList())
     }
 
     @Test
-    fun `adjacent periods are merged when added to a timeline`() {
-        val periods = listOf(
+    fun `adjacent ranges are merged when added to a timeline`() {
+        val ranges = listOf(
             FiniteDateRange(LocalDate.of(2018, 1, 1), LocalDate.of(2018, 12, 31)),
             FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 5, 31)),
             FiniteDateRange(LocalDate.of(2019, 6, 1), LocalDate.of(2020, 1, 1))
         )
-        val timeline = Timeline.of(periods)
-        assertTrue(periods.all { timeline.contains(it) })
-        assertEquals(listOf(FiniteDateRange(start = periods[0].start, end = periods[2].end)), timeline.periods().toList())
+        val timeline = Timeline.of(ranges)
+        assertTrue(ranges.all { timeline.contains(it) })
+        assertEquals(listOf(FiniteDateRange(start = ranges[0].start, end = ranges[2].end)), timeline.ranges().toList())
     }
 
     @Test
-    fun `periods can be removed from a timeline`() {
-        val periods = listOf(
+    fun `ranges can be removed from a timeline`() {
+        val ranges = listOf(
             FiniteDateRange(LocalDate.of(2018, 1, 1), LocalDate.of(2018, 6, 1)),
             FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 3, 1))
         )
-        val timeline = Timeline.of(periods).removeAll(periods)
-        assertEquals(emptyList<FiniteDateRange>(), timeline.periods().toList())
+        val timeline = Timeline.of(ranges).removeAll(ranges)
+        assertEquals(emptyList<FiniteDateRange>(), timeline.ranges().toList())
     }
 
     @Test
-    fun `parts of periods can be removed from a timeline`() {
-        val periods = listOf(
+    fun `parts of ranges can be removed from a timeline`() {
+        val ranges = listOf(
             FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 3, 1)),
             FiniteDateRange(LocalDate.of(2018, 1, 1), LocalDate.of(2018, 6, 1))
         )
-        val timeline = Timeline.of(periods).remove(FiniteDateRange(LocalDate.of(2018, 5, 2), LocalDate.of(2019, 1, 31)))
+        val timeline = Timeline.of(ranges).remove(FiniteDateRange(LocalDate.of(2018, 5, 2), LocalDate.of(2019, 1, 31)))
         assertEquals(
             listOf(
                 FiniteDateRange(LocalDate.of(2018, 1, 1), LocalDate.of(2018, 5, 1)),
                 FiniteDateRange(LocalDate.of(2019, 2, 1), LocalDate.of(2019, 3, 1))
             ),
-            timeline.periods().toList()
+            timeline.ranges().toList()
         )
     }
 }

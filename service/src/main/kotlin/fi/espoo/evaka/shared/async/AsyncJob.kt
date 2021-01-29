@@ -5,6 +5,7 @@
 package fi.espoo.evaka.shared.async
 
 import fi.espoo.evaka.daycare.domain.Language
+import fi.espoo.evaka.koski.KoskiSearchParams
 import fi.espoo.evaka.koski.KoskiStudyRightKey
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import java.time.Duration
@@ -28,6 +29,7 @@ enum class AsyncJobType {
     VTJ_REFRESH,
     DVV_MODIFICATIONS_REFRESH,
     UPLOAD_TO_KOSKI,
+    SCHEDULE_KOSKI_UPLOADS,
     SEND_APPLICATION_EMAIL,
     GARBAGE_COLLECT_PAIRING,
     VARDA_UPDATE
@@ -45,6 +47,11 @@ data class GarbageCollectPairing(val pairingId: UUID) : AsyncJobPayload {
 
 data class SendApplicationEmail(val guardianId: UUID, val language: Language) : AsyncJobPayload {
     override val asyncJobType = AsyncJobType.SEND_APPLICATION_EMAIL
+    override val user: AuthenticatedUser? = null
+}
+
+data class ScheduleKoskiUploads(val params: KoskiSearchParams) : AsyncJobPayload {
+    override val asyncJobType = AsyncJobType.SCHEDULE_KOSKI_UPLOADS
     override val user: AuthenticatedUser? = null
 }
 
