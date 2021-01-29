@@ -11,11 +11,11 @@ const en: Translations = {
     ok: 'Ok',
     unit: {
       providerTypes: {
-        MUNICIPAL: 'Kunnallinen',
-        PURCHASED: 'Ostopalvelu',
-        PRIVATE: 'Yksityinen',
-        MUNICIPAL_SCHOOL: 'Kunnallinen',
-        PRIVATE_SERVICE_VOUCHER: 'Palveluseteli'
+        MUNICIPAL: 'Municipal',
+        PURCHASED: 'Purchased service',
+        PRIVATE: 'Private service',
+        MUNICIPAL_SCHOOL: 'Municipal',
+        PRIVATE_SERVICE_VOUCHER: 'Private service (service voucher)'
       }
     }
   },
@@ -45,17 +45,16 @@ const en: Translations = {
   },
   applications: {
     title: 'Applications',
-    deleteDraftTitle: 'Haluatko poistaa hakemuksen?',
-    deleteDraftText:
-      'Haluatko varmasti poistaa hakemusluonnoksen? Kaikki poistettavan hakemuksen tiedot menetetään.',
-    deleteDraftOk: 'Poista hakemus',
-    deleteDraftCancel: 'Palaa takaisin',
-    deleteSentTitle: 'Haluatko peruuttaa hakemuksen?',
+    deleteDraftTitle: 'Do you want to remove the application?',
+    deleteDraftText: 'All the information of the application will be lost.',
+    deleteDraftOk: 'Delete application',
+    deleteDraftCancel: 'Go back',
+    deleteSentTitle: 'Do you want to cancel the application?',
     deleteSentText:
-      'Haluatko varmasti peruuttaa hakemuksen? Jos peruutat hakemuksen, kaikki tiedot menetetään.',
-    deleteSentOk: 'Peruuta hakemus',
-    deleteSentCancel: 'Palaa takaisin',
-    deleteUnprocessedApplicationError: 'Hakemuksen poisto epäonnistui',
+      'All the information of the application will be lost. Also, as the application has already been sent, it will be cancelled.',
+    deleteSentOk: 'Cancel application',
+    deleteSentCancel: 'Go back',
+    deleteUnprocessedApplicationError: 'Failed to remove the application',
     creation: {
       title: 'Selection of application type',
       daycareLabel: 'Application for early childhood education',
@@ -79,7 +78,7 @@ const en: Translations = {
     editor: {
       heading: {
         title: {
-          DAYCARE: 'Varhaiskasvatushakemus'
+          DAYCARE: 'Application for early childhood education'
         },
         info: {
           DAYCARE: [
@@ -90,40 +89,41 @@ const en: Translations = {
         }
       },
       actions: {
-        hasVerified: 'Olen tarkistanut hakemuksen tiedot oikeiksi',
-        verify: 'Tarkista hakemus',
-        returnToEdit: 'Palaa muokkaamaan hakemusta',
-        returnToEditBtn: 'Takaisin hakemusnäkymään',
-        cancel: 'Palaa',
-        send: 'Lähetä hakemus',
-        sendError: 'Hakemuksen lähettäminen epäonnistui',
-        saveDraft: 'Tallenna keskeneräisenä',
-        saveDraftError: 'Muutosten tallentaminen epäonnistui'
+        hasVerified:
+          'I have checked that the information in the application is correct',
+        verify: 'Verify application',
+        returnToEdit: 'Return to editing',
+        returnToEditBtn: 'Return to editing',
+        cancel: 'Go back',
+        send: 'Send application',
+        sendError: 'Failed to send the application',
+        saveDraft: 'Save as draft',
+        saveDraftError: 'Saving the changes failed'
       },
       verification: {
         title: {
-          DAYCARE: 'Varhaiskasvatushakemuksen tarkistaminen'
+          DAYCARE: 'Verifying the application'
         },
         notYetSent:
-          '<strong>Hakemusta ei ole vielä lähetetty.</strong> Tarkista antamasi tiedot ja lähetä sivun lopussa olevalla Lähetä hakemus-painikkeella.',
-        no: 'ei',
+          '<strong>The application has not yet been sent.</strong> Please check the information you provided and send the application by clicking "Send the application" button in the end of the form.',
+        no: 'No',
         basics: {
-          created: 'Hakemus luotu',
-          modified: 'Hakemusta muokattu viimeksi'
+          created: 'Created',
+          modified: 'Last modified'
         },
         unitPreference: {
-          title: 'Hakutoive',
+          title: 'Preferred units',
           siblingBasis: {
-            title: 'Haku sisarperusteella',
-            siblingBasisLabel: 'Sisarusperuste',
+            title: 'Application on a sibling basis',
+            siblingBasisLabel: 'Sibling basis',
             siblingBasisYes:
-              'Haen ensisijaisesti samaan paikkaan, jossa lapsen sisarus on jo varhaiskasvatuksessa',
-            name: 'Sisaruksen nimi',
-            ssn: 'Sisaruksen henkilötunnus'
+              'I primarily apply for a place at the same early childhood education location attended by the child’s sibling.',
+            name: 'First and last name of the sibling',
+            ssn: 'Personal identity code of the sibling'
           },
           units: {
-            title: 'Hakutoiveet',
-            label: 'Valitsemasi hakutoiveet'
+            title: 'Preferred units',
+            label: 'Selected units'
           }
         }
       },
@@ -188,49 +188,49 @@ const en: Translations = {
           'The support need refers to such a need for support measures that has been indicated by an expert opinion. If the child has not previously attended the Espoo early childhood education services and their support need has been established, the Special Early Education Coordinator will contact you, if necessary, once you have indicated the support need on this application.'
       },
       unitPreference: {
-        title: 'Hakutoive',
+        title: 'Preferred units',
         siblingBasis: {
-          title: 'Haku sisarperusteella',
+          title: 'Application on a sibling basis',
           p1:
-            'Lapsella on sisarusperuste samaan varhaiskasvatuspaikkaan, jossa hänen sisaruksensa on päätöksentekohetkellä. Sisarukseksi katsotaan kaikki samassa osoitteessa asuvat lapset. Tavoitteena on sijoittaa sisarukset samaan varhaiskasvatuspaikkaan perheen niin toivoessa. Jos haet paikkaa sisaruksille, jotka eivät vielä ole varhaiskasvatuksessa, kirjoita tieto lisätietokenttään.',
+            'The child has a sibling basis to the same early childhood education place attended by their sibling at the time of making the decision. All children living at the same address are considered to be siblings. The aim is to place siblings at the same early childhood education place, if the family so wishes. If you are applying for places for siblings who do not yet attend early childhood education, enter this piece of information in the additional information field.',
           p2:
-            'Täytä nämä tiedot vain, jos käytät sisarusperustetta, sekä valitse alla olevissa hakutoiveissa ensisijaiseksi toiveeksi sama varhaiskasvatusyksikkö, jossa lapsen sisarus on.',
+            'Fill in this information only if you are applying the sibling basis.',
           checkbox:
-            'Haen ensisijaisesti samaan paikkaan, jossa lapsen sisarus on jo varhaiskasvatuksessa.',
-          names: 'Sisaruksen etunimet ja sukunimi *',
-          namesPlaceholder: 'Etunimet ja sukunimi',
-          ssn: 'Sisaruksen henkilötunnus *',
-          ssnPlaceholder: 'Henkilötunnus'
+            'I primarily apply for a place at the same early childhood education location attended by the child’s sibling.',
+          names: 'First and last name of the sibling *',
+          namesPlaceholder: 'First and last name',
+          ssn: 'Personal identity code of the sibling',
+          ssnPlaceholder: 'e.g. 010110A000P'
         },
         units: {
-          title: 'Hakutoiveet',
+          title: 'Preferred units',
           startDateMissing:
-            'Päästäksesi valitsemaan hakutoiveet valitse ensin toivottu aloituspäivä "Palvelun tarve" -osiosta',
+            'To select preferred units first set the preferred start date on "Service need" section',
           p1:
-            'Voit hakea paikkaa 1-3 varhaiskasvatusyksiköstä toivomassasi järjestyksessä. Hakutoiveet eivät takaa paikkaa toivotussa yksikössä, mutta mahdollisuus toivotun paikan saamiseen kasvaa antamalla useamman vaihtoehdon.',
-          p2:
-            'Näet eri varhaiskasvatusyksiköiden sijainnin valitsemalla ‘Yksiköt kartalla’.',
-          mapLink: 'Yksiköt kartalla',
+            'You can apply for 1 to 3 locations in your order of preference. Application preferences do not guarantee a place at the desired location, but the possibility of obtaining a desired location increases by giving more than one option.',
+          p2: 'To see the units on map select ‘unit map view’',
+          mapLink: 'Unit map view',
           languageFilter: {
-            label: 'Yksikön kieli',
-            fi: 'suomi',
-            sv: 'ruotsi'
+            label: 'Language of the location:',
+            fi: 'finnish',
+            sv: 'swedish'
           },
           select: {
-            label: 'Valitse hakutoiveet *',
-            placeholder: 'Hae yksiköitä',
-            maxSelected: 'Maksimimäärä yksiköitä valittu',
-            noOptions: 'Ei hakuehtoja vastaavia yksiköitä'
+            label: 'Select preferences *',
+            placeholder: 'Select units',
+            maxSelected:
+              'Maximum number of preferred units reached. Remove an unit so you can add a new one',
+            noOptions: 'No matches'
           },
           preferences: {
-            label: 'Valitsemasi hakutoiveet',
+            label: 'Application preferences you selected:',
             info:
-              'Valitse 1-3 varhaiskasvatusyksikköä ja järjestä ne toivomaasi järjestykseen. Voit muuttaa järjestystä nuolien avulla.',
-            fi: 'suomenkielinen',
-            sv: 'ruotsinkielinen',
-            moveUp: 'Siirrä ylöspäin',
-            moveDown: 'Siirrä alaspäin',
-            remove: 'Poista hakutoive'
+              'Select 1 - 3 preferred units, and sort them in preferred order with the arrows',
+            fi: 'finnish',
+            sv: 'swedish',
+            moveUp: 'Move up',
+            moveDown: 'Move down',
+            remove: 'Remove preference'
           }
         }
       },
@@ -262,55 +262,53 @@ const en: Translations = {
           'Information on allergies is mainly needed when applying for family day care.'
       },
       contactInfo: {
-        title: 'Henkilötiedot',
+        title: 'Personal information',
         info:
-          'Henkilötiedot on haettu väestötiedoista, eikä niitä voi muuttaa tällä hakemuksella. Jos henkilötiedoissa on virheitä, päivitäthän tiedot <a href="https://dvv.fi/henkiloasiakkaat" target="_blank" rel="noreferrer">Digi- ja Väestötietoviraston sivuilla</a>. Mikäli osoitteenne on muuttumassa, voit lisätä tulevan osoitteen erilliseen kohtaan hakemuksella; lisää tuleva osoite sekä lapselle että huoltajalle. Virallisena osoitetietoa pidetään vasta, kun se on päivittynyt väestötietojärjestelmään. Päätökset esiopetus- ja varhaiskasvatuspaikoista toimitetaan automaattisesti myös eri osoitteessa asuvalle väestötiedoista löytyvälle huoltajalle.',
-        childInfoTitle: 'Lapsen tiedot',
-        childFirstName: 'Lapsen etunimet',
-        childLastName: 'Lapsen sukunimi',
-        childSSN: 'Lapsen henkilötunnus',
-        homeAddress: 'Kotiosoite',
-        moveDate: 'Muuttopäivämäärä',
-        street: 'Katuosoite',
-        postalCode: 'Postinumero',
-        postOffice: 'Postitoimipaikka',
-        guardianInfoTitle: 'Huoltajan tiedot',
-        guardianFirstName: 'Huoltajan etunimet',
-        guardianLastName: 'Huoltajan sukunimi',
-        guardianSSN: 'Huoltajan henkilötunnus',
-        phone: 'Puhelinnumero',
-        emailAddress: 'Sähköpostiosoite',
-        email: 'Sähköposti',
-        secondGuardianInfoTitle: 'Toisen huoltajan tiedot',
+          "The personal information has been retrieved from the population data services and cannot be changed with this application. If the personal information is incorrect, please update the information on https://dvv.fi/en/certificates-from-the-population-information-system. If your address is about to change, you can add the new address in a separate field in the application. Add a future address for both the child and guardian. The address information will be official only when it has been updated to the database of the Digital and Population Data Services Agency. Decisions on the child's early childhood or pre-primary education place will be automatically sent to another guardian who lives at a different address based on the Population Information System.",
+        childInfoTitle: 'Child´s information',
+        childFirstName: 'Child’s first name(s)',
+        childLastName: 'Child’s last name',
+        childSSN: 'Child’s personal identity code',
+        homeAddress: 'Home address',
+        moveDate: 'Date of move',
+        street: 'Street address',
+        postalCode: 'Postal code',
+        postOffice: 'Post office',
+        guardianInfoTitle: 'Guardian information',
+        guardianFirstName: 'Guardian first name(s)',
+        guardianLastName: 'Guardian last name',
+        guardianSSN: 'Guardian personal identity code',
+        phone: 'Phone number',
+        emailAddress: 'Email',
+        email: 'Email',
+        secondGuardianInfoTitle: 'Second guardian information',
         secondGuardianInfo:
-          'Toisen huoltajan tiedot haetaan automaattisesti väestötietojärjestelmästä.',
+          'Second guardian information is automatically fetched from VTJ',
         otherPartnerTitle:
-          'Samassa taloudessa asuva avio- tai avopuoliso (ei huoltaja)',
+          'Spouse or cohabiting partner (not a guardian) living in the same household',
         otherPartnerCheckboxLabel:
-          'Samassa taloudessa asuu hakijan kanssa avio- tai avoliitossa oleva henkilö, joka ei ole lapsen huoltaja.',
-        personFirstName: 'Henkilön etunimet',
-        personLastName: 'Henkilön sukunimi',
-        personSSN: 'Henkilön henkilötunnus',
-        otherChildrenTitle: 'Samassa taloudessa asuvat alle 18-vuotiaat lapset',
+          'The applicant has a spouse or a cohabiting partner who lives in the same household with the applicant and who is not the child’s guardian.',
+        personFirstName: 'First name(s)',
+        personLastName: 'Last name',
+        personSSN: 'Person identification code',
+        otherChildrenTitle:
+          'Other children under 18 years of age living in the same household.',
         otherChildrenInfo:
-          'Samassa taloudessa asuvat alle 18-vuotiaat lapset vaikuttavat varhaiskasvatusmaksuihin.',
-        otherChildrenChoiceInfo:
-          'Valitse lapset, jotka asuvat samassa taloudessa.',
-        hasFutureAddress:
-          'Väestörekisterissä oleva osoite on muuttunut tai muuttumassa',
+          'Other children under 18 years of age living in the same household affect the cost of daycare',
+        otherChildrenChoiceInfo: 'Select children living in the same household',
+        hasFutureAddress: 'Address in VTJ is changing',
         guardianFutureAddressEqualsChildFutureAddress:
-          'Muutan samaan osoitteeseen kuin lapsi',
-        firstNamePlaceholder: 'Etunimet',
-        lastNamePlaceholder: 'Sukunimi',
-        ssnPlaceholder: 'Henkilötunnus',
-        streetPlaceholder: 'Osoite',
-        postalCodePlaceholder: 'Postinumero',
-        municipalityPlaceholder: 'Postitoimipaikka',
-        addChild: 'Lisää lapsi',
-        remove: 'Poista',
-        areExtraChildren:
-          'Samassa taloudessa asuu muita alle 18-vuotiaita lapsia (esim. avopuolison lapset)',
-        choosePlaceholder: 'Valitse'
+          'Moving in with the child',
+        firstNamePlaceholder: 'First names',
+        lastNamePlaceholder: 'Last name',
+        ssnPlaceholder: 'Person identification code',
+        streetPlaceholder: 'Street address',
+        postalCodePlaceholder: 'Postal code',
+        municipalityPlaceholder: 'Post office',
+        addChild: 'Add child',
+        remove: 'Remove',
+        areExtraChildren: 'Children under 18 living in the same address',
+        choosePlaceholder: 'Choose'
       },
       draftPolicyInfo: {
         title: 'Your draft application was saved',
@@ -432,32 +430,32 @@ const en: Translations = {
       CANCELLED: 'Place rejected'
     },
     openApplicationLink: 'Open application',
-    editApplicationLink: 'Muokkaa hakemusta',
-    removeApplicationBtn: 'Poista hakemus',
-    cancelApplicationBtn: 'Peruuta hakemus',
+    editApplicationLink: 'Edit application',
+    removeApplicationBtn: 'Remove application',
+    cancelApplicationBtn: 'Cancel application',
     confirmationLinkInstructions:
       'In the Decisions page you can read the decision and either accept or reject the proposed place',
     confirmationLink: 'Review and confirm the decision',
     newApplicationLink: 'New application'
   },
   fileUpload: {
-    loading: 'Uppladdas...',
-    loaded: 'Uppladdad',
+    loading: 'Loading',
+    loaded: 'Loaded',
     error: {
-      FILE_TOO_LARGE: 'För stor fil (max. 10MB)',
-      SERVER_ERROR: 'Uppladdningen misslyckades'
+      FILE_TOO_LARGE: 'File is too big (max. 10MB)',
+      SERVER_ERROR: 'Upload failed'
     },
     input: {
-      title: 'Lägg till bilaga',
+      title: 'Add an attachment',
       text: [
-        'Tryck här eller dra en bilaga åt gången till lådan.',
-        'Maximal storlek för filen: 10 MB.',
-        'Tillåtna format:',
-        'PDF, JPEG/JPG, PNG och DOC/DOCX'
+        'Press here or drag and drop a new file',
+        'Max file size: 10MB.',
+        'Allowed formats:',
+        'PDF, JPEG/JPG, PNG and DOC/DOCX'
       ]
     },
-    modalHeader: 'Behandling av filen pågår',
-    modalMessage: 'Filen kan inte öppnas just nu. Försök igen om en stund.',
+    modalHeader: 'Processing file',
+    modalMessage: 'File is being processed. Try again later',
     modalConfirm: 'OK'
   }
 }
