@@ -26,8 +26,6 @@ import {
   InvoiceRowDetailed
 } from '../../types/invoicing'
 import { totalPrice } from '../../utils/pricing'
-
-import './InvoicePage.scss'
 import { formatName } from '~utils'
 
 const InvoiceDetailsPage = React.memo(function InvoiceDetailsPage() {

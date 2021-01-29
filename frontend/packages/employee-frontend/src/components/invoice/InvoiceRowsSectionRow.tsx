@@ -228,6 +228,10 @@ const NarrowEuroInput = styled(EuroInput)`
   width: 5em;
 `
 
+const NarrowInput = styled(InputField)`
+  max-width: 80px;
+`
+
 const AmountInput = React.memo(function AmountInput({
   value,
   onChange
@@ -247,7 +251,7 @@ const AmountInput = React.memo(function AmountInput({
   }, [stringValue])
 
   return (
-    <InputField
+    <NarrowInput
       type={'number'}
       min={1}
       max={1000}

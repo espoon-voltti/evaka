@@ -16,7 +16,7 @@ import {
   Thead,
   Tr
 } from '@evaka/lib-components/src/layout/Table'
-import Button from '@evaka/lib-components/src/atoms/buttons/Button'
+import InlineButton from '@evaka/lib-components/src/atoms/buttons/InlineButton'
 import Title from '@evaka/lib-components/src/atoms/Title'
 import CollapsibleSection from '@evaka/lib-components/src/molecules/CollapsibleSection'
 import InvoiceRowsSectionRow from './InvoiceRowsSectionRow'
@@ -32,7 +32,6 @@ import { Result } from '@evaka/lib-common/src/api'
 import { totalPrice } from '../../utils/pricing'
 import AbsencesModal from './AbsencesModal'
 import { formatName } from '~utils'
-import InlineButton from '@evaka/lib-components/src/atoms/buttons/InlineButton'
 
 const TitleContainer = styled.div`
   display: flex;
@@ -102,7 +101,7 @@ const TotalPriceTh = styled(Th)`
   width: 110px;
 `
 
-const InvoiceRowsSection = React.memo(function InvoiceRowsSection({
+export default React.memo(function InvoiceRowsSection({
   rows,
   updateRows,
   invoiceCodes,
@@ -219,7 +218,7 @@ const InvoiceRowsSection = React.memo(function InvoiceRowsSection({
                     ))}
                   </Tbody>
                 </InvoiceRowsTable>
-                <Button
+                <InlineButton
                   disabled={!editable}
                   onClick={getAddInvoiceRow(firstRow)}
                   dataQa="invoice-button-add-row"
@@ -237,5 +236,3 @@ const InvoiceRowsSection = React.memo(function InvoiceRowsSection({
     </Fragment>
   )
 })
-
-export default InvoiceRowsSection
