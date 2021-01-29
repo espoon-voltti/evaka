@@ -172,14 +172,25 @@ function ServiceNeedForm(props: Props) {
       })
       .getOrElse(false)
 
-  useEffect(() => {
-    setFormErrors({
+  const checkFormErrors = (updatedForm?: Partial<FormState>) => {
+    const mergedForm = { ...form, ...updatedForm }
+    return {
       dateRange: {
-        inverted: form.endDate ? form.endDate.isBefore(form.startDate) : false,
+        inverted: mergedForm.endDate
+          ? mergedForm.endDate.isBefore(mergedForm.startDate)
+          : false,
         conflict: isCreate(props) ? checkHardConflict() : checkAnyConflict()
       },
-      hours: placementMismatch(form)
-    })
+      hours: placementMismatch(mergedForm)
+    }
+  }
+
+  useEffect(() => {
+    if (!formHasErrors(formErrors)) {
+      return
+    }
+
+    setFormErrors(checkFormErrors())
   }, [form, serviceNeeds])
 
   const autoCutWarning =
@@ -188,7 +199,11 @@ function ServiceNeedForm(props: Props) {
   const submitForm = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
 
-    if (formHasErrors(formErrors)) return
+    const errors = checkFormErrors()
+    if (formHasErrors(errors)) {
+      setFormErrors(errors)
+      return
+    }
 
     const apiCall = isCreate(props)
       ? createServiceNeed(props.childId, form)
@@ -231,13 +246,22 @@ function ServiceNeedForm(props: Props) {
                 <DivFitContent>
                   <DatePicker
                     date={form.startDate}
-                    onChange={(startDate) => updateFormState({ startDate })}
+                    onChange={(startDate) => {
+                      updateFormState({ startDate })
+                      setFormErrors(checkFormErrors({ startDate }))
+                    }}
                   />
                   {' - '}
                   <DatePickerClearable
                     date={form.endDate}
-                    onChange={(endDate) => updateFormState({ endDate })}
-                    onCleared={() => updateFormState({ endDate: null })}
+                    onChange={(endDate) => {
+                      updateFormState({ endDate })
+                      setFormErrors(checkFormErrors({ endDate }))
+                    }}
+                    onCleared={() => {
+                      updateFormState({ endDate: null })
+                      setFormErrors(checkFormErrors({ endDate: null }))
+                    }}
                   />
                 </DivFitContent>
 
@@ -272,6 +296,7 @@ function ServiceNeedForm(props: Props) {
                         hoursPerWeek: Number(value)
                       })
                     }
+                    onBlur={() => setFormErrors(checkFormErrors())}
                     info={
                       formErrors.hours
                         ? {
