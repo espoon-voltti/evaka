@@ -4,7 +4,6 @@
 
 import React from 'react'
 import { ServiceNeedFormData } from '~applications/editor/ApplicationFormData'
-import { DatePicker } from '@evaka/lib-components/src/molecules/DatePicker'
 import Checkbox from '@evaka/lib-components/src/atoms/form/Checkbox'
 import {
   FixedSpaceColumn,
@@ -27,6 +26,7 @@ import { Result } from '~../../lib-common/src/api'
 import { UUID } from '~../../lib-common/src/types'
 import { useParams } from 'react-router-dom'
 import styled from 'styled-components'
+import { DatePickerDeprecated } from '@evaka/lib-components/src/molecules/DatePickerDeprecated'
 
 export type ServiceNeedSectionProps = {
   formData: ServiceNeedFormData
@@ -98,7 +98,7 @@ export default React.memo(function ServiceNeedSection({
           </Tooltip>
         </Label>
 
-        <DatePicker
+        <DatePickerDeprecated
           date={formData.preferredStartDate || undefined}
           onChange={(date) =>
             updateFormData({

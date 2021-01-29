@@ -14,7 +14,6 @@ import { H3, Label, P } from '@evaka/lib-components/src/typography'
 import InputField from '@evaka/lib-components/src/atoms/form/InputField'
 import { ContactInfoFormData } from './ApplicationFormData'
 import EditorSection from '~applications/editor/EditorSection'
-import { DatePickerClearable } from '@evaka/lib-components/src/molecules/DatePicker'
 import AddButton from '@evaka/lib-components/src/atoms/buttons/AddButton'
 import InlineButton from '@evaka/lib-components/src/atoms/buttons/InlineButton'
 import { faTimes } from '@evaka/lib-icons'
@@ -22,6 +21,7 @@ import { useUser } from '~auth/state'
 import { ApplicationPersonBasics } from '@evaka/lib-common/src/api-types/application/ApplicationDetails'
 import { Gap } from '@evaka/lib-components/src/white-space'
 import HorizontalLine from '@evaka/lib-components/src/atoms/HorizontalLine'
+import { DatePickerClearableDeprecated } from '@evaka/lib-components/src/molecules/DatePickerDeprecated'
 
 export type ContactInfoProps = {
   formData: ContactInfoFormData
@@ -138,7 +138,7 @@ export default React.memo(function ContactInfoSection({
           <Gap size={'m'} />
           <FixedSpaceColumn spacing={'xs'}>
             <Label>{t.applications.editor.contactInfo.moveDate + '*'}</Label>
-            <DatePickerClearable
+            <DatePickerClearableDeprecated
               date={formData.childMoveDate}
               onChange={(value) =>
                 updateFormData(
@@ -329,7 +329,7 @@ export default React.memo(function ContactInfoSection({
           )}
           <FixedSpaceColumn spacing={'xs'}>
             <Label>{t.applications.editor.contactInfo.moveDate + '*'}</Label>
-            <DatePickerClearable
+            <DatePickerClearableDeprecated
               date={formData.guardianMoveDate}
               onChange={(value) => updateFormData({ guardianMoveDate: value })}
               onCleared={() => updateFormData({ guardianMoveDate: null })}

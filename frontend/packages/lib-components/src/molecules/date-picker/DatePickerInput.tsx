@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from 'react'
+import React from 'react'
 import styled from 'styled-components'
 
-import { InfoStatus } from '../atoms/StatusIcon'
-import InputField from '../atoms/form/InputField'
+import { InfoStatus } from '../../atoms/StatusIcon'
+import InputField from '../../atoms/form/InputField'
 
 interface Props {
   date: string
@@ -16,8 +16,8 @@ interface Props {
   onKeyPress?: (e: React.KeyboardEvent) => void
 }
 
-const DISALLOWED_CHARACTERS = /[^0-9\.\/\-]+/g
-const SHORT_DATE_FORMAT = /^(\d{1})\.(\d{1})\.(\d{4})$/
+const DISALLOWED_CHARACTERS = /[^0-9./-]+/g
+const SHORT_DATE_FORMAT = /^(\d)\.(\d)\.(\d{4})$/
 
 function DatePickerInput({
   date,

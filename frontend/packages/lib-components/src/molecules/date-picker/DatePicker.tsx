@@ -2,11 +2,11 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useRef, useState } from 'react'
 import styled from 'styled-components'
 
-import { greyscale } from '../colors'
-import { defaultMargins } from '../white-space'
+import { greyscale } from '../../colors'
+import { defaultMargins } from '../../white-space'
 import DatePickerInput from './DatePickerInput'
 import DatePickerDay from './DatePickerDay'
 import LocalDate from '~../../lib-common/src/local-date'
@@ -21,7 +21,6 @@ const DayPickerPositioner = styled.div<{ show: boolean }>`
   left: -70px;
   right: -70px;
   z-index: 99999;
-  display: flex;
   justify-content: center;
   align-items: center;
   display: ${(p) => (p.show ? 'inline-block' : 'none')};
