@@ -11,11 +11,11 @@ const sv: Translations = {
     ok: 'Ok',
     unit: {
       providerTypes: {
-        MUNICIPAL: 'Kunnallinen',
-        PURCHASED: 'Ostopalvelu',
-        PRIVATE: 'Yksityinen',
-        MUNICIPAL_SCHOOL: 'Kunnallinen',
-        PRIVATE_SERVICE_VOUCHER: 'Palveluseteli'
+        MUNICIPAL: 'Kommunal tjänst',
+        PURCHASED: 'Köptjänst',
+        PRIVATE: 'Privat tjänst',
+        MUNICIPAL_SCHOOL: 'Kommunal tjänst',
+        PRIVATE_SERVICE_VOUCHER: 'Privat tjänst (servicesedel)'
       }
     }
   },
@@ -44,18 +44,18 @@ const sv: Translations = {
       'https://easiointi.espoo.fi/eFeedback/sv/Feedback/20-S%C3%A4hk%C3%B6iset%20asiointipalvelut'
   },
   applications: {
-    title: 'Hakemukset',
-    deleteDraftTitle: 'Haluatko poistaa hakemuksen?',
+    title: 'Ansökningar',
+    deleteDraftTitle: 'Vill du ta bort din ansökan?',
     deleteDraftText:
-      'Haluatko varmasti poistaa hakemusluonnoksen? Kaikki poistettavan hakemuksen tiedot menetetään.',
-    deleteDraftOk: 'Poista hakemus',
-    deleteDraftCancel: 'Palaa takaisin',
-    deleteSentTitle: 'Haluatko peruuttaa hakemuksen?',
+      'Alla uppgifter på din ansökan raderas, också ansökan som du redan skickat raderas.',
+    deleteDraftOk: 'Ta bort ansökan',
+    deleteDraftCancel: 'Tillbaka',
+    deleteSentTitle: 'Vill du ta bort din ansökan?',
     deleteSentText:
-      'Haluatko varmasti peruuttaa hakemuksen? Jos peruutat hakemuksen, kaikki tiedot menetetään.',
-    deleteSentOk: 'Peruuta hakemus',
-    deleteSentCancel: 'Palaa takaisin',
-    deleteUnprocessedApplicationError: 'Hakemuksen poisto epäonnistui',
+      'Alla uppgifter på din ansökan raderas, också ansökan som du redan skickat raderas.',
+    deleteSentOk: 'Ta bort ansökan',
+    deleteSentCancel: 'Tillbaka',
+    deleteUnprocessedApplicationError: 'Radera ansökan misslyckades',
     creation: {
       title: 'Val av ansökningsblankett',
       daycareLabel: 'Ansökan till småbarnspedagogik',
@@ -90,40 +90,41 @@ const sv: Translations = {
         }
       },
       actions: {
-        verify: 'Tarkista hakemus',
-        hasVerified: 'Olen tarkistanut hakemuksen tiedot oikeiksi',
-        returnToEdit: 'Palaa muokkaamaan hakemusta',
+        verify: 'Granska',
+        hasVerified: 'Jag har granskat att uppgifterna är rätt',
+        returnToEdit: 'Gå tillbaka',
         returnToEditBtn: 'Takaisin hakemusnäkymään',
-        cancel: 'Palaa',
-        send: 'Lähetä hakemus',
-        sendError: 'Hakemuksen lähettäminen epäonnistui',
-        saveDraft: 'Tallenna keskeneräisenä',
-        saveDraftError: 'Muutosten tallentaminen epäonnistui'
+        cancel: 'Tillbaka',
+        send: 'Skicka ansökan',
+        sendError: 'Spara lyckades inte',
+        saveDraft: 'Spara som oavslutad',
+        saveDraftError: 'Spara lyckades inte'
       },
       verification: {
         title: {
-          DAYCARE: 'Varhaiskasvatushakemuksen tarkistaminen'
+          DAYCARE:
+            'Var god och granska följande obligatoriska fält i blanketten'
         },
         notYetSent:
-          '<strong>Hakemusta ei ole vielä lähetetty.</strong> Tarkista antamasi tiedot ja lähetä sivun lopussa olevalla Lähetä hakemus-painikkeella.',
-        no: 'ei',
+          '<strong>Du har inte ännu skickat ansökan.</strong> Granska informationen du gett, och skicka ansökan med Skicka ansökan-knappen när du är färdig',
+        no: 'Nej',
         basics: {
-          created: 'Hakemus luotu',
-          modified: 'Hakemusta muokattu viimeksi'
+          created: 'Skapad',
+          modified: 'Uppdaterad'
         },
         unitPreference: {
-          title: 'Hakutoive',
+          title: 'Ansökningsönskemål',
           siblingBasis: {
-            title: 'Haku sisarperusteella',
-            siblingBasisLabel: 'Sisarusperuste',
+            title: 'Ansökan på basis av syskonrelationer',
+            siblingBasisLabel: 'Syskonrelation',
             siblingBasisYes:
-              'Haen ensisijaisesti samaan paikkaan, jossa lapsen sisarus on jo varhaiskasvatuksessa',
-            name: 'Sisaruksen nimi',
-            ssn: 'Sisaruksen henkilötunnus'
+              'Jag ansöker i första hand om plats i den enheten där barnets syskon redan har en plats',
+            name: 'Syskonets för- och efternamn *',
+            ssn: 'Syskonets personbeteckning *'
           },
           units: {
-            title: 'Hakutoiveet',
-            label: 'Valitsemasi hakutoiveet'
+            title: 'Ansökningsönskemål',
+            label: 'Utvalda enheter'
           }
         }
       },
@@ -189,49 +190,50 @@ const sv: Translations = {
           'Med behov av stöd för utveckling och lärande avses behov av sådana stödåtgärder som har konstaterats i ett sakkunnigutlåtande. Om ditt barn inte tidigare har deltagit i småbarnspedagogisk verksamhet i Esbo och hen har behov av stöd, kontaktar en konsultativ speciallärare inom småbarnspedagogik dig vid behov då du har meddelat om behovet i ansökan.'
       },
       unitPreference: {
-        title: 'Hakutoive',
+        title: 'Ansökningsönskemål',
         siblingBasis: {
-          title: 'Haku sisarperusteella',
+          title: 'Ansökan på basis av syskonrelationer',
           p1:
-            'Lapsella on sisarusperuste samaan varhaiskasvatuspaikkaan, jossa hänen sisaruksensa on päätöksentekohetkellä. Sisarukseksi katsotaan kaikki samassa osoitteessa asuvat lapset. Tavoitteena on sijoittaa sisarukset samaan varhaiskasvatuspaikkaan perheen niin toivoessa. Jos haet paikkaa sisaruksille, jotka eivät vielä ole varhaiskasvatuksessa, kirjoita tieto lisätietokenttään.',
+            'Målet är att placera syskon i samma enhet om inte familjen önskar annat. Som syskon betraktas barn som är folkbokförda på samma adress. Om du ansöker om en plats för syskon, som inte ännu har plats inom småbarnspedagogik, skriv uppgiften i tilläggsuppgifter.',
           p2:
-            'Täytä nämä tiedot vain, jos käytät sisarusperustetta, sekä valitse alla olevissa hakutoiveissa ensisijaiseksi toiveeksi sama varhaiskasvatusyksikkö, jossa lapsen sisarus on.',
+            'Fyll i dessa uppgifter endast om du vill hänvisa till barnets syskonrelationer.',
           checkbox:
-            'Haen ensisijaisesti samaan paikkaan, jossa lapsen sisarus on jo varhaiskasvatuksessa.',
-          names: 'Sisaruksen etunimet ja sukunimi *',
-          namesPlaceholder: 'Etunimet ja sukunimi',
-          ssn: 'Sisaruksen henkilötunnus *',
-          ssnPlaceholder: 'Henkilötunnus'
+            'Jag ansöker i första hand om plats i den enheten där barnets syskon redan har en plats.',
+          names: 'Syskonets för- och efternamn *',
+          namesPlaceholder: 'För- och efternamn',
+          ssn: 'Syskonets personbeteckning *',
+          ssnPlaceholder: 'Personbeteckning'
         },
         units: {
-          title: 'Hakutoiveet',
+          title: 'Ansökningsönskemål *',
           startDateMissing:
-            'Päästäksesi valitsemaan hakutoiveet valitse ensin toivottu aloituspäivä "Palvelun tarve" -osiosta',
+            'För att välja önskade enheter, välj det första önskade startdatumet i avsnittet om "Servicebehov"',
           p1:
-            'Voit hakea paikkaa 1-3 varhaiskasvatusyksiköstä toivomassasi järjestyksessä. Hakutoiveet eivät takaa paikkaa toivotussa yksikössä, mutta mahdollisuus toivotun paikan saamiseen kasvaa antamalla useamman vaihtoehdon.',
+            'Du kan ange 1-3 platser i önskad ordning. Önskemålen garanterar inte en plats i den önskade enheten, men möjligheterna att få en önskad plats ökar om du anger flera alternativ.',
           p2:
-            'Näet eri varhaiskasvatusyksiköiden sijainnin valitsemalla ‘Yksiköt kartalla’.',
-          mapLink: 'Yksiköt kartalla',
+            'Om du i det tidigare fältet har hänvisat till barnets syskonrelationer ska du som förstahandsönskemål ange den enhet där syskonet redan har en plats.',
+          mapLink: 'Enheter på kartan',
           languageFilter: {
-            label: 'Yksikön kieli',
-            fi: 'suomi',
-            sv: 'ruotsi'
+            label: 'Enhetens språk:',
+            fi: 'finska',
+            sv: 'svenska'
           },
           select: {
-            label: 'Valitse hakutoiveet *',
-            placeholder: 'Hae yksiköitä',
-            maxSelected: 'Maksimimäärä yksiköitä valittu',
-            noOptions: 'Ei hakuehtoja vastaavia yksiköitä'
+            label: 'Välj önskade enheter',
+            placeholder: 'Välj enhet',
+            maxSelected:
+              'Max antal valda verksamhetsenheter. Ta bort en så att du kan lägga till en ny',
+            noOptions: 'Inga hittade enheter'
           },
           preferences: {
-            label: 'Valitsemasi hakutoiveet',
+            label: 'Enheter som du har valt',
             info:
-              'Valitse 1-3 varhaiskasvatusyksikköä ja järjestä ne toivomaasi järjestykseen. Voit muuttaa järjestystä nuolien avulla.',
-            fi: 'suomenkielinen',
-            sv: 'ruotsinkielinen',
-            moveUp: 'Siirrä ylöspäin',
-            moveDown: 'Siirrä alaspäin',
-            remove: 'Poista hakutoive'
+              'Välj minst 1 och högst 3 enheter och ange dem i önskad ordning. Du kan ändra på ordningsföljden genom att dra alternativen till rätt plats.',
+            fi: 'På finska',
+            sv: 'På svenska',
+            moveUp: 'Flytta upp',
+            moveDown: 'Flytta ner',
+            remove: 'Ta bort'
           }
         }
       },
@@ -262,9 +264,9 @@ const sv: Translations = {
           'Information om allergier behövs när du ansöker till familjedagvård.'
       },
       contactInfo: {
-        title: 'Henkilötiedot',
+        title: 'Personuppgifter',
         info:
-          'Henkilötiedot on haettu väestötiedoista, eikä niitä voi muuttaa tällä hakemuksella. Jos henkilötiedoissa on virheitä, päivitäthän tiedot <a href="https://dvv.fi/henkiloasiakkaat" target="_blank" rel="noreferrer">Digi- ja Väestötietoviraston sivuilla</a>. Mikäli osoitteenne on muuttumassa, voit lisätä tulevan osoitteen erilliseen kohtaan hakemuksella; lisää tuleva osoite sekä lapselle että huoltajalle. Virallisena osoitetietoa pidetään vasta, kun se on päivittynyt väestötietojärjestelmään. Päätökset esiopetus- ja varhaiskasvatuspaikoista toimitetaan automaattisesti myös eri osoitteessa asuvalle väestötiedoista löytyvälle huoltajalle.',
+          'Personuppgifterna hämtas från befolkningsdatabasen och du kan inte ändra dem med den här ansökan. Om det finns fel i personuppgifterna, vänligen uppdatera uppgifterna på webbplatsen <a href="https://dvv.fi/sv/kontroll-av-egna-uppgifter-service\" target=\"_blank\" rel=\"noopener noreferrer\">dvv.fi</a> (Myndigheten för digitalisering och befolkningsdata). Ifall adressen kommer att ändras, kan du lägga till den nya adressen på ett separat ställe i ansökan. Fyll i den nya adressen både för vårdnadshavare och barnet. Adressuppgifterna är officiella först när de har uppdaterats av myndigheten för digitalisering och befolkningsdata. Beslutet om barnets plats inom småbarnspedagogiken eller förskoleundervisningen skickas automatiskt också till en vårdnadshavare som bor på en annan adress enligt befolkningsregistret.',
         childInfoTitle: 'Lapsen tiedot',
         childFirstName: 'Lapsen etunimet',
         childLastName: 'Lapsen sukunimi',
