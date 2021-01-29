@@ -43,6 +43,13 @@ export default class DateRange {
     }
   }
 
+  overlapsWith(other: DateRange): boolean {
+    return (
+      (this.end === null || !this.end.isBefore(other.start)) &&
+      (other.end === null || !other.end.isBefore(this.start))
+    )
+  }
+
   static parseJson(json: JsonOf<DateRange>): DateRange {
     return new DateRange(
       LocalDate.parseIso(json.start),

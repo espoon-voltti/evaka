@@ -470,6 +470,9 @@ export const fi = {
           'Palveluntarve menee päällekäin toisen palveluntarpeen kanssa.',
         hardConflict:
           'Palveluntarve menee päällekäin toisen palveluntarpeen alkupäivämäärän kanssa.',
+        checkHours: 'Tarkista',
+        placementMismatchWarning:
+          'Viikottainen palveluntarve ei vastaa sijoituksen toimintamuotoa.',
         autoCutWarning:
           'Aiemmat päällekkäiset palveluntarpeet katkaistaan automaattisesti.'
       },
