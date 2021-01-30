@@ -15,6 +15,9 @@ import HorizontalLine from '@evaka/lib-components/src/atoms/HorizontalLine'
 import { H3, Label, P } from '@evaka/lib-components/src/typography'
 import InputField from '@evaka/lib-components/src/atoms/form/InputField'
 import Tooltip from '@evaka/lib-components/src/atoms/Tooltip'
+import colors from '@evaka/lib-components/src/colors'
+import RoundIcon from '@evaka/lib-components/src/atoms/RoundIcon'
+import { faInfo } from '@evaka/lib-icons'
 import { Gap } from '@evaka/lib-components/src/white-space'
 import EditorSection from '~applications/editor/EditorSection'
 import FileUpload from './FileUpload'
@@ -29,6 +32,22 @@ export type ServiceNeedSectionProps = {
   formData: ServiceNeedFormData
   updateFormData: (update: Partial<ServiceNeedFormData>) => void
 }
+
+const RoundInfoIcon = () => (
+  <>
+    <Gap horizontal size={'xs'} />
+    <RoundIcon
+      content={faInfo}
+      color={colors.brandEspoo.espooTurquoise}
+      size="s"
+    />
+  </>
+)
+
+const CheckboxWithTooltip = styled.div`
+  display: flex;
+  align-items: center;
+`
 
 const Hyphenbox = styled.div`
   display: flex;
@@ -66,15 +85,18 @@ export default React.memo(function ServiceNeedSection({
     >
       <FixedSpaceColumn>
         <H3>{t.applications.editor.serviceNeed.startDate.header}</H3>
-        <Tooltip
-          tooltip={
-            <span>
-              {t.applications.editor.serviceNeed.startDate.instructions}
-            </span>
-          }
-        >
-          <Label>{t.applications.editor.serviceNeed.startDate.label}</Label>
-        </Tooltip>
+        <Label>
+          {t.applications.editor.serviceNeed.startDate.label}
+          <Tooltip
+            tooltip={
+              <span>
+                {t.applications.editor.serviceNeed.startDate.instructions}
+              </span>
+            }
+          >
+            <RoundInfoIcon />
+          </Tooltip>
+        </Label>
 
         <DatePickerDeprecated
           date={formData.preferredStartDate || undefined}
@@ -143,20 +165,19 @@ export default React.memo(function ServiceNeedSection({
       <Gap size={'s'} />
 
       <FixedSpaceColumn>
-        <Tooltip
-          tooltip={
-            <span>
-              {t.applications.editor.serviceNeed.dailyTime.instructions}
-            </span>
-          }
-        >
-          <Label>
-            {
-              t.applications.editor.serviceNeed.dailyTime
-                .usualArrivalAndDeparture
+        <Label>
+          {t.applications.editor.serviceNeed.dailyTime.usualArrivalAndDeparture}
+          <Tooltip
+            tooltip={
+              <span>
+                {t.applications.editor.serviceNeed.dailyTime.instructions}
+              </span>
             }
-          </Label>
-        </Tooltip>
+          >
+            <RoundInfoIcon />
+          </Tooltip>
+        </Label>
+
         <FixedSpaceRow spacing={'m'}>
           <FixedSpaceColumn spacing={'xs'}>
             <Label htmlFor={'daily-time-starts'}>
@@ -188,13 +209,7 @@ export default React.memo(function ServiceNeedSection({
         </FixedSpaceRow>
 
         <Gap size={'s'} />
-        <Tooltip
-          tooltip={
-            <span>
-              {t.applications.editor.serviceNeed.shiftCare.instructions}
-            </span>
-          }
-        >
+        <CheckboxWithTooltip>
           <Checkbox
             checked={formData.shiftCare}
             label={t.applications.editor.serviceNeed.shiftCare.label}
@@ -204,7 +219,16 @@ export default React.memo(function ServiceNeedSection({
               })
             }
           />
-        </Tooltip>
+          <Tooltip
+            tooltip={
+              <span>
+                {t.applications.editor.serviceNeed.shiftCare.instructions}
+              </span>
+            }
+          >
+            <RoundInfoIcon />
+          </Tooltip>
+        </CheckboxWithTooltip>
 
         {formData.shiftCare && (
           <>
@@ -233,13 +257,7 @@ export default React.memo(function ServiceNeedSection({
 
       <FixedSpaceColumn>
         <H3>{t.applications.editor.serviceNeed.assistanceNeed}</H3>
-        <Tooltip
-          tooltip={
-            <span>
-              {t.applications.editor.serviceNeed.assistanceNeedInstructions}
-            </span>
-          }
-        >
+        <CheckboxWithTooltip>
           <Checkbox
             checked={formData.assistanceNeeded}
             label={t.applications.editor.serviceNeed.assistanceNeeded}
@@ -249,7 +267,16 @@ export default React.memo(function ServiceNeedSection({
               })
             }
           />
-        </Tooltip>
+          <Tooltip
+            tooltip={
+              <span>
+                {t.applications.editor.serviceNeed.assistanceNeedInstructions}
+              </span>
+            }
+          >
+            <RoundInfoIcon />
+          </Tooltip>
+        </CheckboxWithTooltip>
         {formData.assistanceNeeded && (
           <InputField
             value={formData.assistanceDescription}

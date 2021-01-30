@@ -2,46 +2,58 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { faInfo, faTimes } from '@evaka/lib-icons'
-import React, { useState } from 'react'
+import React from 'react'
 import styled from 'styled-components'
-import colors, { blueColors } from '../colors'
-import { defaultMargins, Gap } from '../white-space'
-import RoundIcon from './RoundIcon'
-import { P } from '@evaka/lib-components/src/typography'
-import Container from '@evaka/lib-components/src/layout/Container'
-import InlineButton from '@evaka/lib-components/src/atoms/buttons/InlineButton'
-import { FixedSpaceFlexWrap } from '@evaka/lib-components/src/layout/flex-helpers'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { fasCaretUp } from '@evaka/lib-icons'
+import { greyscale } from '../colors'
+import { defaultMargins } from '../white-space'
 
+const TooltipWrapper = styled.div`
+  position: relative;
+  display: inline-block;
+
+  &:not(:hover) {
+    .tooltip {
+      display: none;
+    }
+  }
+`
 const TooltipPositioner = styled.div`
-  width: 100%;
+  position: absolute;
+  top: calc(100% + ${defaultMargins.xs});
+  left: -70px;
+  right: -70px;
+  z-index: 99999;
+  display: flex;
   justify-content: center;
   align-items: center;
 `
 
-const TooltipContainer = styled.div`
-  color: ${blueColors.dark};
+const TooltipDiv = styled.div`
+  color: ${greyscale.white};
   font-size: 15px;
   line-height: 22px;
 
-  background-color: rgba(36, 159, 255, 0.1);
+  background-color: ${greyscale.dark};
   padding: ${defaultMargins.s};
+  border-radius: 2px;
+  box-shadow: 0 4px 4px rgba(0, 0, 0, 0.25);
 
   p:not(:last-child) {
     margin-bottom: 8px;
   }
 `
 
-const FlexDiv = styled.div`
+const Beak = styled.div`
+  position: absolute;
+  top: -24px;
+  left: 0;
+  right: 0;
   display: flex;
-`
-
-const CloseButton = styled.div`
-  text-align: right;
-`
-
-const RightMargin = styled.div`
-  margin-right: 15px;
+  justify-content: center;
+  align-items: center;
+  color: ${greyscale.dark};
 `
 
 type TooltipProps = {
@@ -50,57 +62,18 @@ type TooltipProps = {
 }
 
 export default function Tooltip({ children, tooltip }: TooltipProps) {
-  const [showTooltip, setShowTooltip] = useState<boolean>(false)
   return (
-    <>
-      <FlexDiv>
-        {children}
-        <Gap horizontal size={'xs'} />
-        <RoundIcon
-          content={faInfo}
-          color={colors.brandEspoo.espooTurquoise}
-          size="s"
-          onClick={() => {
-            setShowTooltip(true)
-          }}
-        />
-      </FlexDiv>
-      {showTooltip && (
-        <div style={{ marginLeft: '-32px', marginRight: '-32px' }}>
-          <TooltipPositioner className={'tooltip'}>
-            <TooltipContainer>
-              <Container>
-                <FixedSpaceFlexWrap
-                  style={{ justifyContent: 'space-between' }}
-                  reverse={true}
-                >
-                  <FlexDiv>
-                    <Gap horizontal size={'m'} />
-                    <RightMargin>
-                      <RoundIcon
-                        content={faInfo}
-                        color={colors.brandEspoo.espooTurquoise}
-                        size="s"
-                      />
-                    </RightMargin>
-                    <P style={{ margin: '0' }}>{tooltip}</P>
-                  </FlexDiv>
-                  <span />
-                  <CloseButton>
-                    <InlineButton
-                      onClick={() => {
-                        setShowTooltip(false)
-                      }}
-                      icon={faTimes}
-                      text={''}
-                    />
-                  </CloseButton>
-                </FixedSpaceFlexWrap>
-              </Container>
-            </TooltipContainer>
-          </TooltipPositioner>
-        </div>
-      )}
-    </>
+    <TooltipWrapper>
+      <div>{children}</div>
+
+      <TooltipPositioner className={'tooltip'}>
+        <TooltipDiv>
+          <Beak>
+            <FontAwesomeIcon icon={fasCaretUp} size={'3x'} />
+          </Beak>
+          <div>{tooltip}</div>
+        </TooltipDiv>
+      </TooltipPositioner>
+    </TooltipWrapper>
   )
 }
