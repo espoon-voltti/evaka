@@ -11,7 +11,10 @@ import RoundIcon from '../atoms/RoundIcon'
 import { P } from '@evaka/lib-components/src/typography'
 import Container from '@evaka/lib-components/src/layout/Container'
 import InlineButton from '@evaka/lib-components/src/atoms/buttons/InlineButton'
-import {FixedSpaceFlexWrap, FixedSpaceRow} from '@evaka/lib-components/src/layout/flex-helpers'
+import {
+  FixedSpaceFlexWrap,
+  FixedSpaceRow
+} from '@evaka/lib-components/src/layout/flex-helpers'
 
 const TooltipPositioner = styled.div`
   width: 100%;
@@ -54,10 +57,8 @@ export default function ExpandingInfo({ children, info }: ExpandingInfoProps) {
 
   return (
     <>
-      <FixedSpaceRow spacing='xs'>
-        <div>
-          {children}
-        </div>
+      <FixedSpaceRow spacing="xs">
+        <div>{children}</div>
         <RoundIcon
           content={faInfo}
           color={colors.brandEspoo.espooTurquoise}
