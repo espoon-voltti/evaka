@@ -45,9 +45,35 @@ export default React.memo(function ServiceTimeSubSectionPreschool({
     file: File,
     onUploadProgress: (progressEvent: ProgressEvent) => void
   ): Promise<Result<UUID>> =>
-    saveAttachment(applicationId, file, 'EXTENDED_CARE', onUploadProgress)
+    saveAttachment(applicationId, file, 'EXTENDED_CARE', onUploadProgress).then(
+      (result) => {
+        result.isSuccess &&
+          updateFormData({
+            shiftCareAttachments: [
+              ...formData.shiftCareAttachments,
+              {
+                id: result.value,
+                name: file.name,
+                contentType: file.type,
+                updated: new Date(),
+                type: 'EXTENDED_CARE'
+              }
+            ]
+          })
+        return result
+      }
+    )
 
-  const deleteExtendedCareAttachment = deleteAttachment
+  const deleteExtendedCareAttachment = (id: UUID) =>
+    deleteAttachment(id).then((result) => {
+      result.isSuccess &&
+        updateFormData({
+          shiftCareAttachments: formData.shiftCareAttachments.filter(
+            (file) => file.id !== id
+          )
+        })
+      return result
+    })
 
   return (
     <>

@@ -33,9 +33,35 @@ export default React.memo(function PreferredStartSubSection({
     file: File,
     onUploadProgress: (progressEvent: ProgressEvent) => void
   ): Promise<Result<UUID>> =>
-    saveAttachment(applicationId, file, 'URGENCY', onUploadProgress)
+    saveAttachment(applicationId, file, 'URGENCY', onUploadProgress).then(
+      (result) => {
+        result.isSuccess &&
+          updateFormData({
+            urgencyAttachments: [
+              ...formData.urgencyAttachments,
+              {
+                id: result.value,
+                name: file.name,
+                contentType: file.type,
+                updated: new Date(),
+                type: 'URGENCY'
+              }
+            ]
+          })
+        return result
+      }
+    )
 
-  const deleteUrgencyAttachment = deleteAttachment
+  const deleteUrgencyAttachment = (id: UUID) =>
+    deleteAttachment(id).then((result) => {
+      result.isSuccess &&
+        updateFormData({
+          urgencyAttachments: formData.urgencyAttachments.filter(
+            (file) => file.id !== id
+          )
+        })
+      return result
+    })
 
   return (
     <>
