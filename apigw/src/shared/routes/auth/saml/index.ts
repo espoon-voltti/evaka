@@ -14,6 +14,7 @@ import { logoutExpress, saveLogoutToken } from '../../../session'
 import { fromCallback } from '../../../promise-utils'
 import { getEmployees } from '../../../dev-api'
 import _ from 'lodash'
+import { AuthenticateOptions } from 'passport-saml'
 
 const urlencodedParser = urlencoded({ extended: false })
 
@@ -62,8 +63,13 @@ function createLoginHandler({
       req,
       'Login endpoint called'
     )
+    const locale = req.query.locale
+    const options: AuthenticateOptions = {
+      additionalParams: typeof locale === 'string' ? { locale } : {}
+    }
     passport.authenticate(
       strategyName,
+      options,
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (err: any, user: SamlUser | undefined) => {
         if (err || !user) {
