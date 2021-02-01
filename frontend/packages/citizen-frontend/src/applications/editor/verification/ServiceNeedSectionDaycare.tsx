@@ -14,13 +14,13 @@ type ServiceNeedSectionProps = {
   formData: ApplicationFormData
 }
 
-const AttachmentList = styled.ul`
+export const AttachmentList = styled.ul`
   margin-top: 0;
   padding-left: 0;
   list-style: none;
 `
 
-const AttachmentDownload = styled.a`
+export const AttachmentDownload = styled.a`
   color: ${espooBrandColors.espooTurquoise};
   text-decoration: none;
 `
@@ -48,7 +48,6 @@ export default React.memo(function ServiceNeedSection({
           }
         </Label>
         <span>{formData.serviceNeed.preferredStartDate}</span>
-
         <Label>
           {t.applications.editor.verification.serviceNeed.startDate.urgency}
         </Label>

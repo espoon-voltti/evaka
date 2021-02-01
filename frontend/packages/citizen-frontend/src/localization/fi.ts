@@ -129,6 +129,13 @@ export default {
         },
         serviceNeed: {
           title: 'Palveluntarve',
+          connectedDaycare: {
+            title: 'Esiopetukseen liittyvän varhaiskasvatuksen tarve',
+            label: 'Liittyvä varhaiskasvatus',
+            withConnectedDaycare:
+              'Haen myös esiopetukseen liittyvää varhaiskasvatusta.',
+            withoutConnectedDaycare: 'Ei'
+          },
           attachments: {
             label: 'Tarvittavat liitteet',
             withoutAttachments: 'Ei liitetty, lähetetään postilla'

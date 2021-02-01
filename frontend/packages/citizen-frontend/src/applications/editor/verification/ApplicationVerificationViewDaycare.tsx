@@ -14,19 +14,20 @@ import { defaultMargins, Gap } from '@evaka/lib-components/src/white-space'
 import HorizontalLine from '@evaka/lib-components/src/atoms/HorizontalLine'
 import UnitPreferenceSection from '~applications/editor/verification/UnitPreferenceSection'
 import { ApplicationDetails } from '@evaka/lib-common/src/api-types/application/ApplicationDetails'
-import ServiceNeedSection from './ServiceNeedSection'
+import ServiceNeedSectionDaycare from './ServiceNeedSectionDaycare'
+import ServiceNeedSectionPreschool from './ServiceNeedSectionPreschool'
 import { espooBrandColors } from '@evaka/lib-components/src/colors'
 import styled from 'styled-components'
 import RoundIcon from '@evaka/lib-components/src/atoms/RoundIcon'
 import { faInfo } from '@evaka/lib-icons'
 import ContactInfoSection from './ContactInfoSection'
+import { ApplicationType } from '~../../lib-common/src/api-types/application/enums'
 
 type DaycareApplicationVerificationViewProps = {
   application: ApplicationDetails
   formData: ApplicationFormData
+  type: ApplicationType
 }
-
-const applicationType = 'DAYCARE'
 
 const AttachmentBox = styled.div`
   border: 2px solid ${espooBrandColors.espooTurquoise};
@@ -40,13 +41,14 @@ const RoundIconStyled = styled(RoundIcon)`
 
 export default React.memo(function ApplicationVerificationViewDaycare({
   application,
-  formData
+  formData,
+  type
 }: DaycareApplicationVerificationViewProps) {
   const t = useTranslation()
   return (
     <Container>
       <ContentArea opaque>
-        <H1>{t.applications.editor.verification.title[applicationType]}</H1>
+        <H1>{t.applications.editor.verification.title[type]}</H1>
         <P
           dangerouslySetInnerHTML={{
             __html: t.applications.editor.verification.notYetSent
@@ -90,7 +92,12 @@ export default React.memo(function ApplicationVerificationViewDaycare({
       <ContentArea opaque>
         <BasicsSection application={application} formData={formData} />
         <HorizontalLine />
-        <ServiceNeedSection formData={formData} />
+        {type === 'DAYCARE' && (
+          <ServiceNeedSectionDaycare formData={formData} />
+        )}
+        {type === 'PRESCHOOL' && (
+          <ServiceNeedSectionPreschool formData={formData} />
+        )}
         <HorizontalLine />
         <UnitPreferenceSection formData={formData.unitPreference} />
         <HorizontalLine />
