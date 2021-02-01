@@ -172,6 +172,47 @@ export default {
             title: 'Hakutoiveet',
             label: 'Valitsemasi hakutoiveet'
           }
+        },
+        contactInfo: {
+          title: 'Henkilötiedot',
+          child: {
+            title: 'Lapsen tiedot',
+            name: 'Lapsen nimi',
+            ssn: 'Lapsen henkilötunnus',
+            streetAddress: 'Kotiosoite',
+            hasFutureAddress: 'Osoite muuttunut / muuttumassa',
+            addressChangesAt: 'Muuttopäivämäärä',
+            newAddress: 'Uusi osoite'
+          },
+          guardian: {
+            title: 'Huoltajan tiedot',
+            name: 'Huoltajan nimi',
+            ssn: 'Huoltajan henkilötunnus',
+            streetAddress: 'Kotiosoite',
+            tel: 'Puhelinnumero',
+            email: 'Sähköpostiosoite',
+            hasFutureAddress: 'Osoite muuttunut / muuttumassa',
+            addressChangesAt: 'Muuttopäivämäärä',
+            newAddress: 'Uusi osoite'
+          },
+          secondGuardian: {
+            title: 'Toisen huoltajan tiedot',
+            info:
+              'Toisen huoltajan tiedot haetaan automaattisesti väestötietojärjestelmästä.'
+          },
+          fridgePartner: {
+            title:
+              'Samassa taloudessa asuva avio- tai avopuoliso (ei huoltaja)',
+            fridgePartner:
+              'Samassa taloudessa asuu avio- tai avopuoliso (ei huoltaja)',
+            name: 'Henkilön nimi',
+            ssn: 'Henkilön henkilötunnus'
+          },
+          fridgeChildren: {
+            title: 'Samassa taloudessa asuvat alle 18-vuotiaat lapset',
+            name: 'Lapsen nimi',
+            ssn: 'Henkilön henkilötunnus'
+          }
         }
       },
       serviceNeed: {

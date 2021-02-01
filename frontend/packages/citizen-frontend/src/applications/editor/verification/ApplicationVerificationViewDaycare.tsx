@@ -19,6 +19,7 @@ import { espooBrandColors } from '@evaka/lib-components/src/colors'
 import styled from 'styled-components'
 import RoundIcon from '@evaka/lib-components/src/atoms/RoundIcon'
 import { faInfo } from '@evaka/lib-icons'
+import ContactInfoSection from './ContactInfoSection'
 
 type DaycareApplicationVerificationViewProps = {
   application: ApplicationDetails
@@ -92,6 +93,8 @@ export default React.memo(function ApplicationVerificationViewDaycare({
         <ServiceNeedSection formData={formData} />
         <HorizontalLine />
         <UnitPreferenceSection formData={formData.unitPreference} />
+        <HorizontalLine />
+        <ContactInfoSection formData={formData.contactInfo} />
       </ContentArea>
     </Container>
   )
