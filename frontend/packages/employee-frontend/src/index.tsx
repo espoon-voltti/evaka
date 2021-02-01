@@ -8,7 +8,7 @@ import ReactDOM from 'react-dom'
 import * as Sentry from '@sentry/browser'
 import { polyfill as smoothScrollPolyfill } from 'seamless-scroll-polyfill'
 import App from '~App'
-import './index.scss'
+import './index.css'
 import { getEnvironment } from '@evaka/lib-common/src/utils/helpers'
 import { config } from '@evaka/employee-frontend/src/configs'
 

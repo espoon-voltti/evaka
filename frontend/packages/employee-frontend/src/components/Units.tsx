@@ -27,7 +27,6 @@ import { faSearch } from '@evaka/lib-icons'
 import { getDaycares } from '~api/unit'
 import { Unit } from '~types/unit'
 import { RequireRole } from '~utils/roles'
-import '~components/Units.scss'
 import Loader from '@evaka/lib-components/src/atoms/Loader'
 
 const TopBar = styled.div`
@@ -99,87 +98,79 @@ function Units() {
       .getOrElse(null)
 
   return (
-    <>
-      <div className="units-wrapper" data-qa="units-page">
-        <Container>
-          <Gap size={'L'} />
-          <ContentArea opaque>
-            <Gap size={'XXL'} />
-            <TopBar>
-              <InputField
-                dataQa="unit-name-filter"
-                value={filter}
-                placeholder={i18n.units.findByName}
-                onChange={(value) => {
-                  setFilter(value)
+    <Container data-qa="units-page">
+      <Gap size={'L'} />
+      <ContentArea opaque>
+        <Gap size={'XXL'} />
+        <TopBar>
+          <InputField
+            dataQa="unit-name-filter"
+            value={filter}
+            placeholder={i18n.units.findByName}
+            onChange={(value) => {
+              setFilter(value)
+            }}
+            icon={faSearch}
+            width={'L'}
+          />
+          <RequireRole oneOf={['ADMIN']}>
+            <div>
+              <Button
+                data-qa="create-new-unit"
+                className="units-wrapper-create"
+                onClick={() => {
+                  window.location.href = '/employee/units/new'
                 }}
-                icon={faSearch}
-                width={'L'}
+                text={i18n.unit.create}
               />
-              <RequireRole oneOf={['ADMIN']}>
-                <div>
-                  <Button
-                    data-qa="create-new-unit"
-                    className="units-wrapper-create"
-                    onClick={() => {
-                      window.location.href = '/employee/units/new'
-                    }}
-                    text={i18n.unit.create}
-                  />
-                </div>
-              </RequireRole>
-            </TopBar>
-            <Gap size={'XXL'} />
-            <>
-              <div className="table-of-units">
-                <Table data-qa="table-of-units">
-                  <Thead>
-                    <Tr>
-                      <SortableTh
-                        sorted={
-                          sortColumn === 'name' ? sortDirection : undefined
-                        }
-                        onClick={() => sortBy('name')}
-                      >
-                        {i18n.units.name}
-                      </SortableTh>
-                      <SortableTh
-                        sorted={
-                          sortColumn === 'area.name' ? sortDirection : undefined
-                        }
-                        onClick={() => sortBy('area.name')}
-                      >
-                        {i18n.units.area}
-                      </SortableTh>
-                      <SortableTh
-                        sorted={
-                          sortColumn === 'address' ? sortDirection : undefined
-                        }
-                        onClick={() => sortBy('address')}
-                      >
-                        {i18n.units.address}
-                      </SortableTh>
-                      <SortableTh
-                        sorted={
-                          sortColumn === 'type' ? sortDirection : undefined
-                        }
-                        onClick={() => sortBy('type')}
-                      >
-                        {i18n.units.type}
-                      </SortableTh>
-                    </Tr>
-                  </Thead>
-                  <Tbody>{renderUnits()}</Tbody>
-                </Table>
-              </div>
-            </>
-            {units.isLoading && <Loader />}
-            {units.isFailure && <div>{i18n.common.loadingFailed}</div>}
-            <Gap size={'XXL'} />
-          </ContentArea>
-        </Container>
-      </div>
-    </>
+            </div>
+          </RequireRole>
+        </TopBar>
+        <Gap size={'XXL'} />
+        <>
+          <div className="table-of-units">
+            <Table data-qa="table-of-units">
+              <Thead>
+                <Tr>
+                  <SortableTh
+                    sorted={sortColumn === 'name' ? sortDirection : undefined}
+                    onClick={() => sortBy('name')}
+                  >
+                    {i18n.units.name}
+                  </SortableTh>
+                  <SortableTh
+                    sorted={
+                      sortColumn === 'area.name' ? sortDirection : undefined
+                    }
+                    onClick={() => sortBy('area.name')}
+                  >
+                    {i18n.units.area}
+                  </SortableTh>
+                  <SortableTh
+                    sorted={
+                      sortColumn === 'address' ? sortDirection : undefined
+                    }
+                    onClick={() => sortBy('address')}
+                  >
+                    {i18n.units.address}
+                  </SortableTh>
+                  <SortableTh
+                    sorted={sortColumn === 'type' ? sortDirection : undefined}
+                    onClick={() => sortBy('type')}
+                  >
+                    {i18n.units.type}
+                  </SortableTh>
+                </Tr>
+              </Thead>
+              <Tbody>{renderUnits()}</Tbody>
+            </Table>
+          </div>
+        </>
+        {units.isLoading && <Loader />}
+        {units.isFailure && <div>{i18n.common.loadingFailed}</div>}
+        <Gap size={'XXL'} />
+      </ContentArea>
+    </Container>
   )
 }
 

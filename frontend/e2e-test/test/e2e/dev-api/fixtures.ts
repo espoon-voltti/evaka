@@ -568,8 +568,8 @@ export const feeDecisionsFixture = (
   id: 'bcc42d48-765d-4fe1-bc90-7a7b4c8205fe',
   status,
   decisionType: 'NORMAL',
-  validFrom: '2019-01-01',
-  validTo: '2021-01-01',
+  validFrom: LocalDate.today().subYears(1).formatIso(),
+  validTo: LocalDate.today().addYears(1).formatIso(),
   headOfFamily: { id: adult.id },
   familySize: 2,
   pricing: {
@@ -602,12 +602,14 @@ export const voucherValueDecisionsFixture = (
   adultId: UUID,
   childId: UUID,
   daycareId: UUID,
-  status: 'DRAFT' | 'SENT' = 'DRAFT'
+  status: 'DRAFT' | 'SENT' = 'DRAFT',
+  validFrom = LocalDate.today().subYears(1).formatIso(),
+  validTo = LocalDate.today().addYears(1).formatIso()
 ): VoucherValueDecision => ({
   id: 'ed462aca-f74e-4384-910f-628823201023',
   status,
-  validFrom: '2019-01-01',
-  validTo: '2021-01-01',
+  validFrom,
+  validTo,
   headOfFamily: { id: adultId },
   familySize: 2,
   pricing: {

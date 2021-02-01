@@ -43,13 +43,17 @@ fixture('Reporting - voucher reports')
         fixtures.enduserGuardianFixture.id,
         fixtures.enduserChildFixtureKaarina.id,
         fixtures.daycareFixture.id,
-        'SENT'
+        'SENT',
+        '2020-01-01',
+        '2020-12-31'
       ),
       voucherValueDecisionsFixture(
         fixtures.enduserGuardianFixture.id,
         fixtures.enduserChildFixtureJari.id,
         daycare2Fixture.id,
-        'SENT'
+        'SENT',
+        '2020-01-01',
+        '2020-12-31'
       )
     ])
   })

@@ -5,7 +5,7 @@
 import React, { useCallback, useContext, useEffect } from 'react'
 import { RouteComponentProps } from 'react-router'
 import { flatMap, partition } from 'lodash'
-
+import colors from '@evaka/lib-components/src/colors'
 import { Label, LabelText } from '~components/common/styled/common'
 import Button from '@evaka/lib-components/src/atoms/buttons/Button'
 import Radio from '@evaka/lib-components/src/atoms/form/Radio'
@@ -31,10 +31,7 @@ import {
   CellPart,
   defaultCareTypeCategory
 } from '~types/absence'
-
 import AbsenceTable from './AbsenceTable'
-
-import './Absences.scss'
 import PeriodPicker from '~components/absences/PeriodPicker'
 import { TitleContext, TitleState } from '~state/title'
 import ColorInfo from '~components/absences/ColorInfo'
@@ -50,7 +47,9 @@ const AbsencesContentArea = styled(ContentArea)`
   }
 `
 
-function Absences({ match }: RouteComponentProps<{ groupId: string }>) {
+export default function Absences({
+  match
+}: RouteComponentProps<{ groupId: string }>) {
   const { i18n } = useTranslation()
   const {
     absences,
@@ -189,7 +188,7 @@ function Absences({ match }: RouteComponentProps<{ groupId: string }>) {
     ) : null
 
   return (
-    <div className="absences-page" data-qa="absences-page">
+    <AbsencesPage data-qa="absences-page">
       <Container>
         <ReturnButton
           label={i18n.common.goBack}
@@ -224,7 +223,7 @@ function Absences({ match }: RouteComponentProps<{ groupId: string }>) {
         </AbsencesContentArea>
         <ColorInfo />
       </Container>
-    </div>
+    </AbsencesPage>
   )
 }
 
@@ -234,4 +233,297 @@ const AddAbsencesButton = styled(Button)`
   }
 `
 
-export default Absences
+const cellSize = '20px'
+
+const AbsencesPage = styled.div`
+  button {
+    &:disabled {
+      color: #c4c4c4;
+    }
+  }
+
+  h1,
+  h2 {
+    @media print {
+      margin: 0;
+    }
+  }
+
+  .table {
+    border-collapse: collapse;
+    width: 100%;
+  }
+
+  .table th {
+    text-align: left;
+    text-transform: uppercase;
+    color: ${colors.greyscale.dark};
+    vertical-align: bottom;
+
+    &.absence-header {
+      text-align: center;
+    }
+  }
+
+  .table td {
+    text-align: left;
+    color: #0f0f0f;
+
+    &.absence-cell-wrapper {
+      text-align: center;
+    }
+    &.absence-cell-wrapper > div {
+      margin: 0 auto;
+    }
+  }
+
+  .table td,
+  .table th {
+    padding: 5px 3px !important;
+    border-bottom: none !important;
+  }
+
+  .table thead th {
+    font-weight: 600 !important;
+    font-size: 0.8rem !important;
+  }
+
+  .table td {
+    cursor: pointer;
+
+    &.empty-row {
+      cursor: inherit;
+      height: 20px;
+    }
+  }
+
+  .table .has-text-center {
+    text-align: center;
+  }
+
+  .absence-modal .input-group-item {
+    margin-bottom: 0;
+  }
+
+  .absence-child-name {
+    white-space: nowrap;
+    overflow: hidden;
+    width: 130px;
+    max-width: 130px;
+
+    @media screen and (min-width: 1216px) {
+      width: 206px;
+      max-width: 206px;
+    }
+  }
+
+  .absence-tooltip {
+    span {
+      text-align: left;
+    }
+  }
+
+  .absence-cell-today,
+  .table tr:hover .hover-highlight {
+    background: rgba(158, 158, 158, 0.2);
+
+    .absence-cell-selected {
+      .absence-cell-left-weekend {
+        border-top-color: transparent;
+      }
+
+      .absence-cell-right-weekend {
+        border-bottom-color: transparent;
+      }
+    }
+
+    .absence-cell-left-weekend {
+      border-top-color: ${colors.greyscale.lighter};
+    }
+
+    .absence-cell-right-weekend {
+      border-bottom-color: ${colors.greyscale.lighter};
+    }
+  }
+
+  tr:hover .hover-highlight:first-child {
+    box-shadow: -8px 0 0 rgba(158, 158, 158, 0.2);
+  }
+
+  tr:hover .hover-highlight:last-child {
+    box-shadow: 8px 0 0 rgba(158, 158, 158, 0.2);
+  }
+
+  .absence-header-today {
+    background-color: #9e9e9e;
+    color: ${colors.greyscale.white} !important;
+
+    @media print {
+      background: none;
+      color: inherit !important;
+      font-weight: bolder;
+    }
+  }
+
+  .absence-header-weekday {
+    color: ${colors.greyscale.darkest} !important;
+  }
+
+  .absence-cell {
+    position: relative;
+    height: ${cellSize};
+    width: ${cellSize};
+  }
+
+  .absence-cell-disabled {
+    background: transparent;
+  }
+
+  .absence-cell-left,
+  .absence-cell-right {
+    position: absolute;
+    height: ${cellSize};
+    width: ${cellSize};
+    border-style: solid;
+    border-color: transparent;
+  }
+
+  .absence-cell-left {
+    border-width: ${cellSize} ${cellSize} 0 0;
+
+    &-OTHER_ABSENCE {
+      border-top-color: ${colors.blues.dark};
+    }
+    &-SICKLEAVE {
+      border-top-color: ${colors.accents.violet};
+    }
+    &-UNKNOWN_ABSENCE {
+      border-top-color: ${colors.accents.green};
+    }
+    &-PLANNED_ABSENCE {
+      border-top-color: ${colors.blues.light};
+    }
+    &-TEMPORARY_RELOCATION {
+      border-top-color: ${colors.accents.orange};
+    }
+    &-TEMPORARY_VISITOR {
+      border-top-color: ${colors.accents.yellow};
+    }
+    &-PARENTLEAVE {
+      border-top-color: ${colors.blues.primary};
+    }
+    &-FORCE_MAJEURE {
+      border-top-color: ${colors.accents.red};
+    }
+    &-PRESENCE,
+    &-weekend {
+      border-top-color: ${colors.greyscale.lightest};
+    }
+    &-empty {
+      border-top-color: ${colors.greyscale.lighter};
+    }
+  }
+
+  .absence-cell-right {
+    border-width: 0 0 ${cellSize} ${cellSize};
+
+    &-OTHER_ABSENCE {
+      border-bottom-color: ${colors.blues.dark};
+    }
+    &-SICKLEAVE {
+      border-bottom-color: ${colors.accents.violet};
+    }
+    &-UNKNOWN_ABSENCE {
+      border-bottom-color: ${colors.accents.green};
+    }
+    &-PLANNED_ABSENCE {
+      border-bottom-color: ${colors.blues.light};
+    }
+    &-TEMPORARY_RELOCATION {
+      border-bottom-color: ${colors.accents.orange};
+    }
+    &-TEMPORARY_VISITOR {
+      border-bottom-color: ${colors.accents.yellow};
+    }
+    &-PARENTLEAVE {
+      border-bottom-color: ${colors.blues.primary};
+    }
+    &-FORCE_MAJEURE {
+      border-bottom-color: ${colors.accents.red};
+    }
+    &-PRESENCE,
+    &-weekend {
+      border-bottom-color: ${colors.greyscale.lightest};
+    }
+    &-empty {
+      border-bottom-color: ${colors.greyscale.lighter};
+    }
+  }
+
+  .absence-cell-selected {
+    border: 2px solid ${colors.blues.primary};
+    border-radius: 2px;
+
+    .absence-cell-left,
+    .absence-cell-right {
+      border-color: transparent;
+    }
+  }
+
+  .empty-row {
+    color: transparent;
+
+    td {
+      cursor: default;
+    }
+  }
+
+  .staff-attendance-row {
+    font-weight: 600;
+
+    td {
+      cursor: default;
+      vertical-align: middle;
+    }
+
+    .staff-attendance-cell {
+      /* disable spin buttons Chrome, Safari, Edge, Opera */
+      input::-webkit-outer-spin-button,
+      input::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+      }
+
+      input {
+        /* disable spin buttons Firefox */
+        -moz-appearance: textfield;
+        text-align: center;
+        margin: 0 auto;
+        padding: 0;
+        font-weight: 600;
+        font-size: 0.8rem;
+        height: ${cellSize};
+        width: ${cellSize};
+        min-height: 1.5rem;
+        border-color: #9e9e9e;
+        color: ${colors.greyscale.darkest};
+        display: block;
+        box-shadow: none;
+        max-width: 100%;
+        min-height: 2.5em;
+        border-radius: 0;
+        border-width: 0 0 1px;
+        background-color: transparent;
+
+        @media print {
+          border: none;
+        }
+      }
+    }
+
+    .disabled-staff-cell-container {
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+    }
+  }
+`

@@ -4,12 +4,12 @@
 
 import React, { useContext, useEffect, useState } from 'react'
 import FormModal from '@evaka/lib-components/src/molecules/modals/FormModal'
+import { Label } from '@evaka/lib-components/src/typography'
 import { useTranslation } from '~state/i18n'
 import { UIContext } from '~state/ui'
 import { DatePickerDeprecated } from '@evaka/lib-components/src/molecules/DatePickerDeprecated'
 import InputField from '@evaka/lib-components/src/atoms/form/InputField'
 import { allPropertiesTrue } from '~utils/validation/validations'
-import '~components/unit/tab-groups/groups/GroupModal.scss'
 import { createGroup } from '~api/unit'
 import { EVAKA_START } from '~constants'
 import LocalDate from '@evaka/lib-common/src/local-date'
@@ -93,8 +93,8 @@ function GroupModal({ unitId, reload }: Props) {
       }}
     >
       <FixedSpaceColumn spacing={'m'}>
-        <section>
-          <div className="bold">{i18n.unit.groups.createModal.name}</div>
+        <div>
+          <Label>{i18n.unit.groups.createModal.name}</Label>
           <InputField
             value={form.name}
             onChange={(value) => assignForm({ name: value })}
@@ -108,19 +108,17 @@ function GroupModal({ unitId, reload }: Props) {
                 : undefined
             }
           />
-        </section>
-        <section>
-          <div className="bold">{i18n.common.form.startDate}</div>
+        </div>
+        <div>
+          <Label>{i18n.common.form.startDate}</Label>
           <DatePickerDeprecated
             date={form.startDate}
             onChange={(startDate) => assignForm({ startDate })}
             type="full-width"
           />
-        </section>
-        <section>
-          <div className="bold">
-            {i18n.unit.groups.createModal.initialCaretakers}
-          </div>
+        </div>
+        <div>
+          <Label>{i18n.unit.groups.createModal.initialCaretakers}</Label>
           <InputField
             value={form.initialCaretakers.toString()}
             type={'number'}
@@ -131,7 +129,7 @@ function GroupModal({ unitId, reload }: Props) {
             }
             dataQa={'new-group-name-input'}
           />
-        </section>
+        </div>
       </FixedSpaceColumn>
     </FormModal>
   )
