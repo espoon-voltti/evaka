@@ -166,6 +166,12 @@ const en: Translations = {
             withAssistanceNeed: 'Lapsella on tuen tarve',
             withoutAssistanceNeed: 'Lapsella ei ole tuen tarvetta',
             description: 'Tuen tarpeen kuvaus'
+          },
+          preparatoryEducation: {
+            label: 'Perusopetukseen valmistava opetus',
+            withPreparatory:
+              'Lapsi tarvitsee tukea suomen kielen oppimisessa. Haen myös perusopetukseen valmistavaan opetukseen. Ei koske ruotsinkielistä esiopetusta.',
+            withoutPreparatory: 'Ei'
           }
         },
         unitPreference: {

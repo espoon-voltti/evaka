@@ -157,6 +157,24 @@ export default React.memo(function ServiceNeedSectionPreschool({
           }
         </Label>
         <span>{formData.serviceNeed.assistanceDescription}</span>
+
+        {formData.serviceNeed.preparatory && (
+          <>
+            <Label>
+              {
+                t.applications.editor.verification.serviceNeed
+                  .preparatoryEducation.label
+              }
+            </Label>
+            <span>
+              {formData.serviceNeed.preparatory
+                ? t.applications.editor.verification.serviceNeed
+                    .preparatoryEducation.withPreparatory
+                : t.applications.editor.verification.serviceNeed
+                    .preparatoryEducation.withoutPreparatory}
+            </span>
+          </>
+        )}
       </ListGrid>
     </div>
   )
