@@ -8,20 +8,30 @@ import Checkbox from '@evaka/lib-components/src/atoms/form/Checkbox'
 import { useTranslation } from '~localization'
 import { FeeFormData } from '~applications/editor/ApplicationFormData'
 import EditorSection from '~applications/editor/EditorSection'
+import { ApplicationFormDataErrors } from '~applications/editor/validations'
+import { getErrorCount } from '~form-validation'
 
 type Props = {
   formData: FeeFormData
-  updateFormData: (v: FeeFormData) => void
+  updateFormData: (v: Partial<FeeFormData>) => void
+  errors: ApplicationFormDataErrors['fee']
+  verificationRequested: boolean
 }
 
 export default React.memo(function FeeSection({
   formData,
-  updateFormData
+  updateFormData,
+  errors,
+  verificationRequested
 }: Props) {
   const t = useTranslation()
 
   return (
-    <EditorSection title={t.applications.editor.fee.title} validationErrors={0}>
+    <EditorSection
+      title={t.applications.editor.fee.title}
+      validationErrors={verificationRequested ? getErrorCount(errors) : 0}
+      data-qa="fee-section"
+    >
       <P
         dangerouslySetInnerHTML={{
           __html: t.applications.editor.fee.info
@@ -34,6 +44,7 @@ export default React.memo(function FeeSection({
       />
       <Checkbox
         checked={formData.maxFeeAccepted}
+        dataQa={'maxFeeAccepted-input'}
         label={t.applications.editor.fee.checkbox}
         onChange={(maxFeeAccepted) => updateFormData({ maxFeeAccepted })}
       />

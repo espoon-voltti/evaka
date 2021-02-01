@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2021 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -11,7 +11,8 @@ export const blueColors = {
   dark: '#013c8c',
   medium: '#0050bb',
   primary: '#3273c9',
-  light: '#99b9e4'
+  light: '#99b9e4',
+  lighter: '#e9f5ff'
 }
 
 export const greyscale = {

@@ -10,7 +10,7 @@ import React, {
   useState
 } from 'react'
 
-type Person = {
+export type Person = {
   id: string
   firstName: string
   lastName: string

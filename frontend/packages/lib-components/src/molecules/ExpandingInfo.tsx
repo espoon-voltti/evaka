@@ -2,54 +2,53 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { faInfo, faTimes } from '@evaka/lib-icons'
+import { fasInfo, faTimes } from '@evaka/lib-icons'
 import React, { useState } from 'react'
 import styled from 'styled-components'
-import colors, { blueColors } from '../colors'
-import { defaultMargins, Gap } from '../white-space'
+import colors from '../colors'
 import RoundIcon from '../atoms/RoundIcon'
-import { P } from '@evaka/lib-components/src/typography'
-import Container from '@evaka/lib-components/src/layout/Container'
-import InlineButton from '@evaka/lib-components/src/atoms/buttons/InlineButton'
-import {
-  FixedSpaceFlexWrap,
-  FixedSpaceRow
-} from '@evaka/lib-components/src/layout/flex-helpers'
+import Container, {
+  ContentArea
+} from '@evaka/lib-components/src/layout/Container'
+import { FixedSpaceRow } from '@evaka/lib-components/src/layout/flex-helpers'
+import { defaultMargins } from '../white-space'
+import { tabletMin } from '../breakpoints'
+import IconButton from '../atoms/buttons/IconButton'
 
-const TooltipPositioner = styled.div`
-  width: 100%;
-  justify-content: center;
-  align-items: center;
-`
+const InfoBoxContainer = styled(Container)`
+  @keyframes open {
+    from {
+      max-height: 0;
+    }
+    to {
+      max-height: 100px;
+    }
+  }
 
-const TooltipContainer = styled.div`
-  color: ${blueColors.dark};
-  font-size: 15px;
-  line-height: 22px;
+  background-color: ${colors.blues.lighter};
+  overflow: hidden;
+  margin: ${defaultMargins.s} -${defaultMargins.L} ${defaultMargins.xs};
 
-  background-color: rgba(36, 159, 255, 0.1);
-  padding: ${defaultMargins.s};
-
-  p:not(:last-child) {
-    margin-bottom: 8px;
+  @media (min-width: ${tabletMin}) {
+    animation-name: open;
+    animation-duration: 0.2s;
+    animation-timing-function: ease-out;
   }
 `
 
-const FlexDiv = styled.div`
+const InfoBoxContentArea = styled(ContentArea)`
   display: flex;
 `
 
-const CloseButton = styled.div`
-  text-align: right;
-`
-
-const RightMargin = styled.div`
-  margin-right: 15px;
+const InfoContainer = styled.div`
+  flex-grow: 1;
+  color: ${colors.blues.dark};
+  padding: 0 ${defaultMargins.s};
 `
 
 type ExpandingInfoProps = {
   children: React.ReactNode
-  info: JSX.Element
+  info: JSX.Element | string
 }
 
 export default function ExpandingInfo({ children, info }: ExpandingInfoProps) {
@@ -60,49 +59,30 @@ export default function ExpandingInfo({ children, info }: ExpandingInfoProps) {
       <FixedSpaceRow spacing="xs">
         <div>{children}</div>
         <RoundIcon
-          content={faInfo}
+          content={fasInfo}
           color={colors.brandEspoo.espooTurquoise}
           size="s"
-          onClick={() => {
-            setExpanded(true)
-          }}
+          onClick={() => setExpanded(!expanded)}
         />
       </FixedSpaceRow>
       {expanded && (
-        <div style={{ marginLeft: '-32px', marginRight: '-32px' }}>
-          <TooltipPositioner className={'tooltip'}>
-            <TooltipContainer>
-              <Container>
-                <FixedSpaceFlexWrap
-                  style={{ justifyContent: 'space-between' }}
-                  reverse={true}
-                >
-                  <FlexDiv>
-                    <Gap horizontal size={'m'} />
-                    <RightMargin>
-                      <RoundIcon
-                        content={faInfo}
-                        color={colors.brandEspoo.espooTurquoise}
-                        size="s"
-                      />
-                    </RightMargin>
-                    <P style={{ margin: '0' }}>{info}</P>
-                  </FlexDiv>
-                  <span />
-                  <CloseButton>
-                    <InlineButton
-                      onClick={() => {
-                        setExpanded(false)
-                      }}
-                      icon={faTimes}
-                      text={''}
-                    />
-                  </CloseButton>
-                </FixedSpaceFlexWrap>
-              </Container>
-            </TooltipContainer>
-          </TooltipPositioner>
-        </div>
+        <InfoBoxContainer>
+          <InfoBoxContentArea opaque={false}>
+            <RoundIcon
+              content={fasInfo}
+              color={colors.brandEspoo.espooTurquoise}
+              size="s"
+            />
+
+            <InfoContainer>{info}</InfoContainer>
+
+            <IconButton
+              onClick={() => setExpanded(false)}
+              icon={faTimes}
+              gray
+            />
+          </InfoBoxContentArea>
+        </InfoBoxContainer>
       )}
     </>
   )

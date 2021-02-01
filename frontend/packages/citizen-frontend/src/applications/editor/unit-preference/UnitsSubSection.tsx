@@ -5,46 +5,34 @@
 import React, { useEffect, useState } from 'react'
 import styled from 'styled-components'
 import { H3, Label, P } from '@evaka/lib-components/src/typography'
-import Checkbox from '@evaka/lib-components/src/atoms/form/Checkbox'
-import { UnitPreferenceFormData } from '~applications/editor/ApplicationFormData'
 import {
   FixedSpaceColumn,
   FixedSpaceRow,
   FixedSpaceFlexWrap
 } from '@evaka/lib-components/src/layout/flex-helpers'
-import InputField from '@evaka/lib-components/src/atoms/form/InputField'
 import { Gap } from '@evaka/lib-components/src/white-space'
-import HorizontalLine from '@evaka/lib-components/src/atoms/HorizontalLine'
 import { Loading, Result, Success } from '@evaka/lib-common/src/api'
 import { useRestApi } from '@evaka/lib-common/src/utils/useRestApi'
 import { ApplicationUnitType, getApplicationUnits } from '~applications/api'
-import LocalDate from '@evaka/lib-common/src/local-date'
 import { AlertBox } from '@evaka/lib-components/src/molecules/MessageBoxes'
 import { SpinnerSegment } from '@evaka/lib-components/src/atoms/state/Spinner'
 import ErrorSegment from '@evaka/lib-components/src/atoms/state/ErrorSegment'
-import PreferredUnitBox from '~applications/editor/PreferredUnitBox'
+import PreferredUnitBox from '~applications/editor/unit-preference/PreferredUnitBox'
 import { SelectionChip } from '@evaka/lib-components/src/atoms/Chip'
 import MultiSelect from '@evaka/lib-components/src/atoms/form/MultiSelect'
 import colors from '@evaka/lib-components/src/colors'
 import ExternalLink from '@evaka/lib-components/src/atoms/ExternalLink'
 import { useTranslation } from '~localization'
-import EditorSection from '~applications/editor/EditorSection'
 import { PublicUnit } from '@evaka/lib-common/src/api-types/units/PublicUnit'
-import { ApplicationType } from '@evaka/lib-common/src/api-types/application/enums'
+import { UnitPreferenceSectionProps } from '~applications/editor/unit-preference/UnitPreferenceSection'
 
 const maxUnits = 3
 
-export type UnitPreferenceSectionProps = {
-  formData: UnitPreferenceFormData
-  updateFormData: (update: Partial<UnitPreferenceFormData>) => void
-  applicationType: ApplicationType
-  preparatory: boolean
-  preferredStartDate: LocalDate | null
-}
-
-export default React.memo(function UnitPreferenceSection({
+export default React.memo(function UnitsSubSection({
   formData,
   updateFormData,
+  errors,
+  verificationRequested,
   applicationType,
   preparatory,
   preferredStartDate
@@ -70,67 +58,26 @@ export default React.memo(function UnitPreferenceSection({
 
       loadUnits(unitType, preferredStartDate)
     }
-  }, [applicationType, preparatory, preferredStartDate])
+  }, [applicationType, preparatory, preferredStartDate?.formatIso()])
 
   return (
-    <EditorSection
-      title={t.applications.editor.unitPreference.title}
-      validationErrors={0}
-    >
-      <H3>{t.applications.editor.unitPreference.siblingBasis.title}</H3>
-      <P>{t.applications.editor.unitPreference.siblingBasis.p1}</P>
-      <P>{t.applications.editor.unitPreference.siblingBasis.p2}</P>
-
-      <Checkbox
-        checked={formData.siblingBasis}
-        label={t.applications.editor.unitPreference.siblingBasis.checkbox}
-        onChange={(checked) => updateFormData({ siblingBasis: checked })}
-      />
-      {formData.siblingBasis && (
-        <>
-          <Gap size={'s'} />
-          <FixedSpaceRow spacing={'m'}>
-            <FixedSpaceColumn spacing={'xs'}>
-              <Label htmlFor={'sibling-names'}>
-                {t.applications.editor.unitPreference.siblingBasis.names}
-              </Label>
-              <InputField
-                value={formData.siblingName}
-                onChange={(value) => updateFormData({ siblingName: value })}
-                width={'L'}
-                placeholder={
-                  t.applications.editor.unitPreference.siblingBasis
-                    .namesPlaceholder
-                }
-                id={'sibling-names'}
-              />
-            </FixedSpaceColumn>
-            <FixedSpaceColumn spacing={'xs'}>
-              <Label htmlFor={'sibling-ssn'}>
-                {t.applications.editor.unitPreference.siblingBasis.ssn}
-              </Label>
-              <InputField
-                value={formData.siblingSsn}
-                onChange={(value) => updateFormData({ siblingSsn: value })}
-                placeholder={
-                  t.applications.editor.unitPreference.siblingBasis
-                    .ssnPlaceholder
-                }
-                id={'sibling-ssn'}
-              />
-            </FixedSpaceColumn>
-          </FixedSpaceRow>
-        </>
-      )}
-
-      <HorizontalLine />
-
+    <>
       <H3>{t.applications.editor.unitPreference.units.title}</H3>
+
+      <P>{t.applications.editor.unitPreference.units.p1}</P>
+      <P>{t.applications.editor.unitPreference.units.p2}</P>
+
+      <ExternalLink
+        href="/"
+        text={t.applications.editor.unitPreference.units.mapLink}
+        newTab
+      />
+
+      <Gap size={'s'} />
 
       {!preferredStartDate ? (
         <div>
           <AlertBox
-            thin
             message={
               t.applications.editor.unitPreference.units.startDateMissing
             }
@@ -138,17 +85,6 @@ export default React.memo(function UnitPreferenceSection({
         </div>
       ) : (
         <>
-          <P>{t.applications.editor.unitPreference.units.p1}</P>
-          <P>{t.applications.editor.unitPreference.units.p2}</P>
-
-          <ExternalLink
-            href="/"
-            text={t.applications.editor.unitPreference.units.mapLink}
-            newTab
-          />
-
-          <Gap size={'s'} />
-
           <Label>
             {t.applications.editor.unitPreference.units.languageFilter.label}
           </Label>
@@ -178,10 +114,11 @@ export default React.memo(function UnitPreferenceSection({
             <FixedSpaceFlexWrap horizontalSpacing={'L'} verticalSpacing={'s'}>
               <FixedWidthDiv>
                 <Label htmlFor="unit-selector">
-                  {t.applications.editor.unitPreference.units.select.label}
+                  {t.applications.editor.unitPreference.units.select.label} *
                 </Label>
                 <Gap size={'xs'} />
                 <MultiSelect
+                  data-qa={'preferredUnits-input'}
                   inputId="unit-selector"
                   value={units.value.filter(
                     (u) =>
@@ -216,15 +153,35 @@ export default React.memo(function UnitPreferenceSection({
                   }
                 />
 
+                <Gap size="s" />
                 <Info>
                   {t.applications.editor.unitPreference.units.preferences.info}
                 </Info>
+                <Gap size="xs" />
               </FixedWidthDiv>
               <FixedWidthDiv>
                 <Label>
                   {t.applications.editor.unitPreference.units.preferences.label}
                 </Label>
                 <Gap size={'xs'} />
+                {!verificationRequested &&
+                  formData.preferredUnits.length === 0 && (
+                    <Info>
+                      {
+                        t.applications.editor.unitPreference.units.preferences
+                          .noSelections
+                      }
+                    </Info>
+                  )}
+                {verificationRequested &&
+                  errors.preferredUnits?.arrayErrors && (
+                    <AlertBox
+                      message={
+                        t.validationErrors[errors.preferredUnits.arrayErrors]
+                      }
+                      thin
+                    />
+                  )}
                 <FixedSpaceColumn spacing={'s'}>
                   {formData.preferredUnits
                     .map((u) => units.value.find((u2) => u.id === u2.id))
@@ -280,7 +237,7 @@ export default React.memo(function UnitPreferenceSection({
           )}
         </>
       )}
-    </EditorSection>
+    </>
   )
 })
 
@@ -291,4 +248,5 @@ const FixedWidthDiv = styled.div`
 
 const Info = styled(P)`
   color: ${colors.greyscale.dark};
+  margin: 0;
 `

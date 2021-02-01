@@ -104,8 +104,8 @@ export default React.memo(function AttendanceChildPage() {
 
   return (
     <Fragment>
-      <FullHeightContentArea opaque={false} paddingHorozontal={'s'}>
-        <TallContentArea opaque paddingHorozontal={'s'}>
+      <FullHeightContentArea opaque={false} paddingHorizontal={'s'}>
+        <TallContentArea opaque paddingHorizontal={'s'}>
           <BackButton onClick={() => history.goBack()} icon={faChevronLeft} />
           {child && group && !loading ? (
             <Fragment>

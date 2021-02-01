@@ -157,6 +157,13 @@ export default class LocalDate {
     }
     return date
   }
+  static parseFiOrNull(value: string): LocalDate | null {
+    try {
+      return this.parseFi(value)
+    } catch (e) {
+      return null
+    }
+  }
   static parseIso(value: string): LocalDate {
     const result = LocalDate.tryParseIso(value)
     if (!result) {

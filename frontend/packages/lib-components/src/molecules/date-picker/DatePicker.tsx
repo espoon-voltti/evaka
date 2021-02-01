@@ -10,10 +10,12 @@ import { defaultMargins } from '../../white-space'
 import DatePickerInput from './DatePickerInput'
 import DatePickerDay from './DatePickerDay'
 import LocalDate from '~../../lib-common/src/local-date'
+import { InputInfo } from '../../atoms/form/InputField'
 
 const DatePickerWrapper = styled.div`
   position: relative;
   display: inline-block;
+  width: 120px;
 `
 const DayPickerPositioner = styled.div<{ show: boolean }>`
   position: absolute;
@@ -30,7 +32,7 @@ const DayPickerDiv = styled.div`
   background-color: ${greyscale.white};
   padding: ${defaultMargins.s} 0;
   border-radius: 2px;
-  box-shadow: 0px 0px 4px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.25);
   display: flex;
   justify-content: center;
 
@@ -39,12 +41,25 @@ const DayPickerDiv = styled.div`
   }
 `
 
-type TooltipProps = {
+type DatePickerProps = {
   date: string
   onChange: (date: string) => void
+  locale: 'fi' | 'sv' | 'en'
+  info?: InputInfo
+  hideErrorsBeforeTouched?: boolean
+  disabled?: boolean
+  'data-qa'?: string
 }
 
-function DatePicker({ date, onChange }: TooltipProps) {
+function DatePicker({
+  date,
+  onChange,
+  locale,
+  info,
+  hideErrorsBeforeTouched,
+  disabled,
+  ...props
+}: DatePickerProps) {
   const [show, setShow] = useState<boolean>(false)
   const ref = useRef<HTMLDivElement>(null)
 
@@ -58,13 +73,13 @@ function DatePicker({ date, onChange }: TooltipProps) {
   }
 
   function onInputBlur(e: React.FocusEvent<HTMLInputElement>) {
+    if (e.relatedTarget === null) {
+      setShow(false)
+    }
+
     if (e.relatedTarget instanceof Element) {
       if (ref.current === null || !ref.current?.contains(e.relatedTarget))
         setShow(false)
-    }
-
-    if (e.relatedTarget === null) {
-      setShow(false)
     }
   }
 
@@ -72,13 +87,26 @@ function DatePicker({ date, onChange }: TooltipProps) {
     <DatePickerWrapper ref={ref} onKeyDown={handleUserKeyPress}>
       <DatePickerInput
         date={date}
-        setDate={onChange}
+        setDate={(date) => {
+          if (LocalDate.parseFiOrNull(date) !== null) {
+            setShow(false)
+          }
+          onChange(date)
+        }}
+        disabled={disabled}
         onFocus={() => setShow(true)}
         onBlur={onInputBlur}
+        info={info}
+        hideErrorsBeforeTouched={hideErrorsBeforeTouched}
+        data-qa={props['data-qa']}
       />
       <DayPickerPositioner show={show}>
         <DayPickerDiv>
-          <DatePickerDay inputValue={date} handleDayClick={handleDayClick} />
+          <DatePickerDay
+            locale={locale}
+            inputValue={date}
+            handleDayClick={handleDayClick}
+          />
         </DayPickerDiv>
       </DayPickerPositioner>
     </DatePickerWrapper>

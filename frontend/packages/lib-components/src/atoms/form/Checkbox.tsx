@@ -145,7 +145,7 @@ function Checkbox({
           ref={inputRef}
           data-qa={dataQa}
         />
-        <IconWrapper>
+        <IconWrapper data-qa={dataQa ? `${dataQa}-icon` : undefined}>
           <FontAwesomeIcon icon={faCheck} />
         </IconWrapper>
       </Box>

@@ -1,40 +1,23 @@
 import React from 'react'
 import DayPicker from 'react-day-picker'
 import 'react-day-picker/lib/style.css'
+import { fi, sv, enGB } from 'date-fns/locale'
 
 import LocalDate from '@evaka/lib-common/src/local-date'
 
-const MONTHS = [
-  'tammikuu',
-  'helmikuu',
-  'maaliskuu',
-  'huhtikuu',
-  'toukokuu',
-  'kesäkuu',
-  'heinäkuu',
-  'elokuu',
-  'syyskuu',
-  'lokakuu',
-  'marraskuu',
-  'joulukuu'
-]
-const WEEKDAYS_LONG = [
-  'sunnuntai',
-  'maanantai',
-  'tiistai',
-  'keskiviikko',
-  'torstai',
-  'perjantai',
-  'lauantai'
-]
-const WEEKDAYS_SHORT = ['su', 'ma', 'ti', 'ke', 'to', 'pe', 'la']
+const monthNumbers = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+
+const weekdayNumbers = [0, 1, 2, 3, 4, 5, 6]
 
 interface Props {
   handleDayClick: (day: Date) => void
   inputValue: string
+  locale: 'fi' | 'sv' | 'en'
 }
 
-function DatePickerDay({ handleDayClick, inputValue }: Props) {
+function DatePickerDay({ handleDayClick, inputValue, locale }: Props) {
+  const dateI18n = locale === 'sv' ? sv : locale === 'en' ? enGB : fi
+
   function convertToDate(date: string) {
     try {
       return LocalDate.parseFi(date).toSystemTzDate()
@@ -43,20 +26,26 @@ function DatePickerDay({ handleDayClick, inputValue }: Props) {
     }
   }
 
+  const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1)
+
+  const months = monthNumbers
+    .map((m) => dateI18n.localize?.month(m) ?? '') // eslint-disable-line @typescript-eslint/no-unsafe-return
+    .map(capitalize)
+  const weekdaysLong = weekdayNumbers
+    .map((d) => dateI18n.localize?.day(d) ?? '') // eslint-disable-line @typescript-eslint/no-unsafe-return
+    .map(capitalize)
+  const weekdaysShort = weekdayNumbers
+    .map((d) => dateI18n.localize?.day(d, { width: 'short' }) ?? '') // eslint-disable-line @typescript-eslint/no-unsafe-return
+    .map(capitalize)
+
   return (
     <DayPicker
       onDayClick={handleDayClick}
-      locale="fi"
-      months={MONTHS.map(
-        (month) => month.charAt(0).toUpperCase() + month.slice(1)
-      )}
-      weekdaysLong={WEEKDAYS_LONG.map(
-        (month) => month.charAt(0).toUpperCase() + month.slice(1)
-      )}
-      weekdaysShort={WEEKDAYS_SHORT.map(
-        (month) => month.charAt(0).toUpperCase() + month.slice(1)
-      )}
-      firstDayOfWeek={1}
+      locale={locale}
+      months={months}
+      weekdaysLong={weekdaysLong}
+      weekdaysShort={weekdaysShort}
+      firstDayOfWeek={locale === 'en' ? 0 : 1}
       selectedDays={convertToDate(inputValue)}
     />
   )

@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React from 'react'
+import React, { useState } from 'react'
 import styled from 'styled-components'
 import classNames from 'classnames'
 import TextareaAutosize from 'react-autosize-textarea'
@@ -13,18 +13,20 @@ import colors from '../../colors'
 import { defaultMargins } from '../../white-space'
 import { BaseProps } from '../../utils'
 import UnderRowStatusIcon, { InfoStatus } from '../StatusIcon'
+import { tabletMin } from '../../breakpoints'
 
 const Wrapper = styled.div`
   min-width: 0; // needed for correct overflow behavior
 `
 
-type InputWidth = 'xs' | 's' | 'm' | 'L' | 'full'
+type InputWidth = 'xs' | 's' | 'm' | 'L' | 'XL' | 'full'
 
 const inputWidths: Record<InputWidth, string> = {
   xs: '60px',
   s: '120px',
   m: '240px',
   L: '480px',
+  XL: '720px',
   full: '100%'
 }
 
@@ -35,6 +37,15 @@ interface StyledInputProps {
 }
 const StyledInput = styled.input<StyledInputProps>`
   width: ${(p) => inputWidths[p.width]};
+
+  @media (max-width: ${tabletMin}) {
+    ${(p) => (p.width === 'L' || p.width === 'XL' ? 'width: 100%;' : '')}
+  }
+
+  @media (max-width: 700px) {
+    ${(p) => (p.width === 'XL' ? 'width: 100%; min-width: 100%;' : '')}
+  }
+
   border-style: none none solid none;
   border-width: 1px;
   border-color: ${colors.greyscale.medium};
@@ -122,6 +133,7 @@ const InputFieldUnderRow = styled.div`
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  width: fit-content;
 
   color: ${colors.greyscale.dark};
 
@@ -134,6 +146,11 @@ const InputFieldUnderRow = styled.div`
   }
 `
 
+export type InputInfo = {
+  text: string
+  status?: InfoStatus
+}
+
 interface TextInputProps extends BaseProps {
   value: string
   onChange?: (value: string) => void
@@ -144,10 +161,7 @@ interface TextInputProps extends BaseProps {
   width?: InputWidth
 
   placeholder?: string
-  info?: {
-    text: string
-    status?: InfoStatus
-  }
+  info?: InputInfo
   clearable?: boolean
   align?: 'left' | 'right'
   icon?: IconProp
@@ -159,6 +173,7 @@ interface TextInputProps extends BaseProps {
   'data-qa'?: string
   name?: string
   'aria-describedby'?: string
+  hideErrorsBeforeTouched?: boolean
 }
 
 function InputField({
@@ -180,10 +195,18 @@ function InputField({
   min,
   max,
   step,
+  hideErrorsBeforeTouched,
   id,
   'data-qa': dataQa2,
   'aria-describedby': ariaId
 }: TextInputProps) {
+  const [touched, setTouched] = useState(false)
+
+  const hideError =
+    hideErrorsBeforeTouched && !touched && info?.status === 'warning'
+  const infoText = hideError ? undefined : info?.text
+  const infoStatus = hideError ? undefined : info?.status
+
   return (
     <Wrapper>
       <InputRow>
@@ -194,7 +217,10 @@ function InputField({
             if (onChange && !readonly) onChange(e.target.value)
           }}
           onFocus={onFocus}
-          onBlur={onBlur}
+          onBlur={(e) => {
+            setTouched(true)
+            onBlur && onBlur(e)
+          }}
           onKeyPress={onKeyPress}
           placeholder={placeholder}
           readOnly={readonly}
@@ -202,7 +228,7 @@ function InputField({
           width={width}
           clearable={clearable}
           align={align}
-          className={classNames(className, info?.status)}
+          className={classNames(className, infoStatus)}
           data-qa={dataQa2 ?? dataQa}
           type={type}
           min={min}
@@ -222,9 +248,9 @@ function InputField({
           </InputIcon>
         )}
       </InputRow>
-      {info && (
-        <InputFieldUnderRow className={classNames(info.status)}>
-          <span>{info.text}</span>
+      {infoText && (
+        <InputFieldUnderRow className={classNames(infoStatus)}>
+          <span>{infoText}</span>
           <UnderRowStatusIcon status={info?.status} />
         </InputFieldUnderRow>
       )}
@@ -233,29 +259,41 @@ function InputField({
 }
 
 export const TextArea = styled(TextareaAutosize)`
-  font-family: Open Sans, Arial, sans-serif;
-  align-items: center;
-  border: 1px solid transparent;
-  font-size: 1rem;
-  justify-content: flex-start;
-  line-height: 1.5;
-  padding: calc(0.5em - 1px) calc(0.625em - 1px);
-  position: relative;
-  border-color: #9e9e9e;
-  color: #0f0f0f;
   display: block;
-  box-shadow: none;
-  max-width: 100%;
+  position: relative;
+  align-items: center;
+  justify-content: flex-start;
+
   width: 100%;
+  max-width: 100%;
+  height: 38px;
   min-height: 2.5em;
-  border-radius: 0;
-  border-width: 0 0 1px;
-  background-color: transparent;
-  padding-bottom: calc(0.5em - 1px);
+  padding: calc(0.5em - 1px) calc(0.625em - 1px) calc(0.5em - 1px);
+
+  font-size: 1rem;
+  font-family: 'Open Sans', Arial, sans-serif;
+  color: #0f0f0f;
+  line-height: 1.5;
   overflow: hidden;
   overflow-wrap: break-word;
   resize: none;
-  height: 38px;
+
+  background-color: transparent;
+  border-style: solid;
+  border-width: 0 0 1px;
+  border-color: ${colors.greyscale.medium};
+  border-radius: 0;
+  box-shadow: none;
+
+  outline: none;
+  &:focus {
+    border-width: 2px;
+    border-style: solid;
+    border-color: ${colors.accents.petrol};
+    margin-top: -2px;
+    margin-bottom: -1px;
+    padding-left: 10px;
+  }
 `
 
 export default InputField

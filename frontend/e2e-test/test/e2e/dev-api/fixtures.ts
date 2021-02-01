@@ -94,7 +94,7 @@ export const daycareFixture: Daycare = {
   id: '4f3a32f5-d1bd-4b8b-aa4e-4fd78b18354b',
   careAreaId: careAreaFixture.id,
   name: 'Alkuräjähdyksen päiväkoti',
-  type: ['CENTRE', 'PRESCHOOL'],
+  type: ['CENTRE', 'PRESCHOOL', 'PREPARATORY_EDUCATION'],
   costCenter: '31500',
   streetAddress: 'Kamreerintie 1',
   postalCode: '02210',

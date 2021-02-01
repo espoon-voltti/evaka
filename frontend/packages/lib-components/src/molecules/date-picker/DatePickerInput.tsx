@@ -1,65 +1,75 @@
 import React from 'react'
 import styled from 'styled-components'
 
-import { InfoStatus } from '../../atoms/StatusIcon'
-import InputField from '../../atoms/form/InputField'
+import InputField, { InputInfo } from '../../atoms/form/InputField'
 
 interface Props {
   date: string
   setDate: (date: string) => void
-  info?: {
-    text: string
-    status?: InfoStatus
-  }
+  info?: InputInfo
+  hideErrorsBeforeTouched?: boolean
+  disabled?: boolean
   onFocus: () => void
   onBlur: (e: React.FocusEvent<HTMLInputElement>) => void
   onKeyPress?: (e: React.KeyboardEvent) => void
+  'data-qa'?: string
 }
 
 const DISALLOWED_CHARACTERS = /[^0-9./-]+/g
-const SHORT_DATE_FORMAT = /^(\d)\.(\d)\.(\d{4})$/
+const DATE_FORMAT = /^(\d){1,2}\.(\d){1,2}\.(\d{4})$/
 
 function DatePickerInput({
   date,
   setDate,
   info,
+  hideErrorsBeforeTouched,
+  disabled,
   onFocus,
   onBlur,
-  onKeyPress
+  onKeyPress,
+  ...props
 }: Props) {
   const ariaId = Math.random().toString(36).substring(2, 15)
 
   function changeHandler(e: string) {
     // clean up any invalid characters
-    let cleaned = e.replace(DISALLOWED_CHARACTERS, '')
-    const shortMatch = SHORT_DATE_FORMAT.exec(cleaned)
+    const cleaned = e.replace(DISALLOWED_CHARACTERS, '')
 
-    if (shortMatch) {
-      cleaned = `0${cleaned.slice(0, 1)}.0${cleaned.slice(
-        2,
-        3
-      )}.${cleaned.slice(4, 8)}`
+    // convert d.M.yyyy to dd.MM.yyyy
+    if (DATE_FORMAT.test(cleaned)) {
+      const parts = cleaned.split('.')
+      const d = parts[0].length < 2 ? `0${parts[0]}` : parts[0]
+      const m = parts[1].length < 2 ? `0${parts[1]}` : parts[1]
+      const y = parts[2]
+      setDate(`${d}.${m}.${y}`)
+    } else {
+      setDate(cleaned)
     }
-
-    setDate(cleaned)
   }
 
   return (
-    <>
+    <Wrapper>
       <InputField
         placeholder={'pp.kk.vvvv'}
         value={date}
         onChange={changeHandler}
         aria-describedby={ariaId}
         info={info}
+        hideErrorsBeforeTouched={hideErrorsBeforeTouched}
+        readonly={disabled}
         onFocus={onFocus}
         onBlur={onBlur}
         onKeyPress={onKeyPress}
+        data-qa={props['data-qa']}
       />
       <DatePickerDescription id={ariaId} />
-    </>
+    </Wrapper>
   )
 }
+
+const Wrapper = styled.div`
+  width: 120px;
+`
 
 const StyledP = styled.p`
   border: 0;

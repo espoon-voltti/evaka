@@ -46,7 +46,7 @@ export default React.memo(function AttendanceGroupSelectorPage() {
             {attendanceResponse.value.unit.name}
           </Title>
           <Padding>
-            <ContentArea paddingHorozontal={'s'} opaque>
+            <ContentArea paddingHorizontal={'s'} opaque>
               <AllCapsTitle size={2} centered bold>
                 {i18n.attendances.chooseGroup}
               </AllCapsTitle>

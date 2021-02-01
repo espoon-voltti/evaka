@@ -30,6 +30,10 @@ import {
   VtjPerson
 } from './types'
 import { JsonOf } from '@evaka/lib-common/src/json'
+import {
+  ApplicationDetails,
+  deserializeApplicationDetails
+} from '@evaka/lib-common/src/api-types/application/ApplicationDetails'
 
 export class DevApiError extends BaseError {
   constructor(cause: Error) {
@@ -722,6 +726,19 @@ export async function getDecisionsByApplication(
       `/applications/${applicationId}/decisions`
     )
     return data.map(deserializeDecision)
+  } catch (e) {
+    throw new DevApiError(e)
+  }
+}
+
+export async function getApplication(
+  applicationId: string
+): Promise<ApplicationDetails> {
+  try {
+    const { data } = await devClient.get<JsonOf<ApplicationDetails>>(
+      `/applications/${applicationId}`
+    )
+    return deserializeApplicationDetails(data)
   } catch (e) {
     throw new DevApiError(e)
   }

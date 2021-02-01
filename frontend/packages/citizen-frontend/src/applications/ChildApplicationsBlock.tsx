@@ -164,6 +164,7 @@ export default React.memo(function ChildApplicationsBlock({
         <AddButton
           text={t.applicationsList.newApplicationLink}
           onClick={() => history.push(`/applications/new/${childId}`)}
+          dataQa={`new-application-${childId}`}
         />
       </TitleContainer>
 

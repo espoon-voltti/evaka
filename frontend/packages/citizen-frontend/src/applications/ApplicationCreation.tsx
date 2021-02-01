@@ -16,8 +16,8 @@ import { AlertBox } from '@evaka/lib-components/src/molecules/MessageBoxes'
 import { useUser } from '~auth'
 import { useTranslation } from '~localization'
 import { createApplication, getDuplicateApplications } from '~applications/api'
-import InfoBallWrapper from '~applications/InfoBallWrapper'
 import { ApplicationType } from '@evaka/lib-common/src/api-types/application/enums'
+import ExpandingInfo from '@evaka/lib-components/src/molecules/ExpandingInfo'
 
 export default React.memo(function ApplicationCreation() {
   const history = useHistory()
@@ -54,32 +54,35 @@ export default React.memo(function ApplicationCreation() {
           {child.firstName} {child.lastName}
         </H2>
         <Gap size="XL" />
-        <InfoBallWrapper infoText={t.applications.creation.daycareInfo}>
+        <ExpandingInfo info={t.applications.creation.daycareInfo}>
           <Radio
             checked={selectedType === 'DAYCARE'}
             onChange={() => setSelectedType('DAYCARE')}
             label={t.applications.creation.daycareLabel}
+            dataQa="type-radio-DAYCARE"
           />
-        </InfoBallWrapper>
+        </ExpandingInfo>
         <Gap size="s" />
-        <InfoBallWrapper infoText={t.applications.creation.preschoolInfo}>
+        <ExpandingInfo info={t.applications.creation.preschoolInfo}>
           <Radio
             checked={selectedType === 'PRESCHOOL'}
             onChange={() => setSelectedType('PRESCHOOL')}
             label={t.applications.creation.preschoolLabel}
+            dataQa="type-radio-PRESCHOOL"
           />
-        </InfoBallWrapper>
+        </ExpandingInfo>
         <PreschoolDaycareInfo>
           {t.applications.creation.preschoolDaycareInfo}
         </PreschoolDaycareInfo>
         <Gap size="s" />
-        <InfoBallWrapper infoText={t.applications.creation.clubInfo}>
+        <ExpandingInfo info={t.applications.creation.clubInfo}>
           <Radio
             checked={selectedType === 'CLUB'}
             onChange={() => setSelectedType('CLUB')}
             label={t.applications.creation.clubLabel}
+            dataQa="type-radio-CLUB"
           />
-        </InfoBallWrapper>
+        </ExpandingInfo>
         {duplicateExists ? (
           <>
             <Gap size="L" />
@@ -110,6 +113,7 @@ export default React.memo(function ApplicationCreation() {
                 : Promise.resolve()
             }
             onSuccess={() => undefined}
+            data-qa="submit"
           />
           <Button
             text={t.common.cancel}
