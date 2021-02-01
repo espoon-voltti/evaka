@@ -79,8 +79,8 @@ const en: Translations = {
       heading: {
         title: {
           DAYCARE: 'Application for early childhood education',
-          PRESCHOOL: 'Ilmoittautuminen esiopetukseen',
-          CLUB: 'Kerhohakemus'
+          PRESCHOOL: 'Registration for pre-school education',
+          CLUB: 'Application for club'
         },
         info: {
           DAYCARE: [
@@ -89,9 +89,9 @@ const en: Translations = {
             '* Information marked with a star is required'
           ],
           PRESCHOOL: [
-            'Esiopetukseen osallistutaan vuosi ennen oppivelvollisuuden alkamista. Esiopetus on maksutonta. Lukuvuoden 2021–2022 esiopetukseen ilmoittaudutaan 8.–20.1.2021. Suomen ja ruotsin kielinen esiopetus alkaa 11.8.2021.',
-            'Päätökset tulevat <a href="https://www.suomi.fi/viestit" target="_blank" rel="noreferrer">Suomi.fi-viestit</a> -palveluun tai postitse, mikäli et ole ottanut Suomi.fi -palvelua käyttöön.',
-            '* Tähdellä merkityt tiedot ovat pakollisia'
+            'Pre-primary education is attended one year before the start of compulsory education. Pre-primary education is free of charge. Enrolment for pre-primary education in the 2021–2022 school year takes place on 8–20 January 2021. Finnish and swedish pre-primary education begins on <strong>11 August 2021</strong>. The decisions will be sent to the <a href="https://www.suomi.fi/messages" target="_blank" rel="noreferrer">Suomi.fi Messages</a> service or by post, if the applicant does not use the <a href="https://www.suomi.fi/messages" target="_blank" rel="noreferrer">Suomi.fi Messages</a> service.',
+            'The decisions will be sent to the <a href="https://www.suomi.fi/messages" target="_blank" rel="noreferrer">Suomi.fi Messages</a> service or by post, if the applicant does not use the <a href="https://www.suomi.fi/messages" target="_blank" rel="noreferrer">Suomi.fi Messages</a> service.',
+            '* Information marked with a star is required'
           ],
           CLUB: [
             'Hakuaika syksyllä käynnistyviin kerhoihin on maaliskuussa. Jos lapsenne saa kerhopaikan, saatte päätöksen siitä huhti-toukokuun aikana. Päätös tehdään yhden toimintakauden ajaksi (elokuusta toukokuun loppuun). Päätös kerhopaikasta tulee Suomi.fi-palveluun tai postitse, mikäli ette ole ottanut palvelua käyttöön.',
@@ -101,8 +101,8 @@ const en: Translations = {
           ]
         },
         errors: (count: number) =>
-          count === 1 ? '1 virhe' : `${count} virhettä`,
-        hasErrors: 'Ole hyvä ja tarkista seuraavat tiedot hakemuksestasi:'
+          count === 1 ? '1 error' : `${count} errors`,
+        hasErrors: 'Please correct the following information:'
       },
       actions: {
         hasVerified:
@@ -149,19 +149,19 @@ const en: Translations = {
         startDate: {
           header: {
             DAYCARE: 'Start date',
-            PRESCHOOL: 'Esiopetuksen alkaminen',
-            CLUB: 'Kerhon alkaminen'
+            PRESCHOOL: 'Start date',
+            CLUB: 'Start date'
           },
           info: {
             DAYCARE: [],
             PRESCHOOL: [
-              'Suomen- ja ruotsinkielinen esiopetus alkaa 11.8.2021. Jos tarvitsette varhaiskasvatusta 1.8.2021 lähtien ennen esiopetuksen alkua, voitte hakea sitä tällä hakemuksella valitsemalla ”Haen myös esiopetukseen liittyvää varhaiskasvatusta”.'
+              'Finnish and Swedish pre-primary education begins on 11 August 2021. If you need early childhood education starting from 1 August 2021 before the start of pre-primary education, you can apply for it with this application by selecting “I also apply for early childhood education related to pre-primary education”.'
             ],
             CLUB: [
               'Kerhot noudattavat esiopetuksen työ- ja loma-aikoja. Kerhon toimintakausi on elokuusta toukokuun loppuun, ja kullekin toimintakaudelle haetaan erikseen. Eri kerhot kokoontuvat eri viikonpäivinä.'
             ]
           },
-          clubTerm: 'Kerhon toimintakausi',
+          clubTerm: 'Club term',
           label: 'Desired start date',
           noteOnDelay: 'The application processing time is 4 months.',
           instructions:
@@ -200,23 +200,24 @@ const en: Translations = {
         dailyTime: {
           label: {
             DAYCARE: 'Daily early childhood education time',
-            PRESCHOOL: 'Esiopetukseen liittyvän varhaiskasvatuksen tarve'
+            PRESCHOOL:
+              'Early childhood education need related to pre-primary education'
           },
           connectedDaycareInfo: [
-            'Voit hakea lapselle tarvittaessa <strong>esiopetukseen liittyvää varhaiskasvatusta, joka on maksullista, ja jota annetaan esiopetuksen (4 tuntia/päivä) lisäksi</strong> aamuisin ja/tai iltapäivisin samassa paikassa kuin esiopetus. Jos haluat aloittaa varhaiskasvatuksen myöhemmin kuin esiopetus alkaa, kirjoita haluttu aloituspäivämäärä hakemuksen “Muut lisätiedot” -kohtaan.',
-            'Yksityisiin päiväkoteihin ja osaan ostopalvelupäiväkodeista on tehtävä erillinen hakemus liittyvään varhaiskasvatukseen. Espoon varhaiskasvatus on yhteydessä niihin hakijoihin, joita tämä koskee.',
-            'Saat varhaiskasvatuspaikasta erillisen kirjallisen päätöksen, ja päätös tulee <a href="https://www.suomi.fi/viestit" target="_blank" rel="noreferrer">Suomi.fi-viestit</a> -palveluun tai postitse, mikäli et ole ottanut Suomi.fi-viestit -palvelua käyttöön.'
+            'If necessary, you can apply for early childhood education related to pre-primary education for the child, which is subject to a charge and provided in addition to pre-primary education (4 h/day) in the mornings and/or afternoons in the same place as pre-primary education. If you wish early childhood education to start later than pre-primary education, enter the desired start date in the additional information field.',
+            "Private kindergartens and some of the private kindergartens need a separate application for related early childhood education. Espoo's early childhood education is in contact with those applicants who are affected.",
+            'A separate written decision will be issued on the early childhood education place. The decision will be sent to the <a href="https://www.suomi.fi/messages" target="_blank" rel="noreferrer">Suomi.fi Messages</a> service or by post if you do not use the <a href="https://www.suomi.fi/messages" target="_blank" rel="noreferrer">Suomi.fi messages</a> service.'
           ],
           connectedDaycare:
-            'Haen myös esiopetukseen liittyvää varhaiskasvatusta.',
+            'I also apply for early childhood education related to pre-primary education.',
           instructions: {
             DAYCARE:
               'Indicate the most commonly needed early childhood education time, the time will be specified when early childhood education begins.',
             PRESCHOOL:
-              'Esiopetusta tarjotaan sekä päiväkodeissa että kouluissa 4 tuntia päivässä pääsääntöisesti 09:00 – 13:00, mutta aika saattaa vaihdella yksiköittäin. Ilmoita lapsen tarvitsema varhaiskasvatusaika siten, että se sisältää esiopetusajan 4 h (esim. 7.00 – 17.00). Aika tarkennetaan varhaiskasvatuksen alkaessa. Varhaiskasvatustarpeen ajan vaihdellessa päivittäin tai viikoittain (esim. vuorohoidossa), ilmoita tarve tarkemmin lisätiedoissa lomakkeen lopussa.'
+              'Pre-primary education is provided in both day-care centres and schools for 4 hours a day, as a rule, between 09:00 and 13:00, but the hours may vary by unit. Indicate the early childhood education hours needed by the child so that it includes the 4 hours of pre-primary education (e.g. 7:00–17:00). The hours will be specified when early childhood education begins. If the hours of early childhood education need to vary daily or weekly (e.g. in round-the-clock care), please specify the need in the additional information field.'
           },
           usualArrivalAndDeparture: {
-            DAYCARE: 'Varhaiskasvatuksen alkamis- ja päättymisaika',
+            DAYCARE: 'Daily early childhood education time',
             PRESCHOOL: 'Daily early childhood education time'
           },
           starts: 'Start time',
@@ -225,7 +226,7 @@ const en: Translations = {
         shiftCare: {
           label: 'Evening and round-the-clock care',
           instructions:
-            'Vuorohoidolla tarkoitetaan viikonloppuna tai ympärivuorokautisesti tarvittavaa varhaiskasvatusta. Iltahoito on pääasiassa klo 6.30-18.00 ulkopuolella ja viikonloppuisin tapahtuvaa varhaiskasvatusta. Mikäli tarvitset ilta- tai vuorohoitoa, täsmennä tarvetta lisätietokentässä.',
+            'Round-the-clock care refers to early childhood education needed on weekends or around the clock. Evening and round-the-clock care is mainly early childhood education taking place outside the weekday hours of 6:30 and 18:00.',
           message: {
             title: 'Evening and round-the-clock care',
             text:
@@ -245,9 +246,9 @@ const en: Translations = {
         assistanceNeedInstructions:
           'The support need refers to such a need for support measures that has been indicated by an expert opinion. If the child has not previously attended the Espoo early childhood education services and their support need has been established, the Special Early Education Coordinator will contact you, if necessary, once you have indicated the support need on this application.',
         preparatory:
-          'Lapsi tarvitsee tukea suomen kielen oppimisessa. Haen myös perusopetukseen valmistavaan opetukseen. Ei koske ruotsinkielistä esiopetusta.',
+          'The child needs support with learning Finnish. I am also applying for preparatory education. Not applicable for Swedish pre-primary education.',
         preparatoryInfo:
-          'Esiopetusikäisten valmistavaan opetukseen voivat hakeutua maahanmuuttajataustaiset lapset, paluumuuttajalapset, kaksikielisten perheiden lapset (paitsi suomi-ruotsi) ja adoptiolapset, jotka tarvitsevat tukea suomen kielessä ennen perusopetukseen siirtymistä. Valmistavaa opetusta annetaan esiopetuksen lisäksi keskimäärin 1 h/päivä. Opetus on maksutonta.'
+          'The preparatory education for children in the pre-primary education age is intended for children with an immigrant background, Finnish returnee children, children of bilingual families (excl. Finnish/Swedish) and adopted children who need support with the Finnish language before their transition to basic education. Preparatory education is provided, in addition to pre-primary education, on average for 1 hour per day. Education is free of charge.'
       },
       unitPreference: {
         title: 'Preferred units',
@@ -260,8 +261,8 @@ const en: Translations = {
           checkbox:
             'I primarily apply for a place at the same early childhood education location attended by the child’s sibling.',
           radioLabel:
-            'Valitse sisarus, jonka kanssa haet samaan varhaiskasvatuspaikkaan',
-          otherSibling: 'Muu sisarus',
+            'Choose a sibling with whom you are applying for the same early childhood education place\n',
+          otherSibling: 'Other sibling',
           names: 'First and last name of the sibling',
           namesPlaceholder: 'First and last name',
           ssn: 'Personal identity code of the sibling',
@@ -364,7 +365,7 @@ const en: Translations = {
         otherChildrenChoiceInfo: 'Select children living in the same household',
         hasFutureAddress: 'Address in VTJ is changing',
         futureAddressInfo:
-          'Espoon varhaiskasvatuksessa virallisena osoitteena pidetään väestötiedoista saatavaa osoitetta. Osoite väestötiedoissa muuttuu hakijan tehdessä muuttoilmoituksen postiin tai maistraattiin.',
+          'Espoo’s early childhood education considers the address retrieved from the Population Register Centre as the official address. The address in the Population Register Centre changes when the applicant makes a notification of move to Posti or the Local Register Office.',
         guardianFutureAddressEqualsChildFutureAddress:
           'Moving in with the child',
         firstNamePlaceholder: 'First names',
@@ -391,10 +392,10 @@ const en: Translations = {
         ok: 'Ok!'
       },
       updateInfo: {
-        title: 'Muutokset hakemukseen on tallennettu',
+        title: 'Modifications saved',
         text:
-          'Halutessasi voit tehdä lisää muutoksia niin kauan kuin hakemusta ei olla otettu käsittelyyn.',
-        ok: 'Selvä!'
+          'If you wish, you can make further changes as long as the application has not been processed.',
+        ok: 'Ok!'
       }
     }
   },
@@ -533,14 +534,14 @@ const en: Translations = {
     modalConfirm: 'OK'
   },
   validationErrors: {
-    required: 'Arvo puuttuu',
-    format: 'Anna oikeassa muodossa',
-    ssn: 'Virheellinen henkilötunnus',
-    phone: 'Virheellinen puhelinnumero',
-    email: 'Virheellinen sähköpostiosoite',
-    validDate: 'Anna muodossa pp.kk.vvvv',
-    timeFormat: 'Anna muodossa hh:mm',
-    unitNotSelected: 'Valitse vähintään yksi hakutoive'
+    required: 'Value missing',
+    format: 'Give value in correct format',
+    ssn: 'Invalid person identification number',
+    phone: 'Invalid telephone number',
+    email: 'Invalid email',
+    validDate: 'Valid date format is pp.kk.vvvv',
+    timeFormat: 'Valid time format is hh:mm',
+    unitNotSelected: 'Pick at least one choice'
   }
 }
 
