@@ -244,6 +244,7 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
             application={apiData}
             formData={formData}
             type="DAYCARE"
+            closeVerification={() => setVerifying(false)}
           />
         )
       case 'PRESCHOOL':

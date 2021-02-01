@@ -127,6 +127,15 @@ export default {
           created: 'Hakemus luotu',
           modified: 'Hakemusta muokattu viimeksi'
         },
+        attachmentBox: {
+          nb: 'Huom!',
+          headline:
+            'Jos lisäät liitteet seuraaviin kohtiin sähköisesti, hakemuksesi käsitellään nopeammin, sillä käsittelyaika alkaa liitteiden saapumisesta.',
+          urgency: 'Hakemus on kiireellinen',
+          shiftCare: 'Ilta- ja vuorohoito',
+          goBackLinkText: 'Palaa takaisin hakemusnäkymään',
+          goBackRestText: 'lisätäksesi liitteet hakemukseen.'
+        },
         serviceNeed: {
           title: 'Palveluntarve',
           connectedDaycare: {

@@ -27,6 +27,7 @@ type DaycareApplicationVerificationViewProps = {
   application: ApplicationDetails
   formData: ApplicationFormData
   type: ApplicationType
+  closeVerification: () => void
 }
 
 const AttachmentBox = styled.div`
@@ -42,7 +43,8 @@ const RoundIconStyled = styled(RoundIcon)`
 export default React.memo(function ApplicationVerificationViewDaycare({
   application,
   formData,
-  type
+  type,
+  closeVerification
 }: DaycareApplicationVerificationViewProps) {
   const t = useTranslation()
   return (
@@ -66,21 +68,40 @@ export default React.memo(function ApplicationVerificationViewDaycare({
                 />
                 <div>
                   <P>
-                    <strong>Huom!</strong> Jos lisäät liitteet seuraaviin
-                    kohtiin sähköisesti, hakemuksesi käsitellään nopeammin,
-                    sillä käsittelyaika alkaa liitteiden saapumisesta.
+                    <strong>
+                      {t.applications.editor.verification.attachmentBox.nb}
+                    </strong>
+                    {t.applications.editor.verification.attachmentBox.headline}
                   </P>
                   <ul>
                     {formData.serviceNeed.urgencyAttachments.length === 0 && (
-                      <li>Hakemus on kiireellinen</li>
+                      <li>
+                        {
+                          t.applications.editor.verification.attachmentBox
+                            .urgency
+                        }
+                      </li>
                     )}
                     {formData.serviceNeed.shiftCareAttachments.length === 0 && (
-                      <li>Ilta- ja vuorohoito</li>
+                      <li>
+                        {
+                          t.applications.editor.verification.attachmentBox
+                            .shiftCare
+                        }
+                      </li>
                     )}
                   </ul>
                   <P>
-                    Palaa <a>takaisin hakemusnäkymään</a> lisätäksesi liitteet
-                    hakemukseen.
+                    <a onClick={closeVerification} role="button">
+                      {
+                        t.applications.editor.verification.attachmentBox
+                          .goBackLinkText
+                      }
+                    </a>
+                    {
+                      t.applications.editor.verification.attachmentBox
+                        .goBackLinkText
+                    }
                   </P>
                 </div>
               </AttachmentBox>
