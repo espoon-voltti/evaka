@@ -122,7 +122,7 @@ export default React.memo(function ApplicationVerificationViewDaycare({
         <HorizontalLine />
         <UnitPreferenceSection formData={formData.unitPreference} />
         <HorizontalLine />
-        <ContactInfoSection formData={formData.contactInfo} />
+        <ContactInfoSection formData={formData.contactInfo} type={type} />
       </ContentArea>
     </Container>
   )

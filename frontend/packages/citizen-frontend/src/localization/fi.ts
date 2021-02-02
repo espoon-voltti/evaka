@@ -223,7 +223,11 @@ export default {
           secondGuardian: {
             title: 'Toisen huoltajan tiedot',
             info:
-              'Toisen huoltajan tiedot haetaan automaattisesti väestötietojärjestelmästä.'
+              'Toisen huoltajan tiedot haetaan automaattisesti väestötietojärjestelmästä.',
+            agreed:
+              'Olemme yhdessä sopineet lapsen esiopetuksen hakemisesta lomakkeen tietojen mukaisesti.',
+            notAgreed:
+              'Emme ole voineet sopia hakemuksen tekemisestä yhdessä / toisella huoltajalla on vain tiedonsaantioikeus.'
           },
           fridgePartner: {
             title:

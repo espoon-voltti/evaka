@@ -5,13 +5,18 @@ import { H2, H3, Label } from '@evaka/lib-components/src/typography'
 import ListGrid from '@evaka/lib-components/src/layout/ListGrid'
 import { Gap } from '@evaka/lib-components/src/white-space'
 import { ApplicationDataGridLabelWidth } from '~applications/editor/verification/const'
+import { ApplicationType } from '~../../lib-common/src/api-types/application/enums'
+import ContactInfoSecondGuardianDaycare from './ContactInfoSecondGuardianDaycare'
+import ContactInfoSecondGuardianPreschool from './ContactInfoSecondGuardianPreschool'
 
 type ContactInfoProps = {
   formData: ContactInfoFormData
+  type: ApplicationType
 }
 
 export default React.memo(function UnitPreferenceSection({
-  formData
+  formData,
+  type
 }: ContactInfoProps) {
   const t = useTranslation()
   const tLocal = t.applications.editor.verification.contactInfo
@@ -76,7 +81,12 @@ export default React.memo(function UnitPreferenceSection({
 
       <Gap size="m" />
       <H3>{tLocal.secondGuardian.title}</H3>
-      <span>{tLocal.secondGuardian.info}</span>
+      {type === 'DAYCARE' && <ContactInfoSecondGuardianDaycare />}
+      {type === 'PRESCHOOL' && (
+        <ContactInfoSecondGuardianPreschool
+          agreementStatus={formData.otherGuardianAgreementStatus}
+        />
+      )}
 
       <Gap size="m" />
       <H3>{tLocal.fridgePartner.title}</H3>
