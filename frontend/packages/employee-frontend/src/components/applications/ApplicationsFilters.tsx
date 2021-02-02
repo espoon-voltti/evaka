@@ -33,7 +33,7 @@ const CustomGap = styled.div`
   height: 52px;
 `
 
-function ApplicationFilters() {
+export default React.memo(function ApplicationFilters() {
   const {
     units,
     setUnits,
@@ -251,6 +251,4 @@ function ApplicationFilters() {
       }
     />
   )
-}
-
-export default ApplicationFilters
+})
