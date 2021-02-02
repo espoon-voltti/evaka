@@ -51,6 +51,13 @@ const applications = Selector('[data-qa="table-of-applications"]').find(
   '[data-qa="table-application-row"]'
 )
 
+const voucherUnitFilter = {
+  firstChoice: Selector('[data-qa="filter-voucher-first-choice"]'),
+  voucherOnly: Selector('[data-qa="filter-voucher-all"]'),
+  voucherHide: Selector('[data-qa="filter-voucher-hide"]'),
+  noFilter: Selector('[data-qa="filter-voucher-no-filter"]')
+}
+
 export default {
   url,
   applicationStatus,
@@ -61,5 +68,6 @@ export default {
   application,
   applications,
   toggleArea,
-  unitFilter
+  unitFilter,
+  voucherUnitFilter
 }

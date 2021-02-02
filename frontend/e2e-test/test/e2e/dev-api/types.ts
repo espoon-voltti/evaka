@@ -201,6 +201,12 @@ export interface Daycare {
   daycareApplyPeriod?: DateRange | null
   preschoolApplyPeriod?: DateRange | null
   clubApplyPeriod?: DateRange | null
+  providerType:
+    | 'MUNICIPAL'
+    | 'MUNICIPAL_SCHOOL'
+    | 'PURCHASED'
+    | 'PRIVATE'
+    | 'PRIVATE_SERVICE_VOUCHER'
 }
 
 export interface DaycareGroup {
