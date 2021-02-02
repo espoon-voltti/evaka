@@ -1,6 +1,5 @@
 import React from 'react'
 import { useTranslation } from '~localization'
-import { H3 } from '@evaka/lib-components/src/typography'
 import { ApplicationGuardianAgreementStatus } from '@evaka/lib-common/src/api-types/application/enums'
 
 type Props = {
@@ -15,13 +14,16 @@ export default React.memo(function ContactInfoSecondGuardianPreschool({
 
   return (
     <>
-      <H3>{tLocal.secondGuardian.title}</H3>
-      {agreementStatus &&
-        (agreementStatus === 'AGREED' ? (
-          <span>{tLocal.secondGuardian.agreed}</span>
-        ) : (
-          <span>{tLocal.secondGuardian.notAgreed}</span>
-        ))}
+      {agreementStatus === 'AGREED' && (
+        <span>{tLocal.secondGuardian.agreed}</span>
+      )}
+      {(agreementStatus === 'NOT_AGREED' ||
+        agreementStatus === 'RIGHT_TO_GET_NOTIFIED') && (
+        <span>{tLocal.secondGuardian.notAgreed}</span>
+      )}
+      {!agreementStatus && (
+        <span>{tLocal.secondGuardian.noAgreementStatus}</span>
+      )}
     </>
   )
 })

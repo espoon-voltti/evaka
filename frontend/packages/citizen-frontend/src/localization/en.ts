@@ -230,7 +230,8 @@ const en: Translations = {
             agreed:
               'Olemme yhdessä sopineet lapsen esiopetuksen hakemisesta lomakkeen tietojen mukaisesti.',
             notAgreed:
-              'Emme ole voineet sopia hakemuksen tekemisestä yhdessä / toisella huoltajalla on vain tiedonsaantioikeus.'
+              'Emme ole voineet sopia hakemuksen tekemisestä yhdessä / toisella huoltajalla on vain tiedonsaantioikeus.',
+            noAgreementStatus: 'Ei tiedossa'
           },
           fridgePartner: {
             title:

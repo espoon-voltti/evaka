@@ -14,8 +14,7 @@ import { defaultMargins, Gap } from '@evaka/lib-components/src/white-space'
 import HorizontalLine from '@evaka/lib-components/src/atoms/HorizontalLine'
 import UnitPreferenceSection from '~applications/editor/verification/UnitPreferenceSection'
 import { ApplicationDetails } from '@evaka/lib-common/src/api-types/application/ApplicationDetails'
-import ServiceNeedSectionDaycare from './ServiceNeedSectionDaycare'
-import ServiceNeedSectionPreschool from './ServiceNeedSectionPreschool'
+import ServiceNeedSection from './ServiceNeedSection'
 import { espooBrandColors } from '@evaka/lib-components/src/colors'
 import styled from 'styled-components'
 import RoundIcon from '@evaka/lib-components/src/atoms/RoundIcon'
@@ -113,12 +112,7 @@ export default React.memo(function ApplicationVerificationViewDaycare({
       <ContentArea opaque>
         <BasicsSection application={application} formData={formData} />
         <HorizontalLine />
-        {type === 'DAYCARE' && (
-          <ServiceNeedSectionDaycare formData={formData} />
-        )}
-        {type === 'PRESCHOOL' && (
-          <ServiceNeedSectionPreschool formData={formData} />
-        )}
+        <ServiceNeedSection formData={formData} type={type} />
         <HorizontalLine />
         <UnitPreferenceSection formData={formData.unitPreference} />
         <HorizontalLine />

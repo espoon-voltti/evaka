@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
+
 import { ApplicationFormData } from '~applications/editor/ApplicationFormData'
 import React from 'react'
 import { useTranslation } from '~localization'
@@ -9,24 +13,31 @@ import { faFile } from '@evaka/lib-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import styled from 'styled-components'
 import { espooBrandColors } from '@evaka/lib-components/src/colors'
+import ServiceNeedConnectedDaycare from './ServiceNeedConnectedDaycare'
+import ServiceNeedPreparatory from './ServiceNeedPreparatory'
+import { ApplicationType } from '@evaka/lib-common/src/api-types/application/enums'
+import ServiceNeedUrgency from './ServiceNeedUrgency'
+import ServiceNeedPartTime from './ServiceNeedPartTime'
 
 type ServiceNeedSectionProps = {
   formData: ApplicationFormData
+  type: ApplicationType
 }
 
-export const AttachmentList = styled.ul`
+const AttachmentList = styled.ul`
   margin-top: 0;
   padding-left: 0;
   list-style: none;
 `
 
-export const AttachmentDownload = styled.a`
+const AttachmentDownload = styled.a`
   color: ${espooBrandColors.espooTurquoise};
   text-decoration: none;
 `
 
-export default React.memo(function ServiceNeedSection({
-  formData
+export default React.memo(function ServiceNeedSectionPreschool({
+  formData,
+  type
 }: ServiceNeedSectionProps) {
   const t = useTranslation()
 
@@ -48,74 +59,22 @@ export default React.memo(function ServiceNeedSection({
           }
         </Label>
         <span>{formData.serviceNeed.preferredStartDate}</span>
-        <Label>
-          {t.applications.editor.verification.serviceNeed.startDate.urgency}
-        </Label>
-        <span>
-          {formData.serviceNeed.urgent
-            ? t.applications.editor.verification.serviceNeed.startDate
-                .withUrgency
-            : t.applications.editor.verification.serviceNeed.startDate
-                .withoutUrgency}
-        </span>
 
-        {formData.serviceNeed.urgent && (
-          <>
-            <Label>
-              {t.applications.editor.verification.serviceNeed.attachments.label}
-            </Label>
-            <span>
-              {formData.serviceNeed.urgencyAttachments.length > 0 ? (
-                <AttachmentList>
-                  {formData.serviceNeed.urgencyAttachments.map((file) => (
-                    <li key={file.id}>
-                      <span className="attachment-icon">
-                        <FontAwesomeIcon icon={faFile} />
-                      </span>
-                      <Gap horizontal size={'xs'} />
-                      <AttachmentDownload
-                        href={`/api/application/attachments/${file.id}/download`}
-                        target="_blank"
-                        rel="noreferrer"
-                      >
-                        {file.name}
-                      </AttachmentDownload>
-                    </li>
-                  ))}
-                </AttachmentList>
-              ) : (
-                t.applications.editor.verification.serviceNeed.attachments
-                  .withoutAttachments
-              )}
-            </span>
-          </>
-        )}
+        {type === 'DAYCARE' && <ServiceNeedUrgency formData={formData} />}
       </ListGrid>
 
       <Gap size={'s'} />
-      <H3>{t.applications.editor.verification.serviceNeed.dailyTime.title}</H3>
+
+      {type === 'PRESCHOOL' && (
+        <ServiceNeedConnectedDaycare formData={formData} />
+      )}
+
       <ListGrid
         labelWidth={ApplicationDataGridLabelWidth}
         rowGap="s"
         columnGap="L"
       >
-        <Label>
-          {t.applications.editor.verification.serviceNeed.dailyTime.partTime}
-        </Label>
-        <span>
-          {formData.serviceNeed.partTime
-            ? t.applications.editor.verification.serviceNeed.dailyTime
-                .withPartTime
-            : t.applications.editor.verification.serviceNeed.dailyTime
-                .withoutPartTime}
-        </span>
-
-        <Label>
-          {t.applications.editor.verification.serviceNeed.dailyTime.dailyTime}
-        </Label>
-        <span>
-          {formData.serviceNeed.startTime} - {formData.serviceNeed.endTime}
-        </span>
+        {type === 'DAYCARE' && <ServiceNeedPartTime formData={formData} />}
 
         <Label>
           {t.applications.editor.verification.serviceNeed.dailyTime.shiftCare}
@@ -195,6 +154,8 @@ export default React.memo(function ServiceNeedSection({
             <span>{formData.serviceNeed.assistanceDescription}</span>
           </>
         )}
+
+        {type === 'PRESCHOOL' && <ServiceNeedPreparatory formData={formData} />}
       </ListGrid>
     </div>
   )
