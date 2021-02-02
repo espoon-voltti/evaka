@@ -7,6 +7,7 @@ package fi.espoo.evaka.varda.integration
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
+import com.github.kittinunf.fuel.core.FuelError
 import com.github.kittinunf.fuel.core.FuelManager
 import com.github.kittinunf.fuel.core.Headers
 import com.github.kittinunf.fuel.core.Request
@@ -29,6 +30,7 @@ import fi.espoo.evaka.varda.VardaPlacementResponse
 import fi.espoo.evaka.varda.VardaUnit
 import fi.espoo.evaka.varda.VardaUnitResponse
 import fi.espoo.evaka.varda.VardaUpdateOrganizer
+import fi.espoo.voltti.logging.loggers.error
 import mu.KotlinLogging
 import org.springframework.core.env.Environment
 import java.time.LocalDate
@@ -57,8 +59,7 @@ class VardaClient(
 
     fun createUnit(unit: VardaUnit): VardaUnitResponse? {
         logger.info { "Creating a new unit ${unit.name} to Varda" }
-        logger.info { objectMapper.writeValueAsString(unit) }
-        val (_, _, result) = fuel.post(unitUrl)
+        val (request, _, result) = fuel.post(unitUrl)
             .jsonBody(objectMapper.writeValueAsString(unit))
             .authenticatedResponseStringWithRetries()
 
@@ -70,10 +71,7 @@ class VardaClient(
                 )
             }
             is Result.Failure -> {
-                logger.error(result.getException()) {
-                    "Creating a new unit to Varda failed with body: ${objectMapper.writeValueAsString(unit)}." +
-                        " message: ${String(result.error.errorData)}"
-                }
+                logRequestError(request, result.error)
                 null
             }
         }
@@ -82,7 +80,7 @@ class VardaClient(
     fun updateUnit(unit: VardaUnit): VardaUnitResponse? {
         logger.info { "Updating unit ${unit.name} to Varda" }
         val url = "$unitUrl${unit.vardaUnitId}/"
-        val (_, _, result) = fuel.put(url)
+        val (request, _, result) = fuel.put(url)
             .jsonBody(objectMapper.writeValueAsString(unit))
             .authenticatedResponseStringWithRetries()
 
@@ -94,10 +92,7 @@ class VardaClient(
                 )
             }
             is Result.Failure -> {
-                logger.error(result.getException()) {
-                    "Updating unit to Varda failed with body: ${objectMapper.writeValueAsString(unit)}." +
-                        " message: ${String(result.error.errorData)}"
-                }
+                logRequestError(request, result.error)
                 null
             }
         }
@@ -105,7 +100,7 @@ class VardaClient(
 
     fun updateOrganizer(organizer: VardaUpdateOrganizer): Boolean {
         logger.info { "Updating organizer to Varda" }
-        val (_, _, result) = fuel.put("$organizerUrl${organizer.vardaOrganizerId}")
+        val (request, _, result) = fuel.put("$organizerUrl${organizer.vardaOrganizerId}")
             .header(Headers.CONTENT_TYPE, "application/json")
             .jsonBody(objectMapper.writeValueAsString(organizer))
             .authenticatedResponseStringWithRetries()
@@ -116,10 +111,7 @@ class VardaClient(
                 true
             }
             is Result.Failure -> {
-                logger.error(result.getException()) {
-                    "Updating organizer to Varda failed" +
-                        " message: ${String(result.error.errorData)}"
-                }
+                logRequestError(request, result.error)
                 false
             }
         }
@@ -127,7 +119,7 @@ class VardaClient(
 
     fun createPerson(newPerson: VardaPersonRequest): VardaPersonResponse? {
         logger.info { "Creating a new person ${newPerson.id} to Varda" }
-        val (_, _, result) = fuel.post(personUrl)
+        val (request, _, result) = fuel.post(personUrl)
             .jsonBody(objectMapper.writeValueAsString(newPerson)).authenticatedResponseStringWithRetries()
 
         return when (result) {
@@ -138,10 +130,7 @@ class VardaClient(
                 )
             }
             is Result.Failure -> {
-                logger.error(result.getException()) {
-                    "Creating a new person to Varda failed." +
-                        " message: ${String(result.error.errorData)}"
-                }
+                logRequestError(request, result.error)
                 null
             }
         }
@@ -149,7 +138,7 @@ class VardaClient(
 
     fun createChild(child: VardaChildRequest): VardaChildResponse? {
         logger.info { "Creating child to Varda (body: $child)" }
-        val (_, _, result) = fuel.post(childUrl)
+        val (request, _, result) = fuel.post(childUrl)
             .jsonBody(objectMapper.writeValueAsString(child)).authenticatedResponseStringWithRetries()
 
         return when (result) {
@@ -160,10 +149,7 @@ class VardaClient(
                 )
             }
             is Result.Failure -> {
-                logger.error(result.getException()) {
-                    "Creating child to Varda failed (body: $child)." +
-                        " message: ${String(result.error.errorData)}"
-                }
+                logRequestError(request, result.error)
                 null
             }
         }
@@ -171,7 +157,7 @@ class VardaClient(
 
     fun createFeeData(feeData: VardaFeeData): VardaFeeDataResponse? {
         logger.info { "Creating fee data for child ${feeData.lapsi} to Varda" }
-        val (_, _, result) = fuel.post(feeDataUrl)
+        val (request, _, result) = fuel.post(feeDataUrl)
             .jsonBody(objectMapper.writeValueAsString(feeData)).authenticatedResponseStringWithRetries()
 
         return when (result) {
@@ -182,10 +168,7 @@ class VardaClient(
                 )
             }
             is Result.Failure -> {
-                logger.error(result.getException()) {
-                    "Creating a fee data for child ${feeData.lapsi} to Varda failed." +
-                        " message: ${String(result.error.errorData)}"
-                }
+                logRequestError(request, result.error)
                 null
             }
         }
@@ -193,7 +176,7 @@ class VardaClient(
 
     fun updateFeeData(vardaFeeDataId: Long, feeData: VardaFeeData): Boolean {
         logger.info { "Updating fee data $vardaFeeDataId to Varda" }
-        val (_, _, result) = fuel.put("$feeDataUrl$vardaFeeDataId")
+        val (request, _, result) = fuel.put("$feeDataUrl$vardaFeeDataId")
             .jsonBody(objectMapper.writeValueAsString(feeData)).authenticatedResponseStringWithRetries()
 
         return when (result) {
@@ -202,11 +185,7 @@ class VardaClient(
                 true
             }
             is Result.Failure -> {
-                logger.error(result.getException()) {
-                    "Updating fee data $vardaFeeDataId to Varda failed." +
-                        " message: ${String(result.error.errorData)}"
-                }
-                logger.debug { "Updating feeData to Varda failed: (vardaId: $vardaFeeDataId, body: $feeData)" }
+                logRequestError(request, result.error)
                 false
             }
         }
@@ -214,7 +193,7 @@ class VardaClient(
 
     fun deleteFeeData(vardaId: Long): Boolean {
         logger.info { "Deleting fee data $vardaId from Varda" }
-        val (_, _, result) = fuel.delete("$feeDataUrl$vardaId/").authenticatedResponseStringWithRetries()
+        val (request, _, result) = fuel.delete("$feeDataUrl$vardaId/").authenticatedResponseStringWithRetries()
 
         return when (result) {
             is Result.Success -> {
@@ -222,10 +201,7 @@ class VardaClient(
                 true
             }
             is Result.Failure -> {
-                logger.error(result.getException()) {
-                    "Deleting fee data $vardaId from Varda failed." +
-                        " message: ${String(result.error.errorData)}"
-                }
+                logRequestError(request, result.error)
                 false
             }
         }
@@ -233,7 +209,7 @@ class VardaClient(
 
     fun createDecision(newDecision: VardaDecision): VardaDecisionResponse? {
         logger.info { "Creating a new decision to Varda (body: $newDecision)" }
-        val (_, _, result) = fuel.post(decisionUrl)
+        val (request, _, result) = fuel.post(decisionUrl)
             .jsonBody(objectMapper.writeValueAsString(newDecision)).authenticatedResponseStringWithRetries()
 
         return when (result) {
@@ -242,10 +218,7 @@ class VardaClient(
                 objectMapper.readValue(result.get())
             }
             is Result.Failure -> {
-                logger.error(result.getException()) {
-                    "Creating new decision to Varda failed (body: $newDecision)." +
-                        " message: ${String(result.error.errorData)}"
-                }
+                logRequestError(request, result.error)
                 null
             }
         }
@@ -253,7 +226,7 @@ class VardaClient(
 
     fun updateDecision(vardaDecisionId: Long, updatedDecision: VardaDecision): VardaDecisionResponse? {
         logger.info { "Updating a decision to Varda (vardaId: $vardaDecisionId, body: $updatedDecision)" }
-        val (_, _, result) = fuel.put(getDecisionUrl(vardaDecisionId))
+        val (request, _, result) = fuel.put(getDecisionUrl(vardaDecisionId))
             .jsonBody(objectMapper.writeValueAsString(updatedDecision)).authenticatedResponseStringWithRetries()
 
         return when (result) {
@@ -262,10 +235,7 @@ class VardaClient(
                 objectMapper.readValue(result.get())
             }
             is Result.Failure -> {
-                logger.error(result.getException()) {
-                    "Updating a decision to Varda failed (vardaId: $vardaDecisionId, body: $updatedDecision)." +
-                        " message: ${String(result.error.errorData)}"
-                }
+                logRequestError(request, result.error)
                 null
             }
         }
@@ -273,7 +243,7 @@ class VardaClient(
 
     fun deleteDecision(vardaDecisionId: Long): Boolean {
         logger.info { "Deleting decision from Varda (id: $vardaDecisionId)" }
-        val (_, _, result) = fuel.delete(getDecisionUrl(vardaDecisionId))
+        val (request, _, result) = fuel.delete(getDecisionUrl(vardaDecisionId))
             .authenticatedResponseStringWithRetries()
 
         return when (result) {
@@ -282,10 +252,7 @@ class VardaClient(
                 true
             }
             is Result.Failure -> {
-                logger.error(result.getException()) {
-                    "Deleting decision from Varda failed (id: $vardaDecisionId)." +
-                        " message: ${String(result.error.errorData)}"
-                }
+                logRequestError(request, result.error)
                 false
             }
         }
@@ -293,7 +260,7 @@ class VardaClient(
 
     fun createPlacement(newPlacement: VardaPlacement): VardaPlacementResponse? {
         logger.info { "Creating a new placement to Varda (body: $newPlacement)" }
-        val (_, _, result) = fuel.post(placementUrl)
+        val (request, _, result) = fuel.post(placementUrl)
             .jsonBody(objectMapper.writeValueAsString(newPlacement))
             .authenticatedResponseStringWithRetries()
 
@@ -303,10 +270,7 @@ class VardaClient(
                 objectMapper.readValue(result.get())
             }
             is Result.Failure -> {
-                logger.error(result.getException()) {
-                    "Creating new placement to Varda failed (body: $newPlacement)." +
-                        " message: ${String(result.error.errorData)}"
-                }
+                logRequestError(request, result.error)
                 null
             }
         }
@@ -317,7 +281,7 @@ class VardaClient(
         updatedPlacement: VardaPlacement
     ): VardaPlacementResponse? {
         logger.info { "Updating a placement to Varda (body: $updatedPlacement)" }
-        val (_, _, result) = fuel.put(getPlacementUrl(vardaPlacementId))
+        val (request, _, result) = fuel.put(getPlacementUrl(vardaPlacementId))
             .jsonBody(objectMapper.writeValueAsString(updatedPlacement))
             .authenticatedResponseStringWithRetries()
 
@@ -327,10 +291,7 @@ class VardaClient(
                 objectMapper.readValue(result.get())
             }
             is Result.Failure -> {
-                logger.error(result.getException()) {
-                    "Updating a placement to Varda failed (body: $updatedPlacement)." +
-                        " message: ${String(result.error.errorData)}"
-                }
+                logRequestError(request, result.error)
                 null
             }
         }
@@ -338,7 +299,7 @@ class VardaClient(
 
     fun deletePlacement(vardaPlacementId: Long): Boolean {
         logger.info { "Deleting placement from Varda (id: $vardaPlacementId)" }
-        val (_, _, result) = fuel.delete(getPlacementUrl(vardaPlacementId)).authenticatedResponseStringWithRetries()
+        val (request, _, result) = fuel.delete(getPlacementUrl(vardaPlacementId)).authenticatedResponseStringWithRetries()
 
         return when (result) {
             is Result.Success -> {
@@ -346,10 +307,7 @@ class VardaClient(
                 true
             }
             is Result.Failure -> {
-                logger.error(result.getException()) {
-                    "Deleting placement from Varda failed (id: $vardaPlacementId)." +
-                        " message: ${String(result.error.errorData)}"
-                }
+                logRequestError(request, result.error)
                 false
             }
         }
@@ -382,14 +340,14 @@ class VardaClient(
         fun fetchNext(acc: List<T>, next: String?): List<T> {
             return if (next == null) acc
             else {
-                val (_, _, result) = fuel.get(next).authenticatedResponseStringWithRetries()
+                val (request, _, result) = fuel.get(next).authenticatedResponseStringWithRetries()
                 when (result) {
                     is Result.Success -> {
                         val response = parseJson(result.value)
                         fetchNext(acc + response.results, response.next)
                     }
                     is Result.Failure -> {
-                        logger.error(result.error) { "Fetching page $next from Varda failed. (${result.error.errorData})" }
+                        logRequestError(request, result.error)
                         acc
                     }
                 }
@@ -431,4 +389,14 @@ class VardaClient(
                     }
                 }
         }
+}
+
+private fun logRequestError(request: Request, error: FuelError) {
+    val meta = mapOf(
+        "method" to request.method,
+        "url" to request.url,
+        "body" to request.body.asString("application/json"),
+        "errorMessage" to error.errorData.decodeToString()
+    )
+    logger.error(error, meta) { "Varda request failed" }
 }
