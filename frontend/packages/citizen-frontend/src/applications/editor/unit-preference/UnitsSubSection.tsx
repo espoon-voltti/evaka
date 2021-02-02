@@ -151,6 +151,7 @@ export default React.memo(function UnitsSubSection({
                   noOptionsMessage={
                     t.applications.editor.unitPreference.units.select.noOptions
                   }
+                  showValuesInInput={false}
                 />
 
                 <Gap size="s" />

@@ -4,8 +4,9 @@
 
 import React, { Fragment, useContext, useEffect } from 'react'
 import styled from 'styled-components'
+import { Label } from '@evaka/lib-components/src/typography'
+import MultiSelect from '@evaka/lib-components/src/atoms/form/MultiSelect'
 import {
-  AreaFilter,
   Filters,
   ApplicationDistinctionsFilter,
   ApplicationStatusFilter,
@@ -90,25 +91,6 @@ export default React.memo(function ApplicationFilters() {
 
   const ALL = 'All'
 
-  const toggleArea = (code: string) => () => {
-    if (availableAreas.isSuccess) {
-      setApplicationsResult(Loading.of())
-
-      const newAreas =
-        code === ALL
-          ? area.includes(ALL)
-            ? []
-            : [...availableAreas.value.map((a) => a.shortName), ALL]
-          : area.includes(code)
-          ? area
-              .filter((v) => v !== code)
-              .filter((v) => v !== ALL && code != ALL)
-          : [...area, code]
-
-      setArea(newAreas)
-    }
-  }
-
   const toggleBasis = (toggledBasis: ApplicationBasis) => () => {
     setApplicationsResult(Loading.of())
     basis.includes(toggledBasis)
@@ -190,11 +172,10 @@ export default React.memo(function ApplicationFilters() {
       column1={
         <>
           <Gap size="s" />
-          <AreaFilter
+          <AreaMultiSelect
             areas={availableAreas.getOrElse([])}
-            toggled={area}
-            toggle={toggleArea}
-            showAll
+            selected={area}
+            onSelect={setArea}
           />
           <Gap size="L" />
           <MultiSelectUnitFilter
@@ -250,5 +231,36 @@ export default React.memo(function ApplicationFilters() {
         </Fragment>
       }
     />
+  )
+})
+
+type AreaMultiSelectProps = {
+  areas: { name: string; shortName: string }[]
+  selected: string[]
+  onSelect: (areas: string[]) => void
+}
+
+const AreaMultiSelect = React.memo(function AreaMultiSelect({
+  areas,
+  selected,
+  onSelect
+}: AreaMultiSelectProps) {
+  const { i18n } = useTranslation()
+  const value = areas.filter((area) => selected.includes(area.shortName))
+  const onChange = (selected: { shortName: string }[]) =>
+    onSelect(selected.map(({ shortName }) => shortName))
+  return (
+    <>
+      <Label>{i18n.filters.area}</Label>
+      <MultiSelect
+        value={value}
+        options={areas}
+        getOptionId={({ shortName }) => shortName}
+        getOptionLabel={({ name }) => name}
+        onChange={onChange}
+        placeholder={i18n.applications.list.areaPlaceholder}
+        data-qa="area-filter"
+      />
+    </>
   )
 })

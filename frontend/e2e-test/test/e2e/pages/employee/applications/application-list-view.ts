@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Selector } from 'testcafe'
+import { Selector, t } from 'testcafe'
 import config from '../../../config'
 
 const url = `${config.employeeUrl}/applications`
@@ -29,8 +29,14 @@ const actionsMenuItems = {
   )
 }
 
-const areaFilterItems = (areaShortName: string) =>
-  Selector(`[data-qa="area-filter-${areaShortName}"]`)
+const areaFilter = Selector('[data-qa="area-filter"]')
+const areaFilterInput = areaFilter.find('input')
+const areaFilterFirstOption = areaFilter.find('[id^="react-select-2-option-"')
+
+const toggleArea = async (areaName: string) => {
+  await t.typeText(areaFilterInput, areaName)
+  await t.click(areaFilterFirstOption)
+}
 
 const specialFilterItems = {
   duplicate: Selector('[data-for="application-basis-DUPLICATE_APPLICATION"]')
@@ -54,6 +60,6 @@ export default {
   specialFilterItems,
   application,
   applications,
-  areaFilterItems,
+  toggleArea,
   unitFilter
 }
