@@ -384,6 +384,14 @@ export async function deleteDecisionFixture(id: string): Promise<void> {
   }
 }
 
+export async function createDecisionPdf(id: string): Promise<void> {
+  try {
+    await devClient.post(`/decisions/${id}/actions/create-pdf`)
+  } catch (e) {
+    throw new DevApiError(e)
+  }
+}
+
 export async function insertFeeDecisionFixtures(
   fixture: FeeDecision[]
 ): Promise<void> {

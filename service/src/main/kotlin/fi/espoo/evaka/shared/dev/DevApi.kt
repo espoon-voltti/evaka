@@ -27,6 +27,7 @@ import fi.espoo.evaka.daycare.deleteDaycareGroup
 import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.decision.Decision
+import fi.espoo.evaka.decision.DecisionService
 import fi.espoo.evaka.decision.DecisionType
 import fi.espoo.evaka.decision.getDecisionsByApplication
 import fi.espoo.evaka.decision.insertDecision
@@ -104,7 +105,8 @@ class DevApi(
     private val personService: PersonService,
     private val asyncJobRunner: AsyncJobRunner,
     private val placementPlanService: PlacementPlanService,
-    private val applicationStateService: ApplicationStateService
+    private val applicationStateService: ApplicationStateService,
+    private val decisionService: DecisionService
 ) {
     @PostMapping("/clean-up")
     fun cleanUpDatabase(db: Database): ResponseEntity<Unit> {
@@ -260,6 +262,12 @@ class DevApi(
     @DeleteMapping("/decisions/{id}")
     fun deleteDecisions(db: Database, @PathVariable id: UUID): ResponseEntity<Unit> {
         db.transaction { it.handle.deleteDecision(id) }
+        return ResponseEntity.noContent().build()
+    }
+
+    @PostMapping("/decisions/{id}/actions/create-pdf")
+    fun createDecisionPdf(db: Database, @PathVariable id: UUID): ResponseEntity<Unit> {
+        db.transaction { decisionService.createDecisionPdfs(it, fakeAdmin, id) }
         return ResponseEntity.noContent().build()
     }
 
