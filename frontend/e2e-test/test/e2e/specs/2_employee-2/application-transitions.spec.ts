@@ -7,19 +7,20 @@ import {
   initializeAreaAndPersonData,
   AreaAndPersonFixtures
 } from '../../dev-api/data-init'
-import { applicationFixture } from '../../dev-api/fixtures'
+import { applicationFixture, decisionFixture } from '../../dev-api/fixtures'
 import { logConsoleMessages } from '../../utils/fixture'
 import { EmployeeDetail } from '../../dev-api/types'
 import {
   cleanUpMessages,
+  createDecisionPdf,
   deleteAclForDaycare,
   deleteApplication,
   deleteEmployeeFixture,
   execSimpleApplicationAction,
   execSimpleApplicationActions,
   insertApplications,
+  insertDecisionFixtures,
   insertEmployeeFixture,
-  runPendingAsyncJobs,
   setAclForDaycares as setAclForDaycare
 } from '../../dev-api'
 import { seppoAdminRole, seppoManagerRole } from '../../config/users'
@@ -46,6 +47,7 @@ let fixtures: AreaAndPersonFixtures
 let cleanUp: () => Promise<void>
 let applicationId: string
 let applicationId2: string
+let supervisorId: string
 
 fixture('Application-transitions')
   .meta({ type: 'regression', subType: 'daycare-application' })
@@ -55,7 +57,7 @@ fixture('Application-transitions')
       ...supervisor,
       email: `${Math.random().toString(36).substring(7)}@espoo.fi`
     }
-    await insertEmployeeFixture(uniqueSupervisor)
+    supervisorId = await insertEmployeeFixture(uniqueSupervisor)
     await setAclForDaycare(
       config.supervisorExternalId,
       fixtures.daycareFixture.id
@@ -297,31 +299,41 @@ test('Placement proposal flow', async (t) => {
   await t.expect(unitPage.waitingGuardianConfirmationRow.count).eql(1)
 })
 
-test('Supervisor cannot download decision PDF while it is being generated', async (t) => {
-  const fixture = {
+test('Supervisor can download decision PDF only after it has been generated', async (t) => {
+  const application = {
     ...applicationFixture(
       fixtures.enduserChildFixtureJari,
       fixtures.enduserGuardianFixture
     ),
     status: 'SENT' as const
   }
-  applicationId = fixture.id
+  applicationId = application.id
 
-  await insertApplications([fixture])
+  await insertApplications([application])
 
+  const decision = decisionFixture(
+    applicationId,
+    application.form.preferredStartDate,
+    application.form.preferredStartDate
+  )
+  const decisionId = decision.id
+
+  // NOTE: This will NOT generate a PDF, just create the decision
+  await insertDecisionFixtures([
+    {
+      ...decision,
+      employeeId: supervisorId
+    }
+  ])
   await t.useRole(seppoManagerRole)
 
-  // NOTE: NOT running pending async jobs yet -> PDF won't have been generated from sent decision
-  await execSimpleApplicationActions(applicationId, [
-    'move-to-waiting-placement',
-    'create-default-placement-plan',
-    'send-decisions-without-proposal'
-  ])
+  await applicationReadView.openApplicationByLink(applicationId)
+  await applicationReadView.assertDecisionDownloadPending(decision.type)
+
+  // NOTE: No need to wait for pending async jobs as this is synchronous (unlike the normal flow of users creating
+  // decisions that would trigger PDF generation as an async job).
+  await createDecisionPdf(decisionId)
 
   await applicationReadView.openApplicationByLink(applicationId)
-  await applicationReadView.assertDecisionDownloadPending('DAYCARE')
-
-  await runPendingAsyncJobs()
-  await t.eval(() => location.reload())
-  await applicationReadView.assertDecisionAvailableForDownload('DAYCARE')
+  await applicationReadView.assertDecisionAvailableForDownload(decision.type)
 })

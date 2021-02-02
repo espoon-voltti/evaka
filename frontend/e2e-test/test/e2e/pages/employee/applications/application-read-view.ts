@@ -32,10 +32,10 @@ export default class ApplicationReadView {
   }
 
   async assertDecisionDownloadPending(type: DecisionType) {
-    const downloadLink = Selector(
+    const downloadPendingTxt = Selector(
       `[data-qa="application-decision-${type}"]`
     ).find('[data-qa="application-decision-download-pending"]')
-    await t.expect(downloadLink.exists).ok()
+    await t.expect(downloadPendingTxt.exists).ok()
   }
 
   async openApplicationByLink(id: UUID) {
