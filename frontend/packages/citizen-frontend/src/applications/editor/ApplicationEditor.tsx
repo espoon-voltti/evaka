@@ -248,7 +248,14 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
           />
         )
       case 'PRESCHOOL':
-        return <ErrorSegment title={'Hakemustyyppiä ei ole vielä toteutettu'} />
+        return (
+          <ApplicationVerificationViewDaycare
+            application={apiData}
+            formData={formData}
+            type="PRESCHOOL"
+            closeVerification={() => setVerifying(false)}
+          />
+        )
       case 'CLUB':
         return <ErrorSegment title={'Hakemustyyppiä ei ole vielä toteutettu'} />
     }

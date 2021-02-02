@@ -59,33 +59,37 @@ export default React.memo(function ServiceNeedSection({
                 .withoutUrgency}
         </span>
 
-        <Label>
-          {t.applications.editor.verification.serviceNeed.attachments.label}
-        </Label>
-        <span>
-          {formData.serviceNeed.urgencyAttachments.length > 0 ? (
-            <AttachmentList>
-              {formData.serviceNeed.urgencyAttachments.map((file) => (
-                <li key={file.id}>
-                  <span className="attachment-icon">
-                    <FontAwesomeIcon icon={faFile} />
-                  </span>
-                  <Gap horizontal size={'xs'} />
-                  <AttachmentDownload
-                    href={`/api/application/attachments/${file.id}/download`}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    {file.name}
-                  </AttachmentDownload>
-                </li>
-              ))}
-            </AttachmentList>
-          ) : (
-            t.applications.editor.verification.serviceNeed.attachments
-              .withoutAttachments
-          )}
-        </span>
+        {formData.serviceNeed.urgent && (
+          <>
+            <Label>
+              {t.applications.editor.verification.serviceNeed.attachments.label}
+            </Label>
+            <span>
+              {formData.serviceNeed.urgencyAttachments.length > 0 ? (
+                <AttachmentList>
+                  {formData.serviceNeed.urgencyAttachments.map((file) => (
+                    <li key={file.id}>
+                      <span className="attachment-icon">
+                        <FontAwesomeIcon icon={faFile} />
+                      </span>
+                      <Gap horizontal size={'xs'} />
+                      <AttachmentDownload
+                        href={`/api/application/attachments/${file.id}/download`}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        {file.name}
+                      </AttachmentDownload>
+                    </li>
+                  ))}
+                </AttachmentList>
+              ) : (
+                t.applications.editor.verification.serviceNeed.attachments
+                  .withoutAttachments
+              )}
+            </span>
+          </>
+        )}
       </ListGrid>
 
       <Gap size={'s'} />
@@ -124,33 +128,37 @@ export default React.memo(function ServiceNeedSection({
                 .withoutShiftCare}
         </span>
 
-        <Label>
-          {t.applications.editor.verification.serviceNeed.attachments.label}
-        </Label>
-        <span>
-          {formData.serviceNeed.shiftCareAttachments.length > 0 ? (
-            <AttachmentList>
-              {formData.serviceNeed.shiftCareAttachments.map((file) => (
-                <li key={file.id}>
-                  <span className="attachment-icon">
-                    <FontAwesomeIcon icon={faFile} />
-                  </span>
-                  <Gap horizontal size={'xs'} />
-                  <AttachmentDownload
-                    href={`/api/application/attachments/${file.id}/download`}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    {file.name}
-                  </AttachmentDownload>
-                </li>
-              ))}
-            </AttachmentList>
-          ) : (
-            t.applications.editor.verification.serviceNeed.attachments
-              .withoutAttachments
-          )}
-        </span>
+        {formData.serviceNeed.shiftCare && (
+          <>
+            <Label>
+              {t.applications.editor.verification.serviceNeed.attachments.label}
+            </Label>
+            <span>
+              {formData.serviceNeed.shiftCareAttachments.length > 0 ? (
+                <AttachmentList>
+                  {formData.serviceNeed.shiftCareAttachments.map((file) => (
+                    <li key={file.id}>
+                      <span className="attachment-icon">
+                        <FontAwesomeIcon icon={faFile} />
+                      </span>
+                      <Gap horizontal size={'xs'} />
+                      <AttachmentDownload
+                        href={`/api/application/attachments/${file.id}/download`}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        {file.name}
+                      </AttachmentDownload>
+                    </li>
+                  ))}
+                </AttachmentList>
+              ) : (
+                t.applications.editor.verification.serviceNeed.attachments
+                  .withoutAttachments
+              )}
+            </span>
+          </>
+        )}
       </ListGrid>
 
       <Gap size={'s'} />
@@ -176,13 +184,17 @@ export default React.memo(function ServiceNeedSection({
                 .withoutAssistanceNeed}
         </span>
 
-        <Label>
-          {
-            t.applications.editor.verification.serviceNeed.assistanceNeed
-              .description
-          }
-        </Label>
-        <span>{formData.serviceNeed.assistanceDescription}</span>
+        {formData.serviceNeed.assistanceNeeded && (
+          <>
+            <Label>
+              {
+                t.applications.editor.verification.serviceNeed.assistanceNeed
+                  .description
+              }
+            </Label>
+            <span>{formData.serviceNeed.assistanceDescription}</span>
+          </>
+        )}
       </ListGrid>
     </div>
   )

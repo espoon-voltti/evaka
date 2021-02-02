@@ -39,17 +39,25 @@ export default React.memo(function UnitPreferenceSection({
         <Label>{tLocal.child.streetAddress}</Label>
         <span>{formData.childStreet}</span>
 
-        <Label>{tLocal.child.hasFutureAddress}</Label>
-        <span>{formData.childFutureAddressExists}</span>
-
-        <Label>{tLocal.child.addressChangesAt}</Label>
-        <span>{formData.guardianMoveDate}</span>
-
-        <Label>{tLocal.child.newAddress}</Label>
+        <Label>{tLocal.child.isAddressChanging}</Label>
         <span>
-          {formData.childFutureStreet} {formData.childFuturePostalCode}{' '}
-          {formData.childFuturePostOffice}
+          {formData.childFutureAddressExists
+            ? tLocal.child.hasFutureAddress
+            : t.applications.editor.verification.no}
         </span>
+
+        {formData.childFutureAddressExists && (
+          <>
+            <Label>{tLocal.child.addressChangesAt}</Label>
+            <span>{formData.guardianMoveDate}</span>
+
+            <Label>{tLocal.child.newAddress}</Label>
+            <span>
+              {formData.childFutureStreet} {formData.childFuturePostalCode}{' '}
+              {formData.childFuturePostOffice}
+            </span>
+          </>
+        )}
       </ListGrid>
 
       <Gap size="m" />
@@ -68,45 +76,51 @@ export default React.memo(function UnitPreferenceSection({
 
       <Gap size="m" />
       <H3>{tLocal.secondGuardian.title}</H3>
-      <span>
-        {formData.guardianFirstName} {formData.guardianLastName}
-      </span>
+      <span>{tLocal.secondGuardian.info}</span>
 
       <Gap size="m" />
       <H3>{tLocal.fridgePartner.title}</H3>
-      <ListGrid
-        labelWidth={ApplicationDataGridLabelWidth}
-        rowGap="s"
-        columnGap="L"
-      >
-        <Label>{tLocal.fridgePartner.name}</Label>
-        <span>
-          {formData.otherPartnerFirstName} {formData.otherPartnerLastName}
-        </span>
+      {formData.otherPartnerExists ? (
+        <ListGrid
+          labelWidth={ApplicationDataGridLabelWidth}
+          rowGap="s"
+          columnGap="L"
+        >
+          <Label>{tLocal.fridgePartner.name}</Label>
+          <span>
+            {formData.otherPartnerFirstName} {formData.otherPartnerLastName}
+          </span>
 
-        <Label>{tLocal.fridgePartner.ssn}</Label>
-        <span>{formData.otherPartnerSSN}</span>
-      </ListGrid>
+          <Label>{tLocal.fridgePartner.ssn}</Label>
+          <span>{formData.otherPartnerSSN}</span>
+        </ListGrid>
+      ) : (
+        <span>{t.applications.editor.verification.no}</span>
+      )}
 
       <Gap size="m" />
       <H3>{tLocal.fridgeChildren.title}</H3>
-      {formData.otherChildren.map(
-        ({ firstName, lastName, socialSecurityNumber }) => (
-          <ListGrid
-            key={socialSecurityNumber}
-            labelWidth={ApplicationDataGridLabelWidth}
-            rowGap="s"
-            columnGap="L"
-          >
-            <Label>{tLocal.fridgeChildren.name}</Label>
-            <span>
-              {firstName} {lastName}
-            </span>
+      {formData.otherChildren.length > 0 ? (
+        formData.otherChildren.map(
+          ({ firstName, lastName, socialSecurityNumber }) => (
+            <ListGrid
+              key={socialSecurityNumber}
+              labelWidth={ApplicationDataGridLabelWidth}
+              rowGap="s"
+              columnGap="L"
+            >
+              <Label>{tLocal.fridgeChildren.name}</Label>
+              <span>
+                {firstName} {lastName}
+              </span>
 
-            <Label>{tLocal.fridgeChildren.ssn}</Label>
-            <span>{socialSecurityNumber}</span>
-          </ListGrid>
+              <Label>{tLocal.fridgeChildren.ssn}</Label>
+              <span>{socialSecurityNumber}</span>
+            </ListGrid>
+          )
         )
+      ) : (
+        <span>{tLocal.fridgeChildren.noOtherChildren}</span>
       )}
     </div>
   )

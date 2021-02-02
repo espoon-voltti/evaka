@@ -121,7 +121,8 @@ const en: Translations = {
       },
       verification: {
         title: {
-          DAYCARE: 'Verifying the application'
+          DAYCARE: 'Verifying the application',
+          PRESCHOOL: 'Esiopetushakemuksen tarkistaminen'
         },
         notYetSent:
           '<strong>The application has not yet been sent.</strong> Please check the information you provided and send the application by clicking "Send the application" button in the end of the form.',
@@ -205,7 +206,9 @@ const en: Translations = {
             name: 'Lapsen nimi',
             ssn: 'Lapsen henkilötunnus',
             streetAddress: 'Kotiosoite',
-            hasFutureAddress: 'Osoite muuttunut / muuttumassa',
+            isAddressChanging: 'Osoite muuttunut / muuttumassa',
+            hasFutureAddress:
+              'Väestörekisterissä oleva osoite on muuttunut/muuttumassa ',
             addressChangesAt: 'Muuttopäivämäärä',
             newAddress: 'Uusi osoite'
           },
@@ -236,7 +239,8 @@ const en: Translations = {
           fridgeChildren: {
             title: 'Samassa taloudessa asuvat alle 18-vuotiaat lapset',
             name: 'Lapsen nimi',
-            ssn: 'Henkilön henkilötunnus'
+            ssn: 'Henkilön henkilötunnus',
+            noOtherChildren: 'Ei muita lapsia'
           }
         }
       },

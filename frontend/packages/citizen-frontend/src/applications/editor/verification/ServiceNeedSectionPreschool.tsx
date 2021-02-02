@@ -150,13 +150,17 @@ export default React.memo(function ServiceNeedSectionPreschool({
                 .withoutAssistanceNeed}
         </span>
 
-        <Label>
-          {
-            t.applications.editor.verification.serviceNeed.assistanceNeed
-              .description
-          }
-        </Label>
-        <span>{formData.serviceNeed.assistanceDescription}</span>
+        {formData.serviceNeed.assistanceNeeded && (
+          <>
+            <Label>
+              {
+                t.applications.editor.verification.serviceNeed.assistanceNeed
+                  .description
+              }
+            </Label>
+            <span>{formData.serviceNeed.assistanceDescription}</span>
+          </>
+        )}
 
         {formData.serviceNeed.preparatory && (
           <>

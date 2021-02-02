@@ -118,11 +118,12 @@ export default {
       },
       verification: {
         title: {
-          DAYCARE: 'Varhaiskasvatushakemuksen tarkistaminen'
+          DAYCARE: 'Varhaiskasvatushakemuksen tarkistaminen',
+          PRESCHOOL: 'Esiopetushakemuksen tarkistaminen'
         },
         notYetSent:
           '<strong>Hakemusta ei ole vielä lähetetty.</strong> Tarkista antamasi tiedot ja lähetä sivun lopussa olevalla Lähetä hakemus-painikkeella.',
-        no: 'ei',
+        no: 'Ei',
         basics: {
           created: 'Hakemus luotu',
           modified: 'Hakemusta muokattu viimeksi'
@@ -202,7 +203,9 @@ export default {
             name: 'Lapsen nimi',
             ssn: 'Lapsen henkilötunnus',
             streetAddress: 'Kotiosoite',
-            hasFutureAddress: 'Osoite muuttunut / muuttumassa',
+            isAddressChanging: 'Osoite muuttunut / muuttumassa',
+            hasFutureAddress:
+              'Väestörekisterissä oleva osoite on muuttunut/muuttumassa ',
             addressChangesAt: 'Muuttopäivämäärä',
             newAddress: 'Uusi osoite'
           },
@@ -233,7 +236,8 @@ export default {
           fridgeChildren: {
             title: 'Samassa taloudessa asuvat alle 18-vuotiaat lapset',
             name: 'Lapsen nimi',
-            ssn: 'Henkilön henkilötunnus'
+            ssn: 'Henkilön henkilötunnus',
+            noOtherChildren: 'Ei muita lapsia'
           }
         }
       },

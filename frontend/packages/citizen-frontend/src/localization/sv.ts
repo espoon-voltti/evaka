@@ -122,7 +122,8 @@ const sv: Translations = {
       verification: {
         title: {
           DAYCARE:
-            'Var god och granska följande obligatoriska fält i blanketten'
+            'Var god och granska följande obligatoriska fält i blanketten',
+          PRESCHOOL: 'Esiopetushakemuksen tarkistaminen'
         },
         notYetSent:
           '<strong>Du har inte ännu skickat ansökan.</strong> Granska informationen du gett, och skicka ansökan med Skicka ansökan-knappen när du är färdig',
@@ -207,7 +208,9 @@ const sv: Translations = {
             name: 'Lapsen nimi',
             ssn: 'Lapsen henkilötunnus',
             streetAddress: 'Kotiosoite',
-            hasFutureAddress: 'Osoite muuttunut / muuttumassa',
+            isAddressChanging: 'Osoite muuttunut / muuttumassa',
+            hasFutureAddress:
+              'Väestörekisterissä oleva osoite on muuttunut/muuttumassa ',
             addressChangesAt: 'Muuttopäivämäärä',
             newAddress: 'Uusi osoite'
           },
@@ -238,7 +241,8 @@ const sv: Translations = {
           fridgeChildren: {
             title: 'Samassa taloudessa asuvat alle 18-vuotiaat lapset',
             name: 'Lapsen nimi',
-            ssn: 'Henkilön henkilötunnus'
+            ssn: 'Henkilön henkilötunnus',
+            noOtherChildren: 'Ei muita lapsia'
           }
         }
       },
