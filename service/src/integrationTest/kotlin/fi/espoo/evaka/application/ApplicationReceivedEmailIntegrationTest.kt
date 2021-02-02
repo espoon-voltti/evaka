@@ -35,7 +35,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import java.time.LocalDate
 import java.util.UUID
 
-class EmailResponseIntegrationTest : FullApplicationTest() {
+class ApplicationReceivedEmailIntegrationTest : FullApplicationTest() {
     @Autowired
     lateinit var asyncJobRunner: AsyncJobRunner
 
@@ -65,11 +65,11 @@ class EmailResponseIntegrationTest : FullApplicationTest() {
             resetDatabase(h)
             insertGeneralTestFixtures(h)
         }
-        MockEmailClient.applicationEmails.clear()
+        MockEmailClient.emails.clear()
     }
 
     @Test
-    fun `email is send after end user sends application`() {
+    fun `email is sent after end user sends application`() {
         jdbi.handle { h ->
             val applicationId = insertTestApplication(h = h, childId = testChild_1.id, guardianId = guardian.id, status = ApplicationStatus.CREATED)
             insertTestApplicationForm(
@@ -93,13 +93,13 @@ class EmailResponseIntegrationTest : FullApplicationTest() {
 
             asyncJobRunner.runPendingJobsSync()
 
-            val sentMails = MockEmailClient.applicationEmails
+            val sentMails = MockEmailClient.emails
             assertEquals(1, sentMails.size)
 
             val sentMail = sentMails[0]
             assertEquals(guardian.email, sentMail.toAddress)
-            assertEquals(guardian.id, sentMail.personId)
-            assertEquals("fi", sentMail.language)
+            assertEquals(guardian.id.toString(), sentMail.traceId)
+            assertEquals("Olemme vastaanottaneet hakemuksenne", sentMail.subject)
         }
     }
 
@@ -126,13 +126,13 @@ class EmailResponseIntegrationTest : FullApplicationTest() {
             assertApplicationIsSent(h, applicationId)
             asyncJobRunner.runPendingJobsSync(1)
 
-            val sentMails = MockEmailClient.applicationEmails
+            val sentMails = MockEmailClient.emails
             assertEquals(1, sentMails.size)
 
             val sentMail = sentMails[0]
             assertEquals(guardian.email, sentMail.toAddress)
-            assertEquals(guardian.id, sentMail.personId)
-            assertEquals("sv", sentMail.language)
+            assertEquals(guardian.id.toString(), sentMail.traceId)
+            assertEquals("Vi har tagit emot din ansökan", sentMail.subject)
         }
     }
 
@@ -167,12 +167,12 @@ class EmailResponseIntegrationTest : FullApplicationTest() {
             asyncJobRunner.runPendingJobsSync(1)
             assertEquals(0, asyncJobRunner.getPendingJobCount())
 
-            val sentMails = MockEmailClient.applicationEmails
+            val sentMails = MockEmailClient.emails
             assertEquals(1, sentMails.size)
 
             val sentMail = sentMails[0]
             assertEquals(guardian.email, sentMail.toAddress)
-            assertEquals(guardian.id, sentMail.personId)
+            assertEquals(guardian.id.toString(), sentMail.traceId)
         }
     }
 
@@ -194,7 +194,7 @@ class EmailResponseIntegrationTest : FullApplicationTest() {
             assertApplicationIsSent(h, applicationId)
             assertEquals(0, asyncJobRunner.getPendingJobCount())
 
-            val sentMails = MockEmailClient.applicationEmails
+            val sentMails = MockEmailClient.emails
 
             assertEquals(0, sentMails.size)
         }
@@ -222,7 +222,7 @@ class EmailResponseIntegrationTest : FullApplicationTest() {
             assertEquals(204, res.statusCode)
             assertApplicationIsSent(h, applicationId)
             assertEquals(0, asyncJobRunner.getPendingJobCount())
-            assertEquals(0, MockEmailClient.applicationEmails.size)
+            assertEquals(0, MockEmailClient.emails.size)
         }
     }
 
@@ -254,7 +254,7 @@ class EmailResponseIntegrationTest : FullApplicationTest() {
             assertApplicationIsSent(h, applicationId)
             assertEquals(0, asyncJobRunner.getPendingJobCount())
 
-            val sentMails = MockEmailClient.applicationEmails
+            val sentMails = MockEmailClient.emails
             assertEquals(0, sentMails.size)
         }
     }
@@ -284,7 +284,7 @@ class EmailResponseIntegrationTest : FullApplicationTest() {
 
             asyncJobRunner.runPendingJobsSync()
 
-            val sentMails = MockEmailClient.applicationEmails
+            val sentMails = MockEmailClient.emails
             assertEquals(0, sentMails.size)
         }
     }

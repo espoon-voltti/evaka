@@ -31,7 +31,7 @@ import fi.espoo.evaka.decision.DecisionService
 import fi.espoo.evaka.decision.DecisionType
 import fi.espoo.evaka.decision.getDecisionsByApplication
 import fi.espoo.evaka.decision.insertDecision
-import fi.espoo.evaka.emailclient.MockApplicationEmail
+import fi.espoo.evaka.emailclient.MockEmail
 import fi.espoo.evaka.emailclient.MockEmailClient
 import fi.espoo.evaka.identity.ExternalId
 import fi.espoo.evaka.identity.ExternalIdentifier
@@ -573,13 +573,13 @@ RETURNING id
     }
 
     @GetMapping("/application-emails")
-    fun getApplicationEmails(): ResponseEntity<List<MockApplicationEmail>> {
-        return ResponseEntity.ok(MockEmailClient.applicationEmails)
+    fun getApplicationEmails(): ResponseEntity<List<MockEmail>> {
+        return ResponseEntity.ok(MockEmailClient.emails)
     }
 
     @PostMapping("/application-emails/clean-up")
     fun cleanApplicationEmails(): ResponseEntity<Unit> {
-        MockEmailClient.applicationEmails.clear()
+        MockEmailClient.emails.clear()
         return ResponseEntity.ok().build()
     }
 
