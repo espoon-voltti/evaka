@@ -106,6 +106,7 @@ export function Filters({
         setValue={setFreeText}
         placeholder={searchPlaceholder}
       />
+      <Gap size="s" />
       <FilterColumns>
         <Column>{column1}</Column>
         <Column>{column2}</Column>

@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { Fragment, useContext, useEffect } from 'react'
-import styled from 'styled-components'
 import { Label } from '@evaka/lib-components/src/typography'
 import MultiSelect from '@evaka/lib-components/src/atoms/form/MultiSelect'
 import Radio from '@evaka/lib-components/src/atoms/form/Radio'
@@ -33,10 +32,6 @@ import { Loading } from '@evaka/lib-common/src/api'
 import { getAreas, getUnits } from '../../api/daycare'
 import { Gap } from '@evaka/lib-components/src/white-space'
 import { useTranslation } from '~state/i18n'
-
-const CustomGap = styled.div`
-  height: 52px;
-`
 
 export default React.memo(function ApplicationFilters() {
   const {
@@ -175,7 +170,6 @@ export default React.memo(function ApplicationFilters() {
       clearMargin={status === 'ALL' ? 0 : -40}
       column1={
         <>
-          <Gap size="s" />
           <AreaMultiSelect
             areas={availableAreas.getOrElse([])}
             selected={area}
@@ -207,7 +201,6 @@ export default React.memo(function ApplicationFilters() {
       }
       column2={
         <Fragment>
-          <Gap size="s" />
           <TransferApplicationsFilter
             selected={transferApplications}
             setSelected={setTransferApplications}
@@ -221,14 +214,13 @@ export default React.memo(function ApplicationFilters() {
       }
       column3={
         <Fragment>
-          <Gap size="s" />
           <ApplicationStatusFilter
             toggled={status}
             toggledAllStatuses={allStatuses}
             toggle={toggleStatus}
             toggleAllStatuses={toggleAllStatuses}
           />
-          <CustomGap />
+          <Gap size="XL" />
           <ApplicationDateFilter
             startDate={startDate}
             setStartDate={setStartDate}
