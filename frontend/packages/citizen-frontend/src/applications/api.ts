@@ -138,8 +138,8 @@ export async function getDuplicateApplications(
     `/citizen/applications/duplicates/${childId}`
   )
   return Object.fromEntries(
-    Object.entries(data).map(([type, value]) => [type.toLowerCase(), value])
-  ) as Record<ApplicationType, boolean> // FIXME
+    Object.entries(data).map(([type, value]) => [type, value])
+  ) as Record<ApplicationType, boolean>
 }
 
 export async function saveAttachment(
