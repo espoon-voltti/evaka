@@ -352,19 +352,21 @@ const en: Translations = {
         secondGuardianInfo:
           'Second guardian information is automatically fetched from VTJ',
         secondGuardianNotFound:
-          'Väestötietojärjestelmästä saatujen tietojen mukaan lapsella ei ole toista huoltajaa',
+          'Based on information from the national Population Information System (VTJ) the child does not have a second guardian.',
         secondGuardianInfoPreschoolSeparated:
-          'Toisen huoltajan tiedot haetaan automaattisesti väestötietojärjestelmästä. Tietojemme mukaan lapsen toinen huoltaja asuu eri osoitteessa. Esiopetukseen ilmoittautumisesta tulee sopia yhdessä toisen huoltajan kanssa.',
+          'Information about other guardian is automatically fetched from the national Population Information System. According to it, the other guardian lives in a different address. Guardians need to agree on applying to early education.',
         secondGuardianAgreementStatus: {
           label:
-            'Oletteko sopineet hakemuksen tekemisestä yhdessä toisen huoltajan kanssa?',
-          AGREED: 'Olemme yhdessä sopineet hakemuksen tekemisestä.',
-          NOT_AGREED: 'Emme ole voineet sopia hakemuksen tekemisestä yhdessä.',
+            'Have you agreed about the application together with the second guardian?',
+          AGREED:
+            'We have agreed with the other guardian about this application.',
+          NOT_AGREED:
+            'We have not agreed with the other guardian about this application.',
           RIGHT_TO_GET_NOTIFIED:
-            'Toisella huoltajalla on vain tiedonsaantioikeus.'
+            'The other guardian has only the right to get notified about the placement.'
         },
-        secondGuardianPhone: 'Toisen huoltajan puhelinnumero',
-        secondGuardianEmail: 'Toisen huoltajan sähköpostiosoite',
+        secondGuardianPhone: "Other guardian's phone number",
+        secondGuardianEmail: "Other guardian's email",
         otherPartnerTitle:
           'Spouse or cohabiting partner (not a guardian) living in the same household',
         otherPartnerCheckboxLabel:
