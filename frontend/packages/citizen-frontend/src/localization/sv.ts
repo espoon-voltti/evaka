@@ -549,7 +549,7 @@ const sv: Translations = {
   validationErrors: {
     required: 'Värde saknas',
     requiredSelection: 'Ingenting är valt',
-    format: 'Ange rätt format\n',
+    format: 'Ange rätt format',
     ssn: 'Ogiltigt personbeteckning',
     phone: 'Ogiltigt telefonnummer',
     email: 'Ogiltig e-postadress',

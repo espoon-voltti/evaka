@@ -120,6 +120,7 @@ class ClubApplicationSerializerTest {
             dueDate = LocalDate.now().plusMonths(1),
             guardianId = guardianId,
             otherGuardianId = null,
+            otherGuardianLivesInSameAddress = null,
             modifiedDate = OffsetDateTime.now(),
             sentDate = LocalDate.now(),
             childRestricted = true,
