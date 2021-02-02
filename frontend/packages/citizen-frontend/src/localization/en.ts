@@ -351,6 +351,20 @@ const en: Translations = {
         secondGuardianInfoTitle: 'Second guardian information',
         secondGuardianInfo:
           'Second guardian information is automatically fetched from VTJ',
+        secondGuardianNotFound:
+          'Väestötietojärjestelmästä saatujen tietojen mukaan lapsella ei ole toista huoltajaa',
+        secondGuardianInfoPreschoolSeparated:
+          'Toisen huoltajan tiedot haetaan automaattisesti väestötietojärjestelmästä. Tietojemme mukaan lapsen toinen huoltaja asuu eri osoitteessa. Esiopetukseen ilmoittautumisesta tulee sopia yhdessä toisen huoltajan kanssa.',
+        secondGuardianAgreementStatus: {
+          label:
+            'Oletteko sopineet hakemuksen tekemisestä yhdessä toisen huoltajan kanssa?',
+          AGREED: 'Olemme yhdessä sopineet hakemuksen tekemisestä.',
+          NOT_AGREED: 'Emme ole voineet sopia hakemuksen tekemisestä yhdessä.',
+          RIGHT_TO_GET_NOTIFIED:
+            'Toisella huoltajalla on vain tiedonsaantioikeus.'
+        },
+        secondGuardianPhone: 'Toisen huoltajan puhelinnumero',
+        secondGuardianEmail: 'Toisen huoltajan sähköpostiosoite',
         otherPartnerTitle:
           'Spouse or cohabiting partner (not a guardian) living in the same household',
         otherPartnerCheckboxLabel:
@@ -535,6 +549,7 @@ const en: Translations = {
   },
   validationErrors: {
     required: 'Value missing',
+    requiredSelection: 'Please select one of the options',
     format: 'Give value in correct format',
     ssn: 'Invalid person identification number',
     phone: 'Invalid telephone number',

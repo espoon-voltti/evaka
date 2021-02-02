@@ -80,7 +80,11 @@ class ApplicationControllerCitizen(
     ): ResponseEntity<ApplicationDetails> {
         Audit.ApplicationRead.log(targetId = user.id, objectId = applicationId)
         user.requireOneOfRoles(UserRole.END_USER)
-        val application = db.read { fetchApplicationDetails(it.handle, applicationId) }
+
+        val application = db.transaction { tx ->
+            fetchApplicationDetailsWithCurrentOtherGuardianInfo(user, tx, personService, applicationId)
+        }
+
         return if (application?.guardianId == user.id && !application.hideFromGuardian)
             ResponseEntity.ok(application)
         else

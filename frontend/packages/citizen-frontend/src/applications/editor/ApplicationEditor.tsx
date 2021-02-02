@@ -79,14 +79,14 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
   const [submitting, setSubmitting] = useState<boolean>(false)
 
   const [errors, setErrors] = useState<ApplicationFormDataErrors>(
-    validateApplication(apiData.type, formData)
+    validateApplication(apiData, formData)
   )
   useEffect(() => {
-    setErrors(validateApplication(apiData.type, formData))
+    setErrors(validateApplication(apiData, formData))
   }, [formData])
 
   const onVerify = () => {
-    setErrors(validateApplication(apiData.type, formData))
+    setErrors(validateApplication(apiData, formData))
     setVerificationRequested(true)
 
     if (applicationHasErrors(errors)) {
@@ -98,7 +98,7 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
   }
 
   const onSaveDraft = () => {
-    const reqBody = formDataToApiData(apiData.type, formData)
+    const reqBody = formDataToApiData(apiData, formData)
     setSubmitting(true)
     void saveApplicationDraft(apiData.id, reqBody).then((res) => {
       setSubmitting(false)
@@ -128,7 +128,7 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
   }
 
   const onSend = () => {
-    const reqBody = formDataToApiData(apiData.type, formData)
+    const reqBody = formDataToApiData(apiData, formData)
     setSubmitting(true)
     void updateApplication(apiData.id, reqBody).then((res) => {
       if (res.isFailure) {
@@ -170,7 +170,7 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
   }
 
   const onUpdate = () => {
-    const reqBody = formDataToApiData(apiData.type, formData)
+    const reqBody = formDataToApiData(apiData, formData)
     setSubmitting(true)
     void updateApplication(apiData.id, reqBody).then((res) => {
       if (res.isFailure) {

@@ -5,13 +5,14 @@ import {
   phone,
   regexp,
   required,
+  requiredSelection,
   ssn,
   TIME_REGEXP,
   validate,
   validDate
 } from '~form-validation'
 import { ApplicationFormData } from '~applications/editor/ApplicationFormData'
-import { ApplicationType } from '@evaka/lib-common/src/api-types/application/enums'
+import { ApplicationDetails } from '@evaka/lib-common/src/api-types/application/ApplicationDetails'
 
 export type ApplicationFormDataErrors = {
   [section in keyof ApplicationFormData]: ErrorsOf<ApplicationFormData[section]>
@@ -25,7 +26,11 @@ export const applicationHasErrors = (errors: ApplicationFormDataErrors) => {
 }
 
 export const validateApplication = (
-  type: ApplicationType,
+  {
+    type,
+    otherGuardianId,
+    otherGuardianLivesInSameAddress
+  }: ApplicationDetails,
   form: ApplicationFormData
 ): ApplicationFormDataErrors => {
   const requireFullFamily =
@@ -102,6 +107,26 @@ export const validateApplication = (
       guardianFuturePostOffice: form.contactInfo.guardianFutureAddressExists
         ? validate(form.contactInfo.guardianFuturePostOffice, required)
         : undefined,
+      otherGuardianAgreementStatus:
+        type === 'PRESCHOOL' &&
+        otherGuardianId &&
+        otherGuardianLivesInSameAddress === false
+          ? requiredSelection(form.contactInfo.otherGuardianAgreementStatus)
+          : undefined,
+      otherGuardianPhone:
+        type === 'PRESCHOOL' &&
+        otherGuardianId &&
+        otherGuardianLivesInSameAddress === false &&
+        form.contactInfo.otherGuardianAgreementStatus === 'NOT_AGREED'
+          ? phone(form.contactInfo.otherGuardianPhone)
+          : undefined,
+      otherGuardianEmail:
+        type === 'PRESCHOOL' &&
+        otherGuardianId &&
+        otherGuardianLivesInSameAddress === false &&
+        form.contactInfo.otherGuardianAgreementStatus === 'NOT_AGREED'
+          ? email(form.contactInfo.otherGuardianEmail)
+          : undefined,
       otherPartnerFirstName:
         requireFullFamily && form.contactInfo.otherPartnerExists
           ? validate(form.contactInfo.otherPartnerFirstName, required)

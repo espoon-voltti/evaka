@@ -72,6 +72,7 @@ export default React.memo(function ApplicationFormPreschool({
       />
 
       <ContactInfoSection
+        type={applicationType}
         formData={formData.contactInfo}
         updateFormData={(data) =>
           setFormData((old) =>
@@ -89,6 +90,13 @@ export default React.memo(function ApplicationFormPreschool({
         errors={errors.contactInfo}
         verificationRequested={verificationRequested}
         fullFamily={formData.serviceNeed.connectedDaycare}
+        otherGuardianStatus={
+          apiData.otherGuardianId
+            ? apiData.otherGuardianLivesInSameAddress
+              ? 'SAME_ADDRESS'
+              : 'DIFFERENT_ADDRESS'
+            : 'NO'
+        }
       />
 
       {formData.serviceNeed.connectedDaycare && (
