@@ -71,6 +71,7 @@ export default React.memo(function ApplicationFormClub({
       />
 
       <ContactInfoSection
+        type={applicationType}
         formData={formData.contactInfo}
         updateFormData={(data) =>
           setFormData((old) =>
@@ -88,6 +89,13 @@ export default React.memo(function ApplicationFormClub({
         errors={errors.contactInfo}
         verificationRequested={verificationRequested}
         fullFamily={false}
+        otherGuardianStatus={
+          apiData.otherGuardianId
+            ? apiData.otherGuardianLivesInSameAddress
+              ? 'SAME_ADDRESS'
+              : 'DIFFERENT_ADDRESS'
+            : 'NO'
+        }
       />
 
       <AdditionalDetailsSection

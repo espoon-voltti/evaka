@@ -112,6 +112,11 @@ export default class CitizenApplicationEditor {
         } else if (field === 'siblingBasis') {
           await this.setCheckbox(section, field, value)
           await t.click(Selector('[data-qa="other-sibling-icon"]'))
+        } else if (field === 'otherGuardianAgreementStatus') {
+          await t.click(
+            // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+            Selector(`[data-qa="otherGuardianAgreementStatus-${value}-icon"]`)
+          )
         } else if (
           data.contactInfo?.otherChildren &&
           field === 'otherChildren'

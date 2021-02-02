@@ -630,6 +630,7 @@ fun insertApplication(
         transferApplication = false,
         additionalDaycareApplication = false,
         otherGuardianId = null,
+        otherGuardianLivesInSameAddress = null,
         checkedByAdmin = false,
         hideFromGuardian = false,
         attachments = listOf()

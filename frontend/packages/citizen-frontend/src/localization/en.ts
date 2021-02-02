@@ -351,6 +351,22 @@ const en: Translations = {
         secondGuardianInfoTitle: 'Second guardian information',
         secondGuardianInfo:
           'Second guardian information is automatically fetched from VTJ',
+        secondGuardianNotFound:
+          'Based on information from the national Population Information System (VTJ) the child does not have a second guardian.',
+        secondGuardianInfoPreschoolSeparated:
+          'Information about other guardian is automatically fetched from the national Population Information System. According to it, the other guardian lives in a different address. Guardians need to agree on applying to early education.',
+        secondGuardianAgreementStatus: {
+          label:
+            'Have you agreed about the application together with the second guardian?',
+          AGREED:
+            'We have agreed with the other guardian about this application.',
+          NOT_AGREED:
+            'We have not agreed with the other guardian about this application.',
+          RIGHT_TO_GET_NOTIFIED:
+            'The other guardian has only the right to get notified about the placement.'
+        },
+        secondGuardianPhone: "Other guardian's phone number",
+        secondGuardianEmail: "Other guardian's email",
         otherPartnerTitle:
           'Spouse or cohabiting partner (not a guardian) living in the same household',
         otherPartnerCheckboxLabel:
@@ -535,6 +551,7 @@ const en: Translations = {
   },
   validationErrors: {
     required: 'Value missing',
+    requiredSelection: 'Please select one of the options',
     format: 'Give value in correct format',
     ssn: 'Invalid person identification number',
     phone: 'Invalid telephone number',

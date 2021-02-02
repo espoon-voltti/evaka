@@ -41,7 +41,8 @@ export interface ApplicationDetails {
   origin: ApplicationOrigin
   childId: string
   guardianId: string
-  otherGuardianId?: string
+  otherGuardianId: string | null
+  otherGuardianLivesInSameAddress: boolean | null
   childRestricted: boolean
   guardianRestricted: boolean
   checkedByAdmin: boolean

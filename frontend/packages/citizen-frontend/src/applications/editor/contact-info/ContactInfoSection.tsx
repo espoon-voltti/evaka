@@ -14,13 +14,16 @@ import GuardianSubSection from '~applications/editor/contact-info/GuardianSubSec
 import SecondGuardianSubSection from '~applications/editor/contact-info/SecondGuardianSubSection'
 import OtherPartnerSubSection from '~applications/editor/contact-info/OtherPartnerSubSection'
 import OtherChildrenSubSection from '~applications/editor/contact-info/OtherChildrenSubSection'
+import { ApplicationType } from '@evaka/lib-common/src/api-types/application/enums'
 
 export type ContactInfoSectionProps = {
+  type: ApplicationType
   formData: ContactInfoFormData
   updateFormData: (update: Partial<ContactInfoFormData>) => void
   errors: ApplicationFormDataErrors['contactInfo']
   verificationRequested: boolean
   fullFamily: boolean
+  otherGuardianStatus: 'NO' | 'SAME_ADDRESS' | 'DIFFERENT_ADDRESS'
 }
 
 export default React.memo(function ContactInfoSection(
@@ -39,8 +42,12 @@ export default React.memo(function ContactInfoSection(
       <ChildSubSection {...props} />
       <HorizontalLine />
       <GuardianSubSection {...props} />
-      <HorizontalLine />
-      <SecondGuardianSubSection />
+      {props.type !== 'CLUB' && (
+        <>
+          <HorizontalLine />
+          <SecondGuardianSubSection {...props} />
+        </>
+      )}
       {props.fullFamily && (
         <>
           <HorizontalLine />

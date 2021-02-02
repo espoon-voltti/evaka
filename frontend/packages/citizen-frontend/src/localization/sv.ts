@@ -352,6 +352,20 @@ const sv: Translations = {
         secondGuardianInfoTitle: 'Uppgifter om den andra vårdnadshavaren',
         secondGuardianInfo:
           'Den andra vårdnadshavarens information hämtas automatiskt från befolkningsinformationssystemet.',
+        secondGuardianNotFound:
+          'Baserat på information från VTJ har barnet ingen andra vårdnadshavare',
+        secondGuardianInfoPreschoolSeparated:
+          'Enligt våra uppgifter bor barnets andra vårdnadshavare på en annan adress. Du ska avtala om ansökan om småbarnspedagogik med en annan vårdnadshavare.',
+        secondGuardianAgreementStatus: {
+          label:
+            'Har du kommit överens om ansökan med den andra vårdnadshavaren?',
+          AGREED: 'Vi har tillsammans kommit överens att fylla i ansökan.',
+          NOT_AGREED: 'Vi har inte kunnat komma överens om ansökan.',
+          RIGHT_TO_GET_NOTIFIED:
+            'Den andra vårdnadshavaren har endast rätt att få uppgifter om barnet.'
+        },
+        secondGuardianPhone: 'Den andra vårdnadshavarens telefonnummer',
+        secondGuardianEmail: 'Den andra vårdnadshavarens e-postadress',
         otherPartnerTitle:
           'Maka/make bosatt i samma hushåll (icke vårdnadshavare)',
         otherPartnerCheckboxLabel:
@@ -534,7 +548,8 @@ const sv: Translations = {
   },
   validationErrors: {
     required: 'Värde saknas',
-    format: 'Ange rätt format\n',
+    requiredSelection: 'Ingenting är valt',
+    format: 'Ange rätt format',
     ssn: 'Ogiltigt personbeteckning',
     phone: 'Ogiltigt telefonnummer',
     email: 'Ogiltig e-postadress',

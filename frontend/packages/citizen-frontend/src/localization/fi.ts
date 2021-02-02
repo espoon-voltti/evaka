@@ -345,6 +345,20 @@ export default {
         secondGuardianInfoTitle: 'Toisen huoltajan tiedot',
         secondGuardianInfo:
           'Toisen huoltajan tiedot haetaan automaattisesti väestötietojärjestelmästä.',
+        secondGuardianNotFound:
+          'Väestötietojärjestelmästä saatujen tietojen mukaan lapsella ei ole toista huoltajaa',
+        secondGuardianInfoPreschoolSeparated:
+          'Toisen huoltajan tiedot haetaan automaattisesti väestötietojärjestelmästä. Tietojemme mukaan lapsen toinen huoltaja asuu eri osoitteessa. Esiopetukseen ilmoittautumisesta tulee sopia yhdessä toisen huoltajan kanssa.',
+        secondGuardianAgreementStatus: {
+          label:
+            'Oletteko sopineet hakemuksen tekemisestä yhdessä toisen huoltajan kanssa?',
+          AGREED: 'Olemme yhdessä sopineet hakemuksen tekemisestä.',
+          NOT_AGREED: 'Emme ole voineet sopia hakemuksen tekemisestä yhdessä.',
+          RIGHT_TO_GET_NOTIFIED:
+            'Toisella huoltajalla on vain tiedonsaantioikeus.'
+        },
+        secondGuardianPhone: 'Toisen huoltajan puhelinnumero',
+        secondGuardianEmail: 'Toisen huoltajan sähköpostiosoite',
         otherPartnerTitle:
           'Samassa taloudessa asuva avio- tai avopuoliso (ei huoltaja)',
         otherPartnerCheckboxLabel:
@@ -528,6 +542,7 @@ export default {
   },
   validationErrors: {
     required: 'Arvo puuttuu',
+    requiredSelection: 'Valinta puuttuu',
     format: 'Anna oikeassa muodossa',
     ssn: 'Virheellinen henkilötunnus',
     phone: 'Virheellinen numero',

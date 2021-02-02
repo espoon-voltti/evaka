@@ -543,6 +543,7 @@ fun fetchApplicationDetails(h: Handle, applicationId: UUID): ApplicationDetails?
                 childId = row.mapColumn("child_id"),
                 guardianId = row.mapColumn("guardian_id"),
                 otherGuardianId = row.mapColumn("other_guardian_id"),
+                otherGuardianLivesInSameAddress = null,
                 childRestricted = childRestricted,
                 guardianRestricted = guardianRestricted,
                 transferApplication = row.mapColumn("transferapplication"),

@@ -4,7 +4,7 @@ import {
   ApplicationDetails,
   ApplicationFormUpdate
 } from '@evaka/lib-common/src/api-types/application/ApplicationDetails'
-import { ApplicationType } from '@evaka/lib-common/src/api-types/application/enums'
+import { ApplicationGuardianAgreementStatus } from '@evaka/lib-common/src/api-types/application/enums'
 import { User } from '../../auth/state'
 
 export type ServiceNeedFormData = {
@@ -54,6 +54,9 @@ export type ContactInfoFormData = {
   guardianFutureStreet: string
   guardianFuturePostalCode: string
   guardianFuturePostOffice: string
+  otherGuardianAgreementStatus: ApplicationGuardianAgreementStatus | null
+  otherGuardianPhone: string
+  otherGuardianEmail: string
   otherPartnerExists: boolean
   otherPartnerFirstName: string
   otherPartnerLastName: string
@@ -222,6 +225,10 @@ export function apiDataToFormData(
         application.form.guardian.futureAddress?.postalCode ?? '',
       guardianFuturePostOffice:
         application.form.guardian.futureAddress?.postOffice ?? '',
+      otherGuardianAgreementStatus:
+        application.form.secondGuardian?.agreementStatus ?? null,
+      otherGuardianPhone: application.form.secondGuardian?.phoneNumber ?? '',
+      otherGuardianEmail: application.form.secondGuardian?.email ?? '',
       otherPartnerExists: application.form.otherPartner !== null,
       otherPartnerFirstName: application.form.otherPartner?.firstName ?? '',
       otherPartnerLastName: application.form.otherPartner?.lastName ?? '',
@@ -241,7 +248,11 @@ export function apiDataToFormData(
 }
 
 export function formDataToApiData(
-  type: ApplicationType,
+  {
+    type,
+    otherGuardianId,
+    otherGuardianLivesInSameAddress
+  }: ApplicationDetails,
   form: ApplicationFormData
 ): ApplicationFormUpdate {
   const fullFamily =
@@ -279,7 +290,23 @@ export function formDataToApiData(
       phoneNumber: form.contactInfo.guardianPhone,
       email: form.contactInfo.guardianEmail
     },
-    secondGuardian: null,
+    secondGuardian:
+      type === 'PRESCHOOL' &&
+      otherGuardianId &&
+      !otherGuardianLivesInSameAddress
+        ? {
+            agreementStatus:
+              form.contactInfo.otherGuardianAgreementStatus ?? 'NOT_AGREED',
+            phoneNumber:
+              form.contactInfo.otherGuardianAgreementStatus === 'NOT_AGREED'
+                ? form.contactInfo.otherGuardianPhone
+                : '',
+            email:
+              form.contactInfo.otherGuardianAgreementStatus === 'NOT_AGREED'
+                ? form.contactInfo.otherGuardianEmail
+                : ''
+          }
+        : null,
     otherPartner:
       fullFamily && form.contactInfo.otherPartnerExists
         ? {

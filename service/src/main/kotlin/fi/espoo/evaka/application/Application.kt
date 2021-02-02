@@ -4,9 +4,12 @@
 
 package fi.espoo.evaka.application
 
+import fi.espoo.evaka.pis.service.PersonService
 import fi.espoo.evaka.placement.PlacementPlanConfirmationStatus
 import fi.espoo.evaka.placement.PlacementPlanRejectReason
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.shared.auth.AuthenticatedUser
+import fi.espoo.evaka.shared.db.Database
 import java.time.Instant
 import java.time.LocalDate
 import java.time.OffsetDateTime
@@ -78,6 +81,7 @@ data class ApplicationDetails(
     val childId: UUID,
     val guardianId: UUID,
     val otherGuardianId: UUID?,
+    val otherGuardianLivesInSameAddress: Boolean?,
     val childRestricted: Boolean,
     val guardianRestricted: Boolean,
     val checkedByAdmin: Boolean,
@@ -173,3 +177,27 @@ data class CitizenApplicationSummary(
     val createdDate: OffsetDateTime,
     val modifiedDate: OffsetDateTime
 )
+
+fun fetchApplicationDetailsWithCurrentOtherGuardianInfo(
+    user: AuthenticatedUser,
+    tx: Database.Transaction,
+    personService: PersonService,
+    applicationId: UUID
+): ApplicationDetails? = fetchApplicationDetails(tx.handle, applicationId)
+    ?.let { application ->
+        application.copy(
+            otherGuardianId = personService.getOtherGuardian(tx, user, application.guardianId, application.childId)?.id
+        )
+    }
+    ?.let { application ->
+        application.copy(
+            otherGuardianLivesInSameAddress = application.otherGuardianId
+                ?.let { otherGuardianId ->
+                    personService.personsLiveInTheSameAddress(
+                        tx,
+                        application.guardianId,
+                        otherGuardianId
+                    )
+                }
+        )
+    }

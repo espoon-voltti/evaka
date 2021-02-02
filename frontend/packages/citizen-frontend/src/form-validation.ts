@@ -13,6 +13,7 @@ export const EMAIL_REGEXP = /^\S+@\S+$/
 
 export type ErrorKey =
   | 'required'
+  | 'requiredSelection'
   | 'format'
   | 'ssn'
   | 'phone'
@@ -25,6 +26,11 @@ export const required = (
   val: string,
   err: ErrorKey = 'required'
 ): ErrorKey | undefined => (val.trim().length === 0 ? err : undefined)
+
+export const requiredSelection = <T>(
+  val: T | null | undefined,
+  err: ErrorKey = 'requiredSelection'
+): ErrorKey | undefined => (val === null || val === undefined ? err : undefined)
 
 export const regexp = (
   val: string,

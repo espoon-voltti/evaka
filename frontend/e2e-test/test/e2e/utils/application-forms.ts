@@ -398,7 +398,8 @@ export const minimalPreschoolForm: {
       ]
     },
     contactInfo: {
-      guardianPhone: '(+358) 50-1234567'
+      guardianPhone: '(+358) 50-1234567',
+      otherGuardianAgreementStatus: 'AGREED'
     }
   },
   validateResult: (res) => {
@@ -414,7 +415,9 @@ export const minimalPreschoolForm: {
     assertEquals('(+358) 50-1234567', res.form.guardian.phoneNumber)
     assertBlank(res.form.guardian.email)
 
-    assertNull(res.form.secondGuardian)
+    assertEquals('AGREED', res.form.secondGuardian?.agreementStatus)
+    assertBlank(res.form.secondGuardian?.phoneNumber)
+    assertBlank(res.form.secondGuardian?.email)
 
     assertNull(res.form.otherPartner)
 
@@ -475,6 +478,9 @@ export const fullPreschoolForm: {
       guardianFutureAddressEqualsChild: true,
       guardianPhone: '(+358) 50-1234567',
       guardianEmail: 'johannes.karhula@example.com',
+      otherGuardianAgreementStatus: 'NOT_AGREED',
+      otherGuardianPhone: '1234567890',
+      otherGuardianEmail: 'g2@example.com',
       otherPartnerExists: true,
       otherPartnerFirstName: 'Heikki',
       otherPartnerLastName: 'Heppuli',
@@ -523,7 +529,9 @@ export const fullPreschoolForm: {
     assertEquals('(+358) 50-1234567', res.form.guardian.phoneNumber)
     assertEquals('johannes.karhula@example.com', res.form.guardian.email)
 
-    assertNull(res.form.secondGuardian)
+    assertEquals('NOT_AGREED', res.form.secondGuardian?.agreementStatus)
+    assertEquals('1234567890', res.form.secondGuardian?.phoneNumber)
+    assertEquals('g2@example.com', res.form.secondGuardian?.email)
 
     assertEquals('Heikki', res.form.otherPartner?.firstName)
     assertEquals('Heppuli', res.form.otherPartner?.lastName)
