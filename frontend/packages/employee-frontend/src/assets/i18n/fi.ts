@@ -217,7 +217,7 @@ export const fi = {
         count === 1 ? `${count} hakemus valittu` : `${count} hakemusta valittu`
     },
     distinctiveDetails: {
-      SECONDARY: 'Hae myös 2. ja 3. hakutoiveet'
+      SECONDARY: 'Näytä myös, jos yksikköön on haettu 2. tai 3. toiveena'
     },
     basisTooltip: {
       ADDITIONAL_INFO: 'Lisätietokentässä tekstiä',

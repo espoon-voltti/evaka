@@ -1085,9 +1085,6 @@ export function ApplicationDistinctionsFilter({
   const { i18n } = useTranslation()
   return (
     <Fragment>
-      <Label>
-        <LabelText>{i18n.applications.distinctions}</LabelText>
-      </Label>
       {disableSecondary ? (
         <Tooltip
           tooltipId={'application-distinctions-SECONDARY'}

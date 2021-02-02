@@ -188,6 +188,12 @@ export default React.memo(function ApplicationFilters() {
             onChange={changeUnits}
             dataQa={'unit-selector'}
           />
+          <Gap size="xs" />
+          <ApplicationDistinctionsFilter
+            toggle={toggleApplicationDistinctions}
+            toggled={distinctions}
+            disableSecondary={units.length === 0}
+          />
           <Gap size="L" />
           <ApplicationTypeFilter
             toggled={type}
@@ -210,11 +216,6 @@ export default React.memo(function ApplicationFilters() {
           <VoucherApplicationsFilter
             selected={voucherApplications}
             setSelected={setVoucherApplications}
-          />
-          <ApplicationDistinctionsFilter
-            toggle={toggleApplicationDistinctions}
-            toggled={distinctions}
-            disableSecondary={units.length === 0}
           />
         </Fragment>
       }
