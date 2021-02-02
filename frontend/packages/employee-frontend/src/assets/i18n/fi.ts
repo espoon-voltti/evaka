@@ -178,7 +178,14 @@ export const fi = {
         title: 'Siirtohakemukset',
         transferOnly: 'Näytä vain siirtohakemukset',
         hideTransfer: 'Piilota siirtohakemukset',
-        all: 'Kaikki'
+        all: 'Ei rajausta'
+      },
+      voucherFilter: {
+        title: 'Palvelusetelihakemukset',
+        firstChoice: 'Näytä jos 1. hakutoiveena',
+        allVoucher: 'Näytä kaikki palvelusetelihakemukset',
+        hideVoucher: 'Piilota palvelusetelihakemukset',
+        noFilter: 'Ei rajausta'
       },
       transfer: 'Siirtohakemus',
       paper: 'Paperihakemus',

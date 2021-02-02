@@ -6,6 +6,7 @@ import React, { Fragment, useContext, useEffect } from 'react'
 import styled from 'styled-components'
 import { Label } from '@evaka/lib-components/src/typography'
 import MultiSelect from '@evaka/lib-components/src/atoms/form/MultiSelect'
+import Radio from '@evaka/lib-components/src/atoms/form/Radio'
 import {
   Filters,
   ApplicationDistinctionsFilter,
@@ -24,7 +25,10 @@ import {
   ApplicationDistinctions,
   TransferApplicationsFilter
 } from '../common/Filters'
-import { ApplicationUIContext } from '../../state/application-ui'
+import {
+  ApplicationUIContext,
+  VoucherApplicationFilter
+} from '../../state/application-ui'
 import { Loading } from '@evaka/lib-common/src/api'
 import { getAreas, getUnits } from '../../api/daycare'
 import { Gap } from '@evaka/lib-components/src/white-space'
@@ -67,6 +71,8 @@ export default React.memo(function ApplicationFilters() {
     setDistinctions,
     transferApplications,
     setTransferApplications,
+    voucherApplications,
+    setVoucherApplications,
     setApplicationsResult
   } = useContext(ApplicationUIContext)
 
@@ -88,8 +94,6 @@ export default React.memo(function ApplicationFilters() {
       setDistinctions(distinctions.filter((v) => v !== 'SECONDARY'))
     }
   }, [units])
-
-  const ALL = 'All'
 
   const toggleBasis = (toggledBasis: ApplicationBasis) => () => {
     setApplicationsResult(Loading.of())
@@ -184,25 +188,29 @@ export default React.memo(function ApplicationFilters() {
             onChange={changeUnits}
             dataQa={'unit-selector'}
           />
-          <Gap size="m" />
-          <ApplicationBasisFilter toggled={basis} toggle={toggleBasis} />
-        </>
-      }
-      column2={
-        <Fragment>
-          <Gap size="s" />
+          <Gap size="L" />
           <ApplicationTypeFilter
             toggled={type}
             toggledPreschool={preschoolType}
             toggle={toggleApplicationType}
             togglePreschool={toggleApplicationPreschoolType}
           />
-          <CustomGap />
+          <Gap size="L" />
+          <ApplicationBasisFilter toggled={basis} toggle={toggleBasis} />
+        </>
+      }
+      column2={
+        <Fragment>
+          <Gap size="s" />
           <TransferApplicationsFilter
             selected={transferApplications}
             setSelected={setTransferApplications}
           />
-          <CustomGap />
+          <Gap size="XL" />
+          <VoucherApplicationsFilter
+            selected={voucherApplications}
+            setSelected={setVoucherApplications}
+          />
           <ApplicationDistinctionsFilter
             toggle={toggleApplicationDistinctions}
             toggled={distinctions}
@@ -264,3 +272,54 @@ const AreaMultiSelect = React.memo(function AreaMultiSelect({
     </>
   )
 })
+
+type VoucherApplicationsFilterProps = {
+  selected: VoucherApplicationFilter
+  setSelected: (v: VoucherApplicationFilter) => void
+}
+
+const VoucherApplicationsFilter = React.memo(
+  function VoucherApplicationsFilter({
+    selected,
+    setSelected
+  }: VoucherApplicationsFilterProps) {
+    const { i18n } = useTranslation()
+    return (
+      <>
+        <Label>{i18n.applications.list.voucherFilter.title}</Label>
+        <Gap size="xs" />
+        <Radio
+          dataQa="filter-voucher-first-choice"
+          label={i18n.applications.list.voucherFilter.firstChoice}
+          checked={selected === 'VOUCHER_FIRST_CHOICE'}
+          onChange={() => setSelected('VOUCHER_FIRST_CHOICE')}
+          small
+        />
+        <Gap size="xs" />
+        <Radio
+          dataQa="filter-voucher-all"
+          label={i18n.applications.list.voucherFilter.allVoucher}
+          checked={selected === 'VOUCHER_ONLY'}
+          onChange={() => setSelected('VOUCHER_ONLY')}
+          small
+        />
+        <Gap size="xs" />
+        <Radio
+          dataQa="filter-voucher-hide"
+          label={i18n.applications.list.voucherFilter.hideVoucher}
+          checked={selected === 'NO_VOUCHER'}
+          onChange={() => setSelected('NO_VOUCHER')}
+          small
+        />
+        <Gap size="xs" />
+        <Radio
+          dataQa="filter-voucher-no-filter"
+          label={i18n.applications.list.voucherFilter.noFilter}
+          checked={selected === undefined}
+          onChange={() => setSelected(undefined)}
+          small
+        />
+      </>
+    )
+  }
+)

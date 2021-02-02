@@ -97,6 +97,10 @@ enum class TransferApplicationFilter {
     TRANSFER_ONLY, NO_TRANSFER, ALL
 }
 
+enum class VoucherApplicationFilter {
+    VOUCHER_FIRST_CHOICE, VOUCHER_ONLY, NO_VOUCHER
+}
+
 @RestController
 @RequestMapping("/v2/applications")
 class ApplicationControllerV2(
@@ -180,7 +184,8 @@ class ApplicationControllerV2(
             required = false
         ) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) periodEnd: LocalDate?,
         @RequestParam(required = false) searchTerms: String?,
-        @RequestParam(required = false) transferApplications: TransferApplicationFilter?
+        @RequestParam(required = false) transferApplications: TransferApplicationFilter?,
+        @RequestParam(required = false) voucherApplications: VoucherApplicationFilter?
     ): ResponseEntity<ApplicationSummaries> {
         Audit.ApplicationSearch.log()
         user.requireOneOfRoles(UserRole.ADMIN, UserRole.FINANCE_ADMIN, UserRole.SERVICE_WORKER, UserRole.SPECIAL_EDUCATION_TEACHER)
@@ -208,6 +213,7 @@ class ApplicationControllerV2(
                 periodEnd = periodEnd,
                 searchTerms = searchTerms ?: "",
                 transferApplications = transferApplications ?: TransferApplicationFilter.ALL,
+                voucherApplications = voucherApplications,
                 authorizedUnits = acl.getAuthorizedUnits(user),
                 onlyAuthorizedToViewApplicationsWithAssistanceNeed = !user.hasOneOfRoles(UserRole.ADMIN, UserRole.FINANCE_ADMIN, UserRole.SERVICE_WORKER)
             )

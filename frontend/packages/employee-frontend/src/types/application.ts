@@ -11,6 +11,7 @@ import {
   PlacementPlanRejectReason
 } from '~types/unit'
 import { PlacementType } from '~types/child'
+import { VoucherApplicationFilter } from '~state/application-ui'
 import {
   ApplicationAttachment,
   ApplicationDetails
@@ -107,6 +108,7 @@ export interface ApplicationSearchParams {
   periodEnd?: string
   searchTerms?: string
   transferApplications?: string
+  voucherApplications: VoucherApplicationFilter
 }
 
 export type ApplicationSummaryStatus =
