@@ -70,29 +70,28 @@ fun createAndUpdateFeeData(db: Database.Connection, client: VardaClient, personS
             .filter { (it.firstName + it.lastName).isNotBlank() }
         if (guardians.isEmpty()) return@forEach
 
-        val feeData = vardaDecisionPeriods.flatMap { decisionPeriod ->
-            db.read {
-                getDecisionFeeData(it, childVardaId, decisionPeriod)
-                    .map { data -> decisionPeriod.id to data }
+        val (newFeeData, updatedFeeData) = vardaDecisionPeriods
+            .flatMap { decisionPeriod ->
+                db.read {
+                    getDecisionFeeData(it, childVardaId, decisionPeriod)
+                        .map { data -> decisionPeriod.id to data }
+                }
+            }
+            .partition { (_, data) -> data.vardaId == null }
+
+        logger.info { "Varda: Updating ${updatedFeeData.size} updated fee data" }
+        updatedFeeData.forEach { (_, data) ->
+            val richData = baseToFeeData(data, guardians, client.getChildUrl(data.vardaChildId))
+            client.updateFeeData(data.vardaId!!, richData).let { success ->
+                if (success) db.transaction { updateFeeDataUploadedAt(it, data.vardaId, Instant.now()) }
             }
         }
 
-        logger.info { "Varda: Sending ${feeData.size} new and updated fee data" }
-        feeData.forEach { (vardaDecisionId, data) ->
+        logger.info { "Varda: Sending ${newFeeData.size} new fee data" }
+        newFeeData.forEach { (vardaDecisionId, data) ->
             val richData = baseToFeeData(data, guardians, client.getChildUrl(data.vardaChildId))
-            when (data.vardaId) {
-                is Long -> {
-                    client.updateFeeData(data.vardaId, richData).let { success ->
-                        if (success) db.transaction { updateFeeDataUploadedAt(it, data.vardaId, Instant.now()) }
-                    }
-                }
-                else -> {
-                    client.createFeeData(richData)?.let { (vardaId) ->
-                        db.transaction {
-                            insertFeeDataUpload(it, vardaId, data.feeDecisionId, vardaDecisionId, childVardaId)
-                        }
-                    }
-                }
+            client.createFeeData(richData)?.let { (vardaId) ->
+                db.transaction { insertFeeDataUpload(it, vardaId, data.feeDecisionId, vardaDecisionId, childVardaId) }
             }
         }
     }
