@@ -275,7 +275,7 @@ class DecisionService(
                     path = "/",
                     bytes = it.getBytes()
                 )
-            } ?: error("Decision S3 url is not set for $decisionId.")
+            } ?: throw NotFound("Decision S3 URL is not set for $decisionId. Document generation is still in progress.")
     }
 
     private fun calculateDecisionFileName(tx: Database.Read, decision: Decision, lang: String): String {

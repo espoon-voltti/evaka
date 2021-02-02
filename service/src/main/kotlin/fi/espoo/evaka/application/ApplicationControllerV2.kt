@@ -262,7 +262,7 @@ class ApplicationControllerV2(
             ResponseEntity.ok(
                 ApplicationResponse(
                     application = application,
-                    decisions = decisions.map { it.copy(documentUri = null) },
+                    decisions = decisions,
                     guardians = guardians,
                     attachments = application.attachments
                 )

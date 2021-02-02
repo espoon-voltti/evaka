@@ -6,7 +6,7 @@ import React from 'react'
 import { Link } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 
-import { faFilePdf, faGavel } from '@evaka/lib-icons'
+import { faFilePdf, faGavel, fasExclamationTriangle } from '@evaka/lib-icons'
 import { Label } from '@evaka/lib-components/src/typography'
 import CollapsibleSection from '@evaka/lib-components/src/molecules/CollapsibleSection'
 import ListGrid from '@evaka/lib-components/src/layout/ListGrid'
@@ -29,6 +29,9 @@ const isBlocked = (decisions: Decision[], decision: Decision) =>
       (d.type === 'PRESCHOOL' || d.type === 'PREPARATORY_EDUCATION') &&
       (d.status === 'ACCEPTED' || d.status === 'REJECTED')
   )
+
+const isDownloadAvailable = (decision: Decision) =>
+  decision.documentUri !== null
 
 type Props = {
   applicationId: UUID
@@ -57,16 +60,26 @@ export default React.memo(function ApplicationDecisionsSection({
               <Label>{i18n.application.decisions.type}</Label>
               <FixedSpaceRow>
                 <span>{i18n.application.decisions.types[decision.type]}</span>
-                <a
-                  href={`/api/internal/decisions2/${decision.id}/download`}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  <FixedSpaceRow spacing={'xs'} alignItems={'center'}>
-                    <FontAwesomeIcon icon={faFilePdf} />
-                    <span>{i18n.application.decisions.download}</span>
-                  </FixedSpaceRow>
-                </a>
+                {isDownloadAvailable(decision) ? (
+                  <a
+                    href={`/api/internal/decisions2/${decision.id}/download`}
+                    target="_blank"
+                    rel="noreferrer"
+                    data-qa="application-decision-download-available"
+                  >
+                    <FixedSpaceRow spacing={'xs'} alignItems={'center'}>
+                      <FontAwesomeIcon icon={faFilePdf} />
+                      <span>{i18n.application.decisions.download}</span>
+                    </FixedSpaceRow>
+                  </a>
+                ) : (
+                  <span data-qa="application-decision-download-pending">
+                    <FixedSpaceRow spacing={'xs'} alignItems={'center'}>
+                      <FontAwesomeIcon icon={fasExclamationTriangle} />
+                      <span>{i18n.application.decisions.downloadPending}</span>
+                    </FixedSpaceRow>
+                  </span>
+                )}
               </FixedSpaceRow>
 
               <Label>{i18n.application.decisions.num}</Label>

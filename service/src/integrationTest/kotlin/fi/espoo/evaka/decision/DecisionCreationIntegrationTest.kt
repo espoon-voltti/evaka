@@ -386,6 +386,7 @@ WHERE id = :unitId
             assertNull(row.resolved)
             assertNull(row.resolvedBy)
             assertNotNull(row.sentDate)
+            assertNotNull(row.documentUri)
         }
         assertEquals(ApplicationStatus.WAITING_CONFIRMATION, getApplicationStatus(h, applicationId))
 
