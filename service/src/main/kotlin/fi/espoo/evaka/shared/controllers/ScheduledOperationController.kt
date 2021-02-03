@@ -5,6 +5,7 @@
 package fi.espoo.evaka.shared.controllers
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.application.cancelOutdatedTransferApplications
 import fi.espoo.evaka.application.removeOldDrafts
 import fi.espoo.evaka.attachment.AttachmentsController
 import fi.espoo.evaka.dvv.DvvModificationsBatchRefreshService
@@ -14,11 +15,14 @@ import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.ScheduleKoskiUploads
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.varda.VardaUpdateService
+import mu.KotlinLogging
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
+
+private val logger = KotlinLogging.logger { }
 
 @RestController
 @RequestMapping("/scheduled")
@@ -60,6 +64,16 @@ class ScheduledOperationController(
     fun removeOldDraftApplications(db: Database.Connection): ResponseEntity<Unit> {
         Audit.ApplicationsDeleteDrafts.log()
         db.transaction { removeOldDrafts(it, attachmentsController::deleteAttachment) }
+        return ResponseEntity.noContent().build()
+    }
+
+    @PostMapping("/application/cancel-outdated-transfer-applications")
+    fun cancelOutdatedTransferApplications(db: Database.Connection): ResponseEntity<Unit> {
+        Audit.ApplicationsCancelOutdatedTransferApplications.log()
+        val canceledApplications = db.transaction { it.cancelOutdatedTransferApplications() }
+        logger.info {
+            "Canceled ${canceledApplications.size} outdated transfer applications (ids: ${canceledApplications.joinToString(", ")})"
+        }
         return ResponseEntity.noContent().build()
     }
 

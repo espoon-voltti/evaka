@@ -5,16 +5,30 @@
 package fi.espoo.evaka.shared.controllers
 
 import fi.espoo.evaka.FullApplicationTest
+import fi.espoo.evaka.application.ApplicationStatus
+import fi.espoo.evaka.application.ApplicationType
 import fi.espoo.evaka.application.fetchApplicationDetails
+import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
 import fi.espoo.evaka.attachment.getApplicationAttachments
 import fi.espoo.evaka.insertApplication
 import fi.espoo.evaka.insertGeneralTestFixtures
+import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.dev.insertTestApplication
+import fi.espoo.evaka.shared.dev.insertTestApplicationForm
+import fi.espoo.evaka.shared.dev.insertTestPlacement
+import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.test.validDaycareApplication
+import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_5
+import fi.espoo.evaka.testChild_1
+import fi.espoo.evaka.testDaycare
+import org.jdbi.v3.core.kotlin.mapTo
 import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -73,5 +87,235 @@ class ScheduledOperationControllerIntegrationTest : FullApplicationTest() {
             .bind("created", created)
             .bind("id", applicationId)
             .execute()
+    }
+
+    @Test
+    fun `a transfer application for a child without any placements is cancelled`() {
+        val preferredStartDate = LocalDate.now().plusMonths(1)
+        val applicationId = createTransferApplication(ApplicationType.DAYCARE, preferredStartDate)
+
+        scheduledOperationController.cancelOutdatedTransferApplications(db)
+
+        val applicationStatus = getApplicationStatus(applicationId)
+        assertEquals(ApplicationStatus.CANCELLED, applicationStatus)
+    }
+
+    @Test
+    fun `a normal application for a child without any placements is not cancelled`() {
+        val preferredStartDate = LocalDate.now().plusMonths(1)
+        val applicationId = createNormalApplication(ApplicationType.DAYCARE, preferredStartDate)
+
+        scheduledOperationController.cancelOutdatedTransferApplications(db)
+
+        val applicationStatus = getApplicationStatus(applicationId)
+        assertEquals(ApplicationStatus.SENT, applicationStatus)
+    }
+
+    @Test
+    fun `a daycare transfer application for a child with a daycare placement is not cancelled`() {
+        val preferredStartDate = LocalDate.now().plusMonths(1)
+        val applicationId = createTransferApplication(ApplicationType.DAYCARE, preferredStartDate)
+        val dateRange = FiniteDateRange(preferredStartDate, preferredStartDate.plusMonths(1))
+        createPlacement(PlacementType.DAYCARE, dateRange)
+
+        scheduledOperationController.cancelOutdatedTransferApplications(db)
+
+        val applicationStatus = getApplicationStatus(applicationId)
+        assertEquals(ApplicationStatus.SENT, applicationStatus)
+    }
+
+    @Test
+    fun `a daycare transfer application for a child with a future daycare placement is not cancelled`() {
+        val preferredStartDate = LocalDate.now().plusMonths(1)
+        val applicationId = createTransferApplication(ApplicationType.DAYCARE, preferredStartDate)
+        val dateRange = FiniteDateRange(preferredStartDate.plusMonths(1), preferredStartDate.plusMonths(2))
+        createPlacement(PlacementType.DAYCARE, dateRange)
+
+        scheduledOperationController.cancelOutdatedTransferApplications(db)
+
+        val applicationStatus = getApplicationStatus(applicationId)
+        assertEquals(ApplicationStatus.SENT, applicationStatus)
+    }
+
+    @Test
+    fun `a daycare transfer application for a child with a preschool placement is cancelled`() {
+        val preferredStartDate = LocalDate.now().plusMonths(1)
+        val applicationId = createTransferApplication(ApplicationType.DAYCARE, preferredStartDate)
+        val dateRange = FiniteDateRange(preferredStartDate, preferredStartDate.plusMonths(1))
+        createPlacement(PlacementType.PRESCHOOL, dateRange)
+
+        scheduledOperationController.cancelOutdatedTransferApplications(db)
+
+        val applicationStatus = getApplicationStatus(applicationId)
+        assertEquals(ApplicationStatus.CANCELLED, applicationStatus)
+    }
+
+    @Test
+    fun `a daycare transfer application for a child with a past daycare placement is cancelled`() {
+        val preferredStartDate = LocalDate.now().minusMonths(2)
+        val applicationId = createTransferApplication(ApplicationType.DAYCARE, preferredStartDate)
+        val dateRange = FiniteDateRange(preferredStartDate.minusMonths(1), LocalDate.now().minusMonths(1))
+        createPlacement(PlacementType.DAYCARE, dateRange)
+
+        scheduledOperationController.cancelOutdatedTransferApplications(db)
+
+        val applicationStatus = getApplicationStatus(applicationId)
+        assertEquals(ApplicationStatus.CANCELLED, applicationStatus)
+    }
+
+    @Test
+    fun `a daycare transfer application for a child with a daycare placement that ends today is not cancelled`() {
+        val preferredStartDate = LocalDate.now().minusMonths(2)
+        val applicationId = createTransferApplication(ApplicationType.DAYCARE, preferredStartDate)
+        val dateRange = FiniteDateRange(preferredStartDate.minusMonths(1), LocalDate.now())
+        createPlacement(PlacementType.DAYCARE, dateRange)
+
+        scheduledOperationController.cancelOutdatedTransferApplications(db)
+
+        val applicationStatus = getApplicationStatus(applicationId)
+        assertEquals(ApplicationStatus.SENT, applicationStatus)
+    }
+
+    @Test
+    fun `a daycare transfer application for a child with a past daycare placement that ended yesterday is cancelled`() {
+        val preferredStartDate = LocalDate.now().minusMonths(2)
+        val applicationId = createTransferApplication(ApplicationType.DAYCARE, preferredStartDate)
+        val dateRange = FiniteDateRange(preferredStartDate.minusMonths(1), LocalDate.now().minusDays(1))
+        createPlacement(PlacementType.DAYCARE, dateRange)
+
+        scheduledOperationController.cancelOutdatedTransferApplications(db)
+
+        val applicationStatus = getApplicationStatus(applicationId)
+        assertEquals(ApplicationStatus.CANCELLED, applicationStatus)
+    }
+
+    @Test
+    fun `a preschool transfer application for a child with a preschool placement is not cancelled`() {
+        val preferredStartDate = LocalDate.now().minusMonths(2)
+        val applicationId = createTransferApplication(ApplicationType.PRESCHOOL, preferredStartDate)
+        val dateRange = FiniteDateRange(preferredStartDate.minusMonths(1), LocalDate.now().plusMonths(1))
+        createPlacement(PlacementType.PRESCHOOL, dateRange)
+
+        scheduledOperationController.cancelOutdatedTransferApplications(db)
+
+        val applicationStatus = getApplicationStatus(applicationId)
+        assertEquals(ApplicationStatus.SENT, applicationStatus)
+    }
+
+    @Test
+    fun `a preschool daycare transfer application for a child with a preschool placement is cancelled`() {
+        val preferredStartDate = LocalDate.now().minusMonths(2)
+        val applicationId =
+            createTransferApplication(ApplicationType.PRESCHOOL, preferredStartDate, preschoolDaycare = true)
+        val dateRange = FiniteDateRange(preferredStartDate.minusMonths(1), LocalDate.now().plusMonths(1))
+        createPlacement(PlacementType.PRESCHOOL, dateRange)
+
+        scheduledOperationController.cancelOutdatedTransferApplications(db)
+
+        val applicationStatus = getApplicationStatus(applicationId)
+        assertEquals(ApplicationStatus.CANCELLED, applicationStatus)
+    }
+
+    @Test
+    fun `a preschool transfer application for a child with a preparatory placement is not cancelled`() {
+        val preferredStartDate = LocalDate.now().minusMonths(2)
+        val applicationId = createTransferApplication(ApplicationType.PRESCHOOL, preferredStartDate)
+        val dateRange = FiniteDateRange(preferredStartDate.minusMonths(1), LocalDate.now().plusMonths(1))
+        createPlacement(PlacementType.PREPARATORY, dateRange)
+
+        scheduledOperationController.cancelOutdatedTransferApplications(db)
+
+        val applicationStatus = getApplicationStatus(applicationId)
+        assertEquals(ApplicationStatus.SENT, applicationStatus)
+    }
+
+    @Test
+    fun `a preschool transfer application for a child with a preschool daycare placement is not cancelled`() {
+        val preferredStartDate = LocalDate.now().minusMonths(2)
+        val applicationId = createTransferApplication(ApplicationType.PRESCHOOL, preferredStartDate)
+        val dateRange = FiniteDateRange(preferredStartDate.minusMonths(1), LocalDate.now().plusMonths(1))
+        createPlacement(PlacementType.PRESCHOOL_DAYCARE, dateRange)
+
+        scheduledOperationController.cancelOutdatedTransferApplications(db)
+
+        val applicationStatus = getApplicationStatus(applicationId)
+        assertEquals(ApplicationStatus.SENT, applicationStatus)
+    }
+
+    private fun createTransferApplication(
+        type: ApplicationType,
+        preferredStartDate: LocalDate,
+        preschoolDaycare: Boolean = false,
+        childId: UUID = testChild_1.id
+    ): UUID {
+        return db.transaction { tx ->
+            val applicationId = insertTestApplication(
+                h = tx.handle,
+                status = ApplicationStatus.SENT,
+                childId = childId,
+                guardianId = testAdult_1.id,
+                transferApplication = true
+            )
+            insertTestApplicationForm(
+                h = tx.handle,
+                applicationId = applicationId,
+                document = DaycareFormV0.fromApplication2(validDaycareApplication).copy(
+                    type = type,
+                    preferredStartDate = preferredStartDate,
+                    connectedDaycare = preschoolDaycare
+                )
+            )
+            applicationId
+        }
+    }
+
+    private fun createNormalApplication(
+        type: ApplicationType,
+        preferredStartDate: LocalDate,
+        preparatory: Boolean = false,
+        childId: UUID = testChild_1.id
+    ): UUID {
+        return db.transaction { tx ->
+            val applicationId = insertTestApplication(
+                h = tx.handle,
+                status = ApplicationStatus.SENT,
+                childId = childId,
+                guardianId = testAdult_1.id
+            )
+            insertTestApplicationForm(
+                h = tx.handle,
+                applicationId = applicationId,
+                document = DaycareFormV0.fromApplication2(validDaycareApplication).let { form ->
+                    form.copy(
+                        type = type,
+                        preferredStartDate = preferredStartDate,
+                        careDetails = form.careDetails.copy(preparatory = preparatory)
+                    )
+                }
+            )
+            applicationId
+        }
+    }
+
+    private fun createPlacement(type: PlacementType, dateRange: FiniteDateRange, childId: UUID = testChild_1.id) {
+        db.transaction {
+            insertTestPlacement(
+                it.handle,
+                childId = childId,
+                type = type,
+                startDate = dateRange.start,
+                endDate = dateRange.end,
+                unitId = testDaycare.id
+            )
+        }
+    }
+
+    private fun getApplicationStatus(applicationId: UUID): ApplicationStatus {
+        return db.read {
+            it.createQuery("SELECT status FROM application WHERE id = :id")
+                .bind("id", applicationId)
+                .mapTo<ApplicationStatus>()
+                .first()
+        }
     }
 }
