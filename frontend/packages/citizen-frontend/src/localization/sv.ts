@@ -314,7 +314,11 @@ const sv: Translations = {
             ]
           },
           clubTerm: 'Kerhon toimintakausi',
-          label: 'Önskat inledningsdatum',
+          label: {
+            DAYCARE: 'Toivottu aloituspäivä',
+            PRESCHOOL: 'Aloituspäivä elokuussa',
+            CLUB: 'Kerhon toivottu aloituspäivä'
+          },
           noteOnDelay: 'Behandlingstiden för ansökningen är 4 månader.',
           instructions:
             'Det är möjligt att senarelägga det önskade startdatumet så länge ansökan inte har tagits upp till behandling. Därefter kan du ändra det önskade startdatumet genom att kontakta småbarnspedagogikens servicehänvisning (tfn 09 816 27600).',
@@ -333,14 +337,9 @@ const sv: Translations = {
         },
         urgent: {
           label: 'Ansökningen är brådskande',
-          message: {
-            title: 'Ansökningen är brådskande',
-            text:
-              'Om behovet av småbarnspedagogisk verksamhet beror på att du har blivit sysselsatt eller att du har fått en studieplats på kort varsel, bör du ansöka om plats senast två veckor före behovet börjar. Behandlingstiden börjar från den dag då du lämnat in ett intyg från arbets- eller studieplatsen till barninvalskoordinatorerna (dagis@esbo.fi).'
-          },
           attachmentsMessage: {
             text:
-              'Om behovet av en plats inom småbarnspedagogiken beror på att du plötsligt fått sysselsättning eller börjat studera, ska platsen sökas senast två veckor innan behovet börjar. Bifoga till ansökan ett arbets- eller studieintyg av båda vårdnadshavarna som bor i samma hushåll. Om du inte kan lägga till bilagor till ansökan elektroniskt, skicka dem per post till adressen Småbarnspedagogikens servicehänvisning, PB 3125, 02070 Esbo stad. Behandlingstiden på två veckor börjar när vi har tagit emot ansökan och bilagorna som behövs.',
+              'Om behovet av en plats inom småbarnspedagogiken beror på att du plötsligt fått sysselsättning eller börjat studera, ska platsen sökas <strong>senast två veckor innan</strong> behovet börjar. <strong>Bifoga till ansökan ett arbets- eller studieintyg</strong> av båda vårdnadshavarna som bor i samma hushåll. Om du inte kan lägga till bilagor till ansökan elektroniskt, skicka dem per post till adressen Småbarnspedagogikens servicehänvisning, PB 3125, 02070 Esbo stad. Behandlingstiden på två veckor börjar när vi har tagit emot ansökan och bilagorna som behövs.',
             subtitle:
               'Lägg här till ett arbets- eller studieintyg av båda föräldrarna.'
           }
@@ -406,14 +405,39 @@ const sv: Translations = {
         title: 'Ansökningsönskemål',
         siblingBasis: {
           title: 'Ansökan på basis av syskonrelationer',
-          p1:
-            'Målet är att placera syskon i samma enhet om inte familjen önskar annat. Som syskon betraktas barn som är folkbokförda på samma adress. Om du ansöker om en plats för syskon, som inte ännu har plats inom småbarnspedagogik, skriv uppgiften i tilläggsuppgifter.',
-          p2:
-            'Fyll i dessa uppgifter endast om du vill hänvisa till barnets syskonrelationer.',
-          checkbox:
-            'Jag ansöker i första hand om plats i den enheten där barnets syskon redan har en plats.',
-          radioLabel:
-            'Välj ett syskon som du söker till samma förskoleutbildningsplats',
+          info: {
+            DAYCARE: `
+            <p>Lapsella on sisarusperuste samaan varhaiskasvatuspaikkaan, jossa hänen sisaruksensa on päätöksentekohetkellä. Sisarukseksi katsotaan kaikki samassa osoitteessa asuvat lapset. Tavoitteena on sijoittaa sisarukset samaan varhaiskasvatuspaikkaan perheen niin toivoessa. Jos haet paikkaa sisaruksille, jotka eivät vielä ole varhaiskasvatuksessa, kirjoita tieto lisätietokenttään.</p>
+            <p>Täytä nämä tiedot vain, jos käytät sisarusperustetta, sekä valitse alla olevissa hakutoiveissa ensisijaiseksi toiveeksi sama varhaiskasvatusyksikkö, jossa lapsen sisarus on.</p>
+            `,
+            PRESCHOOL: `
+            <p>Esioppilaalla on sisarusperuste:</p>
+            <ol type="a">
+              <li>Oman palvelualueen päiväkotiin, jossa esioppilaalla on sisarus, jolla on päätöksentekohetkellä ja tulevana esiopetusvuonna paikka esiopetuspäiväkodissa.</li>
+              <li>Kunnan osoittamaan lähikouluun, jota esioppilaan sisarus käy tulevana lukuvuonna.</li>
+            </ol>
+            <p>Huoltaja voi valita, käyttääkö hän sisarusperustetta kohdan a vai b mukaisesti, jos esioppilaalla on sisarusperuste molempien kohtien mukaan. Valinta ilmoitetaan alla. Sisarukseksi katsotaan kaikki samassa osoitteessa asuvat lapset.</p>
+            <p>Täytä nämä tiedot vain, jos käytät sisarusperustetta, sekä valitse alla olevissa hakutoiveissa ensisijaiseksi toiveeksi sama yksikkö, jossa lapsen sisarus on.</p>
+            `,
+            CLUB: `
+            <p>Sisarukseksi katsotaan kaikki samassa osoitteessa asuvat lapset. Tavoitteena on sijoittaa sisarukset samaan kerhoryhmään perheen niin toivoessa.</p>
+            <p>Täytä nämä tiedot vain, jos käytät sisarusperustetta, sekä valitse alla olevissa hakutoiveissa ensisijaiseksi toiveeksi sama kerho, jossa lapsen sisarus on.</p>
+            `
+          },
+          checkbox: {
+            DAYCARE:
+              'Haen ensisijaisesti samaan paikkaan, jossa lapsen sisarus on jo varhaiskasvatuksessa.',
+            PRESCHOOL:
+              'Haen ensisijaisesti samaan paikkaan, jossa lapsen sisarus on.',
+            CLUB:
+              'Haen ensisijaisesti paikkaa samasta kerhoryhmästä, jossa lapsen sisarus on.'
+          },
+          radioLabel: {
+            DAYCARE:
+              'Valitse sisarus, jonka kanssa haet samaan varhaiskasvatuspaikkaan',
+            PRESCHOOL: 'Valitse sisarus, jonka kanssa haet samaan paikkaan',
+            CLUB: 'Valitse sisarus, jonka kanssa haet samaan kerhoryhmään'
+          },
           otherSibling: 'Annat syskon',
           names: 'Syskonets för- och efternamn',
           namesPlaceholder: 'För- och efternamn',
@@ -424,10 +448,17 @@ const sv: Translations = {
           title: 'Ansökningsönskemål',
           startDateMissing:
             'För att välja önskade enheter, välj det första önskade startdatumet i avsnittet om "Servicebehov"',
-          p1:
-            'Du kan ange 1-3 platser i önskad ordning. Önskemålen garanterar inte en plats i den önskade enheten, men möjligheterna att få en önskad plats ökar om du anger flera alternativ.',
-          p2:
-            'Om du i det tidigare fältet har hänvisat till barnets syskonrelationer ska du som förstahandsönskemål ange den enhet där syskonet redan har en plats.',
+          info: {
+            DAYCARE: `
+            <p>Voit hakea 1-3 paikkaa toivomassasi järjestyksessä. <strong>Hakutoiveet eivät takaa paikkaa</strong> toivotussa yksikössä, mutta mahdollisuus toivotun paikan saamiseen kasvaa antamalla useamman vaihtoehdon.</p>
+            <p>Näet eri varhaiskasvatusyksiköiden sijainnin valitsemalla ‘Yksiköt kartalla’.</p>`,
+            PRESCHOOL: `
+            <p>Voit hakea 1-3 paikka paikkaa toivomassasi järjestyksessä. <strong>Hakutoiveet eivät takaa paikkaa</strong> toivotussa yksikössä, mutta mahdollisuus toivotun paikan saamiseen kasvaa antamalla useamman vaihtoehdon.</p>
+            <p>Näet eri yksiköiden sijainnin valitsemalla ‘Yksiköt kartalla’.</p>`,
+            CLUB: `
+            <p>Voit hakea 1-3 paikkaa toivomassasi järjestyksessä. <strong>Hakutoiveet eivät takaa paikkaa</strong> toivotussa kerhossa, mutta mahdollisuus toivotun paikan saamiseen kasvaa antamalla useamman vaihtoehdon.</p>
+            <p>Näet eri kerhojen sijainnin valitsemalla ‘Yksiköt kartalla’.</p>`
+          },
           mapLink: 'Enheter på kartan',
           languageFilter: {
             label: 'Enhetens språk:',
@@ -456,8 +487,13 @@ const sv: Translations = {
       },
       fee: {
         title: 'Avgiften för småbarnspedagogik',
-        info:
-          'Klientavgiften inom den kommunala småbarnspedagogiken är en procentandel av familjens bruttoinkomster. Avgiften beror på familjens storlek och inkomster samt småbarnspedagogikens dagliga längd, från ingen avgift till en månadsavgift på högst 288 euro per barn. Familjen ska lämna in en utredning över sina bruttoinkomster på en särskild blankett, senast inom två veckor från det att barnet har inlett småbarnspedagogiken.',
+        info: {
+          DAYCARE:
+            'Kunnallisen varhaiskasvatuksen asiakasmaksut määräytyvät prosenttiosuutena perheen bruttotuloista. Maksut vaihtelevat perheen koon ja tulojen sekä varhaiskasvatusajan mukaan maksuttomasta varhaiskasvatuksesta enintään 288 euron kuukausimaksuun lasta kohden. Perhe toimittaa tuloselvityksen bruttotuloistaan tuloselvityslomakkeella, viimeistään kahden viikon kuluessa siitä, kun lapsi on aloittanut varhaiskasvatuksessa.',
+          PRESCHOOL:
+            'Esiopetus on maksutonta, mutta siihen liittyvä varhaiskasvatus on maksullista. Jos lapsi osallistuu liittyvään varhaiskasvatukseen, perhe toimittaa tuloselvityksen bruttotuloistaan tuloselvityslomakkeella viimeistään kahden viikon kuluessa siitä, kun lapsi on aloittanut varhaiskasvatuksessa.',
+          CLUB: ''
+        },
         emphasis:
           '<strong>Om familjen samtycker till den högsta avgiften behövs ingen inkomstutredning.</strong>',
         checkbox:

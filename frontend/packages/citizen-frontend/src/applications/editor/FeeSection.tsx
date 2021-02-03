@@ -10,8 +10,10 @@ import { FeeFormData } from '~applications/editor/ApplicationFormData'
 import EditorSection from '~applications/editor/EditorSection'
 import { ApplicationFormDataErrors } from '~applications/editor/validations'
 import { getErrorCount } from '~form-validation'
+import { ApplicationType } from '@evaka/lib-common/src/api-types/application/enums'
 
 type Props = {
+  applicationType: ApplicationType
   formData: FeeFormData
   updateFormData: (v: Partial<FeeFormData>) => void
   errors: ApplicationFormDataErrors['fee']
@@ -19,6 +21,7 @@ type Props = {
 }
 
 export default React.memo(function FeeSection({
+  applicationType,
   formData,
   updateFormData,
   errors,
@@ -34,7 +37,7 @@ export default React.memo(function FeeSection({
     >
       <P
         dangerouslySetInnerHTML={{
-          __html: t.applications.editor.fee.info
+          __html: t.applications.editor.fee.info[applicationType]
         }}
       />
       <P
