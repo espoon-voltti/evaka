@@ -4,6 +4,7 @@
 
 import org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import org.springframework.boot.gradle.tasks.bundling.BootJar
 
 buildscript {
     repositories {
@@ -59,16 +60,16 @@ val ktlint by configurations.creating
 
 dependencies {
     // Kotlin + core
-    implementation(platform(kotlin("bom")))
-    implementation(kotlin("stdlib-jdk8"))
+    api(platform(kotlin("bom")))
+    api(kotlin("stdlib-jdk8"))
 
     // Logging
     implementation("io.github.microutils:kotlin-logging:${Version.kotlinLogging}")
     implementation("net.rakugakibox.spring.boot:logback-access-spring-boot-starter:${Version.logbackSpringBoot}")
 
     // Spring
-    implementation(platform("org.springframework.boot:spring-boot-dependencies:${Version.springBoot}"))
-    implementation("org.springframework.boot:spring-boot-starter")
+    api(platform("org.springframework.boot:spring-boot-dependencies:${Version.springBoot}"))
+    api("org.springframework.boot:spring-boot-starter")
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("org.springframework.boot:spring-boot-starter-aop")
     implementation("org.springframework.boot:spring-boot-starter-jdbc")
@@ -165,6 +166,14 @@ tasks.withType<KotlinCompile> {
         jvmTarget = Version.java
         allWarningsAsErrors = name != "compileIntegrationTestKotlin"
     }
+}
+
+tasks.getByName<Jar>("jar") {
+    enabled = true
+}
+
+tasks.getByName<BootJar>("bootJar") {
+    archiveClassifier.set("boot")
 }
 
 tasks {

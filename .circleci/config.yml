@@ -768,7 +768,7 @@ jobs:
       - run:
           name: Unzip executable
           working_directory: *workspace_service
-          command: unzip -q build/libs/*.jar -d target
+          command: unzip -q build/libs/evaka-service-boot.jar -d target
       - load_base_image
       - build_docker_image:
           image: evaka/service
