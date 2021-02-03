@@ -119,7 +119,8 @@ export default {
       verification: {
         title: {
           DAYCARE: 'Varhaiskasvatushakemuksen tarkistaminen',
-          PRESCHOOL: 'Esiopetushakemuksen tarkistaminen'
+          PRESCHOOL: 'Esiopetushakemuksen tarkistaminen',
+          CLUB: 'Kerhohakemuksen tarkistaminen'
         },
         notYetSent:
           '<strong>Hakemusta ei ole vielä lähetetty.</strong> Tarkista antamasi tiedot ja lähetä sivun lopussa olevalla Lähetä hakemus-painikkeella.',
@@ -139,6 +140,12 @@ export default {
         },
         serviceNeed: {
           title: 'Palveluntarve',
+          wasOnDaycare: 'Varhaiskasvatuksessa ennen kerhoa',
+          wasOnDaycareYes:
+            'Lapsi, jolle haetaan kerhopaikkaa, on varhaiskasvatuksessa ennen kerhon toivottua aloituspäivää.',
+          wasOnClubCare: 'Kerhossa edellisenä toimintakautena',
+          wasOnClubCareYes:
+            'Lapsi on ollut kerhossa edellisen toimintakauden aikana.',
           connectedDaycare: {
             title: 'Esiopetukseen liittyvän varhaiskasvatuksen tarve',
             label: 'Liittyvä varhaiskasvatus',
@@ -151,7 +158,11 @@ export default {
             withoutAttachments: 'Ei liitetty, lähetetään postilla'
           },
           startDate: {
-            title: 'Varhaiskasvatuksen aloitus',
+            title: {
+              DAYCARE: 'Varhaiskasvatuksen aloitus',
+              PRESCHOOL: 'Varhaiskasvatuksen aloitus',
+              CLUB: 'Kerhon aloitus'
+            },
             preferredStartDate: 'Toivottu aloituspäivä',
             urgency: 'Hakemus on kiireellinen',
             withUrgency: 'Kyllä',

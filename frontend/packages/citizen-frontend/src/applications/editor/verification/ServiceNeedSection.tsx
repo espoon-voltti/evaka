@@ -12,7 +12,10 @@ import { Gap } from '@evaka/lib-components/src/white-space'
 import ServiceNeedConnectedDaycare from './ServiceNeedConnectedDaycare'
 import ServiceNeedPreparatory from './ServiceNeedPreparatory'
 import { ApplicationType } from '@evaka/lib-common/src/api-types/application/enums'
-import {ServiceNeedUrgency, ServiceNeedShiftCare} from './ServiceNeedAttachments'
+import {
+  ServiceNeedUrgency,
+  ServiceNeedShiftCare
+} from './ServiceNeedAttachments'
 import ServiceNeedPartTime from './ServiceNeedPartTime'
 
 type ServiceNeedSectionProps = {
@@ -31,7 +34,9 @@ export default React.memo(function ServiceNeedSectionPreschool({
       <H2>{t.applications.editor.verification.serviceNeed.title}</H2>
 
       <Gap size={'s'} />
-      <H3>{t.applications.editor.verification.serviceNeed.startDate.title}</H3>
+      <H3>
+        {t.applications.editor.verification.serviceNeed.startDate.title[type]}
+      </H3>
       <ListGrid
         labelWidth={ApplicationDataGridLabelWidth}
         rowGap="s"
@@ -46,6 +51,28 @@ export default React.memo(function ServiceNeedSectionPreschool({
         <span>{formData.serviceNeed.preferredStartDate}</span>
 
         {type === 'DAYCARE' && <ServiceNeedUrgency formData={formData} />}
+        {type === 'CLUB' && (
+          <>
+            <Label>
+              {t.applications.editor.verification.serviceNeed.wasOnDaycare}
+            </Label>
+            <span>
+              {formData.serviceNeed.wasOnDaycare
+                ? t.applications.editor.verification.serviceNeed.wasOnDaycareYes
+                : t.applications.editor.verification.no}
+            </span>
+
+            <Label>
+              {t.applications.editor.verification.serviceNeed.wasOnClubCare}
+            </Label>
+            <span>
+              {formData.serviceNeed.wasOnClubCare
+                ? t.applications.editor.verification.serviceNeed
+                    .wasOnClubCareYes
+                : t.applications.editor.verification.no}
+            </span>
+          </>
+        )}
       </ListGrid>
 
       <Gap size={'s'} />
@@ -61,7 +88,9 @@ export default React.memo(function ServiceNeedSectionPreschool({
       >
         {type === 'DAYCARE' && <ServiceNeedPartTime formData={formData} />}
 
-        {(type === 'DAYCARE' || type === 'PRESCHOOL') && <ServiceNeedShiftCare formData={formData}/>}
+        {(type === 'DAYCARE' || type === 'PRESCHOOL') && (
+          <ServiceNeedShiftCare formData={formData} />
+        )}
       </ListGrid>
 
       <Gap size={'s'} />

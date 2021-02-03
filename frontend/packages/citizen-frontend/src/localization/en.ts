@@ -122,7 +122,8 @@ const en: Translations = {
       verification: {
         title: {
           DAYCARE: 'Verifying the application',
-          PRESCHOOL: 'Esiopetushakemuksen tarkistaminen'
+          PRESCHOOL: 'Esiopetushakemuksen tarkistaminen',
+          CLUB: 'Kerhohakemuksen tarkistaminen'
         },
         notYetSent:
           '<strong>The application has not yet been sent.</strong> Please check the information you provided and send the application by clicking "Send the application" button in the end of the form.',
@@ -142,6 +143,12 @@ const en: Translations = {
         },
         serviceNeed: {
           title: 'Palveluntarve',
+          wasOnDaycare: 'Varhaiskasvatuksessa ennen kerhoa',
+          wasOnDaycareYes:
+            'Lapsi, jolle haetaan kerhopaikkaa, on varhaiskasvatuksessa ennen kerhon toivottua aloituspäivää.',
+          wasOnClubCare: 'Kerhossa edellisenä toimintakautena',
+          wasOnClubCareYes:
+            'Lapsi on ollut kerhossa edellisen toimintakauden aikana.',
           connectedDaycare: {
             title: 'Esiopetukseen liittyvän varhaiskasvatuksen tarve',
             label: 'Liittyvä varhaiskasvatus',
@@ -154,7 +161,11 @@ const en: Translations = {
             withoutAttachments: 'Ei liitetty, lähetetään postilla'
           },
           startDate: {
-            title: 'Varhaiskasvatuksen aloitus',
+            title: {
+              DAYCARE: 'Varhaiskasvatuksen aloitus',
+              PRESCHOOL: 'Varhaiskasvatuksen aloitus',
+              CLUB: 'Kerhon aloitus'
+            },
             preferredStartDate: 'Toivottu aloituspäivä',
             urgency: 'Hakemus on kiireellinen',
             withUrgency: 'Kyllä',
