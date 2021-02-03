@@ -172,6 +172,8 @@ class FamilyInitializerService(
             } catch (e: UnableToExecuteStatementException) {
                 when (e.psqlCause()?.sqlState) {
                     PSQLState.UNIQUE_VIOLATION.state, PSQLState.EXCLUSION_VIOLATION.state -> {
+                        val constraint = e.psqlCause()?.serverErrorMessage?.constraint ?: "-"
+                        logger.warn("Creating conflict parentship between $headOfChildId and $childId (conflicting constraint is $constraint)")
                         tx.handle.createParentship(
                             childId = childId,
                             headOfChildId = headOfChildId,
@@ -211,6 +213,8 @@ class FamilyInitializerService(
             } catch (e: UnableToExecuteStatementException) {
                 when (e.psqlCause()?.sqlState) {
                     PSQLState.UNIQUE_VIOLATION.state, PSQLState.EXCLUSION_VIOLATION.state -> {
+                        val constraint = e.psqlCause()?.serverErrorMessage?.constraint ?: "-"
+                        logger.warn("Creating conflict partnership between $personId1 and $personId2 (conflicting constraint is $constraint)")
                         tx.handle.createPartnership(
                             personId1 = personId1,
                             personId2 = personId2,
