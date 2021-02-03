@@ -47,7 +47,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
         const redirectUri = `${window.location.pathname}${window.location.search}${window.location.hash}`
         return `/api/application/auth/saml/login?RelayState=${encodeURIComponent(
           redirectUri
-        )}`
+        )}&locale=${encodeURIComponent(this.$i18n.locale)}`
       },
       logoutAddress() {
         return `/api/application/auth/saml/logout`
