@@ -134,6 +134,7 @@ fun fetchApplicationSummaries(
     periodEnd: LocalDate?,
     searchTerms: String = "",
     transferApplications: TransferApplicationFilter,
+    voucherApplications: VoucherApplicationFilter?,
     authorizedUnits: AclAuthorization,
     onlyAuthorizedToViewApplicationsWithAssistanceNeed: Boolean
 ): ApplicationSummaries {
@@ -195,6 +196,12 @@ fun fetchApplicationSummaries(
             TransferApplicationFilter.TRANSFER_ONLY -> "a.transferApplication"
             TransferApplicationFilter.NO_TRANSFER -> "NOT a.transferApplication"
             else -> null
+        },
+        when (voucherApplications) {
+            VoucherApplicationFilter.VOUCHER_FIRST_CHOICE -> "d.provider_type = 'PRIVATE_SERVICE_VOUCHER'"
+            VoucherApplicationFilter.VOUCHER_ONLY -> "f.preferredUnits && (SELECT array_agg(id) FROM daycare WHERE provider_type = 'PRIVATE_SERVICE_VOUCHER')"
+            VoucherApplicationFilter.NO_VOUCHER -> "NOT f.preferredUnits && (SELECT array_agg(id) FROM daycare WHERE provider_type = 'PRIVATE_SERVICE_VOUCHER')"
+            null -> null
         }
     )
 

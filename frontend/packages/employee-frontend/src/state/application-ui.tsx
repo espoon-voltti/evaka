@@ -33,7 +33,6 @@ import { ApplicationsSearchResponse } from '~types/application'
 // Some checkbox handling can be copied from git history
 // when needed if it still belongs in context.
 
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
 interface UIState {
   applicationsResult: Result<ApplicationsSearchResponse>
   setApplicationsResult: (result: Result<ApplicationsSearchResponse>) => void
@@ -72,7 +71,15 @@ interface UIState {
   setDistinctions: (distinctions: ApplicationDistinctions[]) => void
   transferApplications: TransferApplicationFilter
   setTransferApplications: Dispatch<SetStateAction<TransferApplicationFilter>>
+  voucherApplications: VoucherApplicationFilter
+  setVoucherApplications: Dispatch<SetStateAction<VoucherApplicationFilter>>
 }
+
+export type VoucherApplicationFilter =
+  | 'VOUCHER_FIRST_CHOICE'
+  | 'VOUCHER_ONLY'
+  | 'NO_VOUCHER'
+  | undefined
 
 const defaultState: UIState = {
   applicationsResult: Loading.of(),
@@ -111,7 +118,9 @@ const defaultState: UIState = {
   distinctions: [],
   setDistinctions: () => undefined,
   transferApplications: 'ALL',
-  setTransferApplications: () => undefined
+  setTransferApplications: () => undefined,
+  voucherApplications: undefined,
+  setVoucherApplications: () => undefined
 }
 
 export const ApplicationUIContext = createContext<UIState>(defaultState)
@@ -152,6 +161,10 @@ export const ApplicationUIContextProvider = React.memo(
       transferApplications,
       setTransferApplications
     ] = useState<TransferApplicationFilter>(defaultState.transferApplications)
+    const [
+      voucherApplications,
+      setVoucherApplications
+    ] = useState<VoucherApplicationFilter>(defaultState.voucherApplications)
     const debouncedSearchTerms = useDebounce(searchTerms, 500)
 
     const clearSearchFilters = useCallback(() => {
@@ -219,7 +232,9 @@ export const ApplicationUIContextProvider = React.memo(
         distinctions,
         setDistinctions,
         transferApplications,
-        setTransferApplications
+        setTransferApplications,
+        voucherApplications,
+        setVoucherApplications
       }),
       [
         applicationsResult,
@@ -258,7 +273,9 @@ export const ApplicationUIContextProvider = React.memo(
         distinctions,
         setDistinctions,
         transferApplications,
-        setTransferApplications
+        setTransferApplications,
+        voucherApplications,
+        setVoucherApplications
       ]
     )
 

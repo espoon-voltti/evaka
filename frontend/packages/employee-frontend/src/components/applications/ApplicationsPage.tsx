@@ -51,6 +51,7 @@ function ApplicationsPage() {
     dateType,
     distinctions,
     transferApplications,
+    voucherApplications,
     startDate,
     endDate,
     debouncedSearchTerms,
@@ -99,7 +100,8 @@ function ApplicationsPage() {
       periodEnd:
         endDate && dateType.length > 0 ? endDate.formatIso() : undefined,
       searchTerms: debouncedSearchTerms,
-      transferApplications
+      transferApplications,
+      voucherApplications
     }
 
     reloadApplications(page, pageSize, sortBy, sortDirection, params)
@@ -118,6 +120,7 @@ function ApplicationsPage() {
     dateType,
     distinctions,
     transferApplications,
+    voucherApplications,
     startDate,
     endDate,
     debouncedSearchTerms,

@@ -3,9 +3,10 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { Fragment, useContext, useEffect } from 'react'
-import styled from 'styled-components'
+import { Label } from '@evaka/lib-components/src/typography'
+import MultiSelect from '@evaka/lib-components/src/atoms/form/MultiSelect'
+import Radio from '@evaka/lib-components/src/atoms/form/Radio'
 import {
-  AreaFilter,
   Filters,
   ApplicationDistinctionsFilter,
   ApplicationStatusFilter,
@@ -23,17 +24,16 @@ import {
   ApplicationDistinctions,
   TransferApplicationsFilter
 } from '../common/Filters'
-import { ApplicationUIContext } from '../../state/application-ui'
+import {
+  ApplicationUIContext,
+  VoucherApplicationFilter
+} from '../../state/application-ui'
 import { Loading } from '@evaka/lib-common/src/api'
 import { getAreas, getUnits } from '../../api/daycare'
 import { Gap } from '@evaka/lib-components/src/white-space'
 import { useTranslation } from '~state/i18n'
 
-const CustomGap = styled.div`
-  height: 52px;
-`
-
-function ApplicationFilters() {
+export default React.memo(function ApplicationFilters() {
   const {
     units,
     setUnits,
@@ -66,6 +66,8 @@ function ApplicationFilters() {
     setDistinctions,
     transferApplications,
     setTransferApplications,
+    voucherApplications,
+    setVoucherApplications,
     setApplicationsResult
   } = useContext(ApplicationUIContext)
 
@@ -87,27 +89,6 @@ function ApplicationFilters() {
       setDistinctions(distinctions.filter((v) => v !== 'SECONDARY'))
     }
   }, [units])
-
-  const ALL = 'All'
-
-  const toggleArea = (code: string) => () => {
-    if (availableAreas.isSuccess) {
-      setApplicationsResult(Loading.of())
-
-      const newAreas =
-        code === ALL
-          ? area.includes(ALL)
-            ? []
-            : [...availableAreas.value.map((a) => a.shortName), ALL]
-          : area.includes(code)
-          ? area
-              .filter((v) => v !== code)
-              .filter((v) => v !== ALL && code != ALL)
-          : [...area, code]
-
-      setArea(newAreas)
-    }
-  }
 
   const toggleBasis = (toggledBasis: ApplicationBasis) => () => {
     setApplicationsResult(Loading.of())
@@ -189,12 +170,10 @@ function ApplicationFilters() {
       clearMargin={status === 'ALL' ? 0 : -40}
       column1={
         <>
-          <Gap size="s" />
-          <AreaFilter
+          <AreaMultiSelect
             areas={availableAreas.getOrElse([])}
-            toggled={area}
-            toggle={toggleArea}
-            showAll
+            selected={area}
+            onSelect={setArea}
           />
           <Gap size="L" />
           <MultiSelectUnitFilter
@@ -203,42 +182,45 @@ function ApplicationFilters() {
             onChange={changeUnits}
             dataQa={'unit-selector'}
           />
-          <Gap size="m" />
-          <ApplicationBasisFilter toggled={basis} toggle={toggleBasis} />
-        </>
-      }
-      column2={
-        <Fragment>
-          <Gap size="s" />
+          <Gap size="xs" />
+          <ApplicationDistinctionsFilter
+            toggle={toggleApplicationDistinctions}
+            toggled={distinctions}
+            disableSecondary={units.length === 0}
+          />
+          <Gap size="L" />
           <ApplicationTypeFilter
             toggled={type}
             toggledPreschool={preschoolType}
             toggle={toggleApplicationType}
             togglePreschool={toggleApplicationPreschoolType}
           />
-          <CustomGap />
+          <Gap size="L" />
+          <ApplicationBasisFilter toggled={basis} toggle={toggleBasis} />
+        </>
+      }
+      column2={
+        <Fragment>
           <TransferApplicationsFilter
             selected={transferApplications}
             setSelected={setTransferApplications}
           />
-          <CustomGap />
-          <ApplicationDistinctionsFilter
-            toggle={toggleApplicationDistinctions}
-            toggled={distinctions}
-            disableSecondary={units.length === 0}
+          <Gap size="XL" />
+          <VoucherApplicationsFilter
+            selected={voucherApplications}
+            setSelected={setVoucherApplications}
           />
         </Fragment>
       }
       column3={
         <Fragment>
-          <Gap size="s" />
           <ApplicationStatusFilter
             toggled={status}
             toggledAllStatuses={allStatuses}
             toggle={toggleStatus}
             toggleAllStatuses={toggleAllStatuses}
           />
-          <CustomGap />
+          <Gap size="XL" />
           <ApplicationDateFilter
             startDate={startDate}
             setStartDate={setStartDate}
@@ -251,6 +233,86 @@ function ApplicationFilters() {
       }
     />
   )
+})
+
+type AreaMultiSelectProps = {
+  areas: { name: string; shortName: string }[]
+  selected: string[]
+  onSelect: (areas: string[]) => void
 }
 
-export default ApplicationFilters
+const AreaMultiSelect = React.memo(function AreaMultiSelect({
+  areas,
+  selected,
+  onSelect
+}: AreaMultiSelectProps) {
+  const { i18n } = useTranslation()
+  const value = areas.filter((area) => selected.includes(area.shortName))
+  const onChange = (selected: { shortName: string }[]) =>
+    onSelect(selected.map(({ shortName }) => shortName))
+  return (
+    <>
+      <Label>{i18n.filters.area}</Label>
+      <MultiSelect
+        value={value}
+        options={areas}
+        getOptionId={({ shortName }) => shortName}
+        getOptionLabel={({ name }) => name}
+        onChange={onChange}
+        placeholder={i18n.applications.list.areaPlaceholder}
+        data-qa="area-filter"
+      />
+    </>
+  )
+})
+
+type VoucherApplicationsFilterProps = {
+  selected: VoucherApplicationFilter
+  setSelected: (v: VoucherApplicationFilter) => void
+}
+
+const VoucherApplicationsFilter = React.memo(
+  function VoucherApplicationsFilter({
+    selected,
+    setSelected
+  }: VoucherApplicationsFilterProps) {
+    const { i18n } = useTranslation()
+    return (
+      <>
+        <Label>{i18n.applications.list.voucherFilter.title}</Label>
+        <Gap size="xs" />
+        <Radio
+          dataQa="filter-voucher-first-choice"
+          label={i18n.applications.list.voucherFilter.firstChoice}
+          checked={selected === 'VOUCHER_FIRST_CHOICE'}
+          onChange={() => setSelected('VOUCHER_FIRST_CHOICE')}
+          small
+        />
+        <Gap size="xs" />
+        <Radio
+          dataQa="filter-voucher-all"
+          label={i18n.applications.list.voucherFilter.allVoucher}
+          checked={selected === 'VOUCHER_ONLY'}
+          onChange={() => setSelected('VOUCHER_ONLY')}
+          small
+        />
+        <Gap size="xs" />
+        <Radio
+          dataQa="filter-voucher-hide"
+          label={i18n.applications.list.voucherFilter.hideVoucher}
+          checked={selected === 'NO_VOUCHER'}
+          onChange={() => setSelected('NO_VOUCHER')}
+          small
+        />
+        <Gap size="xs" />
+        <Radio
+          dataQa="filter-voucher-no-filter"
+          label={i18n.applications.list.voucherFilter.noFilter}
+          checked={selected === undefined}
+          onChange={() => setSelected(undefined)}
+          small
+        />
+      </>
+    )
+  }
+)

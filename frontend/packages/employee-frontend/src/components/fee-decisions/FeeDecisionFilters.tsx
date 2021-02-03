@@ -149,7 +149,6 @@ function FeeDecisionFilters() {
       clearFilters={clearSearchFilters}
       column1={
         <>
-          <Gap size="s" />
           <AreaFilter
             areas={availableAreas.getOrElse([])}
             toggled={searchFilters.area}
@@ -180,7 +179,6 @@ function FeeDecisionFilters() {
       }
       column2={
         <Fragment>
-          <Gap size="s" />
           <FeeDecisionDistinctionsFilter
             toggled={searchFilters.distinctiveDetails}
             toggle={toggleServiceNeed}
@@ -189,7 +187,6 @@ function FeeDecisionFilters() {
       }
       column3={
         <Fragment>
-          <Gap size="s" />
           <FeeDecisionStatusFilter
             toggled={searchFilters.status}
             toggle={toggleStatus}

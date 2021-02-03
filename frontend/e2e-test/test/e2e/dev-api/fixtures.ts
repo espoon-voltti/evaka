@@ -87,7 +87,8 @@ export const clubFixture: Daycare = {
   decisionHandlerAddress: 'Käsittelijän osoite',
   daycareApplyPeriod: null,
   preschoolApplyPeriod: null,
-  clubApplyPeriod: new DateRange(LocalDate.of(2020, 3, 1), null)
+  clubApplyPeriod: new DateRange(LocalDate.of(2020, 3, 1), null),
+  providerType: 'MUNICIPAL'
 }
 
 export const daycareFixture: Daycare = {
@@ -102,7 +103,8 @@ export const daycareFixture: Daycare = {
   decisionDaycareName: 'Päiväkoti päätöksellä',
   decisionPreschoolName: 'Päiväkoti päätöksellä',
   decisionHandler: 'Käsittelijä',
-  decisionHandlerAddress: 'Käsittelijän osoite'
+  decisionHandlerAddress: 'Käsittelijän osoite',
+  providerType: 'MUNICIPAL'
 }
 
 export const daycare2Fixture: Daycare = {
@@ -117,7 +119,8 @@ export const daycare2Fixture: Daycare = {
   decisionDaycareName: 'Päiväkoti 2 päätöksellä',
   decisionPreschoolName: 'Päiväkoti 2 päätöksellä',
   decisionHandler: 'Käsittelijä 2',
-  decisionHandlerAddress: 'Käsittelijän 2 osoite'
+  decisionHandlerAddress: 'Käsittelijän 2 osoite',
+  providerType: 'MUNICIPAL'
 }
 
 export const preschoolFixture: Daycare = {
@@ -132,7 +135,8 @@ export const preschoolFixture: Daycare = {
   decisionDaycareName: 'Eskari päätöksellä',
   decisionPreschoolName: 'Eskari päätöksellä',
   decisionHandler: 'Käsittelijä',
-  decisionHandlerAddress: 'Käsittelijän osoite'
+  decisionHandlerAddress: 'Käsittelijän osoite',
+  providerType: 'MUNICIPAL'
 }
 
 export const enduserGuardianFixture: ApplicationPersonDetail = {
@@ -758,7 +762,8 @@ export class Fixture {
       decisionDaycareName: `decisionDaycareName_${id}`,
       decisionPreschoolName: `decisionPreschoolName_${id}`,
       decisionHandler: `decisionHandler_${id}`,
-      decisionHandlerAddress: `decisionHandlerAddress_${id}`
+      decisionHandlerAddress: `decisionHandlerAddress_${id}`,
+      providerType: 'MUNICIPAL'
     })
   }
 

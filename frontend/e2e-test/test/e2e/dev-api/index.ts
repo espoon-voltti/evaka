@@ -199,7 +199,8 @@ export async function insertDaycareFixtures(fixture: Daycare[]): Promise<void> {
         closingDate: it.closingDate,
         daycareApplyPeriod: it.daycareApplyPeriod,
         preschoolApplyPeriod: it.preschoolApplyPeriod,
-        clubApplyPeriod: it.clubApplyPeriod
+        clubApplyPeriod: it.clubApplyPeriod,
+        providerType: it.providerType
       }))
     )
   } catch (e) {

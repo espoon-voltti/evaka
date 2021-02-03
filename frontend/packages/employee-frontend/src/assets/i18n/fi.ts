@@ -173,11 +173,19 @@ export const fi = {
       noResults: 'Ei hakutuloksia',
       type: 'Hakutyyppi',
       subtype: 'Osa/Koko',
+      areaPlaceholder: 'Valitse alue',
       transferFilter: {
         title: 'Siirtohakemukset',
         transferOnly: 'Näytä vain siirtohakemukset',
         hideTransfer: 'Piilota siirtohakemukset',
-        all: 'Kaikki'
+        all: 'Ei rajausta'
+      },
+      voucherFilter: {
+        title: 'Palvelusetelihakemukset',
+        firstChoice: 'Näytä jos 1. hakutoiveena',
+        allVoucher: 'Näytä kaikki palvelusetelihakemukset',
+        hideVoucher: 'Piilota palvelusetelihakemukset',
+        noFilter: 'Ei rajausta'
       },
       transfer: 'Siirtohakemus',
       paper: 'Paperihakemus',
@@ -209,7 +217,7 @@ export const fi = {
         count === 1 ? `${count} hakemus valittu` : `${count} hakemusta valittu`
     },
     distinctiveDetails: {
-      SECONDARY: 'Hae myös 2. ja 3. hakutoiveet'
+      SECONDARY: 'Näytä myös, jos yksikköön on haettu 2. tai 3. toiveena'
     },
     basisTooltip: {
       ADDITIONAL_INFO: 'Lisätietokentässä tekstiä',

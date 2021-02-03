@@ -108,13 +108,16 @@ test('Care area filters work', async (t) => {
   await t.eval(() => location.reload())
 
   try {
-    await t.click(ApplicationListView.areaFilterItems('All'))
     await t.expect(ApplicationListView.applications.count).eql(3)
 
-    await t.click(ApplicationListView.areaFilterItems(careArea1.data.shortName))
+    await ApplicationListView.toggleArea(careArea1.data.name)
+    await t.expect(ApplicationListView.applications.count).eql(1)
+    await t.expect(ApplicationListView.application(app1.id).visible).ok()
+
+    await ApplicationListView.toggleArea(careArea2.data.name)
     await t.expect(ApplicationListView.applications.count).eql(2)
+    await t.expect(ApplicationListView.application(app1.id).visible).ok()
     await t.expect(ApplicationListView.application(app2.id).visible).ok()
-    await t.expect(ApplicationListView.application(app3.id).visible).ok()
   } finally {
     await deleteApplication(app1.id)
     await deleteApplication(app2.id)
@@ -159,5 +162,127 @@ test('Unit filter works', async (t) => {
   } finally {
     await deleteApplication(app1.id)
     await deleteApplication(app2.id)
+  }
+})
+
+test('Voucher application filter works', async (t) => {
+  const careArea1 = await Fixture.careArea().save()
+  const voucherUnit = await Fixture.daycare()
+    .with({ providerType: 'PRIVATE_SERVICE_VOUCHER' })
+    .careArea(careArea1)
+    .save()
+  const municipalUnit = await Fixture.daycare()
+    .with({ providerType: 'MUNICIPAL' })
+    .careArea(careArea1)
+    .save()
+
+  const applicationWithVoucherUnitFirst = {
+    ...applicationFixture(
+      fixtures.enduserChildFixtureJari,
+      fixtures.enduserGuardianFixture,
+      undefined,
+      'DAYCARE',
+      null,
+      [voucherUnit.data.id]
+    ),
+    id: uuidv4()
+  }
+  const applicationWithVoucherUnitSecond = {
+    ...applicationFixture(
+      fixtures.enduserChildFixtureJari,
+      fixtures.enduserGuardianFixture,
+      undefined,
+      'DAYCARE',
+      null,
+      [municipalUnit.data.id, voucherUnit.data.id]
+    ),
+    id: uuidv4()
+  }
+  const applicationWithNoVoucherUnit = {
+    ...applicationFixture(
+      fixtures.enduserChildFixtureJari,
+      fixtures.enduserGuardianFixture,
+      undefined,
+      'DAYCARE',
+      null,
+      [municipalUnit.data.id]
+    ),
+    id: uuidv4()
+  }
+
+  await insertApplications([
+    applicationWithVoucherUnitFirst,
+    applicationWithVoucherUnitSecond,
+    applicationWithNoVoucherUnit
+  ])
+  await t.eval(() => location.reload())
+
+  try {
+    await t.click(ApplicationListView.voucherUnitFilter.noFilter)
+    await t.expect(ApplicationListView.applications.count).eql(3)
+
+    await t.click(ApplicationListView.voucherUnitFilter.firstChoice)
+    await t.expect(ApplicationListView.applications.count).eql(1)
+    await t
+      .expect(
+        ApplicationListView.application(applicationWithVoucherUnitFirst.id)
+          .visible
+      )
+      .ok()
+    await t
+      .expect(
+        ApplicationListView.application(applicationWithVoucherUnitSecond.id)
+          .visible
+      )
+      .notOk({ timeout: 200 })
+    await t
+      .expect(
+        ApplicationListView.application(applicationWithNoVoucherUnit.id).visible
+      )
+      .notOk({ timeout: 200 })
+
+    await t.click(ApplicationListView.voucherUnitFilter.voucherOnly)
+    await t.expect(ApplicationListView.applications.count).eql(2)
+    await t
+      .expect(
+        ApplicationListView.application(applicationWithVoucherUnitFirst.id)
+          .visible
+      )
+      .ok()
+    await t
+      .expect(
+        ApplicationListView.application(applicationWithVoucherUnitSecond.id)
+          .visible
+      )
+      .ok()
+    await t
+      .expect(
+        ApplicationListView.application(applicationWithNoVoucherUnit.id).visible
+      )
+      .notOk({ timeout: 200 })
+
+    await t.click(ApplicationListView.voucherUnitFilter.voucherHide)
+    await t.expect(ApplicationListView.applications.count).eql(1)
+    await t
+      .expect(
+        ApplicationListView.application(applicationWithNoVoucherUnit.id).visible
+      )
+      .ok()
+    await t
+      .expect(
+        ApplicationListView.application(applicationWithVoucherUnitFirst.id)
+          .visible
+      )
+      .notOk({ timeout: 200 })
+    await t
+      .expect(
+        ApplicationListView.application(applicationWithVoucherUnitSecond.id)
+          .visible
+      )
+      .notOk({ timeout: 200 })
+  } finally {
+    await deleteApplication(applicationWithVoucherUnitFirst.id)
+    await deleteApplication(applicationWithVoucherUnitSecond.id)
+    await deleteApplication(applicationWithNoVoucherUnit.id)
   }
 })

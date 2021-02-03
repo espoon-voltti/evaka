@@ -106,6 +106,7 @@ export function Filters({
         setValue={setFreeText}
         placeholder={searchPlaceholder}
       />
+      <Gap size="s" />
       <FilterColumns>
         <Column>{column1}</Column>
         <Column>{column2}</Column>
@@ -1085,9 +1086,6 @@ export function ApplicationDistinctionsFilter({
   const { i18n } = useTranslation()
   return (
     <Fragment>
-      <Label>
-        <LabelText>{i18n.applications.distinctions}</LabelText>
-      </Label>
       {disableSecondary ? (
         <Tooltip
           tooltipId={'application-distinctions-SECONDARY'}

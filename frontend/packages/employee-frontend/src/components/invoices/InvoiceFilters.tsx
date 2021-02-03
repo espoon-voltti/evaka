@@ -116,7 +116,6 @@ function InvoiceFilters() {
       clearFilters={clearSearchFilters}
       column1={
         <>
-          <Gap size="s" />
           <AreaFilter
             areas={availableAreas.getOrElse([])}
             toggled={searchFilters.area}
@@ -141,7 +140,6 @@ function InvoiceFilters() {
       }
       column2={
         <Fragment>
-          <Gap size="s" />
           <InvoiceDistinctionsFilter
             toggled={searchFilters.distinctiveDetails}
             toggle={toggleServiceNeed}
@@ -150,7 +148,6 @@ function InvoiceFilters() {
       }
       column3={
         <Fragment>
-          <Gap size="s" />
           <InvoiceStatusFilter
             toggled={searchFilters.status}
             toggle={toggleStatus}

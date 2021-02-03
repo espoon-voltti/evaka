@@ -22,6 +22,7 @@ interface MultiSelectProps<T extends object> {
   maxSelected?: number
   placeholder: string
   noOptionsMessage?: string
+  showValuesInInput?: boolean
   closeMenuOnSelect?: Props<T>['closeMenuOnSelect']
   isClearable?: Props<T>['isClearable']
   inputId?: Props<T>['inputId']
@@ -39,6 +40,7 @@ export default function MultiSelect<T extends object>({
   closeMenuOnSelect,
   noOptionsMessage,
   maxSelected,
+  showValuesInInput: showSelectedValues,
   ...props
 }: MultiSelectProps<T>) {
   return (
@@ -78,7 +80,7 @@ export default function MultiSelect<T extends object>({
         filterOption={({ data }, q) =>
           getOptionLabel(data).toLowerCase().includes(q.toLowerCase())
         }
-        controlShouldRenderValue={false}
+        controlShouldRenderValue={showSelectedValues ?? true}
         components={{
           Option: function Option({ innerRef, innerProps, ...props }) {
             const data = props.data as T
