@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.shared.controllers
 
+import PendingDecisionEmailService
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.application.cancelOutdatedTransferApplications
 import fi.espoo.evaka.application.removeOldDrafts
@@ -30,6 +31,7 @@ class ScheduledOperationController(
     private val vardaUpdateService: VardaUpdateService,
     private val dvvModificationsBatchRefreshService: DvvModificationsBatchRefreshService,
     private val attachmentsController: AttachmentsController,
+    private val pendingDecisionEmailService: PendingDecisionEmailService,
     private val asyncJobRunner: AsyncJobRunner
 ) {
 
@@ -89,6 +91,12 @@ class ScheduledOperationController(
                 """.trimIndent()
             ).execute()
         }
+        return ResponseEntity.noContent().build()
+    }
+
+    @PostMapping("/send-pending-decision-reminder-emails")
+    fun sendPendingDecisionReminderEmails(db: Database.Connection): ResponseEntity<Unit> {
+        pendingDecisionEmailService.scheduleSendPendingDecisionsEmails(db)
         return ResponseEntity.noContent().build()
     }
 }

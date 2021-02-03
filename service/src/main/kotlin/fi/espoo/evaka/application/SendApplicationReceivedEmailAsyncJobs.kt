@@ -2,9 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-package fi.espoo.evaka.emailclient
+package fi.espoo.evaka.application
 
-import fi.espoo.evaka.application.SendApplicationReceivedEmailService
 import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.SendApplicationEmail

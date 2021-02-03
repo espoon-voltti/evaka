@@ -3,27 +3,72 @@ import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.decision.getDecision
 import fi.espoo.evaka.emailclient.EmailClient
 import fi.espoo.evaka.pis.getPersonById
+import fi.espoo.evaka.shared.async.AsyncJobRunner
+import fi.espoo.evaka.shared.async.SendPendingDecisionEmail
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.db.transaction
 import mu.KotlinLogging
+import org.jdbi.v3.core.kotlin.mapTo
 import org.springframework.core.env.Environment
 import org.springframework.stereotype.Service
+import java.time.Instant
 import java.util.UUID
 
 private val logger = KotlinLogging.logger { }
 
 @Service
 class PendingDecisionEmailService(
+    private val asyncJobRunner: AsyncJobRunner,
     private val emailClient: EmailClient,
     private val env: Environment
 ) {
+    init {
+        asyncJobRunner.sendPendingDecisionEmail = ::doSendPendingDecisionsEmail
+    }
+
     val fromAddress = env.getProperty("mail_reply_to_address", "no-reply.evaka@espoo.fi")
 
-    fun sendPendingDecisionEmail(tx: Database.Read, decisionId: UUID) {
-        tx.handle.transaction { h ->
-            getDecision(h, decisionId)?.let { decision ->
-                fetchApplicationDetails(h, decision.applicationId)?.let { application ->
-                    h.getPersonById(application.guardianId)?.let { guardian ->
+    fun doSendPendingDecisionsEmail(db: Database, msg: SendPendingDecisionEmail) {
+        logger.info("Sending pending decision reminder email to decision ${msg.decisionId}")
+        sendPendingDecisionEmail(db, msg.decisionId)
+    }
+
+    fun scheduleSendPendingDecisionsEmails(db: Database.Connection): Int {
+        val jobCount = db.transaction { tx ->
+            tx.createUpdate("DELETE FROM async_job WHERE type = 'SEND_PENDING_DECISION_EMAIL' AND (claimed_by IS NULL OR completed_at IS NOT NULL)")
+                .execute()
+
+            val pendingDecisions = tx.createQuery("""SELECT DISTINCT(id) FROM decision WHERE status = 'PENDING' AND resolved IS NULL AND sent_date + INTERVAL '1 week' < current_date""")
+                .mapTo<UUID>()
+                .list()
+
+            logger.info("PendingDecisionEmailService: Scheduling sending ${pendingDecisions.size} pending decision emails")
+
+            pendingDecisions.forEach { decisionId ->
+                asyncJobRunner.plan(
+                    tx,
+                    payloads = listOf(
+                        SendPendingDecisionEmail(
+                            decisionId = decisionId
+                        )
+                    ),
+                    runAt = Instant.now(),
+                    retryCount = 10
+                )
+            }
+
+            pendingDecisions.size
+        }
+
+        asyncJobRunner.scheduleImmediateRun()
+
+        return jobCount
+    }
+
+    fun sendPendingDecisionEmail(tx: Database, decisionId: UUID) {
+        tx.read { tx ->
+            getDecision(tx.handle, decisionId)?.let { decision ->
+                fetchApplicationDetails(tx.handle, decision.applicationId)?.let { application ->
+                    tx.handle.getPersonById(application.guardianId)?.let { guardian ->
                         if (!guardian.email.isNullOrBlank()) {
                             logger.info("Sending pending decision email to guardian ${guardian.id}")
 
