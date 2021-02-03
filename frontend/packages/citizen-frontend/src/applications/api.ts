@@ -137,9 +137,7 @@ export async function getDuplicateApplications(
   const { data } = await client.get<Record<ApplicationType, boolean>>(
     `/citizen/applications/duplicates/${childId}`
   )
-  return Object.fromEntries(
-    Object.entries(data).map(([type, value]) => [type.toLowerCase(), value])
-  ) as Record<ApplicationType, boolean> // FIXME
+  return data
 }
 
 export async function saveAttachment(

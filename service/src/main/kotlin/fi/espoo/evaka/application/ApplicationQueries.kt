@@ -104,7 +104,7 @@ fun duplicateApplicationExists(
                 guardianid = :guardianId AND
                 type = :type AND 
                 hidefromguardian = false AND
-                status = ANY ('{SENT,WAITING_PLACEMENT,WAITING_CONFIRMATION,WAITING_DECISION,WAITING_MAILING,WAITING_UNIT_CONFIRMATION}'::application_status_type[])
+                status = ANY ('{CREATED,SENT,WAITING_PLACEMENT,WAITING_CONFIRMATION,WAITING_DECISION,WAITING_MAILING,WAITING_UNIT_CONFIRMATION}'::application_status_type[])
         """.trimIndent()
     return h.createQuery(sql)
         .bind("childId", childId)
