@@ -1,28 +1,43 @@
 import React from 'react'
 import { useTranslation } from '~localization'
-import { ApplicationGuardianAgreementStatus } from '@evaka/lib-common/src/api-types/application/enums'
+import { ContactInfoFormData } from '../ApplicationFormData'
+import { ApplicationDataGridLabelWidth } from './const'
+import ListGrid from '@evaka/lib-components/src/layout/ListGrid'
+import { Label } from '@evaka/lib-components/src/typography'
 
 type Props = {
-  agreementStatus: ApplicationGuardianAgreementStatus | null
+  formData: ContactInfoFormData
 }
 
 export default React.memo(function ContactInfoSecondGuardianPreschool({
-  agreementStatus
+  formData
 }: Props) {
   const t = useTranslation()
   const tLocal = t.applications.editor.verification.contactInfo
 
   return (
     <>
-      {agreementStatus === 'AGREED' && (
+      {formData.otherGuardianAgreementStatus === 'AGREED' && (
         <span>{tLocal.secondGuardian.agreed}</span>
       )}
-      {(agreementStatus === 'NOT_AGREED' ||
-        agreementStatus === 'RIGHT_TO_GET_NOTIFIED') && (
-        <span>{tLocal.secondGuardian.notAgreed}</span>
+      {formData.otherGuardianAgreementStatus === 'NOT_AGREED' && (
+        <>
+          <span>{tLocal.secondGuardian.notAgreed}</span>
+          <ListGrid
+            labelWidth={ApplicationDataGridLabelWidth}
+            rowGap="s"
+            columnGap="L"
+          >
+            <Label>{tLocal.secondGuardian.tel}</Label>
+            <span>{formData.otherGuardianPhone}</span>
+
+            <Label>{tLocal.secondGuardian.email}</Label>
+            <span>{formData.otherGuardianEmail}</span>
+          </ListGrid>
+        </>
       )}
-      {!agreementStatus && (
-        <span>{tLocal.secondGuardian.noAgreementStatus}</span>
+      {formData.otherGuardianAgreementStatus === 'RIGHT_TO_GET_NOTIFIED' && (
+        <span>{tLocal.secondGuardian.rightToGetNotified}</span>
       )}
     </>
   )

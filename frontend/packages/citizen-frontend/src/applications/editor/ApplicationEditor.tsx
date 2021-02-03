@@ -39,7 +39,7 @@ import ReturnButton, {
 } from '@evaka/lib-components/src/atoms/buttons/ReturnButton'
 import InlineButton from '@evaka/lib-components/src/atoms/buttons/InlineButton'
 import ApplicationFormDaycare from '~applications/editor/ApplicationFormDaycare'
-import ApplicationVerificationViewDaycare from '~applications/editor/verification/ApplicationVerificationViewDaycare'
+import ApplicationVerificationView from '~applications/editor/verification/ApplicationVerificationView'
 import ApplicationFormClub from '~applications/editor/ApplicationFormClub'
 import ApplicationFormPreschool from '~applications/editor/ApplicationFormPreschool'
 
@@ -240,7 +240,7 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
     switch (apiData.type) {
       case 'DAYCARE':
         return (
-          <ApplicationVerificationViewDaycare
+          <ApplicationVerificationView
             application={apiData}
             formData={formData}
             type="DAYCARE"
@@ -249,7 +249,7 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
         )
       case 'PRESCHOOL':
         return (
-          <ApplicationVerificationViewDaycare
+          <ApplicationVerificationView
             application={apiData}
             formData={formData}
             type="PRESCHOOL"
@@ -258,7 +258,7 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
         )
       case 'CLUB':
         return (
-          <ApplicationVerificationViewDaycare
+          <ApplicationVerificationView
             application={apiData}
             formData={formData}
             type="CLUB"

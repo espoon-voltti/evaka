@@ -12,11 +12,13 @@ import ContactInfoSecondGuardianPreschool from './ContactInfoSecondGuardianPresc
 type ContactInfoProps = {
   formData: ContactInfoFormData
   type: ApplicationType
+  showFridgeFamilySection: boolean
 }
 
 export default React.memo(function ContactInfoSection({
   formData,
-  type
+  type,
+  showFridgeFamilySection
 }: ContactInfoProps) {
   const t = useTranslation()
   const tLocal = t.applications.editor.verification.contactInfo
@@ -54,7 +56,7 @@ export default React.memo(function ContactInfoSection({
         {formData.childFutureAddressExists && (
           <>
             <Label>{tLocal.child.addressChangesAt}</Label>
-            <span>{formData.guardianMoveDate}</span>
+            <span>{formData.childMoveDate}</span>
 
             <Label>{tLocal.child.newAddress}</Label>
             <span>
@@ -84,55 +86,58 @@ export default React.memo(function ContactInfoSection({
           <Gap size="m" />
           <H3>{tLocal.secondGuardian.title}</H3>
           {type === 'DAYCARE' && <ContactInfoSecondGuardianDaycare />}
-          {type === 'PRESCHOOL' && (
-            <ContactInfoSecondGuardianPreschool
-              agreementStatus={formData.otherGuardianAgreementStatus}
-            />
+          {type === 'PRESCHOOL' && !!formData.otherGuardianAgreementStatus && (
+            <ContactInfoSecondGuardianPreschool formData={formData} />
           )}
 
-          <Gap size="m" />
-          <H3>{tLocal.fridgePartner.title}</H3>
-          {formData.otherPartnerExists ? (
-            <ListGrid
-              labelWidth={ApplicationDataGridLabelWidth}
-              rowGap="s"
-              columnGap="L"
-            >
-              <Label>{tLocal.fridgePartner.name}</Label>
-              <span>
-                {formData.otherPartnerFirstName} {formData.otherPartnerLastName}
-              </span>
-
-              <Label>{tLocal.fridgePartner.ssn}</Label>
-              <span>{formData.otherPartnerSSN}</span>
-            </ListGrid>
-          ) : (
-            <span>{t.applications.editor.verification.no}</span>
-          )}
-
-          <Gap size="m" />
-          <H3>{tLocal.fridgeChildren.title}</H3>
-          {formData.otherChildren.length > 0 ? (
-            formData.otherChildren.map(
-              ({ firstName, lastName, socialSecurityNumber }) => (
+          {showFridgeFamilySection && (
+            <>
+              <Gap size="m" />
+              <H3>{tLocal.fridgePartner.title}</H3>
+              {formData.otherPartnerExists ? (
                 <ListGrid
-                  key={socialSecurityNumber}
                   labelWidth={ApplicationDataGridLabelWidth}
                   rowGap="s"
                   columnGap="L"
                 >
-                  <Label>{tLocal.fridgeChildren.name}</Label>
+                  <Label>{tLocal.fridgePartner.name}</Label>
                   <span>
-                    {firstName} {lastName}
+                    {formData.otherPartnerFirstName}{' '}
+                    {formData.otherPartnerLastName}
                   </span>
 
-                  <Label>{tLocal.fridgeChildren.ssn}</Label>
-                  <span>{socialSecurityNumber}</span>
+                  <Label>{tLocal.fridgePartner.ssn}</Label>
+                  <span>{formData.otherPartnerSSN}</span>
                 </ListGrid>
-              )
-            )
-          ) : (
-            <span>{tLocal.fridgeChildren.noOtherChildren}</span>
+              ) : (
+                <span>{t.applications.editor.verification.no}</span>
+              )}
+
+              <Gap size="m" />
+              <H3>{tLocal.fridgeChildren.title}</H3>
+              {formData.otherChildren.length > 0 ? (
+                formData.otherChildren.map(
+                  ({ firstName, lastName, socialSecurityNumber }) => (
+                    <ListGrid
+                      key={socialSecurityNumber}
+                      labelWidth={ApplicationDataGridLabelWidth}
+                      rowGap="s"
+                      columnGap="L"
+                    >
+                      <Label>{tLocal.fridgeChildren.name}</Label>
+                      <span>
+                        {firstName} {lastName}
+                      </span>
+
+                      <Label>{tLocal.fridgeChildren.ssn}</Label>
+                      <span>{socialSecurityNumber}</span>
+                    </ListGrid>
+                  )
+                )
+              ) : (
+                <span>{tLocal.fridgeChildren.noOtherChildren}</span>
+              )}
+            </>
           )}
         </>
       )}

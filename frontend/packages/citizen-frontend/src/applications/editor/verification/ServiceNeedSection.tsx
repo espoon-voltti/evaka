@@ -88,7 +88,8 @@ export default React.memo(function ServiceNeedSection({
       >
         {type === 'DAYCARE' && <ServiceNeedPartTime formData={formData} />}
 
-        {(type === 'DAYCARE' || type === 'PRESCHOOL') && (
+        {(type === 'DAYCARE' ||
+          (type === 'PRESCHOOL' && formData.serviceNeed.connectedDaycare)) && (
           <ServiceNeedShiftCare formData={formData} />
         )}
       </ListGrid>

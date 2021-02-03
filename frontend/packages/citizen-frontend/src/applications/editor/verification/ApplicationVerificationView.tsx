@@ -73,22 +73,25 @@ export default React.memo(function ApplicationVerificationViewDaycare({
                     {t.applications.editor.verification.attachmentBox.headline}
                   </P>
                   <ul>
-                    {formData.serviceNeed.urgencyAttachments.length === 0 && (
-                      <li>
-                        {
-                          t.applications.editor.verification.attachmentBox
-                            .urgency
-                        }
-                      </li>
-                    )}
-                    {formData.serviceNeed.shiftCareAttachments.length === 0 && (
-                      <li>
-                        {
-                          t.applications.editor.verification.attachmentBox
-                            .shiftCare
-                        }
-                      </li>
-                    )}
+                    {formData.serviceNeed.urgent &&
+                      formData.serviceNeed.urgencyAttachments.length === 0 && (
+                        <li>
+                          {
+                            t.applications.editor.verification.attachmentBox
+                              .urgency
+                          }
+                        </li>
+                      )}
+                    {formData.serviceNeed.shiftCare &&
+                      formData.serviceNeed.shiftCareAttachments.length ===
+                        0 && (
+                        <li>
+                          {
+                            t.applications.editor.verification.attachmentBox
+                              .shiftCare
+                          }
+                        </li>
+                      )}
                   </ul>
                   <P>
                     <a onClick={closeVerification} role="button">
@@ -116,7 +119,14 @@ export default React.memo(function ApplicationVerificationViewDaycare({
         <HorizontalLine />
         <UnitPreferenceSection formData={formData.unitPreference} />
         <HorizontalLine />
-        <ContactInfoSection formData={formData.contactInfo} type={type} />
+        <ContactInfoSection
+          formData={formData.contactInfo}
+          type={type}
+          showFridgeFamilySection={
+            type === 'DAYCARE' ||
+            (type === 'PRESCHOOL' && formData.serviceNeed.connectedDaycare)
+          }
+        />
       </ContentArea>
     </Container>
   )

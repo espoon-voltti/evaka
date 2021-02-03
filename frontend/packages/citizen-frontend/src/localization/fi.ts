@@ -188,7 +188,7 @@ export default {
           preparatoryEducation: {
             label: 'Perusopetukseen valmistava opetus',
             withPreparatory:
-              'Lapsi tarvitsee tukea suomen kielen oppimisessa. Haen myös perusopetukseen valmistavaan opetukseen. Ei koske ruotsinkielistä esiopetusta.',
+              'Lapsi tarvitsee tukea suomen kielen oppimisessa. Haen myös perusopetukseen valmistavaan opetukseen.',
             withoutPreparatory: 'Ei'
           }
         },
@@ -233,12 +233,15 @@ export default {
           },
           secondGuardian: {
             title: 'Toisen huoltajan tiedot',
+            email: 'Sähköposti',
+            tel: 'Puhelin',
             info:
               'Toisen huoltajan tiedot haetaan automaattisesti väestötietojärjestelmästä.',
             agreed:
               'Olemme yhdessä sopineet lapsen esiopetuksen hakemisesta lomakkeen tietojen mukaisesti.',
-            notAgreed:
-              'Emme ole voineet sopia hakemuksen tekemisestä yhdessä / toisella huoltajalla on vain tiedonsaantioikeus.',
+            notAgreed: 'Emme ole voineet sopia hakemuksen tekemisestä yhdessä',
+            rightToGetNotified:
+              'Toisella huoltajalla on vain tiedonsaantioikeus.',
             noAgreementStatus: 'Ei tiedossa'
           },
           fridgePartner: {
