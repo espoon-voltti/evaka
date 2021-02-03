@@ -88,17 +88,16 @@ function placementTypeAndHoursMismatch(
 ): boolean {
   switch (placement.type) {
     case 'CLUB':
+    case 'DAYCARE':
+    case 'PRESCHOOL_DAYCARE':
+    case 'PREPARATORY_DAYCARE':
       return false
     case 'PRESCHOOL':
       return hours > 20
-    case 'PRESCHOOL_DAYCARE':
-      return hours <= 20
     case 'PREPARATORY':
     case 'DAYCARE_PART_TIME':
     case 'TEMPORARY_DAYCARE_PART_DAY':
       return hours > 25
-    case 'PREPARATORY_DAYCARE':
-    case 'DAYCARE':
     case 'TEMPORARY_DAYCARE':
       return hours <= 25
   }
