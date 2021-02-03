@@ -12,7 +12,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import styled from 'styled-components'
 import { espooBrandColors } from '@evaka/lib-components/src/colors'
 
-type ServiceNeedSectionProps = {
+type Props = {
   formData: ApplicationFormData
 }
 
@@ -29,7 +29,7 @@ export const AttachmentDownload = styled.a`
 
 export const ServiceNeedUrgency = React.memo(function ServiceNeedUrgency({
   formData
-}: ServiceNeedSectionProps) {
+}: Props) {
   const t = useTranslation()
 
   return (
@@ -81,7 +81,7 @@ export const ServiceNeedUrgency = React.memo(function ServiceNeedUrgency({
 
 export const ServiceNeedShiftCare = React.memo(function ServiceNeedShiftCare({
   formData
-}: ServiceNeedSectionProps) {
+}: Props) {
   const t = useTranslation()
 
   return (

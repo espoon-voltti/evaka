@@ -23,7 +23,7 @@ type ServiceNeedSectionProps = {
   type: ApplicationType
 }
 
-export default React.memo(function ServiceNeedSectionPreschool({
+export default React.memo(function ServiceNeedSection({
   formData,
   type
 }: ServiceNeedSectionProps) {

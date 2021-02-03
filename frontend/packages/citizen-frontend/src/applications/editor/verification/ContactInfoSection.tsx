@@ -14,7 +14,7 @@ type ContactInfoProps = {
   type: ApplicationType
 }
 
-export default React.memo(function UnitPreferenceSection({
+export default React.memo(function ContactInfoSection({
   formData,
   type
 }: ContactInfoProps) {
