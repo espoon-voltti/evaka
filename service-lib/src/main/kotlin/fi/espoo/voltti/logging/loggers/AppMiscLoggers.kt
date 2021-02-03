@@ -31,3 +31,7 @@ fun KLogger.warn(args: Map<String, Any?>, m: () -> Any?) {
 fun KLogger.error(args: Map<String, Any?>, m: () -> Any?) {
     if (isErrorEnabled) error(m.toStringSafe(), StructuredArguments.entries(args))
 }
+
+fun KLogger.error(error: Any, args: Map<String, Any?>, m: () -> Any?) {
+    if (isErrorEnabled) error(m.toStringSafe(), StructuredArguments.entries(args), error)
+}
