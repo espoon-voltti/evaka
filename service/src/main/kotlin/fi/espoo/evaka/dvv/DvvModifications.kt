@@ -147,7 +147,7 @@ data class CustodianLimitedDvvInfoGroup(
 ) : DvvInfoGroup
 
 data class DvvSsn(
-    val henkilotunnus: String
+    val henkilotunnus: String?
 )
 
 data class DeathDvvInfoGroup(

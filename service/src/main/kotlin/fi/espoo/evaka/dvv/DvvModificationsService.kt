@@ -181,15 +181,19 @@ class DvvModificationsService(
         caretakerLimitedDvvInfoGroup: CaretakerLimitedDvvInfoGroup
     ) {
         val user = AuthenticatedUser.machineUser
-        db.transaction { tx ->
-            personService.getOrCreatePerson(
-                tx,
-                user,
-                ExternalIdentifier.SSN.getInstance(caretakerLimitedDvvInfoGroup.huoltaja.henkilotunnus)
-            )
-        }?.let {
-            logger.info("Dvv modification ${caretakerLimitedDvvInfoGroup.muutosattribuutti} for ${it.id}: refreshing all caretaker/custodian info from DVV")
-            fridgeFamilyService.doVTJRefresh(db, VTJRefresh(it.id, user.id))
+        if (caretakerLimitedDvvInfoGroup.huoltaja.henkilotunnus != null) {
+            db.transaction { tx ->
+                personService.getOrCreatePerson(
+                    tx,
+                    user,
+                    ExternalIdentifier.SSN.getInstance(caretakerLimitedDvvInfoGroup.huoltaja.henkilotunnus)
+                )
+            }?.let {
+                logger.info("Dvv modification ${caretakerLimitedDvvInfoGroup.muutosattribuutti} for ${it.id}: refreshing all caretaker/custodian info from DVV")
+                fridgeFamilyService.doVTJRefresh(db, VTJRefresh(it.id, user.id))
+            }
+        } else {
+            logger.info("Dvv modification ignored for caretaker: ssn is null")
         }
     }
 
