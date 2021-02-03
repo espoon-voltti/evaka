@@ -25,6 +25,16 @@ SPDX-License-Identifier: LGPL-2.1-or-later
       </router-link>
 
       <a
+        v-if="showCitizenFrontendMapLink"
+        class="menu-item"
+        :href="newMapUrl"
+        data-qa="nav-map"
+      >
+        <font-awesome-icon :icon="['far', 'map']"></font-awesome-icon>
+        {{ $t('menu.routes.newMap') | uppercase }}
+      </a>
+
+      <a
         v-if="showCitizenFrontendLink"
         class="menu-item"
         :href="newApplicationsUrl"
@@ -164,8 +174,14 @@ SPDX-License-Identifier: LGPL-2.1-or-later
       languages() {
         return Object.values(this.$t('menu.language', { returnObjects: true }))
       },
+      showCitizenFrontendMapLink() {
+        return config.feature.citizenFrontend
+      },
       showCitizenFrontendLink() {
         return this.isLoggedIn && config.feature.citizenFrontend
+      },
+      newMapUrl() {
+        return `${this.citizenFrontendUrl}/map`
       },
       newDecisionsUrl() {
         return `${this.citizenFrontendUrl}/decisions`

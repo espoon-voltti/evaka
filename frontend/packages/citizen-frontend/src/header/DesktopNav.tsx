@@ -15,10 +15,12 @@ import {
   faSignOut,
   farMap,
   farFileAlt,
-  farGavel
+  farGavel,
+  faSignIn
 } from '@evaka/lib-icons'
 import { useUser } from '../auth'
 import { Lang, langs, useLang, useTranslation } from '../localization'
+import { getLoginUri } from '~header/Header'
 
 type Props = {
   enduserBaseUrl: string
@@ -35,44 +37,65 @@ export default React.memo(function DesktopNav({ enduserBaseUrl }: Props) {
           <Icon icon={farMap} />
           {t.header.nav.map}
         </NavItem>
-        <NavItem
-          href={`${enduserBaseUrl}/applications`}
-          data-qa={'nav-old-applications'}
-        >
-          <Icon icon={farFileAlt} />
-          {t.header.nav.applications}
-        </NavItem>
-        <NavItem
-          href={`${enduserBaseUrl}/decisions`}
-          data-qa={'nav-old-decisions'}
-        >
-          <Icon icon={farGavel} />
-          {t.header.nav.decisions}
-        </NavItem>
-        <StyledNavLink to="/applications" data-qa={'nav-applications'}>
-          <Icon icon={farFileAlt} />
-          {t.header.nav.newApplications}
+        {user && (
+          <>
+            <NavItem
+              href={`${enduserBaseUrl}/applications`}
+              data-qa={'nav-old-applications'}
+            >
+              <Icon icon={farFileAlt} />
+              {t.header.nav.applications}
+            </NavItem>
+            <NavItem
+              href={`${enduserBaseUrl}/decisions`}
+              data-qa={'nav-old-decisions'}
+            >
+              <Icon icon={farGavel} />
+              {t.header.nav.decisions}
+            </NavItem>
+          </>
+        )}
+        <StyledNavLink to="/map" data-qa={'nav-map'}>
+          <Icon icon={farMap} />
+          {t.header.nav.newMap}
         </StyledNavLink>
-        <StyledNavLink to="/decisions" data-qa={'nav-decisions'}>
-          <Icon icon={farGavel} />
-          {t.header.nav.newDecisions}
-        </StyledNavLink>
+        {user && (
+          <>
+            <StyledNavLink to="/applications" data-qa={'nav-applications'}>
+              <Icon icon={farFileAlt} />
+              {t.header.nav.newApplications}
+            </StyledNavLink>
+            <StyledNavLink to="/decisions" data-qa={'nav-decisions'}>
+              <Icon icon={farGavel} />
+              {t.header.nav.newDecisions}
+            </StyledNavLink>
+          </>
+        )}
       </Nav>
       <Spacer />
       <LanguageMenu />
-      <NavItem href="/api/application/auth/saml/logout" data-qa="logout-btn">
-        <RoundIconBackground>
-          <RoundIcon icon={faSignOut} />
-        </RoundIconBackground>
-        <LogoutText>
-          {user ? (
-            <UserName>
-              {user.firstName} {user.lastName}
-            </UserName>
-          ) : null}
-          <span>{t.header.logout}</span>
-        </LogoutText>
-      </NavItem>
+      {user ? (
+        <NavItem href="/api/application/auth/saml/logout" data-qa="logout-btn">
+          <RoundIconBackground>
+            <RoundIcon icon={faSignOut} />
+          </RoundIconBackground>
+          <LogoutText>
+            {user ? (
+              <UserName>
+                {user.firstName} {user.lastName}
+              </UserName>
+            ) : null}
+            <span>{t.header.logout}</span>
+          </LogoutText>
+        </NavItem>
+      ) : (
+        <NavItem href={getLoginUri()} data-qa="login-btn">
+          <RoundIconBackground>
+            <RoundIcon icon={faSignIn} />
+          </RoundIconBackground>
+          <span>{t.header.login}</span>
+        </NavItem>
+      )}
     </>
   )
 })

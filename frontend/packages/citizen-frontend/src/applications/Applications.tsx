@@ -12,11 +12,11 @@ import Container, {
 import { getGuardianApplications } from './api'
 import { Gap } from '@evaka/lib-components/src/white-space'
 import { H1, P } from '@evaka/lib-components/src/typography'
-import { SpinnerSegment } from '../../../lib-components/src/atoms/state/Spinner'
-import ErrorSegment from '../../../lib-components/src/atoms/state/ErrorSegment'
 import _ from 'lodash'
 import ChildApplicationsBlock from '~applications/ChildApplicationsBlock'
 import { ApplicationsOfChild } from '@evaka/lib-common/src/api-types/application/ApplicationsOfChild'
+import { SpinnerSegment } from '@evaka/lib-components/src/atoms/state/Spinner'
+import ErrorSegment from '@evaka/lib-components/src/atoms/state/ErrorSegment'
 
 export default React.memo(function Applications() {
   const t = useTranslation()

@@ -191,6 +191,7 @@
       "map": "Kartta",
       "application": "Hakemukset",
       "decisions": "Päätökset",
+      "newMap": "Uusi Kartta",
       "newDecisions": "Uusi Päätökset",
       "newApplications": "Uusi Hakemukset"
     },

@@ -22,11 +22,15 @@ export type User = Person & {
 }
 
 type AuthState = {
-  user?: User
-  setUser: (user: User) => void
+  loading: boolean
+  setLoading: (loading: boolean) => void
+  user: User | undefined
+  setUser: (user: User | undefined) => void
 }
 
 const defaultState: AuthState = {
+  loading: true,
+  setLoading: () => undefined,
   user: undefined,
   setUser: () => undefined
 }
@@ -36,13 +40,16 @@ export const AuthContext = createContext<AuthState>(defaultState)
 export const AuthContextProvider = React.memo(
   function AuthContextProvider(props: { children: ReactNode }) {
     const [user, setUser] = useState<User | undefined>(defaultState.user)
+    const [loading, setLoading] = useState<boolean>(defaultState.loading)
 
     const value = useMemo(
       () => ({
         user,
-        setUser
+        setUser,
+        loading,
+        setLoading
       }),
-      [user, setUser]
+      [user, setUser, loading, setLoading]
     )
 
     return (

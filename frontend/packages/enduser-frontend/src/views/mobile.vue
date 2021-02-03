@@ -91,8 +91,20 @@ SPDX-License-Identifier: LGPL-2.1-or-later
             <font-awesome-icon :icon="item.icon"></font-awesome-icon>
             {{ item.label | uppercase }}
           </router-link>
+        </div>
+
+        <a
+          v-if="showCitizenFrontendMapLink"
+          class="menu-item"
+          :href="newMapUrl"
+          data-qa="nav-map"
+        >
+          <font-awesome-icon :icon="['far', 'map']"></font-awesome-icon>
+          {{ $t('menu.routes.newMap') | uppercase }}
+        </a>
+
+        <div v-if="showCitizenFrontendLink">
           <a
-            v-if="showCitizenFrontendLink"
             class="menu-item"
             :href="newApplicationsUrl"
             data-qa="nav-applications"
@@ -101,7 +113,6 @@ SPDX-License-Identifier: LGPL-2.1-or-later
             {{ $t('menu.routes.newApplications') | uppercase }}
           </a>
           <a
-            v-if="showCitizenFrontendLink"
             class="menu-item"
             :href="newDecisionsUrl"
             data-qa="nav-decisions"
@@ -152,8 +163,14 @@ SPDX-License-Identifier: LGPL-2.1-or-later
       languages() {
         return Object.values(this.$t('menu.language', { returnObjects: true }))
       },
+      showCitizenFrontendMapLink() {
+        return config.feature.citizenFrontend
+      },
       showCitizenFrontendLink() {
         return this.isLoggedIn && config.feature.citizenFrontend
+      },
+      newMapUrl() {
+        return `${this.citizenFrontendUrl}/map`
       },
       newDecisionsUrl() {
         return `${this.citizenFrontendUrl}/decisions`

@@ -24,6 +24,7 @@ const en: Translations = {
       map: 'Map',
       applications: 'Applications',
       decisions: 'Decisions',
+      newMap: 'New Map',
       newDecisions: 'New Decisions',
       newApplications: 'New Applications'
     },
@@ -32,6 +33,7 @@ const en: Translations = {
       sv: 'På svenska',
       en: 'In English'
     },
+    login: 'Log in',
     logout: 'Log out'
   },
   footer: {
