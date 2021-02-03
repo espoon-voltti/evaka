@@ -94,7 +94,7 @@ export default React.memo(function ApplicationVerificationViewDaycare({
                       )}
                   </ul>
                   <P>
-                    <a onClick={closeVerification} role="button">
+                    <a href="#" onClick={closeVerification} role="button">
                       {
                         t.applications.editor.verification.attachmentBox
                           .goBackLinkText
@@ -102,7 +102,7 @@ export default React.memo(function ApplicationVerificationViewDaycare({
                     </a>
                     {
                       t.applications.editor.verification.attachmentBox
-                        .goBackLinkText
+                        .goBackRestText
                     }
                   </P>
                 </div>

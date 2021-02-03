@@ -131,6 +131,7 @@ export default React.memo(function ContactInfoSection({
 
                       <Label>{tLocal.fridgeChildren.ssn}</Label>
                       <span>{socialSecurityNumber}</span>
+                      <Gap size="m" />
                     </ListGrid>
                   )
                 )
