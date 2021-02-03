@@ -327,6 +327,12 @@ const ApplicationsList = React.memo(function Applications({
                 {application.preferredUnits.map((unit, i) => (
                   <p key={`unit-pref-${i}`}>{unit.name}</p>
                 ))}
+                {application.currentPlacementUnit ? (
+                  <CurrentUnit>
+                    {i18n.applications.list.currentUnit}{' '}
+                    {application.currentPlacementUnit.name}
+                  </CurrentUnit>
+                ) : null}
               </div>
             }
           >
@@ -486,4 +492,8 @@ export default ApplicationsList
 const CheckAllContainer = styled.div`
   display: flex;
   justify-content: flex-end;
+`
+
+const CurrentUnit = styled.p`
+  font-style: italic;
 `

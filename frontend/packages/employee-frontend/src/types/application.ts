@@ -82,6 +82,7 @@ export interface ApplicationListSummary {
   duplicateApplication: boolean
   placementProposalStatus: PlacementProposalStatus | null
   placementProposalUnitName: string | null
+  currentPlacementUnit: Unit | null
 }
 
 interface PlacementProposalStatus {

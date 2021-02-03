@@ -196,7 +196,8 @@ export const fi = {
       status: 'Tila',
       basis: 'Perusteet',
       lessthan3: 'Alle 3-vuotias hoidontarpeen alkaessa',
-      morethan3: 'Yli 3-vuotias hoidontarpeen alkaessa'
+      morethan3: 'Yli 3-vuotias hoidontarpeen alkaessa',
+      currentUnit: 'Nyk.'
     },
     actions: {
       moveToWaitingPlacement: 'Siirrä sijoitettaviin',
