@@ -27,7 +27,7 @@ export const AttachmentDownload = styled.a`
   text-decoration: none;
 `
 
-export default React.memo(function ServiceNeedUrgency({
+export const ServiceNeedUrgency = React.memo(function ServiceNeedUrgency({
   formData
 }: ServiceNeedSectionProps) {
   const t = useTranslation()
@@ -75,6 +75,60 @@ export default React.memo(function ServiceNeedUrgency({
           </span>
         </>
       )}
+    </>
+  )
+})
+
+
+export const ServiceNeedShiftCare = React.memo(function ServiceNeedShiftCare({
+  formData
+}: ServiceNeedSectionProps) {
+  const t = useTranslation()
+
+  return (
+    <>
+      <Label>
+          {t.applications.editor.verification.serviceNeed.dailyTime.shiftCare}
+        </Label>
+        <span>
+          {formData.serviceNeed.shiftCare
+            ? t.applications.editor.verification.serviceNeed.dailyTime
+                .withShiftCare
+            : t.applications.editor.verification.serviceNeed.dailyTime
+                .withoutShiftCare}
+        </span>
+
+        {formData.serviceNeed.shiftCare && (
+          <>
+            <Label>
+              {t.applications.editor.verification.serviceNeed.attachments.label}
+            </Label>
+            <span>
+              {formData.serviceNeed.shiftCareAttachments.length > 0 ? (
+                <AttachmentList>
+                  {formData.serviceNeed.shiftCareAttachments.map((file) => (
+                    <li key={file.id}>
+                      <span className="attachment-icon">
+                        <FontAwesomeIcon icon={faFile} />
+                      </span>
+                      <Gap horizontal size={'xs'} />
+                      <AttachmentDownload
+                        href={`/api/application/attachments/${file.id}/download`}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        {file.name}
+                      </AttachmentDownload>
+                    </li>
+                  ))}
+                </AttachmentList>
+              ) : (
+                t.applications.editor.verification.serviceNeed.attachments
+                  .withoutAttachments
+              )}
+            </span>
+          </>
+        )}
     </>
   )
 })

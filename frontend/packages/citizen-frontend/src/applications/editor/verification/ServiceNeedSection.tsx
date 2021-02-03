@@ -9,31 +9,16 @@ import { H2, H3, Label } from '@evaka/lib-components/src/typography'
 import ListGrid from '@evaka/lib-components/src/layout/ListGrid'
 import { ApplicationDataGridLabelWidth } from '~applications/editor/verification/const'
 import { Gap } from '@evaka/lib-components/src/white-space'
-import { faFile } from '@evaka/lib-icons'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import styled from 'styled-components'
-import { espooBrandColors } from '@evaka/lib-components/src/colors'
 import ServiceNeedConnectedDaycare from './ServiceNeedConnectedDaycare'
 import ServiceNeedPreparatory from './ServiceNeedPreparatory'
 import { ApplicationType } from '@evaka/lib-common/src/api-types/application/enums'
-import ServiceNeedUrgency from './ServiceNeedUrgency'
+import {ServiceNeedUrgency, ServiceNeedShiftCare} from './ServiceNeedAttachments'
 import ServiceNeedPartTime from './ServiceNeedPartTime'
 
 type ServiceNeedSectionProps = {
   formData: ApplicationFormData
   type: ApplicationType
 }
-
-const AttachmentList = styled.ul`
-  margin-top: 0;
-  padding-left: 0;
-  list-style: none;
-`
-
-const AttachmentDownload = styled.a`
-  color: ${espooBrandColors.espooTurquoise};
-  text-decoration: none;
-`
 
 export default React.memo(function ServiceNeedSectionPreschool({
   formData,
@@ -76,48 +61,7 @@ export default React.memo(function ServiceNeedSectionPreschool({
       >
         {type === 'DAYCARE' && <ServiceNeedPartTime formData={formData} />}
 
-        <Label>
-          {t.applications.editor.verification.serviceNeed.dailyTime.shiftCare}
-        </Label>
-        <span>
-          {formData.serviceNeed.shiftCare
-            ? t.applications.editor.verification.serviceNeed.dailyTime
-                .withShiftCare
-            : t.applications.editor.verification.serviceNeed.dailyTime
-                .withoutShiftCare}
-        </span>
-
-        {formData.serviceNeed.shiftCare && (
-          <>
-            <Label>
-              {t.applications.editor.verification.serviceNeed.attachments.label}
-            </Label>
-            <span>
-              {formData.serviceNeed.shiftCareAttachments.length > 0 ? (
-                <AttachmentList>
-                  {formData.serviceNeed.shiftCareAttachments.map((file) => (
-                    <li key={file.id}>
-                      <span className="attachment-icon">
-                        <FontAwesomeIcon icon={faFile} />
-                      </span>
-                      <Gap horizontal size={'xs'} />
-                      <AttachmentDownload
-                        href={`/api/application/attachments/${file.id}/download`}
-                        target="_blank"
-                        rel="noreferrer"
-                      >
-                        {file.name}
-                      </AttachmentDownload>
-                    </li>
-                  ))}
-                </AttachmentList>
-              ) : (
-                t.applications.editor.verification.serviceNeed.attachments
-                  .withoutAttachments
-              )}
-            </span>
-          </>
-        )}
+        {(type === 'DAYCARE' || type === 'PRESCHOOL') && <ServiceNeedShiftCare formData={formData}/>}
       </ListGrid>
 
       <Gap size={'s'} />
