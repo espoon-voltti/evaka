@@ -24,6 +24,7 @@ import {
 } from '../../dev-api'
 import { seppoAdminRole } from '../../config/users'
 import { formatISODateString } from '../../utils/dates'
+import LocalDate from '@evaka/lib-common/src/local-date'
 
 const adminHome = new AdminHome()
 const employeeHome = new EmployeeHome()
@@ -80,8 +81,11 @@ test('daycare has one backup care child missing group', async (t) => {
 test('backup care child can be placed into a group and removed from it', async (t) => {
   await unitPage.navigateHere(fixtures.daycareFixture.id)
   await unitPage.openTabGroups()
+
   await unitPage.selectPeriodYear()
   await unitPage.openGroups()
+
+  await unitPage.setFilterStartDate(LocalDate.of(2021, 1, 1))
 
   // open the group placement modal and submit it with default values
   const missingPlacement = missingPlacementElement(
