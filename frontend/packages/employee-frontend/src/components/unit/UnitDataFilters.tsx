@@ -40,6 +40,7 @@ export default React.memo(function UnitDataFilters({
       <DatePickersContainer>
         {canEdit ? (
           <DatePickerDeprecated
+            dataQa="unit-filter-start-date"
             date={startDate}
             onChange={(date) => setFilters(filters.withStartDate(date))}
             type="half-width"

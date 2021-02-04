@@ -6,6 +6,7 @@ import { ClientFunction, Selector, t } from 'testcafe'
 import config from '../../../config'
 import { postPairingChallenge } from '../../../dev-api'
 import { UUID } from '../../../dev-api/types'
+import LocalDate from '@evaka/lib-common/src/local-date'
 
 export default class UnitPage {
   private readonly baseUrl = config.employeeUrl
@@ -50,6 +51,13 @@ export default class UnitPage {
 
   async openTabApplications() {
     await t.click(Selector('[data-qa="applications-tab"]'))
+  }
+
+  async setFilterStartDate(date: LocalDate) {
+    const dateInput = Selector('[data-qa="unit-filter-start-date"] input')
+    await t.typeText(dateInput, date.format('dd.MM.yyyy'), { replace: true })
+    // HACK: DatePickerDeprecated is bugged on the page, but filling the date twice happens to work
+    await t.typeText(dateInput, date.format('dd.MM.yyyy'), { replace: true })
   }
 
   async selectPeriodYear() {
