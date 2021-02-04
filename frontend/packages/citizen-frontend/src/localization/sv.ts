@@ -211,7 +211,6 @@ const sv: Translations = {
             label: 'Utvalda enheter'
           }
         },
-
         contactInfo: {
           title: 'Henkilötiedot',
           child: {
@@ -263,6 +262,12 @@ const sv: Translations = {
             ssn: 'Henkilön henkilötunnus',
             noOtherChildren: 'Ei muita lapsia'
           }
+        },
+        additionalDetails: {
+          title: 'Muut lisätiedot',
+          otherInfoLabel: 'Hakuun liittyvät lisätiedot',
+          dietLabel: 'Erityisruokavalio',
+          allergiesLabel: 'Allergiat'
         }
       },
       serviceNeed: {

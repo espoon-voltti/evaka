@@ -261,6 +261,12 @@ const en: Translations = {
             ssn: 'Henkilön henkilötunnus',
             noOtherChildren: 'Ei muita lapsia'
           }
+        },
+        additionalDetails: {
+          title: 'Muut lisätiedot',
+          otherInfoLabel: 'Hakuun liittyvät lisätiedot',
+          dietLabel: 'Erityisruokavalio',
+          allergiesLabel: 'Allergiat'
         }
       },
       serviceNeed: {

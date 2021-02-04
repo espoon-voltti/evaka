@@ -21,6 +21,7 @@ import RoundIcon from '@evaka/lib-components/src/atoms/RoundIcon'
 import { faInfo } from '@evaka/lib-icons'
 import ContactInfoSection from './ContactInfoSection'
 import { ApplicationType } from '~../../lib-common/src/api-types/application/enums'
+import AdditionalDetailsSection from './AdditionalDetailsSection'
 
 type DaycareApplicationVerificationViewProps = {
   application: ApplicationDetails
@@ -126,6 +127,10 @@ export default React.memo(function ApplicationVerificationViewDaycare({
             type === 'DAYCARE' ||
             (type === 'PRESCHOOL' && formData.serviceNeed.connectedDaycare)
           }
+        />
+        <AdditionalDetailsSection
+          formData={formData}
+          showAllergiesAndDiet={type !== 'CLUB'}
         />
       </ContentArea>
     </Container>

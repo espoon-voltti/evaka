@@ -79,6 +79,12 @@ export default React.memo(function ContactInfoSection({
         <span>
           {formData.guardianFirstName} {formData.guardianLastName}
         </span>
+        <Label>{tLocal.guardian.tel}</Label>
+        <span>{formData.guardianPhone}</span>
+        <Label>{tLocal.guardian.email}</Label>
+        <span>{formData.guardianEmail}</span>
+        <Label>{tLocal.guardian.streetAddress}</Label>
+        <span>{formData.guardianHomeAddress}</span>
       </ListGrid>
 
       {type !== 'CLUB' && (
