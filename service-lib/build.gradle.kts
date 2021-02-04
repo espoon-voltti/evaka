@@ -49,3 +49,9 @@ tasks.withType<KotlinCompile> {
         allWarningsAsErrors = true
     }
 }
+
+tasks {
+    test {
+        useJUnitPlatform()
+    }
+}
