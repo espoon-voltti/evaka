@@ -22,7 +22,6 @@ dependencies {
     // Kotlin + core
     implementation(platform(kotlin("bom")))
     implementation(kotlin("stdlib-jdk8"))
-    implementation(kotlin("reflect"))
 
     // Logging
     implementation("io.github.microutils:kotlin-logging:${Version.kotlinLogging}")
@@ -31,7 +30,6 @@ dependencies {
 
     // Spring
     implementation(platform("org.springframework.boot:spring-boot-dependencies:${Version.springBoot}"))
-    implementation("org.springframework.boot:spring-boot-starter")
     implementation("org.springframework.boot:spring-boot-starter-web")
 
     // Jackson
@@ -40,9 +38,7 @@ dependencies {
 
     // Auth0 JWT
     implementation("com.auth0:java-jwt:${Version.auth0Jwt}")
-    implementation("com.auth0:jwks-rsa:0.15.0")
 
-    testImplementation("org.springframework.boot:spring-boot-starter-web")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.skyscreamer:jsonassert:1.5.0")
 }
