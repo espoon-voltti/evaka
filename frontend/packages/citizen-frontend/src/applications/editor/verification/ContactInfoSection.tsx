@@ -85,6 +85,27 @@ export default React.memo(function ContactInfoSection({
         <span>{formData.guardianEmail}</span>
         <Label>{tLocal.guardian.streetAddress}</Label>
         <span>{formData.guardianHomeAddress}</span>
+
+        <Label>{tLocal.guardian.isAddressChanging}</Label>
+        <span>
+          {formData.guardianFutureAddressExists
+            ? tLocal.guardian.hasFutureAddress
+            : t.applications.editor.verification.no}
+        </span>
+
+        {formData.guardianFutureAddressExists && (
+          <>
+            <Label>{tLocal.guardian.addressChangesAt}</Label>
+            <span>{formData.guardianMoveDate}</span>
+
+            <Label>{tLocal.guardian.newAddress}</Label>
+            <span>
+              {formData.guardianFutureStreet}{' '}
+              {formData.guardianFuturePostalCode}{' '}
+              {formData.guardianFuturePostOffice}
+            </span>
+          </>
+        )}
       </ListGrid>
 
       {type !== 'CLUB' && (

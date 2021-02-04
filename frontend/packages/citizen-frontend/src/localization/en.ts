@@ -230,6 +230,7 @@ const en: Translations = {
             streetAddress: 'Kotiosoite',
             tel: 'Puhelinnumero',
             email: 'Sähköpostiosoite',
+            isAddressChanging: 'Osoite muuttunut / muuttumassa',
             hasFutureAddress: 'Osoite muuttunut / muuttumassa',
             addressChangesAt: 'Muuttopäivämäärä',
             newAddress: 'Uusi osoite'
