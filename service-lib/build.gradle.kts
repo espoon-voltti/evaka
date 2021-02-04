@@ -47,19 +47,9 @@ dependencies {
     testImplementation("org.skyscreamer:jsonassert:1.5.0")
 }
 
-allOpen {
-    annotation("org.springframework.boot.test.context.TestConfiguration")
-}
-
 tasks.withType<KotlinCompile> {
     kotlinOptions {
         jvmTarget = Version.java
         allWarningsAsErrors = true
-    }
-}
-
-tasks {
-    test {
-        systemProperty("spring.profiles.active", "test")
     }
 }
