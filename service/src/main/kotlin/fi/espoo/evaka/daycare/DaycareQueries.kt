@@ -10,10 +10,12 @@ import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.daycare.service.DaycareManager
 import fi.espoo.evaka.shared.auth.AclAuthorization
+import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.bindNullable
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.Coordinate
 import fi.espoo.evaka.shared.domain.DateRange
+import fi.espoo.evaka.shared.utils.zoneId
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.bindKotlin
 import org.jdbi.v3.core.kotlin.mapTo
@@ -243,6 +245,39 @@ ORDER BY name ASC
         .bind("daycare", type == ApplicationUnitType.DAYCARE)
         .bind("preschool", type == ApplicationUnitType.PRESCHOOL)
         .bind("preparatory", type == ApplicationUnitType.PREPARATORY)
+        .mapTo<PublicUnit>()
+        .toList()
+}
+
+fun Database.Read.getAllApplicableUnits(): List<PublicUnit> {
+    // language=sql
+    val sql = """
+SELECT
+    id,
+    name,
+    type,
+    provider_type,
+    language,
+    street_address,
+    postal_code,
+    post_office,
+    phone,
+    email,
+    url,
+    location,
+    opening_date,
+    closing_date,
+    ghost_unit
+FROM daycare
+WHERE daterange(opening_date, closing_date, '[]') && daterange(:date, null) AND (
+    (club_apply_period IS NOT NULL AND club_apply_period && daterange(:date, null)) OR
+    (daycare_apply_period IS NOT NULL AND daycare_apply_period && daterange(:date, null)) OR
+    (preschool_apply_period IS NOT NULL AND preschool_apply_period && daterange(:date, null))
+)
+ORDER BY name ASC
+    """.trimIndent()
+    return createQuery(sql)
+        .bind("date", LocalDate.now(zoneId))
         .mapTo<PublicUnit>()
         .toList()
 }

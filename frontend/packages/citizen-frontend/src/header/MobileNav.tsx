@@ -13,7 +13,7 @@ import { Gap, defaultMargins } from '@evaka/lib-components/src/white-space'
 import { tabletMin } from '@evaka/lib-components/src/breakpoints'
 import { useUser } from '../auth'
 import { langs, useLang, useTranslation } from '../localization'
-import { getLoginUri } from '~header/Header'
+import { getLoginUri } from '~header/const'
 
 type Props = {
   enduserBaseUrl: string

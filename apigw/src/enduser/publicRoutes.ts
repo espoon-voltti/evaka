@@ -11,6 +11,7 @@ const proxy = createProxy()
 
 router.get('/units', proxy)
 router.get('/public/areas', proxy)
+router.get('/public/units/all', proxy)
 
 router.get('/autocomplete', (req, res, next) => {
   const { address } = req.query

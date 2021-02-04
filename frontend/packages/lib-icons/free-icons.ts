@@ -51,6 +51,7 @@ import {
   faInfo,
   faInfoCircle,
   faLink,
+  faList,
   faMapMarkerAlt,
   faMeh,
   faMoneyCheck,
@@ -129,6 +130,7 @@ const icons: IconSet = {
   faInfo,
   faInfoCircle,
   faLink,
+  faList,
   faMapMarkerAlt,
   faMeh,
   faMoneyCheck,
@@ -160,6 +162,7 @@ const icons: IconSet = {
   fasChevronUp: faChevronUp,
   fasExclamationTriangle: faExclamationTriangle,
   fasInfo: faInfo,
+  fasMapMarkerAlt: faMapMarkerAlt,
   fasArrowDown: faArrowDown,
   fasArrowUp: faArrowUp,
   farUser

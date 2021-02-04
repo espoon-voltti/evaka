@@ -17,6 +17,7 @@ import ChildApplicationsBlock from '~applications/ChildApplicationsBlock'
 import { ApplicationsOfChild } from '@evaka/lib-common/src/api-types/application/ApplicationsOfChild'
 import { SpinnerSegment } from '@evaka/lib-components/src/atoms/state/Spinner'
 import ErrorSegment from '@evaka/lib-components/src/atoms/state/ErrorSegment'
+import Footer from '~Footer'
 
 export default React.memo(function Applications() {
   const t = useTranslation()
@@ -34,35 +35,38 @@ export default React.memo(function Applications() {
   }, [loadGuardianApplications])
 
   return (
-    <Container>
-      <Gap size="s" />
-      <ContentArea opaque paddingVertical="L">
-        <H1 noMargin>{t.applicationsList.title}</H1>
-        <P
-          width="800px"
-          dangerouslySetInnerHTML={{ __html: t.applicationsList.summary }}
-        />
-      </ContentArea>
-      <Gap size="s" />
+    <>
+      <Container>
+        <Gap size="s" />
+        <ContentArea opaque paddingVertical="L">
+          <H1 noMargin>{t.applicationsList.title}</H1>
+          <P
+            width="800px"
+            dangerouslySetInnerHTML={{ __html: t.applicationsList.summary }}
+          />
+        </ContentArea>
+        <Gap size="s" />
 
-      {guardianApplications.isLoading && <SpinnerSegment />}
-      {guardianApplications.isFailure && (
-        <ErrorSegment title={t.applicationsList.pageLoadError} />
-      )}
-      {guardianApplications.isSuccess &&
-        _.sortBy(guardianApplications.value, (a) => a.childName).map(
-          (childApplications) => (
-            <React.Fragment key={childApplications.childId}>
-              <ChildApplicationsBlock
-                childId={childApplications.childId}
-                childName={childApplications.childName}
-                applicationSummaries={childApplications.applicationSummaries}
-                reload={loadGuardianApplications}
-              />
-              <Gap size="s" />
-            </React.Fragment>
-          )
+        {guardianApplications.isLoading && <SpinnerSegment />}
+        {guardianApplications.isFailure && (
+          <ErrorSegment title={t.applicationsList.pageLoadError} />
         )}
-    </Container>
+        {guardianApplications.isSuccess &&
+          _.sortBy(guardianApplications.value, (a) => a.childName).map(
+            (childApplications) => (
+              <React.Fragment key={childApplications.childId}>
+                <ChildApplicationsBlock
+                  childId={childApplications.childId}
+                  childName={childApplications.childName}
+                  applicationSummaries={childApplications.applicationSummaries}
+                  reload={loadGuardianApplications}
+                />
+                <Gap size="s" />
+              </React.Fragment>
+            )
+          )}
+      </Container>
+      <Footer />
+    </>
   )
 })

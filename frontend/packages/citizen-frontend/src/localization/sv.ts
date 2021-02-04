@@ -16,7 +16,22 @@ const sv: Translations = {
         PRIVATE: 'Privat tjänst',
         MUNICIPAL_SCHOOL: 'Kommunal tjänst',
         PRIVATE_SERVICE_VOUCHER: 'Privat tjänst (servicesedel)'
+      },
+      careTypes: {
+        CLUB: 'Kerho',
+        FAMILY: 'Perhepäivähoito',
+        CENTRE: 'Päiväkoti',
+        GROUP_FAMILY: 'Ryhmäperhepäivähoito',
+        PRESCHOOL: 'Esiopetus',
+        PREPARATORY_EDUCATION: 'Valmistava opetus'
+      },
+      languages: {
+        fi: 'suomenkielinen',
+        sv: 'ruotsinkielinen'
       }
+    },
+    errors: {
+      genericGetError: 'Hämtar information misslyckades'
     }
   },
   header: {
@@ -44,6 +59,16 @@ const sv: Translations = {
     sendFeedback: 'Ge feedback',
     sendFeedbackLink:
       'https://easiointi.espoo.fi/eFeedback/sv/Feedback/20-S%C3%A4hk%C3%B6iset%20asiointipalvelut'
+  },
+  map: {
+    title: 'Yksiköt kartalla',
+    mainInfo:
+      'Tässä näkymässä voit hakea kartalta Espoon varhaiskasvatus-, esiopetus- ja kerhopaikkoja.',
+    language: 'Yksikön kieli',
+    mobileTabs: {
+      map: 'Kartta',
+      list: 'Lista yksiköistä'
+    }
   },
   applications: {
     title: 'Ansökningar',

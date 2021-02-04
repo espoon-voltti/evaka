@@ -22,6 +22,7 @@ import { useTranslation } from '~localization'
 import { createApplication, getDuplicateApplications } from '~applications/api'
 import { ApplicationType } from '@evaka/lib-common/src/api-types/application/enums'
 import ExpandingInfo from '@evaka/lib-components/src/molecules/ExpandingInfo'
+import Footer from '~Footer'
 
 export default React.memo(function ApplicationCreation() {
   const history = useHistory()
@@ -49,83 +50,89 @@ export default React.memo(function ApplicationCreation() {
   }
 
   return (
-    <Container>
-      <ReturnButton label={t.common.return} />
-      <ContentArea opaque paddingVertical="L">
-        <H1 noMargin>{t.applications.creation.title}</H1>
-        <Gap size="m" />
-        <H2 noMargin>
-          {child.firstName} {child.lastName}
-        </H2>
-        <Gap size="XL" />
-        <ExpandingInfo info={t.applications.creation.daycareInfo}>
-          <Radio
-            checked={selectedType === 'DAYCARE'}
-            onChange={() => setSelectedType('DAYCARE')}
-            label={t.applications.creation.daycareLabel}
-            dataQa="type-radio-DAYCARE"
+    <>
+      <Container>
+        <ReturnButton label={t.common.return} />
+        <ContentArea opaque paddingVertical="L">
+          <H1 noMargin>{t.applications.creation.title}</H1>
+          <Gap size="m" />
+          <H2 noMargin>
+            {child.firstName} {child.lastName}
+          </H2>
+          <Gap size="XL" />
+          <ExpandingInfo info={t.applications.creation.daycareInfo}>
+            <Radio
+              checked={selectedType === 'DAYCARE'}
+              onChange={() => setSelectedType('DAYCARE')}
+              label={t.applications.creation.daycareLabel}
+              dataQa="type-radio-DAYCARE"
+            />
+          </ExpandingInfo>
+          <Gap size="s" />
+          <ExpandingInfo info={t.applications.creation.preschoolInfo}>
+            <Radio
+              checked={selectedType === 'PRESCHOOL'}
+              onChange={() => setSelectedType('PRESCHOOL')}
+              label={t.applications.creation.preschoolLabel}
+              dataQa="type-radio-PRESCHOOL"
+            />
+          </ExpandingInfo>
+          <PreschoolDaycareInfo>
+            {t.applications.creation.preschoolDaycareInfo}
+          </PreschoolDaycareInfo>
+          <Gap size="s" />
+          <ExpandingInfo info={t.applications.creation.clubInfo}>
+            <Radio
+              checked={selectedType === 'CLUB'}
+              onChange={() => setSelectedType('CLUB')}
+              label={t.applications.creation.clubLabel}
+              dataQa="type-radio-CLUB"
+            />
+          </ExpandingInfo>
+          {duplicateExists ? (
+            <>
+              <Gap size="L" />
+              <AlertBox
+                thin
+                message={t.applications.creation.duplicateWarning}
+              />
+            </>
+          ) : null}
+          <Gap size="s" />
+          <P
+            dangerouslySetInnerHTML={{
+              __html: t.applications.creation.applicationInfo
+            }}
           />
-        </ExpandingInfo>
-        <Gap size="s" />
-        <ExpandingInfo info={t.applications.creation.preschoolInfo}>
-          <Radio
-            checked={selectedType === 'PRESCHOOL'}
-            onChange={() => setSelectedType('PRESCHOOL')}
-            label={t.applications.creation.preschoolLabel}
-            dataQa="type-radio-PRESCHOOL"
-          />
-        </ExpandingInfo>
-        <PreschoolDaycareInfo>
-          {t.applications.creation.preschoolDaycareInfo}
-        </PreschoolDaycareInfo>
-        <Gap size="s" />
-        <ExpandingInfo info={t.applications.creation.clubInfo}>
-          <Radio
-            checked={selectedType === 'CLUB'}
-            onChange={() => setSelectedType('CLUB')}
-            label={t.applications.creation.clubLabel}
-            dataQa="type-radio-CLUB"
-          />
-        </ExpandingInfo>
-        {duplicateExists ? (
-          <>
-            <Gap size="L" />
-            <AlertBox thin message={t.applications.creation.duplicateWarning} />
-          </>
-        ) : null}
-        <Gap size="s" />
-        <P
-          dangerouslySetInnerHTML={{
-            __html: t.applications.creation.applicationInfo
-          }}
-        />
-      </ContentArea>
-      <ContentArea opaque={false} paddingVertical="L">
-        <ButtonContainer justify="center">
-          <AsyncButton
-            primary
-            text={t.applications.creation.create}
-            disabled={selectedType === undefined || duplicateExists}
-            onClick={() =>
-              selectedType !== undefined
-                ? createApplication(
-                    childId,
-                    selectedType
-                  ).then((applicationId) =>
-                    history.push(`/applications/${applicationId}/edit`)
-                  )
-                : Promise.resolve()
-            }
-            onSuccess={() => undefined}
-            data-qa="submit"
-          />
-          <Button
-            text={t.common.cancel}
-            onClick={() => history.push('/applications')}
-          />
-        </ButtonContainer>
-      </ContentArea>
-    </Container>
+        </ContentArea>
+        <ContentArea opaque={false} paddingVertical="L">
+          <ButtonContainer justify="center">
+            <AsyncButton
+              primary
+              text={t.applications.creation.create}
+              disabled={selectedType === undefined || duplicateExists}
+              onClick={() =>
+                selectedType !== undefined
+                  ? createApplication(
+                      childId,
+                      selectedType
+                    ).then((applicationId) =>
+                      history.push(`/applications/${applicationId}/edit`)
+                    )
+                  : Promise.resolve()
+              }
+              onSuccess={() => undefined}
+              data-qa="submit"
+            />
+            <Button
+              text={t.common.cancel}
+              onClick={() => history.push('/applications')}
+            />
+          </ButtonContainer>
+        </ContentArea>
+      </Container>
+      <Footer />
+    </>
   )
 })
 

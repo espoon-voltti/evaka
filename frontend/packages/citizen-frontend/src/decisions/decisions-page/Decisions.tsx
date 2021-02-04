@@ -18,6 +18,7 @@ import { SpinnerSegment } from '@evaka/lib-components/src/atoms/state/Spinner'
 import ErrorSegment from '@evaka/lib-components/src/atoms/state/ErrorSegment'
 import ApplicationDecisionsBlock from '~decisions/decisions-page/ApplicationDecisionsBlock'
 import _ from 'lodash'
+import Footer from '~Footer'
 
 export default React.memo(function Decisions() {
   const t = useTranslation()
@@ -39,46 +40,49 @@ export default React.memo(function Decisions() {
     : 0
 
   return (
-    <Container>
-      <Gap size="s" />
-      <ContentArea opaque paddingVertical="L">
-        <H1 noMargin>{t.decisions.title}</H1>
-        <Gap size="xs" />
-        <P
-          width="800px"
-          dangerouslySetInnerHTML={{ __html: t.decisions.summary }}
-        />
-        {unconfirmedDecisionsCount > 0 && (
+    <>
+      <Container>
+        <Gap size="s" />
+        <ContentArea opaque paddingVertical="L">
+          <H1 noMargin>{t.decisions.title}</H1>
+          <Gap size="xs" />
+          <P
+            width="800px"
+            dangerouslySetInnerHTML={{ __html: t.decisions.summary }}
+          />
+          {unconfirmedDecisionsCount > 0 && (
+            <>
+              <Gap size="s" />
+              <AlertBox
+                message={t.decisions.unconfirmedDecisions(
+                  unconfirmedDecisionsCount
+                )}
+                thin
+                data-qa="alert-box-unconfirmed-decisions-count"
+              />
+            </>
+          )}
+        </ContentArea>
+        <Gap size="s" />
+
+        {applicationDecisions.isLoading && <SpinnerSegment />}
+        {applicationDecisions.isFailure && (
+          <ErrorSegment title={t.decisions.pageLoadError} />
+        )}
+        {applicationDecisions.isSuccess && (
           <>
-            <Gap size="s" />
-            <AlertBox
-              message={t.decisions.unconfirmedDecisions(
-                unconfirmedDecisionsCount
-              )}
-              thin
-              data-qa="alert-box-unconfirmed-decisions-count"
-            />
+            {_.sortBy(applicationDecisions.value, (d) => d.childName).map(
+              (applicationDecision) => (
+                <React.Fragment key={applicationDecision.applicationId}>
+                  <ApplicationDecisionsBlock {...applicationDecision} />
+                  <Gap size="s" />
+                </React.Fragment>
+              )
+            )}
           </>
         )}
-      </ContentArea>
-      <Gap size="s" />
-
-      {applicationDecisions.isLoading && <SpinnerSegment />}
-      {applicationDecisions.isFailure && (
-        <ErrorSegment title={t.decisions.pageLoadError} />
-      )}
-      {applicationDecisions.isSuccess && (
-        <>
-          {_.sortBy(applicationDecisions.value, (d) => d.childName).map(
-            (applicationDecision) => (
-              <React.Fragment key={applicationDecision.applicationId}>
-                <ApplicationDecisionsBlock {...applicationDecision} />
-                <Gap size="s" />
-              </React.Fragment>
-            )
-          )}
-        </>
-      )}
-    </Container>
+      </Container>
+      <Footer />
+    </>
   )
 })
