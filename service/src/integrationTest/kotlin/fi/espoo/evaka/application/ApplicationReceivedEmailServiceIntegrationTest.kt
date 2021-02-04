@@ -58,9 +58,9 @@ class ApplicationReceivedEmailServiceIntegrationTest : FullApplicationTest() {
 
     private fun assertEmail(email: MockEmail?, expectedToAddress: String, expectedFromAddress: String, expectedSubject: String, expectedHtmlPart: String, expectedTextPart: String) {
         assertNotNull(email)
-        assertEquals(expectedToAddress, email!!.toAddress)
-        assertEquals(expectedFromAddress, email!!.fromAddress)
-        assertEquals(expectedSubject, email!!.subject)
+        assertEquals(expectedToAddress, email?.toAddress)
+        assertEquals(expectedFromAddress, email?.fromAddress)
+        assertEquals(expectedSubject, email?.subject)
         assert(email!!.htmlBody.contains(expectedHtmlPart, true))
         assert(email!!.textBody.contains(expectedTextPart, true))
     }

@@ -1,7 +1,12 @@
-import fi.espoo.evaka.application.fetchApplicationDetails
+// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
+
+package fi.espoo.evaka.application
+
 import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.decision.getDecision
-import fi.espoo.evaka.emailclient.EmailClient
+import fi.espoo.evaka.emailclient.IEmailClient
 import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.SendPendingDecisionEmail
@@ -18,7 +23,7 @@ private val logger = KotlinLogging.logger { }
 @Service
 class PendingDecisionEmailService(
     private val asyncJobRunner: AsyncJobRunner,
-    private val emailClient: EmailClient,
+    private val emailClient: IEmailClient,
     private val env: Environment
 ) {
     init {
@@ -37,7 +42,17 @@ class PendingDecisionEmailService(
             tx.createUpdate("DELETE FROM async_job WHERE type = 'SEND_PENDING_DECISION_EMAIL' AND (claimed_by IS NULL OR completed_at IS NOT NULL)")
                 .execute()
 
-            val pendingDecisions = tx.createQuery("""SELECT DISTINCT(id) FROM decision WHERE status = 'PENDING' AND resolved IS NULL AND sent_date + INTERVAL '1 week' < current_date""")
+            val pendingDecisions = tx.createQuery(
+                """
+SELECT DISTINCT(d.id)
+FROM decision d
+WHERE d.status = 'PENDING'
+AND d.resolved IS NULL
+AND d.sent_date + INTERVAL '1 week' < current_date
+AND d.pending_decision_emails_sent_count < 2
+AND d.pending_decision_email_sent IS NULL or d.pending_decision_email_sent < current_date - INTERVAL '1 week'
+"""
+            )
                 .mapTo<UUID>()
                 .list()
 
@@ -64,8 +79,8 @@ class PendingDecisionEmailService(
         return jobCount
     }
 
-    fun sendPendingDecisionEmail(tx: Database, decisionId: UUID) {
-        tx.read { tx ->
+    fun sendPendingDecisionEmail(db: Database, decisionId: UUID) {
+        db.read { tx ->
             getDecision(tx.handle, decisionId)?.let { decision ->
                 fetchApplicationDetails(tx.handle, decision.applicationId)?.let { application ->
                     tx.handle.getPersonById(application.guardianId)?.let { guardian ->
@@ -81,6 +96,19 @@ class PendingDecisionEmailService(
                                 getHtml(lang),
                                 getText(lang)
                             )
+
+                            // Mark as sent
+                            db.transaction { tx ->
+                                tx.createUpdate(
+                                    """
+UPDATE decision
+SET pending_decision_emails_sent_count = pending_decision_emails_sent_count + 1, pending_decision_email_sent = now()
+WHERE id = :id
+                                    """.trimIndent()
+                                )
+                                    .bind("id", decisionId)
+                                    .execute()
+                            }
                         } else {
                             logger.warn("Could not send pending decision email to guardian ${guardian.id}: invalid email")
                         }
