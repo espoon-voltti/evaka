@@ -174,6 +174,7 @@ interface TextInputProps extends BaseProps {
   name?: string
   'aria-describedby'?: string
   hideErrorsBeforeTouched?: boolean
+  required?: boolean
 }
 
 function InputField({
@@ -198,7 +199,8 @@ function InputField({
   hideErrorsBeforeTouched,
   id,
   'data-qa': dataQa2,
-  'aria-describedby': ariaId
+  'aria-describedby': ariaId,
+  required
 }: TextInputProps) {
   const [touched, setTouched] = useState(false)
 
@@ -236,6 +238,7 @@ function InputField({
           step={step}
           id={id}
           aria-describedby={ariaId}
+          required={required ?? false}
         />
         {clearable && !icon && (
           <InputIcon onClick={() => onChange && onChange('')}>

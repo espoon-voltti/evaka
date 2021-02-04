@@ -115,6 +115,7 @@ interface IconButtonProps extends BaseProps {
   size?: IconSize
   gray?: boolean
   'data-qa'?: string
+  'aria-label'?: string
 }
 
 function IconButton({
@@ -126,7 +127,8 @@ function IconButton({
   disabled,
   size,
   gray,
-  'data-qa': dataQa2
+  'data-qa': dataQa2,
+  'aria-label': ariaLabel
 }: IconButtonProps) {
   return (
     <StyledButton
@@ -137,6 +139,7 @@ function IconButton({
       aria-label={altText}
       size={size}
       gray={gray}
+      aria-label={ariaLabel}
     >
       <div className="icon-wrapper">
         <FontAwesomeIcon icon={icon} />

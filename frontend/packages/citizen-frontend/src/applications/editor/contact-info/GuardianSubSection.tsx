@@ -71,6 +71,7 @@ export default React.memo(function GuardianSubSection({
               hideErrorsBeforeTouched={!verificationRequested}
               placeholder={t.applications.editor.contactInfo.phone}
               width="m"
+              required={true}
             />
           </FixedSpaceColumn>
           <FixedSpaceColumn spacing={'xs'}>

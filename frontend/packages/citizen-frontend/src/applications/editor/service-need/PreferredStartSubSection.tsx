@@ -28,6 +28,7 @@ export default React.memo(function PreferredStartSubSection({
   const { applicationId } = useParams<{ applicationId: string }>()
   const t = useTranslation()
   const [lang] = useLang()
+  const labelId = Math.random().toString(36).substring(2, 15)
 
   const uploadUrgencyAttachment = (
     file: File,
@@ -90,12 +91,12 @@ export default React.memo(function PreferredStartSubSection({
           <ExpandingInfo
             info={t.applications.editor.serviceNeed.startDate.instructions}
           >
-            <Label>
+            <Label htmlFor={labelId}>
               {t.applications.editor.serviceNeed.startDate.label[type]} *
             </Label>
           </ExpandingInfo>
         ) : (
-          <Label>
+          <Label htmlFor={labelId}>
             {t.applications.editor.serviceNeed.startDate.label[type]} *
           </Label>
         )}
@@ -113,6 +114,8 @@ export default React.memo(function PreferredStartSubSection({
           info={errorToInputInfo(errors.preferredStartDate, t.validationErrors)}
           hideErrorsBeforeTouched={!verificationRequested}
           data-qa={'preferredStartDate-input'}
+          id={labelId}
+          required={true}
         />
 
         {type === 'DAYCARE' && (

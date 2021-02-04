@@ -4,6 +4,7 @@
 
 export default {
   common: {
+    title: 'Varhaiskasvatus',
     cancel: 'Peruuta',
     return: 'Palaa',
     ok: 'Ok',
@@ -725,7 +726,8 @@ export default {
     modalHeader: 'Tiedoston käsittely on kesken',
     modalMessage:
       'Tiedosto ei ole juuri nyt avattavissa. Kokeile hetken kuluttua uudelleen.',
-    modalConfirm: 'Selvä'
+    modalConfirm: 'Selvä',
+    deleteFile: 'Poista tiedosto'
   },
   validationErrors: {
     required: 'Arvo puuttuu',

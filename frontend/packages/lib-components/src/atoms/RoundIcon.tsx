@@ -16,6 +16,7 @@ export type IconSize = 's' | 'm' | 'L' | 'XL' | 'XXL'
 type IconContainerProps = {
   color: string
   size: IconSize
+  tabIndex?: number
 }
 
 const diameter = (px: number) => `
@@ -82,8 +83,14 @@ type RoundIconProps = BaseProps & {
   content: IconDefinition | string
   color: string
   size: IconSize
-  onClick?: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => void
+  onClick?: (
+    e: React.MouseEvent<HTMLDivElement, MouseEvent> | React.KeyboardEvent
+  ) => void
   active?: boolean
+  tabindex?: number
+  role?: string
+  'aria-label'?: string
+  'aria-hidden'?: string
 }
 
 function RoundIcon({
@@ -93,10 +100,18 @@ function RoundIcon({
   onClick,
   active = true,
   className,
-  dataQa
+  dataQa,
+  tabindex,
+  role,
+  'aria-label': ariaLabel,
+  'aria-hidden': ariaHidden
 }: RoundIconProps) {
   if (typeof content === 'string' && size !== 'm') {
     console.warn('Text symbol is designed only for size m')
+  }
+
+  function onKeyDown(e: React.KeyboardEvent) {
+    if (onClick && (e.key === ' ' || e.key === 'Enter')) onClick(e)
   }
 
   return (
@@ -109,6 +124,11 @@ function RoundIcon({
       })}
       data-qa={dataQa}
       onClick={onClick}
+      onKeyDown={onKeyDown}
+      tabIndex={tabindex ?? -1}
+      role={role}
+      aria-label={ariaLabel}
+      aria-hidden={ariaHidden}
     >
       {typeof content === 'string' ? (
         <span className="text">{content}</span>

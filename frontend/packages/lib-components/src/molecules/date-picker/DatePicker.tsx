@@ -11,6 +11,7 @@ import DatePickerInput from './DatePickerInput'
 import DatePickerDay from './DatePickerDay'
 import LocalDate from '~../../lib-common/src/local-date'
 import { InputInfo } from '../../atoms/form/InputField'
+import { tabletMin } from '../../breakpoints'
 
 const DatePickerWrapper = styled.div`
   position: relative;
@@ -26,6 +27,11 @@ const DayPickerPositioner = styled.div<{ show: boolean }>`
   justify-content: center;
   align-items: center;
   display: ${(p) => (p.show ? 'inline-block' : 'none')};
+
+  @media (max-width: ${tabletMin}) {
+    width: ${`calc(100vw - ${2 * parseInt(defaultMargins.L)}px)`};
+    left: 0;
+  }
 `
 
 const DayPickerDiv = styled.div`
@@ -49,6 +55,8 @@ type DatePickerProps = {
   hideErrorsBeforeTouched?: boolean
   disabled?: boolean
   'data-qa'?: string
+  id?: string
+  required?: boolean
 }
 
 function DatePicker({
@@ -58,6 +66,8 @@ function DatePicker({
   info,
   hideErrorsBeforeTouched,
   disabled,
+  id,
+  required,
   ...props
 }: DatePickerProps) {
   const [show, setShow] = useState<boolean>(false)
@@ -99,6 +109,8 @@ function DatePicker({
         info={info}
         hideErrorsBeforeTouched={hideErrorsBeforeTouched}
         data-qa={props['data-qa']}
+        id={id}
+        required={required}
       />
       <DayPickerPositioner show={show}>
         <DayPickerDiv>

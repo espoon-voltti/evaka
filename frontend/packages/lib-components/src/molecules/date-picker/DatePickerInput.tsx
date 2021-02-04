@@ -17,6 +17,8 @@ interface Props {
   onBlur: (e: React.FocusEvent<HTMLInputElement>) => void
   onKeyPress?: (e: React.KeyboardEvent) => void
   'data-qa'?: string
+  id?: string
+  required?: boolean
 }
 
 const DISALLOWED_CHARACTERS = /[^0-9./-]+/g
@@ -31,6 +33,8 @@ function DatePickerInput({
   onFocus,
   onBlur,
   onKeyPress,
+  id,
+  required,
   ...props
 }: Props) {
   const ariaId = Math.random().toString(36).substring(2, 15)
@@ -65,6 +69,8 @@ function DatePickerInput({
         onBlur={onBlur}
         onKeyPress={onKeyPress}
         data-qa={props['data-qa']}
+        id={id}
+        required={required}
       />
       <DatePickerDescription id={ariaId} />
     </Wrapper>

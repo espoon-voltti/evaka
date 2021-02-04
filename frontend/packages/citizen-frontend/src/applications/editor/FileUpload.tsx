@@ -2,8 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useState } from 'react'
+import React, { useRef, useState } from 'react'
 import styled from 'styled-components'
+import { IconDefinition } from '@fortawesome/fontawesome-svg-core'
+
 import { useTranslation } from '~localization'
 import { Gap } from '@evaka/lib-components/src/white-space'
 import colors from '@evaka/lib-components/src/colors'
@@ -24,7 +26,6 @@ import {
   ApplicationAttachment,
   FileObject
 } from '@evaka/lib-common/src/api-types/application/ApplicationDetails'
-import { IconDefinition } from '@fortawesome/fontawesome-svg-core'
 import InfoModal from '@evaka/lib-components/src/molecules/modals/InfoModal'
 import { getFileAvailability, getFileBlob } from '~applications/api'
 
@@ -211,6 +212,9 @@ export default React.memo(function FileUpload({
 }: FileUploadProps) {
   const t = useTranslation()
 
+  const ariaId = Math.random().toString(36).substring(2, 15)
+  const inputRef = useRef<HTMLInputElement>(null)
+
   const [modalVisible, setModalVisible] = useState<boolean>(false)
 
   const [uploadedFiles, setUploadedFiles] = useState<FileObject[]>(
@@ -326,6 +330,13 @@ export default React.memo(function FileUpload({
     }
   }
 
+  function onKeyDown(e: React.KeyboardEvent) {
+    if (e.key === ' ' || e.key === 'Enter') {
+      e.preventDefault()
+      inputRef?.current?.click()
+    }
+  }
+
   return (
     <FileUploadContainer>
       {modalVisible && (
@@ -336,15 +347,24 @@ export default React.memo(function FileUpload({
           icon={faInfo}
         />
       )}
-      <FileInputLabel className="file-input-label" onDrop={onDrop}>
-        <input
-          type="file"
-          accept="image/jpeg, image/png, application/pdf, application/msword, application/vnd.openxmlformats-officedocument.wordprocessingml.document, application/vnd.oasis.opendocument.text"
-          onChange={onChange}
-          data-qa="btn-upload-file"
-        />
-        <h4>{t.fileUpload.input.title}</h4>
-        <p>{t.fileUpload.input.text.join('\n')}</p>
+      <FileInputLabel
+        className="file-input-label"
+        onDrop={onDrop}
+        htmlFor={ariaId}
+        onKeyDown={onKeyDown}
+      >
+        <span role="button" tabIndex={0}>
+          <input
+            type="file"
+            accept="image/jpeg, image/png, application/pdf, application/msword, application/vnd.openxmlformats-officedocument.wordprocessingml.document, application/vnd.oasis.opendocument.text"
+            onChange={onChange}
+            data-qa="btn-upload-file"
+            ref={inputRef}
+            id={ariaId}
+          />
+          <h4>{t.fileUpload.input.title}</h4>
+          <p>{t.fileUpload.input.text.join('\n')}</p>
+        </span>
       </FileInputLabel>
       <Gap horizontal size={'s'} />
       <UploadedFiles>
@@ -363,6 +383,7 @@ export default React.memo(function FileUpload({
                 <FileDeleteButton
                   icon={faTimes}
                   onClick={() => deleteFile(file)}
+                  aria-label={`${t.fileUpload.deleteFile} ${file.name}`}
                 />
               </FileHeader>
               {inProgress(file) && (
