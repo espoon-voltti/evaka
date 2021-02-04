@@ -47,6 +47,11 @@ export default React.memo(function ApplicationVerificationViewDaycare({
   closeVerification
 }: DaycareApplicationVerificationViewProps) {
   const t = useTranslation()
+  const missingAttachments =
+    (formData.serviceNeed.urgent &&
+      formData.serviceNeed.urgencyAttachments.length === 0) ||
+    (formData.serviceNeed.shiftCare &&
+      formData.serviceNeed.shiftCareAttachments.length === 0)
   return (
     <Container>
       <ContentArea opaque>
@@ -56,59 +61,52 @@ export default React.memo(function ApplicationVerificationViewDaycare({
             __html: t.applications.editor.verification.notYetSent
           }}
         />
-        {(formData.serviceNeed.urgent &&
-          formData.serviceNeed.urgencyAttachments.length === 0) ||
-          (formData.serviceNeed.shiftCare &&
-            formData.serviceNeed.shiftCareAttachments.length === 0 && (
-              <AttachmentBox>
-                <RoundIconStyled
-                  content={faInfo}
-                  color={espooBrandColors.espooTurquoise}
-                  size="s"
-                />
-                <div>
-                  <P>
-                    <strong>
-                      {t.applications.editor.verification.attachmentBox.nb}
-                    </strong>
-                    {t.applications.editor.verification.attachmentBox.headline}
-                  </P>
-                  <ul>
-                    {formData.serviceNeed.urgent &&
-                      formData.serviceNeed.urgencyAttachments.length === 0 && (
-                        <li>
-                          {
-                            t.applications.editor.verification.attachmentBox
-                              .urgency
-                          }
-                        </li>
-                      )}
-                    {formData.serviceNeed.shiftCare &&
-                      formData.serviceNeed.shiftCareAttachments.length ===
-                        0 && (
-                        <li>
-                          {
-                            t.applications.editor.verification.attachmentBox
-                              .shiftCare
-                          }
-                        </li>
-                      )}
-                  </ul>
-                  <P>
-                    <a href="#" onClick={closeVerification} role="button">
+        {missingAttachments && (
+          <AttachmentBox>
+            <RoundIconStyled
+              content={faInfo}
+              color={espooBrandColors.espooTurquoise}
+              size="s"
+            />
+            <div>
+              <P>
+                <strong>
+                  {t.applications.editor.verification.attachmentBox.nb}
+                </strong>
+                {t.applications.editor.verification.attachmentBox.headline}
+              </P>
+              <ul>
+                {formData.serviceNeed.urgent &&
+                  formData.serviceNeed.urgencyAttachments.length === 0 && (
+                    <li>
+                      {t.applications.editor.verification.attachmentBox.urgency}
+                    </li>
+                  )}
+                {formData.serviceNeed.shiftCare &&
+                  formData.serviceNeed.shiftCareAttachments.length === 0 && (
+                    <li>
                       {
                         t.applications.editor.verification.attachmentBox
-                          .goBackLinkText
+                          .shiftCare
                       }
-                    </a>
-                    {
-                      t.applications.editor.verification.attachmentBox
-                        .goBackRestText
-                    }
-                  </P>
-                </div>
-              </AttachmentBox>
-            ))}
+                    </li>
+                  )}
+              </ul>
+              <P>
+                <a href="#" onClick={closeVerification} role="button">
+                  {
+                    t.applications.editor.verification.attachmentBox
+                      .goBackLinkText
+                  }
+                </a>
+                {
+                  t.applications.editor.verification.attachmentBox
+                    .goBackRestText
+                }
+              </P>
+            </div>
+          </AttachmentBox>
+        )}
       </ContentArea>
 
       <Gap size="m" />
