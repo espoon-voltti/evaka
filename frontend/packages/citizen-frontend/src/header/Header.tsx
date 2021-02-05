@@ -13,6 +13,11 @@ import MobileNav from './MobileNav'
 const enduserBaseUrl =
   window.location.host === 'localhost:9094' ? 'http://localhost:9091' : ''
 
+export const getLoginUri = () =>
+  `/api/application/auth/saml/login?RelayState=${encodeURIComponent(
+    `${window.location.pathname}${window.location.search}${window.location.hash}`
+  )}`
+
 export default React.memo(function Header() {
   const [showMenu, setShowMenu] = useState(false)
 

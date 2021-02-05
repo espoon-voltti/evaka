@@ -4,7 +4,6 @@
 
 import React from 'react'
 import { BrowserRouter, Route, Switch } from 'react-router-dom'
-import { Authentication } from '~auth'
 import { Localization } from '~localization'
 import Header from '~header/Header'
 import Decisions from '~decisions/decisions-page/Decisions'
@@ -17,6 +16,9 @@ import Applications from '~applications/Applications'
 import ApplicationCreation from '~applications/ApplicationCreation'
 import ApplicationReadView from '~applications/read-view/ApplicationReadView'
 import GlobalInfoDialog from '~overlay/Info'
+import MapView from '~map/MapView'
+import { Authentication } from '~auth'
+import requireAuth from '~auth/requireAuth'
 
 export default function App() {
   return (
@@ -26,27 +28,36 @@ export default function App() {
           <OverlayContextProvider>
             <Header />
             <Switch>
-              <Route exact path="/applications" component={Applications} />
+              <Route exact path="/map" component={MapView} />
+              <Route
+                exact
+                path="/applications"
+                component={requireAuth(Applications)}
+              />
               <Route
                 exact
                 path="/applications/new/:childId"
-                component={ApplicationCreation}
+                component={requireAuth(ApplicationCreation)}
               />
               <Route
                 exact
                 path="/applications/:applicationId"
-                component={ApplicationReadView}
+                component={requireAuth(ApplicationReadView)}
               />
               <Route
                 exact
                 path="/applications/:applicationId/edit"
-                component={ApplicationEditor}
+                component={requireAuth(ApplicationEditor)}
               />
-              <Route exact path="/decisions" component={Decisions} />
+              <Route
+                exact
+                path="/decisions"
+                component={requireAuth(Decisions)}
+              />
               <Route
                 exact
                 path="/decisions/by-application/:applicationId"
-                component={DecisionResponseList}
+                component={requireAuth(DecisionResponseList)}
               />
               <Route path="/" component={RedirectToEnduser} />
             </Switch>

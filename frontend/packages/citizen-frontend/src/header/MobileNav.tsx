@@ -6,13 +6,14 @@ import React, { Dispatch, SetStateAction, useCallback } from 'react'
 import styled from 'styled-components'
 import { NavLink } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faBars, faSignOut, faTimes } from '@evaka/lib-icons'
+import { faBars, faSignIn, faSignOut, faTimes } from '@evaka/lib-icons'
 import colors from '@evaka/lib-components/src/colors'
 import useCloseOnOutsideClick from '@evaka/lib-components/src/utils/useCloseOnOutsideClick'
 import { Gap, defaultMargins } from '@evaka/lib-components/src/white-space'
 import { tabletMin } from '@evaka/lib-components/src/breakpoints'
 import { useUser } from '../auth'
 import { langs, useLang, useTranslation } from '../localization'
+import { getLoginUri } from '~header/Header'
 
 type Props = {
   enduserBaseUrl: string
@@ -49,11 +50,26 @@ export default React.memo(function DesktopNav({
               user?.lastName ?? ''
             }`}</UserName>
             <Gap size="s" />
-            <LogoutButton>
-              <FontAwesomeIcon icon={faSignOut} size="lg" />
-              <Gap size="xs" horizontal />
-              {t.header.logout}
-            </LogoutButton>
+            {user ? (
+              <a
+                href={'/api/application/auth/saml/logout'}
+                data-qa="logout-btn"
+              >
+                <LogInLogOutButton>
+                  <FontAwesomeIcon icon={faSignOut} size="lg" />
+                  <Gap size="xs" horizontal />
+                  {t.header.logout}
+                </LogInLogOutButton>
+              </a>
+            ) : (
+              <a href={getLoginUri()} data-qa="login-btn">
+                <LogInLogOutButton>
+                  <FontAwesomeIcon icon={faSignIn} size="lg" />
+                  <Gap size="xs" horizontal />
+                  {t.header.login}
+                </LogInLogOutButton>
+              </a>
+            )}
           </UserContainer>
         </MenuContainer>
       ) : null}
@@ -151,25 +167,40 @@ const Navigation = React.memo(function Navigation({
   enduserBaseUrl: string
 }) {
   const t = useTranslation()
+  const user = useUser()
 
   return (
     <Nav>
       <NavItem href={enduserBaseUrl} data-qa={'nav-old-map'}>
         {t.header.nav.map}
       </NavItem>
-      <NavItem
-        href={`${enduserBaseUrl}/applications`}
-        data-qa={'nav-old-applications'}
-      >
-        {t.header.nav.applications}
-      </NavItem>
-      <NavItem
-        href={`${enduserBaseUrl}/decisions`}
-        data-qa={'nav-old-decisions'}
-      >
-        {t.header.nav.decisions}
-      </NavItem>
-      <StyledNavLink to="/decisions">{t.header.nav.newDecisions}</StyledNavLink>
+      {user && (
+        <>
+          <NavItem
+            href={`${enduserBaseUrl}/applications`}
+            data-qa={'nav-old-applications'}
+          >
+            {t.header.nav.applications}
+          </NavItem>
+          <NavItem
+            href={`${enduserBaseUrl}/decisions`}
+            data-qa={'nav-old-decisions'}
+          >
+            {t.header.nav.decisions}
+          </NavItem>
+        </>
+      )}
+      <StyledNavLink to="/map">{t.header.nav.newMap}</StyledNavLink>
+      {user && (
+        <>
+          <StyledNavLink to="/applications">
+            {t.header.nav.newApplications}
+          </StyledNavLink>
+          <StyledNavLink to="/decisions">
+            {t.header.nav.newDecisions}
+          </StyledNavLink>
+        </>
+      )}
     </Nav>
   )
 })
@@ -221,11 +252,11 @@ const UserContainer = styled.div`
   }
 `
 
-const LogoutButton = styled.button`
+const LogInLogOutButton = styled.button`
   background: ${colors.blues.dark};
   color: ${colors.greyscale.white};
   border: none;
-  font-family: Open Sans;
+  font-family: 'Open Sans', sans-serif;
   font-size: 1em;
   font-weight: 600;
   text-transform: uppercase;

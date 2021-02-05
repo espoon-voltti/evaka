@@ -22,6 +22,7 @@ export default {
       map: 'Kartta',
       applications: 'Hakemukset',
       decisions: 'Päätökset',
+      newMap: 'Uusi kartta',
       newDecisions: 'Uusi Päätökset',
       newApplications: 'Uusi Hakemukset'
     },
@@ -30,6 +31,7 @@ export default {
       sv: 'På svenska',
       en: 'In English'
     },
+    login: 'Tunnistaudu palveluun',
     logout: 'Kirjaudu ulos'
   },
   footer: {

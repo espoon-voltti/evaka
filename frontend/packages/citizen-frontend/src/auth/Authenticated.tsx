@@ -6,30 +6,25 @@ import React, { ReactNode, useContext, useEffect } from 'react'
 import { client } from '../api-client'
 import { AuthContext, User } from './state'
 
-export default React.memo(function Authenticated(props: {
-  children: ReactNode
-}) {
-  const authContext = useContext(AuthContext)
+export default function Authenticated(props: { children: ReactNode }) {
+  const { setUser, setLoading } = useContext(AuthContext)
 
   useEffect(() => {
+    setLoading(true)
     void getAuthStatus()
       .then((response) => {
         const status = response.data
         if (status.loggedIn && status.user) {
-          authContext.setUser(status.user)
+          setUser(status.user)
         } else {
-          redirectToEnduser()
+          setUser(undefined)
         }
       })
-      .catch(redirectToEnduser)
+      .catch(() => setUser(undefined))
+      .finally(() => setLoading(false))
   }, [])
 
-  return authContext.user !== undefined ? <>{props.children}</> : null
-})
-
-const redirectToEnduser = () => {
-  window.location.href =
-    window.location.host === 'localhost:9094' ? 'http://localhost:9091' : '/'
+  return <>{props.children}</>
 }
 
 const getAuthStatus = () => client.get<AuthStatus>('/auth/status')

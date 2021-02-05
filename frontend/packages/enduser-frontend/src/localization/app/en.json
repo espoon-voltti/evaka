@@ -187,6 +187,7 @@
       "map": "Map",
       "application": "Applications",
       "decisions": "Decisions",
+      "newMap": "New Map",
       "newDecisions": "New Decisions",
       "newApplications": "New Applications"
     },
