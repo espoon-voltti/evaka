@@ -315,9 +315,9 @@ const sv: Translations = {
           },
           clubTerm: 'Kerhon toimintakausi',
           label: {
-            DAYCARE: 'Toivottu aloituspäivä',
-            PRESCHOOL: 'Aloituspäivä elokuussa',
-            CLUB: 'Kerhon toivottu aloituspäivä'
+            DAYCARE: 'Önskat inledningsdatum',
+            PRESCHOOL: 'Inledningsdatum i augusti',
+            CLUB: 'Önskat inledningsdatum'
           },
           noteOnDelay: 'Behandlingstiden för ansökningen är 4 månader.',
           instructions:
@@ -407,36 +407,35 @@ const sv: Translations = {
           title: 'Ansökan på basis av syskonrelationer',
           info: {
             DAYCARE: `
-            <p>Lapsella on sisarusperuste samaan varhaiskasvatuspaikkaan, jossa hänen sisaruksensa on päätöksentekohetkellä. Sisarukseksi katsotaan kaikki samassa osoitteessa asuvat lapset. Tavoitteena on sijoittaa sisarukset samaan varhaiskasvatuspaikkaan perheen niin toivoessa. Jos haet paikkaa sisaruksille, jotka eivät vielä ole varhaiskasvatuksessa, kirjoita tieto lisätietokenttään.</p>
-            <p>Täytä nämä tiedot vain, jos käytät sisarusperustetta, sekä valitse alla olevissa hakutoiveissa ensisijaiseksi toiveeksi sama varhaiskasvatusyksikkö, jossa lapsen sisarus on.</p>
+            <p>Målet är att placera syskon i samma enhet om inte familjen önskar annat. Som syskon betraktas barn som är folkbokförda på samma adress. Om du ansöker om en plats för syskon, som inte ännu har plats inom småbarnspedagogik, skriv uppgiften i tilläggsuppgifter.</p>
+            <p>Fyll i dessa uppgifter endast om du vill hänvisa till barnets syskonrelationer.</p>
             `,
             PRESCHOOL: `
-            <p>Esioppilaalla on sisarusperuste:</p>
+            <p>Fyll i dessa uppgifter endast om du yrkar på prioriteringsordningen till sekundär förskola</p>
+            <p>Vårdnadshavarna kan ansöka om plats för sitt barn i en annan förskola än närförskolan. Sökande från andra elevupptagningsområden kan antas endast om det finns lediga platser efter att barnen i förskolans eget elevupptagningsområde har fått en plats. Om det finns flera sökande än det finns platser tillämpas följande prioriteringsordning. Om du hänvisar till kontinuitetsprincipen skriv barnets nuvarande enhet i fältet för tilläggsuppgifter.</p>
             <ol type="a">
-              <li>Oman palvelualueen päiväkotiin, jossa esioppilaalla on sisarus, jolla on päätöksentekohetkellä ja tulevana esiopetusvuonna paikka esiopetuspäiväkodissa.</li>
-              <li>Kunnan osoittamaan lähikouluun, jota esioppilaan sisarus käy tulevana lukuvuonna.</li>
+              <li>Kontinuitet vid övergång från småbarnspedagogik till förskola. Vid antagning till förskola prioriteras ett barn som haft sin dagvårdsplats i det daghem där förskolan är.</li>
+              <li>Barn med syskon i skolan som finns i samma elevupptagningsområde. Syskonprincipen innebär att elever placeras i samma enhet som äldre syskon. För barn i förskolan tillämpas principen om eleven har syskon i årskurs 1–6 i skolan som finns i samma elevupptagningsområde som förskolan. Som syskon betraktas barn som är folkbokförda på samma adress.</li>
             </ol>
-            <p>Huoltaja voi valita, käyttääkö hän sisarusperustetta kohdan a vai b mukaisesti, jos esioppilaalla on sisarusperuste molempien kohtien mukaan. Valinta ilmoitetaan alla. Sisarukseksi katsotaan kaikki samassa osoitteessa asuvat lapset.</p>
-            <p>Täytä nämä tiedot vain, jos käytät sisarusperustetta, sekä valitse alla olevissa hakutoiveissa ensisijaiseksi toiveeksi sama yksikkö, jossa lapsen sisarus on.</p>
+            <p>Fyll i dessa uppgifter endast om du vill hänvisa till barnets syskonrelationer.</p>
             `,
             CLUB: `
-            <p>Sisarukseksi katsotaan kaikki samassa osoitteessa asuvat lapset. Tavoitteena on sijoittaa sisarukset samaan kerhoryhmään perheen niin toivoessa.</p>
-            <p>Täytä nämä tiedot vain, jos käytät sisarusperustetta, sekä valitse alla olevissa hakutoiveissa ensisijaiseksi toiveeksi sama kerho, jossa lapsen sisarus on.</p>
+            <p>Barn som bor på samma adress betraktas som syskon. Ett försök görs för att placera syskonen i samma klubbgrupp när familjen önskar det.</p>
+            <p>Fyll i dessa uppgifter endast om du vill hänvisa till barnets syskonrelationer och välj samma klubb som syskonet deltar i nedan.</p>
             `
           },
           checkbox: {
             DAYCARE:
-              'Haen ensisijaisesti samaan paikkaan, jossa lapsen sisarus on jo varhaiskasvatuksessa.',
+              'Jag ansöker i första hand om plats i den enheten där barnets syskon redan har en plats.',
             PRESCHOOL:
-              'Haen ensisijaisesti samaan paikkaan, jossa lapsen sisarus on.',
+              'Jag ansöker om plats i en annan förskola än närförskolan med syskonprincipen',
             CLUB:
-              'Haen ensisijaisesti paikkaa samasta kerhoryhmästä, jossa lapsen sisarus on.'
+              'Jag ansöker främst om en plats i samma klubb där barnets syskon deltar.'
           },
           radioLabel: {
-            DAYCARE:
-              'Valitse sisarus, jonka kanssa haet samaan varhaiskasvatuspaikkaan',
-            PRESCHOOL: 'Valitse sisarus, jonka kanssa haet samaan paikkaan',
-            CLUB: 'Valitse sisarus, jonka kanssa haet samaan kerhoryhmään'
+            DAYCARE: 'Välj syskonet',
+            PRESCHOOL: 'Välj syskonet',
+            CLUB: 'Välj syskonet'
           },
           otherSibling: 'Annat syskon',
           names: 'Syskonets för- och efternamn',
@@ -450,14 +449,14 @@ const sv: Translations = {
             'För att välja önskade enheter, välj det första önskade startdatumet i avsnittet om "Servicebehov"',
           info: {
             DAYCARE: `
-            <p>Voit hakea 1-3 paikkaa toivomassasi järjestyksessä. <strong>Hakutoiveet eivät takaa paikkaa</strong> toivotussa yksikössä, mutta mahdollisuus toivotun paikan saamiseen kasvaa antamalla useamman vaihtoehdon.</p>
-            <p>Näet eri varhaiskasvatusyksiköiden sijainnin valitsemalla ‘Yksiköt kartalla’.</p>`,
+            <p>Du kan ange 1-3 platser i önskad ordning. Önskemålen garanterar inte en plats i den önskade enheten, men möjligheterna att få en önskad plats ökar om du anger flera alternativ.</p>
+            <p>Du kan visa enhetsplatserna genom att välja 'Enheter på kartan'.</p>`,
             PRESCHOOL: `
-            <p>Voit hakea 1-3 paikka paikkaa toivomassasi järjestyksessä. <strong>Hakutoiveet eivät takaa paikkaa</strong> toivotussa yksikössä, mutta mahdollisuus toivotun paikan saamiseen kasvaa antamalla useamman vaihtoehdon.</p>
-            <p>Näet eri yksiköiden sijainnin valitsemalla ‘Yksiköt kartalla’.</p>`,
+            <p>Du kan ange 1-3 platser i önskad ordning. Önskemålen garanterar inte en plats i den önskade enheten, men möjligheterna att få en önskad plats ökar om du anger flera alternativ.</p>
+            <p>Du kan visa enhetsplatserna genom att välja 'Enheter på kartan'.</p>`,
             CLUB: `
-            <p>Voit hakea 1-3 paikkaa toivomassasi järjestyksessä. <strong>Hakutoiveet eivät takaa paikkaa</strong> toivotussa kerhossa, mutta mahdollisuus toivotun paikan saamiseen kasvaa antamalla useamman vaihtoehdon.</p>
-            <p>Näet eri kerhojen sijainnin valitsemalla ‘Yksiköt kartalla’.</p>`
+            <p>Du kan ange 1-3 platser i önskad ordning. Önskemålen garanterar inte en plats i den önskade enheten, men möjligheterna att få en önskad plats ökar om du anger flera alternativ.</p>
+            <p>Du kan visa enhetsplatserna genom att välja 'Enheter på kartan'.</p>`
           },
           mapLink: 'Enheter på kartan',
           languageFilter: {
@@ -489,9 +488,9 @@ const sv: Translations = {
         title: 'Avgiften för småbarnspedagogik',
         info: {
           DAYCARE:
-            'Kunnallisen varhaiskasvatuksen asiakasmaksut määräytyvät prosenttiosuutena perheen bruttotuloista. Maksut vaihtelevat perheen koon ja tulojen sekä varhaiskasvatusajan mukaan maksuttomasta varhaiskasvatuksesta enintään 288 euron kuukausimaksuun lasta kohden. Perhe toimittaa tuloselvityksen bruttotuloistaan tuloselvityslomakkeella, viimeistään kahden viikon kuluessa siitä, kun lapsi on aloittanut varhaiskasvatuksessa.',
+            'Klientavgiften inom den kommunala småbarnspedagogiken är en procentandel av familjens bruttoinkomster. Familjen ska lämna in en utredning över sina bruttoinkomster på en särskild blankett, senast inom två veckor från det att barnet har inlett småbarnspedagogiken.',
           PRESCHOOL:
-            'Esiopetus on maksutonta, mutta siihen liittyvä varhaiskasvatus on maksullista. Jos lapsi osallistuu liittyvään varhaiskasvatukseen, perhe toimittaa tuloselvityksen bruttotuloistaan tuloselvityslomakkeella viimeistään kahden viikon kuluessa siitä, kun lapsi on aloittanut varhaiskasvatuksessa.',
+            'Klientavgiften inom den kommunala småbarnspedagogiken är en procentandel av familjens bruttoinkomster. Familjen ska lämna in en utredning över sina bruttoinkomster på en särskild blankett, senast inom två veckor från det att barnet har inlett småbarnspedagogiken.',
           CLUB: ''
         },
         emphasis:
