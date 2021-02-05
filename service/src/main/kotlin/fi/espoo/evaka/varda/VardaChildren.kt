@@ -6,7 +6,6 @@ package fi.espoo.evaka.varda
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
-import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.getUUID
 import fi.espoo.evaka.varda.integration.VardaClient
@@ -17,10 +16,6 @@ import java.time.LocalDate
 import java.util.UUID
 
 private val logger = KotlinLogging.logger {}
-
-private val vardaMinDate = LocalDate.of(2019, 1, 1)
-private val vardaPlacementTypes =
-    listOf(PlacementType.DAYCARE, PlacementType.DAYCARE_PART_TIME, PlacementType.PRESCHOOL_DAYCARE)
 
 fun getVardaMinDate(): LocalDate = vardaMinDate
 
@@ -70,7 +65,7 @@ private fun getPersonsToUpload(tx: Database.Read): List<Pair<String, VardaPerson
         """
         WITH child_unit AS (
             SELECT unit_id, child_id, row_number() OVER (PARTITION BY child_id ORDER BY child_id, start_date) FROM placement 
-            WHERE placement.type IN (<placementTypes>)
+            WHERE placement.type = ANY(:placementTypes::placement_type[])
             AND end_date >= :minDate
         )
         SELECT DISTINCT person.id,
@@ -90,7 +85,7 @@ private fun getPersonsToUpload(tx: Database.Read): List<Pair<String, VardaPerson
         """.trimIndent()
 
     return tx.createQuery(sql)
-        .bindList("placementTypes", vardaPlacementTypes)
+        .bind("placementTypes", vardaPlacementTypes)
         .bind("minDate", vardaMinDate)
         .map(toVardaPersonRequestWithOrganizerOid())
         .list()

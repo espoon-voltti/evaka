@@ -5,11 +5,6 @@
 package fi.espoo.evaka.varda
 
 import com.fasterxml.jackson.annotation.JsonProperty
-import fi.espoo.evaka.placement.PlacementType.DAYCARE
-import fi.espoo.evaka.placement.PlacementType.DAYCARE_PART_TIME
-import fi.espoo.evaka.placement.PlacementType.PRESCHOOL_DAYCARE
-import fi.espoo.evaka.placement.PlacementType.TEMPORARY_DAYCARE
-import fi.espoo.evaka.placement.PlacementType.TEMPORARY_DAYCARE_PART_DAY
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.getUUID
 import fi.espoo.evaka.varda.integration.VardaClient
@@ -80,9 +75,6 @@ fun removeDeletedPlacements(db: Database.Connection, client: VardaClient) {
     }
 }
 
-internal val daycarePlacementTypes = arrayOf(DAYCARE.name, DAYCARE_PART_TIME.name, PRESCHOOL_DAYCARE.name)
-internal val temporaryPlacementTypes = arrayOf(TEMPORARY_DAYCARE.name, TEMPORARY_DAYCARE_PART_DAY.name)
-
 private val placementBaseQuery =
     // language=SQL
     """
@@ -102,7 +94,7 @@ WITH accepted_daycare_decision AS (
     SELECT * FROM derived_decision
 ), daycare_placement AS (
     SELECT * FROM placement
-    WHERE type = ANY(:types::placement_type[])
+    WHERE type = ANY(:placementTypes::placement_type[])
     AND start_date <= now()
 )
 SELECT
@@ -131,7 +123,8 @@ WHERE vp.id IS NULL
         """.trimIndent()
 
     return tx.createQuery(sql)
-        .bind("types", daycarePlacementTypes)
+        .bind("decisionTypes", vardaDecisionTypes)
+        .bind("placementTypes", vardaPlacementTypes)
         .map(toVardaPlacementWithDecisionAndPlacementId(getDecisionUrl))
         .toList()
 }
@@ -177,7 +170,8 @@ WHERE vp.uploaded_at < GREATEST(p.updated, u.updated)
         """.trimIndent()
 
     return tx.createQuery(sql)
-        .bind("types", daycarePlacementTypes)
+        .bind("decisionTypes", vardaDecisionTypes)
+        .bind("placementTypes", vardaPlacementTypes)
         .map(toVardaPlacementWithIdAndVardaId(getDecisionUrl))
         .toList()
 }
