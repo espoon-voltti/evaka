@@ -20,7 +20,7 @@ import fi.espoo.evaka.shared.dev.insertTestApplication
 import fi.espoo.evaka.shared.dev.insertTestApplicationForm
 import fi.espoo.evaka.shared.dev.insertTestDecision
 import fi.espoo.evaka.test.validDaycareApplication
-import fi.espoo.evaka.testAdult_1
+import fi.espoo.evaka.testAdult_6
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDecisionMaker_1
@@ -38,7 +38,7 @@ class PendingDecisionEmailServiceIntegrationTest : FullApplicationTest() {
 
     private val applicationId = UUID.randomUUID()
     private val childId = testChild_1.id
-    private val guardianId = testAdult_1.id
+    private val guardianId = testAdult_6.id
     private val unitId = testDaycare.id
     private val startDate = LocalDate.now()
     private val endDate = startDate.plusYears(1)
@@ -80,7 +80,7 @@ class PendingDecisionEmailServiceIntegrationTest : FullApplicationTest() {
         val sentMails = MockEmailClient.emails
         Assertions.assertEquals(1, sentMails.size)
         assertEmail(
-            sentMails.first(), testAdult_1.email!!,
+            sentMails.first(), testAdult_6.email!!,
             "no-reply.evaka@espoo.fi", "Päätös varhaiskasvatuksesta",
             "kirjautumalla osoitteeseen <a",
             "kirjautumalla osoitteeseen https"
@@ -104,7 +104,7 @@ class PendingDecisionEmailServiceIntegrationTest : FullApplicationTest() {
         val sentMails = MockEmailClient.emails
         Assertions.assertEquals(1, sentMails.size)
         assertEmail(
-            sentMails.first(), testAdult_1.email!!,
+            sentMails.first(), testAdult_6.email!!,
             "no-reply.evaka@espoo.fi", "Päätös varhaiskasvatuksesta",
             "kirjautumalla osoitteeseen <a",
             "kirjautumalla osoitteeseen https"
