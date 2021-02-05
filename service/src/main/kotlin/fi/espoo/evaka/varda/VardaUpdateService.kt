@@ -6,7 +6,9 @@ package fi.espoo.evaka.varda
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.kittinunf.fuel.core.FuelManager
+import fi.espoo.evaka.decision.DecisionType
 import fi.espoo.evaka.pis.service.PersonService
+import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.VardaUpdate
 import fi.espoo.evaka.shared.db.Database
@@ -14,6 +16,24 @@ import fi.espoo.evaka.varda.integration.VardaClient
 import fi.espoo.evaka.varda.integration.VardaTokenProvider
 import org.springframework.core.env.Environment
 import org.springframework.stereotype.Service
+import java.time.LocalDate
+
+internal val vardaMinDate = LocalDate.of(2019, 1, 1)
+internal val vardaPlacementTypes = arrayOf(
+    PlacementType.DAYCARE,
+    PlacementType.DAYCARE_PART_TIME,
+    PlacementType.PRESCHOOL_DAYCARE,
+    PlacementType.PREPARATORY_DAYCARE
+)
+internal val vardaTemporaryPlacementTypes = arrayOf(
+    PlacementType.TEMPORARY_DAYCARE,
+    PlacementType.TEMPORARY_DAYCARE_PART_DAY
+)
+internal val vardaDecisionTypes = arrayOf(
+    DecisionType.DAYCARE,
+    DecisionType.DAYCARE_PART_TIME,
+    DecisionType.PRESCHOOL_DAYCARE
+)
 
 @Service
 class VardaUpdateService(

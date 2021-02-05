@@ -6,10 +6,6 @@ package fi.espoo.evaka.varda
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
-import fi.espoo.evaka.decision.DecisionStatus
-import fi.espoo.evaka.decision.DecisionType.DAYCARE
-import fi.espoo.evaka.decision.DecisionType.DAYCARE_PART_TIME
-import fi.espoo.evaka.decision.DecisionType.PRESCHOOL_DAYCARE
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.getEnum
 import fi.espoo.evaka.shared.db.getUUID
@@ -112,7 +108,8 @@ fun sendUpdatedDecisions(db: Database.Connection, client: VardaClient) {
     val updatedDecisions = db.read { getUpdatedDecisions(it, client.getChildUrl) }
     val updatedDerivedDecisions = db.read { getUpdatedDerivedDecisions(it, client.getChildUrl) }
     val updatedTemporaryDecisions = db.read { getUpdatedTemporaryDecisions(it, client.getChildUrl) }
-    val decisionIds = updatedDecisions.map { it.first } + updatedDerivedDecisions.map { it.first } + updatedTemporaryDecisions.map { it.first }
+    val decisionIds =
+        updatedDecisions.map { it.first } + updatedDerivedDecisions.map { it.first } + updatedTemporaryDecisions.map { it.first }
     cleanUpDecisionRelatedData(db, client, decisionIds)
     logger.info { "Varda: Updating ${decisionIds.size} updated decisions" }
     (updatedDecisions + updatedDerivedDecisions + updatedTemporaryDecisions)
@@ -174,9 +171,6 @@ fun removeDeletedDecisions(db: Database.Connection, client: VardaClient) {
     }
 }
 
-private val acceptedStatus = DecisionStatus.ACCEPTED.name
-private val daycareDecisionTypes = arrayOf(DAYCARE.name, DAYCARE_PART_TIME.name, PRESCHOOL_DAYCARE.name)
-
 val acceptedDaycareDecisionsQuery =
     """
 SELECT 
@@ -195,15 +189,15 @@ JOIN application_view a ON d.application_id = a.id
 LEFT JOIN LATERAL (
     SELECT start_date, greatest(updated, resolved) AS updated FROM decision d2
     WHERE d2.application_id IN (SELECT id FROM application WHERE child_id = a.childid)
-    AND d2.status = '$acceptedStatus'::decision_status
-    AND d2.type IN (${daycareDecisionTypes.joinToString(", ") { type -> "'$type'::decision_type" }})
+    AND d2.status = 'ACCEPTED'::decision_status
+    AND d2.type = ANY(:decisionTypes::decision_type[])
     AND d2.id != d.id
     AND d2.resolved > d.resolved
     AND daterange(d.start_date, d.end_date, '[]') && daterange(d2.start_date, d2.end_date, '[]')
     ORDER BY start_date ASC LIMIT 1
 ) next_decision ON TRUE
-WHERE d.status = '$acceptedStatus'::decision_status
-AND d.type IN (${daycareDecisionTypes.joinToString(", ") { type -> "'$type'::decision_type" }})
+WHERE d.status = 'ACCEPTED'::decision_status
+AND d.type = ANY(:decisionTypes::decision_type[])
 AND (d.start_date < next_decision.start_date OR next_decision.start_date IS NULL)
 AND d.start_date < current_date
     """.trimIndent()
@@ -268,6 +262,7 @@ WHERE vd.id IS NULL
         """.trimIndent()
 
     return tx.createQuery(sql)
+        .bind("decisionTypes", vardaDecisionTypes)
         .map(toVardaDecisionWithDecisionId(getChildUrl))
         .toList()
 }
@@ -302,7 +297,10 @@ INSERT INTO varda_decision (
         .execute()
 }
 
-private fun getUpdatedDecisions(tx: Database.Read, getChildUrl: (Long) -> String): List<Triple<UUID, Long, VardaDecision>> {
+private fun getUpdatedDecisions(
+    tx: Database.Read,
+    getChildUrl: (Long) -> String
+): List<Triple<UUID, Long, VardaDecision>> {
     val sql =
         """
 $decisionQueryBase
@@ -310,6 +308,7 @@ WHERE vd.uploaded_at < greatest(latest_sn.updated, d.updated, first_placement.up
         """.trimIndent()
 
     return tx.createQuery(sql)
+        .bind("decisionTypes", vardaDecisionTypes)
         .map(toVardaDecisionWithIdAndVardaId(getChildUrl))
         .toList()
 }
@@ -335,7 +334,7 @@ WHERE NOT EXISTS(
     AND daterange(p.start_date, p.end_date, '[]') && daterange(d.start_date, d.end_date, '[]')
     AND d.status = 'ACCEPTED'
 )
-AND p.type = ANY(:types::placement_type[])
+AND p.type = ANY(:placementTypes::placement_type[])
 AND p.start_date < current_date
 )
 SELECT
@@ -406,7 +405,7 @@ WHERE vd.id IS NULL
         """.trimIndent()
 
     return tx.createQuery(sql)
-        .bind("types", daycarePlacementTypes)
+        .bind("placementTypes", vardaPlacementTypes)
         .map(toVardaDecisionWithDecisionId(getChildUrl))
         .toList()
 }
@@ -422,7 +421,7 @@ WHERE vd.uploaded_at < greatest(latest_sn.updated, p.updated)
         """.trimIndent()
 
     return tx.createQuery(sql)
-        .bind("types", daycarePlacementTypes)
+        .bind("placementTypes", vardaPlacementTypes)
         .map(toVardaDecisionWithIdAndVardaId(getChildUrl))
         .toList()
 }
@@ -440,6 +439,7 @@ AND d.id IS NULL
         """.trimIndent()
 
     return tx.createQuery(sql)
+        .bind("decisionTypes", vardaDecisionTypes)
         .map { rs, _ -> rs.getUUID("id") to rs.getLong("varda_decision_id") }
         .toList()
 }
@@ -459,13 +459,16 @@ AND d.evaka_id IS NULL
         """.trimIndent()
 
     return tx.createQuery(sql)
-        .bind("types", daycarePlacementTypes)
-        .bind("temporaryPlacementTypes", temporaryPlacementTypes)
+        .bind("placementTypes", vardaPlacementTypes)
+        .bind("temporaryPlacementTypes", vardaTemporaryPlacementTypes)
         .map { rs, _ -> rs.getUUID("id") to rs.getLong("varda_decision_id") }
         .toList()
 }
 
-private fun getNewTemporaryDecisions(tx: Database.Read, getChildUrl: (Long) -> String): List<Pair<UUID, VardaDecision>> {
+private fun getNewTemporaryDecisions(
+    tx: Database.Read,
+    getChildUrl: (Long) -> String
+): List<Pair<UUID, VardaDecision>> {
     val sql =
         """
 $temporaryDecisionQueryBase
@@ -473,7 +476,7 @@ WHERE vd.id IS NULL
         """.trimIndent()
 
     return tx.createQuery(sql)
-        .bind("temporaryPlacementTypes", temporaryPlacementTypes)
+        .bind("temporaryPlacementTypes", vardaTemporaryPlacementTypes)
         .map(toVardaDecisionWithDecisionId(getChildUrl))
         .toList()
 }
@@ -489,7 +492,7 @@ WHERE vd.uploaded_at < greatest(sn.updated, p.updated)
         """.trimIndent()
 
     return tx.createQuery(sql)
-        .bind("temporaryPlacementTypes", temporaryPlacementTypes)
+        .bind("temporaryPlacementTypes", vardaTemporaryPlacementTypes)
         .map(toVardaDecisionWithIdAndVardaId(getChildUrl))
         .toList()
 }
