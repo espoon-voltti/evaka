@@ -39,7 +39,8 @@ data class ApplicationSummary(
     val transferApplication: Boolean,
     val additionalDaycareApplication: Boolean,
     val placementProposalStatus: PlacementProposalStatus?,
-    val placementProposalUnitName: String?
+    val placementProposalUnitName: String?,
+    val currentPlacementUnit: PreferredUnit?
 )
 
 data class PlacementProposalStatus(

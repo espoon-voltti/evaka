@@ -240,6 +240,8 @@ fun fetchApplicationSummaries(
             pp.unit_reject_reason,
             pp.unit_reject_other_reason,
             ppd.unit_name,
+            cpu.id AS current_placement_unit_id,
+            cpu.name AS current_placement_unit_name,
             count(*) OVER () AS total
         FROM application a
         JOIN (
@@ -270,6 +272,14 @@ fun fetchApplicationSummaries(
             GROUP by
                 l.id
         ) duplicates ON a.id = duplicates.id
+        LEFT JOIN LATERAL (
+            SELECT daycare.id, daycare.name
+            FROM daycare
+            JOIN placement ON daycare.id = placement.unit_id
+            WHERE placement.child_id = a.child_id AND daterange(start_date, end_date, '[]') && daterange(current_date, null, '[]')
+            ORDER BY start_date
+            LIMIT 1
+        ) cpu ON true
         WHERE a.status != 'CREATED'::application_status_type $andWhere
         """.trimIndent()
 
@@ -322,7 +332,10 @@ fun fetchApplicationSummaries(
                             unitRejectOtherReason = row.mapColumn("unit_reject_other_reason")
                         )
                     },
-                placementProposalUnitName = row.mapColumn("unit_name")
+                placementProposalUnitName = row.mapColumn("unit_name"),
+                currentPlacementUnit = row.mapColumn<UUID?>("current_placement_unit_id")?.let {
+                    PreferredUnit(it, row.mapColumn("current_placement_unit_name"))
+                }
             )
         }
         .toList()
@@ -840,3 +853,31 @@ fun removeOldDrafts(db: Database.Transaction, deleteAttachment: (db: Database.Tr
             .execute()
     }
 }
+
+fun Database.Transaction.cancelOutdatedTransferApplications(): List<UUID> = createUpdate(
+    """
+UPDATE application SET status = :cancelled
+WHERE transferapplication AND NOT EXISTS (
+    SELECT 1
+    FROM placement p
+    JOIN application_form f
+        ON application.child_id = p.child_id
+        AND f.application_id = application.id
+        AND f.latest
+        AND (CASE
+            WHEN f.document->>'type' = 'DAYCARE' THEN p.type = ANY('{DAYCARE, DAYCARE_PART_TIME}')
+            WHEN f.document->>'type' = 'PRESCHOOL' AND NOT (f.document->>'connectedDaycare')::boolean THEN p.type = ANY('{PRESCHOOL, PRESCHOOL_DAYCARE, PREPARATORY, PREPARATORY_DAYCARE}')
+            WHEN f.document->>'type' = 'PRESCHOOL' AND (f.document->>'connectedDaycare')::boolean THEN p.type = ANY('{PRESCHOOL_DAYCARE, PREPARATORY_DAYCARE}')
+            WHEN f.document->>'type' = 'CLUB' THEN p.type = ANY('{CLUB}')
+        END)
+        AND daterange((f.document->>'preferredStartDate')::date, null, '[]') && daterange(p.start_date, p.end_date, '[]')
+        AND p.end_date >= :now
+)
+RETURNING id
+"""
+)
+    .bind("cancelled", ApplicationStatus.CANCELLED)
+    .bind("now", LocalDate.now())
+    .executeAndReturnGeneratedKeys()
+    .mapTo<UUID>()
+    .toList()

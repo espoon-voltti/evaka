@@ -27,6 +27,7 @@ enum class Audit(
     ApplicationSend("evaka.application.send"),
     ApplicationUpdate("evaka.application.update"),
     ApplicationVerify("evaka.application.verify"),
+    ApplicationsCancelOutdatedTransferApplications("evaka.applications.cancel-outdated-transfer-applications"),
     ApplicationsDeleteDrafts("evaka.application.delete-drafts"),
     ApplicationsReportRead("evaka.applications-report.read"),
     AssistanceActionsReportRead("evaka.assistance-actions-report.read"),

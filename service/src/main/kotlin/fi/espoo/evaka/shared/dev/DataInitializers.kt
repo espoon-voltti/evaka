@@ -257,13 +257,14 @@ fun insertTestApplication(
     guardianId: UUID = UUID.randomUUID(),
     childId: UUID = UUID.randomUUID(),
     otherGuardianId: UUID? = null,
-    hideFromGuardian: Boolean = false
+    hideFromGuardian: Boolean = false,
+    transferApplication: Boolean = false
 ): UUID {
     h
         .createUpdate(
             """
-            INSERT INTO application (id, sentdate, duedate, status, guardian_id, child_id, other_guardian_id, origin, hidefromguardian)
-            VALUES (:id, :sentDate, :dueDate, :status::application_status_type, :guardianId, :childId, :otherGuardianId, 'ELECTRONIC'::application_origin_type, :hideFromGuardian)
+            INSERT INTO application (id, sentdate, duedate, status, guardian_id, child_id, other_guardian_id, origin, hidefromguardian, transferApplication)
+            VALUES (:id, :sentDate, :dueDate, :status::application_status_type, :guardianId, :childId, :otherGuardianId, 'ELECTRONIC'::application_origin_type, :hideFromGuardian, :transferApplication)
             """
         )
         .bindMap(
@@ -275,7 +276,8 @@ fun insertTestApplication(
                 "guardianId" to guardianId,
                 "childId" to childId,
                 "otherGuardianId" to otherGuardianId,
-                "hideFromGuardian" to hideFromGuardian
+                "hideFromGuardian" to hideFromGuardian,
+                "transferApplication" to transferApplication
             )
         )
         .execute()
