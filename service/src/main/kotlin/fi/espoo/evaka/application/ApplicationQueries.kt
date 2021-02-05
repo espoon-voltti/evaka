@@ -855,9 +855,12 @@ fun removeOldDrafts(db: Database.Transaction, deleteAttachment: (db: Database.Tr
 }
 
 fun Database.Transaction.cancelOutdatedTransferApplications(): List<UUID> = createUpdate(
+    // only include applications that don't have decisions
     """
 UPDATE application SET status = :cancelled
-WHERE transferapplication AND NOT EXISTS (
+WHERE transferapplication
+AND status = ANY('{CREATED, SENT, WAITING_PLACEMENT, WAITING_UNIT_CONFIRMATION, WAITING_DECISION}')
+AND NOT EXISTS (
     SELECT 1
     FROM placement p
     JOIN application_form f

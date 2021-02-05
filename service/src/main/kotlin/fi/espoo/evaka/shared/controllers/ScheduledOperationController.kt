@@ -9,9 +9,11 @@ import fi.espoo.evaka.application.PendingDecisionEmailService
 import fi.espoo.evaka.application.cancelOutdatedTransferApplications
 import fi.espoo.evaka.application.removeOldDrafts
 import fi.espoo.evaka.attachment.AttachmentsController
+import fi.espoo.evaka.decision.clearDecisionDrafts
 import fi.espoo.evaka.dvv.DvvModificationsBatchRefreshService
 import fi.espoo.evaka.invoicing.controller.parseUUID
 import fi.espoo.evaka.koski.KoskiSearchParams
+import fi.espoo.evaka.placement.deletePlacementPlans
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.ScheduleKoskiUploads
 import fi.espoo.evaka.shared.db.Database
@@ -72,7 +74,12 @@ class ScheduledOperationController(
     @PostMapping("/application/cancel-outdated-transfer-applications")
     fun cancelOutdatedTransferApplications(db: Database.Connection): ResponseEntity<Unit> {
         Audit.ApplicationsCancelOutdatedTransferApplications.log()
-        val canceledApplications = db.transaction { it.cancelOutdatedTransferApplications() }
+        val canceledApplications = db.transaction {
+            val applicationIds = it.cancelOutdatedTransferApplications()
+            it.deletePlacementPlans(applicationIds)
+            it.clearDecisionDrafts(applicationIds)
+            applicationIds
+        }
         logger.info {
             "Canceled ${canceledApplications.size} outdated transfer applications (ids: ${canceledApplications.joinToString(", ")})"
         }
