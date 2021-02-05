@@ -10,7 +10,6 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import fi.espoo.evaka.vtjclient.dto.VtjPerson
 import fi.espoo.evaka.vtjclient.service.vtjclient.IVtjClientService
 import org.springframework.core.io.ClassPathResource
-import java.nio.file.Files
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentMap
 
@@ -34,8 +33,7 @@ class MockPersonDetailsService() : IPersonDetailsService {
         }
 
         private fun readPersonsFromFile(): List<VtjPerson> {
-            val file = ClassPathResource("mock-vtj-data.json").file
-            val content = String(Files.readAllBytes(file.toPath()))
+            val content = ClassPathResource("mock-vtj-data.json").inputStream.use { it.bufferedReader().readText() }
             val mapper = jacksonObjectMapper().registerModule(JavaTimeModule())
             return mapper.readValue(content)
         }

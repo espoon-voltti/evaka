@@ -16,14 +16,20 @@ class DevDataInitializer(jdbi: Jdbi) {
     init {
         jdbi.transaction { h ->
             if (h.createQuery("SELECT count(*) FROM care_area").mapTo<Int>().first() == 0) {
-                ClassPathResource("dev-data/espoo-dev-data.sql").file.readText().let {
-                    h.createUpdate(it).execute()
+                ClassPathResource("dev-data/espoo-dev-data.sql").inputStream.use {
+                    it.bufferedReader().readText().let { content ->
+                        h.createUpdate(content).execute()
+                    }
                 }
-                ClassPathResource("dev-data/employees.sql").file.readText().let {
-                    h.createUpdate(it).execute()
+                ClassPathResource("dev-data/employees.sql").inputStream.use {
+                    it.bufferedReader().readText().let { content ->
+                        h.createUpdate(content).execute()
+                    }
                 }
-                ClassPathResource("dev-data/preschool-terms.sql").file.readText().let {
-                    h.createUpdate(it).execute()
+                ClassPathResource("dev-data/preschool-terms.sql").inputStream.use {
+                    it.bufferedReader().readText().let { content ->
+                        h.createUpdate(content).execute()
+                    }
                 }
             }
         }

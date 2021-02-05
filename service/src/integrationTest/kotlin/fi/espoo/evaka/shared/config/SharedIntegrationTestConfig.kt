@@ -25,7 +25,6 @@ import org.jdbi.v3.core.Jdbi
 import org.springframework.boot.test.context.TestConfiguration
 import org.springframework.context.annotation.Bean
 import redis.clients.jedis.JedisPool
-import java.nio.file.Paths
 import javax.sql.DataSource
 
 fun isCiEnvironment() = System.getenv("CI") == "true"
@@ -145,7 +144,7 @@ class SharedIntegrationTestConfig {
     @Bean
     fun integrationTestJwtAlgorithm(): Algorithm {
         val publicKeys =
-            loadPublicKeys(Paths.get(SecurityConfig::class.java.getResource("/evaka-integration-test/jwks.json").path))
+            SecurityConfig::class.java.getResourceAsStream("/evaka-integration-test/jwks.json").use { loadPublicKeys(it) }
         return Algorithm.RSA256(JwtKeys(privateKeyId = null, privateKey = null, publicKeys = publicKeys))
     }
 }
