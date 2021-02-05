@@ -122,7 +122,9 @@ const sv: Translations = {
       verification: {
         title: {
           DAYCARE:
-            'Var god och granska följande obligatoriska fält i blanketten'
+            'Var god och granska följande obligatoriska fält i blanketten',
+          PRESCHOOL: 'Esiopetushakemuksen tarkistaminen',
+          CLUB: 'Kerhohakemuksen tarkistaminen'
         },
         notYetSent:
           '<strong>Du har inte ännu skickat ansökan.</strong> Granska informationen du gett, och skicka ansökan med Skicka ansökan-knappen när du är färdig',
@@ -130,6 +132,69 @@ const sv: Translations = {
         basics: {
           created: 'Skapad',
           modified: 'Uppdaterad'
+        },
+        attachmentBox: {
+          nb: 'Huom!',
+          headline:
+            'Jos lisäät liitteet seuraaviin kohtiin sähköisesti, hakemuksesi käsitellään nopeammin, sillä käsittelyaika alkaa liitteiden saapumisesta.',
+          urgency: 'Hakemus on kiireellinen',
+          shiftCare: 'Ilta- ja vuorohoito',
+          goBackLinkText: 'Palaa takaisin hakemusnäkymään',
+          goBackRestText: 'lisätäksesi liitteet hakemukseen.'
+        },
+        serviceNeed: {
+          title: 'Palveluntarve',
+          wasOnDaycare: 'Varhaiskasvatuksessa ennen kerhoa',
+          wasOnDaycareYes:
+            'Lapsi, jolle haetaan kerhopaikkaa, on varhaiskasvatuksessa ennen kerhon toivottua aloituspäivää.',
+          wasOnClubCare: 'Kerhossa edellisenä toimintakautena',
+          wasOnClubCareYes:
+            'Lapsi on ollut kerhossa edellisen toimintakauden aikana.',
+          connectedDaycare: {
+            title: 'Esiopetukseen liittyvän varhaiskasvatuksen tarve',
+            label: 'Liittyvä varhaiskasvatus',
+            withConnectedDaycare:
+              'Haen myös esiopetukseen liittyvää varhaiskasvatusta.',
+            withoutConnectedDaycare: 'Ei'
+          },
+          attachments: {
+            label: 'Tarvittavat liitteet',
+            withoutAttachments: 'Ei liitetty, lähetetään postilla'
+          },
+          startDate: {
+            title: {
+              DAYCARE: 'Varhaiskasvatuksen aloitus',
+              PRESCHOOL: 'Varhaiskasvatuksen aloitus',
+              CLUB: 'Kerhon aloitus'
+            },
+            preferredStartDate: 'Toivottu aloituspäivä',
+            urgency: 'Hakemus on kiireellinen',
+            withUrgency: 'Kyllä',
+            withoutUrgency: 'Ei'
+          },
+          dailyTime: {
+            title: 'Päivittäinen varhaiskasvatusaika',
+            partTime: 'Osa- tai kokopäiväinen',
+            withPartTime: 'Osa-aikainen',
+            withoutPartTime: 'Kokoaikainen',
+            dailyTime: 'Varhaiskasvatuksen alkamis- ja päättymisaika',
+            shiftCare: 'Ilta- ja vuorohoito',
+            withShiftCare: 'Tarvitaan ilta- tai vuorohoitoa',
+            withoutShiftCare: 'Ei tarvita ilta- tai vuorohoitoa'
+          },
+          assistanceNeed: {
+            title: 'Tuen tarve',
+            assistanceNeed: 'Lapsella on tuen tarve',
+            withAssistanceNeed: 'Lapsella on tuen tarve',
+            withoutAssistanceNeed: 'Lapsella ei ole tuen tarvetta',
+            description: 'Tuen tarpeen kuvaus'
+          },
+          preparatoryEducation: {
+            label: 'Perusopetukseen valmistava opetus',
+            withPreparatory:
+              'Lapsi tarvitsee tukea suomen kielen oppimisessa. Haen myös perusopetukseen valmistavaan opetukseen. Ei koske ruotsinkielistä esiopetusta.',
+            withoutPreparatory: 'Ei'
+          }
         },
         unitPreference: {
           title: 'Ansökningsönskemål',
@@ -145,6 +210,65 @@ const sv: Translations = {
             title: 'Ansökningsönskemål',
             label: 'Utvalda enheter'
           }
+        },
+        contactInfo: {
+          title: 'Henkilötiedot',
+          child: {
+            title: 'Lapsen tiedot',
+            name: 'Lapsen nimi',
+            ssn: 'Lapsen henkilötunnus',
+            streetAddress: 'Kotiosoite',
+            isAddressChanging: 'Osoite muuttunut / muuttumassa',
+            hasFutureAddress:
+              'Väestörekisterissä oleva osoite on muuttunut/muuttumassa ',
+            addressChangesAt: 'Muuttopäivämäärä',
+            newAddress: 'Uusi osoite'
+          },
+          guardian: {
+            title: 'Huoltajan tiedot',
+            name: 'Huoltajan nimi',
+            ssn: 'Huoltajan henkilötunnus',
+            streetAddress: 'Kotiosoite',
+            tel: 'Puhelinnumero',
+            email: 'Sähköpostiosoite',
+            isAddressChanging: 'Osoite muuttunut / muuttumassa',
+            hasFutureAddress: 'Osoite muuttunut / muuttumassa',
+            addressChangesAt: 'Muuttopäivämäärä',
+            newAddress: 'Uusi osoite'
+          },
+          secondGuardian: {
+            title: 'Toisen huoltajan tiedot',
+            email: 'Sähköposti',
+            tel: 'Puhelin',
+            info:
+              'Toisen huoltajan tiedot haetaan automaattisesti väestötietojärjestelmästä.',
+            agreed:
+              'Olemme yhdessä sopineet lapsen esiopetuksen hakemisesta lomakkeen tietojen mukaisesti.',
+            notAgreed: 'Emme ole voineet sopia hakemuksen tekemisestä yhdessä',
+            rightToGetNotified:
+              'Toisella huoltajalla on vain tiedonsaantioikeus.',
+            noAgreementStatus: 'Ei tiedossa'
+          },
+          fridgePartner: {
+            title:
+              'Samassa taloudessa asuva avio- tai avopuoliso (ei huoltaja)',
+            fridgePartner:
+              'Samassa taloudessa asuu avio- tai avopuoliso (ei huoltaja)',
+            name: 'Henkilön nimi',
+            ssn: 'Henkilön henkilötunnus'
+          },
+          fridgeChildren: {
+            title: 'Samassa taloudessa asuvat alle 18-vuotiaat lapset',
+            name: 'Lapsen nimi',
+            ssn: 'Henkilön henkilötunnus',
+            noOtherChildren: 'Ei muita lapsia'
+          }
+        },
+        additionalDetails: {
+          title: 'Muut lisätiedot',
+          otherInfoLabel: 'Hakuun liittyvät lisätiedot',
+          dietLabel: 'Erityisruokavalio',
+          allergiesLabel: 'Allergiat'
         }
       },
       serviceNeed: {
