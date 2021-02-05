@@ -42,6 +42,7 @@ import ApplicationFormDaycare from '~applications/editor/ApplicationFormDaycare'
 import ApplicationVerificationView from '~applications/editor/verification/ApplicationVerificationView'
 import ApplicationFormClub from '~applications/editor/ApplicationFormClub'
 import ApplicationFormPreschool from '~applications/editor/ApplicationFormPreschool'
+import Footer from '~Footer'
 
 type ApplicationEditorContentProps = {
   apiData: ApplicationDetails
@@ -372,12 +373,15 @@ export default React.memo(function ApplicationEditor() {
   }, [applicationId])
 
   return (
-    <Container>
-      {apiData.isLoading && <SpinnerSegment />}
-      {apiData.isFailure && <ErrorSegment />}
-      {apiData.isSuccess && (
-        <ApplicationEditorContent apiData={apiData.value} />
-      )}
-    </Container>
+    <>
+      <Container>
+        {apiData.isLoading && <SpinnerSegment />}
+        {apiData.isFailure && <ErrorSegment />}
+        {apiData.isSuccess && (
+          <ApplicationEditorContent apiData={apiData.value} />
+        )}
+      </Container>
+      <Footer />
+    </>
   )
 })

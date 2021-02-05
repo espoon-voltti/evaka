@@ -7,7 +7,6 @@ import { BrowserRouter, Route, Switch } from 'react-router-dom'
 import { Localization } from '~localization'
 import Header from '~header/Header'
 import Decisions from '~decisions/decisions-page/Decisions'
-import Footer from '~Footer'
 import DecisionResponseList from '~decisions/decision-response-page/DecisionResponseList'
 import ApplicationEditor from '~applications/editor/ApplicationEditor'
 import GlobalErrorDialog from '~overlay/Error'
@@ -61,7 +60,6 @@ export default function App() {
               />
               <Route path="/" component={RedirectToEnduser} />
             </Switch>
-            <Footer />
             <GlobalInfoDialog />
             <GlobalErrorDialog />
           </OverlayContextProvider>

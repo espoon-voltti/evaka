@@ -12,6 +12,7 @@ import fi.espoo.evaka.daycare.UnitStub
 import fi.espoo.evaka.daycare.VisitingAddress
 import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.daycare.domain.ProviderType
+import fi.espoo.evaka.daycare.getAllApplicableUnits
 import fi.espoo.evaka.daycare.getApplicationUnits
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
@@ -41,6 +42,15 @@ class LocationController {
     ): ResponseEntity<List<PublicUnit>> {
         val units = db.read { it.handle.getApplicationUnits(type, date, onlyApplicable = user.isEndUser()) }
         return ResponseEntity.ok(units)
+    }
+
+    @GetMapping("/public/units/all")
+    fun getAllApplicableUnits(
+        db: Database.Connection
+    ): ResponseEntity<List<PublicUnit>> {
+        return db
+            .read { it.getAllApplicableUnits() }
+            .let { ResponseEntity.ok(it) }
     }
 
     // Units by areas, only including units that can be applied to

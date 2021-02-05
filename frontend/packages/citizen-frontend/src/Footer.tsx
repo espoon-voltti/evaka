@@ -7,10 +7,10 @@ import { useTranslation } from '~localization'
 import styled from 'styled-components'
 import colors from '@evaka/lib-components/src/colors'
 
-export default React.memo(function Footer() {
+export const FooterContent = React.memo(function FooterContent() {
   const t = useTranslation()
   return (
-    <FooterContainer>
+    <>
       <FooterItem>{t.footer.espooLabel}</FooterItem>
       <FooterItem>
         <FooterLink href={t.footer.privacyPolicyLink} data-qa={'nav-old-map'}>
@@ -22,6 +22,14 @@ export default React.memo(function Footer() {
           {t.footer.sendFeedback}
         </FooterLink>
       </FooterItem>
+    </>
+  )
+})
+
+export default React.memo(function Footer() {
+  return (
+    <FooterContainer>
+      <FooterContent />
     </FooterContainer>
   )
 })

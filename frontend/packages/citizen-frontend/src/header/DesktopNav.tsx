@@ -20,7 +20,7 @@ import {
 } from '@evaka/lib-icons'
 import { useUser } from '../auth'
 import { Lang, langs, useLang, useTranslation } from '../localization'
-import { getLoginUri } from '~header/Header'
+import { getLoginUri } from '~header/const'
 
 type Props = {
   enduserBaseUrl: string

@@ -9,14 +9,7 @@ import { desktopMin } from '@evaka/lib-components/src/breakpoints'
 import Logo from './Logo'
 import DesktopNav from './DesktopNav'
 import MobileNav from './MobileNav'
-
-const enduserBaseUrl =
-  window.location.host === 'localhost:9094' ? 'http://localhost:9091' : ''
-
-export const getLoginUri = () =>
-  `/api/application/auth/saml/login?RelayState=${encodeURIComponent(
-    `${window.location.pathname}${window.location.search}${window.location.hash}`
-  )}`
+import { enduserBaseUrl, headerHeight } from '~header/const'
 
 export default React.memo(function Header() {
   const [showMenu, setShowMenu] = useState(false)
@@ -46,7 +39,7 @@ const HeaderContainer = styled.header<{ fixed: boolean }>`
   display: flex;
   flex-direction: row;
   justify-content: space-between;
-  height: 52px;
+  height: ${headerHeight};
   width: 100%;
 
   @media (min-width: ${desktopMin}) {

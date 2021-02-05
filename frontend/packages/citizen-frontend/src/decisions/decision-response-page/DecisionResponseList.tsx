@@ -25,6 +25,7 @@ import FormModal from '@evaka/lib-components/src/molecules/modals/FormModal'
 import DecisionResponse from './DecisionResponse'
 import { decisionOrderComparator } from '~decisions/shared'
 import HorizontalLine from '@evaka/lib-components/src/atoms/HorizontalLine'
+import Footer from '~Footer'
 
 export default React.memo(function DecisionResponseList() {
   const { applicationId } = useParams<{ applicationId: UUID }>()
@@ -60,95 +61,98 @@ export default React.memo(function DecisionResponseList() {
   }
 
   return (
-    <Container>
-      <Gap size="s" />
-      <InlineButton
-        text={t.decisions.applicationDecisions.returnToPreviousPage}
-        onClick={handleReturnToPreviousPage}
-        icon={faChevronLeft}
-      />
-      <Gap size="s" />
-      <ContentArea opaque>
-        <H1>{t.decisions.title}</H1>
-        {decisionsRequest.isLoading && <SpinnerSegment />}
-        {decisionsRequest.isFailure && (
-          <ErrorSegment
-            title={t.decisions.applicationDecisions.errors.pageLoadError}
+    <>
+      <Container>
+        <Gap size="s" />
+        <InlineButton
+          text={t.decisions.applicationDecisions.returnToPreviousPage}
+          onClick={handleReturnToPreviousPage}
+          icon={faChevronLeft}
+        />
+        <Gap size="s" />
+        <ContentArea opaque>
+          <H1>{t.decisions.title}</H1>
+          {decisionsRequest.isLoading && <SpinnerSegment />}
+          {decisionsRequest.isFailure && (
+            <ErrorSegment
+              title={t.decisions.applicationDecisions.errors.pageLoadError}
+            />
+          )}
+          {decisionsRequest.isSuccess && (
+            <div>
+              <P width="800px">{t.decisions.applicationDecisions.summary}</P>
+              {unconfirmedDecisionsCount > 0 ? (
+                <AlertBox
+                  message={t.decisions.unconfirmedDecisions(
+                    unconfirmedDecisionsCount
+                  )}
+                  thin
+                  data-qa="alert-box-unconfirmed-decisions-count"
+                />
+              ) : null}
+              <Gap size="L" />
+              {decisionsRequest.value
+                .sort(decisionOrderComparator)
+                .map((decision, i) => (
+                  <React.Fragment key={decision.id}>
+                    <DecisionResponse
+                      decision={decision}
+                      blocked={isDecisionBlocked(
+                        decision,
+                        decisionsRequest.value
+                      )}
+                      rejectCascade={isRejectCascaded(
+                        decision,
+                        decisionsRequest.value
+                      )}
+                      refreshDecisionList={() => {
+                        loadDecisions(applicationId)
+                      }}
+                      handleReturnToPreviousPage={handleReturnToPreviousPage}
+                    />
+                    {i < decisionsRequest.value.length - 1 ? (
+                      <HorizontalLine />
+                    ) : null}
+                  </React.Fragment>
+                ))}
+            </div>
+          )}
+          <Gap size="m" />
+        </ContentArea>
+        {displayDecisionWithNoResponseWarning && (
+          <FormModal
+            title={
+              t.decisions.applicationDecisions.warnings
+                .decisionWithNoResponseWarning.title
+            }
+            icon={faExclamation}
+            iconColour={'orange'}
+            text={
+              t.decisions.applicationDecisions.warnings
+                .decisionWithNoResponseWarning.text
+            }
+            resolve={{
+              label:
+                t.decisions.applicationDecisions.warnings
+                  .decisionWithNoResponseWarning.resolveLabel,
+              action: () => {
+                router.push('/decisions')
+              }
+            }}
+            reject={{
+              label:
+                t.decisions.applicationDecisions.warnings
+                  .decisionWithNoResponseWarning.rejectLabel,
+              action: () => {
+                setDisplayDecisionWithNoResponseWarning(false)
+              }
+            }}
+            size={'md'}
           />
         )}
-        {decisionsRequest.isSuccess && (
-          <div>
-            <P width="800px">{t.decisions.applicationDecisions.summary}</P>
-            {unconfirmedDecisionsCount > 0 ? (
-              <AlertBox
-                message={t.decisions.unconfirmedDecisions(
-                  unconfirmedDecisionsCount
-                )}
-                thin
-                data-qa="alert-box-unconfirmed-decisions-count"
-              />
-            ) : null}
-            <Gap size="L" />
-            {decisionsRequest.value
-              .sort(decisionOrderComparator)
-              .map((decision, i) => (
-                <React.Fragment key={decision.id}>
-                  <DecisionResponse
-                    decision={decision}
-                    blocked={isDecisionBlocked(
-                      decision,
-                      decisionsRequest.value
-                    )}
-                    rejectCascade={isRejectCascaded(
-                      decision,
-                      decisionsRequest.value
-                    )}
-                    refreshDecisionList={() => {
-                      loadDecisions(applicationId)
-                    }}
-                    handleReturnToPreviousPage={handleReturnToPreviousPage}
-                  />
-                  {i < decisionsRequest.value.length - 1 ? (
-                    <HorizontalLine />
-                  ) : null}
-                </React.Fragment>
-              ))}
-          </div>
-        )}
-        <Gap size="m" />
-      </ContentArea>
-      {displayDecisionWithNoResponseWarning && (
-        <FormModal
-          title={
-            t.decisions.applicationDecisions.warnings
-              .decisionWithNoResponseWarning.title
-          }
-          icon={faExclamation}
-          iconColour={'orange'}
-          text={
-            t.decisions.applicationDecisions.warnings
-              .decisionWithNoResponseWarning.text
-          }
-          resolve={{
-            label:
-              t.decisions.applicationDecisions.warnings
-                .decisionWithNoResponseWarning.resolveLabel,
-            action: () => {
-              router.push('/decisions')
-            }
-          }}
-          reject={{
-            label:
-              t.decisions.applicationDecisions.warnings
-                .decisionWithNoResponseWarning.rejectLabel,
-            action: () => {
-              setDisplayDecisionWithNoResponseWarning(false)
-            }
-          }}
-          size={'md'}
-        />
-      )}
-    </Container>
+      </Container>
+      <Footer />
+    </>
   )
 })
 

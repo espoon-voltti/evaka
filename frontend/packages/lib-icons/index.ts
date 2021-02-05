@@ -56,6 +56,7 @@ export interface IconSet {
   faInfo: IconDefinition
   faInfoCircle: IconDefinition
   faLink: IconDefinition
+  faList: IconDefinition
   faMapMarkerAlt: IconDefinition
   faMeh: IconDefinition
   faMoneyCheck: IconDefinition
@@ -87,6 +88,7 @@ export interface IconSet {
   fasChevronUp: IconDefinition
   fasExclamationTriangle: IconDefinition
   fasInfo: IconDefinition
+  fasMapMarkerAlt: IconDefinition
   fasArrowDown: IconDefinition
   fasArrowUp: IconDefinition
   farUser: IconDefinition
@@ -145,6 +147,7 @@ export const faHourglassStart = iconSet.faHourglassStart
 export const faInfo = iconSet.faInfo
 export const faInfoCircle = iconSet.faInfoCircle
 export const faLink = iconSet.faLink
+export const faList = iconSet.faList
 export const faMapMarkerAlt = iconSet.faMapMarkerAlt
 export const faMeh = iconSet.faMeh
 export const faMoneyCheck = iconSet.faMoneyCheck
@@ -176,6 +179,7 @@ export const fasChevronUp = iconSet.fasChevronUp
 export const fasCaretUp = iconSet.fasCaretUp
 export const fasExclamationTriangle = iconSet.fasExclamationTriangle
 export const fasInfo = iconSet.fasInfo
+export const fasMapMarkerAlt = iconSet.fasMapMarkerAlt
 export const fasArrowDown = iconSet.fasArrowDown
 export const fasArrowUp = iconSet.fasArrowUp
 export const farUser = iconSet.farUser

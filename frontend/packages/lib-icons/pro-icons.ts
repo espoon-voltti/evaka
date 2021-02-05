@@ -51,6 +51,7 @@ import {
   faInfo,
   faInfoCircle,
   faLink,
+  faList,
   faMapMarkerAlt,
   faMeh,
   faMoneyCheck,
@@ -88,6 +89,7 @@ import {
   faChevronUp as fasChevronUp,
   faExclamationTriangle as fasExclamationTriangle,
   faInfo as fasInfo,
+  faMapMarkerAlt as fasMapMarkerAlt,
   faArrowDown as fasArrowDown,
   faArrowUp as fasArrowUp
 } from '@fortawesome/free-solid-svg-icons'
@@ -144,6 +146,7 @@ const icons: IconSet = {
   faInfo,
   faInfoCircle,
   faLink,
+  faList,
   faMapMarkerAlt,
   faMeh,
   faMoneyCheck,
@@ -175,6 +178,7 @@ const icons: IconSet = {
   fasChevronUp,
   fasExclamationTriangle,
   fasInfo,
+  fasMapMarkerAlt,
   fasArrowDown,
   fasArrowUp,
   farUser: faUser
