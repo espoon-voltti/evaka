@@ -587,14 +587,16 @@ data class TestDecision(
     val status: DecisionStatus = DecisionStatus.PENDING,
     val requestedStartDate: LocalDate? = null,
     val resolvedBy: UUID? = null,
-    val resolved: Instant? = resolvedBy?.let { Instant.ofEpochSecond(1546300800) } // 2019-01-01 midnight
+    val resolved: Instant? = resolvedBy?.let { Instant.ofEpochSecond(1546300800) }, // 2019-01-01 midnight
+    val pendingDecisionEmailsSentCount: Int? = 0,
+    val pendingDecisionEmailSent: Instant? = null
 )
 
 fun Handle.insertTestDecision(decision: TestDecision) = insertTestDataRow(
     decision,
     """
-INSERT INTO decision (created_by, sent_date, unit_id, application_id, type, start_date, end_date, status, requested_start_date, resolved, resolved_by)
-VALUES (:createdBy, :sentDate, :unitId, :applicationId, :type, :startDate, :endDate, :status, :requestedStartDate, :resolved, :resolvedBy)
+INSERT INTO decision (created_by, sent_date, unit_id, application_id, type, start_date, end_date, status, requested_start_date, resolved, resolved_by, pending_decision_emails_sent_count, pending_decision_email_sent)
+VALUES (:createdBy, :sentDate, :unitId, :applicationId, :type, :startDate, :endDate, :status, :requestedStartDate, :resolved, :resolvedBy, :pendingDecisionEmailsSentCount, :pendingDecisionEmailSent)
 RETURNING id
 """
 )
