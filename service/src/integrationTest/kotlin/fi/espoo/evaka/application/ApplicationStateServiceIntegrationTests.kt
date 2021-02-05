@@ -100,7 +100,12 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
     fun `sendApplication - preschool has due date same as sent date`() {
         db.transaction { tx ->
             // given
-            insertApplication(tx.handle, appliedType = PlacementType.PRESCHOOL, applicationId = applicationId)
+            insertApplication(
+                tx.handle,
+                appliedType = PlacementType.PRESCHOOL,
+                applicationId = applicationId,
+                preferredStartDate = LocalDate.of(2020, 8, 13)
+            )
         }
 
         db.transaction { tx ->
@@ -121,7 +126,13 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
     fun `sendApplication - daycare has due date after 4 months if not urgent`() {
         db.transaction { tx ->
             // given
-            insertApplication(tx.handle, appliedType = PlacementType.DAYCARE, urgent = false, applicationId = applicationId)
+            insertApplication(
+                tx.handle,
+                appliedType = PlacementType.DAYCARE,
+                urgent = false,
+                applicationId = applicationId,
+                preferredStartDate = LocalDate.of(2020, 8, 1)
+            )
         }
         db.transaction { tx ->
             // when
@@ -138,7 +149,13 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
     fun `sendApplication - daycare has due date after 2 weeks if urgent`() {
         db.transaction { tx ->
             // given
-            insertApplication(tx.handle, appliedType = PlacementType.DAYCARE, urgent = true, applicationId = applicationId)
+            insertApplication(
+                tx.handle,
+                appliedType = PlacementType.DAYCARE,
+                urgent = true,
+                applicationId = applicationId,
+                preferredStartDate = LocalDate.of(2020, 8, 1)
+            )
         }
         db.transaction { tx ->
             // when
@@ -155,7 +172,13 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
     fun `sendApplication - daycare has not due date if a transfer application`() {
         db.transaction { tx ->
             // given
-            val draft = insertApplication(tx.handle, appliedType = PlacementType.DAYCARE, urgent = false, applicationId = applicationId)
+            val draft = insertApplication(
+                tx.handle,
+                appliedType = PlacementType.DAYCARE,
+                urgent = false,
+                applicationId = applicationId,
+                preferredStartDate = LocalDate.of(2020, 8, 1)
+            )
             tx.handle.insertTestPlacement(
                 DevPlacement(
                     childId = draft.childId,
@@ -181,7 +204,12 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
     fun `moveToWaitingPlacement without otherInfo - status is changed and checkedByAdmin defaults true`() {
         db.transaction { tx ->
             // given
-            insertApplication(tx.handle, hasAdditionalInfo = false, applicationId = applicationId)
+            insertApplication(
+                tx.handle,
+                hasAdditionalInfo = false,
+                applicationId = applicationId,
+                preferredStartDate = LocalDate.of(2020, 8, 1)
+            )
             service.sendApplication(tx, serviceWorker, applicationId)
         }
         db.transaction { tx ->
@@ -200,7 +228,12 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
     fun `moveToWaitingPlacement with otherInfo - status is changed and checkedByAdmin defaults false`() {
         db.transaction { tx ->
             // given
-            insertApplication(tx.handle, hasAdditionalInfo = true, applicationId = applicationId)
+            insertApplication(
+                tx.handle,
+                hasAdditionalInfo = true,
+                applicationId = applicationId,
+                preferredStartDate = LocalDate.of(2020, 8, 1)
+            )
             service.sendApplication(tx, serviceWorker, applicationId)
         }
         db.transaction { tx ->
@@ -218,7 +251,13 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
     fun `moveToWaitingPlacement with maxFeeAccepted - new income has been created`() {
         db.transaction { tx ->
             // given
-            insertApplication(tx.handle, guardian = testAdult_5, maxFeeAccepted = true, applicationId = applicationId)
+            insertApplication(
+                tx.handle,
+                guardian = testAdult_5,
+                maxFeeAccepted = true,
+                applicationId = applicationId,
+                preferredStartDate = LocalDate.of(2020, 8, 1)
+            )
             service.sendApplication(tx, serviceWorker, applicationId)
         }
         db.transaction { tx ->
@@ -247,11 +286,17 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 effect = IncomeEffect.NOT_AVAILABLE,
                 notes = "Income not available",
                 personId = testAdult_5.id,
-                validFrom = LocalDate.now().minusDays(10),
+                validFrom = LocalDate.of(2020, 8, 1).minusDays(10),
                 validTo = null
             )
             upsertIncome(tx.handle, mapper, earlierIndefinite, financeUser.id)
-            insertApplication(tx.handle, guardian = testAdult_5, maxFeeAccepted = true, applicationId = applicationId)
+            insertApplication(
+                tx.handle,
+                guardian = testAdult_5,
+                maxFeeAccepted = true,
+                applicationId = applicationId,
+                preferredStartDate = LocalDate.of(2020, 8, 1)
+            )
             service.sendApplication(tx, serviceWorker, applicationId)
         }
         db.transaction { tx ->
@@ -281,11 +326,17 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 effect = IncomeEffect.NOT_AVAILABLE,
                 notes = "Income not available",
                 personId = testAdult_5.id,
-                validFrom = LocalDate.now().minusDays(10),
-                validTo = LocalDate.now().plusMonths(5)
+                validFrom = LocalDate.of(2020, 8, 1).minusDays(10),
+                validTo = LocalDate.of(2020, 8, 1).plusMonths(5)
             )
             upsertIncome(tx.handle, mapper, earlierIncome, financeUser.id)
-            insertApplication(tx.handle, guardian = testAdult_5, maxFeeAccepted = true, applicationId = applicationId)
+            insertApplication(
+                tx.handle,
+                guardian = testAdult_5,
+                maxFeeAccepted = true,
+                applicationId = applicationId,
+                preferredStartDate = LocalDate.of(2020, 8, 1)
+            )
             service.sendApplication(tx, serviceWorker, applicationId)
         }
         db.transaction { tx ->
@@ -314,11 +365,17 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 effect = IncomeEffect.NOT_AVAILABLE,
                 notes = "Income not available",
                 personId = testAdult_5.id,
-                validFrom = LocalDate.now().plusMonths(5),
+                validFrom = LocalDate.of(2020, 8, 1).plusMonths(5),
                 validTo = null
             )
             upsertIncome(tx.handle, mapper, laterIndefiniteIncome, financeUser.id)
-            insertApplication(tx.handle, guardian = testAdult_5, maxFeeAccepted = true, applicationId = applicationId)
+            insertApplication(
+                tx.handle,
+                guardian = testAdult_5,
+                maxFeeAccepted = true,
+                applicationId = applicationId,
+                preferredStartDate = LocalDate.of(2020, 8, 1)
+            )
             service.sendApplication(tx, serviceWorker, applicationId)
         }
         db.transaction { tx ->
@@ -347,11 +404,17 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 effect = IncomeEffect.NOT_AVAILABLE,
                 notes = "Income not available",
                 personId = testAdult_5.id,
-                validFrom = LocalDate.now().minusMonths(7),
-                validTo = LocalDate.now().minusMonths(5)
+                validFrom = LocalDate.of(2020, 8, 1).minusMonths(7),
+                validTo = LocalDate.of(2020, 8, 1).minusMonths(5)
             )
             upsertIncome(tx.handle, mapper, earlierIncome, financeUser.id)
-            insertApplication(tx.handle, guardian = testAdult_5, maxFeeAccepted = true, applicationId = applicationId)
+            insertApplication(
+                tx.handle,
+                guardian = testAdult_5,
+                maxFeeAccepted = true,
+                applicationId = applicationId,
+                preferredStartDate = LocalDate.of(2020, 8, 1)
+            )
             service.sendApplication(tx, serviceWorker, applicationId)
         }
         db.transaction { tx ->
@@ -381,11 +444,17 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 effect = IncomeEffect.NOT_AVAILABLE,
                 notes = "Income not available",
                 personId = testAdult_5.id,
-                validFrom = LocalDate.now().plusMonths(5),
-                validTo = LocalDate.now().plusMonths(6)
+                validFrom = LocalDate.of(2020, 8, 1).plusMonths(5),
+                validTo = LocalDate.of(2020, 8, 1).plusMonths(6)
             )
             upsertIncome(tx.handle, mapper, laterIncome, financeUser.id)
-            insertApplication(tx.handle, guardian = testAdult_5, maxFeeAccepted = true, applicationId = applicationId)
+            insertApplication(
+                tx.handle,
+                guardian = testAdult_5,
+                maxFeeAccepted = true,
+                applicationId = applicationId,
+                preferredStartDate = LocalDate.of(2020, 8, 1)
+            )
             service.sendApplication(tx, serviceWorker, applicationId)
         }
         db.transaction { tx ->
@@ -418,7 +487,13 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 validTo = null
             )
             upsertIncome(tx.handle, mapper, earlierIndefinite, financeUser.id)
-            insertApplication(tx.handle, guardian = testAdult_5, maxFeeAccepted = true, preferredStartDate = null, applicationId = applicationId)
+            insertApplication(
+                tx.handle,
+                guardian = testAdult_5,
+                maxFeeAccepted = true,
+                preferredStartDate = null,
+                applicationId = applicationId
+            )
             service.sendApplication(tx, serviceWorker, applicationId)
         }
         db.transaction { tx ->
@@ -451,7 +526,13 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 validTo = null
             )
             upsertIncome(tx.handle, mapper, sameDayIncomeIndefinite, financeUser.id)
-            insertApplication(tx.handle, guardian = testAdult_5, maxFeeAccepted = true, applicationId = applicationId)
+            insertApplication(
+                tx.handle,
+                guardian = testAdult_5,
+                maxFeeAccepted = true,
+                applicationId = applicationId,
+                preferredStartDate = LocalDate.of(2020, 8, 1)
+            )
             service.sendApplication(tx, serviceWorker, applicationId)
         }
         db.transaction { tx ->
@@ -484,7 +565,13 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 validTo = LocalDate.now().plusMonths(5)
             )
             upsertIncome(tx.handle, mapper, sameDayIncome, financeUser.id)
-            insertApplication(tx.handle, guardian = testAdult_5, maxFeeAccepted = true, applicationId = applicationId)
+            insertApplication(
+                tx.handle,
+                guardian = testAdult_5,
+                maxFeeAccepted = true,
+                applicationId = applicationId,
+                preferredStartDate = LocalDate.of(2020, 8, 1)
+            )
             service.sendApplication(tx, serviceWorker, applicationId)
         }
         db.transaction { tx ->
@@ -513,11 +600,17 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 effect = IncomeEffect.NOT_AVAILABLE,
                 notes = "Income not available",
                 personId = testAdult_5.id,
-                validFrom = LocalDate.now().plusMonths(4).minusDays(1),
+                validFrom = LocalDate.of(2020, 8, 1).minusDays(1),
                 validTo = null
             )
             upsertIncome(tx.handle, mapper, dayBeforeIncomeIndefinite, financeUser.id)
-            insertApplication(tx.handle, guardian = testAdult_5, maxFeeAccepted = true, applicationId = applicationId)
+            insertApplication(
+                tx.handle,
+                guardian = testAdult_5,
+                maxFeeAccepted = true,
+                applicationId = applicationId,
+                preferredStartDate = LocalDate.of(2020, 8, 1)
+            )
             service.sendApplication(tx, serviceWorker, applicationId)
         }
         db.transaction { tx ->
@@ -551,7 +644,13 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 validTo = null
             )
             upsertIncome(tx.handle, mapper, nextDayIncomeIndefinite, financeUser.id)
-            insertApplication(tx.handle, guardian = testAdult_5, maxFeeAccepted = true, applicationId = applicationId)
+            insertApplication(
+                tx.handle,
+                guardian = testAdult_5,
+                maxFeeAccepted = true,
+                applicationId = applicationId,
+                preferredStartDate = LocalDate.of(2020, 8, 1)
+            )
             service.sendApplication(tx, serviceWorker, applicationId)
         }
         db.transaction { tx ->
@@ -574,7 +673,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
         db.transaction { tx ->
             // given
             val financeUser = AuthenticatedUser(id = testDecisionMaker_1.id, roles = setOf(UserRole.FINANCE_ADMIN))
-            val IncomeDayBefore = Income(
+            val incomeDayBefore = Income(
                 id = UUID.randomUUID(),
                 data = mapOf(),
                 effect = IncomeEffect.NOT_AVAILABLE,
@@ -583,8 +682,14 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 validFrom = LocalDate.now().plusMonths(4).minusDays(1),
                 validTo = LocalDate.now().plusMonths(5)
             )
-            upsertIncome(tx.handle, mapper, IncomeDayBefore, financeUser.id)
-            insertApplication(tx.handle, guardian = testAdult_5, maxFeeAccepted = true, applicationId = applicationId)
+            upsertIncome(tx.handle, mapper, incomeDayBefore, financeUser.id)
+            insertApplication(
+                tx.handle,
+                guardian = testAdult_5,
+                maxFeeAccepted = true,
+                applicationId = applicationId,
+                preferredStartDate = LocalDate.of(2020, 8, 1)
+            )
             service.sendApplication(tx, serviceWorker, applicationId)
         }
         db.transaction { tx ->
@@ -617,7 +722,13 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 validTo = LocalDate.now().plusMonths(4)
             )
             upsertIncome(tx.handle, mapper, earlierIncomeEndingOnSameDay, financeUser.id)
-            insertApplication(tx.handle, guardian = testAdult_5, maxFeeAccepted = true, applicationId = applicationId)
+            insertApplication(
+                tx.handle,
+                guardian = testAdult_5,
+                maxFeeAccepted = true,
+                applicationId = applicationId,
+                preferredStartDate = LocalDate.of(2020, 8, 1)
+            )
             service.sendApplication(tx, serviceWorker, applicationId)
         }
         db.transaction { tx ->
@@ -650,7 +761,13 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 validTo = LocalDate.now().plusMonths(4).plusDays(1)
             )
             upsertIncome(tx.handle, mapper, earlierIncomeEndingOnNextDay, financeUser.id)
-            insertApplication(tx.handle, guardian = testAdult_5, maxFeeAccepted = true, applicationId = applicationId)
+            insertApplication(
+                tx.handle,
+                guardian = testAdult_5,
+                maxFeeAccepted = true,
+                applicationId = applicationId,
+                preferredStartDate = LocalDate.of(2020, 8, 1)
+            )
             service.sendApplication(tx, serviceWorker, applicationId)
         }
         db.transaction { tx ->
@@ -679,11 +796,17 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 effect = IncomeEffect.NOT_AVAILABLE,
                 notes = "Income not available",
                 personId = testAdult_5.id,
-                validFrom = LocalDate.now().minusMonths(4),
-                validTo = LocalDate.now().plusMonths(4).minusDays(1)
+                validFrom = LocalDate.of(2020, 8, 1).minusMonths(4),
+                validTo = LocalDate.of(2020, 8, 1).minusDays(1)
             )
             upsertIncome(tx.handle, mapper, earlierIncomeEndingOnDayBefore, financeUser.id)
-            insertApplication(tx.handle, guardian = testAdult_5, maxFeeAccepted = true, applicationId = applicationId)
+            insertApplication(
+                tx.handle,
+                guardian = testAdult_5,
+                maxFeeAccepted = true,
+                applicationId = applicationId,
+                preferredStartDate = LocalDate.of(2020, 8, 1)
+            )
             service.sendApplication(tx, serviceWorker, applicationId)
         }
         db.transaction { tx ->
@@ -706,7 +829,12 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
     fun `moveToWaitingPlacement - guardian contact details are updated`() {
         db.transaction { tx ->
             // given
-            insertApplication(tx.handle, appliedType = PlacementType.DAYCARE, applicationId = applicationId)
+            insertApplication(
+                tx.handle,
+                appliedType = PlacementType.DAYCARE,
+                applicationId = applicationId,
+                preferredStartDate = LocalDate.of(2020, 8, 1)
+            )
             service.sendApplication(tx, serviceWorker, applicationId)
         }
         db.transaction { tx ->
@@ -725,7 +853,12 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
     fun `moveToWaitingPlacement - child is upserted with diet and allergies`() {
         db.transaction { tx ->
             // given
-            insertApplication(tx.handle, appliedType = PlacementType.DAYCARE, hasAdditionalInfo = true, applicationId = applicationId)
+            insertApplication(
+                tx.handle,
+                appliedType = PlacementType.DAYCARE,
+                hasAdditionalInfo = true,
+                applicationId = applicationId
+            )
             service.sendApplication(tx, serviceWorker, applicationId)
         }
         db.transaction { tx ->
@@ -744,7 +877,12 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
     fun `setVerified and setUnverified - changes checkedByAdmin`() {
         db.transaction { tx ->
             // given
-            insertApplication(tx.handle, hasAdditionalInfo = true, applicationId = applicationId)
+            insertApplication(
+                tx.handle,
+                hasAdditionalInfo = true,
+                applicationId = applicationId,
+                preferredStartDate = LocalDate.of(2020, 8, 1)
+            )
             service.sendApplication(tx, serviceWorker, applicationId)
             service.moveToWaitingPlacement(tx, serviceWorker, applicationId)
         }
@@ -774,7 +912,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
     fun `cancelApplication from SENT - status is changed`() {
         db.transaction { tx ->
             // given
-            insertApplication(tx.handle, applicationId = applicationId)
+            insertApplication(tx.handle, applicationId = applicationId, preferredStartDate = LocalDate.of(2020, 8, 1))
             service.sendApplication(tx, serviceWorker, applicationId)
         }
         db.transaction { tx ->
@@ -792,7 +930,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
     fun `cancelApplication from WAITING_PLACEMENT - status is changed`() {
         db.transaction { tx ->
             // given
-            insertApplication(tx.handle, applicationId = applicationId)
+            insertApplication(tx.handle, applicationId = applicationId, preferredStartDate = LocalDate.of(2020, 8, 1))
             service.sendApplication(tx, serviceWorker, applicationId)
             service.moveToWaitingPlacement(tx, serviceWorker, applicationId)
         }
@@ -811,7 +949,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
     fun `returnToSent - status is changed`() {
         db.transaction { tx ->
             // given
-            insertApplication(tx.handle, applicationId = applicationId)
+            insertApplication(tx.handle, applicationId = applicationId, preferredStartDate = LocalDate.of(2020, 8, 1))
             service.sendApplication(tx, serviceWorker, applicationId)
             service.moveToWaitingPlacement(tx, serviceWorker, applicationId)
         }
@@ -830,7 +968,12 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
     fun `createPlacementPlan - daycare`() {
         db.transaction { tx ->
             // given
-            insertApplication(tx.handle, appliedType = PlacementType.DAYCARE, applicationId = applicationId)
+            insertApplication(
+                tx.handle,
+                appliedType = PlacementType.DAYCARE,
+                applicationId = applicationId,
+                preferredStartDate = LocalDate.of(2020, 8, 1)
+            )
             service.sendApplication(tx, serviceWorker, applicationId)
             service.moveToWaitingPlacement(tx, serviceWorker, applicationId)
         }
@@ -884,7 +1027,12 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
     fun `createPlacementPlan - daycare part-time`() {
         db.transaction { tx ->
             // given
-            insertApplication(tx.handle, appliedType = PlacementType.DAYCARE_PART_TIME, applicationId = applicationId)
+            insertApplication(
+                tx.handle,
+                appliedType = PlacementType.DAYCARE_PART_TIME,
+                applicationId = applicationId,
+                preferredStartDate = LocalDate.of(2020, 8, 1)
+            )
             service.sendApplication(tx, serviceWorker, applicationId)
             service.moveToWaitingPlacement(tx, serviceWorker, applicationId)
         }
@@ -938,7 +1086,12 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
     fun `createPlacementPlan - preschool`() {
         db.transaction { tx ->
             // given
-            insertApplication(tx.handle, appliedType = PlacementType.PRESCHOOL, applicationId = applicationId)
+            insertApplication(
+                tx.handle,
+                appliedType = PlacementType.PRESCHOOL,
+                applicationId = applicationId,
+                preferredStartDate = LocalDate.of(2020, 8, 13)
+            )
             service.sendApplication(tx, serviceWorker, applicationId)
             service.moveToWaitingPlacement(tx, serviceWorker, applicationId)
         }
@@ -1008,7 +1161,12 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
     fun `createPlacementPlan - preschool with daycare`() {
         db.transaction { tx ->
             // given
-            insertApplication(tx.handle, appliedType = PlacementType.PRESCHOOL_DAYCARE, applicationId = applicationId)
+            insertApplication(
+                tx.handle,
+                appliedType = PlacementType.PRESCHOOL_DAYCARE,
+                applicationId = applicationId,
+                preferredStartDate = LocalDate.of(2020, 8, 1)
+            )
             service.sendApplication(tx, serviceWorker, applicationId)
             service.moveToWaitingPlacement(tx, serviceWorker, applicationId)
         }
@@ -1079,7 +1237,12 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
     fun `cancelPlacementPlan - removes placement plan and decision drafts and changes status`() {
         db.transaction { tx ->
             // given
-            insertApplication(tx.handle, appliedType = PlacementType.PRESCHOOL_DAYCARE, applicationId = applicationId)
+            insertApplication(
+                tx.handle,
+                appliedType = PlacementType.PRESCHOOL_DAYCARE,
+                applicationId = applicationId,
+                preferredStartDate = LocalDate.of(2020, 8, 1)
+            )
             service.sendApplication(tx, serviceWorker, applicationId)
             service.moveToWaitingPlacement(tx, serviceWorker, applicationId)
             service.createPlacementPlan(
@@ -1169,7 +1332,14 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
     ) {
         // given
         db.transaction { tx ->
-            insertApplication(tx.handle, appliedType = PlacementType.PRESCHOOL, guardian = applier, child = child, applicationId = applicationId)
+            insertApplication(
+                tx.handle,
+                appliedType = PlacementType.PRESCHOOL,
+                guardian = applier,
+                child = child,
+                applicationId = applicationId,
+                preferredStartDate = LocalDate.of(2020, 8, 13)
+            )
             service.sendApplication(tx, serviceWorker, applicationId)
             service.moveToWaitingPlacement(tx, serviceWorker, applicationId)
             service.createPlacementPlan(
@@ -1227,7 +1397,12 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
     fun `sendPlacementProposal - updates status`() {
         db.transaction { tx ->
             // given
-            insertApplication(tx.handle, appliedType = PlacementType.PRESCHOOL_DAYCARE, applicationId = applicationId)
+            insertApplication(
+                tx.handle,
+                appliedType = PlacementType.PRESCHOOL_DAYCARE,
+                applicationId = applicationId,
+                preferredStartDate = LocalDate.of(2020, 8, 1)
+            )
             service.sendApplication(tx, serviceWorker, applicationId)
             service.moveToWaitingPlacement(tx, serviceWorker, applicationId)
             service.createPlacementPlan(
@@ -1257,7 +1432,12 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
     fun `withdrawPlacementProposal - updates status`() {
         db.transaction { tx ->
             // given
-            insertApplication(tx.handle, appliedType = PlacementType.PRESCHOOL_DAYCARE, applicationId = applicationId)
+            insertApplication(
+                tx.handle,
+                appliedType = PlacementType.PRESCHOOL_DAYCARE,
+                applicationId = applicationId,
+                preferredStartDate = LocalDate.of(2020, 8, 1)
+            )
             service.sendApplication(tx, serviceWorker, applicationId)
             service.moveToWaitingPlacement(tx, serviceWorker, applicationId)
             service.createPlacementPlan(
@@ -1294,7 +1474,8 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 tx.handle, appliedType = PlacementType.PRESCHOOL_DAYCARE,
                 child = testChild_2,
                 guardian = testAdult_1,
-                applicationId = applicationId
+                applicationId = applicationId,
+                preferredStartDate = LocalDate.of(2020, 8, 1)
             )
             service.sendApplication(tx, serviceWorker, applicationId)
             service.moveToWaitingPlacement(tx, serviceWorker, applicationId)
@@ -1347,7 +1528,8 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
             insertApplication(
                 tx.handle, appliedType = PlacementType.PRESCHOOL_DAYCARE,
                 child = testChild_2,
-                guardian = testAdult_1, applicationId = applicationId
+                guardian = testAdult_1, applicationId = applicationId,
+                preferredStartDate = LocalDate.of(2020, 8, 1)
             )
             service.sendApplication(tx, serviceWorker, applicationId)
             service.moveToWaitingPlacement(tx, serviceWorker, applicationId)
@@ -1414,7 +1596,8 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 tx.handle,
                 appliedType = PlacementType.PRESCHOOL,
                 child = testChild_2,
-                guardian = testAdult_1, applicationId = applicationId
+                guardian = testAdult_1, applicationId = applicationId,
+                preferredStartDate = LocalDate.of(2020, 8, 13)
             )
             service.sendApplication(tx, serviceWorker, applicationId)
             service.moveToWaitingPlacement(tx, serviceWorker, applicationId)
@@ -1443,7 +1626,8 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 tx.handle,
                 appliedType = PlacementType.PRESCHOOL,
                 child = testChild_2,
-                guardian = testAdult_1, applicationId = applicationId
+                guardian = testAdult_1, applicationId = applicationId,
+                preferredStartDate = LocalDate.of(2020, 8, 13)
             )
             service.sendApplication(tx, serviceWorker, applicationId)
             service.moveToWaitingPlacement(tx, serviceWorker, applicationId)
@@ -1806,7 +1990,12 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
         getDecisionsByApplication(h, applicationId, AclAuthorization.All).first { it.type == type }
 
     private fun workflowForPreschoolDaycareDecisions(tx: Database.Transaction) {
-        insertApplication(tx.handle, appliedType = PlacementType.PRESCHOOL_DAYCARE, applicationId = applicationId)
+        insertApplication(
+            tx.handle,
+            appliedType = PlacementType.PRESCHOOL_DAYCARE,
+            applicationId = applicationId,
+            preferredStartDate = LocalDate.of(2020, 8, 1)
+        )
         service.sendApplication(tx, serviceWorker, applicationId)
         service.moveToWaitingPlacement(tx, serviceWorker, applicationId)
         service.createPlacementPlan(
