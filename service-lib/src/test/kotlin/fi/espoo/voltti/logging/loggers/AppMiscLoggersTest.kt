@@ -7,6 +7,7 @@ package fi.espoo.voltti.logging.loggers
 import ch.qos.logback.classic.Level
 import ch.qos.logback.classic.Logger
 import ch.qos.logback.classic.spi.ILoggingEvent
+import ch.qos.logback.classic.spi.ThrowableProxy
 import fi.espoo.voltti.logging.utils.clearTestMessages
 import fi.espoo.voltti.logging.utils.getTestAppender
 import fi.espoo.voltti.logging.utils.getTestMessages
@@ -108,6 +109,18 @@ class AppMiscLoggersTest {
 
         val event = logger.getTestAppender().getEvents().first()
         compareArgs(args, event)
+    }
+
+    @Test
+    fun `throwable and all arguments included in error log entry`() {
+        val exception = RuntimeException("This is a test exception")
+        val args = mapOf("meta" to mapOf("metaArg1" to "metaVal1", "metaArg2" to "metaVal2"))
+        logger.error(exception, args) { message }
+
+        val event = logger.getTestAppender().getEvents().first()
+        assertEquals(message, event.message)
+        compareArgs(args, event)
+        assertEquals((event.throwableProxy as ThrowableProxy).throwable, exception)
     }
 
     private fun compareArgs(expectedArgs: Map<String, Any>, event: ILoggingEvent) {
