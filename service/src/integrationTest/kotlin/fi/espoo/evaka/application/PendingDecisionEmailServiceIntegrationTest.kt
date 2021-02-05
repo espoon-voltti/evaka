@@ -80,8 +80,10 @@ class PendingDecisionEmailServiceIntegrationTest : FullApplicationTest() {
         val sentMails = MockEmailClient.emails
         Assertions.assertEquals(1, sentMails.size)
         assertEmail(
-            sentMails.first(), testAdult_6.email!!,
-            "no-reply.evaka@espoo.fi", "Päätös varhaiskasvatuksesta",
+            sentMails.first(),
+            testAdult_6.email!!,
+            "no-reply.evaka@espoo.fi",
+            "Päätös varhaiskasvatuksesta",
             "kirjautumalla osoitteeseen <a",
             "kirjautumalla osoitteeseen https"
         )
@@ -104,8 +106,10 @@ class PendingDecisionEmailServiceIntegrationTest : FullApplicationTest() {
         val sentMails = MockEmailClient.emails
         Assertions.assertEquals(1, sentMails.size)
         assertEmail(
-            sentMails.first(), testAdult_6.email!!,
-            "no-reply.evaka@espoo.fi", "Päätös varhaiskasvatuksesta",
+            sentMails.first(),
+            testAdult_6.email!!,
+            "no-reply.evaka@espoo.fi",
+            "Päätös varhaiskasvatuksesta",
             "kirjautumalla osoitteeseen <a",
             "kirjautumalla osoitteeseen https"
         )

@@ -30,12 +30,14 @@ class PendingDecisionEmailService(
         asyncJobRunner.sendPendingDecisionEmail = ::doSendPendingDecisionsEmail
     }
 
-    val fromAddress = env.getProperty("mail_reply_to_address", "no-reply.evaka@espoo.fi")
+    val fromAddress = env.getRequiredProperty("mail_reply_to_address")
 
     fun doSendPendingDecisionsEmail(db: Database, msg: SendPendingDecisionEmail) {
         logger.info("Sending pending decision reminder email to decision ${msg.decisionId}")
         sendPendingDecisionEmail(db, msg.decisionId)
     }
+
+    class PendingDecisionMailException(msg: String) : Exception(msg)
 
     fun scheduleSendPendingDecisionsEmails(db: Database.Connection): Int {
         val jobCount = db.transaction { tx ->
@@ -48,7 +50,7 @@ SELECT DISTINCT(d.id)
 FROM decision d
 WHERE d.status = 'PENDING'
 AND d.resolved IS NULL
-AND d.sent_date + INTERVAL '1 week' < current_date
+AND d.sent_date < current_date - INTERVAL '1 week'
 AND d.pending_decision_emails_sent_count < 2
 AND d.pending_decision_email_sent IS NULL or d.pending_decision_email_sent < current_date - INTERVAL '1 week'
 """
@@ -80,41 +82,43 @@ AND d.pending_decision_email_sent IS NULL or d.pending_decision_email_sent < cur
     }
 
     fun sendPendingDecisionEmail(db: Database, decisionId: UUID) {
-        db.read { tx ->
-            getDecision(tx.handle, decisionId)?.let { decision ->
-                fetchApplicationDetails(tx.handle, decision.applicationId)?.let { application ->
-                    tx.handle.getPersonById(application.guardianId)?.let { guardian ->
-                        if (!guardian.email.isNullOrBlank()) {
-                            logger.info("Sending pending decision email to guardian ${guardian.id}")
+        try {
+            db.transaction { tx ->
+                val decision = getDecision(tx.handle, decisionId) ?: throw PendingDecisionMailException("Could not send pending decision email for decision $decisionId: decision missing")
 
-                            val lang = getLanguage(guardian.language)
-                            emailClient.sendEmail(
-                                decisionId.toString(),
-                                guardian.email,
-                                fromAddress,
-                                getSubject(lang),
-                                getHtml(lang),
-                                getText(lang)
-                            )
+                val application = fetchApplicationDetails(tx.handle, decision.applicationId) ?: throw PendingDecisionMailException("Could not send pending decision email for decision ${decision.id}: application could not be found")
 
-                            // Mark as sent
-                            db.transaction { tx ->
-                                tx.createUpdate(
-                                    """
-UPDATE decision
-SET pending_decision_emails_sent_count = pending_decision_emails_sent_count + 1, pending_decision_email_sent = now()
-WHERE id = :id
-                                    """.trimIndent()
-                                )
-                                    .bind("id", decisionId)
-                                    .execute()
-                            }
-                        } else {
-                            logger.warn("Could not send pending decision email to guardian ${guardian.id}: invalid email")
-                        }
-                    } ?: logger.warn("Could not send pending decision email for application ${application.id}: guardian cannot be found")
-                } ?: logger.warn("Could not send pending decision email for decision ${decision.id}: application could not be found")
-            } ?: logger.warn("Could not send pending decision email for decision $decisionId: decision missing")
+                val guardian = tx.handle.getPersonById(application.guardianId) ?: throw PendingDecisionMailException("Could not send pending decision email for application ${application.id}: guardian cannot be found")
+
+                if (!guardian.email.isNullOrBlank()) {
+                    logger.info("Sending pending decision email to guardian ${guardian.id}")
+
+                    val lang = getLanguage(guardian.language)
+                    emailClient.sendEmail(
+                        decisionId.toString(),
+                        guardian.email,
+                        fromAddress,
+                        getSubject(lang),
+                        getHtml(lang),
+                        getText(lang)
+                    )
+
+                    // Mark as sent
+                    tx.handle.createUpdate(
+                        """
+    UPDATE decision
+    SET pending_decision_emails_sent_count = pending_decision_emails_sent_count + 1, pending_decision_email_sent = now()
+    WHERE id = :id
+                        """.trimIndent()
+                    )
+                        .bind("id", decisionId)
+                        .execute()
+                } else {
+                    throw PendingDecisionMailException("Could not send pending decision email to guardian ${guardian.id}: invalid email")
+                }
+            }
+        } catch (e: PendingDecisionMailException) {
+            logger.warn(e.message)
         }
     }
 
