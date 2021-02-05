@@ -17,7 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired
 
 class ApplicationReceivedEmailServiceIntegrationTest : FullApplicationTest() {
     @Autowired
-    lateinit var sendApplicationReceivedEmailService: SendApplicationReceivedEmailService
+    lateinit var applicationReceivedEmailService: ApplicationReceivedEmailService
     private val personId = testAdult_1.id
 
     @AfterEach
@@ -27,7 +27,7 @@ class ApplicationReceivedEmailServiceIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `valid email is sent`() {
-        sendApplicationReceivedEmailService.sendApplicationEmail(personId, "working@test.fi", Language.fi)
+        applicationReceivedEmailService.sendApplicationEmail(personId, "working@test.fi", Language.fi)
         assertEmail(
             MockEmailClient.getEmail("working@test.fi"),
             "working@test.fi",
@@ -37,7 +37,7 @@ class ApplicationReceivedEmailServiceIntegrationTest : FullApplicationTest() {
             "Varhaiskasvatushakemuksella on neljän (4) kuukauden hakuaika"
         )
 
-        sendApplicationReceivedEmailService.sendApplicationEmail(personId, "Working.Email@Test.Com", Language.sv)
+        applicationReceivedEmailService.sendApplicationEmail(personId, "Working.Email@Test.Com", Language.sv)
         assertEmail(
             MockEmailClient.getEmail("Working.Email@Test.Com"),
             "Working.Email@Test.Com",
@@ -50,8 +50,8 @@ class ApplicationReceivedEmailServiceIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `email with invalid toAddress is not sent`() {
-        sendApplicationReceivedEmailService.sendApplicationEmail(personId, "not.working.com", Language.fi)
-        sendApplicationReceivedEmailService.sendApplicationEmail(personId, "@test.fi", Language.fi)
+        applicationReceivedEmailService.sendApplicationEmail(personId, "not.working.com", Language.fi)
+        applicationReceivedEmailService.sendApplicationEmail(personId, "@test.fi", Language.fi)
 
         assertEquals(0, MockEmailClient.emails.size)
     }

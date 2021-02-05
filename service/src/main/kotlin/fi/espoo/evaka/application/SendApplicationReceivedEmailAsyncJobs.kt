@@ -13,7 +13,7 @@ import org.springframework.stereotype.Component
 @Component
 class SendApplicationReceivedEmailAsyncJobs(
     asyncJobRunner: AsyncJobRunner,
-    private val sendApplicationReceivedEmailService: SendApplicationReceivedEmailService
+    private val applicationReceivedEmailService: ApplicationReceivedEmailService
 ) {
 
     init {
@@ -27,6 +27,6 @@ class SendApplicationReceivedEmailAsyncJobs(
         if (guardian.email.isNullOrBlank())
             throw Exception("Cannot send application received email to guardian ${guardian.id}: missing email")
 
-        sendApplicationReceivedEmailService.sendApplicationEmail(guardian.id, guardian.email, msg.language)
+        applicationReceivedEmailService.sendApplicationEmail(guardian.id, guardian.email, msg.language)
     }
 }
