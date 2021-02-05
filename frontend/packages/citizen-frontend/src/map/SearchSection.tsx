@@ -1,39 +1,102 @@
-import React from 'react'
+import React, { useState } from 'react'
 import styled from 'styled-components'
-import { ContentArea } from '@evaka/lib-components/src/layout/Container'
 import { UnitLanguage } from '@evaka/lib-common/src/api-types/units/enums'
+import { ContentArea } from '@evaka/lib-components/src/layout/Container'
 import {
   FixedSpaceColumn,
+  FixedSpaceFlexWrap,
   FixedSpaceRow
 } from '@evaka/lib-components/src/layout/flex-helpers'
+import colors from '@evaka/lib-components/src/colors'
+import { Gap } from '@evaka/lib-components/src/white-space'
 import { SelectionChip } from '@evaka/lib-components/src/atoms/Chip'
+import HorizontalLine from '@evaka/lib-components/src/atoms/HorizontalLine'
+import InlineButton from '@evaka/lib-components/src/atoms/buttons/InlineButton'
+import Radio from '@evaka/lib-components/src/atoms/form/Radio'
+import Checkbox from '@evaka/lib-components/src/atoms/form/Checkbox'
 import { H1, Label, P } from '@evaka/lib-components/src/typography'
+import {
+  faAngleDown,
+  faAngleUp,
+  faList,
+  fasMapMarkerAlt
+} from '@evaka/lib-icons'
 import { useTranslation } from '~localization'
 import { mapViewBreakpoint, MobileMode } from '~map/const'
-import HorizontalLine from '../../../lib-components/src/atoms/HorizontalLine'
-import InlineButton from '../../../lib-components/src/atoms/buttons/InlineButton'
-import { faList, fasMapMarkerAlt } from '@evaka/lib-icons'
-import colors from '@evaka/lib-components/src/colors'
+import SearchInput from '~map/SearchInput'
+import { CareTypeOption, MapAddress, ProviderTypeOption } from '~map/MapView'
 
 type Props = {
+  careType: CareTypeOption
+  setCareType: (c: CareTypeOption) => void
   languages: UnitLanguage[]
-  onChangeLanguages: (val: UnitLanguage[]) => void
+  setLanguages: (val: UnitLanguage[]) => void
+  providerTypes: ProviderTypeOption[]
+  setProviderTypes: (val: ProviderTypeOption[]) => void
+  shiftCare: boolean
+  setShiftCare: (val: boolean) => void
   mobileMode: MobileMode
   setMobileMode: (mode: MobileMode) => void
+  selectedAddress: MapAddress | null
+  setSelectedAddress: (address: MapAddress | null) => void
 }
 
 export default React.memo(function SearchSection({
+  careType,
+  setCareType,
   languages,
-  onChangeLanguages,
+  setLanguages,
+  providerTypes,
+  setProviderTypes,
+  shiftCare,
+  setShiftCare,
   mobileMode,
-  setMobileMode
+  setMobileMode,
+  selectedAddress,
+  setSelectedAddress
 }: Props) {
   const t = useTranslation()
+
+  const [showMoreFilters, setShowMoreFilters] = useState<boolean>(false)
 
   return (
     <Wrapper opaque>
       <H1>{t.map.title}</H1>
       <P>{t.map.mainInfo}</P>
+
+      <FixedSpaceColumn spacing="xs">
+        <Label>{t.map.searchLabel}</Label>
+        <SearchInput
+          selectedAddress={selectedAddress}
+          setSelectedAddress={setSelectedAddress}
+        />
+      </FixedSpaceColumn>
+
+      <Gap size="m" />
+
+      <FixedSpaceColumn spacing="xs">
+        <Label>{t.map.careType}</Label>
+        <FixedSpaceFlexWrap>
+          <Radio
+            checked={careType === 'DAYCARE'}
+            label={t.map.careTypes.DAYCARE}
+            onChange={() => setCareType('DAYCARE')}
+          />
+          <Radio
+            checked={careType === 'PRESCHOOL'}
+            label={t.map.careTypes.PRESCHOOL}
+            onChange={() => setCareType('PRESCHOOL')}
+          />
+          <Radio
+            checked={careType === 'CLUB'}
+            label={t.map.careTypes.CLUB}
+            onChange={() => setCareType('CLUB')}
+          />
+        </FixedSpaceFlexWrap>
+      </FixedSpaceColumn>
+
+      <Gap size="xs" />
+
       <FixedSpaceColumn spacing="xs">
         <Label>{t.map.language}</Label>
         <FixedSpaceRow>
@@ -43,7 +106,7 @@ export default React.memo(function SearchSection({
             onChange={(selected) => {
               const nextValue = languages.filter((l) => l !== 'fi')
               if (selected) nextValue.push('fi')
-              onChangeLanguages(nextValue)
+              setLanguages(nextValue)
             }}
           />
           <SelectionChip
@@ -52,11 +115,60 @@ export default React.memo(function SearchSection({
             onChange={(selected) => {
               const nextValue = languages.filter((l) => l !== 'sv')
               if (selected) nextValue.push('sv')
-              onChangeLanguages(nextValue)
+              setLanguages(nextValue)
             }}
           />
         </FixedSpaceRow>
       </FixedSpaceColumn>
+
+      {showMoreFilters && (
+        <>
+          <Gap size="s" />
+
+          <FixedSpaceColumn spacing="xs">
+            <Label>{t.map.providerType}</Label>
+            <FixedSpaceFlexWrap>
+              {([
+                'MUNICIPAL',
+                'PURCHASED',
+                'PRIVATE',
+                'PRIVATE_SERVICE_VOUCHER'
+              ] as ProviderTypeOption[]).map((type) => (
+                <SelectionChip
+                  key={type}
+                  text={t.map.providerTypes[type]}
+                  selected={providerTypes.includes(type)}
+                  onChange={(selected) => {
+                    const nextValue = providerTypes.filter((t) => t !== type)
+                    if (selected) nextValue.push(type)
+                    setProviderTypes(nextValue)
+                  }}
+                />
+              ))}
+            </FixedSpaceFlexWrap>
+          </FixedSpaceColumn>
+
+          <Gap size="xs" />
+
+          <FixedSpaceColumn spacing="xs">
+            <Label>{t.map.shiftCareTitle}</Label>
+            <Checkbox
+              label={t.map.shiftCareLabel}
+              checked={shiftCare}
+              onChange={(checked) => setShiftCare(checked)}
+            />
+          </FixedSpaceColumn>
+        </>
+      )}
+
+      <Gap size="s" />
+      <Centered>
+        <InlineButton
+          onClick={() => setShowMoreFilters(!showMoreFilters)}
+          text={showMoreFilters ? t.map.showLessFilters : t.map.showMoreFilters}
+          icon={showMoreFilters ? faAngleUp : faAngleDown}
+        />
+      </Centered>
 
       <div className="mobile-tabs">
         <HorizontalLine />
@@ -82,6 +194,7 @@ export default React.memo(function SearchSection({
 const Wrapper = styled(ContentArea)`
   box-sizing: border-box;
   width: 100%;
+  padding-right: 20px;
 
   .mobile-tabs {
     display: none;
@@ -100,4 +213,10 @@ const MobileTabs = styled.div`
   .inactive {
     color: ${colors.greyscale.medium} !important;
   }
+`
+
+const Centered = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
 `

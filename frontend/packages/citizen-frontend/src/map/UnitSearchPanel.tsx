@@ -1,68 +1,76 @@
-import React, { useEffect, useState } from 'react'
-import { Gap } from '~../../lib-components/src/white-space'
-import SearchSection from '~map/SearchSection'
-import UnitList from '~map/UnitList'
+import React from 'react'
 import styled from 'styled-components'
-import { Failure, Loading, Result, Success } from '@evaka/lib-common/src/api'
+import { Result } from '@evaka/lib-common/src/api'
 import { PublicUnit } from '@evaka/lib-common/src/api-types/units/PublicUnit'
 import { UnitLanguage } from '@evaka/lib-common/src/api-types/units/enums'
-import _ from 'lodash'
+import { Gap } from '@evaka/lib-components/src/white-space'
+import SearchSection from '~map/SearchSection'
+import UnitList from '~map/UnitList'
 import { MobileMode } from '~map/const'
+import { CareTypeOption, MapAddress, ProviderTypeOption } from '~map/MapView'
+import { UnitWithDistance } from '~map/distances'
 
 type Props = {
-  unitsResult: Result<PublicUnit[]>
+  filteredUnits: Result<PublicUnit[]>
+  unitsWithDistances: Result<UnitWithDistance[]>
+  careType: CareTypeOption
+  setCareType: (c: CareTypeOption) => void
+  languages: UnitLanguage[]
+  setLanguages: (val: UnitLanguage[]) => void
+  providerTypes: ProviderTypeOption[]
+  setProviderTypes: (val: ProviderTypeOption[]) => void
+  shiftCare: boolean
+  setShiftCare: (val: boolean) => void
   mobileMode: MobileMode
   setMobileMode: (mode: MobileMode) => void
+  selectedAddress: MapAddress | null
+  setSelectedAddress: (address: MapAddress | null) => void
+  setSelectedUnit: (u: PublicUnit) => void
 }
 
 export default React.memo(function UnitSearchPanel({
-  unitsResult,
+  filteredUnits,
+  unitsWithDistances,
+  careType,
+  setCareType,
+  languages,
+  setLanguages,
+  providerTypes,
+  setProviderTypes,
+  shiftCare,
+  setShiftCare,
   mobileMode,
-  setMobileMode
+  setMobileMode,
+  selectedAddress,
+  setSelectedAddress,
+  setSelectedUnit
 }: Props) {
-  const [languages, setLanguages] = useState<UnitLanguage[]>([])
-  const [filteredUnits, setFilteredUnits] = useState<Result<PublicUnit[]>>(
-    filterUnits(unitsResult, languages)
-  )
-
-  useEffect(() => {
-    setFilteredUnits(filterUnits(unitsResult, languages))
-  }, [unitsResult, languages])
-
   return (
     <Wrapper>
       <SearchSection
+        careType={careType}
+        setCareType={setCareType}
         languages={languages}
-        onChangeLanguages={setLanguages}
+        setLanguages={setLanguages}
+        providerTypes={providerTypes}
+        setProviderTypes={setProviderTypes}
+        shiftCare={shiftCare}
+        setShiftCare={setShiftCare}
         mobileMode={mobileMode}
         setMobileMode={setMobileMode}
+        selectedAddress={selectedAddress}
+        setSelectedAddress={setSelectedAddress}
       />
       <Gap size="xs" />
-      <UnitList filteredUnits={filteredUnits} />
+      <UnitList
+        selectedAddress={selectedAddress}
+        filteredUnits={filteredUnits}
+        unitsWithDistances={unitsWithDistances}
+        setSelectedUnit={setSelectedUnit}
+      />
     </Wrapper>
   )
 })
-
-const filterUnits = (
-  unitsResult: Result<PublicUnit[]>,
-  languages: UnitLanguage[]
-): Result<PublicUnit[]> => {
-  if (unitsResult.isLoading) return Loading.of()
-  if (unitsResult.isFailure)
-    return Failure.of({
-      message: unitsResult.message,
-      statusCode: unitsResult.statusCode
-    })
-
-  const filteredUnits = unitsResult.value.filter(
-    (u) =>
-      languages.length == 0 ||
-      (!(u.language === 'fi' && !languages.includes('fi')) &&
-        !(u.language === 'sv' && !languages.includes('sv')))
-  )
-  const sortedUnits = _.sortBy(filteredUnits, (u) => u.name)
-  return Success.of(sortedUnits)
-}
 
 const Wrapper = styled.div`
   width: 400px;

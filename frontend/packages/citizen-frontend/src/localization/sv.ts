@@ -65,7 +65,39 @@ const sv: Translations = {
     title: 'Yksiköt kartalla',
     mainInfo:
       'Tässä näkymässä voit hakea kartalta Espoon varhaiskasvatus-, esiopetus- ja kerhopaikkoja.',
+    searchLabel: 'Hae osoitteella tai yksikön nimellä',
+    searchPlaceholder: 'Esim. Kilontie 3 tai Purolan päiväkoti',
+    address: 'Osoite',
+    distanceWalking: 'Etäisyys valitusta osoitteesta kävellen',
+    careType: 'Toimintamuoto',
+    careTypePlural: 'Toimintamuodot',
+    careTypes: {
+      CLUB: 'Kerho',
+      DAYCARE: 'Varhaiskasvatus',
+      PRESCHOOL: 'Esiopetus'
+    },
     language: 'Yksikön kieli',
+    providerType: 'Palveluntarjoaja',
+    providerTypes: {
+      MUNICIPAL: 'kunnalliset',
+      PURCHASED: 'ostopalvelu',
+      PRIVATE: 'yksityiset',
+      PRIVATE_SERVICE_VOUCHER: 'palveluseteli'
+    },
+    homepage: 'Kotisivu',
+    unitHomepage: 'Yksikön kotisivu',
+    route: 'Katso reitti yksiköön',
+    routePlanner: 'Reittiopas',
+    newTab: '(Avautuu uuteen välilehteen)',
+    shiftCareTitle: 'Ilta- ja vuorohoito',
+    shiftCareLabel: 'Näytä vain ilta- ja vuorohoitoyksiköt',
+    shiftCareYes: 'Yksikkö tarjoaa ilta- ja/tai vuorohoitoa',
+    shiftCareNo: 'Yksikkö ei tarjoa ilta- ja/tai vuorohoitoa',
+    showMoreFilters: 'Näytä lisää suodattimia',
+    showLessFilters: 'Näytä vähemmän suodattimia',
+    nearestUnits: 'Lähimmät yksiköt',
+    moreUnits: 'Lisää yksiköitä',
+    showMore: 'Näytä lisää',
     mobileTabs: {
       map: 'Kartta',
       list: 'Lista yksiköistä'
