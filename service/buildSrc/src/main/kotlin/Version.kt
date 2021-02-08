@@ -19,7 +19,7 @@ object Version {
     const val jedis = "3.3.0"
     const val jetbrainsAnnotations = "19.0.0"
     const val junit = "5.6.2"
-    const val kotlin = "1.4.21"
+    const val kotlin = "1.4.30"
     const val kotlinLogging = "1.8.3"
     const val ktlint = "0.40.0"
     const val logbackSpringBoot = "2.7.1"
