@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
-import DayPicker from 'react-day-picker'
+import DayPicker, { Modifier } from 'react-day-picker'
 import 'react-day-picker/lib/style.css'
 import { fi, sv, enGB } from 'date-fns/locale'
 
@@ -17,9 +17,15 @@ interface Props {
   handleDayClick: (day: Date) => void
   inputValue: string
   locale: 'fi' | 'sv' | 'en'
+  disabledDays?: Modifier | Modifier[]
 }
 
-function DatePickerDay({ handleDayClick, inputValue, locale }: Props) {
+function DatePickerDay({
+  handleDayClick,
+  inputValue,
+  locale,
+  disabledDays
+}: Props) {
   const dateI18n = locale === 'sv' ? sv : locale === 'en' ? enGB : fi
 
   function convertToDate(date: string) {
@@ -51,6 +57,7 @@ function DatePickerDay({ handleDayClick, inputValue, locale }: Props) {
       weekdaysShort={weekdaysShort}
       firstDayOfWeek={locale === 'en' ? 0 : 1}
       selectedDays={convertToDate(inputValue)}
+      disabledDays={disabledDays}
     />
   )
 }
