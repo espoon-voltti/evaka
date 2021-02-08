@@ -92,12 +92,7 @@ const Header = React.memo(function Header({ location }: RouteComponentProps) {
           {loggedIn && user && (
             <NavbarStart>
               <RequireRole
-                oneOf={[
-                  'SERVICE_WORKER',
-                  'FINANCE_ADMIN',
-                  'ADMIN',
-                  'SPECIAL_EDUCATION_TEACHER'
-                ]}
+                oneOf={['SERVICE_WORKER', 'ADMIN', 'SPECIAL_EDUCATION_TEACHER']}
               >
                 <NavbarLink
                   className="navbar-item is-tab"
