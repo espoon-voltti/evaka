@@ -7,6 +7,7 @@ package fi.espoo.voltti.logging.loggers
 import ch.qos.logback.classic.Level
 import ch.qos.logback.classic.Logger
 import ch.qos.logback.classic.spi.ILoggingEvent
+import ch.qos.logback.classic.spi.ThrowableProxy
 import fi.espoo.voltti.logging.utils.clearTestMessages
 import fi.espoo.voltti.logging.utils.getTestAppender
 import fi.espoo.voltti.logging.utils.getTestMessages
@@ -43,7 +44,7 @@ class AppMiscLoggersTest {
 
     @Test
     fun `arguments added to trace log entry`() {
-        val args = mapOf("argKey" to "argVal", "meta" to mapOf("metaArg1" to "metaVal1", "metaArg2" to "metaVal2"))
+        val args = mapOf("metaArg1" to "metaVal1", "metaArg2" to "metaVal2")
         logger.trace(args) { message }
 
         val event = logger.getTestAppender().getEvents().first()
@@ -58,7 +59,7 @@ class AppMiscLoggersTest {
 
     @Test
     fun `arguments added to debug log entry`() {
-        val args = mapOf("argKey" to "argVal", "meta" to mapOf("metaArg1" to "metaVal1", "metaArg2" to "metaVal2"))
+        val args = mapOf("metaArg1" to "metaVal1", "metaArg2" to "metaVal2")
         logger.debug(args) { message }
 
         val event = logger.getTestAppender().getEvents().first()
@@ -73,7 +74,7 @@ class AppMiscLoggersTest {
 
     @Test
     fun `arguments added to info log entry`() {
-        val args = mapOf("argKey" to "argVal", "meta" to mapOf("metaArg1" to "metaVal1", "metaArg2" to "metaVal2"))
+        val args = mapOf("metaArg1" to "metaVal1", "metaArg2" to "metaVal2")
         logger.info(args) { message }
 
         val event = logger.getTestAppender().getEvents().first()
@@ -88,7 +89,7 @@ class AppMiscLoggersTest {
 
     @Test
     fun `arguments added to warn log entry`() {
-        val args = mapOf("argKey" to "argVal", "meta" to mapOf("metaArg1" to "metaVal1", "metaArg2" to "metaVal2"))
+        val args = mapOf("metaArg1" to "metaVal1", "metaArg2" to "metaVal2")
         logger.warn(args) { message }
 
         val event = logger.getTestAppender().getEvents().first()
@@ -103,14 +104,26 @@ class AppMiscLoggersTest {
 
     @Test
     fun `arguments added to error log entry`() {
-        val args = mapOf("argKey" to "argVal", "meta" to mapOf("metaArg1" to "metaVal1", "metaArg2" to "metaVal2"))
+        val args = mapOf("metaArg1" to "metaVal1", "metaArg2" to "metaVal2")
         logger.error(args) { message }
 
         val event = logger.getTestAppender().getEvents().first()
         compareArgs(args, event)
     }
 
+    @Test
+    fun `throwable and all arguments included in error log entry`() {
+        val exception = RuntimeException("This is a test exception")
+        val args = mapOf("metaArg1" to "metaVal1", "metaArg2" to "metaVal2")
+        logger.error(exception, args) { message }
+
+        val event = logger.getTestAppender().getEvents().first()
+        assertEquals(message, event.message)
+        compareArgs(args, event)
+        assertEquals((event.throwableProxy as ThrowableProxy).throwable, exception)
+    }
+
     private fun compareArgs(expectedArgs: Map<String, Any>, event: ILoggingEvent) {
-        assertEquals(expectedArgs.toString(), event.argumentArray.first().toString())
+        assertEquals(mapOf("meta" to expectedArgs.toString()).toString(), event.argumentArray.first().toString())
     }
 }
