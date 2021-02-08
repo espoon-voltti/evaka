@@ -122,3 +122,25 @@ plugin. Dependencies are checked on every build with the command `./gradlew depe
 minor vulnerabilities break the build, but they can
 be [suppressed](https://jeremylong.github.io/DependencyCheck/general/suppression.html) when needed. The suppression
 rules are configured [here](./owasp-suppressions.xml).
+
+### Add metadata to log entries
+
+Use the [KLogger extensions in service-lib](../service-lib/src/main/kotlin/fi/espoo/voltti/logging/loggers/AppMiscLoggers.kt)
+to add custom metadata to log entries (useful for querying/statistical analysis):
+
+```kotlin
+import fi.espoo.voltti.logging.loggers.error
+
+try {
+  logger.debug(mapOf("url" to url)) { "Doing something" }
+  something()
+} catch (error: FuelError) {
+  val meta = mapOf(
+      "method" to request.method,
+      "url" to request.url,
+      "body" to request.body.asString("application/json"),
+      "errorMessage" to error.errorData.decodeToString()
+  )
+  logger.error(error, meta) { "Request failed, status ${error.response.statusCode}" }
+}
+```

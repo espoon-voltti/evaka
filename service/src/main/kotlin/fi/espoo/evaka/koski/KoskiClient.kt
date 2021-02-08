@@ -86,7 +86,7 @@ class KoskiClient(
                 )
                 logger.error(
                     error,
-                    mapOf("meta" to meta)
+                    meta
                 ) { "Koski upload ${msg.key} ${data.operation} failed, status ${error.response.statusCode}" }
                 throw error
             }

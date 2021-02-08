@@ -8,30 +8,32 @@ import mu.KLogger
 import net.logstash.logback.argument.StructuredArguments
 
 /**
- * Extensions to allow adding meta-fields (and technically any other) to app-misc logs
- * without requiring StructuredArguments wrapper and a dependency to net.logstash.logback.
+ * Extensions to allow adding meta-fields to app-misc logs without requiring StructuredArguments wrapper
+ * and an unnecessary dependency to net.logstash.logback.
  */
 
-fun KLogger.trace(args: Map<String, Any?>, m: () -> Any?) {
-    if (isTraceEnabled) trace(m.toStringSafe(), StructuredArguments.entries(args))
+fun KLogger.trace(meta: Map<String, Any?>, m: () -> Any?) {
+    if (isTraceEnabled) trace(m.toStringSafe(), metaToLoggerArgs(meta))
 }
 
-fun KLogger.debug(args: Map<String, Any?>, m: () -> Any?) {
-    if (isDebugEnabled) debug(m.toStringSafe(), StructuredArguments.entries(args))
+fun KLogger.debug(meta: Map<String, Any?>, m: () -> Any?) {
+    if (isDebugEnabled) debug(m.toStringSafe(), metaToLoggerArgs(meta))
 }
 
-fun KLogger.info(args: Map<String, Any?>, m: () -> Any?) {
-    if (isInfoEnabled) info(m.toStringSafe(), StructuredArguments.entries(args))
+fun KLogger.info(meta: Map<String, Any?>, m: () -> Any?) {
+    if (isInfoEnabled) info(m.toStringSafe(), metaToLoggerArgs(meta))
 }
 
-fun KLogger.warn(args: Map<String, Any?>, m: () -> Any?) {
-    if (isWarnEnabled) warn(m.toStringSafe(), StructuredArguments.entries(args))
+fun KLogger.warn(meta: Map<String, Any?>, m: () -> Any?) {
+    if (isWarnEnabled) warn(m.toStringSafe(), metaToLoggerArgs(meta))
 }
 
-fun KLogger.error(args: Map<String, Any?>, m: () -> Any?) {
-    if (isErrorEnabled) error(m.toStringSafe(), StructuredArguments.entries(args))
+fun KLogger.error(meta: Map<String, Any?>, m: () -> Any?) {
+    if (isErrorEnabled) error(m.toStringSafe(), metaToLoggerArgs(meta))
 }
 
-fun KLogger.error(error: Any, args: Map<String, Any?>, m: () -> Any?) {
-    if (isErrorEnabled) error(m.toStringSafe(), StructuredArguments.entries(args), error)
+fun KLogger.error(error: Any, meta: Map<String, Any?>, m: () -> Any?) {
+    if (isErrorEnabled) error(m.toStringSafe(), metaToLoggerArgs(meta), error)
 }
+
+private fun metaToLoggerArgs(meta: Map<String, Any?>) = StructuredArguments.entries(mapOf("meta" to meta))

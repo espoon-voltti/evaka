@@ -299,7 +299,8 @@ class VardaClient(
 
     fun deletePlacement(vardaPlacementId: Long): Boolean {
         logger.info { "Deleting placement from Varda (id: $vardaPlacementId)" }
-        val (request, _, result) = fuel.delete(getPlacementUrl(vardaPlacementId)).authenticatedResponseStringWithRetries()
+        val (request, _, result) = fuel.delete(getPlacementUrl(vardaPlacementId))
+            .authenticatedResponseStringWithRetries()
 
         return when (result) {
             is Result.Success -> {
@@ -398,5 +399,5 @@ private fun logRequestError(request: Request, error: FuelError) {
         "body" to request.body.asString("application/json"),
         "errorMessage" to error.errorData.decodeToString()
     )
-    logger.error(error, mapOf("meta" to meta)) { "Varda request to ${request.url} failed, status ${error.response.statusCode}" }
+    logger.error(error, meta) { "Varda request to ${request.url} failed, status ${error.response.statusCode}" }
 }
