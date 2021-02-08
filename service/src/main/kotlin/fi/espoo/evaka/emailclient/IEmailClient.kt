@@ -4,22 +4,16 @@
 
 package fi.espoo.evaka.emailclient
 
-import fi.espoo.evaka.daycare.domain.Language
-import mu.KotlinLogging
-import java.util.UUID
-
-private val logger = KotlinLogging.logger {}
 private val EMAIL_PATTERN = "^([\\w.%+-]+)@([\\w-]+\\.)+([\\w]{2,})\$".toRegex()
 
 interface IEmailClient {
-    fun sendApplicationEmail(personId: UUID, toAddress: String?, language: Language)
+    fun sendEmail(traceId: String, toAddress: String, fromAddress: String, subject: String, htmlBody: String, textBody: String)
 
-    fun validateEmail(personId: UUID, toAddress: String?): Boolean {
-        if (toAddress != null && toAddress.matches(EMAIL_PATTERN)) {
+    fun validateToAddress(traceId: String, toAddress: String): Boolean {
+        if (toAddress.matches(EMAIL_PATTERN)) {
             return true
         }
 
-        logger.info { "Won't send application email due to unsuccessful email validation (personId: $personId)" }
         return false
     }
 }

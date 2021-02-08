@@ -32,7 +32,8 @@ enum class AsyncJobType {
     SCHEDULE_KOSKI_UPLOADS,
     SEND_APPLICATION_EMAIL,
     GARBAGE_COLLECT_PAIRING,
-    VARDA_UPDATE
+    VARDA_UPDATE,
+    SEND_PENDING_DECISION_EMAIL
 }
 
 interface AsyncJobPayload {
@@ -47,6 +48,11 @@ data class GarbageCollectPairing(val pairingId: UUID) : AsyncJobPayload {
 
 data class SendApplicationEmail(val guardianId: UUID, val language: Language) : AsyncJobPayload {
     override val asyncJobType = AsyncJobType.SEND_APPLICATION_EMAIL
+    override val user: AuthenticatedUser? = null
+}
+
+data class SendPendingDecisionEmail(val decisionId: UUID) : AsyncJobPayload {
+    override val asyncJobType = AsyncJobType.SEND_PENDING_DECISION_EMAIL
     override val user: AuthenticatedUser? = null
 }
 

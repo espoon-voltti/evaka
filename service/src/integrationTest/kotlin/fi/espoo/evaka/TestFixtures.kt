@@ -205,6 +205,7 @@ val testAdult_6 = PersonData.Detailed(
     id = UUID.randomUUID(),
     dateOfBirth = LocalDate.of(1999, 12, 31),
     ssn = "311299-999E",
+    email = "ville.vilkas@test.com",
     firstName = "Ville",
     lastName = "Vilkas",
     streetAddress = "Toistie 33",

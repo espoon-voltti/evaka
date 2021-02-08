@@ -103,3 +103,11 @@ fi:
             location: classpath:xroad/trustStore.jks
             password: password
             type: JKS
+application:
+  email:
+    address:
+      fi: testemail_fi@test.com
+      sv: testemail_sv@test.com
+    name:
+      fi: Test email sender fi
+      sv: Test email sender sv

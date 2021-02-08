@@ -92,6 +92,9 @@ class AsyncJobRunner(
     @Volatile
     var vardaUpdate: (db: Database, msg: VardaUpdate) -> Unit = noHandler
 
+    @Volatile
+    var sendPendingDecisionEmail: (db: Database, msg: SendPendingDecisionEmail) -> Unit = noHandler
+
     fun plan(
         tx: Database.Transaction,
         payloads: Iterable<AsyncJobPayload>,
@@ -201,6 +204,7 @@ class AsyncJobRunner(
                     AsyncJobType.GARBAGE_COLLECT_PAIRING -> it.runJob(job, this.garbageCollectPairing)
                     AsyncJobType.VARDA_UPDATE -> it.runJob(job, this.vardaUpdate)
                     AsyncJobType.SCHEDULE_KOSKI_UPLOADS -> it.runJob(job, this.scheduleKoskiUploads)
+                    AsyncJobType.SEND_PENDING_DECISION_EMAIL -> it.runJob(job, this.sendPendingDecisionEmail)
                 }.exhaust()
             }
             if (completed) {

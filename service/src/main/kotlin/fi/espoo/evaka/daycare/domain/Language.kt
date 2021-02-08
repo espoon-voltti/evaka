@@ -5,5 +5,5 @@
 package fi.espoo.evaka.daycare.domain
 
 enum class Language {
-    fi, sv;
+    fi, sv, en;
 }

@@ -14,7 +14,7 @@ class EmailConfig {
     @Bean
     fun emailClient(client: AmazonSimpleEmailService, env: Environment): IEmailClient =
         when (env.getProperty("application.email.enabled", Boolean::class.java, false)) {
-            true -> EmailClient(client = client, env = env)
+            true -> EmailClient(client = client)
             false -> MockEmailClient()
         }
 }
