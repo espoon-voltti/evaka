@@ -92,8 +92,7 @@ const layouts: LayoutsWithDefault<typeof components> = {
     { component: 'parents', open: false },
     { component: 'placements', open: false },
     { component: 'backup-care', open: false },
-    { component: 'service-need', open: false },
-    { component: 'assistance', open: false }
+    { component: 'service-need', open: false }
   ],
   ['ADMIN']: [
     { component: 'family-contacts', open: false },
