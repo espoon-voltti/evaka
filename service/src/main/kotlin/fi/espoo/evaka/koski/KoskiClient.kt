@@ -21,6 +21,7 @@ import com.github.kittinunf.fuel.core.extensions.jsonBody
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.UploadToKoski
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.voltti.logging.loggers.error
 import mu.KotlinLogging
 import org.springframework.core.env.Environment
 import org.springframework.stereotype.Component
@@ -63,7 +64,7 @@ class KoskiClient(
         if (!tx.isPayloadChanged(msg.key, payload)) {
             logger.info { "Koski upload ${msg.key} ${data.operation}: no change in payload -> skipping" }
         } else {
-            val (_, _, result) = fuel.request(
+            val (request, _, result) = fuel.request(
                 method = if (data.operation == KoskiOperation.CREATE) Method.POST else Method.PUT,
                 path = "$baseUrl/oppija"
             )
@@ -77,7 +78,16 @@ class KoskiClient(
             val response: HenkilönOpiskeluoikeusVersiot = try {
                 objectMapper.readValue(result.get())
             } catch (error: FuelError) {
-                logger.error(error) { "Koski upload ${msg.key} ${data.operation} failed: ${error.response}" }
+                val meta = mapOf(
+                    "method" to request.method,
+                    "url" to request.url,
+                    "body" to request.body.asString("application/json"),
+                    "errorMessage" to error.errorData.decodeToString()
+                )
+                logger.error(
+                    error,
+                    mapOf("meta" to meta)
+                ) { "Koski upload ${msg.key} ${data.operation} failed, status ${error.response.statusCode}" }
                 throw error
             }
             tx.finishKoskiUpload(
