@@ -148,8 +148,9 @@ const sv: Translations = {
         title: {
           DAYCARE:
             'Var god och granska följande obligatoriska fält i blanketten',
-          PRESCHOOL: 'Esiopetushakemuksen tarkistaminen',
-          CLUB: 'Kerhohakemuksen tarkistaminen'
+          PRESCHOOL:
+            'Var god och granska följande obligatoriska fält i blanketten',
+          CLUB: 'Var god och granska följande obligatoriska fält i blanketten'
         },
         notYetSent:
           '<strong>Du har inte ännu skickat ansökan.</strong> Granska informationen du gett, och skicka ansökan med Skicka ansökan-knappen när du är färdig',
@@ -159,16 +160,16 @@ const sv: Translations = {
           modified: 'Uppdaterad'
         },
         attachmentBox: {
-          nb: 'Huom!',
+          nb: 'Obs!',
           headline:
-            'Jos lisäät liitteet seuraaviin kohtiin sähköisesti, hakemuksesi käsitellään nopeammin, sillä käsittelyaika alkaa liitteiden saapumisesta.',
-          urgency: 'Hakemus on kiireellinen',
-          shiftCare: 'Ilta- ja vuorohoito',
-          goBackLinkText: 'Palaa takaisin hakemusnäkymään',
-          goBackRestText: 'lisätäksesi liitteet hakemukseen.'
+            ' Om du lägger till bilagor elektroniskt i följande punkter, behandlas din ansökan snabbare. Behandlingstiden börjar när bilagorna kommer in.',
+          urgency: 'Ansökningen är brådskande',
+          shiftCare: 'Kvälls- och skiftesvård',
+          goBackLinkText: 'Återvänd tillbaka till ansökan',
+          goBackRestText: ' för att lägga till bilagor.'
         },
         serviceNeed: {
-          title: 'Palveluntarve',
+          title: 'Behov av småbarnspedagogisk verksamhet',
           wasOnDaycare: 'Varhaiskasvatuksessa ennen kerhoa',
           wasOnDaycareYes:
             'Lapsi, jolle haetaan kerhopaikkaa, on varhaiskasvatuksessa ennen kerhon toivottua aloituspäivää.',
@@ -176,49 +177,52 @@ const sv: Translations = {
           wasOnClubCareYes:
             'Lapsi on ollut kerhossa edellisen toimintakauden aikana.',
           connectedDaycare: {
-            title: 'Esiopetukseen liittyvän varhaiskasvatuksen tarve',
-            label: 'Liittyvä varhaiskasvatus',
+            title: 'Småbarnspedagogik i samband med förskoleundervisning.',
+            label: 'Småbarnspedagogik',
             withConnectedDaycare:
-              'Haen myös esiopetukseen liittyvää varhaiskasvatusta.',
-            withoutConnectedDaycare: 'Ei'
+              'Jag ansöker också om småbarnspedagogik i samband med förskoleundervisning.',
+            withoutConnectedDaycare: 'Nej'
           },
           attachments: {
-            label: 'Tarvittavat liitteet',
-            withoutAttachments: 'Ei liitetty, lähetetään postilla'
+            label: 'Nödvändiga bilagor',
+            withoutAttachments: 'Inte bifogats – skickas per post'
           },
           startDate: {
             title: {
-              DAYCARE: 'Varhaiskasvatuksen aloitus',
-              PRESCHOOL: 'Varhaiskasvatuksen aloitus',
-              CLUB: 'Kerhon aloitus'
+              DAYCARE: 'Inledningsdatum',
+              PRESCHOOL: 'Inledningsdatum',
+              CLUB: 'Inledningsdatum'
             },
-            preferredStartDate: 'Toivottu aloituspäivä',
-            urgency: 'Hakemus on kiireellinen',
-            withUrgency: 'Kyllä',
-            withoutUrgency: 'Ei'
+            preferredStartDate: 'Önskat inledningsdatum',
+            urgency: 'Ansökningen är brådskande',
+            withUrgency: 'Ja',
+            withoutUrgency: 'Nej'
           },
           dailyTime: {
-            title: 'Päivittäinen varhaiskasvatusaika',
-            partTime: 'Osa- tai kokopäiväinen',
-            withPartTime: 'Osa-aikainen',
-            withoutPartTime: 'Kokoaikainen',
-            dailyTime: 'Varhaiskasvatuksen alkamis- ja päättymisaika',
-            shiftCare: 'Ilta- ja vuorohoito',
-            withShiftCare: 'Tarvitaan ilta- tai vuorohoitoa',
-            withoutShiftCare: 'Ei tarvita ilta- tai vuorohoitoa'
+            title: 'Tiden för småbarnspedagogik per dag',
+            partTime: 'Hel- eller deldag',
+            withPartTime: 'Deldag',
+            withoutPartTime: 'Heldag',
+            dailyTime: 'Tiden för småbarnspedagogik per dag',
+            shiftCare: 'Kvälls- och skiftesvård',
+            withShiftCare: 'Ja',
+            withoutShiftCare: 'Nej'
           },
           assistanceNeed: {
-            title: 'Tuen tarve',
-            assistanceNeed: 'Lapsella on tuen tarve',
-            withAssistanceNeed: 'Lapsella on tuen tarve',
-            withoutAssistanceNeed: 'Lapsella ei ole tuen tarvetta',
-            description: 'Tuen tarpeen kuvaus'
+            title: 'Behov av stöd för utveckling och lärande',
+            assistanceNeed:
+              'Barnet har behov av stöd för utveckling och lärande',
+            withAssistanceNeed:
+              'Barnet har behov av stöd för utveckling och lärande',
+            withoutAssistanceNeed:
+              'Barnet har inte behov av stöd för utveckling och lärande',
+            description: 'Beskrivning'
           },
           preparatoryEducation: {
             label: 'Perusopetukseen valmistava opetus',
             withPreparatory:
-              'Lapsi tarvitsee tukea suomen kielen oppimisessa. Haen myös perusopetukseen valmistavaan opetukseen. Ei koske ruotsinkielistä esiopetusta.',
-            withoutPreparatory: 'Ei'
+              'Barnet behöver stöd för att lära sig finska. Barnet söker också till undervisning som förbereder för den grundläggande utbildningen.',
+            withoutPreparatory: 'Nej'
           }
         },
         unitPreference: {
@@ -237,63 +241,64 @@ const sv: Translations = {
           }
         },
         contactInfo: {
-          title: 'Henkilötiedot',
+          title: 'Personuppgifter',
           child: {
-            title: 'Lapsen tiedot',
-            name: 'Lapsen nimi',
-            ssn: 'Lapsen henkilötunnus',
-            streetAddress: 'Kotiosoite',
-            isAddressChanging: 'Osoite muuttunut / muuttumassa',
+            title: 'Barnets information',
+            name: 'Namn',
+            ssn: 'Personbeteckning',
+            streetAddress: 'Hemadress',
+            isAddressChanging:
+              'Adressen som finns i befolkningsdatabasen har ändrats/ska ändras',
             hasFutureAddress:
               'Väestörekisterissä oleva osoite on muuttunut/muuttumassa ',
-            addressChangesAt: 'Muuttopäivämäärä',
-            newAddress: 'Uusi osoite'
+            addressChangesAt: 'Flyttdatum',
+            newAddress: 'Ny adress'
           },
           guardian: {
-            title: 'Huoltajan tiedot',
-            name: 'Huoltajan nimi',
-            ssn: 'Huoltajan henkilötunnus',
-            streetAddress: 'Kotiosoite',
-            tel: 'Puhelinnumero',
-            email: 'Sähköpostiosoite',
-            isAddressChanging: 'Osoite muuttunut / muuttumassa',
-            hasFutureAddress: 'Osoite muuttunut / muuttumassa',
-            addressChangesAt: 'Muuttopäivämäärä',
-            newAddress: 'Uusi osoite'
+            title: 'Vårdnadshavarens information',
+            name: 'Namn',
+            ssn: 'Personbeteckning',
+            streetAddress: 'Hemadress',
+            tel: 'Telefonnummer',
+            email: 'E-postadress',
+            isAddressChanging:
+              'Adressen som finns i befolkningsdatabasen har ändrats/ska ändras',
+            hasFutureAddress:
+              'Adressen som finns i befolkningsdatabasen har ändrats/ska ändras',
+            addressChangesAt: 'Flyttdatum',
+            newAddress: 'Ny adress'
           },
           secondGuardian: {
-            title: 'Toisen huoltajan tiedot',
-            email: 'Sähköposti',
-            tel: 'Puhelin',
+            title: 'Uppgifter om den andra vårdnadshavaren',
+            email: 'E-postadress',
+            tel: 'Telefonnummer',
             info:
-              'Toisen huoltajan tiedot haetaan automaattisesti väestötietojärjestelmästä.',
-            agreed:
-              'Olemme yhdessä sopineet lapsen esiopetuksen hakemisesta lomakkeen tietojen mukaisesti.',
-            notAgreed: 'Emme ole voineet sopia hakemuksen tekemisestä yhdessä',
+              'Den andra vårdnadshavarens information hämtas automatiskt från befolkningsinformationssystemet.',
+            agreed: 'Vi har tillsammans kommit överens att fylla i ansökan.',
+            notAgreed: 'Vi har inte kunnat komma överens om ansökan.',
             rightToGetNotified:
-              'Toisella huoltajalla on vain tiedonsaantioikeus.',
-            noAgreementStatus: 'Ei tiedossa'
+              'Den andra vårdnadshavaren har endast rätt att få uppgifter om barnet.',
+            noAgreementStatus: '-'
           },
           fridgePartner: {
-            title:
-              'Samassa taloudessa asuva avio- tai avopuoliso (ei huoltaja)',
+            title: 'Maka/make bosatt i samma hushåll (icke vårdnadshavare)',
             fridgePartner:
-              'Samassa taloudessa asuu avio- tai avopuoliso (ei huoltaja)',
-            name: 'Henkilön nimi',
-            ssn: 'Henkilön henkilötunnus'
+              'Maka/make bosatt i samma hushåll (icke vårdnadshavare)',
+            name: 'Namn',
+            ssn: 'Personbeteckning'
           },
           fridgeChildren: {
-            title: 'Samassa taloudessa asuvat alle 18-vuotiaat lapset',
-            name: 'Lapsen nimi',
-            ssn: 'Henkilön henkilötunnus',
-            noOtherChildren: 'Ei muita lapsia'
+            title: 'Barn som bor i samma hushåll',
+            name: 'Namn',
+            ssn: 'Personbeteckning',
+            noOtherChildren: 'Ingen'
           }
         },
         additionalDetails: {
-          title: 'Muut lisätiedot',
-          otherInfoLabel: 'Hakuun liittyvät lisätiedot',
-          dietLabel: 'Erityisruokavalio',
-          allergiesLabel: 'Allergiat'
+          title: 'Övriga tilläggsuppgifter',
+          otherInfoLabel: 'Övriga tilläggsuppgifter',
+          dietLabel: 'Specialdiet',
+          allergiesLabel: 'Allergier'
         }
       },
       serviceNeed: {
