@@ -139,7 +139,7 @@ const en: Translations = {
         returnToEditBtn: 'Return to editing',
         cancel: 'Go back',
         send: 'Send application',
-        update: 'Tallenna muutokset',
+        update: 'Save changes',
         sendError: 'Failed to send the application',
         saveDraft: 'Save as draft',
         updateError: 'Saving the changes failed'
@@ -256,7 +256,8 @@ const en: Translations = {
             tel: 'Phone number',
             email: 'Email',
             isAddressChanging: 'Address is about to change',
-            hasFutureAddress: 'The address in the database of the Digital and Population Data Services Agency has changed/is about to change',
+            hasFutureAddress:
+              'The address in the database of the Digital and Population Data Services Agency has changed/is about to change',
             addressChangesAt: 'Moving date',
             newAddress: 'New address'
           },
@@ -268,7 +269,8 @@ const en: Translations = {
               'Second guardian information is automatically fetched from VTJ',
             agreed:
               'We have agreed with the other guardian about this application.',
-            notAgreed: 'We have not agreed with the other guardian about this application.',
+            notAgreed:
+              'We have not agreed with the other guardian about this application.',
             rightToGetNotified:
               'The other guardian has only the right to get notified about the placement.',
             noAgreementStatus: 'Unknown'
@@ -282,7 +284,8 @@ const en: Translations = {
             ssn: 'Person identification code'
           },
           fridgeChildren: {
-            title: 'Other children under 18 years of age living in the same household.',
+            title:
+              'Other children under 18 years of age living in the same household.',
             name: 'Child`s name',
             ssn: 'Person identification code',
             noOtherChildren: 'No other children'
