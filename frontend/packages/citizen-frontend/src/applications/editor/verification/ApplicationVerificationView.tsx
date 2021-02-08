@@ -126,6 +126,8 @@ export default React.memo(function ApplicationVerificationViewDaycare({
             (type === 'PRESCHOOL' && formData.serviceNeed.connectedDaycare)
           }
         />
+        <HorizontalLine />
+
         <AdditionalDetailsSection
           formData={formData}
           showAllergiesAndDiet={type !== 'CLUB'}
