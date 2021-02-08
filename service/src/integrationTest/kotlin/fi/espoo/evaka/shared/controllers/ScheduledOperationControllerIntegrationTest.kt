@@ -5,14 +5,17 @@
 package fi.espoo.evaka.shared.controllers
 
 import fi.espoo.evaka.FullApplicationTest
+import fi.espoo.evaka.application.ApplicationStateService
 import fi.espoo.evaka.application.ApplicationStatus
 import fi.espoo.evaka.application.ApplicationType
+import fi.espoo.evaka.application.DaycarePlacementPlan
 import fi.espoo.evaka.application.fetchApplicationDetails
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
 import fi.espoo.evaka.attachment.getApplicationAttachments
 import fi.espoo.evaka.insertApplication
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.placement.createPlacementPlan
 import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
@@ -26,6 +29,7 @@ import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_5
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
+import fi.espoo.evaka.testDecisionMaker_1
 import org.jdbi.v3.core.kotlin.mapTo
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -38,6 +42,11 @@ import java.util.UUID
 class ScheduledOperationControllerIntegrationTest : FullApplicationTest() {
     @Autowired
     private lateinit var scheduledOperationController: ScheduledOperationController
+
+    @Autowired
+    private lateinit var applicationStateService: ApplicationStateService
+
+    private val serviceWorker = AuthenticatedUser(id = testDecisionMaker_1.id, roles = setOf(UserRole.SERVICE_WORKER))
 
     @BeforeEach
     private fun beforeEach() {
@@ -242,16 +251,74 @@ class ScheduledOperationControllerIntegrationTest : FullApplicationTest() {
         assertEquals(ApplicationStatus.SENT, applicationStatus)
     }
 
+    @Test
+    fun `transfer application cancelling cleans up placement plans and decision drafts`() {
+        val preferredStartDate = LocalDate.now()
+        val applicationId = createTransferApplication(
+            ApplicationType.PRESCHOOL,
+            preferredStartDate,
+            status = ApplicationStatus.WAITING_PLACEMENT
+        )
+        db.transaction {
+            applicationStateService.createPlacementPlan(
+                it,
+                serviceWorker,
+                applicationId,
+                DaycarePlacementPlan(
+                    testDaycare.id,
+                    FiniteDateRange(preferredStartDate, preferredStartDate.plusMonths(1))
+                )
+            )
+        }
+
+        scheduledOperationController.cancelOutdatedTransferApplications(db)
+
+        val applicationStatus = getApplicationStatus(applicationId)
+        assertEquals(ApplicationStatus.CANCELLED, applicationStatus)
+        val placementPlans = db.read { it.createQuery("SELECT COUNT(*) FROM placement_plan").mapTo<Int>().first() }
+        assertEquals(0, placementPlans)
+        val decisions = db.read { it.createQuery("SELECT COUNT(*) FROM decision").mapTo<Int>().first() }
+        assertEquals(0, decisions)
+    }
+
+    @Test
+    fun `a transfer application with a decision does not get canceled`() {
+        val preferredStartDate = LocalDate.now()
+        val applicationId = createTransferApplication(
+            ApplicationType.PRESCHOOL,
+            preferredStartDate,
+            status = ApplicationStatus.WAITING_PLACEMENT
+        )
+        db.transaction {
+            applicationStateService.createPlacementPlan(
+                it,
+                serviceWorker,
+                applicationId,
+                DaycarePlacementPlan(
+                    testDaycare.id,
+                    FiniteDateRange(preferredStartDate, preferredStartDate.plusMonths(1))
+                )
+            )
+            applicationStateService.sendDecisionsWithoutProposal(it, serviceWorker, applicationId)
+        }
+
+        scheduledOperationController.cancelOutdatedTransferApplications(db)
+
+        val applicationStatus = getApplicationStatus(applicationId)
+        assertEquals(ApplicationStatus.WAITING_CONFIRMATION, applicationStatus)
+    }
+
     private fun createTransferApplication(
         type: ApplicationType,
         preferredStartDate: LocalDate,
         preschoolDaycare: Boolean = false,
-        childId: UUID = testChild_1.id
+        childId: UUID = testChild_1.id,
+        status: ApplicationStatus = ApplicationStatus.SENT
     ): UUID {
         return db.transaction { tx ->
             val applicationId = insertTestApplication(
                 h = tx.handle,
-                status = ApplicationStatus.SENT,
+                status = status,
                 childId = childId,
                 guardianId = testAdult_1.id,
                 transferApplication = true

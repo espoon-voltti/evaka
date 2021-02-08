@@ -19,14 +19,6 @@ import java.util.UUID
 
 @Service
 class DecisionDraftService {
-    fun clearDecisionDrafts(tx: Database.Transaction, applicationId: UUID) {
-        // language=sql
-        val sql =
-            """DELETE FROM decision WHERE application_id = :applicationId AND sent_date IS NULL""".trimIndent()
-
-        tx.createUpdate(sql).bind("applicationId", applicationId).execute()
-    }
-
     fun createDecisionDrafts(tx: Database.Transaction, user: AuthenticatedUser, application: ApplicationDetails) {
         val placementPlan = getPlacementPlan(tx.handle, application.id)
             ?: throw NotFound("Application ${application.id} has no placement")
@@ -173,6 +165,14 @@ class DecisionDraftService {
 
         return listOf(primary, connected)
     }
+}
+
+fun Database.Transaction.clearDecisionDrafts(applicationIds: List<UUID>) {
+    // language=sql
+    val sql =
+        """DELETE FROM decision WHERE application_id = ANY(:applicationIds) AND sent_date IS NULL""".trimIndent()
+
+    createUpdate(sql).bind("applicationIds", applicationIds.toTypedArray()).execute()
 }
 
 private val decisionUnitQuery =

@@ -6,6 +6,7 @@ package fi.espoo.evaka.placement
 
 import fi.espoo.evaka.application.ApplicationStatus
 import fi.espoo.evaka.application.DaycarePlacementPlan
+import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.NotFound
 import org.jdbi.v3.core.Handle
@@ -13,10 +14,10 @@ import org.jdbi.v3.core.kotlin.mapTo
 import java.time.LocalDate
 import java.util.UUID
 
-fun deletePlacementPlan(h: Handle, applicationId: UUID) {
-    h.execute(
-        // language=SQL
-        "DELETE FROM placement_plan WHERE application_id = ?", applicationId
+fun Database.Transaction.deletePlacementPlans(applicationIds: List<UUID>) {
+    execute(
+        "DELETE FROM placement_plan WHERE application_id = ANY(?)",
+        applicationIds.toTypedArray()
     )
 }
 

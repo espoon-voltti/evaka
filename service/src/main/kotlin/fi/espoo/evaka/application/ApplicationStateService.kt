@@ -28,6 +28,7 @@ import fi.espoo.evaka.decision.DecisionDraftService
 import fi.espoo.evaka.decision.DecisionService
 import fi.espoo.evaka.decision.DecisionStatus
 import fi.espoo.evaka.decision.DecisionType
+import fi.espoo.evaka.decision.clearDecisionDrafts
 import fi.espoo.evaka.decision.fetchDecisionDrafts
 import fi.espoo.evaka.decision.getDecisionsByApplication
 import fi.espoo.evaka.decision.markDecisionAccepted
@@ -44,7 +45,7 @@ import fi.espoo.evaka.pis.updatePersonBasicContactInfo
 import fi.espoo.evaka.placement.PlacementPlanConfirmationStatus
 import fi.espoo.evaka.placement.PlacementPlanRejectReason
 import fi.espoo.evaka.placement.PlacementPlanService
-import fi.espoo.evaka.placement.deletePlacementPlan
+import fi.espoo.evaka.placement.deletePlacementPlans
 import fi.espoo.evaka.placement.getPlacementPlan
 import fi.espoo.evaka.placement.updatePlacementPlanUnitConfirmation
 import fi.espoo.evaka.shared.async.AsyncJobRunner
@@ -215,8 +216,8 @@ class ApplicationStateService(
 
         val application = getApplication(tx, applicationId)
         verifyStatus(application, WAITING_DECISION)
-        deletePlacementPlan(tx.handle, application.id)
-        decisionDraftService.clearDecisionDrafts(tx, application.id)
+        tx.deletePlacementPlans(listOf(application.id))
+        tx.clearDecisionDrafts(listOf(application.id))
         updateApplicationStatus(tx.handle, application.id, WAITING_PLACEMENT)
     }
 
