@@ -143,7 +143,8 @@ data class PublicUnit(
     val email: String?,
     val url: String?,
     val location: Coordinate?,
-    val ghostUnit: Boolean?
+    val ghostUnit: Boolean?,
+    val roundTheClock: Boolean
 )
 
 data class CareAreaResponseJSON(

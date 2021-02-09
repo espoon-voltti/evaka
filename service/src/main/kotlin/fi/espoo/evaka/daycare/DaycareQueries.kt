@@ -230,7 +230,8 @@ SELECT
     location,
     opening_date,
     closing_date,
-    ghost_unit
+    ghost_unit,
+    round_the_clock
 FROM daycare
 WHERE daterange(opening_date, closing_date, '[]') @> :date AND (
     (:club AND type && '{CLUB}'::care_types[] AND (NOT :onlyApplicable OR (club_apply_period IS NOT NULL AND club_apply_period @> :date)))
@@ -269,7 +270,8 @@ SELECT
     location,
     opening_date,
     closing_date,
-    ghost_unit
+    ghost_unit,
+    round_the_clock
 FROM daycare
 WHERE daterange(opening_date, closing_date, '[]') && daterange(:date, null) AND (
     (club_apply_period IS NOT NULL AND club_apply_period && daterange(:date, null)) OR
