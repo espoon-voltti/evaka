@@ -79,9 +79,7 @@ const layouts: LayoutsWithDefault<typeof components> = {
     { component: 'invoices', open: false },
     { component: 'partners', open: false },
     { component: 'fridge-children', open: false },
-    { component: 'dependants', open: false },
-    { component: 'applications', open: false },
-    { component: 'decisions', open: false }
+    { component: 'dependants', open: false }
   ],
   ['ADMIN']: [
     { component: 'family-overview', open: true },

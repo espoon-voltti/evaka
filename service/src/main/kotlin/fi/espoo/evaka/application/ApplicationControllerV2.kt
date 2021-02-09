@@ -188,7 +188,7 @@ class ApplicationControllerV2(
         @RequestParam(required = false) voucherApplications: VoucherApplicationFilter?
     ): ResponseEntity<ApplicationSummaries> {
         Audit.ApplicationSearch.log()
-        user.requireOneOfRoles(UserRole.ADMIN, UserRole.FINANCE_ADMIN, UserRole.SERVICE_WORKER, UserRole.SPECIAL_EDUCATION_TEACHER)
+        user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.SPECIAL_EDUCATION_TEACHER)
         if (periodStart != null && periodEnd != null && periodStart > periodEnd)
             throw BadRequest("Date parameter periodEnd ($periodEnd) cannot be before periodStart ($periodStart)")
 
@@ -215,7 +215,7 @@ class ApplicationControllerV2(
                 transferApplications = transferApplications ?: TransferApplicationFilter.ALL,
                 voucherApplications = voucherApplications,
                 authorizedUnits = acl.getAuthorizedUnits(user),
-                onlyAuthorizedToViewApplicationsWithAssistanceNeed = !user.hasOneOfRoles(UserRole.ADMIN, UserRole.FINANCE_ADMIN, UserRole.SERVICE_WORKER)
+                onlyAuthorizedToViewApplicationsWithAssistanceNeed = !user.hasOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER)
             )
         }.let { ResponseEntity.ok(it) }
     }
@@ -227,7 +227,7 @@ class ApplicationControllerV2(
         @PathVariable(value = "guardianId") guardianId: UUID
     ): ResponseEntity<List<PersonApplicationSummary>> {
         Audit.ApplicationRead.log(targetId = guardianId)
-        user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN, UserRole.UNIT_SUPERVISOR)
+        user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR)
 
         return db.read { fetchApplicationSummariesForGuardian(it.handle, guardianId) }
             .let { ResponseEntity.ok().body(it) }
@@ -241,7 +241,7 @@ class ApplicationControllerV2(
     ): ResponseEntity<List<PersonApplicationSummary>> {
         Audit.ApplicationRead.log(targetId = childId)
         acl.getRolesForChild(user, childId)
-            .requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN, UserRole.UNIT_SUPERVISOR)
+            .requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR)
 
         return db.read { fetchApplicationSummariesForChild(it.handle, childId) }
             .let { ResponseEntity.ok().body(it) }
@@ -256,7 +256,7 @@ class ApplicationControllerV2(
         Audit.ApplicationRead.log(targetId = applicationId)
         Audit.DecisionRead.log(targetId = applicationId)
         acl.getRolesForApplication(user, applicationId)
-            .requireOneOfRoles(UserRole.ADMIN, UserRole.FINANCE_ADMIN, UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR, UserRole.SPECIAL_EDUCATION_TEACHER)
+            .requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR, UserRole.SPECIAL_EDUCATION_TEACHER)
 
         return db.transaction { tx ->
             val application = fetchApplicationDetails(tx.handle, applicationId)

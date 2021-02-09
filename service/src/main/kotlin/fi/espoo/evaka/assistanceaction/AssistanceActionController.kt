@@ -52,7 +52,7 @@ class AssistanceActionController(
         @PathVariable childId: UUID
     ): ResponseEntity<List<AssistanceAction>> {
         Audit.ChildAssistanceActionRead.log(targetId = childId)
-        acl.getRolesForChild(user, childId).requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR, UserRole.FINANCE_ADMIN, UserRole.SPECIAL_EDUCATION_TEACHER)
+        acl.getRolesForChild(user, childId).requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR, UserRole.SPECIAL_EDUCATION_TEACHER)
         return assistanceActionService.getAssistanceActionsByChildId(db, childId).let(::ok)
     }
 
