@@ -21,6 +21,7 @@
     "react-datepicker": "^2.10.1",
     "react-day-picker": "7.4.8",
     "react-router-dom": "^5.1.2",
+    "react-select": "^3.0.8",
     "styled-components": "5.2.1"
   },
   "devDependencies": {
@@ -28,6 +29,7 @@
     "@storybook/react": "^6.1.17",
     "@types/react": "^17.0.1",
     "@types/react-datepicker": "2.11.0",
+    "@types/react-select": "^3.0.10",
     "csstype": "^3.0.6",
     "eslint": "^7.19.0",
     "eslint-config-prettier": "^7.2.0",
