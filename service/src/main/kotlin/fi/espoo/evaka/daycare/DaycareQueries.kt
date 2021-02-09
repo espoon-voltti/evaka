@@ -230,11 +230,11 @@ SELECT
     closing_date,
     ghost_unit
 FROM daycare
-WHERE daterange(opening_date, closing_date, '[]') @> :date AND (
-    (:club AND type && '{CLUB}'::care_types[] AND (NOT :onlyApplicable OR (club_apply_period IS NOT NULL AND club_apply_period @> :date)))
-    OR (:daycare AND type && '{CENTRE, FAMILY, GROUP_FAMILY}'::care_types[] AND (NOT :onlyApplicable OR (daycare_apply_period IS NOT NULL AND daycare_apply_period @> :date)))
-    OR (:preschool AND type && '{PRESCHOOL}'::care_types[] AND (NOT :onlyApplicable OR (preschool_apply_period IS NOT NULL AND preschool_apply_period @> :date)))
-    OR (:preparatory AND type && '{PREPARATORY_EDUCATION}'::care_types[] AND (NOT :onlyApplicable OR (preschool_apply_period IS NOT NULL AND preschool_apply_period @> :date)))
+WHERE (
+    (:club AND type && '{CLUB}'::care_types[] AND (NOT :onlyApplicable OR (club_apply_period @> :date)))
+    OR (:daycare AND type && '{CENTRE, FAMILY, GROUP_FAMILY}'::care_types[] AND (NOT :onlyApplicable OR (daycare_apply_period @> :date)))
+    OR (:preschool AND type && '{PRESCHOOL}'::care_types[] AND (NOT :onlyApplicable OR (preschool_apply_period @> :date)))
+    OR (:preparatory AND type && '{PREPARATORY_EDUCATION}'::care_types[] AND (NOT :onlyApplicable OR (preschool_apply_period @> :date)))
 )
 ORDER BY name ASC
     """.trimIndent()
@@ -269,10 +269,10 @@ SELECT
     closing_date,
     ghost_unit
 FROM daycare
-WHERE daterange(opening_date, closing_date, '[]') && daterange(:date, null) AND (
-    (club_apply_period IS NOT NULL AND club_apply_period && daterange(:date, null)) OR
-    (daycare_apply_period IS NOT NULL AND daycare_apply_period && daterange(:date, null)) OR
-    (preschool_apply_period IS NOT NULL AND preschool_apply_period && daterange(:date, null))
+WHERE (
+    (club_apply_period && daterange(:date, null, '[]')) OR
+    (daycare_apply_period && daterange(:date, null, '[]')) OR
+    (preschool_apply_period && daterange(:date, null, '[]'))
 )
 ORDER BY name ASC
     """.trimIndent()

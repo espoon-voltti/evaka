@@ -85,18 +85,16 @@ class LocationServiceIntegrationTest : PureJdbiTest() {
 
     @Test
     fun `List of location contains future units`() {
-        val preschool1 = createDaycare(createGenericUnit(areaId = areaId), openingDate = LocalDate.now().minusYears(1), closingDate = LocalDate.now().minusMonths(1))
-        val preschool2 = createDaycare(createGenericUnit(areaId = areaId), openingDate = LocalDate.now().minusYears(1), closingDate = LocalDate.now().plusMonths(1))
-        val preschool3 = createDaycare(createGenericUnit(areaId = areaId), openingDate = LocalDate.now().plusYears(1), closingDate = LocalDate.now().plusYears(2))
+        val preschool1 = createDaycare(createGenericUnit(areaId = areaId), openingDate = LocalDate.now().minusYears(1), closingDate = LocalDate.now().plusMonths(1))
+        val preschool2 = createDaycare(createGenericUnit(areaId = areaId), openingDate = LocalDate.now().plusYears(1), closingDate = LocalDate.now().plusYears(2))
 
         val areas = jdbi.handle { it.getAreas().filter { it.id == areaId } }
         assertThat(areas).size().isEqualTo(1)
         val locationResults = areas.first().locations
 
         with(assertThat(locationResults)) {
-            filteredOn { it.id == preschool1 }.size().isEqualTo(0)
+            filteredOn { it.id == preschool1 }.size().isEqualTo(1)
             filteredOn { it.id == preschool2 }.size().isEqualTo(1)
-            filteredOn { it.id == preschool3 }.size().isEqualTo(1)
         }
     }
 
