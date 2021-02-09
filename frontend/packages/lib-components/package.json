@@ -15,13 +15,13 @@
     "@fortawesome/free-regular-svg-icons": "5.14.0",
     "@fortawesome/free-solid-svg-icons": "5.14.0",
     "@fortawesome/react-fontawesome": "0.1.11",
-    "date-fns": "^2.8.1",
-    "polished": "^4.0.5",
+    "date-fns": "^2.17.0",
+    "polished": "^4.1.0",
     "react": "^16.12.0",
     "react-datepicker": "^2.10.1",
     "react-day-picker": "7.4.8",
     "react-router-dom": "^5.1.2",
-    "styled-components": "5.1.1"
+    "styled-components": "5.2.1"
   },
   "devDependencies": {
     "@storybook/addon-actions": "5.1.11",
@@ -32,7 +32,7 @@
     "@types/react-datepicker": "2.11.0",
     "@types/storybook__addon-actions": "3.4.3",
     "@types/storybook__react": "4.0.2",
-    "csstype": "^2.6.10",
+    "csstype": "^3.0.6",
     "eslint": "^7.19.0",
     "eslint-config-prettier": "^7.2.0",
     "eslint-plugin-prettier": "^3.3.1",

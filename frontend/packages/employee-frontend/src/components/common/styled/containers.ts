@@ -3,14 +3,14 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import styled from 'styled-components'
-import { ContentDistribution, ContentPosition } from 'csstype'
+import { Property } from 'csstype'
 
 export const DivFitContent = styled.div`
   width: fit-content;
 `
 
 interface FlexRowProps {
-  justifyContent?: ContentDistribution | ContentPosition
+  justifyContent?: Property.JustifyContent
 }
 
 export const FlexRow = styled.div<FlexRowProps>`
