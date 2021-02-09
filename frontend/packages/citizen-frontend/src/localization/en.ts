@@ -6,6 +6,7 @@ import { Translations } from '.'
 
 const en: Translations = {
   common: {
+    title: 'Early childhood education',
     cancel: 'Cancel',
     return: 'Return',
     ok: 'Ok',
@@ -733,7 +734,8 @@ const en: Translations = {
     },
     modalHeader: 'Processing file',
     modalMessage: 'File is being processed. Try again later',
-    modalConfirm: 'OK'
+    modalConfirm: 'OK',
+    deleteFile: 'Delete file'
   },
   validationErrors: {
     required: 'Value missing',
