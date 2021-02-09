@@ -91,5 +91,10 @@
   ],
   "jest-junit": {
     "outputDirectory": "test-results/"
+  },
+  "workspaces": {
+    "nohoist": [
+      "**/*"
+    ]
   }
 }
