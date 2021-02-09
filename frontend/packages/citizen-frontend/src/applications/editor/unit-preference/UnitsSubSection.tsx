@@ -64,8 +64,12 @@ export default React.memo(function UnitsSubSection({
     <>
       <H3>{t.applications.editor.unitPreference.units.title}</H3>
 
-      <P>{t.applications.editor.unitPreference.units.p1}</P>
-      <P>{t.applications.editor.unitPreference.units.p2}</P>
+      <P
+        dangerouslySetInnerHTML={{
+          __html:
+            t.applications.editor.unitPreference.units.info[applicationType]
+        }}
+      />
 
       <ExternalLink
         href="/"

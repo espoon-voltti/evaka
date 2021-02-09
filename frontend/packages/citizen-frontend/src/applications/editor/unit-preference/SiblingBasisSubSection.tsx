@@ -15,6 +15,7 @@ import { UnitPreferenceSectionCommonProps } from '~applications/editor/unit-pref
 import Radio from '@evaka/lib-components/src/atoms/form/Radio'
 
 export default React.memo(function SiblingBasisSubSection({
+  applicationType,
   formData,
   updateFormData,
   errors,
@@ -25,13 +26,23 @@ export default React.memo(function SiblingBasisSubSection({
   return (
     <>
       <H3>{t.applications.editor.unitPreference.siblingBasis.title}</H3>
-      <P>{t.applications.editor.unitPreference.siblingBasis.p1}</P>
-      <P>{t.applications.editor.unitPreference.siblingBasis.p2}</P>
+      <P
+        dangerouslySetInnerHTML={{
+          __html:
+            t.applications.editor.unitPreference.siblingBasis.info[
+              applicationType
+            ]
+        }}
+      />
 
       <Checkbox
         checked={formData.siblingBasis}
         dataQa="siblingBasis-input"
-        label={t.applications.editor.unitPreference.siblingBasis.checkbox}
+        label={
+          t.applications.editor.unitPreference.siblingBasis.checkbox[
+            applicationType
+          ]
+        }
         onChange={(checked) => updateFormData({ siblingBasis: checked })}
       />
       {formData.siblingBasis && (
@@ -40,7 +51,12 @@ export default React.memo(function SiblingBasisSubSection({
             <>
               <Gap />
               <Label>
-                {t.applications.editor.unitPreference.siblingBasis.radioLabel} *
+                {
+                  t.applications.editor.unitPreference.siblingBasis.radioLabel[
+                    applicationType
+                  ]
+                }{' '}
+                *
               </Label>
               <Gap />
               <FixedSpaceColumn>

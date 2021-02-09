@@ -86,11 +86,19 @@ export default React.memo(function PreferredStartSubSection({
           </>
         )}
 
-        <ExpandingInfo
-          info={t.applications.editor.serviceNeed.startDate.instructions}
-        >
-          <Label>{t.applications.editor.serviceNeed.startDate.label} *</Label>
-        </ExpandingInfo>
+        {type !== 'CLUB' ? (
+          <ExpandingInfo
+            info={t.applications.editor.serviceNeed.startDate.instructions}
+          >
+            <Label>
+              {t.applications.editor.serviceNeed.startDate.label[type]} *
+            </Label>
+          </ExpandingInfo>
+        ) : (
+          <Label>
+            {t.applications.editor.serviceNeed.startDate.label[type]} *
+          </Label>
+        )}
 
         <Gap size="s" />
 
@@ -125,12 +133,14 @@ export default React.memo(function PreferredStartSubSection({
               <>
                 <Gap size={'s'} />
 
-                <P fitted>
-                  {
-                    t.applications.editor.serviceNeed.urgent.attachmentsMessage
-                      .text
-                  }
-                </P>
+                <P
+                  fitted
+                  dangerouslySetInnerHTML={{
+                    __html:
+                      t.applications.editor.serviceNeed.urgent
+                        .attachmentsMessage.text
+                  }}
+                />
 
                 <Gap size={'s'} />
 

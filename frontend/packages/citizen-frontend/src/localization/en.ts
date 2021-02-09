@@ -313,7 +313,11 @@ const en: Translations = {
             ]
           },
           clubTerm: 'Club term',
-          label: 'Desired start date',
+          label: {
+            DAYCARE: 'Desired start date',
+            PRESCHOOL: 'Start date in August',
+            CLUB: 'Desired start date'
+          },
           noteOnDelay: 'The application processing time is 4 months.',
           instructions:
             'You can postpone your desired start date until the processing of your application starts. After this, you can make changes to your desired start date by contacting early childhood education service counselling (tel. 09 816 31000).',
@@ -332,14 +336,9 @@ const en: Translations = {
         },
         urgent: {
           label: 'Application is urgent',
-          message: {
-            title: 'Application is urgent',
-            text:
-              'If the need for an early childhood education place is due to sudden start of employment or studies, the place must be applied for at least two weeks before the need begins. The two-week processing time begins when proof of employment or studies has been submitted to Service Guidance (<a href="mailto:varhaiskasvatuksen.palveluohjaus@espoo.fi">varhaiskasvatuksen.palveluohjaus@espoo.fi</a>).'
-          },
           attachmentsMessage: {
             text:
-              'If the need for a place in early childhood education arises from sudden employment or a sudden start of studies, you will need to apply for a place no later than two weeks before your child needs it. In addition to the application, you will need to provide documents as proof of the employment or student status of both guardians living in the same household. If you are unable to add attachments to your online application, please send the documents by post to Early childhood education service counselling, P.O. Box 3125, 02070 City of Espoo. The processing period of two weeks will not begin until we have received the application and the required attachments.',
+              'If the need for a place in early childhood education arises from sudden employment or a sudden start of studies, you will need to apply for a place no later than <strong>two weeks before</strong> your child needs it. In addition to the application, you will need to <strong>provide documents as proof of the employment or student status</strong> of both guardians living in the same household. If you are unable to add attachments to your online application, please send the documents by post to Early childhood education service counselling, P.O. Box 3125, 02070 City of Espoo. The processing period of two weeks will not begin until we have received the application and the required attachments.',
             subtitle:
               'Add here documents as proof of the employment or student status of both guardians.'
           }
@@ -405,14 +404,37 @@ const en: Translations = {
         title: 'Preferred units',
         siblingBasis: {
           title: 'Application on a sibling basis',
-          p1:
-            'The child has a sibling basis to the same early childhood education place attended by their sibling at the time of making the decision. All children living at the same address are considered to be siblings. The aim is to place siblings at the same early childhood education place, if the family so wishes. If you are applying for places for siblings who do not yet attend early childhood education, enter this piece of information in the additional information field.',
-          p2:
-            'Fill in this information only if you are applying the sibling basis.',
-          checkbox:
-            'I primarily apply for a place at the same early childhood education location attended by the child’s sibling.',
-          radioLabel:
-            'Choose a sibling with whom you are applying for the same early childhood education place\n',
+          info: {
+            DAYCARE: `
+            <p>The child has a sibling basis to the same early childhood education place attended by their sibling at the time of making the decision. All children living at the same address are considered to be siblings. The aim is to place siblings at the same early childhood education place, if the family so wishes. If you are applying for places for siblings who do not yet attend early childhood education, enter this piece of information in the additional information field.</p>
+            <p>Fill in this information only if you want to exercise the sibling-basis right.</p>`,
+            PRESCHOOL: `
+            <p>A child enrolling for pre-primary education has a sibling-basis right to a</p>
+            <ol type="a">
+              <li>early childhood education in their own service area, where they have a sibling who has, at the moment of making the decision and in the coming pre-primary education year, a place at the pre-primary education day-care centre</li>
+              <li>local school determined by the city, which will be attended by their sibling in the coming school year.</li>
+            </ol>
+            <p>If the child enrolling for pre-primary education has a sibling-basis right to both options, the guardian may decide which of them will be exercised. The selection is indicated by entering the name of the sibling in the field below.</p>
+            <p>Fill in this information only if you want to exercise the sibling-basis right.</p>
+            `,
+            CLUB: `
+            <p>Children living in the same address are considered siblings. An effort is made to put the siblings into a same club group when the family wishes that.</p>
+            <p>Fill in this information only if you want to exercise the sibling-basis right and choose the same club the sibling attends below.</p>
+            `
+          },
+          checkbox: {
+            DAYCARE:
+              'I primarily apply for a place at the same early childhood education location attended by the child’s sibling.',
+            PRESCHOOL:
+              'I primarily apply for a place in the same location attended by the child’s sibling.',
+            CLUB:
+              'I primarily apply for a place in the same club attended by the child’s sibling.'
+          },
+          radioLabel: {
+            DAYCARE: 'Choose the sibling',
+            PRESCHOOL: 'Choose the sibling',
+            CLUB: 'Choose the sibling'
+          },
           otherSibling: 'Other sibling',
           names: 'First and last name of the sibling',
           namesPlaceholder: 'First and last name',
@@ -423,9 +445,17 @@ const en: Translations = {
           title: 'Preferred units',
           startDateMissing:
             'To select preferred units first set the preferred start date on "Service need" section',
-          p1:
-            'You can apply for 1 to 3 locations in your order of preference. Application preferences do not guarantee a place at the desired location, but the possibility of obtaining a desired location increases by giving more than one option.',
-          p2: 'To see the units on map select ‘unit map view’',
+          info: {
+            DAYCARE: `
+            <p>You can apply for 1 to 3 locations in your order of preference. Application preferences do not guarantee a place at the desired location, but the possibility of obtaining a desired location increases by giving more than one option.</p>
+            <p>You can display the unit locations by choosing 'Unit map view'.</p>`,
+            PRESCHOOL: `
+            <p>You can apply for 1 to 3 locations in your order of preference. Application preferences do not guarantee a place at the desired location, but the possibility of obtaining a desired location increases by giving more than one option.</p>
+            <p>You can display the unit locations by choosing 'Unit map view'.</p>`,
+            CLUB: `
+            <p>You can apply for 1 to 3 locations in your order of preference. Application preferences do not guarantee a place at the desired location, but the possibility of obtaining a desired location increases by giving more than one option.</p>
+            <p>You can display the unit locations by choosing 'Unit map view'.</p>`
+          },
           mapLink: 'Unit map view',
           languageFilter: {
             label: 'Language of the location:',
@@ -454,8 +484,13 @@ const en: Translations = {
       },
       fee: {
         title: 'Early childhood education fee',
-        info:
-          'The client fees for municipal early childhood education are calculated as a percentage of the family’s gross income. Depending on the family’s size and income and the hours of early childhood education, the fees vary from free early childhood education to a maximum monthly fee of EUR 288 per child. Each family must provide information about their gross income using the income statement form, no later than two weeks after their child’s early childhood education has started.',
+        info: {
+          DAYCARE:
+            'The client fees for municipal early childhood education are calculated as a percentage of the family’s gross income. Each family must provide information about their gross income using the income statement form, no later than two weeks after their child’s early childhood education has started.',
+          PRESCHOOL:
+            'The client fees for municipal early childhood education are calculated as a percentage of the family’s gross income. Each family must provide information about their gross income using the income statement form, no later than two weeks after their child’s early childhood education has started.',
+          CLUB: ''
+        },
         emphasis:
           '<strong>The income statement is not needed if the family agrees to pay the highest fee.</strong>',
         checkbox:

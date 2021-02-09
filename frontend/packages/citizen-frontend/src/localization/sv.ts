@@ -314,7 +314,11 @@ const sv: Translations = {
             ]
           },
           clubTerm: 'Kerhon toimintakausi',
-          label: 'Önskat inledningsdatum',
+          label: {
+            DAYCARE: 'Önskat inledningsdatum',
+            PRESCHOOL: 'Inledningsdatum i augusti',
+            CLUB: 'Önskat inledningsdatum'
+          },
           noteOnDelay: 'Behandlingstiden för ansökningen är 4 månader.',
           instructions:
             'Det är möjligt att senarelägga det önskade startdatumet så länge ansökan inte har tagits upp till behandling. Därefter kan du ändra det önskade startdatumet genom att kontakta småbarnspedagogikens servicehänvisning (tfn 09 816 27600).',
@@ -333,14 +337,9 @@ const sv: Translations = {
         },
         urgent: {
           label: 'Ansökningen är brådskande',
-          message: {
-            title: 'Ansökningen är brådskande',
-            text:
-              'Om behovet av småbarnspedagogisk verksamhet beror på att du har blivit sysselsatt eller att du har fått en studieplats på kort varsel, bör du ansöka om plats senast två veckor före behovet börjar. Behandlingstiden börjar från den dag då du lämnat in ett intyg från arbets- eller studieplatsen till barninvalskoordinatorerna (dagis@esbo.fi).'
-          },
           attachmentsMessage: {
             text:
-              'Om behovet av en plats inom småbarnspedagogiken beror på att du plötsligt fått sysselsättning eller börjat studera, ska platsen sökas senast två veckor innan behovet börjar. Bifoga till ansökan ett arbets- eller studieintyg av båda vårdnadshavarna som bor i samma hushåll. Om du inte kan lägga till bilagor till ansökan elektroniskt, skicka dem per post till adressen Småbarnspedagogikens servicehänvisning, PB 3125, 02070 Esbo stad. Behandlingstiden på två veckor börjar när vi har tagit emot ansökan och bilagorna som behövs.',
+              'Om behovet av en plats inom småbarnspedagogiken beror på att du plötsligt fått sysselsättning eller börjat studera, ska platsen sökas <strong>senast två veckor innan</strong> behovet börjar. <strong>Bifoga till ansökan ett arbets- eller studieintyg</strong> av båda vårdnadshavarna som bor i samma hushåll. Om du inte kan lägga till bilagor till ansökan elektroniskt, skicka dem per post till adressen Småbarnspedagogikens servicehänvisning, PB 3125, 02070 Esbo stad. Behandlingstiden på två veckor börjar när vi har tagit emot ansökan och bilagorna som behövs.',
             subtitle:
               'Lägg här till ett arbets- eller studieintyg av båda föräldrarna.'
           }
@@ -406,14 +405,38 @@ const sv: Translations = {
         title: 'Ansökningsönskemål',
         siblingBasis: {
           title: 'Ansökan på basis av syskonrelationer',
-          p1:
-            'Målet är att placera syskon i samma enhet om inte familjen önskar annat. Som syskon betraktas barn som är folkbokförda på samma adress. Om du ansöker om en plats för syskon, som inte ännu har plats inom småbarnspedagogik, skriv uppgiften i tilläggsuppgifter.',
-          p2:
-            'Fyll i dessa uppgifter endast om du vill hänvisa till barnets syskonrelationer.',
-          checkbox:
-            'Jag ansöker i första hand om plats i den enheten där barnets syskon redan har en plats.',
-          radioLabel:
-            'Välj ett syskon som du söker till samma förskoleutbildningsplats',
+          info: {
+            DAYCARE: `
+            <p>Målet är att placera syskon i samma enhet om inte familjen önskar annat. Som syskon betraktas barn som är folkbokförda på samma adress. Om du ansöker om en plats för syskon, som inte ännu har plats inom småbarnspedagogik, skriv uppgiften i tilläggsuppgifter.</p>
+            <p>Fyll i dessa uppgifter endast om du vill hänvisa till barnets syskonrelationer.</p>
+            `,
+            PRESCHOOL: `
+            <p>Fyll i dessa uppgifter endast om du yrkar på prioriteringsordningen till sekundär förskola</p>
+            <p>Vårdnadshavarna kan ansöka om plats för sitt barn i en annan förskola än närförskolan. Sökande från andra elevupptagningsområden kan antas endast om det finns lediga platser efter att barnen i förskolans eget elevupptagningsområde har fått en plats. Om det finns flera sökande än det finns platser tillämpas följande prioriteringsordning. Om du hänvisar till kontinuitetsprincipen skriv barnets nuvarande enhet i fältet för tilläggsuppgifter.</p>
+            <ol type="a">
+              <li>Kontinuitet vid övergång från småbarnspedagogik till förskola. Vid antagning till förskola prioriteras ett barn som haft sin dagvårdsplats i det daghem där förskolan är.</li>
+              <li>Barn med syskon i skolan som finns i samma elevupptagningsområde. Syskonprincipen innebär att elever placeras i samma enhet som äldre syskon. För barn i förskolan tillämpas principen om eleven har syskon i årskurs 1–6 i skolan som finns i samma elevupptagningsområde som förskolan. Som syskon betraktas barn som är folkbokförda på samma adress.</li>
+            </ol>
+            <p>Fyll i dessa uppgifter endast om du vill hänvisa till barnets syskonrelationer.</p>
+            `,
+            CLUB: `
+            <p>Barn som bor på samma adress betraktas som syskon. Ett försök görs för att placera syskonen i samma klubbgrupp när familjen önskar det.</p>
+            <p>Fyll i dessa uppgifter endast om du vill hänvisa till barnets syskonrelationer och välj samma klubb som syskonet deltar i nedan.</p>
+            `
+          },
+          checkbox: {
+            DAYCARE:
+              'Jag ansöker i första hand om plats i den enheten där barnets syskon redan har en plats.',
+            PRESCHOOL:
+              'Jag ansöker om plats i en annan förskola än närförskolan med syskonprincipen',
+            CLUB:
+              'Jag ansöker främst om en plats i samma klubb där barnets syskon deltar.'
+          },
+          radioLabel: {
+            DAYCARE: 'Välj syskonet',
+            PRESCHOOL: 'Välj syskonet',
+            CLUB: 'Välj syskonet'
+          },
           otherSibling: 'Annat syskon',
           names: 'Syskonets för- och efternamn',
           namesPlaceholder: 'För- och efternamn',
@@ -424,10 +447,17 @@ const sv: Translations = {
           title: 'Ansökningsönskemål',
           startDateMissing:
             'För att välja önskade enheter, välj det första önskade startdatumet i avsnittet om "Servicebehov"',
-          p1:
-            'Du kan ange 1-3 platser i önskad ordning. Önskemålen garanterar inte en plats i den önskade enheten, men möjligheterna att få en önskad plats ökar om du anger flera alternativ.',
-          p2:
-            'Om du i det tidigare fältet har hänvisat till barnets syskonrelationer ska du som förstahandsönskemål ange den enhet där syskonet redan har en plats.',
+          info: {
+            DAYCARE: `
+            <p>Du kan ange 1-3 platser i önskad ordning. Önskemålen garanterar inte en plats i den önskade enheten, men möjligheterna att få en önskad plats ökar om du anger flera alternativ.</p>
+            <p>Du kan visa enhetsplatserna genom att välja 'Enheter på kartan'.</p>`,
+            PRESCHOOL: `
+            <p>Du kan ange 1-3 platser i önskad ordning. Önskemålen garanterar inte en plats i den önskade enheten, men möjligheterna att få en önskad plats ökar om du anger flera alternativ.</p>
+            <p>Du kan visa enhetsplatserna genom att välja 'Enheter på kartan'.</p>`,
+            CLUB: `
+            <p>Du kan ange 1-3 platser i önskad ordning. Önskemålen garanterar inte en plats i den önskade enheten, men möjligheterna att få en önskad plats ökar om du anger flera alternativ.</p>
+            <p>Du kan visa enhetsplatserna genom att välja 'Enheter på kartan'.</p>`
+          },
           mapLink: 'Enheter på kartan',
           languageFilter: {
             label: 'Enhetens språk:',
@@ -456,8 +486,13 @@ const sv: Translations = {
       },
       fee: {
         title: 'Avgiften för småbarnspedagogik',
-        info:
-          'Klientavgiften inom den kommunala småbarnspedagogiken är en procentandel av familjens bruttoinkomster. Avgiften beror på familjens storlek och inkomster samt småbarnspedagogikens dagliga längd, från ingen avgift till en månadsavgift på högst 288 euro per barn. Familjen ska lämna in en utredning över sina bruttoinkomster på en särskild blankett, senast inom två veckor från det att barnet har inlett småbarnspedagogiken.',
+        info: {
+          DAYCARE:
+            'Klientavgiften inom den kommunala småbarnspedagogiken är en procentandel av familjens bruttoinkomster. Familjen ska lämna in en utredning över sina bruttoinkomster på en särskild blankett, senast inom två veckor från det att barnet har inlett småbarnspedagogiken.',
+          PRESCHOOL:
+            'Klientavgiften inom den kommunala småbarnspedagogiken är en procentandel av familjens bruttoinkomster. Familjen ska lämna in en utredning över sina bruttoinkomster på en särskild blankett, senast inom två veckor från det att barnet har inlett småbarnspedagogiken.',
+          CLUB: ''
+        },
         emphasis:
           '<strong>Om familjen samtycker till den högsta avgiften behövs ingen inkomstutredning.</strong>',
         checkbox:

@@ -101,6 +101,7 @@ export default React.memo(function ApplicationFormPreschool({
 
       {formData.serviceNeed.connectedDaycare && (
         <FeeSection
+          applicationType={applicationType}
           formData={formData.fee}
           updateFormData={(data) =>
             setFormData((old) =>

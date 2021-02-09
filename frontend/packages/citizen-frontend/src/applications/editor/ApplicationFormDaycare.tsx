@@ -100,6 +100,7 @@ export default React.memo(function ApplicationFormDaycare({
       />
 
       <FeeSection
+        applicationType={applicationType}
         formData={formData.fee}
         updateFormData={(data) =>
           setFormData((old) =>
