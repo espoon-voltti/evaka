@@ -52,7 +52,8 @@ data class DaycareFields(
     val ophUnitOid: String?,
     val ophOrganizerOid: String?,
     val ophOrganizationOid: String?,
-    val operationDays: Set<Int>?
+    val operationDays: Set<Int>?,
+    val roundTheClock: Boolean
 ) {
     fun validate() {
         if (name.isBlank()) {
@@ -203,7 +204,8 @@ SET
   oph_unit_oid = :ophUnitOid,
   oph_organizer_oid = :ophOrganizerOid,
   oph_organization_oid = :ophOrganizationOid,
-  operation_days = :operationDays
+  operation_days = :operationDays,
+  round_the_clock = :roundTheClock
 WHERE id = :id
 """
 ).bind("id", id)

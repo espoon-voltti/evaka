@@ -139,7 +139,8 @@ class LocationServiceIntegrationTest : PureJdbiTest() {
                 ophOrganizerOid = null,
                 ophUnitOid = null,
                 operationDays = null,
-                financeDecisionHandlerId = null
+                financeDecisionHandlerId = null,
+                roundTheClock = false
             )
         )
         id
