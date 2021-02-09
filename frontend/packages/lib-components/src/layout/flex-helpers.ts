@@ -3,13 +3,13 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import styled from 'styled-components'
-import { SelfPosition } from 'csstype'
+import { Property } from 'csstype'
 import { defaultMargins, isSpacingSize, SpacingSize } from '../white-space'
 
 interface FixedSpaceRowProps {
   spacing?: SpacingSize | string
-  justifyContent?: string
-  alignItems?: SelfPosition
+  justifyContent?: Property.JustifyContent
+  alignItems?: Property.AlignItems
   marginBottom?: SpacingSize | string
   wrap?: boolean
 }
@@ -56,7 +56,7 @@ export const FixedSpaceRow = styled.div<FixedSpaceRowProps>`
 
 interface FixedSpaceColumnProps {
   spacing?: SpacingSize | string
-  alignItems?: SelfPosition
+  alignItems?: Property.AlignItems
   marginRight?: SpacingSize | string
   fullWidth?: boolean
 }

@@ -92,7 +92,7 @@ const runApp = (): void => {
 }
 
 // Wrap app startup to make sure polyfills are loaded before they are needed (e.g. load Intl before VCalendar is setup)
-if (!global.Intl) {
+if (!window.Intl) {
   require.ensure(['intl', 'intl/locale-data/jsonp/fi.js'], function (require) {
     require('intl')
     require('intl/locale-data/jsonp/fi.js')
