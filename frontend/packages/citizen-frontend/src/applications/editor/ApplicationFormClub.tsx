@@ -21,6 +21,7 @@ export default React.memo(function ApplicationFormClub({
     <FixedSpaceColumn spacing="s">
       <Heading
         type={applicationType}
+        transferApplication={apiData.transferApplication}
         firstName={apiData.form.child.person.firstName}
         lastName={apiData.form.child.person.lastName}
         errors={verificationRequested ? errors : undefined}

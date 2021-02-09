@@ -21,12 +21,14 @@ type HeadingProps = {
   firstName: string
   lastName: string
   errors?: ApplicationFormDataErrors
+  transferApplication: boolean
 }
 export default React.memo(function Heading({
   type,
   firstName,
   lastName,
-  errors
+  errors,
+  transferApplication
 }: HeadingProps) {
   const t = useTranslation()
   const infoParagraphs = t.applications.editor.heading.info[type]
@@ -34,7 +36,8 @@ export default React.memo(function Heading({
   return (
     <ContentArea opaque paddingVertical="L">
       <H1 noMargin data-qa="application-type-title">
-        {t.applications.editor.heading.title[type]}
+        {t.applications.editor.heading.title[type]}{' '}
+        {transferApplication && `(${t.applicationsList.transferApplication})`}
       </H1>
 
       <H2 data-qa="application-child-name-title">

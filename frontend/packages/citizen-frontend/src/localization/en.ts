@@ -689,6 +689,7 @@ const en: Translations = {
       PRESCHOOL: 'Early education application',
       CLUB: 'Club application'
     },
+    transferApplication: 'Transfer application',
     unit: 'Unit',
     period: 'Period',
     created: 'Created',

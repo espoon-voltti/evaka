@@ -457,7 +457,8 @@ fun fetchApplicationSummariesForCitizen(h: Handle, citizenId: UUID): List<Citize
             a.startDate, a.sentDate, 
             a.status AS application_status,
             a.created AS created_date,
-            a.formmodified AS modified_date
+            a.formmodified AS modified_date,
+            a.transferapplication
         FROM application_view a
         LEFT JOIN daycare d ON a.preferredUnit = d.id
         WHERE guardianId = :guardianId AND NOT a.hidefromguardian

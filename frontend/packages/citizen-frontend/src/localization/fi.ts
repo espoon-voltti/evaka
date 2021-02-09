@@ -680,6 +680,7 @@ export default {
       PRESCHOOL: 'Esiopetushakemus',
       CLUB: 'Kerhohakemus'
     },
+    transferApplication: 'Siirtohakemus',
     unit: 'Yksikkö',
     period: 'Ajalle',
     created: 'Luotu',

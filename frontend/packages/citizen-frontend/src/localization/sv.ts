@@ -686,6 +686,7 @@ const sv: Translations = {
       PRESCHOOL: 'Anmälan till förskolan',
       CLUB: 'Ansökan till klubbverksamhet'
     },
+    transferApplication: 'Ansökan om överföring',
     unit: 'Enhet',
     period: 'Period',
     created: 'Skapad',
