@@ -781,6 +781,7 @@ export default {
     phone: 'Virheellinen numero',
     email: 'Virheellinen sähköpostiosoite',
     validDate: 'Anna muodossa pp.kk.vvvv',
+    preferredStartDate: 'Aloituspäivä ei ole sallittu',
     timeFormat: 'Anna muodossa hh:mm',
     unitNotSelected: 'Valitse vähintään yksi hakutoive'
   }

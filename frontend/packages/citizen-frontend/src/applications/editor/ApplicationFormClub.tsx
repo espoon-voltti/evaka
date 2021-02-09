@@ -38,6 +38,8 @@ export default React.memo(function ApplicationFormClub({
       />
 
       <ServiceNeedSection
+        status={apiData.status}
+        originalPreferredStartDate={apiData.form.preferences.preferredStartDate}
         type={applicationType}
         formData={formData.serviceNeed}
         updateFormData={(data) =>

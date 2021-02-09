@@ -17,8 +17,11 @@ import DatePicker from '@evaka/lib-components/src/molecules/date-picker/DatePick
 import { ServiceNeedSectionProps } from '~applications/editor/service-need/ServiceNeedSection'
 import ExpandingInfo from '@evaka/lib-components/src/molecules/ExpandingInfo'
 import { FixedSpaceColumn } from '@evaka/lib-components/src/layout/flex-helpers'
+import { isValidPreferredStartDate } from '~applications/editor/validations'
 
 export default React.memo(function PreferredStartSubSection({
+  status,
+  originalPreferredStartDate,
   type,
   formData,
   updateFormData,
@@ -113,6 +116,14 @@ export default React.memo(function PreferredStartSubSection({
           locale={lang}
           info={errorToInputInfo(errors.preferredStartDate, t.validationErrors)}
           hideErrorsBeforeTouched={!verificationRequested}
+          isValidDate={(date: Date) =>
+            isValidPreferredStartDate(
+              date,
+              originalPreferredStartDate,
+              status,
+              type
+            )
+          }
           data-qa={'preferredStartDate-input'}
           id={labelId}
           required={true}

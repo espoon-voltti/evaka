@@ -11,7 +11,6 @@ import DatePickerInput from './DatePickerInput'
 import DatePickerDay from './DatePickerDay'
 import LocalDate from '~../../lib-common/src/local-date'
 import { InputInfo } from '../../atoms/form/InputField'
-import {Modifier} from "react-day-picker";
 import { tabletMin } from '../../breakpoints'
 
 const DatePickerWrapper = styled.div`
@@ -55,7 +54,7 @@ type DatePickerProps = {
   info?: InputInfo
   hideErrorsBeforeTouched?: boolean
   disabled?: boolean
-  disabledDays?: Modifier | Modifier[]
+  isValidDate?: (date: Date) => boolean
   'data-qa'?: string
   id?: string
   required?: boolean
@@ -68,7 +67,7 @@ function DatePicker({
   info,
   hideErrorsBeforeTouched,
   disabled,
-  disabledDays,
+  isValidDate,
   id,
   required,
   ...props
@@ -121,7 +120,7 @@ function DatePicker({
             locale={locale}
             inputValue={date}
             handleDayClick={handleDayClick}
-            disabledDays={disabledDays}
+            isValidDate={isValidDate}
           />
         </DayPickerDiv>
       </DayPickerPositioner>

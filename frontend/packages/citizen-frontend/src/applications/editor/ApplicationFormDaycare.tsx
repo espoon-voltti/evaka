@@ -39,6 +39,8 @@ export default React.memo(function ApplicationFormDaycare({
       />
 
       <ServiceNeedSection
+        status={apiData.status}
+        originalPreferredStartDate={apiData.form.preferences.preferredStartDate}
         type={applicationType}
         formData={formData.serviceNeed}
         updateFormData={(data) =>

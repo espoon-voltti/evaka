@@ -791,6 +791,7 @@ const sv: Translations = {
     phone: 'Ogiltigt telefonnummer',
     email: 'Ogiltig e-postadress',
     validDate: 'Ange formuläret pp.kk.vvvv',
+    preferredStartDate: 'Ogiltigt datum',
     timeFormat: 'Ange formuläret hh:mm',
     unitNotSelected: 'Välj minst en sökbegäran'
   }

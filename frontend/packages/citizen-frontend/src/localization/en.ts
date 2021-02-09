@@ -792,6 +792,7 @@ const en: Translations = {
     phone: 'Invalid telephone number',
     email: 'Invalid email',
     validDate: 'Valid date format is pp.kk.vvvv',
+    preferredStartDate: 'Invalid preferred start date',
     timeFormat: 'Valid time format is hh:mm',
     unitNotSelected: 'Pick at least one choice'
   }
