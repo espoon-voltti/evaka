@@ -59,7 +59,7 @@
     "@types/react-datepicker": "2.11.0",
     "@types/react-dom": "^17.0.0",
     "@types/react-router-dom": "^5.1.7",
-    "@types/react-select": "^3.0.10",
+    "@types/react-select": "3.0.22",
     "@typescript-eslint/eslint-plugin": "^4.15.0",
     "@typescript-eslint/parser": "^4.15.0",
     "babel-loader": "8.2.2",
