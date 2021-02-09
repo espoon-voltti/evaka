@@ -35,7 +35,8 @@ export default React.memo(function UnitsSubSection({
   verificationRequested,
   applicationType,
   preparatory,
-  preferredStartDate
+  preferredStartDate,
+  shiftCare
 }: UnitPreferenceSectionProps) {
   const t = useTranslation()
   const [units, setUnits] = useState<Result<PublicUnit[]>>(Loading.of())
@@ -56,9 +57,9 @@ export default React.memo(function UnitsSubSection({
           ? 'PREPARATORY'
           : 'PRESCHOOL'
 
-      loadUnits(unitType, preferredStartDate)
+      loadUnits(unitType, preferredStartDate, shiftCare)
     }
-  }, [applicationType, preparatory, preferredStartDate?.formatIso()])
+  }, [applicationType, preparatory, preferredStartDate?.formatIso(), shiftCare])
 
   return (
     <>

@@ -78,6 +78,7 @@ export default React.memo(function ApplicationFormClub({
         )}
         errors={errors.unitPreference}
         verificationRequested={verificationRequested}
+        shiftCare={formData.serviceNeed.shiftCare}
       />
 
       <ContactInfoSection

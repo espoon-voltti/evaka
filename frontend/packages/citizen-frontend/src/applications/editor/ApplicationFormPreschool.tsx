@@ -79,6 +79,7 @@ export default React.memo(function ApplicationFormPreschool({
         )}
         errors={errors.unitPreference}
         verificationRequested={verificationRequested}
+        shiftCare={formData.serviceNeed.shiftCare}
       />
 
       <ContactInfoSection

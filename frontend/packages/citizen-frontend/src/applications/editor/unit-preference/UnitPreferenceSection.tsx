@@ -22,12 +22,14 @@ export type UnitPreferenceSectionCommonProps = {
   applicationType: ApplicationType
   preparatory: boolean
   preferredStartDate: LocalDate | null
+  shiftCare: boolean
 }
 
 export type UnitPreferenceSectionProps = UnitPreferenceSectionCommonProps & {
   applicationType: ApplicationType
   preparatory: boolean
   preferredStartDate: LocalDate | null
+  shiftCare: boolean
 }
 
 export default React.memo(function UnitPreferenceSection(

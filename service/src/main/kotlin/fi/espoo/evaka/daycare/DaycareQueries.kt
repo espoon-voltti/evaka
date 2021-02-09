@@ -212,7 +212,7 @@ WHERE id = :id
     .bindKotlin(fields)
     .execute()
 
-fun Handle.getApplicationUnits(type: ApplicationUnitType, date: LocalDate, onlyApplicable: Boolean): List<PublicUnit> {
+fun Handle.getApplicationUnits(type: ApplicationUnitType, date: LocalDate, shiftCare: Boolean?, onlyApplicable: Boolean): List<PublicUnit> {
     // language=sql
     val sql = """
 SELECT
@@ -233,7 +233,7 @@ SELECT
     ghost_unit,
     round_the_clock
 FROM daycare
-WHERE (
+WHERE ${if (shiftCare == true) "round_the_clock IS TRUE AND" else ""} (
     (:club AND type && '{CLUB}'::care_types[] AND (NOT :onlyApplicable OR (club_apply_period @> :date)))
     OR (:daycare AND type && '{CENTRE, FAMILY, GROUP_FAMILY}'::care_types[] AND (NOT :onlyApplicable OR (daycare_apply_period @> :date)))
     OR (:preschool AND type && '{PRESCHOOL}'::care_types[] AND (NOT :onlyApplicable OR (preschool_apply_period @> :date)))
