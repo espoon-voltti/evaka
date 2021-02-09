@@ -173,11 +173,5 @@
       "react/prop-types": 0,
       "react-hooks/rules-of-hooks": "error"
     }
-  },
-  "workspaces": {
-    "nohoist": [
-      "@types/react-datepicker",
-      "@types/react-datepicker/**"
-    ]
   }
 }
