@@ -33,12 +33,7 @@ function TabGroups({ reloadUnitData, openGroups, setOpenGroups }: Props) {
     savePosition
   } = useContext(UnitContext)
 
-  const isManager = requireRole(
-    roles,
-    'ADMIN',
-    'SERVICE_WORKER',
-    'UNIT_SUPERVISOR'
-  )
+  const isUnitSupervisor = requireRole(roles, 'ADMIN', 'UNIT_SUPERVISOR')
 
   if (unitInformation.isFailure || unitData.isFailure) {
     return <ErrorSegment />
@@ -52,7 +47,7 @@ function TabGroups({ reloadUnitData, openGroups, setOpenGroups }: Props) {
     <FixedSpaceColumn>
       <ContentArea opaque>
         <MissingGroupPlacements
-          canManageChildren={isManager}
+          canManageChildren={isUnitSupervisor}
           groups={unitData.value.groups}
           missingGroupPlacements={unitData.value.missingGroupPlacements}
           backupCares={unitData.value.backupCares}
@@ -64,8 +59,8 @@ function TabGroups({ reloadUnitData, openGroups, setOpenGroups }: Props) {
       <ContentArea opaque>
         <Groups
           unit={unitInformation.value.daycare}
-          canManageGroups={isManager}
-          canManageChildren={isManager}
+          canManageGroups={isUnitSupervisor}
+          canManageChildren={isUnitSupervisor}
           filters={filters}
           setFilters={setFilters}
           groups={unitData.value.groups}
