@@ -3,11 +3,26 @@ import styled from 'styled-components'
 import { defaultMargins } from '@evaka/lib-components/src/white-space'
 import colors from '@evaka/lib-components/src/colors'
 import { FooterContent } from '~Footer'
+import { MapContainer, Marker, TileLayer } from 'react-leaflet'
+import { PublicUnit } from '@evaka/lib-common/src/api-types/units/PublicUnit'
 
-export default React.memo(function SearchSection() {
+export interface Props {
+  units: PublicUnit[]
+}
+
+export default React.memo(function MapBox({ units }: Props) {
   return (
     <Wrapper className="map-box">
-      <Map />
+      <Map center={[60.184147, 24.704897]} zoom={12}>
+        <TileLayer
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        />
+        {units.map(({ id, location }) => {
+          if (location?.lat == null || location?.lon == null) return null
+          return <Marker key={id} position={[location.lat, location.lon]} />
+        })}
+      </Map>
       <FooterWrapper>
         <FooterContent />
       </FooterWrapper>
@@ -27,11 +42,10 @@ const Wrapper = styled.div`
   align-items: stretch;
 `
 
-const Map = styled.div`
+const Map = styled(MapContainer)`
   flex-grow: 1;
   width: 100%;
   min-height: 500px;
-  background-color: #c1e2c9;
 `
 
 const FooterWrapper = styled.div`

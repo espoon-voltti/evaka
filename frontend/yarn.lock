@@ -1541,6 +1541,7 @@ __metadata:
     "@sentry/browser": ^5.11.1
     "@sentry/webpack-plugin": ^1.14.0
     "@types/jest": ^24.0.23
+    "@types/leaflet": ^1.5.21
     "@types/react": ^17.0.1
     "@types/react-dom": ^17.0.0
     "@types/react-router-dom": ^5.1.7
@@ -1558,11 +1559,13 @@ __metadata:
     html-webpack-plugin: ^5.0.0
     jest: ^24.9.0
     jest-junit: ^10.0.0
+    leaflet: ^1.7.1
     lodash: ^4.17.15
     postcss-loader: ^5.0.0
     postcss-preset-env: ^6.7.0
     react: ^17.0.1
     react-dom: ^17.0.1
+    react-leaflet: ^3.1.0
     react-router-dom: ^5.1.2
     seamless-scroll-polyfill: 1.2.3
     style-loader: ^2.0.0
@@ -2808,6 +2811,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@react-leaflet/core@npm:^1.0.2":
+  version: 1.0.2
+  resolution: "@react-leaflet/core@npm:1.0.2"
+  peerDependencies:
+    leaflet: ^1.7.1
+    react: ^17.0.1
+    react-dom: ^17.0.1
+  checksum: d0819720426ae84df87eb156e6477d0bc9060f1715eeadebc774ee630124d5b94155ce007becfe62f2bee854f8bc982b5b2b862b3b77d0654ed88265f572cb30
+  languageName: node
+  linkType: hard
+
 "@scarf/scarf@npm:^1.1.0":
   version: 1.1.0
   resolution: "@scarf/scarf@npm:1.1.0"
@@ -3543,6 +3557,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/geojson@npm:*":
+  version: 7946.0.7
+  resolution: "@types/geojson@npm:7946.0.7"
+  checksum: b0a614f58a169069d9978af24c4b816bc7140a722829d8786ad1ff22d8362b429c56170326c836ce661a0307f8e35820a055966c2eedc21b62671a56c472263e
+  languageName: node
+  linkType: hard
+
 "@types/glob-base@npm:^0.3.0":
   version: 0.3.0
   resolution: "@types/glob-base@npm:0.3.0"
@@ -3666,6 +3687,15 @@ __metadata:
   version: 0.0.29
   resolution: "@types/json5@npm:0.0.29"
   checksum: 66e9ac0143ec521522c7bb670301e9836ee886207eeed1aab6d4854a1b19b404ab3a54cd8d449f9b1f13acc357f540be96f8ac2d1e86e301eab52ae0f9a4066f
+  languageName: node
+  linkType: hard
+
+"@types/leaflet@npm:^1.5.21":
+  version: 1.5.21
+  resolution: "@types/leaflet@npm:1.5.21"
+  dependencies:
+    "@types/geojson": "*"
+  checksum: 414fd1e228285439c60e216eb9667671c68c507bd86a27cdf9fecbcef5a10b4f9331b40276ea4583ab6803844398f38f4fb8fb23b2d5cf6e7bedbbae67e35670
   languageName: node
   linkType: hard
 
@@ -14965,6 +14995,13 @@ fsevents@~2.3.1:
   languageName: node
   linkType: hard
 
+"leaflet@npm:^1.7.1":
+  version: 1.7.1
+  resolution: "leaflet@npm:1.7.1"
+  checksum: 7a841174dc3c8e135a2ba9a81cdd8145ef4c00e516eb558281ea47b20499f94ddab58a76a72ee15104e0dce88a07ae91fe933cfab75b569c5ed0770497aa7d99
+  languageName: node
+  linkType: hard
+
 "left-pad@npm:^1.3.0":
   version: 1.3.0
   resolution: "left-pad@npm:1.3.0"
@@ -19325,6 +19362,19 @@ fsevents@~2.3.1:
   version: 17.0.1
   resolution: "react-is@npm:17.0.1"
   checksum: 5a83dfc78e7adcb93d632bf367b0733db650e3abd2e9c57c33b87e50d201212c1884b0d7bcf13e692f1556189fa1b87f9f3e0ba10fe858fd6aebe83ed4fcd1ea
+  languageName: node
+  linkType: hard
+
+"react-leaflet@npm:^3.1.0":
+  version: 3.1.0
+  resolution: "react-leaflet@npm:3.1.0"
+  dependencies:
+    "@react-leaflet/core": ^1.0.2
+  peerDependencies:
+    leaflet: ^1.7.1
+    react: ^17.0.1
+    react-dom: ^17.0.1
+  checksum: 983744e95dd29891f97cd5977feb9c6eafe97c2abf9f8ca63cbc93e17311b80beac211d9f6dc860aab3fffae62ce17382eca37f61b3a36229b3c23f86365d948
   languageName: node
   linkType: hard
 

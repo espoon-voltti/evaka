@@ -124,7 +124,7 @@ export default React.memo(function MapView() {
           />
         )}
         <MapContainer>
-          <MapBox />
+          <MapBox units={filteredUnits.getOrElse([])} />
         </MapContainer>
       </FlexContainer>
     </FullScreen>

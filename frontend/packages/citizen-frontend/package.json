@@ -22,9 +22,11 @@
     "@sentry/browser": "^5.11.1",
     "axios": "^0.21.1",
     "date-fns": "^2.17.0",
+    "leaflet": "^1.7.1",
     "lodash": "^4.17.15",
     "react": "^17.0.1",
     "react-dom": "^17.0.1",
+    "react-leaflet": "^3.1.0",
     "react-router-dom": "^5.1.2",
     "seamless-scroll-polyfill": "1.2.3",
     "styled-components": "5.2.1"
@@ -32,6 +34,7 @@
   "devDependencies": {
     "@sentry/webpack-plugin": "^1.14.0",
     "@types/jest": "^24.0.23",
+    "@types/leaflet": "^1.5.21",
     "@types/react": "^17.0.1",
     "@types/react-dom": "^17.0.0",
     "@types/react-router-dom": "^5.1.7",
