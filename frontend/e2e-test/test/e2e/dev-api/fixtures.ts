@@ -88,7 +88,8 @@ export const clubFixture: Daycare = {
   daycareApplyPeriod: null,
   preschoolApplyPeriod: null,
   clubApplyPeriod: new DateRange(LocalDate.of(2020, 3, 1), null),
-  providerType: 'MUNICIPAL'
+  providerType: 'MUNICIPAL',
+  roundTheClock: true
 }
 
 export const daycareFixture: Daycare = {
@@ -104,7 +105,8 @@ export const daycareFixture: Daycare = {
   decisionPreschoolName: 'Päiväkoti päätöksellä',
   decisionHandler: 'Käsittelijä',
   decisionHandlerAddress: 'Käsittelijän osoite',
-  providerType: 'MUNICIPAL'
+  providerType: 'MUNICIPAL',
+  roundTheClock: true
 }
 
 export const daycare2Fixture: Daycare = {
@@ -120,7 +122,8 @@ export const daycare2Fixture: Daycare = {
   decisionPreschoolName: 'Päiväkoti 2 päätöksellä',
   decisionHandler: 'Käsittelijä 2',
   decisionHandlerAddress: 'Käsittelijän 2 osoite',
-  providerType: 'MUNICIPAL'
+  providerType: 'MUNICIPAL',
+  roundTheClock: true
 }
 
 export const preschoolFixture: Daycare = {
@@ -136,7 +139,8 @@ export const preschoolFixture: Daycare = {
   decisionPreschoolName: 'Eskari päätöksellä',
   decisionHandler: 'Käsittelijä',
   decisionHandlerAddress: 'Käsittelijän osoite',
-  providerType: 'MUNICIPAL'
+  providerType: 'MUNICIPAL',
+  roundTheClock: true
 }
 
 export const enduserGuardianFixture: ApplicationPersonDetail = {
@@ -763,7 +767,8 @@ export class Fixture {
       decisionPreschoolName: `decisionPreschoolName_${id}`,
       decisionHandler: `decisionHandler_${id}`,
       decisionHandlerAddress: `decisionHandlerAddress_${id}`,
-      providerType: 'MUNICIPAL'
+      providerType: 'MUNICIPAL',
+      roundTheClock: true
     })
   }
 
