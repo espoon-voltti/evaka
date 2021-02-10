@@ -383,7 +383,7 @@ export default React.memo(function FileUpload({
                 <FileDeleteButton
                   icon={faTimes}
                   onClick={() => deleteFile(file)}
-                  aria-label={`${t.fileUpload.deleteFile} ${file.name}`}
+                  altText={`${t.fileUpload.deleteFile} ${file.name}`}
                 />
               </FileHeader>
               {inProgress(file) && (
