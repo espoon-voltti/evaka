@@ -4,6 +4,7 @@
 
 import { ClientFunction, Selector, t } from 'testcafe'
 import { Daycare } from '../../../dev-api/types'
+import { selectFirstOption } from '../../../utils/helpers'
 
 export default class ChildInformationPage {
   readonly serviceNeedElement = (root: Selector) => ({
@@ -209,11 +210,10 @@ export default class ChildInformationPage {
       await t.click(this.placementsCollapsible)
     }
     await t.click(this.newPlacementButton)
-    await t.typeText(
-      this.placementModal.find('#react-select-3-input'),
+    await selectFirstOption(
+      this.placementModal.find('[data-qa="unit-select"]'),
       unitName
     )
-    await t.click(this.placementModal.find('[id^="react-select-3-option-"'))
     await t.typeText(this.placementModalStartDateInput, startDate, {
       replace: true
     })

@@ -5,7 +5,7 @@
 import { t, Selector } from 'testcafe'
 import config from '../../config'
 import { ApplicationType } from '@evaka/lib-common/src/api-types/application/enums'
-import { Checkbox } from '../../utils/helpers'
+import { Checkbox, selectFirstOption } from '../../utils/helpers'
 
 type CareType = 'DAYCARE' | 'PRESCHOOL' | 'PREPARATORY' | 'CLUB'
 
@@ -53,10 +53,7 @@ export class UnitDetailsPage {
   }
 
   async chooseArea(area: string) {
-    const input = Selector('#react-select-2-input')
-    await t.click(input)
-    await t.typeText(input, area)
-    await t.click(Selector('[id^="react-select-2-option-"'))
+    await selectFirstOption(Selector('[data-qa="area-select"]'), area)
   }
 
   async toggleCareType(type: CareType) {

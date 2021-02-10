@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { ClientFunction } from 'testcafe'
+import { t, ClientFunction } from 'testcafe'
 import * as testcafe from 'testcafe'
 
 export const scrollTo = ClientFunction((x: number, y: number) => {
@@ -52,4 +52,14 @@ export class Checkbox {
   get exists(): Promise<boolean> {
     return this.selector.exists
   }
+}
+
+export const selectFirstOption = async (
+  container: Selector,
+  searchString: string
+) => {
+  await t.click(container)
+  const input = container.find('input')
+  await t.typeText(input, searchString)
+  await t.click(container.find('[id*="-option-"]'))
 }
