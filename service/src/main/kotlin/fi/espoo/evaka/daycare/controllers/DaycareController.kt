@@ -100,7 +100,7 @@ class DaycareController(
     ): ResponseEntity<DaycareGroup> {
         Audit.UnitGroupsCreate.log(targetId = daycareId)
         acl.getRolesForUnit(user, daycareId)
-            .requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR)
+            .requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR)
 
         return db.transaction { daycareService.createGroup(it, daycareId, body.name, body.startDate, body.initialCaretakers) }
             .let { created(it, URI.create("/$daycareId/groups/${it.id}")) }
@@ -121,7 +121,7 @@ class DaycareController(
     ): ResponseEntity<Unit> {
         Audit.UnitGroupsUpdate.log(targetId = groupId)
         acl.getRolesForUnitGroup(user, groupId)
-            .requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR)
+            .requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR)
 
         db.transaction { it.handle.updateGroup(groupId, body.name, body.startDate, body.endDate) }
 
@@ -176,7 +176,7 @@ class DaycareController(
     ): ResponseEntity<Unit> {
         Audit.UnitGroupsCaretakersCreate.log(targetId = groupId)
         acl.getRolesForUnitGroup(user, groupId)
-            .requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR)
+            .requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR)
 
         db.transaction {
             caretakerService.insert(
@@ -201,7 +201,7 @@ class DaycareController(
     ): ResponseEntity<Unit> {
         Audit.UnitGroupsCaretakersUpdate.log(targetId = id)
         acl.getRolesForUnitGroup(user, groupId)
-            .requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR)
+            .requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR)
 
         db.transaction {
             caretakerService.update(
@@ -226,7 +226,7 @@ class DaycareController(
     ): ResponseEntity<Unit> {
         Audit.UnitGroupsCaretakersDelete.log(targetId = id)
         acl.getRolesForUnitGroup(user, groupId)
-            .requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR)
+            .requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR)
 
         db.transaction {
             caretakerService.delete(

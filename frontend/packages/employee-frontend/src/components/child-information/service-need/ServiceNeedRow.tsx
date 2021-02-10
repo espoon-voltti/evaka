@@ -15,7 +15,6 @@ import Toolbar from '~components/common/Toolbar'
 import LabelValueList from '~components/common/LabelValueList'
 import { capitalizeFirstLetter, scrollToRef } from 'utils'
 import { removeServiceNeed } from 'api/child/service-needs'
-import { ALL_ROLES_BUT_STAFF } from 'utils/roles'
 
 export interface Props {
   serviceNeed: ServiceNeed
