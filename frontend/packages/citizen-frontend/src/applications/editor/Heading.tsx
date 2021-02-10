@@ -36,8 +36,8 @@ export default React.memo(function Heading({
   return (
     <ContentArea opaque paddingVertical="L">
       <H1 noMargin data-qa="application-type-title">
-        {t.applications.editor.heading.title[type]}{' '}
-        {transferApplication && `(${t.applicationsList.transferApplication})`}
+        {t.applications.editor.heading.title[type]}
+        {transferApplication && ` (${t.applicationsList.transferApplication})`}
       </H1>
 
       <H2 data-qa="application-child-name-title">

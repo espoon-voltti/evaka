@@ -186,9 +186,9 @@ export default React.memo(function ChildApplicationsBlock({
             <React.Fragment key={applicationId}>
               <Gap size="L" />
               <H3 noMargin data-qa={`title-application-type-${applicationId}`}>
-                {t.applicationsList.type[type]}{' '}
+                {t.applicationsList.type[type]}
                 {transferApplication &&
-                  `(${t.applicationsList.transferApplication})`}
+                  ` (${t.applicationsList.transferApplication})`}
               </H3>
               <Gap size="m" />
               <ListGrid labelWidth="max-content" rowGap="s" columnGap="L">
