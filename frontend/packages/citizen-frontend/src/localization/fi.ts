@@ -98,6 +98,12 @@ export default {
         'Lapsella on jo samantyyppinen, keskeneräinen hakemus. Palaa Hakemukset-näkymään ja muokkaa olemassa olevaa hakemusta tai ota yhteyttä palveluohjaukseen.',
       applicationInfo:
         'Hakemukseen voi tehdä muutoksia niin kauan kuin hakemusta ei ole otettu käsittelyyn. Tämän jälkeen muutokset hakemukseen tehdään ottamalla yhteyttä varhaiskasvatuksen palveluohjaukseen (puh. 09 816 31000). Voit perua jo tehdyn hakemuksen ilmoittamalla siitä sähköpostilla varhaiskasvatuksen palveluohjaukseen <a href="mailto:varhaiskasvatuksen.palveluohjaus@espoo.fi">varhaiskasvatuksen.palveluohjaus@espoo.fi</a>.',
+      transferApplicationInfo: {
+        DAYCARE:
+          'Lapsella on jo paikka Espoon varhaiskasvatuksessa. Tällä hakemuksella voit hakea siirtoa toiseen varhaiskasvatusta tarjoavaan yksikköön Espoossa.',
+        PRESCHOOL:
+          'Lapsella on jo esiopetuspaikka. Tällä hakemuksella voit hakea esiopetukseen liittyvää varhaiskasvatusta tai siirtoa toiseen esiopetusta tarjoavaan yksikköön.'
+      },
       create: 'Tee hakemus'
     },
     editor: {
