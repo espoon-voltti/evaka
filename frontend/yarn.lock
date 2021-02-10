@@ -1767,6 +1767,7 @@ __metadata:
     core-js: ^3.8.3
     date-fns: ^2.17.0
     dateformat: ^3.0.0
+    flatpickr: ^4.6.6
     geojson-utils: ^1.1.0
     intl: ^1.2.5
     jest-expect-message: ^1.0.2
