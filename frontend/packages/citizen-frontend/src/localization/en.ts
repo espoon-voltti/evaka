@@ -158,13 +158,13 @@ const en: Translations = {
           modified: 'Last modified'
         },
         attachmentBox: {
-          nb: 'Please note!',
+          nb: 'Note!',
           headline:
-            ' If you add attachments to the following sections online, your application will be processed more quickly as the processing period will begin once we have received the required attachments.',
+            'If you add attachments to the following sections online, your application will be processed more quickly as the processing period will begin once we have received the required attachments.',
           urgency: 'Application is urgent',
           shiftCare: 'Evening and round-the-clock care',
           goBackLinkText: 'Return back to application',
-          goBackRestText: ' to add the attachments.'
+          goBackRestText: 'to add the attachments.'
         },
         serviceNeed: {
           title: 'Service need',
@@ -238,9 +238,9 @@ const en: Translations = {
         contactInfo: {
           title: 'Personal information',
           child: {
-            title: 'Child´s information',
-            name: 'Child’s name',
-            ssn: 'Child’s personal identity code',
+            title: "Child's information",
+            name: "Child's name",
+            ssn: "Child's personal identity code",
             streetAddress: 'Home address',
             isAddressChanging: 'Address is about to change',
             hasFutureAddress:
@@ -286,7 +286,7 @@ const en: Translations = {
           fridgeChildren: {
             title:
               'Other children under 18 years of age living in the same household.',
-            name: 'Child`s name',
+            name: "Child's name",
             ssn: 'Person identification code',
             noOtherChildren: 'No other children'
           }
@@ -486,10 +486,10 @@ const en: Translations = {
         title: 'Personal information',
         info:
           "The personal information has been retrieved from the population data services and cannot be changed with this application. If the personal information is incorrect, please update the information on https://dvv.fi/en/certificates-from-the-population-information-system. If your address is about to change, you can add the new address in a separate field in the application. Add a future address for both the child and guardian. The address information will be official only when it has been updated to the database of the Digital and Population Data Services Agency. Decisions on the child's early childhood or pre-primary education place will be automatically sent to another guardian who lives at a different address based on the Population Information System.",
-        childInfoTitle: 'Child´s information',
-        childFirstName: 'Child’s first name(s)',
-        childLastName: 'Child’s last name',
-        childSSN: 'Child’s personal identity code',
+        childInfoTitle: "Child's information",
+        childFirstName: "Child's first name(s)",
+        childLastName: "Child's last name",
+        childSSN: "Child's personal identity code",
         homeAddress: 'Home address',
         moveDate: 'Date of move',
         street: 'Street address',

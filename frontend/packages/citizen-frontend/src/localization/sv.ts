@@ -162,11 +162,11 @@ const sv: Translations = {
         attachmentBox: {
           nb: 'Obs!',
           headline:
-            ' Om du lägger till bilagor elektroniskt i följande punkter, behandlas din ansökan snabbare. Behandlingstiden börjar när bilagorna kommer in.',
+            'Om du lägger till bilagor elektroniskt i följande punkter, behandlas din ansökan snabbare. Behandlingstiden börjar när bilagorna kommer in.',
           urgency: 'Ansökningen är brådskande',
           shiftCare: 'Kvälls- och skiftesvård',
           goBackLinkText: 'Återvänd tillbaka till ansökan',
-          goBackRestText: ' för att lägga till bilagor.'
+          goBackRestText: 'för att lägga till bilagor.'
         },
         serviceNeed: {
           title: 'Behov av småbarnspedagogisk verksamhet',
