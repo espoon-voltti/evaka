@@ -17,5 +17,10 @@ e2e-test/screenshots/
 .yalc
 yalc.lock
 **/storybook-build/
-.yarn
-.yarnrc
+
+.yarn/*
+!.yarn/releases
+!.yarn/plugins
+!.yarn/sdks
+!.yarn/versions
+.pnp.*
