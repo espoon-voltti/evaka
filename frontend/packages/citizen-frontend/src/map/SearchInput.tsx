@@ -1,19 +1,34 @@
-import React, { useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
+import styled from 'styled-components'
 import ReactSelect from 'react-select'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import classNames from 'classnames'
 import { Result, Success } from '@evaka/lib-common/src/api'
+import { PublicUnit } from '@evaka/lib-common/src/api-types/units/PublicUnit'
 import { useRestApi } from '@evaka/lib-common/src/utils/useRestApi'
+import colors from '@evaka/lib-components/src/colors'
+import { defaultMargins } from '@evaka/lib-components/src/white-space'
+import {
+  FixedSpaceColumn,
+  FixedSpaceRow
+} from '@evaka/lib-components/src/layout/flex-helpers'
+import { fasMapMarkerAlt } from '@evaka/lib-icons'
 import { queryAutocomplete } from '~map/api'
 import { MapAddress } from '~map/MapView'
 import { useTranslation } from '~localization'
 
 type Props = {
+  allUnits: Result<PublicUnit[]>
   selectedAddress: MapAddress | null
   setSelectedAddress: (address: MapAddress | null) => void
+  setSelectedUnit: (u: PublicUnit | null) => void
 }
 
 export default React.memo(function SearchInput({
+  allUnits,
   selectedAddress,
-  setSelectedAddress
+  setSelectedAddress,
+  setSelectedUnit
 }: Props) {
   const t = useTranslation()
   const [inputString, setInputString] = useState('')
@@ -30,6 +45,43 @@ export default React.memo(function SearchInput({
     }
   }, [inputString])
 
+  const getUnitOptions = useCallback(() => {
+    if (inputString.length < 3 || !allUnits.isSuccess) return []
+
+    return allUnits.value
+      .filter((u) => u.name.toLowerCase().includes(inputString.toLowerCase()))
+      .slice(0, 5)
+      .map<MapAddress>((u) => ({
+        unit: {
+          id: u.id,
+          name: u.name
+        },
+        streetAddress: u.streetAddress,
+        postalCode: u.postalCode,
+        postOffice: u.postOffice,
+        coordinates: u.location ?? { lat: 0, lon: 0 }
+      }))
+  }, [allUnits, inputString])
+
+  const selectOption = (option: MapAddress) => {
+    if (option.unit) {
+      setSelectedAddress(null)
+      if (allUnits.isSuccess) {
+        setSelectedUnit(
+          allUnits.value.find((u) => u.id === option.unit?.id) ?? null
+        )
+      }
+    } else {
+      setSelectedUnit(null)
+      setSelectedAddress(option)
+    }
+  }
+
+  const clearSelection = () => {
+    setSelectedAddress(null)
+    setSelectedUnit(null)
+  }
+
   return (
     <div>
       <ReactSelect
@@ -39,23 +91,103 @@ export default React.memo(function SearchInput({
         isLoading={addressOptions.isLoading}
         inputValue={inputString}
         onInputChange={(val: string) => setInputString(val)}
-        options={addressOptions.isSuccess ? addressOptions.value : []}
+        options={[
+          {
+            options: getUnitOptions()
+          },
+          {
+            options: addressOptions.isSuccess ? addressOptions.value : []
+          }
+        ]}
         getOptionLabel={(option) =>
-          `${option.streetAddress}, ${option.postOffice ?? ''}`
+          option.unit
+            ? option.unit.name
+            : `${option.streetAddress}, ${option.postOffice ?? ''}`
         }
         value={selectedAddress}
         onChange={(selected) => {
           if (!selected) {
-            setSelectedAddress(null)
+            clearSelection()
           } else if ('length' in selected) {
-            setSelectedAddress(selected.length ? selected[0] : null)
+            if (selected.length > 0) {
+              selectOption(selected[0])
+            } else clearSelection()
           } else {
-            setSelectedAddress(selected)
+            selectOption(selected)
           }
         }}
         placeholder={t.map.searchPlaceholder}
         noOptionsMessage={() => t.map.noResults}
+        components={{
+          Option: function Option({ innerRef, innerProps, ...props }) {
+            const option = props.data as MapAddress
+
+            return (
+              <OptionWrapper
+                ref={innerRef}
+                {...innerProps}
+                key={
+                  option.unit?.id ??
+                  `${option.streetAddress}, ${option.postOffice}`
+                }
+                className={classNames({ focused: props.isFocused })}
+              >
+                <OptionContents
+                  label={
+                    option.unit?.name ??
+                    `${option.streetAddress}, ${option.postOffice}`
+                  }
+                  secondaryText={
+                    option.unit
+                      ? `${option.streetAddress}, ${option.postOffice}`
+                      : undefined
+                  }
+                  isUnit={option.unit !== undefined}
+                />
+              </OptionWrapper>
+            )
+          }
+        }}
       />
     </div>
   )
 })
+
+const OptionWrapper = styled.div`
+  cursor: pointer;
+  &:hover,
+  &.focused {
+    background-color: ${colors.blues.lighter};
+  }
+  padding: ${defaultMargins.xxs} ${defaultMargins.s};
+  margin-bottom: ${defaultMargins.xs};
+`
+
+const OptionContents = React.memo(function Option({
+  label,
+  secondaryText,
+  isUnit
+}: {
+  label: string
+  secondaryText?: string
+  isUnit: boolean
+}) {
+  return (
+    <FixedSpaceRow alignItems={'center'}>
+      {isUnit && (
+        <FontAwesomeIcon icon={fasMapMarkerAlt} color={colors.primary} />
+      )}
+      <FixedSpaceColumn spacing="zero">
+        <span>{label}</span>
+        {secondaryText && <SecondaryText>{secondaryText}</SecondaryText>}
+      </FixedSpaceColumn>
+    </FixedSpaceRow>
+  )
+})
+
+const SecondaryText = styled.span`
+  font-size: 14px;
+  line-height: 21px;
+  font-weight: 600;
+  color: ${colors.greyscale.dark};
+`

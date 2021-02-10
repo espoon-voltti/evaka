@@ -11,6 +11,7 @@ import { CareTypeOption, MapAddress, ProviderTypeOption } from '~map/MapView'
 import { UnitWithDistance } from '~map/distances'
 
 type Props = {
+  allUnits: Result<PublicUnit[]>
   filteredUnits: Result<PublicUnit[]>
   unitsWithDistances: Result<UnitWithDistance[]>
   careType: CareTypeOption
@@ -25,10 +26,11 @@ type Props = {
   setMobileMode: (mode: MobileMode) => void
   selectedAddress: MapAddress | null
   setSelectedAddress: (address: MapAddress | null) => void
-  setSelectedUnit: (u: PublicUnit) => void
+  setSelectedUnit: (u: PublicUnit | null) => void
 }
 
 export default React.memo(function UnitSearchPanel({
+  allUnits,
   filteredUnits,
   unitsWithDistances,
   careType,
@@ -48,6 +50,7 @@ export default React.memo(function UnitSearchPanel({
   return (
     <Wrapper>
       <SearchSection
+        allUnits={allUnits}
         careType={careType}
         setCareType={setCareType}
         languages={languages}
@@ -60,6 +63,7 @@ export default React.memo(function UnitSearchPanel({
         setMobileMode={setMobileMode}
         selectedAddress={selectedAddress}
         setSelectedAddress={setSelectedAddress}
+        setSelectedUnit={setSelectedUnit}
       />
       <Gap size="xs" />
       <UnitList

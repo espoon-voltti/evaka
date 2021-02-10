@@ -113,7 +113,7 @@ const OptionWrapper = styled.div`
   cursor: pointer;
   &:hover,
   &.focused {
-    background-color: ${colors.blues.light};
+    background-color: ${colors.blues.lighter};
   }
   padding: ${defaultMargins.xxs} ${defaultMargins.s};
 `

@@ -28,6 +28,10 @@ export type MapAddress = {
   streetAddress: string
   postalCode: string
   postOffice: string
+  unit?: {
+    id: string
+    name: string
+  }
 }
 
 export type CareTypeOption = 'CLUB' | 'DAYCARE' | 'PRESCHOOL'
@@ -101,6 +105,7 @@ export default React.memo(function MapView() {
           />
         ) : (
           <UnitSearchPanel
+            allUnits={unitsResult}
             filteredUnits={filteredUnits}
             unitsWithDistances={unitsWithDistances}
             careType={careType}

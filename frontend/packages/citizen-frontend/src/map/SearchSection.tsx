@@ -1,5 +1,7 @@
 import React, { useState } from 'react'
 import styled from 'styled-components'
+import { Result } from '@evaka/lib-common/src/api'
+import { PublicUnit } from '@evaka/lib-common/src/api-types/units/PublicUnit'
 import { UnitLanguage } from '@evaka/lib-common/src/api-types/units/enums'
 import { ContentArea } from '@evaka/lib-components/src/layout/Container'
 import {
@@ -27,6 +29,7 @@ import SearchInput from '~map/SearchInput'
 import { CareTypeOption, MapAddress, ProviderTypeOption } from '~map/MapView'
 
 type Props = {
+  allUnits: Result<PublicUnit[]>
   careType: CareTypeOption
   setCareType: (c: CareTypeOption) => void
   languages: UnitLanguage[]
@@ -39,9 +42,11 @@ type Props = {
   setMobileMode: (mode: MobileMode) => void
   selectedAddress: MapAddress | null
   setSelectedAddress: (address: MapAddress | null) => void
+  setSelectedUnit: (u: PublicUnit | null) => void
 }
 
 export default React.memo(function SearchSection({
+  allUnits,
   careType,
   setCareType,
   languages,
@@ -53,7 +58,8 @@ export default React.memo(function SearchSection({
   mobileMode,
   setMobileMode,
   selectedAddress,
-  setSelectedAddress
+  setSelectedAddress,
+  setSelectedUnit
 }: Props) {
   const t = useTranslation()
 
@@ -67,8 +73,10 @@ export default React.memo(function SearchSection({
       <FixedSpaceColumn spacing="xs">
         <Label>{t.map.searchLabel}</Label>
         <SearchInput
+          allUnits={allUnits}
           selectedAddress={selectedAddress}
           setSelectedAddress={setSelectedAddress}
+          setSelectedUnit={setSelectedUnit}
         />
       </FixedSpaceColumn>
 

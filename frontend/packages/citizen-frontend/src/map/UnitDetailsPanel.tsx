@@ -184,7 +184,12 @@ const Wrapper = styled.div`
   .mobile-tabs {
     display: none;
   }
+
+  @media (max-width: ${mapViewBreakpoint}) {
+    width: 100%;
+  }
 `
+
 const Area = styled(ContentArea)`
   flex-grow: 1;
   box-sizing: border-box;
