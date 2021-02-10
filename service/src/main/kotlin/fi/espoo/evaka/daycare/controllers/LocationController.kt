@@ -188,7 +188,7 @@ data class AreaJSON(
 )
 
 fun Handle.getAreas(): List<CareArea> = createQuery(
-    // language=SQL
+    // language=sql
     """
 SELECT
   ca.id AS care_area_id, ca.name AS care_area_name, ca.short_name AS care_area_short_name,
@@ -197,10 +197,14 @@ SELECT
   u.type, u.url, u.provider_type, u.language, u.daycare_apply_period, u.preschool_apply_period, u.club_apply_period
 FROM care_area ca
 LEFT JOIN daycare u ON ca.id = u.care_area_id
-WHERE (u.daycare_apply_period IS NOT NULL OR u.preschool_apply_period IS NOT NULL OR u.club_apply_period IS NOT NULL )
-AND (u.closing_date IS NULL OR u.closing_date >= current_date)
+WHERE (
+    (u.club_apply_period && daterange(:now, null, '[]')) OR
+    (u.daycare_apply_period && daterange(:now, null, '[]')) OR
+    (u.preschool_apply_period && daterange(:now, null, '[]'))
+)
     """.trimIndent()
 )
+    .bind("now", LocalDate.now())
     .reduceRows(mutableMapOf<UUID, Pair<CareArea, MutableList<Location>>>()) { map, row ->
         val (_, locations) = map.computeIfAbsent(row.mapColumn("care_area_id")) { id ->
             Pair(
@@ -240,7 +244,6 @@ AND (:type = 'ALL' OR
     (:type = 'DAYCARE' AND '{CENTRE, FAMILY, GROUP_FAMILY}' && unit.type) OR
     (:type = 'PRESCHOOL' AND '{PRESCHOOL, PREPARATORY_EDUCATION}' && unit.type)
 )
-AND daterange(unit.opening_date, unit.closing_date) && daterange(current_date, null, '[]')
 ORDER BY name
     """.trimIndent()
 ).bindNullable("areaShortNames", areaShortNames.toTypedArray().takeIf { it.isNotEmpty() })

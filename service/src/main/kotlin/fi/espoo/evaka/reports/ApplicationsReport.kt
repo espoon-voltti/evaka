@@ -50,7 +50,7 @@ private fun Database.Read.getApplicationsRows(from: LocalDate, to: LocalDate): L
                 ch.id AS child_id,
                 date_part('year', age(:to, date_of_birth)) AS age
             FROM care_area ca
-            JOIN daycare u ON ca.id = u.care_area_id AND u.closing_date IS NULL
+            JOIN daycare u ON ca.id = u.care_area_id AND :from <= COALESCE(u.closing_date, 'infinity'::date)
             LEFT JOIN application_view a 
                 ON a.preferredunit = u.id 
                 AND a.status = ANY ('{SENT,WAITING_PLACEMENT,WAITING_DECISION}'::application_status_type[]) 
