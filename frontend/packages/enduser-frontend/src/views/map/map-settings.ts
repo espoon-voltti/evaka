@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import Vue from 'vue'
-import { config } from '@evaka/enduser-frontend/src/config'
+import { config } from '@/config'
 
 const mapSettings = new Vue({
   data: {

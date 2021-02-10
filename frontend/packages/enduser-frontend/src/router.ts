@@ -6,7 +6,7 @@ import Vue from 'vue'
 import Router from 'vue-router'
 import store from '@/store'
 import VersionContainer from '@/components/common/version-container.vue'
-import { config } from '@evaka/enduser-frontend/src/config'
+import { config } from '@/config'
 
 import MapView from '@/views/map/map-view.vue'
 import Applications from '@/views/applications/index.vue'

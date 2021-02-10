@@ -33,7 +33,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 <script>
   import MultiSelect from 'vue-multiselect'
   import _ from 'lodash'
-  import { config } from '@evaka/enduser-frontend/src/config'
+  import { config } from '@/config'
 
   export default {
     props: {
