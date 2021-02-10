@@ -29,6 +29,7 @@ import {
   fullDaycareForm,
   minimalDaycareForm
 } from '../../utils/application-forms'
+import { add } from 'date-fns'
 import CitizenDecisionsPage from '../../pages/citizen/citizen-decisions'
 import CitizenDecisionResponsePage from '../../pages/citizen/citizen-decision-response'
 
@@ -50,7 +51,7 @@ fixture('Citizen daycare applications create')
   })
   .afterEach(async (t) => {
     await logConsoleMessages(t)
-    await deleteApplication(applicationId)
+    if (applicationId) await deleteApplication(applicationId)
   })
   .after(async () => {
     await Fixture.cleanup()
@@ -198,4 +199,21 @@ test('Notification on transfer application is visible', async (t) => {
   await t
     .expect(citizenNewApplicationPage.transferApplicationNotification.visible)
     .ok()
+})
+
+test('Preferred start date can be moved earlier if application is not yet sent', async (t) => {
+  await t.useRole(enduserRole)
+  await t.click(citizenHomePage.nav.applications)
+  await citizenApplicationsPage.createApplication(
+    fixtures.enduserChildFixtureJari.id
+  )
+  await citizenNewApplicationPage.createApplication('DAYCARE')
+  applicationId = await citizenApplicationEditor.getApplicationId()
+
+  await citizenApplicationEditor.fillData(fullDaycareForm.form)
+  await citizenApplicationEditor.setPreferredStartDate(
+    add(new Date(), { months: 1 })
+  )
+  await citizenApplicationEditor.preferredStartDateInputInfo('')
+  await citizenApplicationEditor.saveAsDraft()
 })

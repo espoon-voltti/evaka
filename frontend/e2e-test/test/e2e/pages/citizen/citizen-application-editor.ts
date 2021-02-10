@@ -1,10 +1,18 @@
 import { t, ClientFunction, Selector } from 'testcafe'
 import { FormInput } from '../../utils/application-forms'
 import { Checkbox } from '../../utils/helpers'
+import { format } from 'date-fns'
 
 const getWindowLocation = ClientFunction(() => window.location)
 
 export default class CitizenApplicationEditor {
+  readonly preferredStartDateInput = Selector(
+    '[data-qa="preferredStartDate-input"]'
+  )
+  readonly preferredStartDateInputInfo = Selector(
+    '[data-qa="preferredStartDate-input-info"]'
+  )
+
   readonly applicationTypeTitle = Selector('[data-qa="application-type-title"]')
   readonly applicationChildNameTitle = Selector(
     '[data-qa="application-child-name-title"]'
@@ -16,6 +24,8 @@ export default class CitizenApplicationEditor {
     Selector(`[data-qa="${section}-section"]`)
   readonly applicationSectionHeader = (section: string) =>
     Selector(`[data-qa="${section}-section-header"]`)
+
+  readonly saveAsDraftButton = Selector('[data-qa="save-as-draft-btn"]')
 
   async getApplicationId() {
     const location = await getWindowLocation()
@@ -31,6 +41,10 @@ export default class CitizenApplicationEditor {
     await this.goToVerify()
     await new Checkbox(Selector('[data-qa="verify-checkbox"]')).click()
     await t.click('[data-qa="send-btn"]')
+  }
+
+  async saveAsDraft() {
+    await t.click(this.saveAsDraftButton)
   }
 
   async acknowledgeSendSuccess() {
@@ -149,5 +163,15 @@ export default class CitizenApplicationEditor {
         }
       }
     }
+  }
+
+  async setPreferredStartDate(date: Date) {
+    await t.typeText(this.preferredStartDateInput, format(date, 'dd.MM.yyyy'), {
+      replace: true
+    })
+  }
+
+  async assertPreferredStartDateInputInfo(expected: string) {
+    await t.expect(this.preferredStartDateInputInfo.textContent).eql(expected)
   }
 }

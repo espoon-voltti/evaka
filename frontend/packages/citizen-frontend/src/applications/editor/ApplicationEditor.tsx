@@ -299,6 +299,7 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
             text={t.applications.editor.actions.saveDraft}
             onClick={onSaveDraft}
             disabled={submitting}
+            dataQa="save-as-draft-btn"
           />
         )}
         {verifying ? (
@@ -307,6 +308,7 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
               text={t.applications.editor.actions.returnToEditBtn}
               onClick={() => setVerifying(false)}
               disabled={submitting}
+              dataQa="return-to-edit-btn"
             />
             {apiData.status === 'CREATED' ? (
               <Button
@@ -322,6 +324,7 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
                 onClick={onUpdate}
                 disabled={submitting || !verified}
                 primary
+                dataQa="save-btn"
               />
             )}
           </>
