@@ -26,8 +26,8 @@ export default function App() {
         <Localization>
           <OverlayContextProvider>
             <Header />
-            <Switch>
-              <main>
+            <main>
+              <Switch>
                 <Route exact path="/map" component={MapView} />
                 <Route
                   exact
@@ -60,8 +60,8 @@ export default function App() {
                   component={requireAuth(DecisionResponseList)}
                 />
                 <Route path="/" component={RedirectToEnduser} />
-              </main>
-            </Switch>
+              </Switch>
+            </main>
             <GlobalInfoDialog />
             <GlobalErrorDialog />
           </OverlayContextProvider>
