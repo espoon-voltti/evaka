@@ -17,6 +17,7 @@ type IconContainerProps = {
   color: string
   size: IconSize
   tabIndex?: number
+  'aria-hidden'?: 'true' | 'false' | undefined
 }
 
 const diameter = (px: number) => `
@@ -90,7 +91,7 @@ type RoundIconProps = BaseProps & {
   tabindex?: number
   role?: string
   'aria-label'?: string
-  'aria-hidden'?: string
+  'aria-hidden'?: 'true' | 'false' | undefined
 }
 
 function RoundIcon({
