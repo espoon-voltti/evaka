@@ -60,7 +60,7 @@ export default React.memo(function MapView() {
     setFilteredUnits(
       filterUnits(unitsResult, careType, languages, providerTypes, shiftCare)
     )
-  }, [unitsResult, careType, languages, 'PRESCHOOL', shiftCare])
+  }, [unitsResult, careType, languages, providerTypes, shiftCare])
 
   const [unitsWithDistances, setUnitsWithDistances] = useState<
     Result<UnitWithDistance[]>
@@ -179,7 +179,7 @@ const filterUnits = (
             !providerTypes.includes('PRIVATE_SERVICE_VOUCHER')
           ))
     )
-    .filter(() => !shiftCare) // todo: fix when supported by backend
+    .filter((u) => !shiftCare || u.roundTheClock)
 
   const sortedUnits = _.sortBy(filteredUnits, (u) => u.name)
   return Success.of(sortedUnits)

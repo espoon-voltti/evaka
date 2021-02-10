@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import styled from 'styled-components'
 import { addDays, isSaturday, isSunday } from 'date-fns'
 import { Result } from '@evaka/lib-common/src/api'
@@ -68,7 +68,7 @@ export default React.memo(function UnitDetailsPanel({
 
   const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.substr(1)
 
-  const routeLink = (() => {
+  const getRouteLink = useCallback(() => {
     if (!unit.location || !selectedAddress) return null
 
     const root = 'https://reittiopas.hsl.fi/reitti/'
@@ -86,12 +86,13 @@ export default React.memo(function UnitDetailsPanel({
     }
     arrival.setHours(9)
     arrival.setMinutes(0, 0, 0)
-    console.log(arrival.getTime())
     const params = `?arriveBy=true&time=${
       arrival.getTime() / 1000
     }&locale=${lang}`
     return root + start + '/' + end + params
-  })()
+  }, [selectedAddress, unit, lang])
+
+  const routeLink = getRouteLink()
 
   return (
     <Wrapper>
@@ -139,7 +140,9 @@ export default React.memo(function UnitDetailsPanel({
             <Gap size="s" />
             <Label>{t.map.shiftCareTitle}</Label>
             <Gap size="xs" />
-            <div>{t.map.shiftCareNo}</div> {/*fixme*/}
+            <div>
+              {unit.roundTheClock ? t.map.shiftCareYes : t.map.shiftCareNo}
+            </div>
             {unit.url && (
               <>
                 <Gap size="s" />

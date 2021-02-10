@@ -100,7 +100,7 @@ export const queryDistances = async (
         lat: ${location?.lat ?? 0},
         lon: ${location?.lon ?? 0}
       },
-      modes: "CAR"
+      modes: "WALK"
     ) {
       itineraries{
         legs {
@@ -167,7 +167,7 @@ export const queryDistance = async (
         lat: ${endLocations.lat},
         lon: ${endLocations.lon}
       },
-      modes: "CAR"
+      modes: "WALK"
     ) {
       itineraries{
         legs {

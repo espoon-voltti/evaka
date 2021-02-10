@@ -10,6 +10,7 @@ import { ContentArea } from '@evaka/lib-components/src/layout/Container'
 import InlineButton from '@evaka/lib-components/src/atoms/buttons/InlineButton'
 import { SpinnerSegment } from '@evaka/lib-components/src/atoms/state/Spinner'
 import ErrorSegment from '@evaka/lib-components/src/atoms/state/ErrorSegment'
+import { faAngleDown } from '@evaka/lib-icons'
 import { useTranslation } from '~localization'
 import UnitListItem from '~map/UnitListItem'
 import { formatDistance, UnitWithDistance } from '~map/distances'
@@ -48,6 +49,14 @@ export default React.memo(function UnitList({
       )
     : []
 
+  if (filteredUnits.isSuccess && filteredUnits.value.length === 0) {
+    return (
+      <Wrapper opaque className="unit-list">
+        <span>{t.map.noResults}</span>
+      </Wrapper>
+    )
+  }
+
   if (selectedAddress && !unitsWithDistances.isFailure) {
     return (
       <Wrapper opaque className="unit-list">
@@ -56,7 +65,7 @@ export default React.memo(function UnitList({
           <>
             <H3 noMargin>{t.map.nearestUnits}</H3>
             <Gap size="xxs" />
-            <Info>${t.map.distanceWalking}</Info>
+            <Info>{t.map.distanceWalking}</Info>
             <Gap size="s" />
             {accurateUnits.map((unit) => (
               <UnitListItem
@@ -81,12 +90,17 @@ export default React.memo(function UnitList({
                 ))}
               </>
             ) : (
-              <Centered>
-                <InlineButton
-                  onClick={() => setShowMoreUnits(true)}
-                  text={t.map.showMore}
-                />
-              </Centered>
+              <>
+                <Gap size="s" />
+
+                <Centered>
+                  <InlineButton
+                    onClick={() => setShowMoreUnits(true)}
+                    text={t.map.showMore}
+                    icon={faAngleDown}
+                  />
+                </Centered>
+              </>
             )}
           </>
         )}

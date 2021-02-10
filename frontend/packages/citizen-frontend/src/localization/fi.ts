@@ -27,6 +27,10 @@ export default {
       languages: {
         fi: 'suomenkielinen',
         sv: 'ruotsinkielinen'
+      },
+      languagesShort: {
+        fi: 'suomi',
+        sv: 'ruotsi'
       }
     },
     errors: {
@@ -66,6 +70,7 @@ export default {
     searchLabel: 'Hae osoitteella tai yksikön nimellä',
     searchPlaceholder: 'Esim. Kilontie 3 tai Purolan päiväkoti',
     address: 'Osoite',
+    noResults: 'Ei hakutuloksia',
     distanceWalking: 'Etäisyys valitusta osoitteesta kävellen',
     careType: 'Toimintamuoto',
     careTypePlural: 'Toimintamuodot',
@@ -95,7 +100,7 @@ export default {
     showLessFilters: 'Näytä vähemmän suodattimia',
     nearestUnits: 'Lähimmät yksiköt',
     moreUnits: 'Lisää yksiköitä',
-    showMore: 'Näytä lisää',
+    showMore: 'Näytä lisää hakutuloksia',
     mobileTabs: {
       map: 'Kartta',
       list: 'Lista yksiköistä'

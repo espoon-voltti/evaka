@@ -101,7 +101,7 @@ export default React.memo(function SearchSection({
         <Label>{t.map.language}</Label>
         <FixedSpaceRow>
           <SelectionChip
-            text={t.common.unit.languages.fi}
+            text={t.common.unit.languagesShort.fi}
             selected={languages.includes('fi')}
             onChange={(selected) => {
               const nextValue = languages.filter((l) => l !== 'fi')
@@ -110,7 +110,7 @@ export default React.memo(function SearchSection({
             }}
           />
           <SelectionChip
-            text={t.common.unit.languages.sv}
+            text={t.common.unit.languagesShort.sv}
             selected={languages.includes('sv')}
             onChange={(selected) => {
               const nextValue = languages.filter((l) => l !== 'sv')
@@ -127,10 +127,26 @@ export default React.memo(function SearchSection({
 
           <FixedSpaceColumn spacing="xs">
             <Label>{t.map.providerType}</Label>
-            <FixedSpaceFlexWrap>
+
+            <FixedSpaceRow spacing="s">
+              {(['MUNICIPAL', 'PURCHASED'] as ProviderTypeOption[]).map(
+                (type) => (
+                  <SelectionChip
+                    key={type}
+                    text={t.map.providerTypes[type]}
+                    selected={providerTypes.includes(type)}
+                    onChange={(selected) => {
+                      const nextValue = providerTypes.filter((t) => t !== type)
+                      if (selected) nextValue.push(type)
+                      setProviderTypes(nextValue)
+                    }}
+                  />
+                )
+              )}
+            </FixedSpaceRow>
+
+            <FixedSpaceRow spacing="s">
               {([
-                'MUNICIPAL',
-                'PURCHASED',
                 'PRIVATE',
                 'PRIVATE_SERVICE_VOUCHER'
               ] as ProviderTypeOption[]).map((type) => (
@@ -145,7 +161,7 @@ export default React.memo(function SearchSection({
                   }}
                 />
               ))}
-            </FixedSpaceFlexWrap>
+            </FixedSpaceRow>
           </FixedSpaceColumn>
 
           <Gap size="xs" />

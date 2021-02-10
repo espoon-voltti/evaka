@@ -6,7 +6,7 @@ import { UnitLanguage } from '@evaka/lib-common/src/api-types/units/enums'
 import { Gap } from '@evaka/lib-components/src/white-space'
 import SearchSection from '~map/SearchSection'
 import UnitList from '~map/UnitList'
-import { MobileMode } from '~map/const'
+import { mapViewBreakpoint, MobileMode } from '~map/const'
 import { CareTypeOption, MapAddress, ProviderTypeOption } from '~map/MapView'
 import { UnitWithDistance } from '~map/distances'
 
@@ -83,5 +83,9 @@ const Wrapper = styled.div`
 
   .mobile-tabs {
     display: none;
+  }
+
+  @media (max-width: ${mapViewBreakpoint}) {
+    width: 100%;
   }
 `

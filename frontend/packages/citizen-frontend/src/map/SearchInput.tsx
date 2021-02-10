@@ -34,6 +34,7 @@ export default React.memo(function SearchInput({
     <div>
       <ReactSelect
         isSearchable
+        isClearable
         closeMenuOnSelect
         isLoading={addressOptions.isLoading}
         inputValue={inputString}
@@ -53,6 +54,7 @@ export default React.memo(function SearchInput({
           }
         }}
         placeholder={t.map.searchPlaceholder}
+        noOptionsMessage={() => t.map.noResults}
       />
     </div>
   )

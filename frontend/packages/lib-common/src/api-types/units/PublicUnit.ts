@@ -11,9 +11,10 @@ export type PublicUnit = {
   streetAddress: string
   postalCode: string
   postOffice: string
-  phone: string | undefined
-  email: string | undefined
-  url: string | undefined
-  location: Coordinate | undefined
-  ghostUnit: boolean | undefined
+  phone: string | null
+  email: string | null
+  url: string | null
+  location: Coordinate | null
+  ghostUnit: boolean | null
+  roundTheClock: boolean
 }
