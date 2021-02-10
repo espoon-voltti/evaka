@@ -92,9 +92,7 @@
   "jest-junit": {
     "outputDirectory": "test-results/"
   },
-  "workspaces": {
-    "nohoist": [
-      "**/*"
-    ]
+  "installConfig": {
+    "hoistingLimits": "workspaces"
   }
 }

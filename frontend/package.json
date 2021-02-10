@@ -9,7 +9,6 @@
     "lint": "yarn wsrun --exclude-missing lint",
     "test": "yarn wsrun --exclude-missing test"
   },
-  "dependencies": {},
   "devDependencies": {
     "prettier": "^2.2.1",
     "wsrun": "^5.2.0"
