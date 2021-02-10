@@ -36,6 +36,7 @@ export default React.memo(function EditorSection(props: Props) {
                 content={props.validationErrors.toString()}
                 size="m"
                 color={colors.accents.orange}
+                aria-hidden="true"
               />
             ) : null}
           </TitleWrapper>
@@ -43,6 +44,7 @@ export default React.memo(function EditorSection(props: Props) {
       }
       opaque
       paddingVertical="L"
+      validationErrors={props.validationErrors}
     >
       {props.children}
     </CollapsibleContentArea>

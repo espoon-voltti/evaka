@@ -55,7 +55,7 @@ export default function ExpandingInfo({ children, info }: ExpandingInfoProps) {
   const [expanded, setExpanded] = useState<boolean>(false)
 
   return (
-    <>
+    <span aria-live="polite">
       <FixedSpaceRow spacing="xs">
         <div>{children}</div>
         <RoundIcon
@@ -63,6 +63,10 @@ export default function ExpandingInfo({ children, info }: ExpandingInfoProps) {
           color={colors.brandEspoo.espooTurquoise}
           size="s"
           onClick={() => setExpanded(!expanded)}
+          tabindex={0}
+          role="button"
+          // TODO: add translation
+          aria-label="Avaa lisätietokenttä"
         />
       </FixedSpaceRow>
       {expanded && (
@@ -84,6 +88,6 @@ export default function ExpandingInfo({ children, info }: ExpandingInfoProps) {
           </InfoBoxContentArea>
         </InfoBoxContainer>
       )}
-    </>
+    </span>
   )
 }

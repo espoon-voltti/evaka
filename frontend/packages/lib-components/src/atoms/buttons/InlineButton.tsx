@@ -12,7 +12,7 @@ import { defaultMargins } from '../../white-space'
 import { BaseProps } from '../../utils'
 import { defaultButtonTextStyle } from './button-commons'
 
-const StyledButton = styled.button`
+const StyledButton = styled.button<{ color?: string }>`
   width: fit-content;
   display: inline-block;
 
@@ -49,13 +49,14 @@ const StyledButton = styled.button`
   }
 
   ${defaultButtonTextStyle}
+  color: ${(p) => p.color ?? colors.primary};
 `
 
 interface InlineButtonProps extends BaseProps {
   onClick: () => unknown
   text: string
   altText?: string
-
+  color?: string
   icon?: IconDefinition
   disabled?: boolean
 }
@@ -67,7 +68,8 @@ function InlineButton({
   text,
   altText,
   icon,
-  disabled = false
+  disabled = false,
+  color
 }: InlineButtonProps) {
   return (
     <StyledButton
@@ -76,6 +78,7 @@ function InlineButton({
       onClick={onClick}
       disabled={disabled}
       aria-label={altText}
+      color={color}
     >
       {icon && <FontAwesomeIcon icon={icon} />}
       <span>{text}</span>

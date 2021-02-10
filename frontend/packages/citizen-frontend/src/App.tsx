@@ -26,40 +26,42 @@ export default function App() {
         <Localization>
           <OverlayContextProvider>
             <Header />
-            <Switch>
-              <Route exact path="/map" component={MapView} />
-              <Route
-                exact
-                path="/applications"
-                component={requireAuth(Applications)}
-              />
-              <Route
-                exact
-                path="/applications/new/:childId"
-                component={requireAuth(ApplicationCreation)}
-              />
-              <Route
-                exact
-                path="/applications/:applicationId"
-                component={requireAuth(ApplicationReadView)}
-              />
-              <Route
-                exact
-                path="/applications/:applicationId/edit"
-                component={requireAuth(ApplicationEditor)}
-              />
-              <Route
-                exact
-                path="/decisions"
-                component={requireAuth(Decisions)}
-              />
-              <Route
-                exact
-                path="/decisions/by-application/:applicationId"
-                component={requireAuth(DecisionResponseList)}
-              />
-              <Route path="/" component={RedirectToEnduser} />
-            </Switch>
+            <main>
+              <Switch>
+                <Route exact path="/map" component={MapView} />
+                <Route
+                  exact
+                  path="/applications"
+                  component={requireAuth(Applications)}
+                />
+                <Route
+                  exact
+                  path="/applications/new/:childId"
+                  component={requireAuth(ApplicationCreation)}
+                />
+                <Route
+                  exact
+                  path="/applications/:applicationId"
+                  component={requireAuth(ApplicationReadView)}
+                />
+                <Route
+                  exact
+                  path="/applications/:applicationId/edit"
+                  component={requireAuth(ApplicationEditor)}
+                />
+                <Route
+                  exact
+                  path="/decisions"
+                  component={requireAuth(Decisions)}
+                />
+                <Route
+                  exact
+                  path="/decisions/by-application/:applicationId"
+                  component={requireAuth(DecisionResponseList)}
+                />
+                <Route path="/" component={RedirectToEnduser} />
+              </Switch>
+            </main>
             <GlobalInfoDialog />
             <GlobalErrorDialog />
           </OverlayContextProvider>

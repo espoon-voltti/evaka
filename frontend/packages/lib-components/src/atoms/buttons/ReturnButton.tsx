@@ -5,8 +5,10 @@
 import React from 'react'
 import styled from 'styled-components'
 import { useHistory } from 'react-router-dom'
+
 import { faAngleLeft } from '@evaka/lib-icons'
 import InlineButton from './InlineButton'
+import colors from '../../colors'
 
 export const ReturnButtonWrapper = styled.div`
   margin-top: 32px;
@@ -42,6 +44,7 @@ export default React.memo(function ReturnButton({
         onClick={() => history.goBack()}
         dataQa={dataQa}
         disabled={history.length <= 1}
+        color={colors.blues.dark}
       />
     </ReturnButtonWrapper>
   )

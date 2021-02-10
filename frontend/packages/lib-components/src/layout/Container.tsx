@@ -62,6 +62,7 @@ type CollapsibleContentAreaProps = ContentAreaProps & {
   toggleOpen: () => void
   title: ReactNode
   children: ReactNode
+  validationErrors?: number
 }
 
 export const CollapsibleContentArea = React.memo(
@@ -70,6 +71,7 @@ export const CollapsibleContentArea = React.memo(
     toggleOpen,
     title,
     children,
+    validationErrors,
     ...props
   }: CollapsibleContentAreaProps) {
     const toggleOnEnter = (event: KeyboardEvent<HTMLDivElement>) => {
@@ -87,8 +89,12 @@ export const CollapsibleContentArea = React.memo(
           onKeyUp={toggleOnEnter}
           className={classNames({ open })}
           open={open}
+          role="button"
         >
           <TitleWrapper>{title}</TitleWrapper>
+          <CollapsibleContentAreaDescription
+            numberOfErrors={validationErrors ?? 0}
+          />
           <TitleIcon icon={open ? faChevronUp : faChevronDown} />
         </TitleContainer>
         {open ? children : null}
@@ -96,6 +102,34 @@ export const CollapsibleContentArea = React.memo(
     )
   }
 )
+
+function CollapsibleContentAreaDescription({
+  numberOfErrors
+}: {
+  numberOfErrors: number
+}) {
+  // TODO: add translation
+  return (
+    <>
+      {numberOfErrors > 0 && (
+        <StyledP lang="fi">
+          {numberOfErrors} kenttää jossa puutteellisia tai virheellisiä tietoja.
+        </StyledP>
+      )}
+    </>
+  )
+}
+
+const StyledP = styled.p`
+  border: 0;
+  clip: rect(0 0 0 0);
+  height: 1px;
+  width: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  position: absolute;
+`
 
 const TitleContainer = styled.div<{ open: boolean }>`
   display: flex;

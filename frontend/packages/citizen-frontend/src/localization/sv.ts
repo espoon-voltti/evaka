@@ -6,6 +6,7 @@ import { Translations } from '.'
 
 const sv: Translations = {
   common: {
+    title: 'Småbarnspedagogik',
     cancel: 'Gå tillbaka',
     return: 'Tillbaka',
     ok: 'Ok',
@@ -735,7 +736,8 @@ const sv: Translations = {
     },
     modalHeader: 'Behandling av filen pågår',
     modalMessage: 'Filen kan inte öppnas just nu. Försök igen om en stund.',
-    modalConfirm: 'OK'
+    modalConfirm: 'OK',
+    deleteFile: 'Radera fil'
   },
   validationErrors: {
     required: 'Värde saknas',

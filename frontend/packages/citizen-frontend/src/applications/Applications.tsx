@@ -34,6 +34,13 @@ export default React.memo(function Applications() {
     loadGuardianApplications()
   }, [loadGuardianApplications])
 
+  useEffect(() => {
+    document.title = t.applicationsList.title
+    return () => {
+      document.title = t.common.title
+    }
+  }, [])
+
   return (
     <>
       <Container>

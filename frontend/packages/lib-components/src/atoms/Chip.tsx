@@ -50,25 +50,33 @@ export const SelectionChip = React.memo(function SelectionChip({
         <SelectionChipInnerWrapper
           className={classNames({ checked: selected })}
         >
-          <HiddenInput
-            type="checkbox"
-            onChange={(e) => {
-              e.stopPropagation()
-              onChange(!selected)
-            }}
-            checked={selected}
-          />
-          {selected && (
-            <IconWrapper>
-              <FontAwesomeIcon icon={faCheck} />
-            </IconWrapper>
-          )}
-          <span>{text}</span>
+          <StyledLabel>
+            <HiddenInput
+              type="checkbox"
+              onChange={(e) => {
+                e.stopPropagation()
+                onChange(!selected)
+              }}
+              checked={selected}
+            />
+            {selected && (
+              <IconWrapper>
+                <FontAwesomeIcon icon={faCheck} />
+              </IconWrapper>
+            )}
+            {text}
+          </StyledLabel>
         </SelectionChipInnerWrapper>
       </SelectionChipWrapper>
     </div>
   )
 })
+
+const StyledLabel = styled.label`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+`
 
 const SelectionChipWrapper = styled.div`
   font-family: 'Open Sans', sans-serif;

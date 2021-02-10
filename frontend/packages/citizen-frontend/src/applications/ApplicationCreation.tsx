@@ -40,6 +40,10 @@ export default React.memo(function ApplicationCreation() {
   >(duplicatesDefault)
   useEffect(() => {
     void getDuplicateApplications(childId).then(setDuplicates)
+    document.title = t.applications.creation.title
+    return () => {
+      document.title = t.common.title
+    }
   }, [])
 
   const duplicateExists =
