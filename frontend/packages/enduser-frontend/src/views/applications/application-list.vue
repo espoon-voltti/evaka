@@ -83,7 +83,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 
   import SelectApplicationType from './select-application-type'
   import { APPLICATION_TYPE } from '../../constants'
-  import { config } from '@evaka/enduser-frontend/src/config'
+  import { config } from '@/config'
 
   export default {
     components: {

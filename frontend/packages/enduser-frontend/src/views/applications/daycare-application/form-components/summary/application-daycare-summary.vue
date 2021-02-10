@@ -563,7 +563,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 
 <script>
   import { mapGetters } from 'vuex'
-  import { config } from '@evaka/enduser-frontend/src/config'
+  import { config } from '@/config'
   import _ from 'lodash'
   import { formatDate } from '@/utils/date-utils'
   import { APPLICATION_TYPE, LANGUAGES } from '@/constants.ts'

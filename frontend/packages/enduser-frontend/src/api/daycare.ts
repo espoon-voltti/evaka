@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import axios from 'axios'
-import { config } from '@evaka/enduser-frontend/src/config'
+import { config } from '@/config'
 
 export default {
   getAreas() {

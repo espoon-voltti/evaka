@@ -167,7 +167,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 <script>
   import { mapGetters } from 'vuex'
   import { APPLICATION_TYPE, LANGUAGES } from '../../constants'
-  import { config } from '@evaka/enduser-frontend/src/config'
+  import { config } from '@/config'
 
   export default {
     name: 'SelectApplicationType',

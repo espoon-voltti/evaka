@@ -9,11 +9,11 @@
     "dev": "yarn serve",
     "start": "yarn serve",
     "preserve": "./swap-fonts.sh",
-    "serve": "vue-cli-service serve",
+    "serve": "yarn run preserve && vue-cli-service serve",
     "prebuild": "yarn run preserve",
-    "build": "vue-cli-service build",
+    "build": "yarn run prebuild && vue-cli-service build",
     "prebuild:dev": "yarn run preserve",
-    "build:dev": "vue-cli-service build --mode development",
+    "build:dev": "yarn run prebuild:dev && vue-cli-service build --mode development",
     "lint": "vue-cli-service lint",
     "test": "vue-cli-service test:unit",
     "test:watch": "vue-cli-service test:unit --watchAll"
@@ -33,6 +33,7 @@
     "core-js": "^3.8.3",
     "date-fns": "^2.17.0",
     "dateformat": "^3.0.0",
+    "flatpickr": "^4.6.6",
     "geojson-utils": "^1.1.0",
     "intl": "^1.2.5",
     "lodash": "^4.17.15",
@@ -92,9 +93,7 @@
   "jest-junit": {
     "outputDirectory": "test-results/"
   },
-  "workspaces": {
-    "nohoist": [
-      "**/*"
-    ]
+  "installConfig": {
+    "hoistingLimits": "workspaces"
   }
 }

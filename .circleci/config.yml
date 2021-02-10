@@ -546,7 +546,7 @@ jobs:
       - *restore_apigw_node_modules
       - run:
           working_directory: *workspace_apigw
-          command: yarn install --frozen-lockfile
+          command: yarn install --immutable
       - *store_apigw_node_modules
       - run:
           working_directory: *workspace_apigw
@@ -603,7 +603,7 @@ jobs:
       - *restore_frontend_node_modules
       - run:
           working_directory: *workspace_frontend
-          command: yarn install --frozen-lockfile
+          command: yarn install --immutable
       - *store_frontend_node_modules
       - build_frontend:
           dir: /home/circleci/repo/frontend/packages/employee-frontend

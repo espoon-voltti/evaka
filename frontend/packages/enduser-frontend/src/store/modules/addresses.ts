@@ -4,7 +4,7 @@
 
 import * as types from '@/store/mutation-types'
 import googleApi from '@/api/google'
-import { config } from '@evaka/enduser-frontend/src/config'
+import { config } from '@/config'
 import * as _ from 'lodash/lang'
 
 const initialState = {

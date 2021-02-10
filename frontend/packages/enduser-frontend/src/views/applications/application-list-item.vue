@@ -130,7 +130,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 <script>
   import { mapGetters } from 'vuex'
   import ConfirmModal from '@/components/modal/confirm.vue'
-  import { APPLICATION_STATUS } from '@evaka/enduser-frontend/src/constants'
+  import { APPLICATION_STATUS } from '@/constants'
 
   export default {
     data() {

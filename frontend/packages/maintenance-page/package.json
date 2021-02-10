@@ -12,7 +12,6 @@
     "lint": "prettier --check src/**/*.scss",
     "lint:fix": "prettier --write src/**/*.scss"
   },
-  "dependencies": {},
   "devDependencies": {
     "bulma": "0.7.5",
     "husky": "^5.0.9",

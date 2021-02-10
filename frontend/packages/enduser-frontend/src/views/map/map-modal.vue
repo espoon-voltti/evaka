@@ -85,7 +85,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 
 <script>
   import { mapGetters } from 'vuex'
-  import { config } from '@evaka/enduser-frontend/src/config'
+  import { config } from '@/config'
   import * as types from '@/store/mutation-types'
   import { toMarker } from '@/store/modules/units'
   import mapSettings from '@/views/map/map-settings.ts'
@@ -157,17 +157,17 @@ SPDX-License-Identifier: LGPL-2.1-or-later
         if (marker.services.length === 1) {
           return {
             // NOTE: Due to Webpack's way to handling imports, asset directories must be hard-coded into require statements
-            url: require('@evaka/enduser-frontend/src/assets/' + marker.services[0] + '.png'),
+            url: require('@/assets/' + marker.services[0] + '.png'),
             scaledSize: markerSize
           }
         } else if (marker.services.length > 1) {
           return {
-            url: require('@evaka/enduser-frontend/src/assets/markerMULTIPLE.png'),
+            url: require('@/assets/markerMULTIPLE.png'),
             scaledSize: markerSize
           }
         } else {
           return {
-            url: require('@evaka/enduser-frontend/src/assets/marker.png'),
+            url: require('@/assets/marker.png'),
             scaledSize: markerSize
           }
         }

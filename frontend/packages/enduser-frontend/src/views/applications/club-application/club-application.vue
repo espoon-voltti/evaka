@@ -135,7 +135,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 </template>
 
 <script>
-  import { config } from '@evaka/enduser-frontend/src/config'
+  import { config } from '@/config'
   import router from '@/router'
   import { mapGetters } from 'vuex'
   import form, { bind } from '@/mixins/form'

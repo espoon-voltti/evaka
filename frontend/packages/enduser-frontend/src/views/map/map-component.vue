@@ -62,7 +62,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 
 <script>
   import { mapGetters } from 'vuex'
-  import { config } from '@evaka/enduser-frontend/src/config'
+  import { config } from '@/config'
   import UnitDetails from '@/views/map/unit-details.vue'
   import MapDirections from '@/views/map/map-directions.vue'
   // Map options in separate file
@@ -177,10 +177,10 @@ SPDX-License-Identifier: LGPL-2.1-or-later
         let iconUrl = ''
         if (marker.services.includes(UNIT_TYPE.PRESCHOOL)) {
           // NOTE: Due to Webpack's way to handling imports, asset directories must be hard-coded into require statements
-          iconUrl = require('@evaka/enduser-frontend/src/assets/markerPRESCHOOL.png')
+          iconUrl = require('@/assets/markerPRESCHOOL.png')
         } else {
           iconUrl =
-            require('@evaka/enduser-frontend/src/assets/' +
+            require('@/assets/' +
             'marker' +
             (marker.services.length === 1 ? marker.services[0] : '') +
             '.png')
@@ -225,7 +225,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
         this.mapSettings.icons = {
           homeMarker: {
             scaledSize: new google.maps.Size(42, 42),
-            url: require('@evaka/enduser-frontend/src/assets/markerHOME.png')
+            url: require('@/assets/markerHOME.png')
           },
           otherMarkers: {
             scaledSize: new google.maps.Size(42, 42)

@@ -74,6 +74,8 @@ a better look and feel with regards to icons.
 
 ### Using free icons
 
+**NOTE: Temporarily broken since 2021-02-10**
+
 Professional versions of the Font Awesome libraries are listed as optional
 dependencies so use `yarn install --ignore-optional` to avoid installation
 failures when using free icons. The same argument works for `yarn add`, too.
