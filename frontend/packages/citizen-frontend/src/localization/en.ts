@@ -139,7 +139,7 @@ const en: Translations = {
         returnToEditBtn: 'Return to editing',
         cancel: 'Go back',
         send: 'Send application',
-        update: 'Tallenna muutokset',
+        update: 'Save changes',
         sendError: 'Failed to send the application',
         saveDraft: 'Save as draft',
         updateError: 'Saving the changes failed'
@@ -147,8 +147,8 @@ const en: Translations = {
       verification: {
         title: {
           DAYCARE: 'Verifying the application',
-          PRESCHOOL: 'Esiopetushakemuksen tarkistaminen',
-          CLUB: 'Kerhohakemuksen tarkistaminen'
+          PRESCHOOL: 'Verifying the application',
+          CLUB: 'Verifying the application'
         },
         notYetSent:
           '<strong>The application has not yet been sent.</strong> Please check the information you provided and send the application by clicking "Send the application" button in the end of the form.',
@@ -158,16 +158,16 @@ const en: Translations = {
           modified: 'Last modified'
         },
         attachmentBox: {
-          nb: 'Huom!',
+          nb: 'Note!',
           headline:
-            'Jos lisäät liitteet seuraaviin kohtiin sähköisesti, hakemuksesi käsitellään nopeammin, sillä käsittelyaika alkaa liitteiden saapumisesta.',
-          urgency: 'Hakemus on kiireellinen',
-          shiftCare: 'Ilta- ja vuorohoito',
-          goBackLinkText: 'Palaa takaisin hakemusnäkymään',
-          goBackRestText: 'lisätäksesi liitteet hakemukseen.'
+            'If you add attachments to the following sections online, your application will be processed more quickly as the processing period will begin once we have received the required attachments.',
+          urgency: 'Application is urgent',
+          shiftCare: 'Evening and round-the-clock care',
+          goBackLinkText: 'Return back to application',
+          goBackRestText: 'to add the attachments.'
         },
         serviceNeed: {
-          title: 'Palveluntarve',
+          title: 'Service need',
           wasOnDaycare: 'Varhaiskasvatuksessa ennen kerhoa',
           wasOnDaycareYes:
             'Lapsi, jolle haetaan kerhopaikkaa, on varhaiskasvatuksessa ennen kerhon toivottua aloituspäivää.',
@@ -175,49 +175,49 @@ const en: Translations = {
           wasOnClubCareYes:
             'Lapsi on ollut kerhossa edellisen toimintakauden aikana.',
           connectedDaycare: {
-            title: 'Esiopetukseen liittyvän varhaiskasvatuksen tarve',
-            label: 'Liittyvä varhaiskasvatus',
+            title: 'Apply for early childhood education',
+            label: 'Early childhood education',
             withConnectedDaycare:
-              'Haen myös esiopetukseen liittyvää varhaiskasvatusta.',
-            withoutConnectedDaycare: 'Ei'
+              'I also apply for early childhood education related to pre-primary education.',
+            withoutConnectedDaycare: 'No'
           },
           attachments: {
-            label: 'Tarvittavat liitteet',
-            withoutAttachments: 'Ei liitetty, lähetetään postilla'
+            label: 'Required attachments',
+            withoutAttachments: 'Not attached – will be sent by post'
           },
           startDate: {
             title: {
-              DAYCARE: 'Varhaiskasvatuksen aloitus',
-              PRESCHOOL: 'Varhaiskasvatuksen aloitus',
+              DAYCARE: 'Start of early childhood education',
+              PRESCHOOL: 'Start of early childhood education',
               CLUB: 'Kerhon aloitus'
             },
-            preferredStartDate: 'Toivottu aloituspäivä',
-            urgency: 'Hakemus on kiireellinen',
-            withUrgency: 'Kyllä',
-            withoutUrgency: 'Ei'
+            preferredStartDate: 'Desired start date',
+            urgency: 'Application is urgent',
+            withUrgency: 'Yes',
+            withoutUrgency: 'No'
           },
           dailyTime: {
-            title: 'Päivittäinen varhaiskasvatusaika',
-            partTime: 'Osa- tai kokopäiväinen',
-            withPartTime: 'Osa-aikainen',
-            withoutPartTime: 'Kokoaikainen',
-            dailyTime: 'Varhaiskasvatuksen alkamis- ja päättymisaika',
-            shiftCare: 'Ilta- ja vuorohoito',
-            withShiftCare: 'Tarvitaan ilta- tai vuorohoitoa',
-            withoutShiftCare: 'Ei tarvita ilta- tai vuorohoitoa'
+            title: 'Daily early childhood education time',
+            partTime: 'Part- or full-day',
+            withPartTime: 'Part-day',
+            withoutPartTime: 'Full-day',
+            dailyTime: 'Start and end time of daily early childhood education',
+            shiftCare: 'Evening and round-the-clock care',
+            withShiftCare: 'Need for evening or round-the-clock care',
+            withoutShiftCare: 'No need for evening or round-the-clock care'
           },
           assistanceNeed: {
-            title: 'Tuen tarve',
-            assistanceNeed: 'Lapsella on tuen tarve',
-            withAssistanceNeed: 'Lapsella on tuen tarve',
-            withoutAssistanceNeed: 'Lapsella ei ole tuen tarvetta',
-            description: 'Tuen tarpeen kuvaus'
+            title: 'Support need',
+            assistanceNeed: 'Support need',
+            withAssistanceNeed: 'Child needs special support',
+            withoutAssistanceNeed: 'No need for special support',
+            description: 'Description'
           },
           preparatoryEducation: {
-            label: 'Perusopetukseen valmistava opetus',
+            label: 'Pre-primary education and preparatory education',
             withPreparatory:
-              'Lapsi tarvitsee tukea suomen kielen oppimisessa. Haen myös perusopetukseen valmistavaan opetukseen. Ei koske ruotsinkielistä esiopetusta.',
-            withoutPreparatory: 'Ei'
+              'The child needs support with learning Finnish. I am also applying for preparatory education.',
+            withoutPreparatory: 'No'
           }
         },
         unitPreference: {
@@ -236,63 +236,66 @@ const en: Translations = {
           }
         },
         contactInfo: {
-          title: 'Henkilötiedot',
+          title: 'Personal information',
           child: {
-            title: 'Lapsen tiedot',
-            name: 'Lapsen nimi',
-            ssn: 'Lapsen henkilötunnus',
-            streetAddress: 'Kotiosoite',
-            isAddressChanging: 'Osoite muuttunut / muuttumassa',
+            title: "Child's information",
+            name: "Child's name",
+            ssn: "Child's personal identity code",
+            streetAddress: 'Home address',
+            isAddressChanging: 'Address is about to change',
             hasFutureAddress:
-              'Väestörekisterissä oleva osoite on muuttunut/muuttumassa ',
-            addressChangesAt: 'Muuttopäivämäärä',
-            newAddress: 'Uusi osoite'
+              'The address in the database of the Digital and Population Data Services Agency has changed/is about to change',
+            addressChangesAt: 'Moving date',
+            newAddress: 'New address'
           },
           guardian: {
-            title: 'Huoltajan tiedot',
-            name: 'Huoltajan nimi',
-            ssn: 'Huoltajan henkilötunnus',
-            streetAddress: 'Kotiosoite',
-            tel: 'Puhelinnumero',
-            email: 'Sähköpostiosoite',
-            isAddressChanging: 'Osoite muuttunut / muuttumassa',
-            hasFutureAddress: 'Osoite muuttunut / muuttumassa',
-            addressChangesAt: 'Muuttopäivämäärä',
-            newAddress: 'Uusi osoite'
+            title: 'Guardian information',
+            name: 'Guardian name',
+            ssn: 'Guardian personal identity code',
+            streetAddress: 'Street address',
+            tel: 'Phone number',
+            email: 'Email',
+            isAddressChanging: 'Address is about to change',
+            hasFutureAddress:
+              'The address in the database of the Digital and Population Data Services Agency has changed/is about to change',
+            addressChangesAt: 'Moving date',
+            newAddress: 'New address'
           },
           secondGuardian: {
-            title: 'Toisen huoltajan tiedot',
-            email: 'Sähköposti',
-            tel: 'Puhelin',
+            title: 'Second guardian information',
+            email: 'Email',
+            tel: 'Phone number',
             info:
-              'Toisen huoltajan tiedot haetaan automaattisesti väestötietojärjestelmästä.',
+              'Second guardian information is automatically fetched from VTJ',
             agreed:
-              'Olemme yhdessä sopineet lapsen esiopetuksen hakemisesta lomakkeen tietojen mukaisesti.',
-            notAgreed: 'Emme ole voineet sopia hakemuksen tekemisestä yhdessä',
+              'We have agreed with the other guardian about this application.',
+            notAgreed:
+              'We have not agreed with the other guardian about this application.',
             rightToGetNotified:
-              'Toisella huoltajalla on vain tiedonsaantioikeus.',
-            noAgreementStatus: 'Ei tiedossa'
+              'The other guardian has only the right to get notified about the placement.',
+            noAgreementStatus: 'Unknown'
           },
           fridgePartner: {
             title:
-              'Samassa taloudessa asuva avio- tai avopuoliso (ei huoltaja)',
+              'Spouse or cohabiting partner (not a guardian) living in the same household',
             fridgePartner:
-              'Samassa taloudessa asuu avio- tai avopuoliso (ei huoltaja)',
-            name: 'Henkilön nimi',
-            ssn: 'Henkilön henkilötunnus'
+              'Spouse or cohabiting partner (not a guardian) living in the same household',
+            name: 'Name',
+            ssn: 'Person identification code'
           },
           fridgeChildren: {
-            title: 'Samassa taloudessa asuvat alle 18-vuotiaat lapset',
-            name: 'Lapsen nimi',
-            ssn: 'Henkilön henkilötunnus',
-            noOtherChildren: 'Ei muita lapsia'
+            title:
+              'Other children under 18 years of age living in the same household.',
+            name: "Child's name",
+            ssn: 'Person identification code',
+            noOtherChildren: 'No other children'
           }
         },
         additionalDetails: {
-          title: 'Muut lisätiedot',
-          otherInfoLabel: 'Hakuun liittyvät lisätiedot',
-          dietLabel: 'Erityisruokavalio',
-          allergiesLabel: 'Allergiat'
+          title: 'Other additional information',
+          otherInfoLabel: 'Additional information',
+          dietLabel: 'Special diet',
+          allergiesLabel: 'Allergies'
         }
       },
       serviceNeed: {
@@ -518,10 +521,10 @@ const en: Translations = {
         title: 'Personal information',
         info:
           "The personal information has been retrieved from the population data services and cannot be changed with this application. If the personal information is incorrect, please update the information on https://dvv.fi/en/certificates-from-the-population-information-system. If your address is about to change, you can add the new address in a separate field in the application. Add a future address for both the child and guardian. The address information will be official only when it has been updated to the database of the Digital and Population Data Services Agency. Decisions on the child's early childhood or pre-primary education place will be automatically sent to another guardian who lives at a different address based on the Population Information System.",
-        childInfoTitle: 'Child´s information',
-        childFirstName: 'Child’s first name(s)',
-        childLastName: 'Child’s last name',
-        childSSN: 'Child’s personal identity code',
+        childInfoTitle: "Child's information",
+        childFirstName: "Child's first name(s)",
+        childLastName: "Child's last name",
+        childSSN: "Child's personal identity code",
         homeAddress: 'Home address',
         moveDate: 'Date of move',
         street: 'Street address',

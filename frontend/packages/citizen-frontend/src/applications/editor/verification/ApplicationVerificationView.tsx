@@ -72,7 +72,7 @@ export default React.memo(function ApplicationVerificationViewDaycare({
               <P>
                 <strong>
                   {t.applications.editor.verification.attachmentBox.nb}
-                </strong>
+                </strong>{' '}
                 {t.applications.editor.verification.attachmentBox.headline}
               </P>
               <ul>
@@ -98,7 +98,7 @@ export default React.memo(function ApplicationVerificationViewDaycare({
                     t.applications.editor.verification.attachmentBox
                       .goBackLinkText
                   }
-                </a>
+                </a>{' '}
                 {
                   t.applications.editor.verification.attachmentBox
                     .goBackRestText
@@ -126,6 +126,8 @@ export default React.memo(function ApplicationVerificationViewDaycare({
             (type === 'PRESCHOOL' && formData.serviceNeed.connectedDaycare)
           }
         />
+        <HorizontalLine />
+
         <AdditionalDetailsSection
           formData={formData}
           showAllergiesAndDiet={type !== 'CLUB'}
