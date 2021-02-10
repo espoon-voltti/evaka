@@ -12,7 +12,7 @@ export const blueColors = {
   medium: '#0050bb',
   primary: '#3273c9',
   light: '#99b9e4',
-  lighter: '#e9f5ff'
+  lighter: '#dce5f2'
 }
 
 export const greyscale = {

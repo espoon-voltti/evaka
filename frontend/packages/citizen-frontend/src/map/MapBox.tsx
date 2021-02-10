@@ -1,8 +1,8 @@
 import React from 'react'
 import styled from 'styled-components'
-import { FooterContent } from '~Footer'
 import { defaultMargins } from '@evaka/lib-components/src/white-space'
 import colors from '@evaka/lib-components/src/colors'
+import { FooterContent } from '~Footer'
 
 export default React.memo(function SearchSection() {
   return (

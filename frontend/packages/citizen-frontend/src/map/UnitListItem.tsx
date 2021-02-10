@@ -1,20 +1,39 @@
 import React from 'react'
 import styled from 'styled-components'
-import { defaultMargins } from '@evaka/lib-components/src/white-space'
 import { PublicUnit } from '@evaka/lib-common/src/api-types/units/PublicUnit'
+import { CareType } from '@evaka/lib-common/src/api-types/units/enums'
+import { defaultMargins } from '@evaka/lib-components/src/white-space'
 import colors from '@evaka/lib-components/src/colors'
 import { useTranslation } from '~localization'
 
 type Props = {
   unit: PublicUnit
-  distance?: string
+  distance: string | null
+  onClick: () => void
 }
 
-export default React.memo(function UnitListItem({ unit, distance }: Props) {
+export default React.memo(function UnitListItem({
+  unit,
+  distance,
+  onClick
+}: Props) {
   const t = useTranslation()
 
-  const lang = t.common.unit.languages[unit.language]
   const provider = t.common.unit.providerTypes[unit.providerType].toLowerCase()
+  const formatCareType = (type: CareType) => {
+    switch (type) {
+      case 'CENTRE':
+      case 'FAMILY':
+      case 'GROUP_FAMILY':
+        return t.map.careTypes.DAYCARE.toLowerCase()
+      case 'PRESCHOOL':
+        return t.common.unit.careTypes.PRESCHOOL.toLowerCase()
+      case 'PREPARATORY_EDUCATION':
+        return t.common.unit.careTypes.PREPARATORY_EDUCATION.toLowerCase()
+      case 'CLUB':
+        return t.common.unit.careTypes.CLUB.toLowerCase()
+    }
+  }
   const careTypes = unit.type
     .sort((a, b) => {
       if (a === 'CENTRE') return -1
@@ -23,24 +42,33 @@ export default React.memo(function UnitListItem({ unit, distance }: Props) {
       if (b === 'PREPARATORY_EDUCATION') return -1
       return 0
     })
-    .map((type) => t.common.unit.careTypes[type].toLowerCase())
+    .map(formatCareType)
     .join(', ')
 
   return (
-    <Wrapper>
+    <Wrapper onClick={onClick}>
       <MainRow>
         <UnitName>{unit.name}</UnitName>
-        {distance && <Distance>{distance}</Distance>}
+        {distance !== null && <Distance>{distance}</Distance>}
       </MainRow>
       <UnitDetails>
-        {lang}, {provider}, {careTypes}
+        {provider}, {careTypes}
       </UnitDetails>
     </Wrapper>
   )
 })
 
 const Wrapper = styled.div`
-  padding: ${defaultMargins.xs};
+  margin-bottom: ${defaultMargins.s};
+  cursor: pointer;
+
+  padding: ${defaultMargins.xs} ${defaultMargins.s} ${defaultMargins.xs}
+    ${defaultMargins.L};
+  margin: -${defaultMargins.xs} -${defaultMargins.s} -${defaultMargins.xs} -${defaultMargins.L};
+
+  &:hover {
+    background-color: ${colors.blues.lighter};
+  }
 `
 
 const MainRow = styled.div`
@@ -55,6 +83,7 @@ const UnitName = styled.div`
 
 const Distance = styled.div`
   margin-left: ${defaultMargins.m};
+  white-space: nowrap;
 `
 
 const UnitDetails = styled.div`
