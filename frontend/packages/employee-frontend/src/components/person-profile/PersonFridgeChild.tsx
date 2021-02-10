@@ -168,6 +168,7 @@ const PersonFridgeChild = React.memo(function PersonFridgeChild({
                     toggleUiMode(`remove-fridge-child-${fridgeChild.id}`)
                   }}
                   conflict={fridgeChild.conflict}
+                  deletableFor={['ADMIN', 'FINANCE_ADMIN']}
                 />
               </ButtonsTd>
             </Tr>

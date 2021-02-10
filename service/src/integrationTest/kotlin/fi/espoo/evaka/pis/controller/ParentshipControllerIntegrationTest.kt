@@ -116,13 +116,13 @@ class ParentshipControllerIntegrationTest : AbstractIntegrationTest() {
     }
 
     @Test
-    fun `service worker can delete parentships`() {
-        `can delete parentship`(AuthenticatedUser(UUID.randomUUID(), setOf(UserRole.SERVICE_WORKER)))
+    fun `service worker cannot delete parentships`() {
+        `cannot delete parentship`(AuthenticatedUser(UUID.randomUUID(), setOf(UserRole.SERVICE_WORKER)))
     }
 
     @Test
-    fun `unit supervisor can delete parentships`() {
-        `can delete parentship`(AuthenticatedUser(UUID.randomUUID(), setOf(UserRole.UNIT_SUPERVISOR)))
+    fun `unit supervisor cannot delete parentships`() {
+        `cannot delete parentship`(AuthenticatedUser(UUID.randomUUID(), setOf(UserRole.UNIT_SUPERVISOR)))
     }
 
     @Test
@@ -141,6 +141,17 @@ class ParentshipControllerIntegrationTest : AbstractIntegrationTest() {
             val delResponse = controller.deleteParentship(db, user, parentship.id)
             assertEquals(HttpStatus.NO_CONTENT, delResponse.statusCode)
             assertEquals(1, h.getParentships(headOfChildId = adult.id, childId = null).size)
+        }
+    }
+
+    fun `cannot delete parentship`(user: AuthenticatedUser) {
+        val adult = testPerson1()
+        val child = testPerson2()
+        jdbi.handle { h ->
+            val parentship = h.createParentship(child.id, adult.id, LocalDate.now(), LocalDate.now().plusDays(100))
+            h.createParentship(child.id, adult.id, LocalDate.now().plusDays(200), LocalDate.now().plusDays(300))
+            assertEquals(2, h.getParentships(headOfChildId = adult.id, childId = null).size)
+            assertThrows<Forbidden> { controller.deleteParentship(db, user, parentship.id) }
         }
     }
 
