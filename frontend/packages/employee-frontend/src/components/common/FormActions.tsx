@@ -11,7 +11,6 @@ import { FixedSpaceRow } from '@evaka/lib-components/src/layout/flex-helpers'
 const ButtonsContainer = styled.div`
   display: flex;
   justify-content: flex-end;
-  height: 80px;
 `
 
 interface AddButtonProps {

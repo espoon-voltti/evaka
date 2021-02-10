@@ -68,14 +68,7 @@ const ServiceNeed = React.memo(function ServiceNeed({ id, open }: Props) {
         startCollapsed={!open}
         dataQa="service-need-collapsible"
       >
-        <RequireRole
-          oneOf={[
-            'SERVICE_WORKER',
-            'UNIT_SUPERVISOR',
-            'FINANCE_ADMIN',
-            'ADMIN'
-          ]}
-        >
+        <RequireRole oneOf={['UNIT_SUPERVISOR', 'ADMIN']}>
           <AddButtonRow
             text={i18n.childInformation.serviceNeed.create}
             onClick={() => {

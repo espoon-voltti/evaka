@@ -83,12 +83,12 @@ function ServiceNeedRow({ serviceNeed, onReload }: Props) {
               setToggled(true)
               scrollToRef(refForm)
             }}
-            editableFor={ALL_ROLES_BUT_STAFF}
+            editableFor={['ADMIN', 'UNIT_SUPERVISOR']}
             dataQaEdit="btn-edit-service-need"
             onDelete={() =>
               toggleUiMode(`remove-service-need-${serviceNeed.id}`)
             }
-            deletableFor={ALL_ROLES_BUT_STAFF}
+            deletableFor={['ADMIN', 'UNIT_SUPERVISOR']}
             dataQaDelete="btn-remove-service-need"
             disableAll={!!uiMode && uiMode.startsWith('edit-service-need')}
           />
