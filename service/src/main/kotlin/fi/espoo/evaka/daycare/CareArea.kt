@@ -64,7 +64,8 @@ data class Daycare(
     val ophUnitOid: String?,
     val ophOrganizerOid: String?,
     val ophOrganizationOid: String?,
-    val operationDays: Set<Int>
+    val operationDays: Set<Int>,
+    val roundTheClock: Boolean
 )
 
 @PropagateNull("finance_decision_handler_id")
