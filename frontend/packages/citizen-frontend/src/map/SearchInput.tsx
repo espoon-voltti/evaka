@@ -175,7 +175,11 @@ const OptionContents = React.memo(function Option({
   return (
     <FixedSpaceRow alignItems={'center'}>
       {isUnit && (
-        <FontAwesomeIcon icon={fasMapMarkerAlt} color={colors.primary} />
+        <FontAwesomeIcon
+          icon={fasMapMarkerAlt}
+          color={colors.primary}
+          style={{ fontSize: '24px' }}
+        />
       )}
       <FixedSpaceColumn spacing="zero">
         <span>{label}</span>

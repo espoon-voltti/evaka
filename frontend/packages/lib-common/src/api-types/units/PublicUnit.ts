@@ -15,6 +15,6 @@ export type PublicUnit = {
   email: string | null
   url: string | null
   location: Coordinate | null
-  ghostUnit: boolean | null
+  ghostUnit: boolean | undefined
   roundTheClock: boolean
 }
