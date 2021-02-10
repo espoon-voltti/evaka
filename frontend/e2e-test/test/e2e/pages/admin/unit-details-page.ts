@@ -5,6 +5,7 @@
 import { t, Selector } from 'testcafe'
 import config from '../../config'
 import { ApplicationType } from '@evaka/lib-common/src/api-types/application/enums'
+import { Checkbox } from '../../utils/helpers'
 
 type CareType = 'DAYCARE' | 'PRESCHOOL' | 'PREPARATORY' | 'CLUB'
 
@@ -18,10 +19,10 @@ export class UnitDetailsPage {
   readonly unitNameInput = Selector('[data-qa="unit-name-input"]')
 
   readonly careTypeCheckbox = (type: CareType) =>
-    Selector(`[data-qa="care-type-checkbox-${type}"]`)
+    new Checkbox(Selector(`[data-qa="care-type-checkbox-${type}"]`))
 
   readonly applicationTypeCheckbox = (type: ApplicationType) =>
-    Selector(`[data-qa="application-type-checkbox-${type}"]`)
+    new Checkbox(Selector(`[data-qa="application-type-checkbox-${type}"]`))
 
   readonly streetInput = (type: 'visiting-address' | 'mailing-address') =>
     Selector(`[data-qa="${type}-street-input"]`)
@@ -59,11 +60,11 @@ export class UnitDetailsPage {
   }
 
   async toggleCareType(type: CareType) {
-    await t.click(this.careTypeCheckbox(type))
+    await this.careTypeCheckbox(type).click()
   }
 
   async toggleApplicationType(type: ApplicationType) {
-    await t.click(this.applicationTypeCheckbox(type))
+    await this.applicationTypeCheckbox(type).click()
   }
 
   async fillVisitingAddress(

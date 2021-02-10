@@ -12,7 +12,7 @@ import EmployeeHome from '../../pages/employee/home'
 import config from '../../config'
 import ApplicationReadView from '../employee/applications/application-read-view'
 import ApplicationListView from '../employee/applications/application-list-view'
-import { scrollThenClick } from '../../utils/helpers'
+import { Checkbox, scrollThenClick } from '../../utils/helpers'
 
 export class ApplicationWorkbenchPage {
   readonly applicationListPath = 'employee/applications'
@@ -272,12 +272,9 @@ export class ApplicationWorkbenchPage {
   }
 
   async clickApplicationCheckbox(applicationId: string) {
-    await scrollThenClick(
-      t,
-      Selector(`[data-qa="application-row-checkbox-${applicationId}"]`, {
-        timeout: 50
-      })
-    )
+    await new Checkbox(
+      Selector(`[data-qa="application-row-checkbox-${applicationId}"]`)
+    ).click()
   }
 
   async moveToWaitingPlacement(applicationId: string) {
@@ -373,9 +370,9 @@ export class ApplicationWorkbenchPage {
   }
 
   async redoSearch() {
-    await t.click(this.searchFilter.statusCheckBoxAccepted)
+    await this.searchFilter.statusCheckBoxAccepted.click()
     await t.expect(this.applicationList.visible).ok()
-    await t.click(this.searchFilter.statusCheckBoxAccepted)
+    await this.searchFilter.statusCheckBoxAccepted.click()
     await t.expect(this.applicationList.visible).ok()
   }
 

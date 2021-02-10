@@ -5,6 +5,7 @@
 import { Selector, t } from 'testcafe'
 import { format } from 'date-fns'
 import { ApplicationStatus } from '@evaka/lib-common/src/api-types/application/enums'
+import { Checkbox } from '../../utils/helpers'
 
 const selectDateRangePickerDates = async (
   startDate: Date,
@@ -27,37 +28,31 @@ export default class SearchFilter {
   )
   readonly areas = this.areasFilter.find('.radio-wrapper')
 
-  readonly filterByProcessingDateCheckbox = Selector(
-    '.date-filter .checkbox'
-  ).nth(0)
-  readonly filterByCareStartDateCheckbox = Selector(
-    '.date-filter .checkbox'
-  ).nth(1)
-  readonly filterByApplicationDateCheckbox = Selector(
-    '.date-filter .checkbox'
-  ).nth(2)
-
   readonly dateFilterDatePicker = Selector('.date-filter .date-picker')
   readonly statusRadioAll: Selector = Selector(
     '[data-qa="application-status-filter-ALL"]'
   )
-  readonly statusCheckBoxSent: Selector = Selector(
-    '[data-qa="filter-status-all-VERIFIED,WAITING_PLACEMENT,PLACEMENT_PROPOSED,PLACEMENT_QUEUED"]'
+  readonly statusCheckBoxSent = new Checkbox(
+    Selector(
+      '[data-qa="filter-status-all-VERIFIED,WAITING_PLACEMENT,PLACEMENT_PROPOSED,PLACEMENT_QUEUED"]'
+    )
   )
-  readonly statusCheckBoxWaitingDecision: Selector = Selector(
-    '[data-qa="filter-status-all-WAITING_DECISION"]'
+  readonly statusCheckBoxWaitingDecision = new Checkbox(
+    Selector('[data-qa="filter-status-all-WAITING_DECISION"]')
   )
-  readonly statusCheckBoxConfirm: Selector = Selector(
-    '[data-qa="filter-status-all-CLEARED_FOR_CONFIRMATION,WAITING_CONFIRMATION"]'
+  readonly statusCheckBoxConfirm = new Checkbox(
+    Selector(
+      '[data-qa="filter-status-all-CLEARED_FOR_CONFIRMATION,WAITING_CONFIRMATION"]'
+    )
   )
-  readonly statusCheckBoxAccepted: Selector = Selector(
-    '[data-qa="filter-status-all-ACTIVE"]'
+  readonly statusCheckBoxAccepted = new Checkbox(
+    Selector('[data-qa="filter-status-all-ACTIVE"]')
   )
-  readonly statusCheckBoxRejected: Selector = Selector(
-    '[data-qa="filter-status-all-REJECTED"]'
+  readonly statusCheckBoxRejected = new Checkbox(
+    Selector('[data-qa="filter-status-all-REJECTED"]')
   )
-  readonly statusCheckBoxCancelled: Selector = Selector(
-    '[data-qa="filter-status-all-CANCELLED,TERMINATED"]'
+  readonly statusCheckBoxCancelled = new Checkbox(
+    Selector('[data-qa="filter-status-all-CANCELLED,TERMINATED"]')
   )
 
   async selectDateRangeFilterStartAndEndDate(startDate: Date, endDate: Date) {
@@ -88,54 +83,11 @@ export default class SearchFilter {
     await t.click(Selector(`[data-qa="filter-transfer-exclude"]`))
   }
 
-  async filterByProcessingDate(processingDate: Date) {
-    const checked = await this.filterByProcessingDateCheckbox.hasClass('active')
-    if (!checked) await t.click(this.filterByProcessingDateCheckbox)
-    await this.selectDateRangeFilterStartAndEndDate(
-      processingDate,
-      processingDate
-    )
-  }
-
-  async filterByCareStartDate(
-    careStartStartDate: Date,
-    careStartEndDate: Date
-  ) {
-    const checked = await this.filterByCareStartDateCheckbox.hasClass('active')
-    if (!checked) await t.click(this.filterByCareStartDateCheckbox)
-    await this.selectDateRangeFilterStartAndEndDate(
-      careStartStartDate,
-      careStartEndDate
-    )
-  }
-
-  async filterByApplicationArrivalDate(arrivalDate: Date) {
-    const checked = await this.filterByApplicationDateCheckbox.hasClass(
-      'active'
-    )
-    if (!checked) await t.click(this.filterByApplicationDateCheckbox)
-    await this.selectDateRangeFilterStartAndEndDate(arrivalDate, arrivalDate)
-  }
-
   async filterByApplicationStatus(status: ApplicationStatus) {
     await t.click(this.statusRadioAll)
     await t.click(this.statusRadioAll)
-    await t.click(
-      Selector(`[data-qa="application-status-filter-all-${status}"]`, {
-        timeout: 50
-      })
-    )
-  }
-
-  async checkOrUncheckStatus(
-    checkbox: Selector,
-    statuses: ApplicationStatus[],
-    status: ApplicationStatus
-  ) {
-    if (statuses.includes(status) && !(await checkbox.checked)) {
-      await t.click(checkbox)
-    } else if (!statuses.includes(status) && (await checkbox.checked)) {
-      await t.click(checkbox)
-    }
+    await new Checkbox(
+      Selector(`[data-qa="application-status-filter-all-${status}"]`)
+    ).click()
   }
 }

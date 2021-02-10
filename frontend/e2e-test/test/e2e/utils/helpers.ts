@@ -28,7 +28,11 @@ export const waitUntilScrolled = ClientFunction(
 )
 
 export class Checkbox {
-  constructor(private readonly selector: Selector) {}
+  private _input: Selector
+
+  constructor(private readonly selector: Selector) {
+    this._input = selector.find('input')
+  }
 
   async click(): Promise<void> {
     await testcafe.t.expect(this.disabled).eql(false)
@@ -38,11 +42,11 @@ export class Checkbox {
 
   get checked(): Promise<boolean> {
     // cast needed because checked is Promise<boolean | undefined>
-    return (this.selector.checked as unknown) as Promise<boolean>
+    return (this._input.checked as unknown) as Promise<boolean>
   }
 
   get disabled(): Promise<boolean> {
-    return this.selector.hasAttribute('disabled')
+    return this._input.hasAttribute('disabled')
   }
 
   get exists(): Promise<boolean> {

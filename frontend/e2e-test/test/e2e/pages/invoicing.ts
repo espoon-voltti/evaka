@@ -28,7 +28,7 @@ export default class InvoicingPage {
   readonly feeDecisionRows = Selector('[data-qa="table-fee-decision-row"]')
   readonly firstFeeDecisionRow = this.feeDecisionRows.nth(0)
   readonly toggleAllFeeDecisions = new Checkbox(
-    Selector('[data-qa="toggle-all-decisions"]', { timeout: 50 })
+    Selector('[data-qa="toggle-all-decisions"]')
   )
   readonly toggleFirstFeeDecision = new Checkbox(
     this.firstFeeDecisionRow.find('[data-qa="toggle-decision"]')
@@ -55,7 +55,7 @@ export default class InvoicingPage {
   readonly valueDecisionRows = Selector('[data-qa="table-value-decision-row"]')
   readonly firstValueDecisionRow = this.valueDecisionRows.nth(0)
   readonly toggleAllValueDecisions = new Checkbox(
-    Selector('[data-qa="toggle-all-decisions"]', { timeout: 50 })
+    Selector('[data-qa="toggle-all-decisions"]')
   )
   readonly toggleFirstValueDecision = new Checkbox(
     this.firstFeeDecisionRow.find('[data-qa="toggle-decision"]')
