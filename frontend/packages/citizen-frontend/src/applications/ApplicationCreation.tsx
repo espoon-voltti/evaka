@@ -16,10 +16,17 @@ import AsyncButton from '@evaka/lib-components/src/atoms/buttons/AsyncButton'
 import Button from '@evaka/lib-components/src/atoms/buttons/Button'
 import ReturnButton from '@evaka/lib-components/src/atoms/buttons/ReturnButton'
 import Radio from '@evaka/lib-components/src/atoms/form/Radio'
-import { AlertBox } from '@evaka/lib-components/src/molecules/MessageBoxes'
+import {
+  AlertBox,
+  InfoBox
+} from '@evaka/lib-components/src/molecules/MessageBoxes'
 import { useUser } from '~auth'
 import { useTranslation } from '~localization'
-import { createApplication, getDuplicateApplications } from '~applications/api'
+import {
+  createApplication,
+  getActivePlacementsByApplicationType,
+  getDuplicateApplications
+} from '~applications/api'
 import { ApplicationType } from '@evaka/lib-common/src/api-types/application/enums'
 import ExpandingInfo from '@evaka/lib-components/src/molecules/ExpandingInfo'
 import Footer from '~Footer'
@@ -48,6 +55,19 @@ export default React.memo(function ApplicationCreation() {
 
   const duplicateExists =
     selectedType !== undefined && duplicates[selectedType] === true
+
+  const [transferApplicationTypes, setTransferApplicationTypes] = useState<
+    Record<ApplicationType, boolean>
+  >(duplicatesDefault)
+  useEffect(() => {
+    void getActivePlacementsByApplicationType(childId).then(
+      setTransferApplicationTypes
+    )
+  }, [])
+
+  const shouldUseTransferApplication =
+    (selectedType === 'DAYCARE' || selectedType === 'PRESCHOOL') &&
+    transferApplicationTypes[selectedType] === true
 
   if (child === undefined) {
     return <Redirect to="/applications" />
@@ -98,10 +118,25 @@ export default React.memo(function ApplicationCreation() {
               <Gap size="L" />
               <AlertBox
                 thin
+                data-qa={'duplicate-application-notification'}
                 message={t.applications.creation.duplicateWarning}
               />
             </>
           ) : null}
+          {!duplicateExists && shouldUseTransferApplication && (
+            <>
+              <Gap size="L" />
+              <InfoBox
+                thin
+                data-qa={'transfer-application-notification'}
+                message={
+                  t.applications.creation.transferApplicationInfo[
+                    selectedType === 'DAYCARE' ? 'DAYCARE' : 'PRESCHOOL'
+                  ]
+                }
+              />
+            </>
+          )}
           <Gap size="s" />
           <P
             dangerouslySetInnerHTML={{

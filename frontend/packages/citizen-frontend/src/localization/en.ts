@@ -138,6 +138,12 @@ const en: Translations = {
         'The child already has a similar unfinished application. Please return to the Applications view and complete the existing application or contact the Early Childhood Education Service Guidance.',
       applicationInfo:
         'You can make changes to your application until its processing starts. After this, you can make changes to your application by contacting early childhood education service counselling (tel. 09 816 31000). If you wish to cancel an application you have submitted, please send an email to early childhood education service counselling (<a href="varhaiskasvatuksen.palveluohjaus@espoo.fi">varhaiskasvatuksen.palveluohjaus@espoo.fi</a>).',
+      transferApplicationInfo: {
+        DAYCARE:
+          'Your child already has a place in the City of Espoo’s early childhood education. Use this application to apply for a transfer to another early childhood education unit.',
+        PRESCHOOL:
+          'Your child already has a place in pre-primary education. Use this application to apply for early childhood education <strong>connected to pre-primary education</strong> or a transfer to another pre-primary education unit.'
+      },
       create: 'Apply'
     },
     editor: {
@@ -730,6 +736,7 @@ const en: Translations = {
       PRESCHOOL: 'Early education application',
       CLUB: 'Club application'
     },
+    transferApplication: 'Transfer application',
     unit: 'Unit',
     period: 'Period',
     created: 'Created',

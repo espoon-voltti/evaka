@@ -176,7 +176,8 @@ data class CitizenApplicationSummary(
     val sentDate: LocalDate?,
     val applicationStatus: ApplicationStatus,
     val createdDate: OffsetDateTime,
-    val modifiedDate: OffsetDateTime
+    val modifiedDate: OffsetDateTime,
+    val transferApplication: Boolean
 )
 
 fun fetchApplicationDetailsWithCurrentOtherGuardianInfo(

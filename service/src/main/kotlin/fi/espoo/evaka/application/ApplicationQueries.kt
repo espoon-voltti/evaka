@@ -115,6 +115,35 @@ fun duplicateApplicationExists(
         .isNotEmpty()
 }
 
+fun activePlacementExists(
+    tx: Database.Read,
+    childId: UUID,
+    type: ApplicationType
+): Boolean {
+    val placementTypes = when (type) {
+        ApplicationType.DAYCARE -> listOf(PlacementType.DAYCARE, PlacementType.DAYCARE_PART_TIME)
+        ApplicationType.PRESCHOOL -> listOf(PlacementType.PREPARATORY, PlacementType.PREPARATORY_DAYCARE, PlacementType.PRESCHOOL, PlacementType.PRESCHOOL_DAYCARE)
+        else -> listOf()
+    }
+    if (placementTypes.isEmpty()) return false
+
+    val sql =
+        """
+            SELECT 1
+            FROM placement
+            WHERE 
+                child_id = :childId AND
+                type = ANY(:types::placement_type[]) AND 
+                current_date <= end_date
+        """.trimIndent()
+    return tx.createQuery(sql)
+        .bind("childId", childId)
+        .bind("types", placementTypes.toTypedArray())
+        .mapTo<Int>()
+        .list()
+        .isNotEmpty()
+}
+
 fun fetchApplicationSummaries(
     h: Handle,
     user: AuthenticatedUser,
@@ -457,7 +486,8 @@ fun fetchApplicationSummariesForCitizen(h: Handle, citizenId: UUID): List<Citize
             a.startDate, a.sentDate, 
             a.status AS application_status,
             a.created AS created_date,
-            a.formmodified AS modified_date
+            a.formmodified AS modified_date,
+            a.transferapplication
         FROM application_view a
         LEFT JOIN daycare d ON a.preferredUnit = d.id
         WHERE guardianId = :guardianId AND NOT a.hidefromguardian

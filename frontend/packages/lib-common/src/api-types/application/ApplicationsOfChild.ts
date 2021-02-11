@@ -33,4 +33,5 @@ export interface CitizenApplicationSummary {
   sentDate: LocalDate | null
   createdDate: Date
   modifiedDate: Date
+  transferApplication: boolean
 }

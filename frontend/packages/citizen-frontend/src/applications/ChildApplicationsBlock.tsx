@@ -178,7 +178,8 @@ export default React.memo(function ChildApplicationsBlock({
               startDate,
               createdDate,
               modifiedDate,
-              applicationStatus
+              applicationStatus,
+              transferApplication
             },
             index
           ) => (
@@ -186,6 +187,8 @@ export default React.memo(function ChildApplicationsBlock({
               <Gap size="L" />
               <H3 noMargin data-qa={`title-application-type-${applicationId}`}>
                 {t.applicationsList.type[type]}
+                {transferApplication &&
+                  ` (${t.applicationsList.transferApplication})`}
               </H3>
               <Gap size="m" />
               <ListGrid labelWidth="max-content" rowGap="s" columnGap="L">

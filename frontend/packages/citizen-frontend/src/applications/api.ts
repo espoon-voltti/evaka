@@ -140,6 +140,15 @@ export async function getDuplicateApplications(
   return data
 }
 
+export async function getActivePlacementsByApplicationType(
+  childId: string
+): Promise<Record<ApplicationType, boolean>> {
+  const { data } = await client.get<Record<ApplicationType, boolean>>(
+    `/citizen/applications/active-placements/${childId}`
+  )
+  return data
+}
+
 export async function saveAttachment(
   applicationId: UUID,
   file: File,

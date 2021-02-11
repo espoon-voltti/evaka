@@ -139,6 +139,12 @@ const sv: Translations = {
         'Ditt barn har en motsvarande oavslutad ansökan. Gå tillbaka till vyn Ansökningar och bearbeta den befintliga ansökan eller ta kontakt med barninvalskoordinatorn.',
       applicationInfo:
         'Du kan ändra i ansökan så länge den inte har tagits till behandling. Därefter kan du göra ändringar i ansökan genom att kontakta småbarnspedagogikens servicehänvisning (tfn 09 8163 27600). Du kan återta en ansökan som du redan lämnat in genom att meddela detta per e-post till småbarnspedagogikens servicehänvisning <a href="mailto:dagis@esbo.fi">dagis@esbo.fi</a>.',
+      transferApplicationInfo: {
+        DAYCARE:
+          'Barnet har redan en plats i Esbo stads småbarnspedagogik. Med denna ansökan kan du ansöka om flyttning till en annan enhet som erbjuder småbarnspedagogik.',
+        PRESCHOOL:
+          'Barnet har redan en förskoleplats. Med denna ansökan kan du ansöka om <strong>småbarnspedagogik i anslutning till förskoleundervisningen</strong> eller om flyttning till en annan enhet som erbjuder förskoleundervisning.'
+      },
       create: 'Ny ansökan'
     },
     editor: {
@@ -729,6 +735,7 @@ const sv: Translations = {
       PRESCHOOL: 'Anmälan till förskolan',
       CLUB: 'Ansökan till klubbverksamhet'
     },
+    transferApplication: 'Ansökan om överföring',
     unit: 'Enhet',
     period: 'Period',
     created: 'Skapad',

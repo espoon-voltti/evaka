@@ -158,6 +158,25 @@ class ApplicationControllerCitizen(
         }
     }
 
+    @GetMapping("/applications/active-placements/{childId}")
+    fun getChildPlacementStatusByApplicationType(
+        db: Database.Connection,
+        user: AuthenticatedUser,
+        @PathVariable childId: UUID
+    ): ResponseEntity<Map<ApplicationType, Boolean>> {
+        Audit.ApplicationReadActivePlacementsByType.log(targetId = user.id, objectId = childId)
+        user.requireOneOfRoles(UserRole.END_USER)
+
+        return db.read { tx ->
+            ApplicationType.values()
+                .map { type ->
+                    type to activePlacementExists(tx, childId = childId, type = type)
+                }
+                .toMap()
+                .let { ResponseEntity.ok(it) }
+        }
+    }
+
     @PutMapping("/applications/{applicationId}")
     fun updateApplication(
         db: Database,
