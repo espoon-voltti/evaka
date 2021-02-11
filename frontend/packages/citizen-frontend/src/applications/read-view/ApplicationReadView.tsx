@@ -13,8 +13,8 @@ import { SpinnerSegment } from '@evaka/lib-components/src/atoms/state/Spinner'
 import ErrorSegment from '@evaka/lib-components/src/atoms/state/ErrorSegment'
 import { apiDataToFormData } from '~applications/editor/ApplicationFormData'
 import { useUser } from '~auth'
-import ApplicationReadViewDaycare from '~applications/read-view/ApplicationReadViewDaycare'
 import Footer from '~Footer'
+import ApplicationReadViewContents from '~applications/read-view/ApplicationReadViewContents'
 
 export default React.memo(function ApplicationReadView() {
   const { applicationId } = useParams<{ applicationId: string }>()
@@ -35,20 +35,10 @@ export default React.memo(function ApplicationReadView() {
         {apiData.isLoading && <SpinnerSegment />}
         {apiData.isFailure && <ErrorSegment />}
         {apiData.isSuccess && (
-          <>
-            {apiData.value.type === 'DAYCARE' ? (
-              <ApplicationReadViewDaycare
-                application={apiData.value}
-                formData={apiDataToFormData(apiData.value, user)}
-              />
-            ) : apiData.value.type === 'PRESCHOOL' ? (
-              <ErrorSegment title={'Hakemustyyppiä ei ole vielä toteutettu'} />
-            ) : apiData.value.type === 'CLUB' ? (
-              <ErrorSegment title={'Hakemustyyppiä ei ole vielä toteutettu'} />
-            ) : (
-              <ErrorSegment title={'Tuntematon hakemustyyppi'} />
-            )}
-          </>
+          <ApplicationReadViewContents
+            application={apiData.value}
+            formData={apiDataToFormData(apiData.value, user)}
+          />
         )}
       </Container>
       <Footer />
