@@ -192,6 +192,8 @@ const sv: Translations = {
         },
         notYetSent:
           '<strong>Du har inte ännu skickat ansökan.</strong> Granska informationen du gett, och skicka ansökan med Skicka ansökan-knappen när du är färdig',
+        notYetSaved:
+          '<strong>Ändringarna har inte sparats än.</strong> Granska informationen du gett, och skicka ansökan med "Spara ändringarna" -knappen i slutet av blankett.',
         no: 'Nej',
         basics: {
           created: 'Skapad',

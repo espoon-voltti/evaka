@@ -90,12 +90,12 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
     setErrors(validateApplication(apiData, formData))
     setVerificationRequested(true)
 
-    if (applicationHasErrors(errors)) {
-      window.scrollTo({ left: 0, top: 0, behavior: 'smooth' })
-    } else {
+    if (!applicationHasErrors(errors)) {
       setVerified(false)
       setVerifying(true)
     }
+
+    window.scrollTo({ left: 0, top: 0, behavior: 'smooth' })
   }
 
   const onSaveDraft = () => {

@@ -31,6 +31,7 @@ import InlineButton from '@evaka/lib-components/src/atoms/buttons/InlineButton'
 import { noop } from 'lodash'
 import { removeUnprocessedApplication } from '~applications/api'
 import { OverlayContext } from '~overlay/state'
+import { isAfter } from 'date-fns'
 
 const StyledLink = styled(Link)`
   color: ${colors.blues.primary};
@@ -189,25 +190,37 @@ export default React.memo(function ChildApplicationsBlock({
               </H3>
               <Gap size="m" />
               <ListGrid labelWidth="max-content" rowGap="s" columnGap="L">
-                <Label>{t.applicationsList.unit}</Label>
-                <span data-qa={`application-unit-${applicationId}`}>
-                  {preferredUnitName}
-                </span>
+                {preferredUnitName !== null && (
+                  <>
+                    <Label>{t.applicationsList.unit}</Label>
+                    <span data-qa={`application-unit-${applicationId}`}>
+                      {preferredUnitName}
+                    </span>
+                  </>
+                )}
 
-                <Label>{t.applicationsList.period}</Label>
-                <span data-qa={`application-period-${applicationId}`}>
-                  {startDate?.format()}
-                </span>
+                {startDate !== null && (
+                  <>
+                    <Label>{t.applicationsList.period}</Label>
+                    <span data-qa={`application-period-${applicationId}`}>
+                      {startDate.format()}
+                    </span>
+                  </>
+                )}
 
                 <Label>{t.applicationsList.created}</Label>
                 <span data-qa={`application-created-${applicationId}`}>
                   {formatDate(createdDate)}
                 </span>
 
-                <Label>{t.applicationsList.modified}</Label>
-                <span data-qa={`application-modified-${applicationId}`}>
-                  {formatDate(modifiedDate)}
-                </span>
+                {isAfter(modifiedDate, createdDate) && (
+                  <>
+                    <Label>{t.applicationsList.modified}</Label>
+                    <span data-qa={`application-modified-${applicationId}`}>
+                      {formatDate(modifiedDate)}
+                    </span>
+                  </>
+                )}
 
                 <Label>{t.applicationsList.status.title}</Label>
                 <StatusContainer

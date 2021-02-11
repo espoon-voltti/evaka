@@ -186,7 +186,9 @@ export default {
           CLUB: 'Kerhohakemuksen tarkistaminen'
         },
         notYetSent:
-          '<strong>Hakemusta ei ole vielä lähetetty.</strong> Tarkista antamasi tiedot ja lähetä sivun lopussa olevalla Lähetä hakemus-painikkeella.',
+          '<strong>Hakemusta ei ole vielä lähetetty.</strong> Tarkista antamasi tiedot ja lähetä sivun lopussa olevalla Lähetä hakemus -painikkeella.',
+        notYetSaved:
+          '<strong>Muutoksia ei ole vielä tallennettu.</strong> Tarkista antamasi tiedot ja tallenna sivun lopussa olevalla Tallenna muutokset -painikkeella.',
         no: 'Ei',
         basics: {
           created: 'Hakemus luotu',
