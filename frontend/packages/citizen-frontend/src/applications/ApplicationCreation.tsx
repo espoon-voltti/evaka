@@ -114,6 +114,7 @@ export default React.memo(function ApplicationCreation() {
               <Gap size="L" />
               <AlertBox
                 thin
+                data-qa={'duplicate-application-notification'}
                 message={t.applications.creation.duplicateWarning}
               />
             </>
@@ -123,6 +124,7 @@ export default React.memo(function ApplicationCreation() {
               <Gap size="L" />
               <InfoBox
                 thin
+                data-qa={'transfer-application-notification'}
                 message={
                   t.applications.creation.transferApplicationInfo[
                     selectedType === 'DAYCARE' ? 'DAYCARE' : 'PRESCHOOL'

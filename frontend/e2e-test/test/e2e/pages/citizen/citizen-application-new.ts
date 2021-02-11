@@ -4,6 +4,12 @@ import { ApplicationType } from '@evaka/lib-common/src/api-types/application/enu
 export default class CitizenNewApplicationPage {
   readonly title = Selector('h1')
   readonly submit = Selector('[data-qa="submit"]')
+  readonly transferApplicationNotification = Selector(
+    '[data-qa="transfer-application-notification"]'
+  )
+  readonly duplicateApplicationNotification = Selector(
+    '[data-qa="duplicate-application-notification"]'
+  )
 
   async selectType(type: ApplicationType) {
     await t.click(Selector(`[data-qa="type-radio-${type}"]`))

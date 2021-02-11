@@ -8,21 +8,36 @@ import CitizenNewApplicationPage from '../../pages/citizen/citizen-application-n
 import CitizenApplicationEditor from '../../pages/citizen/citizen-application-editor'
 import { logConsoleMessages } from '../../utils/fixture'
 import { enduserRole } from '../../config/users'
-import { deleteApplication, getApplication } from '../../dev-api'
+import {
+  deleteApplication,
+  execSimpleApplicationActions,
+  getApplication,
+  getDecisionsByApplication,
+  insertApplications,
+  runPendingAsyncJobs
+} from '../../dev-api'
 import {
   AreaAndPersonFixtures,
   initializeAreaAndPersonData
 } from '../../dev-api/data-init'
-import { Fixture } from '../../dev-api/fixtures'
+import {
+  applicationFixture,
+  daycareFixture,
+  Fixture
+} from '../../dev-api/fixtures'
 import {
   fullDaycareForm,
   minimalDaycareForm
 } from '../../utils/application-forms'
+import CitizenDecisionsPage from '../../pages/citizen/citizen-decisions'
+import CitizenDecisionResponsePage from '../../pages/citizen/citizen-decision-response'
 
 const citizenHomePage = new CitizenHomePage()
 const citizenApplicationsPage = new CitizenApplicationsPage()
 const citizenNewApplicationPage = new CitizenNewApplicationPage()
 const citizenApplicationEditor = new CitizenApplicationEditor()
+const citizenDecisionsPage = new CitizenDecisionsPage()
+const citizenDecisionResponsePage = new CitizenDecisionResponsePage()
 
 let applicationId: string
 let fixtures: AreaAndPersonFixtures
@@ -105,4 +120,82 @@ test('Full valid daycare application can be sent', async (t) => {
 
   const application = await getApplication(applicationId)
   fullDaycareForm.validateResult(application)
+})
+
+test('Notification on duplicate application is visible', async (t) => {
+  await t.useRole(enduserRole)
+
+  const application = applicationFixture(
+    fixtures.enduserChildFixtureJari,
+    fixtures.enduserGuardianFixture,
+    undefined,
+    'PRESCHOOL',
+    null,
+    [daycareFixture.id],
+    true
+  )
+  applicationId = application.id
+  await insertApplications([application])
+
+  await execSimpleApplicationActions(applicationId, [
+    'move-to-waiting-placement',
+    'create-default-placement-plan',
+    'send-decisions-without-proposal'
+  ])
+
+  await runPendingAsyncJobs()
+
+  await t.click(citizenHomePage.nav.applications)
+  await citizenApplicationsPage.createApplication(
+    fixtures.enduserChildFixtureJari.id
+  )
+  await citizenNewApplicationPage.selectType('PRESCHOOL')
+
+  await t
+    .expect(citizenNewApplicationPage.duplicateApplicationNotification.visible)
+    .ok()
+})
+
+test('Notification on transfer application is visible', async (t) => {
+  await t.useRole(enduserRole)
+
+  const application = applicationFixture(
+    fixtures.enduserChildFixtureJari,
+    fixtures.enduserGuardianFixture,
+    undefined,
+    'PRESCHOOL',
+    null,
+    [daycareFixture.id],
+    true
+  )
+  applicationId = application.id
+  await insertApplications([application])
+
+  await execSimpleApplicationActions(applicationId, [
+    'move-to-waiting-placement',
+    'create-default-placement-plan',
+    'send-decisions-without-proposal'
+  ])
+
+  await runPendingAsyncJobs()
+
+  const decisions = await getDecisionsByApplication(applicationId)
+  const decisionId = decisions[0]?.id
+
+  await t.click(citizenHomePage.nav.decisions)
+  await t.click(citizenDecisionsPage.goRespondToDecisionBtn(applicationId))
+
+  await citizenDecisionResponsePage.acceptDecision(decisionId)
+
+  await runPendingAsyncJobs()
+
+  await t.click(citizenHomePage.nav.applications)
+  await citizenApplicationsPage.createApplication(
+    fixtures.enduserChildFixtureJari.id
+  )
+  await citizenNewApplicationPage.selectType('PRESCHOOL')
+
+  await t
+    .expect(citizenNewApplicationPage.transferApplicationNotification.visible)
+    .ok()
 })
