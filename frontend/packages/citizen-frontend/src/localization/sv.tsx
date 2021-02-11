@@ -595,23 +595,80 @@ const sv: Translations = {
         siblingBasis: {
           title: 'Ansökan på basis av syskonrelationer',
           info: {
-            DAYCARE: `
-            <p>Målet är att placera syskon i samma enhet om inte familjen önskar annat. Som syskon betraktas barn som är folkbokförda på samma adress. Om du ansöker om en plats för syskon, som inte ännu har plats inom småbarnspedagogik, skriv uppgiften i tilläggsuppgifter.</p>
-            <p>Fyll i dessa uppgifter endast om du vill hänvisa till barnets syskonrelationer.</p>
-            `,
-            PRESCHOOL: `
-            <p>Fyll i dessa uppgifter endast om du yrkar på prioriteringsordningen till sekundär förskola</p>
-            <p>Vårdnadshavarna kan ansöka om plats för sitt barn i en annan förskola än närförskolan. Sökande från andra elevupptagningsområden kan antas endast om det finns lediga platser efter att barnen i förskolans eget elevupptagningsområde har fått en plats. Om det finns flera sökande än det finns platser tillämpas följande prioriteringsordning. Om du hänvisar till kontinuitetsprincipen skriv barnets nuvarande enhet i fältet för tilläggsuppgifter.</p>
-            <ol type="a">
-              <li>Kontinuitet vid övergång från småbarnspedagogik till förskola. Vid antagning till förskola prioriteras ett barn som haft sin dagvårdsplats i det daghem där förskolan är.</li>
-              <li>Barn med syskon i skolan som finns i samma elevupptagningsområde. Syskonprincipen innebär att elever placeras i samma enhet som äldre syskon. För barn i förskolan tillämpas principen om eleven har syskon i årskurs 1–6 i skolan som finns i samma elevupptagningsområde som förskolan. Som syskon betraktas barn som är folkbokförda på samma adress.</li>
-            </ol>
-            <p>Fyll i dessa uppgifter endast om du vill hänvisa till barnets syskonrelationer.</p>
-            `,
-            CLUB: `
-            <p>Barn som bor på samma adress betraktas som syskon. Ett försök görs för att placera syskonen i samma klubbgrupp när familjen önskar det.</p>
-            <p>Fyll i dessa uppgifter endast om du vill hänvisa till barnets syskonrelationer och välj samma klubb som syskonet deltar i nedan.</p>
-            `
+            DAYCARE: function SiblingBasisSummaryTextDaycare() {
+              return (
+                <P>
+                  <p>
+                    Målet är att placera syskon i samma enhet om inte familjen
+                    önskar annat. Som syskon betraktas barn som är folkbokförda
+                    på samma adress. Om du ansöker om en plats för syskon, som
+                    inte ännu har plats inom småbarnspedagogik, skriv uppgiften
+                    i tilläggsuppgifter.
+                  </p>
+                  <p>
+                    Fyll i dessa uppgifter endast om du vill hänvisa till
+                    barnets syskonrelationer.
+                  </p>
+                </P>
+              )
+            },
+            PRESCHOOL: function SiblingBasisSummaryTextPreschool() {
+              return (
+                <P>
+                  <p>
+                    Fyll i dessa uppgifter endast om du yrkar på
+                    prioriteringsordningen till sekundär förskola
+                  </p>
+                  <p>
+                    Vårdnadshavarna kan ansöka om plats för sitt barn i en annan
+                    förskola än närförskolan. Sökande från andra
+                    elevupptagningsområden kan antas endast om det finns lediga
+                    platser efter att barnen i förskolans eget
+                    elevupptagningsområde har fått en plats. Om det finns flera
+                    sökande än det finns platser tillämpas följande
+                    prioriteringsordning. Om du hänvisar till
+                    kontinuitetsprincipen skriv barnets nuvarande enhet i fältet
+                    för tilläggsuppgifter.
+                  </p>
+                  <ol type="a">
+                    <li>
+                      Kontinuitet vid övergång från småbarnspedagogik till
+                      förskola. Vid antagning till förskola prioriteras ett barn
+                      som haft sin dagvårdsplats i det daghem där förskolan är.
+                    </li>
+                    <li>
+                      Barn med syskon i skolan som finns i samma
+                      elevupptagningsområde. Syskonprincipen innebär att elever
+                      placeras i samma enhet som äldre syskon. För barn i
+                      förskolan tillämpas principen om eleven har syskon i
+                      årskurs 1–6 i skolan som finns i samma
+                      elevupptagningsområde som förskolan. Som syskon betraktas
+                      barn som är folkbokförda på samma adress.
+                    </li>
+                  </ol>
+                  <p>
+                    Fyll i dessa uppgifter endast om du vill hänvisa till
+                    barnets syskonrelationer.
+                  </p>
+                </P>
+              )
+            },
+            CLUB: function SiblingBasisSummaryTextClub() {
+              return (
+                <P>
+                  <p>
+                    Barn som bor på samma adress betraktas som syskon. Ett
+                    försök görs för att placera syskonen i samma klubbgrupp när
+                    familjen önskar det.
+                  </p>
+                  <p>
+                    Fyll i dessa uppgifter endast om du vill hänvisa till
+                    barnets syskonrelationer och välj samma klubb som syskonet
+                    deltar i nedan.
+                  </p>
+                </P>
+              )
+            }
           },
           checkbox: {
             DAYCARE:

@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
-import { H3, Label, P } from '@evaka/lib-components/src/typography'
+import { H3, Label } from '@evaka/lib-components/src/typography'
 import Checkbox from '@evaka/lib-components/src/atoms/form/Checkbox'
 import { FixedSpaceColumn } from '@evaka/lib-components/src/layout/flex-helpers'
 import InputField from '@evaka/lib-components/src/atoms/form/InputField'
@@ -26,15 +26,9 @@ export default React.memo(function SiblingBasisSubSection({
   return (
     <>
       <H3>{t.applications.editor.unitPreference.siblingBasis.title}</H3>
-      <P
-        dangerouslySetInnerHTML={{
-          __html:
-            t.applications.editor.unitPreference.siblingBasis.info[
-              applicationType
-            ]
-        }}
-      />
-
+      {t.applications.editor.unitPreference.siblingBasis.info[
+        applicationType
+      ]()}
       <Checkbox
         checked={formData.siblingBasis}
         dataQa="siblingBasis-input"

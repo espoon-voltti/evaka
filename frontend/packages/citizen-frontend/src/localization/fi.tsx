@@ -580,23 +580,72 @@ export default {
         siblingBasis: {
           title: 'Haku sisarperusteella',
           info: {
-            DAYCARE: `
-            <p>Lapsella on sisarusperuste samaan varhaiskasvatuspaikkaan, jossa hänen sisaruksensa on päätöksentekohetkellä. Sisarukseksi katsotaan kaikki samassa osoitteessa asuvat lapset. Tavoitteena on sijoittaa sisarukset samaan varhaiskasvatuspaikkaan perheen niin toivoessa. Jos haet paikkaa sisaruksille, jotka eivät vielä ole varhaiskasvatuksessa, kirjoita tieto lisätietokenttään.</p>
-            <p>Täytä nämä tiedot vain, jos käytät sisarusperustetta, sekä valitse alla olevissa hakutoiveissa ensisijaiseksi toiveeksi sama varhaiskasvatusyksikkö, jossa lapsen sisarus on.</p>
-            `,
-            PRESCHOOL: `
-            <p>Esioppilaalla on sisarusperuste:</p>
-            <ol type="a">
-              <li>Oman palvelualueen päiväkotiin, jossa esioppilaalla on sisarus, jolla on päätöksentekohetkellä ja tulevana esiopetusvuonna paikka esiopetuspäiväkodissa.</li>
-              <li>Kunnan osoittamaan lähikouluun, jota esioppilaan sisarus käy tulevana lukuvuonna.</li>
-            </ol>
-            <p>Huoltaja voi valita, käyttääkö hän sisarusperustetta kohdan a vai b mukaisesti, jos esioppilaalla on sisarusperuste molempien kohtien mukaan. Valinta ilmoitetaan alla. Sisarukseksi katsotaan kaikki samassa osoitteessa asuvat lapset.</p>
-            <p>Täytä nämä tiedot vain, jos käytät sisarusperustetta, sekä valitse alla olevissa hakutoiveissa ensisijaiseksi toiveeksi sama yksikkö, jossa lapsen sisarus on.</p>
-            `,
-            CLUB: `
-            <p>Sisarukseksi katsotaan kaikki samassa osoitteessa asuvat lapset. Tavoitteena on sijoittaa sisarukset samaan kerhoryhmään perheen niin toivoessa.</p>
-            <p>Täytä nämä tiedot vain, jos käytät sisarusperustetta, sekä valitse alla olevissa hakutoiveissa ensisijaiseksi toiveeksi sama kerho, jossa lapsen sisarus on.</p>
-            `
+            DAYCARE: function SiblingBasisSummaryTextDaycare() {
+              return (
+                <P>
+                  <p>
+                    Lapsella on sisarusperuste samaan varhaiskasvatuspaikkaan,
+                    jossa hänen sisaruksensa on päätöksentekohetkellä.
+                    Sisarukseksi katsotaan kaikki samassa osoitteessa asuvat
+                    lapset. Tavoitteena on sijoittaa sisarukset samaan
+                    varhaiskasvatuspaikkaan perheen niin toivoessa. Jos haet
+                    paikkaa sisaruksille, jotka eivät vielä ole
+                    varhaiskasvatuksessa, kirjoita tieto lisätietokenttään.
+                  </p>
+                  <p>
+                    Täytä nämä tiedot vain, jos käytät sisarusperustetta, sekä
+                    valitse alla olevissa hakutoiveissa ensisijaiseksi toiveeksi
+                    sama varhaiskasvatusyksikkö, jossa lapsen sisarus on.
+                  </p>
+                </P>
+              )
+            },
+            PRESCHOOL: function SiblingBasisSummaryTextPreschool() {
+              return (
+                <P>
+                  <p>Esioppilaalla on sisarusperuste:</p>
+                  <ol type="a">
+                    <li>
+                      Oman palvelualueen päiväkotiin, jossa esioppilaalla on
+                      sisarus, jolla on päätöksentekohetkellä ja tulevana
+                      esiopetusvuonna paikka esiopetuspäiväkodissa.
+                    </li>
+                    <li>
+                      Kunnan osoittamaan lähikouluun, jota esioppilaan sisarus
+                      käy tulevana lukuvuonna.
+                    </li>
+                  </ol>
+                  <p>
+                    Huoltaja voi valita, käyttääkö hän sisarusperustetta kohdan
+                    a vai b mukaisesti, jos esioppilaalla on sisarusperuste
+                    molempien kohtien mukaan. Valinta ilmoitetaan alla.
+                    Sisarukseksi katsotaan kaikki samassa osoitteessa asuvat
+                    lapset.
+                  </p>
+                  <p>
+                    Täytä nämä tiedot vain, jos käytät sisarusperustetta, sekä
+                    valitse alla olevissa hakutoiveissa ensisijaiseksi toiveeksi
+                    sama yksikkö, jossa lapsen sisarus on.
+                  </p>
+                </P>
+              )
+            },
+            CLUB: function SiblingBasisSummaryTextClub() {
+              return (
+                <P>
+                  <p>
+                    Sisarukseksi katsotaan kaikki samassa osoitteessa asuvat
+                    lapset. Tavoitteena on sijoittaa sisarukset samaan
+                    kerhoryhmään perheen niin toivoessa.
+                  </p>
+                  <p>
+                    Täytä nämä tiedot vain, jos käytät sisarusperustetta, sekä
+                    valitse alla olevissa hakutoiveissa ensisijaiseksi toiveeksi
+                    sama kerho, jossa lapsen sisarus on.
+                  </p>
+                </P>
+              )
+            }
           },
           checkbox: {
             DAYCARE:
