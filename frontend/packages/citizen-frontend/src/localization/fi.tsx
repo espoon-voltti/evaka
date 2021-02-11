@@ -683,8 +683,28 @@ export default {
       },
       contactInfo: {
         title: 'Henkilötiedot',
-        info:
-          'Henkilötiedot on haettu väestötiedoista, eikä niitä voi muuttaa tällä hakemuksella. Jos henkilötiedoissa on virheitä, päivitäthän tiedot <a href="https://dvv.fi/henkiloasiakkaat" target="_blank" rel="noreferrer">Digi- ja Väestötietoviraston sivuilla</a>. Mikäli osoitteenne on muuttumassa, voit lisätä tulevan osoitteen erilliseen kohtaan hakemuksella; lisää tuleva osoite sekä lapselle että huoltajalle. Virallisena osoitetietoa pidetään vasta, kun se on päivittynyt väestötietojärjestelmään. Päätökset esiopetus- ja varhaiskasvatuspaikoista toimitetaan automaattisesti myös eri osoitteessa asuvalle väestötiedoista löytyvälle huoltajalle.',
+        info: function ContactInfoInfoText() {
+          return (
+            <P>
+              Henkilötiedot on haettu väestötiedoista, eikä niitä voi muuttaa
+              tällä hakemuksella. Jos henkilötiedoissa on virheitä, päivitäthän
+              tiedot{' '}
+              <a
+                href="https://dvv.fi/henkiloasiakkaat"
+                target="_blank"
+                rel="noreferrer"
+              >
+                Digi- ja Väestötietoviraston sivuilla
+              </a>
+              . Mikäli osoitteenne on muuttumassa, voit lisätä tulevan osoitteen
+              erilliseen kohtaan hakemuksella; lisää tuleva osoite sekä lapselle
+              että huoltajalle. Virallisena osoitetietoa pidetään vasta, kun se
+              on päivittynyt väestötietojärjestelmään. Päätökset esiopetus- ja
+              varhaiskasvatuspaikoista toimitetaan automaattisesti myös eri
+              osoitteessa asuvalle väestötiedoista löytyvälle huoltajalle.
+            </P>
+          )
+        },
         childInfoTitle: 'Lapsen tiedot',
         childFirstName: 'Lapsen etunimet',
         childLastName: 'Lapsen sukunimi',

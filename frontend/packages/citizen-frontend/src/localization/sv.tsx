@@ -709,8 +709,31 @@ const sv: Translations = {
       },
       contactInfo: {
         title: 'Personuppgifter',
-        info:
-          'Personuppgifterna hämtas från befolkningsdatabasen och du kan inte ändra dem med den här ansökan. Om det finns fel i personuppgifterna, vänligen uppdatera uppgifterna på webbplatsen <a href="https://dvv.fi/sv/kontroll-av-egna-uppgifter-service" target="_blank" rel="noopener noreferrer">dvv.fi</a> (Myndigheten för digitalisering och befolkningsdata). Ifall adressen kommer att ändras, kan du lägga till den nya adressen på ett separat ställe i ansökan. Fyll i den nya adressen både för vårdnadshavare och barnet. Adressuppgifterna är officiella först när de har uppdaterats av myndigheten för digitalisering och befolkningsdata. Beslutet om barnets plats inom småbarnspedagogiken eller förskoleundervisningen skickas automatiskt också till en vårdnadshavare som bor på en annan adress enligt befolkningsregistret.',
+        info: function ContactInfoInfoText() {
+          return (
+            <P>
+              Personuppgifterna hämtas från befolkningsdatabasen och du kan inte
+              ändra dem med den här ansökan. Om det finns fel i
+              personuppgifterna, vänligen uppdatera uppgifterna på webbplatsen{' '}
+              <a
+                href="https://dvv.fi/sv/kontroll-av-egna-uppgifter-service"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                dvv.fi
+              </a>{' '}
+              (Myndigheten för digitalisering och befolkningsdata). Ifall
+              adressen kommer att ändras, kan du lägga till den nya adressen på
+              ett separat ställe i ansökan. Fyll i den nya adressen både för
+              vårdnadshavare och barnet. Adressuppgifterna är officiella först
+              när de har uppdaterats av myndigheten för digitalisering och
+              befolkningsdata. Beslutet om barnets plats inom
+              småbarnspedagogiken eller förskoleundervisningen skickas
+              automatiskt också till en vårdnadshavare som bor på en annan
+              adress enligt befolkningsregistret.
+            </P>
+          )
+        },
         childInfoTitle: 'Barnets information',
         childFirstName: 'Alla förnamn',
         childLastName: 'Efternamn',

@@ -9,7 +9,7 @@ import {
   FixedSpaceRow
 } from '@evaka/lib-components/src/layout/flex-helpers'
 import Checkbox from '@evaka/lib-components/src/atoms/form/Checkbox'
-import { H3, Label, P } from '@evaka/lib-components/src/typography'
+import { H3, Label } from '@evaka/lib-components/src/typography'
 import InputField from '@evaka/lib-components/src/atoms/form/InputField'
 import { Gap } from '@evaka/lib-components/src/white-space'
 import { errorToInputInfo } from '~form-validation'
@@ -30,11 +30,7 @@ export default React.memo(function ChildSubSection({
   return (
     <>
       <Gap size={'m'} />
-      <P
-        dangerouslySetInnerHTML={{
-          __html: t.applications.editor.contactInfo.info
-        }}
-      />
+      {t.applications.editor.contactInfo.info()}
       <H3>{t.applications.editor.contactInfo.childInfoTitle}</H3>
       <Gap size={'xs'} />
       <FixedSpaceRow spacing={'XL'}>

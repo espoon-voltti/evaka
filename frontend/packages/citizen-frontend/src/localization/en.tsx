@@ -719,8 +719,31 @@ const en: Translations = {
       },
       contactInfo: {
         title: 'Personal information',
-        info:
-          "The personal information has been retrieved from the population data services and cannot be changed with this application. If the personal information is incorrect, please update the information on https://dvv.fi/en/certificates-from-the-population-information-system. If your address is about to change, you can add the new address in a separate field in the application. Add a future address for both the child and guardian. The address information will be official only when it has been updated to the database of the Digital and Population Data Services Agency. Decisions on the child's early childhood or pre-primary education place will be automatically sent to another guardian who lives at a different address based on the Population Information System.",
+        info: function ContactInfoInfoText() {
+          return (
+            <P>
+              The personal information has been retrieved from the population
+              data services and cannot be changed with this application. If the
+              personal information is incorrect, please update the information
+              on
+              <a
+                href="https://dvv.fi/en/certificates-from-the-population-information-system."
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                dvv.fi
+              </a>{' '}
+              If your address is about to change, you can add the new address in
+              a separate field in the application. Add a future address for both
+              the child and guardian. The address information will be official
+              only when it has been updated to the database of the Digital and
+              Population Data Services Agency. Decisions on the child{"'"}s
+              early childhood or pre-primary education place will be
+              automatically sent to another guardian who lives at a different
+              address based on the Population Information System.
+            </P>
+          )
+        },
         childInfoTitle: "Child's information",
         childFirstName: "Child's first name(s)",
         childLastName: "Child's last name",
