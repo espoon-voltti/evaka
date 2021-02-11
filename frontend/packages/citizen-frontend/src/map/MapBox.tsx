@@ -7,18 +7,18 @@ import { FooterContent } from '~Footer'
 import { MapContainer, Marker, TileLayer } from 'react-leaflet'
 import { PublicUnit } from '@evaka/lib-common/src/api-types/units/PublicUnit'
 import marker from './marker.svg'
+import markerHighlight from './marker-highlight.svg'
 
 export interface Props {
   units: PublicUnit[]
+  selectedUnit: PublicUnit | null
 }
 
-export default React.memo(function MapBox({ units }: Props) {
-  const icon = useMemo(
-    () =>
-      new leaflet.Icon({
-        iconUrl: marker
-      }),
-    [marker]
+export default React.memo(function MapBox({ units, selectedUnit }: Props) {
+  const icon = useMemo(() => new leaflet.Icon({ iconUrl: marker }), [marker])
+  const highlightIcon = useMemo(
+    () => new leaflet.Icon({ iconUrl: markerHighlight }),
+    [markerHighlight]
   )
   return (
     <Wrapper className="map-box">
@@ -29,11 +29,12 @@ export default React.memo(function MapBox({ units }: Props) {
         />
         {units.map(({ id, location }) => {
           if (location?.lat == null || location?.lon == null) return null
+          const isSelected = selectedUnit?.id === id
           return (
             <Marker
               key={id}
               position={[location.lat, location.lon]}
-              icon={icon}
+              icon={isSelected ? highlightIcon : icon}
             />
           )
         })}
