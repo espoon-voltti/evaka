@@ -694,15 +694,54 @@ const sv: Translations = {
           startDateMissing:
             'För att välja önskade enheter, välj det första önskade startdatumet i avsnittet om "Servicebehov"',
           info: {
-            DAYCARE: `
-            <p>Du kan ange 1-3 platser i önskad ordning. Önskemålen garanterar inte en plats i den önskade enheten, men möjligheterna att få en önskad plats ökar om du anger flera alternativ.</p>
-            <p>Du kan visa enhetsplatserna genom att välja 'Enheter på kartan'.</p>`,
-            PRESCHOOL: `
-            <p>Du kan ange 1-3 platser i önskad ordning. Önskemålen garanterar inte en plats i den önskade enheten, men möjligheterna att få en önskad plats ökar om du anger flera alternativ.</p>
-            <p>Du kan visa enhetsplatserna genom att välja 'Enheter på kartan'.</p>`,
-            CLUB: `
-            <p>Du kan ange 1-3 platser i önskad ordning. Önskemålen garanterar inte en plats i den önskade enheten, men möjligheterna att få en önskad plats ökar om du anger flera alternativ.</p>
-            <p>Du kan visa enhetsplatserna genom att välja 'Enheter på kartan'.</p>`
+            DAYCARE: function UnitPreferenceInfoTextDaycare() {
+              return (
+                <P>
+                  <p>
+                    Du kan ange 1-3 platser i önskad ordning. Önskemålen
+                    garanterar inte en plats i den önskade enheten, men
+                    möjligheterna att få en önskad plats ökar om du anger flera
+                    alternativ.
+                  </p>
+                  <p>
+                    Du kan visa enhetsplatserna genom att välja {"'"}Enheter på
+                    kartan{"'"}.
+                  </p>
+                </P>
+              )
+            },
+            PRESCHOOL: function UnitPreferenceInfoTextPreschool() {
+              return (
+                <P>
+                  <p>
+                    Du kan ange 1-3 platser i önskad ordning. Önskemålen
+                    garanterar inte en plats i den önskade enheten, men
+                    möjligheterna att få en önskad plats ökar om du anger flera
+                    alternativ.
+                  </p>
+                  <p>
+                    Du kan visa enhetsplatserna genom att välja {"'"}Enheter på
+                    kartan{"'"}.
+                  </p>
+                </P>
+              )
+            },
+            CLUB: function UnitPreferenceInfoTextClub() {
+              return (
+                <P>
+                  <p>
+                    Du kan ange 1-3 platser i önskad ordning. Önskemålen
+                    garanterar inte en plats i den önskade enheten, men
+                    möjligheterna att få en önskad plats ökar om du anger flera
+                    alternativ.
+                  </p>
+                  <p>
+                    Du kan visa enhetsplatserna genom att välja {"'"}Enheter på
+                    kartan{"'"}.
+                  </p>
+                </P>
+              )
+            }
           },
           mapLink: 'Enheter på kartan',
           languageFilter: {

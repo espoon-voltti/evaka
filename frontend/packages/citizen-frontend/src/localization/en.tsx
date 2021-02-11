@@ -665,15 +665,54 @@ const en: Translations = {
           startDateMissing:
             'To select preferred units first set the preferred start date on "Service need" section',
           info: {
-            DAYCARE: `
-            <p>You can apply for 1 to 3 locations in your order of preference. Application preferences do not guarantee a place at the desired location, but the possibility of obtaining a desired location increases by giving more than one option.</p>
-            <p>You can display the unit locations by choosing 'Unit map view'.</p>`,
-            PRESCHOOL: `
-            <p>You can apply for 1 to 3 locations in your order of preference. Application preferences do not guarantee a place at the desired location, but the possibility of obtaining a desired location increases by giving more than one option.</p>
-            <p>You can display the unit locations by choosing 'Unit map view'.</p>`,
-            CLUB: `
-            <p>You can apply for 1 to 3 locations in your order of preference. Application preferences do not guarantee a place at the desired location, but the possibility of obtaining a desired location increases by giving more than one option.</p>
-            <p>You can display the unit locations by choosing 'Unit map view'.</p>`
+            DAYCARE: function UnitPreferenceInfoTextDaycare() {
+              return (
+                <P>
+                  <p>
+                    You can apply for 1 to 3 locations in your order of
+                    preference. Application preferences do not guarantee a place
+                    at the desired location, but the possibility of obtaining a
+                    desired location increases by giving more than one option.
+                  </p>
+                  <p>
+                    You can display the unit locations by choosing {"'"}Unit map
+                    view{"'"}.
+                  </p>
+                </P>
+              )
+            },
+            PRESCHOOL: function UnitPreferenceInfoTextPreschool() {
+              return (
+                <P>
+                  <p>
+                    You can apply for 1 to 3 locations in your order of
+                    preference. Application preferences do not guarantee a place
+                    at the desired location, but the possibility of obtaining a
+                    desired location increases by giving more than one option.
+                  </p>
+                  <p>
+                    You can display the unit locations by choosing {"'"}Unit map
+                    view{"'"}.
+                  </p>
+                </P>
+              )
+            },
+            CLUB: function UnitPreferenceInfoTextClub() {
+              return (
+                <P>
+                  <p>
+                    You can apply for 1 to 3 locations in your order of
+                    preference. Application preferences do not guarantee a place
+                    at the desired location, but the possibility of obtaining a
+                    desired location increases by giving more than one option.
+                  </p>
+                  <p>
+                    You can display the unit locations by choosing {"'"}Unit map
+                    view{"'"}.
+                  </p>
+                </P>
+              )
+            }
           },
           mapLink: 'Unit map view',
           languageFilter: {

@@ -672,15 +672,53 @@ export default {
           startDateMissing:
             'Päästäksesi valitsemaan hakutoiveet valitse ensin toivottu aloituspäivä "Palvelun tarve" -osiosta',
           info: {
-            DAYCARE: `
-            <p>Voit hakea 1-3 paikkaa toivomassasi järjestyksessä. Hakutoiveet eivät takaa paikkaa toivotussa yksikössä, mutta mahdollisuus toivotun paikan saamiseen kasvaa antamalla useamman vaihtoehdon.</p>
-            <p>Näet eri varhaiskasvatusyksiköiden sijainnin valitsemalla ‘Yksiköt kartalla’.</p>`,
-            PRESCHOOL: `
-            <p>Voit hakea 1-3 paikka paikkaa toivomassasi järjestyksessä. Hakutoiveet eivät takaa paikkaa toivotussa yksikössä, mutta mahdollisuus toivotun paikan saamiseen kasvaa antamalla useamman vaihtoehdon.</p>
-            <p>Näet eri yksiköiden sijainnin valitsemalla ‘Yksiköt kartalla’.</p>`,
-            CLUB: `
-            <p>Voit hakea 1-3 paikkaa toivomassasi järjestyksessä. Hakutoiveet eivät takaa paikkaa toivotussa kerhossa, mutta mahdollisuus toivotun paikan saamiseen kasvaa antamalla useamman vaihtoehdon.</p>
-            <p>Näet eri kerhojen sijainnin valitsemalla ‘Yksiköt kartalla’.</p>`
+            DAYCARE: function UnitPreferenceInfoTextDaycare() {
+              return (
+                <P>
+                  <p>
+                    Voit hakea 1-3 paikkaa toivomassasi järjestyksessä.
+                    Hakutoiveet eivät takaa paikkaa toivotussa yksikössä, mutta
+                    mahdollisuus toivotun paikan saamiseen kasvaa antamalla
+                    useamman vaihtoehdon.
+                  </p>
+                  <p>
+                    Näet eri varhaiskasvatusyksiköiden sijainnin valitsemalla
+                    ‘Yksiköt kartalla’.
+                  </p>
+                </P>
+              )
+            },
+            PRESCHOOL: function UnitPreferenceInfoTextPreschool() {
+              return (
+                <P>
+                  <p>
+                    Voit hakea 1-3 paikka paikkaa toivomassasi järjestyksessä.
+                    Hakutoiveet eivät takaa paikkaa toivotussa yksikössä, mutta
+                    mahdollisuus toivotun paikan saamiseen kasvaa antamalla
+                    useamman vaihtoehdon.
+                  </p>
+                  <p>
+                    Näet eri yksiköiden sijainnin valitsemalla ‘Yksiköt
+                    kartalla’.
+                  </p>
+                </P>
+              )
+            },
+            CLUB: function UnitPreferenceInfoTextClub() {
+              return (
+                <P>
+                  <p>
+                    Voit hakea 1-3 paikkaa toivomassasi järjestyksessä.
+                    Hakutoiveet eivät takaa paikkaa toivotussa kerhossa, mutta
+                    mahdollisuus toivotun paikan saamiseen kasvaa antamalla
+                    useamman vaihtoehdon.
+                  </p>
+                  <p>
+                    Näet eri kerhojen sijainnin valitsemalla ‘Yksiköt kartalla’.
+                  </p>
+                </P>
+              )
+            }
           },
           mapLink: 'Yksiköt kartalla',
           languageFilter: {
