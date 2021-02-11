@@ -7,7 +7,7 @@ import { ApplicationDecisions } from '~decisions/types'
 import Container, {
   ContentArea
 } from '@evaka/lib-components/src/layout/Container'
-import { H1, P } from '@evaka/lib-components/src/typography'
+import { H1 } from '@evaka/lib-components/src/typography'
 import { AlertBox } from '@evaka/lib-components/src/molecules/MessageBoxes'
 import { Gap } from '@evaka/lib-components/src/white-space'
 import { useTranslation } from '~localization'
@@ -46,10 +46,7 @@ export default React.memo(function Decisions() {
         <ContentArea opaque paddingVertical="L">
           <H1 noMargin>{t.decisions.title}</H1>
           <Gap size="xs" />
-          <P
-            width="800px"
-            dangerouslySetInnerHTML={{ __html: t.decisions.summary }}
-          />
+          {t.decisions.summary()}
           {unconfirmedDecisionsCount > 0 && (
             <>
               <Gap size="s" />

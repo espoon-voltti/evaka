@@ -855,8 +855,16 @@ const sv: Translations = {
   },
   decisions: {
     title: 'Beslut',
-    summary:
-      'Denna sida visar de beslutar om barns ansökan till småbarnspedagogik, förskola och klubbverksamhet. Du ska omedelbart eller senast två veckor från mottagandet av ett beslut ta emot eller annullera platsen / platserna.',
+    summary: function DecisionsSummaryText() {
+      return (
+        <P width="800px">
+          Denna sida visar de beslutar om barns ansökan till småbarnspedagogik,
+          förskola och klubbverksamhet. Du ska omedelbart eller senast två
+          veckor från mottagandet av ett beslut ta emot eller annullera platsen
+          / platserna.
+        </P>
+      )
+    },
     unconfirmedDecisions: (n: number) => `${n} beslut inväntar bekräftelse`,
     pageLoadError: 'Hämtar information misslyckades',
     applicationDecisions: {

@@ -885,8 +885,16 @@ const en: Translations = {
   },
   decisions: {
     title: 'Decisions',
-    summary:
-      "This page displays the received decisions regarding child's early childhood education, preschool and club applications. Upon receiving a new decision, you are required to respond in two weeks, whether you accept or reject it.",
+    summary: function DecisionsSummaryText() {
+      return (
+        <P width="800px">
+          This page displays the received decisions regarding child{"'"}s early
+          childhood education, preschool and club applications. Upon receiving a
+          new decision, you are required to respond in two weeks, whether you
+          accept or reject it.
+        </P>
+      )
+    },
     unconfirmedDecisions: (n: number) =>
       `${n} ${
         n === 1 ? 'decision is' : 'decisions are'

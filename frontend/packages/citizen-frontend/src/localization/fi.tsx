@@ -840,8 +840,16 @@ export default {
   },
   decisions: {
     title: 'Päätökset',
-    summary:
-      'Tälle sivulle saapuvat lapsen varhaiskasvatus-, esiopetus- ja kerhohakemuksiin liittyvät päätökset. Uuden päätöksen saapuessa <strong>sinun tulee kahden viikon sisällä vastata</strong>, hyväksytkö vai hylkäätkö lapselle tarjotun paikan.',
+    summary: function DecisionsSummaryText() {
+      return (
+        <P width="800px">
+          Tälle sivulle saapuvat lapsen varhaiskasvatus-, esiopetus- ja
+          kerhohakemuksiin liittyvät päätökset. Uuden päätöksen saapuessa{' '}
+          <strong>sinun tulee kahden viikon sisällä vastata</strong>, hyväksytkö
+          vai hylkäätkö lapselle tarjotun paikan.
+        </P>
+      )
+    },
     unconfirmedDecisions: (n: number) =>
       `${n} ${n === 1 ? 'päätös' : 'päätöstä'} odottaa vahvistustasi`,
     pageLoadError: 'Tietojen hakeminen ei onnistunut',
