@@ -20,10 +20,12 @@ import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
 import fi.espoo.evaka.daycare.CareType
 import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.daycare.domain.ProviderType
+import fi.espoo.evaka.identity.ExternalId
 import fi.espoo.evaka.invoicing.domain.PersonData
 import fi.espoo.evaka.invoicing.domain.UnitData
 import fi.espoo.evaka.invoicing.domain.VoucherValue
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.transaction
 import fi.espoo.evaka.shared.dev.DevCareArea
@@ -41,6 +43,7 @@ import fi.espoo.evaka.shared.dev.insertTestEmployee
 import fi.espoo.evaka.shared.dev.insertTestPerson
 import fi.espoo.evaka.shared.dev.insertTestPricing
 import fi.espoo.evaka.shared.dev.insertTestVoucherValue
+import fi.espoo.evaka.shared.dev.updateDaycareAcl
 import fi.espoo.evaka.shared.domain.DateRange
 import org.jdbi.v3.core.Handle
 import java.time.LocalDate
@@ -60,6 +63,8 @@ val svebiTestCode = 400
 
 val defaultMunicipalOrganizerOid = "1.2.246.562.10.888888888888"
 val defaultPurchasedOrganizerOid = "1.2.246.562.10.66666666666"
+
+val testUnitSupervisorExternalId = ExternalId.of("espoo", "00000000-0000-0000-0009-000000000000")
 
 val testDaycare =
     UnitData.Detailed(
@@ -137,6 +142,12 @@ val testDecisionMaker_2 = PersonData.WithName(
     id = UUID.randomUUID(),
     firstName = "Decision",
     lastName = "Maker 2"
+)
+
+val testUnitSupervisor = PersonData.WithName(
+    id = UUID.randomUUID(),
+    firstName = "Sammy",
+    lastName = "Supervisor"
 )
 
 val testAdult_1 = PersonData.Detailed(
@@ -325,7 +336,16 @@ val testChildWithNamelessGuardian = PersonData.Detailed(
 
 val allWorkers = setOf(testDecisionMaker_1, testDecisionMaker_2)
 val allAdults = setOf(testAdult_1, testAdult_2, testAdult_3, testAdult_4, testAdult_5, testAdult_6, testAdult_7)
-val allChildren = setOf(testChild_1, testChild_2, testChild_3, testChild_4, testChild_5, testChild_6, testChild_7, testChildWithNamelessGuardian)
+val allChildren = setOf(
+    testChild_1,
+    testChild_2,
+    testChild_3,
+    testChild_4,
+    testChild_5,
+    testChild_6,
+    testChild_7,
+    testChildWithNamelessGuardian
+)
 val allBasicChildren = allChildren.map { PersonData.Basic(it.id, it.dateOfBirth, it.firstName, it.lastName, it.ssn) }
 val allDaycares = setOf(testDaycare, testDaycare2)
 
@@ -356,7 +376,14 @@ fun insertGeneralTestFixtures(h: Handle) {
             language = Language.sv
         )
     )
-    h.insertTestDaycare(DevDaycare(areaId = testAreaId, id = testDaycare.id, name = testDaycare.name, ophOrganizerOid = defaultMunicipalOrganizerOid))
+    h.insertTestDaycare(
+        DevDaycare(
+            areaId = testAreaId,
+            id = testDaycare.id,
+            name = testDaycare.name,
+            ophOrganizerOid = defaultMunicipalOrganizerOid
+        )
+    )
     h.insertTestDaycare(DevDaycare(areaId = testArea2Id, id = testDaycare2.id, name = testDaycare2.name))
     h.insertTestDaycare(
         DevDaycare(
@@ -404,6 +431,17 @@ fun insertGeneralTestFixtures(h: Handle) {
                 id = it.id,
                 firstName = it.firstName,
                 lastName = it.lastName
+            )
+        )
+    }
+
+    testUnitSupervisor.let {
+        h.insertTestEmployee(
+            DevEmployee(
+                id = it.id,
+                firstName = it.firstName,
+                lastName = it.lastName,
+                externalId = testUnitSupervisorExternalId
             )
         )
     }
@@ -511,6 +549,15 @@ VALUES (
         """.trimIndent()
 
     createUpdate(sql).execute()
+}
+
+fun insertUnitSupervisorAcl(h: Handle) {
+    updateDaycareAcl(
+        h,
+        testDaycare.id,
+        testUnitSupervisorExternalId,
+        UserRole.UNIT_SUPERVISOR
+    )
 }
 
 fun insertTestVardaOrganizer(h: Handle) {

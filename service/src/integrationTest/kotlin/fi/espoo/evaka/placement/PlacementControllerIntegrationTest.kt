@@ -88,7 +88,11 @@ class PlacementControllerIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `get placements works with with daycareId and matching dates`() {
-        val (_, res, result) = http.get("/placements?daycareId=$daycareId&from=${LocalDate.now()}&to=${LocalDate.now().plusDays(900)}")
+        val (_, res, result) = http.get(
+            "/placements?daycareId=$daycareId&from=${LocalDate.now()}&to=${
+            LocalDate.now().plusDays(900)
+            }"
+        )
             .asUser(serviceWorker)
             .responseObject<Set<DaycarePlacementWithGroups>>(objectMapper)
 
@@ -100,7 +104,8 @@ class PlacementControllerIntegrationTest : FullApplicationTest() {
     fun `get placements works with with daycareId and non-matching dates`() {
         val (_, res, result) = http.get(
             "/placements?daycareId=$daycareId&from=${
-            LocalDate.now().minusDays(900)}&to=${LocalDate.now().minusDays(300)}"
+            LocalDate.now().minusDays(900)
+            }&to=${LocalDate.now().minusDays(300)}"
         )
             .asUser(serviceWorker)
             .responseObject<Set<DaycarePlacementWithGroups>>(objectMapper)
@@ -140,7 +145,11 @@ class PlacementControllerIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `get placements works with with childId and matching dates`() {
-        val (_, res, result) = http.get("/placements?childId=$childId&from=${LocalDate.now()}&to=${LocalDate.now().plusDays(900)}")
+        val (_, res, result) = http.get(
+            "/placements?childId=$childId&from=${LocalDate.now()}&to=${
+            LocalDate.now().plusDays(900)
+            }"
+        )
             .asUser(serviceWorker)
             .responseObject<Set<DaycarePlacementWithGroups>>(objectMapper)
 
@@ -152,7 +161,8 @@ class PlacementControllerIntegrationTest : FullApplicationTest() {
     fun `get placements works with with childId and non-matching dates`() {
         val (_, res, result) = http.get(
             "/placements?childId=$childId&from=${
-            LocalDate.now().minusDays(900)}&to=${LocalDate.now().minusDays(300)}"
+            LocalDate.now().minusDays(900)
+            }&to=${LocalDate.now().minusDays(300)}"
         )
             .asUser(serviceWorker)
             .responseObject<Set<DaycarePlacementWithGroups>>(objectMapper)
@@ -371,13 +381,13 @@ class PlacementControllerIntegrationTest : FullApplicationTest() {
                 h.createGroupPlacement(testPlacement.id, groupId, placementStart, placementEnd).id!!
 
             val (_, res, _) = http.delete("/placements/${testPlacement.id}/group-placements/$groupPlacementId")
-                .asUser(serviceWorker)
+                .asUser(unitSupervisor)
                 .response()
 
             Assertions.assertThat(res.statusCode).isEqualTo(204)
 
             val (_, _, result) = http.get("/placements?daycareId=$daycareId")
-                .asUser(serviceWorker)
+                .asUser(unitSupervisor)
                 .responseObject<Set<DaycarePlacementWithGroups>>(objectMapper)
 
             val groupPlacementsAfter = result.get().toList()[0].groupPlacements
@@ -524,9 +534,26 @@ class PlacementControllerIntegrationTest : FullApplicationTest() {
         }
     }
 
-    private fun createGroupPlacement(placementId: UUID, groupPlacement: GroupPlacementRequestBody): ResponseResultOf<ByteArray> {
+    @Test
+    fun `service worker cannot remove placements`() {
+        jdbi.handle { h ->
+            val groupPlacementId =
+                h.createGroupPlacement(testPlacement.id, groupId, placementStart, placementEnd).id!!
+
+            val (_, res, _) = http.delete("/placements/${testPlacement.id}/group-placements/$groupPlacementId")
+                .asUser(serviceWorker)
+                .response()
+
+            Assertions.assertThat(res.statusCode).isEqualTo(403)
+        }
+    }
+
+    private fun createGroupPlacement(
+        placementId: UUID,
+        groupPlacement: GroupPlacementRequestBody
+    ): ResponseResultOf<ByteArray> {
         return http.post("/placements/$placementId/group-placements")
-            .asUser(serviceWorker)
+            .asUser(unitSupervisor)
             .objectBody(bodyObject = groupPlacement, mapper = objectMapper)
             .response()
     }

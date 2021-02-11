@@ -36,7 +36,7 @@ class ServiceNeedController(
         @RequestBody body: ServiceNeedRequest
     ): ResponseEntity<ServiceNeed> {
         Audit.ChildServiceNeedCreate.log(targetId = childId)
-        acl.getRolesForChild(user, childId).requireOneOfRoles(UserRole.UNIT_SUPERVISOR)
+        acl.getRolesForChild(user, childId).requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR)
         return serviceNeedService.createServiceNeed(
             db,
             user = user,
@@ -52,7 +52,14 @@ class ServiceNeedController(
         @PathVariable childId: UUID
     ): ResponseEntity<List<ServiceNeed>> {
         Audit.ChildServiceNeedRead.log(targetId = childId)
-        acl.getRolesForChild(user, childId).requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR, UserRole.FINANCE_ADMIN, UserRole.STAFF, UserRole.SPECIAL_EDUCATION_TEACHER)
+        acl.getRolesForChild(user, childId).requireOneOfRoles(
+            UserRole.ADMIN,
+            UserRole.SERVICE_WORKER,
+            UserRole.UNIT_SUPERVISOR,
+            UserRole.FINANCE_ADMIN,
+            UserRole.STAFF,
+            UserRole.SPECIAL_EDUCATION_TEACHER
+        )
         return serviceNeedService.getServiceNeedsByChildId(db, childId).let(::ok)
     }
 
@@ -64,7 +71,7 @@ class ServiceNeedController(
         @RequestBody body: ServiceNeedRequest
     ): ResponseEntity<ServiceNeed> {
         Audit.ChildServiceNeedUpdate.log(targetId = serviceNeedId)
-        acl.getRolesForServiceNeed(user, serviceNeedId).requireOneOfRoles(UserRole.UNIT_SUPERVISOR)
+        acl.getRolesForServiceNeed(user, serviceNeedId).requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR)
         return serviceNeedService.updateServiceNeed(
             db,
             user = user,
@@ -80,7 +87,7 @@ class ServiceNeedController(
         @PathVariable("id") serviceNeedId: UUID
     ): ResponseEntity<Unit> {
         Audit.ChildServiceNeedDelete.log(targetId = serviceNeedId)
-        acl.getRolesForServiceNeed(user, serviceNeedId).requireOneOfRoles(UserRole.UNIT_SUPERVISOR)
+        acl.getRolesForServiceNeed(user, serviceNeedId).requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR)
         serviceNeedService.deleteServiceNeed(db, serviceNeedId)
         return noContent()
     }
