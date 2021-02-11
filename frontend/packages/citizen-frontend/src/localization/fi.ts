@@ -352,7 +352,7 @@ export default {
           clubTerm: 'Kerhon toimintakausi',
           label: {
             DAYCARE: 'Toivottu aloituspäivä',
-            PRESCHOOL: 'Aloituspäivä elokuussa',
+            PRESCHOOL: 'Toivottu aloituspäivä',
             CLUB: 'Kerhon toivottu aloituspäivä'
           },
           noteOnDelay: 'Hakemuksen käsittelyaika on 4 kuukautta.',

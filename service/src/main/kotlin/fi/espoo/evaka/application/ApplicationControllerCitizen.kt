@@ -5,6 +5,7 @@
 package fi.espoo.evaka.application
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.daycare.getNextPreschoolTerm
 import fi.espoo.evaka.decision.Decision
 import fi.espoo.evaka.decision.DecisionService
 import fi.espoo.evaka.decision.DecisionStatus
@@ -125,7 +126,15 @@ class ApplicationControllerCitizen(
                 type = body.type,
                 guardian = guardian,
                 child = child
-            )
+            ).let {
+                if (body.type == ApplicationType.PRESCHOOL) {
+                    it.copy(
+                        preferences = it.preferences.copy(
+                            preferredStartDate = tx.getNextPreschoolTerm()?.finnishPreschool?.start
+                        )
+                    )
+                } else it
+            }
             updateForm(
                 tx.handle,
                 applicationId,

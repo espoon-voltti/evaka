@@ -56,7 +56,7 @@ export default class CitizenApplicationEditor {
     const input = this.applicationSection(section).find(
       `[data-qa="${field}-input"]`
     )
-    await t.typeText(input, value)
+    await t.typeText(input, value, { replace: true })
   }
 
   async setCheckbox(section: string, field: string, value: boolean) {
