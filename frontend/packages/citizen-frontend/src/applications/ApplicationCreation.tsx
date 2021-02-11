@@ -9,7 +9,7 @@ import {
   Container,
   ContentArea
 } from '@evaka/lib-components/src/layout/Container'
-import { H1, H2, P } from '@evaka/lib-components/src/typography'
+import { H1, H2 } from '@evaka/lib-components/src/typography'
 import { Gap, defaultMargins } from '@evaka/lib-components/src/white-space'
 import ButtonContainer from '@evaka/lib-components/src/layout/ButtonContainer'
 import AsyncButton from '@evaka/lib-components/src/atoms/buttons/AsyncButton'
@@ -138,11 +138,7 @@ export default React.memo(function ApplicationCreation() {
             </>
           )}
           <Gap size="s" />
-          <P
-            dangerouslySetInnerHTML={{
-              __html: t.applications.creation.applicationInfo
-            }}
-          />
+          {t.applications.creation.applicationInfo()}
         </ContentArea>
         <ContentArea opaque={false} paddingVertical="L">
           <ButtonContainer justify="center">

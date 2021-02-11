@@ -2,6 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import React from 'react'
+import { P } from '@evaka/lib-components/src/typography'
+
 export default {
   common: {
     title: 'Varhaiskasvatus',
@@ -134,8 +137,6 @@ export default {
       clubInfo: 'Kerhohakemuksella haetaan kunnallisiin kerhoihin.',
       duplicateWarning:
         'Lapsella on jo samantyyppinen, keskeneräinen hakemus. Palaa Hakemukset-näkymään ja muokkaa olemassa olevaa hakemusta tai ota yhteyttä palveluohjaukseen.',
-      applicationInfo:
-        'Hakemukseen voi tehdä muutoksia niin kauan kuin hakemusta ei ole otettu käsittelyyn. Tämän jälkeen muutokset hakemukseen tehdään ottamalla yhteyttä varhaiskasvatuksen palveluohjaukseen (puh. 09 816 31000). Voit perua jo tehdyn hakemuksen ilmoittamalla siitä sähköpostilla varhaiskasvatuksen palveluohjaukseen <a href="mailto:varhaiskasvatuksen.palveluohjaus@espoo.fi">varhaiskasvatuksen.palveluohjaus@espoo.fi</a>.',
       transferApplicationInfo: {
         DAYCARE:
           'Lapsella on jo paikka Espoon varhaiskasvatuksessa. Tällä hakemuksella voit hakea siirtoa toiseen varhaiskasvatusta tarjoavaan yksikköön Espoossa.',
@@ -144,6 +145,22 @@ export default {
       },
       create: 'Tee hakemus',
       daycare4monthWarning: 'Hakemuksen käsittelyaika on 4 kuukautta.'
+      applicationInfo: function ApplicationInfoText() {
+        return (
+          <P>
+            Hakemukseen voi tehdä muutoksia niin kauan kuin hakemusta ei ole
+            otettu käsittelyyn. Tämän jälkeen muutokset hakemukseen tehdään
+            ottamalla yhteyttä varhaiskasvatuksen palveluohjaukseen (puh. 09 816
+            31000). Voit perua jo tehdyn hakemuksen ilmoittamalla siitä
+            sähköpostilla varhaiskasvatuksen palveluohjaukseen{' '}
+            <a href="mailto:varhaiskasvatuksen.palveluohjaus@espoo.fi">
+              varhaiskasvatuksen.palveluohjaus@espoo.fi
+            </a>
+            .
+          </P>
+        )
+      },
+      create: 'Tee hakemus'
     },
     editor: {
       heading: {

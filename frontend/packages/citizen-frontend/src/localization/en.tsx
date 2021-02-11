@@ -2,6 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { P } from '@evaka/lib-components/src/typography'
+import React from 'react'
 import { Translations } from '.'
 
 const en: Translations = {
@@ -136,8 +138,6 @@ const en: Translations = {
         'The club application is used for applying for municipal clubs.',
       duplicateWarning:
         'The child already has a similar unfinished application. Please return to the Applications view and complete the existing application or contact the Early Childhood Education Service Guidance.',
-      applicationInfo:
-        'You can make changes to your application until its processing starts. After this, you can make changes to your application by contacting early childhood education service counselling (tel. 09 816 31000). If you wish to cancel an application you have submitted, please send an email to early childhood education service counselling (<a href="varhaiskasvatuksen.palveluohjaus@espoo.fi">varhaiskasvatuksen.palveluohjaus@espoo.fi</a>).',
       transferApplicationInfo: {
         DAYCARE:
           'Your child already has a place in the City of Espoo’s early childhood education. Use this application to apply for a transfer to another early childhood education unit.',
@@ -146,6 +146,23 @@ const en: Translations = {
       },
       create: 'Apply',
       daycare4monthWarning: 'The application processing time is 4 months.'
+      applicationInfo: function ApplicationInfoText() {
+        return (
+          <P>
+            You can make changes to your application until its processing
+            starts. After this, you can make changes to your application by
+            contacting early childhood education service counselling (tel. 09
+            816 31000). If you wish to cancel an application you have submitted,
+            please send an email to early childhood education service
+            counselling (
+            <a href="varhaiskasvatuksen.palveluohjaus@espoo.fi">
+              varhaiskasvatuksen.palveluohjaus@espoo.fi
+            </a>
+            ).
+          </P>
+        )
+      },
+      create: 'Apply'
     },
     editor: {
       heading: {
