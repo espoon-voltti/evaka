@@ -1,16 +1,25 @@
-import React from 'react'
+import React, { useMemo } from 'react'
 import styled from 'styled-components'
 import { defaultMargins } from '@evaka/lib-components/src/white-space'
 import colors from '@evaka/lib-components/src/colors'
+import leaflet from 'leaflet'
 import { FooterContent } from '~Footer'
 import { MapContainer, Marker, TileLayer } from 'react-leaflet'
 import { PublicUnit } from '@evaka/lib-common/src/api-types/units/PublicUnit'
+import marker from './marker.svg'
 
 export interface Props {
   units: PublicUnit[]
 }
 
 export default React.memo(function MapBox({ units }: Props) {
+  const icon = useMemo(
+    () =>
+      new leaflet.Icon({
+        iconUrl: marker
+      }),
+    [marker]
+  )
   return (
     <Wrapper className="map-box">
       <Map center={[60.184147, 24.704897]} zoom={12}>
@@ -20,7 +29,13 @@ export default React.memo(function MapBox({ units }: Props) {
         />
         {units.map(({ id, location }) => {
           if (location?.lat == null || location?.lon == null) return null
-          return <Marker key={id} position={[location.lat, location.lon]} />
+          return (
+            <Marker
+              key={id}
+              position={[location.lat, location.lon]}
+              icon={icon}
+            />
+          )
         })}
       </Map>
       <FooterWrapper>
