@@ -151,11 +151,7 @@ test('Unit filter works', async (t) => {
   try {
     await t.expect(ApplicationListView.applications.count).eql(2)
 
-    await t.click(ApplicationListView.unitFilter)
-    await t.typeText(ApplicationListView.unitFilter, daycare1.data.name, {
-      replace: true
-    })
-    await t.pressKey('enter')
+    await ApplicationListView.toggleUnit(daycare1.data.name)
     await t.expect(ApplicationListView.application(app1.id).visible).ok()
     await t.expect(ApplicationListView.application(app2.id).visible).notOk()
     await t.expect(ApplicationListView.applications.count).eql(1)

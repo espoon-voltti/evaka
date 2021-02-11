@@ -1,5 +1,6 @@
 import { t, ClientFunction, Selector } from 'testcafe'
 import { FormInput } from '../../utils/application-forms'
+import { Checkbox } from '../../utils/helpers'
 
 const getWindowLocation = ClientFunction(() => window.location)
 
@@ -28,7 +29,7 @@ export default class CitizenApplicationEditor {
 
   async verifyAndSend() {
     await this.goToVerify()
-    await t.click('[data-qa="verify-checkbox-icon"]')
+    await new Checkbox(Selector('[data-qa="verify-checkbox"]')).click()
     await t.click('[data-qa="send-btn"]')
   }
 
@@ -60,16 +61,12 @@ export default class CitizenApplicationEditor {
   }
 
   async setCheckbox(section: string, field: string, value: boolean) {
-    const input = this.applicationSection(section).find(
-      `[data-qa="${field}-input"]`
+    const checkbox = new Checkbox(
+      this.applicationSection(section).find(`[data-qa="${field}-input"]`)
     )
 
-    const inputIcon = this.applicationSection(section).find(
-      `[data-qa="${field}-input-icon"]`
-    )
-
-    if ((await input.checked) !== value) {
-      await t.click(inputIcon)
+    if ((await checkbox.checked) !== value) {
+      await checkbox.click()
     }
   }
 
@@ -89,12 +86,11 @@ export default class CitizenApplicationEditor {
   }
 
   async selectBooleanRadio(section: string, field: string, value: boolean) {
-    const radio = this.applicationSection(section).find(
-      // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-      `[data-qa="${field}-input-${value}-icon"]`
-    )
-
-    await t.click(radio)
+    await new Checkbox(
+      this.applicationSection(section).find(
+        `[data-qa="${field}-input-${String(value)}"]`
+      )
+    ).click()
   }
 
   async fillData(data: FormInput) {
@@ -111,12 +107,13 @@ export default class CitizenApplicationEditor {
           await this.selectBooleanRadio(section, field, value)
         } else if (field === 'siblingBasis') {
           await this.setCheckbox(section, field, value)
-          await t.click(Selector('[data-qa="other-sibling-icon"]'))
+          await new Checkbox(Selector('[data-qa="other-sibling"]')).click()
         } else if (field === 'otherGuardianAgreementStatus') {
-          await t.click(
-            // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-            Selector(`[data-qa="otherGuardianAgreementStatus-${value}-icon"]`)
-          )
+          await new Checkbox(
+            Selector(
+              `[data-qa="otherGuardianAgreementStatus-${String(value)}"]`
+            )
+          ).click()
         } else if (
           data.contactInfo?.otherChildren &&
           field === 'otherChildren'

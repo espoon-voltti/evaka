@@ -645,6 +645,7 @@ export default function UnitEditor(props: Props): JSX.Element {
                 : undefined
             }
             fullWidth
+            data-qa="area-select"
           />
         ) : (
           props.areas.find((area) => area.id === form.areaId)?.name

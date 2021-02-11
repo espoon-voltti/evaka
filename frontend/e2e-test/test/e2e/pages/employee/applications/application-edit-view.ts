@@ -5,7 +5,7 @@
 import { Selector, t } from 'testcafe'
 import { format } from 'date-fns'
 import { OtherGuardianAgreementStatus } from '../../../dev-api/types'
-import { scrollThenClick } from '../../../utils/helpers'
+import { scrollThenClick, selectFirstOption } from '../../../utils/helpers'
 
 export default class ApplicationEditView {
   readonly readView = Selector('[data-qa="application-read-view"]')
@@ -98,9 +98,7 @@ export default class ApplicationEditView {
   }
 
   async pickUnit(unitName: string) {
-    await t.click(this.preferredUnit)
-    await t.typeText(this.preferredUnit.find('#react-select-2-input'), unitName)
-    await t.click(this.preferredUnit.find('[id^="react-select-2-option-"'))
+    await selectFirstOption(this.preferredUnit, unitName)
   }
 
   async fillApplicantPhoneAndEmail(phone: string, email: string) {

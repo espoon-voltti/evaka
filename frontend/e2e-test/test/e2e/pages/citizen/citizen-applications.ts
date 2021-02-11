@@ -56,7 +56,7 @@ export default class CitizenApplicationsPage {
     await t
       .expect(
         Selector(`[data-qa="title-application-type-${applicationId}"]`, {
-          timeout: 2000
+          timeout: 500
         }).visible
       )
       .notOk()

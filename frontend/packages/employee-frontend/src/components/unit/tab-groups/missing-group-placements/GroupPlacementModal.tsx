@@ -194,6 +194,13 @@ export default React.memo(function GroupPlacementModal({
                   })
                 : undefined
             }
+            value={openGroups
+              .map((group) => ({
+                value: group.id,
+                label: group.name
+              }))
+              .find(({ value }) => value === form.groupId)}
+            placeholder={i18n.common.select}
           />
         </section>
         <section>

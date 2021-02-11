@@ -142,10 +142,7 @@ function Radio({
           small={small}
           id={id}
         />
-        <IconWrapper
-          small={small}
-          data-qa={dataQa ? `${dataQa}-icon` : undefined}
-        >
+        <IconWrapper small={small}>
           <FontAwesomeIcon icon={faCheck} />
         </IconWrapper>
       </Circle>

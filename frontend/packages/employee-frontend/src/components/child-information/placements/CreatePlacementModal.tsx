@@ -141,7 +141,7 @@ function CreatePlacementModal({ childId, reload }: Props) {
           />
         </section>
 
-        <section>
+        <section data-qa="unit-select">
           <div className="bold">
             {i18n.childInformation.placements.daycareUnit}
           </div>

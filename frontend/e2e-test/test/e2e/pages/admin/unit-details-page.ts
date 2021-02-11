@@ -5,6 +5,7 @@
 import { t, Selector } from 'testcafe'
 import config from '../../config'
 import { ApplicationType } from '@evaka/lib-common/src/api-types/application/enums'
+import { Checkbox, selectFirstOption } from '../../utils/helpers'
 
 type CareType = 'DAYCARE' | 'PRESCHOOL' | 'PREPARATORY' | 'CLUB'
 
@@ -18,10 +19,10 @@ export class UnitDetailsPage {
   readonly unitNameInput = Selector('[data-qa="unit-name-input"]')
 
   readonly careTypeCheckbox = (type: CareType) =>
-    Selector(`[data-qa="care-type-checkbox-${type}"]`)
+    new Checkbox(Selector(`[data-qa="care-type-checkbox-${type}"]`))
 
   readonly applicationTypeCheckbox = (type: ApplicationType) =>
-    Selector(`[data-qa="application-type-checkbox-${type}"]`)
+    new Checkbox(Selector(`[data-qa="application-type-checkbox-${type}"]`))
 
   readonly streetInput = (type: 'visiting-address' | 'mailing-address') =>
     Selector(`[data-qa="${type}-street-input"]`)
@@ -52,18 +53,15 @@ export class UnitDetailsPage {
   }
 
   async chooseArea(area: string) {
-    const input = Selector('#react-select-2-input')
-    await t.click(input)
-    await t.typeText(input, area)
-    await t.click(Selector('[id^="react-select-2-option-"'))
+    await selectFirstOption(Selector('[data-qa="area-select"]'), area)
   }
 
   async toggleCareType(type: CareType) {
-    await t.click(this.careTypeCheckbox(type))
+    await this.careTypeCheckbox(type).click()
   }
 
   async toggleApplicationType(type: ApplicationType) {
-    await t.click(this.applicationTypeCheckbox(type))
+    await this.applicationTypeCheckbox(type).click()
   }
 
   async fillVisitingAddress(

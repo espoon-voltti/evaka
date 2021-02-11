@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { ClientFunction } from 'testcafe'
+import { t, ClientFunction } from 'testcafe'
 import * as testcafe from 'testcafe'
 
 export const scrollTo = ClientFunction((x: number, y: number) => {
@@ -28,7 +28,11 @@ export const waitUntilScrolled = ClientFunction(
 )
 
 export class Checkbox {
-  constructor(private readonly selector: Selector) {}
+  private _input: Selector
+
+  constructor(private readonly selector: Selector) {
+    this._input = selector.find('input')
+  }
 
   async click(): Promise<void> {
     await testcafe.t.expect(this.disabled).eql(false)
@@ -38,14 +42,24 @@ export class Checkbox {
 
   get checked(): Promise<boolean> {
     // cast needed because checked is Promise<boolean | undefined>
-    return (this.selector.checked as unknown) as Promise<boolean>
+    return (this._input.checked as unknown) as Promise<boolean>
   }
 
   get disabled(): Promise<boolean> {
-    return this.selector.hasAttribute('disabled')
+    return this._input.hasAttribute('disabled')
   }
 
   get exists(): Promise<boolean> {
     return this.selector.exists
   }
+}
+
+export const selectFirstOption = async (
+  container: Selector,
+  searchString: string
+) => {
+  await t.click(container)
+  const input = container.find('input')
+  await t.typeText(input, searchString)
+  await t.click(container.find('[id*="-option-"]'))
 }
