@@ -41,7 +41,8 @@ data class StartingPlacementsRow(
     val lastName: String,
     val dateOfBirth: LocalDate,
     val ssn: String?,
-    val placementStart: LocalDate
+    val placementStart: LocalDate,
+    val careAreaName: String
 )
 
 /*
@@ -57,9 +58,11 @@ private fun Database.Read.getStartingPlacementsRows(year: Int, month: Int): List
     //language=SQL
     val sql =
         """
-        SELECT p.child_id, p.start_date, c.first_name, c.last_name, c.date_of_birth, c.social_security_number
+        SELECT p.child_id, p.start_date, c.first_name, c.last_name, c.date_of_birth, c.social_security_number, ca.name as care_area_name
         FROM placement p
         JOIN person c ON p.child_id = c.id
+        JOIN daycare u ON p.unit_id = u.id
+        JOIN care_area ca ON u.care_area_id = ca.id
         LEFT JOIN placement preceding ON p.child_id = preceding.child_id AND (p.start_date - interval '1 days') = preceding.end_date AND preceding.type != 'CLUB'::placement_type
         WHERE daterange(:from, :to, '[]') @> p.start_date AND preceding.id IS NULL AND p.type != 'CLUB'::placement_type
         """.trimIndent()
@@ -78,6 +81,7 @@ private val toRow = { rs: ResultSet, _: StatementContext ->
         lastName = rs.getString("last_name"),
         dateOfBirth = rs.getDate("date_of_birth").toLocalDate(),
         ssn = rs.getString("social_security_number"),
-        placementStart = rs.getDate("start_date").toLocalDate()
+        placementStart = rs.getDate("start_date").toLocalDate(),
+        careAreaName = rs.getString("care_area_name")
     )
 }
