@@ -138,6 +138,7 @@ class StartingPlacementsReportTest : FullApplicationTest() {
         lastName = child.lastName,
         dateOfBirth = child.dateOfBirth,
         ssn = child.ssn,
-        placementStart = startDate
+        placementStart = startDate,
+        careAreaName = testDaycare.areaName
     )
 }
