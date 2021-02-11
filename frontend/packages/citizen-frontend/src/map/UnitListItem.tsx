@@ -1,10 +1,10 @@
 import React from 'react'
 import styled from 'styled-components'
 import { PublicUnit } from '@evaka/lib-common/src/api-types/units/PublicUnit'
-import { CareType } from '@evaka/lib-common/src/api-types/units/enums'
 import { defaultMargins } from '@evaka/lib-components/src/white-space'
 import colors from '@evaka/lib-components/src/colors'
 import { useTranslation } from '~localization'
+import { formatCareTypes } from '~map/format'
 
 type Props = {
   unit: PublicUnit
@@ -20,30 +20,6 @@ export default React.memo(function UnitListItem({
   const t = useTranslation()
 
   const provider = t.common.unit.providerTypes[unit.providerType].toLowerCase()
-  const formatCareType = (type: CareType) => {
-    switch (type) {
-      case 'CENTRE':
-      case 'FAMILY':
-      case 'GROUP_FAMILY':
-        return t.map.careTypes.DAYCARE.toLowerCase()
-      case 'PRESCHOOL':
-        return t.common.unit.careTypes.PRESCHOOL.toLowerCase()
-      case 'PREPARATORY_EDUCATION':
-        return t.common.unit.careTypes.PREPARATORY_EDUCATION.toLowerCase()
-      case 'CLUB':
-        return t.common.unit.careTypes.CLUB.toLowerCase()
-    }
-  }
-  const careTypes = unit.type
-    .sort((a, b) => {
-      if (a === 'CENTRE') return -1
-      if (b === 'CENTRE') return 1
-      if (a === 'PREPARATORY_EDUCATION') return 1
-      if (b === 'PREPARATORY_EDUCATION') return -1
-      return 0
-    })
-    .map(formatCareType)
-    .join(', ')
 
   return (
     <Wrapper onClick={onClick}>
@@ -52,7 +28,10 @@ export default React.memo(function UnitListItem({
         {distance !== null && <Distance>{distance}</Distance>}
       </MainRow>
       <UnitDetails>
-        {provider}, {careTypes}
+        {provider},{' '}
+        {formatCareTypes(t, unit.type)
+          .map((text) => text.toLowerCase())
+          .join(', ')}
       </UnitDetails>
     </Wrapper>
   )

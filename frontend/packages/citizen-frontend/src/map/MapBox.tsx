@@ -4,13 +4,16 @@ import { defaultMargins } from '@evaka/lib-components/src/white-space'
 import colors from '@evaka/lib-components/src/colors'
 import leaflet from 'leaflet'
 import { FooterContent } from '~Footer'
-import { MapContainer, Marker, TileLayer } from 'react-leaflet'
+import { MapContainer, Marker, Popup, TileLayer } from 'react-leaflet'
 import { PublicUnit } from '@evaka/lib-common/src/api-types/units/PublicUnit'
 import marker from './marker.svg'
 import markerHighlight from './marker-highlight.svg'
+import { formatDistance, UnitWithDistance } from '~map/distances'
+import { useTranslation } from '~localization'
+import { formatCareTypes } from './format'
 
 export interface Props {
-  units: PublicUnit[]
+  units: (UnitWithDistance | PublicUnit)[]
   selectedUnit: PublicUnit | null
 }
 
@@ -20,6 +23,8 @@ export default React.memo(function MapBox({ units, selectedUnit }: Props) {
     () => new leaflet.Icon({ iconUrl: markerHighlight }),
     [markerHighlight]
   )
+  const t = useTranslation()
+
   return (
     <Wrapper className="map-box">
       <Map center={[60.184147, 24.704897]} zoom={12}>
@@ -27,15 +32,36 @@ export default React.memo(function MapBox({ units, selectedUnit }: Props) {
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
-        {units.map(({ id, location }) => {
+        {units.map((unit) => {
+          const { location } = unit
           if (location?.lat == null || location?.lon == null) return null
-          const isSelected = selectedUnit?.id === id
+          const isSelected = selectedUnit?.id === unit.id
+
           return (
             <Marker
-              key={id}
+              key={unit.id}
               position={[location.lat, location.lon]}
               icon={isSelected ? highlightIcon : icon}
-            />
+            >
+              <UnitPopup>
+                <UnitName>{unit.name}</UnitName>
+                <div>{t.common.unit.providerTypes[unit.providerType]}</div>
+                <UnitDetails>
+                  <UnitDetailsLeft>
+                    {unit.streetAddress}
+                    <br />
+                    {formatCareTypes(t, unit.type).join(', ')}
+                  </UnitDetailsLeft>
+                  {'straightDistance' in unit && (
+                    <UnitDetailsRight>
+                      {formatDistance(
+                        unit.drivingDistance ?? unit.straightDistance
+                      )}
+                    </UnitDetailsRight>
+                  )}
+                </UnitDetails>
+              </UnitPopup>
+            </Marker>
           )
         })}
       </Map>
@@ -87,4 +113,39 @@ const FooterWrapper = styled.div`
       text-align: center;
     }
   }
+`
+
+const UnitPopup = styled(Popup)`
+  font-family: 'Open Sans', sans-serif;
+  font-size: 16px;
+
+  .leaflet-popup-close-button {
+    font-size: 24px !important;
+    width: auto;
+    height: auto;
+    margin-top: 8px;
+    margin-right: 8px;
+  }
+`
+
+const UnitName = styled.div`
+  font-weight: 600;
+  margin-right: 20px;
+`
+
+const UnitDetails = styled.div`
+  display: flex;
+  font-size: 14px;
+  font-weight: 600;
+  color: #6e6e6e;
+`
+
+const UnitDetailsLeft = styled.div`
+  flex: 1 1 auto;
+`
+
+const UnitDetailsRight = styled.div`
+  margin-left: 20px;
+  flex: 0 1 auto;
+  white-space: nowrap;
 `
