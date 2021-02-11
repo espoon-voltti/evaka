@@ -36,11 +36,7 @@ export default React.memo(function FeeSection({
       data-qa="fee-section"
     >
       {t.applications.editor.fee.info[applicationType]()}
-      <P
-        dangerouslySetInnerHTML={{
-          __html: t.applications.editor.fee.emphasis
-        }}
-      />
+      {t.applications.editor.fee.emphasis()}
       <Checkbox
         checked={formData.maxFeeAccepted}
         dataQa={'maxFeeAccepted-input'}

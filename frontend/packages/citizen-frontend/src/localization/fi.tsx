@@ -576,8 +576,13 @@ export default {
             return <P></P>
           }
         },
-        emphasis:
-          '<strong>Tuloselvitystä ei tarvita, jos perhe suostuu korkeimpaan maksuun.</strong>',
+        emphasis: function FeeEmphasisText() {
+          return (
+            <strong>
+              Tuloselvitystä ei tarvita, jos perhe suostuu korkeimpaan maksuun.
+            </strong>
+          )
+        },
         checkbox:
           'Annan suostumuksen korkeimpaan maksuun. Suostumus on voimassa toistaiseksi, kunnes toisin ilmoitan.',
         links:

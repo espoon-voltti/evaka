@@ -578,8 +578,14 @@ const sv: Translations = {
             return <P></P>
           }
         },
-        emphasis:
-          '<strong>Om familjen samtycker till den högsta avgiften behövs ingen inkomstutredning.</strong>',
+        emphasis: function FeeEmphasisText() {
+          return (
+            <strong>
+              Om familjen samtycker till den högsta avgiften behövs ingen
+              inkomstutredning.
+            </strong>
+          )
+        },
         checkbox:
           'Jag ger mitt samtycke till att betala den högsta avgiften. Samtycket gäller tills vidare, tills jag meddelar något annat.',
         links:

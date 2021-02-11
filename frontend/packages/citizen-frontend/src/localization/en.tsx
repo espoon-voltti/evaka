@@ -578,8 +578,14 @@ const en: Translations = {
             return <P></P>
           }
         },
-        emphasis:
-          '<strong>The income statement is not needed if the family agrees to pay the highest fee.</strong>',
+        emphasis: function FeeEmphasisText() {
+          return (
+            <strong>
+              The income statement is not needed if the family agrees to pay the
+              highest fee.
+            </strong>
+          )
+        },
         checkbox:
           'I give consent to the highest fee. This consent will remain valid until I state otherwise.',
         links:
