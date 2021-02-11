@@ -56,14 +56,9 @@ export default React.memo(function ApplicationVerificationViewDaycare({
     <Container>
       <ContentArea opaque>
         <H1>{t.applications.editor.verification.title[type]}</H1>
-        <P
-          dangerouslySetInnerHTML={{
-            __html:
-              application.status === 'CREATED'
-                ? t.applications.editor.verification.notYetSent
-                : t.applications.editor.verification.notYetSaved
-          }}
-        />
+        {application.status === 'CREATED'
+          ? t.applications.editor.verification.notYetSent()
+          : t.applications.editor.verification.notYetSaved()}
         {missingAttachments && (
           <AttachmentBox>
             <RoundIconStyled

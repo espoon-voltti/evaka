@@ -297,10 +297,24 @@ const sv: Translations = {
             'Var god och granska följande obligatoriska fält i blanketten',
           CLUB: 'Var god och granska följande obligatoriska fält i blanketten'
         },
-        notYetSent:
-          '<strong>Du har inte ännu skickat ansökan.</strong> Granska informationen du gett, och skicka ansökan med Skicka ansökan-knappen när du är färdig',
-        notYetSaved:
-          '<strong>Ändringarna har inte sparats än.</strong> Granska informationen du gett, och skicka ansökan med "Spara ändringarna" -knappen i slutet av blankett.',
+        notYetSent: function NotYetSentText() {
+          return (
+            <P>
+              <strong>Du har inte ännu skickat ansökan.</strong> Granska
+              informationen du gett, och skicka ansökan med Skicka
+              ansökan-knappen när du är färdig
+            </P>
+          )
+        },
+        notYetSaved: function NotYetSavedText() {
+          return (
+            <P>
+              <strong>Ändringarna har inte sparats än.</strong> Granska
+              informationen du gett, och skicka ansökan med {'"'}Spara
+              ändringarna{'"'} -knappen i slutet av blankett.
+            </P>
+          )
+        },
         no: 'Nej',
         basics: {
           created: 'Skapad',

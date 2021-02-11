@@ -274,10 +274,24 @@ export default {
           PRESCHOOL: 'Esiopetushakemuksen tarkistaminen',
           CLUB: 'Kerhohakemuksen tarkistaminen'
         },
-        notYetSent:
-          '<strong>Hakemusta ei ole vielä lähetetty.</strong> Tarkista antamasi tiedot ja lähetä sivun lopussa olevalla Lähetä hakemus -painikkeella.',
-        notYetSaved:
-          '<strong>Muutoksia ei ole vielä tallennettu.</strong> Tarkista antamasi tiedot ja tallenna sivun lopussa olevalla Tallenna muutokset -painikkeella.',
+        notYetSent: function NotYetSentText() {
+          return (
+            <P>
+              <strong>Hakemusta ei ole vielä lähetetty.</strong> Tarkista
+              antamasi tiedot ja lähetä sivun lopussa olevalla Lähetä
+              hakemus-painikkeella.
+            </P>
+          )
+        },
+        notYetSaved: function NotYetSavedText() {
+          return (
+            <P>
+              <strong>Muutoksia ei ole vielä tallennettu.</strong> Tarkista
+              antamasi tiedot ja tallenna sivun lopussa olevalla Tallenna
+              muutokset -painikkeella.
+            </P>
+          )
+        },
         no: 'Ei',
         basics: {
           created: 'Hakemus luotu',
