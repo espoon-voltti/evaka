@@ -521,11 +521,32 @@ const sv: Translations = {
             DAYCARE: 'Tiden för småbarnspedagogik per dag',
             PRESCHOOL: 'Tiden för småbarnspedagogik per dag'
           },
-          connectedDaycareInfo: [
-            'Du kan vid behov ansöka om avgiftsbelagd småbarnspedagogik i samband med förskoleundervisningen. Småbarnspedagogik erbjuds utöver förskoleundervisningen (fyra timmar per dag) på morgnar och eftermiddagar på samma ställe som förskoleundervisningen. Om barnet börjar senare, meddela detta under ”Tilläggsuppgifter”.',
-            'Privata förskolor och några av inköpsserviceförskolorna måste göra en separat ansökan om relaterad förskoleundervisning. Espoos förskoleundervisning är i kontakt med de sökande som berörs.',
-            'Du får ett separat skriftligt beslut om platsen inom småbarnspedagogik. Beslutet delges i tjänsten Suomi.fi-meddelanden eller per post, om du inte har tagit tjänsten i bruk.'
-          ],
+          connectedDaycareInfo: function ConnectedDaycareInfoText() {
+            return (
+              <>
+                <P>
+                  Du kan vid behov ansöka om avgiftsbelagd småbarnspedagogik i
+                  samband med förskoleundervisningen. Småbarnspedagogik erbjuds
+                  utöver förskoleundervisningen (fyra timmar per dag) på morgnar
+                  och eftermiddagar på samma ställe som förskoleundervisningen.
+                  Om barnet börjar senare, meddela detta under
+                  ”Tilläggsuppgifter”.
+                </P>
+                <P>
+                  Privata förskolor och några av inköpsserviceförskolorna måste
+                  göra en separat ansökan om relaterad förskoleundervisning.
+                  Espoos förskoleundervisning är i kontakt med de sökande som
+                  berörs.
+                </P>
+                <P>
+                  Du får ett separat skriftligt beslut om platsen inom
+                  småbarnspedagogik. Beslutet delges i tjänsten
+                  Suomi.fi-meddelanden eller per post, om du inte har tagit
+                  tjänsten i bruk.
+                </P>
+              </>
+            )
+          },
           connectedDaycare:
             'Jag ansöker också om småbarnspedagogik i samband med förskoleundervisning.',
           instructions: {

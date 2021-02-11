@@ -535,11 +535,48 @@ const en: Translations = {
             PRESCHOOL:
               'Early childhood education need related to pre-primary education'
           },
-          connectedDaycareInfo: [
-            'If necessary, you can apply for early childhood education related to pre-primary education for the child, which is subject to a charge and provided in addition to pre-primary education (4 h/day) in the mornings and/or afternoons in the same place as pre-primary education. If you wish early childhood education to start later than pre-primary education, enter the desired start date in the additional information field.',
-            "Private kindergartens and some of the private kindergartens need a separate application for related early childhood education. Espoo's early childhood education is in contact with those applicants who are affected.",
-            'A separate written decision will be issued on the early childhood education place. The decision will be sent to the <a href="https://www.suomi.fi/messages" target="_blank" rel="noreferrer">Suomi.fi Messages</a> service or by post if you do not use the <a href="https://www.suomi.fi/messages" target="_blank" rel="noreferrer">Suomi.fi messages</a> service.'
-          ],
+          connectedDaycareInfo: function ConnectedDaycareInfoText() {
+            return (
+              <>
+                <P>
+                  If necessary, you can apply for early childhood education
+                  related to pre-primary education for the child, which is
+                  subject to a charge and provided in addition to pre-primary
+                  education (4 h/day) in the mornings and/or afternoons in the
+                  same place as pre-primary education. If you wish early
+                  childhood education to start later than pre-primary education,
+                  enter the desired start date in the additional information
+                  field.
+                </P>
+                <P>
+                  Private kindergartens and some of the private kindergartens
+                  need a separate application for related early childhood
+                  education. Espoo{"'"}s early childhood education is in contact
+                  with those applicants who are affected.
+                </P>
+                <P>
+                  A separate written decision will be issued on the early
+                  childhood education place. The decision will be sent to the{' '}
+                  <a
+                    href="https://www.suomi.fi/messages"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Suomi.fi Messages
+                  </a>{' '}
+                  service or by post if you do not use the{' '}
+                  <a
+                    href="https://www.suomi.fi/messages"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Suomi.fi messages
+                  </a>{' '}
+                  service.
+                </P>
+              </>
+            )
+          },
           connectedDaycare:
             'I also apply for early childhood education related to pre-primary education.',
           instructions: {

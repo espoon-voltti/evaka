@@ -496,11 +496,43 @@ export default {
             DAYCARE: 'Päivittäinen varhaiskasvatusaika',
             PRESCHOOL: 'Esiopetukseen liittyvän varhaiskasvatuksen tarve'
           },
-          connectedDaycareInfo: [
-            'Voit hakea lapselle tarvittaessa <strong>esiopetukseen liittyvää varhaiskasvatusta, joka on maksullista, ja jota annetaan esiopetuksen (4 tuntia/päivä) lisäksi</strong> aamuisin ja/tai iltapäivisin samassa paikassa kuin esiopetus. Jos haluat aloittaa varhaiskasvatuksen myöhemmin kuin esiopetus alkaa, kirjoita haluttu aloituspäivämäärä hakemuksen “Muut lisätiedot” -kohtaan.',
-            'Yksityisiin päiväkoteihin ja osaan ostopalvelupäiväkodeista on tehtävä erillinen hakemus liittyvään varhaiskasvatukseen. Espoon varhaiskasvatus on yhteydessä niihin hakijoihin, joita tämä koskee.',
-            'Saat varhaiskasvatuspaikasta erillisen kirjallisen päätöksen, ja päätös tulee <a href="https://www.suomi.fi/viestit" target="_blank" rel="noreferrer">Suomi.fi-viestit</a> -palveluun tai postitse, mikäli et ole ottanut Suomi.fi-viestit -palvelua käyttöön.'
-          ],
+          connectedDaycareInfo: function ConnectedDaycareInfoText() {
+            return (
+              <>
+                <P>
+                  Voit hakea lapselle tarvittaessa{' '}
+                  <strong>
+                    esiopetukseen liittyvää varhaiskasvatusta, joka on
+                    maksullista, ja jota annetaan esiopetuksen (4 tuntia/päivä)
+                    lisäksi
+                  </strong>{' '}
+                  aamuisin ja/tai iltapäivisin samassa paikassa kuin esiopetus.
+                  Jos haluat aloittaa varhaiskasvatuksen myöhemmin kuin
+                  esiopetus alkaa, kirjoita haluttu aloituspäivämäärä hakemuksen
+                  “Muut lisätiedot” -kohtaan.
+                </P>
+                <P>
+                  Yksityisiin päiväkoteihin ja osaan ostopalvelupäiväkodeista on
+                  tehtävä erillinen hakemus liittyvään varhaiskasvatukseen.
+                  Espoon varhaiskasvatus on yhteydessä niihin hakijoihin, joita
+                  tämä koskee.
+                </P>
+                <P>
+                  Saat varhaiskasvatuspaikasta erillisen kirjallisen päätöksen,
+                  ja päätös tulee{' '}
+                  <a
+                    href="https://www.suomi.fi/viestit"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Suomi.fi-viestit
+                  </a>{' '}
+                  -palveluun tai postitse, mikäli et ole ottanut
+                  Suomi.fi-viestit -palvelua käyttöön.
+                </P>
+              </>
+            )
+          },
           connectedDaycare:
             'Haen myös esiopetukseen liittyvää varhaiskasvatusta.',
           instructions: {
