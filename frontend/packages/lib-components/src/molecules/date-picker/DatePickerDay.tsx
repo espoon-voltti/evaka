@@ -17,7 +17,7 @@ interface Props {
   handleDayClick: (day: Date) => void
   inputValue: string
   locale: 'fi' | 'sv' | 'en'
-  isValidDate?: (date: Date) => boolean
+  isValidDate?: (date: LocalDate) => boolean
 }
 
 function DatePickerDay({
@@ -57,7 +57,10 @@ function DatePickerDay({
       weekdaysShort={weekdaysShort}
       firstDayOfWeek={locale === 'en' ? 0 : 1}
       selectedDays={convertToDate(inputValue)}
-      disabledDays={(date: Date) => (isValidDate ? !isValidDate(date) : true)}
+      disabledDays={(date: Date) => {
+        const localDate = LocalDate.fromSystemTzDate(date)
+        return isValidDate ? !isValidDate(localDate) : true
+      }}
     />
   )
 }

@@ -18,7 +18,6 @@ import {
   ApplicationStatus,
   ApplicationType
 } from '@evaka/lib-common/src/api-types/application/enums'
-import { addDays, addYears } from 'date-fns'
 import LocalDate from '@evaka/lib-common/src/local-date'
 
 export type ApplicationFormDataErrors = {
@@ -36,30 +35,34 @@ const minPreferredStartDate = (
   status: ApplicationStatus,
   type: ApplicationType,
   originalPreferredStartDate: LocalDate | null
-): Date => {
+): LocalDate => {
   if (status !== 'CREATED') {
     return originalPreferredStartDate
-      ? originalPreferredStartDate.toSystemTzDate()
-      : new Date()
+      ? originalPreferredStartDate
+      : LocalDate.today()
   } else {
-    return type === 'DAYCARE' ? addDays(new Date(), 14) : new Date()
+    LocalDate
+    return type === 'DAYCARE'
+      ? LocalDate.today().addDays(14)
+      : LocalDate.today()
   }
 }
 
-const maxPreferredStartDate = () => {
-  return addYears(new Date(), 1)
+const maxPreferredStartDate = (): LocalDate => {
+  return LocalDate.today().addYears(1)
 }
 
 export const isValidPreferredStartDate = (
-  date: Date,
+  date: LocalDate,
   originalPreferredStartDate: LocalDate | null,
   status: ApplicationStatus,
   type: ApplicationType
 ): boolean => {
-  return (
-    date >= minPreferredStartDate(status, type, originalPreferredStartDate) &&
-    date <= maxPreferredStartDate()
-  )
+  return date !== null
+    ? date.isEqualOrAfter(
+        minPreferredStartDate(status, type, originalPreferredStartDate)
+      ) && date.isEqualOrBefore(maxPreferredStartDate())
+    : false
 }
 
 const preferredStartDateValidator = (
@@ -72,12 +75,7 @@ const preferredStartDateValidator = (
 ): ErrorKey | undefined => {
   const date = LocalDate.parseFiOrNull(val)
   return date &&
-    isValidPreferredStartDate(
-      date.toSystemTzDate(),
-      originalPreferredStartDate,
-      status,
-      type
-    )
+    isValidPreferredStartDate(date, originalPreferredStartDate, status, type)
     ? undefined
     : err
 }

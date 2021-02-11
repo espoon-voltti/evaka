@@ -54,7 +54,7 @@ type DatePickerProps = {
   info?: InputInfo
   hideErrorsBeforeTouched?: boolean
   disabled?: boolean
-  isValidDate?: (date: Date) => boolean
+  isValidDate?: (date: LocalDate) => boolean
   'data-qa'?: string
   id?: string
   required?: boolean

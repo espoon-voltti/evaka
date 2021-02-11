@@ -18,6 +18,7 @@ import { ServiceNeedSectionProps } from '~applications/editor/service-need/Servi
 import ExpandingInfo from '@evaka/lib-components/src/molecules/ExpandingInfo'
 import { FixedSpaceColumn } from '@evaka/lib-components/src/layout/flex-helpers'
 import { isValidPreferredStartDate } from '~applications/editor/validations'
+import LocalDate from '@evaka/lib-common/src/local-date'
 
 export default React.memo(function PreferredStartSubSection({
   status,
@@ -116,7 +117,7 @@ export default React.memo(function PreferredStartSubSection({
           locale={lang}
           info={errorToInputInfo(errors.preferredStartDate, t.validationErrors)}
           hideErrorsBeforeTouched={!verificationRequested}
-          isValidDate={(date: Date) =>
+          isValidDate={(date: LocalDate) =>
             isValidPreferredStartDate(
               date,
               originalPreferredStartDate,
