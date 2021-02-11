@@ -5,7 +5,7 @@
 import React from 'react'
 import { Gap } from '@evaka/lib-components/src/white-space'
 import { ContentArea } from '@evaka/lib-components/src/layout/Container'
-import { H1, H2, P } from '@evaka/lib-components/src/typography'
+import { H1, H2 } from '@evaka/lib-components/src/typography'
 import { useTranslation } from '~localization'
 import { AlertBox } from '@evaka/lib-components/src/molecules/MessageBoxes'
 import {
@@ -31,7 +31,6 @@ export default React.memo(function Heading({
   transferApplication
 }: HeadingProps) {
   const t = useTranslation()
-  const infoParagraphs = t.applications.editor.heading.info[type]
 
   return (
     <ContentArea opaque paddingVertical="L">
@@ -44,13 +43,7 @@ export default React.memo(function Heading({
         {firstName} {lastName}
       </H2>
 
-      {infoParagraphs.map((paragraph, index) => (
-        <P
-          dangerouslySetInnerHTML={{ __html: paragraph }}
-          key={index}
-          fitted={index === infoParagraphs.length - 1}
-        />
-      ))}
+      {t.applications.editor.heading.info[type]()}
       {errors && applicationHasErrors(errors) && (
         <>
           <Gap size="s" />

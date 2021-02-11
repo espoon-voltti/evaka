@@ -169,22 +169,109 @@ const sv: Translations = {
           CLUB: 'Ansökan till klubbverksamhet'
         },
         info: {
-          DAYCARE: [
-            'Du kan ansöka om plats i småbarnspedagogisk verksamhet året om. Ansökningen bör lämnas in senast fyra månader före behovet av verksamheten börjar. Om behovet börjar med kortare varsel bör du ansöka om plats senast två veckor före.',
-            'Du får ett skriftligt beslut om platsen. Beslutet delges i tjänsten <a href="https://www.suomi.fi/meddelanden" target="_blank" rel="noreferrer">Suomi.fi</a>-meddelanden, eller per post om du inte tagit i bruk meddelandetjänsten i Suomi.fi.',
-            '* Informationen markerad med en stjärna krävs'
-          ],
-          PRESCHOOL: [
-            'Barn deltar i förskoleundervisning året innan läroplikten börjar. Förskoleundervisningen är avgiftsfri. Anmälningstiden till förskoleundervisningen 2021–2022 är 8.–20.1.2021. Förskolan börjar i <strong>11.8.2021</strong>. Beslutet delges inom mars i <a href="https://www.suomi.fi/meddelanden" target="_blank" rel="noreferrer">Suomi.fi-meddelandetjänsten</a> eller per post om du inte tagit i bruk <a href="https://www.suomi.fi/meddelanden" target="_blank" rel="noreferrer">meddelandetjänsten i Suomi.fi</a>.',
-            'Du får ett skriftligt beslut om platsen. Beslutet delges i tjänsten <a href="https://www.suomi.fi/meddelanden" target="_blank" rel="noreferrer">Suomi.fi</a>-meddelanden, eller per post om du inte tagit i bruk meddelandetjänsten i Suomi.fi.',
-            '* Informationen markerad med en stjärna krävs'
-          ],
-          CLUB: [
-            'Hakuaika syksyllä käynnistyviin kerhoihin on maaliskuussa. Jos lapsenne saa kerhopaikan, saatte päätöksen siitä huhti-toukokuun aikana. Päätös tehdään yhden toimintakauden ajaksi (elokuusta toukokuun loppuun). Päätös kerhopaikasta tulee Suomi.fi-palveluun tai postitse, mikäli ette ole ottanut palvelua käyttöön.',
-            'Kerhohakemuksen voi jättää myös hakuajan ulkopuolella ja sen jälkeen, kun kerhojen toimintakausi on jo alkanut. Hakuaikana saapuneet hakemukset käsitellään kuitenkin ensin, ja hakuajan ulkopuolella tulleet hakemukset käsitellään saapumisjärjestyksessä. Kerhohakemus kohdistuu yhdelle kerhokaudelle. Kauden päättyessä hakemus poistetaan järjestelmästä.',
-            'Kerhotoiminta on maksutonta, eikä siihen osallistuminen vaikuta Kelan maksamaan kotihoidontukeen. Jos lapselle sen sijaan on myönnetty varhaiskasvatuspaikka tai yksityisen hoidon tuki, ei hänelle voida myöntää kerhopaikkaa.',
-            '* Informationen markerad med en stjärna krävs'
-          ]
+          DAYCARE: function EditorHeadingInfoDaycareText() {
+            return (
+              <>
+                <P>
+                  Du kan ansöka om plats i småbarnspedagogisk verksamhet året
+                  om. Ansökningen bör lämnas in senast fyra månader före behovet
+                  av verksamheten börjar. Om behovet börjar med kortare varsel
+                  bör du ansöka om plats senast två veckor före.
+                </P>
+                <P>
+                  Du får ett skriftligt beslut om platsen. Beslutet delges i
+                  tjänsten{' '}
+                  <a
+                    href="https://www.suomi.fi/meddelanden"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Suomi.fi
+                  </a>
+                  -meddelanden, eller per post om du inte tagit i bruk
+                  meddelandetjänsten i Suomi.fi.
+                </P>
+                <P fitted={true}>
+                  * Informationen markerad med en stjärna krävs
+                </P>
+              </>
+            )
+          },
+          PRESCHOOL: function EditorHeadingInfoPreschoolText() {
+            return (
+              <>
+                <P>
+                  Barn deltar i förskoleundervisning året innan läroplikten
+                  börjar. Förskoleundervisningen är avgiftsfri. Anmälningstiden
+                  till förskoleundervisningen 2021–2022 är 8.–20.1.2021.
+                  Förskolan börjar i <strong>11.8.2021</strong>. Beslutet delges
+                  inom mars i{' '}
+                  <a
+                    href="https://www.suomi.fi/meddelanden"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Suomi.fi-meddelandetjänsten
+                  </a>{' '}
+                  eller per post om du inte tagit i bruk{' '}
+                  <a
+                    href="https://www.suomi.fi/meddelanden"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    meddelandetjänsten i Suomi.fi
+                  </a>
+                  .
+                </P>
+                <P>
+                  Du får ett skriftligt beslut om platsen. Beslutet delges i
+                  tjänsten{' '}
+                  <a
+                    href="https://www.suomi.fi/meddelanden"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Suomi.fi
+                  </a>
+                  -meddelanden, eller per post om du inte tagit i bruk
+                  meddelandetjänsten i Suomi.fi.
+                </P>
+                <P fitted={true}>
+                  * Informationen markerad med en stjärna krävs
+                </P>
+              </>
+            )
+          },
+          CLUB: function EditorHeadingInfoClubText() {
+            return (
+              <>
+                <P>
+                  Hakuaika syksyllä käynnistyviin kerhoihin on maaliskuussa. Jos
+                  lapsenne saa kerhopaikan, saatte päätöksen siitä
+                  huhti-toukokuun aikana. Päätös tehdään yhden toimintakauden
+                  ajaksi (elokuusta toukokuun loppuun). Päätös kerhopaikasta
+                  tulee Suomi.fi-palveluun tai postitse, mikäli ette ole ottanut
+                  palvelua käyttöön.
+                </P>
+                <P>
+                  Kerhohakemuksen voi jättää myös hakuajan ulkopuolella ja sen
+                  jälkeen, kun kerhojen toimintakausi on jo alkanut. Hakuaikana
+                  saapuneet hakemukset käsitellään kuitenkin ensin, ja hakuajan
+                  ulkopuolella tulleet hakemukset käsitellään
+                  saapumisjärjestyksessä. Kerhohakemus kohdistuu yhdelle
+                  kerhokaudelle. Kauden päättyessä hakemus poistetaan
+                  järjestelmästä.
+                </P>
+                <P>
+                  Kerhotoiminta on maksutonta, eikä siihen osallistuminen
+                  vaikuta Kelan maksamaan kotihoidontukeen. Jos lapselle sen
+                  sijaan on myönnetty varhaiskasvatuspaikka tai yksityisen
+                  hoidon tuki, ei hänelle voida myöntää kerhopaikkaa.
+                </P>
+                <P fitted={true}>* Tähdellä merkityt tiedot ovat pakollisia</P>
+              </>
+            )
+          }
         },
         errors: (count: number) => (count === 1 ? '1 fel' : `${count} fel`),
         hasErrors:

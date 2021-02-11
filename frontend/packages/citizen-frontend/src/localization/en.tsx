@@ -172,22 +172,118 @@ const en: Translations = {
           CLUB: 'Application for club'
         },
         info: {
-          DAYCARE: [
-            'You can apply for early childhood education all year round. The application must be submitted at the latest four months before the need for early childhood education begins. If you urgently need early childhood education, you must apply for a place at the latest two weeks before the need begins.',
-            'The applicant will receive a written decision on the early childhood education place via the <a href="https://www.suomi.fi/messages" target="_blank" rel="noreferrer">Messages service of Suomi.fi</a> or by post if the applicant has not taken in use the Messages service of Suomi.fi.',
-            '* Information marked with a star is required'
-          ],
-          PRESCHOOL: [
-            'Pre-primary education is attended one year before the start of compulsory education. Pre-primary education is free of charge. Enrolment for pre-primary education in the 2021–2022 school year takes place on 8–20 January 2021. Finnish and swedish pre-primary education begins on <strong>11 August 2021</strong>. The decisions will be sent to the <a href="https://www.suomi.fi/messages" target="_blank" rel="noreferrer">Suomi.fi Messages</a> service or by post, if the applicant does not use the <a href="https://www.suomi.fi/messages" target="_blank" rel="noreferrer">Suomi.fi Messages</a> service.',
-            'The decisions will be sent to the <a href="https://www.suomi.fi/messages" target="_blank" rel="noreferrer">Suomi.fi Messages</a> service or by post, if the applicant does not use the <a href="https://www.suomi.fi/messages" target="_blank" rel="noreferrer">Suomi.fi Messages</a> service.',
-            '* Information marked with a star is required'
-          ],
-          CLUB: [
-            'Hakuaika syksyllä käynnistyviin kerhoihin on maaliskuussa. Jos lapsenne saa kerhopaikan, saatte päätöksen siitä huhti-toukokuun aikana. Päätös tehdään yhden toimintakauden ajaksi (elokuusta toukokuun loppuun). Päätös kerhopaikasta tulee Suomi.fi-palveluun tai postitse, mikäli ette ole ottanut palvelua käyttöön.',
-            'Kerhohakemuksen voi jättää myös hakuajan ulkopuolella ja sen jälkeen, kun kerhojen toimintakausi on jo alkanut. Hakuaikana saapuneet hakemukset käsitellään kuitenkin ensin, ja hakuajan ulkopuolella tulleet hakemukset käsitellään saapumisjärjestyksessä. Kerhohakemus kohdistuu yhdelle kerhokaudelle. Kauden päättyessä hakemus poistetaan järjestelmästä.',
-            'Kerhotoiminta on maksutonta, eikä siihen osallistuminen vaikuta Kelan maksamaan kotihoidontukeen. Jos lapselle sen sijaan on myönnetty varhaiskasvatuspaikka tai yksityisen hoidon tuki, ei hänelle voida myöntää kerhopaikkaa.',
-            '* Tähdellä merkityt tiedot ovat pakollisia'
-          ]
+          DAYCARE: function EditorHeadingInfoDaycareText() {
+            return (
+              <>
+                <P>
+                  You can apply for early childhood education all year round.
+                  The application must be submitted at the latest four months
+                  before the need for early childhood education begins. If you
+                  urgently need early childhood education, you must apply for a
+                  place at the latest two weeks before the need begins.
+                </P>
+                <P>
+                  The applicant will receive a written decision on the early
+                  childhood education place via the{' '}
+                  <a
+                    href="https://www.suomi.fi/messages"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Messages service of Suomi.fi
+                  </a>{' '}
+                  or by post if the applicant has not taken in use the Messages
+                  service of Suomi.fi.
+                </P>
+                <P fitted={true}>
+                  * Information marked with a star is required
+                </P>
+              </>
+            )
+          },
+          PRESCHOOL: function EditorHeadingInfoPreschoolText() {
+            return (
+              <>
+                <P>
+                  Pre-primary education is attended one year before the start of
+                  compulsory education. Pre-primary education is free of charge.
+                  Enrolment for pre-primary education in the 2021–2022 school
+                  year takes place on 8–20 January 2021. Finnish and swedish
+                  pre-primary education begins on{' '}
+                  <strong>11 August 2021</strong>. The decisions will be sent to
+                  the{' '}
+                  <a
+                    href="https://www.suomi.fi/messages"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Suomi.fi Messages
+                  </a>{' '}
+                  service or by post, if the applicant does not use the{' '}
+                  <a
+                    href="https://www.suomi.fi/messages"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Suomi.fi Messages
+                  </a>{' '}
+                  service.
+                </P>
+                <P>
+                  The decisions will be sent to the{' '}
+                  <a
+                    href="https://www.suomi.fi/messages"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Suomi.fi Messages
+                  </a>{' '}
+                  service or by post, if the applicant does not use the{' '}
+                  <a
+                    href="https://www.suomi.fi/messages"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Suomi.fi Messages
+                  </a>{' '}
+                  service.
+                </P>
+                <P fitted={true}>
+                  * Information marked with a star is required
+                </P>
+              </>
+            )
+          },
+          CLUB: function EditorHeadingInfoClubText() {
+            return (
+              <>
+                <P>
+                  Hakuaika syksyllä käynnistyviin kerhoihin on maaliskuussa. Jos
+                  lapsenne saa kerhopaikan, saatte päätöksen siitä
+                  huhti-toukokuun aikana. Päätös tehdään yhden toimintakauden
+                  ajaksi (elokuusta toukokuun loppuun). Päätös kerhopaikasta
+                  tulee Suomi.fi-palveluun tai postitse, mikäli ette ole ottanut
+                  palvelua käyttöön.
+                </P>
+                <P>
+                  Kerhohakemuksen voi jättää myös hakuajan ulkopuolella ja sen
+                  jälkeen, kun kerhojen toimintakausi on jo alkanut. Hakuaikana
+                  saapuneet hakemukset käsitellään kuitenkin ensin, ja hakuajan
+                  ulkopuolella tulleet hakemukset käsitellään
+                  saapumisjärjestyksessä. Kerhohakemus kohdistuu yhdelle
+                  kerhokaudelle. Kauden päättyessä hakemus poistetaan
+                  järjestelmästä.
+                </P>
+                <P>
+                  Kerhotoiminta on maksutonta, eikä siihen osallistuminen
+                  vaikuta Kelan maksamaan kotihoidontukeen. Jos lapselle sen
+                  sijaan on myönnetty varhaiskasvatuspaikka tai yksityisen
+                  hoidon tuki, ei hänelle voida myöntää kerhopaikkaa.
+                </P>
+                <P fitted={true}>* Tähdellä merkityt tiedot ovat pakollisia</P>
+              </>
+            )
+          }
         },
         errors: (count: number) =>
           count === 1 ? '1 error' : `${count} errors`,

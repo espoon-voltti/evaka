@@ -170,22 +170,87 @@ export default {
           CLUB: 'Kerhohakemus'
         },
         info: {
-          DAYCARE: [
-            'Varhaiskasvatusta voi hakea ympäri vuoden. Hakemus on jätettävä viimeistään neljä kuukautta ennen kuin tarvitsette paikan. Mikäli tarvitsette varhaiskasvatusta kiireellisesti työn tai opiskelujen vuoksi, tulee paikkaa hakea viimeistään kaksi viikkoa ennen.',
-            'Saatte kirjallisen päätöksen varhaiskasvatuspaikasta <a href="https://www.suomi.fi/viestit" target="_blank" rel="noreferrer">Suomi.fi-viestit</a> -palveluun tai postitse, mikäli et ole ottanut Suomi.fi -palvelua käyttöön.',
-            '* Tähdellä merkityt tiedot ovat pakollisia'
-          ],
-          PRESCHOOL: [
-            'Esiopetukseen osallistutaan vuosi ennen oppivelvollisuuden alkamista. Esiopetus on maksutonta. Lukuvuoden 2021–2022 esiopetukseen ilmoittaudutaan 8.–20.1.2021. Suomen ja ruotsin kielinen esiopetus alkaa 11.8.2021.',
-            'Päätökset tulevat <a href="https://www.suomi.fi/viestit" target="_blank" rel="noreferrer">Suomi.fi-viestit</a> -palveluun tai postitse, mikäli et ole ottanut Suomi.fi -palvelua käyttöön.',
-            '* Tähdellä merkityt tiedot ovat pakollisia'
-          ],
-          CLUB: [
-            'Hakuaika syksyllä käynnistyviin kerhoihin on maaliskuussa. Jos lapsenne saa kerhopaikan, saatte päätöksen siitä huhti-toukokuun aikana. Päätös tehdään yhden toimintakauden ajaksi (elokuusta toukokuun loppuun). Päätös kerhopaikasta tulee Suomi.fi-palveluun tai postitse, mikäli ette ole ottanut palvelua käyttöön.',
-            'Kerhohakemuksen voi jättää myös hakuajan ulkopuolella ja sen jälkeen, kun kerhojen toimintakausi on jo alkanut. Hakuaikana saapuneet hakemukset käsitellään kuitenkin ensin, ja hakuajan ulkopuolella tulleet hakemukset käsitellään saapumisjärjestyksessä. Kerhohakemus kohdistuu yhdelle kerhokaudelle. Kauden päättyessä hakemus poistetaan järjestelmästä.',
-            'Kerhotoiminta on maksutonta, eikä siihen osallistuminen vaikuta Kelan maksamaan kotihoidontukeen. Jos lapselle sen sijaan on myönnetty varhaiskasvatuspaikka tai yksityisen hoidon tuki, ei hänelle voida myöntää kerhopaikkaa.',
-            '* Tähdellä merkityt tiedot ovat pakollisia'
-          ]
+          DAYCARE: function EditorHeadingInfoDaycareText() {
+            return (
+              <>
+                <P>
+                  Varhaiskasvatusta voi hakea ympäri vuoden. Hakemus on
+                  jätettävä viimeistään neljä kuukautta ennen kuin tarvitsette
+                  paikan. Mikäli tarvitsette varhaiskasvatusta kiireellisesti
+                  työn tai opiskelujen vuoksi, tulee paikkaa hakea viimeistään
+                  kaksi viikkoa ennen.
+                </P>
+                <P>
+                  Saatte kirjallisen päätöksen varhaiskasvatuspaikasta{' '}
+                  <a
+                    href="https://www.suomi.fi/viestit"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Suomi.fi-viestit
+                  </a>{' '}
+                  -palveluun tai postitse, mikäli et ole ottanut Suomi.fi
+                  -palvelua käyttöön.
+                </P>
+                <P fitted={true}>* Tähdellä merkityt tiedot ovat pakollisia</P>
+              </>
+            )
+          },
+          PRESCHOOL: function EditorHeadingInfoPreschoolText() {
+            return (
+              <>
+                <P>
+                  Esiopetukseen osallistutaan vuosi ennen oppivelvollisuuden
+                  alkamista. Esiopetus on maksutonta. Lukuvuoden 2021–2022
+                  esiopetukseen ilmoittaudutaan 8.–20.1.2021. Suomen ja ruotsin
+                  kielinen esiopetus alkaa 11.8.2021.
+                </P>
+                <P>
+                  Päätökset tulevat{' '}
+                  <a
+                    href="https://www.suomi.fi/viestit"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Suomi.fi-viestit
+                  </a>{' '}
+                  -palveluun tai postitse, mikäli et ole ottanut Suomi.fi
+                  -palvelua käyttöön.
+                </P>
+                <P fitted={true}>* Tähdellä merkityt tiedot ovat pakollisia</P>
+              </>
+            )
+          },
+          CLUB: function EditorHeadingInfoClubText() {
+            return (
+              <>
+                <P>
+                  Hakuaika syksyllä käynnistyviin kerhoihin on maaliskuussa. Jos
+                  lapsenne saa kerhopaikan, saatte päätöksen siitä
+                  huhti-toukokuun aikana. Päätös tehdään yhden toimintakauden
+                  ajaksi (elokuusta toukokuun loppuun). Päätös kerhopaikasta
+                  tulee Suomi.fi-palveluun tai postitse, mikäli ette ole ottanut
+                  palvelua käyttöön.
+                </P>
+                <P>
+                  Kerhohakemuksen voi jättää myös hakuajan ulkopuolella ja sen
+                  jälkeen, kun kerhojen toimintakausi on jo alkanut. Hakuaikana
+                  saapuneet hakemukset käsitellään kuitenkin ensin, ja hakuajan
+                  ulkopuolella tulleet hakemukset käsitellään
+                  saapumisjärjestyksessä. Kerhohakemus kohdistuu yhdelle
+                  kerhokaudelle. Kauden päättyessä hakemus poistetaan
+                  järjestelmästä.
+                </P>
+                <P>
+                  Kerhotoiminta on maksutonta, eikä siihen osallistuminen
+                  vaikuta Kelan maksamaan kotihoidontukeen. Jos lapselle sen
+                  sijaan on myönnetty varhaiskasvatuspaikka tai yksityisen
+                  hoidon tuki, ei hänelle voida myöntää kerhopaikkaa.
+                </P>
+                <P fitted={true}>* Tähdellä merkityt tiedot ovat pakollisia</P>
+              </>
+            )
+          }
         },
         errors: (count: number) =>
           count === 1 ? '1 virhe' : `${count} virhettä`,
