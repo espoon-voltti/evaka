@@ -2,41 +2,61 @@
 '
 ' SPDX-License-Identifier: LGPL-2.1-or-later
 
-@startuml evaka-context
-!includeurl https://github.com/plantuml-stdlib/C4-PlantUML/raw/v2.0.0/C4_Context.puml
+@startuml
+!includeurl https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/v2.0.1/C4_Context.puml
 
 title eVakan kontekstikaavio
 
+LAYOUT_WITH_LEGEND()
+
 Person(hakija, "Kuntalainen", "Varhaiskasvatuksen tai esiopetuksen piirissä olevan lapsen huoltaja")
-System(evaka, "eVaka", "Järjestelmä varhaiskasvatukseen ja esiopetukseen hakemiseen ja hallintaan.\n\nYhteyshenkilö:\nSirpa Puumalainen")
+Person_Ext(partner, "Yksityinen palveluntuottaja", "Yksityinen varhaiskasvatuksen palveluseteliyksikkö")
+System(evaka, "eVaka", "Järjestelmä varhaiskasvatukseen ja esiopetukseen hakemiseen ja hallintaan.")
 
-System_Ext(vtj, "Väestötietojärjestelmä", "Väestörekisterikeskuksen palvelu kansalaisten tietojen hakemiseen")
-System_Ext(varda, "Varda", "Opetushallituksen järjestelmä varhaiskasvatuksen tilastointiin")
-System_Ext(suomifiviestit, "Suomi.fi -viestit", "Väestörekisterikeskuksen palvelu paperisten ja sähköisten viestien lähettämiseen kansalaiselle")
-System_Ext(suomifi, "Suomi.fi -tunnistus", "Väestörekisterikeskuksen kansallinen tunnistusportaali")
-System_Ext(espooad, "Espoo AD -tunnistus", "Virkamiesten tunnistaminen")
-System_Ext(espi, "ESPi", "Espoon kaupungin integraatioalusta")
+Boundary(ulkoiset_tietojarjestelmapalvelut, "Ulkoiset tietojärjestelmäpalvelut") {
+  System_Ext(vtj, "Väestötietojärjestelmä", "DVV:n palvelu kansalaisten tietojen hakemiseen")
+  System_Ext(varda, "Varda", "Opetushallituksen järjestelmä varhaiskasvatuksen tilastointiin")
+  System_Ext(koski, "Koski", "Opetushallituksen järjestelmä opintosuoritusten liittyen tutkintovaatimuksiin ja suorituksiin")
+  System_Ext(suomifiviestit, "Suomi.fi -viestit", "DVV:n palvelu paperisten ja sähköisten viestien lähettämiseen kansalaiselle")
+  System_Ext(suomifi, "Suomi.fi -tunnistus", "DVV:n kansallinen tunnistautumisportaali")
+  System_Ext(tulorekisteri, "Tulorekisteri", "Verohallinnon palvelu kansalaisen tulotietojen tarkastamista varten")
+  System_Ext(psop, "PSOP", "Tieran palvelu palveluseteli- ja ostopalvelujen palvelujärjestäjien ja asiakkaiden hallinnointiin. Hoitaa osan prosessista, ei integraatiota eVakaan")
+ }
 
-Rel_R(hakija, evaka, "Hakee varhaiskasvatuspaikkaa huollettavalleen")
-Rel_U(hakija, suomifi, "Tunnistautuu")
-Rel_U(evaka, suomifi, "Ohjaa hakijan tunnistautumaan")
-Rel(evaka, espooad, "Ohjaa Espoon kaupungin työntekijän tunnistautumaan")
-Rel_U(evaka, vtj, "Hakee kuntalaisen tiedot ja huollettavat")
-Rel_U(evaka, varda, "Varhaiskasvatuksen tilastointi")
-Rel_R(evaka, espi, "Lähettää varhaiskasvatuksen laskut")
-
-Rel(evaka, suomifiviestit, "Lähettää varhaiskasvatuksen päätökset kuntalaiselle")
-
-Boundary(espoon_tyontekija, "Espoon kaupungin työntekijä") {
-  Person(palveluohjaaja, "Palveluohjaaja", "Vastaa oman palvelualueensa varhaiskasvatuksen päätöksistä")
-  Person(yksikon_esimies, "Yksikön esimies", "Vastaa yhdestä tai useammasta toimipisteestä")
-  Person(talouden_henkilo, "Talouden henkilö", "Huolehtii maksupäätöksistä ja laskuista")
+Boundary(kunnan_tietojärjestelmäpalvelut, "Kunnan tietojärjestelmäpalvelut") {
+  System_Ext(ad, "Kunnan keskitetty käyttäjätunnistus (AD)", "Henkilökunnan tunnistautuminen")
+  System_Ext(finance, "Taloushallinto", "Kunnan taloushallinnon järjestelmä tai väylä")
+  System_Ext(dw, "Tietovarastointi", "Kunnan tietovarasto (DW)")
+  System_Ext(planning, "Työvuorosuunnittelu", "Kunnan työvuorosuunnittelun järjestelmä")
 }
 
-Rel_U(palveluohjaaja, evaka, "Käsittelee hakemuksen, sijoittaa lapsen varhaiskasvatukseen ja tekee päätöksen")
-Rel_U(yksikon_esimies, evaka, "Ryhmittelee")
-Rel(talouden_henkilo, evaka, "Luo maksupäätökset ja laskut")
+Boundary(kunnan_tyontekija, "Kunnan työntekijä") {
+  Person(palveluohjaaja, "Palveluohjaaja", "Vastaa oman palvelualueensa varhaiskasvatuksen sijoituksista ja päätöksistä")
+  Person(yksikon_esimies, "Yksikön esimies", "Vastaa yhdestä tai useammasta toimipisteestä, sekä yksikön henkilökunnasta")
+  Person(talouden_henkilo, "Talouden henkilö", "Huolehtii maksupäätöksistä, arvopäätöksistä ja laskuista")
+  Person(henkilokunta, "Henkilökunta", "Vastaa yksikköön sijoitettujen lasten poissaolomerkinnöistä")
+  Person(veo, "Varhaiskasvatuksen erityisopettaja", "Arvioi tuen tarpeellisten lasten sijoitukset")
+}
 
-Rel(espoon_tyontekija, espooad, "Tunnistautuu")
+
+Rel_R(hakija, evaka, "Hakee varhaiskasvatuspaikkaa huollettavalleen")
+Rel_L(partner, evaka, "Tunnistautuu")
+Rel_U(hakija, suomifi, "Tunnistautuu")
+Rel_U(evaka, suomifi, "Ohjaa hakijan tunnistautumaan")
+Rel_R(evaka, ad, "Ohjaa kunnan työntekijän tunnistautumaan")
+Rel_U(evaka, vtj, "Hakee kuntalaisen tiedot ja huollettavat")
+Rel_U(evaka, varda, "Varhaiskasvatuksen tilastointi")
+Rel_U(evaka, koski, "Esiopetuksen ja valmistavan opetuksen opiskeluoikeudet")
+Rel_R(evaka, finance, "Lähettää varhaiskasvatuksen laskut")
+
+Rel_L(evaka, suomifiviestit, "Lähettää varhaiskasvatuksen päätökset kuntalaiselle")
+
+Rel_U(palveluohjaaja, evaka, "Käsittelee hakemuksen, sijoittaa lapsen varhaiskasvatukseen ja tekee päätöksen")
+Rel_U(yksikon_esimies, evaka, "Ryhmittelee, merkitsee palvelutarpeet")
+Rel_U(henkilokunta, evaka, "Merkitsee poissaolot")
+Rel_U(talouden_henkilo, evaka, "Luo maksupäätökset ja laskut")
+Rel_U(veo, evaka, "Arvioi tuen tarpeen hakemuksella")
+
+Rel_R(kunnan_tyontekija, ad, "Tunnistautuu")
 
 @enduml
