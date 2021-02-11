@@ -207,6 +207,7 @@ export interface Daycare {
     | 'PURCHASED'
     | 'PRIVATE'
     | 'PRIVATE_SERVICE_VOUCHER'
+  roundTheClock: boolean
 }
 
 export interface DaycareGroup {

@@ -31,13 +31,15 @@ export type ApplicationUnitType =
 
 export async function getApplicationUnits(
   type: ApplicationUnitType,
-  date: LocalDate
+  date: LocalDate,
+  shiftCare: boolean | null
 ): Promise<Result<PublicUnit[]>> {
   try {
     const { data } = await client.get<JsonOf<PublicUnit[]>>('/units', {
       params: {
         type,
-        date: date.formatIso()
+        date: date.formatIso(),
+        ...(shiftCare && { shiftCare: shiftCare })
       }
     })
     return Success.of(data)
