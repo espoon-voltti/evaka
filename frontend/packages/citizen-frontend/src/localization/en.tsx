@@ -552,11 +552,31 @@ const en: Translations = {
       fee: {
         title: 'Early childhood education fee',
         info: {
-          DAYCARE:
-            'The client fees for municipal early childhood education are calculated as a percentage of the family’s gross income. Each family must provide information about their gross income using the income statement form, no later than two weeks after their child’s early childhood education has started.',
-          PRESCHOOL:
-            'The client fees for municipal early childhood education are calculated as a percentage of the family’s gross income. Each family must provide information about their gross income using the income statement form, no later than two weeks after their child’s early childhood education has started.',
-          CLUB: ''
+          DAYCARE: function FeeInfoTextDaycare() {
+            return (
+              <P>
+                The client fees for municipal early childhood education are
+                calculated as a percentage of the family’s gross income. Each
+                family must provide information about their gross income using
+                the income statement form, no later than two weeks after their
+                child’s early childhood education has started.
+              </P>
+            )
+          },
+          PRESCHOOL: function FeeInfoTextPreschool() {
+            return (
+              <P>
+                The client fees for municipal early childhood education are
+                calculated as a percentage of the family’s gross income. Each
+                family must provide information about their gross income using
+                the income statement form, no later than two weeks after their
+                child’s early childhood education has started.
+              </P>
+            )
+          },
+          CLUB: function FeeInfoTextClub() {
+            return <P></P>
+          }
         },
         emphasis:
           '<strong>The income statement is not needed if the family agrees to pay the highest fee.</strong>',

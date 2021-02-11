@@ -552,11 +552,31 @@ const sv: Translations = {
       fee: {
         title: 'Avgiften för småbarnspedagogik',
         info: {
-          DAYCARE:
-            'Klientavgiften inom den kommunala småbarnspedagogiken är en procentandel av familjens bruttoinkomster. Familjen ska lämna in en utredning över sina bruttoinkomster på en särskild blankett, senast inom två veckor från det att barnet har inlett småbarnspedagogiken.',
-          PRESCHOOL:
-            'Klientavgiften inom den kommunala småbarnspedagogiken är en procentandel av familjens bruttoinkomster. Familjen ska lämna in en utredning över sina bruttoinkomster på en särskild blankett, senast inom två veckor från det att barnet har inlett småbarnspedagogiken.',
-          CLUB: ''
+          DAYCARE: function FeeInfoTextDaycare() {
+            return (
+              <P>
+                Klientavgiften inom den kommunala småbarnspedagogiken är en
+                procentandel av familjens bruttoinkomster. Familjen ska lämna in
+                en utredning över sina bruttoinkomster på en särskild blankett,
+                senast inom två veckor från det att barnet har inlett
+                småbarnspedagogiken.
+              </P>
+            )
+          },
+          PRESCHOOL: function FeeInfoTextPreschool() {
+            return (
+              <P>
+                Klientavgiften inom den kommunala småbarnspedagogiken är en
+                procentandel av familjens bruttoinkomster. Familjen ska lämna in
+                en utredning över sina bruttoinkomster på en särskild blankett,
+                senast inom två veckor från det att barnet har inlett
+                småbarnspedagogiken.
+              </P>
+            )
+          },
+          CLUB: function FeeInfoTextClub() {
+            return <P></P>
+          }
         },
         emphasis:
           '<strong>Om familjen samtycker till den högsta avgiften behövs ingen inkomstutredning.</strong>',

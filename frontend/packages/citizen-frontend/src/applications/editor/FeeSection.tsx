@@ -35,11 +35,7 @@ export default React.memo(function FeeSection({
       validationErrors={verificationRequested ? getErrorCount(errors) : 0}
       data-qa="fee-section"
     >
-      <P
-        dangerouslySetInnerHTML={{
-          __html: t.applications.editor.fee.info[applicationType]
-        }}
-      />
+      {t.applications.editor.fee.info[applicationType]()}
       <P
         dangerouslySetInnerHTML={{
           __html: t.applications.editor.fee.emphasis

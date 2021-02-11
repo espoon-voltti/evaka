@@ -546,11 +546,35 @@ export default {
       fee: {
         title: 'Varhaiskasvatusmaksu',
         info: {
-          DAYCARE:
-            'Kunnallisen varhaiskasvatuksen asiakasmaksut määräytyvät prosenttiosuutena perheen bruttotuloista. Maksut vaihtelevat perheen koon ja tulojen sekä varhaiskasvatusajan mukaan maksuttomasta varhaiskasvatuksesta enintään 288 euron kuukausimaksuun lasta kohden. Perhe toimittaa tuloselvityksen bruttotuloistaan tuloselvityslomakkeella, viimeistään kahden viikon kuluessa siitä, kun lapsi on aloittanut varhaiskasvatuksessa.',
-          PRESCHOOL:
-            'Esiopetus on maksutonta, mutta siihen liittyvä varhaiskasvatus on maksullista. Jos lapsi osallistuu liittyvään varhaiskasvatukseen, perhe toimittaa tuloselvityksen bruttotuloistaan tuloselvityslomakkeella viimeistään kahden viikon kuluessa siitä, kun lapsi on aloittanut varhaiskasvatuksessa.',
-          CLUB: ''
+          DAYCARE: function FeeInfoTextDaycare() {
+            return (
+              <P>
+                Kunnallisen varhaiskasvatuksen asiakasmaksut määräytyvät
+                prosenttiosuutena perheen bruttotuloista. Maksut vaihtelevat
+                perheen koon ja tulojen sekä varhaiskasvatusajan mukaan
+                maksuttomasta varhaiskasvatuksesta enintään 288 euron
+                kuukausimaksuun lasta kohden. Perhe toimittaa tuloselvityksen
+                bruttotuloistaan tuloselvityslomakkeella, viimeistään kahden
+                viikon kuluessa siitä, kun lapsi on aloittanut
+                varhaiskasvatuksessa.
+              </P>
+            )
+          },
+          PRESCHOOL: function FeeInfoTextPreschool() {
+            return (
+              <P>
+                Esiopetus on maksutonta, mutta siihen liittyvä varhaiskasvatus
+                on maksullista. Jos lapsi osallistuu liittyvään
+                varhaiskasvatukseen, perhe toimittaa tuloselvityksen
+                bruttotuloistaan tuloselvityslomakkeella viimeistään kahden
+                viikon kuluessa siitä, kun lapsi on aloittanut
+                varhaiskasvatuksessa.
+              </P>
+            )
+          },
+          CLUB: function FeeInfoTextClub() {
+            return <P></P>
+          }
         },
         emphasis:
           '<strong>Tuloselvitystä ei tarvita, jos perhe suostuu korkeimpaan maksuun.</strong>',
