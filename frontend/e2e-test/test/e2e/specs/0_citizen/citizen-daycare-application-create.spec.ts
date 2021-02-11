@@ -29,7 +29,7 @@ import {
   fullDaycareForm,
   minimalDaycareForm
 } from '../../utils/application-forms'
-import { add } from 'date-fns'
+import { add, sub } from 'date-fns'
 import CitizenDecisionsPage from '../../pages/citizen/citizen-decisions'
 import CitizenDecisionResponsePage from '../../pages/citizen/citizen-decision-response'
 
@@ -201,7 +201,7 @@ test('Notification on transfer application is visible', async (t) => {
     .ok()
 })
 
-test('Preferred start date can be moved earlier if application is not yet sent', async (t) => {
+test('A validation warning is shown if preferred start date is not valid', async (t) => {
   await t.useRole(enduserRole)
   await t.click(citizenHomePage.nav.applications)
   await citizenApplicationsPage.createApplication(
@@ -211,9 +211,44 @@ test('Preferred start date can be moved earlier if application is not yet sent',
   applicationId = await citizenApplicationEditor.getApplicationId()
 
   await citizenApplicationEditor.fillData(fullDaycareForm.form)
-  await citizenApplicationEditor.setPreferredStartDate(
-    add(new Date(), { months: 1 })
+
+  await citizenApplicationEditor.setPreferredStartDate(new Date())
+
+  await citizenApplicationEditor.assertPreferredStartDateProcessingWarningIsShown(
+    true
   )
-  await citizenApplicationEditor.preferredStartDateInputInfo('')
-  await citizenApplicationEditor.saveAsDraft()
+  await citizenApplicationEditor.assertPreferredStartDateInputInfo(
+    true,
+    'Aloituspäivä ei ole sallittu'
+  )
+
+  await citizenApplicationEditor.setPreferredStartDate(
+    add(new Date(), { months: 4 })
+  )
+  await citizenApplicationEditor.assertPreferredStartDateProcessingWarningIsShown(
+    false
+  )
+
+  await citizenApplicationEditor.assertPreferredStartDateInputInfo(false)
+
+  const validDate = add(new Date(), { months: 6 })
+
+  await citizenApplicationEditor.setPreferredStartDate(validDate)
+
+  await citizenApplicationEditor.verifyAndSend()
+  await citizenApplicationEditor.acknowledgeSendSuccess()
+
+  await citizenApplicationsPage.openApplication(applicationId)
+
+  await citizenApplicationEditor.setPreferredStartDate(
+    sub(validDate, { days: 1 })
+  )
+
+  // The validation text is not shown in the test browser without this
+  await t.click(citizenApplicationEditor.applicationTypeTitle)
+
+  await citizenApplicationEditor.assertPreferredStartDateInputInfo(
+    true,
+    'Aloituspäivä ei ole sallittu'
+  )
 })

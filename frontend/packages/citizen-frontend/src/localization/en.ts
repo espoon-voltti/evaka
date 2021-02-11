@@ -144,7 +144,8 @@ const en: Translations = {
         PRESCHOOL:
           'Your child already has a place in pre-primary education. Use this application to apply for early childhood education <strong>connected to pre-primary education</strong> or a transfer to another pre-primary education unit.'
       },
-      create: 'Apply'
+      create: 'Apply',
+      daycare4monthWarning: 'The application processing time is 4 months.'
     },
     editor: {
       heading: {

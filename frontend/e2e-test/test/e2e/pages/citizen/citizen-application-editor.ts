@@ -171,7 +171,30 @@ export default class CitizenApplicationEditor {
     })
   }
 
-  async assertPreferredStartDateInputInfo(expected: string) {
-    await t.expect(this.preferredStartDateInputInfo.textContent).eql(expected)
+  async assertPreferredStartDateInputInfo(
+    expected: boolean,
+    expectedText = ''
+  ) {
+    expected
+      ? await t
+          .expect(
+            this.preferredStartDateInputInfo.with({ timeout: 2000 }).textContent
+          )
+          .eql(expectedText)
+      : await t
+          .expect(
+            this.preferredStartDateInputInfo.with({ timeout: 2000 }).visible
+          )
+          .eql(false)
+  }
+
+  async assertPreferredStartDateProcessingWarningIsShown(expected: boolean) {
+    await t
+      .expect(
+        Selector('[data-qa="daycare-processing-time-warning"]', {
+          timeout: 2000
+        }).visible
+      )
+      .eql(expected)
   }
 }

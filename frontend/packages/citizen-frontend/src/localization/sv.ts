@@ -145,7 +145,8 @@ const sv: Translations = {
         PRESCHOOL:
           'Barnet har redan en förskoleplats. Med denna ansökan kan du ansöka om <strong>småbarnspedagogik i anslutning till förskoleundervisningen</strong> eller om flyttning till en annan enhet som erbjuder förskoleundervisning.'
       },
-      create: 'Ny ansökan'
+      create: 'Ny ansökan',
+      daycare4monthWarning: 'Behandlingstiden för ansökningen är 4 månader.'
     },
     editor: {
       heading: {

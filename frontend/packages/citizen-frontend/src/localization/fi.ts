@@ -142,7 +142,8 @@ export default {
         PRESCHOOL:
           'Lapsella on jo esiopetuspaikka. Tällä hakemuksella voit hakea esiopetukseen liittyvää varhaiskasvatusta tai siirtoa toiseen esiopetusta tarjoavaan yksikköön.'
       },
-      create: 'Tee hakemus'
+      create: 'Tee hakemus',
+      daycare4monthWarning: 'Hakemuksen käsittelyaika on 4 kuukautta.'
     },
     editor: {
       heading: {
