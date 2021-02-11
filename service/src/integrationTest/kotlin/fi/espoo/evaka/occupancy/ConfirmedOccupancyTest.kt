@@ -158,7 +158,7 @@ class ConfirmedOccupancyTest : FullApplicationTest() {
         val result = fetchAndParseOccupancy(testDaycare.id, defaultPeriod)
 
         assertEquals(
-            listOf(OccupancyPeriod(defaultPeriod, 0.54, 1)),
+            listOf(OccupancyPeriod(defaultPeriod, 1.0, 1)),
             result
         )
     }
@@ -361,7 +361,7 @@ class ConfirmedOccupancyTest : FullApplicationTest() {
     }
 
     @Test
-    fun `occupancy calculation is correct for 5-year-old child in daycare with part time placement`() {
+    fun `occupancy calculation is correct for 5-year-old child in daycare with part time hours`() {
         jdbi.handle(
             createOccupancyTestFixture(
                 unitId = testDaycare.id,
@@ -376,7 +376,7 @@ class ConfirmedOccupancyTest : FullApplicationTest() {
 
         assertEquals(
             listOf(
-                OccupancyPeriod(defaultPeriod.copy(end = LocalDate.of(2019, 7, 31)), 0.54, 1),
+                OccupancyPeriod(defaultPeriod.copy(end = LocalDate.of(2019, 7, 31)), 1.0, 1),
                 OccupancyPeriod(defaultPeriod.copy(start = LocalDate.of(2019, 8, 1)), 0.5, 1)
             ),
             result
