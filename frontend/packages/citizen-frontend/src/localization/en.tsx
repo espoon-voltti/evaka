@@ -588,8 +588,22 @@ const en: Translations = {
         },
         checkbox:
           'I give consent to the highest fee. This consent will remain valid until I state otherwise.',
-        links:
-          'You can find further information about early childhood education fees and the income statement form here:<br/><a href="https://www.espoo.fi/en-US/Childcare_and_education/Early_childhood_education/Early_childhood_education_fees" target="_blank" rel="noopener noreferrer">Early childhood education fees</a>'
+        links: function FeeLinksText() {
+          return (
+            <P>
+              You can find further information about early childhood education
+              fees and the income statement form here:
+              <br />
+              <a
+                href="https://www.espoo.fi/en-US/Childcare_and_education/Early_childhood_education/Early_childhood_education_fees"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Early childhood education fees
+              </a>
+            </P>
+          )
+        }
       },
       additionalDetails: {
         title: 'Other additional information',

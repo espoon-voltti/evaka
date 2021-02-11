@@ -585,8 +585,22 @@ export default {
         },
         checkbox:
           'Annan suostumuksen korkeimpaan maksuun. Suostumus on voimassa toistaiseksi, kunnes toisin ilmoitan.',
-        links:
-          'Lisätietoa varhaiskasvatuksen maksuista ja tuloselvityslomakeen löydät Espoon kaupungin sivuilta:<br/><a href="https://www.espoo.fi/fi-FI/Kasvatus_ja_opetus/Varhaiskasvatus/Maksut_varhaiskasvatuksessa" target="_blank" rel="noopener noreferrer">Maksut varhaiskasvatuksessa</a>'
+        links: function FeeLinksText() {
+          return (
+            <P>
+              Lisätietoa varhaiskasvatuksen maksuista ja tuloselvityslomakeen
+              löydät Espoon kaupungin sivuilta:
+              <br />
+              <a
+                href="https://www.espoo.fi/fi-FI/Kasvatus_ja_opetus/Varhaiskasvatus/Maksut_varhaiskasvatuksessa"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Maksut varhaiskasvatuksessa
+              </a>
+            </P>
+          )
+        }
       },
       additionalDetails: {
         title: 'Muut lisätiedot',

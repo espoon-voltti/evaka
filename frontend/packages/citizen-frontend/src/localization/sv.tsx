@@ -588,8 +588,22 @@ const sv: Translations = {
         },
         checkbox:
           'Jag ger mitt samtycke till att betala den högsta avgiften. Samtycket gäller tills vidare, tills jag meddelar något annat.',
-        links:
-          'Mer information om småbarnspedagogikens avgifter och blanketten för inkomstutredning finns här:<br/><a href="https://www.esbo.fi/sv-FI/Utbildning_och_fostran/Smabarnspedagogik/Avgifter_for_smabarnspedagogik" target="_blank" rel="noopener noreferrer">Avgifter för småbarnspedagogik</a>'
+        links: function FeeLinksText() {
+          return (
+            <P>
+              Mer information om småbarnspedagogikens avgifter och blanketten
+              för inkomstutredning finns här:
+              <br />
+              <a
+                href="https://www.esbo.fi/sv-FI/Utbildning_och_fostran/Smabarnspedagogik/Avgifter_for_smabarnspedagogik"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Avgifter för småbarnspedagogik
+              </a>
+            </P>
+          )
+        }
       },
       additionalDetails: {
         title: 'Övriga tilläggsuppgifter',
