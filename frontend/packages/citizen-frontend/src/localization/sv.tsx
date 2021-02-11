@@ -490,8 +490,24 @@ const sv: Translations = {
         urgent: {
           label: 'Ansökningen är brådskande',
           attachmentsMessage: {
-            text:
-              'Om behovet av en plats inom småbarnspedagogiken beror på att du plötsligt fått sysselsättning eller börjat studera, ska platsen sökas <strong>senast två veckor innan</strong> behovet börjar. <strong>Bifoga till ansökan ett arbets- eller studieintyg</strong> av båda vårdnadshavarna som bor i samma hushåll. Om du inte kan lägga till bilagor till ansökan elektroniskt, skicka dem per post till adressen Småbarnspedagogikens servicehänvisning, PB 3125, 02070 Esbo stad. Behandlingstiden på två veckor börjar när vi har tagit emot ansökan och bilagorna som behövs.',
+            text: function UrgentApplicatiionAttachmentMessageText() {
+              return (
+                <P fitted={true}>
+                  Om behovet av en plats inom småbarnspedagogiken beror på att
+                  du plötsligt fått sysselsättning eller börjat studera, ska
+                  platsen sökas <strong>senast två veckor innan</strong> behovet
+                  börjar.{' '}
+                  <strong>
+                    Bifoga till ansökan ett arbets- eller studieintyg
+                  </strong>{' '}
+                  av båda vårdnadshavarna som bor i samma hushåll. Om du inte
+                  kan lägga till bilagor till ansökan elektroniskt, skicka dem
+                  per post till adressen Småbarnspedagogikens servicehänvisning,
+                  PB 3125, 02070 Esbo stad. Behandlingstiden på två veckor
+                  börjar när vi har tagit emot ansökan och bilagorna som behövs.
+                </P>
+              )
+            },
             subtitle:
               'Lägg här till ett arbets- eller studieintyg av båda föräldrarna.'
           }

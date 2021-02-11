@@ -500,8 +500,27 @@ const en: Translations = {
         urgent: {
           label: 'Application is urgent',
           attachmentsMessage: {
-            text:
-              'If the need for a place in early childhood education arises from sudden employment or a sudden start of studies, you will need to apply for a place no later than <strong>two weeks before</strong> your child needs it. In addition to the application, you will need to <strong>provide documents as proof of the employment or student status</strong> of both guardians living in the same household. If you are unable to add attachments to your online application, please send the documents by post to Early childhood education service counselling, P.O. Box 3125, 02070 City of Espoo. The processing period of two weeks will not begin until we have received the application and the required attachments.',
+            text: function UrgentApplicatiionAttachmentMessageText() {
+              return (
+                <P fitted={true}>
+                  If the need for a place in early childhood education arises
+                  from sudden employment or a sudden start of studies, you will
+                  need to apply for a place no later than{' '}
+                  <strong>two weeks before</strong> your child needs it. In
+                  addition to the application, you will need to{' '}
+                  <strong>
+                    provide documents as proof of the employment or student
+                    status
+                  </strong>{' '}
+                  of both guardians living in the same household. If you are
+                  unable to add attachments to your online application, please
+                  send the documents by post to Early childhood education
+                  service counselling, P.O. Box 3125, 02070 City of Espoo. The
+                  processing period of two weeks will not begin until we have
+                  received the application and the required attachments.
+                </P>
+              )
+            },
             subtitle:
               'Add here documents as proof of the employment or student status of both guardians.'
           }

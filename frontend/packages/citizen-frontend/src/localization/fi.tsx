@@ -463,8 +463,26 @@ export default {
         urgent: {
           label: 'Hakemus on kiireellinen',
           attachmentsMessage: {
-            text:
-              'Mikäli varhaiskasvatuspaikan tarve johtuu äkillisestä työllistymisestä tai opiskelusta, tulee paikkaa hakea viimeistään <strong>kaksi viikkoa ennen</strong> kuin tarve alkaa. Hakemuksen <strong>liitteenä tulee olla työ- tai opiskelutodistus</strong> molemmilta samassa taloudessa asuvilta huoltajilta. Suosittelemme toimittamaan liitteen sähköisesti tässä, sillä kahden viikon käsittelyaika alkaa siitä, kun olemme vastaanottaneet hakemuksen tarvittavine liitteineen. Jos et voi lisätä liitteitä hakemukselle sähköisesti, lähetä ne postilla osoitteeseen Varhaiskasvatuksen palveluohjaus, PL 3125, 02070 Espoon kaupunki.',
+            text: function UrgentApplicatiionAttachmentMessageText() {
+              return (
+                <P fitted={true}>
+                  Mikäli varhaiskasvatuspaikan tarve johtuu äkillisestä
+                  työllistymisestä tai opiskelusta, tulee paikkaa hakea
+                  viimeistään <strong>kaksi viikkoa ennen</strong> kuin tarve
+                  alkaa. Hakemuksen{' '}
+                  <strong>
+                    liitteenä tulee olla työ- tai opiskelutodistus
+                  </strong>{' '}
+                  molemmilta samassa taloudessa asuvilta huoltajilta.
+                  Suosittelemme toimittamaan liitteen sähköisesti tässä, sillä
+                  kahden viikon käsittelyaika alkaa siitä, kun olemme
+                  vastaanottaneet hakemuksen tarvittavine liitteineen. Jos et
+                  voi lisätä liitteitä hakemukselle sähköisesti, lähetä ne
+                  postilla osoitteeseen Varhaiskasvatuksen palveluohjaus, PL
+                  3125, 02070 Espoon kaupunki.
+                </P>
+              )
+            },
             subtitle:
               'Lisää tähän työ- tai opiskelutodistus molemmilta vanhemmilta.'
           }
