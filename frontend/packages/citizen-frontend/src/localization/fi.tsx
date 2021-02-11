@@ -735,8 +735,15 @@ export default {
   },
   applicationsList: {
     title: 'Hakeminen varhaiskasvatukseen ja ilmoittautuminen esiopetukseen',
-    summary:
-      'Lapsen huoltaja voi tehdä lapselle hakemuksen varhaiskasvatukseen ja kerhoon tai ilmoittaa lapsen esiopetukseen. Huoltajan lasten tiedot haetaan tähän näkymään automaattisesti Väestötietojärjestelmästä.',
+    summary: function ApplicationListSummaryText() {
+      return (
+        <P width="800px">
+          Lapsen huoltaja voi tehdä lapselle hakemuksen varhaiskasvatukseen ja
+          kerhoon tai ilmoittaa lapsen esiopetukseen. Huoltajan lasten tiedot
+          haetaan tähän näkymään automaattisesti Väestötietojärjestelmästä.
+        </P>
+      )
+    },
     pageLoadError: 'Tietojen hakeminen ei onnistunut',
     noApplications: 'Ei hakemuksia',
     type: {

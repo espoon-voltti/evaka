@@ -11,7 +11,7 @@ import Container, {
 } from '@evaka/lib-components/src/layout/Container'
 import { getGuardianApplications } from './api'
 import { Gap } from '@evaka/lib-components/src/white-space'
-import { H1, P } from '@evaka/lib-components/src/typography'
+import { H1 } from '@evaka/lib-components/src/typography'
 import _ from 'lodash'
 import ChildApplicationsBlock from '~applications/ChildApplicationsBlock'
 import { ApplicationsOfChild } from '@evaka/lib-common/src/api-types/application/ApplicationsOfChild'
@@ -47,10 +47,7 @@ export default React.memo(function Applications() {
         <Gap size="s" />
         <ContentArea opaque paddingVertical="L">
           <H1 noMargin>{t.applicationsList.title}</H1>
-          <P
-            width="800px"
-            dangerouslySetInnerHTML={{ __html: t.applicationsList.summary }}
-          />
+          {t.applicationsList.summary()}
         </ContentArea>
         <Gap size="s" />
 
