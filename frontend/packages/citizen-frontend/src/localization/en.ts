@@ -195,7 +195,9 @@ const en: Translations = {
           CLUB: 'Verifying the application'
         },
         notYetSent:
-          '<strong>The application has not yet been sent.</strong> Please check the information you provided and send the application by clicking "Send the application" button in the end of the form.',
+          '<strong>The application has not yet been sent.</strong> Please check the information you provided and send the application by clicking "Send the application" button at the end of the form.',
+        notYetSaved:
+          '<strong>The changes have not been saved yet.</strong> Please check the information you provided and send the application by clicking "Save changes" button at the end of the form.',
         no: 'No',
         basics: {
           created: 'Created',

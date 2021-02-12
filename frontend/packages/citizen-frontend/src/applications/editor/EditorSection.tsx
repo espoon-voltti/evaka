@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { ReactNode, useCallback, useState } from 'react'
+import React, { ReactNode, useCallback, useRef, useState } from 'react'
 import styled from 'styled-components'
 import colors from '@evaka/lib-components/src/colors'
 import { H2 } from '@evaka/lib-components/src/typography'
@@ -20,34 +20,48 @@ type Props = {
 
 export default React.memo(function EditorSection(props: Props) {
   const [open, setOpen] = useState(props.openInitially === true)
-  const toggleOpen = useCallback(() => setOpen((previous) => !previous), [])
+  const ref = useRef<HTMLDivElement>(null)
+  const toggleOpen = useCallback(() => {
+    setOpen((previous) => !previous)
+    setTimeout(() => {
+      if (ref.current) {
+        window.scrollTo({
+          left: 0,
+          top: ref.current.offsetTop,
+          behavior: 'smooth'
+        })
+      }
+    }, 50)
+  }, [ref.current])
 
   return (
-    <CollapsibleContentArea
-      data-qa={props['data-qa']}
-      open={open}
-      toggleOpen={toggleOpen}
-      title={
-        <>
-          <TitleWrapper>
-            <H2 noMargin>{props.title}</H2>
-            {props.validationErrors !== 0 ? (
-              <ErrorsIcon
-                content={props.validationErrors.toString()}
-                size="m"
-                color={colors.accents.orange}
-                aria-hidden="true"
-              />
-            ) : null}
-          </TitleWrapper>
-        </>
-      }
-      opaque
-      paddingVertical="L"
-      validationErrors={props.validationErrors}
-    >
-      {props.children}
-    </CollapsibleContentArea>
+    <div ref={ref}>
+      <CollapsibleContentArea
+        data-qa={props['data-qa']}
+        open={open}
+        toggleOpen={toggleOpen}
+        title={
+          <>
+            <TitleWrapper>
+              <H2 noMargin>{props.title}</H2>
+              {props.validationErrors !== 0 ? (
+                <ErrorsIcon
+                  content={props.validationErrors.toString()}
+                  size="m"
+                  color={colors.accents.orange}
+                  aria-hidden="true"
+                />
+              ) : null}
+            </TitleWrapper>
+          </>
+        }
+        opaque
+        paddingVertical="L"
+        validationErrors={props.validationErrors}
+      >
+        {props.children}
+      </CollapsibleContentArea>
+    </div>
   )
 })
 

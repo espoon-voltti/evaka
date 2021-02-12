@@ -38,10 +38,15 @@ export default React.memo(function BasicsSection({
           {formatDate(application.createdDate, DATE_FORMAT_DATE_DEFAULT)}
         </span>
 
-        <Label>{t.applications.editor.verification.basics.modified}</Label>
-        <span>
-          {formatDate(application.modifiedDate, DATE_FORMAT_DATE_DEFAULT)}
-        </span>
+        {formatDate(application.modifiedDate, DATE_FORMAT_DATE_DEFAULT) !==
+          formatDate(application.createdDate, DATE_FORMAT_DATE_DEFAULT) && (
+          <>
+            <Label>{t.applications.editor.verification.basics.modified}</Label>
+            <span>
+              {formatDate(application.modifiedDate, DATE_FORMAT_DATE_DEFAULT)}
+            </span>
+          </>
+        )}
       </ListGrid>
     </div>
   )
