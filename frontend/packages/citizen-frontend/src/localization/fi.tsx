@@ -502,7 +502,7 @@ export default {
           }
         },
         partTime: {
-          true: 'Osapäiväinen (max 5h/pv, 25h/vko)',
+          true: 'Osapäiväinen (max 5h/Pv, 25h/vko)',
           false: 'Kokopäiväinen'
         },
         dailyTime: {
@@ -517,7 +517,7 @@ export default {
                   Voit hakea lapselle tarvittaessa{' '}
                   <strong>
                     esiopetukseen liittyvää varhaiskasvatusta, joka on
-                    maksullista, ja jota annetaan esiopetuksen (4 tuntia/päivä)
+                    maksullista, ja jota annetaan esiopetuksen (4 tuntia/Päivä)
                     lisäksi
                   </strong>{' '}
                   aamuisin ja/tai iltapäivisin samassa paikassa kuin esiopetus.
@@ -587,7 +587,7 @@ export default {
         preparatory:
           'Lapsi tarvitsee tukea suomen kielen oppimisessa. Haen myös perusopetukseen valmistavaan opetukseen. Ei koske ruotsinkielistä esiopetusta.',
         preparatoryInfo:
-          'Esiopetusikäisten valmistavaan opetukseen voivat hakeutua maahanmuuttajataustaiset lapset, paluumuuttajalapset, kaksikielisten perheiden lapset (paitsi suomi-ruotsi) ja adoptiolapset, jotka tarvitsevat tukea suomen kielessä ennen perusopetukseen siirtymistä. Valmistavaa opetusta annetaan esiopetuksen lisäksi keskimäärin 1 h/päivä. Opetus on maksutonta.'
+          'Esiopetusikäisten valmistavaan opetukseen voivat hakeutua maahanmuuttajataustaiset lapset, paluumuuttajalapset, kaksikielisten perheiden lapset (paitsi suomi-ruotsi) ja adoptiolapset, jotka tarvitsevat tukea suomen kielessä ennen perusopetukseen siirtymistä. Valmistavaa opetusta annetaan esiopetuksen lisäksi keskimäärin 1 h/Päivä. Opetus on maksutonta.'
       },
       unitPreference: {
         title: 'Hakutoive',
@@ -596,8 +596,8 @@ export default {
           info: {
             DAYCARE: function SiblingBasisSummaryTextDaycare() {
               return (
-                <P>
-                  <p>
+                <>
+                  <P>
                     Lapsella on sisarusperuste samaan varhaiskasvatuspaikkaan,
                     jossa hänen sisaruksensa on päätöksentekohetkellä.
                     Sisarukseksi katsotaan kaikki samassa osoitteessa asuvat
@@ -605,19 +605,19 @@ export default {
                     varhaiskasvatuspaikkaan perheen niin toivoessa. Jos haet
                     paikkaa sisaruksille, jotka eivät vielä ole
                     varhaiskasvatuksessa, kirjoita tieto lisätietokenttään.
-                  </p>
-                  <p>
+                  </P>
+                  <P>
                     Täytä nämä tiedot vain, jos käytät sisarusperustetta, sekä
                     valitse alla olevissa hakutoiveissa ensisijaiseksi toiveeksi
                     sama varhaiskasvatusyksikkö, jossa lapsen sisarus on.
-                  </p>
-                </P>
+                  </P>
+                </>
               )
             },
             PRESCHOOL: function SiblingBasisSummaryTextPreschool() {
               return (
-                <P>
-                  <p>Esioppilaalla on sisarusperuste:</p>
+                <>
+                  <P>Esioppilaalla on sisarusperuste:</P>
                   <ol type="a">
                     <li>
                       Oman palvelualueen päiväkotiin, jossa esioppilaalla on
@@ -629,35 +629,35 @@ export default {
                       käy tulevana lukuvuonna.
                     </li>
                   </ol>
-                  <p>
+                  <P>
                     Huoltaja voi valita, käyttääkö hän sisarusperustetta kohdan
                     a vai b mukaisesti, jos esioppilaalla on sisarusperuste
                     molempien kohtien mukaan. Valinta ilmoitetaan alla.
                     Sisarukseksi katsotaan kaikki samassa osoitteessa asuvat
                     lapset.
-                  </p>
-                  <p>
+                  </P>
+                  <P>
                     Täytä nämä tiedot vain, jos käytät sisarusperustetta, sekä
                     valitse alla olevissa hakutoiveissa ensisijaiseksi toiveeksi
                     sama yksikkö, jossa lapsen sisarus on.
-                  </p>
-                </P>
+                  </P>
+                </>
               )
             },
             CLUB: function SiblingBasisSummaryTextClub() {
               return (
-                <P>
-                  <p>
+                <>
+                  <P>
                     Sisarukseksi katsotaan kaikki samassa osoitteessa asuvat
                     lapset. Tavoitteena on sijoittaa sisarukset samaan
                     kerhoryhmään perheen niin toivoessa.
-                  </p>
-                  <p>
+                  </P>
+                  <P>
                     Täytä nämä tiedot vain, jos käytät sisarusperustetta, sekä
                     valitse alla olevissa hakutoiveissa ensisijaiseksi toiveeksi
                     sama kerho, jossa lapsen sisarus on.
-                  </p>
-                </P>
+                  </P>
+                </>
               )
             }
           },
@@ -688,49 +688,49 @@ export default {
           info: {
             DAYCARE: function UnitPreferenceInfoTextDaycare() {
               return (
-                <P>
-                  <p>
+                <>
+                  <P>
                     Voit hakea 1-3 paikkaa toivomassasi järjestyksessä.
                     Hakutoiveet eivät takaa paikkaa toivotussa yksikössä, mutta
                     mahdollisuus toivotun paikan saamiseen kasvaa antamalla
                     useamman vaihtoehdon.
-                  </p>
-                  <p>
+                  </P>
+                  <P>
                     Näet eri varhaiskasvatusyksiköiden sijainnin valitsemalla
                     ‘Yksiköt kartalla’.
-                  </p>
-                </P>
+                  </P>
+                </>
               )
             },
             PRESCHOOL: function UnitPreferenceInfoTextPreschool() {
               return (
-                <P>
-                  <p>
+                <>
+                  <P>
                     Voit hakea 1-3 paikka paikkaa toivomassasi järjestyksessä.
                     Hakutoiveet eivät takaa paikkaa toivotussa yksikössä, mutta
                     mahdollisuus toivotun paikan saamiseen kasvaa antamalla
                     useamman vaihtoehdon.
-                  </p>
-                  <p>
+                  </P>
+                  <P>
                     Näet eri yksiköiden sijainnin valitsemalla ‘Yksiköt
                     kartalla’.
-                  </p>
-                </P>
+                  </P>
+                </>
               )
             },
             CLUB: function UnitPreferenceInfoTextClub() {
               return (
-                <P>
-                  <p>
+                <>
+                  <P>
                     Voit hakea 1-3 paikkaa toivomassasi järjestyksessä.
                     Hakutoiveet eivät takaa paikkaa toivotussa kerhossa, mutta
                     mahdollisuus toivotun paikan saamiseen kasvaa antamalla
                     useamman vaihtoehdon.
-                  </p>
-                  <p>
+                  </P>
+                  <P>
                     Näet eri kerhojen sijainnin valitsemalla ‘Yksiköt kartalla’.
-                  </p>
-                </P>
+                  </P>
+                </>
               )
             }
           },

@@ -611,29 +611,29 @@ const sv: Translations = {
           info: {
             DAYCARE: function SiblingBasisSummaryTextDaycare() {
               return (
-                <P>
-                  <p>
+                <>
+                  <P>
                     Målet är att placera syskon i samma enhet om inte familjen
                     önskar annat. Som syskon betraktas barn som är folkbokförda
                     på samma adress. Om du ansöker om en plats för syskon, som
                     inte ännu har plats inom småbarnspedagogik, skriv uppgiften
                     i tilläggsuppgifter.
-                  </p>
-                  <p>
+                  </P>
+                  <P>
                     Fyll i dessa uppgifter endast om du vill hänvisa till
                     barnets syskonrelationer.
-                  </p>
-                </P>
+                  </P>
+                </>
               )
             },
             PRESCHOOL: function SiblingBasisSummaryTextPreschool() {
               return (
-                <P>
-                  <p>
+                <>
+                  <P>
                     Fyll i dessa uppgifter endast om du yrkar på
                     prioriteringsordningen till sekundär förskola
-                  </p>
-                  <p>
+                  </P>
+                  <P>
                     Vårdnadshavarna kan ansöka om plats för sitt barn i en annan
                     förskola än närförskolan. Sökande från andra
                     elevupptagningsområden kan antas endast om det finns lediga
@@ -643,7 +643,7 @@ const sv: Translations = {
                     prioriteringsordning. Om du hänvisar till
                     kontinuitetsprincipen skriv barnets nuvarande enhet i fältet
                     för tilläggsuppgifter.
-                  </p>
+                  </P>
                   <ol type="a">
                     <li>
                       Kontinuitet vid övergång från småbarnspedagogik till
@@ -660,27 +660,27 @@ const sv: Translations = {
                       barn som är folkbokförda på samma adress.
                     </li>
                   </ol>
-                  <p>
+                  <P>
                     Fyll i dessa uppgifter endast om du vill hänvisa till
                     barnets syskonrelationer.
-                  </p>
-                </P>
+                  </P>
+                </>
               )
             },
             CLUB: function SiblingBasisSummaryTextClub() {
               return (
-                <P>
-                  <p>
+                <>
+                  <P>
                     Barn som bor på samma adress betraktas som syskon. Ett
                     försök görs för att placera syskonen i samma klubbgrupp när
                     familjen önskar det.
-                  </p>
-                  <p>
+                  </P>
+                  <P>
                     Fyll i dessa uppgifter endast om du vill hänvisa till
                     barnets syskonrelationer och välj samma klubb som syskonet
                     deltar i nedan.
-                  </p>
-                </P>
+                  </P>
+                </>
               )
             }
           },
@@ -710,50 +710,50 @@ const sv: Translations = {
           info: {
             DAYCARE: function UnitPreferenceInfoTextDaycare() {
               return (
-                <P>
-                  <p>
+                <>
+                  <P>
                     Du kan ange 1-3 platser i önskad ordning. Önskemålen
                     garanterar inte en plats i den önskade enheten, men
                     möjligheterna att få en önskad plats ökar om du anger flera
                     alternativ.
-                  </p>
-                  <p>
+                  </P>
+                  <P>
                     Du kan visa enhetsplatserna genom att välja {"'"}Enheter på
                     kartan{"'"}.
-                  </p>
-                </P>
+                  </P>
+                </>
               )
             },
             PRESCHOOL: function UnitPreferenceInfoTextPreschool() {
               return (
-                <P>
-                  <p>
+                <>
+                  <P>
                     Du kan ange 1-3 platser i önskad ordning. Önskemålen
                     garanterar inte en plats i den önskade enheten, men
                     möjligheterna att få en önskad plats ökar om du anger flera
                     alternativ.
-                  </p>
-                  <p>
+                  </P>
+                  <P>
                     Du kan visa enhetsplatserna genom att välja {"'"}Enheter på
                     kartan{"'"}.
-                  </p>
-                </P>
+                  </P>
+                </>
               )
             },
             CLUB: function UnitPreferenceInfoTextClub() {
               return (
-                <P>
-                  <p>
+                <>
+                  <P>
                     Du kan ange 1-3 platser i önskad ordning. Önskemålen
                     garanterar inte en plats i den önskade enheten, men
                     möjligheterna att få en önskad plats ökar om du anger flera
                     alternativ.
-                  </p>
-                  <p>
+                  </P>
+                  <P>
                     Du kan visa enhetsplatserna genom att välja {"'"}Enheter på
                     kartan{"'"}.
-                  </p>
-                </P>
+                  </P>
+                </>
               )
             }
           },

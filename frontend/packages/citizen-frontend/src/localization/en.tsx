@@ -639,22 +639,74 @@ const en: Translations = {
         siblingBasis: {
           title: 'Application on a sibling basis',
           info: {
-            DAYCARE: `
-            <p>The child has a sibling basis to the same early childhood education place attended by their sibling at the time of making the decision. All children living at the same address are considered to be siblings. The aim is to place siblings at the same early childhood education place, if the family so wishes. If you are applying for places for siblings who do not yet attend early childhood education, enter this piece of information in the additional information field.</p>
-            <p>Fill in this information only if you want to exercise the sibling-basis right.</p>`,
-            PRESCHOOL: `
-            <p>A child enrolling for pre-primary education has a sibling-basis right to a</p>
-            <ol type="a">
-              <li>early childhood education in their own service area, where they have a sibling who has, at the moment of making the decision and in the coming pre-primary education year, a place at the pre-primary education day-care centre</li>
-              <li>local school determined by the city, which will be attended by their sibling in the coming school year.</li>
-            </ol>
-            <p>If the child enrolling for pre-primary education has a sibling-basis right to both options, the guardian may decide which of them will be exercised. The selection is indicated by entering the name of the sibling in the field below.</p>
-            <p>Fill in this information only if you want to exercise the sibling-basis right.</p>
-            `,
-            CLUB: `
-            <p>Children living in the same address are considered siblings. An effort is made to put the siblings into a same club group when the family wishes that.</p>
-            <p>Fill in this information only if you want to exercise the sibling-basis right and choose the same club the sibling attends below.</p>
-            `
+            DAYCARE: function SiblingBasisSummaryTextDaycare() {
+              return (
+                <>
+                  <P>
+                    The child has a sibling basis to the same early childhood
+                    education place attended by their sibling at the time of
+                    making the decision. All children living at the same address
+                    are considered to be siblings. The aim is to place siblings
+                    at the same early childhood education place, if the family
+                    so wishes. If you are applying for places for siblings who
+                    do not yet attend early childhood education, enter this
+                    piece of information in the additional information field.
+                  </P>
+                  <P>
+                    Fill in this information only if you want to exercise the
+                    sibling-basis right.
+                  </P>
+                </>
+              )
+            },
+            PRESCHOOL: function SiblingBasisSummaryTextPreschool() {
+              return (
+                <>
+                  <P>
+                    A child enrolling for pre-primary education has a
+                    sibling-basis right to a
+                  </P>
+                  <ol type="a">
+                    <li>
+                      early childhood education in their own service area, where
+                      they have a sibling who has, at the moment of making the
+                      decision and in the coming pre-primary education year, a
+                      place at the pre-primary education day-care centre
+                    </li>
+                    <li>
+                      local school determined by the city, which will be
+                      attended by their sibling in the coming school year.
+                    </li>
+                  </ol>
+                  <P>
+                    If the child enrolling for pre-primary education has a
+                    sibling-basis right to both options, the guardian may decide
+                    which of them will be exercised. The selection is indicated
+                    by entering the name of the sibling in the field below.
+                  </P>
+                  <P>
+                    Fill in this information only if you want to exercise the
+                    sibling-basis right.
+                  </P>
+                </>
+              )
+            },
+            CLUB: function SiblingBasisSummaryTextClub() {
+              return (
+                <>
+                  <P>
+                    Children living in the same address are considered siblings.
+                    An effort is made to put the siblings into a same club group
+                    when the family wishes that.
+                  </P>
+                  <P>
+                    Fill in this information only if you want to exercise the
+                    sibling-basis right and choose the same club the sibling
+                    attends below.
+                  </P>
+                </>
+              )
+            }
           },
           checkbox: {
             DAYCARE:
@@ -682,50 +734,50 @@ const en: Translations = {
           info: {
             DAYCARE: function UnitPreferenceInfoTextDaycare() {
               return (
-                <P>
-                  <p>
+                <>
+                  <P>
                     You can apply for 1 to 3 locations in your order of
                     preference. Application preferences do not guarantee a place
                     at the desired location, but the possibility of obtaining a
                     desired location increases by giving more than one option.
-                  </p>
-                  <p>
+                  </P>
+                  <P>
                     You can display the unit locations by choosing {"'"}Unit map
                     view{"'"}.
-                  </p>
-                </P>
+                  </P>
+                </>
               )
             },
             PRESCHOOL: function UnitPreferenceInfoTextPreschool() {
               return (
-                <P>
-                  <p>
+                <>
+                  <P>
                     You can apply for 1 to 3 locations in your order of
                     preference. Application preferences do not guarantee a place
                     at the desired location, but the possibility of obtaining a
                     desired location increases by giving more than one option.
-                  </p>
-                  <p>
+                  </P>
+                  <P>
                     You can display the unit locations by choosing {"'"}Unit map
                     view{"'"}.
-                  </p>
-                </P>
+                  </P>
+                </>
               )
             },
             CLUB: function UnitPreferenceInfoTextClub() {
               return (
-                <P>
-                  <p>
+                <>
+                  <P>
                     You can apply for 1 to 3 locations in your order of
                     preference. Application preferences do not guarantee a place
                     at the desired location, but the possibility of obtaining a
                     desired location increases by giving more than one option.
-                  </p>
-                  <p>
+                  </P>
+                  <P>
                     You can display the unit locations by choosing {"'"}Unit map
                     view{"'"}.
-                  </p>
-                </P>
+                  </P>
+                </>
               )
             }
           },
