@@ -132,9 +132,9 @@ function UnitMarker({
             <br />
             {formatCareTypes(t, unit.type).join(', ')}
           </UnitDetailsLeft>
-          {'straightDistance' in unit && (
+          {'drivingDistance' in unit && unit.drivingDistance !== null && (
             <UnitDetailsRight>
-              {formatDistance(unit.drivingDistance ?? unit.straightDistance)}
+              {formatDistance(unit.drivingDistance)}
             </UnitDetailsRight>
           )}
         </UnitDetails>
