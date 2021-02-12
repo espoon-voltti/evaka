@@ -131,6 +131,7 @@ export default React.memo(function MapView() {
                 : filteredUnits.getOrElse([])
             }
             selectedUnit={selectedUnit}
+            selectedAddress={selectedAddress}
           />
         </MapContainer>
       </FlexContainer>

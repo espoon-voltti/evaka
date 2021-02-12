@@ -1,69 +1,32 @@
-import React, { useMemo } from 'react'
+import React, { useEffect, useMemo } from 'react'
 import styled from 'styled-components'
 import { defaultMargins } from '@evaka/lib-components/src/white-space'
 import colors from '@evaka/lib-components/src/colors'
 import leaflet from 'leaflet'
 import { FooterContent } from '~Footer'
-import { MapContainer, Marker, Popup, TileLayer } from 'react-leaflet'
+import { MapContainer, Marker, Popup, TileLayer, useMap } from 'react-leaflet'
 import { PublicUnit } from '@evaka/lib-common/src/api-types/units/PublicUnit'
 import marker from './marker.svg'
 import markerHighlight from './marker-highlight.svg'
 import { formatDistance, UnitWithDistance } from '~map/distances'
 import { useTranslation } from '~localization'
 import { formatCareTypes } from './format'
+import { MapAddress } from '~map/MapView'
 
 export interface Props {
   units: (UnitWithDistance | PublicUnit)[]
   selectedUnit: PublicUnit | null
+  selectedAddress: MapAddress | null
 }
 
-export default React.memo(function MapBox({ units, selectedUnit }: Props) {
-  const icon = useMemo(() => new leaflet.Icon({ iconUrl: marker }), [marker])
-  const highlightIcon = useMemo(
-    () => new leaflet.Icon({ iconUrl: markerHighlight }),
-    [markerHighlight]
-  )
-  const t = useTranslation()
+const initialZoom = 12
+const addressZoom = 14
 
+export default React.memo(function MapBox(props: Props) {
   return (
     <Wrapper className="map-box">
-      <Map center={[60.184147, 24.704897]} zoom={12}>
-        <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        />
-        {units.map((unit) => {
-          const { location } = unit
-          if (location?.lat == null || location?.lon == null) return null
-          const isSelected = selectedUnit?.id === unit.id
-
-          return (
-            <Marker
-              key={unit.id}
-              position={[location.lat, location.lon]}
-              icon={isSelected ? highlightIcon : icon}
-            >
-              <UnitPopup>
-                <UnitName>{unit.name}</UnitName>
-                <div>{t.common.unit.providerTypes[unit.providerType]}</div>
-                <UnitDetails>
-                  <UnitDetailsLeft>
-                    {unit.streetAddress}
-                    <br />
-                    {formatCareTypes(t, unit.type).join(', ')}
-                  </UnitDetailsLeft>
-                  {'straightDistance' in unit && (
-                    <UnitDetailsRight>
-                      {formatDistance(
-                        unit.drivingDistance ?? unit.straightDistance
-                      )}
-                    </UnitDetailsRight>
-                  )}
-                </UnitDetails>
-              </UnitPopup>
-            </Marker>
-          )
-        })}
+      <Map center={[60.184147, 24.704897]} zoom={initialZoom}>
+        <MapContents {...props} />
       </Map>
       <FooterWrapper>
         <FooterContent />
@@ -71,6 +34,89 @@ export default React.memo(function MapBox({ units, selectedUnit }: Props) {
     </Wrapper>
   )
 })
+
+function MapContents({ units, selectedUnit, selectedAddress }: Props) {
+  const map = useMap()
+  const icon = useMemo(
+    () =>
+      new leaflet.Icon({
+        iconUrl: marker,
+        iconSize: [30, 30],
+        popupAnchor: [0, -18]
+      }),
+    [marker]
+  )
+  const highlightIcon = useMemo(
+    () =>
+      new leaflet.Icon({
+        iconUrl: markerHighlight,
+        iconSize: [30, 30],
+        popupAnchor: [0, -18]
+      }),
+    [markerHighlight]
+  )
+  const t = useTranslation()
+
+  useEffect(() => {
+    if (selectedAddress) {
+      const { lat, lon } = selectedAddress.coordinates
+      map.stop()
+      map.flyTo([lat, lon], addressZoom, { animate: true })
+    }
+  }, [selectedAddress])
+
+  useEffect(() => {
+    if (selectedUnit && selectedUnit.location) {
+      const { lat, lon } = selectedUnit.location
+      map.stop()
+      map.panTo([lat, lon], { animate: true })
+    }
+  }, [selectedUnit])
+
+  return (
+    <>
+      <TileLayer
+        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        detectRetina={true}
+      />
+      {units.map((unit) => {
+        const { location } = unit
+        if (location?.lat == null || location?.lon == null) return null
+        const isSelected = selectedUnit?.id === unit.id
+
+        return (
+          <Marker
+            key={unit.id}
+            title={unit.name}
+            position={[location.lat, location.lon]}
+            icon={isSelected ? highlightIcon : icon}
+            zIndexOffset={isSelected ? 10 : 0}
+          >
+            <UnitPopup>
+              <UnitName>{unit.name}</UnitName>
+              <div>{t.common.unit.providerTypes[unit.providerType]}</div>
+              <UnitDetails>
+                <UnitDetailsLeft>
+                  {unit.streetAddress}
+                  <br />
+                  {formatCareTypes(t, unit.type).join(', ')}
+                </UnitDetailsLeft>
+                {'straightDistance' in unit && (
+                  <UnitDetailsRight>
+                    {formatDistance(
+                      unit.drivingDistance ?? unit.straightDistance
+                    )}
+                  </UnitDetailsRight>
+                )}
+              </UnitDetails>
+            </UnitPopup>
+          </Marker>
+        )
+      })}
+    </>
+  )
+}
 
 const Wrapper = styled.div`
   position: relative;
