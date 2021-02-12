@@ -74,7 +74,9 @@ class PendingDecisionEmailServiceIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `Pending decision older than one week sends reminder email`() {
-        createPendingDecision(LocalDate.now().minusDays(8), null, null, 0)
+        createPendingDecision(LocalDate.now().minusDays(8), null, null, 0, type = DecisionType.PRESCHOOL)
+        createPendingDecision(LocalDate.now().minusDays(8), null, null, 0, type = DecisionType.PRESCHOOL_DAYCARE)
+
         Assertions.assertEquals(1, runPendingDecisionEmailAsyncJobs())
 
         val sentMails = MockEmailClient.emails
@@ -132,7 +134,7 @@ class PendingDecisionEmailServiceIntegrationTest : FullApplicationTest() {
         assert(email.textBody.contains(expectedTextPart, true))
     }
 
-    private fun createPendingDecision(sentDate: LocalDate, resolved: Instant?, pendingDecisionEmailSent: Instant?, pendingDecisionEmailsSentCount: Int) {
+    private fun createPendingDecision(sentDate: LocalDate, resolved: Instant?, pendingDecisionEmailSent: Instant?, pendingDecisionEmailsSentCount: Int, type: DecisionType = DecisionType.DAYCARE) {
         db.transaction { tx ->
             tx.handle.insertTestDecision(
                 TestDecision(
@@ -140,7 +142,7 @@ class PendingDecisionEmailServiceIntegrationTest : FullApplicationTest() {
                     status = DecisionStatus.PENDING,
                     createdBy = testDecisionMaker_1.id,
                     unitId = unitId,
-                    type = DecisionType.DAYCARE,
+                    type = type,
                     startDate = startDate,
                     endDate = endDate,
                     resolvedBy = testDecisionMaker_1.id,
