@@ -233,17 +233,20 @@ SELECT
     ghost_unit,
     round_the_clock
 FROM daycare
-WHERE ${if (shiftCare == true) "round_the_clock IS TRUE AND" else ""} (
-    (:club AND type && '{CLUB}'::care_types[] AND (NOT :onlyApplicable OR (club_apply_period @> :date)))
-    OR (:daycare AND type && '{CENTRE, FAMILY, GROUP_FAMILY}'::care_types[] AND (NOT :onlyApplicable OR (daycare_apply_period @> :date)))
-    OR (:preschool AND type && '{PRESCHOOL}'::care_types[] AND (NOT :onlyApplicable OR (preschool_apply_period @> :date)))
-    OR (:preparatory AND type && '{PREPARATORY_EDUCATION}'::care_types[] AND (NOT :onlyApplicable OR (preschool_apply_period @> :date)))
-)
+WHERE :date <= COALESCE(closing_date, 'infinity'::date)
+    AND (NOT :shiftCare OR round_the_clock)
+    AND (
+        (:club AND type && '{CLUB}'::care_types[] AND (NOT :onlyApplicable OR (club_apply_period @> :date)))
+        OR (:daycare AND type && '{CENTRE, FAMILY, GROUP_FAMILY}'::care_types[] AND (NOT :onlyApplicable OR (daycare_apply_period @> :date)))
+        OR (:preschool AND type && '{PRESCHOOL}'::care_types[] AND (NOT :onlyApplicable OR (preschool_apply_period @> :date)))
+        OR (:preparatory AND type && '{PREPARATORY_EDUCATION}'::care_types[] AND (NOT :onlyApplicable OR (preschool_apply_period @> :date)))
+    )
 ORDER BY name ASC
     """.trimIndent()
     return createQuery(sql)
         .bind("date", date)
         .bind("onlyApplicable", onlyApplicable)
+        .bind("shiftCare", shiftCare ?: false)
         .bind("club", type == ApplicationUnitType.CLUB)
         .bind("daycare", type == ApplicationUnitType.DAYCARE)
         .bind("preschool", type == ApplicationUnitType.PRESCHOOL)
