@@ -17,8 +17,13 @@ import DatePicker from '@evaka/lib-components/src/molecules/date-picker/DatePick
 import { ServiceNeedSectionProps } from '~applications/editor/service-need/ServiceNeedSection'
 import ExpandingInfo from '@evaka/lib-components/src/molecules/ExpandingInfo'
 import { FixedSpaceColumn } from '@evaka/lib-components/src/layout/flex-helpers'
+import { isValidPreferredStartDate } from '~applications/editor/validations'
+import LocalDate from '@evaka/lib-common/src/local-date'
+import { AlertBox } from '@evaka/lib-components/src/molecules/MessageBoxes'
 
 export default React.memo(function PreferredStartSubSection({
+  status,
+  originalPreferredStartDate,
   type,
   formData,
   updateFormData,
@@ -63,6 +68,17 @@ export default React.memo(function PreferredStartSubSection({
         })
       return result
     })
+
+  const showDaycare4MonthWarning = (): boolean => {
+    const preferredStartDate = LocalDate.parseFiOrNull(
+      formData.preferredStartDate
+    )
+    return (
+      type === 'DAYCARE' &&
+      preferredStartDate !== null &&
+      preferredStartDate.isBefore(LocalDate.today().addMonths(4))
+    )
+  }
 
   return (
     <>
@@ -113,10 +129,29 @@ export default React.memo(function PreferredStartSubSection({
           locale={lang}
           info={errorToInputInfo(errors.preferredStartDate, t.validationErrors)}
           hideErrorsBeforeTouched={!verificationRequested}
+          isValidDate={(date: LocalDate) =>
+            isValidPreferredStartDate(
+              date,
+              originalPreferredStartDate,
+              status,
+              type
+            )
+          }
           data-qa={'preferredStartDate-input'}
           id={labelId}
           required={true}
         />
+
+        {showDaycare4MonthWarning() ? (
+          <>
+            <Gap size="xs" />
+            <AlertBox
+              thin
+              message={t.applications.creation.daycare4monthWarning}
+              data-qa={'daycare-processing-time-warning'}
+            />
+          </>
+        ) : null}
 
         {type === 'DAYCARE' && (
           <>

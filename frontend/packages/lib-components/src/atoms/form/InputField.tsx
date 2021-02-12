@@ -253,7 +253,7 @@ function InputField({
       </InputRow>
       {infoText && (
         <InputFieldUnderRow className={classNames(infoStatus)}>
-          <span>{infoText}</span>
+          <span data-qa={`${dataQa2 ?? dataQa ?? ''}-info`}>{infoText}</span>
           <UnderRowStatusIcon status={info?.status} />
         </InputFieldUnderRow>
       )}

@@ -11,11 +11,17 @@ import { ApplicationFormDataErrors } from '~applications/editor/validations'
 import { getErrorCount } from '~form-validation'
 import PreferredStartSubSection from '~applications/editor/service-need/PreferredStartSubSection'
 import AssistanceNeedSubSection from '~applications/editor/service-need/AssistanceNeedSubSection'
-import { ApplicationType } from '@evaka/lib-common/src/api-types/application/enums'
+import {
+  ApplicationStatus,
+  ApplicationType
+} from '@evaka/lib-common/src/api-types/application/enums'
 import ServiceTimeSubSectionDaycare from '~applications/editor/service-need/ServiceTimeSubSectionDaycare'
 import ServiceTimeSubSectionPreschool from '~applications/editor/service-need/ServiceTimeSubSectionPreschool'
+import LocalDate from '@evaka/lib-common/src/local-date'
 
 export type ServiceNeedSectionProps = {
+  status: ApplicationStatus
+  originalPreferredStartDate: LocalDate | null
   type: ApplicationType
   formData: ServiceNeedFormData
   updateFormData: (update: Partial<ServiceNeedFormData>) => void

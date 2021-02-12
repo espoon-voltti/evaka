@@ -65,4 +65,10 @@ export default class CitizenApplicationsPage {
   async createApplication(childId: string) {
     await t.click(Selector(`[data-qa="new-application-${childId}"]`))
   }
+
+  async openApplication(applicationId: string) {
+    await t.click(
+      Selector(`[data-qa="button-open-application-${applicationId}"]`)
+    )
+  }
 }

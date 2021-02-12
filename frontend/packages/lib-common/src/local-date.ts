@@ -90,6 +90,12 @@ export default class LocalDate {
   isBefore(other: LocalDate): boolean {
     return isBefore(this.toSystemTzDate(), other.toSystemTzDate())
   }
+  isEqualOrAfter(other: LocalDate): boolean {
+    return this.isEqual(other) || this.isAfter(other)
+  }
+  isEqualOrBefore(other: LocalDate): boolean {
+    return this.isEqual(other) || this.isBefore(other)
+  }
   isEqual(other: LocalDate): boolean {
     return (
       this.year === other.year &&

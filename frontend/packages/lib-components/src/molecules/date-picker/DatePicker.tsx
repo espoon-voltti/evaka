@@ -54,6 +54,7 @@ type DatePickerProps = {
   info?: InputInfo
   hideErrorsBeforeTouched?: boolean
   disabled?: boolean
+  isValidDate?: (date: LocalDate) => boolean
   'data-qa'?: string
   id?: string
   required?: boolean
@@ -66,6 +67,7 @@ function DatePicker({
   info,
   hideErrorsBeforeTouched,
   disabled,
+  isValidDate,
   id,
   required,
   ...props
@@ -118,6 +120,7 @@ function DatePicker({
             locale={locale}
             inputValue={date}
             handleDayClick={handleDayClick}
+            isValidDate={isValidDate}
           />
         </DayPickerDiv>
       </DayPickerPositioner>

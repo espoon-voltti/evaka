@@ -1,5 +1,6 @@
 import {
   email,
+  ErrorKey,
   ErrorsOf,
   getErrorCount,
   phone,
@@ -13,6 +14,11 @@ import {
 } from '~form-validation'
 import { ApplicationFormData } from '~applications/editor/ApplicationFormData'
 import { ApplicationDetails } from '@evaka/lib-common/src/api-types/application/ApplicationDetails'
+import {
+  ApplicationStatus,
+  ApplicationType
+} from '@evaka/lib-common/src/api-types/application/enums'
+import LocalDate from '@evaka/lib-common/src/local-date'
 
 export type ApplicationFormDataErrors = {
   [section in keyof ApplicationFormData]: ErrorsOf<ApplicationFormData[section]>
@@ -25,17 +31,62 @@ export const applicationHasErrors = (errors: ApplicationFormDataErrors) => {
   return totalErrors > 0
 }
 
+const minPreferredStartDate = (
+  status: ApplicationStatus,
+  type: ApplicationType,
+  originalPreferredStartDate: LocalDate | null
+): LocalDate => {
+  if (status !== 'CREATED') {
+    return originalPreferredStartDate
+      ? originalPreferredStartDate
+      : LocalDate.today()
+  } else {
+    LocalDate
+    return type === 'DAYCARE'
+      ? LocalDate.today().addDays(14)
+      : LocalDate.today()
+  }
+}
+
+const maxPreferredStartDate = (): LocalDate => {
+  return LocalDate.today().addYears(1)
+}
+
+export const isValidPreferredStartDate = (
+  date: LocalDate,
+  originalPreferredStartDate: LocalDate | null,
+  status: ApplicationStatus,
+  type: ApplicationType
+): boolean => {
+  return date !== null
+    ? date.isEqualOrAfter(
+        minPreferredStartDate(status, type, originalPreferredStartDate)
+      ) && date.isEqualOrBefore(maxPreferredStartDate())
+    : false
+}
+
+const preferredStartDateValidator = (
+  originalPreferredStartDate: LocalDate | null,
+  status: ApplicationStatus,
+  type: ApplicationType
+) => (
+  val: string,
+  err: ErrorKey = 'preferredStartDate'
+): ErrorKey | undefined => {
+  const date = LocalDate.parseFiOrNull(val)
+  return date &&
+    isValidPreferredStartDate(date, originalPreferredStartDate, status, type)
+    ? undefined
+    : err
+}
+
 export const validateApplication = (
-  {
-    type,
-    otherGuardianId,
-    otherGuardianLivesInSameAddress
-  }: ApplicationDetails,
+  apiData: ApplicationDetails,
   form: ApplicationFormData
 ): ApplicationFormDataErrors => {
   const requireFullFamily =
-    type === 'DAYCARE' ||
-    (type === 'PRESCHOOL' && form.serviceNeed.connectedDaycare)
+    apiData.type === 'DAYCARE' ||
+    (apiData.type === 'PRESCHOOL' && form.serviceNeed.connectedDaycare)
 
   const siblingSelected =
     form.unitPreference.vtjSiblings.find((s) => s.selected) !== undefined
@@ -45,17 +96,22 @@ export const validateApplication = (
       preferredStartDate: validate(
         form.serviceNeed.preferredStartDate,
         required,
-        validDate
+        validDate,
+        preferredStartDateValidator(
+          apiData.form.preferences.preferredStartDate,
+          apiData.status,
+          apiData.type
+        )
       ),
       startTime:
-        type === 'DAYCARE' ||
-        (type === 'PRESCHOOL' && form.serviceNeed.connectedDaycare)
+        apiData.type === 'DAYCARE' ||
+        (apiData.type === 'PRESCHOOL' && form.serviceNeed.connectedDaycare)
           ? required(form.serviceNeed.startTime) ||
             regexp(form.serviceNeed.startTime, TIME_REGEXP, 'timeFormat')
           : undefined,
       endTime:
-        type === 'DAYCARE' ||
-        (type === 'PRESCHOOL' && form.serviceNeed.connectedDaycare)
+        apiData.type === 'DAYCARE' ||
+        (apiData.type === 'PRESCHOOL' && form.serviceNeed.connectedDaycare)
           ? required(form.serviceNeed.endTime) ||
             regexp(form.serviceNeed.endTime, TIME_REGEXP, 'timeFormat')
           : undefined
@@ -108,22 +164,22 @@ export const validateApplication = (
         ? validate(form.contactInfo.guardianFuturePostOffice, required)
         : undefined,
       otherGuardianAgreementStatus:
-        type === 'PRESCHOOL' &&
-        otherGuardianId &&
-        otherGuardianLivesInSameAddress === false
+        apiData.type === 'PRESCHOOL' &&
+        apiData.otherGuardianId &&
+        apiData.otherGuardianLivesInSameAddress === false
           ? requiredSelection(form.contactInfo.otherGuardianAgreementStatus)
           : undefined,
       otherGuardianPhone:
-        type === 'PRESCHOOL' &&
-        otherGuardianId &&
-        otherGuardianLivesInSameAddress === false &&
+        apiData.type === 'PRESCHOOL' &&
+        apiData.otherGuardianId &&
+        apiData.otherGuardianLivesInSameAddress === false &&
         form.contactInfo.otherGuardianAgreementStatus === 'NOT_AGREED'
           ? phone(form.contactInfo.otherGuardianPhone)
           : undefined,
       otherGuardianEmail:
-        type === 'PRESCHOOL' &&
-        otherGuardianId &&
-        otherGuardianLivesInSameAddress === false &&
+        apiData.type === 'PRESCHOOL' &&
+        apiData.otherGuardianId &&
+        apiData.otherGuardianLivesInSameAddress === false &&
         form.contactInfo.otherGuardianAgreementStatus === 'NOT_AGREED'
           ? email(form.contactInfo.otherGuardianEmail)
           : undefined,

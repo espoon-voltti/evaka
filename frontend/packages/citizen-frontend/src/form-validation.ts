@@ -21,6 +21,7 @@ export type ErrorKey =
   | 'validDate'
   | 'timeFormat'
   | 'unitNotSelected'
+  | 'preferredStartDate'
 
 export const required = (
   val: string,
