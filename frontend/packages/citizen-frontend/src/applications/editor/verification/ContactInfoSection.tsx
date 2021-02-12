@@ -23,6 +23,17 @@ export default React.memo(function ContactInfoSection({
   const t = useTranslation()
   const tLocal = t.applications.editor.verification.contactInfo
 
+  const otherChildren = [
+    ...formData.vtjSiblings
+      .filter((s) => s.selected)
+      .map((s) => ({
+        firstName: s.firstName,
+        lastName: s.lastName,
+        socialSecurityNumber: s.socialSecurityNumber
+      })),
+    ...(formData.otherChildrenExists ? formData.otherChildren : [])
+  ]
+
   return (
     <div>
       <H2 noMargin>{tLocal.title}</H2>
@@ -142,8 +153,8 @@ export default React.memo(function ContactInfoSection({
 
               <Gap size="m" />
               <H3>{tLocal.fridgeChildren.title}</H3>
-              {formData.otherChildren.length > 0 ? (
-                formData.otherChildren.map(
+              {otherChildren.length > 0 ? (
+                otherChildren.map(
                   ({ firstName, lastName, socialSecurityNumber }) => (
                     <ListGrid
                       key={socialSecurityNumber}

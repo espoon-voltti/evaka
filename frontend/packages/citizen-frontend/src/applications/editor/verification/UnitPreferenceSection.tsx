@@ -26,6 +26,21 @@ export default React.memo(function UnitPreferenceSection({
   const t = useTranslation()
   const tLocal = t.applications.editor.verification.unitPreference
 
+  const sibling = (() => {
+    if (!formData.siblingBasis) return null
+
+    const vtjSibling = formData.vtjSiblings.find((s) => s.selected)
+    return vtjSibling
+      ? {
+          name: `${vtjSibling.firstName} ${vtjSibling.lastName}`,
+          ssn: vtjSibling.socialSecurityNumber
+        }
+      : {
+          name: formData.siblingName,
+          ssn: formData.siblingSsn
+        }
+  })()
+
   return (
     <div>
       <H2 noMargin>{tLocal.title}</H2>
@@ -44,10 +59,10 @@ export default React.memo(function UnitPreferenceSection({
             <span>{tLocal.siblingBasis.siblingBasisYes}</span>
 
             <Label>{tLocal.siblingBasis.name}</Label>
-            <span>{formData.siblingName}</span>
+            <span>{sibling?.name}</span>
 
             <Label>{tLocal.siblingBasis.ssn}</Label>
-            <span>{formData.siblingSsn}</span>
+            <span>{sibling?.ssn}</span>
           </>
         ) : (
           <span>{t.applications.editor.verification.no}</span>
