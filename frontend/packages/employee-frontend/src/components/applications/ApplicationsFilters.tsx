@@ -78,6 +78,10 @@ export default React.memo(function ApplicationFilters() {
   }, [])
 
   useEffect(() => {
+    void getUnits(area, type).then(setAllUnits)
+  }, [area])
+
+  useEffect(() => {
     const areas = availableAreas
       .map((areas) => areas.map(({ shortName }) => shortName))
       .getOrElse([])
