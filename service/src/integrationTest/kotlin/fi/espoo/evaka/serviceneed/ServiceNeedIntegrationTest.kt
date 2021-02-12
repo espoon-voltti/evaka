@@ -8,7 +8,6 @@ import com.github.kittinunf.fuel.core.extensions.jsonBody
 import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.insertGeneralTestFixtures
-import fi.espoo.evaka.insertUnitSupervisorAcl
 import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
@@ -19,7 +18,8 @@ import fi.espoo.evaka.shared.dev.insertTestServiceNeed
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
 import fi.espoo.evaka.testDaycare
-import fi.espoo.evaka.testUnitSupervisor
+import fi.espoo.evaka.testDecisionMaker_1
+import fi.espoo.evaka.unitSupervisorOfTestDaycare
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -29,15 +29,15 @@ import java.time.LocalDate
 import java.util.UUID
 
 class ServiceNeedIntegrationTest : FullApplicationTest() {
-    private val unitSupervisor = AuthenticatedUser(testUnitSupervisor.id, setOf(UserRole.UNIT_SUPERVISOR))
+    private val unitSupervisor = AuthenticatedUser(unitSupervisorOfTestDaycare.id, setOf(UserRole.UNIT_SUPERVISOR))
     private val admin = AuthenticatedUser(UUID.randomUUID(), setOf(UserRole.ADMIN))
+    private val serviceWorker = AuthenticatedUser(testDecisionMaker_1.id, setOf(UserRole.SERVICE_WORKER))
 
     @BeforeEach
     private fun beforeEach() {
         jdbi.handle { h ->
             resetDatabase(h)
             insertGeneralTestFixtures(h)
-            insertUnitSupervisorAcl(h)
             insertTestPlacement(
                 h,
                 childId = testChild_1.id,
@@ -72,7 +72,7 @@ class ServiceNeedIntegrationTest : FullApplicationTest() {
                 partWeek = false,
                 shiftCare = true,
                 updated = serviceNeed.updated,
-                updatedByName = "${testUnitSupervisor.firstName} ${testUnitSupervisor.lastName}"
+                updatedByName = "${unitSupervisorOfTestDaycare.firstName} ${unitSupervisorOfTestDaycare.lastName}"
             ),
             serviceNeed
         )
@@ -102,7 +102,7 @@ class ServiceNeedIntegrationTest : FullApplicationTest() {
                 partWeek = false,
                 shiftCare = true,
                 updated = serviceNeed.updated,
-                updatedByName = "${testUnitSupervisor.firstName} ${testUnitSupervisor.lastName}"
+                updatedByName = "${unitSupervisorOfTestDaycare.firstName} ${unitSupervisorOfTestDaycare.lastName}"
             ),
             serviceNeed
         )
@@ -332,7 +332,12 @@ class ServiceNeedIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `delete service need, not found responds 404`() {
-        whenDeleteServiceNeedThenExpectError(UUID.randomUUID(), 404)
+        whenDeleteServiceNeedThenExpectError(UUID.randomUUID(), 404, admin)
+    }
+
+    @Test
+    fun `when service worker tries to remove service need, respond 403`() {
+        whenDeleteServiceNeedThenExpectError(UUID.randomUUID(), 403, serviceWorker)
     }
 
     @Test
@@ -462,9 +467,9 @@ class ServiceNeedIntegrationTest : FullApplicationTest() {
         assertEquals(204, res.statusCode)
     }
 
-    private fun whenDeleteServiceNeedThenExpectError(id: UUID, status: Int) {
+    private fun whenDeleteServiceNeedThenExpectError(id: UUID, status: Int, authenticatedUser: AuthenticatedUser) {
         val (_, res, _) = http.delete("/service-needs/$id")
-            .asUser(admin)
+            .asUser(authenticatedUser)
             .response()
 
         assertEquals(status, res.statusCode)

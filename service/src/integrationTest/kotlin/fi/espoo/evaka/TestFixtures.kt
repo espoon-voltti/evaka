@@ -64,7 +64,7 @@ val svebiTestCode = 400
 val defaultMunicipalOrganizerOid = "1.2.246.562.10.888888888888"
 val defaultPurchasedOrganizerOid = "1.2.246.562.10.66666666666"
 
-val testUnitSupervisorExternalId = ExternalId.of("espoo", "00000000-0000-0000-0009-000000000000")
+val unitSupervisorExternalId = ExternalId.of("test", UUID.randomUUID().toString())
 
 val testDaycare =
     UnitData.Detailed(
@@ -144,7 +144,7 @@ val testDecisionMaker_2 = PersonData.WithName(
     lastName = "Maker 2"
 )
 
-val testUnitSupervisor = PersonData.WithName(
+val unitSupervisorOfTestDaycare = PersonData.WithName(
     id = UUID.randomUUID(),
     firstName = "Sammy",
     lastName = "Supervisor"
@@ -435,14 +435,20 @@ fun insertGeneralTestFixtures(h: Handle) {
         )
     }
 
-    testUnitSupervisor.let {
+    unitSupervisorOfTestDaycare.let {
         h.insertTestEmployee(
             DevEmployee(
                 id = it.id,
                 firstName = it.firstName,
                 lastName = it.lastName,
-                externalId = testUnitSupervisorExternalId
+                externalId = unitSupervisorExternalId
             )
+        )
+        updateDaycareAcl(
+            h,
+            testDaycare.id,
+            unitSupervisorExternalId,
+            UserRole.UNIT_SUPERVISOR
         )
     }
 
@@ -549,15 +555,6 @@ VALUES (
         """.trimIndent()
 
     createUpdate(sql).execute()
-}
-
-fun insertUnitSupervisorAcl(h: Handle) {
-    updateDaycareAcl(
-        h,
-        testDaycare.id,
-        testUnitSupervisorExternalId,
-        UserRole.UNIT_SUPERVISOR
-    )
 }
 
 fun insertTestVardaOrganizer(h: Handle) {
