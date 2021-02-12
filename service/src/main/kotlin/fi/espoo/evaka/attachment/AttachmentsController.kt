@@ -37,7 +37,7 @@ const val attachmentsPath = "/"
 @RestController
 @RequestMapping("/attachments")
 class AttachmentsController(
-    private val s3Client: DocumentService,
+    private val documentClient: DocumentService,
     env: Environment
 ) {
     private val filesBucket = env.getProperty("fi.espoo.voltti.document.bucket.attachments")!!
@@ -76,7 +76,13 @@ class AttachmentsController(
         return ResponseEntity.ok(id)
     }
 
-    private fun handleFileUpload(db: Database, user: AuthenticatedUser, applicationId: UUID, file: MultipartFile, type: AttachmentType): UUID {
+    private fun handleFileUpload(
+        db: Database,
+        user: AuthenticatedUser,
+        applicationId: UUID,
+        file: MultipartFile,
+        type: AttachmentType
+    ): UUID {
         val name = file.originalFilename
             ?.takeIf { it.isNotBlank() }
             ?: throw BadRequest("Filename missing")
@@ -95,7 +101,7 @@ class AttachmentsController(
                 uploadedByEmployee = user.id.takeUnless { user.isEndUser() },
                 type = type
             )
-            s3Client.upload(
+            documentClient.upload(
                 filesBucket,
                 DocumentWrapper(
                     name = id.toString(),
@@ -124,7 +130,7 @@ class AttachmentsController(
         }
 
         return try {
-            s3Client.headObject(filesBucket, "$attachmentId").let {
+            documentClient.headObject(filesBucket, "$attachmentId").let {
                 ResponseEntity.ok().body(PreDownloadResponse(true))
             }
         } catch (e: AmazonS3Exception) {
@@ -147,11 +153,16 @@ class AttachmentsController(
         val attachment =
             db.read { it.getAttachment(attachmentId) ?: throw NotFound("Attachment $attachmentId not found") }
 
-        return s3Client.get(filesBucket, "$attachmentId").let { document ->
-            ResponseEntity.ok()
-                .header("Content-Disposition", "attachment;filename=${attachment.name}")
-                .contentType(MediaType.valueOf(attachment.contentType))
-                .body(document.getBytes())
+        return try {
+            documentClient.get(filesBucket, "$attachmentId").let { document ->
+                ResponseEntity.ok()
+                    .header("Content-Disposition", "attachment;filename=${attachment.name}")
+                    .contentType(MediaType.valueOf(attachment.contentType))
+                    .body(document.getBytes())
+            }
+        } catch (e: AmazonS3Exception) {
+            if (e.statusCode == 403) throw NotFound("Attachment $attachmentId not yet available")
+            throw e
         }
     }
 
@@ -168,7 +179,7 @@ class AttachmentsController(
 
     fun deleteAttachment(db: Database.Transaction, id: UUID) {
         db.deleteAttachment(id)
-        s3Client.delete(filesBucket, "$id")
+        documentClient.delete(filesBucket, "$id")
     }
 }
 
