@@ -31,6 +31,7 @@ import InlineButton from '@evaka/lib-components/src/atoms/buttons/InlineButton'
 import { noop } from 'lodash'
 import { removeUnprocessedApplication } from '~applications/api'
 import { OverlayContext } from '~overlay/state'
+import {addSeconds, isAfter} from "date-fns";
 
 const StyledLink = styled(Link)`
   color: ${colors.blues.primary};
@@ -212,7 +213,7 @@ export default React.memo(function ChildApplicationsBlock({
                   {formatDate(createdDate)}
                 </span>
 
-                {formatDate(modifiedDate) !== formatDate(createdDate) && (
+                {isAfter(modifiedDate, addSeconds(createdDate, 1)) && (
                   <>
                     <Label>{t.applicationsList.modified}</Label>
                     <span data-qa={`application-modified-${applicationId}`}>
