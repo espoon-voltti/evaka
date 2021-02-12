@@ -96,6 +96,7 @@ const FooterWrapper = styled.div`
   bottom: 0;
   width: fit-content;
   background-color: ${colors.greyscale.white};
+  z-index: 999;
 
   > div {
     margin: 0 ${defaultMargins.s} 0;
@@ -118,13 +119,13 @@ const FooterWrapper = styled.div`
 const UnitPopup = styled(Popup)`
   font-family: 'Open Sans', sans-serif;
   font-size: 16px;
+  line-height: 24px;
 
   .leaflet-popup-close-button {
     font-size: 24px !important;
-    width: auto;
-    height: auto;
-    margin-top: 8px;
-    margin-right: 8px;
+    width: auto !important;
+    height: auto !important;
+    padding: 6px !important;
   }
 `
 
@@ -137,6 +138,7 @@ const UnitDetails = styled.div`
   display: flex;
   font-size: 14px;
   font-weight: 600;
+  line-height: 21px;
   color: #6e6e6e;
 `
 
