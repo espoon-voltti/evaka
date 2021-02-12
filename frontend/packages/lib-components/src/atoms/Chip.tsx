@@ -44,31 +44,48 @@ export const SelectionChip = React.memo(function SelectionChip({
   selected,
   onChange
 }: SelectionChipProps) {
+  const ariaId = Math.random().toString(36).substring(2, 15)
+
   return (
     <div>
-      <SelectionChipWrapper onClick={() => onChange(!selected)}>
+      <SelectionChipWrapper
+        onClick={(e) => {
+          e.preventDefault()
+          onChange(!selected)
+        }}
+      >
         <SelectionChipInnerWrapper
           className={classNames({ checked: selected })}
         >
           <HiddenInput
             type="checkbox"
-            onChange={(e) => {
-              e.stopPropagation()
-              onChange(!selected)
-            }}
+            onChange={() => onChange(!selected)}
             checked={selected}
+            id={ariaId}
           />
           {selected && (
             <IconWrapper>
               <FontAwesomeIcon icon={faCheck} />
             </IconWrapper>
           )}
-          {text}
+          <StyledLabel
+            className={classNames({ checked: selected })}
+            htmlFor={ariaId}
+          >
+            {text}
+          </StyledLabel>
         </SelectionChipInnerWrapper>
       </SelectionChipWrapper>
     </div>
   )
 })
+
+const StyledLabel = styled.label`
+  cursor: pointer;
+  &.checked {
+    margin-left: 32px;
+  }
+`
 
 const SelectionChipWrapper = styled.div`
   font-family: 'Open Sans', sans-serif;
@@ -113,9 +130,6 @@ const HiddenInput = styled.input`
   margin: 0;
   height: 32px;
   width: 0;
-  &:checked {
-    width: 32px;
-  }
 `
 
 const IconWrapper = styled.div`
