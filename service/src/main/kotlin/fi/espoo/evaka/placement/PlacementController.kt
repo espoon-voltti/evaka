@@ -191,7 +191,7 @@ class PlacementController(
     ): ResponseEntity<UUID> {
         Audit.DaycareGroupPlacementCreate.log(targetId = placementId, objectId = body.groupId)
         acl.getRolesForPlacement(user, placementId)
-            .requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR)
+            .requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR)
 
         return db.transaction { tx ->
             tx.createGroupPlacement(
@@ -214,7 +214,7 @@ class PlacementController(
     ): ResponseEntity<Unit> {
         Audit.DaycareGroupPlacementDelete.log(targetId = groupPlacementId)
         acl.getRolesForPlacement(user, daycarePlacementId)
-            .requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR)
+            .requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR)
 
         val success = db.transaction { it.handle.deleteGroupPlacement(groupPlacementId) }
         if (!success) throw NotFound("Group placement not found")
@@ -231,7 +231,7 @@ class PlacementController(
     ): ResponseEntity<Unit> {
         Audit.DaycareGroupPlacementTransfer.log(targetId = groupPlacementId)
         acl.getRolesForPlacement(user, daycarePlacementId)
-            .requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR)
+            .requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR)
 
         return db.transaction {
             it.transferGroup(daycarePlacementId, groupPlacementId, body.groupId, body.startDate).let(::noContent)

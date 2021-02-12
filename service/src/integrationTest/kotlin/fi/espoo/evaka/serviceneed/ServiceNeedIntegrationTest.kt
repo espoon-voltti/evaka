@@ -13,10 +13,13 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.db.handle
+import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.dev.insertTestServiceNeed
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
+import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDecisionMaker_1
+import fi.espoo.evaka.unitSupervisorOfTestDaycare
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -26,6 +29,8 @@ import java.time.LocalDate
 import java.util.UUID
 
 class ServiceNeedIntegrationTest : FullApplicationTest() {
+    private val unitSupervisor = AuthenticatedUser(unitSupervisorOfTestDaycare.id, setOf(UserRole.UNIT_SUPERVISOR))
+    private val admin = AuthenticatedUser(UUID.randomUUID(), setOf(UserRole.ADMIN))
     private val serviceWorker = AuthenticatedUser(testDecisionMaker_1.id, setOf(UserRole.SERVICE_WORKER))
 
     @BeforeEach
@@ -33,6 +38,13 @@ class ServiceNeedIntegrationTest : FullApplicationTest() {
         jdbi.handle { h ->
             resetDatabase(h)
             insertGeneralTestFixtures(h)
+            insertTestPlacement(
+                h,
+                childId = testChild_1.id,
+                unitId = testDaycare.id,
+                startDate = LocalDate.now().minusDays(1),
+                endDate = LocalDate.now().plusDays(3)
+            )
         }
     }
 
@@ -60,7 +72,7 @@ class ServiceNeedIntegrationTest : FullApplicationTest() {
                 partWeek = false,
                 shiftCare = true,
                 updated = serviceNeed.updated,
-                updatedByName = "${testDecisionMaker_1.firstName} ${testDecisionMaker_1.lastName}"
+                updatedByName = "${unitSupervisorOfTestDaycare.firstName} ${unitSupervisorOfTestDaycare.lastName}"
             ),
             serviceNeed
         )
@@ -90,7 +102,7 @@ class ServiceNeedIntegrationTest : FullApplicationTest() {
                 partWeek = false,
                 shiftCare = true,
                 updated = serviceNeed.updated,
-                updatedByName = "${testDecisionMaker_1.firstName} ${testDecisionMaker_1.lastName}"
+                updatedByName = "${unitSupervisorOfTestDaycare.firstName} ${unitSupervisorOfTestDaycare.lastName}"
             ),
             serviceNeed
         )
@@ -320,7 +332,12 @@ class ServiceNeedIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `delete service need, not found responds 404`() {
-        whenDeleteServiceNeedThenExpectError(UUID.randomUUID(), 404)
+        whenDeleteServiceNeedThenExpectError(UUID.randomUUID(), 404, admin)
+    }
+
+    @Test
+    fun `when service worker tries to remove service need, respond 403`() {
+        whenDeleteServiceNeedThenExpectError(UUID.randomUUID(), 403, serviceWorker)
     }
 
     @Test
@@ -329,7 +346,8 @@ class ServiceNeedIntegrationTest : FullApplicationTest() {
             val startDate = 5
             givenServiceNeed(startDate, null, testChild_1.id)
 
-            val results = getServiceNeedsByChildDuringPeriod(h, testChild_1.id, testDate(startDate), testDate(startDate + 5))
+            val results =
+                getServiceNeedsByChildDuringPeriod(h, testChild_1.id, testDate(startDate), testDate(startDate + 5))
             assertEquals(1, results.size)
 
             val serviceNeed = results[0]
@@ -389,7 +407,7 @@ class ServiceNeedIntegrationTest : FullApplicationTest() {
                 childId = childId,
                 startDate = testDate(start),
                 endDate = if (end == null) null else testDate(end),
-                updatedBy = serviceWorker.id
+                updatedBy = unitSupervisor.id
             )
         }
     }
@@ -397,7 +415,7 @@ class ServiceNeedIntegrationTest : FullApplicationTest() {
     private fun whenPostServiceNeedThenExpectSuccess(request: ServiceNeedRequest): ServiceNeed {
         val (_, res, result) = http.post("/children/${testChild_1.id}/service-needs")
             .jsonBody(objectMapper.writeValueAsString(request))
-            .asUser(serviceWorker)
+            .asUser(unitSupervisor)
             .responseObject<ServiceNeed>(objectMapper)
 
         assertEquals(201, res.statusCode)
@@ -407,7 +425,7 @@ class ServiceNeedIntegrationTest : FullApplicationTest() {
     private fun whenPostServiceNeedThenExpectError(request: ServiceNeedRequest, status: Int) {
         val (_, res, _) = http.post("/children/${testChild_1.id}/service-needs")
             .jsonBody(objectMapper.writeValueAsString(request))
-            .asUser(serviceWorker)
+            .asUser(unitSupervisor)
             .response()
 
         assertEquals(status, res.statusCode)
@@ -415,7 +433,7 @@ class ServiceNeedIntegrationTest : FullApplicationTest() {
 
     private fun whenGetServiceNeedsThenExpectSuccess(childId: UUID): List<ServiceNeed> {
         val (_, res, result) = http.get("/children/$childId/service-needs")
-            .asUser(serviceWorker)
+            .asUser(unitSupervisor)
             .responseObject<List<ServiceNeed>>(objectMapper)
 
         assertEquals(200, res.statusCode)
@@ -425,7 +443,7 @@ class ServiceNeedIntegrationTest : FullApplicationTest() {
     private fun whenPutServiceNeedThenExpectSuccess(id: UUID, request: ServiceNeedRequest): ServiceNeed {
         val (_, res, result) = http.put("/service-needs/$id")
             .jsonBody(objectMapper.writeValueAsString(request))
-            .asUser(serviceWorker)
+            .asUser(unitSupervisor)
             .responseObject<ServiceNeed>(objectMapper)
 
         assertEquals(200, res.statusCode)
@@ -435,7 +453,7 @@ class ServiceNeedIntegrationTest : FullApplicationTest() {
     private fun whenPutServiceNeedThenExpectError(id: UUID, request: ServiceNeedRequest, status: Int) {
         val (_, res, _) = http.put("/service-needs/$id")
             .jsonBody(objectMapper.writeValueAsString(request))
-            .asUser(serviceWorker)
+            .asUser(admin)
             .response()
 
         assertEquals(status, res.statusCode)
@@ -443,15 +461,15 @@ class ServiceNeedIntegrationTest : FullApplicationTest() {
 
     private fun whenDeleteServiceNeedThenExpectSuccess(id: UUID) {
         val (_, res, _) = http.delete("/service-needs/$id")
-            .asUser(serviceWorker)
+            .asUser(unitSupervisor)
             .response()
 
         assertEquals(204, res.statusCode)
     }
 
-    private fun whenDeleteServiceNeedThenExpectError(id: UUID, status: Int) {
+    private fun whenDeleteServiceNeedThenExpectError(id: UUID, status: Int, authenticatedUser: AuthenticatedUser) {
         val (_, res, _) = http.delete("/service-needs/$id")
-            .asUser(serviceWorker)
+            .asUser(authenticatedUser)
             .response()
 
         assertEquals(status, res.statusCode)

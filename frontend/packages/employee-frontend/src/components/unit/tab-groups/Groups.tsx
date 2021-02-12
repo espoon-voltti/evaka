@@ -159,7 +159,7 @@ export default React.memo(function Groups({
             dataQa="toggle-all-groups-collapsible"
           />
         </TitleContainer>
-        {requireRole(roles, 'ADMIN', 'SERVICE_WORKER', 'UNIT_SUPERVISOR') && (
+        {canManageGroups && (
           <div>
             <Link to={`/units/${unit.id}/family-contacts`}>
               <InlineButton

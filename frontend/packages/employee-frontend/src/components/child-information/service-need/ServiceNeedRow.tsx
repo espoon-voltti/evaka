@@ -15,7 +15,6 @@ import Toolbar from '~components/common/Toolbar'
 import LabelValueList from '~components/common/LabelValueList'
 import { capitalizeFirstLetter, scrollToRef } from 'utils'
 import { removeServiceNeed } from 'api/child/service-needs'
-import { ALL_ROLES_BUT_STAFF } from 'utils/roles'
 
 export interface Props {
   serviceNeed: ServiceNeed
@@ -83,12 +82,12 @@ function ServiceNeedRow({ serviceNeed, onReload }: Props) {
               setToggled(true)
               scrollToRef(refForm)
             }}
-            editableFor={ALL_ROLES_BUT_STAFF}
+            editableFor={['ADMIN', 'UNIT_SUPERVISOR']}
             dataQaEdit="btn-edit-service-need"
             onDelete={() =>
               toggleUiMode(`remove-service-need-${serviceNeed.id}`)
             }
-            deletableFor={ALL_ROLES_BUT_STAFF}
+            deletableFor={['ADMIN', 'UNIT_SUPERVISOR']}
             dataQaDelete="btn-remove-service-need"
             disableAll={!!uiMode && uiMode.startsWith('edit-service-need')}
           />
