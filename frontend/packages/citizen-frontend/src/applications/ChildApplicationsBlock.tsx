@@ -31,7 +31,7 @@ import InlineButton from '@evaka/lib-components/src/atoms/buttons/InlineButton'
 import { noop } from 'lodash'
 import { removeUnprocessedApplication } from '~applications/api'
 import { OverlayContext } from '~overlay/state'
-import {addSeconds, isAfter} from "date-fns";
+import { addSeconds, isAfter } from 'date-fns'
 
 const StyledLink = styled(Link)`
   color: ${colors.blues.primary};
