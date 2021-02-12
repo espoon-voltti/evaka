@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import styled from 'styled-components'
 import { fi } from 'date-fns/locale'
 import ReactSelect from 'react-select'
@@ -39,6 +39,8 @@ import {
 import { StartingPlacementsRow } from '~types/reports'
 import LocalDate from '@evaka/lib-common/src/local-date'
 import { FlexRow } from 'components/common/styled/containers'
+import _ from 'lodash'
+import { distinct } from '~utils'
 
 const StyledTd = styled(Td)`
   white-space: nowrap;
@@ -81,6 +83,14 @@ function getFilename(i18n: Translations, year: number, month: number) {
   return `${i18n.reports.startingPlacements.reportFileName}-${time}.csv`
 }
 
+interface DisplayFilters {
+  careArea: string
+}
+
+const emptyDisplayFilters: DisplayFilters = {
+  careArea: ''
+}
+
 const StartingPlacements = React.memo(function StartingPlacements() {
   const { i18n, lang } = useTranslation()
   const [rows, setRows] = useState<Result<StartingPlacementsRow[]>>(
@@ -92,10 +102,30 @@ const StartingPlacements = React.memo(function StartingPlacements() {
     month: today.month
   })
 
+  const [displayFilters, setDisplayFilters] = useState<DisplayFilters>(
+    emptyDisplayFilters
+  )
+  const displayFilter = (row: StartingPlacementsRow): boolean => {
+    return !(
+      displayFilters.careArea && row.careAreaName !== displayFilters.careArea
+    )
+  }
+
   useEffect(() => {
     setRows(Loading.of())
+    setDisplayFilters(emptyDisplayFilters)
     void getStartingPlacementsReport(filters).then(setRows)
   }, [filters])
+
+  const filteredRows: StartingPlacementsRow[] = useMemo(
+    () =>
+      _.sortBy(rows.getOrElse([]).filter(displayFilter), [
+        (row) => row.careAreaName,
+        (row) => row.firstName,
+        (row) => row.lastName
+      ]),
+    [rows, displayFilters]
+  )
 
   return (
     <Container>
@@ -133,18 +163,59 @@ const StartingPlacements = React.memo(function StartingPlacements() {
             </Wrapper>
           </FlexRow>
         </FilterRow>
+
+        <FilterRow>
+          <FilterLabel>{i18n.reports.common.careAreaName}</FilterLabel>
+          <FlexRow>
+            <Wrapper>
+              <ReactSelect
+                options={[
+                  { value: '', label: i18n.common.all },
+                  ...rows
+                    .map((rs) =>
+                      distinct(rs.map((row) => row.careAreaName)).map((s) => ({
+                        value: s,
+                        label: s
+                      }))
+                    )
+                    .getOrElse([])
+                ]}
+                onChange={(option) =>
+                  option && 'value' in option
+                    ? setDisplayFilters({
+                        ...displayFilters,
+                        careArea: option.value
+                      })
+                    : undefined
+                }
+                value={
+                  displayFilters.careArea !== ''
+                    ? {
+                        label: displayFilters.careArea,
+                        value: displayFilters.careArea
+                      }
+                    : {
+                        label: i18n.common.all,
+                        value: ''
+                      }
+                }
+                styles={reactSelectStyles}
+                placeholder={i18n.reports.occupancies.filters.areaPlaceholder}
+              />
+            </Wrapper>
+          </FlexRow>
+        </FilterRow>
+
         <ReportDownload
-          data={rows
-            .map((rs) =>
-              rs.map((row) => ({
-                firstName: row.firstName,
-                lastName: row.lastName,
-                ssn: row.ssn ?? row.dateOfBirth.format(),
-                placementStart: row.placementStart.format()
-              }))
-            )
-            .getOrElse([])}
+          data={filteredRows.map((row) => ({
+            careAreaName: row.careAreaName,
+            firstName: row.firstName,
+            lastName: row.lastName,
+            ssn: row.ssn ?? row.dateOfBirth.format(),
+            placementStart: row.placementStart.format()
+          }))}
           headers={[
+            { label: 'Palvelualue', key: 'careAreaName' },
             { label: 'Lapsen sukunimi', key: 'lastName' },
             { label: 'Lapsen etunimi', key: 'firstName' },
             { label: 'Henkilötunnus', key: 'ssn' },
@@ -155,6 +226,7 @@ const StartingPlacements = React.memo(function StartingPlacements() {
         <TableScrollable>
           <Thead>
             <Tr>
+              <Th>{i18n.reports.common.careAreaName}</Th>
               <Th>{i18n.reports.common.childName}</Th>
               <Th>{i18n.reports.startingPlacements.ssn}</Th>
               <Th>{i18n.reports.startingPlacements.placementStart}</Th>
@@ -162,8 +234,9 @@ const StartingPlacements = React.memo(function StartingPlacements() {
           </Thead>
           {rows.isSuccess && (
             <Tbody>
-              {rows.value.map((row) => (
+              {filteredRows.map((row) => (
                 <Tr key={row.childId}>
+                  <StyledTd>{row.careAreaName}</StyledTd>
                   <StyledTd>
                     <Link
                       to={`/child-information/${row.childId}`}

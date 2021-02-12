@@ -313,6 +313,7 @@ export interface StartingPlacementsRow {
   dateOfBirth: LocalDate
   ssn?: string
   placementStart: LocalDate
+  careAreaName: string
 }
 
 export interface VoucherServiceProviderRow {
