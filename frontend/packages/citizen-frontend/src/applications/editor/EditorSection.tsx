@@ -32,7 +32,7 @@ export default React.memo(function EditorSection(props: Props) {
         })
       }
     }, 50)
-  }, [])
+  }, [ref.current])
 
   return (
     <div ref={ref}>
