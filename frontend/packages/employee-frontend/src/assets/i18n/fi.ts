@@ -988,6 +988,7 @@ export const fi = {
     address: 'Osoite',
     type: 'Tyyppi',
     findByName: 'Etsi yksikön nimellä',
+    includeClosed: 'Näytä lopetetut yksiköt',
     noResults: 'Ei tuloksia'
   },
   unit: {
