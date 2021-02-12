@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from 'react'
+import React, { useEffect } from 'react'
 import styled from 'styled-components'
 import { defaultMargins } from '@evaka/lib-components/src/white-space'
 import colors from '@evaka/lib-components/src/colors'
@@ -6,8 +6,9 @@ import leaflet from 'leaflet'
 import { FooterContent } from '~Footer'
 import { MapContainer, Marker, Popup, TileLayer, useMap } from 'react-leaflet'
 import { PublicUnit } from '@evaka/lib-common/src/api-types/units/PublicUnit'
-import marker from './marker.svg'
-import markerHighlight from './marker-highlight.svg'
+import markerUnit from './marker-unit.svg'
+import markerUnitHighlight from './marker-unit-highlight.svg'
+import markerAddress from './marker-address.svg'
 import { formatDistance, UnitWithDistance } from '~map/distances'
 import { useTranslation } from '~localization'
 import { formatCareTypes } from './format'
@@ -35,27 +36,26 @@ export default React.memo(function MapBox(props: Props) {
   )
 })
 
+const addressIcon = new leaflet.Icon({
+  iconUrl: markerAddress,
+  iconSize: [30, 30],
+  popupAnchor: [0, -18]
+})
+
+const unitIcon = new leaflet.Icon({
+  iconUrl: markerUnit,
+  iconSize: [30, 30],
+  popupAnchor: [0, -18]
+})
+
+const unitHighlightIcon = new leaflet.Icon({
+  iconUrl: markerUnitHighlight,
+  iconSize: [30, 30],
+  popupAnchor: [0, -18]
+})
+
 function MapContents({ units, selectedUnit, selectedAddress }: Props) {
   const map = useMap()
-  const icon = useMemo(
-    () =>
-      new leaflet.Icon({
-        iconUrl: marker,
-        iconSize: [30, 30],
-        popupAnchor: [0, -18]
-      }),
-    [marker]
-  )
-  const highlightIcon = useMemo(
-    () =>
-      new leaflet.Icon({
-        iconUrl: markerHighlight,
-        iconSize: [30, 30],
-        popupAnchor: [0, -18]
-      }),
-    [markerHighlight]
-  )
-  const t = useTranslation()
 
   useEffect(() => {
     if (selectedAddress) {
@@ -80,41 +80,66 @@ function MapContents({ units, selectedUnit, selectedAddress }: Props) {
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         detectRetina={true}
       />
-      {units.map((unit) => {
-        const { location } = unit
-        if (location?.lat == null || location?.lon == null) return null
-        const isSelected = selectedUnit?.id === unit.id
-
-        return (
-          <Marker
-            key={unit.id}
-            title={unit.name}
-            position={[location.lat, location.lon]}
-            icon={isSelected ? highlightIcon : icon}
-            zIndexOffset={isSelected ? 10 : 0}
-          >
-            <UnitPopup>
-              <UnitName>{unit.name}</UnitName>
-              <div>{t.common.unit.providerTypes[unit.providerType]}</div>
-              <UnitDetails>
-                <UnitDetailsLeft>
-                  {unit.streetAddress}
-                  <br />
-                  {formatCareTypes(t, unit.type).join(', ')}
-                </UnitDetailsLeft>
-                {'straightDistance' in unit && (
-                  <UnitDetailsRight>
-                    {formatDistance(
-                      unit.drivingDistance ?? unit.straightDistance
-                    )}
-                  </UnitDetailsRight>
-                )}
-              </UnitDetails>
-            </UnitPopup>
-          </Marker>
-        )
-      })}
+      {selectedAddress && <AddressMarker address={selectedAddress} />}
+      {units.map((unit) => (
+        <UnitMarker
+          key={unit.id}
+          unit={unit}
+          isSelected={selectedUnit?.id === unit.id}
+        />
+      ))}
     </>
+  )
+}
+
+function AddressMarker({ address }: { address: MapAddress }) {
+  const { lat, lon } = address.coordinates
+  return (
+    <Marker
+      title={address.streetAddress}
+      position={[lat, lon]}
+      icon={addressIcon}
+      zIndexOffset={20}
+    />
+  )
+}
+
+function UnitMarker({
+  unit,
+  isSelected
+}: {
+  unit: UnitWithDistance | PublicUnit
+  isSelected: boolean
+}) {
+  const t = useTranslation()
+
+  if (unit.location?.lat == null || unit.location?.lon == null) return null
+  const { lat, lon } = unit.location
+
+  return (
+    <Marker
+      title={unit.name}
+      position={[lat, lon]}
+      icon={isSelected ? unitHighlightIcon : unitIcon}
+      zIndexOffset={isSelected ? 10 : 0}
+    >
+      <UnitPopup>
+        <UnitName>{unit.name}</UnitName>
+        <div>{t.common.unit.providerTypes[unit.providerType]}</div>
+        <UnitDetails>
+          <UnitDetailsLeft>
+            {unit.streetAddress}
+            <br />
+            {formatCareTypes(t, unit.type).join(', ')}
+          </UnitDetailsLeft>
+          {'straightDistance' in unit && (
+            <UnitDetailsRight>
+              {formatDistance(unit.drivingDistance ?? unit.straightDistance)}
+            </UnitDetailsRight>
+          )}
+        </UnitDetails>
+      </UnitPopup>
+    </Marker>
   )
 }
 
