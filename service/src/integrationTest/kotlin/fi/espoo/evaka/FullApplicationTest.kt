@@ -84,7 +84,7 @@ abstract class FullApplicationTest {
     }
 
     fun uploadAttachment(applicationId: UUID, user: AuthenticatedUser): Boolean {
-        val (_, res, _) = http.upload("/attachments/enduser/applications/$applicationId", parameters = listOf("type" to "URGENCY"))
+        val (_, res, _) = http.upload("/attachments/citizen/applications/$applicationId", parameters = listOf("type" to "URGENCY"))
             .add(FileDataPart(File(pngFile.toURI()), name = "file"))
             .asUser(user)
             .response()

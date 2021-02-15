@@ -61,25 +61,6 @@ You will also need the `nc/netcat` (Arbitrary TCP and UDP connections and listen
 If your operating system does not have this utility installed, please install
 it using your package manager. (E.g. on Ubuntu, run  `sudo apt-get install netcat`).
 
-### Google Maps API key
-
-To use `enduser-gw`'s Google Maps backed endpoints, create a `.gmaps.env` file ([example](./.default.gmaps.env)).
-**NOTE:** By default, `compose-e2e` will copy a default file (`.default.gmaps.env`) to `.gmaps.env`, so `.gmaps.env`
-might already exist — just fill/replace it.
-
-Due to Google Maps APIs restriction capabilities (see [apigw README](../apigw/README.md#google-maps-api-key)),
-no API key can be provided by default **but `compose-e2e` can be run without an API key**.
-
-⚠️ **DO NOT COMMIT `.gmaps.env` to git!** ⚠️
-
-#### Instructions for Voltti developers
-
-Generate `.gmaps.env` with:
-
-```sh
-echo "GOOGLE_API_KEY=$(aws --profile voltti-local ssm get-parameter --name /local/evaka/google/maps_backend_api_key --query 'Parameter.Value' --with-decryption --output text)" > .gmaps.env
-```
-
 ## Starting all sub-projects in development mode
 
 A configuration file for PM2 is provided in this repository. Thus,
@@ -112,7 +93,7 @@ repositories.
 pm2 status # Shows status
 pm2 stop all # Stops all processes
 pm2 stop apigw # Stops one process (apigw)
-pm2 restart application-srv # Restarts one process (application-srv)
+pm2 restart service # Restarts one process (service)
 pm2 logs apigw # Shows logs from one process (apigw)
 pm2 delete all # Deletes all configured processes. Use this if ecosystem.config.js has changed
 pm2 flush # Clears old logs
@@ -123,7 +104,7 @@ pm2 flush # Clears old logs
 Once the development environment is correctly set up, you can access
 the frontends at following URLs:
 
-- <http://localhost:9091> – Frontend for the citizen
+- <http://localhost:9091> – Frontend for the citizen
 - <http://localhost:9093/employee> – Frontend for the employee roles
 - <http://localhost:9095/employee/mobile> – Frontend for the employee mobile frontend
 
@@ -156,9 +137,9 @@ wrapper for `docker-compose`.
 
 Access the frontends at
 
-- <http://localhost:9999/> – Frontend for the citizen
-- <http://localhost:9999/employee> – Frontend for the employee
-- <http://localhost:9999/employee/mobile> – Frontend for the employee mobile
+- <http://localhost:9999/> – Frontend for the citizen
+- <http://localhost:9999/employee> – Frontend for the employee
+- <http://localhost:9999/employee/mobile> – Frontend for the employee mobile
 
 ## KeyCloak
 
@@ -236,7 +217,3 @@ pm2 logs apigw
 
 You should be able to start all the services without any modifications
 if you have followed the instructions carefully.
-
-### GOOGLE_API_KEY must be configured to use this endpoint
-
-You must configure [a Google Maps API key](#google-maps-api-key) for `enduser-gw`.

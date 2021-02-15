@@ -22,52 +22,26 @@ import { useUser } from '../auth'
 import { Lang, langs, useLang, useTranslation } from '../localization'
 import { getLoginUri } from '~header/const'
 
-type Props = {
-  enduserBaseUrl: string
-}
-
-export default React.memo(function DesktopNav({ enduserBaseUrl }: Props) {
+export default React.memo(function DesktopNav() {
   const user = useUser()
   const t = useTranslation()
 
   return (
     <>
       <Nav>
-        <NavItem href={enduserBaseUrl} data-qa={'nav-old-map'}>
+        <StyledNavLink to="/" data-qa={'nav-map'}>
           <Icon icon={farMap} />
           {t.header.nav.map}
-        </NavItem>
-        {user && (
-          <>
-            <NavItem
-              href={`${enduserBaseUrl}/applications`}
-              data-qa={'nav-old-applications'}
-            >
-              <Icon icon={farFileAlt} />
-              {t.header.nav.applications}
-            </NavItem>
-            <NavItem
-              href={`${enduserBaseUrl}/decisions`}
-              data-qa={'nav-old-decisions'}
-            >
-              <Icon icon={farGavel} />
-              {t.header.nav.decisions}
-            </NavItem>
-          </>
-        )}
-        <StyledNavLink to="/map" data-qa={'nav-map'}>
-          <Icon icon={farMap} />
-          {t.header.nav.newMap}
         </StyledNavLink>
         {user && (
           <>
             <StyledNavLink to="/applications" data-qa={'nav-applications'}>
               <Icon icon={farFileAlt} />
-              {t.header.nav.newApplications}
+              {t.header.nav.applications}
             </StyledNavLink>
             <StyledNavLink to="/decisions" data-qa={'nav-decisions'}>
               <Icon icon={farGavel} />
-              {t.header.nav.newDecisions}
+              {t.header.nav.decisions}
             </StyledNavLink>
           </>
         )}

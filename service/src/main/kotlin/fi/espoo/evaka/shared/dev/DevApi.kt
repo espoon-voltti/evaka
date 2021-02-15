@@ -5,14 +5,11 @@
 package fi.espoo.evaka.shared.dev
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.kotlin.treeToValue
 import fi.espoo.evaka.application.ApplicationDetails
 import fi.espoo.evaka.application.ApplicationOrigin
 import fi.espoo.evaka.application.ApplicationStateService
 import fi.espoo.evaka.application.ApplicationStatus
 import fi.espoo.evaka.application.DaycarePlacementPlan
-import fi.espoo.evaka.application.enduser.daycare.EnduserDaycareFormJSON
-import fi.espoo.evaka.application.enduser.objectMapper
 import fi.espoo.evaka.application.fetchApplicationDetails
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
 import fi.espoo.evaka.assistanceaction.AssistanceActionType
@@ -482,7 +479,7 @@ RETURNING id
         return ResponseEntity.noContent().build()
     }
 
-    @PostMapping("/applications")
+/*    @PostMapping("/applications")
     fun createApplications(db: Database, @RequestBody applications: List<ApplicationWithForm>): ResponseEntity<List<UUID>> {
         val uuids =
             db.transaction { tx ->
@@ -502,7 +499,7 @@ RETURNING id
                 }
             }
         return ResponseEntity.ok(uuids)
-    }
+    }*/
 
     @PostMapping("/placement-plan/{application-id}")
     fun createPlacementPlan(
@@ -699,10 +696,6 @@ fun ensureFakeAdminExists(h: Handle) {
         """.trimIndent()
 
     h.createUpdate(sql).bind("id", fakeAdmin.id).execute()
-}
-
-fun deserializeApplicationForm(jsonString: String): DaycareFormV0 {
-    return objectMapper().treeToValue<EnduserDaycareFormJSON>(objectMapper().readTree(jsonString))!!.deserialize()
 }
 
 fun Handle.clearDatabase() = listOf(

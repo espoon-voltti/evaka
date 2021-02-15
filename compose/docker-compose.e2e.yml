@@ -26,11 +26,8 @@ services:
       - redis
     volumes:
       - ../apigw/config/test-cert:/home/evaka/test-cert
-    # NOTE: .gmaps.env should never be in git as the Google API key is a secret,
-    # so it is generated in compose-e2e.
     env_file:
       - .env
-      - .gmaps.env
     environment:
       VOLTTI_ENV: local
       NODE_ENV: local
@@ -43,8 +40,6 @@ services:
       JWT_PRIVATE_KEY: /home/evaka/test-cert/jwt_private_key.pem
       ENABLE_DEV_API: "true"
       PRETTY_LOGS: "false"
-      # Configured in .gmaps.env
-      # GOOGLE_API_KEY:
 
   internal-gw:
     image: ${EVAKA_GW_IMAGE}

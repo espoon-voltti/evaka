@@ -16,7 +16,6 @@ import fi.espoo.evaka.application.ApplicationStatus.WAITING_DECISION
 import fi.espoo.evaka.application.ApplicationStatus.WAITING_MAILING
 import fi.espoo.evaka.application.ApplicationStatus.WAITING_PLACEMENT
 import fi.espoo.evaka.application.ApplicationStatus.WAITING_UNIT_CONFIRMATION
-import fi.espoo.evaka.application.persistence.DatabaseForm
 import fi.espoo.evaka.daycare.controllers.AdditionalInformation
 import fi.espoo.evaka.daycare.controllers.Child
 import fi.espoo.evaka.daycare.domain.ProviderType
@@ -406,30 +405,6 @@ class ApplicationStateService(
     }
 
     // CONTENT UPDATE
-
-    fun updateOwnApplicationContentsEnduser(tx: Database.Transaction, user: AuthenticatedUser, applicationId: UUID, formV0: DatabaseForm): ApplicationDetails {
-        val original = fetchApplicationDetails(tx.handle, applicationId)
-            ?.takeIf { it.guardianId == user.id }
-            ?: throw NotFound("Application $applicationId of guardian ${user.id} not found")
-
-        val updatedForm = ApplicationForm.fromV0(formV0, original.childRestricted, original.guardianRestricted)
-
-        if (original.status != CREATED) {
-            validateApplication(tx, original.type, updatedForm, strict = true)
-
-            if (listOf(SENT).contains(original.status)) {
-                original.form.preferences.preferredStartDate?.let { previousStartDate ->
-                    updatedForm.preferences.preferredStartDate?.let { newStartDate ->
-                        if (previousStartDate.isAfter(newStartDate))
-                            throw BadRequest("Moving start date $previousStartDate earlier to $newStartDate is not allowed")
-                    }
-                }
-            }
-        }
-
-        tx.updateApplicationContents(original, updatedForm)
-        return getApplication(tx, applicationId)
-    }
 
     fun updateOwnApplicationContentsCitizen(tx: Database.Transaction, user: AuthenticatedUser, applicationId: UUID, update: ApplicationFormUpdate, asDraft: Boolean = false): ApplicationDetails {
         val original = fetchApplicationDetails(tx.handle, applicationId)

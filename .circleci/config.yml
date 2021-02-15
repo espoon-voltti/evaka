@@ -93,7 +93,6 @@ aliases:
     save_cache:
       key: node-modules-frontend-v3-{{ checksum "frontend/yarn.lock" }}
       paths:
-        - frontend/packages/enduser-frontend/node_modules
         - frontend/packages/citizen-frontend/node_modules
         - frontend/packages/employee-frontend/node_modules
         - frontend/packages/employee-mobile-frontend/node_modules
@@ -299,10 +298,6 @@ commands:
       - run:
           name: Configure AWS CLI
           command: replace-credentials
-      - deploy_to_s3:
-          target_env: << parameters.target_env >>
-          from: frontend/packages/enduser-frontend
-          to: application
       - deploy_to_s3:
           target_env: << parameters.target_env >>
           from: frontend/packages/citizen-frontend
@@ -610,8 +605,6 @@ jobs:
       - build_frontend:
           dir: /home/circleci/repo/frontend/packages/employee-mobile-frontend
       - build_frontend:
-          dir: /home/circleci/repo/frontend/packages/enduser-frontend
-      - build_frontend:
           dir: /home/circleci/repo/frontend/packages/citizen-frontend
       - build_frontend:
           dir: /home/circleci/repo/frontend/packages/maintenance-page
@@ -619,7 +612,6 @@ jobs:
       - persist_to_workspace:
           root: *workspace_root
           paths:
-            - frontend/packages/enduser-frontend/dist
             - frontend/packages/citizen-frontend/dist
             - frontend/packages/employee-frontend/dist
             - frontend/packages/employee-mobile-frontend/dist
@@ -638,8 +630,6 @@ jobs:
           path: /home/circleci/repo/frontend/packages/lib-common/test-results
       - store_test_results:
           path: /home/circleci/repo/frontend/packages/employee-frontend/test-results
-      - store_test_results:
-          path: /home/circleci/repo/frontend/packages/enduser-frontend/test-results
       - notify_slack
 
   # E2E JOBS

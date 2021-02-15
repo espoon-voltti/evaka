@@ -21,14 +21,14 @@ import requireAuth from '~auth/requireAuth'
 
 export default function App() {
   return (
-    <BrowserRouter basename="/citizen">
+    <BrowserRouter basename="/">
       <Authentication>
         <Localization>
           <OverlayContextProvider>
             <Header />
             <main>
               <Switch>
-                <Route exact path="/map" component={MapView} />
+                <Route exact path="/" component={MapView} />
                 <Route
                   exact
                   path="/applications"
@@ -59,7 +59,7 @@ export default function App() {
                   path="/decisions/by-application/:applicationId"
                   component={requireAuth(DecisionResponseList)}
                 />
-                <Route path="/" component={RedirectToEnduser} />
+                <Route path="/" component={RedirectToMap} />
               </Switch>
             </main>
             <GlobalInfoDialog />
@@ -71,8 +71,8 @@ export default function App() {
   )
 }
 
-function RedirectToEnduser() {
+function RedirectToMap() {
   window.location.href =
-    window.location.host === 'localhost:9094' ? 'http://localhost:9091' : '/'
+    window.location.host === 'localhost:9094' ? 'http://localhost:9094' : '/'
   return null
 }

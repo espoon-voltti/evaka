@@ -4,7 +4,6 @@
 
 package fi.espoo.evaka.application
 
-import fi.espoo.evaka.application.enduser.daycare.OtherGuardianAgreementStatus
 import fi.espoo.evaka.application.persistence.DatabaseForm
 import fi.espoo.evaka.application.persistence.club.ClubFormV0
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
@@ -348,6 +347,12 @@ data class SecondGuardian(
     val email: String,
     val agreementStatus: OtherGuardianAgreementStatus?
 )
+
+enum class OtherGuardianAgreementStatus {
+    AGREED,
+    NOT_AGREED,
+    RIGHT_TO_GET_NOTIFIED
+}
 
 data class PersonBasics(
     val firstName: String,

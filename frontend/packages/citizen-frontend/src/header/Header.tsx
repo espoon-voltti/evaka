@@ -9,7 +9,7 @@ import { desktopMin } from '@evaka/lib-components/src/breakpoints'
 import Logo from './Logo'
 import DesktopNav from './DesktopNav'
 import MobileNav from './MobileNav'
-import { enduserBaseUrl, headerHeight } from '~header/const'
+import { headerHeight } from '~header/const'
 
 export default React.memo(function Header() {
   const [showMenu, setShowMenu] = useState(false)
@@ -18,14 +18,10 @@ export default React.memo(function Header() {
     <HeaderContainer fixed={showMenu}>
       <Logo />
       <DesktopNavContainer>
-        <DesktopNav enduserBaseUrl={enduserBaseUrl} />
+        <DesktopNav />
       </DesktopNavContainer>
       <MobileNavContainer>
-        <MobileNav
-          enduserBaseUrl={enduserBaseUrl}
-          showMenu={showMenu}
-          setShowMenu={setShowMenu}
-        />
+        <MobileNav showMenu={showMenu} setShowMenu={setShowMenu} />
       </MobileNavContainer>
     </HeaderContainer>
   )

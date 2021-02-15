@@ -44,10 +44,7 @@ export default {
     nav: {
       map: 'Kartta',
       applications: 'Hakemukset',
-      decisions: 'Päätökset',
-      newMap: 'Uusi kartta',
-      newDecisions: 'Uusi Päätökset',
-      newApplications: 'Uusi Hakemukset'
+      decisions: 'Päätökset'
     },
     lang: {
       fi: 'Suomeksi',

@@ -6,9 +6,9 @@ package fi.espoo.evaka.shared.dev
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import fi.espoo.evaka.application.ApplicationStatus
-import fi.espoo.evaka.application.enduser.objectMapper
 import fi.espoo.evaka.application.persistence.club.ClubFormV0
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
+import fi.espoo.evaka.application.persistence.objectMapper
 import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.daycare.service.CareType
 import fi.espoo.evaka.decision.DecisionStatus

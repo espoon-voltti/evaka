@@ -34,7 +34,7 @@ describe('CSRF middleware and cookie handling in enduser-gw', () => {
 
   it('should fail a POST to a proxied API when there is no CSRF token', async () => {
     const res = await tester.client.post(
-      '/api/application/enduser/v2/applications',
+      '/api/application/citizen/applications',
       undefined,
       {
         validateStatus: () => true
@@ -43,19 +43,17 @@ describe('CSRF middleware and cookie handling in enduser-gw', () => {
     expect(res.status).toBe(403)
   })
   it('should pass GET to a proxied API when there is no CSRF token', async () => {
-    tester.nockScope.get('/enduser/v2/applications').reply(200)
-    const res = await tester.client.get(
-      '/api/application/enduser/v2/applications'
-    )
+    tester.nockScope.get('/citizen/applications').reply(200)
+    const res = await tester.client.get('/api/application/citizen/applications')
     tester.nockScope.done()
     expect(res.status).toBe(200)
   })
   it('should pass a POST to a proxied API after CSRF token has been set up by the auth/status endpoint', async () => {
     await setupCsrfToken()
 
-    tester.nockScope.post('/enduser/v2/applications').reply(200)
+    tester.nockScope.post('/citizen/applications').reply(200)
     const res = await tester.client.post(
-      '/api/application/enduser/v2/applications'
+      '/api/application/citizen/applications'
     )
     tester.nockScope.done()
     expect(res.status).toBe(200)
@@ -65,7 +63,7 @@ describe('CSRF middleware and cookie handling in enduser-gw', () => {
     await tester.expireSession()
 
     const res = await tester.client.post(
-      '/api/application/enduser/v2/applications',
+      '/api/application/citizen/applications',
       undefined,
       {
         validateStatus: () => true
