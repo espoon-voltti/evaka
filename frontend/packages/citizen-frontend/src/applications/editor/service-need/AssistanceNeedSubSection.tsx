@@ -6,18 +6,16 @@ import React from 'react'
 import Checkbox from '@evaka/lib-components/src/atoms/form/Checkbox'
 import { useTranslation } from '~localization'
 import { H3 } from '@evaka/lib-components/src/typography'
-import InputField from '@evaka/lib-components/src/atoms/form/InputField'
+import { TextArea } from '@evaka/lib-components/src/atoms/form/InputField'
 import { Gap } from '@evaka/lib-components/src/white-space'
-import { errorToInputInfo } from '~form-validation'
 import { ServiceNeedSectionProps } from '~applications/editor/service-need/ServiceNeedSection'
 import ExpandingInfo from '@evaka/lib-components/src/molecules/ExpandingInfo'
+import styled from 'styled-components'
 
 export default React.memo(function AssistanceNeedSubSection({
   type,
   formData,
-  updateFormData,
-  errors,
-  verificationRequested
+  updateFormData
 }: ServiceNeedSectionProps) {
   const t = useTranslation()
 
@@ -68,24 +66,22 @@ export default React.memo(function AssistanceNeedSubSection({
         <>
           <Gap size={'s'} />
 
-          <InputField
+          <NarrowTextArea
             value={formData.assistanceDescription}
-            dataQa={'assistanceDescription-input'}
-            onChange={(value) =>
-              updateFormData({ assistanceDescription: value })
+            data-qa={'assistanceDescription-input'}
+            onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+              updateFormData({ assistanceDescription: e.target.value })
             }
             placeholder={
               t.applications.editor.serviceNeed.assistanceNeedPlaceholder
             }
-            info={errorToInputInfo(
-              errors.assistanceDescription,
-              t.validationErrors
-            )}
-            hideErrorsBeforeTouched={!verificationRequested}
-            width="XL"
           />
         </>
       )}
     </>
   )
 })
+
+const NarrowTextArea = styled(TextArea)`
+  max-width: 720px;
+`
