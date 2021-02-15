@@ -9,6 +9,8 @@ import { useHistory } from 'react-router-dom'
 import { faAngleLeft } from '@evaka/lib-icons'
 import InlineButton from './InlineButton'
 import colors from '../../colors'
+import { tabletMin } from '../../breakpoints'
+import { defaultMargins } from '../../white-space'
 
 export const ReturnButtonWrapper = styled.div`
   margin-top: 32px;
@@ -19,6 +21,10 @@ export const ReturnButtonWrapper = styled.div`
     padding-left: 0;
     margin-left: 0;
     justify-content: flex-start;
+  }
+
+  @media (max-width: ${tabletMin}) {
+    margin-left: ${defaultMargins.m};
   }
 
   @media print {
