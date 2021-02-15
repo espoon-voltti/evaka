@@ -22,8 +22,9 @@ type AutocompleteResponse = {
     }
     properties: {
       name: string
-      postalcode: string
-      locality: string
+      postalcode?: string
+      locality?: string
+      localadmin?: string
     }
   }[]
 }
@@ -52,8 +53,9 @@ export const queryAutocomplete = async (
           lat: feature.geometry.coordinates[1]
         },
         streetAddress: feature.properties.name,
-        postalCode: feature.properties.postalcode,
-        postOffice: feature.properties.locality
+        postalCode: feature.properties.postalcode ?? '',
+        postOffice:
+          feature.properties.locality ?? feature.properties.localadmin ?? ''
       }))
     )
     .then((options) => Success.of(options))
