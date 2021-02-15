@@ -4,7 +4,7 @@
 
 import { Decision } from '~decisions/types'
 import React, { useContext, useState } from 'react'
-import { useTranslation } from '~localization'
+import { useLang, useTranslation } from '~localization'
 import LocalDate from '@evaka/lib-common/src/local-date'
 import { OverlayContext } from '~overlay/state'
 import { H2, H3, Label, P } from '@evaka/lib-components/src/typography'
@@ -23,7 +23,8 @@ import { PdfLink } from '~decisions/PdfLink'
 import { Status, decisionStatusIcon } from '~decisions/shared'
 import { AsyncFormModal } from '@evaka/lib-components/src/molecules/modals/FormModal'
 import { faExclamation } from '@evaka/lib-icons'
-import { DatePickerDeprecated } from '@evaka/lib-components/src/molecules/DatePickerDeprecated'
+import DatePicker from '@evaka/lib-components/src/molecules/date-picker/DatePicker'
+import { isValidDecisionStartDate } from '~applications/editor/validations'
 
 interface SingleDecisionProps {
   decision: Decision
@@ -41,6 +42,7 @@ export default React.memo(function DecisionResponse({
   handleReturnToPreviousPage
 }: SingleDecisionProps) {
   const t = useTranslation()
+  const [lang] = useLang()
   const {
     id: decisionId,
     applicationId,
@@ -134,16 +136,15 @@ export default React.memo(function DecisionResponse({
                 disabled={blocked || submitting}
                 dataQa={'radio-accept'}
               />
-              <DatePickerDeprecated
-                date={requestedStartDate}
-                onChange={setRequestedStartDate}
-                type="short"
-                minDate={startDate}
-                maxDate={
-                  ['PRESCHOOL', 'PREPARATORY_EDUCATION'].includes(decisionType)
-                    ? startDate
-                    : startDate.addDays(14)
+              <DatePicker
+                date={requestedStartDate.format()}
+                onChange={(date: string) =>
+                  setRequestedStartDate(LocalDate.parseFi(date))
                 }
+                isValidDate={(date: LocalDate) =>
+                  isValidDecisionStartDate(date, startDate, decisionType)
+                }
+                locale={lang}
               />
               <div>{t.decisions.applicationDecisions.response.accept2}</div>
             </FixedSpaceRow>
