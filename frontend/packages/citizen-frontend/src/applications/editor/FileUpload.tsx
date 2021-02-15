@@ -54,7 +54,6 @@ const FileInputLabel = styled.label`
   border-radius: 8px;
   width: min(500px, 70vw);
   padding: 24px;
-  text-align: center;
 
   & input {
     display: none;
@@ -139,6 +138,7 @@ const FileDownloadButton = styled.button`
   background: none;
   color: ${colors.blues.primary};
   cursor: pointer;
+  text-align: left;
   font-size: 15px;
 `
 
@@ -147,6 +147,7 @@ const FileDeleteButton = styled(IconButton)`
   background: none;
   padding: 4px;
   margin-left: 12px;
+  min-width: 32px;
   color: ${colors.greyscale.medium};
 
   &:hover {
