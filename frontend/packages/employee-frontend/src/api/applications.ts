@@ -24,6 +24,7 @@ import {
 import FiniteDateRange from '@evaka/lib-common/src/finite-date-range'
 import {
   ApplicationDetails,
+  AttachmentPreDownloadResponse,
   deserializeApplicationDetails
 } from '@evaka/lib-common/src/api-types/application/ApplicationDetails'
 import { ApplicationType } from '@evaka/lib-common/src/api-types/application/enums'
@@ -333,4 +334,25 @@ export async function updateNote(id: UUID, text: string): Promise<void> {
 
 export async function deleteNote(id: UUID): Promise<void> {
   return client.delete(`/note/${id}`)
+}
+
+export async function getFileAvailability(
+  fileId: UUID
+): Promise<Result<AttachmentPreDownloadResponse>> {
+  return client({
+    url: `/attachments/${fileId}/pre-download`,
+    method: 'GET'
+  })
+    .then((result) => Success.of(result.data))
+    .catch((e) => Failure.fromError(e))
+}
+
+export async function getFileBlob(fileId: UUID): Promise<Result<BlobPart>> {
+  return client({
+    url: `/attachments/${fileId}/download`,
+    method: 'GET',
+    responseType: 'blob'
+  })
+    .then((result) => Success.of(result.data))
+    .catch((e) => Failure.fromError(e))
 }
