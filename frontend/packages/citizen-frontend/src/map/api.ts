@@ -80,6 +80,9 @@ export const queryDistances = async (
   startLocation: Coordinate,
   endLocations: UnitWithStraightDistance[]
 ): Promise<Result<UnitWithDistance[]>> => {
+  if (endLocations.length === 0) {
+    return Success.of([])
+  }
   const unitsToQuery = _.sortBy(
     endLocations.filter((u) => u.straightDistance !== null),
     (u) => u.straightDistance
