@@ -6,26 +6,29 @@ import React from 'react'
 import styled from 'styled-components'
 
 import { Result } from '@evaka/lib-common/src/api'
+import { downloadBlobAsFile } from '@evaka/lib-common/src/utils/file'
 import {
   AttachmentPreDownloadResponse,
   FileObject
 } from '@evaka/lib-common/src/api-types/application/ApplicationDetails'
 import { espooBrandColors } from '@evaka/lib-components/src/colors'
+import { UUID } from '@evaka/lib-common/src/types'
 
 const DownloadButton = styled.button`
   border: none;
+  text-align: start;
+  padding: 0;
   background: none;
   color: ${espooBrandColors.espooTurquoise};
   text-decoration: none;
   cursor: pointer;
-  font-size: 15px;
 `
 
 interface Props {
   file: FileObject
-  fileFetchFn: (file: FileObject) => Promise<Result<BlobPart>>
+  fileFetchFn: (fileId: UUID) => Promise<Result<BlobPart>>
   fileAvailableFn: (
-    file: FileObject
+    fileId: UUID
   ) => Promise<Result<AttachmentPreDownloadResponse>>
   onFileUnavailable: () => void
 }
@@ -41,22 +44,14 @@ export default React.memo(function FileDownloadButton({
   onFileUnavailable
 }: Props) {
   const deliverBlob = async (file: FileObject) => {
-    const result = await fileFetchFn(file)
+    const result = await fileFetchFn(file.id)
     if (result.isSuccess) {
-      const url = URL.createObjectURL(new Blob([result.value]))
-      const link = document.createElement('a')
-      link.href = url
-      link.target = '_blank'
-      link.setAttribute('download', `${file.name}`)
-      link.rel = 'noreferrer'
-      document.body.appendChild(link)
-      link.click()
-      link.remove()
+      downloadBlobAsFile(file.name, result.value)
     }
   }
 
   const getFileIfAvailable = async (file: FileObject) => {
-    const result = await fileAvailableFn(file)
+    const result = await fileAvailableFn(file.id)
     if (result.isFailure) throw new Error(result.message)
     if (result.isLoading)
       throw new Error('Unexpected return before request completion')

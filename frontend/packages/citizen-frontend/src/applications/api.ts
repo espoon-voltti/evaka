@@ -9,8 +9,7 @@ import {
   ApplicationDetails,
   ApplicationFormUpdate,
   AttachmentPreDownloadResponse,
-  deserializeApplicationDetails,
-  FileObject
+  deserializeApplicationDetails
 } from '@evaka/lib-common/src/api-types/application/ApplicationDetails'
 import {
   ApplicationsOfChild,
@@ -191,11 +190,11 @@ export async function deleteAttachment(id: UUID): Promise<Result<void>> {
 }
 
 export async function getFileAvailability(
-  file: FileObject
+  fileId: UUID
 ): Promise<Result<AttachmentPreDownloadResponse>> {
   try {
     const result = await client({
-      url: `/attachments/${file.id}/pre-download`,
+      url: `/attachments/${fileId}/pre-download`,
       method: 'GET'
     })
     return Success.of(result.data)
@@ -204,10 +203,10 @@ export async function getFileAvailability(
   }
 }
 
-export async function getFileBlob(file: FileObject): Promise<Result<BlobPart>> {
+export async function getFileBlob(fileId: UUID): Promise<Result<BlobPart>> {
   try {
     const result = await client({
-      url: `/attachments/${file.id}/download`,
+      url: `/attachments/${fileId}/download`,
       method: 'GET',
       responseType: 'blob'
     })

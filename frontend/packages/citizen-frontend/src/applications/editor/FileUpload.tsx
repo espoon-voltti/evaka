@@ -23,6 +23,7 @@ import {
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { UUID } from '@evaka/lib-common/src/types'
 import { Result } from '@evaka/lib-common/src/api'
+import { attachmentToFile } from '@evaka/lib-common/src/utils/file'
 import {
   ApplicationAttachment,
   FileObject
@@ -187,20 +188,6 @@ const fileIcon = (file: FileObject): IconDefinition => {
 
 const inProgress = (file: FileObject): boolean => file.progress !== 100
 
-export const attachmentToFile = (
-  attachment: ApplicationAttachment
-): FileObject => {
-  return {
-    id: attachment.id,
-    file: undefined,
-    key: Math.random(),
-    name: attachment.name,
-    contentType: attachment.contentType,
-    progress: 100,
-    error: undefined
-  }
-}
-
 export default React.memo(function FileUpload({
   files,
   onUpload,
@@ -345,7 +332,7 @@ export default React.memo(function FileUpload({
             <FileIcon icon={fileIcon(file)} />
             <FileDetails>
               <FileHeader>
-                {!file.error ? (
+                {!inProgress(file) && !file.error ? (
                   <FileDownloadButton
                     file={file}
                     fileAvailableFn={getFileAvailability}
