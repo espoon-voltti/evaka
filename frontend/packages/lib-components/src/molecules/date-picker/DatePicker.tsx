@@ -113,6 +113,7 @@ function DatePicker({
         data-qa={props['data-qa']}
         id={id}
         required={required}
+        locale={locale}
       />
       <DayPickerPositioner show={show}>
         <DayPickerDiv>
