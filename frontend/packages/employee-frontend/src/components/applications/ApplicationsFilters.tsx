@@ -78,15 +78,14 @@ export default React.memo(function ApplicationFilters() {
   }, [])
 
   useEffect(() => {
-    void getUnits(area, type).then(setAllUnits)
-  }, [area])
-
-  useEffect(() => {
-    const areas = availableAreas
-      .map((areas) => areas.map(({ shortName }) => shortName))
-      .getOrElse([])
+    const areas =
+      area.length > 0
+        ? area
+        : availableAreas
+            .map((areas) => areas.map(({ shortName }) => shortName))
+            .getOrElse([])
     void getUnits(areas, type).then(setAllUnits)
-  }, [type, availableAreas])
+  }, [type, availableAreas, area])
 
   useEffect(() => {
     if (units.length === 0 && distinctions.includes('SECONDARY')) {
