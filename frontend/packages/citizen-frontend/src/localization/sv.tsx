@@ -146,7 +146,7 @@ const sv: Translations = {
           'Barnet har redan en förskoleplats. Med denna ansökan kan du ansöka om <strong>småbarnspedagogik i anslutning till förskoleundervisningen</strong> eller om flyttning till en annan enhet som erbjuder förskoleundervisning.'
       },
       create: 'Ny ansökan',
-      daycare4monthWarning: 'Behandlingstiden för ansökningen är 4 månader.'
+      daycare4monthWarning: 'Behandlingstiden för ansökningen är 4 månader.',
       applicationInfo: function ApplicationInfoText() {
         return (
           <P>
@@ -158,8 +158,7 @@ const sv: Translations = {
             <a href="mailto:dagis@esbo.fi">dagis@esbo.fi</a>.
           </P>
         )
-      },
-      create: 'Ny ansökan'
+      }
     },
     editor: {
       heading: {
