@@ -77,12 +77,14 @@ export const isValidPreferredStartDate = (
 
 export const isValidDecisionStartDate = (
   date: LocalDate,
-  startDate: LocalDate,
+  startDate: string,
   type: DecisionType
 ): boolean => {
   return date !== null
-    ? date.isEqualOrAfter(startDate) &&
-        date.isEqualOrBefore(maxDecisionStartDate(startDate, type))
+    ? date.isEqualOrAfter(LocalDate.parseFi(startDate)) &&
+        date.isEqualOrBefore(
+          maxDecisionStartDate(LocalDate.parseFi(startDate), type)
+        )
     : false
 }
 
