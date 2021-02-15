@@ -28,10 +28,10 @@ test('Citizen can change the UI language', async (t) => {
   await t.click(citizenHomePage.nav.decisions)
   await citizenHomePage.selectLanguage('fi')
   await t
-    .expect(citizenHomePage.nav.oldApplications.textContent)
+    .expect(citizenHomePage.nav.applications.textContent)
     .contains('Hakemukset')
   await citizenHomePage.selectLanguage('en')
   await t
-    .expect(citizenHomePage.nav.oldApplications.textContent)
+    .expect(citizenHomePage.nav.applications.textContent)
     .contains('Applications')
 })
