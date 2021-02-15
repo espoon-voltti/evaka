@@ -6,8 +6,10 @@ import React, { useContext, useEffect } from 'react'
 import styled from 'styled-components'
 import * as _ from 'lodash'
 import { Link } from 'react-router-dom'
+import LocalDate from '@evaka/lib-common/src/local-date'
 import { SearchColumn, UnitsContext, UnitsState } from '~state/units'
 import Button from '@evaka/lib-components/src/atoms/buttons/Button'
+import Checkbox from '@evaka/lib-components/src/atoms/form/Checkbox'
 import InputField from '@evaka/lib-components/src/atoms/form/InputField'
 import {
   Container,
@@ -32,7 +34,7 @@ import Loader from '@evaka/lib-components/src/atoms/Loader'
 const TopBar = styled.div`
   display: flex;
   justify-content: space-between;
-  align-items: baseline;
+  align-items: flex-start;
 
   .buttons {
     flex: 0 0 auto;
@@ -49,7 +51,9 @@ function Units() {
     sortColumn,
     setSortColumn,
     sortDirection,
-    setSortDirection
+    setSortDirection,
+    includeClosed,
+    setIncludeClosed
   } = useContext<UnitsState>(UnitsContext)
 
   const sortBy = (column: SearchColumn) => {
@@ -71,6 +75,10 @@ function Units() {
         _.orderBy(us, [sortColumn], [sortDirection === 'ASC' ? 'asc' : 'desc'])
           .filter((unit: Unit) =>
             unit.name.toLowerCase().includes(filter.toLowerCase())
+          )
+          .filter(
+            (unit: Unit) =>
+              includeClosed || !unit.closingDate?.isBefore(LocalDate.today())
           )
           .map((unit: Unit) => {
             return (
@@ -103,16 +111,27 @@ function Units() {
       <ContentArea opaque>
         <Gap size={'XXL'} />
         <TopBar>
-          <InputField
-            dataQa="unit-name-filter"
-            value={filter}
-            placeholder={i18n.units.findByName}
-            onChange={(value) => {
-              setFilter(value)
-            }}
-            icon={faSearch}
-            width={'L'}
-          />
+          <div>
+            <InputField
+              dataQa="unit-name-filter"
+              value={filter}
+              placeholder={i18n.units.findByName}
+              onChange={(value) => {
+                setFilter(value)
+              }}
+              icon={faSearch}
+              width={'L'}
+            />
+            <Gap size="s" />
+            <Checkbox
+              label={i18n.units.includeClosed}
+              checked={includeClosed}
+              onChange={() =>
+                setIncludeClosed((previousState) => !previousState)
+              }
+              dataQa="include-closed"
+            />
+          </div>
           <RequireRole oneOf={['ADMIN']}>
             <div>
               <Button
@@ -126,46 +145,42 @@ function Units() {
             </div>
           </RequireRole>
         </TopBar>
-        <Gap size={'XXL'} />
-        <>
-          <div className="table-of-units">
-            <Table data-qa="table-of-units">
-              <Thead>
-                <Tr>
-                  <SortableTh
-                    sorted={sortColumn === 'name' ? sortDirection : undefined}
-                    onClick={() => sortBy('name')}
-                  >
-                    {i18n.units.name}
-                  </SortableTh>
-                  <SortableTh
-                    sorted={
-                      sortColumn === 'area.name' ? sortDirection : undefined
-                    }
-                    onClick={() => sortBy('area.name')}
-                  >
-                    {i18n.units.area}
-                  </SortableTh>
-                  <SortableTh
-                    sorted={
-                      sortColumn === 'address' ? sortDirection : undefined
-                    }
-                    onClick={() => sortBy('address')}
-                  >
-                    {i18n.units.address}
-                  </SortableTh>
-                  <SortableTh
-                    sorted={sortColumn === 'type' ? sortDirection : undefined}
-                    onClick={() => sortBy('type')}
-                  >
-                    {i18n.units.type}
-                  </SortableTh>
-                </Tr>
-              </Thead>
-              <Tbody>{renderUnits()}</Tbody>
-            </Table>
-          </div>
-        </>
+        <Gap size="L" />
+        <div className="table-of-units">
+          <Table data-qa="table-of-units">
+            <Thead>
+              <Tr>
+                <SortableTh
+                  sorted={sortColumn === 'name' ? sortDirection : undefined}
+                  onClick={() => sortBy('name')}
+                >
+                  {i18n.units.name}
+                </SortableTh>
+                <SortableTh
+                  sorted={
+                    sortColumn === 'area.name' ? sortDirection : undefined
+                  }
+                  onClick={() => sortBy('area.name')}
+                >
+                  {i18n.units.area}
+                </SortableTh>
+                <SortableTh
+                  sorted={sortColumn === 'address' ? sortDirection : undefined}
+                  onClick={() => sortBy('address')}
+                >
+                  {i18n.units.address}
+                </SortableTh>
+                <SortableTh
+                  sorted={sortColumn === 'type' ? sortDirection : undefined}
+                  onClick={() => sortBy('type')}
+                >
+                  {i18n.units.type}
+                </SortableTh>
+              </Tr>
+            </Thead>
+            <Tbody>{renderUnits()}</Tbody>
+          </Table>
+        </div>
         {units.isLoading && <Loader />}
         {units.isFailure && <div>{i18n.common.loadingFailed}</div>}
         <Gap size={'XXL'} />

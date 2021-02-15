@@ -17,7 +17,8 @@ import {
 } from '../../dev-api/data-init'
 import {
   createDaycarePlacementFixture,
-  daycareGroupFixture
+  daycareGroupFixture,
+  Fixture
 } from '../../dev-api/fixtures'
 import { logConsoleMessages } from '../../utils/fixture'
 import { Child, DaycarePlacement } from '../../dev-api/types'
@@ -218,4 +219,25 @@ test('Unit occupancy rates are correct with properly set caretaker counts', asyn
   await t
     .expect(unitPage.occupancies('planned').minimum.textContent)
     .contains('14,3 %')
+})
+
+test('Units list hides closed units unless toggled to show', async (t) => {
+  const area = await Fixture.careArea().save()
+  const closedUnit = await Fixture.daycare()
+    .careArea(area)
+    .with({
+      name: 'Wanha päiväkoti',
+      openingDate: '1900-01-01',
+      closingDate: '2000-01-01'
+    })
+    .save()
+  await t.eval(() => location.reload())
+
+  await unitsPage.filterByName(closedUnit.data.name)
+  await unitsPage.showClosedUnits(false)
+  await t.expect(unitsPage.unitRows.count).eql(0)
+
+  await unitsPage.showClosedUnits(true)
+  await t.expect(unitsPage.unitRows.count).eql(1)
+  await t.expect(unitsPage.unitRows.textContent).contains(closedUnit.data.name)
 })

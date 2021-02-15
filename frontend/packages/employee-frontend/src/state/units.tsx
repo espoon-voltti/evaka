@@ -2,7 +2,13 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { createContext, useMemo, useState } from 'react'
+import React, {
+  createContext,
+  Dispatch,
+  SetStateAction,
+  useMemo,
+  useState
+} from 'react'
 import { Loading, Result } from '@evaka/lib-common/src/api'
 import { Unit } from '~types/unit'
 import { SearchOrder } from '~types'
@@ -16,6 +22,8 @@ export interface UnitsState {
   setSortColumn: (text: string) => void
   sortDirection: SearchOrder
   setSortDirection: (text: SearchOrder) => void
+  includeClosed: boolean
+  setIncludeClosed: Dispatch<SetStateAction<boolean>>
 }
 
 const defaultState: UnitsState = {
@@ -26,7 +34,9 @@ const defaultState: UnitsState = {
   sortColumn: 'name',
   setSortColumn: () => undefined,
   sortDirection: 'ASC',
-  setSortDirection: () => undefined
+  setSortDirection: () => undefined,
+  includeClosed: false,
+  setIncludeClosed: () => undefined
 }
 
 export const UnitsContext = createContext<UnitsState>(defaultState)
@@ -44,6 +54,7 @@ export const UnitsContextProvider = React.memo(function UnitsContextProvider({
   const [sortDirection, setSortDirection] = useState<SearchOrder>(
     defaultState.sortDirection
   )
+  const [includeClosed, setIncludeClosed] = useState(defaultState.includeClosed)
 
   const value = useMemo(
     () => ({
@@ -54,7 +65,9 @@ export const UnitsContextProvider = React.memo(function UnitsContextProvider({
       sortColumn,
       setSortColumn,
       sortDirection,
-      setSortDirection
+      setSortDirection,
+      includeClosed,
+      setIncludeClosed
     }),
     [
       units,
@@ -64,7 +77,9 @@ export const UnitsContextProvider = React.memo(function UnitsContextProvider({
       sortColumn,
       setSortColumn,
       sortDirection,
-      setSortDirection
+      setSortDirection,
+      includeClosed,
+      setIncludeClosed
     ]
   )
 
