@@ -2,6 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import React from 'react'
+import { P } from '@evaka/lib-components/src/typography'
+
 export default {
   common: {
     title: 'Varhaiskasvatus',
@@ -134,8 +137,6 @@ export default {
       clubInfo: 'Kerhohakemuksella haetaan kunnallisiin kerhoihin.',
       duplicateWarning:
         'Lapsella on jo samantyyppinen, keskeneräinen hakemus. Palaa Hakemukset-näkymään ja muokkaa olemassa olevaa hakemusta tai ota yhteyttä palveluohjaukseen.',
-      applicationInfo:
-        'Hakemukseen voi tehdä muutoksia niin kauan kuin hakemusta ei ole otettu käsittelyyn. Tämän jälkeen muutokset hakemukseen tehdään ottamalla yhteyttä varhaiskasvatuksen palveluohjaukseen (puh. 09 816 31000). Voit perua jo tehdyn hakemuksen ilmoittamalla siitä sähköpostilla varhaiskasvatuksen palveluohjaukseen <a href="mailto:varhaiskasvatuksen.palveluohjaus@espoo.fi">varhaiskasvatuksen.palveluohjaus@espoo.fi</a>.',
       transferApplicationInfo: {
         DAYCARE:
           'Lapsella on jo paikka Espoon varhaiskasvatuksessa. Tällä hakemuksella voit hakea siirtoa toiseen varhaiskasvatusta tarjoavaan yksikköön Espoossa.',
@@ -143,7 +144,22 @@ export default {
           'Lapsella on jo esiopetuspaikka. Tällä hakemuksella voit hakea esiopetukseen liittyvää varhaiskasvatusta tai siirtoa toiseen esiopetusta tarjoavaan yksikköön.'
       },
       create: 'Tee hakemus',
-      daycare4monthWarning: 'Hakemuksen käsittelyaika on 4 kuukautta.'
+      daycare4monthWarning: 'Hakemuksen käsittelyaika on 4 kuukautta.',
+      applicationInfo: function ApplicationInfoText() {
+        return (
+          <P>
+            Hakemukseen voi tehdä muutoksia niin kauan kuin hakemusta ei ole
+            otettu käsittelyyn. Tämän jälkeen muutokset hakemukseen tehdään
+            ottamalla yhteyttä varhaiskasvatuksen palveluohjaukseen (puh. 09 816
+            31000). Voit perua jo tehdyn hakemuksen ilmoittamalla siitä
+            sähköpostilla varhaiskasvatuksen palveluohjaukseen{' '}
+            <a href="mailto:varhaiskasvatuksen.palveluohjaus@espoo.fi">
+              varhaiskasvatuksen.palveluohjaus@espoo.fi
+            </a>
+            .
+          </P>
+        )
+      }
     },
     editor: {
       heading: {
@@ -153,22 +169,87 @@ export default {
           CLUB: 'Kerhohakemus'
         },
         info: {
-          DAYCARE: [
-            'Varhaiskasvatusta voi hakea ympäri vuoden. Hakemus on jätettävä viimeistään neljä kuukautta ennen kuin tarvitsette paikan. Mikäli tarvitsette varhaiskasvatusta kiireellisesti työn tai opiskelujen vuoksi, tulee paikkaa hakea viimeistään kaksi viikkoa ennen.',
-            'Saatte kirjallisen päätöksen varhaiskasvatuspaikasta <a href="https://www.suomi.fi/viestit" target="_blank" rel="noreferrer">Suomi.fi-viestit</a> -palveluun tai postitse, mikäli et ole ottanut Suomi.fi -palvelua käyttöön.',
-            '* Tähdellä merkityt tiedot ovat pakollisia'
-          ],
-          PRESCHOOL: [
-            'Esiopetukseen osallistutaan vuosi ennen oppivelvollisuuden alkamista. Esiopetus on maksutonta. Lukuvuoden 2021–2022 esiopetukseen ilmoittaudutaan 8.–20.1.2021. Suomen ja ruotsin kielinen esiopetus alkaa 11.8.2021.',
-            'Päätökset tulevat <a href="https://www.suomi.fi/viestit" target="_blank" rel="noreferrer">Suomi.fi-viestit</a> -palveluun tai postitse, mikäli et ole ottanut Suomi.fi -palvelua käyttöön.',
-            '* Tähdellä merkityt tiedot ovat pakollisia'
-          ],
-          CLUB: [
-            'Hakuaika syksyllä käynnistyviin kerhoihin on maaliskuussa. Jos lapsenne saa kerhopaikan, saatte päätöksen siitä huhti-toukokuun aikana. Päätös tehdään yhden toimintakauden ajaksi (elokuusta toukokuun loppuun). Päätös kerhopaikasta tulee Suomi.fi-palveluun tai postitse, mikäli ette ole ottanut palvelua käyttöön.',
-            'Kerhohakemuksen voi jättää myös hakuajan ulkopuolella ja sen jälkeen, kun kerhojen toimintakausi on jo alkanut. Hakuaikana saapuneet hakemukset käsitellään kuitenkin ensin, ja hakuajan ulkopuolella tulleet hakemukset käsitellään saapumisjärjestyksessä. Kerhohakemus kohdistuu yhdelle kerhokaudelle. Kauden päättyessä hakemus poistetaan järjestelmästä.',
-            'Kerhotoiminta on maksutonta, eikä siihen osallistuminen vaikuta Kelan maksamaan kotihoidontukeen. Jos lapselle sen sijaan on myönnetty varhaiskasvatuspaikka tai yksityisen hoidon tuki, ei hänelle voida myöntää kerhopaikkaa.',
-            '* Tähdellä merkityt tiedot ovat pakollisia'
-          ]
+          DAYCARE: function EditorHeadingInfoDaycareText() {
+            return (
+              <>
+                <P>
+                  Varhaiskasvatusta voi hakea ympäri vuoden. Hakemus on
+                  jätettävä viimeistään neljä kuukautta ennen kuin tarvitsette
+                  paikan. Mikäli tarvitsette varhaiskasvatusta kiireellisesti
+                  työn tai opiskelujen vuoksi, tulee paikkaa hakea viimeistään
+                  kaksi viikkoa ennen.
+                </P>
+                <P>
+                  Saatte kirjallisen päätöksen varhaiskasvatuspaikasta{' '}
+                  <a
+                    href="https://www.suomi.fi/viestit"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Suomi.fi-viestit
+                  </a>{' '}
+                  -palveluun tai postitse, mikäli et ole ottanut Suomi.fi
+                  -palvelua käyttöön.
+                </P>
+                <P fitted={true}>* Tähdellä merkityt tiedot ovat pakollisia</P>
+              </>
+            )
+          },
+          PRESCHOOL: function EditorHeadingInfoPreschoolText() {
+            return (
+              <>
+                <P>
+                  Esiopetukseen osallistutaan vuosi ennen oppivelvollisuuden
+                  alkamista. Esiopetus on maksutonta. Lukuvuoden 2021–2022
+                  esiopetukseen ilmoittaudutaan 8.–20.1.2021. Suomen ja ruotsin
+                  kielinen esiopetus alkaa 11.8.2021.
+                </P>
+                <P>
+                  Päätökset tulevat{' '}
+                  <a
+                    href="https://www.suomi.fi/viestit"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Suomi.fi-viestit
+                  </a>{' '}
+                  -palveluun tai postitse, mikäli et ole ottanut Suomi.fi
+                  -palvelua käyttöön.
+                </P>
+                <P fitted={true}>* Tähdellä merkityt tiedot ovat pakollisia</P>
+              </>
+            )
+          },
+          CLUB: function EditorHeadingInfoClubText() {
+            return (
+              <>
+                <P>
+                  Hakuaika syksyllä käynnistyviin kerhoihin on maaliskuussa. Jos
+                  lapsenne saa kerhopaikan, saatte päätöksen siitä
+                  huhti-toukokuun aikana. Päätös tehdään yhden toimintakauden
+                  ajaksi (elokuusta toukokuun loppuun). Päätös kerhopaikasta
+                  tulee Suomi.fi-palveluun tai postitse, mikäli ette ole ottanut
+                  palvelua käyttöön.
+                </P>
+                <P>
+                  Kerhohakemuksen voi jättää myös hakuajan ulkopuolella ja sen
+                  jälkeen, kun kerhojen toimintakausi on jo alkanut. Hakuaikana
+                  saapuneet hakemukset käsitellään kuitenkin ensin, ja hakuajan
+                  ulkopuolella tulleet hakemukset käsitellään
+                  saapumisjärjestyksessä. Kerhohakemus kohdistuu yhdelle
+                  kerhokaudelle. Kauden päättyessä hakemus poistetaan
+                  järjestelmästä.
+                </P>
+                <P>
+                  Kerhotoiminta on maksutonta, eikä siihen osallistuminen
+                  vaikuta Kelan maksamaan kotihoidontukeen. Jos lapselle sen
+                  sijaan on myönnetty varhaiskasvatuspaikka tai yksityisen
+                  hoidon tuki, ei hänelle voida myöntää kerhopaikkaa.
+                </P>
+                <P fitted={true}>* Tähdellä merkityt tiedot ovat pakollisia</P>
+              </>
+            )
+          }
         },
         errors: (count: number) =>
           count === 1 ? '1 virhe' : `${count} virhettä`,
@@ -192,10 +273,24 @@ export default {
           PRESCHOOL: 'Esiopetushakemuksen tarkistaminen',
           CLUB: 'Kerhohakemuksen tarkistaminen'
         },
-        notYetSent:
-          '<strong>Hakemusta ei ole vielä lähetetty.</strong> Tarkista antamasi tiedot ja lähetä sivun lopussa olevalla Lähetä hakemus -painikkeella.',
-        notYetSaved:
-          '<strong>Muutoksia ei ole vielä tallennettu.</strong> Tarkista antamasi tiedot ja tallenna sivun lopussa olevalla Tallenna muutokset -painikkeella.',
+        notYetSent: function NotYetSentText() {
+          return (
+            <P>
+              <strong>Hakemusta ei ole vielä lähetetty.</strong> Tarkista
+              antamasi tiedot ja lähetä sivun lopussa olevalla Lähetä
+              hakemus-painikkeella.
+            </P>
+          )
+        },
+        notYetSaved: function NotYetSavedText() {
+          return (
+            <P>
+              <strong>Muutoksia ei ole vielä tallennettu.</strong> Tarkista
+              antamasi tiedot ja tallenna sivun lopussa olevalla Tallenna
+              muutokset -painikkeella.
+            </P>
+          )
+        },
         no: 'Ei',
         basics: {
           created: 'Hakemus luotu',
@@ -381,14 +476,32 @@ export default {
         urgent: {
           label: 'Hakemus on kiireellinen',
           attachmentsMessage: {
-            text:
-              'Mikäli varhaiskasvatuspaikan tarve johtuu äkillisestä työllistymisestä tai opiskelusta, tulee paikkaa hakea viimeistään <strong>kaksi viikkoa ennen</strong> kuin tarve alkaa. Hakemuksen <strong>liitteenä tulee olla työ- tai opiskelutodistus</strong> molemmilta samassa taloudessa asuvilta huoltajilta. Suosittelemme toimittamaan liitteen sähköisesti tässä, sillä kahden viikon käsittelyaika alkaa siitä, kun olemme vastaanottaneet hakemuksen tarvittavine liitteineen. Jos et voi lisätä liitteitä hakemukselle sähköisesti, lähetä ne postilla osoitteeseen Varhaiskasvatuksen palveluohjaus, PL 3125, 02070 Espoon kaupunki.',
+            text: function UrgentApplicatiionAttachmentMessageText() {
+              return (
+                <P fitted={true}>
+                  Mikäli varhaiskasvatuspaikan tarve johtuu äkillisestä
+                  työllistymisestä tai opiskelusta, tulee paikkaa hakea
+                  viimeistään <strong>kaksi viikkoa ennen</strong> kuin tarve
+                  alkaa. Hakemuksen{' '}
+                  <strong>
+                    liitteenä tulee olla työ- tai opiskelutodistus
+                  </strong>{' '}
+                  molemmilta samassa taloudessa asuvilta huoltajilta.
+                  Suosittelemme toimittamaan liitteen sähköisesti tässä, sillä
+                  kahden viikon käsittelyaika alkaa siitä, kun olemme
+                  vastaanottaneet hakemuksen tarvittavine liitteineen. Jos et
+                  voi lisätä liitteitä hakemukselle sähköisesti, lähetä ne
+                  postilla osoitteeseen Varhaiskasvatuksen palveluohjaus, PL
+                  3125, 02070 Espoon kaupunki.
+                </P>
+              )
+            },
             subtitle:
               'Lisää tähän työ- tai opiskelutodistus molemmilta vanhemmilta.'
           }
         },
         partTime: {
-          true: 'Osapäiväinen (max 5h/pv, 25h/vko)',
+          true: 'Osapäiväinen (max 5h/Pv, 25h/vko)',
           false: 'Kokopäiväinen'
         },
         dailyTime: {
@@ -396,11 +509,43 @@ export default {
             DAYCARE: 'Päivittäinen varhaiskasvatusaika',
             PRESCHOOL: 'Esiopetukseen liittyvän varhaiskasvatuksen tarve'
           },
-          connectedDaycareInfo: [
-            'Voit hakea lapselle tarvittaessa <strong>esiopetukseen liittyvää varhaiskasvatusta, joka on maksullista, ja jota annetaan esiopetuksen (4 tuntia/päivä) lisäksi</strong> aamuisin ja/tai iltapäivisin samassa paikassa kuin esiopetus. Jos haluat aloittaa varhaiskasvatuksen myöhemmin kuin esiopetus alkaa, kirjoita haluttu aloituspäivämäärä hakemuksen “Muut lisätiedot” -kohtaan.',
-            'Yksityisiin päiväkoteihin ja osaan ostopalvelupäiväkodeista on tehtävä erillinen hakemus liittyvään varhaiskasvatukseen. Espoon varhaiskasvatus on yhteydessä niihin hakijoihin, joita tämä koskee.',
-            'Saat varhaiskasvatuspaikasta erillisen kirjallisen päätöksen, ja päätös tulee <a href="https://www.suomi.fi/viestit" target="_blank" rel="noreferrer">Suomi.fi-viestit</a> -palveluun tai postitse, mikäli et ole ottanut Suomi.fi-viestit -palvelua käyttöön.'
-          ],
+          connectedDaycareInfo: function ConnectedDaycareInfoText() {
+            return (
+              <>
+                <P>
+                  Voit hakea lapselle tarvittaessa{' '}
+                  <strong>
+                    esiopetukseen liittyvää varhaiskasvatusta, joka on
+                    maksullista, ja jota annetaan esiopetuksen (4 tuntia/Päivä)
+                    lisäksi
+                  </strong>{' '}
+                  aamuisin ja/tai iltapäivisin samassa paikassa kuin esiopetus.
+                  Jos haluat aloittaa varhaiskasvatuksen myöhemmin kuin
+                  esiopetus alkaa, kirjoita haluttu aloituspäivämäärä hakemuksen
+                  “Muut lisätiedot” -kohtaan.
+                </P>
+                <P>
+                  Yksityisiin päiväkoteihin ja osaan ostopalvelupäiväkodeista on
+                  tehtävä erillinen hakemus liittyvään varhaiskasvatukseen.
+                  Espoon varhaiskasvatus on yhteydessä niihin hakijoihin, joita
+                  tämä koskee.
+                </P>
+                <P>
+                  Saat varhaiskasvatuspaikasta erillisen kirjallisen päätöksen,
+                  ja päätös tulee{' '}
+                  <a
+                    href="https://www.suomi.fi/viestit"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Suomi.fi-viestit
+                  </a>{' '}
+                  -palveluun tai postitse, mikäli et ole ottanut
+                  Suomi.fi-viestit -palvelua käyttöön.
+                </P>
+              </>
+            )
+          },
           connectedDaycare:
             'Haen myös esiopetukseen liittyvää varhaiskasvatusta.',
           instructions: {
@@ -441,30 +586,79 @@ export default {
         preparatory:
           'Lapsi tarvitsee tukea suomen kielen oppimisessa. Haen myös perusopetukseen valmistavaan opetukseen. Ei koske ruotsinkielistä esiopetusta.',
         preparatoryInfo:
-          'Esiopetusikäisten valmistavaan opetukseen voivat hakeutua maahanmuuttajataustaiset lapset, paluumuuttajalapset, kaksikielisten perheiden lapset (paitsi suomi-ruotsi) ja adoptiolapset, jotka tarvitsevat tukea suomen kielessä ennen perusopetukseen siirtymistä. Valmistavaa opetusta annetaan esiopetuksen lisäksi keskimäärin 1 h/päivä. Opetus on maksutonta.'
+          'Esiopetusikäisten valmistavaan opetukseen voivat hakeutua maahanmuuttajataustaiset lapset, paluumuuttajalapset, kaksikielisten perheiden lapset (paitsi suomi-ruotsi) ja adoptiolapset, jotka tarvitsevat tukea suomen kielessä ennen perusopetukseen siirtymistä. Valmistavaa opetusta annetaan esiopetuksen lisäksi keskimäärin 1 h/Päivä. Opetus on maksutonta.'
       },
       unitPreference: {
         title: 'Hakutoive',
         siblingBasis: {
           title: 'Haku sisarperusteella',
           info: {
-            DAYCARE: `
-            <p>Lapsella on sisarusperuste samaan varhaiskasvatuspaikkaan, jossa hänen sisaruksensa on päätöksentekohetkellä. Sisarukseksi katsotaan kaikki samassa osoitteessa asuvat lapset. Tavoitteena on sijoittaa sisarukset samaan varhaiskasvatuspaikkaan perheen niin toivoessa. Jos haet paikkaa sisaruksille, jotka eivät vielä ole varhaiskasvatuksessa, kirjoita tieto lisätietokenttään.</p>
-            <p>Täytä nämä tiedot vain, jos käytät sisarusperustetta, sekä valitse alla olevissa hakutoiveissa ensisijaiseksi toiveeksi sama varhaiskasvatusyksikkö, jossa lapsen sisarus on.</p>
-            `,
-            PRESCHOOL: `
-            <p>Esioppilaalla on sisarusperuste:</p>
-            <ol type="a">
-              <li>Oman palvelualueen päiväkotiin, jossa esioppilaalla on sisarus, jolla on päätöksentekohetkellä ja tulevana esiopetusvuonna paikka esiopetuspäiväkodissa.</li>
-              <li>Kunnan osoittamaan lähikouluun, jota esioppilaan sisarus käy tulevana lukuvuonna.</li>
-            </ol>
-            <p>Huoltaja voi valita, käyttääkö hän sisarusperustetta kohdan a vai b mukaisesti, jos esioppilaalla on sisarusperuste molempien kohtien mukaan. Valinta ilmoitetaan alla. Sisarukseksi katsotaan kaikki samassa osoitteessa asuvat lapset.</p>
-            <p>Täytä nämä tiedot vain, jos käytät sisarusperustetta, sekä valitse alla olevissa hakutoiveissa ensisijaiseksi toiveeksi sama yksikkö, jossa lapsen sisarus on.</p>
-            `,
-            CLUB: `
-            <p>Sisarukseksi katsotaan kaikki samassa osoitteessa asuvat lapset. Tavoitteena on sijoittaa sisarukset samaan kerhoryhmään perheen niin toivoessa.</p>
-            <p>Täytä nämä tiedot vain, jos käytät sisarusperustetta, sekä valitse alla olevissa hakutoiveissa ensisijaiseksi toiveeksi sama kerho, jossa lapsen sisarus on.</p>
-            `
+            DAYCARE: function SiblingBasisSummaryTextDaycare() {
+              return (
+                <>
+                  <P>
+                    Lapsella on sisarusperuste samaan varhaiskasvatuspaikkaan,
+                    jossa hänen sisaruksensa on päätöksentekohetkellä.
+                    Sisarukseksi katsotaan kaikki samassa osoitteessa asuvat
+                    lapset. Tavoitteena on sijoittaa sisarukset samaan
+                    varhaiskasvatuspaikkaan perheen niin toivoessa. Jos haet
+                    paikkaa sisaruksille, jotka eivät vielä ole
+                    varhaiskasvatuksessa, kirjoita tieto lisätietokenttään.
+                  </P>
+                  <P>
+                    Täytä nämä tiedot vain, jos käytät sisarusperustetta, sekä
+                    valitse alla olevissa hakutoiveissa ensisijaiseksi toiveeksi
+                    sama varhaiskasvatusyksikkö, jossa lapsen sisarus on.
+                  </P>
+                </>
+              )
+            },
+            PRESCHOOL: function SiblingBasisSummaryTextPreschool() {
+              return (
+                <>
+                  <P>Esioppilaalla on sisarusperuste:</P>
+                  <ol type="a">
+                    <li>
+                      Oman palvelualueen päiväkotiin, jossa esioppilaalla on
+                      sisarus, jolla on päätöksentekohetkellä ja tulevana
+                      esiopetusvuonna paikka esiopetuspäiväkodissa.
+                    </li>
+                    <li>
+                      Kunnan osoittamaan lähikouluun, jota esioppilaan sisarus
+                      käy tulevana lukuvuonna.
+                    </li>
+                  </ol>
+                  <P>
+                    Huoltaja voi valita, käyttääkö hän sisarusperustetta kohdan
+                    a vai b mukaisesti, jos esioppilaalla on sisarusperuste
+                    molempien kohtien mukaan. Valinta ilmoitetaan alla.
+                    Sisarukseksi katsotaan kaikki samassa osoitteessa asuvat
+                    lapset.
+                  </P>
+                  <P>
+                    Täytä nämä tiedot vain, jos käytät sisarusperustetta, sekä
+                    valitse alla olevissa hakutoiveissa ensisijaiseksi toiveeksi
+                    sama yksikkö, jossa lapsen sisarus on.
+                  </P>
+                </>
+              )
+            },
+            CLUB: function SiblingBasisSummaryTextClub() {
+              return (
+                <>
+                  <P>
+                    Sisarukseksi katsotaan kaikki samassa osoitteessa asuvat
+                    lapset. Tavoitteena on sijoittaa sisarukset samaan
+                    kerhoryhmään perheen niin toivoessa.
+                  </P>
+                  <P>
+                    Täytä nämä tiedot vain, jos käytät sisarusperustetta, sekä
+                    valitse alla olevissa hakutoiveissa ensisijaiseksi toiveeksi
+                    sama kerho, jossa lapsen sisarus on.
+                  </P>
+                </>
+              )
+            }
           },
           checkbox: {
             DAYCARE:
@@ -491,15 +685,53 @@ export default {
           startDateMissing:
             'Päästäksesi valitsemaan hakutoiveet valitse ensin toivottu aloituspäivä "Palvelun tarve" -osiosta',
           info: {
-            DAYCARE: `
-            <p>Voit hakea 1-3 paikkaa toivomassasi järjestyksessä. Hakutoiveet eivät takaa paikkaa toivotussa yksikössä, mutta mahdollisuus toivotun paikan saamiseen kasvaa antamalla useamman vaihtoehdon.</p>
-            <p>Näet eri varhaiskasvatusyksiköiden sijainnin valitsemalla ‘Yksiköt kartalla’.</p>`,
-            PRESCHOOL: `
-            <p>Voit hakea 1-3 paikka paikkaa toivomassasi järjestyksessä. Hakutoiveet eivät takaa paikkaa toivotussa yksikössä, mutta mahdollisuus toivotun paikan saamiseen kasvaa antamalla useamman vaihtoehdon.</p>
-            <p>Näet eri yksiköiden sijainnin valitsemalla ‘Yksiköt kartalla’.</p>`,
-            CLUB: `
-            <p>Voit hakea 1-3 paikkaa toivomassasi järjestyksessä. Hakutoiveet eivät takaa paikkaa toivotussa kerhossa, mutta mahdollisuus toivotun paikan saamiseen kasvaa antamalla useamman vaihtoehdon.</p>
-            <p>Näet eri kerhojen sijainnin valitsemalla ‘Yksiköt kartalla’.</p>`
+            DAYCARE: function UnitPreferenceInfoTextDaycare() {
+              return (
+                <>
+                  <P>
+                    Voit hakea 1-3 paikkaa toivomassasi järjestyksessä.
+                    Hakutoiveet eivät takaa paikkaa toivotussa yksikössä, mutta
+                    mahdollisuus toivotun paikan saamiseen kasvaa antamalla
+                    useamman vaihtoehdon.
+                  </P>
+                  <P>
+                    Näet eri varhaiskasvatusyksiköiden sijainnin valitsemalla
+                    ‘Yksiköt kartalla’.
+                  </P>
+                </>
+              )
+            },
+            PRESCHOOL: function UnitPreferenceInfoTextPreschool() {
+              return (
+                <>
+                  <P>
+                    Voit hakea 1-3 paikka paikkaa toivomassasi järjestyksessä.
+                    Hakutoiveet eivät takaa paikkaa toivotussa yksikössä, mutta
+                    mahdollisuus toivotun paikan saamiseen kasvaa antamalla
+                    useamman vaihtoehdon.
+                  </P>
+                  <P>
+                    Näet eri yksiköiden sijainnin valitsemalla ‘Yksiköt
+                    kartalla’.
+                  </P>
+                </>
+              )
+            },
+            CLUB: function UnitPreferenceInfoTextClub() {
+              return (
+                <>
+                  <P>
+                    Voit hakea 1-3 paikkaa toivomassasi järjestyksessä.
+                    Hakutoiveet eivät takaa paikkaa toivotussa kerhossa, mutta
+                    mahdollisuus toivotun paikan saamiseen kasvaa antamalla
+                    useamman vaihtoehdon.
+                  </P>
+                  <P>
+                    Näet eri kerhojen sijainnin valitsemalla ‘Yksiköt kartalla’.
+                  </P>
+                </>
+              )
+            }
           },
           mapLink: 'Yksiköt kartalla',
           languageFilter: {
@@ -529,18 +761,61 @@ export default {
       fee: {
         title: 'Varhaiskasvatusmaksu',
         info: {
-          DAYCARE:
-            'Kunnallisen varhaiskasvatuksen asiakasmaksut määräytyvät prosenttiosuutena perheen bruttotuloista. Maksut vaihtelevat perheen koon ja tulojen sekä varhaiskasvatusajan mukaan maksuttomasta varhaiskasvatuksesta enintään 288 euron kuukausimaksuun lasta kohden. Perhe toimittaa tuloselvityksen bruttotuloistaan tuloselvityslomakkeella, viimeistään kahden viikon kuluessa siitä, kun lapsi on aloittanut varhaiskasvatuksessa.',
-          PRESCHOOL:
-            'Esiopetus on maksutonta, mutta siihen liittyvä varhaiskasvatus on maksullista. Jos lapsi osallistuu liittyvään varhaiskasvatukseen, perhe toimittaa tuloselvityksen bruttotuloistaan tuloselvityslomakkeella viimeistään kahden viikon kuluessa siitä, kun lapsi on aloittanut varhaiskasvatuksessa.',
-          CLUB: ''
+          DAYCARE: function FeeInfoTextDaycare() {
+            return (
+              <P>
+                Kunnallisen varhaiskasvatuksen asiakasmaksut määräytyvät
+                prosenttiosuutena perheen bruttotuloista. Maksut vaihtelevat
+                perheen koon ja tulojen sekä varhaiskasvatusajan mukaan
+                maksuttomasta varhaiskasvatuksesta enintään 288 euron
+                kuukausimaksuun lasta kohden. Perhe toimittaa tuloselvityksen
+                bruttotuloistaan tuloselvityslomakkeella, viimeistään kahden
+                viikon kuluessa siitä, kun lapsi on aloittanut
+                varhaiskasvatuksessa.
+              </P>
+            )
+          },
+          PRESCHOOL: function FeeInfoTextPreschool() {
+            return (
+              <P>
+                Esiopetus on maksutonta, mutta siihen liittyvä varhaiskasvatus
+                on maksullista. Jos lapsi osallistuu liittyvään
+                varhaiskasvatukseen, perhe toimittaa tuloselvityksen
+                bruttotuloistaan tuloselvityslomakkeella viimeistään kahden
+                viikon kuluessa siitä, kun lapsi on aloittanut
+                varhaiskasvatuksessa.
+              </P>
+            )
+          },
+          CLUB: function FeeInfoTextClub() {
+            return <P></P>
+          }
         },
-        emphasis:
-          '<strong>Tuloselvitystä ei tarvita, jos perhe suostuu korkeimpaan maksuun.</strong>',
+        emphasis: function FeeEmphasisText() {
+          return (
+            <strong>
+              Tuloselvitystä ei tarvita, jos perhe suostuu korkeimpaan maksuun.
+            </strong>
+          )
+        },
         checkbox:
           'Annan suostumuksen korkeimpaan maksuun. Suostumus on voimassa toistaiseksi, kunnes toisin ilmoitan.',
-        links:
-          'Lisätietoa varhaiskasvatuksen maksuista ja tuloselvityslomakeen löydät Espoon kaupungin sivuilta:<br/><a href="https://www.espoo.fi/fi-FI/Kasvatus_ja_opetus/Varhaiskasvatus/Maksut_varhaiskasvatuksessa" target="_blank" rel="noopener noreferrer">Maksut varhaiskasvatuksessa</a>'
+        links: function FeeLinksText() {
+          return (
+            <P>
+              Lisätietoa varhaiskasvatuksen maksuista ja tuloselvityslomakeen
+              löydät Espoon kaupungin sivuilta:
+              <br />
+              <a
+                href="https://www.espoo.fi/fi-FI/Kasvatus_ja_opetus/Varhaiskasvatus/Maksut_varhaiskasvatuksessa"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Maksut varhaiskasvatuksessa
+              </a>
+            </P>
+          )
+        }
       },
       additionalDetails: {
         title: 'Muut lisätiedot',
@@ -558,8 +833,28 @@ export default {
       },
       contactInfo: {
         title: 'Henkilötiedot',
-        info:
-          'Henkilötiedot on haettu väestötiedoista, eikä niitä voi muuttaa tällä hakemuksella. Jos henkilötiedoissa on virheitä, päivitäthän tiedot <a href="https://dvv.fi/henkiloasiakkaat" target="_blank" rel="noreferrer">Digi- ja Väestötietoviraston sivuilla</a>. Mikäli osoitteenne on muuttumassa, voit lisätä tulevan osoitteen erilliseen kohtaan hakemuksella; lisää tuleva osoite sekä lapselle että huoltajalle. Virallisena osoitetietoa pidetään vasta, kun se on päivittynyt väestötietojärjestelmään. Päätökset esiopetus- ja varhaiskasvatuspaikoista toimitetaan automaattisesti myös eri osoitteessa asuvalle väestötiedoista löytyvälle huoltajalle.',
+        info: function ContactInfoInfoText() {
+          return (
+            <P>
+              Henkilötiedot on haettu väestötiedoista, eikä niitä voi muuttaa
+              tällä hakemuksella. Jos henkilötiedoissa on virheitä, päivitäthän
+              tiedot{' '}
+              <a
+                href="https://dvv.fi/henkiloasiakkaat"
+                target="_blank"
+                rel="noreferrer"
+              >
+                Digi- ja Väestötietoviraston sivuilla
+              </a>
+              . Mikäli osoitteenne on muuttumassa, voit lisätä tulevan osoitteen
+              erilliseen kohtaan hakemuksella; lisää tuleva osoite sekä lapselle
+              että huoltajalle. Virallisena osoitetietoa pidetään vasta, kun se
+              on päivittynyt väestötietojärjestelmään. Päätökset esiopetus- ja
+              varhaiskasvatuspaikoista toimitetaan automaattisesti myös eri
+              osoitteessa asuvalle väestötiedoista löytyvälle huoltajalle.
+            </P>
+          )
+        },
         childInfoTitle: 'Lapsen tiedot',
         childFirstName: 'Lapsen etunimet',
         childLastName: 'Lapsen sukunimi',
@@ -645,8 +940,16 @@ export default {
   },
   decisions: {
     title: 'Päätökset',
-    summary:
-      'Tälle sivulle saapuvat lapsen varhaiskasvatus-, esiopetus- ja kerhohakemuksiin liittyvät päätökset. Uuden päätöksen saapuessa <strong>sinun tulee kahden viikon sisällä vastata</strong>, hyväksytkö vai hylkäätkö lapselle tarjotun paikan.',
+    summary: function DecisionsSummaryText() {
+      return (
+        <P width="800px">
+          Tälle sivulle saapuvat lapsen varhaiskasvatus-, esiopetus- ja
+          kerhohakemuksiin liittyvät päätökset. Uuden päätöksen saapuessa{' '}
+          <strong>sinun tulee kahden viikon sisällä vastata</strong>, hyväksytkö
+          vai hylkäätkö lapselle tarjotun paikan.
+        </P>
+      )
+    },
     unconfirmedDecisions: (n: number) =>
       `${n} ${n === 1 ? 'päätös' : 'päätöstä'} odottaa vahvistustasi`,
     pageLoadError: 'Tietojen hakeminen ei onnistunut',
@@ -718,8 +1021,15 @@ export default {
   },
   applicationsList: {
     title: 'Hakeminen varhaiskasvatukseen ja ilmoittautuminen esiopetukseen',
-    summary:
-      'Lapsen huoltaja voi tehdä lapselle hakemuksen varhaiskasvatukseen ja kerhoon tai ilmoittaa lapsen esiopetukseen. Huoltajan lasten tiedot haetaan tähän näkymään automaattisesti Väestötietojärjestelmästä.',
+    summary: function ApplicationListSummaryText() {
+      return (
+        <P width="800px">
+          Lapsen huoltaja voi tehdä lapselle hakemuksen varhaiskasvatukseen ja
+          kerhoon tai ilmoittaa lapsen esiopetukseen. Huoltajan lasten tiedot
+          haetaan tähän näkymään automaattisesti Väestötietojärjestelmästä.
+        </P>
+      )
+    },
     pageLoadError: 'Tietojen hakeminen ei onnistunut',
     noApplications: 'Ei hakemuksia',
     type: {

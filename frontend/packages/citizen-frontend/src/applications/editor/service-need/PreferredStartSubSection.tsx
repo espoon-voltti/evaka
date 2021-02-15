@@ -170,15 +170,7 @@ export default React.memo(function PreferredStartSubSection({
             {formData.urgent && (
               <>
                 <Gap size={'s'} />
-
-                <P
-                  fitted
-                  dangerouslySetInnerHTML={{
-                    __html:
-                      t.applications.editor.serviceNeed.urgent
-                        .attachmentsMessage.text
-                  }}
-                />
+                {t.applications.editor.serviceNeed.urgent.attachmentsMessage.text()}
 
                 <Gap size={'s'} />
 
