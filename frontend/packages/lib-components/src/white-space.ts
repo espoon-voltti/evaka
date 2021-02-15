@@ -47,10 +47,16 @@ export const defaultMargins: Record<SpacingSize, string> = {
 type GapProps = {
   horizontal?: boolean
   size?: SpacingSize
+  hideOnMobile?: boolean
 }
 
 export const Gap = styled.div<GapProps>`
   display: ${(p) => (p.horizontal ? 'inline-block' : 'block')};
   ${(p) => (p.horizontal ? 'width' : 'height')}: ${(p) =>
     defaultMargins[p.size || 'm']};
+
+  @media (max-width: 600px) {
+    display: ${(p) =>
+      p.hideOnMobile ? 'none' : p.horizontal ? 'inline-block' : 'block'};
+  }
 `

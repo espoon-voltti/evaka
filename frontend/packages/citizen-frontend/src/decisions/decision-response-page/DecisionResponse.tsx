@@ -119,7 +119,7 @@ export default React.memo(function DecisionResponse({
       </ListGrid>
       {decision.status === 'PENDING' && (
         <>
-          <Gap size="L" />
+          <Gap size="s" />
           <H3 data-qa="title-decision-type" fitted>
             {t.decisions.applicationDecisions.response.title}
           </H3>

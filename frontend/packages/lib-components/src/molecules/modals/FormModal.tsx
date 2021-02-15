@@ -42,7 +42,7 @@ interface ModalContainerProps {
 }
 
 export const ModalContainer = styled.div<ModalContainerProps>`
-  width: ${(props: ModalContainerProps) => {
+  max-width: ${(props: ModalContainerProps) => {
     switch (props.size) {
       case 'xs':
         return '300px'
@@ -58,13 +58,14 @@ export const ModalContainer = styled.div<ModalContainerProps>`
         return props.customSize ?? '500px'
     }
   }};
-  max-width: 100vw;
   background: white;
   overflow-x: visible;
   box-shadow: 0 15px 75px 0 rgba(0, 0, 0, 0.5);
   border-radius: 2px;
   padding-left: ${defaultMargins.XXL};
   padding-right: ${defaultMargins.XXL};
+  margin-left: ${defaultMargins.xxs};
+  margin-right: ${defaultMargins.xxs};
   overflow-y: scroll;
 `
 

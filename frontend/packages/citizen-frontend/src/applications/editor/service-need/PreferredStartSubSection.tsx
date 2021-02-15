@@ -146,7 +146,6 @@ export default React.memo(function PreferredStartSubSection({
           <>
             <Gap size="xs" />
             <AlertBox
-              thin
               message={t.applications.creation.daycare4monthWarning}
               data-qa={'daycare-processing-time-warning'}
             />
