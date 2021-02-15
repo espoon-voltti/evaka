@@ -38,7 +38,8 @@ export default React.memo(function MapBox(props: Props) {
 
 const addressIcon = new leaflet.Icon({
   iconUrl: markerAddress,
-  iconSize: [30, 30],
+  iconSize: [20, 38],
+  iconAnchor: [10, 38],
   popupAnchor: [0, -18]
 })
 
