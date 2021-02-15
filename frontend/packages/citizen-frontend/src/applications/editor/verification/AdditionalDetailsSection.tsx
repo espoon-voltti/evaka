@@ -9,6 +9,7 @@ import { H2, Label } from '@evaka/lib-components/src/typography'
 import ListGrid from '@evaka/lib-components/src/layout/ListGrid'
 import { ApplicationDataGridLabelWidth } from '~applications/editor/verification/const'
 import { Gap } from '@evaka/lib-components/src/white-space'
+import styled from 'styled-components'
 
 type AdditionalDetailsProps = {
   formData: ApplicationFormData
@@ -31,18 +32,37 @@ export default React.memo(function AdditionalDetails({
         columnGap="L"
       >
         <Label>{tLocal.otherInfoLabel}</Label>
-        <span>{formData.additionalDetails.otherInfo}</span>
+        <div>
+          {formData.additionalDetails.otherInfo.split('\n').map((text, i) => (
+            <StyledP key={i}>{text}</StyledP>
+          ))}
+        </div>
 
         {showAllergiesAndDiet && (
           <>
             <Label>{tLocal.allergiesLabel}</Label>
-            <span>{formData.additionalDetails.allergies}</span>
+            <div>
+              {formData.additionalDetails.allergies
+                .split('\n')
+                .map((text, i) => (
+                  <StyledP key={i}>{text}</StyledP>
+                ))}
+            </div>
 
             <Label>{tLocal.dietLabel}</Label>
-            <span>{formData.additionalDetails.diet}</span>
+            <div>
+              {formData.additionalDetails.diet.split('\n').map((text, i) => (
+                <StyledP key={i}>{text}</StyledP>
+              ))}
+            </div>
           </>
         )}
       </ListGrid>
     </div>
   )
 })
+
+const StyledP = styled.p`
+  margin-top: 0;
+  margin-bottom: 4px;
+`

@@ -43,7 +43,7 @@ export default React.memo(function DesktopNav({
         <MenuContainer>
           <LanguageMenu close={close} />
           <Gap size="s" />
-          <Navigation enduserBaseUrl={enduserBaseUrl} />
+          <Navigation enduserBaseUrl={enduserBaseUrl} close={close} />
           <Spacer />
           <UserContainer>
             <UserName>{`${user?.firstName ?? ''} ${
@@ -162,9 +162,11 @@ const LangButton = styled.button<{ active: boolean }>`
 `
 
 const Navigation = React.memo(function Navigation({
-  enduserBaseUrl
+  enduserBaseUrl,
+  close
 }: {
   enduserBaseUrl: string
+  close: () => void
 }) {
   const t = useTranslation()
   const user = useUser()
@@ -190,13 +192,15 @@ const Navigation = React.memo(function Navigation({
           </NavItem>
         </>
       )}
-      <StyledNavLink to="/map">{t.header.nav.newMap}</StyledNavLink>
+      <StyledNavLink to="/map" onClick={close}>
+        {t.header.nav.newMap}
+      </StyledNavLink>
       {user && (
         <>
-          <StyledNavLink to="/applications">
+          <StyledNavLink to="/applications" onClick={close}>
             {t.header.nav.newApplications}
           </StyledNavLink>
-          <StyledNavLink to="/decisions">
+          <StyledNavLink to="/decisions" onClick={close}>
             {t.header.nav.newDecisions}
           </StyledNavLink>
         </>
