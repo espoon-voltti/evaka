@@ -5,6 +5,7 @@
 import styled from 'styled-components'
 import { defaultMargins } from '../white-space'
 import colors from '../colors'
+import { tabletMin } from '../breakpoints'
 
 const HorizontalLine = styled.hr`
   width: 100%;
@@ -12,6 +13,11 @@ const HorizontalLine = styled.hr`
   margin-block-end: ${defaultMargins.XL};
   border: none;
   border-bottom: 1px solid ${colors.greyscale.lighter};
+
+  @media (max-width: ${tabletMin}) {
+    margin-block-start: ${defaultMargins.L};
+    margin-block-end: ${defaultMargins.L};
+  }
 `
 
 export default HorizontalLine
