@@ -19,6 +19,7 @@ import {
   ApplicationType
 } from '@evaka/lib-common/src/api-types/application/enums'
 import LocalDate from '@evaka/lib-common/src/local-date'
+import { DecisionType } from '~decisions/types'
 
 export type ApplicationFormDataErrors = {
   [section in keyof ApplicationFormData]: ErrorsOf<ApplicationFormData[section]>
@@ -52,6 +53,15 @@ const maxPreferredStartDate = (): LocalDate => {
   return LocalDate.today().addYears(1)
 }
 
+const maxDecisionStartDate = (
+  startDate: LocalDate,
+  type: DecisionType
+): LocalDate => {
+  return ['PRESCHOOL', 'PREPARATORY_EDUCATION'].includes(type)
+    ? startDate
+    : startDate.addDays(14)
+}
+
 export const isValidPreferredStartDate = (
   date: LocalDate,
   originalPreferredStartDate: LocalDate | null,
@@ -62,6 +72,17 @@ export const isValidPreferredStartDate = (
     ? date.isEqualOrAfter(
         minPreferredStartDate(status, type, originalPreferredStartDate)
       ) && date.isEqualOrBefore(maxPreferredStartDate())
+    : false
+}
+
+export const isValidDecisionStartDate = (
+  date: LocalDate,
+  startDate: LocalDate,
+  type: DecisionType
+): boolean => {
+  return date !== null
+    ? date.isEqualOrAfter(startDate) &&
+        date.isEqualOrBefore(maxDecisionStartDate(startDate, type))
     : false
 }
 
