@@ -191,10 +191,6 @@ server {
     try_files $uri @static;
   }
 
-  location /citizen/ {
-    try_files $uri @static;
-  }
-
   location /employee/ {
     try_files $uri @static;
   }
@@ -237,7 +233,6 @@ server {
     rewrite     /employee/mobile/(.*) /employee/mobile/index.html break;
     rewrite     /employee/(.*) /employee/index.html break;
     rewrite     /application/(.*) /application/index.html break;
-    rewrite     /citizen/(.*) /citizen/index.html break;
     proxy_pass  $staticEndpoint;
   }
 
