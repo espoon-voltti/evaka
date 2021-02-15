@@ -1086,11 +1086,12 @@ export default {
         'PDF, JPEG/JPG, PNG ja DOC/DOCX'
       ]
     },
+    deleteFile: 'Poista tiedosto'
+  },
+  fileDownload: {
     modalHeader: 'Tiedoston käsittely on kesken',
     modalMessage:
-      'Tiedosto ei ole juuri nyt avattavissa. Kokeile hetken kuluttua uudelleen.',
-    modalConfirm: 'Selvä',
-    deleteFile: 'Poista tiedosto'
+      'Tiedosto ei ole juuri nyt avattavissa. Kokeile hetken kuluttua uudelleen.'
   },
   validationErrors: {
     required: 'Arvo puuttuu',

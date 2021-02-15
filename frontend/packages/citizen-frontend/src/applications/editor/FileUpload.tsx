@@ -9,6 +9,7 @@ import { IconDefinition } from '@fortawesome/fontawesome-svg-core'
 import { useTranslation } from '../../localization'
 import { Gap } from '@evaka/lib-components/src/white-space'
 import colors from '@evaka/lib-components/src/colors'
+import FileDownloadButton from '@evaka/lib-components/src/molecules/FileDownloadButton'
 import IconButton from '@evaka/lib-components/src/atoms/buttons/IconButton'
 import {
   faExclamationTriangle,
@@ -133,14 +134,6 @@ const ProgressBar = styled.div<ProgressBarProps>`
   transition: width 0.5s ease-out;
   margin-bottom: 3px;
 `
-const FileDownloadButton = styled.button`
-  border: none;
-  background: none;
-  color: ${colors.blues.primary};
-  cursor: pointer;
-  text-align: left;
-  font-size: 15px;
-`
 
 const FileDeleteButton = styled(IconButton)`
   border: none;
@@ -176,18 +169,6 @@ const ProgressBarError = styled.div`
   }
 `
 
-const attachmentToFile = (attachment: ApplicationAttachment): FileObject => {
-  return {
-    id: attachment.id,
-    file: undefined,
-    key: Math.random(),
-    name: attachment.name,
-    contentType: attachment.contentType,
-    progress: 100,
-    error: undefined
-  }
-}
-
 const fileIcon = (file: FileObject): IconDefinition => {
   switch (file.contentType) {
     case 'image/jpeg':
@@ -205,6 +186,20 @@ const fileIcon = (file: FileObject): IconDefinition => {
 }
 
 const inProgress = (file: FileObject): boolean => file.progress !== 100
+
+export const attachmentToFile = (
+  attachment: ApplicationAttachment
+): FileObject => {
+  return {
+    id: attachment.id,
+    file: undefined,
+    key: Math.random(),
+    name: attachment.name,
+    contentType: attachment.contentType,
+    progress: 100,
+    error: undefined
+  }
+}
 
 export default React.memo(function FileUpload({
   files,
@@ -248,30 +243,6 @@ export default React.memo(function FileUpload({
       })
     } catch (e) {
       console.error(e)
-    }
-  }
-
-  const getFileIfAvailable = async (file: FileObject) => {
-    const result = await getFileAvailability(file)
-    if (result.isSuccess) {
-      result.value.fileAvailable
-        ? void deliverBlob(file)
-        : setModalVisible(true)
-    }
-  }
-
-  const deliverBlob = async (file: FileObject) => {
-    const result = await getFileBlob(file)
-    if (result.isSuccess) {
-      const url = URL.createObjectURL(new Blob([result.value]))
-      const link = document.createElement('a')
-      link.href = url
-      link.target = '_blank'
-      link.setAttribute('download', `${file.name}`)
-      link.rel = 'noreferrer'
-      document.body.appendChild(link)
-      link.click()
-      link.remove()
     }
   }
 
@@ -342,8 +313,8 @@ export default React.memo(function FileUpload({
     <FileUploadContainer>
       {modalVisible && (
         <InfoModal
-          title={t.fileUpload.modalHeader}
-          text={t.fileUpload.modalMessage}
+          title={t.fileDownload.modalHeader}
+          text={t.fileDownload.modalMessage}
           close={() => setModalVisible(false)}
           icon={faInfo}
         />
@@ -375,9 +346,12 @@ export default React.memo(function FileUpload({
             <FileDetails>
               <FileHeader>
                 {!file.error ? (
-                  <FileDownloadButton onClick={() => getFileIfAvailable(file)}>
-                    {file.name}
-                  </FileDownloadButton>
+                  <FileDownloadButton
+                    file={file}
+                    fileAvailableFn={getFileAvailability}
+                    fileFetchFn={getFileBlob}
+                    onFileUnavailable={() => setModalVisible(true)}
+                  />
                 ) : (
                   <span>{file.name}</span>
                 )}

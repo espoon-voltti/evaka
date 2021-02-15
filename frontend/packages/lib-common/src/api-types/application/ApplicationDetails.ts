@@ -217,6 +217,10 @@ export interface ApplicationAttachment {
   type: AttachmentType
 }
 
+export interface AttachmentPreDownloadResponse {
+  fileAvailable: boolean
+}
+
 export interface FileObject {
   id: UUID
   key: number
