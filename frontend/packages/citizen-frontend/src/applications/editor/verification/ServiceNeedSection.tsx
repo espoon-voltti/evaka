@@ -17,6 +17,7 @@ import {
   ServiceNeedShiftCare
 } from './ServiceNeedAttachments'
 import ServiceNeedPartTime from './ServiceNeedPartTime'
+import styled from 'styled-components'
 
 type ServiceNeedSectionProps = {
   formData: ApplicationFormData
@@ -125,7 +126,13 @@ export default React.memo(function ServiceNeedSection({
                   .description
               }
             </Label>
-            <span>{formData.serviceNeed.assistanceDescription}</span>
+            <div>
+              {formData.serviceNeed.assistanceDescription
+                .split('\n')
+                .map((text, i) => (
+                  <StyledP key={i}>{text}</StyledP>
+                ))}
+            </div>
           </>
         )}
 
@@ -134,3 +141,8 @@ export default React.memo(function ServiceNeedSection({
     </div>
   )
 })
+
+const StyledP = styled.p`
+  margin-top: 0;
+  margin-bottom: 4px;
+`
