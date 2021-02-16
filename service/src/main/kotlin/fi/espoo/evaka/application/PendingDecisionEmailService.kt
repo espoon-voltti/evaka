@@ -5,7 +5,6 @@
 package fi.espoo.evaka.application
 
 import fi.espoo.evaka.daycare.domain.Language
-import fi.espoo.evaka.decision.getDecision
 import fi.espoo.evaka.emailclient.IEmailClient
 import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.shared.async.AsyncJobRunner
@@ -33,9 +32,14 @@ class PendingDecisionEmailService(
     val fromAddress = env.getRequiredProperty("mail_reply_to_address")
 
     fun doSendPendingDecisionsEmail(db: Database, msg: SendPendingDecisionEmail) {
-        logger.info("Sending pending decision reminder email to decision ${msg.decisionId}")
-        sendPendingDecisionEmail(db, msg.decisionId)
+        logger.info("Sending pending decision reminder email to guardian ${msg.guardianId}")
+        sendPendingDecisionEmail(db, msg)
     }
+
+    data class GuardianDecisions(
+        val guardianId: UUID,
+        val decisionIds: List<UUID>
+    )
 
     class PendingDecisionMailException(msg: String) : Exception(msg)
 
@@ -44,28 +48,33 @@ class PendingDecisionEmailService(
             tx.createUpdate("DELETE FROM async_job WHERE type = 'SEND_PENDING_DECISION_EMAIL' AND (claimed_by IS NULL OR completed_at IS NOT NULL)")
                 .execute()
 
-            val pendingDecisions = tx.createQuery(
+            val pendingGuardianDecisions = tx.createQuery(
                 """
-SELECT DISTINCT(d.id)
+WITH pending_decisions AS (
+SELECT id, application_id
 FROM decision d
 WHERE d.status = 'PENDING'
 AND d.resolved IS NULL
 AND d.sent_date < current_date - INTERVAL '1 week'
 AND d.pending_decision_emails_sent_count < 2
-AND d.pending_decision_email_sent IS NULL or d.pending_decision_email_sent < current_date - INTERVAL '1 week'
+AND d.pending_decision_email_sent IS NULL or d.pending_decision_email_sent < current_date - INTERVAL '1 week')
+SELECT application.guardian_id as guardian_id, array_agg(pending_decisions.id::uuid) AS decision_ids
+FROM pending_decisions JOIN application ON pending_decisions.application_id = application.id
+GROUP BY application.guardian_id
 """
             )
-                .mapTo<UUID>()
+                .mapTo<GuardianDecisions>()
                 .list()
 
-            logger.info("PendingDecisionEmailService: Scheduling sending ${pendingDecisions.size} pending decision emails")
+            logger.info("PendingDecisionEmailService: Scheduling sending ${pendingGuardianDecisions.size} pending decision emails")
 
-            pendingDecisions.forEach { decisionId ->
+            pendingGuardianDecisions.forEach { pendingDecision ->
                 asyncJobRunner.plan(
                     tx,
                     payloads = listOf(
                         SendPendingDecisionEmail(
-                            decisionId = decisionId
+                            guardianId = pendingDecision.guardianId,
+                            decisionIds = pendingDecision.decisionIds
                         )
                     ),
                     runAt = Instant.now(),
@@ -73,7 +82,7 @@ AND d.pending_decision_email_sent IS NULL or d.pending_decision_email_sent < cur
                 )
             }
 
-            pendingDecisions.size
+            pendingGuardianDecisions.size
         }
 
         asyncJobRunner.scheduleImmediateRun()
@@ -81,21 +90,18 @@ AND d.pending_decision_email_sent IS NULL or d.pending_decision_email_sent < cur
         return jobCount
     }
 
-    fun sendPendingDecisionEmail(db: Database, decisionId: UUID) {
+    fun sendPendingDecisionEmail(db: Database, pendingDecision: SendPendingDecisionEmail) {
         try {
             db.transaction { tx ->
-                val decision = getDecision(tx.handle, decisionId) ?: throw PendingDecisionMailException("Could not send pending decision email for decision $decisionId: decision missing")
 
-                val application = fetchApplicationDetails(tx.handle, decision.applicationId) ?: throw PendingDecisionMailException("Could not send pending decision email for decision ${decision.id}: application could not be found")
-
-                val guardian = tx.handle.getPersonById(application.guardianId) ?: throw PendingDecisionMailException("Could not send pending decision email for application ${application.id}: guardian cannot be found")
+                val guardian = tx.handle.getPersonById(pendingDecision.guardianId) ?: throw PendingDecisionMailException("Could not send pending decision email to ${pendingDecision.guardianId}: guardian cannot be found")
 
                 if (!guardian.email.isNullOrBlank()) {
                     logger.info("Sending pending decision email to guardian ${guardian.id}")
 
                     val lang = getLanguage(guardian.language)
                     emailClient.sendEmail(
-                        decisionId.toString(),
+                        "${guardian.id} - ${pendingDecision.decisionIds.joinToString { "-" }}",
                         guardian.email,
                         fromAddress,
                         getSubject(lang),
@@ -104,15 +110,17 @@ AND d.pending_decision_email_sent IS NULL or d.pending_decision_email_sent < cur
                     )
 
                     // Mark as sent
-                    tx.handle.createUpdate(
-                        """
+                    pendingDecision.decisionIds.forEach { decisionId ->
+                        tx.createUpdate(
+                            """
     UPDATE decision
     SET pending_decision_emails_sent_count = pending_decision_emails_sent_count + 1, pending_decision_email_sent = now()
     WHERE id = :id
-                        """.trimIndent()
-                    )
-                        .bind("id", decisionId)
-                        .execute()
+                            """.trimIndent()
+                        )
+                            .bind("id", decisionId)
+                            .execute()
+                    }
                 } else {
                     throw PendingDecisionMailException("Could not send pending decision email to guardian ${guardian.id}: invalid email")
                 }
