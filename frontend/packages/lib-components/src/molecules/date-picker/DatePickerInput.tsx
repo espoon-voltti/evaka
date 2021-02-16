@@ -19,6 +19,7 @@ interface Props {
   'data-qa'?: string
   id?: string
   required?: boolean
+  locale: 'fi' | 'sv' | 'en'
 }
 
 const DISALLOWED_CHARACTERS = /[^0-9./-]+/g
@@ -35,6 +36,7 @@ function DatePickerInput({
   onKeyPress,
   id,
   required,
+  locale,
   ...props
 }: Props) {
   const ariaId = Math.random().toString(36).substring(2, 15)
@@ -72,7 +74,7 @@ function DatePickerInput({
         id={id}
         required={required}
       />
-      <DatePickerDescription id={ariaId} />
+      <DatePickerDescription id={ariaId} locale={locale} />
     </Wrapper>
   )
 }
@@ -92,13 +94,33 @@ const StyledP = styled.p`
   position: absolute;
 `
 
-function DatePickerDescription({ id }: { id: string }) {
+function DatePickerDescription({
+  id,
+  locale
+}: {
+  id: string
+  locale: 'fi' | 'sv' | 'en'
+}) {
   // TODO: add translation
   return (
-    <StyledP lang="fi" id={id}>
-      Kirjoita päivämäärä muodossa pp.kk.vvvv kenttään. Tab-näppäimellä pääset
-      kuukausivalitsimeen.
-    </StyledP>
+    <>
+      {locale === 'en' ? (
+        <StyledP lang="en" id={id}>
+          Type the date in dd.mm.yyyy format. You can get to month picker with
+          the tab key.
+        </StyledP>
+      ) : locale === 'sv' ? (
+        <StyledP lang="sv" id={id}>
+          Skriv in datumet i formatet dd.mm.åååå. Du kan komma till
+          månadsväljaren med tabbtangenten.
+        </StyledP>
+      ) : (
+        <StyledP lang="fi" id={id}>
+          Kirjoita päivämäärä muodossa pp.kk.vvvv kenttään. Tab-näppäimellä
+          pääset kuukausivalitsimeen.
+        </StyledP>
+      )}
+    </>
   )
 }
 

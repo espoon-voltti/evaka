@@ -46,8 +46,8 @@ export interface DecisionSummary {
 export function deserializeDecision(json: JsonOf<Decision>): Decision {
   return {
     ...json,
-    startDate: LocalDate.parseIso(json.startDate),
-    endDate: LocalDate.parseIso(json.endDate),
+    startDate: LocalDate.parseIso(json.startDate).format(),
+    endDate: LocalDate.parseIso(json.endDate).format(),
     sentDate: LocalDate.parseIso(json.sentDate)
   }
 }
@@ -55,8 +55,8 @@ export function deserializeDecision(json: JsonOf<Decision>): Decision {
 export interface Decision {
   id: UUID
   type: DecisionType
-  startDate: LocalDate
-  endDate: LocalDate
+  startDate: string
+  endDate: string
   unit: DecisionUnit
   applicationId: UUID
   childId: UUID

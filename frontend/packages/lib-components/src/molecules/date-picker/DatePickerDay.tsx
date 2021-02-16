@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
-import DayPicker from 'react-day-picker'
+import DayPicker, { DayModifiers } from 'react-day-picker'
 import 'react-day-picker/lib/style.css'
 import { fi, sv, enGB } from 'date-fns/locale'
 
@@ -14,7 +14,7 @@ const monthNumbers = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
 const weekdayNumbers = [0, 1, 2, 3, 4, 5, 6]
 
 interface Props {
-  handleDayClick: (day: Date) => void
+  handleDayClick: (day: Date, modifiers?: DayModifiers) => void
   inputValue: string
   locale: 'fi' | 'sv' | 'en'
   isValidDate?: (date: LocalDate) => boolean
@@ -61,6 +61,7 @@ function DatePickerDay({
         const localDate = LocalDate.fromSystemTzDate(date)
         return isValidDate ? !isValidDate(localDate) : true
       }}
+      initialMonth={convertToDate(inputValue) ?? undefined}
     />
   )
 }

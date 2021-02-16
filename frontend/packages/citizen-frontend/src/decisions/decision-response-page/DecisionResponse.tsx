@@ -2,9 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import React, { useContext, useEffect, useState } from 'react'
 import { Decision } from '~decisions/types'
-import React, { useContext, useState } from 'react'
-import { useTranslation } from '~localization'
+import { useLang, useTranslation } from '~localization'
 import LocalDate from '@evaka/lib-common/src/local-date'
 import { OverlayContext } from '~overlay/state'
 import { H2, H3, Label, P } from '@evaka/lib-components/src/typography'
@@ -23,7 +23,8 @@ import { PdfLink } from '~decisions/PdfLink'
 import { Status, decisionStatusIcon } from '~decisions/shared'
 import { AsyncFormModal } from '@evaka/lib-components/src/molecules/modals/FormModal'
 import { faExclamation } from '@evaka/lib-icons'
-import { DatePickerDeprecated } from '@evaka/lib-components/src/molecules/DatePickerDeprecated'
+import DatePicker from '@evaka/lib-components/src/molecules/date-picker/DatePicker'
+import { isValidDecisionStartDate } from '~applications/editor/validations'
 
 interface SingleDecisionProps {
   decision: Decision
@@ -41,6 +42,7 @@ export default React.memo(function DecisionResponse({
   handleReturnToPreviousPage
 }: SingleDecisionProps) {
   const t = useTranslation()
+  const [lang] = useLang()
   const {
     id: decisionId,
     applicationId,
@@ -52,13 +54,14 @@ export default React.memo(function DecisionResponse({
     type: decisionType
   } = decision
   const [acceptChecked, setAcceptChecked] = useState<boolean>(true)
-  const [requestedStartDate, setRequestedStartDate] = useState<LocalDate>(
+  const [requestedStartDate, setRequestedStartDate] = useState<string>(
     startDate
   )
   const [submitting, setSubmitting] = useState<boolean>(false)
   const [displayCascadeWarning, setDisplayCascadeWarning] = useState<boolean>(
     false
   )
+  const [dateErrorMessage, setDateErrorMessage] = useState<string>('')
   const { setErrorMessage } = useContext(OverlayContext)
   const getUnitName = () => {
     switch (decision.type) {
@@ -85,6 +88,24 @@ export default React.memo(function DecisionResponse({
     })
   }
 
+  useEffect(() => {
+    if (LocalDate.parseFiOrNull(requestedStartDate) === null) {
+      setDateErrorMessage(t.validationErrors.validDate)
+    } else {
+      if (
+        isValidDecisionStartDate(
+          LocalDate.parseFi(requestedStartDate),
+          startDate,
+          decisionType
+        )
+      ) {
+        setDateErrorMessage('')
+      } else {
+        setDateErrorMessage(t.validationErrors.preferredStartDate)
+      }
+    }
+  }, [requestedStartDate])
+
   return (
     <div data-qa={`decision-${decision.id}`}>
       <H2 data-qa="title-decision-type">
@@ -102,7 +123,7 @@ export default React.memo(function DecisionResponse({
         <span data-qa="decision-unit">{getUnitName()}</span>
         <Label>{t.decisions.applicationDecisions.period}</Label>
         <span data-qa="decision-period">
-          {startDate.format()} - {endDate.format()}
+          {startDate} - {endDate}
         </span>
         <Label>{t.decisions.applicationDecisions.sentDate}</Label>
         <span data-qa="decision-sent-date">{sentDate.format()}</span>
@@ -134,17 +155,27 @@ export default React.memo(function DecisionResponse({
                 disabled={blocked || submitting}
                 dataQa={'radio-accept'}
               />
-              <DatePickerDeprecated
-                date={requestedStartDate}
-                onChange={setRequestedStartDate}
-                type="short"
-                minDate={startDate}
-                maxDate={
-                  ['PRESCHOOL', 'PREPARATORY_EDUCATION'].includes(decisionType)
-                    ? startDate
-                    : startDate.addDays(14)
-                }
-              />
+              {['PRESCHOOL', 'PREPARATORY_EDUCATION'].includes(decisionType) ? (
+                <span>{startDate}</span>
+              ) : (
+                <DatePicker
+                  date={requestedStartDate}
+                  onChange={(date: string) => setRequestedStartDate(date)}
+                  isValidDate={(date: LocalDate) =>
+                    isValidDecisionStartDate(date, startDate, decisionType)
+                  }
+                  locale={lang}
+                  info={
+                    dateErrorMessage !== ''
+                      ? {
+                          text: dateErrorMessage,
+                          status: 'warning'
+                        }
+                      : undefined
+                  }
+                />
+              )}
+
               <div>{t.decisions.applicationDecisions.response.accept2}</div>
             </FixedSpaceRow>
             <Radio
@@ -187,7 +218,11 @@ export default React.memo(function DecisionResponse({
                   })
                 }
               }}
-              disabled={blocked || submitting}
+              disabled={
+                blocked ||
+                (dateErrorMessage !== '' && acceptChecked) ||
+                submitting
+              }
               dataQa={'submit-response'}
             />
             <Button
