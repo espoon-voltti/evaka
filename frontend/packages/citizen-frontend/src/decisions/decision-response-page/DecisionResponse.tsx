@@ -61,7 +61,7 @@ export default React.memo(function DecisionResponse({
   const [displayCascadeWarning, setDisplayCascadeWarning] = useState<boolean>(
     false
   )
-  const [dateError, setDateError] = useState<boolean>(false)
+  const [dateErrorMessage, setDateErrorMessage] = useState<string>('')
   const { setErrorMessage } = useContext(OverlayContext)
   const getUnitName = () => {
     switch (decision.type) {
@@ -90,9 +90,19 @@ export default React.memo(function DecisionResponse({
 
   useEffect(() => {
     if (LocalDate.parseFiOrNull(requestedStartDate) === null) {
-      setDateError(true)
+      setDateErrorMessage(t.validationErrors.validDate)
     } else {
-      setDateError(false)
+      if (
+        isValidDecisionStartDate(
+          LocalDate.parseFi(requestedStartDate),
+          startDate,
+          decisionType
+        )
+      ) {
+        setDateErrorMessage('')
+      } else {
+        setDateErrorMessage(t.validationErrors.preferredStartDate)
+      }
     }
   }, [requestedStartDate])
 
@@ -156,9 +166,9 @@ export default React.memo(function DecisionResponse({
                   }
                   locale={lang}
                   info={
-                    dateError
+                    dateErrorMessage !== ''
                       ? {
-                          text: t.validationErrors.validDate,
+                          text: dateErrorMessage,
                           status: 'warning'
                         }
                       : undefined
@@ -208,7 +218,11 @@ export default React.memo(function DecisionResponse({
                   })
                 }
               }}
-              disabled={blocked || dateError || submitting}
+              disabled={
+                blocked ||
+                (dateErrorMessage !== '' && acceptChecked) ||
+                submitting
+              }
               dataQa={'submit-response'}
             />
             <Button
