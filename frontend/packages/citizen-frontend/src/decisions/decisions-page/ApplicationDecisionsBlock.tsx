@@ -76,7 +76,7 @@ export default React.memo(function ApplicationDecisionsBlock({
               </Status>
             </ListGrid>
 
-            <Gap size="s" hideOnMobile />
+            <Gap size="s" sizeOnMobile={'zero'} />
 
             {status === 'PENDING' ? (
               <ConfirmationDialog applicationId={applicationId} type={type} />
