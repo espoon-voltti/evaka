@@ -187,7 +187,7 @@ server {
   rewrite ^/manager$ https://$host/employee/;
 
   location / {
-    rewrite ^ /application$request_uri break;
+    rewrite ^ /citizen$request_uri break;
     try_files $uri @static;
   }
 
