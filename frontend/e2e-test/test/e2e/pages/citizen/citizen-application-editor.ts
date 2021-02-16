@@ -27,6 +27,8 @@ export default class CitizenApplicationEditor {
 
   readonly saveAsDraftButton = Selector('[data-qa="save-as-draft-btn"]')
 
+  readonly childStreetAddress = Selector('[data-qa="child-street-address"]')
+
   async getApplicationId() {
     const location = await getWindowLocation()
     const urlParts = location.href.split('/')
@@ -196,5 +198,15 @@ export default class CitizenApplicationEditor {
         }).visible
       )
       .eql(expected)
+  }
+
+  async assertChildStreetAddress(expected: string | null) {
+    expected != null
+      ? await t
+          .expect(this.childStreetAddress.with({ timeout: 2000 }).textContent)
+          .eql(expected)
+      : await t
+          .expect(this.childStreetAddress.with({ timeout: 2000 }).visible)
+          .eql(false)
   }
 }

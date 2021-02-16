@@ -98,6 +98,10 @@ test('Minimal valid daycare application can be sent', async (t) => {
 
   await citizenApplicationEditor.fillData(minimalDaycareForm.form)
 
+  await citizenApplicationEditor.assertChildStreetAddress(
+    'Kamreerintie 1, 00340 Espoo'
+  )
+
   await citizenApplicationEditor.verifyAndSend()
   await citizenApplicationEditor.acknowledgeSendSuccess()
 
@@ -251,4 +255,25 @@ test('A validation warning is shown if preferred start date is not valid', async
     true,
     'Aloituspäivä ei ole sallittu'
   )
+})
+
+test('Application can be made for restricted child', async (t) => {
+  await t.useRole(enduserRole)
+  await t.click(citizenHomePage.nav.applications)
+
+  await citizenApplicationsPage.createApplication(
+    fixtures.enduserChildFixturePorriHatterRestricted.id
+  )
+  await citizenNewApplicationPage.createApplication('DAYCARE')
+  applicationId = await citizenApplicationEditor.getApplicationId()
+
+  await citizenApplicationEditor.fillData(fullDaycareForm.form)
+  await citizenApplicationEditor.setPreferredStartDate(
+    add(new Date(), { months: 6 })
+  )
+
+  await citizenApplicationEditor.assertChildStreetAddress(null)
+
+  await citizenApplicationEditor.verifyAndSend()
+  await citizenApplicationEditor.acknowledgeSendSuccess()
 })

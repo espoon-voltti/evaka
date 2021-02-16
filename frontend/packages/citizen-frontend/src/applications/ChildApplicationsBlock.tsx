@@ -270,7 +270,7 @@ export default React.memo(function ChildApplicationsBlock({
                 <Gap size="xs" horizontal />
               </ListGrid>
               <Gap size="s" />
-              <FixedSpaceRow wrap>
+              <FixedSpaceRow flexWrap>
                 {applicationStatus === 'CREATED' ||
                 applicationStatus === 'SENT' ? (
                   <Link to={`/applications/${applicationId}/edit`}>

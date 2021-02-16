@@ -52,7 +52,7 @@ export default React.memo(function ChildSubSection({
       <Gap size={'s'} />
       <FixedSpaceColumn spacing={'xs'}>
         <Label>{t.applications.editor.contactInfo.homeAddress}</Label>
-        <span>{formData.childStreet}</span>
+        <span data-qa={'child-street-address'}>{formData.childStreet}</span>
       </FixedSpaceColumn>
       <Gap size={'m'} />
 
