@@ -25,3 +25,5 @@ export const getEnvironment = (): string => {
 export const isProduction = (): boolean => {
   return getEnvironment() === 'prod'
 }
+
+export const isAutomatedTest = 'evakaAutomatedTest' in window
