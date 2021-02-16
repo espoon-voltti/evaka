@@ -23,21 +23,24 @@ import {
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { UUID } from '@evaka/lib-common/src/types'
 import { Result } from '@evaka/lib-common/src/api'
-import { attachmentToFile } from '@evaka/lib-common/src/utils/file'
-import {
-  ApplicationAttachment,
-  FileObject
-} from '@evaka/lib-common/src/api-types/application/ApplicationDetails'
+import { Attachment } from '@evaka/lib-common/src/api-types/application/ApplicationDetails'
 import InfoModal from '@evaka/lib-components/src/molecules/modals/InfoModal'
 import { getFileAvailability, getFileBlob } from '../../applications/api'
 
 export type FileUploadProps = {
-  files: ApplicationAttachment[]
+  files: Attachment[]
   onUpload: (
     file: File,
     onUploadProgress: (progressEvent: ProgressEvent) => void
   ) => Promise<Result<UUID>>
   onDelete: (id: UUID) => Promise<Result<void>>
+}
+
+interface FileObject extends Attachment {
+  key: number
+  file: File | undefined
+  error: 'FILE_TOO_LARGE' | 'SERVER_ERROR' | undefined
+  progress: number
 }
 
 const FileUploadContainer = styled.div`
@@ -169,6 +172,18 @@ const ProgressBarError = styled.div`
     margin-left: 8px;
   }
 `
+
+const attachmentToFile = (attachment: Attachment): FileObject => {
+  return {
+    id: attachment.id,
+    file: undefined,
+    key: Math.random(),
+    name: attachment.name,
+    contentType: attachment.contentType,
+    progress: 100,
+    error: undefined
+  }
+}
 
 const fileIcon = (file: FileObject): IconDefinition => {
   switch (file.contentType) {

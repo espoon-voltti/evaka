@@ -13,7 +13,6 @@ import {
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 
 import { ApplicationAttachment } from '@evaka/lib-common/src/api-types/application/ApplicationDetails'
-import { attachmentToFile } from '@evaka/lib-common/src/utils/file'
 import { FixedSpaceRow } from '@evaka/lib-components/src/layout/flex-helpers'
 import FileDownloadButton from '@evaka/lib-components/src/molecules/FileDownloadButton'
 import { getFileAvailability, getFileBlob } from '~api/applications'
@@ -57,7 +56,7 @@ function Attachment({ attachment, dataQa }: Props) {
           color={'Dodgerblue'}
         />
         <FileDownloadButton
-          file={attachmentToFile(attachment)}
+          file={attachment}
           fileAvailableFn={getFileAvailability}
           fileFetchFn={getFileBlob}
           onFileUnavailable={() =>

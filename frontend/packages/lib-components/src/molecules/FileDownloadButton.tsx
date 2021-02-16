@@ -8,8 +8,8 @@ import styled from 'styled-components'
 import { Result } from '@evaka/lib-common/src/api'
 import { downloadBlobAsFile } from '@evaka/lib-common/src/utils/file'
 import {
-  AttachmentPreDownloadResponse,
-  FileObject
+  Attachment,
+  AttachmentPreDownloadResponse
 } from '@evaka/lib-common/src/api-types/application/ApplicationDetails'
 import { espooBrandColors } from '@evaka/lib-components/src/colors'
 import { UUID } from '@evaka/lib-common/src/types'
@@ -25,7 +25,7 @@ const DownloadButton = styled.button`
 `
 
 interface Props {
-  file: FileObject
+  file: Attachment
   fileFetchFn: (fileId: UUID) => Promise<Result<BlobPart>>
   fileAvailableFn: (
     fileId: UUID
@@ -43,14 +43,14 @@ export default React.memo(function FileDownloadButton({
   fileAvailableFn,
   onFileUnavailable
 }: Props) {
-  const deliverBlob = async (file: FileObject) => {
+  const deliverBlob = async (file: Attachment) => {
     const result = await fileFetchFn(file.id)
     if (result.isSuccess) {
       downloadBlobAsFile(file.name, result.value)
     }
   }
 
-  const getFileIfAvailable = async (file: FileObject) => {
+  const getFileIfAvailable = async (file: Attachment) => {
     const result = await fileAvailableFn(file.id)
     if (result.isFailure) throw new Error(result.message)
     if (result.isLoading)

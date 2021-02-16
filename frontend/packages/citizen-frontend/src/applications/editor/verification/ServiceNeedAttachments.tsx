@@ -6,7 +6,6 @@ import React, { useState } from 'react'
 import styled from 'styled-components'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 
-import { attachmentToFile } from '@evaka/lib-common/src/utils/file'
 import FileDownloadButton from '@evaka/lib-components/src/molecules/FileDownloadButton'
 import InfoModal from '@evaka/lib-components/src/molecules/modals/InfoModal'
 import { Label } from '@evaka/lib-components/src/typography'
@@ -68,7 +67,7 @@ export const ServiceNeedUrgency = React.memo(function ServiceNeedUrgency({
                     </span>
                     <Gap horizontal size={'xs'} />
                     <FileDownloadButton
-                      file={attachmentToFile(file)}
+                      file={file}
                       fileAvailableFn={getFileAvailability}
                       fileFetchFn={getFileBlob}
                       onFileUnavailable={() => setErrorModalVisible(true)}
@@ -130,7 +129,7 @@ export const ServiceNeedShiftCare = React.memo(function ServiceNeedShiftCare({
                     </span>
                     <Gap horizontal size={'xs'} />
                     <FileDownloadButton
-                      file={attachmentToFile(file)}
+                      file={file}
                       fileAvailableFn={getFileAvailability}
                       fileFetchFn={getFileBlob}
                       onFileUnavailable={() => setErrorModalVisible(true)}
