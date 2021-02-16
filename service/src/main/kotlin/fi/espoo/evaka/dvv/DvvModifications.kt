@@ -171,10 +171,10 @@ data class DvvDate(
     val tarkkuus: String
 ) {
     fun asLocalDate(): LocalDate? {
-        try {
-            return LocalDate.parse(arvo)
+        return try {
+            LocalDate.parse(arvo)
         } catch (e: DateTimeParseException) {
-            return null
+            null
         }
     }
 }

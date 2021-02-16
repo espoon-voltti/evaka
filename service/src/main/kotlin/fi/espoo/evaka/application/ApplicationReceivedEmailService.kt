@@ -10,7 +10,7 @@ import java.util.UUID
 private val logger = KotlinLogging.logger {}
 
 @Service
-class ApplicationReceivedEmailService(private val emailClient: IEmailClient, private val env: Environment) {
+class ApplicationReceivedEmailService(private val emailClient: IEmailClient, env: Environment) {
 
     private val senderAddressFi = env.getProperty("application.email.address.fi", "")
     private val senderNameFi = env.getProperty("application.email.name.fi", "")

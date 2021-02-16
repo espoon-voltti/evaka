@@ -48,7 +48,7 @@ class MockDvvModificationsService(private val mapper: ObjectMapper) {
 }
 
 fun getModifications(ssns: List<String>): String {
-    return ssns.map { ssn -> if (modifications.containsKey(ssn)) modifications[ssn] else null }.filter { it != null }.joinToString(",")
+    return ssns.map { ssn -> if (modifications.containsKey(ssn)) modifications[ssn] else null }.filterNotNull().joinToString(",")
 }
 
 val modifications = mapOf<String, String>(

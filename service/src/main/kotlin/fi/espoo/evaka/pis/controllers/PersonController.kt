@@ -91,7 +91,6 @@ class PersonController(
         user.requireOneOfRoles(UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR, UserRole.FINANCE_ADMIN, UserRole.ADMIN)
         return db.transaction { personService.getGuardians(it, user, personId) }
             .let { ResponseEntity.ok().body(it.map { personDTO -> PersonJSON.from(personDTO) }) }
-            ?: ResponseEntity.notFound().build()
     }
 
     @GetMapping("/search")

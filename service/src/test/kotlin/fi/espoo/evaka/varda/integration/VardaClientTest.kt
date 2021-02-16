@@ -47,7 +47,7 @@ class VardaClientTest {
 
     @Test
     fun `refreshes API token on invalid token error and retries request`() {
-        var fuel = FuelManager()
+        val fuel = FuelManager()
 
         fuel.client = mock<Client>()
         `when`(fuel.client.executeRequest(any()))

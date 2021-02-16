@@ -125,7 +125,7 @@ val address1 = PersonAddress(
     postOfficeSe = "Esbo"
 )
 
-val residenceCode1 = "003KAMRT00100"
+const val residenceCode1 = "003KAMRT00100"
 
 val address2 = PersonAddress(
     streetAddress = "Kamreerintie 2",
@@ -135,7 +135,7 @@ val address2 = PersonAddress(
     postOfficeSe = "Esbo"
 )
 
-val residenceCode2 = "003KAMRT00200"
+const val residenceCode2 = "003KAMRT00200"
 
 val vtjPersonMap = mapOf<String, VtjPersonNormalized>(
     // children

@@ -245,7 +245,7 @@ class DecisionService(
         val uniqueId = "${decision.id}|${guardian.id}"
         val message = SuomiFiMessage(
             messageId = uniqueId,
-            documentId = uniqueId.toString(),
+            documentId = uniqueId,
             documentDisplayName = calculateDecisionFileName(tx, decision, lang),
             documentUri = documentUri,
             firstName = guardian.firstName!!,

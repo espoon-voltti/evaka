@@ -1006,14 +1006,6 @@ data class DaycareAclInsert(
     val externalId: ExternalId
 )
 
-data class ClubTerm(
-    val id: UUID?,
-    val startDate: LocalDate,
-    val endDate: LocalDate,
-    val applicationPeriodStartDate: LocalDate,
-    val applicationPeriodEndDate: LocalDate
-)
-
 data class PlacementPlan(
     val unitId: UUID,
     val periodStart: LocalDate,

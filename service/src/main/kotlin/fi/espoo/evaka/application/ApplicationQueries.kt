@@ -849,16 +849,16 @@ fun removeOldDrafts(db: Database.Transaction, deleteAttachment: (db: Database.Tr
             .bind("applicationIds", applicationIds.toTypedArray())
             .execute()
 
-        applicationIds.forEach {
+        applicationIds.forEach { applicationId ->
             val attachmentIds =
                 db.handle.createUpdate("""DELETE FROM attachment WHERE application_id = :id RETURNING id""")
-                    .bind("id", it)
+                    .bind("id", applicationId)
                     .executeAndReturnGeneratedKeys()
                     .mapTo<UUID>()
                     .toList()
 
-            attachmentIds.forEach {
-                deleteAttachment(db, it)
+            attachmentIds.forEach { attachmentId ->
+                deleteAttachment(db, attachmentId)
             }
         }
 

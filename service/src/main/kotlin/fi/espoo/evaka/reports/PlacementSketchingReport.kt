@@ -5,7 +5,6 @@
 package fi.espoo.evaka.reports
 
 import fi.espoo.evaka.Audit
-import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
@@ -19,7 +18,7 @@ import java.time.LocalDate
 import java.util.UUID
 
 @RestController
-class PlacementSketchingReportController(private val acl: AccessControlList) {
+class PlacementSketchingReportController {
     @GetMapping("/reports/placement-sketching")
     fun getPlacementSketchingReport(
         db: Database,

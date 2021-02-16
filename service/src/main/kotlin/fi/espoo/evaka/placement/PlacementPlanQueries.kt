@@ -21,17 +21,6 @@ fun Database.Transaction.deletePlacementPlans(applicationIds: List<UUID>) {
     )
 }
 
-fun softDeletePlacementPlan(h: Handle, applicationId: UUID) {
-    h.createUpdate(
-        // language=SQL
-        """
-UPDATE placement_plan
-SET deleted = true
-WHERE application_id = :applicationId
-"""
-    ).bind("applicationId", applicationId).execute()
-}
-
 fun softDeletePlacementPlanIfUnused(h: Handle, applicationId: UUID) {
     h.createUpdate(
         // language=SQL

@@ -34,7 +34,7 @@ import javax.sql.DataSource
         ComponentScan.Filter(type = FilterType.CUSTOM, classes = [AutoConfigurationExcludeFilter::class])
     ]
 )
-abstract class AbstractIntegrationTest() {
+abstract class AbstractIntegrationTest {
 
     @MockBean
     lateinit var redisPool: JedisPool

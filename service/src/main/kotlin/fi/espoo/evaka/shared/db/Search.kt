@@ -11,7 +11,7 @@ import fi.espoo.evaka.shared.utils.stripNonAlphanumeric
 
 data class DBQuery(val query: String, val params: Map<String, String>)
 
-private val freeTextParamName = "free_text"
+private const val freeTextParamName = "free_text"
 private val ssnParamName = { index: Int -> "ssn_$index" }
 private val dateParamName = { index: Int -> "date_$index" }
 

@@ -32,8 +32,8 @@ class PlacementServiceIntegrationTest : FullApplicationTest() {
 
     val childId = testChild_1.id
     val unitId = testDaycare.id
-    val year = LocalDate.now().year + 1
-    val month = 1
+    final val year = LocalDate.now().year + 1
+    final val month = 1
     val placementStart = LocalDate.of(year, month, 10)
     val placementEnd = LocalDate.of(year, month, 20)
 

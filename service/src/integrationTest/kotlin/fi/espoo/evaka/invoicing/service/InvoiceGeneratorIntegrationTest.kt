@@ -1846,6 +1846,6 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
             .map(toInvoice)
             .list()
             .let(::flatten)
-            .map { it.copy(rows = it.rows.sortedByDescending { it.child.dateOfBirth }) }
+            .map { it.copy(rows = it.rows.sortedByDescending { row -> row.child.dateOfBirth }) }
     }
 }

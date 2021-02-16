@@ -135,7 +135,7 @@ class DvvModificationsServiceIntegrationTest : DvvModificationsServiceIntegratio
     @Test
     fun `name changed`() {
         val SSN = "010179-9992"
-        var personWithOldName: DevPerson = testPerson.copy(firstName = "Ville", lastName = "Vanhanimi", ssn = SSN)
+        val personWithOldName: DevPerson = testPerson.copy(firstName = "Ville", lastName = "Vanhanimi", ssn = SSN)
         val personWithNewName = testPerson.copy(firstName = "Urkki", lastName = "Uusinimi", ssn = SSN)
 
         createTestPerson(personWithOldName)

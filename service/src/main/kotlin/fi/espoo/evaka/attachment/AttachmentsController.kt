@@ -124,7 +124,7 @@ class AttachmentsController(
         }
 
         return try {
-            s3Client.headObject(filesBucket, "$attachmentId").let { _ ->
+            s3Client.headObject(filesBucket, "$attachmentId").let {
                 ResponseEntity.ok().body(PreDownloadResponse(true))
             }
         } catch (e: AmazonS3Exception) {

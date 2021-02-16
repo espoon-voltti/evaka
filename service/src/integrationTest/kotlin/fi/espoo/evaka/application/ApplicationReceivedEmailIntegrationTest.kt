@@ -364,7 +364,7 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest() {
         assertEquals(expectedFromAddress, email?.fromAddress)
         assertEquals(expectedSubject, email?.subject)
         assert(email!!.htmlBody.contains(expectedHtmlPart, true))
-        assert(email!!.textBody.contains(expectedTextPart, true))
+        assert(email.textBody.contains(expectedTextPart, true))
     }
 
     private fun assertApplicationIsSent(h: Handle, applicationId: UUID) {

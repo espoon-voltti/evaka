@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RestController
 import java.time.LocalDate
 import java.util.UUID
 
-val MAX_NUMBER_OF_DAYS = 14
+const val MAX_NUMBER_OF_DAYS = 14
 
 @RestController
 class PresenceReportController {

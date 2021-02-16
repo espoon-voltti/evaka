@@ -144,7 +144,7 @@ class PdfServiceTest {
             "approverLastName" to "Päättäjä",
             "showTotalIncome" to true
         )
-        simpleVariables.forEach { key, item -> assertEquals(expected.getValue(key), item) }
+        simpleVariables.forEach { (key, item) -> assertEquals(expected.getValue(key), item) }
     }
 
     @Test
@@ -190,7 +190,7 @@ class PdfServiceTest {
             "approverLastName" to "Päättäjä",
             "showTotalIncome" to true
         )
-        simpleVariables.forEach { key, item -> assertEquals(expected.getValue(key), item) }
+        simpleVariables.forEach { (key, item) -> assertEquals(expected.getValue(key), item) }
     }
 
     @Test

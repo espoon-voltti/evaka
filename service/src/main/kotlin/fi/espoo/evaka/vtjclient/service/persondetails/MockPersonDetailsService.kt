@@ -13,7 +13,7 @@ import org.springframework.core.io.ClassPathResource
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentMap
 
-class MockPersonDetailsService() : IPersonDetailsService {
+class MockPersonDetailsService : IPersonDetailsService {
 
     companion object {
         val allPersons: ConcurrentMap<String, VtjPerson> = allPersonsFrom(readPersonsFromFile())

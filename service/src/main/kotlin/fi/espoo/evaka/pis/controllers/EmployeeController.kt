@@ -29,7 +29,7 @@ import java.util.UUID
 @RequestMapping("/employee")
 class EmployeeController {
 
-    @GetMapping()
+    @GetMapping
     fun getEmployees(db: Database.Connection, user: AuthenticatedUser): ResponseEntity<List<Employee>> {
         Audit.EmployeesRead.log()
         user.requireOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.UNIT_SUPERVISOR)
