@@ -189,12 +189,12 @@ export async function deleteAttachment(id: UUID): Promise<Result<void>> {
   }
 }
 
-export async function getFileAvailability(
-  fileId: UUID
+export async function getAttachmentAvailability(
+  attachmentId: UUID
 ): Promise<Result<AttachmentPreDownloadResponse>> {
   try {
     const result = await client({
-      url: `/attachments/${fileId}/pre-download`,
+      url: `/attachments/${attachmentId}/pre-download`,
       method: 'GET'
     })
     return Success.of(result.data)
@@ -203,10 +203,12 @@ export async function getFileAvailability(
   }
 }
 
-export async function getFileBlob(fileId: UUID): Promise<Result<BlobPart>> {
+export async function getAttachmentBlob(
+  attachmentId: UUID
+): Promise<Result<BlobPart>> {
   try {
     const result = await client({
-      url: `/attachments/${fileId}/download`,
+      url: `/attachments/${attachmentId}/download`,
       method: 'GET',
       responseType: 'blob'
     })

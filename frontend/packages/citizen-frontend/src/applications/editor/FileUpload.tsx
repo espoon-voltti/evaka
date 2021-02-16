@@ -25,7 +25,10 @@ import { UUID } from '@evaka/lib-common/src/types'
 import { Result } from '@evaka/lib-common/src/api'
 import { Attachment } from '@evaka/lib-common/src/api-types/application/ApplicationDetails'
 import InfoModal from '@evaka/lib-components/src/molecules/modals/InfoModal'
-import { getFileAvailability, getFileBlob } from '../../applications/api'
+import {
+  getAttachmentAvailability,
+  getAttachmentBlob
+} from '../../applications/api'
 
 export type FileUploadProps = {
   files: Attachment[]
@@ -350,8 +353,8 @@ export default React.memo(function FileUpload({
                 {!inProgress(file) && !file.error ? (
                   <FileDownloadButton
                     file={file}
-                    fileAvailableFn={getFileAvailability}
-                    fileFetchFn={getFileBlob}
+                    fileAvailableFn={getAttachmentAvailability}
+                    fileFetchFn={getAttachmentBlob}
                     onFileUnavailable={() => setModalVisible(true)}
                   />
                 ) : (
