@@ -12,6 +12,7 @@ import DatePickerDay from './DatePickerDay'
 import LocalDate from '~../../lib-common/src/local-date'
 import { InputInfo } from '../../atoms/form/InputField'
 import { tabletMin } from '../../breakpoints'
+import { Modifiers } from 'react-day-picker'
 
 const DatePickerWrapper = styled.div`
   position: relative;
@@ -79,7 +80,10 @@ function DatePicker({
     if (e.key === 'Esc' || e.key === 'Escape') setShow(false)
   }
 
-  function handleDayClick(day: Date) {
+  function handleDayClick(day: Date, modifiers?: Modifiers) {
+    if (modifiers?.disabled) {
+      return
+    }
     setShow(false)
     onChange(LocalDate.fromSystemTzDate(day).format())
   }
