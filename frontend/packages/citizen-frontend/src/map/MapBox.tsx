@@ -13,6 +13,7 @@ import { formatDistance, UnitWithDistance } from '~map/distances'
 import { useTranslation } from '~localization'
 import { formatCareTypes } from './format'
 import { MapAddress } from '~map/MapView'
+import { mapViewBreakpoint } from '~map/const'
 
 export interface Props {
   units: (UnitWithDistance | PublicUnit)[]
@@ -154,12 +155,18 @@ const Wrapper = styled.div`
   display: flex;
   flex-direction: column;
   align-items: stretch;
+
+  min-height: 500px;
+
+  @media (max-width: ${mapViewBreakpoint}) {
+    height: calc(100vh - 80px);
+    min-height: unset;
+  }
 `
 
 const Map = styled(MapContainer)`
   flex-grow: 1;
   width: 100%;
-  min-height: 500px;
 `
 
 const FooterWrapper = styled.div`
@@ -169,6 +176,7 @@ const FooterWrapper = styled.div`
   width: fit-content;
   background-color: ${colors.greyscale.white};
   z-index: 999;
+  margin-right: 250px;
 
   > div {
     margin: 0 ${defaultMargins.s} 0;
@@ -180,6 +188,7 @@ const FooterWrapper = styled.div`
     display: flex;
     flex-wrap: wrap;
     justify-content: space-evenly;
+    margin: 0;
 
     div:first-child {
       width: 100%;
