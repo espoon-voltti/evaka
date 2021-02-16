@@ -24,7 +24,7 @@ const DownloadButton = styled.button`
   cursor: pointer;
 `
 
-interface Props {
+interface FileDownloadButtonProps {
   file: Attachment
   fileFetchFn: (fileId: UUID) => Promise<Result<BlobPart>>
   fileAvailableFn: (
@@ -42,7 +42,7 @@ export default React.memo(function FileDownloadButton({
   fileFetchFn,
   fileAvailableFn,
   onFileUnavailable
-}: Props) {
+}: FileDownloadButtonProps) {
   const deliverBlob = async (file: Attachment) => {
     const result = await fileFetchFn(file.id)
     if (result.isSuccess) {
