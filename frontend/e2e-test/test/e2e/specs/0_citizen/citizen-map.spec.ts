@@ -20,7 +20,11 @@ const swedishDaycare: Daycare = {
   ...daycare2Fixture,
   name: 'Svart hål svenska daghem',
   id: '9db9e8f7-2091-4be1-b091-fe107906e1b9',
-  language: 'sv'
+  language: 'sv',
+  location: {
+    lat: 60.200745762705296,
+    lon: 24.785286409387005
+  }
 }
 
 fixture('Citizen map page')
@@ -74,4 +78,31 @@ test('Unit language filter affects the unit list', async (t) => {
   await mapPage.setLanguageFilters({ fi: false, sv: true })
   await t.expect(mapPage.unitListItem(swedishDaycare).exists).ok()
   await t.expect(mapPage.unitListItem(daycare2Fixture).exists).notOk()
+})
+
+test('Unit details can be viewed by clicking a list item', async (t) => {
+  await t.click(mapPage.unitListItem(daycare2Fixture))
+  await t.expect(mapPage.unitDetailsPanel.exists).ok()
+  await t.expect(mapPage.unitDetailsPanel.name).eql(daycare2Fixture.name)
+
+  await t.click(mapPage.unitDetailsPanel.backButton())
+  await t.click(mapPage.unitListItem(swedishDaycare))
+
+  await t.expect(mapPage.unitDetailsPanel.name).eql(swedishDaycare.name)
+})
+
+test('Viewing unit details automatically pans the map to the right marker', async (t) => {
+  const daycare2Marker = mapPage.unitMapMarker(daycare2Fixture)
+  const swedishMarker = mapPage.unitMapMarker(swedishDaycare)
+
+  // Zoom in fully to make sure we start without either marker visible.
+  await mapPage.map.zoomInFully()
+  await t.expect(daycare2Marker.visible).ok()
+
+  await t.click(mapPage.unitListItem(daycare2Fixture))
+  await t.expect(daycare2Marker.visible).ok()
+
+  await t.click(mapPage.unitDetailsPanel.backButton())
+  await t.click(mapPage.unitListItem(swedishDaycare))
+  await t.expect(swedishMarker.visible).ok()
 })

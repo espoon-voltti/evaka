@@ -95,16 +95,17 @@ export default React.memo(function UnitDetailsPanel({
   const routeLink = getRouteLink()
 
   return (
-    <Wrapper>
+    <Wrapper data-qa="map-unit-details">
       <Area opaque>
         <Gap size="s" />
         <InlineButton
+          dataQa="map-unit-details-back"
           text={'Takaisin hakuun'}
           icon={faArrowLeft}
           onClick={onClose}
         />
         <Gap size="s" />
-        <H2>{unit.name}</H2>
+        <H2 data-qa="map-unit-details-name">{unit.name}</H2>
 
         {selectedAddress && distance && distance.isLoading ? null : (
           <>
