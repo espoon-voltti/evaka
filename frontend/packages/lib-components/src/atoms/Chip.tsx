@@ -37,17 +37,19 @@ type SelectionChipProps = {
   text: string
   selected: boolean
   onChange: (selected: boolean) => void
+  'data-qa'?: string
 }
 
 export const SelectionChip = React.memo(function SelectionChip({
   text,
   selected,
-  onChange
+  onChange,
+  'data-qa': dataQa
 }: SelectionChipProps) {
   const ariaId = Math.random().toString(36).substring(2, 15)
 
   return (
-    <div>
+    <div data-qa={dataQa}>
       <SelectionChipWrapper
         onClick={(e) => {
           e.preventDefault()
