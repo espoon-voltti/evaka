@@ -24,7 +24,6 @@ export const Status = styled.span`
   color: ${colors.greyscale.darkest}
   font-size: 16px;
   font-weight: 400;
-  padding-left: 0.5rem;
 `
 
 export const decisionStatusIcon = {

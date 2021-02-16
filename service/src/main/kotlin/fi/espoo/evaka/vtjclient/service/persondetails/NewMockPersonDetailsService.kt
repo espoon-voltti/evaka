@@ -163,6 +163,18 @@ val vtjPersonMap = mapOf<String, VtjPersonNormalized>(
         dependants = listOf(),
         guardians = listOf("070644-937X", "290385-9900")
     ),
+    "160620A999J" to VtjPersonNormalized(
+        firstNames = "Porri Hatter",
+        lastName = "Karhula",
+        nationalities = listOf(nationalityFin),
+        nativeLanguage = langFin,
+        restrictedDetails = RestrictedDetails(enabled = true),
+        address = null,
+        dateOfDeath = null,
+        residenceCode = null,
+        dependants = listOf(),
+        guardians = listOf("070644-937X")
+    ),
 
     // adults
     "070644-937X" to VtjPersonNormalized(
@@ -174,7 +186,7 @@ val vtjPersonMap = mapOf<String, VtjPersonNormalized>(
         address = address1,
         dateOfDeath = null,
         residenceCode = residenceCode1,
-        dependants = listOf("070714A9126", "160616A978U"),
+        dependants = listOf("070714A9126", "160616A978U", "160620A999J"),
         guardians = listOf()
     ),
     "290385-9900" to VtjPersonNormalized(

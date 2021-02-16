@@ -54,7 +54,6 @@ export default React.memo(function Decisions() {
                 message={t.decisions.unconfirmedDecisions(
                   unconfirmedDecisionsCount
                 )}
-                thin
                 data-qa="alert-box-unconfirmed-decisions-count"
               />
             </>

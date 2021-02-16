@@ -11,14 +11,14 @@ interface FixedSpaceRowProps {
   justifyContent?: Property.JustifyContent
   alignItems?: Property.AlignItems
   marginBottom?: SpacingSize | string
-  wrap?: boolean
+  flexWrap?: boolean
 }
 export const FixedSpaceRow = styled.div<FixedSpaceRowProps>`
   display: flex;
   flex-direction: row;
   ${(p) => (p.justifyContent ? `justify-content: ${p.justifyContent};` : '')}
   ${(p) => (p.alignItems ? `align-items: ${p.alignItems};` : '')}
-  ${(p) => (p.wrap ? 'flex-wrap: wrap;' : '')}
+  ${(p) => (p.flexWrap ? 'flex-wrap: wrap;' : '')}
 
   ${(p) =>
     p.marginBottom

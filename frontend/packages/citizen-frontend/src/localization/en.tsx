@@ -155,7 +155,7 @@ const en: Translations = {
             816 31000). If you wish to cancel an application you have submitted,
             please send an email to early childhood education service
             counselling (
-            <a href="varhaiskasvatuksen.palveluohjaus@espoo.fi">
+            <a href="mailto:varhaiskasvatuksen.palveluohjaus@espoo.fi">
               varhaiskasvatuksen.palveluohjaus@espoo.fi
             </a>
             ).

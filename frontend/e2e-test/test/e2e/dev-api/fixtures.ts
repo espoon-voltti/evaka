@@ -194,6 +194,23 @@ export const enduserChildFixtureKaarina: ApplicationPersonDetail = {
   restrictedDetailsEndDate: null
 }
 
+export const enduserChildFixturePorriHatterRestricted: ApplicationPersonDetail = {
+  id: '28e189d7-abbe-4be9-9074-6e4c881f18de',
+  ssn: '160620A999J',
+  firstName: 'Porri Hatter',
+  lastName: 'Karhula',
+  email: '',
+  phone: '',
+  language: 'fi',
+  dateOfBirth: '2014-07-07',
+  streetAddress: enduserGuardianFixture.streetAddress,
+  postalCode: enduserGuardianFixture.postalCode,
+  postOffice: enduserGuardianFixture.postOffice,
+  nationalities: ['FI'],
+  restrictedDetailsEnabled: true,
+  restrictedDetailsEndDate: null
+}
+
 export const enduserChildJariOtherGuardianFixture: ApplicationPersonDetail = {
   id: 'fb915d31-738f-453f-a2ca-2e7f61db641d',
   ssn: '311299-999E',

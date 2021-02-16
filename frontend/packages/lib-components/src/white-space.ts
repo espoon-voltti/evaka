@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import styled from 'styled-components'
+import { tabletMin } from './breakpoints'
 
 export type SpacingSize =
   | 'zero'
@@ -47,10 +48,16 @@ export const defaultMargins: Record<SpacingSize, string> = {
 type GapProps = {
   horizontal?: boolean
   size?: SpacingSize
+  sizeOnMobile?: SpacingSize
 }
 
 export const Gap = styled.div<GapProps>`
   display: ${(p) => (p.horizontal ? 'inline-block' : 'block')};
   ${(p) => (p.horizontal ? 'width' : 'height')}: ${(p) =>
     defaultMargins[p.size || 'm']};
+
+  @media (min-width: ${tabletMin}) {
+    ${(p) => (p.horizontal ? 'width' : 'height')}: ${(p) =>
+      defaultMargins[p.sizeOnMobile || p.size || 'm']};
+  }
 `

@@ -157,11 +157,11 @@ class MockDataServiceTest {
     }
 
     @Test
-    fun `mr Karhula has two children`() {
+    fun `mr Karhula has 3 children`() {
         val result = mockDetailsService.getPersonWithDependants(mapToQuery("070644-937X"))
         val parent = (result as PersonDetails.Result).vtjPerson
 
-        assertEquals(2, parent.dependants.size)
+        assertEquals(3, parent.dependants.size)
     }
 
     @Test

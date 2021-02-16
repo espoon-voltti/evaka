@@ -167,6 +167,63 @@
             }
           }
         ]
+      },
+      {
+        "firstNames": "Porri Hatter",
+        "lastName": "Karhula",
+        "socialSecurityNumber": "160620A999J",
+        "nationalities": [
+          {
+            "countryName": "Suomi",
+            "countryCode": "FIN"
+          }
+        ],
+        "nativeLanguage": {
+          "languageName": "suomi",
+          "code": "fi"
+        },
+        "restrictedDetails": {
+          "enabled": true,
+          "endDate": null
+        },
+        "residenceCode": "",
+        "address": {
+          "streetAddress": "",
+          "postalCode": "",
+          "postOffice": "",
+          "streetAddressSe": "",
+          "postOfficeSe": ""
+        },
+        "dependants": [],
+        "guardians": [
+          {
+            "firstNames": "Johannes Olavi Antero Tapio",
+            "lastName": "Karhula",
+            "socialSecurityNumber": "070644-937X",
+            "nationalities": [
+              {
+                "countryName": "Suomi",
+                "countryCode": "FIN"
+              }
+            ],
+            "nativeLanguage": {
+              "languageName": "suomi",
+              "code": "fi"
+            },
+            "restrictedDetails": {
+              "enabled": false,
+              "endDate": null
+            },
+            "residenceCode": "hogfors_kamreerintie1",
+            "address": {
+              "streetAddress": "Kamreerintie 1",
+              "postalCode": "00340",
+              "postOffice": "Espoo",
+              "streetAddressSe": "Kamrersgatan 1",
+              "postOfficeSe": "Esbo"
+            }
+          }
+        ]
       }
     ]
   },

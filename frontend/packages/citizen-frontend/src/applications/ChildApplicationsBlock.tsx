@@ -242,6 +242,9 @@ export default React.memo(function ChildApplicationsBlock({
                     }
                     size="s"
                   />
+
+                  <Gap size={'xs'} horizontal={true} />
+
                   <Status data-qa={`application-status-${applicationId}`}>
                     {t.applicationsList.status[applicationStatus]}
                   </Status>
@@ -267,7 +270,7 @@ export default React.memo(function ChildApplicationsBlock({
                 <Gap size="xs" horizontal />
               </ListGrid>
               <Gap size="s" />
-              <FixedSpaceRow>
+              <FixedSpaceRow flexWrap>
                 {applicationStatus === 'CREATED' ||
                 applicationStatus === 'SENT' ? (
                   <Link to={`/applications/${applicationId}/edit`}>

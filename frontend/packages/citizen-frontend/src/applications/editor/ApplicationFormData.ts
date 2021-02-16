@@ -6,6 +6,7 @@ import {
 } from '@evaka/lib-common/src/api-types/application/ApplicationDetails'
 import { ApplicationGuardianAgreementStatus } from '@evaka/lib-common/src/api-types/application/enums'
 import { User } from '../../auth/state'
+import { ApplicationAddress } from '@evaka/lib-common/src/api-types/application/ApplicationDetails'
 
 export type ServiceNeedFormData = {
   preferredStartDate: string
@@ -148,6 +149,19 @@ export function apiDataToFormData(
       socialSecurityNumber: child.socialSecurityNumber ?? ''
     }))
 
+  const formatAddress = (address: ApplicationAddress | null): string => {
+    if (address) {
+      const formattedAddress =
+        `${address.street || ''}, ${address.postalCode || ''} ${
+          address.postOffice || ''
+        }` || ''
+
+      return formattedAddress.trim().length > 1 ? formattedAddress : ''
+    } else {
+      return ''
+    }
+  }
+
   return {
     serviceNeed: {
       preferredStartDate:
@@ -187,10 +201,7 @@ export function apiDataToFormData(
       childFirstName: application.form.child.person.firstName,
       childLastName: application.form.child.person.lastName,
       childSSN: application.form.child.person.socialSecurityNumber || '',
-      childStreet:
-        `${application.form.child.address?.street || ''}, ${
-          application.form.child.address?.postalCode || ''
-        } ${application.form.child.address?.postOffice || ''}` || '',
+      childStreet: formatAddress(application.form.child.address),
       childFutureAddressExists: application.form.child.futureAddress !== null,
       childMoveDate:
         application.form.child.futureAddress?.movingDate?.format() ?? '',
