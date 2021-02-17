@@ -37,7 +37,9 @@ export default function CreateUnitPage(): JSX.Element {
         employeesResponse.map((employees) =>
           employees.map((employee) => ({
             value: employee.id,
-            label: [employee.firstName, employee.lastName].join(' ')
+            label: `${employee.firstName ?? ''} ${employee.lastName ?? ''}${
+              employee.email ? ` (${employee.email})` : ''
+            }`
           }))
         )
       )

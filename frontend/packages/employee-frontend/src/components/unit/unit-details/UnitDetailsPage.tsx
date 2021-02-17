@@ -52,9 +52,9 @@ export default function UnitDetailsPage(): JSX.Element {
         employeesResponse.map((employees) =>
           employees.map((employee) => ({
             value: employee.id,
-            label: `${employee.firstName ?? ''} ${employee.lastName ?? ''} (${
-              employee.email
-            })`
+            label: `${employee.firstName ?? ''} ${employee.lastName ?? ''}${
+              employee.email ? ` (${employee.email})` : ''
+            }`
           }))
         )
       )
