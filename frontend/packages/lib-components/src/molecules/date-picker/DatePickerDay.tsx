@@ -59,7 +59,7 @@ function DatePickerDay({
       selectedDays={convertToDate(inputValue)}
       disabledDays={(date: Date) => {
         const localDate = LocalDate.fromSystemTzDate(date)
-        return isValidDate ? !isValidDate(localDate) : true
+        return isValidDate ? !isValidDate(localDate) : false
       }}
       initialMonth={convertToDate(inputValue) ?? undefined}
     />

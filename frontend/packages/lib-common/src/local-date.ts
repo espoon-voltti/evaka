@@ -106,6 +106,11 @@ export default class LocalDate {
   isAfter(other: LocalDate): boolean {
     return isAfter(this.toSystemTzDate(), other.toSystemTzDate())
   }
+  isBetween(minInclusive: LocalDate, maxInclusive: LocalDate): boolean {
+    return (
+      this.isEqualOrAfter(minInclusive) && this.isEqualOrBefore(maxInclusive)
+    )
+  }
   isToday(): boolean {
     return isToday(this.toSystemTzDate())
   }
