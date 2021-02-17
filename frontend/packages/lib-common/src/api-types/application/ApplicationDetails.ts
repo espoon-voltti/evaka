@@ -219,7 +219,3 @@ export interface ApplicationAttachment extends Attachment {
   updated: Date
   type: AttachmentType
 }
-
-export interface AttachmentPreDownloadResponse {
-  fileAvailable: boolean
-}

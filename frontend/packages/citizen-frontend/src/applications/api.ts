@@ -8,7 +8,6 @@ import LocalDate from '@evaka/lib-common/src/local-date'
 import {
   ApplicationDetails,
   ApplicationFormUpdate,
-  AttachmentPreDownloadResponse,
   deserializeApplicationDetails
 } from '@evaka/lib-common/src/api-types/application/ApplicationDetails'
 import {
@@ -184,20 +183,6 @@ export async function deleteAttachment(id: UUID): Promise<Result<void>> {
   try {
     await client.delete(`/attachments/citizen/${id}`)
     return Success.of(void 0)
-  } catch (e) {
-    return Failure.fromError(e)
-  }
-}
-
-export async function getAttachmentAvailability(
-  attachmentId: UUID
-): Promise<Result<AttachmentPreDownloadResponse>> {
-  try {
-    const result = await client({
-      url: `/attachments/${attachmentId}/pre-download`,
-      method: 'GET'
-    })
-    return Success.of(result.data)
   } catch (e) {
     return Failure.fromError(e)
   }

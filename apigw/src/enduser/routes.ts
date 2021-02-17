@@ -14,7 +14,6 @@ router.get('/decisions2/:decisionId/download', proxy)
 
 router.get('/attachments/:applicationId/download', proxy)
 router.get('/attachments/:attachmentId/download', proxy)
-router.get('/attachments/:attachmentId/pre-download', proxy)
 
 router.delete('/attachments/citizen/:id', proxy)
 

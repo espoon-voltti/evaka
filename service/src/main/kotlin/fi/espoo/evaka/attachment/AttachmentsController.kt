@@ -114,31 +114,6 @@ class AttachmentsController(
         return id
     }
 
-    data class PreDownloadResponse(
-        val fileAvailable: Boolean
-    )
-
-    @GetMapping("/{attachmentId}/pre-download")
-    fun checkAttachmentAvailability(
-        db: Database,
-        user: AuthenticatedUser,
-        @PathVariable attachmentId: UUID
-    ): ResponseEntity<PreDownloadResponse> {
-        Audit.AttachmentsRead.log(targetId = attachmentId)
-        if (!user.hasOneOfRoles(UserRole.ADMIN, UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN)) {
-            if (!db.read { it.isOwnAttachment(attachmentId, user) }) throw Forbidden("Permission denied")
-        }
-
-        return try {
-            documentClient.headObject(filesBucket, "$attachmentId").let {
-                ResponseEntity.ok().body(PreDownloadResponse(true))
-            }
-        } catch (e: AmazonS3Exception) {
-            if (e.statusCode == 403) ResponseEntity.ok().body(PreDownloadResponse(false))
-            else throw e
-        }
-    }
-
     @GetMapping("/{attachmentId}/download")
     fun getAttachment(
         db: Database,
@@ -161,7 +136,7 @@ class AttachmentsController(
                     .body(document.getBytes())
             }
         } catch (e: AmazonS3Exception) {
-            if (e.statusCode == 403) throw NotFound("Attachment $attachmentId not yet available")
+            if (e.statusCode == 403) throw NotFound("Attachment $attachmentId not available, scanning in progress or failed")
             throw e
         }
     }

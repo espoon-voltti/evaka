@@ -13,10 +13,7 @@ import { Gap } from '@evaka/lib-components/src/white-space'
 import { faFile, faInfo } from '@evaka/lib-icons'
 import { ApplicationFormData } from '../../../applications/editor/ApplicationFormData'
 import { useTranslation } from '../../../localization'
-import {
-  getAttachmentAvailability,
-  getAttachmentBlob
-} from '../../../applications/api'
+import { getAttachmentBlob } from '../../../applications/api'
 
 type Props = {
   formData: ApplicationFormData
@@ -71,7 +68,6 @@ export const ServiceNeedUrgency = React.memo(function ServiceNeedUrgency({
                     <Gap horizontal size={'xs'} />
                     <FileDownloadButton
                       file={file}
-                      fileAvailableFn={getAttachmentAvailability}
                       fileFetchFn={getAttachmentBlob}
                       onFileUnavailable={() => setErrorModalVisible(true)}
                     />
@@ -133,7 +129,6 @@ export const ServiceNeedShiftCare = React.memo(function ServiceNeedShiftCare({
                     <Gap horizontal size={'xs'} />
                     <FileDownloadButton
                       file={file}
-                      fileAvailableFn={getAttachmentAvailability}
                       fileFetchFn={getAttachmentBlob}
                       onFileUnavailable={() => setErrorModalVisible(true)}
                     />
