@@ -19,10 +19,6 @@ export default class CitizenMapPage {
 
   readonly map = new Map(Selector('[data-qa="map-view"]'))
 
-  async setLanguageFilters(selected: { fi: boolean; sv: boolean }) {
-    await this.setLanguageFilter('fi', selected.fi)
-    await this.setLanguageFilter('sv', selected.sv)
-  }
   async setLanguageFilter(language: 'fi' | 'sv', selected: boolean) {
     const chip = new SelectionChip(
       Selector(`[data-qa="map-filter-${language}"]`)

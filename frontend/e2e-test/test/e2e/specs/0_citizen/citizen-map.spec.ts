@@ -65,17 +65,15 @@ test('Unit type filter affects the unit list', async (t) => {
 
 test('Unit language filter affects the unit list', async (t) => {
   await t.expect(mapPage.daycareFilter.find('input').checked).ok()
-
-  await mapPage.setLanguageFilters({ fi: false, sv: false })
   await t.expect(mapPage.unitListItem(daycare2Fixture).exists).ok()
   await t.expect(mapPage.unitListItem(swedishDaycare).exists).ok()
 
   await mapPage.setLanguageFilter('fi', true)
-  await t.debug()
   await t.expect(mapPage.unitListItem(swedishDaycare).exists).notOk()
   await t.expect(mapPage.unitListItem(daycare2Fixture).exists).ok()
 
-  await mapPage.setLanguageFilters({ fi: false, sv: true })
+  await mapPage.setLanguageFilter('sv', true)
+  await mapPage.setLanguageFilter('fi', false)
   await t.expect(mapPage.unitListItem(swedishDaycare).exists).ok()
   await t.expect(mapPage.unitListItem(daycare2Fixture).exists).notOk()
 })
