@@ -124,7 +124,15 @@ export default React.memo(function MapView() {
           />
         )}
         <MapContainer>
-          <MapBox />
+          <MapBox
+            units={
+              selectedAddress
+                ? unitsWithDistances.getOrElse([])
+                : filteredUnits.getOrElse([])
+            }
+            selectedUnit={selectedUnit}
+            selectedAddress={selectedAddress}
+          />
         </MapContainer>
       </FlexContainer>
     </FullScreen>

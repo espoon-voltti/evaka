@@ -11,6 +11,8 @@ import App from './App'
 import { getEnvironment } from '@evaka/lib-common/src/utils/helpers'
 import { config } from './configs'
 
+import 'leaflet/dist/leaflet.css'
+
 // Load Sentry before React to make Sentry's integrations work automatically
 Sentry.init({
   enabled: config.sentry.enabled,
