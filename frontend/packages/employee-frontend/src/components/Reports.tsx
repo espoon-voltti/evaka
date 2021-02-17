@@ -290,37 +290,12 @@ function Reports() {
                   color={colors.primary}
                   content={faHandHolding}
                 />
-                <LinkTitle to="/reports/assistance-needs">
-                  {i18n.reports.assistanceNeeds.title}
+                <LinkTitle to="/reports/assistance-needs-and-actions">
+                  {i18n.reports.assistanceNeedsAndActions.title}
                 </LinkTitle>
               </TitleRow>
               <Description>
-                {i18n.reports.assistanceNeeds.description}
-              </Description>
-            </ReportItem>
-          </RequireRole>
-          <RequireRole
-            oneOf={[
-              'ADMIN',
-              'SERVICE_WORKER',
-              'DIRECTOR',
-              'UNIT_SUPERVISOR',
-              'SPECIAL_EDUCATION_TEACHER'
-            ]}
-          >
-            <ReportItem>
-              <TitleRow>
-                <RoundIcon
-                  size="L"
-                  color={colors.primary}
-                  content={faHandHolding}
-                />
-                <LinkTitle to="/reports/assistance-actions">
-                  {i18n.reports.assistanceActions.title}
-                </LinkTitle>
-              </TitleRow>
-              <Description>
-                {i18n.reports.assistanceActions.description}
+                {i18n.reports.assistanceNeedsAndActions.description}
               </Description>
             </ReportItem>
           </RequireRole>

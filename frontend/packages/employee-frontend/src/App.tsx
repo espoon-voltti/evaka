@@ -39,8 +39,7 @@ import ReportPartnersInDifferentAddress from '~components/reports/PartnersInDiff
 import ReportChildrenInDifferentAddress from '~components/reports/ChildrenInDifferentAddress'
 import ReportChildAgeLanguage from '~components/reports/ChildAgeLanguage'
 import ReportApplications from '~components/reports/Applications'
-import ReportAssistanceNeeds from '~components/reports/AssistanceNeeds'
-import ReportAssistanceActions from '~components/reports/AssistanceActions'
+import ReportAssistanceNeedsAndActions from '~components/reports/AssistanceNeedsAndActions'
 import ReportOccupancies from '~components/reports/Occupancies'
 import ReportInvoices from '~components/reports/Invoices'
 import ReportEndedPlacements from '~components/reports/EndedPlacements'
@@ -242,14 +241,8 @@ export default function App() {
             />
             <RouteWithTitle
               exact
-              path="/reports/assistance-needs"
-              component={ensureAuthenticated(ReportAssistanceNeeds)}
-              title={i18n.titles.reports}
-            />
-            <RouteWithTitle
-              exact
-              path="/reports/assistance-actions"
-              component={ensureAuthenticated(ReportAssistanceActions)}
+              path="/reports/assistance-needs-and-actions"
+              component={ensureAuthenticated(ReportAssistanceNeedsAndActions)}
               title={i18n.titles.reports}
             />
             <RouteWithTitle

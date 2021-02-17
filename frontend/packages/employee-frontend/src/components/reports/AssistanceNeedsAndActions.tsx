@@ -23,10 +23,10 @@ import {
 import { reactSelectStyles } from '~components/common/Select'
 import { useTranslation } from '~state/i18n'
 import { Loading, Result } from '@evaka/lib-common/src/api'
-import { AssistanceActionsReportRow } from '~types/reports'
+import { AssistanceNeedsAndActionsReportRow } from '~types/reports'
 import {
-  AssistanceActionsReportFilters,
-  getAssistanceActionsReport
+  AssistanceNeedsAndActionsReportFilters,
+  getAssistanceNeedsAndActionsReport
 } from '~api/reports'
 import ReturnButton from '@evaka/lib-components/src/atoms/buttons/ReturnButton'
 import ReportDownload from '~components/reports/ReportDownload'
@@ -52,19 +52,22 @@ const Wrapper = styled.div`
   width: 100%;
 `
 
-function AssistanceActions() {
+function AssistanceNeedsAndActions() {
   const { i18n } = useTranslation()
-  const [rows, setRows] = useState<Result<AssistanceActionsReportRow[]>>(
-    Loading.of()
-  )
-  const [filters, setFilters] = useState<AssistanceActionsReportFilters>({
+  const [rows, setRows] = useState<
+    Result<AssistanceNeedsAndActionsReportRow[]>
+  >(Loading.of())
+  const [
+    filters,
+    setFilters
+  ] = useState<AssistanceNeedsAndActionsReportFilters>({
     date: LocalDate.today()
   })
 
   const [displayFilters, setDisplayFilters] = useState<DisplayFilters>(
     emptyDisplayFilters
   )
-  const displayFilter = (row: AssistanceActionsReportRow): boolean => {
+  const displayFilter = (row: AssistanceNeedsAndActionsReportRow): boolean => {
     return !(
       displayFilters.careArea && row.careAreaName !== displayFilters.careArea
     )
@@ -73,12 +76,13 @@ function AssistanceActions() {
   useEffect(() => {
     setRows(Loading.of())
     setDisplayFilters(emptyDisplayFilters)
-    void getAssistanceActionsReport(filters).then(setRows)
+    void getAssistanceNeedsAndActionsReport(filters).then(setRows)
   }, [filters])
 
+  const basisTypes = i18n.childInformation.assistanceNeed.fields.basisTypes
   const actionTypes = i18n.childInformation.assistanceAction.fields.actionTypes
 
-  const filteredRows: AssistanceActionsReportRow[] = useMemo(
+  const filteredRows: AssistanceNeedsAndActionsReportRow[] = useMemo(
     () => rows.map((rs) => rs.filter(displayFilter)).getOrElse([]),
     [rows, displayFilters]
   )
@@ -87,7 +91,7 @@ function AssistanceActions() {
     <Container>
       <ReturnButton label={i18n.common.goBack} />
       <ContentArea opaque>
-        <Title size={1}>{i18n.reports.assistanceActions.title}</Title>
+        <Title size={1}>{i18n.reports.assistanceNeedsAndActions.title}</Title>
         <FilterRow>
           <FilterLabel>{i18n.reports.common.date}</FilterLabel>
           <DatePickerDeprecated
@@ -171,6 +175,58 @@ function AssistanceActions() {
                   key: 'unitProviderType'
                 },
                 {
+                  label: basisTypes.AUTISM,
+                  key: 'autism'
+                },
+                {
+                  label: basisTypes.DEVELOPMENTAL_DISABILITY_1,
+                  key: 'developmentalDisability1'
+                },
+                {
+                  label: basisTypes.DEVELOPMENTAL_DISABILITY_2,
+                  key: 'developmentalDisability2'
+                },
+                {
+                  label: basisTypes.FOCUS_CHALLENGE,
+                  key: 'focusChallenge'
+                },
+                {
+                  label: basisTypes.LINGUISTIC_CHALLENGE,
+                  key: 'linguisticChallenge'
+                },
+                {
+                  label: basisTypes.DEVELOPMENT_MONITORING,
+                  key: 'developmentMonitoring'
+                },
+                {
+                  label: basisTypes.DEVELOPMENT_MONITORING_PENDING,
+                  key: 'developmentMonitoringPending'
+                },
+                {
+                  label: basisTypes.MULTI_DISABILITY,
+                  key: 'multiDisability'
+                },
+                {
+                  label: basisTypes.LONG_TERM_CONDITION,
+                  key: 'longTermCondition'
+                },
+                {
+                  label: basisTypes.REGULATION_SKILL_CHALLENGE,
+                  key: 'regulationSkillChallenge'
+                },
+                {
+                  label: basisTypes.DISABILITY,
+                  key: 'disability'
+                },
+                {
+                  label: basisTypes.OTHER,
+                  key: 'otherAssistanceNeed'
+                },
+                {
+                  label: i18n.reports.assistanceNeedsAndActions.basisMissing,
+                  key: 'noAssistanceNeeds'
+                },
+                {
                   label: actionTypes.ASSISTANCE_SERVICE_CHILD,
                   key: 'assistanceServiceChild'
                 },
@@ -192,14 +248,14 @@ function AssistanceActions() {
                 },
                 {
                   label: actionTypes.OTHER,
-                  key: 'other'
+                  key: 'otherAssistanceAction'
                 },
                 {
-                  label: i18n.reports.assistanceActions.actionMissing,
-                  key: 'none'
+                  label: i18n.reports.assistanceNeedsAndActions.actionMissing,
+                  key: 'noAssistanceActions'
                 }
               ]}
-              filename={`Lapsien tukitoimet yksiköissä ${filters.date.formatIso()}.csv`}
+              filename={`Lapsien tuentarpeet ja tukitoimet yksiköissä ${filters.date.formatIso()}.csv`}
             />
             <TableScrollable>
               <Thead>
@@ -209,6 +265,19 @@ function AssistanceActions() {
                   <Th>{i18n.reports.common.groupName}</Th>
                   <Th>{i18n.reports.common.unitType}</Th>
                   <Th>{i18n.reports.common.unitProviderType}</Th>
+                  <Th>{basisTypes.AUTISM}</Th>
+                  <Th>{basisTypes.DEVELOPMENTAL_DISABILITY_1}</Th>
+                  <Th>{basisTypes.DEVELOPMENTAL_DISABILITY_2}</Th>
+                  <Th>{basisTypes.FOCUS_CHALLENGE}</Th>
+                  <Th>{basisTypes.LINGUISTIC_CHALLENGE}</Th>
+                  <Th>{basisTypes.DEVELOPMENT_MONITORING}</Th>
+                  <Th>{basisTypes.DEVELOPMENT_MONITORING_PENDING}</Th>
+                  <Th>{basisTypes.MULTI_DISABILITY}</Th>
+                  <Th>{basisTypes.LONG_TERM_CONDITION}</Th>
+                  <Th>{basisTypes.REGULATION_SKILL_CHALLENGE}</Th>
+                  <Th>{basisTypes.DISABILITY}</Th>
+                  <Th>{basisTypes.OTHER}</Th>
+                  <Th>{i18n.reports.assistanceNeedsAndActions.basisMissing}</Th>
                   <Th>{actionTypes.ASSISTANCE_SERVICE_CHILD}</Th>
                   <Th>{actionTypes.ASSISTANCE_SERVICE_UNIT}</Th>
                   <Th>{actionTypes.SMALLER_GROUP}</Th>
@@ -218,11 +287,13 @@ function AssistanceActions() {
                   <Th>{actionTypes.RATIO_DECREASE}</Th>
                   <Th>{actionTypes.PERIODICAL_VEO_SUPPORT}</Th>
                   <Th>{actionTypes.OTHER}</Th>
-                  <Th>{i18n.reports.assistanceActions.actionMissing}</Th>
+                  <Th>
+                    {i18n.reports.assistanceNeedsAndActions.actionMissing}
+                  </Th>
                 </Tr>
               </Thead>
               <Tbody>
-                {filteredRows.map((row: AssistanceActionsReportRow) => (
+                {filteredRows.map((row: AssistanceNeedsAndActionsReportRow) => (
                   <Tr key={`${row.unitId}:${row.groupId}`}>
                     <Td>{row.careAreaName}</Td>
                     <Td>
@@ -241,6 +312,19 @@ function AssistanceActions() {
                         ]
                       }
                     </Td>
+                    <Td>{row.autism}</Td>
+                    <Td>{row.developmentalDisability1}</Td>
+                    <Td>{row.developmentalDisability2}</Td>
+                    <Td>{row.focusChallenge}</Td>
+                    <Td>{row.linguisticChallenge}</Td>
+                    <Td>{row.developmentMonitoring}</Td>
+                    <Td>{row.developmentMonitoringPending}</Td>
+                    <Td>{row.multiDisability}</Td>
+                    <Td>{row.longTermCondition}</Td>
+                    <Td>{row.regulationSkillChallenge}</Td>
+                    <Td>{row.disability}</Td>
+                    <Td>{row.otherAssistanceNeed}</Td>
+                    <Td>{row.noAssistanceNeeds}</Td>
                     <Td>{row.assistanceServiceChild}</Td>
                     <Td>{row.assistanceServiceUnit}</Td>
                     <Td>{row.smallerGroup}</Td>
@@ -249,8 +333,8 @@ function AssistanceActions() {
                     <Td>{row.resourcePerson}</Td>
                     <Td>{row.ratioDecrease}</Td>
                     <Td>{row.periodicalVeoSupport}</Td>
-                    <Td>{row.other}</Td>
-                    <Td>{row.none}</Td>
+                    <Td>{row.otherAssistanceAction}</Td>
+                    <Td>{row.noAssistanceActions}</Td>
                   </Tr>
                 ))}
               </Tbody>
@@ -261,6 +345,70 @@ function AssistanceActions() {
                   <Td />
                   <Td />
                   <Td />
+                  <Td>{reducePropertySum(filteredRows, (r) => r.autism)}</Td>
+                  <Td>
+                    {reducePropertySum(
+                      filteredRows,
+                      (r) => r.developmentalDisability1
+                    )}
+                  </Td>
+                  <Td>
+                    {reducePropertySum(
+                      filteredRows,
+                      (r) => r.developmentalDisability2
+                    )}
+                  </Td>
+                  <Td>
+                    {reducePropertySum(filteredRows, (r) => r.focusChallenge)}
+                  </Td>
+                  <Td>
+                    {reducePropertySum(
+                      filteredRows,
+                      (r) => r.linguisticChallenge
+                    )}
+                  </Td>
+                  <Td>
+                    {reducePropertySum(
+                      filteredRows,
+                      (r) => r.developmentMonitoring
+                    )}
+                  </Td>
+                  <Td>
+                    {reducePropertySum(
+                      filteredRows,
+                      (r) => r.developmentMonitoringPending
+                    )}
+                  </Td>
+                  <Td>
+                    {reducePropertySum(filteredRows, (r) => r.multiDisability)}
+                  </Td>
+                  <Td>
+                    {reducePropertySum(
+                      filteredRows,
+                      (r) => r.longTermCondition
+                    )}
+                  </Td>
+                  <Td>
+                    {reducePropertySum(
+                      filteredRows,
+                      (r) => r.regulationSkillChallenge
+                    )}
+                  </Td>
+                  <Td>
+                    {reducePropertySum(filteredRows, (r) => r.disability)}
+                  </Td>
+                  <Td>
+                    {reducePropertySum(
+                      filteredRows,
+                      (r) => r.otherAssistanceNeed
+                    )}
+                  </Td>
+                  <Td>
+                    {reducePropertySum(
+                      filteredRows,
+                      (r) => r.noAssistanceNeeds
+                    )}
+                  </Td>
                   <Td>
                     {reducePropertySum(
                       filteredRows,
@@ -297,8 +445,18 @@ function AssistanceActions() {
                       (r) => r.periodicalVeoSupport
                     )}
                   </Td>
-                  <Td>{reducePropertySum(filteredRows, (r) => r.other)}</Td>
-                  <Td>{reducePropertySum(filteredRows, (r) => r.none)}</Td>
+                  <Td>
+                    {reducePropertySum(
+                      filteredRows,
+                      (r) => r.otherAssistanceAction
+                    )}
+                  </Td>
+                  <Td>
+                    {reducePropertySum(
+                      filteredRows,
+                      (r) => r.noAssistanceActions
+                    )}
+                  </Td>
                 </Tr>
               </TableFooter>
             </TableScrollable>
@@ -309,4 +467,4 @@ function AssistanceActions() {
   )
 }
 
-export default AssistanceActions
+export default AssistanceNeedsAndActions

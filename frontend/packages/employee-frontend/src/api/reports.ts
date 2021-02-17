@@ -15,9 +15,7 @@ import {
   PartnersInDifferentAddressReportRow,
   InvoiceReport,
   DuplicatePeopleReportRow,
-  AssistanceNeedsReportRow,
   StartingPlacementsRow,
-  AssistanceActionsReportRow,
   ApplicationsReportRow,
   PresenceReportRow,
   ServiceNeedReportRow,
@@ -25,7 +23,8 @@ import {
   FamilyContactsReportRow,
   VoucherServiceProviderRow,
   VoucherServiceProviderUnitRow,
-  PlacementSketchingRow
+  PlacementSketchingRow,
+  AssistanceNeedsAndActionsReportRow
 } from '~types/reports'
 import { UUID } from '~types'
 import { JsonOf } from '@evaka/lib-common/src/json'
@@ -210,36 +209,22 @@ export async function getServiceNeedReport(
     .catch((e) => Failure.fromError(e))
 }
 
-export interface AssistanceNeedsReportFilters {
+export interface AssistanceNeedsAndActionsReportFilters {
   date: LocalDate
 }
 
-export async function getAssistanceNeedsReport(
-  filters: AssistanceNeedsReportFilters
-): Promise<Result<AssistanceNeedsReportRow[]>> {
+export async function getAssistanceNeedsAndActionsReport(
+  filters: AssistanceNeedsAndActionsReportFilters
+): Promise<Result<AssistanceNeedsAndActionsReportRow[]>> {
   return client
-    .get<JsonOf<AssistanceNeedsReportRow[]>>('/reports/assistance-needs', {
-      params: {
-        date: filters.date.formatIso()
+    .get<JsonOf<AssistanceNeedsAndActionsReportRow[]>>(
+      '/reports/assistance-needs-and-actions',
+      {
+        params: {
+          date: filters.date.formatIso()
+        }
       }
-    })
-    .then((res) => Success.of(res.data))
-    .catch((e) => Failure.fromError(e))
-}
-
-export interface AssistanceActionsReportFilters {
-  date: LocalDate
-}
-
-export async function getAssistanceActionsReport(
-  filters: AssistanceActionsReportFilters
-): Promise<Result<AssistanceActionsReportRow[]>> {
-  return client
-    .get<JsonOf<AssistanceActionsReportRow[]>>('/reports/assistance-actions', {
-      params: {
-        date: filters.date.formatIso()
-      }
-    })
+    )
     .then((res) => Success.of(res.data))
     .catch((e) => Failure.fromError(e))
 }
