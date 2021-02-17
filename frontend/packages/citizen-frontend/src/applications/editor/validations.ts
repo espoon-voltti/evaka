@@ -221,7 +221,7 @@ export const validateApplication = (
       otherChildren: {
         arrayErrors: undefined,
         itemErrors: form.contactInfo.otherChildren.map((child) =>
-          requireFullFamily
+          requireFullFamily && form.contactInfo.otherChildrenExists
             ? {
                 firstName: validate(child.firstName, required),
                 lastName: validate(child.lastName, required),
