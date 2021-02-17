@@ -13,7 +13,6 @@ import { H3, Label } from '@evaka/lib-components/src/typography'
 import InputField from '@evaka/lib-components/src/atoms/form/InputField'
 import { Gap } from '@evaka/lib-components/src/white-space'
 import { errorToInputInfo } from '~form-validation'
-import { AlertBox } from '@evaka/lib-components/src/molecules/MessageBoxes'
 import DatePicker from '@evaka/lib-components/src/molecules/date-picker/DatePicker'
 import AdaptiveFlex from '@evaka/lib-components/src/layout/AdaptiveFlex'
 import { ContactInfoSectionProps } from '~applications/editor/contact-info/ContactInfoSection'
@@ -147,12 +146,6 @@ export default React.memo(function GuardianSubSection({
               )}
               hideErrorsBeforeTouched={!verificationRequested}
             />
-            {verificationRequested && errors.guardianMoveDate && (
-              <AlertBox
-                thin
-                message={t.validationErrors[errors.guardianMoveDate]}
-              />
-            )}
           </FixedSpaceColumn>
           <Gap size={'s'} />
           <FixedSpaceRow spacing={'XL'}>
