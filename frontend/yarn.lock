@@ -3328,29 +3328,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/express-serve-static-core@npm:*, @types/express-serve-static-core@npm:^4.17.18":
-  version: 4.17.18
-  resolution: "@types/express-serve-static-core@npm:4.17.18"
-  dependencies:
-    "@types/node": "*"
-    "@types/qs": "*"
-    "@types/range-parser": "*"
-  checksum: 329d5ded5c6b77c40bbed136ddf34f6fbae1ec3c43dadb5309fa60cedc3de9508a78fcba756c54e0d6362127d29b114afe4fcc75dc42a44909d48a7114315dc4
-  languageName: node
-  linkType: hard
-
-"@types/express@npm:*":
-  version: 4.17.11
-  resolution: "@types/express@npm:4.17.11"
-  dependencies:
-    "@types/body-parser": "*"
-    "@types/express-serve-static-core": ^4.17.18
-    "@types/qs": "*"
-    "@types/serve-static": "*"
-  checksum: 2818120a0fd8b7982215864929cdc6cd14942dd44849f93054fe2a90b4233dff67aadc34c73b5937922a02c688b0263d00a4807aa2e59307ac859a1458d73669
-  languageName: node
-  linkType: hard
-
 "@types/geojson@npm:*":
   version: 7946.0.7
   resolution: "@types/geojson@npm:7946.0.7"
