@@ -42,7 +42,6 @@ const minPreferredStartDate = (
       ? originalPreferredStartDate
       : LocalDate.today()
   } else {
-    LocalDate
     return type === 'DAYCARE'
       ? LocalDate.today().addDays(14)
       : LocalDate.today()
@@ -68,11 +67,24 @@ export const isValidPreferredStartDate = (
   status: ApplicationStatus,
   type: ApplicationType
 ): boolean => {
-  return date !== null
-    ? date.isEqualOrAfter(
-        minPreferredStartDate(status, type, originalPreferredStartDate)
-      ) && date.isEqualOrBefore(maxPreferredStartDate())
-    : false
+  if (date === null) return false
+
+  if (
+    date.isBefore(
+      minPreferredStartDate(status, type, originalPreferredStartDate)
+    )
+  )
+    return false
+
+  if (date.isAfter(maxPreferredStartDate())) return false
+
+  if (type === 'PRESCHOOL') {
+    // cannot apply for summer time between extended preschool terms
+    if (date.isBetween(LocalDate.of(2021, 6, 5), LocalDate.of(2021, 7, 31)))
+      return false
+  }
+
+  return true
 }
 
 export const isValidDecisionStartDate = (
