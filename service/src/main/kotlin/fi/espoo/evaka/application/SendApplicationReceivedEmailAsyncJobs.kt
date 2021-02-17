@@ -8,7 +8,10 @@ import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.SendApplicationEmail
 import fi.espoo.evaka.shared.db.Database
+import mu.KotlinLogging
 import org.springframework.stereotype.Component
+
+private val logger = KotlinLogging.logger { }
 
 @Component
 class SendApplicationReceivedEmailAsyncJobs(
@@ -24,9 +27,10 @@ class SendApplicationReceivedEmailAsyncJobs(
         val guardian = db.read { it.handle.getPersonById(msg.guardianId) }
             ?: throw Exception("Didn't find guardian when sending application email (guardianId: ${msg.guardianId})")
 
-        if (guardian.email.isNullOrBlank())
-            throw Exception("Cannot send application received email to guardian ${guardian.id}: missing email")
-
-        applicationReceivedEmailService.sendApplicationEmail(guardian.id, guardian.email, msg.language)
+        if (!guardian.email.isNullOrBlank()) {
+            applicationReceivedEmailService.sendApplicationEmail(guardian.id, guardian.email, msg.language)
+        } else {
+            logger.warn("Cannot send application received email to guardian ${guardian.id}: missing email")
+        }
     }
 }
