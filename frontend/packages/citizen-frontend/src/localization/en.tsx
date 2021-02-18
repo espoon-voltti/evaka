@@ -21,20 +21,20 @@ const en: Translations = {
         PRIVATE_SERVICE_VOUCHER: 'Private service (service voucher)'
       },
       careTypes: {
-        CLUB: 'Kerho',
-        FAMILY: 'Perhepäivähoito',
+        CLUB: 'Club',
+        FAMILY: 'Family daycare',
         CENTRE: 'Päiväkoti',
-        GROUP_FAMILY: 'Ryhmäperhepäivähoito',
-        PRESCHOOL: 'Esiopetus',
-        PREPARATORY_EDUCATION: 'Valmistava opetus'
+        GROUP_FAMILY: 'Group family daycare',
+        PRESCHOOL: 'Pre-primary education',
+        PREPARATORY_EDUCATION: 'Preparatory education'
       },
       languages: {
-        fi: 'suomenkielinen',
-        sv: 'ruotsinkielinen'
+        fi: 'finnish',
+        sv: 'swedish'
       },
       languagesShort: {
-        fi: 'suomi',
-        sv: 'ruotsi'
+        fi: 'finnish',
+        sv: 'swedish'
       }
     },
     errors: {
@@ -68,46 +68,46 @@ const en: Translations = {
       'https://easiointi.espoo.fi/eFeedback/en/Feedback/20-S%C3%A4hk%C3%B6iset%20asiointipalvelut'
   },
   map: {
-    title: 'Yksiköt kartalla',
+    title: 'Units on the map',
     mainInfo:
-      'Tässä näkymässä voit hakea kartalta Espoon varhaiskasvatus-, esiopetus- ja kerhopaikkoja.',
-    searchLabel: 'Hae osoitteella tai yksikön nimellä',
-    searchPlaceholder: 'Esim. Kilontie 3 tai Purolan päiväkoti',
-    address: 'Osoite',
-    noResults: 'Ei hakutuloksia',
-    distanceWalking: 'Etäisyys valitusta osoitteesta kävellen',
-    careType: 'Toimintamuoto',
-    careTypePlural: 'Toimintamuodot',
+      "In this view, you can search the map for Espoo's early childhood education, pre-primary education and club places.",
+    searchLabel: 'Search by address or unit name',
+    searchPlaceholder: 'For example Kilontie 3 or Purolan päiväkoti',
+    address: 'Address',
+    noResults: 'No results',
+    distanceWalking: 'Walking distance from selected address',
+    careType: 'Service need',
+    careTypePlural: 'Service needs',
     careTypes: {
-      CLUB: 'Kerho',
-      DAYCARE: 'Varhaiskasvatus',
-      PRESCHOOL: 'Esiopetus'
+      CLUB: 'Club',
+      DAYCARE: 'Early childhood education',
+      PRESCHOOL: 'Pre-primary education'
     },
-    language: 'Yksikön kieli',
+    language: 'Unit language',
     providerType: 'Palveluntarjoaja',
     providerTypes: {
-      MUNICIPAL: 'kunnalliset',
-      PURCHASED: 'ostopalvelu',
-      PRIVATE: 'yksityiset',
-      PRIVATE_SERVICE_VOUCHER: 'palveluseteli'
+      MUNICIPAL: 'municipal',
+      PURCHASED: 'purchased service',
+      PRIVATE: 'private service',
+      PRIVATE_SERVICE_VOUCHER: 'private service (service voucher)'
     },
-    homepage: 'Kotisivu',
-    unitHomepage: 'Yksikön kotisivu',
-    route: 'Katso reitti yksiköön',
-    routePlanner: 'Reittiopas',
-    newTab: '(Avautuu uuteen välilehteen)',
-    shiftCareTitle: 'Ilta- ja vuorohoito',
-    shiftCareLabel: 'Näytä vain ilta- ja vuorohoitoyksiköt',
-    shiftCareYes: 'Yksikkö tarjoaa ilta- ja/tai vuorohoitoa',
-    shiftCareNo: 'Yksikkö ei tarjoa ilta- ja/tai vuorohoitoa',
-    showMoreFilters: 'Näytä lisää suodattimia',
-    showLessFilters: 'Näytä vähemmän suodattimia',
-    nearestUnits: 'Lähimmät yksiköt',
-    moreUnits: 'Lisää yksiköitä',
-    showMore: 'Näytä lisää hakutuloksia',
+    homepage: 'Homepage',
+    unitHomepage: "Unit's homepage",
+    route: 'See route to unit',
+    routePlanner: 'Journey Planner',
+    newTab: '(Opens in a new tab)',
+    shiftCareTitle: 'Shift care (evenings and weekends)',
+    shiftCareLabel: 'Only show Shift care (evenings and weekends) units',
+    shiftCareYes: 'Unit provides evening or round-the-clock care',
+    shiftCareNo: 'Unit does not provide evening or round-the-clock care',
+    showMoreFilters: 'Show more filters',
+    showLessFilters: 'Show less filters',
+    nearestUnits: 'Nearest units',
+    moreUnits: 'More units',
+    showMore: 'Show more results',
     mobileTabs: {
-      map: 'Kartta',
-      list: 'Lista yksiköistä'
+      map: 'Map',
+      list: 'List of units'
     }
   },
   applications: {
@@ -257,29 +257,32 @@ const en: Translations = {
             return (
               <>
                 <P>
-                  Hakuaika syksyllä käynnistyviin kerhoihin on maaliskuussa. Jos
-                  lapsenne saa kerhopaikan, saatte päätöksen siitä
-                  huhti-toukokuun aikana. Päätös tehdään yhden toimintakauden
-                  ajaksi (elokuusta toukokuun loppuun). Päätös kerhopaikasta
-                  tulee Suomi.fi-palveluun tai postitse, mikäli ette ole ottanut
-                  palvelua käyttöön.
+                  The application period for clubs starting in the autumn is in
+                  March. If your child gets a club spot, you get the decision on
+                  it during April-May. The decision is made for one operating
+                  period for the period (August to the end of May). Decision on
+                  club location comes to the Suomi.fi service or by post if you
+                  have not taken service.
                 </P>
                 <P>
-                  Kerhohakemuksen voi jättää myös hakuajan ulkopuolella ja sen
-                  jälkeen, kun kerhojen toimintakausi on jo alkanut. Hakuaikana
-                  saapuneet hakemukset käsitellään kuitenkin ensin, ja hakuajan
-                  ulkopuolella tulleet hakemukset käsitellään
-                  saapumisjärjestyksessä. Kerhohakemus kohdistuu yhdelle
-                  kerhokaudelle. Kauden päättyessä hakemus poistetaan
-                  järjestelmästä.
+                  A club application can also be submitted outside the
+                  application period and on after the club’s season has already
+                  begun. During the application period However, applications
+                  received will be processed first, and the application period
+                  applications received from outside will be processed in order
+                  of arrival. The club application is for one for the club
+                  season. At the end of the period, the application will be
+                  deleted system.
                 </P>
                 <P>
-                  Kerhotoiminta on maksutonta, eikä siihen osallistuminen
-                  vaikuta Kelan maksamaan kotihoidontukeen. Jos lapselle sen
-                  sijaan on myönnetty varhaiskasvatuspaikka tai yksityisen
-                  hoidon tuki, ei hänelle voida myöntää kerhopaikkaa.
+                  Club activities are free of charge, not participation affect
+                  the home care allowance paid by Kela. If a child it instead of
+                  being granted early childhood education or private care
+                  allowance, he cannot be granted a club seat.
                 </P>
-                <P fitted={true}>* Tähdellä merkityt tiedot ovat pakollisia</P>
+                <P fitted={true}>
+                  * Information marked with an asterisk is required
+                </P>
               </>
             )
           }
@@ -342,12 +345,12 @@ const en: Translations = {
         },
         serviceNeed: {
           title: 'Service need',
-          wasOnDaycare: 'Varhaiskasvatuksessa ennen kerhoa',
+          wasOnDaycare: 'Was on early childhood education before club',
           wasOnDaycareYes:
-            'Lapsi, jolle haetaan kerhopaikkaa, on varhaiskasvatuksessa ennen kerhon toivottua aloituspäivää.',
-          wasOnClubCare: 'Kerhossa edellisenä toimintakautena',
+            'Child is in early childhood education before the desired start date of the club.',
+          wasOnClubCare: 'In a club in the previous club term',
           wasOnClubCareYes:
-            'Lapsi on ollut kerhossa edellisen toimintakauden aikana.',
+            'Child has been in a club during the previous club term',
           connectedDaycare: {
             title: 'Apply for early childhood education',
             label: 'Early childhood education',
@@ -363,7 +366,7 @@ const en: Translations = {
             title: {
               DAYCARE: 'Start of early childhood education',
               PRESCHOOL: 'Start of early childhood education',
-              CLUB: 'Kerhon aloitus'
+              CLUB: 'Club start date'
             },
             preferredStartDate: 'Desired start date',
             urgency: 'Application is urgent',
@@ -485,9 +488,7 @@ const en: Translations = {
             PRESCHOOL: [
               'Finnish and Swedish pre-primary education begins on 11 August 2021. If you need early childhood education starting from 1 August 2021 before the start of pre-primary education, you can apply for it with this application by selecting “I also apply for early childhood education related to pre-primary education”.'
             ],
-            CLUB: [
-              'Kerhot noudattavat esiopetuksen työ- ja loma-aikoja. Kerhon toimintakausi on elokuusta toukokuun loppuun, ja kullekin toimintakaudelle haetaan erikseen. Eri kerhot kokoontuvat eri viikonpäivinä.'
-            ]
+            CLUB: ['Clubs follow preschool work and vacation times.']
           },
           clubTerm: 'Club term',
           label: {
@@ -503,13 +504,12 @@ const en: Translations = {
         },
         clubDetails: {
           wasOnDaycare:
-            'Lapsella on varhaiskasvatuspaikka, josta hän luopuu kerhopaikan saadessaan.',
+            'Child has an early childhood education placement, which he or she will give up when he or she gets a club placement',
           wasOnDaycareInfo:
-            'Jos lapsi on ollut varhaiskasvatuksessa (päiväkodissa, perhepäivähoidossa tai ryhmäperhepäivähoidossa) ja luopuu paikastaan kerhon alkaessa, hänellä on suurempi mahdollisuus saada kerhopaikka.',
-          wasOnClubCare:
-            'Lapsi on ollut kerhossa edellisen toimintakauden aikana.',
+            'If a child has been in early childhood education (daycare, family daycare or group family daycare) and gives up his or her place at the start of the club, he or she has a better chance of getting a club placement.',
+          wasOnClubCare: 'Child has been in a club during last club term',
           wasOnClubCareInfo:
-            'Jos lapsi on ollut kerhossa jo edellisen toimintakauden aikana, on hänellä suurempi mahdollisuus saada paikka kerhosta.'
+            'If the child has already been to the club during the previous club term, he or she has a better chance of getting a placement in the club.'
         },
         urgent: {
           label: 'Application is urgent',
