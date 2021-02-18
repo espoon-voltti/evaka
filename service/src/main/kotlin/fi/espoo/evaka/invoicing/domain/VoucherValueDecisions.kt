@@ -197,7 +197,7 @@ fun getAgeCoefficient(period: DateRange, dateOfBirth: LocalDate): Int {
     }
 
     return when {
-        period.start < thirdBirthday -> 145
+        period.start < thirdBirthday -> 155
         else -> 100
     }
 }
