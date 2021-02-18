@@ -214,15 +214,7 @@ const FlexContainer = styled(AdaptiveFlex)`
   margin-bottom: ${defaultMargins.m};
   align-items: stretch;
 
-  width: 1520px;
-
-  @media (max-width: 1900px) {
-    width: 80%;
-  }
-
-  @media (max-width: 1700px) {
-    width: 90%;
-  }
+  width: 90%;
 
   @media (max-width: 1500px) {
     width: 95%;
