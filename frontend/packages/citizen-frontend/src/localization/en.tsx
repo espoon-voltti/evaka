@@ -23,7 +23,7 @@ const en: Translations = {
       careTypes: {
         CLUB: 'Club',
         FAMILY: 'Family daycare',
-        CENTRE: 'Päiväkoti',
+        CENTRE: 'Daycare',
         GROUP_FAMILY: 'Group family daycare',
         PRESCHOOL: 'Pre-primary education',
         PREPARATORY_EDUCATION: 'Preparatory education'
@@ -84,7 +84,7 @@ const en: Translations = {
       PRESCHOOL: 'Pre-primary education'
     },
     language: 'Unit language',
-    providerType: 'Palveluntarjoaja',
+    providerType: 'Service provider',
     providerTypes: {
       MUNICIPAL: 'municipal',
       PURCHASED: 'purchased service',
@@ -1029,7 +1029,6 @@ const en: Translations = {
         ACCEPTED: 'Confirmed',
         REJECTED: 'Rejected'
       },
-      openPdf: 'Show the decision',
       confirmationInfo: {
         preschool:
           'You must either accept or reject the place proposed in the decision of pre-primary education, preparatory education and/or early childhood education related to pre-primary education within two weeks of receiving this notification. If you have applied for several services, you will receive separate decisions for each of them that require your action.',
@@ -1049,6 +1048,7 @@ const en: Translations = {
         disabledInfo:
           'NOTE! You are able to accept/reject the related early childhood education decision if you accept the preschool / preparatory education decision first.'
       },
+      openPdf: 'Show the decision',
       warnings: {
         decisionWithNoResponseWarning: {
           title: 'There is a decision without a response',

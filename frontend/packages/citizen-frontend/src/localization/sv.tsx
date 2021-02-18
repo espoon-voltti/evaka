@@ -21,12 +21,12 @@ const sv: Translations = {
         PRIVATE_SERVICE_VOUCHER: 'Privat tjänst (servicesedel)'
       },
       careTypes: {
-        CLUB: 'Kerho',
-        FAMILY: 'Perhepäivähoito',
-        CENTRE: 'Päiväkoti',
-        GROUP_FAMILY: 'Ryhmäperhepäivähoito',
-        PRESCHOOL: 'Esiopetus',
-        PREPARATORY_EDUCATION: 'Valmistava opetus'
+        CLUB: 'Klubbverksamhet',
+        FAMILY: 'Familjedagvård',
+        CENTRE: 'Daghem',
+        GROUP_FAMILY: 'Gruppfamiljedaghem',
+        PRESCHOOL: 'Förskola',
+        PREPARATORY_EDUCATION: 'Förberedande undervisning'
       },
       languages: {
         fi: 'suomenkielinen',
@@ -68,46 +68,46 @@ const sv: Translations = {
       'https://easiointi.espoo.fi/eFeedback/sv/Feedback/20-S%C3%A4hk%C3%B6iset%20asiointipalvelut'
   },
   map: {
-    title: 'Yksiköt kartalla',
+    title: 'Enheter på kartan',
     mainInfo:
-      'Tässä näkymässä voit hakea kartalta Espoon varhaiskasvatus-, esiopetus- ja kerhopaikkoja.',
-    searchLabel: 'Hae osoitteella tai yksikön nimellä',
-    searchPlaceholder: 'Esim. Kilontie 3 tai Purolan päiväkoti',
-    address: 'Osoite',
-    noResults: 'Ei hakutuloksia',
-    distanceWalking: 'Etäisyys valitusta osoitteesta kävellen',
-    careType: 'Toimintamuoto',
-    careTypePlural: 'Toimintamuodot',
+      'I den här vyn kan du söka på kartan för Espoos tidiga barndomsutbildning, förskola och klubbar.',
+    searchLabel: 'Sök efter adress eller enhetsnamn',
+    searchPlaceholder: 'Till ex. Kilontie 3 eller Purola daghem',
+    address: 'Adress',
+    noResults: 'Inga sökresultat',
+    distanceWalking: 'Avstånd från den valda adressen till fots',
+    careType: 'Handlingssätt',
+    careTypePlural: 'Åtgärdssätt',
     careTypes: {
-      CLUB: 'Kerho',
-      DAYCARE: 'Varhaiskasvatus',
-      PRESCHOOL: 'Esiopetus'
+      CLUB: 'Klubbverksamhet',
+      DAYCARE: 'Småbarnspedagogik',
+      PRESCHOOL: 'Förskola'
     },
-    language: 'Yksikön kieli',
-    providerType: 'Palveluntarjoaja',
+    language: 'Enhetens språk',
+    providerType: 'Tjänsteleverantör',
     providerTypes: {
-      MUNICIPAL: 'kunnalliset',
-      PURCHASED: 'ostopalvelu',
-      PRIVATE: 'yksityiset',
-      PRIVATE_SERVICE_VOUCHER: 'palveluseteli'
+      MUNICIPAL: 'kommunal tjänst',
+      PURCHASED: 'köptjänst',
+      PRIVATE: 'privat',
+      PRIVATE_SERVICE_VOUCHER: 'servicesedel'
     },
-    homepage: 'Kotisivu',
-    unitHomepage: 'Yksikön kotisivu',
-    route: 'Katso reitti yksiköön',
+    homepage: 'Hemsida',
+    unitHomepage: 'Enhetens hemsida',
+    route: 'Se rutten till enheten',
     routePlanner: 'Reittiopas',
-    newTab: '(Avautuu uuteen välilehteen)',
-    shiftCareTitle: 'Ilta- ja vuorohoito',
-    shiftCareLabel: 'Näytä vain ilta- ja vuorohoitoyksiköt',
-    shiftCareYes: 'Yksikkö tarjoaa ilta- ja/tai vuorohoitoa',
-    shiftCareNo: 'Yksikkö ei tarjoa ilta- ja/tai vuorohoitoa',
-    showMoreFilters: 'Näytä lisää suodattimia',
-    showLessFilters: 'Näytä vähemmän suodattimia',
-    nearestUnits: 'Lähimmät yksiköt',
-    moreUnits: 'Lisää yksiköitä',
-    showMore: 'Näytä lisää hakutuloksia',
+    newTab: '(Öppnas i en ny flik)',
+    shiftCareTitle: 'Kvälls- och skiftterapi',
+    shiftCareLabel: 'Visa endast kvälls- och skiftenheter',
+    shiftCareYes: 'Enheten erbjuder kvälls- och / eller skifttjänster',
+    shiftCareNo: 'Enheten tillhandahåller inte kvälls- och / eller skiftvård',
+    showMoreFilters: 'Visa fler filter',
+    showLessFilters: 'Visa färre filter',
+    nearestUnits: 'Närmaste enheter',
+    moreUnits: 'Fler enheter',
+    showMore: 'Visa fler sökresultat',
     mobileTabs: {
-      map: 'Kartta',
-      list: 'Lista yksiköistä'
+      map: 'Karta',
+      list: 'Lista över enheter'
     }
   },
   applications: {
@@ -245,27 +245,27 @@ const sv: Translations = {
             return (
               <>
                 <P>
-                  Hakuaika syksyllä käynnistyviin kerhoihin on maaliskuussa. Jos
-                  lapsenne saa kerhopaikan, saatte päätöksen siitä
-                  huhti-toukokuun aikana. Päätös tehdään yhden toimintakauden
-                  ajaksi (elokuusta toukokuun loppuun). Päätös kerhopaikasta
-                  tulee Suomi.fi-palveluun tai postitse, mikäli ette ole ottanut
-                  palvelua käyttöön.
+                  Ansökningsperioden för klubbar som börjar på hösten är i mars.
+                  Om ditt barn får en klubbplats, du får beslutet om det under
+                  april-maj. Beslutet fattas för en verksamhetsperiod för
+                  perioden (augusti till slutet av maj). Beslut om klubbplats
+                  kommer till Suomi.fi-tjänsten eller per post om du inte har
+                  tagit det service.
                 </P>
                 <P>
-                  Kerhohakemuksen voi jättää myös hakuajan ulkopuolella ja sen
-                  jälkeen, kun kerhojen toimintakausi on jo alkanut. Hakuaikana
-                  saapuneet hakemukset käsitellään kuitenkin ensin, ja hakuajan
-                  ulkopuolella tulleet hakemukset käsitellään
-                  saapumisjärjestyksessä. Kerhohakemus kohdistuu yhdelle
-                  kerhokaudelle. Kauden päättyessä hakemus poistetaan
-                  järjestelmästä.
+                  En klubbansökan kan också lämnas in utanför ansökningsperioden
+                  och vidare efter att klubbens säsong redan har börjat. Under
+                  ansökningsperioden De mottagna ansökningarna behandlas dock
+                  först och ansökningsperioden ansökningar som tas emot utifrån
+                  kommer att behandlas i ankomstordning. Klubbansökan är för en
+                  för klubbsäsongen. I slutet av perioden kommer ansökan att
+                  raderas systemet.
                 </P>
                 <P>
-                  Kerhotoiminta on maksutonta, eikä siihen osallistuminen
-                  vaikuta Kelan maksamaan kotihoidontukeen. Jos lapselle sen
-                  sijaan on myönnetty varhaiskasvatuspaikka tai yksityisen
-                  hoidon tuki, ei hänelle voida myöntää kerhopaikkaa.
+                  Klubbaktiviteter är gratis, inte deltagande påverkar
+                  hemvårdsbidraget som betalas av FPA. Om ett barn det istället
+                  för att beviljas förskoleundervisning eller privat vårdbidrag
+                  kan han inte beviljas klubbplats.
                 </P>
                 <P fitted={true}>* Tähdellä merkityt tiedot ovat pakollisia</P>
               </>
@@ -330,12 +330,12 @@ const sv: Translations = {
         },
         serviceNeed: {
           title: 'Behov av småbarnspedagogisk verksamhet',
-          wasOnDaycare: 'Varhaiskasvatuksessa ennen kerhoa',
+          wasOnDaycare: 'I tidig barndomsutbildning innan klubben',
           wasOnDaycareYes:
-            'Lapsi, jolle haetaan kerhopaikkaa, on varhaiskasvatuksessa ennen kerhon toivottua aloituspäivää.',
-          wasOnClubCare: 'Kerhossa edellisenä toimintakautena',
+            'Ett barn för vilket en klubbplats ansöks är i förskoleundervisningen innan klubbens önskade startdatum.',
+          wasOnClubCare: 'I klubben under föregående säsong',
           wasOnClubCareYes:
-            'Lapsi on ollut kerhossa edellisen toimintakauden aikana.',
+            'Barnet har varit i klubben under föregående operationsperiod\n.',
           connectedDaycare: {
             title: 'Småbarnspedagogik i samband med förskoleundervisning.',
             label: 'Småbarnspedagogik',
@@ -1000,7 +1000,6 @@ const sv: Translations = {
         ACCEPTED: 'Bekräftad',
         REJECTED: 'Avvisade'
       },
-      openPdf: 'Visa beslut',
       confirmationInfo: {
         preschool:
           'Du ska omedelbart eller senast två veckor från mottagandet av detta beslut, ta emot eller annullera platsen. Du kan ta emot eller annullera platsen elektroniskt på adressen espoonvarhaiskasvatus.fi (kräver identifiering) eller per post.',
@@ -1020,6 +1019,7 @@ const sv: Translations = {
         disabledInfo:
           'OBS! Du kommer att kunna svara på den relaterade beslutet, om du först accepterar den beslutet om förskola / förberedande undervisning.'
       },
+      openPdf: 'Visa beslut',
       warnings: {
         decisionWithNoResponseWarning: {
           title: 'Ett annat beslut väntar på ditt godkännande',
