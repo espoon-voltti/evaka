@@ -66,8 +66,7 @@ GROUP BY application.guardian_id
                 .mapTo<GuardianDecisions>()
                 .list()
 
-            logger.info("PendingDecisionEmailService: Scheduling sending ${pendingGuardianDecisions.size} pending decision emails")
-
+            var createdJobCount = 0
             pendingGuardianDecisions.forEach { pendingDecision ->
                 tx.handle.getPersonById(pendingDecision.guardianId)?.let { guardian ->
                     if (!guardian.email.isNullOrBlank()) {
@@ -84,13 +83,15 @@ GROUP BY application.guardian_id
                             runAt = Instant.now(),
                             retryCount = 10
                         )
+                        createdJobCount++
                     } else {
                         logger.warn("Could not send pending decision email to guardian ${guardian.id}: invalid email")
                     }
                 }
             }
 
-            pendingGuardianDecisions.size
+            logger.info("PendingDecisionEmailService: Scheduled sending $createdJobCount pending decision emails")
+            createdJobCount
         }
 
         asyncJobRunner.scheduleImmediateRun()
