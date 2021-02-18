@@ -68,7 +68,7 @@ const sv: Translations = {
     title: 'Enheter på kartan',
     mainInfo:
       'I den här vyn kan du söka på kartan för Espoos tidiga barndomsutbildning, förskola och klubbar.',
-    searchLabel: 'Sök efter adress eller enhetsnamn',
+    searchLabel: 'Sök efter din adress eller enhetsnamn',
     searchPlaceholder: 'Till ex. Kilontie 3 eller Purola daghem',
     address: 'Adress',
     noResults: 'Inga sökresultat',
