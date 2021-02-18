@@ -147,6 +147,7 @@ function UnitMarker({
 
 const Wrapper = styled.div`
   position: relative;
+  z-index: 0;
   width: 100%;
   height: 100%;
   flex-grow: 100;
