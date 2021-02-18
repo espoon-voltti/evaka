@@ -6,7 +6,6 @@ import { Selector, t } from 'testcafe'
 
 export default class CitizenHomepage {
   readonly nav = {
-    oldApplications: Selector('[data-qa="nav-old-applications"]'),
     applications: Selector('[data-qa="nav-applications"]'),
     decisions: Selector('[data-qa="nav-decisions"]')
   }

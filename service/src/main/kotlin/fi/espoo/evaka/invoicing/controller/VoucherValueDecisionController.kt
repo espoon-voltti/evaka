@@ -114,11 +114,11 @@ class VoucherValueDecisionController(
     fun markSent(db: Database.Connection, user: AuthenticatedUser, @RequestBody ids: List<UUID>): ResponseEntity<Unit> {
         Audit.VoucherValueDecisionMarkSent.log(targetId = ids)
         user.requireOneOfRoles(UserRole.FINANCE_ADMIN)
-        db.transaction {
-            val decisions = it.handle.getValueDecisionsByIds(objectMapper, ids)
+        db.transaction { tx ->
+            val decisions = tx.handle.getValueDecisionsByIds(objectMapper, ids)
             if (decisions.any { it.status != VoucherValueDecisionStatus.WAITING_FOR_MANUAL_SENDING })
                 throw BadRequest("Voucher value decision cannot be marked sent")
-            it.updateVoucherValueDecisionStatus(ids, VoucherValueDecisionStatus.SENT)
+            tx.updateVoucherValueDecisionStatus(ids, VoucherValueDecisionStatus.SENT)
         }
         return ResponseEntity.noContent().build()
     }

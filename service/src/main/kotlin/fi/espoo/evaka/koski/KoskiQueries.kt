@@ -74,54 +74,54 @@ RETURNING id, void_date IS NOT NULL AS voided
                 createQuery(
                     // language=SQL
                     """
-SELECT
-    kvsr.*,
-    ksr.id AS study_right_id,
-    ksr.study_right_oid,
-    d.language AS daycare_language,
-    d.provider_type AS daycare_provider_type,
-    pr.social_security_number ssn,
-    pr.first_name,
-    pr.last_name
-FROM koski_study_right ksr
-JOIN koski_voided_study_right(:today) kvsr
-ON (kvsr.child_id, kvsr.unit_id, kvsr.type) = (ksr.child_id, ksr.unit_id, ksr.type)
-JOIN daycare d ON ksr.unit_id = d.id
-JOIN person pr ON ksr.child_id = pr.id
-WHERE ksr.id = :id
-        """
+            SELECT
+                kvsr.*,
+                ksr.id AS study_right_id,
+                ksr.study_right_oid,
+                d.language AS daycare_language,
+                d.provider_type AS daycare_provider_type,
+                pr.social_security_number ssn,
+                pr.first_name,
+                pr.last_name
+            FROM koski_study_right ksr
+            JOIN koski_voided_study_right(:today) kvsr
+            ON (kvsr.child_id, kvsr.unit_id, kvsr.type) = (ksr.child_id, ksr.unit_id, ksr.type)
+            JOIN daycare d ON ksr.unit_id = d.id
+            JOIN person pr ON ksr.child_id = pr.id
+            WHERE ksr.id = :id
+                    """
                 ).bind("id", id).bind("today", today)
-                    .mapTo<KoskiVoidedDataRaw>().singleOrNull()?.let { it.toKoskiData(sourceSystem) }
+                    .mapTo<KoskiVoidedDataRaw>().singleOrNull()?.toKoskiData(sourceSystem)
             } else {
                 createQuery(
                     // language=SQL
                     """
-SELECT
-    kasr.*,
-    ksr.id AS study_right_id,
-    ksr.study_right_oid,
-    d.language AS daycare_language,
-    d.provider_type AS daycare_provider_type,
-    um.name AS approver_name,
-    pr.social_security_number ssn,
-    pr.first_name,
-    pr.last_name,
-    holidays
-FROM koski_study_right ksr
-JOIN koski_active_study_right(:today) kasr
-ON (kasr.child_id, kasr.unit_id, kasr.type) = (ksr.child_id, ksr.unit_id, ksr.type)
-JOIN daycare d ON ksr.unit_id = d.id
-JOIN unit_manager um ON d.unit_manager_id = um.id
-JOIN person pr ON ksr.child_id = pr.id
-LEFT JOIN LATERAL (
-    SELECT array_agg(date ORDER BY date) AS holidays
-    FROM holiday h
-    WHERE date <@ kasr.full_range
-) h ON ksr.type = 'PREPARATORY'
-WHERE ksr.id = :id
-        """
+            SELECT
+                kasr.*,
+                ksr.id AS study_right_id,
+                ksr.study_right_oid,
+                d.language AS daycare_language,
+                d.provider_type AS daycare_provider_type,
+                um.name AS approver_name,
+                pr.social_security_number ssn,
+                pr.first_name,
+                pr.last_name,
+                holidays
+            FROM koski_study_right ksr
+            JOIN koski_active_study_right(:today) kasr
+            ON (kasr.child_id, kasr.unit_id, kasr.type) = (ksr.child_id, ksr.unit_id, ksr.type)
+            JOIN daycare d ON ksr.unit_id = d.id
+            JOIN unit_manager um ON d.unit_manager_id = um.id
+            JOIN person pr ON ksr.child_id = pr.id
+            LEFT JOIN LATERAL (
+                SELECT array_agg(date ORDER BY date) AS holidays
+                FROM holiday h
+                WHERE date <@ kasr.full_range
+            ) h ON ksr.type = 'PREPARATORY'
+            WHERE ksr.id = :id
+                    """
                 ).bind("id", id).bind("today", today)
-                    .mapTo<KoskiActiveDataRaw>().singleOrNull()?.let { it.toKoskiData(sourceSystem, today) }
+                    .mapTo<KoskiActiveDataRaw>().singleOrNull()?.toKoskiData(sourceSystem, today)
             }
         }
 

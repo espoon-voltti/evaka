@@ -89,7 +89,7 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest() {
                 )
             )
 
-            val (_, res, _) = http.post("/enduser/v2/applications/$applicationId/actions/send-application")
+            val (_, res, _) = http.post("/citizen/applications/$applicationId/actions/send-application")
                 .asUser(endUser)
                 .response()
 
@@ -124,7 +124,7 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest() {
                 )
             )
 
-            val (_, res, _) = http.post("/enduser/v2/applications/$applicationId/actions/send-application")
+            val (_, res, _) = http.post("/citizen/applications/$applicationId/actions/send-application")
                 .asUser(endUser)
                 .response()
 
@@ -192,7 +192,7 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest() {
                 document = validClubForm
             )
 
-            val (_, res, _) = http.post("/enduser/v2/applications/$applicationId/actions/send-application")
+            val (_, res, _) = http.post("/citizen/applications/$applicationId/actions/send-application")
                 .asUser(endUser)
                 .response()
 
@@ -221,7 +221,7 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest() {
                 )
             )
 
-            val (_, res, _) = http.post("/enduser/v2/applications/$applicationId/actions/send-application")
+            val (_, res, _) = http.post("/citizen/applications/$applicationId/actions/send-application")
                 .asUser(endUser)
                 .response()
 
@@ -280,7 +280,7 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest() {
                 )
             )
 
-            val (_, res, _) = http.post("/enduser/v2/applications/$applicationId/actions/send-application")
+            val (_, res, _) = http.post("/citizen/applications/$applicationId/actions/send-application")
                 .asUser(endUser)
                 .response()
 
@@ -312,7 +312,7 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest() {
                 document = validDaycareForm
             )
 
-            val (_, res, _) = http.post("/enduser/v2/applications/$applicationId/actions/send-application")
+            val (_, res, _) = http.post("/citizen/applications/$applicationId/actions/send-application")
                 .asUser(endUser)
                 .response()
 
@@ -364,7 +364,7 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest() {
         assertEquals(expectedFromAddress, email?.fromAddress)
         assertEquals(expectedSubject, email?.subject)
         assert(email!!.htmlBody.contains(expectedHtmlPart, true))
-        assert(email!!.textBody.contains(expectedTextPart, true))
+        assert(email.textBody.contains(expectedTextPart, true))
     }
 
     private fun assertApplicationIsSent(h: Handle, applicationId: UUID) {

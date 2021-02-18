@@ -8,7 +8,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
 import fi.espoo.evaka.application.ApplicationDetails
 import fi.espoo.evaka.application.ApplicationType
-import fi.espoo.evaka.application.enduser.daycare.OtherGuardianAgreementStatus
+import fi.espoo.evaka.application.OtherGuardianAgreementStatus
 import fi.espoo.evaka.application.persistence.DatabaseForm
 import java.time.LocalDate
 import java.util.UUID

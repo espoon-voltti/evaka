@@ -60,7 +60,7 @@ fun createAllDraftInvoices(h: Handle, objectMapper: ObjectMapper, period: DateRa
     val freeChildren: List<UUID> =
         if (period.start.month == Month.JULY && (period.end != null && period.end.month == Month.JULY && period.start.year == period.end.year)) {
             getFreeJulyChildren(h, period.start.year)
-        } else emptyList<UUID>()
+        } else emptyList()
 
     val invoices =
         generateDraftInvoices(

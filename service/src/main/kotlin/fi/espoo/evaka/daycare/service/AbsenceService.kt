@@ -13,7 +13,6 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
-import fi.espoo.evaka.shared.domain.operationalDays
 import mu.KotlinLogging
 import org.jdbi.v3.core.kotlin.mapTo
 import org.springframework.stereotype.Service
@@ -335,22 +334,6 @@ fun Database.Read.getGroupName(groupId: UUID): String? {
         .bind("groupId", groupId)
         .mapTo(String::class.java)
         .firstOrNull()
-}
-
-fun Database.Read.getDaycareName(groupId: UUID): String {
-    //language=SQL
-    val sql =
-        """
-            SELECT daycare.name 
-            FROM daycare_group 
-                LEFT JOIN daycare ON daycare_group.daycare_id = daycare.id
-            WHERE daycare_group.id = :groupId;
-        """.trimIndent()
-
-    return createQuery(sql)
-        .bind("groupId", groupId)
-        .mapTo(String::class.java)
-        .first()
 }
 
 fun Database.Read.getDaycareIdByGroup(groupId: UUID): UUID {

@@ -243,15 +243,13 @@ class PersonService(
     // Does a request to VTJ
     fun getPersonWithDependants(user: AuthenticatedUser, ssn: ExternalIdentifier.SSN): VtjPersonDTO? {
         return personDetailsService.getPersonWithDependants(IPersonDetailsService.DetailsQuery(user, ssn))
-            .let { it as? PersonDetails.Result }
-            ?.let { result -> result.vtjPerson.mapToDto() }
+            .let { it as? PersonDetails.Result }?.vtjPerson?.mapToDto()
     }
 
     // Does a request to VTJ
     private fun getPersonWithGuardians(user: AuthenticatedUser, ssn: ExternalIdentifier.SSN): VtjPersonDTO? {
         return personDetailsService.getPersonWithGuardians(IPersonDetailsService.DetailsQuery(user, ssn))
-            .let { it as? PersonDetails.Result }
-            ?.let { result -> result.vtjPerson.mapToDto() }
+            .let { it as? PersonDetails.Result }?.vtjPerson?.mapToDto()
     }
 
     private fun hideNonDisclosureInfo(person: PersonDTO?): PersonDTO? {

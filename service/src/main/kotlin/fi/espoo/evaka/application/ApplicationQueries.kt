@@ -10,9 +10,9 @@ import fi.espoo.evaka.application.ApplicationPreschoolTypeToggle.PREPARATORY_DAY
 import fi.espoo.evaka.application.ApplicationPreschoolTypeToggle.PREPARATORY_ONLY
 import fi.espoo.evaka.application.ApplicationPreschoolTypeToggle.PRESCHOOL_DAYCARE
 import fi.espoo.evaka.application.ApplicationPreschoolTypeToggle.PRESCHOOL_ONLY
-import fi.espoo.evaka.application.enduser.objectMapper
 import fi.espoo.evaka.application.persistence.club.ClubFormV0
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
+import fi.espoo.evaka.application.persistence.objectMapper
 import fi.espoo.evaka.application.utils.exhaust
 import fi.espoo.evaka.placement.PlacementPlanConfirmationStatus
 import fi.espoo.evaka.placement.PlacementType
@@ -402,21 +402,6 @@ fun fetchApplicationSummaries(
             )
         }
     )
-}
-
-fun fetchOwnApplicationIds(h: Handle, guardianId: UUID): List<UUID> {
-    // language=SQL
-    val sql =
-        """
-        SELECT a.id
-        FROM application a
-        WHERE a.guardian_id = :guardianId AND a.hidefromguardian = false
-        """.trimIndent()
-
-    return h.createQuery(sql)
-        .bind("guardianId", guardianId)
-        .mapTo<UUID>()
-        .toList()
 }
 
 fun fetchApplicationSummariesForGuardian(h: Handle, guardianId: UUID): List<PersonApplicationSummary> {
@@ -864,16 +849,16 @@ fun removeOldDrafts(db: Database.Transaction, deleteAttachment: (db: Database.Tr
             .bind("applicationIds", applicationIds.toTypedArray())
             .execute()
 
-        applicationIds.forEach {
+        applicationIds.forEach { applicationId ->
             val attachmentIds =
                 db.handle.createUpdate("""DELETE FROM attachment WHERE application_id = :id RETURNING id""")
-                    .bind("id", it)
+                    .bind("id", applicationId)
                     .executeAndReturnGeneratedKeys()
                     .mapTo<UUID>()
                     .toList()
 
-            attachmentIds.forEach {
-                deleteAttachment(db, it)
+            attachmentIds.forEach { attachmentId ->
+                deleteAttachment(db, attachmentId)
             }
         }
 

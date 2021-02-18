@@ -1,12 +1,13 @@
-// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+// SPDX-FileCopyrightText: 2017-2021 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-package fi.espoo.evaka.application.enduser.daycare
+package fi.espoo.evaka.shared.dev
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import fi.espoo.evaka.application.ApplicationType
-import fi.espoo.evaka.application.enduser.FormJson
+import fi.espoo.evaka.application.OtherGuardianAgreementStatus
+import fi.espoo.evaka.application.persistence.DatabaseForm
 import fi.espoo.evaka.application.persistence.daycare.Address
 import fi.espoo.evaka.application.persistence.daycare.Adult
 import fi.espoo.evaka.application.persistence.daycare.Apply
@@ -19,6 +20,13 @@ import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
 import fi.espoo.evaka.application.persistence.daycare.OtherPerson
 import java.time.LocalDate
 import java.util.UUID
+
+sealed class FormJson {
+    abstract val type: ApplicationType
+    abstract fun deserialize(): DatabaseForm
+
+    abstract class DaycareFormJSON : FormJson()
+}
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class EnduserDaycareFormJSON(
@@ -66,12 +74,6 @@ data class EnduserDaycareFormJSON(
         maxFeeAccepted = maxFeeAccepted,
         additionalDetails = additionalDetails.toAdditionalDetails()
     )
-}
-
-enum class OtherGuardianAgreementStatus {
-    AGREED,
-    NOT_AGREED,
-    RIGHT_TO_GET_NOTIFIED
 }
 
 data class AddressJSON(
@@ -185,19 +187,6 @@ private fun DaycareAdditionalDetailsJSON.toAdditionalDetails() =
         dietType = dietType,
         otherInfo = otherInfo
     )
-
-@JsonIgnoreProperties(ignoreUnknown = true)
-data class CareDetailsJSON(
-    val preparatory: Boolean? = null,
-    val assistanceNeeded: Boolean = false,
-    val assistanceDescription: String = ""
-)
-
-fun CareDetailsJSON.toCareDetails() = CareDetails(
-    preparatory = preparatory,
-    assistanceNeeded = assistanceNeeded,
-    assistanceDescription = assistanceDescription
-)
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class EndUserCareDetailsJSON(

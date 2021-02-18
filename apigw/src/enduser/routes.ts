@@ -10,37 +10,15 @@ const proxy = createProxy()
 
 router.all('/citizen/*', createProxy())
 
-router.get('/decisions', createProxy({ path: '/enduser/decisions' }))
 router.get('/decisions2/:decisionId/download', proxy)
+
+router.get('/attachments/:applicationId/download', proxy)
 router.get('/attachments/:attachmentId/download', proxy)
 router.get('/attachments/:attachmentId/pre-download', proxy)
 
-router.post('/enduser/v2/applications', proxy)
-router.get('/enduser/v2/applications', proxy)
-
-router.get('/enduser/v2/applications/:applicationId', proxy)
-router.put('/enduser/v2/applications/:applicationId', proxy)
-router.delete('/enduser/v2/applications/:applicationId', proxy)
-
-router.post(
-  '/enduser/v2/applications/:applicationId/actions/send-application',
-  proxy
-)
-router.post(
-  '/enduser/v2/applications/:applicationId/actions/accept-decision',
-  proxy
-)
-router.post(
-  '/enduser/v2/applications/:applicationId/actions/reject-decision',
-  proxy
-)
-router.delete('/attachments/enduser/:id', proxy)
 router.delete('/attachments/citizen/:id', proxy)
 
-router.get('/attachments/:applicationId/download', proxy)
-
 const multipartProxy = createProxy({ multipart: true })
-router.post('/attachments/enduser/applications/:applicationId', multipartProxy)
 router.post('/attachments/citizen/applications/:applicationId', multipartProxy)
 
 export default router

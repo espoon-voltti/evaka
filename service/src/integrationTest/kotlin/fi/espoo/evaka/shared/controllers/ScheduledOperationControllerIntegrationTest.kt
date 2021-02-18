@@ -15,7 +15,6 @@ import fi.espoo.evaka.attachment.getApplicationAttachments
 import fi.espoo.evaka.insertApplication
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.placement.PlacementType
-import fi.espoo.evaka.placement.createPlacementPlan
 import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
@@ -70,7 +69,7 @@ class ScheduledOperationControllerIntegrationTest : FullApplicationTest() {
             setApplicationCreatedDate(tx, id_not_to_be_deleted, LocalDate.now().minusDays(31))
         }
 
-        db.transaction { _ ->
+        db.transaction {
             uploadAttachment(id_to_be_deleted, user)
             uploadAttachment(id_not_to_be_deleted, user)
         }

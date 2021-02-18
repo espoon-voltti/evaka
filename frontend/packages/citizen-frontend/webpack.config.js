@@ -23,7 +23,6 @@ module.exports = function (env, argv) {
     plugins.push(
       new SentryWebpackPlugin({
         include: './dist',
-        urlPrefix: '~/citizen/',
         setCommits: {
           repo: 'espoon-voltti/evaka',
           auto: true
@@ -39,7 +38,7 @@ module.exports = function (env, argv) {
     output: {
       filename: isDevelopment ? '[name].js' : '[name].[contenthash].js',
       path: path.resolve(__dirname, 'dist'),
-      publicPath: '/citizen/',
+      publicPath: '/',
       assetModuleFilename: isDevelopment
         ? '[name][ext][query][fragment]'
         : '[name].[contenthash][ext][query][fragment]'
@@ -119,9 +118,7 @@ module.exports = function (env, argv) {
     },
     devServer: {
       port: 9094,
-      historyApiFallback: {
-        index: '/citizen/index.html'
-      },
+      historyApiFallback: true,
       proxy: {
         '/api/application': {
           target: process.env.API_PROXY_URL || 'http://localhost:3010'

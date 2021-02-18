@@ -1,7 +1,0 @@
-<!--
-SPDX-FileCopyrightText: 2017-2020 City of Espoo
-
-SPDX-License-Identifier: LGPL-2.1-or-later
--->
-
-<svg id="Layer_1" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><defs><style>.cls-1{fill:#fff;}.cls-2{fill:#0071bc;}</style></defs><title>Artboard 1</title><path class="cls-1" d="M100,1a99,99,0,1,0,99,99A99,99,0,0,0,100,1Z"/><path class="cls-2" d="M100,21a79,79,0,1,0,79,79A79.09,79.09,0,0,0,100,21Z"/><path class="cls-2" d="M100,1a99,99,0,1,0,99,99A99,99,0,0,0,100,1Zm0,188a89,89,0,1,1,89-89A89,89,0,0,1,100,189Z"/></svg>

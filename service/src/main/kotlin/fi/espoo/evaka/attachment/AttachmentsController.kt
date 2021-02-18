@@ -44,7 +44,7 @@ class AttachmentsController(
     private val maxAttachmentsPerUser = env.getRequiredProperty("fi.espoo.evaka.maxAttachmentsPerUser").toInt()
 
     @PostMapping("/applications/{applicationId}", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
-    fun uploadApplicationAttachment(
+    fun uploadApplicationAttachmentEmployee(
         db: Database,
         user: AuthenticatedUser,
         @PathVariable applicationId: UUID,
@@ -58,8 +58,8 @@ class AttachmentsController(
         return ResponseEntity.ok(id)
     }
 
-    @PostMapping(value = ["/enduser/applications/{applicationId}", "/citizen/applications/{applicationId}"], consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
-    fun uploadEnduserApplicationAttachment(
+    @PostMapping("/citizen/applications/{applicationId}", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
+    fun uploadApplicationAttachmentCitizen(
         db: Database,
         user: AuthenticatedUser,
         @PathVariable applicationId: UUID,
@@ -124,7 +124,7 @@ class AttachmentsController(
         }
 
         return try {
-            s3Client.headObject(filesBucket, "$attachmentId").let { _ ->
+            s3Client.headObject(filesBucket, "$attachmentId").let {
                 ResponseEntity.ok().body(PreDownloadResponse(true))
             }
         } catch (e: AmazonS3Exception) {
@@ -155,8 +155,8 @@ class AttachmentsController(
         }
     }
 
-    @DeleteMapping(value = ["/enduser/{id}", "/citizen/{id}"])
-    fun deleteEnduserAttachment(db: Database, user: AuthenticatedUser, @PathVariable id: UUID): ResponseEntity<Unit> {
+    @DeleteMapping("/citizen/{id}")
+    fun deleteAttachmentCitizen(db: Database, user: AuthenticatedUser, @PathVariable id: UUID): ResponseEntity<Unit> {
         Audit.AttachmentsDelete.log(targetId = id)
         user.requireOneOfRoles(UserRole.END_USER)
         if (!db.read { it.isOwnAttachment(id, user) }) throw Forbidden("Permission denied")

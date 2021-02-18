@@ -7,9 +7,7 @@ package fi.espoo.evaka.daycare.controllers
 import fi.espoo.evaka.daycare.CareArea
 import fi.espoo.evaka.daycare.CareType
 import fi.espoo.evaka.daycare.Location
-import fi.espoo.evaka.daycare.MailingAddress
 import fi.espoo.evaka.daycare.UnitStub
-import fi.espoo.evaka.daycare.VisitingAddress
 import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.daycare.getAllApplicableUnits
@@ -19,8 +17,6 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.bindNullable
 import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.domain.Coordinate
-import fi.espoo.evaka.shared.domain.DateRange
-import fi.espoo.evaka.shared.utils.zoneId
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.mapTo
 import org.springframework.format.annotation.DateTimeFormat
@@ -54,28 +50,6 @@ class LocationController {
             .let { ResponseEntity.ok(it) }
     }
 
-    // Units by areas, only including units that can be applied to
-    @GetMapping("/public/areas")
-    fun getEnduserUnitsByArea(db: Database.Connection): ResponseEntity<Collection<CareAreaResponseJSON>> {
-        val future = DateRange(LocalDate.now(zoneId), null)
-        val areas = db.read { it.handle.getAreas() }
-            .map { area: CareArea ->
-                CareArea(
-                    area.id,
-                    area.name,
-                    area.shortName,
-                    area.locations.filter {
-                        (it.daycareApplyPeriod != null && it.daycareApplyPeriod.overlaps(future)) ||
-                            (it.preschoolApplyPeriod != null && it.preschoolApplyPeriod.overlaps(future)) ||
-                            (it.clubApplyPeriod != null && it.clubApplyPeriod.overlaps(future))
-                    }
-                )
-            }
-            .toSet()
-
-        return ResponseEntity.ok(toCareAreaResponses(areas))
-    }
-
     @GetMapping("/areas")
     fun getAreas(db: Database.Connection, user: AuthenticatedUser): ResponseEntity<Collection<AreaJSON>> {
         return db
@@ -92,38 +66,6 @@ class LocationController {
         val areas = area?.split(",") ?: listOf()
         val units = db.read { it.handle.getUnits(areas, type) }
         return ResponseEntity.ok(units)
-    }
-
-    companion object DomainMapping {
-        private fun toCareAreaResponses(areas: Collection<CareArea>) = areas.map { area ->
-            CareAreaResponseJSON(
-                area.id,
-                area.name,
-                area.shortName,
-                area.locations.map(::toLocationResponseJSON)
-            )
-        }
-
-        private fun toLocationResponseJSON(location: Location) =
-            LocationResponseJSON(
-                id = location.id,
-                name = location.name,
-                address = location.visitingAddress.streetAddress,
-                location = location.location,
-                phone = location.phone,
-                postalCode = location.visitingAddress.postalCode,
-                POBox = location.mailingAddress.poBox,
-                type = location.type,
-                care_area_id = location.care_area_id,
-                url = location.url,
-                provider_type = location.provider_type,
-                language = location.language,
-                visitingAddress = location.visitingAddress,
-                mailingAddress = location.mailingAddress,
-                daycareApplyPeriod = location.daycareApplyPeriod,
-                preschoolApplyPeriod = location.preschoolApplyPeriod,
-                clubApplyPeriod = location.clubApplyPeriod
-            )
     }
 }
 
@@ -146,40 +88,6 @@ data class PublicUnit(
     val location: Coordinate?,
     val ghostUnit: Boolean?,
     val roundTheClock: Boolean
-)
-
-data class CareAreaResponseJSON(
-    val id: UUID,
-    val name: String,
-    val shortName: String,
-    val daycares: List<LocationResponseJSON>
-)
-
-data class LocationResponseJSON(
-    val id: UUID,
-    val name: String,
-
-    @Deprecated("Use separate mailing/vising addresses that match data")
-    val address: String,
-
-    val location: Coordinate?, // @Todo remove nullability when data is complete
-    val phone: String?, // @Todo remove nullability when data is complete
-
-    @Deprecated("Use separate mailing/vising addresses that match the data")
-    val postalCode: String?, // @Todo remove nullability when data is complete
-    @Deprecated("Use separate mailing/vising addresses that match the data")
-    val POBox: String?, // @Todo remove nullability when data is complete
-
-    val type: Set<CareType>,
-    val care_area_id: UUID,
-    val url: String?,
-    val provider_type: ProviderType?,
-    val language: Language?,
-    val visitingAddress: VisitingAddress,
-    val mailingAddress: MailingAddress,
-    val daycareApplyPeriod: DateRange?,
-    val preschoolApplyPeriod: DateRange?,
-    val clubApplyPeriod: DateRange?
 )
 
 data class AreaJSON(

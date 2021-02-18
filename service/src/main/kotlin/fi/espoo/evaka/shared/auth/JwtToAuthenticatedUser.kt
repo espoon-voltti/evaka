@@ -18,7 +18,7 @@ fun HttpServletRequest.setAuthenticatedUser(user: AuthenticatedUser) = setAttrib
 
 class JwtToAuthenticatedUser : HttpFilter() {
     override fun doFilter(request: HttpServletRequest, response: HttpServletResponse, chain: FilterChain) {
-        val user = request.getDecodedJwt()?.let { it.toAuthenticatedUser() }
+        val user = request.getDecodedJwt()?.toAuthenticatedUser()
 
         if (user != null) {
             request.setAuthenticatedUser(user)

@@ -65,7 +65,7 @@ class LocationServiceIntegrationTest : PureJdbiTest() {
         )
         val prepPreschoolId = createDaycare(prepPreschool)
 
-        val areas = jdbi.handle { it.getAreas().filter { it.id == areaId } }
+        val areas = jdbi.handle { it.getAreas().filter { area -> area.id == areaId } }
         assertThat(areas).size().isEqualTo(1)
         val locationResults = areas.first().locations
 
@@ -88,7 +88,7 @@ class LocationServiceIntegrationTest : PureJdbiTest() {
         val preschool1 = createDaycare(createGenericUnit(areaId = areaId), openingDate = LocalDate.now().minusYears(1), closingDate = LocalDate.now().plusMonths(1))
         val preschool2 = createDaycare(createGenericUnit(areaId = areaId), openingDate = LocalDate.now().plusYears(1), closingDate = LocalDate.now().plusYears(2))
 
-        val areas = jdbi.handle { it.getAreas().filter { it.id == areaId } }
+        val areas = jdbi.handle { it.getAreas().filter { area -> area.id == areaId } }
         assertThat(areas).size().isEqualTo(1)
         val locationResults = areas.first().locations
 
@@ -111,7 +111,7 @@ class LocationServiceIntegrationTest : PureJdbiTest() {
                 daycareApplyPeriod = location.daycareApplyPeriod,
                 preschoolApplyPeriod = location.preschoolApplyPeriod,
                 clubApplyPeriod = location.clubApplyPeriod,
-                providerType = location.provider_type ?: ProviderType.MUNICIPAL,
+                providerType = location.provider_type ?: MUNICIPAL,
                 language = location.language ?: Language.fi,
                 location = location.location,
                 phone = location.phone,

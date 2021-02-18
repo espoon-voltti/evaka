@@ -9,7 +9,6 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapJsonColumn
-import fi.espoo.evaka.shared.db.transaction
 import org.jdbi.v3.core.kotlin.mapTo
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotEquals
@@ -65,7 +64,7 @@ class AsyncJobQueriesTest : PureJdbiTest() {
 
     @Test
     fun testParallelClaimContention() {
-        val payloads = (0..1).map { _ -> NotifyDecisionCreated(UUID.randomUUID(), user, sendAsMessage = false) }
+        val payloads = (0..1).map { NotifyDecisionCreated(UUID.randomUUID(), user, sendAsMessage = false) }
         db.transaction { tx ->
             payloads.map { tx.insertJob(JobParams(it, 999, Duration.ZERO)) }
         }

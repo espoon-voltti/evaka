@@ -357,7 +357,7 @@ private fun getChildAttendanceStatus(placementBasics: ChildPlacementBasics, atte
 }
 
 private fun isFullyAbsent(placementBasics: ChildPlacementBasics, absences: List<ChildAbsence>): Boolean {
-    return getCareTypes(placementBasics).all { absences.map { it.careType }.contains(it) }
+    return getCareTypes(placementBasics).all { type -> absences.map { it.careType }.contains(type) }
 }
 
 private fun getCareTypes(placementBasics: ChildPlacementBasics): List<CareType> {

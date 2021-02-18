@@ -5,7 +5,6 @@
 package fi.espoo.evaka.decision
 
 import com.github.kittinunf.fuel.core.extensions.jsonBody
-import com.github.kittinunf.fuel.core.isClientError
 import com.github.kittinunf.fuel.core.isSuccessful
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.application.AcceptDecisionRequest
@@ -47,7 +46,6 @@ import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
@@ -296,41 +294,6 @@ class DecisionResolutionIntegrationTest : FullApplicationTest() {
             assertTrue(getPlacementRowsByChild(h, testChild_1.id).list().isEmpty())
             assertTrue(getDecisionRowsByApplication(h, ids.applicationId).all { it.status == DecisionStatus.REJECTED })
         }
-    }
-
-    @Test
-    fun testRequestedStartDateValidation(): Unit = jdbi.handle { h ->
-        val period = FiniteDateRange(
-            LocalDate.of(2020, 8, 15),
-            LocalDate.of(2021, 6, 4)
-        )
-        val preschoolDaycarePeriod = FiniteDateRange(
-            LocalDate.of(2020, 8, 1),
-            LocalDate.of(2021, 7, 31)
-        )
-        val ids = insertInitialData(
-            h,
-            status = ApplicationStatus.WAITING_CONFIRMATION,
-            type = PlacementType.PRESCHOOL_DAYCARE,
-            period = period,
-            preschoolDaycarePeriod = preschoolDaycarePeriod
-        )
-        acceptDecisionAndAssert(h, serviceWorker, applicationId, ids.primaryId!!, period.start)
-
-        val decisionId = ids.preschoolDaycareId!!
-
-        listOf(
-            preschoolDaycarePeriod.start.minusDays(1),
-            preschoolDaycarePeriod.start.plusDays(15)
-        ).forEach { invalidDate ->
-            http.post("/decisions2/$decisionId/accept")
-                .jsonBody(objectMapper.writeValueAsString(EnduserAcceptDecisionRequest(invalidDate)))
-                .asUser(serviceWorker)
-                .response()
-                .also { (_, res, _) -> assertTrue(res.isClientError) }
-        }
-
-        acceptDecisionAndAssert(h, serviceWorker, applicationId, decisionId, preschoolDaycarePeriod.start.plusDays(14))
     }
 
     private fun acceptDecisionAndAssert(h: Handle, user: AuthenticatedUser, applicationId: UUID, decisionId: UUID, requestedStartDate: LocalDate) {

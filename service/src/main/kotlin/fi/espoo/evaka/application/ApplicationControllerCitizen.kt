@@ -61,8 +61,8 @@ class ApplicationControllerCitizen(
 
                 // Some children might not have applications, so add 0 application children
                 getCitizenChildren(tx.handle, user.id).map { citizenChild ->
-                    val childApplications = existingApplicationsByChild.findLast { it.childId == citizenChild.childId }
-                        ?.let { it.applicationSummaries } ?: emptyList()
+                    val childApplications = existingApplicationsByChild.findLast { it.childId == citizenChild.childId }?.applicationSummaries
+                        ?: emptyList()
                     ApplicationsOfChild(
                         childId = citizenChild.childId,
                         childName = citizenChild.childName,

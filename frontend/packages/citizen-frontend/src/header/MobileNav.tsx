@@ -16,13 +16,11 @@ import { langs, useLang, useTranslation } from '../localization'
 import { getLoginUri } from '~header/const'
 
 type Props = {
-  enduserBaseUrl: string
   showMenu: boolean
   setShowMenu: Dispatch<SetStateAction<boolean>>
 }
 
 export default React.memo(function DesktopNav({
-  enduserBaseUrl,
   showMenu,
   setShowMenu
 }: Props) {
@@ -43,7 +41,7 @@ export default React.memo(function DesktopNav({
         <MenuContainer>
           <LanguageMenu close={close} />
           <Gap size="s" />
-          <Navigation enduserBaseUrl={enduserBaseUrl} close={close} />
+          <Navigation close={close} />
           <Spacer />
           <UserContainer>
             <UserName>{`${user?.firstName ?? ''} ${
@@ -162,10 +160,8 @@ const LangButton = styled.button<{ active: boolean }>`
 `
 
 const Navigation = React.memo(function Navigation({
-  enduserBaseUrl,
   close
 }: {
-  enduserBaseUrl: string
   close: () => void
 }) {
   const t = useTranslation()
@@ -173,35 +169,16 @@ const Navigation = React.memo(function Navigation({
 
   return (
     <Nav>
-      <NavItem href={enduserBaseUrl} data-qa={'nav-old-map'}>
+      <StyledNavLink to="/" onClick={close}>
         {t.header.nav.map}
-      </NavItem>
-      {user && (
-        <>
-          <NavItem
-            href={`${enduserBaseUrl}/applications`}
-            data-qa={'nav-old-applications'}
-          >
-            {t.header.nav.applications}
-          </NavItem>
-          <NavItem
-            href={`${enduserBaseUrl}/decisions`}
-            data-qa={'nav-old-decisions'}
-          >
-            {t.header.nav.decisions}
-          </NavItem>
-        </>
-      )}
-      <StyledNavLink to="/map" onClick={close}>
-        {t.header.nav.newMap}
       </StyledNavLink>
       {user && (
         <>
           <StyledNavLink to="/applications" onClick={close}>
-            {t.header.nav.newApplications}
+            {t.header.nav.applications}
           </StyledNavLink>
           <StyledNavLink to="/decisions" onClick={close}>
-            {t.header.nav.newDecisions}
+            {t.header.nav.decisions}
           </StyledNavLink>
         </>
       )}
@@ -236,8 +213,6 @@ const StyledNavItem = (component: any) => styled(component)`
     border-color: ${colors.greyscale.white};
   }
 `
-
-const NavItem = StyledNavItem('a')
 
 const StyledNavLink = StyledNavItem(NavLink)
 

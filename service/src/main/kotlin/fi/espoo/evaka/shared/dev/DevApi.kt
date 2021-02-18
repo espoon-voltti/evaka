@@ -11,10 +11,9 @@ import fi.espoo.evaka.application.ApplicationOrigin
 import fi.espoo.evaka.application.ApplicationStateService
 import fi.espoo.evaka.application.ApplicationStatus
 import fi.espoo.evaka.application.DaycarePlacementPlan
-import fi.espoo.evaka.application.enduser.daycare.EnduserDaycareFormJSON
-import fi.espoo.evaka.application.enduser.objectMapper
 import fi.espoo.evaka.application.fetchApplicationDetails
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
+import fi.espoo.evaka.application.persistence.objectMapper
 import fi.espoo.evaka.assistanceaction.AssistanceActionType
 import fi.espoo.evaka.assistanceaction.AssistanceMeasure
 import fi.espoo.evaka.assistanceneed.AssistanceBasis
@@ -504,6 +503,11 @@ RETURNING id
         return ResponseEntity.ok(uuids)
     }
 
+    fun deserializeApplicationForm(jsonString: String): DaycareFormV0 {
+        val mapper = objectMapper()
+        return mapper.treeToValue<EnduserDaycareFormJSON>(mapper.readTree(jsonString))!!.deserialize()
+    }
+
     @PostMapping("/placement-plan/{application-id}")
     fun createPlacementPlan(
         db: Database,
@@ -699,10 +703,6 @@ fun ensureFakeAdminExists(h: Handle) {
         """.trimIndent()
 
     h.createUpdate(sql).bind("id", fakeAdmin.id).execute()
-}
-
-fun deserializeApplicationForm(jsonString: String): DaycareFormV0 {
-    return objectMapper().treeToValue<EnduserDaycareFormJSON>(objectMapper().readTree(jsonString))!!.deserialize()
 }
 
 fun Handle.clearDatabase() = listOf(
@@ -1004,14 +1004,6 @@ data class DevMobileDevice(
 
 data class DaycareAclInsert(
     val externalId: ExternalId
-)
-
-data class ClubTerm(
-    val id: UUID?,
-    val startDate: LocalDate,
-    val endDate: LocalDate,
-    val applicationPeriodStartDate: LocalDate,
-    val applicationPeriodEndDate: LocalDate
 )
 
 data class PlacementPlan(

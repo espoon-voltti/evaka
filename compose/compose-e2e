@@ -1,28 +1,13 @@
 #!/bin/sh -e
 
-# SPDX-FileCopyrightText: 2017-2020 City of Espoo
-#
-# SPDX-License-Identifier: LGPL-2.1-or-later
-
-GOOGLE_MAPS_ENV_FILE=.gmaps.env
-GOOGLE_MAPS_ENV_FILE_DEFAULT=.default.gmaps.env
-
-# Only use the default configuration if user hasn't created their own
-if [ ! -f "$GOOGLE_MAPS_ENV_FILE" ]; then
-    >&2 echo "INFO: No ${GOOGLE_MAPS_ENV_FILE} exists, replacing with default ${GOOGLE_MAPS_ENV_FILE_DEFAULT}"
-    cp -a "$GOOGLE_MAPS_ENV_FILE_DEFAULT" "$GOOGLE_MAPS_ENV_FILE"
-fi
-
 if [ "$1" = "up" ]; then
     S3_DIR=s3-mount/
     mkdir -p "$S3_DIR"
     LOCAL_DIR=../frontend/packages
 
-    rm -rf "$S3_DIR/enduser"
     rm -rf "$S3_DIR/employee"
     rm -rf "$S3_DIR/employee/mobile"
     rm -rf "$S3_DIR/citizen"
-    cp -r "$LOCAL_DIR/enduser-frontend/dist" "$S3_DIR/enduser"
     cp -r "$LOCAL_DIR/employee-frontend/dist" "$S3_DIR/employee"
     cp -r "$LOCAL_DIR/employee-mobile-frontend/dist" "$S3_DIR/employee/mobile"
     cp -r "$LOCAL_DIR/citizen-frontend/dist" "$S3_DIR/citizen"

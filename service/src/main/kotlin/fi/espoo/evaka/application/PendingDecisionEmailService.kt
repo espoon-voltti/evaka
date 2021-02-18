@@ -23,7 +23,7 @@ private val logger = KotlinLogging.logger { }
 class PendingDecisionEmailService(
     private val asyncJobRunner: AsyncJobRunner,
     private val emailClient: IEmailClient,
-    private val env: Environment
+    env: Environment
 ) {
     init {
         asyncJobRunner.sendPendingDecisionEmail = ::doSendPendingDecisionsEmail

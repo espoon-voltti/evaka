@@ -45,10 +45,7 @@ const sv: Translations = {
     nav: {
       map: 'Karta',
       applications: 'Ansökningar',
-      decisions: 'Beslut',
-      newMap: 'Ny Karta',
-      newDecisions: 'Ny Beslut',
-      newApplications: 'Ny Ansökningar'
+      decisions: 'Beslut'
     },
     lang: {
       fi: 'Suomeksi',

@@ -22,11 +22,6 @@ module.exports = {
     cwd: path.resolve(__dirname, '../frontend/packages/citizen-frontend'),
     ...defaults
   }, {
-    name: 'enduser',
-    script: useProIcons ? 'yarn install && ICONS=pro yarn dev' : 'yarn install && yarn dev',
-    cwd: path.resolve(__dirname, '../frontend/packages/enduser-frontend'),
-    ...defaults
-  }, {
     name: 'employee',
     script: useProIcons ? 'yarn install && ICONS=pro yarn dev' : 'yarn install && yarn dev',
     cwd: path.resolve(__dirname, '../frontend/packages/employee-frontend'),

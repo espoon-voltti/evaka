@@ -45,10 +45,7 @@ const en: Translations = {
     nav: {
       map: 'Map',
       applications: 'Applications',
-      decisions: 'Decisions',
-      newMap: 'New Map',
-      newDecisions: 'New Decisions',
-      newApplications: 'New Applications'
+      decisions: 'Decisions'
     },
     lang: {
       fi: 'Suomeksi',

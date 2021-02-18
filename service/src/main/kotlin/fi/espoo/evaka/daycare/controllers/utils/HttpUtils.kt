@@ -24,7 +24,7 @@ fun <T : Any?> badRequest(): ResponseEntity<T> = ResponseEntity.badRequest().bui
 fun <T : Any?> notFound(): ResponseEntity<T> = ResponseEntity.notFound().build()
 
 fun <T : Any?> created(body: T?, uri: URI? = null): ResponseEntity<T> {
-    var builder = if (uri == null) ResponseEntity.status(HttpStatus.CREATED) else ResponseEntity.created(uri)
+    val builder = if (uri == null) ResponseEntity.status(HttpStatus.CREATED) else ResponseEntity.created(uri)
     return if (body == null) builder.build() else builder.body(body)
 }
 

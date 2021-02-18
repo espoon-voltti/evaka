@@ -15,7 +15,7 @@ export default function requireAuth<T>(
     ) : loading ? (
       <SpinnerSegment />
     ) : (
-      <Redirect to={'/map'} />
+      <Redirect to={'/'} />
     )
   }
 }

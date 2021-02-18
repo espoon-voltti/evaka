@@ -147,7 +147,7 @@ class InvoiceIntegrationTest : FullApplicationTest() {
 
     private val testUser = AuthenticatedUser(testDecisionMaker_1.id, setOf(UserRole.FINANCE_ADMIN))
 
-    @BeforeEach()
+    @BeforeEach
     fun beforeEach() {
         jdbi.handle(::insertGeneralTestFixtures)
     }
@@ -541,7 +541,7 @@ class InvoiceIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `send sets distinct numbers`() {
-        val drafts = (1..5).map { _ ->
+        val drafts = (1..5).map {
             createInvoiceFixture(
                 status = InvoiceStatus.DRAFT,
                 headOfFamilyId = testAdult_1.id,
@@ -574,7 +574,7 @@ class InvoiceIntegrationTest : FullApplicationTest() {
                 it.copy(
                     id = UUID.randomUUID(),
                     number = null,
-                    rows = it.rows.map { it.copy(id = UUID.randomUUID()) }
+                    rows = it.rows.map { row -> row.copy(id = UUID.randomUUID()) }
                 )
             }
         }

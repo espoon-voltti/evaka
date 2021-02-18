@@ -29,7 +29,7 @@ const config: Config = {
   devApiGwUrl: `${
     process.env.BASE_URL || 'http://localhost:3020'
   }/api/internal/dev-api`,
-  enduserUrl: process.env.BASE_URL || 'http://localhost:9091',
+  enduserUrl: process.env.BASE_URL || 'http://localhost:9094',
   supervisorAad,
   supervisorExternalId: `espoo-ad:${supervisorAad}`,
   adminAad,
