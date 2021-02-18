@@ -9,7 +9,6 @@ import {
 import { PublicUnit } from '@evaka/lib-common/src/api-types/units/PublicUnit'
 import { useRestApi } from '@evaka/lib-common/src/utils/useRestApi'
 import { Coordinate } from '@evaka/lib-common/src/api-types/units/Coordinate'
-import { defaultMargins } from '@evaka/lib-components/src/white-space'
 import AdaptiveFlex from '@evaka/lib-components/src/layout/AdaptiveFlex'
 import { headerHeight } from '~header/const'
 import UnitSearchPanel from '~map/UnitSearchPanel'
@@ -200,7 +199,7 @@ const filterUnits = (
 
 const FullScreen = styled.div`
   position: absolute;
-  top: ${headerHeight};
+  top: 0;
   bottom: 0;
   left: 0;
   right: 0;
@@ -210,31 +209,14 @@ const FullScreen = styled.div`
 `
 
 const FlexContainer = styled(AdaptiveFlex)`
-  margin-top: ${defaultMargins.L};
-  margin-bottom: ${defaultMargins.m};
+  margin-top: 64px;
   align-items: stretch;
 
-  width: 1520px;
-
-  @media (max-width: 1900px) {
-    width: 80%;
-  }
-
-  @media (max-width: 1700px) {
-    width: 90%;
-  }
-
-  @media (max-width: 1500px) {
-    width: 95%;
-  }
-
-  @media (max-width: 1200px) {
-    width: 98%;
-  }
+  width: 100%;
 
   @media (max-width: ${mapViewBreakpoint}) {
+    margin-top: ${headerHeight};
     width: 100%;
-    margin-top: 0;
     margin-bottom: 0;
     &.mobile-mode-map {
       .unit-list {

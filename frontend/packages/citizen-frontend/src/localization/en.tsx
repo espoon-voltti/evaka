@@ -68,7 +68,7 @@ const en: Translations = {
     title: 'Units on the map',
     mainInfo:
       "In this view, you can search the map for Espoo's early childhood education, pre-primary education and club places.",
-    searchLabel: 'Search by address or unit name',
+    searchLabel: 'Search by your own address or by a unit name',
     searchPlaceholder: 'For example Kilontie 3 or Purolan päiväkoti',
     address: 'Address',
     noResults: 'No results',
