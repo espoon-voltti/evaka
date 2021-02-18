@@ -18,6 +18,11 @@ export default class CitizenMapPage {
   )
 
   readonly map = new Map(Selector('[data-qa="map-view"]'))
+  readonly searchInput = new MapSearchInput(
+    Selector('[data-qa="map-search-input"]')
+  )
+
+  readonly addressMarker = Selector('[data-qa="map-marker-address"]')
 
   async setLanguageFilter(language: 'fi' | 'sv', selected: boolean) {
     const chip = new SelectionChip(
@@ -28,15 +33,15 @@ export default class CitizenMapPage {
     }
   }
 
-  unitListItem(daycare: Daycare): Selector {
+  listItemFor(daycare: Daycare): Selector {
     return Selector(`[data-qa="map-unit-list-${daycare.id}"]`)
   }
 
-  unitMapMarker(daycare: Daycare): Selector {
+  mapMarkerFor(daycare: Daycare): Selector {
     return Selector(`[data-qa="map-marker-${daycare.id}"]`)
   }
 
-  unitMapPopup(daycare: Daycare): MapPopup {
+  mapPopupFor(daycare: Daycare): MapPopup {
     return new MapPopup(Selector(`[data-qa="map-popup-${daycare.id}"]`))
   }
 }
@@ -95,5 +100,31 @@ class MapPopup {
 
   get name(): Promise<string> {
     return this._name.textContent
+  }
+}
+
+class MapSearchInput {
+  private readonly _input: Selector
+  constructor(private readonly selector: Selector) {
+    this._input = selector.find('input')
+  }
+
+  async typeText(text: string) {
+    await t.expect(this._input.exists).ok()
+    await t.click(this.selector)
+    const keys = text.split('').join(' ')
+    await t.pressKey(keys)
+  }
+
+  async clickUnitResult(daycare: Daycare) {
+    await t.click(this.selector.find(`[data-qa="map-search-${daycare.id}"]`))
+  }
+
+  async clickAddressResult(streetAddress: string) {
+    await t.click(
+      this.selector.find(
+        `[data-qa="map-search-address"][data-address="${streetAddress}"]`
+      )
+    )
   }
 }

@@ -7,6 +7,7 @@ import { Coordinate } from '@evaka/lib-common/src/api-types/units/Coordinate'
 import { client } from '~api-client'
 import { MapAddress } from '~map/MapView'
 import { UnitWithDistance, UnitWithStraightDistance } from '~map/distances'
+import { isAutomatedTest } from '@evaka/lib-common/src/utils/helpers'
 
 export async function fetchUnits(): Promise<Result<PublicUnit[]>> {
   return client
@@ -32,20 +33,21 @@ type AutocompleteResponse = {
 export const queryAutocomplete = async (
   text: string
 ): Promise<Result<MapAddress[]>> => {
+  const url = isAutomatedTest
+    ? '/api/internal/dev-api/digitransit/autocomplete'
+    : 'https://api.digitransit.fi/geocoding/v1/autocomplete'
+
   return axios
-    .get<JsonOf<AutocompleteResponse>>(
-      'https://api.digitransit.fi/geocoding/v1/autocomplete',
-      {
-        params: {
-          text,
-          layers: 'address',
-          'boundary.rect.min_lon': 24.271362626190594,
-          'boundary.rect.max_lon': 25.32055693401933,
-          'boundary.rect.min_lat': 59.9451623086072,
-          'boundary.rect.max_lat': 60.35391259995084
-        }
+    .get<JsonOf<AutocompleteResponse>>(url, {
+      params: {
+        text,
+        layers: 'address',
+        'boundary.rect.min_lon': 24.271362626190594,
+        'boundary.rect.max_lon': 25.32055693401933,
+        'boundary.rect.min_lat': 59.9451623086072,
+        'boundary.rect.max_lat': 60.35391259995084
       }
-    )
+    })
     .then((res) =>
       res.data.features.map((feature) => ({
         coordinates: {
@@ -84,6 +86,13 @@ export const queryDistances = async (
 ): Promise<Result<UnitWithDistance[]>> => {
   if (endLocations.length === 0) {
     return Success.of([])
+  } else if (isAutomatedTest) {
+    return Success.of(
+      endLocations.map((unit, index) => ({
+        ...unit,
+        drivingDistance: index + 1
+      }))
+    )
   }
   const unitsToQuery = _.sortBy(
     endLocations.filter((u) => u.straightDistance !== null),
@@ -161,6 +170,9 @@ export const queryDistance = async (
   startLocation: Coordinate,
   endLocations: Coordinate
 ): Promise<Result<number>> => {
+  if (isAutomatedTest) {
+    return Success.of(7)
+  }
   const query = `
 {
     plan(

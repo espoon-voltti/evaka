@@ -755,3 +755,29 @@ export async function getApplication(
     throw new DevApiError(e)
   }
 }
+
+interface DigitransitAutocomplete {
+  features: DigitransitFeature[]
+}
+
+export interface DigitransitFeature {
+  geometry: {
+    coordinates: [number, number]
+  }
+  properties: {
+    name: string
+    postalcode?: string
+    locality?: string
+    localadmin?: string
+  }
+}
+
+export async function putDigitransitAutocomplete(
+  mockResponse: DigitransitAutocomplete
+): Promise<void> {
+  try {
+    await devClient.put('/digitransit/autocomplete', mockResponse)
+  } catch (e) {
+    throw new DevApiError(e)
+  }
+}

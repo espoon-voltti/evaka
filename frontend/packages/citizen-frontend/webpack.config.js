@@ -122,6 +122,9 @@ module.exports = function (env, argv) {
       proxy: {
         '/api/application': {
           target: process.env.API_PROXY_URL || 'http://localhost:3010'
+        },
+        '/api/internal': {
+          target: process.env.API_PROXY_URL || 'http://localhost:3020'
         }
       },
       watchOptions: {
