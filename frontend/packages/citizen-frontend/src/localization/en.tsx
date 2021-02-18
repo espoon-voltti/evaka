@@ -257,29 +257,32 @@ const en: Translations = {
             return (
               <>
                 <P>
-                  Hakuaika syksyllä käynnistyviin kerhoihin on maaliskuussa. Jos
-                  lapsenne saa kerhopaikan, saatte päätöksen siitä
-                  huhti-toukokuun aikana. Päätös tehdään yhden toimintakauden
-                  ajaksi (elokuusta toukokuun loppuun). Päätös kerhopaikasta
-                  tulee Suomi.fi-palveluun tai postitse, mikäli ette ole ottanut
-                  palvelua käyttöön.
+                  The application period for clubs starting in the autumn is in
+                  March. If your child gets a club spot, you get the decision on
+                  it during April-May. The decision is made for one operating
+                  period for the period (August to the end of May). Decision on
+                  club location comes to the Suomi.fi service or by post if you
+                  have not taken service.
                 </P>
                 <P>
-                  Kerhohakemuksen voi jättää myös hakuajan ulkopuolella ja sen
-                  jälkeen, kun kerhojen toimintakausi on jo alkanut. Hakuaikana
-                  saapuneet hakemukset käsitellään kuitenkin ensin, ja hakuajan
-                  ulkopuolella tulleet hakemukset käsitellään
-                  saapumisjärjestyksessä. Kerhohakemus kohdistuu yhdelle
-                  kerhokaudelle. Kauden päättyessä hakemus poistetaan
-                  järjestelmästä.
+                  A club application can also be submitted outside the
+                  application period and on after the club’s season has already
+                  begun. During the application period However, applications
+                  received will be processed first, and the application period
+                  applications received from outside will be processed in order
+                  of arrival. The club application is for one for the club
+                  season. At the end of the period, the application will be
+                  deleted system.
                 </P>
                 <P>
-                  Kerhotoiminta on maksutonta, eikä siihen osallistuminen
-                  vaikuta Kelan maksamaan kotihoidontukeen. Jos lapselle sen
-                  sijaan on myönnetty varhaiskasvatuspaikka tai yksityisen
-                  hoidon tuki, ei hänelle voida myöntää kerhopaikkaa.
+                  Club activities are free of charge, not participation affect
+                  the home care allowance paid by Kela. If a child it instead of
+                  being granted early childhood education or private care
+                  allowance, he cannot be granted a club seat.
                 </P>
-                <P fitted={true}>* Tähdellä merkityt tiedot ovat pakollisia</P>
+                <P fitted={true}>
+                  * Information marked with an asterisk is required
+                </P>
               </>
             )
           }
