@@ -1863,14 +1863,14 @@ class DecisionGeneratorIntegrationTest : FullApplicationTest() {
             assertEquals(VoucherValueDecisionStatus.DRAFT, decision.status)
             assertEquals(period.start, decision.validFrom)
             assertEquals(testChild_1.dateOfBirth.plusYears(3).minusDays(1), decision.validTo)
-            assertEquals(126150, decision.totalValue())
+            assertEquals(134850, decision.totalValue())
             assertEquals(1, decision.parts.size)
             decision.parts.first().let { part ->
                 assertEquals(testChild_1.id, part.child.id)
                 assertEquals(87000, part.baseValue)
-                assertEquals(145, part.ageCoefficient)
+                assertEquals(155, part.ageCoefficient)
                 assertEquals(100, part.serviceCoefficient)
-                assertEquals(126150, part.value)
+                assertEquals(134850, part.value)
             }
         }
         voucherValueDecisions.last().let { decision ->
