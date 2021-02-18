@@ -69,17 +69,25 @@ GROUP BY application.guardian_id
             logger.info("PendingDecisionEmailService: Scheduling sending ${pendingGuardianDecisions.size} pending decision emails")
 
             pendingGuardianDecisions.forEach { pendingDecision ->
-                asyncJobRunner.plan(
-                    tx,
-                    payloads = listOf(
-                        SendPendingDecisionEmail(
-                            guardianId = pendingDecision.guardianId,
-                            decisionIds = pendingDecision.decisionIds
+                tx.handle.getPersonById(pendingDecision.guardianId)?.let { guardian ->
+                    if (!guardian.email.isNullOrBlank()) {
+                        asyncJobRunner.plan(
+                            tx,
+                            payloads = listOf(
+                                SendPendingDecisionEmail(
+                                    guardianId = pendingDecision.guardianId,
+                                    email = guardian.email,
+                                    language = guardian.language,
+                                    decisionIds = pendingDecision.decisionIds
+                                )
+                            ),
+                            runAt = Instant.now(),
+                            retryCount = 10
                         )
-                    ),
-                    runAt = Instant.now(),
-                    retryCount = 10
-                )
+                    } else {
+                        logger.warn("Could not send pending decision email to guardian ${guardian.id}: invalid email")
+                    }
+                }
             }
 
             pendingGuardianDecisions.size
@@ -91,42 +99,31 @@ GROUP BY application.guardian_id
     }
 
     fun sendPendingDecisionEmail(db: Database, pendingDecision: SendPendingDecisionEmail) {
-        try {
-            db.transaction { tx ->
+        db.transaction { tx ->
+            logger.info("Sending pending decision email to guardian ${pendingDecision.guardianId}")
 
-                val guardian = tx.handle.getPersonById(pendingDecision.guardianId) ?: throw PendingDecisionMailException("Could not send pending decision email to ${pendingDecision.guardianId}: guardian cannot be found")
+            val lang = getLanguage(pendingDecision.language)
+            emailClient.sendEmail(
+                "${pendingDecision.guardianId} - ${pendingDecision.decisionIds.joinToString { "-" }}",
+                pendingDecision.email,
+                fromAddress,
+                getSubject(lang),
+                getHtml(lang),
+                getText(lang)
+            )
 
-                if (!guardian.email.isNullOrBlank()) {
-                    logger.info("Sending pending decision email to guardian ${guardian.id}")
-
-                    val lang = getLanguage(guardian.language)
-                    emailClient.sendEmail(
-                        "${guardian.id} - ${pendingDecision.decisionIds.joinToString { "-" }}",
-                        guardian.email,
-                        fromAddress,
-                        getSubject(lang),
-                        getHtml(lang),
-                        getText(lang)
-                    )
-
-                    // Mark as sent
-                    pendingDecision.decisionIds.forEach { decisionId ->
-                        tx.createUpdate(
-                            """
-    UPDATE decision
-    SET pending_decision_emails_sent_count = pending_decision_emails_sent_count + 1, pending_decision_email_sent = now()
-    WHERE id = :id
-                            """.trimIndent()
-                        )
-                            .bind("id", decisionId)
-                            .execute()
-                    }
-                } else {
-                    throw PendingDecisionMailException("Could not send pending decision email to guardian ${guardian.id}: invalid email")
-                }
+            // Mark as sent
+            pendingDecision.decisionIds.forEach { decisionId ->
+                tx.createUpdate(
+                    """
+UPDATE decision
+SET pending_decision_emails_sent_count = pending_decision_emails_sent_count + 1, pending_decision_email_sent = now()
+WHERE id = :id
+                    """.trimIndent()
+                )
+                    .bind("id", decisionId)
+                    .execute()
             }
-        } catch (e: PendingDecisionMailException) {
-            logger.warn(e.message)
         }
     }
 

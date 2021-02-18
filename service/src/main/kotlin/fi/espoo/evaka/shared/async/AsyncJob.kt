@@ -51,7 +51,7 @@ data class SendApplicationEmail(val guardianId: UUID, val language: Language) : 
     override val user: AuthenticatedUser? = null
 }
 
-data class SendPendingDecisionEmail(val guardianId: UUID, val decisionIds: List<UUID>) : AsyncJobPayload {
+data class SendPendingDecisionEmail(val guardianId: UUID, val email: String, val language: String?, val decisionIds: List<UUID>) : AsyncJobPayload {
     override val asyncJobType = AsyncJobType.SEND_PENDING_DECISION_EMAIL
     override val user: AuthenticatedUser? = null
 }
