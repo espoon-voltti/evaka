@@ -189,7 +189,7 @@ fun Database.Read.userAttachmentCount(userId: UUID): Int {
 }
 
 val contentTypesWithMagicNumbers = mapOf(
-    "image/jpeg" to listOf("FF D8 FF DB", "FF D8 FF EE", "FF D8 FF E0 00 10 4A 46 49 46 00 01"),
+    "image/jpeg" to listOf("FF D8 FF DB", "FF D8 FF EE", "FF D8 FF E1", "FF D8 FF E0 00 10 4A 46 49 46 00 01"),
     "image/png" to listOf("89 50 4E 47 0D 0A 1A 0A"),
     "application/pdf" to listOf("25 50 44 46 2D"),
     "application/msword" to listOf("50 4B 03 04 14 00 06 00", "D0 CF 11 E0 A1 B1 1A E1"),
@@ -206,7 +206,7 @@ fun checkFileContentType(file: InputStream, contentType: String) {
     val contentMatchesMagicNumbers = file.use { stream ->
         val fileBytes = stream.readNBytes(magicNumbers.map { it.size }.maxOrNull() ?: 0)
         magicNumbers.any { numbers ->
-            fileBytes?.contentEquals(numbers) ?: false
+            fileBytes.slice(numbers.indices).toByteArray().contentEquals(numbers)
         }
     }
 
