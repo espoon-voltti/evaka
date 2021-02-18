@@ -169,7 +169,7 @@ const Navigation = React.memo(function Navigation({
 
   return (
     <Nav>
-      <StyledNavLink to="/" onClick={close}>
+      <StyledNavLink to="/" exact onClick={close}>
         {t.header.nav.map}
       </StyledNavLink>
       {user && (

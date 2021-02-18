@@ -29,7 +29,7 @@ export default React.memo(function DesktopNav() {
   return (
     <>
       <Nav>
-        <StyledNavLink to="/" data-qa={'nav-map'}>
+        <StyledNavLink to="/" exact data-qa={'nav-map'}>
           <Icon icon={farMap} />
           {t.header.nav.map}
         </StyledNavLink>
@@ -204,6 +204,7 @@ const LanguageIcon = styled(FontAwesomeIcon)`
 
 const LanguageDropDown = styled.ul`
   position: absolute;
+  z-index: 9999;
   top: 64px;
   list-style: none;
   margin: 0;
