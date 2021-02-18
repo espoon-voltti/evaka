@@ -1929,16 +1929,11 @@ export const fi = {
       description:
         'Raportti listaa lasten määriä yksiköissä kielen ja iän mukaan. Vain vastaanotetut paikat otetaan huomioon.'
     },
-    assistanceNeeds: {
-      title: 'Lasten tuen tarpeet',
+    assistanceNeedsAndActions: {
+      title: 'Lasten tuen tarpeet ja tukitoimet',
       description:
-        'Raportti listaa lasten määriä yksiköissä ja ryhmissä tuen tarpeen perusteiden mukaan. Vain vastaanotetut paikat otetaan huomioon.',
-      basisMissing: 'Peruste puuttuu'
-    },
-    assistanceActions: {
-      title: 'Lasten tukitoimet',
-      description:
-        'Raportti listaa lasten määriä yksiköissä ja ryhmissä tukitoimien mukaan. Vain vastaanotetut paikat otetaan huomioon.',
+        'Raportti listaa lasten määriä yksiköissä ja ryhmissä tuen tarpeen perusteiden ja tukitoimien mukaan. Vain vastaanotetut paikat otetaan huomioon.',
+      basisMissing: 'Peruste puuttuu',
       actionMissing: 'Tukitoimi puuttuu'
     },
     occupancies: {

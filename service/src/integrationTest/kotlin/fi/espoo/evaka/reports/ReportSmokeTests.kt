@@ -44,20 +44,10 @@ class ReportSmokeTests : FullApplicationTest() {
     }
 
     @Test
-    fun `assistance actions report returns http 200`() {
+    fun `assistance needs and actions report returns http 200`() {
         assertOkResponse(
             http.get(
-                "/reports/assistance-actions",
-                listOf("date" to "2020-08-01")
-            )
-        )
-    }
-
-    @Test
-    fun `assistance needs report returns http 200`() {
-        assertOkResponse(
-            http.get(
-                "/reports/assistance-needs",
+                "/reports/assistance-needs-and-actions",
                 listOf("date" to "2020-08-01")
             )
         )

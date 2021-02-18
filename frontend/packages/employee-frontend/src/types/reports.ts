@@ -220,7 +220,8 @@ export interface ChildAgeLanguageReportRow extends UnitBasicsAbstractReportRow {
   other_7y: number
 }
 
-export interface AssistanceNeedsReportRow extends GroupBasicsAbstractReportRow {
+export interface AssistanceNeedsAndActionsReportRow
+  extends GroupBasicsAbstractReportRow {
   autism: number
   developmentalDisability1: number
   developmentalDisability2: number
@@ -232,12 +233,9 @@ export interface AssistanceNeedsReportRow extends GroupBasicsAbstractReportRow {
   longTermCondition: number
   regulationSkillChallenge: number
   disability: number
-  other: number
-  none: number
-}
+  otherAssistanceNeed: number
+  noAssistanceNeeds: number
 
-export interface AssistanceActionsReportRow
-  extends GroupBasicsAbstractReportRow {
   assistanceServiceChild: number
   assistanceServiceUnit: number
   smallerGroup: number
@@ -246,8 +244,8 @@ export interface AssistanceActionsReportRow
   resourcePerson: number
   ratioDecrease: number
   periodicalVeoSupport: number
-  other: number
-  none: number
+  otherAssistanceAction: number
+  noAssistanceActions: number
 }
 
 export interface OccupancyReportRow {
