@@ -27,12 +27,7 @@ This repository uses [Yarn workspaces](https://yarnpkg.com/lang/en/docs/workspac
 common code between packages / applications. See further instructions below.
 
 **NOTE:** This project is currently under very active development.
-It is very likely, that the way the code is organised will change
-in the future. For instance, the user interface is currently implemented
-partly using [Vue.js](https://vuejs.org/). However, the main approach
-is to use [React.js](https://reactjs.org/) for any new features. Thus,
-current Vue.js implementation may be discarded at some point. At this
-point, it is not yet adviced to start developing or running your custom
+At this point, it is not yet adviced to start developing or running your custom
 solution based on this project. Most likely, the project will evolve
 considerably before reaching more stable phase. Please refer to
 project's roadmap for further information regarding development plans.
