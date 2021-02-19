@@ -97,7 +97,7 @@ const MenuContainer = styled.div`
   background: ${colors.blues.medium};
   box-sizing: border-box;
   width: 100vw;
-  height: 100vh;
+  height: 100%;
   padding: calc(52px + ${defaultMargins.s}) ${defaultMargins.s}
     ${defaultMargins.s} ${defaultMargins.s};
   z-index: -1;
