@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useRef } from 'react'
 import styled from 'styled-components'
 import { defaultMargins } from '@evaka/lib-components/src/white-space'
 import colors from '@evaka/lib-components/src/colors'
@@ -14,6 +14,7 @@ import { useTranslation } from '~localization'
 import { formatCareTypes } from './format'
 import { MapAddress } from '~map/MapView'
 import { mapViewBreakpoint } from '~map/const'
+import { isAutomatedTest } from '@evaka/lib-common/src/utils/helpers'
 
 export interface Props {
   units: (UnitWithDistance | PublicUnit)[]
@@ -63,7 +64,7 @@ function MapContents({ units, selectedUnit, selectedAddress }: Props) {
     if (selectedAddress) {
       const { lat, lon } = selectedAddress.coordinates
       map.stop()
-      map.flyTo([lat, lon], addressZoom, { animate: true })
+      map.flyTo([lat, lon], addressZoom, { animate: !isAutomatedTest })
     }
   }, [selectedAddress])
 
@@ -71,7 +72,7 @@ function MapContents({ units, selectedUnit, selectedAddress }: Props) {
     if (selectedUnit && selectedUnit.location) {
       const { lat, lon } = selectedUnit.location
       map.stop()
-      map.panTo([lat, lon], { animate: true })
+      map.panTo([lat, lon], { animate: !isAutomatedTest })
     }
   }, [selectedUnit])
 
@@ -96,12 +97,22 @@ function MapContents({ units, selectedUnit, selectedAddress }: Props) {
 
 function AddressMarker({ address }: { address: MapAddress }) {
   const { lat, lon } = address.coordinates
+  const markerRef = useRef<leaflet.Marker>(null)
+
+  useEffect(() => {
+    const element = markerRef.current?.getElement()
+    if (element) {
+      element.setAttribute('data-qa', 'map-marker-address')
+    }
+  }, [markerRef])
+
   return (
     <Marker
       title={address.streetAddress}
       position={[lat, lon]}
       icon={addressIcon}
       zIndexOffset={20}
+      ref={markerRef}
     />
   )
 }
@@ -114,6 +125,14 @@ function UnitMarker({
   isSelected: boolean
 }) {
   const t = useTranslation()
+  const markerRef = useRef<leaflet.Marker>(null)
+
+  useEffect(() => {
+    const element = markerRef.current?.getElement()
+    if (element) {
+      element.setAttribute('data-qa', `map-marker-${unit.id}`)
+    }
+  }, [markerRef, unit])
 
   if (unit.location?.lat == null || unit.location?.lon == null) return null
   const { lat, lon } = unit.location
@@ -124,22 +143,25 @@ function UnitMarker({
       position={[lat, lon]}
       icon={isSelected ? unitHighlightIcon : unitIcon}
       zIndexOffset={isSelected ? 10 : 0}
+      ref={markerRef}
     >
       <UnitPopup>
-        <UnitName>{unit.name}</UnitName>
-        <div>{t.common.unit.providerTypes[unit.providerType]}</div>
-        <UnitDetails>
-          <UnitDetailsLeft>
-            {unit.streetAddress}
-            <br />
-            {formatCareTypes(t, unit.type).join(', ')}
-          </UnitDetailsLeft>
-          {'drivingDistance' in unit && unit.drivingDistance !== null && (
-            <UnitDetailsRight>
-              {formatDistance(unit.drivingDistance)}
-            </UnitDetailsRight>
-          )}
-        </UnitDetails>
+        <div data-qa={`map-popup-${unit.id}`}>
+          <UnitName data-qa="map-popup-name">{unit.name}</UnitName>
+          <div>{t.common.unit.providerTypes[unit.providerType]}</div>
+          <UnitDetails>
+            <UnitDetailsLeft>
+              {unit.streetAddress}
+              <br />
+              {formatCareTypes(t, unit.type).join(', ')}
+            </UnitDetailsLeft>
+            {'drivingDistance' in unit && unit.drivingDistance !== null && (
+              <UnitDetailsRight>
+                {formatDistance(unit.drivingDistance)}
+              </UnitDetailsRight>
+            )}
+          </UnitDetails>
+        </div>
       </UnitPopup>
     </Marker>
   )

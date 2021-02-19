@@ -6,5 +6,6 @@
       "output": "test-results/junit.xml"
     }
   ],
-  "tsConfigPath": "./tsconfig.json"
+  "tsConfigPath": "./tsconfig.json",
+  "clientScripts": "./injected.js"
 }

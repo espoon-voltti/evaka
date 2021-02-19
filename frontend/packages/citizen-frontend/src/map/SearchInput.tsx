@@ -83,7 +83,7 @@ export default React.memo(function SearchInput({
   }
 
   return (
-    <div>
+    <div data-qa="map-search-input">
       <ReactSelect
         isSearchable
         isClearable
@@ -121,28 +121,27 @@ export default React.memo(function SearchInput({
         components={{
           Option: function Option({ innerRef, innerProps, ...props }) {
             const option = props.data as MapAddress
+            const addressLabel = [option.streetAddress, option.postOffice].join(
+              ', '
+            )
 
             return (
               <OptionWrapper
+                data-qa={
+                  option.unit
+                    ? `map-search-${option.unit.id}`
+                    : 'map-search-address'
+                }
+                data-address={option.streetAddress}
                 ref={innerRef}
                 {...innerProps}
-                key={
-                  option.unit?.id ??
-                  `${option.streetAddress}, ${option.postOffice}`
-                }
+                key={option.unit?.id ?? addressLabel}
                 className={classNames({ focused: props.isFocused })}
               >
                 <OptionContents
-                  label={
-                    option.unit?.name ??
-                    `${option.streetAddress}, ${option.postOffice}`
-                  }
-                  secondaryText={
-                    option.unit
-                      ? `${option.streetAddress}, ${option.postOffice}`
-                      : undefined
-                  }
-                  isUnit={option.unit !== undefined}
+                  label={option.unit?.name ?? addressLabel}
+                  secondaryText={option.unit ? addressLabel : undefined}
+                  isUnit={!!option.unit}
                 />
               </OptionWrapper>
             )

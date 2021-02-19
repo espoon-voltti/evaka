@@ -22,7 +22,7 @@ export default React.memo(function UnitListItem({
   const provider = t.common.unit.providerTypes[unit.providerType].toLowerCase()
 
   return (
-    <Wrapper onClick={onClick}>
+    <Wrapper onClick={onClick} data-qa={`map-unit-list-${unit.id}`}>
       <MainRow>
         <UnitName>{unit.name}</UnitName>
         {distance !== null && <Distance>{distance}</Distance>}

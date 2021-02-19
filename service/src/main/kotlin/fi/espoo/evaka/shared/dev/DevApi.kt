@@ -107,6 +107,8 @@ class DevApi(
     private val applicationStateService: ApplicationStateService,
     private val decisionService: DecisionService
 ) {
+    private val digitransit = MockDigitransit()
+
     @PostMapping("/clean-up")
     fun cleanUpDatabase(db: Database): ResponseEntity<Unit> {
         db.transaction { it.handle.clearDatabase() }
@@ -163,7 +165,11 @@ class DevApi(
     }
 
     @DeleteMapping("/daycares/{daycareId}/acl/{externalId}")
-    fun removeUserAccessToDaycare(db: Database, @PathVariable daycareId: UUID, @PathVariable externalId: ExternalId): ResponseEntity<Unit> {
+    fun removeUserAccessToDaycare(
+        db: Database,
+        @PathVariable daycareId: UUID,
+        @PathVariable externalId: ExternalId
+    ): ResponseEntity<Unit> {
         db.transaction { tx ->
             removeDaycareAcl(tx.handle, daycareId, externalId)
         }
@@ -297,7 +303,10 @@ class DevApi(
     }
 
     @PostMapping("/value-decisions")
-    fun createVoucherValueDecisions(db: Database, @RequestBody decisions: List<VoucherValueDecision>): ResponseEntity<Unit> {
+    fun createVoucherValueDecisions(
+        db: Database,
+        @RequestBody decisions: List<VoucherValueDecision>
+    ): ResponseEntity<Unit> {
         db.transaction { tx -> tx.handle.upsertValueDecisions(objectMapper, decisions) }
         return ResponseEntity.noContent().build()
     }
@@ -406,8 +415,12 @@ DELETE FROM attachment USING ApplicationsDeleted WHERE application_id = Applicat
     }
 
     @PostMapping("/parentship")
-    fun createParentships(db: Database, @RequestBody parentships: List<DevParentship>): ResponseEntity<List<DevParentship>> {
-        return db.transaction { tx -> parentships.map { tx.handle.insertTestParentship(it) } }.let { ResponseEntity.ok(it) }
+    fun createParentships(
+        db: Database,
+        @RequestBody parentships: List<DevParentship>
+    ): ResponseEntity<List<DevParentship>> {
+        return db.transaction { tx -> parentships.map { tx.handle.insertTestParentship(it) } }
+            .let { ResponseEntity.ok(it) }
     }
 
     @GetMapping("/employee")
@@ -433,7 +446,11 @@ DELETE FROM attachment USING ApplicationsDeleted WHERE application_id = Applicat
     }
 
     @PostMapping("/employee/external-id/{externalId}")
-    fun upsertEmployeeByExternalId(db: Database, @PathVariable externalId: ExternalId, @RequestBody employee: DevEmployee): ResponseEntity<UUID> = db.transaction {
+    fun upsertEmployeeByExternalId(
+        db: Database,
+        @PathVariable externalId: ExternalId,
+        @RequestBody employee: DevEmployee
+    ): ResponseEntity<UUID> = db.transaction {
         ResponseEntity.ok(
             it.createUpdate(
                 """
@@ -482,7 +499,10 @@ RETURNING id
     }
 
     @PostMapping("/applications")
-    fun createApplications(db: Database, @RequestBody applications: List<ApplicationWithForm>): ResponseEntity<List<UUID>> {
+    fun createApplications(
+        db: Database,
+        @RequestBody applications: List<ApplicationWithForm>
+    ): ResponseEntity<List<UUID>> {
         val uuids =
             db.transaction { tx ->
                 applications.map { application ->
@@ -691,6 +711,13 @@ RETURNING id
         db.transaction { it.deleteMobileDevice(id) }
         return ResponseEntity.noContent().build()
     }
+
+    @GetMapping("/digitransit/autocomplete")
+    fun digitransitAutocomplete() = ResponseEntity.ok(digitransit.autocomplete())
+
+    @PutMapping("/digitransit/autocomplete")
+    fun putDigitransitAutocomplete(@RequestBody mockResponse: MockDigitransit.Autocomplete) =
+        digitransit.setAutocomplete(mockResponse)
 }
 
 fun ensureFakeAdminExists(h: Handle) {

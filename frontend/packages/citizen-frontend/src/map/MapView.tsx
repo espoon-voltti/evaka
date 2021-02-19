@@ -89,7 +89,7 @@ export default React.memo(function MapView() {
   }, [selectedAddress, filteredUnits])
 
   return (
-    <FullScreen>
+    <FullScreen data-qa="map-view">
       <FlexContainer
         className={`mobile-mode-${mobileMode}`}
         breakpoint={mapViewBreakpoint}

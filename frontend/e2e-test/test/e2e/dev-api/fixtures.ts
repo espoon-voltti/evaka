@@ -106,7 +106,11 @@ export const daycareFixture: Daycare = {
   decisionHandler: 'Käsittelijä',
   decisionHandlerAddress: 'Käsittelijän osoite',
   providerType: 'MUNICIPAL',
-  roundTheClock: true
+  roundTheClock: true,
+  location: {
+    lat: 60.20377343765089,
+    lon: 24.655715743526994
+  }
 }
 
 export const daycare2Fixture: Daycare = {
@@ -123,7 +127,11 @@ export const daycare2Fixture: Daycare = {
   decisionHandler: 'Käsittelijä 2',
   decisionHandlerAddress: 'Käsittelijän 2 osoite',
   providerType: 'MUNICIPAL',
-  roundTheClock: true
+  roundTheClock: true,
+  location: {
+    lat: 60.20350901607783,
+    lon: 24.65379611887424
+  }
 }
 
 export const preschoolFixture: Daycare = {
@@ -140,7 +148,11 @@ export const preschoolFixture: Daycare = {
   decisionHandler: 'Käsittelijä',
   decisionHandlerAddress: 'Käsittelijän osoite',
   providerType: 'MUNICIPAL',
-  roundTheClock: true
+  roundTheClock: true,
+  location: {
+    lat: 60.2040261560435,
+    lon: 24.65517745652623
+  }
 }
 
 export const enduserGuardianFixture: ApplicationPersonDetail = {

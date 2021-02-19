@@ -201,7 +201,9 @@ export async function insertDaycareFixtures(fixture: Daycare[]): Promise<void> {
         preschoolApplyPeriod: it.preschoolApplyPeriod,
         clubApplyPeriod: it.clubApplyPeriod,
         providerType: it.providerType,
-        roundTheClock: it.roundTheClock
+        roundTheClock: it.roundTheClock,
+        location: it.location,
+        language: it.language
       }))
     )
   } catch (e) {
@@ -749,6 +751,32 @@ export async function getApplication(
       `/applications/${applicationId}`
     )
     return deserializeApplicationDetails(data)
+  } catch (e) {
+    throw new DevApiError(e)
+  }
+}
+
+interface DigitransitAutocomplete {
+  features: DigitransitFeature[]
+}
+
+export interface DigitransitFeature {
+  geometry: {
+    coordinates: [number, number]
+  }
+  properties: {
+    name: string
+    postalcode?: string
+    locality?: string
+    localadmin?: string
+  }
+}
+
+export async function putDigitransitAutocomplete(
+  mockResponse: DigitransitAutocomplete
+): Promise<void> {
+  try {
+    await devClient.put('/digitransit/autocomplete', mockResponse)
   } catch (e) {
     throw new DevApiError(e)
   }

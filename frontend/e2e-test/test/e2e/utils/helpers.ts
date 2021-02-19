@@ -54,6 +54,28 @@ export class Checkbox {
   }
 }
 
+export class SelectionChip {
+  private _input: Selector
+
+  constructor(private readonly selector: Selector) {
+    this._input = selector.find('input')
+  }
+
+  async click(): Promise<void> {
+    await scrollTo(0, (await this.selector.boundingClientRect).bottom)
+    await testcafe.t.click(this.selector)
+  }
+
+  get selected(): Promise<boolean> {
+    // cast needed because checked is Promise<boolean | undefined>
+    return (this._input.checked as unknown) as Promise<boolean>
+  }
+
+  get exists(): Promise<boolean> {
+    return this.selector.exists
+  }
+}
+
 export const selectFirstOption = async (
   container: Selector,
   searchString: string

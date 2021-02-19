@@ -15,6 +15,13 @@ type ISODate = string
 type Timestamp = string
 export type FeeDecisionStatus = 'DRAFT' | 'SENT'
 
+export type Language = 'fi' | 'sv' | 'en'
+
+export interface Coordinate {
+  lat: number
+  lon: number
+}
+
 export interface FeeDecision {
   id: UUID
   status: FeeDecisionStatus
@@ -208,6 +215,8 @@ export interface Daycare {
     | 'PRIVATE'
     | 'PRIVATE_SERVICE_VOUCHER'
   roundTheClock: boolean
+  language?: Language
+  location?: Coordinate | null
 }
 
 export interface DaycareGroup {
