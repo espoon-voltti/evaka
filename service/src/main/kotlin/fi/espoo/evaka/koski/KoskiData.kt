@@ -247,12 +247,12 @@ data class KoskiActiveDataRaw(
     fun haeVahvistus(qualifiedDate: LocalDate) = Vahvistus(
         päivä = qualifiedDate,
         paikkakunta = VahvistusPaikkakunta(koodiarvo = VahvistusPaikkakuntaKoodi.ESPOO),
-        myöntäjäOrganisaatio = MyöntäjäOrganisaatio(oid = unit.ophOrganizerOid),
+        myöntäjäOrganisaatio = MyöntäjäOrganisaatio(oid = unit.ophOrganizationOid),
         myöntäjäHenkilöt = listOf(
             MyöntäjäHenkilö(
                 nimi = approverName,
                 titteli = MyöntäjäHenkilönTitteli(approverTitle),
-                organisaatio = MyöntäjäOrganisaatio(unit.ophOrganizationOid)
+                organisaatio = MyöntäjäOrganisaatio(unit.ophOrganizerOid)
             )
         )
     )

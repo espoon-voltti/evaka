@@ -119,11 +119,11 @@ class KoskiPayloadIntegrationTest : FullApplicationTest() {
                                 "vahvistus": {
                                     "päivä":"2020-05-29",
                                     "paikkakunta":{"koodiarvo":"049","koodistoUri":"kunta"},
-                                    "myöntäjäOrganisaatio":{"oid":"$defaultMunicipalOrganizerOid"},
+                                    "myöntäjäOrganisaatio":{"oid":"1.2.3.4.5"},
                                     "myöntäjäHenkilöt":[{
                                         "nimi":"Unit Manager",
                                         "titteli":{"fi":"Esiopetusyksikön johtaja"},
-                                        "organisaatio":{"oid":"1.2.3.4.5"}
+                                        "organisaatio":{"oid":"$defaultMunicipalOrganizerOid"}
                                     }]
                                 },
                                 "osasuoritukset": null
@@ -420,11 +420,11 @@ class KoskiPayloadIntegrationTest : FullApplicationTest() {
                                     "vahvistus": {
                                         "päivä":"2019-05-31",
                                         "paikkakunta":{"koodiarvo":"049","koodistoUri":"kunta"},
-                                        "myöntäjäOrganisaatio":{"oid":"$defaultMunicipalOrganizerOid"},
+                                        "myöntäjäOrganisaatio":{"oid":"1.2.3.4.5"},
                                         "myöntäjäHenkilöt":[{
                                             "nimi":"Unit Manager",
                                             "titteli":{"fi":"Esiopetusyksikön johtaja"},
-                                            "organisaatio":{"oid":"1.2.3.4.5"}
+                                            "organisaatio":{"oid":"$defaultMunicipalOrganizerOid"}
                                         }]
                                     },
                                     "osasuoritukset": null
@@ -671,7 +671,7 @@ class KoskiPayloadIntegrationTest : FullApplicationTest() {
                                         "koodistoUri": "kunta"
                                     },
                                     "myöntäjäOrganisaatio": {
-                                        "oid": "$defaultMunicipalOrganizerOid"
+                                        "oid": "1.2.3.4.5"
                                     },
                                     "myöntäjäHenkilöt": [
                                         {
@@ -680,7 +680,7 @@ class KoskiPayloadIntegrationTest : FullApplicationTest() {
                                                 "fi": "Esiopetusyksikön johtaja"
                                             },
                                             "organisaatio": {
-                                                "oid": "1.2.3.4.5"
+                                                "oid": "$defaultMunicipalOrganizerOid"
                                             }
                                         }
                                     ]
