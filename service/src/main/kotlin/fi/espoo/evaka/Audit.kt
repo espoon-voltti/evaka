@@ -67,6 +67,8 @@ enum class Audit(
     ChildServiceNeedUpdate("evaka.child.service-need.update"),
     ClubPlacementRead("evaka.club-placement.read"),
     ClubTermRead("evaka.club-term.read"),
+    DaycareDailyNoteCreate("evaka.daycare-daily-note.create"),
+    DaycareDailyNoteRead("evaka.daycare-daily-note.read"),
     DaycareGroupPlacementCreate("evaka.daycare-group-placement.create"),
     DaycareGroupPlacementDelete("evaka.daycare-group-placement.delete"),
     DaycareGroupPlacementTransfer("evaka.daycare-group-placement.transfer"),
