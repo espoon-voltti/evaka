@@ -105,7 +105,9 @@ const en: Translations = {
     mobileTabs: {
       map: 'Map',
       list: 'List of units'
-    }
+    },
+    serviceVoucherLink:
+      'https://www.espoo.fi/en-US/Childcare_and_education/Early_childhood_education/Applying_for_early_childhood_education/Service_voucher/Information_for_families'
   },
   applications: {
     title: 'Applications',

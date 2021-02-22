@@ -105,7 +105,9 @@ const sv: Translations = {
     mobileTabs: {
       map: 'Karta',
       list: 'Lista över enheter'
-    }
+    },
+    serviceVoucherLink:
+      'https://www.esbo.fi/sv-FI/Utbildning_och_fostran/Smabarnspedagogik/Privat_smabarnspedagogik'
   },
   applications: {
     title: 'Ansökningar',
