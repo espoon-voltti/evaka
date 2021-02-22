@@ -71,7 +71,7 @@ class KoskiClient(
                 .authentication()
                 .basic(koskiUser, koskiSecret)
                 .header(Headers.ACCEPT, "application/json")
-                .header("Caller-Id", "${data.organizerOid}.espooevaka")
+                .header("Caller-Id", "${data.organizationOid}.espooevaka")
                 .jsonBody(payload)
                 .responseString()
 

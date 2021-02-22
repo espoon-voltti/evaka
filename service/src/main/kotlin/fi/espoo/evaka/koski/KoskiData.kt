@@ -19,7 +19,7 @@ import java.util.UUID
 data class KoskiData(
     val oppija: Oppija,
     val operation: KoskiOperation,
-    val organizerOid: String
+    val organizationOid: String
 )
 
 enum class KoskiOperation {
@@ -84,7 +84,7 @@ data class KoskiVoidedDataRaw(
             henkilö = child.toHenkilö(),
             opiskeluoikeudet = listOf(haeOpiskeluOikeus(sourceSystem))
         ),
-        organizerOid = unit.ophOrganizerOid,
+        organizationOid = unit.ophOrganizationOid,
         operation = KoskiOperation.VOID
     )
 
@@ -166,7 +166,7 @@ data class KoskiActiveDataRaw(
                 opiskeluoikeudet = listOf(haeOpiskeluoikeus(sourceSystem, today, qualifiedDate))
             ),
             operation = if (studyRightOid == null) KoskiOperation.CREATE else KoskiOperation.UPDATE,
-            organizerOid = unit.ophOrganizerOid
+            organizationOid = unit.ophOrganizationOid
         )
     }
 
@@ -247,12 +247,12 @@ data class KoskiActiveDataRaw(
     fun haeVahvistus(qualifiedDate: LocalDate) = Vahvistus(
         päivä = qualifiedDate,
         paikkakunta = VahvistusPaikkakunta(koodiarvo = VahvistusPaikkakuntaKoodi.ESPOO),
-        myöntäjäOrganisaatio = MyöntäjäOrganisaatio(oid = unit.ophOrganizerOid),
+        myöntäjäOrganisaatio = MyöntäjäOrganisaatio(oid = unit.ophOrganizationOid),
         myöntäjäHenkilöt = listOf(
             MyöntäjäHenkilö(
                 nimi = approverName,
                 titteli = MyöntäjäHenkilönTitteli(approverTitle),
-                organisaatio = MyöntäjäOrganisaatio(unit.ophOrganizationOid)
+                organisaatio = MyöntäjäOrganisaatio(unit.ophOrganizerOid)
             )
         )
     )
