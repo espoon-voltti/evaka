@@ -15,7 +15,6 @@ object Version {
     const val java = "11"
     const val jaxbRuntime = "2.3.2"
     const val jdbi = "3.14.1"
-    const val jedis = "3.3.0"
     const val junit = "5.6.2"
     const val kotlin = "1.4.30"
     const val kotlinLogging = "2.0.4"
