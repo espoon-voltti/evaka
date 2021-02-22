@@ -196,7 +196,7 @@ export default React.memo(function AttendancePageWrapper() {
         <Fragment>
           <SearchBar
             style={{
-              height: container.x.interpolate((x) => `${100 * x}vh`)
+              height: container.x.interpolate((x) => `${100 * x}%`)
             }}
           >
             <NoMarginTitle size={1} centered smaller bold>
@@ -230,7 +230,7 @@ export default React.memo(function AttendancePageWrapper() {
           <ContentArea
             opaque={false}
             paddingVertical={'s'}
-            paddingHorizontal={'s'}
+            paddingHorizontal={'zero'}
           >
             <Link to={`/units/${unitId}/groupselector`}>
               <WideButton

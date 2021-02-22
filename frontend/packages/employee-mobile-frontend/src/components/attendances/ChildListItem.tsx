@@ -2,22 +2,23 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React from 'react'
+import React, { useContext } from 'react'
 import styled from 'styled-components'
 
-import { AttendanceChild, AttendanceStatus } from '~api/attendances'
+import { AttendanceChild, AttendanceStatus, Group } from '~api/attendances'
 import RoundIcon from '@evaka/lib-components/src/atoms/RoundIcon'
 import colors from '@evaka/lib-components/src/colors'
 import { defaultMargins } from '@evaka/lib-components/src/white-space'
 import { farUser } from '@evaka/lib-icons'
 import { useTranslation } from '~state/i18n'
 import { formatDateTimeOnly } from '~utils/date'
+import { AttendanceUIContext } from '~state/attendance-ui'
 
 const ChildBox = styled.div<{ type: AttendanceStatus }>`
   align-items: center;
   color: ${colors.greyscale.darkest};
   display: flex;
-  padding: 10px;
+  padding: ${defaultMargins.xs} ${defaultMargins.s};
   border-radius: 2px;
   background-color: ${colors.greyscale.white};
 `
@@ -49,7 +50,20 @@ const IconBox = styled.div<{ type: AttendanceStatus }>`
         return colors.accents.water
     }
   }};
-  border-radius: 4px;
+  border-radius: 50%;
+  box-shadow: ${(props) => {
+    switch (props.type) {
+      case 'ABSENT':
+        return `0 0 0 2px ${colors.greyscale.dark}`
+      case 'DEPARTED':
+        return `0 0 0 2px ${colors.blues.primary}`
+      case 'PRESENT':
+        return `0 0 0 2px ${colors.accents.green}`
+      case 'COMING':
+        return `0 0 0 2px ${colors.accents.water}`
+    }
+  }};
+  border: 2px solid ${colors.greyscale.white};
 `
 
 const DetailsRow = styled.div`
@@ -58,6 +72,7 @@ const DetailsRow = styled.div`
   justify-content: space-between;
   align-items: center;
   color: ${colors.greyscale.dark};
+  font-size: 14px;
 `
 
 const Time = styled.span`
@@ -76,6 +91,7 @@ export default React.memo(function ChildListItem({
   type
 }: ChildListItemProps) {
   const { i18n } = useTranslation()
+  const { attendanceResponse } = useContext(AttendanceUIContext)
 
   return (
     <ChildBox type={type}>
@@ -103,6 +119,17 @@ export default React.memo(function ChildListItem({
         <DetailsRow>
           <div>
             {i18n.attendances.status[attendanceChild.status]}
+            {attendanceResponse.isSuccess &&
+              attendanceChild.status === 'COMING' && (
+                <span>
+                  {' '}
+                  (
+                  {attendanceResponse.value.unit.groups
+                    .find((elem: Group) => elem.id === attendanceChild.groupId)
+                    ?.name.toUpperCase()}
+                  )
+                </span>
+              )}
             <Time>
               {attendanceChild.status === 'PRESENT' &&
                 formatDateTimeOnly(attendanceChild.attendance?.arrived)}

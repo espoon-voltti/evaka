@@ -11,7 +11,7 @@ import { Unit } from '~types/unit'
 import { DataList } from 'components/common/DataList'
 import { RequireRole } from '~utils/roles'
 import { Gap } from '@evaka/lib-components/src/white-space'
-import { isNotProduction } from '~constants'
+import { getMobileUrlPrefix, isNotProduction } from '~constants'
 
 const DetailsLink = styled(Link)`
   text-transform: uppercase;
@@ -95,9 +95,15 @@ function UnitInformation({ unit }: Props) {
       {isNotProduction() && (
         <RequireRole oneOf={['ADMIN']}>
           <Gap size={'L'} />
-          <DetailsLink to={`/units/${unit.id}/groupselector`}>
+          <a
+            href={`${getMobileUrlPrefix()}/mobile/units/${
+              unit.id
+            }/groupselector`}
+            target="_blank"
+            rel="noreferrer"
+          >
             {i18n.unit.openMobilePOC}
-          </DetailsLink>
+          </a>
         </RequireRole>
       )}
     </div>

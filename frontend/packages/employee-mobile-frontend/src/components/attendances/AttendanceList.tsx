@@ -5,6 +5,7 @@
 import React from 'react'
 import { Link, useParams } from 'react-router-dom'
 import styled from 'styled-components'
+
 import {
   defaultMargins,
   isSpacingSize,
@@ -13,6 +14,7 @@ import {
 import { FixedSpaceColumn } from '@evaka/lib-components/src/layout/flex-helpers'
 import ChildListItem from './ChildListItem'
 import { AttendanceChild, AttendanceStatus } from '~api/attendances'
+import colors from '~../../lib-components/src/colors'
 
 interface Props {
   attendanceChildren: AttendanceChild[]
@@ -34,9 +36,9 @@ export default React.memo(function AttendanceList({
 
   return (
     <FixedSpaceColumn>
-      <UnorderedList spacing={'xs'}>
+      <OrderedList spacing={'zero'}>
         {attendanceChildren.map((ac) => (
-          <li key={ac.id}>
+          <Li key={ac.id}>
             <Link
               to={`/units/${unitId}/groups/${groupIdOrAll}/childattendance/${ac.id}`}
             >
@@ -46,16 +48,17 @@ export default React.memo(function AttendanceList({
                 attendanceChild={ac}
               />
             </Link>
-          </li>
+          </Li>
         ))}
-      </UnorderedList>
+      </OrderedList>
     </FixedSpaceColumn>
   )
 })
 
-const UnorderedList = styled.ul<{ spacing?: SpacingSize | string }>`
+const OrderedList = styled.ol<{ spacing?: SpacingSize | string }>`
   list-style: none;
   padding: 0;
+  margin-top: 0;
 
   li {
     margin-bottom: ${(p) =>
@@ -68,5 +71,17 @@ const UnorderedList = styled.ul<{ spacing?: SpacingSize | string }>`
     &:last-child {
       margin-bottom: 0;
     }
+  }
+`
+
+const Li = styled.li`
+  &:after {
+    content: '';
+    width: calc(100% - ${defaultMargins.s});
+    background: ${colors.greyscale.lighter};
+    height: 1px;
+    display: block;
+    position: absolute;
+    left: ${defaultMargins.s};
   }
 `

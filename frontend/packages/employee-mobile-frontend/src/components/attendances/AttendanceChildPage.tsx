@@ -23,7 +23,7 @@ import { FlexColumn } from './components'
 import AttendanceChildAbsent from './AttendanceChildAbsent'
 
 const FullHeightContentArea = styled(ContentArea)`
-  min-height: 100vh;
+  min-height: 100%;
   display: flex;
   flex-direction: column;
 `

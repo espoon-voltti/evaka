@@ -36,6 +36,11 @@ export function getEmployeeUrlPrefix(): string {
   return isLocalMultiPortEnv ? 'http://localhost:9093' : ''
 }
 
+export function getMobileUrlPrefix(): string {
+  const isLocalMultiPortEnv = window.location.host.includes(':9093')
+  return isLocalMultiPortEnv ? 'http://localhost:9095' : ''
+}
+
 export function isNotProduction(): boolean {
   return (
     window.location.host.includes(':9093') ||
