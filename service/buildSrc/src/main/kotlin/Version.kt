@@ -9,7 +9,7 @@ object Version {
     const val byteBuddy = "1.10.14"
     const val commonsPool2 = "2.8.1"
     const val flyingSaucer = "9.1.20"
-    const val flyway = "6.5.5"
+    const val flyway = "7.5.3"
     const val fuel = "2.3.1"
     const val hikariCp = "3.4.5"
     const val jackson = "2.11.2"

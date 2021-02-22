@@ -9,7 +9,7 @@ object Version {
     const val awsSdk = "1.11.832"
     const val bouncyCastle = "1.68"
     const val byteBuddy = "1.10.14"
-    const val flyway = "6.5.5"
+    const val flyway = "7.5.3"
     const val hikariCp = "3.4.5"
     const val jackson = "2.11.2"
     const val java = "11"
