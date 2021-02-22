@@ -144,10 +144,12 @@ WHERE id = :id
     }
 
     private fun getSubject(language: Language): String {
+        val postfix = if (System.getenv("VOLTTI_ENV") == "staging") " [staging]" else ""
+
         return when (language) {
-            Language.en -> "Decision on early childhood education"
-            Language.sv -> "Beslut om förskoleundervisning"
-            else -> "Päätös varhaiskasvatuksesta"
+            Language.en -> "Decision on early childhood education$postfix"
+            Language.sv -> "Beslut om förskoleundervisning$postfix"
+            else -> "Päätös varhaiskasvatuksesta$postfix"
         }
     }
 
