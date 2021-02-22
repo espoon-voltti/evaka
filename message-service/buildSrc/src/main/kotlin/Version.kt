@@ -10,7 +10,7 @@ object Version {
     const val bouncyCastle = "1.68"
     const val byteBuddy = "1.10.21"
     const val flyway = "7.5.3"
-    const val hikariCp = "3.4.5"
+    const val hikariCp = "4.0.2"
     const val jackson = "2.12.1"
     const val java = "11"
     const val jaxbRuntime = "2.3.2"

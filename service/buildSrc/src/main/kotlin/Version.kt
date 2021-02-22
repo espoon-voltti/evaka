@@ -11,7 +11,7 @@ object Version {
     const val flyingSaucer = "9.1.20"
     const val flyway = "7.5.3"
     const val fuel = "2.3.1"
-    const val hikariCp = "3.4.5"
+    const val hikariCp = "4.0.2"
     const val jackson = "2.12.1"
     const val java = "11"
     const val javalin = "3.10.1"
