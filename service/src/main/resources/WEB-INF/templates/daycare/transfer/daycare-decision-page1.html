@@ -56,7 +56,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
                     </div>
                 </div>
 
-                <div class="daycare-time-container">
+                <div th:unless="${hideDaycareTime}" class="daycare-time-container">
                     <span class="strong" th:text="#{text.daycareTime} + ': '"></span>
                     <span th:if="${isPartTimeDecision}" th:text="#{text.partTime}"></span>
                     <span th:unless="${isPartTimeDecision}" th:text="#{text.fullTime}"></span>

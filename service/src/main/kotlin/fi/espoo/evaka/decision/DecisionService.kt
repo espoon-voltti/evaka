@@ -172,6 +172,7 @@ class DecisionService(
                     setVariable("sendAddress", sendAddress)
                     setVariable("pageNumber", i + 1)
                     setVariable("isPartTimeDecision", isPartTimeDecision)
+                    setVariable("hideDaycareTime", decision.type == DecisionType.PRESCHOOL_DAYCARE)
                 }
             )
         }
