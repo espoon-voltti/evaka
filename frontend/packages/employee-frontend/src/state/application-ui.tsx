@@ -23,7 +23,7 @@ import {
   ApplicationDistinctions,
   TransferApplicationFilter
 } from '~components/common/Filters'
-import { useDebounce } from '../utils/useDebounce'
+import { useDebounce } from '@evaka/lib-common/src/utils/useDebounce'
 import { UUID } from '~types'
 import { CareArea } from '~types/unit'
 import { ApplicationsSearchResponse } from '~types/application'

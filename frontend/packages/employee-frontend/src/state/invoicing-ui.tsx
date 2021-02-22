@@ -11,7 +11,7 @@ import React, {
   createContext
 } from 'react'
 import LocalDate from '@evaka/lib-common/src/local-date'
-import { useDebounce } from '../utils/useDebounce'
+import { useDebounce } from '@evaka/lib-common/src/utils/useDebounce'
 import {
   DecisionDistinctiveDetails,
   FeeDecisionStatus,

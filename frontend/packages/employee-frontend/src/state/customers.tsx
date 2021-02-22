@@ -13,7 +13,7 @@ import { PersonDetails, SearchColumn } from '~/types/person'
 import { SearchOrder } from '~types'
 import { Result, Success } from '@evaka/lib-common/src/api'
 import { findByNameOrAddress } from '~api/person'
-import { useDebounce } from '~utils/useDebounce'
+import { useDebounce } from '@evaka/lib-common/src/utils/useDebounce'
 import { useRestApi } from '@evaka/lib-common/src/utils/useRestApi'
 
 export interface CustomersState {

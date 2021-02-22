@@ -16,6 +16,7 @@ import { fasMapMarkerAlt } from '@evaka/lib-icons'
 import { queryAutocomplete } from '~map/api'
 import { MapAddress } from '~map/MapView'
 import { useTranslation } from '~localization'
+import { useDebounce } from '@evaka/lib-common/src/utils/useDebounce'
 
 type Props = {
   allUnits: Result<PublicUnit[]>
@@ -32,24 +33,27 @@ export default React.memo(function SearchInput({
 }: Props) {
   const t = useTranslation()
   const [inputString, setInputString] = useState('')
+  const debouncedInputString = useDebounce(inputString, 500)
 
   const [addressOptions, setAddressOptions] = useState<Result<MapAddress[]>>(
     Success.of([])
   )
   const loadOptions = useRestApi(queryAutocomplete, setAddressOptions)
   useEffect(() => {
-    if (inputString.length > 0) {
-      loadOptions(inputString)
+    if (debouncedInputString.length > 0) {
+      loadOptions(debouncedInputString)
     } else {
       setAddressOptions(Success.of([]))
     }
-  }, [inputString])
+  }, [debouncedInputString])
 
   const getUnitOptions = useCallback(() => {
-    if (inputString.length < 3 || !allUnits.isSuccess) return []
+    if (debouncedInputString.length < 3 || !allUnits.isSuccess) return []
 
     return allUnits.value
-      .filter((u) => u.name.toLowerCase().includes(inputString.toLowerCase()))
+      .filter((u) =>
+        u.name.toLowerCase().includes(debouncedInputString.toLowerCase())
+      )
       .slice(0, 5)
       .map<MapAddress>((u) => ({
         unit: {
@@ -61,7 +65,7 @@ export default React.memo(function SearchInput({
         postOffice: u.postOffice,
         coordinates: u.location ?? { lat: 0, lon: 0 }
       }))
-  }, [allUnits, inputString])
+  }, [allUnits, debouncedInputString])
 
   const selectOption = (option: MapAddress) => {
     if (option.unit) {
