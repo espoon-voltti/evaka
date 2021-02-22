@@ -17,8 +17,7 @@ class MessageControllerEmployee(
 ) {
 
     data class MessageSendRequestBody(
-        val unitId: UUID,
-        val groupIds: Set<UUID>,
+        val group: UUID,
         val title: String,
         val content: String
     )
@@ -29,20 +28,15 @@ class MessageControllerEmployee(
         user: AuthenticatedUser,
         @RequestBody body: MessageSendRequestBody
     ): ResponseEntity<Unit> {
-        Audit.MessagesSend.log(body.groupIds.joinToString(","))
-        acl.getRolesForUnit(user, body.unitId).requireOneOfRoles(UserRole.UNIT_SUPERVISOR)
+        Audit.MessagesSend.log(body.group)
+        acl.getRolesForUnitGroup(user, body.group).requireOneOfRoles(UserRole.UNIT_SUPERVISOR)
 
         db.transaction { tx ->
             tx.createMessage(
                 user = user,
                 title = body.title,
                 content = body.content,
-                recipients = body.groupIds.flatMap { groupId ->
-                    tx.getMessageRecipients(
-                        unitId = body.unitId,
-                        groupId = groupId
-                    )
-                }.toSet()
+                guardians = tx.getGuardiansByDaycareGroup(body.group)
             )
         }
 

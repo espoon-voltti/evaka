@@ -109,7 +109,6 @@ enum class Audit(
     InvoicesSend("evaka.invoices.send"),
     InvoicesSendByDate("evaka.invoices.send-by-date"),
     InvoicesUpdate("evaka.invoices.update"),
-    MessagesMarkRead("messages.received.mark-read"),
     MessagesReadReceived("messages.received.read"),
     MessagesSend("messages.send"),
     MissingHeadOfFamilyReportRead("evaka.missing-head-of-family-report.read"),
