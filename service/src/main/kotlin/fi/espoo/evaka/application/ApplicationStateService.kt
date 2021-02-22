@@ -148,7 +148,6 @@ class ApplicationStateService(
         )
 
         setCheckedByAdminToDefault(tx.handle, applicationId, application.form)
-        if (application.form.maxFeeAccepted) setHighestFeeForUser(tx, application)
 
         asyncJobRunner.plan(tx, listOf(InitializeFamilyFromApplication(application.id, user)))
         updateApplicationStatus(tx.handle, application.id, WAITING_PLACEMENT)
@@ -365,6 +364,7 @@ class ApplicationStateService(
         placementPlanService.softDeleteUnusedPlacementPlanByApplication(tx, applicationId)
 
         if (application.status == WAITING_CONFIRMATION) {
+            if (application.form.maxFeeAccepted) setHighestFeeForUser(tx, application)
             updateApplicationStatus(tx.handle, application.id, ACTIVE)
         }
     }
