@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 object Version {
-    const val auth0Jwt = "3.10.3"
+    const val auth0Jwt = "3.13.0"
     const val awsSdk = "1.11.832"
     const val bouncyCastle = "1.68"
     const val byteBuddy = "1.10.14"
