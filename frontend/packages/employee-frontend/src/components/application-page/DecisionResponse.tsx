@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext, useState } from 'react'
+import React, { useState } from 'react'
 
 import { Decision } from 'types/decision'
 import {
@@ -10,11 +10,10 @@ import {
   FixedSpaceRow
 } from '@evaka/lib-components/src/layout/flex-helpers'
 import Radio from '@evaka/lib-components/src/atoms/form/Radio'
-import Button from '@evaka/lib-components/src/atoms/buttons/Button'
+import AsyncButton from '@evaka/lib-components/src/atoms/buttons/AsyncButton'
 import { useTranslation } from 'state/i18n'
 import { DatePickerDeprecated } from '@evaka/lib-components/src/molecules/DatePickerDeprecated'
 import { acceptDecision, rejectDecision } from 'api/applications'
-import { UIContext } from 'state/ui'
 import { UUID } from 'types'
 
 interface Props {
@@ -29,33 +28,14 @@ export default React.memo(function DecisionResponse({
   reloadApplication
 }: Props) {
   const { i18n } = useTranslation()
-  const { setErrorMessage } = useContext(UIContext)
   const [accept, setAccept] = useState(true)
   const [acceptDate, setAcceptDate] = useState(decision.startDate)
 
   const onSubmit = () => {
     if (accept) {
-      void acceptDecision(applicationId, decision.id, acceptDate)
-        .then(() => reloadApplication())
-        .catch(() =>
-          setErrorMessage({
-            title: i18n.common.error.unknown,
-            text: i18n.application.decisions.response.acceptError,
-            type: 'error',
-            resolveLabel: i18n.common.ok
-          })
-        )
+      return acceptDecision(applicationId, decision.id, acceptDate)
     } else {
-      void rejectDecision(applicationId, decision.id)
-        .then(() => reloadApplication())
-        .catch(() =>
-          setErrorMessage({
-            title: i18n.common.error.unknown,
-            text: i18n.application.decisions.response.rejectError,
-            type: 'error',
-            resolveLabel: i18n.common.ok
-          })
-        )
+      return rejectDecision(applicationId, decision.id)
     }
   }
 
@@ -83,11 +63,12 @@ export default React.memo(function DecisionResponse({
         label={i18n.application.decisions.response.reject}
         onChange={() => setAccept(false)}
       />
-      <Button
-        dataQa="decision-send-answer-button"
+      <AsyncButton
         onClick={onSubmit}
+        onSuccess={reloadApplication}
         text={i18n.application.decisions.response.submit}
         primary
+        data-qa="decision-send-answer-button"
       />
     </FixedSpaceColumn>
   )
