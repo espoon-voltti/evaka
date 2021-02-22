@@ -14,7 +14,7 @@ object Version {
     const val jackson = "2.12.1"
     const val java = "11"
     const val jaxbRuntime = "2.3.2"
-    const val jdbi = "3.14.1"
+    const val jdbi = "3.18.0"
     const val junit = "5.7.1"
     const val kotlin = "1.4.30"
     const val kotlinLogging = "2.0.4"
