@@ -26,7 +26,7 @@ object Version {
     const val postgresDriver = "42.2.16"
     const val springBoot = "2.4.3"
     const val springFox = "3.0.0"
-    const val testContainers = "1.14.3"
+    const val testContainers = "1.15.2"
 
     object GradlePlugin {
         const val kotlinter = "3.3.0"
