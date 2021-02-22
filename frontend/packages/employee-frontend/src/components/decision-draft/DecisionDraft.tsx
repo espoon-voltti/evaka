@@ -309,7 +309,11 @@ const Decision = memo(function Decision({
                 ...decisions.map((decision) => ({
                   label: (
                     <Checkbox
-                      label={i18n.decisionDraft.types[decision.type]}
+                      label={
+                        i18n.decisionDraft.types[
+                          decisionTypeForLabel(decision.type, decisions)
+                        ]
+                      }
                       checked={decision.planned}
                       onChange={(planned: boolean) => {
                         updateState(decision.type, { planned })
@@ -564,5 +568,15 @@ const Decision = memo(function Decision({
     </Container>
   )
 })
+
+/*
+  Since there is no separate decision type for preparatory daycare but it needs
+  its own label, infer it from existence of a preparatory decision
+*/
+const decisionTypeForLabel = (type: DecisionType, decisions: DecisionDraft[]) =>
+  type === 'PRESCHOOL_DAYCARE' &&
+  decisions.some((d) => d.type === 'PREPARATORY_EDUCATION')
+    ? 'PREPARATORY_DAYCARE'
+    : type
 
 export default Decision

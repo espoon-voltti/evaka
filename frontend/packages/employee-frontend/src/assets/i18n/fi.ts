@@ -1764,11 +1764,11 @@ export const fi = {
       CLUB: 'Kerho',
       DAYCARE: 'Varhaiskasvatus',
       DAYCARE_PART_TIME: 'Osapäiväinen varhaiskasvatus',
-      PRESCHOOL_DAYCARE: 'Esiopetus ja liittyvä varhaiskasvatus',
+      PRESCHOOL_DAYCARE: 'Esiopetukseen liittyvä varhaiskasvatus',
       PRESCHOOL: 'Esiopetus',
       PREPARATORY: 'Valmistava opetus',
       PREPARATORY_EDUCATION: 'Valmistava opetus',
-      PREPARATORY_DAYCARE: 'Valmistava opetus ja liittyvä varhaiskasvatus'
+      PREPARATORY_DAYCARE: 'Valmistavaan opetukseen liittyvä varhaiskasvatus'
     },
     placementUnit: 'Sijoittaessa valittu yksikkö',
     selectedUnit: 'Päätökselle valittava yksikkö',
