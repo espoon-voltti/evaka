@@ -21,7 +21,7 @@ object Version {
     const val ktlint = "0.40.0"
     const val logbackSpringBoot = "2.7.1"
     const val logstashEncoder = "6.3"
-    const val mockito = "3.4.6"
+    const val mockito = "3.7.7"
     const val mockitoKotlin = "2.2.0"
     const val postgresDriver = "42.2.16"
     const val springBoot = "2.4.3"
