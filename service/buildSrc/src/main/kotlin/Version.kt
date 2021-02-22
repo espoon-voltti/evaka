@@ -14,7 +14,7 @@ object Version {
     const val hikariCp = "4.0.2"
     const val jackson = "2.12.1"
     const val java = "11"
-    const val javalin = "3.10.1"
+    const val javalin = "3.13.3"
     const val jdbi = "3.18.0"
     const val jedis = "3.5.1"
     const val jetbrainsAnnotations = "20.1.0"
