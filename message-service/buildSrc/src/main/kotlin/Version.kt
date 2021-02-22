@@ -25,7 +25,7 @@ object Version {
     const val mockito = "3.4.6"
     const val mockitoKotlin = "2.2.0"
     const val postgresDriver = "42.2.16"
-    const val springBoot = "2.4.1"
+    const val springBoot = "2.4.3"
     const val springFox = "3.0.0"
     const val testContainers = "1.14.3"
 
