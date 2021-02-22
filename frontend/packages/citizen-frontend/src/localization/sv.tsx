@@ -14,11 +14,11 @@ const sv: Translations = {
     ok: 'Ok',
     unit: {
       providerTypes: {
-        MUNICIPAL: 'Kommunal tjänst',
+        MUNICIPAL: 'Kommunal',
         PURCHASED: 'Köptjänst',
-        PRIVATE: 'Privat tjänst',
-        MUNICIPAL_SCHOOL: 'Kommunal tjänst',
-        PRIVATE_SERVICE_VOUCHER: 'Privat tjänst (servicesedel)'
+        PRIVATE: 'Privat',
+        MUNICIPAL_SCHOOL: 'Kommunal',
+        PRIVATE_SERVICE_VOUCHER: 'Servicesedel'
       },
       careTypes: {
         CLUB: 'Klubbverksamhet',
@@ -29,16 +29,16 @@ const sv: Translations = {
         PREPARATORY_EDUCATION: 'Förberedande undervisning'
       },
       languages: {
-        fi: 'suomenkielinen',
-        sv: 'ruotsinkielinen'
+        fi: 'finskspråkig',
+        sv: 'svenskaspråkig'
       },
       languagesShort: {
         fi: 'suomi',
-        sv: 'ruotsi'
+        sv: 'svenska'
       }
     },
     errors: {
-      genericGetError: 'Hämtar information misslyckades'
+      genericGetError: 'Hämtning av information misslyckades'
     }
   },
   header: {
@@ -60,43 +60,43 @@ const sv: Translations = {
     privacyPolicy: 'Dataskyddsbeskrivningar',
     privacyPolicyLink:
       'https://www.esbo.fi/sv-FI/Etjanster/Dataskydd/Dataskyddsbeskrivningar',
-    sendFeedback: 'Ge feedback',
+    sendFeedback: 'Skicka feedback',
     sendFeedbackLink:
       'https://easiointi.espoo.fi/eFeedback/sv/Feedback/20-S%C3%A4hk%C3%B6iset%20asiointipalvelut'
   },
   map: {
     title: 'Enheter på kartan',
     mainInfo:
-      'I den här vyn kan du söka på kartan för Espoos tidiga barndomsutbildning, förskola och klubbar.',
-    searchLabel: 'Sök efter din adress eller enhetsnamn',
-    searchPlaceholder: 'Till ex. Kilontie 3 eller Purola daghem',
+      'I den här vyn kan du på kartan söka enheter med småbarnspedagogik och förskola.',
+    searchLabel: 'Sök med adress eller enhetens namn',
+    searchPlaceholder: 'T.ex. Kilovägen eller Purola daghem',
     address: 'Adress',
     noResults: 'Inga sökresultat',
-    distanceWalking: 'Avstånd från den valda adressen till fots',
-    careType: 'Handlingssätt',
-    careTypePlural: 'Åtgärdssätt',
+    distanceWalking: 'Avstånd från vald enhet gående',
+    careType: 'Verksamhetsform',
+    careTypePlural: 'Verksamhetsformer',
     careTypes: {
       CLUB: 'Klubbverksamhet',
       DAYCARE: 'Småbarnspedagogik',
-      PRESCHOOL: 'Förskola'
+      PRESCHOOL: 'Förundervisning'
     },
     language: 'Enhetens språk',
-    providerType: 'Tjänsteleverantör',
+    providerType: 'Tjänstleverantör',
     providerTypes: {
-      MUNICIPAL: 'kommunal tjänst',
-      PURCHASED: 'köptjänst',
-      PRIVATE: 'privat',
+      MUNICIPAL: 'kommunala',
+      PURCHASED: 'köpavtal',
+      PRIVATE: 'privata',
       PRIVATE_SERVICE_VOUCHER: 'servicesedel'
     },
     homepage: 'Hemsida',
     unitHomepage: 'Enhetens hemsida',
     route: 'Se rutten till enheten',
-    routePlanner: 'Reittiopas',
-    newTab: '(Öppnas i en ny flik)',
-    shiftCareTitle: 'Kvälls- och skiftterapi',
-    shiftCareLabel: 'Visa endast kvälls- och skiftenheter',
+    routePlanner: 'Reseplanerare',
+    newTab: '(Öppnas till nytt mellanblad)',
+    shiftCareTitle: 'Kvälls- och skiftesvård',
+    shiftCareLabel: 'Visa endast kvälls- och skiftesvårds enheter',
     shiftCareYes: 'Enheten erbjuder kvälls- och / eller skifttjänster',
-    shiftCareNo: 'Enheten tillhandahåller inte kvälls- och / eller skiftvård',
+    shiftCareNo: 'Ingen kvälls- och/eller skiftesvård',
     showMoreFilters: 'Visa fler filter',
     showLessFilters: 'Visa färre filter',
     nearestUnits: 'Närmaste enheter',
@@ -104,7 +104,7 @@ const sv: Translations = {
     showMore: 'Visa fler sökresultat',
     mobileTabs: {
       map: 'Karta',
-      list: 'Lista över enheter'
+      list: 'Lista på enheter'
     },
     serviceVoucherLink:
       'https://www.esbo.fi/sv-FI/Utbildning_och_fostran/Smabarnspedagogik/Privat_smabarnspedagogik'
@@ -113,15 +113,15 @@ const sv: Translations = {
     title: 'Ansökningar',
     deleteDraftTitle: 'Vill du ta bort din ansökan?',
     deleteDraftText:
-      'Alla uppgifter på din ansökan raderas, också ansökan som du redan skickat raderas.',
+      'Vill du återta din ansökan? Om du återtar ansökan raderas alla uppgifter.',
     deleteDraftOk: 'Ta bort ansökan',
     deleteDraftCancel: 'Tillbaka',
-    deleteSentTitle: 'Vill du ta bort din ansökan?',
+    deleteSentTitle: 'Vill du återta din ansökan?',
     deleteSentText:
       'Alla uppgifter på din ansökan raderas, också ansökan som du redan skickat raderas.',
     deleteSentOk: 'Ta bort ansökan',
     deleteSentCancel: 'Tillbaka',
-    deleteUnprocessedApplicationError: 'Radera ansökan misslyckades',
+    deleteUnprocessedApplicationError: 'Att radera ansökan misslyckades',
     creation: {
       title: 'Val av ansökningsblankett',
       daycareLabel: 'Ansökan till småbarnspedagogik',
@@ -137,12 +137,12 @@ const sv: Translations = {
       clubInfo:
         'Med ansökan till klubbverksamhet kan du ansöka till kommunala klubbar.',
       duplicateWarning:
-        'Ditt barn har en motsvarande oavslutad ansökan. Gå tillbaka till vyn Ansökningar och bearbeta den befintliga ansökan eller ta kontakt med barninvalskoordinatorn.',
+        'Ditt barn har en motsvarande oavslutad ansökan. Gå tillbaka till vyn Ansökningar och bearbeta den befintliga ansökan eller ta kontakt med servicehandledningen.',
       transferApplicationInfo: {
         DAYCARE:
-          'Barnet har redan en plats i Esbo stads småbarnspedagogik. Med denna ansökan kan du ansöka om flyttning till en annan enhet som erbjuder småbarnspedagogik.',
+          'Barnet har redan en plats i Esbo stads småbarnspedagogik. Med denna ansökan kan du ansöka om byte till en annan enhet som erbjuder småbarnspedagogik.',
         PRESCHOOL:
-          'Barnet har redan en förskoleplats. Med denna ansökan kan du ansöka om <strong>småbarnspedagogik i anslutning till förskoleundervisningen</strong> eller om flyttning till en annan enhet som erbjuder förskoleundervisning.'
+          'Barnet har redan en förskoleplats. Med denna ansökan kan du ansöka om <strong>småbarnspedagogik i anslutning till förskoleundervisningen</strong> eller om byte till en annan enhet som erbjuder förskoleundervisning.'
       },
       create: 'Ny ansökan',
       daycare4monthWarning: 'Behandlingstiden för ansökningen är 4 månader.',
@@ -151,9 +151,9 @@ const sv: Translations = {
           <P>
             Du kan ändra i ansökan så länge den inte har tagits till behandling.
             Därefter kan du göra ändringar i ansökan genom att kontakta
-            småbarnspedagogikens servicehänvisning (tfn 09 8163 27600). Du kan
-            återta en ansökan som du redan lämnat in genom att meddela detta per
-            e-post till småbarnspedagogikens servicehänvisning{' '}
+            servicehandledningen inom småbarnspedagogik tfn 09 81627600. Du kan
+            återta ansökan som du redan lämnat in genom att meddela detta per
+            e-post till servicehandledningen inom småbarnspedagogik{' '}
             <a href="mailto:dagis@esbo.fi">dagis@esbo.fi</a>.
           </P>
         )
@@ -174,7 +174,8 @@ const sv: Translations = {
                   Du kan ansöka om plats i småbarnspedagogisk verksamhet året
                   om. Ansökningen bör lämnas in senast fyra månader före behovet
                   av verksamheten börjar. Om behovet börjar med kortare varsel
-                  bör du ansöka om plats senast två veckor före.
+                  pga. sysselsättning eller studier bör du ansöka om plats
+                  senast två veckor före.
                 </P>
                 <P>
                   Du får ett skriftligt beslut om platsen. Beslutet delges i
@@ -187,7 +188,8 @@ const sv: Translations = {
                     Suomi.fi
                   </a>
                   -meddelanden, eller per post om du inte tagit i bruk
-                  meddelandetjänsten i Suomi.fi.
+                  meddelandetjänsten i Suomi.fi. * Informationen markerad med en
+                  stjärna krävs.
                 </P>
                 <P fitted={true}>
                   * Informationen markerad med en stjärna krävs
@@ -276,31 +278,29 @@ const sv: Translations = {
           'Var så god och kontrollera följande information för din ansökan'
       },
       actions: {
-        verify: 'Granska',
+        verify: 'Granska ansökan',
         hasVerified: 'Jag har granskat att uppgifterna är rätt',
-        returnToEdit: 'Gå tillbaka',
-        returnToEditBtn: 'Gå tillbaka',
+        returnToEdit: 'Gå tillbaka och bearbeta ansökan',
+        returnToEditBtn: 'Gå tillbaka till vyn Ansökningar',
         cancel: 'Tillbaka',
         send: 'Skicka ansökan',
         update: 'Spara ändringarna',
-        sendError: 'Spara lyckades inte',
+        sendError: 'Att skicka lyckades inte',
         saveDraft: 'Spara som oavslutad',
-        updateError: 'Spara lyckades inte'
+        updateError: 'Att spara lyckades inte'
       },
       verification: {
         title: {
-          DAYCARE:
-            'Var god och granska följande obligatoriska fält i blanketten',
-          PRESCHOOL:
-            'Var god och granska följande obligatoriska fält i blanketten',
+          DAYCARE: 'Granska ansökan till småbarnspedagogisk verksamhet',
+          PRESCHOOL: 'Granska ansökan till förskola',
           CLUB: 'Var god och granska följande obligatoriska fält i blanketten'
         },
         notYetSent: function NotYetSentText() {
           return (
             <P>
-              <strong>Du har inte ännu skickat ansökan.</strong> Granska
-              informationen du gett, och skicka ansökan med Skicka
-              ansökan-knappen när du är färdig
+              <strong>Du har inte ännu skickat ansökan.</strong>
+              Granska uppgifterna och skicka ansökan med <i>Skicka ansökan</i>
+              -knappen i slutet av sidan.
             </P>
           )
         },
@@ -308,8 +308,9 @@ const sv: Translations = {
           return (
             <P>
               <strong>Ändringarna har inte sparats än.</strong> Granska
-              informationen du gett, och skicka ansökan med {'"'}Spara
-              ändringarna{'"'} -knappen i slutet av blankett.
+              uppgifterna du gett, och skicka ansökan med{' '}
+              <i>Spara ändringarna</i>
+              -knappen i slutet av sidan.
             </P>
           )
         },
@@ -321,11 +322,11 @@ const sv: Translations = {
         attachmentBox: {
           nb: 'Obs!',
           headline:
-            'Om du lägger till bilagor elektroniskt i följande punkter, behandlas din ansökan snabbare. Behandlingstiden börjar när bilagorna kommer in.',
+            'Om du lägger till bilagor elektroniskt i följande punkter, behandlas din ansökan snabbare. Behandlingstiden börjar från bilagornas ankomst.',
           urgency: 'Ansökningen är brådskande',
           shiftCare: 'Kvälls- och skiftesvård',
-          goBackLinkText: 'Återvänd tillbaka till ansökan',
-          goBackRestText: 'för att lägga till bilagor.'
+          goBackLinkText: 'Återvänd tillbaka till ansökan vyn',
+          goBackRestText: 'för att lägga till bilagor till ansökan.'
         },
         serviceNeed: {
           title: 'Behov av småbarnspedagogisk verksamhet',
@@ -336,10 +337,11 @@ const sv: Translations = {
           wasOnClubCareYes:
             'Barnet har varit i klubben under föregående operationsperiod\n.',
           connectedDaycare: {
-            title: 'Småbarnspedagogik i samband med förskoleundervisning.',
-            label: 'Småbarnspedagogik',
+            title:
+              'Behov av kompletterande småbarnspedagogik utöver förskoletiden.',
+            label: 'Kompletterande småbarnspedagogik',
             withConnectedDaycare:
-              'Jag ansöker också om småbarnspedagogik i samband med förskoleundervisning.',
+              'Jag ansöker också om kompletterande småbarnspedagogik utöver förskolan.',
             withoutConnectedDaycare: 'Nej'
           },
           attachments: {
@@ -358,24 +360,22 @@ const sv: Translations = {
             withoutUrgency: 'Nej'
           },
           dailyTime: {
-            title: 'Tiden för småbarnspedagogik per dag',
+            title: 'Daglig vårdtid inom småbarnspedagogik börjar och slutar',
             partTime: 'Hel- eller deldag',
             withPartTime: 'Deldag',
             withoutPartTime: 'Heldag',
-            dailyTime: 'Tiden för småbarnspedagogik per dag',
+            dailyTime:
+              'Daglig vårdtid inom småbarnspedagogik börjar och slutar',
             shiftCare: 'Kvälls- och skiftesvård',
-            withShiftCare: 'Ja',
-            withoutShiftCare: 'Nej'
+            withShiftCare: 'Behov av kvälls- eller skiftesvård',
+            withoutShiftCare: 'Behöver inte kvälls- eller skiftesvård'
           },
           assistanceNeed: {
-            title: 'Behov av stöd för utveckling och lärande',
-            assistanceNeed:
-              'Barnet har behov av stöd för utveckling och lärande',
-            withAssistanceNeed:
-              'Barnet har behov av stöd för utveckling och lärande',
-            withoutAssistanceNeed:
-              'Barnet har inte behov av stöd för utveckling och lärande',
-            description: 'Beskrivning'
+            title: 'Behov av stöd',
+            assistanceNeed: 'Barnet har stödbehov',
+            withAssistanceNeed: 'Barnet har stödbehov',
+            withoutAssistanceNeed: 'Barnet har inte stödbehov',
+            description: 'Beskrivning av stödbehov'
           },
           preparatoryEducation: {
             label: 'Perusopetukseen valmistava opetus',
@@ -402,14 +402,13 @@ const sv: Translations = {
         contactInfo: {
           title: 'Personuppgifter',
           child: {
-            title: 'Barnets information',
-            name: 'Namn',
-            ssn: 'Personbeteckning',
+            title: 'Barnets uppgifter',
+            name: 'Barnets namn',
+            ssn: 'Barnets personbeteckning',
             streetAddress: 'Hemadress',
-            isAddressChanging:
-              'Adressen som finns i befolkningsdatabasen har ändrats/ska ändras',
+            isAddressChanging: 'Adressen har ändrats/kommer att ändras',
             hasFutureAddress:
-              'Väestörekisterissä oleva osoite on muuttunut/muuttumassa ',
+              'Adressen som finns i befolkningsdatabasen har ändrats/kommer att ändras',
             addressChangesAt: 'Flyttdatum',
             newAddress: 'Ny adress'
           },
@@ -420,10 +419,8 @@ const sv: Translations = {
             streetAddress: 'Hemadress',
             tel: 'Telefonnummer',
             email: 'E-postadress',
-            isAddressChanging:
-              'Adressen som finns i befolkningsdatabasen har ändrats/ska ändras',
-            hasFutureAddress:
-              'Adressen som finns i befolkningsdatabasen har ändrats/ska ändras',
+            isAddressChanging: 'Adressen har ändrats/kommer att ändras',
+            hasFutureAddress: 'Adressen har ändrats/kommer att ändras',
             addressChangesAt: 'Flyttdatum',
             newAddress: 'Ny adress'
           },
@@ -437,7 +434,7 @@ const sv: Translations = {
             notAgreed: 'Vi har inte kunnat komma överens om ansökan.',
             rightToGetNotified:
               'Den andra vårdnadshavaren har endast rätt att få uppgifter om barnet.',
-            noAgreementStatus: '-'
+            noAgreementStatus: 'Okänd'
           },
           fridgePartner: {
             title: 'Maka/make bosatt i samma hushåll (icke vårdnadshavare)',
@@ -448,24 +445,24 @@ const sv: Translations = {
           },
           fridgeChildren: {
             title: 'Barn som bor i samma hushåll',
-            name: 'Namn',
+            name: 'Barnets namn',
             ssn: 'Personbeteckning',
-            noOtherChildren: 'Ingen'
+            noOtherChildren: 'Inga andra barn'
           }
         },
         additionalDetails: {
           title: 'Övriga tilläggsuppgifter',
-          otherInfoLabel: 'Övriga tilläggsuppgifter',
+          otherInfoLabel: 'Tilläggsuppgifter till ansökan',
           dietLabel: 'Specialdiet',
           allergiesLabel: 'Allergier'
         }
       },
       serviceNeed: {
-        title: 'Behov av småbarnspedagogisk verksamhet',
+        title: 'Vårdbehov',
         startDate: {
           header: {
             DAYCARE: 'Inledningsdatum',
-            PRESCHOOL: 'Inledningsdatum',
+            PRESCHOOL: 'Inledning av småbarnspedagogik',
             CLUB: 'Inledningsdatum'
           },
           info: {
@@ -485,7 +482,7 @@ const sv: Translations = {
           },
           noteOnDelay: 'Behandlingstiden för ansökningen är 4 månader.',
           instructions:
-            'Det är möjligt att senarelägga det önskade startdatumet så länge ansökan inte har tagits upp till behandling. Därefter kan du ändra det önskade startdatumet genom att kontakta småbarnspedagogikens servicehänvisning (tfn 09 816 27600).',
+            'Det är möjligt att senarelägga det önskade startdatumet så länge ansökan inte har tagits upp till behandling. Därefter kan du ändra det önskade startdatumet genom att kontakta servicehandledningen inom småbarnspedagogik (tfn 09 816 27600).',
           placeholder: 'Välj inledningsdatum',
           validationText: 'Önskat inledningsdatum: '
         },
@@ -507,16 +504,13 @@ const sv: Translations = {
                 <P fitted={true}>
                   Om behovet av en plats inom småbarnspedagogiken beror på att
                   du plötsligt fått sysselsättning eller börjat studera, ska
-                  platsen sökas <strong>senast två veckor innan</strong> behovet
-                  börjar.{' '}
-                  <strong>
-                    Bifoga till ansökan ett arbets- eller studieintyg
-                  </strong>{' '}
-                  av båda vårdnadshavarna som bor i samma hushåll. Om du inte
-                  kan lägga till bilagor till ansökan elektroniskt, skicka dem
-                  per post till adressen Småbarnspedagogikens servicehänvisning,
-                  PB 3125, 02070 Esbo stad. Behandlingstiden på två veckor
-                  börjar när vi har tagit emot ansökan och bilagorna som behövs.
+                  platsen sökas senast <strong>två veckor innan</strong> behovet
+                  börjar. Bifoga till ansökan ett arbets- eller studieintyg av
+                  båda vårdnadshavarna som bor i samma hushåll. Om du inte kan
+                  lägga till bilagor till ansökan elektroniskt, skicka dem per
+                  post till adressen Servicehandledningen inom småbarnspedagogik
+                  PB 32 , 02070 Esbo stad. Behandlingstiden på två veckor börjar
+                  när vi har tagit emot ansökan och bilagorna som behövs.
                 </P>
               )
             },
@@ -531,7 +525,8 @@ const sv: Translations = {
         dailyTime: {
           label: {
             DAYCARE: 'Tiden för småbarnspedagogik per dag',
-            PRESCHOOL: 'Tiden för småbarnspedagogik per dag'
+            PRESCHOOL:
+              'Tiden för småbarnspedagogik i samband med förskoleundervisning'
           },
           connectedDaycareInfo: function ConnectedDaycareInfoText() {
             return (
@@ -542,17 +537,8 @@ const sv: Translations = {
                   utöver förskoleundervisningen (fyra timmar per dag) på morgnar
                   och eftermiddagar på samma ställe som förskoleundervisningen.
                   Om barnet börjar senare, meddela detta under
-                  ”Tilläggsuppgifter”.
-                </P>
-                <P>
-                  Privata förskolor och några av inköpsserviceförskolorna måste
-                  göra en separat ansökan om relaterad förskoleundervisning.
-                  Espoos förskoleundervisning är i kontakt med de sökande som
-                  berörs.
-                </P>
-                <P>
-                  Du får ett separat skriftligt beslut om platsen inom
-                  småbarnspedagogik. Beslutet delges i tjänsten
+                  ”Tilläggsuppgifter”. Du får ett separat skriftligt beslut om
+                  platsen inom småbarnspedagogik. Beslutet delges i tjänsten
                   Suomi.fi-meddelanden eller per post, om du inte har tagit
                   tjänsten i bruk.
                 </P>
@@ -568,11 +554,11 @@ const sv: Translations = {
               'Förskoleundervisning ordnas fyra timmar per dag, huvudsakligen kl. 9.00-13.00, men tiden kan variera per enhet. Meddela tiden för småbarnspedagogik så att den innefattar tiden för förskoleundervisning som är fyra timmar (t.ex. kl. 7.00–17.00). Vårdnadshavare meddelar de mera exakta tiderna när småbarnspedagogiken börjar.  Om behovet av småbarnspedagogik varierar dagligen eller per vecka (t.ex. i skiftvård), meddela behovet mer exakt i tilläggsuppgifterna.'
           },
           usualArrivalAndDeparture: {
-            DAYCARE: 'Den dagliga sluttiden för småbarnspedagogisk verksamhet',
+            DAYCARE: 'Den dagliga start-och sluttiden för småbarnspedagogik',
             PRESCHOOL:
               'Tiden för småbarnspedagogik per dag (inkluderar förskoleundervisning)'
           },
-          starts: 'Starttiden',
+          starts: 'Börjar',
           ends: 'Sluttiden'
         },
         shiftCare: {
@@ -586,7 +572,7 @@ const sv: Translations = {
           },
           attachmentsMessage: {
             text:
-              'Kvälls- och skiftomsorg är avsedd för barn vars båda föräldrar har skiftarbete eller studerar huvudsakligen på kvällar och/eller veckoslut. Som bilaga till ansökan ska av båda föräldrarna lämnas ett intyg av arbetsgivaren över skiftarbete eller studier som orsakar behovet av kvälls- eller skiftomsorg. Vi rekommenderar att bilagan skickas elektroniskt här. Om du inte kan lägga till bilagor till ansökan elektroniskt, skicka dem per post till adressen Småbarnspedagogikens servicehänvisning, PB 3125, 02070 Esbo stad.',
+              'Kvälls- och skiftomsorg är avsedd för barn vars båda föräldrar har skiftarbete eller studerar huvudsakligen på kvällar och/eller veckoslut. Som bilaga till ansökan ska av båda föräldrarna lämnas ett intyg av arbetsgivaren över skiftarbete eller studier som orsakar behovet av kvälls- eller skiftomsorg. Vi rekommenderar att bilagan skickas elektroniskt här. Om du inte kan lägga till bilagor till ansökan elektroniskt, skicka dem per post till adressen Servicehandledning inom småbarnspedagogik PB 32 , 02070 Esbo stad.',
             subtitle:
               'Lägg här till för båda föräldrarna antingen arbetsgivarens intyg över skiftarbete eller ett intyg över studier på kvällar/veckoslut.'
           }
@@ -611,15 +597,14 @@ const sv: Translations = {
               return (
                 <>
                   <P>
-                    Målet är att placera syskon i samma enhet om inte familjen
-                    önskar annat. Som syskon betraktas barn som är folkbokförda
-                    på samma adress. Om du ansöker om en plats för syskon, som
-                    inte ännu har plats inom småbarnspedagogik, skriv uppgiften
-                    i tilläggsuppgifter.
-                  </P>
-                  <P>
-                    Fyll i dessa uppgifter endast om du vill hänvisa till
-                    barnets syskonrelationer.
+                    Barnet har syskonprincip till samma småbarnspedagogisk enhet
+                    som hens syskon är när beslutet för småbarnspedagogik
+                    fattas. Som syskon betraktas barn som är folkbokförda på
+                    samma adress. Målet är att placera syskon i samma enhet om
+                    inte familjen önskar annat. Om du ansöker om en plats för
+                    syskon, som inte ännu har plats inom småbarnspedagogik,
+                    skriv uppgiften i tilläggsuppgifter. Fyll i dessa uppgifter
+                    endast om du vill hänvisa till barnets syskonrelationer.
                   </P>
                 </>
               )
@@ -704,7 +689,7 @@ const sv: Translations = {
         units: {
           title: 'Ansökningsönskemål',
           startDateMissing:
-            'För att välja önskade enheter, välj det första önskade startdatumet i avsnittet om "Servicebehov"',
+            'För att kunna välja önskade enheter, välj först det önskade startdatumet i avsnittet om "Behov av småbarnspedagogisk verksamhet"',
           info: {
             DAYCARE: function UnitPreferenceInfoTextDaycare() {
               return (
@@ -713,11 +698,8 @@ const sv: Translations = {
                     Du kan ange 1-3 platser i önskad ordning. Önskemålen
                     garanterar inte en plats i den önskade enheten, men
                     möjligheterna att få en önskad plats ökar om du anger flera
-                    alternativ.
-                  </P>
-                  <P>
-                    Du kan visa enhetsplatserna genom att välja {"'"}Enheter på
-                    kartan{"'"}.
+                    alternativ. Du kan se var enheterna är belägna, genom att
+                    välja <i>Enheter på kartan</i>.
                   </P>
                 </>
               )
@@ -729,11 +711,8 @@ const sv: Translations = {
                     Du kan ange 1-3 platser i önskad ordning. Önskemålen
                     garanterar inte en plats i den önskade enheten, men
                     möjligheterna att få en önskad plats ökar om du anger flera
-                    alternativ.
-                  </P>
-                  <P>
-                    Du kan visa enhetsplatserna genom att välja {"'"}Enheter på
-                    kartan{"'"}.
+                    alternativ. Du kan se var enheterna är belägna, genom att
+                    välja <i>Enheter på kartan</i>.
                   </P>
                 </>
               )
@@ -745,11 +724,8 @@ const sv: Translations = {
                     Du kan ange 1-3 platser i önskad ordning. Önskemålen
                     garanterar inte en plats i den önskade enheten, men
                     möjligheterna att få en önskad plats ökar om du anger flera
-                    alternativ.
-                  </P>
-                  <P>
-                    Du kan visa enhetsplatserna genom att välja {"'"}Enheter på
-                    kartan{"'"}.
+                    alternativ. Du kan se var enheterna är belägna, genom att
+                    välja <i>Enheter på kartan</i>.
                   </P>
                 </>
               )
@@ -763,21 +739,20 @@ const sv: Translations = {
           },
           select: {
             label: 'Välj önskade enheter',
-            placeholder: 'Välj enhet',
-            maxSelected:
-              'Max antal valda verksamhetsenheter. Ta bort en så att du kan lägga till en ny',
-            noOptions: 'Inga hittade enheter'
+            placeholder: 'Sök enheter',
+            maxSelected: 'Max antal valda enheter.',
+            noOptions: 'Inga ansökningar som motsvarar sökkriterier.'
           },
           preferences: {
             label: 'Enheter som du har valt',
             noSelections: 'Inga val',
             info:
-              'Välj minst 1 och högst 3 enheter och ange dem i önskad ordning. Du kan ändra på ordningsföljden genom att dra alternativen till rätt plats.',
-            fi: 'På finska',
-            sv: 'På svenska',
-            moveUp: 'Flytta upp',
-            moveDown: 'Flytta ner',
-            remove: 'Ta bort'
+              'Välj minst 1 och högst 3 enheter och ange dem i önskad ordning. Du kan ändra på ordningsföljden med hjälp av pilarna.',
+            fi: 'Finskspråkig',
+            sv: 'Svenskspråkig',
+            moveUp: 'Flytta uppåt',
+            moveDown: 'Flytta neråt',
+            remove: 'Ta bort önskad enhet'
           }
         }
       },
@@ -788,21 +763,24 @@ const sv: Translations = {
             return (
               <P>
                 Klientavgiften inom den kommunala småbarnspedagogiken är en
-                procentandel av familjens bruttoinkomster. Familjen ska lämna in
+                procentandel av familjens bruttoinkomster. Avgiften varierar
+                beeonden på faniljens storlek, familjens inkomsteer och barnets
+                vårdtid fårn avgiftsfri småbarnspedagogik till högst till 288
+                euro i månaden för familjens första barn. Familjen ska lämna in
                 en utredning över sina bruttoinkomster på en särskild blankett,
-                senast inom två veckor från det att barnet har inlett
-                småbarnspedagogiken.
+                senast inom två veckor från det att barnet har inlett.
               </P>
             )
           },
           PRESCHOOL: function FeeInfoTextPreschool() {
             return (
               <P>
-                Klientavgiften inom den kommunala småbarnspedagogiken är en
-                procentandel av familjens bruttoinkomster. Familjen ska lämna in
-                en utredning över sina bruttoinkomster på en särskild blankett,
-                senast inom två veckor från det att barnet har inlett
-                småbarnspedagogiken.
+                Förskoleundervisning är avgiftsfri, men för småbarnspedagogik i
+                samband med förskoleundervisning uppbärs en avgift. Om barnet
+                deltar i småbarnspedagogisk verksamhet i samband med
+                förskoleundervisning ska familjen lämna in en utredning över
+                sina bruttoinkomster på en särskild blankett, senast inom två
+                veckor från det att barnet har inlett.
               </P>
             )
           },
@@ -841,11 +819,11 @@ const sv: Translations = {
         title: 'Övriga tilläggsuppgifter',
         otherInfoLabel: 'Övriga tilläggsuppgifter',
         otherInfoPlaceholder:
-          'Du kan ge noggrannare uppgifter för din ansökan i det här fältet',
+          'Du kan ge noggrannare uppgifter till din ansökan i det här fältet',
         dietLabel: 'Specialdiet',
         dietPlaceholder: 'Du kan meddela barnets specialdiet i det här fältet',
         dietInfo:
-          'För en del specialdieter behövs även ett skilt läkarintyg som lämnas in till enheten. Undantag är laktosfri eller laktosfattig diet, diet som grundar sig på religiösa orsaker och vegetarisk kost (lakto-ovo).',
+          'För en del specialdieter behövs även ett skilt läkarintyg som lämnas in till enheten. Undantag är laktosfri eller laktosfattig diet, diet som grundar sig på religiösa orsaker eller vegetarisk kost (lakto-ovo).',
         allergiesLabel: 'Allergier',
         allergiesPlaceholder:
           'Du kan meddela barnets allergier i det här fältet',
@@ -888,8 +866,8 @@ const sv: Translations = {
         street: 'Gatuadress',
         postalCode: 'Postnummer',
         postOffice: 'Postanstalt',
-        guardianInfoTitle: 'Vårdnadshavarens information',
-        guardianFirstName: 'Alla förnamn',
+        guardianInfoTitle: 'Vårdnadshavarens uppgifter',
+        guardianFirstName: 'Vårdnadshavarens alla förnamn',
         guardianLastName: 'Efternamn',
         guardianSSN: 'Personbeteckning',
         phone: 'Telefonnummer',
@@ -899,13 +877,13 @@ const sv: Translations = {
         secondGuardianInfo:
           'Den andra vårdnadshavarens information hämtas automatiskt från befolkningsinformationssystemet.',
         secondGuardianNotFound:
-          'Baserat på information från VTJ har barnet ingen andra vårdnadshavare',
+          'Baserat på information från Befolkningsdatasystemet har barnet ingen andra vårdnadshavare',
         secondGuardianInfoPreschoolSeparated:
           'Enligt våra uppgifter bor barnets andra vårdnadshavare på en annan adress. Du ska avtala om ansökan om småbarnspedagogik med en annan vårdnadshavare.',
         secondGuardianAgreementStatus: {
           label:
             'Har du kommit överens om ansökan med den andra vårdnadshavaren?',
-          AGREED: 'Vi har tillsammans kommit överens att fylla i ansökan.',
+          AGREED: 'Vi har tillsammans kommit överens om att fylla i ansökan.',
           NOT_AGREED: 'Vi har inte kunnat komma överens om ansökan.',
           RIGHT_TO_GET_NOTIFIED:
             'Den andra vårdnadshavaren har endast rätt att få uppgifter om barnet.'
@@ -919,10 +897,10 @@ const sv: Translations = {
         personFirstName: 'Alla förnamn',
         personLastName: 'Efternamn',
         personSSN: 'Personbeteckning',
-        otherChildrenTitle: 'Familjens övriga barn',
+        otherChildrenTitle: 'Familjens övriga barn under 18 år i samma hushåll',
         otherChildrenInfo:
           'Barn som bor i samma hushåll påverkar avgifterna för småbarnspedagogik.',
-        otherChildrenChoiceInfo: 'Lägg till et barn',
+        otherChildrenChoiceInfo: 'Lägg till ett barn i samma hushåll',
         hasFutureAddress:
           'Adressen som finns i befolkningsdatabasen har ändrats/ska ändras',
         futureAddressInfo:
@@ -938,8 +916,8 @@ const sv: Translations = {
         addChild: 'Lägg till ett barn',
         remove: 'Ta bort',
         areExtraChildren:
-          'Andra barn under 18 år bor i samma hushåll (t.ex. sambo barn)',
-        choosePlaceholder: 'Välja'
+          'Övriga barn under 18 år som bor i samma hushåll (t.ex. makas/makes)',
+        choosePlaceholder: 'Välj'
       },
       draftPolicyInfo: {
         title: 'Utkastet till ansökan har sparats',
@@ -950,11 +928,11 @@ const sv: Translations = {
       sentInfo: {
         title: 'Ansökan har lämnats in',
         text:
-          'Om du vill kan du göra ändringar i ansökan så länge ansökan inte har behandlats.',
+          'Om du vill kan du göra ytterligare ändringar i ansökan så länge ansökan inte tagits till behandling.',
         ok: 'Klart!'
       },
       updateInfo: {
-        title: 'Ändringar i applikationen har sparats',
+        title: 'Ändringar i ansökan har sparats.',
         text:
           'Om du vill kan du göra ändringar i ansökan så länge ansökan inte har behandlats.',
         ok: 'Klart!'
@@ -966,24 +944,23 @@ const sv: Translations = {
     summary: function DecisionsSummaryText() {
       return (
         <P width="800px">
-          Denna sida visar de beslutar om barns ansökan till småbarnspedagogik,
-          förskola och klubbverksamhet. Du ska omedelbart eller senast två
+          Till denna sida kommer beslut gällande barnets ansökan till
+          småbarnspedagogik och förskola. Du ska omedelbart eller senast två
           veckor från mottagandet av ett beslut ta emot eller annullera platsen
           / platserna.
         </P>
       )
     },
     unconfirmedDecisions: (n: number) => `${n} beslut inväntar bekräftelse`,
-    pageLoadError: 'Hämtar information misslyckades',
+    pageLoadError: 'Hämtning av information misslyckades',
     applicationDecisions: {
-      decision: 'Beslut om',
+      decision: 'Beslut',
       type: {
         CLUB: 'klubbverksamhet',
         DAYCARE: 'småbarnspedagogik',
         DAYCARE_PART_TIME: 'deldag småbarnspedagogik',
         PRESCHOOL: 'förskola',
-        PRESCHOOL_DAYCARE:
-          'småbarnspedagogik i samband med förskoleundervisningen',
+        PRESCHOOL_DAYCARE: 'kompletterande småbarnspedagogik',
         PREPARATORY_EDUCATION: 'förberedande undervisning'
       },
       childName: 'Barnets namn',
@@ -997,7 +974,7 @@ const sv: Translations = {
       status: {
         PENDING: 'Bekräftas av vårdnadshavaren',
         ACCEPTED: 'Bekräftad',
-        REJECTED: 'Avvisade'
+        REJECTED: 'Avvisad'
       },
       confirmationInfo: {
         preschool:
@@ -1007,16 +984,16 @@ const sv: Translations = {
       },
       goToConfirmation:
         'Gå till beslutet för att läsa det och svara om du tar emot eller annullerar platsen.',
-      confirmationLink: 'Granska och bekräfta beslutet',
+      confirmationLink: 'Gå vidare för att bekräfta',
       response: {
-        title: 'Bekräftelse',
+        title: 'Mottagande eller avvisande av plats',
         accept1: 'Vi tar emot platsen från',
-        accept2: '',
+        accept2: 'från och med',
         reject: 'Vi tar inte emot platsen',
-        cancel: 'Gå tillbacka utan att besluta',
+        cancel: 'Gå tillbaka utan att svara',
         submit: 'Skicka svar på beslutet',
         disabledInfo:
-          'OBS! Du kommer att kunna svara på den relaterade beslutet, om du först accepterar den beslutet om förskola / förberedande undervisning.'
+          'OBS! Du kan bekräfta/avvisa beslutet gällande kompletterande småbarnspedagogik, om du först bekräftar beslutet för förskola..'
       },
       openPdf: 'Visa beslut',
       warnings: {
@@ -1025,26 +1002,25 @@ const sv: Translations = {
           text:
             'Ett annat beslut väntar på ditt godkännande. Vill du gå tillbaka till listan utan att svara?',
           resolveLabel: 'Gå tillbaka utan att svara',
-          rejectLabel: 'Förtsätt att svara'
+          rejectLabel: 'Fortsätt att svara'
         },
         doubleRejectWarning: {
-          title: 'Vill du annulera platsen?',
+          title: 'Vill du avvisa platsen?',
           text:
-            'Du ska annullera platsen. Den relaterade småbarnspedagogik plats ska också markeras annulerat.',
-          resolveLabel: 'Annulera båda',
+            'Du tänker avvisa erbjuden förskoleplats. Den kompletterande småbarnspedagogiken markeras samtidigt annulerad.',
+          resolveLabel: 'Avvisa båda',
           rejectLabel: 'Gå tillbaka'
         }
       },
       errors: {
-        pageLoadError: 'Misslyckades att hämta information',
+        pageLoadError: 'Informations sök misslyckades',
         submitFailure: 'Misslyckades att skicka svar'
       },
-      returnToPreviousPage: 'Tillbacka'
+      returnToPreviousPage: 'Tillbaka'
     }
   },
   applicationsList: {
-    title:
-      'Anmälan till förskolan eller ansökan till småbarnspedagogisk verksamhet',
+    title: 'Ansökan till småbarnspedagogik eller anmälan till förskolan',
     summary: function ApplicationListSummaryText() {
       return (
         <P width="800px">
@@ -1059,18 +1035,18 @@ const sv: Translations = {
     noApplications: 'Inga ansökningar',
     type: {
       DAYCARE: 'Ansökan till småbarnspedagogik',
-      PRESCHOOL: 'Anmälan till förskolan',
+      PRESCHOOL: 'Ansökan till förskolan',
       CLUB: 'Ansökan till klubbverksamhet'
     },
     transferApplication: 'Ansökan om överföring',
     unit: 'Enhet',
     period: 'Period',
-    created: 'Skapad',
-    modified: 'Ändrad',
+    created: 'Ansökan skapad',
+    modified: 'Redigerad/uppdaterad',
     status: {
       title: 'Status',
-      CREATED: 'Förslag',
-      SENT: 'Skickas',
+      CREATED: 'Utkast',
+      SENT: 'Skickat',
       WAITING_PLACEMENT: 'Bearbetas',
       WAITING_DECISION: 'Bearbetas',
       WAITING_UNIT_CONFIRMATION: 'Bearbetas',
@@ -1086,7 +1062,7 @@ const sv: Translations = {
     cancelApplicationBtn: 'Ta bort ansökan',
     confirmationLinkInstructions:
       'Under Beslut-fliken kan du läsa besluten till dina ansökningar och ta emot/annullera platsen',
-    confirmationLink: 'Granska och bekräfta beslutet',
+    confirmationLink: 'Gå vidare för att svara',
     newApplicationLink: 'Ny ansökan'
   },
   fileUpload: {
@@ -1112,15 +1088,15 @@ const sv: Translations = {
   },
   validationErrors: {
     required: 'Värde saknas',
-    requiredSelection: 'Ingenting är valt',
+    requiredSelection: 'Val saknas',
     format: 'Ange rätt format',
     ssn: 'Ogiltigt personbeteckning',
     phone: 'Ogiltigt telefonnummer',
     email: 'Ogiltig e-postadress',
-    validDate: 'Ange formuläret pp.kk.vvvv',
+    validDate: 'Ange i format pp.kk.vvvv',
     preferredStartDate: 'Ogiltigt datum',
-    timeFormat: 'Ange formuläret hh:mm',
-    unitNotSelected: 'Välj minst en sökbegäran'
+    timeFormat: 'Ange i format hh:mm',
+    unitNotSelected: 'Välj minst en enhet'
   }
 }
 
