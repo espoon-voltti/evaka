@@ -25,7 +25,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 
         <div th:replace="~{shared/acceptance-form :: daycare-unit-details}"></div>
 
-        <p>
+        <p th:unless="${hideDaycareTime}">
           <span th:text="#{accept.text.1} + ': '"></span>
           <span th:if="${isPartTimeDecision}" th:text="#{accept.text.partTime}"></span>
           <span th:unless="${isPartTimeDecision}" th:text="#{accept.text.fullTime}"></span>
