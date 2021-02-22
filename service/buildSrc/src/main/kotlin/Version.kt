@@ -17,7 +17,7 @@ object Version {
     const val javalin = "3.10.1"
     const val jdbi = "3.14.1"
     const val jedis = "3.5.1"
-    const val jetbrainsAnnotations = "19.0.0"
+    const val jetbrainsAnnotations = "20.1.0"
     const val junit = "5.6.2"
     const val kotlin = "1.4.30"
     const val kotlinLogging = "2.0.4"
