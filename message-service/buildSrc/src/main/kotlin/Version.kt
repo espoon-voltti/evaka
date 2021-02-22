@@ -11,7 +11,7 @@ object Version {
     const val byteBuddy = "1.10.14"
     const val flyway = "7.5.3"
     const val hikariCp = "3.4.5"
-    const val jackson = "2.11.2"
+    const val jackson = "2.12.1"
     const val java = "11"
     const val jaxbRuntime = "2.3.2"
     const val jdbi = "3.14.1"

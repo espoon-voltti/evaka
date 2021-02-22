@@ -12,7 +12,7 @@ object Version {
     const val flyway = "7.5.3"
     const val fuel = "2.3.1"
     const val hikariCp = "3.4.5"
-    const val jackson = "2.11.2"
+    const val jackson = "2.12.1"
     const val java = "11"
     const val javalin = "3.10.1"
     const val jdbi = "3.14.1"
