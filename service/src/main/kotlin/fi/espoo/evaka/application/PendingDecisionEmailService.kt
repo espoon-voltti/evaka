@@ -30,6 +30,7 @@ class PendingDecisionEmailService(
     }
 
     val fromAddress = env.getRequiredProperty("mail_reply_to_address")
+    val emailSendingEnabled = env.getProperty("enable_pending_decision_email_sending")?.let { it.toBoolean() } ?: false
 
     fun doSendPendingDecisionsEmail(db: Database, msg: SendPendingDecisionEmail) {
         logger.info("Sending pending decision reminder email to guardian ${msg.guardianId}")
@@ -103,15 +104,21 @@ GROUP BY application.guardian_id
         db.transaction { tx ->
             logger.info("Sending pending decision email to guardian ${pendingDecision.guardianId}")
 
-            val lang = getLanguage(pendingDecision.language)
-            emailClient.sendEmail(
-                "${pendingDecision.guardianId} - ${pendingDecision.decisionIds.joinToString { "-" }}",
-                pendingDecision.email,
-                fromAddress,
-                getSubject(lang),
-                getHtml(lang),
-                getText(lang)
-            )
+            if (emailSendingEnabled) {
+                val lang = getLanguage(pendingDecision.language)
+
+                emailClient.sendEmail(
+                    "${pendingDecision.guardianId} - ${pendingDecision.decisionIds.joinToString("-")}",
+                    pendingDecision.email,
+                    fromAddress,
+                    getSubject(lang),
+                    getHtml(lang),
+                    getText(lang)
+                )
+            } else {
+                // To do a dry run in production
+                logger.info("Would have sent pending decision email ${pendingDecision.guardianId} - ${pendingDecision.decisionIds.joinToString("-")}")
+            }
 
             // Mark as sent
             pendingDecision.decisionIds.forEach { decisionId ->
@@ -137,10 +144,12 @@ WHERE id = :id
     }
 
     private fun getSubject(language: Language): String {
+        val postfix = if (System.getenv("VOLTTI_ENV") == "staging") " [staging]" else ""
+
         return when (language) {
-            Language.en -> "Decision on early childhood education"
-            Language.sv -> "Beslut om förskoleundervisning"
-            else -> "Päätös varhaiskasvatuksesta"
+            Language.en -> "Decision on early childhood education$postfix"
+            Language.sv -> "Beslut om förskoleundervisning$postfix"
+            else -> "Päätös varhaiskasvatuksesta$postfix"
         }
     }
 
