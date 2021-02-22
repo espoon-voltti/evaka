@@ -10,7 +10,7 @@ import { Container } from '@evaka/lib-components/src/layout/Container'
 import { defaultMargins } from '@evaka/lib-components/src/white-space'
 
 export const FullHeightContainer = styled(Container)<{ spaced?: boolean }>`
-  height: 100vh;
+  height: 100%;
   display: flex;
   flex-direction: column;
   background-color: ${colors.greyscale.white};
