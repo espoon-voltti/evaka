@@ -8,10 +8,13 @@ import { client } from '~api-client'
 import { MapAddress } from '~map/MapView'
 import { UnitWithDistance, UnitWithStraightDistance } from '~map/distances'
 import { isAutomatedTest } from '@evaka/lib-common/src/utils/helpers'
+import { ApplicationType } from '@evaka/lib-common/src/api-types/application/enums'
 
-export async function fetchUnits(): Promise<Result<PublicUnit[]>> {
+export async function fetchUnits(
+  type: ApplicationType
+): Promise<Result<PublicUnit[]>> {
   return client
-    .get<JsonOf<PublicUnit[]>>('/public/units/all')
+    .get<JsonOf<PublicUnit[]>>(`/public/units/${type}`)
     .then((res) => Success.of(res.data))
     .catch((e) => Failure.fromError(e))
 }

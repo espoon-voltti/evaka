@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.daycare
 
+import fi.espoo.evaka.application.ApplicationType
 import fi.espoo.evaka.daycare.controllers.ApplicationUnitType
 import fi.espoo.evaka.daycare.controllers.PublicUnit
 import fi.espoo.evaka.daycare.domain.Language
@@ -255,7 +256,13 @@ ORDER BY name ASC
         .toList()
 }
 
-fun Database.Read.getAllApplicableUnits(): List<PublicUnit> {
+fun Database.Read.getAllApplicableUnits(applicationType: ApplicationType): List<PublicUnit> {
+    val applyPeriod = when (applicationType) {
+        ApplicationType.CLUB -> "club_apply_period"
+        ApplicationType.DAYCARE -> "daycare_apply_period"
+        ApplicationType.PRESCHOOL -> "preschool_apply_period"
+    }
+
     // language=sql
     val sql = """
 SELECT
@@ -276,13 +283,10 @@ SELECT
     ghost_unit,
     round_the_clock
 FROM daycare
-WHERE (
-    (club_apply_period && daterange(:date, null, '[]')) OR
-    (daycare_apply_period && daterange(:date, null, '[]')) OR
-    (preschool_apply_period && daterange(:date, null, '[]'))
-)
+WHERE $applyPeriod && daterange(:date, null, '[]')
 ORDER BY name ASC
     """.trimIndent()
+
     return createQuery(sql)
         .bind("date", LocalDate.now(zoneId))
         .mapTo<PublicUnit>()
