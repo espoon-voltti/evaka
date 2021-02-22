@@ -21,6 +21,7 @@ import {
 } from '~map/distances'
 import { fetchUnits, queryDistances } from '~map/api'
 import UnitDetailsPanel from '~map/UnitDetailsPanel'
+import { ApplicationType } from '@evaka/lib-common/src/api-types/application/enums'
 
 export type MapAddress = {
   coordinates: Coordinate
@@ -33,17 +34,11 @@ export type MapAddress = {
   }
 }
 
-export type CareTypeOption = 'CLUB' | 'DAYCARE' | 'PRESCHOOL'
+export type CareTypeOption = ApplicationType
 
 export type ProviderTypeOption = Exclude<ProviderType, 'MUNICIPAL_SCHOOL'>
 
 export default React.memo(function MapView() {
-  const [unitsResult, setUnitsResult] = useState<Result<PublicUnit[]>>(
-    Loading.of()
-  )
-  const loadUnits = useRestApi(fetchUnits, setUnitsResult)
-  useEffect(loadUnits, [])
-
   const [mobileMode, setMobileMode] = useState<MobileMode>('map')
 
   const [selectedUnit, setSelectedUnit] = useState<PublicUnit | null>(null)
@@ -55,6 +50,12 @@ export default React.memo(function MapView() {
   const [languages, setLanguages] = useState<UnitLanguage[]>([])
   const [providerTypes, setProviderTypes] = useState<ProviderTypeOption[]>([])
   const [shiftCare, setShiftCare] = useState<boolean>(false)
+
+  const [unitsResult, setUnitsResult] = useState<Result<PublicUnit[]>>(
+    Loading.of()
+  )
+  const loadUnits = useRestApi(fetchUnits, setUnitsResult)
+  useEffect(() => loadUnits(careType), [careType])
 
   const [filteredUnits, setFilteredUnits] = useState<Result<PublicUnit[]>>(
     filterUnits(unitsResult, careType, languages, providerTypes, shiftCare)

@@ -9,6 +9,6 @@ const router = Router()
 const proxy = createProxy()
 
 router.get('/units', proxy)
-router.get('/public/units/all', proxy)
+router.get('/public/units/*', proxy)
 
 export default router

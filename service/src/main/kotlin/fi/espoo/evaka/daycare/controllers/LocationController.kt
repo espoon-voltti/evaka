@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.daycare.controllers
 
+import fi.espoo.evaka.application.ApplicationType
 import fi.espoo.evaka.daycare.CareArea
 import fi.espoo.evaka.daycare.CareType
 import fi.espoo.evaka.daycare.Location
@@ -22,6 +23,7 @@ import org.jdbi.v3.core.kotlin.mapTo
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import java.time.LocalDate
@@ -41,12 +43,13 @@ class LocationController {
         return ResponseEntity.ok(units)
     }
 
-    @GetMapping("/public/units/all")
+    @GetMapping("/public/units/{applicationType}")
     fun getAllApplicableUnits(
-        db: Database.Connection
+        db: Database.Connection,
+        @PathVariable applicationType: ApplicationType
     ): ResponseEntity<List<PublicUnit>> {
         return db
-            .read { it.getAllApplicableUnits() }
+            .read { it.getAllApplicableUnits(applicationType) }
             .let { ResponseEntity.ok(it) }
     }
 
