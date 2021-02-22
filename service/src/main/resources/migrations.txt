@@ -33,3 +33,4 @@ V32__temporary_placement_types.sql
 V33__drop_service_need_temporary.sql
 V34__log_sent_decision_emails.sql
 V35__create_round_the_clock_field.sql
+V36__daycare_daily_note.sql
