@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react'
 import styled from 'styled-components'
-import { defaultMargins } from '@evaka/lib-components/src/white-space'
+import { defaultMargins, Gap } from '@evaka/lib-components/src/white-space'
 import colors from '@evaka/lib-components/src/colors'
 import leaflet from 'leaflet'
 import { FooterContent } from '~Footer'
@@ -13,17 +13,15 @@ import { formatDistance, UnitWithDistance } from '~map/distances'
 import { useTranslation } from '~localization'
 import { formatCareTypes } from './format'
 import { MapAddress } from '~map/MapView'
-import { mapViewBreakpoint } from '~map/const'
+import { addressZoom, initialZoom, mapViewBreakpoint } from '~map/const'
 import { isAutomatedTest } from '@evaka/lib-common/src/utils/helpers'
+import ExternalLink from '~../../lib-components/src/atoms/ExternalLink'
 
 export interface Props {
   units: (UnitWithDistance | PublicUnit)[]
   selectedUnit: PublicUnit | null
   selectedAddress: MapAddress | null
 }
-
-const initialZoom = 12
-const addressZoom = 14
 
 export default React.memo(function MapBox(props: Props) {
   return (
@@ -161,6 +159,15 @@ function UnitMarker({
               </UnitDetailsRight>
             )}
           </UnitDetails>
+          {unit.providerType === 'PRIVATE_SERVICE_VOUCHER' && (
+            <>
+              <Gap size="s" />
+              <ExternalLink
+                text={t.common.unit.providerTypes.PRIVATE_SERVICE_VOUCHER}
+                href={t.map.serviceVoucherLink}
+              />
+            </>
+          )}
         </div>
       </UnitPopup>
     </Marker>

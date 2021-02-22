@@ -104,7 +104,9 @@ export default {
     mobileTabs: {
       map: 'Kartta',
       list: 'Lista yksiköistä'
-    }
+    },
+    serviceVoucherLink:
+      'https://www.espoo.fi/fi-FI/Kasvatus_ja_opetus/Varhaiskasvatus/Hakeminen_varhaiskasvatukseen/Palveluseteli/Tietoa_perheille'
   },
   applications: {
     title: 'Hakemukset',

@@ -138,6 +138,17 @@ export default React.memo(function UnitDetailsPanel({
             <Label>{t.map.providerType}</Label>
             <Gap size="xs" />
             <div>{t.common.unit.providerTypes[unit.providerType]}</div>
+            {unit.providerType === 'PRIVATE_SERVICE_VOUCHER' && (
+              <>
+                <Gap size="xs" />
+                <div>
+                  <ExternalLink
+                    text={t.common.unit.providerTypes.PRIVATE_SERVICE_VOUCHER}
+                    href={t.map.serviceVoucherLink}
+                  />
+                </div>
+              </>
+            )}
             <Gap size="s" />
             <Label>{t.map.shiftCareTitle}</Label>
             <Gap size="xs" />
