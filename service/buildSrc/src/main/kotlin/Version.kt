@@ -4,7 +4,7 @@
 
 object Version {
     const val auth0Jwt = "3.13.0"
-    const val awsSdk = "1.11.832"
+    const val awsSdk = "1.11.959"
     const val bouncyCastle = "1.68"
     const val byteBuddy = "1.10.21"
     const val commonsPool2 = "2.8.1"
