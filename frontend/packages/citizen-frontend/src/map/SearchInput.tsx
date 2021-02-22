@@ -16,7 +16,7 @@ import { fasMapMarkerAlt } from '@evaka/lib-icons'
 import { queryAutocomplete } from '~map/api'
 import { MapAddress } from '~map/MapView'
 import { useTranslation } from '~localization'
-import { useDebounce } from '~util.ts'
+import { useDebounce } from '@evaka/lib-common/src/utils/useDebounce'
 
 type Props = {
   allUnits: Result<PublicUnit[]>

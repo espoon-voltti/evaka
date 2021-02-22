@@ -14,7 +14,7 @@ import {
 } from '~api/person'
 import { Result, Success } from '@evaka/lib-common/src/api'
 import { formatName } from '~utils'
-import { useDebounce } from '~utils/useDebounce'
+import { useDebounce } from '@evaka/lib-common/src/utils/useDebounce'
 import { isSsnValid } from '~utils/validation/validations'
 import { useRestApi } from '@evaka/lib-common/src/utils/useRestApi'
 import { CHILD_AGE } from '~constants.ts'
