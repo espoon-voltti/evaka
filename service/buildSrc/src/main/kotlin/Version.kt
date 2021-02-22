@@ -26,7 +26,7 @@ object Version {
     const val logstashEncoder = "6.6"
     const val mockito = "3.7.7"
     const val mockitoKotlin = "1.6.0"
-    const val postgresDriver = "42.2.16"
+    const val postgresDriver = "42.2.19"
     const val springBoot = "2.4.3"
     const val testContainers = "1.15.2"
 
