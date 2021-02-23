@@ -1815,14 +1815,6 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@evaka/styleguide@workspace:packages/old-styleguide":
-  version: 0.0.0-use.local
-  resolution: "@evaka/styleguide@workspace:packages/old-styleguide"
-  peerDependencies:
-    bulma: 0.7.5
-  languageName: unknown
-  linkType: soft
-
 "@fortawesome/fontawesome-common-types@npm:^0.2.30":
   version: 0.2.34
   resolution: "@fortawesome/fontawesome-common-types@npm:0.2.34"
