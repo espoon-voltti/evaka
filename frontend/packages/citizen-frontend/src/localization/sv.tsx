@@ -45,7 +45,8 @@ const sv: Translations = {
     nav: {
       map: 'Karta',
       applications: 'Ansökningar',
-      decisions: 'Beslut'
+      decisions: 'Beslut',
+      messages: 'Meddelanden'
     },
     lang: {
       fi: 'Suomeksi',
@@ -108,6 +109,10 @@ const sv: Translations = {
     },
     serviceVoucherLink:
       'https://www.esbo.fi/sv-FI/Utbildning_och_fostran/Smabarnspedagogik/Privat_smabarnspedagogik'
+  },
+  messages: {
+    inboxTitle: 'Inkorg',
+    noMessages: 'Inga meddelanden'
   },
   applications: {
     title: 'Ansökningar',

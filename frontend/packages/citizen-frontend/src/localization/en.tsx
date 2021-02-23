@@ -45,7 +45,8 @@ const en: Translations = {
     nav: {
       map: 'Map',
       applications: 'Applications',
-      decisions: 'Decisions'
+      decisions: 'Decisions',
+      messages: 'Messages'
     },
     lang: {
       fi: 'Suomeksi',
@@ -108,6 +109,10 @@ const en: Translations = {
     },
     serviceVoucherLink:
       'https://www.espoo.fi/en-US/Childcare_and_education/Early_childhood_education/Applying_for_early_childhood_education/Service_voucher/Information_for_families'
+  },
+  messages: {
+    inboxTitle: 'Inbox',
+    noMessages: 'No messages'
   },
   applications: {
     title: 'Applications',

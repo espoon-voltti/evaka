@@ -44,7 +44,8 @@ export default {
     nav: {
       map: 'Kartta',
       applications: 'Hakemukset',
-      decisions: 'Päätökset'
+      decisions: 'Päätökset',
+      messages: 'Viestit'
     },
     lang: {
       fi: 'Suomeksi',
@@ -107,6 +108,10 @@ export default {
     },
     serviceVoucherLink:
       'https://www.espoo.fi/fi-FI/Kasvatus_ja_opetus/Varhaiskasvatus/Hakeminen_varhaiskasvatukseen/Palveluseteli/Tietoa_perheille'
+  },
+  messages: {
+    inboxTitle: 'Saapuneet viestit',
+    noMessages: 'Ei saapuneita viestejä'
   },
   applications: {
     title: 'Hakemukset',

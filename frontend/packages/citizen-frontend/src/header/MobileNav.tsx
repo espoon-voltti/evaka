@@ -180,6 +180,9 @@ const Navigation = React.memo(function Navigation({
           <StyledNavLink to="/decisions" onClick={close}>
             {t.header.nav.decisions}
           </StyledNavLink>
+          <StyledNavLink to="/messages" onClick={close}>
+            {t.header.nav.messages}
+          </StyledNavLink>
         </>
       )}
     </Nav>
