@@ -1,0 +1,1 @@
+ALTER TABLE income ADD COLUMN application_id uuid REFERENCES application(id);

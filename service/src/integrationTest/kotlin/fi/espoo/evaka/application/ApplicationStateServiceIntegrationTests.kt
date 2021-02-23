@@ -1157,16 +1157,8 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 assertEquals(PlacementType.PRESCHOOL, type)
             }
         }
-
-        db.read {
-            // then
-            val application = fetchApplicationDetails(it.handle, applicationId)!!
-            assertEquals(true, application.form.maxFeeAccepted)
-            val incomes = getIncomesForPerson(it.handle, mapper, testAdult_5.id)
-            assertEquals(1, incomes.size)
-            assertEquals(IncomeEffect.MAX_FEE_ACCEPTED, incomes.first().effect)
-        }
     }
+
     @Test
     fun `accept preschool application with maxFeeAccepted - new income has been created`() {
         db.transaction { tx ->
@@ -1190,6 +1182,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
             val incomes = getIncomesForPerson(it.handle, mapper, testAdult_5.id)
             assertEquals(ApplicationStatus.ACTIVE, application.status)
             assertEquals(1, incomes.size)
+            assertEquals(applicationId, incomes.first().applicationId)
         }
     }
 
@@ -1204,7 +1197,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 effect = IncomeEffect.NOT_AVAILABLE,
                 notes = "Income not available",
                 personId = testAdult_5.id,
-                validFrom = LocalDate.of(2020, 8, 1).minusDays(10),
+                validFrom = mainPeriod.start.minusDays(10),
                 validTo = null
             )
             upsertIncome(tx.handle, mapper, earlierIndefinite, financeUser.id)
@@ -1226,6 +1219,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
             assertEquals(true, application.form.maxFeeAccepted)
             val incomes = getIncomesForPerson(it.handle, mapper, testAdult_5.id)
             assertEquals(2, incomes.size)
+            assertEquals(applicationId, incomes.first().applicationId)
             assertEquals(IncomeEffect.MAX_FEE_ACCEPTED, incomes.first().effect)
             assertEquals(IncomeEffect.NOT_AVAILABLE, incomes[1].effect)
         }
@@ -1242,8 +1236,8 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 effect = IncomeEffect.NOT_AVAILABLE,
                 notes = "Income not available",
                 personId = testAdult_5.id,
-                validFrom = LocalDate.of(2020, 8, 1).minusDays(10),
-                validTo = LocalDate.of(2020, 8, 1).plusMonths(5)
+                validFrom = mainPeriod.start.minusDays(10),
+                validTo = mainPeriod.start.plusMonths(5)
             )
             upsertIncome(tx.handle, mapper, earlierIncome, financeUser.id)
             workflowForPreschoolDaycareDecisions(tx)
@@ -1265,6 +1259,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
             val incomes = getIncomesForPerson(it.handle, mapper, testAdult_5.id)
             assertEquals(ApplicationStatus.ACTIVE, application.status)
             assertEquals(1, incomes.size)
+            assertNull(incomes.first().applicationId)
             assertEquals(IncomeEffect.NOT_AVAILABLE, incomes.first().effect)
         }
     }
@@ -1280,7 +1275,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 effect = IncomeEffect.NOT_AVAILABLE,
                 notes = "Income not available",
                 personId = testAdult_5.id,
-                validFrom = LocalDate.of(2020, 8, 1).plusMonths(5),
+                validFrom = mainPeriod.start.plusMonths(5),
                 validTo = null
             )
             upsertIncome(tx.handle, mapper, laterIndefiniteIncome, financeUser.id)
@@ -1303,6 +1298,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
             val incomes = getIncomesForPerson(it.handle, mapper, testAdult_5.id)
             assertEquals(ApplicationStatus.ACTIVE, application.status)
             assertEquals(1, incomes.size)
+            assertNull(incomes.first().applicationId)
             assertEquals(IncomeEffect.NOT_AVAILABLE, incomes.first().effect)
         }
     }
@@ -1318,8 +1314,8 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 effect = IncomeEffect.NOT_AVAILABLE,
                 notes = "Income not available",
                 personId = testAdult_5.id,
-                validFrom = LocalDate.of(2020, 8, 1).minusMonths(7),
-                validTo = LocalDate.of(2020, 8, 1).minusMonths(5)
+                validFrom = mainPeriod.start.minusMonths(7),
+                validTo = mainPeriod.start.minusMonths(5)
             )
             upsertIncome(tx.handle, mapper, earlierIncome, financeUser.id)
             workflowForPreschoolDaycareDecisions(tx)
@@ -1341,7 +1337,9 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
             val incomes = getIncomesForPerson(it.handle, mapper, testAdult_5.id)
             assertEquals(ApplicationStatus.ACTIVE, application.status)
             assertEquals(2, incomes.size)
-            assertEquals(IncomeEffect.MAX_FEE_ACCEPTED, incomes.first().effect)
+            val incomeByApplication = incomes.first()
+            assertEquals(applicationId, incomeByApplication.applicationId)
+            assertEquals(IncomeEffect.MAX_FEE_ACCEPTED, incomeByApplication.effect)
             assertEquals(IncomeEffect.NOT_AVAILABLE, incomes[1].effect)
         }
     }
@@ -1357,36 +1355,36 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 effect = IncomeEffect.NOT_AVAILABLE,
                 notes = "Income not available",
                 personId = testAdult_5.id,
-                validFrom = LocalDate.of(2020, 8, 1).plusMonths(5),
-                validTo = LocalDate.of(2020, 8, 1).plusMonths(6)
+                validFrom = mainPeriod.start.plusMonths(5),
+                validTo = mainPeriod.start.plusMonths(6)
             )
             upsertIncome(tx.handle, mapper, laterIncome, financeUser.id)
-            insertApplication(
-                tx.handle,
-                guardian = testAdult_5,
-                maxFeeAccepted = true,
-                applicationId = applicationId,
-                preferredStartDate = LocalDate.of(2020, 8, 1)
-            )
-            service.sendApplication(tx, serviceWorker, applicationId)
+            workflowForPreschoolDaycareDecisions(tx)
         }
         db.transaction { tx ->
             // when
-            service.moveToWaitingPlacement(tx, serviceWorker, applicationId)
+            service.acceptDecision(
+                tx,
+                serviceWorker,
+                applicationId,
+                getDecision(tx.handle, DecisionType.PRESCHOOL).id,
+                mainPeriod.start
+            )
         }
         db.read {
             // then
             val application = fetchApplicationDetails(it.handle, applicationId)!!
             assertEquals(true, application.form.maxFeeAccepted)
             val incomes = getIncomesForPerson(it.handle, mapper, testAdult_5.id)
-            assertEquals(ApplicationStatus.WAITING_PLACEMENT, application.status)
+            assertEquals(ApplicationStatus.ACTIVE, application.status)
             assertEquals(1, incomes.size)
+            assertNull(incomes.first().applicationId)
             assertEquals(IncomeEffect.NOT_AVAILABLE, incomes.first().effect)
         }
     }
 
     @Test
-    fun `accept preschool application with maxFeeAccepted - if application does not have a preferred start date income will not be created`() {
+    fun `accept preschool application with maxFeeAccepted - if application does not have a preferred start date income will still be created`() {
         db.transaction { tx ->
             // given
             val financeUser = AuthenticatedUser(id = testDecisionMaker_1.id, roles = setOf(UserRole.FINANCE_ADMIN))
@@ -1396,7 +1394,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 effect = IncomeEffect.NOT_AVAILABLE,
                 notes = "Income not available",
                 personId = testAdult_5.id,
-                validFrom = LocalDate.now().minusDays(10),
+                validFrom = mainPeriod.start.minusDays(10),
                 validTo = null
             )
             upsertIncome(tx.handle, mapper, earlierIndefinite, financeUser.id)
@@ -1418,8 +1416,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
             assertEquals(true, application.form.maxFeeAccepted)
             val incomes = getIncomesForPerson(it.handle, mapper, testAdult_5.id)
             assertEquals(ApplicationStatus.ACTIVE, application.status)
-            assertEquals(1, incomes.size)
-            assertEquals(IncomeEffect.NOT_AVAILABLE, incomes.first().effect)
+            assertEquals(2, incomes.size)
         }
     }
 
@@ -1434,7 +1431,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 effect = IncomeEffect.NOT_AVAILABLE,
                 notes = "Income not available",
                 personId = testAdult_5.id,
-                validFrom = LocalDate.now().plusMonths(4),
+                validFrom = mainPeriod.start,
                 validTo = null
             )
             upsertIncome(tx.handle, mapper, sameDayIncomeIndefinite, financeUser.id)
@@ -1472,8 +1469,8 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 effect = IncomeEffect.NOT_AVAILABLE,
                 notes = "Income not available",
                 personId = testAdult_5.id,
-                validFrom = LocalDate.now().plusMonths(4),
-                validTo = LocalDate.now().plusMonths(5)
+                validFrom = mainPeriod.start,
+                validTo = mainPeriod.start.plusMonths(5)
             )
             upsertIncome(tx.handle, mapper, sameDayIncome, financeUser.id)
             workflowForPreschoolDaycareDecisions(tx)
@@ -1495,6 +1492,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
             val incomes = getIncomesForPerson(tx.handle, mapper, testAdult_5.id)
             assertEquals(ApplicationStatus.ACTIVE, application.status)
             assertEquals(1, incomes.size)
+            assertNull(incomes.first().applicationId)
             assertEquals(IncomeEffect.NOT_AVAILABLE, incomes.first().effect)
         }
     }
@@ -1510,7 +1508,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 effect = IncomeEffect.NOT_AVAILABLE,
                 notes = "Income not available",
                 personId = testAdult_5.id,
-                validFrom = LocalDate.of(2020, 8, 1).minusDays(1),
+                validFrom = mainPeriod.start.minusDays(1),
                 validTo = null
             )
             upsertIncome(tx.handle, mapper, dayBeforeIncomeIndefinite, financeUser.id)
@@ -1533,6 +1531,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
             val incomes = getIncomesForPerson(tx.handle, mapper, testAdult_5.id)
             assertEquals(ApplicationStatus.ACTIVE, application.status)
             assertEquals(2, incomes.size)
+            assertEquals(application.id, incomes.first().applicationId)
             assertEquals(IncomeEffect.MAX_FEE_ACCEPTED, incomes.first().effect)
             assertEquals(IncomeEffect.NOT_AVAILABLE, incomes[1].effect)
         }
@@ -1549,7 +1548,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 effect = IncomeEffect.NOT_AVAILABLE,
                 notes = "Income not available",
                 personId = testAdult_5.id,
-                validFrom = LocalDate.now().plusMonths(4).plusDays(1),
+                validFrom = mainPeriod.start.plusDays(1),
                 validTo = null
             )
             upsertIncome(tx.handle, mapper, nextDayIncomeIndefinite, financeUser.id)
@@ -1572,12 +1571,13 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
             val incomes = getIncomesForPerson(tx.handle, mapper, testAdult_5.id)
             assertEquals(ApplicationStatus.ACTIVE, application.status)
             assertEquals(1, incomes.size)
+            assertNull(incomes.first().applicationId)
             assertEquals(IncomeEffect.NOT_AVAILABLE, incomes.first().effect)
         }
     }
 
     @Test
-    fun `accept preschool application with maxFeeAccepted - no new income will be created if there exists income for the same day - 1 `() {
+    fun `accept preschool application with maxFeeAccepted - no new income will be created if there exists income for the same day - 1`() {
         db.transaction { tx ->
             // given
             val financeUser = AuthenticatedUser(id = testDecisionMaker_1.id, roles = setOf(UserRole.FINANCE_ADMIN))
@@ -1587,8 +1587,8 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 effect = IncomeEffect.NOT_AVAILABLE,
                 notes = "Income not available",
                 personId = testAdult_5.id,
-                validFrom = LocalDate.now().plusMonths(4).minusDays(1),
-                validTo = LocalDate.now().plusMonths(5)
+                validFrom = mainPeriod.start.minusDays(1),
+                validTo = mainPeriod.start.plusMonths(5)
             )
             upsertIncome(tx.handle, mapper, incomeDayBefore, financeUser.id)
             workflowForPreschoolDaycareDecisions(tx)
@@ -1610,6 +1610,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
             val incomes = getIncomesForPerson(tx.handle, mapper, testAdult_5.id)
             assertEquals(ApplicationStatus.ACTIVE, application.status)
             assertEquals(1, incomes.size)
+            assertNull(incomes.first().applicationId)
             assertEquals(IncomeEffect.NOT_AVAILABLE, incomes.first().effect)
         }
     }
@@ -1625,8 +1626,8 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 effect = IncomeEffect.NOT_AVAILABLE,
                 notes = "Income not available",
                 personId = testAdult_5.id,
-                validFrom = LocalDate.now().minusMonths(4),
-                validTo = LocalDate.now().plusMonths(4)
+                validFrom = mainPeriod.start.minusMonths(2),
+                validTo = mainPeriod.start
             )
             upsertIncome(tx.handle, mapper, earlierIncomeEndingOnSameDay, financeUser.id)
             workflowForPreschoolDaycareDecisions(tx)
@@ -1648,6 +1649,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
             val incomes = getIncomesForPerson(tx.handle, mapper, testAdult_5.id)
             assertEquals(ApplicationStatus.ACTIVE, application.status)
             assertEquals(1, incomes.size)
+            assertNull(incomes.first().applicationId)
             assertEquals(IncomeEffect.NOT_AVAILABLE, incomes.first().effect)
         }
     }
@@ -1663,8 +1665,8 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 effect = IncomeEffect.NOT_AVAILABLE,
                 notes = "Income not available",
                 personId = testAdult_5.id,
-                validFrom = LocalDate.now().minusMonths(4),
-                validTo = LocalDate.now().plusMonths(4).plusDays(1)
+                validFrom = mainPeriod.start.minusMonths(2),
+                validTo = mainPeriod.start.plusDays(1)
             )
             upsertIncome(tx.handle, mapper, earlierIncomeEndingOnNextDay, financeUser.id)
             workflowForPreschoolDaycareDecisions(tx)
@@ -1686,12 +1688,13 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
             val incomes = getIncomesForPerson(tx.handle, mapper, testAdult_5.id)
             assertEquals(ApplicationStatus.ACTIVE, application.status)
             assertEquals(1, incomes.size)
+            assertNull(incomes.first().applicationId)
             assertEquals(IncomeEffect.NOT_AVAILABLE, incomes.first().effect)
         }
     }
 
     @Test
-    fun `accept preschool application with maxFeeAccepted - no new income will be created if there exists income that ends on the same day - 1`() {
+    fun `accept preschool application with maxFeeAccepted - new income will be created if there exists income that ends on the same day - 1`() {
         db.transaction { tx ->
             // given
             val financeUser = AuthenticatedUser(id = testDecisionMaker_1.id, roles = setOf(UserRole.FINANCE_ADMIN))
@@ -1701,8 +1704,8 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
                 effect = IncomeEffect.NOT_AVAILABLE,
                 notes = "Income not available",
                 personId = testAdult_5.id,
-                validFrom = LocalDate.of(2020, 8, 1).minusMonths(4),
-                validTo = LocalDate.of(2020, 8, 1).minusDays(1)
+                validFrom = mainPeriod.start.minusMonths(2),
+                validTo = mainPeriod.start.minusDays(1)
             )
             upsertIncome(tx.handle, mapper, earlierIncomeEndingOnDayBefore, financeUser.id)
             workflowForPreschoolDaycareDecisions(tx)
