@@ -4,14 +4,14 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later
  */
 
-@import '~@evaka/styleguide/scss/utilities/_all.scss';
-@import '~@evaka/styleguide/scss/base/_all.scss';
+@import './styleguide/utilities/_all.scss';
+@import './styleguide/base/_all.scss';
 
-@import '~@evaka/styleguide/scss/elements/container.scss';
-@import '~@evaka/styleguide/scss/components/header.scss';
-@import '~@evaka/styleguide/scss/elements/icon.scss';
-@import '~@evaka/styleguide/scss/elements/title.scss';
-@import '~@evaka/styleguide/scss/layout/section.scss';
+@import './styleguide/elements/container.scss';
+@import './styleguide/components/header.scss';
+@import './styleguide/elements/icon.scss';
+@import './styleguide/elements/title.scss';
+@import './styleguide/layout/section.scss';
 
 @import './variables';
 

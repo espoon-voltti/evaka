@@ -249,7 +249,7 @@ $colors: (
 $state-colors: (
   'success': $success,
   'warning': $warning,
-  'error': $danger
+  'error': $danger,
 ) !default;
 
 $status-colors: (
@@ -258,7 +258,7 @@ $status-colors: (
   'visited': $visited,
   'new': $new,
   'not-in-focus': $not-in-focus,
-  'error': $error
+  'error': $error,
 ) !default;
 
 $shades: (
