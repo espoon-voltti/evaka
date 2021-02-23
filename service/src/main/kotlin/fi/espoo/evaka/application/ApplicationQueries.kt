@@ -475,7 +475,7 @@ fun fetchApplicationSummariesForCitizen(h: Handle, citizenId: UUID): List<Citize
             a.transferapplication
         FROM application_view a
         LEFT JOIN daycare d ON a.preferredUnit = d.id
-        WHERE guardianId = :guardianId AND NOT a.hidefromguardian
+        WHERE guardianId = :guardianId AND NOT a.hidefromguardian AND a.status != 'CANCELLED'
         ORDER BY sentDate DESC
         """.trimIndent()
 
