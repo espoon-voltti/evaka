@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useRef, useState } from 'react'
+import React, { useLayoutEffect, useRef, useState } from 'react'
 import styled from 'styled-components'
 
 import { greyscale } from '../../colors'
@@ -11,28 +11,24 @@ import DatePickerInput from './DatePickerInput'
 import DatePickerDay from './DatePickerDay'
 import LocalDate from '~../../lib-common/src/local-date'
 import { InputInfo } from '../../atoms/form/InputField'
-import { tabletMin } from '../../breakpoints'
 import { DayModifiers } from 'react-day-picker'
 
+const inputWidth = 120
 const DatePickerWrapper = styled.div`
   position: relative;
   display: inline-block;
-  width: 120px;
+  width: ${inputWidth}px;
 `
+const overflow = 70
 const DayPickerPositioner = styled.div<{ show: boolean }>`
   position: absolute;
   top: calc(100% + 15px);
-  left: -70px;
-  right: -70px;
+  left: -${overflow}px;
+  right: -${overflow}px;
   z-index: 99999;
   justify-content: center;
   align-items: center;
   display: ${(p) => (p.show ? 'inline-block' : 'none')};
-
-  @media (max-width: ${tabletMin}) {
-    width: ${`calc(100vw - ${2 * parseInt(defaultMargins.L)}px)`};
-    left: 0;
-  }
 `
 
 const DayPickerDiv = styled.div`
@@ -74,7 +70,8 @@ function DatePicker({
   ...props
 }: DatePickerProps) {
   const [show, setShow] = useState<boolean>(false)
-  const ref = useRef<HTMLDivElement>(null)
+  const wrapperRef = useRef<HTMLDivElement>(null)
+  const pickerRef = useRef<HTMLDivElement>(null)
 
   function handleUserKeyPress(e: React.KeyboardEvent) {
     if (e.key === 'Esc' || e.key === 'Escape') setShow(false)
@@ -94,13 +91,43 @@ function DatePicker({
     }
 
     if (e.relatedTarget instanceof Element) {
-      if (ref.current === null || !ref.current?.contains(e.relatedTarget))
+      if (
+        wrapperRef.current === null ||
+        !wrapperRef.current?.contains(e.relatedTarget)
+      )
         setShow(false)
     }
   }
 
+  useLayoutEffect(() => {
+    const realignPicker = () => {
+      if (wrapperRef.current) {
+        const minMargin = 16
+
+        const distanceFromLeftEdge = wrapperRef.current.offsetLeft
+        const distanceFromRightEdge =
+          window.innerWidth - wrapperRef.current.offsetLeft - inputWidth
+
+        const leftOffset =
+          overflow - Math.min(overflow, distanceFromLeftEdge - minMargin)
+        const rightOffset =
+          overflow - Math.min(overflow, distanceFromRightEdge - minMargin)
+
+        if (pickerRef.current && (leftOffset !== 0 || rightOffset !== 0)) {
+          const left = -overflow + leftOffset - rightOffset
+          pickerRef.current.style['left'] = `${left}px`
+          const right = -overflow - leftOffset + rightOffset
+          pickerRef.current.style['right'] = `${right}px`
+        }
+      }
+    }
+    realignPicker()
+    addEventListener('resize', realignPicker, { passive: true })
+    return () => removeEventListener('resize', realignPicker)
+  }, [])
+
   return (
-    <DatePickerWrapper ref={ref} onKeyDown={handleUserKeyPress}>
+    <DatePickerWrapper ref={wrapperRef} onKeyDown={handleUserKeyPress}>
       <DatePickerInput
         date={date}
         setDate={(date) => {
@@ -119,7 +146,7 @@ function DatePicker({
         required={required}
         locale={locale}
       />
-      <DayPickerPositioner show={show}>
+      <DayPickerPositioner ref={pickerRef} show={show}>
         <DayPickerDiv>
           <DatePickerDay
             locale={locale}
