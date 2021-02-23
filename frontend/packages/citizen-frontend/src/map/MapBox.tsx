@@ -189,7 +189,7 @@ const Wrapper = styled.div`
   min-height: 500px;
 
   @media (max-width: ${mapViewBreakpoint}) {
-    height: calc(100vh - 80px);
+    height: calc(100vh - 120px);
     min-height: unset;
   }
 `
