@@ -5,6 +5,7 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.utils.zoneId
 import org.jdbi.v3.core.kotlin.mapTo
+import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.util.UUID
 
@@ -99,6 +100,7 @@ fun Database.Transaction.sendBulletin(
 
     this.createUpdate(insertBulletinInstancesSql)
         .bind("bulletinId", id)
+        .bind("date", LocalDate.now(zoneId))
         .execute()
 }
 
@@ -118,6 +120,23 @@ fun Database.Read.getSentBulletinsByUnit(
         .bind("unitId", unitId)
         .mapTo<Bulletin>()
         .list()
+}
+
+fun Database.Read.getBulletin(
+    id: UUID
+): Bulletin? {
+    // language=sql
+    val sql = """
+        SELECT m.*
+        FROM bulletin m
+        WHERE m.id = :id
+        ORDER BY m.updated DESC
+    """.trimIndent()
+
+    return this.createQuery(sql)
+        .bind("id", id)
+        .mapTo<Bulletin>()
+        .firstOrNull()
 }
 
 fun Database.Read.getOwnBulletinDrafts(
@@ -142,9 +161,10 @@ fun Database.Read.getReceivedBulletinsByGuardian(
 ): List<ReceivedBulletin> {
     // language=sql
     val sql = """
-        SELECT DISTINCT m.id, m.sent_at, m.title, m.content, mi.read_at IS NOT NULL AS is_read
+        SELECT DISTINCT m.id, m.sent_at, m.title, m.content, mi.read_at IS NOT NULL AS is_read, dg.name as sender
         FROM bulletin m
         JOIN bulletin_instance mi ON m.id = mi.bulletin_id
+        JOIN daycare_group dg on m.group_id = dg.id
         WHERE mi.guardian_id = :userId
         ORDER BY m.sent_at DESC
     """.trimIndent()
@@ -169,5 +189,6 @@ fun Database.Transaction.markBulletinRead(
     this.createUpdate(sql)
         .bind("id", id)
         .bind("userId", user.id)
+        .bind("readAt", OffsetDateTime.now(zoneId))
         .execute()
 }
