@@ -55,7 +55,7 @@ const StyledInput = styled.input<StyledInputProps>`
   text-align: ${(p) => p.align ?? 'left'};
   background-color: ${colors.greyscale.white};
 
-  font-size: 15px;
+  font-size: 1rem;
   color: ${colors.greyscale.darkest};
   padding: 6px ${(p) => (p.clearable ? '36px' : '12px')} 6px 12px;
 
