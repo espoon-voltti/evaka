@@ -46,6 +46,7 @@ function ApplicationPage({ match }: RouteComponentProps<{ id: UUID }>) {
 
   const { i18n } = useTranslation()
   const { setTitle, formatTitleName } = useContext<TitleState>(TitleContext)
+  const [position, setPosition] = useState(0)
   const [application, setApplication] = useState<Result<ApplicationResponse>>(
     Loading.of()
   )
@@ -90,6 +91,8 @@ function ApplicationPage({ match }: RouteComponentProps<{ id: UUID }>) {
   const debouncedEditedApplication = useDebounce(editedApplication, 50)
 
   const reloadApplication = () => {
+    setPosition(window.scrollY)
+
     setApplication(Loading.of())
     void getApplication(applicationId).then((result) => {
       setApplication(result)
@@ -118,6 +121,10 @@ function ApplicationPage({ match }: RouteComponentProps<{ id: UUID }>) {
       )
     }
   }, [debouncedEditedApplication])
+
+  useEffect(() => {
+    window.scrollTo({ left: 0, top: position })
+  }, [application])
 
   const renderApplication = (applicationData: ApplicationResponse) =>
     editing ? (
