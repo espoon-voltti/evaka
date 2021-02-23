@@ -1039,8 +1039,8 @@ const en: Translations = {
       confirmationLink: 'Review and confirm the decision',
       response: {
         title: 'Accepting or rejecting the placement',
-        accept1: 'We accept the placement',
-        accept2: 'from',
+        accept1: 'We accept the placement from',
+        accept2: '',
         reject: 'We reject the placement',
         cancel: 'Cancel',
         submit: 'Submit response to the decision',
