@@ -5,6 +5,8 @@ import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.BadRequest
+import fi.espoo.evaka.shared.domain.Forbidden
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -12,30 +14,33 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import java.util.UUID
 
-@RestController("/employee/bulletins")
+@RestController
+@RequestMapping("/bulletins")
 class BulletinControllerEmployee(
     private val acl: AccessControlList
 ) {
 
+    data class CreateBulletinResponse(
+        val id: UUID
+    )
     @PostMapping
     fun createBulletin(
         db: Database.Connection,
         user: AuthenticatedUser
-    ): ResponseEntity<Unit> {
+    ): ResponseEntity<CreateBulletinResponse> {
         Audit.MessagingBulletinDraftCreate.log()
-        user.requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF)
+        authorizeAdminSupervisorOrStaff(user)
 
-        db.transaction { tx ->
+        return db.transaction { tx ->
             tx.initBulletin(
                 user = user
             )
-        }
-
-        return ResponseEntity.noContent().build()
+        }.let { ResponseEntity.ok(CreateBulletinResponse(it)) }
     }
 
     @GetMapping("/sent")
@@ -58,7 +63,7 @@ class BulletinControllerEmployee(
         user: AuthenticatedUser
     ): ResponseEntity<List<Bulletin>> {
         Audit.MessagingBulletinDraftRead.log()
-        user.requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF)
+        authorizeAdminSupervisorOrStaff(user)
 
         return db.transaction { tx ->
             tx.getOwnBulletinDrafts(user)
@@ -78,7 +83,7 @@ class BulletinControllerEmployee(
         @RequestBody body: BulletinUpdate
     ): ResponseEntity<Unit> {
         Audit.MessagingBulletinDraftUpdate.log(id)
-        user.requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF)
+        authorizeAdminSupervisorOrStaff(user)
 
         db.transaction { tx ->
             tx.updateDraftBulletin(
@@ -100,7 +105,7 @@ class BulletinControllerEmployee(
         @PathVariable id: UUID
     ): ResponseEntity<Unit> {
         Audit.MessagingBulletinDraftDelete.log(id)
-        user.requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF)
+        authorizeAdminSupervisorOrStaff(user)
 
         db.transaction { tx ->
             tx.deleteDraftBulletin(user, id)
@@ -116,12 +121,26 @@ class BulletinControllerEmployee(
         @PathVariable id: UUID
     ): ResponseEntity<Unit> {
         Audit.MessagingBulletinSend.log(id)
-        user.requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF)
+        authorizeAdminSupervisorOrStaff(user)
 
         db.transaction { tx ->
+            tx.getBulletin(id)?.let {
+                if (it.groupId != null) {
+                    acl.getRolesForUnitGroup(user, it.groupId)
+                        .requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF)
+                } else throw BadRequest("Must select group before sending")
+            }
             tx.sendBulletin(user, id)
         }
 
         return ResponseEntity.noContent().build()
+    }
+
+    private fun authorizeAdminSupervisorOrStaff(user: AuthenticatedUser) {
+        if (!user.hasOneOfRoles(UserRole.ADMIN)) {
+            if (acl.getAuthorizedUnits(user).ids?.isEmpty() != false) {
+                throw Forbidden("Permission denied")
+            }
+        }
     }
 }
