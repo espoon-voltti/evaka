@@ -989,8 +989,8 @@ const sv: Translations = {
       confirmationLink: 'Gå vidare för att bekräfta',
       response: {
         title: 'Mottagande eller avvisande av plats',
-        accept1: 'Vi tar emot platsen från',
-        accept2: 'från och med',
+        accept1: 'Vi tar emot platsen från och med',
+        accept2: '',
         reject: 'Vi tar inte emot platsen',
         cancel: 'Gå tillbaka utan att svara',
         submit: 'Skicka svar på beslutet',
