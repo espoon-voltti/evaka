@@ -268,7 +268,9 @@ const sv: Translations = {
                   för att beviljas förskoleundervisning eller privat vårdbidrag
                   kan han inte beviljas klubbplats.
                 </P>
-                <P fitted={true}>* Tähdellä merkityt tiedot ovat pakollisia</P>
+                <P fitted={true}>
+                  * Informationen markerad med en stjärna krävs.
+                </P>
               </>
             )
           }
@@ -471,10 +473,10 @@ const sv: Translations = {
               'Förskolan börjar i 11.8.2021. Om ditt barn behöver småbarnspedagogisk verksamhet fr.o.m. 1.8.2021 före förskolan börjar kan du ansöka om sådan med denna blankett. Välj ”Jag ansöker om småbarnspedagogik i samband med förskoleundervisning”.'
             ],
             CLUB: [
-              'Kerhot noudattavat esiopetuksen työ- ja loma-aikoja. Kerhon toimintakausi on elokuusta toukokuun loppuun, ja kullekin toimintakaudelle haetaan erikseen. Eri kerhot kokoontuvat eri viikonpäivinä.'
+              'Klubbar följer förskolans arbetstid och semester. Klubbens verksamhetsperiod är från augusti till slutet av maj och ansökas om separat för varje operationsperiod. Olika klubbar möts olika veckodagar.'
             ]
           },
-          clubTerm: 'Kerhon toimintakausi',
+          clubTerm: 'Klubbens verksamhetsperiod',
           label: {
             DAYCARE: 'Önskat inledningsdatum',
             PRESCHOOL: 'Inledningsdatum i augusti',
@@ -488,13 +490,13 @@ const sv: Translations = {
         },
         clubDetails: {
           wasOnDaycare:
-            'Lapsella on varhaiskasvatuspaikka, josta hän luopuu kerhopaikan saadessaan.',
+            'Barnet har en tidig småbarnspedagogikplats, som han ger upp när han får en klubbplats',
           wasOnDaycareInfo:
-            'Jos lapsi on ollut varhaiskasvatuksessa (päiväkodissa, perhepäivähoidossa tai ryhmäperhepäivähoidossa) ja luopuu paikastaan kerhon alkaessa, hänellä on suurempi mahdollisuus saada kerhopaikka.',
+            'Om ett barn har gått i förskoleundervisningen (dagis, familjedaghem eller gruppfamiljedaghem) och lämnar sin plats i början av klubben, har han eller hon större chans att få en klubbplats.',
           wasOnClubCare:
-            'Lapsi on ollut kerhossa edellisen toimintakauden aikana.',
+            'Barnet har varit i klubben under föregående operationsperiod.',
           wasOnClubCareInfo:
-            'Jos lapsi on ollut kerhossa jo edellisen toimintakauden aikana, on hänellä suurempi mahdollisuus saada paikka kerhosta.'
+            'Om barnet redan har varit på klubben under föregående säsong har han eller hon större chans att få en plats i klubben.'
         },
         urgent: {
           label: 'Ansökningen är brådskande',
