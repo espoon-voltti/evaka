@@ -130,7 +130,6 @@ fun Database.Read.getBulletin(
         SELECT b.*
         FROM bulletin b
         WHERE b.id = :id
-        ORDER BY b.updated DESC
     """.trimIndent()
 
     return this.createQuery(sql)
