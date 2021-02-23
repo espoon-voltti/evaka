@@ -34,7 +34,7 @@ fun Database.Transaction.updateDraftBulletin(
     val sql = """
         UPDATE bulletin
         SET group_id = :groupId, title = :title, content = :content
-        WHERE id = :id AND created_by_employee = :userId
+        WHERE id = :id AND created_by_employee = :userId AND sent_at IS NULL
     """.trimIndent()
 
     val updated = this.createUpdate(sql)
