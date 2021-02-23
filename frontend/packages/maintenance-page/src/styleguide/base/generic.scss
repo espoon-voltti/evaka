@@ -24,7 +24,7 @@ $hr-margin: 1.5rem 0 !default;
 $strong-color: $text-strong !default;
 $strong-weight: $weight-bold !default;
 
-@import "~bulma/sass/base/generic.sass";
+@import '~bulma/sass/base/generic.sass';
 
 a {
   &:active {
