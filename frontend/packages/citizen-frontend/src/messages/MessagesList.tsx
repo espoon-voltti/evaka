@@ -12,10 +12,11 @@ import MessageListItem from '~messages/MessageListItem'
 
 type Props = {
   bulletins: Result<ReceivedBulletin[]>
+  activeBulletin: ReceivedBulletin | null
   onClickBulletin: (target: ReceivedBulletin) => void
 }
 
-function MessagesList({ bulletins, onClickBulletin }: Props) {
+function MessagesList({ bulletins, activeBulletin, onClickBulletin }: Props) {
   const t = useTranslation()
 
   return (
@@ -37,6 +38,7 @@ function MessagesList({ bulletins, onClickBulletin }: Props) {
             key={bulletin.id}
             bulletin={bulletin}
             onClick={() => onClickBulletin(bulletin)}
+            active={activeBulletin?.id === bulletin.id}
           />
         ))}
     </Container>

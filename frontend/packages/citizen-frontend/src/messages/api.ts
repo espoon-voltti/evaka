@@ -9,3 +9,7 @@ export async function getBulletins(): Promise<Result<ReceivedBulletin[]>> {
     .then((res) => Success.of(res.data.map(deserializeReceivedBulletin)))
     .catch((e) => Failure.fromError(e))
 }
+
+export function markBulletinRead(id: string) {
+  void client.put(`/citizen/bulletins/${id}/read`)
+}

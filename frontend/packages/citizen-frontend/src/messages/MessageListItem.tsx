@@ -6,18 +6,29 @@ import { defaultMargins } from '@evaka/lib-components/src/white-space'
 import { ReceivedBulletin } from '~messages/types'
 import { formatDate } from '~util'
 import { FixedSpaceColumn } from '@evaka/lib-components/src/layout/flex-helpers'
+import LocalDate from '@evaka/lib-common/src/local-date'
 
 type Props = {
   bulletin: ReceivedBulletin
+  active: boolean
   onClick: () => void
 }
-function MessageListItem({ bulletin, onClick }: Props) {
+function MessageListItem({ bulletin, active, onClick }: Props) {
   return (
-    <Container onClick={onClick} isRead={bulletin.isRead}>
+    <Container onClick={onClick} isRead={bulletin.isRead} active={active}>
       <FixedSpaceColumn>
         <Header>
           <span>{bulletin.sender}</span>
-          <span>{formatDate(bulletin.sentAt, 'dd.MM')}</span>
+          <span>
+            {formatDate(
+              bulletin.sentAt,
+              LocalDate.fromSystemTzDate(bulletin.sentAt).isEqual(
+                LocalDate.today()
+              )
+                ? 'HH:mm'
+                : 'd.M.'
+            )}
+          </span>
         </Header>
         <Title>{bulletin.title}</Title>
         <ContentSummary>{bulletin.content.split('\n')[0]}</ContentSummary>
@@ -26,9 +37,10 @@ function MessageListItem({ bulletin, onClick }: Props) {
   )
 }
 
-const Container = styled.div<{ isRead: boolean }>`
+const Container = styled.div<{ isRead: boolean; active: boolean }>`
   background-color: ${colors.greyscale.white};
-  padding: ${defaultMargins.m};
+  padding: ${defaultMargins.s} ${defaultMargins.m};
+  cursor: pointer;
 
   border: 1px solid ${colors.greyscale.lighter};
 
@@ -39,15 +51,20 @@ const Container = styled.div<{ isRead: boolean }>`
     border-left-width: 6px;
   `
       : ''}
+
+  ${(p) => (p.active ? `background-color: #E9F5FF;` : '')}
 `
 
 const Header = styled.div`
   display: flex;
   justify-content: space-between;
-  font-weight: 600;
+  font-weight: bold;
+  font-size: 16px;
 `
 
-const Title = styled.div``
+const Title = styled.div`
+  font-weight: 600;
+`
 
 const ContentSummary = styled.div`
   white-space: nowrap;
