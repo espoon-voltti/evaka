@@ -79,6 +79,11 @@ const Time = styled.span`
   margin-left: ${defaultMargins.xs};
 `
 
+const ToolsColumn = styled.div`
+  display: flex;
+  flex-direction: column;
+`
+
 interface ChildListItemProps {
   attendanceChild: AttendanceChild
   onClick?: () => void
@@ -142,6 +147,9 @@ export default React.memo(function ChildListItem({
           )}
         </DetailsRow>
       </ChildBoxInfo>
+      <ToolsColumn>
+        TESTING TESTING
+      </ToolsColumn>
     </ChildBox>
   )
 })
