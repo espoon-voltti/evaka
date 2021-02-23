@@ -56,7 +56,7 @@ export const Gap = styled.div<GapProps>`
   ${(p) => (p.horizontal ? 'width' : 'height')}: ${(p) =>
     defaultMargins[p.size || 'm']};
 
-  @media (min-width: ${tabletMin}) {
+  @media (max-width: ${tabletMin}) {
     ${(p) => (p.horizontal ? 'width' : 'height')}: ${(p) =>
       defaultMargins[p.sizeOnMobile || p.size || 'm']};
   }

@@ -93,10 +93,10 @@ const sv: Translations = {
     route: 'Se rutten till enheten',
     routePlanner: 'Reseplanerare',
     newTab: '(Öppnas till nytt mellanblad)',
-    shiftCareTitle: 'Kvälls- och skiftesvård',
-    shiftCareLabel: 'Visa endast kvälls- och skiftesvårds enheter',
+    shiftCareTitle: 'Kvälls- och skiftvård',
+    shiftCareLabel: 'Visa endast kvälls- och skiftvårds enheter',
     shiftCareYes: 'Enheten erbjuder kvälls- och / eller skifttjänster',
-    shiftCareNo: 'Ingen kvälls- och/eller skiftesvård',
+    shiftCareNo: 'Ingen kvälls- och/eller skiftvård',
     showMoreFilters: 'Visa fler filter',
     showLessFilters: 'Visa färre filter',
     nearestUnits: 'Närmaste enheter',
@@ -268,7 +268,9 @@ const sv: Translations = {
                   för att beviljas förskoleundervisning eller privat vårdbidrag
                   kan han inte beviljas klubbplats.
                 </P>
-                <P fitted={true}>* Tähdellä merkityt tiedot ovat pakollisia</P>
+                <P fitted={true}>
+                  * Informationen markerad med en stjärna krävs.
+                </P>
               </>
             )
           }
@@ -324,7 +326,7 @@ const sv: Translations = {
           headline:
             'Om du lägger till bilagor elektroniskt i följande punkter, behandlas din ansökan snabbare. Behandlingstiden börjar från bilagornas ankomst.',
           urgency: 'Ansökningen är brådskande',
-          shiftCare: 'Kvälls- och skiftesvård',
+          shiftCare: 'Kvälls- och skiftvård',
           goBackLinkText: 'Återvänd tillbaka till ansökan vyn',
           goBackRestText: 'för att lägga till bilagor till ansökan.'
         },
@@ -338,8 +340,8 @@ const sv: Translations = {
             'Barnet har varit i klubben under föregående operationsperiod\n.',
           connectedDaycare: {
             title:
-              'Behov av kompletterande småbarnspedagogik utöver förskoletiden.',
-            label: 'Kompletterande småbarnspedagogik',
+              'Behov av småbarnspedagogik i samband med förskoleundervisningen.',
+            label: 'Småbarnspedagogik i samband med förskoleundervisning',
             withConnectedDaycare:
               'Jag ansöker också om kompletterande småbarnspedagogik utöver förskolan.',
             withoutConnectedDaycare: 'Nej'
@@ -366,9 +368,9 @@ const sv: Translations = {
             withoutPartTime: 'Heldag',
             dailyTime:
               'Daglig vårdtid inom småbarnspedagogik börjar och slutar',
-            shiftCare: 'Kvälls- och skiftesvård',
-            withShiftCare: 'Behov av kvälls- eller skiftesvård',
-            withoutShiftCare: 'Behöver inte kvälls- eller skiftesvård'
+            shiftCare: 'Kvälls- och skiftvård',
+            withShiftCare: 'Behov av kvälls- eller skiftvård',
+            withoutShiftCare: 'Behöver inte kvälls- eller skiftvård'
           },
           assistanceNeed: {
             title: 'Behov av stöd',
@@ -390,7 +392,7 @@ const sv: Translations = {
             title: 'Ansökan på basis av syskonrelationer',
             siblingBasisLabel: 'Syskonrelation',
             siblingBasisYes:
-              'Jag ansöker i första hand om plats i den enheten där barnets syskon redan har en plats',
+              'Jag ansöker i första hand om plats i den enheten där barnets syskon redan har en plats inom småbarnspedagogik',
             name: 'Syskonets för- och efternamn',
             ssn: 'Syskonets personbeteckning'
           },
@@ -461,8 +463,8 @@ const sv: Translations = {
         title: 'Vårdbehov',
         startDate: {
           header: {
-            DAYCARE: 'Inledningsdatum',
-            PRESCHOOL: 'Inledning av småbarnspedagogik',
+            DAYCARE: 'Inledningsdatum för småbarnspedagogik',
+            PRESCHOOL: 'Inledningsdatum för förskoleundervisning',
             CLUB: 'Inledningsdatum'
           },
           info: {
@@ -471,10 +473,10 @@ const sv: Translations = {
               'Förskolan börjar i 11.8.2021. Om ditt barn behöver småbarnspedagogisk verksamhet fr.o.m. 1.8.2021 före förskolan börjar kan du ansöka om sådan med denna blankett. Välj ”Jag ansöker om småbarnspedagogik i samband med förskoleundervisning”.'
             ],
             CLUB: [
-              'Kerhot noudattavat esiopetuksen työ- ja loma-aikoja. Kerhon toimintakausi on elokuusta toukokuun loppuun, ja kullekin toimintakaudelle haetaan erikseen. Eri kerhot kokoontuvat eri viikonpäivinä.'
+              'Klubbar följer förskolans arbetstid och semester. Klubbens verksamhetsperiod är från augusti till slutet av maj och ansökas om separat för varje operationsperiod. Olika klubbar möts olika veckodagar.'
             ]
           },
-          clubTerm: 'Kerhon toimintakausi',
+          clubTerm: 'Klubbens verksamhetsperiod',
           label: {
             DAYCARE: 'Önskat inledningsdatum',
             PRESCHOOL: 'Inledningsdatum i augusti',
@@ -482,19 +484,19 @@ const sv: Translations = {
           },
           noteOnDelay: 'Behandlingstiden för ansökningen är 4 månader.',
           instructions:
-            'Det är möjligt att senarelägga det önskade startdatumet så länge ansökan inte har tagits upp till behandling. Därefter kan du ändra det önskade startdatumet genom att kontakta servicehandledningen inom småbarnspedagogik (tfn 09 816 27600).',
+            'Det är möjligt att senarelägga det önskade startdatumet så länge ansökan inte har tagits upp till behandling. Därefter kan du ändra det önskade startdatumet genom att kontakta servicehandledningen inom småbarnspedagogik (tfn 09 816 27600)..',
           placeholder: 'Välj inledningsdatum',
           validationText: 'Önskat inledningsdatum: '
         },
         clubDetails: {
           wasOnDaycare:
-            'Lapsella on varhaiskasvatuspaikka, josta hän luopuu kerhopaikan saadessaan.',
+            'Barnet har en tidig småbarnspedagogikplats, som han ger upp när han får en klubbplats',
           wasOnDaycareInfo:
-            'Jos lapsi on ollut varhaiskasvatuksessa (päiväkodissa, perhepäivähoidossa tai ryhmäperhepäivähoidossa) ja luopuu paikastaan kerhon alkaessa, hänellä on suurempi mahdollisuus saada kerhopaikka.',
+            'Om ett barn har gått i förskoleundervisningen (dagis, familjedaghem eller gruppfamiljedaghem) och lämnar sin plats i början av klubben, har han eller hon större chans att få en klubbplats.',
           wasOnClubCare:
-            'Lapsi on ollut kerhossa edellisen toimintakauden aikana.',
+            'Barnet har varit i klubben under föregående operationsperiod.',
           wasOnClubCareInfo:
-            'Jos lapsi on ollut kerhossa jo edellisen toimintakauden aikana, on hänellä suurempi mahdollisuus saada paikka kerhosta.'
+            'Om barnet redan har varit på klubben under föregående säsong har han eller hon större chans att få en plats i klubben.'
         },
         urgent: {
           label: 'Ansökningen är brådskande',
@@ -509,7 +511,7 @@ const sv: Translations = {
                   båda vårdnadshavarna som bor i samma hushåll. Om du inte kan
                   lägga till bilagor till ansökan elektroniskt, skicka dem per
                   post till adressen Servicehandledningen inom småbarnspedagogik
-                  PB 32 , 02070 Esbo stad. Behandlingstiden på två veckor börjar
+                  PB 32, 02070 Esbo stad. Behandlingstiden på två veckor börjar
                   när vi har tagit emot ansökan och bilagorna som behövs.
                 </P>
               )
@@ -536,9 +538,9 @@ const sv: Translations = {
                   samband med förskoleundervisningen. Småbarnspedagogik erbjuds
                   utöver förskoleundervisningen (fyra timmar per dag) på morgnar
                   och eftermiddagar på samma ställe som förskoleundervisningen.
-                  Om barnet börjar senare, meddela detta under
-                  ”Tilläggsuppgifter”. Du får ett separat skriftligt beslut om
-                  platsen inom småbarnspedagogik. Beslutet delges i tjänsten
+                  Om barnet börjar senare, meddela detta under{' '}
+                  <i>Tilläggsuppgifter</i>. Du får ett separat skriftligt beslut
+                  om platsen inom småbarnspedagogik. Beslutet delges i tjänsten
                   Suomi.fi-meddelanden eller per post, om du inte har tagit
                   tjänsten i bruk.
                 </P>
@@ -549,7 +551,7 @@ const sv: Translations = {
             'Jag ansöker också om småbarnspedagogik i samband med förskoleundervisning.',
           instructions: {
             DAYCARE:
-              'Meddela tiden då ditt barn behöver småbarnspedagogisk verksamhet. Du kan meddela den mera exakta tiden när verksamheten börjar. Om ditt behov varierar dagligen eller per vecka (t.ex i skiftesvård) kan du meddela behovet mer exakt i tilläggsuppgifterna.',
+              'Meddela tiden då ditt barn behöver småbarnspedagogisk verksamhet. Du kan meddela den mera exakta tiden när verksamheten börjar. Om ditt behov varierar dagligen eller per vecka (t.ex i skiftvård) kan du meddela behovet mer exakt i tilläggsuppgifterna.',
             PRESCHOOL:
               'Förskoleundervisning ordnas fyra timmar per dag, huvudsakligen kl. 9.00-13.00, men tiden kan variera per enhet. Meddela tiden för småbarnspedagogik så att den innefattar tiden för förskoleundervisning som är fyra timmar (t.ex. kl. 7.00–17.00). Vårdnadshavare meddelar de mera exakta tiderna när småbarnspedagogiken börjar.  Om behovet av småbarnspedagogik varierar dagligen eller per vecka (t.ex. i skiftvård), meddela behovet mer exakt i tilläggsuppgifterna.'
           },
@@ -562,17 +564,17 @@ const sv: Translations = {
           ends: 'Sluttiden'
         },
         shiftCare: {
-          label: 'Kvälls- och skiftesvård',
+          label: 'Kvälls- och skiftvård',
           instructions:
-            'Med skiftesvård avses verksamhet under veckosluten eller dygnet runt. Kvälls- och skiftesvård är vård som huvudsakligen sker under annan tid än vardagar klockan 6.30-18.00. Om ditt barn behöver skiftesvård, beskriv behovet i fältet för tilläggsuppgifter.',
+            'Med skiftvård avses verksamhet under veckosluten eller dygnet runt. Kvälls- och skiftvård är vård som huvudsakligen sker under annan tid än vardagar klockan 6.30-18.00. Om ditt barn behöver skiftvård, beskriv behovet i fältet för tilläggsuppgifter.',
           message: {
-            title: 'Kvälls- och skiftesvård',
+            title: 'Kvälls- och skiftvård',
             text:
-              'Kvälls- och skiftesvård är till för barn vars båda föräldrar jobbar i skiften eller studerar huvudsakligen kvällstid och under veckoslut. Som bilaga till ansökan ska ett intyg om skiftesarbete eller studier lämnas in av båda vårdnadshavarna.'
+              'Kvälls- och skiftvård är till för barn vars båda föräldrar jobbar i skiften eller studerar huvudsakligen kvällstid och under veckoslut. Som bilaga till ansökan ska ett intyg om skiftesarbete eller studier lämnas in av båda vårdnadshavarna.'
           },
           attachmentsMessage: {
             text:
-              'Kvälls- och skiftomsorg är avsedd för barn vars båda föräldrar har skiftarbete eller studerar huvudsakligen på kvällar och/eller veckoslut. Som bilaga till ansökan ska av båda föräldrarna lämnas ett intyg av arbetsgivaren över skiftarbete eller studier som orsakar behovet av kvälls- eller skiftomsorg. Vi rekommenderar att bilagan skickas elektroniskt här. Om du inte kan lägga till bilagor till ansökan elektroniskt, skicka dem per post till adressen Servicehandledning inom småbarnspedagogik PB 32 , 02070 Esbo stad.',
+              'Kvälls- och skiftvård är avsedd för barn vars båda föräldrar har skiftarbete eller studerar huvudsakligen på kvällar och/eller veckoslut. Som bilaga till ansökan ska av båda föräldrarna lämnas ett intyg av arbetsgivaren över skiftarbete eller studier som orsakar behovet av kvälls- eller skiftomsorg. Vi rekommenderar att bilagan skickas elektroniskt här. Om du inte kan lägga till bilagor till ansökan elektroniskt, skicka dem per post till adressen Servicehandledning inom småbarnspedagogik PB 32, 02070 Esbo stad.',
             subtitle:
               'Lägg här till för båda föräldrarna antingen arbetsgivarens intyg över skiftarbete eller ett intyg över studier på kvällar/veckoslut.'
           }
@@ -764,11 +766,11 @@ const sv: Translations = {
               <P>
                 Klientavgiften inom den kommunala småbarnspedagogiken är en
                 procentandel av familjens bruttoinkomster. Avgiften varierar
-                beeonden på faniljens storlek, familjens inkomsteer och barnets
-                vårdtid fårn avgiftsfri småbarnspedagogik till högst till 288
-                euro i månaden för familjens första barn. Familjen ska lämna in
+                från avgiftsfri småbarnspedagogik till högst till 288 euro i
+                månaden, beronden på familjens storlek , familjens inkomster och
+                barnets vårdtid för familjens första barn. Familjen ska lämna in
                 en utredning över sina bruttoinkomster på en särskild blankett,
-                senast inom två veckor från det att barnet har inlett.
+                senast inom två veckor från det att barnet har inlett
               </P>
             )
           },
@@ -965,12 +967,12 @@ const sv: Translations = {
       },
       childName: 'Barnets namn',
       unit: 'Enhet',
-      period: 'Period',
+      period: 'För tiden',
       sentDate: 'Beslutsdatum',
       resolved: 'Bekräftat',
       statusLabel: 'Status',
       summary:
-        'Du ska omedelbart eller senast två veckor från mottagandet av ett beslut ta emot eller annullera platsen / platserna.',
+        'Du ska omedelbart eller senast två veckor från mottagandet av ett beslut ta emot eller avvisa platsen / platserna.',
       status: {
         PENDING: 'Bekräftas av vårdnadshavaren',
         ACCEPTED: 'Bekräftad',
@@ -983,7 +985,7 @@ const sv: Translations = {
           'Du ska omedelbart eller senast två veckor från mottagandet av ett beslut ta emot eller annullera platsen.'
       },
       goToConfirmation:
-        'Gå till beslutet för att läsa det och svara om du tar emot eller annullerar platsen.',
+        'Gå till beslutet för att läsa det och svara om du tar emot eller avvisar platsen.',
       confirmationLink: 'Gå vidare för att bekräfta',
       response: {
         title: 'Mottagande eller avvisande av plats',
@@ -1040,7 +1042,7 @@ const sv: Translations = {
     },
     transferApplication: 'Ansökan om överföring',
     unit: 'Enhet',
-    period: 'Period',
+    period: 'För tiden',
     created: 'Ansökan skapad',
     modified: 'Redigerad/uppdaterad',
     status: {
@@ -1093,7 +1095,7 @@ const sv: Translations = {
     ssn: 'Ogiltigt personbeteckning',
     phone: 'Ogiltigt telefonnummer',
     email: 'Ogiltig e-postadress',
-    validDate: 'Ange i format pp.kk.vvvv',
+    validDate: 'Ange i format dd.mm.åååå',
     preferredStartDate: 'Ogiltigt datum',
     timeFormat: 'Ange i format hh:mm',
     unitNotSelected: 'Välj minst en enhet'
