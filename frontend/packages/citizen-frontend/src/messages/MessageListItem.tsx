@@ -55,6 +55,7 @@ const Container = styled.div<{ isRead: boolean; active: boolean }>`
       ? `
     border-left-color: ${colors.brandEspoo.espooTurquoise};
     border-left-width: 6px;
+    padding-left: calc(${defaultMargins.m} - 6px);
   `
       : ''}
 
