@@ -10,8 +10,6 @@ spring:
     enabled: false
   main:
     allow-bean-definition-overriding: true
-  profiles:
-    active: integration-test
 management:
   endpoints:
     web:

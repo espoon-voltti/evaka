@@ -70,7 +70,7 @@ dependencies {
     implementation(kotlin("stdlib-jdk8"))
 
     // Logging
-    implementation("io.github.microutils:kotlin-logging:${Version.kotlinLogging}")
+    implementation("io.github.microutils:kotlin-logging-jvm:${Version.kotlinLogging}")
     implementation("net.rakugakibox.spring.boot:logback-access-spring-boot-starter:2.7.1")
 
     // Spring

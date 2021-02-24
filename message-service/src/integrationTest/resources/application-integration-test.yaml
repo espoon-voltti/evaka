@@ -4,10 +4,6 @@
 ---
 debug: true
 
-spring:
-  profiles:
-    active: integration-test
-
 aws:
   region: eu-west-1
 
