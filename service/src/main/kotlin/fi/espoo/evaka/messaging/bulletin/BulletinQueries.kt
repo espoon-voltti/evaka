@@ -164,7 +164,7 @@ fun Database.Read.getReceivedBulletinsByGuardian(
         FROM bulletin b
         JOIN bulletin_instance bi ON b.id = bi.bulletin_id
         JOIN daycare_group dg on b.group_id = dg.id
-        WHERE bi.guardian_id = :userId
+        WHERE bi.guardian_id = :userId AND b.sent_at IS NOT NULL 
         ORDER BY b.sent_at DESC
     """.trimIndent()
 

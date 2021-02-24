@@ -4,7 +4,8 @@
 
 export const espooBrandColors = {
   espooBlue: '#0050bb',
-  espooTurquoise: '#249fff'
+  espooTurquoise: '#249fff',
+  espooTurquoiseLight: '#e9f5ff'
 }
 
 export const blueColors = {

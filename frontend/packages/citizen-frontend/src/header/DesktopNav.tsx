@@ -13,14 +13,12 @@ import {
   faChevronDown,
   faChevronUp,
   faSignOut,
-  farMap,
-  farFileAlt,
-  farGavel,
   faSignIn
 } from '@evaka/lib-icons'
 import { useUser } from '../auth'
 import { Lang, langs, useLang, useTranslation } from '../localization'
 import { getLoginUri } from '~header/const'
+import { featureFlags } from '~config'
 
 export default React.memo(function DesktopNav() {
   const user = useUser()
@@ -30,19 +28,21 @@ export default React.memo(function DesktopNav() {
     <>
       <Nav>
         <StyledNavLink to="/" exact data-qa={'nav-map'}>
-          <Icon icon={farMap} />
           {t.header.nav.map}
         </StyledNavLink>
         {user && (
           <>
             <StyledNavLink to="/applications" data-qa={'nav-applications'}>
-              <Icon icon={farFileAlt} />
               {t.header.nav.applications}
             </StyledNavLink>
             <StyledNavLink to="/decisions" data-qa={'nav-decisions'}>
-              <Icon icon={farGavel} />
               {t.header.nav.decisions}
             </StyledNavLink>
+            {featureFlags.messaging && (
+              <StyledNavLink to="/messages" data-qa={'nav-decisions'}>
+                {t.header.nav.messages}
+              </StyledNavLink>
+            )}
           </>
         )}
       </Nav>
