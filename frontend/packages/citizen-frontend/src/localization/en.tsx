@@ -37,6 +37,7 @@ const en: Translations = {
         sv: 'swedish'
       }
     },
+    openExpandingInfo: 'Open the details',
     errors: {
       genericGetError: 'Error in fetching the requested information'
     }

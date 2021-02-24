@@ -61,6 +61,7 @@ export default React.memo(function AdditionalDetailsSection({
           <FixedSpaceColumn spacing="xs">
             <ExpandingInfo
               info={t.applications.editor.additionalDetails.dietInfo}
+              ariaLabel={t.common.openExpandingInfo}
             >
               <Label>{t.applications.editor.additionalDetails.dietLabel}</Label>
             </ExpandingInfo>
@@ -81,6 +82,7 @@ export default React.memo(function AdditionalDetailsSection({
           <FixedSpaceColumn spacing="xs">
             <ExpandingInfo
               info={t.applications.editor.additionalDetails.allergiesInfo}
+              ariaLabel={t.common.openExpandingInfo}
             >
               <Label>
                 {t.applications.editor.additionalDetails.allergiesLabel}

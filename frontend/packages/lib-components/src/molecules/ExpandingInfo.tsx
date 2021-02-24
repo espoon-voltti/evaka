@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { fasInfo, faTimes } from '@evaka/lib-icons'
-import React, { useState } from 'react'
+import React, { ReactNode, useState } from 'react'
 import styled from 'styled-components'
 import colors from '../colors'
 import RoundIcon from '../atoms/RoundIcon'
@@ -46,27 +46,35 @@ const InfoContainer = styled.div`
   padding: 0 ${defaultMargins.s};
 `
 
+const RoundIconWithMargin = styled(RoundIcon)`
+  margin-top: ${defaultMargins.xs};
+`
+
 type ExpandingInfoProps = {
   children: React.ReactNode
-  info: JSX.Element | string
+  info: ReactNode
+  ariaLabel: string
 }
 
-export default function ExpandingInfo({ children, info }: ExpandingInfoProps) {
+export default function ExpandingInfo({
+  children,
+  info,
+  ariaLabel
+}: ExpandingInfoProps) {
   const [expanded, setExpanded] = useState<boolean>(false)
 
   return (
     <span aria-live="polite">
       <FixedSpaceRow spacing="xs">
         <div>{children}</div>
-        <RoundIcon
+        <RoundIconWithMargin
           content={fasInfo}
           color={colors.brandEspoo.espooTurquoise}
           size="s"
           onClick={() => setExpanded(!expanded)}
           tabindex={0}
           role="button"
-          // TODO: add translation
-          aria-label="Avaa lisätietokenttä"
+          aria-label={ariaLabel}
         />
       </FixedSpaceRow>
       {expanded && (

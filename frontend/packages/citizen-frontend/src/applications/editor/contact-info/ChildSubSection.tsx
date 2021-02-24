@@ -56,7 +56,10 @@ export default React.memo(function ChildSubSection({
       </FixedSpaceColumn>
       <Gap size={'m'} />
 
-      <ExpandingInfo info={t.applications.editor.contactInfo.futureAddressInfo}>
+      <ExpandingInfo
+        info={t.applications.editor.contactInfo.futureAddressInfo}
+        ariaLabel={t.common.openExpandingInfo}
+      >
         <Checkbox
           label={t.applications.editor.contactInfo.hasFutureAddress}
           checked={formData.childFutureAddressExists}

@@ -92,7 +92,10 @@ export default React.memo(function GuardianSubSection({
       </FixedSpaceRow>
       <Gap size={'m'} />
 
-      <ExpandingInfo info={t.applications.editor.contactInfo.futureAddressInfo}>
+      <ExpandingInfo
+        info={t.applications.editor.contactInfo.futureAddressInfo}
+        ariaLabel={t.common.openExpandingInfo}
+      >
         <Checkbox
           label={t.applications.editor.contactInfo.hasFutureAddress}
           checked={formData.guardianFutureAddressExists}

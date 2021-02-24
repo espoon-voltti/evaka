@@ -36,6 +36,7 @@ export default {
         sv: 'ruotsi'
       }
     },
+    openExpandingInfo: 'Avaa lisätietokenttä',
     errors: {
       genericGetError: 'Tietojen hakeminen ei onnistunut'
     }
