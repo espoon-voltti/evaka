@@ -36,7 +36,7 @@ export default React.memo(function MessageReadView({ bulletin }: Props) {
 })
 
 const Container = styled.div`
-  flex-grow: 1;
+  width: 100%;
   box-sizing: border-box;
   max-width: 100%;
   min-height: 500px;

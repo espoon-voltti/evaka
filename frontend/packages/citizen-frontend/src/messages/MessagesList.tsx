@@ -82,11 +82,14 @@ const Return = styled(IconButton)`
 `
 
 const Container = styled.div`
-  min-width: 250px;
+  min-width: 35%;
   max-width: 400px;
   min-height: 500px;
   background-color: ${colors.greyscale.white};
-  flex-grow: 2;
+
+  @media (max-width: 750px) {
+    min-width: 50%;
+  }
 
   @media (max-width: ${tabletMin}) {
     width: 100%;
