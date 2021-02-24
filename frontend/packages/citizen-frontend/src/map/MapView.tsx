@@ -10,6 +10,8 @@ import { PublicUnit } from '@evaka/lib-common/src/api-types/units/PublicUnit'
 import { useRestApi } from '@evaka/lib-common/src/utils/useRestApi'
 import { Coordinate } from '@evaka/lib-common/src/api-types/units/Coordinate'
 import AdaptiveFlex from '@evaka/lib-components/src/layout/AdaptiveFlex'
+import { useTranslation } from '~localization'
+import useTitle from '~useTitle'
 import { headerHeight } from '~header/const'
 import UnitSearchPanel from '~map/UnitSearchPanel'
 import MapBox from '~map/MapBox'
@@ -39,6 +41,7 @@ export type CareTypeOption = ApplicationType
 export type ProviderTypeOption = Exclude<ProviderType, 'MUNICIPAL_SCHOOL'>
 
 export default React.memo(function MapView() {
+  const t = useTranslation()
   const [mobileMode, setMobileMode] = useState<MobileMode>('map')
 
   const [selectedUnit, setSelectedUnit] = useState<PublicUnit | null>(null)
@@ -88,6 +91,8 @@ export default React.memo(function MapView() {
       setUnitsWithDistances(Success.of([]))
     }
   }, [selectedAddress, filteredUnits])
+
+  useTitle(t, t.map.title)
 
   return (
     <FullScreen data-qa="map-view">

@@ -26,6 +26,7 @@ import DecisionResponse from './DecisionResponse'
 import { decisionOrderComparator } from '~decisions/shared'
 import HorizontalLine from '@evaka/lib-components/src/atoms/HorizontalLine'
 import Footer from '~Footer'
+import useTitle from '~useTitle'
 
 export default React.memo(function DecisionResponseList() {
   const { applicationId } = useParams<{ applicationId: UUID }>()
@@ -42,6 +43,8 @@ export default React.memo(function DecisionResponseList() {
 
   const loadDecisions = useRestApi(getApplicationDecisions, setDecisionsRequest)
   useEffect(() => loadDecisions(applicationId), [applicationId])
+
+  useTitle(t, t.decisions.title)
 
   const unconfirmedDecisionsCount = decisionsRequest.isSuccess
     ? decisionsRequest.value.filter(({ status }) => status === 'PENDING').length

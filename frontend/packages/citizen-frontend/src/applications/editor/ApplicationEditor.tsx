@@ -43,6 +43,7 @@ import ApplicationVerificationView from '~applications/editor/verification/Appli
 import ApplicationFormClub from '~applications/editor/ApplicationFormClub'
 import ApplicationFormPreschool from '~applications/editor/ApplicationFormPreschool'
 import Footer from '~Footer'
+import useTitle from '~useTitle'
 
 type ApplicationEditorContentProps = {
   apiData: ApplicationDetails
@@ -366,6 +367,7 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
 
 export default React.memo(function ApplicationEditor() {
   const { applicationId } = useParams<{ applicationId: string }>()
+  const t = useTranslation()
   const [apiData, setApiData] = useState<Result<ApplicationDetails>>(
     Loading.of()
   )
@@ -374,6 +376,14 @@ export default React.memo(function ApplicationEditor() {
   useEffect(() => {
     loadApplication(applicationId)
   }, [applicationId])
+
+  useTitle(
+    t,
+    apiData
+      .map(({ type }) => t.applications.editor.heading.title[type])
+      .getOrElse(''),
+    [apiData]
+  )
 
   return (
     <>

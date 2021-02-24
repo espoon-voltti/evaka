@@ -30,12 +30,14 @@ import {
 import { ApplicationType } from '@evaka/lib-common/src/api-types/application/enums'
 import ExpandingInfo from '@evaka/lib-components/src/molecules/ExpandingInfo'
 import Footer from '~Footer'
+import useTitle from '~useTitle'
 
 export default React.memo(function ApplicationCreation() {
   const history = useHistory()
   const { childId } = useParams<{ childId: string }>()
   const t = useTranslation()
   const user = useUser()
+  useTitle(t, t.applications.creation.title)
   const child = useMemo(() => user?.children.find(({ id }) => childId === id), [
     childId,
     user
@@ -47,10 +49,6 @@ export default React.memo(function ApplicationCreation() {
   >(duplicatesDefault)
   useEffect(() => {
     void getDuplicateApplications(childId).then(setDuplicates)
-    document.title = t.applications.creation.title
-    return () => {
-      document.title = t.common.title
-    }
   }, [])
 
   const duplicateExists =

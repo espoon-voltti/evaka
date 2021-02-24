@@ -18,6 +18,7 @@ import { ApplicationsOfChild } from '@evaka/lib-common/src/api-types/application
 import { SpinnerSegment } from '@evaka/lib-components/src/atoms/state/Spinner'
 import ErrorSegment from '@evaka/lib-components/src/atoms/state/ErrorSegment'
 import Footer from '~Footer'
+import useTitle from '~useTitle'
 
 export default React.memo(function Applications() {
   const t = useTranslation()
@@ -34,12 +35,7 @@ export default React.memo(function Applications() {
     loadGuardianApplications()
   }, [loadGuardianApplications])
 
-  useEffect(() => {
-    document.title = t.applicationsList.title
-    return () => {
-      document.title = t.common.title
-    }
-  }, [])
+  useTitle(t, t.applicationsList.title)
 
   return (
     <>

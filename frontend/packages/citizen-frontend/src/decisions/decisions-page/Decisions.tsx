@@ -19,6 +19,7 @@ import ErrorSegment from '@evaka/lib-components/src/atoms/state/ErrorSegment'
 import ApplicationDecisionsBlock from '~decisions/decisions-page/ApplicationDecisionsBlock'
 import _ from 'lodash'
 import Footer from '~Footer'
+import useTitle from '~useTitle'
 
 export default React.memo(function Decisions() {
   const t = useTranslation()
@@ -30,6 +31,8 @@ export default React.memo(function Decisions() {
   useEffect(() => {
     loadDecisions()
   }, [loadDecisions])
+
+  useTitle(t, t.decisions.title)
 
   const unconfirmedDecisionsCount = applicationDecisions.isSuccess
     ? applicationDecisions.value.reduce(
