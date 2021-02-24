@@ -706,6 +706,31 @@ RETURNING id
         return ResponseEntity.noContent().build()
     }
 
+    data class MobileDeviceReq(
+        val id: UUID,
+        val unitId: UUID,
+        val name: String,
+        val deleted: Boolean,
+        val longTermToken: UUID
+    )
+
+    @PostMapping("/mobile/devices")
+    fun postMobileDevice(
+        db: Database.Connection,
+        @RequestBody body: MobileDeviceReq
+    ): ResponseEntity<Unit> {
+        return db.transaction {
+            it.createUpdate(
+                """
+INSERT INTO mobile_device (id, unit_id, name, deleted, long_term_token)
+VALUES(:id, :unitId, :name, :deleted, :longTermToken)
+                """.trimIndent()
+            )
+                .bindKotlin(body)
+                .execute()
+        }.let { ResponseEntity.noContent().build() }
+    }
+
     @DeleteMapping("/mobile/devices/{id}")
     fun deleteMobileDevice(db: Database, @PathVariable id: UUID): ResponseEntity<Unit> {
         db.transaction { it.deleteMobileDevice(id) }

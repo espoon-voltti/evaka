@@ -717,6 +717,24 @@ export async function deletePairing(pairingId: string): Promise<void> {
   }
 }
 
+interface MobileDevice {
+  id: UUID
+  unitId: UUID
+  name: string
+  deleted: boolean
+  longTermToken: UUID
+}
+
+export async function postMobileDevice(
+  mobileDevice: MobileDevice
+): Promise<void> {
+  try {
+    await devClient.post<PairingResponse>(`/mobile/devices`, mobileDevice)
+  } catch (e) {
+    throw new DevApiError(e)
+  }
+}
+
 export async function deleteMobileDevice(deviceId: string): Promise<void> {
   try {
     await devClient.delete(`/mobile/devices/${deviceId}`)

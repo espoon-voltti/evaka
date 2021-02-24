@@ -14,6 +14,7 @@ interface Config {
   supervisorExternalId: string
   adminAad: UUID
   adminExternalId: string
+  mobileBaseUrl: string
   mobileUrl: string
 }
 
@@ -34,6 +35,7 @@ const config: Config = {
   supervisorExternalId: `espoo-ad:${supervisorAad}`,
   adminAad,
   adminExternalId: `espoo-ad:${adminAad}`,
+  mobileBaseUrl: `${process.env.BASE_URL || 'http://localhost:9095'}`,
   mobileUrl: `${
     process.env.BASE_URL || 'http://localhost:9095'
   }/employee/mobile`

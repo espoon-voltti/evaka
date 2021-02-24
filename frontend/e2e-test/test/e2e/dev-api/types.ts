@@ -299,6 +299,7 @@ export type UserRole =
   | 'STAFF'
   | 'END_USER'
   | 'DIRECTOR'
+  | 'MOBILE'
 
 export interface Application {
   id: UUID

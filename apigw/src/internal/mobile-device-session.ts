@@ -78,3 +78,14 @@ export default toRequestHandler(async (req, res) => {
   await mobileLogin(req, res, deviceIdentity)
   res.sendStatus(204)
 })
+
+export const devApiE2ESignup = toRequestHandler(async (req, res) => {
+  const token = assertStringProp(req.query, 'token')
+  const deviceIdentity = await identifyMobileDevice(req, token)
+  if (deviceIdentity) {
+    await mobileLogin(req, res, deviceIdentity)
+    res.redirect('/employee/mobile')
+  } else {
+    res.sendStatus(404)
+  }
+})

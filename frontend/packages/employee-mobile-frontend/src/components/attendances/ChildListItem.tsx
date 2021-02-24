@@ -147,9 +147,7 @@ export default React.memo(function ChildListItem({
           )}
         </DetailsRow>
       </ChildBoxInfo>
-      <ToolsColumn>
-        TESTING TESTING
-      </ToolsColumn>
+      <ToolsColumn>TESTING TESTING</ToolsColumn>
     </ChildBox>
   )
 })
