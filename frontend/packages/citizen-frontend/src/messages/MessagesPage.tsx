@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useEffect, useState } from 'react'
-import { Loading, Result, Success } from '@evaka/lib-common/src/api'
+import { Loading, Result } from '@evaka/lib-common/src/api'
 import { useRestApi } from '@evaka/lib-common/src/utils/useRestApi'
 import Container from '@evaka/lib-components/src/layout/Container'
 import AdaptiveFlex from '@evaka/lib-components/src/layout/AdaptiveFlex'
@@ -33,15 +33,11 @@ export default React.memo(function MessagesPage() {
         b?.id === bulletin.id ? { ...b, isRead: true } : b
       )
 
-      if (bulletins.isSuccess) {
-        setBulletins(
-          Success.of(
-            bulletins.value.map((b) =>
-              b.id === bulletin.id ? { ...b, isRead: true } : b
-            )
-          )
+      setBulletins(
+        bulletins.map((values) =>
+          values.map((b) => (b.id === bulletin.id ? { ...b, isRead: true } : b))
         )
-      }
+      )
     })
   }
 
