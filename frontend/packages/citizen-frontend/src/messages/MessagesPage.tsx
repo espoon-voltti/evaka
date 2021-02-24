@@ -43,7 +43,7 @@ function MessagesPage() {
   return (
     <Container>
       <Gap size="s" />
-      <AdaptiveFlex breakpoint={messagesBreakpoint} horizontalSpacing='L'>
+      <AdaptiveFlex breakpoint={messagesBreakpoint} horizontalSpacing="L">
         <MessagesList
           bulletins={bulletins}
           activeBulletin={activeBulletin}

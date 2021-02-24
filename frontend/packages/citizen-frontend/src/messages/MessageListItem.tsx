@@ -15,7 +15,13 @@ type Props = {
 }
 function MessageListItem({ bulletin, active, onClick }: Props) {
   return (
-    <Container onClick={onClick} isRead={bulletin.isRead} active={active}>
+    <Container
+      isRead={bulletin.isRead}
+      active={active}
+      onClick={onClick}
+      tabIndex={0}
+      onKeyPress={(e) => e.key === 'Enter' && onClick()}
+    >
       <FixedSpaceColumn>
         <Header>
           <span>{bulletin.sender}</span>
