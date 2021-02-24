@@ -38,7 +38,11 @@ const IncomeItemBody = React.memo(function IncomeItemBody({ income }: Props) {
         <Label>{i18n.personProfile.income.details.updated}</Label>
         <span>{formatDate(income.updatedAt)}</span>
         <Label>{i18n.personProfile.income.details.handler}</Label>
-        <span>{income.updatedBy}</span>
+        <span>
+          {income.applicationId
+            ? i18n.personProfile.income.details.originApplication
+            : income.updatedBy}
+        </span>
       </ListGrid>
       {income.effect === 'INCOME' ? (
         <>
