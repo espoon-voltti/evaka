@@ -4,13 +4,13 @@
 
 import React from 'react'
 import styled from 'styled-components'
+import { tabletMin } from '@evaka/lib-components/src/breakpoints'
 import colors from '@evaka/lib-components/src/colors'
 import { defaultMargins } from '@evaka/lib-components/src/white-space'
 import { FixedSpaceRow } from '@evaka/lib-components/src/layout/flex-helpers'
 import { H3 } from '@evaka/lib-components/src/typography'
 import { formatDate } from '~util'
 import { ReceivedBulletin } from '~messages/types'
-import { messagesBreakpoint } from '~messages/const'
 
 type Props = {
   bulletin: ReceivedBulletin
@@ -42,8 +42,9 @@ const Container = styled.div`
   min-height: 500px;
   background-color: ${colors.greyscale.white};
   padding: ${defaultMargins.m};
+  min-width: 300px;
 
-  @media (max-width: ${messagesBreakpoint}) {
+  @media (max-width: ${tabletMin}) {
     padding: ${defaultMargins.s};
   }
 `
@@ -55,14 +56,17 @@ const Header = styled.div`
   font-weight: 600;
   font-size: 16px;
   margin-bottom: ${defaultMargins.XL};
+  flex-wrap: wrap;
 
-  @media (max-width: ${messagesBreakpoint}) {
+  @media (max-width: ${tabletMin}) {
     flex-direction: column;
-    align-items: flex-start;
+    flex-wrap: nowrap;
     justify-content: flex-start;
+    align-items: flex-start;
   }
 `
 
 const Title = styled(H3)`
   font-weight: 600;
+  margin-right: ${defaultMargins.XXL};
 `

@@ -6,6 +6,7 @@ import React from 'react'
 import styled from 'styled-components'
 import { Result } from '@evaka/lib-common/src/api'
 import { faArrowLeft } from '@evaka/lib-icons'
+import { tabletMin } from '@evaka/lib-components/src/breakpoints'
 import colors from '@evaka/lib-components/src/colors'
 import { defaultMargins } from '@evaka/lib-components/src/white-space'
 import { H1 } from '@evaka/lib-components/src/typography'
@@ -14,7 +15,6 @@ import ErrorSegment from '@evaka/lib-components/src/atoms/state/ErrorSegment'
 import IconButton from '@evaka/lib-components/src/atoms/buttons/IconButton'
 import { useTranslation } from '~localization'
 import { ReceivedBulletin } from '~messages/types'
-import { messagesBreakpoint } from '~messages/const'
 import MessageListItem from '~messages/MessageListItem'
 
 type Props = {
@@ -72,7 +72,7 @@ export default React.memo(function MessagesList({
 const MobileOnly = styled.div`
   display: none;
 
-  @media (max-width: ${messagesBreakpoint}) {
+  @media (max-width: ${tabletMin}) {
     display: block;
   }
 `
@@ -82,13 +82,18 @@ const Return = styled(IconButton)`
 `
 
 const Container = styled.div`
-  width: 400px;
-  max-width: 100%;
+  min-width: 250px;
+  width: 30%;
+  max-width: 400px;
   min-height: 500px;
   background-color: ${colors.greyscale.white};
 
+  @media (max-width: ${tabletMin}) {
+    max-width: 100%;
+  }
+
   &.desktop-only {
-    @media (max-width: ${messagesBreakpoint}) {
+    @media (max-width: ${tabletMin}) {
       display: none;
     }
   }

@@ -5,14 +5,15 @@
 import React, { useEffect, useState } from 'react'
 import { Loading, Result } from '@evaka/lib-common/src/api'
 import { useRestApi } from '@evaka/lib-common/src/utils/useRestApi'
+import { tabletMin } from '@evaka/lib-components/src/breakpoints'
 import Container from '@evaka/lib-components/src/layout/Container'
 import AdaptiveFlex from '@evaka/lib-components/src/layout/AdaptiveFlex'
 import { Gap } from '@evaka/lib-components/src/white-space'
-import { messagesBreakpoint } from '~messages/const'
 import { ReceivedBulletin } from '~messages/types'
 import { getBulletins, markBulletinRead } from '~messages/api'
 import MessagesList from '~messages/MessagesList'
 import MessageReadView from '~messages/MessageReadView'
+import styled from 'styled-components'
 
 export default React.memo(function MessagesPage() {
   const [bulletins, setBulletins] = useState<Result<ReceivedBulletin[]>>(
@@ -44,7 +45,7 @@ export default React.memo(function MessagesPage() {
   return (
     <Container>
       <Gap size="s" />
-      <AdaptiveFlex breakpoint={messagesBreakpoint} horizontalSpacing="L">
+      <StyledFlex breakpoint={tabletMin} horizontalSpacing="L">
         <MessagesList
           bulletins={bulletins}
           activeBulletin={activeBulletin}
@@ -52,7 +53,11 @@ export default React.memo(function MessagesPage() {
           onReturn={() => setActiveBulletin(null)}
         />
         {activeBulletin && <MessageReadView bulletin={activeBulletin} />}
-      </AdaptiveFlex>
+      </StyledFlex>
     </Container>
   )
 })
+
+const StyledFlex = styled(AdaptiveFlex)`
+  align-items: flex-start;
+`

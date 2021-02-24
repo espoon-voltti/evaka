@@ -78,6 +78,10 @@ const Header = styled.div`
   justify-content: space-between;
   font-weight: bold;
   font-size: 16px;
+
+  :first-child {
+    margin-right: ${defaultMargins.s};
+  }
 `
 
 const Title = styled.div`
