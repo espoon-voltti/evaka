@@ -15,7 +15,7 @@ import { messagesBreakpoint } from '~messages/const'
 type Props = {
   bulletin: ReceivedBulletin
 }
-function MessageReadView({ bulletin }: Props) {
+export default React.memo(function MessageReadView({ bulletin }: Props) {
   return (
     <Container>
       <Header>
@@ -33,7 +33,7 @@ function MessageReadView({ bulletin }: Props) {
       ))}
     </Container>
   )
-}
+})
 
 const Container = styled.div`
   flex-grow: 1;
@@ -66,5 +66,3 @@ const Header = styled.div`
 const Title = styled(H3)`
   font-weight: 600;
 `
-
-export default React.memo(MessageReadView)

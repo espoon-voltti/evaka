@@ -24,7 +24,7 @@ type Props = {
   onReturn: () => void
 }
 
-function MessagesList({
+export default React.memo(function MessagesList({
   bulletins,
   activeBulletin,
   onClickBulletin,
@@ -67,7 +67,7 @@ function MessagesList({
       </Container>
     </>
   )
-}
+})
 
 const MobileOnly = styled.div`
   display: none;
@@ -97,5 +97,3 @@ const Container = styled.div`
 const HeaderContainer = styled.div`
   padding: ${defaultMargins.m};
 `
-
-export default React.memo(MessagesList)

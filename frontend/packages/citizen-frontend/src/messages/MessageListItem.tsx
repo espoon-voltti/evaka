@@ -16,7 +16,12 @@ type Props = {
   active: boolean
   onClick: () => void
 }
-function MessageListItem({ bulletin, active, onClick }: Props) {
+
+export default React.memo(function MessageListItem({
+  bulletin,
+  active,
+  onClick
+}: Props) {
   return (
     <Container
       isRead={bulletin.isRead}
@@ -44,7 +49,7 @@ function MessageListItem({ bulletin, active, onClick }: Props) {
       </FixedSpaceColumn>
     </Container>
   )
-}
+})
 
 const Container = styled.div<{ isRead: boolean; active: boolean }>`
   background-color: ${colors.greyscale.white};
@@ -84,5 +89,3 @@ const ContentSummary = styled.div`
   overflow: hidden;
   text-overflow: ellipsis;
 `
-
-export default React.memo(MessageListItem)

@@ -14,7 +14,7 @@ import { getBulletins, markBulletinRead } from '~messages/api'
 import MessagesList from '~messages/MessagesList'
 import MessageReadView from '~messages/MessageReadView'
 
-function MessagesPage() {
+export default React.memo(function MessagesPage() {
   const [bulletins, setBulletins] = useState<Result<ReceivedBulletin[]>>(
     Loading.of()
   )
@@ -59,6 +59,4 @@ function MessagesPage() {
       </AdaptiveFlex>
     </Container>
   )
-}
-
-export default React.memo(MessagesPage)
+})
