@@ -4,7 +4,7 @@ import styled from 'styled-components'
 import colors from '@evaka/lib-components/src/colors'
 import { defaultMargins } from '@evaka/lib-components/src/white-space'
 import { ReceivedBulletin } from '~messages/types'
-import { H3, P } from '@evaka/lib-components/src/typography'
+import { H3 } from '@evaka/lib-components/src/typography'
 import { messagesBreakpoint } from '~messages/const'
 import { FixedSpaceRow } from '@evaka/lib-components/src/layout/flex-helpers'
 import {formatDate} from "~util";
@@ -22,8 +22,11 @@ function MessageReadView({ bulletin }: Props) {
           <span>{formatDate(bulletin.sentAt)}</span>
         </FixedSpaceRow>
       </Header>
-      {bulletin.content.split('\n').map((pText, i) => (
-        <P key={i}>{pText}</P>
+      {bulletin.content.split('\n').map((text, i) => (
+        <React.Fragment key={i}>
+          <span>{text}</span>
+          <br/>
+        </React.Fragment>
       ))}
     </Container>
   )
@@ -48,6 +51,7 @@ const Header = styled.div`
   align-items: center;
   font-weight: 600;
   font-size: 16px;
+  margin-bottom: ${defaultMargins.L};
 `
 
 const Title = styled(H3)`
