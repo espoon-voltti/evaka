@@ -19,7 +19,7 @@ export default React.memo(function MessageReadView({ bulletin }: Props) {
   return (
     <Container>
       <Header>
-        <Title>{bulletin.title}</Title>
+        <Title noMargin>{bulletin.title}</Title>
         <FixedSpaceRow spacing="s">
           <span>{bulletin.sender}</span>
           <span>{formatDate(bulletin.sentAt)}</span>
@@ -51,10 +51,10 @@ const Container = styled.div`
 const Header = styled.div`
   display: flex;
   justify-content: space-between;
-  align-items: baseline;
+  align-items: flex-end;
   font-weight: 600;
   font-size: 16px;
-  margin-bottom: ${defaultMargins.L};
+  margin-bottom: ${defaultMargins.XL};
 
   @media (max-width: ${messagesBreakpoint}) {
     flex-direction: column;
