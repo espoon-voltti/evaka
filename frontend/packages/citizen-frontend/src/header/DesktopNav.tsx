@@ -18,7 +18,7 @@ import {
 import { useUser } from '../auth'
 import { Lang, langs, useLang, useTranslation } from '../localization'
 import { getLoginUri } from '~header/const'
-import {featureFlags} from "~config";
+import { featureFlags } from '~config'
 
 export default React.memo(function DesktopNav() {
   const user = useUser()
@@ -38,7 +38,7 @@ export default React.memo(function DesktopNav() {
             <StyledNavLink to="/decisions" data-qa={'nav-decisions'}>
               {t.header.nav.decisions}
             </StyledNavLink>
-            { featureFlags.messaging && (
+            {featureFlags.messaging && (
               <StyledNavLink to="/messages" data-qa={'nav-decisions'}>
                 {t.header.nav.messages}
               </StyledNavLink>

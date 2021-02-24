@@ -19,7 +19,7 @@ import MapView from '~map/MapView'
 import { Authentication } from '~auth'
 import requireAuth from '~auth/requireAuth'
 import MessagesPage from '~messages/MessagesPage'
-import {featureFlags} from "~config";
+import { featureFlags } from '~config'
 
 export default function App() {
   return (
@@ -61,7 +61,7 @@ export default function App() {
                   path="/decisions/by-application/:applicationId"
                   component={requireAuth(DecisionResponseList)}
                 />
-                { featureFlags.messaging && (
+                {featureFlags.messaging && (
                   <Route
                     exact
                     path="/messages"

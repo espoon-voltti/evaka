@@ -14,7 +14,7 @@ import { tabletMin } from '@evaka/lib-components/src/breakpoints'
 import { useUser } from '../auth'
 import { langs, useLang, useTranslation } from '../localization'
 import { getLoginUri } from '~header/const'
-import {featureFlags} from "~config";
+import { featureFlags } from '~config'
 
 type Props = {
   showMenu: boolean
@@ -181,7 +181,7 @@ const Navigation = React.memo(function Navigation({
           <StyledNavLink to="/decisions" onClick={close}>
             {t.header.nav.decisions}
           </StyledNavLink>
-          { featureFlags.messaging && (
+          {featureFlags.messaging && (
             <StyledNavLink to="/messages" onClick={close}>
               {t.header.nav.messages}
             </StyledNavLink>

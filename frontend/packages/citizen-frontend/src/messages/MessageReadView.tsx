@@ -7,7 +7,7 @@ import { ReceivedBulletin } from '~messages/types'
 import { H3 } from '@evaka/lib-components/src/typography'
 import { messagesBreakpoint } from '~messages/const'
 import { FixedSpaceRow } from '@evaka/lib-components/src/layout/flex-helpers'
-import {formatDate} from "~util";
+import { formatDate } from '~util'
 
 type Props = {
   bulletin: ReceivedBulletin
@@ -17,7 +17,7 @@ function MessageReadView({ bulletin }: Props) {
     <Container>
       <Header>
         <Title>{bulletin.title}</Title>
-        <FixedSpaceRow spacing='s'>
+        <FixedSpaceRow spacing="s">
           <span>{bulletin.sender}</span>
           <span>{formatDate(bulletin.sentAt)}</span>
         </FixedSpaceRow>
@@ -25,7 +25,7 @@ function MessageReadView({ bulletin }: Props) {
       {bulletin.content.split('\n').map((text, i) => (
         <React.Fragment key={i}>
           <span>{text}</span>
-          <br/>
+          <br />
         </React.Fragment>
       ))}
     </Container>
@@ -48,10 +48,16 @@ const Container = styled.div`
 const Header = styled.div`
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: baseline;
   font-weight: 600;
   font-size: 16px;
   margin-bottom: ${defaultMargins.L};
+
+  @media (max-width: ${messagesBreakpoint}) {
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-start;
+  }
 `
 
 const Title = styled(H3)`

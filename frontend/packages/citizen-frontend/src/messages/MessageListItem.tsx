@@ -59,7 +59,10 @@ const Container = styled.div<{ isRead: boolean; active: boolean }>`
   `
       : ''}
 
-  ${(p) => (p.active ? `background-color: ${colors.brandEspoo.espooTurquoiseLight};` : '')}
+  ${(p) =>
+    p.active
+      ? `background-color: ${colors.brandEspoo.espooTurquoiseLight};`
+      : ''}
 `
 
 const Header = styled.div`
