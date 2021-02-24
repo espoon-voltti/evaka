@@ -14,6 +14,6 @@ export async function getBulletins(): Promise<Result<ReceivedBulletin[]>> {
     .catch((e) => Failure.fromError(e))
 }
 
-export function markBulletinRead(id: string) {
-  void client.put(`/citizen/bulletins/${id}/read`)
+export async function markBulletinRead(id: string): Promise<void> {
+  return client.put(`/citizen/bulletins/${id}/read`)
 }

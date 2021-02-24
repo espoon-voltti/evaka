@@ -26,22 +26,23 @@ function MessagesPage() {
   useEffect(() => loadBulletins(), [])
 
   const openBulletin = (bulletin: ReceivedBulletin) => {
-    markBulletinRead(bulletin.id)
+    setActiveBulletin(bulletin)
 
-    setActiveBulletin({
-      ...bulletin,
-      isRead: true
-    })
+    void markBulletinRead(bulletin.id).then(() => {
+      setActiveBulletin((b) =>
+        b?.id === bulletin.id ? { ...b, isRead: true } : b
+      )
 
-    if (bulletins.isSuccess) {
-      setBulletins(
-        Success.of(
-          bulletins.value.map((b) =>
-            b.id === bulletin.id ? { ...b, isRead: true } : b
+      if (bulletins.isSuccess) {
+        setBulletins(
+          Success.of(
+            bulletins.value.map((b) =>
+              b.id === bulletin.id ? { ...b, isRead: true } : b
+            )
           )
         )
-      )
-    }
+      }
+    })
   }
 
   return (
