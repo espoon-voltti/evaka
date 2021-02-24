@@ -53,7 +53,8 @@ fun getAdditionalInformation(h: Handle, childId: UUID): AdditionalInformation {
         AdditionalInformation(
             allergies = child.additionalInformation.allergies,
             diet = child.additionalInformation.diet,
-            additionalInfo = child.additionalInformation.additionalInfo
+            additionalInfo = child.additionalInformation.additionalInfo,
+            preferredName = child.additionalInformation.preferredName
         )
     } else AdditionalInformation()
 }
@@ -80,5 +81,6 @@ data class Child(
 data class AdditionalInformation(
     val allergies: String = "",
     val diet: String = "",
-    val additionalInfo: String = ""
+    val additionalInfo: String = "",
+    val preferredName: String = ""
 )

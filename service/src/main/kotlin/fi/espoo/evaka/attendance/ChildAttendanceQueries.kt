@@ -120,16 +120,18 @@ fun Database.Read.fetchChildrenBasics(unitId: UUID): List<ChildBasics> {
     val sql =
         """
         SELECT 
-            ch.id,
-            ch.first_name,
-            ch.last_name,
-            ch.date_of_birth,
+            pe.id,
+            pe.first_name,
+            pe.last_name,
+            ch.preferred_name,
+            pe.date_of_birth,
             gp.daycare_group_id as group_id,
             p.type as placement_type,
             false AS backup
         FROM daycare_group_placement gp
         JOIN placement p ON p.id = gp.daycare_placement_id
-        JOIN person ch ON ch.id = p.child_id
+        JOIN person pe ON pe.id = p.child_id
+        JOIN child ch ON ch.id = p.child_id
         WHERE p.unit_id = :unitId AND daterange(gp.start_date, gp.end_date, '[]') @> :today AND NOT EXISTS (
             SELECT 1 FROM backup_care bc WHERE bc.child_id = p.child_id AND daterange(bc.start_date, bc.end_date, '[]') @> :today
         )
@@ -137,16 +139,18 @@ fun Database.Read.fetchChildrenBasics(unitId: UUID): List<ChildBasics> {
         UNION ALL 
         
         SELECT 
-            ch.id,
-            ch.first_name,
-            ch.last_name,
-            ch.date_of_birth,
+            pe.id,
+            pe.first_name,
+            pe.last_name,
+            ch.preferred_name,
+            pe.date_of_birth,
             bc.group_id,
             p.type as placement_type,
             true AS backup
         FROM backup_care bc
         JOIN placement p ON p.child_id = bc.child_id AND daterange(p.start_date, p.end_date, '[]') @> :today
-        JOIN person ch ON ch.id = p.child_id
+        JOIN person pe ON pe.id = p.child_id
+        JOIN child ch ON ch.id = p.child_id
         WHERE bc.unit_id = :unitId AND bc.group_id IS NOT NULL AND daterange(bc.start_date, bc.end_date, '[]') @> :today
         """.trimIndent()
 

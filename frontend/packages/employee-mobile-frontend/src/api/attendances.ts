@@ -32,6 +32,7 @@ export interface AttendanceChild {
   id: string
   firstName: string
   lastName: string
+  preferredName: string
   groupId: string
   backup: boolean
   status: AttendanceStatus

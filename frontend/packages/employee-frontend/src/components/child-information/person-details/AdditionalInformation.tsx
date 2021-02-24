@@ -61,7 +61,8 @@ const AdditionalInformation = React.memo(function AdditionalInformation({
   const [form, setForm] = useState<AdditionalInformation>({
     additionalInfo: '',
     allergies: '',
-    diet: ''
+    diet: '',
+    preferredName: ''
   })
 
   const editing = uiMode == 'child-additional-details-editing'
@@ -82,7 +83,8 @@ const AdditionalInformation = React.memo(function AdditionalInformation({
       setForm({
         additionalInfo: additionalInformation.value.additionalInfo,
         allergies: additionalInformation.value.allergies,
-        diet: additionalInformation.value.diet
+        diet: additionalInformation.value.diet,
+        preferredName: additionalInformation.value.preferredName
       })
       toggleUiMode('child-additional-details-editing')
     }
@@ -125,6 +127,27 @@ const AdditionalInformation = React.memo(function AdditionalInformation({
             <LabelValueList
               spacing="small"
               contents={[
+                {
+                  label:
+                    i18n.childInformation.additionalInformation.preferredName,
+                  value: editing ? (
+                    <TextAreaInput
+                      value={form.preferredName}
+                      onChange={(
+                        event: React.ChangeEvent<HTMLTextAreaElement>
+                      ) =>
+                        setForm({
+                          ...form,
+                          preferredName: event.target.value
+                        })
+                      }
+                      rows={textAreaRows(form.preferredName)}
+                    />
+                  ) : (
+                    formatParagraphs(additionalInformation.value.preferredName)
+                  ),
+                  valueWidth: '400px'
+                },
                 {
                   label:
                     i18n.childInformation.additionalInformation.additionalInfo,
