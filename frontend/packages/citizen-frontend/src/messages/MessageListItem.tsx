@@ -1,12 +1,15 @@
-import React from 'react'
+// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
 
+import React from 'react'
 import styled from 'styled-components'
+import LocalDate from '@evaka/lib-common/src/local-date'
 import colors from '@evaka/lib-components/src/colors'
 import { defaultMargins } from '@evaka/lib-components/src/white-space'
-import { ReceivedBulletin } from '~messages/types'
-import { formatDate } from '~util'
 import { FixedSpaceColumn } from '@evaka/lib-components/src/layout/flex-helpers'
-import LocalDate from '@evaka/lib-common/src/local-date'
+import { formatDate } from '~util'
+import { ReceivedBulletin } from '~messages/types'
 
 type Props = {
   bulletin: ReceivedBulletin

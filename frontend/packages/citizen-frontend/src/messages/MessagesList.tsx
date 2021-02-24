@@ -1,17 +1,21 @@
+// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
+
 import React from 'react'
 import styled from 'styled-components'
+import { Result } from '@evaka/lib-common/src/api'
+import { faArrowLeft } from '@evaka/lib-icons'
 import colors from '@evaka/lib-components/src/colors'
 import { defaultMargins } from '@evaka/lib-components/src/white-space'
 import { H1 } from '@evaka/lib-components/src/typography'
-import { Result } from '@evaka/lib-common/src/api'
-import { ReceivedBulletin } from '~messages/types'
 import { SpinnerSegment } from '@evaka/lib-components/src/atoms/state/Spinner'
-import { useTranslation } from '~localization'
 import ErrorSegment from '@evaka/lib-components/src/atoms/state/ErrorSegment'
-import MessageListItem from '~messages/MessageListItem'
 import IconButton from '@evaka/lib-components/src/atoms/buttons/IconButton'
-import { faArrowLeft } from '@evaka/lib-icons'
+import { useTranslation } from '~localization'
+import { ReceivedBulletin } from '~messages/types'
 import { messagesBreakpoint } from '~messages/const'
+import MessageListItem from '~messages/MessageListItem'
 
 type Props = {
   bulletins: Result<ReceivedBulletin[]>
