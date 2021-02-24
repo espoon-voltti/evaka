@@ -59,5 +59,5 @@ export default React.memo(function MessagesPage() {
 })
 
 const StyledFlex = styled(AdaptiveFlex)`
-  align-items: flex-start;
+  align-items: stretch;
 `
