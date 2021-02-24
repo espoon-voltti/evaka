@@ -15,7 +15,7 @@ import { formatCareTypes } from './format'
 import { MapAddress } from '~map/MapView'
 import { addressZoom, initialZoom, mapViewBreakpoint } from '~map/const'
 import { isAutomatedTest } from '@evaka/lib-common/src/utils/helpers'
-import ExternalLink from '~../../lib-components/src/atoms/ExternalLink'
+import ExternalLink from '@evaka/lib-components/src/atoms/ExternalLink'
 
 export interface Props {
   units: (UnitWithDistance | PublicUnit)[]

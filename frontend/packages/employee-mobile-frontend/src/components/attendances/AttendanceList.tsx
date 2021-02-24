@@ -14,7 +14,7 @@ import {
 import { FixedSpaceColumn } from '@evaka/lib-components/src/layout/flex-helpers'
 import ChildListItem from './ChildListItem'
 import { AttendanceChild, AttendanceStatus } from '~api/attendances'
-import colors from '~../../lib-components/src/colors'
+import colors from '@evaka/lib-components/src/colors'
 
 interface Props {
   attendanceChildren: AttendanceChild[]

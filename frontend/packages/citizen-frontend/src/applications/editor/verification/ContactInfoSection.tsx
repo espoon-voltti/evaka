@@ -5,7 +5,7 @@ import { H2, H3, Label } from '@evaka/lib-components/src/typography'
 import ListGrid from '@evaka/lib-components/src/layout/ListGrid'
 import { Gap } from '@evaka/lib-components/src/white-space'
 import { ApplicationDataGridLabelWidth } from '~applications/editor/verification/const'
-import { ApplicationType } from '~../../lib-common/src/api-types/application/enums'
+import { ApplicationType } from '@evaka/lib-common/src/api-types/application/enums'
 import ContactInfoSecondGuardianDaycare from './ContactInfoSecondGuardianDaycare'
 import ContactInfoSecondGuardianPreschool from './ContactInfoSecondGuardianPreschool'
 
