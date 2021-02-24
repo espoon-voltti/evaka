@@ -23,13 +23,7 @@ export default React.memo(function MessageListItem({
   onClick
 }: Props) {
   return (
-    <Container
-      isRead={bulletin.isRead}
-      active={active}
-      onClick={onClick}
-      tabIndex={0}
-      onKeyPress={(e) => e.key === 'Enter' && onClick()}
-    >
+    <Container isRead={bulletin.isRead} active={active} onClick={onClick}>
       <FixedSpaceColumn>
         <Header>
           <span>{bulletin.sender}</span>
@@ -51,19 +45,29 @@ export default React.memo(function MessageListItem({
   )
 })
 
-const Container = styled.div<{ isRead: boolean; active: boolean }>`
+const Container = styled.button<{ isRead: boolean; active: boolean }>`
+  text-align: left;
+  width: 100%;
+  outline: none;
+
   background-color: ${colors.greyscale.white};
   padding: ${defaultMargins.s} ${defaultMargins.m};
   cursor: pointer;
 
   border: 1px solid ${colors.greyscale.lighter};
 
+  &:focus {
+    border: 2px solid ${colors.accents.petrol};
+    margin: -1px 0;
+    padding: ${defaultMargins.s} calc(${defaultMargins.m} - 1px);
+  }
+
   ${(p) =>
     !p.isRead
       ? `
-    border-left-color: ${colors.brandEspoo.espooTurquoise};
-    border-left-width: 6px;
-    padding-left: calc(${defaultMargins.m} - 6px);
+    border-left-color: ${colors.brandEspoo.espooTurquoise} !important;
+    border-left-width: 6px !important;
+    padding-left: calc(${defaultMargins.m} - 6px) !important;
   `
       : ''}
 
