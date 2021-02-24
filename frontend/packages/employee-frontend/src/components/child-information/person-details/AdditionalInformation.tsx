@@ -132,7 +132,7 @@ const AdditionalInformation = React.memo(function AdditionalInformation({
                     i18n.childInformation.additionalInformation.preferredName,
                   value: editing ? (
                     <TextAreaInput
-                      value={form.preferredName}
+                      value={form.preferredName || ''}
                       onChange={(
                         event: React.ChangeEvent<HTMLTextAreaElement>
                       ) =>
@@ -141,10 +141,12 @@ const AdditionalInformation = React.memo(function AdditionalInformation({
                           preferredName: event.target.value
                         })
                       }
-                      rows={textAreaRows(form.preferredName)}
+                      rows={textAreaRows(form.preferredName || '')}
                     />
                   ) : (
-                    formatParagraphs(additionalInformation.value.preferredName)
+                    formatParagraphs(
+                      additionalInformation.value.preferredName || ''
+                    )
                   ),
                   valueWidth: '400px'
                 },
