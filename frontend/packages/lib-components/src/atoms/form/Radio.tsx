@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useRef } from 'react'
+import React, { ReactNode, useRef } from 'react'
 import styled from 'styled-components'
 import classNames from 'classnames'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -92,30 +92,28 @@ const IconWrapper = styled.div<SizeProps>`
   color: ${colors.greyscale.white};
 `
 
-interface RadioProps extends BaseProps {
+type RadioProps = BaseProps & {
   checked: boolean
-  label: string
-  labelIcon?: JSX.Element
   onChange?: () => void
   name?: string
   disabled?: boolean
   small?: boolean
   id?: string
-}
+} & ({ label: string } | { label: ReactNode; ariaLabel: string })
 
 function Radio({
   checked,
-  label,
-  labelIcon,
   onChange,
   name,
   disabled,
   className,
   dataQa,
   small,
-  id
+  id,
+  ...props
 }: RadioProps) {
   const inputRef = useRef<HTMLInputElement>(null)
+  const ariaLabel: string = 'ariaLabel' in props ? props.ariaLabel : props.label
 
   return (
     <Wrapper
@@ -131,7 +129,7 @@ function Radio({
           type="radio"
           checked={checked}
           name={name}
-          aria-label={label}
+          aria-label={ariaLabel}
           disabled={disabled}
           onChange={(e) => {
             e.stopPropagation()
@@ -146,8 +144,7 @@ function Radio({
           <FontAwesomeIcon icon={faCheck} />
         </IconWrapper>
       </Circle>
-      <label>{label}</label>
-      {labelIcon && labelIcon}
+      <label htmlFor={id}>{props.label}</label>
     </Wrapper>
   )
 }

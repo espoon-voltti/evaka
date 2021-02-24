@@ -148,37 +148,53 @@ export default React.memo(function DecisionResponse({
           <FixedSpaceColumn>
             <FixedSpaceRow alignItems="center" spacing="xs">
               <Radio
+                id={`${decision.id}-accept`}
                 checked={acceptChecked}
                 onChange={() => setAcceptChecked(true)}
                 name={`${decision.id}-accept`}
-                label={t.decisions.applicationDecisions.response.accept1}
+                label={
+                  <>
+                    {t.decisions.applicationDecisions.response.accept1}
+                    {['PRESCHOOL', 'PREPARATORY_EDUCATION'].includes(
+                      decisionType
+                    ) ? (
+                      <span>{startDate}</span>
+                    ) : (
+                      <span onClick={(e) => e.stopPropagation()}>
+                        <DatePicker
+                          date={requestedStartDate}
+                          onChange={(date: string) =>
+                            setRequestedStartDate(date)
+                          }
+                          isValidDate={(date: LocalDate) =>
+                            isValidDecisionStartDate(
+                              date,
+                              startDate,
+                              decisionType
+                            )
+                          }
+                          locale={lang}
+                          info={
+                            dateErrorMessage !== ''
+                              ? {
+                                  text: dateErrorMessage,
+                                  status: 'warning'
+                                }
+                              : undefined
+                          }
+                        />
+                      </span>
+                    )}
+                    {t.decisions.applicationDecisions.response.accept2}
+                  </>
+                }
+                ariaLabel={`${t.decisions.applicationDecisions.response.accept1} ${requestedStartDate} ${t.decisions.applicationDecisions.response.accept2}`}
                 disabled={blocked || submitting}
                 dataQa={'radio-accept'}
               />
-              {['PRESCHOOL', 'PREPARATORY_EDUCATION'].includes(decisionType) ? (
-                <span>{startDate}</span>
-              ) : (
-                <DatePicker
-                  date={requestedStartDate}
-                  onChange={(date: string) => setRequestedStartDate(date)}
-                  isValidDate={(date: LocalDate) =>
-                    isValidDecisionStartDate(date, startDate, decisionType)
-                  }
-                  locale={lang}
-                  info={
-                    dateErrorMessage !== ''
-                      ? {
-                          text: dateErrorMessage,
-                          status: 'warning'
-                        }
-                      : undefined
-                  }
-                />
-              )}
-
-              <div>{t.decisions.applicationDecisions.response.accept2}</div>
             </FixedSpaceRow>
             <Radio
+              id={`${decision.id}-reject`}
               checked={!acceptChecked}
               onChange={() => setAcceptChecked(false)}
               name={`${decision.id}-reject`}

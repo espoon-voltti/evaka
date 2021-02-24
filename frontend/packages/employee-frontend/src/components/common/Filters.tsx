@@ -698,14 +698,17 @@ export function ApplicationTypeFilter({
             <Fragment key={id}>
               <Radio
                 key={id}
-                label={i18n.applications.types[id]}
-                labelIcon={
-                  <ApplicationOpenIcon
-                    icon={toggled === id ? faAngleUp : faAngleDown}
-                    size={'lg'}
-                    color={colors.greyscale.dark}
-                  />
+                label={
+                  <>
+                    {i18n.applications.types[id]}
+                    <ApplicationOpenIcon
+                      icon={toggled === id ? faAngleUp : faAngleDown}
+                      size={'lg'}
+                      color={colors.greyscale.dark}
+                    />
+                  </>
                 }
+                ariaLabel={i18n.applications.types[id]}
                 checked={toggled === id}
                 onChange={toggle(id)}
                 dataQa={`application-type-filter-${id}`}
@@ -791,16 +794,19 @@ export function ApplicationStatusFilter({
         {statuses.map((id: ApplicationSummaryStatusOptions) => (
           <Radio
             key={id}
-            label={i18n.application.statuses[id]}
-            labelIcon={
-              id === 'ALL' ? (
-                <ApplicationOpenIcon
-                  icon={toggled === id ? faAngleUp : faAngleDown}
-                  size={'lg'}
-                  color={colors.greyscale.dark}
-                />
-              ) : undefined
+            label={
+              <>
+                {i18n.application.statuses[id]}
+                {id === 'ALL' ? (
+                  <ApplicationOpenIcon
+                    icon={toggled === id ? faAngleUp : faAngleDown}
+                    size={'lg'}
+                    color={colors.greyscale.dark}
+                  />
+                ) : undefined}
+              </>
             }
+            ariaLabel={i18n.application.statuses[id]}
             checked={toggled === id}
             onChange={toggle(id)}
             dataQa={`application-status-filter-${id}`}
