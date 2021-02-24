@@ -9,47 +9,85 @@ import { SpinnerSegment } from '@evaka/lib-components/src/atoms/state/Spinner'
 import { useTranslation } from '~localization'
 import ErrorSegment from '@evaka/lib-components/src/atoms/state/ErrorSegment'
 import MessageListItem from '~messages/MessageListItem'
+import IconButton from '@evaka/lib-components/src/atoms/buttons/IconButton'
+import { faArrowLeft } from '@evaka/lib-icons'
+import { messagesBreakpoint } from '~messages/const'
 
 type Props = {
   bulletins: Result<ReceivedBulletin[]>
   activeBulletin: ReceivedBulletin | null
   onClickBulletin: (target: ReceivedBulletin) => void
+  onReturn: () => void
 }
 
-function MessagesList({ bulletins, activeBulletin, onClickBulletin }: Props) {
+function MessagesList({
+  bulletins,
+  activeBulletin,
+  onClickBulletin,
+  onReturn
+}: Props) {
   const t = useTranslation()
 
   return (
-    <Container>
-      <HeaderContainer>
-        <H1 noMargin>{t.messages.inboxTitle}</H1>
-        {bulletins.isSuccess && bulletins.value.length === 0 && (
-          <span>{t.messages.noMessages}</span>
-        )}
-      </HeaderContainer>
-
-      {bulletins.isLoading && <SpinnerSegment />}
-      {bulletins.isFailure && (
-        <ErrorSegment title={t.common.errors.genericGetError} />
-      )}
-      {bulletins.isSuccess &&
-        bulletins.value.map((bulletin) => (
-          <MessageListItem
-            key={bulletin.id}
-            bulletin={bulletin}
-            onClick={() => onClickBulletin(bulletin)}
-            active={activeBulletin?.id === bulletin.id}
+    <>
+      {activeBulletin && (
+        <MobileOnly>
+          <Return
+            icon={faArrowLeft}
+            onClick={onReturn}
+            altText={t.common.return}
           />
-        ))}
-    </Container>
+        </MobileOnly>
+      )}
+      <Container className={activeBulletin ? 'desktop-only' : undefined}>
+        <HeaderContainer>
+          <H1 noMargin>{t.messages.inboxTitle}</H1>
+          {bulletins.isSuccess && bulletins.value.length === 0 && (
+            <span>{t.messages.noMessages}</span>
+          )}
+        </HeaderContainer>
+
+        {bulletins.isLoading && <SpinnerSegment />}
+        {bulletins.isFailure && (
+          <ErrorSegment title={t.common.errors.genericGetError} />
+        )}
+        {bulletins.isSuccess &&
+          bulletins.value.map((bulletin) => (
+            <MessageListItem
+              key={bulletin.id}
+              bulletin={bulletin}
+              onClick={() => onClickBulletin(bulletin)}
+              active={activeBulletin?.id === bulletin.id}
+            />
+          ))}
+      </Container>
+    </>
   )
 }
 
+const MobileOnly = styled.div`
+  display: none;
+
+  @media (max-width: ${messagesBreakpoint}) {
+    display: block;
+  }
+`
+
+const Return = styled(IconButton)`
+  margin-left: ${defaultMargins.xs};
+`
+
 const Container = styled.div`
   width: 400px;
-  min-width: 400px;
+  max-width: 100%;
   min-height: 500px;
   background-color: ${colors.greyscale.white};
+
+  &.desktop-only {
+    @media (max-width: ${messagesBreakpoint}) {
+      display: none;
+    }
+  }
 `
 
 const HeaderContainer = styled.div`

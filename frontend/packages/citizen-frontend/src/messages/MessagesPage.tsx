@@ -1,13 +1,14 @@
 import React, { useEffect, useState } from 'react'
 import Container from '@evaka/lib-components/src/layout/Container'
 import { Gap } from '@evaka/lib-components/src/white-space'
-import { FixedSpaceRow } from '@evaka/lib-components/src/layout/flex-helpers'
 import MessagesList from '~messages/MessagesList'
 import MessageReadView from '~messages/MessageReadView'
 import { Loading, Result, Success } from '@evaka/lib-common/src/api'
 import { ReceivedBulletin } from '~messages/types'
 import { useRestApi } from '@evaka/lib-common/src/utils/useRestApi'
 import { getBulletins, markBulletinRead } from '~messages/api'
+import AdaptiveFlex from '@evaka/lib-components/src/layout/AdaptiveFlex'
+import { messagesBreakpoint } from '~messages/const'
 
 function MessagesPage() {
   const [bulletins, setBulletins] = useState<Result<ReceivedBulletin[]>>(
@@ -42,14 +43,15 @@ function MessagesPage() {
   return (
     <Container>
       <Gap size="s" />
-      <FixedSpaceRow>
+      <AdaptiveFlex breakpoint={messagesBreakpoint} horizontalSpacing='L'>
         <MessagesList
           bulletins={bulletins}
           activeBulletin={activeBulletin}
           onClickBulletin={openBulletin}
+          onReturn={() => setActiveBulletin(null)}
         />
         {activeBulletin && <MessageReadView bulletin={activeBulletin} />}
-      </FixedSpaceRow>
+      </AdaptiveFlex>
     </Container>
   )
 }
