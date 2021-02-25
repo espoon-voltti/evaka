@@ -96,9 +96,9 @@ function UnitInformation({ unit }: Props) {
         <RequireRole oneOf={['ADMIN']}>
           <Gap size={'L'} />
           <a
-            href={`${getMobileUrlPrefix()}/mobile/units/${
+            href={`${getMobileUrlPrefix()}/employee/mobile/units/${
               unit.id
-            }/groupselector`}
+            }/attendance/all/coming`}
             target="_blank"
             rel="noreferrer"
           >
