@@ -13,6 +13,7 @@ import EspooLogo from '../assets/EspooLogo.png'
 import { logoutUrl } from '~api/auth'
 import { RequireRole } from '~utils/roles'
 import Title from '@evaka/lib-components/src/atoms/Title'
+import { featureFlags } from '~config'
 
 const Img = styled.img`
   color: #0050bb;
@@ -164,6 +165,18 @@ const Header = React.memo(function Header({ location }: RouteComponentProps) {
                   {i18n.header.reports}
                 </NavbarLink>
               </RequireRole>
+
+              {featureFlags.messaging && (
+                <RequireRole oneOf={['UNIT_SUPERVISOR']}>
+                  <NavbarLink
+                    className="navbar-item is-tab"
+                    to="/messages"
+                    data-qa="messages-nav"
+                  >
+                    {i18n.header.messages}
+                  </NavbarLink>
+                </RequireRole>
+              )}
             </NavbarStart>
           )}
 
