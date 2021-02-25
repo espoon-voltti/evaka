@@ -126,9 +126,6 @@ const SelectionChipInnerWrapper = styled.div`
 
   @media (max-width: ${tabletMin}) {
     height: 40px;
-    background-color: ${colors.blues.lighter};
-    border: 1px solid ${colors.blues.lighter};
-    color: ${colors.blues.medium};
   }
 `
 
