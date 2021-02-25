@@ -13,11 +13,6 @@
     "prettier": "^2.2.1",
     "wsrun": "^5.2.0"
   },
-  "optionalDependencies": {
-    "@fortawesome/pro-light-svg-icons": "file:./vendor/fortawesome/fortawesome-pro-light-svg-icons-5.14.0.tgz",
-    "@fortawesome/pro-regular-svg-icons": "file:./vendor/fortawesome/fortawesome-pro-regular-svg-icons-5.14.0.tgz",
-    "@fortawesome/pro-solid-svg-icons": "file:./vendor/fortawesome/fortawesome-pro-solid-svg-icons-5.14.0.tgz"
-  },
   "engines": {
     "node": ">= 14.15.0"
   },

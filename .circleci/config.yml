@@ -597,6 +597,11 @@ jobs:
       - attach_root_workspace
       - *restore_frontend_node_modules
       - run:
+          name: Unpack commercial frontend dependencies
+          working_directory: *workspace_frontend
+          command: |
+            ./unpack-pro-icons.sh
+      - run:
           working_directory: *workspace_frontend
           command: yarn install --immutable
       - *store_frontend_node_modules
