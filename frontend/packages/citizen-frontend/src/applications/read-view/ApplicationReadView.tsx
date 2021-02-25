@@ -13,11 +13,14 @@ import { SpinnerSegment } from '@evaka/lib-components/src/atoms/state/Spinner'
 import ErrorSegment from '@evaka/lib-components/src/atoms/state/ErrorSegment'
 import { apiDataToFormData } from '~applications/editor/ApplicationFormData'
 import { useUser } from '~auth'
+import { useTranslation } from '~localization'
 import Footer from '~Footer'
+import useTitle from '~useTitle'
 import ApplicationReadViewContents from '~applications/read-view/ApplicationReadViewContents'
 
 export default React.memo(function ApplicationReadView() {
   const { applicationId } = useParams<{ applicationId: string }>()
+  const t = useTranslation()
   const user = useUser()
 
   const [apiData, setApiData] = useState<Result<ApplicationDetails>>(
@@ -28,6 +31,14 @@ export default React.memo(function ApplicationReadView() {
   useEffect(() => {
     loadApplication(applicationId)
   }, [applicationId])
+
+  useTitle(
+    t,
+    apiData
+      .map(({ type }) => t.applications.editor.heading.title[type])
+      .getOrElse(''),
+    [apiData]
+  )
 
   return (
     <>

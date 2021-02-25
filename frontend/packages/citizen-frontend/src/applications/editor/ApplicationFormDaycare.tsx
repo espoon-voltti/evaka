@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React from 'react'
 
 import { FixedSpaceColumn } from '@evaka/lib-components/src/layout/flex-helpers'
 import Heading from '~applications/editor/Heading'
@@ -9,7 +9,6 @@ import ContactInfoSection from '~applications/editor/contact-info/ContactInfoSec
 import FeeSection from '~applications/editor/FeeSection'
 import AdditionalDetailsSection from '~applications/editor/AdditionalDetailsSection'
 import { ApplicationFormProps } from '~applications/editor/ApplicationEditor'
-import { useTranslation } from '~localization'
 
 export default React.memo(function ApplicationFormDaycare({
   apiData,
@@ -18,15 +17,7 @@ export default React.memo(function ApplicationFormDaycare({
   errors,
   verificationRequested
 }: ApplicationFormProps) {
-  const t = useTranslation()
   const applicationType = 'DAYCARE'
-
-  useEffect(() => {
-    document.title = t.applications.editor.heading.title[applicationType]
-    return () => {
-      document.title = t.common.title
-    }
-  }, [])
 
   return (
     <FixedSpaceColumn spacing="s">
