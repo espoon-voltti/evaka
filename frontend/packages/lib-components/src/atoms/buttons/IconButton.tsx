@@ -14,6 +14,7 @@ import { IconSize } from '../RoundIcon'
 interface ButtonProps {
   size: IconSize | undefined
   gray?: boolean
+  white?: boolean
 }
 
 const StyledButton = styled.button<ButtonProps>`
@@ -69,7 +70,12 @@ const StyledButton = styled.button<ButtonProps>`
         return '20px'
     }
   }};
-  color: ${(props) => (props.gray ? colors.greyscale.dark : colors.primary)};
+  color: ${(props) =>
+    props.gray
+      ? colors.greyscale.dark
+      : props.white
+      ? colors.greyscale.white
+      : colors.primary};
   border: none;
   border-radius: 100%;
   background: none;
@@ -114,6 +120,7 @@ interface IconButtonProps extends BaseProps {
   disabled?: boolean
   size?: IconSize
   gray?: boolean
+  white?: boolean
   'data-qa'?: string
 }
 
@@ -126,6 +133,7 @@ function IconButton({
   disabled,
   size,
   gray,
+  white,
   'data-qa': dataQa2
 }: IconButtonProps) {
   return (
@@ -137,6 +145,7 @@ function IconButton({
       aria-label={altText}
       size={size}
       gray={gray}
+      white={white}
     >
       <div className="icon-wrapper">
         <FontAwesomeIcon icon={icon} />
