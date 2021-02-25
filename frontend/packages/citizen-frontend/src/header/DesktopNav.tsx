@@ -6,6 +6,7 @@ import React, { useCallback, useState } from 'react'
 import styled from 'styled-components'
 import { NavLink } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { desktopMin } from '@evaka/lib-components/src/breakpoints'
 import colors from '@evaka/lib-components/src/colors'
 import { defaultMargins, Gap } from '@evaka/lib-components/src/white-space'
 import useCloseOnOutsideClick from '@evaka/lib-components/src/utils/useCloseOnOutsideClick'
@@ -20,8 +21,7 @@ export default React.memo(function DesktopNav() {
   const t = useTranslation()
 
   return (
-    <>
-      <Spacer />
+    <Container>
       <Nav>
         {user && (
           <>
@@ -60,9 +60,19 @@ export default React.memo(function DesktopNav() {
         </Login>
       )}
       <Gap size="m" horizontal />
-    </>
+    </Container>
   )
 })
+
+const Container = styled.div`
+  display: none;
+
+  @media (min-width: ${desktopMin}) {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-end;
+  }
+`
 
 const Nav = styled.nav`
   display: flex;
@@ -86,10 +96,6 @@ const StyledNavLink = styled(NavLink)`
     border-color: ${colors.greyscale.white};
     font-weight: 700;
   }
-`
-
-const Spacer = styled.div`
-  margin: 0 auto;
 `
 
 const Login = styled.a`

@@ -7,6 +7,7 @@ import styled from 'styled-components'
 import { NavLink } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faBars, faSignIn, faSignOut, faTimes } from '@evaka/lib-icons'
+import { desktopMin } from '@evaka/lib-components/src/breakpoints'
 import colors from '@evaka/lib-components/src/colors'
 import useCloseOnOutsideClick from '@evaka/lib-components/src/utils/useCloseOnOutsideClick'
 import { Gap, defaultMargins } from '@evaka/lib-components/src/white-space'
@@ -21,10 +22,7 @@ type Props = {
   setShowMenu: Dispatch<SetStateAction<boolean>>
 }
 
-export default React.memo(function DesktopNav({
-  showMenu,
-  setShowMenu
-}: Props) {
+export default React.memo(function MobileNav({ showMenu, setShowMenu }: Props) {
   const user = useUser()
   const t = useTranslation()
   const ref = useCloseOnOutsideClick<HTMLDivElement>(() => setShowMenu(false))
@@ -34,7 +32,7 @@ export default React.memo(function DesktopNav({
   const close = useCallback(() => setShowMenu(false), [setShowMenu])
 
   return (
-    <div ref={ref}>
+    <Container ref={ref}>
       <MenuButton onClick={toggleMenu}>
         <FontAwesomeIcon icon={showMenu ? faTimes : faBars} />
       </MenuButton>
@@ -72,9 +70,19 @@ export default React.memo(function DesktopNav({
           </UserContainer>
         </MenuContainer>
       ) : null}
-    </div>
+    </Container>
   )
 })
+
+const Container = styled.div`
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+
+  @media (min-width: ${desktopMin}) {
+    display: none;
+  }
+`
 
 const MenuButton = styled.button`
   background: transparent;

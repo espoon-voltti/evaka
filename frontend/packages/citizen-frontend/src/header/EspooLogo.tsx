@@ -9,17 +9,24 @@ import { defaultMargins } from '@evaka/lib-components/src/white-space'
 import EspooLogo from '../espoo-logo.svg'
 
 export default React.memo(function Logo() {
-  return <Img src={EspooLogo} alt="Espoo logo" />
+  return (
+    <Container>
+      <Img src={EspooLogo} alt="Espoo logo" />
+    </Container>
+  )
 })
 
-const Img = styled.img`
+const Container = styled.div`
   padding: ${defaultMargins.xs} 0;
   margin-left: ${defaultMargins.xs};
-  max-width: 150px;
-  width: auto;
-  height: 100%;
 
   @media (min-width: ${desktopMin}) {
     margin-left: ${defaultMargins.L};
   }
+`
+
+const Img = styled.img`
+  max-width: 150px;
+  width: auto;
+  height: 100%;
 `

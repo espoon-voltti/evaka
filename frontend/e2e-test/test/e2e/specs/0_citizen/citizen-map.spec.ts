@@ -50,7 +50,6 @@ fixture('Citizen map page')
   })
   .beforeEach(async (t) => {
     await t.navigateTo(config.enduserUrl)
-    await t.click('[data-qa="nav-map"]')
     await t.expect(mapPage.mapView.visible).ok()
   })
   .afterEach(logConsoleMessages)
