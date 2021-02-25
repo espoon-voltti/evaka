@@ -10,6 +10,7 @@ import { faCheck } from '@evaka/lib-icons'
 import colors from '../colors'
 import { defaultMargins } from '../white-space'
 import classNames from 'classnames'
+import { tabletMin } from '../breakpoints'
 
 export const StaticChip = styled.div<{ color: string; textColor?: string }>`
   font-family: 'Open Sans', sans-serif;
@@ -121,6 +122,13 @@ const SelectionChipInnerWrapper = styled.div`
   &.checked {
     background-color: ${colors.primary};
     color: ${colors.greyscale.white};
+  }
+
+  @media (max-width: ${tabletMin}) {
+    height: 40px;
+    background-color: ${colors.blues.lighter};
+    border: 1px solid ${colors.blues.lighter};
+    color: ${colors.blues.medium};
   }
 `
 
