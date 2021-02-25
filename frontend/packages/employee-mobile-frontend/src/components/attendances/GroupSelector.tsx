@@ -5,7 +5,7 @@
 import React, { Fragment, useContext } from 'react'
 import styled from 'styled-components'
 
-import { SelectionChip } from '@evaka/lib-components/src/atoms/Chip'
+import { ChoiceChip } from '@evaka/lib-components/src/atoms/Chip'
 import { Gap } from '@evaka/lib-components/src/white-space'
 
 import { AttendanceUIContext } from '~state/attendance-ui'
@@ -48,7 +48,7 @@ export default function GroupSelector({
     <GroupChipWrapper>
       {attendanceResponse.isSuccess && (
         <>
-          <SelectionChip
+          <ChoiceChip
             text={`${i18n.common.all} (${
               attendanceResponse.value.children.filter((child) => {
                 return child.status === 'PRESENT'
@@ -60,7 +60,7 @@ export default function GroupSelector({
           <Gap horizontal size={'xxs'} />
           {attendanceResponse.value.unit.groups.map((group) => (
             <Fragment key={group.id}>
-              <SelectionChip
+              <ChoiceChip
                 text={`${group.name} (${numberOfChildrenPresent(
                   group.id,
                   attendanceResponse.value
