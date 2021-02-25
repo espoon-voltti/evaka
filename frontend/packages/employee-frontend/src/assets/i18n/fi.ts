@@ -648,7 +648,8 @@ export const fi = {
       title: 'Lisätietoja',
       allergies: 'Allergiat',
       diet: 'Erityisruokavalio',
-      additionalInfo: 'Lisätiedot'
+      additionalInfo: 'Lisätiedot',
+      preferredName: 'Kutsumanimi'
     },
     feeAlteration: {
       title: 'Alennukset, vapautukset ja korotukset',

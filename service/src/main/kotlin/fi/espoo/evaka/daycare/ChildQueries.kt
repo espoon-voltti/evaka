@@ -50,12 +50,13 @@ fun Handle.upsertChild(child: Child) {
 
 fun Handle.updateChild(child: Child) {
     // language=SQL
-    val sql = "UPDATE child SET allergies = :allergies, diet = :diet, additionalinfo = :additionalInfo WHERE id = :id"
+    val sql = "UPDATE child SET allergies = :allergies, diet = :diet, additionalinfo = :additionalInfo, preferred_name = :preferredName WHERE id = :id"
 
     createUpdate(sql)
         .bind("id", child.id)
         .bind("allergies", child.additionalInformation.allergies)
         .bind("diet", child.additionalInformation.diet)
         .bind("additionalInfo", child.additionalInformation.additionalInfo)
+        .bind("preferredName", child.additionalInformation.preferredName)
         .execute()
 }

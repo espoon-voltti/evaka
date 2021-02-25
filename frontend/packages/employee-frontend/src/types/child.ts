@@ -89,6 +89,7 @@ export interface AdditionalInformation {
   allergies: string
   diet: string
   additionalInfo: string
+  preferredName: string | null
 }
 
 export interface Placement {

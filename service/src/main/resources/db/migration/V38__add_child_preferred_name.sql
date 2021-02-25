@@ -1,0 +1,1 @@
+ALTER TABLE child ADD preferred_name text;
