@@ -7,10 +7,10 @@ import styled from 'styled-components'
 
 import { SelectionChip } from '@evaka/lib-components/src/atoms/Chip'
 import { Gap } from '@evaka/lib-components/src/white-space'
+import { Success } from '@evaka/lib-common/src/api'
 
 import { AttendanceUIContext } from '~state/attendance-ui'
 import { useTranslation } from '~state/i18n'
-import { Success } from '~../../lib-common/src/api'
 import { AttendanceResponse, Group } from '~api/attendances'
 
 interface GroupSelectorProps {
@@ -28,7 +28,7 @@ export default function GroupSelector({
 }: GroupSelectorProps) {
   const { i18n } = useTranslation()
 
-  const { attendanceResponseAll } = useContext(AttendanceUIContext)
+  const { attendanceResponse } = useContext(AttendanceUIContext)
 
   function numberOfChildrenPresent(
     gId: string,
@@ -41,27 +41,36 @@ export default function GroupSelector({
       }).length
   }
 
+  function getTotalChildren(groupId: string) {
+    if (attendanceResponse.isSuccess) {
+      return attendanceResponse.value.children.filter((ac) => {
+        return ac.groupId === groupId
+      }).length
+    }
+    return 0
+  }
+
   return (
     <GroupChipWrapper>
-      {attendanceResponseAll.isSuccess && (
+      {attendanceResponse.isSuccess && (
         <>
           <SelectionChip
             text={`${i18n.common.all} (${
-              attendanceResponseAll.value.children.filter((child) => {
+              attendanceResponse.value.children.filter((child) => {
                 return child.status === currentPage?.toUpperCase()
               }).length
-            }/${attendanceResponseAll.value.children.length})`}
+            }/${attendanceResponse.value.children.length})`}
             selected={groupIdOrAll === 'all' ? true : false}
             onChange={() => changeGroup('all')}
           />
           <Gap horizontal size={'xxs'} />
-          {attendanceResponseAll.value.unit.groups.map((group) => (
+          {attendanceResponse.value.unit.groups.map((group) => (
             <Fragment key={group.id}>
               <SelectionChip
                 text={`${group.name} (${numberOfChildrenPresent(
                   group.id,
-                  attendanceResponseAll
-                )}/${attendanceResponseAll.value.children.length})`}
+                  attendanceResponse
+                )}/${getTotalChildren(group.id)})`}
                 selected={
                   selectedGroup
                     ? selectedGroup.id === group.id
