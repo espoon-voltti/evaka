@@ -6,7 +6,7 @@ import React, { useState } from 'react'
 import styled from 'styled-components'
 import colors from '@evaka/lib-components/src/colors'
 import { desktopMin } from '@evaka/lib-components/src/breakpoints'
-import Logo from './Logo'
+import EspooLogo from './EspooLogo'
 import DesktopNav from './DesktopNav'
 import MobileNav from './MobileNav'
 import { headerHeight } from '~header/const'
@@ -16,7 +16,7 @@ export default React.memo(function Header() {
 
   return (
     <HeaderContainer fixed={showMenu}>
-      <Logo />
+      <EspooLogo />
       <DesktopNavContainer>
         <DesktopNav />
       </DesktopNavContainer>
@@ -30,16 +30,16 @@ export default React.memo(function Header() {
 const HeaderContainer = styled.header<{ fixed: boolean }>`
   z-index: 99;
   color: ${colors.greyscale.white};
-  background-color: ${colors.brandEspoo.espooBlue};
+  background-color: ${colors.blues.primary};
   position: ${({ fixed }) => (fixed ? 'fixed' : 'relative')};
   display: flex;
   flex-direction: row;
   justify-content: space-between;
-  height: ${headerHeight};
+  height: 60px;
   width: 100%;
 
   @media (min-width: ${desktopMin}) {
-    height: 64px;
+    height: ${headerHeight};
     justify-content: flex-start;
   }
 `

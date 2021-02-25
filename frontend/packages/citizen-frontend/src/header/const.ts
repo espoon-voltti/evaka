@@ -3,4 +3,4 @@ export const getLoginUri = () =>
     `${window.location.pathname}${window.location.search}${window.location.hash}`
   )}`
 
-export const headerHeight = '52px'
+export const headerHeight = '80px'

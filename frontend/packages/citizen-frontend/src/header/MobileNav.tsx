@@ -95,7 +95,7 @@ const MenuContainer = styled.div`
   overflow-y: scroll;
   top: 0;
   right: 0;
-  background: ${colors.blues.medium};
+  background: ${colors.blues.primary};
   box-sizing: border-box;
   width: 100vw;
   height: 100%;

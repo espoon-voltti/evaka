@@ -5,31 +5,21 @@
 import React from 'react'
 import styled from 'styled-components'
 import { desktopMin } from '@evaka/lib-components/src/breakpoints'
+import { defaultMargins } from '@evaka/lib-components/src/white-space'
 import EspooLogo from '../espoo-logo.svg'
 
 export default React.memo(function Logo() {
-  return (
-    <LogoContainer>
-      <Img src={EspooLogo} alt="Espoo logo" />
-    </LogoContainer>
-  )
+  return <Img src={EspooLogo} alt="Espoo logo" />
 })
 
-const LogoContainer = styled.div`
-  flex-grow: 0;
-  flex-shrink: 1;
-  flex-basis: 20%;
-  min-width: 180px;
-`
-
 const Img = styled.img`
-  padding: 0;
-  margin-left: 16px;
+  padding: ${defaultMargins.xs} 0;
+  margin-left: ${defaultMargins.xs};
   max-width: 150px;
   width: auto;
   height: 100%;
 
   @media (min-width: ${desktopMin}) {
-    padding: 0 24px;
+    margin-left: ${defaultMargins.L};
   }
 `
