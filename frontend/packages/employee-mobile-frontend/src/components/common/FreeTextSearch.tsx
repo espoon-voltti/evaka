@@ -5,23 +5,25 @@
 import React, { useCallback } from 'react'
 import styled from 'styled-components'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faSearch, faTimes } from '@evaka/lib-icons'
+import { faArrowLeft, faTimes } from '@evaka/lib-icons'
 import colors from '@evaka/lib-components/src/colors'
 import IconButton from '@evaka/lib-components/src/atoms/buttons/IconButton'
+import { AttendanceChild } from '~api/attendances'
+import { defaultMargins } from '~../../lib-components/src/white-space'
 
 const SearchInputContainer = styled.div`
-  height: 50px;
+  height: 60px;
   display: flex;
   justify-content: center;
   align-items: center;
+  margin-bottom: ${defaultMargins.xs};
 `
 
-const SearchInput = styled.input<{ background?: string }>`
+const SearchInput = styled.input<{ background?: string; showClose: boolean }>`
   width: 100%;
   border: none;
   font-size: 1rem;
   background: ${(p) => p.background ?? colors.greyscale.lightest};
-  width: 100%;
   display: flex;
   flex-direction: row;
   flex-wrap: nowrap;
@@ -30,12 +32,11 @@ const SearchInput = styled.input<{ background?: string }>`
   font-size: 17px;
   outline: none;
   margin-left: -38px;
-  margin-right: -25px;
+  margin-right: ${(p) => (p.showClose ? '-25px' : '0')};
   color: ${colors.greyscale.darkest};
+  height: 100%;
 
   &::placeholder {
-    font-style: italic;
-    font-size: 17px;
     color: ${colors.greyscale.dark};
   }
 
@@ -44,9 +45,7 @@ const SearchInput = styled.input<{ background?: string }>`
     border-radius: 2px;
     border-style: solid;
     border-color: ${colors.accents.petrol};
-    margin-top: -2px;
     padding-left: 53px;
-    margin-bottom: -2px;
   }
 `
 
@@ -56,6 +55,7 @@ const CustomIcon = styled(FontAwesomeIcon)`
   position: relative;
   left: 10px;
   font-size: 22px;
+  cursor: pointer;
 `
 
 const CustomIconButton = styled(IconButton)`
@@ -70,27 +70,34 @@ type FreeTextSearchProps = {
   setValue: (s: string) => void
   placeholder: string
   background?: string
+  setShowSearch: (show: boolean) => void
+  searchResults: AttendanceChild[]
 }
 
 export default function FreeTextSearch({
   value,
   setValue,
   placeholder,
-  background
+  background,
+  setShowSearch,
+  searchResults
 }: FreeTextSearchProps) {
   const clear = useCallback(() => setValue(''), [setValue])
 
   return (
     <SearchInputContainer>
-      <CustomIcon icon={faSearch} />
+      <CustomIcon icon={faArrowLeft} onClick={() => setShowSearch(false)} />
       <SearchInput
         placeholder={placeholder}
         value={value}
         onChange={(e) => setValue(e.target.value)}
         data-qa="free-text-search-input"
         background={background}
+        showClose={searchResults.length > 1}
       ></SearchInput>
-      <CustomIconButton icon={faTimes} onClick={clear} size={'m'} />
+      {searchResults.length > 1 && (
+        <CustomIconButton icon={faTimes} onClick={clear} size={'m'} />
+      )}
     </SearchInputContainer>
   )
 }
