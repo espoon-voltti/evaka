@@ -45,7 +45,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
                 <div class="child-details">
                     <div>
                         <span class="strong" th:text="#{text.section.decision.details.child}">Lapsellenne</span>
-                        <span th:text="${application.form.child.firstName} + ' ' + ${application.form.child.lastName} + ' ' + ${#temporals.format(application.childDateOfBirth, 'd.M.yyyy')}"></span>
+                        <span th:text="${child.person.firstName} + ' ' + ${child.person.lastName} + ' ' + ${#temporals.format(child.dateOfBirth, 'd.M.yyyy')}"></span>
                     </div>
                     <div>
                         <span class="strong" th:text="#{text.section.decision.details.date}">on tehty varhaiskasvatuspäätös varhaiskasvatukseen ajalle</span>

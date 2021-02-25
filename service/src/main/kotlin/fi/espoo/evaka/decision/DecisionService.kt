@@ -6,7 +6,6 @@ package fi.espoo.evaka.decision
 
 import fi.espoo.evaka.application.ApplicationDetails
 import fi.espoo.evaka.application.fetchApplicationDetails
-import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
 import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.daycare.getUnitManager
 import fi.espoo.evaka.daycare.service.DaycareManager
@@ -153,33 +152,29 @@ class DecisionService(
             val templates = createTemplates(decision, application)
             val isPartTimeDecision: Boolean = decision.type === DecisionType.DAYCARE_PART_TIME
 
-            // todo: decision templates still except old format :(
-            val legacyApplication = PdfTemplateApplication(
-                form = DaycareFormV0.fromForm2(application.form, application.type, false, false),
-                childDateOfBirth = child.dateOfBirth
-            )
-
             val pages = generatePages(
                 templates,
                 lang,
                 decision,
-                legacyApplication,
+                application,
                 guardian,
                 unitManager,
                 sendAddress,
+                child.dateOfBirth,
                 isPartTimeDecision
             )
             return pdfService.render(pages)
         }
 
-        private fun generatePages(
+        fun generatePages(
             templates: List<String>,
             lang: String,
             decision: Decision,
-            legacyApplication: PdfTemplateApplication,
+            application: ApplicationDetails,
             guardian: PersonDTO,
             manager: DaycareManager,
             sendAddress: DecisionSendAddress,
+            childDateOfBirth: LocalDate,
             isPartTimeDecision: Boolean
         ): List<Page> {
             return templates.mapIndexed { i, template ->
@@ -188,7 +183,9 @@ class DecisionService(
                     Context().apply {
                         locale = Locale.Builder().setLanguage(lang).build()
                         setVariable("decision", decision)
-                        setVariable("application", legacyApplication)
+                        setVariable("application", application)
+                        setVariable("child", application.form.child)
+                        setVariable("childDateOfBirth", childDateOfBirth)
                         setVariable("guardian", guardian)
                         setVariable("manager", manager)
                         setVariable("sendAddress", sendAddress)
@@ -200,7 +197,7 @@ class DecisionService(
             }
         }
 
-        private fun createTemplates(
+        fun createTemplates(
             decision: Decision,
             application: ApplicationDetails
         ): List<String> {
@@ -273,11 +270,6 @@ class DecisionService(
             DecisionType.PREPARATORY_EDUCATION -> "preparatorydecision"
         }.let { "${it}_${decision.id}_${guardian.id}_$lang" }
     }
-
-    data class PdfTemplateApplication(
-        var form: DaycareFormV0,
-        val childDateOfBirth: LocalDate
-    )
 
     private fun uploadPdfToS3(bucket: String, key: String, document: ByteArray): DocumentLocation =
         s3Client.upload(
