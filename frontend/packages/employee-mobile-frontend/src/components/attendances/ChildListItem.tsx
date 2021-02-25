@@ -99,7 +99,7 @@ export default React.memo(function ChildListItem({
   const { attendanceResponse } = useContext(AttendanceUIContext)
 
   return (
-    <ChildBox type={type}>
+    <ChildBox type={type} data-qa={`child-${attendanceChild.id}`}>
       <IconBox type={type}>
         <RoundIcon
           content={farUser}
@@ -118,11 +118,11 @@ export default React.memo(function ChildListItem({
         />
       </IconBox>
       <ChildBoxInfo onClick={onClick}>
-        <Bold>
+        <Bold data-qa={'child-name'}>
           {attendanceChild.firstName} {attendanceChild.lastName}
         </Bold>
         <DetailsRow>
-          <div>
+          <div data-qa={'child-status'}>
             {i18n.attendances.status[attendanceChild.status]}
             {attendanceResponse.isSuccess &&
               attendanceChild.status === 'COMING' && (

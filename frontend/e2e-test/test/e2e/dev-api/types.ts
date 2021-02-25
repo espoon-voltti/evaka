@@ -249,6 +249,14 @@ export interface DaycarePlacement {
   endDate: string
 }
 
+export interface DaycareGroupPlacement {
+  id: UUID
+  daycareGroupId: UUID
+  daycarePlacementId: UUID
+  startDate: string
+  endDate: string
+}
+
 export interface BackupCare {
   id: UUID
   childId: UUID

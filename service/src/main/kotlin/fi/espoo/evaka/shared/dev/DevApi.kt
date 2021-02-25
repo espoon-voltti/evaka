@@ -192,6 +192,42 @@ class DevApi(
         return ResponseEntity.ok().build()
     }
 
+    /*
+     id                   | uuid                     |           | not null | ext.uuid_generate_v1mc()
+ created              | timestamp with time zone |           |          | now()
+ updated              | timestamp with time zone |           |          | now()
+ daycare_placement_id | uuid                     |           | not null |
+ daycare_group_id     | uuid                     |           | not null |
+ start_date           | date                     |           | not null |
+ end_date             | date                     |           | not null |
+     */
+    data class DaycareGroupPlacement(
+        val id: UUID,
+        val daycarePlacementId: UUID,
+        val daycareGroupId: UUID,
+        val startDate: LocalDate,
+        val end_date: LocalDate
+    )
+
+    @PostMapping("/daycare-group-placements")
+    fun createDaycareGroupPlacement(db: Database, @RequestBody placements: List<DevDaycareGroupPlacement>): ResponseEntity<Unit> {
+
+        db.transaction {
+            placements.forEach { placement -> insertTestDaycareGroupPlacement(it.handle, placement.daycarePlacementId, placement.daycareGroupId, placement.id, placement.startDate, placement.endDate) }
+        }
+        return ResponseEntity.noContent().build()
+    }
+
+    @DeleteMapping("/daycare-group-placements/{id}")
+    fun removeDaycareGroupPlacement(db: Database, @PathVariable id: UUID): ResponseEntity<Unit> {
+        db.transaction { tx ->
+            tx.createUpdate("DELETE FROM daycare_group_placement WHERE id = :id")
+                .bind("id", id)
+                .execute()
+        }
+        return ResponseEntity.ok().build()
+    }
+
     data class Caretaker(
         val groupId: UUID,
         val amount: Double,
@@ -948,6 +984,14 @@ data class DevDaycareGroup(
     val daycareId: UUID,
     val name: String = "Testiläiset",
     val startDate: LocalDate = LocalDate.of(2019, 1, 1)
+)
+
+data class DevDaycareGroupPlacement(
+    val id: UUID = UUID.randomUUID(),
+    val daycarePlacementId: UUID,
+    val daycareGroupId: UUID,
+    val startDate: LocalDate,
+    val endDate: LocalDate
 )
 
 data class DevAssistanceNeed(

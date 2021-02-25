@@ -14,6 +14,7 @@ import {
   Daycare,
   DaycareCaretakers,
   DaycareGroup,
+  DaycareGroupPlacement,
   DaycarePlacement,
   Decision,
   DecisionFixture,
@@ -268,6 +269,16 @@ export async function insertDaycarePlacementFixtures(
 ): Promise<void> {
   try {
     await devClient.post(`/daycare-placements`, fixture)
+  } catch (e) {
+    throw new DevApiError(e)
+  }
+}
+
+export async function insertDaycareGroupPlacementFixtures(
+  fixture: DaycareGroupPlacement[]
+): Promise<void> {
+  try {
+    await devClient.post(`/daycare-group-placements`, fixture)
   } catch (e) {
     throw new DevApiError(e)
   }
