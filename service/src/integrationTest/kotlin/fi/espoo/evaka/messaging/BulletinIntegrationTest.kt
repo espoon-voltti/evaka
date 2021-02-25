@@ -139,7 +139,7 @@ class BulletinIntegrationTest : FullApplicationTest() {
     private fun initBulletin(user: AuthenticatedUser): UUID {
         val (_, res, result) = http.post("/bulletins")
             .asUser(user)
-            .responseObject<BulletinControllerEmployee.CreateBulletinResponse>(objectMapper)
+            .responseObject<Bulletin>(objectMapper)
 
         assertEquals(200, res.statusCode)
         return result.get().id
