@@ -26,7 +26,7 @@ import AddButton from '@evaka/lib-components/src/atoms/buttons/AddButton'
 import { Link, useHistory } from 'react-router-dom'
 import { CitizenApplicationSummary } from '@evaka/lib-common/src/api-types/application/ApplicationsOfChild'
 import { ApplicationStatus } from '@evaka/lib-common/src/api-types/application/enums'
-import { FixedSpaceRow } from '@evaka/lib-components/src/layout/flex-helpers'
+import { FixedSpaceFlexWrap } from '@evaka/lib-components/src/layout/flex-helpers'
 import InlineButton from '@evaka/lib-components/src/atoms/buttons/InlineButton'
 import { noop } from 'lodash'
 import { removeUnprocessedApplication } from '~applications/api'
@@ -270,7 +270,7 @@ export default React.memo(function ChildApplicationsBlock({
                 <Gap size="xs" horizontal />
               </ListGrid>
               <Gap size="s" />
-              <FixedSpaceRow flexWrap>
+              <FixedSpaceFlexWrap>
                 {applicationStatus === 'CREATED' ||
                 applicationStatus === 'SENT' ? (
                   <Link to={`/applications/${applicationId}/edit`}>
@@ -306,7 +306,7 @@ export default React.memo(function ChildApplicationsBlock({
                     dataQa={`button-remove-application-${applicationId}`}
                   />
                 )}
-              </FixedSpaceRow>
+              </FixedSpaceFlexWrap>
 
               {index != applicationSummaries.length - 1 && <LineBreak />}
             </React.Fragment>
