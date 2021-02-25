@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { JsonOf, JsonOfObject } from '@evaka/lib-common/src/json'
+import { JsonOf } from '@evaka/lib-common/src/json'
 import { Failure, Result, Success } from '@evaka/lib-common/src/api'
 import { AbsenceType, CareType } from '~types'
 import { PlacementType } from '~types'
@@ -202,8 +202,8 @@ export async function postDeparture(
 }
 
 function compareByProperty(
-  a: JsonOfObject<AttendanceChild>,
-  b: JsonOfObject<AttendanceChild>,
+  a: JsonOf<AttendanceChild>,
+  b: JsonOf<AttendanceChild>,
   property: string
 ) {
   if (a[property] < b[property]) {
