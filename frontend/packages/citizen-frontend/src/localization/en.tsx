@@ -262,28 +262,30 @@ const en: Translations = {
             return (
               <>
                 <P>
-                  The application period for clubs starting in the autumn is in
-                  March. If your child gets a club spot, you get the decision on
-                  it during April-May. The decision is made for one operating
-                  period for the period (August to the end of May). Decision on
-                  club location comes to the Suomi.fi service or by post if you
-                  have not taken service.
+                  The application period for clubs that start in the autumn is
+                  in March. If your child is given a place in a club, you will
+                  receive a decision in April or May. The decision will cover
+                  one operating period (from August until the end of May). The
+                  decision will be sent to the Suomi.fi service or by post if
+                  you have not activated the service.
                 </P>
                 <P>
-                  A club application can also be submitted outside the
-                  application period and on after the club’s season has already
-                  begun. During the application period However, applications
-                  received will be processed first, and the application period
-                  applications received from outside will be processed in order
-                  of arrival. The club application is for one for the club
-                  season. At the end of the period, the application will be
-                  deleted system.
+                  You can also submit a club applicationoutside of the
+                  application period and after the clubs’ operating period has
+                  started. We will, however, first process all applications that
+                  are submitted during the application period. The applications
+                  that are submitted outside of the application period will be
+                  processed in the order in which they are received. The club
+                  application is for one operating period. At the end of the
+                  period, the application will be removed from the system.
                 </P>
                 <P>
-                  Club activities are free of charge, not participation affect
-                  the home care allowance paid by Kela. If a child it instead of
-                  being granted early childhood education or private care
-                  allowance, he cannot be granted a club seat.
+                  Club activities are free of charge and participation in club
+                  activities will not affect the child home care allowance paid
+                  by Kela. However, if the child has been granted a place in
+                  early childhood education or your family has been granted
+                  private day care allowance, a place in a club cannot be
+                  granted to the child
                 </P>
                 <P fitted={true}>
                   * Information marked with an asterisk is required
