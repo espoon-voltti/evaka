@@ -224,7 +224,7 @@ export default React.memo(function AttendancePageWrapper() {
               height: containerSpring.x.interpolate((x) => `${100 * x}%`)
             }}
           >
-            <NoMarginTitle size={1} centered smaller bold>
+            <NoMarginTitle size={1} centered smaller bold data-qa="unit-name">
               {attendanceResponse.value.unit.name}{' '}
               <IconButton
                 onClick={() => setShowSearch(!showSearch)}
