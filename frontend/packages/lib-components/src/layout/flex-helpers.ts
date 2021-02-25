@@ -95,7 +95,6 @@ interface FixedSpaceFlexWrapProps {
 export const FixedSpaceFlexWrap = styled.div<FixedSpaceFlexWrapProps>`
   display: flex;
   flex-direction: row;
-  width: 100%;
   flex-wrap: ${(p) => (p.reverse ? 'wrap-reverse' : 'wrap')};
 
   margin-bottom: -${(p) => (p.verticalSpacing ? defaultMargins[p.verticalSpacing] : defaultMargins.s)};
