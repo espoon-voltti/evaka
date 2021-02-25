@@ -125,6 +125,14 @@ class PendingDecisionEmailServiceIntegrationTest : FullApplicationTest() {
         Assertions.assertEquals(0, sentMails.size)
     }
 
+    @Test
+    fun `Pending decision older than two months does not send an email`() {
+        createPendingDecision(LocalDate.now().minusMonths(2), null, null, 0)
+        Assertions.assertEquals(0, runPendingDecisionEmailAsyncJobs())
+        val sentMails = MockEmailClient.emails
+        Assertions.assertEquals(0, sentMails.size)
+    }
+
     private fun assertEmail(email: MockEmail?, expectedToAddress: String, expectedFromAddress: String, expectedSubject: String, expectedHtmlPart: String, expectedTextPart: String) {
         Assertions.assertNotNull(email)
         Assertions.assertEquals(expectedToAddress, email?.toAddress)
