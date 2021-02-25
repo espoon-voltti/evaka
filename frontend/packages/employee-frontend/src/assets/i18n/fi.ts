@@ -134,6 +134,7 @@ export const fi = {
     feeDecisions: 'Maksupäätökset',
     valueDecisions: 'Arvopäätökset',
     reports: 'Raportit',
+    messages: 'Viestit',
     logout: 'Kirjaudu ulos'
   },
   language: {

@@ -61,6 +61,7 @@ import { featureFlags } from '~config'
 import PlacementSketching from '~components/reports/PlacementSketching'
 import { idleTracker } from '@evaka/lib-common/src/utils/idleTracker'
 import { client } from '~api/client'
+import MessagesPage from '~components/messages/MessagesPage'
 
 export default function App() {
   const { i18n } = useTranslation()
@@ -300,6 +301,14 @@ export default function App() {
                 exact
                 path="/reports/voucher-service-providers/:unitId"
                 component={ensureAuthenticated(VoucherServiceProviderUnit)}
+                title={i18n.titles.reports}
+              />
+            )}
+            {featureFlags.messaging && (
+              <RouteWithTitle
+                exact
+                path="/messages"
+                component={ensureAuthenticated(MessagesPage)}
                 title={i18n.titles.reports}
               />
             )}
