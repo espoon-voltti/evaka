@@ -10,6 +10,8 @@ import { AttendanceResponse } from '~api/attendances'
 interface UIState {
   attendanceResponse: Result<AttendanceResponse>
   setAttendanceResponse: (result: Result<AttendanceResponse>) => void
+  attendanceResponseAll: Result<AttendanceResponse>
+  setAttendanceResponseAll: (result: Result<AttendanceResponse>) => void
   filterAndSetAttendanceResponse: (
     result: Result<AttendanceResponse>,
     groupIdOrAll: string | 'all'
@@ -19,6 +21,8 @@ interface UIState {
 const defaultState: UIState = {
   attendanceResponse: Loading.of(),
   setAttendanceResponse: () => undefined,
+  attendanceResponseAll: Loading.of(),
+  setAttendanceResponseAll: () => undefined,
   filterAndSetAttendanceResponse: () => undefined
 }
 
@@ -31,6 +35,9 @@ export const AttendanceUIContextProvider = React.memo(
     children: JSX.Element
   }) {
     const [attendanceResponse, setAttendanceResponse] = useState<
+      Result<AttendanceResponse>
+    >(Loading.of())
+    const [attendanceResponseAll, setAttendanceResponseAll] = useState<
       Result<AttendanceResponse>
     >(Loading.of())
 
@@ -52,11 +59,15 @@ export const AttendanceUIContextProvider = React.memo(
       () => ({
         attendanceResponse,
         setAttendanceResponse,
+        attendanceResponseAll,
+        setAttendanceResponseAll,
         filterAndSetAttendanceResponse
       }),
       [
         attendanceResponse,
         setAttendanceResponse,
+        attendanceResponseAll,
+        setAttendanceResponseAll,
         filterAndSetAttendanceResponse
       ]
     )
