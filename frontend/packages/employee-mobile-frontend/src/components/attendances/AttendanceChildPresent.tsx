@@ -34,13 +34,11 @@ import {
 interface Props {
   child: AttendanceChild
   unitId: string
-  groupId: string | 'all'
 }
 
 export default React.memo(function AttendanceChildPresent({
   child,
-  unitId,
-  groupId: groupIdOrAll
+  unitId
 }: Props) {
   const history = useHistory()
   const { i18n } = useTranslation()
@@ -52,12 +50,10 @@ export default React.memo(function AttendanceChildPresent({
     Result<DepartureInfoResponse>
   >(Loading.of())
 
-  const { filterAndSetAttendanceResponse } = useContext(AttendanceUIContext)
+  const { setAttendanceResponse } = useContext(AttendanceUIContext)
 
   useEffect(() => {
-    void getDaycareAttendances(unitId).then((res) =>
-      filterAndSetAttendanceResponse(res, groupIdOrAll)
-    )
+    void getDaycareAttendances(unitId).then(setAttendanceResponse)
   }, [])
 
   function markDeparted() {
@@ -122,9 +118,7 @@ export default React.memo(function AttendanceChildPresent({
             text={i18n.attendances.actions.returnToComing}
             onClick={() => returnToComingCall()}
             onSuccess={async () => {
-              await getDaycareAttendances(unitId).then((res) =>
-                filterAndSetAttendanceResponse(res, groupIdOrAll)
-              )
+              await getDaycareAttendances(unitId).then(setAttendanceResponse)
               history.goBack()
             }}
             data-qa="delete-attendance"

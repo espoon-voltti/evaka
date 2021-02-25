@@ -17,16 +17,14 @@ import { InlineWideAsyncButton } from './components'
 interface Props {
   child: AttendanceChild
   unitId: string
-  groupId: string | 'all'
 }
 
 export default React.memo(function AttendanceChildAbsent({
   child,
-  unitId,
-  groupId: groupIdOrAll
+  unitId
 }: Props) {
   const { i18n } = useTranslation()
-  const { filterAndSetAttendanceResponse } = useContext(AttendanceUIContext)
+  const { setAttendanceResponse } = useContext(AttendanceUIContext)
 
   function returnToComingCall() {
     return returnToComing(unitId, child.id)
@@ -40,9 +38,7 @@ export default React.memo(function AttendanceChildAbsent({
           text={i18n.attendances.actions.returnToComing}
           onClick={() => returnToComingCall()}
           onSuccess={async () => {
-            await getDaycareAttendances(unitId).then((res) =>
-              filterAndSetAttendanceResponse(res, groupIdOrAll)
-            )
+            await getDaycareAttendances(unitId).then(setAttendanceResponse)
           }}
           data-qa="delete-attendance"
         />

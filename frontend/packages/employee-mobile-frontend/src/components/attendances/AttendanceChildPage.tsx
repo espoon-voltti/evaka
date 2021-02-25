@@ -68,22 +68,19 @@ export default React.memo(function AttendanceChildPage() {
   const { i18n } = useTranslation()
   const history = useHistory()
 
-  const { unitId, groupId: groupIdOrAll, childId } = useParams<{
+  const { unitId, childId } = useParams<{
     unitId: string
-    groupId: string | 'all'
     childId: string
   }>()
 
   const [child, setChild] = useState<AttendanceChild | undefined>(undefined)
   const [group, setGroup] = useState<Group | undefined>(undefined)
-  const { attendanceResponse, filterAndSetAttendanceResponse } = useContext(
+  const { attendanceResponse, setAttendanceResponse } = useContext(
     AttendanceUIContext
   )
 
   useEffect(() => {
-    void getDaycareAttendances(unitId).then((res) =>
-      filterAndSetAttendanceResponse(res, groupIdOrAll)
-    )
+    void getDaycareAttendances(unitId).then(setAttendanceResponse)
   }, [])
 
   useEffect(() => {
@@ -144,29 +141,16 @@ export default React.memo(function AttendanceChildPage() {
                     unitId={unitId}
                     child={child}
                     group={group}
-                    groupId={groupIdOrAll}
                   />
                 )}
                 {child.status === 'PRESENT' && (
-                  <AttendanceChildPresent
-                    child={child}
-                    unitId={unitId}
-                    groupId={groupIdOrAll}
-                  />
+                  <AttendanceChildPresent child={child} unitId={unitId} />
                 )}
                 {child.status === 'DEPARTED' && (
-                  <AttendanceChildDeparted
-                    child={child}
-                    unitId={unitId}
-                    groupId={groupIdOrAll}
-                  />
+                  <AttendanceChildDeparted child={child} unitId={unitId} />
                 )}
                 {child.status === 'ABSENT' && (
-                  <AttendanceChildAbsent
-                    child={child}
-                    unitId={unitId}
-                    groupId={groupIdOrAll}
-                  />
+                  <AttendanceChildAbsent child={child} unitId={unitId} />
                 )}
               </FlexColumn>
             </Fragment>

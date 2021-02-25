@@ -32,14 +32,12 @@ interface Props {
   unitId: string
   child: AttendanceChild
   group: Group
-  groupId: string | 'all'
 }
 
 export default React.memo(function AttendanceChildComing({
   unitId,
   child,
-  group,
-  groupId: groupIdOrAll
+  group
 }: Props) {
   const history = useHistory()
   const { i18n } = useTranslation()
@@ -48,12 +46,10 @@ export default React.memo(function AttendanceChildComing({
   const [markAbsence, setMarkAbsence] = useState<boolean>(false)
   const [markPresent, setMarkPresent] = useState<boolean>(false)
 
-  const { filterAndSetAttendanceResponse } = useContext(AttendanceUIContext)
+  const { setAttendanceResponse } = useContext(AttendanceUIContext)
 
   useEffect(() => {
-    void getDaycareAttendances(unitId).then((res) =>
-      filterAndSetAttendanceResponse(res, groupIdOrAll)
-    )
+    void getDaycareAttendances(unitId).then(setAttendanceResponse)
   }, [])
 
   async function selectAbsenceType(absenceType: AbsenceType) {

@@ -20,17 +20,15 @@ import { FlexLabel, InlineWideAsyncButton } from './components'
 interface Props {
   child: AttendanceChild
   unitId: string
-  groupId: string | 'all'
 }
 
 export default React.memo(function AttendanceChildDeparted({
   child,
-  unitId,
-  groupId: groupIdOrAll
+  unitId
 }: Props) {
   const { i18n } = useTranslation()
 
-  const { filterAndSetAttendanceResponse } = useContext(AttendanceUIContext)
+  const { setAttendanceResponse } = useContext(AttendanceUIContext)
 
   function returnToPresentCall() {
     return returnToPresent(unitId, child.id)
@@ -84,9 +82,7 @@ export default React.memo(function AttendanceChildDeparted({
         text={i18n.attendances.actions.returnToPresent}
         onClick={() => returnToPresentCall()}
         onSuccess={async () => {
-          await getDaycareAttendances(unitId).then((res) =>
-            filterAndSetAttendanceResponse(res, groupIdOrAll)
-          )
+          await getDaycareAttendances(unitId).then(setAttendanceResponse)
         }}
         data-qa="delete-attendance"
       />
