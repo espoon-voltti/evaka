@@ -18,12 +18,12 @@ import Tabs from '@evaka/lib-components/src/molecules/Tabs'
 import Title from '@evaka/lib-components/src/atoms/Title'
 import { ContentArea } from '@evaka/lib-components/src/layout/Container'
 import IconButton from '@evaka/lib-components/src/atoms/buttons/IconButton'
-import { defaultMargins } from '@evaka/lib-components/src/white-space'
+import { defaultMargins, Gap } from '@evaka/lib-components/src/white-space'
 import colors from '@evaka/lib-components/src/colors'
 import { faAngleDown, faAngleUp, faSearch, faTimes } from '@evaka/lib-icons'
 import InlineButton from '@evaka/lib-components/src/atoms/buttons/InlineButton'
+import { useRestApi } from '@evaka/lib-common/src/utils/useRestApi'
 
-import AttendanceGroupSelectorPage from './AttendanceGroupSelectorPage'
 import AttendanceComingPage from './AttendanceComingPage'
 import AttendancePresentPage from './AttendancePresentPage'
 import AttendanceDepartedPage from './AttendanceDepartedPage'
@@ -56,10 +56,13 @@ export default React.memo(function AttendancePageWrapper() {
     undefined
   )
 
+  const loadDaycareAttendances = useRestApi(
+    getDaycareAttendances,
+    setAttendanceResponse
+  )
+
   useEffect(() => {
-    void getDaycareAttendances(unitId).then((res) => {
-      setAttendanceResponse(res)
-    })
+    loadDaycareAttendances(unitId)
   }, [groupIdOrAll])
 
   useEffect(() => {
@@ -90,7 +93,10 @@ export default React.memo(function AttendancePageWrapper() {
     }
   }, [attendanceResponse])
 
-  const currentPage = location.pathname.split('/').pop()
+  const currentPage = location.pathname
+    .split('/')
+    .filter((elem) => elem.length > 0)
+    .pop()
   const totalAttendances = attendanceResponse.isSuccess
     ? groupIdOrAll === 'all'
       ? attendanceResponse.value.children.length
@@ -250,6 +256,26 @@ export default React.memo(function AttendancePageWrapper() {
               />
             </NoMarginTitle>
           </Name>
+          <GroupSelectorWrapper
+            style={{
+              maxHeight: groupSelectorSpring.x.interpolate((x) => `${100 * x}%`)
+            }}
+          >
+            <GroupSelectorButton
+              text={selectedGroup ? selectedGroup.name : i18n.common.all}
+              onClick={() => {
+                setShowGroupSelector(!showGroupSelector)
+              }}
+              icon={showGroupSelector ? faAngleUp : faAngleDown}
+              iconRight
+            />
+            <GroupSelector
+              groupIdOrAll={groupIdOrAll}
+              selectedGroup={selectedGroup}
+              changeGroup={changeGroup}
+            />
+          </GroupSelectorWrapper>
+          <Gap size={'XL'} />
           <Tabs tabs={tabs} mobile />
 
           <FullHeightContentArea
@@ -257,34 +283,7 @@ export default React.memo(function AttendancePageWrapper() {
             paddingVertical={'s'}
             paddingHorizontal={'zero'}
           >
-            <GroupSelectorWrapper
-              style={{
-                maxHeight: groupSelectorSpring.x.interpolate(
-                  (x) => `${100 * x}%`
-                )
-              }}
-            >
-              <GroupSelectorButton
-                text={selectedGroup ? selectedGroup.name : i18n.common.all}
-                onClick={() => {
-                  setShowGroupSelector(!showGroupSelector)
-                }}
-                icon={showGroupSelector ? faAngleUp : faAngleDown}
-                iconRight
-              />
-              <GroupSelector
-                groupIdOrAll={groupIdOrAll}
-                currentPage={currentPage}
-                selectedGroup={selectedGroup}
-                changeGroup={changeGroup}
-              />
-            </GroupSelectorWrapper>
             <Switch>
-              <Route
-                exact
-                path="/units/:unitId/attendance/groups"
-                component={AttendanceGroupSelectorPage}
-              />
               <Route
                 exact
                 path="/units/:unitId/attendance/:groupId/coming"
@@ -345,7 +344,7 @@ const GroupSelectorButton = styled(InlineButton)`
 
 const GroupSelectorWrapper = animated(styled.div`
   box-shadow: 0px 2px 6px 0px ${colors.greyscale.lighter};
-  position: relative;
+  position: absolute;
   z-index: 1;
   display: flex;
   background-color: ${colors.greyscale.white};

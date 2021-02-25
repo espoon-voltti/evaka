@@ -5,6 +5,7 @@
 import React, { Fragment, useContext, useEffect, useState } from 'react'
 import { useHistory, useParams } from 'react-router-dom'
 import styled from 'styled-components'
+
 import { ContentArea } from '@evaka/lib-components/src/layout/Container'
 import RoundIcon from '@evaka/lib-components/src/atoms/RoundIcon'
 import { faChevronLeft, farUser } from '@evaka/lib-icons'
@@ -12,13 +13,15 @@ import colors from '@evaka/lib-components/src/colors'
 import { Gap } from '@evaka/lib-components/src/white-space'
 import { useTranslation } from '~state/i18n'
 import Loader from '@evaka/lib-components/src/atoms/Loader'
+import { useRestApi } from '@evaka/lib-common/src/utils/useRestApi'
+import IconButton from '@evaka/lib-components/src/atoms/buttons/IconButton'
+import { FixedSpaceRow } from '@evaka/lib-components/src/layout/flex-helpers'
+
 import AttendanceChildComing from './AttendanceChildComing'
 import AttendanceChildPresent from './AttendanceChildPresent'
 import AttendanceChildDeparted from './AttendanceChildDeparted'
-import IconButton from '@evaka/lib-components/src/atoms/buttons/IconButton'
 import { AttendanceChild, getDaycareAttendances, Group } from '~api/attendances'
 import { AttendanceUIContext } from '~state/attendance-ui'
-import { FixedSpaceRow } from '@evaka/lib-components/src/layout/flex-helpers'
 import { FlexColumn } from './components'
 import AttendanceChildAbsent from './AttendanceChildAbsent'
 
@@ -79,8 +82,13 @@ export default React.memo(function AttendanceChildPage() {
     AttendanceUIContext
   )
 
+  const loadDaycareAttendances = useRestApi(
+    getDaycareAttendances,
+    setAttendanceResponse
+  )
+
   useEffect(() => {
-    void getDaycareAttendances(unitId).then(setAttendanceResponse)
+    loadDaycareAttendances(unitId)
   }, [])
 
   useEffect(() => {
