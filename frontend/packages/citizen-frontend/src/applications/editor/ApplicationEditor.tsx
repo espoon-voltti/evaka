@@ -95,7 +95,10 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
       setVerifying(true)
     }
 
-    window.scrollTo({ left: 0, top: 0, behavior: 'smooth' })
+    setTimeout(
+      () => window.scrollTo({ left: 0, top: 0, behavior: 'smooth' }),
+      50
+    )
   }
 
   const onSaveDraft = () => {
