@@ -69,18 +69,6 @@ a better look and feel with regards to icons.
 
 ### Using free icons
 
-**NOTE: Temporarily broken since 2021-02-10**
-
-Professional versions of the Font Awesome libraries are listed as optional
-dependencies so use `yarn install --ignore-optional` to avoid installation
-failures when using free icons. The same argument works for `yarn add`, too.
-
-To simplify your local development, you can create a `.yarnrc`:
-
-```ini
---ignore-optional
-```
-
 By default, all builds will use the free icons but you can also explicitly set
 then environment variable `ICONS=free`, e.g.:
 
@@ -90,10 +78,6 @@ ICONS=free yarn dev
 ```
 
 ### Using professional icons
-
-**NOTE:** If you've run `yarn install` with `--ignore-optional`, you must
-clear `node_modules` to force yarn to install the optional packages after
-you have fetched them. This appears to be a bug with `yarn` itself.
 
 Please refer to [Font Awesome documentation](https://fontawesome.com/plans)
 on how to obtain a commercial license for the professional version of the icon library.
@@ -142,12 +126,12 @@ npm pack @fortawesome/fontawesome-pro@5.14.0 --userconfig=<path to your .npmrc>
 ```
 
 Place the fetched `.tgz` packages in the `./vendor/fortawesome/` directory,
-and run `yarn install` to install the packages to the `node_modules` directory.
+and run `./unpack-pro-icons.sh` to install the packages to the `node_modules` directory.
 
 #### Instructions for Voltti developers
 
-Voltti developers can use the helper script to fetch the icon packages from
-a private S3 bucket: `./init-pro-icons.sh`
+Voltti developers can use the helper script to fetch and unpack the icon packages from
+a private S3 bucket: `./init-pro-icons.sh && ./unpack-pro-icons.sh`
 
 For updating the icons, follow [the non-Voltti developer guide](#instructions-for-developers-with-a-license-for-font-awesome-professional-icons)
 for fetching the new versions. Once fetched, upload the packages to S3:
