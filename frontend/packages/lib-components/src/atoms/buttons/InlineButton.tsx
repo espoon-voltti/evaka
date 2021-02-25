@@ -52,6 +52,10 @@ const StyledButton = styled.button<{ color?: string }>`
   color: ${(p) => p.color ?? colors.primary};
 `
 
+const Margin = styled.span`
+  margin-left: ${defaultMargins.s};
+`
+
 interface InlineButtonProps extends BaseProps {
   onClick: () => unknown
   text: string
@@ -59,6 +63,7 @@ interface InlineButtonProps extends BaseProps {
   color?: string
   icon?: IconDefinition
   disabled?: boolean
+  iconRight?: boolean
 }
 
 function InlineButton({
@@ -69,7 +74,8 @@ function InlineButton({
   altText,
   icon,
   disabled = false,
-  color
+  color,
+  iconRight
 }: InlineButtonProps) {
   return (
     <StyledButton
@@ -80,8 +86,13 @@ function InlineButton({
       aria-label={altText}
       color={color}
     >
-      {icon && <FontAwesomeIcon icon={icon} />}
+      {icon && !iconRight && <FontAwesomeIcon icon={icon} />}
       <span>{text}</span>
+      {icon && iconRight && (
+        <Margin>
+          <FontAwesomeIcon icon={icon} />
+        </Margin>
+      )}
     </StyledButton>
   )
 }
