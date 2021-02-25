@@ -44,12 +44,9 @@ export default React.memo(function AttendancePageWrapper() {
   const location = useLocation()
   const history = useHistory()
 
-  const {
-    attendanceResponse,
-    attendanceResponseAll,
-    setAttendanceResponseAll,
-    filterAndSetAttendanceResponse
-  } = useContext(AttendanceUIContext)
+  const { attendanceResponse, setAttendanceResponse } = useContext(
+    AttendanceUIContext
+  )
 
   const [showSearch, setShowSearch] = useState<boolean>(false)
   const [showGroupSelector, setShowGroupSelector] = useState<boolean>(false)
@@ -61,15 +58,9 @@ export default React.memo(function AttendancePageWrapper() {
 
   useEffect(() => {
     void getDaycareAttendances(unitId).then((res) => {
-      filterAndSetAttendanceResponse(res, groupIdOrAll)
+      setAttendanceResponse(res)
     })
-  }, [location])
-
-  useEffect(() => {
-    void getDaycareAttendances(unitId).then((res) => {
-      setAttendanceResponseAll(res)
-    })
-  }, [])
+  }, [groupIdOrAll])
 
   useEffect(() => {
     if (freeText === '') {
@@ -100,35 +91,47 @@ export default React.memo(function AttendancePageWrapper() {
   }, [attendanceResponse])
 
   const currentPage = location.pathname.split('/').pop()
-  const totalAttendances = attendanceResponse
-    .map((res) => res.children.length)
-    .getOrElse(0)
+  const totalAttendances = attendanceResponse.isSuccess
+    ? groupIdOrAll === 'all'
+      ? attendanceResponse.value.children.length
+      : attendanceResponse.value.children.filter(
+          (ac) => ac.groupId === groupIdOrAll
+        ).length
+    : 0
   const totalComing = attendanceResponse
-    .map(
-      (res) =>
-        res.children.filter((attendance) => attendance.status === 'COMING')
-          .length
+    .map((res) =>
+      groupIdOrAll === 'all'
+        ? res.children.filter((ac) => ac.status === 'COMING').length
+        : res.children
+            .filter((ac) => ac.groupId === groupIdOrAll)
+            .filter((ac) => ac.status === 'COMING').length
     )
     .getOrElse(0)
   const totalPresent = attendanceResponse
-    .map(
-      (res) =>
-        res.children.filter((attendance) => attendance.status === 'PRESENT')
-          .length
+    .map((res) =>
+      groupIdOrAll === 'all'
+        ? res.children.filter((ac) => ac.status === 'PRESENT').length
+        : res.children
+            .filter((ac) => ac.groupId === groupIdOrAll)
+            .filter((ac) => ac.status === 'PRESENT').length
     )
     .getOrElse(0)
   const totalDeparted = attendanceResponse
-    .map(
-      (res) =>
-        res.children.filter((attendance) => attendance.status === 'DEPARTED')
-          .length
+    .map((res) =>
+      groupIdOrAll === 'all'
+        ? res.children.filter((ac) => ac.status === 'DEPARTED').length
+        : res.children
+            .filter((ac) => ac.groupId === groupIdOrAll)
+            .filter((ac) => ac.status === 'DEPARTED').length
     )
     .getOrElse(0)
   const totalAbsent = attendanceResponse
-    .map(
-      (res) =>
-        res.children.filter((attendance) => attendance.status === 'ABSENT')
-          .length
+    .map((res) =>
+      groupIdOrAll === 'all'
+        ? res.children.filter((ac) => ac.status === 'ABSENT').length
+        : res.children
+            .filter((ac) => ac.groupId === groupIdOrAll)
+            .filter((ac) => ac.status === 'ABSENT').length
     )
     .getOrElse(0)
 
@@ -235,7 +238,7 @@ export default React.memo(function AttendancePageWrapper() {
                 setShowSearch={setShowSearch}
                 searchResults={searchResults}
               />
-              <AttendanceList attendanceChildren={searchResults} />
+              <AttendanceList attendanceChildren={searchResults} showAll />
             </ContentArea>
           </SearchBar>
           <Name>
@@ -269,14 +272,12 @@ export default React.memo(function AttendancePageWrapper() {
                 icon={showGroupSelector ? faAngleUp : faAngleDown}
                 iconRight
               />
-              {attendanceResponseAll.isSuccess && (
-                <GroupSelector
-                  groupIdOrAll={groupIdOrAll}
-                  currentPage={currentPage}
-                  selectedGroup={selectedGroup}
-                  changeGroup={changeGroup}
-                />
-              )}
+              <GroupSelector
+                groupIdOrAll={groupIdOrAll}
+                currentPage={currentPage}
+                selectedGroup={selectedGroup}
+                changeGroup={changeGroup}
+              />
             </GroupSelectorWrapper>
             <Switch>
               <Route
