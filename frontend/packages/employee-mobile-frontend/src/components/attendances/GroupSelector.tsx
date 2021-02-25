@@ -7,7 +7,6 @@ import styled from 'styled-components'
 
 import { SelectionChip } from '@evaka/lib-components/src/atoms/Chip'
 import { Gap } from '@evaka/lib-components/src/white-space'
-import { Success } from '@evaka/lib-common/src/api'
 
 import { AttendanceUIContext } from '~state/attendance-ui'
 import { useTranslation } from '~state/i18n'
@@ -28,14 +27,10 @@ export default function GroupSelector({
 
   const { attendanceResponse } = useContext(AttendanceUIContext)
 
-  function numberOfChildrenPresent(
-    gId: string,
-    res: Success<AttendanceResponse>
-  ) {
-    return res.value.children
+  function numberOfChildrenPresent(gId: string, res: AttendanceResponse) {
+    return res.children
       .filter((child) => child.groupId === gId)
       .filter((child) => {
-        // return child.status === currentPage?.toUpperCase()
         return child.status === 'PRESENT'
       }).length
   }
@@ -68,15 +63,9 @@ export default function GroupSelector({
               <SelectionChip
                 text={`${group.name} (${numberOfChildrenPresent(
                   group.id,
-                  attendanceResponse
+                  attendanceResponse.value
                 )}/${getTotalChildren(group.id)})`}
-                selected={
-                  selectedGroup
-                    ? selectedGroup.id === group.id
-                    : groupIdOrAll === 'all'
-                    ? true
-                    : false
-                }
+                selected={selectedGroup ? selectedGroup.id === group.id : false}
                 onChange={() => {
                   changeGroup(group)
                 }}
