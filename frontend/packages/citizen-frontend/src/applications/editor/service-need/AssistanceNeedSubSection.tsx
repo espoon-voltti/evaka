@@ -29,6 +29,7 @@ export default React.memo(function AssistanceNeedSubSection({
         <>
           <ExpandingInfo
             info={t.applications.editor.serviceNeed.preparatoryInfo}
+            ariaLabel={t.common.openExpandingInfo}
           >
             {' '}
             <Checkbox
@@ -48,6 +49,7 @@ export default React.memo(function AssistanceNeedSubSection({
 
       <ExpandingInfo
         info={t.applications.editor.serviceNeed.assistanceNeedInstructions}
+        ariaLabel={t.common.openExpandingInfo}
       >
         {' '}
         <Checkbox

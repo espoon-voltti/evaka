@@ -37,6 +37,7 @@ const sv: Translations = {
         sv: 'svenska'
       }
     },
+    openExpandingInfo: 'Öppna detaljer',
     errors: {
       genericGetError: 'Hämtning av information misslyckades'
     }

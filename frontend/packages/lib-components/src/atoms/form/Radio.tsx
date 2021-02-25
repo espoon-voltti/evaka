@@ -13,12 +13,13 @@ import { BaseProps } from '../../utils'
 
 const diameter = '36px'
 
-const Wrapper = styled.div`
+const Wrapper = styled.div<SizeProps>`
   display: inline-flex;
-  align-items: center;
+  align-items: flex-start;
   cursor: pointer;
 
   label {
+    margin-top: ${(p) => (p.small ? '3px' : '6px')};
     margin-left: ${defaultMargins.s};
     cursor: pointer;
   }
@@ -122,6 +123,7 @@ function Radio({
         if (!disabled && onChange) onChange()
       }}
       className={classNames(className, { disabled })}
+      small={small}
       data-qa={dataQa}
     >
       <Circle small={small}>

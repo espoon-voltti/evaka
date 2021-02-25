@@ -117,6 +117,7 @@ export default React.memo(function ServiceTimeSubSectionDaycare({
             applicationType
           ]
         }
+        ariaLabel={t.common.openExpandingInfo}
       >
         <Label>
           {t.applications.editor.serviceNeed.dailyTime.usualArrivalAndDeparture[
@@ -167,6 +168,7 @@ export default React.memo(function ServiceTimeSubSectionDaycare({
 
       <ExpandingInfo
         info={t.applications.editor.serviceNeed.shiftCare.instructions}
+        ariaLabel={t.common.openExpandingInfo}
       >
         <Checkbox
           checked={formData.shiftCare}

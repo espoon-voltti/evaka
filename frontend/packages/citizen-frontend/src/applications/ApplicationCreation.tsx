@@ -84,7 +84,10 @@ export default React.memo(function ApplicationCreation() {
             {child.firstName} {child.lastName}
           </H2>
           <Gap size="XL" />
-          <ExpandingInfo info={t.applications.creation.daycareInfo}>
+          <ExpandingInfo
+            info={t.applications.creation.daycareInfo}
+            ariaLabel={t.common.openExpandingInfo}
+          >
             <Radio
               checked={selectedType === 'DAYCARE'}
               onChange={() => setSelectedType('DAYCARE')}
@@ -93,7 +96,10 @@ export default React.memo(function ApplicationCreation() {
             />
           </ExpandingInfo>
           <Gap size="s" />
-          <ExpandingInfo info={t.applications.creation.preschoolInfo}>
+          <ExpandingInfo
+            info={t.applications.creation.preschoolInfo}
+            ariaLabel={t.common.openExpandingInfo}
+          >
             <Radio
               checked={selectedType === 'PRESCHOOL'}
               onChange={() => setSelectedType('PRESCHOOL')}
@@ -105,7 +111,10 @@ export default React.memo(function ApplicationCreation() {
             {t.applications.creation.preschoolDaycareInfo}
           </PreschoolDaycareInfo>
           <Gap size="s" />
-          <ExpandingInfo info={t.applications.creation.clubInfo}>
+          <ExpandingInfo
+            info={t.applications.creation.clubInfo}
+            ariaLabel={t.common.openExpandingInfo}
+          >
             <Radio
               checked={selectedType === 'CLUB'}
               onChange={() => setSelectedType('CLUB')}
