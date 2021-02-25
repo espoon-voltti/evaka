@@ -15,14 +15,12 @@ import { AttendanceResponse, Group } from '~api/attendances'
 
 interface GroupSelectorProps {
   groupIdOrAll: string | 'all'
-  currentPage: string | undefined
   selectedGroup: Group | undefined
   changeGroup: (groupOrAll: Group | 'all') => void
 }
 
 export default function GroupSelector({
   groupIdOrAll,
-  currentPage,
   selectedGroup,
   changeGroup
 }: GroupSelectorProps) {
@@ -37,7 +35,8 @@ export default function GroupSelector({
     return res.value.children
       .filter((child) => child.groupId === gId)
       .filter((child) => {
-        return child.status === currentPage?.toUpperCase()
+        // return child.status === currentPage?.toUpperCase()
+        return child.status === 'PRESENT'
       }).length
   }
 
@@ -57,7 +56,7 @@ export default function GroupSelector({
           <SelectionChip
             text={`${i18n.common.all} (${
               attendanceResponse.value.children.filter((child) => {
-                return child.status === currentPage?.toUpperCase()
+                return child.status === 'PRESENT'
               }).length
             }/${attendanceResponse.value.children.length})`}
             selected={groupIdOrAll === 'all' ? true : false}
