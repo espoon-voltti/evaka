@@ -25,8 +25,8 @@ class Main
 
 fun main(args: Array<String>) {
     val profiles = when (System.getenv("VOLTTI_ENV")) {
-        "dev", "test" -> arrayOf("enable_dev_api")
-        else -> emptyArray()
+        "dev", "test" -> arrayOf("espoo_evaka", "enable_dev_api")
+        else -> arrayOf("espoo_evaka")
     }
 
     SpringApplicationBuilder()

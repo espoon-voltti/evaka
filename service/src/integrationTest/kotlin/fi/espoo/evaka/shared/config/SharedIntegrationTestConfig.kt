@@ -12,8 +12,10 @@ import com.amazonaws.client.builder.AwsClientBuilder
 import com.amazonaws.services.s3.AmazonS3
 import com.amazonaws.services.s3.AmazonS3ClientBuilder
 import com.auth0.jwt.algorithms.Algorithm
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
+import fi.espoo.evaka.invoicing.integration.InvoiceIntegrationClient
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.db.configureJdbi
 import fi.espoo.evaka.shared.db.handle
@@ -147,4 +149,7 @@ class SharedIntegrationTestConfig {
             SecurityConfig::class.java.getResourceAsStream("/evaka-integration-test/jwks.json").use { loadPublicKeys(it) }
         return Algorithm.RSA256(JwtKeys(privateKeyId = null, privateKey = null, publicKeys = publicKeys))
     }
+
+    @Bean
+    fun invoiceIntegrationClient(objectMapper: ObjectMapper): InvoiceIntegrationClient = InvoiceIntegrationClient.MockClient(objectMapper)
 }
