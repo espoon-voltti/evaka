@@ -309,7 +309,7 @@ export default function App() {
                 exact
                 path="/messages"
                 component={ensureAuthenticated(MessagesPage)}
-                title={i18n.titles.reports}
+                title={i18n.titles.messages}
               />
             )}
             <RouteWithTitle
