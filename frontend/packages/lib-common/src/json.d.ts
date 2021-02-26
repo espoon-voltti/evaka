@@ -6,8 +6,6 @@ import LocalDate from './local-date'
 import FiniteDateRange from './finite-date-range'
 import DateRange from './date-range'
 
-// eslint-disable-next-line @typescript-eslint/ban-types
-type JsonOfObject<T extends object> = { [P in keyof T]: JsonOf<T[P]> }
 export type JsonOf<T> = T extends string | number | boolean | null | undefined
   ? T
   : T extends Date
@@ -23,5 +21,5 @@ export type JsonOf<T> = T extends string | number | boolean | null | undefined
   : T extends Array<infer U>
   ? Array<JsonOf<U>>
   : T extends object // eslint-disable-line @typescript-eslint/ban-types
-  ? JsonOfObject<T>
+  ? { [P in keyof T]: JsonOf<T[P]> }
   : never

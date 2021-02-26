@@ -6,7 +6,7 @@ import React, { useEffect, useState } from 'react'
 import { useHistory, useParams } from 'react-router-dom'
 import { useRestApi } from '@evaka/lib-common/src/utils/useRestApi'
 import { getApplicationDecisions } from '~decisions/api'
-import { UUID } from '@evaka/employee-frontend/src/types'
+import { UUID } from '@evaka/lib-common/src/types'
 import { Loading, Result } from '@evaka/lib-common/src/api'
 import { Decision } from '~decisions/types'
 import {

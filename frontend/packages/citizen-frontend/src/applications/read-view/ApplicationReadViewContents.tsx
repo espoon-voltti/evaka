@@ -7,7 +7,7 @@ import Container, {
   ContentArea
 } from '@evaka/lib-components/src/layout/Container'
 import { ApplicationFormData } from '~applications/editor/ApplicationFormData'
-import { H1 } from '~../../lib-components/src/typography'
+import { H1 } from '@evaka/lib-components/src/typography'
 import { useTranslation } from '~localization'
 import BasicsSection from '~applications/editor/verification/BasicsSection'
 import HorizontalLine from '@evaka/lib-components/src/atoms/HorizontalLine'
