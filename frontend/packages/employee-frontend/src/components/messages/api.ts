@@ -1,8 +1,17 @@
+// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
 import { Failure, Result, Success } from '@evaka/lib-common/src/api'
 import { JsonOf } from '@evaka/lib-common/src/json'
 import { client } from '~api/client'
 import { UUID } from '~types'
-import { Bulletin, IdAndName, deserializeBulletin } from './types'
+import {
+  Bulletin,
+  IdAndName,
+  deserializeBulletin,
+  SentBulletin,
+  deserializeSentBulletin
+} from './types'
 
 export async function initNewBulletin(): Promise<Result<Bulletin>> {
   return client
@@ -43,5 +52,11 @@ export async function getGroups(unitId: UUID): Promise<Result<IdAndName[]>> {
   return client
     .get<JsonOf<IdAndName[]>>(`/daycares/${unitId}/groups`)
     .then((res) => Success.of(res.data.map(({ id, name }) => ({ id, name }))))
+}
+
+export async function getSentBulletins(): Promise<Result<SentBulletin[]>> {
+  return client
+    .get<JsonOf<SentBulletin[]>>('/bulletins/sent')
+    .then((res) => Success.of(res.data.map(deserializeSentBulletin)))
     .catch((e) => Failure.fromError(e))
 }

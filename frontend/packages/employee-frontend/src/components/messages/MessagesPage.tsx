@@ -3,13 +3,11 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useEffect, useState } from 'react'
-import ReactSelect from 'react-select'
 import _ from 'lodash'
 import { Loading, Result } from '@evaka/lib-common/src/api'
 import { useRestApi } from '@evaka/lib-common/src/utils/useRestApi'
 import { useDebounce } from '@evaka/lib-common/src/utils/useDebounce'
 import Container from '@evaka/lib-components/src/layout/Container'
-import { H1 } from '@evaka/lib-components/src/typography'
 import Button from '@evaka/lib-components/src/atoms/buttons/Button'
 import { Gap } from '@evaka/lib-components/src/white-space'
 import { Bulletin, IdAndName } from './types'
@@ -22,6 +20,10 @@ import {
   updateDraftBulletin
 } from './api'
 import MessageEditor from './MessageEditor'
+import { tabletMin } from '@evaka/lib-components/src/breakpoints'
+import AdaptiveFlex from '@evaka/lib-components/src/layout/AdaptiveFlex'
+import styled from 'styled-components'
+import UnitsList from './UnitsList'
 
 export default React.memo(function MessagesPage() {
   const [units, setUnits] = useState<Result<IdAndName[]>>(Loading.of())
@@ -73,25 +75,23 @@ export default React.memo(function MessagesPage() {
 
   return (
     <Container>
-      <H1>Viestit</H1>
+      <Gap size="s" />
+      <StyledFlex breakpoint={tabletMin} horizontalSpacing="L">
+        <UnitsList units={units} activeUnit={unit} selectUnit={setUnit} />
 
-      <ReactSelect
-        options={units.isSuccess ? _.sortBy(units.value, (u) => u.name) : []}
-        getOptionLabel={(u) => u.name}
-        getOptionValue={(u) => u.id}
-        value={unit}
-        onChange={(val) =>
-          setUnit(
-            val
-              ? 'length' in val
-                ? val.length > 0
-                  ? val[0]
-                  : null
-                : val
-              : null
-          )
-        }
-      />
+        {editorMessage && groups?.isSuccess && (
+          <MessageEditor
+            bulletin={editorMessage}
+            groups={groups.value}
+            onChange={(change) =>
+              setEditorMessage((old) => (old ? { ...old, ...change } : old))
+            }
+            onClose={() => setEditorMessage(null)}
+            onDeleteDraft={onDeleteDraft}
+            onSend={onSend}
+          />
+        )}
+      </StyledFlex>
 
       <Gap size={'s'} />
 
@@ -101,19 +101,10 @@ export default React.memo(function MessagesPage() {
         onClick={onCreateNew}
         disabled={!unit || groups?.isSuccess !== true}
       />
-
-      {editorMessage && groups?.isSuccess && (
-        <MessageEditor
-          bulletin={editorMessage}
-          groups={groups.value}
-          onChange={(change) =>
-            setEditorMessage((old) => (old ? { ...old, ...change } : old))
-          }
-          onClose={() => setEditorMessage(null)}
-          onDeleteDraft={onDeleteDraft}
-          onSend={onSend}
-        />
-      )}
     </Container>
   )
 })
+
+const StyledFlex = styled(AdaptiveFlex)`
+  align-items: stretch;
+`

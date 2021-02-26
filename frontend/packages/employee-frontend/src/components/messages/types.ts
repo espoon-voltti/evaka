@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
+
 import { JsonOf } from '@evaka/lib-common/src/json'
 import { UUID } from '~types'
 
@@ -21,3 +25,18 @@ export type IdAndName = {
   id: UUID
   name: string
 }
+
+export type SentBulletin = {
+  id: string
+  sentAt: Date
+  sender: string
+  title: string
+  content: string
+}
+
+export const deserializeSentBulletin = (
+  json: JsonOf<SentBulletin>
+): SentBulletin => ({
+  ...json,
+  sentAt: new Date(json.sentAt)
+})

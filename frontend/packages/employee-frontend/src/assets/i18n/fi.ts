@@ -21,6 +21,7 @@ export const fi = {
     invoice: 'Lasku',
     invoiceDraft: 'Laskuluonnos',
     reports: 'Raportit',
+    messages: 'Viestit',
     caretakers: 'Henkilökunta',
     createUnit: 'Luo uusi yksikkö'
   },
@@ -2155,5 +2156,9 @@ export const fi = {
       ophOrganizerOid: 'Järjestäjän OID puuttuu',
       ophOrganizationOid: 'Organisaation OID puuttuu'
     }
+  },
+  messages: {
+    inboxTitle: 'Viestit',
+    unitListTitle: 'Yksiköt'
   }
 }
