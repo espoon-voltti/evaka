@@ -48,7 +48,8 @@ data class Child(
     val status: AttendanceStatus,
     val attendance: ChildAttendance?,
     val absences: List<ChildAbsence>,
-    val entitledToFreeFiveYearsOldDaycare: Boolean
+    val entitledToFreeFiveYearsOldDaycare: Boolean,
+    val dailyNoteId: UUID?
 )
 
 enum class AttendanceStatus {
@@ -67,4 +68,9 @@ data class ChildAbsence(
     val id: UUID,
     val childId: UUID,
     val careType: CareType
+)
+
+data class ChildDaycareDailyNote(
+    val id: UUID,
+    val childId: UUID
 )

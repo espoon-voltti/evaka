@@ -29,7 +29,7 @@ fun Database.Transaction.upsertDaycareDailyNote(note: DaycareDailyNote) {
     createUpdate(
         """
 INSERT INTO daycare_daily_note (child_id, group_id, date, note, feeding_note, sleeping_note, reminders, reminder_note, modified_by)
-VALUES(:childId, :groupId, :date, :note, :feedingNote, :sleepingNote, :reminders, :reminderNote, :modifiedBy)
+VALUES(:childId, :groupId, :date, :note, :feedingNote, :sleepingNote, :reminders::daycare_daily_note_reminder[], :reminderNote, :modifiedBy)
 ON CONFLICT(child_id, group_id, date)
     DO UPDATE SET 
         child_id = :childId, 
@@ -38,9 +38,9 @@ ON CONFLICT(child_id, group_id, date)
         note = :note, 
         feeding_note = :feedingNote, 
         sleeping_note = :sleepingNote,
-        reminders = :reminders,
+        reminders = :reminders::daycare_daily_note_reminder[],
         reminder_note = :reminderNote,
-        modified_by = :modifiedBy
+        modified_by = :modifiedBy,
         modified_at = now()
         """.trimIndent()
     )
@@ -50,7 +50,7 @@ ON CONFLICT(child_id, group_id, date)
         .bind("note", note.note)
         .bind("feedingNote", note.feedingNote)
         .bind("sleepingNote", note.sleepingNote)
-        .bind("reminders", note.reminders)
+        .bind("reminders", note.reminders.map { it.name }.toTypedArray())
         .bind("reminderNote", note.reminderNote)
         .bind("modifiedBy", note.modifiedBy)
         .execute()

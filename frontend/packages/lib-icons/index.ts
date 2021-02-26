@@ -71,6 +71,8 @@ export interface IconSet {
   faSearch: IconDefinition
   faSignIn: IconDefinition
   faSignOut: IconDefinition
+  faStickyNote: IconDefinition
+  farStickyNote: IconDefinition
   faSync: IconDefinition
   faTimes: IconDefinition
   faTrash: IconDefinition
@@ -162,6 +164,8 @@ export const faQuestionCircle = iconSet.faQuestionCircle
 export const faSearch = iconSet.faSearch
 export const faSignIn = iconSet.faSignIn
 export const faSignOut = iconSet.faSignOut
+export const faStickyNote = iconSet.faStickyNote
+export const farStickyNote = iconSet.farStickyNote
 export const faSync = iconSet.faSync
 export const faTimes = iconSet.faTimes
 export const faTrash = iconSet.faTrash

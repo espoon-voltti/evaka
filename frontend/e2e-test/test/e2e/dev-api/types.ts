@@ -533,3 +533,20 @@ export interface ApplicationEmail {
   toAddress: string | null
   language: string
 }
+
+export type DaycareDailyNoteLevel = 'GOOD' | 'MEDIUM' | 'NONE'
+export type DaycareDailyNoteReminder = 'DIAPERS' | 'CLOTHES' | 'LAUNDRY'
+
+export interface DaycareDailyNote {
+  id: UUID
+  date: LocalDate
+  childId?: UUID
+  groupId?: UUID
+  note?: string
+  feedingNote?: DaycareDailyNoteLevel
+  sleepingNote?: DaycareDailyNoteLevel
+  reminders?: DaycareDailyNoteReminder[]
+  reminderNote?: string
+  modifiedAt?: Date
+  modifiedBy?: string
+}

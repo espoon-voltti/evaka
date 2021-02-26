@@ -218,6 +218,22 @@ fun Database.Read.fetchChildrenAbsences(unitId: UUID): List<ChildAbsence> {
         .list()
 }
 
+fun Database.Read.fetchChildDaycareDailyNotes(unitId: UUID): List<ChildDaycareDailyNote> {
+    // language=sql
+    val sql =
+        """
+        SELECT note.child_id, note.id
+        FROM daycare_daily_note note LEFT JOIN daycare_group ON note.group_id = daycare_group.id
+        WHERE note.date = :today AND daycare_group.daycare_id = :unitId
+        """.trimIndent()
+
+    return createQuery(sql)
+        .bind("unitId", unitId)
+        .bind("today", LocalDate.now(zoneId))
+        .mapTo<ChildDaycareDailyNote>()
+        .list()
+}
+
 fun Database.Transaction.updateAttendance(attendanceId: UUID, arrived: Instant, departed: Instant?) {
     // language=sql
     val sql =

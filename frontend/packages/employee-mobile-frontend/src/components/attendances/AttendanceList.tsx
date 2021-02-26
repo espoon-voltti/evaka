@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { useParams } from 'react-router-dom'
 import styled from 'styled-components'
 
 import {
@@ -47,15 +47,12 @@ export default React.memo(function AttendanceList({
       <OrderedList spacing={'zero'}>
         {attendanceChildren.map((ac) => (
           <Li key={ac.id}>
-            <Link
-              to={`/units/${unitId}/groups/${groupIdOrAll}/childattendance/${ac.id}`}
-            >
-              <ChildListItem
-                type={ac.status}
-                key={ac.id}
-                attendanceChild={ac}
-              />
-            </Link>
+            <ChildListItem
+              type={ac.status}
+              key={ac.id}
+              attendanceChild={ac}
+              childAttendanceUrl={`/units/${unitId}/groups/${groupIdOrAll}/childattendance/${ac.id}`}
+            />
           </Li>
         ))}
       </OrderedList>

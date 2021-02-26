@@ -15,6 +15,7 @@ import {
   insertDaycareGroupPlacementFixtures,
   insertDaycarePlacementFixtures,
   insertEmployeeFixture,
+  postDaycareDailyNote,
   postMobileDevice
 } from '../../dev-api'
 import { mobileAutoSignInRole } from '../../config/users'
@@ -24,10 +25,13 @@ import {
   createDaycarePlacementFixture,
   DaycareBuilder,
   DaycareGroupBuilder,
+  enduserChildFixtureJari,
   Fixture,
   uuidv4
 } from '../../dev-api/fixtures'
 import MobileGroupsPage from '../../pages/employee/mobile/mobile-groups'
+import { DaycareDailyNote, DaycarePlacement } from '../../dev-api/types'
+import LocalDate from '@evaka/lib-common/src/local-date'
 
 let fixtures: AreaAndPersonFixtures
 let cleanUp: () => Promise<void>
@@ -38,7 +42,7 @@ const mobileLongTermToken = uuidv4()
 const pairingId = uuidv4()
 const daycareGroupPlacementId = uuidv4()
 
-let daycarePlacementFixture
+let daycarePlacementFixture: DaycarePlacement
 let daycareGroup: DaycareGroupBuilder
 let daycare: DaycareBuilder
 let careArea: CareAreaBuilder
@@ -101,6 +105,21 @@ fixture('Mobile daily notes')
 const mobileGroupsPage = new MobileGroupsPage()
 
 test('Daycare groups are shown', async (t) => {
+  const daycareDailyNote: DaycareDailyNote = {
+    id: uuidv4(),
+    groupId: daycareGroup.data.id,
+    childId: enduserChildFixtureJari.id,
+    date: LocalDate.today(),
+    note: 'Testi viesti',
+    feedingNote: 'MEDIUM',
+    sleepingNote: 'NONE',
+    reminders: ['DIAPERS'],
+    reminderNote: 'Ei enää pähkinöitä antaa saa',
+    modifiedBy: 'e2e-test'
+  }
+
+  await postDaycareDailyNote(daycareDailyNote)
+
   await t.expect(mobileGroupsPage.allGroups.visible).ok()
 
   await t
@@ -124,4 +143,11 @@ test('Daycare groups are shown', async (t) => {
         .textContent
     )
     .contains('Tulossa')
+
+  await t
+    .expect(
+      mobileGroupsPage.childDailyNoteLink(fixtures.enduserChildFixtureJari.id)
+        .visible
+    )
+    .ok()
 })

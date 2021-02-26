@@ -40,6 +40,8 @@ import fi.espoo.evaka.invoicing.data.upsertValueDecisions
 import fi.espoo.evaka.invoicing.domain.FeeDecision
 import fi.espoo.evaka.invoicing.domain.Invoice
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecision
+import fi.espoo.evaka.messaging.DaycareDailyNote
+import fi.espoo.evaka.messaging.upsertDaycareDailyNote
 import fi.espoo.evaka.pairing.Pairing
 import fi.espoo.evaka.pairing.PairingsController
 import fi.espoo.evaka.pairing.challengePairing
@@ -192,15 +194,6 @@ class DevApi(
         return ResponseEntity.ok().build()
     }
 
-    /*
-     id                   | uuid                     |           | not null | ext.uuid_generate_v1mc()
- created              | timestamp with time zone |           |          | now()
- updated              | timestamp with time zone |           |          | now()
- daycare_placement_id | uuid                     |           | not null |
- daycare_group_id     | uuid                     |           | not null |
- start_date           | date                     |           | not null |
- end_date             | date                     |           | not null |
-     */
     data class DaycareGroupPlacement(
         val id: UUID,
         val daycarePlacementId: UUID,
@@ -434,6 +427,7 @@ DELETE FROM attachment USING ApplicationsDeleted WHERE application_id = Applicat
             it.execute("DELETE FROM fridge_child WHERE head_of_child = ? OR child_id = ?", id, id)
             it.execute("DELETE FROM guardian WHERE (guardian_id = ? OR child_id = ?)", id, id)
             it.execute("DELETE FROM child WHERE id = ?", id)
+            it.execute("DELETE FROM daycare_daily_note WHERE child_id = ?", id)
             it.execute("DELETE FROM person WHERE id = ?", id)
         }
         return ResponseEntity.ok().build()
@@ -767,6 +761,14 @@ VALUES(:id, :unitId, :name, :deleted, :longTermToken)
         }.let { ResponseEntity.noContent().build() }
     }
 
+    @PostMapping("/messaging/daycare-daily-note")
+    fun postDaycareDailyNote(
+        db: Database.Connection,
+        @RequestBody body: DaycareDailyNote
+    ): ResponseEntity<Unit> {
+        return db.transaction { it.upsertDaycareDailyNote(body) }.let { ResponseEntity.noContent().build() }
+    }
+
     @DeleteMapping("/mobile/devices/{id}")
     fun deleteMobileDevice(db: Database, @PathVariable id: UUID): ResponseEntity<Unit> {
         db.transaction { it.deleteMobileDevice(id) }
@@ -878,11 +880,15 @@ WITH deleted_ids AS (
     )
     execute("DELETE FROM daycare_acl WHERE daycare_id IN (SELECT id FROM daycare WHERE care_area_id = ?)", id)
     execute("DELETE FROM mobile_device WHERE unit_id IN (SELECT id FROM daycare WHERE care_area_id = ?)", id)
+    execute("DELETE FROM daycare_daily_note WHERE group_id IN (SELECT id FROM daycare_group WHERE daycare_id IN (SELECT id FROM daycare WHERE care_area_id = ?))", id)
     execute("DELETE FROM daycare WHERE care_area_id = ?", id)
     execute("DELETE FROM care_area WHERE id = ?", id)
 }
 
 fun Handle.deleteDaycare(id: UUID) {
+    execute("DELETE FROM daycare_daily_note WHERE group_id IN (SELECT id FROM daycare_group WHERE daycare_id = ?)", id)
+    execute("DELETE FROM daycare_group_placement WHERE daycare_placement_id IN (SELECT id FROM placement WHERE unit_id = ?)", id)
+    execute("DELETE FROM placement WHERE unit_id = ?", id)
     execute("DELETE FROM mobile_device WHERE unit_id = ?", id)
     execute(
         "DELETE FROM daycare WHERE id = ?",
@@ -895,6 +901,7 @@ fun Handle.deleteChild(id: UUID) {
         "DELETE FROM daycare_group_placement WHERE daycare_placement_id IN (SELECT id FROM placement WHERE child_id = ?)",
         id
     )
+    execute("DELETE FROM daycare_daily_note WHERE child_id = ?", id)
     execute("DELETE FROM absence WHERE child_id = ?", id)
     execute("DELETE FROM backup_care WHERE child_id = ?", id)
     execute("DELETE FROM placement WHERE child_id = ?", id)

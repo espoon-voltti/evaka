@@ -9,10 +9,11 @@ import { AttendanceChild, AttendanceStatus, Group } from '~api/attendances'
 import RoundIcon from '@evaka/lib-components/src/atoms/RoundIcon'
 import colors from '@evaka/lib-components/src/colors'
 import { defaultMargins } from '@evaka/lib-components/src/white-space'
-import { farUser } from '@evaka/lib-icons'
+import { farStickyNote, farUser } from '@evaka/lib-icons'
 import { useTranslation } from '~state/i18n'
 import { formatDateTimeOnly } from '~utils/date'
 import { AttendanceUIContext } from '~state/attendance-ui'
+import { Link } from 'react-router-dom'
 
 const ChildBox = styled.div<{ type: AttendanceStatus }>`
   align-items: center;
@@ -21,6 +22,12 @@ const ChildBox = styled.div<{ type: AttendanceStatus }>`
   padding: ${defaultMargins.xs} ${defaultMargins.s};
   border-radius: 2px;
   background-color: ${colors.greyscale.white};
+`
+
+const AttendanceLinkBox = styled(Link)`
+  align-items: center;
+  display: flex;
+  width: 100%;
 `
 
 const ChildBoxInfo = styled.div`
@@ -88,66 +95,85 @@ interface ChildListItemProps {
   attendanceChild: AttendanceChild
   onClick?: () => void
   type: AttendanceStatus
+  childAttendanceUrl: string
 }
 
 export default React.memo(function ChildListItem({
   attendanceChild,
   onClick,
-  type
+  type,
+  childAttendanceUrl
 }: ChildListItemProps) {
   const { i18n } = useTranslation()
   const { attendanceResponse } = useContext(AttendanceUIContext)
 
   return (
     <ChildBox type={type} data-qa={`child-${attendanceChild.id}`}>
-      <IconBox type={type}>
-        <RoundIcon
-          content={farUser}
-          color={
-            type === 'ABSENT'
-              ? colors.greyscale.dark
-              : type === 'DEPARTED'
-              ? colors.blues.primary
-              : type === 'PRESENT'
-              ? colors.accents.green
-              : type === 'COMING'
-              ? colors.accents.water
-              : colors.blues.medium
-          }
-          size="XL"
-        />
-      </IconBox>
-      <ChildBoxInfo onClick={onClick}>
-        <Bold data-qa={'child-name'}>
-          {attendanceChild.firstName} {attendanceChild.lastName}
-        </Bold>
-        <DetailsRow>
-          <div data-qa={'child-status'}>
-            {i18n.attendances.status[attendanceChild.status]}
-            {attendanceResponse.isSuccess &&
-              attendanceChild.status === 'COMING' && (
-                <span>
-                  {' '}
-                  (
-                  {attendanceResponse.value.unit.groups
-                    .find((elem: Group) => elem.id === attendanceChild.groupId)
-                    ?.name.toUpperCase()}
-                  )
-                </span>
-              )}
-            <Time>
-              {attendanceChild.status === 'PRESENT' &&
-                formatDateTimeOnly(attendanceChild.attendance?.arrived)}
-              {attendanceChild.status === 'DEPARTED' &&
-                formatDateTimeOnly(attendanceChild.attendance?.departed)}
-            </Time>
-          </div>
-          {attendanceChild.backup && (
-            <RoundIcon content="V" size="m" color={colors.blues.primary} />
-          )}
-        </DetailsRow>
-      </ChildBoxInfo>
-      <ToolsColumn>TESTING TESTING</ToolsColumn>
+      <AttendanceLinkBox to={childAttendanceUrl}>
+        <IconBox type={type}>
+          <RoundIcon
+            content={farUser}
+            color={
+              type === 'ABSENT'
+                ? colors.greyscale.dark
+                : type === 'DEPARTED'
+                ? colors.blues.primary
+                : type === 'PRESENT'
+                ? colors.accents.green
+                : type === 'COMING'
+                ? colors.accents.water
+                : colors.blues.medium
+            }
+            size="XL"
+          />
+        </IconBox>
+        <ChildBoxInfo onClick={onClick}>
+          <Bold data-qa={'child-name'}>
+            {attendanceChild.firstName} {attendanceChild.lastName}
+          </Bold>
+          <DetailsRow>
+            <div data-qa={'child-status'}>
+              {i18n.attendances.status[attendanceChild.status]}
+              {attendanceResponse.isSuccess &&
+                attendanceChild.status === 'COMING' && (
+                  <span>
+                    {' '}
+                    (
+                    {attendanceResponse.value.unit.groups
+                      .find(
+                        (elem: Group) => elem.id === attendanceChild.groupId
+                      )
+                      ?.name.toUpperCase()}
+                    )
+                  </span>
+                )}
+              <Time>
+                {attendanceChild.status === 'PRESENT' &&
+                  formatDateTimeOnly(attendanceChild.attendance?.arrived)}
+                {attendanceChild.status === 'DEPARTED' &&
+                  formatDateTimeOnly(attendanceChild.attendance?.departed)}
+              </Time>
+            </div>
+            {attendanceChild.backup && (
+              <RoundIcon content="V" size="m" color={colors.blues.primary} />
+            )}
+          </DetailsRow>
+        </ChildBoxInfo>
+      </AttendanceLinkBox>
+      <ToolsColumn>
+        {attendanceChild.dailyNoteId && (
+          <Link
+            to={`attendance/daily-note/${attendanceChild.dailyNoteId}`}
+            data-qa={'link-child-daycare-daily-note'}
+          >
+            <RoundIcon
+              content={farStickyNote}
+              color={colors.accents.petrol}
+              size={'m'}
+            />
+          </Link>
+        )}
+      </ToolsColumn>
     </ChildBox>
   )
 })

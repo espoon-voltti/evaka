@@ -14,4 +14,7 @@ export default class MobileGroupsPage {
 
   readonly childStatus = (childId: string) =>
     this.childRow(childId).find('[data-qa="child-status"]')
+
+  readonly childDailyNoteLink = (childId: string) =>
+    this.childRow(childId).find('[data-qa="link-child-daycare-daily-note"]')
 }

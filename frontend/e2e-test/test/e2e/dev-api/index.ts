@@ -15,6 +15,7 @@ import {
   DaycareCaretakers,
   DaycareGroup,
   DaycareGroupPlacement,
+  DaycareDailyNote,
   DaycarePlacement,
   Decision,
   DecisionFixture,
@@ -806,6 +807,16 @@ export async function putDigitransitAutocomplete(
 ): Promise<void> {
   try {
     await devClient.put('/digitransit/autocomplete', mockResponse)
+  } catch (e) {
+    throw new DevApiError(e)
+  }
+}
+
+export async function postDaycareDailyNote(
+  note: DaycareDailyNote
+): Promise<void> {
+  try {
+    await devClient.post<PairingResponse>(`/messaging/daycare-daily-note`, note)
   } catch (e) {
     throw new DevApiError(e)
   }
