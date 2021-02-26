@@ -66,6 +66,7 @@ import {
   faSearch,
   faSignIn,
   faSignOut,
+  faStickyNote,
   faSync,
   faTimes,
   faTrash,
@@ -79,7 +80,8 @@ import {
 import {
   faFileAlt as farFileAlt,
   faGavel as farGavel,
-  faMap as farMap
+  faMap as farMap,
+  faStickyNote as farStickyNote
 } from '@fortawesome/pro-regular-svg-icons'
 
 import {
@@ -161,6 +163,7 @@ const icons: IconSet = {
   faSearch,
   faSignIn,
   faSignOut,
+  faStickyNote,
   faSync,
   faTimes,
   faTrash,
@@ -181,6 +184,7 @@ const icons: IconSet = {
   fasMapMarkerAlt,
   fasArrowDown,
   fasArrowUp,
+  farStickyNote,
   farUser: faUser
 }
 

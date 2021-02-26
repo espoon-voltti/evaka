@@ -78,6 +78,7 @@ import {
 import {
   faFileAlt as farFileAlt,
   faMap as farMap,
+  faStickyNote as farStickyNote,
   faUser as farUser
 } from '@fortawesome/free-regular-svg-icons'
 import { IconSet } from '.'
@@ -147,7 +148,7 @@ const icons: IconSet = {
   faSignIn: faSignInAlt,
   faSignOut: faSignOutAlt,
   faStickyNote,
-  farStickyNote: faStickyNote,
+  farStickyNote,
   faSync,
   faTimes,
   faTrash,
