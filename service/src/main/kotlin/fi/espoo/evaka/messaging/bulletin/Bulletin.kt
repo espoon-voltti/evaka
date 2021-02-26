@@ -8,6 +8,7 @@ data class Bulletin(
     val title: String,
     val content: String,
     val createdByEmployee: UUID,
+    val unitId: UUID,
     val groupId: UUID?,
     val sentAt: Instant?
 )

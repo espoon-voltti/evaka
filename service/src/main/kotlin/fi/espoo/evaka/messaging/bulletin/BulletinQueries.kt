@@ -10,16 +10,18 @@ import java.time.OffsetDateTime
 import java.util.UUID
 
 fun Database.Transaction.initBulletin(
-    user: AuthenticatedUser
+    user: AuthenticatedUser,
+    unitId: UUID
 ): UUID {
     // language=sql
     val sql = """
-        INSERT INTO bulletin (created_by_employee)
-        VALUES (:createdBy)
+        INSERT INTO bulletin (created_by_employee, unit_id)
+        VALUES (:createdBy, :unitId)
         RETURNING id
     """.trimIndent()
     return this.createQuery(sql)
         .bind("createdBy", user.id)
+        .bind("unitId", unitId)
         .mapTo<UUID>()
         .first()
 }
@@ -139,18 +141,20 @@ fun Database.Read.getBulletin(
 }
 
 fun Database.Read.getOwnBulletinDrafts(
-    user: AuthenticatedUser
+    user: AuthenticatedUser,
+    unitId: UUID
 ): List<Bulletin> {
     // language=sql
     val sql = """
         SELECT b.*
         FROM bulletin b
-        WHERE b.created_by_employee = :userId AND b.sent_at IS NULL 
+        WHERE b.created_by_employee = :userId AND b.sent_at IS NULL AND b.unit_id = :unitId 
         ORDER BY b.updated DESC
     """.trimIndent()
 
     return this.createQuery(sql)
         .bind("userId", user.id)
+        .bind("unitId", unitId)
         .mapTo<Bulletin>()
         .list()
 }

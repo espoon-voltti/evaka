@@ -36,3 +36,4 @@ V35__create_round_the_clock_field.sql
 V36__daycare_daily_note.sql
 V37__create_bulletin_tables.sql
 V38__add_child_preferred_name.sql
+V39__add_unit_id_to_bulletin.sql

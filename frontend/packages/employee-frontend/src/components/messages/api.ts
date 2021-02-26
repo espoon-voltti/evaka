@@ -63,9 +63,11 @@ export async function getSentBulletins(
     .catch((e) => Failure.fromError(e))
 }
 
-export async function getDraftBulletins(): Promise<Result<Bulletin[]>> {
+export async function getDraftBulletins(
+  unitId: UUID
+): Promise<Result<Bulletin[]>> {
   return client
-    .get<JsonOf<Bulletin[]>>('/bulletins/draft')
+    .get<JsonOf<Bulletin[]>>('/bulletins/draft', { params: { unitId } })
     .then((res) => Success.of(res.data.map(deserializeBulletin)))
     .catch((e) => Failure.fromError(e))
 }

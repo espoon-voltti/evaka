@@ -28,14 +28,16 @@ class BulletinControllerEmployee(
     @PostMapping
     fun createBulletin(
         db: Database.Connection,
-        user: AuthenticatedUser
+        user: AuthenticatedUser,
+        @RequestParam(required = true) unitId: UUID
     ): ResponseEntity<Bulletin> {
         Audit.MessagingBulletinDraftCreate.log()
         authorizeAdminSupervisorOrStaff(user)
 
         return db.transaction { tx ->
             tx.initBulletin(
-                user = user
+                user = user,
+                unitId = unitId
             )
         }.let {
             ResponseEntity.ok(
@@ -45,7 +47,8 @@ class BulletinControllerEmployee(
                     content = "",
                     createdByEmployee = user.id,
                     groupId = null,
-                    sentAt = null
+                    sentAt = null,
+                    unitId = unitId
                 )
             )
         }
@@ -68,13 +71,14 @@ class BulletinControllerEmployee(
     @GetMapping("/draft")
     fun getDraftBulletins(
         db: Database.Connection,
-        user: AuthenticatedUser
+        user: AuthenticatedUser,
+        @RequestParam(required = true) unitId: UUID
     ): ResponseEntity<List<Bulletin>> {
         Audit.MessagingBulletinDraftRead.log()
         authorizeAdminSupervisorOrStaff(user)
 
         return db.transaction { tx ->
-            tx.getOwnBulletinDrafts(user)
+            tx.getOwnBulletinDrafts(user, unitId)
         }.let { ResponseEntity.ok(it) }
     }
 

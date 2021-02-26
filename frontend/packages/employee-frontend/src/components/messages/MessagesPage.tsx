@@ -56,7 +56,7 @@ export default React.memo(function MessagesPage() {
 
   const loadDraftMessages = useRestApi(getDraftBulletins, setDraftMessages)
   useEffect(() => {
-    if (unit) loadDraftMessages()
+    if (unit) loadDraftMessages(unit.id)
   }, [unit])
 
   const loadSentMessages = useRestApi(getSentBulletins, setSentMessages)
