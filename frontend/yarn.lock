@@ -1626,6 +1626,7 @@ __metadata:
     eslint-plugin-prettier: ^3.3.1
     eslint-plugin-react: ^7.22.0
     eslint-plugin-react-hooks: ^4.2.0
+    focus-trap-react: ^8.4.2
     history: ^4.9.0
     html-webpack-plugin: ^5.0.0
     husky: ^5.0.9
@@ -10146,6 +10147,28 @@ __metadata:
   dependencies:
     tslib: ^1.9.3
   checksum: 8e574d1586b95c8974f0579aa32c4fdce9d2b6e0d7d01616eb71585e65b6940e39ae1aecb2824ede384c4123d16dd4640f2536a210129efad3e1befae6726372
+  languageName: node
+  linkType: hard
+
+"focus-trap-react@npm:^8.4.2":
+  version: 8.4.2
+  resolution: "focus-trap-react@npm:8.4.2"
+  dependencies:
+    focus-trap: ^6.3.0
+  peerDependencies:
+    prop-types: ^15.7.2
+    react: ">=16.0.0"
+    react-dom: ">=16.0.0"
+  checksum: a11a7755f6aa3d931e3b99d5233a33b3c62f975bef001b98e120154060544a6b1fa52018ddf40ebc29e9202b7d2b30142a358ae2344595770706cf536ac25c89
+  languageName: node
+  linkType: hard
+
+"focus-trap@npm:^6.3.0":
+  version: 6.3.0
+  resolution: "focus-trap@npm:6.3.0"
+  dependencies:
+    tabbable: ^5.1.5
+  checksum: eb3f2c304fbce4b0428d94e563519e263998e973185629224e7b21eb009d0bf377779923d631fd2c65c255e809fe279dfbc7b938548d26f772a44c8273df50ed
   languageName: node
   linkType: hard
 
@@ -19296,6 +19319,13 @@ resolve@1.1.7:
     has-symbols: ^1.0.1
     object.getownpropertydescriptors: ^2.1.0
   checksum: a258436a8038fe6d58e1becb3d550eeed8fdcc9c4e9d357a1f570113b2f4fb6cdc37dcdcf657c35e436ae5c2d929305123ce7eddcd501211623433a9a2fe81fc
+  languageName: node
+  linkType: hard
+
+"tabbable@npm:^5.1.5":
+  version: 5.1.6
+  resolution: "tabbable@npm:5.1.6"
+  checksum: cce1826264254c8a5777f71361aee1eaec36ee797a1c7e7c5fd15a32ca4548d0b3fd33d77114a032418915542d24d4bf1f69389cfe4fb873c3652d06db95d775
   languageName: node
   linkType: hard
 

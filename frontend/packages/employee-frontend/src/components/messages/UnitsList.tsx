@@ -4,6 +4,7 @@
 
 import React from 'react'
 import styled from 'styled-components'
+import _ from 'lodash'
 import { Result } from '@evaka/lib-common/src/api'
 import colors from '@evaka/lib-components/src/colors'
 import { defaultMargins } from '@evaka/lib-components/src/white-space'
@@ -30,7 +31,7 @@ export default React.memo(function UnitsList({
     <>
       <Container>
         <HeaderContainer>
-          <H1 noMargin>{t.i18n.messages.unitListTitle}</H1>
+          <H1 noMargin>{t.i18n.messages.unitList.title}</H1>
         </HeaderContainer>
 
         {units.isLoading && <SpinnerSegment />}
@@ -39,7 +40,7 @@ export default React.memo(function UnitsList({
         )}
         <Units>
           {units.isSuccess &&
-            units.value.map((unit) => (
+            _.sortBy(units.value, (u) => u.name).map((unit) => (
               <Unit
                 key={unit.id}
                 onClick={() => selectUnit(unit)}
@@ -56,6 +57,19 @@ export default React.memo(function UnitsList({
   )
 })
 
+const Container = styled.div`
+  width: 20%;
+  min-width: 20%;
+  max-width: 20%;
+  min-height: 500px;
+  background-color: ${colors.greyscale.white};
+  overflow-y: auto;
+`
+
+const HeaderContainer = styled.div`
+  padding: ${defaultMargins.m};
+`
+
 const Units = styled.div`
   display: flex;
   flex-direction: column;
@@ -64,22 +78,11 @@ const Units = styled.div`
 const Unit = styled.button`
   background: white;
   border: none;
-  padding: ${defaultMargins.s} ${defaultMargins.m};
-  margin: 0;
+  padding: ${defaultMargins.xs} ${defaultMargins.m};
+  margin: 0 0 ${defaultMargins.xxs};
   text-align: left;
   &.active {
     font-weight: 600;
     background: ${colors.brandEspoo.espooTurquoiseLight};
   }
-`
-
-const Container = styled.div`
-  min-width: 35%;
-  max-width: 400px;
-  min-height: 500px;
-  background-color: ${colors.greyscale.white};
-`
-
-const HeaderContainer = styled.div`
-  padding: ${defaultMargins.m};
 `
