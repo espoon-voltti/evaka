@@ -32,7 +32,6 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import org.thymeleaf.context.Context
 import java.net.URI
-import java.time.LocalDate
 import java.util.Locale
 import java.util.UUID
 
@@ -111,9 +110,9 @@ class DecisionService(
         val decisionBytes = createDecisionPdf(
             pdfService,
             decision,
-            application,
             otherGuardian,
             child,
+            application.transferApplication,
             decisionLanguage,
             unitManager
         )
@@ -139,28 +138,27 @@ class DecisionService(
 
     companion object {
         fun createDecisionPdf(
-            pdfService: PDFService,
-            decision: Decision,
-            application: ApplicationDetails,
-            guardian: PersonDTO,
-            child: PersonDTO,
-            lang: String,
-            unitManager: DaycareManager
+                pdfService: PDFService,
+                decision: Decision,
+                guardian: PersonDTO,
+                child: PersonDTO,
+                isTransferApplication: Boolean,
+                lang: String,
+                unitManager: DaycareManager
         ): ByteArray {
             val sendAddress = getSendAddress(guardian, lang)
 
-            val templates = createTemplates(decision, application)
+            val templates = createTemplates(decision, isTransferApplication)
             val isPartTimeDecision: Boolean = decision.type === DecisionType.DAYCARE_PART_TIME
 
             val pages = generatePages(
                 templates,
                 lang,
                 decision,
-                application,
+                child,
                 guardian,
                 unitManager,
                 sendAddress,
-                child.dateOfBirth,
                 isPartTimeDecision
             )
             return pdfService.render(pages)
@@ -170,11 +168,10 @@ class DecisionService(
             templates: List<String>,
             lang: String,
             decision: Decision,
-            application: ApplicationDetails,
+            child: PersonDTO,
             guardian: PersonDTO,
             manager: DaycareManager,
             sendAddress: DecisionSendAddress,
-            childDateOfBirth: LocalDate,
             isPartTimeDecision: Boolean
         ): List<Page> {
             return templates.mapIndexed { i, template ->
@@ -183,9 +180,7 @@ class DecisionService(
                     Context().apply {
                         locale = Locale.Builder().setLanguage(lang).build()
                         setVariable("decision", decision)
-                        setVariable("application", application)
-                        setVariable("child", application.form.child)
-                        setVariable("childDateOfBirth", childDateOfBirth)
+                        setVariable("child", child)
                         setVariable("guardian", guardian)
                         setVariable("manager", manager)
                         setVariable("sendAddress", sendAddress)
@@ -199,7 +194,7 @@ class DecisionService(
 
         fun createTemplates(
             decision: Decision,
-            application: ApplicationDetails
+            isTransferApplication: Boolean
         ): List<String> {
             return when (decision.type) {
                 DecisionType.CLUB -> listOf(
@@ -216,7 +211,7 @@ class DecisionService(
                             "daycare/voucher/daycare-acceptance-form"
                         )
                     } else {
-                        if (application.transferApplication) {
+                        if (isTransferApplication) {
                             listOf(
                                 "daycare/transfer/daycare-decision-page1",
                                 "daycare/transfer/daycare-decision-page2",

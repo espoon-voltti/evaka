@@ -16,8 +16,8 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 <body>
     <div th:replace="~{ ipost/ipost-letter :: cover(~{ :: address},~{ :: heading},~{ :: content})}">
         <div th:fragment="address">
-            <div th:text="${application.form.guardian.lastName}"></div>
-            <div th:text="${application.form.guardian.firstName}"></div>
+            <div th:text="${guardian.lastName}"></div>
+            <div th:text="${guardian.firstName}"></div>
             <div th:text="${sendAddress.row1}"></div>
             <div th:text="${sendAddress.row2}"></div>
             <div th:if="${not #strings.isEmpty(sendAddress.row3)}" th:text="${sendAddress.row3}"></div>
@@ -44,7 +44,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
                 <div class="child-details">
                     <div>
                         <span class="strong" th:text="#{text.section.decision.details.child}">Lapsellenne</span>
-                        <span th:text="${application.form.child.firstName} + ' ' + ${application.form.child.lastName}"></span>
+                        <span th:text="${child.firstName} + ' ' + ${child.lastName}"></span>
                     </div>
                     <div>
                         <span class="strong" th:text="#{text.section.decision.details.date}">on varattu kerhopaikka ajalle</span>
