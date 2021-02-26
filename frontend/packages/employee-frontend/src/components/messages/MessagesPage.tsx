@@ -10,10 +10,12 @@ import { useDebounce } from '@evaka/lib-common/src/utils/useDebounce'
 import Container from '@evaka/lib-components/src/layout/Container'
 import Button from '@evaka/lib-components/src/atoms/buttons/Button'
 import { Gap } from '@evaka/lib-components/src/white-space'
-import { Bulletin, IdAndName } from './types'
+import { Bulletin, IdAndName, SentBulletin } from './types'
 import {
   deleteDraftBulletin,
+  getDraftBulletins,
   getGroups,
+  getSentBulletins,
   getUnits,
   initNewBulletin,
   sendBulletin,
@@ -24,11 +26,22 @@ import { tabletMin } from '@evaka/lib-components/src/breakpoints'
 import AdaptiveFlex from '@evaka/lib-components/src/layout/AdaptiveFlex'
 import styled from 'styled-components'
 import UnitsList from './UnitsList'
+import MessageBoxes, { MessageBoxType } from './MessageBoxes'
 
 export default React.memo(function MessagesPage() {
   const [units, setUnits] = useState<Result<IdAndName[]>>(Loading.of())
   const [groups, setGroups] = useState<Result<IdAndName[]> | null>(null)
+  const [draftMessages, setDraftMessages] = useState<Result<Bulletin[]> | null>(
+    null
+  )
+  const [sentMessages, setSentMessages] = useState<Result<
+    SentBulletin[]
+  > | null>(null)
   const [editorMessage, setEditorMessage] = useState<Bulletin | null>()
+  const [
+    activeMessageBox,
+    setActiveMessageBox
+  ] = useState<MessageBoxType | null>(null)
   const debouncedMessage = useDebounce(editorMessage, 2000)
 
   const [unit, setUnit] = useState<IdAndName | null>(null)
@@ -39,6 +52,16 @@ export default React.memo(function MessagesPage() {
   const loadGroups = useRestApi(getGroups, setGroups)
   useEffect(() => {
     if (unit) loadGroups(unit.id)
+  }, [unit])
+
+  const loadDraftMessages = useRestApi(getDraftBulletins, setDraftMessages)
+  useEffect(() => {
+    if (unit) loadDraftMessages()
+  }, [unit])
+
+  const loadSentMessages = useRestApi(getSentBulletins, setSentMessages)
+  useEffect(() => {
+    if (unit) loadSentMessages(unit.id)
   }, [unit])
 
   const onCreateNew = () => {
@@ -78,6 +101,16 @@ export default React.memo(function MessagesPage() {
       <Gap size="s" />
       <StyledFlex breakpoint={tabletMin} horizontalSpacing="L">
         <UnitsList units={units} activeUnit={unit} selectUnit={setUnit} />
+        {unit && (
+          <MessageBoxes
+            activeMessageBox={activeMessageBox}
+            selectMessageBox={setActiveMessageBox}
+            messageCounts={{
+              SENT: sentMessages?.isSuccess ? sentMessages.value.length : 0,
+              DRAFT: draftMessages?.isSuccess ? draftMessages.value.length : 0
+            }}
+          />
+        )}
 
         {editorMessage && groups?.isSuccess && (
           <MessageEditor

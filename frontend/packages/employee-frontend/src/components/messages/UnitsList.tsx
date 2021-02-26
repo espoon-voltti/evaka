@@ -69,7 +69,7 @@ const Unit = styled.button`
   text-align: left;
   &.active {
     font-weight: 600;
-    background: ${colors.blues.lighter};
+    background: ${colors.brandEspoo.espooTurquoiseLight};
   }
 `
 
