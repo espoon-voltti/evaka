@@ -54,9 +54,18 @@ export async function getGroups(unitId: UUID): Promise<Result<IdAndName[]>> {
     .then((res) => Success.of(res.data.map(({ id, name }) => ({ id, name }))))
 }
 
-export async function getSentBulletins(): Promise<Result<SentBulletin[]>> {
+export async function getSentBulletins(
+  unitId: UUID
+): Promise<Result<SentBulletin[]>> {
   return client
-    .get<JsonOf<SentBulletin[]>>('/bulletins/sent')
+    .get<JsonOf<SentBulletin[]>>('/bulletins/sent', { params: { unitId } })
     .then((res) => Success.of(res.data.map(deserializeSentBulletin)))
+    .catch((e) => Failure.fromError(e))
+}
+
+export async function getDraftBulletins(): Promise<Result<Bulletin[]>> {
+  return client
+    .get<JsonOf<Bulletin[]>>('/bulletins/draft')
+    .then((res) => Success.of(res.data.map(deserializeBulletin)))
     .catch((e) => Failure.fromError(e))
 }

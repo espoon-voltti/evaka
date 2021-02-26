@@ -26,12 +26,8 @@ export type IdAndName = {
   name: string
 }
 
-export type SentBulletin = {
-  id: string
+export type SentBulletin = Bulletin & {
   sentAt: Date
-  sender: string
-  title: string
-  content: string
 }
 
 export const deserializeSentBulletin = (
