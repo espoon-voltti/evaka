@@ -6,7 +6,11 @@ package fi.espoo.evaka.shared
 
 import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.daycare.service.DaycareManager
-import fi.espoo.evaka.decision.*
+import fi.espoo.evaka.decision.Decision
+import fi.espoo.evaka.decision.DecisionService
+import fi.espoo.evaka.decision.DecisionStatus
+import fi.espoo.evaka.decision.DecisionType
+import fi.espoo.evaka.decision.DecisionUnit
 import fi.espoo.evaka.identity.ExternalIdentifier
 import fi.espoo.evaka.pis.service.PersonDTO
 import fi.espoo.evaka.shared.config.PDFConfig
@@ -21,28 +25,29 @@ import org.springframework.boot.test.context.SpringBootTest
 import java.io.File
 import java.io.FileOutputStream
 import java.time.LocalDate
-import java.util.*
+import java.util.UUID
 
 val logger = KotlinLogging.logger { }
 
 private val application = validPreschoolApplication
 private val transferApplication = application.copy(
-        transferApplication = true
+    transferApplication = true
 )
 
 private val daycareTransferDecision =
-        createValidDecision(applicationId = transferApplication.id, type = DecisionType.DAYCARE)
+    createValidDecision(applicationId = transferApplication.id, type = DecisionType.DAYCARE)
 private val daycareDecision = createValidDecision(applicationId = application.id, type = DecisionType.DAYCARE)
 private val preschoolDaycareDecision =
-        createValidDecision(applicationId = application.id, type = DecisionType.PRESCHOOL_DAYCARE)
+    createValidDecision(applicationId = application.id, type = DecisionType.PRESCHOOL_DAYCARE)
 private val daycareDecisionPartTime =
-        createValidDecision(applicationId = application.id, type = DecisionType.DAYCARE_PART_TIME)
+    createValidDecision(applicationId = application.id, type = DecisionType.DAYCARE_PART_TIME)
 private val preschoolDecision = createValidDecision(applicationId = application.id, type = DecisionType.PRESCHOOL)
 private val preparatoryDecision =
-        createValidDecision(applicationId = application.id, type = DecisionType.PREPARATORY_EDUCATION)
+    createValidDecision(applicationId = application.id, type = DecisionType.PREPARATORY_EDUCATION)
 private val clubDecision = createValidDecision(applicationId = application.id, type = DecisionType.CLUB)
 
-private val voucherDecision = daycareDecision.copy(unit = DecisionUnit(
+private val voucherDecision = daycareDecision.copy(
+    unit = DecisionUnit(
         UUID.randomUUID(),
         "Suomenniemen palvelusetelipäiväkoti",
         "Suomenniemen palvelusetelipäiväkoti",
@@ -54,46 +59,46 @@ private val voucherDecision = daycareDecision.copy(unit = DecisionUnit(
         "Suomenniemen palvelusetelipäiväkodin asiakaspalvelu",
         "Kartanonkujanpää 565, 02210 Espoo",
         providerType = ProviderType.PRIVATE_SERVICE_VOUCHER
-))
+    )
+)
 
 private val child = PersonDTO(
-        testChild_1.id,
-        ExternalIdentifier.SSN.getInstance(testChild_1.ssn!!),
-        null,
-        "Kullervo Kyöstinpoika",
-        "Pöysti",
-        null,
-        null,
-        null,
-        testChild_1.dateOfBirth,
-        null,
-        "Kuusikallionrinne 26 A 4",
-        "02270",
-        "Espoo",
-        null
+    testChild_1.id,
+    ExternalIdentifier.SSN.getInstance(testChild_1.ssn!!),
+    null,
+    "Kullervo Kyöstinpoika",
+    "Pöysti",
+    null,
+    null,
+    null,
+    testChild_1.dateOfBirth,
+    null,
+    "Kuusikallionrinne 26 A 4",
+    "02270",
+    "Espoo",
+    null
 )
 private val guardian = PersonDTO(
-        testAdult_1.id,
-        ExternalIdentifier.SSN.getInstance(testAdult_1.ssn!!),
-        null,
-        "Kyösti Taavetinpoika",
-        "Pöysti",
-        "kyostipoysti@example.com",
-        "+358914822",
-        null,
-        testAdult_1.dateOfBirth,
-        null,
-        "Kuusikallionrinne 26 A 4",
-        "02270",
-        "Espoo",
-        null
+    testAdult_1.id,
+    ExternalIdentifier.SSN.getInstance(testAdult_1.ssn!!),
+    null,
+    "Kyösti Taavetinpoika",
+    "Pöysti",
+    "kyostipoysti@example.com",
+    "+358914822",
+    null,
+    testAdult_1.dateOfBirth,
+    null,
+    "Kuusikallionrinne 26 A 4",
+    "02270",
+    "Espoo",
+    null
 )
 private val manager = DaycareManager("Maija Manageri", "maija.manageri@test.com", "0401231234")
 
-
 @SpringBootTest(
-        webEnvironment = SpringBootTest.WebEnvironment.NONE,
-        classes = [PDFConfig::class, PDFService::class]
+    webEnvironment = SpringBootTest.WebEnvironment.NONE,
+    classes = [PDFConfig::class, PDFService::class]
 )
 class PDFServiceTest {
 
@@ -126,7 +131,15 @@ class PDFServiceTest {
 
     private fun createPDF(decision: Decision, isTransferApplication: Boolean, lang: String) {
         val decisionPdfByteArray =
-                DecisionService.createDecisionPdf(pdfService, decision, guardian, child, isTransferApplication, lang, manager)
+            DecisionService.createDecisionPdf(
+                pdfService,
+                decision,
+                guardian,
+                child,
+                isTransferApplication,
+                lang,
+                manager
+            )
 
         val file = File.createTempFile(decision.id.toString(), ".pdf")
         FileOutputStream(file).use {
@@ -144,49 +157,49 @@ class PDFServiceTest {
 }
 
 fun createValidDecision(
-        id: UUID = UUID.randomUUID(),
-        createdBy: String = "John Doe",
-        type: DecisionType = DecisionType.DAYCARE,
-        startDate: LocalDate = LocalDate.of(2019, 1, 1),
-        endDate: LocalDate = LocalDate.of(2019, 12, 31),
-        unit: DecisionUnit = DecisionUnit(
-                UUID.randomUUID(),
-                "unit name",
-                "Daycare unit name",
-                "Preschool unit name",
-                "manager name",
-                "unit address",
-                "unit postal code",
-                "ESPOO",
-                "Handler",
-                "Handler address",
-                providerType = ProviderType.MUNICIPAL
-        ),
-        applicationId: UUID = UUID.randomUUID(),
-        childId: UUID = UUID.randomUUID(),
-        documentUri: String? = null,
-        otherGuardianDocumentUri: String? = null,
-        decisionNumber: Long = 123,
-        sentDate: LocalDate = LocalDate.now(),
-        status: DecisionStatus = DecisionStatus.ACCEPTED,
-        resolved: LocalDate? = null
+    id: UUID = UUID.randomUUID(),
+    createdBy: String = "John Doe",
+    type: DecisionType = DecisionType.DAYCARE,
+    startDate: LocalDate = LocalDate.of(2019, 1, 1),
+    endDate: LocalDate = LocalDate.of(2019, 12, 31),
+    unit: DecisionUnit = DecisionUnit(
+        UUID.randomUUID(),
+        "unit name",
+        "Daycare unit name",
+        "Preschool unit name",
+        "manager name",
+        "unit address",
+        "unit postal code",
+        "ESPOO",
+        "Handler",
+        "Handler address",
+        providerType = ProviderType.MUNICIPAL
+    ),
+    applicationId: UUID = UUID.randomUUID(),
+    childId: UUID = UUID.randomUUID(),
+    documentUri: String? = null,
+    otherGuardianDocumentUri: String? = null,
+    decisionNumber: Long = 123,
+    sentDate: LocalDate = LocalDate.now(),
+    status: DecisionStatus = DecisionStatus.ACCEPTED,
+    resolved: LocalDate? = null
 ): Decision {
     return Decision(
-            id = id,
-            createdBy = createdBy,
-            type = type,
-            startDate = startDate,
-            endDate = endDate,
-            unit = unit,
-            applicationId = applicationId,
-            childId = childId,
-            documentUri = documentUri,
-            otherGuardianDocumentUri = otherGuardianDocumentUri,
-            decisionNumber = decisionNumber,
-            sentDate = sentDate,
-            status = status,
-            childName = "Test Child",
-            requestedStartDate = startDate,
-            resolved = resolved
+        id = id,
+        createdBy = createdBy,
+        type = type,
+        startDate = startDate,
+        endDate = endDate,
+        unit = unit,
+        applicationId = applicationId,
+        childId = childId,
+        documentUri = documentUri,
+        otherGuardianDocumentUri = otherGuardianDocumentUri,
+        decisionNumber = decisionNumber,
+        sentDate = sentDate,
+        status = status,
+        childName = "Test Child",
+        requestedStartDate = startDate,
+        resolved = resolved
     )
 }

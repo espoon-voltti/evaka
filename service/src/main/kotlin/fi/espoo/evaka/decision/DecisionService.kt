@@ -138,20 +138,19 @@ class DecisionService(
 
     companion object {
         fun createDecisionPdf(
-                pdfService: PDFService,
-                decision: Decision,
-                guardian: PersonDTO,
-                child: PersonDTO,
-                isTransferApplication: Boolean,
-                lang: String,
-                unitManager: DaycareManager
+            pdfService: PDFService,
+            decision: Decision,
+            guardian: PersonDTO,
+            child: PersonDTO,
+            isTransferApplication: Boolean,
+            lang: String,
+            unitManager: DaycareManager
         ): ByteArray {
             val sendAddress = getSendAddress(guardian, lang)
-
             val templates = createTemplates(decision, isTransferApplication)
             val isPartTimeDecision: Boolean = decision.type === DecisionType.DAYCARE_PART_TIME
 
-            val pages = generatePages(
+            val pages = generateDecisionPages(
                 templates,
                 lang,
                 decision,
@@ -164,7 +163,7 @@ class DecisionService(
             return pdfService.render(pages)
         }
 
-        fun generatePages(
+        fun generateDecisionPages(
             templates: List<String>,
             lang: String,
             decision: Decision,
