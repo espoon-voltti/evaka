@@ -43,7 +43,7 @@ const features: Features = {
     voucherServiceProviders: true,
     attachments: true,
     evakaLogin: true,
-    messaging: false
+    messaging: true
   },
   prod: {
     voucherValueDecisionsPage: false,

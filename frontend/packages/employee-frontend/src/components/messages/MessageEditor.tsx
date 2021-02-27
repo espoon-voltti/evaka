@@ -8,13 +8,13 @@ import ReactSelect from 'react-select'
 import _ from 'lodash'
 import { faTimes, faTrash } from '@evaka/lib-icons'
 import colors from '@evaka/lib-components/src/colors'
-import InputField, {
-  TextArea
-} from '@evaka/lib-components/src/atoms/form/InputField'
+import InputField from '@evaka/lib-components/src/atoms/form/InputField'
 import IconButton from '@evaka/lib-components/src/atoms/buttons/IconButton'
 import InlineButton from '@evaka/lib-components/src/atoms/buttons/InlineButton'
 import Button from '@evaka/lib-components/src/atoms/buttons/Button'
 import { defaultMargins, Gap } from '@evaka/lib-components/src/white-space'
+import { Label } from '@evaka/lib-components/src/typography'
+import { useTranslation } from '~state/i18n'
 import { Bulletin, IdAndName } from './types'
 
 type Props = {
@@ -34,14 +34,16 @@ export default React.memo(function MessageEditor({
   onClose,
   onSend
 }: Props) {
+  const { i18n } = useTranslation()
+
   return (
     <Container>
       <TopBar>
-        <span>Uusi tiedote</span>
+        <span>{i18n.messages.messageEditor.newBulletin}</span>
         <IconButton icon={faTimes} onClick={onClose} white />
       </TopBar>
       <FormArea>
-        <div>Vastaanottaja</div>
+        <div>{i18n.messages.messageEditor.to.label}</div>
         <Gap size={'xs'} />
         <ReactSelect
           options={_.sortBy(groups, (g) => g.name.toLowerCase())}
@@ -59,10 +61,12 @@ export default React.memo(function MessageEditor({
                 : null
             })
           }
+          noOptionsMessage={() => i18n.messages.messageEditor.to.noOptions}
+          placeholder={i18n.messages.messageEditor.to.placeholder}
         />
         <Gap size={'s'} />
 
-        <div>Otsikko</div>
+        <div>{i18n.messages.messageEditor.title}</div>
         <Gap size={'xs'} />
         <InputField
           value={bulletin.title}
@@ -70,43 +74,45 @@ export default React.memo(function MessageEditor({
         />
         <Gap size={'s'} />
 
-        <div>Viesti</div>
+        <Label>{i18n.messages.messageEditor.message}</Label>
         <Gap size={'xs'} />
-        <TextArea
+        <StyledTextArea
           value={bulletin.content}
           onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
             onChange({ content: e.target.value })
           }
         />
         <Gap size={'s'} />
+        <BottomRow>
+          <InlineButton
+            onClick={onDeleteDraft}
+            text={i18n.messages.messageEditor.deleteDraft}
+            icon={faTrash}
+          />
+          <Button
+            text={i18n.messages.messageEditor.send}
+            primary
+            onClick={onSend}
+            disabled={
+              !bulletin.groupId ||
+              !groups.find((group) => group.id === bulletin.groupId)
+            }
+          />
+        </BottomRow>
       </FormArea>
-      <BottomRow>
-        <InlineButton
-          onClick={onDeleteDraft}
-          text={'Hylkää luonnos'}
-          icon={faTrash}
-        />
-        <Button
-          text={'Lähetä'}
-          primary
-          onClick={onSend}
-          disabled={
-            !bulletin.groupId ||
-            !groups.find((group) => group.id === bulletin.groupId)
-          }
-        />
-      </BottomRow>
     </Container>
   )
 })
 
 const Container = styled.div`
   width: 680px;
-  height: 835px;
-  position: relative;
-  right: 43px;
+  height: 100%;
+  max-height: 700px;
+  position: absolute;
+  z-index: 100;
+  right: 0;
   bottom: 0;
-  box-shadow: 0 60px 8px 8px rgba(15, 15, 15, 0.15);
+  box-shadow: 0 8px 8px 8px rgba(15, 15, 15, 0.15);
   display: flex;
   flex-direction: column;
   background-color: ${colors.greyscale.white};
@@ -126,7 +132,15 @@ const TopBar = styled.div`
 const FormArea = styled.div`
   width: 100%;
   flex-grow: 1;
-  padding: ${defaultMargins.L} ${defaultMargins.L} ${defaultMargins.XXL};
+  padding: ${defaultMargins.m};
+  display: flex;
+  flex-direction: column;
+`
+
+const StyledTextArea = styled.textarea`
+  width: 100%;
+  resize: none;
+  flex-grow: 1;
 `
 
 const BottomRow = styled.div`
@@ -134,5 +148,4 @@ const BottomRow = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: ${defaultMargins.L} ${defaultMargins.L} ${defaultMargins.XXL};
 `

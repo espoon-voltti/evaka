@@ -3,13 +3,13 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useEffect, useState } from 'react'
-import _ from 'lodash'
+import styled from 'styled-components'
+import FocusTrap from 'focus-trap-react'
 import { Loading, Result } from '@evaka/lib-common/src/api'
 import { useRestApi } from '@evaka/lib-common/src/utils/useRestApi'
 import { useDebounce } from '@evaka/lib-common/src/utils/useDebounce'
 import Container from '@evaka/lib-components/src/layout/Container'
-import Button from '@evaka/lib-components/src/atoms/buttons/Button'
-import { Gap } from '@evaka/lib-components/src/white-space'
+import { FixedSpaceRow } from '@evaka/lib-components/src/layout/flex-helpers'
 import { Bulletin, IdAndName, SentBulletin } from './types'
 import {
   deleteDraftBulletin,
@@ -22,11 +22,10 @@ import {
   updateDraftBulletin
 } from './api'
 import MessageEditor from './MessageEditor'
-import { tabletMin } from '@evaka/lib-components/src/breakpoints'
-import AdaptiveFlex from '@evaka/lib-components/src/layout/AdaptiveFlex'
-import styled from 'styled-components'
 import UnitsList from './UnitsList'
 import MessageBoxes, { MessageBoxType } from './MessageBoxes'
+import MessageList from './MessageList'
+import MessageReadView from './MessageReadView'
 
 export default React.memo(function MessagesPage() {
   const [units, setUnits] = useState<Result<IdAndName[]>>(Loading.of())
@@ -37,12 +36,13 @@ export default React.memo(function MessagesPage() {
   const [sentMessages, setSentMessages] = useState<Result<
     SentBulletin[]
   > | null>(null)
-  const [editorMessage, setEditorMessage] = useState<Bulletin | null>()
+  const [messageOpen, setMessageOpen] = useState<Bulletin | null>()
+  const [messageUnderEdit, setMessageUnderEdit] = useState<Bulletin | null>()
   const [
     activeMessageBox,
     setActiveMessageBox
   ] = useState<MessageBoxType | null>(null)
-  const debouncedMessage = useDebounce(editorMessage, 2000)
+  const debouncedMessage = useDebounce(messageUnderEdit, 2000)
 
   const [unit, setUnit] = useState<IdAndName | null>(null)
 
@@ -65,11 +65,11 @@ export default React.memo(function MessagesPage() {
   }, [unit])
 
   const onCreateNew = () => {
-    if (editorMessage) return
+    if (messageUnderEdit) return
 
-    void initNewBulletin().then(
-      (res) => res.isSuccess && setEditorMessage(res.value)
-    )
+    void initNewBulletin()
+      .then((res) => res.isSuccess && setMessageUnderEdit(res.value))
+      .then(() => loadDraftMessages())
   }
 
   useEffect(() => {
@@ -80,64 +80,136 @@ export default React.memo(function MessagesPage() {
   }, [debouncedMessage])
 
   const onDeleteDraft = () => {
-    if (!editorMessage) return
+    if (!messageUnderEdit) return
 
-    void deleteDraftBulletin(editorMessage.id).then(() =>
-      setEditorMessage(null)
-    )
+    void deleteDraftBulletin(messageUnderEdit.id).then(() => {
+      setMessageUnderEdit(null)
+      setMessageOpen(null)
+      if (unit) {
+        loadDraftMessages()
+        loadSentMessages(unit.id)
+      }
+    })
   }
 
   const onSend = () => {
-    if (!editorMessage) return
+    if (!messageUnderEdit) return
 
-    const { id, groupId, title, content } = editorMessage
+    const { id, groupId, title, content } = messageUnderEdit
     void updateDraftBulletin(id, groupId, title, content)
-      .then(() => sendBulletin(editorMessage.id))
-      .then(() => setEditorMessage(null))
+      .then(() => sendBulletin(messageUnderEdit.id))
+      .then(() => {
+        setMessageUnderEdit(null)
+        setMessageOpen(null)
+        if (unit) {
+          loadDraftMessages()
+          loadSentMessages(unit.id)
+        }
+      })
+  }
+
+  const onClose = () => {
+    if (!messageUnderEdit) return
+
+    const { id, groupId, title, content } = messageUnderEdit
+    void updateDraftBulletin(id, groupId, title, content).then(() => {
+      setMessageUnderEdit(null)
+      setMessageOpen(null)
+      if (unit) {
+        loadDraftMessages()
+        loadSentMessages(unit.id)
+      }
+    })
   }
 
   return (
     <Container>
-      <Gap size="s" />
-      <StyledFlex breakpoint={tabletMin} horizontalSpacing="L">
+      <StyledFlex spacing="L" tabIndex={messageUnderEdit ? -1 : undefined}>
         <UnitsList units={units} activeUnit={unit} selectUnit={setUnit} />
+
         {unit && (
           <MessageBoxes
             activeMessageBox={activeMessageBox}
-            selectMessageBox={setActiveMessageBox}
+            selectMessageBox={(box) => {
+              setActiveMessageBox(box)
+              setMessageOpen(null)
+            }}
             messageCounts={{
               SENT: sentMessages?.isSuccess ? sentMessages.value.length : 0,
               DRAFT: draftMessages?.isSuccess ? draftMessages.value.length : 0
             }}
+            onCreateNew={onCreateNew}
+            createNewDisabled={!unit || groups?.isSuccess !== true}
           />
         )}
 
-        {editorMessage && groups?.isSuccess && (
-          <MessageEditor
-            bulletin={editorMessage}
-            groups={groups.value}
-            onChange={(change) =>
-              setEditorMessage((old) => (old ? { ...old, ...change } : old))
-            }
-            onClose={() => setEditorMessage(null)}
-            onDeleteDraft={onDeleteDraft}
-            onSend={onSend}
+        {!messageOpen && activeMessageBox === 'SENT' && sentMessages && (
+          <MessageList
+            messageBoxType={'SENT'}
+            messages={sentMessages}
+            selectMessage={setMessageOpen}
+            groups={groups?.isSuccess === true ? groups.value : []}
+          />
+        )}
+
+        {!messageOpen && activeMessageBox === 'DRAFT' && draftMessages && (
+          <MessageList
+            messageBoxType={'DRAFT'}
+            messages={draftMessages}
+            selectMessage={setMessageOpen}
+            groups={groups?.isSuccess === true ? groups.value : []}
+          />
+        )}
+
+        {messageOpen && (
+          <MessageReadView
+            message={messageOpen}
+            onEdit={() => {
+              setMessageUnderEdit(messageOpen)
+              setMessageOpen(null)
+            }}
           />
         )}
       </StyledFlex>
 
-      <Gap size={'s'} />
-
-      <Button
-        text={'Uusi tiedote'}
-        primary
-        onClick={onCreateNew}
-        disabled={!unit || groups?.isSuccess !== true}
-      />
+      {messageUnderEdit && groups?.isSuccess && (
+        <>
+          <Dimmer />
+          <FocusTrap>
+            <div>
+              <MessageEditor
+                bulletin={messageUnderEdit}
+                groups={groups.value}
+                onChange={(change) =>
+                  setMessageUnderEdit((old) =>
+                    old ? { ...old, ...change } : old
+                  )
+                }
+                onClose={onClose}
+                onDeleteDraft={onDeleteDraft}
+                onSend={onSend}
+              />
+            </div>
+          </FocusTrap>
+        </>
+      )}
     </Container>
   )
 })
 
-const StyledFlex = styled(AdaptiveFlex)`
+const StyledFlex = styled(FixedSpaceRow)`
   align-items: stretch;
+  margin-top: 16px;
+  height: calc(100vh - 176px);
+`
+
+const Dimmer = styled.div`
+  position: absolute;
+  top: -1000px;
+  bottom: -1000px;
+  left: -1000px;
+  right: -1000px;
+  z-index: 10;
+  backdrop-filter: blur(4px);
+  opacity: 0.7;
 `

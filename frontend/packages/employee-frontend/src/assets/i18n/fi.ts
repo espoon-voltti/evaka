@@ -2159,6 +2159,36 @@ export const fi = {
   },
   messages: {
     inboxTitle: 'Viestit',
-    unitListTitle: 'Yksiköt'
+    unitList: {
+      title: 'Yksiköt'
+    },
+    messageBoxes: {
+      names: {
+        SENT: 'Lähetetyt',
+        DRAFT: 'Luonnokset'
+      },
+      newBulletin: 'Uusi tiedote'
+    },
+    messageList: {
+      titles: {
+        SENT: 'Lähetetyt viestit',
+        DRAFT: 'Luonnokset'
+      }
+    },
+    messageEditor: {
+      newBulletin: 'Uusi tiedote',
+      to: {
+        label: 'Vastaanottaja',
+        placeholder: 'Valitse ryhmä',
+        noOptions: 'Ei ryhmiä'
+      },
+      title: 'Otsikko',
+      message: 'Viesti',
+      deleteDraft: 'Hylkää luonnos',
+      send: 'Lähetä'
+    },
+    noTitle: 'Ei otsikkoa',
+    notSent: 'Ei lähetetty',
+    editDraft: 'Muokkaa luonnosta'
   }
 }

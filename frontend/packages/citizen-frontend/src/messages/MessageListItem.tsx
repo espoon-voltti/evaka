@@ -39,7 +39,9 @@ export default React.memo(function MessageListItem({
           </span>
         </Header>
         <Title>{bulletin.title}</Title>
-        <ContentSummary>{bulletin.content.split('\n')[0]}</ContentSummary>
+        <ContentSummary>
+          {bulletin.content.substring(0, 200).replace('\n', ' ')}
+        </ContentSummary>
       </FixedSpaceColumn>
     </Container>
   )
