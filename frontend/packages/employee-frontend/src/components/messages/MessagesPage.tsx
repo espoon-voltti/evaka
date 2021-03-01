@@ -69,7 +69,9 @@ export default React.memo(function MessagesPage() {
 
     void initNewBulletin()
       .then((res) => res.isSuccess && setMessageUnderEdit(res.value))
-      .then(() => loadDraftMessages())
+      .then(() => {
+        if (unit) loadDraftMessages(unit.id)
+      })
   }
 
   useEffect(() => {
@@ -79,17 +81,19 @@ export default React.memo(function MessagesPage() {
     }
   }, [debouncedMessage])
 
+  const resetUI = () => {
+    setMessageUnderEdit(null)
+    setMessageOpen(null)
+    if (unit) {
+      loadDraftMessages(unit.id)
+      loadSentMessages(unit.id)
+    }
+  }
+
   const onDeleteDraft = () => {
     if (!messageUnderEdit) return
 
-    void deleteDraftBulletin(messageUnderEdit.id).then(() => {
-      setMessageUnderEdit(null)
-      setMessageOpen(null)
-      if (unit) {
-        loadDraftMessages()
-        loadSentMessages(unit.id)
-      }
-    })
+    void deleteDraftBulletin(messageUnderEdit.id).then(resetUI)
   }
 
   const onSend = () => {
@@ -98,28 +102,14 @@ export default React.memo(function MessagesPage() {
     const { id, groupId, title, content } = messageUnderEdit
     void updateDraftBulletin(id, groupId, title, content)
       .then(() => sendBulletin(messageUnderEdit.id))
-      .then(() => {
-        setMessageUnderEdit(null)
-        setMessageOpen(null)
-        if (unit) {
-          loadDraftMessages()
-          loadSentMessages(unit.id)
-        }
-      })
+      .then(resetUI)
   }
 
   const onClose = () => {
     if (!messageUnderEdit) return
 
     const { id, groupId, title, content } = messageUnderEdit
-    void updateDraftBulletin(id, groupId, title, content).then(() => {
-      setMessageUnderEdit(null)
-      setMessageOpen(null)
-      if (unit) {
-        loadDraftMessages()
-        loadSentMessages(unit.id)
-      }
-    })
+    void updateDraftBulletin(id, groupId, title, content).then(resetUI)
   }
 
   return (
