@@ -139,8 +139,9 @@ class BulletinIntegrationTest : FullApplicationTest() {
     }
 
     private fun initBulletin(user: AuthenticatedUser, unitId: UUID = testDaycare.id): UUID {
-        val (_, res, result) = http.post("/bulletins?unitId=$unitId")
+        val (_, res, result) = http.post("/bulletins")
             .asUser(user)
+            .jsonBody(objectMapper.writeValueAsString(BulletinControllerEmployee.CreateBulletinRequest(unitId)))
             .responseObject<Bulletin>(objectMapper)
 
         assertEquals(200, res.statusCode)
