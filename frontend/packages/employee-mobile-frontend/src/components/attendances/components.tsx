@@ -27,9 +27,8 @@ export const BigWideButton = styled(WideButton)`
   height: 64px;
 `
 
-export const BigWideInlineButton = styled(InlineButton)`
+export const WideInlineButton = styled(InlineButton)`
   white-space: normal;
-  height: 64px;
   width: 100%;
 `
 

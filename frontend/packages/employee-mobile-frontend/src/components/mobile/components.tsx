@@ -5,8 +5,12 @@
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
+import IconButton from '@evaka/lib-components/src/atoms/buttons/IconButton'
 import colors from '@evaka/lib-components/src/colors'
-import { Container } from '@evaka/lib-components/src/layout/Container'
+import {
+  Container,
+  ContentArea
+} from '@evaka/lib-components/src/layout/Container'
 import { defaultMargins } from '@evaka/lib-components/src/white-space'
 
 export const FullHeightContainer = styled(Container)<{ spaced?: boolean }>`
@@ -35,4 +39,17 @@ export const WideLinkButton = styled(Link)`
   display: flex;
   justify-content: center;
   align-items: center;
+`
+
+export const BackButton = styled(IconButton)`
+  color: ${colors.blues.dark};
+  position: absolute;
+`
+
+export const TallContentArea = styled(ContentArea)`
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  justify-content: space-between;
 `

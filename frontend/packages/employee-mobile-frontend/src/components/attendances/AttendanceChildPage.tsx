@@ -6,49 +6,31 @@ import React, { Fragment, useContext, useEffect, useState } from 'react'
 import { useHistory, useParams } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { ContentArea } from '@evaka/lib-components/src/layout/Container'
 import RoundIcon from '@evaka/lib-components/src/atoms/RoundIcon'
-import { faChevronLeft, farUser } from '@evaka/lib-icons'
+import { faArrowLeft, farUser } from '@evaka/lib-icons'
 import colors from '@evaka/lib-components/src/colors'
 import { Gap } from '@evaka/lib-components/src/white-space'
 import { useTranslation } from '../../state/i18n'
 import Loader from '@evaka/lib-components/src/atoms/Loader'
 import { useRestApi } from '@evaka/lib-common/src/utils/useRestApi'
-import IconButton from '@evaka/lib-components/src/atoms/buttons/IconButton'
-import { FixedSpaceRow } from '@evaka/lib-components/src/layout/flex-helpers'
+import { FixedSpaceColumn } from '@evaka/lib-components/src/layout/flex-helpers'
+import { StaticChip } from '@evaka/lib-components/src/atoms/Chip'
 
 import AttendanceChildComing from './AttendanceChildComing'
 import AttendanceChildPresent from './AttendanceChildPresent'
 import AttendanceChildDeparted from './AttendanceChildDeparted'
 import {
   AttendanceChild,
+  AttendanceStatus,
   getDaycareAttendances,
   Group
 } from '../../api/attendances'
 import { AttendanceUIContext } from '../../state/attendance-ui'
 import { FlexColumn } from './components'
 import AttendanceChildAbsent from './AttendanceChildAbsent'
-
-const FullHeightContentArea = styled(ContentArea)`
-  min-height: 100%;
-  display: flex;
-  flex-direction: column;
-`
-
-const Titles = styled.div``
+import { BackButton, TallContentArea } from '../../components/mobile/components'
 
 const ChildStatus = styled.div`
-  color: ${colors.greyscale.medium};
-`
-
-const TallContentArea = styled(ContentArea)`
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-`
-
-const BackButton = styled(IconButton)`
   color: ${colors.greyscale.medium};
 `
 
@@ -57,8 +39,8 @@ const CustomTitle = styled.h1`
   font-weight: 600;
   font-size: 20px;
   line-height: 30px;
-  margin-block-start: 0;
-  margin-block-end: 0;
+  margin-top: 0;
+  color: ${colors.blues.dark};
 `
 
 const GroupName = styled.div`
@@ -113,64 +95,51 @@ export default React.memo(function AttendanceChildPage() {
 
   return (
     <Fragment>
-      <FullHeightContentArea opaque={false} paddingHorizontal={'s'}>
-        <TallContentArea opaque paddingHorizontal={'s'}>
-          <BackButton onClick={() => history.goBack()} icon={faChevronLeft} />
-          {child && group && !loading ? (
-            <Fragment>
-              <FixedSpaceRow>
-                <RoundIcon
-                  content={farUser}
-                  color={
-                    child.status === 'ABSENT'
-                      ? colors.greyscale.dark
-                      : child.status === 'DEPARTED'
-                      ? colors.blues.medium
-                      : child.status === 'PRESENT'
-                      ? colors.accents.green
-                      : child.status === 'COMING'
-                      ? colors.accents.water
-                      : colors.blues.medium
-                  }
-                  size="XXL"
-                />
-                <Titles>
-                  <CustomTitle>
-                    {child.firstName} {child.lastName}
-                  </CustomTitle>
-                  <GroupName>{group.name}</GroupName>
-                  <Gap size={'s'} />
-                  <ChildStatus>
-                    {i18n.attendances.types[child.status]}
-                  </ChildStatus>
-                </Titles>
-              </FixedSpaceRow>
+      <TallContentArea opaque paddingHorizontal={'s'}>
+        <BackButton onClick={() => history.goBack()} icon={faArrowLeft} />
+        {child && group && !loading ? (
+          <Fragment>
+            <FixedSpaceColumn alignItems={'center'}>
+              <RoundIcon
+                content={farUser}
+                color={getColorByStatus(child.status)}
+                size="XXL"
+              />
+              <CustomTitle>
+                {child.firstName} {child.lastName}
+              </CustomTitle>
+              <GroupName>{group.name}</GroupName>
+              <ChildStatus>
+                <StaticChip color={getColorByStatus(child.status)}>
+                  {i18n.attendances.types[child.status]}
+                </StaticChip>
+              </ChildStatus>
+            </FixedSpaceColumn>
 
-              <Gap size={'s'} />
-              <FlexColumn>
-                {child.status === 'COMING' && (
-                  <AttendanceChildComing
-                    unitId={unitId}
-                    child={child}
-                    group={group}
-                  />
-                )}
-                {child.status === 'PRESENT' && (
-                  <AttendanceChildPresent child={child} unitId={unitId} />
-                )}
-                {child.status === 'DEPARTED' && (
-                  <AttendanceChildDeparted child={child} unitId={unitId} />
-                )}
-                {child.status === 'ABSENT' && (
-                  <AttendanceChildAbsent child={child} unitId={unitId} />
-                )}
-              </FlexColumn>
-            </Fragment>
-          ) : (
-            <Loader />
-          )}
-        </TallContentArea>
-      </FullHeightContentArea>
+            <Gap size={'s'} />
+            <FlexColumn>
+              {child.status === 'COMING' && (
+                <AttendanceChildComing
+                  unitId={unitId}
+                  child={child}
+                  group={group}
+                />
+              )}
+              {child.status === 'PRESENT' && (
+                <AttendanceChildPresent child={child} unitId={unitId} />
+              )}
+              {child.status === 'DEPARTED' && (
+                <AttendanceChildDeparted child={child} unitId={unitId} />
+              )}
+              {child.status === 'ABSENT' && (
+                <AttendanceChildAbsent child={child} unitId={unitId} />
+              )}
+            </FlexColumn>
+          </Fragment>
+        ) : (
+          <Loader />
+        )}
+      </TallContentArea>
     </Fragment>
   )
 })
@@ -187,4 +156,16 @@ export function getTimeString(date: Date) {
     : date.getMinutes() < 10
     ? `${date.getHours()}:0${date.getMinutes()}`
     : `${date.getHours()}:${date.getMinutes()}`
+}
+
+function getColorByStatus(status: AttendanceStatus) {
+  return status === 'ABSENT'
+    ? colors.greyscale.dark
+    : status === 'DEPARTED'
+    ? colors.blues.medium
+    : status === 'PRESENT'
+    ? colors.accents.green
+    : status === 'COMING'
+    ? colors.accents.water
+    : colors.blues.medium
 }

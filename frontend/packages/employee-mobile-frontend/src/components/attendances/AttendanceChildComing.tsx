@@ -21,10 +21,10 @@ import { AbsenceType } from '../../types'
 import AbsenceSelector from './AbsenceSelector'
 import { getCurrentTime } from './AttendanceChildPage'
 import {
-  BigWideButton,
-  BigWideInlineButton,
-  WideAsyncButton,
-  FlexLabel
+  FlexLabel,
+  WideButton,
+  WideInlineButton,
+  WideAsyncButton
 } from './components'
 
 interface Props {
@@ -69,7 +69,7 @@ export default React.memo(function AttendanceChildComing({
       {!markAbsence && !markPresent && (
         <Fragment>
           <FixedSpaceColumn>
-            <BigWideButton
+            <WideButton
               primary
               text={i18n.attendances.actions.markPresent}
               onClick={() => {
@@ -79,11 +79,12 @@ export default React.memo(function AttendanceChildComing({
               data-qa="mark-present"
             />
 
-            <BigWideInlineButton
+            <WideInlineButton
               text={i18n.attendances.actions.markAbsent}
               onClick={() => setMarkAbsence(true)}
             />
           </FixedSpaceColumn>
+          <Gap size={'L'} />
         </Fragment>
       )}
 
