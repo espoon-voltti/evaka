@@ -2,10 +2,14 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 import { isBefore, parse } from 'date-fns'
-import React, { Fragment, useContext, useEffect, useState } from 'react'
+import React, { Fragment, useContext, useState } from 'react'
 import { useHistory } from 'react-router-dom'
 
 import { Result, Loading } from '@evaka/lib-common/src/api'
+import InputField from '@evaka/lib-components/src/atoms/form/InputField'
+import { FixedSpaceColumn } from '@evaka/lib-components/src/layout/flex-helpers'
+import { Gap } from '@evaka/lib-components/src/white-space'
+
 import {
   AttendanceChild,
   childDeparts,
@@ -15,9 +19,6 @@ import {
   postDeparture,
   returnToComing
 } from '~api/attendances'
-import InputField from '@evaka/lib-components/src/atoms/form/InputField'
-import { FixedSpaceColumn } from '@evaka/lib-components/src/layout/flex-helpers'
-import { Gap } from '@evaka/lib-components/src/white-space'
 import { AttendanceUIContext } from '~state/attendance-ui'
 import { useTranslation } from '~state/i18n'
 import { AbsenceType } from '~types'
@@ -34,13 +35,11 @@ import {
 interface Props {
   child: AttendanceChild
   unitId: string
-  groupId: string | 'all'
 }
 
 export default React.memo(function AttendanceChildPresent({
   child,
-  unitId,
-  groupId: groupIdOrAll
+  unitId
 }: Props) {
   const history = useHistory()
   const { i18n } = useTranslation()
@@ -52,13 +51,7 @@ export default React.memo(function AttendanceChildPresent({
     Result<DepartureInfoResponse>
   >(Loading.of())
 
-  const { filterAndSetAttendanceResponse } = useContext(AttendanceUIContext)
-
-  useEffect(() => {
-    void getDaycareAttendances(unitId).then((res) =>
-      filterAndSetAttendanceResponse(res, groupIdOrAll)
-    )
-  }, [])
+  const { setAttendanceResponse } = useContext(AttendanceUIContext)
 
   function markDeparted() {
     return childDeparts(unitId, child.id, time)
@@ -122,9 +115,7 @@ export default React.memo(function AttendanceChildPresent({
             text={i18n.attendances.actions.returnToComing}
             onClick={() => returnToComingCall()}
             onSuccess={async () => {
-              await getDaycareAttendances(unitId).then((res) =>
-                filterAndSetAttendanceResponse(res, groupIdOrAll)
-              )
+              await getDaycareAttendances(unitId).then(setAttendanceResponse)
               history.goBack()
             }}
             data-qa="delete-attendance"

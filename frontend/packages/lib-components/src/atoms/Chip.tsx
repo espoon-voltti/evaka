@@ -10,6 +10,7 @@ import { faCheck } from '@evaka/lib-icons'
 import colors from '../colors'
 import { defaultMargins } from '../white-space'
 import classNames from 'classnames'
+import { tabletMin } from '../breakpoints'
 
 export const StaticChip = styled.div<{ color: string; textColor?: string }>`
   font-family: 'Open Sans', sans-serif;
@@ -38,13 +39,15 @@ type SelectionChipProps = {
   selected: boolean
   onChange: (selected: boolean) => void
   'data-qa'?: string
+  showIcon?: boolean
 }
 
 export const SelectionChip = React.memo(function SelectionChip({
   text,
   selected,
   onChange,
-  'data-qa': dataQa
+  'data-qa': dataQa,
+  showIcon = true
 }: SelectionChipProps) {
   const ariaId = Math.random().toString(36).substring(2, 15)
 
@@ -65,13 +68,13 @@ export const SelectionChip = React.memo(function SelectionChip({
             checked={selected}
             id={ariaId}
           />
-          {selected && (
+          {showIcon && selected && (
             <IconWrapper>
               <FontAwesomeIcon icon={faCheck} />
             </IconWrapper>
           )}
           <StyledLabel
-            className={classNames({ checked: selected })}
+            className={classNames({ checked: showIcon && selected })}
             htmlFor={ariaId}
           >
             {text}
@@ -79,6 +82,23 @@ export const SelectionChip = React.memo(function SelectionChip({
         </SelectionChipInnerWrapper>
       </SelectionChipWrapper>
     </div>
+  )
+})
+
+export const ChoiceChip = React.memo(function ChoiceChip({
+  text,
+  selected,
+  onChange,
+  'data-qa': dataQa
+}: SelectionChipProps) {
+  return (
+    <SelectionChip
+      text={text}
+      selected={selected}
+      onChange={onChange}
+      data-qa={dataQa}
+      showIcon={false}
+    />
   )
 })
 
@@ -121,6 +141,10 @@ const SelectionChipInnerWrapper = styled.div`
   &.checked {
     background-color: ${colors.primary};
     color: ${colors.greyscale.white};
+  }
+
+  @media (max-width: ${tabletMin}) {
+    height: 40px;
   }
 `
 

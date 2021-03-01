@@ -19,11 +19,13 @@ import colors from '@evaka/lib-components/src/colors'
 interface Props {
   attendanceChildren: AttendanceChild[]
   type?: AttendanceStatus
+  showAll?: boolean
 }
 
 export default React.memo(function AttendanceList({
   attendanceChildren,
-  type
+  type,
+  showAll
 }: Props) {
   const { unitId, groupId: groupIdOrAll } = useParams<{
     unitId: string
@@ -32,6 +34,12 @@ export default React.memo(function AttendanceList({
 
   if (type) {
     attendanceChildren = attendanceChildren.filter((ac) => ac.status === type)
+  }
+
+  if (groupIdOrAll !== 'all' && !showAll) {
+    attendanceChildren = attendanceChildren.filter(
+      (ac) => ac.groupId === groupIdOrAll
+    )
   }
 
   return (

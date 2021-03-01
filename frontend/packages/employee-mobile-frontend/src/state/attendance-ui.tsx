@@ -10,16 +10,16 @@ import { AttendanceResponse } from '~api/attendances'
 interface UIState {
   attendanceResponse: Result<AttendanceResponse>
   setAttendanceResponse: (result: Result<AttendanceResponse>) => void
-  filterAndSetAttendanceResponse: (
+  filterAttendanceResponse: (
     result: Result<AttendanceResponse>,
     groupIdOrAll: string | 'all'
-  ) => void
+  ) => Result<AttendanceResponse>
 }
 
 const defaultState: UIState = {
   attendanceResponse: Loading.of(),
   setAttendanceResponse: () => undefined,
-  filterAndSetAttendanceResponse: () => undefined
+  filterAttendanceResponse: () => Loading.of()
 }
 
 export const AttendanceUIContext = createContext<UIState>(defaultState)
@@ -34,8 +34,7 @@ export const AttendanceUIContextProvider = React.memo(
       Result<AttendanceResponse>
     >(Loading.of())
 
-    // TODO: return just attendanceresponse. Do not set setAttendanceResponse(attendanceResponse)
-    function filterAndSetAttendanceResponse(
+    function filterAttendanceResponse(
       attendanceResponse: Result<AttendanceResponse>,
       groupIdOrAll: string | 'all'
     ) {
@@ -45,20 +44,16 @@ export const AttendanceUIContextProvider = React.memo(
             (child) => child.groupId === groupIdOrAll
           )
       }
-      setAttendanceResponse(attendanceResponse)
+      return attendanceResponse
     }
 
     const value = useMemo(
       () => ({
         attendanceResponse,
         setAttendanceResponse,
-        filterAndSetAttendanceResponse
+        filterAttendanceResponse
       }),
-      [
-        attendanceResponse,
-        setAttendanceResponse,
-        filterAndSetAttendanceResponse
-      ]
+      [attendanceResponse, setAttendanceResponse, filterAttendanceResponse]
     )
 
     return (

@@ -16,7 +16,6 @@ import { I18nContextProvider } from '~state/i18n'
 import { UserContextProvider } from '~state/user'
 import MobileLander from '~components/mobile/MobileLander'
 import PairingWizard from '~components/mobile/PairingWizard'
-import AttendanceGroupSelectorPage from '~components/attendances/AttendanceGroupSelectorPage'
 import AttendancePageWrapper from '~components/attendances/AttendancePageWrapper'
 import AttendanceChildPage from '~components/attendances/AttendanceChildPage'
 import { getAuthStatus, AuthStatus } from '~api/auth'
@@ -40,11 +39,6 @@ export default function App() {
             <Switch>
               <Route exact path="/landing" component={MobileLander} />
               <Route exact path="/pairing" component={PairingWizard} />
-              <Route
-                exact
-                path="/units/:unitId/groupselector"
-                component={ensureAuthenticated(AttendanceGroupSelectorPage)}
-              />
               <Route
                 path="/units/:unitId/attendance/:groupId"
                 component={ensureAuthenticated(AttendancePageWrapper)}

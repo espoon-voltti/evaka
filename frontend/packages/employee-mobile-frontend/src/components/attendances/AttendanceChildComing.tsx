@@ -2,21 +2,20 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { Fragment, useContext, useEffect, useState } from 'react'
+import React, { Fragment, useState } from 'react'
 import { useHistory } from 'react-router-dom'
 
-import {
-  AttendanceChild,
-  childArrivesPOST,
-  getDaycareAttendances,
-  Group,
-  postFullDayAbsence
-} from '~api/attendances'
 import InputField from '@evaka/lib-components/src/atoms/form/InputField'
 import Loader from '@evaka/lib-components/src/atoms/Loader'
 import { FixedSpaceColumn } from '@evaka/lib-components/src/layout/flex-helpers'
 import { Gap } from '@evaka/lib-components/src/white-space'
-import { AttendanceUIContext } from '~state/attendance-ui'
+
+import {
+  AttendanceChild,
+  childArrivesPOST,
+  Group,
+  postFullDayAbsence
+} from '~api/attendances'
 import { useTranslation } from '~state/i18n'
 import { AbsenceType } from '~types'
 import AbsenceSelector from './AbsenceSelector'
@@ -32,14 +31,12 @@ interface Props {
   unitId: string
   child: AttendanceChild
   group: Group
-  groupId: string | 'all'
 }
 
 export default React.memo(function AttendanceChildComing({
   unitId,
   child,
-  group,
-  groupId: groupIdOrAll
+  group
 }: Props) {
   const history = useHistory()
   const { i18n } = useTranslation()
@@ -47,14 +44,6 @@ export default React.memo(function AttendanceChildComing({
   const [time, setTime] = useState<string>(getCurrentTime())
   const [markAbsence, setMarkAbsence] = useState<boolean>(false)
   const [markPresent, setMarkPresent] = useState<boolean>(false)
-
-  const { filterAndSetAttendanceResponse } = useContext(AttendanceUIContext)
-
-  useEffect(() => {
-    void getDaycareAttendances(unitId).then((res) =>
-      filterAndSetAttendanceResponse(res, groupIdOrAll)
-    )
-  }, [])
 
   async function selectAbsenceType(absenceType: AbsenceType) {
     return postFullDayAbsence(unitId, child.id, absenceType)
