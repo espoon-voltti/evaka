@@ -47,12 +47,14 @@ export default React.memo(function MessageReadView({ message, onEdit }: Props) {
         )}
       </Header>
 
-      {message.content.split('\n').map((text, i) => (
-        <React.Fragment key={i}>
-          <span>{text}</span>
-          <br />
-        </React.Fragment>
-      ))}
+      <div>
+        {message.content.split('\n').map((text, i) => (
+          <React.Fragment key={i}>
+            <span>{text}</span>
+            <br />
+          </React.Fragment>
+        ))}
+      </div>
     </Container>
   )
 })
