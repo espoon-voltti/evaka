@@ -23,11 +23,7 @@ export const ColorCircle = styled.div<ColorCircleProps>`
 `
 
 function Row({ children }: { children: React.ReactNode }) {
-  return (
-    <FixedSpaceRow spacing={'m'} flexWrap>
-      {children}
-    </FixedSpaceRow>
-  )
+  return <FixedSpaceRow spacing={'m'}>{children}</FixedSpaceRow>
 }
 
 function Col({ children }: { children: React.ReactNode }) {

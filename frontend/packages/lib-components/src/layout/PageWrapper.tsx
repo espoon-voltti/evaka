@@ -18,7 +18,6 @@ type WithoutReturnProps = {
 
 type WithReturnProps = {
   withReturn: true
-  history: { length: number; goBack: () => void }
   goBackLabel: string
 }
 
@@ -28,9 +27,7 @@ export default React.memo(function PageWrapper({
 }: (Props & WithoutReturnProps) | (Props & WithReturnProps)) {
   return (
     <Container>
-      {props.withReturn && (
-        <ReturnButton history={props.history} label={props.goBackLabel} />
-      )}
+      {props.withReturn && <ReturnButton label={props.goBackLabel} />}
       <ContentArea opaque>{children}</ContentArea>
     </Container>
   )
