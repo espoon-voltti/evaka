@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
+import styled from 'styled-components'
 import Checkbox from '@evaka/lib-components/src/atoms/form/Checkbox'
 import { useLang, useTranslation } from '~localization'
 import { H3, Label, P } from '@evaka/lib-components/src/typography'
@@ -16,10 +17,11 @@ import { errorToInputInfo } from '~form-validation'
 import DatePicker from '@evaka/lib-components/src/molecules/date-picker/DatePicker'
 import { ServiceNeedSectionProps } from '~applications/editor/service-need/ServiceNeedSection'
 import ExpandingInfo from '@evaka/lib-components/src/molecules/ExpandingInfo'
-import { FixedSpaceColumn } from '@evaka/lib-components/src/layout/flex-helpers'
 import { isValidPreferredStartDate } from '~applications/editor/validations'
 import LocalDate from '@evaka/lib-common/src/local-date'
 import { AlertBox } from '@evaka/lib-components/src/molecules/MessageBoxes'
+
+const clubTerms = ['13.08.2020 - 04.06.2021', '11.8.2021-03.06.2022']
 
 export default React.memo(function PreferredStartSubSection({
   status,
@@ -93,12 +95,19 @@ export default React.memo(function PreferredStartSubSection({
 
         {type === 'CLUB' && (
           <>
-            <FixedSpaceColumn>
-              <Label>
-                {t.applications.editor.serviceNeed.startDate.clubTerm}
-              </Label>
-              <span>13.08.2020 - 04.06.2021</span>
-            </FixedSpaceColumn>
+            <Label>
+              {
+                t.applications.editor.serviceNeed.startDate[
+                  clubTerms.length === 1 ? 'clubTerm' : 'clubTerms'
+                ]
+              }
+            </Label>
+            <Gap size="s" />
+            <Ul>
+              {clubTerms.map((term) => (
+                <li key={term}>{term}</li>
+              ))}
+            </Ul>
             <Gap size="m" />
           </>
         )}
@@ -242,3 +251,7 @@ export default React.memo(function PreferredStartSubSection({
     </>
   )
 })
+
+const Ul = styled.ul`
+  margin: 0;
+`

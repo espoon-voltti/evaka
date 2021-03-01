@@ -102,7 +102,10 @@ class ApplicationControllerCitizen(
         user.requireOneOfRoles(UserRole.END_USER)
 
         return db.transaction { tx ->
-            if (duplicateApplicationExists(tx.handle, guardianId = user.id, childId = body.childId, type = body.type)) {
+            if (
+                body.type != ApplicationType.CLUB &&
+                duplicateApplicationExists(tx.handle, guardianId = user.id, childId = body.childId, type = body.type)
+            ) {
                 throw BadRequest("Duplicate application")
             }
 
@@ -160,7 +163,10 @@ class ApplicationControllerCitizen(
         return db.read { tx ->
             ApplicationType.values()
                 .map { type ->
-                    type to duplicateApplicationExists(tx.handle, guardianId = user.id, childId = childId, type = type)
+                    type to (
+                        type != ApplicationType.CLUB &&
+                            duplicateApplicationExists(tx.handle, guardianId = user.id, childId = childId, type = type)
+                        )
                 }
                 .toMap()
                 .let { ResponseEntity.ok(it) }

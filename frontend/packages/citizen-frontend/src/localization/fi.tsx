@@ -457,6 +457,7 @@ export default {
             ]
           },
           clubTerm: 'Kerhon toimintakausi',
+          clubTerms: 'Kerhon toimintakaudet',
           label: {
             DAYCARE: 'Toivottu aloituspäivä',
             PRESCHOOL: 'Toivottu aloituspäivä',
