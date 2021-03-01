@@ -94,7 +94,8 @@ class BulletinIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `supervisor sends a bulletin, citizen reads it`() {
-        val bulletinId = initBulletin(supervisor)
+        val unitId = testDaycare.id
+        val bulletinId = initBulletin(supervisor, unitId)
         updateBulletin(
             supervisor, bulletinId,
             BulletinControllerEmployee.BulletinUpdate(
@@ -103,7 +104,7 @@ class BulletinIntegrationTest : FullApplicationTest() {
                 content = msgContent
             )
         )
-        getDraftBulletins(supervisor).also { assertEquals(1, it.size) }
+        getDraftBulletins(supervisor, unitId).also { assertEquals(1, it.size) }
         sendBulletin(supervisor, bulletinId)
 
         getBulletinsAsGuardian(guardian)
@@ -126,18 +127,19 @@ class BulletinIntegrationTest : FullApplicationTest() {
         getSentBulletinsByUnit(staffMember, testDaycare.id).also {
             assertEquals(msgContent, it.first().content)
         }
-        getDraftBulletins(supervisor).also { assertTrue(it.isEmpty()) }
+        getDraftBulletins(supervisor, unitId).also { assertTrue(it.isEmpty()) }
     }
 
     @Test
     fun `supervisor deletes a draft`() {
-        val bulletinId = initBulletin(supervisor)
+        val unitId = testDaycare.id
+        val bulletinId = initBulletin(supervisor, unitId)
         deleteDraftBulletin(supervisor, bulletinId)
-        getDraftBulletins(supervisor).also { assertTrue(it.isEmpty()) }
+        getDraftBulletins(supervisor, unitId).also { assertTrue(it.isEmpty()) }
     }
 
-    private fun initBulletin(user: AuthenticatedUser): UUID {
-        val (_, res, result) = http.post("/bulletins")
+    private fun initBulletin(user: AuthenticatedUser, unitId: UUID = testDaycare.id): UUID {
+        val (_, res, result) = http.post("/bulletins?unitId=$unitId")
             .asUser(user)
             .responseObject<Bulletin>(objectMapper)
 
@@ -170,8 +172,8 @@ class BulletinIntegrationTest : FullApplicationTest() {
         assertEquals(204, res.statusCode)
     }
 
-    private fun getDraftBulletins(user: AuthenticatedUser): List<Bulletin> {
-        val (_, res, result) = http.get("/bulletins/draft")
+    private fun getDraftBulletins(user: AuthenticatedUser, unitId: UUID): List<Bulletin> {
+        val (_, res, result) = http.get("/bulletins/draft?unitId=$unitId")
             .asUser(user)
             .responseObject<List<Bulletin>>(objectMapper)
 
