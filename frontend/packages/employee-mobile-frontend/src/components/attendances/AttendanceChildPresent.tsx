@@ -2,10 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 import { isBefore, parse } from 'date-fns'
-import React, { Fragment, useContext, useEffect, useState } from 'react'
+import React, { Fragment, useContext, useState } from 'react'
 import { useHistory } from 'react-router-dom'
 
-import { useRestApi } from '@evaka/lib-common/src/utils/useRestApi'
 import { Result, Loading } from '@evaka/lib-common/src/api'
 import InputField from '@evaka/lib-components/src/atoms/form/InputField'
 import { FixedSpaceColumn } from '@evaka/lib-components/src/layout/flex-helpers'
@@ -53,15 +52,6 @@ export default React.memo(function AttendanceChildPresent({
   >(Loading.of())
 
   const { setAttendanceResponse } = useContext(AttendanceUIContext)
-
-  const loadDaycareAttendances = useRestApi(
-    getDaycareAttendances,
-    setAttendanceResponse
-  )
-
-  useEffect(() => {
-    loadDaycareAttendances(unitId)
-  }, [])
 
   function markDeparted() {
     return childDeparts(unitId, child.id, time)
