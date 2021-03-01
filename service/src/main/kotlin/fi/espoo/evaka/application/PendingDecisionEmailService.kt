@@ -39,7 +39,8 @@ class PendingDecisionEmailService(
 
     data class GuardianDecisions(
         val guardianId: UUID,
-        val decisionIds: List<UUID>
+        val decisionIds: List<UUID>,
+        val applicationEmail: String?
     )
 
     class PendingDecisionMailException(msg: String) : Exception(msg)
@@ -59,8 +60,10 @@ AND d.resolved IS NULL
 AND (d.sent_date < current_date - INTERVAL '1 week' AND d.sent_date > current_date - INTERVAL '2 month')
 AND d.pending_decision_emails_sent_count < 2
 AND d.pending_decision_email_sent IS NULL or d.pending_decision_email_sent < current_date - INTERVAL '1 week')
-SELECT application.guardian_id as guardian_id, array_agg(pending_decisions.id::uuid) AS decision_ids
-FROM pending_decisions JOIN application ON pending_decisions.application_id = application.id
+SELECT application.guardian_id as guardian_id, array_agg(pending_decisions.id::uuid) AS decision_ids, (array_agg(form.document->'guardian'->>'email'::text))[1] AS application_email
+FROM pending_decisions
+    JOIN application ON pending_decisions.application_id = application.id
+    JOIN application_form form ON application.id = form.application_id AND form.latest IS TRUE
 GROUP BY application.guardian_id
 """
             )
@@ -70,13 +73,20 @@ GROUP BY application.guardian_id
             var createdJobCount = 0
             pendingGuardianDecisions.forEach { pendingDecision ->
                 tx.handle.getPersonById(pendingDecision.guardianId)?.let { guardian ->
-                    if (!guardian.email.isNullOrBlank()) {
+
+                    val email = if (!guardian.email.isNullOrBlank()) {
+                        guardian.email
+                    } else if (!pendingDecision.applicationEmail.isNullOrBlank()) {
+                        pendingDecision.applicationEmail
+                    } else null
+
+                    if (email != null) {
                         asyncJobRunner.plan(
                             tx,
                             payloads = listOf(
                                 SendPendingDecisionEmail(
                                     guardianId = pendingDecision.guardianId,
-                                    email = guardian.email,
+                                    email = email,
                                     language = guardian.language,
                                     decisionIds = pendingDecision.decisionIds
                                 )
@@ -86,7 +96,7 @@ GROUP BY application.guardian_id
                         )
                         createdJobCount++
                     } else {
-                        logger.warn("Could not send pending decision email to guardian ${guardian.id}: invalid email")
+                        logger.warn("Could not send pending decision email to guardian ${guardian.id}: missing email")
                     }
                 }
             }
