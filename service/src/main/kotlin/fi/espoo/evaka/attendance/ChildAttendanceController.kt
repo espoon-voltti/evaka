@@ -320,12 +320,14 @@ private fun Database.Read.getAttendancesResponse(unitId: UUID): AttendanceRespon
     val childrenBasics = fetchChildrenBasics(unitId)
     val childrenAttendances = fetchChildrenAttendances(unitId)
     val childrenAbsences = fetchChildrenAbsences(unitId)
+    val childDaycareDailyNotes = fetchChildDaycareDailyNotes(unitId)
 
     val children = childrenBasics.map { child ->
         val attendance = childrenAttendances.firstOrNull { it.childId == child.id }
         val absences = childrenAbsences.filter { it.childId == child.id }
         val placementBasics = ChildPlacementBasics(child.placementType, child.dateOfBirth)
         val status = getChildAttendanceStatus(placementBasics, attendance, absences)
+        val daycareDailyNote = childDaycareDailyNotes.firstOrNull { it.childId == child.id }
 
         Child(
             id = child.id,
@@ -338,7 +340,8 @@ private fun Database.Read.getAttendancesResponse(unitId: UUID): AttendanceRespon
             status = status,
             attendance = attendance,
             absences = absences,
-            entitledToFreeFiveYearsOldDaycare = isEntitledToFreeFiveYearsOldDaycare(child.dateOfBirth)
+            entitledToFreeFiveYearsOldDaycare = isEntitledToFreeFiveYearsOldDaycare(child.dateOfBirth),
+            dailyNoteId = daycareDailyNote?.id
         )
     }
 

@@ -34,6 +34,17 @@ export const enduserRole = Role(
   { preserveUrl: true }
 )
 
+export const mobileAutoSignInRole = (token: string) =>
+  Role(
+    config.mobileUrl,
+    async (t) => {
+      await t.navigateTo(
+        `${config.mobileBaseUrl}/api/internal/auth/mobile-e2e-signup?token=${token}`
+      )
+    },
+    { preserveUrl: true }
+  )
+
 export const mobileRole = Role(config.mobileUrl, () => Promise.resolve(), {
   preserveUrl: true
 })

@@ -20,7 +20,8 @@ import nocache from 'nocache'
 import helmet from 'helmet'
 import tracing from '../shared/middleware/tracing'
 import mobileDeviceSession, {
-  refreshMobileSession
+  refreshMobileSession,
+  devApiE2ESignup
 } from './mobile-device-session'
 import authStatus from './routes/auth-status'
 import createSamlRouter from '../shared/routes/auth/saml'
@@ -92,6 +93,8 @@ function internalApiRouter() {
       '/dev-api',
       createProxy({ path: ({ path }) => `/dev-api${path}` })
     )
+
+    router.get('/auth/mobile-e2e-signup', devApiE2ESignup)
   }
 
   router.post('/auth/mobile', mobileDeviceSession)

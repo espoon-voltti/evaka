@@ -249,6 +249,14 @@ export interface DaycarePlacement {
   endDate: string
 }
 
+export interface DaycareGroupPlacement {
+  id: UUID
+  daycareGroupId: UUID
+  daycarePlacementId: UUID
+  startDate: string
+  endDate: string
+}
+
 export interface BackupCare {
   id: UUID
   childId: UUID
@@ -299,6 +307,7 @@ export type UserRole =
   | 'STAFF'
   | 'END_USER'
   | 'DIRECTOR'
+  | 'MOBILE'
 
 export interface Application {
   id: UUID
@@ -523,4 +532,21 @@ export interface ApplicationEmail {
   personId: string
   toAddress: string | null
   language: string
+}
+
+export type DaycareDailyNoteLevel = 'GOOD' | 'MEDIUM' | 'NONE'
+export type DaycareDailyNoteReminder = 'DIAPERS' | 'CLOTHES' | 'LAUNDRY'
+
+export interface DaycareDailyNote {
+  id: UUID
+  date: LocalDate
+  childId?: UUID
+  groupId?: UUID
+  note?: string
+  feedingNote?: DaycareDailyNoteLevel
+  sleepingNote?: DaycareDailyNoteLevel
+  reminders?: DaycareDailyNoteReminder[]
+  reminderNote?: string
+  modifiedAt?: Date
+  modifiedBy?: string
 }

@@ -38,3 +38,4 @@ V37__create_bulletin_tables.sql
 V38__add_child_preferred_name.sql
 V39__add_unit_id_to_bulletin.sql
 V40__unit_id_in_bulletin_as_not_null.sql
+V41__daycare_daily_note_v2.sql

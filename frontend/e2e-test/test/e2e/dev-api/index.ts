@@ -14,6 +14,8 @@ import {
   Daycare,
   DaycareCaretakers,
   DaycareGroup,
+  DaycareGroupPlacement,
+  DaycareDailyNote,
   DaycarePlacement,
   Decision,
   DecisionFixture,
@@ -268,6 +270,16 @@ export async function insertDaycarePlacementFixtures(
 ): Promise<void> {
   try {
     await devClient.post(`/daycare-placements`, fixture)
+  } catch (e) {
+    throw new DevApiError(e)
+  }
+}
+
+export async function insertDaycareGroupPlacementFixtures(
+  fixture: DaycareGroupPlacement[]
+): Promise<void> {
+  try {
+    await devClient.post(`/daycare-group-placements`, fixture)
   } catch (e) {
     throw new DevApiError(e)
   }
@@ -717,6 +729,24 @@ export async function deletePairing(pairingId: string): Promise<void> {
   }
 }
 
+interface MobileDevice {
+  id: UUID
+  unitId: UUID
+  name: string
+  deleted: boolean
+  longTermToken: UUID
+}
+
+export async function postMobileDevice(
+  mobileDevice: MobileDevice
+): Promise<void> {
+  try {
+    await devClient.post<PairingResponse>(`/mobile/devices`, mobileDevice)
+  } catch (e) {
+    throw new DevApiError(e)
+  }
+}
+
 export async function deleteMobileDevice(deviceId: string): Promise<void> {
   try {
     await devClient.delete(`/mobile/devices/${deviceId}`)
@@ -777,6 +807,16 @@ export async function putDigitransitAutocomplete(
 ): Promise<void> {
   try {
     await devClient.put('/digitransit/autocomplete', mockResponse)
+  } catch (e) {
+    throw new DevApiError(e)
+  }
+}
+
+export async function postDaycareDailyNote(
+  note: DaycareDailyNote
+): Promise<void> {
+  try {
+    await devClient.post<PairingResponse>(`/messaging/daycare-daily-note`, note)
   } catch (e) {
     throw new DevApiError(e)
   }

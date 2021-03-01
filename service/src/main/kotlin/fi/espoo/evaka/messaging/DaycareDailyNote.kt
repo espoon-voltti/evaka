@@ -12,10 +12,10 @@ data class DaycareDailyNote(
     val note: String?,
     val feedingNote: DaycareDailyNoteLevelInfo?,
     val sleepingNote: DaycareDailyNoteLevelInfo?,
-    val reminders: List<DaycareDailyNoteReminder>,
+    val reminders: List<DaycareDailyNoteReminder> = emptyList(),
     val reminderNote: String?,
     val modifiedAt: Date? = null,
-    val modifiedBy: String? = null
+    val modifiedBy: String? = "evaka"
 )
 
 enum class DaycareDailyNoteLevelInfo {

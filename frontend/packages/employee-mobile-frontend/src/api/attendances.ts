@@ -40,6 +40,7 @@ export interface AttendanceChild {
   attendance: Attendance | null
   absences: Absence[]
   entitledToFreeFiveYearsOldDaycare: boolean
+  dailyNoteId: string | null
 }
 
 interface Attendance {
