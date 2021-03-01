@@ -10,7 +10,9 @@ export type Bulletin = {
   title: string
   content: string
   createdByEmployee: UUID
+  createdByEmployeeName: string
   groupId: UUID | null
+  groupName: string | null
   sentAt: Date | null
 }
 

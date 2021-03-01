@@ -14,6 +14,7 @@ import { defaultMargins } from '@evaka/lib-components/src/white-space'
 import { formatDate } from '~utils/date'
 import { useTranslation } from '~state/i18n'
 import { Bulletin } from './types'
+import { FixedSpaceRow } from '@evaka/lib-components/src/layout/flex-helpers'
 
 interface Props {
   message: Bulletin
@@ -28,16 +29,19 @@ export default React.memo(function MessageReadView({ message, onEdit }: Props) {
       <Header>
         <Title noMargin>{message.title || i18n.messages.noTitle}</Title>
         {message.sentAt ? (
-          <span>
-            {formatDate(
-              message.sentAt,
-              LocalDate.fromSystemTzDate(message.sentAt).isEqual(
-                LocalDate.today()
-              )
-                ? 'HH:mm'
-                : 'd.M.'
-            )}
-          </span>
+          <FixedSpaceRow>
+            <span>{message.groupName}</span>
+            <span>
+              {formatDate(
+                message.sentAt,
+                LocalDate.fromSystemTzDate(message.sentAt).isEqual(
+                  LocalDate.today()
+                )
+                  ? 'HH:mm'
+                  : 'd.M.'
+              )}
+            </span>
+          </FixedSpaceRow>
         ) : (
           <InlineButton
             icon={faPen}
@@ -46,6 +50,7 @@ export default React.memo(function MessageReadView({ message, onEdit }: Props) {
           />
         )}
       </Header>
+      <Info>{message.createdByEmployeeName}</Info>
 
       <div>
         {message.content.split('\n').map((text, i) => (
@@ -75,8 +80,8 @@ const Header = styled.div`
   align-items: flex-end;
   font-weight: 600;
   font-size: 16px;
-  margin-bottom: ${defaultMargins.XL};
   flex-wrap: wrap;
+  margin-bottom: ${defaultMargins.xs};
 
   @media (max-width: ${tabletMin}) {
     flex-direction: column;
@@ -89,4 +94,11 @@ const Header = styled.div`
 const Title = styled(H3)`
   font-weight: 600;
   margin-right: ${defaultMargins.XXL};
+`
+
+const Info = styled.span`
+  font-size: 14px;
+  font-weight: 600;
+  color: ${colors.greyscale.medium};
+  margin-bottom: ${defaultMargins.L};
 `

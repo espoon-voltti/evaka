@@ -111,8 +111,9 @@ fun Database.Read.getSentBulletinsByUnit(
 ): List<Bulletin> {
     // language=sql
     val sql = """
-        SELECT b.*
+        SELECT b.*, dg.name AS group_name, concat(e.first_name, ' ', e.last_name) AS created_by_employee_name
         FROM bulletin b
+        JOIN employee e on b.created_by_employee = e.id
         JOIN daycare_group dg ON b.group_id = dg.id
         WHERE dg.daycare_id = :unitId AND b.sent_at IS NOT NULL
         ORDER BY b.sent_at DESC
@@ -129,8 +130,11 @@ fun Database.Read.getBulletin(
 ): Bulletin? {
     // language=sql
     val sql = """
-        SELECT b.*
+        SELECT b.*, dg.name AS group_name, concat(e.first_name, ' ', e.last_name) AS created_by_employee_name
         FROM bulletin b
+        JOIN employee e on b.created_by_employee = e.id
+        LEFT JOIN daycare_group dg ON b.group_id = dg.id
+        
         WHERE b.id = :id
     """.trimIndent()
 
@@ -146,8 +150,10 @@ fun Database.Read.getOwnBulletinDrafts(
 ): List<Bulletin> {
     // language=sql
     val sql = """
-        SELECT b.*
+        SELECT b.*, dg.name AS group_name, concat(e.first_name, ' ', e.last_name) AS created_by_employee_name
         FROM bulletin b
+        JOIN employee e on b.created_by_employee = e.id
+        LEFT JOIN daycare_group dg ON b.group_id = dg.id
         WHERE b.created_by_employee = :userId AND b.sent_at IS NULL AND b.unit_id = :unitId 
         ORDER BY b.updated DESC
     """.trimIndent()
