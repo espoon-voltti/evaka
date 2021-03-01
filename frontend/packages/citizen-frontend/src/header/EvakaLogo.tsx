@@ -4,6 +4,7 @@
 
 import React from 'react'
 import styled from 'styled-components'
+import { desktopMin, desktopSmall } from '@evaka/lib-components/src/breakpoints'
 
 export default React.memo(function Logo() {
   return (
@@ -50,5 +51,11 @@ const Container = styled.div`
     max-width: 150px;
     width: auto;
     height: 100%;
+  }
+
+  @media (min-width: ${desktopMin}) and (max-width: calc(${desktopSmall} - 1px)) {
+    svg {
+      display: none;
+    }
   }
 `

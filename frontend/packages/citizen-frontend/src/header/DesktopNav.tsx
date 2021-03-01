@@ -47,7 +47,7 @@ export default React.memo(function DesktopNav() {
         <Logout href="/api/application/auth/saml/logout" data-qa="logout-btn">
           {user ? (
             <UserName>
-              {user.firstName} {user.lastName}
+              <span>{user.firstName}</span> <span>{user.lastName}</span>
             </UserName>
           ) : null}
           <LogoutText>{t.header.logout}</LogoutText>
@@ -124,8 +124,12 @@ const LogoutText = styled.div`
 `
 
 const UserName = styled.span`
+  text-align: center;
   text-transform: none;
-  white-space: nowrap;
+
+  span {
+    white-space: nowrap;
+  }
 `
 
 const LanguageMenu = React.memo(function LanguageMenu() {
