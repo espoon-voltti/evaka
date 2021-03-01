@@ -498,6 +498,7 @@ const en: Translations = {
             CLUB: ['Clubs follow preschool work and vacation times.']
           },
           clubTerm: 'Club term',
+          clubTerms: 'Club terms',
           label: {
             DAYCARE: 'Desired start date',
             PRESCHOOL: 'Start date in August',
