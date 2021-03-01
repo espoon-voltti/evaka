@@ -6,15 +6,11 @@ import React, { useCallback, useState } from 'react'
 import styled from 'styled-components'
 import { NavLink } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { desktopMin } from '@evaka/lib-components/src/breakpoints'
 import colors from '@evaka/lib-components/src/colors'
+import { defaultMargins, Gap } from '@evaka/lib-components/src/white-space'
 import useCloseOnOutsideClick from '@evaka/lib-components/src/utils/useCloseOnOutsideClick'
-import {
-  faCheck,
-  faChevronDown,
-  faChevronUp,
-  faSignOut,
-  faSignIn
-} from '@evaka/lib-icons'
+import { faCheck, faChevronDown, faChevronUp, faSignIn } from '@evaka/lib-icons'
 import { useUser } from '../auth'
 import { Lang, langs, useLang, useTranslation } from '../localization'
 import { getLoginUri } from '~header/const'
@@ -25,13 +21,13 @@ export default React.memo(function DesktopNav() {
   const t = useTranslation()
 
   return (
-    <>
+    <Container>
       <Nav>
-        <StyledNavLink to="/" exact data-qa={'nav-map'}>
-          {t.header.nav.map}
-        </StyledNavLink>
         {user && (
           <>
+            <StyledNavLink to="/" exact data-qa={'nav-map'}>
+              {t.header.nav.map}
+            </StyledNavLink>
             <StyledNavLink to="/applications" data-qa={'nav-applications'}>
               {t.header.nav.applications}
             </StyledNavLink>
@@ -46,102 +42,94 @@ export default React.memo(function DesktopNav() {
           </>
         )}
       </Nav>
-      <Spacer />
       <LanguageMenu />
       {user ? (
-        <NavItem href="/api/application/auth/saml/logout" data-qa="logout-btn">
-          <RoundIconBackground>
-            <RoundIcon icon={faSignOut} />
-          </RoundIconBackground>
-          <LogoutText>
-            {user ? (
-              <UserName>
-                {user.firstName} {user.lastName}
-              </UserName>
-            ) : null}
-            <span>{t.header.logout}</span>
-          </LogoutText>
-        </NavItem>
+        <Logout href="/api/application/auth/saml/logout" data-qa="logout-btn">
+          {user ? (
+            <UserName>
+              <span>{user.firstName}</span> <span>{user.lastName}</span>
+            </UserName>
+          ) : null}
+          <LogoutText>{t.header.logout}</LogoutText>
+        </Logout>
       ) : (
-        <NavItem href={getLoginUri()} data-qa="login-btn">
-          <RoundIconBackground>
-            <RoundIcon icon={faSignIn} />
-          </RoundIconBackground>
-          <span>{t.header.login}</span>
-        </NavItem>
+        <Login href={getLoginUri()} data-qa="login-btn">
+          <Icon icon={faSignIn} />
+          <Gap size="xs" horizontal />
+          {t.header.login}
+        </Login>
       )}
-    </>
+      <Gap size="m" horizontal />
+    </Container>
   )
 })
+
+const Container = styled.div`
+  display: none;
+
+  @media (min-width: ${desktopMin}) {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-end;
+  }
+`
 
 const Nav = styled.nav`
   display: flex;
   flex-direction: row;
 `
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const StyledNavItem = (component: any) => styled(component)`
+const StyledNavLink = styled(NavLink)`
   color: inherit;
   text-decoration: none;
   display: flex;
   justify-content: center;
   align-items: center;
-  font-size: 14px;
+  font-family: Montserrat, sans-serif;
+  font-size: 0.9375rem;
   text-transform: uppercase;
   min-width: 140px;
-  padding: 0 16px;
-  border-bottom: 4px solid transparent;
-
-  &:hover {
-    border-color: ${colors.blues.primary};
-  }
+  padding: 0 ${defaultMargins.s};
+  border-bottom: 3px solid transparent;
 
   &.active {
-    border-color: ${colors.brandEspoo.espooTurquoise};
+    border-color: ${colors.greyscale.white};
+    font-weight: 700;
   }
 `
 
-const NavItem = StyledNavItem('a')
-
-const StyledNavLink = StyledNavItem(NavLink)
-
-const Spacer = styled.div`
-  margin: 0 auto;
+const Login = styled.a`
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  color: inherit;
+  text-decoration: none;
+  font-weight: 600;
+  padding: 0 ${defaultMargins.s};
+  border-bottom: 3px solid transparent;
 `
 
 const Icon = styled(FontAwesomeIcon)`
-  height: 16px !important;
-  width: 16px !important;
-  margin-right: 10px;
+  font-size: 1.25rem;
 `
 
-const RoundIconBackground = styled.div`
-  display: inline-flex;
-  justify-content: center;
-  align-items: center;
-  background: ${colors.brandEspoo.espooTurquoise};
-  width: 40px;
-  height: 40px;
-  min-width: 40px;
-  min-height: 40px;
-  border-radius: 100%;
-  margin-right: 10px;
-`
-
-const RoundIcon = styled(Icon)`
-  margin: 0;
+const Logout = styled(Login)`
+  flex-direction: column;
 `
 
 const LogoutText = styled.div`
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: flex-start;
+  font-size: 0.75rem;
+  text-transform: uppercase;
 `
 
 const UserName = styled.span`
+  text-align: center;
   text-transform: none;
-  white-space: nowrap;
+
+  span {
+    white-space: nowrap;
+  }
 `
 
 const LanguageMenu = React.memo(function LanguageMenu() {
@@ -186,12 +174,13 @@ const LanguageMenu = React.memo(function LanguageMenu() {
 const LanguageButton = styled.button`
   color: inherit;
   text-transform: uppercase;
+  font-family: Montserrat, sans-serif;
   font-size: 1rem;
   background: transparent;
   height: 100%;
-  padding: 16px 18px;
+  padding: ${defaultMargins.s};
   border: none;
-  border-bottom: 4px solid transparent;
+  border-bottom: 3px solid transparent;
   cursor: pointer;
   white-space: nowrap;
 `

@@ -5,3 +5,5 @@
 export const tabletMin = '600px'
 
 export const desktopMin = '1024px'
+
+export const desktopSmall = '1366px'

@@ -6,7 +6,8 @@ import React, { useState } from 'react'
 import styled from 'styled-components'
 import colors from '@evaka/lib-components/src/colors'
 import { desktopMin } from '@evaka/lib-components/src/breakpoints'
-import Logo from './Logo'
+import EspooLogo from './EspooLogo'
+import EvakaLogo from './EvakaLogo'
 import DesktopNav from './DesktopNav'
 import MobileNav from './MobileNav'
 import { headerHeight } from '~header/const'
@@ -16,13 +17,10 @@ export default React.memo(function Header() {
 
   return (
     <HeaderContainer fixed={showMenu}>
-      <Logo />
-      <DesktopNavContainer>
-        <DesktopNav />
-      </DesktopNavContainer>
-      <MobileNavContainer>
-        <MobileNav showMenu={showMenu} setShowMenu={setShowMenu} />
-      </MobileNavContainer>
+      <EspooLogo />
+      <EvakaLogo />
+      <DesktopNav />
+      <MobileNav showMenu={showMenu} setShowMenu={setShowMenu} />
     </HeaderContainer>
   )
 })
@@ -30,35 +28,15 @@ export default React.memo(function Header() {
 const HeaderContainer = styled.header<{ fixed: boolean }>`
   z-index: 99;
   color: ${colors.greyscale.white};
-  background-color: ${colors.brandEspoo.espooBlue};
+  background-color: ${colors.blues.primary};
   position: ${({ fixed }) => (fixed ? 'fixed' : 'relative')};
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  height: ${headerHeight};
+  display: grid;
+  grid: minmax(60px, min-content) / repeat(3, minmax(100px, 1fr));
+  height: 60px;
   width: 100%;
 
   @media (min-width: ${desktopMin}) {
-    height: 64px;
-    justify-content: flex-start;
-  }
-`
-
-const DesktopNavContainer = styled.div`
-  display: none;
-
-  @media (min-width: ${desktopMin}) {
-    display: flex;
-    flex-direction: row;
-    flex-grow: 1;
-  }
-`
-
-const MobileNavContainer = styled.div`
-  display: flex;
-  flex-direction: row;
-
-  @media (min-width: ${desktopMin}) {
-    display: none;
+    grid: minmax(${headerHeight}, min-content) / max-content max-content auto;
+    height: ${headerHeight};
   }
 `
