@@ -63,7 +63,7 @@ export default React.memo(function AttendancePageWrapper() {
 
   useEffect(() => {
     loadDaycareAttendances(unitId)
-  }, [groupIdOrAll])
+  }, [groupIdOrAll, location])
 
   useEffect(() => {
     if (freeText === '') {
