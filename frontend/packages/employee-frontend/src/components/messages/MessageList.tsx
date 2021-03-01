@@ -103,6 +103,7 @@ const MessageListItem = styled.button`
   padding: ${defaultMargins.s} ${defaultMargins.m};
   margin: 0 0 ${defaultMargins.xxs};
   text-align: left;
+  cursor: pointer;
   &.selected-message {
     font-weight: 600;
     background: ${colors.brandEspoo.espooTurquoiseLight};

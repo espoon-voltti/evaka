@@ -81,6 +81,7 @@ const Unit = styled.button`
   padding: ${defaultMargins.xs} ${defaultMargins.m};
   margin: 0 0 ${defaultMargins.xxs};
   text-align: left;
+  cursor: pointer;
   &.active {
     font-weight: 600;
     background: ${colors.brandEspoo.espooTurquoiseLight};

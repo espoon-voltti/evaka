@@ -65,13 +65,11 @@ export default React.memo(function MessagesPage() {
   }, [unit])
 
   const onCreateNew = () => {
-    if (messageUnderEdit) return
+    if (!unit || messageUnderEdit) return
 
-    void initNewBulletin()
+    void initNewBulletin(unit.id)
       .then((res) => res.isSuccess && setMessageUnderEdit(res.value))
-      .then(() => {
-        if (unit) loadDraftMessages(unit.id)
-      })
+      .then(() => loadDraftMessages(unit.id))
   }
 
   useEffect(() => {

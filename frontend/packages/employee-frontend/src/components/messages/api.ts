@@ -13,9 +13,9 @@ import {
   deserializeSentBulletin
 } from './types'
 
-export async function initNewBulletin(): Promise<Result<Bulletin>> {
+export async function initNewBulletin(unitId: UUID): Promise<Result<Bulletin>> {
   return client
-    .post<JsonOf<Bulletin>>('/bulletins')
+    .post<JsonOf<Bulletin>>('/bulletins', { unitId })
     .then((res) => Success.of(deserializeBulletin(res.data)))
     .catch((e) => Failure.fromError(e))
 }

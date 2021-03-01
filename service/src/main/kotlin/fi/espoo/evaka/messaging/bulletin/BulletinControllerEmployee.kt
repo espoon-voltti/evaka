@@ -25,11 +25,14 @@ class BulletinControllerEmployee(
     private val acl: AccessControlList
 ) {
 
+    data class CreateBulletinRequest(
+        val unitId: UUID
+    )
     @PostMapping
     fun createBulletin(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @RequestParam(required = true) unitId: UUID
+        @RequestBody body: CreateBulletinRequest
     ): ResponseEntity<Bulletin> {
         Audit.MessagingBulletinDraftCreate.log()
         authorizeAdminSupervisorOrStaff(user)
@@ -37,20 +40,10 @@ class BulletinControllerEmployee(
         return db.transaction { tx ->
             tx.initBulletin(
                 user = user,
-                unitId = unitId
-            )
+                unitId = body.unitId
+            ).let { tx.getBulletin(it)!! }
         }.let {
-            ResponseEntity.ok(
-                Bulletin(
-                    id = it,
-                    title = "",
-                    content = "",
-                    createdByEmployee = user.id,
-                    groupId = null,
-                    sentAt = null,
-                    unitId = unitId
-                )
-            )
+            ResponseEntity.ok(it)
         }
     }
 

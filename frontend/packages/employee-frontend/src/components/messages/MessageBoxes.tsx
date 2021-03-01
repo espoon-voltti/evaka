@@ -77,6 +77,7 @@ const MessageBox = styled.button`
   padding: ${defaultMargins.xs} ${defaultMargins.m};
   margin: 0 0 ${defaultMargins.xxs};
   text-align: left;
+  cursor: pointer;
   &.selected-message-box {
     font-weight: 600;
     background: ${colors.brandEspoo.espooTurquoiseLight};
