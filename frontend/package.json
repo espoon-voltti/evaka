@@ -7,7 +7,8 @@
   "scripts": {
     "build": "yarn wsrun --serial --exclude-missing build",
     "lint": "yarn wsrun --exclude-missing lint",
-    "test": "yarn wsrun --exclude-missing test"
+    "test": "yarn wsrun --exclude-missing test",
+    "type-check": "yarn wsrun --exclude-missing type-check"
   },
   "devDependencies": {
     "prettier": "^2.2.1",
