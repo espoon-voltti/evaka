@@ -196,6 +196,23 @@ fun Database.Read.getReceivedBulletinsByGuardian(
         .list()
 }
 
+fun Database.Read.getUnreadBulletinCountByGuardian(
+    user: AuthenticatedUser
+): Int {
+    // language=sql
+    val sql = """
+        SELECT count(distinct b.id) AS count
+        FROM bulletin b
+        JOIN bulletin_instance bi ON b.id = bi.bulletin_id
+        WHERE bi.guardian_id = :userId AND b.sent_at IS NOT NULL AND bi.read_at IS NULL
+    """.trimIndent()
+
+    return this.createQuery(sql)
+        .bind("userId", user.id)
+        .mapTo<Int>()
+        .first()
+}
+
 fun Database.Transaction.markBulletinRead(
     user: AuthenticatedUser,
     id: UUID

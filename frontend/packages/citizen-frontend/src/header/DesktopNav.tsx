@@ -16,7 +16,11 @@ import { Lang, langs, useLang, useTranslation } from '../localization'
 import { getLoginUri } from '../header/const'
 import { featureFlags } from '../config'
 
-export default React.memo(function DesktopNav() {
+interface Props {
+  unreadMessagesCount: number
+}
+
+export default React.memo(function DesktopNav({ unreadMessagesCount }: Props) {
   const user = useUser()
   const t = useTranslation()
 
@@ -36,7 +40,12 @@ export default React.memo(function DesktopNav() {
             </StyledNavLink>
             {featureFlags.messaging && (
               <StyledNavLink to="/messages" data-qa={'nav-decisions'}>
-                {t.header.nav.messages}
+                {t.header.nav.messages}{' '}
+                {unreadMessagesCount > 0 ? (
+                  <CircledChar>{unreadMessagesCount}</CircledChar>
+                ) : (
+                  ''
+                )}
               </StyledNavLink>
             )}
           </>
@@ -130,6 +139,18 @@ const UserName = styled.span`
   span {
     white-space: nowrap;
   }
+`
+const CircledChar = styled.div`
+  width: ${defaultMargins.s};
+  height: ${defaultMargins.s};
+  border: 1px solid ${colors.greyscale.white};
+  padding: 10px;
+  margin: ${defaultMargins.xs};
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  border-radius: 100%;
 `
 
 const LanguageMenu = React.memo(function LanguageMenu() {
