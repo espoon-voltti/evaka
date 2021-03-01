@@ -120,14 +120,6 @@ test('Daycare groups are shown', async (t) => {
 
   await postDaycareDailyNote(daycareDailyNote)
 
-  await t.expect(mobileGroupsPage.allGroups.visible).ok()
-
-  await t
-    .expect(mobileGroupsPage.groupButton(daycareGroup.data.id).visible)
-    .ok()
-
-  await t.click(mobileGroupsPage.groupButton(daycareGroup.data.id))
-
   await t
     .expect(
       mobileGroupsPage.childName(fixtures.enduserChildFixtureJari.id)
