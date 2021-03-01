@@ -630,6 +630,9 @@ jobs:
           command: yarn lint
       - run:
           working_directory: *workspace_frontend
+          command: yarn type-check
+      - run:
+          working_directory: *workspace_frontend
           command: yarn test --maxWorkers=2
       - store_test_results:
           path: /home/circleci/repo/frontend/packages/lib-common/test-results

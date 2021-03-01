@@ -50,7 +50,9 @@ function ReportDownload({ data, headers, filename, dataQa }: Props) {
     const handler = reloadCSV
       ? setTimeout(() => setReloadCSV(false), 200)
       : undefined
-    return () => clearTimeout(handler)
+    return () => {
+      if (handler) clearTimeout(handler)
+    }
   }, [reloadCSV])
 
   return (
