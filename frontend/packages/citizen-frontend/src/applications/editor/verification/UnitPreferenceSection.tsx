@@ -2,14 +2,14 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { UnitPreferenceFormData } from '~applications/editor/ApplicationFormData'
+import { UnitPreferenceFormData } from '../../../applications/editor/ApplicationFormData'
 import React from 'react'
-import { useTranslation } from '~localization'
+import { useTranslation } from '../../../localization'
 import { H2, H3, Label } from '@evaka/lib-components/src/typography'
 import ListGrid from '@evaka/lib-components/src/layout/ListGrid'
 import { Gap } from '@evaka/lib-components/src/white-space'
 import styled from 'styled-components'
-import { ApplicationDataGridLabelWidth } from '~applications/editor/verification/const'
+import { ApplicationDataGridLabelWidth } from '../../../applications/editor/verification/const'
 
 const NumberedList = styled.ol`
   margin: 0;

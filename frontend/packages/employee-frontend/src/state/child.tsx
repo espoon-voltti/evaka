@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useMemo, useState, createContext } from 'react'
-import { FeeAlteration } from '~types/fee-alteration'
+import { FeeAlteration } from '../types/fee-alteration'
 import {
   AdditionalInformation,
   AssistanceAction,
@@ -11,11 +11,11 @@ import {
   ChildBackupCare,
   Placement,
   ServiceNeed
-} from '~/types/child'
+} from '../types/child'
 import { Loading, Result } from '@evaka/lib-common/src/api'
-import { PersonDetails } from '~types/person'
-import { Parentship } from '~types/fridge'
-import { ApplicationSummary } from 'types/application'
+import { PersonDetails } from '../types/person'
+import { Parentship } from '../types/fridge'
+import { ApplicationSummary } from '../types/application'
 
 export interface ChildState {
   person: Result<PersonDetails>

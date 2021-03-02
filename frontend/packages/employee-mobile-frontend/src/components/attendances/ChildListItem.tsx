@@ -5,14 +5,14 @@
 import React, { useContext } from 'react'
 import styled from 'styled-components'
 
-import { AttendanceChild, AttendanceStatus, Group } from '~api/attendances'
+import { AttendanceChild, AttendanceStatus, Group } from '../../api/attendances'
 import RoundIcon from '@evaka/lib-components/src/atoms/RoundIcon'
 import colors from '@evaka/lib-components/src/colors'
 import { defaultMargins } from '@evaka/lib-components/src/white-space'
 import { farStickyNote, farUser } from '@evaka/lib-icons'
-import { useTranslation } from '~state/i18n'
-import { formatDateTimeOnly } from '~utils/date'
-import { AttendanceUIContext } from '~state/attendance-ui'
+import { useTranslation } from '../../state/i18n'
+import { formatDateTimeOnly } from '../../utils/date'
+import { AttendanceUIContext } from '../../state/attendance-ui'
 import { Link } from 'react-router-dom'
 
 const ChildBox = styled.div<{ type: AttendanceStatus }>`

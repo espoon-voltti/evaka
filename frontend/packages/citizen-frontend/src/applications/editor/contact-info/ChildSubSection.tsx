@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
-import { useLang, useTranslation } from '~localization'
+import { useLang, useTranslation } from '../../../localization'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
@@ -12,10 +12,10 @@ import Checkbox from '@evaka/lib-components/src/atoms/form/Checkbox'
 import { H3, Label } from '@evaka/lib-components/src/typography'
 import InputField from '@evaka/lib-components/src/atoms/form/InputField'
 import { Gap } from '@evaka/lib-components/src/white-space'
-import { errorToInputInfo } from '~form-validation'
+import { errorToInputInfo } from '../../../form-validation'
 import DatePicker from '@evaka/lib-components/src/molecules/date-picker/DatePicker'
 import AdaptiveFlex from '@evaka/lib-components/src/layout/AdaptiveFlex'
-import { ContactInfoSectionProps } from '~applications/editor/contact-info/ContactInfoSection'
+import { ContactInfoSectionProps } from '../../../applications/editor/contact-info/ContactInfoSection'
 import ExpandingInfo from '@evaka/lib-components/src/molecules/ExpandingInfo'
 
 export default React.memo(function ChildSubSection({

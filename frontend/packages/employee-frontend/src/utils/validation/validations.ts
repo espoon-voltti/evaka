@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import LocalDate from '@evaka/lib-common/src/local-date'
-import { DateRange, rangesOverlap } from '~utils/date'
+import { DateRange, rangesOverlap } from '../../utils/date'
 
 export const EMAIL_REGEX = /^([\w.%+-]+)@([\w-]+\.)+([\w]{2,})$/i
 

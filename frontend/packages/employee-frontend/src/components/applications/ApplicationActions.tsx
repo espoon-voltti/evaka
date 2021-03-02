@@ -4,7 +4,7 @@
 
 import React, { useContext, useMemo, useState } from 'react'
 import { useHistory } from 'react-router-dom'
-import { useTranslation } from '~state/i18n'
+import { useTranslation } from '../../state/i18n'
 import {
   cancelApplication,
   cancelPlacementPlan,
@@ -16,14 +16,14 @@ import {
   setUnverified,
   setVerified,
   withdrawPlacementProposal
-} from '~api/applications'
-import { ApplicationListSummary } from '~types/application'
-import { ApplicationSummaryStatusOptions } from '~components/common/Filters'
-import ActionMenu from '~components/applications/ActionsMenu'
-import PrimaryAction from '~components/applications/PrimaryAction'
+} from '../../api/applications'
+import { ApplicationListSummary } from '../../types/application'
+import { ApplicationSummaryStatusOptions } from '../../components/common/Filters'
+import ActionMenu from '../../components/applications/ActionsMenu'
+import PrimaryAction from '../../components/applications/PrimaryAction'
 import styled from 'styled-components'
-import ActionCheckbox from '~components/applications/ActionCheckbox'
-import { UIContext } from 'state/ui'
+import ActionCheckbox from '../../components/applications/ActionCheckbox'
+import { UIContext } from '../../state/ui'
 
 export type Action = {
   id: string

@@ -11,10 +11,10 @@ import InlineButton from '@evaka/lib-components/src/atoms/buttons/InlineButton'
 import { SpinnerSegment } from '@evaka/lib-components/src/atoms/state/Spinner'
 import ErrorSegment from '@evaka/lib-components/src/atoms/state/ErrorSegment'
 import { faAngleDown } from '@evaka/lib-icons'
-import { useTranslation } from '~localization'
-import UnitListItem from '~map/UnitListItem'
-import { formatDistance, UnitWithDistance } from '~map/distances'
-import { MapAddress } from '~map/MapView'
+import { useTranslation } from '../localization'
+import UnitListItem from '../map/UnitListItem'
+import { formatDistance, UnitWithDistance } from '../map/distances'
+import { MapAddress } from '../map/MapView'
 
 type Props = {
   selectedAddress: MapAddress | null

@@ -7,12 +7,12 @@ import * as _ from 'lodash'
 import { Link } from 'react-router-dom'
 
 import { faFileAlt } from '@evaka/lib-icons'
-import { UUID } from '~types'
-import { useTranslation } from '~state/i18n'
+import { UUID } from '../../types'
+import { useTranslation } from '../../state/i18n'
 import { useEffect } from 'react'
 import { Loading } from '@evaka/lib-common/src/api'
 import { useContext } from 'react'
-import { PersonContext } from '~state/person'
+import { PersonContext } from '../../state/person'
 import {
   Table,
   Tbody,
@@ -23,9 +23,9 @@ import {
 } from '@evaka/lib-components/src/layout/Table'
 import Loader from '@evaka/lib-components/src/atoms/Loader'
 import CollapsibleSection from '@evaka/lib-components/src/molecules/CollapsibleSection'
-import { getGuardianApplicationSummaries } from '~api/person'
-import { ApplicationSummary } from '~types/application'
-import { DateTd, NameTd, StatusTd } from '~components/PersonProfile'
+import { getGuardianApplicationSummaries } from '../../api/person'
+import { ApplicationSummary } from '../../types/application'
+import { DateTd, NameTd, StatusTd } from '../../components/PersonProfile'
 import IconButton from '@evaka/lib-components/src/atoms/buttons/IconButton'
 
 interface Props {

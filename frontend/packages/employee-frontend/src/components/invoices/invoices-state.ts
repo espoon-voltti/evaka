@@ -12,10 +12,10 @@ import {
   SortByInvoices,
   sendInvoices,
   sendInvoicesByDate
-} from '~api/invoicing'
-import { InvoicingUiContext } from '~state/invoicing-ui'
-import { SearchOrder } from '~types'
-import { InvoiceSearchResult, InvoiceSummary } from '~types/invoicing'
+} from '../../api/invoicing'
+import { InvoicingUiContext } from '../../state/invoicing-ui'
+import { SearchOrder } from '../../types'
+import { InvoiceSearchResult, InvoiceSummary } from '../../types/invoicing'
 import { useRestApi } from '@evaka/lib-common/src/utils/useRestApi'
 
 const pageSize = 200

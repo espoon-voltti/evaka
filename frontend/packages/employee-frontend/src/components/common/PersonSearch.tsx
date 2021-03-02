@@ -6,19 +6,19 @@ import React, { useEffect, useMemo, useState } from 'react'
 import styled from 'styled-components'
 import ReactSelect, { components, OptionProps } from 'react-select'
 
-import { Translations, useTranslation } from '~state/i18n'
+import { Translations, useTranslation } from '../../state/i18n'
 import {
   findByNameOrAddress,
   getOrCreatePersonBySsn,
   getPersonDetails
-} from '~api/person'
+} from '../../api/person'
 import { Result, Success } from '@evaka/lib-common/src/api'
-import { formatName } from '~utils'
+import { formatName } from '../../utils'
 import { useDebounce } from '@evaka/lib-common/src/utils/useDebounce'
-import { isSsnValid } from '~utils/validation/validations'
+import { isSsnValid } from '../../utils/validation/validations'
 import { useRestApi } from '@evaka/lib-common/src/utils/useRestApi'
-import { CHILD_AGE } from '~constants.ts'
-import { PersonDetails } from '~types/person'
+import { CHILD_AGE } from '../../constants.ts'
+import { PersonDetails } from '../../types/person'
 import { getAge } from '@evaka/lib-common/src/utils/local-date'
 
 const Container = styled.div`

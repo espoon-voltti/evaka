@@ -19,21 +19,21 @@ import {
   Thead,
   Tbody
 } from '@evaka/lib-components/src/layout/Table'
-import { reactSelectStyles } from '~components/common/Select'
-import { useTranslation } from '~state/i18n'
+import { reactSelectStyles } from '../../components/common/Select'
+import { useTranslation } from '../../state/i18n'
 import { Link } from 'react-router-dom'
 import { Loading, Result } from '@evaka/lib-common/src/api'
-import { FamilyConflictReportRow } from '~types/reports'
-import { getFamilyConflictsReport } from '~api/reports'
+import { FamilyConflictReportRow } from '../../types/reports'
+import { getFamilyConflictsReport } from '../../api/reports'
 import ReturnButton from '@evaka/lib-components/src/atoms/buttons/ReturnButton'
-import ReportDownload from '~components/reports/ReportDownload'
+import ReportDownload from '../../components/reports/ReportDownload'
 import {
   FilterLabel,
   FilterRow,
   RowCountInfo,
   TableScrollable
-} from 'components/reports/common'
-import { distinct } from 'utils'
+} from '../../components/reports/common'
+import { distinct } from '../../utils'
 
 interface DisplayFilters {
   careArea: string

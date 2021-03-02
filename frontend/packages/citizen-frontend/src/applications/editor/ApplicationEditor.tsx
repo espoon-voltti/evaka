@@ -14,21 +14,21 @@ import {
   saveApplicationDraft,
   sendApplication,
   updateApplication
-} from '~applications/api'
+} from '../../applications/api'
 import { ApplicationDetails } from '@evaka/lib-common/src/api-types/application/ApplicationDetails'
-import { useTranslation } from '~localization'
-import { useUser } from '~auth'
-import { OverlayContext } from '~overlay/state'
+import { useTranslation } from '../../localization'
+import { useUser } from '../../auth'
+import { OverlayContext } from '../../overlay/state'
 import {
   apiDataToFormData,
   ApplicationFormData,
   formDataToApiData
-} from '~applications/editor/ApplicationFormData'
+} from '../../applications/editor/ApplicationFormData'
 import {
   ApplicationFormDataErrors,
   applicationHasErrors,
   validateApplication
-} from '~applications/editor/validations'
+} from '../../applications/editor/validations'
 import { faAngleLeft, faCheck, faExclamation } from '@evaka/lib-icons'
 import { defaultMargins, Gap } from '@evaka/lib-components/src/white-space'
 import Checkbox from '@evaka/lib-components/src/atoms/form/Checkbox'
@@ -38,12 +38,12 @@ import ReturnButton, {
   ReturnButtonWrapper
 } from '@evaka/lib-components/src/atoms/buttons/ReturnButton'
 import InlineButton from '@evaka/lib-components/src/atoms/buttons/InlineButton'
-import ApplicationFormDaycare from '~applications/editor/ApplicationFormDaycare'
-import ApplicationVerificationView from '~applications/editor/verification/ApplicationVerificationView'
-import ApplicationFormClub from '~applications/editor/ApplicationFormClub'
-import ApplicationFormPreschool from '~applications/editor/ApplicationFormPreschool'
-import Footer from '~Footer'
-import useTitle from '~useTitle'
+import ApplicationFormDaycare from '../../applications/editor/ApplicationFormDaycare'
+import ApplicationVerificationView from '../../applications/editor/verification/ApplicationVerificationView'
+import ApplicationFormClub from '../../applications/editor/ApplicationFormClub'
+import ApplicationFormPreschool from '../../applications/editor/ApplicationFormPreschool'
+import Footer from '../../Footer'
+import useTitle from '../../useTitle'
 
 type ApplicationEditorContentProps = {
   apiData: ApplicationDetails

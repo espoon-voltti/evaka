@@ -1,5 +1,5 @@
 import React from 'react'
-import { useTranslation } from '~localization'
+import { useTranslation } from '../../../localization'
 import { ContactInfoFormData } from '../ApplicationFormData'
 import { ApplicationDataGridLabelWidth } from './const'
 import ListGrid from '@evaka/lib-components/src/layout/ListGrid'

@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { ReactNode, useContext } from 'react'
-import { UserContext } from '~state/user'
-import { AdRole } from '~types'
+import { UserContext } from '../state/user'
+import { AdRole } from '../types'
 
 export const requireRole = (roles: AdRole[], ...requiresOneOf: AdRole[]) => {
   const requiredRoles: AdRole[] = [...requiresOneOf, 'ADMIN']

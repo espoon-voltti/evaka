@@ -4,11 +4,11 @@
 
 import React, { Dispatch, SetStateAction } from 'react'
 import LocalDate from '@evaka/lib-common/src/local-date'
-import { useTranslation } from '~state/i18n'
+import { useTranslation } from '../../state/i18n'
 import { DatePickerDeprecated } from '@evaka/lib-components/src/molecules/DatePickerDeprecated'
 import styled from 'styled-components'
-import Chip, { Chips } from 'components/common/Chip'
-import { UnitFilters } from 'utils/UnitFilters'
+import Chip, { Chips } from '../../components/common/Chip'
+import { UnitFilters } from '../../utils/UnitFilters'
 import { FixedSpaceRow } from '@evaka/lib-components/src/layout/flex-helpers'
 
 const DatePickersContainer = styled.div`

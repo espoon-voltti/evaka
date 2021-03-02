@@ -4,19 +4,19 @@
 
 import React, { useContext, useEffect } from 'react'
 import * as _ from 'lodash'
-import { UUID } from '~types'
+import { UUID } from '../../types'
 import Loader from '@evaka/lib-components/src/atoms/Loader'
-import { useTranslation } from '~state/i18n'
+import { useTranslation } from '../../state/i18n'
 import { faHiking } from '@evaka/lib-icons'
-import { ChildContext } from '~state'
+import { ChildContext } from '../../state'
 import { Loading } from '@evaka/lib-common/src/api'
-import { getChildBackupCares } from 'api/child/backup-care'
-import { UIContext } from '~state/ui'
-import BackupCareForm from '~components/child-information/backup-care/BackupCareForm'
-import BackupCareRow from '~components/child-information/backup-care/BackupCareRow'
+import { getChildBackupCares } from '../../api/child/backup-care'
+import { UIContext } from '../../state/ui'
+import BackupCareForm from '../../components/child-information/backup-care/BackupCareForm'
+import BackupCareRow from '../../components/child-information/backup-care/BackupCareRow'
 import { AddButtonRow } from '@evaka/lib-components/src/atoms/buttons/AddButton'
 import CollapsibleSection from '@evaka/lib-components/src/molecules/CollapsibleSection'
-import { RequireRole } from 'utils/roles'
+import { RequireRole } from '../../utils/roles'
 
 export interface Props {
   id: UUID

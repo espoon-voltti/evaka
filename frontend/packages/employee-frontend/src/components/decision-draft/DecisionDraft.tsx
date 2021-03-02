@@ -28,28 +28,28 @@ import {
   getDecisionDrafts,
   getDecisionUnits,
   updateDecisionDrafts
-} from '~api/decision-draft'
-import { DecisionDraftState, DecisionDraftContext } from '~state/decision'
-import { useTranslation, Translations } from '~state/i18n'
-import { UUID } from '~types'
+} from '../../api/decision-draft'
+import { DecisionDraftState, DecisionDraftContext } from '../../state/decision'
+import { useTranslation, Translations } from '../../state/i18n'
+import { UUID } from '../../types'
 import { Loading, Result } from '@evaka/lib-common/src/api'
 import { DatePickerDeprecated } from '@evaka/lib-components/src/molecules/DatePickerDeprecated'
-import LabelValueList from '~components/common/LabelValueList'
-import Select from '~components/common/Select'
+import LabelValueList from '../../components/common/LabelValueList'
+import Select from '../../components/common/Select'
 import {
   DecisionDraft,
   DecisionDraftUpdate,
   DecisionType,
   DecisionUnit
-} from '~types/decision'
+} from '../../types/decision'
 import { faEnvelope } from '@evaka/lib-icons'
 import {
   AlertBox,
   InfoBox
 } from '@evaka/lib-components/src/molecules/MessageBoxes'
-import { TitleContext, TitleState } from '~state/title'
+import { TitleContext, TitleState } from '../../state/title'
 import colors from '@evaka/lib-components/src/colors'
-import { formatName } from '~utils'
+import { formatName } from '../../utils'
 import { FixedSpaceRow } from '@evaka/lib-components/src/layout/flex-helpers'
 
 const ColumnTitle = styled.div`

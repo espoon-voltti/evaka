@@ -19,24 +19,27 @@ import {
   Thead,
   Tbody
 } from '@evaka/lib-components/src/layout/Table'
-import { reactSelectStyles } from '~components/common/Select'
-import { Translations, useTranslation } from '~state/i18n'
+import { reactSelectStyles } from '../../components/common/Select'
+import { Translations, useTranslation } from '../../state/i18n'
 import { Loading, Result, Success } from '@evaka/lib-common/src/api'
-import { EndedPlacementsReportRow } from '~types/reports'
-import { getEndedPlacementsReport, PlacementsReportFilters } from '~api/reports'
+import { EndedPlacementsReportRow } from '../../types/reports'
+import {
+  getEndedPlacementsReport,
+  PlacementsReportFilters
+} from '../../api/reports'
 import ReturnButton from '@evaka/lib-components/src/atoms/buttons/ReturnButton'
-import ReportDownload from '~components/reports/ReportDownload'
-import { SelectOptionProps } from '~components/common/Select'
+import ReportDownload from '../../components/reports/ReportDownload'
+import { SelectOptionProps } from '../../components/common/Select'
 import { fi } from 'date-fns/locale'
 import {
   FilterLabel,
   FilterRow,
   RowCountInfo,
   TableScrollable
-} from '~components/reports/common'
+} from '../../components/reports/common'
 import { Link } from 'react-router-dom'
 import LocalDate from '@evaka/lib-common/src/local-date'
-import { FlexRow } from 'components/common/styled/containers'
+import { FlexRow } from '../../components/common/styled/containers'
 
 const StyledTd = styled(Td)`
   white-space: nowrap;

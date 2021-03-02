@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { PlacementType } from '~types/child'
+import { PlacementType } from '../types/child'
 
 const partDayPlacementTypes: readonly PlacementType[] = [
   'DAYCARE_PART_TIME',

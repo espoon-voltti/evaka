@@ -20,17 +20,17 @@ import {
   AlertBox,
   InfoBox
 } from '@evaka/lib-components/src/molecules/MessageBoxes'
-import { useUser } from '~auth'
-import { useTranslation } from '~localization'
+import { useUser } from '../auth'
+import { useTranslation } from '../localization'
 import {
   createApplication,
   getActivePlacementsByApplicationType,
   getDuplicateApplications
-} from '~applications/api'
+} from '../applications/api'
 import { ApplicationType } from '@evaka/lib-common/src/api-types/application/enums'
 import ExpandingInfo from '@evaka/lib-components/src/molecules/ExpandingInfo'
-import Footer from '~Footer'
-import useTitle from '~useTitle'
+import Footer from '../Footer'
+import useTitle from '../useTitle'
 
 export default React.memo(function ApplicationCreation() {
   const history = useHistory()

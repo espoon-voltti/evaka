@@ -3,15 +3,15 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useEffect, useState } from 'react'
-import { UUID } from 'types'
+import { UUID } from '../../types'
 import { Loading, Result } from '@evaka/lib-common/src/api'
-import { getFamilyContacts } from 'api/family-overview'
+import { getFamilyContacts } from '../../api/family-overview'
 import { useRestApi } from '@evaka/lib-common/src/utils/useRestApi'
-import { FamilyContact } from 'types/family-overview'
+import { FamilyContact } from '../../types/family-overview'
 import { SpinnerSegment } from '@evaka/lib-components/src/atoms/state/Spinner'
 import CollapsibleSection from '@evaka/lib-components/src/molecules/CollapsibleSection'
 import { faUsers } from '@evaka/lib-icons'
-import { useTranslation } from 'state/i18n'
+import { useTranslation } from '../../state/i18n'
 import ErrorSegment from '@evaka/lib-components/src/atoms/state/ErrorSegment'
 import {
   Table,
@@ -21,7 +21,7 @@ import {
   Thead,
   Tr
 } from '@evaka/lib-components/src/layout/Table'
-import { formatName } from 'utils'
+import { formatName } from '../../utils'
 import { FixedSpaceColumn } from '@evaka/lib-components/src/layout/flex-helpers'
 
 interface FamilyContactsProps {

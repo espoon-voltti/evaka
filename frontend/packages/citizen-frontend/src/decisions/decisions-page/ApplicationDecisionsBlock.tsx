@@ -11,14 +11,14 @@ import ButtonContainer from '@evaka/lib-components/src/layout/ButtonContainer'
 import RoundIcon from '@evaka/lib-components/src/atoms/RoundIcon'
 import { H2, H3, Label, P } from '@evaka/lib-components/src/typography'
 import { Gap } from '@evaka/lib-components/src/white-space'
-import { ApplicationDecisions, DecisionType } from '~decisions/types'
-import { useTranslation } from '~localization'
+import { ApplicationDecisions, DecisionType } from '../../decisions/types'
+import { useTranslation } from '../../localization'
 import {
   decisionOrderComparator,
   Status,
   decisionStatusIcon
-} from '~decisions/shared'
-import { PdfLink } from '~decisions/PdfLink'
+} from '../../decisions/shared'
+import { PdfLink } from '../../decisions/PdfLink'
 
 const preschoolInfoTypes: DecisionType[] = [
   'PRESCHOOL',

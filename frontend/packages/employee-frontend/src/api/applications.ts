@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { UUID, SearchOrder } from 'types'
+import { UUID, SearchOrder } from '../types'
 import {
   ApplicationListSummary,
   ApplicationsSearchResponse,
@@ -10,17 +10,17 @@ import {
   ApplicationSearchParams,
   ApplicationResponse,
   ApplicationNote
-} from 'types/application'
+} from '../types/application'
 import { Failure, Result, Success } from '@evaka/lib-common/src/api'
-import { client } from 'api/client'
+import { client } from '../api/client'
 import { JsonOf } from '@evaka/lib-common/src/json'
 import LocalDate from '@evaka/lib-common/src/local-date'
-import { CreatePersonBody } from '~api/person'
-import { DaycarePlacementPlan, PlacementDraft } from 'types/placementdraft'
+import { CreatePersonBody } from '../api/person'
+import { DaycarePlacementPlan, PlacementDraft } from '../types/placementdraft'
 import {
   PlacementPlanConfirmationStatus,
   PlacementPlanRejectReason
-} from '~types/unit'
+} from '../types/unit'
 import FiniteDateRange from '@evaka/lib-common/src/finite-date-range'
 import {
   ApplicationDetails,

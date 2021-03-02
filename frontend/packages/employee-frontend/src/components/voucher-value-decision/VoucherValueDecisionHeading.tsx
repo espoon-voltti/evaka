@@ -8,7 +8,7 @@ import styled from 'styled-components'
 import LocalDate from '@evaka/lib-common/src/local-date'
 import { Gap } from '@evaka/lib-components/src/white-space'
 import { H1 } from '@evaka/lib-components/src/typography'
-import LabelValueList from '~components/common/LabelValueList'
+import LabelValueList from '../../components/common/LabelValueList'
 import { useTranslation } from '../../state/i18n'
 import { formatDate } from '../../utils/date'
 import {
@@ -16,9 +16,9 @@ import {
   PersonDetailed
 } from '../../types/invoicing'
 import { getVoucherValueDecisionPdfUrl } from '../../api/invoicing'
-import WarningLabel from '~components/common/WarningLabel'
+import WarningLabel from '../../components/common/WarningLabel'
 import colors from '@evaka/lib-components/src/colors'
-import { formatName } from '~utils'
+import { formatName } from '../../utils'
 
 type Props = {
   id: string

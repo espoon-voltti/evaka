@@ -14,8 +14,8 @@ import {
   Cell,
   CellPart,
   CareTypeCategory
-} from '~types/absence'
-import { UUID } from '~types'
+} from '../types/absence'
+import { UUID } from '../types'
 
 export interface AbsencesState {
   absences: Result<Group>

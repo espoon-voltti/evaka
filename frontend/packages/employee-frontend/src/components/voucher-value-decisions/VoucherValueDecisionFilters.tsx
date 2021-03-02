@@ -14,8 +14,8 @@ import { InvoicingUiContext } from '../../state/invoicing-ui'
 import { getAreas, getUnits } from '../../api/daycare'
 import { VoucherValueDecisionStatus } from '../../types/invoicing'
 import { Gap } from '@evaka/lib-components/src/white-space'
-import { useTranslation } from '~state/i18n'
-import { getFinanceDecisionHandlers } from '~api/employees'
+import { useTranslation } from '../../state/i18n'
+import { getFinanceDecisionHandlers } from '../../api/employees'
 import { useMemo } from 'react'
 
 export default React.memo(function VoucherValueDecisionFilters() {

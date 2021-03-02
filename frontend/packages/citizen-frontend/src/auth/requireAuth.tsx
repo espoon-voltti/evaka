@@ -1,5 +1,5 @@
 import React, { useContext } from 'react'
-import { AuthContext } from '~auth/state'
+import { AuthContext } from '../auth/state'
 import { RouteComponentProps } from 'react-router'
 import { Redirect } from 'react-router-dom'
 import { SpinnerSegment } from '@evaka/lib-components/src/atoms/state/Spinner'

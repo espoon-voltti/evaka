@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useContext } from 'react'
-import { ApplicationUIContext } from '~state/application-ui'
+import { ApplicationUIContext } from '../../state/application-ui'
 import Checkbox from '@evaka/lib-components/src/atoms/form/Checkbox'
 import styled from 'styled-components'
 

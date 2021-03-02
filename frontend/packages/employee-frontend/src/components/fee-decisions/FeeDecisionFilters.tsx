@@ -21,7 +21,7 @@ import {
   FeeDecisionStatus
 } from '../../types/invoicing'
 import { Gap } from '@evaka/lib-components/src/white-space'
-import { useTranslation } from '~state/i18n'
+import { useTranslation } from '../../state/i18n'
 import { useMemo } from 'react'
 
 function FeeDecisionFilters() {

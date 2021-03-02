@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { UUID } from '~/types'
+import { UUID } from '../types'
 
 export interface Employee {
   id: UUID

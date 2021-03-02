@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import LocalDate from '@evaka/lib-common/src/local-date'
-import { Translations } from '~state/i18n'
+import { Translations } from '../state/i18n'
 
 export interface User {
   id: string

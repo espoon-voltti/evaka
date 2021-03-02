@@ -6,10 +6,10 @@ import React, { Fragment } from 'react'
 import styled from 'styled-components'
 import { H3, H4 } from '@evaka/lib-components/src/typography'
 import { Gap } from '@evaka/lib-components/src/white-space'
-import { useTranslation } from '~state/i18n'
-import { VoucherValueDecisionDetailed } from '~types/invoicing'
-import { formatCents } from '~utils/money'
-import { formatName } from '~utils'
+import { useTranslation } from '../../state/i18n'
+import { VoucherValueDecisionDetailed } from '../../types/invoicing'
+import { formatCents } from '../../utils/money'
+import { formatName } from '../../utils'
 
 type Props = {
   decision: VoucherValueDecisionDetailed

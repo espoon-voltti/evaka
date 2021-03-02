@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
-import { UUID } from '~types'
-import { useTranslation } from '~state/i18n'
+import { UUID } from '../../types'
+import { useTranslation } from '../../state/i18n'
 import { useEffect } from 'react'
 import { Loading } from '@evaka/lib-common/src/api'
 import { useContext } from 'react'
@@ -19,12 +19,12 @@ import {
 } from '@evaka/lib-components/src/layout/Table'
 import _ from 'lodash'
 import { Link } from 'react-router-dom'
-import { PersonDetails } from '~/types/person'
-import { formatName } from '~utils'
-import { NameTd } from '~components/PersonProfile'
-import { ChildContext } from '~state'
+import { PersonDetails } from '../../types/person'
+import { formatName } from '../../utils'
+import { NameTd } from '../../components/PersonProfile'
+import { ChildContext } from '../../state'
 import { faFemale } from '@evaka/lib-icons'
-import { getPersonGuardians } from '~api/person'
+import { getPersonGuardians } from '../../api/person'
 import { getAge } from '@evaka/lib-common/src/utils/local-date'
 import CollapsibleSection from '@evaka/lib-components/src/molecules/CollapsibleSection'
 

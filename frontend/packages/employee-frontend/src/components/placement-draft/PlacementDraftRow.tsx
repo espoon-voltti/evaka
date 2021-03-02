@@ -9,14 +9,14 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import LocalDate from '@evaka/lib-common/src/local-date'
 import Title from '@evaka/lib-components/src/atoms/Title'
 
-import { useTranslation } from '~state/i18n'
+import { useTranslation } from '../../state/i18n'
 import { DatePickerDeprecated } from '@evaka/lib-components/src/molecules/DatePickerDeprecated'
 import {
   DaycarePlacementPlan,
   PlacementDraft,
   PlacementDraftPlacement
-} from '~types/placementdraft'
-import { PlacementType } from '~types/child'
+} from '../../types/placementdraft'
+import { PlacementType } from '../../types/child'
 import colors from '@evaka/lib-components/src/colors'
 import FiniteDateRange from '@evaka/lib-common/src/finite-date-range'
 

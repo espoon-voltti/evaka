@@ -5,7 +5,7 @@
 import React from 'react'
 import styled from 'styled-components'
 import { H4, Label, Dimmed } from '@evaka/lib-components/src/typography'
-import { ApplicationResponse } from 'types/application'
+import { ApplicationResponse } from '../../types/application'
 import CollapsibleSection from '@evaka/lib-components/src/molecules/CollapsibleSection'
 import {
   faChild,
@@ -16,17 +16,17 @@ import {
   faUsers
 } from '@evaka/lib-icons'
 import { Gap } from '@evaka/lib-components/src/white-space'
-import { formatName } from 'utils'
-import { useTranslation } from 'state/i18n'
+import { formatName } from '../../utils'
+import { useTranslation } from '../../state/i18n'
 import ListGrid from '@evaka/lib-components/src/layout/ListGrid'
 import { Link } from 'react-router-dom'
-import { formatParagraphs } from 'utils/html-utils'
+import { formatParagraphs } from '../../utils/html-utils'
 import { FixedSpaceColumn } from '@evaka/lib-components/src/layout/flex-helpers'
-import ApplicationTitle from 'components/application-page/ApplicationTitle'
-import VTJGuardian from 'components/application-page/VTJGuardian'
-import ApplicationStatusSection from 'components/application-page/ApplicationStatusSection'
-import ApplicationDecisionsSection from 'components/application-page/ApplicationDecisionsSection'
-import Attachment from '~components/common/Attachment'
+import ApplicationTitle from '../../components/application-page/ApplicationTitle'
+import VTJGuardian from '../../components/application-page/VTJGuardian'
+import ApplicationStatusSection from '../../components/application-page/ApplicationStatusSection'
+import ApplicationDecisionsSection from '../../components/application-page/ApplicationDecisionsSection'
+import Attachment from '../../components/common/Attachment'
 import {
   ApplicationAddress,
   ApplicationPersonBasics

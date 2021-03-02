@@ -5,7 +5,7 @@
 import React, { useMemo, useState } from 'react'
 import LocalDate from '@evaka/lib-common/src/local-date'
 import styled from 'styled-components'
-import Select from '~components/common/Select'
+import Select from '../../../components/common/Select'
 import {
   CareArea,
   Coordinate,
@@ -13,7 +13,7 @@ import {
   Unit,
   UnitLanguage,
   UnitTypes
-} from '~types/unit'
+} from '../../../types/unit'
 import {
   DatePickerDeprecated,
   DatePickerClearableDeprecated
@@ -22,10 +22,10 @@ import InputField from '@evaka/lib-components/src/atoms/form/InputField'
 import Button from '@evaka/lib-components/src/atoms/buttons/Button'
 import Radio from '@evaka/lib-components/src/atoms/form/Radio'
 import Checkbox from '@evaka/lib-components/src/atoms/form/Checkbox'
-import { DaycareFields } from '~api/unit'
-import { DayOfWeek, UUID } from '~types'
+import { DaycareFields } from '../../../api/unit'
+import { DayOfWeek, UUID } from '../../../types'
 import { Result } from '@evaka/lib-common/src/api'
-import { Translations, useTranslation } from '~state/i18n'
+import { Translations, useTranslation } from '../../../state/i18n'
 import colors from '@evaka/lib-components/src/colors'
 import InlineButton from '@evaka/lib-components/src/atoms/buttons/InlineButton'
 import { faPen } from '@evaka/lib-icons'
@@ -36,7 +36,7 @@ import {
   FixedSpaceRow
 } from '@evaka/lib-components/src/layout/flex-helpers'
 import DateRange from '@evaka/lib-common/src/date-range'
-import { FinanceDecisionHandlerOption } from '~state/invoicing-ui'
+import { FinanceDecisionHandlerOption } from '../../../state/invoicing-ui'
 
 type CareType = 'DAYCARE' | 'PRESCHOOL' | 'PREPARATORY_EDUCATION' | 'CLUB'
 type DaycareType = 'CENTRE' | 'FAMILY' | 'GROUP_FAMILY'

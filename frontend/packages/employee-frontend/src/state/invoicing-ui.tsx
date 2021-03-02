@@ -21,8 +21,8 @@ import {
   InvoiceDistinctiveDetails
 } from '../types/invoicing'
 import { Loading, Result } from '@evaka/lib-common/src/api'
-import { CareArea } from '~types/unit'
-import { UUID } from '~types'
+import { CareArea } from '../types/unit'
+import { UUID } from '../types'
 
 interface Checked {
   [id: string]: boolean

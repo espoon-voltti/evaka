@@ -5,13 +5,13 @@
 import React from 'react'
 import styled from 'styled-components'
 import colors from '@evaka/lib-components/src/colors'
-import { useTranslation } from '~state/i18n'
+import { useTranslation } from '../../../../state/i18n'
 import Title from '@evaka/lib-components/src/atoms/Title'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faArrowDown, faArrowUp, faEye, faEyeSlash } from '@evaka/lib-icons'
-import Tooltip from '~components/common/Tooltip'
-import { formatPercentage } from '~components/utils'
-import { OccupancyResponse } from '~api/unit'
+import Tooltip from '../../../../components/common/Tooltip'
+import { formatPercentage } from '../../../../components/utils'
+import { OccupancyResponse } from '../../../../api/unit'
 
 interface CardProps {
   color: string

@@ -3,9 +3,9 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import LocalDate from '@evaka/lib-common/src/local-date'
-import { UUID } from '~types/index'
+import { UUID } from '../types/index'
 import FiniteDateRange from '@evaka/lib-common/src/finite-date-range'
-import { PlacementType } from '~types/child'
+import { PlacementType } from '../types/child'
 
 interface Unit {
   id: UUID

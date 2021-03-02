@@ -5,14 +5,14 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import styled from 'styled-components'
 import ReactSelect, { components, OptionProps } from 'react-select'
-import { Translations, useTranslation } from '~state/i18n'
-import { getOrCreatePersonBySsn } from '~api/person'
+import { Translations, useTranslation } from '../../state/i18n'
+import { getOrCreatePersonBySsn } from '../../api/person'
 import { Result, Success } from '@evaka/lib-common/src/api'
-import { formatName } from '~utils'
+import { formatName } from '../../utils'
 import { useDebounce } from '@evaka/lib-common/src/utils/useDebounce'
-import { isSsnValid } from '~utils/validation/validations'
+import { isSsnValid } from '../../utils/validation/validations'
 import { useRestApi } from '@evaka/lib-common/src/utils/useRestApi'
-import { PersonDetails } from '~types/person'
+import { PersonDetails } from '../../types/person'
 
 const Container = styled.div`
   margin: 10px 0;

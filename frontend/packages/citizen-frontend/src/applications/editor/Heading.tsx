@@ -6,13 +6,13 @@ import React from 'react'
 import { Gap } from '@evaka/lib-components/src/white-space'
 import { ContentArea } from '@evaka/lib-components/src/layout/Container'
 import { H1, H2 } from '@evaka/lib-components/src/typography'
-import { useTranslation } from '~localization'
+import { useTranslation } from '../../localization'
 import { AlertBox } from '@evaka/lib-components/src/molecules/MessageBoxes'
 import {
   ApplicationFormDataErrors,
   applicationHasErrors
-} from '~applications/editor/validations'
-import { getErrorCount } from '~form-validation'
+} from '../../applications/editor/validations'
+import { getErrorCount } from '../../form-validation'
 import { FixedSpaceColumn } from '@evaka/lib-components/src/layout/flex-helpers'
 import { ApplicationType } from '@evaka/lib-common/src/api-types/application/enums'
 

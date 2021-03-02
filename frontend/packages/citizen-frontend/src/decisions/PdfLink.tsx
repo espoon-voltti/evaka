@@ -6,7 +6,7 @@ import InlineButton from '@evaka/lib-components/src/atoms/buttons/InlineButton'
 import { faFileAlt } from '@evaka/lib-icons'
 import { noop } from 'lodash'
 import React from 'react'
-import { useTranslation } from '~localization'
+import { useTranslation } from '../localization'
 
 export const PdfLink = React.memo(function PdfLink({
   decisionId

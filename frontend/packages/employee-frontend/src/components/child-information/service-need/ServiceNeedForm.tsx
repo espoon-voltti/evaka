@@ -5,14 +5,17 @@
 import React, { FormEvent, useContext, useEffect, useState } from 'react'
 import LocalDate from '@evaka/lib-common/src/local-date'
 import DateRange from '@evaka/lib-common/src/date-range'
-import { useTranslation } from '~/state/i18n'
-import { UIContext } from '~state/ui'
+import { useTranslation } from '../../../state/i18n'
+import { UIContext } from '../../../state/ui'
 import { Gap } from '@evaka/lib-components/src/white-space'
 import Checkbox from '@evaka/lib-components/src/atoms/form/Checkbox'
 import InputField from '@evaka/lib-components/src/atoms/form/InputField'
-import { Placement, ServiceNeed } from '~types/child'
-import { UUID } from '~types'
-import { FormErrors, formHasErrors } from '~utils/validation/validations'
+import { Placement, ServiceNeed } from '../../../types/child'
+import { UUID } from '../../../types'
+import {
+  FormErrors,
+  formHasErrors
+} from '../../../utils/validation/validations'
 import {
   DatePickerDeprecated,
   DatePickerClearableDeprecated
@@ -21,17 +24,17 @@ import {
   AlertBox,
   InfoBox
 } from '@evaka/lib-components/src/molecules/MessageBoxes'
-import FormActions from '~components/common/FormActions'
-import LabelValueList from '~components/common/LabelValueList'
+import FormActions from '../../../components/common/FormActions'
+import LabelValueList from '../../../components/common/LabelValueList'
 import styled from 'styled-components'
-import { ChildContext } from '~state'
-import { DateRangeOpen, rangeContainsDate } from '~utils/date'
-import { DivFitContent } from 'components/common/styled/containers'
+import { ChildContext } from '../../../state'
+import { DateRangeOpen, rangeContainsDate } from '../../../utils/date'
+import { DivFitContent } from '../../../components/common/styled/containers'
 import {
   createServiceNeed,
   ServiceNeedRequest,
   updateServiceNeed
-} from 'api/child/service-needs'
+} from '../../../api/child/service-needs'
 import { FixedSpaceColumn } from '@evaka/lib-components/src/layout/flex-helpers'
 
 const NumberInputWrapper = styled.div`

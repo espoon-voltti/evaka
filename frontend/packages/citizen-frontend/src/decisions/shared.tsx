@@ -16,7 +16,7 @@ import {
   faFile
 } from '@evaka/lib-icons'
 import styled from 'styled-components'
-import { Decision, DecisionSummary } from '~decisions/types'
+import { Decision, DecisionSummary } from '../decisions/types'
 import { IconDefinition } from '@fortawesome/fontawesome-svg-core'
 
 export const Status = styled.span`

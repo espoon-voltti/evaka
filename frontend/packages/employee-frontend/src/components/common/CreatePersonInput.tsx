@@ -11,8 +11,8 @@ import { Gap } from '@evaka/lib-components/src/white-space'
 import { Label } from '@evaka/lib-components/src/typography'
 import InputField from '@evaka/lib-components/src/atoms/form/InputField'
 import { DatePickerDeprecated } from '@evaka/lib-components/src/molecules/DatePickerDeprecated'
-import { useTranslation } from '~state/i18n'
-import { CreatePersonBody } from '~api/person'
+import { useTranslation } from '../../state/i18n'
+import { CreatePersonBody } from '../../api/person'
 
 interface Props {
   createPersonInfo: Partial<CreatePersonBody>

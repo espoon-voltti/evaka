@@ -7,9 +7,9 @@ import ListGrid from '@evaka/lib-components/src/layout/ListGrid'
 import { Label } from '@evaka/lib-components/src/typography'
 import Title from '@evaka/lib-components/src/atoms/Title'
 import IncomeTable from './IncomeTable'
-import { Income } from '~types/income'
-import { useTranslation } from '~state/i18n'
-import { formatDate } from '~utils/date'
+import { Income } from '../../../types/income'
+import { useTranslation } from '../../../state/i18n'
+import { formatDate } from '../../../utils/date'
 
 interface Props {
   income: Income

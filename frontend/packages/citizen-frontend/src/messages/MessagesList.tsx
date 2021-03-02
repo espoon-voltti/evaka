@@ -13,9 +13,9 @@ import { H1 } from '@evaka/lib-components/src/typography'
 import { SpinnerSegment } from '@evaka/lib-components/src/atoms/state/Spinner'
 import ErrorSegment from '@evaka/lib-components/src/atoms/state/ErrorSegment'
 import IconButton from '@evaka/lib-components/src/atoms/buttons/IconButton'
-import { useTranslation } from '~localization'
-import { ReceivedBulletin } from '~messages/types'
-import MessageListItem from '~messages/MessageListItem'
+import { useTranslation } from '../localization'
+import { ReceivedBulletin } from '../messages/types'
+import MessageListItem from '../messages/MessageListItem'
 
 type Props = {
   bulletins: Result<ReceivedBulletin[]>

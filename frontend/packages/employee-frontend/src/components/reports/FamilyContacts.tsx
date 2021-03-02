@@ -17,16 +17,16 @@ import {
   Thead,
   Tbody
 } from '@evaka/lib-components/src/layout/Table'
-import { useTranslation } from '~state/i18n'
+import { useTranslation } from '../../state/i18n'
 import { Link, useParams } from 'react-router-dom'
 import { Loading, Result } from '@evaka/lib-common/src/api'
-import { FamilyContactsReportRow } from '~types/reports'
-import { getFamilyContactsReport } from '~api/reports'
+import { FamilyContactsReportRow } from '../../types/reports'
+import { getFamilyContactsReport } from '../../api/reports'
 import ReturnButton from '@evaka/lib-components/src/atoms/buttons/ReturnButton'
-import ReportDownload from '~components/reports/ReportDownload'
-import { TableScrollable } from 'components/reports/common'
-import { UUID } from '~types'
-import { getDaycare, UnitResponse } from '~api/unit'
+import ReportDownload from '../../components/reports/ReportDownload'
+import { TableScrollable } from '../../components/reports/common'
+import { UUID } from '../../types'
+import { getDaycare, UnitResponse } from '../../api/unit'
 
 function FamilyContacts() {
   const { unitId } = useParams<{ unitId: UUID }>()

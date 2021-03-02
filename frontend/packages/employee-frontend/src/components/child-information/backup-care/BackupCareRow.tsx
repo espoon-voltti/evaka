@@ -3,19 +3,22 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useContext } from 'react'
-import { useTranslation } from '~/state/i18n'
-import { UIContext } from '~state/ui'
+import { useTranslation } from '../../../state/i18n'
+import { UIContext } from '../../../state/ui'
 import { faQuestion } from '@evaka/lib-icons'
 import Title from '@evaka/lib-components/src/atoms/Title'
 import InfoModal from '@evaka/lib-components/src/molecules/modals/InfoModal'
-import { ChildContext } from '~state'
-import { UUID } from '~types'
-import BackupCareForm from '~components/child-information/backup-care/BackupCareForm'
-import { getChildBackupCares, removeBackupCare } from 'api/child/backup-care'
+import { ChildContext } from '../../../state'
+import { UUID } from '../../../types'
+import BackupCareForm from '../../../components/child-information/backup-care/BackupCareForm'
+import {
+  getChildBackupCares,
+  removeBackupCare
+} from '../../../api/child/backup-care'
 import styled from 'styled-components'
-import { ChildBackupCare } from '~types/child'
-import Toolbar from '~components/common/Toolbar'
-import { ALL_ROLES_BUT_STAFF } from 'utils/roles'
+import { ChildBackupCare } from '../../../types/child'
+import Toolbar from '../../../components/common/Toolbar'
+import { ALL_ROLES_BUT_STAFF } from '../../../utils/roles'
 
 export interface Props {
   childId: UUID

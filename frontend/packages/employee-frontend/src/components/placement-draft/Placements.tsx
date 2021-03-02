@@ -8,15 +8,15 @@ import Title from '@evaka/lib-components/src/atoms/Title'
 import { faChevronUp, fasExclamationTriangle } from '@evaka/lib-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 
-import { useTranslation } from '~state/i18n'
-import { PlacementDraftPlacement } from '~types/placementdraft'
+import { useTranslation } from '../../state/i18n'
+import { PlacementDraftPlacement } from '../../types/placementdraft'
 import {
   PlacementDraftState,
   PlacementDraftContext
-} from '~state/placementdraft'
+} from '../../state/placementdraft'
 import colors from '@evaka/lib-components/src/colors'
-import { getStatusLabelByDateRange } from '~utils/date'
-import StatusLabel from '~components/common/StatusLabel'
+import { getStatusLabelByDateRange } from '../../utils/date'
+import StatusLabel from '../../components/common/StatusLabel'
 import { AlertBox } from '@evaka/lib-components/src/molecules/MessageBoxes'
 
 interface PlacementsContainerProps {

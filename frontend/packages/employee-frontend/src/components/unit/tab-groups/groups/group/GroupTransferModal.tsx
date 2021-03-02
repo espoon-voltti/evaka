@@ -4,17 +4,20 @@
 
 import React, { useState, useContext } from 'react'
 import LocalDate from '@evaka/lib-common/src/local-date'
-import { useTranslation } from '~state/i18n'
-import { UIContext } from '~state/ui'
+import { useTranslation } from '../../../../../state/i18n'
+import { UIContext } from '../../../../../state/ui'
 import FormModal from '@evaka/lib-components/src/molecules/modals/FormModal'
 import { Result } from '@evaka/lib-common/src/api'
 import { faExchange } from '@evaka/lib-icons'
-import { transferGroup } from '~api/unit'
-import { UUID } from '~types'
+import { transferGroup } from '../../../../../api/unit'
+import { UUID } from '../../../../../types'
 import { DatePickerDeprecated } from '@evaka/lib-components/src/molecules/DatePickerDeprecated'
-import { formatName } from '~utils'
-import { DaycareGroupPlacementDetailed, DaycareGroup } from '~types/unit'
-import Select from '~components/common/Select'
+import { formatName } from '../../../../../utils'
+import {
+  DaycareGroupPlacementDetailed,
+  DaycareGroup
+} from '../../../../../types/unit'
+import Select from '../../../../../components/common/Select'
 import { FixedSpaceColumn } from '@evaka/lib-components/src/layout/flex-helpers'
 
 interface Props {

@@ -39,27 +39,27 @@ import {
   removeDaycareAclStaff,
   removeDaycareAclSupervisor,
   removeDaycareAclSpecialEducationTeacher
-} from '~api/unit'
-import { getEmployees } from '~api/employees'
-import { Employee } from '~types/employee'
-import { UserContext } from '~state/user'
+} from '../../../api/unit'
+import { getEmployees } from '../../../api/employees'
+import { Employee } from '../../../types/employee'
+import { UserContext } from '../../../state/user'
 import { useRestApi } from '@evaka/lib-common/src/utils/useRestApi'
-import { RequireRole } from '~utils/roles'
-import { useTranslation } from '~state/i18n'
+import { RequireRole } from '../../../utils/roles'
+import { useTranslation } from '../../../state/i18n'
 import IconButton from '@evaka/lib-components/src/atoms/buttons/IconButton'
 import { faPen, faQuestion, faTrash } from '@evaka/lib-icons'
 import { H2 } from '@evaka/lib-components/src/typography'
 import Button from '@evaka/lib-components/src/atoms/buttons/Button'
-import { UUID } from '~types'
-import { UIContext } from '~state/ui'
-import { formatName } from '~utils'
+import { UUID } from '../../../types'
+import { UIContext } from '../../../state/ui'
+import { formatName } from '../../../utils'
 import AddButton from '@evaka/lib-components/src/atoms/buttons/AddButton'
 import { Gap } from '@evaka/lib-components/src/white-space'
 import MobilePairingModal from '../MobilePairingModal'
 import { FixedSpaceRow } from '@evaka/lib-components/src/layout/flex-helpers'
 import InputField from '@evaka/lib-components/src/atoms/form/InputField'
-import { isNotProduction, isPilotUnit } from '~constants'
-import { AdRole } from '~types'
+import { isNotProduction, isPilotUnit } from '../../../constants'
+import { AdRole } from '../../../types'
 
 type Props = { unitId: string }
 

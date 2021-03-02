@@ -9,7 +9,7 @@ import {
 } from '@evaka/lib-components/src/layout/Container'
 import Title from '@evaka/lib-components/src/atoms/Title'
 import { Gap } from '@evaka/lib-components/src/white-space'
-import { useTranslation } from '~state/i18n'
+import { useTranslation } from '../state/i18n'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 import {
@@ -29,10 +29,10 @@ import {
   faDatabase
 } from '@evaka/lib-icons'
 import colors from '@evaka/lib-components/src/colors'
-import { RequireRole } from '~utils/roles'
+import { RequireRole } from '../utils/roles'
 import RoundIcon from '@evaka/lib-components/src/atoms/RoundIcon'
 import { defaultMargins } from '@evaka/lib-components/src/white-space'
-import { featureFlags } from '~config'
+import { featureFlags } from '../config'
 
 const ReportItems = styled.div`
   margin: 20px 0;

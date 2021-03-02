@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Action } from '~components/applications/ApplicationActions'
+import { Action } from '../../components/applications/ApplicationActions'
 import React from 'react'
 import InlineButton from '@evaka/lib-components/src/atoms/buttons/InlineButton'
 import styled from 'styled-components'

@@ -8,8 +8,8 @@ import { Redirect } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { P } from '@evaka/lib-components/src/typography'
-import { useTranslation } from '~state/i18n'
-import { UserContext } from '~state/user'
+import { useTranslation } from '../../state/i18n'
+import { UserContext } from '../../state/user'
 import EvakaLogo from '../../assets/EvakaLogo.svg'
 import { FullHeightContainer, WideLinkButton } from './components'
 

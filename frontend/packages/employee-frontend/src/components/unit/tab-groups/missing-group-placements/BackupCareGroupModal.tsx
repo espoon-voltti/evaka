@@ -3,16 +3,16 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useContext, useState } from 'react'
-import { useTranslation } from '~state/i18n'
-import { UIContext } from '~state/ui'
+import { useTranslation } from '../../../../state/i18n'
+import { UIContext } from '../../../../state/ui'
 import FormModal from '@evaka/lib-components/src/molecules/modals/FormModal'
 import { faChild, faExchange } from '@evaka/lib-icons'
-import { UUID } from '~types'
-import Select from '~components/common/Select'
-import { formatName } from '~utils'
-import { UnitBackupCare } from '~types/child'
-import { DaycareGroup } from '~types/unit'
-import { updateBackupCare } from 'api/child/backup-care'
+import { UUID } from '../../../../types'
+import Select from '../../../../components/common/Select'
+import { formatName } from '../../../../utils'
+import { UnitBackupCare } from '../../../../types/child'
+import { DaycareGroup } from '../../../../types/unit'
+import { updateBackupCare } from '../../../../api/child/backup-care'
 
 interface Props {
   backupCare: UnitBackupCare

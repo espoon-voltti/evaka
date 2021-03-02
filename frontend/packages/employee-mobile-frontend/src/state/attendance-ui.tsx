@@ -5,7 +5,7 @@
 import React, { useMemo, useState, createContext } from 'react'
 
 import { Loading, Result } from '@evaka/lib-common/src/api'
-import { AttendanceResponse } from '~api/attendances'
+import { AttendanceResponse } from '../api/attendances'
 
 interface UIState {
   attendanceResponse: Result<AttendanceResponse>

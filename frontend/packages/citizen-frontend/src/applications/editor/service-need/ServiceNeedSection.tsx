@@ -3,20 +3,20 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
-import { ServiceNeedFormData } from '~applications/editor/ApplicationFormData'
-import { useTranslation } from '~localization'
+import { ServiceNeedFormData } from '../../../applications/editor/ApplicationFormData'
+import { useTranslation } from '../../../localization'
 import HorizontalLine from '@evaka/lib-components/src/atoms/HorizontalLine'
-import EditorSection from '~applications/editor/EditorSection'
-import { ApplicationFormDataErrors } from '~applications/editor/validations'
-import { getErrorCount } from '~form-validation'
-import PreferredStartSubSection from '~applications/editor/service-need/PreferredStartSubSection'
-import AssistanceNeedSubSection from '~applications/editor/service-need/AssistanceNeedSubSection'
+import EditorSection from '../../../applications/editor/EditorSection'
+import { ApplicationFormDataErrors } from '../../../applications/editor/validations'
+import { getErrorCount } from '../../../form-validation'
+import PreferredStartSubSection from '../../../applications/editor/service-need/PreferredStartSubSection'
+import AssistanceNeedSubSection from '../../../applications/editor/service-need/AssistanceNeedSubSection'
 import {
   ApplicationStatus,
   ApplicationType
 } from '@evaka/lib-common/src/api-types/application/enums'
-import ServiceTimeSubSectionDaycare from '~applications/editor/service-need/ServiceTimeSubSectionDaycare'
-import ServiceTimeSubSectionPreschool from '~applications/editor/service-need/ServiceTimeSubSectionPreschool'
+import ServiceTimeSubSectionDaycare from '../../../applications/editor/service-need/ServiceTimeSubSectionDaycare'
+import ServiceTimeSubSectionPreschool from '../../../applications/editor/service-need/ServiceTimeSubSectionPreschool'
 import LocalDate from '@evaka/lib-common/src/local-date'
 
 export type ServiceNeedSectionProps = {

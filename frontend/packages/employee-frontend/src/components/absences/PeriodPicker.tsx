@@ -5,7 +5,7 @@
 import React from 'react'
 import styled from 'styled-components'
 import LocalDate from '@evaka/lib-common/src/local-date'
-import { useTranslation } from '~state/i18n'
+import { useTranslation } from '../../state/i18n'
 import { H3 } from '@evaka/lib-components/src/typography'
 import { faChevronLeft, faChevronRight } from '@evaka/lib-icons'
 import IconButton from '@evaka/lib-components/src/atoms/buttons/IconButton'

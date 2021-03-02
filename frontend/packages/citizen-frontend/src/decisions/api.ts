@@ -10,8 +10,8 @@ import {
   Decision,
   deserializeApplicationDecisions,
   deserializeDecision
-} from '~decisions/types'
-import { client } from '~api-client'
+} from '../decisions/types'
+import { client } from '../api-client'
 import LocalDate from '@evaka/lib-common/src/local-date'
 
 export async function getDecisions(): Promise<Result<ApplicationDecisions[]>> {

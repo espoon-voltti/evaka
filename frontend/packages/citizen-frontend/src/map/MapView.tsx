@@ -10,19 +10,19 @@ import { PublicUnit } from '@evaka/lib-common/src/api-types/units/PublicUnit'
 import { useRestApi } from '@evaka/lib-common/src/utils/useRestApi'
 import { Coordinate } from '@evaka/lib-common/src/api-types/units/Coordinate'
 import AdaptiveFlex from '@evaka/lib-components/src/layout/AdaptiveFlex'
-import { useTranslation } from '~localization'
-import useTitle from '~useTitle'
-import { headerHeight } from '~header/const'
-import UnitSearchPanel from '~map/UnitSearchPanel'
-import MapBox from '~map/MapBox'
-import { mapViewBreakpoint, MobileMode } from '~map/const'
+import { useTranslation } from '../localization'
+import useTitle from '../useTitle'
+import { headerHeight } from '../header/const'
+import UnitSearchPanel from '../map/UnitSearchPanel'
+import MapBox from '../map/MapBox'
+import { mapViewBreakpoint, MobileMode } from '../map/const'
 import {
   calcStraightDistance,
   UnitWithDistance,
   UnitWithStraightDistance
-} from '~map/distances'
-import { fetchUnits, queryDistances } from '~map/api'
-import UnitDetailsPanel from '~map/UnitDetailsPanel'
+} from '../map/distances'
+import { fetchUnits, queryDistances } from '../map/api'
+import UnitDetailsPanel from '../map/UnitDetailsPanel'
 import { ApplicationType } from '@evaka/lib-common/src/api-types/application/enums'
 
 export type MapAddress = {

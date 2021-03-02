@@ -2,16 +2,16 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { UUID } from '~types/index'
+import { UUID } from '../types/index'
 import LocalDate from '@evaka/lib-common/src/local-date'
-import { Decision } from 'types/decision'
-import { PersonDetails } from '~types/person'
+import { Decision } from '../types/decision'
+import { PersonDetails } from '../types/person'
 import {
   PlacementPlanConfirmationStatus,
   PlacementPlanRejectReason
-} from '~types/unit'
-import { PlacementType } from '~types/child'
-import { VoucherApplicationFilter } from '~state/application-ui'
+} from '../types/unit'
+import { PlacementType } from '../types/child'
+import { VoucherApplicationFilter } from '../state/application-ui'
 import {
   ApplicationAttachment,
   ApplicationDetails

@@ -4,11 +4,11 @@
 
 import React from 'react'
 import Checkbox from '@evaka/lib-components/src/atoms/form/Checkbox'
-import { useTranslation } from '~localization'
-import { FeeFormData } from '~applications/editor/ApplicationFormData'
-import EditorSection from '~applications/editor/EditorSection'
-import { ApplicationFormDataErrors } from '~applications/editor/validations'
-import { getErrorCount } from '~form-validation'
+import { useTranslation } from '../../localization'
+import { FeeFormData } from '../../applications/editor/ApplicationFormData'
+import EditorSection from '../../applications/editor/EditorSection'
+import { ApplicationFormDataErrors } from '../../applications/editor/validations'
+import { getErrorCount } from '../../form-validation'
 import { ApplicationType } from '@evaka/lib-common/src/api-types/application/enums'
 
 type Props = {

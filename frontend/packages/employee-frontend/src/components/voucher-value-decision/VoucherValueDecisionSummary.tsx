@@ -11,9 +11,9 @@ import { H4 } from '@evaka/lib-components/src/typography'
 import VoucherValueDecisionIncomeSection from './VoucherValueDecisionIncomeSection'
 import VoucherValueDecisionCoPaymentSection from './VoucherValueDecisionCoPaymentSection'
 import VoucherValueDecisionValueSection from './VoucherValueDecisionValueSection'
-import { useTranslation } from '~state/i18n'
-import { VoucherValueDecisionDetailed } from '~types/invoicing'
-import { formatCents } from '~utils/money'
+import { useTranslation } from '../../state/i18n'
+import { VoucherValueDecisionDetailed } from '../../types/invoicing'
+import { formatCents } from '../../utils/money'
 
 type Props = {
   decision: VoucherValueDecisionDetailed

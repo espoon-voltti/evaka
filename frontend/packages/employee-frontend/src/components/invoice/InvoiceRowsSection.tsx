@@ -22,7 +22,7 @@ import CollapsibleSection from '@evaka/lib-components/src/molecules/CollapsibleS
 import InvoiceRowsSectionRow from './InvoiceRowsSectionRow'
 import Sum from './Sum'
 import { useTranslation } from '../../state/i18n'
-import { UIContext } from '~state/ui'
+import { UIContext } from '../../state/ui'
 import {
   InvoiceRowDetailed,
   InvoiceCodes,
@@ -31,7 +31,7 @@ import {
 import { Result } from '@evaka/lib-common/src/api'
 import { totalPrice } from '../../utils/pricing'
 import AbsencesModal from './AbsencesModal'
-import { formatName } from '~utils'
+import { formatName } from '../../utils'
 
 const TitleContainer = styled.div`
   display: flex;

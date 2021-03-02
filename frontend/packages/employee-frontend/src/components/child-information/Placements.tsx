@@ -3,22 +3,22 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useContext, useEffect } from 'react'
-import { UUID } from '~types'
-import { useTranslation } from '~state/i18n'
-import { ChildContext } from '~state'
-import { ChildState } from '~state/child'
+import { UUID } from '../../types'
+import { useTranslation } from '../../state/i18n'
+import { ChildContext } from '../../state'
+import { ChildState } from '../../state/child'
 import { Loading } from '@evaka/lib-common/src/api'
 import Loader from '@evaka/lib-components/src/atoms/Loader'
 import { faMapMarkerAlt } from '@evaka/lib-icons'
-import PlacementRow from '~components/child-information/placements/PlacementRow'
-import { UIContext } from '~state/ui'
-import CreatePlacementModal from '~components/child-information/placements/CreatePlacementModal'
+import PlacementRow from '../../components/child-information/placements/PlacementRow'
+import { UIContext } from '../../state/ui'
+import CreatePlacementModal from '../../components/child-information/placements/CreatePlacementModal'
 import { AddButtonRow } from '@evaka/lib-components/src/atoms/buttons/AddButton'
-import { getPlacements } from 'api/child/placements'
+import { getPlacements } from '../../api/child/placements'
 import CollapsibleSection from '@evaka/lib-components/src/molecules/CollapsibleSection'
-import { RequireRole } from 'utils/roles'
-import { DateRange, rangesOverlap } from '~utils/date'
-import { Placement } from '~types/child'
+import { RequireRole } from '../../utils/roles'
+import { DateRange, rangesOverlap } from '../../utils/date'
+import { Placement } from '../../types/child'
 
 interface Props {
   id: UUID

@@ -21,27 +21,27 @@ import {
   Thead,
   Tbody
 } from '@evaka/lib-components/src/layout/Table'
-import { useTranslation } from '~state/i18n'
+import { useTranslation } from '../../state/i18n'
 import { Loading, Result } from '@evaka/lib-common/src/api'
-import { VoucherServiceProviderUnitRow } from '~types/reports'
+import { VoucherServiceProviderUnitRow } from '../../types/reports'
 import {
   getVoucherServiceProviderUnitReport,
   VoucherProviderChildrenReportFilters as VoucherServiceProviderUnitFilters
-} from '~api/reports'
+} from '../../api/reports'
 import ReturnButton from '@evaka/lib-components/src/atoms/buttons/ReturnButton'
-import ReportDownload from '~components/reports/ReportDownload'
+import ReportDownload from '../../components/reports/ReportDownload'
 import {
   FilterLabel,
   FilterRow,
   TableScrollable
-} from '~components/reports/common'
-import { UUID } from '~types'
-import { reactSelectStyles } from '~components/common/Select'
+} from '../../components/reports/common'
+import { UUID } from '../../types'
+import { reactSelectStyles } from '../../components/common/Select'
 
 import { defaultMargins } from '@evaka/lib-components/src/white-space'
 
-import { formatCents } from '~utils/money'
-import { capitalizeFirstLetter, formatName } from '~utils'
+import { formatCents } from '../../utils/money'
+import { capitalizeFirstLetter, formatName } from '../../utils'
 import Tooltip from '@evaka/lib-components/src/atoms/Tooltip'
 
 const Wrapper = styled.div`

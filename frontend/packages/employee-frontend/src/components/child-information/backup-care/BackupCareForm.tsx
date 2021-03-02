@@ -11,28 +11,28 @@ import React, {
 } from 'react'
 import _ from 'lodash'
 import LocalDate from '@evaka/lib-common/src/local-date'
-import { UUID } from '~types'
-import { useTranslation } from '~state/i18n'
-import { UIContext } from '~state/ui'
-import { ChildContext } from '~state'
-import { DateRange } from '~utils/date'
+import { UUID } from '../../../types'
+import { useTranslation } from '../../../state/i18n'
+import { UIContext } from '../../../state/ui'
+import { ChildContext } from '../../../state'
+import { DateRange } from '../../../utils/date'
 import Button from '@evaka/lib-components/src/atoms/buttons/Button'
 import { Loading, Result } from '@evaka/lib-common/src/api'
 import {
   isDateRangeInverted,
   isDateRangeOverlappingWithExisting
-} from '~utils/validation/validations'
+} from '../../../utils/validation/validations'
 import { DatePickerDeprecated } from '@evaka/lib-components/src/molecules/DatePickerDeprecated'
-import { getUnits } from '~api/daycare'
-import { Unit } from '~types/invoicing'
+import { getUnits } from '../../../api/daycare'
+import { Unit } from '../../../types/invoicing'
 import {
   createBackupCare,
   getChildBackupCares,
   updateBackupCare
-} from 'api/child/backup-care'
+} from '../../../api/child/backup-care'
 import ReactSelect, { createFilter, components } from 'react-select'
 import styled from 'styled-components'
-import { ChildBackupCare } from '~types/child'
+import { ChildBackupCare } from '../../../types/child'
 import { FixedSpaceRow } from '@evaka/lib-components/src/layout/flex-helpers'
 import FiniteDateRange from '@evaka/lib-common/src/finite-date-range'
 

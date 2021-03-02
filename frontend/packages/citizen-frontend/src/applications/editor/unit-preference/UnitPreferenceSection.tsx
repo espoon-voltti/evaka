@@ -3,16 +3,16 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
-import { UnitPreferenceFormData } from '~applications/editor/ApplicationFormData'
+import { UnitPreferenceFormData } from '../../../applications/editor/ApplicationFormData'
 import HorizontalLine from '@evaka/lib-components/src/atoms/HorizontalLine'
 import LocalDate from '@evaka/lib-common/src/local-date'
-import { useTranslation } from '~localization'
-import EditorSection from '~applications/editor/EditorSection'
+import { useTranslation } from '../../../localization'
+import EditorSection from '../../../applications/editor/EditorSection'
 import { ApplicationType } from '@evaka/lib-common/src/api-types/application/enums'
-import { ApplicationFormDataErrors } from '~applications/editor/validations'
-import { getErrorCount } from '~form-validation'
-import SiblingBasisSubSection from '~applications/editor/unit-preference/SiblingBasisSubSection'
-import UnitsSubSection from '~applications/editor/unit-preference/UnitsSubSection'
+import { ApplicationFormDataErrors } from '../../../applications/editor/validations'
+import { getErrorCount } from '../../../form-validation'
+import SiblingBasisSubSection from '../../../applications/editor/unit-preference/SiblingBasisSubSection'
+import UnitsSubSection from '../../../applications/editor/unit-preference/UnitsSubSection'
 
 export type UnitPreferenceSectionCommonProps = {
   formData: UnitPreferenceFormData

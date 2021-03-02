@@ -20,31 +20,31 @@ import {
   Thead,
   Tbody
 } from '@evaka/lib-components/src/layout/Table'
-import { reactSelectStyles } from '~components/common/Select'
-import { Translations, useTranslation } from '~state/i18n'
+import { reactSelectStyles } from '../../components/common/Select'
+import { Translations, useTranslation } from '../../state/i18n'
 import { Loading, Result, Success } from '@evaka/lib-common/src/api'
-import { OccupancyReportRow } from '~types/reports'
+import { OccupancyReportRow } from '../../types/reports'
 import {
   getOccupanciesReport,
   OccupancyReportFilters,
   OccupancyReportType
-} from '~api/reports'
+} from '../../api/reports'
 import ReturnButton from '@evaka/lib-components/src/atoms/buttons/ReturnButton'
-import ReportDownload from '~components/reports/ReportDownload'
+import ReportDownload from '../../components/reports/ReportDownload'
 import { addDays, isAfter, isWeekend, lastDayOfMonth } from 'date-fns'
-import { formatDate } from '~utils/date'
-import { DATE_FORMAT_ISO } from '~constants'
-import { formatPercentage, formatDecimal } from '~components/utils'
-import { SelectOptionProps } from '~components/common/Select'
+import { formatDate } from '../../utils/date'
+import { DATE_FORMAT_ISO } from '../../constants'
+import { formatPercentage, formatDecimal } from '../../components/utils'
+import { SelectOptionProps } from '../../components/common/Select'
 import { fi } from 'date-fns/locale'
-import { CareArea } from '~types/unit'
-import { getAreas } from '~api/daycare'
+import { CareArea } from '../../types/unit'
+import { getAreas } from '../../api/daycare'
 import {
   FilterLabel,
   FilterRow,
   TableScrollable
-} from '~components/reports/common'
-import { FlexRow } from 'components/common/styled/containers'
+} from '../../components/reports/common'
+import { FlexRow } from '../../components/common/styled/containers'
 
 const StyledTd = styled(Td)`
   white-space: nowrap;

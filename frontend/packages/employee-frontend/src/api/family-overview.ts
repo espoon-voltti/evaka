@@ -3,9 +3,9 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { Failure, Result, Success } from '@evaka/lib-common/src/api'
-import { client } from '~/api/client'
-import { UUID } from '~types'
-import { FamilyContact, FamilyOverview } from '~types/family-overview'
+import { client } from '../api/client'
+import { UUID } from '../types'
+import { FamilyContact, FamilyOverview } from '../types/family-overview'
 import { JsonOf } from '@evaka/lib-common/src/json'
 import LocalDate from '@evaka/lib-common/src/local-date'
 

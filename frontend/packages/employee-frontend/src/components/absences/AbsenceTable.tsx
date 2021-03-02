@@ -6,13 +6,13 @@ import React, { useContext } from 'react'
 import { Link } from 'react-router-dom'
 import classNames from 'classnames'
 import LocalDate from '@evaka/lib-common/src/local-date'
-import { Child, TableMode } from '~types/absence'
+import { Child, TableMode } from '../../types/absence'
 import { getRange, getWeekDay, getMonthDays } from './utils'
 import AbsenceCellWrapper, { DisabledCell } from './AbsenceCell'
 import StaffAttendance from './StaffAttendance'
-import { AbsencesState, AbsencesContext } from '~state/absence'
-import { Translations, useTranslation } from '~state/i18n'
-import Tooltip from '~components/common/Tooltip'
+import { AbsencesState, AbsencesContext } from '../../state/absence'
+import { Translations, useTranslation } from '../../state/i18n'
+import Tooltip from '../../components/common/Tooltip'
 
 interface AbsenceRowProps {
   child: Child

@@ -4,9 +4,9 @@
 
 import React, { useMemo } from 'react'
 import { Redirect, Route, Switch } from 'react-router-dom'
-import { featureFlags } from '~config'
-import { useTranslation } from '~state/i18n'
-import { RouteWithTitle } from '~components/RouteWithTitle'
+import { featureFlags } from '../config'
+import { useTranslation } from '../state/i18n'
+import { RouteWithTitle } from '../components/RouteWithTitle'
 import { Gap } from '@evaka/lib-components/src/white-space'
 import Tabs from '@evaka/lib-components/src/molecules/Tabs'
 import FeeDecisionsPage from './fee-decisions/FeeDecisionsPage'

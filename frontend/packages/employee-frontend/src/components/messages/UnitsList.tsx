@@ -11,7 +11,7 @@ import { defaultMargins } from '@evaka/lib-components/src/white-space'
 import { H1 } from '@evaka/lib-components/src/typography'
 import { SpinnerSegment } from '@evaka/lib-components/src/atoms/state/Spinner'
 import ErrorSegment from '@evaka/lib-components/src/atoms/state/ErrorSegment'
-import { useTranslation } from '~state/i18n'
+import { useTranslation } from '../../state/i18n'
 import { IdAndName } from './types'
 
 type Props = {

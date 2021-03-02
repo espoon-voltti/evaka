@@ -9,7 +9,7 @@ import { useTranslation } from '../../state/i18n'
 import StickyActionBar from '../common/StickyActionBar'
 import { confirmFeeDecisions } from '../../api/invoicing'
 import { FeeDecisionStatus } from '../../types/invoicing'
-import { CheckedRowsInfo } from '~components/common/CheckedRowsInfo'
+import { CheckedRowsInfo } from '../../components/common/CheckedRowsInfo'
 import colors from '@evaka/lib-components/src/colors'
 
 const ErrorMessage = styled.div`

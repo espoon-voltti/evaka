@@ -20,28 +20,28 @@ import {
   Thead,
   Tbody
 } from '@evaka/lib-components/src/layout/Table'
-import { reactSelectStyles } from '~components/common/Select'
-import { useTranslation } from '~state/i18n'
+import { reactSelectStyles } from '../../components/common/Select'
+import { useTranslation } from '../../state/i18n'
 import { Loading, Result } from '@evaka/lib-common/src/api'
-import { MissingServiceNeedReportRow } from '~types/reports'
+import { MissingServiceNeedReportRow } from '../../types/reports'
 import {
   getMissingServiceNeedReport,
   MissingServiceNeedReportFilters
-} from '~api/reports'
+} from '../../api/reports'
 import ReturnButton from '@evaka/lib-components/src/atoms/buttons/ReturnButton'
-import ReportDownload from '~components/reports/ReportDownload'
+import ReportDownload from '../../components/reports/ReportDownload'
 import {
   FilterLabel,
   FilterRow,
   RowCountInfo,
   TableScrollable
-} from '~components/reports/common'
+} from '../../components/reports/common'
 import {
   DatePickerDeprecated,
   DatePickerClearableDeprecated
 } from '@evaka/lib-components/src/molecules/DatePickerDeprecated'
 import LocalDate from '@evaka/lib-common/src/local-date'
-import { distinct } from 'utils'
+import { distinct } from '../../utils'
 
 interface DisplayFilters {
   careArea: string

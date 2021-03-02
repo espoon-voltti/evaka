@@ -3,12 +3,12 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import LocalDate from '@evaka/lib-common/src/local-date'
-import { UUID } from '~types'
+import { UUID } from './types'
 import {
   AssistanceActionType,
   AssistanceBasis,
   AssistanceMeasure
-} from '~types/child'
+} from './types/child'
 
 export const DATE_FORMAT_DEFAULT = 'dd.MM.yyyy'
 export const DATE_FORMAT_DATE_TIME = 'dd.MM.yyyy HH:mm'

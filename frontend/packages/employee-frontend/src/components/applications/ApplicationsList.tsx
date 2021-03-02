@@ -14,16 +14,16 @@ import {
   Tbody,
   SortableTh
 } from '@evaka/lib-components/src/layout/Table'
-import { useTranslation } from 'state/i18n'
+import { useTranslation } from '../../state/i18n'
 import {
   ApplicationListSummary,
   ApplicationsSearchResponse
-} from 'types/application'
-import { SearchOrder } from '~types'
+} from '../../types/application'
+import { SearchOrder } from '../../types'
 import Pagination from '@evaka/lib-components/src/Pagination'
 import colors, { blueColors } from '@evaka/lib-components/src/colors'
-import { SortByApplications } from '~types/application'
-import { formatName } from '~utils'
+import { SortByApplications } from '../../types/application'
+import { formatName } from '../../utils'
 import RoundIcon from '@evaka/lib-components/src/atoms/RoundIcon'
 import {
   FixedSpaceColumn,
@@ -31,19 +31,19 @@ import {
 } from '@evaka/lib-components/src/layout/flex-helpers'
 import { H1 } from '@evaka/lib-components/src/typography'
 import { defaultMargins } from '@evaka/lib-components/src/white-space'
-import { getEmployeeUrlPrefix } from '~constants'
-import { formatDate } from '~utils/date'
-import ApplicationActions from '~components/applications/ApplicationActions'
+import { getEmployeeUrlPrefix } from '../../constants'
+import { formatDate } from '../../utils/date'
+import ApplicationActions from '../../components/applications/ApplicationActions'
 import Checkbox from '@evaka/lib-components/src/atoms/form/Checkbox'
-import { ApplicationUIContext } from '~state/application-ui'
-import ActionBar from '~components/applications/ActionBar'
+import { ApplicationUIContext } from '../../state/application-ui'
+import ActionBar from '../../components/applications/ActionBar'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import Tooltip from '@evaka/lib-components/src/atoms/Tooltip'
-import { careTypesFromPlacementType } from '~components/common/CareTypeLabel'
+import { careTypesFromPlacementType } from '../../components/common/CareTypeLabel'
 import PlacementCircle from '@evaka/lib-components/src/atoms/PlacementCircle'
-import { UserContext } from '~state/user'
-import { hasRole } from '~utils/roles'
-import { isPartDayPlacement } from '~utils/placements'
+import { UserContext } from '../../state/user'
+import { hasRole } from '../../utils/roles'
+import { isPartDayPlacement } from '../../utils/placements'
 
 const CircleIcon = styled.div`
   display: flex;

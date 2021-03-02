@@ -11,11 +11,11 @@ import InlineButton from '@evaka/lib-components/src/atoms/buttons/InlineButton'
 import ExternalLink from '@evaka/lib-components/src/atoms/ExternalLink'
 import { Gap } from '@evaka/lib-components/src/white-space'
 import { faArrowLeft } from '@evaka/lib-icons'
-import { mapViewBreakpoint } from '~map/const'
-import { useLang, useTranslation } from '~localization'
-import { MapAddress } from '~map/MapView'
-import { queryDistance } from '~map/api'
-import { formatDistance } from '~map/distances'
+import { mapViewBreakpoint } from '../map/const'
+import { useLang, useTranslation } from '../localization'
+import { MapAddress } from '../map/MapView'
+import { queryDistance } from '../map/api'
+import { formatDistance } from '../map/distances'
 
 type Props = {
   unit: PublicUnit

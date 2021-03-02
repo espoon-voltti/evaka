@@ -3,23 +3,23 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { MutableRefObject, useContext, useRef, useState } from 'react'
-import { useTranslation } from '~/state/i18n'
-import { AssistanceNeed } from '~types/child'
-import { UIContext } from '~state/ui'
-import InfoBall from '~components/common/InfoBall'
-import AssistanceNeedForm from '~components/child-information/assistance-need/AssistanceNeedForm'
+import { useTranslation } from '../../../state/i18n'
+import { AssistanceNeed } from '../../../types/child'
+import { UIContext } from '../../../state/ui'
+import InfoBall from '../../../components/common/InfoBall'
+import AssistanceNeedForm from '../../../components/child-information/assistance-need/AssistanceNeedForm'
 import { faQuestion } from '@evaka/lib-icons'
-import ToolbarAccordion from '~components/common/ToolbarAccordion'
-import { isActiveDateRange } from '~/utils/date'
+import ToolbarAccordion from '../../../components/common/ToolbarAccordion'
+import { isActiveDateRange } from '../../../utils/date'
 import InfoModal from '@evaka/lib-components/src/molecules/modals/InfoModal'
-import { formatDecimal } from '~components/utils'
+import { formatDecimal } from '../../../components/utils'
 
-import { formatParagraphs } from '~utils/html-utils'
-import LabelValueList from '~components/common/LabelValueList'
-import { ASSISTANCE_BASIS_LIST } from '~constants'
-import Toolbar from '~components/common/Toolbar'
-import { scrollToRef } from 'utils'
-import { removeAssistanceNeed } from 'api/child/assistance-needs'
+import { formatParagraphs } from '../../../utils/html-utils'
+import LabelValueList from '../../../components/common/LabelValueList'
+import { ASSISTANCE_BASIS_LIST } from '../../../constants'
+import Toolbar from '../../../components/common/Toolbar'
+import { scrollToRef } from '../../../utils'
+import { removeAssistanceNeed } from '../../../api/child/assistance-needs'
 
 export interface Props {
   assistanceNeed: AssistanceNeed

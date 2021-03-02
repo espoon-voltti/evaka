@@ -6,10 +6,10 @@ import { faUserFriends } from '@evaka/lib-icons'
 import React from 'react'
 import { Link } from 'react-router-dom'
 import CollapsibleSection from '@evaka/lib-components/src/molecules/CollapsibleSection'
-import LabelValueList from '~components/common/LabelValueList'
-import { useTranslation } from '~state/i18n'
-import { PersonDetailed, Placement, UnitDetailed } from '~types/invoicing'
-import { formatName } from '~utils'
+import LabelValueList from '../../components/common/LabelValueList'
+import { useTranslation } from '../../state/i18n'
+import { PersonDetailed, Placement, UnitDetailed } from '../../types/invoicing'
+import { formatName } from '../../utils'
 
 interface Props {
   child: PersonDetailed

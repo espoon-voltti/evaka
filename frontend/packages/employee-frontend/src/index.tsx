@@ -7,10 +7,10 @@ import React from 'react'
 import ReactDOM from 'react-dom'
 import * as Sentry from '@sentry/browser'
 import { polyfill as smoothScrollPolyfill } from 'seamless-scroll-polyfill'
-import App from '~App'
+import App from './App'
 import './index.css'
 import { getEnvironment } from '@evaka/lib-common/src/utils/helpers'
-import { config } from '~configs'
+import { config } from './configs'
 
 // Load Sentry before React to make Sentry's integrations work automatically
 Sentry.init({

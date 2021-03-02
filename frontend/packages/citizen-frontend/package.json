@@ -78,9 +78,6 @@
       "default",
       "jest-junit"
     ],
-    "moduleNameMapper": {
-      "^~(.*)$": "<rootDir>/src/$1"
-    },
     "modulePathIgnorePatterns": [
       "/node_modules/",
       "/dist/"

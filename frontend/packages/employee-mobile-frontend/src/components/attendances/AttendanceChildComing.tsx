@@ -15,9 +15,9 @@ import {
   childArrivesPOST,
   Group,
   postFullDayAbsence
-} from '~api/attendances'
-import { useTranslation } from '~state/i18n'
-import { AbsenceType } from '~types'
+} from '../../api/attendances'
+import { useTranslation } from '../../state/i18n'
+import { AbsenceType } from '../../types'
 import AbsenceSelector from './AbsenceSelector'
 import { getCurrentTime } from './AttendanceChildPage'
 import {

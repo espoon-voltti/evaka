@@ -8,10 +8,10 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useContext } from 'react'
 import { ContentArea } from '@evaka/lib-components/src/layout/Container'
-import { UnitContext } from '~state/unit'
+import { UnitContext } from '../../state/unit'
 import { SpinnerSegment } from '@evaka/lib-components/src/atoms/state/Spinner'
 import ErrorSegment from '@evaka/lib-components/src/atoms/state/ErrorSegment'
-import { useTranslation } from '~state/i18n'
+import { useTranslation } from '../../state/i18n'
 import Title from '@evaka/lib-components/src/atoms/Title'
 import {
   Table,
@@ -21,10 +21,10 @@ import {
   Thead,
   Tr
 } from '@evaka/lib-components/src/layout/Table'
-import { formatName } from '~utils'
+import { formatName } from '../../utils'
 import PlacementCircle from '@evaka/lib-components/src/atoms/PlacementCircle'
-import { careTypesFromPlacementType } from '~components/common/CareTypeLabel'
-import { isPartDayPlacement } from '~utils/placements'
+import { careTypesFromPlacementType } from '../../components/common/CareTypeLabel'
+import { isPartDayPlacement } from '../../utils/placements'
 
 function TabApplications() {
   const { i18n } = useTranslation()

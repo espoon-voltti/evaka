@@ -13,8 +13,8 @@ import useCloseOnOutsideClick from '@evaka/lib-components/src/utils/useCloseOnOu
 import { faCheck, faChevronDown, faChevronUp, faSignIn } from '@evaka/lib-icons'
 import { useUser } from '../auth'
 import { Lang, langs, useLang, useTranslation } from '../localization'
-import { getLoginUri } from '~header/const'
-import { featureFlags } from '~config'
+import { getLoginUri } from '../header/const'
+import { featureFlags } from '../config'
 
 export default React.memo(function DesktopNav() {
   const user = useUser()

@@ -20,22 +20,22 @@ import {
   Thead,
   Tbody
 } from '@evaka/lib-components/src/layout/Table'
-import { reactSelectStyles } from '~components/common/Select'
-import { useTranslation } from '~state/i18n'
+import { reactSelectStyles } from '../../components/common/Select'
+import { useTranslation } from '../../state/i18n'
 import { Loading, Result } from '@evaka/lib-common/src/api'
-import { ApplicationsReportRow } from '~types/reports'
-import { getApplicationsReport, PeriodFilters } from '~api/reports'
-import ReportDownload from '~components/reports/ReportDownload'
+import { ApplicationsReportRow } from '../../types/reports'
+import { getApplicationsReport, PeriodFilters } from '../../api/reports'
+import ReportDownload from '../../components/reports/ReportDownload'
 import {
   FilterLabel,
   FilterRow,
   TableFooter,
   TableScrollable
-} from '~components/reports/common'
+} from '../../components/reports/common'
 import { DatePickerDeprecated } from '@evaka/lib-components/src/molecules/DatePickerDeprecated'
-import { distinct, reducePropertySum } from 'utils'
+import { distinct, reducePropertySum } from '../../utils'
 import LocalDate from '@evaka/lib-common/src/local-date'
-import { FlexRow } from 'components/common/styled/containers'
+import { FlexRow } from '../../components/common/styled/containers'
 import ReturnButton from '@evaka/lib-components/src/atoms/buttons/ReturnButton'
 
 interface DisplayFilters {

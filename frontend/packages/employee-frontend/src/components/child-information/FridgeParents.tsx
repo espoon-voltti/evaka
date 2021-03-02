@@ -5,8 +5,8 @@
 import React, { useContext } from 'react'
 import * as _ from 'lodash'
 
-import { useTranslation } from '~/state/i18n'
-import { ChildContext, ChildState } from '~/state/child'
+import { useTranslation } from '../../state/i18n'
+import { ChildContext, ChildState } from '../../state/child'
 import { faUser } from '@evaka/lib-icons'
 import {
   Table,
@@ -17,10 +17,10 @@ import {
   Tr
 } from '@evaka/lib-components/src/layout/Table'
 import Loader from '@evaka/lib-components/src/atoms/Loader'
-import { Parentship } from '~types/fridge'
+import { Parentship } from '../../types/fridge'
 import { Link } from 'react-router-dom'
-import { getStatusLabelByDateRange } from '~utils/date'
-import StatusLabel from '~components/common/StatusLabel'
+import { getStatusLabelByDateRange } from '../../utils/date'
+import StatusLabel from '../../components/common/StatusLabel'
 import CollapsibleSection from '@evaka/lib-components/src/molecules/CollapsibleSection'
 
 type Props = {

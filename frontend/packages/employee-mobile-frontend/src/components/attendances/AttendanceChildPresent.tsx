@@ -18,10 +18,10 @@ import {
   getDaycareAttendances,
   postDeparture,
   returnToComing
-} from '~api/attendances'
-import { AttendanceUIContext } from '~state/attendance-ui'
-import { useTranslation } from '~state/i18n'
-import { AbsenceType } from '~types'
+} from '../../api/attendances'
+import { AttendanceUIContext } from '../../state/attendance-ui'
+import { useTranslation } from '../../state/i18n'
+import { AbsenceType } from '../../types'
 import AbsenceSelector from './AbsenceSelector'
 import { getCurrentTime, getTimeString } from './AttendanceChildPage'
 import {

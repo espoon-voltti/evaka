@@ -4,7 +4,7 @@
 
 import React, { useContext } from 'react'
 import { Redirect, RouteComponentProps } from 'react-router-dom'
-import { UserContext } from '~state/user'
+import { UserContext } from '../state/user'
 import Login from './login-page/Login'
 
 function LoginPage({ location }: RouteComponentProps) {

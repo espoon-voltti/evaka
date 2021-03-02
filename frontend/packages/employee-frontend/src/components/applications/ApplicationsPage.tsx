@@ -4,27 +4,27 @@
 
 import React, { useCallback, useEffect, useState, useContext } from 'react'
 import { Result } from '@evaka/lib-common/src/api'
-import { getApplications } from '~api/applications'
+import { getApplications } from '../../api/applications'
 import {
   ApplicationsSearchResponse,
   ApplicationSearchParams
-} from '~types/application'
+} from '../../types/application'
 import { useRestApi } from '@evaka/lib-common/src/utils/useRestApi'
-import { SortByApplications } from '~/types/application'
-import { SearchOrder } from '~/types'
+import { SortByApplications } from '../../types/application'
+import { SearchOrder } from '../../types'
 import { defaultMargins, Gap } from '@evaka/lib-components/src/white-space'
 import {
   Container,
   ContentArea
 } from '@evaka/lib-components/src/layout/Container'
-import ApplicationsList from 'components/applications/ApplicationsList'
+import ApplicationsList from '../../components/applications/ApplicationsList'
 import ApplicationFilters from './ApplicationsFilters'
-import { ApplicationUIContext } from '~state/application-ui'
+import { ApplicationUIContext } from '../../state/application-ui'
 import { H1 } from '@evaka/lib-components/src/typography'
 import ErrorSegment from '@evaka/lib-components/src/atoms/state/ErrorSegment'
 import { SpinnerSegment } from '@evaka/lib-components/src/atoms/state/Spinner'
 import styled from 'styled-components'
-import { useTranslation } from '~state/i18n'
+import { useTranslation } from '../../state/i18n'
 
 const PaddedDiv = styled.div`
   padding: ${defaultMargins.m} ${defaultMargins.L};

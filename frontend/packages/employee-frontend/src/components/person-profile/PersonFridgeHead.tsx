@@ -3,18 +3,18 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useEffect } from 'react'
-import { UUID } from '~types'
-import { useTranslation } from '~state/i18n'
+import { UUID } from '../../types'
+import { useTranslation } from '../../state/i18n'
 import { Loading, Success } from '@evaka/lib-common/src/api'
-import { getPersonDetails } from '~api/person'
+import { getPersonDetails } from '../../api/person'
 import { useContext } from 'react'
-import { PersonContext, PersonState } from '~state/person'
+import { PersonContext, PersonState } from '../../state/person'
 import Loader from '@evaka/lib-components/src/atoms/Loader'
 import CollapsibleSection from '@evaka/lib-components/src/molecules/CollapsibleSection'
-import { PersonDetails as PersonDetailsType } from '~types/person'
-import PersonDetails from '~components/person-shared/PersonDetails'
+import { PersonDetails as PersonDetailsType } from '../../types/person'
+import PersonDetails from '../../components/person-shared/PersonDetails'
 import { faUser } from '@evaka/lib-icons'
-import { TitleContext, TitleState } from '~state/title'
+import { TitleContext, TitleState } from '../../state/title'
 
 interface Props {
   id: UUID

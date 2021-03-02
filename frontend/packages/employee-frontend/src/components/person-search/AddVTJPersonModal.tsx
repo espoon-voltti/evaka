@@ -10,11 +10,11 @@ import { Gap } from '@evaka/lib-components/src/white-space'
 import { Label } from '@evaka/lib-components/src/typography'
 import InputField from '@evaka/lib-components/src/atoms/form/InputField'
 import FormModal from '@evaka/lib-components/src/molecules/modals/FormModal'
-import { useTranslation } from '~state/i18n'
+import { useTranslation } from '../../state/i18n'
 import { Loading, Result } from '@evaka/lib-common/src/api'
-import { getOrCreatePersonBySsn } from '~api/person'
-import { PersonDetails } from '~types/person'
-import { isSsnValid } from '~utils/validation/validations'
+import { getOrCreatePersonBySsn } from '../../api/person'
+import { PersonDetails } from '../../types/person'
+import { isSsnValid } from '../../utils/validation/validations'
 
 export default React.memo(function VTJModal({
   closeModal

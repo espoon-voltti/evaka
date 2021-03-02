@@ -12,8 +12,8 @@ import {
   deserializeChild,
   AbsenceType,
   CareType
-} from '~types/absence'
-import { UUID } from '~types'
+} from '../types/absence'
+import { UUID } from '../types'
 import { JsonOf } from '@evaka/lib-common/src/json'
 import LocalDate from '@evaka/lib-common/src/local-date'
 

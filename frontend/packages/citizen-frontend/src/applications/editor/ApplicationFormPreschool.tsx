@@ -1,14 +1,14 @@
 import React from 'react'
 
 import { FixedSpaceColumn } from '@evaka/lib-components/src/layout/flex-helpers'
-import Heading from '~applications/editor/Heading'
-import ServiceNeedSection from '~applications/editor/service-need/ServiceNeedSection'
-import UnitPreferenceSection from '~applications/editor/unit-preference/UnitPreferenceSection'
+import Heading from '../../applications/editor/Heading'
+import ServiceNeedSection from '../../applications/editor/service-need/ServiceNeedSection'
+import UnitPreferenceSection from '../../applications/editor/unit-preference/UnitPreferenceSection'
 import LocalDate from '@evaka/lib-common/src/local-date'
-import ContactInfoSection from '~applications/editor/contact-info/ContactInfoSection'
-import FeeSection from '~applications/editor/FeeSection'
-import AdditionalDetailsSection from '~applications/editor/AdditionalDetailsSection'
-import { ApplicationFormProps } from '~applications/editor/ApplicationEditor'
+import ContactInfoSection from '../../applications/editor/contact-info/ContactInfoSection'
+import FeeSection from '../../applications/editor/FeeSection'
+import AdditionalDetailsSection from '../../applications/editor/AdditionalDetailsSection'
+import { ApplicationFormProps } from '../../applications/editor/ApplicationEditor'
 
 export default React.memo(function ApplicationFormPreschool({
   apiData,

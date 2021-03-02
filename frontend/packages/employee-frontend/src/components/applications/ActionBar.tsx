@@ -3,12 +3,12 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useContext, useState } from 'react'
-import { ApplicationUIContext } from '~state/application-ui'
+import { ApplicationUIContext } from '../../state/application-ui'
 import Button from '@evaka/lib-components/src/atoms/buttons/Button'
-import { useTranslation } from '~state/i18n'
-import StickyActionBar from '~components/common/StickyActionBar'
-import { UIContext } from '~state/ui'
-import { CheckedRowsInfo } from '~components/common/CheckedRowsInfo'
+import { useTranslation } from '../../state/i18n'
+import StickyActionBar from '../../components/common/StickyActionBar'
+import { UIContext } from '../../state/ui'
+import { CheckedRowsInfo } from '../../components/common/CheckedRowsInfo'
 import {
   batchCancelPlacementPlan,
   batchMoveToWaitingPlacement,
@@ -16,7 +16,7 @@ import {
   batchSendDecisionsWithoutProposal,
   batchSendPlacementProposal,
   batchWithdrawPlacementProposal
-} from 'api/applications'
+} from '../../api/applications'
 import { FixedSpaceRow } from '@evaka/lib-components/src/layout/flex-helpers'
 
 type Action = {

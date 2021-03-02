@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { client } from './client'
-import { AdRole, User } from '~types'
+import { AdRole, User } from '../types'
 import { JsonOf } from '@evaka/lib-common/src/json'
 
 export const logoutUrl = `/api/internal/auth/saml/logout?RelayState=/employee/login`

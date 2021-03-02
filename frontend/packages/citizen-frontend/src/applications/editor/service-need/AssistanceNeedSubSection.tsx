@@ -4,11 +4,11 @@
 
 import React from 'react'
 import Checkbox from '@evaka/lib-components/src/atoms/form/Checkbox'
-import { useTranslation } from '~localization'
+import { useTranslation } from '../../../localization'
 import { H3 } from '@evaka/lib-components/src/typography'
 import { TextArea } from '@evaka/lib-components/src/atoms/form/InputField'
 import { Gap } from '@evaka/lib-components/src/white-space'
-import { ServiceNeedSectionProps } from '~applications/editor/service-need/ServiceNeedSection'
+import { ServiceNeedSectionProps } from '../../../applications/editor/service-need/ServiceNeedSection'
 import ExpandingInfo from '@evaka/lib-components/src/molecules/ExpandingInfo'
 import styled from 'styled-components'
 

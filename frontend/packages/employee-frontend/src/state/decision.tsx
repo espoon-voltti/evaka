@@ -4,7 +4,7 @@
 
 import React, { createContext, useMemo, useState } from 'react'
 import { Loading, Result } from '@evaka/lib-common/src/api'
-import { DecisionDraftGroup } from '~types/decision'
+import { DecisionDraftGroup } from '../types/decision'
 
 export interface DecisionDraftState {
   decisionDraftGroup: Result<DecisionDraftGroup>

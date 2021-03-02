@@ -4,7 +4,7 @@
 
 import React, { createContext, useMemo, useState } from 'react'
 import { Loading, Result } from '@evaka/lib-common/src/api'
-import { PlacementDraft } from '~types/placementdraft'
+import { PlacementDraft } from '../types/placementdraft'
 
 export interface Unit {
   id: string
