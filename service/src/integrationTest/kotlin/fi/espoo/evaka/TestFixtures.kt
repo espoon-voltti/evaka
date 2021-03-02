@@ -132,6 +132,15 @@ val testGhostUnitDaycare = DevDaycare(
     ghostUnit = true
 )
 
+val testRoundTheClockDaycare = DevDaycare(
+    id = UUID.randomUUID(),
+    name = "Test Ghost Unit Daycare",
+    areaId = testAreaId,
+    type = setOf(CareType.CENTRE),
+    roundTheClock = true,
+    operationDays = setOf(1, 2, 3, 4, 5, 6, 7)
+)
+
 val testDecisionMaker_1 = PersonData.WithName(
     id = UUID.randomUUID(),
     firstName = "Decision",
@@ -414,6 +423,7 @@ fun insertGeneralTestFixtures(h: Handle) {
     )
     h.insertTestDaycare(testClub)
     h.insertTestDaycare(testGhostUnitDaycare)
+    h.insertTestDaycare(testRoundTheClockDaycare)
 
     testDecisionMaker_1.let {
         h.insertTestEmployee(

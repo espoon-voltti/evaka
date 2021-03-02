@@ -41,6 +41,7 @@ import fi.espoo.evaka.testChild_2
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDaycare2
 import fi.espoo.evaka.testDecisionMaker_1
+import fi.espoo.evaka.testRoundTheClockDaycare
 import org.jdbi.v3.core.Handle
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -63,10 +64,15 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
     fun beforeEach() {
         jdbi.handle(::insertGeneralTestFixtures)
         jdbi.handle { h ->
-            h.createUpdate("INSERT INTO holiday (date) VALUES (:date1), (:date2)")
-                .bind("date1", LocalDate.of(2019, 1, 1))
-                .bind("date2", LocalDate.of(2019, 1, 6))
-                .execute()
+            h.execute(
+                "INSERT INTO holiday (date) VALUES (?), (?), (?), (?), (?), (?)",
+                LocalDate.of(2019, 1, 1),
+                LocalDate.of(2019, 1, 6),
+                LocalDate.of(2020, 1, 1),
+                LocalDate.of(2020, 1, 6),
+                LocalDate.of(2021, 1, 1),
+                LocalDate.of(2021, 1, 6),
+            )
         }
     }
 
@@ -1545,6 +1551,435 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest() {
 
         val result = jdbi.handle(getAllInvoices)
         assertEquals(0, result.size)
+    }
+
+    @Test
+    fun `invoice generation when fee decision is valid only for two weeks in a round the clock unit`() {
+        val period = DateRange(LocalDate.of(2021, 1, 1), LocalDate.of(2021, 1, 31))
+        val placementPeriod = DateRange(LocalDate.of(2021, 1, 18), LocalDate.of(2021, 1, 31))
+        jdbi.handle(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
+        val decision = createFeeDecisionFixture(
+            FeeDecisionStatus.SENT,
+            FeeDecisionType.NORMAL,
+            placementPeriod,
+            testAdult_1.id,
+            listOf(
+                createFeeDecisionPartFixture(
+                    childId = testChild_1.id,
+                    dateOfBirth = testChild_1.dateOfBirth,
+                    daycareId = testRoundTheClockDaycare.id!!,
+                    baseFee = 28900,
+                    fee = 28900,
+                    feeAlterations = listOf()
+                )
+            )
+        )
+        jdbi.handle { h -> insertDecisionsAndPlacements(h, listOf(decision)) }
+
+        jdbi.transaction { createAllDraftInvoices(it, objectMapper, period) }
+
+        val result = jdbi.handle(getAllInvoices)
+        assertEquals(1, result.size)
+        result.first().let { invoice ->
+            assertEquals(15210, invoice.totalPrice())
+            assertEquals(1, invoice.rows.size)
+            invoice.rows.first().let { invoiceRow ->
+                assertEquals(10, invoiceRow.amount)
+                assertEquals(1521, invoiceRow.unitPrice)
+                assertEquals(15210, invoiceRow.price())
+            }
+        }
+    }
+
+    @Test
+    fun `invoice generation when fee decision is valid only during last weekend of month in a round the clock unit`() {
+        val period = DateRange(LocalDate.of(2021, 1, 1), LocalDate.of(2021, 1, 31))
+        val placementPeriod = DateRange(LocalDate.of(2021, 1, 30), LocalDate.of(2021, 1, 31))
+        jdbi.handle(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
+        val decision = createFeeDecisionFixture(
+            FeeDecisionStatus.SENT,
+            FeeDecisionType.NORMAL,
+            placementPeriod,
+            testAdult_1.id,
+            listOf(
+                createFeeDecisionPartFixture(
+                    childId = testChild_1.id,
+                    dateOfBirth = testChild_1.dateOfBirth,
+                    daycareId = testRoundTheClockDaycare.id!!,
+                    baseFee = 28900,
+                    fee = 28900,
+                    feeAlterations = listOf()
+                )
+            )
+        )
+        jdbi.handle { h -> insertDecisionsAndPlacements(h, listOf(decision)) }
+
+        jdbi.transaction { createAllDraftInvoices(it, objectMapper, period) }
+
+        val result = jdbi.handle(getAllInvoices)
+        assertEquals(1, result.size)
+        result.first().let { invoice ->
+            assertEquals(3042, invoice.totalPrice())
+            assertEquals(1, invoice.rows.size)
+            invoice.rows.first().let { invoiceRow ->
+                assertEquals(2, invoiceRow.amount)
+                assertEquals(1521, invoiceRow.unitPrice)
+                assertEquals(3042, invoiceRow.price())
+            }
+        }
+    }
+
+    @Test
+    fun `invoice generation when fee decision is valid for all but new year in a round the clock unit`() {
+        val period = DateRange(LocalDate.of(2021, 1, 1), LocalDate.of(2021, 1, 31))
+        val placementPeriod = DateRange(LocalDate.of(2021, 1, 2), LocalDate.of(2021, 1, 31))
+        jdbi.handle(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
+        val decision = createFeeDecisionFixture(
+            FeeDecisionStatus.SENT,
+            FeeDecisionType.NORMAL,
+            placementPeriod,
+            testAdult_1.id,
+            listOf(
+                createFeeDecisionPartFixture(
+                    childId = testChild_1.id,
+                    dateOfBirth = testChild_1.dateOfBirth,
+                    daycareId = testRoundTheClockDaycare.id!!,
+                    baseFee = 28900,
+                    fee = 28900,
+                    feeAlterations = listOf()
+                )
+            )
+        )
+        jdbi.handle { h -> insertDecisionsAndPlacements(h, listOf(decision)) }
+
+        jdbi.transaction { createAllDraftInvoices(it, objectMapper, period) }
+
+        val result = jdbi.handle(getAllInvoices)
+        assertEquals(1, result.size)
+        result.first().let { invoice ->
+            assertEquals(28900, invoice.totalPrice())
+            assertEquals(1, invoice.rows.size)
+            invoice.rows.first().let { invoiceRow ->
+                assertEquals(1, invoiceRow.amount)
+                assertEquals(28900, invoiceRow.unitPrice)
+                assertEquals(28900, invoiceRow.price())
+            }
+        }
+    }
+
+    @Test
+    fun `invoice generation when fee decision is valid for all but new year and the first weekend in a round the clock unit`() {
+        val period = DateRange(LocalDate.of(2021, 1, 1), LocalDate.of(2021, 1, 31))
+        val placementPeriod = DateRange(LocalDate.of(2021, 1, 4), LocalDate.of(2021, 1, 31))
+        jdbi.handle(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
+        val decision = createFeeDecisionFixture(
+            FeeDecisionStatus.SENT,
+            FeeDecisionType.NORMAL,
+            placementPeriod,
+            testAdult_1.id,
+            listOf(
+                createFeeDecisionPartFixture(
+                    childId = testChild_1.id,
+                    dateOfBirth = testChild_1.dateOfBirth,
+                    daycareId = testRoundTheClockDaycare.id!!,
+                    baseFee = 28900,
+                    fee = 28900,
+                    feeAlterations = listOf()
+                )
+            )
+        )
+        jdbi.handle { h -> insertDecisionsAndPlacements(h, listOf(decision)) }
+
+        jdbi.transaction { createAllDraftInvoices(it, objectMapper, period) }
+
+        val result = jdbi.handle(getAllInvoices)
+        assertEquals(1, result.size)
+        result.first().let { invoice ->
+            assertEquals(28900, invoice.totalPrice())
+            assertEquals(1, invoice.rows.size)
+            invoice.rows.first().let { invoiceRow ->
+                assertEquals(1, invoiceRow.amount)
+                assertEquals(28900, invoiceRow.unitPrice)
+                assertEquals(28900, invoiceRow.price())
+            }
+        }
+    }
+
+    @Test
+    fun `invoice generation when fee decision is valid for only for the week with epiphany in a round the clock unit`() {
+        val period = DateRange(LocalDate.of(2021, 1, 1), LocalDate.of(2021, 1, 31))
+        val placementPeriod = DateRange(LocalDate.of(2021, 1, 4), LocalDate.of(2021, 1, 10))
+        jdbi.handle(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
+        val decision = createFeeDecisionFixture(
+            FeeDecisionStatus.SENT,
+            FeeDecisionType.NORMAL,
+            placementPeriod,
+            testAdult_1.id,
+            listOf(
+                createFeeDecisionPartFixture(
+                    childId = testChild_1.id,
+                    dateOfBirth = testChild_1.dateOfBirth,
+                    daycareId = testRoundTheClockDaycare.id!!,
+                    baseFee = 28900,
+                    fee = 28900,
+                    feeAlterations = listOf()
+                )
+            )
+        )
+        jdbi.handle { h -> insertDecisionsAndPlacements(h, listOf(decision)) }
+
+        jdbi.transaction { createAllDraftInvoices(it, objectMapper, period) }
+
+        val result = jdbi.handle(getAllInvoices)
+        assertEquals(1, result.size)
+        result.first().let { invoice ->
+            assertEquals(6084, invoice.totalPrice())
+            assertEquals(1, invoice.rows.size)
+            invoice.rows.first().let { invoiceRow ->
+                assertEquals(4, invoiceRow.amount)
+                assertEquals(1521, invoiceRow.unitPrice)
+                assertEquals(6084, invoiceRow.price())
+            }
+        }
+    }
+
+    @Test
+    fun `invoice generation when is half a month in a round the clock unit and the rest in a regular unit`() {
+        val period = DateRange(LocalDate.of(2021, 1, 1), LocalDate.of(2021, 1, 31))
+        jdbi.handle(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
+        val decisions = listOf(
+            createFeeDecisionFixture(
+                FeeDecisionStatus.SENT,
+                FeeDecisionType.NORMAL,
+                period.copy(end = period.start.plusDays(13)),
+                testAdult_1.id,
+                listOf(
+                    createFeeDecisionPartFixture(
+                        childId = testChild_1.id,
+                        dateOfBirth = testChild_1.dateOfBirth,
+                        daycareId = testRoundTheClockDaycare.id!!,
+                        baseFee = 28900,
+                        fee = 28900,
+                        feeAlterations = listOf()
+                    )
+                )
+            ),
+            createFeeDecisionFixture(
+                FeeDecisionStatus.SENT,
+                FeeDecisionType.NORMAL,
+                period.copy(start = period.start.plusDays(14)),
+                testAdult_1.id,
+                listOf(
+                    createFeeDecisionPartFixture(
+                        childId = testChild_1.id,
+                        dateOfBirth = testChild_1.dateOfBirth,
+                        daycareId = testDaycare.id,
+                        baseFee = 28900,
+                        fee = 28900,
+                        feeAlterations = listOf()
+                    )
+                )
+            )
+        )
+        jdbi.handle { h -> insertDecisionsAndPlacements(h, decisions) }
+
+        jdbi.transaction { createAllDraftInvoices(it, objectMapper, period) }
+
+        val result = jdbi.handle(getAllInvoices)
+        assertEquals(1, result.size)
+        result.first().let { invoice ->
+            assertEquals(28900, invoice.totalPrice())
+            assertEquals(3, invoice.rows.size)
+            invoice.rows[0].let { invoiceRow ->
+                assertEquals(8, invoiceRow.amount)
+                assertEquals(1521, invoiceRow.unitPrice)
+                assertEquals(12168, invoiceRow.price())
+            }
+            invoice.rows[1].let { invoiceRow ->
+                assertEquals(11, invoiceRow.amount)
+                assertEquals(1521, invoiceRow.unitPrice)
+                assertEquals(16731, invoiceRow.price())
+            }
+            invoice.rows[2].let { invoiceRow ->
+                assertEquals(1, invoiceRow.amount)
+                assertEquals(1, invoiceRow.unitPrice)
+                assertEquals(1, invoiceRow.price())
+            }
+        }
+    }
+
+    @Test
+    fun `invoice generation for round the clock unit with a force majeure absence during the week`() {
+        val period = DateRange(LocalDate.of(2021, 1, 1), LocalDate.of(2021, 1, 31))
+        jdbi.handle(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
+        val decision = createFeeDecisionFixture(
+            FeeDecisionStatus.SENT,
+            FeeDecisionType.NORMAL,
+            period,
+            testAdult_1.id,
+            listOf(
+                createFeeDecisionPartFixture(
+                    childId = testChild_1.id,
+                    dateOfBirth = testChild_1.dateOfBirth,
+                    daycareId = testRoundTheClockDaycare.id!!,
+                    baseFee = 28900,
+                    fee = 28900,
+                    feeAlterations = listOf()
+                )
+            )
+        )
+        jdbi.handle { h -> insertDecisionsAndPlacements(h, listOf(decision)) }
+        db.transaction { tx ->
+            absenceService.upsertAbsences(
+                tx,
+                listOf(
+                    Absence(
+                        absenceType = AbsenceType.FORCE_MAJEURE,
+                        childId = testChild_1.id,
+                        date = LocalDate.of(2021, 1, 5),
+                        careType = CareType.DAYCARE
+                    )
+                ),
+                UUID.randomUUID(),
+                testDecisionMaker_1.id
+            )
+        }
+
+        jdbi.transaction { createAllDraftInvoices(it, objectMapper, period) }
+
+        val result = jdbi.handle(getAllInvoices)
+        assertEquals(1, result.size)
+        result.first().let { invoice ->
+            assertEquals(27379, invoice.totalPrice())
+            assertEquals(2, invoice.rows.size)
+            invoice.rows.first().let { invoiceRow ->
+                assertEquals(1, invoiceRow.amount)
+                assertEquals(28900, invoiceRow.unitPrice)
+                assertEquals(28900, invoiceRow.price())
+            }
+            invoice.rows.last().let { invoiceRow ->
+                assertEquals(1, invoiceRow.amount)
+                assertEquals(-1521, invoiceRow.unitPrice)
+                assertEquals(-1521, invoiceRow.price())
+            }
+        }
+    }
+
+    @Test
+    fun `invoice generation for round the clock unit with a force majeure absence during the weekend`() {
+        val period = DateRange(LocalDate.of(2021, 1, 1), LocalDate.of(2021, 1, 31))
+        jdbi.handle(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
+        val decision = createFeeDecisionFixture(
+            FeeDecisionStatus.SENT,
+            FeeDecisionType.NORMAL,
+            period,
+            testAdult_1.id,
+            listOf(
+                createFeeDecisionPartFixture(
+                    childId = testChild_1.id,
+                    dateOfBirth = testChild_1.dateOfBirth,
+                    daycareId = testRoundTheClockDaycare.id!!,
+                    baseFee = 28900,
+                    fee = 28900,
+                    feeAlterations = listOf()
+                )
+            )
+        )
+        jdbi.handle { h -> insertDecisionsAndPlacements(h, listOf(decision)) }
+        db.transaction { tx ->
+            absenceService.upsertAbsences(
+                tx,
+                listOf(
+                    Absence(
+                        absenceType = AbsenceType.FORCE_MAJEURE,
+                        childId = testChild_1.id,
+                        date = LocalDate.of(2021, 1, 3),
+                        careType = CareType.DAYCARE
+                    )
+                ),
+                UUID.randomUUID(),
+                testDecisionMaker_1.id
+            )
+        }
+
+        jdbi.transaction { createAllDraftInvoices(it, objectMapper, period) }
+
+        val result = jdbi.handle(getAllInvoices)
+        assertEquals(1, result.size)
+        result.first().let { invoice ->
+            assertEquals(27379, invoice.totalPrice())
+            assertEquals(2, invoice.rows.size)
+            invoice.rows.first().let { invoiceRow ->
+                assertEquals(1, invoiceRow.amount)
+                assertEquals(28900, invoiceRow.unitPrice)
+                assertEquals(28900, invoiceRow.price())
+            }
+            invoice.rows.last().let { invoiceRow ->
+                assertEquals(1, invoiceRow.amount)
+                assertEquals(-1521, invoiceRow.unitPrice)
+                assertEquals(-1521, invoiceRow.price())
+            }
+        }
+    }
+
+    @Test
+    fun `invoice generation for round the clock unit with force majeure absences for the whole month`() {
+        val period = DateRange(LocalDate.of(2021, 1, 1), LocalDate.of(2021, 1, 31))
+        jdbi.handle(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
+        val decision = createFeeDecisionFixture(
+            FeeDecisionStatus.SENT,
+            FeeDecisionType.NORMAL,
+            period,
+            testAdult_1.id,
+            listOf(
+                createFeeDecisionPartFixture(
+                    childId = testChild_1.id,
+                    dateOfBirth = testChild_1.dateOfBirth,
+                    daycareId = testRoundTheClockDaycare.id!!,
+                    baseFee = 28900,
+                    fee = 28900,
+                    feeAlterations = listOf()
+                )
+            )
+        )
+        jdbi.handle { h -> insertDecisionsAndPlacements(h, listOf(decision)) }
+        db.transaction { tx ->
+            absenceService.upsertAbsences(
+                tx,
+                generateSequence(period.start) { it.plusDays(1) }
+                    .takeWhile { it <= period.end }
+                    .map {
+                        Absence(
+                            absenceType = AbsenceType.FORCE_MAJEURE,
+                            childId = testChild_1.id,
+                            date = it,
+                            careType = CareType.DAYCARE
+                        )
+                    }
+                    .toList(),
+                UUID.randomUUID(),
+                testDecisionMaker_1.id
+            )
+        }
+
+        jdbi.transaction { createAllDraftInvoices(it, objectMapper, period) }
+
+        val result = jdbi.handle(getAllInvoices)
+        assertEquals(1, result.size)
+        result.first().let { invoice ->
+            assertEquals(0, invoice.totalPrice())
+            assertEquals(2, invoice.rows.size)
+            invoice.rows.first().let { invoiceRow ->
+                assertEquals(1, invoiceRow.amount)
+                assertEquals(28900, invoiceRow.unitPrice)
+                assertEquals(28900, invoiceRow.price())
+            }
+            invoice.rows.last().let { invoiceRow ->
+                assertEquals(1, invoiceRow.amount)
+                assertEquals(-28900, invoiceRow.unitPrice)
+                assertEquals(-28900, invoiceRow.price())
+            }
+        }
     }
 
     @Test

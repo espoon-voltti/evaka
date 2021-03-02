@@ -153,12 +153,22 @@ fun asDistinctPeriods(periods: List<DateRange>, spanningPeriod: DateRange): List
     return allStartDates.map { start -> DateRange(start, allEndDates.find { end -> start <= orMax(end) }) }.toList()
 }
 
-fun operationalDays(h: Handle, year: Int, month: Month): Map<UUID, List<LocalDate>> {
+data class OperationalDays(
+    val fullMonth: List<LocalDate>,
+    val generalCase: List<LocalDate>,
+    private val specialCases: Map<UUID, List<LocalDate>>
+) {
+    fun forUnit(id: UUID): List<LocalDate> = specialCases[id] ?: generalCase
+}
+
+fun operationalDays(h: Handle, year: Int, month: Month): OperationalDays {
     val firstDayOfMonth = LocalDate.of(year, month, 1)
-    val days = generateSequence(firstDayOfMonth) { it.plusDays(1) }
+    val daysOfMonth = generateSequence(firstDayOfMonth) { it.plusDays(1) }
         .takeWhile { date -> date.month == month }
 
-    val unitOperationalDays = h.createQuery("SELECT id, operation_days FROM daycare")
+    // Only includes units that don't have regular monday to friday operational days
+    val specialUnitOperationalDays = h
+        .createQuery("SELECT id, operation_days FROM daycare WHERE NOT (operation_days @> '{1,2,3,4,5}' AND operation_days <@ '{1,2,3,4,5}')")
         .map { rs, _ -> rs.getUUID("id") to rs.getArray("operation_days").array as Array<*> }
         .map { (id, days) -> id to days.map { it as Int }.map { DayOfWeek.of(it) } }
         .toList()
@@ -169,16 +179,23 @@ fun operationalDays(h: Handle, year: Int, month: Month): Map<UUID, List<LocalDat
         .mapTo<LocalDate>()
         .list()
 
-    return unitOperationalDays
+    val generalCase = daysOfMonth
+        .filter { it.dayOfWeek != DayOfWeek.SATURDAY && it.dayOfWeek != DayOfWeek.SUNDAY }
+        .filterNot { holidays.contains(it) }
+        .toList()
+
+    val specialCases = specialUnitOperationalDays
         .map { (unitId, operationalDays) ->
-            val operationalDates = days
+            val operationalDates = daysOfMonth
                 .filter { operationalDays.contains(it.dayOfWeek) }
-                // units that are operational every day of the week are also operational during holidays
+                // Units that are operational every day of the week are also operational during holidays
                 .filter { operationalDays.size == 7 || !holidays.contains(it) }
 
             unitId to operationalDates.toList()
         }
         .toMap()
+
+    return OperationalDays(daysOfMonth.toList(), generalCase, specialCases)
 }
 
 fun LocalDate.isWeekend() = this.dayOfWeek == DayOfWeek.SATURDAY || this.dayOfWeek == DayOfWeek.SUNDAY

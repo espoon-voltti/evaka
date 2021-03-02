@@ -32,6 +32,7 @@ import fi.espoo.evaka.shared.db.PGConstants
 import fi.espoo.evaka.shared.db.getEnum
 import fi.espoo.evaka.shared.db.getUUID
 import fi.espoo.evaka.shared.domain.DateRange
+import fi.espoo.evaka.shared.domain.OperationalDays
 import fi.espoo.evaka.shared.domain.asDistinctPeriods
 import fi.espoo.evaka.shared.domain.mergePeriods
 import fi.espoo.evaka.shared.domain.operationalDays
@@ -39,6 +40,7 @@ import fi.espoo.evaka.shared.domain.orMax
 import org.jdbi.v3.core.Handle
 import java.math.BigDecimal
 import java.math.RoundingMode
+import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.Month
 import java.time.temporal.ChronoUnit
@@ -82,7 +84,7 @@ internal fun generateDraftInvoices(
     placements: Map<UUID, List<Placements>>,
     period: DateRange,
     daycareCodes: Map<UUID, DaycareCodes>,
-    operationalDays: Map<UUID, List<LocalDate>>,
+    operationalDays: OperationalDays,
     absences: List<AbsenceStub> = listOf(),
     freeChildren: List<UUID> = listOf()
 ): List<Invoice> {
@@ -111,7 +113,7 @@ internal fun generateDraftInvoice(
     placements: List<Placements>,
     invoicePeriod: DateRange,
     daycareCodes: Map<UUID, DaycareCodes>,
-    operationalDays: Map<UUID, List<LocalDate>>,
+    operationalDays: OperationalDays,
     absences: List<AbsenceStub>,
     freeChildren: List<UUID>
 ): Invoice? {
@@ -169,13 +171,11 @@ internal fun generateDraftInvoice(
             val placementUnit = rowStub.placement.unit
             val codes = daycareCodes[placementUnit]
                 ?: error("Couldn't find invoice codes for daycare ($placementUnit)")
-            val unitOperationalDays = operationalDays[placementUnit]
-                ?: error("Couldn't find operational days for daycare ($placementUnit)")
             toInvoiceRows(
                 period,
                 rowStub,
                 codes,
-                unitOperationalDays,
+                operationalDays,
                 absences.filter { it.childId == rowStub.child.id }
             )
         }
@@ -202,15 +202,15 @@ internal fun generateDraftInvoice(
     )
 }
 
-internal fun calculateDailyPriceForInvoiceRow(price: Int, operationalDays: List<LocalDate>): Int {
-    return BigDecimal(price).divide(BigDecimal(operationalDays.size), 0, RoundingMode.HALF_UP).toInt()
+internal fun calculateDailyPriceForInvoiceRow(price: Int, operationalDays: Int): Int {
+    return BigDecimal(price).divide(BigDecimal(operationalDays), 0, RoundingMode.HALF_UP).toInt()
 }
 
 internal fun toInvoiceRows(
     period: DateRange,
     invoiceRowStub: InvoiceRowStub,
     codes: DaycareCodes,
-    operationalDays: List<LocalDate>,
+    operationalDays: OperationalDays,
     absences: List<AbsenceStub>
 ): List<InvoiceRow> {
     val (child, placement, price, feeAlterations) = invoiceRowStub
@@ -231,7 +231,7 @@ internal fun toInvoiceRows(
             child,
             price,
             codes,
-            operationalDays,
+            operationalDays.forUnit(placement.unit),
             absences
         )
     }
@@ -272,26 +272,50 @@ private fun toPermanentPlacementInvoiceRows(
     placement: PermanentPlacement,
     price: Int,
     codes: DaycareCodes,
-    operationalDays: List<LocalDate>,
+    operationalDays: OperationalDays,
     feeAlterations: List<Pair<FeeAlteration.Type, Int>>,
     absences: List<AbsenceStub>
 ): List<InvoiceRow> {
-    val relevantDays = operationalDays.filter { day -> period.includes(day) }
+    val relevantDays = run {
+        val unitOperationalDays = operationalDays.forUnit(placement.unit)
+        if (operationalDays.generalCase == unitOperationalDays) {
+            operationalDays.generalCase.filter { day -> period.includes(day) }
+        }
+
+        val unitDays = unitOperationalDays.filter { day -> period.includes(day) }
+        val weeks = operationalDays.fullMonth.fold(listOf<List<LocalDate>>()) { weeks, date ->
+            if (weeks.isEmpty()) listOf(listOf(date))
+            else {
+                if (date.dayOfWeek == DayOfWeek.MONDAY) weeks.plusElement(listOf(date))
+                else weeks.subList(0, weeks.size - 1).plusElement(weeks.last() + date)
+            }
+        }
+
+        weeks.flatMap { week ->
+            week.filter { unitDays.contains(it) }.take(operationalDays.generalCase.intersect(week).size)
+        }
+    }
     if (relevantDays.isEmpty()) return listOf()
 
     val product = getProductFromActivity(placement.type)
-    val (amount, unitPrice) = if (relevantDays.size == operationalDays.size) Pair(
+    val (amount, unitPrice) = if (relevantDays.size == operationalDays.generalCase.size) Pair(
         1,
         { p: Int -> p }
     ) else Pair(
         relevantDays.size,
-        { p: Int -> calculateDailyPriceForInvoiceRow(p, operationalDays) }
+        { p: Int -> calculateDailyPriceForInvoiceRow(p, operationalDays.generalCase.size) }
     )
 
     fun getDailyAbsenceModifiers(price: Int): List<InvoiceRow> =
         if (price == 0) listOf()
-        else getDailyDiscountDates(period, child.dateOfBirth, operationalDays, absences).map { (dates, product) ->
-            if (dates.toSet() == operationalDays.toSet()) InvoiceRow(
+        else getDailyDiscountDates(
+            period,
+            child.dateOfBirth,
+            absences,
+            operationalDays.forUnit(placement.unit),
+            operationalDays.generalCase.size
+        ).map { (dates, product) ->
+            if (dates.size == operationalDays.generalCase.size) InvoiceRow(
                 id = UUID.randomUUID(),
                 child = child,
                 periodStart = period.start,
@@ -311,14 +335,14 @@ private fun toPermanentPlacementInvoiceRows(
                 costCenter = codes.costCenter!!,
                 subCostCenter = codes.subCostCenter,
                 amount = dates.size,
-                unitPrice = -getDailyDiscount(period, price, operationalDays)
+                unitPrice = -getDailyDiscount(period, price, operationalDays.generalCase)
             )
         }
 
     fun getMonthlyAbsenceModifiers(price: Int): List<InvoiceRow> =
         if (price == 0) listOf()
         else listOfNotNull(
-            getAbsenceProduct(operationalDays, absences)?.let {
+            getAbsenceProduct(absences, operationalDays.forUnit(placement.unit), operationalDays.generalCase.size)?.let {
                 InvoiceRow(
                     id = UUID.randomUUID(),
                     child = child,
@@ -371,21 +395,19 @@ private fun toPermanentPlacementInvoiceRows(
     return withDailyDiscountModifiers + getMonthlyAbsenceModifiers(invoiceRowTotal(withDailyDiscountModifiers))
 }
 
-internal fun getDatesInCommon(list1: List<LocalDate>, list2: List<LocalDate>): List<LocalDate> =
-    list1.toSet().intersect(list2.toSet()).toList()
-
-internal fun getAbsenceProduct(operationalDays: List<LocalDate>, absences: List<AbsenceStub>): Product? {
-    val sickAbsences = absences.filter { it.absenceType == AbsenceType.SICKLEAVE }.map { it.date }
-    val allAbsences = absences.map { it.date }
-
-    val wasSickWholePeriod = getDatesInCommon(operationalDays, sickAbsences).size == operationalDays.size
-    val wasSick11Days = getDatesInCommon(operationalDays, sickAbsences).size >= 11
-    val wasAwayForWholePeriod = getDatesInCommon(operationalDays, allAbsences).size == operationalDays.size
+internal fun getAbsenceProduct(
+    absences: List<AbsenceStub>,
+    unitOperationalDays: List<LocalDate>,
+    monthlyOperationalDays: Int
+): Product? {
+    val relevantAbsences = absences.filter { unitOperationalDays.contains(it.date) }
+    val sickAbsences = relevantAbsences.filter { it.absenceType == AbsenceType.SICKLEAVE }.map { it.date }
+    val allAbsences = relevantAbsences.map { it.date }
 
     return when {
-        wasSickWholePeriod -> Product.SICK_LEAVE_100
-        wasAwayForWholePeriod -> Product.ABSENCE
-        wasSick11Days -> Product.SICK_LEAVE_50
+        sickAbsences.size == monthlyOperationalDays -> Product.SICK_LEAVE_100
+        sickAbsences.size >= 11 -> Product.SICK_LEAVE_50
+        allAbsences.size == monthlyOperationalDays -> Product.ABSENCE
         else -> null
     }
 }
@@ -393,8 +415,9 @@ internal fun getAbsenceProduct(operationalDays: List<LocalDate>, absences: List<
 internal fun getDailyDiscountDates(
     period: DateRange,
     childDob: LocalDate,
+    absences: List<AbsenceStub>,
     operationalDays: List<LocalDate>,
-    absences: List<AbsenceStub>
+    monthlyOperationalDays: Int
 ): List<Pair<List<LocalDate>, Product>> {
     val relevantOperationalDays = operationalDays.filter { period.includes(it) }
 
@@ -407,7 +430,7 @@ internal fun getDailyDiscountDates(
         .filter { ChronoUnit.YEARS.between(childDob, it) < 2 }
         .filter { day -> parentLeaveAbsences.find { day == it.date } != null }
 
-    val combinedDays = (forceMajeureDays + parentLeaveDays).distinct()
+    val combinedDays = (forceMajeureDays + parentLeaveDays).distinct().take(monthlyOperationalDays)
 
     return listOfNotNull(
         if (combinedDays.isNotEmpty()) combinedDays to Product.FREE_OF_CHARGE else null
