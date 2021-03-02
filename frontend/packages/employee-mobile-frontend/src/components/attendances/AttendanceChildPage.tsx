@@ -41,6 +41,7 @@ const CustomTitle = styled.h1`
   line-height: 30px;
   margin-top: 0;
   color: ${colors.blues.dark};
+  text-align: center;
 `
 
 const GroupName = styled.div`
@@ -57,8 +58,9 @@ export default React.memo(function AttendanceChildPage() {
   const { i18n } = useTranslation()
   const history = useHistory()
 
-  const { unitId, childId } = useParams<{
+  const { unitId, childId, groupId: groupIdOrAll } = useParams<{
     unitId: string
+    groupId: string | 'all'
     childId: string
   }>()
 
@@ -95,7 +97,7 @@ export default React.memo(function AttendanceChildPage() {
 
   return (
     <Fragment>
-      <TallContentArea opaque paddingHorizontal={'s'}>
+      <TallContentArea opaque paddingHorizontal={'s'} spaced>
         <BackButton onClick={() => history.goBack()} icon={faArrowLeft} />
         {child && group && !loading ? (
           <Fragment>
@@ -122,7 +124,7 @@ export default React.memo(function AttendanceChildPage() {
                 <AttendanceChildComing
                   unitId={unitId}
                   child={child}
-                  group={group}
+                  groupIdOrAll={groupIdOrAll}
                 />
               )}
               {child.status === 'PRESENT' && (

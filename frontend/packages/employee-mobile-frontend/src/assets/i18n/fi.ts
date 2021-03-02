@@ -30,7 +30,8 @@ export const fi = {
     code: 'Koodi',
     children: 'Lapset',
     staff: 'Henkilökunta',
-    messages: 'Viestit'
+    messages: 'Viestit',
+    back: 'Takaisin'
   },
   absences: {
     title: 'Poissaolot',
@@ -83,7 +84,21 @@ export const fi = {
     noAbsences: 'Ei poissaoloja',
     missingFrom: 'Poissa seuraavasta toimintamuodosta',
     missingFromPlural: 'Poissa seuraavista toimintamuodoista',
-    timeError: 'Virheellinen aika'
+    timeError: 'Virheellinen aika',
+    notes: {
+      dailyNotes: 'Päivän muistiinpanot',
+      labels: {
+        note: 'Päivän tapahtumia',
+        feedingNote: 'Lapsi söi tänään',
+        sleepingNote: 'Lapsi nukkui tänään',
+        reminderNote: 'Muistettavia asioita'
+      },
+      values: {
+        GOOD: 'Hyvin',
+        MEDIUM: 'Kohtalaisesti',
+        NONE: 'Ei ollenkaan'
+      }
+    }
   },
   mobile: {
     landerText1:
