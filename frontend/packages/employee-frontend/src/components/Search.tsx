@@ -30,7 +30,7 @@ import {
 import Loader from '@evaka/lib-components/src/atoms/Loader'
 import AddVTJPersonModal from '../components/person-search/AddVTJPersonModal'
 import CreatePersonModal from '../components/person-search/CreatePersonModal'
-import { CHILD_AGE } from '../constants.ts'
+import { CHILD_AGE } from '../constants'
 import { CustomersContext } from '../state/customers'
 import { useTranslation } from '../state/i18n'
 import { RequireRole } from '../utils/roles'
