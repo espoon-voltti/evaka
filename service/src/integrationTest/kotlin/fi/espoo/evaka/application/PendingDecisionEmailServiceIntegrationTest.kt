@@ -11,6 +11,7 @@ import fi.espoo.evaka.decision.DecisionType
 import fi.espoo.evaka.emailclient.MockEmail
 import fi.espoo.evaka.emailclient.MockEmailClient
 import fi.espoo.evaka.insertGeneralTestFixtures
+import fi.espoo.evaka.invoicing.domain.PersonData
 import fi.espoo.evaka.resetDatabase
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -20,6 +21,7 @@ import fi.espoo.evaka.shared.dev.insertTestApplication
 import fi.espoo.evaka.shared.dev.insertTestApplicationForm
 import fi.espoo.evaka.shared.dev.insertTestDecision
 import fi.espoo.evaka.test.validDaycareApplication
+import fi.espoo.evaka.testAdult_5
 import fi.espoo.evaka.testAdult_6
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
@@ -38,7 +40,6 @@ class PendingDecisionEmailServiceIntegrationTest : FullApplicationTest() {
 
     private val applicationId = UUID.randomUUID()
     private val childId = testChild_1.id
-    private val guardianId = testAdult_6.id
     private val unitId = testDaycare.id
     private val startDate = LocalDate.now()
     private val endDate = startDate.plusYears(1)
@@ -48,25 +49,13 @@ class PendingDecisionEmailServiceIntegrationTest : FullApplicationTest() {
         db.transaction { tx ->
             tx.resetDatabase()
             insertGeneralTestFixtures(tx.handle)
-
-            insertTestApplication(
-                h = tx.handle,
-                id = applicationId,
-                status = ApplicationStatus.WAITING_CONFIRMATION,
-                childId = childId,
-                guardianId = guardianId
-            )
-            insertTestApplicationForm(
-                h = tx.handle,
-                applicationId = applicationId,
-                document = DaycareFormV0.fromApplication2(validDaycareApplication)
-            )
         }
         MockEmailClient.emails.clear()
     }
 
     @Test
     fun `Pending decision newer than one week does not get reminder email`() {
+        createApplication(testAdult_6)
         createPendingDecision(LocalDate.now(), null, null, 0)
         Assertions.assertEquals(0, runPendingDecisionEmailAsyncJobs())
         Assertions.assertEquals(0, MockEmailClient.emails.size)
@@ -74,6 +63,7 @@ class PendingDecisionEmailServiceIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `Pending decision older than one week sends reminder email`() {
+        createApplication(testAdult_6)
         createPendingDecision(LocalDate.now().minusDays(8), null, null, 0, type = DecisionType.PRESCHOOL)
         createPendingDecision(LocalDate.now().minusDays(8), null, null, 0, type = DecisionType.PRESCHOOL_DAYCARE)
 
@@ -93,6 +83,7 @@ class PendingDecisionEmailServiceIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `Pending decision older than one week with sent reminder less than week ago does not send a new one`() {
+        createApplication(testAdult_6)
         createPendingDecision(LocalDate.now().minusDays(8), null, Instant.now(), 1)
         Assertions.assertEquals(0, runPendingDecisionEmailAsyncJobs())
         Assertions.assertEquals(0, MockEmailClient.emails.size)
@@ -102,6 +93,7 @@ class PendingDecisionEmailServiceIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `Pending decision older than one week with sent reminder older than one week sends a new email`() {
+        createApplication(testAdult_6)
         createPendingDecision(LocalDate.now().minusDays(16), null, Instant.now().minusSeconds(eightDaySeconds), 1)
         Assertions.assertEquals(1, runPendingDecisionEmailAsyncJobs())
 
@@ -118,7 +110,26 @@ class PendingDecisionEmailServiceIntegrationTest : FullApplicationTest() {
     }
 
     @Test
+    fun `If guardian does not have email uses application email instead`() {
+        createApplication(testAdult_5)
+        createPendingDecision(LocalDate.now().minusDays(16), null, Instant.now().minusSeconds(eightDaySeconds), 1)
+        Assertions.assertEquals(1, runPendingDecisionEmailAsyncJobs())
+
+        val sentMails = MockEmailClient.emails
+        Assertions.assertEquals(1, sentMails.size)
+        assertEmail(
+            sentMails.first(),
+            validDaycareApplication.form.guardian.email,
+            "no-reply.evaka@espoo.fi",
+            "Päätös varhaiskasvatuksesta",
+            "kirjautumalla osoitteeseen <a",
+            "kirjautumalla osoitteeseen https"
+        )
+    }
+
+    @Test
     fun `Pending decision older than one week but already two reminders does not send third`() {
+        createApplication(testAdult_6)
         createPendingDecision(LocalDate.now().minusDays(8), null, null, 2)
         Assertions.assertEquals(0, runPendingDecisionEmailAsyncJobs())
         val sentMails = MockEmailClient.emails
@@ -127,6 +138,7 @@ class PendingDecisionEmailServiceIntegrationTest : FullApplicationTest() {
 
     @Test
     fun `Pending decision older than two months does not send an email`() {
+        createApplication(testAdult_6)
         createPendingDecision(LocalDate.now().minusMonths(2), null, null, 0)
         Assertions.assertEquals(0, runPendingDecisionEmailAsyncJobs())
         val sentMails = MockEmailClient.emails
@@ -159,6 +171,23 @@ class PendingDecisionEmailServiceIntegrationTest : FullApplicationTest() {
                     pendingDecisionEmailSent = pendingDecisionEmailSent,
                     pendingDecisionEmailsSentCount = pendingDecisionEmailsSentCount
                 )
+            )
+        }
+    }
+
+    private fun createApplication(guardian: PersonData.Detailed) {
+        db.transaction { tx ->
+            insertTestApplication(
+                h = tx.handle,
+                id = applicationId,
+                status = ApplicationStatus.WAITING_CONFIRMATION,
+                childId = childId,
+                guardianId = guardian.id
+            )
+            insertTestApplicationForm(
+                h = tx.handle,
+                applicationId = applicationId,
+                document = DaycareFormV0.fromApplication2(validDaycareApplication)
             )
         }
     }
