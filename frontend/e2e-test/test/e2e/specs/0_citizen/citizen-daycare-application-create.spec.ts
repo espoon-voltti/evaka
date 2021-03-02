@@ -6,6 +6,7 @@ import CitizenHomePage from '../../pages/citizen/citizen-homepage'
 import CitizenApplicationsPage from '../../pages/citizen/citizen-applications'
 import CitizenNewApplicationPage from '../../pages/citizen/citizen-application-new'
 import CitizenApplicationEditor from '../../pages/citizen/citizen-application-editor'
+import CitizenApplicationVerificationPage from '../../pages/citizen/citizen-application-verification'
 import { logConsoleMessages } from '../../utils/fixture'
 import { enduserRole } from '../../config/users'
 import {
@@ -26,17 +27,35 @@ import {
   Fixture
 } from '../../dev-api/fixtures'
 import {
+  FormInput,
   fullDaycareForm,
   minimalDaycareForm
 } from '../../utils/application-forms'
 import { add, sub } from 'date-fns'
 import CitizenDecisionsPage from '../../pages/citizen/citizen-decisions'
 import CitizenDecisionResponsePage from '../../pages/citizen/citizen-decision-response'
+import path from 'path'
+import { RequestLogger } from 'testcafe'
+
+const logger = RequestLogger(
+  { url: /\/attachments\/[a-fA-F0-9-]+\/download$/, method: 'GET' },
+  { logResponseHeaders: true }
+)
+
+const testFilePath = '../../assets/test_file.jpg'
+const testFileName = path.basename(testFilePath)
+const testFileDispositionRegex = new RegExp(
+  `attachment;\\s*filename=${testFileName.replace(
+    /[|\\{}()[\]^$+*?.]/g,
+    '\\$&' // Escape characters in filename to make a valid regular expression
+  )}`
+)
 
 const citizenHomePage = new CitizenHomePage()
 const citizenApplicationsPage = new CitizenApplicationsPage()
 const citizenNewApplicationPage = new CitizenNewApplicationPage()
 const citizenApplicationEditor = new CitizenApplicationEditor()
+const citizenApplicationVerification = new CitizenApplicationVerificationPage()
 const citizenDecisionsPage = new CitizenDecisionsPage()
 const citizenDecisionResponsePage = new CitizenDecisionResponsePage()
 
@@ -277,3 +296,85 @@ test('Application can be made for restricted child', async (t) => {
   await citizenApplicationEditor.verifyAndSend()
   await citizenApplicationEditor.acknowledgeSendSuccess()
 })
+
+test.requestHooks(logger)(
+  'Urgent application attachment can be uploaded and downloaded by citizen',
+  async (t) => {
+    await t.useRole(enduserRole)
+    await t.click(citizenHomePage.nav.applications)
+    await citizenApplicationsPage.createApplication(
+      fixtures.enduserChildFixtureJari.id
+    )
+    await citizenNewApplicationPage.createApplication('DAYCARE')
+    applicationId = await citizenApplicationEditor.getApplicationId()
+
+    const formWithUrgencyOnly: FormInput = {
+      serviceNeed: {
+        urgent: true
+      }
+    }
+
+    await citizenApplicationEditor.fillData(formWithUrgencyOnly)
+    await citizenApplicationEditor.uploadUrgentFile(testFilePath)
+    await citizenApplicationEditor.assertUrgentFileHasBeenUploaded(testFileName)
+
+    await t.click(
+      citizenApplicationEditor.urgentAttachmentDownloadButton(testFileName)
+    )
+    await t
+      .expect(
+        logger.contains(
+          (r) =>
+            r.response.statusCode === 200 &&
+            testFileDispositionRegex.test(
+              r.response.headers['content-disposition']
+            )
+        )
+      )
+      .ok()
+  }
+)
+
+test.requestHooks(logger)(
+  'Urgent application attachment can be downloaded by citizen on application verification page',
+  async (t) => {
+    await t.useRole(enduserRole)
+    await t.click(citizenHomePage.nav.applications)
+    await citizenApplicationsPage.createApplication(
+      fixtures.enduserChildFixtureJari.id
+    )
+    await citizenNewApplicationPage.createApplication('DAYCARE')
+    applicationId = await citizenApplicationEditor.getApplicationId()
+
+    const minimalFormWithUrgency: FormInput = {
+      ...minimalDaycareForm.form,
+      serviceNeed: {
+        ...minimalDaycareForm.form.serviceNeed,
+        urgent: true
+      }
+    }
+
+    await citizenApplicationEditor.fillData(minimalFormWithUrgency)
+    await citizenApplicationEditor.uploadUrgentFile(testFilePath)
+    await citizenApplicationEditor.assertUrgentFileHasBeenUploaded(testFileName)
+
+    await citizenApplicationEditor.goToVerify()
+
+    await t.click(
+      citizenApplicationVerification.serviceNeedUrgencyAttachmentDownload(
+        testFileName
+      )
+    )
+    await t
+      .expect(
+        logger.contains(
+          (r) =>
+            r.response.statusCode === 200 &&
+            testFileDispositionRegex.test(
+              r.response.headers['content-disposition']
+            )
+        )
+      )
+      .ok()
+  }
+)

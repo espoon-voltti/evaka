@@ -66,6 +66,7 @@ function Attachment({ attachment, dataQa }: Props) {
               resolveLabel: i18n.common.ok
             })
           }
+          dataQa={'attachment-download'}
         />
       </FixedSpaceRow>
     </AttachmentContainer>
