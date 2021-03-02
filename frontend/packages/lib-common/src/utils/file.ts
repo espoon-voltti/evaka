@@ -20,4 +20,15 @@ export const downloadBlobAsFile = (fileName: string, blobPart: BlobPart) => {
   document.body.appendChild(link)
   link.click()
   document.body.removeChild(link)
+
+  // Firefox at least needs a bit of time to trigger the download activation event
+  setTimeout(() => {
+    // Revoking an object URL should be safe as long as the download has been
+    // started as browsers should keep the object in their Blob store at least
+    // for the duration of the download: https://w3c.github.io/FileAPI/#dfn-revokeObjectURL
+    // If the URL were not revoked, the blob would be kept in memory until the
+    // page is closed, which would lead to significant memory usage if a user
+    // downloads multiple attachments in a single session.
+    window.URL.revokeObjectURL(url)
+  }, 100)
 }
