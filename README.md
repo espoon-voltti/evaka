@@ -39,6 +39,7 @@ The applications consists of several sub-projects:
   fronetend requests to services
 - [`service-lib`](service-lib/) – A common library shared with `service` and
   `message-service` projects
+- [`maintenance-page`](maintenance-page/README.md) - Static website to be shown during maintenance instead of the other frontends
 
 ## Contributing
 

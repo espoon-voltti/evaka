@@ -17,7 +17,6 @@ by user functionality:
   process or operational tasks at the daycare.
 - [`enduser-frontend`](packages/enduser-frontend/README.md) – Frontend
   application for the citizen. Citizens may e.g. apply to early childhood education, or browse decisions made for their dependants.
-- [`maintenance-page`](packages/maintenance-page/README.md) - Static website to be shown during maintenance instead of the other frontends
 
 And into a shared library:
 
