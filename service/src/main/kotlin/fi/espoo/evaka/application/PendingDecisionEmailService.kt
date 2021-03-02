@@ -30,7 +30,6 @@ class PendingDecisionEmailService(
     }
 
     val fromAddress = env.getRequiredProperty("mail_reply_to_address")
-    val emailSendingEnabled = env.getProperty("enable_pending_decision_email_sending")?.let { it.toBoolean() } ?: false
 
     fun doSendPendingDecisionsEmail(db: Database, msg: SendPendingDecisionEmail) {
         logger.info("Sending pending decision reminder email to guardian ${msg.guardianId}")
@@ -41,8 +40,6 @@ class PendingDecisionEmailService(
         val guardianId: UUID,
         val decisionIds: List<UUID>
     )
-
-    class PendingDecisionMailException(msg: String) : Exception(msg)
 
     fun scheduleSendPendingDecisionsEmails(db: Database.Connection): Int {
         val jobCount = db.transaction { tx ->
@@ -103,22 +100,16 @@ GROUP BY application.guardian_id
     fun sendPendingDecisionEmail(db: Database, pendingDecision: SendPendingDecisionEmail) {
         db.transaction { tx ->
             logger.info("Sending pending decision email to guardian ${pendingDecision.guardianId}")
+            val lang = getLanguage(pendingDecision.language)
 
-            if (emailSendingEnabled) {
-                val lang = getLanguage(pendingDecision.language)
-
-                emailClient.sendEmail(
-                    "${pendingDecision.guardianId} - ${pendingDecision.decisionIds.joinToString("-")}",
-                    pendingDecision.email,
-                    fromAddress,
-                    getSubject(lang),
-                    getHtml(lang),
-                    getText(lang)
-                )
-            } else {
-                // To do a dry run in production
-                logger.info("Would have sent pending decision email ${pendingDecision.guardianId} - ${pendingDecision.decisionIds.joinToString("-")}")
-            }
+            emailClient.sendEmail(
+                "${pendingDecision.guardianId} - ${pendingDecision.decisionIds.joinToString("-")}",
+                pendingDecision.email,
+                fromAddress,
+                getSubject(lang),
+                getHtml(lang),
+                getText(lang)
+            )
 
             // Mark as sent
             pendingDecision.decisionIds.forEach { decisionId ->
