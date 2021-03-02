@@ -618,6 +618,22 @@ class KoskiIntegrationTest : FullApplicationTest() {
     }
 
     @Test
+    fun `a daycare with private provider type is marked as purchased in study rights`() {
+        val daycareId = jdbi.handle {
+            it.insertTestDaycare(
+                DevDaycare(areaId = testAreaId, providerType = ProviderType.PRIVATE)
+            )
+        }
+        insertPlacement(daycareId = daycareId)
+
+        val today = preschoolTerm2019.end.plusDays(1)
+        koskiTester.triggerUploads(today)
+
+        val opiskeluoikeus = koskiServer.getStudyRights().values.single().opiskeluoikeus
+        assertEquals(Järjestämismuoto(JärjestämismuotoKoodi.PURCHASED), opiskeluoikeus.järjestämismuoto)
+    }
+
+    @Test
     fun `absences have no effect on preschool study rights`() {
         insertPlacement(period = preschoolTerm2020, type = PlacementType.PRESCHOOL)
 

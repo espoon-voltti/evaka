@@ -64,7 +64,7 @@ data class KoskiUnitRaw(
         ProviderType.PURCHASED -> Järjestämismuoto(JärjestämismuotoKoodi.PURCHASED)
         ProviderType.PRIVATE_SERVICE_VOUCHER -> Järjestämismuoto(JärjestämismuotoKoodi.PRIVATE_SERVICE_VOUCHER)
         ProviderType.MUNICIPAL -> null
-        ProviderType.PRIVATE -> null
+        ProviderType.PRIVATE -> Järjestämismuoto(JärjestämismuotoKoodi.PURCHASED)
         ProviderType.MUNICIPAL_SCHOOL -> null
     }
 }
