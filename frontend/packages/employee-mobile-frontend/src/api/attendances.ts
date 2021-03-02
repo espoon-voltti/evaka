@@ -4,6 +4,8 @@
 
 import { JsonOf } from '@evaka/lib-common/src/json'
 import { Failure, Result, Success } from '@evaka/lib-common/src/api'
+import LocalDate from '@evaka/lib-common/src/local-date'
+
 import { AbsenceType, CareType } from '../types'
 import { PlacementType } from '../types'
 import { client } from './client'
@@ -40,7 +42,7 @@ export interface AttendanceChild {
   attendance: Attendance | null
   absences: Absence[]
   entitledToFreeFiveYearsOldDaycare: boolean
-  dailyNoteId: string | null
+  dailyNote: DailyNote | null
 }
 
 interface Attendance {
@@ -54,6 +56,24 @@ interface Absence {
   childId: string
   id: string
 }
+
+interface DailyNote {
+  id: string
+  childId: string | null
+  groupId: string | null
+  date: LocalDate
+  note: string | null
+  feedingNote: DaycareDailyNoteLevelInfo | null
+  sleepingNote: DaycareDailyNoteLevelInfo | null
+  reminders: DaycareDailyNoteReminder[]
+  reminderNote: string | null
+  modifiedAt: Date | null
+  modifiedBy: string
+}
+
+type DaycareDailyNoteLevelInfo = 'GOOD' | 'MEDIUM' | 'NONE'
+
+type DaycareDailyNoteReminder = 'DIAPERS' | 'CLOTHES' | 'LAUNDRY'
 
 interface ArrivalInfoResponse {
   absentFromPreschool: boolean
@@ -234,6 +254,15 @@ function deserializeAttendanceResponse(
                   arrived: new Date(attendanceChild.attendance.arrived),
                   departed: attendanceChild.attendance.departed
                     ? new Date(attendanceChild.attendance.departed)
+                    : null
+                }
+              : null,
+            dailyNote: attendanceChild.dailyNote
+              ? {
+                  ...attendanceChild.dailyNote,
+                  date: LocalDate.parseIso(attendanceChild.dailyNote.date),
+                  modifiedAt: attendanceChild.dailyNote.modifiedAt
+                    ? new Date(attendanceChild.dailyNote.modifiedAt)
                     : null
                 }
               : null
