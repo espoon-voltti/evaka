@@ -149,3 +149,9 @@ export function withStaleCancellation<F extends ApiFunction>(
     )
   }
 }
+
+export interface Paged<T> {
+  data: T[]
+  total: number
+  pages: number
+}

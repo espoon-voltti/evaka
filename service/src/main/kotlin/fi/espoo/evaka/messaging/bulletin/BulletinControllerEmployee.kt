@@ -1,6 +1,7 @@
 package fi.espoo.evaka.messaging.bulletin
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole

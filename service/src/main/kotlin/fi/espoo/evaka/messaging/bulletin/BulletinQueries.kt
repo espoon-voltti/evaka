@@ -1,9 +1,12 @@
 package fi.espoo.evaka.messaging.bulletin
 
+import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.NotFound
+import fi.espoo.evaka.shared.mapToPaged
 import fi.espoo.evaka.shared.utils.zoneId
+import fi.espoo.evaka.shared.withCountMapper
 import org.jdbi.v3.core.kotlin.mapTo
 import java.time.LocalDate
 import java.time.OffsetDateTime
@@ -178,22 +181,27 @@ fun Database.Read.getOwnBulletinDrafts(
 }
 
 fun Database.Read.getReceivedBulletinsByGuardian(
-    user: AuthenticatedUser
-): List<ReceivedBulletin> {
+    user: AuthenticatedUser,
+    page: Int,
+    pageSize: Int
+): Paged<ReceivedBulletin> {
     // language=sql
     val sql = """
-        SELECT DISTINCT b.id, b.sent_at, b.title, b.content, bi.read_at IS NOT NULL AS is_read, dg.name as sender
-        FROM bulletin b
-        JOIN bulletin_instance bi ON b.id = bi.bulletin_id
+        SELECT COUNT(bi.*) OVER (), bi.id, b.sent_at, b.title, b.content, bi.read_at IS NOT NULL AS is_read, dg.name as sender
+        FROM bulletin_instance bi
+        JOIN bulletin b ON bi.bulletin_id = b.id
         JOIN daycare_group dg on b.group_id = dg.id
         WHERE bi.receiver_id = :userId AND b.sent_at IS NOT NULL 
         ORDER BY b.sent_at DESC
+        LIMIT :pageSize OFFSET (:page - 1) * :pageSize
     """.trimIndent()
 
     return this.createQuery(sql)
         .bind("userId", user.id)
-        .mapTo<ReceivedBulletin>()
-        .list()
+        .bind("page", page)
+        .bind("pageSize", pageSize)
+        .map(withCountMapper<ReceivedBulletin>())
+        .let(mapToPaged(pageSize))
 }
 
 fun Database.Read.getUnreadBulletinCountByGuardian(
@@ -220,7 +228,7 @@ fun Database.Transaction.markBulletinRead(
     val sql = """
         UPDATE bulletin_instance
         SET read_at = :readAt
-        WHERE bulletin_id = :id AND receiver_id = :userId AND read_at IS NULL 
+        WHERE id = :id AND receiver_id = :userId AND read_at IS NULL
     """.trimIndent()
 
     this.createUpdate(sql)

@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Failure, Result, Success } from '@evaka/lib-common/src/api'
+import { Failure, Paged, Result, Success } from '@evaka/lib-common/src/api'
 import { JsonOf } from '@evaka/lib-common/src/json'
 import { client } from '../api-client'
 import {
@@ -10,10 +10,20 @@ import {
   ReceivedBulletin
 } from '../messages/types'
 
-export async function getBulletins(): Promise<Result<ReceivedBulletin[]>> {
+export async function getBulletins(
+  page: number,
+  pageSize = 50
+): Promise<Result<Paged<ReceivedBulletin>>> {
   return client
-    .get<JsonOf<ReceivedBulletin[]>>('/citizen/bulletins')
-    .then((res) => Success.of(res.data.map(deserializeReceivedBulletin)))
+    .get<JsonOf<Paged<ReceivedBulletin>>>('/citizen/bulletins', {
+      params: { page, pageSize }
+    })
+    .then((res) =>
+      Success.of({
+        ...res.data,
+        data: res.data.data.map(deserializeReceivedBulletin)
+      })
+    )
     .catch((e) => Failure.fromError(e))
 }
 
