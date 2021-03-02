@@ -5,8 +5,9 @@
 package fi.espoo.evaka.shared.async
 
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.config.SharedIntegrationTestConfig
+import fi.espoo.evaka.shared.config.getTestDataSource
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.db.configureJdbi
 import org.jdbi.v3.core.Jdbi
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -16,8 +17,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.assertThrows
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.test.context.junit.jupiter.SpringJUnitConfig
 import java.time.Duration
 import java.util.UUID
 import java.util.concurrent.CompletableFuture
@@ -25,20 +24,17 @@ import java.util.concurrent.ExecutionException
 import java.util.concurrent.Future
 import java.util.concurrent.TimeUnit
 
-@SpringJUnitConfig(SharedIntegrationTestConfig::class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class AsyncJobRunnerTest {
     private lateinit var asyncJobRunner: AsyncJobRunner
-
-    @Autowired
-    lateinit var jdbi: Jdbi
-
-    lateinit var db: Database
+    private lateinit var jdbi: Jdbi
+    private lateinit var db: Database
 
     private val user = AuthenticatedUser(UUID.randomUUID(), setOf())
 
     @BeforeAll
     fun setup() {
+        jdbi = configureJdbi(Jdbi.create(getTestDataSource()))
         asyncJobRunner = AsyncJobRunner(jdbi, syncMode = false)
     }
 
