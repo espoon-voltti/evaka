@@ -97,9 +97,9 @@ aliases:
         - frontend/packages/employee-frontend/node_modules
         - frontend/packages/employee-mobile-frontend/node_modules
         - frontend/packages/lib-common/node_modules
-        - frontend/packages/maintenance-page/node_modules
         - frontend/e2e-test/node_modules
         - frontend/node_modules
+        - maintenance-page/node_modules
 
   - &restore_service_gradle
     restore_cache:
@@ -312,7 +312,7 @@ commands:
           to: employee/mobile
       - deploy_to_s3:
           target_env: << parameters.target_env >>
-          from: frontend/packages/maintenance-page
+          from: maintenance-page
           to: maintenance-page
       - storybook_to_s3:
           target_env: << parameters.target_env >>
@@ -612,7 +612,7 @@ jobs:
       - build_frontend:
           dir: /home/circleci/repo/frontend/packages/citizen-frontend
       - build_frontend:
-          dir: /home/circleci/repo/frontend/packages/maintenance-page
+          dir: /home/circleci/repo/maintenance-page
       - build_storybook
       - persist_to_workspace:
           root: *workspace_root
@@ -620,10 +620,10 @@ jobs:
             - frontend/packages/citizen-frontend/dist
             - frontend/packages/employee-frontend/dist
             - frontend/packages/employee-mobile-frontend/dist
-            - frontend/packages/maintenance-page/dist
             - frontend/packages/lib-components/storybook-build
             - frontend/e2e-test/dist
             - frontend/e2e-test/scripts
+            - maintenance-page/dist
             - *yarn_cache
       - run:
           working_directory: *workspace_frontend
