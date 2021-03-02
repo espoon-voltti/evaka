@@ -40,3 +40,4 @@ V39__add_unit_id_to_bulletin.sql
 V40__unit_id_in_bulletin_as_not_null.sql
 V41__daycare_daily_note_v2.sql
 V42__income_references_application.sql
+V43__rename_bulletin_guardian_id.sql

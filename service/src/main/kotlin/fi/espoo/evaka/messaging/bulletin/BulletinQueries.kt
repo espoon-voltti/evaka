@@ -90,14 +90,26 @@ fun Database.Transaction.sendBulletin(
     // todo: include backup care?
     // language=sql
     val insertBulletinInstancesSql = """
-        INSERT INTO bulletin_instance (bulletin_id, guardian_id)
-        SELECT DISTINCT b.id, g.guardian_id
-        FROM bulletin b
-        JOIN daycare_group dg ON b.group_id = dg.id
-        JOIN daycare_group_placement gpl ON dg.id = gpl.daycare_group_id AND daterange(gpl.start_date, gpl.end_date, '[]') @> :date
-        JOIN placement pl ON gpl.daycare_placement_id = pl.id
-        JOIN guardian g ON pl.child_id = g.child_id
-        WHERE b.id = :bulletinId
+        WITH children AS (
+            SELECT pl.child_id
+            FROM bulletin b
+            JOIN daycare_group dg ON b.group_id = dg.id
+            JOIN daycare_group_placement gpl ON dg.id = gpl.daycare_group_id AND daterange(gpl.start_date, gpl.end_date, '[]') @> :date
+            JOIN placement pl ON gpl.daycare_placement_id = pl.id
+            WHERE b.id = :bulletinId
+        ), receivers AS (
+            SELECT g.guardian_id AS receiver_id
+            FROM children c
+            JOIN guardian g ON g.child_id = c.child_id
+            
+            UNION DISTINCT 
+            
+            SELECT fc.head_of_child AS receiver_id
+            FROM children c
+            JOIN fridge_child fc ON fc.child_id = c.child_id AND daterange(fc.start_date, fc.end_date, '[]') @> :date
+        )
+        INSERT INTO bulletin_instance (bulletin_id, receiver_id)
+        SELECT :bulletinId, receiver_id FROM receivers
     """.trimIndent()
 
     this.createUpdate(insertBulletinInstancesSql)
@@ -174,7 +186,7 @@ fun Database.Read.getReceivedBulletinsByGuardian(
         FROM bulletin b
         JOIN bulletin_instance bi ON b.id = bi.bulletin_id
         JOIN daycare_group dg on b.group_id = dg.id
-        WHERE bi.guardian_id = :userId AND b.sent_at IS NOT NULL 
+        WHERE bi.receiver_id = :userId AND b.sent_at IS NOT NULL 
         ORDER BY b.sent_at DESC
     """.trimIndent()
 
@@ -192,7 +204,7 @@ fun Database.Transaction.markBulletinRead(
     val sql = """
         UPDATE bulletin_instance
         SET read_at = :readAt
-        WHERE bulletin_id = :id AND guardian_id = :userId AND read_at IS NULL 
+        WHERE bulletin_id = :id AND receiver_id = :userId AND read_at IS NULL 
     """.trimIndent()
 
     this.createUpdate(sql)
