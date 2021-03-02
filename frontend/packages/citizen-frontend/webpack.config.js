@@ -5,7 +5,6 @@
 const path = require('path')
 
 const HtmlWebpackPlugin = require('html-webpack-plugin')
-const TsconfigPathsPlugin = require('tsconfig-paths-webpack-plugin')
 const SentryWebpackPlugin = require('@sentry/webpack-plugin')
 
 module.exports = function (env, argv) {
@@ -45,7 +44,6 @@ module.exports = function (env, argv) {
     },
     resolve: {
       extensions: ['.js', '.jsx', '.ts', '.tsx', '.json'],
-      plugins: [new TsconfigPathsPlugin()],
       alias: {
         Icons:
           process.env.ICONS === 'pro'
