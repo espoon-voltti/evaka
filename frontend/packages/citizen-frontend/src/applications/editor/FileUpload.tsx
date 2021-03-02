@@ -34,6 +34,7 @@ export type FileUploadProps = {
     onUploadProgress: (progressEvent: ProgressEvent) => void
   ) => Promise<Result<UUID>>
   onDelete: (id: UUID) => Promise<Result<void>>
+  dataQa?: string
 }
 
 interface FileObject extends Attachment {
@@ -206,7 +207,8 @@ const inProgress = (file: FileObject): boolean => file.progress !== 100
 export default React.memo(function FileUpload({
   files,
   onUpload,
-  onDelete
+  onDelete,
+  dataQa
 }: FileUploadProps) {
   const t = useTranslation()
 
@@ -312,7 +314,7 @@ export default React.memo(function FileUpload({
   }
 
   return (
-    <FileUploadContainer>
+    <FileUploadContainer data-qa={dataQa}>
       {modalVisible && (
         <InfoModal
           title={t.fileDownload.modalHeader}
@@ -341,7 +343,7 @@ export default React.memo(function FileUpload({
         </span>
       </FileInputLabel>
       <Gap horizontal size={'s'} />
-      <UploadedFiles>
+      <UploadedFiles data-qa={'uploaded-files'}>
         {uploadedFiles.map((file) => (
           <File key={file.key}>
             <FileIcon icon={fileIcon(file)} />
@@ -352,9 +354,12 @@ export default React.memo(function FileUpload({
                     file={file}
                     fileFetchFn={getAttachmentBlob}
                     onFileUnavailable={() => setModalVisible(true)}
+                    dataQa={'file-download-button'}
                   />
                 ) : (
-                  <span>{file.name}</span>
+                  <span data-qa={'file-download-unavailable-text'}>
+                    {file.name}
+                  </span>
                 )}
                 <FileDeleteButton
                   icon={faTimes}
