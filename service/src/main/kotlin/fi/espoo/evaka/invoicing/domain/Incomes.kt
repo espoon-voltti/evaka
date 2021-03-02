@@ -24,7 +24,8 @@ data class Income(
     val validTo: LocalDate?,
     val notes: String,
     val updatedAt: Instant? = null,
-    val updatedBy: String? = null
+    val updatedBy: String? = null,
+    val applicationId: UUID? = null
 ) {
     @JsonProperty("totalIncome")
     fun totalIncome(): Int =

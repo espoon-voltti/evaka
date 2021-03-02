@@ -920,6 +920,8 @@ export const fi = {
         name: 'Nimi',
         updated: 'Tulotiedot päivitetty',
         handler: 'Käsittelijä',
+        originApplication:
+          'Huoltaja on hakemuksella suostunut korkeimpaan maksuluokkaan',
         dateRange: 'Ajalle',
         effect: 'Maksun peruste',
         effectOptions: {

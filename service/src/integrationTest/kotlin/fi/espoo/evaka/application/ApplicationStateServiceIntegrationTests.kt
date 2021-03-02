@@ -248,584 +248,6 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
     }
 
     @Test
-    fun `moveToWaitingPlacement with maxFeeAccepted - new income has been created`() {
-        db.transaction { tx ->
-            // given
-            insertApplication(
-                tx.handle,
-                guardian = testAdult_5,
-                maxFeeAccepted = true,
-                applicationId = applicationId,
-                preferredStartDate = LocalDate.of(2020, 8, 1)
-            )
-            service.sendApplication(tx, serviceWorker, applicationId)
-        }
-        db.transaction { tx ->
-            // when
-            service.moveToWaitingPlacement(tx, serviceWorker, applicationId)
-        }
-        db.read {
-            // then
-            val application = fetchApplicationDetails(it.handle, applicationId)!!
-            assertEquals(true, application.form.maxFeeAccepted)
-            val incomes = getIncomesForPerson(it.handle, mapper, testAdult_5.id)
-            assertEquals(ApplicationStatus.WAITING_PLACEMENT, application.status)
-            assertEquals(1, incomes.size)
-            assertEquals(IncomeEffect.MAX_FEE_ACCEPTED, incomes.first().effect)
-        }
-    }
-
-    @Test
-    fun `moveToWaitingPlacement with maxFeeAccepted - existing overlapping indefinite income will be handled`() {
-        db.transaction { tx ->
-            // given
-            val financeUser = AuthenticatedUser(id = testDecisionMaker_1.id, roles = setOf(UserRole.FINANCE_ADMIN))
-            val earlierIndefinite = Income(
-                id = UUID.randomUUID(),
-                data = mapOf(),
-                effect = IncomeEffect.NOT_AVAILABLE,
-                notes = "Income not available",
-                personId = testAdult_5.id,
-                validFrom = LocalDate.of(2020, 8, 1).minusDays(10),
-                validTo = null
-            )
-            upsertIncome(tx.handle, mapper, earlierIndefinite, financeUser.id)
-            insertApplication(
-                tx.handle,
-                guardian = testAdult_5,
-                maxFeeAccepted = true,
-                applicationId = applicationId,
-                preferredStartDate = LocalDate.of(2020, 8, 1)
-            )
-            service.sendApplication(tx, serviceWorker, applicationId)
-        }
-        db.transaction { tx ->
-            // when
-            service.moveToWaitingPlacement(tx, serviceWorker, applicationId)
-        }
-        db.read {
-            // then
-            val application = fetchApplicationDetails(it.handle, applicationId)!!
-            assertEquals(true, application.form.maxFeeAccepted)
-            val incomes = getIncomesForPerson(it.handle, mapper, testAdult_5.id)
-            assertEquals(ApplicationStatus.WAITING_PLACEMENT, application.status)
-            assertEquals(2, incomes.size)
-            assertEquals(IncomeEffect.MAX_FEE_ACCEPTED, incomes.first().effect)
-            assertEquals(IncomeEffect.NOT_AVAILABLE, incomes[1].effect)
-        }
-    }
-
-    @Test
-    fun `moveToWaitingPlacement with maxFeeAccepted - existing overlapping income will be handled by not adding a new income for user`() {
-        db.transaction { tx ->
-            // given
-            val financeUser = AuthenticatedUser(id = testDecisionMaker_1.id, roles = setOf(UserRole.FINANCE_ADMIN))
-            val earlierIncome = Income(
-                id = UUID.randomUUID(),
-                data = mapOf(),
-                effect = IncomeEffect.NOT_AVAILABLE,
-                notes = "Income not available",
-                personId = testAdult_5.id,
-                validFrom = LocalDate.of(2020, 8, 1).minusDays(10),
-                validTo = LocalDate.of(2020, 8, 1).plusMonths(5)
-            )
-            upsertIncome(tx.handle, mapper, earlierIncome, financeUser.id)
-            insertApplication(
-                tx.handle,
-                guardian = testAdult_5,
-                maxFeeAccepted = true,
-                applicationId = applicationId,
-                preferredStartDate = LocalDate.of(2020, 8, 1)
-            )
-            service.sendApplication(tx, serviceWorker, applicationId)
-        }
-        db.transaction { tx ->
-            // when
-            service.moveToWaitingPlacement(tx, serviceWorker, applicationId)
-        }
-        db.read {
-            // then
-            val application = fetchApplicationDetails(it.handle, applicationId)!!
-            assertEquals(true, application.form.maxFeeAccepted)
-            val incomes = getIncomesForPerson(it.handle, mapper, testAdult_5.id)
-            assertEquals(ApplicationStatus.WAITING_PLACEMENT, application.status)
-            assertEquals(1, incomes.size)
-            assertEquals(IncomeEffect.NOT_AVAILABLE, incomes.first().effect)
-        }
-    }
-
-    @Test
-    fun `moveToWaitingPlacement with maxFeeAccepted - later indefinite income will be handled by not adding a new income`() {
-        db.transaction { tx ->
-            // given
-            val financeUser = AuthenticatedUser(id = testDecisionMaker_1.id, roles = setOf(UserRole.FINANCE_ADMIN))
-            val laterIndefiniteIncome = Income(
-                id = UUID.randomUUID(),
-                data = mapOf(),
-                effect = IncomeEffect.NOT_AVAILABLE,
-                notes = "Income not available",
-                personId = testAdult_5.id,
-                validFrom = LocalDate.of(2020, 8, 1).plusMonths(5),
-                validTo = null
-            )
-            upsertIncome(tx.handle, mapper, laterIndefiniteIncome, financeUser.id)
-            insertApplication(
-                tx.handle,
-                guardian = testAdult_5,
-                maxFeeAccepted = true,
-                applicationId = applicationId,
-                preferredStartDate = LocalDate.of(2020, 8, 1)
-            )
-            service.sendApplication(tx, serviceWorker, applicationId)
-        }
-        db.transaction { tx ->
-            // when
-            service.moveToWaitingPlacement(tx, serviceWorker, applicationId)
-        }
-        db.read {
-            // then
-            val application = fetchApplicationDetails(it.handle, applicationId)!!
-            assertEquals(true, application.form.maxFeeAccepted)
-            val incomes = getIncomesForPerson(it.handle, mapper, testAdult_5.id)
-            assertEquals(ApplicationStatus.WAITING_PLACEMENT, application.status)
-            assertEquals(1, incomes.size)
-            assertEquals(IncomeEffect.NOT_AVAILABLE, incomes.first().effect)
-        }
-    }
-
-    @Test
-    fun `moveToWaitingPlacement with maxFeeAccepted - earlier income does not affect creating a new income`() {
-        db.transaction { tx ->
-            // given
-            val financeUser = AuthenticatedUser(id = testDecisionMaker_1.id, roles = setOf(UserRole.FINANCE_ADMIN))
-            val earlierIncome = Income(
-                id = UUID.randomUUID(),
-                data = mapOf(),
-                effect = IncomeEffect.NOT_AVAILABLE,
-                notes = "Income not available",
-                personId = testAdult_5.id,
-                validFrom = LocalDate.of(2020, 8, 1).minusMonths(7),
-                validTo = LocalDate.of(2020, 8, 1).minusMonths(5)
-            )
-            upsertIncome(tx.handle, mapper, earlierIncome, financeUser.id)
-            insertApplication(
-                tx.handle,
-                guardian = testAdult_5,
-                maxFeeAccepted = true,
-                applicationId = applicationId,
-                preferredStartDate = LocalDate.of(2020, 8, 1)
-            )
-            service.sendApplication(tx, serviceWorker, applicationId)
-        }
-        db.transaction { tx ->
-            // when
-            service.moveToWaitingPlacement(tx, serviceWorker, applicationId)
-        }
-        db.read {
-            // then
-            val application = fetchApplicationDetails(it.handle, applicationId)!!
-            assertEquals(true, application.form.maxFeeAccepted)
-            val incomes = getIncomesForPerson(it.handle, mapper, testAdult_5.id)
-            assertEquals(ApplicationStatus.WAITING_PLACEMENT, application.status)
-            assertEquals(2, incomes.size)
-            assertEquals(IncomeEffect.MAX_FEE_ACCEPTED, incomes.first().effect)
-            assertEquals(IncomeEffect.NOT_AVAILABLE, incomes[1].effect)
-        }
-    }
-
-    @Test
-    fun `moveToWaitingPlacement with maxFeeAccepted - later income will be handled by not adding a new income`() {
-        db.transaction { tx ->
-            // given
-            val financeUser = AuthenticatedUser(id = testDecisionMaker_1.id, roles = setOf(UserRole.FINANCE_ADMIN))
-            val laterIncome = Income(
-                id = UUID.randomUUID(),
-                data = mapOf(),
-                effect = IncomeEffect.NOT_AVAILABLE,
-                notes = "Income not available",
-                personId = testAdult_5.id,
-                validFrom = LocalDate.of(2020, 8, 1).plusMonths(5),
-                validTo = LocalDate.of(2020, 8, 1).plusMonths(6)
-            )
-            upsertIncome(tx.handle, mapper, laterIncome, financeUser.id)
-            insertApplication(
-                tx.handle,
-                guardian = testAdult_5,
-                maxFeeAccepted = true,
-                applicationId = applicationId,
-                preferredStartDate = LocalDate.of(2020, 8, 1)
-            )
-            service.sendApplication(tx, serviceWorker, applicationId)
-        }
-        db.transaction { tx ->
-            // when
-            service.moveToWaitingPlacement(tx, serviceWorker, applicationId)
-        }
-        db.read {
-            // then
-            val application = fetchApplicationDetails(it.handle, applicationId)!!
-            assertEquals(true, application.form.maxFeeAccepted)
-            val incomes = getIncomesForPerson(it.handle, mapper, testAdult_5.id)
-            assertEquals(ApplicationStatus.WAITING_PLACEMENT, application.status)
-            assertEquals(1, incomes.size)
-            assertEquals(IncomeEffect.NOT_AVAILABLE, incomes.first().effect)
-        }
-    }
-
-    @Test
-    fun `moveToWaitingPlacement with maxFeeAccepted - if application does not have a preferred start date income will not be created`() {
-        db.transaction { tx ->
-            // given
-            val financeUser = AuthenticatedUser(id = testDecisionMaker_1.id, roles = setOf(UserRole.FINANCE_ADMIN))
-            val earlierIndefinite = Income(
-                id = UUID.randomUUID(),
-                data = mapOf(),
-                effect = IncomeEffect.NOT_AVAILABLE,
-                notes = "Income not available",
-                personId = testAdult_5.id,
-                validFrom = LocalDate.now().minusDays(10),
-                validTo = null
-            )
-            upsertIncome(tx.handle, mapper, earlierIndefinite, financeUser.id)
-            insertApplication(
-                tx.handle,
-                guardian = testAdult_5,
-                maxFeeAccepted = true,
-                preferredStartDate = null,
-                applicationId = applicationId
-            )
-            service.sendApplication(tx, serviceWorker, applicationId)
-        }
-        db.transaction { tx ->
-            // when
-            service.moveToWaitingPlacement(tx, serviceWorker, applicationId)
-        }
-        db.read {
-            // then
-            val application = fetchApplicationDetails(it.handle, applicationId)!!
-            assertEquals(true, application.form.maxFeeAccepted)
-            val incomes = getIncomesForPerson(it.handle, mapper, testAdult_5.id)
-            assertEquals(ApplicationStatus.WAITING_PLACEMENT, application.status)
-            assertEquals(1, incomes.size)
-            assertEquals(IncomeEffect.NOT_AVAILABLE, incomes.first().effect)
-        }
-    }
-
-    @Test
-    fun `moveToWaitingPlacement with maxFeeAccepted - no new income will be created if there exists indefinite income for the same day `() {
-        db.transaction { tx ->
-            // given
-            val financeUser = AuthenticatedUser(id = testDecisionMaker_1.id, roles = setOf(UserRole.FINANCE_ADMIN))
-            val sameDayIncomeIndefinite = Income(
-                id = UUID.randomUUID(),
-                data = mapOf(),
-                effect = IncomeEffect.NOT_AVAILABLE,
-                notes = "Income not available",
-                personId = testAdult_5.id,
-                validFrom = LocalDate.now().plusMonths(4),
-                validTo = null
-            )
-            upsertIncome(tx.handle, mapper, sameDayIncomeIndefinite, financeUser.id)
-            insertApplication(
-                tx.handle,
-                guardian = testAdult_5,
-                maxFeeAccepted = true,
-                applicationId = applicationId,
-                preferredStartDate = LocalDate.of(2020, 8, 1)
-            )
-            service.sendApplication(tx, serviceWorker, applicationId)
-        }
-        db.transaction { tx ->
-            // when
-            service.moveToWaitingPlacement(tx, serviceWorker, applicationId)
-        }
-        db.read { tx ->
-            // then
-            val application = fetchApplicationDetails(tx.handle, applicationId)!!
-            assertEquals(true, application.form.maxFeeAccepted)
-            val incomes = getIncomesForPerson(tx.handle, mapper, testAdult_5.id)
-            assertEquals(ApplicationStatus.WAITING_PLACEMENT, application.status)
-            assertEquals(1, incomes.size)
-            assertEquals(IncomeEffect.NOT_AVAILABLE, incomes.first().effect)
-        }
-    }
-
-    @Test
-    fun `moveToWaitingPlacement with maxFeeAccepted - no new income will be created if there exists income for the same day `() {
-        db.transaction { tx ->
-            // given
-            val financeUser = AuthenticatedUser(id = testDecisionMaker_1.id, roles = setOf(UserRole.FINANCE_ADMIN))
-            val sameDayIncome = Income(
-                id = UUID.randomUUID(),
-                data = mapOf(),
-                effect = IncomeEffect.NOT_AVAILABLE,
-                notes = "Income not available",
-                personId = testAdult_5.id,
-                validFrom = LocalDate.now().plusMonths(4),
-                validTo = LocalDate.now().plusMonths(5)
-            )
-            upsertIncome(tx.handle, mapper, sameDayIncome, financeUser.id)
-            insertApplication(
-                tx.handle,
-                guardian = testAdult_5,
-                maxFeeAccepted = true,
-                applicationId = applicationId,
-                preferredStartDate = LocalDate.of(2020, 8, 1)
-            )
-            service.sendApplication(tx, serviceWorker, applicationId)
-        }
-        db.transaction { tx ->
-            // when
-            service.moveToWaitingPlacement(tx, serviceWorker, applicationId)
-        }
-        db.read { tx ->
-            // then
-            val application = fetchApplicationDetails(tx.handle, applicationId)!!
-            assertEquals(true, application.form.maxFeeAccepted)
-            val incomes = getIncomesForPerson(tx.handle, mapper, testAdult_5.id)
-            assertEquals(ApplicationStatus.WAITING_PLACEMENT, application.status)
-            assertEquals(1, incomes.size)
-            assertEquals(IncomeEffect.NOT_AVAILABLE, incomes.first().effect)
-        }
-    }
-
-    @Test
-    fun `moveToWaitingPlacement with maxFeeAccepted - new income will be created if there exists indefinite income for the same day - 1 `() {
-        db.transaction { tx ->
-            // given
-            val financeUser = AuthenticatedUser(id = testDecisionMaker_1.id, roles = setOf(UserRole.FINANCE_ADMIN))
-            val dayBeforeIncomeIndefinite = Income(
-                id = UUID.randomUUID(),
-                data = mapOf(),
-                effect = IncomeEffect.NOT_AVAILABLE,
-                notes = "Income not available",
-                personId = testAdult_5.id,
-                validFrom = LocalDate.of(2020, 8, 1).minusDays(1),
-                validTo = null
-            )
-            upsertIncome(tx.handle, mapper, dayBeforeIncomeIndefinite, financeUser.id)
-            insertApplication(
-                tx.handle,
-                guardian = testAdult_5,
-                maxFeeAccepted = true,
-                applicationId = applicationId,
-                preferredStartDate = LocalDate.of(2020, 8, 1)
-            )
-            service.sendApplication(tx, serviceWorker, applicationId)
-        }
-        db.transaction { tx ->
-            // when
-            service.moveToWaitingPlacement(tx, serviceWorker, applicationId)
-        }
-        db.read { tx ->
-            // then
-            val application = fetchApplicationDetails(tx.handle, applicationId)!!
-            assertEquals(true, application.form.maxFeeAccepted)
-            val incomes = getIncomesForPerson(tx.handle, mapper, testAdult_5.id)
-            assertEquals(ApplicationStatus.WAITING_PLACEMENT, application.status)
-            assertEquals(2, incomes.size)
-            assertEquals(IncomeEffect.MAX_FEE_ACCEPTED, incomes.first().effect)
-            assertEquals(IncomeEffect.NOT_AVAILABLE, incomes[1].effect)
-        }
-    }
-
-    @Test
-    fun `moveToWaitingPlacement with maxFeeAccepted - no new income will be created if there exists indefinite income for the same day + 1 `() {
-        db.transaction { tx ->
-            // given
-            val financeUser = AuthenticatedUser(id = testDecisionMaker_1.id, roles = setOf(UserRole.FINANCE_ADMIN))
-            val nextDayIncomeIndefinite = Income(
-                id = UUID.randomUUID(),
-                data = mapOf(),
-                effect = IncomeEffect.NOT_AVAILABLE,
-                notes = "Income not available",
-                personId = testAdult_5.id,
-                validFrom = LocalDate.now().plusMonths(4).plusDays(1),
-                validTo = null
-            )
-            upsertIncome(tx.handle, mapper, nextDayIncomeIndefinite, financeUser.id)
-            insertApplication(
-                tx.handle,
-                guardian = testAdult_5,
-                maxFeeAccepted = true,
-                applicationId = applicationId,
-                preferredStartDate = LocalDate.of(2020, 8, 1)
-            )
-            service.sendApplication(tx, serviceWorker, applicationId)
-        }
-        db.transaction { tx ->
-            // when
-            service.moveToWaitingPlacement(tx, serviceWorker, applicationId)
-        }
-        db.read { tx ->
-            // then
-            val application = fetchApplicationDetails(tx.handle, applicationId)!!
-            assertEquals(true, application.form.maxFeeAccepted)
-            val incomes = getIncomesForPerson(tx.handle, mapper, testAdult_5.id)
-            assertEquals(ApplicationStatus.WAITING_PLACEMENT, application.status)
-            assertEquals(1, incomes.size)
-            assertEquals(IncomeEffect.NOT_AVAILABLE, incomes.first().effect)
-        }
-    }
-
-    @Test
-    fun `moveToWaitingPlacement with maxFeeAccepted - no new income will be created if there exists income for the same day - 1 `() {
-        db.transaction { tx ->
-            // given
-            val financeUser = AuthenticatedUser(id = testDecisionMaker_1.id, roles = setOf(UserRole.FINANCE_ADMIN))
-            val incomeDayBefore = Income(
-                id = UUID.randomUUID(),
-                data = mapOf(),
-                effect = IncomeEffect.NOT_AVAILABLE,
-                notes = "Income not available",
-                personId = testAdult_5.id,
-                validFrom = LocalDate.now().plusMonths(4).minusDays(1),
-                validTo = LocalDate.now().plusMonths(5)
-            )
-            upsertIncome(tx.handle, mapper, incomeDayBefore, financeUser.id)
-            insertApplication(
-                tx.handle,
-                guardian = testAdult_5,
-                maxFeeAccepted = true,
-                applicationId = applicationId,
-                preferredStartDate = LocalDate.of(2020, 8, 1)
-            )
-            service.sendApplication(tx, serviceWorker, applicationId)
-        }
-        db.transaction { tx ->
-            // when
-            service.moveToWaitingPlacement(tx, serviceWorker, applicationId)
-        }
-        db.read { tx ->
-            // then
-            val application = fetchApplicationDetails(tx.handle, applicationId)!!
-            assertEquals(true, application.form.maxFeeAccepted)
-            val incomes = getIncomesForPerson(tx.handle, mapper, testAdult_5.id)
-            assertEquals(ApplicationStatus.WAITING_PLACEMENT, application.status)
-            assertEquals(1, incomes.size)
-            assertEquals(IncomeEffect.NOT_AVAILABLE, incomes.first().effect)
-        }
-    }
-
-    @Test
-    fun `moveToWaitingPlacement with maxFeeAccepted - no new income will be created if there exists income that ends on the same day`() {
-        db.transaction { tx ->
-            // given
-            val financeUser = AuthenticatedUser(id = testDecisionMaker_1.id, roles = setOf(UserRole.FINANCE_ADMIN))
-            val earlierIncomeEndingOnSameDay = Income(
-                id = UUID.randomUUID(),
-                data = mapOf(),
-                effect = IncomeEffect.NOT_AVAILABLE,
-                notes = "Income not available",
-                personId = testAdult_5.id,
-                validFrom = LocalDate.now().minusMonths(4),
-                validTo = LocalDate.now().plusMonths(4)
-            )
-            upsertIncome(tx.handle, mapper, earlierIncomeEndingOnSameDay, financeUser.id)
-            insertApplication(
-                tx.handle,
-                guardian = testAdult_5,
-                maxFeeAccepted = true,
-                applicationId = applicationId,
-                preferredStartDate = LocalDate.of(2020, 8, 1)
-            )
-            service.sendApplication(tx, serviceWorker, applicationId)
-        }
-        db.transaction { tx ->
-            // when
-            service.moveToWaitingPlacement(tx, serviceWorker, applicationId)
-        }
-        db.read { tx ->
-            // then
-            val application = fetchApplicationDetails(tx.handle, applicationId)!!
-            assertEquals(true, application.form.maxFeeAccepted)
-            val incomes = getIncomesForPerson(tx.handle, mapper, testAdult_5.id)
-            assertEquals(ApplicationStatus.WAITING_PLACEMENT, application.status)
-            assertEquals(1, incomes.size)
-            assertEquals(IncomeEffect.NOT_AVAILABLE, incomes.first().effect)
-        }
-    }
-
-    @Test
-    fun `moveToWaitingPlacement with maxFeeAccepted - no new income will be created if there exists income that ends on the same day + 1`() {
-        db.transaction { tx ->
-            // given
-            val financeUser = AuthenticatedUser(id = testDecisionMaker_1.id, roles = setOf(UserRole.FINANCE_ADMIN))
-            val earlierIncomeEndingOnNextDay = Income(
-                id = UUID.randomUUID(),
-                data = mapOf(),
-                effect = IncomeEffect.NOT_AVAILABLE,
-                notes = "Income not available",
-                personId = testAdult_5.id,
-                validFrom = LocalDate.now().minusMonths(4),
-                validTo = LocalDate.now().plusMonths(4).plusDays(1)
-            )
-            upsertIncome(tx.handle, mapper, earlierIncomeEndingOnNextDay, financeUser.id)
-            insertApplication(
-                tx.handle,
-                guardian = testAdult_5,
-                maxFeeAccepted = true,
-                applicationId = applicationId,
-                preferredStartDate = LocalDate.of(2020, 8, 1)
-            )
-            service.sendApplication(tx, serviceWorker, applicationId)
-        }
-        db.transaction { tx ->
-            // when
-            service.moveToWaitingPlacement(tx, serviceWorker, applicationId)
-        }
-        db.read { tx ->
-            // then
-            val application = fetchApplicationDetails(tx.handle, applicationId)!!
-            assertEquals(true, application.form.maxFeeAccepted)
-            val incomes = getIncomesForPerson(tx.handle, mapper, testAdult_5.id)
-            assertEquals(ApplicationStatus.WAITING_PLACEMENT, application.status)
-            assertEquals(1, incomes.size)
-            assertEquals(IncomeEffect.NOT_AVAILABLE, incomes.first().effect)
-        }
-    }
-
-    @Test
-    fun `moveToWaitingPlacement with maxFeeAccepted - no new income will be created if there exists income that ends on the same day - 1`() {
-        db.transaction { tx ->
-            // given
-            val financeUser = AuthenticatedUser(id = testDecisionMaker_1.id, roles = setOf(UserRole.FINANCE_ADMIN))
-            val earlierIncomeEndingOnDayBefore = Income(
-                id = UUID.randomUUID(),
-                data = mapOf(),
-                effect = IncomeEffect.NOT_AVAILABLE,
-                notes = "Income not available",
-                personId = testAdult_5.id,
-                validFrom = LocalDate.of(2020, 8, 1).minusMonths(4),
-                validTo = LocalDate.of(2020, 8, 1).minusDays(1)
-            )
-            upsertIncome(tx.handle, mapper, earlierIncomeEndingOnDayBefore, financeUser.id)
-            insertApplication(
-                tx.handle,
-                guardian = testAdult_5,
-                maxFeeAccepted = true,
-                applicationId = applicationId,
-                preferredStartDate = LocalDate.of(2020, 8, 1)
-            )
-            service.sendApplication(tx, serviceWorker, applicationId)
-        }
-        db.transaction { tx ->
-            // when
-            service.moveToWaitingPlacement(tx, serviceWorker, applicationId)
-        }
-        db.read { tx ->
-            // then
-            val application = fetchApplicationDetails(tx.handle, applicationId)!!
-            assertEquals(true, application.form.maxFeeAccepted)
-            val incomes = getIncomesForPerson(tx.handle, mapper, testAdult_5.id)
-            assertEquals(ApplicationStatus.WAITING_PLACEMENT, application.status)
-            assertEquals(2, incomes.size)
-            assertEquals(IncomeEffect.MAX_FEE_ACCEPTED, incomes.first().effect)
-            assertEquals(IncomeEffect.NOT_AVAILABLE, incomes[1].effect)
-        }
-    }
-
-    @Test
     fun `moveToWaitingPlacement - guardian contact details are updated`() {
         db.transaction { tx ->
             // given
@@ -1738,6 +1160,579 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
     }
 
     @Test
+    fun `accept preschool application with maxFeeAccepted - new income has been created`() {
+        db.transaction { tx ->
+            // given
+            workflowForPreschoolDaycareDecisions(tx)
+        }
+        db.transaction { tx ->
+            // when
+            service.acceptDecision(
+                tx,
+                serviceWorker,
+                applicationId,
+                getDecision(tx.handle, DecisionType.PRESCHOOL).id,
+                mainPeriod.start
+            )
+        }
+        db.read {
+            // then
+            val application = fetchApplicationDetails(it.handle, applicationId)!!
+            assertEquals(true, application.form.maxFeeAccepted)
+            val incomes = getIncomesForPerson(it.handle, mapper, testAdult_5.id)
+            assertEquals(ApplicationStatus.ACTIVE, application.status)
+            assertEquals(1, incomes.size)
+            assertEquals(applicationId, incomes.first().applicationId)
+        }
+    }
+
+    @Test
+    fun `accept preschool application with maxFeeAccepted - existing overlapping indefinite income will be handled`() {
+        db.transaction { tx ->
+            // given
+            val financeUser = AuthenticatedUser(id = testDecisionMaker_1.id, roles = setOf(UserRole.FINANCE_ADMIN))
+            val earlierIndefinite = Income(
+                id = UUID.randomUUID(),
+                data = mapOf(),
+                effect = IncomeEffect.NOT_AVAILABLE,
+                notes = "Income not available",
+                personId = testAdult_5.id,
+                validFrom = mainPeriod.start.minusDays(10),
+                validTo = null
+            )
+            upsertIncome(tx.handle, mapper, earlierIndefinite, financeUser.id)
+            workflowForPreschoolDaycareDecisions(tx)
+        }
+        db.transaction { tx ->
+            // when
+            service.acceptDecision(
+                tx,
+                serviceWorker,
+                applicationId,
+                getDecision(tx.handle, DecisionType.PRESCHOOL).id,
+                mainPeriod.start
+            )
+        }
+        db.read {
+            // then
+            val application = fetchApplicationDetails(it.handle, applicationId)!!
+            assertEquals(true, application.form.maxFeeAccepted)
+            val incomes = getIncomesForPerson(it.handle, mapper, testAdult_5.id)
+            assertEquals(2, incomes.size)
+            assertEquals(applicationId, incomes.first().applicationId)
+            assertEquals(IncomeEffect.MAX_FEE_ACCEPTED, incomes.first().effect)
+            assertEquals(IncomeEffect.NOT_AVAILABLE, incomes[1].effect)
+        }
+    }
+
+    @Test
+    fun `accept preschool application with maxFeeAccepted - existing overlapping income will be handled by not adding a new income for user`() {
+        db.transaction { tx ->
+            // given
+            val financeUser = AuthenticatedUser(id = testDecisionMaker_1.id, roles = setOf(UserRole.FINANCE_ADMIN))
+            val earlierIncome = Income(
+                id = UUID.randomUUID(),
+                data = mapOf(),
+                effect = IncomeEffect.NOT_AVAILABLE,
+                notes = "Income not available",
+                personId = testAdult_5.id,
+                validFrom = mainPeriod.start.minusDays(10),
+                validTo = mainPeriod.start.plusMonths(5)
+            )
+            upsertIncome(tx.handle, mapper, earlierIncome, financeUser.id)
+            workflowForPreschoolDaycareDecisions(tx)
+        }
+        db.transaction { tx ->
+            // when
+            service.acceptDecision(
+                tx,
+                serviceWorker,
+                applicationId,
+                getDecision(tx.handle, DecisionType.PRESCHOOL).id,
+                mainPeriod.start
+            )
+        }
+        db.read {
+            // then
+            val application = fetchApplicationDetails(it.handle, applicationId)!!
+            assertEquals(true, application.form.maxFeeAccepted)
+            val incomes = getIncomesForPerson(it.handle, mapper, testAdult_5.id)
+            assertEquals(ApplicationStatus.ACTIVE, application.status)
+            assertEquals(1, incomes.size)
+            assertNull(incomes.first().applicationId)
+            assertEquals(IncomeEffect.NOT_AVAILABLE, incomes.first().effect)
+        }
+    }
+
+    @Test
+    fun `accept preschool application with maxFeeAccepted - later indefinite income will be handled by not adding a new income`() {
+        db.transaction { tx ->
+            // given
+            val financeUser = AuthenticatedUser(id = testDecisionMaker_1.id, roles = setOf(UserRole.FINANCE_ADMIN))
+            val laterIndefiniteIncome = Income(
+                id = UUID.randomUUID(),
+                data = mapOf(),
+                effect = IncomeEffect.NOT_AVAILABLE,
+                notes = "Income not available",
+                personId = testAdult_5.id,
+                validFrom = mainPeriod.start.plusMonths(5),
+                validTo = null
+            )
+            upsertIncome(tx.handle, mapper, laterIndefiniteIncome, financeUser.id)
+            workflowForPreschoolDaycareDecisions(tx)
+        }
+        db.transaction { tx ->
+            // when
+            service.acceptDecision(
+                tx,
+                serviceWorker,
+                applicationId,
+                getDecision(tx.handle, DecisionType.PRESCHOOL).id,
+                mainPeriod.start
+            )
+        }
+        db.read {
+            // then
+            val application = fetchApplicationDetails(it.handle, applicationId)!!
+            assertEquals(true, application.form.maxFeeAccepted)
+            val incomes = getIncomesForPerson(it.handle, mapper, testAdult_5.id)
+            assertEquals(ApplicationStatus.ACTIVE, application.status)
+            assertEquals(1, incomes.size)
+            assertNull(incomes.first().applicationId)
+            assertEquals(IncomeEffect.NOT_AVAILABLE, incomes.first().effect)
+        }
+    }
+
+    @Test
+    fun `accept preschool application with maxFeeAccepted - earlier income does not affect creating a new income`() {
+        db.transaction { tx ->
+            // given
+            val financeUser = AuthenticatedUser(id = testDecisionMaker_1.id, roles = setOf(UserRole.FINANCE_ADMIN))
+            val earlierIncome = Income(
+                id = UUID.randomUUID(),
+                data = mapOf(),
+                effect = IncomeEffect.NOT_AVAILABLE,
+                notes = "Income not available",
+                personId = testAdult_5.id,
+                validFrom = mainPeriod.start.minusMonths(7),
+                validTo = mainPeriod.start.minusMonths(5)
+            )
+            upsertIncome(tx.handle, mapper, earlierIncome, financeUser.id)
+            workflowForPreschoolDaycareDecisions(tx)
+        }
+        db.transaction { tx ->
+            // when
+            service.acceptDecision(
+                tx,
+                serviceWorker,
+                applicationId,
+                getDecision(tx.handle, DecisionType.PRESCHOOL).id,
+                mainPeriod.start
+            )
+        }
+        db.read {
+            // then
+            val application = fetchApplicationDetails(it.handle, applicationId)!!
+            assertEquals(true, application.form.maxFeeAccepted)
+            val incomes = getIncomesForPerson(it.handle, mapper, testAdult_5.id)
+            assertEquals(ApplicationStatus.ACTIVE, application.status)
+            assertEquals(2, incomes.size)
+            val incomeByApplication = incomes.first()
+            assertEquals(applicationId, incomeByApplication.applicationId)
+            assertEquals(IncomeEffect.MAX_FEE_ACCEPTED, incomeByApplication.effect)
+            assertEquals(IncomeEffect.NOT_AVAILABLE, incomes[1].effect)
+        }
+    }
+
+    @Test
+    fun `accept preschool application with maxFeeAccepted - later income will be handled by not adding a new income`() {
+        db.transaction { tx ->
+            // given
+            val financeUser = AuthenticatedUser(id = testDecisionMaker_1.id, roles = setOf(UserRole.FINANCE_ADMIN))
+            val laterIncome = Income(
+                id = UUID.randomUUID(),
+                data = mapOf(),
+                effect = IncomeEffect.NOT_AVAILABLE,
+                notes = "Income not available",
+                personId = testAdult_5.id,
+                validFrom = mainPeriod.start.plusMonths(5),
+                validTo = mainPeriod.start.plusMonths(6)
+            )
+            upsertIncome(tx.handle, mapper, laterIncome, financeUser.id)
+            workflowForPreschoolDaycareDecisions(tx)
+        }
+        db.transaction { tx ->
+            // when
+            service.acceptDecision(
+                tx,
+                serviceWorker,
+                applicationId,
+                getDecision(tx.handle, DecisionType.PRESCHOOL).id,
+                mainPeriod.start
+            )
+        }
+        db.read {
+            // then
+            val application = fetchApplicationDetails(it.handle, applicationId)!!
+            assertEquals(true, application.form.maxFeeAccepted)
+            val incomes = getIncomesForPerson(it.handle, mapper, testAdult_5.id)
+            assertEquals(ApplicationStatus.ACTIVE, application.status)
+            assertEquals(1, incomes.size)
+            assertNull(incomes.first().applicationId)
+            assertEquals(IncomeEffect.NOT_AVAILABLE, incomes.first().effect)
+        }
+    }
+
+    @Test
+    fun `accept preschool application with maxFeeAccepted - if application does not have a preferred start date income will still be created`() {
+        db.transaction { tx ->
+            // given
+            val financeUser = AuthenticatedUser(id = testDecisionMaker_1.id, roles = setOf(UserRole.FINANCE_ADMIN))
+            val earlierIndefinite = Income(
+                id = UUID.randomUUID(),
+                data = mapOf(),
+                effect = IncomeEffect.NOT_AVAILABLE,
+                notes = "Income not available",
+                personId = testAdult_5.id,
+                validFrom = mainPeriod.start.minusDays(10),
+                validTo = null
+            )
+            upsertIncome(tx.handle, mapper, earlierIndefinite, financeUser.id)
+            workflowForPreschoolDaycareDecisions(tx, preferredStartDate = null)
+        }
+        db.transaction { tx ->
+            // when
+            service.acceptDecision(
+                tx,
+                serviceWorker,
+                applicationId,
+                getDecision(tx.handle, DecisionType.PRESCHOOL).id,
+                mainPeriod.start
+            )
+        }
+        db.read {
+            // then
+            val application = fetchApplicationDetails(it.handle, applicationId)!!
+            assertEquals(true, application.form.maxFeeAccepted)
+            val incomes = getIncomesForPerson(it.handle, mapper, testAdult_5.id)
+            assertEquals(ApplicationStatus.ACTIVE, application.status)
+            assertEquals(2, incomes.size)
+        }
+    }
+
+    @Test
+    fun `accept preschool application with maxFeeAccepted - no new income will be created if there exists indefinite income for the same day `() {
+        db.transaction { tx ->
+            // given
+            val financeUser = AuthenticatedUser(id = testDecisionMaker_1.id, roles = setOf(UserRole.FINANCE_ADMIN))
+            val sameDayIncomeIndefinite = Income(
+                id = UUID.randomUUID(),
+                data = mapOf(),
+                effect = IncomeEffect.NOT_AVAILABLE,
+                notes = "Income not available",
+                personId = testAdult_5.id,
+                validFrom = mainPeriod.start,
+                validTo = null
+            )
+            upsertIncome(tx.handle, mapper, sameDayIncomeIndefinite, financeUser.id)
+            workflowForPreschoolDaycareDecisions(tx)
+        }
+        db.transaction { tx ->
+            // when
+            service.acceptDecision(
+                tx,
+                serviceWorker,
+                applicationId,
+                getDecision(tx.handle, DecisionType.PRESCHOOL).id,
+                mainPeriod.start
+            )
+        }
+        db.read { tx ->
+            // then
+            val application = fetchApplicationDetails(tx.handle, applicationId)!!
+            assertEquals(true, application.form.maxFeeAccepted)
+            val incomes = getIncomesForPerson(tx.handle, mapper, testAdult_5.id)
+            assertEquals(ApplicationStatus.ACTIVE, application.status)
+            assertEquals(1, incomes.size)
+            assertEquals(IncomeEffect.NOT_AVAILABLE, incomes.first().effect)
+        }
+    }
+
+    @Test
+    fun `accept preschool application with maxFeeAccepted - no new income will be created if there exists income for the same day `() {
+        db.transaction { tx ->
+            // given
+            val financeUser = AuthenticatedUser(id = testDecisionMaker_1.id, roles = setOf(UserRole.FINANCE_ADMIN))
+            val sameDayIncome = Income(
+                id = UUID.randomUUID(),
+                data = mapOf(),
+                effect = IncomeEffect.NOT_AVAILABLE,
+                notes = "Income not available",
+                personId = testAdult_5.id,
+                validFrom = mainPeriod.start,
+                validTo = mainPeriod.start.plusMonths(5)
+            )
+            upsertIncome(tx.handle, mapper, sameDayIncome, financeUser.id)
+            workflowForPreschoolDaycareDecisions(tx)
+        }
+        db.transaction { tx ->
+            // when
+            service.acceptDecision(
+                tx,
+                serviceWorker,
+                applicationId,
+                getDecision(tx.handle, DecisionType.PRESCHOOL).id,
+                mainPeriod.start
+            )
+        }
+        db.read { tx ->
+            // then
+            val application = fetchApplicationDetails(tx.handle, applicationId)!!
+            assertEquals(true, application.form.maxFeeAccepted)
+            val incomes = getIncomesForPerson(tx.handle, mapper, testAdult_5.id)
+            assertEquals(ApplicationStatus.ACTIVE, application.status)
+            assertEquals(1, incomes.size)
+            assertNull(incomes.first().applicationId)
+            assertEquals(IncomeEffect.NOT_AVAILABLE, incomes.first().effect)
+        }
+    }
+
+    @Test
+    fun `accept preschool application with maxFeeAccepted - new income will be created if there exists indefinite income for the same day - 1 `() {
+        db.transaction { tx ->
+            // given
+            val financeUser = AuthenticatedUser(id = testDecisionMaker_1.id, roles = setOf(UserRole.FINANCE_ADMIN))
+            val dayBeforeIncomeIndefinite = Income(
+                id = UUID.randomUUID(),
+                data = mapOf(),
+                effect = IncomeEffect.NOT_AVAILABLE,
+                notes = "Income not available",
+                personId = testAdult_5.id,
+                validFrom = mainPeriod.start.minusDays(1),
+                validTo = null
+            )
+            upsertIncome(tx.handle, mapper, dayBeforeIncomeIndefinite, financeUser.id)
+            workflowForPreschoolDaycareDecisions(tx)
+        }
+        db.transaction { tx ->
+            // when
+            service.acceptDecision(
+                tx,
+                serviceWorker,
+                applicationId,
+                getDecision(tx.handle, DecisionType.PRESCHOOL).id,
+                mainPeriod.start
+            )
+        }
+        db.read { tx ->
+            // then
+            val application = fetchApplicationDetails(tx.handle, applicationId)!!
+            assertEquals(true, application.form.maxFeeAccepted)
+            val incomes = getIncomesForPerson(tx.handle, mapper, testAdult_5.id)
+            assertEquals(ApplicationStatus.ACTIVE, application.status)
+            assertEquals(2, incomes.size)
+            assertEquals(application.id, incomes.first().applicationId)
+            assertEquals(IncomeEffect.MAX_FEE_ACCEPTED, incomes.first().effect)
+            assertEquals(IncomeEffect.NOT_AVAILABLE, incomes[1].effect)
+        }
+    }
+
+    @Test
+    fun `accept preschool application with maxFeeAccepted - no new income will be created if there exists indefinite income for the same day + 1 `() {
+        db.transaction { tx ->
+            // given
+            val financeUser = AuthenticatedUser(id = testDecisionMaker_1.id, roles = setOf(UserRole.FINANCE_ADMIN))
+            val nextDayIncomeIndefinite = Income(
+                id = UUID.randomUUID(),
+                data = mapOf(),
+                effect = IncomeEffect.NOT_AVAILABLE,
+                notes = "Income not available",
+                personId = testAdult_5.id,
+                validFrom = mainPeriod.start.plusDays(1),
+                validTo = null
+            )
+            upsertIncome(tx.handle, mapper, nextDayIncomeIndefinite, financeUser.id)
+            workflowForPreschoolDaycareDecisions(tx)
+        }
+        db.transaction { tx ->
+            // when
+            service.acceptDecision(
+                tx,
+                serviceWorker,
+                applicationId,
+                getDecision(tx.handle, DecisionType.PRESCHOOL).id,
+                mainPeriod.start
+            )
+        }
+        db.read { tx ->
+            // then
+            val application = fetchApplicationDetails(tx.handle, applicationId)!!
+            assertEquals(true, application.form.maxFeeAccepted)
+            val incomes = getIncomesForPerson(tx.handle, mapper, testAdult_5.id)
+            assertEquals(ApplicationStatus.ACTIVE, application.status)
+            assertEquals(1, incomes.size)
+            assertNull(incomes.first().applicationId)
+            assertEquals(IncomeEffect.NOT_AVAILABLE, incomes.first().effect)
+        }
+    }
+
+    @Test
+    fun `accept preschool application with maxFeeAccepted - no new income will be created if there exists income for the same day - 1`() {
+        db.transaction { tx ->
+            // given
+            val financeUser = AuthenticatedUser(id = testDecisionMaker_1.id, roles = setOf(UserRole.FINANCE_ADMIN))
+            val incomeDayBefore = Income(
+                id = UUID.randomUUID(),
+                data = mapOf(),
+                effect = IncomeEffect.NOT_AVAILABLE,
+                notes = "Income not available",
+                personId = testAdult_5.id,
+                validFrom = mainPeriod.start.minusDays(1),
+                validTo = mainPeriod.start.plusMonths(5)
+            )
+            upsertIncome(tx.handle, mapper, incomeDayBefore, financeUser.id)
+            workflowForPreschoolDaycareDecisions(tx)
+        }
+        db.transaction { tx ->
+            // when
+            service.acceptDecision(
+                tx,
+                serviceWorker,
+                applicationId,
+                getDecision(tx.handle, DecisionType.PRESCHOOL).id,
+                mainPeriod.start
+            )
+        }
+        db.read { tx ->
+            // then
+            val application = fetchApplicationDetails(tx.handle, applicationId)!!
+            assertEquals(true, application.form.maxFeeAccepted)
+            val incomes = getIncomesForPerson(tx.handle, mapper, testAdult_5.id)
+            assertEquals(ApplicationStatus.ACTIVE, application.status)
+            assertEquals(1, incomes.size)
+            assertNull(incomes.first().applicationId)
+            assertEquals(IncomeEffect.NOT_AVAILABLE, incomes.first().effect)
+        }
+    }
+
+    @Test
+    fun `accept preschool application with maxFeeAccepted - no new income will be created if there exists income that ends on the same day`() {
+        db.transaction { tx ->
+            // given
+            val financeUser = AuthenticatedUser(id = testDecisionMaker_1.id, roles = setOf(UserRole.FINANCE_ADMIN))
+            val earlierIncomeEndingOnSameDay = Income(
+                id = UUID.randomUUID(),
+                data = mapOf(),
+                effect = IncomeEffect.NOT_AVAILABLE,
+                notes = "Income not available",
+                personId = testAdult_5.id,
+                validFrom = mainPeriod.start.minusMonths(2),
+                validTo = mainPeriod.start
+            )
+            upsertIncome(tx.handle, mapper, earlierIncomeEndingOnSameDay, financeUser.id)
+            workflowForPreschoolDaycareDecisions(tx)
+        }
+        db.transaction { tx ->
+            // when
+            service.acceptDecision(
+                tx,
+                serviceWorker,
+                applicationId,
+                getDecision(tx.handle, DecisionType.PRESCHOOL).id,
+                mainPeriod.start
+            )
+        }
+        db.read { tx ->
+            // then
+            val application = fetchApplicationDetails(tx.handle, applicationId)!!
+            assertEquals(true, application.form.maxFeeAccepted)
+            val incomes = getIncomesForPerson(tx.handle, mapper, testAdult_5.id)
+            assertEquals(ApplicationStatus.ACTIVE, application.status)
+            assertEquals(1, incomes.size)
+            assertNull(incomes.first().applicationId)
+            assertEquals(IncomeEffect.NOT_AVAILABLE, incomes.first().effect)
+        }
+    }
+
+    @Test
+    fun `accept preschool application with maxFeeAccepted - no new income will be created if there exists income that ends on the same day + 1`() {
+        db.transaction { tx ->
+            // given
+            val financeUser = AuthenticatedUser(id = testDecisionMaker_1.id, roles = setOf(UserRole.FINANCE_ADMIN))
+            val earlierIncomeEndingOnNextDay = Income(
+                id = UUID.randomUUID(),
+                data = mapOf(),
+                effect = IncomeEffect.NOT_AVAILABLE,
+                notes = "Income not available",
+                personId = testAdult_5.id,
+                validFrom = mainPeriod.start.minusMonths(2),
+                validTo = mainPeriod.start.plusDays(1)
+            )
+            upsertIncome(tx.handle, mapper, earlierIncomeEndingOnNextDay, financeUser.id)
+            workflowForPreschoolDaycareDecisions(tx)
+        }
+        db.transaction { tx ->
+            // when
+            service.acceptDecision(
+                tx,
+                serviceWorker,
+                applicationId,
+                getDecision(tx.handle, DecisionType.PRESCHOOL).id,
+                mainPeriod.start
+            )
+        }
+        db.read { tx ->
+            // then
+            val application = fetchApplicationDetails(tx.handle, applicationId)!!
+            assertEquals(true, application.form.maxFeeAccepted)
+            val incomes = getIncomesForPerson(tx.handle, mapper, testAdult_5.id)
+            assertEquals(ApplicationStatus.ACTIVE, application.status)
+            assertEquals(1, incomes.size)
+            assertNull(incomes.first().applicationId)
+            assertEquals(IncomeEffect.NOT_AVAILABLE, incomes.first().effect)
+        }
+    }
+
+    @Test
+    fun `accept preschool application with maxFeeAccepted - new income will be created if there exists income that ends on the same day - 1`() {
+        db.transaction { tx ->
+            // given
+            val financeUser = AuthenticatedUser(id = testDecisionMaker_1.id, roles = setOf(UserRole.FINANCE_ADMIN))
+            val earlierIncomeEndingOnDayBefore = Income(
+                id = UUID.randomUUID(),
+                data = mapOf(),
+                effect = IncomeEffect.NOT_AVAILABLE,
+                notes = "Income not available",
+                personId = testAdult_5.id,
+                validFrom = mainPeriod.start.minusMonths(2),
+                validTo = mainPeriod.start.minusDays(1)
+            )
+            upsertIncome(tx.handle, mapper, earlierIncomeEndingOnDayBefore, financeUser.id)
+            workflowForPreschoolDaycareDecisions(tx)
+        }
+        db.transaction { tx ->
+            // when
+            service.acceptDecision(
+                tx,
+                serviceWorker,
+                applicationId,
+                getDecision(tx.handle, DecisionType.PRESCHOOL).id,
+                mainPeriod.start
+            )
+        }
+        db.read { tx ->
+            // then
+            val application = fetchApplicationDetails(tx.handle, applicationId)!!
+            assertEquals(true, application.form.maxFeeAccepted)
+            val incomes = getIncomesForPerson(tx.handle, mapper, testAdult_5.id)
+            assertEquals(ApplicationStatus.ACTIVE, application.status)
+            assertEquals(2, incomes.size)
+            assertEquals(IncomeEffect.MAX_FEE_ACCEPTED, incomes.first().effect)
+            assertEquals(IncomeEffect.NOT_AVAILABLE, incomes[1].effect)
+        }
+    }
+
+    @Test
     fun `enduser can accept and reject own decisions`() {
         db.transaction { tx ->
             // given
@@ -1989,12 +1984,14 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
     private fun getDecision(h: Handle, type: DecisionType): Decision =
         getDecisionsByApplication(h, applicationId, AclAuthorization.All).first { it.type == type }
 
-    private fun workflowForPreschoolDaycareDecisions(tx: Database.Transaction) {
+    private fun workflowForPreschoolDaycareDecisions(tx: Database.Transaction, preferredStartDate: LocalDate? = LocalDate.of(2020, 8, 1)) {
         insertApplication(
             tx.handle,
+            guardian = testAdult_5,
+            maxFeeAccepted = true,
             appliedType = PlacementType.PRESCHOOL_DAYCARE,
             applicationId = applicationId,
-            preferredStartDate = LocalDate.of(2020, 8, 1)
+            preferredStartDate = preferredStartDate
         )
         service.sendApplication(tx, serviceWorker, applicationId)
         service.moveToWaitingPlacement(tx, serviceWorker, applicationId)

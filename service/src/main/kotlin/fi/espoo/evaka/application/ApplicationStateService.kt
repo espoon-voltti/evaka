@@ -148,7 +148,6 @@ class ApplicationStateService(
         )
 
         setCheckedByAdminToDefault(tx.handle, applicationId, application.form)
-        if (application.form.maxFeeAccepted) setHighestFeeForUser(tx, application)
 
         asyncJobRunner.plan(tx, listOf(InitializeFamilyFromApplication(application.id, user)))
         updateApplicationStatus(tx.handle, application.id, WAITING_PLACEMENT)
@@ -365,6 +364,7 @@ class ApplicationStateService(
         placementPlanService.softDeleteUnusedPlacementPlanByApplication(tx, applicationId)
 
         if (application.status == WAITING_CONFIRMATION) {
+            if (application.form.maxFeeAccepted) setHighestFeeForUser(tx, application, requestedStartDate)
             updateApplicationStatus(tx.handle, application.id, ACTIVE)
         }
     }
@@ -564,32 +564,31 @@ class ApplicationStateService(
     private fun livesInSameAddress(residenceCode1: String?, residenceCode2: String?): Boolean =
         !residenceCode1.isNullOrBlank() && !residenceCode2.isNullOrBlank() && residenceCode1 == residenceCode2
 
-    private fun setHighestFeeForUser(tx: Database.Transaction, application: ApplicationDetails) {
+    private fun setHighestFeeForUser(tx: Database.Transaction, application: ApplicationDetails, validFrom: LocalDate) {
         val incomes = getIncomesForPerson(tx.handle, mapper, application.guardianId)
-        val preferredStartDate = application.form.preferences.preferredStartDate
-        val preferredOrNow = preferredStartDate ?: LocalDate.now()
 
         val hasOverlappingDefiniteIncome = incomes.any { income ->
             income.validTo != null &&
-                DateRange(income.validFrom, income.validTo).overlaps(DateRange(preferredOrNow, null))
+                DateRange(income.validFrom, income.validTo).overlaps(DateRange(validFrom, null))
         }
 
         val hasLaterIncome = incomes.any { income ->
-            income.validFrom.plusDays(1).isAfter(preferredOrNow)
+            income.validFrom.plusDays(1).isAfter(validFrom)
         }
 
-        if (hasOverlappingDefiniteIncome || hasLaterIncome || preferredStartDate == null) {
-            logger.debug { "Could not add a new max fee accepted income when moving to WAITING_FOR_PLACEMENT state" }
+        if (hasOverlappingDefiniteIncome || hasLaterIncome) {
+            logger.debug { "Could not add a new max fee accepted income from application ${application.id}" }
         } else {
-            val period = DateRange(start = preferredOrNow, end = null)
+            val period = DateRange(start = validFrom, end = null)
             val validIncome = Income(
                 id = UUID.randomUUID(),
                 data = mapOf(),
                 effect = IncomeEffect.MAX_FEE_ACCEPTED,
                 notes = "created automatically from application",
                 personId = application.guardianId,
-                validFrom = preferredOrNow,
-                validTo = null
+                validFrom = validFrom,
+                validTo = null,
+                applicationId = application.id
             ).let(::validateIncome)
             splitEarlierIncome(tx.handle, validIncome.personId, period)
             upsertIncome(tx.handle, mapper, validIncome, application.guardianId)

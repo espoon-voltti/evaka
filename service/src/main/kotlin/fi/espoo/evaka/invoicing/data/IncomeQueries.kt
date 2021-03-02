@@ -31,7 +31,8 @@ fun upsertIncome(h: Handle, mapper: ObjectMapper, income: Income, updatedBy: UUI
             valid_to,
             notes,
             updated_at,
-            updated_by
+            updated_by,
+            application_id
         ) VALUES (
             :id,
             :person_id,
@@ -43,7 +44,8 @@ fun upsertIncome(h: Handle, mapper: ObjectMapper, income: Income, updatedBy: UUI
             :valid_to,
             :notes,
             now(),
-            :updated_by
+            :updated_by,
+            :application_id
         ) ON CONFLICT (id) DO UPDATE SET
             effect = :effect,
             data = :data,
@@ -71,7 +73,8 @@ fun upsertIncome(h: Handle, mapper: ObjectMapper, income: Income, updatedBy: UUI
                 "valid_from" to income.validFrom,
                 "valid_to" to income.validTo,
                 "notes" to income.notes,
-                "updated_by" to updatedBy
+                "updated_by" to updatedBy,
+                "application_id" to income.applicationId
             )
         )
 
@@ -166,6 +169,7 @@ fun toIncome(objectMapper: ObjectMapper) = { rs: ResultSet, _: StatementContext 
         validTo = rs.getDate("valid_to")?.toLocalDate(),
         notes = rs.getString("notes"),
         updatedAt = rs.getTimestamp("updated_at").toInstant(),
-        updatedBy = (rs.getString("updated_by_employee"))
+        updatedBy = (rs.getString("updated_by_employee")),
+        applicationId = rs.getString("application_id")?.let { UUID.fromString(it) },
     )
 }
