@@ -272,6 +272,32 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest() {
     }
 
     @Test
+    fun `moveToWaitingPlacement - empty application guardian email does not wipe out person email`() {
+        db.transaction { tx ->
+            // given
+            insertApplication(
+                h = tx.handle,
+                guardian = testAdult_6,
+                appliedType = PlacementType.DAYCARE,
+                applicationId = applicationId,
+                preferredStartDate = LocalDate.of(2020, 8, 1),
+                guardianEmail = ""
+            )
+            service.sendApplication(tx, serviceWorker, applicationId)
+        }
+        db.transaction { tx ->
+            // when
+            service.moveToWaitingPlacement(tx, serviceWorker, applicationId)
+        }
+        db.read { tx ->
+            // then
+            val guardian = tx.handle.getPersonById(testAdult_6.id)!!
+            assertEquals(testAdult_6.email, guardian.email)
+            assertEquals("0501234567", guardian.phone)
+        }
+    }
+
+    @Test
     fun `moveToWaitingPlacement - child is upserted with diet and allergies`() {
         db.transaction { tx ->
             // given

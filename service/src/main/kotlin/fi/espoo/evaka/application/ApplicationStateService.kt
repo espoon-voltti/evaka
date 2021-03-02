@@ -39,6 +39,7 @@ import fi.espoo.evaka.invoicing.data.splitEarlierIncome
 import fi.espoo.evaka.invoicing.data.upsertIncome
 import fi.espoo.evaka.invoicing.domain.Income
 import fi.espoo.evaka.invoicing.domain.IncomeEffect
+import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.pis.service.PersonService
 import fi.espoo.evaka.pis.updatePersonBasicContactInfo
 import fi.espoo.evaka.placement.PlacementPlanConfirmationStatus
@@ -107,11 +108,20 @@ class ApplicationStateService(
             applicationFlags.isTransferApplication
         )
         updateApplicationDates(tx.handle, application.id, sentDate, dueDate)
-        tx.handle.updatePersonBasicContactInfo(
-            id = application.guardianId,
-            email = application.form.guardian.email,
-            phone = application.form.guardian.phoneNumber
-        )
+
+        tx.handle.getPersonById(application.guardianId)?.let {
+            val email = if (!application.form.guardian.email.isNullOrBlank()) {
+                application.form.guardian.email
+            } else {
+                it.email
+            }
+
+            tx.handle.updatePersonBasicContactInfo(
+                id = application.guardianId,
+                email = email ?: "",
+                phone = application.form.guardian.phoneNumber
+            )
+        }
 
         if (!application.hideFromGuardian && application.type == ApplicationType.DAYCARE) {
             val preferredUnit =
@@ -132,11 +142,20 @@ class ApplicationStateService(
         val application = getApplication(tx, applicationId)
         verifyStatus(application, SENT)
 
-        tx.handle.updatePersonBasicContactInfo(
-            id = application.guardianId,
-            email = application.form.guardian.email,
-            phone = application.form.guardian.phoneNumber
-        )
+        tx.handle.getPersonById(application.guardianId)?.let {
+            val email = if (!application.form.guardian.email.isNullOrBlank()) {
+                application.form.guardian.email
+            } else {
+                it.email
+            }
+
+            tx.handle.updatePersonBasicContactInfo(
+                id = application.guardianId,
+                email = email ?: "",
+                phone = application.form.guardian.phoneNumber
+            )
+        }
+
         tx.handle.upsertChild(
             Child(
                 id = application.childId,
