@@ -90,14 +90,26 @@ fun Database.Transaction.sendBulletin(
     // todo: include backup care?
     // language=sql
     val insertBulletinInstancesSql = """
+        WITH children AS (
+            SELECT pl.child_id
+            FROM bulletin b
+            JOIN daycare_group dg ON b.group_id = dg.id
+            JOIN daycare_group_placement gpl ON dg.id = gpl.daycare_group_id AND daterange(gpl.start_date, gpl.end_date, '[]') @> :date
+            JOIN placement pl ON gpl.daycare_placement_id = pl.id
+            WHERE b.id = :bulletinId
+        ), receivers AS (
+            SELECT g.guardian_id AS receiver
+            FROM children c
+            JOIN guardian g ON g.child_id = c.child_id
+            
+            UNION DISTINCT 
+            
+            SELECT fc.head_of_child AS receiver
+            FROM children c
+            JOIN fridge_child fc ON fc.child_id = c.child_id AND daterange(fc.start_date, fc.end_date, '[]') @> :date
+        )
         INSERT INTO bulletin_instance (bulletin_id, guardian_id)
-        SELECT DISTINCT b.id, g.guardian_id
-        FROM bulletin b
-        JOIN daycare_group dg ON b.group_id = dg.id
-        JOIN daycare_group_placement gpl ON dg.id = gpl.daycare_group_id AND daterange(gpl.start_date, gpl.end_date, '[]') @> :date
-        JOIN placement pl ON gpl.daycare_placement_id = pl.id
-        JOIN guardian g ON pl.child_id = g.child_id
-        WHERE b.id = :bulletinId
+        SELECT :bulletinId, receiver FROM receivers
     """.trimIndent()
 
     this.createUpdate(insertBulletinInstancesSql)
