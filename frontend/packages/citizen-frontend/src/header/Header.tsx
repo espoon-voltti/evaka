@@ -41,7 +41,13 @@ export default React.memo(function Header() {
           unreadBulletinsCount?.isSuccess ? unreadBulletinsCount.value : 0
         }
       />
-      <MobileNav showMenu={showMenu} setShowMenu={setShowMenu} />
+      <MobileNav
+        showMenu={showMenu}
+        setShowMenu={setShowMenu}
+        unreadMessagesCount={
+          unreadBulletinsCount?.isSuccess ? unreadBulletinsCount.value : 0
+        }
+      />
     </HeaderContainer>
   )
 })

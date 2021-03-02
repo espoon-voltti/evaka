@@ -140,12 +140,12 @@ const UserName = styled.span`
     white-space: nowrap;
   }
 `
-const CircledChar = styled.div`
+export const CircledChar = styled.div`
   width: ${defaultMargins.s};
   height: ${defaultMargins.s};
   border: 1px solid ${colors.greyscale.white};
   padding: 10px;
-  margin: ${defaultMargins.xs};
+  margin-left: ${defaultMargins.xs};
   display: flex;
   justify-content: center;
   align-items: center;
