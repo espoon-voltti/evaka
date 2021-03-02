@@ -46,10 +46,18 @@ export const BackButton = styled(IconButton)`
   position: absolute;
 `
 
-export const TallContentArea = styled(ContentArea)`
+export const TallContentArea = styled(ContentArea)<{ spaced?: boolean }>`
   height: 100%;
   display: flex;
   flex-direction: column;
   flex: 1;
-  justify-content: space-between;
+  ${(p) => (p.spaced ? 'justify-content: space-between;' : '')}
+`
+
+export const ContentAreaWithShadow = styled(ContentArea)<{ active?: boolean }>`
+  box-shadow: 0px 4px 4px 0px #d9d9d9;
+  ${(p) =>
+    p.active
+      ? `background-color: ${colors.brandEspoo.espooTurquoiseLight}`
+      : ''}
 `
