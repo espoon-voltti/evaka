@@ -7,14 +7,20 @@
 set -euo pipefail
 
 # Configuration
+DEBUG=${DEBUG:-false}
 REUSE_VERSION=0.12.1
 REUSE_YEARS=${REUSE_YEARS:-"2017-$(date +"%Y")"}
+
+if [ "$DEBUG" = "true" ]; then
+    set -x
+fi
 
 if [ "${1:-X}" = '--help' ]; then
   echo 'Usage: ./bin/add-license-headers.sh [OPTIONS]'
   echo -e
-  echo 'Helper script to attempt automatically adding missing license headers to all source code files'
-  echo 'NOTE: Known non-compliant files are excluded from automatic fixes but not from linting'
+  echo 'Helper script to attempt automatically adding missing license headers to all source code files.'
+  echo 'Any missing license files are downloaded automatically to LICENSES/.'
+  echo 'NOTE: Known non-compliant files are excluded from automatic fixes but not from linting.'
   echo -e
   echo 'Options:'
   echo "    --lint-only     Only lint for missing headers, don't attempt to add anything"
@@ -50,11 +56,29 @@ if [ "$REUSE_EXIT_CODE" != 1 ]; then
     exit "$REUSE_EXIT_CODE"
 fi
 
+# NOTE: All of the following nonsense can be dropped if "reuse json" or something else machine-readable
+# is ever implemented in the tool (https://github.com/fsfe/reuse-tool/issues/183).
+
+# If licenses referenced in some file are missing, the output contains:
+#
+# * Missing licenses: BSD-2-Clause, ANOTHER-LICENSE
+#
+# -> find all quoted license IDs and download them automatically
+# shellcheck disable=SC2207
+MISSING_LICENSES=($(echo "$REUSE_OUTPUT" | grep '^* Missing licenses:' | cut -d ' ' -f 4- | tr ', ' ' '))
+for license in "${MISSING_LICENSES[@]}"; do
+    if [ -z "$license" ]; then
+        continue
+    fi
+
+    run_reuse download "$license"
+done
+
 # Unfortunately reuse tool doesn't provide a machine-readable output currently,
 # so some ugly parsing is necessary.
 # TODO: Remove excludes when we have reuse-compatible licensing info for them
 NONCOMPLIANT_FILES=$(echo "$REUSE_OUTPUT" \
-    | awk '/^$/ {next} /following/ {next} /resources\/wsdl/ {next} /espoo-logo/ {next} /MISSING/{flag=1; next} /SUMMARY/{flag=0} flag' \
+    | awk '/^$/ {next} /following/ {next} /resources\/wsdl/ {next} /espoo-logo/ {next} /MISSING COPYRIGHT AND LICENSING INFORMATION/{flag=1; next} /SUMMARY/{flag=0} flag' \
     | cut -d' ' -f2
 )
 
@@ -63,9 +87,9 @@ while IFS= read -r file; do
         continue
     fi
 
-    # reuse tool doesn't currently recognize TSX files
-    if [[ "$file" = *tsx ]]; then
-        addheader "$file" --style jsx
+    # Explicitly define styles for some common files not yet recognized by a released version of reuse:
+    if [[ "$file" = *svg ]] || [[ "$file" = *json ]]; then
+        addheader "$file" --explicit-license
     else
         addheader "$file"
     fi
