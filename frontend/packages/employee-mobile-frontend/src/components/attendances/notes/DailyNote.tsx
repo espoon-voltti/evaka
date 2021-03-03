@@ -57,7 +57,7 @@ export default React.memo(function DailyNote({ child }: Props) {
           )}
         </FixedSpaceColumn>
       ) : (
-        <div>Ei merkintöjä tälle päivälle</div>
+        <div>{i18n.attendances.notes.noNotes}</div>
       )}
     </DailyNoteWrapper>
   )

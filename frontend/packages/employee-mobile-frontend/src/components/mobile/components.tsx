@@ -22,7 +22,7 @@ export const FullHeightContainer = styled(Container)<{ spaced?: boolean }>`
   ${(p) => (p.spaced ? 'justify-content: space-between;' : '')}
 `
 
-export const WideLinkButton = styled(Link)`
+export const WideLinkButton = styled(Link)<{ $primary?: boolean }>`
   min-height: 45px;
   outline: none;
   cursor: pointer;
@@ -34,11 +34,13 @@ export const WideLinkButton = styled(Link)`
   white-space: nowrap;
   letter-spacing: 0.2px;
   width: 100%;
-  color: ${colors.greyscale.white};
-  background: ${colors.blues.primary};
+
   display: flex;
   justify-content: center;
   align-items: center;
+  background: ${(p) =>
+    p.$primary ? colors.blues.primary : colors.greyscale.white};
+  color: ${(p) => (p.$primary ? colors.greyscale.white : colors.blues.primary)};
 `
 
 export const BackButton = styled(IconButton)`
