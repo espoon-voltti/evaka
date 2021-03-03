@@ -128,7 +128,11 @@ export default React.memo(function AttendanceChildPage() {
                 />
               )}
               {child.status === 'PRESENT' && (
-                <AttendanceChildPresent child={child} unitId={unitId} />
+                <AttendanceChildPresent
+                  child={child}
+                  unitId={unitId}
+                  groupIdOrAll={groupIdOrAll}
+                />
               )}
               {child.status === 'DEPARTED' && (
                 <AttendanceChildDeparted child={child} unitId={unitId} />

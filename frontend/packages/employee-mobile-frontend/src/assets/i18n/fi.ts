@@ -34,7 +34,7 @@ export const fi = {
     back: 'Takaisin'
   },
   absences: {
-    title: 'Poissaolot',
+    title: 'Poissaolomerkinnät',
     absenceTypes: {
       OTHER_ABSENCE: 'Muu poissaolo',
       SICKLEAVE: 'Sairaus',
@@ -70,9 +70,9 @@ export const fi = {
     },
     groupSelectError: 'Valitun ryhmän nimeä ei löytynyt',
     actions: {
-      markAbsent: 'Merkitse poissa',
+      markAbsent: 'Merkitse poissaolevaksi',
       markPresent: 'Merkitse saapuneeksi',
-      markLeaving: 'Merkitse lähteväksi',
+      markDeparted: 'Merkitse lähteneeksi',
       returnToComing: 'Palauta tulossa oleviin',
       returnToPresent: 'Palauta läsnäoleviin'
     },
@@ -97,8 +97,10 @@ export const fi = {
         GOOD: 'Hyvin',
         MEDIUM: 'Kohtalaisesti',
         NONE: 'Ei ollenkaan'
-      }
-    }
+      },
+      noNotes: 'Ei merkintöjä tälle päivälle'
+    },
+    absenceTitle: 'Poissaolomerkintä'
   },
   mobile: {
     landerText1:

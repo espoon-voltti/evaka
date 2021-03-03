@@ -2,17 +2,13 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { Fragment, useState } from 'react'
+import React, { Fragment } from 'react'
 
-import Loader from '@evaka/lib-components/src/atoms/Loader'
 import { FixedSpaceColumn } from '@evaka/lib-components/src/layout/flex-helpers'
 import { Gap } from '@evaka/lib-components/src/white-space'
 
 import { useTranslation } from '../../state/i18n'
-import { AbsenceType } from '../../types'
-import { AttendanceChild, postFullDayAbsence } from '../../api/attendances'
-import AbsenceSelector from './AbsenceSelector'
-import { WideInlineButton } from './components'
+import { AttendanceChild } from '../../api/attendances'
 import { WideLinkButton } from '../../components/mobile/components'
 
 interface Props {
@@ -28,43 +24,24 @@ export default React.memo(function AttendanceChildComing({
 }: Props) {
   const { i18n } = useTranslation()
 
-  const [markAbsence, setMarkAbsence] = useState<boolean>(false)
-
-  async function selectAbsenceType(absenceType: AbsenceType) {
-    return postFullDayAbsence(unitId, child.id, absenceType)
-  }
-
   return (
     <Fragment>
-      {markAbsence &&
-        (child ? (
-          <Fragment>
-            <Gap size={'s'} />
+      <FixedSpaceColumn>
+        <WideLinkButton
+          $primary
+          data-qa="mark-present"
+          to={`/units/${unitId}/groups/${groupIdOrAll}/childattendance/${child.id}/markpresent`}
+        >
+          {i18n.attendances.actions.markPresent}
+        </WideLinkButton>
 
-            <AbsenceSelector selectAbsenceType={selectAbsenceType} />
-          </Fragment>
-        ) : (
-          <Loader />
-        ))}
-
-      {!markAbsence && (
-        <Fragment>
-          <FixedSpaceColumn>
-            <WideLinkButton
-              data-qa="mark-present"
-              to={`/units/${unitId}/groups/${groupIdOrAll}/childattendance/${child.id}/markpresent`}
-            >
-              {i18n.attendances.actions.markPresent}
-            </WideLinkButton>
-
-            <WideInlineButton
-              text={i18n.attendances.actions.markAbsent}
-              onClick={() => setMarkAbsence(true)}
-            />
-          </FixedSpaceColumn>
-          <Gap size={'L'} />
-        </Fragment>
-      )}
+        <WideLinkButton
+          to={`/units/${unitId}/groups/${groupIdOrAll}/childattendance/${child.id}/markabsent`}
+        >
+          {i18n.attendances.actions.markAbsent}
+        </WideLinkButton>
+      </FixedSpaceColumn>
+      <Gap size={'L'} />
     </Fragment>
   )
 })
