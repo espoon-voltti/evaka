@@ -20,6 +20,7 @@ import { Authentication } from './auth'
 import requireAuth from './auth/requireAuth'
 import MessagesPage from './messages/MessagesPage'
 import { featureFlags } from './config'
+import { MessagesContextProvider } from './messages/state'
 
 export default function App() {
   return (
@@ -27,52 +28,54 @@ export default function App() {
       <Authentication>
         <Localization>
           <OverlayContextProvider>
-            <Header />
-            <main>
-              <Switch>
-                <Route exact path="/" component={MapView} />
-                <Route
-                  exact
-                  path="/applications"
-                  component={requireAuth(Applications)}
-                />
-                <Route
-                  exact
-                  path="/applications/new/:childId"
-                  component={requireAuth(ApplicationCreation)}
-                />
-                <Route
-                  exact
-                  path="/applications/:applicationId"
-                  component={requireAuth(ApplicationReadView)}
-                />
-                <Route
-                  exact
-                  path="/applications/:applicationId/edit"
-                  component={requireAuth(ApplicationEditor)}
-                />
-                <Route
-                  exact
-                  path="/decisions"
-                  component={requireAuth(Decisions)}
-                />
-                <Route
-                  exact
-                  path="/decisions/by-application/:applicationId"
-                  component={requireAuth(DecisionResponseList)}
-                />
-                {featureFlags.messaging && (
+            <MessagesContextProvider>
+              <Header />
+              <main>
+                <Switch>
+                  <Route exact path="/" component={MapView} />
                   <Route
                     exact
-                    path="/messages"
-                    component={requireAuth(MessagesPage)}
+                    path="/applications"
+                    component={requireAuth(Applications)}
                   />
-                )}
-                <Route path="/" component={RedirectToMap} />
-              </Switch>
-            </main>
-            <GlobalInfoDialog />
-            <GlobalErrorDialog />
+                  <Route
+                    exact
+                    path="/applications/new/:childId"
+                    component={requireAuth(ApplicationCreation)}
+                  />
+                  <Route
+                    exact
+                    path="/applications/:applicationId"
+                    component={requireAuth(ApplicationReadView)}
+                  />
+                  <Route
+                    exact
+                    path="/applications/:applicationId/edit"
+                    component={requireAuth(ApplicationEditor)}
+                  />
+                  <Route
+                    exact
+                    path="/decisions"
+                    component={requireAuth(Decisions)}
+                  />
+                  <Route
+                    exact
+                    path="/decisions/by-application/:applicationId"
+                    component={requireAuth(DecisionResponseList)}
+                  />
+                  {featureFlags.messaging && (
+                    <Route
+                      exact
+                      path="/messages"
+                      component={requireAuth(MessagesPage)}
+                    />
+                  )}
+                  <Route path="/" component={RedirectToMap} />
+                </Switch>
+              </main>
+              <GlobalInfoDialog />
+              <GlobalErrorDialog />
+            </MessagesContextProvider>
           </OverlayContextProvider>
         </Localization>
       </Authentication>

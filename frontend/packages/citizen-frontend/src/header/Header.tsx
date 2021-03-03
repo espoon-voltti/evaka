@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useEffect, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import styled from 'styled-components'
 import colors from '@evaka/lib-components/src/colors'
 import { desktopMin } from '@evaka/lib-components/src/breakpoints'
@@ -11,42 +11,38 @@ import EvakaLogo from './EvakaLogo'
 import DesktopNav from './DesktopNav'
 import MobileNav from './MobileNav'
 import { headerHeight } from '../header/const'
-import { Result } from '@evaka/lib-common/src/api'
-import { getUnreadBulletinsCount } from '~messages/api'
+import { getUnreadBulletinsCount } from '../messages/api'
 import { useRestApi } from '@evaka/lib-common/src/utils/useRestApi'
 import { useUser } from '../auth'
+import { MessagesContext, MessagesState } from '../messages/state'
 
 export default React.memo(function Header() {
   const [showMenu, setShowMenu] = useState(false)
   const user = useUser()
-  const [
+
+  const {
     unreadBulletinsCount,
     setUnreadBulletinsCount
-  ] = useState<Result<number> | null>(null)
+  } = useContext<MessagesState>(MessagesContext)
 
-  const loadUnreadCount = useRestApi(
+  const loadUnreadBulletinsCount = useRestApi(
     getUnreadBulletinsCount,
-    setUnreadBulletinsCount
+    (result) => result.isSuccess && setUnreadBulletinsCount(result.value)
   )
+
   useEffect(() => {
-    if (user) loadUnreadCount()
+    if (user) loadUnreadBulletinsCount()
   }, [user])
 
   return (
     <HeaderContainer fixed={showMenu}>
       <EspooLogo />
       <EvakaLogo />
-      <DesktopNav
-        unreadMessagesCount={
-          unreadBulletinsCount?.isSuccess ? unreadBulletinsCount.value : 0
-        }
-      />
+      <DesktopNav unreadMessagesCount={unreadBulletinsCount ?? 0} />
       <MobileNav
         showMenu={showMenu}
         setShowMenu={setShowMenu}
-        unreadMessagesCount={
-          unreadBulletinsCount?.isSuccess ? unreadBulletinsCount.value : 0
-        }
+        unreadMessagesCount={unreadBulletinsCount ?? 0}
       />
     </HeaderContainer>
   )
