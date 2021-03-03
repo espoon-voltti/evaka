@@ -204,7 +204,7 @@ fun Database.Read.getUnreadBulletinCountByGuardian(
         SELECT count(distinct b.id) AS count
         FROM bulletin b
         JOIN bulletin_instance bi ON b.id = bi.bulletin_id
-        WHERE bi.guardian_id = :userId AND b.sent_at IS NOT NULL AND bi.read_at IS NULL
+        WHERE bi.receiver_id = :userId AND b.sent_at IS NOT NULL AND bi.read_at IS NULL
     """.trimIndent()
 
     return this.createQuery(sql)

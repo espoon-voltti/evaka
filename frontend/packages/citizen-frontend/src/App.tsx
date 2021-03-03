@@ -20,7 +20,7 @@ import { Authentication } from './auth'
 import requireAuth from './auth/requireAuth'
 import MessagesPage from './messages/MessagesPage'
 import { featureFlags } from './config'
-import { MessagesContextProvider } from './messages/state'
+import { HeaderContextProvider } from './messages/state'
 
 export default function App() {
   return (
@@ -28,7 +28,7 @@ export default function App() {
       <Authentication>
         <Localization>
           <OverlayContextProvider>
-            <MessagesContextProvider>
+            <HeaderContextProvider>
               <Header />
               <main>
                 <Switch>
@@ -75,7 +75,7 @@ export default function App() {
               </main>
               <GlobalInfoDialog />
               <GlobalErrorDialog />
-            </MessagesContextProvider>
+            </HeaderContextProvider>
           </OverlayContextProvider>
         </Localization>
       </Authentication>

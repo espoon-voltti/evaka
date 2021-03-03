@@ -4,9 +4,9 @@
 
 import React, { useMemo, useState, createContext } from 'react'
 
-export interface MessagesState {
+export interface HeaderState {
   unreadBulletinsCount: number | null
-  setUnreadBulletinsCount: (request: number) => void
+  setUnreadBulletinsCount: (value: number) => void
 }
 
 const defaultState = {
@@ -14,30 +14,26 @@ const defaultState = {
   setUnreadBulletinsCount: () => undefined
 }
 
-export const MessagesContext = createContext<MessagesState>(defaultState)
+export const HeaderContext = createContext<HeaderState>(defaultState)
 
-export const MessagesContextProvider = React.memo(
-  function MessagesContextProvider({
-    children
-  }: {
-    children: React.ReactNode
-  }) {
-    const [unreadBulletinsCount, setUnreadBulletinsCount] = useState<
-      number | null
-    >(null)
+export const HeaderContextProvider = React.memo(function HeaderContextProvider({
+  children
+}: {
+  children: React.ReactNode
+}) {
+  const [unreadBulletinsCount, setUnreadBulletinsCount] = useState<
+    number | null
+  >(null)
 
-    const value = useMemo(
-      () => ({
-        unreadBulletinsCount: unreadBulletinsCount,
-        setUnreadBulletinsCount: setUnreadBulletinsCount
-      }),
-      [unreadBulletinsCount, setUnreadBulletinsCount]
-    )
+  const value = useMemo(
+    () => ({
+      unreadBulletinsCount,
+      setUnreadBulletinsCount
+    }),
+    [unreadBulletinsCount, setUnreadBulletinsCount]
+  )
 
-    return (
-      <MessagesContext.Provider value={value}>
-        {children}
-      </MessagesContext.Provider>
-    )
-  }
-)
+  return (
+    <HeaderContext.Provider value={value}>{children}</HeaderContext.Provider>
+  )
+})

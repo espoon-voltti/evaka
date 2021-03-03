@@ -14,7 +14,7 @@ import { getBulletins, markBulletinRead } from '../messages/api'
 import MessagesList from '../messages/MessagesList'
 import MessageReadView from '../messages/MessageReadView'
 import styled from 'styled-components'
-import { MessagesState, MessagesContext } from './state'
+import { HeaderState, HeaderContext } from './state'
 
 export default React.memo(function MessagesPage() {
   const [bulletins, setBulletins] = useState<Result<ReceivedBulletin[]>>(
@@ -24,24 +24,30 @@ export default React.memo(function MessagesPage() {
     null
   )
 
-  const {
-    unreadBulletinsCount,
-    setUnreadBulletinsCount
-  } = useContext<MessagesState>(MessagesContext)
+  const { setUnreadBulletinsCount } = useContext<HeaderState>(HeaderContext)
 
   const loadBulletins = useRestApi(getBulletins, setBulletins)
   useEffect(() => loadBulletins(), [])
 
+  useEffect(
+    () =>
+      bulletins.isSuccess
+        ? setUnreadBulletinsCount(
+            bulletins.value.filter(({ isRead }) => !isRead).length
+          )
+        : undefined,
+    [bulletins]
+  )
+
   const openBulletin = (bulletin: ReceivedBulletin) => {
     setActiveBulletin(bulletin)
+
+    if (bulletin.isRead) return
 
     void markBulletinRead(bulletin.id).then(() => {
       setActiveBulletin((b) =>
         b?.id === bulletin.id ? { ...b, isRead: true } : b
       )
-
-      if (unreadBulletinsCount)
-        setUnreadBulletinsCount(unreadBulletinsCount - 1)
 
       setBulletins(
         bulletins.map((values) =>

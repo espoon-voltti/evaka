@@ -14,7 +14,7 @@ import { headerHeight } from '../header/const'
 import { getUnreadBulletinsCount } from '../messages/api'
 import { useRestApi } from '@evaka/lib-common/src/utils/useRestApi'
 import { useUser } from '../auth'
-import { MessagesContext, MessagesState } from '../messages/state'
+import { HeaderContext, HeaderState } from '../messages/state'
 
 export default React.memo(function Header() {
   const [showMenu, setShowMenu] = useState(false)
@@ -23,7 +23,7 @@ export default React.memo(function Header() {
   const {
     unreadBulletinsCount,
     setUnreadBulletinsCount
-  } = useContext<MessagesState>(MessagesContext)
+  } = useContext<HeaderState>(HeaderContext)
 
   const loadUnreadBulletinsCount = useRestApi(
     getUnreadBulletinsCount,
