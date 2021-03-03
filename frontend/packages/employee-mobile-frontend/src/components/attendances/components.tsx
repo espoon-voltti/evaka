@@ -9,11 +9,12 @@ import { AttendanceChild } from '../../api/attendances'
 import AsyncButton from '@evaka/lib-components/src/atoms/buttons/AsyncButton'
 import Button from '@evaka/lib-components/src/atoms/buttons/Button'
 import InlineButton from '@evaka/lib-components/src/atoms/buttons/InlineButton'
-import RoundIcon from '@evaka/lib-components/src/atoms/RoundIcon'
 import colors from '@evaka/lib-components/src/colors'
 import { defaultMargins } from '@evaka/lib-components/src/white-space'
 import { Label } from '@evaka/lib-components/src/typography'
-import { faExclamation } from '@evaka/lib-icons'
+import Title from '@evaka/lib-components/src/atoms/Title'
+import HorizontalLine from '@evaka/lib-components/src/atoms/HorizontalLine'
+
 import { useTranslation } from '../../state/i18n'
 import { CareType, formatCareType } from '../../types'
 
@@ -101,13 +102,67 @@ export const FlexLabel = styled(Label)`
   }
 `
 
-const AbsentFromWrapper = styled.div`
+export const ArrivalTime = styled.div`
+  font-family: Montserrat, sans-serif;
+  font-size: 18px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 27px;
+  letter-spacing: 0em;
+  display: flex;
+  justify-content: space-between;
+  color: ${colors.greyscale.dark};
+`
+
+export const CustomHorizontalLine = styled(HorizontalLine)`
+  margin-bottom: 14px;
+  margin-top: 14px;
+`
+
+export const Actions = styled.div`
+  width: 100%;
+  display: flex;
+
+  * > button {
+    width: 50%;
+  }
+`
+
+export const CustomTitle = styled(Title)`
+  margin-top: 0;
+  margin-bottom: 0;
+  text-align: center;
+`
+
+export const DailyNotes = styled.div`
   display: flex;
 `
 
-const InfoText = styled.div`
+export const BackButtonInline = styled(InlineButton)`
+  color: ${colors.blues.dark};
+  margin-top: ${defaultMargins.s};
   margin-left: ${defaultMargins.s};
+  margin-bottom: ${defaultMargins.s};
 `
+
+const AbsentFromWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+`
+
+const AbsenceTitle = styled(Title)`
+  color: ${colors};
+  font-size: 18px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 27px;
+  letter-spacing: 0em;
+  text-align: left;
+  margin-top: 0;
+  margin-bottom: 0;
+`
+
+const InfoText = styled.div``
 
 interface AbsentFromProps {
   child: AttendanceChild
@@ -119,11 +174,8 @@ export function AbsentFrom({ child, absentFrom }: AbsentFromProps) {
 
   return (
     <AbsentFromWrapper>
-      <RoundIcon
-        color={colors.brandEspoo.espooTurquoise}
-        size={'s'}
-        content={faExclamation}
-      />
+      <CustomHorizontalLine />
+      <AbsenceTitle size={2}>{i18n.attendances.absenceTitle}</AbsenceTitle>
       <InfoText>
         {absentFrom.length > 1
           ? i18n.attendances.missingFromPlural
