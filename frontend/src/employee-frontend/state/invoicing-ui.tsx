@@ -71,7 +71,7 @@ interface ValueDecisionSearchFilterState {
   clearSearchFilters: () => void
 }
 
-interface InvoiceSearchFilters {
+export interface InvoiceSearchFilters {
   area: string[]
   unit?: string
   status: InvoiceStatus
