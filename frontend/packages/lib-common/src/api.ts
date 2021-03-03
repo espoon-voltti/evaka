@@ -29,6 +29,11 @@ export class Loading<T> {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  chain<A>(_f: (v: T) => Result<A>): Result<A> {
+    return (this as unknown) as Loading<A>
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   map<A>(_f: (v: T) => A): Result<A> {
     return (this as unknown) as Loading<A>
   }
@@ -64,6 +69,11 @@ export class Failure<T> {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  chain<A>(_f: (v: T) => Result<A>): Result<A> {
+    return (this as unknown) as Result<A>
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   map<A>(_f: (v: T) => A): Result<A> {
     return (this as unknown) as Result<A>
   }
@@ -89,8 +99,12 @@ export class Success<T> {
     return new Success(v)
   }
 
+  chain<A>(f: (v: T) => Result<A>): Result<A> {
+    return f(this.value)
+  }
+
   map<A>(f: (v: T) => A): Result<A> {
-    return new Success(f(this.value))
+    return this.chain((v) => Success.of(f(v)))
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars

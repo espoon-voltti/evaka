@@ -52,13 +52,15 @@ class BulletinControllerEmployee(
     fun getSentBulletins(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @RequestParam(required = true) unitId: UUID
-    ): ResponseEntity<List<Bulletin>> {
+        @RequestParam unitId: UUID,
+        @RequestParam page: Int,
+        @RequestParam pageSize: Int
+    ): ResponseEntity<Paged<Bulletin>> {
         Audit.MessagingBulletinRead.log(unitId)
         acl.getRolesForUnit(user, unitId).requireOneOfRoles(UserRole.ADMIN, UserRole.UNIT_SUPERVISOR, UserRole.STAFF)
 
         return db.transaction { tx ->
-            tx.getSentBulletinsByUnit(unitId)
+            tx.getSentBulletinsByUnit(unitId, page, pageSize)
         }.let { ResponseEntity.ok(it) }
     }
 
@@ -66,13 +68,15 @@ class BulletinControllerEmployee(
     fun getDraftBulletins(
         db: Database.Connection,
         user: AuthenticatedUser,
-        @RequestParam(required = true) unitId: UUID
-    ): ResponseEntity<List<Bulletin>> {
+        @RequestParam unitId: UUID,
+        @RequestParam page: Int,
+        @RequestParam pageSize: Int
+    ): ResponseEntity<Paged<Bulletin>> {
         Audit.MessagingBulletinDraftRead.log()
         authorizeAdminSupervisorOrStaff(user)
 
         return db.transaction { tx ->
-            tx.getOwnBulletinDrafts(user, unitId)
+            tx.getOwnBulletinDrafts(user, unitId, page, pageSize)
         }.let { ResponseEntity.ok(it) }
     }
 

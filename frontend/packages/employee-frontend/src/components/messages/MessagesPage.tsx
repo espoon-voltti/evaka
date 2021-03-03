@@ -2,15 +2,16 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import styled from 'styled-components'
 import FocusTrap from 'focus-trap-react'
 import { Loading, Result } from '@evaka/lib-common/src/api'
 import { useRestApi } from '@evaka/lib-common/src/utils/useRestApi'
 import { useDebounce } from '@evaka/lib-common/src/utils/useDebounce'
+import { defaultMargins } from '@evaka/lib-components/src/white-space'
 import Container from '@evaka/lib-components/src/layout/Container'
 import { FixedSpaceRow } from '@evaka/lib-components/src/layout/flex-helpers'
-import { Bulletin, IdAndName, SentBulletin } from './types'
+import { Bulletin, IdAndName } from './types'
 import {
   deleteDraftBulletin,
   getDraftBulletins,
@@ -30,21 +31,22 @@ import MessageReadView from './MessageReadView'
 export default React.memo(function MessagesPage() {
   const [units, setUnits] = useState<Result<IdAndName[]>>(Loading.of())
   const [groups, setGroups] = useState<Result<IdAndName[]> | null>(null)
-  const [draftMessages, setDraftMessages] = useState<Result<Bulletin[]> | null>(
-    null
-  )
-  const [sentMessages, setSentMessages] = useState<Result<
-    SentBulletin[]
-  > | null>(null)
+  const [messageCounts, setMessageCounts] = useState<
+    Record<MessageBoxType, number>
+  >(initialMessageCounts)
   const [messageOpen, setMessageOpen] = useState<Bulletin | null>()
   const [messageUnderEdit, setMessageUnderEdit] = useState<Bulletin | null>()
-  const [
-    activeMessageBox,
-    setActiveMessageBox
-  ] = useState<MessageBoxType | null>(null)
+  const [activeMessageBox, setActiveMessageBox] = useState<MessageBoxType>(
+    'SENT'
+  )
   const debouncedMessage = useDebounce(messageUnderEdit, 2000)
 
   const [unit, setUnit] = useState<IdAndName | null>(null)
+  const selectUnit = (unit: IdAndName) => {
+    setMessageCounts(initialMessageCounts)
+    setActiveMessageBox('SENT')
+    setUnit(unit)
+  }
 
   const loadUnits = useRestApi(getUnits, setUnits)
   useEffect(() => loadUnits(), [])
@@ -54,14 +56,26 @@ export default React.memo(function MessagesPage() {
     if (unit) loadGroups(unit.id)
   }, [unit])
 
-  const loadDraftMessages = useRestApi(getDraftBulletins, setDraftMessages)
-  useEffect(() => {
-    if (unit) loadDraftMessages(unit.id)
-  }, [unit])
+  const setMessageCountResult = useCallback(
+    (result: Result<Record<MessageBoxType, number>>) =>
+      result.isSuccess ? setMessageCounts(result.value) : undefined,
+    [setMessageCounts]
+  )
+  const loadMessageCounts = useRestApi(
+    (unitId: string) =>
+      Promise.all([
+        getDraftBulletins(unitId, 1, 1),
+        getSentBulletins(unitId, 1, 1)
+      ]).then(([drafts, sent]) =>
+        drafts.chain((ds) =>
+          sent.map((ss) => ({ SENT: ss.total, DRAFT: ds.total }))
+        )
+      ),
+    setMessageCountResult
+  )
 
-  const loadSentMessages = useRestApi(getSentBulletins, setSentMessages)
   useEffect(() => {
-    if (unit) loadSentMessages(unit.id)
+    if (unit) loadMessageCounts(unit.id)
   }, [unit])
 
   const onCreateNew = () => {
@@ -69,7 +83,7 @@ export default React.memo(function MessagesPage() {
 
     void initNewBulletin(unit.id)
       .then((res) => res.isSuccess && setMessageUnderEdit(res.value))
-      .then(() => loadDraftMessages(unit.id))
+      .then(() => loadMessageCounts(unit.id))
   }
 
   useEffect(() => {
@@ -83,8 +97,7 @@ export default React.memo(function MessagesPage() {
     setMessageUnderEdit(null)
     setMessageOpen(null)
     if (unit) {
-      loadDraftMessages(unit.id)
-      loadSentMessages(unit.id)
+      loadMessageCounts(unit.id)
     }
   }
 
@@ -113,50 +126,38 @@ export default React.memo(function MessagesPage() {
   return (
     <Container>
       <StyledFlex spacing="L" tabIndex={messageUnderEdit ? -1 : undefined}>
-        <UnitsList units={units} activeUnit={unit} selectUnit={setUnit} />
+        <UnitsList units={units} activeUnit={unit} selectUnit={selectUnit} />
 
         {unit && (
-          <MessageBoxes
-            activeMessageBox={activeMessageBox}
-            selectMessageBox={(box) => {
-              setActiveMessageBox(box)
-              setMessageOpen(null)
-            }}
-            messageCounts={{
-              SENT: sentMessages?.isSuccess ? sentMessages.value.length : 0,
-              DRAFT: draftMessages?.isSuccess ? draftMessages.value.length : 0
-            }}
-            onCreateNew={onCreateNew}
-            createNewDisabled={!unit || groups?.isSuccess !== true}
-          />
-        )}
+          <>
+            <MessageBoxes
+              activeMessageBox={activeMessageBox}
+              selectMessageBox={(box) => {
+                setActiveMessageBox(box)
+                setMessageOpen(null)
+              }}
+              messageCounts={messageCounts}
+              onCreateNew={onCreateNew}
+              createNewDisabled={!unit || groups?.isSuccess !== true}
+            />
 
-        {!messageOpen && activeMessageBox === 'SENT' && sentMessages && (
-          <MessageList
-            messageBoxType={'SENT'}
-            messages={sentMessages}
-            selectMessage={setMessageOpen}
-            groups={groups?.isSuccess === true ? groups.value : []}
-          />
-        )}
-
-        {!messageOpen && activeMessageBox === 'DRAFT' && draftMessages && (
-          <MessageList
-            messageBoxType={'DRAFT'}
-            messages={draftMessages}
-            selectMessage={setMessageOpen}
-            groups={groups?.isSuccess === true ? groups.value : []}
-          />
-        )}
-
-        {messageOpen && (
-          <MessageReadView
-            message={messageOpen}
-            onEdit={() => {
-              setMessageUnderEdit(messageOpen)
-              setMessageOpen(null)
-            }}
-          />
+            {messageOpen ? (
+              <MessageReadView
+                message={messageOpen}
+                onEdit={() => {
+                  setMessageUnderEdit(messageOpen)
+                  setMessageOpen(null)
+                }}
+              />
+            ) : (
+              <MessageList
+                unitId={unit.id}
+                messageBoxType={activeMessageBox}
+                selectMessage={setMessageOpen}
+                groups={groups?.isSuccess === true ? groups.value : []}
+              />
+            )}
+          </>
         )}
       </StyledFlex>
 
@@ -185,10 +186,12 @@ export default React.memo(function MessagesPage() {
   )
 })
 
+const initialMessageCounts = { SENT: 0, DRAFT: 0 }
+
 const StyledFlex = styled(FixedSpaceRow)`
   align-items: stretch;
-  margin-top: 16px;
-  height: calc(100vh - 176px);
+  margin: ${defaultMargins.s} 0;
+  height: calc(100vh - 192px);
 `
 
 const Dimmer = styled.div`

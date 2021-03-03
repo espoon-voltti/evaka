@@ -122,22 +122,27 @@ fun Database.Transaction.sendBulletin(
 }
 
 fun Database.Read.getSentBulletinsByUnit(
-    unitId: UUID
-): List<Bulletin> {
+    unitId: UUID,
+    page: Int,
+    pageSize: Int
+): Paged<Bulletin> {
     // language=sql
     val sql = """
-        SELECT b.*, dg.name AS group_name, concat(e.first_name, ' ', e.last_name) AS created_by_employee_name
+        SELECT COUNT(b.*) OVER (), b.*, dg.name AS group_name, concat(e.first_name, ' ', e.last_name) AS created_by_employee_name
         FROM bulletin b
         JOIN employee e on b.created_by_employee = e.id
         JOIN daycare_group dg ON b.group_id = dg.id
         WHERE dg.daycare_id = :unitId AND b.sent_at IS NOT NULL
         ORDER BY b.sent_at DESC
+        LIMIT :pageSize OFFSET (:page - 1) * :pageSize
     """.trimIndent()
 
     return this.createQuery(sql)
         .bind("unitId", unitId)
-        .mapTo<Bulletin>()
-        .list()
+        .bind("page", page)
+        .bind("pageSize", pageSize)
+        .map(withCountMapper<Bulletin>())
+        .let(mapToPaged(pageSize))
 }
 
 fun Database.Read.getBulletin(
@@ -161,23 +166,28 @@ fun Database.Read.getBulletin(
 
 fun Database.Read.getOwnBulletinDrafts(
     user: AuthenticatedUser,
-    unitId: UUID
-): List<Bulletin> {
+    unitId: UUID,
+    page: Int,
+    pageSize: Int
+): Paged<Bulletin> {
     // language=sql
     val sql = """
-        SELECT b.*, dg.name AS group_name, concat(e.first_name, ' ', e.last_name) AS created_by_employee_name
+        SELECT COUNT(b.*) OVER (), b.*, dg.name AS group_name, concat(e.first_name, ' ', e.last_name) AS created_by_employee_name
         FROM bulletin b
         JOIN employee e on b.created_by_employee = e.id
         LEFT JOIN daycare_group dg ON b.group_id = dg.id
         WHERE b.created_by_employee = :userId AND b.sent_at IS NULL AND b.unit_id = :unitId 
         ORDER BY b.updated DESC
+        LIMIT :pageSize OFFSET (:page - 1) * :pageSize
     """.trimIndent()
 
     return this.createQuery(sql)
         .bind("userId", user.id)
         .bind("unitId", unitId)
-        .mapTo<Bulletin>()
-        .list()
+        .bind("page", page)
+        .bind("pageSize", pageSize)
+        .map(withCountMapper<Bulletin>())
+        .let(mapToPaged(pageSize))
 }
 
 fun Database.Read.getReceivedBulletinsByGuardian(

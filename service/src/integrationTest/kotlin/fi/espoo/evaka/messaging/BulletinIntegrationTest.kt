@@ -105,7 +105,7 @@ class BulletinIntegrationTest : FullApplicationTest() {
                 content = msgContent
             )
         )
-        getDraftBulletins(supervisor, unitId).also { assertEquals(1, it.size) }
+        getDraftBulletins(supervisor, unitId).also { assertEquals(1, it.total) }
         sendBulletin(supervisor, bulletinId)
 
         val guardianBulletin = getBulletinsAsGuardian(guardian)
@@ -125,12 +125,12 @@ class BulletinIntegrationTest : FullApplicationTest() {
         assertTrue(getBulletinsAsGuardian(guardian).data.first().isRead)
 
         getSentBulletinsByUnit(supervisor, testDaycare.id).also {
-            assertEquals(msgContent, it.first().content)
+            assertEquals(msgContent, it.data.first().content)
         }
         getSentBulletinsByUnit(staffMember, testDaycare.id).also {
-            assertEquals(msgContent, it.first().content)
+            assertEquals(msgContent, it.data.first().content)
         }
-        getDraftBulletins(supervisor, unitId).also { assertTrue(it.isEmpty()) }
+        getDraftBulletins(supervisor, unitId).also { assertTrue(it.data.isEmpty()) }
     }
 
     @Test
@@ -138,7 +138,7 @@ class BulletinIntegrationTest : FullApplicationTest() {
         val unitId = testDaycare.id
         val bulletinId = initBulletin(supervisor, unitId)
         deleteDraftBulletin(supervisor, bulletinId)
-        getDraftBulletins(supervisor, unitId).also { assertTrue(it.isEmpty()) }
+        getDraftBulletins(supervisor, unitId).also { assertTrue(it.data.isEmpty()) }
     }
 
     private fun initBulletin(user: AuthenticatedUser, unitId: UUID = testDaycare.id): UUID {
@@ -176,19 +176,19 @@ class BulletinIntegrationTest : FullApplicationTest() {
         assertEquals(204, res.statusCode)
     }
 
-    private fun getDraftBulletins(user: AuthenticatedUser, unitId: UUID): List<Bulletin> {
-        val (_, res, result) = http.get("/bulletins/draft?unitId=$unitId")
+    private fun getDraftBulletins(user: AuthenticatedUser, unitId: UUID): Paged<Bulletin> {
+        val (_, res, result) = http.get("/bulletins/draft?unitId=$unitId", listOf("page" to 1, "pageSize" to 50))
             .asUser(user)
-            .responseObject<List<Bulletin>>(objectMapper)
+            .responseObject<Paged<Bulletin>>(objectMapper)
 
         assertEquals(200, res.statusCode)
         return result.get()
     }
 
-    private fun getSentBulletinsByUnit(user: AuthenticatedUser, unitId: UUID): List<Bulletin> {
-        val (_, res, result) = http.get("/bulletins/sent?unitId=$unitId")
+    private fun getSentBulletinsByUnit(user: AuthenticatedUser, unitId: UUID): Paged<Bulletin> {
+        val (_, res, result) = http.get("/bulletins/sent?unitId=$unitId", listOf("page" to 1, "pageSize" to 50))
             .asUser(user)
-            .responseObject<List<Bulletin>>(objectMapper)
+            .responseObject<Paged<Bulletin>>(objectMapper)
 
         assertEquals(200, res.statusCode)
         return result.get()

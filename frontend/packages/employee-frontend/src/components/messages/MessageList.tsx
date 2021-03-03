@@ -2,10 +2,12 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import styled from 'styled-components'
 import LocalDate from '@evaka/lib-common/src/local-date'
-import { Result } from '@evaka/lib-common/src/api'
+import { Loading, Paged, Result, Success } from '@evaka/lib-common/src/api'
+import { useRestApi } from '@evaka/lib-common/src/utils/useRestApi'
+import useIntersectionObserver from '@evaka/lib-common/src/utils/useIntersectionObserver'
 import colors from '@evaka/lib-components/src/colors'
 import { defaultMargins } from '@evaka/lib-components/src/white-space'
 import { H1, H3 } from '@evaka/lib-components/src/typography'
@@ -13,72 +15,158 @@ import { SpinnerSegment } from '@evaka/lib-components/src/atoms/state/Spinner'
 import ErrorSegment from '@evaka/lib-components/src/atoms/state/ErrorSegment'
 import HorizontalLine from '@evaka/lib-components/src/atoms/HorizontalLine'
 import { FixedSpaceRow } from '@evaka/lib-components/src/layout/flex-helpers'
+import { getDraftBulletins, getSentBulletins } from './api'
 import { useTranslation } from '../../state/i18n'
 import { formatDate } from '../../utils/date'
 import { MessageBoxType } from './MessageBoxes'
 import { Bulletin, IdAndName } from './types'
 
 interface Props {
+  unitId: string
   messageBoxType: MessageBoxType
-  messages: Result<Bulletin[]>
   groups: IdAndName[]
   selectMessage: (msg: Bulletin) => void
 }
 
 export default React.memo(function MessageList({
+  unitId,
   messageBoxType,
-  messages,
   selectMessage,
   groups
 }: Props) {
   const { i18n } = useTranslation()
+  const [messagesState, setMessagesState] = useState<MessagesState>(
+    initialState
+  )
+
+  const setMessagesResult = useCallback(
+    (result: Result<Paged<Bulletin>>) =>
+      setMessagesState((state) => {
+        if (result.isSuccess) {
+          return {
+            ...state,
+            bulletins: [...state.bulletins, ...result.value.data],
+            nextPage: Success.of(undefined),
+            total: result.value.total,
+            pages: result.value.pages
+          }
+        }
+
+        if (result.isFailure) {
+          return {
+            ...state,
+            nextPage: result.map(() => undefined)
+          }
+        }
+
+        return state
+      }),
+    [setMessagesState]
+  )
+
+  const loadMessages = useRestApi(
+    (unit: string, type: MessageBoxType, page: number) => {
+      switch (type) {
+        case 'SENT':
+          return getSentBulletins(unit, page)
+        case 'DRAFT':
+          return getDraftBulletins(unit, page)
+      }
+    },
+    setMessagesResult
+  )
+
+  useEffect(() => {
+    setMessagesState(initialState)
+    loadMessages(unitId, messageBoxType, initialState.currentPage)
+  }, [unitId, messageBoxType])
+
+  useEffect(() => {
+    setMessagesState((state) => ({ ...state, nextPage: Loading.of() }))
+    loadMessages(unitId, messageBoxType, messagesState.currentPage)
+  }, [messagesState.currentPage])
+
+  const loadNextPage = () =>
+    setMessagesState((state) => {
+      if (state.currentPage < state.pages) {
+        return {
+          ...state,
+          currentPage: state.currentPage + 1
+        }
+      }
+      return state
+    })
+
   return (
     <Container>
       <HeaderContainer>
         <H1 noMargin>{i18n.messages.messageList.titles[messageBoxType]}</H1>
       </HeaderContainer>
-      {messages.isLoading && <SpinnerSegment />}
-      {messages.isFailure && <ErrorSegment title={i18n.common.loadingFailed} />}
-      {messages.isSuccess && (
-        <>
-          {messages.value.map((msg) => (
-            <React.Fragment key={msg.id}>
-              <MessageListItem onClick={() => selectMessage(msg)}>
-                <MessageTopRow>
-                  <MessageTitle noMargin>
-                    {msg.title || `(${i18n.messages.noTitle})`}
-                  </MessageTitle>
-                  {msg.sentAt ? (
-                    <FixedSpaceRow>
-                      <span>
-                        {groups.find((g) => g.id === msg.groupId)?.name}
-                      </span>
-                      <span>
-                        {formatDate(
-                          msg.sentAt,
-                          LocalDate.fromSystemTzDate(msg.sentAt).isEqual(
-                            LocalDate.today()
-                          )
-                            ? 'HH:mm'
-                            : 'd.M.'
-                        )}
-                      </span>
-                    </FixedSpaceRow>
-                  ) : (
-                    <span>{i18n.messages.notSent}</span>
-                  )}
-                </MessageTopRow>
-                <MessageSummary>
-                  {msg.content.substring(0, 200).replace('\n', ' ')}
-                </MessageSummary>
-              </MessageListItem>
-              <StyledHr />
-            </React.Fragment>
-          ))}
-        </>
+      {messagesState.bulletins.map((msg) => (
+        <React.Fragment key={msg.id}>
+          <MessageListItem onClick={() => selectMessage(msg)}>
+            <MessageTopRow>
+              <MessageTitle noMargin>
+                {msg.title || `(${i18n.messages.noTitle})`}
+              </MessageTitle>
+              {msg.sentAt ? (
+                <FixedSpaceRow>
+                  <span>{groups.find((g) => g.id === msg.groupId)?.name}</span>
+                  <span>
+                    {formatDate(
+                      msg.sentAt,
+                      LocalDate.fromSystemTzDate(msg.sentAt).isEqual(
+                        LocalDate.today()
+                      )
+                        ? 'HH:mm'
+                        : 'd.M.'
+                    )}
+                  </span>
+                </FixedSpaceRow>
+              ) : (
+                <span>{i18n.messages.notSent}</span>
+              )}
+            </MessageTopRow>
+            <MessageSummary>
+              {msg.content.substring(0, 200).replace('\n', ' ')}
+            </MessageSummary>
+          </MessageListItem>
+          <StyledHr />
+        </React.Fragment>
+      ))}
+      {messagesState.nextPage.isSuccess && (
+        <OnEnterView onEnter={loadNextPage} />
+      )}
+      {messagesState.nextPage.isLoading && <SpinnerSegment />}
+      {messagesState.nextPage.isFailure && (
+        <ErrorSegment title={i18n.common.loadingFailed} />
       )}
     </Container>
   )
+})
+
+interface MessagesState {
+  bulletins: Bulletin[]
+  nextPage: Result<void>
+  currentPage: number
+  pages: number
+  total?: number
+}
+
+const initialState: MessagesState = {
+  bulletins: [],
+  nextPage: Loading.of(),
+  currentPage: 1,
+  pages: 0
+}
+
+const OnEnterView = React.memo(function IsInView({
+  onEnter
+}: {
+  onEnter: () => void
+}) {
+  const ref = useIntersectionObserver<HTMLDivElement>(onEnter)
+  return <div ref={ref} />
 })
 
 const Container = styled.div`

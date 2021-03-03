@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2017-2021 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
-import { Failure, Result, Success } from '@evaka/lib-common/src/api'
+import { Failure, Paged, Result, Success } from '@evaka/lib-common/src/api'
 import { JsonOf } from '@evaka/lib-common/src/json'
 import { client } from '../../api/client'
 import { UUID } from '../../types'
@@ -55,19 +55,37 @@ export async function getGroups(unitId: UUID): Promise<Result<IdAndName[]>> {
 }
 
 export async function getSentBulletins(
-  unitId: UUID
-): Promise<Result<SentBulletin[]>> {
+  unitId: UUID,
+  page: number,
+  pageSize = 50
+): Promise<Result<Paged<SentBulletin>>> {
   return client
-    .get<JsonOf<SentBulletin[]>>('/bulletins/sent', { params: { unitId } })
-    .then((res) => Success.of(res.data.map(deserializeSentBulletin)))
+    .get<JsonOf<Paged<SentBulletin>>>('/bulletins/sent', {
+      params: { unitId, page, pageSize }
+    })
+    .then((res) =>
+      Success.of({
+        ...res.data,
+        data: res.data.data.map(deserializeSentBulletin)
+      })
+    )
     .catch((e) => Failure.fromError(e))
 }
 
 export async function getDraftBulletins(
-  unitId: UUID
-): Promise<Result<Bulletin[]>> {
+  unitId: UUID,
+  page: number,
+  pageSize = 50
+): Promise<Result<Paged<Bulletin>>> {
   return client
-    .get<JsonOf<Bulletin[]>>('/bulletins/draft', { params: { unitId } })
-    .then((res) => Success.of(res.data.map(deserializeBulletin)))
+    .get<JsonOf<Paged<Bulletin>>>('/bulletins/draft', {
+      params: { unitId, page, pageSize }
+    })
+    .then((res) =>
+      Success.of({
+        ...res.data,
+        data: res.data.data.map(deserializeBulletin)
+      })
+    )
     .catch((e) => Failure.fromError(e))
 }

@@ -12,7 +12,7 @@ import { useTranslation } from '../../state/i18n'
 export type MessageBoxType = 'SENT' | 'DRAFT'
 
 interface Props {
-  activeMessageBox: MessageBoxType | null
+  activeMessageBox: MessageBoxType
   selectMessageBox: (selected: MessageBoxType) => void
   messageCounts: Record<MessageBoxType, number>
   onCreateNew: () => void
